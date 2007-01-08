@@ -1,17 +1,12 @@
-Date: Mon, 8 Jan 2007 14:45:40 +0100 (MET)
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N.
-	=?utf-8?q?l=C3=A4uft_jetzt_auch_permanent_auf_der_Zwingli-Nordost_-?=
-	=?utf-8?q?_105=2E130=2E1=2E67?=
-References: <200701071300.05634.lindner_marek@yahoo.de>
-	<200701081337.12060.lindner_marek@yahoo.de>
-	<200701081359.23633.axel@notmail.org>
-In-Reply-To: <200701081359.23633.axel@notmail.org>
+Message-ID: <45A27A1A.3030608@gmx.net>
+Date: Mon, 08 Jan 2007 18:06:34 +0100
+From: elektra <onelektra@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Message-Id: <200701081424.22778.lindner_marek@yahoo.de>
-Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] IP Aggregation
+References: <200701081401.39454.lindner_marek@yahoo.de>
+In-Reply-To: <200701081401.39454.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -23,14 +18,36 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
+Hi Marek -
+> Die Vorteil liegt auf der Hand: Weniger batman Pakete und weniger=20
+> Routeneintr=E4ge.
+>  =20
+der Nachteil ist erh=F6hte Komplexizit=E4t der Sache. Der Vorschlag geht in=
+=20
+die Richtung Methoden aus Linkstate Protokollen zu =FCbernehmen.=20
+Prinzipiell spricht nichts dagegen.
 
-Am Montag, 8. Januar 2007 13:59 schrieb axel:
-> ich schicke nachher mal nen invite an alle die irgendwann mal auf unseren
-> internen CC - "mailing listen" standen... und mach noch nen announce auf
-> open-mesh.net/batman.
+Ich w=FCrde vorschlagen alle notwendigen Schritte zu machen, so dass der=20
+Code tendenziell die bestm=F6glichen Entscheidungen beim Routing trifft.=20
+Wenn Uns Linkstate-Komponenten dabei helfen (ETX-Werte zu=20
+Single-Hop-Nachbarn) k=F6nnen wir gerne darauf zur=FCckgreifen. Bislang seh=
+e=20
+Ich die Notwendigkeit jedoch nicht. Wenn der Code dann beim Routing sein=20
+Bestes gibt k=F6nnen wir schauen wie wir ihn in Richtung Skalierbarkeit=20
+optimieren.
 
-Ok - klingt gut.
+Was die Abst=FCrze angeht kann Ich die Aussage von Lui nur best=E4tigen -  =
 
-Gruß,
-Marek
+wir haben ein Memory-Leak. Der Speicherverbrauch stieg auf der Zwingli=20
+mit etwa 0.2% des Gesamtspeichers pro Stunde. Ich habe den Daemon=20
+daraufhin wieder abgeschaltet, da Ich ungern die Zwingli lahmlegen=20
+m=F6chte - ein Neustart geht leider nicht remote. Auf dem WRT in der=20
+Wagenburg l=E4uft der Daemon seit Tagen durch - der Speicherverbauch=20
+betr=E4gt konstant 2,7 %.
 
+Ziemlich omin=F6s das Ganze...
+
+Was haltet Ihr davon auf der Liste in English zu schreiben? Bislang ist=20
+Deutsch ok - aber wir bauen damit potentiell eine Barriere auf.
+
+cu elektra
