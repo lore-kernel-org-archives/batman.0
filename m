@@ -1,10 +1,13 @@
-From: axel <axel@notmail.org>
-Date: Mon, 8 Jan 2007 20:02:31 +0100
+From: yokoy <batman@yokoy.de>
+Date: Mon, 8 Jan 2007 23:04:41 +0100
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_HVpoF7/Hku22SMn"
-Message-Id: <200701082002.31400.axel@notmail.org>
-Subject: [B.A.T.M.A.N.] path selection
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701082304.42273.batman@yokoy.de>
+Subject: [B.A.T.M.A.N.] invitation to B.A.T.M.A.N@list.open-mesh.net mailing
+	list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -16,170 +19,5 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
---Boundary-00=_HVpoF7/Hku22SMn
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,
-there is also one concern bothering my mind since a while.
-
-I think the protocol currently establishes routes between nodes, but optimizes 
-them the wrong way around. More concrete, the originatorMessages (OGMs) 
-initiated by each node install routing information for DOWN-link traffic in 
-the mesh which are actually optimized for UP-link traffic. 
-
-The following scenario and attached figure (is of course a little bit 
-constructed but it) may illustrate this. The figure shows 4 nodes (A,b,c,D) 
-and 4 existing links between them A-b, b-D, A-c, and c-D - thus, two 
-potential routes between node A and D. The  links b-D and c-D are symmetric, 
-perfect links with 0% packet loss. The links A-b and A-c are asymmetric links 
-with 0% packet loss for A->b and A<-c, but 50% loss for A<-b and A->c (See 
-attached figure). However, each of the 4 links can be assumed as a 
-bidirectional link since at least every second OGM will reach the 
-corresponding link neighbor. 
-Now, node A would receive 100% of the OGMs initiated by D and rebroadcasted 
-via node c but wouldreceive only 50% via node b. Therefore A would select c 
-as its best nighbor towards D (obversely D would select b as its best 
-neighbortowards A). 
-However, in this case, that is not the best choice since every second packet 
-send via A-c-D needs to be retransmitted on the link A-c, which would not be 
-necessary if send via A-b-D . 
-
-Don't know if you agree, ...is that reasonable? Also I don't have any simple 
-approach in mind to solve this but it might be worth to reconsider.
-
-ciao,
-axel
-
-
---Boundary-00=_HVpoF7/Hku22SMn
-Content-Type: image/jpeg;
-  name="asymmetricPathChaos.jpg"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
-	filename="asymmetricPathChaos.jpg"
-
-/9j/4AAQSkZJRgABAQEAUABQAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a
-HBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIy
-MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCABvAM4DASIA
-AhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA
-AAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3
-ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm
-p6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA
-AwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx
-BhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK
-U1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3
-uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iii
-gAooooAKKr31/Z6ZZyXl/dwWlrHjfNPII0XJAGWPAySB+NRzatpttpY1SfULSLTyiuLt5lWIq2Np
-3k4wcjBzzkUAXKKjM8K3CW7Sxid0Z0jLDcyqQGIHUgFlBPbcPWpKACiiuTk8cQ6hcG08KWMmvzq4
-WS4hkEdlDymd9wQVJCybtsYduCMCgDc1PXdH0Tyv7W1WxsPOz5f2u4SLfjGcbiM4yOnqKr6D4p0b
-xP8AbDo159sjtJfJlmSJxHv9FcgK/r8pPBB6EZ8M8UfCzTLDxK/iDxz4n03TrC+Rri5g09ZBK9yx
-AdYUfezIGYMW5PONijket+Bb24lsxZWng+fw/wCHraILZfbJAk8hz8wMABK8hiWZstkHncSADy/w
-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
-blFAHzpB8PvjB4S8QRa1puoR6vdzOGutuoFlmCDaqzCYpvG0kDGSMHBU4Ne5+HtW1HU7M/2vok+j
-36cyW7yrMm0k7SsqfK3Q5HDDuMFS2xRQB5feePPFmveKNc0fwNpelTx6Hlbq41CR/wB/LjAiRRt2
-tuWRcklTtzuUYz3Giaxea34Xg1T+yZ7C+miY/YL/ADEySAkbWO0kKSOG252kHb2rzv8A4R3xp4F8
-Y+JtU8LaLaa3Z6+5nVZbxYpLaYZbL7toZN0kmFUkkAZZT19E8LW+u2nhy0g8S3sF7q67/tE8AAR8
-uxXACr0XaOg6fjQB5vffBK48Wa5JrXjPxPPdXE0QH2ewhESW54ISNnLZjX5gPlBOdxOSc+ieEvCt
-j4M8PxaNp013LbxuzhrqXe2WOTjoFHsoA6nqSTuUUAFFFFABRRRQAUUUUAFFFFABRRRQB//Z/9j/
-4AAQSkZJRgABAQEAUABQAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwg
-JC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIy
-MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCABvAM4DASIAAhEB
-AxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9
-AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6
-Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ip
-qrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEB
-AQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJB
-UQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RV
-VldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6
-wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigAoo
-ooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiii
-gAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKA
-CiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAK
-KKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAoo
-ooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiii
-gAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKA
-CiiigAooooAKKKKACiiigD//2Q==
-
---Boundary-00=_HVpoF7/Hku22SMn--
+Vielen Dank fuer die Einladung. Und fuer B.A.T.M.A.N.
+yky
