@@ -1,11 +1,17 @@
-Date: Mon, 8 Jan 2007 14:15:44 +0100 (MET)
+Date: Mon, 8 Jan 2007 14:45:40 +0100 (MET)
 From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N.
+	=?utf-8?q?l=C3=A4uft_jetzt_auch_permanent_auf_der_Zwingli-Nordost_-?=
+	=?utf-8?q?_105=2E130=2E1=2E67?=
+References: <200701071300.05634.lindner_marek@yahoo.de>
+	<200701081337.12060.lindner_marek@yahoo.de>
+	<200701081359.23633.axel@notmail.org>
+In-Reply-To: <200701081359.23633.axel@notmail.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-Message-Id: <200701081401.39454.lindner_marek@yahoo.de>
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] IP Aggregation
+Message-Id: <200701081424.22778.lindner_marek@yahoo.de>
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -18,41 +24,13 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@open-mesh.net
 
 
-Hi,
+Am Montag, 8. Januar 2007 13:59 schrieb axel:
+> ich schicke nachher mal nen invite an alle die irgendwann mal auf unseren
+> internen CC - "mailing listen" standen... und mach noch nen announce auf
+> open-mesh.net/batman.
 
-die folgende Idee ist auf dem Kongress in diversen Diskussionen entstanden =
-und=20
-bei weitem noch nicht ausgereift. Mich w=FCrde eure Meinung dazu interessie=
-ren.=20
+Ok - klingt gut.
 
-Bisher rebroadcastet jeder batman Knoten alle batman Pakete (wir ignorieren=
-=20
-die Ausnahmen jetzt mal). K=F6nnen wir einen geschickten Algorithmus=20
-entwickeln / anwenden, der es uns gestattet an Stelle des Rebroadcasts der =
-
-Nachbar-Nachrichten HNA informationen in unserem Paket mitzusenden ?
-
-So k=F6nnte das funktioneren: Mein batman Knoten merkt, dass er 3 one Hop=20
-Nachbarn hat, welche keine anderen Nachbarn hinter sich haben. Daher nehme =
-
-ich diese Nachbarn als HNA auf. Meine anderen Nachbarn erhalten nun das Pak=
-et=20
-und k=F6nnen feststellen, dass meine IP und die IPs meine Nachbarn ziemlich=
-=20
-dicht beieinander sind und stopfen uns alle in eine HNA Nachricht.
-
-Die Vorteil liegt auf der Hand: Weniger batman Pakete und weniger=20
-Routeneintr=E4ge.
-
-Wir m=FCssten das aber so geschickt machen, dass wir nicht unsere eigene=20
-Statistik f=E4lschen. Wenn ich zu meinem aggregierten Nachbarn 50% packet l=
-oss=20
-habe, ihn aber in jeder meine OGMs erw=E4hne, k=F6nnte der Eindruck entsteh=
-en,=20
-dass der Link recht gut ist ?!
-
-Was meint ihr ?
-
-Gru=DF,
+Gruß,
 Marek
 
