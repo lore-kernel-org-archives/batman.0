@@ -1,13 +1,10 @@
-Message-ID: <BAY121-DAV4E72170A917AAE7B91EC5AFAE0@phx.gbl>
-From: "Dan Flett" <conhoolio@hotmail.com>
-Date: Mon, 22 Jan 2007 20:04:48 +1100
-Message-ID: <002501c73e04$5e572830$dc3d8b90@gtv.local>
+Message-ID: <37176.81.188.21.235.1169462818.squirrel@lecurie.homelinux.org>
+Date: Mon, 22 Jan 2007 11:46:58 +0100 (CET)
+From: rcml@lecurie.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-In-Reply-To: <BAY121-DAV112C05C0B354E2F8AFAC6AFB20@phx.gbl>
-Subject: [B.A.T.M.A.N.] Plug-ins
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] hi all 
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -19,13 +16,19 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-Hi Guys,
+first question:
+I wondered whether there was a debian package of batman
 
-Just wondering if there are any plans to introduce a plug-in interface to
-BATMAN?  I am especially keen to see a Nameservice plugin, or any other
-service advertisement-type plugin.
+?
 
-Cheers,
+and if freinfunk package is openwrt compatible.
 
-Dan
+afflicted for these simple question, it is the beginning
+
+
+thank
+
+Dako
+(i speak french)
+
 
