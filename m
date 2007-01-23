@@ -1,13 +1,13 @@
 Date: Tue, 23 Jan 2007 10:45:40 +0100 (MET)
 From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Plug-ins
-References: <BAY121-DAV4E72170A917AAE7B91EC5AFAE0@phx.gbl>
-In-Reply-To: <BAY121-DAV4E72170A917AAE7B91EC5AFAE0@phx.gbl>
+Subject: Re: [B.A.T.M.A.N.] hi all
+References: <37176.81.188.21.235.1169462818.squirrel@lecurie.homelinux.org>
+In-Reply-To: <37176.81.188.21.235.1169462818.squirrel@lecurie.homelinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain;  charset="ansi_x3.4-1968"
+Content-Type: text/plain;  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200701231039.19182.lindner_marek@yahoo.de>
+Message-Id: <200701231029.22069.lindner_marek@yahoo.de>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -20,21 +20,22 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@open-mesh.net
 
 
+
 Hi,
 
+> first question:
+> I wondered whether there was a debian package of batman ?
 
-> Just wondering if there are any plans to introduce a plug-in interface to
-> BATMAN?  I am especially keen to see a Nameservice plugin, or any other
-> service advertisement-type plugin.
+up to now there is no debain package available. Our primary targets are 
+embedded devices and small mobile computers. Therefore the debian integration 
+is not our top priority. But feel free to do something about that.  ;-)
 
-the main idea behind batman is to create a small, lightweight and easy to use 
-routing daemon. Without bloating the code or "spamming" the network with 
-unneccessary traffic.  Hence no such plug-in interface is planned or wanted 
-at the moment.
-Personally, I like the concept of creating these features one layer above 
-batman so that these "services" can run indepently from the routing 
-algorithm. Currently FX from Phenoelit is working on a nameservice which does 
-exactly that.
+
+> and if freinfunk package is openwrt compatible.
+
+The precompiled binary package should be compatible but the web gui is 
+probably not. At 23C3 I talked to the OpenWRT maintainers and they tend to 
+integrate batman into their trunk in the near future.
 
 Regards,
 Marek
