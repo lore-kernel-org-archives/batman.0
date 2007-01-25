@@ -1,11 +1,10 @@
-Date: Thu, 25 Jan 2007 15:45:41 +0100 (MET)
-From: Marek Lindner <lindner_marek@yahoo.de>
+Message-ID: <426db8020701250722o70316147j7ebcea8d511de5@mail.gmail.com>
+Date: Thu, 25 Jan 2007 10:22:50 -0500
+From: "Michael Oh" <mikeoh68@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701251533.03312.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] Announcement: batman 0.1.1 released
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_16875_1376222.1169738570151"
+Subject: [B.A.T.M.A.N.] Performance
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -17,32 +16,25 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
+------=_Part_16875_1376222.1169738570151
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi,
+Just curious if there were any performance and scalability info/figures for
+batman vs olsrd vs roofnet. Running / testing olsrd right now, but running
+into scalability issues...
 
-the batman team proudly announces the 0.1.1 release which is a stability and 
-bugfix release for the 0.1.x branch.
-The following bugs were squashed:
+-- 
 
-- compability version increased to 2
-- batmand deactivates linux kernel antispoof protection which led to packet 
-loss on multihomed devices
-- "logical" memory leaks fixed (continuously growing neighbour and packet 
-list)
-- removed double free on neighbour purge (neighbour with hna)
-- broken tun support disabled (on *BSD and MacOS X)
-- debug level 1 display bug fixed (patch from nino) 
+Thanks!
+Michael Oh
 
-We suggest you to upgrade to the latest version for a better batman 
-experience !  ;-)
+------=_Part_16875_1376222.1169738570151
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-ATTENTION: Certain bugs affect the behaviour of a batman network not only the 
-one batman node itself. That is why we increased the compability version for 
-batman packets for the first time. batman irgnores all batman packets that do 
-not have the same compability version. Which means that batman 0.1.1 will 
-ignore batman 0.1 and the other way round. 
+Just curious if there were any performance and scalability info/figures for batman vs olsrd vs roofnet. Running / testing olsrd right now, but running into scalability issues...<br clear="all"><br>-- <br><br>Thanks!<br>Michael Oh
 
-You can get the sources and precompiled mips binaries from open-mesh.net.
-
-Regards,
-Marek
+------=_Part_16875_1376222.1169738570151--
