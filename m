@@ -1,11 +1,13 @@
-From: "Lui" <batman@schmudde.com>
-Date: Mon, 29 Jan 2007 17:18:12 +0100
-Message-ID: <001601c743c1$16212ad0$0105a8c0@bluebox>
+Date: Mon, 29 Jan 2007 18:45:39 +0100 (MET)
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] -p ... crashes
+References: <001601c743c1$16212ad0$0105a8c0@bluebox>
+In-Reply-To: <001601c743c1$16212ad0$0105a8c0@bluebox>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
+Content-Type: text/plain;  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] -p ... crashes
+Content-Disposition: inline
+Message-Id: <200701291838.17909.lindner_marek@yahoo.de>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -17,22 +19,24 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
+
 Hi,
 
-i've seen this behavior bevor, but couln't reproduce it until now:
 
-If B.A.T.M.A.N.-III v0.1.1 beta2 (compability version 2)
-is startet with a -p(refered gateway) option and the given gateway is (at least) 2 hops away
-(may also not/-always/-directly reachable after start), batmand crashes.
+> i've seen this behavior bevor, but couln't reproduce it until now:
+> This happens reproduceble ~30-60sec. after start.
+> Until this point routes are written.
+> No output. No purging of written routes.
 
-This happens reproduceble ~30-60sec. after start.
-Until this point routes are written.
-No output. No purging of written routes.
+could you send a core dump and your binary ?
 
-Tests used: batmand -p <gateway> -r 2 eth1:bat br0:bat 
+How to create a core dump:
+Connect to your device (via ssh) and type:
+ulimit -c 20000
+Afterwards start batmand with a debug level > 0, e.g.:
+batmand -d 3 -p <gateway> -r 2 eth1:bat br0:bat
+Wait until it crashed and you will find a file named "core" in your current 
+directory which represents the state of batman in the moment when it crashed.
 
-With a 1-hop-to-prefered-gateway enviroment batmand seems to have no problems...
-
-Regards
-Lui
-
+Regards,
+Marek
