@@ -1,13 +1,12 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Probleme mit Routing bei BATMAN
-Date: Fri, 9 Feb 2007 10:44:02 +0100
-References: <E82C5AD5-131B-41A9-9B3F-26924A75A74A@gmx.net>
-In-Reply-To: <E82C5AD5-131B-41A9-9B3F-26924A75A74A@gmx.net>
+Message-ID: <560c7c9a0702140437l21bad4f4v7d12854ee932a7c0@mail.gmail.com>
+Date: Wed, 14 Feb 2007 13:37:11 +0100
+From: "Benjamin Henrion" <bh@udev.org>
+Sender: zoobab@gmail.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702091044.02776.lindner_marek@yahoo.de>
-Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] First batman tests
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -19,17 +18,35 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-
 Hi,
 
-> Ich benutze batman-III-0.1-rc1auf einem Debian Sarge System ohne tun.
+We met with several people in Brussels active on the reseaucitoyen
+project to test Batman.
 
-hier liegt dein Problem. Der Bug in dieser Version ist bekannt und wurde sc=
-hon=20
-lange gefixt (rc1 wurde Mitte Oktober released).
-Am besten du nimmst die 0.1.1 oder wartest noch 1-2 Tage, dann kommt die=20
-0.1.2.
+Our configuration was 4 laptops like this:
 
-Gru=DF,
-Marek
+laptop1 <----ethernet----> laptop2
++                                               +
++                                               +
++                                               +
+wlan1                                    wlan11
++                                               +
++                                               +
++                                               +
+laptop3 <----ethernet----> laptop4
 
+With 8 different IPs for the 8 interfaces.
+
+We launched batman-0.10 on all the nodes, but it appeared that one of
+the interfaces was not reachable via ping. And the experience was
+reproductible when we restarted the dameon, sometimes with a different
+IP unreachable.
+
+We are going to test the same configuration soon to see if batman
+chooses the fastest route in terms of throughput.
+
+Best,
+
+--
+Benjamin Henrion <bhenrion at ffii.org>
+FFII Brussels - +32-484-566109 - +32-2-4148403
