@@ -1,12 +1,12 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 21 Feb 2007 13:28:24 +0100
+Date: Wed, 21 Feb 2007 13:35:40 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702211328.24551.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] Announcement: batman 0.2 alpha released
+Message-Id: <200702211335.40405.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] Announcement: batman 0.1.2 released
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -21,37 +21,19 @@ To: b.a.t.m.a.n@open-mesh.net
 
 Hi,
 
-we are happy to announce the first test release of the upcoming batmand. A lot 
-of work has been done under the hood:
+today we release a bugfix and stability release for the 0.1.x branch.
+We fixed the following problems:
 
-- many cpu and memory usage optimizations
-- Big Endian / Little Endian support added
-- 64 Bit compability added
-- ability to give access to the various debug levels without restarting the 
-daemon
+- routing table manipulation bug fixed (some routes towards HNA were not 
+properly set)
+- crash while using "-p" fixed
+- several race conditions removed (regarding UDP tunnel setup) 
 
-Since a while the *BSD and MacOS X support is unmaintained. Therefore the 
-systems are not supported any longer until a maintainer is found. 
+As the *BSD and MacOS X is stopped for now the Big Endian / Little Endian 
+support was backported from the 0.2 branch. 
 
-The 0.2 release will be fully backward compatible to 0.1.1 and above. That 
-enables you to use the stable branch for most of your network and try 0.2 
-alpha on test machines. Any feedback is highly appreciated.
-
-
-Short explanation how to use the debug levels now:
-
-At first start batman normally:
-batmand  <your_options> <interface(s)>
-
-Use another shell and type this:
-batmand -c -d <your_desired_debug_level>
-
-The option "c" tells batman to connect to a running batman instead of behaving 
-like a normal batman. You even can connect more than once or different debug 
-level. For debug level 1 and 2 a batch mode was included which prevents 
-redrawing the screen and is ideal for script integration:
-
-batmand -c -b -d 1
+Special thanks to Lui for providing access to his hostile testing environment 
+and endless patience with us.  ;-)
 
 
 You can get the sources and precompiled mips / arm binaries from 
