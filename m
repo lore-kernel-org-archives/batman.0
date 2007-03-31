@@ -1,13 +1,13 @@
-Date: Wed, 21 Mar 2007 14:56:16 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] b.a.t.m.a.n & OLPC
-Message-ID: <20070321135616.GA13922@hrz.tu-chemnitz.de>
-References: <26c774550703210540j66d663ccr2c5b56b6f13c3919@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
-Content-Disposition: inline
-In-Reply-To: <26c774550703210540j66d663ccr2c5b56b6f13c3919@mail.gmail.com>
+From: "Lui" <batman@schmudde.com>
+References: <00e801c73614$8a5c5060$0105a8c0@bluebox>
+Date: Sat, 31 Mar 2007 06:49:10 +0200
+Message-ID: <004a01c7734f$ed211f50$fe78a8c0@bluebox>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 7bit
+In-Reply-To: <00e801c73614$8a5c5060$0105a8c0@bluebox>
+Subject: [B.A.T.M.A.N.] Relaese: freifunk-batman_0.83.ipk
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -17,85 +17,82 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: "'B.A.T.M.A.N.-ML'" <b.a.t.m.a.n@open-mesh.net>
 
+Hi,
 
---FL5UXtIhxfXey3p5
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+freifunk-batman_0.83.ipk is out now.
 
-Hi Diego,
+hope it's usefull
+Lui
 
-the Documentation so far can be found in the wiki:
+CHANGES:
+# ----------------------------------------------------------------------------
 
-https://www.open-mesh.net/batman/documentation
+ToDo:
+* Info: better representation of status and link-relations...
+* Translations: it-fr-nl-<place your language here>
+* Config: 'choosing' a prefered gateway
+* ...
+* keep close to the hight development-cycles of batmand ;-)
+* watching out for B.A.T.M.A.N.-IV ;-)
 
-and our code subversion repository might help too:
+Changes (0.82 -> 0.83)
++ "Raider is Twix" and S55batman is S66batman now - lowers a timestamp problem with S60rdate
++ removed S54(/S65)robin
 
-svn co https://dev.open-mesh.net/svn/batman/
+Changes (0.81 -> 0.82)
++ replaced option d|debug with log... (S55batman log <mode> <time>)
++ fixed cron entry + added tun-ex
++ added: S55... v like batmand -v
 
-We have a new branch there called "batman-advanced" which is highly
-experimental and tries to pull the batman protocol on layer2, which
-makes ipv6, ipv4 or your own ip-discovering protocol possible. But it
-might not work yet, be warned. :)
-I'm going to write some Docs about this branch soon.
+Changes (0.80 -> 0.81)
++ use /etc/ff_bat.config and remove extensive use of nvram (/-commit)
++ language *switch* via config...
++ layout issues
 
-Some question about the chip/processor there:
+Changes (0.7x -> 0.80)
++ (merged) support for non-WRT like hardware (i.e SE505) and tagged-vlans...
++ community network support: choose olsr->batman network (/8 /16 /24) transition.
++ multi language support: de, en (please help with your addional translations)
++ status-page with links to known nodes
++ B.A.T.M.A.N.-III v0.2++ client-mode info on router-frontpage
++ S55batman initscript opens by default traceroute ports
++ re-designed bad handling of NVRAM-vars
+# ----------------------------------------------------------------------------
 
-1.  is it possible to compile code (gcc) for that?
+...this last informations are still valid:
 
-2.  do we have an OS? b.a.t.m.a.n. only works on Linux so far, so you
-    might need to (re)write libc/kernel-things yourself if you want to port.
-	I'd recommend porting right now as b.a.t.m.a.n. (even the stable
-	branch) is still in development, protocol things might change.
-=09
-3.  How much RAM do we have available? b.a.t.m.a.n. is storing
-    quite a few things about its neighbours.
+>Sent: Freitag, 12. Januar 2007 07:40
+>To: B.A.T.M.A.N.-ML
+>Subject: [B.A.T.M.A.N.] freifunk-batman-de (0.73 "vampimated")
+>
+>Hi all,
+>
+>cleanups - and more... ;-)
+>
+>!!!Important!!!
+>For those of you, who have installed any previous versions - 1st:
+>#>ipkg remove freifunk-batman-de
+>
+>For others:
+>freifunk-batman-de is a WebUI-Plugin for the freifunk-firmware (->[1])
+>It allows to easily configure and manage all aspects of the 
+>batman-daemon in a side-by-side environment with olsr (even 
+>for unskilled users).
+>[...]
+>The main goal is to raise the amount of 
+>batman-nodes in 'a mesh' of heterogeneous skilled node owners 
+>over 'the critical-mass' in the phase of development and 
+>testing... and of course, to make it easy for myself to manage 
+>testing with 10++ batman-nodes.
+>
+>[...]
+>
+>Find it at: http://freifunk.schmudde.com/ipkg
+>
+>Regards
+>Lui
+>
+>[1] - http://ff-firmware.sourceforge.net/
 
-If you're familiar with irc you're also welcome to join our channel
-(#batman on irc.freenode.org).
-
-Regards
-	Simon
-
-
-On Wed, Mar 21, 2007 at 12:40:53PM +0000, Diego Paez wrote:
-> Hi!
->=20
-> i wonder if there are some chances to test b.a.t.m.a.n protocol over a
-> olpc...I want to test it, but i know that we have some things to consider,
-> like the ability for the protocol to run into the arm9e processor (the
-> processor of the  marvell libertas, some specifications here
-> http://arm.com/products/CPUs/ARM946E-S.html ).
->=20
-> Im gonna need some code and/or some documentation...anything :D...
->=20
-> However my english isn't that good...Sorry!
->=20
-> Thanks!
->=20
-> Diego
-> Facultad de Informatica
-> UNLP
-
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-
-
---FL5UXtIhxfXey3p5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFGATmArzg/fFk7axYRAnpsAJ0XcT4pEx/lV0C5iba/4eMseU5VKwCgqmi0
-UfbIteUQd1D/J6nIoyP8v7g=
-=SFLR
------END PGP SIGNATURE-----
-
---FL5UXtIhxfXey3p5--
