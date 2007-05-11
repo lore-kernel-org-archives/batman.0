@@ -2,11 +2,11 @@ In-Reply-To: <560c7c9a0705110206pb513b6fh6c98ccde99bd677b@mail.gmail.com>
 References: <560c7c9a0705110206pb513b6fh6c98ccde99bd677b@mail.gmail.com>
 Mime-Version: 1.0 (Apple Message framework v752.3)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9FFD2493-DA06-4AD0-ADE7-A9470D6A95C4@lo-res.org>
+Message-Id: <3CF44839-6D0F-4208-A277-1F10850427F1@lo-res.org>
 Content-Transfer-Encoding: 7bit
 From: Aaron Kaplan <aaron@lo-res.org>
 Subject: Re: [B.A.T.M.A.N.] testbed for BATMAN?
-Date: Fri, 11 May 2007 11:23:33 +0200
+Date: Fri, 11 May 2007 11:24:13 +0200
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -20,7 +20,7 @@ To: Benjamin Henrion <bh@udev.org>
 Cc: B.A.T.M.A.N@open-mesh.net
 
 
-wonderful, I am waiting for that! :)
+for accounts please contact me in person.
 
 
 On May 11, 2007, at 11:06 AM, Benjamin Henrion wrote:
