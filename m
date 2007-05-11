@@ -1,12 +1,12 @@
-In-Reply-To: <560c7c9a0705110206pb513b6fh6c98ccde99bd677b@mail.gmail.com>
-References: <560c7c9a0705110206pb513b6fh6c98ccde99bd677b@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3CF44839-6D0F-4208-A277-1F10850427F1@lo-res.org>
-Content-Transfer-Encoding: 7bit
-From: Aaron Kaplan <aaron@lo-res.org>
+Message-ID: <4644376B.2020600@gmx.net>
+Date: Fri, 11 May 2007 11:29:15 +0200
+From: elektra <onelektra@gmx.net>
+MIME-Version: 1.0
 Subject: Re: [B.A.T.M.A.N.] testbed for BATMAN?
-Date: Fri, 11 May 2007 11:24:13 +0200
+References: <560c7c9a0705110206pb513b6fh6c98ccde99bd677b@mail.gmail.com>
+In-Reply-To: <560c7c9a0705110206pb513b6fh6c98ccde99bd677b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -16,27 +16,25 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: Benjamin Henrion <bh@udev.org>
-Cc: B.A.T.M.A.N@open-mesh.net
+To: B.A.T.M.A.N@open-mesh.net
+
+We are going to use it. Unfortunately I can't start to work on this 
+project right now due to lack of time.
+
+cu elektra
 
 
-for accounts please contact me in person.
-
-
-On May 11, 2007, at 11:06 AM, Benjamin Henrion wrote:
-
-> Hi,
 >
 > I have seen a testbed made with UML instances here to test OLSR:
 >
 > https://wiki.funkfeuer.at/index.php/OLSR-NG
 >
-> I was wondering if it would be possible to setup such system to  
-> test BATMAN.
+> I was wondering if it would be possible to setup such system to test 
+> BATMAN.
 >
 > Best,
 >
-> --
+> -- 
 > Benjamin Henrion <bhenrion at ffii.org>
 > FFII Brussels - +32-484-566109 - +32-2-4148403
 > _______________________________________________
@@ -44,8 +42,4 @@ On May 11, 2007, at 11:06 AM, Benjamin Henrion wrote:
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 >
-
----
-there's no place like 127.0.0.1
-
 
