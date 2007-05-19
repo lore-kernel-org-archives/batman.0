@@ -1,14 +1,12 @@
+Content-Disposition: inline
 From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] problems running batman rev350
-Date: Sat, 19 May 2007 17:49:22 +0200
-References: <464F0FEF.6090603@gmx.net>
-In-Reply-To: <464F0FEF.6090603@gmx.net>
+Subject: Fwd: Re: [B.A.T.M.A.N.] problems running batman rev350
+Date: Sat, 19 May 2007 17:56:52 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
+Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705191749.22823.axel@open-mesh.net>
+Message-Id: <200705191756.52380.axel@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
 List-Unsubscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
@@ -20,17 +18,30 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
+Hey again,
+
+...sorry I forgot to mention:
+you need tun support loaded into your kernel
+and the libpthread library (but the latter should be default on most i386 
+based machines).
+
+----------  Forwarded Message  ----------
+
+Subject: Re: [B.A.T.M.A.N.] problems running batman rev350
+Date: Saturday 19 May 2007 17:49
+From: Axel Neumann <axel@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
 Hey Dragan,
 
->
 >  #!/bin/sh
 >     iwconfig eth2 mode ad-hoc essid olsr.freifunk.net channel 10 ap
 > 02:CA:FF:EE ifconfig eth2 104.130.30.9
 
-(just to be shure) this should be 02:CA:FF:EE:BA:BE 
+(just to be shure) this should be 02:CA:FF:EE:BA:BE
 
 ..
->
+
 > i am starting batman with:
 >
 > #!/bin/bash
@@ -39,51 +50,50 @@ Hey Dragan,
 >     ifconfig eth2 up
 >     sleep 1
 >     batmand -d 1 -p 105.131.41.5 -r 1 eth2
-can  you start batmand in background with: 
+
+can  you start batmand in background with:
 batmand -r 1 -p 105.131.41.5  eth2
-instead and tell if the problem continues. This command instantly returns your 
-prompt but a:
+instead and tell if the problem continues. This command instantly returns
+ your prompt but a:
 ps -aux | grep batmand
 should show the running main-daemon in the background.
-Also please check that there are no predefined host routes for the 105.0.0.0/8 
-network before you start batmand and after it stopped. Meaning a:
-route -n | grep ^105 
+Also please check that there are no predefined host routes for the
+ 105.0.0.0/8 network before you start batmand and after it stopped. Meaning
+ a:
+route -n | grep ^105
 berfore and after the daemon is running should only show:
 105.0.0.0       0.0.0.0         255.0.0.0       U     0      0        0 eth2
-While batmand is running it should of course show routing entries for all 
-other known batman nodes but if such host routes are still there after the 
-daemon stopped it is a definitive sign for an uncorect termination of teh 
+While batmand is running it should of course show routing entries for all
+other known batman nodes but if such host routes are still there after the
+daemon stopped it is a definitive sign for an uncorect termination of teh
 daemon.
 
->
 > #!/bin/bash
 > batmand -c -d 2
 >
 > in another terminal.
 
-It should of course always be possible to access the debug output from the 
+It should of course always be possible to access the debug output from the
 running batmand main-daemon by launching a batmand-client with
 batmand -c -d <1-4>
-or in batch mode (providing just a single outputpage and returns to the 
+or in batch mode (providing just a single outputpage and returns to the
 prompt) with:
 batmand -c -d <1-4> -b
-However, it would be interesting to know if the crash is related to existence 
-of a batmand-client connecting to the main daemon. For example for 
+However, it would be interesting to know if the crash is related to existence
+of a batmand-client connecting to the main daemon. For example for
 batmand-0.2.0-rc2-rv350 (and before) debug level 4:
 batmand -c -d 4
-is known to cause the batmand to crash after a short time and it might be 
+is known to cause the batmand to crash after a short time and it might be
 possible that this problems also occur with other debug-levels.
-Try 
+Try
 batmand -c -d 1
-and 
+and
 batmand -c -d 2
 instead.
 
 ciao,
 axel
 
-
->
 > when batman starts, the 'batmand -c' script shows, that i am connected
 > to another gateway, but not to preferred one:
 >
@@ -126,3 +136,5 @@ axel
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+
+-------------------------------------------------------
