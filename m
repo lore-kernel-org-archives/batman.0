@@ -1,10 +1,10 @@
-Message-ID: <4672937F.3040208@poelzi.org>
-Date: Fri, 15 Jun 2007 15:26:23 +0200
-From: poelzi <poelzi@poelzi.org>
+Message-ID: <4672C430.1020208@poelzi.org>
+Date: Fri, 15 Jun 2007 18:54:08 +0200
+From: Daniel Poelzleithner <poelzi@poelzi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] Small feature request
+Subject: [B.A.T.M.A.N.] dynamic network annoucments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,37 +18,42 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
 Hi,
 
-I got a interessting paper forwarded which discussed routing in tcp on
-ad-hoc networks (especially tcp vegas). The idea was like that:
-If the routing protocol notices the tcp stack that the route has
-changed, it can recalculate some of its parameters (here the BaseRTT
-value) to optimize speed.
+another feature i forgot in the last mail :)
 
-Implementing meshferry, a tcp over udp proxy to surround most of tcp
-problems, I can see a lot of usage for this. Because batman doesn't know
-the topology itself, i thought about a mechanism to detect route changes
-without knowing topology itself.
+It would be great if batman allows to dynamic add and remove announced
+networks via the unix socket interface.
 
-All batman originator packets would become an additional flag, lets say
-uint32. When batman starts, it generates a random uint32 for its
-complete runtime.
-On a new broadcast message, it sets this new flag to his own random
-value. If it rebroadcasts a message, it used the original value XOR its
-own. This mechanism detects route changes very likely and even batman
-restarts.
+for example
+# adds new announced network
+batmand -c -a someip/mask
+# removes some announced network
+batmand -c -A someip/mask
 
-If the this new flag changes, the route somewhere in the network has
-changed, it can't say where, but it doesn't have to.
+why ?
+we are working on the posibility to give a computer in the mesh a unique
+ip, besides the network the node is serving. if you assign a unique ip
+to a computer, and get a dhcp lease of another node, the node would then
+add your ip as a hostroute announcement to batman, which would overwrite
+the default place: your home network. this would mean real mobile ip
+without the overhead of sending the traffic to your home router and then
+forward to your actual position.
 
-The operations are cheap, the overhead is small. And allows analysis if
-routes are more static or switching (would be interessting to see).
-
-Long term I was thinking about a socket interface between routing daemon
-and transport daemon. For the case of switching routes, batman would
-then notify the route to host x has changed somehow, so he can optimize
-his parameters.
+besides this, it would allow better integration into bgp by simply
+spawning a script to add/remove routes via zebra.
 
 kindly regards
- daniel
+  daniel
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: GnuPT 2.7.2
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGcsQwy/mkIQp7AD0RAkG5AKC1UkQHec8jfbGmsMD9d1turzdWjACdFLMh
+W8ciliTQtKs4NTNfEt8Zc4U=
+=XzcN
+-----END PGP SIGNATURE-----
