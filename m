@@ -1,10 +1,10 @@
-Mime-Version: 1.0 (Apple Message framework v752.3)
+Message-ID: <4672937F.3040208@poelzi.org>
+Date: Fri, 15 Jun 2007 15:26:23 +0200
+From: poelzi <poelzi@poelzi.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <E0745007-322B-43B0-9725-0B256A1072EA@port-x.de>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-From: Mario Roeber <mario@port-x.de>
-Date: Tue, 12 Jun 2007 21:13:33 +0200
-Subject: [B.A.T.M.A.N.] every day, something new!
+Subject: [B.A.T.M.A.N.] Small feature request
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,21 +18,37 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-hello everyone,
+Hi,
 
-i'm new in this list, and i'was like to say everybudy hello ... I'm  
-from germany naer Magdeburg. my age is 42 and i'm male ;)
-what i'want here? of'course know more about b.a.t.m.a.n to build and  
-make our local mesh-net better. here, we dont get some
-dsl line or somthing like that, so we have to help us self. her we  
-have a fast direct wlan connection to Magdeburg with 5ghz hardware.
-and local we use at the this moment olsr for our mesh-net. i'was try  
-batman and i'was get the feel, he is runing better. so it's means
-i'like to try a clear batman mesh-network. without any olsr. so, for  
-that i'm here ;) and maybe it is possible.
+I got a interessting paper forwarded which discussed routing in tcp on
+ad-hoc networks (especially tcp vegas). The idea was like that:
+If the routing protocol notices the tcp stack that the route has
+changed, it can recalculate some of its parameters (here the BaseRTT
+value) to optimize speed.
 
-so, my english is not so mutch perfect ... but i'hope, not to mutch  
-bad ;)
+Implementing meshferry, a tcp over udp proxy to surround most of tcp
+problems, I can see a lot of usage for this. Because batman doesn't know
+the topology itself, i thought about a mechanism to detect route changes
+without knowing topology itself.
 
-have a nice day
-Mario
+All batman originator packets would become an additional flag, lets say
+uint32. When batman starts, it generates a random uint32 for its
+complete runtime.
+On a new broadcast message, it sets this new flag to his own random
+value. If it rebroadcasts a message, it used the original value XOR its
+own. This mechanism detects route changes very likely and even batman
+restarts.
+
+If the this new flag changes, the route somewhere in the network has
+changed, it can't say where, but it doesn't have to.
+
+The operations are cheap, the overhead is small. And allows analysis if
+routes are more static or switching (would be interessting to see).
+
+Long term I was thinking about a socket interface between routing daemon
+and transport daemon. For the case of switching routes, batman would
+then notify the route to host x has changed somehow, so he can optimize
+his parameters.
+
+kindly regards
+ daniel
