@@ -1,10 +1,13 @@
-Mime-Version: 1.0 (Apple Message framework v752.3)
+Message-ID: <46742217.4080504@poelzi.org>
+Date: Sat, 16 Jun 2007 19:47:03 +0200
+From: Daniel Poelzleithner <poelzi@poelzi.org>
+MIME-Version: 1.0
+Subject: Re: [B.A.T.M.A.N.] dynamic network annoucments
+References: <4672C430.1020208@poelzi.org>
+	<200706161105.23131.axel@open-mesh.net>
+In-Reply-To: <200706161105.23131.axel@open-mesh.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <1D2535A1-F70E-46F3-B24F-A12C33DCC097@port-x.de>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-From: Mario Roeber <mario@port-x.de>
-Date: Sat, 16 Jun 2007 16:26:08 +0200
-Subject: [B.A.T.M.A.N.] maybe some reason 
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,20 +21,64 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-hello,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-i'think about some smal tool ... or batmand have this option to  
-update himself. for example the option batmand -vn,  he look every day
-for a new stable version ... or some seperat tool ... what can update  
-a lot nodes ... to do this bei manual is grrrr ....
+Axel Neumann wrote:
 
-it's only some idea.
+>> why ?
+>> we are working on the posibility to give a computer in the mesh a unique
+>> ip, besides the network the node is serving. if you assign a unique ip
+>> to a computer, and get a dhcp lease of another node, the node would then
+>> add your ip as a hostroute announcement to batman, which would overwrite
+>> the default place: your home network. this would mean real mobile ip
+>> without the overhead of sending the traffic to your home router and then
+>> forward to your actual position.
+> Thats interesting but seems too complex for me, can you explain the approach 
+> in more detail.
 
-so, some other info ... the batman net run here nice ... only the  
-gatway get a lot of cpu work ... sometimes it's grow up
-to 80% ... but it's working. i'wait for the version what made the  
-routing on layer 2 ... and  i'will fast roll out it.
+we here in leipzig freifunk will soon assign a network to people as
+house networks. we will later make it possible to assign ips to mac
+addresses. with the new dnsmasq you can run scripts, which would check
+the mac list. if he finds a mac, he will assign this ip, add a hostroute
+and would notify batman that this host is here via the interface i
+proposed. some checking must be done to remove those networks later, but
+thats a minor problem.
 
-so everybudy ... i'hope have a nice weekend.
+because hostroutes have higher priority then network routes, the
+notebook will be available as it should be.
 
-mario
+the only problem i see so far is the growth of the routing table, but i
+think if this problem acutally makes impact, this could be fixed with
+using different routing tables. i never looked at the routing table
+implementation, if it would perform better if a ip rule + secound table
+or one big table is faster. i guess the first one.
+
+>>From my understanding, Mobile ip means that a node is reachable by a unique 
+> and not-changing IP address and independent from the current point of 
+> attachment to an access network. I do not understand how your mobile node can 
+> maintain TCP scessions with corresponding nodes in the GBI while switching 
+> the MESH-GBI GW. 
+
+i don't know if mobile ip means roaming without breaking tcp
+connections, i think this is much harder. i think the posibilty that a
+computer is reachable through one ip in the complete network without
+useless routing is at least better then all the mobile ip stuff i have
+seen so far.
+
+>> besides this, it would allow better integration into bgp by simply
+>> spawning a script to add/remove routes via zebra.
+
+i looked at quagga but didn't found the posibility to add routes that
+way, so a small cron job/daemon will have to do this job...
+
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: GnuPT 2.7.2
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGdCIIy/mkIQp7AD0RAi+xAJ9dVquTKsK6DLzjijhNiTCeQtbsrgCgvWhk
+RqmImPCk9pYYM2cOBmxIW1Y=
+=XtfH
+-----END PGP SIGNATURE-----
