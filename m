@@ -1,13 +1,14 @@
-Message-ID: <46742217.4080504@poelzi.org>
-Date: Sat, 16 Jun 2007 19:47:03 +0200
-From: Daniel Poelzleithner <poelzi@poelzi.org>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Small feature request
+Date: Sun, 17 Jun 2007 14:00:00 +0200
+References: <4672937F.3040208@poelzi.org>
+In-Reply-To: <4672937F.3040208@poelzi.org>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] dynamic network annoucments
-References: <4672C430.1020208@poelzi.org>
-	<200706161105.23131.axel@open-mesh.net>
-In-Reply-To: <200706161105.23131.axel@open-mesh.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706171400.01329.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,66 +20,58 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
-
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Axel Neumann wrote:
-
->> why ?
->> we are working on the posibility to give a computer in the mesh a unique
->> ip, besides the network the node is serving. if you assign a unique ip
->> to a computer, and get a dhcp lease of another node, the node would then
->> add your ip as a hostroute announcement to batman, which would overwrite
->> the default place: your home network. this would mean real mobile ip
->> without the overhead of sending the traffic to your home router and then
->> forward to your actual position.
-> Thats interesting but seems too complex for me, can you explain the approach 
-> in more detail.
-
-we here in leipzig freifunk will soon assign a network to people as
-house networks. we will later make it possible to assign ips to mac
-addresses. with the new dnsmasq you can run scripts, which would check
-the mac list. if he finds a mac, he will assign this ip, add a hostroute
-and would notify batman that this host is here via the interface i
-proposed. some checking must be done to remove those networks later, but
-thats a minor problem.
-
-because hostroutes have higher priority then network routes, the
-notebook will be available as it should be.
-
-the only problem i see so far is the growth of the routing table, but i
-think if this problem acutally makes impact, this could be fixed with
-using different routing tables. i never looked at the routing table
-implementation, if it would perform better if a ip rule + secound table
-or one big table is faster. i guess the first one.
-
->>From my understanding, Mobile ip means that a node is reachable by a unique 
-> and not-changing IP address and independent from the current point of 
-> attachment to an access network. I do not understand how your mobile node can 
-> maintain TCP scessions with corresponding nodes in the GBI while switching 
-> the MESH-GBI GW. 
-
-i don't know if mobile ip means roaming without breaking tcp
-connections, i think this is much harder. i think the posibilty that a
-computer is reachable through one ip in the complete network without
-useless routing is at least better then all the mobile ip stuff i have
-seen so far.
-
->> besides this, it would allow better integration into bgp by simply
->> spawning a script to add/remove routes via zebra.
-
-i looked at quagga but didn't found the posibility to add routes that
-way, so a small cron job/daemon will have to do this job...
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: GnuPT 2.7.2
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Hi,
 
-iD8DBQFGdCIIy/mkIQp7AD0RAi+xAJ9dVquTKsK6DLzjijhNiTCeQtbsrgCgvWhk
-RqmImPCk9pYYM2cOBmxIW1Y=
-=XtfH
------END PGP SIGNATURE-----
+
+> I got a interessting paper forwarded which discussed routing in tcp on
+> ad-hoc networks (especially tcp vegas). The idea was like that:
+> If the routing protocol notices the tcp stack that the route has
+> changed, it can recalculate some of its parameters (here the BaseRTT
+> value) to optimize speed.
+>
+> Implementing meshferry, a tcp over udp proxy to surround most of tcp
+> problems, I can see a lot of usage for this. Because batman doesn't know
+> the topology itself, i thought about a mechanism to detect route changes
+> without knowing topology itself.
+
+interesting idea but I don't get your big picture. Could you further explain 
+what you have in mind while considering the following:
+
+Even with your algorithm, detecting route changes is quite difficult for 
+batman, simply because batman does not know the concept of routes through the 
+network. Batman just counts packets which arrived via one or the other 
+neighbor and does not care about how the packets arrived at its neighbors. 
+Which "route change" should be considered ? A route change after one / two / 
+three / ... hops ? A one hop routing change could be detected without your 
+algorithm. That is why I think you want to detect more.
+If we make a 2 hop example: We have a batman running and (for the sake of 
+simplicity) one neighbor A. This neighbor has 3 neighbors of its own which 
+equally supply originator packets of our target, lets say 3 and we receive 9 
+packets via our neighbor A. What is our new route ?
+On the other hand we begin to leave the new approach of a one hop horizon 
+towards OLSR based routing which makes routing assumptions based on outdated 
+data.
+
+TCP Vegas is an algorithm in which the sending side increases and decreases 
+its window size. If you upload something it is your very host or in case of a 
+download it is the server. Apart from the fact that you would need an altered 
+TCP stack, batman has no big chance in helping out because its most 
+widespread use is to build the "backbone infrastructure". Batman hosts 
+seldomly act as client or server.
+
+TCP Vegas algorithm to detect congestion is based on the round trip times of 
+the packets. It simply observes if the RTTs get bigger or smaller and derives 
+its window size from it. No information about a routing change is needed.
+
+If you really plan to deploy TCP Vegas in your network you should make sure 
+that *all* your clients do the same. Otherwise the users of TCP Vegas will 
+experience a massive throughput loss because the commonly used TCP stack is 
+much less fair. More information on that matter can be found here: 
+http://www.isoc.org/inet2000/cdproceedings/2d/2d_2.htm
+
+
+Regards,
+Marek
