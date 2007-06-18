@@ -1,14 +1,15 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] maybe some reason
-Date: Mon, 18 Jun 2007 15:43:53 +0200
-References: <1D2535A1-F70E-46F3-B24F-A12C33DCC097@port-x.de>
-In-Reply-To: <1D2535A1-F70E-46F3-B24F-A12C33DCC097@port-x.de>
+From: Axel Neumann <axel@open-mesh.net>
+References: <200706121445.40692.axel@open-mesh.net>
+	<46756548.90201@komm-netz.de>
+In-Reply-To: <46756548.90201@komm-netz.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="ansi_x3.4-1968"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706181543.53498.lindner_marek@yahoo.de>
+Date: Mon, 18 Jun 2007 17:10:53 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706181710.53998.axel@open-mesh.net>
+Subject: [B.A.T.M.A.N.] exchange of experience
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,36 +21,53 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
+Hello,
+
+we are VERY pleased to hear that there are quite a few people from outside 
+Berlin  considering to come to the release party. Of course these pionieers 
+are not coming without expectations.
+
+Therefore we want to reserve and announce some extra time now (besides the 
+usual gathering and celebrating) for an open discussion and the exchange of 
+experience related to the batman routing protocol.
+
+The gathering will be integrated in the regularly Waveloeten workshop 
+( http://wiki.c-base.org/coredump/WaveLoeten ) which happens every Wednesday 
+at the C-Base ( http://c-base.org/ )in Berlin. 
+
+For the discussion we propose to start at 8:15 pm 
+( 20.6.07 Rungestrasse 20, 10179 Berlin )
+
+A list of  topics may include but is not limited to:
+
+* Why BATMAN at all? After many years of optimization OLSR seems to be quite 
+stable now!
+
+* Does BATMAN really redeem what it claims?
+
+* What means exist to allow a smooth migration from an existing routing 
+protocol and which problems can be expected.
+
+* The one-does-it-all solution (Eierlegende Wollmilchsau) does not exist so 
+what are the disadvantages.
+
+* Which skills are needed to set up a somehow working or a productively usable 
+mesh network.
+
+* Which parameters exist to better adapt the batman implementation to local 
+particularities
+
+* Do user prefer an aggressive or a conservative revision and versioning cycle
+
+* What is missing (besides documentation)
+
+* Please feel free to add your topic here!
+
+What would you expect to hear from a decent batman / batman advanced 
+presentation / workshop ?
 
 
-Hi,
-
-> i'think about some smal tool ... or batmand have this option to
-> update himself. for example the option batmand -vn,  he look every day
-> for a new stable version ... or some seperat tool ... what can update
-> a lot nodes ... to do this bei manual is grrrr ....
->
-> it's only some idea.
-
-an integrated auto-update mechanism is difficult because we have many batman 
-users outside of Germany. Should they all update via open-mesh ? On the other 
-hand may be they don't want to have the latest version because they are happy 
-with what they have. Or they want to test it before the whole network 
-updates.
-I better solution would be a custom skript which checks for updates and logs 
-into the router via SSH to install it. Axel wrote such a script. I think he 
-could give it to you.
-Is it worth considering to publish it on open-mesh ?
-
-
-> so, some other info ... the batman net run here nice ... only the
-> gatway get a lot of cpu work ... sometimes it's grow up
-> to 80% ... but it's working. i'wait for the version what made the
-> routing on layer 2 ... and  i'will fast roll out it.
-
-I hope you take some time to test it before you that or your users may become 
-unhappy.  ;-)
-
-Regards,
-Marek
+looking forward to see you,
+the B.A.T.M.A.N. development team
