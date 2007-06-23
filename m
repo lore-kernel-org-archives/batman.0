@@ -1,12 +1,10 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 22 Jun 2007 13:54:32 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Mime-Version: 1.0 (Apple Message framework v752.3)
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706221354.32747.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] visualization
+Message-Id: <0350C74D-B199-43AE-A0D5-D25107EA3640@port-x.de>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+From: Mario Roeber <mario@port-x.de>
+Date: Sat, 23 Jun 2007 11:26:41 +0200
+Subject: [B.A.T.M.A.N.] here some information
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,20 +18,12 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
+hello,
 
-Hi,
+so, we was speak at 20.june about that the tun0 device sometimes  
+crash ... it'is like that ... i'dont know wy ... but i'ts crash ...
+and the default route is not set.
 
-a while ago we startet the vis server project. Its aim is to supply a topology 
-layout of the batman network. To overcome the problem that every node just 
-knows its very own horizon we designed a vis server which collects vis 
-topology messages from every node and generates the well known dot draw 
-output. This output can be used by various programs to render a topology 
-graphic. I just made some screenshots of our network rendered by olsrs3d (see 
-s3d.berlios.de). 
-You can find them here: https://www.open-mesh.net/batman/vis
-I will update the pictures once more hosts in Berlin have activated that 
-feature and thus are visible on our topology.
+hm ... i'dont know what i'should do ...
 
-Regards,
-Marek
-
+have a nice day .. mario 
