@@ -1,10 +1,14 @@
-Message-ID: <28978.85.41.146.90.1182805896.squirrel@krisma.oltrelinux.com>
-Date: Mon, 25 Jun 2007 23:11:36 +0200 (CEST)
-From: a.anselmi@oltrelinux.com
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] visualization
+Date: Mon, 25 Jun 2007 23:56:38 +0200
+References: <200706221354.32747.lindner_marek@yahoo.de>
+In-Reply-To: <200706221354.32747.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] batman FONera
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706252356.38497.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,23 +20,19 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-I'm testing BATMAN (batmand_0.2-rv451_mips-kk-elf-32-msb-static) in a mesh
-composed with Fonera (standard FON firmware 0.7.x) in pseudo IBSS mode:
-every cient node brings up a bat_AP offering connectivity. It seems
-working well but... I'm experiencing in a small environment with only 4
-Fonera and 1 gateway node.
 
-My request is intended to obtain - if possible - a better testbed with
-your help: if you decide to make a little batman-fonera-mesh-cloud you can
-download     mesh-ponte2 from http://sourceforge.net/projects/ponte2/
+Hi,
 
-The testing release in named 1.0.8-step2, in the next days I'll upload
-1.0.10 (sure more stable)
+I continued improving the vis server. The most obvious enhancement are the 
+calculated ETX values. It is not absolutely correct but sufficient. ;-)
+I updated the screenshots on our website: https://www.open-mesh.net/batman/vis
+You may wonder why some links are colored (blue, yellow or red) and some are 
+just grey. The colors represent the link quality of the connection which is 
+based on the sending and receiving average. Naturally the vis server needs 
+the packet count of both sides to calculate it. If it is available the links 
+are colored if not they are just grey.
 
-Thanks for all
-
---
-Antonio
-
+Regards,
+Marek
