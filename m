@@ -1,12 +1,10 @@
-Message-ID: <467FC88A.8050204@q-dsl.de>
-Date: Mon, 25 Jun 2007 15:52:10 +0200
-From: Andreas Langer <a.langer@q-dsl.de>
+Message-ID: <28978.85.41.146.90.1182805896.squirrel@krisma.oltrelinux.com>
+Date: Mon, 25 Jun 2007 23:11:36 +0200 (CEST)
+From: a.anselmi@oltrelinux.com
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] vis server with 0.2 final
-References: <2bda28cd0706250628t7f1ab8edr57d859e6ad4fcbb6@mail.gmail.com>
-In-Reply-To: <2bda28cd0706250628t7f1ab8edr57d859e6ad4fcbb6@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] batman FONera
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,23 +16,23 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-Hello Stefano can you give me more information about the error output,
-when you try to compile.
+I'm testing BATMAN (batmand_0.2-rv451_mips-kk-elf-32-msb-static) in a mesh
+composed with Fonera (standard FON firmware 0.7.x) in pseudo IBSS mode:
+every cient node brings up a bat_AP offering connectivity. It seems
+working well but... I'm experiencing in a small environment with only 4
+Fonera and 1 gateway node.
 
+My request is intended to obtain - if possible - a better testbed with
+your help: if you decide to make a little batman-fonera-mesh-cloud you can
+download     mesh-ponte2 from http://sourceforge.net/projects/ponte2/
 
-Stefano Scipioni schrieb:
-> I'm testing batman III 0.2 final on a mesh network with openwrt kamikaze.
-> I have a problem with vis server on a linux machine: vis-0.1 does not
-> work and vis svn version does not compile with batman 0.2.
->
-> What is my mistake?
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->   
+The testing release in named 1.0.8-step2, in the next days I'll upload
+1.0.10 (sure more stable)
+
+Thanks for all
+
+--
+Antonio
 
