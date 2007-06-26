@@ -1,14 +1,12 @@
-From: Axel Neumann <axel@open-mesh.net>
+Message-ID: <46810D9E.9050009@bb.banban.jp>
+Date: Tue, 26 Jun 2007 21:59:10 +0900
+From: Lemonde <zukky@bb.banban.jp>
+MIME-Version: 1.0
 Subject: Re: [B.A.T.M.A.N.] batman FONera
-Date: Tue, 26 Jun 2007 09:50:42 +0200
 References: <28978.85.41.146.90.1182805896.squirrel@krisma.oltrelinux.com>
 In-Reply-To: <28978.85.41.146.90.1182805896.squirrel@krisma.oltrelinux.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706260950.43044.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,22 +20,17 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hey Antonio,
+Hi, Antonio.
 
-Very cool work!  Particulary i like your illustrative documentation:
-http://www.blogin.it/howtoponte2/node95.html
+Does your ponte2-mesh also work on normal openwrt/kamikaze? (I wish....)
+If so, I'll try it with wifidog.
 
-I am very interested to hear how stable your madwifi virtual interfaces 
-configuration operates in the long run (and with more than one mesh 
-neighbor). My experience (months ago and with another purpose) was that one 
-of them (either the one in ad-hoc, the ap or the client one) sooner or later 
-broke. And I've never tested the pseudo IBSS mode. 
+Thanks,
 
-ciao,
-axel
+zukky
 
 
-On Monday 25 June 2007 23:11, a.anselmi@oltrelinux.com wrote:
+a.anselmi@oltrelinux.com wrote:
 > I'm testing BATMAN (batmand_0.2-rv451_mips-kk-elf-32-msb-static) in a mesh
 > composed with Fonera (standard FON firmware 0.7.x) in pseudo IBSS mode:
 > every cient node brings up a bat_AP offering connectivity. It seems
@@ -55,8 +48,4 @@ On Monday 25 June 2007 23:11, a.anselmi@oltrelinux.com wrote:
 >
 > --
 > Antonio
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>   
