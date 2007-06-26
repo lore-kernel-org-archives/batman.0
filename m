@@ -1,15 +1,11 @@
-Message-ID: <560c7c9a0706260741s49964848if48540635a13d9fa@mail.gmail.com>
-Date: Tue, 26 Jun 2007 16:41:27 +0200
-From: "Benjamin Henrion" <bh@udev.org>
-Sender: zoobab@gmail.com
-Subject: Re: [B.A.T.M.A.N.] batman FONera
-In-Reply-To: <46810D9E.9050009@bb.banban.jp>
+Message-ID: <2bda28cd0706260823h3c1e4d78m27f8eb9809e655cd@mail.gmail.com>
+Date: Tue, 26 Jun 2007 17:23:35 +0200
+From: "Stefano Scipioni" <stefano@one-b.it>
+Sender: scipio.it@gmail.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <28978.85.41.146.90.1182805896.squirrel@krisma.oltrelinux.com>
-	<46810D9E.9050009@bb.banban.jp>
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_25163_5968478.1182871415887"
+Subject: [B.A.T.M.A.N.] securing batman gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,16 +17,26 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-On 6/26/07, Lemonde <zukky@bb.banban.jp> wrote:
-> Hi, Antonio.
->
-> Does your ponte2-mesh also work on normal openwrt/kamikaze? (I wish....)
+------=_Part_25163_5968478.1182871415887
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-As far as I know, Kamikaze does not support VirtualAPs. That's what
-some people said, but I still have to test it by myself.
+I am working on a mesh cloud with wep encryption on wireless channel, olsr
+and openvpn to have a tunnel with gateway.
 
---
-Benjamin Henrion <bhenrion at ffii.org>
-FFII Brussels - +32-484-566109 - +32-2-4148403
+Batman has a tunnel with gateway but is it possible to secure it? In first
+step only clients with proper credentials can start tunnel and in second
+step tunnel is crypted.
+
+------=_Part_25163_5968478.1182871415887
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+I am working on a mesh cloud with wep encryption on wireless channel, olsr and openvpn to have a tunnel with gateway.<br><br>Batman has a tunnel with gateway but is it possible to secure it? In first step only clients with proper credentials can start tunnel and in second step tunnel is crypted.
+<br><br><br>
+
+------=_Part_25163_5968478.1182871415887--
