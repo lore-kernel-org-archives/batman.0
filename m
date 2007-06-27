@@ -1,14 +1,10 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] securing batman gateway
-Date: Wed, 27 Jun 2007 12:08:19 +0200
-References: <2bda28cd0706260823h3c1e4d78m27f8eb9809e655cd@mail.gmail.com>
-In-Reply-To: <2bda28cd0706260823h3c1e4d78m27f8eb9809e655cd@mail.gmail.com>
+Message-ID: <48330.85.41.146.90.1182957677.squirrel@krisma.oltrelinux.com>
+Date: Wed, 27 Jun 2007 17:21:17 +0200 (CEST)
+From: a.anselmi@oltrelinux.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706271208.19749.lindner_marek@yahoo.de>
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] batman FONera - kamikaze
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +16,17 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
+For what concerns ponte2 on Kamikaze the script crash the kernel: maybe
+it's due to the dual SSID used by ponte2 when onfigured as repeater AP
+(Kamikaze doesn't support dual SSID ?).
+mesh-ponte2 use only one SSID for the VAP bat_AP (VAP acting as batman
+client works in pseudo-IBSS so no SSID is needed) and maybe it can works
+on Kamikaze.
+However I have never tested ponte2 scripts on OpenWRT.
+
+--
+Antonio
 
 
-Hi,
-
-
-> Batman has a tunnel with gateway but is it possible to secure it? In first
-> step only clients with proper credentials can start tunnel and in second
-> step tunnel is crypted.
-
-I agree that this would be a good idea. Using the batman tunnels would be much 
-easier to set up than IPSec as everything is integrated. Besides that a 
-lightweight encryption could be implemented which even runs on weaker 
-machines.
-
-That feature is planned and a concept already exists. Nevertheless, the batman 
-developer team has a divided opinion about this idea. Some of us (inlucing 
-me) think that it a good opportunity to help spreading internet gateways 
-throughout a city wide mesh. The others fear that this could be the beginning 
-of the end of free mesh networks if we implement such control mechanisms.
-What do you think ? Why do you want this feature ?
-
-Btw: Does your vis server compile now ?
-
-Regards,
-Marek
