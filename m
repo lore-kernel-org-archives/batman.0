@@ -1,11 +1,12 @@
-Message-ID: <468193BB.30202@dd19.de>
-Date: Wed, 27 Jun 2007 00:31:23 +0200
-From: Alexander Morlang <alx@dd19.de>
+Message-ID: <4681E445.70008@bb.banban.jp>
+Date: Wed, 27 Jun 2007 13:15:01 +0900
+From: Lemonde <zukky@bb.banban.jp>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] securing batman gateway
-References: <2bda28cd0706260823h3c1e4d78m27f8eb9809e655cd@mail.gmail.com>
-In-Reply-To: <2bda28cd0706260823h3c1e4d78m27f8eb9809e655cd@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] batman FONera
+References: <28978.85.41.146.90.1182805896.squirrel@krisma.oltrelinux.com>	<46810D9E.9050009@bb.banban.jp>	<560c7c9a0706260741s49964848if48540635a13d9fa@mail.gmail.com>
+	<46818D64.6010809@dd19.de>
+In-Reply-To: <46818D64.6010809@dd19.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -20,33 +21,20 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hi, Benjamin and Alex.
 
+>> As far as I know, Kamikaze does not support VirtualAPs. That's what
+>> some people said, but I still have to test it by myself.
+>>
+>>
+>>     
+> kamikaze supports VAP with atheros hardware and on the broadcom mips
+> platform.
+>
+> Master&Ad-hoc combined should work since a few days.
+>   
+Oh, I can see the light. I'll give it a try.
 
+best regards,
 
-Stefano Scipioni schrieb:
-> I am working on a mesh cloud with wep encryption on wireless channel,
-> olsr and openvpn to have a tunnel with gateway.
-> 
-> Batman has a tunnel with gateway but is it possible to secure it? In
-> first step only clients with proper credentials can start tunnel and in
-> second step tunnel is crypted.
-> 
-
-As the tunnel connects 2 nodes inside the mesh, ipsec transport (not
-tunnel) could secure communication.
-http://en.wikipedia.org/wiki/IPsec#Transport_mode
-
-This would require less changes then implementing an additional tunnel
-for encryption.
-
-Gruss, Alex
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGgZO7hx2RbV7T5aERAsZzAJoDkkmSR1XF+vsRg/I3gBxEo8gZ0ACgxYg+
-RwdE5e4LXLJA0nTlpSHjq+w=
-=N3aP
------END PGP SIGNATURE-----
+zukky
