@@ -1,14 +1,10 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] proposal for batman-status release
-Date: Fri, 29 Jun 2007 19:57:08 +0200
-References: <200706281838.38789.axel@open-mesh.net>
-	<560c7c9a0706281021h2be71470i9fb76e24ac8e5724@mail.gmail.com>
-In-Reply-To: <560c7c9a0706281021h2be71470i9fb76e24ac8e5724@mail.gmail.com>
+Message-ID: <468BAFD3.6060700@fokus.fraunhofer.de>
+Date: Wed, 04 Jul 2007 16:33:55 +0200
+From: Anton Gillert <anton.gillert@fokus.fraunhofer.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Message-Id: <200706291957.08319.axel@open-mesh.net>
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] Batman problem with tun0
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,59 +16,128 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-Hello
+I have following problem:
+I have two Asus wl500gp router, each with atheros(Atheros 5212) 
+wlancards, running kamikaze 7.06; kernel ver.:2.6.19.2. and B.A.T.M.A.N. 
+0.2 rv451 (compability version 3)
+one of them has access to the internet.
+The one who has no internet connection, doesn't set a default route to 
+the one who has. It only sets this routes:
 
-On Thursday 28 June 2007 19:21, Benjamin Henrion wrote:
-> "=B7 The setup for the following emulation consisted of an "Intel(R)
-> Core(TM)2 CPU T7200 @
->   2.00GHz" with a 32-bit gentoo Linux OS and using openVZ for
-> virtualization of individual
->   nodes."
->
-> Is it possible to have a copy of the 32-bits binary to reproduce your
-> tests?
+Destination     Gateway         Genmask         Flags Metric Ref    Use 
+Iface
+192.168.33.23   0.0.0.0         255.255.255.255 UH    0      0        0 
+ath0
+ 0.0.0.0             0.0.0.0         0.0.0.0                 U       
+0      0        0 tun0
+how can I fix it, or what did I wrong? here my are settings
 
-generally we used a current batman from the stable 0.2.x branch, compiled=20
-(gcc-4.1 with the following flags), and finally stripped it.
+On the router with the internet connection:
 
-The exact binary is batmand-02-dynamic-stripped downloadable from
-http://open-mesh.net/batman/documentation/evaluation/setup-details/batman-0=
-.2.x-modified.tgz
+NIC:
+ath0      IEEE 802.11g  ESSID:"muh"  Nickname:""
+         Mode:Ad-Hoc  Frequency:2.412 GHz  Cell: 02:0B:6B:4E:17:DA
+         Bit Rate:0 kb/s   Tx-Power:16 dBm   Sensitivity=0/3
+         Retry:off   RTS thr:off   Fragment thr:off
+         Encryption key:off
+         Power Management:off
+         Link Quality=27/94  Signal level=-68 dBm  Noise level=-95 dBm
+         Rx invalid nwid:621  Rx invalid crypt:0  Rx invalid frag:0
+         Tx excessive retries:0  Invalid misc:0   Missed beacon:0
 
-Further details are about the setup are given here:
-http://open-mesh.net/batman/documentation/evaluation/setup-details/
+ath0      Link encap:Ethernet  HWaddr 00:0B:6B:4E:17:DA
+         inet addr:192.168.33.23  Bcast:192.168.255.255  Mask:255.255.0.0
+         UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+         RX packets:1759 errors:0 dropped:0 overruns:0 frame:0
+         TX packets:1720 errors:0 dropped:0 overruns:0 carrier:0
+         collisions:0 txqueuelen:0
+         RX bytes:91520 (89.3 KiB)  TX bytes:89328 (87.2 KiB)
 
-However, this doc is not yet complete. I`ll continue the description soon...
+batmand:
+batmand -g 11 -r 0 ath0
+
+batmand -c -d 1
+
+Originator           Router (#/128):    Potential routers... 
+[B.A.T.M.A.N. 0.2 rv451, MainIF/IP: ath0 192.168.33.23, UT: 0d 0h16m]
+192.168.33.27     192.168.33.27 (128):   192.168.33.27 (128)
+
+route:
+
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use 
+Iface
+192.168.33.27   0.0.0.0         255.255.255.255 UH    0      0        0 
+ath0
+10.147.112.0    0.0.0.0         255.255.255.128 U     0      0        0 
+eth0.1
+192.168.1.0     0.0.0.0         255.255.255.0   U     0      0        0 
+br-lan
+192.168.0.0     0.0.0.0         255.255.0.0     U     0      0        0 
+ath0
+0.0.0.0         10.147.112.1    0.0.0.0         UG    0      0        0 
+eth0.1
+
+configuration of the router without internet connection:
+
+NIC:
 
 
-ciao,
-axel
+ath0      IEEE 802.11g  ESSID:"muh"  Nickname:""
+         Mode:Ad-Hoc  Frequency:2.412 GHz  Cell: 02:0B:6B:4E:17:DA
+         Bit Rate:0 kb/s   Tx-Power:16 dBm   Sensitivity=0/3
+         Retry:off   RTS thr:off   Fragment thr:off
+         Encryption key:off
+         Power Management:off
+         Link Quality=62/94  Signal level=-33 dBm  Noise level=-95 dBm
+         Rx invalid nwid:197859  Rx invalid crypt:0  Rx invalid frag:0
+         Tx excessive retries:0  Invalid misc:0   Missed beacon:0
 
->
-> Otherwise, results looks great. I will try batman soon on an old
-> usr2450, with 33Mhz cpu, and I would be interested to connect it to
-> the "simulator", in order to populate its routing table.
->
-> On 6/28/07, Axel Neumann <axel@open-mesh.net> wrote:
-> > Hello,
-> >
-> > we have summarized the current development status of B.A.T.M.A.N. in so=
-me
-> > kind of report available at
-> > http://open-mesh.net/batman/documentation/batman-status.pdf
-> >
-> > Thanks to all the people who made this development possible and those w=
-ho
-> > motivated us to finally catch up on this documentation issue.
-> >
-> > Please tell us what you like, what you don't, and what you are missing.
-> >
-> > fondest regards,
-> > marek, elektra, axel
-> > _______________________________________________
-> > B.A.T.M.A.N mailing list
-> > B.A.T.M.A.N@open-mesh.net
-> > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+ath0      Link encap:Ethernet  HWaddr 00:0B:6B:4E:17:53
+         inet addr:192.168.33.27  Bcast:192.168.255.255  Mask:255.255.0.0
+         UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+         RX packets:886366 errors:0 dropped:0 overruns:0 frame:0
+         TX packets:887894 errors:0 dropped:0 overruns:0 carrier:0
+         collisions:0 txqueuelen:0
+         RX bytes:46036433 (43.9 MiB)  TX bytes:46196970 (44.0 MiB)
+# was set by batmand
+tun0      Link encap:UNSPEC  HWaddr 
+00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+         inet addr:192.168.33.27  P-t-P:192.168.33.27  Mask:255.255.255.255
+         UP POINTOPOINT RUNNING NOARP MULTICAST  MTU:1472  Metric:1
+         RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+         TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+         collisions:0 txqueuelen:500
+         RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
 
+
+batmand:
+
+batmand -r 1 ath0
+
+batmand -c -d 1
+
+Originator           Router (#/128):    Potential routers... 
+[B.A.T.M.A.N. 0.2 rv451, MainIF/IP: ath0 192.168.33.27, UT: 5d 0h28m]
+192.168.33.23     192.168.33.23 (128):   192.168.33.23 (128)
+
+batmanad -c -d 2
+
+    Gateway              Router (#/128)
+=> 192.168.33.23     192.168.33.23 (128), gw_class 11 - >6 MBit, 
+reliability: 0
+
+route:
+
+Destination     Gateway         Genmask         Flags Metric Ref    Use 
+Iface
+192.168.33.23   0.0.0.0         255.255.255.255 UH    0      0        0 
+ath0
+192.168.1.0     0.0.0.0         255.255.255.0   U     0      0        0 
+br-lan
+192.168.0.0     0.0.0.0         255.255.0.0     U     0      0        0 
+ath0
+0.0.0.0         0.0.0.0         0.0.0.0         U     0      0        0 
+tun0
