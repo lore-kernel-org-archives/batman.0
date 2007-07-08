@@ -1,15 +1,12 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Re: Batman problem with tun0
-Date: Fri, 6 Jul 2007 09:59:54 +0200
-References: <200707051000.l65A02Y3020074@open-mesh.net>
-	<468DEE47.6080106@fokus.fraunhofer.de>
-In-Reply-To: <468DEE47.6080106@fokus.fraunhofer.de>
+Message-ID: <2bda28cd0707072306x3d66da44ybfa584f739348b92@mail.gmail.com>
+Date: Sun, 8 Jul 2007 08:06:39 +0200
+From: "Stefano Scipioni" <stefano@one-b.it>
+Sender: scipio.it@gmail.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707060959.54813.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] originator timeout
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,19 +18,12 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
+I'm testing batman 0.2 rv451 with nodes.
 
 
-Hi,
+node1                  node2                  node3
 
-> thanks for replying so fast. Unfortunately the reason isn't the blocked
-> tcp-port, I tested it after I shutdown the firewall on each node with
-> the same result as you can see above. Is there something else I can do?
-
-Sure. You can debug this by using tcpdump. Use the following call to see the 
-batman TCP and UDP gateway connections: tcpdump -ni <your_wifi_dev> port 1967
-Best would be to send it to me, so that I can say a few words about your 
-problem.  :-)
-
-Regards,
-Marek
+10.0.1.1 ------------- | 10.0.1.3 |
+                           | 10.1.1.1 |----------- 10.1.1.10 ------ 10.1.1.13
