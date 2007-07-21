@@ -1,14 +1,12 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] TTL-Interface specific
-Date: Fri, 20 Jul 2007 22:56:27 +0200
-References: <20070720172531.tjq2at48zqo048sk@webmail.ddmesh.de>
-In-Reply-To: <20070720172531.tjq2at48zqo048sk@webmail.ddmesh.de>
+Message-ID: <46A21D01.3000406@ddmesh.de>
+Date: Sat, 21 Jul 2007 16:49:37 +0200
+From: Freifunk Dresden <freifunk@ddmesh.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+References: <200707211000.l6LA02R6018086@open-mesh.net>
+In-Reply-To: <200707211000.l6LA02R6018086@open-mesh.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707202256.27470.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] Re: TTL-Interface specific
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,26 +18,21 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
+Hello,
 
-Hi,
+thanks for your explainations. Of cource I mean processes instead of
+"instances".
+As setting up a TTL per interface and per command line you may extent
+the interface name like the following examble:
+batmand eth1:32 bbs:2 bbc
 
+which could mean to setup the eth1 with TTL 32, bbs with TTL 2 and bbc
+with the default TTL value.
 
-> Questions 2:
->   batman on mipsel runs in three instances independed of number of
-> interfaces listen. on i386 only one instance is running (three
-> interfaces). How does this work?
+Question: the olsrd allows to send a list of services (http,ftp)
+provided by the node. Is there a way to send such messages with batmand?
 
-the words "instances" means threads. I guess you found that word on the batman 
-freifunk gui ?! It is a bit misleading.
-Batman is a threaded application. Several tasks are done by different threads. 
-OpenWRT (Whiterussian) has no good thread implementation - so called 
-LinuxThreads. They emulate thread behaviour via processes. Thats why you see 
-so many. 
-However, this library is deprecated and a newer (NPTL) is in widely use today 
-but requires Linux Kernel 2.6. This is a real thread implementation where you 
-have only one process. I guess that you use this lib on your i386 ?!
-
-Regards,
-Marek
+Regards
+ Stephan
