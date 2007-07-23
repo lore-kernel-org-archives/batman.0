@@ -1,15 +1,14 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] Re: TTL-Interface specific
-Date: Sun, 22 Jul 2007 22:25:02 +0200
-References: <200707211000.l6LA02R6018086@open-mesh.net>
-	<46A21D01.3000406@ddmesh.de>
-In-Reply-To: <46A21D01.3000406@ddmesh.de>
+Message-ID: <20070723140744.ozvor890jy5cockg@webmail.ddmesh.de>
+Date: Mon, 23 Jul 2007 14:07:44 +0200
+From: Freifunk Dresden <freifunk@ddmesh.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-Message-Id: <200707222225.02178.axel@open-mesh.net>
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] Multiple connections / prioritiy
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +20,29 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: open-mesh <b.a.t.m.a.n@open-mesh.net>
 
-Hello
+Hi Axel,
 
-On Saturday 21 July 2007 16:49, Freifunk Dresden wrote:
-> As setting up a TTL per interface and per command line you may extent
-done!
-can be tested from trunk/batman-experimental revision rv 479  
-available from e.g.:
-http://downloads.open-mesh.net/batman/development/i386/batmand-exp_0.3-exp-current_i386-gc-elf-32-lsb-dynamic.tgz
-or using:
-svn co https://dev.open-mesh.net/svn/batman/trunk/batman-experimental
+this is great and I will try it, but I can not promise to give you  
+results soon because
+the lack of time.
+If I have multiple connections between two nodes, is there a way to  
+setup the quality or
+priority of those connection?
+Assume I have tree or more nodes connected in a line (A,B,C,D) and  
+node A and Node D are
+connected via backbone tunnel over Internet, the wireless connection  
+should be used until
+the quality falls below a certain level or the number of nodes
+exceeded a maximum value. setting up a hysteresis should be possible  
+to avoid to much
+switching of the route.
 
-> the interface name like the following examble:
-> batmand eth1:32 bbs:2 bbc
-however, the ":" is reserved because it is used to differentiate alias 
-interfaces from the physical interface name. 
-The (optional) syntax is now: /t number-of-ttl to be given behind the 
-interface name.  According to your example use:
-batmand eth1 /t 32 bbs /t 2 bbc
 
-> which could mean to setup the eth1 with TTL 32, bbs with TTL 2 and bbc
-> with the default TTL value.
+eth1:   A ------- B ------- C ------- D
+bbs:    A ============================D
 
-You can also specify the default TTL value with -t like
-batmand -t 60 eth1 /t 32 bbs /t 2 bbc
+Regards
+  Stephan
 
-ciao,
-axel
