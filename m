@@ -1,14 +1,12 @@
-Message-ID: <20070724152109.yhywdc2kj6skcgck@webmail.ddmesh.de>
-Date: Tue, 24 Jul 2007 15:21:09 +0200
-From: Freifunk Dresden <freifunk@ddmesh.de>
+Message-ID: <46A64669.5050604@poelzi.org>
+Date: Tue, 24 Jul 2007 20:35:21 +0200
+From: Daniel Poelzleithner <poelzi@poelzi.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] dynamic gateway / hna / services
+Subject: Re: [B.A.T.M.A.N.] dynamic gateway / hna / services
+References: <20070724152109.yhywdc2kj6skcgck@webmail.ddmesh.de>
+In-Reply-To: <20070724152109.yhywdc2kj6skcgck@webmail.ddmesh.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,67 +18,55 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: open-mesh <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-hi,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Question 1:
+Freifunk Dresden wrote:
 
-how does batmand detect whether the internet connection is really connected to
-the internet or not. Or does batmand just relays on the -g parameter.
-Until now we let run a cron job that checks for the real working  
-gateway. Because we can not relay on the presence of the default  
-route. User may use a different
-router to connect to the internet and just add the default route this  
-private router.
-The problem is that the node offering a internet connection (-g)  
-should also be able to access other internet connection if its local  
-connection is brocken.
+> I'm currently checking how the HNA is working, but until now I can not
+> see any HNA on a second node. Firewall is enabled completely for both
+> nodes and each node sees the other nodes. I call batmand as follow:
+> Node1: batmand -t 63 -a 141.56.0.0/16 wlan0 bbs /t 2 bbc /t 2
+> Node2: batmand -t 63 eth1 bbs /t 2 bbc /t 2
 
-Question 2:
+> 
+> But batmand -c -d 4 does not show any HNA messages and no HNA entry is
+> stored in   routing table.
 
-I'm currently checking how the HNA is working, but until now I can not  
-see any HNA on a second node. Firewall is enabled completely for both  
-nodes and each node sees the other nodes. I call batmand as follow:
-Node1: batmand -t 63 -a 141.56.0.0/16 wlan0 bbs /t 2 bbc /t 2
-Node2: batmand -t 63 eth1 bbs /t 2 bbc /t 2
+mmhh, the hna announcments are written into another routing table, have
+you checked that ?
 
-But batmand -c -d 4 does not show any HNA messages and no HNA entry is  
-stored in   routing table.
+> If a node offers a ftp server (portforwarding) I like to offer this
+> "service" via batmand like olsrd.
+> A generic solution would be good to just allow to send user text
+> messages with the OGM.
 
-Beside of this the Idea to add/delete HNA without stopping batmand  
-would be good. e.g. batmand -c -a <add-hna>
-            batmand -c -A <del-hna>
+This is a bad idea in my opinion. A routing protocol has one purpose
+which is routing, not flooding 99% useless information just because it
+COULD.
 
-Question 3:
+i think the right approch for service discovery is using something like
+dns for example. dns is very small overheaded, allows great redundancy,
+works on demand...
 
-If a node offers a ftp server (portforwarding) I like to offer this  
-"service" via batmand like olsrd.
-A generic solution would be good to just allow to send user text  
-messages with the OGM.
+using TXT and SRV records, a good dns infrastructure and user frontend,
+it should be easy to publish services.
 
-e.g:sending:  batmand -c -m "this is my message" (called requlary by  
-cron.d to send/update a message or command)
-  the running batmand will need an addional options e.g. -m (script)  
-that is called to process the incomming message.
-e.g:  batmand -m process-message-script wlan0
+here in leipzig we already layed the ground stones for a widespanning,
+redundant dns network using anycast ips for redundancy.
 
-The advantage would be, that each user that is using batman can offer  
-different
-services: e.g. populate a service list, news, software updates,....
+http://wiki.freifunk.net/FF-Zone
 
-Another Idea of the "-m" is to differenciate this parameter to -M <"message">
-and -m <send-script>. by calling batmand -c -m send-script, batmand  
-can setup stdin/stdou as binary file handle and fill a user-OGM with  
-binary data that is then send.
+kindly regards
+ Daniel
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: GnuPT 2.7.2
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-
-Please tell me if some of the features already present in the  
-batman-experimental trunk.
-
-Kind regards
-  Stephan
-
-
-
-
+iD8DBQFGpkZpy/mkIQp7AD0RAhrlAKCVDRFsf+6+909tsAxtCFM3oZSxugCfdKsT
+sGLdwUFF9ckhxfLHikdfwP8=
+=DW4D
+-----END PGP SIGNATURE-----
