@@ -1,15 +1,14 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] Multiple connections / prioritiy
-Date: Tue, 24 Jul 2007 12:54:54 +0200
-References: <20070723140744.ozvor890jy5cockg@webmail.ddmesh.de>
-	<46A591C0.8090009@poelzi.org>
-In-Reply-To: <46A591C0.8090009@poelzi.org>
+Message-ID: <20070724152109.yhywdc2kj6skcgck@webmail.ddmesh.de>
+Date: Tue, 24 Jul 2007 15:21:09 +0200
+From: Freifunk Dresden <freifunk@ddmesh.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-Message-Id: <200707241254.54152.axel@open-mesh.net>
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] dynamic gateway / hna / services
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,35 +20,67 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: open-mesh <b.a.t.m.a.n@open-mesh.net>
 
-Hi
+hi,
 
-On Tuesday 24 July 2007 07:44, Daniel Poelzleithner wrote:
-> Freifunk Dresden wrote:
-> > If I have multiple connections between two nodes, is there a way to
-> > setup the quality or
-> > priority of those connection?
->
-> Same goes for Leipzig, we have our vpn[1,2].leipzig.freifunk.net nodes.
-> I thought about this problem a lot and the simplest solution would be to
-> simply drop like 9 of 10 batman packets on the outgoing vpn interface.
-> this is like a olsr multiplicator of 10 with the advantage that it saves
-> bandwith.
-on a specific interface
-a) you man drop received originator messages (OGMs) which does not really 
-reducing the traffic or
-b) suspend the sending of OGMs 
+Question 1:
 
-However, dropping or suspending should only be applied to OGMs from 
-non-neighboring nodes, otherwise it also affects the bidirectional link check 
-which would result in a confusing side-effect, marking even more packets as 
-invalid.
+how does batmand detect whether the internet connection is really connected to
+the internet or not. Or does batmand just relays on the -g parameter.
+Until now we let run a cron job that checks for the real working  
+gateway. Because we can not relay on the presence of the default  
+route. User may use a different
+router to connect to the internet and just add the default route this  
+private router.
+The problem is that the node offering a internet connection (-g)  
+should also be able to access other internet connection if its local  
+connection is brocken.
 
-In parallel it might be beneficial to configure different originator intervals 
-for particular interfaces. For example for a vpn connection a very large 
-originator interval (with a small TTL would be sufficient) since its 
-link-quality is not supposed to change anyway (and causing less traffic to 
-the vpn).
+Question 2:
 
-/axel
+I'm currently checking how the HNA is working, but until now I can not  
+see any HNA on a second node. Firewall is enabled completely for both  
+nodes and each node sees the other nodes. I call batmand as follow:
+Node1: batmand -t 63 -a 141.56.0.0/16 wlan0 bbs /t 2 bbc /t 2
+Node2: batmand -t 63 eth1 bbs /t 2 bbc /t 2
+
+But batmand -c -d 4 does not show any HNA messages and no HNA entry is  
+stored in   routing table.
+
+Beside of this the Idea to add/delete HNA without stopping batmand  
+would be good. e.g. batmand -c -a <add-hna>
+            batmand -c -A <del-hna>
+
+Question 3:
+
+If a node offers a ftp server (portforwarding) I like to offer this  
+"service" via batmand like olsrd.
+A generic solution would be good to just allow to send user text  
+messages with the OGM.
+
+e.g:sending:  batmand -c -m "this is my message" (called requlary by  
+cron.d to send/update a message or command)
+  the running batmand will need an addional options e.g. -m (script)  
+that is called to process the incomming message.
+e.g:  batmand -m process-message-script wlan0
+
+The advantage would be, that each user that is using batman can offer  
+different
+services: e.g. populate a service list, news, software updates,....
+
+Another Idea of the "-m" is to differenciate this parameter to -M <"message">
+and -m <send-script>. by calling batmand -c -m send-script, batmand  
+can setup stdin/stdou as binary file handle and fill a user-OGM with  
+binary data that is then send.
+
+
+Please tell me if some of the features already present in the  
+batman-experimental trunk.
+
+Kind regards
+  Stephan
+
+
+
+
