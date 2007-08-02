@@ -1,16 +1,14 @@
 From: Axel Neumann <axel@open-mesh.net>
 Subject: Re: [B.A.T.M.A.N.] dynamic gateway / hna / services
-Date: Sat, 28 Jul 2007 10:03:39 +0200
+Date: Thu, 2 Aug 2007 16:26:21 +0200
 References: <20070724152109.yhywdc2kj6skcgck@webmail.ddmesh.de>
-	<200707271840.31922.lindner_marek@yahoo.de>
-	<4E49DEA7-86FD-478C-B9D6-C5388F7F6EE3@lo-res.org>
-In-Reply-To: <4E49DEA7-86FD-478C-B9D6-C5388F7F6EE3@lo-res.org>
+In-Reply-To: <20070724152109.yhywdc2kj6skcgck@webmail.ddmesh.de>
 MIME-Version: 1.0
+Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707281003.40203.axel@open-mesh.net>
+Message-Id: <200708021626.21405.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,63 +24,49 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open
 
 Hello,
 
-On Friday 27 July 2007 22:41, Aaron Kaplan wrote:
-> >> I just again and again get the feeling from batman people that sort
-> >> of "everything else sucks"
-> >> Like academia sucks, olsr sucks etc etc.
-> >> But that is a bit contra-productive. That is what I wanted to
-> >> point out.
-> >
-> > Where does this feeling come from ?
+On Dienstag 24 Juli 2007, Freifunk Dresden wrote:
+[...]
+> Question 2:
 >
-> I think there has been enough academia bashing (completely useless!)
-> in the past.
-> If you look up the old mails then you know what I mean. 
+> I'm currently checking how the HNA is working, but until now I can not
+> see any HNA on a second node. Firewall is enabled completely for both
+> nodes and each node sees the other nodes. I call batmand as follow:
+> Node1: batmand -t 63 -a 141.56.0.0/16 wlan0 bbs /t 2 bbc /t 2
+> Node2: batmand -t 63 eth1 bbs /t 2 bbc /t 2
+>
+> But batmand -c -d 4 does not show any HNA messages and no HNA entry is
+> stored in   routing table.
 
-Sorry, I still have difficulties to understand. I looked up the old mails (of 
-this mailing list) and found only one mail mentioning "academic" and that was 
-in march, so i am not sure if you are referring to that. 
+Indeed, seemed something has been missed (sorry for late reply). 
+Can you try something above rv489 
 
-Anyway, if there was bashing (on whatever) then I am sorry, but it also would 
-be just fair to give a reasonable hint (in a reasonable time) to the 
-statements that caused the bad feelings. Otherwise it causes just reproaches 
-without leaving a chance to defend/explain and even worse at a time where 
-nobody remembers what the actual thread was about.
-The same applies to olsr but here i want to add that comparing batman with 
-existing state of the art solutions is usual and wanted. I admit , personally 
-I might be a bit biased but thats why we have this public mailing list, so 
-that everybody can question the given statements and come up with precise and 
-concrete counter arguments.
+debul-level 3 should show (batmand -c -d 3):
+Adding route to 10.20.0.222/32 via 10.20.0.2 (table 65 - eth0:bat)
+and 
+ip route ls table 65
+10.20.0.222 via 10.20.0.2 dev eth0  proto static
 
-> I am quite 
-> convinced that academia already overtook
-> the freifunk style networks some time ago! And you just don't notice it.
+> Beside of this the Idea to add/delete HNA without stopping batmand
+> would be good. e.g. batmand -c -a <add-hna>
+>             batmand -c -A <del-hna>
 
-Can you provide further (background-)links on that (especially interesting 
-would be those based on real world tests as addressed below)?
+I also like the idea of dynamically changing some parameters but on the other 
+hand, what are the negative side-effects of restarting a daemon ? 
+ - A client connected to the daemon might temporary loose connection
+ - Do you know others?
 
-best regards,
+[...]
+
+>
+> Another Idea of the "-m" is to differenciate this parameter to -M
+> <"message"> and -m <send-script>. by calling batmand -c -m send-script,
+> batmand can setup stdin/stdou as binary file handle and fill a user-OGM
+> with binary data that is then send.
+>
+
+Even if such message-flooding ist not implemented I just thought of whether 
+there exist some standardized formats to announce such services (maybe the 
+community network markup language CNML idea) ? 
+
+ciao, 
 axel
-
-> Again: I do NOT really think about OLSR so much in particular.
-> I just wanted to give you some feedback.
-> You could also sum the feedback up as:
->
->    "Hochmut/Arroganz kommt vor dem Fall"
->
-> I hope I am wrong.
->
-> nevertheless, I am very curious when the next real world tests come out.
-> Well, again. Just my personal feelings and observations. I hope I am
-> wrong.
->
-> ciao,
-> a.
->
->
->
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
