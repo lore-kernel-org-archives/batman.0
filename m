@@ -1,5 +1,5 @@
-Message-ID: <20070803110942.7h6ynax7lx0cckgc@webmail.ddmesh.de>
-Date: Fri, 03 Aug 2007 11:09:42 +0200
+Message-ID: <20070803111004.256txg3batj8ks0s@webmail.ddmesh.de>
+Date: Fri, 03 Aug 2007 11:10:04 +0200
 From: Freifunk Dresden <freifunk@ddmesh.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
@@ -25,69 +25,71 @@ To: b.a.t.m.a.n@open-mesh.net
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-Zitat von Marek Lindner <lindner_marek@yahoo.de>:
+Zitat von Lui <batman@schmudde.com>:
 
+> Marek,
 >
-> Hi,
+>> First of all, "-g" is just flooded through the network. We
+>> also want some kind of "dyngw"-plugin but with a better approach:
+>> By using tunnels to the gateway batman is in a far better situation
+>> than OLSR. The "is internet really available" check can be done on
+>> the client side and is therefore much more
+>
+> it's about the gateway himself (not a client-of-the-gateway).
+> A gateway router (has to/)should check his default route and change
+> his role to 'ordinary-client' => switch working state from -g to
+> -r/-p Mode. May think about NATed LAN-clients, too...
+>
+> The "working-tunnel-check" is good tool against 'vandalism' or
+> mis-configuration in the hand of a gateway-client, but it's no
+> protection for the gateway against vandalism (i.e.) of his ISP...
+>
+> Lui
+> (stucking just in the mentioned situation)
 >
 >
-> this question was a bit forgotten.  :-)
->
->> how does batmand detect whether the internet connection is really connected
->> to the internet or not. Or does batmand just relays on the -g parameter.
->> Until now we let run a cron job that checks for the real working
->> gateway. Because we can not relay on the presence of the default
->> route. User may use a different
->> router to connect to the internet and just add the default route this
->> private router.
->> The problem is that the node offering a internet connection (-g)
->> should also be able to access other internet connection if its local
->> connection is brocken.
->
-> First of all, "-g" is just flooded through the network. We also want  
->   some kind
-> of "dyngw"-plugin but with a better approach: By using tunnels to the gateway
-> batman is in a far better situation than OLSR. The "is internet really
-> available" check can be done on the client side and is therefore much more
-> reliable. With batman 0.3 all the packet flow towards and from the internet
-> is going through batman. Batman just has to check whether traffic is coming
-> back through the tunnel after sending packets to the internet. If this is not
-> the case the batman node offering the internet is blacklisted and another
-> gateway is chosen.
-> This has not been implemented yet but all the neccessary basics for that
-> feature are completed by now. Expect this feature to come in the following
-> weeks.
->
-> Regards,
-> Marek
 > _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 >
+Hi,
 
-this sounds good, but you should keep in mind that such a "good"
-internet connection that was choosen being the best, has only a short
-disconnection. I this case each batmand of each client should retest
-the connection after a timeout of few minutes. I think this could be
-disturbing an established connection because the batmand has to change
-the tunnel to the new gateway.
-For this I beleave that it is better to have a separated process
-checking its own internet connection (if provided and setup by node
-config). this process then tells batmand about the connection. batmand
-will deside on some criteries if this connection is stable an worth to
-be populated through the net.
-I have implemented in our firmware a test (like leipzig) that only
-pings some addresses.
+independet of the kind of the solution for the internet gateway, each
+node that offers can do some vandalism. It only needs to use its own
+firmware or compiled batmand version. So we should trust each node
+client that it is not modified in such a bad way. If a tunnel is used
+or other parts of the firmware run some tests and setup default routes
+doesn't matter.
+As you know dresden freifunk is very in the beginning and therefore I
+like to take the opportunity to use badmand because of its clear usage
+and functionality. but for our tests I have used policy routing and a
+similar technic to check for all possible gateways a node may have.
+this eliminates the following problem: A------B(HNA:
+allinet)-----C(HNA:one Inet ip)
+Node C only has a HNA for a specific internet server but does not
+offer a verified internet gateway. If A access this ip  than Node B
+did not use its verified offered gateway and forwards the request to
+C. The problem is, that the  HNA of C may be brocken or missconfigured.
+Policy routing allows to filter for all Internet addresses on Node B
+and redirects the packets to the proofed gateway.
 
-cheers
+Please let me know if I didn't got anything right. For the first glace
+I would prever standard routing without tunnel, which let me see where
+the packet go to the internet and which way they use (inc.timings
+traceroute). I now I can traceroute the gateway and the internet in
+two step to get the same info.
+
+Bye
   Stephan
+
+
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.7 (MingW32)
 
-iD8DBQFGsjy+ZSvvlmZMBPIRAuCNAJ0WFVjL92oCAQtCiZxpCPPMaeEMrQCfdQ9S
-sNv9gTDx0pk5yMNheTEMkAE=
-=oLrN
+iD8DBQFGsjy2ZSvvlmZMBPIRAkTwAKDjQMXBafT9TLrVN5nI2GU1VBKGDACg4Vkz
+Iz7AI++9jKcEF79KrY/7rG0=
+=geXb
 -----END PGP SIGNATURE-----
 
 
