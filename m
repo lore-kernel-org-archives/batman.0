@@ -1,16 +1,16 @@
-Message-ID: <4437.85.41.146.90.1188055392.squirrel@krisma.oltrelinux.com>
-In-Reply-To: <46faed20708250156g5fcde31bs5a99d7e33ca24a4a@mail.gmail.com>
-References: <38331.85.41.146.90.1187693478.squirrel@krisma.oltrelinux.com>
-	<46CF07B9.8060903@bb.banban.jp>
-	<46faed20708241035n595ebaas4e45df35c3dfdff5@mail.gmail.com>
-	<a934d3f30708241122h4031e67di927d5523caaf5db1@mail.gmail.com>
-	<46faed20708250156g5fcde31bs5a99d7e33ca24a4a@mail.gmail.com>
-Date: Sat, 25 Aug 2007 17:23:12 +0200 (CEST)
-Subject: Re: [B.A.T.M.A.N.] robin
-From: a.anselmi@oltrelinux.com
+From: Axel Neumann <axel@open-mesh.net>
+Date: Mon, 27 Aug 2007 13:14:39 +0200
+References: <435DF58A933BA74397B42CDEB8145A860F5137E5@ex9.hostedexchange.local>
+	<200708261325.55854.axel@open-mesh.net>
+	<435DF58A933BA74397B42CDEB8145A860C460189@ex9.hostedexchange.local>
+In-Reply-To: <435DF58A933BA74397B42CDEB8145A860C460189@ex9.hostedexchange.local>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708271314.40816.axel@open-mesh.net>
+Subject: [B.A.T.M.A.N.] Hops along the way
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,129 +22,79 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: Michael Burmeister-Brown <mike@netequality.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-> so people are flashing the meraki because they don't want to work with the
-> central server dashboard.Meraki.com ?
+Hello,
 
-Not only. So that, we are writing a server side php interface that will
-replace a visualization server and will rely on Meraki dashborad adding
-some views taken from nodogsplash daemon... I think it will be ready for
-public tests within a couple of weeks.
+On Sonntag 26 August 2007, Michael Burmeister-Brown wrote:
+> Regarding finding gateways:
+>
+> What I meant was, is there a way for a repeater node to find the current
+> route being used from the node to the Gateway?
 
-The other reason was that I think is better starting from scratch with a
-totally open, clear and clean root filesystem like kamikaze: I colud build
-the needed image with only and only what I want and skilled users can
-upgrade adding any desired package.
+You can use tools like traceroute or ping -R. But you must use the ip of 
+the currently selected GW node as the target address. You can get the
+currently selected GW-node with batmand -c -d 2 -b. 
+This debugoutput level 2 shows the currently available GWs and the 
+currently selected GW. It'll look like:
+$ batmand -c -d 2 -b
+     Gateway              Router (#/128)
+=> 10.1.0.1               10.1.0.1 ( 31), gw_class  2 - 64 KBit (e.g. ISDN), reliability: 0
+   10.2.0.1               10.1.0.1 ( 30), gw_class  2 - 64 KBit (e.g. ISDN), reliability: 0
 
-...personally not any flames against Meraki dashboard !
+Note that 
+10.1.0.1 and 10.2.0.1 is actually one machine with two interfaces. And
+10.1.1.1 and 10.2.1.1 is another machine with two interfaces.
 
---
-Antonio
+Note also that ping and traceroute are sometimes confusing when tracing a node
+with multiple IPs.
+Then any of the valid IPs on that machine may be returned as the traced hop.
+
+
+So there are two gateways avilable and 10.1.0.1 is the currently selected one.
+The following examples have been executed on node 10.1.1.2
+
+$ ping -R 10.1.0.1 # shows the first 10 hops from source to destination and back
+PING 10.1.0.1 (10.1.0.1) 56(124) bytes of data.
+64 bytes from 10.1.0.1: icmp_seq=1 ttl=64 time=19.1 ms
+RR:     10.1.1.2
+        10.2.1.1
+        10.1.0.1
+        10.1.0.1
+        10.1.1.1
+        10.1.1.2
+
+$ traceroute 10.1.0.1 # shows only the intermediate hops from source to destination
+traceroute to 10.1.0.1 (10.1.0.1), 30 hops max, 40 byte packets
+ 1  10.1.1.1 (10.1.1.1)  5.103 ms  3.608 ms  3.870 ms
+ 2  10.1.0.1 (10.1.0.1)  7.762 ms  8.640 ms  7.650 ms
+
+( If you do not have ping or traceroute available or do not have it 
+compiled with the desired options (like -R for ping) for your hardware
+you can try the pre-compiled binaries at:
+http://downloads.open-mesh.net/misc/handy-tools/ )
 
 >
-> 2007/8/24, Vinay Menon <vinaymenon@gmail.com>:
->>
->> I tried ROBIN on the Meraki nodes i have,must say it really looks
->> promising.
->> Truly 0-config without the need of a central server this is plug-n play
->> :)
->>
->> I was wondering why dont you use the same essid as ROBIN instead of the
->> ROBIN_mac/ip.
->> This would make a mesh repeater network and would completely emulate
->> meraki.
->>
->> Thanks and
->> Regards,
->> Vinay
->>
->> On 8/24/07, Steven Leeman <steven@leeman.be> wrote:
->> >
->> > Ive allready got a  5Node fonera robin mesh and 8others are waiting to
->> > be installed; first a vis-server;and the most recent updates
->> >
->> > 2007/8/24, Lemonde <zukky@bb.banban.jp >:
->> > > Hi, all. Hi, Antonio.
->> > >
->> > > I've made up two ROBIN nodes on LaFoneras.
->> > > They works quite well.
->> > >
->> > > ---node.A as gateway---
->> > > root@OpenWrt:~# /sbin/brn -h
->> > > usage /sbin/brn
->> > >  -a : shows batmand -d 1
->> > >  -b : shows neighbors
->> > >  -d : shows non-direct neighbors
->> > >  -g : shows: OGs using NBs with non-direct GWs
->> > >  -v : shows all
->> > >  -l : loop every 2 seconds
->> > >  -h : shows help
->> > >
->> > > root@OpenWrt:~# /sbin/brn -v
->> > > All Originators:
->> > > 6.16.66.32           6.16.66.32 (128):       6.16.66.32 (128)
->> > > NBs:
->> > > 6.16.66.32           6.16.66.32 (128):      6.16.66.32 (128)
->> > > NBs with non-direct GWs:
->> > > OGs using NBs with non-direct GWs:
->> > > root@OpenWrt:~#
->> > > -------------------------
->> > >
->> > > ---node.B as node------
->> > > root@OpenWrt:~# /sbin/brn -v
->> > > All Originators:
->> > > 6.16.62.172         6.16.62.172 (126):     6.16.62.172 (126)
->> > > NBs:
->> > > 6.16.62.172         6.16.62.172 (126):     6.16.62.172 (126)
->> > > NBs with non-direct GWs:
->> > > OGs using NBs with non-direct GWs:
->> > > root@OpenWrt:~#
->> > > -------------------------
->> > >
->> > > ROBIN is so 0-config that I can't understand how it woks. :-)
->> > >
->> > > regards,
->> > >
->> > > zukky
->> > >
->> > > P.S.
->> > > Antonio, your documents are so nice.
->> > >
->> > >
->> > > > Hi,
->> > > >
->> > > > I'm using BATMAN routing algorithm on an kamikaze based firwmare,
->> > > > realizing ROBIN (Routing Batman Inside) MESH: a 0-config, QoS
->> > capable mesh
->> > > > software which targets Atheros AP51 devices such as Meraki Mini or
->> > Fonera.
->> > > >
->> > > _______________________________________________
->> > > B.A.T.M.A.N mailing list
->> > > B.A.T.M.A.N@open-mesh.net
->> > > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->> > >
->> > _______________________________________________
->> > B.A.T.M.A.N mailing list
->> > B.A.T.M.A.N@open-mesh.net
->> > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->> >
->>
->>
->>
->> --
->> Vinay Menon
->> _______________________________________________
->> B.A.T.M.A.N mailing list
->> B.A.T.M.A.N@open-mesh.net
->> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->>
->>
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+> It would be nice to be able to see how many hops are being used, the
+> quality of each link along the way, etc.  Our Google maps (for Merakis)
+> will also highlight the route to the gateway, for example.
+To get detailed feedback about the quality of each individual hop
+you may install a central visualization server using the vis tool:
+svn co https://dev.open-mesh.net/batman/browser/trunk/vis/
+
+Then each node must be configured to send information about the 
+link qualities to its neighbors to the centralized server. 
+( There is no global knowledge at every node about every link , 
+thats one of the big differences between batman and link-state-protocols )
+Therefore simply start the client nodes with eg.:
+batmand -s <IP-of-central-visualization-server> wlan0
+
+ciao,
+axel
+
 >
-
-
+> Thanks again,
+>
+> Mike
+>
