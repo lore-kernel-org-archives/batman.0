@@ -1,10 +1,12 @@
-Message-ID: <002d01c7f5cc$825d8910$0cdbe29f@happy0bc06a65b>
-From: =?gb2312?B?zMa2pg==?= <tangding@mail.ioa.ac.cn>
-Date: Thu, 13 Sep 2007 14:08:30 +0800
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Thu, 13 Sep 2007 13:12:01 +0200
+From: thomasasta@gmx.net
+In-Reply-To: <002d01c7f5cc$825d8910$0cdbe29f@happy0bc06a65b>
+Message-ID: <20070913111201.237460@gmx.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_002A_01C7F60F.9023DC00"
-Subject: [B.A.T.M.A.N.] translation of batman-adv
+References: <002d01c7f5cc$825d8910$0cdbe29f@happy0bc06a65b>
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] terra-net (Mesh im Handy)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,37 +18,79 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+Cc: wlannews@freifunk.net
 
-This is a multi-part message in MIME format.
+Hallo, vielleicht bekommt man Batman auch in Openmoko Linux Handy?
 
-------=_NextPart_000_002A_01C7F60F.9023DC00
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+http://www.openmoko.org/
 
-aGkhDQpEb3NlIHRoZSB0cmFuc2xhdGlvbiBvZiBiYXRtYW4tYWR2IHN1cHBvcnQgZmFzdCByb2Ft
-aW5nIGJldHdlZW4gYmF0bWFuIG5vZGVzKGV2ZXJ5IGJhdG1hbiBub2RlIGhhcyB0d28gd2lyZWxl
-c3MgaW50ZXJmYWNlIHVuZGVyIGEgYnJpZGdlLG9uZSB3b3JrcyBpbiBhcCBtb2RlLGFub3RoZXIg
-d29ya3MgaW4gYWRob2MgbW9kZSBmb3IgYmF0bWFuJyByb3V0aW5nKQ0K
+Dann h=E4tte man eine Alternative zum Terra-Net, was bestimmt closed source=
+ ist.
 
-------=_NextPart_000_002A_01C7F60F.9023DC00
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+Danke Gruss
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
-MC41NzMwLjExIiBuYW1lPUdFTkVSQVRPUj4NCjxTVFlMRT48L1NUWUxFPg0KPC9IRUFEPg0KPEJP
-RFkgYmdDb2xvcj0jZmZmZmZmPg0KPERJVj48Rk9OVCBzaXplPTI+DQo8RElWPjxGT05UIHNpemU9
-Mj5oaSE8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj5Eb3NlJm5ic3A7dGhlIHRyYW5z
-bGF0aW9uIG9mIGJhdG1hbi1hZHYgc3VwcG9ydCBmYXN0IHJvYW1pbmcgDQpiZXR3ZWVuIGJhdG1h
-biZuYnNwO25vZGVzKGV2ZXJ5IGJhdG1hbiBub2RlIGhhcyB0d28gd2lyZWxlc3MgaW50ZXJmYWNl
-IHVuZGVyIGEgDQpicmlkZ2Usb25lIHdvcmtzJm5ic3A7aW4gYXAgbW9kZSxhbm90aGVyIHdvcmtz
-Jm5ic3A7aW4gYWRob2MgDQptb2RlJm5ic3A7Zm9yJm5ic3A7YmF0bWFuJyByb3V0aW5nKTwvRk9O
-VD48L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+PC9GT05UPjwvRElWPjwvQk9EWT48L0hUTUw+DQo=
+P2P-Mobilfunksystem erm=F6glicht Gratis-Anrufe
+Quelle: http://www.openmoko.org/
 
-------=_NextPart_000_002A_01C7F60F.9023DC00--
+"Mesh-Netzwerk mit Handys bedeutet das Ende von GSM-Netzen" -
+Technologie ist im WLAN-Bereich ein Hoffnungstr=E4ger
+Das schwedische Unternehmen TerraNet hat eine M=F6glichkeit entwickelt,
+mobile Kommunikation ohne ein herk=F6mmliches Mobilfunknetzwerk
+umzusetzen. Die Handys werden dabei in ein Peer-to-Peer-System
+eingebunden und vernetzen sich untereinander, berichtet BBC online.
+Der Grundgedanke ist ein sogenanntes Mesh-Netzwerk, eine
+dezentralisierte Infrastruktur, bei der jeder Knoten - in diesem Fall
+sind es die Mobiltelefone - nur soviel Leistung bringen muss, um sich
+mit dem n=E4chsten zu verbinden. Der gr=F6=DFte Vorteil der Technologie ist,
+dass Gespr=E4che durch die Umgehung eines Providers kostenlos gef=FChrt
+werden k=F6nnen.
 
+Mesh-Technologie ist derzeit vor allem im WLAN-Bereich ein
+Hoffnungstr=E4ger. Mesh-f=E4hige Ger=E4te senden und empfangen Daten.
+Gleichzeitig nehmen sie Router-Funktionen wahr und leiten Daten an
+andere Clients weiter. Die Ingenieure wollen damit Funkl=F6cher stopfen.
+Dieselbe Intention verfolgte Anders Carlius, der Gr=FCnder von TerraNet.
+Durch die Anwendung der Mesh-Technologie bei Mobiltelefonen, soll es
+selbst in Gebieten mit schwacher Mobilfunkversorgung m=F6glich sein,
+Telefonate zu f=FChren. Ein Anruf wird dabei solange von Telefon zu
+Telefon weitergeleitet, bis er das Zielger=E4t erreicht.
 
+Projekte in Tansania und Equador
+
+Carlius arbeitet seit 2002 an der Idee und konnte erste Projekte
+k=FCrzlich in Tansania und Equador starten. Das System ist derzeit vor
+allem f=FCr Gebiete gedacht, in denen die Aufstellung von Basisstationen
+entweder nicht m=F6glich oder schlicht unrentabel ist - beispielsweise
+in W=FCstengebieten. "In manchen Gegenden in Afrika, S=FCdamerika, Indien
+oder China k=F6nnen wir die Ersten sein, die den Menschen die
+M=F6glichkeit zur Kommunikation geben. Dar=FCber hinaus gibt es noch eine
+Vielzahl an M=F6glichkeiten, unsere Technologie anzuwenden", meint
+Carlius gegen=FCber pressetext.
+
+Sobald ein TerraNet-Ger=E4t eingeschaltet wird, sucht es seine Umgebung
+im Umkreis von etwa einem Kilometer nach weiteren Ger=E4ten ab und
+verbindet sich mit ihnen. Somit wird das Netz mit jedem weiteren Ger=E4t
+erweitert und die Abdeckung durch das Netz vergr=F6=DFert. Ein Anruf in
+ein anderes, nicht direkt verbundenes Handy-Netzwerk soll =FCber VoIP
+funktionieren. Dazu m=FCsste lediglich ein Ger=E4t pro Netzwerk mit dem
+Internet verbunden sein. Befindet sich das Zielhandy also nicht im
+eigenen Netz, wird der Anruf =FCber das Web zum entsprechenden Mesh-Netz
+weitergeleitet.
+
+Nur mit speziellen Handys
+
+Derzeit funktioniert das TerraNet-System nur mit speziellen
+Mobiltelefonen. Allerdings hofft Carlius, dass die Technologie k=FCnftig
+=E4hnlich wie Bluetooth als zus=E4tzliche Funktion in handels=FCbliche
+Handys integriert wird. Weniger angetan von der TerraNet-Idee sind
+laut Carlius die gro=DFen Mobilfunkprovider. Der TerraNet-Gr=FCnder
+liefert zugleich die Begr=FCndung: "Peer-to-Peer-Kommunikation im
+Mobilfunk k=F6nnte m=F6glicherweise das Ende der GSM-Netze bedeuten." Die
+Technologie sei nicht ausgereift und funktioniere nicht, lauten die
+Gegenargumente, die Carlius jedoch nicht gelten l=E4sst. Er verweist auf
+den Telefonhersteller Ericsson, der bereits drei Mio. Pfund (4,4 Mio.
+Euro) in TerraNet investiert habe.
+--=20
+GMX FreeMail: 1 GB Postfach, 5 E-Mail-Adressen, 10 Free SMS.
+Alle Infos und kostenlose Anmeldung: http://www.gmx.net/de/go/freemail
