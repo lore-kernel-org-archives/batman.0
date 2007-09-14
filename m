@@ -1,14 +1,14 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] running batman as non-root
-Date: Fri, 14 Sep 2007 16:55:16 +0200
-References: <46EA5834.6030703@ddmesh.de>
-In-Reply-To: <46EA5834.6030703@ddmesh.de>
+Message-ID: <20070914172207.lemavxar4o8kkog8@172.20.2.230>
+Date: Fri, 14 Sep 2007 17:22:07 -0400
+From: karl@skytecmail.com
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-Message-Id: <200709141655.16137.lindner_marek@yahoo.de>
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] WRT54G Wireless Mode setup questions.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,35 +20,37 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
+Hello everyone!,
+
+I have a couple of question, and excuse me if they has been previously  
+answered, but I can't find any straight answer.
+If I run "batmand" on a WRT54G, either running OpenWRT, Tomato, DD-WRT  
+or similar firmware, what is the correct mode to set up the router?
+That is, do I leave it in AP mode, Repeater mode (as in the case of  
+DD-WRT) or what mode?
+
+I still don't have clear how the routers talk/find each other.
+And then, how do you set up DHCP server on them? On one gateway?,  
+meaning that it will supply addresses to all clients, or on each  
+gateway? I assume there has to be a single DHCP server on the mesh  
+(obviously!), but where?
+Please point me to some references as to how to set up on an existing WRT54G.
+I have already installed "batmand" on a WRT54G (v6) running DD-WRT  
+(micro) and it runs!, but my setup will be on one master router  
+WRT54GS V1, currently running Tomato VPN build that has tun driver)  
+that will be my Internet gateway, and two WRT's running DD-WRT micro  
+as satellites for the mesh.
+I'm confused, so I need a little guidance here :)
+Also, if I can use anything else other than DD-WRT firmware on the  
+WRT54G V6's I have, please let me know.
+What I have available on hand is (1) WRT54G V1 and (2) WRT54G V6, so  
+that's what I have to work with.
+
+Thanks!,
+-Karl
 
 
-Hi,
-
-> I'm running batman (experimental) on a debian linux as root but want to
-> access the debug levels (batmand -c -b -d 1) from within a apache that
-> is not running as root.
-
-indeed a problem. As quick fix you could use sudo and allow www-data to access 
-batmand.
 
 
-> batman actually checks the user id and does not allow to run as non-root
-> users. also when I disable the check, batman can not access the
-> /var/run/batman.socket except when I change the access modes from
-> command line.
-
-That is why batman checks the user id ...
-
-
-> Is it possible to also support non root access for batmand -c -b -d 1?
-
-The question is: Do we really want that ? I understand your case but your 
-solutions implies that other non-privileged could access the daemon. 
-The "batmand -c" command can do much more than giving you the debug output as 
-changing the gateway_class / routing_class / preferred gateway and may be 
-more in the future.
-
-
-Regards,
-Marek
