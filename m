@@ -1,13 +1,14 @@
-Message-ID: <001401c7f6ba$3ab9e600$0cdbe29f@happy0bc06a65b>
-From: "??" <tangding@mail.ioa.ac.cn>
+Message-ID: <32455.85.41.146.90.1189767047.squirrel@krisma.oltrelinux.com>
+In-Reply-To: <001401c7f6ba$3ab9e600$0cdbe29f@happy0bc06a65b>
 References: <002d01c7f5cc$825d8910$0cdbe29f@happy0bc06a65b><20070914064628.GA1471@hrz.tu-chemnitz.de><000e01c7f69e$7ca80400$0cdbe29f@happy0bc06a65b>
 	<20070914080358.GA1870@hrz.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] translation of batman-adv
-Date: Fri, 14 Sep 2007 18:30:11 +0800
+	<001401c7f6ba$3ab9e600$0cdbe29f@happy0bc06a65b>
+Date: Fri, 14 Sep 2007 12:50:47 +0200 (CEST)
+From: a.anselmi@oltrelinux.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain;charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] a proposal
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,22 +20,41 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-hi
-i have a question:
-when a node moved from one ap to another ap, will the two aps  announce this node
-until the "previous node" age out? 
------ Original Message ----- 
-From: "Simon Wunderlich" <simon.wunderlich@s2003.tu-chemnitz.de>
-To: "The list for a Better Approach To Mobile Ad-hoc Networking" <b.a.t.m.a.n@open-mesh.net>
-Sent: Friday, September 14, 2007 4:03 PM
-Subject: Re: [B.A.T.M.A.N.] translation of batman-adv
+A client node take its decision about chosing a gateway in a unilateral
+way, that is chosing gateway on a ranking basis (or wathever else)
+checking the path "node-->gateway" or "node-->hop-->gateway" (also if the
+second is not always preferred, chosing a poor link "node-->gateway"
+rather then best links "node-->hop-->gateway").
 
+Presuming the node has a bouquet of canditate gateways: we can think to
+use an udp packet polling the candidate gateways and asking them "how you
+see me?" so the the node itself can obtain a path evaluation computed at
+gateway side and not only at node side.
+For example
+presuming node A can chose among gateways G1 and G2 (the candidate
+gateways) it will make its choice upon path evaluation:
 
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
+A --> hops --> G1
+A --> hops --> G1
+where [hops] can be also 0 (no hops between A and Gn)
+
+and computing OGMs coming from neighboors.
+
+Well, node A can send two udp packet (same format as OGM but different
+op-code in payload||different dest port) to G1 and G2 asking to send their
+path evaluation like "G1 --> hops --> A" evaluation (received from
+candidate G1) and "G2 --> hops --> A" evaluation (received from candidate
+G2). In this way node A has a more clear vision about the entire path A
+<--> G_candidate and can take a more serious decision.
+
+Using udp requests we introduce low latency than tcp and with a separate
+thread on gateway (with a poor resources consumpion) we can manage this
+task without effetcing the main.
+
+What are you thoughts about?
+
+--
+Antonio
 
