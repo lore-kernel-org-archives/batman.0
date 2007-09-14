@@ -1,10 +1,13 @@
-Message-ID: <46EA5834.6030703@ddmesh.de>
-Date: Fri, 14 Sep 2007 11:45:24 +0200
-From: Freifunk Dresden <freifunk@ddmesh.de>
+Message-ID: <001401c7f6ba$3ab9e600$0cdbe29f@happy0bc06a65b>
+From: "??" <tangding@mail.ioa.ac.cn>
+References: <002d01c7f5cc$825d8910$0cdbe29f@happy0bc06a65b><20070914064628.GA1471@hrz.tu-chemnitz.de><000e01c7f69e$7ca80400$0cdbe29f@happy0bc06a65b>
+	<20070914080358.GA1870@hrz.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] translation of batman-adv
+Date: Fri, 14 Sep 2007 18:30:11 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] running batman as non-root
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,21 +21,20 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi,
+hi
+i have a question:
+when a node moved from one ap to another ap, will the two aps  announce this node
+until the "previous node" age out? 
+----- Original Message ----- 
+From: "Simon Wunderlich" <simon.wunderlich@s2003.tu-chemnitz.de>
+To: "The list for a Better Approach To Mobile Ad-hoc Networking" <b.a.t.m.a.n@open-mesh.net>
+Sent: Friday, September 14, 2007 4:03 PM
+Subject: Re: [B.A.T.M.A.N.] translation of batman-adv
 
-I'm running batman (experimental) on a debian linux as root but want to
-access the debug levels (batmand -c -b -d 1) from within a apache that
-is not running as root.
 
-batman actually checks the user id and does not allow to run as non-root
-users. also when I disable the check, batman can not access the
-/var/run/batman.socket except when I change the access modes from
-command line.
-but after each start of batman, the access rights are restricted to root.
-
-Is it possible to also support non root access for batmand -c -b -d 1?
-
-Regards
- Stephan
-
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
 
