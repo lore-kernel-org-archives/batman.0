@@ -1,14 +1,14 @@
-Message-ID: <32455.85.41.146.90.1189767047.squirrel@krisma.oltrelinux.com>
-In-Reply-To: <001401c7f6ba$3ab9e600$0cdbe29f@happy0bc06a65b>
-References: <002d01c7f5cc$825d8910$0cdbe29f@happy0bc06a65b><20070914064628.GA1471@hrz.tu-chemnitz.de><000e01c7f69e$7ca80400$0cdbe29f@happy0bc06a65b>
-	<20070914080358.GA1870@hrz.tu-chemnitz.de>
+Date: Fri, 14 Sep 2007 13:32:50 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] translation of batman-adv
+Message-ID: <20070914113250.GA3041@hrz.tu-chemnitz.de>
+References: <20070914080358.GA1870@hrz.tu-chemnitz.de>
 	<001401c7f6ba$3ab9e600$0cdbe29f@happy0bc06a65b>
-Date: Fri, 14 Sep 2007 12:50:47 +0200 (CEST)
-From: a.anselmi@oltrelinux.com
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] a proposal
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="KsGdsel6WgEHnImy"
+Content-Disposition: inline
+In-Reply-To: <001401c7f6ba$3ab9e600$0cdbe29f@happy0bc06a65b>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,41 +20,44 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-A client node take its decision about chosing a gateway in a unilateral
-way, that is chosing gateway on a ranking basis (or wathever else)
-checking the path "node-->gateway" or "node-->hop-->gateway" (also if the
-second is not always preferred, chosing a poor link "node-->gateway"
-rather then best links "node-->hop-->gateway").
 
-Presuming the node has a bouquet of canditate gateways: we can think to
-use an udp packet polling the candidate gateways and asking them "how you
-see me?" so the the node itself can obtain a path evaluation computed at
-gateway side and not only at node side.
-For example
-presuming node A can chose among gateways G1 and G2 (the candidate
-gateways) it will make its choice upon path evaluation:
+--KsGdsel6WgEHnImy
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-A --> hops --> G1
-A --> hops --> G1
-where [hops] can be also 0 (no hops between A and Gn)
+No,=20
 
-and computing OGMs coming from neighboors.
+the batman-adv currently has a timeout for client-macs of 5 minutes. But
+as soon as another new ap announce the mac as his node, the old ap will
+recognize this, update his table (remove the client-mac) and stop announcin=
+g it.=20
+So only the new ap will keep on announcing, not both.
 
-Well, node A can send two udp packet (same format as OGM but different
-op-code in payload||different dest port) to G1 and G2 asking to send their
-path evaluation like "G1 --> hops --> A" evaluation (received from
-candidate G1) and "G2 --> hops --> A" evaluation (received from candidate
-G2). In this way node A has a more clear vision about the entire path A
-<--> G_candidate and can take a more serious decision.
+Regards,
+	Simon
 
-Using udp requests we introduce low latency than tcp and with a separate
-thread on gateway (with a poor resources consumpion) we can manage this
-task without effetcing the main.
 
-What are you thoughts about?
+On Fri, Sep 14, 2007 at 06:30:11PM +0800, ?? wrote:
+> hi
+> i have a question:
+> when a node moved from one ap to another ap, will the two aps  announce t=
+his node
+> until the "previous node" age out?=20
 
---
-Antonio
+--KsGdsel6WgEHnImy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG6nFirzg/fFk7axYRAjJMAJ4rExIGLRMU9Ape2Ep1Sjjg/9w/7wCgjDXc
+pXuGtaABpHMK1iIejP3jFSg=
+=UJ2K
+-----END PGP SIGNATURE-----
+
+--KsGdsel6WgEHnImy--
