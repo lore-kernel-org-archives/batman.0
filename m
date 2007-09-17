@@ -1,13 +1,13 @@
-Subject: Re: [B.A.T.M.A.N.] WRT54G Wireless Mode setup questions.
-From: Karl Wagner <karl@skytecmail.com>
-In-Reply-To: <20070915123426.GA10893@hrz.tu-chemnitz.de>
-References: <20070914172207.lemavxar4o8kkog8@172.20.2.230>
-	<20070915123426.GA10893@hrz.tu-chemnitz.de>
-Content-Type: text/plain
-Date: Sat, 15 Sep 2007 15:10:35 -0400
-Message-Id: <1189883435.6073.11.camel@karl-desktop>
-Mime-Version: 1.0
+From: Axel Neumann <axel@open-mesh.net>
+Date: Tue, 18 Sep 2007 00:25:59 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709180025.59446.axel@open-mesh.net>
+Subject: [B.A.T.M.A.N.] batman experience at wireless community weekend Graz
+	2007
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +21,17 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Sat, 2007-09-15 at 14:34 +0200, Simon Wunderlich wrote:
+Hi,
 
-> You need Ad-Hoc Mode, so anyone can talk to anyone. 
-> 
+the wonderful people from graz.funkfeuer.at are simply the fastest in terms of 
+realtime documentation of ongoing experiments.
 
-Ok, great! Thanks Simon :)
-I'm going to be doing some tests today, and I'll report back ;)
-I wasn't sure about the mode, if it was supposed to be ad-hoc or
-repeater. As you can see, my experience with meshes is
-almost /dev/zero :D
-I am setting up two units today, side by side, to see if they can see
-each other.
-I also found this:
-http://thimerosa.wordpress.com/2006/11/07/dummys-guide-to-setting-up-olsr-on-wrt54g-and-openwrt/
-Even though it's a setup for OSLR, I assume the nvram values are
-relevant for a b.a.t.m.a.n setup?
+see: https://wiki.graz.funkfeuer.at/BatmanTestbed
+and particularly the smooth handover experiment when walking through the 
+exhibition side (furnished with 20 mesh-routers) with an OLPC running batman 
+(with a window size (NBRF) of 5 and an originator interval of 2 seconds).
+The ping -R indicates the route changes, the life audio stream, does not stop 
+until getting outside the building into kind of blind spot.
 
-
-> 
-> Have a look at openwrt or the freifunk firmware
-> (http://freifunk.net/wiki/FreifunkFirmwareEnglish).
-> 
-Thanks for the link.
-I'll read now :)
-
--Karl
-
-
+ciao,
+axel
