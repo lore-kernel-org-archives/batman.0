@@ -1,16 +1,15 @@
-From: elektra <onelektra@gmx.net>
-Subject: Re: [B.A.T.M.A.N.] batman routing clarification
-Date: Wed, 19 Sep 2007 19:44:07 +0200
+Message-ID: <19910.85.41.146.90.1190236360.squirrel@krisma.oltrelinux.com>
+In-Reply-To: <200709191907.41922.onelektra@gmx.net>
 References: <2bda28cd0709190519r74f0c58ncc1c23553c925091@mail.gmail.com>
 	<200709191525.12422.onelektra@gmx.net>
-	<2bda28cd0709190924o217a3686vabf481bd66927971@mail.gmail.com>
-In-Reply-To: <2bda28cd0709190924o217a3686vabf481bd66927971@mail.gmail.com>
+	<17196.85.41.146.90.1190212517.squirrel@krisma.oltrelinux.com>
+	<200709191907.41922.onelektra@gmx.net>
+Date: Wed, 19 Sep 2007 23:12:40 +0200 (CEST)
+Subject: Re: [B.A.T.M.A.N.] batman routing clarification
+From: a.anselmi@oltrelinux.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709191944.07884.onelektra@gmx.net>
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,106 +21,84 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Thanks!
+Thank for reply
+I just read it but maybe is late in the night or maybe I'm too tired...
+but some statements are puzzling me. Sure tomorrow morning I'll have  a
+more clean mind and take a look more deeper to your scripts.
 
-One thing that just came to my mind: when you used -o 3000 it takes very long 
-to fill the sliding window size of OGM statistics. A sliding window size of 
-128 will take 384 seconds to fill up - more than 6 minutes! So if you just 
-fire up the daemon and quickly start your measurements, the routing results 
-can be quite arbitrary since there are not enough packets to make a 
-reasonable decision.
+ciao
 
-But it might very well be the case that the broadcasts of the stretched link 
-are propagating too far. In this case there is a workaround: You can increase 
-the broadcast datarate if your wireless drivers/cards support this feature. 
-This way you will decrease the range of OGM broadcasts. This has proven to be 
-a good solution for mesh networks using OLSR at Freifunk.
-
-Batman-0.2 still has some flaws in the routing metrics. The routing algorithm 
-works nicely, but the metrics are sometimes unfortunate (choosing routes with 
-bad performance in transmit direction, rumors saying it is preferring routes 
-with small hopcount too much.) We are addressing this with 0.3 and in the 
-experimental branch of batmand.
-
-Also it could indicate a problem with the wireless devices.
-
-cu elektra
+Antonio
 
 
-
-> 2007/9/19, elektra <onelektra@gmx.net>:
-> > Hi -
-> >
-> > which version of batman are you using? And you should provide us with
-> > more
+>> What above is well right using that bandwidht values (6Mb) but with
+>> poor/lossy links we have also to consider the IP datagrams loss at
+>> network
+>> layer ---> which will cause TCP retransmits at higher layers (think to
+>> http connection) just based on that links.
+>> For this reason maybe a kind of "bandwidth threshold" can help in
+>> preferring a 500_Kb per link mulit-hop path rather than a 300_Kb link
+>> direct path.
 >
-> batman 0.2
+> Well, you certainly have a point here. The goal of a routing protocol
+> should
+> be to achive the maximum achievable bandwidth for all nodes using the
+> network. There is a fancy word for this condition that one can use to brag
+> around and sound like a scientist: equilibrium.
 >
+> A route can consist of a large number of very good links - this would be
+> one
+> extreme. Or consist of a minimum of lousy links with maximum packet loss.
+> The first option would consume a very high amount of available bandwidth
+> since
+> there will be many retransimissions disturbing others and it is likely to
+> be
+> relatively slow if your machines use one wireless interface only. The
+> latter
+> is likely to be completely unusable for anything more than transfering a
+> few
+> bytes.
 >
-> details. Just saying Link is 'poor' or 'good' is very unprecise. Remember:
-> A
+> The protocol should find the most effective compromise, of course.
 >
-> > direct route with 6 Megabit performs similar to a two-hop link with 12
-> > Megabits on each link, since no retransmissions have to be made.
+> With OLSR and ETX a two hop route with ETX=1,1 on each link won't be used
+> if
+> there is a direct link with ETX=2,1. The idea of ETX is to find the best
+> compromise regarding loss and retransmissions. One has to note that this
+> approach is only useful for wireless networks. ETX on wired connections
+> sucks.
 >
-> poor respectly to radio signal, A to C without B give 100kbit/s unstable
+> We are doing basically the same with Batman, but it is inherit in the
+> algorithm. Usually a shorter route has a smaller propagation delay - so
+> packets are approaching faster at the node that is counting. Only if the
+> longer - and slower - route looses significant less packets Batman will
+> choose the longer path. Batman has a small benefit on wired connections
+> because they are usually much faster than wireless links and thus tend to
+> be
+> preferred.
 >
-> If you set the routes manually, it would be interesting to know the
-> transfer
+> In the previous example OLSR will prefer a single hop route with more than
+> 50%
+> packetloss, rather than the two-hop path with approx. 17% packetloss.
 >
-> > performance of the following:
+> There are some people suggesting that Batman preferres shorter routes too
+> much, so it is interesting to collect such reports. But misconfigurations
+> have to be ruled out when collecting such data.
 >
-> A->C: 100kbit
+> Something that could help to improve the situation as a workaround in this
+> case is to increase the broadcast rate in the wireless settings of the
+> cards.
+> This will reduce the range of broadcasts and can improve the result,
+> because
+> the number of OGMs on stretched links will decrease.
 >
-> > A->B: full
-> > A->B->C: 1000kbit
-> > C->A: 100kbi
-> > C->B: 2500kbit
-> > C->B->A: 1000kbit
-> >
-> >
-> > How many OGMs does A count directly from C and via B? (And vice versa)
-> > By the way: -o 3000 is quite slow for sending Originator messages if you
-> > have
-> > 20 nodes only. The default should be fine.
+> cu elektra
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 >
-> Ok, I removed -o 3000 and changed antenna in A node (less sensitive to node
-> C).
-> Now default route for A is B, that it is correct.
->
-> > > I am switching a 20 mesh node from olsrd but I have some problem in
-> > > routing. I have no gateway node because I use openvpn to have a tunnel
-> >
-> > with
-> >
-> > > PC. All nodes have:
-> > >   batman -g 0 -r 3 -o 3000 <interface>
-> > >
-> > > node C has:
-> > >   batman -g 0 -r 3 -o 3000 -a 10.0.0.0/24 <interface>
-> > >
-> > > I have several case like this:
-> > >
-> > > A----good----B----good-----C-----10.0.0.0/24----PC
-> > > \---------------poor-------------/
-> > >
-> > > three node can communicate with all others but radio link from A to C
-> > > is poor.
-> > >
-> > > When node A want to communicate to node C it goes directly to C because
-> > > batman calculate a direct route to it.
-> > > But if I manually set routes to use node B connection from A to C is
-> >
-> > good.
-> >
-> > > What is my mistake?
-> > >
-> > > -r parameter in batmand daemon works only in searching gateway node?
-> >
-> > ...or
-> >
-> > > it works every time, also with normal node?
 
 
