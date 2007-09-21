@@ -1,10 +1,11 @@
-Message-ID: <38681.85.41.146.90.1190394295.squirrel@krisma.oltrelinux.com>
-Date: Fri, 21 Sep 2007 19:04:55 +0200 (CEST)
-From: a.anselmi@oltrelinux.com
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] assigned IP life
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7FC71.D23224F5"
+Subject: Re: [B.A.T.M.A.N.] assigned IP life
+Date: Fri, 21 Sep 2007 10:06:59 -0700
+Message-ID: <840E3F681DF3D043B353C0FDD4A6C3530F7837@ex9.hostedexchange.local>
+From: "Michael Burmeister-Brown" <mike@netequality.org>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,25 +19,76 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-Hi
-mybe these lines form -d3 level at client node 5.1.7.251 can help:
+This is a multi-part message in MIME format.
 
-Gateway client - got IP (1.0.254.169) from gateway: 5.1.7.254
-Gateway client - gateway (5.1.7.254) says: IP (1.0.254.169) is expired
-Gateway client - got IP (1.0.254.169) from gateway: 5.1.7.254
-Gateway client - gateway (5.1.7.254) says: IP (1.0.254.169) is expired
-Gateway client - got IP (1.0.254.169) from gateway: 5.1.7.254
-Gateway client - gateway (5.1.7.254) says: IP (1.0.254.169) is expired
-Gateway client - got IP (1.0.254.169) from gateway: 5.1.7.254
-Gateway client - disconnecting from unresponsive gateway: 5.1.7.254
-Deleting default route via bat0 0.0.0.0 (table 67)
--- after some seconds --
-Adding default route to 5.1.7.254 (49,64,64)
-Adding default route via bat0 0.0.0.0 (table 67)
+------_=_NextPart_001_01C7FC71.D23224F5
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: base64
 
-...seems that lease assigned by gateway to client (IP 1.0.254.169) have a
-less than 1 sec of life... almost in my case.
+U28gaG93IGRvIHdlIGZpeD8NCg0KLS0tLS0gT3JpZ2luYWwgTWVzc2FnZSAtLS0tLQ0KRnJvbTog
+Yi5hLnQubS5hLm4tYm91bmNlc0BvcGVuLW1lc2gubmV0IDxiLmEudC5tLmEubi1ib3VuY2VzQG9w
+ZW4tbWVzaC5uZXQ+DQpUbzogYi5hLnQubS5hLm5Ab3Blbi1tZXNoLm5ldCA8Yi5hLnQubS5hLm5A
+b3Blbi1tZXNoLm5ldD4NClNlbnQ6IEZyaSBTZXAgMjEgMTA6MDQ6NTUgMjAwNw0KU3ViamVjdDog
+W0IuQS5ULk0uQS5OLl0gYXNzaWduZWQgSVAgbGlmZQ0KDQpIaQ0KbXliZSB0aGVzZSBsaW5lcyBm
+b3JtIC1kMyBsZXZlbCBhdCBjbGllbnQgbm9kZSA1LjEuNy4yNTEgY2FuIGhlbHA6DQoNCkdhdGV3
+YXkgY2xpZW50IC0gZ290IElQICgxLjAuMjU0LjE2OSkgZnJvbSBnYXRld2F5OiA1LjEuNy4yNTQN
+CkdhdGV3YXkgY2xpZW50IC0gZ2F0ZXdheSAoNS4xLjcuMjU0KSBzYXlzOiBJUCAoMS4wLjI1NC4x
+NjkpIGlzIGV4cGlyZWQNCkdhdGV3YXkgY2xpZW50IC0gZ290IElQICgxLjAuMjU0LjE2OSkgZnJv
+bSBnYXRld2F5OiA1LjEuNy4yNTQNCkdhdGV3YXkgY2xpZW50IC0gZ2F0ZXdheSAoNS4xLjcuMjU0
+KSBzYXlzOiBJUCAoMS4wLjI1NC4xNjkpIGlzIGV4cGlyZWQNCkdhdGV3YXkgY2xpZW50IC0gZ290
+IElQICgxLjAuMjU0LjE2OSkgZnJvbSBnYXRld2F5OiA1LjEuNy4yNTQNCkdhdGV3YXkgY2xpZW50
+IC0gZ2F0ZXdheSAoNS4xLjcuMjU0KSBzYXlzOiBJUCAoMS4wLjI1NC4xNjkpIGlzIGV4cGlyZWQN
+CkdhdGV3YXkgY2xpZW50IC0gZ290IElQICgxLjAuMjU0LjE2OSkgZnJvbSBnYXRld2F5OiA1LjEu
+Ny4yNTQNCkdhdGV3YXkgY2xpZW50IC0gZGlzY29ubmVjdGluZyBmcm9tIHVucmVzcG9uc2l2ZSBn
+YXRld2F5OiA1LjEuNy4yNTQNCkRlbGV0aW5nIGRlZmF1bHQgcm91dGUgdmlhIGJhdDAgMC4wLjAu
+MCAodGFibGUgNjcpDQotLSBhZnRlciBzb21lIHNlY29uZHMgLS0NCkFkZGluZyBkZWZhdWx0IHJv
+dXRlIHRvIDUuMS43LjI1NCAoNDksNjQsNjQpDQpBZGRpbmcgZGVmYXVsdCByb3V0ZSB2aWEgYmF0
+MCAwLjAuMC4wICh0YWJsZSA2NykNCg0KLi4uc2VlbXMgdGhhdCBsZWFzZSBhc3NpZ25lZCBieSBn
+YXRld2F5IHRvIGNsaWVudCAoSVAgMS4wLjI1NC4xNjkpIGhhdmUgYQ0KbGVzcyB0aGFuIDEgc2Vj
+IG9mIGxpZmUuLi4gYWxtb3N0IGluIG15IGNhc2UuDQoNCkFudG9uaW8NCg0KDQpfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KQi5BLlQuTS5BLk4gbWFpbGlu
+ZyBsaXN0DQpCLkEuVC5NLkEuTkBvcGVuLW1lc2gubmV0DQpodHRwczovL2xpc3Qub3Blbi1tZXNo
+Lm5ldC9tbS9saXN0aW5mby9iLmEudC5tLmEubg0K
 
-Antonio
+------_=_NextPart_001_01C7FC71.D23224F5
+Content-Type: text/html;
+	charset="UTF-8"
+Content-Transfer-Encoding: base64
 
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDMuMi8vRU4iPg0KPEhUTUw+
+DQo8SEVBRD4NCjxNRVRBIEhUVFAtRVFVSVY9IkNvbnRlbnQtVHlwZSIgQ09OVEVOVD0idGV4dC9o
+dG1sOyBjaGFyc2V0PXV0Zi04Ij4NCjxNRVRBIE5BTUU9IkdlbmVyYXRvciIgQ09OVEVOVD0iTVMg
+RXhjaGFuZ2UgU2VydmVyIHZlcnNpb24gNi41Ljc2NTIuMjQiPg0KPFRJVExFPlJlOiBbQi5BLlQu
+TS5BLk4uXSBhc3NpZ25lZCBJUCBsaWZlPC9USVRMRT4NCjwvSEVBRD4NCjxCT0RZPg0KPCEtLSBD
+b252ZXJ0ZWQgZnJvbSB0ZXh0L3BsYWluIGZvcm1hdCAtLT4NCg0KPFA+PEZPTlQgU0laRT0yPlNv
+IGhvdyBkbyB3ZSBmaXg/PEJSPg0KPEJSPg0KLS0tLS0gT3JpZ2luYWwgTWVzc2FnZSAtLS0tLTxC
+Uj4NCkZyb206IGIuYS50Lm0uYS5uLWJvdW5jZXNAb3Blbi1tZXNoLm5ldCAmbHQ7Yi5hLnQubS5h
+Lm4tYm91bmNlc0BvcGVuLW1lc2gubmV0Jmd0OzxCUj4NClRvOiBiLmEudC5tLmEubkBvcGVuLW1l
+c2gubmV0ICZsdDtiLmEudC5tLmEubkBvcGVuLW1lc2gubmV0Jmd0OzxCUj4NClNlbnQ6IEZyaSBT
+ZXAgMjEgMTA6MDQ6NTUgMjAwNzxCUj4NClN1YmplY3Q6IFtCLkEuVC5NLkEuTi5dIGFzc2lnbmVk
+IElQIGxpZmU8QlI+DQo8QlI+DQpIaTxCUj4NCm15YmUgdGhlc2UgbGluZXMgZm9ybSAtZDMgbGV2
+ZWwgYXQgY2xpZW50IG5vZGUgNS4xLjcuMjUxIGNhbiBoZWxwOjxCUj4NCjxCUj4NCkdhdGV3YXkg
+Y2xpZW50IC0gZ290IElQICgxLjAuMjU0LjE2OSkgZnJvbSBnYXRld2F5OiA1LjEuNy4yNTQ8QlI+
+DQpHYXRld2F5IGNsaWVudCAtIGdhdGV3YXkgKDUuMS43LjI1NCkgc2F5czogSVAgKDEuMC4yNTQu
+MTY5KSBpcyBleHBpcmVkPEJSPg0KR2F0ZXdheSBjbGllbnQgLSBnb3QgSVAgKDEuMC4yNTQuMTY5
+KSBmcm9tIGdhdGV3YXk6IDUuMS43LjI1NDxCUj4NCkdhdGV3YXkgY2xpZW50IC0gZ2F0ZXdheSAo
+NS4xLjcuMjU0KSBzYXlzOiBJUCAoMS4wLjI1NC4xNjkpIGlzIGV4cGlyZWQ8QlI+DQpHYXRld2F5
+IGNsaWVudCAtIGdvdCBJUCAoMS4wLjI1NC4xNjkpIGZyb20gZ2F0ZXdheTogNS4xLjcuMjU0PEJS
+Pg0KR2F0ZXdheSBjbGllbnQgLSBnYXRld2F5ICg1LjEuNy4yNTQpIHNheXM6IElQICgxLjAuMjU0
+LjE2OSkgaXMgZXhwaXJlZDxCUj4NCkdhdGV3YXkgY2xpZW50IC0gZ290IElQICgxLjAuMjU0LjE2
+OSkgZnJvbSBnYXRld2F5OiA1LjEuNy4yNTQ8QlI+DQpHYXRld2F5IGNsaWVudCAtIGRpc2Nvbm5l
+Y3RpbmcgZnJvbSB1bnJlc3BvbnNpdmUgZ2F0ZXdheTogNS4xLjcuMjU0PEJSPg0KRGVsZXRpbmcg
+ZGVmYXVsdCByb3V0ZSB2aWEgYmF0MCAwLjAuMC4wICh0YWJsZSA2Nyk8QlI+DQotLSBhZnRlciBz
+b21lIHNlY29uZHMgLS08QlI+DQpBZGRpbmcgZGVmYXVsdCByb3V0ZSB0byA1LjEuNy4yNTQgKDQ5
+LDY0LDY0KTxCUj4NCkFkZGluZyBkZWZhdWx0IHJvdXRlIHZpYSBiYXQwIDAuMC4wLjAgKHRhYmxl
+IDY3KTxCUj4NCjxCUj4NCi4uLnNlZW1zIHRoYXQgbGVhc2UgYXNzaWduZWQgYnkgZ2F0ZXdheSB0
+byBjbGllbnQgKElQIDEuMC4yNTQuMTY5KSBoYXZlIGE8QlI+DQpsZXNzIHRoYW4gMSBzZWMgb2Yg
+bGlmZS4uLiBhbG1vc3QgaW4gbXkgY2FzZS48QlI+DQo8QlI+DQpBbnRvbmlvPEJSPg0KPEJSPg0K
+PEJSPg0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX188QlI+
+DQpCLkEuVC5NLkEuTiBtYWlsaW5nIGxpc3Q8QlI+DQpCLkEuVC5NLkEuTkBvcGVuLW1lc2gubmV0
+PEJSPg0KPEEgSFJFRj0iaHR0cHM6Ly9saXN0Lm9wZW4tbWVzaC5uZXQvbW0vbGlzdGluZm8vYi5h
+LnQubS5hLm4iPmh0dHBzOi8vbGlzdC5vcGVuLW1lc2gubmV0L21tL2xpc3RpbmZvL2IuYS50Lm0u
+YS5uPC9BPjxCUj4NCjwvRk9OVD4NCjwvUD4NCg0KPC9CT0RZPg0KPC9IVE1MPg==
 
+------_=_NextPart_001_01C7FC71.D23224F5--
