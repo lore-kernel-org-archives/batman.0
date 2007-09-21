@@ -1,13 +1,10 @@
-Date: Fri, 21 Sep 2007 11:40:15 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] MAC and OLSR
-Message-ID: <20070921094015.GA12211@hrz.tu-chemnitz.de>
-References: <46F31E2A.9040801@toyota-ti.ac.jp>
+Message-ID: <36260.159.213.72.82.1190373036.squirrel@krisma.oltrelinux.com>
+Date: Fri, 21 Sep 2007 13:10:36 +0200 (CEST)
+From: a.anselmi@oltrelinux.com
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qDbXVdCdHGoSgWSk"
-Content-Disposition: inline
-In-Reply-To: <46F31E2A.9040801@toyota-ti.ac.jp>
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] batman 0.3-exp-rv623
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,63 +16,39 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
+Hi,
+
+I use 0.3-exp-rv623 and looking at d3 debug on gateway it seems work:
+gateway assign an ip to a client which wants an outdoor connection:
+
+Gateway - assigned 1.0.254.169 to client 5.1.8.5
+
+client 5.1.8.5 well see its gateway: I've tried issuing:
+batmand -c -d 2 -b
+
+...all is ok but client don't browse internet, it never reach any outdoor IP!
+
+The 2 nodes run batman as:
+(at gateway) batmand --bmx-default -g 5000 ath0
+(at client)  batmand --bmx-default -r 3 ath0
+
+and see eachother so I believe is not a firewall problem...
+
+From a second ssh session at client, I see no default route is assigned
+(issuing ip route show) while node is trying to ping outside the mesh: I
+really do not understand why... issuing a logread at repeater I see:
+
+Trying to name tunnel to bat0 ...
+success!
+
+but no default route is set
+
+Where I'm wrong?
+Where I can see on debug in order to fix problem?
+I've to change something in batman arguments string ?
 
 
---qDbXVdCdHGoSgWSk
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Antonio
 
-Hello,=20
-
-maybe you already noticed, but we implemented batman on layer 2,=20
-called batman-advanced. It uses MAC-addresses as identifies, sends
-protocol information and payload in own ethernet frames and does the=20
-whole switching/routing part on its own. Maybe you want to have a look.
-:)
-
-For your question, i don't know but a guess would be to look in the
-wireless-tools accesible information and the driver itself.
-
-Regards
-	Simon
-
-
-On Fri, Sep 21, 2007 at 10:28:10AM +0900, giuseppe de marco wrote:
-> I agree that OLSR and also BATMAN should be moved to link layer.
-> Anyway, now I am trying to do some experiment with OLSR and BATMAN, but
-> by using also the information of MAC layer.
-> I am using linux and ieee80211. Does anybody know how to read the mac=20
-> parameters, such as
-> lost frames, number of retransmission and so on?
-> Regards
->=20
-> --=20
-> Giuseppe De Marco, PhD
-> Toyota Technological Institute
-> 468-8511 Aichi 2-12-1 Hisakata, Tenpaku-ku,=20
-> Nagoya, Japan
-> Email: demarco at toyota-ti dot ac dot jp
-> Tel (int): +81 (052)-809-1802
-> Skype-Id: giuseppe_dem2
->=20
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-
---qDbXVdCdHGoSgWSk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG85F/rzg/fFk7axYRAlalAKC8mJ1beVqCbXEUEdaihqfdXEaMeACdF3O7
-9U7tcBSrKXRnJnozNCqMRuA=
-=7MwJ
------END PGP SIGNATURE-----
-
---qDbXVdCdHGoSgWSk--
