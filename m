@@ -1,14 +1,14 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] a strange case
-Date: Mon, 24 Sep 2007 20:32:57 +0200
-References: <53923.85.41.146.90.1190656836.squirrel@krisma.oltrelinux.com>
-In-Reply-To: <53923.85.41.146.90.1190656836.squirrel@krisma.oltrelinux.com>
+From: Axel Neumann <axel@open-mesh.net>
+Subject: Re: [B.A.T.M.A.N.] 0.3 alpha (today revison)
+Date: Mon, 24 Sep 2007 20:56:10 +0200
+References: <840E3F681DF3D043B353C0FDD4A6C3533F76B8@ex9.hostedexchange.local>
+In-Reply-To: <840E3F681DF3D043B353C0FDD4A6C3533F76B8@ex9.hostedexchange.local>
 MIME-Version: 1.0
+Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709242032.57498.lindner_marek@yahoo.de>
+Message-Id: <200709242056.10606.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,27 +22,35 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+Hello,
 
-Hi,
+On Montag 24 September 2007, Michael Burmeister-Brown wrote:
+> Marek,
+>
+> I hate to bother you but you were so responsive before...
+>
+> Antonio just put up a post.  We are both seeing the same problem -
+> computers associated with repeaters on 0.3 (MIPS) can't browse.  But ssh
+> into that node and do a wget and it works great!.  If we just replace
+> 0.3 with 0.2 all works again.
 
-> But what is puzzling me is that running batman 0.2 on nodes... laptop
-> associated with AP_n (client' AP) can browse!
-> (I've only changed the daemon, no others change into environment -
-> procedures dinamically change batmand command string)
+So you want to use the batman-clients as APs for usual 802.11-managed-mode 
+clients.
+If I understand you right, then you prbably need to do network address 
+translation (NAT) or MASQUERADEing on the bat0 interfaces on the batman 
+clients.
+And of course a second time on the batman-GW.
 
-I don't know exactely about the experimental branch but the alpha branch has 
-changed ports. Now we are using port 4305 for OGMs and 4306 for the internet 
-tunnel. May be you have to adjust your firewall settings. In any case the 
-debug level 3 output should give us more information regarding your problems.
+>
+> Also, I am tracking memory and see it dropping steadily on the nodes
+> (500k in about 12 hours).  This didn't happen with 0.2 and that is all
+> that has changed.
+Thats interesting, sounds like a memory leak, because in the lates setups i 
+tested the memory consumption was constantly 3.1 percent (even after hours). 
+using dynamically compiled mipsel binaries and up to 20 nodes .
+Can you send the output from top right after the start, after a few minutes 
+and after a few hours. And the output of debug-level -5 (hope its compiled 
+in)
 
-
-> I noticed the parameter "--no-unreachable-rule" then tryed adding this
-> parameter at the batman 0.3 command string but unfortunately with no
-> results!
-
-I would suggest that you don't touch the policy routing switches unless you 
-know what you are doing. If you don't have any special use cases the defaults 
-should work perfectly for you.
-
-Regards,
-Marek
+ciao,
+axel
