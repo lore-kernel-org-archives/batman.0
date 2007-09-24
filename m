@@ -1,15 +1,13 @@
-Message-ID: <54551.85.41.146.90.1190668169.squirrel@krisma.oltrelinux.com>
-In-Reply-To: <200709242227.12925.lindner_marek@yahoo.de>
-References: <53923.85.41.146.90.1190656836.squirrel@krisma.oltrelinux.com>
-	<200709242038.29535.axel@open-mesh.net>
-	<54331.85.41.146.90.1190664332.squirrel@krisma.oltrelinux.com>
-	<200709242227.12925.lindner_marek@yahoo.de>
-Date: Mon, 24 Sep 2007 23:09:29 +0200 (CEST)
-Subject: Re: [B.A.T.M.A.N.] a strange case
-From: a.anselmi@oltrelinux.com
+Message-ID: <46F84B93.2080702@toyota-ti.ac.jp>
+Date: Tue, 25 Sep 2007 08:43:15 +0900
+From: giuseppe de marco <demarco@toyota-ti.ac.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] MAC and OLSR
+References: <46F31E2A.9040801@toyota-ti.ac.jp>
+	<20070921094015.GA12211@hrz.tu-chemnitz.de>
+In-Reply-To: <20070921094015.GA12211@hrz.tu-chemnitz.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,55 +21,63 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Ok Marek
-
-At present I can't test neither send any logs or printouts :(
-tomorrow morning I'll try 0.3 alpha into same scenario and feedback to you.
-Thanks for tip!
-
-ciao
-
-Antonio
-
+Simon Wunderlich wrote:
+> Hello, 
 >
->> Is not a problem of ports or firewall (batman' stream flows well over
->> the
->> mesh... otherwise client node itself would not browse or would not find
->> any other originator): iI believe problem stay "in front" of mesh and
->> not
->> inside the mesh. I've two roads to walk:
+> maybe you already noticed, but we implemented batman on layer 2, 
+> called batman-advanced. It uses MAC-addresses as identifies, sends
+> protocol information and payload in own ethernet frames and does the 
+> whole switching/routing part on its own. Maybe you want to have a look.
+> :)
 >
-> ok - seems logic.  :-)
+> For your question, i don't know but a guess would be to look in the
+> wireless-tools accesible information and the driver itself.
+>
+> Regards
+> 	Simon
 >
 >
->> 1) AP IP space is in HNA: maybe exists a different way of managing HNA
->> routes in gateways and in clients ? (remember that users associated with
->> gateway AP browse). It seems client node batmand daemon  (the 0.3
->> release)
->> doesn't how to manage/route packets coming from HNA - it desn't matter
->> if
->> coming from wifi conenctions or wired one but its source IP
+> On Fri, Sep 21, 2007 at 10:28:10AM +0900, giuseppe de marco wrote:
+>   
+>> I agree that OLSR and also BATMAN should be moved to link layer.
+>> Anyway, now I am trying to do some experiment with OLSR and BATMAN, but
+>> by using also the information of MAC layer.
+>> I am using linux and ieee80211. Does anybody know how to read the mac 
+>> parameters, such as
+>> lost frames, number of retransmission and so on?
+>> Regards
 >>
->> 2) Something of wrong in route table 65?
->
-> At first: Could you check on the batman alpha branch ? I fxed the HNA
-> settings
-> which may be the cause of your trouble. AFAIK Axel did not merge this into
-> experimental yet.
->
-> Normally the packet flow would be like this: AP -> client which routes the
-> traffic into the tun device. Batman 0.3 has a "default route protection"
-> which disallows other mesh users to access the tunnel. All other
-> interfaces
-> should be routed through the tunnel. Could you send us your routing tables
-> (as Axel already suggested) ?
->
-> Regards,
-> Marek
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
+>> -- 
+>> Giuseppe De Marco, PhD
+>> Toyota Technological Institute
+>> 468-8511 Aichi 2-12-1 Hisakata, Tenpaku-ku, 
+>> Nagoya, Japan
+>> Email: demarco at toyota-ti dot ac dot jp
+>> Tel (int): +81 (052)-809-1802
+>> Skype-Id: giuseppe_dem2
+>>
+>> _______________________________________________
+>> B.A.T.M.A.N mailing list
+>> B.A.T.M.A.N@open-mesh.net
+>> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>>     
+>> ------------------------------------------------------------------------
+>>
+>> _______________________________________________
+>> B.A.T.M.A.N mailing list
+>> B.A.T.M.A.N@open-mesh.net
+>> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>>     
+Where I can download the code from?
+G
 
+
+-- 
+Giuseppe De Marco, PhD
+Toyota Technological Institute
+468-8511 Aichi 2-12-1 Hisakata, Tenpaku-ku, 
+Nagoya, Japan
+Email: demarco at toyota-ti dot ac dot jp
+Tel (int): +81 (052)-809-1802
+Skype-Id: giuseppe_dem2
 
