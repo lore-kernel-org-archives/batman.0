@@ -1,13 +1,12 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] 0.3 alpha (today revison)
-Date: Mon, 24 Sep 2007 20:58:02 +0200
-References: <840E3F681DF3D043B353C0FDD4A6C3533F76B8@ex9.hostedexchange.local>
-In-Reply-To: <840E3F681DF3D043B353C0FDD4A6C3533F76B8@ex9.hostedexchange.local>
+Message-ID: <54331.85.41.146.90.1190664332.squirrel@krisma.oltrelinux.com>
+In-Reply-To: <200709242038.29535.axel@open-mesh.net>
+References: <53923.85.41.146.90.1190656836.squirrel@krisma.oltrelinux.com>
+	<200709242038.29535.axel@open-mesh.net>
+Date: Mon, 24 Sep 2007 22:05:32 +0200 (CEST)
+Subject: Re: [B.A.T.M.A.N.] a strange case
+From: a.anselmi@oltrelinux.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Disposition: inline
-Message-Id: <200709242058.02187.lindner_marek@yahoo.de>
+Content-Type: text/plain;charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -22,46 +21,86 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+Hi
 
-Hi,
+Is not a problem of ports or firewall (batman' stream flows well over the
+mesh... otherwise client node itself would not browse or would not find
+any other originator): iI believe problem stay "in front" of mesh and not
+inside the mesh. I've two roads to walk:
 
-> I hate to bother you but you were so responsive before...
+1) AP IP space is in HNA: maybe exists a different way of managing HNA
+routes in gateways and in clients ? (remember that users associated with
+gateway AP browse). It seems client node batmand daemon  (the 0.3 release)
+doesn't how to manage/route packets coming from HNA - it desn't matter if
+coming from wifi conenctions or wired one but its source IP
 
-no problem - I'm here.  :-)
+2) Something of wrong in route table 65?
 
+I'll do more tests looking deeper at routing tables...
 
-> Antonio just put up a post.  We are both seeing the same problem -
-> computers associated with repeaters on 0.3 (MIPS) can't browse.  But ssh
-> into that node and do a wget and it works great!.  If we just replace
-> 0.3 with 0.2 all works again.
-
-From the client associated to AP_n you can ssh to your gateway ? Than you have 
-a problem with your internet tunnel.
-
-
-> Also, I am tracking memory and see it dropping steadily on the nodes
-> (500k in about 12 hours).  This didn't happen with 0.2 and that is all
-> that has changed.
-
-What do you mean with "memory and see it dropping steadily" ?
+Antonio
 
 
-> Is there any way you can look into this ASAP?  We are very close to
-> having to give code to our supplier for the routers and we would very
-> much like to ship with 0.3 rather than 0.2.
+> Just to get you right. your laptop is not running batman, just a usual
+> wifi-client in managed mode. and your APs are not running batman as well,
+> just usual APs in managed mode.
+> If that is the case the problems is actually only related to non-batman
+> nodes!? If not, try to collect further information about your iproute
+> configuration like:
+> $ip rule
+> $ip r ls t 254
+> $ip r ls t 65
+> $ip r ls t 66
+> $ip r ls t 67
+> And maybe your firewall or nat settings?
+>>
+>> But what is puzzling me is that running batman 0.2 on nodes... laptop
+>> associated with AP_n (client' AP) can browse!
+>> (I've only changed the daemon, no others change into environment -
+>> procedures dinamically change batmand command string)
+>> .
+>> I noticed the parameter "--no-unreachable-rule" then tryed adding this
+>> parameter at the batman 0.3 command string but unfortunately with no
+>> results!
+>
+> Batman-0.3 and beyond supports policy routing, thus uses 3 routing tables
+> for
+> configuring the routes. There is table 65 for HNA routes, 66 for host
+> routes,
+> and 67 for default routes (the command: ip route list table 66 # for
+> example
+> shows the host routes). Also batman usually adds an unreachable rule to
+> the
+> end of table 66 so that all hosts which IP netmask is falling into the
+> netmask used for the batman mesh is immediately considered unreachable if
+> not
+> having a dedicated batman-host route to that IP.  The
+> --no-unreachable-rule
+> simply does not set this roule. Using this switch is usully only necessary
+> if
+> you are doing very fancy stuff.
+>
+> ciao,
+> axel
+>
+>
+>>
+>> Maybe I'm boring you... bat have any ideas about?
+>>
+>> --
+>> Antonio
+>>
+>>
+>> _______________________________________________
+>> B.A.T.M.A.N mailing list
+>> B.A.T.M.A.N@open-mesh.net
+>> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
 
-And you are sure to preinstall 0.3 ? It is not stable yet. There are a bunch 
-of things to come soon: improved blackhole detection, BATMAN IV, a kernel 
-modul for faster tunneling, bugfixes, etc ...
-Especially the experimental branch is packed with a lot of additional testing 
-features. I don't know wether it is wise to ship that ...
-
-
-> FYI, we sent you 6 merakis today.  I'll get you a tracking number
-> shortly.
-
-Great - thanks.
-
-Regards,
-Marek
 
