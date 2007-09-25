@@ -1,14 +1,13 @@
-Message-ID: <20070925091716.ummlm5rfkgs8000o@webmail.ddmesh.de>
-Date: Tue, 25 Sep 2007 09:17:16 +0200
+Message-ID: <46F8C16A.1010805@ddmesh.de>
+Date: Tue, 25 Sep 2007 10:06:02 +0200
 From: Freifunk Dresden <freifunk@ddmesh.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
+Subject: Re: [B.A.T.M.A.N.] routing / direct connection
+References: <46F26999.1010307@ddmesh.de>
+	<200709212038.41280.axel@open-mesh.net>
+In-Reply-To: <200709212038.41280.axel@open-mesh.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] batmand terminates silently
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,21 +19,25 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: "Open-Mesh, Mailinglist" <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hello Axel,
+Hi,
 
+I shortly checked your writing and found some unclear points.
+- What is the difference (-d 1 ) of the viaIF and the viaIF of
+the optional info block?
 
-few weeks agoe I had sometimes the problem that batmand (experimental) exits
-silently. Today I found maybe one reason for this.
-When you have batman running and insert the iptable rule
+- the nlq = l2q / l2: what is l2?
+- you compare the lq with the OLSR-ETX. But can you explain it
+  without "OLSR-ETX", because I don't like to check the documentation
+  of OLSR
+-bidirectional timeout: is the number given in seconds or sequence count difference
+			or something other?
 
-iptables -I OUTPUT -o eth1 -j DROP
+If haven't already planed, the options --dups-xxx --asymmetric-xxx and all
+that only have the blue bar needs more description and what influence they have
+within the batmand. Examples as you have offered by --window-size are very
+helpful.
 
-
-batmand exits. This also happen for additional interfaces controlled
-by batmand.
-
-Maybe it helps you a little.
-
-Regards, Stephan
+Regards
+ Stephan
