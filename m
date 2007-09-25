@@ -1,14 +1,14 @@
-Subject: Re: [B.A.T.M.A.N.] MAC and OLSR
-From: Karl Wagner <karl@skytecmail.com>
-In-Reply-To: <46F84B93.2080702@toyota-ti.ac.jp>
-References: <46F31E2A.9040801@toyota-ti.ac.jp>
-	<20070921094015.GA12211@hrz.tu-chemnitz.de>
-	<46F84B93.2080702@toyota-ti.ac.jp>
-Content-Type: text/plain
-Date: Mon, 24 Sep 2007 21:07:47 -0400
-Message-Id: <1190682467.11632.2.camel@karl-desktop>
-Mime-Version: 1.0
+Message-ID: <20070925091716.ummlm5rfkgs8000o@webmail.ddmesh.de>
+Date: Tue, 25 Sep 2007 09:17:16 +0200
+From: Freifunk Dresden <freifunk@ddmesh.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] batmand terminates silently
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,31 +20,21 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: "Open-Mesh, Mailinglist" <b.a.t.m.a.n@open-mesh.net>
+
+Hello Axel,
 
 
-On Tue, 2007-09-25 at 08:43 +0900, giuseppe de marco wrote:
-> Simon Wunderlich wrote:
-> > Hello, 
-> >
-> > maybe you already noticed, but we implemented batman on layer 2, 
-> > called batman-advanced. 
-> >>    
+few weeks agoe I had sometimes the problem that batmand (experimental) exits
+silently. Today I found maybe one reason for this.
+When you have batman running and insert the iptable rule
 
->  
-> Where I can download the code from?
-> G
-> 
-> 
-
-From the link here: https://dev.open-mesh.net/batman
-
-"to build batman advanced which also enables layer-two routing you need
-to checkout the complete trunk: 
-svn co https://dev.open-mesh.net/svn/batman/trunk/ 
-Then change to the batman-advanced folder and compile the sources"
-
-Regards,
--Karl
+iptables -I OUTPUT -o eth1 -j DROP
 
 
+batmand exits. This also happen for additional interfaces controlled
+by batmand.
+
+Maybe it helps you a little.
+
+Regards, Stephan
