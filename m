@@ -1,15 +1,16 @@
-Date: Tue, 25 Sep 2007 11:20:12 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] MAC and OLSR
-Message-ID: <20070925092012.GA31929@hrz.tu-chemnitz.de>
-References: <46F31E2A.9040801@toyota-ti.ac.jp>
-	<20070921094015.GA12211@hrz.tu-chemnitz.de>
-	<46F84B93.2080702@toyota-ti.ac.jp>
+From: Axel Neumann <axel@open-mesh.net>
+Subject: Re: [B.A.T.M.A.N.] routing / direct connection
+Date: Tue, 25 Sep 2007 13:26:38 +0200
+References: <46F26999.1010307@ddmesh.de>
+	<200709212038.41280.axel@open-mesh.net>
+	<46F8C16A.1010805@ddmesh.de>
+In-Reply-To: <46F8C16A.1010805@ddmesh.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+HP7ph2BbKc20aGI"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46F84B93.2080702@toyota-ti.ac.jp>
+Message-Id: <200709251326.39010.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,100 +24,42 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+Hi,
+first thanks for your input,
 
---+HP7ph2BbKc20aGI
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> I shortly checked your writing and found some unclear points.
+> - What is the difference (-d 1 ) of the viaIF and the viaIF of
+> the optional info block?
 
-Currently you should use the batman-saxnet branch for batman-advanced, it
-features bridging and some other fixes which are not merged back yet.
-Use subversion to check out:
+I've tried to make this more concrete. 
+http://open-mesh.net/batman/doc/BMX#debug-level-1-parameter
+critic is still welcome.
 
-svn co https://dev.open-mesh.net/svn/batman/batman-saxnet/
+>
+> - the nlq = l2q / l2: what is l2?
+Yes,  that was a flaw, I meant lq NOT l2. Anyway I renamed the terms a little 
+bit so that it now reads:
+NLQ = RTQ / LQ
+where RTQ should be referred as  Round Trip Quality
 
-Regards
-	Simon
+> - you compare the lq with the OLSR-ETX. But can you explain it
+>   without "OLSR-ETX", because I don't like to check the documentation
+>   of OLSR
+done
+
+> -bidirectional timeout: is the number given in seconds or sequence count
+> difference or something other?
+
+in sequence number counts. I'll see to make this clearer as well.
+
+>
+> If haven't already planed, the options --dups-xxx --asymmetric-xxx and all
+> that only have the blue bar needs more description and what influence they
+> have within the batmand. Examples as you have offered by --window-size are
+> very helpful.
+on its way...
 
 
-On Tue, Sep 25, 2007 at 08:43:15AM +0900, giuseppe de marco wrote:
-> Simon Wunderlich wrote:
-> >Hello,=20
-> >
-> >maybe you already noticed, but we implemented batman on layer 2,=20
-> >called batman-advanced. It uses MAC-addresses as identifies, sends
-> >protocol information and payload in own ethernet frames and does the=20
-> >whole switching/routing part on its own. Maybe you want to have a look.
-> >:)
-> >
-> >For your question, i don't know but a guess would be to look in the
-> >wireless-tools accesible information and the driver itself.
-> >
-> >Regards
-> >	Simon
-> >
-> >
-> >On Fri, Sep 21, 2007 at 10:28:10AM +0900, giuseppe de marco wrote:
-> > =20
-> >>I agree that OLSR and also BATMAN should be moved to link layer.
-> >>Anyway, now I am trying to do some experiment with OLSR and BATMAN, but
-> >>by using also the information of MAC layer.
-> >>I am using linux and ieee80211. Does anybody know how to read the mac=
-=20
-> >>parameters, such as
-> >>lost frames, number of retransmission and so on?
-> >>Regards
-> >>
-> >>--=20
-> >>Giuseppe De Marco, PhD
-> >>Toyota Technological Institute
-> >>468-8511 Aichi 2-12-1 Hisakata, Tenpaku-ku,=20
-> >>Nagoya, Japan
-> >>Email: demarco at toyota-ti dot ac dot jp
-> >>Tel (int): +81 (052)-809-1802
-> >>Skype-Id: giuseppe_dem2
-> >>
-> >>_______________________________________________
-> >>B.A.T.M.A.N mailing list
-> >>B.A.T.M.A.N@open-mesh.net
-> >>https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-> >>   =20
-> >>------------------------------------------------------------------------
-> >>
-> >>_______________________________________________
-> >>B.A.T.M.A.N mailing list
-> >>B.A.T.M.A.N@open-mesh.net
-> >>https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-> >>   =20
-> Where I can download the code from?
-> G
->=20
->=20
-> --=20
-> Giuseppe De Marco, PhD
-> Toyota Technological Institute
-> 468-8511 Aichi 2-12-1 Hisakata, Tenpaku-ku,=20
-> Nagoya, Japan
-> Email: demarco at toyota-ti dot ac dot jp
-> Tel (int): +81 (052)-809-1802
-> Skype-Id: giuseppe_dem2
->=20
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+ciao,
+axel
 
---+HP7ph2BbKc20aGI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG+NLMrzg/fFk7axYRAuTGAJ42OJ1t4gyC10p1PEK4fyIbagTkiQCeK2S5
-CpzcAVaL96odtrR5bEieM04=
-=blo/
------END PGP SIGNATURE-----
-
---+HP7ph2BbKc20aGI--
