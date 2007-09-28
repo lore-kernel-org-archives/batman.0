@@ -1,16 +1,12 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] routing / direct connection
-Date: Tue, 25 Sep 2007 13:26:38 +0200
-References: <46F26999.1010307@ddmesh.de>
-	<200709212038.41280.axel@open-mesh.net>
-	<46F8C16A.1010805@ddmesh.de>
-In-Reply-To: <46F8C16A.1010805@ddmesh.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709251326.39010.axel@open-mesh.net>
+Date: Sat, 29 Sep 2007 00:27:50 +0200
+Content-Type: text/plain;
+  charset="ansi_x3.4-1968"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200709290027.50827.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] 0.3 beta released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,42 +20,56 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+
 Hi,
-first thanks for your input,
 
-> I shortly checked your writing and found some unclear points.
-> - What is the difference (-d 1 ) of the viaIF and the viaIF of
-> the optional info block?
+the 0.2 branch has proven to be quite stable and robust but with many rough 
+edges. We used this fundament to work on annoyances and improvements all 
+over the code to make the upcoming release a worthy successor.
 
-I've tried to make this more concrete. 
-http://open-mesh.net/batman/doc/BMX#debug-level-1-parameter
-critic is still welcome.
+We are very proud to announce that B.A.T.M.A.N. has an official port assigned 
+by the IANA now. It is 4305 and already in the code. You can see it for 
+yourself: http://www.iana.org/assignments/port-numbers 
+Pay attention to the fact that all ports used by B.A.T.M.A.N. are changing: 
+4305 for OGMs, 4306 for the tunneling and 4307 for the vis server. Adjust 
+your firewall settings if required.
 
->
-> - the nlq = l2q / l2: what is l2?
-Yes,  that was a flaw, I meant lq NOT l2. Anyway I renamed the terms a little 
-bit so that it now reads:
-NLQ = RTQ / LQ
-where RTQ should be referred as  Round Trip Quality
+Another big step forward is our new experimental routing code - we call it 
+B.A.T.M.A.N. IV. It takes asymmetric routing into account. Currently we have 
+several ideas competing for the final inclusion into the release. Feel free 
+to join our testing team.
+If you use the stable branch you will find the TQ (Transmit Quality) algorithm 
+enabled. Each node observes its neighbor nodes and measures the link quality 
+and adds this information to all (re)broadcasted packets. The clients 
+choose the route with the best tq value. Use debug level 1 to get the tq 
+information.
 
-> - you compare the lq with the OLSR-ETX. But can you explain it
->   without "OLSR-ETX", because I don't like to check the documentation
->   of OLSR
-done
+Also, we heavily worked to improve the overall performance of our buitin 
+tunneling. Therefore we created mod_batgat -  a linux kernel module which will 
+do the job from within the kernel land. It still needs some love and to be 
+backported to 2.4 but it certainly will be finished for the release.
 
-> -bidirectional timeout: is the number given in seconds or sequence count
-> difference or something other?
+The whole gateway management received a lot attention. We have new gateway 
+classes which support down- and upload rates. Just specify your speeds and 
+B.A.T.M.A.N. will guess the appropriate gateway class. The routing classes 
+have been reworked as well. The user can choose between fast, stable or 
+fast-switching connection. The B.A.T.M.A.N. internet client can detect broken 
+gateways (blackholes) to avoid them. All internet related options can be 
+changed during runtime. Disabling the own gateway, change the preferred 
+gateway or routing class is possible without restarting the daemon.
 
-in sequence number counts. I'll see to make this clearer as well.
+We also improved the quality of our documentation and thanks to the hard work 
+of Wesley we have a man page with a compete overview about all options 
+accompanied by a usage example section.
 
->
-> If haven't already planed, the options --dups-xxx --asymmetric-xxx and all
-> that only have the blue bar needs more description and what influence they
-> have within the batmand. Examples as you have offered by --window-size are
-> very helpful.
-on its way...
+Our vis server was a bit hidden in the past but it steadily made progress and 
+is now a stable powerful application. It can handle multiple interfaces, HNA 
+and is small enough to run on embedded devices. We will provide precompiled 
+packages for it from now on. Therefore we release its first beta version. In 
+order to avoid confusion in the future the vis server will get the same 
+version numer as the compatible batman release. That makes it 0.3 beta as 
+well.
 
 
-ciao,
-axel
+The B.A.T.M.A.N. dev team
 
