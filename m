@@ -1,11 +1,14 @@
-Message-ID: <2bda28cd0710080329g4c21fe84va7afa2211841cec2@mail.gmail.com>
-Date: Mon, 8 Oct 2007 12:29:06 +0200
-From: "Stefano Scipioni" <stefano@one-b.it>
-Sender: scipio.it@gmail.com
+From: elektra <onelektra@gmx.net>
+Subject: Re: [B.A.T.M.A.N.] switching from 0.2
+Date: Mon, 8 Oct 2007 12:52:06 +0200
+References: <2bda28cd0710080329g4c21fe84va7afa2211841cec2@mail.gmail.com>
+In-Reply-To: <2bda28cd0710080329g4c21fe84va7afa2211841cec2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_50287_12571670.1191839346734"
-Subject: [B.A.T.M.A.N.] switching from 0.2
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710081252.06909.onelektra@gmx.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,26 +20,33 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-------=_Part_50287_12571670.1191839346734
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi -
 
-There is a sort of HOWTO to switch from 0.2 release (compilation,
-configuration, new features) to 0.3?
-I'm interested to make a package for kamikaze svn version to test batman in
-a 30 mesh network (now we use batman 0.2).
+you may need to change your firewall settings if you are running a firewall on 
+your devices. We have new port numbers thanks to the IANA that has assigned 
+port 4305 UDP to batman. We are also using port 4306 (UDP) for the gateway 
+tunnels and 4307 to connect to the vis-server.
 
-Thanks
+Apart from these changes the syntax hasn't changed much. Gateways can now 
+configure the uplink/downlink speed.
 
-------=_Part_50287_12571670.1191839346734
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+If you are trying to use it today you may be disappointed since we are 
+currently searching for a bug that is affecting link metrics.
 
-There is a sort of HOWTO to switch from 0.2 release (compilation, configuration, new features) to 0.3?<br>I&#39;m interested to make a package for kamikaze svn version to test batman in a 30 mesh network (now we use batman 
-0.2).<br><br>Thanks<br>
+As soon as we have this issue fixed we would be happy to hear about your 
+results.
 
-------=_Part_50287_12571670.1191839346734--
+Cheers,
+
+elektra
+
+> There is a sort of HOWTO to switch from 0.2 release (compilation,
+> configuration, new features) to 0.3?
+> I'm interested to make a package for kamikaze svn version to test batman in
+> a 30 mesh network (now we use batman 0.2).
+>
+> Thanks
+
+
