@@ -1,14 +1,14 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] second sliding window size
-Date: Tue, 16 Oct 2007 15:17:23 +0200
-References: <6850.85.41.146.90.1192461541.squirrel@krisma.oltrelinux.com>
-In-Reply-To: <6850.85.41.146.90.1192461541.squirrel@krisma.oltrelinux.com>
+Date: Tue, 16 Oct 2007 11:25:52 -0600
+From: Jan Hetges <tran@ms20.net>
+Subject: Re: [B.A.T.M.A.N.] batmand_0.3-beta-rv724 segmentation fault
+Message-ID: <20071016172552.GA6324@apoderado.ometepe.net>
+References: <20071016020242.GA4608@apoderado.ometepe.net>
+	<200710161513.52445.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="MGYHOYXEY6WxJCY8"
 Content-Disposition: inline
-Message-Id: <200710161517.23630.lindner_marek@yahoo.de>
+In-Reply-To: <200710161513.52445.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,21 +23,43 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-Hi,
+--MGYHOYXEY6WxJCY8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> coming from rv674 and approaching to rv719 the very first remarkable
-> difference I see is the "second" number (among parenthesis) in title
-> column
-> Router (#/255 #/64) issuing the command:
->
-> batmand -c -d 1 -b (or -d 2 looking for gateways)
->
-> There is a second sliding window (size) ?
+On Tue, Oct 16, 2007 at 03:13:52PM +0200, Marek Lindner wrote:
 
-yes there is. The second column tells you how symetric your connection is. The 
-higher the value the more it is symetric.
-Expect this column to vanish in the future. It was only for debugging purpose 
-as this value is computed into the first column.
+> > i just tried both and batmand_0.3-beta-rv674 gives a segmenation
+> > fault and
+> are you sure it segfaults or is it simply not running ? Please
+yes, at least it said "Segmentation fault"
+> > batmand_0.2-rv502 doesn't start (probably segfault as well).
+this one is simply not running
 
-Regards,
-Marek
+so i installed
+http://downloads.open-mesh.net/batman/development/misc/batmand_0.3-beta-rv724_mipsel-wr-elf-32-lsb-dynamic-unstripped.tgz
+md5sum /tmp/batmand_0.3-beta-rv724_mipsel-wr-elf-32-lsb-dynamic
+955cc1f203c4ad47fea84427b7b7c5c4
+/tmp/batmand_0.3-beta-rv724_mipsel-wr-elf-32-lsb-dynamic
+
+i'll send the coredump in private mail, and if really needed the binary
+as well
+
+cheers
+
+  --Jan
+
+--MGYHOYXEY6WxJCY8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHFPQflTtvZdk47D4RAst9AKCblkPKA59AeDH2gorFwInmxdQ7jQCgiNql
+N2Gy3v2o6GF1UUNyaDDACGk=
+=Ez8X
+-----END PGP SIGNATURE-----
+
+--MGYHOYXEY6WxJCY8--
