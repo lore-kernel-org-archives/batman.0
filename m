@@ -1,16 +1,14 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] development-ipkgs broken
-Date: Thu, 18 Oct 2007 14:08:50 +0200
-References: <BLU122-W10D014E29FA86CA3739C9AF6A30@phx.gbl>
-	<200710161204.38008.onelektra@gmx.net>
-	<BLU122-W8053274D7F88798A76C4AF69C0@phx.gbl>
-In-Reply-To: <BLU122-W8053274D7F88798A76C4AF69C0@phx.gbl>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Tunnel problems...
+Date: Thu, 18 Oct 2007 16:07:59 +0200
+References: <000001c81164$7ec1c8d0$4100a8c0@meritechbrett>
+In-Reply-To: <000001c81164$7ec1c8d0$4100a8c0@meritechbrett>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710181408.50444.axel@open-mesh.net>
+Message-Id: <200710181607.59969.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,33 +22,20 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hey Dennis,
 
-On Dienstag 16 Oktober 2007, Dennis Bartsch wrote:
-> hey,
->
-> installation of the latest development-ipkgs (at least the i386 ones) of
-> 0.3-beta fails, because control.tar.gz is missing:
->
-> root@NicoAP5G:~# ipkg install
-> http://downloads.open-mesh.net/batman/development/i386/batmand_0.3-beta-rv7
->22_i386-gc-elf-32-lsb-dynamic.tgz Downloading
+Hi,
 
-Hmm, the tgz in that folder is a tgz :-) 
-I think there has never been a ipk in the development/i386 folder - maybe 
-there should. 
-Anyway, there are ipk packages for i386 here:
-http://downloads.open-mesh.net/batman/development/misc/batmand_0.3-beta-current_i386-gc-elf-32-lsb-static.ipk
-or here:
-http://downloads.open-mesh.net/batman/development/misc/batmand_0.3-beta-current_i386-gc-elf-32-lsb-dynamic.ipk
+> I can see A routing through B to GW fine. The tunnel bat0 on A and B seems
+> unstable though. I'm looking at VIS packets arriving at PC. It arrives for
+> about 30 sec then stops for a while. It is not clear why the tunnel keeps
+> disconnecting.
 
-If you can confirm that its working for i386-kamikaze I'll open a 
-deveopment/i386-kamikaze folder.
+thank you for reporting this bug. As Axel already pointed out the blackhole 
+detection falsely kicks your gateway connection. Therefore I added a check 
+for services that don't send data back as the vis server and snmp. If you 
+know more services to ignore please let us know.
 
-Yesterday you also mentioned some problems with the binary packages for ARM 
-CPUs. Ipkg and tgz can be found here: 
-http://downloads.open-mesh.net/batman/development/armv5te/
-Unfortunately, I do not remember the exact problem description ;-)
+Could you re-test with the latest revision ?
 
-ciao
-/axel
+Regards,
+Marek
