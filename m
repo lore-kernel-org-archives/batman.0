@@ -1,14 +1,16 @@
 From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] Tunnel problems...
-Date: Thu, 18 Oct 2007 13:13:01 +0200
-References: <000001c81164$7ec1c8d0$4100a8c0@meritechbrett>
-In-Reply-To: <000001c81164$7ec1c8d0$4100a8c0@meritechbrett>
+Subject: Re: [B.A.T.M.A.N.] development-ipkgs broken
+Date: Thu, 18 Oct 2007 14:08:50 +0200
+References: <BLU122-W10D014E29FA86CA3739C9AF6A30@phx.gbl>
+	<200710161204.38008.onelektra@gmx.net>
+	<BLU122-W8053274D7F88798A76C4AF69C0@phx.gbl>
+In-Reply-To: <BLU122-W8053274D7F88798A76C4AF69C0@phx.gbl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-6"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710181313.02144.axel@open-mesh.net>
+Message-Id: <200710181408.50444.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,53 +24,33 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hello,
+Hey Dennis,
 
-On Donnerstag 18 Oktober 2007, Brett Maurer wrote:
-> I'm having a problem with bat0. It seems to be disconnecting and I cannot
-> find the cause. My configuration is as follows:
-> Version:
-> 0.3 beta rv731
-
-Are you sure the tunnel interface is called bat0. Because in 0.3-beta-rv731 it 
-should be called gate0. - but in batmand-exp  it is called bat0. 
-> Scenario:
-> A-----B-----GW-----PC
-> A - is on 104.0.0.3 ath0 with -s 10.0.0.10
-> B - is on 104.0.0.2 ath0 with -s 10.0.0.10
-> GW - is on 104.0.0.1 ath0 and 10.0.0.1 eth0
+On Dienstag 16 Oktober 2007, Dennis Bartsch wrote:
+> hey,
 >
-> PC - is on 10.0.0.10
-> I can see A routing through B to GW fine. The tunnel bat0 on A and B seems
-> unstable though. I'm looking at VIS packets arriving at PC. It arrives for
-> about 30 sec then stops for a while. It is not clear why the tunnel keeps
-> disconnecting.
+> installation of the latest development-ipkgs (at least the i386 ones) of
+> 0.3-beta fails, because control.tar.gz is missing:
+>
+> root@NicoAP5G:~# ipkg install
+> http://downloads.open-mesh.net/batman/development/i386/batmand_0.3-beta-rv7
+>22_i386-gc-elf-32-lsb-dynamic.tgz Downloading
 
-The current client-GW-tunnel implementation is observing the traffic from the 
-client point of view.
-The client suspects a GW as unresponsive (black-hole) if data is send through 
-the tunnel from the client to the GW but no data is send the other way around 
-(tunnelled from the GW to the client).
+Hmm, the tgz in that folder is a tgz :-) 
+I think there has never been a ipk in the development/i386 folder - maybe 
+there should. 
+Anyway, there are ipk packages for i386 here:
+http://downloads.open-mesh.net/batman/development/misc/batmand_0.3-beta-current_i386-gc-elf-32-lsb-static.ipk
+or here:
+http://downloads.open-mesh.net/batman/development/misc/batmand_0.3-beta-current_i386-gc-elf-32-lsb-dynamic.ipk
 
-Then the client waits for a while and if still no data arrives through the 
-tunnel, a timeout hits and automatically disconnects the client from the GW - 
-hoping that other available GW are more responsive.
-This can be observed using debug-leve-3 on the client side.
+If you can confirm that its working for i386-kamikaze I'll open a 
+deveopment/i386-kamikaze folder.
 
-The problem is that the mechanism assumes a bidirectional communication 
-between the mesh client node and a distant node behind the GW. Unfortunately, 
-this is not the case with your scenario when sending vis packets to a 
-visualization server.
-In batmand-exp there is a --no-unresp-gw-check directive which disables this 
-feature. For node A  try:
- batmand --no-unresp-gw-check -r 3 -s 10.0.0.10 ath0
+Yesterday you also mentioned some problems with the binary packages for ARM 
+CPUs. Ipkg and tgz can be found here: 
+http://downloads.open-mesh.net/batman/development/armv5te/
+Unfortunately, I do not remember the exact problem description ;-)
 
 ciao
 /axel
-
->
->
->
-> If anyone can offer some advice, I'd much appreciate it.
-
-
