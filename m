@@ -1,16 +1,11 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] no gateway / tun interface / default route
-Date: Thu, 25 Oct 2007 13:13:59 +0200
-References: <4717BE98.2010206@ddmesh.de>
-	<200710221458.45648.axel@open-mesh.net>
-	<472070E7.8020500@ddmesh.de>
-In-Reply-To: <472070E7.8020500@ddmesh.de>
+Message-ID: <47207A74.3060005@ddmesh.de>
+Date: Thu, 25 Oct 2007 13:13:56 +0200
+From: Freifunk Dresden <freifunk@ddmesh.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710251313.59479.axel@open-mesh.net>
+Subject: [B.A.T.M.A.N.] Segmentation fault and log errors,
+	expermimental Rev.756
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,30 +19,57 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hello
+Hi,
 
-On Donnerstag 25 Oktober 2007, Freifunk Dresden wrote:
->
-> > > by the way. Since batmand-exp rv 730 the parametrization of
-> > > --bmx-defaults is now enabled by default (it detects much better
-> > > routes). This parametrization automatically hides all non-primary
-> > > interfaces and announces them as HNA. You can revert the HNA
-> > > announcements for a interface with the interface specific /A switch
-> > > (since revision 747).
->
-> To be sure, if I add /A behind bbs then no HNA is created for this
-> interface ip?
-correct!
+I'm using experimental batmand Rev 756. After a while the batmand is crashing.
+with "Segmentation fault". the crashing batmand is running on i386 (debian 2.6.22.1).
+All routers are running the same batmand version. I have not checked if also the
+batmand crashs on the routers.
 
-ciao,
-/axel
+syslog: batmand[6733]: Error - got packet from unknown client: 10.12.10.17 (virtual ip 169.254.1.1)
+batman log (-d4):  Error - SIGSEGV received, trying to clean up ...
 
->
-> Bye Stephan
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+/usr/bin/batmand -g 1024/200 -a 104.61.0.0/16 -s 10.12.0.1 --no-unreachable-rule
+--no-throw-rules --no-prio-rules --resist-blocked-send wlan0 bbs /t 1 /i /A bbc /t 1 /i /A -d 4 >/tmp/batman-chrash
 
+A___B---C
 
+(_) backbone (bbs-bbc)
+(-) wlan
+
+A: wlan0 10.12.0.1    , bbs 172.16.0.1
+B: eth1  10.12.10.17  , bbc 172.16.10.18
+C: eth1  10.12.10.1
+
+A offers internet gateway.
+
+Additional during batman start syslog shows some errors:
+Oct 25 12:18:06 0-1 batmand[26343]: Trying to name tunnel to bat0 ...
+Oct 25 12:18:06 0-1 batmand[26343]: success!
+Oct 25 12:18:06 0-1 batmand[26343]: Error - can't add route to 169.254.0.0/24 via 0.0.0.0 (table 254): File exists
+Oct 25 12:18:06 0-1 batmand[26343]: Trying to name tunnel to bat0 ...
+Oct 25 12:18:06 0-1 batmand[26343]: busy!
+Oct 25 12:18:06 0-1 batmand[26343]: Trying to name tunnel to bat1 ...
+Oct 25 12:18:06 0-1 batmand[26343]: success!
+Oct 25 12:18:06 0-1 batmand[26343]: Error - can't add route to 169.254.1.0/24 via 0.0.0.0 (table 254): File exists
+Oct 25 12:18:06 0-1 batmand[26343]: Trying to name tunnel to bat0 ...
+Oct 25 12:18:06 0-1 batmand[26343]: busy!
+Oct 25 12:18:06 0-1 batmand[26343]: Trying to name tunnel to bat1 ...
+Oct 25 12:18:06 0-1 batmand[26343]: busy!
+Oct 25 12:18:06 0-1 batmand[26343]: Trying to name tunnel to bat2 ...
+Oct 25 12:18:06 0-1 batmand[26343]: success!
+Oct 25 12:18:06 0-1 batmand[26343]: Error - can't add route to 169.254.2.0/24 via 0.0.0.0 (table 254): File exists
+
+ip addr
+28: bat0: <POINTOPOINT,MULTICAST,NOARP,UP,10000> mtu 1471 qdisc pfifo_fast qlen 500
+    link/[65534]
+    inet 169.254.0.0/32 scope global bat0
+29: bat1: <POINTOPOINT,MULTICAST,NOARP,UP,10000> mtu 1471 qdisc pfifo_fast qlen 500
+    link/[65534]
+    inet 169.254.1.0/32 scope global bat1
+30: bat2: <POINTOPOINT,MULTICAST,NOARP,UP,10000> mtu 1471 qdisc pfifo_fast qlen 500
+    link/[65534]
+    inet 169.254.2.0/32 scope global bat2
+
+Bye
+ Stephan
