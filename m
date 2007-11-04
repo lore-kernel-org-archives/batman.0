@@ -1,9 +1,9 @@
-Date: Sun, 4 Nov 2007 03:21:31 +0000 (GMT)
+Date: Sun, 4 Nov 2007 03:34:44 +0000 (GMT)
 From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: AW: [B.A.T.M.A.N.] ideas for 0.3
+Subject: AW: AW: [B.A.T.M.A.N.] Experiences with B.A.T.M.A.N. 0.3-beta rv767
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-ID: <532130.49309.qm@web26910.mail.ukl.yahoo.com>
+Message-ID: <88707.93205.qm@web26908.mail.ukl.yahoo.com>
 Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -19,18 +19,13 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-> How about forwarding the average TQ-Value of the best ranking neighbor
- instead 
-> of the actual incoming value? This should avoid inconsistency amongst 
-> TQ-Values to a great degree!
+> May be we have to set the source address explicitely. I look into that.
 
-That is what we do now !
-It is the reason for the "10 seconds loops". Therefore I proposed to forward the 
-incoming value instead of the average. I think you mixed it up.  ;-)
+I issued a patch. Could you test that for me (rev 779) ? At the moment 
+I can't do it myself.
 
 Regards,
 Marek
-
 
 
 
