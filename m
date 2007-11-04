@@ -1,12 +1,13 @@
-Mime-Version: 1.0 (Apple Message framework v752.3)
-In-Reply-To: <967229.12523.qm@web26903.mail.ukl.yahoo.com>
+Date: Sat, 3 Nov 2007 19:10:10 -0600
+From: Jan Hetges <tran@ms20.net>
+Subject: Re: [B.A.T.M.A.N.] batmand-exp test in the developing world
+Message-ID: <20071104011010.GA8676@apoderado.ometepe.net>
 References: <967229.12523.qm@web26903.mail.ukl.yahoo.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5E7BE189-5DC4-444A-AFFB-5341AEFAF55D@lo-res.org>
-Content-Transfer-Encoding: 7bit
-From: Aaron Kaplan <aaron@lo-res.org>
-Subject: Re: AW: [B.A.T.M.A.N.] batmand-exp test in the developing world
-Date: Sun, 4 Nov 2007 02:09:01 +0100
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="W/nzBZO5zC0uMSeA"
+Content-Disposition: inline
+In-Reply-To: <967229.12523.qm@web26903.mail.ukl.yahoo.com>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,22 +22,43 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-On Nov 4, 2007, at 1:53 AM, Marek Lindner wrote:
+--W/nzBZO5zC0uMSeA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
->> We experienced ~ 200% increase in cpu efficiency and ~ 300% in
->> network efficiency between 0.4.10 and 0.5.4.
->> c.f. http://olsr.funkfeuer.at for graphs.
->
-> Wow - you are part of the marketing team ?
+On Sun, Nov 04, 2007 at 12:53:13AM +0000, Marek Lindner wrote:
+[..snip..]=20
+>=20
+> >> I'm sorry to say that 0.3beta is not usable at the moment.
+> > and my tests with 0.3-beta_~rv720 showed path-detection pretty
+> > broken
+>=20
+> Well, rev720 is almost 3 weeks old. During that time the new
+> routing algo was quite unstable. Did you also try the newer
+> snapshots ?
+On Tue, Oct 16, 2007 at 12:04:37PM +0200, elektra wrote:
+> We'll post a message to the list as soon as we think it is fixed and
+> worth a try.
 
-  there is no marketing team. however there was a constant anti  
-marketing again and again about the OLSR-NG attempts in vienna. So I  
-wanted simply to make clear that there is *a*lot* of progress  
-happening in "good old" olsrd by now. A lot of progress!
+i never saw that post (maybe i missed it?), so i only tested exp-0.3 :)
 
-> I guess B.A.T.M.A.N. has over 1000% increase in efficiency
-> between 0.01 and now.  ;-)
+cheers
+
+  --Jan
 
 
-big deal.
+--W/nzBZO5zC0uMSeA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHLRvylTtvZdk47D4RAu4IAJ9VTk11vIooSYx07vOAPch09dKPiACgrGmU
+GW3NLrREuUrwtnmOln1D4hY=
+=lp65
+-----END PGP SIGNATURE-----
+
+--W/nzBZO5zC0uMSeA--
