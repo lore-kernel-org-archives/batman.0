@@ -1,10 +1,10 @@
-Date: Tue, 6 Nov 2007 08:24:47 +0000 (GMT)
+Date: Tue, 6 Nov 2007 08:26:20 +0000 (GMT)
 From: Marek Lindner <lindner_marek@yahoo.de>
 Subject: AW: [B.A.T.M.A.N.] 0.3-beta-rv779 and rv780
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Message-ID: <709285.93018.qm@web26901.mail.ukl.yahoo.com>
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Message-ID: <193253.89493.qm@web26905.mail.ukl.yahoo.com>
+Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,32 +19,37 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-
-> The non-usual setup: you have different parts of your mesh operating in
-=20
-> different subnets you need an additional ip rule to make the nodes in
- the=20
-> non-homed subnet reachable from a node which has no interface in that
- subnet.=20
-> So for example, if your setup looks like:
->      A---------------------B1_B2---------------C
-> 10.0.0.1/24       10.0.0.2/24 10.0.1.2/24  10.0.1.3/24  =20
->=20
-> the easiest way to do achieve that at A and C is:
-> $ ip rule add from all pref 6500 t 66
-
-Wouldn't be HNA the much better solution ? Node B should announce one of=20
-the networks. To not rebroadcast OGMs from the wrong network batman
-should check if the received originator IP is within the own network.
+Hi,
 
 
+> For some reason (or another?) my middle unit keeps re-creating the
+ gate0
+> every few seconds. Sometimes it loses it completely and sometimes it
+ keeps
+> it for 10 seconds or so. The furthest node from the gw keeps it's
+ tunnel
+> permanently configured (which is nice).
 
-Regards,
+to get to the bottom of your problem I need debug level 3 output. If
+ you start
+the daemon with "-d 3" or connect to the running daemon with "batmand
+ -c -d 3"
+and send me that output I will be able to figure it out.
+
+
+> Basically, node-to-node traffic is ok, very stable and very nice but
+> node-through-gw is flaky.
+
+On all nodes or just from that one ?
+
+
+Greetings,
 Marek
 
 
 
 
-      Jetzt Mails schnell in einem Vorschaufenster =FCberfliegen. Dies und =
-viel mehr bietet das neue Yahoo! Mail - www.yahoo.de/mail
+
+
+      Heute schon einen Blick in die Zukunft von E-Mails wagen? www.yahoo.de/mail
 
