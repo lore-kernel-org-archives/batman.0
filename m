@@ -1,9 +1,9 @@
-References: <000b01c81ff0$d7ed14b0$87c73e10$@com>
-	<200711060915.59594.axel@open-mesh.net>
-In-Reply-To: <200711060915.59594.axel@open-mesh.net>
-Subject: RE: [B.A.T.M.A.N.] 0.3-beta-rv779 and rv780
-Date: Tue, 6 Nov 2007 13:35:53 +0100
-Message-ID: <000301c82071$95051270$bf0f3750$@com>
+References: <709285.93018.qm@web26901.mail.ukl.yahoo.com>
+	<200711061057.26215.axel@open-mesh.net>
+In-Reply-To: <200711061057.26215.axel@open-mesh.net>
+Subject: RE: AW: [B.A.T.M.A.N.] 0.3-beta-rv779 and rv780
+Date: Wed, 7 Nov 2007 02:05:52 +0100
+Message-ID: <000301c820da$5c489880$14d9c980$@com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
@@ -24,35 +24,48 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@open-mesh.net>
 
-Thank you for your quick replies guys. I just woke up (doh!) so I'll get
-back to you with all details shortly, but just to quickly answer axels
-question on olsr.
+My sincere apologies!
 
-Ok I will also post my setup
+I have gone through the whole setup once again today and now gate0 stays up
+and running on all client nodes, it was my iptables setup on middle client
+node that was forwarding nat-ted traffic onto ath1 instead of gate0. Sorry
+again. Now everything seems stable and nice. I am getting between
+600-800KB/s TCP from gateway with 3 nodes which, I presume, is a nice
+figure, unless -exp offers something more?
 
-Aa ----------------- Ba --------- Ca  (a is 11a g is 11bg interface)
-105.0.0.1/24     105.0.0.2   105.0.0.3
-Ag ----------------- Bg --------- Cg
-105.0.1.1/24     105.0.1.2   105.0.1.3
+I have gone by the advice and put all radios onto the same subnet. Now
+traceroute from one node onto another takes ages to do (with single-radio
+setup it was nice and showed me exactly what I was expecting) - I guess it
+has something to do with two interfaces with the same mask etc etc? Also
+doesn't this set-up hurt performance if the linux kernel sends packets with
+the same broadcast address down the first interface it finds, even though
+that interface might be the radio with worse connectivity than the second
+one? How should we handle this?
 
-11a is switched OFF on all nodes.
+Pele
 
-OLSR seems to ALWAYS just go from Ag directly to Cg (I presume it's because
-it can see it on g radio) even though route through Bg would be better and
-it takes 10-15ms (at least for traceroute output). B.A.T.M.A.N ALLWAYS goes
-through Bg and it's all 2ms hops Ag > Bg 2ms, Bg > Cg 2ms. Much better
-wouldn't you say?
-That's why I've given up on OLSR.
+P.S. who do I complain to about vis not showing ALL my interfaces
+(dual-radio units) as distinct IP addresses and their connections to others
+but instead just takes the first interface on the subnet so instead of
+having 6 nodes on my diagram I only have 3 and each one has a host-hna
+attached to it (I'd rather not burden this list with mime attachments)?
 
-Ok that was the short answer, later I'll get back to you on the gate0 issue.
+-----Original Message-----
+From: b.a.t.m.a.n-bounces@open-mesh.net
+[mailto:b.a.t.m.a.n-bounces@open-mesh.net] On Behalf Of Axel Neumann
+Sent: Tuesday, November 06, 2007 10:57 AM
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+Subject: Re: AW: [B.A.T.M.A.N.] 0.3-beta-rv779 and rv780
 
-> but I believe this would be a 
-> far more usable setup than olsr 5.3 that I also tried.
-maybe check 5.4. Because I think that the improvements from 5.3 to 5.4 are 
-huge, but also because I am always interested in the concrete pros and cons 
-that people observe between the latest olsr/batman state-of-the art.
+On Dienstag 06 November 2007, Marek Lindner wrote:
+> > The non-usual setup: you have different parts of your mesh operating in
+> >
+> > different subnets you need an additional ip rule to make the nodes in
+>
+>  the
+>
+> > non-homed subnet reachable from a node which has no interface in that
+>
+>  subnet.
 
-
-ciao,
-axel
 
