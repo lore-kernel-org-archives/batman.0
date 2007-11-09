@@ -1,17 +1,13 @@
-References: <709285.93018.qm@web26901.mail.ukl.yahoo.com>
-	<200711061057.26215.axel@open-mesh.net>
-In-Reply-To: <200711061057.26215.axel@open-mesh.net>
-Subject: RE: AW: [B.A.T.M.A.N.] 0.3-beta-rv779 and rv780
-Date: Wed, 7 Nov 2007 02:05:52 +0100
-Message-ID: <000301c820da$5c489880$14d9c980$@com>
+Message-ID: <2bda28cd0711090623r2e7b8750g558aebab35247da0@mail.gmail.com>
+Date: Fri, 9 Nov 2007 15:23:47 +0100
+From: "Stefano Scipioni" <stefano@one-b.it>
+Sender: scipio.it@gmail.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Language: en-us
-From: Predrag Balorda <predrag.balorda@gmail.com>
-Reply-To: pele@balorda.com,
-	The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] routing problem?
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -22,50 +18,33 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-My sincere apologies!
+I'm testing batman 0.3 exp rv 777
 
-I have gone through the whole setup once again today and now gate0 stays up
-and running on all client nodes, it was my iptables setup on middle client
-node that was forwarding nat-ted traffic onto ath1 instead of gate0. Sorry
-again. Now everything seems stable and nice. I am getting between
-600-800KB/s TCP from gateway with 3 nodes which, I presume, is a nice
-figure, unless -exp offers something more?
+traceroute give me a problem
 
-I have gone by the advice and put all radios onto the same subnet. Now
-traceroute from one node onto another takes ages to do (with single-radio
-setup it was nice and showed me exactly what I was expecting) - I guess it
-has something to do with two interfaces with the same mask etc etc? Also
-doesn't this set-up hurt performance if the linux kernel sends packets with
-the same broadcast address down the first interface it finds, even though
-that interface might be the radio with worse connectivity than the second
-one? How should we handle this?
+root@sala:~$ traceroute  10.0.1.1
+traceroute: can't find interface
+root@sala:~$ ip route ls tab 66
+10.1.5.104 dev ath0  proto static  scope link  src 10.1.5.102
+10.1.5.130 via 10.1.5.104 dev ath0  proto static
+10.1.5.129 via 10.1.5.1 dev ath0  proto static
+10.1.5.1 via 10.1.5.104 dev ath0  proto static
+root@sala:~$ ip route ls tab 65
+10.0.1.0/24 via 10.1.5.1 dev ath0  proto static
+root@sala:~$ traceroute  10.0.1.1
+traceroute: can't find interface
+root@sala:~$ ping 10.0.1.1
+PING 10.0.1.1 (10.0.1.1): 56 data bytes
+64 bytes from 10.0.1.1: seq=0 ttl=61 time=9.119 ms
+64 bytes from 10.0.1.1: seq=1 ttl=61 time=8.486 ms
 
-Pele
+traceroute works If I utilize source address option.
+What is my mistake?
 
-P.S. who do I complain to about vis not showing ALL my interfaces
-(dual-radio units) as distinct IP addresses and their connections to others
-but instead just takes the first interface on the subnet so instead of
-having 6 nodes on my diagram I only have 3 and each one has a host-hna
-attached to it (I'd rather not burden this list with mime attachments)?
+Also if one of nodes has no batman-exp running on it I can't reach it
+from neighbours (I use batmand on ath0 interface, not an alias)?
+Perhaps I have to use --no-unreachable-rule?
 
------Original Message-----
-From: b.a.t.m.a.n-bounces@open-mesh.net
-[mailto:b.a.t.m.a.n-bounces@open-mesh.net] On Behalf Of Axel Neumann
-Sent: Tuesday, November 06, 2007 10:57 AM
-To: The list for a Better Approach To Mobile Ad-hoc Networking
-Subject: Re: AW: [B.A.T.M.A.N.] 0.3-beta-rv779 and rv780
-
-On Dienstag 06 November 2007, Marek Lindner wrote:
-> > The non-usual setup: you have different parts of your mesh operating in
-> >
-> > different subnets you need an additional ip rule to make the nodes in
->
->  the
->
-> > non-homed subnet reachable from a node which has no interface in that
->
->  subnet.
-
-
+Stefano
