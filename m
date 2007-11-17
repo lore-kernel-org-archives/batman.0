@@ -1,16 +1,10 @@
-Date: Fri, 16 Nov 2007 08:59:05 -0600
-From: Jan Hetges <tran@ms20.net>
-Subject: Re: [B.A.T.M.A.N.] parametrization for bmxd on ethernet?
-Message-ID: <20071116145905.GA4732@apoderado.ometepe.net>
-References: <20071114170618.GA4282@apoderado.ometepe.net>
-	<200711141934.51710.axel@open-mesh.net>
-	<20071114232050.GA5080@apoderado.ometepe.net>
-	<200711152029.49188.axel@open-mesh.net>
+Message-ID: <473F0B87.9050002@leipzig.freifunk.net>
+Date: Sat, 17 Nov 2007 16:40:55 +0100
+From: tetzlav <tetzlav@leipzig.freifunk.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LQksG6bCIzRHxTLp"
-Content-Disposition: inline
-In-Reply-To: <200711152029.49188.axel@open-mesh.net>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] gateway-tunnel crashes with multiple net-dev 
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,124 +18,166 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+Its me again... ;)
 
---LQksG6bCIzRHxTLp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Nov 15, 2007 at 08:29:49PM +0100, Axel Neumann wrote:
->=20
-> > > > So howto parametrize bmxd for devices without wireless-intrerface
-> > >
-> > > usually the same parameters as for a node with a wireless interface
-> > > should be fine, like:
-> > > bmxd -g 1000 eth0:bmx eth1:bmx
-> > >
-> > > You can slightly optimize the cpu consumtion and
-> > > protocol-traffic-overhead by appending the /c 100 option to the first
-> > > interface parameter like:
-> > >
-> > > batmand -g 1000 eth0:bat /c 100 eth1:bat
-> > >
-> > > This overwrites the default configuration (/c 200) of the first inter=
-face
-> > > parameter which is assumed to be the only wlan interface. /c 200 achi=
-eves
-> > > some optimization for the path detection via wireless links.
-> > >
-> > > However, on a cabled lan the protocol-traffic-overhead does not really
-> > > hurt and on a i386 architecture you will barely recognize any increas=
-ed
-> > > cpu consumption.
-> update: I added two more simple interface specific option with rv801 . Th=
-e=20
-> daemon now tells you about this during startup:
-> The batman-exp default parametrization assumes the first given interface=
-=20
-> argument to be the one and only wireless interface, followed by zero or m=
-ore=20
-> lan interfaces! To change this assumption mark the interfaces explicitly=
-=20
-> using /w to specify the wlan interface(s) and /l to specify the lan=20
-> interface(s). Example: batmand eth0 /l wlan0 /w ath1 /w
-
-nice one
-> > >
-> > > > Can i use --gateway-change-hysteresis together with -p ?
-> > >
-> > > No, --gateway-change-hysteresis can only be used with -r 3 (fast-swit=
-ch
-> > > internet connection).
-> > >
-> > > with -p 10.1.2.3 the gw-client will stick to its selected gw as long =
-as
-> > > its somehow available (until it times out, as you described below).
-> >
-> > sorry, actually my question has to be:
-> > can i use -p together with -r3 ?
->=20
-> You can. Then -r3 is the fallback strategy for the GW selection in case t=
-he=20
-> preferred one is not available. But still the client-node will not think=
-=20
-> about choosing a faster GW until the preferred GW has been purged. Once t=
-he=20
-> preferred GW is not available anymore it uses the -r3 policy to switch=20
-> between the remaining available GWs :-(
-
-but with only two gateways, that's actually all i need :-)
->=20
-> >
-> > > > Suggestion: in bmxd -cbd1 i saw nodes with lvld >400 before they
-> > > > get deleted, i think 180 should be more than enough, 3 minutes is
-> > > > plenty of time for normal reboot, and if a node dosn't send OGMs for
-> > > > more than that... it has a serious problem ;)
-> > >
-> > > Well, these long timeout defaults are kind of traditional remains from
-> > > batmand-0.2. But, not constantly receiving OGMs from a distant node d=
-oes
-> > > not mean that the distant node has not send some or is down. And it a=
-lso
-> > > does not necessarily mean that the old route to this distant node does
-> > > not work anymore. With 0.2 we sometimes observed paths to distant nod=
-es
-> > > via which only one OGMs was received within the current window-size
-> > > (which was 128 seconds) and still the path was somehow usable.
-> >
-> another update:
-> You can slightly modify the purge interval by configuring the value used =
-for=20
-> the rudimentary DuplicateAddressDetection (--dad-timeout). Default is 100=
-=20
-> which means that the DAD timeout is 100% of the (originator-interval *=20
-> window-size). So 150 seconds by default. The daeomon also tells you about=
-=20
-> these values during startup: --dad-timeout 50 (which is the minimum allow=
-ed)=20
-> will print:
-> Using duplicate-address-detection timeout 75s, purge timeout 160s, origin=
-ator=20
-> interval 1500ms, window size 100
-
-o.k., i see, and thanks for the explaination
+At first i thought this is a problem with our complex setup on the
+freifunk-routers with olsr+batman on alias-interfaces and so on, but
+know i testet batman on my Laptop and have the same problems with
+multiple network interfaces and gateway-tunnels.
+I dont know how this gateway-tunnels really works, but i think this
+pseudo-NAT on gate0 not really works or send wrong source-IP or what else...
 
 
-cheers
+Regards
+tetzlav
 
-  --Jan
+-----<tunnel-client>-----
 
---LQksG6bCIzRHxTLp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+ root@tetzlav #  ./batmand -v
+B.A.T.M.A.N. 0.3-beta rv799 (compatibility version 4)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+ root@tetzlav # ip addr | sed 's/\(..:..\):..:..:/\1:XX:XX:/'
+1: lo: <LOOPBACK,UP,10000> mtu 16436 qdisc noqueue
+    link/loopback 00:00:XX:XX:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+170: eth0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen 100
+    link/ether 00:09:XX:XX:cb:9d brd ff:ff:ff:ff:ff:ff
+    inet 192.168.105.254/24 brd 192.168.105.255 scope global eth0
+    inet6 fe80::209:6bff:fe3f:cb9d/64 scope link
+       valid_lft forever preferred_lft forever
+171: eth2: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen
+1000
+    link/ether 00:01:XX:XX:c3:8f brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.2/24 brd 192.168.1.255 scope global eth2
+    inet6 fe80::201:3ff:fe81:c38f/64 scope link
+       valid_lft forever preferred_lft forever
+174: wifi0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast
+qlen 199
+    link/ieee802.11 00:90:XX:XX:07:e1 brd ff:ff:ff:ff:ff:ff
+175: ath0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc noqueue
+    link/ether 06:90:XX:XX:07:e1 brd ff:ff:ff:ff:ff:ff
+    inet 105.61.17.106/8 brd 105.255.255.255 scope global ath0
+    inet6 fe80::490:4bff:fedc:7e1/64 scope link
+       valid_lft forever preferred_lft forever
 
-iD8DBQFHPbA5lTtvZdk47D4RAi4qAKCdVuhDUaoK3dFXmxl/VQFr9sBWggCfTmx7
-lXuw8cRpRZAZYVzabD8G5Jg=
-=y6r2
------END PGP SIGNATURE-----
+ root@tetzlav # ./batmand -r2 ath0 && ./batmand -cd3
+Using interface ath0 with address 105.61.17.106 and broadcast address
+105.255.255.255
+Adding route to 105.61.17.35 via 0.0.0.0 (table 66 - ath0)
+Adding route to 105.61.89.89/32 via 105.61.17.35 (table 65 - ath0)
+Found new gateway 105.61.17.35 -> class: 65 - 16MBit/4MBit
+Adding route to 105.61.17.17/32 via 105.61.17.35 (table 66 - ath0)
+Adding route to 105.61.13.18/32 via 105.61.17.35 (table 66 - ath0)
+Adding route to 105.61.89.81/32 via 105.61.17.35 (table 65 - ath0)
+Adding route to 105.61.17.21/32 via 105.61.17.35 (table 66 - ath0)
+Adding route to 105.61.89.90/32 via 105.61.17.35 (table 65 - ath0)
+Adding route to 105.61.17.32/32 via 105.61.17.35 (table 66 - ath0)
+Adding route to 105.61.17.18 via 0.0.0.0 (table 66 - ath0)
+Deleting route to 105.61.17.18 via 0.0.0.0 (table 66 - ath0)
+Adding route to 105.61.17.18/32 via 105.61.17.35 (table 66 - ath0)
+Adding route to 105.61.17.1/32 via 105.61.17.35 (table 66 - ath0)
+Adding route to 105.61.89.92/32 via 105.61.17.35 (table 65 - ath0)
+Adding route to 105.61.18.12/32 via 105.61.17.35 (table 66 - ath0)
+Adding route to 105.61.17.19/32 via 105.61.17.35 (table 66 - ath0)
+Found new gateway 105.61.17.19 -> class: 41 - 2048KBit/512KBit
+Adding default route to 105.61.17.35 (gw_flags: 65, tq: 240, gw_product: 0)
+Gateway client - got IP (169.254.0.1) from gateway: 105.61.17.35
+Adding default route via gate0 (table 68)
+Gateway client - gateway (105.61.17.35) says: IP (169.254.0.1) is expired
+Deleting default route via gate0 (table 68)
+Adding default route to 105.61.17.35 (gw_flags: 65, tq: 240, gw_product: 0)
+Gateway client - got IP (169.254.0.1) from gateway: 105.61.17.35
+Adding default route via gate0 (table 68)
+Gateway client - gateway (105.61.17.35) says: IP (169.254.0.1) is expired
+Deleting default route via gate0 (table 68)
+Adding default route to 105.61.17.35 (gw_flags: 65, tq: 240, gw_product: 0)
+Gateway client - got IP (169.254.0.1) from gateway: 105.61.17.35
+Adding default route via gate0 (table 68)
+Gateway client - gateway (105.61.17.35) says: IP (169.254.0.1) is expired
+Deleting default route via gate0 (table 68)
 
---LQksG6bCIzRHxTLp--
+ root@tetzlav # while sleep 1; do tcpdump -vvvni gate0; done
+16:07:13.079874 IP (tos 0x0, ttl   7, id 7998, offset 0, flags [none],
+proto: ICMP (1), length: 64) 169.254.0.1 > 141.1.1.1: ICMP echo request,
+id 56067, seq 32519, length 44
+16:07:13.109311 IP (tos 0x0, ttl 248, id 0, offset 0, flags [none],
+proto: ICMP (1), length: 56) 195.2.10.37 > 169.254.0.1: ICMP time
+exceeded in-transit, length 36
+        IP (tos 0x0, ttl   1, id 7998, offset 0, flags [none], proto:
+ICMP (1), length: 64) 169.254.0.1 > 141.1.1.1: ICMP echo request, id
+56067, seq 32519, length 44
+16:07:13.207659 IP (tos 0x0, ttl   8, id 7999, offset 0, flags [none],
+proto: ICMP (1), length: 64) 169.254.0.1 > 141.1.1.1: ICMP echo request,
+id 56067, seq 32775, length 44
+16:07:13.236168 IP (tos 0x0, ttl  57, id 56889, offset 0, flags [none],
+proto: ICMP (1), length: 64) 141.1.1.1 > 169.254.0.1: ICMP echo reply,
+id 56067, seq 32775, length 44
+16:07:13.336254 IP (tos 0x0, ttl   1, id 8000, offset 0, flags [none],
+proto: ICMP (1), length: 64) 169.254.0.1 > 141.1.1.1: ICMP echo request,
+id 56067, seq 33031, length 44
+16:07:13.337616 IP (tos 0xc0, ttl  64, id 56062, offset 0, flags [none],
+proto: ICMP (1), length: 92) 169.254.0.0 > 169.254.0.1: ICMP time
+exceeded in-transit, length 72
+        IP (tos 0x0, ttl   1, id 8000, offset 0, flags [none], proto:
+ICMP (1), length: 64) 169.254.0.1 > 141.1.1.1: ICMP echo request, id
+56067, seq 33031, length 44
+16:07:13.360347 IP (tos 0x0, ttl  64, id 10973, offset 0, flags [DF],
+proto: TCP (6), length: 64) 192.168.105.254.47000 > 217.10.10.194.5223:
+., cksum 0xe918 (correct), 3496148623:3496148635(12) ack 3669129091 win
+2003 <nop,nop,timestamp 230212021 497584259>
+tcpdump: pcap_loop: recvfrom: Network is down
+29 packets captured
+29 packets received by filter
+0 packets dropped by kernel
+tcpdump: SIOCGIFHWADDR: No such device
+tcpdump: SIOCGIFHWADDR: No such device
+
+
+
+-----<on batman-gateway>----
+
+root@17-35:~# batmand -cd3
+Deleting route to 105.61.18.12/32 via 105.61.89.92 (table 66 - vlan1:bat)
+Adding route to 105.61.18.12/32 via 105.61.89.81 (table 66 - vlan1:bat)
+Deleting route to 105.61.18.12/32 via 105.61.89.81 (table 66 - vlan1:bat)
+Adding route to 105.61.18.12/32 via 105.61.89.92 (table 66 - vlan1:bat)
+Gateway - assigned 169.254.0.1 to client: 105.61.17.106
+Deleting route to 105.61.17.18 via 0.0.0.0 (table 66 - eth2:bat)
+Adding route to 105.61.17.18/32 via 105.61.89.81 (table 66 - vlan1:bat)
+Gateway - assigned 169.254.0.1 to client: 105.61.17.106
+Deleting route to 105.61.17.18/32 via 105.61.89.81 (table 66 - vlan1:bat)
+Adding route to 105.61.17.18 via 0.0.0.0 (table 66 - eth2:bat)
+Gateway - assigned 169.254.0.1 to client: 105.61.17.106
+Gateway - assigned 169.254.0.1 to client: 105.61.17.106
+Gateway - assigned 169.254.0.1 to client: 105.61.17.106
+Gateway - assigned 169.254.0.1 to client: 105.61.17.106
+Deleting route to 105.61.18.12/32 via 105.61.89.92 (table 66 - vlan1:bat)
+Adding route to 105.61.18.12/32 via 105.61.89.81 (table 66 - vlan1:bat)
+Gateway - assigned 169.254.0.1 to client: 105.61.17.106
+Deleting route to 105.61.18.12/32 via 105.61.89.81 (table 66 - vlan1:bat)
+Adding route to 105.61.18.12/32 via 105.61.89.92 (table 66 - vlan1:bat)
+Gateway - assigned 169.254.0.1 to client: 105.61.17.106
+Gateway - assigned 169.254.0.1 to client: 105.61.17.106
+Gateway - assigned 169.254.0.1 to client: 105.61.17.106
+
+root@17-35:~# logread -f
+Nov 17 16:24:16 (none) daemon.err batmand[12811]: Error - got packet
+from unknown client: 105.61.17.106 (virtual ip 192.168.105.254) 
+Nov 17 16:24:21 (none) daemon.err batmand[12811]: Error - got packet
+from unknown client: 105.61.17.106 (virtual ip 192.168.105.254) 
+Nov 17 16:24:32 (none) daemon.err batmand[12811]: Error - got packet
+from unknown client: 105.61.17.106 (virtual ip 192.168.105.254) 
+Nov 17 16:24:34 (none) daemon.err batmand[12811]: Error - got packet
+from unknown client: 105.61.17.106 (virtual ip 192.168.105.254) 
+Nov 17 16:24:38 (none) daemon.err batmand[12811]: Error - got packet
+from unknown client: 105.61.17.106 (virtual ip 192.168.105.254) 
+Nov 17 16:24:51 (none) daemon.err batmand[12811]: Error - got packet
+from unknown client: 105.61.17.106 (virtual ip 192.168.105.254) 
+Nov 17 16:24:56 (none) daemon.err batmand[12811]: Error - got packet
+from unknown client: 105.61.17.106 (virtual ip 192.168.105.254) 
+Nov 17 16:25:02 (none) daemon.err batmand[12811]: Error - got packet
+from unknown client: 105.61.17.106 (virtual ip 192.168.105.254) 
+Nov 17 16:25:04 (none) daemon.err batmand[12811]: Error - got packet
+from unknown client: 105.61.17.106 (virtual ip 192.168.105.254)
