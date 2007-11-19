@@ -1,14 +1,14 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] adding network announce
-Date: Sun, 18 Nov 2007 11:37:39 +0100
-References: <20071117191401.GA4836@apoderado.ometepe.net>
-In-Reply-To: <20071117191401.GA4836@apoderado.ometepe.net>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] gateway-tunnel crashes with multiple net-dev
+Date: Mon, 19 Nov 2007 10:57:07 +0100
+References: <473F0B87.9050002@leipzig.freifunk.net>
+In-Reply-To: <473F0B87.9050002@leipzig.freifunk.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-6"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711181137.39473.axel@open-mesh.net>
+Message-Id: <200711191057.07530.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,29 +22,22 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Samstag 17 November 2007, Jan Hetges wrote:
-> Hi
-> is that supposed to work?
-> at least, first it says it does, but second it doesn't:
-> root@bla:~# bmxd -c -a 172.16.x.x/32
-> WARNING: You are using BatMan-eXp 0.3-alpha rv802 (compatibility version 9)
-> ! adding HNA 172.16.x.x/32, atype 1
-> bmxd -r 3 -a 172.17.x.x/24 eth1:bmx
-No, that does not (yet) work - even if it says so :-(
-So fare you can only define HNA announcements during startup.
-Actually, other people have also asked for exactly this feature. The 
-preparations to support dynamic add-and-removal of HNA announcement with -c 
-is almost done and I think this can be supported soon.
 
-ciao,
-axel
+Hi,
 
->
-> (172.17.x.x/24 is the network already announced at startup)
-that should be just fine.
->
-> cheers
->
->   --Jan
+it seems not to be a crash. The batman client destroys the gate0 interface 
+after too many tries or is the daemon really dead ?
+The problem Antonio mentions has been fixed with rev799.
 
+> I dont know how this gateway-tunnels really works, but i think this
+> pseudo-NAT on gate0 not really works or send wrong source-IP or what
+> else...
+
+I saw this problem from time to time but it comes and goes. Can you reproduce 
+that everytime ? If so could you provide a step by step explanation to 
+reproduce it ? So far I saw this kind of behaviour with alias interfaces 
+only.
+
+Regards,
+Marek
 
