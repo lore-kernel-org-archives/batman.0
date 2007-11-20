@@ -1,10 +1,14 @@
-Message-ID: <47426F09.9060605@absorb.it>
-Date: Tue, 20 Nov 2007 10:52:17 +0530
-From: rene <batman@absorb.it>
+From: Axel Neumann <axel@open-mesh.net>
+Subject: Re: [B.A.T.M.A.N.] problem starting batmand (v799)
+Date: Tue, 20 Nov 2007 10:08:13 +0100
+References: <47426F09.9060605@absorb.it>
+In-Reply-To: <47426F09.9060605@absorb.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] problem starting batmand (v799)
+Content-Disposition: inline
+Message-Id: <200711201008.13700.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,47 +24,38 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open
 
 Hi,
 
-starting batmand, the daemon sometimes doesn't seem to recognize the
-network the right way.
+On Dienstag 20 November 2007, rene wrote:
+> Hi,
+>
+> starting batmand, the daemon sometimes doesn't seem to recognize the
+> network the right way.
+>
+>
+> root@25:~# killall batmand
+> root@25:~# batmand eth1:1 vlan0:1
+> Using interface eth1:1 with address 192.168.42.25 and broadcast address
+> 192.168.43.255
+> Using interface vlan0:1 with address 192.168.42.25 and broadcast address
+> 192.168.43.255
 
+> -------------------------------------------
+> on the other node:
+> root@25:~# killall batmand
+> root@25:~# batmand eth1:1 vlan0:1
+> Using interface eth1:1 with address 192.168.42.25 and broadcast address
+> 192.168.43.255
+> Using interface vlan0:1 with address 192.168.42.25 and broadcast address
+> 192.168.43.255
+> root@25:~#
+>
 
-root@25:~# killall batmand
-root@25:~# batmand eth1:1 vlan0:1
-Using interface eth1:1 with address 192.168.42.25 and broadcast address
-192.168.43.255
-Using interface vlan0:1 with address 192.168.42.25 and broadcast address
-192.168.43.255
--------------------------------------------------------
- This is a tcpdump from a neighbor node:
+What is definitively not correct is that your capture indicates 4 times the 
+same IP address (192.168.42.25) on 4 different interfaces. 
+Can you check whether your capture, the alias-interface configuration (what is 
+the output of ip a ?), or the daemon is wrong?
+There MUST be a different IP address for each BATMAN interface in the network 
+(also if a single BATMAN node has more than one interface). 
+All BATMAN interfaces SHOULD  have the same netmask and broadcast address.
 
-root@ap14:~# tcpdump -i eth0 src 192.168.42.25
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
-05:12:09.512310 arp who-has 192.168.43.255 tell 192.168.42.25
-05:12:10.512178 arp who-has 192.168.43.255 tell 192.168.42.25
-05:12:11.699795 arp who-has 192.168.43.255 tell 192.168.42.25
-
--------------------------------------------
-on the other node:
-root@25:~# killall batmand
-root@25:~# batmand eth1:1 vlan0:1
-Using interface eth1:1 with address 192.168.42.25 and broadcast address
-192.168.43.255
-Using interface vlan0:1 with address 192.168.42.25 and broadcast address
-192.168.43.255
-root@25:~#
-
-----------------------------------------------
-tcpdump:
-
-05:12:28.621940 IP 192.168.42.25.4305 > 192.168.43.255.4305: UDP, length 20
-05:12:28.873246 IP 192.168.42.25.4305 > 192.168.43.255.4305: UDP, length 25
-05:12:28.892343 IP 192.168.42.25.4305 > 192.168.43.255.4305: UDP, length 15
-
-
-now batmand is running successfully.
-
-Any Ideas?
-
-regards,
-Rene
+ciao,
+axel
