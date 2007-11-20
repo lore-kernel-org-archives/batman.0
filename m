@@ -1,13 +1,17 @@
-Message-ID: <4742B775.2060601@absorb.it>
-Date: Tue, 20 Nov 2007 16:01:17 +0530
-From: rene <batman@absorb.it>
-MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] problem starting batmand (v799)
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] single IP for multiple interfaces (was: Re:
+	[B.A.T.M.A.N.] problem starting batmand (v799))
+Date: Tue, 20 Nov 2007 11:59:15 +0100
 References: <47426F09.9060605@absorb.it>
 	<200711201008.13700.axel@open-mesh.net>
-In-Reply-To: <200711201008.13700.axel@open-mesh.net>
-Content-Type: text/plain; charset=iso-8859-1
+	<4742B775.2060601@absorb.it>
+In-Reply-To: <4742B775.2060601@absorb.it>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711201159.15845.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,52 +25,34 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+
 Hi,
 
-Axel Neumann wrote:
-> Hi,
-> 
-> On Dienstag 20 November 2007, rene wrote:
->> Hi,
->>
->> starting batmand, the daemon sometimes doesn't seem to recognize the
->> network the right way.
->>
->>
->> root@25:~# killall batmand
->> root@25:~# batmand eth1:1 vlan0:1
->> Using interface eth1:1 with address 192.168.42.25 and broadcast address
->> 192.168.43.255
->> Using interface vlan0:1 with address 192.168.42.25 and broadcast address
->> 192.168.43.255
-> 
->> -------------------------------------------
->> on the other node:
->> root@25:~# killall batmand
->> root@25:~# batmand eth1:1 vlan0:1
->> Using interface eth1:1 with address 192.168.42.25 and broadcast address
->> 192.168.43.255
->> Using interface vlan0:1 with address 192.168.42.25 and broadcast address
->> 192.168.43.255
->> root@25:~#
->>
-> 
-> What is definitively not correct is that your capture indicates 4 times the 
-> same IP address (192.168.42.25) on 4 different interfaces. 
-This is two times the same node, first time it recognizes the broadcast
-the right way, second time not.
+> 05:12:09.512310 arp who-has 192.168.43.255 tell 192.168.42.25
+> 05:12:10.512178 arp who-has 192.168.43.255 tell 192.168.42.25
 
-> There MUST be a different IP address for each BATMAN interface in the network 
-> (also if a single BATMAN node has more than one interface). 
-Is this implemented like this (where?)? Can't work BATMAN with the
-interfaces (or can't we change it to work this way), it would make the
-whole configuration much easier to assign to every node only one single
-IP address (or two, one for olsr and ne for BATMAN)? We are doing this
-with olsr and this really makes the network-structure much cleaner -
-every node has one IP.
+These ARP request are not issued by BATMAN itself. BATMAN does only send 
+broadcast packets - your system creates these requests. 
 
-Is the described problem with the misconfigured broadcast related to the
-'same IP on different interfaces' issue?
 
-regards,
-Rene
+> This is two times the same node, first time it recognizes the broadcast
+> the right way, second time not.
+
+BATMAN askes the system for the IP and broadcast addresses. In both cases the 
+system responds with the same answer. I don't see much difference from 
+batmans point of view.
+
+
+> Is this implemented like this (where?)? Can't work BATMAN with the
+> interfaces (or can't we change it to work this way), it would make the
+> whole configuration much easier to assign to every node only one single
+> IP address (or two, one for olsr and ne for BATMAN)? We are doing this
+> with olsr and this really makes the network-structure much cleaner -
+> every node has one IP.
+
+You have multihomed OLSR nodes with a single IP and that works ? Can anyone of 
+the OLSR folks say something about that ? I can't imagine how the routing 
+daemon can distinguish 2 distinct connections with the same address ...
+
+Regards,
+Marek
