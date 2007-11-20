@@ -1,14 +1,13 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] problem starting batmand (v799)
-Date: Tue, 20 Nov 2007 10:08:13 +0100
-References: <47426F09.9060605@absorb.it>
-In-Reply-To: <47426F09.9060605@absorb.it>
+Message-ID: <4742B775.2060601@absorb.it>
+Date: Tue, 20 Nov 2007 16:01:17 +0530
+From: rene <batman@absorb.it>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Subject: Re: [B.A.T.M.A.N.] problem starting batmand (v799)
+References: <47426F09.9060605@absorb.it>
+	<200711201008.13700.axel@open-mesh.net>
+In-Reply-To: <200711201008.13700.axel@open-mesh.net>
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711201008.13700.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,38 +23,50 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open
 
 Hi,
 
-On Dienstag 20 November 2007, rene wrote:
+Axel Neumann wrote:
 > Hi,
->
-> starting batmand, the daemon sometimes doesn't seem to recognize the
-> network the right way.
->
->
-> root@25:~# killall batmand
-> root@25:~# batmand eth1:1 vlan0:1
-> Using interface eth1:1 with address 192.168.42.25 and broadcast address
-> 192.168.43.255
-> Using interface vlan0:1 with address 192.168.42.25 and broadcast address
-> 192.168.43.255
+> 
+> On Dienstag 20 November 2007, rene wrote:
+>> Hi,
+>>
+>> starting batmand, the daemon sometimes doesn't seem to recognize the
+>> network the right way.
+>>
+>>
+>> root@25:~# killall batmand
+>> root@25:~# batmand eth1:1 vlan0:1
+>> Using interface eth1:1 with address 192.168.42.25 and broadcast address
+>> 192.168.43.255
+>> Using interface vlan0:1 with address 192.168.42.25 and broadcast address
+>> 192.168.43.255
+> 
+>> -------------------------------------------
+>> on the other node:
+>> root@25:~# killall batmand
+>> root@25:~# batmand eth1:1 vlan0:1
+>> Using interface eth1:1 with address 192.168.42.25 and broadcast address
+>> 192.168.43.255
+>> Using interface vlan0:1 with address 192.168.42.25 and broadcast address
+>> 192.168.43.255
+>> root@25:~#
+>>
+> 
+> What is definitively not correct is that your capture indicates 4 times the 
+> same IP address (192.168.42.25) on 4 different interfaces. 
+This is two times the same node, first time it recognizes the broadcast
+the right way, second time not.
 
-> -------------------------------------------
-> on the other node:
-> root@25:~# killall batmand
-> root@25:~# batmand eth1:1 vlan0:1
-> Using interface eth1:1 with address 192.168.42.25 and broadcast address
-> 192.168.43.255
-> Using interface vlan0:1 with address 192.168.42.25 and broadcast address
-> 192.168.43.255
-> root@25:~#
->
+> There MUST be a different IP address for each BATMAN interface in the network 
+> (also if a single BATMAN node has more than one interface). 
+Is this implemented like this (where?)? Can't work BATMAN with the
+interfaces (or can't we change it to work this way), it would make the
+whole configuration much easier to assign to every node only one single
+IP address (or two, one for olsr and ne for BATMAN)? We are doing this
+with olsr and this really makes the network-structure much cleaner -
+every node has one IP.
 
-What is definitively not correct is that your capture indicates 4 times the 
-same IP address (192.168.42.25) on 4 different interfaces. 
-Can you check whether your capture, the alias-interface configuration (what is 
-the output of ip a ?), or the daemon is wrong?
-There MUST be a different IP address for each BATMAN interface in the network 
-(also if a single BATMAN node has more than one interface). 
-All BATMAN interfaces SHOULD  have the same netmask and broadcast address.
+Is the described problem with the misconfigured broadcast related to the
+'same IP on different interfaces' issue?
 
-ciao,
-axel
+regards,
+Rene
