@@ -1,15 +1,13 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] batmand still doesn't start the right way
-Date: Sun, 25 Nov 2007 18:55:23 +0100
-References: <4747BE35.3040307@absorb.it>
-	<200711251732.00986.axel@open-mesh.net> <4749A6DF.40106@absorb.it>
-In-Reply-To: <4749A6DF.40106@absorb.it>
+Message-ID: <4749C420.4010308@absorb.it>
+Date: Mon, 26 Nov 2007 00:21:12 +0530
+From: rene <batman@absorb.it>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Subject: Re: [B.A.T.M.A.N.] batmand still doesn't start the right way
+References: <4747BE35.3040307@absorb.it>	<200711251732.00986.axel@open-mesh.net>
+	<4749A6DF.40106@absorb.it> <200711251855.23693.axel@open-mesh.net>
+In-Reply-To: <200711251855.23693.axel@open-mesh.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711251855.23693.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,47 +23,82 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open
 
 Hi,
 
-On Sonntag 25 November 2007, rene wrote:
-> Hi,
->
-> Axel Neumann wrote:
-> > According to your log files the 144 batman does send OGM and also
-> > receives them. For me that does not look like a problem with batman.
-> >
-> > If it is not HW related, it might still be a problem with the alias
-> > interfaces.
->
-> Maybe, but this is happening on a range of different hardware. At least
-> on WRAP(x86), Buffalo and Linksys, all running OpenWrt, the WRAPs a
-> kamikaze(half-year-old) and the BuffaloS and LinkSysS running
-> Whiterussian0.9.
-> Any Problems about the usage of alias-interfaces known on these platforms?
->
-> Thanks for your reply, the one APs wasn't changed and still has no OGMs
-> sended - so further debugging is possible, if somebody suggests how...
+tested the ping, interestingly it used mostly the wrong IP for the
+interface (eth1:1 is 192.168.40.144, not 192.168.41(!).144)
 
-try to let another application use the suspect alias interface.
-for example ping from AP144:
-ping -I 192.168.41.144 192.168.41.43
+CASE1 - broken
+----------------------------------------------------------------------
+root@144:~# ./ping -I eth1:1 192.168.40.43
+PING 192.168.40.43 (192.168.40.43) from 192.168.41.144 eth1:1: 56(84)
+bytes of data.
+64 bytes from 192.168.40.43: icmp_seq=1 ttl=64 time=3.46 ms
+64 bytes from 192.168.40.43: icmp_seq=2 ttl=64 time=1.47 ms
+64 bytes from 192.168.40.43: icmp_seq=3 ttl=64 time=5.90 ms
+64 bytes from 192.168.40.43: icmp_seq=4 ttl=64 time=1.40 ms
+64 bytes from 192.168.40.43: icmp_seq=5 ttl=64 time=1.40 ms
+...
 
--I specifies the outgoing interface. what does tcpdump report then?
+a tcpdump looks like:
+root@144:~# tcpdump -i eth1:1 proto \\icmp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth1:1, link-type EN10MB (Ethernet), capture size 96 bytes
+18:33:29.868686 IP 192.168.1.144 > 192.168.40.43: ICMP echo request, id
+48764, seq 1, length 64
+18:33:29.869863 IP 192.168.40.43 > 192.168.1.144: ICMP echo reply, id
+48764, seq 1, length 64
 
-ciao,
-axel
+CASE2 - ok
+----------------------------------------------------------------------
+root@144:~# ./ping -I eth1:1 192.168.40.43
+PING 192.168.40.43 (192.168.40.43) from 192.168.40.144 eth1:1: 56(84)
+bytes of data.
+64 bytes from 192.168.40.43: icmp_seq=1 ttl=57 time=7.91 ms
+64 bytes from 192.168.40.43: icmp_seq=2 ttl=57 time=7.77 ms
 
-PS.:
-if you need a non-busybox version of ping for buffalo/linksys:
-http://downloads.open-mesh.net/misc/handy-tools/wrt-freifunk/ping.tgz
-and i386/wrap
-http://downloads.open-mesh.net/misc/handy-tools/sources/iputils-current/ping
-
-
->
-> Regards,
-> Rene
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+root@144:~# tcpdump -i eth1:1 proto \\icmp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth1:1, link-type EN10MB (Ethernet), capture size 96 bytes
+18:29:51.015329 IP 192.168.40.144 > 192.168.40.43: ICMP echo request, id
+13432, seq 23, length 64
+18:29:52.025343 IP 192.168.40.144 > 192.168.40.43: ICMP echo request, id
+13432, seq 24, length 64
 
 
+CASE3 - ?? (the IP is right but packages using the wrong interface)
+----------------------------------------------------------------------
+root@144:~# ./ping -I 192.168.40.144 192.168.40.43
+PING 192.168.40.43 (192.168.40.43) from 192.168.40.144 : 56(84) bytes of
+data.
+64 bytes from 192.168.40.43: icmp_seq=5 ttl=57 time=2116 ms
+64 bytes from 192.168.40.43: icmp_seq=6 ttl=57 time=1117 ms
+64 bytes from 192.168.40.43: icmp_seq=7 ttl=57 time=119 ms
+
+and tcpdump:
+root@144:~# tcpdump -i eth1:1 proto \\icmp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth1:1, link-type EN10MB (Ethernet), capture size 96 bytes
+
+0 packets captured
+0 packets received by filter
+0 packets dropped by kernel
+root@144:~# tcpdump -i vlan1:1 proto \\icmp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on vlan1:1, link-type EN10MB (Ethernet), capture size 96 bytes
+18:43:21.685189 IP 192.168.40.144 > 192.168.40.43: ICMP echo request, id
+62214, seq 30, length 64
+18:43:21.735541 IP 192.168.40.43 > 192.168.40.144: ICMP echo reply, id
+62214, seq 30, length 64
+18:43:22.695179 IP 192.168.40.144 > 192.168.40.43: ICMP echo request, id
+62214, seq 31, length 64
+1
+
+------------------------------------------------------------------------
+
+Wow, seems a little disturbed the whole thing... Another Router showed
+the same transmission problem with BATMAN, this time one that had only
+one interface. Solving the problem seems somehow possible by killing
+batmand (not removing the interfaces), waiting a few seconds and
+starting batmand. after a few trials it works :)
+
+Regards,
+Rene
