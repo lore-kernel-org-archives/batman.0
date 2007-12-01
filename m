@@ -1,16 +1,14 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] rv791 <---> rv824 incompatible?
-Date: Sat, 1 Dec 2007 19:26:12 +0100
-References: <4750C29B.6030708@leipzig.freifunk.net>
-	<200712011837.46218.lindner_marek@yahoo.de>
-	<4751A22D.3060207@leipzig.freifunk.net>
-In-Reply-To: <4751A22D.3060207@leipzig.freifunk.net>
+From: Holger Levsen <holger@layer-acht.org>
+Subject: Re: [B.A.T.M.A.N.] batmand in debian
+Date: Sat, 1 Dec 2007 20:12:01 +0100
+References: <200712011234.13058.holger@layer-acht.org>
+	<200712011839.28187.lindner_marek@yahoo.de>
+In-Reply-To: <200712011839.28187.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: multipart/signed; boundary="nextPart1373936.IW6dHIFuEl";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712011926.12718.lindner_marek@yahoo.de>
+Message-Id: <200712012012.01657.holger@layer-acht.org>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,28 +22,40 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+--nextPart1373936.IW6dHIFuEl
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> The rv791 routes fine, but gateway make some Problems. So we included
-> this testet version and only request the users that _want_ to use
-> batman-gateway-tunnel tu update their batmand. (updatecheck is
-> includet)  -> now our Plans are broken... :-(
+Hi Marek,
 
-Sorry about that.
-We don't do it to explicitly annoy our users but to minimize future problems. 
-But to do that change now than after the final release.
+On Saturday 01 December 2007 18:39, Marek Lindner wrote:
+> great news ! Thanks to all people involved in that process. :-)
+
+Wesley did a lot :-)
+
+> > Which means, we can now prepare 0.3 for Debian/experimental, or to
+> > unstable if you you think that's better.
+>  I think unstable would be fine for the moment or any objections ?
+
+Then 0.2 would be "gone".. as I understood you, you have these two branches=
+=20
+for a reason... if not, let's go for 0.3~svn_revision in unstable.
 
 
-> Why you dont enlarge the compat# from 4 to 5, or so?
-> Thats confusing, sorry...
+regards,
+	Holger
 
-That would not change the problem - here is why:
-Before rev812 the version (compat) field was the 10th byte in the header. Now 
-it is the first byte. Even if the newer versions increment their version 
-field the older version will look for it at the wrong place.
+--nextPart1373936.IW6dHIFuEl
+Content-Type: application/pgp-signature
 
-If we don't have the version field at the first byte all future header changes 
-may "move" the version field around (same as now). That is why we have to do 
-it once and hopefully never again.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Regards,
-Marek
+iD8DBQBHUbIBUHLQNqxYNSARAvjXAJ9Bq3+ckyZ+DebkhRCcuutC0OIOzwCgoXka
+SS7W4aa6GQRyaW6TWAyity4=
+=ixjS
+-----END PGP SIGNATURE-----
+
+--nextPart1373936.IW6dHIFuEl--
