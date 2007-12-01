@@ -1,14 +1,14 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] rv791 <---> rv824 incompatible?
-Date: Sat, 1 Dec 2007 18:37:46 +0100
-References: <4750C29B.6030708@leipzig.freifunk.net>
-In-Reply-To: <4750C29B.6030708@leipzig.freifunk.net>
+Subject: Re: [B.A.T.M.A.N.] batmand in debian
+Date: Sat, 1 Dec 2007 18:39:28 +0100
+References: <200712011234.13058.holger@layer-acht.org>
+In-Reply-To: <200712011234.13058.holger@layer-acht.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712011837.46218.lindner_marek@yahoo.de>
+Message-Id: <200712011839.28187.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,12 +23,18 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-> > [   7946500] Is an internet gateway (class 1)
-> > [   7946510] Drop packet: incompatible batman version (105)
+Hi,
 
-In revision 812 the header format was changed due to future compability issues 
-(the version field is now the first field in the header).
-I'm sorry about the inconvenience -  it wont happen too often.
+> batmand is now in Debian/unstable, see
+> http://packages.qa.debian.org/batmand
+
+great news ! Thanks to all people involved in that process. :-)
+
+
+> Which means, we can now prepare 0.3 for Debian/experimental, or to unstable
+> if you you think that's better.
+
+ I think unstable would be fine for the moment or any objections ?
 
 Greetings,
 Marek
