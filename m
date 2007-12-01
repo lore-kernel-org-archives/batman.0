@@ -1,11 +1,14 @@
-From: Holger Levsen <holger@layer-acht.org>
-Date: Sat, 1 Dec 2007 12:34:07 +0100
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] rv791 <---> rv824 incompatible?
+Date: Sat, 1 Dec 2007 18:37:46 +0100
+References: <4750C29B.6030708@leipzig.freifunk.net>
+In-Reply-To: <4750C29B.6030708@leipzig.freifunk.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart56978374.Pm2yUS9l0K";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200712011234.13058.holger@layer-acht.org>
-Subject: [B.A.T.M.A.N.] batmand in debian
+Content-Disposition: inline
+Message-Id: <200712011837.46218.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,36 +20,15 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
-
---nextPart56978374.Pm2yUS9l0K
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi,
-
-batmand is now in Debian/unstable, see http://packages.qa.debian.org/batmand
-:-)
-
-Which means, we can now prepare 0.3 for Debian/experimental, or to unstable=
- if=20
-you you think that's better.
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-regards,
-	Holger
+> > [   7946500] Is an internet gateway (class 1)
+> > [   7946510] Drop packet: incompatible batman version (105)
 
---nextPart56978374.Pm2yUS9l0K
-Content-Type: application/pgp-signature
+In revision 812 the header format was changed due to future compability issues 
+(the version field is now the first field in the header).
+I'm sorry about the inconvenience -  it wont happen too often.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHUUa1UHLQNqxYNSARAjF9AJsGgOicKMXRihZz7M2p4IyH3C5A/wCgqUHm
-lXh9P00T1zMC9BYeGhSIqhA=
-=qZvO
------END PGP SIGNATURE-----
-
---nextPart56978374.Pm2yUS9l0K--
+Greetings,
+Marek
