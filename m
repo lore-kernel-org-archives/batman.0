@@ -1,14 +1,14 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batmand in debian
-Date: Sat, 1 Dec 2007 18:39:28 +0100
-References: <200712011234.13058.holger@layer-acht.org>
-In-Reply-To: <200712011234.13058.holger@layer-acht.org>
+Subject: Re: [B.A.T.M.A.N.] two-way-tunnel quirks
+Date: Sat, 1 Dec 2007 18:34:54 +0100
+References: <20071130232852.GC3934@apoderado.ometepe.net>
+In-Reply-To: <20071130232852.GC3934@apoderado.ometepe.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712011839.28187.lindner_marek@yahoo.de>
+Message-Id: <200712011834.54327.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,18 +23,22 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-Hi,
+> now i found an issue which i didn't relate with batman
+> first. I got several reports of users, hotmail/msn/live.com
+> not being accessible anymore...
+> Yesterday i found out theres also problems with some pop server
+> not beeing accessible, but everything works fine directly at the
+> upstream gw, without any batmand involved.
 
-> batmand is now in Debian/unstable, see
-> http://packages.qa.debian.org/batmand
+Unfortunately, it is too few information to do anything about it. Could you 
+describe your experiences in more detail. Here some questions on the way:
 
-great news ! Thanks to all people involved in that process. :-)
-
-
-> Which means, we can now prepare 0.3 for Debian/experimental, or to unstable
-> if you you think that's better.
-
- I think unstable would be fine for the moment or any objections ?
+- When did you notice the problem for the first time ?
+- Which revision was used ?
+- What exactely is your problem ?
+- Can you describe it in way that i can reproduce it ?
 
 Greetings,
 Marek
+
+
