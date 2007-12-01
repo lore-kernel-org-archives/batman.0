@@ -1,10 +1,11 @@
-Message-ID: <4750C29B.6030708@leipzig.freifunk.net>
-Date: Sat, 01 Dec 2007 03:10:35 +0100
-From: tetzlav <tetzlav@leipzig.freifunk.net>
+From: Holger Levsen <holger@layer-acht.org>
+Date: Sat, 1 Dec 2007 12:34:07 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: multipart/signed; boundary="nextPart56978374.Pm2yUS9l0K";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] rv791 <---> rv824 incompatible?
+Message-Id: <200712011234.13058.holger@layer-acht.org>
+Subject: [B.A.T.M.A.N.] batmand in debian
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,33 +19,34 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-> root@17-21:~# batmand
-> -v                                                                                                                                                    
->  
-> B.A.T.M.A.N. 0.3-beta rv791 (compatibility version 4)
-> root@17-21:~# batmand -cd4
-> [  33051930] Received BATMAN packet via NB: 105.61.17.32, IF: eth1:bat
-> 105.61.17.21 (from OG: 4.0.50.0, via old OG: 31.213.16.210, seqno
-> 4384, tq 17, TTL 61, V 61, UDF 0, IDF 1)
-> [  33051930] Is an internet gateway (class 105)
-> [  33051930] Drop packet: incompatible batman version (61)
+--nextPart56978374.Pm2yUS9l0K
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi,
+
+batmand is now in Debian/unstable, see http://packages.qa.debian.org/batmand
+:-)
+
+Which means, we can now prepare 0.3 for Debian/experimental, or to unstable=
+ if=20
+you you think that's better.
 
 
----
-> root@17-32:~# batmand -v
-> WARNING: You are using the unstable batman branch. If you are
-> interested in *using* batman get the latest stable release
-> !                                                   
-> B.A.T.M.A.N. 0.3-beta rv824 (compatibility version 4)
-> root@17.32:~# batmand -cd4
-> [   7946500] Received BATMAN packet via NB: 105.61.17.21, IF: eth1:bat
-> 105.61.17.32 (from OG: 0.254.113.181, via old OG: 0.4.117.105, seqno
-> 26941, tq 61, TTL 18, V 105, UDF 0, IDF
-> 0)                                                                                                                                                                     
->
-> [   7946500] Is an internet gateway (class 1)
-> [   7946510] Drop packet: incompatible batman version (105)
+regards,
+	Holger
 
-Regards
-tetzlav
+--nextPart56978374.Pm2yUS9l0K
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHUUa1UHLQNqxYNSARAjF9AJsGgOicKMXRihZz7M2p4IyH3C5A/wCgqUHm
+lXh9P00T1zMC9BYeGhSIqhA=
+=qZvO
+-----END PGP SIGNATURE-----
+
+--nextPart56978374.Pm2yUS9l0K--
