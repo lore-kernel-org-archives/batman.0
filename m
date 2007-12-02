@@ -1,16 +1,15 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batmand in debian
-Date: Sun, 2 Dec 2007 15:59:30 +0100
-References: <200712011234.13058.holger@layer-acht.org>
-	<200712011839.28187.lindner_marek@yahoo.de>
-	<200712012012.01657.holger@layer-acht.org>
-In-Reply-To: <200712012012.01657.holger@layer-acht.org>
+From: Axel Neumann <axel@open-mesh.net>
+Subject: Re: [B.A.T.M.A.N.] two-way-tunnel quirks
+Date: Sun, 2 Dec 2007 19:54:24 +0100
+References: <20071130232852.GC3934@apoderado.ometepe.net>
+	<200712011834.54327.lindner_marek@yahoo.de>
+	<20071202043216.GB3923@apoderado.ometepe.net>
+In-Reply-To: <20071202043216.GB3923@apoderado.ometepe.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: multipart/alternative; boundary="Boundary-01=_g9vUHd0fISwup7b"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712021559.30672.lindner_marek@yahoo.de>
+Message-Id: <200712021954.24310.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,22 +23,68 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+--Boundary-01=_g9vUHd0fISwup7b
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: 7bit
 
-Hi,
+Hello,
 
-> > > Which means, we can now prepare 0.3 for Debian/experimental, or to
-> > > unstable if you you think that's better.
-> >
-> >  I think unstable would be fine for the moment or any objections ?
+...
 >
-> Then 0.2 would be "gone".. as I understood you, you have these two branches
-> for a reason... if not, let's go for 0.3~svn_revision in unstable.
+> > - Can you describe it in way that i can reproduce it ?
+>
+>   A---B---C
+>
+> A: your computer
+>
+> B: bmxd_rv804  client node      }
+>                                  }running 2-way-tunnel
+> C: bmxd_rv804    gw node        }
 
-yes - 0.3 is not stable yet. I'm not in a hurry. If you think it is better to 
-go with experimental first I wont object to that. 
-Another option would be to delay this question for a month or so. I know that 
-during the CCC event (at the end of the yea)r a lot of testing and hacking is 
-planned. Lets see where we are after that.
+I am just curious, can you confirm if the following correctly 
+describes the HNA/SNAT of your setup:
 
-Greetings,
-Marek
+for the two-way-tunnel setup:
+ - you were doing SNAT at Cs' upstream interface AND at Bs' bat0 interface 
+
+for the one-way tunnel setup:
+ - you are only doing SNAT at Cs' upstream interface 
+ - and additionally an HNA announcement by B for the address used by A
+
+thanks,
+axel
+--Boundary-01=_g9vUHd0fISwup7b
+Content-Type: text/html;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: 7bit
+
+<html><head><meta name="qrichtext" content="1" /></head><body style="font-size:10pt;font-family:Bitstream Vera Sans Mono">
+<p>Hello,</p>
+<p></p>
+<p>...</p>
+<p>&gt;</p>
+<p>&gt; &gt; - Can you describe it in way that i can reproduce it ?</p>
+<p>&gt;</p>
+<p>&gt;   A---B---C</p>
+<p>&gt;</p>
+<p>&gt; A: your computer</p>
+<p>&gt;</p>
+<p>&gt; B: bmxd_rv804  client node      }</p>
+<p>&gt;                                  }running 2-way-tunnel</p>
+<p>&gt; C: bmxd_rv804    gw node        }</p>
+<p></p>
+<p>I am just curious, can you confirm if the following correctly </p>
+<p>describes the HNA/SNAT of your setup:</p>
+<p></p>
+<p>for the two-way-tunnel setup:</p>
+<p> - you were doing SNAT at Cs' upstream interface AND at Bs' bat0 interface </p>
+<p></p>
+<p>for the one-way tunnel setup:</p>
+<p> - you are only doing SNAT at Cs' upstream interface </p>
+<p> - and additionally an HNA announcement by B for the address used by A</p>
+<p></p>
+<p>thanks,</p>
+<p>axel</p>
+</body></html>
+--Boundary-01=_g9vUHd0fISwup7b--
