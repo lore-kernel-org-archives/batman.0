@@ -1,14 +1,15 @@
-Date: Sat, 1 Dec 2007 22:32:16 -0600
+Date: Sat, 1 Dec 2007 23:39:16 -0600
 From: Jan Hetges <tran@ms20.net>
 Subject: Re: [B.A.T.M.A.N.] two-way-tunnel quirks
-Message-ID: <20071202043216.GB3923@apoderado.ometepe.net>
+Message-ID: <20071202053915.GC3923@apoderado.ometepe.net>
 References: <20071130232852.GC3934@apoderado.ometepe.net>
 	<200712011834.54327.lindner_marek@yahoo.de>
+	<200712012141.59334.axel@open-mesh.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="VrqPEDrXMn8OVzN4"
+	protocol="application/pgp-signature"; boundary="NKoe5XOeduwbEQHU"
 Content-Disposition: inline
-In-Reply-To: <200712011834.54327.lindner_marek@yahoo.de>
+In-Reply-To: <200712012141.59334.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,50 +24,45 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
---VrqPEDrXMn8OVzN4
+--NKoe5XOeduwbEQHU
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Dec 01, 2007 at 06:34:54PM +0100, Marek Lindner wrote:
+Hi
+On Sat, Dec 01, 2007 at 09:41:59PM +0100, Axel Neumann wrote:
+> perhaps this has something to do with the reduced maximum-transfer-unit (=
+mtu)=20
+> which ist left for the tunnel interfaces. Since the one-way-tunnel do onl=
+y=20
+> tunnel the upling-traffic but NOT tunnel the downlink traffic this is not=
+ a=20
+> problem when trying to connect to a intractable www server.
 >=20
-> > now i found an issue which i didn't relate with batman
-> > first. I got several reports of users, hotmail/msn/live.com
-> > not being accessible anymore...
-> > Yesterday i found out theres also problems with some pop server
-> > not beeing accessible, but everything works fine directly at the
-> > upstream gw, without any batmand involved.
+> Did I understand you correct, that these problems only occurs when surfin=
+g to=20
+> a few webservers, but not to all webservers?
+exactly
 >=20
-> Unfortunately, it is too few information to do anything about it. Could y=
-ou=20
-> describe your experiences in more detail. Here some questions on the way:
->=20
-> - When did you notice the problem for the first time ?
-user reports for about 3 weeks
-> - Which revision was used ?
-probably rv777, i'm running batmand-exp only since then
-> - What exactely is your problem ?
-web-browsers say something like "hotmail/msn/live.com dropped the
-connection"
-> - Can you describe it in way that i can reproduce it ?
-
-  A---B---C
-
-A: your computer
-
-B: bmxd_rv804  client node      }
-                                 }running 2-way-tunnel
-C: bmxd_rv804    gw node        }
-
-and now try to browse www.hotmail.com, but i'm not sure if
-you can reproduce it, because the high latency (>640ms) of
-our sat-uplink might be also involved=20
+> Can you try what happens if you reduce the mtu of the outgoing interface =
+at=20
+> the upstream gateway (e.g. ifconfig ethX mtu 1400). I think there might b=
+e 3=20
+> possible results:
+>  1) everything remains as before, there is another reason
+ok, set mtu on upstream gw to 1400, and everything remains as before :-(
+(didn't check at the upstream gw yet, but from inside the mesh i can
+also access hotmail when 1-way-tunnel, and not access hotmail when
+2-way-tunnel)
+and tried another one with mtu 1200... still the same, seems not
+related.
 
 cheers
 
   --Jan
 
---VrqPEDrXMn8OVzN4
+
+--NKoe5XOeduwbEQHU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -74,9 +70,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHUjVQlTtvZdk47D4RAiiOAJ9HWtddx2ygsyTks9D41OoY1YQSkQCgg9Qj
-MtBsSlAIyw6S/HBPsRk/cSI=
-=63P8
+iD8DBQFHUkUDlTtvZdk47D4RAoUkAJ4msbaZl4slQMHUjriffcq+vfdeagCgi5qW
+FBTa9q0PeoRMmQbz44Sp/D4=
+=jKaq
 -----END PGP SIGNATURE-----
 
---VrqPEDrXMn8OVzN4--
+--NKoe5XOeduwbEQHU--
