@@ -1,16 +1,16 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] two-way-tunnel quirks
-Date: Sun, 2 Dec 2007 19:54:24 +0100
-References: <20071130232852.GC3934@apoderado.ometepe.net>
-	<200712011834.54327.lindner_marek@yahoo.de>
-	<20071202043216.GB3923@apoderado.ometepe.net>
-In-Reply-To: <20071202043216.GB3923@apoderado.ometepe.net>
+References: <20071130232852.GC3934@apoderado.ometepe.net>	<200712011834.54327.lindner_marek@yahoo.de>	<20071202043216.GB3923@apoderado.ometepe.net>
+	<200712021954.24310.axel@open-mesh.net>
+In-Reply-To: <200712021954.24310.axel@open-mesh.net>
+Subject: RE: [B.A.T.M.A.N.] two-way-tunnel quirks
+Date: Mon, 3 Dec 2007 18:47:14 +0100
+Message-ID: <000001c835d4$8cccccb0$a6666610$@com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="Boundary-01=_g9vUHd0fISwup7b"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712021954.24310.axel@open-mesh.net>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0001_01C835DC.EE9860A0"
+Content-Language: en-us
+From: Predrag Balorda <predrag.balorda@gmail.com>
+Reply-To: pele@balorda.com,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -21,70 +21,146 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@open-mesh.net>
 
---Boundary-01=_g9vUHd0fISwup7b
+This is a multipart message in MIME format.
+
+------=_NextPart_000_0001_01C835DC.EE9860A0
 Content-Type: text/plain;
-  charset="iso-8859-6"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+Batman-0.3 and batman-adv disappeared from the ftp server?
 
-...
->
-> > - Can you describe it in way that i can reproduce it ?
->
->   A---B---C
->
-> A: your computer
->
-> B: bmxd_rv804  client node      }
->                                  }running 2-way-tunnel
-> C: bmxd_rv804    gw node        }
+ 
 
-I am just curious, can you confirm if the following correctly 
-describes the HNA/SNAT of your setup:
+A major re-naming effort underway perhaps?
 
-for the two-way-tunnel setup:
- - you were doing SNAT at Cs' upstream interface AND at Bs' bat0 interface 
+ 
 
-for the one-way tunnel setup:
- - you are only doing SNAT at Cs' upstream interface 
- - and additionally an HNA announcement by B for the address used by A
+Pele
 
-thanks,
-axel
---Boundary-01=_g9vUHd0fISwup7b
+ 
+
+P.S. I've grabbed some sources just in case your ftp server is dying J
+
+
+------=_NextPart_000_0001_01C835DC.EE9860A0
 Content-Type: text/html;
-  charset="iso-8859-6"
-Content-Transfer-Encoding: 7bit
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-<html><head><meta name="qrichtext" content="1" /></head><body style="font-size:10pt;font-family:Bitstream Vera Sans Mono">
-<p>Hello,</p>
-<p></p>
-<p>...</p>
-<p>&gt;</p>
-<p>&gt; &gt; - Can you describe it in way that i can reproduce it ?</p>
-<p>&gt;</p>
-<p>&gt;   A---B---C</p>
-<p>&gt;</p>
-<p>&gt; A: your computer</p>
-<p>&gt;</p>
-<p>&gt; B: bmxd_rv804  client node      }</p>
-<p>&gt;                                  }running 2-way-tunnel</p>
-<p>&gt; C: bmxd_rv804    gw node        }</p>
-<p></p>
-<p>I am just curious, can you confirm if the following correctly </p>
-<p>describes the HNA/SNAT of your setup:</p>
-<p></p>
-<p>for the two-way-tunnel setup:</p>
-<p> - you were doing SNAT at Cs' upstream interface AND at Bs' bat0 interface </p>
-<p></p>
-<p>for the one-way tunnel setup:</p>
-<p> - you are only doing SNAT at Cs' upstream interface </p>
-<p> - and additionally an HNA announcement by B for the address used by A</p>
-<p></p>
-<p>thanks,</p>
-<p>axel</p>
-</body></html>
---Boundary-01=_g9vUHd0fISwup7b--
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+p
+	{mso-style-priority:99;
+	mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:"Calibri","sans-serif";
+	color:#1F497D;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-size:10.0pt;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:11.0pt;font-family:"Calibri","sans-serif";
+color:#1F497D'>Batman-0.3 and batman-adv disappeared from the ftp =
+server?<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:11.0pt;font-family:"Calibri","sans-serif";
+color:#1F497D'><o:p>&nbsp;</o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:11.0pt;font-family:"Calibri","sans-serif";
+color:#1F497D'>A major re-naming effort underway =
+perhaps?<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:11.0pt;font-family:"Calibri","sans-serif";
+color:#1F497D'><o:p>&nbsp;</o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:11.0pt;font-family:"Calibri","sans-serif";
+color:#1F497D'>Pele<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:11.0pt;font-family:"Calibri","sans-serif";
+color:#1F497D'><o:p>&nbsp;</o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:11.0pt;font-family:"Calibri","sans-serif";
+color:#1F497D'>P.S. I&#8217;ve grabbed some sources just in case your =
+ftp
+server is dying </span><span =
+style=3D'font-size:11.0pt;font-family:Wingdings;
+color:#1F497D'>J</span><span =
+style=3D'font-size:11.0pt;font-family:"Calibri","sans-serif";
+color:#1F497D'><o:p></o:p></span></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0001_01C835DC.EE9860A0--
+
