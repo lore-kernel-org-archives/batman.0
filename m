@@ -1,16 +1,16 @@
 From: Axel Neumann <axel@open-mesh.net>
 Subject: Re: [B.A.T.M.A.N.] two-way-tunnel quirks
-Date: Tue, 4 Dec 2007 10:05:46 +0100
+Date: Tue, 4 Dec 2007 11:01:06 +0100
 References: <20071130232852.GC3934@apoderado.ometepe.net>
-	<200712021954.24310.axel@open-mesh.net>
-	<20071204040309.GA3827@apoderado.ometepe.net>
-In-Reply-To: <20071204040309.GA3827@apoderado.ometepe.net>
+	<200712011834.54327.lindner_marek@yahoo.de>
+	<20071202043216.GB3923@apoderado.ometepe.net>
+In-Reply-To: <20071202043216.GB3923@apoderado.ometepe.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-6"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712041005.46329.axel@open-mesh.net>
+Message-Id: <200712041101.06161.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,69 +26,89 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open
 
 Hi,
 
-On Dienstag 04 Dezember 2007, Jan Hetges wrote:
-> Hi Axel
->
-> On Sun, Dec 02, 2007 at 07:54:24PM +0100, Axel Neumann wrote:
-> > ...
+On Sonntag 02 Dezember 2007, Jan Hetges wrote:
+> On Sat, Dec 01, 2007 at 06:34:54PM +0100, Marek Lindner wrote:
+> > > now i found an issue which i didn't relate with batman
+> > > first. I got several reports of users, hotmail/msn/live.com
+> > > not being accessible anymore...
+> > > Yesterday i found out theres also problems with some pop server
+> > > not beeing accessible, but everything works fine directly at the
+> > > upstream gw, without any batmand involved.
 > >
-> > > > - Can you describe it in way that i can reproduce it ?
-> > >
-> > >   A---B---C
-> > >
-> > > A: your computer
-> > >
-> > > B: bmxd_rv804  client node      }
-> > >                                  }running 2-way-tunnel
-> > > C: bmxd_rv804    gw node        }
+> > Unfortunately, it is too few information to do anything about it. Could
+> > you describe your experiences in more detail. Here some questions on the
+> > way:
 > >
-> > I am just curious, can you confirm if the following correctly
-> > describes the HNA/SNAT of your setup:
-> >
-> > for the two-way-tunnel setup:
-> >  - you were doing SNAT at Cs' upstream interface AND at Bs' bat0
-> > interface
+> > - When did you notice the problem for the first time ?
 >
-> MASQUERADE
+> user reports for about 3 weeks
 >
-> > for the one-way tunnel setup:
-> >  - you are only doing SNAT at Cs' upstream interface
+> > - Which revision was used ?
 >
-> no, i still do MASQUERADE also on Bs' bat0, because i was too lazy to
-> comment it out ;-)
-
-Interesting to know that this is possible, because (as I understand):
-
-- Internet Uplink packets are MASQUERADEd (*) when being entunnelled at Bs' 
-bat0 interface and a second time at your upstream GW interface
-
- A          B                C      
-eth0    eth0 bat0        bat0 dsl0   Internet
- >---------->*===============>*--------->
-        MASQUERADE       MASQUERADE
-
-
-- Downlink packets are de-MASQUERADED (*) at Cs' upstream interface (dsl0).
-But using one-way-tunnel, the Downlink packets are NOT routed via the 
-bat-tunnel, therefore downlick packets will not come out of Bs' bat0 
-interface and (I thought) would not be de-MASQERADEd (?) !
-
- A          B                C      
-eth0    eth0 wlan0      wlan0 dsl0   Internet
- <----------<?---------------<*---------<
-       de-MASQUERDE?   de-MASQUERADE 
-
-
-catched my draft ? Please correct me if I misunderstood!
-
-ciao
-/axel 
-
-
+> probably rv777, i'm running batmand-exp only since then
 >
-> >  - and additionally an HNA announcement by B for the address used by A
+> > - What exactely is your problem ?
 >
-> yes, but also with 2-way-tunnel (because i want net internal routing)
+> web-browsers say something like "hotmail/msn/live.com dropped the
+> connection"
+>
+> > - Can you describe it in way that i can reproduce it ?
+>
+>   A---B---C
+>
+> A: your computer
+>
+> B: bmxd_rv804  client node      }
+>                                  }running 2-way-tunnel
+> C: bmxd_rv804    gw node        }
+>
+> and now try to browse www.hotmail.com, but i'm not sure if
+> you can reproduce it, because the high latency (>640ms) of
+> our sat-uplink might be also involved
+
+theres nothing you cannot do with linux:
+
+on my upstream server:
+|isix:~# tc qdisc add dev eth5 root netem delay 800ms
+
+on my notebook:
+|smart linux # ping -n google.de
+|PING google.de (216.239.59.104) 56(84) bytes of data.
+|64 bytes from 216.239.59.104: icmp_seq=1 ttl=242 time=852 ms
+
+the interesting:
+|smart linux # ping -n msn.com
+|PING msn.com (207.68.172.246) 56(84) bytes of data.
+|--- msn.com ping statistics ---
+|7 packets transmitted, 0 received, 100% packet loss, time 5998ms
+
+|smart linux # ping -n live.com
+|PING live.com (207.46.30.34) 56(84) bytes of data.
+|--- live.com ping statistics ---
+|7 packets transmitted, 0 received, 100% packet loss, time 5998ms
+
+remove artificial delay again:
+|isix:~# tc qdisc del dev eth5 root netem delay 800ms
+
+still the problematic ones you mentioned do not reply to icmp pings.
+|smart linux # ping -n live.com
+|PING live.com (207.46.30.34) 56(84) bytes of data.
+|--- live.com ping statistics ---
+|4 packets transmitted, 0 received, 100% packet loss, time 2998ms
+
+
+|smart linux # ping -n open-mesh.net
+|PING open-mesh.net (88.198.145.69) 56(84) bytes of data.
+|64 bytes from 88.198.145.69: icmp_seq=1 ttl=54 time=29.4 ms
+
+
+Still I could not yet reproduce the problem but I am quite sure
+that this has something to do with the msn&co.coms' reluctance to 
+respond to icmp messages.
+
+ciao,
+axel
+
 >
 > cheers
 >
