@@ -1,13 +1,16 @@
-From: Axel Neumann <axel@open-mesh.net>
-Date: Mon, 10 Dec 2007 12:19:23 +0100
+Date: Mon, 10 Dec 2007 14:50:10 -0600
+From: Jan Hetges <tran@ms20.net>
+Subject: Re: [B.A.T.M.A.N.] exp-rv811 and exp-864 non-interoperable?
+Message-ID: <20071210205010.GB8878@apoderado.ometepe.net>
+References: <20071206023407.GA4041@apoderado.ometepe.net>
+	<475835EF.1030306@leipzig.freifunk.net>
+	<20071206203107.GA4116@apoderado.ometepe.net>
+	<000001c83b09$ca292e20$5e7b8a60$@com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="uQr8t48UFsdbeI+V"
 Content-Disposition: inline
-Message-Id: <200712101219.23274.axel@open-mesh.net>
-Subject: [B.A.T.M.A.N.] In-the-field Protocol Migration (was: exp-rv811 and
-	exp-864 non-interoperable?)
+In-Reply-To: <000001c83b09$ca292e20$5e7b8a60$@com>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,112 +22,54 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: pele@balorda.com, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi,
 
-On Montag 10 Dezember 2007, Predrag Balorda wrote:
+--uQr8t48UFsdbeI+V
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi
+first: could you please open a new tread, istead of replying OT ?!
+On Mon, Dec 10, 2007 at 09:50:57AM +0100, Predrag Balorda wrote:
 > Before I go round upgrading my routers, are these two incompatible because
-> it seems so? 
-Yes, everyting < 863 is incompatible with revisions >= 863
-> If so then I'll need to figure out the exact order of 
-> upgrading (i.e furthest first - I don't want to have to climb roofs or walk
-> too long)
+> it seems so? If so then I'll need to figure out the exact order of upgrad=
+ing
+> (i.e furthest first - I don't want to have to climb roofs or walk too lon=
+g)
+if you read the ChangeLog, you see:=20
+12/09/07 15:48:20 863 863    axel   Incremented Compatibility Version !!
 
+cheers=20
 
-The following should be possible even without any upgrading order - allowing a 
-completely seamless, in-the-field protocol migration. May sound a bit 
-oversized but is probably the only way for large-chaotic mesh networks.
-
-In short this approach involves three steps:
-
-1) Install the new batman version in parallel to the existing one 
-   (ensure independent operation of the two protocols, more details below...)
-
-2) Test the new batman version
-
-3) Disable the old batman version
-
-Now the long and detailed howto. Don't be afraid it turns out to be much 
-easier than it first sounds.
-
-0) You keep your current revision running as it is.
-
-1) Install the new version in parallel to the existing one. 
-   Do NOT enable GW-client mode (-r of -p) before step 2. 
-   Configure the new version with independent:
-    a) alias interfaces and IP ranges 
-      ( e.g. use eth0:bmx 103.x.y.z/8 in addition to eth0:bat 105.x.y.z/8 )
-
-Ensure that the old batmand gets (re-)started after the new alias interfaces 
-and ip ranges have been configured. Thus, either 
- - you only restart the old batmand after the new interface configuration or
- - you put the bat and bmx alias-interface configuration in your startup
-   scripts and reboot your device.
-The reason for this is that batman learns about the networks of a node during 
-its startup process and takes care that packets towards these networks are 
-not routed into the batman tunnel. Because we don't want the 103.0.0.0/8 
-traffic (related to the new batmand) to be routed via the bat0 tunnel of the 
-old batmand, we have to make sure that the old batmand knows about it.
-
-    b) binary name (e.g. rename the binary to /usr/sbin/bmxd)
-    c) protocol port numbers ( e.g. use 14305 instead of 4305 )
-    d) ip preference rules (e.g. use 14xxx instead of 6xxx)
-    e) ip routing tables (e.g. use table 144-148 instead of 64-68 )
-    f) gateway tunnel ip ranges 
-       (e.g. use bat1 169.254.128.0/22 instead of bat0 169.254.0.0/22 )
-    g) unix-socket identifier to access debug messages
- 
-   The good thing is, the --neta option cares for task 
-   c,d,e,f,g automatically, so the only tasks left are the binary names and 
-   the interface configuration (and of course the annoying firewall
-   configuration)
-
-2) Now - when the new version is installed everywhere - it can be tested. 
-So fare GW-Client mode should not have been activated with the new version. 
-Therefore, the first testing can only involve the routing inside the mesh, the 
-cpu load of the new version,...
-One note, to access the debug output of the new batman version 
-use --neta -cd1 , the verbose output has moved to debug-level 8 (--neta -cd8)
-
-To test internet connectivity I assume that the nodes which were operating in 
-GW-mode with the old batmand are also operating in GW-mode with the new 
-batman version.
-But so fare GW-Client mode has not been activated with the new version. The 
-GW-Client mode (e.g. -r 3) configures your default route and there can be 
-only ONE default route per node. So here each node/user has to make a choice.
-The good thing is, this choice can now be done independently at each node.
-Since revision 811 (this is before the compatibility change) you can use 
--c -r 0 to dynamically deactivate GW-client mode with the old batman 
-and --neta -c -r 3 to dynamically activate GW-client mode with the new 
-version.
-
-3) Once every node and user is convinced that using the new batman version for 
-routing and surfing the internet pays out (thus uses -r 0 with the old batman 
-and -r 3 with the new version) the old version can be gradually deactivated.
-
-
-
-happy routing,
-axel
-
-
-
->
+  --Jan
+>=20
 > Best regards,
->
+>=20
 > Pele
->
+>=20
 > P.S. also has anyone compared network throughput between beta and exp and
 > are there any benefits to beta over exp?
-
-
-
 > P.P.S I'm experimenting with PoE and guess which process is the first that
 > gets killed because of undervoltage?! :-)
->
+>=20
 > _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
+--uQr8t48UFsdbeI+V
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHXaaClTtvZdk47D4RAloBAJ9dRhM5icLkt1au2KjGgCqT+PrH3ACeLOqo
+bQ8oiM7XIGcnFrq+hVJlPKQ=
+=vQd/
+-----END PGP SIGNATURE-----
+
+--uQr8t48UFsdbeI+V--
