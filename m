@@ -1,12 +1,14 @@
-Message-ID: <44530.85.41.146.90.1197350316.squirrel@krisma.oltrelinux.com>
-In-Reply-To: <475DE9DA.1030509@toyota-ti.ac.jp>
-References: <475DE9DA.1030509@toyota-ti.ac.jp>
-Date: Tue, 11 Dec 2007 06:18:36 +0100 (CET)
+From: elektra <onelektra@gmx.net>
 Subject: Re: [B.A.T.M.A.N.] (no subject)
-From: a.anselmi@oltrelinux.com
+Date: Tue, 11 Dec 2007 18:23:05 +0100
+References: <475DE9DA.1030509@toyota-ti.ac.jp>
+In-Reply-To: <475DE9DA.1030509@toyota-ti.ac.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712111823.05674.onelektra@gmx.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,31 +20,16 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-BATMAN is the core algorithm in the ROBIN project (ROuting Batman INside)
-http://www.blogin.it. ROBIN is an Open Source mesh network running on
-Atheros AP51 routers such as Meraki Mini and La Fonera and developed in
-Italy.
-
--- Antonio
-
+On Tuesday 11 December 2007 02:37:30 giuseppe de marco wrote:
 > Anybody know a good embedded harware to use for test batman?
 > G
->
-> --
-> Giuseppe De Marco, PhD
-> Toyota Technological Institute
-> 468-8511 Aichi 2-12-1 Hisakata, Tenpaku-ku,
-> Nagoya, Japan
-> Email: demarco at toyota-ti dot ac dot jp
-> Tel (int): +81 (052)-809-1802
-> Skype-Id: giuseppe_dem2
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
 
+Recommended: Embedded router with broadcom chipset - Buffalo WHR-G54S, Linksys 
+WRT54GL or similar, running OpenWRT. Proprietary broadcom driver works best 
+in ad-hoc mode. This is stress-tested with up to 30 neighbors in Freifunk 
+mesh networks. If you have mains power, Buffalo is much cheaper. If you want 
+to power with batteries/solarpower use the Linksys.
 
+cu elektra
