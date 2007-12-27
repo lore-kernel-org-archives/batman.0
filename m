@@ -1,13 +1,11 @@
-Date: Mon, 17 Dec 2007 12:40:10 +0100
-From: "daniel.poelzleithner" <poelzi@poelzi.org>
-Subject: Re: [B.A.T.M.A.N.] Some issues in ahdemo and intra-mesh traffic (slow)
-Message-Id: <20071217124010.07e781ab.poelzi@poelzi.org>
-In-Reply-To: <200712131824.52450.axel@open-mesh.net>
-References: <001d01c83cdc$a15dcd50$e41967f0$@com>
-	<200712131824.52450.axel@open-mesh.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Holger Levsen <holger@layer-acht.org>
+Date: Thu, 27 Dec 2007 11:48:12 +0100
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1451949.oGA3XJbISK";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200712271148.14121.holger@layer-acht.org>
+Subject: [B.A.T.M.A.N.] batmand_0.3~r875 debian packages available
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,18 +17,35 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
-Cc: pele@balorda.com
+To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@open-mesh.net>
 
-On Thu, 13 Dec 2007 18:24:52 +0100
-Axel Neumann <axel@open-mesh.net> wrote:
+--nextPart1451949.oGA3XJbISK
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> I dont know why but ahdemo (or ad-hoc mode in general) is usually less 
-> performat than managed mode. IMO the ad-hoc implementations never experience 
-> as much devotion as developers spent in the managed mode. 
+Hi,
 
-It's even worser. 
-In the backoff algorithm (collision detection) the wifi spec says that in ad-hoc mode the waiting time in collision cases is *2. Which means that in ad-hoc mode when the air is very dense, ad-hoc networks the only half the airtime managed networks get. personally i suspect that it is even worse and causes many of the ad-hoc network problems and gets worser with more hops.
+yesterday night I've uploaded 0.3 svn r875 packages to Debian experimental,=
+=20
+they are also available at http://layer-acht.org/batmand/ for etch and sid.
 
-kindly regards
- daniel
+=46eedback welcome!
+
+
+regards,
+	Holger
+
+--nextPart1451949.oGA3XJbISK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHc4LuUHLQNqxYNSARAoSOAKCrweFH1uM7rygKl52ZA3UVW34G0QCgqQuR
+r6A+qo/xxpDGUpOnMxff8GQ=
+=0ab2
+-----END PGP SIGNATURE-----
+
+--nextPart1451949.oGA3XJbISK--
