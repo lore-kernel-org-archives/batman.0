@@ -1,11 +1,13 @@
-From: Holger Levsen <holger@layer-acht.org>
-Date: Thu, 27 Dec 2007 11:48:12 +0100
+Date: Thu, 27 Dec 2007 13:20:37 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] batmand_0.3~r875 debian packages available
+Message-ID: <20071227122037.GA21485@hrz.tu-chemnitz.de>
+References: <200712271148.14121.holger@layer-acht.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1451949.oGA3XJbISK";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200712271148.14121.holger@layer-acht.org>
-Subject: [B.A.T.M.A.N.] batmand_0.3~r875 debian packages available
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
+Content-Disposition: inline
+In-Reply-To: <200712271148.14121.holger@layer-acht.org>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,35 +19,56 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart1451949.oGA3XJbISK
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+
+--J2SCkAp4GZ/dPZZf
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hello,=20
 
-yesterday night I've uploaded 0.3 svn r875 packages to Debian experimental,=
-=20
-they are also available at http://layer-acht.org/batmand/ for etch and sid.
+the URL is broken, i guess the right URL is
+http://layer-acht.org/batman/
+?
 
-=46eedback welcome!
+Best regards,
+	Simon
+
+On Thu, Dec 27, 2007 at 11:48:12AM +0100, Holger Levsen wrote:
+> Hi,
+>=20
+> yesterday night I've uploaded 0.3 svn r875 packages to Debian experimenta=
+l,=20
+> they are also available at http://layer-acht.org/batmand/ for etch and si=
+d.
+>=20
+> Feedback welcome!
+>=20
+>=20
+> regards,
+> 	Holger
 
 
-regards,
-	Holger
 
---nextPart1451949.oGA3XJbISK
-Content-Type: application/pgp-signature
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+
+
+--J2SCkAp4GZ/dPZZf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBHc4LuUHLQNqxYNSARAoSOAKCrweFH1uM7rygKl52ZA3UVW34G0QCgqQuR
-r6A+qo/xxpDGUpOnMxff8GQ=
-=0ab2
+iD8DBQFHc5iVrzg/fFk7axYRAomlAKDjvShc6yzpnl0HfFpjHcK9I6BqiQCfco9H
+0oV8ZD1OEFAprmDs7lSnPIE=
+=8iI8
 -----END PGP SIGNATURE-----
 
---nextPart1451949.oGA3XJbISK--
+--J2SCkAp4GZ/dPZZf--
