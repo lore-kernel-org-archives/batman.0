@@ -1,14 +1,14 @@
-From: Axel Neumann <axel@open-mesh.net>
+From: Holger Levsen <holger@layer-acht.org>
 Subject: Re: [B.A.T.M.A.N.] batmand_0.3~r875 debian packages available
-Date: Thu, 27 Dec 2007 13:27:56 +0100
+Date: Thu, 27 Dec 2007 14:41:25 +0100
 References: <200712271148.14121.holger@layer-acht.org>
-In-Reply-To: <200712271148.14121.holger@layer-acht.org>
+	<20071227122037.GA21485@hrz.tu-chemnitz.de>
+In-Reply-To: <20071227122037.GA21485@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-6"
+Content-Type: multipart/signed; boundary="nextPart1720823.pH73D01PDr";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712271327.56387.axel@open-mesh.net>
+Message-Id: <200712271441.31623.holger@layer-acht.org>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,25 +22,34 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi Holger,
+--nextPart1720823.pH73D01PDr
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-is it also possible to package a current batmand-exp revision (current or rv 
-892), as it is used a lot on 24c3. 
-Are your there? Maybe we can meet at the freifunk corner (first floor).
+Hi,
 
-ciao,
-axel
+On Thursday 27 December 2007 13:20, Simon Wunderlich wrote:
+> the URL is broken, i guess the right URL is
+> http://layer-acht.org/batman/
 
-On Donnerstag 27 Dezember 2007, Holger Levsen wrote:
-> Hi,
->
-> yesterday night I've uploaded 0.3 svn r875 packages to Debian experimental,
-> they are also available at http://layer-acht.org/batmand/ for etch and sid.
->
-> Feedback welcome!
->
->
-> regards,
-> 	Holger
+well yes, and no :-) It's batmand now (as the package name). Thanks for=20
+noticing!
 
 
+regards,
+	Holger
+
+--nextPart1720823.pH73D01PDr
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHc6uLUHLQNqxYNSARAuILAJ9aAon5PPwcsY3WD2EZRIaGTdtt8QCcDs4/
+x3b4/JuATWqveehGoYNDIBU=
+=3DTN
+-----END PGP SIGNATURE-----
+
+--nextPart1720823.pH73D01PDr--
