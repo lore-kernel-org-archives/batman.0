@@ -1,14 +1,12 @@
-From: Holger Levsen <holger@layer-acht.org>
-Subject: Re: [B.A.T.M.A.N.] batmand_0.3~r875 debian packages available
-Date: Thu, 27 Dec 2007 14:41:25 +0100
-References: <200712271148.14121.holger@layer-acht.org>
-	<20071227122037.GA21485@hrz.tu-chemnitz.de>
-In-Reply-To: <20071227122037.GA21485@hrz.tu-chemnitz.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1720823.pH73D01PDr";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Disposition: inline
+Date: Sun, 30 Dec 2007 18:06:12 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200712271441.31623.holger@layer-acht.org>
+Message-Id: <200712301806.13081.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] policy routing improved
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,34 +20,24 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart1720823.pH73D01PDr
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
 Hi,
 
-On Thursday 27 December 2007 13:20, Simon Wunderlich wrote:
-> the URL is broken, i guess the right URL is
-> http://layer-acht.org/batman/
+after several talks with different batman users / freifunk communities it 
+became clear that we need more flexibility for the policy routing. Therefore 
+I implemented a new option which takes a path to a executable / shell script 
+as argument (--policy-routing-script). If this option is given batmand will 
+send all routing table changes to this executable instead of manipulating the 
+routing table itself. The messages contain all neccessary information to 
+manipulate the routing table correctly. The executable can modify the 
+parameters before changing the routing table (routing tables, interfaces, 
+priorities, etc) or just ignore messages.
 
-well yes, and no :-) It's batmand now (as the package name). Thanks for=20
-noticing!
+I wrote a sample shell script which you can use as basis for your hacking:
+http://downloads.open-mesh.net/batman/useful-scripts-and-tools/policy_routing_script.sh
 
+This makes the --no-policy-routing option obsolete which was removed.
+Feedback is welcome.  ;-)
 
-regards,
-	Holger
-
---nextPart1720823.pH73D01PDr
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHc6uLUHLQNqxYNSARAuILAJ9aAon5PPwcsY3WD2EZRIaGTdtt8QCcDs4/
-x3b4/JuATWqveehGoYNDIBU=
-=3DTN
------END PGP SIGNATURE-----
-
---nextPart1720823.pH73D01PDr--
+Greetings,
+Marek
