@@ -1,14 +1,16 @@
-From: Acinonyx <acinonyxs@yahoo.gr>
-Subject: Re: [B.A.T.M.A.N.] Quagga zebra API client for BATMAN
-Date: Sat, 5 Jan 2008 13:00:13 +0200
-References: <200712271148.14121.holger@layer-acht.org>
-	<200712310201.49542.acinonyxs@yahoo.gr>
-	<200801021614.22056.lindner_marek@yahoo.de>
-In-Reply-To: <200801021614.22056.lindner_marek@yahoo.de>
+Message-ID: <20080105214740.n00x2uza0coowssk@webmail.ddmesh.de>
+Date: Sat, 05 Jan 2008 21:47:40 +0100
+From: Freifunk Dresden <freifunk@ddmesh.de>
+Subject: Re: [B.A.T.M.A.N.] Memory leak
+References: <20080104105751.q5lswookggc040gk@webmail.ddmesh.de>
+	<200801042124.18425.axel@open-mesh.net>
+In-Reply-To: <200801042124.18425.axel@open-mesh.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-Message-Id: <200801051300.14112.acinonyxs@yahoo.gr>
 Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -23,32 +25,51 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-Hello,
+Hi,
 
-Στις Wednesday 02 January 2008 17:14:21 ο/η Marek Lindner έγραψε:
-> Hi,
->
-> thanks for submitting your work. I published it on our website so that
-> others can find it: https://www.open-mesh.net/batman/patches
+I have checked the problem a little more. Beside the "top" command on debian
+can show the same as the "top" does on WRTs. If you press 'H' the threads are
+also shown. Perhaps the implementation of the "top" or "ps" show the  
+threads too.
 
-Thank you Marek. :)
+There are four batmand threads running. After a while one thread is  
+terminated for about 100 seconds (25 x 4 seconds) and a new thread is  
+created after
+this time. At this time the memory needs is increased. It seams that  
+at each thread-kill-restart 16 Kbytes are wasted. The virtual assinged  
+memory increases
+and also the %-Value used.
 
-> By the way: Using the TTL as basis for a hop metric is ambiguous and may
-> lead to errors. By doing so you assume that every host uses the same start
-> TTL and every hop decreases it in the same way. The B.A.T.M.A.N. protocol
-> does not demand or enforce this behaviour.
-> On the other hand the hop count does not reflect the quality of a path. May
-> be it would be a better approach to calculate the link quality into the
-> metric so that hop based protocols can do a better decission.
->
+Below you will see the values (memory and pid) delivered by "top" for one
+incrementation.
+Hope it gives you a hint.
+Why is the thread killed and created? There is no client conntected to any
+router. rdate is restarted periodically and the laptop is telling that it has
+an internet connection (configured through batmand arguments, which is  
+wanted).
+Note that the laptop does not have a connection to internet. It just pretends
+it has one.
 
-Yes, I have noticed the potential problem with TTL. At this moment, TTL 
-setting must be the same throughout the whole network for zebra metrics to be 
-calculated correctly. I will try to implement a more appropriate metric 
-calculation based on actual link quality as soon as I feel familiarized 
-enough with the BATMAN protocol.
 
-Regards,
-Vasilis
+MEM: 1180   8%
+PIDS:1 -> 893 -> 894 -> 895
+                      -> 2673
+
+Pid 2673 terminates
+MEM: 1180   8%
+....
+100 seconds
+....
+MEM: 1180   8%
+Pid 3751 is created
+MEM: 1196   9%
+1 -> 893 -> 894 -> 895
+                 -> 3751
+MEM: 1196   9%
+
+
+Bye
+  Stephan
+
 
 
