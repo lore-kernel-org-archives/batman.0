@@ -1,17 +1,16 @@
-Message-ID: <20080105214740.n00x2uza0coowssk@webmail.ddmesh.de>
-Date: Sat, 05 Jan 2008 21:47:40 +0100
-From: Freifunk Dresden <freifunk@ddmesh.de>
+From: Axel Neumann <axel@open-mesh.net>
 Subject: Re: [B.A.T.M.A.N.] Memory leak
+Date: Sun, 6 Jan 2008 15:03:08 +0100
 References: <20080104105751.q5lswookggc040gk@webmail.ddmesh.de>
 	<200801042124.18425.axel@open-mesh.net>
-In-Reply-To: <200801042124.18425.axel@open-mesh.net>
+	<20080105214740.n00x2uza0coowssk@webmail.ddmesh.de>
+In-Reply-To: <20080105214740.n00x2uza0coowssk@webmail.ddmesh.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+Message-Id: <200801061503.09053.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,53 +22,80 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 Hi,
 
-I have checked the problem a little more. Beside the "top" command on debian
-can show the same as the "top" does on WRTs. If you press 'H' the threads are
-also shown. Perhaps the implementation of the "top" or "ps" show the  
-threads too.
+On Samstag 05 Januar 2008, Freifunk Dresden wrote:
+> Hi,
+>
+> I have checked the problem a little more. Beside the "top" command on
+> debian can show the same as the "top" does on WRTs. If you press 'H' the
+> threads are also shown. Perhaps the implementation of the "top" or "ps"
+> show the threads too.
+>
+> There are four batmand threads running. After a while one thread is
+> terminated for about 100 seconds (25 x 4 seconds) and a new thread is
+> created after
+> this time. At this time the memory needs is increased. It seams that
+> at each thread-kill-restart 16 Kbytes are wasted. The virtual assinged
+> memory increases
+> and also the %-Value used.
 
-There are four batmand threads running. After a while one thread is  
-terminated for about 100 seconds (25 x 4 seconds) and a new thread is  
-created after
-this time. At this time the memory needs is increased. It seams that  
-at each thread-kill-restart 16 Kbytes are wasted. The virtual assinged  
-memory increases
-and also the %-Value used.
+Does it really increase endlessly with each new thread ? 
+If its the GW-client thread then you can enforce the termination and 
+recreation on-the-fly with batmand -c -r0 (to destroy the tunnel) and 
+-c -r3 (to create the tunnel)
 
-Below you will see the values (memory and pid) delivered by "top" for one
-incrementation.
-Hope it gives you a hint.
-Why is the thread killed and created? There is no client conntected to any
-router. rdate is restarted periodically and the laptop is telling that it has
-an internet connection (configured through batmand arguments, which is  
-wanted).
-Note that the laptop does not have a connection to internet. It just pretends
-it has one.
+>
+> Below you will see the values (memory and pid) delivered by "top" for one
+> incrementation.
+> Hope it gives you a hint.
+> Why is the thread killed and created? There is no client conntected to any
+> router. rdate is restarted periodically and the laptop is telling that it
+> has an internet connection (configured through batmand arguments, which is
+> wanted).
+> Note that the laptop does not have a connection to internet. It just
+> pretends it has one.
 
-
-MEM: 1180   8%
-PIDS:1 -> 893 -> 894 -> 895
-                      -> 2673
-
-Pid 2673 terminates
-MEM: 1180   8%
-....
-100 seconds
-....
-MEM: 1180   8%
-Pid 3751 is created
-MEM: 1196   9%
-1 -> 893 -> 894 -> 895
-                 -> 3751
-MEM: 1196   9%
+there is a blackhole detection in the default two-way-tunnel. This can cause 
+the client to disconnect from the unresponsive (-blackhole-) GW and put the 
+GW on a blacklist for some time. It should all be reported on debug-level 3.
+If no other GW is available, the GW-client node will reconnect to the GW after 
+a while (might be 100 sec).
+If you have a dummy GW, either use --no-unresp-gw-check or 
+use --one-way-tunnel 3 at the client and the GW side 
 
 
-Bye
-  Stephan
+/axel
 
+>
+>
+> MEM: 1180   8%
+> PIDS:1 -> 893 -> 894 -> 895
+>                       -> 2673
+>
+> Pid 2673 terminates
+> MEM: 1180   8%
+> ....
+> 100 seconds
+> ....
+> MEM: 1180   8%
+> Pid 3751 is created
+> MEM: 1196   9%
+> 1 -> 893 -> 894 -> 895
+>                  -> 3751
+> MEM: 1196   9%
+>
+>
+> Bye
+>   Stephan
+>
+>
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
 
