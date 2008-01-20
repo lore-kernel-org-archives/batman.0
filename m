@@ -1,16 +1,16 @@
 From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] Quagga zebra API client for BATMAN
-Date: Sun, 20 Jan 2008 08:52:41 +0100
-References: <200712271148.14121.holger@layer-acht.org>
-	<200712310201.49542.acinonyxs@yahoo.gr>
-	<200801181816.35869.acinonyxs@yahoo.gr>
-In-Reply-To: <200801181816.35869.acinonyxs@yahoo.gr>
+Subject: Re: [B.A.T.M.A.N.] Memory leak
+Date: Sun, 20 Jan 2008 12:13:19 +0100
+References: <20080104105751.q5lswookggc040gk@webmail.ddmesh.de>
+	<200801042124.18425.axel@open-mesh.net>
+	<20080117140452.sf4w0jir48sgwsw0@webmail.ddmesh.de>
+In-Reply-To: <20080117140452.sf4w0jir48sgwsw0@webmail.ddmesh.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-6"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801200852.41541.axel@open-mesh.net>
+Message-Id: <200801201213.19923.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,54 +24,28 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hello Vasilis,
+Hi,
 
-cool work.
-I have some questions:
+can you check if the problem is fixed with rv 957.
 
-> I've also tried to calculate a metric based on link quality. Unfortunately,
-> I wasn't able to find a way to compare latency between two different
-> originators. 
-
-Assuming information about the latency is available. I guess you would like to 
-use it as a secondary input when calculating the metric. Do you know (or have 
-any feeling) how problematic it can become if the indicated latency for a 
-given route is changing very frequently (definitely much more often than the 
-best next hop and related TTL). 
-
-
-> Originators could only be compared based on packet loss which 
-> isn't what we want because it would lead to having the same metric (1) for
-> all nodes if there isn't some packet loss present. So, we are staying for
-> the moment with the TTL approach with some adjustment to make it safer with
-> different TTL settings.
-
-I am not familiar with quagga. Why is it problematic to have several routes 
-with the same metric. Or asked another way: There could also be several 
-routes (to the same destination) with the same TTL. Why does this problem not 
-exist in this case?
-
->
-> I also want to point out an issue with batmand host routes and Quagga.
-> Although Quagga succesfully installs host routes, it doesn't treat them as
-> valid gateways if the associated interface isn't flaged as P-t-P. I don't
-> know if this is a bug or a feature but it renders all batmand second level
-> routes inactive. I added a workaround in zebra client which disables host
-> route installation. This means that you can use quagga zebra client only if
-> you have standard broadcast subnets.
-
-what is your definition of a standard broadcast subnet ?
-is it "POINTOPOINT,MULTICAST,NOARP,..." and /32 ?
-
->
-> The attached patch is against latest stable BATMAN release (revsion 502).
-copied to http://downloads.open-mesh.net/batman/patches/quagga/
-
->
-> Regards,
-> Vasilis
-
-
-
-ciao,
+regards,
 axel
+
+On Donnerstag 17 Januar 2008, Freifunk Dresden wrote:
+> Hi,
+>
+> has anyone could verify the memory-leak problem (see previous thread).
+> I'm currently use the -one-way-tunnel which does not destroy/recreate
+> the gw thread that is causing the memory consumtion.
+>
+> jfi: the system is whiterussian rc6, busybox 1.7.2/1.8.2, uclibc 0.27.
+> I still couldn't get uclibc 29 running to check if this causes the problem.
+> Can somebody check this or first verify the problem?
+>
+> /Stephan
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+
+
