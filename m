@@ -1,16 +1,12 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] Memory leak
-Date: Sun, 20 Jan 2008 12:13:19 +0100
-References: <20080104105751.q5lswookggc040gk@webmail.ddmesh.de>
-	<200801042124.18425.axel@open-mesh.net>
-	<20080117140452.sf4w0jir48sgwsw0@webmail.ddmesh.de>
-In-Reply-To: <20080117140452.sf4w0jir48sgwsw0@webmail.ddmesh.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 21 Jan 2008 15:27:04 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801201213.19923.axel@open-mesh.net>
+Message-Id: <200801211527.04600.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] batman OpenWRT integration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,30 +18,18 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
 
 Hi,
 
-can you check if the problem is fixed with rv 957.
+finally I finished updating all the batman OpenWRT packages. Additionally, you 
+can find the tunnel kernel modul, the battools and batman advanced (layer 2) 
+kernel module in OpenWRT now.
+You need the latest trunk to get these updates. We are already working on a 
+backport to 07.09 kamikaze but I'm not sure that these files are included in 
+the official SVN repository.
+Feel free to contact me if you have any thoughts / wishes / bugs on that.
 
-regards,
-axel
-
-On Donnerstag 17 Januar 2008, Freifunk Dresden wrote:
-> Hi,
->
-> has anyone could verify the memory-leak problem (see previous thread).
-> I'm currently use the -one-way-tunnel which does not destroy/recreate
-> the gw thread that is causing the memory consumtion.
->
-> jfi: the system is whiterussian rc6, busybox 1.7.2/1.8.2, uclibc 0.27.
-> I still couldn't get uclibc 29 running to check if this causes the problem.
-> Can somebody check this or first verify the problem?
->
-> /Stephan
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-
-
+Greetings,
+Marek
