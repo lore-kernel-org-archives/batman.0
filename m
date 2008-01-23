@@ -1,15 +1,14 @@
-From: Andreas Langer <an.langer@gmx.de>
+Message-ID: <a934d3f30801230049x78665caau3b4c657cb87521fe@mail.gmail.com>
+Date: Wed, 23 Jan 2008 03:49:27 -0500
+From: "Vinay Menon" <vinaymenon@gmail.com>
 Subject: Re: [B.A.T.M.A.N.] batman OpenWRT integration
-Date: Mon, 21 Jan 2008 19:20:30 +0100
+In-Reply-To: <200801211920.30577.an.langer@gmx.de>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_9300_32872952.1201078167943"
 References: <200801211527.04600.lindner_marek@yahoo.de>
 	<000001c85c3e$fd11d070$f7357150$@com>
-In-Reply-To: <000001c85c3e$fd11d070$f7357150$@com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801211920.30577.an.langer@gmx.de>
+	<200801211920.30577.an.langer@gmx.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,33 +20,36 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: pele@balorda.com, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
- Hi,
+------=_Part_9300_32872952.1201078167943
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> Marek, correct me here but are you saying you included the tunnel module in
-> batman ipk? No need for that as there is already a separate kmod-tun for
-> kamikaze7.09.
+Hi,
 
-marek means the batgat module which i wrote. batman does its own tunneling and 
-uses kmod-tun for it. this batman tunneling can also be done in the kernel 
-space which improves the overall tunnel performance. i hope ;)
+There is a typo in the batmand startup (init.d) script
+the interface is refered as
 
+interface=$(uci get batman.general.interface)
+while it should be interface=$(uci get batmand.general.interface)
+(ie. batman should be batmand)
 
-> Also, the official kamikaze7.09 includes batman-0.2 (I think) but there are
-> these nice /etc/config/batman and /etc/init.d/batman that come with it.
-> Have you included those in your package?
-> I have played a bit with the init 
-> script to include one-way-tunnel and two-way-tunnel parameters in
-> /etc/config/batman but if you want I can play some more and include most if
-> not all parameters in the init script?
+similar is the case with the options too.
 
-yes, the config files are also included. but as far as i understood they are 
-not needed anymore in the not so distant future. OpenWRT has a new config 
-interface called UCI which we are going to support. up to now we don't fully 
-understand how this is going to work but as soon as we do we let you know.
+the uci command arguments are
+uci get/set packagename.config_profile.option
 
+Regards,
+Vinay
 
-regards,
-andreas
+------=_Part_9300_32872952.1201078167943
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+Hi,<br><br>There is a typo in the batmand startup (init.d) script<br>the interface is refered as&nbsp; <br><br>interface=$(uci get batman.general.interface)<br>while it should be interface=$(uci get batmand.general.interface)<br>
+(ie. batman should be batmand)<br><br>similar is the case with the options too.<br><br>the uci command arguments are <br>uci get/set packagename.config_profile.option<br><br>Regards,<br>Vinay<br>
+
+------=_Part_9300_32872952.1201078167943--
