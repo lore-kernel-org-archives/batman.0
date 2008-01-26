@@ -1,14 +1,18 @@
-From: Acinonyx <acinonyxs@yahoo.gr>
-Subject: Re: [B.A.T.M.A.N.] Quagga zebra API client for BATMAN
-Date: Fri, 25 Jan 2008 22:50:48 +0200
-References: <200712271148.14121.holger@layer-acht.org>
-	<200801181816.35869.acinonyxs@yahoo.gr>
-	<200801200852.41541.axel@open-mesh.net>
-In-Reply-To: <200801200852.41541.axel@open-mesh.net>
+Message-ID: <20080126220430.7z7w3ddfkwkos0s0@webmail.ddmesh.de>
+Date: Sat, 26 Jan 2008 22:04:30 +0100
+From: Freifunk Dresden <freifunk@ddmesh.de>
+Subject: Re: [B.A.T.M.A.N.] Memory leak
+References: <20080104105751.q5lswookggc040gk@webmail.ddmesh.de>
+	<200801042124.18425.axel@open-mesh.net>
+	<20080117140452.sf4w0jir48sgwsw0@webmail.ddmesh.de>
+	<200801201213.19923.axel@open-mesh.net>
+In-Reply-To: <200801201213.19923.axel@open-mesh.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-Message-Id: <200801252250.49055.acinonyxs@yahoo.gr>
 Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -23,43 +27,48 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-Στις Sunday 20 January 2008 09:52:41 ο/η Axel Neumann έγραψε:
+Hi,
 
-Hello Axel,
+I have checked the revision 966 and the memory leak is gone.
+calling batmand -c -r3 creates a task and the memory size is set
+to 1164. After calling batmand -c -r0 the size is back to 1148.
+I can repeat these calles and all looks fine.
 
-> Assuming information about the latency is available. I guess you would like
-> to use it as a secondary input when calculating the metric. Do you know (or
-> have any feeling) how problematic it can become if the indicated latency
-> for a given route is changing very frequently (definitely much more often
-> than the best next hop and related TTL).
+/Stephan
 
-I would like to use it as primary input for metric calculation. The reason I 
-wrote quagga zebra client is to be able to use B.A.T.M.A.N. as IGP in a BGP 
-Confederation. BGP minimum route advertisement interval is by default 30 
-seconds and updating route metric more frequently than that isn't necessery. 
-I haven't given this step much thought since I realised that there is no way 
-to compare latency between different originators but I think I could 
-calculate the average latency from an originator and update metrics every x 
-seconds interval (30 secs in my case).
 
-> I am not familiar with quagga. Why is it problematic to have several routes
-> with the same metric. Or asked another way: There could also be several
-> routes (to the same destination) with the same TTL. Why does this problem
-> not exist in this case?
+Zitat von Axel Neumann <axel@open-mesh.net>:
+
+> Hi,
+>
+> can you check if the problem is fixed with rv 957.
+>
+> regards,
+> axel
+>
+> On Donnerstag 17 Januar 2008, Freifunk Dresden wrote:
+>> Hi,
+>>
+>> has anyone could verify the memory-leak problem (see previous thread).
+>> I'm currently use the -one-way-tunnel which does not destroy/recreate
+>> the gw thread that is causing the memory consumtion.
+>>
+>> jfi: the system is whiterussian rc6, busybox 1.7.2/1.8.2, uclibc 0.27.
+>> I still couldn't get uclibc 29 running to check if this causes the problem.
+>> Can somebody check this or first verify the problem?
+>>
+>> /Stephan
+>> _______________________________________________
+>> B.A.T.M.A.N mailing list
+>> B.A.T.M.A.N@open-mesh.net
+>> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 >
 
-In a BGP Confederation, best path selection is based on IGP metric since all 
-the other criteria are always equal. If IGP metrics are also equal, then path 
-selection falls to the rule: 'Prefer the route that comes from the BGP router 
-with the lowest router ID'. This creates a major problem when all metrics are 
-equal because it always favors the selection of paths that come from one 
-specific BGP router. 
 
-> what is your definition of a standard broadcast subnet ?
-> is it "POINTOPOINT,MULTICAST,NOARP,..." and /32 ?
-
-A subnet on an interface flaged as BROADCAST with a prefix length < /32
-
-Best Regards,
-Vasilis
 
