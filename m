@@ -1,14 +1,14 @@
-Message-ID: <20080127174820.uo7k8twns4c8c4o8@webmail.ddmesh.de>
-Date: Sun, 27 Jan 2008 17:48:20 +0100
-From: Freifunk Dresden <freifunk@ddmesh.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] batman OpenWRT integration
+Date: Mon, 28 Jan 2008 13:53:31 +0100
+References: <200801211527.04600.lindner_marek@yahoo.de>
+In-Reply-To: <200801211527.04600.lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] gateway class/batmand termination
+Content-Disposition: inline
+Message-Id: <200801281353.32070.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +20,16 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: "Open-Mesh, Mailinglist" <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+
+
 
 Hi,
 
-I have implemented a mechanism that checks for a working internet connection.
-Depending on this batmand is called either with options "-c -b -r2" or
-"-c -b -g 1024/1024".
+I was sent a backport of the batman package for OpenWRT 7.09. Download and 
+install instructions can be found here:
 
-Most often when batmand is called with "-c -b -g 1024/1024" batmand  
-terminates:
+https://www.open-mesh.net/batman/patches
 
-batmand -c -b -g 1024/1024
-WARNING: You are using BatMan-eXp 0.3-alpha (compatibility version 10) !
-Connection terminated by remote host.
-
-I have to restart batmand, but all routes are removed and batman loses
-its data. I also have to check for the internet connection again and must hope
-that batmand does not terminate.
-
-Batmand does not terminate every time.
-
-Any ideas?
-Tested rev. 966 (batman-experimental)
-
-/Stephan
-
+Regards,
+Marek
