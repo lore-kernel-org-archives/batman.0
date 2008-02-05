@@ -1,12 +1,13 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 4 Feb 2008 23:25:02 +0800
+From: Holger Levsen <holger@layer-acht.org>
+Subject: Re: [B.A.T.M.A.N.] get the branches explained
+Date: Tue, 5 Feb 2008 11:34:51 +0100
+References: <200802042325.02853.lindner_marek@yahoo.de>
+In-Reply-To: <200802042325.02853.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: multipart/signed; boundary="nextPart4453969.I8QWk8QF6R";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802042325.02853.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] get the branches explained
+Message-Id: <200802051134.52933.holger@layer-acht.org>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,81 +21,38 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+--nextPart4453969.I8QWk8QF6R
+Content-Type: text/plain;
+  charset="ansi_x3.4-1968"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Hi,
+Hi Marek,
 
-in the last months many new branches were created and many numbers are 
-floating around which caused much confusion. Here comes a brief summary why 
-these branches and numbers were created, what they are good for and who is 
-behind it:
+On Monday 04 February 2008 16:25, Marek Lindner wrote:
+> in the last months many new branches were created and many numbers are
+> floating around which caused much confusion. Here comes a brief summary w=
+hy
+> these branches and numbers were created, what they are good for and who is
+> behind it:
 
-Whenever we mention Roman numerals (as II or III) we speak of B.A.T.M.A.N.'s 
-routing algorithm version. It describes how the routing information are 
-flooded and how they are handled to make the best routing decission possible.
-
-Arabic numerals are used to distinguish the version of our implementation. 
-Next to the routing algorithm many features and goodies are added to simplify 
-the users life.
-
-Example: batman 0.2 uses the B.A.T.M.A.N. III routing algorithm.
-
-
-=== batman-0.2 ===
-[Maintainer: Marek Lindner, Axel Neumann]
-
-- 0.2 stable was created last summer and represents our implementation of the
-BATMAN III routing algorithm. It works quite well and stable but has a major
-flaw while routing strong asymetric links. That is why we began working on
-a new algorithm - 0.2 is to be deprecated soon.
-
-=== batman-0.3 ===
-[Maintainer: Marek Lindner, Andreas Langer]
-
-- The 0.3 branch brought a bunch of new features and updates to 0.2,
-especially a newly designed routing algorithm. It seems rather stable but
-needs some more testing before replacing the current stable version.
-
-=== batman-experimental (aka bmx) ===
-[Maintainer: Axel Neumann]
-
-- This branch kept the 0.2 routing algorithm and tried to overcome its flaws
-by extending it.
-Despite its name it is neither specifically unstable nor contains the latest
-features for the 0.3 branch (we are not debian ;-) ). Under the hood it
-shares much code with 0.3 - not more or less.
-
-=== batman-advanced (aka batman-adv aka batman-adv-userspace) ===
-[Maintainer: Simon Wunderlich, Marek Lindner]
-
-- In April 2007 batman advanced (residing in user space) came to light. It was
-a layer 2 implementation of batman 0.2. Since then it was continuously worked
-on and uses the batman 0.3 routing algorithm today. It builds a switch of all
-your nodes and enables you to ran any protocol (IPv4, IPv6, ..) on top of it.
-
-=== batman-saxnet (merged back into batman-adv-userspace) ===
-[Maintainer: www.saxnet.de]
-
-- In autumn 2007 Saxnet (a German company) wanted to use our layer 2
-implementation for their products. They tested, fixed and improved our layer
-2 implementation. Therefore they got an extra branch which was merged back
-into our batman advanced userspace branch.
-
-=== batman-adv-kernelland ===
-[Maintainer: Marek Lindner]
-
-- Due to the testing we realized that the layer 2 implementation in user space
-suffered from many performance problems. In late 2007 we ported our layer 2
-implementation to kernel space in form of a kernel modul. At the moment it is
-heavily worked on and a release is to be expected in the coming weeks.
-
-=== battools ===
-[Maintainer: Andreas Langer]
-
-- The battools are a set of debugging tools which work together with our layer
-2 implementation (user space and kernel land). You can use them to debug the
-mesh which proved to be difficult without them.
+Cool, thanks. Please put this summary also either on the website or somewhe=
+re=20
+in svn or both :-)=20
 
 
-Regards,
-Marek
+regards,
+	Holger
 
+--nextPart4453969.I8QWk8QF6R
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHqDvMUHLQNqxYNSARAhKoAJwMtz/Py5LMNLGZHIfUIdvw7KRK4wCdF+9i
+CAddeUBWGfEihuQsdGjqTSk=
+=7nPc
+-----END PGP SIGNATURE-----
+
+--nextPart4453969.I8QWk8QF6R--
