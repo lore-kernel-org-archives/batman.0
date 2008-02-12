@@ -1,17 +1,17 @@
-Message-ID: <20080212092737.mo3o35zwg0044gcs@webmail.ddmesh.de>
-Date: Tue, 12 Feb 2008 09:27:37 +0100
+Message-ID: <20080212094759.vx84kym5c0oowok0@webmail.ddmesh.de>
+Date: Tue, 12 Feb 2008 09:47:59 +0100
 From: Freifunk Dresden <freifunk@ddmesh.de>
 Subject: Re: [B.A.T.M.A.N.] Rev 972: batmand -c -d n hangs sometimes
 References: <20080203125031.37lz3lkn0gsc0ooc@webmail.ddmesh.de>
-	<47A607A8.3050709@gmx.net>
-In-Reply-To: <47A607A8.3050709@gmx.net>
+	<200802111304.42349.axel@open-mesh.net>
+In-Reply-To: <200802111304.42349.axel@open-mesh.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset=ISO-8859-1;
 	DelSp="Yes";
 	format="flowed"
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,26 +25,56 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-Zitat von elektra <onelektra@gmx.net>:
+Hi Axel,
 
-[Zitattext verstecken]
-Hi -
+> I have several WRT54GL here and I can execute something like
+> "batmand -cbd8"
+> as often as I want. It never hangs.
+> Can you attach the cron file that is executed and that causes the problem?
+The crontab contains an entry such like:
+0-59/1 * * * * /etc/init.d/S53batmand check
 
-Routing is working and there is enough memory. I have setup
-a cron job to call "batmand -c -d [2,7,8,9]" every minutes to
-update the status files on ramdisk. The webinterface then
-access the content of the status file which reduces the cpu load.
-just a stupid question to verify things - you have not forgotten to  
-add -b for batch mode to the command?
-yes, you are right. I just forgot this option in the previous post.
-The firmware uses the -b option.
-When I create the firmware I'm using the whiterussian kit 1.4.5. It generates
-the same firmware for different routers. So when I flash the WRT54GS and the
-WRT54GL with the same firmware, the WRT54GL batmand hangs. There are
-still 2Mbyte Ram unused. restarting batman does almost not change the memory
-consumtion. I use the "top" command for this.
+this calles the following commands after another:
+batmand -cb -d2 >/tmp/batmand_gateway
+batmand -cb -d7 >/tmp/batmand_gateway
+batmand -cb -d8 >/tmp/batmand_gateway
+batmand -cb -d9 >/tmp/batmand_gateway
 
-I have made a log when the batmand stopps. Perhaps it helps you a little.
+But I also did put these commands into an loop:
+while true; do batmand -cb -d2;....;done
+
+I have also disabled this "logging" completely and let only run batmand to
+build up the net. I can not say if the access to the debug output leads to
+blocking the batmand faster.I also have seen that batmand blocks after  
+awhile if
+it is only running for building the network.
+
+I have put a logfile on my webpage.
 http://www.ddmesh.de/batmand-hanglog.txt
 
+In one of the previous threads someone had a problem with "batmand  
+going crazy".
+I'm not sure to remember right. But I think that it had to do with  
+sequence number that's wrapping around.
+The logfile ends at the time batmand stopps. At the end of this log you
+will find something like "prevRxSeqno: 0, currRxSeqno-prevRxSeqno 0," perhabs
+it is the same reason.
+
+batmand is currently started with two interfaces eth1 and tbb. eth1 is  
+the wireless interface and tbb is a tun/tap device that is used by vpn  
+tincd.
+tincd has got invalid hostnames, so it never creates a connection.
+Perhabs batmand has a problem with this kind of "dead" interfaces.
+I have tried to remove this tbb interface when starting batmand.  
+batmand was running at least for two days. But the "dead" interface  
+may also have no influence to this problem.
+Currently batmand is running since 10 hours with eth1 and tbb (dead  
+interface).
+
+I never have seen this problem with the WRT54GS, only with GL.
+
 /Stephan
+
+
+
+
