@@ -1,13 +1,14 @@
-Date: Thu, 21 Feb 2008 11:59:34 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] simple question
-Message-ID: <20080221105933.GA28785@hrz.tu-chemnitz.de>
-References: <47BCCAA9.7090601@toyota-ti.ac.jp>
+From: Axel Neumann <axel@open-mesh.net>
+Subject: Re: [B.A.T.M.A.N.] Rev 972: batmand -c -d n hangs sometimes
+Date: Mon, 25 Feb 2008 12:00:00 +0100
+References: <20080217214820.h3br6pf544s4s0ok@webmail.ddmesh.de>
+In-Reply-To: <20080217214820.h3br6pf544s4s0ok@webmail.ddmesh.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47BCCAA9.7090601@toyota-ti.ac.jp>
+Message-Id: <200802251200.00221.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,50 +22,108 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+Hi Stephan,
 
---bp/iNruPH9dso1Pn
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+thanks for that hint. I changed that lines with rv982 and also made 
+the --resist-blocked-send switch the default behavior now. I also believe 
+that terminating the daemon due to any temporary unavailable device or 
+blocked port is too paranoid. 
+This should also help with other previously reported problems like
+"[B.A.T.M.A.N.] strange batman aborting" indicated by Jan
 
-Hello Giuseppe,
+ciao,
+axel
 
-Yes, multiple radio interfaces are well supported. Just add all the
-interfaces as commandline parameters, e.g.
-
-batmand wlan0 wlan1 wlan2 ... wlanX
-
-Best regards,
-	Simon
-
-On Thu, Feb 21, 2008 at 09:49:45AM +0900, giuseppe de marco wrote:
-> Does Batman run also on embedded devices with multiple interfaces?
-> I mean: every link has one radio interface, but evey node can have=20
-> multiple radio interface.
-> That is, link are orthogonal in frequency.
-> G
->=20
-> --=20
-> Giuseppe De Marco, PhD
-> Toyota Technological Institute
->=20
->=20
+On Sonntag 17 Februar 2008, Freifunk Dresden wrote:
+> Hi Axel,
+>
+> when I use rv980 and call "kill -STOP $(pidof tincd)" then batman works
+> for a while (1-2 minutes) and exists with the following error:
+>
+> [    411413] Error - can't send udp packet: Resource temporarily
+> unavailable. Connection terminated by remote host
+>
+> When I restart batmand when tincd is still stopped, the OGM are processed
+> and I see the neighbour nodes until I get the same error after about 1-2
+> minutes. good news, it does not block.
+>
+> Because of the error message I have inserted at posix/posix.c: 705 "return
+> 0" (send_udp_packet()).
+>
+> I have tested two wrt54gl that had the problems before with the rev980 and
+> the "return 0" statement. Both routers has be running for 18 hours when
+> tincd was running without creating a connection.
+> After that I called "kill -STOP $(pidof tincd)" on both routers. Both
+> routers running now since 13 hours without problems.
+>
+>
+> Please check and insert the "return 0" at posix/posix:705 if it is the
+> right solution.
+>
+> Have a nice week
+>
+> /Stephan
+>
+> Zitat von Axel Neumann <axel@open-mesh.net>:
+> > Hi Stephan,
+> >
+> > can you check if rv980 solves the problem ?
+> >
+> > ciao,
+> > axel
+> >
+> > On Donnerstag 14 Februar 2008, Freifunk Dresden wrote:
+> >> Hi Axel,
+> >>
+> >> I have done some checks. First I have added the tincd tap interface to
+> >> a bridge and used the bridge as parameter for batmand. This is currently
+> >> running since 10h.
+> >>
+> >> The second what I have tried is to call "kill -STOP $(pidof tincd)".
+> >> On the WRT54GL batmand stopped quite fast, but it stopped also fast
+> >> without the "kill". On the WRT54SL where I never have seen batmand
+> >> stopping, the "kill" has stopped batmand after 5-10 minutes. I could
+> >> reproduce this serveral times with the GS.
+> >>
+> >> When calling batmand -c -a 120.56.56.56/32 I get the following output on
+> >> batmand -cd3:
+> >>
+> >> [    275531] Unix socket: got connection
+> >> [    275539] got request: 10
+> >> [    275540] Unix socket: Requesting adding of HNA 120.56.56.34/32 -
+> >> put this on todo list...
+> >> [    275544] got request: 10
+> >> [    275545] Unix client closed connection ...
+> >>
+> >> Three batmand processes are running and batmand -c returns:
+> >> WARNING: You are using BatMan-eXp 0.3-alpha (compatibility version 10) !
+> >> /sbin/batmand [not-all-options-displayed] -r 2 -a 10.12.10.16/28 eth1
+> >> tbb
+> >>
+> >> After calling "killall batmand" only one of three batmand processes is
+> >> killed. I have to killall -9 to get rid of it.
+> >>
+> >> Regards
+> >> /Stephan
+> >>
+> >>
+> >>
+> >>
+> >>
+> >>
+> >> _______________________________________________
+> >> B.A.T.M.A.N mailing list
+> >> B.A.T.M.A.N@open-mesh.net
+> >> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+> >
+> > _______________________________________________
+> > B.A.T.M.A.N mailing list
+> > B.A.T.M.A.N@open-mesh.net
+> > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
 > _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
---bp/iNruPH9dso1Pn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHvVmVrzg/fFk7axYRAhR6AJ9dI1JbLZ/v3Xsv+AYYcRm7AHXcgQCg3nSc
-OCq1A+EVV7BygIwdQl6YCD4=
-=c7NH
------END PGP SIGNATURE-----
-
---bp/iNruPH9dso1Pn--
