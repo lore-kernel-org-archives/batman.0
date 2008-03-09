@@ -1,13 +1,12 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 8 Mar 2008 00:35:10 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+From: Donald Davis <dondavis@reglue.org>
+Content-Type: text/plain
+Date: Sun, 09 Mar 2008 15:31:37 -0500
+Message-Id: <1205094697.4165.8.camel@krupskaya.is-a-geek.net.is-a-geek.net>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803080035.10207.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] B.A.T.M.A.N. RFC Draft
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Subject: [B.A.T.M.A.N.] b.a.t.m.a.n. + wrt54gl + OpenWrt Kamikaze + X-wrt
+Reply-To: dondavis@reglue.org,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -18,18 +17,24 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
+I've been trying to get batman running on a a few wrt54gl's with openwrt
+kamikaze + x=wrt.
+
+Has anyone on the list had success with this?
+
+I am unsure about the wireless mode.  I thought ad-hoc, but I've also
+tried client and ap mode.
+
+I tried
+batmand br-lan
+batmand eth0:1
+
+I've tried running several all on channel 1.  And they reported there
+were no batman nodes in range.  What have I left out?
 
 
-Hi,
 
-last months we have worked on a RFC draft to document the B.A.T.M.A.N. 
-protocol. Finally, the day has come to publish the results. You can find the 
-draft in our document section (https://www.open-mesh.net/batman/doc).
 
-Simon is going to send the draft to the RFC editors to start making it a real 
-standard. If anyone has time and/or experience to support that process - you 
-are welcome to join the effort.
 
-Regards,
-Marek
