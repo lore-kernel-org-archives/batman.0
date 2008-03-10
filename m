@@ -1,11 +1,13 @@
-Message-ID: <51526.70.253.200.118.1205126321.squirrel@webmail.reglue.org>
-Date: Sun, 9 Mar 2008 22:18:41 -0700 (PDT)
-Subject: Re: [B.A.T.M.A.N.] b.a.t.m.a.n. + wrt54gl + OpenWrt Kamikaze +     
-	X-wrt]
-From: dondavis@reglue.org
+Message-ID: <47D505FF.9090209@gmx.net>
+Date: Mon, 10 Mar 2008 10:57:19 +0100
+From: elektra <onelektra@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] b.a.t.m.a.n. + wrt54gl + OpenWrt Kamikaze +  
+	X-wrt]
+References: <51526.70.253.200.118.1205126321.squirrel@webmail.reglue.org>
+In-Reply-To: <51526.70.253.200.118.1205126321.squirrel@webmail.reglue.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,169 +19,187 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+
+hi -
+
+you are experiencing bssid cell-splitting -
+
+in order to communicate all routers must use the same channel, essid and 
+bssid.
+
+channels must be set manually - auto only works for stations in 
+infrastructure mode - and you have to set the channel on the 
+accesspoint, of course.
 
 
-
-I have 8 wrt54gl's running openwrt + batman.  I set all to auto channel +
-ad-hoc.
-
-
-I'm trying this startup script.
-ifconfig eth0.0 103.0.0.* netmask 255.0.0.0 broadcast 103.255.255.255 &
-ifconfig wl0 103.0.0.* netmask 255.0.0.0 broadcast 103.255.255.255 &
-batmand eth0.0 eth0.1 wl0 &
-iptables -t filter -I INPUT 2 -p udp --dport 1966 --sport 1966 -j ACCEPT &
-iptables -t filter -I OUTPUT 2 -p udp --dport 1966 --sport 1966 -j ACCEPT
-&
-
-
-I did a kismet scan and only 4 are showing up.  All 8 have wlan lights
-blinking in sync.
-
-Should I manually set the channel?
-
-Do the essids matter?
-
-Should the lan ip be the same as the ip I give the batman device?
-
-do I need to use wan ips?
-
-
-
-
-One shows up- Channel 10 ap-
- Name    : mobileWRT                                            &#9474;
-&#9474;|&#9474;
-    &#9474;
-&#9474;|&#9474; SSID    : mobileWRT
-    &#9474;
-&#9474;|&#9474; Server  : localhost:2501
-    &#9474;
-&#9474; &#9474; BSSID   : 00:1C:10:BC:AC:68
-    &#9474;
-&#9474; &#9474; Carrier : IEEE 802.11g
-    &#9474;
-&#9474; &#9474; Manuf   : Unknown
-    &#9474;
-&#9474; &#9474; Max Rate: 54.0
-    &#9474;
-&#9474; &#9474; BSS Time: 2b688188
-    &#9474;
-&#9474; &#9474; Max Seen: 1000 kbps
-    &#9474;
-&#9474; &#9474; First   : Sun Mar  9 19:34:06 2008
-    &#9474;
-&#9474; &#9474; Latest  : Sun Mar  9 19:40:38 2008
-    &#9474;
-&#9474; &#9474; Clients : 0
-    &#9474;
-&#9474; &#9474; Type    : Access Point (infrastructure)
-    &#9474;
-&#9492;&#9472;&#9474; Info    :
-          &#9474;
-&#9484;&#9472;&#9474; Channel : 10
-          &#9474;
-&#9474; &#9474;
-
-3 ad-hocs
-&#9474;-&#9474; Name    : Adhoc networks
-  &#9474; &#9474;
-&#9474;|&#9474; Networks: 3
-  &#9474; &#9474;
-&#9474;|&#9474; Min Loc : N/A
-  &#9474; &#9474;
-&#9474;|&#9474; Max Loc : N/A
-  &#9474; &#9474;
-&#9474; &#9474; Range   : N/A
-  &#9474; &#9474;
-&#9474; &#9474; Carrier : IEEE 802.11g
-  &#9474; &#9474;
-&#9474; &#9474;
-  &#9474; &#9474;
-&#9474; &#9474; Network 1
-  &#9474; &#9474;
-&#9474; &#9474; SSID    : OpenWrt
-  &#9474; &#9474;
-&#9474; &#9474; Server  : localhost:2501
-  &#9474; &#9474;
-&#9474; &#9474; BSSID   : 42:19:24:94:DF:5E
-  &#9474; &#9474;
-&#9474; &#9474; Carrier : IEEE 802.11g
-  &#9474; &#9474;
-&#9474; &#9474; Manuf   : Unknown
-  &#9474; &#9474;
-&#9474; &#9474; Max Rate: 11.0
- Clients : 15                                                 &#9474; &#9474;
-&#9474; &#9474; Type    : Ad-hoc
-  &#9474; &#9474;
-&#9474; &#9474; Info    :
-  &#9474; &#9474;
-&#9474; &#9474; Channel : 1
-  &#9474; &#9474;
-&#9474; &#9474; Privacy : No
-  &#9474; &#9474;
-&#9474; &#9474; Encrypt : None
-
-
- Network 2                                                    &#9474; &#9474;
-&#9474;|&#9474; SSID    : project5
-  &#9474; &#9474;
-&#9474;|&#9474; Server  : localhost:2501
-  &#9474; &#9474;
-&#9474; &#9474; BSSID   : 4E:FC:E3:89:31:9E
-  &#9474; &#9474;
-&#9474; &#9474; Carrier : IEEE 802.11g
-  &#9474; &#9474;
-&#9474; &#9474; Manuf   : Unknown
-  &#9474; &#9474;
-&#9474; &#9474; Max Rate: 54.0
-  &#9474; &#9474;
-&#9474; &#9474; BSS Time: e480e183
-  &#9474; &#9474;
-&#9474; &#9474; Max Seen: 1000 kbps
-  &#9474; &#9474;
-&#9474; &#9474; First   : Sun Mar  9 19:34:06 2008
-  &#9474; &#9474;
-&#9474; &#9474; Latest  : Sun Mar  9 20:35:55 2008
-  &#9474; &#9474;
-&#9474; &#9474; Clients : 5
-  &#9474; &#9474;
-&#9474; &#9474; Type    : Ad-hoc
-  &#9474; &#9474;
-&#9474; &#9474; Info    :
-  &#9474; &#9474;
-&#9474; &#9474; Channel : 11
-  &#9474; &#9474;
-&#9474; &#9474; Privacy : No
-  &#9474; &#9474;
-&#9474;+&#9474; Encrypt : None
-
-
- Network 3                                                    &#9474; &#9474;
-&#9474; &#9474; SSID    : mobileWRT
-  &#9474; &#9474;
-&#9474; &#9474; Server  : localhost:2501
-  &#9474; &#9474;
-&#9474; &#9474; BSSID   : D6:4E:A1:DA:E5:55
-  &#9474; &#9474;
-&#9474; &#9474; Carrier : IEEE 802.11g
-  &#9474; &#9474;
-&#9474; &#9474; Manuf   : Unknown
-  &#9474; &#9474;
-&#9474;+&#9474; Max Rate: 11.0
- Type    : Ad-hoc                                             &#9474; &#9474;
-&#9474; &#9474; Info    :
-  &#9474; &#9474;
-&#9474; &#9474; Channel : 11
-  &#9474; &#9474;
-&#9474; &#9474; Privacy : No
-  &#9474; &#9474;
-&#9474; &#9474; Encrypt : None
-
-
-
-
-
-
+dondavis@reglue.org wrote:
+> I have 8 wrt54gl's running openwrt + batman.  I set all to auto channel +
+> ad-hoc.
+>
+>
+> I'm trying this startup script.
+> ifconfig eth0.0 103.0.0.* netmask 255.0.0.0 broadcast 103.255.255.255 &
+> ifconfig wl0 103.0.0.* netmask 255.0.0.0 broadcast 103.255.255.255 &
+> batmand eth0.0 eth0.1 wl0 &
+> iptables -t filter -I INPUT 2 -p udp --dport 1966 --sport 1966 -j ACCEPT &
+> iptables -t filter -I OUTPUT 2 -p udp --dport 1966 --sport 1966 -j ACCEPT
+> &
+>
+>
+> I did a kismet scan and only 4 are showing up.  All 8 have wlan lights
+> blinking in sync.
+>
+> Should I manually set the channel?
+>
+> Do the essids matter?
+>
+> Should the lan ip be the same as the ip I give the batman device?
+>
+> do I need to use wan ips?
+>
+>
+>
+>
+> One shows up- Channel 10 ap-
+>  Name    : mobileWRT                                            &#9474;
+> &#9474;|&#9474;
+>     &#9474;
+> &#9474;|&#9474; SSID    : mobileWRT
+>     &#9474;
+> &#9474;|&#9474; Server  : localhost:2501
+>     &#9474;
+> &#9474; &#9474; BSSID   : 00:1C:10:BC:AC:68
+>     &#9474;
+> &#9474; &#9474; Carrier : IEEE 802.11g
+>     &#9474;
+> &#9474; &#9474; Manuf   : Unknown
+>     &#9474;
+> &#9474; &#9474; Max Rate: 54.0
+>     &#9474;
+> &#9474; &#9474; BSS Time: 2b688188
+>     &#9474;
+> &#9474; &#9474; Max Seen: 1000 kbps
+>     &#9474;
+> &#9474; &#9474; First   : Sun Mar  9 19:34:06 2008
+>     &#9474;
+> &#9474; &#9474; Latest  : Sun Mar  9 19:40:38 2008
+>     &#9474;
+> &#9474; &#9474; Clients : 0
+>     &#9474;
+> &#9474; &#9474; Type    : Access Point (infrastructure)
+>     &#9474;
+> &#9492;&#9472;&#9474; Info    :
+>           &#9474;
+> &#9484;&#9472;&#9474; Channel : 10
+>           &#9474;
+> &#9474; &#9474;
+>
+> 3 ad-hocs
+> &#9474;-&#9474; Name    : Adhoc networks
+>   &#9474; &#9474;
+> &#9474;|&#9474; Networks: 3
+>   &#9474; &#9474;
+> &#9474;|&#9474; Min Loc : N/A
+>   &#9474; &#9474;
+> &#9474;|&#9474; Max Loc : N/A
+>   &#9474; &#9474;
+> &#9474; &#9474; Range   : N/A
+>   &#9474; &#9474;
+> &#9474; &#9474; Carrier : IEEE 802.11g
+>   &#9474; &#9474;
+> &#9474; &#9474;
+>   &#9474; &#9474;
+> &#9474; &#9474; Network 1
+>   &#9474; &#9474;
+> &#9474; &#9474; SSID    : OpenWrt
+>   &#9474; &#9474;
+> &#9474; &#9474; Server  : localhost:2501
+>   &#9474; &#9474;
+> &#9474; &#9474; BSSID   : 42:19:24:94:DF:5E
+>   &#9474; &#9474;
+> &#9474; &#9474; Carrier : IEEE 802.11g
+>   &#9474; &#9474;
+> &#9474; &#9474; Manuf   : Unknown
+>   &#9474; &#9474;
+> &#9474; &#9474; Max Rate: 11.0
+>  Clients : 15                                                 &#9474; &#9474;
+> &#9474; &#9474; Type    : Ad-hoc
+>   &#9474; &#9474;
+> &#9474; &#9474; Info    :
+>   &#9474; &#9474;
+> &#9474; &#9474; Channel : 1
+>   &#9474; &#9474;
+> &#9474; &#9474; Privacy : No
+>   &#9474; &#9474;
+> &#9474; &#9474; Encrypt : None
+>
+>
+>  Network 2                                                    &#9474; &#9474;
+> &#9474;|&#9474; SSID    : project5
+>   &#9474; &#9474;
+> &#9474;|&#9474; Server  : localhost:2501
+>   &#9474; &#9474;
+> &#9474; &#9474; BSSID   : 4E:FC:E3:89:31:9E
+>   &#9474; &#9474;
+> &#9474; &#9474; Carrier : IEEE 802.11g
+>   &#9474; &#9474;
+> &#9474; &#9474; Manuf   : Unknown
+>   &#9474; &#9474;
+> &#9474; &#9474; Max Rate: 54.0
+>   &#9474; &#9474;
+> &#9474; &#9474; BSS Time: e480e183
+>   &#9474; &#9474;
+> &#9474; &#9474; Max Seen: 1000 kbps
+>   &#9474; &#9474;
+> &#9474; &#9474; First   : Sun Mar  9 19:34:06 2008
+>   &#9474; &#9474;
+> &#9474; &#9474; Latest  : Sun Mar  9 20:35:55 2008
+>   &#9474; &#9474;
+> &#9474; &#9474; Clients : 5
+>   &#9474; &#9474;
+> &#9474; &#9474; Type    : Ad-hoc
+>   &#9474; &#9474;
+> &#9474; &#9474; Info    :
+>   &#9474; &#9474;
+> &#9474; &#9474; Channel : 11
+>   &#9474; &#9474;
+> &#9474; &#9474; Privacy : No
+>   &#9474; &#9474;
+> &#9474;+&#9474; Encrypt : None
+>
+>
+>  Network 3                                                    &#9474; &#9474;
+> &#9474; &#9474; SSID    : mobileWRT
+>   &#9474; &#9474;
+> &#9474; &#9474; Server  : localhost:2501
+>   &#9474; &#9474;
+> &#9474; &#9474; BSSID   : D6:4E:A1:DA:E5:55
+>   &#9474; &#9474;
+> &#9474; &#9474; Carrier : IEEE 802.11g
+>   &#9474; &#9474;
+> &#9474; &#9474; Manuf   : Unknown
+>   &#9474; &#9474;
+> &#9474;+&#9474; Max Rate: 11.0
+>  Type    : Ad-hoc                                             &#9474; &#9474;
+> &#9474; &#9474; Info    :
+>   &#9474; &#9474;
+> &#9474; &#9474; Channel : 11
+>   &#9474; &#9474;
+> &#9474; &#9474; Privacy : No
+>   &#9474; &#9474;
+> &#9474; &#9474; Encrypt : None
+>
+>
+>
+>
+>
+>
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+>   
 
