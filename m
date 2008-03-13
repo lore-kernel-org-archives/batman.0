@@ -1,18 +1,14 @@
-Subject: Re: [B.A.T.M.A.N.] Gateway routing / finding
-From: Donald Davis <dondavis@reglue.org>
-In-Reply-To: <56609.70.128.180.22.1205356972.squirrel@webmail.reglue.org>
-References: <49584.70.128.180.22.1205342204.squirrel@webmail.reglue.org>
-	<47D8148D.600@gmx.net>
-	<35440.70.128.180.22.1205347786.squirrel@webmail.reglue.org>
-	<47D82E1B.1040802@gmx.net>
-	<56609.70.128.180.22.1205356972.squirrel@webmail.reglue.org>
-Content-Type: text/plain
-Date: Wed, 12 Mar 2008 17:19:07 -0500
-Message-Id: <1205360347.16080.25.camel@krupskaya.is-a-geek.net.is-a-geek.net>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Reply-To: dondavis@reglue.org,
-	The list for a Better Approach To Mobile Ad-hoc Networking
+Date: Thu, 13 Mar 2008 09:41:00 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] batman-adv / mac-addresses without leading zeros
+Message-ID: <20080313084100.GA21613@hrz.tu-chemnitz.de>
+References: <1205334058.47d7f02ae5c39@mail.bluebottle.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="C7zPtVaVf+AK4Oqc"
+Content-Disposition: inline
+In-Reply-To: <1205334058.47d7f02ae5c39@mail.bluebottle.com>
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -25,15 +21,54 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Well, I think I've got it working for now with freifunk.  I'm thinking
-there were some ports that needed unblocking (besides 1966-67) in
-Kamikaze.  I think disabling the  firewall in freifunk helped clear
-things up.  
 
-Thank you for your help.  Hopefully I'm close.
+--C7zPtVaVf+AK4Oqc
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello Bastian,
+
+the output comes from ether_ntoa(), but i personally like the padded
+output more, too. ;)
+
+So the latest revision should print pretty MACs. :)
+best regards,
+	Simon
 
 
-Cheers,
+On Wed, Mar 12, 2008 at 03:00:58PM +0000, Bastian Bittorf wrote:
+> during batch/debug-mode the output of all
+> mac-adresses is without leading zeros, e.g.
+>=20
+> 01:02:03:04:05:06 =3D 1:2:3:4:5:6
+>=20
+> we would like to replace mac-addresses with
+> hostnames [1] for better understanding of
+> the debug-output. Would it be a great problem
+> to strictly output full mac-addresses?
+>=20
+> bye, Bastian Bittorf
+>=20
+> [1]
+> each router 8-) has a list with
+> mac =3D ip =3D hostname
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
-D Davis 
+--C7zPtVaVf+AK4Oqc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD4DBQFH2Oicrzg/fFk7axYRApMNAJ94wGFj4zXcs1nyxSH7P9GcUM4NrACVE2jh
+kMYyWvceIVk0/7T3/tHUWw==
+=4XiJ
+-----END PGP SIGNATURE-----
+
+--C7zPtVaVf+AK4Oqc--
