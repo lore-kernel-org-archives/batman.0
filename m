@@ -1,15 +1,14 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] faulty dev-batman-adv.ipk
-Date: Fri, 14 Mar 2008 06:53:18 +0800
-References: <1205401123.47d8f6235d1ae@mail.bluebottle.com>
-	<47D93815.9070307@leipzig.freifunk.net>
-In-Reply-To: <47D93815.9070307@leipzig.freifunk.net>
+Subject: Re: [B.A.T.M.A.N.] userspace BATTOOLS for freifunk-fw
+Date: Fri, 14 Mar 2008 07:06:02 +0800
+References: <1205333717.47d7eed59a813@mail.bluebottle.com>
+In-Reply-To: <1205333717.47d7eed59a813@mail.bluebottle.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803140653.18350.lindner_marek@yahoo.de>
+Message-Id: <200803140706.02121.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,23 +25,21 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open
 
 Hi,
 
-> with or without leading "./" - its always the same _relative_ path, i
-> think...
+> in weimar/germany we would like to make some
+> tests with the userspace-deamon (batman-adv),
+> but the battools-ipkg's are missing:
+>
+> http://downloads.open-mesh.net/batman/development/wrt-freifunk/
+>
+> Is it possible to add them?
 
-I agree.
+great news - let us know what you find out.  :-)
+Thanks for the hint. I fixed the battool Makefile on the server, so that the 
+packages are created again.
 
 
-> The files are on the box, but the manager thinks "not fully installed"
+> best wishes - see you at WCW in berlin in mai!
 
-Why do you think so ?
+Right - see you there !
 
-
-> and an "ipkg files batman-adv" leads to zero output.
-
-As far as I remember, the ipkg command is pretty dumb. It does not parse 
-packets but only the packet database which can be updated with "ipkg update". 
-But these packages are not included in a repos - it is just a plain install. 
-So, the ipkg command can't help you here or am I mistaken ?
-
-Greetings,
 Marek
