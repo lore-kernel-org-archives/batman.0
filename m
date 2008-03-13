@@ -1,10 +1,12 @@
-Message-ID: <1205401123.47d8f6235d1ae@mail.bluebottle.com>
-Date: Thu, 13 Mar 2008 09:38:43 +0000
-From: Bastian Bittorf <bittorf@bluebottle.com>
+Message-ID: <47D93815.9070307@leipzig.freifunk.net>
+Date: Thu, 13 Mar 2008 15:20:05 +0100
+From: tetzlav <tetzlav@leipzig.freifunk.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] faulty dev-batman-adv.ipk
+Subject: Re: [B.A.T.M.A.N.] faulty dev-batman-adv.ipk
+References: <1205401123.47d8f6235d1ae@mail.bluebottle.com>
+In-Reply-To: <1205401123.47d8f6235d1ae@mail.bluebottle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,22 +18,25 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-The data.tar.gz in the archive is
-not build correct. All file-paths must
-be relative, not absolute:
+Bastian Bittorf schrieb:
+> The data.tar.gz in the archive is
+> not build correct. All file-paths must
+> be relative, not absolute:
+>
+> ./usr/sbin/batmand-adv (at the moment)
+> usr/sbin/batmand-adv (correct)
 
-./usr/sbin/batmand-adv (at the moment)
-usr/sbin/batmand-adv (correct)
+with or without leading "./" - its always the same _relative_ path, i 
+think...
 
-At the first look that doesn't seem to be
-a problem, but the packet-manager does
-not accept that. The files are on the box,
-but the manager thinks "not fully installed"
-and an "ipkg files batman-adv" leads to
-zero output.
+root@tetzlav-uplink:~# touch test-without
+root@tetzlav-uplink:~# touch ./test-with
+root@tetzlav-uplink:~# ls -l test*
+-rw-r--r--    1 root     root            0 Mar 13 15:16 test-with
+-rw-r--r--    1 root     root            0 Mar 13 15:16 test-without
 
-Thanks in advance for fixing that 8-)
 
-bye, Bastian Bittorf
+Regards
+tetzlav
