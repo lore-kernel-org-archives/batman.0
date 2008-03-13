@@ -1,12 +1,15 @@
-Message-ID: <47D93815.9070307@leipzig.freifunk.net>
-Date: Thu, 13 Mar 2008 15:20:05 +0100
-From: tetzlav <tetzlav@leipzig.freifunk.net>
-MIME-Version: 1.0
+From: Marek Lindner <lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] faulty dev-batman-adv.ipk
+Date: Fri, 14 Mar 2008 06:53:18 +0800
 References: <1205401123.47d8f6235d1ae@mail.bluebottle.com>
-In-Reply-To: <1205401123.47d8f6235d1ae@mail.bluebottle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<47D93815.9070307@leipzig.freifunk.net>
+In-Reply-To: <47D93815.9070307@leipzig.freifunk.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803140653.18350.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,23 +23,26 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Bastian Bittorf schrieb:
-> The data.tar.gz in the archive is
-> not build correct. All file-paths must
-> be relative, not absolute:
->
-> ./usr/sbin/batmand-adv (at the moment)
-> usr/sbin/batmand-adv (correct)
 
-with or without leading "./" - its always the same _relative_ path, i 
-think...
+Hi,
 
-root@tetzlav-uplink:~# touch test-without
-root@tetzlav-uplink:~# touch ./test-with
-root@tetzlav-uplink:~# ls -l test*
--rw-r--r--    1 root     root            0 Mar 13 15:16 test-with
--rw-r--r--    1 root     root            0 Mar 13 15:16 test-without
+> with or without leading "./" - its always the same _relative_ path, i
+> think...
+
+I agree.
 
 
-Regards
-tetzlav
+> The files are on the box, but the manager thinks "not fully installed"
+
+Why do you think so ?
+
+
+> and an "ipkg files batman-adv" leads to zero output.
+
+As far as I remember, the ipkg command is pretty dumb. It does not parse 
+packets but only the packet database which can be updated with "ipkg update". 
+But these packages are not included in a repos - it is just a plain install. 
+So, the ipkg command can't help you here or am I mistaken ?
+
+Greetings,
+Marek
