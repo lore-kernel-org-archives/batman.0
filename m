@@ -1,13 +1,10 @@
-Date: Wed, 2 Apr 2008 22:53:52 +0200
-From: Solon Lutz <solon@pyro.de>
-Message-ID: <1765280842.20080402225352@pyro.de>
-Subject: Re: [B.A.T.M.A.N.] Fonera ready image with batman?
-In-Reply-To: <46faed20804021144x7e91643ak9eaebfdb8d2bbf21@mail.gmail.com>
-References: <560c7c9a0804021136j4c02f298ic049330de68c4add@mail.gmail.com>
-	<46faed20804021144x7e91643ak9eaebfdb8d2bbf21@mail.gmail.com>
+Message-ID: <33170.70.128.180.22.1207180655.squirrel@webmail.reglue.org>
+Date: Wed, 2 Apr 2008 16:57:35 -0700 (PDT)
+From: dondavis@reglue.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] B.A.T.M.A.N. on frontpage of Texas newspaper
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,14 +16,12 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-> www.blogin.it has a "robin" image that works very good with www.open-mesh.com and the Fonera 2100
+I don't know if anyone is interested but I got B.A.T.M.A.N. mentioned on
+the front page of a newspaper in Texas.
 
-...which also works flawlessly with the fonera 2200a...
+http://www.sanmarcosrecord.com/local/local_story_093113337.html
 
-
-Solon Lutz
-
-
+cheers.
 
