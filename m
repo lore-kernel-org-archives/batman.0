@@ -1,14 +1,16 @@
-Message-Id: <E3C3B297-FD0F-4708-AA7D-AEA1F979EA70@gmail.com>
-From: Vinay Menon <vinaymenon@gmail.com>
-In-Reply-To: <200804092255.36474.gfjl@ubbi.com>
-Content-Type: text/plain; charset="utf-8"; format="flowed"; delsp="yes"
-Mime-Version: 1.0 (iPhone Mail 4A102)
+From: Marek Lindner <lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] AHdemo mode
-Date: Thu, 10 Apr 2008 07:53:58 +0530
+Date: Thu, 10 Apr 2008 12:12:10 +0800
 References: <200804092052.12389.gfjl@ubbi.com>
 	<200804100852.51052.lindner_marek@yahoo.de>
 	<200804092255.36474.gfjl@ubbi.com>
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <200804092255.36474.gfjl@ubbi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804101212.10384.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,73 +24,18 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-The problem I see here is the possibility of unwanted batman nodes  
-joining in and announcing wrong/ false gateway. Since adhoc will only  
-support WEP and imo its not viable having batman run only over VPN, i  
-think a symmetric key arrangement where in all nodes have the same  
-password to join in routing would be a great addition. This basically  
-is the concept of olsr secure plugin.
 
-
-Regards,
-Vinay Menon
-
-On Apr 10, 2008, at 7:25 AM, GUSL <gfjl@ubbi.com> wrote:
-
-> El Wednesday 09 April 2008 21:52:50 Marek Lindner escribió:
->> Hi,
->>
->>> I found this post : http://robin.forumup.it/about107-robin.html
->>>
->>> I like to hear opinions about this possible security issue.
->>
->> why do the security experts always find the same bug ?  :D
->>
->> As far as I know the WPA encryption is not supposed to secure _all_  
->> your
->> traffic. It is supposed to encrypt the traffic between your  
->> notebook and
->> your accesspoint.
->>
->> For meshing you need ad-hoc mode and in this mode you don't have a  
->> single
->> authority to authenticate against. How should "mesh encryption"  
->> work - all
->> nodes are "equal" ?
->>
->> If you want to secure your network traffic, please use the higher  
->> security
->> layers as SSL or similar technologies. They do _proper_ end to end
->> encryption. Even if the WPA would work your traffic is not secure  
->> as the
->> internet gateway and all stations after it still could sniff your  
->> traffic.
->>
->> I would be very interested to hear from "williamruckman" what kind of
->> packets he would inject to "capture all traffic or perform a
->> man-in-the-middle attack". I suggest reading the "security  
->> considerations"
->> section of this document first:
->> https://www.open-mesh.net/batman/doc/draft-openmesh-b-a-t-m-a- 
->> n-00.txt
->>
->> Regards,
->> Marek
->> _______________________________________________
->> B.A.T.M.A.N mailing list
->> B.A.T.M.A.N@open-mesh.net
->> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
 > Thanks for your reply.
 > I hope I am not being annoying.
 >
 > Obviously there are too many "security experts" out there.... :P
->
-> Regards,
-> GUSL
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
+No, you are not anoying - I simply here that question over and over again. I'm 
+sorry if my mail sounded too rough. May be I should prepare a template 
+somewhere ..  ;-)
+
+If you or somebody else want to discuss / improve security I happily join the 
+discussion.
+
+Greetings,
+Marek
