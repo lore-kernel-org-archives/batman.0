@@ -1,14 +1,16 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Batgat on kamikaze 7.09
-Date: Tue, 15 Apr 2008 00:59:30 +0800
-References: <a934d3f30804140355pa3cd9csae593db08ca51eff@mail.gmail.com>
-In-Reply-To: <a934d3f30804140355pa3cd9csae593db08ca51eff@mail.gmail.com>
-MIME-Version: 1.0
+Message-Id: <A9EA6D7C-CAAC-4050-9799-58D452688B37@gmail.com>
+From: Vinay Menon <vinaymenon@gmail.com>
+In-Reply-To: <200804150059.30456.lindner_marek@yahoo.de>
 Content-Type: text/plain;
-  charset="utf-8"
+	charset=US-ASCII;
+	format=flowed;
+	delsp=yes
+Mime-Version: 1.0 (iPhone Mail 4A102)
+Subject: Re: [B.A.T.M.A.N.] Batgat on kamikaze 7.09
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804150059.30456.lindner_marek@yahoo.de>
+Date: Mon, 14 Apr 2008 23:07:04 +0530
+References: <a934d3f30804140355pa3cd9csae593db08ca51eff@mail.gmail.com>
+	<200804150059.30456.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,18 +25,29 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-Hi,
 
-> I am getting  the message "Unable to resolve ip_hdr" while trying to load
-> batgat(r 963) on openwrt kamikaze 7.09
-> Batman however runs with tun module loaded.
-> Any suggestions on what i am missing .
+2.6.21
 
-which kernel version are you using ?
+On Apr 14, 2008, at 22:29, Marek Lindner <lindner_marek@yahoo.de> wrote:
 
-Greetings,
-Marek
-
-
-
-
+>
+> Hi,
+>
+>> I am getting  the message "Unable to resolve ip_hdr" while trying  
+>> to load
+>> batgat(r 963) on openwrt kamikaze 7.09
+>> Batman however runs with tun module loaded.
+>> Any suggestions on what i am missing .
+>
+> which kernel version are you using ?
+>
+> Greetings,
+> Marek
+>
+>
+>
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
