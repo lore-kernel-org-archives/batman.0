@@ -1,14 +1,16 @@
-Message-ID: <48088CEB.20700@gmx.net>
-Date: Fri, 18 Apr 2008 13:58:35 +0200
-From: elektra <onelektra@gmx.net>
-MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] Who can help with BATMAN-ADV integration into
-	ROBIN-FW?
-References: <003a01c894a2$8f7ebe00$ae7c3a00$@com>	<200804070039.31852.lindner_marek@yahoo.de>	<1655027616.20080410173709@pyro.de>	<200804181257.08183.lindner_marek@yahoo.de>	<1936797443.20080418123911@pyro.de>
-	<48088BBF.3070906@gmx.net>
-In-Reply-To: <48088BBF.3070906@gmx.net>
-Content-Type: text/plain; charset="windows-1252"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Message-id: <C3F5B343-E97B-4745-8007-01C66906860E@philippeapril.com>
+From: Philippe April <isf_lists@philippeapril.com>
+In-reply-to: <48902.85.41.146.90.1208503463.squirrel@krisma.oltrelinux.com>
+Subject: Re: [B.A.T.M.A.N.] Node keeps switching back and forth
+Date: Fri, 18 Apr 2008 09:46:09 -0400
+References: <7BE4D55B-B938-45A8-BCF4-923632152CFC@philippeapril.com>
+	<854CEDF6-8307-4BB8-AFD0-EAC208163FE3@gmail.com>
+	<B0598FDC-F54D-4D67-BEE2-670F6BD8A064@philippeapril.com>
+	<200804181448.44510.lindner_marek@yahoo.de>
+	<48902.85.41.146.90.1208503463.squirrel@krisma.oltrelinux.com>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,88 +24,85 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi -
+:)
 
-correction: May 2nd-4th not May 2nd-5th.
+Sorry if this sentence sounded so bad... I obviously meant unusable in  
+this situation where I couldn't make it work properly, I know there's  
+a LOT of people who use it without any problem! There must be  
+something in the air...
 
-cu elektra
-> Hi -
+2 La Fonera, 2 Accton (from open-mesh.com). I had issues with antenna  
+diversity at first, reflashed them all to c484 which got upgraded to  
+beta-1.1.
+
+Is there an image to flash straight to beta-1.1 and make sure I'm not  
+missing upgrades in between or something weird like that?
+
+I won't discuss this anymore on this list here and move the thread to  
+the ROBIN forums, as it's no longer related to BATMAN which seems to  
+work great except some firewall issues I'm having related to packets  
+tagged as "INVALID".
+
+Thanks to everyone for the great explanations... It'd be great to have  
+the Wireless Community Weekend's ROBIN test filmed and put on the net,  
+as I won't be able to be part of it :)
+
+On 18-Apr-08, at 3:24 AM, a.anselmi@oltrelinux.com wrote:
+
+> Hi,
 >
-> at the Wireless Community Weekend (May 2nd-5th in Berlin/Germany @=20
-> C-Base) there will be a test with 20+ Foneras running RO.B.I.N.
+>> I tried the RO.B.IN firmware on 4 nodes and the symptoms are the  
+>> same,
+>> it's basically unusable.
 >
-> The B.A.T.M.A.N. developers will be around (maybe we'll miss Axel, he=20
-> wasn't sure whether he will be in Berlin on time).
+> Can you tell me your hardware and what version are you using?
+> Surely there are some problems in your configurations or hardware:  
+> many
+> peoples run flawlessy robin beta-1.1.
 >
-> If you have the time, join us!
->
-> cu elektra
->
->
-> WCW Venue:
-> c-base e.V.
-> rungestrasse 20
-> 10179 berlin (center)
+> Greetings,
+> Antonio
 >
 >
 >
->> ML> Hi,
+> Marek Lindner disse:
 >>
->> =20
->>>>> I think the "batman advanced" topic is quite new and you wont find=20
->>>>> people
->>>>> that can help you easily. The first weekend in May we will have a=20
->>>>> wireless
->>>>> community weekend in Berlin (C-Base). I will be there and so will be
->>>>> Simon. We are the main developers behind the layer 2 implementation.
->>>>> I believe more people are interested in that topic - may be we=20
->>>>> will do a
->>>>> little workshop ?
->>>>>        =20
+>> Hi,
 >>
->> =20
->>>> A BATMAN adv workshop would be great, if we need a little bit more=20
->>>> space,
->>>> 30+ fonera APs and a huge area - I can provide all of it...
->>>>      =20
+>>> I tried the RO.B.IN firmware on 4 nodes and the symptoms are the  
+>>> same,
+>>> it's basically unusable.
 >>
->> More to come:
->>
->> Have a look at www.studentendorf.de , if we meet there, we can use=20
->> all the existing facilities:
->>
->> Internet-Access, a huge meeting-room with enough tables and chairs for
->> 50+ people, Student-Club www.club-a18.de (food/drinks from 20:00 to=20
->> 1:00).
->>
->> Free accommodation for people with mattresses/sleeping-bags can be=20
->> arranged,
->> breakfast for everybody is also possible. You can also rent a=20
->> bed&breakfast
->> room on site for =8024.
->>
->> Public transportation:
->>
->> BUS 112/N48 or S-Bahn Schlachtensee (7min) / Nikolassee (12min)
+>> when did you try this ? I helped them to fix some of these  
+>> problems, so I
+>> know
+>> it should be quite stable now.
 >>
 >>
->> bye
+>>> Does anybody have a great success story to tell me with this  
+>>> hardware
+>>> (FON/Accton with Atheros) and mesh networks? B.A.T.M.A.N seems to be
+>>> the only thing stable in my setup after all :)
 >>
->> Solon
+>> There are a bunch of thing you should pay attention to. the last item
+>> which
+>> made Robin much more stable was:
 >>
+>> iwconfig ath0 rate 5.5M
 >>
+>> Try this.
 >>
->>
+>> Greetings,
+>> Marek
 >> _______________________________________________
 >> B.A.T.M.A.N mailing list
 >> B.A.T.M.A.N@open-mesh.net
 >> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 >>
->>  =20
+>
 >
 > _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
 
