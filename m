@@ -1,18 +1,16 @@
-Date: Tue, 22 Apr 2008 07:13:29 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] Who can help with BATMAN-ADV integration into
-	ROBIN-FW?
-Message-ID: <20080422051329.GA32184@hrz.tu-chemnitz.de>
-References: <003a01c894a2$8f7ebe00$ae7c3a00$@com>
-	<200804070039.31852.lindner_marek@yahoo.de>
-	<1655027616.20080410173709@pyro.de>
-	<200804181257.08183.lindner_marek@yahoo.de>
-	<1936797443.20080418123911@pyro.de>
+From: Axel Neumann <axel@open-mesh.net>
+Subject: Re: [B.A.T.M.A.N.] two-radio nodes and alternative next hop
+Date: Tue, 22 Apr 2008 16:01:57 +0200
+References: <20080421123928.GA3483@apoderado.ometepe.net>
+	<560c7c9a0804210557v2c94a553w5a2c8dd2efb8eead@mail.gmail.com>
+	<20080421203002.GA4490@apoderado.ometepe.net>
+In-Reply-To: <20080421203002.GA4490@apoderado.ometepe.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
+Content-Type: text/plain;
+  charset="iso-8859-6"
 Content-Disposition: inline
-In-Reply-To: <1936797443.20080418123911@pyro.de>
+Message-Id: <200804221601.57318.axel@open-mesh.net>
+Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,72 +24,73 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+Hi Jan,
 
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Montag 21 April 2008, Jan Hetges wrote:
+> On Mon, Apr 21, 2008 at 02:57:44PM +0200, Benjamin Henrion wrote:
+> > On Mon, Apr 21, 2008 at 2:39 PM, Jan Hetges <tran@ms20.net> wrote:
+> > >  i'm running bmxd_rv972 for almost three months now, without
+> > >  any mayor problems :-)... thanks.
+> > >  what i recognized lately, on two nodes (the ones with more than
+> > >  one bmx interface), show alternativeNextHops, which are *NO*
+> > >  alternative. It seems there gets some 'information' lost between
+> > >  the two IFs. I suppose that's a known issue ;-), 
+It is NOT a known issue (at least not to me) and if its a bug it should be fixed.
+> > >  fix/workaround ? iirc, i saw once or twice a node "on the other
+> > >  interface" even listed as the bestNextHop.
+> >
+> > Can you describe a little more extensively your network configuration?
+>
+> sorry ;-):
+>
+>  
+> x.x.0.0/24---x.x.0.1/x.x.3.1---x.x.3.0/24---x.x.3.160/x.x.4.1---x.x.4.0/24
+One general questions: do all your interfaces operate on the same frequency?
 
-Hello Solon,
+Then, I am unsure about the netmasks you are using. The above line I 
+understand that you are using x.x.3.0/24 and x.x.4.0/24 netmasks. 
+Generally, It is strongly recommended to always use the same netmask 
+on ALL batman interfaces !
+In your case there is: x.x.3.160/24 for one interface on the 3.160 node 
+which should result in a broadcast address of x.x.3.255. 
+But according to the debug output there is a direct link to x.x.4.165/24 
+(which I guess has broadcast address of x.x.4.255) and therefore the two 
+interfaces should not see each other!!?? Can you verify that (note that the 
+"ifconfig dev ip/netmask" command is buggy and does not always produce 
+corresponding netmask and broadcast addresses and that the interfaces MUST be 
+configured appropriately before the daemon is started. !!!)
 
-thank you for the offer, but i really think we should do this workshop
-in the c-base, because all people will be assembled there, and i'm sure
-there are some people who will join us spontanously.
+> .0.1/.3.1 is one node with two radios, and .3.160/.4.1 the other one.
+> and, .3.160/.4.1 lists .4.162 as alternativeNextHop to .3.128.
+> where .3.1 and .3.137 can see .3.128, but .4.162 can not. 
 
-It would be nice if you could bring some FON-routers (like 5 to 10) that
-we can use for the workshop for the batman-adv. That would be enough for
-the start, and maybe more people will come and join with their routers.
+An alternativeNextHop to a specific node must not necessarily be a direct neighbor of 
+that node. For example in the following scenario:
 
-Best Regards,
-	Simon
+A---B---D
+|       |
++---E---+
 
-On Fri, Apr 18, 2008 at 12:39:11PM +0200, Solon Lutz wrote:
-> ML> Hi,
->=20
-> >> > I think the "batman advanced" topic is quite new and you wont find p=
-eople
-> >> > that can help you easily. The first weekend in May we will have a wi=
-reless
-> >> > community weekend in Berlin (C-Base). I will be there and so will be
-> >> > Simon. We are the main developers behind the layer 2 implementation.
-> >> > I believe more people are interested in that topic - may be we will =
-do a
-> >> > little workshop ?
->=20
-> >> A BATMAN adv workshop would be great, if we need a little bit more spa=
-ce,
-> >> 30+ fonera APs and a huge area - I can provide all of it...
->=20
-> More to come:
->=20
-> Have a look at www.studentendorf.de , if we meet there, we can use all th=
-e existing facilities:
->=20
-> Internet-Access, a huge meeting-room with enough tables and chairs for
-> 50+ people, Student-Club www.club-a18.de (food/drinks from 20:00 to 1:00).
->=20
-> Free accommodation for people with mattresses/sleeping-bags can be arrang=
-ed,
-> breakfast for everybody is also possible. You can also rent a bed&breakfa=
-st
-> room on site for =E2=82=AC24.
->=20
-> Public transportation:
->=20
-> BUS 112/N48 or S-Bahn Schlachtensee (7min) / Nikolassee (12min)
->=20
+From As' point of view B and E may both be potential next hops towards D. But only E 
+can directly see D.
 
---vkogqOf2sHV7VnPd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Is it possible to generate (almost simultaneously) -cbd8 logs from the involved 
+nodes, especially 3.1, 3.160, 4.162, 3.128. 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> So, there is a 
+> real alternativeNextHop to .3.128 ... .3.137, which is listed after .4.162
+> on .3.160/.4.1. I attach the output of bmxd -cbd8.
 
-iD8DBQFIDXP5rzg/fFk7axYRAh8oAJ9SREjtUfUN/TDA/lSSc5bd2hbw/gCgjlx6
-BzvDEb5iXLfhKhgLGBjXccQ=
-=Ez9D
------END PGP SIGNATURE-----
+The attached debug log shows:
+172.19.3.128    wlan0:bmx       172.19.3.1  80 (  97  1:01:20:33 15813    0 100 1012  
+18   2      1 )    172.19.4.162  67    172.19.3.140   2 
 
---vkogqOf2sHV7VnPd--
+At least this line does not show 3.137 listed after .4.162 on .3.160/.4.1
+Has it been truncated ??
+
+Looking forward to solve this...
+best regards,
+axel
+
+
+
