@@ -1,5 +1,5 @@
-Message-ID: <480E4DBA.8000304@gmx.net>
-Date: Tue, 22 Apr 2008 22:42:34 +0200
+Message-ID: <480E4DCC.7090402@gmx.net>
+Date: Tue, 22 Apr 2008 22:42:52 +0200
 From: elektra <onelektra@gmx.net>
 MIME-Version: 1.0
 Subject: Re: [B.A.T.M.A.N.] Who can help with BATMAN-ADV integration into
@@ -11,7 +11,9 @@ References: <003a01c894a2$8f7ebe00$ae7c3a00$@com>
 	<bccbc6690804220924w3af5cffeqbdc9a122b7840537@mail.gmail.com>
 	<480E35DC.801@gmx.net>
 	<2520215E-4451-43DD-B86C-BE1AA134933B@philippeapril.com>
-In-Reply-To: <2520215E-4451-43DD-B86C-BE1AA134933B@philippeapril.com>
+	<480E421E.3030407@gmx.net>
+	<FF6CA3D4-0705-458F-8FD4-80D4CDA3A165@philippeapril.com>
+In-Reply-To: <FF6CA3D4-0705-458F-8FD4-80D4CDA3A165@philippeapril.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,94 +29,46 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi Phillipe -
+Hi Philippe -
 
-well, Freifunk and others around the globe are successfully using mesh
-as network infrastructure for their daily communication needs. (I'm
-using multihop mesh as internet uplink since 4 years).
+> The WRT54GL's are available here (I'm in Canada), I'm sure it is also 
+> available down in the US.
+>
+That's good to know.
 
-Here is how it works: Rather than using a zoo of different hardware use
-one that works, and that is the proprietary (I hate to support this!!!)
-Broadcom driver for the embedded Broadcom designs used in many 802.11b/g
-routers.
+> We like the Atheros hardware (fonera, meraki) because it's so small in 
+> comparison (unless your WRT54GL's are the ones with smaller footprint 
+> than the old big blue model?) and because it's less proprietary than 
+> broadcom hardware/drivers...
+It is small - ok. Things I like about WRT54GL: JTAG (even if you hose
+the system completely including bootloader you can restore it), serial
+interface, wide range DC-input (5-20 Volts), doesn't die if you reverse
+polarity, low power consumption (3.6 Watts under full load). Up to 250mW
+transmit power. Makes it ideal for my solar-powered home and developing
+countries, outdoor nodes, disaster areas and so on. Open up the housing
+and have a look at those *three* individual DC-DC converters for every
+internal voltage.
 
-Get this and go ahead deploying your network. You'll love it.
-Particularly if you use Freifunk firmware. This is one key to success
-nowadays.
+Disclaimer: I am not working or getting paid by Linksys. I'm willing to
+utilize everything good that comes the way...
 
-It is a pitty that Linksys USA is not selling WRT54GL's in the US
-(correct me if I'm wrong). So most people there are using Atheros SoC -
-Fonera, Meraki - which are all made by Accton/Taiwan. (Again, correct me
-if I'm wrong). While people in Europe, Africa and Asia are predominantly
-using WRT54GL.
+Of course I don't like using proprietary code, this is sad. You know
+Linksys/Cisco had to be forced to their own good. They must be selling
+those devices like crazy. We have WRTs running on churches in a noisy
+area with many competing networks,  each one linked to 15-20 other
+single hop mesh nodes. Somewhere around 30 single hop neighbors there is
+a limit for the driver/chipset, I suppose. The driver works rock solid.
+As soon as Madwifi or ath5k (with OpenHAL) can compete with that I'll be
+much more than happy.
 
-As far as I understood Antonio Anselmi, recent RO.B.I.N. firmware works
-stable in ad-hoc with Atheros SoC.
+If I could utter a wish to a fairy coming my way I would also ask to
+have at least one good performing usb chipset for 802.11abgn that works
+with Linux as well. I'd start assembling omnis and directionals with
+usb-connector immediately ;-)
 
-I was working on a system for the Meraka institute in SA, for their
-'Massive Mesh' grid, which was build to practically develop/test/verify
-mesh routing protocols and drivers. (I was running tests of OLSRD and
-all B.A.T.M.A.N. versions there.)
-
-I have patched an older Madwifi which works rock-solid in the Meraka
-mesh. There is only one issue: Fragmentation does not work. To be
-precise: If you enable it, the cards won't send data packets greater
-than the fragmentation value  anymore :-(
-
-AFAIK this issue is still not solved.
-
-Running different Madwifi VAPs in ad-hoc and master mode is something I
-didn't test. Last time that I have tested it (quite a while ago) it was
-a hack. And I was happy if my machine didn't lock up after a while.
-Since I performed those tests several months ago I can't say much about it.
-
-I see it that way: Keep infrastructure clients separated from your mesh
-infrastructure - particularly keep clients away from your mesh channel.
-Otherwise you will degrade performance by using and re-using the same
-channel all the time. Even if Madwifi VAPs work stable-ish this doesn't
-perform well. A stupid but working access point is cheap, use the mesh
-as an uplink. Well, if all that you want is a very cheap mesh with a
-couple of nodes and want to accept performance issues, you may be fine
-with VAPs if the driver works.
-
-The new ath5k driver in the most recent Linux kernel works in ad-hoc,
-but has range issues. As could be read recently in the news, Atheros is
-actively sponsoring development of their hardware for the kernel now
-(they are paying a guy to develop drivers).
+Cheers,
 
 cu elektra
 
-
-> Hi Elektra,
->
-> I haven't replied on the list about my problems with mesh networks but 
-> I think I narrowed my issues to exactly this: I have hardware at home 
-> that just doesn't like to see an access point with an ADHOC interface 
-> AND an AP interface.
->
-> The weird hardware: my macbook pro (atheros based?), and a dell 
-> truemobile 1400.
->
-> The same setup works flawlessly with a D-Link G-630 PCMCIA.
->
-> I don't know what to do to resolve these issues, but I will certainly 
-> not deploy a mesh network in these conditions where maybe 30%+ of the 
-> hardware doesn't work with adhoc mesh!
->
-> Tonight I'll try to switch my access points to 802.11b only and see if 
-> it's more compatible for adhoc+ap...
->
-> If you have any clue as to what to tweak in Madwifi to help with these 
-> compatibility issues, let me know :)
->
-> On 22-Apr-08, at 3:00 PM, elektra wrote:
->>
->> In general the ad-hoc mode has been widely neglected by manufacturers 
->> and developers. From the first day I started to work on mesh networks 
->> I have been battling with firmware/driver issues. But as more and 
->> more people start using mesh networks the demand for working drivers 
->> is increasing. So we can expect that - finally, after many years - 
->> the situation will improve quickly.
->
 
 
