@@ -1,16 +1,15 @@
-Message-ID: <bccbc6690804220924w3af5cffeqbdc9a122b7840537@mail.gmail.com>
-Date: Tue, 22 Apr 2008 18:24:41 +0200
-From: "M. Peterson" <petersonmaxx@googlemail.com>
+Message-ID: <480E35DC.801@gmx.net>
+Date: Tue, 22 Apr 2008 21:00:44 +0200
+From: elektra <onelektra@gmx.net>
+MIME-Version: 1.0
 Subject: Re: [B.A.T.M.A.N.] Who can help with BATMAN-ADV integration into
 	ROBIN-FW?
-In-Reply-To: <1768846515.20080405222610@pyro.de>
-MIME-Version: 1.0
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_4806_10089394.1208881481674"
-References: <003a01c894a2$8f7ebe00$ae7c3a00$@com>
-	<20080403133445.GA29070@hrz.tu-chemnitz.de>
-	<001001c8959b$2596d2d0$70c47870$@com> <47F6072D.2050503@gmx.net>
-	<1768846515.20080405222610@pyro.de>
+References: <003a01c894a2$8f7ebe00$ae7c3a00$@com>	<20080403133445.GA29070@hrz.tu-chemnitz.de>	<001001c8959b$2596d2d0$70c47870$@com>
+	<47F6072D.2050503@gmx.net>	<1768846515.20080405222610@pyro.de>
+	<bccbc6690804220924w3af5cffeqbdc9a122b7840537@mail.gmail.com>
+In-Reply-To: <bccbc6690804220924w3af5cffeqbdc9a122b7840537@mail.gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,29 +23,48 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-------=_Part_4806_10089394.1208881481674
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Max -
 
-hi
+this is solely a issue of malfunctioning drivers/ WiFi cards in ad-hoc=20
+mode. The proprietary Broadcom driver for 2.4 Linux kernels shipped with=20
+devices like Linksys WRT54GL, Buffalo WHR-G54S, Asus WL500GP works=20
+flawlessly.
 
-will it be some day technically possible to use the marvel wifi chip of the
-laptop to join the mesh network or is always a router needed?
+The Madwifi driver for Atheros cards works but still has issues that=20
+developers are working on. The best working Madwifi driver seems to come=20
+with OpenWRT.
 
-Why can=B4t that drawn to the laptops with a software solution ?
+This is basically what works at the moment. Most Intel drivers have=20
+issues (there are firmware issues as well, as I have experienced with=20
+IPW2200). IPW2100 seems to work, IPW3945 works more or less with some=20
+tricks (and occasional firmware errors).
 
-Max
+Marvel drivers are nowadays shipped with the Linux kernel, but because I=20
+lack Marvell hardware I couldn't test it in ad-hoc mode.
 
-------=_Part_4806_10089394.1208881481674
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+In general the ad-hoc mode has been widely neglected by manufacturers=20
+and developers. From the first day I started to work on mesh networks I=20
+have been battling with firmware/driver issues. But as more and more=20
+people start using mesh networks the demand for working drivers is=20
+increasing. So we can expect that - finally, after many years - the=20
+situation will improve quickly.
 
-hi<br><br>will it be some day technically possible to use the marvel wifi c=
-hip of the laptop to join the mesh network or is always a router needed?<br=
-><br>Why can=B4t that drawn to the laptops with a software solution ?<br><b=
-r>
-Max<br>
+cu elektra
 
-------=_Part_4806_10089394.1208881481674--
+
+> hi
+>
+> will it be some day technically possible to use the marvel wifi chip=20
+> of the laptop to join the mesh network or is always a router needed?
+>
+> Why can=B4t that drawn to the laptops with a software solution ?
+>
+> Max
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>  =20
+
