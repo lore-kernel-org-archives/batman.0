@@ -1,16 +1,16 @@
 From: Axel Neumann <axel@open-mesh.net>
 Subject: Re: [B.A.T.M.A.N.] two-radio nodes and alternative next hop
-Date: Thu, 24 Apr 2008 09:33:08 +0200
+Date: Thu, 24 Apr 2008 10:09:05 +0200
 References: <20080421123928.GA3483@apoderado.ometepe.net>
 	<200804230954.37620.axel@open-mesh.net>
-	<20080423230233.GA20235@apoderado.ometepe.net>
-In-Reply-To: <20080423230233.GA20235@apoderado.ometepe.net>
+	<20080424035553.GA22613@apoderado.ometepe.net>
+In-Reply-To: <20080424035553.GA22613@apoderado.ometepe.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-6"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804240933.08946.axel@open-mesh.net>
+Message-Id: <200804241009.05448.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,53 +26,34 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open
 
 Hi,
 
-> ok, what happend: .4.165 (i386/prism2.5/hostap(-pci)) switched for some
-> unknown reason to .3.x/channel/essid (which explains the poor link from
-> .4.165 to ".4.1"(actually .3.160), and i thought it was a fast growing
-> Guahumo tree :). So i fixed the bssids on both, .4.1 and .4.165. And it
-> seems to not switch anymore... 
-So lets hope that the prism2.5 behavior is more predictable than madwifi
-> thanks for being so stubborn :-) 
-> But that doesn't change the fact, that .4.1 still shows .4.162 as
-> alternativeNextHop to .3.x, where, in fact, all alternative paths inside
-> .4.x to .3.x lead back to .4.1 !
+On Donnerstag 24 April 2008, Jan Hetges wrote:
+> and something completely different: i think, .4.1 should choose the
+> direkt link to .4.162 instead of going through .4.160 (and vice versa)
+I experienced the same. Sometimes, from the end2end throughput point of view, 
+it would be better to choose the direct route and sometimes not. I played a 
+lot with the metric in charge of the final route. But in the end I am unsure 
+which parameters are responsible for that or whether the better path can be 
+identified over several hops at all (perhaps if we take hop-by-hop bandwidth, 
+interference, load, and other stuff into account). You could twist the metric 
+so that it always prefers end2end routes with less hops but I think in the 
+end it is most important to have a general and unique metric applied to every 
+routing instance in your mesh. 
 
-Yea, thats correct. Its not a bug, its a design thing of the batman protocol.
-3.1 generates OGMs which are rebroadcasted via 4.1. Then, they are received 
-by 4.162 and 4.160 which rebroadcast them again. Consequently, 4.162 and 
-4.160 will both receive 3.1-OGMs from each other. 
+Don't know if you want to hear it? You can play with --dups-ttl-degradation X 
+(current default is X=2). This degrades the preference for a path by 2 
+percent with every additional hop (relative to the shortes path). So if you 
+use 50 instead, a node with two alternative paths (one single-hop and one 
+two-hop path) to a given destination will ignore 50% of the OGMs received via 
+a two hop path. Then it will probably choose the single-hop path.
+And of course, if you find a value which works general better for all your 
+nodes then let us know.
 
-3.x----4.1--+- - -4.162-+
-            |           |
-            +---4.160---+
-
-Now assuming, for some reasons the link between 4.1 and 4.162 is weak, then 
-4.162 might receive more OGMs via 4.160 then via 4.1. Consequently, 4.1 will 
-receive the 3.x-OGMs broadcasted by 4.162 and consider 4.162 as an 
-alternativeNextHop towards 3.x. 
-The good thing is that the number of OGMs received via such a "wrong path" can 
-NEVER become more (and faster) than those received via the "correct path" and 
-therefore such path should never be chosen.
-
-Theoretically, the same applies for a setup like this:
-3.x----4.1---4.162 
-where 4.1 receives the 3.x-OGMs rebroadcasted by 4.162. But for paranoid 
-reasons we included a mechanism which allows 4.1 to identify OGMs that 
-travelled via itself just one hop ago.
-
-happy ruminating,
-
+ciao,
 axel
 
-
->
-> > > i'll make some more logs when .3.137 is back up
->
-> still down, anyways, i attach -cbd8 from .4.1, .4.160, .4.162 and .4.165
->
 >
 > cheers
 >
->     --Jan
+>   --Jan
 
 
