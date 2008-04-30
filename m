@@ -1,14 +1,18 @@
-Message-ID: <20080428220906.zpzwi7piosoogo88@webmail.ddmesh.de>
-Date: Mon, 28 Apr 2008 22:09:06 +0200
-From: Freifunk Dresden <freifunk@ddmesh.de>
+Date: Wed, 30 Apr 2008 19:20:07 +0200
+From: Solon Lutz <solon@pyro.de>
+Message-ID: <605683035.20080430192007@pyro.de>
+Subject: Re[2]: [B.A.T.M.A.N.] Who can help with BATMAN-ADV integration into
+	ROBIN-FW?
+In-Reply-To: <20080422051329.GA32184@hrz.tu-chemnitz.de>
+References: <003a01c894a2$8f7ebe00$ae7c3a00$@com>
+	<200804070039.31852.lindner_marek@yahoo.de>
+	<1655027616.20080410173709@pyro.de>
+	<200804181257.08183.lindner_marek@yahoo.de>
+	<1936797443.20080418123911@pyro.de>
+	<20080422051329.GA32184@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] batmand-ex: inactive interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,20 +24,17 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: "Open-Mesh, Mailinglist" <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-HI,
+SW> Hello Solon,
 
-I'm running batman-experimental rev1023. If I have an working  
-interface which is  deactivated (vpn restart) and activated later,  
-then batmand first detects and
-ignores this interface but does not try to use the inteface again.
-I have to restart batmand with same interfaces and parameter. Within  
-seconds the
-other nodes are recognized.
+SW> It would be nice if you could bring some FON-routers (like 5 to 10) that
+SW> we can use for the workshop for the batman-adv. That would be enough for
+SW> the start, and maybe more people will come and join with their routers.
 
-Is there a way that the inactive interfaces are reactivated and used  
-automatically?
-/Stephan
+I'll bring plenty of FONs with me, but I can't be there on friday.
+Expect my arrival on saturday 11-12am.
+
+Regards, Solon
 
 
