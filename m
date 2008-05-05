@@ -1,14 +1,12 @@
-Mime-Version: 1.0 (Apple Message framework v753)
-In-Reply-To: <200805052112.45635.holger@layer-acht.org>
+Message-ID: <33923.85.41.146.90.1210019802.squirrel@krisma.oltrelinux.com>
+In-Reply-To: <200805051954.19727.lindner_marek@yahoo.de>
 References: <200805051954.19727.lindner_marek@yahoo.de>
-	<200805052112.45635.holger@layer-acht.org>
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=pgp-sha1; boundary="Apple-Mail-26--220320873"
-Message-Id: <926D75F5-0718-4550-9773-52EB4C87D9F5@lo-res.org>
-Content-Transfer-Encoding: 7bit
-From: Aaron Kaplan <aaron@lo-res.org>
+Date: Mon, 5 May 2008 22:36:42 +0200 (CEST)
 Subject: Re: [B.A.T.M.A.N.] 0.3 final released
-Date: Mon, 5 May 2008 21:18:32 +0200
+From: a.anselmi@oltrelinux.com
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,45 +20,69 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---Apple-Mail-26--220320873
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+great work Marek, compliments!
+
+Antonio
 
 
-On May 5, 2008, at 9:12 PM, Holger Levsen wrote:
 
-> Hi,
+On Lun, 5 Maggio 2008 13:54, Marek Lindner disse:
 >
-> On Monday 05 May 2008 13:54, Marek Lindner wrote:
->> after a long release cycle (almost one year) the B.A.T.M.A.N. team  
->> is proud
->> to announce the release of:
->> - batman 0.3 stable
->> - vis server 0.3 stable
->> - batman advanced kernelland 0.1 beta
+> Hello everybody,
 >
-> Congrats!!
+> after a long release cycle (almost one year) the B.A.T.M.A.N. team is
+> proud to
+> announce the release of:
+> - batman 0.3 stable
+> - vis server 0.3 stable
+> - batman advanced kernelland 0.1 beta
+>
+> We used the Wireless Community Weekend 2008 in the c-Base to release our
+> newest version. Here are the main features in brief:
+>
+> batman 0.3:
+> - TQ based routing algorith to overcome BATMAN III limitations
+> - policy routing (see: http://open-mesh.net/batman/doc/RoutingVodoo)
+> - policy routing script to fully control the routing table (see:
+> http://downloads.open-mesh.net/batman/useful-scripts-and-tools/policy_routing_script.sh)
+> - tunneling rewritten (only UDP based, blackhole detection and kernel
+> module
+> batgat for performance boosting)
+> - parameters can be changed at runtime (routing_class, gateway_class, hna,
+> preferred gateway)
+> - routing_class support 4 different settings (see:
+> http://open-mesh.net/batman/doc/InternetTuning)
+> - interface watchdog (interfaces can be (de)activated dynamically)
+> - packet aggregation (experimental)
+> - official IANA port 4035 is used
+> - RFC draft published
+>
+> batman advanced kernelland:
+> - layer 2 meshing based on BATMAN TQ algorithm in kernelland
+> - operates on any ethernet like interface
+> - supports IPv4, IPv6, DHCP, etc
+> - is controlled via /proc/net/bvatman-adv/
+> - bridging via brctl is supported
+> - interface watchdog (interfaces can be (de)activated dynamically)
+> - offers integrated vis server which meshes/syncs with other vis servers
+> in
+> range
+>
+> The latest version of batman layer 3 obsoletes batman 0.2 which is not
+> supported anymore. The current version (batman 0.3) is the stable version
+> from now on. Even though a version 0.4 might emerge we will continue
+> supporting 0.3 for a long time period with security fixes and stability
+> patches.
+>
+> Download our code and have fun ! :-)
+>
+> Greetings,
+> Marek
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
 
-congrats also from over here :)
 
-
-
-
-
---Apple-Mail-26--220320873
-content-type: application/pgp-signature; x-mac-type=70674453;
-	name=PGP.sig
-content-description: This is a digitally signed message part
-content-disposition: inline; filename=PGP.sig
-content-transfer-encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (Darwin)
-
-iD8DBQFIH12JxEgyMttZ8YwRAmrbAJ4+xXxolim0jLCT+Hy/xdowJyO1mgCeL06v
-yzlZqHgpZFhKN8Pd/Le8+BA=
-=D3hS
------END PGP SIGNATURE-----
-
---Apple-Mail-26--220320873--
