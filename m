@@ -1,19 +1,12 @@
-Date: Fri, 2 May 2008 09:40:44 +0200
-From: Solon Lutz <solon@pyro.de>
-Message-ID: <1534781443.20080502094044@pyro.de>
-Subject: Re: [B.A.T.M.A.N.] Who can help with BATMAN-ADV integration into
-	ROBIN-FW?
-In-Reply-To: <481A0B77.1020801@dd19.de>
-References: <003a01c894a2$8f7ebe00$ae7c3a00$@com>
-	<200804070039.31852.lindner_marek@yahoo.de>
-	<1655027616.20080410173709@pyro.de>
-	<200804181257.08183.lindner_marek@yahoo.de>
-	<1936797443.20080418123911@pyro.de>
-	<20080422051329.GA32184@hrz.tu-chemnitz.de>
-	<605683035.20080430192007@pyro.de> <481A0B77.1020801@dd19.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 5 May 2008 19:54:19 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805051954.19727.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] 0.3 final released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,34 +20,52 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Dear Alexander Morlang, on Donnerstag, 1. Mai 2008 at 20:27 you wrote:
 
-> Solon Lutz schrieb:
->> SW> Hello Solon,
+Hello everybody,
 
->> SW> It would be nice if you could bring some FON-routers (like 5 to 10) that
->> SW> we can use for the workshop for the batman-adv. That would be enough for
->> SW> the start, and maybe more people will come and join with their routers.
+after a long release cycle (almost one year) the B.A.T.M.A.N. team is proud to 
+announce the release of:
+- batman 0.3 stable
+- vis server 0.3 stable
+- batman advanced kernelland 0.1 beta
 
->> I'll bring plenty of FONs with me, but I can't be there on friday.
->> Expect my arrival on saturday 11-12am.
+We used the Wireless Community Weekend 2008 in the c-Base to release our 
+newest version. Here are the main features in brief:
 
-> stupid question:
-> will this be a batman l2 test or a robin test?
+batman 0.3:
+- TQ based routing algorith to overcome BATMAN III limitations
+- policy routing (see: http://open-mesh.net/batman/doc/RoutingVodoo)
+- policy routing script to fully control the routing table (see: 
+http://downloads.open-mesh.net/batman/useful-scripts-and-tools/policy_routing_script.sh)
+- tunneling rewritten (only UDP based, blackhole detection and kernel module 
+batgat for performance boosting)
+- parameters can be changed at runtime (routing_class, gateway_class, hna, 
+preferred gateway)
+- routing_class support 4 different settings (see: 
+http://open-mesh.net/batman/doc/InternetTuning)
+- interface watchdog (interfaces can be (de)activated dynamically)
+- packet aggregation (experimental)
+- official IANA port 4035 is used
+- RFC draft published 
 
-A. Try out BATMAN-L2
-B. Try to integrate it into the ROBIN-FW
+batman advanced kernelland:
+- layer 2 meshing based on BATMAN TQ algorithm in kernelland
+- operates on any ethernet like interface 
+- supports IPv4, IPv6, DHCP, etc
+- is controlled via /proc/net/bvatman-adv/
+- bridging via brctl is supported
+- interface watchdog (interfaces can be (de)activated dynamically)
+- offers integrated vis server which meshes/syncs with other vis servers in 
+range
 
+The latest version of batman layer 3 obsoletes batman 0.2 which is not 
+supported anymore. The current version (batman 0.3) is the stable version 
+from now on. Even though a version 0.4 might emerge we will continue 
+supporting 0.3 for a long time period with security fixes and stability 
+patches.
 
-Best regards,
+Download our code and have fun ! :-)
 
-Solon Lutz
-
-
-+-----------------------------------------------+
-| PyroDesign Berlin - Creativity for tomorrow   |
-| Wasgenstrasse 75/13 - 14129 Berlin, Germany   |
-| www.pyro.de - phone + 49 - 30 - 48 48 58 58   |
-| info@pyro.de - fax + 49 - 30 - 80 94 03 52    |
-+-----------------------------------------------+
+Greetings,
+Marek
 
