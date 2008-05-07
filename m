@@ -1,16 +1,17 @@
-Message-Id: <61342998-9D14-4154-A6CF-776154E44FD7@cslab.ece.ntua.gr>
-From: Antony Chazapis <chazapis@cslab.ece.ntua.gr>
-In-Reply-To: <200805072129.29427.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [B.A.T.M.A.N.] 0.3 final <-> quagga
-Date: Wed, 7 May 2008 17:10:58 +0300
+Message-ID: <4821D62A.4010705@leo34.net>
+Date: Wed, 07 May 2008 18:17:46 +0200
+From: Daniel Paufler <dpaufler@leo34.net>
+MIME-Version: 1.0
 References: <51B22798-78A8-4425-BAEA-530297B1518A@cslab.ece.ntua.gr>
-	<200805072041.54021.lindner_marek@yahoo.de>
-	<4A79C120-E22D-4EB4-91E9-851EA0B2DBE5@cslab.ece.ntua.gr>
-	<200805072129.29427.lindner_marek@yahoo.de>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+	<4821B37C.4080608@leo34.net>
+	<200805072203.33919.lindner_marek@yahoo.de>
+In-Reply-To: <200805072203.33919.lindner_marek@yahoo.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig37B7057A4BA7C13903E782D7"
+Subject: Re: [B.A.T.M.A.N.] 0.3 final <-> quagga
+Reply-To: dpaufler@leo34.net,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -23,87 +24,80 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig37B7057A4BA7C13903E782D7
+Content-Type: multipart/mixed; boundary="------------080804050208090104000707"
 
-On May 7, 2008, at 4:29 PM, Marek Lindner wrote:
+This is a multi-part message in MIME format.
+--------------080804050208090104000707
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
->
->
->> I would prefer that you copy it over. I think it is better to keep
->> things in one place. :)
->
-> Ok, I copied it and put a note on the website. See:
-> https://www.open-mesh.net/batman/patches
->
-> I renamed the patches from "experimental" to "needs-testing"  
-> otherwise people
-> might get confused with our experimental branch.
->
->
->> I had a lengthy conversation about that with Acinonyx. The first  
->> patch
->> I did was to enable us to pass arguments to the policy routing  
->> script.
->> However, I preferred a direct patch, because I couldn't find an  
->> easy way
->> with the current batmand and (more importantly) the zebra interface  
->> to
->> retrieve routes on exit. I had to implement some kind of route
->> management/tracking in the script and delete these
->> routes on shutdown. With the direct patch, route management is done  
->> in
->> the kernel. Sure, a full-featured policy-routing-script would be a  
->> more
->> appropriate solution and I hope to find some time to do it in the  
->> future.
->
-> But batman should keep track of all routes and send the delete  
-> commands to
-> your program. On exit batman should notify your program about all  
-> the routes
-> to be deleted. If not you found a bug.  ;-)
->
+Hey Marek
 
-This is not a bug, but an implementation restriction. Batmand uses
-flush_routes_rules (in linux/route.c) to get back all all routes that
-have been added to the kernel during execution and from there it calls
-add_dell_route to remove them. When using the policy-routing-script,
-nothing is removed, as nothing has been added to the kernel. It is
-supposed to be the responsibility of the policy-routing-script to know
-what has to be deleted. If there was a way to simply tell zebra:
-"Delete all routes from batman", that wouldn't be a problem. But I don't
-know how to do this with the zebra API and I didn't wan't to keep track
-of all routes in the script, as this is already implemented in batmand.
+Marek Lindner wrote:
+>> I am mainly interested in redistributing zebra routes to batman as i d=
+o
+>> with olsr_quagga plugin. This way, i can think about switching from ol=
+sr
+>> to batman 0.3. Perhaps, you will enable it in your code again.
+> it was never "enabled" - it was part of a patch.
+> I'm not that familiar with zebra/quagga. Can you explain what you need =
+and why=20
+> the dynamic HNA adding/deleting is not enough ? That feature did not ex=
+ist in=20
+> revision 502.
+Enabling zebra to tell batmand to add/remove routes needs a patch in
+zebra. It would be really nice to have a batmand plugin whatever that
+talks to zebra for getting dynamic HNA routes. So i dont have to modify
+my zebra, but can enable a plugin in batmand (as it is in OLSR).
 
->
->> An even greater challenge would be to implement a bidirectional  
->> policy-
->> routing-script, that could also be used to implement route  
->> redistribution
->> from other protocols.
->> Which would of course require a full API to talk with batmand... Need
->> even more time for that... :)
->
-> You mean batman should distribute zebra routes on the fly ? That is  
-> possible -
-> even _today_.  :-)
-> You can add and delete HNA routes via the unix socket. HNA is a way  
-> to flood
-> the batman network with routes which do not belong to batman.
->
+I need this for BGP routing. Imagine to route two batmand clouds
+together via BGP. If the third cloud joins, i dont want to reconfigure
+the other batmand-daemons. They just grep the routes from the running zeb=
+ra.
 
-I hadn't though about that. I'll give it a try.
+Another big option would be to let zebra speak batman / olsr protocol
+and be able to configure batman / olsr through zebra interface /
+configuraion. But that would be "top of everything" and imo not necessary=
+=2E
 
-You could also consider merging
-http://www.cslab.ece.ntua.gr/~chazapis/batman/batman-r1040-policy-routing-script-argv.patch
-into the main branch. It allow for passing args to the policy-routing- 
-script, which is really useful.
+Greetz
 
-Antony
+Daniel
 
-> Greetings,
-> Marek
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+--=20
+Dipl. Inf. (FH) Daniel Paufler
+Angewandte Informatik - Computer Aided Facility Management
 
+
+
+--------------080804050208090104000707
+Content-Type: application/pgp-signature;
+ name="signature.asc"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="signature.asc"
+
+LS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0KVmVyc2lvbjogR251UEcgdjEuNC4yLjIg
+KEdOVS9MaW51eCkKQ29tbWVudDogVXNpbmcgR251UEcgd2l0aCBNb3ppbGxhIC0gaHR0cDov
+L2VuaWdtYWlsLm1vemRldi5vcmcKCmlEOERCUUZJSWNHQXE2eW1GVWtaTFRJUkF2dW1BS0Rx
+OXp6Qll4ZmVxUzM1UW5WYXQydlpJNFN0NndDZEU3dTQKdC9jQ3hCa0xManlUSEY5RVUxS1px
+TFE9Cj03dWt4Ci0tLS0tRU5EIFBHUCBTSUdOQVRVUkUtLS0tLQoK
+--------------080804050208090104000707--
+
+--------------enig37B7057A4BA7C13903E782D7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFIIdYqq6ymFUkZLTIRAnurAJwJGOJsk++1a96Rwqkb1OSjYfm5EgCgtkUF
+ONtnK+TIZmGfrOfgXNg/yBk=
+=Kcig
+-----END PGP SIGNATURE-----
+
+--------------enig37B7057A4BA7C13903E782D7--
