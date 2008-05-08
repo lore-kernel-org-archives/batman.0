@@ -1,15 +1,16 @@
-From: Holger Levsen <holger@layer-acht.org>
-Subject: Re: [B.A.T.M.A.N.] 0.3 final released
-Date: Thu, 8 May 2008 01:27:28 +0200
-References: <200805051954.19727.lindner_marek@yahoo.de>
-	<200805071444.27294.holger@layer-acht.org>
-	<200805072113.23669.lindner_marek@yahoo.de>
-In-Reply-To: <200805072113.23669.lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] 0.3 final <-> quagga
+Date: Thu, 8 May 2008 17:23:37 +0800
+References: <51B22798-78A8-4425-BAEA-530297B1518A@cslab.ece.ntua.gr>
+	<200805072203.33919.lindner_marek@yahoo.de>
+	<4821D62A.4010705@leo34.net>
+In-Reply-To: <4821D62A.4010705@leo34.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart14590657.VSR6zVCojW";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200805080127.29399.holger@layer-acht.org>
+Content-Disposition: inline
+Message-Id: <200805081723.37648.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,33 +24,17 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart14590657.VSR6zVCojW
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hi Marek,
+Hi,
 
-On Wednesday 07 May 2008 15:13, Marek Lindner wrote:
-> I updated http://open-mesh.net/batman/downloads to link to the checksums
-> and the signature. Is that what you mean ?
+> Enabling zebra to tell batmand to add/remove routes needs a patch in
+> zebra. It would be really nice to have a batmand plugin whatever that
+> talks to zebra for getting dynamic HNA routes. So i dont have to modify
+> my zebra, but can enable a plugin in batmand (as it is in OLSR).
 
-Yes, thanks.
+Your concept of "batman plugin" confuses me a bit. Is that a plugin in batman 
+or a plugin in zebra ? And what are the functions it provides which can't be 
+provided now and why ?
 
-
-regards,
-	Holger
-
---nextPart14590657.VSR6zVCojW
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIIjrhUHLQNqxYNSARAjIzAJ0fmLx8YTJDM3sVoR+mSMj5Kzj/ogCgwLy4
-/A43t4LchtMUpAO6+/zFLfc=
-=gCq2
------END PGP SIGNATURE-----
-
---nextPart14590657.VSR6zVCojW--
+Greetings,
+Marek
