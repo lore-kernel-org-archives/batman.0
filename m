@@ -1,16 +1,16 @@
-Message-ID: <20080514123109.zi9cbcu3ryqoo8o0@wwwstudent.murdoch.edu.au>
-Date: Wed, 14 May 2008 12:31:09 +0800
-From: David Murray <30179198@student.murdoch.edu.au>
-Subject: Re: [B.A.T.M.A.N.] Multiple radios to improve throughput
-References: <30773.75.128.50.239.1210728113.squirrel@corp.changind.com>
-	<482A54A5.5030302@gmx.net>
-In-Reply-To: <482A54A5.5030302@gmx.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format="flowed"
-Content-Disposition: inline
+Message-Id: <E2361084-04EE-46FD-A64C-631DE73E21AB@cslab.ece.ntua.gr>
+From: Antony Chazapis <chazapis@cslab.ece.ntua.gr>
+In-Reply-To: <77182109-977E-4598-BD0B-ED38BCED2D68@cslab.ece.ntua.gr>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [B.A.T.M.A.N.] 0.3 final <-> quagga
+Date: Wed, 14 May 2008 16:51:16 +0300
+References: <51B22798-78A8-4425-BAEA-530297B1518A@cslab.ece.ntua.gr>
+	<200805081812.33117.lindner_marek@yahoo.de>
+	<CB4F1B6A-15D9-4CFD-BA29-4B6AC6F72596@cslab.ece.ntua.gr>
+	<200805131634.20052.lindner_marek@yahoo.de>
+	<77182109-977E-4598-BD0B-ED38BCED2D68@cslab.ece.ntua.gr>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,74 +22,58 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
-Cc: schao@changind.com
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Are both of your radios using 2.4 GHz channels? How close are they and 
-are you using external antennas?
 
-This paper [1] p13 and this paper [2] p6 both talk about an inter radio 
-interference issue when using multiple radios on one node.
+On May 13, 2008, at 12:14 PM, Antony Chazapis wrote:
 
-Dave
-
-[1] http://citeseer.ist.psu.edu/raniwala04centralized.html
-[2] http://research.microsoft.com/research/pubs/view.aspx?tr_id=667
-
-Quoting elektra <onelektra@gmx.net>:
-
-> Hi Shane -
 >
-> if all radios are operating on the same channel you can't expect any 
-> improvement. So operate one link on channel 1 and the other on 
-> channel 11, 13 or 14 according to the regulations in your country. 
-> Channels in the 5 GHz range are even better ;-)
->
-> Note also that many embedded devices have not enough CPU power to 
-> saturate the capacity of a single radio link operating at full speed. 
-> At 54 Mbit a single link can have approx. 3 MByte/sec throughput, but 
-> we have experienced that a 200 MHz MIPS CPU doesn't provide enough 
-> power for more than 1.2 to 1.6 MByte/sec with a single interface 
-> depending on the chipset/type of your wifi card.
->
-> cu elektra
->
->
->> Hello,
->>
->> I have a 3 node mesh network with layout as follows:
->>
->>    node #1       node #2        node #3
->> 192.168.2.1   192.168.2.5    192.168.2.9
->>
->> Each node has only one radio and #1 talks to #3 via #2 and vice versa.
->> If I want to improve the throughput between #1 and #3, logically I would
->> add another radio to #2 so it can communicate to both #1 and #3
->> simultaneously w/o having the single radio switching back and forth
->> between #1 and #3.
->>
->> However, I ran IPERF between #1 and #3 before and after adding the
->> second radio to node #2 and the bandwidth didn't really improve.
->> In my node #2 configuration, I did not bridge the two wifi interfaces so
->> I have ath0 and ath1 with their own IP addresses.  All three nodes are
->> configured with the same channel.  My batmand command line for node #2
->> is:  batmand ath0 ath1.
->>
->> Can anyone advise me on what I did wrong?
->>
->> Thanks,
->> Shane
->> _______________________________________________
->> B.A.T.M.A.N mailing list
->> B.A.T.M.A.N@open-mesh.net
->> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->>
+> On May 13, 2008, at 11:34 AM, Marek Lindner wrote:
 >>
 >
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
+>> I did some testing with a script which just prints the commands and  
+>> I noticed
+>> that the script can't execute those commands because it dies too  
+>> quickly via
+>> SIGINT or SIGTERM. Therefore the latest revision (1065) ignores these
+>> signals. Apart from that we have a little sync problem. Batman  
+>> kills its
+>> child after sending all the commands via the pipe. At that moment  
+>> the child
+>> may still be busy with processing these commands. We have to find  
+>> an elegant
+>> way to communicate that the child finished its last job. The latest  
+>> revision
+>> waits another 3 seconds which is far from being perfect ...
+>>
 
+I've checked out the latest revision and have seen the problem you  
+mention.
+I think that waiting and then killing the process is not needed. If  
+you just
+close the pipe, the other end should notice that there is an EOF at  
+stdin and die.
+I created a new batquagga version (0.2) that does exactly that and even
+when removing the "sleep" and "kill" commands from restore_defaults(),  
+it works fine.
+
+Moreover, batquagga-0.2 has no signal handlers for SIGKILL and SIGINT.
+They are not needed anymore. Also, the "retain routes" option was  
+removed
+(no sense at this point, and no way to properly distinguish between  
+delete routes
+that happen at shutdown vs. delete routes that would normally occur).
+
+>>
+>> PS: Your addtional script arguments patch is an interesting idea.  
+>> We are
+>> checking on that because it might have some side effects.
+>>
+
+
+The arguments patch or some other form of passing arguments is essential
+for using the policy-routing-script to redistribute routes from other  
+protocols...
+
+Antony
 
