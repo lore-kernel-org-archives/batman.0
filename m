@@ -1,15 +1,16 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] 0.3 final released
-Date: Thu, 15 May 2008 08:24:45 +0800
-References: <200805051954.19727.lindner_marek@yahoo.de>
-	<50769.209.206.168.53.1210029743.squirrel@webmail.reglue.org>
-	<200805061527.48573.lindner_marek@yahoo.de>
-In-Reply-To: <200805061527.48573.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] 0.3 final <-> quagga
+Date: Thu, 15 May 2008 10:12:48 +0800
+References: <51B22798-78A8-4425-BAEA-530297B1518A@cslab.ece.ntua.gr>
+	<200805150252.45068.lindner_marek@yahoo.de>
+	<CB6D3CEE-C8C6-4047-AED4-AAF9F90EB2CF@cslab.ece.ntua.gr>
+In-Reply-To: <CB6D3CEE-C8C6-4047-AED4-AAF9F90EB2CF@cslab.ece.ntua.gr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805150824.45705.lindner_marek@yahoo.de>
-Content-Transfer-Encoding: quoted-printable
+Message-Id: <200805151012.48270.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,15 +24,21 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Tuesday, 6. May 2008 15:27:48 Marek Lindner wrote:
-> The pre-compiled packages will be available at:
-> http://downloads.open-mesh.net/batman/stable
-> in the coming days. Give us some time to recover from our release party. =
 
-> ;-)
+Hi,
 
-Now it is done - have fun with it.  :-)
+> This is because you use a "while true" loop.
 
-Gru=DF,
+I'm well aware of that. For you that might be enough but in general the 
+solution is not really perfect. I will get flooded with questions why batman 
+uses 100% cpu power.  ;-)
+What about sending a special "EXIT" command to give the child the possibility 
+to clean up. If the child is not dead after 10 seconds batman kills it.
+
+
+> Even simpler... Much better.
+
+Yeah - I like it simple. Thanks for the idea and thanks Simon for input.
+
+Greetings,
 Marek
-
