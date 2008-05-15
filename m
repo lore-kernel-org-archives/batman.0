@@ -1,12 +1,14 @@
-Mime-Version: 1.0 (Apple Message framework v753)
-In-Reply-To: <751282.80967.qm@web65603.mail.ac4.yahoo.com>
-References: <751282.80967.qm@web65603.mail.ac4.yahoo.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <75EF07B0-D404-4C5F-8569-F77EBD55E1E4@lo-res.org>
-Content-Transfer-Encoding: 7bit
-From: Aaron Kaplan <aaron@lo-res.org>
+From: Marek Lindner <lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] query regarding BAMAN for Mac OS X
-Date: Thu, 15 May 2008 09:46:24 +0200
+Date: Thu, 15 May 2008 20:02:02 +0800
+References: <751282.80967.qm@web65603.mail.ac4.yahoo.com>
+In-Reply-To: <751282.80967.qm@web65603.mail.ac4.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805152002.02626.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,15 +23,18 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-On May 15, 2008, at 9:37 AM, TARUN CHAPLOT wrote:
+Hi,
 
-> Hello
-> I have two queries:
 > Is the BATMAN available for Mac OS X and windows ?
+
+the batman layer 3 implementation has initial OS X support but it is not fully 
+functional. As we move forward to layer 2 in the kernel space a windows port 
+seems unlikely.
+
+
 > Is the BATMAN compatible with OLSR.
-no, it is not comaptible.
 
+Batman is a new approach which is not related to OLSR.
 
-
-
-
+Greetings,
+Marek
