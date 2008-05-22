@@ -1,15 +1,12 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] problems detecting gw
-Date: Wed, 21 May 2008 10:18:47 +0800
-References: <e58370e60805200549w4160deaxc16af3005b684b2c@mail.gmail.com>
-In-Reply-To: <e58370e60805200549w4160deaxc16af3005b684b2c@mail.gmail.com>
+Message-ID: <48352AF5.1050909@csp.it>
+Date: Thu, 22 May 2008 10:12:37 +0200
+From: cipollone <cipollone@csp.it>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200805211018.47816.lindner_marek@yahoo.de>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Subject: [B.A.T.M.A.N.] BATMAN-ADVANCED OpenWRT Package
+Reply-To: cipollone@csp.it,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -20,37 +17,17 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
-
+To: b.a.t.m.a.n@open-mesh.net
 
 Hi,
+I'm trying to install Batman-Adv Package on OpenWRt but the Makefile 
+doesn't work correctly. It try to download from an incorrect path. I 
+have tried changing the  URL Source but I think that I haven't download 
+from the correct source (becouse I have errors in compiling the package 
+after). Someone could tell me the correct URL source? Are other  errors 
+on the makefile?
 
-> 1- What is the procedure to identify gw?
->
-> I have initiated the daemon in the node switched into a ethernet like -a
-> 1.2.3.4/16 -g 7 -s 2.3.4.5
-> Then in other nodes I begin the daemon in second option and always "No
-> gateways in range..." is displayed.
+Thanks
 
-on the gateway you have to activate the gateway class and on the client the 
-routing class. Currently, you are using the old gateway class syntax. Please 
-have a look at our doc section on open-mesh.net, especially 
-http://open-mesh.net/batman/doc/InternetTuning
-
-
-> 2- How to use the visualization server?
->
-> Is possible to use the same interface of batman protocol to receive
-> visualization info? or it should be an alias or something like that?
-> As I understood I have to download s3d to display the vis info, is that
-> correct?
-
-The batman deamon and the vis server use different ports. Therefore you can 
-use them on the same interface at the same time.
-The vis server offers the graph information in the dot draw format. You can 
-use any tool to visualize that which understands that format. One of them is 
-s3d but there are others.
-
-Greetings,
-Marek
+Paolo Cipollone
 
