@@ -1,11 +1,12 @@
-From: Holger Levsen <holger@layer-acht.org>
-Date: Fri, 23 May 2008 18:51:20 +0200
+Message-ID: <4836FE66.1050303@gmx.net>
+Date: Fri, 23 May 2008 19:27:02 +0200
+From: elektra <onelektra@gmx.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3077510.WsFLZHbGlX";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Subject: Re: [B.A.T.M.A.N.] batmand 0.3-1 uploaded to Debian sid
+References: <200805231851.21517.holger@layer-acht.org>
+In-Reply-To: <200805231851.21517.holger@layer-acht.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200805231851.21517.holger@layer-acht.org>
-Subject: [B.A.T.M.A.N.] batmand 0.3-1 uploaded to Debian sid
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,33 +18,28 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart3077510.WsFLZHbGlX
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi Holger -
 
-Hi,
+great, tnx! apt-get install batman (0.2) works even in Ubuntu now!
 
-subject says it all, batmand 0.3-1 has been uploaded to Debian sid.
+cu elektra
+> Hi,
+>
+> subject says it all, batmand 0.3-1 has been uploaded to Debian sid.
+>
+> http://packages.qa.debian.org/b/batmand.html
+>
+>
+> regards,
+> 	Holger
+>   
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>   
 
-http://packages.qa.debian.org/b/batmand.html
-
-
-regards,
-	Holger
-
---nextPart3077510.WsFLZHbGlX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBINvYJUHLQNqxYNSARAujKAKCZQuyFRlwWjMn2F+IGoWggQehGDQCeOP1l
-ib8AM98JCTzP6x1FI5Mjelg=
-=DhxF
------END PGP SIGNATURE-----
-
---nextPart3077510.WsFLZHbGlX--
