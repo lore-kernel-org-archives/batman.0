@@ -1,12 +1,12 @@
-Message-ID: <48352AF5.1050909@csp.it>
-Date: Thu, 22 May 2008 10:12:37 +0200
-From: cipollone <cipollone@csp.it>
+From: Holger Levsen <holger@layer-acht.org>
+Date: Fri, 23 May 2008 18:51:20 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: multipart/signed; boundary="nextPart3077510.WsFLZHbGlX";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] BATMAN-ADVANCED OpenWRT Package
-Reply-To: cipollone@csp.it,
-	The list for a Better Approach To Mobile Ad-hoc Networking
+Message-Id: <200805231851.21517.holger@layer-acht.org>
+Subject: [B.A.T.M.A.N.] batmand 0.3-1 uploaded to Debian sid
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -19,15 +19,31 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
+--nextPart3077510.WsFLZHbGlX
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
 Hi,
-I'm trying to install Batman-Adv Package on OpenWRt but the Makefile 
-doesn't work correctly. It try to download from an incorrect path. I 
-have tried changing the  URL Source but I think that I haven't download 
-from the correct source (becouse I have errors in compiling the package 
-after). Someone could tell me the correct URL source? Are other  errors 
-on the makefile?
 
-Thanks
+subject says it all, batmand 0.3-1 has been uploaded to Debian sid.
 
-Paolo Cipollone
+http://packages.qa.debian.org/b/batmand.html
 
+
+regards,
+	Holger
+
+--nextPart3077510.WsFLZHbGlX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBINvYJUHLQNqxYNSARAujKAKCZQuyFRlwWjMn2F+IGoWggQehGDQCeOP1l
+ib8AM98JCTzP6x1FI5Mjelg=
+=DhxF
+-----END PGP SIGNATURE-----
+
+--nextPart3077510.WsFLZHbGlX--
