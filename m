@@ -1,11 +1,14 @@
-Date: Sun, 1 Jun 2008 20:29:28 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20080601182928.GA12822@hrz.tu-chemnitz.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] batmand 0.3 + freifunkfirmware
+Date: Mon, 2 Jun 2008 10:17:53 +0800
+References: <50872.209.206.168.53.1212239575.squirrel@webmail.reglue.org>
+In-Reply-To: <50872.209.206.168.53.1212239575.squirrel@webmail.reglue.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] B.A.T.M.A.N. wireshark dissectors available
+Message-Id: <200806021017.53260.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,50 +20,22 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+On Saturday, 31. May 2008 21:12:55 dondavis@reglue.org wrote:
+> freifunk-batman is incompatible with batmand 0.3
+> I tried installing freifunk and the batman 0.3 package from
+> http://downloads.open-mesh.net/batman/stable/wrt-freifunk/batmand_0.3-rv105
+>7_mipsel-wr-elf-32-lsb-dynamic.ipk (no freifunk batman) on the commandline. 
+> Package is installed.  I start batmand br0 (which worked quite well in
+> batman 0.2)
+> I can no longer log into the router via ssh or web.
+> Is using the bridge to be avoided in 0.3?  Is it because I'm not
+> specifying all interfaces?
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
+One of the 0.3 features is advanced policy routing which probably is your 
+problem. Please have a look at our documentation:
+http://open-mesh.net/batman/doc/RoutingVodoo
 
-Hello,
-
-thanks to Sven Eckelmann we now have Wireshark [1] dissectors available. :)
-
-You can use them to analyze B.A.T.M.A.N. traffic in your network, it
-dissects the protocol information of the incoming packets.
-
-The dissectors are available at our tool download site[2]:
-
-http://downloads.open-mesh.net/batman/useful-scripts-and-tools/wireshark-batman-adv-0.2.0.tar.bz2
--> Dissector for the latest batman-advanced (layer 2) revision
-http://downloads.open-mesh.net/batman/useful-scripts-and-tools/wireshark-batman-0.2.2.tar.bz2
--> Dissector for batman-0.3 (layer 3)
-
-Development is going on at
-http://gitorious.org/projects/wireshark-batman and
-http://gitorious.org/projects/wireshark-batman-adv
-
-It is planned to contribute the dissectors to the upstream Wireshark soon.
-
-Regards,
-	Simon
-
-[1] http://www.wireshark.org/
-[2] http://downloads.open-mesh.net/batman/useful-scripts-and-tools/
-
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIQuqIrzg/fFk7axYRAtzpAKDfVIvFmeEUrvzVPlz8egMP+uUkkQCgjj4X
-gsCctYw273vjiLrh8M7C+c0=
-=VfvS
------END PGP SIGNATURE-----
-
---fdj2RfSjLxBAspz7--
+Greetings,
+Marek
