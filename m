@@ -1,14 +1,10 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batmand 0.3 + freifunkfirmware
-Date: Mon, 2 Jun 2008 10:17:53 +0800
-References: <50872.209.206.168.53.1212239575.squirrel@webmail.reglue.org>
-In-Reply-To: <50872.209.206.168.53.1212239575.squirrel@webmail.reglue.org>
+Message-ID: <48448358.4070505@changind.com>
+Date: Mon, 02 Jun 2008 16:33:44 -0700
+From: Shane Chao <schao@changind.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806021017.53260.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] Multiple radios to improve throughput
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,22 +16,30 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-On Saturday, 31. May 2008 21:12:55 dondavis@reglue.org wrote:
-> freifunk-batman is incompatible with batmand 0.3
-> I tried installing freifunk and the batman 0.3 package from
-> http://downloads.open-mesh.net/batman/stable/wrt-freifunk/batmand_0.3-rv105
->7_mipsel-wr-elf-32-lsb-dynamic.ipk (no freifunk batman) on the commandline. 
-> Package is installed.  I start batmand br0 (which worked quite well in
-> batman 0.2)
-> I can no longer log into the router via ssh or web.
-> Is using the bridge to be avoided in 0.3?  Is it because I'm not
-> specifying all interfaces?
+Elektra,
 
-One of the 0.3 features is advanced policy routing which probably is your 
-problem. Please have a look at our documentation:
-http://open-mesh.net/batman/doc/RoutingVodoo
+Thank you for pointing out in May 08 that most embedded boards do not 
+have enough CPU power to saturate the capacity of single radio link.  I 
+was experimenting Batman in a straight line, three node configuration 
+with the middle node having two radios so it doesn't have to switch 
+between node 1 and node 3.  My configuration is as follows:
 
-Greetings,
-Marek
+node 1          node 2          node 3
+------          ------          ------
+  ath0 <--ch 1--> ath0
+                  ath1 <--ch 11-> ath0
+
+When I ran iperf between node 1 and 3, I did not see any throughput 
+improvements with either one or two radios in node 2. I even stopped 
+Batman and manually setup the routes and the performance remains the 
+same.  However, when I upgrade node 2 from a 200MHz CPU board to a 
+500MHz CPU board, the bandwidth went up 50%.  So thanks again for 
+pointing out my bottleneck:)
+
+Lastly, can someone suggest some embedded boards fast enough to push 
+wifi radios to its limits?
+
+Thanks,
+Shane
