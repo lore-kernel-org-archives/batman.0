@@ -1,8 +1,8 @@
 References: <48448358.4070505@changind.com>
 In-Reply-To: <48448358.4070505@changind.com>
 Subject: RE: [B.A.T.M.A.N.] Multiple radios to improve throughput
-Date: Tue, 3 Jun 2008 10:24:12 +0200
-Message-ID: <000601c8c553$3630bba0$a29232e0$@com>
+Date: Tue, 3 Jun 2008 10:26:30 +0200
+Message-ID: <000701c8c553$882cbd50$988637f0$@com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
@@ -23,21 +23,8 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@open-mesh.net>
 
-Now, is this CPU bottleneck because of batman and routing or something else?
-(cannot forward packets fast enough?)
-11mbits isn't really that much and I still have to see my setup hit that figure
-between only two nodes, let alone multi-hop.
-
-Now that we've played around a bit can someone please provide some benchmarks of
-a 5-node network (with some multi-hop paths) with batman and with just the whole
-network bridged and on the same subnet.
-
-What sort of performance should you expect in either scenario?
-
-As I said before, I used to get 1MB/s with non-routed bridged network of two
-atheros devices but ever since I started using batman, 300KB/s is the most I was
-ever able to achieve between the same two nodes. 2 hops and it goes down to
-40KB/s.
+I believe the new routerboard 433 is supposed to handle that with its 600 (or
+was it 800?) MHz cpu (atheros). But then you never know...
 
 > -----Original Message-----
 > From: b.a.t.m.a.n-bounces@open-mesh.net [mailto:b.a.t.m.a.n-bounces@open-
