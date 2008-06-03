@@ -1,11 +1,16 @@
-Message-ID: <48448358.4070505@changind.com>
-Date: Mon, 02 Jun 2008 16:33:44 -0700
-From: Shane Chao <schao@changind.com>
+References: <48448358.4070505@changind.com>
+In-Reply-To: <48448358.4070505@changind.com>
+Subject: RE: [B.A.T.M.A.N.] Multiple radios to improve throughput
+Date: Tue, 3 Jun 2008 10:24:12 +0200
+Message-ID: <000601c8c553$3630bba0$a29232e0$@com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] Multiple radios to improve throughput
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Language: en-us
+From: Predrag Balorda <predrag.balorda@gmail.com>
+Reply-To: pele@balorda.com,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -16,30 +21,58 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@open-mesh.net>
 
-Elektra,
+Now, is this CPU bottleneck because of batman and routing or something else?
+(cannot forward packets fast enough?)
+11mbits isn't really that much and I still have to see my setup hit that figure
+between only two nodes, let alone multi-hop.
 
-Thank you for pointing out in May 08 that most embedded boards do not 
-have enough CPU power to saturate the capacity of single radio link.  I 
-was experimenting Batman in a straight line, three node configuration 
-with the middle node having two radios so it doesn't have to switch 
-between node 1 and node 3.  My configuration is as follows:
+Now that we've played around a bit can someone please provide some benchmarks of
+a 5-node network (with some multi-hop paths) with batman and with just the whole
+network bridged and on the same subnet.
 
-node 1          node 2          node 3
-------          ------          ------
-  ath0 <--ch 1--> ath0
-                  ath1 <--ch 11-> ath0
+What sort of performance should you expect in either scenario?
 
-When I ran iperf between node 1 and 3, I did not see any throughput 
-improvements with either one or two radios in node 2. I even stopped 
-Batman and manually setup the routes and the performance remains the 
-same.  However, when I upgrade node 2 from a 200MHz CPU board to a 
-500MHz CPU board, the bandwidth went up 50%.  So thanks again for 
-pointing out my bottleneck:)
+As I said before, I used to get 1MB/s with non-routed bridged network of two
+atheros devices but ever since I started using batman, 300KB/s is the most I was
+ever able to achieve between the same two nodes. 2 hops and it goes down to
+40KB/s.
 
-Lastly, can someone suggest some embedded boards fast enough to push 
-wifi radios to its limits?
+> -----Original Message-----
+> From: b.a.t.m.a.n-bounces@open-mesh.net [mailto:b.a.t.m.a.n-bounces@open-
+> mesh.net] On Behalf Of Shane Chao
+> Sent: Tuesday, June 03, 2008 1:34 AM
+> To: b.a.t.m.a.n@open-mesh.net
+> Subject: [B.A.T.M.A.N.] Multiple radios to improve throughput
+> 
+> Elektra,
+> 
+> Thank you for pointing out in May 08 that most embedded boards do not
+> have enough CPU power to saturate the capacity of single radio link.  I
+> was experimenting Batman in a straight line, three node configuration
+> with the middle node having two radios so it doesn't have to switch
+> between node 1 and node 3.  My configuration is as follows:
+> 
+> node 1          node 2          node 3
+> ------          ------          ------
+>   ath0 <--ch 1--> ath0
+>                   ath1 <--ch 11-> ath0
+> 
+> When I ran iperf between node 1 and 3, I did not see any throughput
+> improvements with either one or two radios in node 2. I even stopped
+> Batman and manually setup the routes and the performance remains the
+> same.  However, when I upgrade node 2 from a 200MHz CPU board to a
+> 500MHz CPU board, the bandwidth went up 50%.  So thanks again for
+> pointing out my bottleneck:)
+> 
+> Lastly, can someone suggest some embedded boards fast enough to push
+> wifi radios to its limits?
+> 
+> Thanks,
+> Shane
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
-Thanks,
-Shane
