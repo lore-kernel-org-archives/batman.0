@@ -1,14 +1,12 @@
-Message-ID: <9f33c5230806031641w11b2b511hebe4702141368388@mail.gmail.com>
-Date: Tue, 3 Jun 2008 19:41:58 -0400
-From: "cao jing" <caojing.china@gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Multiple radios to improve throughput
-In-Reply-To: <20080603233017.GU2265@localhost>
+Message-ID: <4846B27B.9020907@csp.it>
+Date: Wed, 04 Jun 2008 17:19:23 +0200
+From: cipollone <cipollone@csp.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48448358.4070505@changind.com> <20080603233017.GU2265@localhost>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Subject: [B.A.T.M.A.N.] Batman-Advanced Kernel land 
+Reply-To: cipollone@csp.it,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -19,50 +17,21 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-What's the highest speed you get when you upgrade node 2 from a 200MHz
-CPU board to a
-500MHz CPU board.
+Hi,
 
-I did the similar experiments on three soekris box. I found if you run
-the iperf on the first or last node, the iperf consume a lot cpu time.
+    I'm testing Batman-Advanced on Open WRT. I've compiled the package 
+release # 1074 (the last from svn) and I'm working on a X86 machine.
 
-Jing
+    I've installed Batman Advanced on 2 virtual machine (using Qemu and 
+Vde Switch, software used to create the simulation environment) and, 
+after the configuration of the interface and the assignation of the IP 
+address on each bat0 device I've tried to test the connection between 
+the machine using ping command. Well, the ping crash the reciver 
+machine. I only have to restart becouse it doesn't answer.
 
-On Tue, Jun 3, 2008 at 7:30 PM, Benjamin Henrion <bh@udev.org> wrote:
-> Shane Chao <schao@changind.com> [080603]:
->> Elektra,
->>
->> Thank you for pointing out in May 08 that most embedded boards do not
->> have enough CPU power to saturate the capacity of single radio link.  I
->> was experimenting Batman in a straight line, three node configuration
->> with the middle node having two radios so it doesn't have to switch
->> between node 1 and node 3.  My configuration is as follows:
->>
->> node 1          node 2          node 3
->> ------          ------          ------
->>  ath0 <--ch 1--> ath0
->>                  ath1 <--ch 11-> ath0
->>
->> When I ran iperf between node 1 and 3, I did not see any throughput
->> improvements with either one or two radios in node 2. I even stopped
->> Batman and manually setup the routes and the performance remains the
->> same.  However, when I upgrade node 2 from a 200MHz CPU board to a
->> 500MHz CPU board, the bandwidth went up 50%.  So thanks again for
->> pointing out my bottleneck:)
->>
->> Lastly, can someone suggest some embedded boards fast enough to push
->> wifi radios to its limits?
->
-> Make a test with 2 atheros minipci cards on a Alix 3C3 (500mhz) and try
-> to find out if the CPU is saturated.
->
-> --
-> Benjamin Henrion <bhenrion@ffii.org>
-> FFII Brussels - +32-484-566109 - +32-2-4148403
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
+Someone can help me?
+
+Regards, Paolo
+
