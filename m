@@ -1,15 +1,15 @@
-Date: Thu, 5 Jun 2008 09:47:52 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] Batman-Advanced Kernel land
-Message-ID: <20080605074752.GA25354@hrz.tu-chemnitz.de>
+Date: Thu, 5 Jun 2008 10:10:00 +0200
 References: <4846B27B.9020907@csp.it>
 	<200806041811.38881.sven.eckelmann@gmx.de>
 	<200806051038.19094.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qDbXVdCdHGoSgWSk"
-Content-Disposition: inline
 In-Reply-To: <200806051038.19094.lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2968811.EFgnYu85Y1";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200806051010.28794.sven.eckelmann@gmx.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,61 +23,44 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-
---qDbXVdCdHGoSgWSk
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
+--nextPart2968811.EFgnYu85Y1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-
-Hello,
-
-I can not reproduce the problem on 2.6.24, but i can on 2.6.22.19=20
-with the same batman-adv source (rev1084). So it looks like the=20
-two kernel have a different behaviour for this problem.=20
-
-@Paolo: Which kernel version did you use?
-
-As i can reproduce it now, i'll look in this problem. :)
-
-Thanks for the report,
-	Simon
-
-On Thu, Jun 05, 2008 at 10:38:13AM +0800, Marek Lindner wrote:
-> On Thursday, 5. June 2008 00:11:31 Sven Eckelmann wrote:
-> > > Someone can help me?
-> >
-> > Can you please test it further?
-> > I used uml with linux 2.6.22.5 and uml_switch configured as hub to prod=
-uce
-> > the same problem, but dotslash told me that he wasn't able to reproduce=
- it
-> > with his uml image (2.6.24 based). Maybe I can help him to get the same
-> > effect it so he can try to find the problem.
->=20
-> Same with me -  I can't reproduce the problem but I use a setup similar s=
-etup=20
-> to Simons setup. Could you try to use 2.6.24 to see whether it depends on=
- the=20
-> kernel version ?
->=20
-> Greetings,
-> Marek
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-
---qDbXVdCdHGoSgWSk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 Content-Disposition: inline
+
+> On Thursday, 5. June 2008 04:38:13 Marek Lindner wrote:
+> Same with me -  I can't reproduce the problem but I use a setup similar
+> setup to Simons setup.
+I gave Simon my (nearly) complete uml test environment and he was able to k=
+ill=20
+batman+kernel with a small ping packet.
+
+> Could you try to use 2.6.24 to see whether it=20
+> depends on the kernel version ?
+Yes, I tried it and it happened again (and this time no warning in dmesg at=
+=20
+all). The problem seems to be gone when I configure my uml_switch as switch=
+=20
+instead of hub (removing "-hub" from commandline) - but sometimes it crashe=
+s=20
+again when all nodes try to send pings to each other (2 -> 1, 3 -> 1 and 1 =
+=2D>=20
+2). So I am really sure that you know what it looks like :(
+
+Greetings
+	Sven
+
+--nextPart2968811.EFgnYu85Y1
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iD8DBQFIR5oorzg/fFk7axYRAkXyAKDTxXr8wVc8/p27vAuBxCCbBN22oQCfTXsW
-Kvet3SSO+tllBYsII92cXq0=
-=haao
+iEYEABECAAYFAkhHn1gACgkQqQGwKVlMoDukkACfa1kINrMVCzEPWw45OYMCiKEJ
+AwwAoLilj8tcXMUIM6xVXnDSu5gppLGO
+=Os9D
 -----END PGP SIGNATURE-----
 
---qDbXVdCdHGoSgWSk--
+--nextPart2968811.EFgnYu85Y1--
