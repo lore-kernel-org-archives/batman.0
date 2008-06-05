@@ -1,16 +1,15 @@
-Mime-Version: 1.0 (Apple Message framework v753.1)
-In-Reply-To: <560c7c9a0806050617o215bc764w9beb5796b9bb5539@mail.gmail.com>
-References: <48448358.4070505@changind.com>
-	<000601c8c553$3630bba0$a29232e0$@com>
-	<1212669547.6960.7.camel@mkellyDell>
-	<560c7c9a0806050617o215bc764w9beb5796b9bb5539@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <DAA5EADF-A988-4D31-BA02-59877D419082@lo-res.org>
+Message-ID: <4847F23D.6010903@csp.it>
+Date: Thu, 05 Jun 2008 16:03:41 +0200
+From: cipollone <cipollone@csp.it>
+MIME-Version: 1.0
+Subject: Re: [B.A.T.M.A.N.] Batman-Advanced Kernel land
+References: <4846B27B.9020907@csp.it>	<200806041811.38881.sven.eckelmann@gmx.de>
+	<200806051038.19094.lindner_marek@yahoo.de>
+In-Reply-To: <200806051038.19094.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Aaron Kaplan <aaron@lo-res.org>
-Subject: Re: [B.A.T.M.A.N.] Multiple radios to improve throughput
-Date: Thu, 5 Jun 2008 15:43:04 +0200
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Reply-To: cipollone@csp.it,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -23,28 +22,23 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+Hi,
 
-On Jun 5, 2008, at 3:17 PM, Benjamin Henrion wrote:
+I've tested B.A.T.M.A.N. Advanced Kernel Land version 6 with a different 
+Linux OpenWRT Kernel Version. I've used the # 2.6.24.2 and , also in 
+this case, I can't ping the other pc with the same kernel version.
 
->
-> I have bought 12 foneras to make a test with 6 nodes (2 foneras per
-> node), to see if OLSR chooses the fastest route in terms of
-> throughput, and it does not. I have to try to play with
-> LinkQualityMult on the ethernet link.
+Now, with kernel version 2.6.25.4, 2.6.22.2 and 2.6.24.2, Batman doesn't 
+send packets. I think there is a problem passing in layer 3 because if I 
+ping itself it answer at the request ( it is because it doesn't go in 
+the layer 3, but stay at layer 2 with ARP).
 
-Not *yet* :)
+I'm reading the log message in order to understand what's the problem 
+and where is.
 
-With ETT metric this will be the case.
+Now I have also putted vde switch in hub mode.
 
-With MIC metrics we will even be able to avoid collisions much more.
+Regards
 
-Stay tuned or help in making this possible :)
-
-a.
-
-
----
-there's no place like 127.0.0.1
-
-
+Paolo
 
