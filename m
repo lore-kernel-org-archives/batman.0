@@ -1,14 +1,16 @@
-Message-ID: <484ADDDC.9090702@gmx.net>
-Date: Sat, 07 Jun 2008 21:13:32 +0200
-From: elektra <onelektra@gmx.net>
+Date: Sat, 7 Jun 2008 22:39:49 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] Batman-Advanced Kernel land
+Message-ID: <20080607203948.GA21781@hrz.tu-chemnitz.de>
+References: <4846B27B.9020907@csp.it>
+	<200806041811.38881.sven.eckelmann@gmx.de>
+	<200806051038.19094.lindner_marek@yahoo.de>
+	<4847F23D.6010903@csp.it>
 MIME-Version: 1.0
-Subject: =?ISO-8859-1?Q?Re=3A_=5BB=2EA=2ET=2EM=2EA=2EN=2E=5D_Fwd=3A_?=
-	=?ISO-8859-1?Q?=5Bak-vorrat=5D_Internet_=FCber_CB-Funk?=
-References: <5cc93d950806070719s5ce178d3pd4f2d607882d0fd@mail.gmail.com>	<bccbc6690806070721w3d596edr2f715fcc3f160487@mail.gmail.com>	<484ACE55.5080203@gmx.net>	<bccbc6690806071122h4a205861q7d795633a769bd48@mail.gmail.com>	<484AD57D.5080101@gmx.net>
-	<bccbc6690806071200p16d4688fl24eb615958a1eeb2@mail.gmail.com>
-In-Reply-To: <bccbc6690806071200p16d4688fl24eb615958a1eeb2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
+Content-Disposition: inline
+In-Reply-To: <4847F23D.6010903@csp.it>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,83 +22,74 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
-
-Hi -
-
-why in hell do you want to use WIMAX? People are networking large areas 
-all over the world (particularly developing countries) with WiFi + 
-Batman or OLSR.
-
-Of course *if* WiMAX becomes:
-
-* Cheap
-* License-free
-* Supports Ad-Hoc networking
-
-(which it isn't, nothing of this tiny list can be affirmed)
-
-we can use BATMAN with it and maybe have a bit more fun than we already 
-have with WiFi...
-
-I'd rather ask the good fairy in my dreams for more WiFi drivers that 
-actually support ad-hoc mode. Particularly USB. Ralink rt73 would be one 
-of my favorites... Maybe the good fairy is already subscribed to this 
-mailing list?
-
-Dream on Elektra, dream on...
-
-cu elektra
+To: cipollone@csp.it, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-> Hi well that sounds great.
-> then we only need to research the additional IEEE and we need a 
-> hardware manufacturer, who is offering small FON like Routers, whith 
-> the batman protocol. So two users can connect to the internet over the 
-> air, while only one has DSL.
-> To make it safe, encryption is important.
-> Like this two one over power:
-> http://www.devolo.com/co_EN_cs/produkte/dlan/dlanaudioextsk.html
-> Isnt there a manufacturer, who can offer that with BATMAN inside?`
-> That would be perfect, that I buy these two USB sticks, one in the 
-> laptop on a router with DSL, and the other on any machine in the air 
-> and this one can surf as well. maybe it is as well a stratey, to use 
-> BATMAN first from point to point (encrypted), and then to add the 
-> modus, that ANY Stick can be joined for DSL in the neighbourhood.
-> For meshing there will be no hardware manufacturer, but for point to 
-> point like Devolo, this would be fine.
-> The Software should be build in the stick like in the huawei USB 
-> modem, which simulates a CD rom.
-> maybe we can start such a manufacturer contact??
-> Regards Max
->
->
->  
-> On 6/7/08, *elektra* <onelektra@gmx.net <mailto:onelektra@gmx.net>> 
-> wrote:
->
->     Hi -
->
->     you'd be surprised. I have built WiFi links up to 25 km (480
->     KByte/sec TCP throughput with 802.11b). Which is not rocket
->     science and actually relatively short, compared to the WiFi world
->     record of 380 km...
->
->     Even with the default antennas, a popular Wifi router has a range
->     of approx 2 km at 1 Megabit, given a clear fresnel zone.
->
->     What you are referring to is the fact, that those WIMAX modems
->     don't support multipoint-to-multipoint networking.  Actually there
->     is an idea to have this mode in WIMAX (don't know the IEEE draft
->     number, though), but it surely is not implemented...
->
->     cu elektra
->
-> ------------------------------------------------------------------------
->
+--vkogqOf2sHV7VnPd
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hey Paolo,
+
+thanks again for your testing. I've tried a few old revisions=20
+and could reproduce the "ping of death" problem in Svens 2.6.22=20
+enviroment. Even Revision 1024, which worked flawlessly before in my UML,=
+=20
+on Accton routers and other devices in various setups, showed this problem.=
+=20
+:(
+
+So there seems to be some hard to catch issue and i haven't found the bug
+yet (two others instead ;), but i'm working on it.=20
+
+For the time being you may try your luck with revision 1024, maybe it
+works for you. It also has some bugs, but worked out in some scenarios
+i set up.
+
+Thanks again
+	Simon
+
+On Thu, Jun 05, 2008 at 04:03:41PM +0200, cipollone wrote:
+> Hi,
+>=20
+> I've tested B.A.T.M.A.N. Advanced Kernel Land version 6 with a different=
+=20
+> Linux OpenWRT Kernel Version. I've used the # 2.6.24.2 and , also in=20
+> this case, I can't ping the other pc with the same kernel version.
+>=20
+> Now, with kernel version 2.6.25.4, 2.6.22.2 and 2.6.24.2, Batman doesn't=
+=20
+> send packets. I think there is a problem passing in layer 3 because if I=
+=20
+> ping itself it answer at the request ( it is because it doesn't go in=20
+> the layer 3, but stay at layer 2 with ARP).
+>=20
+> I'm reading the log message in order to understand what's the problem=20
+> and where is.
+>=20
+> Now I have also putted vde switch in hub mode.
+>=20
+> Regards
+>=20
+> Paolo
+>=20
 > _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->   
 
+--vkogqOf2sHV7VnPd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFISvIUrzg/fFk7axYRAifXAJ9qUvnhD/EQ3G1UIf+AnpTLyTyHcgCg6eha
++1X3La0wH4e18Wrp56IPKj4=
+=c+E9
+-----END PGP SIGNATURE-----
+
+--vkogqOf2sHV7VnPd--
