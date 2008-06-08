@@ -1,12 +1,12 @@
-MIME-version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Message-id: <484BF2D5.50302@zapquebec.org>
-Date: Sun, 08 Jun 2008 09:55:17 -0500
-From: Bruno Remy <bremy@zapquebec.org>
-Subject: Re: [B.A.T.M.A.N.] question
+Mime-Version: 1.0 (Apple Message framework v753.1)
+In-Reply-To: <91b3572a0806080640n274dbb4qe9abe4082cbebb3c@mail.gmail.com>
 References: <91b3572a0806080640n274dbb4qe9abe4082cbebb3c@mail.gmail.com>
-In-reply-to: <91b3572a0806080640n274dbb4qe9abe4082cbebb3c@mail.gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Message-Id: <21DD4A18-C436-49CB-8B33-2729C10233AF@lo-res.org>
+From: Aaron Kaplan <aaron@lo-res.org>
+Subject: Re: [B.A.T.M.A.N.] question
+Date: Sun, 8 Jun 2008 16:02:13 +0200
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,28 +20,42 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi Mathias
 
-You can find all the documentation here:
-https://www.open-mesh.net/batman/doc
+On Jun 8, 2008, at 3:40 PM, Mathias HOUNGBO wrote:
 
-And downlod the Howto here:
-https://www.open-mesh.net/batman/doc/batmand_howto.pdf
-
-regards,
-
-Bruno
-
-Mathias HOUNGBO a écrit :
-
->Hi everybody;
+> Hi everybody;
 >
->Someone can provide an howto on batman + openwrt kamikaze + adhoc +
->firewall.user ?
+> Someone can provide an howto on batman + openwrt kamikaze + adhoc +
+> firewall.user ?
 >
->thanks
+
+firewall.user:
+
+
+just have the iptables fulshed. Like this:
+
+iptables -F
+iptables -t nat -F
+
+
+> thanks
 >
 >
->  
+> --=20
+> Mathias HOUNGBO
+> http://mathias.houngbo.net/ (mon blog)
+> http://mathias.houngbo.net/wiki/ (mon wiki)
+> http://www.cotonou-wireless.org (le wifi enchain=E9)
 >
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+
+---
+there's no place like 127.0.0.1
+
+
+
 
