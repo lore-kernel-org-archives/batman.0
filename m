@@ -1,15 +1,15 @@
-Message-ID: <91b3572a0806090821i6dcb918bob80c878a883ce23c@mail.gmail.com>
-Date: Mon, 9 Jun 2008 16:21:24 +0100
-From: "Mathias HOUNGBO" <mathias.houngbo@gmail.com>
+Message-Id: <5593CBB0-851B-45DF-AEAF-1E44FA921C50@cslab.ece.ntua.gr>
+From: Antony Chazapis <chazapis@cslab.ece.ntua.gr>
+In-Reply-To: <91b3572a0806090821i6dcb918bob80c878a883ce23c@mail.gmail.com>
+Content-Type: multipart/alternative; boundary=Apple-Mail-3-642154781
+Mime-Version: 1.0 (Apple Message framework v919.2)
 Subject: Re: [B.A.T.M.A.N.] question
-In-Reply-To: <C34B0738-A655-4003-8C19-0F2180B2607B@lo-res.org>
-MIME-Version: 1.0
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_17348_20845692.1213024884641"
+Date: Mon, 9 Jun 2008 18:24:32 +0300
 References: <91b3572a0806080640n274dbb4qe9abe4082cbebb3c@mail.gmail.com>
 	<21DD4A18-C436-49CB-8B33-2729C10233AF@lo-res.org>
 	<91b3572a0806081235t61b6b5f2g3e0d2a2200e9a702@mail.gmail.com>
 	<C34B0738-A655-4003-8C19-0F2180B2607B@lo-res.org>
+	<91b3572a0806090821i6dcb918bob80c878a883ce23c@mail.gmail.com>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,130 +23,232 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-------=_Part_17348_20845692.1213024884641
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
 
-d2hhdCBjYW4gaSBkbyBub3cgPwoKcmVzZXQgdGhlIHJvdXRlcgoKMjAwOC82LzggQWFyb24gS2Fw
-bGFuIDxhYXJvbkBsby1yZXMub3JnPjoKCj4KPiBPbiBKdW4gOCwgMjAwOCwgYXQgOTozNSBQTSwg
-TWF0aGlhcyBIT1VOR0JPIHdyb3RlOgo+Cj4gIEhpIEFhcm9uLAo+Pgo+PiBhZnRlciBwdXQKPj4K
-Pj4gaXB0YWJsZXMgLUYKPj4gaXB0YWJsZXMgLXQgbmF0IC1GCj4+Cj4+IGluIG15IGZpcmV3YWxs
-LnVzZXIKPj4KPj4gSXQncyBpbXBvc3NpYmxlIHRvIGFjY2VzcyB0byB0aGUgcm91dGVyIDooCj4+
-Cj4KPiBvb3BzISBzZWVtcyB5b3UgZG8gaGF2ZSBhIGRlZmF1bHQgZGVueSByb3V0ZSB0aGVyZS4K
-Pgo+Cj4KPgo+PiBubyBwaW5nLCBubyBzc2gsIG5vIHdlYiBpbnRlcmZhY2UKPj4KPj4KPj4KPj4g
-MjAwOC82LzgsIEFhcm9uIEthcGxhbiA8YWFyb25AbG8tcmVzLm9yZz46Cj4+Cj4+Pgo+Pj4gT24g
-SnVuIDgsIDIwMDgsIGF0IDM6NDAgUE0sIE1hdGhpYXMgSE9VTkdCTyB3cm90ZToKPj4+Cj4+PiAg
-SGkgZXZlcnlib2R5Owo+Pj4+Cj4+Pj4gU29tZW9uZSBjYW4gcHJvdmlkZSBhbiBob3d0byBvbiBi
-YXRtYW4gKyBvcGVud3J0IGthbWlrYXplICsgYWRob2MgKwo+Pj4+IGZpcmV3YWxsLnVzZXIgPwo+
-Pj4+Cj4+Pj4KPj4+IGZpcmV3YWxsLnVzZXI6Cj4+Pgo+Pj4KPj4+IGp1c3QgaGF2ZSB0aGUgaXB0
-YWJsZXMgZnVsc2hlZC4gTGlrZSB0aGlzOgo+Pj4KPj4+IGlwdGFibGVzIC1GCj4+PiBpcHRhYmxl
-cyAtdCBuYXQgLUYKPj4+Cj4+Pgo+Pj4gIHRoYW5rcwo+Pj4+Cj4+Pj4KPj4+PiAtLQo+Pj4+IE1h
-dGhpYXMgSE9VTkdCTwo+Pj4+IGh0dHA6Ly9tYXRoaWFzLmhvdW5nYm8ubmV0LyAobW9uIGJsb2cp
-Cj4+Pj4gaHR0cDovL21hdGhpYXMuaG91bmdiby5uZXQvd2lraS8gKG1vbiB3aWtpKQo+Pj4+IGh0
-dHA6Ly93d3cuY290b25vdS13aXJlbGVzcy5vcmcgKGxlIHdpZmkgZW5jaGFpbsOpKQo+Pj4+Cj4+
-Pj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPj4+PiBC
-LkEuVC5NLkEuTiBtYWlsaW5nIGxpc3QKPj4+PiBCLkEuVC5NLkEuTkBvcGVuLW1lc2gubmV0Cj4+
-Pj4gaHR0cHM6Ly9saXN0Lm9wZW4tbWVzaC5uZXQvbW0vbGlzdGluZm8vYi5hLnQubS5hLm4KPj4+
-Pgo+Pj4+Cj4+PiAtLS0KPj4+IHRoZXJlJ3Mgbm8gcGxhY2UgbGlrZSAxMjcuMC4wLjEKPj4+Cj4+
-Pgo+Pj4KPj4+Cj4+PiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwo+Pj4gQi5BLlQuTS5BLk4gbWFpbGluZyBsaXN0Cj4+PiBCLkEuVC5NLkEuTkBvcGVuLW1l
-c2gubmV0Cj4+PiBodHRwczovL2xpc3Qub3Blbi1tZXNoLm5ldC9tbS9saXN0aW5mby9iLmEudC5t
-LmEubgo+Pj4KPj4+Cj4+Cj4+IC0tCj4+IE1hdGhpYXMgSE9VTkdCTwo+PiBodHRwOi8vbWF0aGlh
-cy5ob3VuZ2JvLm5ldC8gKG1vbiBibG9nKQo+PiBodHRwOi8vbWF0aGlhcy5ob3VuZ2JvLm5ldC93
-aWtpLyAobW9uIHdpa2kpCj4+IGh0dHA6Ly93d3cuY290b25vdS13aXJlbGVzcy5vcmcgKGxlIHdp
-ZmkgZW5jaGFpbsOpKQo+Pgo+PiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwo+PiBCLkEuVC5NLkEuTiBtYWlsaW5nIGxpc3QKPj4gQi5BLlQuTS5BLk5Ab3Bl
-bi1tZXNoLm5ldAo+PiBodHRwczovL2xpc3Qub3Blbi1tZXNoLm5ldC9tbS9saXN0aW5mby9iLmEu
-dC5tLmEubgo+Pgo+Pgo+IC0tLQo+IHRoZXJlJ3Mgbm8gcGxhY2UgbGlrZSAxMjcuMC4wLjEKPgo+
-Cj4KPgo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4g
-Qi5BLlQuTS5BLk4gbWFpbGluZyBsaXN0Cj4gQi5BLlQuTS5BLk5Ab3Blbi1tZXNoLm5ldAo+IGh0
-dHBzOi8vbGlzdC5vcGVuLW1lc2gubmV0L21tL2xpc3RpbmZvL2IuYS50Lm0uYS5uCj4KCgoKLS0g
-Ck1hdGhpYXMgSE9VTkdCTwpodHRwOi8vbWF0aGlhcy5ob3VuZ2JvLm5ldC8gKG1vbiBibG9nKQpo
-dHRwOi8vbWF0aGlhcy5ob3VuZ2JvLm5ldC93aWtpLyAobW9uIHdpa2kpCmh0dHA6Ly93d3cuY290
-b25vdS13aXJlbGVzcy5vcmcgKGxlIHdpZmkgZW5jaGFpbsOpKQo=
-------=_Part_17348_20845692.1213024884641
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+--Apple-Mail-3-642154781
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed;
+	delsp=yes
+Content-Transfer-Encoding: quoted-printable
 
-d2hhdCBjYW4gaSBkbyBub3cgPzxicj48YnI+cmVzZXQgdGhlIHJvdXRlcjxicj48YnI+PGRpdiBj
-bGFzcz0iZ21haWxfcXVvdGUiPjIwMDgvNi84IEFhcm9uIEthcGxhbiAmbHQ7PGEgaHJlZj0ibWFp
-bHRvOmFhcm9uQGxvLXJlcy5vcmciPmFhcm9uQGxvLXJlcy5vcmc8L2E+Jmd0Ozo8YnI+PGJsb2Nr
-cXVvdGUgY2xhc3M9ImdtYWlsX3F1b3RlIiBzdHlsZT0iYm9yZGVyLWxlZnQ6IDFweCBzb2xpZCBy
-Z2IoMjA0LCAyMDQsIDIwNCk7IG1hcmdpbjogMHB0IDBwdCAwcHQgMC44ZXg7IHBhZGRpbmctbGVm
-dDogMWV4OyI+CjxkaXYgY2xhc3M9IkloMkUzZCI+PGJyPgpPbiBKdW4gOCwgMjAwOCwgYXQgOToz
-NSBQTSwgTWF0aGlhcyBIT1VOR0JPIHdyb3RlOjxicj4KPGJyPgo8YmxvY2txdW90ZSBjbGFzcz0i
-Z21haWxfcXVvdGUiIHN0eWxlPSJib3JkZXItbGVmdDogMXB4IHNvbGlkIHJnYigyMDQsIDIwNCwg
-MjA0KTsgbWFyZ2luOiAwcHQgMHB0IDBwdCAwLjhleDsgcGFkZGluZy1sZWZ0OiAxZXg7Ij4KSGkg
-QWFyb24sPGJyPgo8YnI+CmFmdGVyIHB1dDxicj4KPGJyPgppcHRhYmxlcyAtRjxicj4KaXB0YWJs
-ZXMgLXQgbmF0IC1GPGJyPgo8YnI+CmluIG15IGZpcmV3YWxsLnVzZXI8YnI+Cjxicj4KSXQmIzM5
-O3MgaW1wb3NzaWJsZSB0byBhY2Nlc3MgdG8gdGhlIHJvdXRlciA6KDxicj4KPC9ibG9ja3F1b3Rl
-Pgo8YnI+PC9kaXY+Cm9vcHMhIHNlZW1zIHlvdSBkbyBoYXZlIGEgZGVmYXVsdCBkZW55IHJvdXRl
-IHRoZXJlLjxkaXY+PGRpdj48L2Rpdj48ZGl2IGNsYXNzPSJXajNDN2MiPjxicj4KPGJyPgo8YnI+
-CjxibG9ja3F1b3RlIGNsYXNzPSJnbWFpbF9xdW90ZSIgc3R5bGU9ImJvcmRlci1sZWZ0OiAxcHgg
-c29saWQgcmdiKDIwNCwgMjA0LCAyMDQpOyBtYXJnaW46IDBwdCAwcHQgMHB0IDAuOGV4OyBwYWRk
-aW5nLWxlZnQ6IDFleDsiPgo8YnI+Cm5vIHBpbmcsIG5vIHNzaCwgbm8gd2ViIGludGVyZmFjZTxi
-cj4KPGJyPgo8YnI+Cjxicj4KMjAwOC82LzgsIEFhcm9uIEthcGxhbiAmbHQ7PGEgaHJlZj0ibWFp
-bHRvOmFhcm9uQGxvLXJlcy5vcmciIHRhcmdldD0iX2JsYW5rIj5hYXJvbkBsby1yZXMub3JnPC9h
-PiZndDs6PGJyPgo8YmxvY2txdW90ZSBjbGFzcz0iZ21haWxfcXVvdGUiIHN0eWxlPSJib3JkZXIt
-bGVmdDogMXB4IHNvbGlkIHJnYigyMDQsIDIwNCwgMjA0KTsgbWFyZ2luOiAwcHQgMHB0IDBwdCAw
-LjhleDsgcGFkZGluZy1sZWZ0OiAxZXg7Ij4KPGJyPgpPbiBKdW4gOCwgMjAwOCwgYXQgMzo0MCBQ
-TSwgTWF0aGlhcyBIT1VOR0JPIHdyb3RlOjxicj4KPGJyPgo8YmxvY2txdW90ZSBjbGFzcz0iZ21h
-aWxfcXVvdGUiIHN0eWxlPSJib3JkZXItbGVmdDogMXB4IHNvbGlkIHJnYigyMDQsIDIwNCwgMjA0
-KTsgbWFyZ2luOiAwcHQgMHB0IDBwdCAwLjhleDsgcGFkZGluZy1sZWZ0OiAxZXg7Ij4KSGkgZXZl
-cnlib2R5Ozxicj4KPGJyPgpTb21lb25lIGNhbiBwcm92aWRlIGFuIGhvd3RvIG9uIGJhdG1hbiAr
-IG9wZW53cnQga2FtaWthemUgKyBhZGhvYyArPGJyPgpmaXJld2FsbC51c2VyID88YnI+Cjxicj4K
-PC9ibG9ja3F1b3RlPgo8YnI+CmZpcmV3YWxsLnVzZXI6PGJyPgo8YnI+Cjxicj4KanVzdCBoYXZl
-IHRoZSBpcHRhYmxlcyBmdWxzaGVkLiBMaWtlIHRoaXM6PGJyPgo8YnI+CmlwdGFibGVzIC1GPGJy
-PgppcHRhYmxlcyAtdCBuYXQgLUY8YnI+Cjxicj4KPGJyPgo8YmxvY2txdW90ZSBjbGFzcz0iZ21h
-aWxfcXVvdGUiIHN0eWxlPSJib3JkZXItbGVmdDogMXB4IHNvbGlkIHJnYigyMDQsIDIwNCwgMjA0
-KTsgbWFyZ2luOiAwcHQgMHB0IDBwdCAwLjhleDsgcGFkZGluZy1sZWZ0OiAxZXg7Ij4KdGhhbmtz
-PGJyPgo8YnI+Cjxicj4KLS08YnI+Ck1hdGhpYXMgSE9VTkdCTzxicj4KPGEgaHJlZj0iaHR0cDov
-L21hdGhpYXMuaG91bmdiby5uZXQvIiB0YXJnZXQ9Il9ibGFuayI+aHR0cDovL21hdGhpYXMuaG91
-bmdiby5uZXQvPC9hPiAobW9uIGJsb2cpPGJyPgo8YSBocmVmPSJodHRwOi8vbWF0aGlhcy5ob3Vu
-Z2JvLm5ldC93aWtpLyIgdGFyZ2V0PSJfYmxhbmsiPmh0dHA6Ly9tYXRoaWFzLmhvdW5nYm8ubmV0
-L3dpa2kvPC9hPiAobW9uIHdpa2kpPGJyPgo8YSBocmVmPSJodHRwOi8vd3d3LmNvdG9ub3Utd2ly
-ZWxlc3Mub3JnIiB0YXJnZXQ9Il9ibGFuayI+aHR0cDovL3d3dy5jb3Rvbm91LXdpcmVsZXNzLm9y
-ZzwvYT4gKGxlIHdpZmkgZW5jaGFpbsOpKTxicj4KPGJyPgpfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXzxicj4KQi5BLlQuTS5BLk4gbWFpbGluZyBsaXN0PGJy
-Pgo8YSBocmVmPSJtYWlsdG86Qi5BLlQuTS5BLk5Ab3Blbi1tZXNoLm5ldCIgdGFyZ2V0PSJfYmxh
-bmsiPkIuQS5ULk0uQS5OQG9wZW4tbWVzaC5uZXQ8L2E+PGJyPgo8YSBocmVmPSJodHRwczovL2xp
-c3Qub3Blbi1tZXNoLm5ldC9tbS9saXN0aW5mby9iLmEudC5tLmEubiIgdGFyZ2V0PSJfYmxhbmsi
-Pmh0dHBzOi8vbGlzdC5vcGVuLW1lc2gubmV0L21tL2xpc3RpbmZvL2IuYS50Lm0uYS5uPC9hPjxi
-cj4KPGJyPgo8L2Jsb2NrcXVvdGU+Cjxicj4KLS0tPGJyPgp0aGVyZSYjMzk7cyBubyBwbGFjZSBs
-aWtlIDxhIGhyZWY9Imh0dHA6Ly8xMjcuMC4wLjEiIHRhcmdldD0iX2JsYW5rIj4xMjcuMC4wLjE8
-L2E+PGJyPgo8YnI+Cjxicj4KPGJyPgo8YnI+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fPGJyPgpCLkEuVC5NLkEuTiBtYWlsaW5nIGxpc3Q8YnI+CjxhIGhy
-ZWY9Im1haWx0bzpCLkEuVC5NLkEuTkBvcGVuLW1lc2gubmV0IiB0YXJnZXQ9Il9ibGFuayI+Qi5B
-LlQuTS5BLk5Ab3Blbi1tZXNoLm5ldDwvYT48YnI+CjxhIGhyZWY9Imh0dHBzOi8vbGlzdC5vcGVu
-LW1lc2gubmV0L21tL2xpc3RpbmZvL2IuYS50Lm0uYS5uIiB0YXJnZXQ9Il9ibGFuayI+aHR0cHM6
-Ly9saXN0Lm9wZW4tbWVzaC5uZXQvbW0vbGlzdGluZm8vYi5hLnQubS5hLm48L2E+PGJyPgo8YnI+
-CjwvYmxvY2txdW90ZT4KPGJyPgo8YnI+Ci0tIDxicj4KTWF0aGlhcyBIT1VOR0JPPGJyPgo8YSBo
-cmVmPSJodHRwOi8vbWF0aGlhcy5ob3VuZ2JvLm5ldC8iIHRhcmdldD0iX2JsYW5rIj5odHRwOi8v
-bWF0aGlhcy5ob3VuZ2JvLm5ldC88L2E+IChtb24gYmxvZyk8YnI+CjxhIGhyZWY9Imh0dHA6Ly9t
-YXRoaWFzLmhvdW5nYm8ubmV0L3dpa2kvIiB0YXJnZXQ9Il9ibGFuayI+aHR0cDovL21hdGhpYXMu
-aG91bmdiby5uZXQvd2lraS88L2E+IChtb24gd2lraSk8YnI+CjxhIGhyZWY9Imh0dHA6Ly93d3cu
-Y290b25vdS13aXJlbGVzcy5vcmciIHRhcmdldD0iX2JsYW5rIj5odHRwOi8vd3d3LmNvdG9ub3Ut
-d2lyZWxlc3Mub3JnPC9hPiAobGUgd2lmaSBlbmNoYWluw6kpPGJyPgo8YnI+Cl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fPGJyPgpCLkEuVC5NLkEuTiBtYWls
-aW5nIGxpc3Q8YnI+CjxhIGhyZWY9Im1haWx0bzpCLkEuVC5NLkEuTkBvcGVuLW1lc2gubmV0IiB0
-YXJnZXQ9Il9ibGFuayI+Qi5BLlQuTS5BLk5Ab3Blbi1tZXNoLm5ldDwvYT48YnI+CjxhIGhyZWY9
-Imh0dHBzOi8vbGlzdC5vcGVuLW1lc2gubmV0L21tL2xpc3RpbmZvL2IuYS50Lm0uYS5uIiB0YXJn
-ZXQ9Il9ibGFuayI+aHR0cHM6Ly9saXN0Lm9wZW4tbWVzaC5uZXQvbW0vbGlzdGluZm8vYi5hLnQu
-bS5hLm48L2E+PGJyPgo8YnI+CjwvYmxvY2txdW90ZT4KPGJyPgotLS08YnI+CnRoZXJlJiMzOTtz
-IG5vIHBsYWNlIGxpa2UgPGEgaHJlZj0iaHR0cDovLzEyNy4wLjAuMSIgdGFyZ2V0PSJfYmxhbmsi
-PjEyNy4wLjAuMTwvYT48YnI+Cjxicj4KPGJyPgo8YnI+Cjxicj4KX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX188YnI+CkIuQS5ULk0uQS5OIG1haWxpbmcgbGlz
-dDxicj4KPGEgaHJlZj0ibWFpbHRvOkIuQS5ULk0uQS5OQG9wZW4tbWVzaC5uZXQiIHRhcmdldD0i
-X2JsYW5rIj5CLkEuVC5NLkEuTkBvcGVuLW1lc2gubmV0PC9hPjxicj4KPGEgaHJlZj0iaHR0cHM6
-Ly9saXN0Lm9wZW4tbWVzaC5uZXQvbW0vbGlzdGluZm8vYi5hLnQubS5hLm4iIHRhcmdldD0iX2Js
-YW5rIj5odHRwczovL2xpc3Qub3Blbi1tZXNoLm5ldC9tbS9saXN0aW5mby9iLmEudC5tLmEubjwv
-YT48YnI+CjwvZGl2PjwvZGl2PjwvYmxvY2txdW90ZT48L2Rpdj48YnI+PGJyIGNsZWFyPSJhbGwi
-Pjxicj4tLSA8YnI+TWF0aGlhcyBIT1VOR0JPPGJyPjxhIGhyZWY9Imh0dHA6Ly9tYXRoaWFzLmhv
-dW5nYm8ubmV0LyI+aHR0cDovL21hdGhpYXMuaG91bmdiby5uZXQvPC9hPiAobW9uIGJsb2cpPGJy
-PjxhIGhyZWY9Imh0dHA6Ly9tYXRoaWFzLmhvdW5nYm8ubmV0L3dpa2kvIj5odHRwOi8vbWF0aGlh
-cy5ob3VuZ2JvLm5ldC93aWtpLzwvYT4gKG1vbiB3aWtpKTxicj4KPGEgaHJlZj0iaHR0cDovL3d3
-dy5jb3Rvbm91LXdpcmVsZXNzLm9yZyI+aHR0cDovL3d3dy5jb3Rvbm91LXdpcmVsZXNzLm9yZzwv
-YT4gKGxlIHdpZmkgZW5jaGFpbsOpKSAK
-------=_Part_17348_20845692.1213024884641--
+If this is an embedded device, like a Linksys WRT54G(L),
+you should  be able to access the router in "failsafe" mode
+in order to put the original settings back. Power cycle it and
+press the reset button while it powers on.
+
+More info:
+
+http://wiki.openwrt.org/OpenWrtDocs/Troubleshooting
+
+Regards,
+
+Antony
+
+On Jun 9, 2008, at 6:21 PM, Mathias HOUNGBO wrote:
+
+> what can i do now ?
+>
+> reset the router
+>
+> 2008/6/8 Aaron Kaplan <aaron@lo-res.org>:
+>
+> On Jun 8, 2008, at 9:35 PM, Mathias HOUNGBO wrote:
+>
+> Hi Aaron,
+>
+> after put
+>
+> iptables -F
+> iptables -t nat -F
+>
+> in my firewall.user
+>
+> It's impossible to access to the router :(
+>
+> oops! seems you do have a default deny route there.
+>
+>
+>
+>
+> no ping, no ssh, no web interface
+>
+>
+>
+> 2008/6/8, Aaron Kaplan <aaron@lo-res.org>:
+>
+> On Jun 8, 2008, at 3:40 PM, Mathias HOUNGBO wrote:
+>
+> Hi everybody;
+>
+> Someone can provide an howto on batman + openwrt kamikaze + adhoc +
+> firewall.user ?
+>
+>
+> firewall.user:
+>
+>
+> just have the iptables fulshed. Like this:
+>
+> iptables -F
+> iptables -t nat -F
+>
+>
+> thanks
+>
+>
+> --
+> Mathias HOUNGBO
+> http://mathias.houngbo.net/ (mon blog)
+> http://mathias.houngbo.net/wiki/ (mon wiki)
+> http://www.cotonou-wireless.org (le wifi enchain=E9)
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+>
+> ---
+> there's no place like 127.0.0.1
+>
+>
+>
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+>
+>
+> -- =20
+> Mathias HOUNGBO
+> http://mathias.houngbo.net/ (mon blog)
+> http://mathias.houngbo.net/wiki/ (mon wiki)
+> http://www.cotonou-wireless.org (le wifi enchain=E9)
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+>
+> ---
+> there's no place like 127.0.0.1
+>
+>
+>
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+>
+>
+> -- =20
+> Mathias HOUNGBO
+> http://mathias.houngbo.net/ (mon blog)
+> http://mathias.houngbo.net/wiki/ (mon wiki)
+> http://www.cotonou-wireless.org (le wifi enchain=E9) =20
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+
+
+--Apple-Mail-3-642154781
+Content-Type: text/html;
+	charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<html><body style=3D"word-wrap: break-word; -webkit-nbsp-mode: space; =
+-webkit-line-break: after-white-space; ">If this is an embedded device, =
+like a Linksys WRT54G(L),<div>you should &nbsp;be able to access the =
+router in "failsafe" mode<div>in order to put the original settings =
+back. Power cycle it and</div><div>press the reset button while it =
+powers on.</div><div><br></div><div>More =
+info:</div><div><br></div><div><a =
+href=3D"http://wiki.openwrt.org/OpenWrtDocs/Troubleshooting">http://wiki.o=
+penwrt.org/OpenWrtDocs/Troubleshooting</a><br><div><html><br></html><html>=
+Regards,</html><html><br></html><html>Antony</html><html><br></html><html>=
+On Jun 9, 2008, at 6:21 PM, Mathias HOUNGBO wrote:</html><br =
+class=3D"Apple-interchange-newline"><blockquote type=3D"cite">what can i =
+do now ?<br><br>reset the router<br><br><div =
+class=3D"gmail_quote">2008/6/8 Aaron Kaplan &lt;<a =
+href=3D"mailto:aaron@lo-res.org">aaron@lo-res.org</a>>:<br><blockquote =
+class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204, =
+204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"> <div =
+class=3D"Ih2E3d"><br> On Jun 8, 2008, at 9:35 PM, Mathias HOUNGBO =
+wrote:<br> <br> <blockquote class=3D"gmail_quote" style=3D"border-left: =
+1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: =
+1ex;"> Hi Aaron,<br> <br> after put<br> <br> iptables -F<br> iptables -t =
+nat -F<br> <br> in my firewall.user<br> <br> It's impossible to access =
+to the router :(<br> </blockquote> <br></div> oops! seems you do have a =
+default deny route there.<div><div></div><div class=3D"Wj3C7c"><br> <br> =
+<br> <blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid =
+rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"> <br> =
+no ping, no ssh, no web interface<br> <br> <br> <br> 2008/6/8, Aaron =
+Kaplan &lt;<a href=3D"mailto:aaron@lo-res.org" =
+target=3D"_blank">aaron@lo-res.org</a>>:<br> <blockquote =
+class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204, =
+204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"> <br> On Jun 8, =
+2008, at 3:40 PM, Mathias HOUNGBO wrote:<br> <br> <blockquote =
+class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204, =
+204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"> Hi everybody;<br> =
+<br> Someone can provide an howto on batman + openwrt kamikaze + adhoc =
++<br> firewall.user ?<br> <br> </blockquote> <br> firewall.user:<br> =
+<br> <br> just have the iptables fulshed. Like this:<br> <br> iptables =
+-F<br> iptables -t nat -F<br> <br> <br> <blockquote class=3D"gmail_quote" =
+style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt =
+0.8ex; padding-left: 1ex;"> thanks<br> <br> <br> --<br> Mathias =
+HOUNGBO<br> <a href=3D"http://mathias.houngbo.net/" =
+target=3D"_blank">http://mathias.houngbo.net/</a> (mon blog)<br> <a =
+href=3D"http://mathias.houngbo.net/wiki/" =
+target=3D"_blank">http://mathias.houngbo.net/wiki/</a> (mon wiki)<br> <a =
+href=3D"http://www.cotonou-wireless.org" =
+target=3D"_blank">http://www.cotonou-wireless.org</a> (le wifi =
+enchain=E9)<br> <br> _______________________________________________<br> =
+B.A.T.M.A.N mailing list<br> <a href=3D"mailto:B.A.T.M.A.N@open-mesh.net" =
+target=3D"_blank">B.A.T.M.A.N@open-mesh.net</a><br> <a =
+href=3D"https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" =
+target=3D"_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><b=
+r> <br> </blockquote> <br> ---<br> there's no place like <a =
+href=3D"http://127.0.0.1" target=3D"_blank">127.0.0.1</a><br> <br> <br> =
+<br> <br> _______________________________________________<br> =
+B.A.T.M.A.N mailing list<br> <a href=3D"mailto:B.A.T.M.A.N@open-mesh.net" =
+target=3D"_blank">B.A.T.M.A.N@open-mesh.net</a><br> <a =
+href=3D"https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" =
+target=3D"_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><b=
+r> <br> </blockquote> <br> <br> -- <br> Mathias HOUNGBO<br> <a =
+href=3D"http://mathias.houngbo.net/" =
+target=3D"_blank">http://mathias.houngbo.net/</a> (mon blog)<br> <a =
+href=3D"http://mathias.houngbo.net/wiki/" =
+target=3D"_blank">http://mathias.houngbo.net/wiki/</a> (mon wiki)<br> <a =
+href=3D"http://www.cotonou-wireless.org" =
+target=3D"_blank">http://www.cotonou-wireless.org</a> (le wifi =
+enchain=E9)<br> <br> _______________________________________________<br> =
+B.A.T.M.A.N mailing list<br> <a href=3D"mailto:B.A.T.M.A.N@open-mesh.net" =
+target=3D"_blank">B.A.T.M.A.N@open-mesh.net</a><br> <a =
+href=3D"https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" =
+target=3D"_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><b=
+r> <br> </blockquote> <br> ---<br> there's no place like <a =
+href=3D"http://127.0.0.1" target=3D"_blank">127.0.0.1</a><br> <br> <br> =
+<br> <br> _______________________________________________<br> =
+B.A.T.M.A.N mailing list<br> <a href=3D"mailto:B.A.T.M.A.N@open-mesh.net" =
+target=3D"_blank">B.A.T.M.A.N@open-mesh.net</a><br> <a =
+href=3D"https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" =
+target=3D"_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><b=
+r> </div></div></blockquote></div><br><br clear=3D"all"><br>-- =
+<br>Mathias HOUNGBO<br><a =
+href=3D"http://mathias.houngbo.net/">http://mathias.houngbo.net/</a> =
+(mon blog)<br><a =
+href=3D"http://mathias.houngbo.net/wiki/">http://mathias.houngbo.net/wiki/=
+</a> (mon wiki)<br> <a =
+href=3D"http://www.cotonou-wireless.org">http://www.cotonou-wireless.org</=
+a> (le wifi enchain=E9) =
+_______________________________________________<br>B.A.T.M.A.N mailing =
+list<br>B.A.T.M.A.N@open-mesh.net<br>https://list.open-mesh.net/mm/listinf=
+o/b.a.t.m.a.n<br></blockquote></div><br></div></div></body></html>=
+
+--Apple-Mail-3-642154781--
