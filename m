@@ -1,10 +1,12 @@
-Message-ID: <4851AB7D.2030300@dd19.de>
-Date: Fri, 13 Jun 2008 01:04:29 +0200
-From: Alexander Morlang <alx@dd19.de>
+Message-ID: <91b3572a0806130135ge7d4426he560dce53a7ad908@mail.gmail.com>
+Date: Fri, 13 Jun 2008 09:35:13 +0100
+From: "Mathias HOUNGBO" <mathias.houngbo@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] [Fwd: [FFL] B.A.T.M.A.N eXperimental Status]
+In-Reply-To: <4851AB7D.2030300@dd19.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] [Fwd: [FFL] B.A.T.M.A.N eXperimental Status]
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_5899_24170559.1213346113536"
+References: <4851AB7D.2030300@dd19.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,41 +18,97 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-news from leipzig, 131 nodes with batman experimental.
+------=_Part_5899_24170559.1213346113536
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
--------- Original-Nachricht --------
-Betreff: [FFL] B.A.T.M.A.N eXperimental Status
-Datum: Fri, 13 Jun 2008 00:21:36 +0200
-Von: tetzlav <tetzlav@leipzig.freifunk.net>
-Antwort an: Freifunk Leipzig <freifunk-leipzig@subsignal.org>
-Organisation: Freifunk Leipzig
-An: freifunk-leipzig@subsignal.org
-Newsgruppen: freifunk.de.leipzig.discuss
+SGkgQWxleGFuZGVyLAoKY2FuIHlvdSBwcm92aWRlIGEgImZpcmV3YWxsLnVzZXIiIGV4YW1wbGUg
+Zm9yIHlvdXIgcm91dGVyIHdpdGggYmF0bWFuID8KSSBoYXZlIHNvbWUgZGlmZmljdWx0aWVzIHRv
+IGNvbmZpZ3VyZSBiYXRtYW4gb24gbXkgd3J0NTRnbAoKdGhhbmtzCgoKCi0tIApNYXRoaWFzIEhP
+VU5HQk8KaHR0cDovL21hdGhpYXMuaG91bmdiby5uZXQvIChtb24gYmxvZykKaHR0cDovL21hdGhp
+YXMuaG91bmdiby5uZXQvd2lraS8gKG1vbiB3aWtpKQpodHRwOi8vd3d3LmNvdG9ub3Utd2lyZWxl
+c3Mub3JnIChsZSB3aWZpIGVuY2hhaW7DqSkKCgoKMjAwOC82LzEzIEFsZXhhbmRlciBNb3JsYW5n
+IDxhbHhAZGQxOS5kZT46Cgo+IG5ld3MgZnJvbSBsZWlwemlnLCAxMzEgbm9kZXMgd2l0aCBiYXRt
+YW4gZXhwZXJpbWVudGFsLgo+Cj4gLS0tLS0tLS0gT3JpZ2luYWwtTmFjaHJpY2h0IC0tLS0tLS0t
+Cj4gQmV0cmVmZjogW0ZGTF0gQi5BLlQuTS5BLk4gZVhwZXJpbWVudGFsIFN0YXR1cwo+IERhdHVt
+OiBGcmksIDEzIEp1biAyMDA4IDAwOjIxOjM2ICswMjAwCj4gVm9uOiB0ZXR6bGF2IDx0ZXR6bGF2
+QGxlaXB6aWcuZnJlaWZ1bmsubmV0Pgo+IEFudHdvcnQgYW46IEZyZWlmdW5rIExlaXB6aWcgPGZy
+ZWlmdW5rLWxlaXB6aWdAc3Vic2lnbmFsLm9yZz4KPiBPcmdhbmlzYXRpb246IEZyZWlmdW5rIExl
+aXB6aWcKPiBBbjogZnJlaWZ1bmstbGVpcHppZ0BzdWJzaWduYWwub3JnCj4gTmV3c2dydXBwZW46
+IGZyZWlmdW5rLmRlLmxlaXB6aWcuZGlzY3Vzcwo+Cj4gSXN0IHZsbHQuIG5pZW1hbmRlbSBzbyB3
+aXJrbGljaCBhdWZnZWZhbGxlbiBkYXMgZWluIGFsdGVybmF0aXZlcwo+IFJvdXRpbmdwcm90b2tv
+bGwgbmViZW4gb2xzciBlaW4gU2NoYXR0ZW5kYXNlaW4gaW4gYWxsZW4gYWt0dWVsbGVuIEZpcm13
+YXJlcwo+IGbDvGhydC4KPgo+IEdyYWRlIGViZW4gaGF0IG1pY2ggbWFsIGludGVyZXNzaWVydCB3
+aWV2aWVsZSBGcmVpZnVuay1Sb3V0ZXIgbWl0dGxlcndlaWxlCj4gYm14Cj4gInNwcmVjaGVuIi4u
+Lgo+Cj4gIHJvb3RAdGV0emxhdi11cGxpbms6fiMgaXAgcm91dGUgbGlzdCB0YWJsZSA3OCB8IHdj
+IC1sCj4+ICAgIDEzMQo+Pgo+Cj4gZGFzIGhlaXNzdCBlcyBleGlzdGllcmVuIGluIGRlciBibXgt
+aG9zdC1Sb3V0ZW4tVGFiZWxsZSAxMzEgRWludHLDpGdlLCB3YXMKPiBzb3ZpZWwKPiBiZWRldXRl
+dCB3aWU6IEVzIGV4aXN0aWVydCBlaW4gTmV0eiBhdXMgMTMxIEtub3RlbiwgYmVpIHdlbGNoZW4g
+bWFuIG9sc3IKPiBhdXNzY2hhbHRlbiBrw7ZubnRlIG9obmUgZGFzIGRlciBLb250YWt0IHp1ZWlu
+YW5kZXIgdmVybG9yZW4gZ2VoZW4gd8O8cmRlLi4uCj4gOykKPgo+IERhcyBHUsOWU1NURSByZWFs
+ZSBCLkEuVC5NLkEuTi1OZXR6IGRlciBXZWx0IHfDvHJkZSBpY2ggbWFsIHNhZ2VuLiA6RAo+Cj4K
+PiBHcnXDnwo+IHRldHpsYXYKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwo+IEZyZWlmdW5rIExlaXB6aWcgQ29tbXVuaXR5Cj4gaHR0cDovL2xlaXB6aWcu
+ZnJlaWZ1bmsubmV0Cj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KPiBCLkEuVC5NLkEuTiBtYWlsaW5nIGxpc3QKPiBCLkEuVC5NLkEuTkBvcGVuLW1lc2gu
+bmV0Cj4gaHR0cHM6Ly9saXN0Lm9wZW4tbWVzaC5uZXQvbW0vbGlzdGluZm8vYi5hLnQubS5hLm4K
+Pgo=
+------=_Part_5899_24170559.1213346113536
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-Ist vllt. niemandem so wirklich aufgefallen das ein alternatives
-Routingprotokoll neben olsr ein Schattendasein in allen aktuellen=20
-Firmwares f=FChrt.
-
-Grade eben hat mich mal interessiert wieviele Freifunk-Router=20
-mittlerweile bmx
-"sprechen"...
-
-> root@tetzlav-uplink:~# ip route list table 78 | wc -l
->     131
-
-das heisst es existieren in der bmx-host-Routen-Tabelle 131 Eintr=E4ge,=20
-was soviel
-bedeutet wie: Es existiert ein Netz aus 131 Knoten, bei welchen man olsr
-ausschalten k=F6nnte ohne das der Kontakt zueinander verloren gehen=20
-w=FCrde... ;)
-
-Das GR=D6SSTE reale B.A.T.M.A.N-Netz der Welt w=FCrde ich mal sagen. :D
-
-
-Gru=DF
-tetzlav
-_______________________________________________
-Freifunk Leipzig Community
-http://leipzig.freifunk.net
+SGkgQWxleGFuZGVyLDxicj48YnI+Y2FuIHlvdSBwcm92aWRlIGEgJnF1b3Q7ZmlyZXdhbGwudXNl
+ciZxdW90OyBleGFtcGxlIGZvciB5b3VyIHJvdXRlciB3aXRoIGJhdG1hbiA/PGJyPkkgaGF2ZSBz
+b21lIGRpZmZpY3VsdGllcyB0byBjb25maWd1cmUgYmF0bWFuIG9uIG15IHdydDU0Z2w8YnI+PGJy
+PnRoYW5rczxicj48YnI+PGJyPjxicj4tLSA8YnI+TWF0aGlhcyBIT1VOR0JPPGJyPjxhIGhyZWY9
+Imh0dHA6Ly9tYXRoaWFzLmhvdW5nYm8ubmV0LyI+aHR0cDovL21hdGhpYXMuaG91bmdiby5uZXQv
+PC9hPiAobW9uIGJsb2cpPGJyPgo8YSBocmVmPSJodHRwOi8vbWF0aGlhcy5ob3VuZ2JvLm5ldC93
+aWtpLyI+aHR0cDovL21hdGhpYXMuaG91bmdiby5uZXQvd2lraS88L2E+IChtb24gd2lraSk8YnI+
+PGEgaHJlZj0iaHR0cDovL3d3dy5jb3Rvbm91LXdpcmVsZXNzLm9yZyI+aHR0cDovL3d3dy5jb3Rv
+bm91LXdpcmVsZXNzLm9yZzwvYT4gKGxlIHdpZmkgZW5jaGFpbsOpKSAKPGJyPjxicj48YnI+PGJy
+PjxkaXYgY2xhc3M9ImdtYWlsX3F1b3RlIj4yMDA4LzYvMTMgQWxleGFuZGVyIE1vcmxhbmcgJmx0
+OzxhIGhyZWY9Im1haWx0bzphbHhAZGQxOS5kZSI+YWx4QGRkMTkuZGU8L2E+Jmd0Ozo8YnI+PGJs
+b2NrcXVvdGUgY2xhc3M9ImdtYWlsX3F1b3RlIiBzdHlsZT0iYm9yZGVyLWxlZnQ6IDFweCBzb2xp
+ZCByZ2IoMjA0LCAyMDQsIDIwNCk7IG1hcmdpbjogMHB0IDBwdCAwcHQgMC44ZXg7IHBhZGRpbmct
+bGVmdDogMWV4OyI+Cm5ld3MgZnJvbSBsZWlwemlnLCAxMzEgbm9kZXMgd2l0aCBiYXRtYW4gZXhw
+ZXJpbWVudGFsLjxicj4KPGJyPgotLS0tLS0tLSBPcmlnaW5hbC1OYWNocmljaHQgLS0tLS0tLS08
+YnI+CkJldHJlZmY6IFtGRkxdIEIuQS5ULk0uQS5OIGVYcGVyaW1lbnRhbCBTdGF0dXM8YnI+CkRh
+dHVtOiBGcmksIDEzIEp1biAyMDA4IDAwOjIxOjM2ICswMjAwPGJyPgpWb246IHRldHpsYXYgJmx0
+OzxhIGhyZWY9Im1haWx0bzp0ZXR6bGF2QGxlaXB6aWcuZnJlaWZ1bmsubmV0IiB0YXJnZXQ9Il9i
+bGFuayI+dGV0emxhdkBsZWlwemlnLmZyZWlmdW5rLm5ldDwvYT4mZ3Q7PGJyPgpBbnR3b3J0IGFu
+OiBGcmVpZnVuayBMZWlwemlnICZsdDs8YSBocmVmPSJtYWlsdG86ZnJlaWZ1bmstbGVpcHppZ0Bz
+dWJzaWduYWwub3JnIiB0YXJnZXQ9Il9ibGFuayI+ZnJlaWZ1bmstbGVpcHppZ0BzdWJzaWduYWwu
+b3JnPC9hPiZndDs8YnI+Ck9yZ2FuaXNhdGlvbjogRnJlaWZ1bmsgTGVpcHppZzxicj4KQW46IDxh
+IGhyZWY9Im1haWx0bzpmcmVpZnVuay1sZWlwemlnQHN1YnNpZ25hbC5vcmciIHRhcmdldD0iX2Js
+YW5rIj5mcmVpZnVuay1sZWlwemlnQHN1YnNpZ25hbC5vcmc8L2E+PGJyPgpOZXdzZ3J1cHBlbjog
+ZnJlaWZ1bmsuZGUubGVpcHppZy5kaXNjdXNzPGJyPgo8YnI+CklzdCB2bGx0LiBuaWVtYW5kZW0g
+c28gd2lya2xpY2ggYXVmZ2VmYWxsZW4gZGFzIGVpbiBhbHRlcm5hdGl2ZXM8YnI+ClJvdXRpbmdw
+cm90b2tvbGwgbmViZW4gb2xzciBlaW4gU2NoYXR0ZW5kYXNlaW4gaW4gYWxsZW4gYWt0dWVsbGVu
+IEZpcm13YXJlcyBmw7xocnQuPGJyPgo8YnI+CkdyYWRlIGViZW4gaGF0IG1pY2ggbWFsIGludGVy
+ZXNzaWVydCB3aWV2aWVsZSBGcmVpZnVuay1Sb3V0ZXIgbWl0dGxlcndlaWxlIGJteDxicj4KJnF1
+b3Q7c3ByZWNoZW4mcXVvdDsuLi48YnI+Cjxicj4KPGJsb2NrcXVvdGUgY2xhc3M9ImdtYWlsX3F1
+b3RlIiBzdHlsZT0iYm9yZGVyLWxlZnQ6IDFweCBzb2xpZCByZ2IoMjA0LCAyMDQsIDIwNCk7IG1h
+cmdpbjogMHB0IDBwdCAwcHQgMC44ZXg7IHBhZGRpbmctbGVmdDogMWV4OyI+CnJvb3RAdGV0emxh
+di11cGxpbms6fiMgaXAgcm91dGUgbGlzdCB0YWJsZSA3OCB8IHdjIC1sPGJyPgogJm5ic3A7ICZu
+YnNwOzEzMTxicj4KPC9ibG9ja3F1b3RlPgo8YnI+CmRhcyBoZWlzc3QgZXMgZXhpc3RpZXJlbiBp
+biBkZXIgYm14LWhvc3QtUm91dGVuLVRhYmVsbGUgMTMxIEVpbnRyw6RnZSwgd2FzIHNvdmllbDxi
+cj4KYmVkZXV0ZXQgd2llOiBFcyBleGlzdGllcnQgZWluIE5ldHogYXVzIDEzMSBLbm90ZW4sIGJl
+aSB3ZWxjaGVuIG1hbiBvbHNyPGJyPgphdXNzY2hhbHRlbiBrw7ZubnRlIG9obmUgZGFzIGRlciBL
+b250YWt0IHp1ZWluYW5kZXIgdmVybG9yZW4gZ2VoZW4gd8O8cmRlLi4uIDspPGJyPgo8YnI+CkRh
+cyBHUsOWU1NURSByZWFsZSBCLkEuVC5NLkEuTi1OZXR6IGRlciBXZWx0IHfDvHJkZSBpY2ggbWFs
+IHNhZ2VuLiA6RDxicj4KPGJyPgo8YnI+CkdydcOfPGJyPgp0ZXR6bGF2PGJyPgpfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXzxicj4KRnJlaWZ1bmsgTGVpcHpp
+ZyBDb21tdW5pdHk8YnI+CjxhIGhyZWY9Imh0dHA6Ly9sZWlwemlnLmZyZWlmdW5rLm5ldCIgdGFy
+Z2V0PSJfYmxhbmsiPmh0dHA6Ly9sZWlwemlnLmZyZWlmdW5rLm5ldDwvYT48YnI+Cl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fPGJyPgpCLkEuVC5NLkEuTiBt
+YWlsaW5nIGxpc3Q8YnI+CjxhIGhyZWY9Im1haWx0bzpCLkEuVC5NLkEuTkBvcGVuLW1lc2gubmV0
+IiB0YXJnZXQ9Il9ibGFuayI+Qi5BLlQuTS5BLk5Ab3Blbi1tZXNoLm5ldDwvYT48YnI+CjxhIGhy
+ZWY9Imh0dHBzOi8vbGlzdC5vcGVuLW1lc2gubmV0L21tL2xpc3RpbmZvL2IuYS50Lm0uYS5uIiB0
+YXJnZXQ9Il9ibGFuayI+aHR0cHM6Ly9saXN0Lm9wZW4tbWVzaC5uZXQvbW0vbGlzdGluZm8vYi5h
+LnQubS5hLm48L2E+PGJyPgo8L2Jsb2NrcXVvdGU+PC9kaXY+PGJyPjxiciBjbGVhcj0iYWxsIj48
+YnI+Cg==
+------=_Part_5899_24170559.1213346113536--
