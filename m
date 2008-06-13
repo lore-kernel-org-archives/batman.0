@@ -1,10 +1,13 @@
-Mime-Version: 1.0 (Apple Message framework v753)
+Message-ID: <4852CFB3.7060709@dd19.de>
+Date: Fri, 13 Jun 2008 21:51:15 +0200
+From: Alexander Morlang <alx@dd19.de>
+MIME-Version: 1.0
+Subject: Re: [B.A.T.M.A.N.] [Fwd: [FFL] B.A.T.M.A.N eXperimental Status]
+References: <4851AB7D.2030300@dd19.de>
+	<91b3572a0806130135ge7d4426he560dce53a7ad908@mail.gmail.com>
+In-Reply-To: <91b3572a0806130135ge7d4426he560dce53a7ad908@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <980AD9AD-8A54-4E91-A23B-A1715CC87580@yahoo.de>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-From: Daniel Heldt <daniel.heldt@yahoo.de>
-Date: Fri, 13 Jun 2008 11:00:00 +0200
-Subject: [B.A.T.M.A.N.] Theoretical Research w.t.r B.A.T.M.A.N.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,21 +21,17 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi there,
+Mathias HOUNGBO schrieb:
+> Hi Alexander,
+> 
+> can you provide a "firewall.user" example for your router with batman ?
+> I have some difficulties to configure batman on my wrt54gl
 
-Exists there any theoretical work about batman's routing properties?  
-For example a model explaining batman as some kind of 'ant-routing'  
-or statements a'la
+have a look into the freifunk leipzig firmware.
 
-"If the network and load balance does not change for a long enough  
-time, than the routing tables converge agains a nash-equilibrium."
+> 
+> thanks
+> 
+> 
 
-Do you know, if anybody is working in that direction, or is 'out  
-there' somebody interested in this kind of work?
-
-
-with kind regards,
-
-
-daniel
-
+np
