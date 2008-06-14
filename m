@@ -1,13 +1,10 @@
-Message-ID: <4852CFB3.7060709@dd19.de>
-Date: Fri, 13 Jun 2008 21:51:15 +0200
-From: Alexander Morlang <alx@dd19.de>
+Message-ID: <c1004cd20806140759m4a709a70ue8ac380213d3df71@mail.gmail.com>
+Date: Sat, 14 Jun 2008 16:59:38 +0200
+From: "thomas anderson" <eidos85@gmail.com>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] [Fwd: [FFL] B.A.T.M.A.N eXperimental Status]
-References: <4851AB7D.2030300@dd19.de>
-	<91b3572a0806130135ge7d4426he560dce53a7ad908@mail.gmail.com>
-In-Reply-To: <91b3572a0806130135ge7d4426he560dce53a7ad908@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_32644_13870019.1213455578912"
+Subject: [B.A.T.M.A.N.] Compile batman for fonera 2100
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,19 +16,26 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-Mathias HOUNGBO schrieb:
-> Hi Alexander,
-> 
-> can you provide a "firewall.user" example for your router with batman ?
-> I have some difficulties to configure batman on my wrt54gl
+------=_Part_32644_13870019.1213455578912
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-have a look into the freifunk leipzig firmware.
+Hi guys!
+I'm trying to compile B.A.T.M.A.N. for the fonera 2100 from svn
+http://downloads.open-mesh.net/svn/batman/trunk/batman/ (is in this
+directory the latest svn code for B.A.T.M.A.N. ?), but i don't know how
+cross compile for fonera 2100 ... Can you help me?
+Eidos
 
-> 
-> thanks
-> 
-> 
+------=_Part_32644_13870019.1213455578912
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-np
+Hi guys!<br>I&#39;m trying to compile B.A.T.M.A.N. for the fonera 2100 from svn <a href="http://downloads.open-mesh.net/svn/batman/trunk/batman/">http://downloads.open-mesh.net/svn/batman/trunk/batman/</a> (is in this directory the latest svn code for  B.A.T.M.A.N. ?), but i don&#39;t know how cross compile for fonera 2100 ... Can you help me?<br>
+Eidos<br>
+
+------=_Part_32644_13870019.1213455578912--
