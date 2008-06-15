@@ -1,14 +1,13 @@
-Date: Mon, 16 Jun 2008 01:09:01 +0200
+Date: Mon, 16 Jun 2008 01:18:07 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] Error " LibG3D-WARNING **: no handler for file "
-	with meshs3d
-Message-ID: <20080615230900.GB9736@hrz.tu-chemnitz.de>
-References: <c1004cd20806150724t747078ag6dc16415b00a22f3@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Securing batman networks
+Message-ID: <20080615231807.GC9736@hrz.tu-chemnitz.de>
+References: <1213487132.5782.14.camel@damian-x31.damian.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rJwd6BRFiFCcLxzm"
+	protocol="application/pgp-signature"; boundary="jousvV0MzM2p6OtC"
 Content-Disposition: inline
-In-Reply-To: <c1004cd20806150724t747078ag6dc16415b00a22f3@mail.gmail.com>
+In-Reply-To: <1213487132.5782.14.camel@damian-x31.damian.org>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,101 +22,65 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
---rJwd6BRFiFCcLxzm
+--jousvV0MzM2p6OtC
 Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hello,
+Hello Damian,
 
-you're probably missing the plugins for 3ds. Libg3d has a main library
-and is "outsourcing" file-specific handlers into plugins (e.g. for .3ds
-models), and maybe you have not installed them.=20
+maybe WPA-NONE can help you. It is basicly WPA with pre-shared keys
+which works on Ad-Hoc, but misses a lot of security features like replay
+attack detection (would not make sense in adhoc networks) or having
+different session keys, as usually access points manage these. So i
+don't know how "secure" this actually is.
+
+Furthermore, WPA-NONE is not included in any standard afaik. But at
+least wpa_supplicant and Windows support it. However it is not
+guaranteed that it works with any driver ... at least madwifi did not
+work with it out of the box (but after some patches ;) when i tried it.
 
 best regards,
 	Simon
 
-
-
-On Sun, Jun 15, 2008 at 04:24:09PM +0200, thomas anderson wrote:
-> When i start meshs3d i can see the ip of the access point but not the ima=
-ge
-> and on shell i got this errors:
+On Sun, Jun 15, 2008 at 09:45:32AM +1000, Damian Ivereigh wrote:
+> Does anyone have any experience with securing batman networks (or more
+> to the point the adhoc networks it is based on)? My setup will be a
+> relatively planned infrastructure with all units controlled by myself,
+> so embedding keys etc won't really be an issue.
 >=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> 'objs/accesspoint.3ds' found
+> Can you use WPA2 with adhoc networks? How does this work with
+> wpa_supplicant & hostapd (which are obviously designed for use with
+> access point infrastructure).
 >=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> './objs/accesspoint.3ds' found
+> When I use the term "security" I am looking at it at several levels:-
 >=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> '../objs/accesspoint.3ds' found
+> 1) Stopping rogue units joining the network.
+> 2) Encrypting the traffic to stop eavesdropping.
+> 3) Stopping others from hijacking the connections (either between nodes
+> or via the gateways).=20
 >=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> '../../objs/accesspoint.3ds' found
+> I realise this is a different style from the community mesh network,
+> open to everyone, that Batman appears to have been part of up to now. In
+> Australia bandwidth is so limited (and expensive) that people here are
+> generally not willing to share it, so there is almost no chance of a
+> community arising of its own accord.
 >=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> 'objs/accesspoint_inet.3ds' found
+> Damian
 >=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> './objs/accesspoint_inet.3ds' found
+> --=20
+> Launtel - Plugging Tassie into the world
+> Tel: 1800LAUNTEL (1800528683)
+> Mob: 0418217582
+> Fax: 1300784109
+> http://www.launtel.net.au
 >=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> '../objs/accesspoint_inet.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> '../../objs/accesspoint_inet.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file 'objs/internet.3d=
-s'
-> found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> './objs/internet.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> '../objs/internet.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> '../../objs/internet.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file 'objs/btn_close.3=
-ds'
-> found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> './objs/btn_close.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> '../objs/btn_close.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> '../../objs/btn_close.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> 'objs/s3d_berlios_de.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> './objs/s3d_berlios_de.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> '../objs/s3d_berlios_de.3ds' found
->=20
-> (process:29085): LibG3D-WARNING **: no handler for file
-> '../../objs/s3d_berlios_de.3ds' found
->=20
-> The file are present in that folder but seem that meshs3d can't find it
-> right?
-> Any help is welcome :)
-> Eidos
-
 > _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
-
---rJwd6BRFiFCcLxzm
+--jousvV0MzM2p6OtC
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -125,9 +88,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFIVaEMrzg/fFk7axYRAhX0AKDewj9sHveye9UqqB2YlkZgyDHKowCffMKR
-24qhCkk1aI2CVmeBcWIMrFk=
-=X2ri
+iD8DBQFIVaMvrzg/fFk7axYRAkvdAJ4vikd/aBVN/Rd0xpnP/jHZtM5QKACfT+z7
+0CyLtePLAza/y/7XCgdYfGQ=
+=RwIx
 -----END PGP SIGNATURE-----
 
---rJwd6BRFiFCcLxzm--
+--jousvV0MzM2p6OtC--
