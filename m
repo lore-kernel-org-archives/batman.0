@@ -1,14 +1,13 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] Error " LibG3D-WARNING **: no handler for file "
-	with meshs3d
-Date: Mon, 16 Jun 2008 15:08:22 +0200
-References: <e58370e60806160527y7536a733la99c827ba944211f@mail.gmail.com>
-In-Reply-To: <e58370e60806160527y7536a733la99c827ba944211f@mail.gmail.com>
+Message-ID: <c1004cd20806160853i1f26c82bm8dad8ca7b99c3e18@mail.gmail.com>
+Date: Mon, 16 Jun 2008 17:53:28 +0200
+From: "thomas anderson" <eidos85@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Batman on windows?
+In-Reply-To: <20080615230512.GA9736@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3821476.3ZFQKdkIP9";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200806161508.27511.sven.eckelmann@gmx.de>
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_6642_31057710.1213631608508"
+References: <c1004cd20806150702u4e853fcek86a82e68bfaea819@mail.gmail.com>
+	<20080615230512.GA9736@hrz.tu-chemnitz.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,51 +21,85 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart3821476.3ZFQKdkIP9
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+------=_Part_6642_31057710.1213631608508
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-You wrote:
-> I
-> received the same error just when I'm not root or when another meshs3d
-> process is running, but ever the symbols are appeared.
-Can you rewrite this sentence? I am not able to understand when something=20
-(not?) happens.
+Ok i'l think about it :)
+Eidos
 
-> ldd of meshs3d recognize libg3d library. What do you exactly mean with
-> those 3ds plugins? where can we found them or realize if we've got them
-> installed?
-libg3d has its own plugin infrastructure and you cannot detect dependencies=
-=20
-with running ldd on meshs3d. If you have installed the debian package for=20
-libg3d then you should have another one with the name libg3d-plugins which=
-=20
-also must be installed. (Yes, the package description is wrong and the next=
-=20
-debian package release should have it marked as recommended for libg3d).
-To check if you have the plugin installed, search for imp_3ds.so in /usr (i=
-f=20
-you have installed libg3d there).
+2008/6/16 Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>:
 
-find /usr/lib -name "imp_3ds.so"
+> Hello,
+>
+> AFAIK no one has done a port, or tried it. It should be possible, but no
+> one of us is interested in writing one. If you want to port it, please
+> feel free to do so. :)
+>
+> best regards,
+>        Simon
+>
+> On Sun, Jun 15, 2008 at 04:02:26PM +0200, thomas anderson wrote:
+> > What about porting B.A.T.M.A.N. on windows?
+> > Eidos
+>
+> > _______________________________________________
+> > B.A.T.M.A.N mailing list
+> > B.A.T.M.A.N@open-mesh.net
+> > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+>
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.6 (GNU/Linux)
+>
+> iD8DBQFIVaAorzg/fFk7axYRAmmBAKCI/F5FLS5mS1pXSZlyg6gr1rIG1QCfbJoQ
+> SuCqmGazZikEphV72vvG4ug=
+> =gZUB
+> -----END PGP SIGNATURE-----
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+>
 
-Please check file permissions if find is successful.
+------=_Part_6642_31057710.1213631608508
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Best Regards,
-	Sven
+Ok i&#39;l think about it :) <br>Eidos<br><br><div class="gmail_quote">2008/6/16 Simon Wunderlich &lt;<a href="mailto:simon.wunderlich@s2003.tu-chemnitz.de">simon.wunderlich@s2003.tu-chemnitz.de</a>&gt;:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Hello,<br>
+<br>
+AFAIK no one has done a port, or tried it. It should be possible, but no<br>
+one of us is interested in writing one. If you want to port it, please<br>
+feel free to do so. :)<br>
+<br>
+best regards,<br>
+ &nbsp; &nbsp; &nbsp; &nbsp;Simon<br>
+<div class="Ih2E3d"><br>
+On Sun, Jun 15, 2008 at 04:02:26PM +0200, thomas anderson wrote:<br>
+&gt; What about porting B.A.T.M.A.N. on windows?<br>
+&gt; Eidos<br>
+<br>
+</div>&gt; _______________________________________________<br>
+&gt; B.A.T.M.A.N mailing list<br>
+&gt; <a href="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</a><br>
+&gt; <a href="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target="_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
+<br>
+<br>-----BEGIN PGP SIGNATURE-----<br>
+Version: GnuPG v1.4.6 (GNU/Linux)<br>
+<br>
+iD8DBQFIVaAorzg/fFk7axYRAmmBAKCI/F5FLS5mS1pXSZlyg6gr1rIG1QCfbJoQ<br>
+SuCqmGazZikEphV72vvG4ug=<br>
+=gZUB<br>
+-----END PGP SIGNATURE-----<br>
+<br>_______________________________________________<br>
+B.A.T.M.A.N mailing list<br>
+<a href="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</a><br>
+<a href="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target="_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
+<br></blockquote></div><br>
 
---nextPart3821476.3ZFQKdkIP9
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkhWZcYACgkQqQGwKVlMoDvseQCdFbj6sQ7M/PPzOkUX4dUbiTK1
-gF4AoI7ECf6fjeefjLZHTwSMukk5r6DD
-=fV08
------END PGP SIGNATURE-----
-
---nextPart3821476.3ZFQKdkIP9--
+------=_Part_6642_31057710.1213631608508--
