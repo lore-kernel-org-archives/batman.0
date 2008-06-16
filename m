@@ -1,14 +1,14 @@
-Message-ID: <c1004cd20806160912q72e6b258o27d5a98d0597ba4f@mail.gmail.com>
-Date: Mon, 16 Jun 2008 18:12:34 +0200
-From: "thomas anderson" <eidos85@gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Error " LibG3D-WARNING **: no handler for file "
-	with meshs3d
-In-Reply-To: <200806161508.27511.sven.eckelmann@gmx.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Batman doesn't add default route...
+Date: Tue, 17 Jun 2008 01:49:43 +0800
+References: <c1004cd20806160901m70ff21d2y97830fdd128c5f75@mail.gmail.com>
+In-Reply-To: <c1004cd20806160901m70ff21d2y97830fdd128c5f75@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_6791_3864582.1213632754795"
-References: <e58370e60806160527y7536a733la99c827ba944211f@mail.gmail.com>
-	<200806161508.27511.sven.eckelmann@gmx.de>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806170149.43572.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,84 +22,18 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-------=_Part_6791_3864582.1213632754795
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tuesday, 17. June 2008 00:01:23 thomas anderson wrote:
+> The problem is that when i start batman on the client pc it doesn't add the
+> default route to 192.168.9.1 infact if i add it manually with:
+> route add default gw 192.168.9.1
+> everything goes ok and i can surf on internet but without the manual add of
+> the route i can't surf..
+> Can someone help me?
 
-Now it works i just installed the libg3d-plugins on a Ubuntu box.
-Thank you!
-Eidos
+All routing table entries are not shown in the default table (254) but can be 
+found elsewhere. Please read: http://open-mesh.net/batman/doc/RoutingVodoo
+If your internet connection still does not work, please log debug level 3 and 
+watch out for errors / warnings or post them here.
 
-2008/6/16 Sven Eckelmann <sven.eckelmann@gmx.de>:
-
-> You wrote:
-> > I
-> > received the same error just when I'm not root or when another meshs3d
-> > process is running, but ever the symbols are appeared.
-> Can you rewrite this sentence? I am not able to understand when something
-> (not?) happens.
->
-> > ldd of meshs3d recognize libg3d library. What do you exactly mean with
-> > those 3ds plugins? where can we found them or realize if we've got them
-> > installed?
-> libg3d has its own plugin infrastructure and you cannot detect dependencies
-> with running ldd on meshs3d. If you have installed the debian package for
-> libg3d then you should have another one with the name libg3d-plugins which
-> also must be installed. (Yes, the package description is wrong and the next
-> debian package release should have it marked as recommended for libg3d).
-> To check if you have the plugin installed, search for imp_3ds.so in /usr
-> (if
-> you have installed libg3d there).
->
-> find /usr/lib -name "imp_3ds.so"
->
-> Please check file permissions if find is successful.
->
-> Best Regards,
->         Sven
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
->
-
-------=_Part_6791_3864582.1213632754795
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Now it works i just installed the libg3d-plugins on a Ubuntu box.<br>Thank you!<br>Eidos<br><br><div class="gmail_quote">2008/6/16 Sven Eckelmann &lt;<a href="mailto:sven.eckelmann@gmx.de">sven.eckelmann@gmx.de</a>&gt;:<br>
-<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class="Ih2E3d">You wrote:<br>
-&gt; I<br>
-&gt; received the same error just when I&#39;m not root or when another meshs3d<br>
-&gt; process is running, but ever the symbols are appeared.<br>
-</div>Can you rewrite this sentence? I am not able to understand when something<br>
-(not?) happens.<br>
-<div class="Ih2E3d"><br>
-&gt; ldd of meshs3d recognize libg3d library. What do you exactly mean with<br>
-&gt; those 3ds plugins? where can we found them or realize if we&#39;ve got them<br>
-&gt; installed?<br>
-</div>libg3d has its own plugin infrastructure and you cannot detect dependencies<br>
-with running ldd on meshs3d. If you have installed the debian package for<br>
-libg3d then you should have another one with the name libg3d-plugins which<br>
-also must be installed. (Yes, the package description is wrong and the next<br>
-debian package release should have it marked as recommended for libg3d).<br>
-To check if you have the plugin installed, search for imp_3ds.so in /usr (if<br>
-you have installed libg3d there).<br>
-<br>
-find /usr/lib -name &quot;imp_3ds.so&quot;<br>
-<br>
-Please check file permissions if find is successful.<br>
-<br>
-Best Regards,<br>
-<font color="#888888"> &nbsp; &nbsp; &nbsp; &nbsp;Sven<br>
-</font><br>_______________________________________________<br>
-B.A.T.M.A.N mailing list<br>
-<a href="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</a><br>
-<a href="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target="_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
-<br></blockquote></div><br>
-
-------=_Part_6791_3864582.1213632754795--
+Greetings,
+Marek
