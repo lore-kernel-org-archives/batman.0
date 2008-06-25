@@ -1,17 +1,15 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] using routing script in addtion to batman routing
-	rules
-Date: Thu, 26 Jun 2008 00:24:07 +0800
-References: <0e192879c584de17adb2dbfc872a5004.squirrel@wm.ddmesh.de>
-	<200806251809.47182.lindner_marek@yahoo.de>
-	<d20a0e8003cd91a098c494eb5a1a0472.squirrel@wm.ddmesh.de>
-In-Reply-To: <d20a0e8003cd91a098c494eb5a1a0472.squirrel@wm.ddmesh.de>
+Subject: Re: [B.A.T.M.A.N.] Re: routing script
+Date: Thu, 26 Jun 2008 00:29:02 +0800
+References: <14659.85.41.146.90.1214391124.squirrel@krisma.oltrelinux.com>
+	<ba16c324897fee6d1842df2085f702b5.squirrel@wm.ddmesh.de>
+In-Reply-To: <ba16c324897fee6d1842df2085f702b5.squirrel@wm.ddmesh.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806260024.07186.lindner_marek@yahoo.de>
+Message-Id: <200806260029.02891.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,11 +23,22 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Wednesday, 25. June 2008 20:01:02 freifunk@ddmesh.de wrote:
-> what option do I need to use the routing script for batman-ex rev1066?
 
-AFAIK batman-ex does not support this function. If you want to get it in you 
-have to talk to Axel or patch it yourself. The sources is yours.  :-)
+Hi,
+
+> As I know you can not directly trigger to change the default route.
+
+I don't know about batman-ex but batman allows that. Depending on your needs 
+you have several options:
+
+- If you know what gateway you want you can use the -p option even at runtime:
+batmand [-c] -p <IP>
+
+- If you want that batman chooses a better gateway based on the TQ as soon as 
+it is available use -r XX (also available at runtime) where XX bgreater than 
+3. To switch to a new gateway as soon as its TQ values is 20 points higher 
+than the current gateway:
+batmand [-c] -r 20
 
 Greetings,
 Marek
