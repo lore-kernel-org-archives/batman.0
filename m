@@ -1,12 +1,17 @@
-Message-ID: <ba16c324897fee6d1842df2085f702b5.squirrel@wm.ddmesh.de>
-In-Reply-To: <14659.85.41.146.90.1214391124.squirrel@krisma.oltrelinux.com>
-References: <14659.85.41.146.90.1214391124.squirrel@krisma.oltrelinux.com>
-Date: Wed, 25 Jun 2008 14:51:22 +0200 (CEST)
-From: freifunk@ddmesh.de
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] using routing script in addtion to batman routing
+	rules
+Date: Thu, 26 Jun 2008 00:24:07 +0800
+References: <0e192879c584de17adb2dbfc872a5004.squirrel@wm.ddmesh.de>
+	<200806251809.47182.lindner_marek@yahoo.de>
+	<d20a0e8003cd91a098c494eb5a1a0472.squirrel@wm.ddmesh.de>
+In-Reply-To: <d20a0e8003cd91a098c494eb5a1a0472.squirrel@wm.ddmesh.de>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Re: routing script
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806260024.07186.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,57 +23,13 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi Antonio,
+On Wednesday, 25. June 2008 20:01:02 freifunk@ddmesh.de wrote:
+> what option do I need to use the routing script for batman-ex rev1066?
 
-As I know you can not directly trigger to change the default route.
-batmand allows you to setup a ip address that should be used as gateway.
-<batmand -p ip>
-What the script does I don't know. Actually I do not use it as the routing
-that batmand-experimental does with its arguments works fine.
+AFAIK batman-ex does not support this function. If you want to get it in you 
+have to talk to Axel or patch it yourself. The sources is yours.  :-)
 
-> ip route add 0.0.0.0/0 via 0.0.0.0 src 169.254.0.1 dev gate0 table 68
-does setup a default route for dev gate0. gate0 is created by batmand
-and the ip is taken from a ip range that is never routed in internet.
-
-As soon as batmand detects a working gateway it creates this tunnel and
-the tunnel interface gate0. Depending on the routing parameters "-r"
-batmand chooses the gateway. If you specify the -p option to pass a
-ip of the network (not from range 169.254.x.x) and the gateway is working,
-it is used. If this gateway does not work, batmand chooses the gateway
-depending on the -r option.
-
-if you look at the router script you will see that it only prints the
-commands and does not really execute it.
-You have to remove the "echo" in front of the command or keep the line and
-add your own commands to add/del the rules/routes.
-
-If not no routes are setup at all and your network shouldn't work.
-When I remember right, if you specifiy a routing script batmand does not
-set rules/routes anymore and pass the complete control to the script.
-
-/Stephan
-
-> Hi Stephan
->
-> I too am interested to capture the gateway-switching from application
-> layer, but looking at the log produced by a custom-policy-routing
-> script I can only see something like:
->
-> ip route add 0.0.0.0/0 via 0.0.0.0 src 169.254.0.1 dev gate0 table 68
->
-> that is the initialization of the tunnel with a 169.254/16 IP address.
-> Any idea about triggering the gateway change?
->
-> I've a bit edited the default script as included, hope this could be
-> useful.
->
->
-> Antonio
->
->
->
->
-
-
+Greetings,
+Marek
