@@ -1,16 +1,12 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Re: routing script
-Date: Thu, 26 Jun 2008 00:29:02 +0800
-References: <14659.85.41.146.90.1214391124.squirrel@krisma.oltrelinux.com>
-	<ba16c324897fee6d1842df2085f702b5.squirrel@wm.ddmesh.de>
-In-Reply-To: <ba16c324897fee6d1842df2085f702b5.squirrel@wm.ddmesh.de>
+Message-ID: <4864DD02.20209@csp.it>
+Date: Fri, 27 Jun 2008 14:28:50 +0200
+From: cipollone <cipollone@csp.it>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806260029.02891.lindner_marek@yahoo.de>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Subject: [B.A.T.M.A.N.] BATMAN ADVANCED KERNEL LAND LOOP
+Reply-To: cipollone@csp.it,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -21,24 +17,28 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
-
+To: b.a.t.m.a.n@open-mesh.net, simon.wunderlich@s2003.tu-chemnitz.de
 
 Hi,
 
-> As I know you can not directly trigger to change the default route.
+I'm testing BATMAN Advanced Kernel Land and I've found a problem.
+I'm using BATMAN-adv over OpenWRT.
 
-I don't know about batman-ex but batman allows that. Depending on your needs 
-you have several options:
+My test is:
 
-- If you know what gateway you want you can use the -p option even at runtime:
-batmand [-c] -p <IP>
+3 virtual machine
+2 Ethernet card for each virtual machine
+3 Vlan
 
-- If you want that batman chooses a better gateway based on the TQ as soon as 
-it is available use -r XX (also available at runtime) where XX bgreater than 
-3. To switch to a new gateway as soon as its TQ values is 20 points higher 
-than the current gateway:
-batmand [-c] -r 20
+So we have a loop and I hoped that BATMAN solve this but...
 
-Greetings,
-Marek
+What's happen is that each virtual machine can send message to itself 
+using the 2 interface.
+It passes because  the BATMAN  message are re-broadcasted and at a 
+certain point 1 of machine start to communicate only with itself, 
+disappearing from the network.
+
+I need helppp!!!
+
+Paolo Cipollone
+
