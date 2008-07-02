@@ -1,12 +1,13 @@
-Message-ID: <4868B75E.7080301@dd19.de>
-Date: Mon, 30 Jun 2008 12:37:18 +0200
-From: Alexander Morlang <alx@dd19.de>
+Date: Wed, 2 Jul 2008 15:01:16 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20080702130116.GA28427@hrz.tu-chemnitz.de>
+References: <4864DD02.20209@csp.it>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] cherry pal with batman protocol
-References: <bccbc6690806300155y1acf04e5sdbfabb09a4921f1@mail.gmail.com>
-In-Reply-To: <bccbc6690806300155y1acf04e5sdbfabb09a4921f1@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="EVF5PPMfhYS0aIcm"
+Content-Disposition: inline
+In-Reply-To: <4864DD02.20209@csp.it>
+Subject: [B.A.T.M.A.N.] Re: BATMAN ADVANCED KERNEL LAND LOOP
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,38 +21,57 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-M. Peterson schrieb:
-| Hello Mr Seybold,
-|
-| would it be possible, that the cherry pal http://cherrypal.com/ has a
-| wireless chip and this Driver pre-installed?
+--EVF5PPMfhYS0aIcm
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-i found nothing about wireless, but the unit has usb.
-http://www.theregister.co.uk/2008/06/17/cherrypal/
+Hey,
 
-as it is supposed to run debian, batman will run on it without any
-modifications.
+Just as an update for other people interested in batman-advanced: Paolo
+and me were hunting the bug(s) in private, and these issues should be
+resolved with rev1090.=20
 
-| that would allow to build a FON-like network, it is a routing mesh
-| network and all cherrypals could connect wireless to each other.
-| https://www.open-mesh.net/batman
+Thank you again for reporting and testing, Paolo!
+	Simon
 
-you did not understand the difference between the fon rip off and free
-meshnetworks.
+On Fri, Jun 27, 2008 at 02:28:50PM +0200, cipollone wrote:
+> Hi,
+>=20
+> I'm testing BATMAN Advanced Kernel Land and I've found a problem.
+> I'm using BATMAN-adv over OpenWRT.
+>=20
+> My test is:
+>=20
+> 3 virtual machine
+> 2 Ethernet card for each virtual machine
+> 3 Vlan
+>=20
+> So we have a loop and I hoped that BATMAN solve this but...
+>=20
+> What's happen is that each virtual machine can send message to itself=20
+> using the 2 interface.
+> It passes because  the BATMAN  message are re-broadcasted and at a=20
+> certain point 1 of machine start to communicate only with itself,=20
+> disappearing from the network.
+>=20
+> I need helppp!!!
+>=20
+> Paolo Cipollone
+>=20
 
-|
-| Thanks for a feedfback
-| Max
+--EVF5PPMfhYS0aIcm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Alex
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFIaLdehx2RbV7T5aERArdDAKCAXYNI7saY3GdFiPYbtHDd1l33jwCgyqIF
-D0YClFcXh4MnqQMimUXyL3Y=
-=r71h
+iD8DBQFIa3wcrzg/fFk7axYRAskcAJ9f1LVGtrHSZBWE8uDwh0Lo9YyPfACfZzK/
+JwRekcyyEMG8YNPAshngeEU=
+=ynv8
 -----END PGP SIGNATURE-----
+
+--EVF5PPMfhYS0aIcm--
