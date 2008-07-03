@@ -1,14 +1,14 @@
-Date: Wed, 2 Jul 2008 15:01:16 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20080702130116.GA28427@hrz.tu-chemnitz.de>
-References: <4864DD02.20209@csp.it>
+Message-ID: <486CD741.3050008@csp.it>
+Date: Thu, 03 Jul 2008 15:42:25 +0200
+From: cipollone <cipollone@csp.it>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="EVF5PPMfhYS0aIcm"
-Content-Disposition: inline
-In-Reply-To: <4864DD02.20209@csp.it>
-Subject: [B.A.T.M.A.N.] Re: BATMAN ADVANCED KERNEL LAND LOOP
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+References: <4864DD02.20209@csp.it> <20080702130116.GA28427@hrz.tu-chemnitz.de>
+In-Reply-To: <20080702130116.GA28427@hrz.tu-chemnitz.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] BATMAN Gateway
+Reply-To: cipollone@csp.it,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -21,57 +21,15 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+Hi,
 
---EVF5PPMfhYS0aIcm
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I want to know how work and what I have to configure the kernel module 
+of BATMAN Gateway. I'm using OPENWRT and I haven't found paper that 
+describe this kernel module (usage, configuration, how work).
 
-Hey,
+Someone could help me?
 
-Just as an update for other people interested in batman-advanced: Paolo
-and me were hunting the bug(s) in private, and these issues should be
-resolved with rev1090.=20
+Thanks
 
-Thank you again for reporting and testing, Paolo!
-	Simon
+Paolo Cipollone
 
-On Fri, Jun 27, 2008 at 02:28:50PM +0200, cipollone wrote:
-> Hi,
->=20
-> I'm testing BATMAN Advanced Kernel Land and I've found a problem.
-> I'm using BATMAN-adv over OpenWRT.
->=20
-> My test is:
->=20
-> 3 virtual machine
-> 2 Ethernet card for each virtual machine
-> 3 Vlan
->=20
-> So we have a loop and I hoped that BATMAN solve this but...
->=20
-> What's happen is that each virtual machine can send message to itself=20
-> using the 2 interface.
-> It passes because  the BATMAN  message are re-broadcasted and at a=20
-> certain point 1 of machine start to communicate only with itself,=20
-> disappearing from the network.
->=20
-> I need helppp!!!
->=20
-> Paolo Cipollone
->=20
-
---EVF5PPMfhYS0aIcm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIa3wcrzg/fFk7axYRAskcAJ9f1LVGtrHSZBWE8uDwh0Lo9YyPfACfZzK/
-JwRekcyyEMG8YNPAshngeEU=
-=ynv8
------END PGP SIGNATURE-----
-
---EVF5PPMfhYS0aIcm--
