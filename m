@@ -1,14 +1,14 @@
-Date: Thu, 17 Jul 2008 10:00:54 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-Id: <0C69D8C5-D212-4615-937B-B448397664AE@gmail.com>
+From: Scott Raynel <scottraynel@gmail.com>
+In-Reply-To: <20080717080054.GA15826@hrz.tu-chemnitz.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v926)
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv-kernelland linux-2.6.21
 	compatibility
-Message-ID: <20080717080054.GA15826@hrz.tu-chemnitz.de>
+Date: Thu, 17 Jul 2008 23:32:58 +1200
 References: <A2A8A9D0-44EF-4330-8AEE-4A17F741C109@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ReaqsoxgOBHFXBhH"
-Content-Disposition: inline
-In-Reply-To: <A2A8A9D0-44EF-4330-8AEE-4A17F741C109@gmail.com>
+	<20080717080054.GA15826@hrz.tu-chemnitz.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,70 +22,44 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+Hi Simon,
 
---ReaqsoxgOBHFXBhH
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 17/07/2008, at 8:00 PM, Simon Wunderlich wrote:
 
-Hey Scott,
+> Hey Scott,
+>
+> thank you for the patch, it looks good to me so i applied it. Having a
+> compat.h is a good idea, maybe we should use it even more to get rid  
+> of
+> some ugly #ifdef's. :)
+> I've tested your patch against various kernels, it seems to work until
+> 2.6.20, but breaks for 2.6.19.
 
-thank you for the patch, it looks good to me so i applied it. Having a
-compat.h is a good idea, maybe we should use it even more to get rid of
-some ugly #ifdef's. :)=20
-I've tested your patch against various kernels, it seems to work until=20
-2.6.20, but breaks for 2.6.19.
+Great, thanks. The idea of a compat.h for those macros is blatantly  
+stolen from madwifi, which I'm a casual contributor to :) If I get  
+some more spare time I'll look at fixes for earlier kernels, but I  
+needed to target 2.6.21 with a project I'm working on, hence the  
+patch :)
 
-We welcome any kind of patches, so don't hesitate to submit. We can=20
-integrate them directly (like your patch) or offer them on our homepage
-(like the quagga patches [1]).
+>
+>
+> We welcome any kind of patches, so don't hesitate to submit. We can
+> integrate them directly (like your patch) or offer them on our  
+> homepage
+> (like the quagga patches [1]).
+>
 
-Thanks again,
-	Simon
+I'll keep that in mind - hopefully as we start to play with the module  
+some more I'll be able contribute further.
 
+Cheers,
 
-[1] http://downloads.open-mesh.net/batman/patches/quagga/
-
-
-
-On Thu, Jul 17, 2008 at 01:34:53PM +1200, Scott Raynel wrote:
-> Hi there,
->=20
-> Not sure how you guys want patches submitted, so point me in the right =
-=20
-> direction if this is not it. Here's a simple patch that enables =20
-> compilation on linux-2.6.21 (and possibly earlier, though I've tested =20
-> 2.6.16 and it doesn't work).
->=20
-> Cheers,
->=20
-> --
-> Scott Raynel
-> WAND Network Research Group
-> Department of Computer Science
-> University of Waikato
-> New Zealand
->=20
->=20
+--
+Scott Raynel
+WAND Network Research Group
+Department of Computer Science
+University of Waikato
+New Zealand
 
 
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
-
---ReaqsoxgOBHFXBhH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIfvw2rzg/fFk7axYRAoCiAJoDjaBWPu2eXPGtBQoRQAEJPXhspACgyS4c
-EMnWeOwpvxZvM9mwd0f0ixQ=
-=VXKu
------END PGP SIGNATURE-----
-
---ReaqsoxgOBHFXBhH--
