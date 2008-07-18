@@ -1,16 +1,12 @@
-Date: Fri, 18 Jul 2008 01:36:21 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] Batman 0.3 + Freifunk setup questions
-Message-ID: <20080717233621.GA10978@hrz.tu-chemnitz.de>
-References: <487F60E5.5000003@reglue.org> <487F77DF.8050305@reglue.org>
-	<487F9142.9000704@reglue.org> <487FA7DD.7080607@reglue.org>
-	<20080717220707.GA9314@hrz.tu-chemnitz.de>
-	<487FC8BB.6010707@reglue.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
-Content-Disposition: inline
-In-Reply-To: <487FC8BB.6010707@reglue.org>
+Subject: Re: [B.A.T.M.A.N.] batman and Kernel 2.6.26-rc8&rc9
+From: Mark Kelly <mark.kelly@cadre5.com>
+In-Reply-To: <20080714154944.GA16555@hrz.tu-chemnitz.de>
+References: <1216040292.12178.3.camel@mkellyDell>
+	<20080714154944.GA16555@hrz.tu-chemnitz.de>
+Content-Type: multipart/alternative; boundary="=-4LoiN1fXRPqyjiN2Qdus"
+Date: Thu, 17 Jul 2008 21:48:27 -0400
+Message-Id: <1216345707.2919.1.camel@mkellyDell>
+Mime-Version: 1.0
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,72 +21,124 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
---LZvS9be/3tNcYl/X
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--=-4LoiN1fXRPqyjiN2Qdus
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Hello Don,
+Hey Simon,
 
-Debug Level 2 will list the available gateways. There is no need to
-restart BATMAN, it will notice the new gateway available gateways=20
-automatically (the gateways are announced with the BATMAN-packets). One
-of the gateways will be selected depending on the configuration at -r.=20
+I just got around to trying this again on 2.6.26 final and I'm still
+getting a fail error on the gateway module, and I've tried it using
+r1099 and r1100 under openwrt on an ixp4xx board.
 
-You might want to read the howto [1] for further information. :)
-Please ask again if your question is not answered there.
+make[3]: Entering directory
+`/opt/openwrt/k1/build_dir/linux-ixp4xx_generic/linux-2.6.26'
+  CC
+[M]  /opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.o
+/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.c: In function 'init_module':
+/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.c:93: error: implicit declaration of function 'class_device_create'
+/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.c: In function 'cleanup_module':
+/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.c:118: error: implicit declaration of function 'class_device_destroy'
+make[4]: ***
+[/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.o] Error 1
+make[3]: ***
+[_module_/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules]
+Error 2
+make[3]: Leaving directory
+`/opt/openwrt/k1/build_dir/linux-ixp4xx_generic/linux-2.6.26'
+make[2]: *** [/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/.built]
+Error 2
+make[2]: Leaving directory `/opt/openwrt/packages/net/batman'
+make[1]: *** [package/batman/compile] Error 2
+make[1]: Leaving directory `/opt/openwrt/k1'
+make: *** [package/batman-compile] Error 2
 
-regards,
-	Simon
 
-[1] http://open-mesh.net/batman/doc/batmand_howto.pdf
 
-On Thu, Jul 17, 2008 at 05:33:31PM -0500, Don Davis wrote:
-> Simon Wunderlich wrote:
-> >On Thu, Jul 17, 2008 at 03:13:17PM -0500, Don Davis wrote:
-> >>batmand -g 5mb eth1 vlan1 #for gw?
-> >Hello Don,
-> >
-> >try "-g 5mbit" instead of "-g 5mb". Seems this wrong option is silently
-> >ignored ...
-> >
-> >best regards,
-> >	Simon
-> >
-> Thank you.  That did do the trick.
->=20
-> Is the gateway detection for announced gateways?
-> Is there a script that can probe to see if the router is a gateway and=20
-> if so make it available?
->=20
-> I was under the mistaken impression that because I hadn't configured=20
-> olsr (nor had I disabled it) that I was not running OLSR.  Thanks to=20
-> Sven Ola it seems that it was a zero conf olsr.  Without specifying=20
-> ifconfig eth1:bat 10.0.5.* the batmand eth1  command seemed to work (the=
-=20
-> same for batmand -g 5mbit eth1 vlan1) and batmand -c -d 1/2/3/4 show=20
-> batman running.
->=20
->=20
-> Is it normal that I have to kill and restart batman for the new gateway=
-=20
-> to be noticed?
+On Mon, 2008-07-14 at 17:49 +0200, Simon Wunderlich wrote:
+
+> Hello Mark,
+> 
+> thanks for the report. The issue should be fixed with revision 1099.
+> 
+> regards
+> 	Simon
+> 
+> On Mon, Jul 14, 2008 at 08:58:11AM -0400, Mark Kelly wrote:
+> > The batman layer3 kernel module does not appear to compile on the
+> > 2.6.26-rc8 & rc9 kernels.  Is this a known bug?
+> > 
+> > 
+> 
+> > _______________________________________________
+> > B.A.T.M.A.N mailing list
+> > B.A.T.M.A.N@open-mesh.net
+> > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+> 
 > _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
---LZvS9be/3tNcYl/X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+--=-4LoiN1fXRPqyjiN2Qdus
+Content-Type: text/html; charset=utf-8
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
+<HTML>
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
+  <META NAME="GENERATOR" CONTENT="GtkHTML/3.18.3">
+</HEAD>
+<BODY>
+Hey Simon,<BR>
+<BR>
+I just got around to trying this again on 2.6.26 final and I'm still getting a fail error on the gateway module, and I've tried it using r1099 and r1100 under openwrt on an ixp4xx board.<BR>
+<BR>
+make[3]: Entering directory `/opt/openwrt/k1/build_dir/linux-ixp4xx_generic/linux-2.6.26'<BR>
+&nbsp; CC [M]&nbsp; /opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.o<BR>
+/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.c: In function 'init_module':<BR>
+/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.c:93: error: implicit declaration of function 'class_device_create'<BR>
+/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.c: In function 'cleanup_module':<BR>
+/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.c:118: error: implicit declaration of function 'class_device_destroy'<BR>
+make[4]: *** [/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules/gateway.o] Error 1<BR>
+make[3]: *** [_module_/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/linux/modules] Error 2<BR>
+make[3]: Leaving directory `/opt/openwrt/k1/build_dir/linux-ixp4xx_generic/linux-2.6.26'<BR>
+make[2]: *** [/opt/openwrt/k1/build_dir/armeb/batman-0.3-r1100/.built] Error 2<BR>
+make[2]: Leaving directory `/opt/openwrt/packages/net/batman'<BR>
+make[1]: *** [package/batman/compile] Error 2<BR>
+make[1]: Leaving directory `/opt/openwrt/k1'<BR>
+make: *** [package/batman-compile] Error 2<BR>
+<BR>
+<BR>
+<BR>
+On Mon, 2008-07-14 at 17:49 +0200, Simon Wunderlich wrote:
+<BLOCKQUOTE TYPE=CITE>
+<PRE>
+Hello Mark,
 
-iD8DBQFIf9d1rzg/fFk7axYRAqEUAKCm72E2TT0Yk1NaXd0PZILpzcCJDQCg1AGF
-tBtN0xBbSeUqKoNOAj5F2zQ=
-=CiUd
------END PGP SIGNATURE-----
+thanks for the report. The issue should be fixed with revision 1099.
 
---LZvS9be/3tNcYl/X--
+regards
+	Simon
+
+On Mon, Jul 14, 2008 at 08:58:11AM -0400, Mark Kelly wrote:
+&gt; The batman layer3 kernel module does not appear to compile on the
+&gt; 2.6.26-rc8 &amp; rc9 kernels.  Is this a known bug?
+&gt; 
+&gt; 
+
+&gt; _______________________________________________
+&gt; B.A.T.M.A.N mailing list
+&gt; <A HREF="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</A>
+&gt; <A HREF="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</A>
+
+_______________________________________________
+B.A.T.M.A.N mailing list
+<A HREF="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</A>
+<A HREF="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</A>
+</PRE>
+</BLOCKQUOTE>
+</BODY>
+</HTML>
+
+--=-4LoiN1fXRPqyjiN2Qdus--
