@@ -1,13 +1,15 @@
-Date: Fri, 25 Jul 2008 13:17:52 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv-kernelland: Possible kernel deadlock?
-Message-ID: <20080725111751.GA27127@hrz.tu-chemnitz.de>
-References: <E9DE65F5-50B7-494C-8C69-E0A028F2AF0B@gmail.com>
+Message-ID: <488E2502.4090907@reglue.org>
+Date: Mon, 28 Jul 2008 14:58:58 -0500
+From: Don Davis <dondavis@reglue.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="EVF5PPMfhYS0aIcm"
-Content-Disposition: inline
-In-Reply-To: <E9DE65F5-50B7-494C-8C69-E0A028F2AF0B@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Batman 0.3 + Freifunk setup questions
+References: <487F60E5.5000003@reglue.org>
+	<487F77DF.8050305@reglue.org>	<487F9142.9000704@reglue.org>
+	<487FA7DD.7080607@reglue.org>	<20080717220707.GA9314@hrz.tu-chemnitz.de>	<487FC8BB.6010707@reglue.org>
+	<20080717233621.GA10978@hrz.tu-chemnitz.de>
+In-Reply-To: <20080717233621.GA10978@hrz.tu-chemnitz.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,72 +24,46 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
---EVF5PPMfhYS0aIcm
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Debug Level 2 will list the available gateways. There is no need to
+> restart BATMAN, it will notice the new gateway available gateways 
+> automatically (the gateways are announced with the BATMAN-packets). One
+> of the gateways will be selected depending on the configuration at -r. 
 
-Hello Scott,
+I'm a little curious about setting up an init script for batmand 0.3
+Using freifunk + batmand 0.3:
 
-thanks for the report. I could reproduce the Bug. (i've tried something
-similar myself, but did not wait between the commands before...).=20
-When i reproduce, not the syscall but the module itself locks up. :(
+S97startnode.sh
+#! /bin/sh
+batmand eth1
 
-I'll look into this, please keep me informed, i'll do the same. :)
+Works fine for the nodes.  However,
+S97startnode.sh
+#! /bin/sh
+batmand -r 3 eth1
 
-regards,
-	Simon
+does not find the gateway.  I thought the default routing class was 3 or 
+would respond fastest but apparently not.
 
-On Fri, Jul 25, 2008 at 03:14:44PM +1200, Scott Raynel wrote:
-> Hi all,
->=20
-> I'm running batman-adv-kernelland r1102 on linux-2.6.21.5. I've found =20
-> I can fairly reliably deadlock the kernel by disabling and re-enabling =
-=20
-> batman a few times, e.g.
->=20
-> $ echo ath0 > /proc/net/batman-adv/interfaces
-> wait a while...
-> $ echo > /proc/net/batman-adv/interfaces
-> wait a while and repeat.
->=20
-> It appears that this is deadlocking the kernel somehow, as syscalls =20
-> never return, e.g. 'ps' prints the header and then freezes.
->=20
-> Our interface configuration system brings interfaces up and down on re-=
-=20
-> configure, so we'd like the batman interface to be able to withstand =20
-> this use case. I will try to start looking through the code, but I =20
-> thought I'd throw the problem out there to see what others more =20
-> experienced with it think.
->=20
-> Thanks all,
->=20
-> --
-> Scott Raynel
-> WAND Network Research Group
-> Department of Computer Science
-> University of Waikato
-> New Zealand
->=20
->=20
->=20
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+More of a concern though is writing an init script for a gateway.
+S97gateway.sh
+#! /bin/sh
+batmand -g 5mbit eth1 vlan1
 
---EVF5PPMfhYS0aIcm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+at best has to be killed and restarted for batmand to work; worst case 
+scenario it freezes the router.  I need to find a way to get it to wait 
+for the dhcp lease before starting (I guess).  Though doesn't the dhcp 
+lease come after S99?
 
-iD8DBQFIibZfrzg/fFk7axYRAomuAKCfi1gnGvR5YKKz5dLcM3HXrsvtbgCgqLEe
-Fa6psYdPbgaOzWFqxkoGon8=
-=XyJE
------END PGP SIGNATURE-----
+What about a script (much like watchout4batman which I haven't seen for 
+batman 0.3) that can be run as a cronjob that does two things 1) makes 
+sure batmand is up and running 2) if an interface is available on vlan1 
+(or whatever the wan port is on) then restart batmand and announce the 
+node as a gateway?
 
---EVF5PPMfhYS0aIcm--
+For a gateway is there any advantage to
+batmand -g 5mbit eth1 vlan1
+over
+batmand -g 5mbit eth1?
+
+
