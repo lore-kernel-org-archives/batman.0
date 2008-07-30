@@ -1,16 +1,11 @@
-Message-ID: <48908444.3040805@csp.it>
-Date: Wed, 30 Jul 2008 17:09:56 +0200
-From: cipollone <cipollone@csp.it>
+Message-ID: <59864.212.147.148.167.1217448919.squirrel@www.rivertowermail.com>
+Date: Wed, 30 Jul 2008 21:15:19 +0100 (IST)
+From: "Derek C" <derekbatman@hssl.ie>
 MIME-Version: 1.0
-References: <E9DE65F5-50B7-494C-8C69-E0A028F2AF0B@gmail.com>
-	<20080725111751.GA27127@hrz.tu-chemnitz.de>
-In-Reply-To: <20080725111751.GA27127@hrz.tu-chemnitz.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] BATMAN Advanced Kernel: how much time to find a new
-	route?
-Reply-To: cipollone@csp.it,
-	The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Multi-card MESH
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -21,24 +16,35 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
 
 Hi,
 
-I'm studying how BATMAN Advanced-Kernel work.
-I'm interesting in knowing what is the behavior of BATMAN and the 
-reaction time of the protocol if a node exit from a range node and 
-entered in another range node. I have discovered that (in a simulation 
-with 3 hosts with a mobile node and 2 static node) BATMAN find a new 
-route losing more or less 8 seconds, passing from one to the other node. 
-But the OGMs time is 1 s and the sliding window is 64, so why it can 
-lost 64 seconds to find another route (or 32)?
+Is it possible to use BATMAN with two backbone network cards?
 
-So there is a equation to define a the time lost to find a new route?
+I am hoping to make nodes with three radio cards - two at 5Ghz and one
+2Ghz card for customer access.
 
-I have an originator interval of 1 seconds (set by default).
+I have been playing around with openwrt on gateworks boards (4 miniPCI
+slots) and three radio cards.  In my testing I've only been using typical
+AP / STA setups on the "backbone" radio cards and I'm using OSPF to handle
+dynamic routing.  I'm handing my MESH "intelligence" (making one node's
+STA card associate to a close-by strong signal node's AP card) with Perl
+scripts.
 
-Thank you
+I've got problems with my test system not avoiding circular loops and
+ignoring the bandwidth supply node(s).  I think I've gone on the wrong
+path trying to re-invent the MESH wheel so I'm now looking into BATMAN as
+a possibility.
 
-Paolo
+thanks for any information!
+
+Derek
+
+
+
+
+-- 
+Derek C
 
