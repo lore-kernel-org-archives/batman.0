@@ -1,13 +1,16 @@
-Date: Sat, 2 Aug 2008 17:14:12 +0200
+Date: Sat, 2 Aug 2008 17:47:57 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv-kernelland: Possible kernel deadlock?
-Message-ID: <20080802151412.GA32217@pandem0nium>
+Subject: Re: [B.A.T.M.A.N.] BATMAN Advanced Kernel: how much time to find a
+	new route?
+Message-ID: <20080802154757.GB32217@pandem0nium>
 References: <E9DE65F5-50B7-494C-8C69-E0A028F2AF0B@gmail.com>
+	<20080725111751.GA27127@hrz.tu-chemnitz.de>
+	<48908444.3040805@csp.it>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
+	protocol="application/pgp-signature"; boundary="ADZbWkCsHQ7r3kzd"
 Content-Disposition: inline
-In-Reply-To: <E9DE65F5-50B7-494C-8C69-E0A028F2AF0B@gmail.com>
+In-Reply-To: <48908444.3040805@csp.it>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,63 +22,67 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: cipollone@csp.it, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
---Kj7319i9nmIyA2yE
+--ADZbWkCsHQ7r3kzd
 Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hello Scott,
+Hi Paolo,
 
-please have a look into rev 1104, this should fix some synchronisation
-problems. At least the problem i could reproduce when unloading is gone
-now. Please tell me if this solves your problem, too. :)
+BATMAN IV in batman-advanced uses TQ_GLOBAL_WINDOW_SIZE of 10.=20
+When a packet is received, the TQ value transmitted in the packet will
+be weighted and stored. The sliding window of neighbours who did not=20
+forward an OGM with this sequence number will have this entry set to zero.
+The old neighbours' sliding window will be filled with zeros, while
+the new neighbours' sliding window will gain more and more (weighted)=20
+TQ values. Once the Average of the sliding window is higher than the
+old one, the route will switch.
+
+So it should change after maximum of 10 seconds. The new neighbour will
+start off with bad tq values for the TQ: Neighbours have not answered a
+lot of OGMs, so the asymetric penalty reduces the stored TQ value a lot.=20
+This is probably the reason why it does not switch in 5 seconds, but
+takes a bit longer.
+
+If you want to read in the source code, look into isBidirectionalNeigh()
+and update_orig(). This is the theory, i don't guarantee for bugs. ;)
 
 regards,
 	Simon
 
-On Fri, Jul 25, 2008 at 03:14:44PM +1200, Scott Raynel wrote:
-> Hi all,
+
+
+On Wed, Jul 30, 2008 at 05:09:56PM +0200, cipollone wrote:
+> Hi,
 >=20
-> I'm running batman-adv-kernelland r1102 on linux-2.6.21.5. I've found =20
-> I can fairly reliably deadlock the kernel by disabling and re-enabling =
+> I'm studying how BATMAN Advanced-Kernel work.
+> I'm interesting in knowing what is the behavior of BATMAN and the=20
+> reaction time of the protocol if a node exit from a range node and=20
+> entered in another range node. I have discovered that (in a simulation=20
+> with 3 hosts with a mobile node and 2 static node) BATMAN find a new=20
+> route losing more or less 8 seconds, passing from one to the other node.=
 =20
-> batman a few times, e.g.
+> But the OGMs time is 1 s and the sliding window is 64, so why it can=20
+> lost 64 seconds to find another route (or 32)?
 >=20
-> $ echo ath0 > /proc/net/batman-adv/interfaces
-> wait a while...
-> $ echo > /proc/net/batman-adv/interfaces
-> wait a while and repeat.
+> So there is a equation to define a the time lost to find a new route?
 >=20
-> It appears that this is deadlocking the kernel somehow, as syscalls =20
-> never return, e.g. 'ps' prints the header and then freezes.
+> I have an originator interval of 1 seconds (set by default).
 >=20
-> Our interface configuration system brings interfaces up and down on re-=
-=20
-> configure, so we'd like the batman interface to be able to withstand =20
-> this use case. I will try to start looking through the code, but I =20
-> thought I'd throw the problem out there to see what others more =20
-> experienced with it think.
+> Thank you
 >=20
-> Thanks all,
->=20
-> --
-> Scott Raynel
-> WAND Network Research Group
-> Department of Computer Science
-> University of Waikato
-> New Zealand
->=20
->=20
+> Paolo
 >=20
 > _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>=20
 
---Kj7319i9nmIyA2yE
+--ADZbWkCsHQ7r3kzd
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -83,9 +90,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFIlHnErzg/fFk7axYRAqPCAJ9AaBK8VIaf/ZsyeODz56ww0VmGwACgqMhY
-KZeLeim4GqnzMx2H0ke2nNQ=
-=XVVi
+iD8DBQFIlIGtrzg/fFk7axYRAhLKAJ9bESztiSBIw52RDvfpdqiHNhKxBQCeLghc
+XVhTnQuoSxOth01jBtyADCc=
+=b16Q
 -----END PGP SIGNATURE-----
 
---Kj7319i9nmIyA2yE--
+--ADZbWkCsHQ7r3kzd--
