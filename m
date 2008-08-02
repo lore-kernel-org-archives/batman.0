@@ -1,13 +1,13 @@
-Message-ID: <47725.78.152.237.242.1217490038.squirrel@www.rivertowermail.com>
-In-Reply-To: <489118AA.7020905@gmx.net>
-References: <59864.212.147.148.167.1217448919.squirrel@www.rivertowermail.com>
-	<489118AA.7020905@gmx.net>
-Date: Thu, 31 Jul 2008 08:40:38 +0100 (IST)
-Subject: Re: [B.A.T.M.A.N.] Multi-card MESH
-From: "Derek C" <derekbatman@hssl.ie>
+Date: Sat, 2 Aug 2008 17:14:12 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] batman-adv-kernelland: Possible kernel deadlock?
+Message-ID: <20080802151412.GA32217@pandem0nium>
+References: <E9DE65F5-50B7-494C-8C69-E0A028F2AF0B@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
+Content-Disposition: inline
+In-Reply-To: <E9DE65F5-50B7-494C-8C69-E0A028F2AF0B@gmail.com>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,47 +20,72 @@ List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi Elektra,
 
-I wonder if I use an omni and a higher gain directional antenna would it
-work itself out?  Longer distance links would find the directional
-antennas would give a better association an hopefully less packet loss
-while still having the same hop count.
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Then again if the higher gain directional antennas all saw each other
-(like with a higher node density) then it would end up being a single card
-MESH system with unused cards and antennas.
+Hello Scott,
 
-I'm trying to find out if OLSR is the same with multi card systems
+please have a look into rev 1104, this should fix some synchronisation
+problems. At least the problem i could reproduce when unloading is gone
+now. Please tell me if this solves your problem, too. :)
 
-thanks
+regards,
+	Simon
 
-Derek
-
-On Thu, July 31, 2008 2:43 am, elektra wrote:
-> Hi -
->
->
->
->> Is it possible to use BATMAN with two backbone network cards?
->>
->
->
-> multiple network interfaces are supported, but the current routing metric
-> is based on packet loss and hop count, not actual throughput - this is
-> likely to be suboptimal in some scenarios. Please go ahead and test if it
-> does fit your purpose.
->
-> cu elektra _______________________________________________
+On Fri, Jul 25, 2008 at 03:14:44PM +1200, Scott Raynel wrote:
+> Hi all,
+>=20
+> I'm running batman-adv-kernelland r1102 on linux-2.6.21.5. I've found =20
+> I can fairly reliably deadlock the kernel by disabling and re-enabling =
+=20
+> batman a few times, e.g.
+>=20
+> $ echo ath0 > /proc/net/batman-adv/interfaces
+> wait a while...
+> $ echo > /proc/net/batman-adv/interfaces
+> wait a while and repeat.
+>=20
+> It appears that this is deadlocking the kernel somehow, as syscalls =20
+> never return, e.g. 'ps' prints the header and then freezes.
+>=20
+> Our interface configuration system brings interfaces up and down on re-=
+=20
+> configure, so we'd like the batman interface to be able to withstand =20
+> this use case. I will try to start looking through the code, but I =20
+> thought I'd throw the problem out there to see what others more =20
+> experienced with it think.
+>=20
+> Thanks all,
+>=20
+> --
+> Scott Raynel
+> WAND Network Research Group
+> Department of Computer Science
+> University of Waikato
+> New Zealand
+>=20
+>=20
+>=20
+> _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
->
 
+--Kj7319i9nmIyA2yE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
--- 
-Derek C
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFIlHnErzg/fFk7axYRAqPCAJ9AaBK8VIaf/ZsyeODz56ww0VmGwACgqMhY
+KZeLeim4GqnzMx2H0ke2nNQ=
+=XVVi
+-----END PGP SIGNATURE-----
+
+--Kj7319i9nmIyA2yE--
