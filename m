@@ -1,16 +1,10 @@
-From: Axel Neumann <axel@open-mesh.net>
-Date: Mon, 1 Sep 2008 14:02:42 +0200
-References: <7ifxp3v86m.fsf@lanthane.pps.jussieu.fr>
-	<200808210742.53261.axel@open-mesh.net>
-	<7id4juo258.fsf@lanthane.pps.jussieu.fr>
-In-Reply-To: <7id4juo258.fsf@lanthane.pps.jussieu.fr>
+Message-ID: <5635aa0d0809050801k1c5f0bd5wa366574efedd910f@mail.gmail.com>
+Date: Fri, 5 Sep 2008 22:01:24 +0700
+From: "Outback Dingo" <outbackdingo@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Message-Id: <200809011402.43114.axel@open-mesh.net>
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] Re: [Babel-users] A few more comments on the BATMAN
-	routing protocol
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_131488_19412698.1220626884163"
+Subject: [B.A.T.M.A.N.] Batman gateway lock ups
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,128 +16,233 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
-Cc: Juliusz Chroboczek <Juliusz.Chroboczek@pps.jussieu.fr>, olsr-users@lists.olsr.org, babel-users@lists.alioth.debian.org
+To: b.a.t.m.a.n@open-mesh.net
 
-Hi,
+------=_Part_131488_19412698.1220626884163
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Mittwoch 27 August 2008, you wrote:
-> >> My claim that there exist topologies in which average-case convergence
-> >> of BATMAN is exponential in the number of hops has been confirmed by
-> >> two of the BATMAN developers.  I still believe this to be a very
-> >> significant flaw of BATMAN.
-> >
-> > Packet loss increases also the count of OGMs that trigger a route switch
-> > decreases.
->
-> I realise that.  The trouble is that the time needed to reconverge is
-> proportional to the product of the link qualities, and not to the sum
-> of the link qualities, as is the case in Babel and in OLSR.
->
-> > Now let's come to the worst case. Again two paths that are
-> > non-overlapping. One is terrible, 99% loss. The other is perfect, no
-> > loss.
->
-> As I mentioned in my point 3, the packet loss, as measured by BATMAN,
-> is not realistic in the presence of link-layer AQM.  As you know,
-> IEEE 802.11 does perform link-layer AQM for unicast packets.
-AQM =3D=3D Active Queueing Management ? Sorry, I did not know this. I know =
-that=20
-802.11 retransmits (usually up to 7 times) in case of absent ACKs and most =
+ see pastebin
 
-implementation performs some non-standardized Ack-based rate control.=20
+http://www.pastebin.ca/1194874
 
-All mesh protocols I am aware of use broadcast-based link probing for=20
-estimating the link quality. I agree that this is not very precise and also=
-=20
-does not indicate much about the achievable bandwidth. But the alternatives=
-=20
-are also difficult. Performing unicast measurements introduces lots of=20
-overhead especially in areas of high node density and relying on estimated =
+pertinent info
+dmesg | grep 'batgat loaded'
+batgat: [init_module:96] batgat loaded  rv1025
+uname -a
+Linux nightwing 2.6.23.16 #16 Tue Apr 22 20:00:17 ART 2008 mips unknown
+root@nightwing:~# batmand -v
+WARNING: You are using the unstable batman branch. If you are interested in
+*using* batman get the latest stable release !
+B.A.T.M.A.N. 0.3-beta (compatibility version 5)
+lsmod
 
-802.11 transmit rates requires interaction with the MAC layer and still doe=
-s=20
-not relieve from the need for casual unicast traffic between all neighborin=
-g=20
-nodes.=20
-I am currently experiencing with unicast probes, hoping to find an acceptab=
-le=20
-mixture of selective unicast probing and reusing probetraffic for flooding =
-of=20
-topology information.=20
+Module                  Size  Used by    Tainted:
+P
+sch_htb                14048
+2
+ath_ahb               103616
+0
+wlan_xauth               480
+0
+wlan_wep                4000
+0
+wlan_tkip               9856
+0
+wlan_ccmp               5440
+2
+wlan_acl                1920  0
+ath_rate_minstrel       8352  1
+ath_hal               136832  3 ath_ahb,ath_rate_minstrel
+wlan_scan_sta           8768  1
+wlan_scan_ap            6656  0
+wlan                  152464  10
+ath_ahb,wlan_xauth,wlan_wep,wlan_tkip,wlan_ccmp,wlan_acl,ath_rate_minstrel,wlan_scan_sta,wlan_scan_ap
+batgat                 10944  1
+ipt_iprange              672  0
+ipt_TOS                  832  0
+ipt_TTL                  928  0
+xt_MARK                  960  3
+ipt_ECN                 1472  0
+xt_CLASSIFY              640  0
+ipt_ttl                  704  0
+ipt_tos                  544  0
+ipt_time                1568  0
+xt_tcpmss               1088  0
+xt_statistic             832  0
+xt_mark                  672  7
+xt_mac                   736  3
+xt_length                736  0
+ipt_ecn                 1024  0
+xt_DSCP                 1056  0
+xt_dscp                  832  0
+imq                     2096  0
+ipt_IMQ                  672  2
+xt_string                896  0
+xt_layer7               9840  0
+ipt_ipp2p               6784  0
+ipt_LOG                 4640  0
+xt_CHAOS                1792  0
+xt_DELUDE               2624  1
+xt_TARPIT               2816  1
+xt_quota                 800  0
+xt_portscan             2016  0
+xt_pkttype               704  0
+xt_physdev              1488  0
+ipt_owner                800  0
+iptable_raw              832  0
+xt_NOTRACK               832  0
+xt_CONNMARK             1088  0
+ipt_recent              4992  0
+xt_helper                992  0
+xt_conntrack            1312  0
+xt_connmark              832  0
+xt_connbytes            1312  0
+tun                     6592  0
 
->
-> A 10-hop route with each link having 20% loss will be measured by
-> BATMAN as a route with 90% loss.  However, with 7-persistent per-hop
-> AQM (the IEEE 802.11 default), such a route has an effective loss rate
-> of roughly 10^-4, and is therefore quite usable by standard transport-lay=
-er
-> protocols such as TCP.  (In case this is not clear to you -- this is
-> brilliantly exposed in the original ETX paper.)
->
-> Hence, my claim that BATMAN converges in exponential time stands, even
-> if you restrict yourself to routes usable by TCP.
+------=_Part_131488_19412698.1220626884163
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-And we have not denied your claim. But the evolution of BATMAN has continue=
-d=20
-after batmand-0.2 and what is described in the draft - so did the OLSR whic=
-h=20
-is used in todays Freifunk networks. For example, the BMX version by defaul=
-t=20
-sends each OGM twice (or more often if wanted, my first observations was th=
-at=20
-twice seems sufficient and more than twice does not pay off). Taken your=20
-example of 10 hops with a packet loss of 20% and a resulting Path Error Rat=
-e=20
-of 90 %=20
-transferred to the scenario of sending OGMs twice:=20
-(Link-OGM-Error-Rate) LOER=3D(LPER)=B2=3D0.04	=3D>=20
-(Path-OGM-Error-Rate) POER =3D 1-( (1-LOER)^hops ) =3D 0.34 =3D 34%
+<div dir=3D"ltr">&nbsp;see pastebin<br><br><a href=3D"http://www.pastebin.c=
+a/1194874">http://www.pastebin.ca/1194874</a><br><br>pertinent info<br>dmes=
+g | grep &#39;batgat loaded&#39;<br>batgat: [init_module:96] batgat loaded&=
+nbsp; rv1025<br>
+uname -a<br>Linux nightwing <a href=3D"http://2.6.23.16">2.6.23.16</a> #16 =
+Tue Apr 22 20:00:17 ART 2008 mips unknown<br>root@nightwing:~# batmand -v<b=
+r>WARNING: You are using the unstable batman branch. If you are interested =
+in *using* batman get the latest stable release !<br>
+B.A.T.M.A.N. 0.3-beta (compatibility version 5)<br>lsmod&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>Module&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; Size&nbsp; Used by&nbsp;&nbsp;&nbsp; Tainted: P&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+sch_htb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp; 14048&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>ath_ahb&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp; 103616&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>wlan_xauth&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 480&nbsp; 0=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp; <br>
+wlan_wep&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp; 4000&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>wlan_tkip&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp; 9856&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>wlan_ccmp&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5440&nbsp; 2=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp; <br>
+wlan_acl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp; 1920&nbsp; 0<br>ath_rate_minstrel&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp; 8352&nbsp; 1<br>ath_hal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 136832&nbsp; 3 ath_ahb,=
+ath_rate_minstrel<br>wlan_scan_sta&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp; 8768&nbsp; 1<br>wlan_scan_ap&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6656&nbsp; 0<br>wlan&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp; 152464&nbsp; 10 ath_ahb,wlan_xauth,wlan_wep,wlan_tkip,wlan_ccm=
+p,wlan_acl,ath_rate_minstrel,wlan_scan_sta,wlan_scan_ap<br>
+batgat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp; 10944&nbsp; 1<br>ipt_iprange&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 672&nbsp; 0<br>=
+ipt_TOS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 832&nbsp; 0<br>ipt_TTL&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; 928&nbsp; 0<br>xt_MARK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 960&nbsp; 3<br>=
+ipt_ECN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp; 1472&nbsp; 0<br>xt_CLASSIFY&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 640&nbsp; 0<br>
+ipt_ttl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 704&nbsp; 0<br>ipt_tos&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; 544&nbsp; 0<br>ipt_time&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1568&nbsp; 0<br>xt_tcpmss&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp; 1088&nbsp; 0<br>xt_statistic&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 832&nbsp; 0<br>xt_mark&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; 672&nbsp; 7<br>xt_mac&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 736&nbsp; =
+3<br>
+xt_length&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp; 736&nbsp; 0<br>ipt_ecn&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1024&n=
+bsp; 0<br>xt_DSCP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1056&nbsp; 0<br>xt_dscp&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp; 832&nbsp; 0<br>imq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp; 2096&nbsp; 0<br>ipt_IMQ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 672&nbsp; 2<br>xt_st=
+ring&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp; 896&nbsp; 0<br>
+xt_layer7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp; 9840&nbsp; 0<br>ipt_ipp2p&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6784&nbsp; 0<br>ipt_L=
+OG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp; 4640&nbsp; 0<br>xt_CHAOS&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1792&nbsp; =
+0<br>xt_DELUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp; 2624&nbsp; 1<br>xt_TARPIT&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2816&nbsp; 1<br>=
+xt_quota&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 800&nbsp; 0<br>
+xt_portscan&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp; 2016&nbsp; 0<br>xt_pkttype&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 704&nbsp; 0<br>xt_physdev&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1=
+488&nbsp; 0<br>ipt_owner&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 800&nbsp; 0<br>iptable_raw&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 832&n=
+bsp; 0<br>xt_NOTRACK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 832&nbsp; 0<br>xt_CONNMARK&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1088&nbsp; 0<br>
+ipt_recent&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; 4992&nbsp; 0<br>xt_helper&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 992&nbsp; 0<br>xt_co=
+nntrack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1=
+312&nbsp; 0<br>xt_connmark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 832&nbsp; 0<br>xt_connbytes&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1312&nbsp; 0<br>tun&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6592&nbsp; 0<br><br></div>
 
-So statistically even after 10 hops 66 of 100 OGMs will be received.=20
-Even after 20 hops more than 55 of 100 OGMs could be received.=20
-
-But the generally cool thing is: The more weak hops exist between two nodes=
-=20
-(and therefore the less important a good estimation of the path quality=20
-becomes) the less OGMs are eating up the available bandwidth and processing=
-=20
-resources.
-
-To sum up: Yes, it is exponential. Its not a bug, its a feature. This is=20
-wanted as long as sufficient OGMs remain to maintain usable routes.
-
->
-> > All versions of Batman benefit from the fact that they don't produce
-> > much protocol overhead (small amount of data that needs to be
-> > communicated, OGM flooding is only flooded exclusively via the best
-> > routing path to a destination).
->
-> Given a network with n nodes and e edges, BATMAN sends O(n^2) packets
-> per unit of time, Babel sends O(n^2) messages, and OLSR sends between
-> O(e) and O(e.n) depending on the MPR redundancy.
->
-
-I think the packets BATMAN sends per node (without packet loss) should be=20
-O(n).
-Even though, this calculation ignores the packet loss which has been=20
-emphasized so much above. Without being an expert. If you want to express t=
-he=20
-theoretical effort of large BATMAN networks WITH PACKETLOSS with the=20
-O-notation, I guess that it rather ends up in something like O(log n) per=20
-node. Simply because the larger a network becomes, the greater the average =
-
-distance between nodes in terms of hops becomes and therefore the greater t=
-he=20
-average end-to-end OGM loss. ( I think Roman Steiner also mentioned this=20
-effect in his simulations which he has described here=20
-http://open-mesh.net/Members/roman/report.pdf )
-
-With kind of provoking example: Adding 500 nodes in the distance of 500 hop=
-s=20
-(with a Link OGM Error Rate of 4% and an originator interval of 1 second)=20
-causes the nodes at the other side to send 21 OGMs more  per year.
-
-ciao,
-axel
-
+------=_Part_131488_19412698.1220626884163--
