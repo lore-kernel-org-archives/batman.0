@@ -1,10 +1,10 @@
-Message-ID: <5635aa0d0809110601h3e400ed8g3e0d82387a755917@mail.gmail.com>
-Date: Thu, 11 Sep 2008 20:01:11 +0700
-From: "Outback Dingo" <outbackdingo@gmail.com>
+Date: Thu, 11 Sep 2008 15:51:48 +0200
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Message-ID: <20080911135148.GA21632@sven-desktop.lazhur.ath.cx>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_41686_21422068.1221138071962"
-Subject: [B.A.T.M.A.N.] Batman never stabilizes a route for nodes
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] [PATCH] Unlock all spinlocks in batgat
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,35 +16,46 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-------=_Part_41686_21422068.1221138071962
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+We leave get_ip_addr when a client was found in hash immediately, but have have
+spinlocked hash_lock before. Spinlocks on non smp kernels are simple nops which
+only disable peempt (only on peempt enabled kernels) and so will never lock
+anything and no dead(spin)lock will happen.
+More informations about this issue can be found in "Unreliable Guide To Locking"
+under the section "Locks and Uniprocessor Kernels".
 
-Batmand never established a stable route for clients, ie. they never get
-reliable internet, actually to be honest, they get 0 internet cause routing
-always loops
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman/linux/modules/gateway.c   |    1 +
+ batman/linux/modules/gateway24.c |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-Scenerio 30 nodes, 5 gateways, OpenWRT Trunk Batman ver 1105
-batman gateway client expired
+diff --git a/batman/linux/modules/gateway.c b/batman/linux/modules/gateway.c
+index 999d3e6..5786be8 100644
+--- a/batman/linux/modules/gateway.c
++++ b/batman/linux/modules/gateway.c
+@@ -645,6 +645,7 @@ static struct gw_client *get_ip_addr(struct sockaddr_in *client_addr)
+ 
+ 	if (gw_client != NULL) {
+ 		DBG("found client in hash");
++		spin_unlock(&hash_lock);
+ 		return gw_client;
+ 	}
+ 
+diff --git a/batman/linux/modules/gateway24.c b/batman/linux/modules/gateway24.c
+index 48f31a7..44dfc0e 100644
+--- a/batman/linux/modules/gateway24.c
++++ b/batman/linux/modules/gateway24.c
+@@ -587,6 +587,7 @@ static struct gw_client *get_ip_addr(struct sockaddr_in *client_addr)
+ 
+ 	if (gw_client != NULL) {
+ 		printk(KERN_DEBUG "found client in hash");
++		spin_unlock(&hash_lock);
+ 		return gw_client;
+ 	}
+ 
+-- 
+1.6.0.1
 
-http://pastebin.com/m1677070a
 
-i also found this thread from before showing a similiar issue
-
-https://list.open-mesh.net/pipermail/b.a.t.m.a.n/2007-September/000277.html
-
-question is how do i get the routes to stabilize so the mesh functions
-
-------=_Part_41686_21422068.1221138071962
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div dir="ltr">Batmand never established a stable route for clients, ie. they never get reliable internet, actually to be honest, they get 0 internet cause routing always loops<br><br>Scenerio 30 nodes, 5 gateways, OpenWRT Trunk Batman ver 1105<br>
-batman gateway client expired<br><br><a href="http://pastebin.com/m1677070a">http://pastebin.com/m1677070a</a><br><br>i also found this thread from before showing a similiar issue<br><br><a href="https://list.open-mesh.net/pipermail/b.a.t.m.a.n/2007-September/000277.html">https://list.open-mesh.net/pipermail/b.a.t.m.a.n/2007-September/000277.html</a><br>
-<br>question is how do i get the routes to stabilize so the mesh functions<br></div>
-
-------=_Part_41686_21422068.1221138071962--
