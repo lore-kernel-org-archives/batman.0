@@ -1,16 +1,10 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 11 Sep 2008 13:47:41 +0800
-References: <8c906fa50809100941y79bc2011nd234780ad7b5cd0@mail.gmail.com>
-	<200809111101.31420.lindner_marek@yahoo.de>
-	<5635aa0d0809102122s4f528693o3aeb1795ce640d4e@mail.gmail.com>
-In-Reply-To: <5635aa0d0809102122s4f528693o3aeb1795ce640d4e@mail.gmail.com>
+Message-ID: <5635aa0d0809110601h3e400ed8g3e0d82387a755917@mail.gmail.com>
+Date: Thu, 11 Sep 2008 20:01:11 +0700
+From: "Outback Dingo" <outbackdingo@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809111347.41152.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] BATGAT
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_41686_21422068.1221138071962"
+Subject: [B.A.T.M.A.N.] Batman never stabilizes a route for nodes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,17 +18,33 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Thursday, 11. September 2008 12:22:42 Outback Dingo wrote:
-> http://pastebin.com/m1677070a
->
-> batgat crashed out, and unloaded without batgat batman routes never stay
+------=_Part_41686_21422068.1221138071962
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-That does not look like a crash ?! Is your log related to the issue mentioned 
-by the original reporter ? He said his batmand crashes and the kernel module 
-is still alive.
+Batmand never established a stable route for clients, ie. they never get
+reliable internet, actually to be honest, they get 0 internet cause routing
+always loops
 
-To debug your issue a tcpdump on UDP port 4306 would help. So we can see what 
-packages are sent forth and back.
+Scenerio 30 nodes, 5 gateways, OpenWRT Trunk Batman ver 1105
+batman gateway client expired
 
-Greetings,
-Marek
+http://pastebin.com/m1677070a
+
+i also found this thread from before showing a similiar issue
+
+https://list.open-mesh.net/pipermail/b.a.t.m.a.n/2007-September/000277.html
+
+question is how do i get the routes to stabilize so the mesh functions
+
+------=_Part_41686_21422068.1221138071962
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div dir="ltr">Batmand never established a stable route for clients, ie. they never get reliable internet, actually to be honest, they get 0 internet cause routing always loops<br><br>Scenerio 30 nodes, 5 gateways, OpenWRT Trunk Batman ver 1105<br>
+batman gateway client expired<br><br><a href="http://pastebin.com/m1677070a">http://pastebin.com/m1677070a</a><br><br>i also found this thread from before showing a similiar issue<br><br><a href="https://list.open-mesh.net/pipermail/b.a.t.m.a.n/2007-September/000277.html">https://list.open-mesh.net/pipermail/b.a.t.m.a.n/2007-September/000277.html</a><br>
+<br>question is how do i get the routes to stabilize so the mesh functions<br></div>
+
+------=_Part_41686_21422068.1221138071962--
