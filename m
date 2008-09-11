@@ -1,10 +1,11 @@
-Date: Thu, 11 Sep 2008 15:51:48 +0200
+Date: Thu, 11 Sep 2008 15:52:05 +0200
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20080911135148.GA21632@sven-desktop.lazhur.ath.cx>
+Message-ID: <20080911135205.GA21654@sven-desktop.lazhur.ath.cx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [PATCH] Unlock all spinlocks in batgat
+Subject: [B.A.T.M.A.N.] [PATCH] kfree list nodes after deleting them from
+	free_client_list in batgat
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,41 +19,73 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-We leave get_ip_addr when a client was found in hash immediately, but have have
-spinlocked hash_lock before. Spinlocks on non smp kernels are simple nops which
-only disable peempt (only on peempt enabled kernels) and so will never lock
-anything and no dead(spin)lock will happen.
-More informations about this issue can be found in "Unreliable Guide To Locking"
-under the section "Locks and Uniprocessor Kernels".
+list_del will only move the next pointer of the previous entry to the next entry
+and the do the same with the previous pointer of the next entry. The entry
+itself will not be touched.
+We allocated new memory for the list entry so we must free them or otherwise we
+would only leak memory and run out of it after enough connecting and leaving
+clients.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman/linux/modules/gateway.c   |    1 +
- batman/linux/modules/gateway24.c |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+ batman/linux/modules/gateway.c   |    3 +++
+ batman/linux/modules/gateway24.c |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
 diff --git a/batman/linux/modules/gateway.c b/batman/linux/modules/gateway.c
-index 999d3e6..5786be8 100644
+index 5786be8..e90be0b 100644
 --- a/batman/linux/modules/gateway.c
 +++ b/batman/linux/modules/gateway.c
-@@ -645,6 +645,7 @@ static struct gw_client *get_ip_addr(struct sockaddr_in *client_addr)
+@@ -148,6 +148,7 @@ void cleanup_module()
+ 		if(entry->gw_client != NULL) {
+ 			gw_client = entry->gw_client;
+ 			list_del(&entry->list);
++			kfree(entry);
+ 			kfree(gw_client);
+ 		}
  
- 	if (gw_client != NULL) {
- 		DBG("found client in hash");
-+		spin_unlock(&hash_lock);
- 		return gw_client;
+@@ -267,6 +268,7 @@ static int batgat_ioctl( struct inode *inode, struct file *file, unsigned int cm
+ 				if(entry->gw_client) {
+ 					gw_client = entry->gw_client;
+ 					list_del(&entry->list);
++					kfree(entry);
+ 					kfree(gw_client);
+ 				}
+ 
+@@ -653,6 +655,7 @@ static struct gw_client *get_ip_addr(struct sockaddr_in *client_addr)
+ 		DBG("use free client from list");
+ 		gw_client = entry->gw_client;
+ 		list_del(&entry->list);
++		kfree(entry);
+ 		break;
  	}
  
 diff --git a/batman/linux/modules/gateway24.c b/batman/linux/modules/gateway24.c
-index 48f31a7..44dfc0e 100644
+index 44dfc0e..585fe85 100644
 --- a/batman/linux/modules/gateway24.c
 +++ b/batman/linux/modules/gateway24.c
-@@ -587,6 +587,7 @@ static struct gw_client *get_ip_addr(struct sockaddr_in *client_addr)
+@@ -129,6 +129,7 @@ void cleanup_module()
+ 		if(entry->gw_client != NULL) {
+ 			gw_client = entry->gw_client;
+ 			list_del(&entry->list);
++			kfree(entry);
+ 			kfree(gw_client);
+ 		}
  
- 	if (gw_client != NULL) {
- 		printk(KERN_DEBUG "found client in hash");
-+		spin_unlock(&hash_lock);
- 		return gw_client;
+@@ -251,6 +252,7 @@ static int batgat_ioctl( struct inode *inode, struct file *file, unsigned int cm
+ 
+ 				gw_client = entry->gw_client;
+ 				list_del(&entry->list);
++				kfree(entry);
+ 				kfree(gw_client);
+ 
+ 			}
+@@ -595,6 +597,7 @@ static struct gw_client *get_ip_addr(struct sockaddr_in *client_addr)
+ 		printk(KERN_DEBUG "use free client from list");
+ 		gw_client = entry->gw_client;
+ 		list_del(&entry->list);
++		kfree(entry);
+ 		break;
  	}
  
 -- 
