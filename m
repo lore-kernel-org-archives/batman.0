@@ -1,16 +1,10 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 12 Sep 2008 11:49:43 +0800
-References: <5635aa0d0809110601h3e400ed8g3e0d82387a755917@mail.gmail.com>
-	<200809121031.00697.lindner_marek@yahoo.de>
-	<5635aa0d0809112012v1fbb67c4h663bf4fe4f063910@mail.gmail.com>
-In-Reply-To: <5635aa0d0809112012v1fbb67c4h663bf4fe4f063910@mail.gmail.com>
+Message-ID: <8c906fa50809120528g269e7831s979246af74b29427@mail.gmail.com>
+Date: Fri, 12 Sep 2008 09:28:34 -0300
+From: "Gustavo Lindberg" <gus.lindberg@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809121149.43323.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Batman never stabilizes a route for nodes
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_27037_18921268.1221222514545"
+Subject: [B.A.T.M.A.N.] Batmand dies
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,40 +16,88 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-On Friday, 12. September 2008 11:12:21 Outback Dingo wrote:
-> ok, im getting tcpdumps, this is a test bed of the same hardward atheros
-> based Ubiquity NS2 devices running OpenWRT trunk
+------=_Part_27037_18921268.1221222514545
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Then it is not related to your hw and the link posted earlier does not help 
-here.
+I just tried the last openwrt-kamikaze trunk with the svn v1109 of batman on
+ubnt NS2. Batmand die as follows:
 
-
-> http://pastebin.com/md162302 which is from last night 10PM
-
-Your log is pretty interesting. It shows that the basic functionality is there 
-but does not work reliably. The gateway is sending the keep alive reply to 
-the client which further indicates that we don't have an endianess issue 
-here.
-
-
-> I also have 21 nodes, same hardware, running batgat which still crashed as
-> Gustavo pointed out
-> of which the logs were forwarded, the test bed has been setup to remove
-> batgat and look for stability
-
-Do you intend to test the latest stability patches from Sven ? May be it 
-solves your problem. It would be interesting to find out why the network is 
-less flaky if you use the module.
+ root@OpenWrt:~# batmand -d 4 -g 5000 ath2
+WARNING: You are using the unstable batman branch. If you are interested in
+*using* batman get the latest stable release !
+Interface activated: ath2
+Using interface ath2 with address 5.0.0.1 and broadcast address
+5.255.255.255
+B.A.T.M.A.N. 0.3-beta (compatibility version 5)
+[        80] Error - can't set IFFLAGS for gate0: Cannot assign requested
+address
+[        80] Error - can't set IFFLAGS for gate0: Cannot assign requested
+address
 
 
-> im tcpdumping on both client and gateway now, ill forward the result of
-> these logs in a bit
-> as for wireshark ill make a build with that and see if i can get these logs
-> also
+dmesg output:
 
-Cool !
+Atheros HAL provided by OpenWrt, DD-WRT and MakSat Technologies
+wifi0: 11b rates: 1Mbps 2Mbps 5.5Mbps 11Mbps
+wifi0: 11g rates: 1Mbps 2Mbps 5.5Mbps 11Mbps 6Mbps 9Mbps 12Mbps 18Mbps
+24Mbps 36Mbps 48Mbps 54Mbps
+wifi0: H/W encryption support: WEP AES AES_CCM TKIP
+ath_ahb: wifi0: Atheros 2315 WiSoC: mem=0xb0000000, irq=3
+gpio-buttons driver version 0.1.1
+batgat: [batgat_ioctl:224] name gate0 index 7
+batgat: [batgat_ioctl:244] disconnect daemon
+batgat: [packet_recv_thread:508] thread stop
+batgat: [batgat_ioctl:256] thread shutdown
+batgat: [batgat_ioctl:263] gate shutdown
+batgat: [batgat_ioctl:277] device unregistered successfully
+batgat: [batgat_ioctl:224] name gate0 index 8
+batgat: [batgat_ioctl:244] disconnect daemon
+batgat: [packet_recv_thread:508] thread stop
+batgat: [batgat_ioctl:256] thread shutdown
+batgat: [batgat_ioctl:263] gate shutdown
+batgat: [batgat_ioctl:277] device unregistered successfully
+batgat: [batgat_ioctl:224] name gate0 index 9
+batgat: [batgat_ioctl:244] disconnect daemon
+batgat: [packet_recv_thread:508] thread stop
+batgat: [batgat_ioctl:256] thread shutdown
+batgat: [batgat_ioctl:263] gate shutdown
+batgat: [batgat_ioctl:277] device unregistered successfully
+batgat: [batgat_ioctl:224] name gate0 index 10
+batgat: [batgat_ioctl:244] disconnect daemon
+batgat: [packet_recv_thread:508] thread stop
+batgat: [batgat_ioctl:256] thread shutdown
+batgat: [batgat_ioctl:263] gate shutdown
+batgat: [batgat_ioctl:277] device unregistered successfully
+root@OpenWrt:~#
 
-Greetings,
-Marek
+No iptables rules at all. All policy ACCEPT.
+
+BATGAT dont crash anymore,
+
+
+
+Greetings.
+Gustavo.
+
+------=_Part_27037_18921268.1221222514545
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div dir="ltr"><p>I just tried the last openwrt-kamikaze trunk with the svn v1109 of batman on ubnt NS2. Batmand die as follows:<br>&nbsp;<br>&nbsp;<a href="mailto:root@OpenWrt">root@OpenWrt</a>:~# batmand -d 4 -g 5000 ath2<br>WARNING: You are using the unstable batman branch. If you are interested in *using* batman get the latest stable release !<br>
+Interface activated: ath2<br>Using interface ath2 with address <a href="http://5.0.0.1">5.0.0.1</a> and broadcast address <a href="http://5.255.255.255">5.255.255.255</a><br>B.A.T.M.A.N. 0.3-beta (compatibility version 5)<br>
+[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 80] Error - can&#39;t set IFFLAGS for gate0: Cannot assign requested address<br>[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 80] Error - can&#39;t set IFFLAGS for gate0: Cannot assign requested address<br>&nbsp;<br>&nbsp;<br>dmesg output:<br>&nbsp;<br>Atheros HAL provided by OpenWrt, DD-WRT and MakSat Technologies<br>
+wifi0: 11b rates: 1Mbps 2Mbps 5.5Mbps 11Mbps<br>wifi0: 11g rates: 1Mbps 2Mbps 5.5Mbps 11Mbps 6Mbps 9Mbps 12Mbps 18Mbps 24Mbps 36Mbps 48Mbps 54Mbps<br>wifi0: H/W encryption support: WEP AES AES_CCM TKIP<br>ath_ahb: wifi0: Atheros 2315 WiSoC: mem=0xb0000000, irq=3<br>
+gpio-buttons driver version 0.1.1<br>batgat: [batgat_ioctl:224] name gate0 index 7<br>batgat: [batgat_ioctl:244] disconnect daemon<br>batgat: [packet_recv_thread:508] thread stop<br>batgat: [batgat_ioctl:256] thread shutdown<br>
+batgat: [batgat_ioctl:263] gate shutdown<br>batgat: [batgat_ioctl:277] device unregistered successfully<br>batgat: [batgat_ioctl:224] name gate0 index 8<br>batgat: [batgat_ioctl:244] disconnect daemon<br>batgat: [packet_recv_thread:508] thread stop<br>
+batgat: [batgat_ioctl:256] thread shutdown<br>batgat: [batgat_ioctl:263] gate shutdown<br>batgat: [batgat_ioctl:277] device unregistered successfully<br>batgat: [batgat_ioctl:224] name gate0 index 9<br>batgat: [batgat_ioctl:244] disconnect daemon<br>
+batgat: [packet_recv_thread:508] thread stop<br>batgat: [batgat_ioctl:256] thread shutdown<br>batgat: [batgat_ioctl:263] gate shutdown<br>batgat: [batgat_ioctl:277] device unregistered successfully<br>batgat: [batgat_ioctl:224] name gate0 index 10<br>
+batgat: [batgat_ioctl:244] disconnect daemon<br>batgat: [packet_recv_thread:508] thread stop<br>batgat: [batgat_ioctl:256] thread shutdown<br>batgat: [batgat_ioctl:263] gate shutdown<br>batgat: [batgat_ioctl:277] device unregistered successfully<br>
+<a href="mailto:root@OpenWrt">root@OpenWrt</a>:~#&nbsp;&nbsp; </p>
+<p>No iptables rules at all. All policy ACCEPT.<br>&nbsp;<br>BATGAT dont crash anymore,&nbsp;<br>&nbsp;<br>&nbsp;<br>&nbsp;<br>Greetings.<br>Gustavo.</p></div>
+
+------=_Part_27037_18921268.1221222514545--
