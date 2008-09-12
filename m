@@ -1,15 +1,10 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 13 Sep 2008 00:03:57 +0800
-References: <20080912145945.GA27083@sven-desktop.lazhur.ath.cx>
-In-Reply-To: <20080912145945.GA27083@sven-desktop.lazhur.ath.cx>
+Date: Sat, 13 Sep 2008 01:24:20 +0200
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Message-ID: <20080912232420.GA9669@sven-desktop.lazhur.ath.cx>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809130003.57939.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Don't validate hardware address of batgat
-	gate0 device
+Subject: [B.A.T.M.A.N.] [PATCH] Make batman timer functions thread safe
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,17 +16,59 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-On Friday, 12. September 2008 22:59:45 Sven Eckelmann wrote:
-> linux v2.6.24-rc1-1-gbada339 introduces a check for valid ethernet mac
-> address. We don't have such a valid one because it is just a virtual
-> gateway device which doesn't need such thing. To disable the
-> eth_validate_addr check we can override the function pointer inside the
-> netdevice structure or just setting it to NULL to disable it at all.
+The calculation inside of update_internal_clock aren't atomic and can lead to
+bogus time informations when many threads calling get_time_msec64 or
+get_time_msec.
 
-I applied that one as well. Hope you also get some sleep while you are not 
-sending patches.  :-)
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman/posix/posix.c |   17 +++++++++++++++--
+ 1 files changed, 15 insertions(+), 2 deletions(-)
 
-Greetings,
-Marek
+diff --git a/batman/posix/posix.c b/batman/posix/posix.c
+index dd24a65..042a2b9 100644
+--- a/batman/posix/posix.c
++++ b/batman/posix/posix.c
+@@ -49,6 +49,7 @@ static float system_tick;
+ 
+ uint8_t tunnel_running = 0;
+ 
++static pthread_mutex_t batman_clock_mutex = PTHREAD_MUTEX_INITIALIZER;
+ 
+ void update_internal_clock()
+ {
+@@ -61,14 +62,26 @@ void update_internal_clock()
+ 
+ uint32_t get_time_msec()
+ {
++	uint32_t time;
++
++	pthread_mutex_lock(&batman_clock_mutex);
+ 	update_internal_clock();
+-	return (uint32_t)(((float)(batman_clock_ticks) * 1000) / system_tick);
++	time = (uint32_t)(((float)(batman_clock_ticks) * 1000) / system_tick);
++	pthread_mutex_unlock(&batman_clock_mutex);
++
++	return time;
+ }
+ 
+ uint64_t get_time_msec64()
+ {
++	uint64_t time;
++
++	pthread_mutex_lock(&batman_clock_mutex);
+ 	update_internal_clock();
+-	return (uint64_t)(((float)(batman_clock_ticks) * 1000) / system_tick);
++	time = (uint64_t)(((float)(batman_clock_ticks) * 1000) / system_tick);
++	pthread_mutex_unlock(&batman_clock_mutex);
++
++	return time;
+ }
+ 
+ /* batman animation */
+-- 
+1.6.0.1
+
+
