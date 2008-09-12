@@ -1,14 +1,16 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 12 Sep 2008 10:33:27 +0800
-References: <20080911135327.GA21671@sven-desktop.lazhur.ath.cx>
-In-Reply-To: <20080911135327.GA21671@sven-desktop.lazhur.ath.cx>
+Date: Fri, 12 Sep 2008 10:41:33 +0800
+References: <8c906fa50809100941y79bc2011nd234780ad7b5cd0@mail.gmail.com>
+	<200809111101.31420.lindner_marek@yahoo.de>
+	<8c906fa50809111518y799f5a29me41a8ece69f47ae4@mail.gmail.com>
+In-Reply-To: <8c906fa50809111518y799f5a29me41a8ece69f47ae4@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809121033.27804.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Remove batgat proc entries correctly
+Message-Id: <200809121041.33187.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] BATGAT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,14 +24,21 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Thursday, 11. September 2008 21:53:27 Sven Eckelmann wrote:
-> We must remove the /proc/net/batgat/clients file and /proc/net/batgat dir
-> correctly or otherwise we will get a oops when someone tries to access the
-> file. If we do not remove the directory it is possible that more then one
-> batgat entry appears inside of /proc/net/
+On Friday, 12. September 2008 06:18:58 Gustavo Lindberg wrote:
+> B.A.T.M.A.N. 0.3-beta (compatibility version 5)
 
-Your patches look very good. Nice catch !
-Simon already applied them. 
+It seems you are using an older version of the daemon together with the kernel 
+module. "0.3-beta" may not be compatible with the latest kernel module.
 
-Thanks,
+
+> [        80] Error - can't set IFFLAGS for gate0: Cannot assign requested
+> address
+> [        80] Error - can't set IFFLAGS for gate0: Cannot assign requested
+> address
+
+It does not crash here but exits because it can't set the IP address. 
+
+Please update to the latest versions first.
+
+Greetings,
 Marek
