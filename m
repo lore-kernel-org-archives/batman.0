@@ -1,14 +1,14 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 12 Sep 2008 10:31:00 +0800
-References: <5635aa0d0809110601h3e400ed8g3e0d82387a755917@mail.gmail.com>
-In-Reply-To: <5635aa0d0809110601h3e400ed8g3e0d82387a755917@mail.gmail.com>
+Date: Fri, 12 Sep 2008 10:33:27 +0800
+References: <20080911135327.GA21671@sven-desktop.lazhur.ath.cx>
+In-Reply-To: <20080911135327.GA21671@sven-desktop.lazhur.ath.cx>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809121031.00697.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Batman never stabilizes a route for nodes
+Message-Id: <200809121033.27804.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Remove batgat proc entries correctly
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,28 +22,14 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Thursday, 11. September 2008 21:01:11 Outback Dingo wrote:
-> Batmand never established a stable route for clients, ie. they never get
-> reliable internet, actually to be honest, they get 0 internet cause routing
-> always loops
+On Thursday, 11. September 2008 21:53:27 Sven Eckelmann wrote:
+> We must remove the /proc/net/batgat/clients file and /proc/net/batgat dir
+> correctly or otherwise we will get a oops when someone tries to access the
+> file. If we do not remove the directory it is possible that more then one
+> batgat entry appears inside of /proc/net/
 
-Please be precise here: Do you see routing loops or is your UDP connection not 
-stable (as indicated by your log) ?
+Your patches look very good. Nice catch !
+Simon already applied them. 
 
-
-> i also found this thread from before showing a similiar issue
->
-> https://list.open-mesh.net/pipermail/b.a.t.m.a.n/2007-September/000277.html
-
-This may or may not apply here. I have a look into the code later. Do you use 
-different hardware for your gateways and clients or always the same ?
-
-
-> question is how do i get the routes to stabilize so the mesh functions
-
-As I mentioned before we need a tcpdump of your traffic to help you. Even 
-better would be a wireshark log from both ends that we can analyze.
-
-Greetings,
+Thanks,
 Marek
-
