@@ -1,14 +1,13 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 14 Sep 2008 12:15:04 +0800
-References: <20080912232420.GA9669@sven-desktop.lazhur.ath.cx>
-In-Reply-To: <20080912232420.GA9669@sven-desktop.lazhur.ath.cx>
+Message-ID: <5635aa0d0809140612x33ca7600tfbeaeaa3dc59ae3d@mail.gmail.com>
+Date: Sun, 14 Sep 2008 20:12:55 +0700
+From: "Outback Dingo" <outbackdingo@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Batmand dies
+In-Reply-To: <200809121713.12525.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809141215.05216.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Make batman timer functions thread safe
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_1144_5562226.1221397975810"
+References: <8c906fa50809120528g269e7831s979246af74b29427@mail.gmail.com>
+	<200809121713.12525.sven.eckelmann@gmx.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,13 +21,19 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Saturday, 13. September 2008 07:24:20 Sven Eckelmann wrote:
-> The calculation inside of update_internal_clock aren't atomic and can lead
-> to bogus time informations when many threads calling get_time_msec64 or
-> get_time_msec.
+------=_Part_1144_5562226.1221397975810
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Just applied your latest patches as well. Thanks for looking over the code. 
-Virgin eyes stumble easier over nasty stuff.  :-)
+looks like OpenWRT build with latest trunk r1112 built seems to be pretty
+functional no issues so far, at least on UBNT
 
-Greetings,
-Marek
+------=_Part_1144_5562226.1221397975810
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div dir="ltr">looks like OpenWRT build with latest trunk r1112 built seems to be pretty functional no issues so far, at least on UBNT<br></div>
+
+------=_Part_1144_5562226.1221397975810--
