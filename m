@@ -1,11 +1,10 @@
-Date: Thu, 25 Sep 2008 16:49:17 +0200
+Date: Thu, 25 Sep 2008 16:50:02 +0200
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20080925144917.GA9330@sven-desktop.lazhur.ath.cx>
+Message-ID: <20080925145002.GA9344@sven-desktop.lazhur.ath.cx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [PATCHv2] Move more linux 2.6 compat stuff to
-	compat26.h
+Subject: [B.A.T.M.A.N.] [PATCH] Allow unoptimized builds of batgat
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,141 +18,59 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
+Currently htons is a functions provided by userspace libraries and will only be
+replaced by a special builtin functions of gcc when optimization is enabled.
+Linux v2.6.27-rc2-497-gbc2aa80 will provide these function symbols as macros
+for in-kernel usage.
 ---
- batman/linux/modules/compat26.h   |   12 ++++++++++++
- batman/linux/modules/gateway.c    |    8 --------
- batman/linux/modules/mod_batman.c |   22 ++--------------------
- 3 files changed, 14 insertions(+), 28 deletions(-)
+ batman/linux/modules/gateway.c   |    4 ++--
+ batman/linux/modules/gateway24.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/batman/linux/modules/compat26.h b/batman/linux/modules/compat26.h
-index a95b229..f1fdc67 100644
---- a/batman/linux/modules/compat26.h
-+++ b/batman/linux/modules/compat26.h
-@@ -31,6 +31,7 @@ static inline struct iphdr *ip_hdr(const struct sk_buff *skb)
- {
- 	return (struct iphdr *)skb_network_header(skb);
- }
-+
- #endif /* KERNEL_VERSION(2, 6, 22) */
- 
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 19)
-@@ -39,4 +40,15 @@ static inline int kernel_bind(struct socket *sock, struct sockaddr *addr, int ad
- {
- 	return sock->ops->bind(sock, addr, addrlen);
- }
-+
- #endif /* KERNEL_VERSION(2, 6, 19) */
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26)
-+
-+#define device_create_drvdata \
-+	class_device_create
-+
-+#define device_destroy \
-+	class_device_destroy
-+
-+#endif /* KERNEL_VERSION(2,6,26) */
 diff --git a/batman/linux/modules/gateway.c b/batman/linux/modules/gateway.c
-index 965f87b..154497e 100644
+index 9411575..41d75b5 100644
 --- a/batman/linux/modules/gateway.c
 +++ b/batman/linux/modules/gateway.c
-@@ -91,11 +91,7 @@ int init_module()
- 	if ( IS_ERR( batman_class ) )
- 		DBG( "could not register class 'batgat'" );
- 	else
--#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
- 		device_create_drvdata(batman_class, NULL, MKDEV(Major, 0), NULL, "batgat");
--#else
--		class_device_create(batman_class, NULL, MKDEV(Major, 0), NULL, "batgat");
--#endif
+@@ -313,7 +313,7 @@ static int packet_recv_thread(void *data)
  
+ 	server_addr.sin_family = AF_INET;
+ 	server_addr.sin_addr.s_addr = INADDR_ANY;
+-	server_addr.sin_port = htons( (unsigned short) BATMAN_PORT );
++	server_addr.sin_port = __constant_htons( (unsigned short) BATMAN_PORT );
  
- 	DBG( "batgat loaded %s", strlen(REVISION_VERSION) > 3 ? REVISION_VERSION : "" );
-@@ -120,11 +116,7 @@ void cleanup_module()
- 	struct free_client_data *entry, *next;
- 	struct gw_client *gw_client;
+ 	if ( ( sock_create_kern( PF_INET, SOCK_RAW, IPPROTO_RAW, &inet_sock ) ) < 0 ) {
  
--#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
- 	device_destroy( batman_class, MKDEV( Major, 0 ) );
--#else
--	class_device_destroy( batman_class, MKDEV( Major, 0 ) );
--#endif
- 	class_destroy( batman_class );
+@@ -551,7 +551,7 @@ static int bat_netdev_xmit( struct sk_buff *skb, struct net_device *dev )
  
- 	/* Unregister the device */
-diff --git a/batman/linux/modules/mod_batman.c b/batman/linux/modules/mod_batman.c
-index d34b05e..1b9ecda 100644
---- a/batman/linux/modules/mod_batman.c
-+++ b/batman/linux/modules/mod_batman.c
-@@ -50,6 +50,8 @@
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
- 	#include <linux/devfs_fs_kernel.h>
- #else
-+#include "compat26.h"
-+
- 	static struct class *batman_class;
- #endif
+ 		sa.sin_family = AF_INET;
+ 		sa.sin_addr.s_addr = client_data->wip_addr;
+-		sa.sin_port = htons( (unsigned short)BATMAN_PORT );
++		sa.sin_port = __constant_htons( (unsigned short)BATMAN_PORT );
  
-@@ -117,11 +119,7 @@ int init_module( void ) {
- 	if ( IS_ERR(batman_class) )
- 		printk( "B.A.T.M.A.N.: Could not register class 'batman' \n" );
- 	else
--#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)  
- 		device_create_drvdata( batman_class, NULL, MKDEV( Major, 0 ), NULL, "batman" );
--#else
--		class_device_create( batman_class, NULL, MKDEV( Major, 0 ), NULL, "batman" );
--#endif
- #endif
+ 		msg.msg_flags = MSG_NOSIGNAL | MSG_DONTWAIT;
+ 		msg.msg_name = &sa;
+diff --git a/batman/linux/modules/gateway24.c b/batman/linux/modules/gateway24.c
+index 9b60fe4..dbd1f42 100644
+--- a/batman/linux/modules/gateway24.c
++++ b/batman/linux/modules/gateway24.c
+@@ -291,7 +291,7 @@ static int packet_recv_thread(void *data)
  
- 	for ( i = 0; i < 255; i++ ) {
-@@ -143,11 +141,7 @@ void cleanup_module( void ) {
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
- 	devfs_remove( "batman", 0 );
- #else
--#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)  
- 	device_destroy_drvdata( batman_class, MKDEV( Major, 0 ) );
--#else
--	class_device_destroy( batman_class, MKDEV( Major, 0 ) );
--#endif
- 	class_destroy( batman_class );
- #endif
+ 	server_addr.sin_family = AF_INET;
+ 	server_addr.sin_addr.s_addr = INADDR_ANY;
+-	server_addr.sin_port = htons( (unsigned short) BATMAN_PORT );
++	server_addr.sin_port = __constant_htons( (unsigned short) BATMAN_PORT );
  
-@@ -247,11 +241,7 @@ static int device_release( struct inode *inode, struct file *file ) {
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
- 		devfs_remove( "batman", minor_num );
- #else
--#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)  
- 		device_destroy(minor->minor_class, MKDEV(Major, minor_num));
--#else
--		class_device_destroy( minor->minor_class, MKDEV( Major, minor_num ) );
--#endif
- 		class_destroy( minor->minor_class );
- #endif
- 		sock_release( minor->raw_sock );
-@@ -367,11 +357,7 @@ static int device_ioctl( struct inode *inode, struct file *file, unsigned int cm
- 			if ( IS_ERR(minor->minor_class) )
- 				printk( "B.A.T.M.A.N.: Could not register class '%s' \n", filename );
- 			else
--#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)  
- 				device_create_drvdata( minor->minor_class, NULL, MKDEV( Major, minor_num ), NULL, "batman%d", minor_num );
--#else
--				class_device_create( minor->minor_class, NULL, MKDEV( Major, minor_num ), NULL, "batman%d", minor_num );
--#endif
- #endif
- 			/* let udev create the device file */
- 			set_current_state(TASK_INTERRUPTIBLE);
-@@ -395,11 +381,7 @@ static int device_ioctl( struct inode *inode, struct file *file, unsigned int cm
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
- 					devfs_remove( "batman", minor_num );
- #else
--#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)  
- 					device_destroy( minor->minor_class, MKDEV(Major, minor_num ));
--#else
--					class_device_destroy( minor->minor_class, MKDEV(Major, minor_num ));
--#endif
- 					class_destroy( minor->minor_class );
- #endif
- 					kfree( minor );
+ 	if ( ( sock_create( PF_INET, SOCK_RAW, IPPROTO_RAW, &inet_sock ) ) < 0 ) {
+ 
+@@ -509,7 +509,7 @@ static int bat_netdev_xmit( struct sk_buff *skb, struct net_device *dev )
+ 
+ 		sa.sin_family = AF_INET;
+ 		sa.sin_addr.s_addr = client_data->wip_addr;
+-		sa.sin_port = htons( (unsigned short)BATMAN_PORT );
++		sa.sin_port = __constant_htons( (unsigned short)BATMAN_PORT );
+ 
+ 		msg.msg_flags = MSG_NOSIGNAL | MSG_DONTWAIT;
+ 		msg.msg_name = &sa;
 -- 
 1.6.0.1
 
