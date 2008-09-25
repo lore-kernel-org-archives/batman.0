@@ -1,11 +1,13 @@
-Date: Wed, 24 Sep 2008 23:59:39 +0200
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20080924215939.GA9277@sven-desktop.lazhur.ath.cx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [PATCH] Send TUNNEL_IP_REQUEST as response of
+Message-ID: <6fd627b9bdd448cd88026446baddb8a5.squirrel@wm.ddmesh.de>
+In-Reply-To: <20080924215939.GA9277@sven-desktop.lazhur.ath.cx>
+References: <20080924215939.GA9277@sven-desktop.lazhur.ath.cx>
+Date: Thu, 25 Sep 2008 11:12:11 +0200 (CEST)
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Send TUNNEL_IP_REQUEST as response of 
 	TUNNEL_IP_REQUEST
+From: "Stephan Enderlein (Freifunk Dresden)" <freifunk@ddmesh.de>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,40 +19,18 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Userspace gateway sends TUNNEL_IP_REQUEST when he receives TUNNEL_IP_REQUEST
-and will not start to send new IP as TUNNEL_DATA
----
- batman/linux/modules/gateway.c   |    1 -
- batman/linux/modules/gateway24.c |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
+Hello Sven,
 
-diff --git a/batman/linux/modules/gateway.c b/batman/linux/modules/gateway.c
-index 154497e..9411575 100644
---- a/batman/linux/modules/gateway.c
-+++ b/batman/linux/modules/gateway.c
-@@ -405,7 +405,6 @@ static int packet_recv_thread(void *data)
- 
- 				if(client_data != NULL) {
- 
--					buffer[0] = TUNNEL_DATA;
- 					memcpy( &buffer[1], &client_data->vip_addr, sizeof( client_data->vip_addr ) );
- 
- 					iov.iov_base = buffer;
-diff --git a/batman/linux/modules/gateway24.c b/batman/linux/modules/gateway24.c
-index 585fe85..9b60fe4 100644
---- a/batman/linux/modules/gateway24.c
-+++ b/batman/linux/modules/gateway24.c
-@@ -385,7 +385,6 @@ static int packet_recv_thread(void *data)
- 
- 				if(client_data != NULL) {
- 
--					buffer[0] = TUNNEL_DATA;
- 					memcpy( &buffer[1], &client_data->vip_addr, sizeof( client_data->vip_addr ) );
- 
- 					iov.iov_base = buffer;
--- 
-1.6.0.1
+It seems that you are always replying to emails of a different thread.
+The information you send do not belong to my questions.
+I also have seen that you replay to other threads that is not related
+to the threads.
+Please create a new thread instead for you PATCH messages as it would
+keep the thread in correct order.
+
+Bye
+ Stephan
 
 
