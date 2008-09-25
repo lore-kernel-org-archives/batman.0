@@ -1,15 +1,14 @@
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Send TUNNEL_IP_REQUEST as response of
-	TUNNEL_IP_REQUEST
-Date: Thu, 25 Sep 2008 11:33:15 +0200
-References: <20080924215939.GA9277@sven-desktop.lazhur.ath.cx>
-	<6fd627b9bdd448cd88026446baddb8a5.squirrel@wm.ddmesh.de>
-In-Reply-To: <6fd627b9bdd448cd88026446baddb8a5.squirrel@wm.ddmesh.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Move more linux 2.6 compat stuff to
+	compat26.h
+Date: Thu, 25 Sep 2008 15:58:53 +0200
+References: <20080924215921.GA9265@sven-desktop.lazhur.ath.cx>
+In-Reply-To: <20080924215921.GA9265@sven-desktop.lazhur.ath.cx>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8734887.s9MdAdRfIX";
+Content-Type: multipart/signed; boundary="nextPart27167280.oSQrkHaFxV";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200809251133.19049.sven.eckelmann@gmx.de>
+Message-Id: <200809251558.57882.sven.eckelmann@gmx.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,42 +22,35 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart8734887.s9MdAdRfIX
+--nextPart27167280.oSQrkHaFxV
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-On Thursday 25 September 2008 11:12:11 Stephan Enderlein (Freifunk Dresden)=
-=20
-wrote:
-> It seems that you are always replying to emails of a different thread.
-> The information you send do not belong to my questions.
-> I also have seen that you replay to other threads that is not related
-> to the threads.
-> Please create a new thread instead for you PATCH messages as it would
-> keep the thread in correct order.
-Sry, I haven't replied to any threads with my [PATCH] mails. Please check y=
-our=20
-mua and the mail headers of my [PATCH] mails. You will notice that there ar=
-e=20
-no In-Reply-To or References in them - just the usual stuff mutt creates fo=
-r=20
-"new" mails and the stuff mailman adds.
+On Wednesday 24 September 2008 23:59:21 Sven Eckelmann wrote:
+> ---
+>  batman/linux/modules/gateway.c    |    8 --------
+>  batman/linux/modules/mod_batman.c |   22 ++--------------------
+>  2 files changed, 2 insertions(+), 28 deletions(-)
+>
+> diff --git a/batman/linux/modules/gateway.c
+Please ignore this one - there is missing a file. I will resend this patch =
+in=20
+a minute.
 
-Best regards
-	Sven Eckelmann
+Sven
 
---nextPart8734887.s9MdAdRfIX
+--nextPart27167280.oSQrkHaFxV
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkjbWtsACgkQqQGwKVlMoDtyVwCgpvkVI651q6T6yEe4H6VJgW8i
-EWYAoPDGxCXktwEWK3W9vNMIxR1a4xxw
-=fwQl
+iEYEABECAAYFAkjbmR4ACgkQqQGwKVlMoDvLOACg0UQMWv2SJrao2m7pBrh3v3HE
+o4cAoIH9XPYuv46x4JM5fMyFfrADz2V/
+=4TFZ
 -----END PGP SIGNATURE-----
 
---nextPart8734887.s9MdAdRfIX--
+--nextPart27167280.oSQrkHaFxV--
