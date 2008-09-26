@@ -1,14 +1,15 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Sync hash implementation of batgat and
-	batman-adv
-Date: Thu, 25 Sep 2008 23:42:34 +0200
-References: <20080925191508.GA8854@sven-desktop.lazhur.ath.cx>
-In-Reply-To: <20080925191508.GA8854@sven-desktop.lazhur.ath.cx>
+Message-ID: <98ded638d254e60e1038e55af9dd7c1e.squirrel@wm.ddmesh.de>
+In-Reply-To: <200809251133.19049.sven.eckelmann@gmx.de>
+References: <20080924215939.GA9277@sven-desktop.lazhur.ath.cx>
+	<6fd627b9bdd448cd88026446baddb8a5.squirrel@wm.ddmesh.de>
+	<200809251133.19049.sven.eckelmann@gmx.de>
+Date: Fri, 26 Sep 2008 13:19:19 +0200 (CEST)
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Send TUNNEL_IP_REQUEST as response of 
+	TUNNEL_IP_REQUEST
+From: "Stephan Enderlein (Freifunk Dresden)" <freifunk@ddmesh.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7069706.BlJ46xlnNp";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200809252342.38150.sven.eckelmann@gmx.de>
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,66 +23,36 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart7069706.BlJ46xlnNp
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi,
 
-On Thursday 25 September 2008 21:15:08 Sven Eckelmann wrote:
-> The compare functions had a different interpretation of its return value
-> and kmalloc can sleep inside batgat because we are running in user context
-> of kernel.
+> Sry, I haven't replied to any threads with my [PATCH] mails. Please check
+> your
+> mua and the mail headers of my [PATCH] mails. You will notice that there
+> are
+> no In-Reply-To or References in them - just the usual stuff mutt creates
+> for
+> "new" mails and the stuff mailman adds.
 
-This patch can ignored if not wanted. It is just a copy of batman-adv-
-kernelland/batman-core/hash.c to batman/linux/modules/hash.c so they have=20
-nearly the same implementations. The only difference should now that the on=
-e=20
-in batman-adv-kernelland uses GFP_ATOMIC in kmallocs and the one in batgat=
-=20
-uses GFP_KERNEL. Most changes are coding style changes and a different=20
-interpretation of the return value of the compare functions.
+When I display the complete email header of you emails I have the following
+line:
+"In-Reply-To: <6fd627b9bdd448cd88026446baddb8a5.squirrel@wm.ddmesh.de>"
+For some reason you are creating emails with that header entry instead
+without it.
 
-Sven
+Please also look at the archive at
+https://list.open-mesh.net/pipermail/b.a.t.m.a.n/2008-September/thread.html.
+You will see that only your mails are always appended to other threads and
+are not starting as a new thread. All answers are currently under
+"[B.A.T.M.A.N.] batman-exp hang on 95% CPU load" which definitively do not
+belong to the subject.
+Please check your environment.
 
-Current differences:
-diff batman/linux/modules/hash.c batman-adv-kernelland/batman-core/hash.c  =
-                                                                           =
-                    =20
-24,25c24
-< #include <linux/string.h>     /* strlen, strstr, strncmp ... */
-< #include <linux/slab.h>
-=2D--
-> #include "main.h"
-80c79
-<               iter =3D kmalloc(sizeof(struct hash_it_t), GFP_KERNEL);
-=2D--
->               iter =3D kmalloc(sizeof(struct hash_it_t), GFP_ATOMIC);
-148c147
-<       hash =3D kmalloc(sizeof(struct hashtable_t) , GFP_KERNEL);
-=2D--
->       hash =3D kmalloc(sizeof(struct hashtable_t) , GFP_ATOMIC);
-154c153
-<       hash->table =3D kmalloc(sizeof(struct element_t *) * size, GFP_KERN=
-EL);
-=2D--
->       hash->table =3D kmalloc(sizeof(struct element_t *) * size, GFP_ATOM=
-IC);
-187c186
-<       bucket =3D kmalloc(sizeof(struct element_t),GFP_KERNEL);
-=2D--
->       bucket =3D kmalloc(sizeof(struct element_t),GFP_ATOMIC);
+Bye
+ Stephan
 
---nextPart7069706.BlJ46xlnNp
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+---------------------------------------
+Dipl.Informatiker(FH) Stephan Enderlein
+Freifunk Dresden
 
-iEYEABECAAYFAkjcBcsACgkQqQGwKVlMoDs9TwCaAvL2SHvQ4Nc8oyYL5ldKwRnJ
-DPEAoNrPJPc7h9G783Vq6XIXDWGEWz5p
-=H23l
------END PGP SIGNATURE-----
 
---nextPart7069706.BlJ46xlnNp--
