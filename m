@@ -1,15 +1,12 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 27 Sep 2008 00:03:23 +0800
-References: <20080925191508.GA8854@sven-desktop.lazhur.ath.cx>
-In-Reply-To: <20080925191508.GA8854@sven-desktop.lazhur.ath.cx>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sat, 27 Sep 2008 18:31:14 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: multipart/signed; boundary="nextPart2022190.g2CYmJusCB";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809270003.23510.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Sync hash implementation of batgat and
-	batman-adv
+Message-Id: <200809271831.18672.sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] Possible null pointer dereference in batman's
+	update_routes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,20 +18,40 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-On Friday, 26. September 2008 03:15:08 Sven Eckelmann wrote:
-> The compare functions had a different interpretation of its return value
-> and kmalloc can sleep inside batgat because we are running in user context
-> of kernel.
+--nextPart2022190.g2CYmJusCB
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-All your patches look very good - thanks (again) for your support. As far as I 
-can see Simon already pushed them into the SVN. 
+Hi,
+I am not sure but I think it could be possible that there is a null pointer=
+=20
+dereference at batman.c:420
+I assume that it is possible that neigh_node is NULL and orig_node->router =
+is=20
+also NULL in batman.c:412. Now we dereference neigh_node in batman.c:420 as=
+=20
+third parameter of add_del_route.
+I don't know if the third parameter should be set to 0 if neigh_node is NUL=
+L=20
+or if the "if"-statement is wrong - so i will not send a patch this time.
 
-FYI: The different interpretation of the return value in the kernel space 
-module is just a feeling thing. I thought that way it comes much easier to 
-read and understand. No big deal actually - the code behaves the same 
-way.  :-)
+Best regards,
+	Sven
 
-Greetings,
-Marek
+--nextPart2022190.g2CYmJusCB
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkjeX9MACgkQqQGwKVlMoDvVbACg+3zl7sECZqcDVFYAdzy9zfj3
+9/QAnjT+YZ8dDq6AFYD5LGPH/1jwnnio
+=OzJW
+-----END PGP SIGNATURE-----
+
+--nextPart2022190.g2CYmJusCB--
