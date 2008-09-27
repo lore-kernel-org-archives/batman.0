@@ -1,11 +1,14 @@
-Date: Sat, 27 Sep 2008 20:27:59 +0200
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20080927182759.GA14446@sven-desktop.lazhur.ath.cx>
+From: Axel Neumann <axel@open-mesh.net>
+Subject: Re: [B.A.T.M.A.N.] batman-exp hang on 95% CPU load
+Date: Sat, 27 Sep 2008 21:53:06 +0200
+References: <e11ab4a352cc7f56557957a5d5eed927.squirrel@wm.ddmesh.de>
+In-Reply-To: <e11ab4a352cc7f56557957a5d5eed927.squirrel@wm.ddmesh.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [PATCH] Mark not returning functions with
-	__noreturn__
+Message-Id: <200809272153.07235.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,66 +20,29 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-The gcc feature for functions that will definitely not return should help the
-static analyzer and the optimizer slightly. See
-http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html#Function-Attributes
-for more informations.
----
- batman/os.h          |    8 +++++++-
- batman/posix/posix.c |    4 ++--
- 2 files changed, 9 insertions(+), 3 deletions(-)
-
-diff --git a/batman/os.h b/batman/os.h
-index b1e9423..d29ebf1 100644
---- a/batman/os.h
-+++ b/batman/os.h
-@@ -22,6 +22,12 @@
- 
- #include "batman.h"
- 
-+#ifdef __GNUC_MINOR__
-+#define NO_RETURN  __attribute__ ((__noreturn__))
-+#else
-+#define NO_RETURN
-+#endif
-+
- uint32_t get_time_msec(void);
- uint64_t get_time_msec64(void);
- int32_t rand_num( int32_t limit );
-@@ -34,7 +40,7 @@ void add_del_hna( struct orig_node *orig_node, int8_t del );
- int8_t is_aborted();
- void handler( int32_t sig );
- void segmentation_fault( int32_t sig );
--void restore_and_exit( uint8_t is_sigsegv );
-+void restore_and_exit( uint8_t is_sigsegv ) NO_RETURN;
- 
- /* route.c */
- void add_del_route( uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src_ip, int32_t ifi, char *dev, uint8_t rt_table, int8_t route_type, int8_t del );
-diff --git a/batman/posix/posix.c b/batman/posix/posix.c
-index b94ceae..432b45f 100644
---- a/batman/posix/posix.c
-+++ b/batman/posix/posix.c
-@@ -499,6 +499,8 @@ void restore_and_exit( uint8_t is_sigsegv ) {
- 
- 	if ( !is_sigsegv )
- 		exit(EXIT_FAILURE);
-+	else
-+		raise( SIGSEGV );
- 
- }
- 
-@@ -515,8 +517,6 @@ void segmentation_fault( int32_t sig ) {
- 
- 	restore_and_exit(1);
- 
--	raise( SIGSEGV );
--
- }
- 
- 
--- 
-1.6.0.1
+Hi Stephan,
 
 
+On Mittwoch 24 September 2008, Stephan Enderlein (Freifunk Dresden) wrote:
+> Hi,
+>
+> I currently use batman-experimental rev 1105. Yesterday
+> a node was not reachable. The "top" showed me that batmand
+> was running with almost 100% load.
+>
+...
+> Do you have already seen this?
+No, not recently. I've seen something similar (see:
+https://list.open-mesh.net/pipermail/b.a.t.m.a.n/2008-January/000550.html )
+but I dont remember which PID caused the trouble. Do you have an idea for how 
+long the daemon was running without any interruption ? 
+
+The PID which referenced the hanging thread seems to be the debug thread. 
+Perhaps the problem was related to the bug which Sven Eckelmann identified 
+recently. Revision 1123 for bmx has no dedicated thread for debugging 
+anymore. So if this was the problem it should be fixed now.
+
+greetings
+/axel
