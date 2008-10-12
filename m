@@ -1,12 +1,14 @@
-Date: Thu, 9 Oct 2008 09:35:55 +0200
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20081009073555.GA4544@sven-desktop.lazhur.ath.cx>
+Message-ID: <3e261d3e8b8f9e2a1eb297aecae89b6a.squirrel@unimail.uni-dortmund.de>
+In-Reply-To: <20081009073555.GA4544@sven-desktop.lazhur.ath.cx>
+References: <20081009073555.GA4544@sven-desktop.lazhur.ath.cx>
+Date: Mon, 13 Oct 2008 00:47:50 +0200 (CEST)
+From: "Resul Cetin" <resul.cetin@uni-dortmund.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [PATCH] Let the compiler interpret the noreturn
-	situation in restore_and_exit correct
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] configuration of B.A.T.M.A.N.
+Reply-To: resul.cetin@uni-dortmund.de,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -17,36 +19,21 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-It is just implicit that raise will not return in this case because we are in
-a sighandler right now. So let call exit always afterwards even if it will
-not be reached.
+Hiii,
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman/posix/posix.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+I followed the configuraition steps
+http://www.freifunk-bno.de/wiki/firmware:batman#status_info but withous
+success. I have to Linksys with the Freifunk Firmware on them. I installed
+the Package "batmand_current_mipsel.ipk" from the site
+http://freifunk.schmudde.com/ipkg/.
 
-diff --git a/batman/posix/posix.c b/batman/posix/posix.c
-index 4423345..bbeac38 100644
---- a/batman/posix/posix.c
-+++ b/batman/posix/posix.c
-@@ -497,11 +497,10 @@ void restore_and_exit( uint8_t is_sigsegv ) {
- 
- 	}
- 
--	if (!is_sigsegv)
--		exit(EXIT_FAILURE);
--	else
-+	if (is_sigsegv)
- 		raise(SIGSEGV);
- 
-+	exit(EXIT_FAILURE);
- }
- 
- 
--- 
-1.6.0.1
+My problem is, that the two Router cann't recognize each other. In the
+Status entry of the neigbour nodes is nothing to see.
 
+Can anybody help me to build the B.A.T.M.A.N. Mesh Network ?
+
+greetings,
+E.
 
