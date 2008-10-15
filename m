@@ -1,12 +1,12 @@
-Subject: Re: [B.A.T.M.A.N.] Problem with gateway-dhcp
-Content-Disposition: inline
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 14 Oct 2008 17:14:47 +0800
+Message-ID: <48F5EF69.3080100@irt.de>
+Date: Wed, 15 Oct 2008 15:26:01 +0200
+From: Tobias Gieseke <gieseke@irt.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Subject: Re: [B.A.T.M.A.N.] Problem with gateway-dhcp
+References: <200810141714.47396.lindner_marek@yahoo.de>
+In-Reply-To: <200810141714.47396.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200810141714.47396.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,40 +20,48 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-
 Hi,
 
-> For example (can't remember the exact messages but this was about their
-> content):
-> Message on Gateway, Debugmode3:
-> "Gateway assigned IP adress 169.254.0.1 to client 192.168.100.2"
-> Message on Client, Debugmode3:
-> "Got IP adress 169.254.0.1 from Gateway 192.168.100.1"
+thanks for the quick answer. But the iptable command didn't make any 
+difference.
 
-so far, everything as expected. 
+I'm able to ping the Gateway (169.254.0.0) from the Client (169.254.0.1) 
+but I can not ping any futher i.e. to the LAN. Which leads me to the 
+assumption that it is a kind of routing problem in my gateway router.
+Here are some facts
 
+-    I'm able to get a connection to the internet (from the client) 
+without batman by having an ad-hoc connection        to       the gateway.
+-    With batman running I can reach the WAN-Interface (192.168.208.x) 
+of the gateway from the client.
+-    I can not reach the default-gateway of the LAN (192.168.208.251) 
+from the client, but of course from the           gateway.
+-    I left the default-gateways in the X-WRT webif of the client (WiFi 
+and LAN) blank.
 
-> According to the batman manual the gateway should act as "a tiny DHCP
-> server" but as I always get these 169. adresses I assume it isn't
-> running properly. I did not touch the firewall or the iptables because I
-> don't know anything about it. There might be some entries which would
-> solve the problem, but I could not find those in the manual or the
-> mailing-list archive.
+I'll try illustrating the network
 
-Batman has its internal DHCP server for the gateway tunneling via the gate0 
-interfaces. This address space was chosen to avoid configuration as it should 
-not be in use. 
+LAN                        GW                                  Client   
+.208.251----ETH---.208.x
+                                .222.1-----WLAN-------222.2
+                       169.254.0.0--------TUN------169.254.0.1
 
-You could try to ping the gateway via the virtual address (169.254.0.0) to 
-check whether the tunnel connection works or not. If you run into a timeout 
-you should disable the firewall on the gateway. Ping again to feel the 
-difference.  ;-)
+I'll have to mention that the LAN is quite big. I had to change the IPs 
+for the mesh because someone told the 192.168.100.0 net already exists 
+in the LAN (whops!).
 
-May be you are lacking the the masquerading rules on gate0. Issue:
-iptables -t nat -I POSTROUTING -o gate0 -j MASQUERADE
-on the client and on the gateway.
+Here are some question which will help you start your answer to this 
+post ;-)
+
+-Do I have to start the batmand with the WAN-Interface (vlan1)? Meaning: 
+batmand -g 10mbit eth1 vlan1
+-Do I have to announce the 192.168.208.0/24 net  with batman? (I guess not)
+-Do I have to set the DNS-Server manualy or is the gateway acting as DNS
+
+I'm sorry this turns out to be more a routing problem than a batman/mesh 
+problem. Hope you help me anyway.
 
 Regards,
-Marek
 
+Tobi
 
