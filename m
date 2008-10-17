@@ -1,12 +1,12 @@
-Subject: Re: [B.A.T.M.A.N.] Problem with gateway-dhcp
-Content-Disposition: inline
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 16 Oct 2008 19:48:46 +0800
+Message-ID: <48F886F6.5030603@irt.de>
+Date: Fri, 17 Oct 2008 14:37:10 +0200
+From: Tobias Gieseke <gieseke@irt.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Subject: Re: [B.A.T.M.A.N.] Problem with gateway-dhcp
+References: <200810161948.46530.lindner_marek@yahoo.de>
+In-Reply-To: <200810161948.46530.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200810161948.46530.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,33 +20,34 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Wednesday 15 October 2008 21:26:01 Tobias Gieseke wrote:
-> -Do I have to start the batmand with the WAN-Interface (vlan1)? Meaning:
-> batmand -g 10mbit eth1 vlan1
+Hi again,
 
-No, that is unnecessary. Whenever the batman gateway receives packets for the 
-internet it simply adds them to the routing queue. The kernel itself will 
-handle further routing.
+it is still not running :-( but I was able to specify the problem in 
+more detail.
+First a short summary of what the problem is:
+I got one client connected to a gateway over batman-mesh. Tunnel (gate0) 
+is established an has assigned correct IP-Adresses. Problem: I am able 
+to ping the gateways WAN-Interface, but I am not able to ping the 
+Standard-Gateway of the WAN. The ping to the WAN-Gateway is not leaving 
+the WAN-Interface of the gateway (I sniffed that with Wireshark).
+
+Strange: When I'm setting up the Network without Batman (setting a fixed 
+gateway on the client) I can ping the Gateway in the WAN. As soon as I 
+start the batmand with -g on the Mesh-Gateway the ping stops. Besides, 
+the ping does not end up in an error-message it just doesn't answer.
+
+In my last test I "replaced" the WAN (which was actually our 
+company-LAN) with another SoHO-Router. So the WAN is now represented by 
+this Router. I did this to aviod complications with already assigned 
+networks.
+
+Still a routing problem, but any kind of help would be nice.
+Thanks!
+
+Tobi
 
 
-> -Do I have to announce the 192.168.208.0/24 net  with batman? (I guess not)
-
-Not really unless you want to get a connection to a distinct node other than 
-the internet gateway. Remember: you also need a route back if you do so.
 
 
-> -Do I have to set the DNS-Server manualy or is the gateway acting as DNS
-
-DNS handling is not part of batman. You need to set appropriate DNS entries on 
-the clients.
-
-
-> I'm sorry this turns out to be more a routing problem than a batman/mesh
-> problem. Hope you help me anyway.
-
-Sure, no problem. Let us know whether it solves your problem or not.
-
-Regards,
-Marek
 
 
