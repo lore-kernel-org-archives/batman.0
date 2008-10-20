@@ -1,18 +1,15 @@
-Message-Id: <82DC9B9B-E0E1-4FF5-88CE-8BC68BFFE7D1@meshfi.com>
-From: Tony Whelan <tony@meshfi.com>
-In-Reply-To: <48FD001A.5030808@gmx.net>
+From: Axel Neumann <axel@open-mesh.net>
+Subject: Re: [B.A.T.M.A.N.] current vis revision (1128) not working with
+	batmand-experimental
+Date: Tue, 21 Oct 2008 01:48:15 +0200
+References: <06116ba9eb4ae280303c7073dd272ef8.squirrel@wm.ddmesh.de>
+In-Reply-To: <06116ba9eb4ae280303c7073dd272ef8.squirrel@wm.ddmesh.de>
+MIME-Version: 1.0
 Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (iPhone Mail 5F136)
-Subject: Re: [B.A.T.M.A.N.] every phone a hotspot?
-	->	http://www.walkinghotspot.com/
-Date: Mon, 20 Oct 2008 18:30:36 -0400
-References: <bccbc6690810201215p72de1046p67e2cd3a0b9336a1@mail.gmail.com>
-	<46faed20810201234q122e31ddle8fbcb1b29daea74@mail.gmail.com>
-	<48FD001A.5030808@gmx.net>
+Content-Disposition: inline
+Message-Id: <200810210148.15957.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,42 +23,39 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-The next gen of nanophosphate batteries should help with the power  
-issues.
+Hi Stephan, 
 
-Tony Whelan
-Sent from my iPhone
+I updated  VIS_COMPAT_VERSION in rv1132 of batman-experimental/batman.h to 22 
+so that it conforms to VIS_COMPAT_VERSION in trunk/vis/vis.h
 
-On Oct 20, 2008, at 6:03 PM, elektra <onelektra@gmx.net> wrote:
+first test with my vis-server looks good.
 
-> Hi -
->> I've got "joikuspot" installed on my phone (Symbian) ... battery is  
->> drained within 2 hours...
+ciao,
+axel
+
+
+On Montag 20 Oktober 2008, Stephan Enderlein (Freifunk Dresden) wrote:
+> Hi,
 >
-> this is the crux of current WiFi interfaces in mobile phones. WiFi  
-> consumes way to much power - especially if a phone forwards traffic  
-> for other devices. It is possible - but the mobile handset will need  
-> to have the size and weight of a mobile phone 8 years ago, simply to  
-> provide the battery capacity. Batman-Experimental has an option to  
-> disable routing traffic for other phones (--asocial-device : mobile  
-> device mode reluctant to help others). An "asocial" device will just  
-> make itself known to the existing mesh infrastructure and use the  
-> closest Batman node as a gateway. It will only reply to Originator  
-> messages originated  by the chosen gateway. Together with a slow OGM  
-> interval you can roam within an existing mesh infrastructure without  
-> wearing your batteries out quickly.
+> I had some problems with vis which was consuming a lot of memory within
+> a short time after running for days. So I decided to use the current
+> revision of vis.
+> But it seems that the vis does not process any incomming vis packet
+> from batman-experimental.
 >
->> I've heard wmfhotspot for windows mobile is just thesame... and  
->> best of all the HTC brand consumes more energy than it's charger so  
->> even with a powerplug you have no chance :-)
+> Do you have any idea to get it running?
 >
-> That sounds like a miserable design.
+> Best regards
+> Stephan
 >
-> Cheers,
+> ---------------------------------------
+> Dipl.Informatiker(FH) Stephan Enderlein
+> Freifunk Dresden
 >
-> elektra
 >
 > _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+
+
