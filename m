@@ -1,15 +1,11 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Problem with gateway-dhcp
-Date: Sat, 18 Oct 2008 12:18:53 +0800
-References: <200810161948.46530.lindner_marek@yahoo.de>
-	<48F886F6.5030603@irt.de>
-In-Reply-To: <48F886F6.5030603@irt.de>
+Message-ID: <06116ba9eb4ae280303c7073dd272ef8.squirrel@wm.ddmesh.de>
+Date: Mon, 20 Oct 2008 12:12:29 +0200 (CEST)
+From: "Stephan Enderlein (Freifunk Dresden)" <freifunk@ddmesh.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810181218.53935.lindner_marek@yahoo.de>
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] current vis revision (1128) not working with
+	batmand-experimental
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,23 +17,24 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-On Friday 17 October 2008 20:37:10 Tobias Gieseke wrote:
-> Strange: When I'm setting up the Network without Batman (setting a fixed
-> gateway on the client) I can ping the Gateway in the WAN. As soon as I
-> start the batmand with -g on the Mesh-Gateway the ping stops. Besides,
-> the ping does not end up in an error-message it just doesn't answer.
 
-It sounds like your ping is going in the right direction but there is no route 
-back (the host that wants to send an answer has no routing information to 
-route the packet back to its origin). Usually, you can solve that by adding 
-routes at the other end or via NAT. 
+Hi,
 
-Its rather difficult to help you that way. I suggest you join our IRC channel on 
-irc.freenode.org. You will find us in the #batman channel. There we can debug 
-your problems interactively.  :-)
+I had some problems with vis which was consuming a lot of memory within
+a short time after running for days. So I decided to use the current
+revision of vis.
+But it seems that the vis does not process any incomming vis packet
+from batman-experimental.
 
-Regards,
-Marek
+Do you have any idea to get it running?
+
+Best regards
+Stephan
+
+---------------------------------------
+Dipl.Informatiker(FH) Stephan Enderlein
+Freifunk Dresden
+
 
