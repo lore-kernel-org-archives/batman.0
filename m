@@ -1,17 +1,10 @@
-Date: Fri, 24 Oct 2008 00:47:57 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] Re: batman in atheros
-Message-ID: <20081023224757.GA2098@pandem0nium>
-References: <bccbc6690810230341j340091cbs50b15d7680d7cf5e@mail.gmail.com>
-	<20081023120531.GE5979@tesla>
-	<bccbc6690810231225r6411dc49p9b90126649d5cbcc@mail.gmail.com>
-	<20081023123502.GH5979@tesla>
-	<bccbc6690810231252u59e56c16u4f7e82b25ee13f49@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9amGYk9869ThD9tj"
-Content-Disposition: inline
-In-Reply-To: <bccbc6690810231252u59e56c16u4f7e82b25ee13f49@mail.gmail.com>
+Date: Fri, 24 Oct 2008 15:43:07 +0800
+From: "=?GB2312?B?zMa2pg==?=" <tangding@mail.ioa.ac.cn>
+Message-ID: <200810241543070787033@mail.ioa.ac.cn>
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=====003_Dragon750364344481_====="
+Subject: [B.A.T.M.A.N.] dose batman-adv support multi-gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,88 +16,58 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
-Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: "b.a.t.m.a.n" <b.a.t.m.a.n@open-mesh.net>
 
 
---9amGYk9869ThD9tj
-Content-Type: text/plain; charset=utf8
-Content-Disposition: attachment
-Content-Transfer-Encoding: quoted-printable
+This is a multi-part message in MIME format.
 
-Hello Max,
+--=====003_Dragon750364344481_=====
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
-BATMAN is a routing daemon, a userspace program modifying the routing
-table on each node to build up the mesh network. It sends UDP packets
-to exchange information. This is very different from 802.11s, which is=20
-building the mesh on the Link Layer. In 802.11s, routing information
-is exchanged via WiFi management frames, and it is implemented in the=20
-wifi driver.
+hi
+dose batman-adv support multi-gateway. 
+If there is a router  which connets two mesh devices(gateway) through same layer 2 wired network, can the mesh network select a better gateway to the router for one packet. 
 
-Depending on your view, BATMAN is also a routing algorithm. It could
-also be implemented directly on the Link Layer. We have implemented the
-algorithm in batman-advanced on the Ethernet, to use Ethernet Frames=20
-to exchange information and route (or better switch) Frames on our own.=20
-You get a virtual interface, and can use the mesh network like a big switch.
+2008-10-24 
 
-Still, this has little to do with 802.11s. I guess its possible to
-implement the BATMAN algorithm into the 802.11s framework as well.
-If you want to do so, i recommend to go with Luis suggestion and
-contribute some code to mac80211. You should know that this would require=
-=20
-serious efforts for you, it is not done with "providing Luis some=20
-information".
+--=====003_Dragon750364344481_=====
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
-However, it is not even needed to implement BATMAN in the wifi driver. It c=
-an
-run very well ON TOP of the otus wifi driver, as it runs on any other wifi
-driver. The only requirement is that the driver supports AdHoc Mode, and=20
-according to the announcement that is the case.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=GB2312">
+<META content="MSHTML 6.00.2900.3268" name=GENERATOR>
+<STYLE>BLOCKQUOTE {
+	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px; MARGIN-LEFT: 2em
+}
+OL {
+	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
+}
+UL {
+	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
+}
+</STYLE>
+</HEAD>
+<BODY 
+style="BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 0px; FONT-SIZE: 10pt; BORDER-BOTTOM-WIDTH: 0px; FONT-FAMILY: verdana; BORDER-RIGHT-WIDTH: 0px">
+<DIV><FONT face=Verdana size=2>hi</FONT></DIV>
+<DIV>dose batman-adv support multi-gateway. </DIV>
+<DIV>If there&nbsp;is a router&nbsp; which connets two mesh 
+devices(gateway)&nbsp;through same layer 2 wired network, can the mesh 
+network&nbsp;select a&nbsp;better&nbsp;gateway to the router for one 
+packet.&nbsp;</DIV>
+<DIV><FONT face=Verdana size=2></FONT>&nbsp;</DIV>
+<DIV align=left><FONT face=Verdana color=#c0c0c0 size=2>2008-10-24 
+</FONT></DIV><FONT face=Verdana size=2>
+<HR style="WIDTH: 122px; HEIGHT: 2px" align=left SIZE=2>
 
-best regards,
-	Simon
+<DIV><FONT face=Verdana color=#c0c0c0 
+size=2><SPAN></SPAN></FONT></DIV></FONT></BODY></HTML>
 
-On Thu, Oct 23, 2008 at 09:52:06PM +0200, M. Peterson wrote:
-> Hello Batmans,
-> can you provide info to Luiz, to integrate Batman into the Atheros Linux
-> Wlan driver as a a default package?
-> Thx Max
->=20
-> http://thread.gmane.org/gmane.linux.kernel/747372
-> http://www.golem.de/0810/63121.html
->=20
-> On Thu, Oct 23, 2008 at 2:35 PM, Luis R. Rodriguez
-> <lrodriguez@atheros.com>wrote:
->=20
-> > On Thu, Oct 23, 2008 at 12:25:28PM -0700, M. Peterson wrote:
-> > > can you integrate batman ? so that atheros drivers provide it?
-> >
-> > I tried to read the FAQ and Documentaion and nothing explained what the
-> > difference is between 11s. What is it?
-> >
-> > If batman !=3D 11s, then your best bet is to contribute code to mac80211
-> > to enable batman as an option.
-> >
-> >  Luis
-> >
-
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+--=====003_Dragon750364344481_=====--
 
 
---9amGYk9869ThD9tj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFJAP8drzg/fFk7axYRAlNkAKCrFd3iZx1zJzSDjkneKnIWcNsFxgCgwWDg
-WTyROyEcDorl13OK9LWZ5DE=
-=wot5
------END PGP SIGNATURE-----
-
---9amGYk9869ThD9tj--
