@@ -1,10 +1,11 @@
-Message-ID: <24eb75fd8a048d4b908387e3bfbce04f.squirrel@webmail.ddmesh.de>
-Date: Sat, 25 Oct 2008 17:30:03 +0200 (CEST)
-From: "Stephan Enderlein (Freifunk Dresden)" <freifunk@ddmesh.de>
+Message-ID: <d5bba6ce0810251333r67247a0cpaf164be0e33b0f38@mail.gmail.com>
+Date: Sat, 25 Oct 2008 18:33:24 -0200
+From: "Julio Cesar Puigpinos" <jcpuigpinos@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] batman-exp still has sometimes around 90% CPU load
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] BMX problem in r1138 with client node and tun
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,39 +19,54 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
+Hi
 
-Hi,
+I'm having a problem with bmxd-r1138, bat0 is not created in client node.
+The gateway is started with: -o 2000 -g 5000 ath2. The client is
+started with: -o 2000 -r 1 ath2
 
-I'm using batman-experimental rev1145. I test this release since
-2 days. I found that a thread of batmand was consuming around 90%
-of cpu resources.
+Using this parameters and OpenWRT Kamikaze r13037 in the nodes:
 
-Mem: 15064K used, 15560K free, 0K shrd, 1152K buff, 5176K cached
-CPU: 10.0% usr 90.0% sys  0.0% nice  0.0% idle  0.0% io  0.0% irq  0.0%
-softirq
-Load average: 0.98 1.00 0.97
-  PID  PPID USER     STAT   VSZ %MEM %CPU COMMAND
- 4464  1941 root     R     1216  3.9 84.1 /sbin/batmand -s 10.12.0.1  -a
-10.12.10.16/28 -r 1 --t 63 --no-unreachable-rule --no-throw-rules
- 1151     1 root     S     1216  3.9  0.0 /sbin/batmand -s 10.12.0.1  -a
-10.12.10.16/28 -r 1 --t 63 --no-unreachable-rule --no-throw-rules
- 1941  1151 root     S     1216  3.9  0.0 /sbin/batmand -s 10.12.0.1  -a
-10.12.10.16/28 -r 1 --t 63 --no-unreachable-rule --no-throw-rules
-
-it was not possibe to connect to the running batmand.
-A call "batmand -c" just hangs without printing current parameters.
-
-I had this error in previous revision where you disabled the debug task.
-Batmand was running without problems.Have you enabled the debug task again
-in current revision?
-
-any idea or solution?
-Regards
- /Stephan
+    client                 gw                     Works?
+bmxd-r1062        bmxd-r1062             YES
+bmxd-r1138        bmxd-r1062             YES
+bmxd-r1138        bmxd-r1138             NO
+bmxd-r1062        bmxd-r1138             NO
 
 
----------------------------------------
-Dipl.Informatiker(FH) Stephan Enderlein
-Freifunk Dresden
+In bmxd-r1138, the debug level 3 shows:
+[     39193] select() indicated changed interface status! Going to
+check interfaces!
+[     76206] change route to 5.255.22.64     via 5.255.22.64       1 /
+100 (prev. via 0.0.0.0           0)
+[     76212] found new gateway 5.255.22.64, announced by 5.255.22.64
+-> class: 49 - 4MBit/1024KBit, new supported tunnel types TWT, OWT
+[    200028] using default tunnel to GW 5.255.22.64 (gw_flags: 49,
+packet_count: 610, gw_product: 238144)
+[    200030] add_default_route()...
+[    200039] client_to_gw_tun() started...
+[    200039] send ip request to gateway: 5.255.22.64, preferred IP: 0.0.0.0
+[    201228] send ip request to gateway: 5.255.22.64, preferred IP: 0.0.0.0
+                  .............. 57 the same message .......................
+[    270269] send ip request to gateway: 5.255.22.64, preferred IP: 0.0.0.0
+[    270470] Gateway client - disconnecting from unresponsive gateway
+(5.255.22.64) !
+[    270470] Gateway client - Maximum number of tunnel ip requests send !
+[    270471] Gateway client - Ignoring this GW for 10 secs
+[    270471] terminating client_to_gw_tun thread: is_aborted(): NO,
+curr_gateway: 4801776, deleted: 0
+[    270475] Error - can't delete route to 0.0.0.0/0 via 0.0.0.0
+(table 68): No such process
+[    270482] Error - can't delete tun device: Inappropriate ioctl for device
 
 
+If you need more info, let me know it.
+
+
+                     Saludos, Julio
+
+-- 
+www.lugro-mesh.org.ar/        Wireless Mesh Networks Group
+www.lugro.org.ar                         GNU/Linux User Group Rosario, Argentina
+Slackware rulez :P             www.slackware.org
+NO A LA MATRICULA!!!: http://noalamatricula.wordpress.com/
