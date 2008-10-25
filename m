@@ -1,13 +1,10 @@
-Date: Fri, 24 Oct 2008 13:31:54 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] dose batman-adv support multi-gateway
-Message-ID: <20081024113154.GA7911@pandem0nium>
-References: <200810241543070787033@mail.ioa.ac.cn>
+Message-ID: <24eb75fd8a048d4b908387e3bfbce04f.squirrel@webmail.ddmesh.de>
+Date: Sat, 25 Oct 2008 17:30:03 +0200 (CEST)
+From: "Stephan Enderlein (Freifunk Dresden)" <freifunk@ddmesh.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
-Content-Disposition: inline
-In-Reply-To: <200810241543070787033@mail.ioa.ac.cn>
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] batman-exp still has sometimes around 90% CPU load
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,69 +16,41 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
 
---mYCpIKhGyMATD0i+
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hello =E5=94=90=E9=BC=8E,
+I'm using batman-experimental rev1145. I test this release since
+2 days. I found that a thread of batmand was consuming around 90%
+of cpu resources.
 
-Gateway things are not handled by batman-adv, this is a Layer 3 issue.
+Mem: 15064K used, 15560K free, 0K shrd, 1152K buff, 5176K cached
+CPU: 10.0% usr 90.0% sys  0.0% nice  0.0% idle  0.0% io  0.0% irq  0.0%
+softirq
+Load average: 0.98 1.00 0.97
+  PID  PPID USER     STAT   VSZ %MEM %CPU COMMAND
+ 4464  1941 root     R     1216  3.9 84.1 /sbin/batmand -s 10.12.0.1  -a
+10.12.10.16/28 -r 1 --t 63 --no-unreachable-rule --no-throw-rules
+ 1151     1 root     S     1216  3.9  0.0 /sbin/batmand -s 10.12.0.1  -a
+10.12.10.16/28 -r 1 --t 63 --no-unreachable-rule --no-throw-rules
+ 1941  1151 root     S     1216  3.9  0.0 /sbin/batmand -s 10.12.0.1  -a
+10.12.10.16/28 -r 1 --t 63 --no-unreachable-rule --no-throw-rules
 
-But lets assume you have a router/gateway C in the wired network of your
-2 gateways A, B. Then there are two possible routes:
+it was not possibe to connect to the running batmand.
+A call "batmand -c" just hangs without printing current parameters.
 
-You -----(mesh)----> A ---> C
-You -----(mesh)----> B ---> C
+I had this error in previous revision where you disabled the debug task.
+Batmand was running without problems.Have you enabled the debug task again
+in current revision?
 
-Only one of these routes is chosen, depending on which route looks
-better for the BATMAN algorithm in the moment of sending the packet.=20
-So it always uses only the best route, but not both (as you can see,=20
-it always chooses the "better gateway").=20
-
-Using both routes simultaneously is an open research topic (look for=20
-buzz-/keywords like "multipath routing"), but we have no working=20
-implementation for this. In the best case its possible to gain more
-bandwidth, but this is only possible with multiple disjoint
-(interference-free) routes.
-
-Don't hesitate to ask more if i couldn't answer your question.
-
-regards,
-	Simon
-
-[1] http://www.cs.huji.ac.il/labs/danss/sensor/adhoc/routing/lee_2001splitm=
-ultipath.pdf
-
-On Fri, Oct 24, 2008 at 03:43:07PM +0800, =E5=94=90=E9=BC=8E wrote:
-> hi
-> dose batman-adv support multi-gateway.=20
-> If there is a router  which connets two mesh devices(gateway) through sam=
-e layer 2 wired network, can the mesh network select a better gateway to th=
-e router for one packet.=20
->=20
-> 2008-10-24=20
-
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+any idea or solution?
+Regards
+ /Stephan
 
 
---mYCpIKhGyMATD0i+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+---------------------------------------
+Dipl.Informatiker(FH) Stephan Enderlein
+Freifunk Dresden
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFJAbIqrzg/fFk7axYRAkASAJ9bH+r2bg6McjgRKDW1lorcPL0YQgCcD1/h
-94BUhPkH8Y4Otz/+QieHsQA=
-=BT0+
------END PGP SIGNATURE-----
-
---mYCpIKhGyMATD0i+--
