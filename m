@@ -1,5 +1,5 @@
-Message-ID: <d5bba6ce0810251340w25e0d17awe3cea427b0512be9@mail.gmail.com>
-Date: Sat, 25 Oct 2008 18:40:17 -0200
+Message-ID: <d5bba6ce0810251351n34997f2w330aa8dee0efd20a@mail.gmail.com>
+Date: Sat, 25 Oct 2008 18:51:30 -0200
 From: "Julio Cesar Puigpinos" <jcpuigpinos@gmail.com>
 In-Reply-To: <d5bba6ce0810251333r67247a0cpaf164be0e33b0f38@mail.gmail.com>
 MIME-Version: 1.0
@@ -22,28 +22,12 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@open-mesh.net
 
 2008/10/25 Julio Cesar Puigpinos :
-> Hi
->
-> I'm having a problem with bmxd-r1138, bat0 is not created in client node.
-> The gateway is started with: -o 2000 -g 5000 ath2. The client is
-> started with: -o 2000 -r 1 ath2
->
-> Using this parameters and OpenWRT Kamikaze r13037 in the nodes:
-
-Sorry, a typo. it's bmxd-r1069, not bmxd-r1062 :)
-
-The right table is this:
-
-    client                 gw                     Works?
- bmxd-r1069        bmxd-r1069             YES
- bmxd-r1138        bmxd-r1069             YES
- bmxd-r1138        bmxd-r1138             NO
- bmxd-r1069        bmxd-r1138             NO
-
-
 > [...]
+> If you need more info, let me know it.
 
-        Saludos, Julio
+I'm using a MIPS Big Endian platform. NanoStation2, Foneras, and 3Com devices.
+
+                         Saludos, Julio
 
 -- 
 www.lugro-mesh.org.ar/        Wireless Mesh Networks Group
