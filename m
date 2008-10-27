@@ -1,14 +1,14 @@
-From: Axel Neumann <axel@open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] batman-exp still has sometimes around 90% CPU load
-Date: Mon, 27 Oct 2008 06:03:18 +0200
-References: <24eb75fd8a048d4b908387e3bfbce04f.squirrel@webmail.ddmesh.de>
-In-Reply-To: <24eb75fd8a048d4b908387e3bfbce04f.squirrel@webmail.ddmesh.de>
+Message-ID: <d5bba6ce0810271636p2d1b0476q35dd43dd17fc07af@mail.gmail.com>
+Date: Mon, 27 Oct 2008 21:36:21 -0200
+From: "Julio Cesar Puigpinos" <jcpuigpinos@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] BMX problem in r1138 with client node and tun
+In-Reply-To: <200810270502.41531.axel@open-mesh.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810270503.18516.axel@open-mesh.net>
+References: <d5bba6ce0810251333r67247a0cpaf164be0e33b0f38@mail.gmail.com>
+	<200810270502.41531.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,47 +22,31 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi,
+2008/10/27 Axel Neumann <axel@open-mesh.net>:
+> Hi Julio, Stephan,..
 
-On Samstag 25 Oktober 2008, Stephan Enderlein (Freifunk Dresden) wrote:
-[...]
+Hi Axel
+
+> I could not reproduce the described problems (in my setup with x86 and mipsel
+> r1069 and 1138 cooperated as expected). But your reports pointed me to some
+> forgotten and falsley directed debug messages from the tunnel thread, some
+> other threading issues, and the need for Sven Eckelmanns patch for allocate.c
+> which is applied now.
 >
-> it was not possibe to connect to the running batmand.
-> A call "batmand -c" just hangs without printing current parameters.
+> please let me know if there are further issues with MIPS big endian.
 
-grrr, I know that really ugly
+I'm still getting the same messages, and having the same problem.
 
->
-> I had this error in previous revision where you disabled the debug task.
-> Batmand was running without problems.Have you enabled the debug task again
-> in current revision?
-Well, the debug functionality has never been disabled. It has just been moved 
-to the main thread. Iam already thinking whether it makes sense to do the 
-same with the tunnel thread - but not tonight. According to your debug output 
-Iam sure its the tunnel thread. Just wondering why the same peace of code 
-works since days on several mipsel and x86 devices here. Please test with 
-r1146.
+Is there any other info that I can provide or test to do, to help find
+the source of the problem?
 
-cheers,
-axel
+> ciao,
+> axel
 
+            Saludos, Julio
 
-
-
->
-> any idea or solution?
-> Regards
->  /Stephan
->
->
-> ---------------------------------------
-> Dipl.Informatiker(FH) Stephan Enderlein
-> Freifunk Dresden
->
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-
-
+-- 
+www.lugro-mesh.org.ar/        Wireless Mesh Networks Group
+www.lugro.org.ar                         GNU/Linux User Group Rosario, Argentina
+Slackware rulez :P             www.slackware.org
+NO A LA MATRICULA!!!: http://noalamatricula.wordpress.com/
