@@ -1,10 +1,10 @@
-Date: Wed, 5 Nov 2008 15:48:38 +0100
+Date: Wed, 5 Nov 2008 16:35:01 +0100
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20081105144838.GA30895@sven-desktop.lazhur.ath.cx>
+Message-ID: <20081105153501.GA12588@sven-desktop.lazhur.ath.cx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [PATCH] Use device_create instead of
+Subject: [B.A.T.M.A.N.] [PATCHv2] Use device_create instead of
 	device_create_drvdata in linux modules
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -25,17 +25,17 @@ define in include/linux/device.h which is removed in linux 2.6.28-rc1.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv-kernelland/batman-core/compat.h |   10 +++++++++-
+ batman-adv-kernelland/batman-core/compat.h |   11 ++++++++++-
  batman-adv-kernelland/batman-core/device.c |    2 +-
  batman/linux/modules/compat26.h            |   12 +++++++++++-
  batman/linux/modules/gateway.c             |    2 +-
- 4 files changed, 22 insertions(+), 4 deletions(-)
+ 4 files changed, 23 insertions(+), 4 deletions(-)
 
 diff --git a/batman-adv-kernelland/batman-core/compat.h b/batman-adv-kernelland/batman-core/compat.h
-index 5f58f8f..3704656 100644
+index 5f58f8f..33deec6 100644
 --- a/batman-adv-kernelland/batman-core/compat.h
 +++ b/batman-adv-kernelland/batman-core/compat.h
-@@ -38,10 +38,18 @@
+@@ -38,10 +38,19 @@
  
  #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26)
  
@@ -46,8 +46,7 @@ index 5f58f8f..3704656 100644
  #define device_destroy(_cls, _device) \
  	class_device_destroy(_cls, _device)
  
- #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26) */
-+
++#else
 +
 +#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 27)
 +
@@ -55,6 +54,8 @@ index 5f58f8f..3704656 100644
 +	device_create_drvdata(_cls, _parent, _devt, _device, _fmt)
 +
 +#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 27) */
++
+ #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26) */
 diff --git a/batman-adv-kernelland/batman-core/device.c b/batman-adv-kernelland/batman-core/device.c
 index c401634..028cf7d 100644
 --- a/batman-adv-kernelland/batman-core/device.c
@@ -69,7 +70,7 @@ index c401634..028cf7d 100644
  #endif
  
 diff --git a/batman/linux/modules/compat26.h b/batman/linux/modules/compat26.h
-index f1fdc67..692d271 100644
+index f1fdc67..3ddbe0a 100644
 --- a/batman/linux/modules/compat26.h
 +++ b/batman/linux/modules/compat26.h
 @@ -34,6 +34,7 @@ static inline struct iphdr *ip_hdr(const struct sk_buff *skb)
@@ -93,9 +94,7 @@ index f1fdc67..692d271 100644
  
  #define device_destroy \
  	class_device_destroy
- 
- #endif /* KERNEL_VERSION(2,6,26) */
-+
++#else
 +
 +#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27)
 +
@@ -103,6 +102,8 @@ index f1fdc67..692d271 100644
 +	device_create_drvdata
 +
 +#endif /* KERNEL_VERSION(2,6,27) */
+ 
+ #endif /* KERNEL_VERSION(2,6,26) */
 diff --git a/batman/linux/modules/gateway.c b/batman/linux/modules/gateway.c
 index fcf4dd2..b1b346c 100644
 --- a/batman/linux/modules/gateway.c
