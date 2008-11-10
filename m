@@ -1,14 +1,13 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Use device_create instead of
-	device_create_drvdata in linux modules
-Date: Wed, 5 Nov 2008 16:37:43 +0100
-References: <20081105144838.GA30895@sven-desktop.lazhur.ath.cx>
-In-Reply-To: <20081105144838.GA30895@sven-desktop.lazhur.ath.cx>
+Message-ID: <49183B54.10106@dd19.de>
+Date: Mon, 10 Nov 2008 14:47:00 +0100
+From: Alexander Morlang <alx@dd19.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4887933.kjpF4D9xj4";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Subject: Re: [B.A.T.M.A.N.] batman - how does "fast
+	internet	connection"	connection work
+References: <1225349370.13082.53.camel@desiree> <49098068.80606@lo-res.org>
+In-Reply-To: <49098068.80606@lo-res.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200811051637.46836.sven.eckelmann@gmx.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,35 +21,65 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart4887933.kjpF4D9xj4
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Wednesday 05 November 2008 15:48:38 Sven Eckelmann wrote:
-> The function device_create_drvdata was renamed to device_create in linux
-> v2.6.26-5782-g4e10673. Until v2.6.27-4446-g7fb6b5d there was a
-> compatibility define in include/linux/device.h which is removed in linux
-> 2.6.28-rc1.
-Sry, the conditions for the compat*.h stuff are obvious wrong. A revised pa=
-tch=20
-was send to the ml.
+aaron schrieb:
+> david johnson wrote:
+>> Hi
+>>
+>> First an introduction - I am a David Johnson - I've been working on mesh
+>> protocols for a few years now and I've built a 49 node wireless grid to
+>> benchmark mesh protocols in South Africa:
+>> http://wirelessafrica.meraka.org.za/wiki/index.php/49-node_Indoor_Mesh
+>>
+>> Elektra and I did some experiments with batman (do I have to use the
+>> dots @#!!!) and olsr at the beginning of the year and we wrote a paper
+>> showing how batman outperforms olsr on CPU usage and better throughput
+>> due to less flapping. The results were very impressive!
+>>   
+> 
+> Well, it is interesting that you note that.
+> I read the PDF. One thing that struck me was that the settings for OLSR
+> were such that OLSR used *full flooding*. (MPR 7 etc)
+> That is *exactly* NOT what it is meant to do!
 
-Best regards,
-	Sven Eckelmann
+yes, the MPR idea was a good idea, in theorie.
 
+as i heard, it did not work out at all and made the mesh even more unstable.
 
---nextPart4887933.kjpF4D9xj4
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+i think, the problem was in the way of selecting MPR, but i don't
+remember exactly, elektra did a very good explanation that time, some 2
+or 3 years ago.
+
+it is quite sad to see that knowledge lost in the current OLSR developer
+community.
+
+elektra, could you be so nice and enlight aaron on the topic of problems
+with the MPR selection?
+
+> So I must object to the objectivity of the study.
+> Basically the study was comparing an elephant and a wale
+> Well.. both are great ideas :) But ... they do live in different terrain
+> and under different assumptions :)))
+> 
+> got me?
+
+please calm your temper.
+
+...
+
+>> Thanks and look forward to becoming part of the discussion
+>>
+>> David
+
+Alex
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v1.4.8 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iEYEABECAAYFAkkRvcgACgkQqQGwKVlMoDuKegCeKeuNdRbOP1rBkMPdRGe/Vtfj
-PggAn0wDznDl+485vj2Jx4gB20aMGmy/
-=fmEF
+iEYEARECAAYFAkkYO1QACgkQhx2RbV7T5aEaRwCfVw47gRH1mVfwVj0Qqxbh37e2
+m7kAn1nT6v6EeMdQrJucI+iEs+grbZEl
+=a2lu
 -----END PGP SIGNATURE-----
-
---nextPart4887933.kjpF4D9xj4--
