@@ -1,13 +1,10 @@
-Message-ID: <49183B54.10106@dd19.de>
-Date: Mon, 10 Nov 2008 14:47:00 +0100
-From: Alexander Morlang <alx@dd19.de>
+Message-ID: <8c906fa50811110547w53172e3dwe70f8782ec6e36f6@mail.gmail.com>
+Date: Tue, 11 Nov 2008 11:47:30 -0200
+From: "Gustavo Lindberg" <gus.lindberg@gmail.com>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] batman - how does "fast
-	internet	connection"	connection work
-References: <1225349370.13082.53.camel@desiree> <49098068.80606@lo-res.org>
-In-Reply-To: <49098068.80606@lo-res.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_55613_17726091.1226411250178"
+Subject: [B.A.T.M.A.N.] VIS usage
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,67 +16,35 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+------=_Part_55613_17726091.1226411250178
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-aaron schrieb:
-> david johnson wrote:
->> Hi
->>
->> First an introduction - I am a David Johnson - I've been working on mesh
->> protocols for a few years now and I've built a 49 node wireless grid to
->> benchmark mesh protocols in South Africa:
->> http://wirelessafrica.meraka.org.za/wiki/index.php/49-node_Indoor_Mesh
->>
->> Elektra and I did some experiments with batman (do I have to use the
->> dots @#!!!) and olsr at the beginning of the year and we wrote a paper
->> showing how batman outperforms olsr on CPU usage and better throughput
->> due to less flapping. The results were very impressive!
->>   
-> 
-> Well, it is interesting that you note that.
-> I read the PDF. One thing that struck me was that the settings for OLSR
-> were such that OLSR used *full flooding*. (MPR 7 etc)
-> That is *exactly* NOT what it is meant to do!
+Hi
 
-yes, the MPR idea was a good idea, in theorie.
+I'm doing some testing with VIS.
 
-as i heard, it did not work out at all and made the mesh even more unstable.
+I have installed the VIS server on a node and the other nodes appear
+registered on the server, so I gather that this working well.
 
-i think, the problem was in the way of selecting MPR, but i don't
-remember exactly, elektra did a very good explanation that time, some 2
-or 3 years ago.
+Is it possible to install the server of VIS on a computer outside of the
+mesh ?
 
-it is quite sad to see that knowledge lost in the current OLSR developer
-community.
+I have read the documentation of VIS and I could not find any example of
+that scenario.
 
-elektra, could you be so nice and enlight aaron on the topic of problems
-with the MPR selection?
+Saludos.
+Gustavo.
 
-> So I must object to the objectivity of the study.
-> Basically the study was comparing an elephant and a wale
-> Well.. both are great ideas :) But ... they do live in different terrain
-> and under different assumptions :)))
-> 
-> got me?
+------=_Part_55613_17726091.1226411250178
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-please calm your temper.
+Hi<br><br>I&#39;m doing some testing with VIS.<br><br>I have installed the VIS server on a node and the other nodes appear registered on the server, so I gather that this working well.<br><br>Is it possible to install the server of VIS on a computer outside of the mesh ?<br>
+<br>I have read the documentation of VIS and I could not find any example of that scenario.<br><br>Saludos.<br>Gustavo.<br><br><br><br>
 
-...
-
->> Thanks and look forward to becoming part of the discussion
->>
->> David
-
-Alex
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkkYO1QACgkQhx2RbV7T5aEaRwCfVw47gRH1mVfwVj0Qqxbh37e2
-m7kAn1nT6v6EeMdQrJucI+iEs+grbZEl
-=a2lu
------END PGP SIGNATURE-----
+------=_Part_55613_17726091.1226411250178--
