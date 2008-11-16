@@ -1,16 +1,10 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv debian announcement
-Date: Mon, 17 Nov 2008 01:37:31 +0800
-References: <200811170004.23285.lindner_marek@yahoo.de>
-	<200811170111.32580.lindner_marek@yahoo.de>
-	<5635aa0d0811160922p6950f53euf1ec626c3fd520b5@mail.gmail.com>
-In-Reply-To: <5635aa0d0811160922p6950f53euf1ec626c3fd520b5@mail.gmail.com>
+Message-ID: <5635aa0d0811161013j28992766n5f30ad0c4e2c721e@mail.gmail.com>
+Date: Mon, 17 Nov 2008 01:13:32 +0700
+From: "Outback Dingo" <outbackdingo@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811170137.31341.lindner_marek@yahoo.de>
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_24049_12724464.1226859212055"
+Subject: [B.A.T.M.A.N.] Question - Layer 2 / Layer 3 - kernel / userland
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,21 +18,29 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Monday 17 November 2008 01:22:24 Outback Dingo wrote:
-> ok, perfectly clear, one or the other
+------=_Part_24049_12724464.1226859212055
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Good.  :-)
+is there a document somewhere with a brief explanation between the
+differences and benefits of layer 2 / layer 3
+and kernel or userland ??
 
+im sure a layer 2 kernel mod is the most efficient, yet, is there a test or
+comparision and explantion of why or what benefits ?
 
-> now last question, there is a batman-adv kernel module and a batman-adv
-> userland
-> am i to assume i dont need the userland if running the kernel mod or are
-> both required
+im just doing a comparitive between my current mesh running bmxd in userland
+and say batman-adv kernel mod, and id prefer
+to document the data and reasons in the internal wiki for our information,
+helps not only myself but others understand why :)
 
-Correct - you only need one of them. At the moment the kernel implementation 
-is a bit ahead compared to user space. I hope in the coming weeks I will find 
-the time to update the user space branch.
+------=_Part_24049_12724464.1226859212055
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Regards,
-Marek
+is there a document somewhere with a brief explanation between the differences and benefits of layer 2 / layer 3<br>and kernel or userland ?? <br><br>im sure a layer 2 kernel mod is the most efficient, yet, is there a test or comparision and explantion of why or what benefits ?<br>
+<br>im just doing a comparitive between my current mesh running bmxd in userland and say batman-adv kernel mod, and id prefer <br>to document the data and reasons in the internal wiki for our information, helps not only myself but others understand why :)<br>
 
+------=_Part_24049_12724464.1226859212055--
