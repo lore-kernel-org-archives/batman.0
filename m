@@ -1,14 +1,14 @@
-Message-ID: <5635aa0d0811160830r5521a8a4he0d5b22665664d7@mail.gmail.com>
-Date: Sun, 16 Nov 2008 23:30:06 +0700
+Message-ID: <5635aa0d0811160832r41e156f2t2960467482110be0@mail.gmail.com>
+Date: Sun, 16 Nov 2008 23:32:59 +0700
 From: "Outback Dingo" <outbackdingo@gmail.com>
 Subject: Re: [B.A.T.M.A.N.] batman-adv debian announcement
-In-Reply-To: <200811170026.10020.lindner_marek@yahoo.de>
+In-Reply-To: <20081116162726.GA19689@pandem0nium>
 MIME-Version: 1.0
 Content-Type: multipart/alternative; 
-	boundary="----=_Part_23429_28850972.1226853006619"
+	boundary="----=_Part_23445_24421995.1226853179541"
 References: <200811170004.23285.lindner_marek@yahoo.de>
 	<5635aa0d0811160806h69169967w846a18250d77b87c@mail.gmail.com>
-	<200811170026.10020.lindner_marek@yahoo.de>
+	<20081116162726.GA19689@pandem0nium>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,89 +22,169 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-------=_Part_23429_28850972.1226853006619
+------=_Part_23445_24421995.1226853179541
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-ok lastly, it seems possible its very similiar config to bmxd which is what
-has been running, though layer 3, im trying to get layer 2 kernel routing
-going
-originally i used batgat but yet it was problematic, so its safe to say i
-could go batman-adv and drop bmxd? as i belive one is not compatible with
-the
-other in the mesh
+LOL it seriously cant be this easy :)
 
-On Sun, Nov 16, 2008 at 11:26 PM, Marek Lindner <lindner_marek@yahoo.de>wrote:
+On Sun, Nov 16, 2008 at 11:27 PM, Simon Wunderlich <
+simon.wunderlich@s2003.tu-chemnitz.de> wrote:
 
-> On Monday 17 November 2008 00:06:37 Outback Dingo wrote:
+> The README also applies to Atheros hardware:
+>
+> https://dev.open-mesh.net/batman/file/trunk/batman-adv-kernelland/README
+>
+> regards,
+>         Simon
+>
+> On Sun, Nov 16, 2008 at 11:06:37PM +0700, Outback Dingo wrote:
 > > any good docs on configuring batman-adv for atheros ?
+> >
+> > On Sun, Nov 16, 2008 at 11:04 PM, Marek Lindner <lindner_marek@yahoo.de
+> >wrote:
+> >
+> > >
+> > > Hi,
+> > >
+> > > even if the news is still some days old - its worth mentioning:
+> > > batman-advanced is now available in Debian!
+> > >
+> > > The packages are available through your favorite dpkg frontend
+> (apt-get,
+> > > aptitude, ...) using the unstable repositories. To follow the package
+> > > development you can visit the following pages:
+> > >
+> > > http://packages.debian.org/sid/batman-adv-source
+> > > http://packages.debian.org/sid/batman-adv-battool
+> > >
+> > > batman-adv-source contains the source code and can be compiled for your
+> > > kernel
+> > > using module-assistant [1]. batman-adv-battool contains the battool
+> which
+> > > provides ping, traceroute and other tools for the batman-adv network.
+> > >
+> > > Big thanks to Sven Eckelmann, Simon Wunderlich and Holger Levsen for
+> their
+> > > work on these packages. :)
+> > >
+> > > BTW, you also can find the current batman stable (0.3) in the lenny and
+> > > unstable repositories. Here the respective package pages:
+> > >
+> > > http://packages.debian.org/lenny/batmand
+> > > http://packages.debian.org/sid/batmand
+> > >
+> > >
+> > > Regards,
+> > > Marek
+> > >
+> > >
+> > > [1] http://packages.debian.org/sid/module-assistant
+> > >
+> > >
+> > > _______________________________________________
+> > > B.A.T.M.A.N mailing list
+> > > B.A.T.M.A.N@open-mesh.net
+> > > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+> > >
 >
-> We are writing it but it takes time.  :-)
+> > _______________________________________________
+> > B.A.T.M.A.N mailing list
+> > B.A.T.M.A.N@open-mesh.net
+> > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 >
 >
-> Here the short intro:
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.6 (GNU/Linux)
 >
-> Batman advanced is not aware of the Atheros driver. On every hardware it
-> runs
-> in the same way.
->
-> Load the module -> modprobe batman-adv-core
->
-> In /proc/net/batman-adv/ you will find the files to tweak batman. E.g. give
-> it a
-> device to operate on -> echo eth0 > /proc/net/batman-adv/interface
->
-> deactivate batman-adv -> echo "" > /proc/net/batman-adv/interface
->
-> The other files in that folder should be self explanatory. If not come back
-> and
-> ask us.
->
-> Regards,
-> Marek
+> iD8DBQFJIEnurzg/fFk7axYRAk0mAJ9lNbvJJhgHtLRZqcEniHlsA7Ek7wCg06E0
+> k2oDvj0hf+mvjIdykS1+0C8=
+> =LnLX
+> -----END PGP SIGNATURE-----
 >
 > _______________________________________________
 > B.A.T.M.A.N mailing list
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 >
+>
 
-------=_Part_23429_28850972.1226853006619
+------=_Part_23445_24421995.1226853179541
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-ok lastly, it seems possible its very similiar config to bmxd which is what has been running, though layer 3, im trying to get layer 2 kernel routing going<br>originally i used batgat but yet it was problematic, so its safe to say i could go batman-adv and drop bmxd? as i belive one is not compatible with the <br>
-other in the mesh <br><br><div class="gmail_quote">On Sun, Nov 16, 2008 at 11:26 PM, Marek Lindner <span dir="ltr">&lt;<a href="mailto:lindner_marek@yahoo.de">lindner_marek@yahoo.de</a>&gt;</span> wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div class="Ih2E3d">On Monday 17 November 2008 00:06:37 Outback Dingo wrote:<br>
-&gt; any good docs on configuring batman-adv for atheros ?<br>
+LOL it seriously cant be this easy :)<br><br><div class="gmail_quote">On Sun, Nov 16, 2008 at 11:27 PM, Simon Wunderlich <span dir="ltr">&lt;<a href="mailto:simon.wunderlich@s2003.tu-chemnitz.de">simon.wunderlich@s2003.tu-chemnitz.de</a>&gt;</span> wrote:<br>
+<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">The README also applies to Atheros hardware:<br>
 <br>
-</div>We are writing it but it takes time. &nbsp;:-)<br>
+<a href="https://dev.open-mesh.net/batman/file/trunk/batman-adv-kernelland/README" target="_blank">https://dev.open-mesh.net/batman/file/trunk/batman-adv-kernelland/README</a><br>
 <br>
-<br>
-Here the short intro:<br>
-<br>
-Batman advanced is not aware of the Atheros driver. On every hardware it runs<br>
-in the same way.<br>
-<br>
-Load the module -&gt; modprobe batman-adv-core<br>
-<br>
-In /proc/net/batman-adv/ you will find the files to tweak batman. E.g. give it a<br>
-device to operate on -&gt; echo eth0 &gt; /proc/net/batman-adv/interface<br>
-<br>
-deactivate batman-adv -&gt; echo &quot;&quot; &gt; /proc/net/batman-adv/interface<br>
-<br>
-The other files in that folder should be self explanatory. If not come back and<br>
-ask us.<br>
-<br>
-Regards,<br>
-<font color="#888888">Marek<br>
+regards,<br>
+<font color="#888888"> &nbsp; &nbsp; &nbsp; &nbsp;Simon<br>
 </font><div><div></div><div class="Wj3C7c"><br>
-_______________________________________________<br>
+On Sun, Nov 16, 2008 at 11:06:37PM +0700, Outback Dingo wrote:<br>
+&gt; any good docs on configuring batman-adv for atheros ?<br>
+&gt;<br>
+&gt; On Sun, Nov 16, 2008 at 11:04 PM, Marek Lindner &lt;<a href="mailto:lindner_marek@yahoo.de">lindner_marek@yahoo.de</a>&gt;wrote:<br>
+&gt;<br>
+&gt; &gt;<br>
+&gt; &gt; Hi,<br>
+&gt; &gt;<br>
+&gt; &gt; even if the news is still some days old - its worth mentioning:<br>
+&gt; &gt; batman-advanced is now available in Debian!<br>
+&gt; &gt;<br>
+&gt; &gt; The packages are available through your favorite dpkg frontend (apt-get,<br>
+&gt; &gt; aptitude, ...) using the unstable repositories. To follow the package<br>
+&gt; &gt; development you can visit the following pages:<br>
+&gt; &gt;<br>
+&gt; &gt; <a href="http://packages.debian.org/sid/batman-adv-source" target="_blank">http://packages.debian.org/sid/batman-adv-source</a><br>
+&gt; &gt; <a href="http://packages.debian.org/sid/batman-adv-battool" target="_blank">http://packages.debian.org/sid/batman-adv-battool</a><br>
+&gt; &gt;<br>
+&gt; &gt; batman-adv-source contains the source code and can be compiled for your<br>
+&gt; &gt; kernel<br>
+&gt; &gt; using module-assistant [1]. batman-adv-battool contains the battool which<br>
+&gt; &gt; provides ping, traceroute and other tools for the batman-adv network.<br>
+&gt; &gt;<br>
+&gt; &gt; Big thanks to Sven Eckelmann, Simon Wunderlich and Holger Levsen for their<br>
+&gt; &gt; work on these packages. :)<br>
+&gt; &gt;<br>
+&gt; &gt; BTW, you also can find the current batman stable (0.3) in the lenny and<br>
+&gt; &gt; unstable repositories. Here the respective package pages:<br>
+&gt; &gt;<br>
+&gt; &gt; <a href="http://packages.debian.org/lenny/batmand" target="_blank">http://packages.debian.org/lenny/batmand</a><br>
+&gt; &gt; <a href="http://packages.debian.org/sid/batmand" target="_blank">http://packages.debian.org/sid/batmand</a><br>
+&gt; &gt;<br>
+&gt; &gt;<br>
+&gt; &gt; Regards,<br>
+&gt; &gt; Marek<br>
+&gt; &gt;<br>
+&gt; &gt;<br>
+&gt; &gt; [1] <a href="http://packages.debian.org/sid/module-assistant" target="_blank">http://packages.debian.org/sid/module-assistant</a><br>
+&gt; &gt;<br>
+&gt; &gt;<br>
+&gt; &gt; _______________________________________________<br>
+&gt; &gt; B.A.T.M.A.N mailing list<br>
+&gt; &gt; <a href="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</a><br>
+&gt; &gt; <a href="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target="_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
+&gt; &gt;<br>
+<br>
+&gt; _______________________________________________<br>
+&gt; B.A.T.M.A.N mailing list<br>
+&gt; <a href="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</a><br>
+&gt; <a href="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target="_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
+<br>
+</div></div><br>-----BEGIN PGP SIGNATURE-----<br>
+Version: GnuPG v1.4.6 (GNU/Linux)<br>
+<br>
+iD8DBQFJIEnurzg/fFk7axYRAk0mAJ9lNbvJJhgHtLRZqcEniHlsA7Ek7wCg06E0<br>
+k2oDvj0hf+mvjIdykS1+0C8=<br>
+=LnLX<br>
+-----END PGP SIGNATURE-----<br>
+<br>_______________________________________________<br>
 B.A.T.M.A.N mailing list<br>
 <a href="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</a><br>
 <a href="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target="_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
-</div></div></blockquote></div><br>
+<br></blockquote></div><br>
 
-------=_Part_23429_28850972.1226853006619--
+------=_Part_23445_24421995.1226853179541--
