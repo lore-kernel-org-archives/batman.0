@@ -1,11 +1,12 @@
-Date: Sun, 16 Nov 2008 17:41:59 +0200
-From: jan@aims.ac.za
-Message-ID: <20081116154159.GC26177@aims.ac.za>
+Message-ID: <5635aa0d0811160748m2b34a74fub4da13de23ac2d70@mail.gmail.com>
+Date: Sun, 16 Nov 2008 22:48:35 +0700
+From: "Outback Dingo" <outbackdingo@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] ipkg install batman over ssh: postinst fails
+In-Reply-To: <20081116154159.GC26177@aims.ac.za>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] ipkg install batman over ssh: postinst fails
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_22918_8841543.1226850515566"
+References: <20081116154159.GC26177@aims.ac.za>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,99 +18,163 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi
+------=_Part_22918_8841543.1226850515566
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-I have a mesh running freifunk =E2=92=88.6.32 nodes.
-I am using the recommended batman0.2 ipkg to test it next
-to OLSR. (Is there no ipkg package and source for 0.3 or=20
-the latest stable?)
+aWQgZ3Vlc3MgdGhpcyBpcyBhICBicm9hZGNvbSBkZXZpY2UgcnVubmluZyB3aGl0ZSBydXNzaWFu
+IGNvcnJlY3QgPz8/CgpPbiBTdW4sIE5vdiAxNiwgMjAwOCBhdCAxMDo0MSBQTSwgPGphbkBhaW1z
+LmFjLnphPiB3cm90ZToKCj4gSGkKPgo+IEkgaGF2ZSBhIG1lc2ggcnVubmluZyBmcmVpZnVuayCi
+sS42LjMyIG5vZGVzLgo+IEkgYW0gdXNpbmcgdGhlIHJlY29tbWVuZGVkIGJhdG1hbjAuMiBpcGtn
+IHRvIHRlc3QgaXQgbmV4dAo+IHRvIE9MU1IuIChJcyB0aGVyZSBubyBpcGtnIHBhY2thZ2UgYW5k
+IHNvdXJjZSBmb3IgMC4zIG9yCj4gdGhlIGxhdGVzdCBzdGFibGU/KQo+Cj4gV2hlbiBJIGRpZCB0
+d28gbm9kZXMgbWFudWFsbHksIEkgaW5zdGFsbGVkIGFuZCBzZXQgdGhlIG5ldHdvcmsKPiBtaWdy
+YXRpb24sIGFuZCBzYXcgc29tZSBiYXRtYW4gcGFja2V0cy4KPgo+IFRoZW4gSSB3ZW50IGFoZWFk
+IGFuZCBzY3JpcHRlZCBhbiBpbnN0YWxsIG9uIGFsbCB0aGUgbm9kZXMgKGFib3V0IDQwKS4KPgo+
+IEl0IGdvZXMsIHdpdGggZHJvcGJlYXIgYXV0aG9yaXplZF9rZXlzLCBmb3IgZWFjaCBub2RlIGlu
+ICRORVdJUDoKPgo+ICAgIyBiYXRtYW4gc291cmNlcwo+ICAgc2NwIHJvb3RAJHtORVdJUH06L2V0
+Yy9pcGtnLmNvbmYgLgo+ICAgcGF0Y2ggaXBrZy5jb25mIDwgaXBrZy5jb25mLnBhdGNoCj4gICBz
+Y3AgaXBrZy5jb25mIHJvb3RAJHtORVdJUH06L2V0Yy9pcGtnLmNvbmYKPiAgICMgdXBkYXRlCj4g
+ICBzc2ggcm9vdEAke05FV0lQfSBpcGtnIHVwZGF0ZQo+ICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIwo+ICAgIyMgQWRtaW4gPiBCLkEuVC5NLkEuTiAjIwo+ICAgIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIwo+ICAgIyBTZXR1cCBzY3JlZW4gZm9yIG1pZ3JhdGlvbiBvZiBuZXR3b3JrIChvbmx5
+IHNob3duIG9uY2UpCj4gICAvdXNyL3NiaW4vbnZyYW0gc2V0IGZmX2JhdF9uZXRtaWc9MTcyLjE4
+LzE3Mi4xNgo+ICAgIyBCLkEuVC5NLkEuTi4gb24vb2ZmCj4gICAvdXNyL3NiaW4vbnZyYW0gc2V0
+IGZmX2JhdF9zdGFydD0xCj4gICAjIFdMQU4gYXMgZXRoMTpiYXQgb24gc3VibmV0LzE2Cj4gICAv
+dXNyL3NiaW4vbnZyYW0gc2V0IGZmX2JhdF9yYW5fb249MQo+ICAgL3Vzci9zYmluL252cmFtIHNl
+dCBmZl9iYXRfcmFuX2lmPWV0aDE6YmF0Cj4gICAvdXNyL3NiaW4vbnZyYW0gc2V0IGZmX2JhdF9y
+YW5faXA9MTcyLjE2LjE3NC45Nwo+ICAgL3Vzci9zYmluL252cmFtIHNldCBmZl9iYXRfcmFuX3Bm
+PTE2Cj4gICAjIExBTiBhcyBicjAgb24gc3VibmV0LzI5Cj4gICAvdXNyL3NiaW4vbnZyYW0gc2V0
+IGZmX2JhdF9sYW5fb249MQo+ICAgL3Vzci9zYmluL252cmFtIHNldCBmZl9iYXRfbGFuX2lmPWJy
+MAo+ICAgL3Vzci9zYmluL252cmFtIHNldCBmZl9iYXRfbGFuX2lwPTE5Mi4xNjguMTc0Ljk3Cj4g
+ICAvdXNyL3NiaW4vbnZyYW0gc2V0IGZmX2JhdF9sYW5fcGY9MjkKPiAgICMgbG9jYWwgaW50ZXJu
+ZXQtYmFuZHdpZHRoOiBUaGlzIGlzIG5vdCBpbnRlcm5ldCBndwo+ICAgL3Vzci9zYmluL252cmFt
+IHNldCBmZl9iYXRfZ3dfdXBsaW5rPTAKPiAgICMgY29tbW9uIHVzZWQgZ2F0ZXdheTogc2V0IG5v
+IGRlZmF1bHQgcm91dGUKPiAgIC91c3Ivc2Jpbi9udnJhbSBzZXQgZmZfYmF0X2d3X2Nob29zZT0w
+Cj4gICAjIHByZWZlcnJlZCBnYXRld2F5Cj4gICAjIEhOQQo+ICAgIyBWaXogc2VydmVyCj4gICAj
+IEhlbGxvIGludGVydmFsICgxMDAwbXMpCj4gICAjIERlYW1vbiBzdGFrZW91dAo+ICAgIyBTdG9w
+IE9MU1IKPiAgICMgT3BlbiBmaXJld2FsbAo+ICAgL3Vzci9zYmluL252cmFtIHNldCBmZl9iYXRf
+Znc9MQo+ICAgIwo+ICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKPiAgICMjIEFkbWluID4g
+Qi5BLlQuTS5BLk4uICMjCj4gICAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwo+ICAgc3NoIHJv
+b3RAJHtORVdJUH0gaXBrZyBpbnN0YWxsIGJhdG1hbmQgZnJlaWZ1bmstYmF0bWFuCj4gICAjIE5l
+eHQgbGluZSBtdXN0IGJlIGRvbmUgd2l0aCBleHBlY3QgZWxzZSBudnJhbSBub3QgZm91bmQKPiAg
+ICMgRm9yIG5vdyBpdCB3aWxsIGJlIGRvbmUgb24gcmVib290IGFueXdheQo+ICAgI3NzaCByb290
+QCR7TkVXSVB9IC9ldGMvaW5pdC5kL1M2NmJhdG1hbiByZXN0YXJ0Cj4KPiBUaGUgbnZyYW0gY29t
+bWFuZCBpcyB1c3VhbGx5IG5vdCBpbiB0aGUgcGF0aCBvdmVyIGFuIHNzaCBsaWtlCj4gdGhhdCAo
+bm90IGludGVyYWN0aXZlLCBwYXNzaW5nIHRoZSBjb21tYW5kIHRvIHNzaCBhcyBhbiBhcmd1bWVu
+dCkKPiB0aHVzIEkgdXNlIC91c3Ivc2Jpbi9udnJhbS4gSW4gdHdvIHBsYWNlcyB0aGlzIGZhaWw6
+Cj4KPiBUaGUgZnJlaWZ1bmstYmF0bWFuIHBhY2thZ2U6Cj4gVW5wYWNraW5nIGZyZWlmdW5rLWJh
+dG1hbi4uLkRvbmUuCj4gQ29uZmlndXJpbmcgZnJlaWZ1bmstYmF0bWFuLi4uLy91c3IvbGliL2lw
+a2cvaW5mby9mcmVpZnVuay1iYXRtYW4ucG9zdGluc3Q6Cj4gMTA6IG52cmFtOiBub3QgZm91bmQK
+PiAvL3Vzci9saWIvaXBrZy9pbmZvL2ZyZWlmdW5rLWJhdG1hbi5wb3N0aW5zdDogMTA6IG52cmFt
+OiBub3QgZm91bmQKPiBEb25lLgo+Cj4gQW5kIHRoZSBTNjZiYXRtYW4gcmVzdGFydCwgd2hpY2gg
+SSBkaWQgbWFudWFsbHkuCj4KPiBOb3cgdGhlIGJhdG1hbiBydW5zLCBoYXMgYWxsIHRoZSBudnJh
+bSBzZXR0aW5ncywgdGhvdWdoIEkgZGlkbid0IGdvIHRocm91Z2gKPiB0aGUgcHJvbXB0IGZvciBu
+ZXR3b3JrIG1pZ3JhdGlvbiB2aWEgdGhlIHdlYiBpbnRlcmZhY2UgLS0gSSBkaWQgdGhlIHNjcmlw
+dAo+IGFib3ZlLiBCdXQgdGhlcmUgYXJlIG5vIGJhdG1hbiBuZWlnYm91cnMgb3IgbWVzc2FnZXMg
+c2hvd24gb24gdGhlCj4gaW5mby9zdGF0dXMKPiBwYWdlcyBpbiB0aGUgd2ViIGludGVyZmFjZS4g
+RXZlbiB3aGVuIEkgcmVpbnN0YWxsZWQgZnJlaWZ1bmstYmF0bWFuIHR3bwo+IG5vZGVzIG1hbnVh
+bGx5LAo+IHRoYXQgaXMgdmlhIGludGVyYWN0aXZlIHNzaCwgYW5kIHRoZXJlIHdhcyBubyBlcnJv
+ciwgSSBhbSBzdGlsbCBnZXR0aW5nIG5vCj4gYmF0bWFuCj4gbmVpZ2JvdXJzIHNob3duLgo+Cj4g
+VXN1YWxseSBJIGRvIHN1Y2ggY2FzZXMgd2l0aCBleHBlY3QsIHRoZXJlIGFyZSBzZXZlcmFsIHBs
+YWNlcwo+IGluIG15IGZyZWlmdW5rIGluc3RhbGwgLyB1cGdyYWRlIHNjcmlwdCB3aGVyZSBJIGRv
+IHRoaXMpLgo+IFRoZSBsb25nIHRlcm0gYW5zd2VyIGlzIGNsZWFybHk/IGEgdHJ4L2JpbiBpbWFn
+ZSBvZiBvdXIgb3duLgo+Cj4gSW4gdGhlIG1lYW50aW1lLCBkbyBJIGhhdmUgdG8gcmVmbGFzaCB0
+aGVtLCBpbnN0YWxsIGJhdG1hbiBtYW51YWxseQo+IG9yIHdpdGggZXhwZWN0PyBDYW4gSSBldmVu
+IGRvIHRoYXQgb3Igd2hhdCBoYXBwZW5zIHdoZW4gdGhlIHdlYiBpbnRlcmZhY2UKPiBpcyB1c2Vk
+IHRvIGVudGVyIHRoZSBuZXR3b3JrIG1pZ3JhdGlvbiBpbmZvLCB3aGljaCBpcyBub3cgbm90IGhh
+cHBlbmluZwo+IG9uIG15IG5vZGVzPwo+Cj4gcmVnYXJkcywKPiBKYW4KPgo+Cj4gX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPiBCLkEuVC5NLkEuTiBtYWls
+aW5nIGxpc3QKPiBCLkEuVC5NLkEuTkBvcGVuLW1lc2gubmV0Cj4gaHR0cHM6Ly9saXN0Lm9wZW4t
+bWVzaC5uZXQvbW0vbGlzdGluZm8vYi5hLnQubS5hLm4KPgo=
+------=_Part_22918_8841543.1226850515566
+Content-Type: text/html; charset=GB2312
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-When I did two nodes manually, I installed and set the network
-migration, and saw some batman packets.
-
-Then I went ahead and scripted an install on all the nodes (about 40).
-
-It goes, with dropbear authorized_keys, for each node in $NEWIP:
-
-   # batman sources
-   scp root@${NEWIP}:/etc/ipkg.conf .
-   patch ipkg.conf < ipkg.conf.patch
-   scp ipkg.conf root@${NEWIP}:/etc/ipkg.conf
-   # update
-   ssh root@${NEWIP} ipkg update
-   #########################
-   ## Admin > B.A.T.M.A.N ##
-   #########################
-   # Setup screen for migration of network (only shown once)
-   /usr/sbin/nvram set ff_bat_netmig=3D172.18/172.16
-   # B.A.T.M.A.N. on/off
-   /usr/sbin/nvram set ff_bat_start=3D1
-   # WLAN as eth1:bat on subnet/16
-   /usr/sbin/nvram set ff_bat_ran_on=3D1
-   /usr/sbin/nvram set ff_bat_ran_if=3Deth1:bat
-   /usr/sbin/nvram set ff_bat_ran_ip=3D172.16.174.97
-   /usr/sbin/nvram set ff_bat_ran_pf=3D16
-   # LAN as br0 on subnet/29
-   /usr/sbin/nvram set ff_bat_lan_on=3D1
-   /usr/sbin/nvram set ff_bat_lan_if=3Dbr0
-   /usr/sbin/nvram set ff_bat_lan_ip=3D192.168.174.97
-   /usr/sbin/nvram set ff_bat_lan_pf=3D29
-   # local internet-bandwidth: This is not internet gw
-   /usr/sbin/nvram set ff_bat_gw_uplink=3D0
-   # common used gateway: set no default route
-   /usr/sbin/nvram set ff_bat_gw_choose=3D0
-   # preferred gateway
-   # HNA
-   # Viz server
-   # Hello interval (1000ms)
-   # Deamon stakeout
-   # Stop OLSR
-   # Open firewall
-   /usr/sbin/nvram set ff_bat_fw=3D1
-   #
-   ##########################
-   ## Admin > B.A.T.M.A.N. ##
-   ##########################
-   ssh root@${NEWIP} ipkg install batmand freifunk-batman
-   # Next line must be done with expect else nvram not found
-   # For now it will be done on reboot anyway
-   #ssh root@${NEWIP} /etc/init.d/S66batman restart
-
-The nvram command is usually not in the path over an ssh like
-that (not interactive, passing the command to ssh as an argument)
-thus I use /usr/sbin/nvram. In two places this fail:
-
-The freifunk-batman package:
-Unpacking freifunk-batman...Done.
-Configuring freifunk-batman...//usr/lib/ipkg/info/freifunk-batman.postinst:=
- 10: nvram: not found
-//usr/lib/ipkg/info/freifunk-batman.postinst: 10: nvram: not found
-Done.
-
-And the S66batman restart, which I did manually.
-
-Now the batman runs, has all the nvram settings, though I didn't go through
-the prompt for network migration via the web interface -- I did the script
-above. But there are no batman neigbours or messages shown on the info/stat=
-us
-pages in the web interface. Even when I reinstalled freifunk-batman two nod=
-es manually,
-that is via interactive ssh, and there was no error, I am still getting no =
-batman
-neigbours shown.
-
-Usually I do such cases with expect, there are several places
-in my freifunk install / upgrade script where I do this).=20
-The long term answer is clearly? a trx/bin image of our own.
-
-In the meantime, do I have to reflash them, install batman manually
-or with expect? Can I even do that or what happens when the web interface
-is used to enter the network migration info, which is now not happening
-on my nodes?
-
-regards,
-Jan
-
-
+aWQgZ3Vlc3MgdGhpcyBpcyBhJm5ic3A7IGJyb2FkY29tIGRldmljZSBydW5uaW5nIHdoaXRlIHJ1
+c3NpYW4gY29ycmVjdCA/Pz88YnI+PGJyPjxkaXYgY2xhc3M9ImdtYWlsX3F1b3RlIj5PbiBTdW4s
+IE5vdiAxNiwgMjAwOCBhdCAxMDo0MSBQTSwgIDxzcGFuIGRpcj0ibHRyIj4mbHQ7PGEgaHJlZj0i
+bWFpbHRvOmphbkBhaW1zLmFjLnphIj5qYW5AYWltcy5hYy56YTwvYT4mZ3Q7PC9zcGFuPiB3cm90
+ZTo8YnI+CjxibG9ja3F1b3RlIGNsYXNzPSJnbWFpbF9xdW90ZSIgc3R5bGU9ImJvcmRlci1sZWZ0
+OiAxcHggc29saWQgcmdiKDIwNCwgMjA0LCAyMDQpOyBtYXJnaW46IDBwdCAwcHQgMHB0IDAuOGV4
+OyBwYWRkaW5nLWxlZnQ6IDFleDsiPkhpPGJyPgo8YnI+CkkgaGF2ZSBhIG1lc2ggcnVubmluZyBm
+cmVpZnVuayCisS42LjMyIG5vZGVzLjxicj4KSSBhbSB1c2luZyB0aGUgcmVjb21tZW5kZWQgYmF0
+bWFuMC4yIGlwa2cgdG8gdGVzdCBpdCBuZXh0PGJyPgp0byBPTFNSLiAoSXMgdGhlcmUgbm8gaXBr
+ZyBwYWNrYWdlIGFuZCBzb3VyY2UgZm9yIDAuMyBvcjxicj4KdGhlIGxhdGVzdCBzdGFibGU/KTxi
+cj4KPGJyPgpXaGVuIEkgZGlkIHR3byBub2RlcyBtYW51YWxseSwgSSBpbnN0YWxsZWQgYW5kIHNl
+dCB0aGUgbmV0d29yazxicj4KbWlncmF0aW9uLCBhbmQgc2F3IHNvbWUgYmF0bWFuIHBhY2tldHMu
+PGJyPgo8YnI+ClRoZW4gSSB3ZW50IGFoZWFkIGFuZCBzY3JpcHRlZCBhbiBpbnN0YWxsIG9uIGFs
+bCB0aGUgbm9kZXMgKGFib3V0IDQwKS48YnI+Cjxicj4KSXQgZ29lcywgd2l0aCBkcm9wYmVhciBh
+dXRob3JpemVkX2tleXMsIGZvciBlYWNoIG5vZGUgaW4gJE5FV0lQOjxicj4KPGJyPgogJm5ic3A7
+ICMgYmF0bWFuIHNvdXJjZXM8YnI+CiAmbmJzcDsgc2NwIHJvb3RAJHtORVdJUH06L2V0Yy9pcGtn
+LmNvbmYgLjxicj4KICZuYnNwOyBwYXRjaCBpcGtnLmNvbmYgJmx0OyBpcGtnLmNvbmYucGF0Y2g8
+YnI+CiAmbmJzcDsgc2NwIGlwa2cuY29uZiByb290QCR7TkVXSVB9Oi9ldGMvaXBrZy5jb25mPGJy
+PgogJm5ic3A7ICMgdXBkYXRlPGJyPgogJm5ic3A7IHNzaCByb290QCR7TkVXSVB9IGlwa2cgdXBk
+YXRlPGJyPgogJm5ic3A7ICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyM8YnI+CiAmbmJzcDsgIyMg
+QWRtaW4gJmd0OyBCLkEuVC5NLkEuTiAjIzxicj4KICZuYnNwOyAjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjPGJyPgogJm5ic3A7ICMgU2V0dXAgc2NyZWVuIGZvciBtaWdyYXRpb24gb2YgbmV0d29y
+ayAob25seSBzaG93biBvbmNlKTxicj4KICZuYnNwOyAvdXNyL3NiaW4vbnZyYW0gc2V0IGZmX2Jh
+dF9uZXRtaWc9MTcyLjE4LzE3Mi4xNjxicj4KICZuYnNwOyAjIEIuQS5ULk0uQS5OLiBvbi9vZmY8
+YnI+CiAmbmJzcDsgL3Vzci9zYmluL252cmFtIHNldCBmZl9iYXRfc3RhcnQ9MTxicj4KICZuYnNw
+OyAjIFdMQU4gYXMgZXRoMTpiYXQgb24gc3VibmV0LzE2PGJyPgogJm5ic3A7IC91c3Ivc2Jpbi9u
+dnJhbSBzZXQgZmZfYmF0X3Jhbl9vbj0xPGJyPgogJm5ic3A7IC91c3Ivc2Jpbi9udnJhbSBzZXQg
+ZmZfYmF0X3Jhbl9pZj1ldGgxOmJhdDxicj4KICZuYnNwOyAvdXNyL3NiaW4vbnZyYW0gc2V0IGZm
+X2JhdF9yYW5faXA9PGEgaHJlZj0iaHR0cDovLzE3Mi4xNi4xNzQuOTciIHRhcmdldD0iX2JsYW5r
+Ij4xNzIuMTYuMTc0Ljk3PC9hPjxicj4KICZuYnNwOyAvdXNyL3NiaW4vbnZyYW0gc2V0IGZmX2Jh
+dF9yYW5fcGY9MTY8YnI+CiAmbmJzcDsgIyBMQU4gYXMgYnIwIG9uIHN1Ym5ldC8yOTxicj4KICZu
+YnNwOyAvdXNyL3NiaW4vbnZyYW0gc2V0IGZmX2JhdF9sYW5fb249MTxicj4KICZuYnNwOyAvdXNy
+L3NiaW4vbnZyYW0gc2V0IGZmX2JhdF9sYW5faWY9YnIwPGJyPgogJm5ic3A7IC91c3Ivc2Jpbi9u
+dnJhbSBzZXQgZmZfYmF0X2xhbl9pcD08YSBocmVmPSJodHRwOi8vMTkyLjE2OC4xNzQuOTciIHRh
+cmdldD0iX2JsYW5rIj4xOTIuMTY4LjE3NC45NzwvYT48YnI+CiAmbmJzcDsgL3Vzci9zYmluL252
+cmFtIHNldCBmZl9iYXRfbGFuX3BmPTI5PGJyPgogJm5ic3A7ICMgbG9jYWwgaW50ZXJuZXQtYmFu
+ZHdpZHRoOiBUaGlzIGlzIG5vdCBpbnRlcm5ldCBndzxicj4KICZuYnNwOyAvdXNyL3NiaW4vbnZy
+YW0gc2V0IGZmX2JhdF9nd191cGxpbms9MDxicj4KICZuYnNwOyAjIGNvbW1vbiB1c2VkIGdhdGV3
+YXk6IHNldCBubyBkZWZhdWx0IHJvdXRlPGJyPgogJm5ic3A7IC91c3Ivc2Jpbi9udnJhbSBzZXQg
+ZmZfYmF0X2d3X2Nob29zZT0wPGJyPgogJm5ic3A7ICMgcHJlZmVycmVkIGdhdGV3YXk8YnI+CiAm
+bmJzcDsgIyBITkE8YnI+CiAmbmJzcDsgIyBWaXogc2VydmVyPGJyPgogJm5ic3A7ICMgSGVsbG8g
+aW50ZXJ2YWwgKDEwMDBtcyk8YnI+CiAmbmJzcDsgIyBEZWFtb24gc3Rha2VvdXQ8YnI+CiAmbmJz
+cDsgIyBTdG9wIE9MU1I8YnI+CiAmbmJzcDsgIyBPcGVuIGZpcmV3YWxsPGJyPgogJm5ic3A7IC91
+c3Ivc2Jpbi9udnJhbSBzZXQgZmZfYmF0X2Z3PTE8YnI+CiAmbmJzcDsgIzxicj4KICZuYnNwOyAj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIzxicj4KICZuYnNwOyAjIyBBZG1pbiAmZ3Q7IEIuQS5U
+Lk0uQS5OLiAjIzxicj4KICZuYnNwOyAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIzxicj4KICZu
+YnNwOyBzc2ggcm9vdEAke05FV0lQfSBpcGtnIGluc3RhbGwgYmF0bWFuZCBmcmVpZnVuay1iYXRt
+YW48YnI+CiAmbmJzcDsgIyBOZXh0IGxpbmUgbXVzdCBiZSBkb25lIHdpdGggZXhwZWN0IGVsc2Ug
+bnZyYW0gbm90IGZvdW5kPGJyPgogJm5ic3A7ICMgRm9yIG5vdyBpdCB3aWxsIGJlIGRvbmUgb24g
+cmVib290IGFueXdheTxicj4KICZuYnNwOyAjc3NoIHJvb3RAJHtORVdJUH0gL2V0Yy9pbml0LmQv
+UzY2YmF0bWFuIHJlc3RhcnQ8YnI+Cjxicj4KVGhlIG52cmFtIGNvbW1hbmQgaXMgdXN1YWxseSBu
+b3QgaW4gdGhlIHBhdGggb3ZlciBhbiBzc2ggbGlrZTxicj4KdGhhdCAobm90IGludGVyYWN0aXZl
+LCBwYXNzaW5nIHRoZSBjb21tYW5kIHRvIHNzaCBhcyBhbiBhcmd1bWVudCk8YnI+CnRodXMgSSB1
+c2UgL3Vzci9zYmluL252cmFtLiBJbiB0d28gcGxhY2VzIHRoaXMgZmFpbDo8YnI+Cjxicj4KVGhl
+IGZyZWlmdW5rLWJhdG1hbiBwYWNrYWdlOjxicj4KVW5wYWNraW5nIGZyZWlmdW5rLWJhdG1hbi4u
+LkRvbmUuPGJyPgpDb25maWd1cmluZyBmcmVpZnVuay1iYXRtYW4uLi4vL3Vzci9saWIvaXBrZy9p
+bmZvL2ZyZWlmdW5rLWJhdG1hbi5wb3N0aW5zdDogMTA6IG52cmFtOiBub3QgZm91bmQ8YnI+Ci8v
+dXNyL2xpYi9pcGtnL2luZm8vZnJlaWZ1bmstYmF0bWFuLnBvc3RpbnN0OiAxMDogbnZyYW06IG5v
+dCBmb3VuZDxicj4KRG9uZS48YnI+Cjxicj4KQW5kIHRoZSBTNjZiYXRtYW4gcmVzdGFydCwgd2hp
+Y2ggSSBkaWQgbWFudWFsbHkuPGJyPgo8YnI+Ck5vdyB0aGUgYmF0bWFuIHJ1bnMsIGhhcyBhbGwg
+dGhlIG52cmFtIHNldHRpbmdzLCB0aG91Z2ggSSBkaWRuJiMzOTt0IGdvIHRocm91Z2g8YnI+CnRo
+ZSBwcm9tcHQgZm9yIG5ldHdvcmsgbWlncmF0aW9uIHZpYSB0aGUgd2ViIGludGVyZmFjZSAtLSBJ
+IGRpZCB0aGUgc2NyaXB0PGJyPgphYm92ZS4gQnV0IHRoZXJlIGFyZSBubyBiYXRtYW4gbmVpZ2Jv
+dXJzIG9yIG1lc3NhZ2VzIHNob3duIG9uIHRoZSBpbmZvL3N0YXR1czxicj4KcGFnZXMgaW4gdGhl
+IHdlYiBpbnRlcmZhY2UuIEV2ZW4gd2hlbiBJIHJlaW5zdGFsbGVkIGZyZWlmdW5rLWJhdG1hbiB0
+d28gbm9kZXMgbWFudWFsbHksPGJyPgp0aGF0IGlzIHZpYSBpbnRlcmFjdGl2ZSBzc2gsIGFuZCB0
+aGVyZSB3YXMgbm8gZXJyb3IsIEkgYW0gc3RpbGwgZ2V0dGluZyBubyBiYXRtYW48YnI+Cm5laWdi
+b3VycyBzaG93bi48YnI+Cjxicj4KVXN1YWxseSBJIGRvIHN1Y2ggY2FzZXMgd2l0aCBleHBlY3Qs
+IHRoZXJlIGFyZSBzZXZlcmFsIHBsYWNlczxicj4KaW4gbXkgZnJlaWZ1bmsgaW5zdGFsbCAvIHVw
+Z3JhZGUgc2NyaXB0IHdoZXJlIEkgZG8gdGhpcykuPGJyPgpUaGUgbG9uZyB0ZXJtIGFuc3dlciBp
+cyBjbGVhcmx5PyBhIHRyeC9iaW4gaW1hZ2Ugb2Ygb3VyIG93bi48YnI+Cjxicj4KSW4gdGhlIG1l
+YW50aW1lLCBkbyBJIGhhdmUgdG8gcmVmbGFzaCB0aGVtLCBpbnN0YWxsIGJhdG1hbiBtYW51YWxs
+eTxicj4Kb3Igd2l0aCBleHBlY3Q/IENhbiBJIGV2ZW4gZG8gdGhhdCBvciB3aGF0IGhhcHBlbnMg
+d2hlbiB0aGUgd2ViIGludGVyZmFjZTxicj4KaXMgdXNlZCB0byBlbnRlciB0aGUgbmV0d29yayBt
+aWdyYXRpb24gaW5mbywgd2hpY2ggaXMgbm93IG5vdCBoYXBwZW5pbmc8YnI+Cm9uIG15IG5vZGVz
+Pzxicj4KPGJyPgpyZWdhcmRzLDxicj4KSmFuPGJyPgo8YnI+Cjxicj4KX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX188YnI+CkIuQS5ULk0uQS5OIG1haWxpbmcg
+bGlzdDxicj4KPGEgaHJlZj0ibWFpbHRvOkIuQS5ULk0uQS5OQG9wZW4tbWVzaC5uZXQiPkIuQS5U
+Lk0uQS5OQG9wZW4tbWVzaC5uZXQ8L2E+PGJyPgo8YSBocmVmPSJodHRwczovL2xpc3Qub3Blbi1t
+ZXNoLm5ldC9tbS9saXN0aW5mby9iLmEudC5tLmEubiIgdGFyZ2V0PSJfYmxhbmsiPmh0dHBzOi8v
+bGlzdC5vcGVuLW1lc2gubmV0L21tL2xpc3RpbmZvL2IuYS50Lm0uYS5uPC9hPjxicj4KPC9ibG9j
+a3F1b3RlPjwvZGl2Pjxicj4K
+------=_Part_22918_8841543.1226850515566--
