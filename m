@@ -1,15 +1,15 @@
-Date: Sun, 16 Nov 2008 19:12:52 +0200
-From: Jan Groenewald <jan@aims.ac.za>
-Subject: Re: [B.A.T.M.A.N.] ipkg install batman over ssh: postinst failsi
-Message-ID: <20081116171252.GC27634@aims.ac.za>
-References: <20081116154159.GC26177@aims.ac.za>
-	<200811170046.24693.lindner_marek@yahoo.de>
-	<20081116165312.GB27634@aims.ac.za>
-	<200811170105.56871.lindner_marek@yahoo.de>
+Message-ID: <5635aa0d0811160922p6950f53euf1ec626c3fd520b5@mail.gmail.com>
+Date: Mon, 17 Nov 2008 00:22:24 +0700
+From: "Outback Dingo" <outbackdingo@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] batman-adv debian announcement
+In-Reply-To: <200811170111.32580.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <200811170105.56871.lindner_marek@yahoo.de>
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_23817_15819712.1226856144549"
+References: <200811170004.23285.lindner_marek@yahoo.de>
+	<5635aa0d0811160830r5521a8a4he0d5b22665664d7@mail.gmail.com>
+	<20081116164831.GA21213@pandem0nium>
+	<200811170111.32580.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,30 +23,63 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi
+------=_Part_23817_15819712.1226856144549
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Mon, Nov 17, 2008 at 01:05:56AM +0800, Marek Lindner wrote:
->  The ipk files from our servers are plain batmand binaries and come without any 
-> start skript. How it runs is up to you. I suggest you create a very simple 
-> start script for your own needs:
-> 
-> 1. create an ip alias for batman (ifconfig eth1:bat x.,x.x.x)
-> 2. start batmand using that interface (batmand eth1:bat)
+ok, perfectly clear, one or the other
 
-OK, they seem to be running due to the nvram settings from the previous batmand.
-I do want them to last over flashes.
- 
-> Another idea: Simply reuse the IPs from your OLSR network - just change the 
-> first byte. It will be easier to recognize the nodes.
+now last question, there is a batman-adv kernel module and a batman-adv
+userland
+am i to assume i dont need the userland if running the kernel mod or are
+both required
 
-This is done from the previous freifunk-batman network migration.
- 
-> Yes, uninstall would be best. There is no other web interface I know of. If 
-> you update the current webif many people would be happy about it.  :-)
+On Mon, Nov 17, 2008 at 12:11 AM, Marek Lindner <lindner_marek@yahoo.de>wrote:
 
-OK, now where is the main config file please? Or is it only nvram, and is it still
-reading those? So I'm down to the command line only? It is fine, I just want to 
-understand. I won't be doing the webif soon, but maybe later... still learning.
+> On Monday 17 November 2008 00:48:31 Simon Wunderlich wrote:
+> > yep, bmxd/batman0.3 and batman-adv are both not compatible to each
+> > other.
+>
+> Let me try to be clear at this point: You can run batman and batman-adv at
+> the
+> same time - no problem here. But you can't expect a batman node and a
+> batman-
+> adv node to talk to each other. Batman is not aware of batman-adv and vice
+> versa because they operate on different layers.
+>
+> Regards,
+> Marek
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
 
-regards,
-Jan
+------=_Part_23817_15819712.1226856144549
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+ok, perfectly clear, one or the other<br><br>now last question, there is a batman-adv kernel module and a batman-adv userland<br>am i to assume i dont need the userland if running the kernel mod or are both required<br><br>
+<div class="gmail_quote">On Mon, Nov 17, 2008 at 12:11 AM, Marek Lindner <span dir="ltr">&lt;<a href="mailto:lindner_marek@yahoo.de">lindner_marek@yahoo.de</a>&gt;</span> wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+On Monday 17 November 2008 00:48:31 Simon Wunderlich wrote:<br>
+&gt; yep, bmxd/batman0.3 and batman-adv are both not compatible to each<br>
+&gt; other.<br>
+<br>
+Let me try to be clear at this point: You can run batman and batman-adv at the<br>
+same time - no problem here. But you can&#39;t expect a batman node and a batman-<br>
+adv node to talk to each other. Batman is not aware of batman-adv and vice<br>
+versa because they operate on different layers.<br>
+<div><div></div><div class="Wj3C7c"><br>
+Regards,<br>
+Marek<br>
+<br>
+_______________________________________________<br>
+B.A.T.M.A.N mailing list<br>
+<a href="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</a><br>
+<a href="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target="_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
+</div></div></blockquote></div><br>
+
+------=_Part_23817_15819712.1226856144549--
