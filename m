@@ -1,10 +1,16 @@
-Message-ID: <49626.149.5.32.200.1226911838.squirrel@www.rivertowermail.com>
-Date: Mon, 17 Nov 2008 08:50:38 -0000 (UTC)
-From: "Derek C" <derekbatman@hssl.ie>
+From: Axel Neumann <axel@open-mesh.net>
+Subject: Re: [B.A.T.M.A.N.] ipkg install batman over ssh: postinst failsi
+Date: Mon, 17 Nov 2008 10:44:13 +0100
+References: <20081116154159.GC26177@aims.ac.za>
+	<200811170046.24693.lindner_marek@yahoo.de>
+	<20081116165312.GB27634@aims.ac.za>
+In-Reply-To: <20081116165312.GB27634@aims.ac.za>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Visualization server
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811171044.13784.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,20 +22,44 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi all,
 
-Is there any links re: a batman visualization server?  (servers themselves
-and/or the visualization protocol format?)
+Hi,
 
-I've seen a link to https://www.open-mesh.net/batman/vis but I've noticed
-that (generally) links to open-mesh.net seem to all give 404s.
+On Sonntag 16 November 2008, Jan Groenewald wrote:
+> Hi
+>
+> On Mon, Nov 17, 2008 at 12:46:24AM +0800, Marek Lindner wrote:
+> > On Monday 17 November 2008 00:37:35 Jan Groenewald wrote:
+> > > Is there an ipkg.conf line I can use to set the source url?
+> >
+> > Sorry, we don't have a complete ipkg repository but you can simply
+> > install the whole URL: ipkg install
+> > http://downloads.open-mesh.net/batman/<package.ipk>
+>
+> Thanks. Will this still run in test mode next to OLSR? Can I leave the
+> nvram settings as is? Should I uninstall freifunk-batman (is that the
+> webif?). Is there any other webif?
 
-thanks for any info!
+The people from Freifunk Leipzig have spend lots of time in integrating batman 
+next to olsr and for freifun/whiterussion based system. 
 
-Derek
+You can find ipk packages in their repository:
+http://firmware.leipzig.freifunk.net/svn2ipkg/1/6/10/
 
--- 
-Derek C
+Some further informatin is here:
+http://wiki.leipzig.freifunk.net/Firmware_Guide
+and 
+http://wiki.leipzig.freifunk.net/BATMAN
+
+PS.: Due to an older mail there is also a traffic/cpu-load statistic plugin 
+available named freifunk-statistics-ng-de-le. To use this you may have to 
+edit the base-port value in  /etc/init.d/S97rrdconfig .
+
+
+>
+> regards,
+> Jan
+
 
