@@ -1,15 +1,13 @@
-Message-ID: <53427.149.5.32.200.1227179161.squirrel@www.rivertowermail.com>
-In-Reply-To: <200811201819.17453.lindner_marek@yahoo.de>
-References: <52133.149.5.32.200.1227140000.squirrel@www.rivertowermail.com>
-	<200811201148.45976.lindner_marek@yahoo.de>
-	<49111.149.5.32.200.1227173227.squirrel@www.rivertowermail.com>
-	<200811201819.17453.lindner_marek@yahoo.de>
-Date: Thu, 20 Nov 2008 11:06:01 -0000 (UTC)
-Subject: Re: [B.A.T.M.A.N.] My proposed network - is it ok?
-From: "Derek C" <derekbatman@hssl.ie>
+Message-ID: <5635aa0d0811202259x689b8a05ve2445e8a7b0f4a97@mail.gmail.com>
+Date: Fri, 21 Nov 2008 13:59:34 +0700
+From: "Outback Dingo" <outbackdingo@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] OpenWRT Kamikaze - Freifunk Luci BMXD gui
+In-Reply-To: <200811152034.58121.axel@open-mesh.net>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_12560_4025930.1227250774959"
+References: <5635aa0d0811150657n7751415fsbfb18b65213ac331@mail.gmail.com>
+	<200811152034.58121.axel@open-mesh.net>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,38 +20,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
-Cc: b.a.t.m.a.n@open-mesh.net
 
-Hi Marek,
+------=_Part_12560_4025930.1227250774959
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Yes - I did read about the default route remaining fixing somehow - I
-suppose I didn't quite believe it!
+Would you like some help coding this GUI to move it along... if so let me
+know
 
-I thought that the idea of keeping the network internal all the way to the
-single point where I hit the Internet was the best idea.  I just have to
-make sure I build multiple backbone links for resilience - I've got one
-link up and I'll get another one up in the next two weeks and hopefully
-thats a good start.
+On Sun, Nov 16, 2008 at 2:34 AM, Axel Neumann <axel@open-mesh.net> wrote:
 
-Derek
-
-
-On Thu, November 20, 2008 10:19 am, Marek Lindner wrote:
-> On Thursday 20 November 2008 17:27:07 Derek C wrote:
+> Hi,
 >
->> Overall that's great news (that I can route BATMAN over ethernet as
->> well as wireless) - it means that if routes flap from gateway to gateway
->> for whatever reason people will not drop connections as I'll keep the
->> NAT at
->> the Internet source (I can do it because I only have one Internet
->> source).
+> I have not seen one yet for kamikaze.
+> Since kamikaze 8.09RC1 I am working on a LuCI based Web GUi. But I dont
+> expect
+> to finish the first version before December.
 >
-> Glad that you found your way through. I'm not so sure what route flapping
-> you are talking about. Batman itself will keep an eye on the default route
-> to ensure it does not change too often.
+> ciao,
+> axel
 >
-> Regards,
-> Marek
+>
+> On Samstag 15 November 2008, Outback Dingo wrote:
+> > Anyone know if there exists a luci, ffluci, or freifunk kamikaze atheros
+> > capable freifunk-batman capable package or is there just no support for
+> > atheros, mips and luci with bmxd on the mesh mesh???
+> > ive seen hints at potentially prior work but i would swear someone here
+> > uses is on a freifunk mesh ? question is is there an atheros/mips based
+> for
+> > Atheros ahdemo or NS2 devices???
 >
 >
 > _______________________________________________
@@ -61,9 +57,36 @@ On Thu, November 20, 2008 10:19 am, Marek Lindner wrote:
 > B.A.T.M.A.N@open-mesh.net
 > https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 >
->
 
+------=_Part_12560_4025930.1227250774959
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
--- 
-Derek C
+Would you like some help coding this GUI to move it along... if so let me know<br><br><div class="gmail_quote">On Sun, Nov 16, 2008 at 2:34 AM, Axel Neumann <span dir="ltr">&lt;<a href="mailto:axel@open-mesh.net">axel@open-mesh.net</a>&gt;</span> wrote:<br>
+<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">Hi,<br>
+<br>
+I have not seen one yet for kamikaze.<br>
+Since kamikaze 8.09RC1 I am working on a LuCI based Web GUi. But I dont expect<br>
+to finish the first version before December.<br>
+<br>
+ciao,<br>
+axel<br>
+<div><div></div><div class="Wj3C7c"><br>
+<br>
+On Samstag 15 November 2008, Outback Dingo wrote:<br>
+&gt; Anyone know if there exists a luci, ffluci, or freifunk kamikaze atheros<br>
+&gt; capable freifunk-batman capable package or is there just no support for<br>
+&gt; atheros, mips and luci with bmxd on the mesh mesh???<br>
+&gt; ive seen hints at potentially prior work but i would swear someone here<br>
+&gt; uses is on a freifunk mesh ? question is is there an atheros/mips based for<br>
+&gt; Atheros ahdemo or NS2 devices???<br>
+<br>
+<br>
+</div></div>_______________________________________________<br>
+B.A.T.M.A.N mailing list<br>
+<a href="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</a><br>
+<a href="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target="_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
+</blockquote></div><br>
 
+------=_Part_12560_4025930.1227250774959--
