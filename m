@@ -1,13 +1,10 @@
-Message-ID: <59505.149.5.32.200.1227370620.squirrel@www.rivertowermail.com>
-In-Reply-To: <200811222344.13407.lindner_marek@yahoo.de>
-References: <60530.149.5.32.200.1227364065.squirrel@www.rivertowermail.com>
-	<200811222344.13407.lindner_marek@yahoo.de>
-Date: Sat, 22 Nov 2008 16:17:00 -0000 (UTC)
-Subject: Re: [B.A.T.M.A.N.] gateX interfaces
+Message-ID: <57356.149.5.32.200.1227370855.squirrel@www.rivertowermail.com>
+Date: Sat, 22 Nov 2008 16:20:55 -0000 (UTC)
 From: "Derek C" <derekbatman@hssl.ie>
 MIME-Version: 1.0
 Content-Type: text/plain;charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] BATMAN routing (via gate0)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,54 +16,28 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-Hi Marek,
+Hi [yet] again!
 
-It was pure lazyness that I was using kill -9 :)
+Can someone detail how BATMAN routes?
+
+For example if I have nodes with IPs like:
+     5.255.0.1
+     5.255.0.2
+     5.255.0.3
+       etc
+
+I see that BATMAN makes a tunnel to the gateway and then routes traffic
+via the 169.254 gate0 subnet
+
+Does this mean that all outgoing from the node should be NATed?  or is it
+possible for the upstream node(s) to ping the node via its true IP address
+(5.255.XXX.XXX) ?
+
+thanks again,
 
 Derek
-
-On Sat, November 22, 2008 3:44 pm, Marek Lindner wrote:
-> On Saturday 22 November 2008 22:27:45 Derek C wrote:
->
->> Currently I'm constantly killing batmand and starting it up again
->> (different debugging levels, etc).
->>
->>
->> Sometimes I end up with a 2nd gate tunnel (so I'd have a gate0 and a
->> gate1).
->>
->> I understand (guess?) that it's because I do kill -9 and don't give
->> batmand a chance to clean up.
->>
->> Normally is it true that there would only ever be one tunnel (gate0) ?
->>
->>
->> when multiple nodes are deployed is this still always the case?
->
-> Yes, you always will have only one gate0. If you happen to have gate1
-> make sure that you firewalling (NAT) is ok. Actually, I have an idea how to
-> make that additional NAT rule unnecessary but I can't test it. If you have
-> time join our IRC channel and we can discuss it.
->
-> Why are you killing batman with SIGKILL anyways ? Do you want fast access
-> to the debug output ? You can start batman with the "-d <debug_level>"
-> option to prevent batman from forking into the background (CTRL + C will
-> kill batman).
->
-> Regards,
-> Marek
->
->
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
->
 
 
 -- 
