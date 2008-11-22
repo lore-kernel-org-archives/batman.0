@@ -1,10 +1,14 @@
-Message-ID: <57356.149.5.32.200.1227370855.squirrel@www.rivertowermail.com>
-Date: Sat, 22 Nov 2008 16:20:55 -0000 (UTC)
-From: "Derek C" <derekbatman@hssl.ie>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] BATMAN routing (via gate0)
+Date: Sun, 23 Nov 2008 00:35:05 +0800
+References: <57356.149.5.32.200.1227370855.squirrel@www.rivertowermail.com>
+In-Reply-To: <57356.149.5.32.200.1227370855.squirrel@www.rivertowermail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] BATMAN routing (via gate0)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811230035.05534.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,30 +20,19 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi [yet] again!
+On Sunday 23 November 2008 00:20:55 Derek C wrote:
+> I see that BATMAN makes a tunnel to the gateway and then routes traffic
+> via the 169.254 gate0 subnet
+>
+> Does this mean that all outgoing from the node should be NATed?  or is it
+> possible for the upstream node(s) to ping the node via its true IP address
+> (5.255.XXX.XXX) ?
 
-Can someone detail how BATMAN routes?
+The tunnel is used for internet traffic only. Within the mesh you can use the 
+mesh ip addresses.
 
-For example if I have nodes with IPs like:
-     5.255.0.1
-     5.255.0.2
-     5.255.0.3
-       etc
-
-I see that BATMAN makes a tunnel to the gateway and then routes traffic
-via the 169.254 gate0 subnet
-
-Does this mean that all outgoing from the node should be NATed?  or is it
-possible for the upstream node(s) to ping the node via its true IP address
-(5.255.XXX.XXX) ?
-
-thanks again,
-
-Derek
-
-
--- 
-Derek C
+Regards,
+Marek
 
