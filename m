@@ -1,10 +1,10 @@
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon,  1 Dec 2008 20:14:14 +0100
-Message-Id: <1228158854-30405-2-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <200812012005.27477.sven.eckelmann@gmx.de>
-References: <200812012005.27477.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2] Remove unused parameter of
-	use_gateway_module
+Date: Mon,  1 Dec 2008 21:11:57 +0100
+Message-Id: <1228162317-31331-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1228157822-29406-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1228157822-29406-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] Don't convert new_hna_len from int16_t to
+	int and back to int16_t
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,36 +20,36 @@ To: b.a.t.m.a.n@open-mesh.net
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman/os.h         |    2 +-
- batman/posix/init.c |    2 +-
+ batman/batman.c |    2 +-
+ batman/os.h     |    2 +-
  2 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/batman/batman.c b/batman/batman.c
+index 0c17f33..392dd1e 100644
+--- a/batman/batman.c
++++ b/batman/batman.c
+@@ -255,7 +255,7 @@ static int hna_buff_delete(struct hna_element *buf, int *buf_len, struct hna_ele
+  * a situation where no route is present.
+  */
+ void update_hna(struct orig_node *orig_node, unsigned char *new_hna,
+-				int new_hna_len, struct neigh_node *old_router)
++				int16_t new_hna_len, struct neigh_node *old_router)
+ {
+ 	unsigned char *old_hna;
+ 	int old_hna_len;
 diff --git a/batman/os.h b/batman/os.h
-index 76525bf..5531bae 100644
+index 5531bae..da61d18 100644
 --- a/batman/os.h
 +++ b/batman/os.h
-@@ -70,7 +70,7 @@ int32_t get_send_redirects( char *dev );
- void set_forwarding( int32_t state );
- int32_t get_forwarding( void );
- int8_t bind_to_iface( int32_t sock, char *dev );
--int8_t use_gateway_module();
-+int8_t use_gateway_module(void);
+@@ -38,7 +38,7 @@ void addr_to_string( uint32_t addr, char *str, int32_t len );
  
- /* posix.c */
- void print_animation( void );
-diff --git a/batman/posix/init.c b/batman/posix/init.c
-index 79d5a3b..9ad06f9 100644
---- a/batman/posix/init.c
-+++ b/batman/posix/init.c
-@@ -1152,7 +1152,7 @@ void init_interface_gw (void) {
- 	struct batman_if *batman_if = (struct batman_if *)if_list.next;
- 
- 
--	if ( ( batman_if->udp_tunnel_sock = use_gateway_module( batman_if->dev ) ) < 0 ) {
-+	if ( ( batman_if->udp_tunnel_sock = use_gateway_module() ) < 0 ) {
- 
- 		batman_if->addr.sin_port = htons(GW_PORT);
- 
+ int8_t is_aborted(void);
+ void update_hna(struct orig_node *orig_node, unsigned char *new_hna, 
+-				int new_hna_len, struct neigh_node *old_router);
++				int16_t new_hna_len, struct neigh_node *old_router);
+ void handler(int32_t sig);
+ void segmentation_fault(int32_t sig) NO_RETURN;
+ void restore_and_exit(uint8_t is_sigsegv) NO_RETURN;
 -- 
 1.6.0.4
 
