@@ -1,16 +1,15 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] 0.3.1 rv1152 - some test results
-Date: Mon, 1 Dec 2008 12:19:34 +0800
-References: <492DDC20.7090900@web.de>
-	<200811290835.26929.lindner_marek@yahoo.de>
-	<49331715.5020602@web.de>
-In-Reply-To: <49331715.5020602@web.de>
+Date: Mon, 1 Dec 2008 12:30:00 +0800
+References: <492DDC20.7090900@web.de> <20081128205145.GB25072@pandem0nium>
+	<4930713D.40809@web.de>
+In-Reply-To: <4930713D.40809@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812011219.39242.lindner_marek@yahoo.de>
+Message-Id: <200812011230.01187.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,26 +23,27 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Monday 01 December 2008 06:43:33 Chris W. wrote:
-> You're right, modules are an individual thing. I rather hoped for a hint
-> to a  backported openwrt-0.9 makefile ;-).
+On Saturday 29 November 2008 06:31:25 Chris W. wrote:
+> Uh, this would mean double NAT in the network, sip phones don't like it.
 
-I'm not sure what an "openwrt-0.9" is but may be this helps you:
-https://dev.open-mesh.net/batman/wiki/Patches
+I overlooked that comment thats why my answer comes a bit late:
+
+Are you sure that the batman setup is a problem for SIP ? I'm definitely not 
+the SIP expert but I don't think it is a problem (correct me if I'm wrong).
+
+The normal double NAT setup looks like this:
+
+NET_A -> NET_B -> Internet
+
+SIP & STUN get in trouble here.
 
 
-> It is working as you described, here it takes about one minute to switch
-> to an active gateway.
+In the batman network it looks a bit different:
 
-Yeah, it always takes one minute - its the internal timeout for inactive 
-gateways.  :-)
+NET_A -> NET_B -> NET_A -> Internet
 
-By the way, you still can ping around and test the connection yourself. Either 
-by using a simple cron script which runs every x minutes or by triggering your 
-test script via the routing script. Depending on your setup/firewall/ISP you 
-might experience problems pinging around. Also, if your users expect the 
-internet to work for 2 hours per day you waste time and bandwidth in the other 
-22 hours of the day.
+The second NAT is used for internal transport only. I guess STUN will not 
+notice that there is the second network in between. Could you verify that ?
 
 Regards,
 Marek
