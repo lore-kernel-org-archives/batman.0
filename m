@@ -1,13 +1,11 @@
-Message-ID: <ac3d5a10868a68b63ff9054d1c45dde6.squirrel@wm.ddmesh.de>
-In-Reply-To: <200812021306.20569.axel@open-mesh.net>
-References: <83b3410f8105237b1e68c92065dec7d0.squirrel@wm.ddmesh.de>
-	<200812021306.20569.axel@open-mesh.net>
-Date: Tue, 2 Dec 2008 14:59:58 +0100 (CET)
-From: "Stephan Enderlein (Freifunk Dresden)" <freifunk@ddmesh.de>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] batman-exp rev.1154 still using 94% CPU load
+Message-Id: <DFF8A357-1AF1-4F11-BE89-46DD131FA7FF@gmail.com>
+From: Scott Raynel <scottraynel@gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Date: Thu, 4 Dec 2008 14:14:27 +1300
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv-kernelland: Fix memory corruption
+	bug
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +19,45 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi axel,
+Hi there,
 
-> Do you feel this problem has arised with a specific revision (has it been
-> there with rv1069 and before) or has it always been there and your setup has
-> changed?
-The first time I saw this was on revistion 1105. But a similar problem was already
-on revision 972 where I still could call "batmand -c -r 3" but not with "-d...".
-I can not say if this is still the same problem.
+I've been spending some time tracking down a bug that's been causing  
+memory corruption followed by random kernel panics. Thanks to the  
+kernel's slab memory debugger I tracked it down to a kfree in send.c  
+that was freeing a block of memory that had been written to past the  
+end of its allocation.
 
-My setup of compiling batmand was not changed.
-The compile flags I used were:
-CFLAGS =        -Wall -O1 -DMEMORY_USAGE -DPROFILE_DATA -DDEBUG_MALLOC
-LDFLAGS =       -lpthread
+Turned out to be a simple typo, which I've fixed in the following  
+patch. When resizing the packet_buff struct in batman_if, the new  
+length was being updated but the old length was being used for the  
+kmalloc(), causing something later to think it had more memory  
+allocated to write to, hence writing past the end of the allocation.
 
-Today I changed to revision 1171 and use the following flags:
-CFLAGS =        -Wall -O2 -g -DDEBUG_MALLOC -DMEMORY_USAGE -DPROFILE_DATA
-LDFLAGS =       -lpthread
+Signed-off-by: Scott Raynel <scottraynel@gmail.com>
 
-I compile batmand within the whiterussian_rc6 openwrt environment.
-I wanted to create a core file but it seems that the openwrt kernel does not support it.
-(ulimit -c unlimited, and kill -6 xxx)
+Index: send.c
+===================================================================
+--- send.c	(revision 1105)
++++ send.c	(working copy)
+@@ -159,7 +159,7 @@
+  	if ((hna_local_changed) && (batman_if->if_num == 0)) {
 
-> Actually not. Unfortunately I'll be probably be offline during the next week
-> and cant do much. There is a completely thread-free version waiting to be
-> checked in, then we can see if this helps, But actually I would prefer to
-> nail down the source of the problem...
-When do you expect a thread-free version of the batman-experimental branch?
-I also like to solve such problems instead of using new code in hope that the problem
-is gone.
+  		new_len = sizeof(struct batman_packet) + (num_hna * ETH_ALEN);
+-		new_buf = kmalloc(batman_if->pack_buff_len, GFP_ATOMIC);
++		new_buf = kmalloc(new_len, GFP_ATOMIC);
 
-Bye Stephan
----------------------------------------
-Dipl.Informatiker(FH) Stephan Enderlein
-Freifunk Dresden
+  		/* keep old buffer if kmalloc should fail */
+  		if (new_buf) {
+
+
+Cheers,
+
+--
+Scott Raynel
+WAND Network Research Group
+Department of Computer Science
+University of Waikato
+New Zealand
+
 
 
