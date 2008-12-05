@@ -1,16 +1,13 @@
-Date: Fri, 5 Dec 2008 20:51:31 +0100
+Date: Fri, 5 Dec 2008 21:04:14 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv-kernelland: Fix memory
-	corruption bug
-Message-ID: <20081205195131.GA27271@pandem0nium>
-References: <DFF8A357-1AF1-4F11-BE89-46DD131FA7FF@gmail.com>
-	<20081204113558.GA14932@pandem0nium>
-	<C12B8956-7F83-4FBE-A300-B803928CB64C@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Looking for batman-adv 0.1-alpha
+Message-ID: <20081205200414.GB27271@pandem0nium>
+References: <4938F21D.2050907@irt.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
+	protocol="application/pgp-signature"; boundary="EuxKj2iCbKjpUGkD"
 Content-Disposition: inline
-In-Reply-To: <C12B8956-7F83-4FBE-A300-B803928CB64C@gmail.com>
+In-Reply-To: <4938F21D.2050907@irt.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,61 +22,57 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
---vtzGhvizbBRQ85DL
+--EuxKj2iCbKjpUGkD
 Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hey Scott,
+Hey Tobias,
 
-On Fri, Dec 05, 2008 at 11:40:30PM +1300, Scott Raynel wrote:
-> Hi Simon,
->=20
-> On 5/12/2008, at 12:35 AM, Simon Wunderlich wrote:
->=20
-> >Hey Scott,
-> >
-> >thank you very much for the fix! Can you confirm if this bug is =20
-> >related
-> >to https://dev.open-mesh.net/batman/ticket/86 ?
-> >This bug has very likely been caused by a memory corruption, but i
-> >couldn=C3=82=C2=B4t find where. (i have not experienced any kernel panic=
-s by =20
-> >this
-> >however ...).
->=20
->=20
-> It is quite possible that they are related. The slab error states that =
-=20
-> a memory allocation was overwritten - the same problem as my patch =20
-> fixed. However, I can't confirm whether it is the same memory =20
-> allocation or a different one. The stack trace I got specifically =20
-> mentioned the kfree() in send_own_packet(), whereas this stack trace =20
-> does not.
->=20
-> Is that bug easily reproducible? It will be a couple of days before I =20
-> can try to look at it.
+are you using the kernelland or userspace version of batman-adv? If you
+want to use the userspace version, it's enough to compile and copy the
+binary from your desktop to the meshnode (it's i386 after all).=20
 
-Yep, it was quite easy: just turn it on and off a few times. (echo
-device and nothing into /proc/net/batman-adv/interfaces). The warning
-appeared after 10 times in my qemu instance. No crash, only this warning.
->=20
-> Also, the stack trace is confusing as it appears to indicate a kfree() =
-=20
-> within hardif_min_mtu(), which I can't find :)
+However i'd recommend to use the latest revision of
+batman-adv-kernelland. For this you'd need to compile the modules for
+the kernel. AFAIK they use a debian based system, so you could probably
+use our Debian packages:
 
-That's the problem, that is what confused me at this point. :/
+http://packages.debian.org/sid/batman-adv-source
+http://packages.debian.org/sid/batman-adv-battool
 
->=20
-> I'll try to do some stress testing of the module with the slab =20
-> debugger turned on for a while and see what happens.
+(you'd need their kernel source packages to compile it, thou ...)
+Please note that the userland version was intended as proof of concept=20
+and we might only support the kernelland version in the long term.
 
-Sounds great. Thanks for you hard work. :)
+OpenWRT also supports batman-adv btw. :)
 
 best regards,
 	Simon
 
---vtzGhvizbBRQ85DL
+On Fri, Dec 05, 2008 at 10:19:25AM +0100, Tobias Gieseke wrote:
+> Hi,
+>=20
+> I'm looking for Batman-advanced 0.1-alpha (compability version 1). We've=
+=20
+> got some meshnodes III from a company called Saxnet and they seem to=20
+> work with this old version.. I can't find it in the repositories so=20
+> perhaps someone can tell me where to find it, or send it to me directly.=
+=20
+> I need it for i386 architecture.
+> Is there a chance to get batman-adv running on open-wrt?
+>=20
+> kind regards,
+>=20
+> Tobi
+>=20
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>=20
+
+--EuxKj2iCbKjpUGkD
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -87,9 +80,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFJOYZDrzg/fFk7axYRAlX7AKCsLdwCSKOiYwdG3rsvT3U++RF8IgCg1ciN
-tMsv2UAu4I/fm6LuGZjLe54=
-=yig1
+iD8DBQFJOYk+rzg/fFk7axYRAnBfAJ9m8PSWmycRDpdKtjJ9zUQiTEArsgCgrG0r
+2QMK3Jrh6wQlmJx9NLyvp28=
+=JSHL
 -----END PGP SIGNATURE-----
 
---vtzGhvizbBRQ85DL--
+--EuxKj2iCbKjpUGkD--
