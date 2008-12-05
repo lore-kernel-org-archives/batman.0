@@ -1,14 +1,14 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Looking for batman-adv 0.1-alpha
-Date: Fri, 5 Dec 2008 17:48:38 +0800
-References: <4938F21D.2050907@irt.de>
-In-Reply-To: <4938F21D.2050907@irt.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812051748.39389.lindner_marek@yahoo.de>
+Message-Id: <C12B8956-7F83-4FBE-A300-B803928CB64C@gmail.com>
+From: Scott Raynel <scottraynel@gmail.com>
+In-Reply-To: <20081204113558.GA14932@pandem0nium>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"; delsp="yes"
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv-kernelland: Fix memory
+	corruption bug
+Date: Fri, 5 Dec 2008 23:40:30 +1300
+References: <DFF8A357-1AF1-4F11-BE89-46DD131FA7FF@gmail.com>
+	<20081204113558.GA14932@pandem0nium>
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,21 +22,46 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Friday 05 December 2008 17:19:25 Tobias Gieseke wrote:
-> I'm looking for Batman-advanced 0.1-alpha (compability version 1). We've
-> got some meshnodes III from a company called Saxnet and they seem to
-> work with this old version.. I can't find it in the repositories so
-> perhaps someone can tell me where to find it, or send it to me directly.
-> I need it for i386 architecture.
-> Is there a chance to get batman-adv running on open-wrt?
+Hi Simon,
 
-What repositories are you referring to ? 
-Nobody can just send you some batman-adv modules as your kernel is rather 
-unknown. You need to match the exact version (including patches) or it wont 
-work.
-Batman-adv runs perfectly fine with OpenWRT and was integrated. Look at this 
-page for more information: https://dev.open-mesh.net/batman/wiki/Download
+On 5/12/2008, at 12:35 AM, Simon Wunderlich wrote:
 
-Regards,
-Marek
+> Hey Scott,
+>
+> thank you very much for the fix! Can you confirm if this bug is =20
+> related
+> to https://dev.open-mesh.net/batman/ticket/86 ?
+> This bug has very likely been caused by a memory corruption, but i
+> couldn=C2=B4t find where. (i have not experienced any kernel panics by =20
+> this
+> however ...).
+
+
+It is quite possible that they are related. The slab error states that =20
+a memory allocation was overwritten - the same problem as my patch =20
+fixed. However, I can't confirm whether it is the same memory =20
+allocation or a different one. The stack trace I got specifically =20
+mentioned the kfree() in send_own_packet(), whereas this stack trace =20
+does not.
+
+Is that bug easily reproducible? It will be a couple of days before I =20
+can try to look at it.
+
+Also, the stack trace is confusing as it appears to indicate a kfree() =20
+within hardif_min_mtu(), which I can't find :)
+
+I'll try to do some stress testing of the module with the slab =20
+debugger turned on for a while and see what happens.
+
+Cheers,
+
+--
+Scott Raynel
+WAND Network Research Group
+Department of Computer Science
+University of Waikato
+New Zealand
+
+
+
 
