@@ -1,14 +1,11 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] Looking for batman-adv 0.1-alpha
-Date: Mon, 8 Dec 2008 19:22:25 +0100
-References: <4938F21D.2050907@irt.de> <20081205200414.GB27271@pandem0nium>
-	<493CDAD8.10400@irt.de>
-In-Reply-To: <493CDAD8.10400@irt.de>
+Message-ID: <d5bba6ce0812081023n52589d10s2372accf28a716c9@mail.gmail.com>
+Date: Mon, 8 Dec 2008 16:23:08 -0200
+From: "Julio Cesar Puigpinos" <jcpuigpinos@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2951874.Z4iq6vOQkB";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200812081922.29181.sven.eckelmann@gmx.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] New release of the firmware Nightwing, wich uses BMX
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,47 +19,52 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart2951874.Z4iq6vOQkB
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+The development group [0] of LUGRo-Mesh [1] announces that already
+it's avalaible the second release of the firmware Nightwing [2],
+version 0.6-beta1 [3].
 
-On Monday 08 December 2008 09:29:12 Tobias Gieseke wrote:
-> Sorry, but my question to open-wrt was not precise enough. I wanted to
-> know if there is a chance to get batmand-adv running on open-wrt with
-> broadcom wifi. AFAIK batmand-adv is only running on kernel 2.6 but with
-> kernel 2.6 broadcom wifi is not running on open-wrt (according to the
-> open-wrt homepage).  Maybe you know a trick to get batmand-adv running
-> on the Linksys WRT54GL or the Buffalo WHR-HP-G54 WiFi-Router, with WiFi
-> running of course.
-It is correct that kamikaze 7.x doesn't support linux 2.6 with stable wifi =
-but=20
-the new kamikaze 8.09rc1 [1] uses the b43 driver[2] and should support the=
-=20
-integrated bcm43xx hardware inside the wgt54gl + adhoc mode. You should be=
-=20
-able to run batman-adv on these devices.
-The hardware I have here is currently in productive use - so I cannot test=
-=20
-that it really works.
+Nightwing allows the creation of Wireless Mesh Networks [4], with a
+fast and easy deployment. Requires an Atheros wireless chip, and a
+minimum of 4MB of flash memory and 16MB of RAM memory. It can be
+instaled in devices from Ubiquiti like the NanoStation, from Accton
+like the Fonera 2200, and many more devices that cover the minimun
+requirements.
 
-Best regards,
-	Sven
+Some of the new characteristics introduced are:
+* Use of the protocol B.A.T.M.A.N.-Experimental (BMX) [5]
+* The Public connection Interface es now managed by the captive portal
+WiFiDog [6].
+* Each Access Point has an unic SSID for every node.
+* A WiFiDog server [7] is avalaible for the LUGRo-Mesh Network. Thanks
+to Maximiliano M=FCller of SitiosHispanos.com for supplying a VPS for
+the server.
 
-[1] http://downloads.openwrt.org/kamikaze/8.09_RC1/release.txt
-[2] http://linuxwireless.org/en/users/Drivers/b43
+The group has mailing list for the Nightwing firmware [8] and for the
+group it self [9].
 
---nextPart2951874.Z4iq6vOQkB
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Also, it's avalaible the repository of the LUGRo-Mesh Development Group [10=
+].
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkk9ZeEACgkQqQGwKVlMoDsR0wCfbWJrGQgi5PfILZlZBYsmL8zW
-ypEAnAxZKutVJ9n+SNIAtprUynNVLcGD
-=LaJs
------END PGP SIGNATURE-----
+  [0] lugro-mesh-dev_AT_lugro.org.ar
+  [1] http://www.lugro-mesh.org.ar/en/
+  [2] http://nightwing.lugro-mesh.org.ar/en/
+  [3] http://nightwing.lugro-mesh.org.ar/en/download.html
+  [4] http://en.wikipedia.org/wiki/Wireless_mesh_network
+  [5] https://dev.open-mesh.net/batman/wiki
+  [6] http://dev.wifidog.org/wiki
+  [7] http://wifidog.lugro-mesh.org.ar/
+  [8] http://www.lugro.org.ar/mailman/listinfo/nightwing
+  [9] http://www.lugro.org.ar/mailman/listinfo/lugro-mesh
+[10] http://trac.assembla.com/lugro-mesh-dev/wiki
 
---nextPart2951874.Z4iq6vOQkB--
+
+                Saludos, Julio
+
+--=20
+www.lugro-mesh.org.ar/        Wireless Mesh Networks Group
+www.lugro.org.ar                         GNU/Linux User Group Rosario, Arge=
+ntina
+Slackware rulez :P             www.slackware.org
+NO A LA MATRICULA!!!: http://noalamatricula.wordpress.com/
+
