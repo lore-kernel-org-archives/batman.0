@@ -1,13 +1,16 @@
-Message-ID: <49411D3D.90301@ddmesh.de>
-Date: Thu, 11 Dec 2008 15:01:33 +0100
-From: Freifunk <freifunk@ddmesh.de>
-MIME-Version: 1.0
-References: <83b3410f8105237b1e68c92065dec7d0.squirrel@wm.ddmesh.de>	<200812021306.20569.axel@open-mesh.net>	<3ca03f2b6ae1c3c84704f2ce5e8fd89a.squirrel@wm.ddmesh.de>
-	<200812111154.31726.neumann@cgws.de>
-In-Reply-To: <200812111154.31726.neumann@cgws.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] dublicate HNAs
+Message-Id: <E062161D-1C70-4104-AE6D-8A1EE2767CFB@gmail.com>
+From: Scott Raynel <scottraynel@gmail.com>
+In-Reply-To: <20081205195131.GA27271@pandem0nium>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"; delsp="yes"
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv-kernelland: Fix memory
+	corruption bug
+Date: Fri, 12 Dec 2008 22:08:01 +1300
+References: <DFF8A357-1AF1-4F11-BE89-46DD131FA7FF@gmail.com>
+	<20081204113558.GA14932@pandem0nium>
+	<C12B8956-7F83-4FBE-A300-B803928CB64C@gmail.com>
+	<20081205195131.GA27271@pandem0nium>
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,65 +24,68 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi Axel,
+Hi Simon,
 
-thanks for your description. Would it be better to only ignore the HNA that
-is already received from another node instead of ignoring the node completely?
-I currently use one node that is connected to icvpn (inter-city vpn) that connects
-different freifunk cities together. The network runs bgp and allows to setup
-a second server that also initiates a connection to the icvpn. both server
-would then announce the same ip addresses.
-In this case the batman notes only should ignore the HNA if they are injected
-by different icvpn servers and keep the server still in network.
+On 6/12/2008, at 8:51 AM, Simon Wunderlich wrote:
 
-Bye
- stephan
+> Hey Scott,
+>
+> On Fri, Dec 05, 2008 at 11:40:30PM +1300, Scott Raynel wrote:
+>> Hi Simon,
+>>
+>> On 5/12/2008, at 12:35 AM, Simon Wunderlich wrote:
+>>
+>>> Hey Scott,
+>>>
+>>> thank you very much for the fix! Can you confirm if this bug is
+>>> related
+>>> to https://dev.open-mesh.net/batman/ticket/86 ?
+>>> This bug has very likely been caused by a memory corruption, but i
+>>> couldn=C3=82=C2=B4t find where. (i have not experienced any kernel pani=
+cs by
+>>> this
+>>> however ...).
+>>
+>>
+>> It is quite possible that they are related. The slab error states =20
+>> that
+>> a memory allocation was overwritten - the same problem as my patch
+>> fixed. However, I can't confirm whether it is the same memory
+>> allocation or a different one. The stack trace I got specifically
+>> mentioned the kfree() in send_own_packet(), whereas this stack trace
+>> does not.
+>>
+>> Is that bug easily reproducible? It will be a couple of days before I
+>> can try to look at it.
+>
+> Yep, it was quite easy: just turn it on and off a few times. (echo
+> device and nothing into /proc/net/batman-adv/interfaces). The warning
+> appeared after 10 times in my qemu instance. No crash, only this =20
+> warning.
 
-Axel Neumann schrieb:
-> Hi,
-> 
-> On Dienstag 09 Dezember 2008, Stephan Enderlein (Freifunk Dresden) wrote:
->> -----------
->> Another question: in previous versions I have seen that if two batmand
->> announce the same HNA ip (-a) one of the batmand are ignored and complete
->> ignored any batmand traffic. As result the node was removed from any
->> batmand list and was not reachable anymore.
->> -----------
-> 
-> And it should be also the current behavior of bmx. The background is:
-> 
-> BMX currently does NOT support anycast routing. 
-> 
-> Therefore in practical terms, if two nodes are announcing the same IP it is 
-> effectively an IP doubler. Such a scenario triggers the dublicate-address 
-> detection which results in ignoring the younger of the two nodes announcing 
-> this IP.
-> 
-> With the batman routing algorithm it is indeed difficult to do a consistent 
-> anycast routing. Therefore I've decided to protect against casual duplicate 
-> address announcements with the described behavior.
-> Older versions (2007 and before) tended to have chaotic routing entries due to 
-> duplicated entries or removals of HNA routing entries.
-> 
-> When dynamically adding an HNA (using e.g. bmxd -ca 1.2.3.4/32) the daemon 
-> checks if other nodes are already announcing this specific HNA. If this is 
-> the case the announcement is rejected and a warning should be given in 
-> debuglevel 3. You can always inspect current announcements from other nodes 
-> using debug-level 9.
-> This debug-level also differentiates between announced interfaces (e.g. 
-> 1.2.3.4/IF) and networks (e.g. 1.2.3.4/32). ( the idea for the future was,  
-> that network announcements should become anycast announcements )
-> 
-> Indeed it is a problem when a daemon is started from the beginning with a 
-> duplicate HNA announcement. In this situation the daemon can hardly check if 
-> the network is already announced. Then, only his neighboring nodes are aware 
-> of the IP doubler. They will ignore everything from this node and cause a 
-> warning in debug level 0. 
-> 
-> hope this clarifies a bit.
-> 
-> /axel
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+I can't reproduce this bug before my patch is applied because the bug =20
+it fixes always gets in the way :)
+
+After applying the patch I seem to be able to consistently lock up the =20
+system by adding and removing an interface from the batman device =20
+several times. The box still replies to pings, but I can't SSH in. =20
+This does not trigger the slab debugger. I've looked at using the =20
+magic sysreq interface to see what's going on and by printing the =20
+current task it appears to be hanging during the =20
+cancel_rearming_delayed_work() call in shutdown_module(). This might =20
+be related to the scheduling-while-atomic bugs. I'll keep looking into =20
+this as I get time, but things are pretty busy here at the moment.
+
+Cheers,
+
+
+--
+Scott Raynel
+WAND Network Research Group
+Department of Computer Science
+University of Waikato
+New Zealand
+
+
+
+
