@@ -1,14 +1,16 @@
-Message-ID: <4942F8FA.4040600@ddmesh.de>
-Date: Sat, 13 Dec 2008 00:51:22 +0100
-From: "Stephan Enderlein (Freifunk Dresden)" <freifunk@ddmesh.de>
-MIME-Version: 1.0
-References: <83b3410f8105237b1e68c92065dec7d0.squirrel@wm.ddmesh.de>	<200812111154.31726.neumann@cgws.de>
-	<49411D3D.90301@ddmesh.de> <200812121146.26579.neumann@cgws.de>
+Message-ID: <5dfe3cd98da52153d44b79b834280707.squirrel@unimail.uni-dortmund.de>
 In-Reply-To: <200812121146.26579.neumann@cgws.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] dublicate HNAs
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+References: <83b3410f8105237b1e68c92065dec7d0.squirrel@wm.ddmesh.de>
+	<200812111154.31726.neumann@cgws.de> <49411D3D.90301@ddmesh.de>
+	<200812121146.26579.neumann@cgws.de>
+Date: Wed, 17 Dec 2008 13:19:58 +0100 (CET)
+From: "Resul Cetin" <resul.cetin@uni-dortmund.de>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Can't build a mesh network
+Reply-To: resul.cetin@uni-dortmund.de,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -21,17 +23,28 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi,
+Hiii,
 
-I'm not so deep involved in batman routing to find a solution. I hope
-you can find a way. But for now it is not so important.
-But if one node announces a HNA and a different node that just has fun to
-"turn off" this node can simply send the same HNA. If you say the first
-HNA is the right one, then what happens when this node gets the forced disconnection
-after 24 hours by its internet provider?
 
-I think it is difficult to find a solution for this. The best is to keep all nodes
-active but kill the HNA if not reachable?
 
-/Stephan
+I'm a beginner regarding mesh networks. At the moment, I have a problem by
+building a mesh network with batman between 2 Linksys and a Laptop. I get
+a ping response on the router side and from my Laptop side. There is a
+connection... ok..
+
+But I can't run batmand to establish a mesh network...
+
+I gave the command" sudo batmand eth1 wlan0:test" to build the connection
+and then this here"sudo batmand -c -d 1"
+but the second command gives this error message:
+"Error - can't connect to unix socket '/var/run/batmand.socket': No such
+file or directory ! Is batmand running on this host ?"
+
+My batman version is"
+B.A.T.M.A.N. 0.2 (compability version 3)"
+
+Can anybody help me to fix this problem ?
+
+greetings,
+R
 
