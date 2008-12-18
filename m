@@ -1,15 +1,16 @@
-From: Axel Neumann <neumann@cgws.de>
-Subject: Re: [B.A.T.M.A.N.] dublicate HNAs
-Date: Wed, 17 Dec 2008 21:14:43 +0100
+From: Marek Lindner <lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Can't build a mesh network
+Date: Thu, 18 Dec 2008 14:32:45 +0800
 References: <83b3410f8105237b1e68c92065dec7d0.squirrel@wm.ddmesh.de>
-	<200812121146.26579.neumann@cgws.de> <4942F8FA.4040600@ddmesh.de>
-In-Reply-To: <4942F8FA.4040600@ddmesh.de>
+	<5dfe3cd98da52153d44b79b834280707.squirrel@unimail.uni-dortmund.de>
+	<48e8355278083c6883a51b059432df08.squirrel@unimail.uni-dortmund.de>
+In-Reply-To: <48e8355278083c6883a51b059432df08.squirrel@unimail.uni-dortmund.de>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812172114.43427.neumann@cgws.de>
+Content-Disposition: inline
+Message-Id: <200812181432.58146.lindner_marek@yahoo.de>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,37 +24,31 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+
 Hi,
 
-On Samstag 13 Dezember 2008, Stephan Enderlein (Freifunk Dresden) wrote:
-> Hi,
+> its me again...
+> I fixed my problem, that I mentioned in the previous message. I choosed
+> the wrong interface, this was the mistake...
+
+ok, thanks for letting us know.
+
+
+> But I have still a problem...
 >
-> I'm not so deep involved in batman routing to find a solution. I hope
-> you can find a way. But for now it is not so important.
-> But if one node announces a HNA and a different node that just has fun to
-> "turn off" this node can simply send the same HNA. If you say the first
-> HNA is the right one, then what happens when this node gets the forced
-> disconnection after 24 hours by its internet provider?
-
-Theoretically, if the node can reestablish a new connection after its forced 
-disconnection within the dad timeout (100secs by default) then it should not 
-be kicked out. But, the preliminary for this is that: the node must re-appear 
-using the same primary IP for its primary interface and continuing with the 
-foreseen sequence-number range.
-
-
-
-best,
-axel
+> After maybe 10 minutes, the connection is broken between the Laptop and
+> the Routers...
 >
-> I think it is difficult to find a solution for this. The best is to keep
-> all nodes active but kill the HNA if not reachable?
->
-> /Stephan
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+> Has anybody experience with this issue...
 
+As Elektra mentioned this problem might be related to the wifi layer itself and 
+not to batman. You can try to connect to your routers with your notebook 
+without using batman (configuring the IPs and set the routing table entries 
+manually). If the connection still brakes its a wifi problem.
+
+Btw, you should consider upgrading to batman 0.3 (0.2 is quite outdated). 
+Version 0.3 is our current stable. Also, expect the 0.3.1 release soon.
+
+
+Marek
 
