@@ -1,10 +1,10 @@
-Message-ID: <bc65394302b4195028587d4c09b43fba.squirrel@wm.ddmesh.de>
+Message-ID: <6fc7e744ebfbdddaff4637bb5451544d.squirrel@wm.ddmesh.de>
 In-Reply-To: <200812191115.20610.neumann@cgws.de>
 References: <83b3410f8105237b1e68c92065dec7d0.squirrel@wm.ddmesh.de>
 	<200812172114.43427.neumann@cgws.de>
 	<3f7879383457743711ac3341637ff601.squirrel@wm.ddmesh.de>
 	<200812191115.20610.neumann@cgws.de>
-Date: Fri, 19 Dec 2008 12:06:40 +0100 (CET)
+Date: Fri, 19 Dec 2008 12:19:40 +0100 (CET)
 From: "Stephan Enderlein (Freifunk Dresden)" <freifunk@ddmesh.de>
 MIME-Version: 1.0
 Content-Type: text/plain;charset=iso-8859-1
@@ -23,33 +23,18 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi,
 
-> I like brainstorming like this.
-me too.
+Hi again,
 
-> We wanted batmand (and especially its core routing algorithm) to be decentral
-> and simple. So no central point of control/failure and therefore also no HNA
-> server.
-Perhaps there is a different solution. What if everybody may broadcast their HNA
-like batman is currently working and batmand get a list of router ip from which
-HNA is accepted?
-The bad-guy has normally no way to modify the firmware of other routers and can not
-tell the batmand to accept its faulty HNA.
-In this case batman can be updated requlary by cron-job and needs only check HNA against
-it list.
-A positiv and negativ list should be possible. Perhaps the list may contain network ranges.
-(hcl = hna control list)
+is there a way to set a TTL value for each hna that is different from OGM TTL?
+If I assume that an HNA internet host is reachable via two nodes (e.g. running icvpn - bgp)
+batmand currently ignores one of this hna and also the node and its traffic (right?).
 
-the firmware of the router may request the list from a server.
-In case a non accepted hna is received, batmand may completely ignore the node, that is injecting
-invalid HNA. When I understand you right, batmand currently ignores nodes completely that
-are sending the same HNA?
+What if we use the ttl value as metric to decide which hna is used? In this
+case both nodes are still present in network but you don't have a address conflict.
+Batman should not accept HNA that belongs to the ipranges of the batman network.
+So a node with ip 10.12.0.1 can not send a HNA with 10.12.10.17 and disturbing the
+routing. Perhaps batmand already checks this?
 
 /stephan
-
----------------------------------------
-Dipl.Informatiker(FH) Stephan Enderlein
-Freifunk Dresden
-
 
