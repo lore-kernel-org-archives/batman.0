@@ -1,19 +1,17 @@
-Message-ID: <8c906fa50812190404o4de6dfe7h9513adec1856f6f6@mail.gmail.com>
-Date: Fri, 19 Dec 2008 10:04:50 -0200
-From: "Gustavo Lindberg" <gus.lindberg@gmail.com>
-Subject: Re: [B.A.T.M.A.N.] policy-routing-script issues
-In-Reply-To: <fe4fe3c70bcbdcf1ead4c86cc18349db.squirrel@wm.ddmesh.de>
+Message-ID: <8fb8a9264839c333f90f620c65fa48ea.squirrel@unimail.uni-dortmund.de>
+In-Reply-To: <200812191115.20610.neumann@cgws.de>
+References: <83b3410f8105237b1e68c92065dec7d0.squirrel@wm.ddmesh.de>
+	<200812172114.43427.neumann@cgws.de>
+	<3f7879383457743711ac3341637ff601.squirrel@wm.ddmesh.de>
+	<200812191115.20610.neumann@cgws.de>
+Date: Wed, 24 Dec 2008 19:24:31 +0100 (CET)
+From: "Resul Cetin" <resul.cetin@uni-dortmund.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_27076_2760492.1229688290309"
-References: <20080912232420.GA9669@sven-desktop.lazhur.ath.cx>
-	<200809171100.22178.axel@open-mesh.net>
-	<11de18502b175436206cf97736ac12af.squirrel@wm.ddmesh.de>
-	<200809211558.54635.axel@open-mesh.net>
-	<fcd11f054a43f09a9bac569c394d0d85.squirrel@wm.ddmesh.de>
-	<20081218131736.GM17616@terastar.local>
-	<fe4fe3c70bcbdcf1ead4c86cc18349db.squirrel@wm.ddmesh.de>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Testing Batman
+Reply-To: resul.cetin@uni-dortmund.de,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.open-mesh.net>
@@ -26,80 +24,42 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-------=_Part_27076_2760492.1229688290309
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hii,
 
-2008/12/19 Stephan Enderlein (Freifunk Dresden) <freifunk@ddmesh.de>
+I will make some test with BATMAN. My test scenario is very simple, it
+consists at the moment by a router and a Laptop.
 
-> Hi,
->
-> > Please give an example: which dns server is n/a from which provider?
-> > (i think it's an urban legend...)
-> I have seen this here in dresden with telekom and arcor dns servers. I used
-> the dns server
-> from telekom that we got while connecting via DSL. This is not working if
-> the router that offers
-> internet connection is connected to VDSL or Alice. I could use DNS server
-> of acor for the
-> router that was connected to the VDSL.
-> But as you can not predict which gateway is used, you must habe a different
-> solution.
-> I therefore use a script that always set the dns server to the router ip
-> that currently is used
-> as gateway. The router ensures that dns is working.
->
+My problem is, I cann't run Iperf to test the network. The ping response
+is also to high.
 
-Might find useful Opendns.org
-208.67.222.222
-208.67.220.220  Gustavo.
+I start batmand on my laptop by " sudo batmand wlan0"
 
->
-> /Stephan
->
-> ---------------------------------------
-> Dipl.Informatiker(FH) Stephan Enderlein
-> Freifunk Dresden
->
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
+The Iperf test are broken after only 10-15 seconds...Here is my Iperf output:
+"[  3] local 11.1.1.23 port 49672 connected with 129.217.186.46 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0- 5.0 sec    640 KBytes  1.05 Mbits/sec
+[  3]  5.0-10.0 sec    640 KBytes  1.05 Mbits/sec
+[  3] 10.0-15.0 sec    640 KBytes  1.05 Mbits/sec
+write2 failed: Network is down
+[  3]  0.0-15.9 sec  1.98 MBytes  1.05 Mbits/sec
+[  3] Sent 1415 datagrams
+[  3] WARNING: did not receive ack of last datagram after 10 tries."
 
-------=_Part_27076_2760492.1229688290309
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+The ping results are:
+"64 bytes from 11.1.1.3: icmp_seq=1377 ttl=64 time=2.09 ms
+64 bytes from 11.1.1.3: icmp_seq=1378 ttl=64 time=2.10 ms
+64 bytes from 11.1.1.3: icmp_seq=1379 ttl=64 time=6.69 ms
+64 bytes from 11.1.1.3: icmp_seq=1380 ttl=64 time=9.33 ms
+64 bytes from 11.1.1.3: icmp_seq=1381 ttl=64 time=12.07 ms
+64 bytes from 11.1.1.3: icmp_seq=1382 ttl=64 time=27.9 ms
+64 bytes from 11.1.1.3: icmp_seq=1384 ttl=64 time=5.16 ms
+"
 
-<br><br><div class="gmail_quote">2008/12/19 Stephan Enderlein (Freifunk Dresden) <span dir="ltr">&lt;<a href="mailto:freifunk@ddmesh.de">freifunk@ddmesh.de</a>&gt;</span><br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Hi,<br>
-<div class="Ih2E3d"><br>
-&gt; Please give an example: which dns server is n/a from which provider?<br>
-&gt; (i think it&#39;s an urban legend...)<br>
-</div>I have seen this here in dresden with telekom and arcor dns servers. I used the dns server<br>
-from telekom that we got while connecting via DSL. This is not working if the router that offers<br>
-internet connection is connected to VDSL or Alice. I could use DNS server of acor for the<br>
-router that was connected to the VDSL.<br>
-But as you can not predict which gateway is used, you must habe a different solution.<br>
-I therefore use a script that always set the dns server to the router ip that currently is used<br>
-as gateway. The router ensures that dns is working.<br>
-<font color="#888888"></font></blockquote><div><br>Might find useful Opendns.org&nbsp; <br><h4>208.67.222.222<br>
-				208.67.220.220
-			</h4>&nbsp;Gustavo.</div><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><font color="#888888"><br>
-/Stephan<br>
-</font><div><div></div><div class="Wj3C7c"><br>
----------------------------------------<br>
-Dipl.Informatiker(FH) Stephan Enderlein<br>
-Freifunk Dresden<br>
-<br>
-<br>
-_______________________________________________<br>
-B.A.T.M.A.N mailing list<br>
-<a href="mailto:B.A.T.M.A.N@open-mesh.net">B.A.T.M.A.N@open-mesh.net</a><br>
-<a href="https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target="_blank">https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
-</div></div></blockquote></div><br>
+Can anybody help me to fix this problem... I didn't give a HNA on my
+router, could this be problem ?
 
-------=_Part_27076_2760492.1229688290309--
+I would be very appreciate, if anybody could help me..
+
+greetings,
+E
+
