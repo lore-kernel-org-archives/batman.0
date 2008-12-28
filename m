@@ -1,9 +1,12 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun, 28 Dec 2008 17:33:02 +0100
-Message-Id: <1230481982-8960-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <200812281730.53628.sven.eckelmann@gmx.de>
-References: <200812281730.53628.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] Detect unstable version in SOURCE_VERSION
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 28 Dec 2008 17:52:57 +0100
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200812281752.58019.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] batman advanced 0.1 release
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,39 +18,44 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-The SOURCE_VERSION consists of a version part and the actual status of
-this version (called postfix). Both parts are seperated by a dash.
-This seperator dash can be detected during runtime and can enable the
-unstable warning instead of removing this warning in every release.
-Before releasing the a new stable version the release manager must
-remove the postfix of SOURCE_VERSION in batman.h, check INSTALL,
-THANKS and README and then create the tag in the repository as usual.
-Afterwards the development branch should change the SOURCE_VERSION to
-the upcoming version number including a postfix starting with a dash
-that informs the user that it is "unstable" and in development. This
-could be for example "-dev", "-pre-alpha", "-beta" or "-rc1".
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman/posix/init.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Hi, 
 
-diff --git a/batman/posix/init.c b/batman/posix/init.c
-index c79c010..1447178 100644
---- a/batman/posix/init.c
-+++ b/batman/posix/init.c
-@@ -249,7 +249,8 @@ void apply_init_args( int argc, char *argv[] ) {
- 	stop = 0;
- 	prog_name = argv[0];
- 
--/*	printf( "WARNING: You are using the unstable batman branch. If you are interested in *using* batman get the latest stable release !\n" );*/
-+	if ( strstr( SOURCE_VERSION, "-" ) != NULL )
-+		printf( "WARNING: You are using the unstable batman branch. If you are interested in *using* batman get the latest stable release !\n" );
- 
- 	while ( ( optchar = getopt_long( argc, argv, "a:A:bcd:hHio:g:p:r:s:vV", long_options, &option_index ) ) != -1 ) {
- 
--- 
-1.6.0.6
+today, after a 6 months stabilization and debugging phase we release the first 
+milestone towards a stable version: batman advanced 0.1.
+As this implementation resides in the kernel land only we wanted to make sure 
+its stability before releasing it to the public.
+
+This batman implemention is marked with the label "advanced" to outline the 
+fact that it operates on layer 2 (mac layer) as opposed to batman which 
+operates on layer 3. To gain optimal performance it resides in the kernel as a 
+module and can be enabled/disabled/configured via the /proc/net/batman-adv/ 
+interface.
+
+Unfortunately, we can not offer precompiled packages for your kernel as the 
+module sources need to be linked against your very own kernel headers. If you 
+are using debian you will find packages that you can install via apt-get. 
+OpenWRT also has the package included. If you intend to use the module on your 
+own system, simply download the sources, build and load the module.
+
+You can find the sources here:
+http://downloads.open-mesh.net/batman/stable/sources/
+
+Special thanks to Sven Eckelmann and Scott Raynel who spent a considerable 
+amount of time testing, debugging and patching the sources. We included all 
+their patches which allow us to release today.
+
+The biggest changes since the beta release are:
+- support latest kernel version (2.6.20 - 2.6.28)
+- LOTS of cleanup: locking, stack usage, memory leaks
+- Change Ethertype from 0x0842 to 0x4305
+unregistered at IEEE, if you want to sponsor an official Ethertype ($2500) 
+please contact us
+
+
+We welcome any feedback/patches/ideas, 
+The B.A.T.M.A.N. developer team
+
 
