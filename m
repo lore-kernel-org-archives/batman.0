@@ -1,10 +1,8 @@
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 14 Jan 2009 11:58:03 +0100
-Message-Id: <1231930683-5625-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <200901140145.34127.sven.eckelmann@gmx.de>
-References: <200901140145.34127.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] Suppress warning about unused parameter in
-	bsd/*.c
+Date: Wed, 14 Jan 2009 13:02:55 +0100
+Message-Id: <1231934576-7289-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] Change urls to new open-mesh third level
+	domains
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,130 +16,154 @@ List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
+Most of the urls are redirected by an 301 Moved permanently but some are
+not at the moment. It should not hurt to have the new versions of them
+everywhere.
+
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman/bsd/kernel.c |   10 +++++-----
- batman/bsd/route.c  |   12 ++++++------
- batman/bsd/tun.c    |    6 +++---
- 3 files changed, 14 insertions(+), 14 deletions(-)
+ batman-adv-userspace/Makefile          |    2 +-
+ batman-adv-userspace/man/batmand-adv.8 |    2 +-
+ batman-experimental/INSTALL            |    4 ++--
+ batman-experimental/doc/bmx.tex        |    2 +-
+ batman/CHANGELOG                       |    2 +-
+ batman/INSTALL                         |    4 ++--
+ batman/Makefile                        |    2 +-
+ battool/Makefile                       |    2 +-
+ vis/Makefile                           |    2 +-
+ 9 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/batman/bsd/kernel.c b/batman/bsd/kernel.c
-index 0a126d4..b98c06f 100644
---- a/batman/bsd/kernel.c
-+++ b/batman/bsd/kernel.c
-@@ -76,7 +76,7 @@ int32_t get_forwarding(void)
- 	return state;
- }
+diff --git a/batman-adv-userspace/Makefile b/batman-adv-userspace/Makefile
+index d71b5e6..9826dad 100644
+--- a/batman-adv-userspace/Makefile
++++ b/batman-adv-userspace/Makefile
+@@ -71,7 +71,7 @@ sources:
  
--void set_send_redirects(int32_t state, char* dev)
-+void set_send_redirects(int32_t state, char* BATMANUNUSED(dev))
- {
- 	int mib[4];
+ 	for i in $$( find . | grep $(SRC_FILES) | grep -v "\.svn" ); do [ -d $$i ] && mkdir -p $(FILE_NAME)/$$i ; [ -f $$i ] && cp -Lvp $$i $(FILE_NAME)/$$i ;done
  
-@@ -97,7 +97,7 @@ void set_send_redirects(int32_t state, char* dev)
- 		err(1, "Cannot change net.inet.ip.redirect");
- }
+-	$(BUILD_PATH)/wget --no-check-certificate -O changelog.html  https://dev.open-mesh.net/batman/log/$(LOG_BRANCH)/
++	$(BUILD_PATH)/wget -O changelog.html  http://www.open-mesh.net/batman/log/$(LOG_BRANCH)/
+ 	html2text -o changelog.txt -nobs -ascii changelog.html
+ 	awk '/View revision/,/10\/01\/06 20:23:03/' changelog.txt > $(FILE_NAME)/CHANGELOG
  
--int32_t get_send_redirects(char *dev)
-+int32_t get_send_redirects(char *BATMANUNUSED(dev))
- {
- 	int state;
- 	size_t len;
-@@ -117,20 +117,20 @@ int32_t get_send_redirects(char *dev)
- 	return state;
- }
+diff --git a/batman-adv-userspace/man/batmand-adv.8 b/batman-adv-userspace/man/batmand-adv.8
+index 208541c..966f213 100644
+--- a/batman-adv-userspace/man/batmand-adv.8
++++ b/batman-adv-userspace/man/batmand-adv.8
+@@ -24,7 +24,7 @@ batmand-adv \- better approach to mobile ad-hoc networking, Layer 2 version batm
+ .br
+ .SH DESCRIPTION
+ .B B.A.T.M.A.N
+-means better approach to mobile ad-hoc networking, this is a new routing protocol for multi-hop ad-hoc mesh networks. Go to http://open-mesh.net/batman to get more information.
++means better approach to mobile ad-hoc networking, this is a new routing protocol for multi-hop ad-hoc mesh networks. Go to http://www.open-mesh.net/ to get more information.
+ .PP
+ Unlike batmand, batmand-adv operates on Layer 2, using Ethernet frames to encapsulate protocol and payload data and not UDP/IP. A batmand-adv mesh network is acting like a switch, and after starting the daemon you'll get a virtual network interface "bat0" which can be used like a usual LAN interface. Communication is tunneled directly to other batmand-adv participants.
+ .PP
+diff --git a/batman-experimental/INSTALL b/batman-experimental/INSTALL
+index 3014b0f..fccb6e1 100644
+--- a/batman-experimental/INSTALL
++++ b/batman-experimental/INSTALL
+@@ -30,7 +30,7 @@ downloads.open-mesh.net is likely to offer precompiled packages
+ for your system.
  
--void set_rp_filter( int32_t state, char* dev )
-+void set_rp_filter( int32_t BATMANUNUSED(state), char* BATMANUNUSED(dev) )
- {
- 	/* On BSD, reverse path filtering should be disabled in the firewall. */
- 	return;
- }
+ Download and compile the latest stable sources from the download 
+-section http://open-mesh.net/batman/downloads by executing eg.:
++section http://www.open-mesh.net/wiki/Download by executing eg.:
  
--int32_t get_rp_filter( char *dev )
-+int32_t get_rp_filter( char *BATMANUNUSED(dev) )
- {
- 	/* On BSD, reverse path filtering should be disabled in the firewall. */
- 	return 0;
- }
+ �$ wget http://downloads.open-mesh.net/batman/stable/sources/batmand_0.2-current_sources.tgz
+ �$ tar xzvf batmand_0.2-current_sources.tgz
+@@ -94,7 +94,7 @@ batman for one (or several) interfaces and specify the netmask and IP address
+ as well as other optionally parameters.
  
+ Alternatively you can get the latest stable release (as well as development) 
+-versions from �http://open-mesh.net/batman/downoads/
++versions from �http://www.open-mesh.net/wiki/Download
  
--int8_t bind_to_iface( int32_t udp_recv_sock, char *dev )
-+int8_t bind_to_iface( int32_t BATMANUNUSED(udp_recv_sock), char *BATMANUNUSED(dev) )
- {
- 	/* XXX: Is binding a socket to a specific
- 	 * interface possible in *BSD?
-diff --git a/batman/bsd/route.c b/batman/bsd/route.c
-index 953e995..8c9de48 100644
---- a/batman/bsd/route.c
-+++ b/batman/bsd/route.c
-@@ -139,8 +139,8 @@ static uint32_t get_dev_addr(char *dev)
- 	return addr->sin_addr.s_addr;
- }
+ For example to install batmand-0.2 on a freifunk WRT do:
  
--void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src_ip,
--		int32_t ifi, char *dev, uint8_t rt_table, int8_t route_type, int8_t del)
-+void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t BATMANUNUSED(src_ip),
-+		int32_t BATMANUNUSED(ifi), char *dev, uint8_t BATMANUNUSED(rt_table), int8_t BATMANUNUSED(route_type), int8_t del)
- {
- 	char dest_str[16], router_str[16];
- 	struct rt_msg msg;
-@@ -203,20 +203,20 @@ void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src
- }
+diff --git a/batman-experimental/doc/bmx.tex b/batman-experimental/doc/bmx.tex
+index e4fcb5c..6d1b945 100755
+--- a/batman-experimental/doc/bmx.tex
++++ b/batman-experimental/doc/bmx.tex
+@@ -1956,7 +1956,7 @@ Wesley Tsai (wesleyboy-at-gmail.com)
  
+ \bibitem{svn-batmand-install} 
+ {batmand subversion repository},\\
+-{https://dev.open-mesh.net/svn/batman/trunk/batman/INSTALL}
++{http://downloads.open-mesh.net/svn/batman/trunk/batman/INSTALL}
  
--void add_del_rule(uint32_t network, uint8_t netmask, int8_t rt_table,
--		uint32_t prio, char *iif, int8_t dst_rule, int8_t del )
-+void add_del_rule(uint32_t BATMANUNUSED(network), uint8_t BATMANUNUSED(netmask), int8_t BATMANUNUSED(rt_table),
-+		uint32_t BATMANUNUSED(prio), char *BATMANUNUSED(iif), int8_t BATMANUNUSED(dst_rule), int8_t BATMANUNUSED(del) )
- {
- 	fprintf(stderr, "add_del_rule: not implemented\n");
- 	return;
- }
+ \bibitem{bmx-source-url}
+ {batmand-experimental download URL},\\
+diff --git a/batman/CHANGELOG b/batman/CHANGELOG
+index 99d0e2a..40089f3 100644
+--- a/batman/CHANGELOG
++++ b/batman/CHANGELOG
+@@ -1,3 +1,3 @@
+ For a reasonable up-to-date CHANGELOG visit:
  
--int add_del_interface_rules( int8_t del )
-+int add_del_interface_rules( int8_t BATMANUNUSED(del) )
- {
- 	fprintf(stderr, "add_del_interface_rules: not implemented\n");
- 	return 0;
- }
+-https://dev.open-mesh.net/batman/log/trunk
++https://www.open-mesh.net/batman/log/trunk
+diff --git a/batman/INSTALL b/batman/INSTALL
+index bf3434b..3f44760 100644
+--- a/batman/INSTALL
++++ b/batman/INSTALL
+@@ -32,7 +32,7 @@ downloads.open-mesh.net likely offers precompiled packages
+ for your system.
  
--int flush_routes_rules( int8_t rt_table )
-+int flush_routes_rules( int8_t BATMANUNUSED(rt_table) )
- {
- 	fprintf(stderr, "flush_routes_rules: not implemented\n");
- 	return 0;
-diff --git a/batman/bsd/tun.c b/batman/bsd/tun.c
-index 7d4c79c..b44dac3 100644
---- a/batman/bsd/tun.c
-+++ b/batman/bsd/tun.c
-@@ -90,7 +90,7 @@ static int open_tun_any(char *dev_name, size_t dev_name_size)
- #endif
+ Download and compile the latest stable sources from the download
+-section http://open-mesh.net/batman/downloads by executing eg.:
++section http://www.open-mesh.net/wiki/Download by executing eg.:
  
- /* Probe for tun interface availability */
--int8_t probe_tun(uint8_t print_to_stderr)
-+int8_t probe_tun(uint8_t BATMANUNUSED(print_to_stderr))
- {
- 	int fd;
- 	fd = open_tun_any(NULL, 0);
-@@ -105,7 +105,7 @@ int8_t del_dev_tun(int32_t fd)
- 	return close(fd);
- }
+ $ wget http://downloads.open-mesh.net/batman/releases/batman-0.3.1/batman-0.3.1.tar.gz
+ $ tar xzvf batman-0.3.1.tar.gz
+@@ -94,7 +94,7 @@ batman for one (or several) interfaces and specify the netmask and IP address
+ as well as other optionally parameters.
  
--int8_t set_tun_addr(int32_t fd, uint32_t tun_addr, char *tun_ifname)
-+int8_t set_tun_addr(int32_t BATMANUNUSED(fd), uint32_t tun_addr, char *tun_ifname)
- {
- 	int so;
- 	struct ifreq ifr_tun;
-@@ -136,7 +136,7 @@ int8_t set_tun_addr(int32_t fd, uint32_t tun_addr, char *tun_ifname)
- }
+ Alternatively you can get the latest stable release (as well as development)
+-versions from http://open-mesh.net/batman/downoads/
++versions from http://www.open-mesh.net/wiki/Download
  
- int8_t add_dev_tun(struct batman_if *batman_if, uint32_t tun_addr,
--		char *tun_dev, size_t tun_dev_size, int32_t *fd, int32_t *ifi)
-+		char *tun_dev, size_t tun_dev_size, int32_t *fd, int32_t *BATMANUNUSED(ifi))
- {
- 	int so;
- 	struct ifreq ifr_tun, ifr_if;
+ For example to install batmand-0.2 on a freifunk WRT do:
+ 
+diff --git a/batman/Makefile b/batman/Makefile
+index f956a2e..95eb682 100644
+--- a/batman/Makefile
++++ b/batman/Makefile
+@@ -89,7 +89,7 @@ sources:
+ 
+ 	for i in $$( find . | grep $(SRC_FILES) | grep -v "\.svn" ); do [ -d $$i ] && mkdir -p $(FILE_NAME)/$$i ; [ -f $$i ] && cp -Lvp $$i $(FILE_NAME)/$$i ;done
+ 
+-	wget --no-check-certificate -O changelog.html  https://dev.open-mesh.net/batman/log/$(LOG_BRANCH)/
++	wget -O changelog.html  http://www.open-mesh.net/batman/log/$(LOG_BRANCH)/
+ 	html2text -o changelog.txt -nobs -ascii changelog.html
+ 	awk '/View revision/,/10\/01\/06 20:23:03/' changelog.txt > $(FILE_NAME)/CHANGELOG
+ 
+diff --git a/battool/Makefile b/battool/Makefile
+index 805e454..01afe84 100644
+--- a/battool/Makefile
++++ b/battool/Makefile
+@@ -81,7 +81,7 @@ sources:
+ 
+ 	for i in $$( find . | grep $(SRC_FILES) | grep -v "\.svn" ); do [ -d $$i ] && mkdir -p $(FILE_NAME)/$$i ; [ -f $$i ] && cp -Lvp $$i $(FILE_NAME)/$$i ;done
+ 
+-	$(BUILD_PATH)/wget --no-check-certificate -O changelog.html  https://dev.open-mesh.net/batman/log/$(LOG_BRANCH)/
++	$(BUILD_PATH)/wget -O changelog.html  http://www.open-mesh.net/batman/log/$(LOG_BRANCH)/
+ 	html2text -o changelog.txt -nobs -ascii changelog.html
+ 	awk '/View revision/,/10\/01\/06 20:23:03/' changelog.txt > $(FILE_NAME)/CHANGELOG
+ 
+diff --git a/vis/Makefile b/vis/Makefile
+index e91b621..1b39f04 100644
+--- a/vis/Makefile
++++ b/vis/Makefile
+@@ -100,7 +100,7 @@ sources:
+ 	
+ 	for i in $$( find . | grep $(SRC_FILES) | grep -v "\.svn" ); do [ -d $$i ] && mkdir -p $(FILE_NAME)/$$i ; [ -f $$i ] && cp -Lvp $$i $(FILE_NAME)/$$i ;done
+ 	
+-	$(BUILD_PATH)/wget --no-check-certificate -O changelog.html  https://dev.open-mesh.net/batman/log/$(LOG_BRANCH)/
++	$(BUILD_PATH)/wget -O changelog.html  http://www.open-mesh.net/batman/log/$(LOG_BRANCH)/
+ 	html2text -o changelog.txt -nobs -ascii changelog.html
+ 	awk '/View revision/,/10\/01\/06 20:23:03/' changelog.txt > $(FILE_NAME)/CHANGELOG
+ 		
 -- 
 1.6.0.6
 
