@@ -1,15 +1,10 @@
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 14 Jan 2009 01:45:26 +0100
-References: <1F97746F-9493-4343-A46A-B2A9A727E13B@7degrees.co.za>
-	<1231872376-21395-1-git-send-email-sven.eckelmann@gmx.de>
-	<1F63FEA4-ED42-48C5-B45E-87BF3764F4BB@7degrees.co.za>
-In-Reply-To: <1F63FEA4-ED42-48C5-B45E-87BF3764F4BB@7degrees.co.za>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3253940.13PCtOqkYt";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200901140145.34127.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] Compile vis under FreeBSD and OSX
+Date: Wed, 14 Jan 2009 01:59:39 +0100
+Message-Id: <1231894779-29325-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <200901140145.34127.sven.eckelmann@gmx.de>
+References: <200901140145.34127.sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] Sync definitions in bsd/* with definitions
+	in os.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +16,79 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
---nextPart3253940.13PCtOqkYt
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman/bsd/kernel.c |    9 ++-------
+ batman/bsd/tun.c    |    6 +++---
+ 2 files changed, 5 insertions(+), 10 deletions(-)
 
-On Tuesday 13 January 2009 22:29:25 Antoine van Gelder wrote:
-> On 13 Jan 2009, at 20:46 , Sven Eckelmann wrote:
-> > PS: Interested in porting batmand again to *bsd plattforms?
->
-> Possibly - it would be nice to have the option to mesh with a beastie :)
->
-> Do you have a rough idea of what broke since it last worked ?
-Don't know when it worked the last time but it doesnt compile at the moment.
+diff --git a/batman/bsd/kernel.c b/batman/bsd/kernel.c
+index 505f551..0a126d4 100644
+--- a/batman/bsd/kernel.c
++++ b/batman/bsd/kernel.c
+@@ -35,7 +35,7 @@
+ #include "../os.h"
+ #include "../batman.h"
+ 
+-void set_forwarding(int state)
++void set_forwarding(int32_t state)
+ {
+ 	int mib[4];
+ 
+@@ -56,7 +56,7 @@ void set_forwarding(int state)
+ 		err(1, "Cannot change net.inet.ip.forwarding");
+ }
+ 
+-int get_forwarding(void)
++int32_t get_forwarding(void)
+ {
+ 	int state;
+ 	size_t len;
+@@ -138,11 +138,6 @@ int8_t bind_to_iface( int32_t udp_recv_sock, char *dev )
+ 	return 1;
+ }
+ 
+-int8_t use_kernel_module( char *dev )
+-{
+-	return -1;
+-}
+-
+ int32_t use_gateway_module(void)
+ {
+ 	return -1;
+diff --git a/batman/bsd/tun.c b/batman/bsd/tun.c
+index d38b954..7d4c79c 100644
+--- a/batman/bsd/tun.c
++++ b/batman/bsd/tun.c
+@@ -51,7 +51,7 @@
+  * this string is assumed to be dev_name_size bytes large.
+  */
+ #if defined(__OpenBSD__) || defined(__Darwin__)
+-int open_tun_any(char *dev_name, size_t dev_name_size)
++static int open_tun_any(char *dev_name, size_t dev_name_size)
+ {
+ 	int i;
+ 	int fd;
+@@ -72,7 +72,7 @@ int open_tun_any(char *dev_name, size_t dev_name_size)
+ 	return -1;
+ }
+ #elif defined(__FreeBSD__)
+-int open_tun_any(char *dev_name, size_t dev_name_size)
++static int open_tun_any(char *dev_name, size_t dev_name_size)
+ {
+ 	int fd;
+ 	struct stat buf;
+@@ -90,7 +90,7 @@ int open_tun_any(char *dev_name, size_t dev_name_size)
+ #endif
+ 
+ /* Probe for tun interface availability */
+-int8_t probe_tun()
++int8_t probe_tun(uint8_t print_to_stderr)
+ {
+ 	int fd;
+ 	fd = open_tun_any(NULL, 0);
+-- 
+1.6.0.6
 
-There are also some parts marked as "not implemented" in bsd/route.c
-You must check if all functions in bsd/*.c are in sync with linux/*.c
-
-Best regards,
-	Sven
-
---nextPart3253940.13PCtOqkYt
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkltNaYACgkQqQGwKVlMoDtn/ACgyS7rTL747LHMJHTJJlwNqonf
-sngAoJd46/VWimOCr4GkDXrj/0EB3P69
-=PSda
------END PGP SIGNATURE-----
-
---nextPart3253940.13PCtOqkYt--
