@@ -1,15 +1,16 @@
-From: Axel Neumann <neumann@cgws.de>
-Date: Thu, 15 Jan 2009 15:24:53 +0100
-References: <83b3410f8105237b1e68c92065dec7d0.squirrel@wm.ddmesh.de>
-	<200812191115.20610.neumann@cgws.de> <4963633D.2020306@dd19.de>
-In-Reply-To: <4963633D.2020306@dd19.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901151524.53433.neumann@cgws.de>
-Subject: Re: [B.A.T.M.A.N.] dublicate HNAs / certificates
+Message-Id: <DDB9027B-13A4-4D03-A7FC-81253F5865A2@7degrees.co.za>
+From: Antoine van Gelder <antoine@7degrees.co.za>
+In-Reply-To: <200901140145.34127.sven.eckelmann@gmx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Date: Sun, 18 Jan 2009 22:17:14 +0200
+References: <1F97746F-9493-4343-A46A-B2A9A727E13B@7degrees.co.za>
+	<1231872376-21395-1-git-send-email-sven.eckelmann@gmx.de>
+	<1F63FEA4-ED42-48C5-B45E-87BF3764F4BB@7degrees.co.za>
+	<200901140145.34127.sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] Compile batmand under FreeBSD and OSX (Was: Compile
+	vis)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,61 +23,56 @@ List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
-
-Hi,
-
-On Dienstag 06 Januar 2009, Alexander Morlang wrote:
-> Axel Neumann schrieb:
-> > We wanted batmand (and especially its core routing algorithm) to be
-> > decentral and simple. So no central point of control/failure and
-> > therefore also no HNA server. Of course there are many potential attack
-> > vectors in a community mesh and probably there will always be until you
-> > completely restrict the access. Therefore IMHO the preferable security to
-> > be solved should be:
-> >
-> > - detect and protect against (usually accidental) misconfigurations like
-> > duplicate addresses.
->
-> sure, a duplicate address is something the routingprotocoll has to
-> detect and to react on, but:
-> duplicate HNA are very importand and widely accepted in the internet
-> community, they are called anycast and are a vital instrument in network
-> design and deployment.
->
-> as an example, anycast ist used for dns root servers, 6to4 tunnel and
-> many other usecases.
->
-> i am still not understanding why you are discussing about removing such
-> important thing as anycast.
-I think nobody wants to remove it. I wanted to point out that real anycast 
-routing has never been supported by batman/bmx and that our features for HNA 
-should NOT be confused with anycast routing. The problem is that the concept 
-of anycast-routing does not easily fit into the batman routing algorithm 
-which relies on a single-source of originator messages (OGMs) for any given 
-destination.
+Cc: Kobus Roux <kroux@csir.co.za>, Ajay Makan <amakan@csir.co.za>
 
 
-I agree that the lack of anycast routing support is a problem and not a 
-feature. Especially when talking about quagga/zebra like route exchange 
-between different autonomous systems.
+On 14 Jan 2009, at 02:45 , Sven Eckelmann wrote:
 
-ciao,
-axel
+> On Tuesday 13 January 2009 22:29:25 Antoine van Gelder wrote:
+>> On 13 Jan 2009, at 20:46 , Sven Eckelmann wrote:
+>>> PS: Interested in porting batmand again to *bsd plattforms?
+>>
+>> Possibly - it would be nice to have the option to mesh with a =20
+>> beastie :)
+>>
+>> Do you have a rough idea of what broke since it last worked ?
+> Don't know when it worked the last time but it doesnt compile at the =20=
 
->
-> anycast is a way to use distributed services, as you can announce an
-> anycast address on every node, providing a specific service and packets
-> will get routed to the nearest service provider.
->
-> > - find mechanisms to limit the impact of denial of service or other
-> > attacks to the local environment (neighborhood).
->
-> <removed>
->
-> Gruss, Alex
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+> moment.
 
+
+
+Fun weekend :)
+
+batmand compiles under FreeBSD now but Darwin (Mac OSX) support is =20
+still broken.
+
+ =46rom what I can make out it looks like net/if_tun.h mysteriously got =20=
+
+renditioned at some point on the road to Leopard.
+
+Not sure what the best strategy would be moving forward. Any advice/=20
+suggestions ?  http://tuntaposx.sourceforge.net perhaps ?
+
+Some more information at: =
+http://lists.apple.com/archives/Darwin-development/2000/Oct/msg00033.html
+
+
+> There are also some parts marked as "not implemented" in bsd/route.c
+> You must check if all functions in bsd/*.c are in sync with linux/*.c
+
+
+These are the functions to manage the policy routing rules - I've had =20=
+
+some limited success running batmand with the --policy-routing-script =20=
+
+option but this is going to have to wait till next weekend to finish up.
+
+Best
+antoine
+
+
+--
+http://7degrees.co.za
+"Libr=E9 software for human education."
 
