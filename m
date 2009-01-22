@@ -1,13 +1,13 @@
-Date: Fri, 23 Jan 2009 00:02:00 +0100
+Date: Fri, 23 Jan 2009 00:10:28 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20090122230200.GA29236@pandem0nium>
-References: <bccbc6690901221325x5fdabb35n5ce6de134e54de5b@mail.gmail.com>
+Message-ID: <20090122231028.GB29236@pandem0nium>
+References: <200901212136.01338.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+	protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
 Content-Disposition: inline
-In-Reply-To: <bccbc6690901221325x5fdabb35n5ce6de134e54de5b@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] possible on any device with batman?
+In-Reply-To: <200901212136.01338.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] batmand-howto conversation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,22 +22,53 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
---UlVJffcvxoiEqYs2
+--KFztAG8eRSV9hGtP
 Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hello Maxx,
+Hey Sven,
 
-would you please consider removing the batman mailing list from your
-advertisement recipient collection? Thank you ...
+thanks for your work, it'd be nice to keep the howto up to date. We
+might as well merge the howto with our ongoing documentation [1].=20
+What do you (and the others) think?
 
-best regards
+Anyway, i'd upload the updated version of the howto as soon as you
+consider it ready. Just compiled it and it seems quite good from a=20
+quick look ... ;)
+
+best regards,
 	Simon
 
-On Thu, Jan 22, 2009 at 10:25:32PM +0100, M. Peterson wrote:
-[SPAM deleted]
+[1] http://gitorious.org/projects/batman-adv-doc
 
---UlVJffcvxoiEqYs2
+On Wed, Jan 21, 2009 at 09:36:00PM +0100, Sven Eckelmann wrote:
+> Hi,
+> I could not find any type of "source" (aka batmand-howto.odt in this case=
+) of=20
+> the batmand-howto written by Wesley Tsai and it seems to be partially=20
+> outdated. Because of that I decided to do a conversation of the PDF to La=
+TeX=20
+> so it can be changed more easily. It is quite rough at the moment, but I =
+hope=20
+> that their is some kind of interest in it.
+> Current sources can be found at http://gitorious.org/projects/batmand-how=
+to=20
+> and Simon and Marek have write access to mainline.
+>=20
+> Best regards,
+> 	Sven
+>=20
+
+
+
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+
+
+--KFztAG8eRSV9hGtP
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -45,9 +76,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFJeProrzg/fFk7axYRAjidAJ0cWFzDPm5R07nWzwwjlTwco38w0gCgokq8
-qJuN+zBoaCtP+OU3qKAnjs0=
-=ROkN
+iD8DBQFJePzkrzg/fFk7axYRAufXAJ9rJ1xsg8W3a7AfIeS0L/fu1FTalQCeNKr5
+Vk5e2CIV1COzC/op1+Z/f8M=
+=I3b6
 -----END PGP SIGNATURE-----
 
---UlVJffcvxoiEqYs2--
+--KFztAG8eRSV9hGtP--
