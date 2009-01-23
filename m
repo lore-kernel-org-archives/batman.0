@@ -3,8 +3,8 @@ MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
-Date: Fri, 23 Jan 2009 17:30:26 +0800
-Message-ID: <278AF6CA06F13D4C9E9F69C7B9AB3B8303504623@MBX21.stu.nus.edu.sg>
+Date: Fri, 23 Jan 2009 17:39:31 +0800
+Message-ID: <278AF6CA06F13D4C9E9F69C7B9AB3B8303504624@MBX21.stu.nus.edu.sg>
 In-Reply-To: <200901211621.21753.sven.eckelmann@gmx.de>
 References: <278AF6CA06F13D4C9E9F69C7B9AB3B8303504611@MBX21.stu.nus.edu.sg>
 	<200901211436.08998.sven.eckelmann@gmx.de>
@@ -23,7 +23,7 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>, b.a.t.m.a.n@open-mesh.net
+To: b.a.t.m.a.n@open-mesh.net
 
 Thanks Sven/Simon.
 
