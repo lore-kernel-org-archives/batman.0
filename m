@@ -1,16 +1,15 @@
-Content-class: urn:content-classes:message
+From: elektra <onelektra@gmx.net>
+Date: Fri, 23 Jan 2009 11:01:54 +0100
+References: <278AF6CA06F13D4C9E9F69C7B9AB3B8303504611@MBX21.stu.nus.edu.sg>
+	<200901211621.21753.sven.eckelmann@gmx.de>
+	<278AF6CA06F13D4C9E9F69C7B9AB3B8303504624@MBX21.stu.nus.edu.sg>
+In-Reply-To: <278AF6CA06F13D4C9E9F69C7B9AB3B8303504624@MBX21.stu.nus.edu.sg>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Date: Fri, 23 Jan 2009 17:39:31 +0800
-Message-ID: <278AF6CA06F13D4C9E9F69C7B9AB3B8303504624@MBX21.stu.nus.edu.sg>
-In-Reply-To: <200901211621.21753.sven.eckelmann@gmx.de>
-References: <278AF6CA06F13D4C9E9F69C7B9AB3B8303504611@MBX21.stu.nus.edu.sg>
-	<200901211436.08998.sven.eckelmann@gmx.de>
-	<20090121143814.GA13404@pandem0nium>
-	<200901211621.21753.sven.eckelmann@gmx.de>
-From: "Kartik Muralidharan" <kartik_m@nus.edu.sg>
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901231101.55035.onelektra@gmx.net>
 Subject: Re: [B.A.T.M.A.N.] Install Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -23,42 +22,36 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Thanks Sven/Simon.
+Hi Kartik -
 
-I was able to compile and checking 'file batmand' gave me the output
-mentioned below.
+please provide info about the error message... 
 
-But running ./batmand ath0 gives me an error.=20
+Of course you have to set up the wireless interface...
 
-What configuration do I need to do on the wireless interface on the
-device?
+Here is the startup-script I use on my laptop:
 
-Thanks
-Kartik
+# Load the tun kernel module
+modprobe tun
 
------Original Message-----
-From: Sven Eckelmann [mailto:sven.eckelmann@gmx.de]=20
-Sent: Wednesday, January 21, 2009 11:21 PM
-To: b.a.t.m.a.n@open-mesh.net
-Cc: Simon Wunderlich; Kartik Muralidharan
-Subject: Re: [B.A.T.M.A.N.] Install Batman
+# Create Ahdemo mode Madwifi wireless VAP
+wlanconfig ath0 create wlandev wifi0 wlanmode ahdemo
 
-Hi
-On Wednesday 21 January 2009 15:38:14 Simon Wunderlich wrote:
-> another option is to compile/linu batmand with the -static flag on
-your
-> x86 (i386) desktop
-Thx, forgot that one. You should be able to link it statically by using
-the=20
-current version from trunk and running
- LDFLAGS=3D"-s -static" /usr/bin/make
+# Create  /etc/resolv.conf with preferred domain name server 
+echo "nameserver 141.1.1.1" > /etc/resolv.conf
 
-You can check it with `file batmand`. It should print something like
- batmand: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV),
-statically=20
-linked, for GNU/Linux 2.6.8, stripped
-=20
-best regards,
-	Sven
+# Set up wireless essid, channel and fix the IBSS-ID to avoid cell-splitting 
+# - mandatory to join an existing cell in Ahdemo mode
+iwconfig ath0 essid olsr.freifunk.net channel 10 ap 02:CA:FF:EE:BA:BE
+
+# Configure IP of VAP interface
+ip a add 103.130.30.10/8 brd 103.255.255.255 dev ath0 
+
+# Switch it on.
+ip link set ath0 up
+
+# Start batmand with preferred internet gateway
+batmand  -p 103.130.1.67 ath0 
+
+cu elektra
