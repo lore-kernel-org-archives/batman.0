@@ -1,12 +1,13 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 25 Jan 2009 19:45:37 +0100
+Date: Sun, 25 Jan 2009 20:30:57 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20090125193057.GA9177@pandem0nium>
+References: <200901251946.21505.lindner_marek@yahoo.de>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200901251946.21505.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] batman 0.3.1 released
+In-Reply-To: <200901251946.21505.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] batman 0.3.1 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,38 +22,39 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
-Hi,
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-the B.A.T.M.A.N. team is pleased to announce the availability of batman 0.3.1  
-a bugfix and maintenance release. As usual, we provide precompiled packages:
-http://downloads.open-mesh.net/batman/stable/binaries/
-as well as signed source tarballs:
-http://downloads.open-mesh.net/batman/stable/sources/
+Hey,
 
-As you may have noticed we slighty modified the folder structure to seperate 
-binaries and sources better. Also, we will keep providing older source 
-tarballs to support the various distributions better. In addition, we added a 
-release "bundle" folder which contains related source packages:
-http://downloads.open-mesh.net/batman/releases/
+On Sun, Jan 25, 2009 at 07:45:37PM +0100, Marek Lindner wrote:
+> BSD compability was committed.
 
-Many people outside the B.A.T.M.A.N. team contributed to make this release 
-possible. Thanks to everyone that helped us.
-Special thanks goes to Antonio and the open-mesh.com crew. They provided us 
-with bug reports, test beds and ideas to improve the overall batman 
-experience. Also, we wish to thank Sven Eckelmann for his endless stream of 
-patches and thoughtful hints. 
+just to be clear: B.A.T.M.A.N. is currently not supported under *BSD,
+only the visualization server has been fixed. Maybe batmand=20
+compiles under *BSD, but lacks features like gateway functionality,=20
+or might have other regressions.=20
 
-During the past months the code received improvements all over the place. 
-Nearly all functions were touched. The packet aggregation was debugged and 
-improved. Areas with a high density of nodes suffered from bogus routing 
-information which was fixed. BSD compability was committed. Now, on a changing 
-route batman adds new routes to the kernel routing table before the old routes 
-are deleted to avoid race conditions. The batgat kernel module received many 
-fixes that improve stability. The makefile reduced the verbosity of its output 
-to allow easy distinctions between warnings and commands. The full changelog 
-can be retrieved here: http://open-mesh.net/log/trunk/batman?rev=1201
+Experience reports, patches, comments ... anything is welcome. :)
 
-Happy routing,
-Marek
+best regards,
+	Simon
 
 
+
+--+QahgC5+KEYLbs62
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFJfL3xrzg/fFk7axYRAtwSAJ4mXJZoqU2za7w6WCe90iz67SZS7QCeIfmm
+zysTtJRZQeDbeZMG5z21kKg=
+=hxo1
+-----END PGP SIGNATURE-----
+
+--+QahgC5+KEYLbs62--
