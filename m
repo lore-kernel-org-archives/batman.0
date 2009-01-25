@@ -1,13 +1,15 @@
-Date: Sun, 25 Jan 2009 20:30:57 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20090125193057.GA9177@pandem0nium>
-References: <200901251946.21505.lindner_marek@yahoo.de>
+Date: Sun, 25 Jan 2009 21:14:23 +0100
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Message-ID: <20090125201423.GA22459@WGT634U>
+References: <200901212136.01338.sven.eckelmann@gmx.de>
+	<20090122231028.GB29236@pandem0nium>
+	<200901230126.27298.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
+	protocol="application/pgp-signature"; boundary="7AUc2qLy4jB3hD7Z"
 Content-Disposition: inline
-In-Reply-To: <200901251946.21505.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman 0.3.1 released
+In-Reply-To: <200901230126.27298.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] batmand-howto conversation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,39 +24,32 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
 
---+QahgC5+KEYLbs62
-Content-Type: text/plain; charset=utf8
+--7AUc2qLy4jB3hD7Z
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hey,
+On Fri, Jan 23, 2009 at 01:26:18AM +0100, Sven Eckelmann wrote:
+> Maybe it works when their would be
+> * part 1 - batmand - algorithm, implementation, usage, ...
+> * part 2 - batman-adv, differents in implementation, usage, ...
+> ... or something completely different
+It is merged now into batman-adv-doc. A little bit more work is still
+needed...
 
-On Sun, Jan 25, 2009 at 07:45:37PM +0100, Marek Lindner wrote:
-> BSD compability was committed.
+Best regards,
+	Sven
 
-just to be clear: B.A.T.M.A.N. is currently not supported under *BSD,
-only the visualization server has been fixed. Maybe batmand=20
-compiles under *BSD, but lacks features like gateway functionality,=20
-or might have other regressions.=20
-
-Experience reports, patches, comments ... anything is welcome. :)
-
-best regards,
-	Simon
-
-
-
---+QahgC5+KEYLbs62
+--7AUc2qLy4jB3hD7Z
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iD8DBQFJfL3xrzg/fFk7axYRAtwSAJ4mXJZoqU2za7w6WCe90iz67SZS7QCeIfmm
-zysTtJRZQeDbeZMG5z21kKg=
-=hxo1
+iEYEARECAAYFAkl8yB4ACgkQqQGwKVlMoDudQQCcD1U4xTMMxXG7zxnGaVkiICzy
+tTcAnjIN+c4dIS5A9oo1yNXgrLA0xoXv
+=3M5P
 -----END PGP SIGNATURE-----
 
---+QahgC5+KEYLbs62--
+--7AUc2qLy4jB3hD7Z--
