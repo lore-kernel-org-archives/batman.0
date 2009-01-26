@@ -1,12 +1,15 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 26 Jan 2009 21:01:01 +0100
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+In-Reply-To: <200901270341.31896.lindner_marek@yahoo.de>
+References: <238a15490901231630s7d460687x6a95238f7308998a@mail.gmail.com>
+	<200901240942.07893.lindner_marek@yahoo.de>
+	<238a15490901260934i1f4dcd30u7404cd79fff7a29c@mail.gmail.com>
+	<200901270341.31896.lindner_marek@yahoo.de>
+Date: Mon, 26 Jan 2009 14:28:44 -0600
+Message-ID: <238a15490901261228t3b1ae9d1l1ced88b416698731@mail.gmail.com>
+From: Gargi Purohit <gaargie@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901270401.02271.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] nat & aggregation
+Subject: Re: [B.A.T.M.A.N.] Help in batman advanced configuration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,26 +23,68 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+On Mon, Jan 26, 2009 at 1:41 PM, Marek Lindner <lindner_marek@yahoo.de> wrote:
+> On Tuesday 27 January 2009 01:34:16 Gargi Purohit wrote:
+>> I hope other than setting the interface "ath0" in
+>> /proc/net/batman-advanced/interfaces - i dont
+>> need any other configuration changes.
+>>
+>> Since I can batping between the two routers i guess the layer 2
+>> connectivity is established between
+>> these guys - am just wondering if they should be able to forward
+>> requests like dhcp over multiple hop
+>> (1 hop and above)....
+>
+> Yes, a working batping indicates that the connection between both modules is
+> given. The DHCP request should be forwarded without problems. Your setup is
+> misconfigured somewhere.
+>
+> Could you please show the output of "brctl show br0" and "cat
+> /proc/net/batman-adv/interfaces" on both nodes. You can check where the dhcp
+> request dies by using tcpdump or batdump.
 
-Hi,
+On node 1 (Which is wired)
+---------------------------------------
 
-today I submitted the first patches into the 0.3.2 branch. Some of these 
-patches change the behaviour of batman:
+root@open-mesh:~# brctl show br0
+bridge name     bridge id               STP enabled     interfaces
+br0             8000.00180a0145b0       no              bat0
+                                                        ath1
+                                                        ath2
+                                                        eth0
+root@open-mesh:~# cat /proc/net/batman-adv/interfaces
+ath0
 
-- Aggregation is now enabled per default. We tested since a while now and 
-believe it is ready for a broader test. If you experience problems with your 
-routing you can disable the aggregation using the "--disable-aggregation" 
-option and verify whether it is related to the aggregation or not. Please 
-inform us about your experience.
+root@open-mesh:~# cat /proc/net/batman-adv/originators
+  Originator     (#/255)           Nexthop [outgoingIF]:   Potential
+nexthops ... [B.A.T.M.A.N. Adv 0.1-beta rv1103, MainIF/MAC:
+ath0/00:18:0a:01:45:b0]
+00:18:0a:01:44:d0  (255) 00:18:0a:01:44:d0 [      ath0]: 00:18:0a:01:44:d0 (255)
 
-- We noticed that quite some newly interested people have difficulties dealing 
-with batman since it requires NAT on the internet tunnel. Therefore the NAT on 
-the gate0 device will be configured by batman automatically. The iptables 
-binary is called to modify the outgoing NAT rules. This should make it easier 
-to get started with batman.
+On node 2 (Which is connected wirelessly to node 1 - eth0 is down)
+--------------------------------------------------------------------------------------------------
+root@open-mesh:/proc/net# brctl show br0
+bridge name     bridge id               STP enabled     interfaces
+br0             8000.00ff678aa75f       no                    ath1
+                                                        bat0
+                                                        ath2
+root@open-mesh:/proc/net# cat /proc/net/batman-adv/interfaces
+ath0
 
-Regards,
-Marek
+root@open-mesh:/proc/net# cat /proc/net/batman-adv/originators
+  Originator     (#/255)           Nexthop [outgoingIF]:   Potential nexthops ..
+. [B.A.T.M.A.N. Adv 0.1-beta rv1103, MainIF/MAC: ath0/00:18:0a:01:44:d0]
+00:18:0a:01:45:b0  (255) 00:18:0a:01:45:b0 [      ath0]: 00:18:0a:01:45:b0 (255)
+
+root@open-mesh:/proc/net#
 
 
 
+> Regards,
+> Marek
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
