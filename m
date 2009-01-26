@@ -1,15 +1,13 @@
-From: "SoukoussMan - FrancoFON CEO" <soukoussman@francofon.fr>
-References: <497CE6F6.7090504@francofon.fr>	<200901260711.12511.lindner_marek@yahoo.de>	<497D7F55.9040104@francofon.fr>
-	<200901261808.22139.lindner_marek@yahoo.de>
-In-Reply-To: <200901261808.22139.lindner_marek@yahoo.de>
-Date: Mon, 26 Jan 2009 12:25:32 +0100
-Message-ID: <003401c97fa8$cd3c1570$67b44050$@fr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Language: fr
-Subject: Re: [B.A.T.M.A.N.] problem with batman test
+In-Reply-To: <200901240942.07893.lindner_marek@yahoo.de>
+References: <238a15490901231630s7d460687x6a95238f7308998a@mail.gmail.com>
+	<200901240942.07893.lindner_marek@yahoo.de>
+Date: Mon, 26 Jan 2009 11:34:16 -0600
+Message-ID: <238a15490901260934i1f4dcd30u7404cd79fff7a29c@mail.gmail.com>
+From: Gargi Purohit <gaargie@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Help in batman advanced configuration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,78 +19,84 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi,
-
-When batmand is launch and show this :
-root@Fonera:~# /usr/bin/batmand -g 1mbit/1024 -o 2000 -d 3 ath2
-Interface activated: ath2
-Using interface ath2 with address 5.0.0.1 and broadcast address
-5.255.255.255
-B.A.T.M.A.N. 0.3.1 rv1203 (compatibility version 5)
-Warning - batgat kernel modul interface (/dev/batgat) not usable: No =
-such
-file or directory
-This may decrease the performance of batman!
-debug level: 3
-originator interval: 2000
-gateway class: 39 -> propagating: 1024KBit/1024KBit
-Adding route to 169.254.0.0/16 via 0.0.0.0 (table 254 - gate0)
-
-I do this command :=20
-root@Fonera:~# ip route ls table 254
-192.168.182.0/24 dev tun0  proto kernel  scope link  src 192.168.182.1=20
-192.168.18.0/24 dev eth0.1  proto kernel  scope link  src 192.168.18.3=20
-192.168.10.0/24 dev br-lan  proto kernel  scope link  src 192.168.10.1=20
-5.0.0.0/8 dev ath2  proto kernel  scope link  src 5.0.0.1=20
-default via 192.168.18.1 dev eth0.1=20
-root@Fonera:~#
-
-The route isn't present in the table 254.
-
-
-Cordialement,
-
---=20
-FrancoFON CEO and Founder
-SoukoussMan@FrancoFON.fr
-Communaut=E9 des foneros francophones - www.francofon.fr
-
------Message d'origine-----
-De=A0: b.a.t.m.a.n-bounces@open-mesh.net
-[mailto:b.a.t.m.a.n-bounces@open-mesh.net] De la part de Marek Lindner
-Envoy=E9=A0: lundi 26 janvier 2009 11:08
-=C0=A0: The list for a Better Approach To Mobile Ad-hoc Networking
-Objet=A0: Re: [B.A.T.M.A.N.] problem with batman test
-
-
-Hi,
-
-> Adding route to 169.254.0.0/16 via 0.0.0.0 (table 254 - gate0)
-> ^CDeleting route to 169.254.0.0/16 via 0.0.0.0 (table 254 - gate0)
-> Error - can't delete route to 169.254.0.0/16 via 0.0.0.0 (table 254): =
-No
-> such process
-> Deleting all BATMAN routes
-> Interface deactivated: ath2
+On Sat, Jan 24, 2009 at 2:42 AM, Marek Lindner <lindner_marek@yahoo.de> wrote:
 >
-> The route isn't add when batmand is launch.
+> Hi,
+>
+> > OPENMESH 2 - configuration
+> > ==========================
+> >
+> > 1. I stop the routing daemons. It has ath0, ath1, ath2 interfaces.
+> >    I again bridge these interfaces (br0 - ath0, ath1, ath2
+> >
+> >    I try getting an IP for this node usign the same method of running
+> > udhcpc but i am unable to
+> >    So I dont have an IP - but i dont worry about it now.
+>
+> You wont get an IP address on distant hosts (more than 1 hop) unless you have
+> batman running. The adhoc network will not relay your message.
+>
+> B.A.T.M.A.N. advanced is a kind of bridging tool on its own. You should load
+> the module and add the batman interfaces (in your case ath0). After configuring
+> batman you will have a new interface called "bat0" which you can add to your
+> bridge setup (br0 - ath1, ath2, bat0). Run udhcp on top of br0 now.
+>
 
-I just ran the same command as you and it works as expected. Why are you =
-so=20
-sure that the route is not added ? Batman would throw an error message=20
-(similar to the delete error). But it does not happen. May be something =
-else
+Thanks for your reply.
 
-deletes the route ?
-Could you check whether the command "logread" reveals more clues ?
+I do have the batman module running on openmesh2 as well and I have
+included in the br0 (ath1, ath2, bat0).
+I also have set ath0 in /proc/net/batman-advanced/interfaces.
 
-Regards,
-Marek
+I also run udhcpc specifying -i br0.  However I am unable to get an IP
+for openmesh2.
 
-_______________________________________________
-B.A.T.M.A.N mailing list
-B.A.T.M.A.N@open-mesh.net
-https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+So i was basically wondering if batman kernel module is running on
+both openmesh routers and one of routers is
+connected to eth0 (openmesh1) while the other is wirelessly connected
+to openmesh1 (i.e. my openmesh2) - should
+it receive an IP from my wired backbone?
 
+
+> > Associate a client
+> > ==================
+> >
+> > I now try to associate a client to open mesh 2.  Its IP request gets
+> > forwarded to the wired network and it receives an IP
+> > (192.168.50.6)
+> >
+> > However i can't batping to it from either openmesh 2 or openmesh 1
+> > Is something missing in my configuration?
+>
+> You can't run the battools (e.g. batping) from a client that does not run
+> batman advanced. The battools connect to the running batman to inject their
+> ping requests. Batman will recognize these special packets and treat them
+> accordingly.
+
+Ok.  That makes sense that batping cannot ping clients (as they dont run batman)
+Again my client when associated to openmesh1 (which is wired) gets an IP however
+when connected to openmesh2 (wirelessly connected to openmesh1) does
+not get an IP
+
+I hope other than setting the interface "ath0" in
+/proc/net/batman-advanced/interfaces - i dont
+need any other configuration changes.
+
+Since I can batping between the two routers i guess the layer 2
+connectivity is established between
+these guys - am just wondering if they should be able to forward
+requests like dhcp over multiple hop
+(1 hop and above)....
+
+
+
+> Regards,
+> Marek
+>
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
