@@ -1,16 +1,12 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 26 Jan 2009 20:41:31 +0100
-References: <238a15490901231630s7d460687x6a95238f7308998a@mail.gmail.com>
-	<200901240942.07893.lindner_marek@yahoo.de>
-	<238a15490901260934i1f4dcd30u7404cd79fff7a29c@mail.gmail.com>
-In-Reply-To: <238a15490901260934i1f4dcd30u7404cd79fff7a29c@mail.gmail.com>
+Date: Mon, 26 Jan 2009 21:01:01 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901270341.31896.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Help in batman advanced configuration
+Message-Id: <200901270401.02271.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] nat & aggregation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,25 +20,26 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Tuesday 27 January 2009 01:34:16 Gargi Purohit wrote:
-> I hope other than setting the interface "ath0" in
-> /proc/net/batman-advanced/interfaces - i dont
-> need any other configuration changes.
->
-> Since I can batping between the two routers i guess the layer 2
-> connectivity is established between
-> these guys - am just wondering if they should be able to forward
-> requests like dhcp over multiple hop
-> (1 hop and above)....
 
-Yes, a working batping indicates that the connection between both modules is 
-given. The DHCP request should be forwarded without problems. Your setup is 
-misconfigured somewhere.
+Hi,
 
-Could you please show the output of "brctl show br0" and "cat 
-/proc/net/batman-adv/interfaces" on both nodes. You can check where the dhcp 
-request dies by using tcpdump or batdump.
+today I submitted the first patches into the 0.3.2 branch. Some of these 
+patches change the behaviour of batman:
+
+- Aggregation is now enabled per default. We tested since a while now and 
+believe it is ready for a broader test. If you experience problems with your 
+routing you can disable the aggregation using the "--disable-aggregation" 
+option and verify whether it is related to the aggregation or not. Please 
+inform us about your experience.
+
+- We noticed that quite some newly interested people have difficulties dealing 
+with batman since it requires NAT on the internet tunnel. Therefore the NAT on 
+the gate0 device will be configured by batman automatically. The iptables 
+binary is called to modify the outgoing NAT rules. This should make it easier 
+to get started with batman.
 
 Regards,
 Marek
+
+
 
