@@ -1,17 +1,13 @@
+Message-ID: <497EC25F.2060406@francofon.fr>
+Date: Tue, 27 Jan 2009 09:14:23 +0100
+From: SoukoussMan <soukoussman@francofon.fr>
 MIME-Version: 1.0
-In-Reply-To: <20090126212412.GA16326@pandem0nium>
-References: <238a15490901231630s7d460687x6a95238f7308998a@mail.gmail.com>
-	<200901240942.07893.lindner_marek@yahoo.de>
-	<238a15490901260934i1f4dcd30u7404cd79fff7a29c@mail.gmail.com>
-	<200901270341.31896.lindner_marek@yahoo.de>
-	<238a15490901261228t3b1ae9d1l1ced88b416698731@mail.gmail.com>
-	<20090126212412.GA16326@pandem0nium>
-Date: Mon, 26 Jan 2009 19:41:38 -0600
-Message-ID: <238a15490901261741tc7f7382r8769ee42b2fa6f8c@mail.gmail.com>
-From: Gargi Purohit <gaargie@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] Help in batman advanced configuration
+References: <497CE6F6.7090504@francofon.fr>	<200901260711.12511.lindner_marek@yahoo.de>	<497D7F55.9040104@francofon.fr>	<200901261808.22139.lindner_marek@yahoo.de>
+	<003401c97fa8$cd3c1570$67b44050$@fr>
+In-Reply-To: <003401c97fa8$cd3c1570$67b44050$@fr>
+Content-Type: multipart/alternative;
+	boundary="------------040902070704030301070209"
+Subject: Re: [B.A.T.M.A.N.] problem with batman test
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,127 +21,123 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Mon, Jan 26, 2009 at 3:24 PM, Simon Wunderlich
-<simon.wunderlich@s2003.tu-chemnitz.de> wrote:
-> Hello Gargi,
+This is a multi-part message in MIME format.
+--------------040902070704030301070209
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+Someone can help me to find which command is executed to add the=20
+169.254.0.0/16 route to try to execute manually and look if i've a error =
+?
+
+SoukoussMan - FrancoFON CEO a =C3=A9crit :
+> Hi,
 >
-> your setup looks correct from what you've pasted. Some questions to find
-> the reason:
+> When batmand is launch and show this :
+> root@Fonera:~# /usr/bin/batmand -g 1mbit/1024 -o 2000 -d 3 ath2
+> Interface activated: ath2
+> Using interface ath2 with address 5.0.0.1 and broadcast address
+> 5.255.255.255
+> B.A.T.M.A.N. 0.3.1 rv1203 (compatibility version 5)
+> Warning - batgat kernel modul interface (/dev/batgat) not usable: No su=
+ch
+> file or directory
+> This may decrease the performance of batman!
+> debug level: 3
+> originator interval: 2000
+> gateway class: 39 -> propagating: 1024KBit/1024KBit
+> Adding route to 169.254.0.0/16 via 0.0.0.0 (table 254 - gate0)
+>
+> I do this command :=20
+> root@Fonera:~# ip route ls table 254
+> 192.168.182.0/24 dev tun0  proto kernel  scope link  src 192.168.182.1 =
+
+> 192.168.18.0/24 dev eth0.1  proto kernel  scope link  src 192.168.18.3 =
+
+> 192.168.10.0/24 dev br-lan  proto kernel  scope link  src 192.168.10.1 =
+
+> 5.0.0.0/8 dev ath2  proto kernel  scope link  src 5.0.0.1=20
+> default via 192.168.18.1 dev eth0.1=20
+> root@Fonera:~#
+>
+> The route isn't present in the table 254.
+>
+>
+> Cordialement,
+>
+>  =20
+
+--=20
+-----
+FrancoFON CEO and Founder
+Pr=C3=A9sident de l'association FrancoFON
+Communaut=C3=A9 des foneros francophones - http://www.francofon.fr
 
 
-Thanks a lot for your hints.  Really appreciate!!
-> 1. Have you set "up" all the interfaces by doing "ifconfig <dev> up"?
->
+--------------040902070704030301070209
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-I screwed up here ... bat0 was not up...i brought it up on both
-openmesh1 and openmesh2 and
-i got an IP for openmesh2
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content=3D"text/html;charset=3DUTF-8" http-equiv=3D"Content-Type"=
+>
+</head>
+<body bgcolor=3D"#ffffff" text=3D"#333399">
+<font size=3D"+1"><font face=3D"Courier New, Courier, monospace">Hi,<br>
+<br>
+Someone can help me to find which command is executed to add the
+169.254.0.0/16 route to try to execute manually and look if i've a
+error ?<br>
+</font></font><br>
+SoukoussMan - FrancoFON CEO a =C3=A9crit=C2=A0:
+<blockquote cite=3D"mid:003401c97fa8$cd3c1570$67b44050$@fr" type=3D"cite"=
+>
+  <pre wrap=3D"">Hi,
+
+When batmand is launch and show this :
+root@Fonera:~# /usr/bin/batmand -g 1mbit/1024 -o 2000 -d 3 ath2
+Interface activated: ath2
+Using interface ath2 with address 5.0.0.1 and broadcast address
+5.255.255.255
+B.A.T.M.A.N. 0.3.1 rv1203 (compatibility version 5)
+Warning - batgat kernel modul interface (/dev/batgat) not usable: No such=
+
+file or directory
+This may decrease the performance of batman!
+debug level: 3
+originator interval: 2000
+gateway class: 39 -&gt; propagating: 1024KBit/1024KBit
+Adding route to 169.254.0.0/16 via 0.0.0.0 (table 254 - gate0)
+
+I do this command :=20
+root@Fonera:~# ip route ls table 254
+192.168.182.0/24 dev tun0  proto kernel  scope link  src 192.168.182.1=20
+192.168.18.0/24 dev eth0.1  proto kernel  scope link  src 192.168.18.3=20
+192.168.10.0/24 dev br-lan  proto kernel  scope link  src 192.168.10.1=20
+5.0.0.0/8 dev ath2  proto kernel  scope link  src 5.0.0.1=20
+default via 192.168.18.1 dev eth0.1=20
+root@Fonera:~#
+
+The route isn't present in the table 254.
 
 
-I hope likewise a client of openmesh2 would too get an IP...I would
-check that soon....just wanted
-to thank you first :D
+Cordialement,
 
-> 2. If you set IPs on br0 of open-mesh1 and br0 of open-mesh2 manually,
-> can they ping each other?
->
-> 3. If yes (and configured within the subnet of PIX):
-> Can you ping PIX from open-mesh2?
->
-> 4. If you do udhcpc on open-mesh2, do you receive the packet on br0 on
-> open-mesh1? Please check with tcpdump, this should work. If yes, do you
-> also receive it on the PIX? (Maybe the answer is getting lost somewhere).
->
-> BTW, i've set up similar scenarios yet, this is supposed to work. ;)
->
-> best regards,
->        Simon
->
->
->
-> On Mon, Jan 26, 2009 at 02:28:44PM -0600, Gargi Purohit wrote:
->> On Mon, Jan 26, 2009 at 1:41 PM, Marek Lindner <lindner_marek@yahoo.de> wrote:
->> > On Tuesday 27 January 2009 01:34:16 Gargi Purohit wrote:
->> >> I hope other than setting the interface "ath0" in
->> >> /proc/net/batman-advanced/interfaces - i dont
->> >> need any other configuration changes.
->> >>
->> >> Since I can batping between the two routers i guess the layer 2
->> >> connectivity is established between
->> >> these guys - am just wondering if they should be able to forward
->> >> requests like dhcp over multiple hop
->> >> (1 hop and above)....
->> >
->> > Yes, a working batping indicates that the connection between both modules is
->> > given. The DHCP request should be forwarded without problems. Your setup is
->> > misconfigured somewhere.
->> >
->> > Could you please show the output of "brctl show br0" and "cat
->> > /proc/net/batman-adv/interfaces" on both nodes. You can check where the dhcp
->> > request dies by using tcpdump or batdump.
->>
->> On node 1 (Which is wired)
->> ---------------------------------------
->>
->> root@open-mesh:~# brctl show br0
->> bridge name     bridge id               STP enabled     interfaces
->> br0             8000.00180a0145b0       no              bat0
->>                                                         ath1
->>                                                         ath2
->>                                                         eth0
->> root@open-mesh:~# cat /proc/net/batman-adv/interfaces
->> ath0
->>
->> root@open-mesh:~# cat /proc/net/batman-adv/originators
->>   Originator     (#/255)           Nexthop [outgoingIF]:   Potential
->> nexthops ... [B.A.T.M.A.N. Adv 0.1-beta rv1103, MainIF/MAC:
->> ath0/00:18:0a:01:45:b0]
->> 00:18:0a:01:44:d0  (255) 00:18:0a:01:44:d0 [      ath0]: 00:18:0a:01:44:d0 (255)
->>
->> On node 2 (Which is connected wirelessly to node 1 - eth0 is down)
->> --------------------------------------------------------------------------------------------------
->> root@open-mesh:/proc/net# brctl show br0
->> bridge name     bridge id               STP enabled     interfaces
->> br0             8000.00ff678aa75f       no                    ath1
->>                                                         bat0
->>                                                         ath2
->> root@open-mesh:/proc/net# cat /proc/net/batman-adv/interfaces
->> ath0
->>
->> root@open-mesh:/proc/net# cat /proc/net/batman-adv/originators
->>   Originator     (#/255)           Nexthop [outgoingIF]:   Potential nexthops ..
->> . [B.A.T.M.A.N. Adv 0.1-beta rv1103, MainIF/MAC: ath0/00:18:0a:01:44:d0]
->> 00:18:0a:01:45:b0  (255) 00:18:0a:01:45:b0 [      ath0]: 00:18:0a:01:45:b0 (255)
->>
->> root@open-mesh:/proc/net#
->>
->>
->>
->> > Regards,
->> > Marek
->> >
->> > _______________________________________________
->> > B.A.T.M.A.N mailing list
->> > B.A.T.M.A.N@open-mesh.net
->> > https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->> >
->> _______________________________________________
->> B.A.T.M.A.N mailing list
->> B.A.T.M.A.N@open-mesh.net
->> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->>
->
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.6 (GNU/Linux)
->
-> iD8DBQFJfin8rzg/fFk7axYRArD6AJsFopD8+ZhlwhJWN6jNnGAo83qHPgCdFgHp
-> t/I6o0/TASreYNzzrjw65fY=
-> =rn7h
-> -----END PGP SIGNATURE-----
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
->
+  </pre>
+</blockquote>
+<br>
+<pre class=3D"moz-signature" cols=3D"72">--=20
+-----
+FrancoFON CEO and Founder
+Pr=C3=A9sident de l'association FrancoFON
+Communaut=C3=A9 des foneros francophones - <a class=3D"moz-txt-link-freet=
+ext" href=3D"http://www.francofon.fr">http://www.francofon.fr</a>
+</pre>
+</body>
+</html>
+
+--------------040902070704030301070209--
