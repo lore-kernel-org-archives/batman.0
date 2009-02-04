@@ -1,13 +1,10 @@
 MIME-Version: 1.0
-In-Reply-To: <200901260725.52680.lindner_marek@yahoo.de>
-References: <2ced936d0901251908l6372c54o532bc9a6097bf626@mail.gmail.com>
-	<200901260725.52680.lindner_marek@yahoo.de>
-Date: Wed, 4 Feb 2009 14:39:01 -0300
-Message-ID: <2ced936d0902040939j62a0739di2d7de3a40ed8b19e@mail.gmail.com>
+Date: Wed, 4 Feb 2009 15:03:35 -0300
+Message-ID: <2ced936d0902041003g74679247i56b83a29b18e7dd2@mail.gmail.com>
 From: Breno Jacinto <breno@freeunix.com.br>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Layer 2.5
+Subject: [B.A.T.M.A.N.] Stable adapters for Ad Hoc networks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +18,36 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hello Marek,
+Hello everyone,
 
-2009/1/26 Marek Lindner <lindner_marek@yahoo.de>:
->>    I'm writing a paper on mesh protocols and I need to know which
->> layer batman really operates in order to cite it correctly.
->
-> Sounds interesting. What is that paper about ?
+  I`m running several experiments involving ad hoc networks. I`ve
+selected some well known-to-be-compatible adapters, such as Edimax
+(Ralink shipset), Alfa networks (Realtek) and Atheros (madwifi).
+Atheros is available only as built-in adapter on the equipement or as
+a  PCI board.
 
-    It's a survey of existing protocol protocol solutions, with a
-focus on the underlay (below-IP) aproaches, and with the information
-you provided I'll certainly include BATMAN :)
+  So, I'm experiencing some instability regarding the selection of
+the BSSID used by all the nodes. I start the network with a single
+node, then another, then another. Now, for a couple of minutes it
+works, bu then some nodes start losing sight of each and changing
+their BSSIDs to a different value (and they should always use the
+same). I'm really running out of
+explanations of why this is happening, because these nodes are all
+in-range of each other, and should be "pingable" directly. My main
+suspect is the driver instability, but then I dont know of any other
+better alternatives. I've tested the following USB adapters:
+
+- Edimax EW-7318USg (rt73 drivers)
+- Alfa AWUS036H-11g
+
+  And the builtin adapters:
+
+- Atheros chipset AR5007EG
 
 
-> If you need more information &and/or help let us know.
+best regards,
 
-    Yes, I'll surely need. I'll send other e-mails as soon as I get my
-equipments set up here. Thanks for you attention.
->
-> Regards,
-> Marek
-
-
-All the best,
-
-
+--=20
 --=20
 :: Breno Jacinto ::
 :: breno - at - gprt.ufpe.br ::
