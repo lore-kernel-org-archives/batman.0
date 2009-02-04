@@ -1,15 +1,13 @@
-From: "SoukoussMan - FrancoFON CEO" <soukoussman@francofon.fr>
-References: <497CE6F6.7090504@francofon.fr>	<003401c97fa8$cd3c1570$67b44050$@fr>	<497EC25F.2060406@francofon.fr>
-	<200901271806.53826.lindner_marek@yahoo.de>
-In-Reply-To: <200901271806.53826.lindner_marek@yahoo.de>
-Date: Tue, 27 Jan 2009 11:51:49 +0100
-Message-ID: <009501c9806d$42125ca0$c63715e0$@fr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+In-Reply-To: <200901260725.52680.lindner_marek@yahoo.de>
+References: <2ced936d0901251908l6372c54o532bc9a6097bf626@mail.gmail.com>
+	<200901260725.52680.lindner_marek@yahoo.de>
+Date: Wed, 4 Feb 2009 14:39:01 -0300
+Message-ID: <2ced936d0902040939j62a0739di2d7de3a40ed8b19e@mail.gmail.com>
+From: Breno Jacinto <breno@freeunix.com.br>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Content-Language: fr
-Subject: Re: [B.A.T.M.A.N.] problem with batman test
+Subject: Re: [B.A.T.M.A.N.] Layer 2.5
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,43 +19,38 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Ok thanks i test this
+Hello Marek,
+
+2009/1/26 Marek Lindner <lindner_marek@yahoo.de>:
+>>    I'm writing a paper on mesh protocols and I need to know which
+>> layer batman really operates in order to cite it correctly.
+>
+> Sounds interesting. What is that paper about ?
+
+    It's a survey of existing protocol protocol solutions, with a
+focus on the underlay (below-IP) aproaches, and with the information
+you provided I'll certainly include BATMAN :)
 
 
+> If you need more information &and/or help let us know.
 
-Cordialement,
+    Yes, I'll surely need. I'll send other e-mails as soon as I get my
+equipments set up here. Thanks for you attention.
+>
+> Regards,
+> Marek
+
+
+All the best,
+
 
 --=20
-FrancoFON CEO and Founder
-SoukoussMan@FrancoFON.fr
-Communaut=E9 des foneros francophones - www.francofon.fr
-
-
------Message d'origine-----
-De=A0: b.a.t.m.a.n-bounces@open-mesh.net
-[mailto:b.a.t.m.a.n-bounces@open-mesh.net] De la part de Marek Lindner
-Envoy=E9=A0: mardi 27 janvier 2009 11:07
-=C0=A0: The list for a Better Approach To Mobile Ad-hoc Networking
-Objet=A0: Re: [B.A.T.M.A.N.] problem with batman test
-
-On Tuesday 27 January 2009 16:14:23 SoukoussMan wrote:
-> Someone can help me to find which command is executed to add the
-> 169.254.0.0/16 route to try to execute manually and look if i've a =
-error ?
-
-The command line would look like this:
-ip route add 169.254.0.0/16 dev eth0
-
-You can use logread to see the systems log messages.
-
-
-Regards,
-Marek
-
-_______________________________________________
-B.A.T.M.A.N mailing list
-B.A.T.M.A.N@open-mesh.net
-https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-
+:: Breno Jacinto ::
+:: breno - at - gprt.ufpe.br ::
+:: FingerPrint ::
+   2F15 8A61 F566 E442 8581
+   E3C0 EFF4 E202 74B7 7484
+:: Persistir no dif=EDcil =E9 a =FAnica maneira de torn=E1-lo f=E1cil algum=
+ dia.  ::
