@@ -1,14 +1,15 @@
-MIME-Version: 1.0
-In-Reply-To: <200902071030.10319.lindner_marek@yahoo.de>
+From: elektra <onelektra@gmx.net>
+Date: Sat, 7 Feb 2009 22:38:50 +0100
 References: <2ced936d0902041003g74679247i56b83a29b18e7dd2@mail.gmail.com>
-	<200902061001.59366.lindner_marek@yahoo.de>
-	<2ced936d0902060925g3ab56154haee0bc6aac8ba5ff@mail.gmail.com>
 	<200902071030.10319.lindner_marek@yahoo.de>
-Date: Sat, 7 Feb 2009 17:38:16 -0300
-Message-ID: <2ced936d0902071238i14ac756cmccfe2481cb56e6c7@mail.gmail.com>
-From: Breno Jacinto <breno@freeunix.com.br>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+	<2ced936d0902071238i14ac756cmccfe2481cb56e6c7@mail.gmail.com>
+In-Reply-To: <2ced936d0902071238i14ac756cmccfe2481cb56e6c7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902072238.50756.onelektra@gmx.net>
 Subject: Re: [B.A.T.M.A.N.] Stable adapters for Ad Hoc networks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -23,46 +24,34 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hello Marek,
+Hi -
 
-    Thank you for replying. I have one final question about this.
+I'm waiting for working drivers (particularly USB)  for IBSS mode for long 
+time and was putting my hope on Ralink RT73 as well.  
 
-2009/2/6 Marek Lindner <lindner_marek@yahoo.de>:
-> thanks to Felix from the OpenWRT project the Atheros driver has that feat=
-ure
-> (as you know). Broadcom is a much harder cases because the drivers a bina=
-ry
-> only. We mostly use the famous WRT54G and its derivates for our network. =
-Sven-
-> Ola managed to write patch for that binary driver of the WRT. There also =
-is an
-> open source driver project for the broadcom chips but I'm not sure where =
-it
-> stands.
+The situation is improving with the mac80211 driver development in the Linux 
+kernel. Recently patches went into compat-wireless that allow to fix the 
+IBSSID with the
 
-    How about in the laptops / pcs that access the WRT54G, which make
-the "infrastructure" of the mesh? What kind of adapters do you use on
-them?
+iwconfig  <interface> ap <cell-id> 
 
-> I never experimented with Ralink myself, so I can't answer that. I'm sure
-> Elektra could jump in here.  :-)
+command - with some drivers, not all. 
 
-     That would be really helpful - I'm trying to contact the rt73
-drivers guys for the last week and got no response from them. If
-anyone could confirm whether these Edimax dongles could set a static
-BSSID, that would help us decide which equipment to buy for building
-our ad hoc network test-bed.
+However the situation is a little more complex than just fixing the IBSSID, 
+because the drivers/firmware have to be convinced not to perform a IBSS-merge 
+every time the TSF timestamp in a received beacon is a little older.  Upon a 
+merge the cards may flush  their MAC table - this could happen every few 
+miliseconds - like I have observed with Intel ipw4965 driver. Also TSF clock 
+skews can cause race conditions.
 
-> Regards,
-> Marek
+So far ath5k and ath9k seem to work - but the only driver I can really 
+recommend is Madwifi with all patches from Openwrt -  vanilla Madwifi is 
+*not* working. The patched Madwifi in Openwrt Kamikaze works perfectly (I'm 
+using mesh with Batman exclusively every day and I can  suspend/resume my 
+EEE-PC for weeks and I'm always online ;-)
 
-best regards,
---=20
---=20
-:: Breno Jacinto ::
-:: breno - at - gprt.ufpe.br ::
-:: FingerPrint ::
-   2F15 8A61 F566 E442 8581
-   E3C0 EFF4 E202 74B7 7484
-:: Persistir no dif=EDcil =E9 a =FAnica maneira de torn=E1-lo f=E1cil algum=
- dia.  ::
+But Madwifi does not support USB...
+
+Best bet for USB is Zydas, I guess.
+
+cu elektra
