@@ -1,15 +1,15 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 8 Feb 2009 11:50:05 +0800
+From: elektra <onelektra@gmx.net>
+Date: Sun, 8 Feb 2009 12:47:50 +0100
 References: <2ced936d0902041003g74679247i56b83a29b18e7dd2@mail.gmail.com>
-	<200902072238.50756.onelektra@gmx.net>
 	<2ced936d0902071444q129aed4me5dab6117a2e19fb@mail.gmail.com>
-In-Reply-To: <2ced936d0902071444q129aed4me5dab6117a2e19fb@mail.gmail.com>
+	<200902081150.05625.lindner_marek@yahoo.de>
+In-Reply-To: <200902081150.05625.lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902081150.05625.lindner_marek@yahoo.de>
+Message-Id: <200902081247.51109.onelektra@gmx.net>
 Subject: Re: [B.A.T.M.A.N.] Stable adapters for Ad Hoc networks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -24,45 +24,27 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+Hi -
 
-Hi,
+some EEE PC models use a Atheros mPCI wireless card (the 701 for example) but 
+my 901 was shipped with a Ralink rt2870 (802.11 abgn) that I replaced with an 
+Atheros abg card ASAP...
 
->      Thanks for the information. At least now I have some background
-> to work on - I already have several rt73 USB dongles, some notebooks
-> with Atheros, some OpenMokos (which have atheros chipsets) and a few
-> Nokia N810 tablets (which have a prism chipset).
+Actually I'm using Ahdemo mode in my EEE-PC which works nicely together with 
+other devices with 'normal' IBSS-mode but fixed IBSS-ID - in our local mesh 
+we use Madwifi with OpenWRT patches and Broadcom-based devices (WRT54G/GL/GS, 
+Asus WL500GP) with OpenWRT Whiterussian and Broadcom proprietary driver with 
+fixed IBSS-ID hack (Freifunk Firmware).
 
-although the Openmoko Freerunner has an Atheros chip inside it does not use 
-the madiwifi driver (this is the AR6001 mobile chip, in case you wonder).
+Rate adaption with the Ministrel algorithm works well in Ahdemo mode - and you 
+have the possibility to set up a AP VAP on the same interface, too.
 
+Performance is fine. That may be different if you run a Ahdemo-only network in 
+range with other wireless networks - they won't detect collisions, hence 
+performance can suffer.
 
->      And they mentioned about some intermediate mode, called
-> Pseudo-IBSS or AHdemo mode, which allows a device to set a static
-> BSSID and it is supported by some drivers. I suppose we are talking
-> about the same thing here, just not giving any names (?).
+Cheers,
+elektra
 
-AHdemo is not the same as setting the BSSID in ad-hoc mode manually. As 
-mentioned on the page you linked to the AHdemo mode does not send any beacons. 
-Whereas the ad-hoc mode sends beacons with a fixed BSSID. Not sending beacons 
-has certain side effects: 
-- your network will appear being "invisible" (the normal network manager wont 
-show it)
-- you have to manually configure the connection speed and other stuff as the 
-usual autonegotiation is using the beacons for that
-- you will have collisions (might lead to decreased performance)
-- driver compat problems (only a few drivers support this mode)
-
-Nevertheless, it will fix your cell split problem. :-)
-
-
->      When you mentioned your EEE PC, which uses an Atheros chipset,
-> did you also had to set a static BSSID to the same used in the mesh
-> network you use?
-
-I think EEE PC uses the madwifi driver?! If so you can set the BSSID 
-statically.
-
-Regards,
-Marek
 
 
