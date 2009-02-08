@@ -1,15 +1,15 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 8 Feb 2009 11:37:39 +0800
+Date: Sun, 8 Feb 2009 11:50:05 +0800
 References: <2ced936d0902041003g74679247i56b83a29b18e7dd2@mail.gmail.com>
-	<200902071030.10319.lindner_marek@yahoo.de>
-	<2ced936d0902071238i14ac756cmccfe2481cb56e6c7@mail.gmail.com>
-In-Reply-To: <2ced936d0902071238i14ac756cmccfe2481cb56e6c7@mail.gmail.com>
+	<200902072238.50756.onelektra@gmx.net>
+	<2ced936d0902071444q129aed4me5dab6117a2e19fb@mail.gmail.com>
+In-Reply-To: <2ced936d0902071444q129aed4me5dab6117a2e19fb@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902081137.49016.lindner_marek@yahoo.de>
+Message-Id: <200902081150.05625.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Stable adapters for Ad Hoc networks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -27,17 +27,42 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open
 
 Hi,
 
->     How about in the laptops / pcs that access the WRT54G, which make
-> the "infrastructure" of the mesh? What kind of adapters do you use on
-> them?
+>      Thanks for the information. At least now I have some background
+> to work on - I already have several rt73 USB dongles, some notebooks
+> with Atheros, some OpenMokos (which have atheros chipsets) and a few
+> Nokia N810 tablets (which have a prism chipset).
 
-I think Elektra made clear that the driver situation for mobile devices is 
-much worse. We stopped promoting laptops as part of the network. Next to the 
-driver issues we faced different OSes in different versions, firewalls, 
-$security_software, wrongly configured routing daemons, confused ordinary 
-users, etc. Instead we encouraged people to use the routers for meshing and 
-normal managed networks for the laptops.
+although the Openmoko Freerunner has an Atheros chip inside it does not use 
+the madiwifi driver (this is the AR6001 mobile chip, in case you wonder).
+
+
+>      And they mentioned about some intermediate mode, called
+> Pseudo-IBSS or AHdemo mode, which allows a device to set a static
+> BSSID and it is supported by some drivers. I suppose we are talking
+> about the same thing here, just not giving any names (?).
+
+AHdemo is not the same as setting the BSSID in ad-hoc mode manually. As 
+mentioned on the page you linked to the AHdemo mode does not send any beacons. 
+Whereas the ad-hoc mode sends beacons with a fixed BSSID. Not sending beacons 
+has certain side effects: 
+- your network will appear being "invisible" (the normal network manager wont 
+show it)
+- you have to manually configure the connection speed and other stuff as the 
+usual autonegotiation is using the beacons for that
+- you will have collisions (might lead to decreased performance)
+- driver compat problems (only a few drivers support this mode)
+
+Nevertheless, it will fix your cell split problem. :-)
+
+
+>      When you mentioned your EEE PC, which uses an Atheros chipset,
+> did you also had to set a static BSSID to the same used in the mesh
+> network you use?
+
+I think EEE PC uses the madwifi driver?! If so you can set the BSSID 
+statically.
 
 Regards,
 Marek
+
 
