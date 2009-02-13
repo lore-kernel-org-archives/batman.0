@@ -1,10 +1,14 @@
+Date: Fri, 13 Feb 2009 14:08:40 +0100
+From: Bastian Bittorf <bittorf@bluebottle.com>
+Message-ID: <20090213130840.GX28964@amd>
+References: <mailman.134.1234470500.960.b.a.t.m.a.n@open-mesh.net>
+	<499494DE.1070304@gmail.com> <20090213002143.GA27725@pandem0nium>
 MIME-Version: 1.0
-Date: Thu, 12 Feb 2009 23:42:44 -0300
-Message-ID: <2ced936d0902121842k7ff76dc8o7c7d303a685a78bd@mail.gmail.com>
-From: Breno Jacinto <breno@freeunix.com.br>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] B.A.T.M.A.N L2 over a Bluetooth PAN
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="npbjE3dh3wBH6WIP"
+Content-Disposition: inline
+In-Reply-To: <20090213002143.GA27725@pandem0nium>
+Subject: Re: [B.A.T.M.A.N.] Wimax-Stuff and Ideas
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,49 +22,49 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hello,
 
-    I'm experimenting on heterogeneous ad hoc networks, which today
-are still very restricted in terms of hardware availability for
-off-the-shelf devices. Actually, the two most common technologies
-available today are 802.11 and Bluetooth, being this last one able to
-form simple personal area networks in the form of piconets.
+--npbjE3dh3wBH6WIP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-     In practical terms, the BlueZ stack of the Linux allows the
-formation of Bluetooth PANs consisting of up to 8 nodes, but it's an
-incredibly difficult process - actually, the piconet master needs to
-bridge connections so that all other devices in the network, which
-depend on this master, are able to reach it other directly - or at
-least feel like they are doing that. In fact, everything is just an
-emulation, since Bluetooth is a connection-oriented technology.
+* Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de> [13.02.2009 01:3=
+0]:
 
-     BNEP (Bluetooth Network Encapsulation Protocol) is the piece
-responsible for emulating an Ethernet network over Bluetooth, and
-theoretically any IP and above protocols can be used. Trying with
-simple IP broadcasts over a Bluetooth network shows that it works, but
-the problem comes when I try to do "straight" layer 2 broadcasts (not
-coming from the IP layer), such as the ones that BATMAN L2 does.
+[sorry for mixing up threads]
 
-    I tried to run BATMAN and add the interfaces used on each device -
-pan0 for the master, which is a bridge device, and bnep0 for the
-slave, but the frame dont seem to reach any destination on the
-network. The originators table remains empty on both sides of the
-connection. Running Wireshark shows the frame being generated, but
-never reaching anyone.
+> WiFi has some kind of range limit due to the acknowledgement timeout,
+> but you can easily overcome this by increasing the timeout (at least the=
+=20
+> madwifi driver allowed to change this timeout). Another
+> limit is of course the allowed transmit power, or EIRP. The limit is
 
-    So, I still cannot figure out why this is happening. I'd like to
-know if anyone has adventured in doing something similar and
-succeeded.
+Thats not true for special tasks like disaster management.
+It's no problem (and allowed) to work with 40.000 mW in such a situation.
+Ask somebody from the german THW for details.
 
+Normally you have some cars with built-in radio's, that are placed on
+e.g. hills to build up the backbone and do an "shortshot" down to
+the base of the hill to the workers (with another freq)
 
-best regards,
+Wimax is the worse idea i have ever heard of for such a situation.
+Just look at the frequencies, and it _must_ be clear that it was not
+build for long range. You have to lower the frequency to get a higher
+range...so take WiFi or use 900 MHz GSM...
 
---=20
---=20
-:: Breno Jacinto ::
-:: breno - at - gprt.ufpe.br ::
-:: FingerPrint ::
-   2F15 8A61 F566 E442 8581
-   E3C0 EFF4 E202 74B7 7484
-:: Persistir no dif=EDcil =E9 a =FAnica maneira de torn=E1-lo f=E1cil algum=
- dia.  ::
+bye, Bastian Bittorf / weimar.freifunk.net
+
+--npbjE3dh3wBH6WIP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmVcNcACgkQDonSpHhHLlxYWQCgpoFHR3jt3h8ewkTJzZ5NfXM3
+1QwAoODoi2BepsfmEcheuJYUMAE7fnuJ
+=z0og
+-----END PGP SIGNATURE-----
+
+--npbjE3dh3wBH6WIP--
