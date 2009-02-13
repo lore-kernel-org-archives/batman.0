@@ -1,15 +1,15 @@
-Date: Fri, 13 Feb 2009 16:20:07 +0100
-From: Bastian Bittorf <bittorf@bluebottle.com>
-Message-ID: <20090213152007.GA28964@amd>
-References: <mailman.134.1234470500.960.b.a.t.m.a.n@open-mesh.net>
-	<499494DE.1070304@gmail.com> <20090213002143.GA27725@pandem0nium>
-	<20090213130840.GX28964@amd> <20090213142309.GB17394@pandem0nium>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vWfgMjdKllQeoPX8"
-Content-Disposition: inline
-In-Reply-To: <20090213142309.GB17394@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] Wimax-Stuff and Ideas
+In-Reply-To: <200902130029.48657.lindner_marek@yahoo.de>
+References: <238a15490902111906g23358005v35fd57d8df857154@mail.gmail.com>
+	<20090212125347.GA4074@pandem0nium>
+	<238a15490902120658h4edb144bvc17db63a5b4a6f0a@mail.gmail.com>
+	<200902130029.48657.lindner_marek@yahoo.de>
+Date: Fri, 13 Feb 2009 14:58:03 -0600
+Message-ID: <238a15490902131258r3f44f405m75ce70b7fff09738@mail.gmail.com>
+From: Gargi Purohit <gaargie@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Using batman L2 on multiple wireless cards
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,46 +23,55 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+> Yes, batman has the concept of "main interface" (the first given interface) to
+> reduce overhead but on the node that has 2 interfaces you should see both
+> interfaces in the originator table (on a more distant host this might be
+> different).
+> Could you post the important lines from originators and explain the
+> corresponding setup ?
 
---vWfgMjdKllQeoPX8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ok...now I get that...However I think not always I am able to
+reproduce this scenario.  I have node A, node B, node C - each with 2
+radios
 
-* Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de> [13.02.2009 15:3=
-0]:
+--ch60---| A |---ch56---------ch56---| B |---ch40-------ch40---| C |---ch48
+      (1C)..........(22)...............(20)............(21).................(1D).........(23)...
 
-> > > limit is of course the allowed transmit power, or EIRP. The limit is
-> >=20
-> > Thats not true for special tasks like disaster management.
-> > It's no problem (and allowed) to work with 40.000 mW in such a situatio=
-n.
-> > Ask somebody from the german THW for details.
->=20
-> Thanks for pointnig that out, i did not know that. :)
-> So you can get an exception from the RegTP for special purposes like
-> desaster management?
+The terminating mac addresses for the radios are shown in ( )
 
-Yes. I would think, that this is global. In germany you have also          =
-                                                                   =20
-much more possibilities if you are a certified "Amateur Funker",
-that means you have completed a government-controlled seminar
-for "radio knowledge". (sorry, can't describe it better in english)
+My originator tables for node a, b, c are as follows:
+For Node A
+=======
+root@OpenWrt:/# cat /proc/net/batman-adv/originators
+  Originator     (#/255)           Nexthop [outgoingIF]:   Potential nexthops .
+00:02:6f:52:80:20  (255) 00:02:6f:52:80:20 [      ath1]: 00:02:6f:52:80:20 (255)
+00:02:6f:52:80:1d  (177) 00:02:6f:52:80:20 [      ath1]: 00:02:6f:52:80:20 (177)
+00:02:6f:52:80:21  (255) 00:02:6f:52:80:20 [      ath1]: 00:02:6f:52:80:20 (255)
 
-Bastian Bittorf
+For Node B
+=======
+root@OpenWrt:/# cat /proc/net/batman-adv/originators
+  Originator     (#/255)           Nexthop [outgoingIF]:   Potential nexthops .
+00:02:6f:52:80:22  (255) 00:02:6f:52:80:22 [      ath1]: 00:02:6f:52:80:22 (255)
+00:02:6f:52:80:1d  (250) 00:02:6f:52:80:1d [      ath0]: 00:02:6f:52:80:1d (250)
+00:02:6f:52:80:1c  (255) 00:02:6f:52:80:22 [      ath1]: 00:02:6f:52:80:22 (255)
 
+For Node C
+=======
+root@OpenWrt:/# cat /proc/net/batman-adv/originators
+  Originator     (#/255)           Nexthop [outgoingIF]:   Potential nexthops .
+00:02:6f:52:80:1c  (241) 00:02:6f:52:80:21 [      ath0]: 00:02:6f:52:80:21 (241)
+00:02:6f:52:80:21  (255) 00:02:6f:52:80:21 [      ath0]: 00:02:6f:52:80:21 (255)
 
---vWfgMjdKllQeoPX8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+I am wondering why
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Node A: Cannot reach mac 23
+Node B: Cannot reach mac 23
+Node C: Cannot reach 20, 22
 
-iEYEARECAAYFAkmVj6cACgkQDonSpHhHLlwytgCZASl1KsMFk/f5ChXYCu2Tq+/p
-+dcAn2Hyk3OoqRBRMYnZFzT/S2YYOVqL
-=xYvE
------END PGP SIGNATURE-----
+Should they be able to reach out "each of the radios" on "a node" or
+"just one of the radios" on "the node". Sometimes they can and some
+times they dont seem to..
 
---vWfgMjdKllQeoPX8--
+For instance...
+I am not sure if it is more of a radio issue than software problem...
