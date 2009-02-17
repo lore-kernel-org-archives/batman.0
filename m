@@ -1,13 +1,12 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 16 Feb 2009 20:21:48 +0100
+Date: Tue, 17 Feb 2009 13:37:24 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20090217123723.GA12179@pandem0nium>
 References: <4999A216.9020709@galilee.univ-paris13.fr>
-	<4999B9CE.8080400@gmail.com>
-In-Reply-To: <4999B9CE.8080400@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1897561.Pcd6ReAls3";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200902162021.51704.sven.eckelmann@gmx.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="YZ5djTAD1cGYuMQK"
+Content-Disposition: inline
+In-Reply-To: <4999A216.9020709@galilee.univ-paris13.fr>
 Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. on NS-2 ?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -20,35 +19,46 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net, sebastian.criado@gmail.com
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart1897561.Pcd6ReAls3
-Content-Type: text/plain;
-  charset="iso-8859-1"
+
+--YZ5djTAD1cGYuMQK
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+
+Hello Arnaud,
+
+there is no implementation for the NS-2 simulator as far as i know.
+
+best regards,
+	Simon
+
+On Mon, Feb 16, 2009 at 06:27:50PM +0100, Arnaud Kaiser wrote:
+> Hi,
+>=20
+> I wonder if it exists an implementation of B.A.T.M.A.N. on NS-2 simulator.
+>=20
+> Thanks.
+>=20
+> Arnaud.
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>=20
+
+--YZ5djTAD1cGYuMQK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 Content-Disposition: inline
 
-On Monday 16 February 2009 20:09:02 Sebasti=E1n D. Criado wrote:
-> > I wonder if it exists an implementation of B.A.T.M.A.N. on NS-2
-> > simulator.
->
-> Are you talking about the Nano Station 2 Access Point?
-No, about the ns-2 aka The Network Simulator 2
-	http://www.isi.edu/nsnam/ns/
-
-Regards,
-	Sven
-
---nextPart1897561.Pcd6ReAls3
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-iEYEABECAAYFAkmZvMwACgkQqQGwKVlMoDsY5wCgluT0cHqaa79DBBjxWvlLKW9B
-QjsAnRfjNbfY3VIOB9vFh+Ccpf/jwFwO
-=++9V
+iD8DBQFJmq+Drzg/fFk7axYRAq17AKDaEgZJgOq86A3X/eUdL++eviSCcwCfZ20q
+xxwK8+/z74CMu8Yss2nTYLw=
+=DsTH
 -----END PGP SIGNATURE-----
 
---nextPart1897561.Pcd6ReAls3--
+--YZ5djTAD1cGYuMQK--
