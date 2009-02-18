@@ -1,13 +1,11 @@
-Date: Tue, 17 Feb 2009 13:37:24 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20090217123723.GA12179@pandem0nium>
-References: <4999A216.9020709@galilee.univ-paris13.fr>
+Message-ID: <400f089fa7be494a681820c2261b9005.squirrel@wm.ddmesh.de>
+Date: Wed, 18 Feb 2009 10:47:02 +0100 (CET)
+From: "Stephan Enderlein (Freifunk Dresden)" <freifunk@ddmesh.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="YZ5djTAD1cGYuMQK"
-Content-Disposition: inline
-In-Reply-To: <4999A216.9020709@galilee.univ-paris13.fr>
-Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. on NS-2 ?
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Drop Packet, ,
+	single packet to large to fit maximum packet size
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,46 +17,26 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
+Hi,
+
+I very often get the following error in syslog and batman log.
+Currently I use batman-experimental rev 1214
+The error occurres every second.
+
+[  79646204] Error - Drop Packet, single packet to large to fit maximum packet size scheduled time
+79646157, now 79646202, agg_size 4, next_len 276 !!
 
 
---YZ5djTAD1cGYuMQK
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Axel: have you read my last email directly sent to you? It was about the hanging batmand problem.
 
-Hello Arnaud,
+Bye
+ Stephan
 
-there is no implementation for the NS-2 simulator as far as i know.
 
-best regards,
-	Simon
+---------------------------------------
+Dipl.Informatiker(FH) Stephan Enderlein
+Freifunk Dresden
 
-On Mon, Feb 16, 2009 at 06:27:50PM +0100, Arnaud Kaiser wrote:
-> Hi,
->=20
-> I wonder if it exists an implementation of B.A.T.M.A.N. on NS-2 simulator.
->=20
-> Thanks.
->=20
-> Arnaud.
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->=20
 
---YZ5djTAD1cGYuMQK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFJmq+Drzg/fFk7axYRAq17AKDaEgZJgOq86A3X/eUdL++eviSCcwCfZ20q
-xxwK8+/z74CMu8Yss2nTYLw=
-=DsTH
------END PGP SIGNATURE-----
-
---YZ5djTAD1cGYuMQK--
