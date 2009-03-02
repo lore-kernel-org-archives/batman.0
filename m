@@ -1,8 +1,10 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon,  2 Mar 2009 14:15:54 +0100
-Message-Id: <1235999754-6552-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] Generate source dependency informations on
-	the fly
+Message-ID: <8d79bbc03733436bcbf2616af3ef08eb.squirrel@wm.ddmesh.de>
+Date: Mon, 2 Mar 2009 14:43:02 +0100 (CET)
+From: "Stephan Enderlein (Freifunk Dresden)" <freifunk@ddmesh.de>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] batman-exp rev1214 sometimes keeps dead node in list
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,125 +18,45 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-The current way to track dependencies in batman and related tools is to
-look for changes in the .c file and if it exist the .h file with the
-same name. This can lead to inconsistent compilations when changes are
-done in a header which is included in different .c files.
-The easiest workaround is to let the compiler generate the dependency
-information which is then included in the makefile to notice changes
-in directly and indirectly included files. The first run is made without
-these informations during the build of object files. No extra execve or
-gcc startup related overhead is generated in that way and future changes
-are still tracked by make.
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-adv-userspace/Makefile |   10 ++++------
- batman/Makefile               |    9 ++++-----
- battool/Makefile              |    7 ++++---
- vis-advanced/Makefile         |   10 ++++------
- 4 files changed, 16 insertions(+), 20 deletions(-)
+Hi,
 
-diff --git a/batman-adv-userspace/Makefile b/batman-adv-userspace/Makefile
-index 6e3c2dd..265799b 100644
---- a/batman-adv-userspace/Makefile
-+++ b/batman-adv-userspace/Makefile
-@@ -60,11 +60,9 @@ all:
- $(BINARY_NAME):	$(SRC_O) $(SRC_H) Makefile
- 	$(Q_LD)$(CC) -o $@ $(SRC_O) $(LDFLAGS)
- 
--%.o: %.c %.h
--	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
--
--%.o: %.c
--	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
-+.c.o:
-+	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MD -c $< -o $@
-+-include $(SRC_C:.c=.d)
- 
- sources:
- 	mkdir -p $(FILE_NAME)
-@@ -80,7 +78,7 @@ sources:
- 	tar czvf $(FILE_NAME).tgz $(FILE_NAME)
- 
- clean:
--	rm -f $(BINARY_NAME) *.o
-+	rm -f $(BINARY_NAME) *.o *.d
- 
- 
- clean-long:
-diff --git a/batman/Makefile b/batman/Makefile
-index 565d75e..509217d 100644
---- a/batman/Makefile
-+++ b/batman/Makefile
-@@ -78,11 +78,9 @@ all:
- $(BINARY_NAME):	$(SRC_O) $(SRC_H) Makefile
- 	$(Q_LD)$(CC) -o $@ $(SRC_O) $(LDFLAGS)
- 
--%.o: %.c %.h
--	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
--
--%.o: %.c
--	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
-+.c.o:
-+	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MD -c $< -o $@
-+-include $(SRC_C:.c=.d)
- 
- sources:
- 	mkdir -p $(FILE_NAME)
-@@ -99,6 +97,7 @@ sources:
- 
- clean:
- 	rm -f $(BINARY_NAME) *.o posix/*.o linux/*.o bsd/*.o
-+	rm -f `find . -name '*.d' -print`
- 
- 
- clean-long:
-diff --git a/battool/Makefile b/battool/Makefile
-index 10d310f..4c8d497 100644
---- a/battool/Makefile
-+++ b/battool/Makefile
-@@ -73,8 +73,9 @@ all:		$(BINARY_NAME)
- $(BINARY_NAME):	$(SRC_O) $(SRC_H) Makefile
- 	$(Q_LD)$(CC) -o $@ $(SRC_O) $(LDFLAGS)
- 
--%.o: %.c
--	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
-+.c.o:
-+	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MD -c $< -o $@
-+-include $(SRC_C:.c=.d)
- 
- sources:
- 	mkdir -p $(FILE_NAME)
-@@ -91,7 +92,7 @@ sources:
- 	tar czvf $(FILE_NAME).tgz $(FILE_NAME)
- 
- clean:
--	rm -f $(BINARY_NAME) *.o
-+	rm -f $(BINARY_NAME) *.o *.d
- 
- 
- clean-long:
-diff --git a/vis-advanced/Makefile b/vis-advanced/Makefile
-index 548d85f..3eaf1eb 100644
---- a/vis-advanced/Makefile
-+++ b/vis-advanced/Makefile
-@@ -42,11 +42,9 @@ vis-adv:	$(SRC_O) Makefile
- vis-adv-static:	$(SRC_O) Makefile
- 		$(Q_LD)$(CC) $(CFLAGS) -o $@ $(SRC_O) $(LDFLAGS_STATIC)
- 
--%.o: %.c %.h
--	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
--
--%.o: %.c
--	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
-+.c.o:
-+	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MD -c $< -o $@
-+-include $(SRC_C:.c=.d)
- 
- clean:
--		rm -f vis-adv vis-adv-static *.o *~
-+		rm -f vis-adv vis-adv-static *.o *.d *~
--- 
-1.6.1.3
+i have seen that batman-experimental rev. 1214 keeps a dead node in its list and also
+keeps the routing entry valid.
+Node 10.12.59.1 is the dead node. this seems to be in list since some days.
+
+BatMan-eXp 0.3-alpha, IF eth1 10.12.10.1, LinkWindowSize 100, PathWindSize 100, OGI 1000ms,
+currSeqno 51910, UT 23:22:38:18, CPU 7/1000, IntTime 2068698579
+Neighbor        outgoingIF     bestNextHop brc (~rcvd  knownSince  lseq lvld rid nid ) [     viaIF
+RTQ  RQ  TQ]..
+10.12.10.17     eth1           10.12.10.17  94 (   98 23:22:37:42 10810    0   1   1 ) [      eth1
+ 94  98  95]
+10.12.59.1      eth1            10.12.59.1  97 (  100  7:19:27:24 18041 490493   2   0 ) [     
+eth1   0  94   0]
+
+Originator      outgoingIF     bestNextHop brc (~rcvd  knownSince  lseq lvld pws  ogi cpu hop
+change ) alternativeNextHops brc ...
+10.12.23.1      eth1           10.12.10.17  93 (   97  6:18:09:30 42628    0 100 1004  17 -11   
+163 )
+10.12.0.1       eth1           10.12.10.17  96 (  100  7:20:16:51 20266    0 100 1001   0   2  
+1741 )
+10.12.59.1      eth1            10.12.59.1  97 (  100  7:19:27:24 18041 490493 100 1021   0 -12  
+1782 )
+10.12.0.17      eth1           10.12.10.17  91 (   95  7:20:17:05 57466    0 100 1009   1   2  
+1959 )
+10.12.45.1      eth1           10.12.10.17  93 (   97 13:00:40:40 28037    0 100 1001  20 -11  
+1687 )
+10.12.10.17     eth1           10.12.10.17  94 (   98 23:22:37:42 10810    0 100 1007  40 -12  
+1823 )
+10.12.8.1       eth1           10.12.10.17  99 (  100 13:00:37:54 61117    0 100 1003  17 -11  
+1745 )
+   7 known Originator(s), averages:         94 (   98                   70070 100 1007  13  -7  
+1557 )
+
+Bye Stephan
+
+---------------------------------------
+Dipl.Informatiker(FH) Stephan Enderlein
+Freifunk Dresden
+
 
