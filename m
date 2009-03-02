@@ -1,8 +1,9 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 24 Feb 2009 11:52:40 +0100
-Message-Id: <1235472760-8775-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] Fix deletion of aggregate_ogm in
-	/proc/net/batman-adv
+MIME-Version: 1.0
+Date: Mon, 2 Mar 2009 12:28:25 +0100
+Message-ID: <bccbc6690903020328j2374101g8e3da914d3dd05d0@mail.gmail.com>
+From: "M. Peterson" <petersonmaxx@googlemail.com>
+Content-Type: multipart/alternative; boundary=001636498c8ff28a840464211d4d
+Subject: [B.A.T.M.A.N.] WLan Sharing with Mobile Phone: Asus P835
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,31 +15,20 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-remove_proc_entry needs as second parameter the parent directory and
-not the proc_dir_entry of the file to delete. Otherwise nothing will
-be removed the deletion of /proc/net/batman-adv will fail because it
-still has child nodes.
+--001636498c8ff28a840464211d4d
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-adv-kernelland/proc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+http://www.heise.de/newsticker/Asus-stellt-Smartphone-mit-WLAN-Sharing-vor--/meldung/133740
+http://asus.com/news_show.aspx?id=14488
 
-diff --git a/batman-adv-kernelland/proc.c b/batman-adv-kernelland/proc.c
-index 6c475d4..00e177a 100644
---- a/batman-adv-kernelland/proc.c
-+++ b/batman-adv-kernelland/proc.c
-@@ -134,7 +134,7 @@ void cleanup_procfs(void)
- 		remove_proc_entry(PROC_FILE_VIS, proc_batman_dir);
- 
- 	if (proc_aggr_file)
--		remove_proc_entry(PROC_FILE_AGGR, proc_aggr_file);
-+		remove_proc_entry(PROC_FILE_AGGR, proc_batman_dir);
- 
- 	if (proc_batman_dir)
- #ifdef __NET_NET_NAMESPACE_H
--- 
-1.6.1.3
+--001636498c8ff28a840464211d4d
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
+<div><a href="http://www.heise.de/newsticker/Asus-stellt-Smartphone-mit-WLAN-Sharing-vor--/meldung/133740">http://www.heise.de/newsticker/Asus-stellt-Smartphone-mit-WLAN-Sharing-vor--/meldung/133740</a></div>
+<div><a href="http://asus.com/news_show.aspx?id=14488">http://asus.com/news_show.aspx?id=14488</a></div>
+
+--001636498c8ff28a840464211d4d--
