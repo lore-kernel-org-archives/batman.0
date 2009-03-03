@@ -1,13 +1,12 @@
-From: elektra <onelektra@gmx.net>
-Date: Tue, 3 Mar 2009 19:26:45 +0100
+Message-ID: <COL105-W58BA161C6D6360E9F4B568F6A60@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_1377a7e2-113a-4acc-addc-5750aff71297_"
+From: Dennis Bartsch <dennis_bartsch@hotmail.com>
+Date: Tue, 3 Mar 2009 20:49:07 +0100
+In-Reply-To: <200903031926.46231.onelektra@gmx.net>
 References: <49AD6C20.8060404@java-system.com>
-In-Reply-To: <49AD6C20.8060404@java-system.com>
+	<200903031926.46231.onelektra@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903031926.46231.onelektra@gmx.net>
 Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. first experience (2 questions)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -20,121 +19,59 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-Hi Marco!
-
-If you experience intermittend operation this is with 99.9% probability a 
-driver issue.
-
-Please use a Atheros-based interface with Madwifi driver and all patches  from 
-OpenWRT's Madwifi!
-
-And: Use nosbeacon option when creating adhoc VAP and fix the cell-ID 
-(IBSSID).
-
-Example:
-wlanconfig ath0 create wlandev wifi0 wlanmode adhoc nosbeacon
-iwconfig ath0 ap 02:CA:FF:EE:BA:BE
-
-This is the only driver that works reliably. Broadcom proprietary driver with 
-IBSS-fix hack works also (Linux 2.4.X from OpenWrt only)
-
-Happy meshing!
-
-cu elektra
+--_1377a7e2-113a-4acc-addc-5750aff71297_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 
+Hello=2C
 
->
-> I just installed OpenWRT and B.A.T.M.A.N. on 3 Fonera router (IPs are
-> 192.168.2.200-201-202)
-> Started BATMAN on each fonera
-> Power of fonera limited to 9dBm (instead of 18dBm) since I'm
-> experimenting in my small apartment
->
-> Then I started BATMAN on my laptop (IP 192.168.2.65)
->
-> This is the output of batmand -d 1 wlan0
->   Originator  (#/255)         Nexthop [outgoingIF]:   Potential nexthops
-> ... [B.A.T.M.A.N. 0.3, MainIF/IP: wlan0/192.168.2.65, UT: 0d 0h 2m]
-> 192.168.2.200   (235)   192.168.2.200 [     wlan0]:   192.168.2.200
-> (235)   192.168.2.202 (229)   192.168.2.201 (229)
-> 192.168.2.201   (245)   192.168.2.201 [     wlan0]:   192.168.2.201
-> (245)   192.168.2.200 (208)   192.168.2.202 (225)
-> 192.168.2.202   (236)   192.168.2.202 [     wlan0]:   192.168.2.202
-> (236)   192.168.2.201 (228)   192.168.2.200 (219)
-> EOD
-> BOD
->   Originator  (#/255)         Nexthop [outgoingIF]:   Potential nexthops
-> ... [B.A.T.M.A.N. 0.3, MainIF/IP: wlan0/192.168.2.65, UT: 0d 0h 2m]
-> 192.168.2.200   (236)   192.168.2.200 [     wlan0]:   192.168.2.200
-> (236)   192.168.2.202 (229)   192.168.2.201 (229)
-> 192.168.2.201   (245)   192.168.2.201 [     wlan0]:   192.168.2.201
-> (245)   192.168.2.200 (210)   192.168.2.202 (225)
-> 192.168.2.202   (237)   192.168.2.202 [     wlan0]:   192.168.2.202
-> (237)   192.168.2.201 (229)   192.168.2.200 (221)
-> EOD
-> BOD
->   Originator  (#/255)         Nexthop [outgoingIF]:   Potential nexthops
-> ... [B.A.T.M.A.N. 0.3, MainIF/IP: wlan0/192.168.2.65, UT: 0d 0h 2m]
-> 192.168.2.200   (237)   192.168.2.200 [     wlan0]:   192.168.2.200
-> (237)   192.168.2.202 (229)   192.168.2.201 (229)
-> 192.168.2.201   (245)   192.168.2.201 [     wlan0]:   192.168.2.201
-> (245)   192.168.2.200 (212)   192.168.2.202 (225)
-> 192.168.2.202   (237)   192.168.2.202 [     wlan0]:   192.168.2.202
-> (237)   192.168.2.201 (229)   192.168.2.200 (223)
-> EOD
-> BOD
->   Originator  (#/255)         Nexthop [outgoingIF]:   Potential nexthops
-> ... [B.A.T.M.A.N. 0.3, MainIF/IP: wlan0/192.168.2.65, UT: 0d 0h 2m]
-> 192.168.2.200   (239)   192.168.2.200 [     wlan0]:   192.168.2.200
-> (239)   192.168.2.202 (229)   192.168.2.201 (229)
-> 192.168.2.201   (246)   192.168.2.201 [     wlan0]:   192.168.2.201
-> (246)   192.168.2.200 (213)   192.168.2.202 (225)
-> 192.168.2.202   (238)   192.168.2.202 [     wlan0]:   192.168.2.202
-> (238)   192.168.2.201 (229)   192.168.2.200 (223)
-> EOD
->
->
-> Then I started 3 terminal windows with ping command to each of 3 foneras
-> I get a lot of error from ping command, please check at the following
-> output example
->
->  >From 192.168.2.202 icmp_seq=10 Destination Port Unreachable
->  >From 192.168.2.202 icmp_seq=11 Destination Port Unreachable
->  >From 192.168.2.202 icmp_seq=12 Destination Port Unreachable
->
-> 64 bytes from 192.168.2.201: icmp_seq=13 ttl=64 time=1.89 ms
-> 64 bytes from 192.168.2.201: icmp_seq=14 ttl=64 time=1.64 ms
-> 64 bytes from 192.168.2.201: icmp_seq=15 ttl=64 time=1.64 ms
-> 64 bytes from 192.168.2.201: icmp_seq=16 ttl=64 time=1.61 ms
-> 64 bytes from 192.168.2.201: icmp_seq=17 ttl=64 time=1.78 ms
->
->  >From 192.168.2.202 icmp_seq=18 Destination Port Unreachable
->  >From 192.168.2.202 icmp_seq=19 Destination Port Unreachable
->
-> 64 bytes from 192.168.2.201: icmp_seq=20 ttl=64 time=1.68 ms
-> 64 bytes from 192.168.2.201: icmp_seq=21 ttl=64 time=1.68 ms
-> 64 bytes from 192.168.2.201: icmp_seq=22 ttl=64 time=1.84 ms
-> 64 bytes from 192.168.2.201: icmp_seq=23 ttl=64 time=1.65 ms
-> 64 bytes from 192.168.2.201: icmp_seq=24 ttl=64 time=1.58 ms
->
->
-> The final result shows a loss of packets from 12% to 64%
->
-> 1st question: Where is my error?
->
-> 2nd question: I'm still able to perform ping to fonera router also after
-> kill of batmand, is this ok?
->
->
-> Thanks
-> Marco
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>=20
+> And: Use nosbeacon option when creating adhoc VAP and fix the cell-ID=20
+> (IBSSID).
+>=20
 
+just a hint:
 
+the uci option for getting the same result is "sw_merge" (set to 1) in the =
+wifi-iface section of the ad-hoc VAP.
+
+regards
+dennis bartsch
+
+_________________________________________________________________
+http://redirect.gimas.net/?n=3DM0903xIMTicTacToe
+Kostenlose Spannung? Spiel jetzt mit Freunden TIC TAC TOE in 3D!=
+
+--_1377a7e2-113a-4acc-addc-5750aff71297_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Verdana
+}
+</style>
+</head>
+<body class=3D'hmmessage'>
+Hello=2C<br><br>&gt=3B <br>&gt=3B And: Use nosbeacon option when creating a=
+dhoc VAP and fix the cell-ID <br>&gt=3B (IBSSID).<br>&gt=3B <br><br>just a =
+hint:<br><br>the uci option for getting the same result is "sw_merge" (set =
+to 1) in the wifi-iface section of the ad-hoc VAP.<br><br>regards<br>dennis=
+ bartsch<br><br /><hr />Feier laut! Mit Musik=A0 vom Windows Live Sky Drive=
+. <a href=3D'http://redirect.gimas.net/?n=3DM0903Wave3Party' target=3D'_new=
+'>Hol' dir jetzt 25 GB Speicherplatz!</a></body>
+</html>=
+
+--_1377a7e2-113a-4acc-addc-5750aff71297_--
