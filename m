@@ -1,13 +1,12 @@
-Date: Tue, 3 Mar 2009 14:36:03 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20090303133603.GA17994@pandem0nium>
+MIME-Version: 1.0
+In-Reply-To: <C5DF257F-EE1F-4070-AB04-EF4481777324@port-x.de>
 References: <8d79bbc03733436bcbf2616af3ef08eb.squirrel@wm.ddmesh.de>
 	<C5DF257F-EE1F-4070-AB04-EF4481777324@port-x.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="G4iJoqBmSsgzjUCe"
-Content-Disposition: inline
-In-Reply-To: <C5DF257F-EE1F-4070-AB04-EF4481777324@port-x.de>
+Date: Tue, 3 Mar 2009 12:12:29 -0200
+Message-ID: <d5bba6ce0903030612o466bc14dn2149fef5174369fa@mail.gmail.com>
+From: Julio Cesar Puigpinos <jcpuigpinos@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] Maybe!?!
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -22,47 +21,37 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-
---G4iJoqBmSsgzjUCe
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello Mario,
-
-maybe this link [1] helps you.
-
-best regards,
-	Simon
-
-[1] http://freshmeat.net/search/?q=3Dwifi+management&section=3Dprojects
-
-On Mon, Mar 02, 2009 at 02:52:18PM +0100, Mario Roeber wrote:
+2009/3/2 Mario Roeber :
 > Hello,
->
-> i'know it's not direct a BATMAN problem/question. i'm looking for =20
-> opensource central wlan managmend software.
+
+Hi
+
+> i'know it's not direct a BATMAN problem/question. i'm looking for opensource
+> central wlan managmend software.
 > maybe someone know a project.
->
+
+You can take a look to Afrimesh.
+
+Quoted from http://groups.google.com/group/village-telco-dev/browse_thread/thread/1555e4bc6160de89?hl=en
+
+"Afrimesh builds on top of the most excellent B.A.T.M.A.N. project to
+provide a simple management dashboard which enables network operators
+to create and sustain a resilient communications network with a
+minimum of fuss."
+
+More info in http://code.google.com/p/afrimesh and a live demo in
+http://afrimesh.7degrees.co.za/
+
+
+Or if you need something more simple take a look to http://dev.wifidog.org/
+
 > thanks for help,
 > Mario Roeber
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
 
---G4iJoqBmSsgzjUCe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+                  Saludos, Julio
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmtMkMACgkQrzg/fFk7axY2cACgoJKc6X43avcpbTvaoOrcif+l
-nmAAoJNdagO5dKxq4KOErtHYVru4ZtfJ
-=Ux1q
------END PGP SIGNATURE-----
-
---G4iJoqBmSsgzjUCe--
+-- 
+www.lugro-mesh.org.ar/        Wireless Mesh Networks Group
+www.lugro.org.ar                         GNU/Linux User Group Rosario, Argentina
+Slackware rulez :P             www.slackware.org
+NO A LA MATRICULA!!!: http://noalamatricula.wordpress.com/
