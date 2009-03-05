@@ -1,13 +1,15 @@
-Message-ID: <49AEDF7F.3070700@java-system.com>
-Date: Wed, 04 Mar 2009 21:07:27 +0100
-From: marco tozzini <lists@java-system.com>
+From: "P. Mazart" <pmazart@web.de>
+Date: Thu, 5 Mar 2009 11:55:16 +0100
+References: <200903032126.57456.pmazart@web.de>
+In-Reply-To: <200903032126.57456.pmazart@web.de>
 MIME-Version: 1.0
-References: <49AD6C20.8060404@java-system.com>
-	<200903031926.46231.onelektra@gmx.net>
-In-Reply-To: <200903031926.46231.onelektra@gmx.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. first experience (2 questions)
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+Message-Id: <200903051155.16975.pmazart@web.de>
+Sender: pmazart@web.de
+Subject: Re: [B.A.T.M.A.N.] =?utf-8?q?Hiding_Local_Topology_=E2=80=93_TTL?=
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,28 +21,17 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach ToMobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-elektra wrote:
-> Hi Marco!
->
-> If you experience intermittend operation this is with 99.9% probability a 
-> driver issue.
->
-> Please use a Atheros-based interface with Madwifi driver and all patches  from 
-> OpenWRT's Madwifi!
->
->
->   
-...
-> cu elektra
->
->   
-I made a quick test using one of the fonera routers as ping originator
-The first result shows 0% loss of ping
+Hello again,
 
-Thanks for your help
+Am Dienstag, 3. M=C3=A4rz 2009 schrieb P. Mazart:
+> How do I exactly set the TTL-Value for one or more of the specified
+> interfaces?
 
-Cheers
-Marco
+How about the vis-server? Does it need  a route back to the Source?=20
+(i.e. an =E2=80=9Einvisible=E2=80=9C back-bone-node)
+How often does BM send its status to the vis server?
 
+Best Regards
+P.M.
