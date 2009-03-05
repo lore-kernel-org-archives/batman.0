@@ -1,14 +1,16 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 5 Mar 2009 19:14:01 +0800
+From: "P. Mazart" <pmazart@web.de>
+Date: Thu, 5 Mar 2009 14:22:15 +0100
 References: <200903032126.57456.pmazart@web.de>
 	<200903051155.16975.pmazart@web.de>
-In-Reply-To: <200903051155.16975.pmazart@web.de>
+	<200903051914.02114.lindner_marek@yahoo.de>
+In-Reply-To: <200903051914.02114.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <200903051914.02114.lindner_marek@yahoo.de>
+Content-Disposition: inline
+Message-Id: <200903051422.15547.pmazart@web.de>
+Sender: pmazart@web.de
 Subject: Re: [B.A.T.M.A.N.] =?utf-8?q?Hiding_Local_Topology_=E2=80=93_TTL?=
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -23,30 +25,23 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Thursday 05 March 2009 18:55:16 P. Mazart wrote:
-> > How do I exactly set the TTL-Value for one or more of the specified
-> > interfaces?
+Hello & Thank's for your reply,
 
-This paper just mentions the possibilities - not all flavors implement that=
-=20
-feature. As far as I know bmx (batman-experimental) supports it though.
+Am Donnerstag, 5. M=C3=A4rz 2009 schrieb Marek Lindner:
+> This paper just mentions the possibilities - not all flavors
+> implement that feature. As far as I know bmx (batman-experimental)
+> supports it though.
 
+Now I'm completely stuck with BM's brands. :-)
 
-> How about the vis-server? Does it need  a route back to the Source?
-> (i.e. an =E2=80=9Einvisible=E2=80=9C back-bone-node)
-
-A route back to the source? The packets sent to the vis server are UDP pack=
-ets=20
-which require no ACK.
+Can you say something about overhead and performance of BM in=20
+kernelspace compared to the udp-userspace deamon?
+And devel-status of each of them?
 
 
-> How often does BM send its status to the vis server?
+> [=E2=80=A6] The packets sent to the vis server are UDP packets [=E2=80=A6]
 
-The interval depends on the implementation - tcpdump can help you to check=
-=20
-your daemon.  :-)
+Ahh. Great. Thank's for the information.
 
-Regards,
-Marek
-
-
+Greetings,
+P.M.
