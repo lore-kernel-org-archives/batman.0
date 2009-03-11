@@ -1,14 +1,13 @@
-From: elektra <onelektra@gmx.net>
-Date: Wed, 11 Mar 2009 22:14:44 +0100
-References: <49B825BE.4040605@java-system.com>
-In-Reply-To: <49B825BE.4040605@java-system.com>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Wed, 11 Mar 2009 22:38:56 +0100
+References: <200903111902.05050.pmazart@web.de>
+In-Reply-To: <200903111902.05050.pmazart@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: multipart/signed; boundary="nextPart1869554.6iUraZWx9l";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903112214.44339.onelektra@gmx.net>
-Subject: Re: [B.A.T.M.A.N.] Unable to connect to internet
+Message-Id: <200903112239.00521.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] =?utf-8?q?batmand_=E2=87=94_AF=5FINET6?=
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,21 +21,36 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi .
+--nextPart1869554.6iUraZWx9l
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Any Hints?
+On Wednesday 11 March 2009 19:02:04 P. Mazart wrote:
+> BM does not let me go.
+>
+> Any complaints about sending badmand's broadcasts over ipv6?
+Afaik is no batman implementation (batmand and bmxd) is able to create rout=
+es=20
+for ipv6 at the moment. If you have that requirement than you should try=20
+batman-adv-kernelland because it can routes everything encapsulated inside =
+an=20
+ethernet frame.
 
-sure: You are not announcing a default route.
+Best Regards,
+	Sven
 
-On mesh router connected to ADSL:
+--nextPart1869554.6iUraZWx9l
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-batmand -g 1000 ath0
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-On other mesh router:
+iEYEABECAAYFAkm4L3AACgkQqQGwKVlMoDtgdgCg/Fnim3pGYkffMBGTn96Q/kip
+rbwAoKev6xrPwE38DLAsuM0axEgQdEuB
+=HmZj
+-----END PGP SIGNATURE-----
 
-batmand -r 1 ath0
-
-You have to NAT towards the internet on the gateway.
-
-Cheers,
-elektra 
+--nextPart1869554.6iUraZWx9l--
