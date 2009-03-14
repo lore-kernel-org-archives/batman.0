@@ -1,10 +1,10 @@
-Message-ID: <49BB6719.2070502@java-system.com>
-Date: Sat, 14 Mar 2009 09:13:13 +0100
+Message-ID: <49BB7058.2070100@java-system.com>
+Date: Sat, 14 Mar 2009 09:52:40 +0100
 From: marco tozzini <lists@java-system.com>
 MIME-Version: 1.0
-References: <49B825BE.4040605@java-system.com>	<200903112214.44339.onelektra@gmx.net>	<49B98151.2010906@java-system.com>
-	<200903131012.01212.lindner_marek@yahoo.de>
-In-Reply-To: <200903131012.01212.lindner_marek@yahoo.de>
+References: <49B825BE.4040605@java-system.com>
+	<200903112214.44339.onelektra@gmx.net>
+In-Reply-To: <200903112214.44339.onelektra@gmx.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] Unable to connect to internet
@@ -21,60 +21,77 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi Marek
-
-Marek Lindner wrote:
-> Hi,
+elektra wrote:
+> Hi .
 >
 >   
->> root@OpenWrt:~# batmand -a 192.168.0.1/24 -g 1000 -d 3 ath0
->> WARNING: You are using the unstable batman branch. If you are interested
->> in *using* batman get the latest stable release !
->> Interface activated: ath0
->> Using interface ath0 with address 192.168.2.200 and broadcast address
->> 192.168.2.255
->> B.A.T.M.A.N. 0.3-beta (compatibility version 5)
+>> Any Hints?
 >>     
 >
-> are you using the latest version ? Elektra reported a bug if you use the 
-> latest version together with the "-a" option. As a result the node that runs 
-> with that option enabled does not see any neighbours. Can you confirm that ?
+> sure: You are not announcing a default route.
 >
+> On mesh router connected to ADSL:
 >
+> batmand -g 1000 ath0
+>
+> On other mesh router:
+>
+> batmand -r 1 ath0
+>
+> You have to NAT towards the internet on the gateway.
+>
+> Cheers,
+> elektra 
 >   
-No idea it's the version available from Openwrt kamikaze 8.09
-batmand -v reports on my fonera v2 (192.168.0.200):
-root@OpenWrt:~# batmand -c -v
-WARNING: You are using the unstable batman branch. If you are interested 
-in *using* batman get the latest stable release !
-B.A.T.M.A.N. 0.3-beta (compatibility version 5)
 
-batmand -v reports on my fonera v1 (192.168.0.203):
-root@OpenWrt:~# batmand -c -v
-B.A.T.M.A.N. 0.3.1 rv1206 (compatibility version 5)
+After this hint I have
+node 203 = batman node not connect to internet
+node 200 = batman node gateway connect to wired lan and internet
 
-Do you think this mix is not good?
+ >From the batman node client 203 (not connected to internet)
+root@OpenWrt:~# ping -c 2 192.168.2.200 (= ath0)
+PING 192.168.2.200 (192.168.2.200): 56 data bytes
+64 bytes from 192.168.2.200: seq=0 ttl=64 time=3.330 ms
+64 bytes from 192.168.2.200: seq=1 ttl=64 time=2.902 ms
+--- 192.168.2.200 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 2.902/3.116/3.330 ms
 
-If you mean batman node as neighbor the answer is:
-I can see batman neighbors
-I can't see node on my wired network (adsl route 192.168.0.1, other 
-openwrt station 192.168.0.80)
+root@OpenWrt:~# ping -c 2 192.168.0.200 (= br-lan)
+PING 192.168.0.200 (192.168.0.200): 56 data bytes
+64 bytes from 192.168.0.200: seq=0 ttl=64 time=4.780 ms
+64 bytes from 192.168.0.200: seq=1 ttl=64 time=2.944 ms
+--- 192.168.0.200 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 2.944/3.862/4.780 ms
 
->> It seems batman set a gate0 interface with 169.254.x.x IP address
->> How can I use this one with my 192.168.0.1 ADSL router?
->>     
->
-> You can safely ignore the 169.254.x.x addresses. Batman uses that for its 
-> internal tunneling mechanism which should not concern you.
-> Does your setup work now or not ?
->
->   
-Thank you so much for this info
-AFAIK there is no such information anywhere
+root@OpenWrt:~# ping -c 2 192.168.0.1 (= router ADSL)
+PING 192.168.0.1 (192.168.0.1): 56 data bytes
+--- 192.168.0.1 ping statistics ---
+2 packets transmitted, 0 packets received, 100% packet loss
 
-My system is still not working
-Any hints for debug or throubleshoot?
+root@OpenWrt:~# ping -c 2 192.168.0.80 (= other openwrt station 
+connected through lan cable)
+PING 192.168.0.80 (192.168.0.80): 56 data bytes
+--- 192.168.0.80 ping statistics ---
+2 packets transmitted, 0 packets received, 100% packet loss
 
-Ciao
+
+further; from GATEWAY batman node 200 (connected to wired lan and internet)
+I can ping everything
+
+So this means:
+
+ From the CLIENT batman node 203 (not connected to wired lan and internet)
+I can ping wireless interface of the batman node connected to wired lan
+I can ping br-lan wired interface of the batman node connected to wired 
+lan (so I think routing exist)
+I CAN'T ping other nodes seen by br-lan wired interface of the batman 
+node connected to wired lan
+
+I suspect the problem could be elsewhere batman, isn't it?
+
+thanks
 Marco
+
 
