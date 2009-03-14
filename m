@@ -1,15 +1,15 @@
-From: elektra <onelektra@gmx.net>
-Date: Sat, 14 Mar 2009 10:14:21 +0100
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 14 Mar 2009 19:01:43 +0800
 References: <49B825BE.4040605@java-system.com>
-	<200903112214.44339.onelektra@gmx.net>
-	<49BB7058.2070100@java-system.com>
-In-Reply-To: <49BB7058.2070100@java-system.com>
+	<200903131012.01212.lindner_marek@yahoo.de>
+	<49BB6719.2070502@java-system.com>
+In-Reply-To: <49BB6719.2070502@java-system.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903141014.21989.onelektra@gmx.net>
+Message-Id: <200903141901.43732.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Unable to connect to internet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -24,26 +24,19 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hi!
+On Saturday 14 March 2009 16:13:13 marco tozzini wrote:
+> No idea it's the version available from Openwrt kamikaze 8.09
+> batmand -v reports on my fonera v2 (192.168.0.200):
+> B.A.T.M.A.N. 0.3-beta (compatibility version 5)
+>
+> batmand -v reports on my fonera v1 (192.168.0.203):
+> B.A.T.M.A.N. 0.3.1 rv1206 (compatibility version 5)
 
-> > On mesh router connected to ADSL:
-> >
-> > batmand -g 1000 ath0
-> >
-> > On other mesh router:
-> >
-> > batmand -r 1 ath0
-> >
-> > You have to NAT towards the internet on the gateway.
+The 0.3.1 is good but please don't use the 0.3-beta in a production 
+environment! The 0.3 contained several bugs thats why we had the 0.3.1 
+release. Consider upgrading to the latest stable release (0.3.1 at the 
+moment).
 
-There is a bug in batmand in current 0.3.2 code, which occurs when you use HNA 
-(-a). We are currently working on it. You don't need to use -a to connect to 
-the internet in your case, however. But you have to set up simple NAT towards 
-the interface of the batman-gateway connected to the ADSL modem.
+Regards,
+Marek
 
-If that interface is eth0 the command would be:
-
-iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-
-Cheers,
-elektra
