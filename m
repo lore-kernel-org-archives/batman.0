@@ -1,12 +1,15 @@
-Message-ID: <49BB7058.2070100@java-system.com>
-Date: Sat, 14 Mar 2009 09:52:40 +0100
-From: marco tozzini <lists@java-system.com>
-MIME-Version: 1.0
+From: elektra <onelektra@gmx.net>
+Date: Sat, 14 Mar 2009 10:14:21 +0100
 References: <49B825BE.4040605@java-system.com>
 	<200903112214.44339.onelektra@gmx.net>
-In-Reply-To: <200903112214.44339.onelektra@gmx.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<49BB7058.2070100@java-system.com>
+In-Reply-To: <49BB7058.2070100@java-system.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903141014.21989.onelektra@gmx.net>
 Subject: Re: [B.A.T.M.A.N.] Unable to connect to internet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -21,77 +24,26 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-elektra wrote:
-> Hi .
->
->   
->> Any Hints?
->>     
->
-> sure: You are not announcing a default route.
->
-> On mesh router connected to ADSL:
->
-> batmand -g 1000 ath0
->
-> On other mesh router:
->
-> batmand -r 1 ath0
->
-> You have to NAT towards the internet on the gateway.
->
-> Cheers,
-> elektra 
->   
+Hi!
 
-After this hint I have
-node 203 = batman node not connect to internet
-node 200 = batman node gateway connect to wired lan and internet
+> > On mesh router connected to ADSL:
+> >
+> > batmand -g 1000 ath0
+> >
+> > On other mesh router:
+> >
+> > batmand -r 1 ath0
+> >
+> > You have to NAT towards the internet on the gateway.
 
- >From the batman node client 203 (not connected to internet)
-root@OpenWrt:~# ping -c 2 192.168.2.200 (= ath0)
-PING 192.168.2.200 (192.168.2.200): 56 data bytes
-64 bytes from 192.168.2.200: seq=0 ttl=64 time=3.330 ms
-64 bytes from 192.168.2.200: seq=1 ttl=64 time=2.902 ms
---- 192.168.2.200 ping statistics ---
-2 packets transmitted, 2 packets received, 0% packet loss
-round-trip min/avg/max = 2.902/3.116/3.330 ms
+There is a bug in batmand in current 0.3.2 code, which occurs when you use HNA 
+(-a). We are currently working on it. You don't need to use -a to connect to 
+the internet in your case, however. But you have to set up simple NAT towards 
+the interface of the batman-gateway connected to the ADSL modem.
 
-root@OpenWrt:~# ping -c 2 192.168.0.200 (= br-lan)
-PING 192.168.0.200 (192.168.0.200): 56 data bytes
-64 bytes from 192.168.0.200: seq=0 ttl=64 time=4.780 ms
-64 bytes from 192.168.0.200: seq=1 ttl=64 time=2.944 ms
---- 192.168.0.200 ping statistics ---
-2 packets transmitted, 2 packets received, 0% packet loss
-round-trip min/avg/max = 2.944/3.862/4.780 ms
+If that interface is eth0 the command would be:
 
-root@OpenWrt:~# ping -c 2 192.168.0.1 (= router ADSL)
-PING 192.168.0.1 (192.168.0.1): 56 data bytes
---- 192.168.0.1 ping statistics ---
-2 packets transmitted, 0 packets received, 100% packet loss
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
-root@OpenWrt:~# ping -c 2 192.168.0.80 (= other openwrt station 
-connected through lan cable)
-PING 192.168.0.80 (192.168.0.80): 56 data bytes
---- 192.168.0.80 ping statistics ---
-2 packets transmitted, 0 packets received, 100% packet loss
-
-
-further; from GATEWAY batman node 200 (connected to wired lan and internet)
-I can ping everything
-
-So this means:
-
- From the CLIENT batman node 203 (not connected to wired lan and internet)
-I can ping wireless interface of the batman node connected to wired lan
-I can ping br-lan wired interface of the batman node connected to wired 
-lan (so I think routing exist)
-I CAN'T ping other nodes seen by br-lan wired interface of the batman 
-node connected to wired lan
-
-I suspect the problem could be elsewhere batman, isn't it?
-
-thanks
-Marco
-
-
+Cheers,
+elektra
