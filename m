@@ -1,16 +1,10 @@
-Date: Sat, 21 Mar 2009 09:53:36 +0100
-From: Bastian Bittorf <bittorf@bluebottle.com>
-Message-ID: <20090321085336.GL32483@amd>
-References: <49C40762.3050109@java-system.com>
-	<200903210917.54806.lindner_marek@yahoo.de>
-	<49C49C1A.6050100@java-system.com>
-	<200903211634.46493.lindner_marek@yahoo.de>
+Message-ID: <49C4E247.3050907@gmail.com>
+Date: Sat, 21 Mar 2009 13:49:11 +0100
+From: Raphaela Wrede <raphaela.wrede@googlemail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Z/kiM2A+9acXa48/"
-Content-Disposition: inline
-In-Reply-To: <200903211634.46493.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] What do you think of this result?
+Content-Type: text/plain; charset="iso-8859-15"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Fragen zu Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,46 +16,65 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
+
+Kann mir jemand folgende Fragen beantworten:
 
 
---Z/kiM2A+9acXa48/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ich fertige gerade eine Dipl. Arbeit zum Thema: "Leistungsanalyse des BATMA=
+N Routingprotokolls f=FCr drahtlose=20
+Sensornetze" an der FU Berlin an. (Abgabe 11.5.)
+Es geht um einen Leistungsvergleich von OLSR und BATMAN. Hierf=FCr habe ich=
+ jedes der beiden Protokolle f=FCr die Scatternet=20
+Platform der FU Berlin implementiert und sehr aufw=E4ndige realworld Tests =
+bis zu eine Netzgr=F6=DFe von 15 Sensorknoten=20
+durchgef=FChrt. Zus=E4tzlich l=E4uft eine andere Diplomarbeit, die das Ganz=
+e im Simulator untersucht, f=FCr eine gr=F6=DFe=20
+Knotenanzahl, um Skalierbarkeit zu testen.
 
-* Marek Lindner <lindner_marek@yahoo.de> [21.03.2009 09:45]:
+Wie auch immer.. ich habe noch ein paar Fragen. Vielleicht hast du Zeit sie=
+ zu beantworten:
 
-> or less. This is an approximation of the reality. If you have ideas how t=
-o=20
-> improve it let us know. Meanwhile, we can try to help getting your wifi u=
-p to=20
-> speed (see antonios mail).  :-)
+1.) Warum habt ihr BATMAN als Alternative zu OLSR entworfen?
+Das Argument, das ich kenne sind die widerspr=FCchlichen Topologieinformati=
+onen bei Olsr, die zu Kreisrouten f=FChren=20
+k=F6nnen. Aber was ist zum Beispiel mit dem Routing Traffic Overhead, bei g=
+ro=DFen Netzen.. wie verh=E4lt der sich. Wie stark=20
+wirkt sich das auf den Durchsatz aus? Ende-Zu-Ende Verz=F6gerung... etc. Wa=
+s war das gravierendste Problem nach eurer=20
+Erfahrung bei gro=DFen Netzen. Gibt es hierzu irgendwelche Dokumente.. Diag=
+ramme.. die ihr habt? Falls ja, wie wurden die=20
+Daten dar=FCber gewonnen.
 
-in OLSR networks we change the multicast-rate, to allow only links
-with "reasonable" bandwith to be used. Maybe this is also a good
-idea for batman. In a dense network, set you multicast-rate to
-12mbit on all nodes, in a "normal" network you can use e.g. 5.5 mbit.
-(this helps the routing daemon and does nearly not change the
-normal network behavior)
+2.) Warum ist das RFC zu Batman abgelaufen? Warum l=E4uft sowas =FCberhaupt=
+ ab? Wie geht es diesbez=FCglich weiter? Leider=20
+kenne ich mich mit diesem Request For Comments Krempel nicht so gut aus.. M=
+ein Betreuer meinte, dass es schlecht ist,=20
+sich auf ein abgelaufenes RFC zu berufen.
 
-important question:
-are batman-adv-packets transfered in multicast-rate?
+3.) Gewinnt Batman eher an Popularit=E4t in der Meshgemeinde oder ist eher =
+das Gegenteil der Fall. Wo wird Batman noch=20
+eingesetzt?
 
-greets,
-Bastian Bittorf
+4.) Wie mein Kommilitone und ich feststellen mussten, gibt es so gut wie ke=
+ine offiziell ver=F6ffentlichten=20
+wissenschaftlichen Arbeiten zu BATMAN. Das ist ein kleines Problem, da es s=
+chwierig ist, sich auf andere Arbeiten bei=20
+bestimmten Behauptungen zu st=FCtzen. Hier d=FCrfen nur offizielle Papers a=
+ngegeben werden. Es gibt da ein Paper, wo du auch=20
+mitgewirkt hast, wo ein Leistungsvergleich zwischen OLSR und BATMAN in eine=
+ Realtestbed gemacht wurde. Aber leider=20
+scheint selbst dies nicht offiziell ver=F6ffentlich zu sein.
+Falls du mir irgendwelche Papers schicken kannst, w=E4re ich dir sehr dankb=
+ar.
 
---Z/kiM2A+9acXa48/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Vielen Dank.
 
-iEYEARECAAYFAknEqxAACgkQDonSpHhHLlwEhwCgjJQxq4bz/Poz+qXXBAFuFSbs
-7KsAniPkAqUBzPU+tHqAn8ta6K90Ntjb
-=4ovL
------END PGP SIGNATURE-----
+Raphaela
 
---Z/kiM2A+9acXa48/--
+
+
+
+
+
