@@ -1,15 +1,15 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 21 Mar 2009 16:34:46 +0800
+Date: Sat, 21 Mar 2009 09:53:36 +0100
+From: Bastian Bittorf <bittorf@bluebottle.com>
+Message-ID: <20090321085336.GL32483@amd>
 References: <49C40762.3050109@java-system.com>
 	<200903210917.54806.lindner_marek@yahoo.de>
 	<49C49C1A.6050100@java-system.com>
-In-Reply-To: <49C49C1A.6050100@java-system.com>
+	<200903211634.46493.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Z/kiM2A+9acXa48/"
 Content-Disposition: inline
-Message-Id: <200903211634.46493.lindner_marek@yahoo.de>
+In-Reply-To: <200903211634.46493.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] What do you think of this result?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -24,31 +24,44 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Saturday 21 March 2009 15:49:46 marco tozzini wrote:
->  From batman debug output it seems batman station has a good view one to
-> each other, but working on this systems is very annoying:
-> ssh terminal has a wobbling response to commands
->
-> Is this the behavior I shall expect from a good working mesh system?
 
-Please keep in mind what batman is doing to obtain these results: It 
-broadcasts packets and receives broadcasts. From that it tries to give an 
-estimation about the networks status and the link conditions. Obviously, you 
-can't derive latency or bandwidth throughput from this information base. 
+--Z/kiM2A+9acXa48/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Lets look at your fping test: Usually batman broadcasts are sent once a 
-second. While rebroadcasting a jitter is applied to reduce the probability of 
-collisions with other batman packets. When you run fping on 192.168.2.200/30 
-you will generate traffic that has a high probability of collisions which will 
-lead to different test results.
+* Marek Lindner <lindner_marek@yahoo.de> [21.03.2009 09:45]:
 
-If you compare test mechanisms make sure they run under the same conditions 
-otherwise it does not make sense to draw conclusions from it. The batman TQ 
-value tells you how batman sees the link at this specific time - nothing more 
-or less. This is an approximation of the reality. If you have ideas how to 
-improve it let us know. Meanwhile, we can try to help getting your wifi up to 
-speed (see antonios mail).  :-)
+> or less. This is an approximation of the reality. If you have ideas how t=
+o=20
+> improve it let us know. Meanwhile, we can try to help getting your wifi u=
+p to=20
+> speed (see antonios mail).  :-)
 
-Regards,
-Marek
+in OLSR networks we change the multicast-rate, to allow only links
+with "reasonable" bandwith to be used. Maybe this is also a good
+idea for batman. In a dense network, set you multicast-rate to
+12mbit on all nodes, in a "normal" network you can use e.g. 5.5 mbit.
+(this helps the routing daemon and does nearly not change the
+normal network behavior)
 
+important question:
+are batman-adv-packets transfered in multicast-rate?
+
+greets,
+Bastian Bittorf
+
+--Z/kiM2A+9acXa48/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknEqxAACgkQDonSpHhHLlwEhwCgjJQxq4bz/Poz+qXXBAFuFSbs
+7KsAniPkAqUBzPU+tHqAn8ta6K90Ntjb
+=4ovL
+-----END PGP SIGNATURE-----
+
+--Z/kiM2A+9acXa48/--
