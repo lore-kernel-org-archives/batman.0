@@ -1,17 +1,12 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 25 Mar 2009 10:44:01 +0800
-References: <3ebdcf0a0903180743q3968e6a0wd480347cf70a50ff@mail.gmail.com>
-	<200903232305.39161.sven.eckelmann@gmx.de>
-	<200903242017.51987.sven.eckelmann@gmx.de>
-In-Reply-To: <200903242017.51987.sven.eckelmann@gmx.de>
+Message-ID: <49CAA4C8.7080307@java-system.com>
+Date: Wed, 25 Mar 2009 22:40:24 +0100
+From: marco tozzini <lists@java-system.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-6"
+References: <49C40762.3050109@java-system.com>
+In-Reply-To: <49C40762.3050109@java-system.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903251044.05666.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Problem with B.A.T.M.A.N. 0.3.1 rv1206
-	(compatibility version 5)
+Subject: Re: [B.A.T.M.A.N.] What do you think of this result?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,20 +20,26 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Wednesday 25 March 2009 03:17:47 Sven Eckelmann wrote:
-> 0.9.28 worked without any problems and 0.9.30.1 without nptl showed the
-> same problem - the nptl version doesn't compile at the moment. So changing
-> the uclibc is a possible solution. Otherwise ask the openwrt developers to
-> take a look at the problem. Please add this example (or a similar one) and
-> the expected results + a list of uclibc versions which worked.
+marco tozzini wrote:
+>
+> from my laptop
+> fping -c 1000 -g 192.168.2.200/30
+>
+> and this is the results
+> 192.168.2.200 : xmt/rcv/%loss = 1000/928/7%, min/avg/max = 1.23/2.04/92.8
+> 192.168.2.201 : xmt/rcv/%loss = 1000/759/24%, min/avg/max = 
+> 1.28/3.11/27.5
+> 192.168.2.203 : xmt/rcv/%loss = 1000/766/23%, min/avg/max = 
+> 1.33/3.36/38.7
+>
+Just for completeness ... here it is (almost) the same test with OLSRd
 
-Thanks a lot for sharing your test results. I suspected ulibc to be the 
-culprit as we had trouble with fork() and pthread_create() before. Actually, 
-thats the reason why batman has its own daemonize function. It seems they 
-still have trouble with it.
+192.168.2.200 : xmt/rcv/%loss = 1000/902/9%, min/avg/max = 1.27/2.39/35.3
+192.168.2.201 : xmt/rcv/%loss = 1000/815/18%, min/avg/max = 1.28/3.80/73.6
+192.168.2.203 : xmt/rcv/%loss = 1000/821/17%, min/avg/max = 1.31/3.56/122
 
-I'll try to get in touch with some OpenWRT developers to see what can be done.
+;)
 
-Regards,
-Marek
+Ciao
+Marco
 
