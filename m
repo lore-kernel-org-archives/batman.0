@@ -1,15 +1,15 @@
-Message-ID: <20090331212304.82212h1pad739qjc@mail.tu-chemnitz.de>
-Date: Tue, 31 Mar 2009 21:23:04 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 1 Apr 2009 10:28:57 +0800
 References: <49D2300C.9010206@kait.de>
-In-Reply-To: <49D2300C.9010206@kait.de>
+	<200904010215.44621.lindner_marek@yahoo.de>
+	<5b8543210903311213n139e4323pa5e879c53fb42f04@mail.gmail.com>
+In-Reply-To: <5b8543210903311213n139e4323pa5e879c53fb42f04@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
- charset=ISO-8859-1;
- DelSp="Yes";
- format="flowed"
-Content-Disposition: inline
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904011028.58218.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Batman-adv nodes do not recieve OGMs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -22,41 +22,21 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Hello Kai,
+On Wednesday 01 April 2009 03:13:01 Kai Timmer wrote:
+> Actually i already tried that and it didn't change anything. And when
+> that is really the problem, why is the module than even starting to
+> send messages?
 
-Quoting Kai Timmer <email@kait.de>:
-> Hello,
-> i have a problem using batman-adv. At the moment i use v0.1, but i had
-> the same problem when trying the svn version 1241.
->
-> All the nodes send their ogm, but none does recieve any of these. What i
-> did on all nodes is:
->
-> iwconfig $wlaninterface essid batman mode ad-hoc
-> and then
-> echo "$wlaninterface" > /proc/net/batman-adv/interfaces
-> echo 15 > /proc/net/batman-adv/log_level
->
-> cat /proc/net/batman-adv/log after that shows somethink like this:
->
-> Adding interface: ath0
-> Can't activate module: the primary interface is not active
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Athough the interface is down batman still runs internally to trigger events, 
+timeouts, link quality updates, etc. That does not mean the packets go out 
+although the logs might indicate packets were sent. You can easily verify 
+whether the packets leave the system or not by using the battools or tcpdump. 
 
-are you sure you set ath0 up?
+I agree with Simon: If you experience connection problems first make sure that 
+ping & friends run smoothly. 
 
-ifconfig ath0 up
-
-should do the trick.
-
-If you start experimenting, a good idea is to first check the  
-connectivity without batman. Just set some IP addresses on the wifi  
-devices and ping the other nodes to make sure your adhoc network  
-works. If it does, you can activate batman-adv. :)
-
-good luck,
-     Simon
-
+Regards,
+Marek
 
