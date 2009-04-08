@@ -1,11 +1,13 @@
-Date: Wed, 8 Apr 2009 14:59:26 -0600
-From: Jan Hetges <tran@ms20.net>
-Message-ID: <20090408205926.GA5316@chunche.ms20.nix>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Wed, 8 Apr 2009 23:30:27 +0200
+References: <20090408205926.GA5316@chunche.ms20.nix>
+In-Reply-To: <20090408205926.GA5316@chunche.ms20.nix>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] bmxd rv1197 changelog
+Content-Type: multipart/signed; boundary="nextPart1634253.CLRt2OpbG2";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200904082330.28300.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] bmxd rv1197 changelog
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,30 +21,41 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-
---LZvS9be/3tNcYl/X
-Content-Type: text/plain; charset=us-ascii
+--nextPart1634253.CLRt2OpbG2
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Hi Axel
-http://downloads.open-mesh.net/batman/development/sources/batmand-exp_0.3-alpha-current_sources/CHANGELOG
-this seems to be empty!?
+On Wednesday 08 April 2009 22:59:26 Jan Hetges wrote:
+> Hi Axel
+> http://downloads.open-mesh.net/batman/development/sources/batmand-exp_0.3-a
+>lpha-current_sources/CHANGELOG this seems to be empty!?
+Thanks. The autogeneration of the changelog is easy to break. If you want a
+recent version of it, please visit
+ http://www.open-mesh.net/log/trunk/batman-experimental
 
-cheers
+I don't know how exactly the current version of the script looks like on the
+server but a line like this should be the problem:
+ awk '/View revision/,/10\/01\/06 20:23:03/' changelog.txt > $(FILE_NAME)/CHANGELOG
+The format of the trac log changed in such a way that it isn't compatible
+anymore to this script. Maybe it should be replaced by something which builds
+on top of
+ http://www.open-mesh.net/log/trunk/batman-experimental?limit=999999&mode=follow_copies&format=changelog
 
-  --Jan
+Best regards,
+	Sven
 
---LZvS9be/3tNcYl/X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+--nextPart1634253.CLRt2OpbG2
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkndEC4ACgkQlTtvZdk47D4hAACfa/qo+RCkeu9SqOQDfTvr0AkQ
-2ygAoKUx3QYWy0Z/2GRgJQRq/n2OJaMY
-=X9kH
+iEYEABECAAYFAkndF3QACgkQqQGwKVlMoDssWwCePiTxZMtlAjQ5Il98stL5+Xul
+KzoAnja4+9QTGKzK7rPEOS+qddQKuxP3
+=aQa+
 -----END PGP SIGNATURE-----
 
---LZvS9be/3tNcYl/X--
+--nextPart1634253.CLRt2OpbG2--
