@@ -1,14 +1,7 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 9 Apr 2009 18:06:25 +0800
-References: <6.2.5.6.2.20090409002313.038d87a0@gmail.com>
-In-Reply-To: <6.2.5.6.2.20090409002313.038d87a0@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904091806.26221.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] hardware requirements for mesh
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Thu,  9 Apr 2009 12:45:59 +0200
+Message-Id: <1239273959-7911-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] Add compilation support for GNU/kFreeBSD
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,22 +13,51 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
+Debian recently announced that it added GNU/kFreeBSD as supported
+distribution. It consists of an FreeBSD kernel and the usual debian
+userspace tools and libraries. It uses the glibc with some extra
+(free)bsd libraries to support bsd-only functions like devname and
+strlcpy.
+batmand should instantly work on this platform if a BSD developer would
+port the bsd compatibility layer again to (Open|Free)BSD.
 
-Hi,
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman/Makefile  |    5 +++++
+ batman/bsd/tun.c |    2 +-
+ 2 files changed, 6 insertions(+), 1 deletions(-)
 
-> Can those 2 routers be use in a mesh network so that laptops can
-> connect to them and go on the net?  All the other mesh
-> routers/repeaters I've seen can run in multiple modes.
-
-they can be used in mesh but as you noticed the wifi cards are not able to open 
-multiple wifi networks at the same time. If you want to offer managed networks 
-for the laptops you need to find other solutions. Either you use Atheros based 
-devices that can open multiple networks or you connect 2 devices (e.g. 
-wrt54gl) via Ethernet (one opens the managed network and the other meshes in 
-ad-hoc mode).
-
-Regards,
-Marek
+diff --git a/batman/Makefile b/batman/Makefile
+index 509217d..0f6e61f 100644
+--- a/batman/Makefile
++++ b/batman/Makefile
+@@ -44,6 +44,11 @@ ifeq ($(UNAME),Darwin)
+ OS_C=		$(BSD_C) $(POSIX_C)
+ endif
+ 
++ifeq ($(UNAME),GNU/kFreeBSD)
++OS_C=		$(BSD_C) $(POSIX_C)
++LDFLAGS+=	-lfreebsd -lbsd
++endif
++
+ ifeq ($(UNAME),FreeBSD)
+ OS_C=		$(BSD_C) $(POSIX_C)
+ endif
+diff --git a/batman/bsd/tun.c b/batman/bsd/tun.c
+index 2629bcd..2c571c0 100644
+--- a/batman/bsd/tun.c
++++ b/batman/bsd/tun.c
+@@ -71,7 +71,7 @@ static int open_tun_any(char *dev_name, size_t dev_name_size)
+ 	}
+ 	return -1;
+ }
+-#elif defined(__FreeBSD__)
++#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+ static int open_tun_any(char *dev_name, size_t dev_name_size)
+ {
+ 	int fd;
+-- 
+1.6.2.2
 
