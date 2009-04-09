@@ -1,13 +1,9 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 8 Apr 2009 23:30:27 +0200
-References: <20090408205926.GA5316@chunche.ms20.nix>
-In-Reply-To: <20090408205926.GA5316@chunche.ms20.nix>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1634253.CLRt2OpbG2";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200904082330.28300.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] bmxd rv1197 changelog
+Message-Id: <6.2.5.6.2.20090409001324.0390cd00@gmail.com>
+Date: Thu, 09 Apr 2009 00:23:00 -0700
+From: leongmzlist <leongmzlist@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: [B.A.T.M.A.N.] default routes not set
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,43 +15,46 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
---nextPart1634253.CLRt2OpbG2
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi,
+new at batman. I've got the following done:
 
-On Wednesday 08 April 2009 22:59:26 Jan Hetges wrote:
-> Hi Axel
-> http://downloads.open-mesh.net/batman/development/sources/batmand-exp_0.3-a
->lpha-current_sources/CHANGELOG this seems to be empty!?
-Thanks. The autogeneration of the changelog is easy to break. If you want a
-recent version of it, please visit
- http://www.open-mesh.net/log/trunk/batman-experimental
+1. got an airlink ar430w and wrt54gl to ping each other over ad-hoc network
+2. setup br-lan:0 on each router.  ar430w has is 192.168.100.1; 
+wrt54gl is 192.168.100.2
+3. was able to ping each other via br-lan:0 IP
+4. using openwrt 8.09 on both routers.
 
-I don't know how exactly the current version of the script looks like on the
-server but a line like this should be the problem:
- awk '/View revision/,/10\/01\/06 20:23:03/' changelog.txt > $(FILE_NAME)/CHANGELOG
-The format of the trac log changed in such a way that it isn't compatible
-anymore to this script. Maybe it should be replaced by something which builds
-on top of
- http://www.open-mesh.net/log/trunk/batman-experimental?limit=999999&mode=follow_copies&format=changelog
+The wrt54gl got the wan/internet link up.  I started "batmand -g 
+1mbit/128kbit br-lan:0"
+the ar430w doesn't have internet; I started "batmand -r 3 -d 3 br-lan:0"
 
-Best regards,
-	Sven
+got this on the ar430w logs:
 
---nextPart1634253.CLRt2OpbG2
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Interface activated: br-lan:0
+Using interface br-lan:0 with address 192.168.100.1 and broadcast 
+address 192.168.100.255
+B.A.T.M.A.N. 0.3.1 rv1206 (compatibility version 5)
+Adding throw route to 127.0.0.0/8 via 0.0.0.0 (table 68 - lo)
+Adding throw route to 192.168.1.0/24 via 0.0.0.0 (table 68 - br-lan)
+Adding throw route to 192.168.100.0/24 via 0.0.0.0 (table 68 - br-lan:0)
+debug level: 3
+routing class: 3
+Adding route to 192.168.100.2 via 0.0.0.0 (table 66 - br-lan:0)
+Found new gateway 192.168.100.2 -> class: 32 - 1024KBit/128KBit
+Adding default route to 192.168.100.2 (gw_flags: 32, tq: 217, gw_product: 0)
+Gateway client - got IP (169.254.0.1) from gateway: 192.168.100.2
+Adding default route via gate0 (table 68)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkndF3QACgkQqQGwKVlMoDssWwCePiTxZMtlAjQ5Il98stL5+Xul
-KzoAnja4+9QTGKzK7rPEOS+qddQKuxP3
-=aQa+
------END PGP SIGNATURE-----
+When I run route -n on the ar430w, there's no default route set.  I 
+manually ran:
+route add default gw 169.254.0.1
 
---nextPart1634253.CLRt2OpbG2--
+Next I tried to ping the outside world on the ar430w but it gets no 
+where.  Any ideas?
+
+thx
+mike
+
