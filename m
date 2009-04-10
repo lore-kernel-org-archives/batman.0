@@ -1,11 +1,14 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 10 Apr 2009 12:31:07 +0200
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 11 Apr 2009 06:34:39 +0800
+References: <200904101231.14877.sven.eckelmann@gmx.de>
+In-Reply-To: <200904101231.14877.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart16978878.qN7gMrYVnl";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Type: Text/Plain;
+  charset="iso-8859-6"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200904101231.14877.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] Out of tree builds of kernel modules
+Content-Disposition: inline
+Message-Id: <200904110634.39509.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Out of tree builds of kernel modules
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,77 +22,46 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart16978878.qN7gMrYVnl
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
 Hi,
-I have currently following problem with batman-adv-kernelland and batmand-
-gateway:
 
-Danial Baumann supports building of kernel modules against the current Debi=
-an=20
-kernel in sid with his linux-modules-extra-2.6 package. The module sources=
-=20
-must only to support build over the kernel headers. It is done like that:
- /usr/bin/make -C /usr/src/linux-headers-2.6.29-1-amd64 M=3D/batman-adv/
+> First thing is that there is a Makefile.kbuild which is included with
+>  include $(PWD)/Makefile.kbuild
+> This will not work in the current situation because the PWD is now
+> /usr/src/linux-headers-2.6.29-1-amd64. Is this extra Makefile.kbuild really
+> needed?
 
-So it calls the Makefile in /usr/src/linux-headers-2.6.29-1-amd64 to build =
-the=20
-sources in /batman-adv/. This seems to be a quite common way to do the buil=
-d.=20
-There are different problems with the way the current Makefiles of these=20
-modules are written.
+the Makefile.kbuild was introduced to support OpenWRT better (OpenWRT uses the 
+kbuild Makefile only and replaces the main Makefile with its own). Could we do 
+the same with debian ?
 
-=46irst thing is that there is a Makefile.kbuild which is included with=20
- include $(PWD)/Makefile.kbuild
-This will not work in the current situation because the PWD is now=20
-/usr/src/linux-headers-2.6.29-1-amd64. Is this extra Makefile.kbuild really=
-=20
-needed?
-The second problem is the check of KERNELPATH of Makefile. It will check if=
-=20
-the sources of the current kernel is installed and quits if not (+ error=20
-message that someone should set the KERNELPATH variable). In the current=20
-situation we don't have the sources of the current kernel installed, but th=
-e=20
-kernel headers of another kernel are being used automatically. Wouldn't be=
-=20
-following check
 
- KERNELPATH ?=3D /lib/modules/$(shell uname -r)/build
- # sanity check: does KERNELPATH exist?
- ifeq ($(shell cd $(KERNELPATH) && pwd),)
- $(warning $(KERNELPATH) is missing, please set KERNELPATH)
- endif
+>  KERNELPATH ?= /lib/modules/$(shell uname -r)/build
+>  # sanity check: does KERNELPATH exist?
+>  ifeq ($(shell cd $(KERNELPATH) && pwd),)
+>  $(warning $(KERNELPATH) is missing, please set KERNELPATH)
+>  endif
+>
+> ok too?
 
-ok too?
+Yes, I think its fine. I commited it.
 
-The batmand-gateway cannot be build for linux 2.6 if the current kernel is =
-a=20
-2.4.x. Isn't it possible to make the obj-m and batgat-objs assignment outsi=
-de=20
-the check for the kernel version?
 
-My current workaround is to install my own version of the Makefile in the=20
-debian package, but I ask myself if this is really needed or parts of it=20
-should also be changed upstream.
+> The batmand-gateway cannot be build for linux 2.6 if the current kernel is
+> a 2.4.x. Isn't it possible to make the obj-m and batgat-objs assignment
+> outside the check for the kernel version?
 
-Best regards,
-	Sven
+I'm not so sure what you have in mind. Could you explain it further ?
 
---nextPart16978878.qN7gMrYVnl
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> My current workaround is to install my own version of the Makefile in the
+> debian package, but I ask myself if this is really needed or parts of it
+> should also be changed upstream.
 
-iEYEABECAAYFAknfH+sACgkQqQGwKVlMoDtO9wCfdi4omehFS/WdY17b+JkgFF6M
-KrAAoMAQkOYA5vIx4amAkpl8IDIddCR5
-=XR8l
------END PGP SIGNATURE-----
+I think we should try to move as much as possible upstream in order to reduce 
+the overhead of the package maintainers.
 
---nextPart16978878.qN7gMrYVnl--
+Regards,
+Marek
+
+
