@@ -1,14 +1,15 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 11 Apr 2009 10:53:27 +0200
-References: <200904101231.14877.sven.eckelmann@gmx.de>
-	<200904110634.39509.lindner_marek@yahoo.de>
-In-Reply-To: <200904110634.39509.lindner_marek@yahoo.de>
+Date: Tue, 14 Apr 2009 18:09:40 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20090414160940.GA7032@pandem0nium>
+References: <238a15490904071518w6f11536nb8ec30fb43fc870b@mail.gmail.com>
+	<238a15490904071523v2a1e193bwcf624fe33108efb4@mail.gmail.com>
+	<238a15490904071525u142520f1vdfa5e45b3fb867d8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1772088.EVYXADZHMk";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200904111053.31967.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] Out of tree builds of kernel modules
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="xHFwDpU9dbj6ez1V"
+Content-Disposition: inline
+In-Reply-To: <238a15490904071525u142520f1vdfa5e45b3fb867d8@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Trouble with SSH in L2 batman network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,92 +21,192 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart1772088.EVYXADZHMk
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+
+--xHFwDpU9dbj6ez1V
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hey Gargi,
 
-> > First thing is that there is a Makefile.kbuild which is included with
-> >  include $(PWD)/Makefile.kbuild
-> > This will not work in the current situation because the PWD is now
-> > /usr/src/linux-headers-2.6.29-1-amd64. Is this extra Makefile.kbuild
-> > really needed?
->
-> the Makefile.kbuild was introduced to support OpenWRT better (OpenWRT uses
-> the kbuild Makefile only and replaces the main Makefile with its own).
-> Could we do the same with debian ?
-I do something like this at the moment. I generate the kernel module source=
-=20
-=2Etar.bz2 by with Makefile.kbuild (renamed to Makefile) and add "all" and=
-=20
-"clean" target. They are needed to be able to run module-assistent at the=20
-moment... maybe I can change this in the future slightly and only use=20
-Makefile.kbuild as openwrt does it.
+i've read your setup as you described it, and as far as i understood
+it is supposed to work. I've already built up similar setups
+without problems and don't see what your problem is here.
 
-> > The batmand-gateway cannot be build for linux 2.6 if the current kernel
-> > is a 2.4.x. Isn't it possible to make the obj-m and batgat-objs
-> > assignment outside the check for the kernel version?
->
-> I'm not so sure what you have in mind. Could you explain it further ?
-I was thinking a little bit too loud. The problem is that the version of th=
-e=20
-current running kernel has nothing to do with the version of the kernel whi=
-ch=20
-will be the target kernel of the new module. So if somebody (aka build=20
-servers) have a 2.4 kernel running and want to build against 2.6... nothing=
-=20
-will be build at all. So my first idea was to change the lines
+Maybe you can provide some more information, e.g. your startup script,
+to get a clue here?
 
- ifeq ($(strip $(findstring $(LINUX26),$(LINUX_VERSION))),$(LINUX26))
+kind regards,
+        Simon
 
- obj-m +=3D batgat.o
- batgat-objs :=3D gateway.o hash.o
+On Tue, Apr 07, 2009 at 05:25:08PM -0500, Gargi Purohit wrote:
+> Sorry was not clear in the configuration
+>=20
+> =3D =3D AP to AP wireless link
+> ^ ^ AP to client wireless link
+> Server1 and RB1 on wired n/w
+>=20
+>  =C2=A0My configuration is like this:
+>=20
+>  -Server 1 --|
+>  =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0|
+>  =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0|-----(RB1) =3D =
+=C2=A0 =3D =C2=A0 (RB2)
+>  =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0^ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ^
+>  =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0^ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ^
+>  =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0^ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ^
+>  =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0C1 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0C2
+>=20
+>=20
+> > On Tue, Apr 7, 2009 at 5:18 PM, Gargi Purohit <gaargie@gmail.com> wrote:
+> >> Hi
+> >>
+> >> I have configured a Layer 2 mesh (Using batman kernel module) on
+> >> Routerboard 433. =C2=A0These are boards equipped with 2 interfaces. =
+=C2=A0I have
+> >> configured/created a virtual interface on every physical interface.
+> >> So for E.g. my routerboard 1 (RB1) has ath0 (Phy interface - Adhoc
+> >> mode), ath1 (Virtual interface - Master mode), ath2 (Phy interface -
+> >> Adhoc mode) and ath3 (Virtual interface in Master mode).
+> >>
+> >> My set up has 2 routerboards - one is wired and the other is wireless.
+> >> Thus RB1 has (ath0, ath1, ath2, ath3 and eth0)
+> >> RB2 has (ath0, ath1, ath2, ath3)
+> >>
+> >> The proc is as follows on both RB1 and RB2
+> >>
+> >> root@open-mesh:~# cat /proc/net/batman-adv/interfaces
+> >> ath0 ath2
+> >>
+> >> I have created a bridge between all interfaces.
+> >> The bridge config on RB1 is:
+> >>
+> >> root@open-mesh:~# brctl show
+> >> bridge name =C2=A0 =C2=A0 bridge id =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 STP enabled =C2=A0 =C2=A0 interfaces
+> >> br0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 8000.000c422fbfe4 =C2=A0=
+ =C2=A0 =C2=A0 no =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0eth0
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ath1
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ath3
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 bat0
+> >>
+> >>
+> >> The bridge config on RB2 is:
+> >> root@open-mesh:~# brctl show
+> >> bridge name =C2=A0 =C2=A0 bridge id =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 STP enabled =C2=A0 =C2=A0 interfaces
+> >> br0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 8000.00ff8fffdcc7 =C2=A0=
+ =C2=A0 =C2=A0 no =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 bat0
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ath1
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ath3
+> >>
+> >>
+> >> I can connect clients to each of these RB and they can get Internet ac=
+cess.
+> >>
+> >> My configuration is like this:
+> >>
+> >> -------------------Server 1 -------------|
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 |
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 |-------------Wired AP
+> >> (RB1) =C2=A0 =3D =C2=A0 =3D =C2=A0 =3D =C2=A0 =3D =C2=A0 =3D =C2=A0 =
+=3D =C2=A0 =3D Wireless AP (RB2)
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 |
+> >> ^ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 ^
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 |
+> >> ^ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 ^
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 |
+> >> ^ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 ^
+> >> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 |
+> >> C1 (Client of RB1) =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0C2 (Client of
+> >> RB2)
+> >>
+> >>
+> >> The APs RB1 and RB2 are connected to each other over 2 mesh wireless
+> >> links on different channels (ath0 and ath2)
+> >>
+> >> I am trying to ssh to Server 1 from all these nodes. =C2=A0I can ssh to
+> >> Server 1 from anyone but RB2 (RB1, C1, C2 can ssh Server 1 but RB2
+> >> cannot).
+> >>
+> >> Likewise I can ssh all nodes from each other. =C2=A0E.g from anywhere =
+on
+> >> LAN I can ssh to each of these nodes. =C2=A0But RB2 can be sshed only =
+=66rom
+> >> nodes directly connected (eg. RB1 and C2).
+> >>
+> >> Note however i can ping Server 1 from RB2.
+> >>
+> >> Am not sure where I am going wrong?
+> >>
+> >> Regards
+> >>
+> >> Gargi
+> >>
+> >
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>=20
 
- else
-to
- obj-m +=3D batgat.o
- batgat-objs :=3D gateway.o hash.o
- ifneq ($(strip $(findstring $(LINUX26),$(LINUX_VERSION))),$(LINUX26))
-
-but as I don't know what possible side effects are - just forget it. It sho=
-uld=20
-be better to check linux/version.h like madwifi does it, but this adds extr=
-a=20
-overhead by calling CC and again the problem that the batmand-gateway path =
-has=20
-to be known when compiling directly over the  kernel source/headers as linu=
-x-
-modules-extra-2.6 does it.
-
-The really problem when using (unchanged) Makefile.kbuild in batmand-gatewa=
-y=20
-is that the check for linux-2.6 is not in there - but to patch it for debia=
-n=20
-is (in my opinion) the cleanest version for everyone.
-
-If no better solution comes to my mind, I would say that nothing should be=
-=20
-changed at the moment.
-
-Best regards,
-	Sven
-
---nextPart1772088.EVYXADZHMk
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+--xHFwDpU9dbj6ez1V
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkngWogACgkQqQGwKVlMoDvE1QCeIfxTa5MwagbqE/1M0TpZPlxN
-ImQAnAmYuPkU5W79qM1Z2DuEHlubul/h
-=OCnb
+iEYEARECAAYFAknktUQACgkQrzg/fFk7axYNcQCgtVaUb2iudTRj/C6/Eu3d/7Zf
+qosAn25pa3FNULQ7+lfU2HAHF7vy53+X
+=Y8vF
 -----END PGP SIGNATURE-----
 
---nextPart1772088.EVYXADZHMk--
+--xHFwDpU9dbj6ez1V--
