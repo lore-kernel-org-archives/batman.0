@@ -1,16 +1,12 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 17 Apr 2009 11:08:01 +0800
-References: <238a15490904071518w6f11536nb8ec30fb43fc870b@mail.gmail.com>
-	<20090414160940.GA7032@pandem0nium>
-	<238a15490904150600p7541769y34920669c1106fe4@mail.gmail.com>
-In-Reply-To: <238a15490904150600p7541769y34920669c1106fe4@mail.gmail.com>
+Date: Tue, 21 Apr 2009 10:45:32 +0800
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904171108.09321.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Trouble with SSH in L2 batman network
+Message-Id: <200904211045.32526.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] WirelessBattleMesh2009
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,20 +18,14 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
 
-Hi,
+Hi folks,
 
-> Apparently the kamikaze distribution was screwed up.  After hours of
-> debugging I thought of changing the distro last night, and voila it
-> worked fine.
->
-> Perhaps they did not have the perfect networking subsystem in the
-> trunk of kamikaze.
-
-what version were you using before and what are you using now ? If there is a 
-problem somewhere it has a chance of coming back at some point. :)
+the B.A.T.M.A.N. team attended the WirelessBattleMesh2009 in Paris. A summary 
+of this event is available on our website now:
+https://www.open-mesh.net/wiki/2009-04-19-wbm2009-aftermath
 
 Regards,
 Marek
