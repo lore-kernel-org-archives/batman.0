@@ -1,13 +1,9 @@
-Message-ID: <49F98E54.5030602@gmx.net>
-Date: Thu, 30 Apr 2009 13:41:08 +0200
-From: elektra <onelektra@gmx.net>
 MIME-Version: 1.0
-References: <209743CECB91EB4F84169A51F300410D1F3137C3F9@MAIL02.ug.kth.se>	<49F5E0D3.208@gmx.net>
-	<49F96044.4070207@informatik.haw-hamburg.de>
-In-Reply-To: <49F96044.4070207@informatik.haw-hamburg.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] Masters thesis
+Date: Thu, 30 Apr 2009 10:43:02 -0500
+Message-ID: <4313f3060904300843ra2f7a71o37f39780a797cfd2@mail.gmail.com>
+From: Nathan Wharton <naw@greptar.com>
+Content-Type: multipart/mixed; boundary=0016e6464f7227fe860468c78d3f
+Subject: [B.A.T.M.A.N.] times wrapper
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,121 +15,75 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <B.A.T.M.A.N@open-mesh.net>
 
-Hello Maik!
+--0016e6464f7227fe860468c78d3f
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
+When I first started meshing, I used olsrd.  There was a problem on
+our platform that caused olsrd packets to stop going out after the
+board had been up about 5 minutes.  The outage lasted about 40
+seconds, then came back.  It turns out that there is a problem with
+the times() call that will return -1 for the 4096 jiffies before wrap
+around.  This caused no apparent change in time during that duration,
+so no packets were sent.  Also, for some reason on our platform,
+times() starts out about 5 minutes before wrap around.
 
-> Was the protocol implemented yet on a simulation platform like omnet?
-> For comparing purposes (for example with OLSR) it could be interesting
-> to simulate the protocol.
->   
+I found a work around elsewhere (and I leave credit in the patch) for
+some other software that was failing every 400 something days.  I
+applied this to olsrd, and the problem went away.
 
+When I switched to batman, I saw that times() is used in it as well,
+so I made the patch attached.  So, if anyone sees packets fail to come
+from batman for 40 seconds, they might need this.
 
-There is no implementation of Batman for NS2 or Omnet, as far as I'm 
-aware of. However there is a paper about the simulation of Batman-0.1 
-(Mark I of the Batman algorithm without bidirectional link check) and 
-Batman-0.2 (Mark II of the Batman algorithm with bidirectional link 
-check): http://www.olsr.org/~aaron/olsr/batman_report.pdf
+--0016e6464f7227fe860468c78d3f
+Content-Type: application/octet-stream; name="001-times.patch"
+Content-Disposition: attachment; filename="001-times.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fu5mh3y20
 
-Note: The paper is nice, the results were encouraging but the study is 
-dated. The lack of a bidirectional link check was a known limitation of 
-Mark I when we just wanted to do a quick and dirty test to prove the 
-feasibility of the Batman idea. So the first version we expected to work 
-well in the real world was Mark II. Mark II was replaced quickly by Mark 
-III because as Axel Neumann has pointed out there was a bug in the 
-algorithm in both Mark I and Mark II which can cause routing loops.
-
-Addressing this problem in Mark III also had the benefit to reduce 
-protocol overhead. Mark III works nice, but we found that the link 
-metric we used still had a flaw. All Batman algorithms can route 
-asymmetric, which is great. However Mark I-III tend to prefer routing 
-paths from which they *receive* protocol messages well as paths in the 
-opposite direction to *transmit* payload. This can be unfortunate, 
-because there could be an alternate routing path which works better in 
-transmit direction than the path which works better in receive 
-direction. In Mark II and III we tried to address this via the 
-bidirectional link check, to achieve a symmetric ETX like routing 
-behavior. This mitigated the problem but didn't solve it completely. 
-Also it was not what we really were aiming for: Routing asymmetric in 
-the transmit direction if this is the best routing path to go. Hence 
-Mark IV was introduced.
-
-We have tested and compared Olsrd 0.5.0 and Batman-Experimental (Mark IV 
-) in the "Massive Mesh" wireless indoor grid at the Meraka institute of 
-the CSIR in Tshwane (aka Pretoria) in South Africa. At the time we ran 
-the tests Batman-0.3 was pretty much in its alpha state so we were 
-concentrating on the Batman-Experimental branch because the 
-implementation was more mature. (Batman-0.3.X and Batman-Experimental 
-represent two different ideas for Mark IV of the Batman algorithm.)
-
-http://researchspace.csir.co.za/dspace/bitstream/10204/3035/1/Johnson3_2008.pdf
-
-
-Note that time has passed over this study as well. Olsr fans will point 
-out that they have improved the code much since the study and fixed at 
-least one crucial bug (ETX was not only calculated based on Hello packet 
-loss in Olsrd, as I had suggested it to Thomas Lopatic when we were both 
-designing the ETX/LQ implementation in Olsr in 2004. Thomas had decided 
-to use all protocol messages to calculate TQ/NLQ in the implementation 
-of olsr-0.4.8, so the LQ/NLQ values would change quicker than I expected 
-- depending on the number of TC messages floating around in the network)
-
-However some general conclusions still remain the same if you compare 
-both protocol ideas:
-
-* Batman-IV floods protocol messages selectively i.e. only on paths 
-following the best route for each destination. Olsr has to flood all 
-topology messages everywhere - the only optimization being the idea of 
-multipoint relays. (MPR redundancy was set to 7 MPRs per node, since I 
-tried my best to avoid routing loops).  However - enabling multi-point 
-relays or not - Olsr tries to sync every topology update with all nodes. 
-Since the grid has thousands of alternate propagation paths to 
-redundantly flood messages the protocol overhead is drastic, because 
-there is not much protocol message loss.
-
-* Olsr needs more protocol information (topology data) to operate than 
-Batman.
-
-* We did the best to stop Olsr from looping payload packets - i.e. send 
-topology updates redundant - however this comes at a price. In order to 
-avoid loops the topology information has to be synced with all OLSR 
-nodes. Despite the high level of redundancy less than 70% of the routes 
-used were symmetric. This is a clear indication that the topology data 
-bases were not in sync, because ETX would route symmetric at all times 
-if the topology data is in sync. Despite the great deal of of effort to 
-sync topology information Olsr still had transient routing loops under 
-heavy payload. It would be interesting to see how a current Olsr behaves 
-today, since the fix of the fore mentioned issue.
-
-* Batman-IV didn't loop, no matter how hard we saturated the network 
-with payload traffic. This is not a surprise because it was the main 
-goal of the algorithm design. Transient routing loops were the main 
-motivation for Thomas and me to drop development of Olsr.
-
-
-> In respect to IPv6: What is the problem with IPv6? 
-
-
-No problem regarding the protocol - we are just missing IPv6 support so 
-far in the OSI-Layer 3 implementations of Batman (both Experimental and 
-0.3.X). Batman-Advanced doesn't have this problem, as a Layer 2 protocol 
-it can carry any protocol you like.
-
-
-> The batman protocol
-> self should work with ipv6? 
-
-Absolutely.
-
-> As payload it could be realized by an tunnel
-> too.
-
-Yes. As a side-note: Batman uses tunnels for Internet connectivity to 
-address the problem of gateway switching when NAT is used on the 
-gateway. With IPv6 NAT on gateways should become superfluous one sunny 
-day :-)
-
-
-Cheers,
-elektra
+ZGlmZiAtcnVOIGJhdG1hbmQtcjExNzgub3JpZy9wb3NpeC9wb3NpeC5jIGJhdG1hbmQtcjExNzgv
+cG9zaXgvcG9zaXguYwotLS0gYmF0bWFuZC1yMTE3OC5vcmlnL3Bvc2l4L3Bvc2l4LmMJMjAwOC0x
+Mi0yOSAwOTozNTozOC4wMDAwMDAwMDAgLTA2MDAKKysrIGJhdG1hbmQtcjExNzgvcG9zaXgvcG9z
+aXguYwkyMDA5LTAxLTAyIDEzOjMxOjI3LjAwMDAwMDAwMCAtMDYwMApAQCAtNDksMTEgKzQ5LDQ5
+IEBACiAKIHN0YXRpYyBwdGhyZWFkX211dGV4X3QgYmF0bWFuX2Nsb2NrX211dGV4ID0gUFRIUkVB
+RF9NVVRFWF9JTklUSUFMSVpFUjsKIAorc3RhdGljIHN0cnVjdCB0bXMgZHVtbXlfdG1zX3N0cnVj
+dDsKK3N0YXRpYyBjbG9ja190Cit0aW1lc193cmFwcGVyKHZvaWQpIC8qIE1ha2UgdGltZXMoMikg
+YmVoYXZlIHJhdGlvbmFsbHkgb24gTGludXggKi8KK3sKKyAgICAgICBpbnQgICAgICAgICAgICAg
+c2F2ZV9lcnJubyA9IGVycm5vOworICAgICAgIGNsb2NrX3QgcmV0OworCisgICAgICAgLyoKKyAg
+ICAgICAgKiB0aW1lcygyKSByZWFsbHkgcmV0dXJucyBhbiB1bnNpZ25lZCB2YWx1ZSAuLi4KKyAg
+ICAgICAgKgorICAgICAgICAqIFdlIGRvbid0IGNoZWNrIHRvIHNlZSBpZiB3ZSBnb3QgYmFjayB0
+aGUgZXJyb3IgdmFsdWUgKC0xKSwgYmVjYXVzZQorICAgICAgICAqIHRoZSBvbmx5IHBvc3NpYmls
+aXR5IGZvciBhbiBlcnJvciB3b3VsZCBiZSBpZiB0aGUgYWRkcmVzcyBvZgorICAgICAgICAqIGR1
+bW15X3Rtc19zdHJ1Y3Qgd2FzIGludmFsaWQuICBTaW5jZSBpdCdzIGEKKyAgICAgICAgKiBjb21w
+aWxlci1nZW5lcmF0ZWQgYWRkcmVzcywgd2UgYXNzdW1lIHRoYXQgZXJyb3JzIGFyZSBpbXBvc3Np
+YmxlLgorICAgICAgICAqIEFuZCwgdW5mb3J0dW5hdGVseSwgaXQgaXMgcXVpdGUgcG9zc2libGUg
+Zm9yIHRoZSBjb3JyZWN0IHJldHVybgorICAgICAgICAqIGZyb20gdGltZXMoMikgdG8gYmUgZXhh
+Y3RseSAoY2xvY2tfdCktMS4gIFNpZ2guLi4KKyAgICAgICAgKgorICAgICAgICAqLworICAgICAg
+IGVycm5vICAgPSAwOworICAgICAgIHJldCAgICAgPSB0aW1lcygmZHVtbXlfdG1zX3N0cnVjdCk7
+CisKKy8qCisgKiAgICAgVGhpcyBpcyB0byB3b3JrIGFyb3VuZCBhIGJ1ZyBpbiB0aGUgc3lzdGVt
+IGNhbGwgaW50ZXJmYWNlCisgKiAgICAgZm9yIHRpbWVzKDIpIGZvdW5kIGluIGdsaWJjIG9uIExp
+bnV4IChhbmQgbWF5YmUgZWxzZXdoZXJlKQorICogICAgIEl0IGNoYW5nZXMgdGhlIHJldHVybiB2
+YWx1ZXMgZnJvbSAtMSB0byAtNDA5NiBhbGwgaW50bworICogICAgIC0xIGFuZCB0aGVuIGR1bXBz
+IHRoZSAtKHJldHVybiB2YWx1ZSkgaW50byBlcnJuby4KKyAqCisgKiAgICAgVGhpcyB0b3RhbGx5
+IGJpemFycmUgYmVoYXZpb3Igc2VlbXMgdG8gYmUgd2lkZXNwcmVhZCBpbgorICogICAgIHZlcnNp
+b25zIG9mIExpbnV4IGFuZCBnbGliYy4KKyAqCisgKiAgICAgTWFueSB0aGFua3MgdG8gV29sZmdh
+bmcgRHVtaHMgPHdvbGZnYW5nLmR1bWhzIChhdCkgZ214LmF0PgorICogICAgIGZvciBmaW5kaW5n
+IGFuZCBkb2N1bWVudGluZyB0aGlzIGJpemFycmUgYmVoYXZpb3IuCisgKi8KKyAgICAgICBpZiAo
+ZXJybm8gIT0gMCkgeworICAgICAgICAgICAgICAgcmV0ID0gKGNsb2NrX3QpICgtZXJybm8pOwor
+ICAgICAgIH0KKyAgICAgICBlcnJubyA9IHNhdmVfZXJybm87CisgICAgICAgcmV0dXJuIHJldDsK
+K30KIAogc3RhdGljIHZvaWQgdXBkYXRlX2ludGVybmFsX2Nsb2NrKHZvaWQpCiB7Ci0Jc3RydWN0
+IHRtcyB0cDsKLQljbG9ja190IGN1cnJlbnRfY2xvY2tfdGljayA9IHRpbWVzKCZ0cCk7CisJY2xv
+Y2tfdCBjdXJyZW50X2Nsb2NrX3RpY2sgPSB0aW1lc193cmFwcGVyKCk7CiAKIAliYXRtYW5fY2xv
+Y2tfdGlja3MgKz0gKGN1cnJlbnRfY2xvY2tfdGljayAtIGxhc3RfY2xvY2tfdGljayk7CiAJbGFz
+dF9jbG9ja190aWNrID0gY3VycmVudF9jbG9ja190aWNrOwpAQCAtNTUzLDcgKzU5MSw2IEBACiBp
+bnQgbWFpbiggaW50IGFyZ2MsIGNoYXIgKmFyZ3ZbXSApIHsKIAogCWludDhfdCByZXM7Ci0Jc3Ry
+dWN0IHRtcyB0cDsKIAogCS8qIGNoZWNrIGlmIHVzZXIgaXMgcm9vdCAqLwogCWlmICggKCBnZXR1
+aWQoKSApIHx8ICggZ2V0Z2lkKCkgKSApIHsKQEAgLTU3NSw3ICs2MTIsNyBAQAogCiAJLyogc2F2
+ZSBzdGFydCB2YWx1ZSAqLwogCXN5c3RlbV90aWNrID0gKGZsb2F0KXN5c2NvbmYoX1NDX0NMS19U
+Q0spOwotCWxhc3RfY2xvY2tfdGljayA9IHRpbWVzKCZ0cCk7CisJbGFzdF9jbG9ja190aWNrID0g
+dGltZXNfd3JhcHBlcigpOwogCXVwZGF0ZV9pbnRlcm5hbF9jbG9jaygpOwogCiAJYXBwbHlfaW5p
+dF9hcmdzKCBhcmdjLCBhcmd2ICk7Cg==
+--0016e6464f7227fe860468c78d3f--
