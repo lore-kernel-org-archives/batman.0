@@ -1,12 +1,13 @@
-Message-ID: <4A0078B5.10009@thewybles.com>
-Date: Tue, 05 May 2009 10:34:45 -0700
-From: Charles Wyble <charles@thewybles.com>
-MIME-Version: 1.0
+From: Carcellelist <carcellelist@free.fr>
+Date: Tue, 5 May 2009 19:34:35 +0200
 References: <bad82a80905050708x1f0a75f0j27e78d72c81201bc@mail.gmail.com>
-	<COL105-W37D1C83DD504C88D3B91B9F6690@phx.gbl>
-In-Reply-To: <COL105-W37D1C83DD504C88D3B91B9F6690@phx.gbl>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <bad82a80905050708x1f0a75f0j27e78d72c81201bc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905051935.03639.carcellelist@free.fr>
 Subject: Re: [B.A.T.M.A.N.] batman-adv use in Manchester NH
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -19,39 +20,35 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-Some folks want to deploy a centralized architecture. :)
+Hi Arc,
 
-There are many many uses for technology. That's the beauty of it.
+> What kind of traffic throughput is the kernel module capable of?  Does the
+> module multithread properly for multicore utilization?  Would a FPGA
+> variant be needed to have a "mesh switch" or would a high-end multicore ARM
+> be reasonably able to handle say an 8-port gigabit mesh switch?
 
-I'm guessing that the goal of the deployment is for an ISP type=20
-architecture.
+Concerning the multithreading of the batman daemon, if batman supports multi-
+threads, you can distribute this on different cores definitely:
 
-Dennis Bartsch wrote:
-> Hello,
->=20
->  > From: arcriley@gmail.com
->  > [...]  Would a FPGA variant be needed to have a "mesh switch" or would
->  > a high-end multicore ARM be reasonably able to handle say an 8-port=20
-> gigabit mesh switch?
->  > [...]
->=20
-> What for does one want an 8-port gigabit mesh-switch?
-> meshing with batman-adv is a totally decentral thing.
->=20
-> cheers
-> dennis bartsch
->=20
-> ------------------------------------------------------------------------
-> Die virtuelle Festplatte im Netz - 25 GB f=FCr deine Bilder, Musikfiles=20
-> und Dateien! Jetzt kostenlos sichern!=20
-> <http://redirect.gimas.net/?n=3DM0905WLPhotos>
->=20
->=20
-> ------------------------------------------------------------------------
->=20
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+Concerning FPGA and the batman daemon (both userspace and kernelspace), it 
+will depend on the FPGA you want to use (FPGAs from the two major vendors, 
+Xilinx and Altera, are divided into two families based on the number of 
+logical gates they have - huge Xilinx VIRTEX5 and coming 6 are even embarking 
+one or event 2 PowerPCs next to the FPGA gates). Large FPGAs could embark part 
+of the daemon in the CPU hardwired in the chip and the rest (for instance 
+intensive functions like packet routing and filtering). Small FPGAs would run 
+the daemon in the softcore (OpenRISC, Microblaze, aEMB) either "userspace" or 
+"kernelspace" in the softcore or directly with the daemon in low level langage 
+(VHDL or VERILOG) after porting the C code into this HDL langages. Core-
+networking routers from CISCO, JUNIPER are loaded with FPGAs to process the 
+packet filtering and routing the closest from the physical layer.
+
+Concerning ARM and 8-port gigabit mesh switch, the power of even a coming 
+multicore ARM13 would not be sufficient to run the packet routing and 
+filtering for the 8xGigabits ports. ARM had been primarly developed for 
+embedded devices and not for powerful applications such as switching and 
+routing.
+
+Xavier.
