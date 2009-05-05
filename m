@@ -1,13 +1,11 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 6 May 2009 00:05:55 +0800
-References: <bad82a80905050708x1f0a75f0j27e78d72c81201bc@mail.gmail.com>
+Message-ID: <COL105-W37D1C83DD504C88D3B91B9F6690@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_578dd0d7-04cb-490e-9e1f-98386ff7bc3a_"
+From: Dennis Bartsch <dennis_bartsch@hotmail.com>
+Date: Tue, 5 May 2009 19:26:01 +0200
 In-Reply-To: <bad82a80905050708x1f0a75f0j27e78d72c81201bc@mail.gmail.com>
+References: <bad82a80905050708x1f0a75f0j27e78d72c81201bc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-6"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905060006.19114.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv use in Manchester NH
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -20,74 +18,60 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-On Tuesday 05 May 2009 22:08:44 Arc Riley wrote:
-> We're setting up batman-adv on open-mesh.com OM1P routers and
-> unidirectional antennas to connect homes and businesses across the city.
-
-Cool ! May I ask who "we" is and how you would describe the current status ?
+--_578dd0d7-04cb-490e-9e1f-98386ff7bc3a_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 
-> Is there currently a multicast protocol or method for a node on the network
-> to get local link stats from every other node on the network?  We're
-> looking at this for a GUI desktop diagnostics tool which shows the current
-> 1-hop link states for all nodes on the network
+Hello=2C
 
-If you want to assemble a view of the whole topology the built-in vis server 
-might be what you are looking for. I think the 24C3 video that you can find on 
-our website describes how it works.
+> From: arcriley@gmail.com
+> [...]  Would a FPGA variant be needed to have a "mesh switch" or would=20
+> a high-end multicore ARM be reasonably able to handle say an 8-port gigab=
+it mesh switch?
+> [...]
 
+What for does one want an 8-port gigabit mesh-switch?=20
+meshing with batman-adv is a totally decentral thing.
 
-> Is there a layer 3 solution for routing each end user to the nearest IP
-> gateway that works well on top of a batman-adv network?
+cheers
+dennis bartsch
 
-Actually, this gateway question puzzles us as well. We did not find a very good 
-solution for this problem yet. Batman-adv knows the best route towards the 
-gateway - no problem here. But how can we propate that upwards ? Setting a 
-route (which would be layer 3) ? We could even create an API that allows other 
-processes to retrieve the best gateway but we "just" have a mac address no IP 
-address.
+_________________________________________________________________
+http://redirect.gimas.net/?n=3DM0905xFTP_SpringCampaign2
+--> F=FCr Fotos hier abdr=FCcken <-=
 
+--_578dd0d7-04cb-490e-9e1f-98386ff7bc3a_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> Does batman-adv currently support "bonding"; ie, will it route all packets
-> through the best connection until it's saturated, or will it spread packets
-> across connections (especially that are near the same quality) for optimal
-> speed?
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Verdana
+}
+</style>
+</head>
+<body class=3D'hmmessage'>
+Hello=2C<br><br>&gt=3B From: arcriley@gmail.com<br>&gt=3B [...]&nbsp=3B Wou=
+ld a FPGA variant be needed to have a "mesh switch" or would <br>&gt=3B a h=
+igh-end multicore ARM be reasonably able to handle say an 8-port gigabit me=
+sh switch?<br>&gt=3B [...]<br><br>What for does one want an 8-port gigabit =
+mesh-switch? <br>meshing with batman-adv is a totally decentral thing.<br><=
+br>cheers<br>dennis bartsch<br><br /><hr />Die virtuelle Festplatte im Netz=
+ - 25 GB f=FCr deine Bilder=2C Musikfiles und Dateien! <a href=3D'http://re=
+direct.gimas.net/?n=3DM0905WLPhotos' target=3D'_new'>Jetzt kostenlos sicher=
+n!</a></body>
+</html>=
 
-As soon as a link is used its link quality will go down as well but I think 
-you are referring to a feature known as "Multipath Routing" 
-(http://en.wikipedia.org/wiki/Multipath_routing) ?! Currently, batman does not 
-have this feature. I'm not aware of any implementation that does as it is 
-quite tricky. If you know some let me know.  :-)
-
-On the other hand Simon is working on "short distance" bonding (which 
-simplifies the task a lot). So far we have no working code.
-
-
-> What kind of traffic throughput is the kernel module capable of?  Does the
-> module multithread properly for multicore utilization?  Would a FPGA
-> variant be needed to have a "mesh switch" or would a high-end multicore ARM
-> be reasonably able to handle say an 8-port gigabit mesh switch?
-
-I'm not the right guy to answer the "how much power do we need for an 8-port 
-gigabit switch". This is not directly related to batman. I hope someone else 
-can jump in.
-
-Batman-adv is fully multithreaded as every reasonable linux module should be. 
-Thats one of the main reasons that make it quite time consuming to debug - 
-every little race condition leads to crashes and then you look for the needle 
-in the haystack. :-)
-
-
-> These questions are less to evaluate batman-adv for our uses than looking
-> forward at what we'll need to develop as we expand.
-
-Sounds great - we are looking forward to all kind of feedback / contributions. 
-Let us know if you have more questions.
-
-Regards,
-Marek
-
-
-
+--_578dd0d7-04cb-490e-9e1f-98386ff7bc3a_--
