@@ -1,11 +1,15 @@
-MIME-Version: 1.0
-In-Reply-To: <4A00856D.9080209@thewybles.com>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 6 May 2009 13:15:08 +0800
 References: <bad82a80905050708x1f0a75f0j27e78d72c81201bc@mail.gmail.com>
-	<4A00856D.9080209@thewybles.com>
-Date: Tue, 5 May 2009 14:53:56 -0400
-Message-ID: <bad82a80905051153y14c528c7mc3461a1467824cc9@mail.gmail.com>
-From: Arc Riley <arcriley@gmail.com>
-Content-Type: multipart/alternative; boundary=0016e644dd2606efcd04692ecdeb
+	<200905060006.19114.lindner_marek@yahoo.de>
+	<bad82a80905051111t8acb76aoedb7d57c3d42141e@mail.gmail.com>
+In-Reply-To: <bad82a80905051111t8acb76aoedb7d57c3d42141e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905061315.09151.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv use in Manchester NH
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -20,84 +24,63 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---0016e644dd2606efcd04692ecdeb
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Wednesday 06 May 2009 02:11:57 Arc Riley wrote:
+> I haven't found any such video on the website.  Is the vis server setup for
+> batman-adv or just the layer 3 batman?  Is the protocol used for nodes to
+> announce their status documented?
+>
+> We're building a desktop/mobile app using OpenStreetMap data and Mapnik, we
+> don't want to require Internet access to view available nodes from any
+> user's connection to the mesh so that it can be used to view and diagnose
+> the network in any situation.  If that software could listen to the node
+> status announcements ("I have X quality link with node A, Y quality link
+> with node B, Z quality link with node C"), along with nodes announcing
+> other properties including long/lat, wifi protocol and signal, etc, this
+> should be very easy to show colored links indicating their quality.
+>
+> Since we need local link status from nodes, and not the compiled quality to
+> route to any node, listening to OGM frames is not enough.
 
-> Excellent! Is there a website for your project?
+What you want is the vis server that does all that for you. In the /proc 
+filesystem you will find a file called "vis" which outputs all the data you want 
+in the well-known dot draw format. You can use any dot draw parser to generate 
+a map for your mesh.
+Basically, this vis server is quite similar to the layer 3 vis server but it 
+is integrated into the module (no additional programs needed - just activate 
+it). 
+Once your network grows you will appreciate the vis server sync feature.  :-)
 
-
-Not yet, in the next two weeks.
-
-
-Are you fully committed to Batman or still in the evaluation phases?
-
-
-There's room to be swayed, but batman-adv seems to be the best suited for
-our needs right now.  The primary concern is that the layer 2 branch isn't
-old enough to guarentee that it'll last - but it's free software so if it
-fizzles and is useful, someone will pick it up.
-
-
-OSPF perhaps? :)
-
-
-As I understand it, OSPF is designed for layer 3 networks.  There is no
-layer 3 routing going on within this network, to layer 3 protocols the
-entire mesh appears to be locally accessable.
-
-We really need something that directs users to use the gateway with the
-highest TQ.
-
-One method I just thought of; each gateway runs a DHCP server.  When a
-broadcast request is received, each gateway announces to the others their TQ
-to the requesting node, and after a brief timeout, the gateway with the
-highest TQ responds to the requesting node.
-
-This raises a question however.  After reading the protocol document, I do
-not understand how the nodes on a network know which node to route frames
-which are destined for a MAC not belonging to a node, ie, a standard laptop
-connected to the mesh.  The above scenario would require knowing which node
-a non-node MAC is connected through.
+The video can be downloaded here:
+http://downloads.open-mesh.net/batman/misc/24C3-Wireless_Kernel_Tweaking.mkv
+and other documentation can be found here:
+http://open-mesh.net/wiki/UserDocs
 
 
-As a completely unrelated question, how does the batman-adv 0.1 kernel
-module currently handle multicast frame routing?
+> How about running this as a custom DHCP server which uses the above
+> mentioned data to determine the "best" gateway on that network and return
+> the relevant information (IP, netmask, gateway IP) to each client with a
+> timeout sufficient for dealing with mobile users in a reasonable amount of
+> time.
 
---0016e644dd2606efcd04692ecdeb
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+We thought about a modified client which would query the local module for the 
+link quality information before accepting DHCP answers. Implementing a client 
+might be easier than the server.
 
-<br><div class=3D"gmail_quote"><blockquote class=3D"gmail_quote" style=3D"b=
-order-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; paddin=
-g-left: 1ex;">Excellent! Is there a website for your project?</blockquote><=
-div>
-<br>Not yet, in the next two weeks.<br><br><br></div><blockquote class=3D"g=
-mail_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt=
- 0pt 0pt 0.8ex; padding-left: 1ex;">Are you fully committed to Batman or st=
-ill in the evaluation phases?</blockquote>
-<div><br>There&#39;s room to be swayed, but batman-adv seems to be the best=
- suited for our needs right now.=C2=A0 The primary concern is that the laye=
-r 2 branch isn&#39;t old enough to guarentee that it&#39;ll last - but it&#=
-39;s free software so if it fizzles and is useful, someone will pick it up.=
-<br>
-<br><br></div><blockquote class=3D"gmail_quote" style=3D"border-left: 1px s=
-olid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">OSP=
-F perhaps? :)</blockquote><br>As I understand it, OSPF is designed for laye=
-r 3 networks.=C2=A0 There is no layer 3 routing going on within this networ=
-k, to layer 3 protocols the entire mesh appears to be locally accessable.<b=
-r>
-</div><br>We really need something that directs users to use the gateway wi=
-th the highest TQ.<br><br>One method I just thought of; each gateway runs a=
- DHCP server.=C2=A0 When a broadcast request is received, each gateway anno=
-unces to the others their TQ to the requesting node, and after a brief time=
-out, the gateway with the highest TQ responds to the requesting node.<br>
-<br>This raises a question however.=C2=A0 After reading the protocol docume=
-nt, I do not understand how the nodes on a network know which node to route=
- frames which are destined for a MAC not belonging to a node, ie, a standar=
-d laptop connected to the mesh.=C2=A0 The above scenario would require know=
-ing which node a non-node MAC is connected through.<br>
-<br><br>As a completely unrelated question, how does the batman-adv 0.1 ker=
-nel module currently handle multicast frame routing?<br>
 
---0016e644dd2606efcd04692ecdeb--
+> Bonding as in when two nodes have multiple direct connections to each
+> other, dividing frames accordingly rather than continually switching all
+> traffic to the highest quality link.
+>
+> This would be very useful for multi-radio routers operating multiple links
+> on different channels (or even 802.11G vs 802.11A) between the same set of
+> nodes.  Standard ethernet bonding is not preferable since you'd want the
+> mesh protocol to use lower TQ links (ie, channel 6 gets periodic high
+> interferance) less than higher TQ links (ie, 802.11A often has little
+> interferance).
+
+Thats what we mean with "short distance" bonding. I agree with you - it could 
+be very valuable.
+
+Regards,
+Marek
+
