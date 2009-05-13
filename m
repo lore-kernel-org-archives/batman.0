@@ -1,15 +1,13 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 13 May 2009 18:25:28 +0800
-References: <1240609318-18133-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1240609318-18133-1-git-send-email-sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Message-Id: <90C733EE-D757-431F-85EA-765257488668@mac.com>
+From: Andrew de Andrade <andrew.de.andrade@mac.com>
+In-Reply-To: <200905131825.39007.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905131825.39007.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Differentiate between hyphen and minus
-	in manpage
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Date: Wed, 13 May 2009 16:33:23 -0300
+References: <1240609318-18133-1-git-send-email-sven.eckelmann@gmx.de>
+	<200905131825.39007.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] Has anyone considered the addition of GPS in BATMAN?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,17 +21,36 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Saturday 25 April 2009 05:41:58 Sven Eckelmann wrote:
-> groff differentiate between minus signs and hyphens. The default option
-> is to interpret '-' as hyphens (U+2010) and makes it hard to use copy
-> and paste for options in UTF-8 environments.
-> See http://lists.debian.org/debian-devel/2003/03/msg01481.html for more
-> informations.
->
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+Hello all, I'm new to the BATMAN project and have only been following  
+it a short while, but I was curious if any thought had been given to  
+having B.A.T.M.A.N. use GPS data to aid in calculating best routes  
+through a network.
 
-Sorry for the late reaction - I just commited it (rev. 1260).
+i.e. once a node joins the mesh network, it not only broadcasts its  
+presence and who it is connected to, but also it's physical location,  
+assuming it has a GPS dongle connected to it.
 
-Thanks for the patch,
-Marek
+The way I see it, only a few nodes in the network would need to be GPS  
+capable to greatly increase the ability to calculate a route through  
+the network.
+
+Using response time to its closest neighbors, a node theoretically  
+would only need to be connected to three other nodes the are GPS  
+capable to triangulate its location. Once this node has triangulated  
+its location it could then broadcast it to the rest of the network,  
+thereby aiding other nodes figure out where they are located.
+
+So long as each location-aware node is connected to at least 3 other  
+nodes on average and assuming they are fairly evenly distributed,  
+every node in the network with at least three links should be able to  
+calculate it's location.
+
+This location awareness plus congestion (node health) data would  
+increase the efficiency of calculating the network topology at each  
+node, and calculating the most efficient route to route the data.
+
+Anyways, just an idea. As I said, I'm new here and will try to  
+contribute where I can.
+
+Andrew
 
