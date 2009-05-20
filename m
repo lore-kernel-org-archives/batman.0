@@ -1,16 +1,15 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 21 May 2009 01:30:01 +0800
-References: <1242819232-614-3-git-send-email-sven.eckelmann@gmx.de>
-	<1242836756-2491-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1242836756-2491-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Thu, 21 May 2009 02:37:32 +0800
+References: <F6D9C212-B698-46E4-8AE3-FE76DAFD2C54@7degrees.co.za>
+In-Reply-To: <F6D9C212-B698-46E4-8AE3-FE76DAFD2C54@7degrees.co.za>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905210130.01798.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH2/2v2] [batman] Don't add size for netlink
-	header twice in netlink request
+Message-Id: <200905210237.32316.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Allow vis daemon to serve mesh topology
+	simultaneously in dot_draw and JSON format
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,18 +23,32 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Thursday 21 May 2009 00:25:56 Sven Eckelmann wrote:
-> The parameter len of NLMSG_LENGTH is only the size of the payload of
-> the request. If we use this function to calculate the size of the buffer
-> we send to the kernel we would add (sizeof(nlmsghdr)+padding) and the
-> size of our own structure which also has a nlmsghdr included. We must
-> split the req structure into a header part and the payload to calculate
-> the correct size of our buffer and having the payload always start at
-> the correct address.
+On Tuesday 19 May 2009 01:01:48 Antoine van Gelder wrote:
+> After some great input from Marek I took a swing at rewriting my vis
+> patch to allow serving of mesh topology simultaneously in dot_draw &
+> json.
 >
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+>
+> * -j enables JSON server on port 2005
+>
+> * dot_draw continues to be served on port 2004 irrespective of whether
+> -j is specified or not.
 
-Great findings - the patches are in now.  :-)
+Nice patch - I just uploaded it.
+
+
+> Some thoughts:
+>
+> * It is not the prettiest of patches but it works. Thinking about
+> cleaner approaches makes my imagination drift in the direction of a
+> simple plugin API such as OLSRd has, anyone else having any similar
+> thoughts ? :)
+>
+> * I'm serving json on port 2005 - any alternative suggestions ?
+
+The code itself is far from being pretty. As usual it started as a proof of 
+concept grew into a temporary solution and is still around. It worked quite 
+well so far but if you have ideas & energy to improve it, please go ahead. :-)
 
 Regards,
 Marek
