@@ -1,16 +1,7 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 20 May 2009 09:30:32 +0800
-References: <4313f3060905190727x279f2d0boc4e74e4df6e821bc@mail.gmail.com>
-	<200905192121.08028.sven.eckelmann@gmx.de>
-	<4313f3060905191338n3ac9a795nd605da75ec1523aa@mail.gmail.com>
-In-Reply-To: <4313f3060905191338n3ac9a795nd605da75ec1523aa@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905200930.52901.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Kernel crashes with batgat installed
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Wed, 20 May 2009 13:33:50 +0200
+Message-Id: <1242819232-614-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] Possible page faults at route.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,31 +13,32 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-On Wednesday 20 May 2009 04:38:31 Nathan Wharton wrote:
-> >> Everything works fine otherwise.  Except one thing that just came to
-> >> mind, I had to remove -DDEBUG_MALLOC -DMEMORY_USAGE because batman
-> >> wouldn't do anything without crashing because of magic number
-> >> problems.  Could this be because I am on Big Endian hardware?
-> >
-> > I am running it also on big endian hardware and it seems to work. Does it
-> > happen right after the start or were extra interaction needed? What was
-> > the error output?
->
-> It happens right after the start, and the error is debugRealloc -
-> invalid magic number in trailer.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
 
-The DEBUG_MALLOC option enables additional functions within batman that allow 
-it to easily trace back malloc bugs. A simple core dump might help but 
-sometimes it is hard to say where it is coming from. Could you post the exact 
-"invalid trailer number" line ?
+In the handling of netlink sockets is are two small and (probably
+always) non fatal glitches. Only together they could lead to page
+faults. It is quite unlikely that it happens, but you cannot say
+that it is impossible.
 
-I'm a bit confused here:
-* Is batman crashing ?
-* Is the kernel crashing ?
-* Is batman crashing if you use the batgat module ?
+Best regards,
+	Sven
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-Regards,
-Marek
-
+iQIcBAEBCgAGBQJKE+oyAAoJEF2HCgfBJntGsv4P/ih/7xcrweNox8Kv8+OhoWBV
+sZ8DcgRI3REqFtZMCNte/P/6ZGSx1hE95NytTo2R767PJF1ZjKX4B45NGf52rtAp
+y+5++SGZ6vRPXPDhEF/1yg4i0ce29pgwZJVYj0qXZk5uLyJz2j4RtkPDGuCm4MCd
+V7B1V+tVTLOGKLGnJAMEi49F61dRsYNt5tobQKwNxGt6tZVC7CCD7Ze2jA3c2b8r
+dGixm+4vQGrV0EEmUS4JoJloOlz9tUI8+ld65urwj5Ep8IpSYBfrjQRbd9oaVtQe
+6vRXnuAdZz9nam9MZRm4IqGa5DfNBkd0vXQryy85sxPSuIFti0FtiQI3bGYX8QnV
+7ShajIU4JRo4k6jqZX6H+Z65DBahUFrbrfGqip7eOSLUANwtHy4S/0MD4Aw4FU2X
+FF6AfsrdiBdT68eVBsxJdXInrAu5UwXBtIwNQm90l8JzT3TOo5pnDGiA7z0fVRGb
+IJbTQKqkpZNvf0esyF7PhcEnjwefsP9gdXzuTcqlAday/mX3m73TmMismlM22Id+
+eSLLU03Qi+fM3HfmMCk7OlMYXPw47qI+vMX8NGNqh/3MSqXZv8z9BXts89DXjMxs
+jDOFX/qZCx0Z5c31DjCH7sxi3/R8rQTSE/AUMLVUrttuGwS/WzE4m/8W/Yu13gMi
+ERz3CKiMqSEDin8EyL6a
+=ECeu
+-----END PGP SIGNATURE-----
