@@ -1,10 +1,15 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 20 May 2009 13:33:52 +0200
-Message-Id: <1242819232-614-3-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1242819232-614-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1242819232-614-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] [batman] Don't add size for netlink
-	header twice in netlink request
+MIME-Version: 1.0
+In-Reply-To: <200905200930.52901.lindner_marek@yahoo.de>
+References: <4313f3060905190727x279f2d0boc4e74e4df6e821bc@mail.gmail.com>
+	<200905192121.08028.sven.eckelmann@gmx.de>
+	<4313f3060905191338n3ac9a795nd605da75ec1523aa@mail.gmail.com>
+	<200905200930.52901.lindner_marek@yahoo.de>
+Date: Wed, 20 May 2009 09:34:29 -0500
+Message-ID: <4313f3060905200734x3d6385f7jeac3eb3a8255355@mail.gmail.com>
+From: Nathan Wharton <naw@greptar.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Kernel crashes with batgat installed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,193 +21,83 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-The parameter len of NLMSG_LENGTH is only the size of the payload of
-the request. If we use this function to calculate the size of the buffer
-we send to the kernel we would add (sizeof(nlmsghdr)+padding) and the
-size of our own structure which also has a nlmsghdr included. We must
-split the req structure into a header part and the payload to calculate
-the correct size of our buffer and having the payload always start at
-the correct address.
+On Tue, May 19, 2009 at 8:30 PM, Marek Lindner <lindner_marek@yahoo.de> wro=
+te:
+> On Wednesday 20 May 2009 04:38:31 Nathan Wharton wrote:
+>> >> Everything works fine otherwise. =A0Except one thing that just came t=
+o
+>> >> mind, I had to remove -DDEBUG_MALLOC -DMEMORY_USAGE because batman
+>> >> wouldn't do anything without crashing because of magic number
+>> >> problems. =A0Could this be because I am on Big Endian hardware?
+>> >
+>> > I am running it also on big endian hardware and it seems to work. Does=
+ it
+>> > happen right after the start or were extra interaction needed? What wa=
+s
+>> > the error output?
+>>
+>> It happens right after the start, and the error is debugRealloc -
+>> invalid magic number in trailer.
+>
+> The DEBUG_MALLOC option enables additional functions within batman that a=
+llow
+> it to easily trace back malloc bugs. A simple core dump might help but
+> sometimes it is hard to say where it is coming from. Could you post the e=
+xact
+> "invalid trailer number" line ?
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman/linux/route.c |   59 ++++++++++++++++++++++++++-----------------------
- 1 files changed, 31 insertions(+), 28 deletions(-)
+Here is the output when I have DEBUG_MALLOC on from start to finish:
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+root@SchaferRobotics_1_3:/# batmand -d 3 -r 2 -a 10.1.3.0/24 --disable-clie=
+nt-na
+t --hop-penalty 5 --purge-timeout 10000 ath0 eth0
+WARNING: You are using the unstable batman branch. If you are
+interested in *using* batman get the lat
+est stable release !
+Deleting throw route to 10.1.3.0/24 via 0.0.0.0 (table 66 - unknown)
+Deleting throw route to 10.1.3.0/24 via 0.0.0.0 (table 66 - unknown)
+Deleting throw route to 10.1.3.0/24 via 0.0.0.0 (table 65 - unknown)
+Deleting throw route to 10.1.3.0/24 via 0.0.0.0 (table 65 - unknown)
+Deleting throw route to 10.1.3.0/24 via 0.0.0.0 (table 67 - unknown)
+Deleting throw route to 10.1.3.0/24 via 0.0.0.0 (table 67 - unknown)
+Interface activated: ath0
+Using interface ath0 with address 10.0.1.3 and broadcast address 10.0.255.2=
+55
+Interface activated: eth0
+Using interface eth0 with address 10.255.1.3 and broadcast address
+10.255.255.255
+B.A.T.M.A.N. 0.3.2-beta rv1256 (compatibility version 5)
+Adding throw route to 127.0.0.0/8 via 0.0.0.0 (table 68 - lo)
+Adding throw route to 10.1.3.0/24 via 0.0.0.0 (table 68 - eth1)
+Adding throw route to 10.0.0.0/16 via 0.0.0.0 (table 68 - ath0)
+debug level: 3
+routing class: 2
+Adding throw route to 10.1.3.0/24 via 0.0.0.0 (table 65 - unknown)
+Adding throw route to 10.1.3.0/24 via 0.0.0.0 (table 66 - unknown)
+Adding throw route to 10.1.3.0/24 via 0.0.0.0 (table 67 - unknown)
+Adding throw route to 10.1.3.0/24 via 0.0.0.0 (table 68 - unknown)
+Error - can't add throw route to 10.1.3.0/24 via 0.0.0.0 (table 68): File e=
+xists
+debugRealloc - invalid magic number in trailer: 78183456, malloc tag =3D 15
+Deleting throw route to 127.0.0.0/8 via 0.0.0.0 (table 68 - lo)
+Deleting throw route to 10.1.3.0/24 via 0.0.0.0 (table 68 - eth1)
+Deleting throw route to 10.0.0.0/16 via 0.0.0.0 (table 68 - ath0)
+Interface deactivated: ath0
+Interface deactivated: eth0
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
-diff --git a/batman/linux/route.c b/batman/linux/route.c
-index 3ddce2e..4be0179 100644
---- a/batman/linux/route.c
-+++ b/batman/linux/route.c
-@@ -182,8 +182,8 @@ void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src
- 	struct iovec iov;
- 	struct msghdr msg;
- 	struct nlmsghdr *nh;
-+	struct nlmsghdr *nlh;
- 	struct req_s {
--		struct nlmsghdr nlh;
- 		struct rtmsg rtm;
- 		char buff[4 * (sizeof(struct rtattr) + 4)];
- 	} *req;
-@@ -228,9 +228,10 @@ void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src
- 	}
- 
- 
--	req = (struct req_s*)req_buf;
-+	nlh = (struct nlmsghdr *)req_buf;
-+	req = (struct req_s*)NLMSG_DATA(req_buf);
- 	memset(&nladdr, 0, sizeof(struct sockaddr_nl));
--	memset(req, 0, NLMSG_LENGTH(sizeof(struct req_s)));
-+	memset(req_buf, 0, NLMSG_LENGTH(sizeof(struct req_s)));
- 	memset(&msg, 0, sizeof(struct msghdr));
- 
- 	nladdr.nl_family = AF_NETLINK;
-@@ -244,22 +245,22 @@ void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src
- 	if (src_ip != 0)
- 		len += sizeof(struct rtattr) + 4;
- 
--	req->nlh.nlmsg_len = NLMSG_LENGTH(len);
--	req->nlh.nlmsg_pid = getpid();
-+	nlh->nlmsg_len = NLMSG_LENGTH(len);
-+	nlh->nlmsg_pid = getpid();
- 	req->rtm.rtm_family = AF_INET;
- 	req->rtm.rtm_table = rt_table;
- 	req->rtm.rtm_dst_len = netmask;
- 
- 	if (route_action == ROUTE_DEL) {
- 
--		req->nlh.nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
--		req->nlh.nlmsg_type = RTM_DELROUTE;
-+		nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
-+		nlh->nlmsg_type = RTM_DELROUTE;
- 		req->rtm.rtm_scope = RT_SCOPE_NOWHERE;
- 
- 	} else {
- 
--		req->nlh.nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK | NLM_F_CREATE | NLM_F_APPEND;
--		req->nlh.nlmsg_type = RTM_NEWROUTE;
-+		nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK | NLM_F_CREATE | NLM_F_APPEND;
-+		nlh->nlmsg_type = RTM_NEWROUTE;
- 
- 		if (route_type == ROUTE_TYPE_UNICAST && my_router == 0 && src_ip != 0)
- 			req->rtm.rtm_scope = RT_SCOPE_LINK;
-@@ -317,7 +318,7 @@ void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src
- 
- 	}
- 
--	if (sendto(netlink_sock, req, req->nlh.nlmsg_len, 0, (struct sockaddr *)&nladdr, sizeof(struct sockaddr_nl)) < 0) {
-+	if (sendto(netlink_sock, req_buf, nlh->nlmsg_len, 0, (struct sockaddr *)&nladdr, sizeof(struct sockaddr_nl)) < 0) {
- 
- 		debug_output(0, "Error - can't send message to kernel via netlink socket for routing table manipulation: %s\n", strerror(errno));
- 		close(netlink_sock);
-@@ -366,8 +367,8 @@ void add_del_rule(uint32_t network, uint8_t netmask, int8_t rt_table, uint32_t p
- 	struct iovec iov;
- 	struct msghdr msg;
- 	struct nlmsghdr *nh;
-+	struct nlmsghdr *nlh;
- 	struct req_s {
--		struct nlmsghdr nlh;
- 		struct rtmsg rtm;
- 		char buff[2 * (sizeof(struct rtattr) + 4)];
- 	} *req;
-@@ -385,9 +386,10 @@ void add_del_rule(uint32_t network, uint8_t netmask, int8_t rt_table, uint32_t p
- 	}
- 
- 
--	req = (struct req_s*)req_buf;
-+	nlh = (struct nlmsghdr *)req_buf;
-+	req = (struct req_s*)NLMSG_DATA(req_buf);
- 	memset(&nladdr, 0, sizeof(struct sockaddr_nl));
--	memset(req, 0, NLMSG_LENGTH(sizeof(struct req_s)));
-+	memset(req_buf, 0, NLMSG_LENGTH(sizeof(struct req_s)));
- 	memset(&msg, 0, sizeof(struct msghdr));
- 
- 	nladdr.nl_family = AF_NETLINK;
-@@ -397,22 +399,22 @@ void add_del_rule(uint32_t network, uint8_t netmask, int8_t rt_table, uint32_t p
- 	if (prio != 0)
- 		len += sizeof(struct rtattr) + 4;
- 
--	req->nlh.nlmsg_len = NLMSG_LENGTH(len);
--	req->nlh.nlmsg_pid = getpid();
-+	nlh->nlmsg_len = NLMSG_LENGTH(len);
-+	nlh->nlmsg_pid = getpid();
- 	req->rtm.rtm_family = AF_INET;
- 	req->rtm.rtm_table = rt_table;
- 
- 
- 	if (rule_action == RULE_DEL) {
- 
--		req->nlh.nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
--		req->nlh.nlmsg_type = RTM_DELRULE;
-+		nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
-+		nlh->nlmsg_type = RTM_DELRULE;
- 		req->rtm.rtm_scope = RT_SCOPE_NOWHERE;
- 
- 	} else {
- 
--		req->nlh.nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK | NLM_F_CREATE | NLM_F_EXCL;
--		req->nlh.nlmsg_type = RTM_NEWRULE;
-+		nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK | NLM_F_CREATE | NLM_F_EXCL;
-+		nlh->nlmsg_type = RTM_NEWRULE;
- 		req->rtm.rtm_scope = RT_SCOPE_UNIVERSE;
- 		req->rtm.rtm_protocol = RTPROT_STATIC;
- 		req->rtm.rtm_type = RTN_UNICAST;
-@@ -467,7 +469,7 @@ void add_del_rule(uint32_t network, uint8_t netmask, int8_t rt_table, uint32_t p
- 	}
- 
- 
--	if (sendto(netlink_sock, req, req->nlh.nlmsg_len, 0, (struct sockaddr *)&nladdr, sizeof(struct sockaddr_nl)) < 0)  {
-+	if (sendto(netlink_sock, req_buf, nlh->nlmsg_len, 0, (struct sockaddr *)&nladdr, sizeof(struct sockaddr_nl)) < 0)  {
- 
- 		debug_output( 0, "Error - can't send message to kernel via netlink socket for routing rule manipulation: %s\n", strerror(errno));
- 		close(netlink_sock);
-@@ -632,8 +634,8 @@ int flush_routes_rules(int8_t is_rule)
- 	struct msghdr msg;
- 	struct nlmsghdr *nh;
- 	struct rtmsg *rtm;
-+	struct nlmsghdr *nlh;
- 	struct req_s {
--		struct nlmsghdr nlh;
- 		struct rtmsg rtm;
- 	} *req;
- 	char req_buf[NLMSG_LENGTH(sizeof(struct req_s))];
-@@ -643,19 +645,20 @@ int flush_routes_rules(int8_t is_rule)
- 	iov.iov_base = buf;
- 	iov.iov_len  = sizeof(buf);
- 
--	req = (struct req_s*)req_buf;
-+	nlh = (struct nlmsghdr *)req_buf;
-+	req = (struct req_s*)NLMSG_DATA(req_buf);
- 	memset(&nladdr, 0, sizeof(struct sockaddr_nl));
--	memset(req, 0, NLMSG_LENGTH(sizeof(struct req_s)));
-+	memset(req_buf, 0, NLMSG_LENGTH(sizeof(struct req_s)));
- 	memset(&msg, 0, sizeof(struct msghdr));
- 
- 	nladdr.nl_family = AF_NETLINK;
- 
--	req->nlh.nlmsg_len = NLMSG_LENGTH(sizeof(struct req_s));
--	req->nlh.nlmsg_pid = getpid();
-+	nlh->nlmsg_len = NLMSG_LENGTH(sizeof(struct req_s));
-+	nlh->nlmsg_pid = getpid();
- 	req->rtm.rtm_family = AF_INET;
- 
--	req->nlh.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
--	req->nlh.nlmsg_type = (is_rule ? RTM_GETRULE : RTM_GETROUTE);
-+	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
-+	nlh->nlmsg_type = (is_rule ? RTM_GETRULE : RTM_GETROUTE);
- 	req->rtm.rtm_scope = RTN_UNICAST;
- 
- 	if ((netlink_sock = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_ROUTE)) < 0) {
-@@ -666,7 +669,7 @@ int flush_routes_rules(int8_t is_rule)
- 	}
- 
- 
--	if (sendto(netlink_sock, req, req->nlh.nlmsg_len, 0, (struct sockaddr *)&nladdr, sizeof(struct sockaddr_nl)) < 0) {
-+	if (sendto(netlink_sock, req_buf, nlh->nlmsg_len, 0, (struct sockaddr *)&nladdr, sizeof(struct sockaddr_nl)) < 0) {
- 
- 		debug_output(0, "Error - can't send message to kernel via netlink socket for flushing the routing table: %s\n", strerror(errno));
- 		close(netlink_sock);
--- 
-1.6.3.1
+> I'm a bit confused here:
+> * Is batman crashing ?
+> * Is the kernel crashing ?
+> * Is batman crashing if you use the batgat module ?
 
+This is only happening when using the batgat module.
+The kernel is crashing.  If it happens to not reboot, I see that
+batman is in a device wait state and can't be killed.
+
+I see that some more patches were added recently.  I will try them and
+see if anything changes.
