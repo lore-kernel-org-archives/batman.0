@@ -1,14 +1,13 @@
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 22 May 2009 20:03:17 +0200
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 23 May 2009 12:30:02 +0800
 References: <1242937180.14711.14.camel@turing.asconix.lan>
-	<20090522110826.GA26812@pandem0nium>
-	<8502079e0905221051s197a3d21n30658bb952b56463@mail.gmail.com>
-In-Reply-To: <8502079e0905221051s197a3d21n30658bb952b56463@mail.gmail.com>
+In-Reply-To: <1242937180.14711.14.camel@turing.asconix.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart17762871.jqO0Q7V66J";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200905222003.20298.sven.eckelmann@gmx.de>
+Content-Disposition: inline
+Message-Id: <200905231230.16394.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] VIS server for batman-adv-kernelland
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -21,47 +20,36 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---nextPart17762871.jqO0Q7V66J
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Friday 22 May 2009 19:51:20 Christoph Pilka wrote:
-> many thanks for all the infos and hints. The base install seems to work
-> properly. I'll take a look at s3d this weekend cause I'm very interested =
-in
-> getting it running at ethernet frame level. By the way, the JSON output
-> seems to be really nice feature but the code is only available for level3
-> batman ?
-No, it is also available in the current svn version of batman-adv. See=20
-https://www.open-mesh.org/changeset/1265 for more informations.
+Hi,
 
-Best regards,
-	Sven
+> For the German readers: I am documenting all the stuff on
+> http://debian.asconix.com/batman-advanced-openwrt-howto but I think, the
+> way I'm describing in the vis chapter is the way to get vis running in
+> layer3 batman, isn't it?
 
---nextPart17762871.jqO0Q7V66J
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+its fantastic that you write such an extensive documentation. As soon as you 
+feel ready I will add a link from our page to yours, so that people can find 
+you.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+I think there are 2 hidden misunderstandings in the howto:
 
-iQIcBAABCgAGBQJKFujlAAoJEF2HCgfBJntGkVcP/Rq9i+2Xokp6x27YKCBXA7tZ
-beo7yOq0DdDuy0Xc+mOSflL5jJEY/SiGc4jhk3Y3H+nHCWzQtJQ9wY74TEc9UHbd
-yioekH4uDkE8i8jXwXoUET0Mm/RXiyGra+hczCEPoYD1lNHYPeK+8NqQfkdlZ8qQ
-bA087jsD166TXAxAFZkzS+hOySaM1NPEP1kF1dw9/xm2ZCzOwRK8erJ9c0lBvpYX
-/GSWesrwYz0HEdxg0UpRi8w8ai+B2xrdrkqiC8Yj5MCeNzml8YNdw67JAD2NzDb1
-LAlZMe6MU/MGQKrJ7cbIJNr47TCHK/2T6irl/JaSQKf+UG8ZrDZ1ji5fQO3K2D80
-Y85/hISaDP0MsG7mEwSdPI6Dz9PZBwgCKSet/WMSindq00i2LMAFzw2iNDpBG7Ts
-ts23sKDcfLeV7RgoJCDTGQ3ihtd4uYyFpfG6EBUwDE2o3+jdI6dzX5nNNm/YTjlr
-Cuyol74IUSwfYiczsHJ4CYIhE30N96g4BLhTg3TJfzvTkyiaxtAuzv48P3d3sxcO
-UeK0h5QFq/Kt/Lr0lxxPrcznjcyiXz2RvKDHz3TN8rJgvFNdwBS4/L5zv1tyqqi2
-X70G73lDc4Jy0dgeMqNYCafYM+/nvTUiJ5dz4iEMu0wHpwJyHnz4WUa//ZYlV7/s
-ZJybr5/b3ZuToGRmt0Fg
-=pX+/
------END PGP SIGNATURE-----
+* You are splitting up the VLANs and I did not quite get the reason. In the 
+document you state the number of OGMs will be decreased. Whether it decreases 
+or not heavily depends on the network attached to these VLANs. How does the 
+topology look like ? May be I overlooked that section ?
 
---nextPart17762871.jqO0Q7V66J--
+* The vis-advanced daemon is not necessary here because the kernel module has 
+the server built-in. All you need to do is activating a server (echo "server" 
+> /proc/net/batman-adv/vis) which allows you to retrieve the information via 
+cat /proc/net/batman-adv/vis. The vis-advanced daemon goes together with 
+batman-adv-userspace which is the user space implementation of the layer 2 
+approach. Its a bit confusing - we have to think about how to clean it up ..
+
+In case you are aware of all these facts just discard my mail.  :-)
+
+Regards,
+Marek
+
