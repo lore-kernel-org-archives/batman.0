@@ -1,12 +1,14 @@
-MIME-Version: 1.0
-In-Reply-To: <4313f3060905261148t14ea24bcq6f2ebca3e1007106@mail.gmail.com>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Wed, 27 May 2009 00:13:08 +0200
 References: <4313f3060905261148t14ea24bcq6f2ebca3e1007106@mail.gmail.com>
-Date: Tue, 26 May 2009 13:50:56 -0500
-Message-ID: <4313f3060905261150o6c9fe82at6dd40d26456ac03a@mail.gmail.com>
-From: Nathan Wharton <naw@greptar.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] Debug Malloc Problem
+	<4313f3060905261150o6c9fe82at6dd40d26456ac03a@mail.gmail.com>
+In-Reply-To: <4313f3060905261150o6c9fe82at6dd40d26456ac03a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2307306.8eIAMyi1j1";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200905270013.12447.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] Debug Malloc Problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,85 +20,105 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <B.A.T.M.A.N@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-Looks like this one didn't go to all either.  Sorry for the mess.
+--nextPart2307306.8eIAMyi1j1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Tue, May 26, 2009 at 10:47 AM, Nathan Wharton <naw@greptar.com> wrote:
-> On Fri, May 22, 2009 at 11:31 PM, Marek Lindner <lindner_marek@yahoo.de> =
-wrote:
->>> I am getting set up to do remote debugging. =A0I'll see what I can find
->>> doing that.
->>
->> Yeah, that would be another option.
->
-> ok, here is what I found on the debug malloc problem I am having:
->
-> In the function debugMalloc:
+On Tuesday 26 May 2009 20:50:56 Nathan Wharton wrote:
+> I added the following patch:
 > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> =A0 =A0 =A0 =A0chunkHeader =3D (struct chunkHeader *)memory;
-> =A0 =A0 =A0 =A0chunk =3D memory + sizeof(struct chunkHeader);
-> =A0 =A0 =A0 =A0chunkTrailer =3D (struct chunkTrailer *)(memory + sizeof(s=
-truct
-> chunkHeader) + length);
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- batmand-r1269/batman/allocate.c     2009-05-20 13:54:18.000000000 -05=
+00
+> +++ batmand-r1269.mod/batman/allocate.c 2009-05-26 12:25:07.000000000 -05=
+00
+> @@ -206,6 +206,10 @@
+>        struct chunkHeader *chunkHeader;
+>        struct chunkTrailer *chunkTrailer;
+>        unsigned char *chunk;
+> +       uint32_t remainder =3D length % 4;
+> +
+> +       if (remainder > 0)
+> +         length +=3D 4 - remainder;
 >
-> =A0 =A0 =A0 =A0chunkHeader->length =3D length;
-> =A0 =A0 =A0 =A0chunkHeader->tag =3D tag;
-> =A0 =A0 =A0 =A0chunkHeader->magicNumber =3D MAGIC_NUMBER;
->
-> =A0 =A0 =A0 =A0chunkTrailer->magicNumber =3D MAGIC_NUMBER;
->
-> =3D> =A0 =A0 =A0pthread_mutex_lock(&chunk_mutex);
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> I get the following results:
->
-> (gdb) p chunkHeader
-> $26 =3D (struct chunkHeader *) 0x308c8
-> (gdb) p chunk
-> $27 =3D (unsigned char *) 0x308d8 "\020\322\n"
-> (gdb) p chunkTrailer
-> $28 =3D (struct chunkTrailer *) 0x308dd
-> (gdb) p *chunkHeader
-> $29 =3D {next =3D 0x40096c34, length =3D 5, tag =3D 15, magicNumber =3D 3=
-05419896}
-> (gdb) p *chunkTrailer
-> $30 =3D {magicNumber =3D 878082050}
-> (gdb) p length
-> $31 =3D 5
->
-> I think the magic number is not getting into the chunk trailer
-> correctly because it is not aligned.
-> chunkHeader is aligned because it was returned by malloc
-> chunk is aligned because the size of the header is 16
-> chunkTrailer is not aligned because it is chunk + 5
->
-> Hope this helps. =A0If not, and that shouldn't be a problem, I'll see
-> what else I can find.
->
-
-I added the following patch:
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- batmand-r1269/batman/allocate.c =A0 =A0 2009-05-20 13:54:18.000000000 -=
-0500
-+++ batmand-r1269.mod/batman/allocate.c 2009-05-26 12:25:07.000000000 -0500
-@@ -206,6 +206,10 @@
-=A0 =A0 =A0 =A0struct chunkHeader *chunkHeader;
-=A0 =A0 =A0 =A0struct chunkTrailer *chunkTrailer;
-=A0 =A0 =A0 =A0unsigned char *chunk;
-+ =A0 =A0 =A0 uint32_t remainder =3D length % 4;
-+
-+ =A0 =A0 =A0 if (remainder > 0)
-+ =A0 =A0 =A0 =A0 length +=3D 4 - remainder;
-
-=A0/* =A0 =A0 printf("sizeof(struct chunkHeader) =3D %u, sizeof (struct
-chunkTrailer) =3D %u\n", sizeof (struct chunkHeader), sizeof (struct
-chunkTrailer)); */
+>  /*     printf("sizeof(struct chunkHeader) =3D %u, sizeof (struct
+> chunkTrailer) =3D %u\n", sizeof (struct chunkHeader), sizeof (struct
+> chunkTrailer)); */
+Please don't introduce more magic numbers. If you need an alignment on inte=
+ger=20
+granularity then please use sizeof(int) instead of a simple constant.
+The rest looks quite good and logical. I assumed that the only architecture=
+=20
+without automatic catching of alignment problems is mips with load operator=
+s=20
+to the fp registers (never had such problems on simple arm machine nor coul=
+d I=20
+produce that problem on them). Is there any other documentation about such=
+=20
+problems on xscale or can you proof this with an test program (malloc 6 byt=
+e,=20
+write uint32_t to first 4 byte, write another uint32_t to byte 2-5, compare=
+=20
+bytes with input - don't forget to set it volatile)? Your current proof if=
+=20
+concept test only shows that the "overriden" bytes will not get overriden=20
+after moving them some bytes higher.
 
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-And I don't get any debug malloc problems anymore.
+#include <stdio.h>
+#include <stdlib.h>
 
-I do, however, still get the kernel crashes when using batgat.
+#define x_moved(pos) ((int*)&x[pos])[0]
+static const int value1 =3D 0x01234567;
+static const int value2 =3D 0x89abcdef;
+
+int main() {
+	volatile char *x =3D (char*)malloc(sizeof(int) * 2);
+	x_moved(0) =3D value1;
+	x_moved(2) =3D value2;
+
+	if (x_moved(2) !=3D value2) {
+		printf("ERROR Value: ");
+	} else {
+		printf("Value: ");
+	}
+	printf("%x %x\n", x_moved(0) , x_moved(2));
+
+	free(x);
+	return 0;
+}
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+
+Best regards,
+	Sven
+
+--nextPart2307306.8eIAMyi1j1
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iQIcBAABCgAGBQJKHGl0AAoJEF2HCgfBJntGmyoQAKhKUvR0mYOOElGI6OSS8gzf
+2eG1xIJJfZoqR/wOLOiWdDMdH0VorB6lVGoN1DBq2183nLWTm2psHzFPD8T5w//a
+U2Yj84jaG3vD/HDgM0oFY03DW65yiffkPHLGijjxtYpNmvzLSuuGM/SVogBtoiQw
+3m3ZUqV881yk+0/zdsWL4HSp1sjoG0gDdcyu4OXOos67Gfk5i0ovgTHYrBIm6l89
+HPIILE8R4gDCQERr+leM82BTgtEYIjRl2SQFosyjToVgZc+H8w7rxJPkEGmXdOKe
+DnIv45XOtVc37vqHkCdQ+AsDDEVWm7gvK512XbxCSzh2NWHSJvSlosob+Nwv8LMt
+QKtV5vGTG3NvHyyg646WVg3uhNZ5qkVS2Be8BY49kI3iONb8Z5yWnqISBTFoYLKh
+SOZisx7XSwzxBHUv/tEnYDh1mGYhEOxT9quS90ZvmwN2NngGyIoNI1qJ24dgxED1
+YeVGxl8riz9dqagSGzPr7VRgHj+WvfQSYqk+byOPncbiBvdrIiOZqxyE8cVyZK72
+nRChtb3H985tsNTM3gRGSpdi2hgg0Booos5EsfbV0KjQe/mD9+mGyUEp9bARlZVY
+IVZX4F2f8G3xKJOleoM0ItuSfSixIpgZTlrOTXOODifzvHsdtuinEgdUyw/xmnYu
+4XCSP05ZC5X17KxmjqhL
+=wUks
+-----END PGP SIGNATURE-----
+
+--nextPart2307306.8eIAMyi1j1--
