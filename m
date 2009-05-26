@@ -1,12 +1,10 @@
 MIME-Version: 1.0
-In-Reply-To: <200905231230.16394.lindner_marek@yahoo.de>
-References: <1242937180.14711.14.camel@turing.asconix.lan>
-	<200905231230.16394.lindner_marek@yahoo.de>
-Date: Sat, 23 May 2009 09:40:15 +0200
-Message-ID: <8502079e0905230040q775277b5g71866bf362f2fb20@mail.gmail.com>
-From: Christoph Pilka <christoph.pilka@googlemail.com>
-Content-Type: multipart/alternative; boundary=000e0cd25048e44164046a8f7c21
-Subject: Re: [B.A.T.M.A.N.] VIS server for batman-adv-kernelland
+Date: Tue, 26 May 2009 13:48:25 -0500
+Message-ID: <4313f3060905261148t14ea24bcq6f2ebca3e1007106@mail.gmail.com>
+From: Nathan Wharton <naw@greptar.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Debug Malloc Problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,106 +16,59 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <B.A.T.M.A.N@open-mesh.net>
 
---000e0cd25048e44164046a8f7c21
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Sorry, looks like I didn't reply all on this one:
 
-Hi all,
 
-Hi* You are splitting up the VLANs and I did not quite get the reason. In
-> the
-> document you state the number of OGMs will be decreased. Whether it
-> decreases
-> or not heavily depends on the network attached to these VLANs. How does the
-> topology look like ? May be I overlooked that section ?
+On Fri, May 22, 2009 at 11:31 PM, Marek Lindner <lindner_marek@yahoo.de> wr=
+ote:
+>> I am getting set up to do remote debugging. =A0I'll see what I can find
+>> doing that.
 >
+> Yeah, that would be another option.
 
-Well, I didn't mention it, but the reason for splitting the lan ports into
-VLANs is an approach for using bat-adv on boxes in a partially wired
-environment (indoor installations with some ethernet wires). So, yepp,
-you're right, it depends on the network topology. In my case I am using some
-of the LAN connections to link the boxes among each other. So I think, it's
-a good approach to seperate the lan ports and to let bat-adv bridge the
-frames. Correct me, if it's wrong.
+ok, here is what I found on the debug malloc problem I am having:
 
-* The vis-advanced daemon is not necessary here because the kernel module
-> has
-> the server built-in. All you need to do is activating a server (echo
-> "server"
-> > /proc/net/batman-adv/vis) which allows you to retrieve the information
-> via
-> cat /proc/net/batman-adv/vis. The vis-advanced daemon goes together with
-> batman-adv-userspace which is the user space implementation of the layer 2
-> approach. Its a bit confusing - we have to think about how to clean it up
-> ..
->
+In the function debugMalloc:
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+=A0 =A0 =A0 =A0chunkHeader =3D (struct chunkHeader *)memory;
+=A0 =A0 =A0 =A0chunk =3D memory + sizeof(struct chunkHeader);
+=A0 =A0 =A0 =A0chunkTrailer =3D (struct chunkTrailer *)(memory + sizeof(str=
+uct
+chunkHeader) + length);
 
-Yepp, you're right. I've documented the vis stuff beeing not sure if it's
-working this way on layer 2. Simon answered all of my questions so now it's
-time for me to write down the bat-adv-kernel way ;-) He gave me some very
-interesting hints to collect the data from outside the mesh like polling
-/proc/net/batman-adv/vis. I think it's a good challenge for me for this
-weekend to set up a nice solution to collect the data on a central box
-outside the mesh and visualize it. I have some experiences with JSON, so
-Iwould use it as exchange format. Well, patching s3d to accept MAC- instead
-of IP-addresses seems to be a nice solution too.
+=A0 =A0 =A0 =A0chunkHeader->length =3D length;
+=A0 =A0 =A0 =A0chunkHeader->tag =3D tag;
+=A0 =A0 =A0 =A0chunkHeader->magicNumber =3D MAGIC_NUMBER;
 
-Regards,
-Chris
+=A0 =A0 =A0 =A0chunkTrailer->magicNumber =3D MAGIC_NUMBER;
 
--- 
-"Privacy in residential applications is a desirable marketing option." (ETSI
-EN 300 175-7 Ch. A6)
+=3D> =A0 =A0 =A0pthread_mutex_lock(&chunk_mutex);
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+I get the following results:
 
---000e0cd25048e44164046a8f7c21
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+(gdb) p chunkHeader
+$26 =3D (struct chunkHeader *) 0x308c8
+(gdb) p chunk
+$27 =3D (unsigned char *) 0x308d8 "\020\322\n"
+(gdb) p chunkTrailer
+$28 =3D (struct chunkTrailer *) 0x308dd
+(gdb) p *chunkHeader
+$29 =3D {next =3D 0x40096c34, length =3D 5, tag =3D 15, magicNumber =3D 305=
+419896}
+(gdb) p *chunkTrailer
+$30 =3D {magicNumber =3D 878082050}
+(gdb) p length
+$31 =3D 5
 
-Hi all,<br><span dir=3D"ltr"></span><br><div class=3D"gmail_quote"><blockqu=
-ote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204, 204=
-); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Hi* You are splitting up the VLANs and I did not quite get the reason. In t=
-he<br>
-document you state the number of OGMs will be decreased. Whether it decreas=
-es<br>
-or not heavily depends on the network attached to these VLANs. How does the=
-<br>
-topology look like ? May be I overlooked that section ?<br>
-</blockquote><div><br>Well, I didn&#39;t mention it, but the reason for spl=
-itting the lan ports into VLANs is an approach for using bat-adv on boxes i=
-n a partially wired environment (indoor installations with some ethernet wi=
-res). So, yepp, you&#39;re right, it depends on the network topology. In my=
- case I am using some of the LAN connections to link the boxes among each o=
-ther. So I think, it&#39;s a good approach to seperate the lan ports and to=
- let bat-adv bridge the frames. Correct me, if it&#39;s wrong. <br>
-<br></div><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid=
- rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-* The vis-advanced daemon is not necessary here because the kernel module h=
-as<br>
-the server built-in. All you need to do is activating a server (echo &quot;=
-server&quot;<br>
-&gt; /proc/net/batman-adv/vis) which allows you to retrieve the information=
- via<br>
-cat /proc/net/batman-adv/vis. The vis-advanced daemon goes together with<br=
->
-batman-adv-userspace which is the user space implementation of the layer 2<=
-br>
-approach. Its a bit confusing - we have to think about how to clean it up .=
-.<br>
-</blockquote><div><br>Yepp, you&#39;re right. I&#39;ve documented the vis s=
-tuff beeing not sure if it&#39;s working this way on layer 2. Simon answere=
-d all of my questions so now it&#39;s time for me to write down the bat-adv=
--kernel way ;-) He gave me some very interesting hints to collect the data =
-from outside the mesh like polling /proc/net/batman-adv/vis. I think it&#39=
-;s a good challenge for me for this weekend to set up a nice solution to co=
-llect the data on a central box outside the mesh and visualize it. I have s=
-ome experiences with JSON, so Iwould use it as exchange format. Well, patch=
-ing s3d to accept MAC- instead of IP-addresses seems to be a nice solution =
-too. <br>
-<br>Regards,<br>Chris<br><br></div></div>-- <br>&quot;Privacy in residentia=
-l applications is a desirable marketing option.&quot; (ETSI EN 300 175-7 Ch=
-. A6)<br><br>
+I think the magic number is not getting into the chunk trailer
+correctly because it is not aligned.
+chunkHeader is aligned because it was returned by malloc
+chunk is aligned because the size of the header is 16
+chunkTrailer is not aligned because it is chunk + 5
 
---000e0cd25048e44164046a8f7c21--
+Hope this helps. =A0If not, and that shouldn't be a problem, I'll see
+what else I can find.
