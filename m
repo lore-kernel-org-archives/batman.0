@@ -1,15 +1,16 @@
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 28 May 2009 02:42:12 +0800
+References: <278AF6CA06F13D4C9E9F69C7B9AB3B8302E8D24B@MBX21.stu.nus.edu.sg>
+	<200905272329.46313.lindner_marek@yahoo.de>
+	<560c7c9a0905270839t768570bdo22a862ab31f8863c@mail.gmail.com>
+In-Reply-To: <560c7c9a0905270839t768570bdo22a862ab31f8863c@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <200905271913.09013.sven.eckelmann@gmx.de>
-References: <4313f3060905261148t14ea24bcq6f2ebca3e1007106@mail.gmail.com>
-	<4313f3060905270921p31ea2a10m21d1b9bf61170132@mail.gmail.com>
-	<4313f3060905270935ub7f69fct239833a3bcaf742c@mail.gmail.com>
-	<200905271913.09013.sven.eckelmann@gmx.de>
-Date: Wed, 27 May 2009 12:21:37 -0500
-Message-ID: <4313f3060905271021qfdaad6fl8b0b1bb48aaa3348@mail.gmail.com>
-From: Nathan Wharton <naw@greptar.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Debug Malloc Problem
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905280242.13316.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] MultiRadio Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,30 +22,19 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Wed, May 27, 2009 at 12:13 PM, Sven Eckelmann <sven.eckelmann@gmx.de> wr=
-ote:
-> Ok, so 100% sure that it is a alignment problem. The kernel fixup is alwa=
-ys
-> activated and shouldn't create such problems as the page faults you menti=
-oned
-> in your first post. Maybe some communication between kernelland and userl=
-and
-> has gone wrong. Can you test batmand with batgat and activated alignment
-> fixup?
->
-> Best regards,
-> =A0 =A0 =A0 =A0Sven
->
-> (Thanks for the link - it is a real nice overview).
->
+On Wednesday 27 May 2009 23:39:37 Benjamin Henrion wrote:
+> Let's say a packet comes from node A interface ath0 of node B, and
+> there is a route on node B for the packet to go to node C, route which
+> use the same interface ath0. In this case, you might want to add a
+> cost to hop over the same wireless interface.
 
-Changing the mode from -r 2 to -g 12000 still causes the kernel to
-crash with alignment fixup.
+Ok, good idea. I quickly made a patch:
+http://www.open-mesh.net/changeset/1276
 
-On the console I am doing a logread when it happens.  The last thing
-printed out before the crash is:
-May 27 17:12:23 OpenWrt user.debug kernel: batgat: [batgat_ioctl:238]
-disconnect daemon
+Feel free to test it. :-)
+
+Regards,
+Marek
+
