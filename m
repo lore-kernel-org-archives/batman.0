@@ -1,14 +1,11 @@
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <200905270013.12447.sven.eckelmann@gmx.de>
-References: <4313f3060905261148t14ea24bcq6f2ebca3e1007106@mail.gmail.com>
-	<4313f3060905261150o6c9fe82at6dd40d26456ac03a@mail.gmail.com>
-	<200905270013.12447.sven.eckelmann@gmx.de>
-Date: Tue, 26 May 2009 19:06:16 -0500
-Message-ID: <4313f3060905261706o16a78bd3l102c9921e035ada@mail.gmail.com>
-From: Nathan Wharton <naw@greptar.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Debug Malloc Problem
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C9DE8F.2F761481"
+Date: Wed, 27 May 2009 13:51:31 +0800
+Message-ID: <278AF6CA06F13D4C9E9F69C7B9AB3B8302E8D24B@MBX21.stu.nus.edu.sg>
+From: "Kartik Muralidharan" <kartik_m@nus.edu.sg>
+Subject: [B.A.T.M.A.N.] MultiRadio Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,75 +17,132 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@open-mesh.net
+To: b.a.t.m.a.n@open-mesh.net
 
-On Tue, May 26, 2009 at 5:13 PM, Sven Eckelmann <sven.eckelmann@gmx.de> wro=
-te:
-> On Tuesday 26 May 2009 20:50:56 Nathan Wharton wrote:
->> I added the following patch:
-> Please don't introduce more magic numbers. If you need an alignment on in=
-teger
-> granularity then please use sizeof(int) instead of a simple constant.
-> The rest looks quite good and logical. I assumed that the only architectu=
-re
-> without automatic catching of alignment problems is mips with load operat=
-ors
-> to the fp registers (never had such problems on simple arm machine nor co=
-uld I
-> produce that problem on them). Is there any other documentation about suc=
-h
-> problems on xscale or can you proof this with an test program (malloc 6 b=
-yte,
-> write uint32_t to first 4 byte, write another uint32_t to byte 2-5, compa=
-re
-> bytes with input - don't forget to set it volatile)? Your current proof i=
-f
-> concept test only shows that the "overriden" bytes will not get overriden
-> after moving them some bytes higher.
->
+This is a multi-part message in MIME format.
 
-I didn't really mean for that to be an accepted patch, just a quick
-test.  Maybe the trailing magic number could just be a byte so you
-don't have to allocate more memory.  I'm sure there are other things
-to do too.
+------_=_NextPart_001_01C9DE8F.2F761481
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I haven't looked at any documentation for the xscale for this problem.
- I can do a test program.  I have seen this type of problem before,
-but it would throw a bus error instead of going along with an
-incorrect result.
+Hello,
+
+We have finally deployed a WMN testbed on our campus , currently running
+roofnet. However I would like to run BATMAN as the underlying routing
+protocol. Could you help me out with deploying and testing BATMAN on the
+nodes.
+
+=20
+
+Further since our nodes have two radio we are looking at taking
+advantage of the same. Any pointers from a coding perspective to tackle
+this would be great as I am hoping to publish the same.
+
+=20
+
+Also does Batman advanced operate in Monitor mode?
+
+=20
+
+Thanks
+
+Kartik
 
 
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> #include <stdio.h>
-> #include <stdlib.h>
->
-> #define x_moved(pos) ((int*)&x[pos])[0]
-> static const int value1 =3D 0x01234567;
-> static const int value2 =3D 0x89abcdef;
->
-> int main() {
-> =A0 =A0 =A0 =A0volatile char *x =3D (char*)malloc(sizeof(int) * 2);
-> =A0 =A0 =A0 =A0x_moved(0) =3D value1;
-> =A0 =A0 =A0 =A0x_moved(2) =3D value2;
->
-> =A0 =A0 =A0 =A0if (x_moved(2) !=3D value2) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0printf("ERROR Value: ");
-> =A0 =A0 =A0 =A0} else {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0printf("Value: ");
-> =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0printf("%x %x\n", x_moved(0) , x_moved(2));
->
-> =A0 =A0 =A0 =A0free(x);
-> =A0 =A0 =A0 =A0return 0;
-> }
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->
->
-> Best regards,
-> =A0 =A0 =A0 =A0Sven
->
+------_=_NextPart_001_01C9DE8F.2F761481
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for your help.
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal>Hello,<o:p></o:p></p>
+
+<p class=3DMsoNormal>We have finally deployed a WMN testbed on our =
+campus ,
+currently running roofnet. However I would like to run BATMAN as the =
+underlying
+routing protocol. Could you help me out with deploying and testing =
+BATMAN on
+the nodes.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>Further since our nodes have two radio we are =
+looking at
+taking advantage of the same. Any pointers from a coding perspective to =
+tackle
+this would be great as I am hoping to publish the same.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>Also does Batman advanced operate in Monitor =
+mode?<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>Thanks<o:p></o:p></p>
+
+<p class=3DMsoNormal>Kartik<o:p></o:p></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C9DE8F.2F761481--
