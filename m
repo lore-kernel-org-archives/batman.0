@@ -1,14 +1,14 @@
 MIME-Version: 1.0
-Sender: zoobab@gmail.com
-In-Reply-To: <278AF6CA06F13D4C9E9F69C7B9AB3B8302E8D24F@MBX21.stu.nus.edu.sg>
-References: <278AF6CA06F13D4C9E9F69C7B9AB3B8302E8D24B@MBX21.stu.nus.edu.sg>
-	<278AF6CA06F13D4C9E9F69C7B9AB3B8302E8D24F@MBX21.stu.nus.edu.sg>
-Date: Wed, 27 May 2009 15:42:07 +0200
-Message-ID: <560c7c9a0905270642k5141ef8bwc31fa7a9713495f5@mail.gmail.com>
-From: Benjamin Henrion <bh@udev.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] MultiRadio Batman
+In-Reply-To: <200905270013.12447.sven.eckelmann@gmx.de>
+References: <4313f3060905261148t14ea24bcq6f2ebca3e1007106@mail.gmail.com>
+	<4313f3060905261150o6c9fe82at6dd40d26456ac03a@mail.gmail.com>
+	<200905270013.12447.sven.eckelmann@gmx.de>
+Date: Wed, 27 May 2009 09:20:16 -0500
+Message-ID: <4313f3060905270720k45859cb5y822c47397482b77c@mail.gmail.com>
+From: Nathan Wharton <naw@greptar.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: base64
+Subject: Re: [B.A.T.M.A.N.] Debug Malloc Problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,26 +20,20 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: Sven Eckelmann <sven.eckelmann@gmx.de>
+Cc: b.a.t.m.a.n@open-mesh.net
 
-On Wed, May 27, 2009 at 3:28 PM, Kartik Muralidharan
-<kartik_m@nus.edu.sg> wrote:
->>I tried Batman at the WBM to see if it was finding the fastest route
->
->>in terms of bandwidth, and it was not doing it. So Batman will
->
->>continue to hop on the same channel, even if another route is faster
->
->>in terms of bandwidth
->
->
->
-> Just to clarify. Every node has 2 radios. One on 11a and the other 11b. D=
-oes
-> batman take advantage of this like WCETT/iAware/MIC =85.
-
-No.
-
---
-Benjamin Henrion <bhenrion at ffii.org>
-FFII Brussels - +32-484-566109 - +32-2-4148403
+T24gVHVlLCBNYXkgMjYsIDIwMDkgYXQgNToxMyBQTSwgU3ZlbiBFY2tlbG1hbm4gPHN2ZW4uZWNr
+ZWxtYW5uQGdteC5kZT4gd3JvdGU6Cj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT0KPiAjaW5jbHVkZSA8c3RkaW8uaD4KPiAjaW5jbHVkZSA8c3RkbGliLmg+Cj4KPiAj
+ZGVmaW5lIHhfbW92ZWQocG9zKSAoKGludCopJnhbcG9zXSlbMF0KPiBzdGF0aWMgY29uc3QgaW50
+IHZhbHVlMSA9IDB4MDEyMzQ1Njc7Cj4gc3RhdGljIGNvbnN0IGludCB2YWx1ZTIgPSAweDg5YWJj
+ZGVmOwo+Cj4gaW50IG1haW4oKSB7Cj4goCCgIKAgoHZvbGF0aWxlIGNoYXIgKnggPSAoY2hhciop
+bWFsbG9jKHNpemVvZihpbnQpICogMik7Cj4goCCgIKAgoHhfbW92ZWQoMCkgPSB2YWx1ZTE7Cj4g
+oCCgIKAgoHhfbW92ZWQoMikgPSB2YWx1ZTI7Cj4KPiCgIKAgoCCgaWYgKHhfbW92ZWQoMikgIT0g
+dmFsdWUyKSB7Cj4goCCgIKAgoCCgIKAgoCCgcHJpbnRmKCJFUlJPUiBWYWx1ZTogIik7Cj4goCCg
+IKAgoH0gZWxzZSB7Cj4goCCgIKAgoCCgIKAgoCCgcHJpbnRmKCJWYWx1ZTogIik7Cj4goCCgIKAg
+oH0KPiCgIKAgoCCgcHJpbnRmKCIleCAleFxuIiwgeF9tb3ZlZCgwKSAsIHhfbW92ZWQoMikpOwo+
+Cj4goCCgIKAgoGZyZWUoeCk7Cj4goCCgIKAgoHJldHVybiAwOwo+IH0KPiA9PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKVGhpcyByZXN1bHRzIGluOgpFUlJPUiBWYWx1
+ZTogODlhYmNkZWYgY2RlZjg5YWIK
