@@ -1,17 +1,15 @@
 MIME-Version: 1.0
-Sender: zoobab@gmail.com
-In-Reply-To: <560c7c9a0905270839t768570bdo22a862ab31f8863c@mail.gmail.com>
-References: <278AF6CA06F13D4C9E9F69C7B9AB3B8302E8D24B@MBX21.stu.nus.edu.sg>
-	<200905272255.32032.lindner_marek@yahoo.de>
-	<560c7c9a0905270805t1a35f733mc5b5b162e8eef6b2@mail.gmail.com>
-	<200905272329.46313.lindner_marek@yahoo.de>
-	<560c7c9a0905270839t768570bdo22a862ab31f8863c@mail.gmail.com>
-Date: Wed, 27 May 2009 17:41:13 +0200
-Message-ID: <560c7c9a0905270841g360955c2rf5d4f8519a7e58da@mail.gmail.com>
-From: Benjamin Henrion <bh@udev.org>
+In-Reply-To: <4313f3060905270720k45859cb5y822c47397482b77c@mail.gmail.com>
+References: <4313f3060905261148t14ea24bcq6f2ebca3e1007106@mail.gmail.com>
+	<4313f3060905261150o6c9fe82at6dd40d26456ac03a@mail.gmail.com>
+	<200905270013.12447.sven.eckelmann@gmx.de>
+	<4313f3060905270720k45859cb5y822c47397482b77c@mail.gmail.com>
+Date: Wed, 27 May 2009 11:07:17 -0500
+Message-ID: <4313f3060905270907v61739fcei1cecc75adb578acb@mail.gmail.com>
+From: Nathan Wharton <naw@greptar.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] MultiRadio Batman
+Subject: Re: [B.A.T.M.A.N.] Debug Malloc Problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,36 +21,42 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: Sven Eckelmann <sven.eckelmann@gmx.de>
+Cc: b.a.t.m.a.n@open-mesh.net
 
-On Wed, May 27, 2009 at 5:39 PM, Benjamin Henrion <bh@udev.org> wrote:
-> On Wed, May 27, 2009 at 5:29 PM, Marek Lindner <lindner_marek@yahoo.de> w=
+On Wed, May 27, 2009 at 9:20 AM, Nathan Wharton <naw@greptar.com> wrote:
+> On Tue, May 26, 2009 at 5:13 PM, Sven Eckelmann <sven.eckelmann@gmx.de> w=
 rote:
->> On Wednesday 27 May 2009 23:05:39 Benjamin Henrion wrote:
->>> > Right, that is still on open point on my ToDo. I'd like to automate t=
-hat
->>> > if possible but did not have a good idea how to do that.
->>>
->>> When a packet comes from the same interface, add a cost it.
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>> #include <stdio.h>
+>> #include <stdlib.h>
 >>
->> Thats a bit too brief for me. Would you mind being more verbose ? =A0:-)
+>> #define x_moved(pos) ((int*)&x[pos])[0]
+>> static const int value1 =3D 0x01234567;
+>> static const int value2 =3D 0x89abcdef;
+>>
+>> int main() {
+>> =A0 =A0 =A0 =A0volatile char *x =3D (char*)malloc(sizeof(int) * 2);
+>> =A0 =A0 =A0 =A0x_moved(0) =3D value1;
+>> =A0 =A0 =A0 =A0x_moved(2) =3D value2;
+>>
+>> =A0 =A0 =A0 =A0if (x_moved(2) !=3D value2) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0printf("ERROR Value: ");
+>> =A0 =A0 =A0 =A0} else {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0printf("Value: ");
+>> =A0 =A0 =A0 =A0}
+>> =A0 =A0 =A0 =A0printf("%x %x\n", x_moved(0) , x_moved(2));
+>>
+>> =A0 =A0 =A0 =A0free(x);
+>> =A0 =A0 =A0 =A0return 0;
+>> }
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 >
-> Let's say a packet comes from node A interface ath0 of node B, and
-> there is a route on node B for the packet to go to node C, route which
-> use the same interface ath0. In this case, you might want to add a
-> cost to hop over the same wireless interface.
+> This results in:
+> ERROR Value: 89abcdef cdef89ab
+>
 
-I say "wireless" in this case because "wired" is usually full duplex
-and not half duplex. Half duplex makes the situation worse for the
-reasons I explained here:
-
-http://hackerspace.be/wbm2009#toc9
-
-Hopping over the same radio means:
-
-    * dividing the bandwidth by two at each hop and
-    * choosing the worst radio link of your two neighboors
-
---=20
-Benjamin Henrion <bhenrion at ffii.org>
-FFII Brussels - +32-484-566109 - +32-2-4148403
+Some good info is here:
+http://lecs.cs.ucla.edu/wiki/index.php/XScale_alignment
