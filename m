@@ -1,11 +1,10 @@
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C9DF53.89C68666"
-Date: Thu, 28 May 2009 13:17:04 +0800
-Message-ID: <278AF6CA06F13D4C9E9F69C7B9AB3B8302E8D251@MBX21.stu.nus.edu.sg>
-From: "Kartik Muralidharan" <kartik_m@nus.edu.sg>
-Subject: [B.A.T.M.A.N.] Multiradio Batman
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Thu, 28 May 2009 12:40:08 +0200
+Message-Id: <1243507208-8999-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <4313f3060905190727x279f2d0boc4e74e4df6e821bc@mail.gmail.com>
+References: <4313f3060905190727x279f2d0boc4e74e4df6e821bc@mail.gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCH] [batman] Add padding around allocation
+	debugger structures
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,157 +18,177 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-This is a multi-part message in MIME format.
+Architectures with a special alignment for load and store operations on
+datatypes bigger than bytes will return a prealigned memory region when
+calling malloc. When we add our data structure before and after this
+region we destroy this alignment.
+To fix this problem we add special regions with "magic" padding data.
+To be sure that it is big enough for every load/store operation we use
+the alignment for uintmax_t or a pointer even when the architecture only
+supports smaller load/store operations.
 
-------_=_NextPart_001_01C9DF53.89C68666
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman/allocate.c |   77 +++++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 69 insertions(+), 8 deletions(-)
 
-> Let's say a packet comes from node A interface ath0 of node B, and
-> there is a route on node B for the packet to go to node C, route which
-> use the same interface ath0. In this case, you might want to add a
-> cost to hop over the same wireless interface.
-=20
->Ok, good idea. I quickly made a patch:
->http://www.open-mesh.net/changeset/1276
-=20
->Feel free to test it. :-)
-=20
->Regards,
->Marek
+diff --git a/batman/allocate.c b/batman/allocate.c
+index 3cb1d65..a779504 100644
+--- a/batman/allocate.c
++++ b/batman/allocate.c
+@@ -67,6 +67,44 @@ struct memoryUsage
+ };
+ 
+ 
++static size_t getHeaderPad() {
++	size_t pad = sizeof(uintmax_t) - (sizeof(struct chunkHeader) % sizeof(uintmax_t));
++	if (pad == sizeof(uintmax_t))
++		return 0;
++	else
++		return pad;
++}
++
++static size_t getTrailerPad(size_t length) {
++	size_t pad = sizeof(uintmax_t) - (length % sizeof(uintmax_t));
++	if (pad == sizeof(uintmax_t))
++		return 0;
++	else
++		return pad;
++}
++
++static void fillPadding(unsigned char* padding, size_t length) {
++	unsigned char c = 0x00;
++	size_t i;
++
++	for (i = 0; i < length; i++) {
++		c += 0xA7;
++		padding[i] = c;
++	}
++}
++
++static int checkPadding(unsigned char* padding, size_t length) {
++	unsigned char c = 0x00;
++	size_t i;
++
++	for (i = 0; i < length; i++) {
++		c += 0xA7;
++		if (padding[i] != c)
++			return 0;
++	}
++	return 1;
++}
++
+ static void addMemory( uint32_t length, int32_t tag ) {
+ 
+ 	struct memoryUsage *walker;
+@@ -176,7 +214,7 @@ void checkIntegrity(void)
+ 
+ 		memory = (unsigned char *)walker;
+ 
+-		chunkTrailer = (struct chunkTrailer *)(memory + sizeof(struct chunkHeader) + walker->length);
++		chunkTrailer = (struct chunkTrailer *)(memory + sizeof(struct chunkHeader) + getHeaderPad() + walker->length + getTrailerPad(walker->length));
+ 
+ 		if (chunkTrailer->magicNumber != MAGIC_NUMBER)
+ 		{
+@@ -209,7 +247,7 @@ void *debugMalloc(uint32_t length, int32_t tag)
+ 
+ /* 	printf("sizeof(struct chunkHeader) = %u, sizeof (struct chunkTrailer) = %u\n", sizeof (struct chunkHeader), sizeof (struct chunkTrailer)); */
+ 
+-	memory = malloc(length + sizeof(struct chunkHeader) + sizeof(struct chunkTrailer));
++	memory = malloc(length + sizeof(struct chunkHeader) + sizeof(struct chunkTrailer) + getHeaderPad() + getTrailerPad(length));
+ 
+ 	if (memory == NULL)
+ 	{
+@@ -218,8 +256,11 @@ void *debugMalloc(uint32_t length, int32_t tag)
+ 	}
+ 
+ 	chunkHeader = (struct chunkHeader *)memory;
+-	chunk = memory + sizeof(struct chunkHeader);
+-	chunkTrailer = (struct chunkTrailer *)(memory + sizeof(struct chunkHeader) + length);
++	chunk = memory + sizeof(struct chunkHeader) + getHeaderPad();
++	chunkTrailer = (struct chunkTrailer *)(memory + sizeof(struct chunkHeader) + length + getHeaderPad() + getTrailerPad(length));
++
++	fillPadding((unsigned char*)chunkHeader + sizeof(struct chunkHeader), getHeaderPad());
++	fillPadding(chunk + length, getTrailerPad(length));
+ 
+ 	chunkHeader->length = length;
+ 	chunkHeader->tag = tag;
+@@ -251,7 +292,7 @@ void *debugRealloc(void *memoryParameter, uint32_t length, int32_t tag)
+ 
+ 	if (memoryParameter) { /* if memoryParameter==NULL, realloc() should work like malloc() !! */
+ 		memory = memoryParameter;
+-		chunkHeader = (struct chunkHeader *)(memory - sizeof(struct chunkHeader));
++		chunkHeader = (struct chunkHeader *)(memory - sizeof(struct chunkHeader) - getHeaderPad());
+ 
+ 		if (chunkHeader->magicNumber != MAGIC_NUMBER)
+ 		{
+@@ -259,13 +300,23 @@ void *debugRealloc(void *memoryParameter, uint32_t length, int32_t tag)
+ 			restore_and_exit(0);
+ 		}
+ 
+-		chunkTrailer = (struct chunkTrailer *)(memory + chunkHeader->length);
++		if (checkPadding(memory - getHeaderPad(), getHeaderPad()) == 0) {
++			debug_output( 0, "debugRealloc - invalid magic padding in header, malloc tag = %d\n", chunkHeader->tag );
++			restore_and_exit(0);
++		}
++
++		chunkTrailer = (struct chunkTrailer *)(memory + chunkHeader->length + getTrailerPad(chunkHeader->length));
+ 
+ 		if (chunkTrailer->magicNumber != MAGIC_NUMBER)
+ 		{
+ 			debug_output( 0, "debugRealloc - invalid magic number in trailer: %08x, malloc tag = %d\n", chunkTrailer->magicNumber, chunkHeader->tag );
+ 			restore_and_exit(0);
+ 		}
++
++		if (checkPadding(memory + chunkHeader->length, getTrailerPad(chunkHeader->length)) == 0) {
++			debug_output( 0, "debugRealloc - invalid magic padding in trailer, malloc tag = %d\n", chunkHeader->tag );
++			restore_and_exit(0);
++		}
+ 	}
+ 
+ 
+@@ -292,7 +343,7 @@ void debugFree(void *memoryParameter, int tag)
+ 	struct chunkHeader *previous;
+ 
+ 	memory = memoryParameter;
+-	chunkHeader = (struct chunkHeader *)(memory - sizeof(struct chunkHeader));
++	chunkHeader = (struct chunkHeader *)(memory - sizeof(struct chunkHeader) - getHeaderPad());
+ 
+ 	if (chunkHeader->magicNumber != MAGIC_NUMBER)
+ 	{
+@@ -300,6 +351,11 @@ void debugFree(void *memoryParameter, int tag)
+ 		restore_and_exit(0);
+ 	}
+ 
++	if (checkPadding(memory - getHeaderPad(), getHeaderPad()) == 0) {
++		debug_output( 0, "debugFree - invalid magic padding in header, malloc tag = %d\n", chunkHeader->tag );
++		restore_and_exit(0);
++	}
++
+ 	previous = NULL;
+ 
+ 	pthread_mutex_lock(&chunk_mutex);
+@@ -326,7 +382,7 @@ void debugFree(void *memoryParameter, int tag)
+ 
+ 	pthread_mutex_unlock(&chunk_mutex);
+ 
+-	chunkTrailer = (struct chunkTrailer *)(memory + chunkHeader->length);
++	chunkTrailer = (struct chunkTrailer *)(memory + chunkHeader->length + getTrailerPad(chunkHeader->length));
+ 
+ 	if (chunkTrailer->magicNumber != MAGIC_NUMBER)
+ 	{
+@@ -334,6 +390,11 @@ void debugFree(void *memoryParameter, int tag)
+ 		restore_and_exit(0);
+ 	}
+ 
++	if (checkPadding(memory + chunkHeader->length, getTrailerPad(chunkHeader->length)) == 0) {
++		debug_output( 0, "debugFree - invalid magic padding in trailer, malloc tag = %d\n", chunkHeader->tag );
++		restore_and_exit(0);
++	}
++
+ #if defined MEMORY_USAGE
+ 
+ 	removeMemory( chunkHeader->tag, tag );
+-- 
+1.6.3.1
 
-=20
-
-But how would batman choose the next hop if at every node there are two
-interfaces available. The ideal ofcourse would be
-11a->11b->11a->11b->11a on each hop.
-
-=20
-
-Regards
-
-Kartik=20
-
-
-------_=_NextPart_001_01C9DF53.89C68666
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-pre
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:10.0pt;
-	font-family:"Courier New";}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1><pre><font size=3D2 face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>&gt;<i><span style=3D'font-style:italic'> =
-Let's say a packet comes from node A interface ath0 of node B, =
-and<o:p></o:p></span></i></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&gt;<i><span
-style=3D'font-style:italic'> there is a route on node B for the packet =
-to go to node C, route =
-which<o:p></o:p></span></i></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&gt;<i><span
-style=3D'font-style:italic'> use the same interface ath0. In this case, =
-you might want to add =
-a<o:p></o:p></span></i></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&gt;<i><span
-style=3D'font-style:italic'> cost to hop over the same wireless =
-interface.<o:p></o:p></span></i></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></pre><pre><fon=
-t
-size=3D2 face=3D"Courier New"><span style=3D'font-size:10.0pt'>&gt;Ok, =
-good idea. I quickly made a =
-patch:<o:p></o:p></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span style=3D'font-size:10.0pt'>&gt;<a
-href=3D"http://www.open-mesh.net/changeset/1276">http://www.open-mesh.net=
-/changeset/1276</a><o:p></o:p></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></pre><pre><fon=
-t
-size=3D2 face=3D"Courier New"><span style=3D'font-size:10.0pt'>&gt;Feel =
-free to test it. :-)<o:p></o:p></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></pre><pre><fon=
-t
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&gt;Regards,<o:p></o:p></span></font></pre><pr=
-e><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&gt;Marek<o:p></o:p></span></font></pre>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>But how would batman choose the next hop if at every node there =
-are two
-interfaces available. The ideal ofcourse would be =
-11a-&gt;11b-&gt;11a-&gt;11b-&gt;11a
-on each hop.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>Regards<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>Kartik <o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C9DF53.89C68666--
