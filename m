@@ -1,14 +1,16 @@
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 29 May 2009 14:58:49 +0800
-References: <278AF6CA06F13D4C9E9F69C7B9AB3B8302E8D251@MBX21.stu.nus.edu.sg>
-In-Reply-To: <278AF6CA06F13D4C9E9F69C7B9AB3B8302E8D251@MBX21.stu.nus.edu.sg>
+Date: Fri, 29 May 2009 15:02:42 +0800
+References: <4313f3060905190727x279f2d0boc4e74e4df6e821bc@mail.gmail.com>
+	<1243507208-8999-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1243507208-8999-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905291458.52132.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Multiradio Batman
+Message-Id: <200905291502.43117.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] [batman] Add padding around allocation
+	debugger structures
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,18 +24,20 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Thursday 28 May 2009 13:17:04 Kartik Muralidharan wrote:
-> But how would batman choose the next hop if at every node there are two
-> interfaces available. The ideal ofcourse would be
-> 11a->11b->11a->11b->11a on each hop.
+On Thursday 28 May 2009 18:40:08 Sven Eckelmann wrote:
+> Architectures with a special alignment for load and store operations on
+> datatypes bigger than bytes will return a prealigned memory region when
+> calling malloc. When we add our data structure before and after this
+> region we destroy this alignment.
+> To fix this problem we add special regions with "magic" padding data.
+> To be sure that it is big enough for every load/store operation we use
+> the alignment for uintmax_t or a pointer even when the architecture only
+> supports smaller load/store operations.
+>
+> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 
-If all nodes have 2 interfaces its hard to predict whether it will be:
-11a->11b->11a->11b->11a
-or
-11b->11a->11b->11a->11b
-
-If the link qualities are all equal batman we choose the fastest path (lowest 
-latency).
+@Nathan: Could you let me know if these patches work for you ? If so I'll 
+commit them. 
 
 Regards,
 Marek
