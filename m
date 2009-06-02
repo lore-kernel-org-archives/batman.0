@@ -1,14 +1,15 @@
-MIME-Version: 1.0
-In-Reply-To: <200906012135.22488.sven.eckelmann@gmx.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 2 Jun 2009 12:36:41 +0800
 References: <4313f3060905190727x279f2d0boc4e74e4df6e821bc@mail.gmail.com>
-	<200906011844.15664.sven.eckelmann@gmx.de>
 	<4313f3060906011103q21b32600nf99f8607bd01045c@mail.gmail.com>
 	<200906012135.22488.sven.eckelmann@gmx.de>
-Date: Mon, 1 Jun 2009 16:50:36 -0500
-Message-ID: <4313f3060906011450i3b5bef03j73d1b9613bddf6f6@mail.gmail.com>
-From: Nathan Wharton <naw@greptar.com>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <200906012135.22488.sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906021236.42019.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] [batman] Add padding around allocation
 	debugger structures
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,34 +23,16 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@open-mesh.net, Marek Lindner <lindner_marek@yahoo.de>
+To: b.a.t.m.a.n@open-mesh.net
 
-On Mon, Jun 1, 2009 at 2:35 PM, Sven Eckelmann <sven.eckelmann@gmx.de> wrote:
-> Ok, I think I see the problem. The malloc returned a valid aligned adress.
-> list_add_tail will get a pointer to an element in hna_global_entry. This
-> structure is packed and all operations on it should be non-alignment safe. If
-> you look at it further you will notice that orig_list is at position 9
-> (assuming 4 bytes for a pointer) - which will not be aligned to 4 bytes of
-> course.....
-> And here comes the problem: the compiler will only do the safe operations on
-> non-aligned data if it knows that it is not alignent. Since a cast is done by
-> calling list_add_tail it will not know that this parameter is not aligned and
-> the non-alignment bug will occur.
->
-> So my question to marek: Is it really needed to have "struct hna_global_entry"
-> packed in hna.h:57? If not then we should remove it and this problem should be
-> gone. And what is with "struct hna_element".
->
-> Thank you for your work, Nathan :)
+On Tuesday 02 June 2009 03:35:07 Sven Eckelmann wrote:
+> So my question to marek: Is it really needed to have "struct
+> hna_global_entry" packed in hna.h:57? If not then we should remove it and
+> this problem should be gone. And what is with "struct hna_element".
 
-You are welcome, thanks for your help.
+The first 5 bytes of both structs are used as base for the hash index. If the 
+compiler changes the order or something similar it might not work.
 
-The crashing of batgat on unloading turns out to be socket 4306 not
-being ready to be reused yet.
-I worked around this by using:
-batmand -c -r 0 ; sleep 1 ; batmand -c -g 11000
-and
-batmand -c -g 0 ; sleep 1 ; batmand -c -r 2
+Regards,
+Marek
 
-Marek helped figure that out on irc.
