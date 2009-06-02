@@ -1,17 +1,9 @@
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 2 Jun 2009 12:36:41 +0800
-References: <4313f3060905190727x279f2d0boc4e74e4df6e821bc@mail.gmail.com>
-	<4313f3060906011103q21b32600nf99f8607bd01045c@mail.gmail.com>
-	<200906012135.22488.sven.eckelmann@gmx.de>
-In-Reply-To: <200906012135.22488.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906021236.42019.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] [batman] Add padding around allocation
-	debugger structures
+Date: Tue, 2 Jun 2009 09:20:02 +0200
+Message-ID: <da2086ba0906020020r7438fe7bwe93c4375e45e5406@mail.gmail.com>
+From: Siphamandla Nxumalo <slnxumalo@gmail.com>
+Content-Type: multipart/alternative; boundary=0016e6db61ca02ab9b046b585fa5
+Subject: [B.A.T.M.A.N.] Implementation of BATMAN routing metric on NS2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,14 +17,30 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@open-mesh.net
 
-On Tuesday 02 June 2009 03:35:07 Sven Eckelmann wrote:
-> So my question to marek: Is it really needed to have "struct
-> hna_global_entry" packed in hna.h:57? If not then we should remove it and
-> this problem should be gone. And what is with "struct hna_element".
+--0016e6db61ca02ab9b046b585fa5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-The first 5 bytes of both structs are used as base for the hash index. If the 
-compiler changes the order or something similar it might not work.
+Hi.
 
-Regards,
-Marek
+I would like to know if there is any implementation of BATMAN roting metric
+that has been done on NS2.
 
+Kind regards
+S`pha
+
+-- 
+Siphamandla L. Nxumalo
+MSc Student
+Department of Computer Science
+University of Zululand
+Cell: (+27) 723277418
+
+--0016e6db61ca02ab9b046b585fa5
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hi.<br><br>I would like to know if there is any implementation of BATMAN roting metric that has been done on NS2.<br><br>Kind regards<br>S`pha<br><br>-- <br>Siphamandla L. Nxumalo<br>MSc Student<br>Department of Computer Science<br>
+University of Zululand<br>Cell: (+27) 723277418<br><br>
+
+--0016e6db61ca02ab9b046b585fa5--
