@@ -1,15 +1,10 @@
+Message-ID: <SNT107-W35F044CDA96BC87A08CDA1A6430@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_da0ae8bb-257c-4841-acea-f7009dc30ad5_"
+From: nick farrow <nickthefarrow@hotmail.com>
+Date: Fri, 12 Jun 2009 16:19:24 +0000
 MIME-Version: 1.0
-In-Reply-To: <200906121913.40206.lindner_marek@yahoo.de>
-References: <5161afcd0906111040v1e2831ccv79c8ab6a5ca6cb58@mail.gmail.com>
-	<5161afcd0906111112p2cf55955o757f87dc6f75cb41@mail.gmail.com>
-	<5161afcd0906111246y446d9bc4hf145a3423ff6653e@mail.gmail.com>
-	<200906121913.40206.lindner_marek@yahoo.de>
-Date: Fri, 12 Jun 2009 09:21:18 -0600
-Message-ID: <5161afcd0906120821w5698c18ag7b993869377e3d61@mail.gmail.com>
-From: Jacob Marble <jacobmarble@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] batman advanced in openwrt
+Subject: [B.A.T.M.A.N.] A tutorial for BATMAN (on openwrt)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,47 +16,76 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
+To: b.a.t.m.a.n@open-mesh.net
 
-On Fri, Jun 12, 2009 at 5:13 AM, Marek Lindner<lindner_marek@yahoo.de> wrot=
-e:
-> On Friday 12 June 2009 03:46:05 Jacob Marble wrote:
->> I removed the batmand-adv package, and all is well. =C2=A0This must be t=
-he
->> userspace version.
->
-> Yes, you should not use the kernel version and the user space version at =
-the
-> same time. Actually, the user space version is obsolete and has been remo=
-ved
-> from our SVN (http://www.open-mesh.net/changeset/1283) and from OpenWRT
-> lately. It created more confusion than anything else.
+--_da0ae8bb-257c-4841-acea-f7009dc30ad5_
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
 
-Agreed.
 
-> Great that you found your way through. We seeking to make things more obv=
-ious
-> - any hints ?
+Hi=2C
 
-batman-advanced needs a howto.  I'm a pretty smart guy, but this took
-me all week to figure out.  I'm still shaky and my mesh network isn't
-working very well yet.  I would be willing to put together some more
-detailed info for OpenWrt.
+=20
 
-I'm sure that there are people like me who can "get it" if you just
-hold their hand through getting bat0 on one node to see bat0 on
-another node.  adhoc mode?  ahdemo mode?  What is the difference?
-This might be a little off-topic for batman-adv but it's very
-relevant.
+I would be really greatfull if someone could point me to some basic instruc=
+tions to get me up and running.
 
-Also, it's tedious to deal with /proc/net/batman-adv/*  It's cool in
-hacky sort of way, but tedious.  Is there any way that this could be
-manipulated with a script?  brctl is a nice interface, how about
-bactl?  "bactl show originators"  "bactl show interfaces"  "bactl set
-log_level 15"  "bactl help"  Of course, leave the /proc interface for
-hard-core types. ;)
+=20
 
-Overall, this is really great software, so I hope barriers-to-entry
-can be removed.
+I have installed batman and olsr on my trusty linksys wrt54g but have no id=
+ea how or what I need to do from here (other than put the wifi into adhoc m=
+ode). I have found some basic instructions but dont really understand them =
+and am having trouble getting anything that really describes the whats and =
+whys.
 
-Jake
+=20
+
+Thanks very much=20
+
+=20
+
+nick
+
+_________________________________________________________________
+Share your photos with Windows Live Photos =96 Free.
+http://clk.atdmt.com/UKM/go/134665338/direct/01/=
+
+--_da0ae8bb-257c-4841-acea-f7009dc30ad5_
+Content-Type: text/html; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Verdana
+}
+</style>
+</head>
+<body class=3D'hmmessage'>
+Hi=2C<BR>
+&nbsp=3B<BR>
+I would be really greatfull if someone could point me to some basic instruc=
+tions to get me up and running.<BR>
+&nbsp=3B<BR>
+I have installed batman and olsr on my trusty linksys wrt54g but have no id=
+ea how or what I need to do from here (other than put the wifi into adhoc m=
+ode). I have found some basic instructions but dont really understand them =
+and am having trouble getting anything that really describes the whats and =
+whys.<BR>
+&nbsp=3B<BR>
+Thanks very much <BR>
+&nbsp=3B<BR>
+nick<BR><br /><hr />View your Twitter and Flickr updates from one place =96=
+ <a href=3D'http://clk.atdmt.com/UKM/go/137984870/direct/01/' target=3D'_ne=
+w'>Learn more!</a></body>
+</html>=
+
+--_da0ae8bb-257c-4841-acea-f7009dc30ad5_--
