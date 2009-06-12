@@ -1,14 +1,15 @@
 MIME-Version: 1.0
-In-Reply-To: <200906130059.52978.lindner_marek@yahoo.de>
+In-Reply-To: <5161afcd0906120821w5698c18ag7b993869377e3d61@mail.gmail.com>
 References: <5161afcd0906111040v1e2831ccv79c8ab6a5ca6cb58@mail.gmail.com>
+	<5161afcd0906111112p2cf55955o757f87dc6f75cb41@mail.gmail.com>
+	<5161afcd0906111246y446d9bc4hf145a3423ff6653e@mail.gmail.com>
 	<200906121913.40206.lindner_marek@yahoo.de>
 	<5161afcd0906120821w5698c18ag7b993869377e3d61@mail.gmail.com>
-	<200906130059.52978.lindner_marek@yahoo.de>
-Date: Fri, 12 Jun 2009 11:14:51 -0600
-Message-ID: <5161afcd0906121014jf43527fwcfb8af01c70c8cdd@mail.gmail.com>
+Date: Fri, 12 Jun 2009 11:19:51 -0600
+Message-ID: <5161afcd0906121019w4ec402a2ged0c622013515ea6@mail.gmail.com>
 From: Jacob Marble <jacobmarble@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] batman advanced in openwrt
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -23,42 +24,20 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-On Fri, Jun 12, 2009 at 10:59 AM, Marek Lindner<lindner_marek@yahoo.de> wro=
-te:
-> On Friday 12 June 2009 23:21:18 Jacob Marble wrote:
->> batman-advanced needs a howto. =C2=A0I'm a pretty smart guy, but this to=
-ok
->> me all week to figure out. =C2=A0I'm still shaky and my mesh network isn=
-'t
->> working very well yet. =C2=A0I would be willing to put together some mor=
-e
->> detailed info for OpenWrt.
->
-> It would be great if you would write something. We can either publish it =
-on
-> open-mesh.net or link to your site. Christoph Pilka started writing a how=
-to
-> (in German) but the link it not accessable anymore
-> (http://debian.asconix.com/batman-advanced-openwrt-howto).
+Some of my nodes cannot see each other...  For example, node 1 can
+battool ping node 2, but node 2 cannot battool ping node 1.  All nodes
+have the following:
 
-I have read the Google translation, and it's pretty good, but not
-simple enough for my simply self.  I would be *very happy* to write
-something.
+With log_level = 11:
+"cat ath0 > /proc/net/batman-adv/interfaces"
+produces:
+"Can't activate module: the primary interface is not active"
 
->> Also, it's tedious to deal with /proc/net/batman-adv/* =C2=A0It's cool i=
-n
->> hacky sort of way, but tedious. =C2=A0Is there any way that this could b=
-e
->> manipulated with a script? =C2=A0brctl is a nice interface, how about
->> bactl? =C2=A0"bactl show originators" =C2=A0"bactl show interfaces" =C2=
-=A0"bactl set
->> log_level 15" =C2=A0"bactl help" =C2=A0Of course, leave the /proc interf=
-ace for
->> hard-core types. ;)
->
-> The idea sounds interesting. We could integrate these feature into the
-> battools in order to not create another tool. What do you think ?
->
+The node that can ping out, but not be pinged gave the following before it died:
 
-Sure, I have already started something, written in sh.  I'll post it here l=
-ater.
+"Could not read from deactivated interface <NULL>!"
+
+I have looked at the source code, and I can see where these log
+messages come from, but nothing else in there makes sense to me.  And
+now it looks like it's working again.  This is with all of the
+interfaces in ahdemo mode.
