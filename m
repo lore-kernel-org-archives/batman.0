@@ -1,13 +1,14 @@
-Date: Sat, 13 Jun 2009 20:36:48 +0200
-From: Linus =?iso-8859-1?Q?L=FCssing?= <linus.luessing@web.de>
-Message-ID: <20090613183648.GA4943@Linus-Debian>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gBBFr7Ir9EOA20Yy"
-Content-Disposition: inline
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] bat0 looses IPv6 capabilities when inserting
-	tinc-interface	(BATMAN-Adv)
+In-Reply-To: <200906130059.52978.lindner_marek@yahoo.de>
+References: <5161afcd0906111040v1e2831ccv79c8ab6a5ca6cb58@mail.gmail.com>
+	<200906121913.40206.lindner_marek@yahoo.de>
+	<5161afcd0906120821w5698c18ag7b993869377e3d61@mail.gmail.com>
+	<200906130059.52978.lindner_marek@yahoo.de>
+Date: Mon, 15 Jun 2009 13:40:13 -0600
+Message-ID: <5161afcd0906151240g7a4972d5t5c417fc6da0806f9@mail.gmail.com>
+From: Jacob Marble <jacobmarble@gmail.com>
+Content-Type: multipart/mixed; boundary=00163646c9ea18dcd3046c683aab
+Subject: Re: [B.A.T.M.A.N.] batman advanced in openwrt
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,61 +20,100 @@ List-Post: <mailto:b.a.t.m.a.n@open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
+--00163646c9ea18dcd3046c683aab
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
---gBBFr7Ir9EOA20Yy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Fri, Jun 12, 2009 at 10:59 AM, Marek Lindner<lindner_marek@yahoo.de> wro=
+te:
+>> Also, it's tedious to deal with /proc/net/batman-adv/* =C2=A0It's cool i=
+n
+>> hacky sort of way, but tedious. =C2=A0Is there any way that this could b=
+e
+>> manipulated with a script? =C2=A0brctl is a nice interface, how about
+>> bactl? =C2=A0"bactl show originators" =C2=A0"bactl show interfaces" =C2=
+=A0"bactl set
+>> log_level 15" =C2=A0"bactl help" =C2=A0Of course, leave the /proc interf=
+ace for
+>> hard-core types. ;)
+>
+> The idea sounds interesting. We could integrate these feature into the
+> battools in order to not create another tool. What do you think ?
 
-I'm having a tinc-tunnel with the interface named 3micc
-over the internet here which is in "switch-mode" (so every
-tunneled package has a complete ethernet-frame which makes
-batman-adv able to use this interface for OGMs).
+Here is batctl.  I have only tested it in OpenWrt 8.09.1 and the latest SVN=
+.
 
-When I'm doing the steps in the following order, then everything
-works fine:
-1) sudo modprobe batman-adv
-2) sudo ifconfig bat0 up
-3) su -c "echo 3micc > /proc/net/batman-adv/interfaces"
+Jake
 
-But when I'm switching the steps 2) and 3), so first adding the
-interface and then putting bat0 up, then bat0 suddenly looses its
-IPv6 link-local addresse. /proc/sys/net/ipv6/conf/bat0 vanished
-(but ipv4/conf/bat0 is still there). When I'm trying to add an
-IPv6-address manually with "sudo ip -6 addr add
-fe80::2ff:e3ff:fe85:b9ca/64 dev bat0" then I get the response
-"RTNETLINK answers: No buffer space available". But dmesg shows
-no errors. This problem is reproducable, I've been doing a sudo
-modprobe -r batman-adv a couple of times and repeating the steps
-stated above.
+--00163646c9ea18dcd3046c683aab
+Content-Type: application/octet-stream; name=batctl
+Content-Disposition: attachment; filename=batctl
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fvzl9sj00
 
-I'm running batman-adv-modules-2.6.26-2-486 version
-0.1-7+2.6.26-15 on Debian unstable with the same kernel-version.
-
-Cheers, Linus
-
---gBBFr7Ir9EOA20Yy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iQIcBAEBAgAGBQJKM/HAAAoJEBKw7u43QNpfg9cP/2PTvLLci4jRZX8E91Zy4BHh
-Z3irY8mnxlDI0fiWzCG1cTFdhja2V9Xz7ptSGpOf3xc9kkaiS9laDo72mwN4TaLL
-F/DFaLCsL2KDKlPeAQ+UfY5oGfZCGtezGr7YokUgI+wN2rSnFr1l30C62Z6o0Zai
-S7HHVu00OwEtBXp06LbSxZATH1QTm7al9C55uNalZy6DVRtH6Ipr9HpHT8O63pXH
-ZnVsq+KH2dtBIgm04ypWpmJdfguGbeg9ZE1c0sARAm+mlNkI5mXdjegd2HBLFJRB
-omE0u851Ce0QgDfNjSt1paf71G2nOPWrxctvRpeYtnPS/aSzzSyPA5400qDlgruF
-zdMzvc6ybzcVzPRhuCi3jg1eoa2Hx8J+PMYCL9ACAU1N4HX8uBiJOzh/nfanXGvZ
-U6AO6KgVWMKoxtgwA0NgAxlPyLcpfw6h3tLAxVRPJZZzDtUCFMCO3S8EVs8TtRH7
-Z31QM8sb/HXhSZFSDkODZJ+vMFcPKb8/naz3AMR+I9LULJrr+TMLSeYht+Cgia7g
-9cVN/rx4or/UqdknGGqkDn5Rw4NzozIyONs7advjchiEReZx3YD8SnUJOyHxVVTX
-+YCtnLjWqo7m9oaM5O8xu+TXcRmhwCz/8O4zdxJYP/2cgnZDfe6vx10AmtUSWTuU
-ql6wdAmaCj+yS3a2QNpg
-=mTQL
------END PGP SIGNATURE-----
-
---gBBFr7Ir9EOA20Yy--
+IyEvYmluL3NoCiMKIyBiYXRjdGwgLSBiYXRtYW4tYWR2IGNvbnRyb2wgdG9vbDsgd3JhcHBlciBm
+b3IgL3Byb2MvbmV0L2JhdG1hbi1hZHYgaW50ZXJmYWNlCiMKIyB3cml0dGVuIGJ5IEphY29iIE1h
+cmJsZSAoamFjb2JtYXJibGVAZ21haWwuY29tKQojIGp1bi0yMDA5CgpQUkVGSVg9Ii9wcm9jL25l
+dC9iYXRtYW4tYWR2LyIKSU5URVJGQUNFUz0iaW50ZXJmYWNlcyIKT1JJR0lOQVRPUlM9Im9yaWdp
+bmF0b3JzIgpMT0dfTEVWRUw9ImxvZ19sZXZlbCIKT1JJR19JTlRFUlZBTD0ib3JpZ19pbnRlcnZh
+bCIKVFJBTlNUQUJMRV9HTE9CQUw9InRyYW5zdGFibGVfZ2xvYmFsIgpUUkFOU1RBQkxFX0xPQ0FM
+PSJ0cmFuc3RhYmxlX2xvY2FsIgpBR0dSRUdBVEVfT0dNPSJhZ2dyZWdhdGVfb2dtIgpWSVM9InZp
+cyIKVklTX0ZPUk1BVD0idmlzX2Zvcm1hdCIKTE9HPSJsb2ciCgpiYXRjdGxfdGVzdF9maWxlKCkg
+ewoJaWYgWyAhIC1yICQxIF0gOyB0aGVuCgkJZWNobyAiJDEgZG9lcyBub3QgZXhpc3Qgb3IgaXMg
+bm90IHJlYWRhYmxlLiIKCQlleGl0IDEKCWZpCglyZXR1cm4gMAp9CgpiYXRjdGxfaW50ZXJmYWNl
+cygpIHsKCWJhdGN0bF90ZXN0X2ZpbGUgJFBSRUZJWCRJTlRFUkZBQ0VTCglpZiBbIC1uICIkMSIg
+XSA7IHRoZW4KCQlpZiBbICIkMSIgPSAibm9uZSIgXSA7IHRoZW4KCQkJZWNobyAiIiA+ICRQUkVG
+SVgkSU5URVJGQUNFUwoJCWVsc2UKCQkJZWNobyAiJDEiID4gJFBSRUZJWCRJTlRFUkZBQ0VTCgkJ
+ZmkKCWZpCgllY2hvICJJbnRlcmZhY2VzIGF0dGFjaGVkIHRvIGJhdDA6IGBjYXQgJFBSRUZJWCRJ
+TlRFUkZBQ0VTYCIKfQoKYmF0Y3RsX29yaWdpbmF0b3JzKCkgewoJYmF0Y3RsX3Rlc3RfZmlsZSAk
+UFJFRklYJE9SSUdJTkFUT1JTCgljYXQgJFBSRUZJWCRPUklHSU5BVE9SUwp9CgpiYXRjdGxfbG9n
+X2xldmVsKCkgewoJYmF0Y3RsX3Rlc3RfZmlsZSAkUFJFRklYJExPR19MRVZFTAoJWyAtbiAiJDEi
+IF0gJiYgZWNobyAiJDEiID4gJFBSRUZJWCRMT0dfTEVWRUwKCWVjaG8gLWUgIkN1cnJlbnRseSBs
+b2dnaW5nOlxuYGNhdCAkUFJFRklYJExPR19MRVZFTGAiCn0KCmJhdGN0bF9vcmlnX2ludGVydmFs
+KCkgewoJYmF0Y3RsX3Rlc3RfZmlsZSAkUFJFRklYJE9SSUdfSU5URVJWQUwKCVsgLW4gIiQxIiBd
+ICYmIGVjaG8gIiQxIiA+ICRQUkVGSVgkT1JJR19JTlRFUlZBTAoJZWNobyAiT3JpZ2luYXRvciBJ
+bnRlcnZhbDogYGNhdCAkUFJFRklYJE9SSUdfSU5URVJWQUxgIgp9CgpiYXRjdGxfdHJhbnN0YWJs
+ZV9nbG9iYWwoKSB7CgliYXRjdGxfdGVzdF9maWxlICRQUkVGSVgkVFJBTlNUQUJMRV9HTE9CQUwK
+CWNhdCAkUFJFRklYJFRSQU5TVEFCTEVfR0xPQkFMCn0KCmJhdGN0bF90cmFuc3RhYmxlX2xvY2Fs
+KCkgewoJYmF0Y3RsX3Rlc3RfZmlsZSAkUFJFRklYJFRSQU5TVEFCTEVfTE9DQUwKCWNhdCAkUFJF
+RklYJFRSQU5TVEFCTEVfTE9DQUwKfQoKYmF0Y3RsX2FnZ3JlZ2F0ZV9vZ20oKSB7CgliYXRjdGxf
+dGVzdF9maWxlICRQUkVGSVgkQUdHUkVHQVRFX09HTQoJZWNobyAiQWdncmVnYXRlIE9HTSB2YWx1
+ZTogYGNhdCAkUFJFRklYJEFHR1JFR0FURV9PR01gIgp9CgpiYXRjdGxfdmlzKCkgewoJYmF0Y3Rs
+X3Rlc3RfZmlsZSAkUFJFRklYJFZJUwoJWyAtbiAiJDEiIF0gJiYgZWNobyAiJDEiID4gJFBSRUZJ
+WCRWSVMKCWVjaG8gLWUgIlZpc3VhbGl6YXRpb24gc2VydmVyIHNheXM6XG5gY2F0ICRQUkVGSVgk
+VklTYCIKfQoKYmF0Y3RsX3Zpc19mb3JtYXQoKSB7CgliYXRjdGxfdGVzdF9maWxlICRQUkVGSVgk
+VklTX0ZPUk1BVAoJWyAtbiAiJDEiIF0gJiYgZWNobyAiJDEiID4gJFBSRUZJWCRWSVNfRk9STUFU
+CgllY2hvIC1lICJWaXN1YWxpemF0aW9uIHNlcnZlciBmb3JtYXQ6XG5gY2F0ICRQUkVGSVgkVklT
+X0ZPUk1BVGAiCn0KCmJhdGN0bF9sb2coKSB7CgliYXRjdGxfdGVzdF9maWxlICRQUkVGSVgkTE9H
+CgljYXQgJFBSRUZJWCRMT0cKfQoKaWYgWyAkIyAtbmUgMCBdIDsgdGhlbgoJWyAiJDEiID0gImFs
+bCIgLW8gIiQxIiA9ICIkSU5URVJGQUNFUyIgXSAmJiBiYXRjdGxfJElOVEVSRkFDRVMgJDIKCVsg
+IiQxIiA9ICJhbGwiIF0gJiYgZWNobyAtZSAiIgoJWyAiJDEiID0gImFsbCIgLW8gIiQxIiA9ICIk
+T1JJR0lOQVRPUlMiIF0gJiYgYmF0Y3RsXyRPUklHSU5BVE9SUwoJWyAiJDEiID0gImFsbCIgXSAm
+JiBlY2hvIC1lICIiCglbICIkMSIgPSAiYWxsIiAtbyAiJDEiID0gIiRMT0dfTEVWRUwiIF0gJiYg
+YmF0Y3RsXyRMT0dfTEVWRUwgJDIKCVsgIiQxIiA9ICJhbGwiIF0gJiYgZWNobyAtZSAiIgoJWyAi
+JDEiID0gImFsbCIgLW8gIiQxIiA9ICIkT1JJR19JTlRFUlZBTCIgXSAmJiBiYXRjdGxfJE9SSUdf
+SU5URVJWQUwgJDIKCVsgIiQxIiA9ICJhbGwiIF0gJiYgZWNobyAtZSAiIgoJWyAiJDEiID0gImFs
+bCIgLW8gIiQxIiA9ICIkVFJBTlNUQUJMRV9HTE9CQUwiIF0gJiYgYmF0Y3RsXyRUUkFOU1RBQkxF
+X0dMT0JBTAoJWyAiJDEiID0gImFsbCIgXSAmJiBlY2hvIC1lICIiCglbICIkMSIgPSAiYWxsIiAt
+byAiJDEiID0gIiRUUkFOU1RBQkxFX0xPQ0FMIiBdICYmIGJhdGN0bF8kVFJBTlNUQUJMRV9MT0NB
+TAoJWyAiJDEiID0gImFsbCIgXSAmJiBlY2hvIC1lICIiCglbICIkMSIgPSAiYWxsIiAtbyAiJDEi
+ID0gIiRBR0dSRUdBVEVfT0dNIiBdICYmIGJhdGN0bF8kQUdHUkVHQVRFX09HTQoJWyAiJDEiID0g
+ImFsbCIgXSAmJiBlY2hvIC1lICIiCglbICIkMSIgPSAiYWxsIiAtbyAiJDEiID0gIiRWSVMiIF0g
+JiYgYmF0Y3RsXyRWSVMgJDIKCVsgIiQxIiA9ICJhbGwiIF0gJiYgZWNobyAtZSAiIgoJWyAiJDEi
+ID0gImFsbCIgLW8gIiQxIiA9ICIkVklTX0ZPUk1BVCIgXSAmJiBiYXRjdGxfJFZJU19GT1JNQVQg
+JDIKCVsgIiQxIiA9ICIkTE9HIiBdICYmIGJhdGN0bF8kTE9HCmVsc2UKCWVjaG8gImJhdGN0bCBp
+cyBiYXRtYW4tYWR2YW5jZWQtY29udHJvbCwgY2FuZHkgZm9yIHRoZSAvcHJvYyBpbnRlcmZhY2Ui
+CgllY2hvICJVc2FnZTogJDAgY29tbWFuZCBbdmFsdWVdIgoJZWNobyAiY29tbWFuZHM6IgoJZWNo
+byAiCSRJTlRFUkZBQ0VTCQlbYXRoWHxldGhYfG5vbmV8d2hhdGV2ZXJdIgoJZWNobyAiCSRPUklH
+SU5BVE9SUyIKCWVjaG8gIgkkTE9HX0xFVkVMCQlbMC0xNV0iCgllY2hvICIJJE9SSUdfSU5URVJW
+QUwJCVtpbnRlZ2VyID4gMF0iCgllY2hvICIJJFRSQU5TVEFCTEVfR0xPQkFMIgoJZWNobyAiCSRU
+UkFOU1RBQkxFX0xPQ0FMIgoJZWNobyAiCSRBR0dSRUdBVEVfT0dNIgoJZWNobyAiCSRWSVMJCQlb
+Y2xpZW50fHNlcnZlcl0iCgllY2hvICIJJFZJU19GT1JNQVQJCVtkb3RfZHJhd3xqc29uXSIKCWVj
+aG8gIgkkTE9HIgoJZWNobyAiCWFsbCIKCWVjaG8gImV4YW1wbGVzOiIKCWVjaG8gIgkkMCAkSU5U
+RVJGQUNFUyBhdGgwCSMgYWRkIGF0aDAgdG8gdGhlIGJhdDAgaW50ZXJmYWNlIgoJZWNobyAiCSQw
+ICRJTlRFUkZBQ0VTIG5vbmUJIyBjbGVhciBhbGwgaW50ZXJmYWNlcyBhbmQgZGlzYWJsZSBiYXRt
+YW4tYWR2YW5jZWQiCgllY2hvICIJJDAgYWxsCQkjIHNob3cgZXZlcnl0aGluZyBleGNlcHQgdGhl
+IGxvZyIKCWV4aXQgMApmaQo=
+--00163646c9ea18dcd3046c683aab--
