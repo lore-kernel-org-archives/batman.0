@@ -1,13 +1,15 @@
 MIME-Version: 1.0
-In-Reply-To: <200906130059.52978.lindner_marek@yahoo.de>
+In-Reply-To: <5161afcd0906121452p7fd294daha8915c906d7bb00e@mail.gmail.com>
 References: <5161afcd0906111040v1e2831ccv79c8ab6a5ca6cb58@mail.gmail.com>
-	<200906121913.40206.lindner_marek@yahoo.de>
-	<5161afcd0906120821w5698c18ag7b993869377e3d61@mail.gmail.com>
-	<200906130059.52978.lindner_marek@yahoo.de>
-Date: Mon, 15 Jun 2009 13:40:13 -0600
-Message-ID: <5161afcd0906151240g7a4972d5t5c417fc6da0806f9@mail.gmail.com>
+	<200906130408.45362.lindner_marek@yahoo.de>
+	<5161afcd0906121327m603d4c4ftc02458f30d39ff9c@mail.gmail.com>
+	<200906130538.06620.lindner_marek@yahoo.de>
+	<5161afcd0906121452p7fd294daha8915c906d7bb00e@mail.gmail.com>
+Date: Mon, 15 Jun 2009 16:03:25 -0600
+Message-ID: <5161afcd0906151503kb1945d5x665050c2d7eaea7a@mail.gmail.com>
 From: Jacob Marble <jacobmarble@gmail.com>
-Content-Type: multipart/mixed; boundary=00163646c9ea18dcd3046c683aab
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] batman advanced in openwrt
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@open-mesh.net>
@@ -22,98 +24,49 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
---00163646c9ea18dcd3046c683aab
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Jun 12, 2009 at 10:59 AM, Marek Lindner<lindner_marek@yahoo.de> wro=
-te:
->> Also, it's tedious to deal with /proc/net/batman-adv/* =C2=A0It's cool i=
-n
->> hacky sort of way, but tedious. =C2=A0Is there any way that this could b=
-e
->> manipulated with a script? =C2=A0brctl is a nice interface, how about
->> bactl? =C2=A0"bactl show originators" =C2=A0"bactl show interfaces" =C2=
-=A0"bactl set
->> log_level 15" =C2=A0"bactl help" =C2=A0Of course, leave the /proc interf=
-ace for
->> hard-core types. ;)
+On Fri, Jun 12, 2009 at 3:52 PM, Jacob Marble<jacobmarble@gmail.com> wrote:
+> On Fri, Jun 12, 2009 at 3:38 PM, Marek Lindner<lindner_marek@yahoo.de> wr=
+ote:
+>> On Saturday 13 June 2009 04:27:44 Jacob Marble wrote:
+>>> > This message indicates that this nodes already has one interface whic=
+h is
+>>> > not activate. Could you post "cat /proc/net/batman-adv/interfaces" af=
+ter
+>>> > you get this result ?
+>>>
+>>> "echo 'ath0' > interfaces"
+>>> "cat interfaces"
+>>> ath0
+>>>
+>>> [ =C2=A0 =C2=A0 97532] Adding interface: ath0
+>>> [ =C2=A0 =C2=A0 97532] Can't activate module: the primary interface is =
+not active
+>>> [ =C2=A0 =C2=A0 97534] Adding route towards: 00:15:6d:a7:6a:14 (via
+>>> 00:15:6d:a7:6a:14) [ =C2=A0 =C2=A0 97534] Creating new global hna entry=
+:
+>>> 00:ff:cf:5c:68:e0 (via 00:15:6d:a7:6a:14)
+>>
+>> It looks like a bug that I fixed in revision 1254. What version are you =
+using ?
+>>
 >
-> The idea sounds interesting. We could integrate these feature into the
-> battools in order to not create another tool. What do you think ?
+> 1176 (from OpenWrt repositories). =C2=A0I'll get the latest svn.
+>
 
-Here is batctl.  I have only tested it in OpenWrt 8.09.1 and the latest SVN=
-.
+Alright, I have OpenWrt SVN compiling, which has revision 1289.
+However, I would like to compile the batman-advanced code from the
+batman SVN repository instead.  I have tried copying the
+batman-advanced directory to [the openwrt sdk]/package/ and then run
+make, and this doesn't work.  I have tried compiling the
+batman-advanced code by simply "make
+KERNELPATH=3D~/OpenWrt-SDK-atheros-for-Linux-i686/" and that didn't
+work.  I have tried several paths for KERNELPATH, but I think I need
+the other cross-compile tools to be available as well...
+
+Can someone give me a quick-and-dirty "Howto compile for OpenWrt"?
+Afterwards, I could put together a nice README.openwrt for the SVN
+repository.
+
+TIA,
 
 Jake
-
---00163646c9ea18dcd3046c683aab
-Content-Type: application/octet-stream; name=batctl
-Content-Disposition: attachment; filename=batctl
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fvzl9sj00
-
-IyEvYmluL3NoCiMKIyBiYXRjdGwgLSBiYXRtYW4tYWR2IGNvbnRyb2wgdG9vbDsgd3JhcHBlciBm
-b3IgL3Byb2MvbmV0L2JhdG1hbi1hZHYgaW50ZXJmYWNlCiMKIyB3cml0dGVuIGJ5IEphY29iIE1h
-cmJsZSAoamFjb2JtYXJibGVAZ21haWwuY29tKQojIGp1bi0yMDA5CgpQUkVGSVg9Ii9wcm9jL25l
-dC9iYXRtYW4tYWR2LyIKSU5URVJGQUNFUz0iaW50ZXJmYWNlcyIKT1JJR0lOQVRPUlM9Im9yaWdp
-bmF0b3JzIgpMT0dfTEVWRUw9ImxvZ19sZXZlbCIKT1JJR19JTlRFUlZBTD0ib3JpZ19pbnRlcnZh
-bCIKVFJBTlNUQUJMRV9HTE9CQUw9InRyYW5zdGFibGVfZ2xvYmFsIgpUUkFOU1RBQkxFX0xPQ0FM
-PSJ0cmFuc3RhYmxlX2xvY2FsIgpBR0dSRUdBVEVfT0dNPSJhZ2dyZWdhdGVfb2dtIgpWSVM9InZp
-cyIKVklTX0ZPUk1BVD0idmlzX2Zvcm1hdCIKTE9HPSJsb2ciCgpiYXRjdGxfdGVzdF9maWxlKCkg
-ewoJaWYgWyAhIC1yICQxIF0gOyB0aGVuCgkJZWNobyAiJDEgZG9lcyBub3QgZXhpc3Qgb3IgaXMg
-bm90IHJlYWRhYmxlLiIKCQlleGl0IDEKCWZpCglyZXR1cm4gMAp9CgpiYXRjdGxfaW50ZXJmYWNl
-cygpIHsKCWJhdGN0bF90ZXN0X2ZpbGUgJFBSRUZJWCRJTlRFUkZBQ0VTCglpZiBbIC1uICIkMSIg
-XSA7IHRoZW4KCQlpZiBbICIkMSIgPSAibm9uZSIgXSA7IHRoZW4KCQkJZWNobyAiIiA+ICRQUkVG
-SVgkSU5URVJGQUNFUwoJCWVsc2UKCQkJZWNobyAiJDEiID4gJFBSRUZJWCRJTlRFUkZBQ0VTCgkJ
-ZmkKCWZpCgllY2hvICJJbnRlcmZhY2VzIGF0dGFjaGVkIHRvIGJhdDA6IGBjYXQgJFBSRUZJWCRJ
-TlRFUkZBQ0VTYCIKfQoKYmF0Y3RsX29yaWdpbmF0b3JzKCkgewoJYmF0Y3RsX3Rlc3RfZmlsZSAk
-UFJFRklYJE9SSUdJTkFUT1JTCgljYXQgJFBSRUZJWCRPUklHSU5BVE9SUwp9CgpiYXRjdGxfbG9n
-X2xldmVsKCkgewoJYmF0Y3RsX3Rlc3RfZmlsZSAkUFJFRklYJExPR19MRVZFTAoJWyAtbiAiJDEi
-IF0gJiYgZWNobyAiJDEiID4gJFBSRUZJWCRMT0dfTEVWRUwKCWVjaG8gLWUgIkN1cnJlbnRseSBs
-b2dnaW5nOlxuYGNhdCAkUFJFRklYJExPR19MRVZFTGAiCn0KCmJhdGN0bF9vcmlnX2ludGVydmFs
-KCkgewoJYmF0Y3RsX3Rlc3RfZmlsZSAkUFJFRklYJE9SSUdfSU5URVJWQUwKCVsgLW4gIiQxIiBd
-ICYmIGVjaG8gIiQxIiA+ICRQUkVGSVgkT1JJR19JTlRFUlZBTAoJZWNobyAiT3JpZ2luYXRvciBJ
-bnRlcnZhbDogYGNhdCAkUFJFRklYJE9SSUdfSU5URVJWQUxgIgp9CgpiYXRjdGxfdHJhbnN0YWJs
-ZV9nbG9iYWwoKSB7CgliYXRjdGxfdGVzdF9maWxlICRQUkVGSVgkVFJBTlNUQUJMRV9HTE9CQUwK
-CWNhdCAkUFJFRklYJFRSQU5TVEFCTEVfR0xPQkFMCn0KCmJhdGN0bF90cmFuc3RhYmxlX2xvY2Fs
-KCkgewoJYmF0Y3RsX3Rlc3RfZmlsZSAkUFJFRklYJFRSQU5TVEFCTEVfTE9DQUwKCWNhdCAkUFJF
-RklYJFRSQU5TVEFCTEVfTE9DQUwKfQoKYmF0Y3RsX2FnZ3JlZ2F0ZV9vZ20oKSB7CgliYXRjdGxf
-dGVzdF9maWxlICRQUkVGSVgkQUdHUkVHQVRFX09HTQoJZWNobyAiQWdncmVnYXRlIE9HTSB2YWx1
-ZTogYGNhdCAkUFJFRklYJEFHR1JFR0FURV9PR01gIgp9CgpiYXRjdGxfdmlzKCkgewoJYmF0Y3Rs
-X3Rlc3RfZmlsZSAkUFJFRklYJFZJUwoJWyAtbiAiJDEiIF0gJiYgZWNobyAiJDEiID4gJFBSRUZJ
-WCRWSVMKCWVjaG8gLWUgIlZpc3VhbGl6YXRpb24gc2VydmVyIHNheXM6XG5gY2F0ICRQUkVGSVgk
-VklTYCIKfQoKYmF0Y3RsX3Zpc19mb3JtYXQoKSB7CgliYXRjdGxfdGVzdF9maWxlICRQUkVGSVgk
-VklTX0ZPUk1BVAoJWyAtbiAiJDEiIF0gJiYgZWNobyAiJDEiID4gJFBSRUZJWCRWSVNfRk9STUFU
-CgllY2hvIC1lICJWaXN1YWxpemF0aW9uIHNlcnZlciBmb3JtYXQ6XG5gY2F0ICRQUkVGSVgkVklT
-X0ZPUk1BVGAiCn0KCmJhdGN0bF9sb2coKSB7CgliYXRjdGxfdGVzdF9maWxlICRQUkVGSVgkTE9H
-CgljYXQgJFBSRUZJWCRMT0cKfQoKaWYgWyAkIyAtbmUgMCBdIDsgdGhlbgoJWyAiJDEiID0gImFs
-bCIgLW8gIiQxIiA9ICIkSU5URVJGQUNFUyIgXSAmJiBiYXRjdGxfJElOVEVSRkFDRVMgJDIKCVsg
-IiQxIiA9ICJhbGwiIF0gJiYgZWNobyAtZSAiIgoJWyAiJDEiID0gImFsbCIgLW8gIiQxIiA9ICIk
-T1JJR0lOQVRPUlMiIF0gJiYgYmF0Y3RsXyRPUklHSU5BVE9SUwoJWyAiJDEiID0gImFsbCIgXSAm
-JiBlY2hvIC1lICIiCglbICIkMSIgPSAiYWxsIiAtbyAiJDEiID0gIiRMT0dfTEVWRUwiIF0gJiYg
-YmF0Y3RsXyRMT0dfTEVWRUwgJDIKCVsgIiQxIiA9ICJhbGwiIF0gJiYgZWNobyAtZSAiIgoJWyAi
-JDEiID0gImFsbCIgLW8gIiQxIiA9ICIkT1JJR19JTlRFUlZBTCIgXSAmJiBiYXRjdGxfJE9SSUdf
-SU5URVJWQUwgJDIKCVsgIiQxIiA9ICJhbGwiIF0gJiYgZWNobyAtZSAiIgoJWyAiJDEiID0gImFs
-bCIgLW8gIiQxIiA9ICIkVFJBTlNUQUJMRV9HTE9CQUwiIF0gJiYgYmF0Y3RsXyRUUkFOU1RBQkxF
-X0dMT0JBTAoJWyAiJDEiID0gImFsbCIgXSAmJiBlY2hvIC1lICIiCglbICIkMSIgPSAiYWxsIiAt
-byAiJDEiID0gIiRUUkFOU1RBQkxFX0xPQ0FMIiBdICYmIGJhdGN0bF8kVFJBTlNUQUJMRV9MT0NB
-TAoJWyAiJDEiID0gImFsbCIgXSAmJiBlY2hvIC1lICIiCglbICIkMSIgPSAiYWxsIiAtbyAiJDEi
-ID0gIiRBR0dSRUdBVEVfT0dNIiBdICYmIGJhdGN0bF8kQUdHUkVHQVRFX09HTQoJWyAiJDEiID0g
-ImFsbCIgXSAmJiBlY2hvIC1lICIiCglbICIkMSIgPSAiYWxsIiAtbyAiJDEiID0gIiRWSVMiIF0g
-JiYgYmF0Y3RsXyRWSVMgJDIKCVsgIiQxIiA9ICJhbGwiIF0gJiYgZWNobyAtZSAiIgoJWyAiJDEi
-ID0gImFsbCIgLW8gIiQxIiA9ICIkVklTX0ZPUk1BVCIgXSAmJiBiYXRjdGxfJFZJU19GT1JNQVQg
-JDIKCVsgIiQxIiA9ICIkTE9HIiBdICYmIGJhdGN0bF8kTE9HCmVsc2UKCWVjaG8gImJhdGN0bCBp
-cyBiYXRtYW4tYWR2YW5jZWQtY29udHJvbCwgY2FuZHkgZm9yIHRoZSAvcHJvYyBpbnRlcmZhY2Ui
-CgllY2hvICJVc2FnZTogJDAgY29tbWFuZCBbdmFsdWVdIgoJZWNobyAiY29tbWFuZHM6IgoJZWNo
-byAiCSRJTlRFUkZBQ0VTCQlbYXRoWHxldGhYfG5vbmV8d2hhdGV2ZXJdIgoJZWNobyAiCSRPUklH
-SU5BVE9SUyIKCWVjaG8gIgkkTE9HX0xFVkVMCQlbMC0xNV0iCgllY2hvICIJJE9SSUdfSU5URVJW
-QUwJCVtpbnRlZ2VyID4gMF0iCgllY2hvICIJJFRSQU5TVEFCTEVfR0xPQkFMIgoJZWNobyAiCSRU
-UkFOU1RBQkxFX0xPQ0FMIgoJZWNobyAiCSRBR0dSRUdBVEVfT0dNIgoJZWNobyAiCSRWSVMJCQlb
-Y2xpZW50fHNlcnZlcl0iCgllY2hvICIJJFZJU19GT1JNQVQJCVtkb3RfZHJhd3xqc29uXSIKCWVj
-aG8gIgkkTE9HIgoJZWNobyAiCWFsbCIKCWVjaG8gImV4YW1wbGVzOiIKCWVjaG8gIgkkMCAkSU5U
-RVJGQUNFUyBhdGgwCSMgYWRkIGF0aDAgdG8gdGhlIGJhdDAgaW50ZXJmYWNlIgoJZWNobyAiCSQw
-ICRJTlRFUkZBQ0VTIG5vbmUJIyBjbGVhciBhbGwgaW50ZXJmYWNlcyBhbmQgZGlzYWJsZSBiYXRt
-YW4tYWR2YW5jZWQiCgllY2hvICIJJDAgYWxsCQkjIHNob3cgZXZlcnl0aGluZyBleGNlcHQgdGhl
-IGxvZyIKCWV4aXQgMApmaQo=
---00163646c9ea18dcd3046c683aab--
