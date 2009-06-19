@@ -1,13 +1,17 @@
-Return-Path: <jacobmarble@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 19 Jun 2009 19:37:52 +0800
+References: <5161afcd0906111040v1e2831ccv79c8ab6a5ca6cb58@mail.gmail.com>
+	<200906130059.52978.lindner_marek@yahoo.de>
+	<5161afcd0906181141h691cc67gd6c47964a0618431@mail.gmail.com>
+In-Reply-To: <5161afcd0906181141h691cc67gd6c47964a0618431@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <5161afcd0906181522x5f967b00t203ce685ef8d8937@mail.gmail.com>
-References: <5161afcd0906181522x5f967b00t203ce685ef8d8937@mail.gmail.com>
-Date: Thu, 18 Jun 2009 16:36:39 -0600
-Message-ID: <5161afcd0906181536k2fb5bb7bqe9cdb829f9e57ef7@mail.gmail.com>
-From: Jacob Marble <jacobmarble@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] originators says yes, batping says no
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906191937.52892.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] batman advanced in openwrt
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,19 +23,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-On Thu, Jun 18, 2009 at 4:22 PM, Jacob Marble<jacobmarble@gmail.com> wrote:
-> I have three nodes running OpenWrt r16484 (SVN) and batman-advanced
-> r1298. =C2=A0All nodes show each other in originators. =C2=A0batping gets=
- host
-> unreachable for all relationships, and the host unreachable messages
-> come very quickly, maybe 1000/second. =C2=A0Here is a log sample, log_lev=
-el
-> 4. =C2=A0log_level 11 doesn't show anything.
->
-> The setup I'm using worked fine with r1176. =C2=A0Using ahdemo.
->
+On Friday 19 June 2009 02:41:17 Jacob Marble wrote:
+> Here is the beginning of a How-To.  It explains the most basic install
+> from easy-access binaries.  I'm working on a second section, which
+> will talk about compiling.
+> http://wiki.hskflashcards.com/index.php?page=B.A.T.M.A.N.+Advanced+on+OpenW
+>rt+How-To
 
-And, to make things more interesting, IPv4 is working fine.  My guess
-is that the developers already know this...
+Good work. I added a link in our UserDocs section.
+
+Regards,
+Marek
+
