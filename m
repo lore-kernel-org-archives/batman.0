@@ -1,12 +1,14 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 22 Jun 2009 14:43:34 +0200
+Return-Path: <jacobmarble@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2050210.KtUC2VHfPU";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+In-Reply-To: <200906200323.44115.sven.eckelmann@gmx.de>
+References: <5161afcd0906191517l4083ef4dnb1642207d81816c1@mail.gmail.com>
+	<200906200323.44115.sven.eckelmann@gmx.de>
+Date: Mon, 22 Jun 2009 13:57:07 -0600
+Message-ID: <5161afcd0906221257m589d5ac3leea3bcd22dd20182@mail.gmail.com>
+From: Jacob Marble <jacobmarble@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906221443.38100.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] Clarification of version number in batctl/main.h
+Subject: Re: [B.A.T.M.A.N.] HTTP transfers greater than 1000 bytes fail
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,70 +20,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: Sven Eckelmann <sven.eckelmann@gmx.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
---nextPart2050210.KtUC2VHfPU
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, Jun 19, 2009 at 7:23 PM, Sven Eckelmann<sven.eckelmann@gmx.de> wrote:
+> On Saturday 20 June 2009 00:17:23 Jacob Marble wrote:
+>> Two Linux boxes, each plugged in via Ethernet to a BATMAN node (two
+>> nodes).  The nodes talk batman-advanced to each other via WiFi.  The
+>> Linux boxes can ping each other all day long.  Both Linux boxes have
+>> Apache running.  Downloading a file via HTTP works only if the file is
+>> smaller than or equal to exactly 1,145 bytes.  TFTP file transfers are
+>> halting, but they get through (4 megabytes took a couple of minutes).
+>>
+>> This happens with both r1176 and r1298 on OpenWrt.
+>
+> Sry, haven't followed your other mails so I don't know your whole setup. It
+> looks like a mtu problem for me. Please try to set the mtu a lot lower on your
+> eth devices. You can do a ping test with `ping -s TESTSIZEINBYTE -M dont
+> IPTOSENDIPPACKET` - dont forget to add the 28 extra bytes needed for the whole
+> headers inside the ethernet frame. So `ping -s 1472 -M do 192.168.1.1` would
+> send a 1500 bytes package.
+> You can also set the mtu on your wifi devices higher (and bat0 devices). So
+> for example wifi device to 1524 and bat0 to 1500 (like the eth devices).
+> Also check if you have bridge mtu patch from Simon[1] (included in linux
+> 2.6.27) when you are bridging some of the devices. Also check that icmp
+> "Destination Unreachable" - "Fragmentation required, and DF flag set" isn't
+> filtered anywhere.
+>
 
-Hi,
-I just wanted to ask how to interpret the current version number of batctl.=
-=20
-Does it mean that the current version in svn is before or after a possible=
-=20
-0.2-beta release? Is it important for me because debian differentiates betw=
-een=20
-before and after something. For example 0.2~beta would mean that there is a=
-=20
-beta version before the 0.2 release. So I wanted to know if should call a s=
-vn=20
-snapshot of the current batctl 0.2~beta~svn1317 (svn1317 snapshot before a=
-=20
-possible 0.2~beta release) or 0.2~beta+svn1317 (svn1317 snapshot after the=
-=20
-beta phase has started - no beta version will ever be made available or has=
-=20
-been released already).
-It seems that the 0.2~beta~svn1317 is the more "correct" version as it has=
-=20
-less extra rules than 0.2~beta+svn1317. For example there must not be an ex=
-tra=20
-rule for events like the release of 0.3.1 of batman when Simon changed the=
-=20
-version string to 0.3.1 in 1177 which was before the release of 0.3.1 and t=
-hus=20
-shouldn't be called 0.3.1+svn1177.
-Can this be interpreted the same way for all other on open-mesh.net publish=
-ed=20
-hosted projects? So if I would create a snapshot version of batman it would=
-=20
-have the version number 0.4~beta~svn1309?
+The nodes running batman-advanced are OpenWrt 8.09.1, which uses
+kernel 2.6.26.8.  The patch is *not* in there, so I have re-flashed
+(again) with OpenWrt SVN, which uses... 2.6.28.10.  Um, if the patch
+isn't in OpenWrt stable releases, then maybe something should be said
+on open-mesh.net?  Also, I need to make a big fat note in my howto.
 
-Regards,
-Sven
+The setup is two Ubiquiti NanoStation2 nodes, which have one wifi
+device and one Ethernet device each.  Atheros 231x SoC.
+ath0 = wifi0, ahdemo, channel = 1
+bat0 interfaces = ath0
+br-lan (bridge) = bat0 + eth0, IP address set on this device only
 
---nextPart2050210.KtUC2VHfPU
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+The Linux workstations are attached via Ethernet, running Ubuntu.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+The MTU, by default, is 1500 on eth0, ath0, wifi0
+The MTU, by default, is 1476 on bat0, br-lan
 
-iQIcBAABCgAGBQJKP3x3AAoJEF2HCgfBJntG0tUQAJj2r7SZAmgVW0tIwgWH780C
-HVJqEKOcid5Uj7fXRXBeNYBeRI5JntNzozAJDwHt2RJSN19JZ0Qeim7MppiMhcfN
-v/rhdEbpYwEChrXS0wYp9ENFSQK9jXzrv2xIoiZw3GKPyHaahf7t39KkwideBFrQ
-0d0HhkwSEoe4YqF8QP0OMQOTNCA8P9rwIMUJ7Z5UM3lLC09UO55uo0fDKX2buPjc
-CJZWPMndP+a/NNSkPIG5Q8KgqTxBORrlYXJr+FMutRn32wgcCPMYRR8kBbDJnTlX
-2P1n7tNrhiXPsvqp9ydH3uEagmxKRdZdIYZvgNwaqrD3STnMpQ8dYNfuNt+N5aQi
-ycA8XC2Y7XTdMHeN1aXU/ysQHd+WGzNrfN13kN51M6SPh/zR0JyDUGqw9xyoQTEQ
-r6LA4WoMBxA0qrEjTPoxPYefFtBzR1OwNZMw9HJ1JXeLZgl1Bp7xUG7fAayDG1/9
-tHLutRWVFrYrB+6EaTAIvmpOFx6MKFhpofHsiVCEpA48jUvFfqdThZy+GSgk3oeS
-4ENrYLvW3sAT8RXTgF7AoltxDwf4EUlmzSyx4vccersYyQWoe3Ul6K9YhJD0qQR1
-pcU9K3YmuKnqiuSvbByzRrrQLVS9lGx5HsEG10QMJpKXBr15xAWpGYaC4vkylTF0
-Fa6gjcRVaUsr9HkmxR4G
-=NGyq
------END PGP SIGNATURE-----
+Ping from Linux workstation to Linux workstation works as long as the
+-s flag is 1448 or less.  1448 = 1476 - 28
+The -M do doesn't seem to change anything.
 
---nextPart2050210.KtUC2VHfPU--
+HTTP transfers still don't go through when they are larger than ~1400
+bytes.  I'll go play with the MTUs now.
