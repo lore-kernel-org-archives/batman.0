@@ -1,13 +1,15 @@
-Return-Path: <jacobmarble@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <200906200323.44115.sven.eckelmann@gmx.de>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon, 22 Jun 2009 22:24:40 +0200
 References: <5161afcd0906191517l4083ef4dnb1642207d81816c1@mail.gmail.com>
 	<200906200323.44115.sven.eckelmann@gmx.de>
-Date: Mon, 22 Jun 2009 13:57:07 -0600
-Message-ID: <5161afcd0906221257m589d5ac3leea3bcd22dd20182@mail.gmail.com>
-From: Jacob Marble <jacobmarble@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	<5161afcd0906221257m589d5ac3leea3bcd22dd20182@mail.gmail.com>
+In-Reply-To: <5161afcd0906221257m589d5ac3leea3bcd22dd20182@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2235395.jBJ48heZZD";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200906222224.43917.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] HTTP transfers greater than 1000 bytes fail
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -20,54 +22,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.net
 
-On Fri, Jun 19, 2009 at 7:23 PM, Sven Eckelmann<sven.eckelmann@gmx.de> wrote:
-> On Saturday 20 June 2009 00:17:23 Jacob Marble wrote:
->> Two Linux boxes, each plugged in via Ethernet to a BATMAN node (two
->> nodes).  The nodes talk batman-advanced to each other via WiFi.  The
->> Linux boxes can ping each other all day long.  Both Linux boxes have
->> Apache running.  Downloading a file via HTTP works only if the file is
->> smaller than or equal to exactly 1,145 bytes.  TFTP file transfers are
->> halting, but they get through (4 megabytes took a couple of minutes).
->>
->> This happens with both r1176 and r1298 on OpenWrt.
+--nextPart2235395.jBJ48heZZD
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+On Monday 22 June 2009 21:57:07 Jacob Marble wrote:
+[...]
+> > You can also set the mtu on your wifi devices higher (and bat0 devices).
+> > So for example wifi device to 1524 and bat0 to 1500 (like the eth
+> > devices). Also check if you have bridge mtu patch from Simon[1] (includ=
+ed
+> > in linux 2.6.27) when you are bridging some of the devices. Also check
+> > that icmp "Destination Unreachable" - "Fragmentation required, and DF
+> > flag set" isn't filtered anywhere.
+[...]
+> The Linux workstations are attached via Ethernet, running Ubuntu.
 >
-> Sry, haven't followed your other mails so I don't know your whole setup. It
-> looks like a mtu problem for me. Please try to set the mtu a lot lower on your
-> eth devices. You can do a ping test with `ping -s TESTSIZEINBYTE -M dont
-> IPTOSENDIPPACKET` - dont forget to add the 28 extra bytes needed for the whole
-> headers inside the ethernet frame. So `ping -s 1472 -M do 192.168.1.1` would
-> send a 1500 bytes package.
-> You can also set the mtu on your wifi devices higher (and bat0 devices). So
-> for example wifi device to 1524 and bat0 to 1500 (like the eth devices).
-> Also check if you have bridge mtu patch from Simon[1] (included in linux
-> 2.6.27) when you are bridging some of the devices. Also check that icmp
-> "Destination Unreachable" - "Fragmentation required, and DF flag set" isn't
-> filtered anywhere.
+> The MTU, by default, is 1500 on eth0, ath0, wifi0
+> The MTU, by default, is 1476 on bat0, br-lan
 >
+> Ping from Linux workstation to Linux workstation works as long as the
+> -s flag is 1448 or less.  1448 =3D 1476 - 28
+> The -M do doesn't seem to change anything.
+>
+> HTTP transfers still don't go through when they are larger than ~1400
+> bytes.  I'll go play with the MTUs now.
+Ok, setting mtu of ath0's to 1524 and of bat0 to 1500 should help here. Jus=
+t=20
+for the sake of completeness: Is there bridging involved in the workstation=
+s=20
+or any icmp filtering on the workstations/nanostations?
 
-The nodes running batman-advanced are OpenWrt 8.09.1, which uses
-kernel 2.6.26.8.  The patch is *not* in there, so I have re-flashed
-(again) with OpenWrt SVN, which uses... 2.6.28.10.  Um, if the patch
-isn't in OpenWrt stable releases, then maybe something should be said
-on open-mesh.net?  Also, I need to make a big fat note in my howto.
+Regards,
+Sven
 
-The setup is two Ubiquiti NanoStation2 nodes, which have one wifi
-device and one Ethernet device each.  Atheros 231x SoC.
-ath0 = wifi0, ahdemo, channel = 1
-bat0 interfaces = ath0
-br-lan (bridge) = bat0 + eth0, IP address set on this device only
+--nextPart2235395.jBJ48heZZD
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-The Linux workstations are attached via Ethernet, running Ubuntu.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-The MTU, by default, is 1500 on eth0, ath0, wifi0
-The MTU, by default, is 1476 on bat0, br-lan
+iQIcBAABCgAGBQJKP+iIAAoJEF2HCgfBJntGQmoP/1PWZ/4XF1yYnsGWx84Zr4Xe
+aHJ6FqPhbUhQvJwyZlzj+se6nuShCi1Wa5PKNT+D2Wt/VqnAuHXVvZkzoVXsteDE
+Pv+iNuNybiYBKMHtd3xyvOpM8AFUKIATOrBmOObxxKXoUMWDhTxHOrc9KGpEPtBE
+IQID3U8XxG3bODY0xXqU3XVvi8LF3YgyrVaHAJ4pjkKMULSHQWVnHmlIfK2iOixp
+BnSMhZFbKuNHhcjPSXEGSo6ywLxh6CUfafnS4qQLQzNI9wsZf/2/WhqdTRd0Segd
+5Mtv+RQUtNmhwKKxO0JxnXnOUNsrM6S1yeC4QmHexsea1OUEua/oUoJM/76pf1xF
+9yuuxt39+fdVQpIVAAN5PnuMt0o6Nha72eCICf2ft25gfPBQIBaksJSkRx2nrik3
+/VCzYg0Wp8kDq4mx0rm845iNpj30xV00FOPQSlVNAvInSpiXxdVjxp31bq0+qiMf
+uzuKgnM32W9i1Hut78G1Bpd1I3dHyQn9MYDSuNNHGAr/ZS85zRcGSUIXBOlbRDiF
+so6xIYNrsCb4sUZk4ppOfrlObQ6SgDwk3aKUZL+CVlu/T7y8CfIJcAbJy45xA83d
+lXAwUeqrm4XyB49qoo8nY02Uogt1fpVzbXtUy5Vu3VZmzwwx0KbkRLmaoEq1h7CC
+oHASghaVjNmFKZHme/TK
+=MD4i
+-----END PGP SIGNATURE-----
 
-Ping from Linux workstation to Linux workstation works as long as the
--s flag is 1448 or less.  1448 = 1476 - 28
-The -M do doesn't seem to change anything.
-
-HTTP transfers still don't go through when they are larger than ~1400
-bytes.  I'll go play with the MTUs now.
+--nextPart2235395.jBJ48heZZD--
