@@ -1,8 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 20 Jun 2009 21:18:00 +0200
-Message-Id: <1245525480-23538-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] [batctl] Expand ~ in paths to host files
+Date: Mon, 22 Jun 2009 14:04:14 +0200
+Message-Id: <1245672254-32531-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] [batctl] Use length modifier for size_t
+	types in printf
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,55 +20,85 @@ To: b.a.t.m.a.n@lists.open-mesh.net
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batctl/bat-hosts.c |   21 ++++++++++++++++++---
- 1 files changed, 18 insertions(+), 3 deletions(-)
+ batctl/ping.c       |   10 +++++-----
+ batctl/traceroute.c |    8 ++++----
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/batctl/bat-hosts.c b/batctl/bat-hosts.c
-index 95d105f..e997ad0 100644
---- a/batctl/bat-hosts.c
-+++ b/batctl/bat-hosts.c
-@@ -67,7 +67,6 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
- 	struct hashtable_t *swaphash;
+diff --git a/batctl/ping.c b/batctl/ping.c
+index b56867b..f051fe9 100644
+--- a/batctl/ping.c
++++ b/batctl/ping.c
+@@ -147,7 +147,7 @@ int ping(int argc, char **argv)
+ 	icmp_packet_out.ttl = 50;
+ 	icmp_packet_out.seqno = 0;
  
- 	name[0] = mac_str[0] = '\0';
--
- 	fd = fopen(path, "r");
- 	if (fd == NULL)
- 		return;
-@@ -129,6 +128,9 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
- void bat_hosts_init(void)
- {
- 	unsigned int i;
-+#define CONF_DIR_LEN 256
-+	char confdir[CONF_DIR_LEN];
-+	char *homedir;
+-	printf("PING %s (%s) %i(%i) bytes of data\n", dst_string, mac_string,
++	printf("PING %s (%s) %zi(%zi) bytes of data\n", dst_string, mac_string,
+ 		sizeof(icmp_packet_out), sizeof(icmp_packet_out) + 28);
  
- 	host_hash = hash_new(64, compare_mac, choose_mac);
+ 	while (!is_aborted) {
+@@ -194,8 +194,8 @@ int ping(int argc, char **argv)
+ 			goto sleep;
+ 		}
  
-@@ -137,8 +139,21 @@ void bat_hosts_init(void)
- 		return;
- 	}
+-		if ((unsigned int)read_len < sizeof(icmp_packet_in)) {
+-			printf("Warning - dropping received packet as it is smaller than expected (%d): %d\n",
++		if ((size_t)read_len < sizeof(icmp_packet_in)) {
++			printf("Warning - dropping received packet as it is smaller than expected (%zd): %zd\n",
+ 				sizeof(icmp_packet_in), read_len);
+ 			goto sleep;
+ 		}
+@@ -204,7 +204,7 @@ int ping(int argc, char **argv)
+ 		case ECHO_REPLY:
+ 			gettimeofday(&end, (struct timezone*)0);
+ 			time_delta = time_diff(&start, &end);
+-			printf("%d bytes from %s icmp_seq=%u ttl=%d time=%.2f ms\n",
++			printf("%zd bytes from %s icmp_seq=%u ttl=%d time=%.2f ms\n",
+ 					read_len, dst_string, ntohs(icmp_packet_in.seqno),
+ 					icmp_packet_in.ttl, time_delta);
  
--	for (i = 0; i < sizeof(bat_hosts_path) / sizeof(char *); i++)
--		parse_hosts_file(host_hash, bat_hosts_path[i]);
-+	homedir = getenv("HOME");
-+
-+	for (i = 0; i < sizeof(bat_hosts_path) / sizeof(char *); i++) {
-+		strcpy(confdir, "");
-+		if (strlen(bat_hosts_path[i]) >= 2
-+		    && bat_hosts_path[i][0] == '~' && bat_hosts_path[i][1] == '/') {
-+			strncpy(confdir, homedir, CONF_DIR_LEN);
-+			confdir[CONF_DIR_LEN - 1] = '\0';
-+			strncat(confdir, &bat_hosts_path[i][1], CONF_DIR_LEN - strlen(confdir));
-+		} else {
-+			strncpy(confdir, bat_hosts_path[i], CONF_DIR_LEN);
-+			confdir[CONF_DIR_LEN - 1] = '\0';
-+		}
-+		parse_hosts_file(host_hash, confdir);
-+	}
- }
+@@ -227,7 +227,7 @@ int ping(int argc, char **argv)
+ 			printf("Please make sure to compatible versions!\n");
+ 			goto out;
+ 		default:
+-			printf("Unknown message type %d len %d received\n", icmp_packet_in.msg_type, read_len);
++			printf("Unknown message type %d len %zd received\n", icmp_packet_in.msg_type, read_len);
+ 			break;
+ 		}
  
- struct bat_host *bat_hosts_find_by_name(char *name)
+diff --git a/batctl/traceroute.c b/batctl/traceroute.c
+index 2d16ff4..cdc2b8c 100644
+--- a/batctl/traceroute.c
++++ b/batctl/traceroute.c
+@@ -108,7 +108,7 @@ int traceroute(int argc, char **argv)
+ 	icmp_packet_out.msg_type = ECHO_REQUEST;
+ 	icmp_packet_out.seqno = 0;
+ 
+-	printf("traceroute to %s (%s), %d hops max, %d byte packets\n",
++	printf("traceroute to %s (%s), %d hops max, %zd byte packets\n",
+ 		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
+ 
+ 	for (icmp_packet_out.ttl = 0; !dst_reached && icmp_packet_out.ttl < TTL_MAX; icmp_packet_out.ttl++) {
+@@ -143,8 +143,8 @@ int traceroute(int argc, char **argv)
+ 				continue;
+ 			}
+ 
+-			if ((unsigned int)read_len < sizeof(icmp_packet_in)) {
+-				printf("Warning - dropping received packet as it is smaller than expected (%d): %d\n",
++			if ((size_t)read_len < sizeof(icmp_packet_in)) {
++				printf("Warning - dropping received packet as it is smaller than expected (%zd): %zd\n",
+ 					sizeof(icmp_packet_in), read_len);
+ 				continue;
+ 			}
+@@ -182,7 +182,7 @@ int traceroute(int argc, char **argv)
+ 				printf("Please make sure to compatible versions!\n");
+ 				goto out;
+ 			default:
+-				printf("Unknown message type %d len %d received\n", icmp_packet_in.msg_type, read_len);
++				printf("Unknown message type %d len %zd received\n", icmp_packet_in.msg_type, read_len);
+ 				break;
+ 			}
+ 		}
 -- 
 1.6.3.1
 
