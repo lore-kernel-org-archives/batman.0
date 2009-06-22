@@ -1,15 +1,15 @@
 Return-Path: <jacobmarble@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <200906222224.43917.sven.eckelmann@gmx.de>
+In-Reply-To: <200906222246.11849.sven.eckelmann@gmx.de>
 References: <5161afcd0906191517l4083ef4dnb1642207d81816c1@mail.gmail.com>
-	<200906200323.44115.sven.eckelmann@gmx.de>
 	<5161afcd0906221257m589d5ac3leea3bcd22dd20182@mail.gmail.com>
-	<200906222224.43917.sven.eckelmann@gmx.de>
-Date: Mon, 22 Jun 2009 14:47:30 -0600
-Message-ID: <5161afcd0906221347p4125aac4kb8efed0bc1cfd01@mail.gmail.com>
+	<5635aa0d0906221331nad876c8x6fec3fde12332c41@mail.gmail.com>
+	<200906222246.11849.sven.eckelmann@gmx.de>
+Date: Mon, 22 Jun 2009 14:48:21 -0600
+Message-ID: <5161afcd0906221348m7895318bwc87cf9d2369ca70@mail.gmail.com>
 From: Jacob Marble <jacobmarble@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] HTTP transfers greater than 1000 bytes fail
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -22,52 +22,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-On Mon, Jun 22, 2009 at 2:24 PM, Sven Eckelmann<sven.eckelmann@gmx.de> wrot=
-e:
-> On Monday 22 June 2009 21:57:07 Jacob Marble wrote:
-> [...]
->> > You can also set the mtu on your wifi devices higher (and bat0 devices=
-).
->> > So for example wifi device to 1524 and bat0 to 1500 (like the eth
->> > devices). Also check if you have bridge mtu patch from Simon[1] (inclu=
-ded
->> > in linux 2.6.27) when you are bridging some of the devices. Also check
->> > that icmp "Destination Unreachable" - "Fragmentation required, and DF
->> > flag set" isn't filtered anywhere.
-> [...]
->> The Linux workstations are attached via Ethernet, running Ubuntu.
->>
->> The MTU, by default, is 1500 on eth0, ath0, wifi0
->> The MTU, by default, is 1476 on bat0, br-lan
->>
->> Ping from Linux workstation to Linux workstation works as long as the
->> -s flag is 1448 or less. =C2=A01448 =3D 1476 - 28
->> The -M do doesn't seem to change anything.
->>
->> HTTP transfers still don't go through when they are larger than ~1400
->> bytes. =C2=A0I'll go play with the MTUs now.
-> Ok, setting mtu of ath0's to 1524 and of bat0 to 1500 should help here. J=
-ust
-> for the sake of completeness: Is there bridging involved in the workstati=
-ons
-> or any icmp filtering on the workstations/nanostations?
+On Mon, Jun 22, 2009 at 2:46 PM, Sven Eckelmann<sven.eckelmann@gmx.de> wrote:
+> On Monday 22 June 2009 22:31:57 Outback Dingo wrote:
+>> when you say dont go thru, what exactly are they not passing through, which
+>> interface or meaning thru the DSL / internet link, we need to try to
+>> detmine also the bottleneck of the issue, so what interface is data not
+>> passing through, and icmp tests wount decipher much in regards to MTU....
+>> tcpdump however might tell us where the traffic is getting stopped at
+> I would guess that the data gets stopped at the bat0 interface. Lets say that
+> the workstation sends a big sized ethernet frame (aka 1500 bytes) with ip
+> data. Then it comes to the workstation over the eth0 interface which accepts
+> frames till the size of 1500 bytes (everything happy until now). The bridge
+> now sends it to the bat0 interface.... and oh noes, this fails because the
+> bat0 only accepts ethernet frames of the size of 1476 bytes (see the mtu of
+> the ath0 - 24 bytes for bat-adv stuff). The bridge should now send information
+> (icmp packet) back the path that it cannot send the ethernet frame through
+> this chokepoint[1]. This doesn't seem to happen here or isn't recognized by
+> the client.
 >
 > Regards,
 > Sven
 >
+> [1] ftp://ftp.rfc-editor.org/in-notes/rfc1191.txt
+>
 
-Yes.  However, I can't set the MTU any higher than 1476 on the bat0 interfa=
-ce:
-
-root@OpenWrt:~# ifconfig bat0 mtu 1500
-ifconfig: SIOCSIFMTU: Invalid argument
-root@OpenWrt:~# ifconfig bat0 mtu 1477
-ifconfig: SIOCSIFMTU: Invalid argument
-root@OpenWrt:~# ifconfig bat0 mtu 1476
-root@OpenWrt:~#
-
-The same thing goes for the br-lan interface, I assume because brctl
-uses the lowest MTU of all bridged interfaces as its max MTU.
+OK, what if I set the MTU of ath0 higher?  Lemme see.
