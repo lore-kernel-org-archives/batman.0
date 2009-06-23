@@ -1,11 +1,11 @@
 Return-Path: <andrew.lunn@ascom.ch>
-Date: Tue, 23 Jun 2009 17:06:02 +0200
+Date: Tue, 23 Jun 2009 17:16:31 +0200
 From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090623150602.GM19149@ma.tech.ascom.ch>
+Message-ID: <20090623151631.GN19149@ma.tech.ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] originator tq_avg oscilations
+Subject: [B.A.T.M.A.N.] ring buffer average function...
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,37 +21,50 @@ To: B.A.T.M.A.N@lists.open-mesh.net
 
 Hi Folks
 
-I've been playing with B.A.T.M.A.N advanced for a few weeks now. 
+Can somebody explain why this function works the way it does:
 
-One of the scenarios where we might want to use it is nomadic
-vehicles. Each vehicle has a wifi radio which is used to build a mesh
-between the vehicles when the vehicles are parked together at a
-location. I said the vehicles are nomadic. By that i mean they tend to
-stay in one place for a while, and then move on. They can move
-individually, or in groups. For the moment we are not interested in
-meshing while on the move. 
+uint8_t ring_buffer_avg(uint8_t lq_recv[])
+{
+	uint8_t *ptr;
+	uint16_t count = 0, i = 0, sum = 0;
 
-I've run into a "problem" when one vehicle/node moves away from the
-rest of the vehicles/nodes. It is taking a long time for the mesh to
-realize the node has gone and rebuild the mesh. With a 500ms
-orig_interval in our little test network, pings get lost for an
-average of 26 seconds. The variation is great, sometimes it reroutes
-in 10 seconds, sometimes in 50 seconds. 
+	ptr = lq_recv;
 
-So i want to improve this. The first thing i did was make some plots
-of the tq_avg value, as shown in /proc/net/batman-adv/originators. I
-look at one particular originator and plot the different tq_avg values
-for the list of neighbors. Attaches is a png image showing this.
+	while (i < TQ_GLOBAL_WINDOW_SIZE) {
+		if (*ptr != 0) {
+			count++;
+			sum += *ptr;
+		}
 
-I was surprised to see that its unstable and oscillating. The
-different tq_avg values mostly oscillate together, as shown in the
-figure, but i've also seen cases when they oscillate 180 degrees out
-of phase. In that case, the routing flips on the cross overs.
+		i++;
+		ptr++;
+	}
 
-Is this normal? Is it expected behavior?
+	if (count == 0)
+		return 0;
 
-Has anybody worked on making re-routing around disappears nodes
-faster?
+	return (uint8_t)(sum / count);
+}
 
-        Thanks
-                Andrew
+It only averages over the none zero values. 
+
+The code filling these ring buffer puts a zero in whenever an
+originator message is received from another neighbor. When the
+originator message is from this neighbor, the tq in the originator
+message is put in.
+
+When a neighbor is dead, the ring slowly fills with 0's, whenever
+there is an originator message from one of the other
+neighbors. However since the 0 are ignored when calculating the
+average, we tend to have a cliff effect for dead neighbors. There
+tq_avg stays about the same for quite a while, and then plummets to 0.
+For faster detecting dead neighbors, it would be better if the 0 were
+included in the average. The tv_avg would then drop more linearly, not
+cliff like, so it is likely to cross below another neighbors tv_avg
+earlier, so re-routing around the dead node faster.
+
+Before i change this function, i just want to understand why it is
+like this, and what i'm likely to break :-(
+
+     Thanks
+          Andrew
