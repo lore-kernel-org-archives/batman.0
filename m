@@ -1,14 +1,11 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 29 Jun 2009 10:30:21 +0200
-References: <23720428.305461246260296570.JavaMail.coremail@bj126app27.126.com>
-In-Reply-To: <23720428.305461246260296570.JavaMail.coremail@bj126app27.126.com>
+Return-Path: <jtmze87@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2401006.TFduLyimx3";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906291030.25138.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] about: BATMAN algorithm ?
+Date: Thu, 2 Jul 2009 14:13:16 +0200
+Message-ID: <1739bfe0907020513m78e06c83s980ce88b5cb5cca5@mail.gmail.com>
+From: jonathan mzengeza <jtmze87@gmail.com>
+Content-Type: multipart/alternative; boundary=001636427659ee3f2a046db7f64c
+Subject: [B.A.T.M.A.N.] [PATCH] json output from vis server would fail with
+	incomplete writes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,53 +17,89 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
---nextPart2401006.TFduLyimx3
-Content-Type: text/plain;
-  charset="iso-8859-15"
+--001636427659ee3f2a046db7f64c
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hi
+
+Jonathan here I am attending a code sprint here at CSIR in South Africa.
+
+We are using B.A.T.M.A.N as a mesh networking software. We ran into a bug
+which occurred with web browser whereby the  data written back through the
+socket was not complete thereby causing an error with our program.
+
+The fix works by making sure that all the data that is to be sent in the
+send_buffer is sent. It checks the value of ret until it equals the size of
+the data to be sent.
+
+--
+
+Index: vis.c
+===================================================================
+--- vis.c    (revision 1336)
++++ vis.c    (working copy)
+@@ -580,8 +580,18 @@
+             } else {
+                 send_buffer = current->json_buffer;
+             }
++
++            ret = write( thread_data->socket, send_buffer, strlen(
+send_buffer ));
+
+-            ret = write( thread_data->socket, send_buffer, strlen(
+send_buffer ) );
++            while(ret != strlen( send_buffer )) {
++                send_buffer += ret;
++
++                if ( fsync(thread_data->socket) != 0 ) {
++                    ret = write(thread_data->socket, send_buffer, strlen(
+send_buffer ));
++                }
++
++            }
++
+             if( ret != strlen( send_buffer ) || (thread_data->format ==
+json) )
+             {
+                 pthread_mutex_lock( &current->mutex );
+
+--001636427659ee3f2a046db7f64c
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Hi,
-can you please use a correct name in your From:, thanks.
+Hi <br><br>Jonathan here I am attending a code sprint here at CSIR in South=
+ Africa.<br><br>We are using B.A.T.M.A.N as a mesh networking software. We =
+ran into a bug which occurred with web browser whereby the=A0 data written =
+back through the socket was not complete thereby causing an error with our =
+program.<br>
+<br>The fix works by making sure that all the data that is to be sent in th=
+e send_buffer is sent. It checks the value of ret until it equals the size =
+of the data to be sent.<br><br>--<br><br>Index: vis.c<br>=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D<br>
+--- vis.c=A0=A0 =A0(revision 1336)<br>+++ vis.c=A0=A0 =A0(working copy)<br>=
+@@ -580,8 +580,18 @@<br>=A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0} else {<br>=A0=A0=
+=A0 =A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0send_buffer =3D current-&gt;json_buffe=
+r;<br>=A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0}<br>+=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=
+<br>+=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0ret =3D write( thread_data-&gt;socket, s=
+end_buffer, strlen( send_buffer ));<br>
+=A0<br>-=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0ret =3D write( thread_data-&gt;socket=
+, send_buffer, strlen( send_buffer ) );<br>+=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0w=
+hile(ret !=3D strlen( send_buffer )) {<br>+=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=
+=A0=A0=A0 send_buffer +=3D ret;<br>+=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =
+=A0<br>+=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=A0=A0=A0 if ( fsync(thread_data-&gt;=
+socket) !=3D 0 ) {<br>
++=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=A0=A0=A0 ret =3D write(thread_dat=
+a-&gt;socket, send_buffer, strlen( send_buffer ));<br>+=A0=A0 =A0=A0=A0 =A0=
+=A0=A0 =A0=A0=A0=A0 }<br>+=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0 =A0<br>+=A0=A0 =A0=
+=A0=A0 =A0=A0=A0 =A0}<br>+=A0=A0 =A0<br>=A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0if=
+( ret !=3D strlen( send_buffer ) || (thread_data-&gt;format =3D=3D json) )<=
+br>
+=A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0{<br>=A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=A0=
+=A0 =A0pthread_mutex_lock( &amp;current-&gt;mutex ); <br><br><br><br>
 
-On Monday 29 June 2009 09:24:56 linuxer wrote:
-> at  http://www.open-mesh.net/wiki/BranchesExplained
-> you say,
-> batman 0.3 is the latest stable implementation, using a new version of the
-> algorithm known as the BATMAN IV/TQ algorithm.
->
-> Where is the document which describes the BATMAN IV/TQ algorithm in detai=
-l?
-=46or example in http://gitorious.org/batman-adv-doc
-
-I think version III was described in=20
-http://tools.ietf.org/html/draft-wunderlich-openmesh-manet-routing-00
-
-Best regards,
-	Sven
-
---nextPart2401006.TFduLyimx3
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iQIcBAABCgAGBQJKSHudAAoJEF2HCgfBJntGm1EQALFal1fYFGVKJtCyeT4jriAF
-1fXGYaFO+Riop7VJvBEN38VlpaACkmyCg4xnFT72H3fbHb5sHd0V7Xd7KR8R4sy8
-5z24pWxRWs+61upxOUE3Sp103FIpNvmOob2BX0942/KUtHZVNG0kUfbmYPjcRX+R
-ws3/D2WZT/CBuu7KSDXiIiJ1PGwdcDIF+W416n7OE9rUwQ+cwTM0FyN8IV3sXV9n
-J9EDym0clh9bI2Vx8wSUAyks+MwfGHUpY8reVEAXQmbJyF2ao0Y50J97HNEx1NE/
-gzS5vtygfslhikRM88gdJekQwTJDCB2J5uVISOPJDBNHLtqJABsdfKb6wLzMDuIl
-JXcX30iIFtp7kpmSxtMKZljltyOHW2DGJ9Qk6qbDf5fjWQqCJwWCvCJ1/3xK7SZ/
-I3NDa7A+1H25FyGzd3cxvl9USAdhJTXFMdl2acxK/G0ERCWDuV4POZrBCQ1CyoYQ
-lnq5sWsV8b6snCLHiD1DL2hiEMTgLKIymNJmn/zRaI+yCrFspHBJ0oSi0RE/rYF8
-XoAZ3FiWJ0FMoEKPuqCxECh8mVMAV46hSlsX8R0tMepn1cILYNmdD80fTstXa5dd
-l4GXjcw8RCCkPwuejwBeGvxGdZNqREsWpr36O7xzO1OETIsvIxru0LZwlmgTRH5F
-2AWmE/+v+3NxzDG3O1xS
-=es2I
------END PGP SIGNATURE-----
-
---nextPart2401006.TFduLyimx3--
+--001636427659ee3f2a046db7f64c--
