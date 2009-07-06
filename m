@@ -1,14 +1,13 @@
-Return-Path: <onelektra@gmx.net>
-From: elektra <onelektra@gmx.net>
-In-Reply-To: <600718.39266.qm@web55301.mail.re4.yahoo.com>
-References: <600718.39266.qm@web55301.mail.re4.yahoo.com>
-Content-Type: text/plain
-Date: Mon, 06 Jul 2009 21:43:12 +0200
-Message-Id: <1246909392.2301.168.camel@X>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Return-Path: <austinxxh-ath9k@yahoo.com>
+Message-ID: <97539.97811.qm@web55306.mail.re4.yahoo.com>
+Date: Mon, 6 Jul 2009 13:02:03 -0700 (PDT)
+From: xxiao <austinxxh-ath9k@yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] batman-adv and 11n speed
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Reply-To: austinxxh-ath9k@yahoo.com,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.net>
@@ -19,385 +18,387 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: austinxxh-ath9k@yahoo.com, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
-
-Hi xxiao -
-
-I guess your problem is not related to batman-adv - I would plea not
-guilty unless proven otherwise.  This looks like a driver issue. 
-
-Batman doesn't force your driver to use a certain 802.11 mode or rate.
-It does send protocol messages as broadcasts of course, and those are
-usually sent at basic rate.
-
-Did you actually test performance in IBSS mode without batman-adv
-running?
-
-Ath9k is pretty new and my guess is that the driver hasn't experienced
-much testing in IBSS mode.
-
-I'd like to suggest that you test the following:
-
-Restart your wireless interfaces, set up IBSS mode. Don't start
-batman-adv.
-
-Send broadcasts (by sending ping to the networks broadcast address for
-example) and check if the driver reports the same behaviour or not.
-
-Cheers,
-Elektra
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>, elektra <onelektra@gmx.net>
 
 
-
-> I'm using Openwrt/compat-wireless-2009-06-25 on a AR7161 board. I'm using ath9k trying to get 11n speed for batman-adv working. All code is from openwrt trunk.
-> 
-> >From the debugfs of mac80211/ath9k, I can see under IBSS mode, the rcstat reports speed up to 300mbps. I have batman-adv enabled.
-> 
-> However after a second board with the same software booted up, both boards' rcstat output showed a speed of 11g only, an immediate drop from 11n to 11g. It's like the second batman-adv somehow forced a 11g speed after it "talked" to the first batman-adv board.
-> 
-> Any help is appreciated!
-> xxiao
-> 
-> 
-> Before the second batman-adv is booted up:
-> root@OpenWrt:/# cat /mnt/ath9k/phy0/rcstat 
->  Rate         Success  Retries  XRetries PER
-> 
->   1.0:        0        0        0        0
->   2.0:        0        0        0        0
->   5.5:        0        0        0        0
->  11.0:        0        0        0        0
->   6.0:        0        0        0        0
->   9.0:        0        0        0        0
->  12.0:        0        0        0        0
->  18.0:        0        0        0        0
->  24.0:        0        0        0        0
->  36.0:        0        0        0        0
->  48.0:        0        0        0        0
->  54.0:        0        0        0        0
->   6.5:        0        0        0        0
->  13.0:        0        0        0        0
->  19.5:        0        0        0        0
->  26.0:        0        0        0        0
->  39.0:        0        0        0        0
->  52.0:        0        0        0        0
->  58.5:        0        0        0        0
->  65.0:        0        0        0        0
->  13.0:        0        0        0        0
->  26.0:        0        0        0        0
->  39.0:        0        0        0        0
->  52.0:        0        0        0        0
->  78.0:        0        0        0        0
-> 104.0:        0        0        0        0
-> 117.0:        0        0        0        0
-> 130.0:        0        0        0        0
->  13.5:        0        0        0        0
->  27.5:        0        0        0        0
->  40.5:        0        0        0        0
->  54.0:        0        0        0        0
->  81.5:        0        0        0        0
-> 108.0:        0        0        0        0
-> 121.5:        0        0        0        0
-> 135.0:        0        0        0        0
-> 150.0:        0        0        0        0
->  27.0:        0        0        0        0
->  54.0:        0        0        0        0
->  81.0:        0        0        0        0
-> 108.0:        0        0        0        0
-> 162.0:        0        0        0        0
-> 216.0:        0        0        0        0
-> 243.0:        0        0        0        0
-> 270.0:        0        0        0        0
-> 300.0:        0        0        0        0
-> 
-> after the second batman-adv is up:
-> root@OpenWrt:/# cat /mnt/ath9k/phy0/rcstat 
->  Rate         Success  Retries  XRetries PER
-> 
->   1.0:        0        0        0        0
->   2.0:        0        0        0        0
->   5.5:        0        0        0        0
->  11.0:        0        0        0        0
->   6.0:        0        0        0        0
->   9.0:        0        0        0        0
->  12.0:        0        0        0        0
->  18.0:        0        0        0        0
->  24.0:        0        0        0        0
->  36.0:        0        0        0        0
->  48.0:        0        0        0        0
->  54.0:        0        0        0        0
-> 
-> On both boards I have this:
-> root@OpenWrt:/# iwconfig
-> lo        no wireless extensions.
-> 
-> eth0      no wireless extensions.
-> 
-> eth1      no wireless extensions.
-> 
-> br-lan    no wireless extensions.
-> 
-> wlan0     IEEE 802.11abgn  ESSID:"xyz"  
->           Mode:Ad-Hoc  Frequency:2.432 GHz  Cell: 92:46:0A:A3:8B:39   
->           Tx-Power=27 dBm   
->           Retry  long limit:7   RTS thr:off   Fragment thr:off
->           Encryption key:off
->           Power Management:off
->           Link Quality:0  Signal level:0  Noise level:0
->           Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
->           Tx excessive retries:0  Invalid misc:0   Missed beacon:0
-> 
-> bat0      no wireless extensions.
-> 
-> Here is the dmesg dump:
-> root@OpenWrt:/# dmesg
-> 30fe050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831da04a DA=831da044 BSSID=831da050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8312204a DA=83122044 BSSID=83122050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=8326804a DA=83268044 BSSID=83268050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8319e04a DA=8319e044 BSSID=8319e050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1604
-> wlan0: RX ProbeReq SA=831ac04a DA=831ac044 BSSID=831ac050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8309604a DA=83096044 BSSID=83096050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831e204a DA=831e2044 BSSID=831e2050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831a204a DA=831a2044 BSSID=831a2050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832de04a DA=832de044 BSSID=832de050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8324604a DA=83246044 BSSID=83246050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1604
-> wlan0: RX ProbeReq SA=832fc04a DA=832fc044 BSSID=832fc050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8337604a DA=83376044 BSSID=83376050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=82c6804a DA=82c68044 BSSID=82c68050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8329a04a DA=8329a044 BSSID=8329a050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1004
-> wlan0: RX ProbeReq SA=830e804a DA=830e8044 BSSID=830e8050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=830ec04a DA=830ec044 BSSID=830ec050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1604
-> wlan0: RX ProbeReq SA=830be04a DA=830be044 BSSID=830be050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8311004a DA=83110044 BSSID=83110050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8312c04a DA=8312c044 BSSID=8312c050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8312e04a DA=8312e044 BSSID=8312e050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8313a04a DA=8313a044 BSSID=8313a050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=830e604a DA=830e6044 BSSID=830e6050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8313604a DA=83136044 BSSID=83136050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=831d004a DA=831d0044 BSSID=831d0050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831d604a DA=831d6044 BSSID=831d6050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8329004a DA=83290044 BSSID=83290050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831d204a DA=831d2044 BSSID=831d2050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=8332004a DA=83320044 BSSID=83320050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=8332c04a DA=8332c044 BSSID=8332c050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1604
-> wlan0: RX ProbeReq SA=8333e04a DA=8333e044 BSSID=8333e050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1604
-> wlan0: RX ProbeReq SA=8333c04a DA=8333c044 BSSID=8333c050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=832e804a DA=832e8044 BSSID=832e8050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8333a04a DA=8333a044 BSSID=8333a050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8334a04a DA=8334a044 BSSID=8334a050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8335204a DA=83352044 BSSID=83352050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=8331204a DA=83312044 BSSID=83312050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=833b804a DA=833b8044 BSSID=833b8050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8303e04a DA=8303e044 BSSID=8303e050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8308404a DA=83084044 BSSID=83084050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8307204a DA=83072044 BSSID=83072050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8311604a DA=83116044 BSSID=83116050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8311204a DA=83112044 BSSID=83112050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=831ca04a DA=831ca044 BSSID=831ca050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831c804a DA=831c8044 BSSID=831c8050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8319c04a DA=8319c044 BSSID=8319c050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831ce04a DA=831ce044 BSSID=831ce050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=831e204a DA=831e2044 BSSID=831e2050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831a204a DA=831a2044 BSSID=831a2050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=832c604a DA=832c6044 BSSID=832c6050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832cc04a DA=832cc044 BSSID=832cc050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832d404a DA=832d4044 BSSID=832d4050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8301e04a DA=8301e044 BSSID=8301e050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8338004a DA=83380044 BSSID=83380050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832b204a DA=832b2044 BSSID=832b2050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8303a04a DA=8303a044 BSSID=8303a050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831e804a DA=831e8044 BSSID=831e8050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8311c04a DA=8311c044 BSSID=8311c050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8312004a DA=83120044 BSSID=83120050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1004
-> wlan0: RX ProbeReq SA=8312a04a DA=8312a044 BSSID=8312a050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8317c04a DA=8317c044 BSSID=8317c050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8311e04a DA=8311e044 BSSID=8311e050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8321404a DA=83214044 BSSID=83214050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831c804a DA=831c8044 BSSID=831c8050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1604
-> wlan0: RX ProbeReq SA=832d404a DA=832d4044 BSSID=832d4050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8301e04a DA=8301e044 BSSID=8301e050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1004
-> wlan0: RX ProbeReq SA=83aac04a DA=83aac044 BSSID=83aac050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8334204a DA=83342044 BSSID=83342050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=832f604a DA=832f6044 BSSID=832f6050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832de04a DA=832de044 BSSID=832de050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=83a0e04a DA=83a0e044 BSSID=83a0e050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8303404a DA=83034044 BSSID=83034050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8325404a DA=83254044 BSSID=83254050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8306c04a DA=8306c044 BSSID=8306c050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8304604a DA=83046044 BSSID=83046050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1004
-> wlan0: RX ProbeReq SA=8307804a DA=83078044 BSSID=83078050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8335a04a DA=8335a044 BSSID=8335a050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8312c04a DA=8312c044 BSSID=8312c050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8312e04a DA=8312e044 BSSID=8312e050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=8313804a DA=83138044 BSSID=83138050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8312204a DA=83122044 BSSID=83122050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831e404a DA=831e4044 BSSID=831e4050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=8314e04a DA=8314e044 BSSID=8314e050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=831fa04a DA=831fa044 BSSID=831fa050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=8320804a DA=83208044 BSSID=83208050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8321a04a DA=8321a044 BSSID=8321a050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8321004a DA=83210044 BSSID=83210050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8321204a DA=83212044 BSSID=83212050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8324a04a DA=8324a044 BSSID=8324a050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8325c04a DA=8325c044 BSSID=8325c050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8328604a DA=83286044 BSSID=83286050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832f004a DA=832f0044 BSSID=832f0050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8322604a DA=83226044 BSSID=83226050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8326204a DA=83262044 BSSID=83262050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8331e04a DA=8331e044 BSSID=8331e050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832d204a DA=832d2044 BSSID=832d2050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8335c04a DA=8335c044 BSSID=8335c050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=83aa404a DA=83aa4044 BSSID=83aa4050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=83b2a04a DA=83b2a044 BSSID=83b2a050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=832fa04a DA=832fa044 BSSID=832fa050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8309404a DA=83094044 BSSID=83094050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=830e804a DA=830e8044 BSSID=830e8050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8313c04a DA=8313c044 BSSID=8313c050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8314c04a DA=8314c044 BSSID=8314c050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8315404a DA=83154044 BSSID=83154050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8316004a DA=83160044 BSSID=83160050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8310a04a DA=8310a044 BSSID=8310a050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1004
-> wlan0: RX ProbeReq SA=830fc04a DA=830fc044 BSSID=830fc050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831a804a DA=831a8044 BSSID=831a8050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=832c804a DA=832c8044 BSSID=832c8050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831c404a DA=831c4044 BSSID=831c4050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1004
-> wlan0: RX ProbeReq SA=8336c04a DA=8336c044 BSSID=8336c050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8336e04a DA=8336e044 BSSID=8336e050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1004
-> wlan0: RX ProbeReq SA=83ac604a DA=83ac6044 BSSID=83ac6050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=83b6c04a DA=83b6c044 BSSID=83b6c050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8337a04a DA=8337a044 BSSID=8337a050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8305c04a DA=8305c044 BSSID=8305c050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1604
-> wlan0: RX ProbeReq SA=8309e04a DA=8309e044 BSSID=8309e050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=830b004a DA=830b0044 BSSID=830b0050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=831ec04a DA=831ec044 BSSID=831ec050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8310604a DA=83106044 BSSID=83106050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1604
-> phy0: Adding new IBSS station 8324e04a (dev=wlan0)
-> phy0: Allocated STA 830c8224
-> phy0: Inserted STA 830c8224
-> wlan0: RX ProbeReq SA=832aa04a DA=832aa044 BSSID=832aa050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832ae04a DA=832ae044 BSSID=832ae050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8323004a DA=83230044 BSSID=83230050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832e004a DA=832e0044 BSSID=832e0050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8323804a DA=83238044 BSSID=83238050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832d804a DA=832d8044 BSSID=832d8050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8330e04a DA=8330e044 BSSID=8330e050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8331c04a DA=8331c044 BSSID=8331c050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1004
-> wlan0: RX ProbeReq SA=8334204a DA=83342044 BSSID=83342050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8397004a DA=83970044 BSSID=83970050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=830ba04a DA=830ba044 BSSID=830ba050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=830bc04a DA=830bc044 BSSID=830bc050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=830f804a DA=830f8044 BSSID=830f8050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8309004a DA=83090044 BSSID=83090050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=8310204a DA=83102044 BSSID=83102050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=832ea04a DA=832ea044 BSSID=832ea050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8311404a DA=83114044 BSSID=83114050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8310804a DA=83108044 BSSID=83108050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=831b804a DA=831b8044 BSSID=831b8050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831ba04a DA=831ba044 BSSID=831ba050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8310e04a DA=8310e044 BSSID=8310e050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=830e604a DA=830e6044 BSSID=830e6050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831d804a DA=831d8044 BSSID=831d8050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831e404a DA=831e4044 BSSID=831e4050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831ee04a DA=831ee044 BSSID=831ee050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8310604a DA=83106044 BSSID=83106050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8322804a DA=83228044 BSSID=83228050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8322a04a DA=8322a044 BSSID=8322a050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=8303204a DA=83032044 BSSID=83032050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832e004a DA=832e0044 BSSID=832e0050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=83b6c04a DA=83b6c044 BSSID=83b6c050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8334204a DA=83342044 BSSID=83342050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1804
-> wlan0: RX ProbeReq SA=839ae04a DA=839ae044 BSSID=839ae050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=830c004a DA=830c0044 BSSID=830c0050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1a04
-> wlan0: RX ProbeReq SA=8309204a DA=83092044 BSSID=83092050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831e404a DA=831e4044 BSSID=831e4050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=831ee04a DA=831ee044 BSSID=831ee050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1204
-> wlan0: RX ProbeReq SA=832d804a DA=832d8044 BSSID=832d8050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8326804a DA=83268044 BSSID=83268050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1004
-> wlan0: RX ProbeReq SA=832fe04a DA=832fe044 BSSID=832fe050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8330204a DA=83302044 BSSID=83302050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8324204a DA=83242044 BSSID=83242050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8332a04a DA=8332a044 BSSID=8332a050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=832ca04a DA=832ca044 BSSID=832ca050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=83b9804a DA=83b98044 BSSID=83b98050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1604
-> wlan0: RX ProbeReq SA=8305804a DA=83058044 BSSID=83058050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8311004a DA=83110044 BSSID=83110050 (tx_last_beacon=1)
-> wlan0: RX ProbeReq SA=8303a04a DA=8303a044 BSSID=8303a050 (tx_last_beacon=1)
-> wlan0: Sending ProbeResp to 838e1604
-> root@OpenWrt:/# 
->  CTRL-A Z for help |115200 8N1 | NOR | Minicom 2.3-rc | VT102 |      Offline
-> 
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@lists.open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-
+Elektra,=0AYou're correct. I disabled batman-adv, the speed will still retu=
+rn to 11g after a second IBSS board is up. that has something to do with ra=
+te-discovery-under-IBSS for mac80211/ath9k I think.=0Athanks,=0Axxiao=0A=0A=
+--- On Mon, 7/6/09, elektra <onelektra@gmx.net> wrote:=0A=0A> From: elektra=
+ <onelektra@gmx.net>=0A> Subject: Re: [B.A.T.M.A.N.] batman-adv and 11n spe=
+ed=0A> To: austinxxh-ath9k@yahoo.com, "The list for a Better Approach To Mo=
+bile Ad-hoc Networking" <b.a.t.m.a.n@lists.open-mesh.net>=0A> Date: Monday,=
+ July 6, 2009, 2:43 PM=0A> Hi xxiao -=0A> =0A> I guess your problem is not =
+related to batman-adv - I would=0A> plea not=0A> guilty unless proven other=
+wise.=A0 This looks like a=0A> driver issue. =0A> =0A> Batman doesn't force=
+ your driver to use a certain 802.11=0A> mode or rate.=0A> It does send pro=
+tocol messages as broadcasts of course, and=0A> those are=0A> usually sent =
+at basic rate.=0A> =0A> Did you actually test performance in IBSS mode with=
+out=0A> batman-adv=0A> running?=0A> =0A> Ath9k is pretty new and my guess i=
+s that the driver hasn't=0A> experienced=0A> much testing in IBSS mode.=0A>=
+ =0A> I'd like to suggest that you test the following:=0A> =0A> Restart you=
+r wireless interfaces, set up IBSS mode. Don't=0A> start=0A> batman-adv.=0A=
+> =0A> Send broadcasts (by sending ping to the networks broadcast=0A> addre=
+ss for=0A> example) and check if the driver reports the same behaviour=0A> =
+or not.=0A> =0A> Cheers,=0A> Elektra=0A> =0A> =0A> =0A> > I'm using Openwrt=
+/compat-wireless-2009-06-25 on a=0A> AR7161 board. I'm using ath9k trying t=
+o get 11n speed for=0A> batman-adv working. All code is from openwrt trunk.=
+=0A> > =0A> > >From the debugfs of mac80211/ath9k, I can see=0A> under IBSS=
+ mode, the rcstat reports speed up to 300mbps. I=0A> have batman-adv enable=
+d.=0A> > =0A> > However after a second board with the same software=0A> boo=
+ted up, both boards' rcstat output showed a speed of 11g=0A> only, an immed=
+iate drop from 11n to 11g. It's like the=0A> second batman-adv somehow forc=
+ed a 11g speed after it=0A> "talked" to the first batman-adv board.=0A> > =
+=0A> > Any help is appreciated!=0A> > xxiao=0A> > =0A> > =0A> > Before the =
+second batman-adv is booted up:=0A> > root@OpenWrt:/# cat /mnt/ath9k/phy0/r=
+cstat =0A> >=A0 Rate=A0 =A0 =A0=0A> =A0=A0=A0Success=A0 Retries=A0 XRetries=
+ PER=0A> > =0A> >=A0=A0=A01.0:=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=A0 =A0=
+ =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=0A> >=A0=A0=A02.0:=A0 =A0 =A0 =A0=0A> 0=A0 =
+=A0 =A0 =A0 0=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=0A> >=A0=A0=A05.5:=A0 =
+=A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=0A=
+> >=A0 11.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=
+=0A> =A0 =A0 0=0A> >=A0=A0=A06.0:=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=A0 =
+=A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=0A> >=A0=A0=A09.0:=A0 =A0 =A0 =A0=0A> 0=
+=A0 =A0 =A0 =A0 0=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=0A> >=A0 12.0:=A0 =
+=A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A=
+> >=A0 18.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=
+=0A> =A0 =A0 0=0A> >=A0 24.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =
+=A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 36.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =
+=A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 48.0:=A0 =A0 =A0 =
+=A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 5=
+4.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =
+=A0 0=0A> >=A0=A0=A06.5:=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=A0 =A0 =A0 =
+=A0=0A> 0=A0 =A0 =A0 =A0 0=0A> >=A0 13.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =
+=A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 19.5:=A0 =A0 =A0 =A0 0=
+=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 26.0:=
+=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 =
+0=0A> >=A0 39.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =
+=A0=0A> =A0 =A0 0=0A> >=A0 52.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =
+=A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 58.5:=A0 =A0 =A0 =A0 0=A0 =A0=
+=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 65.0:=A0 =A0 =
+=A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=
+=A0 13.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A>=
+ =A0 =A0 0=0A> >=A0 26.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =
+=A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 39.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =
+=A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 52.0:=A0 =A0 =A0 =A0 0=
+=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 78.0:=
+=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 =
+0=0A> > 104.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =
+=A0=0A> =A0 =A0 0=0A> > 117.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0=
+ =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> > 130.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =
+=A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 13.5:=A0 =A0 =A0 =
+=A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 2=
+7.5:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =
+=A0 0=0A> >=A0 40.5:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=
+=A0 =A0=0A> =A0 =A0 0=0A> >=A0 54.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=
+=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 81.5:=A0 =A0 =A0 =A0 0=A0 =
+=A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> > 108.0:=A0 =A0=
+ =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=
+ 121.5:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =
+=A0 =A0 0=0A> > 135.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0=
+ 0=A0 =A0=0A> =A0 =A0 0=0A> > 150.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=
+=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 27.0:=A0 =A0 =A0 =A0 0=A0 =
+=A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 54.0:=A0 =
+=A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A=
+> >=A0 81.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=
+=0A> =A0 =A0 0=0A> > 108.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =
+=A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> > 162.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0=
+ =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> > 216.0:=A0 =A0 =A0 =A0 0=
+=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> > 243.0:=A0=
+ =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=
+=0A> > 270.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=
+=0A> =A0 =A0 0=0A> > 300.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =
+=A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> > =0A> > after the second batman-adv is =
+up:=0A> > root@OpenWrt:/# cat /mnt/ath9k/phy0/rcstat =0A> >=A0 Rate=A0 =A0 =
+=A0=0A> =A0=A0=A0Success=A0 Retries=A0 XRetries PER=0A> > =0A> >=A0=A0=A01.=
+0:=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =
+=A0 0=0A> >=A0=A0=A02.0:=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=A0 =A0 =A0 =
+=A0=0A> 0=A0 =A0 =A0 =A0 0=0A> >=A0=A0=A05.5:=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =
+=A0 =A0 0=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=0A> >=A0 11.0:=A0 =A0 =A0 =
+=A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0=
+=A0=A06.0:=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=A0 =A0 =A0 =A0=0A> 0=A0 =
+=A0 =A0 =A0 0=0A> >=A0=A0=A09.0:=A0 =A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=A0 =
+=A0 =A0 =A0=0A> 0=A0 =A0 =A0 =A0 0=0A> >=A0 12.0:=A0 =A0 =A0 =A0 0=A0 =A0=
+=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 18.0:=A0 =A0 =
+=A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=
+=A0 24.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A>=
+ =A0 =A0 0=0A> >=A0 36.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =
+=A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 48.0:=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =
+=A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> >=A0 54.0:=A0 =A0 =A0 =A0 0=
+=A0 =A0=0A> =A0 =A0 0=A0 =A0 =A0 =A0 0=A0 =A0=0A> =A0 =A0 0=0A> > =0A> > On=
+ both boards I have this:=0A> > root@OpenWrt:/# iwconfig=0A> > lo=A0 =A0 =
+=A0 =A0 no wireless extensions.=0A> > =0A> > eth0=A0 =A0 =A0 no wireless ex=
+tensions.=0A> > =0A> > eth1=A0 =A0 =A0 no wireless extensions.=0A> > =0A> >=
+ br-lan=A0 =A0 no wireless extensions.=0A> > =0A> > wlan0=A0 =A0=A0=A0IEEE =
+802.11abgn=A0=0A> ESSID:"xyz"=A0 =0A> >=A0 =A0 =A0 =A0=0A> =A0=A0=A0Mode:Ad=
+-Hoc=A0 Frequency:2.432=0A> GHz=A0 Cell: 92:46:0A:A3:8B:39=A0=A0=A0=0A> >=
+=A0 =A0 =A0 =A0=0A> =A0=A0=A0Tx-Power=3D27 dBm=A0=A0=A0=0A> >=A0 =A0 =A0 =
+=A0=0A> =A0=A0=A0Retry=A0 long=0A> limit:7=A0=A0=A0RTS=0A> thr:off=A0=A0=A0=
+Fragment thr:off=0A> >=A0 =A0 =A0 =A0=0A> =A0=A0=A0Encryption key:off=0A> >=
+=A0 =A0 =A0 =A0 =A0=A0=A0Power=0A> Management:off=0A> >=A0 =A0 =A0 =A0 =A0=
+=A0=A0Link=0A> Quality:0=A0 Signal level:0=A0 Noise level:0=0A> >=A0 =A0 =
+=A0 =A0 =A0=A0=A0Rx=0A> invalid nwid:0=A0 Rx invalid crypt:0=A0 Rx invalid=
+=0A> frag:0=0A> >=A0 =A0 =A0 =A0 =A0=A0=A0Tx=0A> excessive retries:0=A0 Inv=
+alid=0A> misc:0=A0=A0=A0Missed beacon:0=0A> > =0A> > bat0=A0 =A0 =A0 no wir=
+eless extensions.=0A> > =0A> > Here is the dmesg dump:=0A> > root@OpenWrt:/=
+# dmesg=0A> > 30fe050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83=
+1da04a DA=3D831da044=0A> BSSID=3D831da050 (tx_last_beacon=3D1)=0A> > wlan0:=
+ RX ProbeReq SA=3D8312204a DA=3D83122044=0A> BSSID=3D83122050 (tx_last_beac=
+on=3D1)=0A> > wlan0: Sending ProbeResp to 838e1804=0A> > wlan0: RX ProbeReq=
+ SA=3D8326804a DA=3D83268044=0A> BSSID=3D83268050 (tx_last_beacon=3D1)=0A> =
+> wlan0: RX ProbeReq SA=3D8319e04a DA=3D8319e044=0A> BSSID=3D8319e050 (tx_l=
+ast_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1604=0A> > wlan0: RX =
+ProbeReq SA=3D831ac04a DA=3D831ac044=0A> BSSID=3D831ac050 (tx_last_beacon=
+=3D1)=0A> > wlan0: RX ProbeReq SA=3D8309604a DA=3D83096044=0A> BSSID=3D8309=
+6050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D831e204a DA=3D831e2=
+044=0A> BSSID=3D831e2050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=
+=3D831a204a DA=3D831a2044=0A> BSSID=3D831a2050 (tx_last_beacon=3D1)=0A> > w=
+lan0: RX ProbeReq SA=3D832de04a DA=3D832de044=0A> BSSID=3D832de050 (tx_last=
+_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8324604a DA=3D83246044=0A> BSSID=
+=3D83246050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1604=
+=0A> > wlan0: RX ProbeReq SA=3D832fc04a DA=3D832fc044=0A> BSSID=3D832fc050 =
+(tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8337604a DA=3D83376044=
+=0A> BSSID=3D83376050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D82=
+c6804a DA=3D82c68044=0A> BSSID=3D82c68050 (tx_last_beacon=3D1)=0A> > wlan0:=
+ RX ProbeReq SA=3D8329a04a DA=3D8329a044=0A> BSSID=3D8329a050 (tx_last_beac=
+on=3D1)=0A> > wlan0: Sending ProbeResp to 838e1004=0A> > wlan0: RX ProbeReq=
+ SA=3D830e804a DA=3D830e8044=0A> BSSID=3D830e8050 (tx_last_beacon=3D1)=0A> =
+> wlan0: RX ProbeReq SA=3D830ec04a DA=3D830ec044=0A> BSSID=3D830ec050 (tx_l=
+ast_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1604=0A> > wlan0: RX =
+ProbeReq SA=3D830be04a DA=3D830be044=0A> BSSID=3D830be050 (tx_last_beacon=
+=3D1)=0A> > wlan0: RX ProbeReq SA=3D8311004a DA=3D83110044=0A> BSSID=3D8311=
+0050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8312c04a DA=3D8312c=
+044=0A> BSSID=3D8312c050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=
+=3D8312e04a DA=3D8312e044=0A> BSSID=3D8312e050 (tx_last_beacon=3D1)=0A> > w=
+lan0: RX ProbeReq SA=3D8313a04a DA=3D8313a044=0A> BSSID=3D8313a050 (tx_last=
+_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D830e604a DA=3D830e6044=0A> BSSID=
+=3D830e6050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8313604a DA=
+=3D83136044=0A> BSSID=3D83136050 (tx_last_beacon=3D1)=0A> > wlan0: Sending =
+ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq SA=3D831d004a DA=3D831d0044=
+=0A> BSSID=3D831d0050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83=
+1d604a DA=3D831d6044=0A> BSSID=3D831d6050 (tx_last_beacon=3D1)=0A> > wlan0:=
+ Sending ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq SA=3D8329004a DA=3D=
+83290044=0A> BSSID=3D83290050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq=
+ SA=3D831d204a DA=3D831d2044=0A> BSSID=3D831d2050 (tx_last_beacon=3D1)=0A> =
+> wlan0: Sending ProbeResp to 838e1804=0A> > wlan0: RX ProbeReq SA=3D833200=
+4a DA=3D83320044=0A> BSSID=3D83320050 (tx_last_beacon=3D1)=0A> > wlan0: Sen=
+ding ProbeResp to 838e1804=0A> > wlan0: RX ProbeReq SA=3D8332c04a DA=3D8332=
+c044=0A> BSSID=3D8332c050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeRe=
+sp to 838e1604=0A> > wlan0: RX ProbeReq SA=3D8333e04a DA=3D8333e044=0A> BSS=
+ID=3D8333e050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e16=
+04=0A> > wlan0: RX ProbeReq SA=3D8333c04a DA=3D8333c044=0A> BSSID=3D8333c05=
+0 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1a04=0A> > wla=
+n0: RX ProbeReq SA=3D832e804a DA=3D832e8044=0A> BSSID=3D832e8050 (tx_last_b=
+eacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1a04=0A> > wlan0: RX Probe=
+Req SA=3D8333a04a DA=3D8333a044=0A> BSSID=3D8333a050 (tx_last_beacon=3D1)=
+=0A> > wlan0: Sending ProbeResp to 838e1a04=0A> > wlan0: RX ProbeReq SA=3D8=
+334a04a DA=3D8334a044=0A> BSSID=3D8334a050 (tx_last_beacon=3D1)=0A> > wlan0=
+: RX ProbeReq SA=3D8335204a DA=3D83352044=0A> BSSID=3D83352050 (tx_last_bea=
+con=3D1)=0A> > wlan0: Sending ProbeResp to 838e1804=0A> > wlan0: RX ProbeRe=
+q SA=3D8331204a DA=3D83312044=0A> BSSID=3D83312050 (tx_last_beacon=3D1)=0A>=
+ > wlan0: RX ProbeReq SA=3D833b804a DA=3D833b8044=0A> BSSID=3D833b8050 (tx_=
+last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1a04=0A> > wlan0: RX=
+ ProbeReq SA=3D8303e04a DA=3D8303e044=0A> BSSID=3D8303e050 (tx_last_beacon=
+=3D1)=0A> > wlan0: Sending ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq S=
+A=3D8308404a DA=3D83084044=0A> BSSID=3D83084050 (tx_last_beacon=3D1)=0A> > =
+wlan0: RX ProbeReq SA=3D8307204a DA=3D83072044=0A> BSSID=3D83072050 (tx_las=
+t_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8311604a DA=3D83116044=0A> BSSI=
+D=3D83116050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8311204a DA=
+=3D83112044=0A> BSSID=3D83112050 (tx_last_beacon=3D1)=0A> > wlan0: Sending =
+ProbeResp to 838e1804=0A> > wlan0: RX ProbeReq SA=3D831ca04a DA=3D831ca044=
+=0A> BSSID=3D831ca050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83=
+1c804a DA=3D831c8044=0A> BSSID=3D831c8050 (tx_last_beacon=3D1)=0A> > wlan0:=
+ Sending ProbeResp to 838e1a04=0A> > wlan0: RX ProbeReq SA=3D8319c04a DA=3D=
+8319c044=0A> BSSID=3D8319c050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq=
+ SA=3D831ce04a DA=3D831ce044=0A> BSSID=3D831ce050 (tx_last_beacon=3D1)=0A> =
+> wlan0: Sending ProbeResp to 838e1804=0A> > wlan0: RX ProbeReq SA=3D831e20=
+4a DA=3D831e2044=0A> BSSID=3D831e2050 (tx_last_beacon=3D1)=0A> > wlan0: RX =
+ProbeReq SA=3D831a204a DA=3D831a2044=0A> BSSID=3D831a2050 (tx_last_beacon=
+=3D1)=0A> > wlan0: Sending ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq S=
+A=3D832c604a DA=3D832c6044=0A> BSSID=3D832c6050 (tx_last_beacon=3D1)=0A> > =
+wlan0: RX ProbeReq SA=3D832cc04a DA=3D832cc044=0A> BSSID=3D832cc050 (tx_las=
+t_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D832d404a DA=3D832d4044=0A> BSSI=
+D=3D832d4050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8301e04a DA=
+=3D8301e044=0A> BSSID=3D8301e050 (tx_last_beacon=3D1)=0A> > wlan0: RX Probe=
+Req SA=3D8338004a DA=3D83380044=0A> BSSID=3D83380050 (tx_last_beacon=3D1)=
+=0A> > wlan0: RX ProbeReq SA=3D832b204a DA=3D832b2044=0A> BSSID=3D832b2050 =
+(tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1a04=0A> > wlan0=
+: RX ProbeReq SA=3D8303a04a DA=3D8303a044=0A> BSSID=3D8303a050 (tx_last_bea=
+con=3D1)=0A> > wlan0: RX ProbeReq SA=3D831e804a DA=3D831e8044=0A> BSSID=3D8=
+31e8050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1204=0A>=
+ > wlan0: RX ProbeReq SA=3D8311c04a DA=3D8311c044=0A> BSSID=3D8311c050 (tx_=
+last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8312004a DA=3D83120044=0A> B=
+SSID=3D83120050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e=
+1004=0A> > wlan0: RX ProbeReq SA=3D8312a04a DA=3D8312a044=0A> BSSID=3D8312a=
+050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8317c04a DA=3D8317c0=
+44=0A> BSSID=3D8317c050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp=
+ to 838e1a04=0A> > wlan0: RX ProbeReq SA=3D8311e04a DA=3D8311e044=0A> BSSID=
+=3D8311e050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8321404a DA=
+=3D83214044=0A> BSSID=3D83214050 (tx_last_beacon=3D1)=0A> > wlan0: RX Probe=
+Req SA=3D831c804a DA=3D831c8044=0A> BSSID=3D831c8050 (tx_last_beacon=3D1)=
+=0A> > wlan0: Sending ProbeResp to 838e1604=0A> > wlan0: RX ProbeReq SA=3D8=
+32d404a DA=3D832d4044=0A> BSSID=3D832d4050 (tx_last_beacon=3D1)=0A> > wlan0=
+: RX ProbeReq SA=3D8301e04a DA=3D8301e044=0A> BSSID=3D8301e050 (tx_last_bea=
+con=3D1)=0A> > wlan0: Sending ProbeResp to 838e1004=0A> > wlan0: RX ProbeRe=
+q SA=3D83aac04a DA=3D83aac044=0A> BSSID=3D83aac050 (tx_last_beacon=3D1)=0A>=
+ > wlan0: RX ProbeReq SA=3D8334204a DA=3D83342044=0A> BSSID=3D83342050 (tx_=
+last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1a04=0A> > wlan0: RX=
+ ProbeReq SA=3D832f604a DA=3D832f6044=0A> BSSID=3D832f6050 (tx_last_beacon=
+=3D1)=0A> > wlan0: RX ProbeReq SA=3D832de04a DA=3D832de044=0A> BSSID=3D832d=
+e050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83a0e04a DA=3D83a0e=
+044=0A> BSSID=3D83a0e050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=
+=3D8303404a DA=3D83034044=0A> BSSID=3D83034050 (tx_last_beacon=3D1)=0A> > w=
+lan0: RX ProbeReq SA=3D8325404a DA=3D83254044=0A> BSSID=3D83254050 (tx_last=
+_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8306c04a DA=3D8306c044=0A> BSSID=
+=3D8306c050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8304604a DA=
+=3D83046044=0A> BSSID=3D83046050 (tx_last_beacon=3D1)=0A> > wlan0: Sending =
+ProbeResp to 838e1004=0A> > wlan0: RX ProbeReq SA=3D8307804a DA=3D83078044=
+=0A> BSSID=3D83078050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83=
+35a04a DA=3D8335a044=0A> BSSID=3D8335a050 (tx_last_beacon=3D1)=0A> > wlan0:=
+ RX ProbeReq SA=3D8312c04a DA=3D8312c044=0A> BSSID=3D8312c050 (tx_last_beac=
+on=3D1)=0A> > wlan0: RX ProbeReq SA=3D8312e04a DA=3D8312e044=0A> BSSID=3D83=
+12e050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1804=0A> =
+> wlan0: RX ProbeReq SA=3D8313804a DA=3D83138044=0A> BSSID=3D83138050 (tx_l=
+ast_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1a04=0A> > wlan0: RX =
+ProbeReq SA=3D8312204a DA=3D83122044=0A> BSSID=3D83122050 (tx_last_beacon=
+=3D1)=0A> > wlan0: RX ProbeReq SA=3D831e404a DA=3D831e4044=0A> BSSID=3D831e=
+4050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1804=0A> > =
+wlan0: RX ProbeReq SA=3D8314e04a DA=3D8314e044=0A> BSSID=3D8314e050 (tx_las=
+t_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1204=0A> > wlan0: RX Pr=
+obeReq SA=3D831fa04a DA=3D831fa044=0A> BSSID=3D831fa050 (tx_last_beacon=3D1=
+)=0A> > wlan0: Sending ProbeResp to 838e1804=0A> > wlan0: RX ProbeReq SA=3D=
+8320804a DA=3D83208044=0A> BSSID=3D83208050 (tx_last_beacon=3D1)=0A> > wlan=
+0: Sending ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq SA=3D8321a04a DA=
+=3D8321a044=0A> BSSID=3D8321a050 (tx_last_beacon=3D1)=0A> > wlan0: Sending =
+ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq SA=3D8321004a DA=3D83210044=
+=0A> BSSID=3D83210050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp t=
+o 838e1204=0A> > wlan0: RX ProbeReq SA=3D8321204a DA=3D83212044=0A> BSSID=
+=3D83212050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1204=
+=0A> > wlan0: RX ProbeReq SA=3D8324a04a DA=3D8324a044=0A> BSSID=3D8324a050 =
+(tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8325c04a DA=3D8325c044=
+=0A> BSSID=3D8325c050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp t=
+o 838e1a04=0A> > wlan0: RX ProbeReq SA=3D8328604a DA=3D83286044=0A> BSSID=
+=3D83286050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D832f004a DA=
+=3D832f0044=0A> BSSID=3D832f0050 (tx_last_beacon=3D1)=0A> > wlan0: Sending =
+ProbeResp to 838e1a04=0A> > wlan0: RX ProbeReq SA=3D8322604a DA=3D83226044=
+=0A> BSSID=3D83226050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83=
+26204a DA=3D83262044=0A> BSSID=3D83262050 (tx_last_beacon=3D1)=0A> > wlan0:=
+ RX ProbeReq SA=3D8331e04a DA=3D8331e044=0A> BSSID=3D8331e050 (tx_last_beac=
+on=3D1)=0A> > wlan0: RX ProbeReq SA=3D832d204a DA=3D832d2044=0A> BSSID=3D83=
+2d2050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8335c04a DA=3D833=
+5c044=0A> BSSID=3D8335c050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeR=
+esp to 838e1804=0A> > wlan0: RX ProbeReq SA=3D83aa404a DA=3D83aa4044=0A> BS=
+SID=3D83aa4050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83b2a04a =
+DA=3D83b2a044=0A> BSSID=3D83b2a050 (tx_last_beacon=3D1)=0A> > wlan0: Sendin=
+g ProbeResp to 838e1804=0A> > wlan0: RX ProbeReq SA=3D832fa04a DA=3D832fa04=
+4=0A> BSSID=3D832fa050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8=
+309404a DA=3D83094044=0A> BSSID=3D83094050 (tx_last_beacon=3D1)=0A> > wlan0=
+: Sending ProbeResp to 838e1804=0A> > wlan0: RX ProbeReq SA=3D830e804a DA=
+=3D830e8044=0A> BSSID=3D830e8050 (tx_last_beacon=3D1)=0A> > wlan0: RX Probe=
+Req SA=3D8313c04a DA=3D8313c044=0A> BSSID=3D8313c050 (tx_last_beacon=3D1)=
+=0A> > wlan0: RX ProbeReq SA=3D8314c04a DA=3D8314c044=0A> BSSID=3D8314c050 =
+(tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8315404a DA=3D83154044=
+=0A> BSSID=3D83154050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83=
+16004a DA=3D83160044=0A> BSSID=3D83160050 (tx_last_beacon=3D1)=0A> > wlan0:=
+ RX ProbeReq SA=3D8310a04a DA=3D8310a044=0A> BSSID=3D8310a050 (tx_last_beac=
+on=3D1)=0A> > wlan0: Sending ProbeResp to 838e1004=0A> > wlan0: RX ProbeReq=
+ SA=3D830fc04a DA=3D830fc044=0A> BSSID=3D830fc050 (tx_last_beacon=3D1)=0A> =
+> wlan0: RX ProbeReq SA=3D831a804a DA=3D831a8044=0A> BSSID=3D831a8050 (tx_l=
+ast_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1804=0A> > wlan0: RX =
+ProbeReq SA=3D832c804a DA=3D832c8044=0A> BSSID=3D832c8050 (tx_last_beacon=
+=3D1)=0A> > wlan0: RX ProbeReq SA=3D831c404a DA=3D831c4044=0A> BSSID=3D831c=
+4050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1004=0A> > =
+wlan0: RX ProbeReq SA=3D8336c04a DA=3D8336c044=0A> BSSID=3D8336c050 (tx_las=
+t_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8336e04a DA=3D8336e044=0A> BSSI=
+D=3D8336e050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e100=
+4=0A> > wlan0: RX ProbeReq SA=3D83ac604a DA=3D83ac6044=0A> BSSID=3D83ac6050=
+ (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83b6c04a DA=3D83b6c044=
+=0A> BSSID=3D83b6c050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp t=
+o 838e1a04=0A> > wlan0: RX ProbeReq SA=3D8337a04a DA=3D8337a044=0A> BSSID=
+=3D8337a050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8305c04a DA=
+=3D8305c044=0A> BSSID=3D8305c050 (tx_last_beacon=3D1)=0A> > wlan0: Sending =
+ProbeResp to 838e1604=0A> > wlan0: RX ProbeReq SA=3D8309e04a DA=3D8309e044=
+=0A> BSSID=3D8309e050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83=
+0b004a DA=3D830b0044=0A> BSSID=3D830b0050 (tx_last_beacon=3D1)=0A> > wlan0:=
+ Sending ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq SA=3D831ec04a DA=3D=
+831ec044=0A> BSSID=3D831ec050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq=
+ SA=3D8310604a DA=3D83106044=0A> BSSID=3D83106050 (tx_last_beacon=3D1)=0A> =
+> wlan0: Sending ProbeResp to 838e1604=0A> > phy0: Adding new IBSS station =
+8324e04a (dev=3Dwlan0)=0A> > phy0: Allocated STA 830c8224=0A> > phy0: Inser=
+ted STA 830c8224=0A> > wlan0: RX ProbeReq SA=3D832aa04a DA=3D832aa044=0A> B=
+SSID=3D832aa050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D832ae04a=
+ DA=3D832ae044=0A> BSSID=3D832ae050 (tx_last_beacon=3D1)=0A> > wlan0: Sendi=
+ng ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq SA=3D8323004a DA=3D832300=
+44=0A> BSSID=3D83230050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D=
+832e004a DA=3D832e0044=0A> BSSID=3D832e0050 (tx_last_beacon=3D1)=0A> > wlan=
+0: RX ProbeReq SA=3D8323804a DA=3D83238044=0A> BSSID=3D83238050 (tx_last_be=
+acon=3D1)=0A> > wlan0: RX ProbeReq SA=3D832d804a DA=3D832d8044=0A> BSSID=3D=
+832d8050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8330e04a DA=3D8=
+330e044=0A> BSSID=3D8330e050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq =
+SA=3D8331c04a DA=3D8331c044=0A> BSSID=3D8331c050 (tx_last_beacon=3D1)=0A> >=
+ wlan0: Sending ProbeResp to 838e1004=0A> > wlan0: RX ProbeReq SA=3D8334204=
+a DA=3D83342044=0A> BSSID=3D83342050 (tx_last_beacon=3D1)=0A> > wlan0: RX P=
+robeReq SA=3D8397004a DA=3D83970044=0A> BSSID=3D83970050 (tx_last_beacon=3D=
+1)=0A> > wlan0: Sending ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq SA=
+=3D830ba04a DA=3D830ba044=0A> BSSID=3D830ba050 (tx_last_beacon=3D1)=0A> > w=
+lan0: RX ProbeReq SA=3D830bc04a DA=3D830bc044=0A> BSSID=3D830bc050 (tx_last=
+_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1a04=0A> > wlan0: RX Pro=
+beReq SA=3D830f804a DA=3D830f8044=0A> BSSID=3D830f8050 (tx_last_beacon=3D1)=
+=0A> > wlan0: Sending ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq SA=3D8=
+309004a DA=3D83090044=0A> BSSID=3D83090050 (tx_last_beacon=3D1)=0A> > wlan0=
+: Sending ProbeResp to 838e1804=0A> > wlan0: RX ProbeReq SA=3D8310204a DA=
+=3D83102044=0A> BSSID=3D83102050 (tx_last_beacon=3D1)=0A> > wlan0: Sending =
+ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq SA=3D832ea04a DA=3D832ea044=
+=0A> BSSID=3D832ea050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp t=
+o 838e1a04=0A> > wlan0: RX ProbeReq SA=3D8311404a DA=3D83114044=0A> BSSID=
+=3D83114050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1a04=
+=0A> > wlan0: RX ProbeReq SA=3D8310804a DA=3D83108044=0A> BSSID=3D83108050 =
+(tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1804=0A> > wlan0=
+: RX ProbeReq SA=3D831b804a DA=3D831b8044=0A> BSSID=3D831b8050 (tx_last_bea=
+con=3D1)=0A> > wlan0: RX ProbeReq SA=3D831ba04a DA=3D831ba044=0A> BSSID=3D8=
+31ba050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1204=0A>=
+ > wlan0: RX ProbeReq SA=3D8310e04a DA=3D8310e044=0A> BSSID=3D8310e050 (tx_=
+last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D830e604a DA=3D830e6044=0A> B=
+SSID=3D830e6050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D831d804a=
+ DA=3D831d8044=0A> BSSID=3D831d8050 (tx_last_beacon=3D1)=0A> > wlan0: RX Pr=
+obeReq SA=3D831e404a DA=3D831e4044=0A> BSSID=3D831e4050 (tx_last_beacon=3D1=
+)=0A> > wlan0: RX ProbeReq SA=3D831ee04a DA=3D831ee044=0A> BSSID=3D831ee050=
+ (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8310604a DA=3D83106044=
+=0A> BSSID=3D83106050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83=
+22804a DA=3D83228044=0A> BSSID=3D83228050 (tx_last_beacon=3D1)=0A> > wlan0:=
+ RX ProbeReq SA=3D8322a04a DA=3D8322a044=0A> BSSID=3D8322a050 (tx_last_beac=
+on=3D1)=0A> > wlan0: Sending ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq=
+ SA=3D8303204a DA=3D83032044=0A> BSSID=3D83032050 (tx_last_beacon=3D1)=0A> =
+> wlan0: RX ProbeReq SA=3D832e004a DA=3D832e0044=0A> BSSID=3D832e0050 (tx_l=
+ast_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1204=0A> > wlan0: RX =
+ProbeReq SA=3D83b6c04a DA=3D83b6c044=0A> BSSID=3D83b6c050 (tx_last_beacon=
+=3D1)=0A> > wlan0: RX ProbeReq SA=3D8334204a DA=3D83342044=0A> BSSID=3D8334=
+2050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1804=0A> > =
+wlan0: RX ProbeReq SA=3D839ae04a DA=3D839ae044=0A> BSSID=3D839ae050 (tx_las=
+t_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D830c004a DA=3D830c0044=0A> BSSI=
+D=3D830c0050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1a0=
+4=0A> > wlan0: RX ProbeReq SA=3D8309204a DA=3D83092044=0A> BSSID=3D83092050=
+ (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D831e404a DA=3D831e4044=
+=0A> BSSID=3D831e4050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D83=
+1ee04a DA=3D831ee044=0A> BSSID=3D831ee050 (tx_last_beacon=3D1)=0A> > wlan0:=
+ Sending ProbeResp to 838e1204=0A> > wlan0: RX ProbeReq SA=3D832d804a DA=3D=
+832d8044=0A> BSSID=3D832d8050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq=
+ SA=3D8326804a DA=3D83268044=0A> BSSID=3D83268050 (tx_last_beacon=3D1)=0A> =
+> wlan0: Sending ProbeResp to 838e1004=0A> > wlan0: RX ProbeReq SA=3D832fe0=
+4a DA=3D832fe044=0A> BSSID=3D832fe050 (tx_last_beacon=3D1)=0A> > wlan0: RX =
+ProbeReq SA=3D8330204a DA=3D83302044=0A> BSSID=3D83302050 (tx_last_beacon=
+=3D1)=0A> > wlan0: RX ProbeReq SA=3D8324204a DA=3D83242044=0A> BSSID=3D8324=
+2050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8332a04a DA=3D8332a=
+044=0A> BSSID=3D8332a050 (tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=
+=3D832ca04a DA=3D832ca044=0A> BSSID=3D832ca050 (tx_last_beacon=3D1)=0A> > w=
+lan0: RX ProbeReq SA=3D83b9804a DA=3D83b98044=0A> BSSID=3D83b98050 (tx_last=
+_beacon=3D1)=0A> > wlan0: Sending ProbeResp to 838e1604=0A> > wlan0: RX Pro=
+beReq SA=3D8305804a DA=3D83058044=0A> BSSID=3D83058050 (tx_last_beacon=3D1)=
+=0A> > wlan0: RX ProbeReq SA=3D8311004a DA=3D83110044=0A> BSSID=3D83110050 =
+(tx_last_beacon=3D1)=0A> > wlan0: RX ProbeReq SA=3D8303a04a DA=3D8303a044=
+=0A> BSSID=3D8303a050 (tx_last_beacon=3D1)=0A> > wlan0: Sending ProbeResp t=
+o 838e1604=0A> > root@OpenWrt:/# =0A> >=A0 CTRL-A Z for help |115200 8N1 | =
+NOR | Minicom=0A> 2.3-rc | VT102 |=A0 =A0 =A0 Offline=0A> > =0A> > ________=
+_______________________________________=0A> > B.A.T.M.A.N mailing list=0A> =
+> B.A.T.M.A.N@lists.open-mesh.net=0A> > https://lists.open-mesh.net/mm/list=
+info/b.a.t.m.a.n=0A> =0A> 
