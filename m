@@ -1,11 +1,14 @@
-Return-Path: <andrew.lunn@ascom.ch>
-Date: Fri, 10 Jul 2009 11:40:10 +0200
-From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090710094010.GF19071@ma.tech.ascom.ch>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Fri, 10 Jul 2009 12:08:19 +0200
+References: <20090710093621.GE19071@ma.tech.ascom.ch>
+In-Reply-To: <20090710093621.GE19071@ma.tech.ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [PATCH]: Remove unused parameter
+Content-Type: multipart/signed; boundary="nextPart4200606.hWksKQXKPI";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907101208.23842.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [patch] Typos and spelling errors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,59 +20,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Hi Folks
+--nextPart4200606.hWksKQXKPI
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-A little patch which removes an unused parameter to a function call...
+> Hi Folks
+>
+> This patch fixes a few typos and spelling errors.
+You don't specify for which project this patch is (yes, I can guess when I=
+=20
+look at the patched files, but who wants to guess if it could be in the=20
+summary line of the patch - see as an example
+ https://lists.open-mesh.net/pipermail/b.a.t.m.a.n/2009-June/002712.html or=
+=20
+Mareks commit messages since r1257).
+I am not really sure but I think Marek prefers -p1 unified patches from the=
+=20
+trunk... as he has written a script to apply my patches directly from mbox.=
+ He=20
+seems to interpret the whole message as commit message with the real patch =
+at=20
+the end.
 
-  Andrew
+Maybe somebody should at a "SubmittingPatches" to the wiki - a good example=
+=20
+for such a document is=20
+http://git.kernel.org/?p=3Dgit/git.git;a=3Dblob;f=3DDocumentation/Submittin=
+gPatches;hb=3DHEAD
 
-Index: send.c
-===================================================================
---- send.c	(revision 1340)
-+++ send.c	(working copy)
-@@ -207,7 +207,7 @@
- 	add_bat_packet_to_list(batman_if->packet_buff, batman_if->packet_len, batman_if, 1, send_time);
- }
- 
--void schedule_forward_packet(struct orig_node *orig_node, struct ethhdr *ethhdr, struct batman_packet *batman_packet, uint8_t directlink, unsigned char *hna_buff, int hna_buff_len, struct batman_if *if_incoming)
-+void schedule_forward_packet(struct orig_node *orig_node, struct ethhdr *ethhdr, struct batman_packet *batman_packet, uint8_t directlink, int hna_buff_len, struct batman_if *if_incoming)
- {
- 	unsigned char in_tq, in_ttl, tq_avg = 0;
- 	unsigned long send_time;
-Index: send.h
-===================================================================
---- send.h	(revision 1340)
-+++ send.h	(working copy)
-@@ -28,7 +28,7 @@
- void send_own_packet_work(struct work_struct *work);
- void send_raw_packet(unsigned char *pack_buff, int pack_buff_len, uint8_t *src_addr, uint8_t *dst_addr, struct batman_if *batman_if);
- void schedule_own_packet(struct batman_if *batman_if);
--void schedule_forward_packet(struct orig_node *orig_node, struct ethhdr *ethhdr, struct batman_packet *batman_packet, uint8_t directlink, unsigned char *hna_buff, int hna_buff_len, struct batman_if *if_outgoing);
-+void schedule_forward_packet(struct orig_node *orig_node, struct ethhdr *ethhdr, struct batman_packet *batman_packet, uint8_t directlink, int hna_buff_len, struct batman_if *if_outgoing);
- void add_bcast_packet_to_list(unsigned char *packet_buff, int packet_len);
- void send_outstanding_bcast_packet(struct work_struct *work);
- void send_outstanding_bat_packet(struct work_struct *work);
-Index: routing.c
-===================================================================
---- routing.c	(revision 1340)
-+++ routing.c	(working copy)
-@@ -469,7 +469,7 @@
- 	if (is_single_hop_neigh) {
- 
- 		/* mark direct link on incoming interface */
--		schedule_forward_packet(orig_node, ethhdr, batman_packet, 1, hna_buff, hna_buff_len, if_incoming);
-+		schedule_forward_packet(orig_node, ethhdr, batman_packet, 1, hna_buff_len, if_incoming);
- 
- 		debug_log(LOG_TYPE_BATMAN, "Forwarding packet: rebroadcast neighbour packet with direct link flag \n");
- 		return;
-@@ -487,7 +487,7 @@
- 	}
- 
- 	debug_log(LOG_TYPE_BATMAN, "Forwarding packet: rebroadcast originator packet \n");
--	schedule_forward_packet(orig_node, ethhdr, batman_packet, 0, hna_buff, hna_buff_len, if_incoming);
-+	schedule_forward_packet(orig_node, ethhdr, batman_packet, 0, hna_buff_len, if_incoming);
- }
- 
- void purge_orig(struct work_struct *work)
+Best regards,
+	Sven
+
+--nextPart4200606.hWksKQXKPI
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iQIcBAABCgAGBQJKVxMUAAoJEF2HCgfBJntGU7gP/RdwtEGT5eAzgFdVQAxDJhbC
+zb/vE78YLQpllUTzZzW2+R0OBtQ/DTEIP/Nu8+9oyIVdnwapOfl2LI1aij27y7nA
+y47wY9m/8MKkpRWZPkXUG+VeoR2n1Jsvh+gU3ProoyEYeJRReqasC65gTjD81LLQ
+X2wBl27iD/3JD2Htgg9Z2PaQzb2xkUvby0pXviVwOK8LOwSkUz07XM2ki7Now8lI
+e11AuJ6DhTfF/p/ywUjl4w3w5Dg4i0eAVJzpnXYRWolpkFEH5ZF0PpFMJEkt9kLK
+hhzSU1MstTrW0LxButs4d4DHzuOyvFxJzOhiY/94nEsfznOwtBNXBDbhXSe2LQDP
+R8pnGUXfBxwX1Me0K1u7tfAvMGyhRrbAJlFKyg1nubqTTwjRgT1uhr3diVBTU2vs
+t0dIj15D+dlBJDsZrFougBjzlifINL9eT3K9z4i+zTQcjSW9JIWhva2Ymsoo9s9J
+KetM7dNIyF3iokN5XNLnZ9Qvf14TEPdJGleNh2J20TVZuNl1JtSMCjg3xFnyEnTX
+24vUyiVbXwPyHpnyijTGOdMyU0KfW6x4/F8e14889MFUK+PtpIAQYjqZUUScP7y4
+rFrFGdqYdgtqXYOlo2NZ3Dodg/Ospcv7tYo7W1/hsVumPo8pT0Z6y7+AAKO14hHR
+oQ+r7fngjZS8J0iuqosB
+=QuWK
+-----END PGP SIGNATURE-----
+
+--nextPart4200606.hWksKQXKPI--
