@@ -1,11 +1,11 @@
 Return-Path: <andrew.lunn@ascom.ch>
-Date: Fri, 10 Jul 2009 11:36:21 +0200
+Date: Fri, 10 Jul 2009 11:40:10 +0200
 From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090710093621.GE19071@ma.tech.ascom.ch>
+Message-ID: <20090710094010.GF19071@ma.tech.ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [patch] Typos and spelling errors
+Subject: [B.A.T.M.A.N.] [PATCH]: Remove unused parameter
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,151 +21,55 @@ To: b.a.t.m.a.n@lists.open-mesh.net
 
 Hi Folks
 
-This patch fixes a few typos and spelling errors.
+A little patch which removes an unused parameter to a function call...
 
-     Andrew
+  Andrew
 
 Index: send.c
 ===================================================================
 --- send.c	(revision 1340)
 +++ send.c	(working copy)
-@@ -143,7 +143,7 @@
- 				batman_packet->tq = (batman_packet->tq * (TQ_MAX_VALUE - (2 * TQ_HOP_PENALTY))) / (TQ_MAX_VALUE);
+@@ -207,7 +207,7 @@
+ 	add_bat_packet_to_list(batman_if->packet_buff, batman_if->packet_len, batman_if, 1, send_time);
+ }
  
- 			debug_log(LOG_TYPE_BATMAN,
--					"%s %spacket (originator %s, seqno %d, TQ %d, TTL %d, IDF %s) on interface %s [%s]\n",
-+					"%s %s packet (originator %s, seqno %d, TQ %d, TTL %d, IDF %s) on interface %s [%s]\n",
- 					(packet_num > 0 ? "Forwarding" : (forw_packet->own ? "Sending own" : "Forwarding")),
- 					(packet_num > 0 ? "aggregated " : ""), orig_str, ntohs(batman_packet->seqno),
- 					batman_packet->tq, batman_packet->ttl,
-Index: hard-interface.c
+-void schedule_forward_packet(struct orig_node *orig_node, struct ethhdr *ethhdr, struct batman_packet *batman_packet, uint8_t directlink, unsigned char *hna_buff, int hna_buff_len, struct batman_if *if_incoming)
++void schedule_forward_packet(struct orig_node *orig_node, struct ethhdr *ethhdr, struct batman_packet *batman_packet, uint8_t directlink, int hna_buff_len, struct batman_if *if_incoming)
+ {
+ 	unsigned char in_tq, in_ttl, tq_avg = 0;
+ 	unsigned long send_time;
+Index: send.h
 ===================================================================
---- hard-interface.c	(revision 1340)
-+++ hard-interface.c	(working copy)
-@@ -314,7 +314,7 @@
- 		return;
- 
- 	/**
--	 * wait for readers of the the interfaces, so update won't be a problem.
-+	 * wait for readers of the interfaces, so update won't be a problem.
- 	 * this function is not time critical and can wait a bit ....
- 	 */
- 	synchronize_rcu();
-Index: README
-===================================================================
---- README	(revision 1340)
-+++ README	(working copy)
-@@ -57,7 +57,7 @@
- 
- # cat /proc/net/batman-adv/vis
- 
--This output can be processeed with graphviz-tools like dot.
-+This output can be processed with graphviz-tools like dot.
- The labels are similar/compatible to the ETX metric, 1.0 means perfect
- connection (100%), 2.0 means 50%, 3.0 means 33% and so on.
- 
-Index: aggregation.c
-===================================================================
---- aggregation.c	(revision 1340)
-+++ aggregation.c	(working copy)
-@@ -59,7 +59,7 @@
- 				batman_packet = (struct batman_packet *)forw_packet_pos->packet_buff;
- 
- 				/**
--				 * check aggregation compability
-+				 * check aggregation compatibility
- 				 * -> direct link packets are broadcasted on their interface only
- 				 * -> aggregate packet if the current packet is a "global" packet
- 				 *    as well as the base packet
+--- send.h	(revision 1340)
++++ send.h	(working copy)
+@@ -28,7 +28,7 @@
+ void send_own_packet_work(struct work_struct *work);
+ void send_raw_packet(unsigned char *pack_buff, int pack_buff_len, uint8_t *src_addr, uint8_t *dst_addr, struct batman_if *batman_if);
+ void schedule_own_packet(struct batman_if *batman_if);
+-void schedule_forward_packet(struct orig_node *orig_node, struct ethhdr *ethhdr, struct batman_packet *batman_packet, uint8_t directlink, unsigned char *hna_buff, int hna_buff_len, struct batman_if *if_outgoing);
++void schedule_forward_packet(struct orig_node *orig_node, struct ethhdr *ethhdr, struct batman_packet *batman_packet, uint8_t directlink, int hna_buff_len, struct batman_if *if_outgoing);
+ void add_bcast_packet_to_list(unsigned char *packet_buff, int packet_len);
+ void send_outstanding_bcast_packet(struct work_struct *work);
+ void send_outstanding_bat_packet(struct work_struct *work);
 Index: routing.c
 ===================================================================
 --- routing.c	(revision 1340)
 +++ routing.c	(working copy)
-@@ -76,7 +76,7 @@
- 		kfree(neigh_node);
+@@ -469,7 +469,7 @@
+ 	if (is_single_hop_neigh) {
+ 
+ 		/* mark direct link on incoming interface */
+-		schedule_forward_packet(orig_node, ethhdr, batman_packet, 1, hna_buff, hna_buff_len, if_incoming);
++		schedule_forward_packet(orig_node, ethhdr, batman_packet, 1, hna_buff_len, if_incoming);
+ 
+ 		debug_log(LOG_TYPE_BATMAN, "Forwarding packet: rebroadcast neighbour packet with direct link flag \n");
+ 		return;
+@@ -487,7 +487,7 @@
  	}
  
--	hna_global_del_orig(orig_node, "originator timeouted");
-+	hna_global_del_orig(orig_node, "originator timed out");
+ 	debug_log(LOG_TYPE_BATMAN, "Forwarding packet: rebroadcast originator packet \n");
+-	schedule_forward_packet(orig_node, ethhdr, batman_packet, 0, hna_buff, hna_buff_len, if_incoming);
++	schedule_forward_packet(orig_node, ethhdr, batman_packet, 0, hna_buff_len, if_incoming);
+ }
  
- 	kfree(orig_node->bcast_own);
- 	kfree(orig_node->bcast_own_sum);
-@@ -158,7 +158,7 @@
- 		if ((orig_node->router != NULL) && (neigh_node == NULL)) {
- 
- 			debug_log(LOG_TYPE_ROUTES, "Deleting route towards: %s\n", orig_str);
--			hna_global_del_orig(orig_node, "originator timeouted");
-+			hna_global_del_orig(orig_node, "originator timed out");
- 
- 		/* route added */
- 		} else if ((orig_node->router == NULL) && (neigh_node != NULL)) {
-@@ -247,7 +247,7 @@
- 	/*
- 	 * 1 - ((1-x) ** 3), normalized to TQ_MAX_VALUE
- 	 * this does affect the nearly-symmetric links only a little,
--	 * but punishes asymetric links more.
-+	 * but punishes asymmetric links more.
- 	 * this will give a value between 0 and TQ_MAX_VALUE
- 	 */
- 	orig_neigh_node->tq_asym_penalty = TQ_MAX_VALUE - (TQ_MAX_VALUE *
-@@ -258,7 +258,7 @@
- 
- 	batman_packet->tq = ((batman_packet->tq * orig_neigh_node->tq_own * orig_neigh_node->tq_asym_penalty) / (TQ_MAX_VALUE *  TQ_MAX_VALUE));
- 
--	debug_log(LOG_TYPE_BATMAN, "bidirectional: orig = %-15s neigh = %-15s => own_bcast = %2i, real recv = %2i, local tq: %3i, asym_penality: %3i, total tq: %3i \n",
-+	debug_log(LOG_TYPE_BATMAN, "bidirectional: orig = %-15s neigh = %-15s => own_bcast = %2i, real recv = %2i, local tq: %3i, asym_penalty: %3i, total tq: %3i \n",
- 		  orig_str, neigh_str, total_count, neigh_node->real_packet_count, orig_neigh_node->tq_own, orig_neigh_node->tq_asym_penalty, batman_packet->tq);
- 
- 	/* if link has the minimum required transmission quality consider it bidirectional */
-@@ -451,9 +451,9 @@
- 	if (orig_neigh_node == NULL)
- 		return;
- 
--	/* drop packet if sender is not a direct neighbor and if we no route towards it */
-+	/* drop packet if sender is not a direct neighbor and if we don't route towards it */
- 	if (!is_single_hop_neigh && (orig_neigh_node->router == NULL)) {
--		debug_log(LOG_TYPE_BATMAN, "Drop packet: OGM via unkown neighbor! \n");
-+		debug_log(LOG_TYPE_BATMAN, "Drop packet: OGM via unknown neighbor! \n");
- 		return;
- 	}
- 
-@@ -662,7 +662,7 @@
- 					if (!is_my_mac(ethhdr->h_dest))
- 						continue;
- 
--					/* drop packet if it has not neccessary minimum size */
-+					/* drop packet if it has not necessary minimum size */
- 					if (result < sizeof(struct ethhdr) + sizeof(struct icmp_packet))
- 						continue;
- 
-@@ -761,7 +761,7 @@
- 					if (!is_my_mac(ethhdr->h_dest))
- 						continue;
- 
--					/* drop packet if it has not neccessary minimum size */
-+					/* drop packet if it has not necessary minimum size */
- 					if (result < sizeof(struct ethhdr) + sizeof(struct unicast_packet))
- 						continue;
- 
-@@ -809,7 +809,7 @@
- 					if (is_bcast(ethhdr->h_source))
- 						continue;
- 
--					/* drop packet if it has not neccessary minimum size */
-+					/* drop packet if it has not necessary minimum size */
- 					if (result < sizeof(struct ethhdr) + sizeof(struct bcast_packet))
- 						continue;
- 
-Index: main.h
-===================================================================
---- main.h	(revision 1340)
-+++ main.h	(working copy)
-@@ -34,7 +34,7 @@
- #define PURGE_TIMEOUT 200000  /* purge originators after time in ms if no valid packet comes in -> TODO: check influence on TQ_LOCAL_WINDOW_SIZE */
- #define LOCAL_HNA_TIMEOUT 3600000
- 
--#define TQ_LOCAL_WINDOW_SIZE 64     /* sliding packet range of received originator messages in squence numbers (should be a multiple of our word size) */
-+#define TQ_LOCAL_WINDOW_SIZE 64     /* sliding packet range of received originator messages in sequence numbers (should be a multiple of our word size) */
- #define TQ_GLOBAL_WINDOW_SIZE 10
- #define TQ_LOCAL_BIDRECT_SEND_MINIMUM 1
- #define TQ_LOCAL_BIDRECT_RECV_MINIMUM 1
+ void purge_orig(struct work_struct *work)
