@@ -1,16 +1,18 @@
-Return-Path: <andrew.lunn@ascom.ch>
-Date: Tue, 14 Jul 2009 15:57:36 +0200
-From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090714135736.GP19071@ma.tech.ascom.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 14 Jul 2009 22:48:10 +0800
 References: <20090714130926.GM19071@ma.tech.ascom.ch>
 	<20090714132004.GN19071@ma.tech.ascom.ch>
-	<F51A1DAE-D376-454C-8C39-2A1680CBCC6A@7degrees.co.za>
+In-Reply-To: <20090714132004.GN19071@ma.tech.ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <F51A1DAE-D376-454C-8C39-2A1680CBCC6A@7degrees.co.za>
-Subject: Re: [B.A.T.M.A.N.] [batman-adv] bitarray.[ch] Linux coding
-	style	cleanupy
+Message-Id: <200907142248.10724.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.]
+ =?iso-8859-1?q?=5Bbatman-adv=5D_bitarray=2E=5Bch?=
+ =?iso-8859-1?q?=5D_Linux_coding_style=09cleanup?=
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,14 +26,20 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-> I have a minor patch outstanding against the vis server
+On Tuesday 14 July 2009 21:20:04 Andrew Lunn wrote:
+> What are peoples opinion about this? Should i spend a little time
+> cleaning up all the files? Some code needs refactoring a little, to
+> reducing the nesting, creating more helper functions, but mostly its
+> white space changes. However such changes can cause pain when trying
+> to merge in other work people who diff's are against before the
+> cleanup. Does anybody have any major patches?
 
-Me too. I fixed the race condition at startup that you cannot enable
-vis until batman is properly up and running.
+I have a major patch myself which I did not upload yet. It aims to improve the 
+routing over multiple interfaces and thus touches quite some files. I'd rather 
+test this stuff a bit longer before I screw up everyones routing.  ;-)
 
-> Very happy with the decision to do a clean-up.
+So, in my opinion there is not need to hesitate. Cleanup is a good idea.
 
-The decision has not yet been made. I'm trying to gather opinions
-about it...
+Regards,
+Marek
 
-      Andrew
