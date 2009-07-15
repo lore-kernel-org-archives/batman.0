@@ -1,11 +1,14 @@
-Return-Path: <jtmze87@gmail.com>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Wed, 15 Jul 2009 15:56:29 +0200
+References: <1739bfe0907150649l61d6b0dga6825e84dc45832d@mail.gmail.com>
+In-Reply-To: <1739bfe0907150649l61d6b0dga6825e84dc45832d@mail.gmail.com>
 MIME-Version: 1.0
-Date: Wed, 15 Jul 2009 15:49:34 +0200
-Message-ID: <1739bfe0907150649l61d6b0dga6825e84dc45832d@mail.gmail.com>
-From: jonathan mzengeza <jtmze87@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: base64
-Subject: [B.A.T.M.A.N.] [vis] fixed partial json output
+Content-Type: multipart/signed; boundary="nextPart6096718.QvXisRxJ9D";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907151556.32314.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [vis] fixed partial json output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,23 +20,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-UGFydGlhbCBvdXRwdXQgd2FzIGNhdXNlZCBieSBmYWlsaW5nIHRvIHJlYWQgdGhlIEhUVFAgcmVx
-dWVzdC4gVGhpcwpwYXRjaCByZWFkcyB0aGUgSFRUUCByZXF1ZXN0IGludG8gYSB0ZW1wb3Jhcnkg
-YnVmZmVyIGJlZm9yZSBkaXNjYXJkaW5nCml0LgoKU2lnbmVkLW9mZi1ieTogSm9uYXRoYW4gTXpl
-bmdlemEgPGp0bXplODdAZ21haWwuY29tPgpJbmRleDogdmlzLmMKPT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gdmlz
-LmOgoKAgKHJldmlzaW9uIDEzNDMpCisrKyB2aXMuY6CgoCAod29ya2luZyBjb3B5KQpAQCAtNTY2
-LDYgKzU2Niw3IEBACqCgoKAgYnVmZmVyX3QgKmxhc3Rfc2VuZCA9IE5VTEw7CqCgoKAgc2l6ZV90
-IHJldDsKoKCgoCBjaGFyKiBzZW5kX2J1ZmZlciA9IE5VTEw7CiugIGNoYXIgdG1wWzUxMl07Cgqg
-oKCgIHdoaWxlICggIWlzX2Fib3J0ZWQoKSApIHsKCkBAIC01NzksNiArNTgwLDExIEBACqCgoKAg
-oKCgIKCgoCCgoKAgc2VuZF9idWZmZXIgPSBjdXJyZW50LT5kb3RfYnVmZmVyOwqgoKCgIKCgoCCg
-oKAgfSBlbHNlIHsKoKCgoCCgoKAgoKCgIKCgoCBzZW5kX2J1ZmZlciA9IGN1cnJlbnQtPmpzb25f
-YnVmZmVyOworoKCgIKCgoCCgoKAgoKCgIHJldCA9IHJlYWQoIHRocmVhZF9kYXRhLT5zb2NrZXQs
-IHRtcCwgc2l6ZW9mKCB0bXAgKSk7CiugoKAgoKCgIKCgoCCgoKAgd2hpbGUgKCByZXQgPT0gLTEg
-KSB7CiugoKAgoKCgIKCgoCCgoKAgoCByZXQgPSByZWFkKCB0aHJlYWRfZGF0YS0+c29ja2V0LCB0
-bXAsIHNpemVvZiggdG1wICkpOworoKCgIKCgoCCgoKAgoKCgIKAgdXNsZWVwKDI1MCk7CiugoKAg
-oKCgIKCgoCCgoKAgfQqgoKCgIKCgoCCgoKAgfQoKoKCgoCCgoKAgoKCgIHJldCA9IHdyaXRlKCB0
-aHJlYWRfZGF0YS0+c29ja2V0LCBzZW5kX2J1ZmZlciwgc3RybGVuKApzZW5kX2J1ZmZlciApICk7
-Cg==
+--nextPart6096718.QvXisRxJ9D
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+> Partial output was caused by failing to read the HTTP request. This
+> patch reads the HTTP request into a temporary buffer before discarding
+> it.
+This patch creates an endless loop on unrecoverable socket errors. See read=
+(3)=20
+for more information about return codes. Please provide more information if=
+ I=20
+am wrong.
+
+Best regards,
+	Sven
+
+--nextPart6096718.QvXisRxJ9D
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iQIcBAABCgAGBQJKXeANAAoJEF2HCgfBJntGdGYP/1KKsyu34W+xfhy5tN4LJNRL
+9ufd9bTW9HVK0AcivssNa2qM9NxC9cWS7i1Ha+jwiyY0t1esdYnPiE5IRJuKU4XY
+Vyem5CGZ/eI+g0I0/aofN7+ZibOIWglxNAwF8aL1P6ElN3VbCKjSenLbE6DEePIy
+cSWrL5VozH1o0Nj1kAL3+MnN5Gc/5jcsE6e0xWyuyNYswvgcP48cNIdN01JcrqCK
+bCuiGzpT1nvQuayPPASG0Cw0UFJ+gAYYYpRdb33RfQGz7AYmMU+eEfxU5fBlSG+A
+u3jIxQK+Uv+Z+QlaR+HHr9jEG6fFPDs6qxsXh1+ODqrntAseUcO+Ji4m5XyYgb63
+gj92G2rhXJEUdRD45FpPfmiOiXguHYmIeVztORLgZDQ/zzna/cnssp/Vd08pynHx
+iAkyQ8P4ygblQZyfXJwsu+QfYIGzrC7mpMgBi+fClqteF3GM3DfKL4swzJZa2ln7
+s2679Euccw59fJGDrMr3qycErCWx6gz9fAxdeI+ObB9uTcD0Pyl3nhDT49WptOR1
+roTYUHOChleyC1beHPHrGUFfE4t6knES3Cob96cfLOICfo/B+nw/T0pMpuH77+ym
+thskiX9S1LmK7pw7S5v8I1U9CfHIN0LB7U6yBdKARTHQT8WsIrTteIGqlfuD2QO+
+W26Ha7yVsPME0ffZHNli
+=AgJN
+-----END PGP SIGNATURE-----
+
+--nextPart6096718.QvXisRxJ9D--
