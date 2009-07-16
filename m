@@ -1,11 +1,16 @@
-Return-Path: <andrew.lunn@ascom.ch>
-Date: Thu, 16 Jul 2009 09:44:01 +0200
-From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090716074401.GT19071@ma.tech.ascom.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [batman-adv]: move vis_format from vis.c to proc.c
+Return-Path: <antoine@7degrees.co.za>
+Message-Id: <9B01495A-3D13-463A-B4FC-3C5E129D32EF@7degrees.co.za>
+From: Antoine van Gelder <antoine@7degrees.co.za>
+In-Reply-To: <200907160936.25169.sven.eckelmann@gmx.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Date: Thu, 16 Jul 2009 09:45:19 +0200
+References: <1739bfe0907150649l61d6b0dga6825e84dc45832d@mail.gmail.com>
+	<200907152050.18936.sven.eckelmann@gmx.de>
+	<F0997A98-262F-4E4A-907A-22E1BDC86CB2@7degrees.co.za>
+	<200907160936.25169.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [vis] fixed partial json output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,44 +24,35 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-vis_format is currently in vis.c however this variable is only used in
-proc.c.  Move it into proc, and remove the volatile, which should not
-be needed.
 
-Signed-off-by: Andrew Lunn <andrew.lunn@ascom.ch>
-Index: vis.c
-===================================================================
---- vis.c	(revision 1345)
-+++ vis.c	(working copy)
-@@ -42,7 +42,6 @@
- void free_info(void *data);
- void send_vis_packet(struct vis_info *info);
- void start_vis_timer(void);
--volatile uint8_t vis_format = DOT_DRAW;
- 
- 
- int vis_info_cmp(void *data1, void *data2) {
-Index: vis.h
-===================================================================
---- vis.h	(revision 1345)
-+++ vis.h	(working copy)
-@@ -51,7 +51,6 @@
- 
- extern struct hashtable_t *vis_hash;
- extern spinlock_t vis_hash_lock;
--extern volatile uint8_t vis_format;
- 
- void receive_vis_packet(struct ethhdr *ethhdr, struct vis_packet *vis_packet, int vis_info_len);
- void vis_set_mode(int mode);
-Index: proc.c
-===================================================================
---- proc.c	(revision 1345)
-+++ proc.c	(working copy)
-@@ -31,6 +31,7 @@
- #include "types.h"
- #include "hash.h"
- 
-+static uint8_t vis_format = DOT_DRAW;
- 
- 
- static struct proc_dir_entry *proc_batman_dir = NULL, *proc_interface_file = NULL, *proc_orig_interval_file = NULL, *proc_originators_file = NULL;
+On 16 Jul 2009, at 09:36 , Sven Eckelmann wrote:
+
+>>> Maybe someone sees a problem in my proposal. The only thing I see is
+>>> that the
+>>> read should appear before locking the current buffer or a "bad
+>>> person" (me)
+>>> could delay the new buffers for all others by connecting and then
+>>> wait for a
+>>> long time. I see the same problem in your current implementation.
+>>
+>> I'm not sure the current implementation performs a read between locks
+>> but I agree that the server should not block other connections while
+>> waiting for a response from another connection.
+> I didn't wanted to say that the current implementation in trunk uses  
+> a read,
+> but Jonathan Mzengeza's patch does it.
+
+
+It _is_ Jonathan's patch I'm referring to :-)
+
+As it stands his code does not delay the new buffers for all others if  
+someone connects and then waits a long time.
+
+But that is a choopchick and not really important one way or another,  
+I think we both agree that switching to blocking sockets is a  
+promising idea.
+
+Does anyone with insights into the gooey innards of vis.c have any  
+thoughts about this strategy?
+
+  - a
