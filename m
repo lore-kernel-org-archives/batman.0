@@ -1,16 +1,11 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 16 Jul 2009 09:36:05 +0200
-References: <1739bfe0907150649l61d6b0dga6825e84dc45832d@mail.gmail.com>
-	<200907152050.18936.sven.eckelmann@gmx.de>
-	<F0997A98-262F-4E4A-907A-22E1BDC86CB2@7degrees.co.za>
-In-Reply-To: <F0997A98-262F-4E4A-907A-22E1BDC86CB2@7degrees.co.za>
+Return-Path: <andrew.lunn@ascom.ch>
+Date: Thu, 16 Jul 2009 09:44:01 +0200
+From: Andrew Lunn <andrew.lunn@ascom.ch>
+Message-ID: <20090716074401.GT19071@ma.tech.ascom.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9758430.tHHbJT8TR1";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907160936.25169.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [vis] fixed partial json output
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] [batman-adv]: move vis_format from vis.c to proc.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,50 +19,44 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
---nextPart9758430.tHHbJT8TR1
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+vis_format is currently in vis.c however this variable is only used in
+proc.c.  Move it into proc, and remove the volatile, which should not
+be needed.
 
-> > Maybe someone sees a problem in my proposal. The only thing I see is
-> > that the
-> > read should appear before locking the current buffer or a "bad
-> > person" (me)
-> > could delay the new buffers for all others by connecting and then
-> > wait for a
-> > long time. I see the same problem in your current implementation.
->
-> I'm not sure the current implementation performs a read between locks
-> but I agree that the server should not block other connections while
-> waiting for a response from another connection.
-I didn't wanted to say that the current implementation in trunk uses a read=
-,=20
-but Jonathan Mzengeza's patch does it.
-
-Best Regards,
-	Sven
-
---nextPart9758430.tHHbJT8TR1
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iQIcBAABCgAGBQJKXthlAAoJEF2HCgfBJntGFdQQAIgJtcKlDjCduqBr3daexm8b
-s8FjkBsHqmoPeEFuWOkwm5Njq3zFxHhCQKrcwYQkIVET2loLrZrqXzIVmMBfg6te
-H2oVj9eThq8F0XQ62yjJEN/ujLvfS5yTS68oIBh/hEBdmil9MDSBDfvqQQhFBkOx
-EDmUCVD3kirkT7HzsHW2c8Lo/yYBjo2BE2Ka4XBccyHhV9n5J75llmjTX2kMXKHI
-5s/QRx6c/ZYGqQEarrUGOMkwPT0uVTclYdGhgP1Oe9Bp6IBFW6061IuhaW3E1d0p
-aA5xxMsTJudsiBIaweSPmibjw7pBFWVbCye2N7jn5brDmFj67Qn6t9QUw8M/5X6B
-hkLmUrx5wESrmo/hYdmjWUCE0xPIZbOMg+sqFNKkmQ1gdYcdfx+8BlIivexTS4GO
-QXlwslmp+LtrkG+NIRe5Zv/ToBMpxSCv+jyi370qOI9OVgBAvwAKd5r+p1XwyfzL
-PU66f7hrNipL05H7a2Wa1FN8qJIgK06g18z2olNR4losQjsf8qqhwZAMkPYSAge5
-7Vm4yMCtUOunUAWJ6BHnJ7OFGpp9Qy0lBlig6Ul9tKfK9RY3+srU5B5FjkGKhKGx
-Ds7iMdAtzVRZMtvU1lKwis3KtMH8EikgXuKulMX1ZEr4Ioa3SHFpnvEZ0xelqSBa
-ZSrRrwbfEDdSwyTiK+8f
-=dQ7d
------END PGP SIGNATURE-----
-
---nextPart9758430.tHHbJT8TR1--
+Signed-off-by: Andrew Lunn <andrew.lunn@ascom.ch>
+Index: vis.c
+===================================================================
+--- vis.c	(revision 1345)
++++ vis.c	(working copy)
+@@ -42,7 +42,6 @@
+ void free_info(void *data);
+ void send_vis_packet(struct vis_info *info);
+ void start_vis_timer(void);
+-volatile uint8_t vis_format = DOT_DRAW;
+ 
+ 
+ int vis_info_cmp(void *data1, void *data2) {
+Index: vis.h
+===================================================================
+--- vis.h	(revision 1345)
++++ vis.h	(working copy)
+@@ -51,7 +51,6 @@
+ 
+ extern struct hashtable_t *vis_hash;
+ extern spinlock_t vis_hash_lock;
+-extern volatile uint8_t vis_format;
+ 
+ void receive_vis_packet(struct ethhdr *ethhdr, struct vis_packet *vis_packet, int vis_info_len);
+ void vis_set_mode(int mode);
+Index: proc.c
+===================================================================
+--- proc.c	(revision 1345)
++++ proc.c	(working copy)
+@@ -31,6 +31,7 @@
+ #include "types.h"
+ #include "hash.h"
+ 
++static uint8_t vis_format = DOT_DRAW;
+ 
+ 
+ static struct proc_dir_entry *proc_batman_dir = NULL, *proc_interface_file = NULL, *proc_orig_interval_file = NULL, *proc_originators_file = NULL;
