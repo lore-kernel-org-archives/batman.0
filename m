@@ -1,15 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 15 Jul 2009 20:50:15 +0200
+Return-Path: <antoine@7degrees.co.za>
+Message-Id: <F0997A98-262F-4E4A-907A-22E1BDC86CB2@7degrees.co.za>
+From: Antoine van Gelder <antoine@7degrees.co.za>
+In-Reply-To: <200907152050.18936.sven.eckelmann@gmx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Date: Thu, 16 Jul 2009 07:49:44 +0200
 References: <1739bfe0907150649l61d6b0dga6825e84dc45832d@mail.gmail.com>
 	<200907151556.32314.sven.eckelmann@gmx.de>
 	<1739bfe0907150726l70ee35b1wa92f4fb1aabfdd61@mail.gmail.com>
-In-Reply-To: <1739bfe0907150726l70ee35b1wa92f4fb1aabfdd61@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1960047.MCIQ2ksMnh";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907152050.18936.sven.eckelmann@gmx.de>
+	<200907152050.18936.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [vis] fixed partial json output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -24,62 +24,98 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
---nextPart1960047.MCIQ2ksMnh
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-> Thanks, is this better?
-There are different things I don't understand complete. How does the receiv=
-e=20
-buffer affect the output buffer in this case?
-Isn't it possible to disable non-blocking sockets in vis.c:635-638 and chan=
-ge=20
-the read to following for json: Try to recv data until the read fails or an=
-=20
-empty line (please check HTTP rfc before implementing) appears. If the read=
-=20
-fails -> discard everything. If the empty line appeared then send the data.
-You should create an extra function to read (and discard) the header stuff.
+If I can chime in with my 5 cents,
 
-My personal opinion about the errno and delay stuff is... I don't like it. =
-It=20
-seems to be somewhat correct to ask again on EAGAIN corresponding to the ma=
-n=20
-page, but we could do it in a cleaner way if possible.
 
-Maybe someone sees a problem in my proposal. The only thing I see is that t=
-he=20
-read should appear before locking the current buffer or a "bad person" (me)=
-=20
-could delay the new buffers for all others by connecting and then wait for =
-a=20
-long time. I see the same problem in your current implementation.
+On 15 Jul 2009, at 20:50 , Sven Eckelmann wrote:
 
-Regards,
-	Sven
+>> Thanks, is this better?
+> There are different things I don't understand complete. How does the =20=
 
---nextPart1960047.MCIQ2ksMnh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+> receive
+> buffer affect the output buffer in this case?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iQIcBAABCgAGBQJKXiToAAoJEF2HCgfBJntGer4P/A44Rougq3x3Ue01pwmal3rG
-pneYUIQNaus/SioOrhl1soad1N1/rKsBwzy2D3jogjrkIGiOV7+Gnf34W4xh4ISN
-e1UK5jXkSdXAa7RuHmDPIdvjg3ax/QFEjHq1cLUFPipu4mV9w0/l25RaTwxuY5ER
-qRrTdl0QGYVJ+OeSV6N1iM8WtO3IWEHqgfjYSP3+FzYr6bCmVXPp5l6D86fx4e7i
-kj24AF0AXhBK9UM26Vu90gbYRzE4cTAPZSp9p5VStKXw5y0xmp2CTb8VsrKnp2m6
-KPEghO0XXq1cztl7xt5Q2eUngeMrOJVLS22gIurzJ34yDKDxxEX87ijDYGyuCUm8
-y1UQPf41Eti2I8AjAIb1YRgBQuNmzUgFWp5LtO3wWXUdARcQxGfSt+GjwTURxM7X
-mE7/z57t2qRy+2PV7E8jxyy7aNCVHQ0o5ZGP58HOVfnwnwNIsoWlT5twsR9uz849
-f2YsnLQM5vSJ3TSS7c3QuaioPPTm5ANRR4zNxvCUQrQD/CfhXuEAK4oDFc/YvOu2
-x5J/T2cO8UEWJc/ROl2RkEK0QzqyP/psLSdpTWgEFByVlJbmeHdkzpT3Bc8XYdHP
-8LjhMuQMag2Romb70oSIJd67DDT0Xp4JfWh3e2Ql9zH1RLc8Rwy0F4cCvn9RByDO
-xO7AxQRKU+vo8zIIohAq
-=0FMj
------END PGP SIGNATURE-----
+Without spending a day rooting through the syscall implementation I'm =20=
 
---nextPart1960047.MCIQ2ksMnh--
+not sure why this is the case. Neither the documentation nor Google =20
+has been much help beyond revealing that:
+
+   * It is a widespread phenomena where writes are getting truncated =20
+when there is unread data on the socket.
+
+   * There exists many opinions and precious little consensus on the =20
+precise semantics of read(2) and write(2) !
+
+Oy vey.
+
+
+> Isn't it possible to disable non-blocking sockets in vis.c:635-638 =20
+> and change
+> the read to following for json: Try to recv data until the read =20
+> fails or an
+> empty line (please check HTTP rfc before implementing) appears. If =20
+> the read
+> fails -> discard everything. If the empty line appeared then send =20
+> the data.
+> You should create an extra function to read (and discard) the header =20=
+
+> stuff.
+
+
+If everyone else thinks this is a good idea I would also greatly =20
+prefer to modify the vis server to use blocking sockets.
+
+Given that it is a threaded implementation it is not immediately =20
+obvious to me why this approach was chosen originally unless the =20
+threading got added later?
+
+Thoughts anyone?
+
+
+> My personal opinion about the errno and delay stuff is... I don't =20
+> like it. It
+> seems to be somewhat correct to ask again on EAGAIN corresponding to =20=
+
+> the man
+> page, but we could do it in a cleaner way if possible.
+
+
+*nod*
+
+It _is_ ugly. It is simulating blocking behavior on a non-blocking =20
+object which, really, means that one should ideally just be using a =20
+blocking object in the first place!
+
+:-D
+
+
+> Maybe someone sees a problem in my proposal. The only thing I see is =20=
+
+> that the
+> read should appear before locking the current buffer or a "bad =20
+> person" (me)
+> could delay the new buffers for all others by connecting and then =20
+> wait for a
+> long time. I see the same problem in your current implementation.
+
+
+
+I'm not sure the current implementation performs a read between locks =20=
+
+but I agree that the server should not block other connections while =20
+waiting for a response from another connection.
+
+
+Thank you for the code review Sven!
+
+  - antoine
+
+
+--
+http://7degrees.co.za
+"Libr=E9 software for human education."
+
+
+
