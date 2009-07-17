@@ -1,11 +1,17 @@
-Return-Path: <andrew.lunn@ascom.ch>
-Date: Fri, 17 Jul 2009 12:57:27 +0200
-From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090717105727.GA32143@ma.tech.ascom.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 17 Jul 2009 21:29:35 +0800
+References: <20090717075943.GX19071@ma.tech.ascom.ch>
+	<200907171009.30563.sven.eckelmann@gmx.de>
+	<20090717100128.GY19071@ma.tech.ascom.ch>
+In-Reply-To: <20090717100128.GY19071@ma.tech.ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [batctl] Fix compiler warning in tcpdump.c
+Message-Id: <200907172129.36060.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] battools sources in SVN?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,22 +23,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Compiling batctl/tcpdump.c with gcc version 4.3.3 gives a compiler
-warning. Add a cast to fix this.
+On Friday 17 July 2009 18:01:28 Andrew Lunn wrote:
+> > It is now called batctl and no developer has changed the wiki yet. :)
 
-Signed-off-by: Andrew Lunn <andrew.lunn@ascom.ch>
-Index: batctl/tcpdump.c
-===================================================================
---- batctl/tcpdump.c	(revision 1347)
-+++ batctl/tcpdump.c	(working copy)
-@@ -191,7 +191,7 @@
- 
- 		switch (ntohs(udphdr->dest)) {
- 		case 67:
--			LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr), 44, "DHCP");
-+                        LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr), (size_t) 44, "DHCP");
- 			printf("%s.67: BOOTP/DHCP, Request from %s, length %zd\n",
- 				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
- 				ether_ntoa_long((struct ether_addr *)(((char *)udphdr) + sizeof(struct udphdr) + 28)),
+Yeah, very true. I just worked a lot on it recently and did not get to it yet. 
+Also the manpage is not updated yet. :|
+
+
+> There does not seem to be a way to create accounts on the wiki. Does
+> this mean only registered developers can edit the wiki pages?
+
+At the moment only admins can create more accounts. We have been limiting the 
+access due to the fact that the whole website is a wiki and could be modified 
+by everyone and until now there was not a high demand for writing stuff into 
+the wiki. If you are interested I'll make you an account. :-)
+
+Regards,
+Marek
+
