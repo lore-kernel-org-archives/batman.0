@@ -1,17 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 18 Jul 2009 02:53:03 +0800
-References: <1739bfe0907150649l61d6b0dga6825e84dc45832d@mail.gmail.com>
-	<200907161900.54293.lindner_marek@yahoo.de>
-	<1739bfe0907170010n67ae2bd8m9bf9813d09687951@mail.gmail.com>
-In-Reply-To: <1739bfe0907170010n67ae2bd8m9bf9813d09687951@mail.gmail.com>
+Date: Sat, 18 Jul 2009 03:39:36 +0800
+References: <20090717172521.GB4656@ma.tech.ascom.ch>
+	<20090717184614.GE4656@ma.tech.ascom.ch>
+In-Reply-To: <20090717184614.GE4656@ma.tech.ascom.ch>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200907180253.03945.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [vis] fixed partial json output
+Message-Id: <200907180339.36929.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [batman-adv v2] packet.h coding style cleanup
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,16 +24,14 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-On Friday 17 July 2009 15:10:55 jonathan mzengeza wrote:
-> I looked at the site and it talked about something I had already tried
-> which works well. Here is another patch hope its better.
->
-> +	shutdown(thread_data->socket, SHUT_WR);
+On Saturday 18 July 2009 02:46:14 Andrew Lunn wrote:
+> Make packet.h clean with respect to the 2.6.29 checkpatch script.
+> Also adds one macro, BAT_PACKET_LEN, which is used in other patches
+> to follow.
 
-Does your patch also work without the shutdown ? Some clients (e.g. s3d) read 
-the constant stream of vis data to update their visualization without  re-
-opening the connection. 
+I comitted all your patches except the vis struct changes as there were some 
+open issues.
 
-Regards,
+Thanks for your effort,
 Marek
 
