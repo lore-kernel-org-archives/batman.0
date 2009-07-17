@@ -1,16 +1,11 @@
-Return-Path: <jtmze87@gmail.com>
+Return-Path: <andrew.lunn@ascom.ch>
+Date: Fri, 17 Jul 2009 09:59:43 +0200
+From: Andrew Lunn <andrew.lunn@ascom.ch>
+Message-ID: <20090717075943.GX19071@ma.tech.ascom.ch>
 MIME-Version: 1.0
-In-Reply-To: <200907161900.54293.lindner_marek@yahoo.de>
-References: <1739bfe0907150649l61d6b0dga6825e84dc45832d@mail.gmail.com>
-	<200907160936.25169.sven.eckelmann@gmx.de>
-	<9B01495A-3D13-463A-B4FC-3C5E129D32EF@7degrees.co.za>
-	<200907161900.54293.lindner_marek@yahoo.de>
-Date: Fri, 17 Jul 2009 09:10:55 +0200
-Message-ID: <1739bfe0907170010n67ae2bd8m9bf9813d09687951@mail.gmail.com>
-From: jonathan mzengeza <jtmze87@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [vis] fixed partial json output
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] battools sources in SVN?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,36 +19,36 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-I looked at the site and it talked about something I had already tried
-which works well. Here is another patch hope its better.
+Hi Folks
 
-Signed-off-by: Jonathan Mzengeza <jtmze87@gmail.com>
-Index: vis.c
-===================================================================
---- vis.c	(revision 1343)
-+++ vis.c	(working copy)
-@@ -566,6 +566,7 @@
- 	buffer_t *last_send = NULL;
- 	size_t ret;
- 	char* send_buffer = NULL;
-+  	char tmp[4096];
+The wiki page: http://open-mesh.org/wiki/Download says:
 
- 	while ( !is_aborted() ) {
+# svn co http://downloads.open-mesh.net/svn/batman/trunk/
+# battool (for B.A.T.M.A.N. advanced): check out the complete
+  repository, cd into battool (we're using symlinks here ...)
 
-@@ -600,6 +601,17 @@
+I have a complete checkout of trunk, but there is no battool
+directory:
 
- 	}
+batman/trunk$ svn info
+Path: .
+Repository Root: http://downloads.open-mesh.net/svn/batman
+Repository UUID: 45894c77-fb22-0410-b583-ff6e7d5dbf6c
+Revision: 1347
+Node Kind: directory
+Schedule: normal
+Last Changed Author: marek
+Last Changed Rev: 1347
+Last Changed Date: 2009-07-16 15:15:54 +0200 (Thu, 16 Jul 2009)
 
-+	shutdown(thread_data->socket, SHUT_WR);
-+	
-+	for(;;) {
-+		ret=read(thread_data->socket, tmp, sizeof(tmp));
-+		if(ret < 0) {
-+			break;
-+		}
-+		if(!ret) {
-+			break;
-+		}
-+	}			
- 	if ( debug_level > 0 )
- 		debug_output( "TCP client has left: %s \n", thread_data->ip );
+batman/trunk$ ls
+batctl  batman-adv-kernelland  batman-experimental
+batman  batman-debug4.pl       vis
+
+batman/trunk$ find . -name battool*
+batman/trunk$
+
+Where have the source for battool gone?
+
+      Thanks
+        Andrew
