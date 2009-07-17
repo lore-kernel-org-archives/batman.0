@@ -1,11 +1,14 @@
-Return-Path: <andrew.lunn@ascom.ch>
-Date: Fri, 17 Jul 2009 09:59:43 +0200
-From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090717075943.GX19071@ma.tech.ascom.ch>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Fri, 17 Jul 2009 10:09:25 +0200
+References: <20090717075943.GX19071@ma.tech.ascom.ch>
+In-Reply-To: <20090717075943.GX19071@ma.tech.ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] battools sources in SVN?
+Content-Type: multipart/signed; boundary="nextPart1513410.hK0ApGHvTT";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907171009.30563.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] battools sources in SVN?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,36 +22,44 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Hi Folks
+--nextPart1513410.hK0ApGHvTT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-The wiki page: http://open-mesh.org/wiki/Download says:
+> Hi Folks
+>
+> The wiki page: http://open-mesh.org/wiki/Download says:
+>
+> # svn co http://downloads.open-mesh.net/svn/batman/trunk/
+> # battool (for B.A.T.M.A.N. advanced): check out the complete
+>   repository, cd into battool (we're using symlinks here ...)
+It is now called batctl and no developer has changed the wiki yet. :)
 
-# svn co http://downloads.open-mesh.net/svn/batman/trunk/
-# battool (for B.A.T.M.A.N. advanced): check out the complete
-  repository, cd into battool (we're using symlinks here ...)
+Regards,
+	Sven
 
-I have a complete checkout of trunk, but there is no battool
-directory:
+--nextPart1513410.hK0ApGHvTT
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-batman/trunk$ svn info
-Path: .
-Repository Root: http://downloads.open-mesh.net/svn/batman
-Repository UUID: 45894c77-fb22-0410-b583-ff6e7d5dbf6c
-Revision: 1347
-Node Kind: directory
-Schedule: normal
-Last Changed Author: marek
-Last Changed Rev: 1347
-Last Changed Date: 2009-07-16 15:15:54 +0200 (Thu, 16 Jul 2009)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-batman/trunk$ ls
-batctl  batman-adv-kernelland  batman-experimental
-batman  batman-debug4.pl       vis
+iQIcBAABCgAGBQJKYDG1AAoJEF2HCgfBJntGFR0P/2JRcMJykfGv0CDxCYzlTAmy
+sYXecRa/8qDlEK4bdm/TSZkImuZ80wMjgX4rm1bMT2PzodEJm6TBg/tMOOSnRXRw
+XkN8GUgRpw0T7GbyVWGMKT9cNy+6TiJXpf97L1j0uiSYVuhTZdhbtFOv14TVQtTa
+dmCcHm+73rkXScoXgVyOaGwGfHHwOlqQY8L9kYYGO8Yxqod6kxEAwG1QGNawH2SF
+0VHuoFGiQ5VCQQ+ev/YG9vsZJo2bSltmIn9cFLULCnPmih39OCkgOrpyzMeL7yTQ
+seXATjpJfq9+BSmEg+RizOZMNGTo+isALE3tgWZQEv99hYNYICfbONiI2jHmI+cc
+1HpI3IbjrefmpTNUJqZZanZGPlUp9htOzNSvUnPQnMd9zXcg/PupLbPQ+omHdX39
+3QiZJoawZgqXrxq04kW02TfruKJagCcKUWDMOG2CmybWtKIkfbvAE8+jmbXf2ZHW
+i9voK3uGv8STah9b+qpoXYoQfWN5+5Ld9wdbbyUtjhvyzG2c1eHW5WQH/ywfCCL8
+1njUok5HXZPPSYRL6buU5ur2oaK4IDoqrhv6NF0/v1VMXBgyWKfCdeLFrwyb/qme
+fU8z17xAwBWJLU+VzV9xuJpZzllzX+U6b4XCgcjr5lhLWpdTDEI1ckhj9cd+d8kT
+K6pHsmrJ+6J8rOgR91fU
+=Cp7I
+-----END PGP SIGNATURE-----
 
-batman/trunk$ find . -name battool*
-batman/trunk$
-
-Where have the source for battool gone?
-
-      Thanks
-        Andrew
+--nextPart1513410.hK0ApGHvTT--
