@@ -1,11 +1,11 @@
 Return-Path: <andrew.lunn@ascom.ch>
-Date: Sat, 18 Jul 2009 16:32:50 +0200
+Date: Sat, 18 Jul 2009 16:36:56 +0200
 From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090718143250.GI4656@ma.tech.ascom.ch>
+Message-ID: <20090718143656.GJ4656@ma.tech.ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [batman-adv] Cleanup aggregation.[ch]
+Subject: [B.A.T.M.A.N.] [batman-adv] cleanup device.[ch]
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,352 +19,301 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
 
-Make aggregation.[ch] clean with respect to the 2.6.29 checkpatch script.
+Make device.[ch] clean with respect to the 2.6.29 checkpatch
+script. Exceptions are long lines with debug_log and the use of
+KERNEL_VERSION.
 
 Signed-off-by: Andrew Lunn <andrew.lunn@ascom.ch>
-Index: batman-adv-kernelland/aggregation.c
+Index: batman-adv-kernelland/device.c
 ===================================================================
---- batman-adv-kernelland/aggregation.c	(revision 1351)
-+++ batman-adv-kernelland/aggregation.c	(working copy)
-@@ -17,146 +17,212 @@
+--- batman-adv-kernelland/device.c	(revision 1351)
++++ batman-adv-kernelland/device.c	(working copy)
+@@ -17,10 +17,6 @@
   *
   */
  
 -
 -
 -
+-
  #include "main.h"
- #include "aggregation.h"
- #include "send.h"
- #include "routing.h"
+ #include "device.h"
+ #include "log.h"
+@@ -34,11 +30,9 @@
+ static struct class *batman_class;
+ #endif
  
-+/* calculate the size of the hna information for a given packet */
-+static int hna_len(struct batman_packet *batman_packet)
-+{
-+	return batman_packet->num_hna * ETH_ALEN;
-+}
++static int Major;	/* Major number assigned to our device driver */
  
-+/* return true if new_packet can be aggregated with forw_packet */
-+static bool can_aggregate_with(struct batman_packet *new_packet,
-+			       int packet_len,
-+			       unsigned long send_time,
-+			       bool directlink,
-+			       struct batman_if *if_incoming,
-+			       struct forw_packet *forw_packet_pos)
-+{
+-
+-static int Major = 0;	/* Major number assigned to our device driver */
+-
+-static struct file_operations fops = {
++static const struct file_operations fops = {
+ 	.open = bat_device_open,
+ 	.release = bat_device_release,
+ 	.read = bat_device_read,
+@@ -48,8 +42,6 @@
  
--void add_bat_packet_to_list(unsigned char *packet_buff, int packet_len, struct batman_if *if_incoming, char own_packet, unsigned long send_time)
--{
-+	struct batman_packet *forw_packet =
-+		(struct batman_packet *)forw_packet_pos->packet_buff;
-+	int aggregated_bytes = forw_packet_pos->packet_len + packet_len;
-+
- 	/**
--	 * _aggr -> pointer to the packet we want to aggregate with
--	 * _pos -> pointer to the position in the queue
-+	 * we can aggregate the current packet to this aggregated packet
-+	 * if:
-+	 *
-+	 * - the send time is within our MAX_AGGREGATION_MS time
-+	 * - the resulting packet wont be bigger than
-+	 *   MAX_AGGREGATION_BYTES
- 	 */
--	struct forw_packet *forw_packet_aggr = NULL, *forw_packet_pos = NULL;
--	struct hlist_node *tmp_node;
--	struct batman_packet *batman_packet;
--	unsigned char directlink = (((struct batman_packet *)packet_buff)->flags & DIRECTLINK ? 1 : 0);
+ static struct device_client *device_client_hash[256];
  
--	/* find position for the packet in the forward queue */
--	spin_lock(&forw_bat_list_lock);
--	hlist_for_each_entry(forw_packet_pos, tmp_node, &forw_bat_list, list) {
-+	if (time_before(send_time, forw_packet_pos->send_time) &&
-+	    (aggregated_bytes <= MAX_AGGREGATION_BYTES)) {
+-
+-
+ void bat_device_init(void)
+ {
+ 	int i;
+@@ -66,14 +58,17 @@
+ 		return;
  
--		/* own packets are not to be aggregated */
--		if ((atomic_read(&aggregation_enabled)) && (!own_packet)) {
-+		/**
-+		 * check aggregation compatibility
-+		 * -> direct link packets are broadcasted on
-+		 *    their interface only
-+		 * -> aggregate packet if the current packet is
-+		 *    a "global" packet as well as the base
-+		 *    packet
-+		 */
+ 	/* register our device - kernel assigns a free major number */
+-	if ((tmp_major = register_chrdev(0, DRIVER_DEVICE, &fops)) < 0) {
+-		debug_log(LOG_TYPE_WARN, "Registering the character device failed with %d\n", tmp_major);
++	tmp_major = register_chrdev(0, DRIVER_DEVICE, &fops);
++	if (tmp_major < 0) {
++		debug_log(LOG_TYPE_WARN, "Registering the character device failed with %d\n",
++			  tmp_major);
+ 		return;
+ 	}
  
--			/* don't save aggregation position if aggregation is disabled */
--			forw_packet_aggr = forw_packet_pos;
-+		/* packets without direct link flag and high TTL
-+		 * are flooded through the net  */
-+		if ((!directlink) &&
-+		    (!(forw_packet->flags & DIRECTLINK)) &&
-+		    (forw_packet->ttl != 1) &&
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+-	if (devfs_mk_cdev(MKDEV(tmp_major, 0), S_IFCHR | S_IRUGO | S_IWUGO, "batman-adv", 0)) {
+-		debug_log(LOG_TYPE_WARN, "Could not create /dev/batman-adv\n" );
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0)
++	if (devfs_mk_cdev(MKDEV(tmp_major, 0), S_IFCHR | S_IRUGO | S_IWUGO,
++			  "batman-adv", 0)) {
++		debug_log(LOG_TYPE_WARN, "Could not create /dev/batman-adv\n");
+ 		return;
+ 	}
+ #else
+@@ -84,7 +79,8 @@
+ 		return;
+ 	}
  
--			/**
--			 * we can aggregate the current packet to this packet if:
--			 * - the send time is within our MAX_AGGREGATION_MS time
--			 * - the resulting packet wont be bigger than MAX_AGGREGATION_BYTES
--			 */
--			if ((time_before(send_time, forw_packet_pos->send_time)) &&
--						(forw_packet_pos->packet_len + packet_len <= MAX_AGGREGATION_BYTES)) {
-+		    /* own packets originating non-primary
-+		     * interfaces leave only that interface */
-+		    ((!forw_packet_pos->own) ||
-+		     (forw_packet_pos->if_incoming->if_num == 0)))
-+			return true;
+-	device_create(batman_class, NULL, MKDEV(tmp_major, 0), NULL, "batman-adv");
++	device_create(batman_class, NULL, MKDEV(tmp_major, 0), NULL,
++		      "batman-adv");
+ #endif
  
--				batman_packet = (struct batman_packet *)forw_packet_pos->packet_buff;
-+		/* if the incoming packet is sent via this one
-+		 * interface only - we still can aggregate */
-+		if ((directlink) &&
-+		    (new_packet->ttl == 1) &&
-+		    (forw_packet_pos->if_incoming == if_incoming))
-+			return true;
+ 	Major = tmp_major;
+@@ -97,7 +93,7 @@
+ 	if (!Major)
+ 		return;
  
--				/**
--				 * check aggregation compatibility
--				 * -> direct link packets are broadcasted on their interface only
--				 * -> aggregate packet if the current packet is a "global" packet
--				 *    as well as the base packet
--				 */
-+	}
-+	return false;
-+}
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0)
+ 	devfs_remove("batman-adv", 0);
+ #else
+ 	device_destroy(batman_class, MKDEV(Major, 0));
+@@ -105,7 +101,7 @@
+ #endif
  
--				/* packets without direct link flag and high TTL are flooded through the net  */
--				if ((!directlink) && (!(batman_packet->flags & DIRECTLINK)) && (batman_packet->ttl != 1) &&
-+/* create a new aggregated packet and add this packet to it */
-+void new_aggregated_packet(unsigned char *packet_buff, int packet_len,
-+			   unsigned long send_time,
-+			   bool direct_link,
-+			   struct batman_if *if_incoming,
-+			   int own_packet)
-+{
-+	struct forw_packet *forw_packet_aggr;
+ 	/* Unregister the device */
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 23)
+ 	result = unregister_chrdev(Major, DRIVER_DEVICE);
+ #else
+ 	unregister_chrdev(Major, DRIVER_DEVICE);
+@@ -154,7 +150,8 @@
  
--				/* own packets originating non-primary interfaces leave only that interface */
--						((!forw_packet_pos->own) || (forw_packet_pos->if_incoming->if_num == 0)))
--					break;
-+	forw_packet_aggr = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
-+	if (!forw_packet_aggr)
-+		return;
+ int bat_device_release(struct inode *inode, struct file *file)
+ {
+-	struct device_client *device_client = (struct device_client *)file->private_data;
++	struct device_client *device_client =
++		(struct device_client *)file->private_data;
+ 	struct device_packet *device_packet;
+ 	struct list_head *list_pos, *list_pos_tmp;
  
--				batman_packet = (struct batman_packet *)packet_buff;
-+	forw_packet_aggr->packet_buff = kmalloc(MAX_AGGREGATION_BYTES,
-+						GFP_ATOMIC);
-+	if (!forw_packet_aggr->packet_buff) {
-+		kfree(forw_packet_aggr);
-+		return;
-+	}
+@@ -162,7 +159,8 @@
  
--				/* if the incoming packet is sent via this one interface only - we still can aggregate */
--				if ((directlink) && (batman_packet->ttl == 1) && (forw_packet_pos->if_incoming == if_incoming))
--					break;
-+	INIT_HLIST_NODE(&forw_packet_aggr->list);
+ 	/* for all packets in the queue ... */
+ 	list_for_each_safe(list_pos, list_pos_tmp, &device_client->queue_list) {
+-		device_packet = list_entry(list_pos, struct device_packet, list);
++		device_packet = list_entry(list_pos,
++					   struct device_packet, list);
  
--			}
-+	forw_packet_aggr->packet_len = packet_len;
-+	memcpy(forw_packet_aggr->packet_buff,
-+	       packet_buff,
-+	       forw_packet_aggr->packet_len);
+ 		list_del(list_pos);
+ 		kfree(device_packet);
+@@ -177,9 +175,11 @@
+ 	return 0;
+ }
  
--			/* could not find packet to aggregate with */
--			forw_packet_aggr = NULL;
-+	forw_packet_aggr->own = own_packet;
-+	forw_packet_aggr->if_incoming = if_incoming;
-+	forw_packet_aggr->num_packets = 0;
-+	forw_packet_aggr->direct_link_flags = 0;
-+	forw_packet_aggr->send_time = send_time;
+-ssize_t bat_device_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
++ssize_t bat_device_read(struct file *file, char __user *buf, size_t count,
++			loff_t *ppos)
+ {
+-	struct device_client *device_client = (struct device_client *)file->private_data;
++	struct device_client *device_client =
++		(struct device_client *)file->private_data;
+ 	struct device_packet *device_packet;
+ 	int error;
  
--		}
-+	/* save packet direct link flag status */
-+	if (direct_link)
-+		forw_packet_aggr->direct_link_flags |= 1;
+@@ -192,20 +192,23 @@
+ 	if (!access_ok(VERIFY_WRITE, buf, count))
+ 		return -EFAULT;
  
+-	error = wait_event_interruptible(device_client->queue_wait, (device_client->queue_len));
++	error = wait_event_interruptible(device_client->queue_wait,
++					 device_client->queue_len);
+ 
+ 	if (error)
+ 		return error;
+ 
+ 	spin_lock(&device_client->lock);
+ 
+-	device_packet = list_first_entry(&device_client->queue_list, struct device_packet, list);
++	device_packet = list_first_entry(&device_client->queue_list,
++					 struct device_packet, list);
+ 	list_del(&device_packet->list);
+ 	device_client->queue_len--;
+ 
+ 	spin_unlock(&device_client->lock);
+ 
+-	error = __copy_to_user(buf, &device_packet->icmp_packet, sizeof(struct icmp_packet));
++	error = __copy_to_user(buf, &device_packet->icmp_packet,
++			       sizeof(struct icmp_packet));
+ 
+ 	kfree(device_packet);
+ 
+@@ -215,9 +218,11 @@
+ 	return sizeof(struct icmp_packet);
+ }
+ 
+-ssize_t bat_device_write(struct file *file, const char __user *buff, size_t len, loff_t *off)
++ssize_t bat_device_write(struct file *file, const char __user *buff,
++			 size_t len, loff_t *off)
+ {
+-	struct device_client *device_client = (struct device_client *)file->private_data;
++	struct device_client *device_client =
++		(struct device_client *)file->private_data;
+ 	struct icmp_packet icmp_packet;
+ 	struct orig_node *orig_node;
+ 
+@@ -229,9 +234,8 @@
+ 	if (!access_ok(VERIFY_READ, buff, sizeof(struct icmp_packet)))
+ 		return -EFAULT;
+ 
+-	if (__copy_from_user(&icmp_packet, buff, sizeof(icmp_packet))) {
++	if (__copy_from_user(&icmp_packet, buff, sizeof(icmp_packet)))
+ 		return -EFAULT;
 -	}
-+	/* add new packet to packet list */
-+	spin_lock(&forw_bat_list_lock);
-+	hlist_add_head(&forw_packet_aggr->list, &forw_bat_list);
-+	spin_unlock(&forw_bat_list_lock);
  
--	/* nothing to aggregate with - either aggregation disabled or no suitable aggregation packet found */
--	if (forw_packet_aggr == NULL) {
-+	/* start timer for this packet */
-+	INIT_DELAYED_WORK(&forw_packet_aggr->delayed_work,
-+			  send_outstanding_bat_packet);
-+	queue_delayed_work(bat_event_workqueue,
-+			   &forw_packet_aggr->delayed_work,
-+			   send_time - jiffies);
-+}
+ 	if (icmp_packet.packet_type != BAT_ICMP) {
+ 		debug_log(LOG_TYPE_NOTICE, "Error - can't send packet from char device: got bogus packet type (expected: BAT_ICMP)\n");
+@@ -255,17 +259,19 @@
+ 	spin_lock(&orig_hash_lock);
+ 	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet.dst));
  
--		/* the following section can run without the lock */
--		spin_unlock(&forw_bat_list_lock);
-+/* aggregate a new packet into the existing aggregation */
-+static void aggregate(struct forw_packet *forw_packet_aggr,
-+		      unsigned char *packet_buff, int packet_len,
-+		      bool direct_link)
-+{
-+	memcpy((forw_packet_aggr->packet_buff + forw_packet_aggr->packet_len),
-+	       packet_buff, packet_len);
-+	forw_packet_aggr->packet_len += packet_len;
-+	forw_packet_aggr->num_packets++;
+-	if ((orig_node != NULL) && (orig_node->batman_if != NULL) && (orig_node->router != NULL)) {
++	if ((orig_node != NULL) &&
++	    (orig_node->batman_if != NULL) &&
++	    (orig_node->router != NULL)) {
++		memcpy(icmp_packet.orig,
++		       orig_node->batman_if->net_dev->dev_addr, ETH_ALEN);
  
--		forw_packet_aggr = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
--		forw_packet_aggr->packet_buff = kmalloc(MAX_AGGREGATION_BYTES, GFP_ATOMIC);
-+	/* save packet direct link flag status */
-+	if (direct_link)
-+		forw_packet_aggr->direct_link_flags |=
-+			(1 << forw_packet_aggr->num_packets);
-+}
- 
--		INIT_HLIST_NODE(&forw_packet_aggr->list);
-+void add_bat_packet_to_list(unsigned char *packet_buff, int packet_len,
-+			    struct batman_if *if_incoming, char own_packet,
-+			    unsigned long send_time)
-+{
-+	/**
-+	 * _aggr -> pointer to the packet we want to aggregate with
-+	 * _pos -> pointer to the position in the queue
-+	 */
-+	struct forw_packet *forw_packet_aggr = NULL, *forw_packet_pos = NULL;
-+	struct hlist_node *tmp_node;
-+	struct batman_packet *batman_packet =
-+		(struct batman_packet *)packet_buff;
-+	bool direct_link = batman_packet->flags & DIRECTLINK ? 1 : 0;
- 
--		forw_packet_aggr->packet_len = packet_len;
--		memcpy(forw_packet_aggr->packet_buff, packet_buff, forw_packet_aggr->packet_len);
-+	/* find position for the packet in the forward queue */
-+	spin_lock(&forw_bat_list_lock);
-+	/* own packets are not to be aggregated */
-+	if ((atomic_read(&aggregation_enabled)) && (!own_packet)) {
-+		hlist_for_each_entry(forw_packet_pos, tmp_node, &forw_bat_list,
-+				     list) {
-+			if (can_aggregate_with(batman_packet,
-+					       packet_len,
-+					       send_time,
-+					       direct_link,
-+					       if_incoming,
-+					       forw_packet_pos)) {
-+				forw_packet_aggr = forw_packet_pos;
-+				break;
-+			}
-+		}
-+	}
- 
--		forw_packet_aggr->own = own_packet;
--		forw_packet_aggr->if_incoming = if_incoming;
--		forw_packet_aggr->num_packets = 0;
--		forw_packet_aggr->direct_link_flags = 0;
+-		memcpy(icmp_packet.orig, orig_node->batman_if->net_dev->dev_addr, ETH_ALEN);
 -
--		forw_packet_aggr->send_time = send_time;
+-		send_raw_packet((unsigned char *)&icmp_packet, sizeof(struct icmp_packet), orig_node->batman_if->net_dev->dev_addr, orig_node->router->addr, orig_node->batman_if);
 -
--		batman_packet = (struct batman_packet *)packet_buff;
--
--		/* save packet direct link flag status */
--		if (batman_packet->flags & DIRECTLINK)
--			forw_packet_aggr->direct_link_flags = forw_packet_aggr->direct_link_flags | (1 << forw_packet_aggr->num_packets);
--
--		/* add new packet to packet list */
--		spin_lock(&forw_bat_list_lock);
--		hlist_add_head(&forw_packet_aggr->list, &forw_bat_list);
-+	/* nothing to aggregate with - either aggregation disabled or no
-+	 * suitable aggregation packet found */
-+	if (forw_packet_aggr == NULL) {
-+		/* the following section can run without the lock */
- 		spin_unlock(&forw_bat_list_lock);
--
--		/* start timer for this packet */
--		INIT_DELAYED_WORK(&forw_packet_aggr->delayed_work, send_outstanding_bat_packet);
--		queue_delayed_work(bat_event_workqueue, &forw_packet_aggr->delayed_work, send_time - jiffies);
--
-+		new_aggregated_packet(packet_buff, packet_len,
-+				      send_time, direct_link,
-+				      if_incoming, own_packet);
++		send_raw_packet((unsigned char *)&icmp_packet,
++				sizeof(struct icmp_packet),
++				orig_node->batman_if->net_dev->dev_addr,
++				orig_node->router->addr, orig_node->batman_if);
  	} else {
 -
--		batman_packet = (struct batman_packet *)packet_buff;
--
--		memcpy(forw_packet_aggr->packet_buff + forw_packet_aggr->packet_len, packet_buff, packet_len);
--		forw_packet_aggr->packet_len += packet_len;
--
--		forw_packet_aggr->num_packets++;
--
--		/* save packet direct link flag status */
--		if (batman_packet->flags & DIRECTLINK)
--			forw_packet_aggr->direct_link_flags = forw_packet_aggr->direct_link_flags | (1 << forw_packet_aggr->num_packets);
--
-+		aggregate(forw_packet_aggr,
-+			  packet_buff, packet_len,
-+			  direct_link);
- 		spin_unlock(&forw_bat_list_lock);
+ 		icmp_packet.msg_type = DESTINATION_UNREACHABLE;
+ 		bat_device_add_packet(device_client, &icmp_packet);
 -
  	}
- }
  
--void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff, int packet_len, struct batman_if *if_incoming)
-+/* unpack the aggregated packets and process them one by one */
-+void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff,
-+			     int packet_len, struct batman_if *if_incoming)
+ 	spin_unlock(&orig_hash_lock);
+@@ -276,7 +282,8 @@
+ 
+ unsigned int bat_device_poll(struct file *file, poll_table *wait)
  {
- 	struct batman_packet *batman_packet;
--	int16_t buff_pos = 0;
-+	int buff_pos = 0;
-+	unsigned char *hna_buff;
+-	struct device_client *device_client = (struct device_client *)file->private_data;
++	struct device_client *device_client =
++		(struct device_client *)file->private_data;
  
- 	batman_packet = (struct batman_packet *)packet_buff;
+ 	poll_wait(file, &device_client->queue_wait, wait);
  
--	/* unpack the aggregated packets and process them one by one */
--	while (aggregated_packet(buff_pos, packet_len, batman_packet->num_hna)) {
-+	while (aggregated_packet(buff_pos, packet_len,
-+				 batman_packet->num_hna)) {
- 
--		/* network to host order for our 16bit seqno. */
-+		/* network to host order for our 16bit seqno, and the
-+		   orig_interval. */
- 		batman_packet->seqno = ntohs(batman_packet->seqno);
- 
--		receive_bat_packet(ethhdr, batman_packet, packet_buff + buff_pos + sizeof(struct batman_packet), batman_packet->num_hna * ETH_ALEN, if_incoming);
-+		hna_buff = packet_buff + buff_pos + BAT_PACKET_LEN;
-+		receive_bat_packet(ethhdr, batman_packet,
-+				   hna_buff, hna_len(batman_packet),
-+				   if_incoming);
- 
--		buff_pos += sizeof(struct batman_packet) + batman_packet->num_hna * ETH_ALEN;
--		batman_packet = (struct batman_packet *)(packet_buff + buff_pos);
-+		buff_pos += BAT_PACKET_LEN + hna_len(batman_packet);
-+		batman_packet = (struct batman_packet *)
-+			(packet_buff + buff_pos);
- 	}
+@@ -286,7 +293,8 @@
+ 	return 0;
  }
-Index: batman-adv-kernelland/aggregation.h
+ 
+-void bat_device_add_packet(struct device_client *device_client, struct icmp_packet *icmp_packet)
++void bat_device_add_packet(struct device_client *device_client,
++			   struct icmp_packet *icmp_packet)
+ {
+ 	struct device_packet *device_packet;
+ 
+@@ -296,11 +304,13 @@
+ 		return;
+ 
+ 	INIT_LIST_HEAD(&device_packet->list);
+-	memcpy(&device_packet->icmp_packet, icmp_packet, sizeof(struct icmp_packet));
++	memcpy(&device_packet->icmp_packet, icmp_packet,
++	       sizeof(struct icmp_packet));
+ 
+ 	spin_lock(&device_client->lock);
+ 
+-	/* while waiting for the lock the device_client could have been deleted */
++	/* while waiting for the lock the device_client could have been
++	 * deleted */
+ 	if (device_client_hash[icmp_packet->uid] == NULL) {
+ 		kfree(device_packet);
+ 		return;
+@@ -310,7 +320,8 @@
+ 	device_client->queue_len++;
+ 
+ 	if (device_client->queue_len > 100) {
+-		device_packet = list_first_entry(&device_client->queue_list, struct device_packet, list);
++		device_packet = list_first_entry(&device_client->queue_list,
++						 struct device_packet, list);
+ 
+ 		list_del(&device_packet->list);
+ 		kfree(device_packet);
+@@ -324,7 +335,8 @@
+ 
+ void bat_device_receive_packet(struct icmp_packet *icmp_packet)
+ {
+-	if (device_client_hash[icmp_packet->uid] != NULL)
+-		bat_device_add_packet((struct device_client *)device_client_hash[icmp_packet->uid], icmp_packet);
++	struct device_client *hash = device_client_hash[icmp_packet->uid];
++
++	if (hash != NULL)
++		bat_device_add_packet(hash, icmp_packet);
+ }
+-
+Index: batman-adv-kernelland/device.h
 ===================================================================
---- batman-adv-kernelland/aggregation.h	(revision 1351)
-+++ batman-adv-kernelland/aggregation.h	(working copy)
-@@ -17,15 +17,19 @@
+--- batman-adv-kernelland/device.h	(revision 1351)
++++ batman-adv-kernelland/device.h	(working copy)
+@@ -17,22 +17,18 @@
   *
   */
  
 -
 -
 -
- #include "main.h"
+-
+ #include "types.h"
  
--#define aggregated_packet(buff_pos, packet_len, num_hna) \
--		buff_pos + sizeof(struct batman_packet) + (num_hna * ETH_ALEN) <= packet_len && \
--		buff_pos + sizeof(struct batman_packet) + (num_hna * ETH_ALEN) <= MAX_AGGREGATION_BYTES
-+/* is there another aggregated packet here? */
-+static inline int aggregated_packet(int buff_pos, int packet_len, int num_hna)
-+{
-+	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (num_hna * ETH_ALEN);
- 
-+	return (next_buff_pos <= packet_len) &&
-+		(next_buff_pos <= MAX_AGGREGATION_BYTES);
-+}
- 
--void add_bat_packet_to_list(unsigned char *packet_buff, int packet_len, struct batman_if *if_outgoing, char own_packet, unsigned long send_time);
--void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff, int packet_len, struct batman_if *if_incoming);
-+void add_bat_packet_to_list(unsigned char *packet_buff, int packet_len,
-+			    struct batman_if *if_outgoing, char own_packet,
-+			    unsigned long send_time);
-+void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff,
-+			     int packet_len, struct batman_if *if_incoming);
+-
+-
+ void bat_device_init(void);
+ void bat_device_setup(void);
+ void bat_device_destroy(void);
+ int bat_device_open(struct inode *inode, struct file *file);
+ int bat_device_release(struct inode *inode, struct file *file);
+-ssize_t bat_device_read(struct file *file, char __user *buf, size_t count, loff_t *ppos);
+-ssize_t bat_device_write(struct file *file, const char __user *buff, size_t len, loff_t *off);
++ssize_t bat_device_read(struct file *file, char __user *buf, size_t count,
++			loff_t *ppos);
++ssize_t bat_device_write(struct file *file, const char __user *buff,
++			 size_t len, loff_t *off);
+ unsigned int bat_device_poll(struct file *file, poll_table *wait);
+-void bat_device_add_packet(struct device_client *device_client, struct icmp_packet *icmp_packet);
++void bat_device_add_packet(struct device_client *device_client,
++			   struct icmp_packet *icmp_packet);
+ void bat_device_receive_packet(struct icmp_packet *icmp_packet);
+-
