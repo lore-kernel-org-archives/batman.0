@@ -1,11 +1,11 @@
 Return-Path: <andrew.lunn@ascom.ch>
-Date: Sat, 18 Jul 2009 16:36:56 +0200
+Date: Sat, 18 Jul 2009 16:40:06 +0200
 From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090718143656.GJ4656@ma.tech.ascom.ch>
+Message-ID: <20090718144006.GK4656@ma.tech.ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [batman-adv] cleanup device.[ch]
+Subject: [B.A.T.M.A.N.] [batman-adv] Cleanup hardinterface.[ch]
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,15 +19,14 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
 
-Make device.[ch] clean with respect to the 2.6.29 checkpatch
-script. Exceptions are long lines with debug_log and the use of
-KERNEL_VERSION.
+Make hardinterface.[ch] clean with respect to the 2.6.29 checkpatch
+script. Exceptions are long lines with debug_log.
 
 Signed-off-by: Andrew Lunn <andrew.lunn@ascom.ch>
-Index: batman-adv-kernelland/device.c
+Index: batman-adv-kernelland/hard-interface.c
 ===================================================================
---- batman-adv-kernelland/device.c	(revision 1351)
-+++ batman-adv-kernelland/device.c	(working copy)
+--- batman-adv-kernelland/hard-interface.c	(revision 1351)
++++ batman-adv-kernelland/hard-interface.c	(working copy)
 @@ -17,10 +17,6 @@
   *
   */
@@ -37,283 +36,307 @@ Index: batman-adv-kernelland/device.c
 -
 -
  #include "main.h"
- #include "device.h"
+ #include "hard-interface.h"
  #include "log.h"
-@@ -34,11 +30,9 @@
- static struct class *batman_class;
- #endif
+@@ -31,15 +27,14 @@
+ #include "hash.h"
+ #include "compat.h"
  
-+static int Major;	/* Major number assigned to our device driver */
+-#define MIN(x,y) ((x) < (y) ? (x):(y))
++#define MIN(x, y) ((x) < (y) ? (x) : (y))
  
++static DECLARE_DELAYED_WORK(hardif_check_interfaces_wq,
++			    hardif_check_interfaces_status_wq);
+ 
++static char avail_ifs;
++static char active_ifs;
+ 
+-static DECLARE_DELAYED_WORK(hardif_check_interfaces_wq, hardif_check_interfaces_status_wq);
 -
--static int Major = 0;	/* Major number assigned to our device driver */
+-static char avail_ifs = 0;
+-static char active_ifs = 0;
 -
--static struct file_operations fops = {
-+static const struct file_operations fops = {
- 	.open = bat_device_open,
- 	.release = bat_device_release,
- 	.read = bat_device_read,
-@@ -48,8 +42,6 @@
+ static void hardif_free_interface(struct rcu_head *rcu);
  
- static struct device_client *device_client_hash[256];
- 
--
--
- void bat_device_init(void)
- {
- 	int i;
-@@ -66,14 +58,17 @@
- 		return;
- 
- 	/* register our device - kernel assigns a free major number */
--	if ((tmp_major = register_chrdev(0, DRIVER_DEVICE, &fops)) < 0) {
--		debug_log(LOG_TYPE_WARN, "Registering the character device failed with %d\n", tmp_major);
-+	tmp_major = register_chrdev(0, DRIVER_DEVICE, &fops);
-+	if (tmp_major < 0) {
-+		debug_log(LOG_TYPE_WARN, "Registering the character device failed with %d\n",
-+			  tmp_major);
- 		return;
+ int hardif_min_mtu(void)
+@@ -52,7 +47,8 @@
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+ 		if (batman_if->if_active == IF_ACTIVE)
+-			min_mtu = MIN(batman_if->net_dev->mtu - BAT_HEADER_LEN, min_mtu);
++			min_mtu = MIN(batman_if->net_dev->mtu - BAT_HEADER_LEN,
++				      min_mtu);
  	}
+ 	rcu_read_unlock();
  
--#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
--	if (devfs_mk_cdev(MKDEV(tmp_major, 0), S_IFCHR | S_IRUGO | S_IWUGO, "batman-adv", 0)) {
--		debug_log(LOG_TYPE_WARN, "Could not create /dev/batman-adv\n" );
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0)
-+	if (devfs_mk_cdev(MKDEV(tmp_major, 0), S_IFCHR | S_IRUGO | S_IWUGO,
-+			  "batman-adv", 0)) {
-+		debug_log(LOG_TYPE_WARN, "Could not create /dev/batman-adv\n");
- 		return;
+@@ -68,26 +64,26 @@
+ 	 * if we already have an interface in our interface list and
+ 	 * the current interface is not the primary interface and
+ 	 * the primary interface is not up and
+-	 * the primary interface has never been up - don't activate any secondary interface !
++	 * the primary interface has never been up - don't activate any
++	 * secondary interface !
+ 	 */
+ 
+ 	rcu_read_lock();
+ 	if ((!list_empty(&if_list)) &&
+-		     (strncmp(((struct batman_if *)if_list.next)->dev, dev, IFNAMSIZ) != 0) &&
+-		     !(((struct batman_if *)if_list.next)->if_active == IF_ACTIVE) &&
+-		     (!main_if_was_up())) {
+-
++	    strncmp(((struct batman_if *)if_list.next)->dev, dev, IFNAMSIZ) &&
++	    !(((struct batman_if *)if_list.next)->if_active == IF_ACTIVE) &&
++	    (!main_if_was_up())) {
+ 		rcu_read_unlock();
+ 		goto end;
+-
  	}
- #else
-@@ -84,7 +79,8 @@
- 		return;
- 	}
+ 	rcu_read_unlock();
  
--	device_create(batman_class, NULL, MKDEV(tmp_major, 0), NULL, "batman-adv");
-+	device_create(batman_class, NULL, MKDEV(tmp_major, 0), NULL,
-+		      "batman-adv");
+ #ifdef __NET_NET_NAMESPACE_H
+-	if ((net_dev = dev_get_by_name(&init_net, dev)) == NULL)
++	net_dev = dev_get_by_name(&init_net, dev);
+ #else
+-	if ((net_dev = dev_get_by_name(dev)) == NULL)
++	net_dev = dev_get_by_name(dev);
  #endif
++	if (!net_dev)
+ 		goto end;
  
- 	Major = tmp_major;
-@@ -97,7 +93,7 @@
- 	if (!Major)
- 		return;
+ 	if (!(net_dev->flags & IFF_UP))
+@@ -108,8 +104,6 @@
+ 	if (batman_if->raw_sock != NULL)
+ 		sock_release(batman_if->raw_sock);
  
--#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0)
- 	devfs_remove("batman-adv", 0);
- #else
- 	device_destroy(batman_class, MKDEV(Major, 0));
-@@ -105,7 +101,7 @@
- #endif
+-	/* batman_if->raw_sock->sk->sk_data_ready = batman_if->raw_sock->sk->sk_user_data; */
+-
+ 	/**
+ 	 * batman_if->net_dev has been acquired by dev_get_by_name() in
+ 	 * proc_interfaces_write() and has to be unreferenced.
+@@ -124,7 +118,8 @@
+ 	batman_if->if_active = IF_INACTIVE;
+ 	active_ifs--;
  
- 	/* Unregister the device */
--#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 23)
- 	result = unregister_chrdev(Major, DRIVER_DEVICE);
- #else
- 	unregister_chrdev(Major, DRIVER_DEVICE);
-@@ -154,7 +150,8 @@
- 
- int bat_device_release(struct inode *inode, struct file *file)
- {
--	struct device_client *device_client = (struct device_client *)file->private_data;
-+	struct device_client *device_client =
-+		(struct device_client *)file->private_data;
- 	struct device_packet *device_packet;
- 	struct list_head *list_pos, *list_pos_tmp;
- 
-@@ -162,7 +159,8 @@
- 
- 	/* for all packets in the queue ... */
- 	list_for_each_safe(list_pos, list_pos_tmp, &device_client->queue_list) {
--		device_packet = list_entry(list_pos, struct device_packet, list);
-+		device_packet = list_entry(list_pos,
-+					   struct device_packet, list);
- 
- 		list_del(list_pos);
- 		kfree(device_packet);
-@@ -177,9 +175,11 @@
- 	return 0;
+-	debug_log(LOG_TYPE_NOTICE, "Interface deactivated: %s\n", batman_if->dev);
++	debug_log(LOG_TYPE_NOTICE, "Interface deactivated: %s\n",
++		  batman_if->dev);
  }
  
--ssize_t bat_device_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
-+ssize_t bat_device_read(struct file *file, char __user *buf, size_t count,
-+			loff_t *ppos)
- {
--	struct device_client *device_client = (struct device_client *)file->private_data;
-+	struct device_client *device_client =
-+		(struct device_client *)file->private_data;
- 	struct device_packet *device_packet;
- 	int error;
+ /* (re)activate given interface. */
+@@ -134,14 +129,20 @@
+ 	int retval;
  
-@@ -192,20 +192,23 @@
- 	if (!access_ok(VERIFY_WRITE, buf, count))
- 		return -EFAULT;
+ #ifdef __NET_NET_NAMESPACE_H
+-	if ((batman_if->net_dev = dev_get_by_name(&init_net, batman_if->dev)) == NULL)
++	batman_if->net_dev = dev_get_by_name(&init_net, batman_if->dev);
+ #else
+-	if ((batman_if->net_dev = dev_get_by_name(batman_if->dev)) == NULL)
++	batman_if->net_dev = dev_get_by_name(batman_if->dev);
+ #endif
++	if (!batman_if->net_dev)
+ 		goto error;
  
--	error = wait_event_interruptible(device_client->queue_wait, (device_client->queue_len));
-+	error = wait_event_interruptible(device_client->queue_wait,
-+					 device_client->queue_len);
+-	if ((retval = sock_create_kern(PF_PACKET, SOCK_RAW, __constant_htons(ETH_P_BATMAN), &batman_if->raw_sock)) < 0) {
+-		debug_log(LOG_TYPE_WARN, "Can't create raw socket: %i\n", retval);
++	retval = sock_create_kern(PF_PACKET, SOCK_RAW,
++				  __constant_htons(ETH_P_BATMAN),
++				  &batman_if->raw_sock);
++
++	if (retval < 0) {
++		debug_log(LOG_TYPE_WARN, "Can't create raw socket: %i\n",
++			  retval);
+ 		goto error;
+ 	}
  
- 	if (error)
- 		return error;
+@@ -149,18 +150,25 @@
+ 	bind_addr.sll_ifindex = batman_if->net_dev->ifindex;
+ 	bind_addr.sll_protocol = 0;	/* is set by the kernel */
  
- 	spin_lock(&device_client->lock);
+-	if ((retval = kernel_bind(batman_if->raw_sock, (struct sockaddr *)&bind_addr, sizeof(bind_addr))) < 0) {
+-		debug_log(LOG_TYPE_WARN, "Can't create bind raw socket: %i\n", retval);
++	retval = kernel_bind(batman_if->raw_sock,
++			     (struct sockaddr *)&bind_addr, sizeof(bind_addr));
++
++	if (retval < 0) {
++		debug_log(LOG_TYPE_WARN, "Can't create bind raw socket: %i\n",
++			  retval);
+ 		goto error;
+ 	}
  
--	device_packet = list_first_entry(&device_client->queue_list, struct device_packet, list);
-+	device_packet = list_first_entry(&device_client->queue_list,
-+					 struct device_packet, list);
- 	list_del(&device_packet->list);
- 	device_client->queue_len--;
+-	batman_if->raw_sock->sk->sk_user_data = batman_if->raw_sock->sk->sk_data_ready;
++	batman_if->raw_sock->sk->sk_user_data =
++		batman_if->raw_sock->sk->sk_data_ready;
+ 	batman_if->raw_sock->sk->sk_data_ready = batman_data_ready;
  
- 	spin_unlock(&device_client->lock);
+ 	addr_to_string(batman_if->addr_str, batman_if->net_dev->dev_addr);
  
--	error = __copy_to_user(buf, &device_packet->icmp_packet, sizeof(struct icmp_packet));
-+	error = __copy_to_user(buf, &device_packet->icmp_packet,
-+			       sizeof(struct icmp_packet));
+-	memcpy(((struct batman_packet *)(batman_if->packet_buff))->orig, batman_if->net_dev->dev_addr, ETH_ALEN);
+-	memcpy(((struct batman_packet *)(batman_if->packet_buff))->old_orig, batman_if->net_dev->dev_addr, ETH_ALEN);
++	memcpy(((struct batman_packet *)(batman_if->packet_buff))->orig,
++	       batman_if->net_dev->dev_addr, ETH_ALEN);
++	memcpy(((struct batman_packet *)(batman_if->packet_buff))->old_orig,
++	       batman_if->net_dev->dev_addr, ETH_ALEN);
  
- 	kfree(device_packet);
- 
-@@ -215,9 +218,11 @@
- 	return sizeof(struct icmp_packet);
+ 	batman_if->if_active = IF_ACTIVE;
+ 	active_ifs++;
+@@ -209,12 +217,41 @@
+ 	}
  }
  
--ssize_t bat_device_write(struct file *file, const char __user *buff, size_t len, loff_t *off)
-+ssize_t bat_device_write(struct file *file, const char __user *buff,
-+			 size_t len, loff_t *off)
++static int resize_orig(struct orig_node *orig_node, int if_num)
++{
++	void *data_ptr;
++
++	data_ptr = kmalloc((if_num + 1) * sizeof(TYPE_OF_WORD) * NUM_WORDS,
++			   GFP_KERNEL);
++	if (!data_ptr) {
++		debug_log(LOG_TYPE_WARN, "Can't resize orig: out of memory\n");
++		return -1;
++	}
++
++	memcpy(data_ptr, orig_node->bcast_own,
++	       if_num * sizeof(TYPE_OF_WORD) * NUM_WORDS);
++	kfree(orig_node->bcast_own);
++	orig_node->bcast_own = data_ptr;
++
++	data_ptr = kmalloc((if_num + 1) * sizeof(uint8_t), GFP_KERNEL);
++	if (!data_ptr) {
++		debug_log(LOG_TYPE_WARN, "Can't resize orig: out of memory\n");
++		return -1;
++	}
++
++	memcpy(data_ptr, orig_node->bcast_own_sum, if_num * sizeof(uint8_t));
++	kfree(orig_node->bcast_own_sum);
++	orig_node->bcast_own_sum = data_ptr;
++
++	return 0;
++}
++
++
+ /* adds an interface the interface list and activate it, if possible */
+ int hardif_add_interface(char *dev, int if_num)
  {
--	struct device_client *device_client = (struct device_client *)file->private_data;
-+	struct device_client *device_client =
-+		(struct device_client *)file->private_data;
- 	struct icmp_packet icmp_packet;
+ 	struct batman_if *batman_if;
+ 	struct batman_packet *batman_packet;
+-	void *data_ptr;
  	struct orig_node *orig_node;
+ 	struct hash_it_t *hashit = NULL;
  
-@@ -229,9 +234,8 @@
- 	if (!access_ok(VERIFY_READ, buff, sizeof(struct icmp_packet)))
- 		return -EFAULT;
+@@ -229,9 +266,9 @@
+ 	batman_if->net_dev = NULL;
  
--	if (__copy_from_user(&icmp_packet, buff, sizeof(icmp_packet))) {
-+	if (__copy_from_user(&icmp_packet, buff, sizeof(icmp_packet)))
- 		return -EFAULT;
--	}
+ 	if ((if_num == 0) && (num_hna > 0))
+-		batman_if->packet_len = sizeof(struct batman_packet) + num_hna * ETH_ALEN;
++		batman_if->packet_len = BAT_PACKET_LEN + num_hna * ETH_ALEN;
+ 	else
+-		batman_if->packet_len = sizeof(struct batman_packet);
++		batman_if->packet_len = BAT_PACKET_LEN;
  
- 	if (icmp_packet.packet_type != BAT_ICMP) {
- 		debug_log(LOG_TYPE_NOTICE, "Error - can't send packet from char device: got bogus packet type (expected: BAT_ICMP)\n");
-@@ -255,17 +259,19 @@
+ 	batman_if->packet_buff = kmalloc(batman_if->packet_len, GFP_KERNEL);
+ 
+@@ -259,27 +296,27 @@
+ 	batman_packet->tq = TQ_MAX_VALUE;
+ 	batman_packet->num_hna = 0;
+ 
+-	if (batman_if->packet_len != sizeof(struct batman_packet))
+-		batman_packet->num_hna = hna_local_fill_buffer(batman_if->packet_buff + sizeof(struct batman_packet), batman_if->packet_len - sizeof(struct batman_packet));
++	if (batman_if->packet_len != BAT_PACKET_LEN) {
++		unsigned char *hna_buff;
++		int hna_len;
+ 
++		hna_buff = batman_if->packet_buff + BAT_PACKET_LEN;
++		hna_len = batman_if->packet_len - BAT_PACKET_LEN;
++		batman_packet->num_hna = hna_local_fill_buffer(hna_buff,
++							       hna_len);
++	}
+ 	atomic_set(&batman_if->seqno, 1);
+ 
+-
+-	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on if_num */
++	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
++	 * if_num */
  	spin_lock(&orig_hash_lock);
- 	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet.dst));
  
--	if ((orig_node != NULL) && (orig_node->batman_if != NULL) && (orig_node->router != NULL)) {
-+	if ((orig_node != NULL) &&
-+	    (orig_node->batman_if != NULL) &&
-+	    (orig_node->router != NULL)) {
-+		memcpy(icmp_packet.orig,
-+		       orig_node->batman_if->net_dev->dev_addr, ETH_ALEN);
- 
--		memcpy(icmp_packet.orig, orig_node->batman_if->net_dev->dev_addr, ETH_ALEN);
+ 	while (NULL != (hashit = hash_iterate(orig_hash, hashit))) {
+ 		orig_node = hashit->bucket->data;
 -
--		send_raw_packet((unsigned char *)&icmp_packet, sizeof(struct icmp_packet), orig_node->batman_if->net_dev->dev_addr, orig_node->router->addr, orig_node->batman_if);
+-		data_ptr = kmalloc((if_num + 1) * sizeof(TYPE_OF_WORD) * NUM_WORDS, GFP_KERNEL);
+-		memcpy(data_ptr, orig_node->bcast_own, if_num * sizeof(TYPE_OF_WORD) * NUM_WORDS);
+-		kfree(orig_node->bcast_own);
+-		orig_node->bcast_own = data_ptr;
 -
-+		send_raw_packet((unsigned char *)&icmp_packet,
-+				sizeof(struct icmp_packet),
-+				orig_node->batman_if->net_dev->dev_addr,
-+				orig_node->router->addr, orig_node->batman_if);
- 	} else {
--
- 		icmp_packet.msg_type = DESTINATION_UNREACHABLE;
- 		bat_device_add_packet(device_client, &icmp_packet);
--
+-		data_ptr = kmalloc((if_num + 1) * sizeof(uint8_t), GFP_KERNEL);
+-		memcpy(data_ptr, orig_node->bcast_own_sum, if_num * sizeof(uint8_t));
+-		kfree(orig_node->bcast_own_sum);
+-		orig_node->bcast_own_sum = data_ptr;
++		if (resize_orig(orig_node, if_num) == -1) {
++			spin_unlock(&orig_hash_lock);
++			goto out;
++		}
  	}
  
  	spin_unlock(&orig_hash_lock);
-@@ -276,7 +282,8 @@
+@@ -314,14 +351,15 @@
+ 		return;
  
- unsigned int bat_device_poll(struct file *file, poll_table *wait)
+ 	/**
+-	 * wait for readers of the interfaces, so update won't be a problem.
++	 * wait for readers of the the interfaces, so update won't be a problem.
+ 	 * this function is not time critical and can wait a bit ....
+ 	 */
+ 	synchronize_rcu();
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+-		if ((batman_if->if_active == IF_INACTIVE) && (hardif_is_interface_up(batman_if->dev)))
++		if ((batman_if->if_active == IF_INACTIVE) &&
++		    (hardif_is_interface_up(batman_if->dev)))
+ 			hardif_activate_interface(batman_if);
+ 
+ 		if (batman_if->if_active == IF_TO_BE_DEACTIVATED)
+@@ -329,8 +367,10 @@
+ 	}
+ 	rcu_read_unlock();
+ 
+-	/* waiting for activation? if interfaces are available now, we can activate. */
+-	if ((module_state == MODULE_WAITING) && (hardif_get_active_if_num() > 0))
++	/* waiting for activation? if interfaces are available now, we can
++	 * activate. */
++	if ((module_state == MODULE_WAITING) &&
++	    (hardif_get_active_if_num() > 0))
+ 		activate_module();
+ 
+ 	/* decrease the MTU if a new interface with a smaller MTU appeared. */
+@@ -348,11 +388,11 @@
+ 
+ void start_hardif_check_timer(void)
  {
--	struct device_client *device_client = (struct device_client *)file->private_data;
-+	struct device_client *device_client =
-+		(struct device_client *)file->private_data;
- 
- 	poll_wait(file, &device_client->queue_wait, wait);
- 
-@@ -286,7 +293,8 @@
- 	return 0;
+-	queue_delayed_work(bat_event_workqueue, &hardif_check_interfaces_wq, 1 * HZ);
++	queue_delayed_work(bat_event_workqueue, &hardif_check_interfaces_wq,
++			   1 * HZ);
  }
  
--void bat_device_add_packet(struct device_client *device_client, struct icmp_packet *icmp_packet)
-+void bat_device_add_packet(struct device_client *device_client,
-+			   struct icmp_packet *icmp_packet)
+ void destroy_hardif_check_timer(void)
  {
- 	struct device_packet *device_packet;
- 
-@@ -296,11 +304,13 @@
- 		return;
- 
- 	INIT_LIST_HEAD(&device_packet->list);
--	memcpy(&device_packet->icmp_packet, icmp_packet, sizeof(struct icmp_packet));
-+	memcpy(&device_packet->icmp_packet, icmp_packet,
-+	       sizeof(struct icmp_packet));
- 
- 	spin_lock(&device_client->lock);
- 
--	/* while waiting for the lock the device_client could have been deleted */
-+	/* while waiting for the lock the device_client could have been
-+	 * deleted */
- 	if (device_client_hash[icmp_packet->uid] == NULL) {
- 		kfree(device_packet);
- 		return;
-@@ -310,7 +320,8 @@
- 	device_client->queue_len++;
- 
- 	if (device_client->queue_len > 100) {
--		device_packet = list_first_entry(&device_client->queue_list, struct device_packet, list);
-+		device_packet = list_first_entry(&device_client->queue_list,
-+						 struct device_packet, list);
- 
- 		list_del(&device_packet->list);
- 		kfree(device_packet);
-@@ -324,7 +335,8 @@
- 
- void bat_device_receive_packet(struct icmp_packet *icmp_packet)
- {
--	if (device_client_hash[icmp_packet->uid] != NULL)
--		bat_device_add_packet((struct device_client *)device_client_hash[icmp_packet->uid], icmp_packet);
-+	struct device_client *hash = device_client_hash[icmp_packet->uid];
-+
-+	if (hash != NULL)
-+		bat_device_add_packet(hash, icmp_packet);
+ 	cancel_delayed_work_sync(&hardif_check_interfaces_wq);
  }
 -
-Index: batman-adv-kernelland/device.h
+Index: batman-adv-kernelland/hard-interface.h
 ===================================================================
---- batman-adv-kernelland/device.h	(revision 1351)
-+++ batman-adv-kernelland/device.h	(working copy)
-@@ -17,22 +17,18 @@
+--- batman-adv-kernelland/hard-interface.h	(revision 1351)
++++ batman-adv-kernelland/hard-interface.h	(working copy)
+@@ -17,14 +17,10 @@
   *
   */
  
 -
 -
--
--
- #include "types.h"
+ #define IF_INACTIVE 0
+ #define IF_ACTIVE 1
+ #define IF_TO_BE_DEACTIVATED 2
  
 -
 -
- void bat_device_init(void);
- void bat_device_setup(void);
- void bat_device_destroy(void);
- int bat_device_open(struct inode *inode, struct file *file);
- int bat_device_release(struct inode *inode, struct file *file);
--ssize_t bat_device_read(struct file *file, char __user *buf, size_t count, loff_t *ppos);
--ssize_t bat_device_write(struct file *file, const char __user *buff, size_t len, loff_t *off);
-+ssize_t bat_device_read(struct file *file, char __user *buf, size_t count,
-+			loff_t *ppos);
-+ssize_t bat_device_write(struct file *file, const char __user *buff,
-+			 size_t len, loff_t *off);
- unsigned int bat_device_poll(struct file *file, poll_table *wait);
--void bat_device_add_packet(struct device_client *device_client, struct icmp_packet *icmp_packet);
-+void bat_device_add_packet(struct device_client *device_client,
-+			   struct icmp_packet *icmp_packet);
- void bat_device_receive_packet(struct icmp_packet *icmp_packet);
--
+ void hardif_remove_interfaces(void);
+ int hardif_add_interface(char *dev, int if_num);
+ void hardif_deactivate_interface(struct batman_if *batman_if);
