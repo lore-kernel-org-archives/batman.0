@@ -1,11 +1,14 @@
-Return-Path: <andrew.lunn@ascom.ch>
-Date: Sat, 18 Jul 2009 17:45:22 +0200
-From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090718154522.GA15661@ma.tech.ascom.ch>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Tue, 21 Jul 2009 22:48:01 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20090721204801.GA14658@pandem0nium>
+References: <5635aa0d0809050801k1c5f0bd5wa366574efedd910f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BOKacYhQ+x31HxR3"
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [batman-adv] cleanup send.[ch]
+In-Reply-To: <5635aa0d0809050801k1c5f0bd5wa366574efedd910f@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Batman gateway lock ups
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,515 +20,125 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-Make send.[ch] clean with respect to the 2.6.29
-checkpatch script. Exceptions are long lines with debug_log.
 
-Signed-off-by: Andrew Lunn <andrew.lunn@ascom.ch>
-Index: batman-adv-kernelland/send.c
-===================================================================
---- batman-adv-kernelland/send.c	(revision 1351)
-+++ batman-adv-kernelland/send.c	(working copy)
-@@ -17,9 +17,6 @@
-  *
-  */
- 
--
--
--
- #include "main.h"
- #include "send.h"
- #include "log.h"
-@@ -32,10 +29,44 @@
- 
- #include "compat.h"
- 
-+/* apply the hop penalty for a wireless link */
-+static uint8_t wireless_hop_penalty(const uint8_t tq)
-+{
-+	return (tq * (TQ_MAX_VALUE - (2 * TQ_HOP_PENALTY))) / (TQ_MAX_VALUE);
-+}
- 
-+/* apply hop penalty for a normal link */
-+static uint8_t hop_penalty(const uint8_t tq)
-+{
-+	return (tq * (TQ_MAX_VALUE - TQ_HOP_PENALTY)) / (TQ_MAX_VALUE);
-+}
- 
-+/* when do we schedule our own packet to be sent */
-+static unsigned long own_send_time(void)
-+{
-+	return jiffies +
-+		(((atomic_read(&originator_interval) - JITTER +
-+		   (random32() % 2*JITTER)) * HZ) / 1000);
-+}
-+
-+/* when do we schedule a forwarded packet to be sent */
-+static unsigned long forward_send_time(void)
-+{
-+	unsigned long send_time = jiffies; /* Starting now plus... */
-+
-+	if (atomic_read(&aggregation_enabled))
-+		send_time += (((MAX_AGGREGATION_MS - (JITTER/2) +
-+				(random32() % JITTER)) * HZ) / 1000);
-+	else
-+		send_time += (((random32() % (JITTER/2)) * HZ) / 1000);
-+
-+	return send_time;
-+}
-+
- /* sends a raw packet. */
--void send_raw_packet(unsigned char *pack_buff, int pack_buff_len, uint8_t *src_addr, uint8_t *dst_addr, struct batman_if *batman_if)
-+void send_raw_packet(unsigned char *pack_buff, int pack_buff_len,
-+		     uint8_t *src_addr, uint8_t *dst_addr,
-+		     struct batman_if *batman_if)
- {
- 	struct ethhdr *ethhdr;
- 	struct sk_buff *skb;
-@@ -46,7 +77,8 @@
- 		return;
- 
- 	if (!(batman_if->net_dev->flags & IFF_UP)) {
--		debug_log(LOG_TYPE_WARN, "Interface %s is not up - can't send packet via that interface !\n", batman_if->dev);
-+		debug_log(LOG_TYPE_WARN,
-+			  "Interface %s is not up - can't send packet via that interface !\n", batman_if->dev);
- 		batman_if->if_active = IF_TO_BE_DEACTIVATED;
- 		return;
- 	}
-@@ -69,29 +101,103 @@
- 	skb->protocol = __constant_htons(ETH_P_BATMAN);
- 	skb->dev = batman_if->net_dev;
- 
--	/* dev_queue_xmit() returns a negative result on error.
--	 * However on congestion and traffic shaping, it drops and returns
--	 * NET_XMIT_DROP (which is > 0). This will not be treated as an error. */
-+	/* dev_queue_xmit() returns a negative result on error.	 However on
-+	 * congestion and traffic shaping, it drops and returns NET_XMIT_DROP
-+	 * (which is > 0). This will not be treated as an error. */
- 	retval = dev_queue_xmit(skb);
- 	if (retval < 0) {
--		debug_log(LOG_TYPE_CRIT, "Can't write to raw socket: %i\n", retval);
-+		debug_log(LOG_TYPE_CRIT, "Can't write to raw socket: %i\n",
-+			  retval);
- 		batman_if->if_active = IF_TO_BE_DEACTIVATED;
- 	}
- }
- 
-+/* Send a packet to a given interface */
-+static void send_packet_to_if(struct forw_packet *forw_packet,
-+			      struct batman_if *batman_if)
-+{
-+	char *fwd_str;
-+	uint8_t packet_num;
-+	int16_t buff_pos;
-+	struct batman_packet *batman_packet =
-+		(struct batman_packet *)(forw_packet->packet_buff);
-+	char orig_str[ETH_STR_LEN];
-+
-+	if (batman_if->if_active != IF_ACTIVE)
-+		return;
-+
-+	packet_num = buff_pos = 0;
-+	batman_packet = (struct batman_packet *)
-+		(forw_packet->packet_buff);
-+
-+	/* adjust all flags and log packets */
-+	while (aggregated_packet(buff_pos,
-+				 forw_packet->packet_len,
-+				 batman_packet->num_hna)) {
-+
-+		/* we might have aggregated direct link packets with an
-+		 * ordinary base packet */
-+		if ((forw_packet->direct_link_flags & (1 << packet_num)) &&
-+		    (forw_packet->if_incoming == batman_if))
-+			batman_packet->flags |= DIRECTLINK;
-+		else
-+			batman_packet->flags &= ~DIRECTLINK;
-+
-+		/* for later logging */
-+		if (packet_num > 0)
-+			addr_to_string(orig_str, batman_packet->orig);
-+
-+		/**
-+		 * if the outgoing interface is a wifi interface and
-+		 * equal to the incoming interface add extra penalty
-+		 * (own packets are to be ignored)
-+		 */
-+		if ((batman_if->net_dev->wireless_handlers) &&
-+		    (!forw_packet->own) &&
-+		    (forw_packet->if_incoming == batman_if))
-+			batman_packet->tq =
-+				wireless_hop_penalty(batman_packet->tq);
-+
-+		fwd_str = (packet_num > 0 ? "Forwarding" : (forw_packet->own ?
-+							    "Sending own" :
-+							    "Forwarding"));
-+		debug_log(LOG_TYPE_BATMAN,
-+			  "%s %s packet (originator %s, seqno %d, TQ %d, TTL %d, IDF %s) on interface %s [%s]\n",
-+			  fwd_str,
-+			  (packet_num > 0 ? "aggregated " : ""),
-+			  orig_str, ntohs(batman_packet->seqno),
-+			  batman_packet->tq, batman_packet->ttl,
-+			  (batman_packet->flags & DIRECTLINK ?
-+			   "on" : "off"),
-+			  batman_if->dev, batman_if->addr_str);
-+
-+		buff_pos += sizeof(struct batman_packet) +
-+			(batman_packet->num_hna * ETH_ALEN);
-+		packet_num++;
-+		batman_packet = (struct batman_packet *)
-+			(forw_packet->packet_buff + buff_pos);
-+	}
-+
-+	send_raw_packet(forw_packet->packet_buff,
-+			forw_packet->packet_len,
-+			batman_if->net_dev->dev_addr,
-+			broadcastAddr, batman_if);
-+}
-+
- /* send a batman packet */
- static void send_packet(struct forw_packet *forw_packet)
- {
- 	struct batman_if *batman_if;
--	struct batman_packet *batman_packet = (struct batman_packet *)(forw_packet->packet_buff);
-+	struct batman_packet *batman_packet =
-+		(struct batman_packet *)(forw_packet->packet_buff);
- 	char orig_str[ETH_STR_LEN];
- 	unsigned char directlink = (batman_packet->flags & DIRECTLINK ? 1 : 0);
--	uint8_t packet_num;
--	int16_t buff_pos;
- 
--	/* according to calltree the incoming iface should always be specified. */
-+	/* according to calltree the incoming iface should always be
-+	 * specified. */
- 	if (forw_packet->if_incoming == NULL) {
--		debug_log(LOG_TYPE_CRIT, "Error - can't forward packet: incoming iface not specified\n");
-+		debug_log(LOG_TYPE_CRIT,
-+			  "Error - can't forward packet: incoming iface not specified\n");
- 		return;
- 	}
- 
-@@ -103,94 +209,66 @@
- 	/* multihomed peer assumed */
- 	/* non-primary OGMs are only broadcasted on their interface */
- 	if ((directlink && (batman_packet->ttl == 1)) ||
--		    (forw_packet->own && (forw_packet->if_incoming->if_num > 0))) {
-+	    (forw_packet->own && (forw_packet->if_incoming->if_num > 0))) {
- 
- 		/* FIXME: what about aggregated packets ? */
--		debug_log(LOG_TYPE_BATMAN, "%s packet (originator %s, seqno %d, TTL %d) on interface %s [%s]\n", (forw_packet->own ? "Sending own" : "Forwarding"), orig_str, ntohs(batman_packet->seqno), batman_packet->ttl, forw_packet->if_incoming->dev, forw_packet->if_incoming->addr_str);
-+		debug_log(LOG_TYPE_BATMAN,
-+			  "%s packet (originator %s, seqno %d, TTL %d) on interface %s [%s]\n",
-+			  (forw_packet->own ? "Sending own" : "Forwarding"),
-+			  orig_str, ntohs(batman_packet->seqno),
-+			  batman_packet->ttl, forw_packet->if_incoming->dev,
-+			  forw_packet->if_incoming->addr_str);
- 
--		send_raw_packet(forw_packet->packet_buff, forw_packet->packet_len, forw_packet->if_incoming->net_dev->dev_addr, broadcastAddr, forw_packet->if_incoming);
-+		send_raw_packet(forw_packet->packet_buff,
-+				forw_packet->packet_len,
-+				forw_packet->if_incoming->net_dev->dev_addr,
-+				broadcastAddr, forw_packet->if_incoming);
- 		return;
- 	}
- 
- 	/* broadcast on every interface */
- 	rcu_read_lock();
--	list_for_each_entry_rcu(batman_if, &if_list, list) {
--		if (batman_if->if_active != IF_ACTIVE)
--			continue;
-+	list_for_each_entry_rcu(batman_if, &if_list, list)
-+		send_packet_to_if(forw_packet, batman_if);
-+	rcu_read_unlock();
-+}
- 
--		packet_num = buff_pos = 0;
--		batman_packet = (struct batman_packet *)(forw_packet->packet_buff);
-+static void rebuild_batman_packet(struct batman_if *batman_if)
-+{
-+	int new_len;
-+	unsigned char *new_buff;
-+	struct batman_packet *batman_packet;
- 
--		/* adjust all flags and log packets */
--		while (aggregated_packet(buff_pos, forw_packet->packet_len, batman_packet->num_hna)) {
-+	new_len = sizeof(struct batman_packet) + (num_hna * ETH_ALEN);
-+	new_buff = kmalloc(new_len, GFP_ATOMIC);
- 
--			/* we might have aggregated direct link packets with an ordinary base packet */
--			if ((forw_packet->direct_link_flags & (1 << packet_num)) && (forw_packet->if_incoming == batman_if))
--				batman_packet->flags |= DIRECTLINK;
--			else
--				batman_packet->flags &= ~DIRECTLINK;
-+	/* keep old buffer if kmalloc should fail */
-+	if (new_buff) {
-+		memcpy(new_buff, batman_if->packet_buff,
-+		       sizeof(struct batman_packet));
-+		batman_packet = (struct batman_packet *)new_buff;
- 
--			/* for later logging */
--			if (packet_num > 0)
--				addr_to_string(orig_str, batman_packet->orig);
-+		batman_packet->num_hna = hna_local_fill_buffer(
-+			new_buff + sizeof(struct batman_packet),
-+			new_len - sizeof(struct batman_packet));
- 
--			/**
--			 * if the outgoing interface is a wifi interface and equal to the incoming interface
--			 * add extra penalty (own packets are to be ignored)
--			 */
--			if ((batman_if->net_dev->wireless_handlers) && (!forw_packet->own) &&
--					(forw_packet->if_incoming == batman_if))
--				batman_packet->tq = (batman_packet->tq * (TQ_MAX_VALUE - (2 * TQ_HOP_PENALTY))) / (TQ_MAX_VALUE);
--
--			debug_log(LOG_TYPE_BATMAN,
--					"%s %s packet (originator %s, seqno %d, TQ %d, TTL %d, IDF %s) on interface %s [%s]\n",
--					(packet_num > 0 ? "Forwarding" : (forw_packet->own ? "Sending own" : "Forwarding")),
--					(packet_num > 0 ? "aggregated " : ""), orig_str, ntohs(batman_packet->seqno),
--					batman_packet->tq, batman_packet->ttl,
--					(batman_packet->flags & DIRECTLINK ? "on" : "off"),
--					batman_if->dev, batman_if->addr_str);
--
--			buff_pos += sizeof(struct batman_packet) + (batman_packet->num_hna * ETH_ALEN);
--			packet_num++;
--			batman_packet = (struct batman_packet *)(forw_packet->packet_buff + buff_pos);
--		}
--
--		send_raw_packet(forw_packet->packet_buff, forw_packet->packet_len, batman_if->net_dev->dev_addr, broadcastAddr, batman_if);
-+		kfree(batman_if->packet_buff);
-+		batman_if->packet_buff = new_buff;
-+		batman_if->packet_len = new_len;
- 	}
--	rcu_read_unlock();
- }
- 
- void schedule_own_packet(struct batman_if *batman_if)
- {
--	unsigned char *new_buff;
- 	unsigned long send_time;
- 	struct batman_packet *batman_packet;
--	int new_len;
- 
- 	batman_packet = (struct batman_packet *)batman_if->packet_buff;
- 
- 	/* if local hna has changed and interface is a primary interface */
--	if ((hna_local_changed) && (batman_if->if_num == 0)) {
-+	if ((hna_local_changed) && (batman_if->if_num == 0))
-+		rebuild_batman_packet(batman_if);
- 
--		new_len = sizeof(struct batman_packet) + (num_hna * ETH_ALEN);
--		new_buff = kmalloc(new_len, GFP_ATOMIC);
--
--		/* keep old buffer if kmalloc should fail */
--		if (new_buff) {
--			memcpy(new_buff, batman_if->packet_buff, sizeof(struct batman_packet));
--			batman_packet = (struct batman_packet *)new_buff;
--
--			batman_packet->num_hna = hna_local_fill_buffer(
--						new_buff + sizeof(struct batman_packet),
--						new_len - sizeof(struct batman_packet));
--
--			kfree(batman_if->packet_buff);
--			batman_if->packet_buff = new_buff;
--			batman_if->packet_len = new_len;
--		}
--
--	}
--
- 	/* change sequence number to network order */
- 	batman_packet->seqno = htons((uint16_t)atomic_read(&batman_if->seqno));
- 
-@@ -203,11 +281,16 @@
- 	atomic_inc(&batman_if->seqno);
- 
- 	slide_own_bcast_window(batman_if);
--	send_time = jiffies + (((atomic_read(&originator_interval) - JITTER + (random32() % 2*JITTER)) * HZ) / 1000);
--	add_bat_packet_to_list(batman_if->packet_buff, batman_if->packet_len, batman_if, 1, send_time);
-+	send_time = own_send_time();
-+	add_bat_packet_to_list(batman_if->packet_buff,
-+			       batman_if->packet_len, batman_if, 1, send_time);
- }
- 
--void schedule_forward_packet(struct orig_node *orig_node, struct ethhdr *ethhdr, struct batman_packet *batman_packet, uint8_t directlink, int hna_buff_len, struct batman_if *if_incoming)
-+void schedule_forward_packet(struct orig_node *orig_node,
-+			     struct ethhdr *ethhdr,
-+			     struct batman_packet *batman_packet,
-+			     uint8_t directlink, int hna_buff_len,
-+			     struct batman_if *if_incoming)
- {
- 	unsigned char in_tq, in_ttl, tq_avg = 0;
- 	unsigned long send_time;
-@@ -223,7 +306,8 @@
- 	batman_packet->ttl--;
- 	memcpy(batman_packet->old_orig, ethhdr->h_source, ETH_ALEN);
- 
--	/* rebroadcast tq of our best ranking neighbor to ensure the rebroadcast of our best tq value */
-+	/* rebroadcast tq of our best ranking neighbor to ensure the rebroadcast
-+	 * of our best tq value */
- 	if ((orig_node->router != NULL) && (orig_node->router->tq_avg != 0)) {
- 
- 		/* rebroadcast ogm of best ranking neighbor as is */
-@@ -231,17 +315,17 @@
- 
- 			batman_packet->tq = orig_node->router->tq_avg;
- 			batman_packet->ttl = orig_node->router->last_ttl - 1;
--
- 		}
- 
- 		tq_avg = orig_node->router->tq_avg;
--
- 	}
- 
- 	/* apply hop penalty */
--	batman_packet->tq = (batman_packet->tq * (TQ_MAX_VALUE - TQ_HOP_PENALTY)) / (TQ_MAX_VALUE);
-+	batman_packet->tq = hop_penalty(batman_packet->tq);
- 
--	debug_log(LOG_TYPE_BATMAN, "Forwarding packet: tq_orig: %i, tq_avg: %i, tq_forw: %i, ttl_orig: %i, ttl_forw: %i \n", in_tq, tq_avg, batman_packet->tq, in_ttl - 1, batman_packet->ttl);
-+	debug_log(LOG_TYPE_BATMAN, "Forwarding packet: tq_orig: %i, tq_avg: %i, tq_forw: %i, ttl_orig: %i, ttl_forw: %i \n",
-+		  in_tq, tq_avg, batman_packet->tq, in_ttl - 1,
-+		  batman_packet->ttl);
- 
- 	batman_packet->seqno = htons(batman_packet->seqno);
- 
-@@ -250,12 +334,10 @@
- 	else
- 		batman_packet->flags &= ~DIRECTLINK;
- 
--	if (atomic_read(&aggregation_enabled))
--		send_time = jiffies + (((MAX_AGGREGATION_MS - (JITTER/2) + (random32() % JITTER)) * HZ) / 1000);
--	else
--		send_time = jiffies + (((random32() % (JITTER/2)) * HZ) / 1000);
--
--	add_bat_packet_to_list((unsigned char *)batman_packet, sizeof(struct batman_packet) + hna_buff_len, if_incoming, 0, send_time);
-+	send_time = forward_send_time();
-+	add_bat_packet_to_list((unsigned char *)batman_packet,
-+			       sizeof(struct batman_packet) + hna_buff_len,
-+			       if_incoming, 0, send_time);
- }
- 
- static void forw_packet_free(struct forw_packet *forw_packet)
-@@ -264,7 +346,8 @@
- 	kfree(forw_packet);
- }
- 
--static void _add_bcast_packet_to_list(struct forw_packet *forw_packet, unsigned long send_time)
-+static void _add_bcast_packet_to_list(struct forw_packet *forw_packet,
-+				      unsigned long send_time)
- {
- 	INIT_HLIST_NODE(&forw_packet->list);
- 
-@@ -274,8 +357,10 @@
- 	spin_unlock(&forw_bcast_list_lock);
- 
- 	/* start timer for this packet */
--	INIT_DELAYED_WORK(&forw_packet->delayed_work, send_outstanding_bcast_packet);
--	queue_delayed_work(bat_event_workqueue, &forw_packet->delayed_work, send_time);
-+	INIT_DELAYED_WORK(&forw_packet->delayed_work,
-+			  send_outstanding_bcast_packet);
-+	queue_delayed_work(bat_event_workqueue, &forw_packet->delayed_work,
-+			   send_time);
- }
- 
- void add_bcast_packet_to_list(unsigned char *packet_buff, int packet_len)
-@@ -297,8 +382,10 @@
- void send_outstanding_bcast_packet(struct work_struct *work)
- {
- 	struct batman_if *batman_if;
--	struct delayed_work *delayed_work = container_of(work, struct delayed_work, work);
--	struct forw_packet *forw_packet = container_of(delayed_work, struct forw_packet, delayed_work);
-+	struct delayed_work *delayed_work =
-+		container_of(work, struct delayed_work, work);
-+	struct forw_packet *forw_packet =
-+		container_of(delayed_work, struct forw_packet, delayed_work);
- 
- 	spin_lock(&forw_bcast_list_lock);
- 	hlist_del(&forw_packet->list);
-@@ -307,15 +394,19 @@
- 	/* rebroadcast packet */
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(batman_if, &if_list, list) {
--		send_raw_packet(forw_packet->packet_buff, forw_packet->packet_len,
--				batman_if->net_dev->dev_addr, broadcastAddr, batman_if);
-+		send_raw_packet(forw_packet->packet_buff,
-+				forw_packet->packet_len,
-+				batman_if->net_dev->dev_addr,
-+				broadcastAddr, batman_if);
- 	}
- 	rcu_read_unlock();
- 
- 	forw_packet->num_packets++;
- 
--	/* if we still have some more bcasts to send and we are not shutting down */
--	if ((forw_packet->num_packets < 3) && (module_state != MODULE_INACTIVE))
-+	/* if we still have some more bcasts to send and we are not shutting
-+	 * down */
-+	if ((forw_packet->num_packets < 3) &&
-+	    (module_state != MODULE_INACTIVE))
- 		_add_bcast_packet_to_list(forw_packet, ((5 * HZ) / 1000));
- 	else
- 		forw_packet_free(forw_packet);
-@@ -323,8 +414,10 @@
- 
- void send_outstanding_bat_packet(struct work_struct *work)
- {
--	struct delayed_work *delayed_work = container_of(work, struct delayed_work, work);
--	struct forw_packet *forw_packet = container_of(delayed_work, struct forw_packet, delayed_work);
-+	struct delayed_work *delayed_work =
-+		container_of(work, struct delayed_work, work);
-+	struct forw_packet *forw_packet =
-+		container_of(delayed_work, struct forw_packet, delayed_work);
- 
- 	spin_lock(&forw_bat_list_lock);
- 	hlist_del(&forw_packet->list);
-@@ -352,7 +445,8 @@
- 
- 	/* free bcast list */
- 	spin_lock(&forw_bcast_list_lock);
--	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node, &forw_bcast_list, list) {
-+	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node,
-+				  &forw_bcast_list, list) {
- 
- 		spin_unlock(&forw_bcast_list_lock);
- 
-@@ -367,7 +461,8 @@
- 
- 	/* free batman packet list */
- 	spin_lock(&forw_bat_list_lock);
--	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node, &forw_bat_list, list) {
-+	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node,
-+				  &forw_bat_list, list) {
- 
- 		spin_unlock(&forw_bat_list_lock);
- 
-Index: batman-adv-kernelland/send.h
-===================================================================
---- batman-adv-kernelland/send.h	(revision 1351)
-+++ batman-adv-kernelland/send.h	(working copy)
-@@ -17,18 +17,18 @@
-  *
-  */
- 
--
--
--
--
- #include "types.h"
- 
--
--
- void send_own_packet_work(struct work_struct *work);
--void send_raw_packet(unsigned char *pack_buff, int pack_buff_len, uint8_t *src_addr, uint8_t *dst_addr, struct batman_if *batman_if);
-+void send_raw_packet(unsigned char *pack_buff, int pack_buff_len,
-+		     uint8_t *src_addr, uint8_t *dst_addr,
-+		     struct batman_if *batman_if);
- void schedule_own_packet(struct batman_if *batman_if);
--void schedule_forward_packet(struct orig_node *orig_node, struct ethhdr *ethhdr, struct batman_packet *batman_packet, uint8_t directlink, int hna_buff_len, struct batman_if *if_outgoing);
-+void schedule_forward_packet(struct orig_node *orig_node,
-+			     struct ethhdr *ethhdr,
-+			     struct batman_packet *batman_packet,
-+			     uint8_t directlink, int hna_buff_len,
-+			     struct batman_if *if_outgoing);
- void add_bcast_packet_to_list(unsigned char *packet_buff, int packet_len);
- void send_outstanding_bcast_packet(struct work_struct *work);
- void send_outstanding_bat_packet(struct work_struct *work);
+--BOKacYhQ+x31HxR3
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello Dingo,
+
+i know it is a long time ago, but can you please verify if the problem pres=
+ent in
+Ticket 121 [1] still affects you? Or is it already solved? The entries are =
+10
+months old and the issue is probably already fixed.
+
+Thank you very much,
+	Simon
+
+[1] https://www.open-mesh.net/ticket/121
+
+On Fri, Sep 05, 2008 at 10:01:24PM +0700, Outback Dingo wrote:
+>  see pastebin
+>=20
+> http://www.pastebin.ca/1194874
+>=20
+> pertinent info
+> dmesg | grep 'batgat loaded'
+> batgat: [init_module:96] batgat loaded  rv1025
+> uname -a
+> Linux nightwing 2.6.23.16 #16 Tue Apr 22 20:00:17 ART 2008 mips unknown
+> root@nightwing:~# batmand -v
+> WARNING: You are using the unstable batman branch. If you are interested =
+in
+> *using* batman get the latest stable release !
+> B.A.T.M.A.N. 0.3-beta (compatibility version 5)
+> lsmod
+>=20
+> Module                  Size  Used by    Tainted:
+> P
+> sch_htb                14048
+> 2
+> ath_ahb               103616
+> 0
+> wlan_xauth               480
+> 0
+> wlan_wep                4000
+> 0
+> wlan_tkip               9856
+> 0
+> wlan_ccmp               5440
+> 2
+> wlan_acl                1920  0
+> ath_rate_minstrel       8352  1
+> ath_hal               136832  3 ath_ahb,ath_rate_minstrel
+> wlan_scan_sta           8768  1
+> wlan_scan_ap            6656  0
+> wlan                  152464  10
+> ath_ahb,wlan_xauth,wlan_wep,wlan_tkip,wlan_ccmp,wlan_acl,ath_rate_minstre=
+l,wlan_scan_sta,wlan_scan_ap
+> batgat                 10944  1
+> ipt_iprange              672  0
+> ipt_TOS                  832  0
+> ipt_TTL                  928  0
+> xt_MARK                  960  3
+> ipt_ECN                 1472  0
+> xt_CLASSIFY              640  0
+> ipt_ttl                  704  0
+> ipt_tos                  544  0
+> ipt_time                1568  0
+> xt_tcpmss               1088  0
+> xt_statistic             832  0
+> xt_mark                  672  7
+> xt_mac                   736  3
+> xt_length                736  0
+> ipt_ecn                 1024  0
+> xt_DSCP                 1056  0
+> xt_dscp                  832  0
+> imq                     2096  0
+> ipt_IMQ                  672  2
+> xt_string                896  0
+> xt_layer7               9840  0
+> ipt_ipp2p               6784  0
+> ipt_LOG                 4640  0
+> xt_CHAOS                1792  0
+> xt_DELUDE               2624  1
+> xt_TARPIT               2816  1
+> xt_quota                 800  0
+> xt_portscan             2016  0
+> xt_pkttype               704  0
+> xt_physdev              1488  0
+> ipt_owner                800  0
+> iptable_raw              832  0
+> xt_NOTRACK               832  0
+> xt_CONNMARK             1088  0
+> ipt_recent              4992  0
+> xt_helper                992  0
+> xt_conntrack            1312  0
+> xt_connmark              832  0
+> xt_connbytes            1312  0
+> tun                     6592  0
+
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@open-mesh.net
+> https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+
+
+--BOKacYhQ+x31HxR3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpmKYEACgkQrzg/fFk7axa3jQCfbUDUU+9KB2/vgrPrfefpwvAO
+B2AAn0h76olEPQ6u+w7MZcJ2R30KwIBe
+=NUcO
+-----END PGP SIGNATURE-----
+
+--BOKacYhQ+x31HxR3--
