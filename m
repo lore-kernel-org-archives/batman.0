@@ -1,14 +1,11 @@
-Return-Path: <andrew.lunn@ascom.ch>
-Date: Thu, 23 Jul 2009 15:48:41 +0200
-From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090723134841.GB23742@ma.tech.ascom.ch>
-References: <20090718143250.GI4656@ma.tech.ascom.ch>
-	<200907231959.55861.lindner_marek@yahoo.de>
+Return-Path: <nickthefarrow@hotmail.com>
+Message-ID: <SNT107-W22D1616B6679E23748E9FAA6180@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_8e5eb11d-ef06-4cd0-821a-40ac295c3506_"
+From: nick farrow <nickthefarrow@hotmail.com>
+Date: Thu, 23 Jul 2009 16:38:59 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907231959.55861.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [batman-adv] Cleanup aggregation.[ch]
+Subject: [B.A.T.M.A.N.] Bit of clarification - interfaces wrt54
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,28 +17,108 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
-On Thu, Jul 23, 2009 at 07:59:29PM +0800, Marek Lindner wrote:
-> On Saturday 18 July 2009 22:32:50 Andrew Lunn wrote:
-> > Make aggregation.[ch] clean with respect to the 2.6.29 checkpatch script.
-> >
-> > Signed-off-by: Andrew Lunn <andrew.lunn@ascom.ch>
-> 
-> I applied your patch. 
-> I noticed you created a function for the calculcation of the hna length. It 
-> does not really do much. Would it make sense to transform it into a macro ?
+--_8e5eb11d-ef06-4cd0-821a-40ac295c3506_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-The advantage of a function is you get full type checking.  In terms
-of code size, it makes no difference between a macro and a
-function. Since it is defined before it is used gcc can and probably
-will inline it. 
 
-> While reviewing the code I saw multiple incarnations of the variable
-> own_packet. Sometimes it is char, uint8_t or int. Not sure what
-> effect it might have but I think it would be better to unify that ?!
+Hi=2C
 
-Sure. At the moment i'm just getting the code look O.K. Then i can
-start to see if type need sorting out, etc.
+=20
 
-      Andrew
+I have installed kamikaze=2C xwrt=2C webif=2C batman webif - all ok.
+
+=20
+
+I'm having difficulty in understanding how I 'link' batman to the wireless =
+interface. I have removed all the virtual lan stuff as I think this is the =
+first step.
+
+=20
+
+If I ssh in and ifconfig I can see eth0.0 (lan ports) eth0.1 (seems to be t=
+he internet wan port) and also wl0 with the config I set for it via the web=
+if.
+
+=20
+
+If I go to the webif/mesh tab all I can select as interfaces are the listed=
+ are the eth0.0 and eth0.1 no mention of the wireless interface ?
+
+=20
+
+Second point the Mesh tab indicates that no batmand is running=2C presumabl=
+y it will auto start (from this page) when I  have the interface set proper=
+ly.
+
+=20
+
+Sorry for the basic questions=2C I have read the basic howto's but am not r=
+eally sure how the command line relates to the batman webif.
+
+=20
+
+Thanks very much
+
+=20
+
+nick
+
+_________________________________________________________________
+Windows Live Messenger: Celebrate 10 amazing years with free winks and emot=
+icons.
+http://clk.atdmt.com/UKM/go/157562755/direct/01/=
+
+--_8e5eb11d-ef06-4cd0-821a-40ac295c3506_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Verdana
+}
+</style>
+</head>
+<body class=3D'hmmessage'>
+Hi=2C<BR>
+&nbsp=3B<BR>
+I have installed kamikaze=2C xwrt=2C webif=2C batman webif - all ok.<BR>
+&nbsp=3B<BR>
+I'm having difficulty in understanding how I 'link' batman to the wireless =
+interface. I&nbsp=3Bhave&nbsp=3Bremoved all the virtual lan stuff as I thin=
+k this is the first step.<BR>
+&nbsp=3B<BR>
+If I ssh in and ifconfig&nbsp=3BI can see eth0.0 (lan ports) eth0.1 (seems =
+to be the internet wan port) and also wl0 with the config&nbsp=3BI set for =
+it via the&nbsp=3Bwebif.<BR>
+&nbsp=3B<BR>
+If I go to the webif/mesh tab all I can select as interfaces are the listed=
+&nbsp=3Bare the eth0.0 and eth0.1 no mention of the wireless interface ?<BR=
+>
+&nbsp=3B<BR>
+Second point the Mesh tab&nbsp=3Bindicates that no batmand is running=2C pr=
+esumably it will auto start&nbsp=3B(from this page) when I &nbsp=3Bhave the=
+ interface set properly.<BR>
+&nbsp=3B<BR>
+Sorry for the basic questions=2C I have read the basic howto's but am not r=
+eally sure how the command line relates to the batman webif.<BR>
+&nbsp=3B<BR>
+Thanks very much<BR>
+&nbsp=3B<BR>
+nick<BR><br /><hr />Windows Live Messenger: Celebrate 10 amazing years with=
+ free winks and emoticons. <a href=3D'http://clk.atdmt.com/UKM/go/157562755=
+/direct/01/' target=3D'_new'>Get Them Now</a></body>
+</html>=
+
+--_8e5eb11d-ef06-4cd0-821a-40ac295c3506_--
