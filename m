@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 26 Jul 2009 17:15:16 +0800
-References: <20090718154522.GA15661@ma.tech.ascom.ch>
-In-Reply-To: <20090718154522.GA15661@ma.tech.ascom.ch>
+Date: Sun, 26 Jul 2009 17:16:42 +0800
+References: <1248527611-5246-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1248527611-5246-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200907261715.16875.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [batman-adv] cleanup send.[ch]
+Message-Id: <200907261716.43240.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Cleanup smaller style problems
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,12 +23,11 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-On Saturday 18 July 2009 23:45:22 Andrew Lunn wrote:
-> Make send.[ch] clean with respect to the 2.6.29
-> checkpatch script. Exceptions are long lines with debug_log.
+On Saturday 25 July 2009 21:13:31 Sven Eckelmann wrote:
+> Make some files clean with respect to the 2.6.29 checkpatch
+> script. Exceptions are long lines with printk/seq_print.
 
-I just finished reviewing your last patch and comitted it. 
-Thanks for all your work.
+I added your patch as well. Thanks!
 
 Regards,
 Marek
