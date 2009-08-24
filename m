@@ -1,12 +1,13 @@
-Return-Path: <andrew.lunn@ascom.ch>
-Date: Sun, 23 Aug 2009 15:54:51 +0200
-From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090823135451.GA17243@ma.tech.ascom.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 24 Aug 2009 17:02:32 +0800
 References: <20090823130934.GA28556@ma.tech.ascom.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <20090823130934.GA28556@ma.tech.ascom.ch>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908241702.32201.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [batman-adv] Use prinkt instead of debug_log
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -19,55 +20,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Hi Folks
 
-I've been considering what to do with the remaining debug_log
-calls. 
+Hey,
 
-We have three classes of output from debug_log:
+> If batman is to get into mainline, the use of debug_log will need to
+> be removed. This is a first step in this direction. It replaces
+> debug_log calls for CRITICAL, WARNING and NOTICE with printk calls.
+> It tries to consistently prefix all such output with "batman:" making
+> it easier to find such output mixed in with other kernel messages.
+> LOG_TYPE_BATMAN and LOG_TYPE_ROUTES has not been changed.
 
-1) Changes to HNA entries, all in translation-table.c.
-2) Changes of routes, all in routing.c
-3) All the remaining debug output scattered in a number of files.
+thanks a lot for your patch and thoughts. 
+Does this patch mean you got in touch with a maintainer and he/she suggested 
+to do that ? What else did he/she suggest ?
+I'm asking because I want to understand in which direction we are moving 
+before I start rowing.  ;-)
 
-1) and 2) are pretty low volume in terms of output, and code size. 
-
-3) is a lot more verbose and needs more code. It is also not so
-efficient in that it does lots of string manipulations, creating ascii
-representations of MAC addresses which rarely get output. That can be
-fixed once we are close to integration to mainline and can drop
-backward compatibility to older kernels. We can then use the %pM
-format in printk. However, until then, it would be good to be able to
-compile out this code.
-
-Traditionally the network code uses pr_debug() for outputting debug
-information. This is disabled by default and in order to see it, it is
-necessary to add #define DEBUG to any file you want to see the debug
-output from.
-
-I don't think pr_debug is flexible enough for what we want at the
-moment. My proposal is to add to main.h macros
-
-#define CONFIG_BATMAN_DEBUG_ROUTE 1
-#define CONFIG_BATMAN_DEBUG_BATMAN 0
-
-#if CONFIG_BATMAN_DEBUG_ROUTE
-pr_route_debug(format, a...) printk(KERN_DEBUG "batman:" format, ##a)
-#else 
-pr_route_debug(format, a...)
-#endif
-
-#if CONFIG_BATMAN_DEBUG_BATMAN
-pr_batman_debug(format, a...) printk(KERN_DEBUG "batman:" format, ##a)
-#else 
-pr_batman_debug(format, a...)
-#endif
-
-So by default the routing updates will make it out, but the rest is
-disabled by default.
-
-What do others think?
-
-     Andrew
+Regards,
+Marek
