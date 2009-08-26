@@ -1,12 +1,11 @@
 Return-Path: <andrew.lunn@ascom.ch>
-Date: Wed, 26 Aug 2009 08:41:51 +0200
+Date: Wed, 26 Aug 2009 08:49:54 +0200
 From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090826064151.GE21827@ma.tech.ascom.ch>
+Message-ID: <20090826064954.GG21827@ma.tech.ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] List policy for none subscribers
+Subject: [B.A.T.M.A.N.] Getting batman into staging
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,41 +19,79 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
 
-Hi folks
+Hi Folks
 
-Yesterday evening i sent an email to Greg KH about getting batman into
-mainline via staging. I CCed the list. Since i used an account which is
-not subscribed, i got a bounce:
+Here is the email i sent to Greg KH about getting into staging
 
-  You are not allowed to post to this mailing list, and your message
-  has been automatically rejected.  If you think that your messages
-  are being rejected in error, contact the mailing list owner at
-  b.a.t.m.a.n-owner@lists.open-mesh.net.
+     Andrew
 
-This is contrary to what the wiki says:
+----------------------------------------------------------------------
 
-http://open-mesh.org/wiki/MailingList
+> Hi Greg
+>
+> I've decided to take on the challenge of getting batman-advanced into
+> mainline. This is a challenge since as to date all i've had committed
+> to mainline are a few USB querks for devices i happen to have.
+>
+> B.A.T.M.A.N. (better approach to mobile ad-hoc networking) is a
+> routing protocol for multi-hop ad-hoc mesh networks. It can be used
+> over wireless and wired links. Batman is used for example in Berlin to
+> provide their "Freifunknetzes", free wireless network, and in many
+> other cities.
+>
+> The project website can be found at:
+>
+> http://www.open-mesh.org/
+>
+> My first question would be is this something that can go into
+> staging?  It is not a device driver or a filesystem which seems to
+> be the major usage for staging. The only exception i found to this
+> is the openPOWERLINK protocol stack. Batman layers on top of the
+> wireless and wired network devices, exporting a virtual network
+> device for accessing the resulting mesh.  The nice thing about
+> batman is that it is completely contained. It does not need any
+> patches anywhere else, which does fit with the staging model.
+>
+> The source code is currently in a subversion repository:
+>
+> http://downloads.open-mesh.net/svn/batman/trunk/batman-adv-kernelland/
+>
+> I also have a list of things which i think need doing:
+>
+> Finish stripping out debug_log.
+>
+> Make batctl, the user space configuration tool, standalone.
+>
+> Maybe make batctl _The_ tool for configuration and status and
+> depreciate direct /proc access, so that we can restructure it without
+> too much pain for users.
+>
+> Take out the dot_draw/josm formatting in /proc/net/batman-adv/vis and
+> put it into userspace as part of batctl.
+>
+> Think if /proc/net/batman-adv should be renamed /proc/net/bat0 giving
+> the option of /proc/net/bat1 etc in the future?
+>
+> Should /proc/net/batman-adv/interface be replaced with an IOCTL interface
+> similar to brctl?
+>
+> Maybe move orig_interval, aggregate_ogm and write half of vis to
+> /sys/class/batman/bat0/?
+>
+> Investigate if there is a generic linux hash algorithm which should be used?
+>
+> Strip out all backward compatibility support to older kernels.
+>
+> Make use of printk %pM support.
+>
+> The code is however sparse clean and checkpatch only complains about a
+> few lines being longer than 80 characters. Most of these are printk
+> like statements.
+>
+> My second question would be when is the right time to get into
+> staging? 
+>
+> Should i work on all these issues first? Or can it go into staging
+> with some of these issues in a TODO file, to be joined by new issues
+> as the code is reviewed by more experts?
 
-  You can subscribe to our Mailing List here. You can also send an
-  E-Mail without subscription to b.a.t.m.a.n@…, but note that this
-  message will have to be accepted manually (and this can take some
-  time).
-
-Greg KH reply also bounced, and he was not so happy about that.
-
-If we want to receive comments from the kernel experts, we are
-probably going to need an open list.
-
-I can think of two options:
-
-1) Make the batman list open for none subscribers to post to.
-
-2) Create a batman-adv list which is open and we use that for all
-   discussion about kernel work.
-
-As a side issue, i'm not sure batman-adv is the right name for
-mainline. In the context of the batman project, it makes sense, but
-from the perspective of mainline, this is the first version of batman,
-and maybe we cannot justify the advanced.
-
-    Andrew
