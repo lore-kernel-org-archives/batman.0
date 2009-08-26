@@ -1,11 +1,14 @@
-Return-Path: <andrew.lunn@ascom.ch>
-Date: Wed, 26 Aug 2009 08:53:44 +0200
-From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090826065343.GH21827@ma.tech.ascom.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 26 Aug 2009 15:54:37 +0800
+References: <20090826064151.GE21827@ma.tech.ascom.ch>
+In-Reply-To: <20090826064151.GE21827@ma.tech.ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] Reply from Greg KH
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <200908261554.37200.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] List policy for none subscribers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,106 +20,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-and here is the reply...
 
-    Andrew
+Hi,
 
-----------------------------------------------------------------------
-On Tue, Aug 25, 2009 at 10:05:30PM +0200, Andrew Lunn wrote:
-> Hi Greg
+> This is contrary to what the wiki says:
 >
-> I've decided to take on the challenge of getting batman-advanced into
-> mainline. This is a challenge since as to date all i've had committed
-> to mainline are a few USB querks for devices i happen to have.
+> http://open-mesh.org/wiki/MailingList
 >
-> B.A.T.M.A.N. (better approach to mobile ad-hoc networking) is a
-> routing protocol for multi-hop ad-hoc mesh networks. It can be used
-> over wireless and wired links. Batman is used for example in Berlin to
-> provide their "Freifunknetzes", free wireless network, and in many
-> other cities.
->
-> The project website can be found at:
->
-> http://www.open-mesh.org/
->
-> My first question would be is this something that can go into staging?
-> It is not a device driver or a filesystem which seems to be the major
-> usage for staging.
+>   You can subscribe to our Mailing List here. You can also send an
+>   E-Mail without subscription to b.a.t.m.a.n@=E2=80=A6, but note that this
+>   message will have to be accepted manually (and this can take some
+>   time).
 
-If it is "self-contained" then we can add it to the staging tree.
+the wiki is obviously wrong here. I see 2 options:
 
-> The only exception i found to this is the openPOWERLINK protocol
-> stack.
+1) Correcting the wiki.
 
-Heh, bad example, that code is getting ripped out for the 2.6.32 release
-as there has been no support from the developers to get this code into
-mergable shape :)
+2) Finding people that are willing to handle the moderator requests.
 
-> Batman layers on top of the wireless and wired network devices,
-> exporting a virtual network device for accessing the resulting mesh.
-> The nice thing about batman is that it is completely contained. It
-> does not need any patches anywhere else, which does fit with the
-> staging model.
 
-Good.
+> 1) Make the batman list open for none subscribers to post to.
 
-But first off, what is keeping this code from being added to the "main"
-portion of the kernel tree?  Have you submitted it for inclusion there
-already?  If so, what was the response?  If not, why not?
+That will bring a lot of SPAM to our list. Last time I checked we got 25.00=
+0=20
+SPAM mails in less than 3 days. Moderator requests could be the right=20
+compromise if somebody deals with the requests.
 
->
-> The source code is currently in a subversion repository:
->
-> http://downloads.open-mesh.net/svn/batman/trunk/batman-adv-kernelland/
->
-> I also have a list of things which i think need doing:
->
-> Finish stripping out debug_log.
->
-> Make batctl, the user space configuration tool, standalone.
->
-> Maybe make batctl _The_ tool for configuration and status and
-> depreciate direct /proc access, so that we can restructure it without
-> too much pain for users.
->
-> Take out the dot_draw/josm formatting in /proc/net/batman-adv/vis and
-> put it into userspace as part of batctl.
->
-> Think if /proc/net/batman-adv should be renamed /proc/net/bat0 giving
-> the option of /proc/net/bat1 etc in the future?
->
-> Should /proc/net/batman-adv/interface be replaced with an IOCTL interface
-> similar to brctl?
->
-> Maybe move orig_interval, aggregate_ogm and write half of vis to
-> /sys/class/batman/bat0/?
->
-> Investigate if there is a generic linux hash algorithm which should be used?
->
-> Strip out all backward compatibility support to older kernels.
->
-> Make use of printk %pM support.
->
-> The code is however sparse clean and checkpatch only complains about a
-> few lines being longer than 80 characters. Most of these are printk
-> like statements.
->
-> My second question would be when is the right time to get into
-> staging?
 
-Hm, based on the above, right now :)
+> 2) Create a batman-adv list which is open and we use that for all
+>    discussion about kernel work.
 
-> Should i work on all these issues first? Or can it go into staging
-> with some of these issues in a TODO file, to be joined by new issues
-> as the code is reviewed by more experts?
+We always can create more mailing lists but I don't have the feeling we hav=
+e=20
+that much traffic to justify another mailing list. Or what do you think ?
 
-Yes, it can go in right now, with that TODO file, and we, and you, can
-work on it there.
 
-Sound good?  If so, send me some patches!
+> As a side issue, i'm not sure batman-adv is the right name for
+> mainline. In the context of the batman project, it makes sense, but
+> from the perspective of mainline, this is the first version of batman,
+> and maybe we cannot justify the advanced.
 
-thanks,
+Yeah, maybe you are right.
 
-greg k-h
+Regards,
+Marek
