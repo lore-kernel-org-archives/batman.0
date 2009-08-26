@@ -1,11 +1,11 @@
 Return-Path: <andrew.lunn@ascom.ch>
-Date: Wed, 26 Aug 2009 08:49:54 +0200
+Date: Wed, 26 Aug 2009 08:53:44 +0200
 From: Andrew Lunn <andrew.lunn@ascom.ch>
-Message-ID: <20090826064954.GG21827@ma.tech.ascom.ch>
+Message-ID: <20090826065343.GH21827@ma.tech.ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] Getting batman into staging
+Subject: [B.A.T.M.A.N.] Reply from Greg KH
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,14 +19,12 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
 
-Hi Folks
+and here is the reply...
 
-Here is the email i sent to Greg KH about getting into staging
-
-     Andrew
+    Andrew
 
 ----------------------------------------------------------------------
-
+On Tue, Aug 25, 2009 at 10:05:30PM +0200, Andrew Lunn wrote:
 > Hi Greg
 >
 > I've decided to take on the challenge of getting batman-advanced into
@@ -43,14 +41,31 @@ Here is the email i sent to Greg KH about getting into staging
 >
 > http://www.open-mesh.org/
 >
-> My first question would be is this something that can go into
-> staging?  It is not a device driver or a filesystem which seems to
-> be the major usage for staging. The only exception i found to this
-> is the openPOWERLINK protocol stack. Batman layers on top of the
-> wireless and wired network devices, exporting a virtual network
-> device for accessing the resulting mesh.  The nice thing about
-> batman is that it is completely contained. It does not need any
-> patches anywhere else, which does fit with the staging model.
+> My first question would be is this something that can go into staging?
+> It is not a device driver or a filesystem which seems to be the major
+> usage for staging.
+
+If it is "self-contained" then we can add it to the staging tree.
+
+> The only exception i found to this is the openPOWERLINK protocol
+> stack.
+
+Heh, bad example, that code is getting ripped out for the 2.6.32 release
+as there has been no support from the developers to get this code into
+mergable shape :)
+
+> Batman layers on top of the wireless and wired network devices,
+> exporting a virtual network device for accessing the resulting mesh.
+> The nice thing about batman is that it is completely contained. It
+> does not need any patches anywhere else, which does fit with the
+> staging model.
+
+Good.
+
+But first off, what is keeping this code from being added to the "main"
+portion of the kernel tree?  Have you submitted it for inclusion there
+already?  If so, what was the response?  If not, why not?
+
 >
 > The source code is currently in a subversion repository:
 >
@@ -89,9 +104,19 @@ Here is the email i sent to Greg KH about getting into staging
 > like statements.
 >
 > My second question would be when is the right time to get into
-> staging? 
->
+> staging?
+
+Hm, based on the above, right now :)
+
 > Should i work on all these issues first? Or can it go into staging
 > with some of these issues in a TODO file, to be joined by new issues
 > as the code is reviewed by more experts?
 
+Yes, it can go in right now, with that TODO file, and we, and you, can
+work on it there.
+
+Sound good?  If so, send me some patches!
+
+thanks,
+
+greg k-h
