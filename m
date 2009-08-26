@@ -1,15 +1,14 @@
 Return-Path: <andrew@lunn.ch>
-Date: Wed, 26 Aug 2009 20:08:10 +0200
+Date: Wed, 26 Aug 2009 20:25:48 +0200
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20090826180810.GF16067@lunn.ch>
-References: <20090826064151.GE21827@ma.tech.ascom.ch>
-	<200908261001.31814.sven.eckelmann@gmx.de>
-	<200908261119.22173.onelektra@gmx.net>
+Message-ID: <20090826182548.GG16067@lunn.ch>
+References: <20090825200530.GA21951@lunn.ch>
+ <20090825201457.GA5070@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908261119.22173.onelektra@gmx.net>
-Subject: Re: [B.A.T.M.A.N.] List policy for none subscribers
+In-Reply-To: <20090825201457.GA5070@suse.de>
+Subject: Re: [B.A.T.M.A.N.] Getting batman into staging
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,23 +20,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: Greg KH <gregkh@suse.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-> This is a good and important question. Even more so because Marek and I were 
-> having a initial discussion via VOIP about ideas and changes to the algorithm 
-> for the next generation mark 5 of the protocol algorithm. Our aim is (again) 
-> reduced computational and data overhead, faster convergence speed, a 
-> simplification of the protocol  and added support for IPv6. This step will 
-> again call for a higher packet version number
+Hi Greg
 
-How many of these goals can be reached without changing the packet
-format? I've implemented regenerating lost OGMs without changing the
-protocol to a degree it needs to bump the version number. Does
-removing the averaging of TQ from remote neighbors change the message
-format?
+CC: to the batman list should now work for you. Your email address has
+been listed as O.K. to accept. There is an ongoing discussion about an
+open list and fighting SPAM etc.
 
-My question would be, does not changing the message format so that the
-version number can stay the same impose too high a penalty in terms of
-design restrictions?
+> But first off, what is keeping this code from being added to the "main"
+> portion of the kernel tree?  Have you submitted it for inclusion there
+> already?  If so, what was the response?  If not, why not?
+ 
+I'm reasonably new to the project so don't know the history too
+well. I get the impression the code has not been sent to lkml or
+linux-net list. There seems to be a perception within the developers
+that getting code into mainline is difficult, so why bother when it
+has been going O.K. out of mainline. I think you saying it could go
+into staging right now has taken quite a few people by surprise.
 
-       Andrew
+Is staging the right way to do this? Is posting to say linux-net
+better for this sort of code?
+
+> Sound good?  If so, send me some patches!
+
+Assuming we do go via staging, do you want one jumbo patch, 6500 lines
+of code, or should i break it up into smaller chunks?
+
+   Thanks
+        Andrew
