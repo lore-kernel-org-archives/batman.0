@@ -1,14 +1,16 @@
-Return-Path: <gregkh@suse.de>
-Date: Wed, 26 Aug 2009 14:11:45 -0700
-From: Greg KH <gregkh@suse.de>
-Message-ID: <20090826211145.GA8671@suse.de>
-References: <20090825200530.GA21951@lunn.ch> <20090825201457.GA5070@suse.de>
-	<20090826182548.GG16067@lunn.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 27 Aug 2009 17:58:33 +0800
+References: <20090826064151.GE21827@ma.tech.ascom.ch>
+	<200908261651.16980.lindner_marek@yahoo.de>
+	<20090826105234.GH20818@lunn.ch>
+In-Reply-To: <20090826105234.GH20818@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090826182548.GG16067@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] Getting batman into staging
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908271758.33752.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] New name for batman-adv?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,49 +22,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-On Wed, Aug 26, 2009 at 08:25:48PM +0200, Andrew Lunn wrote:
-> Hi Greg
-> 
-> CC: to the batman list should now work for you. Your email address has
-> been listed as O.K. to accept. There is an ongoing discussion about an
-> open list and fighting SPAM etc.
+On Wednesday 26 August 2009 18:52:34 Andrew Lunn wrote:
+> > stateless proactive adhoc networking protocol
+> > Does not sound too bad in my opinion. Other opinions ?
+>
+> spanp
+>
+> Not the nicest of acronym. It would be good to be able to build a
+> short, 3 letter abbreviation of the acronym for the network device
+> name. That is one thing that batman->bat0 has going for it.
 
-Heh, that's normal.  I run a few open lists, and it's not that hard.
+Well, we safely can omit the last "p" to make it "span". 
+span0 looks fine to me.  ;-)
 
-> > But first off, what is keeping this code from being added to the "main"
-> > portion of the kernel tree?  Have you submitted it for inclusion there
-> > already?  If so, what was the response?  If not, why not?
->  
-> I'm reasonably new to the project so don't know the history too
-> well. I get the impression the code has not been sent to lkml or
-> linux-net list. There seems to be a perception within the developers
-> that getting code into mainline is difficult, so why bother when it
-> has been going O.K. out of mainline. I think you saying it could go
-> into staging right now has taken quite a few people by surprise.
+By the way, I was referring to the protocol name and not to the 
+implementation's name. Sven pointed out that the protocol and the 
+implementation share the same name which is a bit confusing.
 
-That's what staging is for!
+Feel free to make alternative suggestions. :-)
 
-> Is staging the right way to do this? Is posting to say linux-net
-> better for this sort of code?
-
-staging gets pulled into linux-next automatically.  linux-next is only
-for what is going to be in the "next" kernel release (2.6.32 for right
-now).  So, you would have to have the code up to mergable standards, and
-approved by the network maintainers before it could go into linux-next
-on its own.
-
-> > Sound good?  If so, send me some patches!
-> 
-> Assuming we do go via staging, do you want one jumbo patch, 6500 lines
-> of code, or should i break it up into smaller chunks?
-
-6500 lines is nothing :)
-
-Whatever you feel is a "logical" chunk would be good to have.
-
-thanks,
-
-greg k-h
+Regards,
+Marek
