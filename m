@@ -1,17 +1,14 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 27 Aug 2009 21:44:40 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20090827194440.GC27212@lunn.ch>
-References: <20090826064151.GE21827@ma.tech.ascom.ch>
-	<200908261651.16980.lindner_marek@yahoo.de>
-	<20090826105234.GH20818@lunn.ch>
-	<200908271758.33752.lindner_marek@yahoo.de>
+Return-Path: <sebastian.criado@gmail.com>
+Message-ID: <4A96E28C.4050409@gmail.com>
+Date: Thu, 27 Aug 2009 16:46:20 -0300
+From: =?ISO-8859-1?Q?=22Sebasti=E1n_D=2E_Criado=22?=
+	<sebastian.criado@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908271758.33752.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] New name for batman-adv?
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Is svn broken?
+Reply-To: sebastian.criado@gmail.com,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.net>
@@ -24,19 +21,17 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-> Well, we safely can omit the last "p" to make it "span". 
-> span0 looks fine to me.  ;-)
+I cant's update v=EDa svn
 
-That is not so bad. A quick google search for "span linux" found:
+svn co http://downloads.open-mesh.net/svn/batman/trunk/batman-experimental/
+svn: Could not open the requested SVN filesystem
 
-http://www.irisa.fr/lande/genet/span/
+Saludos.-
+--=20
+Sebastian.Criado@gmail.com - GPG: 1024D/FB208AA2
+797A 6D01 B7FC B8C7 AD5E|counter.li.org: #146768
+2A50 66E6 2FFB FB20 8AA2|http://www.lugro.org.ar
+http://noalamatricula.wordpress.com/about/ read!
+"Si  el Universo fuera un programa estar=EDa hecho
+en C, y correr=EDa sobre un sistema UNIX" An=F3nimo.
 
-which appears to be a user space tool to draw message sequence
-charts. Its a French university project. It would be polite to ask if
-they mind having a linux kernel module with the same name, just in
-case they claim some sort of trademark.
-
-Are you suggesting a mass rename: In the kernel module sources batman
-or batman-adv becomes span?
-
-   Andrew
