@@ -1,14 +1,12 @@
-Return-Path: <linus.luessing@web.de>
-Date: Sun, 30 Aug 2009 03:59:03 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20090830015903.GA26116@Linus-Debian>
+Return-Path: <andrew@lunn.ch>
+Date: Sun, 30 Aug 2009 09:37:52 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20090830073752.GO16067@lunn.ch>
 References: <20090830013647.GA26017@Linus-Debian>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/04w6evG8XlLl3ft"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20090830013647.GA26017@Linus-Debian>
-Sender: linus.luessing@web.de
 Subject: Re: [B.A.T.M.A.N.] [patch] adding subgraph-feature to vis-output in
  dot-file-format
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,61 +20,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
+> Cheers, Linus
+>
+> PPS: I had to introduce a src-field in the vis-packet-struct,
+> therefore the compatibility version had to be increased as well.
 
---/04w6evG8XlLl3ft
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm thinking about linux-mainline here.
 
-And if someone prefers a visual example, a simple setup like
-node1 <-> node2 <-> node3 results into a dot-file like this:
+Does it make sense to have a version number per message type? Some
+things we can do backward compatibility easily, some things not.
 
-digraph {
-        "22:05:f9:aa:77:1f" -> "a2:14:84:e5:e5:46" [label=3D"1.15"]
-        "22:05:f9:aa:77:1f" -> "00:ff:5b:62:9c:a3" [label=3D"HNA"]
-        subgraph "cluster_22:05:f9:aa:77:1f" {
-                "22:05:f9:aa:77:1f" [peripheries=3D2]
-        }  =20
-        "6a:25:1f:a0:14:72" -> "4e:18:87:ef:80:12" [label=3D"1.0"]
-        "6a:25:1f:a0:14:72" -> "00:ff:2c:c8:bd:d5" [label=3D"HNA"]
-        subgraph "cluster_6a:25:1f:a0:14:72" {
-                "6a:25:1f:a0:14:72" [peripheries=3D2]
-        }  =20
-        "a2:14:84:e5:e5:46" -> "22:05:f9:aa:77:1f" [label=3D"1.0"]
-        "4e:18:87:ef:80:12" -> "6a:25:1f:a0:14:72" [label=3D"1.15"]
-        "a2:14:84:e5:e5:46" -> "00:ff:5e:e0:23:15" [label=3D"HNA"]
-        subgraph "cluster_a2:14:84:e5:e5:46" {
-                "a2:14:84:e5:e5:46" [peripheries=3D2]
-                "4e:18:87:ef:80:12"
-        }  =20
-}
+I guess it should not be too hard to do backward compatibility
+here. If you receive a version 7 do the old way of getting the source
+address. If its a version 8 packet, use the new way?
 
-Which can then be parsed to a nice svg with fdp (or dot):
-http://krtek.asta.uni-luebeck.de:8080/~tux/batman-vis-with-subgraph.svg
+Allowing this sort of backward compatibility also makes deployment
+easier. You currently have a real danger of loosing contact to some of
+your nodes during software updates. If you do it in the wrong order,
+you could end up with a disconnected island.
 
---/04w6evG8XlLl3ft
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Also, once in mainline, the vis file becomes part of the well defined
+API. It should not just change in ways which are not backward
+compatible. I'm guessing this change breaks all my tools for parsing
+vis, and it probably breaks other peoples tools. Ideally, we strip out
+all graphviz and JSON formatting from the kernel and put it into
+userspace, eg batctl. Tools should then use batcl. It then becomes
+safer to change the proc vis format. The output of batctl stays the
+same, unless you add a command line flag to enable the new feature.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+This move to mainline requires some adaptations to the development
+ways. We need to discuss this and need to get the basics sorted out
+before we do go into mainline. However, it looks like we could be in
+mainline very quickly if we wanted.
 
-iQIcBAEBAgAGBQJKmdznAAoJEBKw7u43QNpfiLwQAJVvKrB7YLnA7MKWZPGb337K
-vTfQMQsg+m2M+W2Uf207qpO2xXFotFb0r8+r7pDB3reLnmg71cw4cyWbxqWHqYZx
-xtqNsytiOztzhZsWKqfZd0pe/PchiWRurGQz3p4WlzI0KURVdpmecYnJ+HqeNUUa
-E2CJ8M12ulON1FRYVqtwZwER8ZgOVeLcYrVvHKCNDke7wqwLtXTRcgFimXTcyFpn
-Apz5OI61TeCjeLlni5AUCIlgdnufXdxMMuJkmF/4bw4w9Rl2A5zrMUBHIqGHuI17
-9TYINGqFS++mGpGULICwlzU1ZWauOpPwm7G+u2sKBNAU3g1tHGGjLET2V6cxLEyw
-IFJ4oPhutUqFLDgs6Aak+fKg0f20bFV3FZU5aUa6X0TRjIguBWd8gwbdQxsujvp7
-kPjIBsK9R+E9b8wDfnmmMFbHO2hUHkbPew5pBgRIjZY/vqrHPIo1aKMQKrZi5Rrn
-EV620+ycS0SbWjR9XBHlfEZ3YAUdS3pQMMuRlp0pyMUwFvsIZ2WJ5Oxo6615KgBn
-0xF7S93gxzj1qqioBcn4WlaIlH09dMCdAIOPMyfjwtfH5SI81g2GrxZrbj0XI98P
-pRLyZIXT+ZltVOrVuBGH2DvS6srXhaUrxoU0A0syPOMMNzaJyS2+vQYXUjqWTQdb
-KC3m30FkIQm5hbC/SKVX
-=Dzt5
------END PGP SIGNATURE-----
+      Andrew
 
---/04w6evG8XlLl3ft--
