@@ -1,14 +1,15 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 30 Aug 2009 22:23:06 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20090830202306.GB2410@pandem0nium>
+Return-Path: <linus.luessing@web.de>
+Date: Sun, 30 Aug 2009 23:47:19 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20090830214719.GA3905@Linus-Debian>
 References: <20090830013647.GA26017@Linus-Debian>
-	<20090830073752.GO16067@lunn.ch>
+	<20090830195553.GA2410@pandem0nium>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="U+BazGySraz5kW0T"
+	protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
 Content-Disposition: inline
-In-Reply-To: <20090830073752.GO16067@lunn.ch>
+In-Reply-To: <20090830195553.GA2410@pandem0nium>
+Sender: linus.luessing@web.de
 Subject: Re: [B.A.T.M.A.N.] [patch] adding subgraph-feature to vis-output	in
 	dot-file-format
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,100 +26,26 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
 
---U+BazGySraz5kW0T
-Content-Type: text/plain; charset=utf8
+--J2SCkAp4GZ/dPZZf
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Yep, works fine for me, compiled and run it on our three virtual
+machines and looks the same as with my original patch. I also had
+a quick look at the json output and I think the patch should not
+have broken anything of that either, but a json-expert should have
+a look at it again. Also it might make sense to introduce
+something comparable to the subgraphing-feature of the
+dot-file-format to the json output, wouldn't it? Otherwise you
+will still see seperated graphs with json output if nodes are
+having multiple interfaces. So someone might have to write and
+commit a patch for that sometime in the future as well.
 
-On Sun, Aug 30, 2009 at 09:37:52AM +0200, Andrew Lunn wrote:
-> > Cheers, Linus
-> >
-> > PPS: I had to introduce a src-field in the vis-packet-struct,
-> > therefore the compatibility version had to be increased as well.
->=20
-> I'm thinking about linux-mainline here.
->=20
-> Does it make sense to have a version number per message type? Some
-> things we can do backward compatibility easily, some things not.
->=20
-> I guess it should not be too hard to do backward compatibility
-> here. If you receive a version 7 do the old way of getting the source
-> address. If its a version 8 packet, use the new way?
+Thanks for reviewing the patch.
 
-Generally possible, but as we store the vis information locally=20
-in whole packets we have to distinguish everywhere between the versions
-(packet handling, proc access, etc). This will not make the code
-look pretty.
+Cheers, Linus
 
->=20
-> Allowing this sort of backward compatibility also makes deployment
-> easier. You currently have a real danger of loosing contact to some of
-> your nodes during software updates. If you do it in the wrong order,
-> you could end up with a disconnected island.
-
-Each software updates on meshed nodes is difficult. Even=20
-if you just change the channel, the ESSID/BSSID or other wifi parameters
-you can end up with islands. Most setup i have seen tried to use software
-firmwares as homogenous as possible, even if they are a little bit older.
-Software Updates in mesh networks always require more sophisticated
-strategies.
-
->=20
-> Also, once in mainline, the vis file becomes part of the well defined
-> API. It should not just change in ways which are not backward
-> compatible. I'm guessing this change breaks all my tools for parsing
-> vis, and it probably breaks other peoples tools. Ideally, we strip out
-> all graphviz and JSON formatting from the kernel and put it into
-> userspace, eg batctl. Tools should then use batcl. It then becomes
-> safer to change the proc vis format. The output of batctl stays the
-> same, unless you add a command line flag to enable the new feature.
-
-Mhm, even if we had transported the data from kernel to userspace, we
-would have ended up in a change to this interface as the data format
-changed (additional source field).=20
-
-However i've added a compile flag in the reviewed version of linus patch
-which should give you the possibility to get the "old" vis output.
-
-Generally i think that the patch was really neccesary as the original
-vis did not consider nodes with multiple interfaces. Disconnected graphs
-were the result of this, which makes the vis output pretty useless
-if you employ nodes with multiple interfaces. I think the approach
-by using clusters is quite good too, even if we (the toolwriters,
-me included) need to change their parsers now.=20
-
->=20
-> This move to mainline requires some adaptations to the development
-> ways. We need to discuss this and need to get the basics sorted out
-> before we do go into mainline. However, it looks like we could be in
-> mainline very quickly if we wanted.
-
-I agree, we should sort this out early. My personal opinion is that
-the algorithm will be optimized further, and it will make the code
-unmaintainable to add exceptions for all older versions (especially
-the various intermediate versions).
-
-As it was pointed out earlier by Marek and Elektra, using multiple versions
-in one network will most probably lead to "side effects". IMHO it's better
-to let users know that it won't work properly backward than risking these
-side effects.
-
-Usually we have stable versions (e.g. batman-adv 0.1) with a specific forma=
-t,
-and an ongoing development in the svn trunk. Maybe we should do the same
-for future kernel development - maintaining one packet and algorithm version
-in the kernel, and further develop the algorithm on our own (e.g. in a=20
-git tree or with sets of patches)?=20
-In this case, we should post the current batman-adv to the list when
-0.2 is stabilized and finished. Mainline algorithm should only be changed
-when we reach a new stable version.
-
-best regards,
-	Simon
-
---U+BazGySraz5kW0T
+--J2SCkAp4GZ/dPZZf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -126,9 +53,19 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkqa36oACgkQrzg/fFk7axYixACfQpGrntYJyIRofGKega1ugD9r
-COgAn2YJeB8bOXIQKcg//UKXq+AodDFj
-=/0F6
+iQIcBAEBAgAGBQJKmvNmAAoJEBKw7u43QNpfI8gP/2JnxGOu0oL/c+pK9b3tfzM4
+yXhhw//wkGm2Wkb1zdIVsW21f+bDgfIWCT/fEG0FUcaBVBdV4NQXFJK6qex+BUua
+52MqdBw+8CarYuIoPvQyB/4JuhZj2AxnFMlvLnnolGVoV51gdAieFJRw3pDiqwZb
+FpvIVvx8gmSqEEJ8IvTVA2k6M+A9cmngnRMMnV8Ddb+JgD5XcwDXbSLkPQo7kAev
+7Y3CU/XYzkIwyYBnMSjjYIXMUukb5jRdMMgWP7ZjGZ2jaQhdyvIDcNw58nnqLJod
+HGHgqt8ffM6TG/qA6zh3ZHOs7DgwCR0WsabayK2jcCboQ9H7RhHqh1rew7FC+mO5
+wdI4qCIs9ccgvWgPVaXoL9dajbsq03RXu44euJ4gx/yzJs9QAJmIaGbflFkMlCfE
+j89tSles8oZzV9OayAVs5UkvdyWjXRph2ufqYPXv5sl54y69pp1JYyEWxX6Hze7n
+KIS5rD9lUWFlD+YkQASIlht3QhuIS2kAmJ0bmH27pgZyngjlZgXsISq6CMub1Hya
+gD7AXjpUk4Bu+M32i8kRGWZoce/Z/m0avVwTFkQGRolVe/uUVoWFNS0KskAKDuEj
+UbRqpWdmdoQmUQO5oGISnXhYlhWQugwF2QouKx8yqoR6rSfEoF81j4DOowY79uk3
+tvI5GL2t0iMSOirNGt9y
+=liMV
 -----END PGP SIGNATURE-----
 
---U+BazGySraz5kW0T--
+--J2SCkAp4GZ/dPZZf--
