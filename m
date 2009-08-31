@@ -1,16 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 31 Aug 2009 13:26:29 +0800
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 31 Aug 2009 07:28:53 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20090831052853.GQ16067@lunn.ch>
 References: <20090830013647.GA26017@Linus-Debian>
-	<20090830073752.GO16067@lunn.ch>
-	<20090830202306.GB2410@pandem0nium>
-In-Reply-To: <20090830202306.GB2410@pandem0nium>
+	<20090830195553.GA2410@pandem0nium>
+	<20090830214719.GA3905@Linus-Debian>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908311326.29339.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] development flow
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090830214719.GA3905@Linus-Debian>
+Subject: Re: [B.A.T.M.A.N.] [patch] adding subgraph-feature to vis-output	in
+	dot-file-format
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,24 +24,27 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-On Monday 31 August 2009 04:23:06 Simon Wunderlich wrote:
-> Usually we have stable versions (e.g. batman-adv 0.1) with a specific
-> format, and an ongoing development in the svn trunk. Maybe we should do the
-> same for future kernel development - maintaining one packet and algorithm
-> version in the kernel, and further develop the algorithm on our own (e.g.
-> in a git tree or with sets of patches)?
-> In this case, we should post the current batman-adv to the list when
-> 0.2 is stabilized and finished. Mainline algorithm should only be changed
-> when we reach a new stable version.
+Hi Linus, Simon
 
-Actually, I came to a similar conclusion:
-We "only" submit stable versions to mainline (including stability fixes) 
-whereas the development stays outside of the official linux tree. That way we 
-can keep our development speed without worrying too much about compatibility. 
-When we are getting to the next stable release we can think about how to 
-soften the transition. 
+One of the things on the TODO list for mainline is to strip out all
+the graphvis/JSON formatting done by the kernel and put it into user
+space, probably batctl, or another standalone tool, or maybe even a
+little library...
 
-More ideas / opinions ?
+Why:
 
-Regards,
-Marek
+1) No other file in /proc does any special formatting.
+2) What happens when one tool wants graphvis and another JSON, at the same time?
+3) What happens when you want a third, forth, fifth format etc...
+
+Are either of you interested on working on this? 
+
+I guess the first step is to design a file format for vis in proc.  I
+would suggest space separated values. Maybe one line per
+vis_into_entry? I would also suggest the quality value is 0-255, not a
+real number. User space, which has float support, can then turn it
+into a float if need be.
+
+     Andrew
+
+
