@@ -1,15 +1,14 @@
-Return-Path: <zoobab@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 5 Sep 2009 02:22:31 +0800
+References: <4AA10320.1000503@ninux.org>
+In-Reply-To: <4AA10320.1000503@ninux.org>
 MIME-Version: 1.0
-Sender: zoobab@gmail.com
-In-Reply-To: <5635aa0d0909040505gf7335eax61590fed468d15a9@mail.gmail.com>
-References: <20090829073824.GA31899@ffii.org>
-	<5635aa0d0909040505gf7335eax61590fed468d15a9@mail.gmail.com>
-Date: Fri, 4 Sep 2009 15:21:26 +0200
-Message-ID: <560c7c9a0909040621l4dd812b4y71555966e62f7d03@mail.gmail.com>
-From: Benjamin Henrion <bh@udev.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] HSB announces the second Wireless Battle Mesh
-	(Brussels, 17-18 Oct)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909050222.31291.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Ninux Day 2009
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,30 +22,26 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-On Fri, Sep 4, 2009 at 2:05 PM, Outback Dingo<outbackdingo@gmail.com> wrote:
-> Benjamin,
-> Would the plan be to use broadcom based gear again in the tests, or is it
-> possible atheros hardware is going to be included? Ive been having an
-> internal discussion here with a partner, we would like to know how many
-> nodes will be tested and if atheros will be part of the test bed?
+On Friday 04 September 2009 20:08:00 Claudio wrote:
+> Ninux Day 2009
+> 27-29 November, Rome, Italy
+> http://blog.ninux.org/2009/09/03/ninux-day-2009/
+> http://wiki.ninux.org/NinuxDay2009en
+>
+> The Ninux.org team is glad to announce the first *Ninux Day*, the only
+> day that lasts a weekend ;)
+>
+> A weekend surreal time slot on topics about wireless communities.
+> Under the same roof for the first time you'll find hackers, geeks,
+> nerds, engineers, artists, curious and academics.
 
-I personally have 10 foneras, so yes Atheros will be tested.
+Although I'm happy that there is growing interest for events (which is 
+important) I have the feeling you are not in touch with the Belgian guys ? 
+They just announced their event a couple of days ago. It seems there is not 
+much coordination between you guys ? One event in October and the other one in 
+November ?
 
-I am preparing a permanent outdoor testbed with 5 sites with 2 radios
-each. One of the goal is to test if each routing protocol can add a
-routing cost to hop over the same radio interface.
+Regards,
+Marek
 
-Hopping over the same radio interface should be costly:
 
-http://hackerspace.be/wbm2009#toc9
-
---
-Benjamin Henrion <bhenrion at ffii.org>
-FFII Brussels - +32-484-566109 - +32-2-4148403
-"In July 2005, after several failed attempts to legalise software
-patents in Europe, the patent establishment changed its strategy.
-Instead of explicitly seeking to sanction the patentability of
-software, they are now seeking to create a central European patent
-court, which would establish and enforce patentability rules in their
-favor, without any possibility of correction by competing courts or
-democratically elected legislators."
