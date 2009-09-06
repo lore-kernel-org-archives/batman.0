@@ -1,15 +1,13 @@
-Return-Path: <onelektra@gmx.net>
-From: elektra <onelektra@gmx.net>
-Date: Sun, 6 Sep 2009 14:37:08 +0200
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 6 Sep 2009 23:11:22 +0800
 References: <4AA34865.9000203@rsm-freilassing.de>
-	<200909061250.40558.onelektra@gmx.net>
-	<4AA39E02.7030201@rsm-freilassing.de>
-In-Reply-To: <4AA39E02.7030201@rsm-freilassing.de>
+In-Reply-To: <4AA34865.9000203@rsm-freilassing.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909061437.08881.onelektra@gmx.net>
+Message-Id: <200909062311.22521.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Problems with Gateway-Selection without option -g
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -24,20 +22,30 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Hi Michael!
+
+Hi,
+
+> When i try to start BATMAN on the Gateway with this options:
+>    batmand -g 30mbit/2mbit
+> 
+> the clients will create a gate0 interface. I do not need this gate0
+> interface. All routers have static public ip-addresses assigned. The
+> once that i need is, that BATMAN inserts a DEFAULT-ROUTE to the next
+> neighbour hop thats reach the gateway.
+
+I don't understand why you have the feeling the gate0 interface is a problem. 
+As Elektra explained choosing a default gateway by "inserting a default route" 
+is meaningless (in a mesh). If each client should be able to choose its own 
+gateway there is no way around the tunnel mechanism. 
+
+If you dislike the masquerading (which is activated per default) you can learn 
+here[0] how to disable it. If you really want to have the plain default route 
+I suggest to use the --policy-routing-script [1] option to modify the routing 
+tables on the fly.
+
+Regards,
+Marek
 
 
-> Announcing 0.0.0.0/0 can really be a problem, but why does BATMAN tunnel
-> the internet-traffic through gate0?
-
-Because we want to have the means to select the gateway from the gateway 
-client, rather than ending up somewhere random with our outgoing Internet 
-traffic. With default route entries in every mesh node all a gateway client node 
-can determine is its next link-local hop on the path towards one of the 
-gateways. Hence every node on your path will make its own selection for the 
-default gateway, so it is not possible to select the gateway from the mesh 
-gateway client. 
-
-Cheers,
-Elektra
-
+[0] http://www.open-mesh.net/wiki/InternetTuning
+[1] http://www.open-mesh.net/wiki/RoutingVodoo
