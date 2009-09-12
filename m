@@ -1,9 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 12 Sep 2009 12:10:20 +0200
-Message-Id: <1252750220-19243-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] Remove compatibility code for pre 2.6 kernel
-	versions
+Date: Sat, 12 Sep 2009 12:12:44 +0200
+Message-Id: <1252750364-19308-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] [batman-adv] Remove compatibility code for
+	pre 2.6 kernel versions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
