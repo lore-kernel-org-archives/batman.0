@@ -1,12 +1,13 @@
-Return-Path: <post@tiwoc.de>
-Message-ID: <4AB29DDF.3050303@tiwoc.de>
-Date: Thu, 17 Sep 2009 22:36:47 +0200
-From: Daniel Seither <post@tiwoc.de>
+Return-Path: <lick.prize@gmail.com>
+Message-ID: <B32C944A35244A19A20707D36198AFEE@youillmlpt3>
+From: "Lick A Prize" <lick.prize@gmail.com>
+References: <AACE951F705644649DB6ABC24CFBCF29@youillmlpt3><8c906fa50909171115v2b296844h69c5f93eea99403c@mail.gmail.com>
+	<4AB28C2D.7060600@tiwoc.de>
+In-Reply-To: <4AB28C2D.7060600@tiwoc.de>
+Date: Fri, 18 Sep 2009 14:38:53 +1000
 MIME-Version: 1.0
-References: <AACE951F705644649DB6ABC24CFBCF29@youillmlpt3>	<8c906fa50909171115v2b296844h69c5f93eea99403c@mail.gmail.com>	<4AB28C2D.7060600@tiwoc.de>
-	<8c906fa50909171314lb275b23vf87bd2852e3bd244@mail.gmail.com>
-In-Reply-To: <8c906fa50909171314lb275b23vf87bd2852e3bd244@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] IP from MAC
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,30 +23,20 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Gustavo Lindberg schrieb:
-> 2009/9/17 Daniel Seither <post@tiwoc.de>
-> 
->> Gustavo Lindberg wrote:
->>> Then, At a meeting of 60 people there is the 99% probability  of the
->> least
->>> two men have a  birthday the same day. So,, Similarly to the case of
->>> MAC-Adress is:
->>>
->>> P(r)=1-65536!/(65536^r * (65536-r)!)
->> Robin uses 3 bytes of the MAC address to choose the IP address of the
->> mesh interface, not only 2 bytes = 65536 possibilities. This leads to
->> 2^24 = 16777216 different addresses.
->>
-> 
-> All IP addresses are derived by device's MAC address, if MAC is
-> aa:bb:cc:dd:ee:ff then ath0 IP (mesh iface) will be 5.dd:ee:ff while ath1 IP
-> and ath2 IP will be 101.ee:ff:1 and 102.ee:ff:1 (obviously in decimal
-> format).
+OK so IPs from MAC addresses is pretty good but not a perfect solution.
 
-I read this before, but now I realize that colliding IP addresses of the
-ath1/2 interfaces are a problem. This seriously limits the number of
-nodes in the network for reasonably low collision probabilities. With
-200 nodes, you already have a probability greater than 25%. Enter IPv6...
+This comment is interesting...
 
-Regards,
-Daniel
+> However, as Marek already wrote, the focus of the batman development
+> moves to layer 2 where IP addresses are not used. On top of batman-adv,
+> you can use any IP address distribution scheme you like. For example,
+> you could simply run a DHCP server.
+>
+> Regards,
+> Daniel
+
+Batman-adv does indeed seem like the way forward. So, on top of batman-adv, 
+what solutions are there for IP address distribution? What might you try in 
+a situation where there is no obvious central coordinator to put a DHCP 
+server on? 
+
