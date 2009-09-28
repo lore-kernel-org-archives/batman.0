@@ -1,15 +1,18 @@
-Return-Path: <lick.prize@gmail.com>
-Message-ID: <90B6BB88B18A44DFB755CDB24D4D8FC6@youillmlpt3>
-From: "Lick A Prize" <lick.prize@gmail.com>
-References: <200909181019.11099.sven.eckelmann@gmx.de><2EF270158B06420682C845446EBAA2FC@youillmlpt3>
-	<20090918180450.GA19559@pandem0nium>
-In-Reply-To: <20090918180450.GA19559@pandem0nium>
-Date: Mon, 21 Sep 2009 14:31:23 +1000
+Return-Path: <jacobmarble@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] IP from MAC
+In-Reply-To: <20090919075934.GS16067@lunn.ch>
+References: <20090830013647.GA26017@Linus-Debian>
+	<200909031406.49008.lindner_marek@yahoo.de>
+	<20090908160146.GA21945@lunn.ch>
+	<200909090154.54096.lindner_marek@yahoo.de>
+	<5161afcd0909181414kd78329dvc2617cacff43c591@mail.gmail.com>
+	<5161afcd0909181419j24a75484n27791a65e52ac9f1@mail.gmail.com>
+	<20090919075934.GS16067@lunn.ch>
+Date: Sun, 27 Sep 2009 21:29:35 -0600
+Message-ID: <5161afcd0909272029t2f3054f2t39e99aa28fe3a453@mail.gmail.com>
+From: Jacob Marble <jacobmarble@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] mailing list migration (was: development flow)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,25 +26,27 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Will link local autoconfiguration/APIPA work in multi-hop ad hoc networks?
+On Sat, Sep 19, 2009 at 1:59 AM, Andrew Lunn <andrew@lunn.ch> wrote:
+> What is important is the quality of its spam filtering. We need
+> something with very high quality, eg like sourceforge, vger, or
+> sourceware would provide. So i would suggest a provider with a proven
+> record of hosting open source project mailing lists which are open for
+> anybody to post to.
 
-Say you have 5 nodes connected, in a line, in an ad hoc network as 
-follows...
+Sorry for the delay, busy week.  So, I'm looking for a mailing host that:
 
-A <----> B <-----> C <-----> D <------> E
+a) has experience hosting, and so can filter spam without hassle
+b) lets us use open-mesh.net instead of super-duper-mailing-host.com
+c) hosts open source gratis
 
-Will autoconfigure ensure that A and E have different addresses? Is there a 
-chance that they will both end up with, say for example, 169.254.0.123?
+I've looked at sourceforge, but their mailing list service looks very
+canned and they only allow <listname>@lists.sourceforge.net.  Also, SF
+already has a project called batman, so I created one called batman2
+(there are surely more creative project names available).  I have
+created a test account:
+https://lists.sourceforge.net/lists/admin/batman2-test
 
---------------------------------------------------
-From: "Simon Wunderlich" <simon.wunderlich@s2003.tu-chemnitz.de>
-Sent: Saturday, September 19, 2009 4:04 AM
-To: "The list for a Better Approach To Mobile Ad-hoc Networking" 
-<b.a.t.m.a.n@lists.open-mesh.net>
-Subject: Re: [B.A.T.M.A.N.] IP from MAC
+This week, I'll look at commercial entities as well as larger open
+source projects.
 
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@lists.open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-> 
+Jake
