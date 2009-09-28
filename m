@@ -1,6 +1,7 @@
-Return-Path: <jacobmarble@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <5161afcd0909272029t2f3054f2t39e99aa28fe3a453@mail.gmail.com>
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 28 Sep 2009 07:03:22 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20090928050322.GW16067@lunn.ch>
 References: <20090830013647.GA26017@Linus-Debian>
 	<200909031406.49008.lindner_marek@yahoo.de>
 	<20090908160146.GA21945@lunn.ch>
@@ -9,11 +10,10 @@ References: <20090830013647.GA26017@Linus-Debian>
 	<5161afcd0909181419j24a75484n27791a65e52ac9f1@mail.gmail.com>
 	<20090919075934.GS16067@lunn.ch>
 	<5161afcd0909272029t2f3054f2t39e99aa28fe3a453@mail.gmail.com>
-Date: Sun, 27 Sep 2009 21:31:35 -0600
-Message-ID: <5161afcd0909272031u39f85beex279c6c094226878f@mail.gmail.com>
-From: Jacob Marble <jacobmarble@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5161afcd0909272029t2f3054f2t39e99aa28fe3a453@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] mailing list migration (was: development flow)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -28,35 +28,24 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-On Sun, Sep 27, 2009 at 9:29 PM, Jacob Marble <jacobmarble@gmail.com> wrote=
-:
-> On Sat, Sep 19, 2009 at 1:59 AM, Andrew Lunn <andrew@lunn.ch> wrote:
->> What is important is the quality of its spam filtering. We need
->> something with very high quality, eg like sourceforge, vger, or
->> sourceware would provide. So i would suggest a provider with a proven
->> record of hosting open source project mailing lists which are open for
->> anybody to post to.
->
-> Sorry for the delay, busy week. =C2=A0So, I'm looking for a mailing host =
-that:
->
+> Sorry for the delay, busy week.  So, I'm looking for a mailing host that:
+> 
 > a) has experience hosting, and so can filter spam without hassle
 > b) lets us use open-mesh.net instead of super-duper-mailing-host.com
 > c) hosts open source gratis
->
+
+a and b are must have, c would be nice. 
+ 
 > I've looked at sourceforge, but their mailing list service looks very
-> canned and they only allow <listname>@lists.sourceforge.net. =C2=A0Also, =
-SF
+> canned and they only allow <listname>@lists.sourceforge.net.  Also, SF
 > already has a project called batman, so I created one called batman2
-> (there are surely more creative project names available). =C2=A0I have
+> (there are surely more creative project names available).  I have
 > created a test account:
 > https://lists.sourceforge.net/lists/admin/batman2-test
->
-> This week, I'll look at commercial entities as well as larger open
-> source projects.
->
-> Jake
->
 
-Information about mailing lists at SF:
-https://sourceforge.net/apps/trac/sourceforge/wiki/Mailing%20lists
+There was briefly a discussion about renaming batman-adv to something
+else, but that discussion seemed to of died before reaching any
+conclusion. So for the moment i would suggest for the moment we keep
+with batman.
+
+        Andrew
