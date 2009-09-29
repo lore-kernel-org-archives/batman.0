@@ -1,6 +1,6 @@
 Return-Path: <jacobmarble@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090928050322.GW16067@lunn.ch>
+In-Reply-To: <5161afcd0909272312r4d773954i3c5827e195d4d764@mail.gmail.com>
 References: <20090830013647.GA26017@Linus-Debian>
 	<200909031406.49008.lindner_marek@yahoo.de>
 	<20090908160146.GA21945@lunn.ch>
@@ -10,10 +10,12 @@ References: <20090830013647.GA26017@Linus-Debian>
 	<20090919075934.GS16067@lunn.ch>
 	<5161afcd0909272029t2f3054f2t39e99aa28fe3a453@mail.gmail.com>
 	<20090928050322.GW16067@lunn.ch>
-Date: Mon, 28 Sep 2009 00:12:55 -0600
-Message-ID: <5161afcd0909272312r4d773954i3c5827e195d4d764@mail.gmail.com>
+	<5161afcd0909272312r4d773954i3c5827e195d4d764@mail.gmail.com>
+Date: Mon, 28 Sep 2009 23:06:15 -0600
+Message-ID: <5161afcd0909282206w7e412a8ak3c9f5ad1f5ab878a@mail.gmail.com>
 From: Jacob Marble <jacobmarble@gmail.com>
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] mailing list migration (was: development flow)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -28,52 +30,51 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-On Sun, Sep 27, 2009 at 11:03 PM, Andrew Lunn <andrew@lunn.ch> wrote:
->> a) has experience hosting, and so can filter spam without hassle
->> b) lets us use open-mesh.net instead of super-duper-mailing-host.com
->> c) hosts open source gratis
+On Mon, Sep 28, 2009 at 12:12 AM, Jacob Marble <jacobmarble@gmail.com> wrot=
+e:
+>>> a) has experience hosting, and so can filter spam without hassle
+>>> b) lets us use open-mesh.net instead of super-duper-mailing-host.com
+>>> c) hosts open source gratis
+>>
+>> a and b are must have, c would be nice.
 >
-> a and b are must have, c would be nice.
+> EMWD (http://www.emwd.com/mailman.html) looks like a regular webhost
+> with better-than-average mailing list support. =C2=A0They claim to have
+> spam filters in place, and they charge US$4/month. =C2=A0I emailed them
+> regarding hosting with open-mesh.net
+>
 
-I started going down the list at
-http://en.wikipedia.org/wiki/Comparison_of_open_source_software_hosting_facilities#Features
+I got an email this morning from Brian Carpenter at EMWD:
 
-Codendi looks like a very "comprehensive" solution, probably excessive.
+<quote>
+Hi Jacob:
 
-The following require that every list subscriber have "yet another
-username/password" and they all host mailing lists at mail-host.com:
+Thank you for your interest in our services.
 
-sourceforge.net
-tigris.org
-launchpad.net
+> a) filters spam very well
+> b) allows the list to be hosted using our domain name, not yours
 
-Another alternative is freelists.org, which only hosts @freelists.org,
-but does not require subscribers to log in to their site, ever.  I
-found them because the Haiku OS project uses them.
+We meet both of those requirement. Just keep in mind that since you
+cannot have a domain point to two servers (Mailman requires a web
+server), you will need to use a domain name that is not in current use
+or you can use a sub-domain off of your main domain such as
+list.open-mesh.net.
 
-There are others listed, but I feel like this is a wrong path.  Now
-I'm looking at services listed at the Mailman wiki:
-http://wiki.list.org/display/COM/Mailman+hosting+services
+> We currently have about 100 message/month in traffic.  Does this
+> describe your $4/month service?
 
-A lot of these services are VPS, which tells me that they let the
-customer handle details like spam.
+How many members will be subscribed to your list?
+</quote>
 
-JPBerlin (http://www.jpberlin.de/) looks good, but I don't know any
-German.  The Mailman like says "CEO Peer Heinlein is the maintainer of
-the german Mailman-translation and author of a book about secure
-mail-server administration."
+This is the best alternative that I have found.  They charge $4/month
+for up to 1000 subscribers and 1-8 posts/day.  Looking at the
+archives, I don't think this will be a problem for us.  We can pay
+more for up to 20,000 subscribers with this service.  If you guys are
+comfortable with this, then I need to work out details with Brian (how
+many subscribers, how to pay, can we import the existing archive, DNS
+records).
 
-Thielpark Systeme GmbH (http://www.thielpark.de/) I will contact this
-one.  "Reliable Mailman hosting on Linux with per list
-templates/language files, MHonArc integration for archiving and
-searching, customization of templates to match look of your website.
-Address import from various data sources."
-
-EMWD (http://www.emwd.com/mailman.html) looks like a regular webhost
-with better-than-average mailing list support.  They claim to have
-spam filters in place, and they charge US$4/month.  I emailed them
-regarding hosting with open-mesh.net
-
-More later.
+IMHO, I feel that better alternatives exist if we drop requirement
+"b", but I'm happy to be sysadmin for the list, wherever we host it.
 
 Jake
