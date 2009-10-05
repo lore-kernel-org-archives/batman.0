@@ -1,11 +1,14 @@
 Return-Path: <andrew@lunn.ch>
-Date: Sun, 4 Oct 2009 19:41:27 +0200
+Date: Mon, 5 Oct 2009 08:34:04 +0200
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20091004174127.GB3685@lunn.ch>
+Message-ID: <20091005063404.GF16067@lunn.ch>
+References: <20091004174127.GB3685@lunn.ch>
+	<20091004.171221.67525397.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] VGER mailing list request
+In-Reply-To: <20091004.171221.67525397.davem@davemloft.net>
+Subject: Re: [B.A.T.M.A.N.] VGER mailing list request
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,45 +20,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: postmaster@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: David Miller <davem@davemloft.net>
+Cc: b.a.t.m.a.n@lists.open-mesh.net, postmaster@vger.kernel.org
 
-> I'm sure your project is very interesting, but it falls short of the
-> scope for having the list crated on vger.
+On Sun, Oct 04, 2009 at 05:12:21PM -0700, David Miller wrote:
+> From: Andrew Lunn <andrew@lunn.ch>
+> Date: Sun, 4 Oct 2009 19:41:27 +0200
 > 
-> Generally, we host lists for kernel projects and their tools for which
-> they are already upstream or for which their upstream acceptance is
-> imminent.
+> > Is likely acceptance in staging sufficient for "...for which their
+> > upstream acceptance is imminent."?
 > 
-> I've never seen the BATMAN kernel bits even submitted for review on
-> netdev@vger.kernel.org and getting your code upstream via submission
-> there would be a prerequesite before we could be discussing a mailing
-> list on vger.
+> A lot of code doesn't make it past staging, and gets kicked right back
+> out of the staging tree instead of being moved to a final resting
+> place in the kernel tree.
 > 
-> I'm not even sure the getting your kernel bits upstream is even
-> something you want, or whether the networking maintainer (that's
-> me :-) would consider your code and approach acceptable.
+> So staging inclusion doesn't really mean much, an so upstream
+> acceptance isn't imminent just because you get your code into staging
+> :-)
 
 Hi David
 
-Let me fill in some of the background.
+Thanks for the reply. We will keep looking else where then for a list
+server. Once the code hits staging i will let you know so you can
+review it if you like.
 
-We have been talking to GregKH about submitting the code to staging.
-Greg has said he is happy to accept the patches for staging, since the
-code is totally self contained, mostly passed checkpatch apart from
-some long lines, sparse clean etc. And we have a TODO list of things
-we think need fixing before it can leave staging.
-
-However, at the moment we are using a closed list. Your reply to this
-email is going to bounce from the list server. Before we submit to
-staging and hopefully start getting feedback from kernel experts, we
-would like to move to an open list. The current list server does not
-have good enough Spam filtering for an open list. So we are looking
-for a list server provider who we could use. vger seemed like an
-obvious choice.
-
-Is likely acceptance in staging sufficient for "...for which their
-upstream acceptance is imminent."?
-
-   Thanks
+       Thanks
           Andrew
