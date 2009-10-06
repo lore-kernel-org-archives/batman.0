@@ -1,14 +1,16 @@
-Return-Path: <a.mailevent@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <200910061143.08021.sven.eckelmann@gmx.de>
+Return-Path: <andrew@lunn.ch>
+Date: Tue, 6 Oct 2009 12:54:36 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20091006105436.GB6646@lunn.ch>
 References: <d9bba8670910050221m476d31eaodcdb8e9cdfbe8fa3@mail.gmail.com>
 	<200910052324.55426.sven.eckelmann@gmx.de>
 	<d9bba8670910060226i3068db6awc4f126c9b6c51b1a@mail.gmail.com>
 	<200910061143.08021.sven.eckelmann@gmx.de>
-Date: Tue, 6 Oct 2009 12:49:01 +0200
-Message-ID: <d9bba8670910060349j63fe6515y65bff306bd7e0587@mail.gmail.com>
-From: a <a.mailevent@gmail.com>
-Content-Type: multipart/alternative; boundary=00c09ffb55446ba82b047541facd
+	<d9bba8670910060333i45d91b8eyc5fb1f1b05b94194@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d9bba8670910060333i45d91b8eyc5fb1f1b05b94194@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] batman-adv and TCP problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -21,80 +23,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
---00c09ffb55446ba82b047541facd
-Content-Type: text/plain; charset=ISO-8859-1
+On Tue, Oct 06, 2009 at 12:33:55PM +0200, a wrote:
+> Dear Sven, Marek
+> 
+> you can find as attachment the dump on eth2 of GW (tcpdump -ni eth2 -s 0 -w
+> gw.cap);
+> the output of batctl td -p 4 eth1 is:
+> 
+> 10:29:15.510000 BAT 52:54:00:00:20:01 > 52:54:00:00:30:01: UCAST, ttl 50, IP
+> 192.168.100.2.9001 > 192.168.20.4.45417: TCP, flags [...PA.], length 6
 
-I also tested ping with -M option, from B1 to GW1:
-ping -M do -s 1448 192.168.20.4
+192.168.100.2->192.168.20.4
 
-It works up to 1448 bytes, then starting from 1549 I receive the error
-"From 192.168.100.2 icmp_seq=1 Frag needed and DF set (mtu = 1476)"
+> 10:29:18.000000 BAT 52:54:00:00:30:01 > 52:54:00:00:20:01: UCAST, ttl 50, IP
+> 192.168.20.4.38246 > 192.168.100.2.9002: TCP, flags [.S....], length 12
 
-And my bat0 configuration is:
+192.168.20.4->192.168.100.2
 
-bat0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1476 qdisc pfifo_fast state
-UNKNOWN qlen 1000
+> 10:29:18.010000 BAT 52:54:00:00:20:01 > 52:54:00:00:30:01: UCAST, ttl 50, IP
+> 192.168.100.2.9002 > 192.168.20.4.38246: TCP, flags [.S..A.], length 12
 
+192.168.100.2-> 192.168.20.4
 
-andrea
+However you said:
 
-On Tue, Oct 6, 2009 at 11:43 AM, Sven Eckelmann <sven.eckelmann@gmx.de>wrote:
+> IP addresses:
+> - B1 - bat0: 192.168.10.1/24 - default gateway: 192.168.10.2
+> - GW: bat0: 192.168.10.2/24, eth1: 192.168.20.2/24
+> - EX: eth0: 192.168.20.3/24 - default gateway: 192.168.20.3
 
-> a wrote:
-> > It is correct. I'm using openwrt and, at the moment, without -M option.
-> > 1500byte packets work, with fragmentation.
-> > However, my TCP packets are small (about 60bytes). I have verified
-> TCPDump
-> > file and packets arrive. It seems that the Linux IP stack does not
-> forward
-> > them to the application.
-> > Moreover, if I disable batman on B1-GW1 link, it works
-> So it would be a good idea to do what Marek said. Give him a dump with
-> `batctl
-> td` on the gateway and if I could add something: complete tcpdump of both
-> ends
-> so we can see what packets receive on both sites.
->
-> Best regards,
->         Sven
->
+i.e, none of these IP addresses match!
 
---00c09ffb55446ba82b047541facd
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Maybe you should give us all the networking details. 
 
-I also tested ping with -M option, from B1 to GW1:<br>ping -M do -s 1448 19=
-2.168.20.4<br><br>It works up to 1448 bytes, then starting from 1549 I rece=
-ive the error <br>&quot;From 192.168.100.2 icmp_seq=3D1 Frag needed and DF =
-set (mtu =3D 1476)&quot;<br>
-<br>And my bat0 configuration is:<br><br>bat0: &lt;BROADCAST,MULTICAST,UP,L=
-OWER_UP&gt; mtu 1476 qdisc pfifo_fast state UNKNOWN qlen 1000<br><br><br>an=
-drea<br><br><div class=3D"gmail_quote">On Tue, Oct 6, 2009 at 11:43 AM, Sve=
-n Eckelmann <span dir=3D"ltr">&lt;<a href=3D"mailto:sven.eckelmann@gmx.de">=
-sven.eckelmann@gmx.de</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
-204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class=3D"im"=
->a wrote:<br>
-&gt; It is correct. I&#39;m using openwrt and, at the moment, without -M op=
-tion.<br>
-&gt; 1500byte packets work, with fragmentation.<br>
-&gt; However, my TCP packets are small (about 60bytes). I have verified TCP=
-Dump<br>
-&gt; file and packets arrive. It seems that the Linux IP stack does not for=
-ward<br>
-&gt; them to the application.<br>
-&gt; Moreover, if I disable batman on B1-GW1 link, it works<br>
-</div>So it would be a good idea to do what Marek said. Give him a dump wit=
-h `batctl<br>
-td` on the gateway and if I could add something: complete tcpdump of both e=
-nds<br>
-so we can see what packets receive on both sites.<br>
-<br>
-Best regards,<br>
-<font color=3D"#888888"> =A0 =A0 =A0 =A0Sven<br>
-</font></blockquote></div><br>
-
---00c09ffb55446ba82b047541facd--
+      Andrew
