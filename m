@@ -1,12 +1,19 @@
-Return-Path: <holger@layer-acht.org>
-From: Holger Levsen <holger@layer-acht.org>
-Date: Tue, 6 Oct 2009 13:28:04 +0200
+Return-Path: <a.mailevent@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2920262.imI7ZZpIaC";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910061328.04894.holger@layer-acht.org>
-Subject: [B.A.T.M.A.N.] Fwd: Re: Debian extra modules
+In-Reply-To: <20091006111933.GC6646@lunn.ch>
+References: <d9bba8670910050221m476d31eaodcdb8e9cdfbe8fa3@mail.gmail.com>
+	<200910052324.55426.sven.eckelmann@gmx.de>
+	<d9bba8670910060226i3068db6awc4f126c9b6c51b1a@mail.gmail.com>
+	<200910061143.08021.sven.eckelmann@gmx.de>
+	<d9bba8670910060333i45d91b8eyc5fb1f1b05b94194@mail.gmail.com>
+	<20091006105436.GB6646@lunn.ch>
+	<d9bba8670910060411h3e47b86bt117e4306514fa926@mail.gmail.com>
+	<20091006111933.GC6646@lunn.ch>
+Date: Tue, 6 Oct 2009 13:55:01 +0200
+Message-ID: <d9bba8670910060455u52c25a2fk9253f53c1d1f3991@mail.gmail.com>
+From: a <a.mailevent@gmail.com>
+Content-Type: multipart/alternative; boundary=001636025af17a7cfa047542e611
+Subject: Re: [B.A.T.M.A.N.] batman-adv and TCP problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,78 +25,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
---nextPart2920262.imI7ZZpIaC
-Content-Type: text/plain;
-  charset="ansi_x3.4-1968"
+--001636025af17a7cfa047542e611
+Content-Type: text/plain; charset=ISO-8859-1
+
+When I found the problem I have created a dedicated test bed, with the first
+IP address schema; then, I come back to my original test bed with the IP
+that you have seen in the last email
+
+andrea
+
+On Tue, Oct 6, 2009 at 1:19 PM, Andrew Lunn <andrew@lunn.ch> wrote:
+
+> On Tue, Oct 06, 2009 at 01:11:00PM +0200, a wrote:
+> > Dear Andrew,
+> >
+> > I have sent yesterday night the IP configuration that I am using for the
+> > test; I send it again
+>
+> Ah, sorry. I was looking at your first email.
+> https://lists.open-mesh.net/pipermail/b.a.t.m.a.n/2009-October/001795.html
+>
+> I had not noticed you now have a completely different IP address
+> scheme.
+>
+> Why did you change?
+>
+>    Andrew
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@lists.open-mesh.net
+> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+>
+
+--001636025af17a7cfa047542e611
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Hi,
+When I found the problem I have created a dedicated test bed, with the firs=
+t IP address schema; then, I come back to my original test bed with the IP =
+that you have seen in the last email<br><br>andrea<br><br><div class=3D"gma=
+il_quote">
+On Tue, Oct 6, 2009 at 1:19 PM, Andrew Lunn <span dir=3D"ltr">&lt;<a href=
+=3D"mailto:andrew@lunn.ch">andrew@lunn.ch</a>&gt;</span> wrote:<br><blockqu=
+ote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204, 204=
+); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+<div class=3D"im">On Tue, Oct 06, 2009 at 01:11:00PM +0200, a wrote:<br>
+&gt; Dear Andrew,<br>
+&gt;<br>
+&gt; I have sent yesterday night the IP configuration that I am using for t=
+he<br>
+&gt; test; I send it again<br>
+<br>
+</div>Ah, sorry. I was looking at your first email.<br>
+<a href=3D"https://lists.open-mesh.net/pipermail/b.a.t.m.a.n/2009-October/0=
+01795.html" target=3D"_blank">https://lists.open-mesh.net/pipermail/b.a.t.m=
+.a.n/2009-October/001795.html</a><br>
+<br>
+I had not noticed you now have a completely different IP address<br>
+scheme.<br>
+<br>
+Why did you change?<br>
+<div><div></div><div class=3D"h5"><br>
+ =A0 =A0Andrew<br>
+_______________________________________________<br>
+B.A.T.M.A.N mailing list<br>
+<a href=3D"mailto:B.A.T.M.A.N@lists.open-mesh.net">B.A.T.M.A.N@lists.open-m=
+esh.net</a><br>
+<a href=3D"https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target=3D"_=
+blank">https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
+</div></div></blockquote></div><br>
 
-I've shortened Gregs mail to only have the relevant info for this list :-)
-=46ull mail is at http://lists.debian.org/debian-kernel/2009/10/msg00236.ht=
-ml
-
-regards,
-	Holger
-
-=2D---------  Forwarded Message  ----------
-
-subject: Re: Debian extra modules
-date: Dienstag, 6. Oktober 2009
-from: Greg KH <greg@kroah.com>
-to: Ben Hutchings <ben@decadent.org.uk>
-cc: debian-kernel@lists.debian.org
-
-On Sun, Oct 04, 2009 at 04:58:15PM +0100, Ben Hutchings wrote:
-[...]
-> batman
-> ------
->=20
-> A mesh routing system.  Maybe a candidate for staging; try asking
-> upstream.
->=20
-> Debian: http://packages.debian.org/source/sid/batmand
-> Upstream: http://www.open-mesh.net/browser/trunk/batman/linux/modules
->=20
-> batman-adv
-> ----------
->=20
-> A mesh bridging system.  As for batman.
->=20
-> Debian: http://packages.debian.org/source/sid/batman-adv-kernelland
-> Upstream: http://www.open-mesh.net/browser/trunk/batman-adv-kernelland
-
-Please post this code, if it's a module, and the developers want it
-upstream, I'll be glad to take it in staging.
-
-[...]
-thanks,
-
-greg k-h
-
-
-=2D-=20
-To UNSUBSCRIBE, email to debian-kernel-REQUEST@lists.debian.org
-with a subject of "unsubscribe". Trouble? Contact listmaster@lists.debian.o=
-rg
-
-
-
-=2D------------------------------------------------------
-
---nextPart2920262.imI7ZZpIaC
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBKyynEUHLQNqxYNSARApvyAJwICAvOas7KBgSInWyDCfF2x5/BFQCgy1an
-kGn0tnf8J/B3ptKc9H57TxU=
-=7hpu
------END PGP SIGNATURE-----
-
---nextPart2920262.imI7ZZpIaC--
+--001636025af17a7cfa047542e611--
