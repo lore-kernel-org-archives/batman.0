@@ -1,13 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 8 Oct 2009 09:33:37 +0800
-References: <d9bba8670910070812s16f9a1bne9c3ab97d61bf6fd@mail.gmail.com>
-In-Reply-To: <d9bba8670910070812s16f9a1bne9c3ab97d61bf6fd@mail.gmail.com>
+Date: Fri, 9 Oct 2009 03:39:17 +0800
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910080933.37546.lindner_marek@yahoo.de>
+Message-Id: <200910090339.17577.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv and TCP problem - SOLVED
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
