@@ -1,12 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 9 Oct 2009 03:39:17 +0800
+Return-Path: <begbe@gmx.net>
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Thu, 08 Oct 2009 22:45:36 +0200
+From: begbe@gmx.net
+Message-ID: <20091008204536.324000@gmx.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910090339.17577.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv and TCP problem - SOLVED
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Batman and encryption
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,24 +17,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
+Hello list,
 
-Hi,
+I'm experimenting with batman right now and would like to know, if there is=
+ a way to implement it with Openswan or another encrypting/tunneling softwa=
+re (OpenSSL?). I'm testing batman on a couple of WRT54GL. I'm interested in=
+ not allowing everybody to connect to my router only by knowing the BSSID.
 
-> I have solved my problem.
-> 
-> It is related to the TCP checksum offload function: I am using as embedded
-> platform PCEngines Alix 3d2, that do not support this function (and also
-> qemu virtual machines do not support it).
-> 
-> This patch disable the tx checksum offload and everything now works fine
->  for me!
+It would be great if somebody could give me a hint.
 
-nice finding !
-I looked through kernel source a bit and it seems we can live without that flag 
-(the tun driver also does not set it). I would commit your patch to the 
-repository unless there are objections ?
+Thanks a lot,
 
-Regards,
-Marek
+Rafael
+--=20
+GRATIS f=FCr alle GMX-Mitglieder: Die maxdome Movie-FLAT!
+Jetzt freischalten unter http://portal.gmx.net/de/go/maxdome01
