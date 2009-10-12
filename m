@@ -1,13 +1,13 @@
-Return-Path: <andrew@lunn.ch>
-Date: Mon, 12 Oct 2009 17:22:50 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20091012152250.GD12833@lunn.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 13 Oct 2009 00:48:49 +0800
 References: <20091012081122.GB12833@lunn.ch>
-	<65D79C94-1997-418C-B773-54D0E79D5FA3@7degrees.co.za>
+In-Reply-To: <20091012081122.GB12833@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <65D79C94-1997-418C-B773-54D0E79D5FA3@7degrees.co.za>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910130048.49571.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Changing vis output ready for mainline...
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -22,59 +22,47 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-> >A current vis output would be:
-> >
-> >       "fe:fe:00:00:04:01" -> "fe:fe:00:00:05:01" [label="1.0"]
-> >       "fe:fe:00:00:04:01" -> "fe:fe:00:00:03:01" [label="1.0"]
-> >       "fe:fe:00:00:04:01" -> "00:ff:7c:3c:ec:e0" [label="HNA"]
-> >       subgraph "cluster_fe:fe:00:00:04:01" {
-> >               "fe:fe:00:00:04:01" [peripheries=2]
-> >               "fe:fe:00:00:04:02"
-> >       }
-> >
-> >I suggest something like:
-> >
-> >fe:fe:00:00:04:01 fe:fe:00:00:05:01 255 fe:fe:00:00:03:01 255
-> >00:ff:7c:3c:ec:e0 HNA fe:fe:00:00:04:02 S
-> >
-> >In BNF something like
-> >
-> ><Primary MAC> <Doublets>
-> ><Doublets>   ::= {<Doublet> }
-> ><Doublet>    ::= <MAC> <Flag/Value>
-> ><Flag/Value> ::= <TQ_Value>|<HNA>|<Secondary>
-> ><TQ_Value>   ::= uint8_t
-> ><HNA>        ::= "HNA"
-> ><Secondary>  ::= "S"
-> >We then have a list of these, one line per mesh node which has
-> >provided VIS information.
+
+Hi,
+
+> 1) No other /proc file in mainline does any special formatting. Either
+> comma separated value or space separated value is used. User space
+> reads this and then performs any formatting needed.
 > 
+> 2) No other /proc file supports two userspace switchable formats!
 > 
-> Couple of questions:
+> 3) We have problems when multiple applications wants different formats
+> at the same time. One wants dot the other wants JSON. Currently there
+> is no locking, so something bad is going to happen.
 > 
-> * Would (<TQ_Value> / 255) be equivalent to the label value in the
-> current vis output?
+> What do others thing of this? Does anybody have a different proposal?
 
-I need to look at the current code to see how it derives its
-value. Since you cannot use floating point in the kernel i know it
-does something different than plain /255. What ever it does, i would
-keep the same algorithm in batctl so the values stay the same. It
-would also be possible to add a flag to batctl to really do a floating
-point TQ_Value/255. 
+thanks a lot for summarizing the situation and pushing for a solution.
 
-> * Does <Secondary> refer to a secondary interface reachable from
-> <Primary MAC> ?
+It seems we have to decide where we want to go with batctl. Until now batctl 
+was not mandatory to operate the batman-adv kernel module. batctl extended the 
+modules functionality and made things easier to configure but remained 
+optional.
 
-Linus added the subgraph for the primary and secondary interfaces. 
+Personally, I like it a lot that way because it does not create unnecessary 
+dependencies. It can become an uphill battle if you want to keep your kernel 
+and its configuration tools in sync. Everyone that tried to use oprofile knows 
+what I'm talking about (or the wireless tools to name another example).
 
-https://lists.open-mesh.net/pipermail/b.a.t.m.a.n/2009-August/001669.html
-https://lists.open-mesh.net/pipermail/b.a.t.m.a.n/2009-August/001723.html
+So, the question is whether we want to make batctl the almighty tool that we 
+always depend on or are we trying to find alternative solutions to avoid that 
+dependency ?
 
-The word "secondary" is mine, i don't think Linus used it
-anywhere. I'm happy to change this to something else.
- 
-> Looks sane!
+One option for the case at hand might be debugfs 
+(http://lwn.net/Articles/115282/). It is another filesystem which needs to be 
+mounted seperately - there we can output whatever we want (unlike /proc). It 
+would be possible to create virtual files for the dot draw / json / raw output 
+(raw means the neutral format suggested by Andrew).
 
-Thanks
+Soon we also will have to decide what to do with routing log as we can't 
+"spam" the system log with our data. Again, debugfs seems like a good 
+solution. That does not need to be decided now but could be a consistent path 
+towards mainline integration.
 
-        Andrew
+Regards,
+Marek
