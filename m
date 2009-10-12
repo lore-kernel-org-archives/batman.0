@@ -1,14 +1,11 @@
-Return-Path: <linus.luessing@web.de>
-Date: Fri, 9 Oct 2009 20:57:15 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20091009185715.GA9471@Linus-Debian>
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 12 Oct 2009 10:11:22 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20091012081122.GB12833@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908271758.33752.lindner_marek@yahoo.de>
-Sender: linus.luessing@web.de
-Subject: Re: [B.A.T.M.A.N.] New name for batman-adv?
+Subject: [B.A.T.M.A.N.] Changing vis output ready for mainline...
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,42 +19,62 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.net
 
+Hi Folks
 
---dDRMvlgZJXvWKvBx
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+We need to discuss the changes which are needed to the VIS output for
+inclusion of batman into mainline.
 
-Hmm, I think I'd also favour SPAN routing protocol so far. Things
-I came up with, were DIPD (Decentral Intelligence,
-Proactive Distribution) or SIRPD (Swarm Intelligence, Proactive
-Distribution) or SIMR (Swarm Intelligence Mesh Routing). I found
-the discription on Wikipedia about swarm intelligence quite
-fitting in this context, "[...] interacting locally [...]
-very simple rules [...] no centralised control structure".
+At the moment the vis output can be read from /proc/net/batman-adv/vis. It
+supports two formats, graphviz dot and JSON. This can be selected
+using the file /proc/net/batman-adv/vis_format.
 
-Cheers, Linus
+I see a few problems here. 
 
---dDRMvlgZJXvWKvBx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+1) No other /proc file in mainline does any special formatting. Either
+comma separated value or space separated value is used. User space
+reads this and then performs any formatting needed.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+2) No other /proc file supports two userspace switchable formats!
 
-iQIcBAEBAgAGBQJKz4eLAAoJEBKw7u43QNpf2MgQALuICfJvtJ81dSAi3X9hAMT3
-xZXd+mqPeDYOYSGCX7Pa8mtt6Ep77ZrfKPDrDXOoEc1E1LqmGWIoDpDwNUKNCuRf
-iaSw+oNzcDNRAHFq3THMsNJW/tRb7/o+9sbMvw8Ds38B7qf/GsrUVTWZBhwqaTPo
-7pkDqB10otVSJHPmYyvn5Ij0ktnSkDFqH1OoYzstvgUuIhV5bVRCcPbhw4f38WtV
-z8SMd88XMUOzMoPD0tT4GG+l8IibMw6EC4HvQT5xzwfl7TfA9VAzlsMUm8uMvMjY
-wPea6GvQcVSMgM5BakmOzRyie0XqozkMMdjg0MlmwTcO2mpusUVXQhWYGCFJeIl/
-f5OhVGdFy2D7zcdlC9sld94EUBzz3O2ppn7qCielYs9/mtVmlW+19uGKSLJ71b5b
-tE8XQLhu9S2eO15wvZcsC0EiOJqRH3SdEsVDA+zLoLjKX5kwwhFh35uiU8jUfhQ3
-z+KvsvSKkrB+Yuk4HnyCqLig4nwvxJEXiKgAeU6tYT1+RAwR5RV/plIB0Di6XUGw
-H4g9gswOtStSf72o96k5oLiLwc0dRQm82L8fXh6ngXSaQEumBZM982hBJkNZeev+
-LEJaGteiJqKZg4d3Ce0GMKaevdthT3L91ErMIJOIVUYaa2VpSKYeQL6JCb9kSprn
-OlJLWD2CJZYPgKT8fgHL
-=mIhC
------END PGP SIGNATURE-----
+3) We have problems when multiple applications wants different formats
+at the same time. One wants dot the other wants JSON. Currently there
+is no locking, so something bad is going to happen.
 
---dDRMvlgZJXvWKvBx--
+There are a number of ways to solve this. We should discuss different
+proposals.
+
+I would suggest changing /proc/net/batman-adv/vis to space separated
+value and moving the current formatting code into batctl. I don't yet
+have a 100% defined format in mind.
+
+A current vis output would be:
+
+        "fe:fe:00:00:04:01" -> "fe:fe:00:00:05:01" [label="1.0"]
+        "fe:fe:00:00:04:01" -> "fe:fe:00:00:03:01" [label="1.0"]
+        "fe:fe:00:00:04:01" -> "00:ff:7c:3c:ec:e0" [label="HNA"]
+        subgraph "cluster_fe:fe:00:00:04:01" {
+                "fe:fe:00:00:04:01" [peripheries=2]
+                "fe:fe:00:00:04:02"
+        }
+
+I suggest something like:
+
+fe:fe:00:00:04:01 fe:fe:00:00:05:01 255 fe:fe:00:00:03:01 255 00:ff:7c:3c:ec:e0 HNA fe:fe:00:00:04:02 S
+
+In BNF something like
+
+<Primary MAC> <Doublets>
+<Doublets>   ::= {<Doublet> }
+<Doublet>    ::= <MAC> <Flag/Value>
+<Flag/Value> ::= <TQ_Value>|<HNA>|<Secondary>
+<TQ_Value>   ::= uint8_t
+<HNA>        ::= "HNA"
+<Secondary>  ::= "S"
+
+We then have a list of these, one line per mesh node which has
+provided VIS information.
+
+What do others thing of this? Does anybody have a different proposal?
+
+     Thanks
+        Andrew
