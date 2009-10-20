@@ -1,14 +1,13 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 20 Oct 2009 17:23:38 +0200
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 20 Oct 2009 23:33:53 +0800
 References: <45f642440910200802u6864b4cfk6b52f03bed14f8fe@mail.gmail.com>
-	<200910201717.12868.sven.eckelmann@gmx.de>
-In-Reply-To: <200910201717.12868.sven.eckelmann@gmx.de>
+In-Reply-To: <45f642440910200802u6864b4cfk6b52f03bed14f8fe@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3814132.bFIBgabdn9";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910201723.38988.sven.eckelmann@gmx.de>
+Message-Id: <200910202333.53437.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] basic B.A.T.M.A.N-adv setup
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -23,43 +22,41 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
---nextPart3814132.bFIBgabdn9
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 
-Sven Eckelmann wrote:
-> You must give bat0 also an ip to use IPv4(/6) over it... in most cases only
-> bat0 as it is just the hardware interface the bat0 interface is using.
-> If you only want to test raw ethernet data over bat0 this should work.
-Meant that wlan0 is just the hardware interface bat0 is using.
+Hi,
 
-> > Or I have to bridge bat0 and wlan0 together?
-No, you should not bridge them together.
+> From the beginning, I am using batman-adv 3.2 compiled along with batctl.
 
-Best regards,
-	Sven
+batman-adv 3.2 ? I guess you mean 0.2 ?
 
---nextPart3814132.bFIBgabdn9
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> $ insmod batman-adv.ko
+> $ iwconfig wlan0 mode ad-hoc essid BATMAN_NET
+> $ echo wlan0 > /proc/net/batman-adv/interfaces
+> $ ifconfig wlan0 192.168.1.xxx up
+> $ ifconfig bat0 up
 
-iQIcBAABCgAGBQJK3dX6AAoJEF2HCgfBJntGpCAP/RGizRzDI0QjXuovhPc/Pwsc
-MoD6Dd+IA94gWaVM0tcnSDebKfXnKWwVTKaU1mPUNBugardkAF3AKTAhqK5j3WUW
-wabTG+7fcDoN3hPFGpnsmOxV+qzG5INIF3UjIjFXzf1kEsVGs6Bn5ifWPyCkV8au
-VUwOfJ7D7E/k+5rZwJB5LuRU6T2w1JE1zaOxd9NCTcC+4EXcaQ4rmYByPxfYh0Rx
-kuXyi1b0bNThthJnMlHZOY4TnpvmogHh/X/R/EFDWM8C1mNuDKndWHTKJfXdUp7V
-3GXH6WZjQwVU7MaphCCSU7p3el6VvUKQjT1Pv7zmD+c9HWu8ctIBWnQYZs8nInl4
-Opu0AQcAW8i1bRBNGPZPFiI295JfKCYP319oiWdqV1v+CLFH8E3FIqGXKz1f5ujz
-E5NJ99r6c+7SpRlN2Zx/gvCWsH/BthJMgGGOnOOPingZYqtTw37Lvplj5+8L8n8k
-SQJOe4X2wpjat8bdJR7Dd5lWSJAB/5meydvorWyf58AG7oF3LxaO6VX7yyc1CIYb
-4P0lo8HTvYr6AojRTCRc4mzCu84R8+x+tVS0MsUh2gkWK88nvPyvzJyg4UokNXDJ
-oERUONOFD2nulOGykEcktgxigXPra6QmtlNN51eCdeQPBAo74XDYVpZmDIqqOh/h
-0vyBUzqvuEtAGp3v7jxl
-=fo7f
------END PGP SIGNATURE-----
+The wlan0 device does not need an IP address. It needs to be up & running but 
+the IP goes on the bat0 device.  
 
---nextPart3814132.bFIBgabdn9--
+
+> I get a new bat0 interface, iwconfig shows nodes properly part of the
+>  ad-hoc network.
+> I see correct $batctl o  output but i cannot $batctl ping $mac_address
+
+Would you mind showing us the batctl o output and the batctl ping call plus 
+error message(s) ?
+
+
+> There are no bridges between interfaces. I just want to run batman-adv  on
+> wlan0.
+> Do I need to set an IP address for wlan0, for bat0 or for both?
+> Or I have to bridge bat0 and wlan0 together?
+
+No, don't bridge bat0 and wlan0. Imagine you had another wifi interface in 
+managed mode for non-batman nodes to connect to (e.g. wlan1). Then you would 
+want to make the mesh accessible for the managed clients by bridging bat0 with 
+wlan1.
+
+Regards,
+Marek
