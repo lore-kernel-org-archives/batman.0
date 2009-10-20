@@ -1,15 +1,10 @@
-Return-Path: <holger@layer-acht.org>
-From: Holger Levsen <holger@layer-acht.org>
-Date: Tue, 20 Oct 2009 12:35:01 +0200
-References: <200910061328.04894.holger@layer-acht.org>
-	<200910201204.37562.sven.eckelmann@gmx.de>
-In-Reply-To: <200910201204.37562.sven.eckelmann@gmx.de>
+Return-Path: <francesco.cappuccio@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1934483.Cq8ox1ARmH";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910201235.02231.holger@layer-acht.org>
-Subject: Re: [B.A.T.M.A.N.] Debian extra modules
+From: Francesco <francesco.cappuccio@gmail.com>
+Date: Tue, 20 Oct 2009 17:02:10 +0200
+Message-ID: <45f642440910200802u6864b4cfk6b52f03bed14f8fe@mail.gmail.com>
+Content-Type: multipart/alternative; boundary=00163628453eb68f0a04765f26fb
+Subject: [B.A.T.M.A.N.] basic B.A.T.M.A.N-adv setup
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,35 +18,63 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.net
 
---nextPart1934483.Cq8ox1ARmH
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--00163628453eb68f0a04765f26fb
+Content-Type: text/plain; charset=ISO-8859-1
 
-Hi Sven,
+Hi all,
+i'm starting a B.A.T.M.A.N. mesh testbed, i've read some messages to find
+some answers but no luck.
+I'll try to explain what I've done and the errors i get..hope i get some
+help in here.
 
-On Dienstag, 20. Oktober 2009, Sven Eckelmann wrote:
-> I will search for some more information what must be done to support dkms
+From the beginning, I am using batman-adv 3.2 compiled along with batctl.
+Only one wireless interface (wlan0) on each linux box (5 boxes by now)
+Here are commands I fire on each node:
 
-http://lists.debian.org/debian-kernel/2009/10/msg00683.html
+$ insmod batman-adv.ko
+$ iwconfig wlan0 mode ad-hoc essid BATMAN_NET
+$ echo wlan0 > /proc/net/batman-adv/interfaces
+$ ifconfig wlan0 192.168.1.xxx up
+$ ifconfig bat0 up
 
-:-)
+I get a new bat0 interface, iwconfig shows nodes properly part of the ad-hoc
+network.
+I see correct $batctl o  output but i cannot $batctl ping $mac_address
+
+There are no bridges between interfaces. I just want to run batman-adv  on
+wlan0.
+Do I need to set an IP address for wlan0, for bat0 or for both?
+Or I have to bridge bat0 and wlan0 together?
 
 
-regards,
-	Holger
 
---nextPart1934483.Cq8ox1ARmH
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+-- 
+Francesco Cappuccio
 
-iD8DBQBK3ZJWUHLQNqxYNSARAh3PAJ96aAO3yhZN89alBGniy+1HMM0VTACfc8Nh
-GrOBmvMMoIjZIQoIY6oxv1Q=
-=61q7
------END PGP SIGNATURE-----
+--00163628453eb68f0a04765f26fb
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
---nextPart1934483.Cq8ox1ARmH--
+Hi all,<br>i&#39;m starting a B.A.T.M.A.N. mesh testbed, i&#39;ve read some=
+ messages to find some answers but no luck.<br>I&#39;ll try to explain what=
+ I&#39;ve done and the errors i get..hope i get some help in here.<br><br>
+
+From the beginning, I am using batman-adv 3.2 compiled along with batctl.<b=
+r>Only one wireless interface (wlan0) on each linux box (5 boxes by now)<br=
+>Here are commands I fire on each node:<br><br>$ insmod batman-adv.ko<br>
+
+$ iwconfig wlan0 mode ad-hoc essid BATMAN_NET<br>$ echo wlan0 &gt; /proc/ne=
+t/batman-adv/interfaces<br>$ ifconfig wlan0 192.168.1.xxx up<br>$ ifconfig =
+bat0 up<br><br>I get a new bat0 interface, iwconfig shows nodes properly pa=
+rt of the ad-hoc network.<br>
+
+I see correct $batctl o=A0 output but i cannot $batctl ping $mac_address<br=
+><br>There are no bridges between interfaces. I just want to run batman-adv=
+=A0 on wlan0.<br>Do I need to set an IP address for wlan0, for bat0 or for =
+both?<br>
+
+Or I have to bridge bat0 and wlan0 together?<br><br><br><br clear=3D"all"><=
+br>-- <br>Francesco Cappuccio<br><br>
+
+--00163628453eb68f0a04765f26fb--
