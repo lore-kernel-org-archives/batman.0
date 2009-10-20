@@ -1,15 +1,14 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 20 Oct 2009 19:17:11 +0200
-References: <45f642440910200802u6864b4cfk6b52f03bed14f8fe@mail.gmail.com>
-	<45f642440910200902l14132a61o484e5a674b8e4985@mail.gmail.com>
-	<200910201910.16032.sven.eckelmann@gmx.de>
-In-Reply-To: <200910201910.16032.sven.eckelmann@gmx.de>
+Return-Path: <francesco.cappuccio@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3235075.9d9TaSx4Kr";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910201917.12629.sven.eckelmann@gmx.de>
+In-Reply-To: <200910201917.12629.sven.eckelmann@gmx.de>
+References: <45f642440910200802u6864b4cfk6b52f03bed14f8fe@mail.gmail.com> 
+	<45f642440910200902l14132a61o484e5a674b8e4985@mail.gmail.com> 
+	<200910201910.16032.sven.eckelmann@gmx.de>
+	<200910201917.12629.sven.eckelmann@gmx.de>
+From: Francesco <francesco.cappuccio@gmail.com>
+Date: Tue, 20 Oct 2009 21:59:02 +0200
+Message-ID: <45f642440910201259j63a37a7bi58ea8b97a094a82f@mail.gmail.com>
+Content-Type: multipart/alternative; boundary=00163630ef476566190476634c90
 Subject: Re: [B.A.T.M.A.N.] basic B.A.T.M.A.N-adv setup
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -24,39 +23,48 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
---nextPart3235075.9d9TaSx4Kr
-Content-Type: Text/Plain;
-  charset="us-ascii"
+--00163630ef476566190476634c90
+Content-Type: text/plain; charset=ISO-8859-1
+
+Hi Sven,now I see what was wrong, I'm really feeling so stupid.. :)
+It was misleading that I reached the batman-adv download page (
+http://downloads.open-mesh.net/batman/stable/sources/batman-adv-kernelland/ )
+browsing batman 0.3.2 download page (
+http://www.open-mesh.org/wiki/2009-06-13-batman-0-3-2-release ) and I got
+confused.
+
+Thanks for your kind reply.
+
+I didn't read enough about batctl and its use against most recent batman-adv
+version.
+My fault.
+
+As soon as i get back to the lab I'll try latetest version of both
+batman-adv and batctl and see what comes out.
+
+-- 
+Francesco Cappuccio
+
+--00163630ef476566190476634c90
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Just to highlight it:
-> > nexthops ... [B.A.T.M.A.N. Adv 0.1, MainIF/MAC: wlan0/00:0b:6b:34:88:94]
-batctl isn't compatible with batman-adv 0.1. It was called battool when=20
-batman-adv-kernelland 0.1 was released.
+Hi Sven,<div>now I see what was wrong, I&#39;m really feeling so stupid.. :=
+)</div><div>It was misleading that I reached the batman-adv download page (=
+<a href=3D"http://downloads.open-mesh.net/batman/stable/sources/batman-adv-=
+kernelland/">http://downloads.open-mesh.net/batman/stable/sources/batman-ad=
+v-kernelland/</a>=A0) browsing batman 0.3.2 download page (<a href=3D"http:=
+//www.open-mesh.org/wiki/2009-06-13-batman-0-3-2-release">http://www.open-m=
+esh.org/wiki/2009-06-13-batman-0-3-2-release</a>=A0) and I got confused.</d=
+iv>
 
-Best regards,
-	Sven
+<div><br></div><div>Thanks for your kind reply.</div><div><br></div><div>I =
+didn&#39;t read enough about batctl and its use against most recent batman-=
+adv version.</div><div>My fault.</div><div><br></div><div>As soon as i get =
+back to the lab I&#39;ll try latetest version of both batman-adv and batctl=
+ and see what comes out.</div>
 
---nextPart3235075.9d9TaSx4Kr
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+<div><br></div><div>-- <br>Francesco Cappuccio<br><br>
+</div>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJK3fCYAAoJEF2HCgfBJntGnvQQALwawodnr9HCX2P1GLY6k2hf
-veJhDMm4VAWhzbII/a+TubV0tLUpbTkfiS68e2szp6oyrK8SxCkYzJS4uWrn3r2E
-HfFj0WTiSaiNieUa+tJybKmLNUsLe6sZTFnjwIlk9JS2zhXCDqzPIWfVT6V7K4cK
-PLOFOkye3Jc1wkLVcwkFNucqcUP1hALMYTi0AekHWxrWqv2LluSTmcnjuMGquA22
-XLr7u4WMuMwxLoL1/2g+X0JHunid6Fg4AuKW/qm04HMZHIwyMmnbauc3y4/IILMH
-yX6kBKxUkg6mqv3Eqw970CXW6ozj/mcZfpeR651I9LMe/wkfyKdic9p0hfUjqV6x
-yk5hMr5uN261RzXhYaU8FXs0yOP9IKbblq77bMF9TlB/dlRku26csBija+a6zXR4
-WAdCAVEPCFaLYGmZG/zPW4pLKlTJ2JXe8z0VPw3uJsv6MqnQLDAQu/G0kDbt/cTv
-ZsGjZzvtXu0gIChvsZzPjwHrzX/+Uq5ylE6d4ND+x4+uN2PgchqQMnmwT6URfk/g
-oHFvacXFliRANfrY/Wk6NDFxsGtNTBqTudKdhbJ8XCsv0qEbXqo0uJzQXe3n6h6x
-W+v+RiLnlN+0NZnjvx6vj4nM/aSVKH3sXatBCAiN9+TPpwtMc5gUfAyY/KELRNK7
-tKlqBj2jCQ/FccvUNrPt
-=OHO+
------END PGP SIGNATURE-----
-
---nextPart3235075.9d9TaSx4Kr--
+--00163630ef476566190476634c90--
