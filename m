@@ -1,14 +1,15 @@
-Return-Path: <francesco.cappuccio@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <200910201917.12629.sven.eckelmann@gmx.de>
-References: <45f642440910200802u6864b4cfk6b52f03bed14f8fe@mail.gmail.com> 
-	<45f642440910200902l14132a61o484e5a674b8e4985@mail.gmail.com> 
-	<200910201910.16032.sven.eckelmann@gmx.de>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Tue, 20 Oct 2009 22:22:31 +0200
+References: <45f642440910200802u6864b4cfk6b52f03bed14f8fe@mail.gmail.com>
 	<200910201917.12629.sven.eckelmann@gmx.de>
-From: Francesco <francesco.cappuccio@gmail.com>
-Date: Tue, 20 Oct 2009 21:59:02 +0200
-Message-ID: <45f642440910201259j63a37a7bi58ea8b97a094a82f@mail.gmail.com>
-Content-Type: multipart/alternative; boundary=00163630ef476566190476634c90
+	<45f642440910201259j63a37a7bi58ea8b97a094a82f@mail.gmail.com>
+In-Reply-To: <45f642440910201259j63a37a7bi58ea8b97a094a82f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2289961.hRlSADyTOA";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910202222.36928.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] basic B.A.T.M.A.N-adv setup
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -23,48 +24,69 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
---00163630ef476566190476634c90
-Content-Type: text/plain; charset=ISO-8859-1
-
-Hi Sven,now I see what was wrong, I'm really feeling so stupid.. :)
-It was misleading that I reached the batman-adv download page (
-http://downloads.open-mesh.net/batman/stable/sources/batman-adv-kernelland/ )
-browsing batman 0.3.2 download page (
-http://www.open-mesh.org/wiki/2009-06-13-batman-0-3-2-release ) and I got
-confused.
-
-Thanks for your kind reply.
-
-I didn't read enough about batctl and its use against most recent batman-adv
-version.
-My fault.
-
-As soon as i get back to the lab I'll try latetest version of both
-batman-adv and batctl and see what comes out.
-
--- 
-Francesco Cappuccio
-
---00163630ef476566190476634c90
-Content-Type: text/html; charset=ISO-8859-1
+--nextPart2289961.hRlSADyTOA
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sven,<div>now I see what was wrong, I&#39;m really feeling so stupid.. :=
-)</div><div>It was misleading that I reached the batman-adv download page (=
-<a href=3D"http://downloads.open-mesh.net/batman/stable/sources/batman-adv-=
-kernelland/">http://downloads.open-mesh.net/batman/stable/sources/batman-ad=
-v-kernelland/</a>=A0) browsing batman 0.3.2 download page (<a href=3D"http:=
-//www.open-mesh.org/wiki/2009-06-13-batman-0-3-2-release">http://www.open-m=
-esh.org/wiki/2009-06-13-batman-0-3-2-release</a>=A0) and I got confused.</d=
-iv>
+=46rancesco wrote:
+> Hi Sven,now I see what was wrong, I'm really feeling so stupid.. :)
+> It was misleading that I reached the batman-adv download page (
+> http://downloads.open-mesh.net/batman/stable/sources/batman-adv-kernellan=
+d/
+>  ) browsing batman 0.3.2 download page (
+> http://www.open-mesh.org/wiki/2009-06-13-batman-0-3-2-release ) and I got
+> confused.
 
-<div><br></div><div>Thanks for your kind reply.</div><div><br></div><div>I =
-didn&#39;t read enough about batctl and its use against most recent batman-=
-adv version.</div><div>My fault.</div><div><br></div><div>As soon as i get =
-back to the lab I&#39;ll try latetest version of both batman-adv and batctl=
- and see what comes out.</div>
+No reason to feel stupid. You aren't the first person which got confused by
+the different implementations of the B.A.T.M.A.N. algorithm.
 
-<div><br></div><div>-- <br>Francesco Cappuccio<br><br>
-</div>
+> I didn't read enough about batctl and its use against most recent
+>  batman-adv version.
+> My fault.
+>=20
+> As soon as i get back to the lab I'll try latetest version of both
+> batman-adv and batctl and see what comes out.
 
---00163630ef476566190476634c90--
+There is currently nothing like a stable branch. So if you want to have 0.1
+with some backported stabilization patches you should look at the Debian
+package of batman-adv-kernelland[1] and batman-adv-battool[2]. The source
+packages of both packages include the separated patches[3].
+
+But if you are currently in lab testing I would recommend to use both from =
+svn
+as batctl has some nice new features and changes in batman-adv-kernelland a=
+re
+also looking quite interesting.
+
+Best regards,
+	Sven
+
+[1] http://packages.debian.org/sid/batman-adv-source
+[2] http://packages.debian.org/sid/batman-adv-battool
+[3] http://git.debian.org/?p=3Dcollab-maint/batman-adv-kernelland.git;a=3Dt=
+ree;f=3Ddebian/patches;hb=3Dmaster
+
+--nextPart2289961.hRlSADyTOA
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJK3hwIAAoJEF2HCgfBJntGdrEP/2DXsWBKpq4gbV24G9fbf05V
+us1ukx80kzp0vbJRi9TIbI5H8viuulDb2R+PavS/6rsQas/l6i7QVQkGSZJNsjib
+YEYf3222KZPD8Hv7flYcdGQ3zcvjQblMCE9JtTtlHkXCEFTO8q282Jl7ZqRHa9Tk
+u7GbVb9KZtmQ1VO3rpmU4hZlVbTXdURUW5XFLxWNalAln0lC9hN/XxwjYVare8CU
+82Ng4FmMMfyFwJoMVuzd9bI80LhGEM0PIXP//W/bcyt2uTgSZoCMVwniE89Kv2kf
++w4hztYEsN+W65D3C+ZrCmRHkz3LQwJWKfScjl1VklxMxuAIb6M+QskKnW0xW0ra
+Q8KH7LCDd7wh5rwX0dIYsxkBKnEFiPcFGlxYhtOlMZOUwcGGHZJrFnuYDTUgDWj5
+QMcma1Xbwvx+ioG/zw+zj1i3FgAAARPZV6MZARjeAx9mrZ2EUru+W/r472093jAl
+jqg0lUwU4BKV0IHtJjpyeUGZ62rYT5RgeNiTtwCrRo5Mj6o2CapW70zuOBnnv7rK
+6sV3uUgDcZZww/TQXO9I9vK4fnA/wlF+qHxYe3em2jtYuY6kTU6idAq5E/sTIWmd
+XxfQtGtwfEJZbfVi4nHCd8Ohl21NXDp+IBLcT3kSAb3bByq6XUQrQfjxiLqKCtTN
+aunG9hdYA/u6xQxfTRrW
+=cq/V
+-----END PGP SIGNATURE-----
+
+--nextPart2289961.hRlSADyTOA--
