@@ -1,15 +1,14 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 20 Oct 2009 22:22:31 +0200
-References: <45f642440910200802u6864b4cfk6b52f03bed14f8fe@mail.gmail.com>
-	<200910201917.12629.sven.eckelmann@gmx.de>
-	<45f642440910201259j63a37a7bi58ea8b97a094a82f@mail.gmail.com>
-In-Reply-To: <45f642440910201259j63a37a7bi58ea8b97a094a82f@mail.gmail.com>
+Return-Path: <francesco.cappuccio@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2289961.hRlSADyTOA";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910202222.36928.sven.eckelmann@gmx.de>
+In-Reply-To: <200910202222.36928.sven.eckelmann@gmx.de>
+References: <45f642440910200802u6864b4cfk6b52f03bed14f8fe@mail.gmail.com> 
+	<200910201917.12629.sven.eckelmann@gmx.de>
+	<45f642440910201259j63a37a7bi58ea8b97a094a82f@mail.gmail.com> 
+	<200910202222.36928.sven.eckelmann@gmx.de>
+From: Francesco <francesco.cappuccio@gmail.com>
+Date: Wed, 21 Oct 2009 08:54:02 +0200
+Message-ID: <45f642440910202354r1224c4f5i99e6f126c09c82c1@mail.gmail.com>
+Content-Type: multipart/alternative; boundary=0016362836a2d7947d04766c723c
 Subject: Re: [B.A.T.M.A.N.] basic B.A.T.M.A.N-adv setup
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -24,69 +23,76 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
---nextPart2289961.hRlSADyTOA
-Content-Type: Text/Plain;
-  charset="us-ascii"
+--0016362836a2d7947d04766c723c
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-=46rancesco wrote:
-> Hi Sven,now I see what was wrong, I'm really feeling so stupid.. :)
-> It was misleading that I reached the batman-adv download page (
-> http://downloads.open-mesh.net/batman/stable/sources/batman-adv-kernellan=
-d/
->  ) browsing batman 0.3.2 download page (
-> http://www.open-mesh.org/wiki/2009-06-13-batman-0-3-2-release ) and I got
-> confused.
+HI all,
+I've now downloaded and $make latest batman-adv trunk from
+$svn co
+http://downloads.open-mesh.net/svn/batman/trunk/batman-adv-kernelland/
+I have issues with batctl trunk:
+$svn co http://downloads.open-mesh.net/svn/batman/trunk/batctl/
 
-No reason to feel stupid. You aren't the first person which got confused by
-the different implementations of the B.A.T.M.A.N. algorithm.
+Download is ok but when i fire
+$ make
 
-> I didn't read enough about batctl and its use against most recent
->  batman-adv version.
-> My fault.
->=20
-> As soon as i get back to the lab I'll try latetest version of both
-> batman-adv and batctl and see what comes out.
+root@francesco-desktop:/home/francesco/batctl# make
+make -j 1 batctl
+make[1]: Entering directory `/home/francesco/batctl'
+    CC main.o
+In file included from main.c:34:
+tcpdump.h:23:25: error: list-batman.h: No such file or directory
+In file included from main.c:34:
+tcpdump.h:33: error: field =91list=92 has incomplete type
+In file included from main.c:35:
+bisect.h:30: error: field =91event_list=92 has incomplete type
+bisect.h:31: error: field =91rt_table_list=92 has incomplete type
+bisect.h:36: error: field =91list=92 has incomplete type
+bisect.h:47: error: field =91list=92 has incomplete type
+bisect.h:65: error: field =91list=92 has incomplete type
+make[1]: *** [main.o] Error 1
+make[1]: Leaving directory `/home/francesco/batctl'
+make: *** [all] Error 2
 
-There is currently nothing like a stable branch. So if you want to have 0.1
-with some backported stabilization patches you should look at the Debian
-package of batman-adv-kernelland[1] and batman-adv-battool[2]. The source
-packages of both packages include the separated patches[3].
 
-But if you are currently in lab testing I would recommend to use both from =
-svn
-as batctl has some nice new features and changes in batman-adv-kernelland a=
-re
-also looking quite interesting.
+I suppose there was no need to uninstall old batctl i did compiled..or not?
 
-Best regards,
-	Sven
+Thanks.
 
-[1] http://packages.debian.org/sid/batman-adv-source
-[2] http://packages.debian.org/sid/batman-adv-battool
-[3] http://git.debian.org/?p=3Dcollab-maint/batman-adv-kernelland.git;a=3Dt=
-ree;f=3Ddebian/patches;hb=3Dmaster
+--=20
+Francesco Cappuccio
 
---nextPart2289961.hRlSADyTOA
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+--0016362836a2d7947d04766c723c
+Content-Type: text/html; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+HI all,<br>I&#39;ve now downloaded and $make latest batman-adv trunk from<b=
+r>$svn co <a href=3D"http://downloads.open-mesh.net/svn/batman/trunk/batman=
+-adv-kernelland/">http://downloads.open-mesh.net/svn/batman/trunk/batman-ad=
+v-kernelland/</a> <br>
 
-iQIcBAABCgAGBQJK3hwIAAoJEF2HCgfBJntGdrEP/2DXsWBKpq4gbV24G9fbf05V
-us1ukx80kzp0vbJRi9TIbI5H8viuulDb2R+PavS/6rsQas/l6i7QVQkGSZJNsjib
-YEYf3222KZPD8Hv7flYcdGQ3zcvjQblMCE9JtTtlHkXCEFTO8q282Jl7ZqRHa9Tk
-u7GbVb9KZtmQ1VO3rpmU4hZlVbTXdURUW5XFLxWNalAln0lC9hN/XxwjYVare8CU
-82Ng4FmMMfyFwJoMVuzd9bI80LhGEM0PIXP//W/bcyt2uTgSZoCMVwniE89Kv2kf
-+w4hztYEsN+W65D3C+ZrCmRHkz3LQwJWKfScjl1VklxMxuAIb6M+QskKnW0xW0ra
-Q8KH7LCDd7wh5rwX0dIYsxkBKnEFiPcFGlxYhtOlMZOUwcGGHZJrFnuYDTUgDWj5
-QMcma1Xbwvx+ioG/zw+zj1i3FgAAARPZV6MZARjeAx9mrZ2EUru+W/r472093jAl
-jqg0lUwU4BKV0IHtJjpyeUGZ62rYT5RgeNiTtwCrRo5Mj6o2CapW70zuOBnnv7rK
-6sV3uUgDcZZww/TQXO9I9vK4fnA/wlF+qHxYe3em2jtYuY6kTU6idAq5E/sTIWmd
-XxfQtGtwfEJZbfVi4nHCd8Ohl21NXDp+IBLcT3kSAb3bByq6XUQrQfjxiLqKCtTN
-aunG9hdYA/u6xQxfTRrW
-=cq/V
------END PGP SIGNATURE-----
+I have issues with batctl trunk:<br>$svn co <a href=3D"http://downloads.ope=
+n-mesh.net/svn/batman/trunk/batctl/">http://downloads.open-mesh.net/svn/bat=
+man/trunk/batctl/</a><br><br>Download is ok but when i fire<br>$ make<br>
 
---nextPart2289961.hRlSADyTOA--
+<br>root@francesco-desktop:/home/francesco/batctl# make<br>make -j 1 batctl=
+<br>make[1]: Entering directory `/home/francesco/batctl&#39;<br>=A0=A0=A0 C=
+C main.o<br>In file included from main.c:34:<br>tcpdump.h:23:25: error: lis=
+t-batman.h: No such file or directory<br>
+
+In file included from main.c:34:<br>tcpdump.h:33: error: field =91list=92 h=
+as incomplete type<br>In file included from main.c:35:<br>bisect.h:30: erro=
+r: field =91event_list=92 has incomplete type<br>bisect.h:31: error: field =
+=91rt_table_list=92 has incomplete type<br>
+
+bisect.h:36: error: field =91list=92 has incomplete type<br>bisect.h:47: er=
+ror: field =91list=92 has incomplete type<br>bisect.h:65: error: field =91l=
+ist=92 has incomplete type<br>make[1]: *** [main.o] Error 1<br>make[1]: Lea=
+ving directory `/home/francesco/batctl&#39;<br>
+
+make: *** [all] Error 2<br><br><br>I suppose there was no need to uninstall=
+ old batctl i did compiled..or not?<br><br>Thanks.<br clear=3D"all"><br>-- =
+<br>Francesco Cappuccio<br><br>
+
+--0016362836a2d7947d04766c723c--
