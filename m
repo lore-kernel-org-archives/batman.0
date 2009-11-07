@@ -1,8 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat,  7 Nov 2009 17:33:05 +0100
-Message-Id: <1257611585-6627-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] [batctl] Remove unreachable code in tcpdump
+Return-Path: <Juliusz.Chroboczek@pps.jussieu.fr>
+From: Juliusz Chroboczek <Juliusz.Chroboczek@pps.jussieu.fr>
+References: <871vkbzd6s.fsf@trurl.pps.jussieu.fr>
+	<200911071842.08599.lindner_marek@yahoo.de>
+Date: Sat, 07 Nov 2009 17:42:50 +0100
+In-Reply-To: <200911071842.08599.lindner_marek@yahoo.de> (Marek Lindner's
+	message of "Sat, 7 Nov 2009 18:42:08 +0800")
+Message-ID: <7iocnez3p1.fsf@lanthane.pps.jussieu.fr>
+MIME-Version: 1.0
+Content-Type: text/plain
+Subject: Re: [B.A.T.M.A.N.] [Olsr-users] A peer-reviewed assessment of OLSR,
+	BATMAN and Babel
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,27 +21,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: Marek Lindner <lindner_marek@yahoo.de>
+Cc: olsr-users@lists.olsr.org, b.a.t.m.a.n@lists.open-mesh.net, jerryw@uow.edu.au, babel-users@lists.alioth.debian.org, brett_hagelstein@uow.edu.au, mehrana@uow.edu.au
 
+>> 4. They ran the routing daemons with the default parameters.  This means
+>>    that BATMAN ran with an OGM interval of 1 second, while Babel used
+>>    a Hello interval of 4 seconds.
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batctl/tcpdump.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+> Although I get your point, you probably share my belief in default options, 
+> hence it is the right thing to compare.
 
-diff --git a/batctl/tcpdump.c b/batctl/tcpdump.c
-index b96984b..abf20b1 100644
---- a/batctl/tcpdump.c
-+++ b/batctl/tcpdump.c
-@@ -547,8 +547,6 @@ int tcpdump(int argc, char **argv)
- 
- 	}
- 
--	ret = EXIT_SUCCESS;
--
- out:
- 	list_for_each_entry_safe(dump_if, dump_if_tmp, &dump_if_list, list) {
- 		if (dump_if->raw_sock)
--- 
-1.6.5.2
+Fully agreed -- I would have liked to see a comparison with similar
+parameters *in addition* to the comparison with the default parameters.
 
+                                        Juliusz
