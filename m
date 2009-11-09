@@ -1,14 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 9 Nov 2009 22:39:01 +0800
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon, 9 Nov 2009 16:08:27 +0100
 References: <200911082144.49637.lindner_marek@yahoo.de>
 	<591bc9930911090043mf62cd17tac8033d316002a18@mail.gmail.com>
 In-Reply-To: <591bc9930911090043mf62cd17tac8033d316002a18@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: multipart/signed; boundary="nextPart2858228.JTBSKGMhpM";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911092239.01984.lindner_marek@yahoo.de>
+Message-Id: <200911091608.44365.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv 0.2 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -21,33 +21,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
-On Monday 09 November 2009 16:43:33 Donald Gordon wrote:
+--nextPart2858228.JTBSKGMhpM
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+Donald Gordon wrote:
+> That's really exciting.
+>=20
 > I have a feature request -- has there been any consideration to getting
 > batman-adv to fragment ethernet frames, so as to get a 1500 byte MTU
-> batman-adv network running on top of a 1500 byte MTU ethernet network? 
+> batman-adv network running on top of a 1500 byte MTU ethernet network?=20
+This would mean that we have to add extra information to find which parts=20
+belong together. It is also needed that we buffer everything and put it=20
+together if needed - so out of order receiving of ethernet frame must be=20
+possible. I am not sure if we real want that as other protocols running on =
+top=20
+of it should do that work.
+
 >  This would be a useful feature for people trying to reuse whatever random
 >  ethernet networks happen to be nearby to extend their mesh, while not
->  requiring the mesh users to all configure a lower MTU.  And the support
->  you've announced for combining small ethernet frames into larger
->  batman-adv frames means that the overhead might not be too bad.
+>  requiring the mesh users to all configure a lower MTU.
+Most modern switches and routers should support 800.3as which makes it=20
+possible to use a larger MTU on ethernet to connect two meshes. And if a=20
+router receives a to large IP packet is should send an ICMP "fragmentation=
+=20
+needed and DF set" when it cannot be fragmented by the router.
 
-You will need quite some code to implement a good fragmentation but even if 
-you find the time to do so it comes with a severe performance penalty. 
-Imagine a payload packet comes in (1500 bytes), batman-adv adds its stuff (24 
-bytes) and then we make 2 packets out of it: one 1500 Bytes and one 24 Bytes 
-(probably a bit more for fragmentation handling). Now you have 2 packets 
-instead of one! Wired networks tend to avoid it (which is why applications 
-tried to determine the PMTU) - wireless networks should avoid it even more 
-because if you loose one of the packets both need to be retransmitted. 
+Is there any tunneling protocol which support ethernet frame fragmentation?
 
-You can handle this issue elegantly by increasing the MTU of the mesh 
-interfaces. Most wifi cards / drivers already accept MTUs greater than 1500 
-bytes and most ethernet cards do as well.
+Best regards,
+	Sven
 
-Nevertheless, it might be neat to have fragmentation as a fallback mechanism. 
-Be sure we review and submit your code as soon as it is available.  :)
+--nextPart2858228.JTBSKGMhpM
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Regards,
-Marek
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJK+DBsAAoJEF2HCgfBJntGBIkQANLp3tbN0HoOSztvc2p8+7Tb
+2sYygBTYuObS/aitMU9CLRIhrro6ZOqJcNiTpx/R9N3ZWLd+WcMAvJFcyfCwj5Ko
+wYYeHvbnmZ/D6aoEqGvnBEDX4YuGWxHN6VH9CadXv/WyYOypgOjSRcGoFtA7E+D3
+PXxwAIwUQdOOf3k0DBEAy5RPqaJ3p1530JCdzBCsEWJPuFLldqF8RnT40wtoHPU/
+7p8QLcDKfLHovCTf9HG417jL32A5xsk8RskW0l0XdzuiZbmnhIRvHel9YeClbur7
+/iUOhwZUKnenx4c2qaYiUm/jEuZgfeDO5QVF0oJJzPG1D36RjfkM1IzUPBuCChIV
+8uhtqgyZwQlehlqh2TRKw+ec2xGQHZE/fbVjHi6L5lGZRD51yy0AJ52fYJX0LvvX
+q/e4Q+4JSmwfWf3a4Rm99JQoKtWuOnBj4UFZUCHfi/Q10Yjg8a2xHag0KNZPMSGa
+KK8nnRHrm+871925QS2m83cZMDcl7PiKt9TmCOoTUPXWnIyss9eV35EsI7KIKs1q
+4FAB2JrmzR4xj17/+VaR6H+UnTVFCIRQlfYhpSoDrRrgcKkoTZt+PPDoTpt/3t2z
+yLN33Mch9hTJq5EVVlw+MIXBrKLQ9BJiH/MBAdJySjf3k2YxBBHNWVDh+cRGaneQ
+bDMgTrY3giyUuXCHoqxp
+=CRu6
+-----END PGP SIGNATURE-----
+
+--nextPart2858228.JTBSKGMhpM--
