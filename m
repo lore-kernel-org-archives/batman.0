@@ -1,15 +1,16 @@
-Return-Path: <hrogge@googlemail.com>
-From: Henning Rogge <hrogge@googlemail.com>
-Date: Mon, 9 Nov 2009 16:22:21 +0100
-References: <BD0FE81CE135624188025441BB9CB99138F599F20A@EXCMS01.ad.uow.edu.au>
-In-Reply-To: <BD0FE81CE135624188025441BB9CB99138F599F20A@EXCMS01.ad.uow.edu.au>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon, 9 Nov 2009 16:26:18 +0100
+References: <200911082144.49637.lindner_marek@yahoo.de>
+	<200911091608.44365.sven.eckelmann@gmx.de>
+	<200911092313.08777.lindner_marek@yahoo.de>
+In-Reply-To: <200911092313.08777.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2323443.150Y1Gac8z";
+Content-Type: multipart/signed; boundary="nextPart1614535.Daa2rKn9SR";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911091622.26778.hrogge@googlemail.com>
-Subject: Re: [B.A.T.M.A.N.] [Babel-users] A peer-reviewed assessment of OLSR,
-	BATMAN and Babel
+Message-Id: <200911091626.19190.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] batman-adv 0.2 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,56 +22,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: Chun-Ping Wang <jerryw@uow.edu.au>
-Cc: "olsr-users@lists.olsr.org" <olsr-users@lists.olsr.org>, "b.a.t.m.a.n@lists.open-mesh.net" <b.a.t.m.a.n@lists.open-mesh.net>, Brett Hegelstein <brett.hagelstein@gmail.com>, "justin.lipman@gmail.com" <justin.lipman@gmail.com>, Juliusz Chroboczek <jch@pps.jussieu.fr>, "babel-users@lists.alioth.debian.org" <babel-users@lists.alioth.debian.org>, Brett Hagelstein <bretth@uow.edu.au>, Mehran Abolhasan <mehrana@uow.edu.au>
+To: b.a.t.m.a.n@lists.open-mesh.net
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart2323443.150Y1Gac8z
+--nextPart1614535.Daa2rKn9SR
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Am Montag 09 November 2009 14:00:24 schrieb Chun-Ping Wang:
-> Hi all,
+Marek Lindner wrote:
+> On Monday 09 November 2009 23:08:27 Sven Eckelmann wrote:
+> > And if a router receives a to large IP packet is should send an ICMP
+> > "fragmentation needed and DF set" when it cannot be fragmented by the
+> > router.
 >=20
-> Many thanks for all your feedbacks.  It will definately help us to improve
->  our work. However, I think there is quite a bit of confusions at very
->  beginning.  So I would like to make some clarifications for this paper.
->=20
-> As it has been mentioned earlier, this paper was to study all the protoco=
-ls
->  in their default setting.  In term of "default setting" for OLSR, we used
->  original config file shipped in olsr v0.5.5.  As far as I know, this
->  config file is based on the LQ mode of OLSR  (i.e. olsrd.conf.default.lq
->  ).  So, correct me if I am wrong, we have been using OLSR with ETX to
->  begin with. We only modified the HELLO and TC interval to improve static
->  node performance. The results shown in our paper is actually the
->  performance of OLSR with ETX.
-Hmm... olsrd.conf.default.lq should be with ETX...
-
-> You may also aware the protocols that we used are already out-dated.  This
->  is because this work was done back in 2008.  We are more than happy to
->  undergo another study with more recent protocols.
-The implementation was outdated, not the protocol... but the protocol does=
+> The problem is we keep the payload on layer 2, so that it never will bubb=
+le
+>  up to layer 3, hence never emit fragmentation needed (we even might not
+>  have an IP address). All you see is a hanging connection.
+Ah, I think I misunderstood him. My idea was that he has meshA and a meshB =
+and=20
+between them is a normal router which connects both. In this case it would=
 =20
-only mention hopcount, so most people just use "RFC compatible" OLSR.
+work - but yes, he probably meant one mesh and only one connection is ether=
+net=20
+cable (or many of them) instead of a wireless link. In this case there is=20
+nothing like a router which looks at the layer 3 stuff.
 
-I would be interested what config file you used for the test. If you plan t=
-o=20
-redo the test we (the olsr.org team) would be very interested in getting=20
-feedback what kind of problems you have so that we can improve our software.
+Best regards,
+	Sven
 
-Henning Rogge
-
---nextPart2323443.150Y1Gac8z
+--nextPart1614535.Daa2rKn9SR
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkr4M7IACgkQcenvcwAcHWfwBQCeOporpgU8Dk7nepIKs1spFcEo
-50kAnjIGHbL+Ad4w7bbcU2nJ/lAPGQ1q
-=9ulT
+iQIcBAABCgAGBQJK+DSbAAoJEF2HCgfBJntGnG0QAK0Ez0c30SrXYbg09zAkjJOe
+4KCkC2f6ssIQmCpRwgz2e7BN+4ZLNSaehLrpVx174dTZnYKdjUzbjspgYouKrwdX
+3rulR/BgF+4xPgZ7hUfKmjLfkrf253WgdbPEWunWZ8cOWVk5i5tchl+EB+nhzg7m
+6BchXJApYQzUFAAzNtJr4vjoeGZexviwmwE4M6S+vvQosn2FlVSpAg2jmtbBXiV6
+lnYITRteqZbypegAUpdnzUq3Vk8EFGCJ2RjUuqDHm61iNIqZGw8RQPmkRO/OKiTb
+9W14t68bYzSiJbVLTxRJ3bpwrYq13XZKE8d005LWgLjfABssJmWCq60lcRT/jfNy
+hxfdASByRe/197sbjxYuRJqT809oheDHmihJ4A31e1Pertz3dYa8Y8iMBj1+pktu
+qH6q48ij0mrnf64HKZmE61qD+NiYjh3Lyoeyq93yweNk+opT09JpBofnXAv9Xg8Y
+RoQnNJqSbm7tRFuHFN8Jgrd23/PeaVyeAQ6ki2UXkkOF+LrRgfUB2wW4HWbnq7wj
+fSDnVu8lHJtZXVW3gpdTQaBOueWbKr4h/15vK37Lgu0rORtZjz0CuK4j7SdedOdi
+djLvX9qrz2CWbtwPQv5NnSxy1648Fp0QFAkO4Fv1ZSBzvwXXFEM6T27ql64qnjqW
+huFojC3doqeastqVMQRV
+=LmBA
 -----END PGP SIGNATURE-----
 
---nextPart2323443.150Y1Gac8z--
+--nextPart1614535.Daa2rKn9SR--
