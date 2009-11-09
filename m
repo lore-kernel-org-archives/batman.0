@@ -1,15 +1,13 @@
-Return-Path: <Juliusz.Chroboczek@pps.jussieu.fr>
-From: Juliusz Chroboczek <Juliusz.Chroboczek@pps.jussieu.fr>
-References: <871vkbzd6s.fsf@trurl.pps.jussieu.fr>
-	<006301ca60f7$991ca3a0$f90a8282@sharlyn>
-Date: Mon, 09 Nov 2009 18:06:04 +0100
-In-Reply-To: <006301ca60f7$991ca3a0$f90a8282@sharlyn> (Mehran Abolhasan's
-	message of "Mon, 9 Nov 2009 15:46:16 +1100")
-Message-ID: <7iiqdjmxvn.fsf@lanthane.pps.jussieu.fr>
+Return-Path: <linus.luessing@web.de>
+Date: Mon, 9 Nov 2009 20:02:06 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20091109190206.GA2642@Linus-Debian>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: [B.A.T.M.A.N.] A peer-reviewed assessment of OLSR,
-	BATMAN and Babel
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="a8Wt8u1KmwUX3Y2C"
+Content-Disposition: inline
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] BATMAN-Adv and MTU handling
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,112 +19,104 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: "Dr. Mehran Abolhasan" <mehrana@uow.edu.au>
-Cc: olsr-users@lists.olsr.org, b.a.t.m.a.n@lists.open-mesh.net, justin.lipman@gmail.com, Brett Hegelstein <brett.hagelstein@gmail.com>, Chun-Ping Wang <jerryw@uow.edu.au>, babel-users@lists.alioth.debian.org, Brett Hagelstein <bretth@uow.edu.au>
+To: B.A.T.M.A.N@lists.open-mesh.net
 
-Hello to both of you, and thanks a lot for your paper.
 
-MA:
+--a8Wt8u1KmwUX3Y2C
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 1. The aim of this paper was to study all the protocols in their default
-> settings.
+Thought it might be a good idea to continue the discussion about
+MTU handling to a new thread on the mailinglist for sharing some
+experiences we had with this here in L=C3=BCbeck already. Hope this is
+fine with you guys :).
 
-I realise that.  My comments were just a quick guide to the paper, to
-make it easier for folks to read it, by no way a criticism.
+In our setup we first started with the default settings of using
+wifi and ethernet links with the default MTU of 1500, ending up at
+a MTU of 1476 on bat0. After discovering, that we could actually
+increase the MTU on both the wifi and ethernet interfaces on our
+Dlink DIR-300 routers running OpenWRT, we decided to give an MTU
+of 1524 a try. In the beginning this was absolutely fine for our
+test setups, as we had a quite homogeneous network. But as soon as
+we were trying to connect some x86 desktop pcs running BATMAN-Adv
+to the same network, things got quite complicated. Our experiences
+were, that we are having 1GBit ethernet card in a laptop, that is
+able to increase the MTU to 1524 on a recent 2.6.30 kernel. We
+were trying about 5 random network cards we had available here in
+our cellar and they all were not able to increase the MTU
+(including my laptop's BCM5787M GB-ethernet card). So at the
+moment I'm truely considering to also switch those Dlink routers
+back to an MTU of 1500 for the sake of compatibility at least on
+local area networks.
 
-MA:
+The motivation of using a higher MTU of 1524 at the beginning was
+the rumour, that there might be some client devices (which we
+would get into the network by bridging bat0 wifi wlan0 for
+instance) not able to handle any MTU smaller than 1500. But in
+fact it turned out, that in our days basically all devices are
+able to do both IPv4 and IPv6 PMTU discovery on layer 3. So tests
+showed, that if all BATMAN nodes are using an MTU of 1476 on bat0
+(or the overlaying bridge) everything seems to work fine.
 
-> We did not switch off ETX with olsr 
+So now the question remains of what to do with links, where you
+are only able to have links with an MTU of smaller than 1500?
+Well, this usually is just the case when you are tunneling (over
+the internet) where the standard MTU is mostly lower than 1500
+because of the VPN overhead (+ pppoe). Luckily there might be a
+nice workaround already: Since version 1.0.10 of the tinc VPN
+daemon, which was released 3 weeks ago, it is handling packets
+being too large for the PMTU (which tinc discovers on its own)
+differently in switch mode (which is needed to transport
+BATMAN-Adv ethernet frames). Usually you are choosing UDP mode
+in tinc, any ethernet frame inside of this will then be
+encapsulated in this. But if tinc discovers, that the packet will
+be too big to fit through this link and the PMTU tinc discovered
+for it, it will do TCP encapsulation instead to let the kernel
+fragment the packet automatically.
 
-CPW:
+As in a mesh network usually not an internet uplink but the wifi
+is very likely being the bottleneck, the extra overhead on the
+internet uplinks created by fragmentation might not be "harmful"
+for the network average bandwidth. And as also the packet loss on
+an internet uplink not running on its bandwidth limit is very,
+very low, latencies shouldn't increase too much.
 
-> The results shown in our paper is actually the performance of OLSR
-> with ETX.
+I'm going to test the usability of the current tinc version for
+tranporting BATMAN-Adv packets soon, don't know if this "feature"
+is working yet at all. But anyone else, please feel free to do
+the same :).
 
-In Section IV.A, at the bottom of the first column, you say
+Yes, and it would probably be nice to have "emergency"
+fragmentation in BATMAN-Adv already, but as it had been mentioned
+before, this is not trivial to implement. I also don't see a way
+of how PMTU discovery might be done instead of fragmentation...
+probably even tougher to do because of the dynamically changing
+topology :).
 
-   OLSR, which based on hop-count metric, always maintains the minimum
-   number of hops for any given destination.
+Cheers, Linus
 
-I'd really like this to be clarified, it is part of an ongoing debate in
-our community (which I'm not going to summarise right now, since I'm
-trying to avoid a flamewar).
+--a8Wt8u1KmwUX3Y2C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-MA:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> 3. In terms of overheads, given that this was a small scale indoor
-> test-bed, we believed the amount of overhead introduced into the
-> network is not signficant enough to adversely affect the network.
+iQIcBAEBAgAGBQJK+GcuAAoJEBKw7u43QNpf+EYP/ixvFoBVbxFIifOa5vwGfahl
+g6wyuCuEvsK/r5zr5m9WIPXry5xWGUZ7JhOzcxEtgzSYeSHDa7nabpSO8fbYSUHw
+2RVZgf6pUkfx+x67vTQbp+KLyaqWS0jjEHXST/bPwfarGINztyyK8KnUBDY4DVmP
+EbAQirDXl+gmORkr8pFP7YUfqGtc2YVsxm6J+y7KwmfbqLv/2coSELjSkLLlIJ5m
+7TDo91yHohw3BvZ7ZQCT/ivg5qPhdHbGxbbiLegHU8j5K98DxS6+ZtFzWFimJEST
+Mx+JUNTDWf7oaj4X5sH1Q12gofU5alnRZGoJa8pKQAmuASRASkhVr3mUB9BLYMuz
+rq5r22WqYZCo7VqViLbAghLZr+raZGK+Xg44RNS/XjaL2wjyHXXLdv3kQ/1O8eVv
+cwcULwoJSdvHYKgs2elhITwptjEqGO8+ezFkgFJKjVCLF2Zn0u2e9GAUu0NYiY7x
+JxefdDPefQ/Yzkmxtnldubo/VDjUFwnprNmBHEo7DEJfsrOtwKauxpno/sdoRT5b
+udwrbuzZBWXjw3qLV/05fqH7Hl8OYitgM3WlySgkxIZlBDiHkbEX8Jlc4jjPvxKa
+bYLx1LaGxDmLMi1ApqtaqlvAnQMP2BMgUrv8Oq3b/bjbihmt355x+McXUQ8G/yV5
+RX3dS5VvjVseRwOAXPFK
+=Crp5
+-----END PGP SIGNATURE-----
 
-I agree.  However, this is the kind of informaton that would be
-interesting to me -- Babel extensively uses reactive requests and
-updates, and the heuristics used are somewhat tricky to tune.  Packet
-count is the information I need in order to know out if I got it right.
-
-(I'm not quite sure what to measure here, but I'd say that the values of
-interest are the number of packets sent on average per unit of time, the
-average, median and standard derivation of packet size, and the average
-interval between two packets -- the latter being an estimate of how
-bursty the routing traffic is).
-
-CPW:
-
-> You may also aware the protocols that we used are already out-dated.
-> This is because this work was done back in 2008.
-
-The results are still very interesting.  While our routing daemons have
-gone through extensive amounts of tuning since then, the basic
-principles have not changed, and your paper validates the approaches
-that we've taken.
-
-CPW:
-
-> We are more than happy to undergo another study with more recent
-> protocols.
-
-That would be excellent.  We all know how time-consuming it is to set up
-a testbed and perform quantitative measures, and we're most grateful for
-any data you're willing to share.
-
-Two comments:
-
-In Figure 3, you show that Babel tends to have a packet loss rate of 1%.
-Since you had redundant routes in your case, and were running normal
-802.11 with link-layer ARQ, this should not happen -- and the BATMAN
-results show that, indeed, it is possible to have 0% loss rate.
-
-I suspect that the explanation is that Babel ocasionally loses a packet
-when it switches routes -- that would be consistent with the RCF given
-in Table I.  Do you have any extra data on this test that you'd be
-willing to share?  In particular, do you know whether the losses were
-evenly distributed, or whether they came in bursts?
-
-Finally, in Section IV.C, you say
-
-  BABEL had the fastest route convergence time with a fastest repair
-  time of nine seconds. Interestingly, it was found in the bandwidth
-  test that the route changed in as little as two seconds when parallel
-  paths were available. This suggests the route preference algorithm is
-  more active than the route repair algorithm.
-
-This is, unfortunately, an effect that I don't know how to avoid.  Since
-you were running with a Hello interval of 2 seconds, you have shown that
-Babel repairs a broken route after 2 to 3 hellos; anything more
-aggressive than that, and you risk massive amounts of route flapping,
-since a single stray packet could too easily cause a route switch.
-
-However, you have witnessed route flaps happening in two seconds in the
-worst case -- given two neighbours A and B, two seconds is the average
-time for receiving first a packet from A, then a packet from B; if the
-two routes have very similar metrics, slight oscillations of ETX might
-cause Babel to switch after just two hellos.
-
-As you justly point out, the two facts put together indicate that the
-link cost computation and hysteresis in Babel do not interact quite
-right.  This is the most tricky bit of Babel, since it appears to be
-a pure engineering tradeoff and I don't see any theoretical arguments to
-guide me in its design.
-
-Thanks again for your work,
-
-                                        Juliusz
+--a8Wt8u1KmwUX3Y2C--
