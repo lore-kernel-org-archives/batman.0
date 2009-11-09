@@ -1,12 +1,15 @@
-Return-Path: <don@dis.org.nz>
+Return-Path: <hrogge@googlemail.com>
 MIME-Version: 1.0
-In-Reply-To: <200911082144.49637.lindner_marek@yahoo.de>
-References: <200911082144.49637.lindner_marek@yahoo.de>
-Date: Mon, 9 Nov 2009 21:43:33 +1300
-Message-ID: <591bc9930911090043mf62cd17tac8033d316002a18@mail.gmail.com>
-From: Donald Gordon <don@dis.org.nz>
-Content-Type: multipart/alternative; boundary=0016e64ccdf857a54b0477ec30d0
-Subject: Re: [B.A.T.M.A.N.] batman-adv 0.2 released
+In-Reply-To: <006301ca60f7$991ca3a0$f90a8282@sharlyn>
+References: <871vkbzd6s.fsf@trurl.pps.jussieu.fr>
+	<006301ca60f7$991ca3a0$f90a8282@sharlyn>
+Date: Mon, 9 Nov 2009 10:07:27 +0100
+Message-ID: <87eacd830911090107k394e7f8fm5c6b28d20f2f3e0d@mail.gmail.com>
+From: Henning Rogge <hrogge@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [Babel-users] A peer-reviewed assessment of OLSR,
+	BATMAN and 	Babel
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,57 +21,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: "Dr. Mehran Abolhasan" <mehrana@uow.edu.au>
+Cc: olsr-users@lists.olsr.org, b.a.t.m.a.n@lists.open-mesh.net, Brett Hegelstein <brett.hagelstein@gmail.com>, justin.lipman@gmail.com, Chun-Ping Wang <jerryw@uow.edu.au>, Juliusz Chroboczek <jch@pps.jussieu.fr>, babel-users@lists.alioth.debian.org, Brett Hagelstein <bretth@uow.edu.au>
 
---0016e64ccdf857a54b0477ec30d0
-Content-Type: text/plain; charset=ISO-8859-1
-
-That's really exciting.
-
-I have a feature request -- has there been any consideration to getting
-batman-adv to fragment ethernet frames, so as to get a 1500 byte MTU
-batman-adv network running on top of a 1500 byte MTU ethernet network?  This
-would be a useful feature for people trying to reuse whatever random
-ethernet networks happen to be nearby to extend their mesh, while not
-requiring the mesh users to all configure a lower MTU.  And the support
-you've announced for combining small ethernet frames into larger batman-adv
-frames means that the overhead might not be too bad.
-
-donald
-
-On Mon, Nov 9, 2009 at 2:44 AM, Marek Lindner <lindner_marek@yahoo.de>wrote:
-
+On Mon, Nov 9, 2009 at 05:46, Dr. Mehran Abolhasan <mehrana@uow.edu.au> wro=
+te:
+> Hi All,
 >
-> The B.A.T.M.A.N. team is pleased to announce the availability of the second
-> batman-adv release which brings major improvements, new features, changes
-> along the way and a series of bugfixes.
+> Many Thanks for all your comments. Just a couple of point of clarificatio=
+n.
 >
+> 1. The aim of this paper was to study all the protocols in their default
+> settings. We did not
+> switch off ETX with olsr (note we used the olsr version from olsr.org). I=
+n
+> fact the link quality metric was left to 2 by default. We are well aware
+> that ETX provide more stable routes than hop count.
+The problem is that the "RFC" mode of olsr.org is not well tested, the
+MPR algorithm is broken in 0.5.6 and RFC conform OLSR networks do not
+work in practice for non-trivial networks. I'm surprised that you got
+results this good.
+
+> 2. In terms of looking at performance using different parameters, we will=
+ be
+> doing this in our future studies.
+> Also, note that the conference papers were limited to 4 pages only.
+If you plan to start your tests, feel free to contact the olsr mailing
+lists for some suggestions for parameters. ;)
+
+> 3. In terms of overheads, given that this was a small scale indoor test-b=
+ed,
+> we believed the amount of overhead introduced into the network is not
+> signficant enough to adversely affect the network. So we did not look int=
+o
+> overheads for this paper, however we would do this for larger test-beds.
 >
+> 4. We previously ran OLSR using various different outdoor and indoor
+> test-beds and at the time we were doing the experimentations BATMAN and
+> BABEL were more stable.
+Noone surprised (without ETX).
 
---0016e64ccdf857a54b0477ec30d0
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Henning Rogge
 
-That&#39;s really exciting.<br><br>I have a feature request -- has there be=
-en any consideration to getting batman-adv to fragment ethernet frames, so =
-as to get a 1500 byte MTU batman-adv network running on top of a 1500 byte =
-MTU ethernet network?=A0 This would be a useful feature for people trying t=
-o reuse whatever random ethernet networks happen to be nearby to extend the=
-ir mesh, while not requiring the mesh users to all configure a lower MTU.=
-=A0 And the support you&#39;ve announced for combining small ethernet frame=
-s into larger batman-adv frames means that the overhead might not be too ba=
-d.<br>
-<br>donald<br><br><div class=3D"gmail_quote">On Mon, Nov 9, 2009 at 2:44 AM=
-, Marek Lindner <span dir=3D"ltr">&lt;<a href=3D"mailto:lindner_marek@yahoo=
-.de">lindner_marek@yahoo.de</a>&gt;</span> wrote:<br><blockquote class=3D"g=
-mail_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt=
- 0pt 0pt 0.8ex; padding-left: 1ex;">
-<br>
-The B.A.T.M.A.N. team is pleased to announce the availability of the second=
-<br>
-batman-adv release which brings major improvements, new features, changes<b=
-r>
-along the way and a series of bugfixes.<br><br>
-</blockquote></div><br>
-
---0016e64ccdf857a54b0477ec30d0--
+--=20
+"Wo k=E4men wir hin, wenn alle sagten, wo k=E4mem wir hin, und niemand
+ginge, um einmal zu schauen, wohin man k=E4me, wenn man ginge." (Kurt
+Marti)
