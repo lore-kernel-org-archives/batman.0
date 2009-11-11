@@ -1,15 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Wed, 11 Nov 2009 07:43:01 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20091111064301.GQ5005@lunn.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 11 Nov 2009 20:14:22 +0800
 References: <200911082144.49637.lindner_marek@yahoo.de>
-	<591bc9930911090043mf62cd17tac8033d316002a18@mail.gmail.com>
 	<200911092239.01984.lindner_marek@yahoo.de>
 	<591bc9930911101917j149b5ba5j666ddded7a0ceeb0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <591bc9930911101917j149b5ba5j666ddded7a0ceeb0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911112014.23054.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv 0.2 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -24,45 +24,33 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Thinking a little out of the box here...
+On Wednesday 11 November 2009 11:17:22 Donald Gordon wrote:
+> One implementation possibility I was thinking of was adding yet another
+> ethernet device that sat like a proxy in front of bat0.  It would fragment
+> transmitted frames larger than the bat0 MTU (changing the ethernet frame
+> type), and reassemble recieved frames.  This would push the load of frame
+> fragmentation to the edge of the network, and shouldn't add too much
+> overhead.  Does that sound like a reasonable way forward?  And if so, does
+> anyone have any pointers on how to develop fake ethernet drivers?
 
-So far, everybody has talked about fragmenting so that you can
-transfer 1500byte frames over interfaces with an MTU of 1476.
+If you look for simple interfaces then just dive into the bat0 code - it is 
+exactly that. But at that point I doubt you would need yet another interface 
+to achieve your goal. If you wanted your fragmentation happening at each 
+beginning and ending of the mesh you easily could do that inside of the 
+batman-adv code. The data will go in and out via bat0 ...
 
-24 bytes are the problem. We could try to compress the packet as a
-first stage to solving the problem. If we cannot sufficiently compress
-it, then segment it.
-
-There are a few well know compression schemes that could be used, some
-generic, so more tailored to network traffic.
-
-V. Jacobson TCP/IP header compression, often used on PPP links:
-http://tools.ietf.org/html/rfc1144
-
-There is already a kernel implementation of this which might be
-reusable. It may also be possible to extend the scheme to compress
-part of the original ethernet header.
-
-There is a more generic header compression scheme:
-http://tools.ietf.org/html/rfc3095
-
-The advantage of this is that it can compress more than just TCP/IP
-and is decoupled from PPP.
-
-Then there is the more traditional compression schemes, eg LZO etc.
-There are a few academic papers available looking at this subject.
-The disadvantage of trying to compress the packet data is often it is
-already compressed, eg images. Or it is https traffic which makes it
-harder to compress.
-
-I would tend more towards header compression. It requires a lot less
-CPU usage then data compression and should provide the 24 bytes of
-compression we need most of the time. However, as i said at the
-beginning, we need to be able to fall back to segmentation when it
-does not work, or has to send full header information in order to
-establish the compression tables.
-
-	  Andrew
+Besides, I'm not sure your approach will make everyone happy as you might have 
+different MTUs throughout the network (e.g. see you batman over IP suggestion). 
+The endpoints might have a higher MTU than a segment inbetween. In that case 
+the fragmentation could not help.
 
 
+>  Which means I'm also keen on some sort of integrated way to tunnel batman
+>  packets over IP without the overhead of passing them to userspace through
+>  a tun/tap but I guess that'll have to wait :-)
 
+Well, if static tunneling solves the problem you easily could use GRE or 
+similar techniques.
+
+Regards,
+Marek
