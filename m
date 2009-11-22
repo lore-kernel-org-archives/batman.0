@@ -1,12 +1,10 @@
-Return-Path: <andrew@lunn.ch>
-Date: Fri, 20 Nov 2009 09:22:53 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20091120082253.GA12827@lunn.ch>
+Return-Path: <abhishek.kona@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] FWD: patch staging-batman-adv-meshing-protocol.patch
- added to gregkh-2.6 tree
+Date: Mon, 23 Nov 2009 05:20:37 +0530
+Message-ID: <7f6eebb90911221550t190e7650kbec2c48e79f67f58@mail.gmail.com>
+From: Abhishek K <abhishek.kona@gmail.com>
+Content-Type: multipart/alternative; boundary=001636c9239229d6d90478fe6093
+Subject: [B.A.T.M.A.N.] Simulator availability of B.A.T.M.A.N
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,39 +16,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
-FYI:
+--001636c9239229d6d90478fe6093
+Content-Type: text/plain; charset=ISO-8859-1
 
-We just made a big towards getting batman-adv in mainline. We are now
-in GregKH patch tree. 
+Hi
 
-What i don't know is if this will be merged for the next 2.6.32-rc or
-if we need to wait for the opening of the 2.6.33 window.
+Is there a B.A.T.M.A.N implementation on any of the simulators NS2 or
+Omnet++ available?
 
-   Andrew
+Regards
+Abhishek K
+National Institute of Technology Karnataka India
 
------ Forwarded message from gregkh@suse.de -----
+--001636c9239229d6d90478fe6093
+Content-Type: text/html; charset=ISO-8859-1
 
-Date: Thu, 19 Nov 2009 15:01:09 -0800
-From: gregkh@suse.de
-To: andrew@lunn.ch, gregkh@suse.de, lindner_marek@yahoo.de,
-	siwu@hrz.tu-chemnitz.de
-Subject: patch staging-batman-adv-meshing-protocol.patch added to gregkh-2.6
-	tree
-X-Spam-Status: No, score=-2.6 required=4.0 tests=BAYES_00 autolearn=ham
-	version=3.2.5
+Hi<div><br></div><div>Is there a B.A.T.M.A.N implementation on any of the simulators NS2 or Omnet++ available?</div><div><br></div><div>Regards</div><div>Abhishek K</div><div>National Institute of Technology Karnataka India</div>
+<div><br></div>
 
-
-This is a note to let you know that I've just added the patch titled
-
-    Subject: staging: batman-adv meshing protocol
-
-to my gregkh-2.6 tree.  Its filename is
-
-    staging-batman-adv-meshing-protocol.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
------ End forwarded message -----
+--001636c9239229d6d90478fe6093--
