@@ -1,17 +1,14 @@
-Return-Path: <linus.luessing@web.de>
-Date: Mon, 23 Nov 2009 15:21:51 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20091123142151.GA21537@Sellars>
-References: <20091109190206.GA2642@Linus-Debian>
-	<200911101834.41970.lindner_marek@yahoo.de>
-	<20091112005149.GA2879@Linus-Debian>
-	<87fx8fvhpg.fsf@trurl.pps.jussieu.fr>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 24 Nov 2009 23:19:28 +0800
+References: <7f6eebb90911221550t190e7650kbec2c48e79f67f58@mail.gmail.com>
+In-Reply-To: <7f6eebb90911221550t190e7650kbec2c48e79f67f58@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <87fx8fvhpg.fsf@trurl.pps.jussieu.fr>
-Sender: linus.luessing@web.de
-Subject: Re: [B.A.T.M.A.N.] BATMAN-Adv and MTU handling
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911242319.28949.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Simulator availability of B.A.T.M.A.N
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,26 +22,21 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-> > Hmm, yes, true, IPv6 does not support fragmentation at all...
-> 
-> It does, but it's done end-to-end, not at intermediate routers.  See
-> Section 5 of RFC 2460.
-Ah, ok, yes, you're right, forgot about the fragmentation header
-in IPv6 :).
 
-If BATMAN were just doing transparent link fragmentation towards
-its neighbours as a "fall-back" mechanism despite header
-compression, would it be better to also do something like
-"aggregation"? So for example if we were receiving a packet of
-1500 bytes, which does not fit through a bat0 interface with an MTU
-of 1476, we could wait for a maximum of maybe 5ms for another
-packet and send a packet fragment of (1476 - (fragmentation
-information overhead)). A second packet fragment would be send with
-the rest of the first and the beginning of the second packet.
-Wouldn't that cause a lot less loss of throughput compared to
-splitting it in two packets of equal size as done in fragmentation
-in IPv4 (in fact, only the additonal fragmentation header
-overhead of a couple of bytes, especially in lossy environments
-like wifi, right?). Any concerns about such an approach?
+Hey,
 
-Cheers, Linus
+> Is there a B.A.T.M.A.N implementation on any of the simulators NS2 or
+> Omnet++ available?
+
+that question pops up quite often therefore the responses are a bit slow. ;)
+I just wrote a small section in our FAQ for future reference:
+
+Does B.A.T.M.A.N. have simulator (NS2, Omnet++, etc) support?
+At this point none of B.A.T.M.A.N. implementation (we know of) supports 
+simulators like the ones mentioned above. However, some people experiment with 
+B.A.T.M.A.N. using emulators (UML/Qemu/etc). If you are looking for step-by-
+step instructions to install such a system you can read our emulation 
+document. 
+
+Regards,
+Marek
