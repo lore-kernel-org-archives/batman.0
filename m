@@ -1,13 +1,11 @@
-Return-Path: <francesco.cappuccio@gmail.com>
+Return-Path: <michael.rack@rsm-freilassing.de>
+Message-ID: <4B0D0DD2.1040107@rsm-freilassing.de>
+Date: Wed, 25 Nov 2009 11:58:26 +0100
+From: Michael Rack <michael.rack@rsm-freilassing.de>
 MIME-Version: 1.0
-In-Reply-To: <200910292104.13536.lindner_marek@yahoo.de>
-References: <45f642440910260327u6eb01bc3nf468cc092fa8700@mail.gmail.com> 
-	<200910292104.13536.lindner_marek@yahoo.de>
-From: Francesco <francesco.cappuccio@gmail.com>
-Date: Wed, 25 Nov 2009 11:26:58 +0100
-Message-ID: <45f642440911250226s1ea87735ja8639d433ba7c942@mail.gmail.com>
-Content-Type: multipart/alternative; boundary=001636164063cb836104792f8081
-Subject: Re: [B.A.T.M.A.N.] batman-adv metric and next-hop choice
+Content-Type: text/plain; charset="iso-8859-15"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] What routingprotocol is similar to B.A.T.M.A.N ?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,103 +19,49 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
---001636164063cb836104792f8081
-Content-Type: text/plain; charset=ISO-8859-1
+Dear List,
 
-Hi,
+sorry if that is not the right place for my question. But the approach=20
+of B.A.T.M.A.N in how to choise the next hop is phantastic. Protocols=20
+how BGPv4 and OSPF only take the shortest path to the destination.=20
+B.A.T.M.A.N looks for the fastest way where the Hello-Message arrives first.
 
-I was just looking for a name: the name of the metric (is that ETX?) that is
-used in batman-adv.
-Actually i did not find any useful info in old messages on the list.
+So long. I need a Routing-Protocol for static mash. My Wireless-Network=20
+besides on fixed Wireless Stations they become never to be dynamic. The=20
+complete Wireless Network is in Infrastructure-Mode. All members in the=20
+Network have just one role (AP / Client).
 
-Thanks.
+Currently OLSR does the routing job. But there lots of problems. OLSR=20
+also take the shortest path, also in case, a better link is available.
 
-On Thu, Oct 29, 2009 at 2:04 PM, Marek Lindner <lindner_marek@yahoo.de>wrote:
+B.A.T.M.A.N is not suitable for my situation. The Client should not be=20
+able to select a desired gateway. A gateway should inject a default=20
+gateway to the clients, how OLSR does it.
 
->
-> Hi,
->
-> > I am experimenting some path hopping in my tests using batman-adv.
-> > Was wondering if and where metric information are shared among batman
-> nodes
-> > (again, with batman-adv) as I did not find any useful infos sniffing
-> >  packets with wireshark patched.
-> >
-> > The command batctl l shows (with log level 8)
-> > But no info about actual metric when a route is changed.
->
-> I'm not entirely sure what you expect to find or what is missing. If you
-> want
-> to understand the batman protocol you might want to start with some of our
-> recorded talks. If you want to use wireshark to analyze the traffic be sure
-> to
-> have the batman dissectors installed (or use batctl td). If you want
-> routing
-> debug information from the module use debug level 12 (batman [4] + routes
-> [8]).
->
-> Hope that helps,
-> Marek
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@lists.open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
+Is there any other routing protocol on the market, that combine all that=20
+features, that i need?
 
+     * Routing descission on fastest HelloMessage
+     * Inject Default-Gateway via 0.0.0.0/0
+     * Without tunneling data
 
+I know. B.A.T.M.A.N is opensource. But i'm not familiar with C/C++ and=20
+so, i'm not able to do some modifications to the source.
 
--- 
-Francesco Cappuccio
+Or is anyone out there, that can do the modification for me? Tell me,=20
+how long the work takes, and what you interested to earn for.
 
---001636164063cb836104792f8081
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Requirements:
 
-Hi,<br><br>I was just looking for a name: the name of the metric (is that E=
-TX?) that is used in batman-adv.<br>Actually i did not find any useful info=
- in old messages on the list.<br><br>Thanks.<br><br><div class=3D"gmail_quo=
-te">
+     * Disable the bat0 Interface
+     * Enable announcing 0.0.0.0/0
 
-On Thu, Oct 29, 2009 at 2:04 PM, Marek Lindner <span dir=3D"ltr">&lt;<a hre=
-f=3D"mailto:lindner_marek@yahoo.de">lindner_marek@yahoo.de</a>&gt;</span> w=
-rote:<br><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid =
-rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Liebe Gr=FC=DFe aus Freilassing,
 
-<br>
-Hi,<br>
-<div class=3D"im"><br>
-&gt; I am experimenting some path hopping in my tests using batman-adv.<br>
-&gt; Was wondering if and where metric information are shared among batman =
-nodes<br>
-&gt; (again, with batman-adv) as I did not find any useful infos sniffing<b=
-r>
-&gt; =A0packets with wireshark patched.<br>
-&gt;<br>
-&gt; The command batctl l shows (with log level 8)<br>
-</div><div class=3D"im">&gt; But no info about actual metric when a route i=
-s changed.<br>
-<br>
-</div>I&#39;m not entirely sure what you expect to find or what is missing.=
- If you want<br>
-to understand the batman protocol you might want to start with some of our<=
-br>
-recorded talks. If you want to use wireshark to analyze the traffic be sure=
- to<br>
-have the batman dissectors installed (or use batctl td). If you want routin=
-g<br>
-debug information from the module use debug level 12 (batman [4] + routes<b=
-r>
-[8]).<br>
-<br>
-Hope that helps,<br>
-Marek<br>
-_______________________________________________<br>
-B.A.T.M.A.N mailing list<br>
-<a href=3D"mailto:B.A.T.M.A.N@lists.open-mesh.net">B.A.T.M.A.N@lists.open-m=
-esh.net</a><br>
-<a href=3D"https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n" target=3D"_=
-blank">https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n</a><br>
-</blockquote></div><br><br clear=3D"all"><br>-- <br>Francesco Cappuccio<br>=
-<br>
+Michael Rack
+RSM Freilassing
+--=20
+RSM Freilassing                 Tel.: +49 8654 607110
+Nocksteinstr. 13                Fax.: +49 8654 670438
+D-83395 Freilassing            www.rsm-freilassing.de
 
---001636164063cb836104792f8081--
