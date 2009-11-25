@@ -1,11 +1,13 @@
-Return-Path: <michael.rack@rsm-freilassing.de>
-Message-ID: <4B0D0DD2.1040107@rsm-freilassing.de>
-Date: Wed, 25 Nov 2009 11:58:26 +0100
-From: Michael Rack <michael.rack@rsm-freilassing.de>
+Return-Path: <aaron@lo-res.org>
+Message-ID: <4B0D106F.40404@lo-res.org>
+Date: Wed, 25 Nov 2009 12:09:35 +0100
+From: "L. Aaron Kaplan" <aaron@lo-res.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"; format="flowed"
+References: <4B0D0DD2.1040107@rsm-freilassing.de>
+In-Reply-To: <4B0D0DD2.1040107@rsm-freilassing.de>
+Content-Type: text/plain; charset="iso-8859-15"
 Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] What routingprotocol is similar to B.A.T.M.A.N ?
+Subject: Re: [B.A.T.M.A.N.] What routingprotocol is similar to B.A.T.M.A.N ?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,49 +21,54 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Dear List,
+Michael Rack wrote:
+> Dear List,
+>
+> sorry if that is not the right place for my question. But the approach
+> of B.A.T.M.A.N in how to choise the next hop is phantastic. Protocols
+> how BGPv4 and OSPF only take the shortest path to the destination.
+> B.A.T.M.A.N looks for the fastest way where the Hello-Message arrives
+> first.
+>
+> So long. I need a Routing-Protocol for static mash. My
+> Wireless-Network besides on fixed Wireless Stations they become never
+> to be dynamic. The complete Wireless Network is in
+> Infrastructure-Mode. All members in the Network have just one role (AP
+> / Client).
+>
+> Currently OLSR does the routing job. But there lots of problems. OLSR
+> also take the shortest path, also in case, a better link is available.
+>
+For OLSR development it would be interesting if you could discuss on the
+mailing list there how your routing metric should be.
+OLSR has a very nice framework (this is one of the advantages that it
+has next tom some disadvantages) that actually you *can* change the metric!
+We simply did not find any way yet to make layer 2 metrics cross
+plattform comparable.
 
-sorry if that is not the right place for my question. But the approach=20
-of B.A.T.M.A.N in how to choise the next hop is phantastic. Protocols=20
-how BGPv4 and OSPF only take the shortest path to the destination.=20
-B.A.T.M.A.N looks for the fastest way where the Hello-Message arrives first.
+But this is better discussed on the OLSR mailing lists of course. (off
+topic here)
 
-So long. I need a Routing-Protocol for static mash. My Wireless-Network=20
-besides on fixed Wireless Stations they become never to be dynamic. The=20
-complete Wireless Network is in Infrastructure-Mode. All members in the=20
-Network have just one role (AP / Client).
+> B.A.T.M.A.N is not suitable for my situation. The Client should not be
+> able to select a desired gateway. A gateway should inject a default
+> gateway to the clients, how OLSR does it.
+>
+> Is there any other routing protocol on the market, that combine all
+> that features, that i need?
+>
 
-Currently OLSR does the routing job. But there lots of problems. OLSR=20
-also take the shortest path, also in case, a better link is available.
+You could try BGP . It is for sure very stable and very well tested ;-)
+And actually it is also used in static mesh networks.
+I have the feeling that it will actually do what you want. without major
+bugs.
 
-B.A.T.M.A.N is not suitable for my situation. The Client should not be=20
-able to select a desired gateway. A gateway should inject a default=20
-gateway to the clients, how OLSR does it.
 
-Is there any other routing protocol on the market, that combine all that=20
-features, that i need?
-
-     * Routing descission on fastest HelloMessage
-     * Inject Default-Gateway via 0.0.0.0/0
-     * Without tunneling data
-
-I know. B.A.T.M.A.N is opensource. But i'm not familiar with C/C++ and=20
-so, i'm not able to do some modifications to the source.
-
-Or is anyone out there, that can do the modification for me? Tell me,=20
-how long the work takes, and what you interested to earn for.
-
-Requirements:
-
-     * Disable the bat0 Interface
-     * Enable announcing 0.0.0.0/0
-
-Liebe Gr=FC=DFe aus Freilassing,
-
-Michael Rack
-RSM Freilassing
---=20
-RSM Freilassing                 Tel.: +49 8654 607110
-Nocksteinstr. 13                Fax.: +49 8654 670438
-D-83395 Freilassing            www.rsm-freilassing.de
+>     * Routing descission on fastest HelloMessage
+>     * Inject Default-Gateway via 0.0.0.0/0
+>     * Without tunneling data
+>
+> Liebe Gr=FC=DFe aus Freilassing,
+>
+> Michael Rack
+> RSM Freilassing
 
