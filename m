@@ -1,12 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 30 Nov 2009 07:36:51 +0800
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 30 Nov 2009 11:09:02 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20091130100902.GE10269@lunn.ch>
+References: <20091129200950.GA19275@pandem0nium>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911300736.51646.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] batman's new configuration interface
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091129200950.GA19275@pandem0nium>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Removing the big batman lock
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,32 +19,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+
+On Sun, Nov 29, 2009 at 09:09:50PM +0100, Simon Wunderlich wrote:
+
+> I did some testing, including loading, unloading, killing individual
+> nodes etc, which seems to be clean so far. However there might be 
+> more race conditions introduced by this large patch, and i'm therefore
+> requesting a careful review before committing.
+
+Hi Simon
+
+I've not done a careful review yet, just a quick look.
+
+Two idea for improvements:
+
+In the purge code, add some debug code which looks at the refcount
+value. If it is not between 1 and 5, prinkt() a warning what there is
+probably a missing refcount operation. Since the purge code does not
+run very often, it should not add much overhead, yet it is still a
+useful debug tool.
+
+The following bit of code happens quite a lot:
+
+while (NULL != (orig_node = orig_hash_iterate(&hashit, orig_node))) {
 
 
-Hey folks,
+There is also a comment about having to free hashit, if you don't
+iterate to the end of the hash. How about refactoring this, more like
+the linux list.h.
 
-I have given the new interface (designed in Brussels - specs are at the bottom 
-of this page: http://www.open-mesh.net/wiki/2009-10-23-batman-goes-mainline) a 
-little bit of thought. The main idea is to have batman list all available 
-interfaces inside of /proc/sys/net/batman-adv/interfaces to let the user 
-enable/disable/configure each interface individually via sysctl or batctl.
+Make hashit a stack variable, with an init macro:
 
-Back then we decided to create a "mesh" folder that should contain all 
-relevant meshing data such as the originator table, translation tables, vis 
-data, etc. We did not consider that the sysctl interface is not made for such 
-data. It easily allows to set small variables but other (read-only) 
-information should be placed elsewhere.
+#define HASHIT(name) struct hash_it_t name = { .index = -1, .bucket = NULL, \
+	                                       .prev_bucket=NULL,           \
+ 					       .first_bucket=NULL }
 
-Now, we have to rethink the location. The creator of the new interface (Linus) 
-suggested to create 2 folders inside of /proc: The first folder should be part 
-of sysctl and contain all files that are writeable. The other should be 
-/proc/net/batman-adv and contains all read-only information.
-Alternatively, we could keep everything in one folder but outside of the 
-sysctl interface.
+and a macro for iterating over the hash
+    
+    HASHIT(hashit);
 
-Other ideas ? Opinions ?
+    orig_hash_for_each(orig_node, hashit) {
 
-Regards,
-Marek
+    foo(orig_node);
+    }
 
+
+    Andrew
