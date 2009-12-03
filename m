@@ -1,14 +1,14 @@
 Return-Path: <andrew@lunn.ch>
-Date: Thu, 3 Dec 2009 06:53:27 +0100
+Date: Thu, 3 Dec 2009 07:00:42 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20091203055327.GA29768@lunn.ch>
-References: <20091203002407.GA10048@Linus-Debian> <4B172691.8010707@gmail.com>
-	<200912031048.17909.lindner_marek@yahoo.de>
+Message-ID: <20091203060042.GB29768@lunn.ch>
+References: <20091129200950.GA19275@pandem0nium>
+	<20091203013122.GA2223@Linus-Debian>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200912031048.17909.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Updating orig_str for debug
+In-Reply-To: <20091203013122.GA2223@Linus-Debian>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Removing the big batman lock
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,17 +22,21 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-> you are probably right but I know that Andrew has a patch in his
-> pipeline which will remove these addr_to_string() calls entirely
-> (printk can handle mac addresses for us). Until then we can live
-> with this workaround. :)
+On Thu, Dec 03, 2009 at 02:31:22AM +0100, Linus L??ssing wrote:
+> Hi Simon,
+> 
+> I just gave your patch a try on my laptop and could successfully,
+> reproduceably crash my kernel in the following way:
 
-I've been holding off on this patch because of Simon's big lock
-removal patch. The two will probably clash.
+This looks like a deadlock. 
 
-However the deadlocks Linus just posted suggests Simon's patch is
-still in the experimental stage. My patch should be low risk, so maybe
-it can go in first. I will submit a patch ASAP.
+Simon: Did you try lockdep on this new code? 
 
-   Andrew
+http://lwn.net/Articles/185666/
 
+This should hopefully show you what locks are being taken in the wrong
+order. This is something i keep intending on running, but never get
+around to it. Now we have a probably deadlock, it might be enough
+reason for me to actually do it.
+
+	Andrew
