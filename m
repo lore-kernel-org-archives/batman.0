@@ -1,13 +1,13 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 3 Dec 2009 10:45:40 +0800
-References: <20091203002407.GA10048@Linus-Debian>
-In-Reply-To: <20091203002407.GA10048@Linus-Debian>
+Date: Thu, 3 Dec 2009 10:48:17 +0800
+References: <20091203002407.GA10048@Linus-Debian> <4B172691.8010707@gmail.com>
+In-Reply-To: <4B172691.8010707@gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <200912031045.40789.lindner_marek@yahoo.de>
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912031048.17909.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] Updating orig_str for debug
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -22,22 +22,17 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-On Thursday 03 December 2009 08:24:07 Linus L=FCssing wrote:
-> In commit 1488 the orig_str has been removed from
-> purge_orig_neighbours(). Apparently, this breaks compilation when
-> enabling debug-flags, as bat_dbg() is expecting this variable as a
-> parameter. Actually, this variable has never been initialised also
-> before commit 1488 (which was probably the reason for mistakenly
-> removing it).
-> This tiny patch adds the orig_str again, but initialises it now as
-> well.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
 
-Thanks for your patch - I just applied it.
-By the way, it was a bit troublesome - somehow patch did not like your emai=
-l.=20
-I got malformed patch error messages. Not sure what the issue is.
+Hi Gus,
+
+> Shouldn't the "addr_to_string(orig_str, orig_node->orig);" be moved out
+> side the loop to near the top of the function? There is only one
+> originator node and there is no reason to iterate over it. One time
+> should suffice.
+
+you are probably right but I know that Andrew has a patch in his pipeline 
+which will remove these addr_to_string() calls entirely (printk can handle mac 
+addresses for us). Until then we can live with this workaround. :)
 
 Regards,
 Marek
