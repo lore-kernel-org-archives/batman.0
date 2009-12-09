@@ -1,14 +1,22 @@
-Return-Path: <gosand1982@yahoo.com>
-Message-ID: <618743.16485.qm@web111609.mail.gq1.yahoo.com>
-References: <391345.99048.qm@web111612.mail.gq1.yahoo.com>
-	<20091209063411.GJ29768@lunn.ch>
-Date: Wed, 9 Dec 2009 12:35:24 -0800 (PST)
-From: George Sanders <gosand1982@yahoo.com>
-In-Reply-To: <20091209063411.GJ29768@lunn.ch>
+Return-Path: <gregkh@suse.de>
+Date: Wed, 9 Dec 2009 12:23:49 -0800
+From: Greg KH <gregkh@suse.de>
+Message-ID: <20091209202348.GA16094@suse.de>
+References: <1260389373-1071-1-git-send-email-andrew@lunn.ch>
+	<1260389373-1071-2-git-send-email-andrew@lunn.ch>
+	<1260389373-1071-3-git-send-email-andrew@lunn.ch>
+	<1260389373-1071-4-git-send-email-andrew@lunn.ch>
+	<1260389373-1071-5-git-send-email-andrew@lunn.ch>
+	<1260389373-1071-6-git-send-email-andrew@lunn.ch>
+	<1260389373-1071-7-git-send-email-andrew@lunn.ch>
+	<1260389373-1071-8-git-send-email-andrew@lunn.ch>
+	<1260389373-1071-9-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: Re: [B.A.T.M.A.N.] general theory question RE: dhcp on a peer only
-	mesh
+Content-Disposition: inline
+In-Reply-To: <1260389373-1071-9-git-send-email-andrew@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 08/10] staging:batman-adv:Fix the naming
+ of the debug option in Kconfig.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,39 +28,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: devel@driverdev.osuosl.org, b.a.t.m.a.n@lists.open-mesh.net
 
-Hello,
+On Wed, Dec 09, 2009 at 09:09:31PM +0100, Andrew Lunn wrote:
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 
+First off, much better on sending the patches, that worked fine.
 
-> > My question is:
-> > 
-> > Who provides IP addresses in a truly ad-hoc, truly "peer only" mesh network ?
+> ---
+>  drivers/staging/batman-adv/Kconfig |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> One option is IPv6 and link local addresses. These are derived from
-> the MAC address, plus duplicate address detection, to ensure the IP
-> address is unique. http://tools.ietf.org/html/rfc4862
-> 
-> Another option is zeroconf, http://en.wikipedia.org/wiki/Zeroconf, 
-> http://tools.ietf.org/html/rfc3927.
-> 
-> Another option is statically configure all the boxes with a unique IP
-> address from a well know subnet. It is often worth remembering that a
-> truly ad-hoc, truly "peer only" mesh network is used within some sort
-> of organization. The organization can impose management rules.
+> diff --git a/drivers/staging/batman-adv/Kconfig b/drivers/staging/batman-adv/Kconfig
+> index b9742e7..698eb31 100644
+> --- a/drivers/staging/batman-adv/Kconfig
+> +++ b/drivers/staging/batman-adv/Kconfig
 
+But it seems that only this one, and one other (10/10) are able to be
+applied to the kernel tree, as they properly have the files in the
+correct location.
 
+What were the other patches against?  A local repo somewhere that did
+not have the batman-adv code in drivers/staging/batman-adv?
 
-Yes, I do agree that many real world ad-hoc networks will be deployed by an organized
-group and that we can speak of pre-existing arrangements, or rules, but I am exploring
-the extreme cases where individuals randomly congregate and have nothing but a
-common toolset, and there are no server "roles" being played.
+confused,
 
-Thank you for the pointer to zeroconf, as it is right along the lines of what I was thinking
-about.
-
-Out of curiousity, what does the freifunk network use for assigning IPs ?
-
-
-      
-
+greg k-h
