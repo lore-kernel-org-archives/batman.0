@@ -1,10 +1,14 @@
-Return-Path: <gosand1982@yahoo.com>
-Message-ID: <391345.99048.qm@web111612.mail.gq1.yahoo.com>
-Date: Tue, 8 Dec 2009 20:24:01 -0800 (PST)
-From: George Sanders <gosand1982@yahoo.com>
+Return-Path: <andrew@lunn.ch>
+Date: Wed, 9 Dec 2009 07:34:11 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20091209063411.GJ29768@lunn.ch>
+References: <391345.99048.qm@web111612.mail.gq1.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: [B.A.T.M.A.N.] general theory question RE: dhcp on a peer only mesh
+Content-Disposition: inline
+In-Reply-To: <391345.99048.qm@web111612.mail.gq1.yahoo.com>
+Subject: Re: [B.A.T.M.A.N.] general theory question RE: dhcp on a peer only
+ mesh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,30 +20,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
+On Tue, Dec 08, 2009 at 08:24:01PM -0800, George Sanders wrote:
+> 
+> 
+> This is not a BATMAN specific question, but I see very clueful chatter here and would appreciate any comments.
+> 
+> My question is:
+> 
+> Who provides IP addresses in a truly ad-hoc, truly "peer only" mesh network ?
 
+One option is IPv6 and link local addresses. These are derived from
+the MAC address, plus duplicate address detection, to ensure the IP
+address is unique. http://tools.ietf.org/html/rfc4862
 
-This is not a BATMAN specific question, but I see very clueful chatter here and would appreciate any comments.
+Another option is zeroconf, http://en.wikipedia.org/wiki/Zeroconf, 
+http://tools.ietf.org/html/rfc3927.
 
-My question is:
+Another option is statically configure all the boxes with a unique IP
+address from a well know subnet. It is often worth remembering that a
+truly ad-hoc, truly "peer only" mesh network is used within some sort
+of organization. The organization can impose management rules.
 
-Who provides IP addresses in a truly ad-hoc, truly "peer only" mesh network ?
-
-That is, if I create a pool of clients, and have no centralized authority of any kind - every node is a peer, and is simply a client talking to other clients, how does anyone get an IP address ?
-
-This assumes that there is no connection to the proper Internet and that this is simply a small pool of clients arranged to perform peer to peer networking.  But again, if it is an IP network ... how would you get IPs properly ?
-
-If you guess ahead of time, you will either be on different IP networks/subnets, or you will collide your addresses.
-
-If you have no DHCP servers, that won't work ...
-
-The only thing I can think of is that _everyone_ is a DHCP server and you somehow manage timing so as to decide who should get an address from whom ...
-
-Please do point me to any writings or information related to this.
-
-Thanks.
-
-
-      
-
+	Andrew
