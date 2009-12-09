@@ -1,17 +1,10 @@
-Return-Path: <onelektra@gmx.net>
-From: elektra <onelektra@gmx.net>
-Date: Wed, 9 Dec 2009 21:42:07 +0100
-References: <391345.99048.qm@web111612.mail.gq1.yahoo.com>
-	<20091209063411.GJ29768@lunn.ch>
-	<618743.16485.qm@web111609.mail.gq1.yahoo.com>
-In-Reply-To: <618743.16485.qm@web111609.mail.gq1.yahoo.com>
+Return-Path: <gosand1982@yahoo.com>
+Message-ID: <771195.22552.qm@web111610.mail.gq1.yahoo.com>
+Date: Wed, 9 Dec 2009 12:42:51 -0800 (PST)
+From: George Sanders <gosand1982@yahoo.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912092142.07700.onelektra@gmx.net>
-Subject: Re: [B.A.T.M.A.N.] general theory question RE: dhcp on a peer only
-	mesh
+Content-Type: text/plain; charset=us-ascii
+Subject: [B.A.T.M.A.N.] point me to some OSI layer diagrams if possible ?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,16 +16,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
-Hi!
+I am researching meshes/MANETs, and the accompanying 802.11s/HWMP/olsr/etc.
 
-> 
-> Out of curiousity, what does the freifunk network use for assigning IPs ?
->
+Before asking any specific questions, I wonder if someone could point me to some proper OSI
+diagrams that I cannot find - specifically:
 
-At Freifunk Berlin users register with a user name and a valid e-mail address. 
-Then you can register IPs in the data base.
 
-Cheers,
-Elektra
+
+- can someone draw, or direct me to, an OSI diagram showing an 802.11a/b/g/n network using 
+plain old vanilla 802.11s + HWMP (no OLSR) to support an IP network ?
+
+
+
+Then, for comparison:
+
+
+
+- can someone draw, or direct me to, an OSI diagram showing an 802.11a/b/g/n network using
+ONLY BATMAN (no 802.11s) ... ?
+
+
+
+Finally, in my research I came across this very interesting conversation from 2006:
+
+http://www.ietf.org/mail-archive/web/manet/current/msg08218.html
+
+and I wonder, has that question:
+
+"I agree, but we may still be able to pull it off without having to messup the stack."
+
+been answered yet ?  Or is there still argument over whether or not some implementations require "discussion"
+between components on different OSI layers ?
+
+Thank you.
+
+
+      
+
