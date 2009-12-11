@@ -1,20 +1,19 @@
 Return-Path: <linus.luessing@web.de>
-Date: Fri, 11 Dec 2009 14:33:54 +0100
+Date: Fri, 11 Dec 2009 14:45:35 +0100
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20091211133353.GA2708@Linus-Debian>
-References: <391345.99048.qm@web111612.mail.gq1.yahoo.com>
-	<20091209063411.GJ29768@lunn.ch>
-	<618743.16485.qm@web111609.mail.gq1.yahoo.com>
-	<200912092142.07700.onelektra@gmx.net>
-	<375210.41936.qm@web111602.mail.gq1.yahoo.com>
+Message-ID: <20091211134535.GA2879@Linus-Debian>
+References: <20091109190206.GA2642@Linus-Debian>
+	<200911101834.41970.lindner_marek@yahoo.de>
+	<20091112005149.GA2879@Linus-Debian>
+	<87fx8fvhpg.fsf@trurl.pps.jussieu.fr>
+	<20091123142151.GA21537@Sellars>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
+	protocol="application/pgp-signature"; boundary="sdtB3X0nJg68CQEu"
 Content-Disposition: inline
-In-Reply-To: <375210.41936.qm@web111602.mail.gq1.yahoo.com>
+In-Reply-To: <20091123142151.GA21537@Sellars>
 Sender: linus.luessing@web.de
-Subject: Re: [B.A.T.M.A.N.] general theory question RE: dhcp on a peer only
- mesh
+Subject: Re: [B.A.T.M.A.N.] BATMAN-Adv and MTU handling
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -29,55 +28,26 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
 
---bp/iNruPH9dso1Pn
+--sdtB3X0nJg68CQEu
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi George,
-
-if you are really talking about "and is simply a client talking to other cl=
-ients" as you said before, then IPv6 autoconf is the way to go as Andrew me=
-ntioned before.
-> Are any freifunk networks purely peer-to-peer, without any "server" or "c=
-ore" nodes ?
->=20
-> That is, are any freifunk networks using ipv6 autoconf, or zeroconf ?
-Here in L=C3=BCbeck we are currently experimenting with such an IPv6-mesh-o=
-nly network. Because of BTM-Adv a completely adhoc ip-assignment is possibl=
-e as long as your mac adresses in your network are unique (as they should b=
-e). If it were just for communications inside of the mesh without any routi=
-ng from this mesh to hosts outside of the mesh, you can even use the automa=
-tically assigned link-local adresses - this is working out of the box in mo=
-st current operating systems.
-
-So basically our intention is to not have the mesh network as an uplink dir=
-ectly to the internet but more as a dedicated metropolitan area network, a =
-switched "LAN". In this MAN everyone shall be free to set up VPNs for their=
- internet gateway / to their home network. Of course this is a trade-off ab=
-out usability on the other hand as setting up a VPN is not a trivial task f=
-or "common" people... but don't know what your specific goal is. Could you =
-expain your intention a little further maybe?
-
-We were also running in some trouble with those link-local adresses, not al=
-l applications seem to support this properly. Therefore we were assigning a=
-dditional ipv6 unique local addresses with the help of radvd (and limited t=
-his to the local wifi/ethernet clients on one router with the help of ebtab=
-les). (this should also be possible with dhcpv6 instead of using radvd thou=
-gh, I guess)
-
-
-I'm not aware of any routing protocol supporting dynamic, decentral ipv4+6 =
-internet gatewaying over a ipv6-only mesh network yet. Though there are dis=
-cussions about how this could be achieved on the BATMAN-Adv side as well. I=
-'m also curious about what the Berlin Freifunk guys are up to with NIIT, go=
-tta have a look at the workshop/discussion during the 26c3. Has anyone hear=
-d of IVI (or totd) yet? I think this should make routing packets between th=
-e ipv4 and ipv6 stack possible.
+On Mon, Nov 23, 2009 at 03:21:51PM +0100, Linus L=C3=BCssing wrote:
+> > > Hmm, yes, true, IPv6 does not support fragmentation at all...
+> >=20
+> > It does, but it's done end-to-end, not at intermediate routers.  See
+> > Section 5 of RFC 2460.
+> Ah, ok, yes, you're right, forgot about the fragmentation header
+> in IPv6 :).
+By the way, does anyone know if it is possible to encapsulate
+packets with the ethernet frame / packets from a brdige port in ipv6?
+RFC 4303 for encapsulating security payload looks like only tunnelling of
+ip-traffic is possible with the standardised features of IPv6.
 
 Cheers, Linus
 
---bp/iNruPH9dso1Pn
+--sdtB3X0nJg68CQEu
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -85,19 +55,19 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAEBAgAGBQJLIkpBAAoJEBKw7u43QNpfwikP/007SOWA16vidYJUUpxCDjHM
-2pKU2gesluND/vbfD7XGrPcMQPZsIY+MFi71L2xm+yfYOmvYASytTKXP8nmAP3PL
-B5Gd52Qt5dDzDIsjH1iQJWsCMcv8H03Y/CpkDTAwafm6/+oChbPr+6E3NMb7F1Ge
-GwPrTRyXVsEQhTl9EQygkWlvG1vmym5zBdATtG57Vw8D9CqCIDk7LIhISyqA9k96
-vHW3s58bUYKGimjpgncSn35G+ByJsvO5rSrJr/zCNwTt7B9flCaNcfuW8F2Z71ee
-XjOXJKGSK7jh/ZTEGqfQaXXN1u2/k0hZUezHGcphTKK9jAZgsut+8p9wWPv8auhk
-T50HtOuSd/z7EXkdGBKTC9TR7CIWS58GPi8XK9reM/LLAjMkXSTtgTb5LiMCKn94
-EHYuCyi+zFWolnwCRycemFXCHBEdilyzO5EuqDCvI0ihWVhDqqyD8Nf+8DQ4eqTY
-unckZkaT2tawt1Gj8DjbxnkZcNuyzjU/yqw/Q16gM2RafEZwxThMee2mXmWHtFcW
-HT2I4GyeKUrd4KQq/3QRpIrPna+/0bkmB6HrdpICg8/gz8BYq5HgK+ZkIcJ/izrs
-iG2QDSJ9n1In9SQgEDSI5ezdeP6OteGjejR9WHjko8XlWUZMBdZAFW0iIi4dEKn5
-M3A/iS8l5CZLiWqP1i65
-=2Zcu
+iQIcBAEBAgAGBQJLIkz/AAoJEBKw7u43QNpf70gQALyhHK+zZprqilQt3cTNN1NF
+RwGNBUDSCOMW6rD8hbAB4FUyJJy+ydN/5ralUBX8MUE+XZhKt9pLsoaJWToc8a60
+CjmpX4lEp+lRhExAA8eS81EIYVDmL6R2aMfrBgE7NBJHq0yoZjWfTW6anQB5OmfY
+nq+UjkXP1z30jZ35DPvhxjfDpL7YatJqDExol7x+B9HVIP1xjxwNbRSWGCpRiEnp
+we+CorYYq3pQh4ll15rSYmQ+4Bl6yyMw19IRoFDobccpjQu0mY8Q/JAX0vIpsKDy
+jHDNv60CnSuNKgnGvvVckDm5StrfiIAc4Wlebngf6B7q/Nn2iqfK9S1jh1Rw0YVS
+umzL22tkBdU+BEexwN0IbIja6UI/X5vxP1780uDpqG8Oa7AQkr7SyVEbwDIE3+vR
+VBIxbU66/JCl0RVLzVKahJz9hiYOjIATmghC9Cu+unFKD5U7daZsYyMHwa3lGH7q
+2h4dTgvO6IoCKnq1niC91HCaIWXzFj9asl0Pa1kUpFrTbLmHZ7IvvEmlZL6cnWK2
+KO332iGUyAlD2qfpmbrBxiHmtgpwPWirIxFg7Q7W9z+A14/wg1OEesvob/18VcpM
+jVgqfY2s5VJ4BJMuM8jFoV2GT9jrp/SDwUiXV1w9nnvvYxMu1FimnJDZSierIyTc
+mKTm6fyuRtrPq47qowjl
+=2uVa
 -----END PGP SIGNATURE-----
 
---bp/iNruPH9dso1Pn--
+--sdtB3X0nJg68CQEu--
