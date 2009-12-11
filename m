@@ -1,13 +1,13 @@
-Return-Path: <predrag.balorda@gmail.com>
+Return-Path: <petersonmaxx@googlemail.com>
 MIME-Version: 1.0
-In-Reply-To: <102820.28764.qm@web111617.mail.gq1.yahoo.com>
-References: <102820.28764.qm@web111617.mail.gq1.yahoo.com>
-Date: Fri, 11 Dec 2009 21:01:49 +0100
-Message-ID: <de7865070912111201j3f0eb0fdu6ca7d7d1abe28581@mail.gmail.com>
-From: predrag balorda <predrag.balorda@gmail.com>
+In-Reply-To: <db4d51920912111251j13ad7b51v19389343253a11c6@mail.gmail.com>
+References: <db4d51920912111251j13ad7b51v19389343253a11c6@mail.gmail.com>
+Date: Fri, 11 Dec 2009 21:59:44 +0100
+Message-ID: <bccbc6690912111259j4d74bcd1i57d8cd9b175861f6@mail.gmail.com>
+From: Max <petersonmaxx@googlemail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] BATMAN development vs. Freifunk usage of OLSR ?
+Subject: [B.A.T.M.A.N.] Fwd: Network Redesign with Freifunk / 802.11N
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,37 +19,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@open-mesh.net>
 
-who cares?
+---------- Forwarded message ----------
+From: Mike Dawson <mikeofmanchester@gmail.com>
+Date: Fri, Dec 11, 2009 at 9:51 PM
+Subject: Network Redesign with Freifunk / 802.11N
 
-2009/12/11 George Sanders <gosand1982@yahoo.com>:
->
->
-> It is my understanding that BATMAN has come out of the freifunk community=
-, and wikipedia seems to confirm this:
->
-> http://en.wikipedia.org/wiki/B.A.T.M.A.N.
->
-> And further, it appears that there is some amount of criticism of OLSR fr=
-om the BATMAN camp:
->
-> http://www.open-mesh.net/wiki/the-olsr-story
->
-> This all makes sense to me, but what I don't understand is, why do all (o=
-r nearly all ?) of the freifunk
-> networks use OLSR, and continue to use OLSR on the freifunk firmware ?
->
-> Are any of the freifunk networks using BATMAN ? =A0If so, what routing me=
-tric are they using with it ?
->
-> Thanks.
->
->
->
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@lists.open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
+
+
+Hi All,
+
+We've successfully tested here in Afghanistan using Freifunk to mesh
+routers between classrooms so that we can avoid the need for doing
+ethernet cabling in the school. =A0Now with the 802.11n hardware out
+there that supports dual band MIMO 2.4GHZ and 5GHZ I'm hoping that we
+can achieve a wireless backbone performance equal or better to cabled.
+
+Some Freifunkers out in Italy managed to get 80Mbps over a 4KM link even:
+
+http://74.125.153.132/search?q=3Dcache:Ul-NcC60_tYJ:global.freifunk.net/%3F=
+q%3Ditem/open_source_802_11n_big_breakthroughs_are_coming+freifunk+802.11n&=
+cd=3D1&hl=3Den&ct=3Dclnk&gl=3Duk
+
+As far as I can tell 100Mbps (hopefully we can achieve 200-300) should
+be a reasonable throughput for the backbone for running the local
+library service / jabber / journal backup with about 600 laptops in
+the school, any opinions on that?
+
+I was thinking of making a small transparent plastic container for it
+so that each one would sit slightly above the roof of each classroom,
+then connect to a normal 802.11g router in the classroom.
+
+As per other deployments we cut the signal strength inside the
+classroom; the classrooms are running on two non overlapping channels
+and the mesh backbone on another. =A0We should have results by the end
+of the month. =A0Given the cost of sending technicians to do cabling,
+feeding them, etc. I'm hoping this works out as about the same cost
+but more scalable.
+
+Regards,
+
+-Mike
+_______________________________________________
