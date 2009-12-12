@@ -1,15 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 12 Dec 2009 10:34:29 +0800
+Return-Path: <gosand1982@yahoo.com>
+Message-ID: <795872.22696.qm@web111620.mail.gq1.yahoo.com>
 References: <102820.28764.qm@web111617.mail.gq1.yahoo.com>
 	<48655D92-93E9-4E10-A84C-A9B86B69B54C@lo-res.org>
 	<801558.78070.qm@web111609.mail.gq1.yahoo.com>
-In-Reply-To: <801558.78070.qm@web111609.mail.gq1.yahoo.com>
+	<200912121034.30024.lindner_marek@yahoo.de>
+Date: Fri, 11 Dec 2009 20:22:39 -0800 (PST)
+From: George Sanders <gosand1982@yahoo.com>
+In-Reply-To: <200912121034.30024.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912121034.30024.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=us-ascii
 Subject: Re: [B.A.T.M.A.N.] BATMAN development vs. Freifunk usage of OLSR ?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -25,43 +24,26 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
 
-Hi,
 
-> This is the meat of what I am asking - I am wondering what context is it
->  proper to use BATMAN, and the reason I am confused about it is that I see
->  most (all ?) of the freifunk networks using OLSR.
-
-first of all I have to say not all Freifunk networks use OLSR but I think it is 
-fair to say many of them do and here is why:
-
-a) These networks use the "standard" freifunk firmware that you can find here: 
-http://downloads.berlin.freifunk.net/ - this firmware has OLSR built-in (the 
-maintainer is/was an olsrd.org developer). 
-
-b) Many networks were using olsrd.org as protocol before batman became stable, 
-hence they face upgrade issues (in a decentral environment).
-
-c) These networks are community driven networks and somewhat slow to embrace 
-change. A whole network requires a lot of maintenance - you don't want to 
-fiddle with the protocol every week (although quite some experimented with 
-batman - Weimar comes to mind).
-
-d) None of us is actively trying to "lobby" batman into the Freifunk networks. 
-If they have questions they can contact us (some do) but other than that ..
-
-In general we see a strong adoption in new networks (no dependency issues 
-there) and recently people are quite interested in layer 2 which gives you 
-roaming/meshwide DHCP/etc.
-
-So, I can understand you - Freifunk initiated an innovation that it does not 
-use. Our biggest user groups are outside of Freifunk - funny.  :)
+> So, I can understand you - Freifunk initiated an innovation that it does not 
+> use. Our biggest user groups are outside of Freifunk - funny.  :)
 
 
-> And as an aside, I am curious, if any freifunk networks are using BATMAN,
->  what routing metric do they use ?
 
-The TQ based algorithm.
+Ok, thank you.  Yes, that was the thing that confused me and I now have
+a good grasp of it - many thanks to all.
 
-Regards,
-Marek
+
+> > And as an aside, I am curious, if any freifunk networks are using BATMAN,
+> >  what routing metric do they use ?
+> 
+> The TQ based algorithm.
+
+
+
+Is there another name for this ?  I see talk of _calculating_ TQ, but I don't know
+what the proper name of the routing metric is ...
+
+
+      
 
