@@ -1,9 +1,14 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 15 Dec 2009 16:20:10 +0100
-Message-Id: <1260890410-27960-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] [batman-debug4] Fix small typo "unkown" ->
-	"unknown"
+Return-Path: <linuxer@126.com>
+Date: Wed, 16 Dec 2009 01:13:47 +0800 (CST)
+From: "wu xiaofei" <linuxer@126.com>
+Message-ID: <33324075.613801260897227505.JavaMail.coremail@bj126app103.126.com>
+In-Reply-To: <200912151951.04568.lindner_marek@yahoo.de>
+References: <200912151951.04568.lindner_marek@yahoo.de>
+	<14202394.464551260869728978.JavaMail.coremail@bj126app27.126.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_159723_13502016.1260897227505"
+Subject: Re: [B.A.T.M.A.N.] Does batman-adv  support gateway ?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,27 +20,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
+------=_Part_159723_13502016.1260897227505
+Content-Type: text/plain; charset=gbk
+Content-Transfer-Encoding: base64
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-debug4.pl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+CgoKCgrU2jIwMDktMTItMTU/MTk6NTE6MDSjrCJNYXJlaz9MaW5kbmVyIj88bGluZG5lcl9tYXJl
+a0B5YWhvby5kZT4/0LS1wKO6Cj5Pbj9UdWVzZGF5PzE1P0RlY2VtYmVyPzIwMDk/MTc6MzU6Mjg/
+d3U/eGlhb2ZlaT93cm90ZToKPj4/RG9lcz9iYXRtYW4tYWR2Pz9zdXBwb3J0P2dhdGV3YXk/Pz9T
+aG91bGQ/YWxsP25vZGVzJz9pbnRlcmZhY2VzKGJhdG1hbi1hZHYKPj4/P2ludGVyZmFjZT8sP25v
+bj9iYXRtYW4tYWR2P2ludGVyZmFjZSk/YmU/aW4/dGhlP3NhbWU/bmV0d29yayhlLmcuCj4+Pz8x
+OTIuMTY4LjEuMC8yNCk/Pz9vcj8/dXNlPyJITkEiP3RvP2Fubm91bmNlP2RpZmZlcmVudD9uZXR3
+b3Jrcz8/KHNvbWUKPj4/P25vZGVzP2hhdmU/bXVsdGk/aW50ZXJmYWNlcykKPj4/Cj4+P09sc3Jk
+P2Nhbj91c2U/IkhOQSI/dG8/YW5ub3VuY2U/Pydub24tb2xzcmQ/aW50ZXJmYWNlJz9pbj9kaWZm
+ZXJlbnQ/bmV0d29yawo+Pj8/P2Zyb20/J29sc3JkP2ludGVyZmFjZSc/LD9zbz9vdGhlcj9ub2Rl
+cz9rbm93P2hvdz90bz9nZXQ/dG8/dGhhdD9uZXR3b3JrLgo+Pj8KPj4/SG93P3RvP2NvbmZpZz90
+aGU/SVA/YWRkcmVzcz9vZj9hP25vZGU/d2l0aD90d28/aW50ZXJmYWNlcz9ydW5uaW5nCj4+Pz9i
+YXRtYW4tYWR2P2F0P3RoZT9zYW1lP3RpbWU/Cj4KPgo+SGV5LAo+Cj5hcmU/c3VyZT95b3U/d2Fu
+dD90bz9rbm93P2Fib3V0P2JhdG1hbi1hZHY/Pz9BZHZhbmNlZD9vcGVyYXRlcz9vbj9sYXllcj8y
+PyhtYWM/Cj5hZGRyZXNzP2xheWVyKT9hbmQ/ZG9lcz9ub3Q/Y2FyZT9hYm91dD9JUD9hZGRyZXNz
+ZXMuP0lmP3lvdT93YW50P3RvP2xldD9ub24tCj5iYXRtYW4/bm9kZXM/am9pbj90aGU/bmV0d29y
+az95b3U/c2ltcGx5P2JyaWRnZT90aGU/aW50ZXJmYWNlcy4/Tm8/KG1hbnVhbCk/Cj5ITkE/c2V0
+dGluZ3M/YXJlP25lZWRlZC4KPgoKVGhhbmsgeW91IGZvciB5b3VyIHJlcGx5IQpJIGp1c3QgdXNl
+ZCBvbHNyZC4gSSBhbSBhIG5ld2JpZSBmb3IgQkFUTUFOLiBJIHdhbnQgdG8gdHJ5IGl0LgoKRnJv
+bSBvcGVuLW1lc2gubmV0IGFuZCB5b3VyIGRlc2NyaXB0aW9uIEkgYWxtb3N0IGtub3cgYmF0bWFu
+LWFkdiBpcyBvbiBsYXllciAyIC4gQnV0IHNvbWUgYXBwbGljYXRpb25zIG5lZWQgSVAgYWRkcmVz
+c2VzLCAKc28gdXNlIERIQ1Agc2VydmVyIHRvIGFsbG9jYXRlIElQIGFkZHJlc3MgaW4gdGhlIHNh
+bWUgbmV0d29yaywgb3IgY29uZmlnIG1hbnVhbGx5PwpDb3VsZCB5b3UgZ2l2ZSBtZSBhIGd1aWRl
+IGRvY3VtZW50IGFib3V0IHNldHRpbmcgYW5kIGNvbmZpZyBzdGVwcyBvZiBhIG1lc2ggbmV0d29y
+ayAgKGFib3V0IDMwIG5vZGVzKSB1c2luZyBiYXRtYW4tYWR2ICBpbiBkZXRhaWwuIAoKaW4gIlJF
+QURNRSIgOgojIGluc21vZCBiYXRtYW4tYWR2LmtvCiMgZWNobyB3bGFuMCA+IC9wcm9jL25ldC9i
+YXRtYW4tYWR2L2ludGVyZmFjZXMKVGhlIG1vZHVsZSB3aWxsIGNyZWF0ZSBhIG5ldyBpbnRlcmZh
+Y2UgJ2JhdDAnCgpXaGF0J3MgdGhlIGRpZmZlcmVuY2UgYmV0d2VlbiAnd2xhbjAnIGFuZCAnYmF0
+MCc/IApTaG91bGQgSSBicmlkZ2UgdGhlIG5vbi1iYXRtYW4gaW50ZXJmYWNlIChlLmcuIGV0aDAg
+Li4uKSB3aXRoIApiYXQwIG9yIHdsYW4wID8gICBjb25maWcgdGhlIElQIGFkZHJlc3Mgb2Ygd2xh
+bjAgLCBiYXQwIHNlcGFyYXRlbHkgPwoKLS0KV3UK
+------=_Part_159723_13502016.1260897227505
+Content-Type: text/html; charset=gbk
+Content-Transfer-Encoding: base64
 
-diff --git a/batman-debug4.pl b/batman-debug4.pl
-index b2f9f45..1322b32 100755
---- a/batman-debug4.pl
-+++ b/batman-debug4.pl
-@@ -100,7 +100,7 @@ while ( <BATMANLOG> ) {
- 
- 				$receive_hash{ $last_orig }{ $last_neigh }{ "uni_flag" }++;
- 
--			} elsif ( m/OGM\ via\ unkown\ neighbor/ ) {
-+			} elsif ( m/OGM\ via\ unknown\ neighbor/ ) {
- 
- 				$receive_hash{ $last_orig }{ $last_neigh }{ "unknown" }++;
- 
--- 
-1.6.5.4
+PGRpdj48YnI+PGJyPjwvZGl2PjxkaXY+PC9kaXY+PGJyPjxwcmU+1NoyMDA5LTEyLTE1Jm5ic3A7
+MTk6NTE6MDSjrCJNYXJlayZuYnNwO0xpbmRuZXIiJm5ic3A7Jmx0O2xpbmRuZXJfbWFyZWtAeWFo
+b28uZGUmZ3Q7Jm5ic3A70LS1wKO6CiZndDtPbiZuYnNwO1R1ZXNkYXkmbmJzcDsxNSZuYnNwO0Rl
+Y2VtYmVyJm5ic3A7MjAwOSZuYnNwOzE3OjM1OjI4Jm5ic3A7d3UmbmJzcDt4aWFvZmVpJm5ic3A7
+d3JvdGU6CiZndDsmZ3Q7Jm5ic3A7RG9lcyZuYnNwO2JhdG1hbi1hZHYmbmJzcDsmbmJzcDtzdXBw
+b3J0Jm5ic3A7Z2F0ZXdheSZuYnNwOz8mbmJzcDtTaG91bGQmbmJzcDthbGwmbmJzcDtub2Rlcycm
+bmJzcDtpbnRlcmZhY2VzKGJhdG1hbi1hZHYKJmd0OyZndDsmbmJzcDsmbmJzcDtpbnRlcmZhY2Um
+bmJzcDssJm5ic3A7bm9uJm5ic3A7YmF0bWFuLWFkdiZuYnNwO2ludGVyZmFjZSkmbmJzcDtiZSZu
+YnNwO2luJm5ic3A7dGhlJm5ic3A7c2FtZSZuYnNwO25ldHdvcmsoZS5nLgomZ3Q7Jmd0OyZuYnNw
+OyZuYnNwOzE5Mi4xNjguMS4wLzI0KSZuYnNwOyZuYnNwOyZuYnNwO29yJm5ic3A7Jm5ic3A7dXNl
+Jm5ic3A7IkhOQSImbmJzcDt0byZuYnNwO2Fubm91bmNlJm5ic3A7ZGlmZmVyZW50Jm5ic3A7bmV0
+d29ya3M/Jm5ic3A7KHNvbWUKJmd0OyZndDsmbmJzcDsmbmJzcDtub2RlcyZuYnNwO2hhdmUmbmJz
+cDttdWx0aSZuYnNwO2ludGVyZmFjZXMpCiZndDsmZ3Q7Jm5ic3A7CiZndDsmZ3Q7Jm5ic3A7T2xz
+cmQmbmJzcDtjYW4mbmJzcDt1c2UmbmJzcDsiSE5BIiZuYnNwO3RvJm5ic3A7YW5ub3VuY2UmbmJz
+cDsmbmJzcDsnbm9uLW9sc3JkJm5ic3A7aW50ZXJmYWNlJyZuYnNwO2luJm5ic3A7ZGlmZmVyZW50
+Jm5ic3A7bmV0d29yawomZ3Q7Jmd0OyZuYnNwOyZuYnNwOyZuYnNwO2Zyb20mbmJzcDsnb2xzcmQm
+bmJzcDtpbnRlcmZhY2UnJm5ic3A7LCZuYnNwO3NvJm5ic3A7b3RoZXImbmJzcDtub2RlcyZuYnNw
+O2tub3cmbmJzcDtob3cmbmJzcDt0byZuYnNwO2dldCZuYnNwO3RvJm5ic3A7dGhhdCZuYnNwO25l
+dHdvcmsuCiZndDsmZ3Q7Jm5ic3A7CiZndDsmZ3Q7Jm5ic3A7SG93Jm5ic3A7dG8mbmJzcDtjb25m
+aWcmbmJzcDt0aGUmbmJzcDtJUCZuYnNwO2FkZHJlc3MmbmJzcDtvZiZuYnNwO2EmbmJzcDtub2Rl
+Jm5ic3A7d2l0aCZuYnNwO3R3byZuYnNwO2ludGVyZmFjZXMmbmJzcDtydW5uaW5nCiZndDsmZ3Q7
+Jm5ic3A7Jm5ic3A7YmF0bWFuLWFkdiZuYnNwO2F0Jm5ic3A7dGhlJm5ic3A7c2FtZSZuYnNwO3Rp
+bWU/CiZndDsKJmd0OwomZ3Q7SGV5LAomZ3Q7CiZndDthcmUmbmJzcDtzdXJlJm5ic3A7eW91Jm5i
+c3A7d2FudCZuYnNwO3RvJm5ic3A7a25vdyZuYnNwO2Fib3V0Jm5ic3A7YmF0bWFuLWFkdiZuYnNw
+Oz8mbmJzcDtBZHZhbmNlZCZuYnNwO29wZXJhdGVzJm5ic3A7b24mbmJzcDtsYXllciZuYnNwOzIm
+bmJzcDsobWFjJm5ic3A7CiZndDthZGRyZXNzJm5ic3A7bGF5ZXIpJm5ic3A7YW5kJm5ic3A7ZG9l
+cyZuYnNwO25vdCZuYnNwO2NhcmUmbmJzcDthYm91dCZuYnNwO0lQJm5ic3A7YWRkcmVzc2VzLiZu
+YnNwO0lmJm5ic3A7eW91Jm5ic3A7d2FudCZuYnNwO3RvJm5ic3A7bGV0Jm5ic3A7bm9uLQomZ3Q7
+YmF0bWFuJm5ic3A7bm9kZXMmbmJzcDtqb2luJm5ic3A7dGhlJm5ic3A7bmV0d29yayZuYnNwO3lv
+dSZuYnNwO3NpbXBseSZuYnNwO2JyaWRnZSZuYnNwO3RoZSZuYnNwO2ludGVyZmFjZXMuJm5ic3A7
+Tm8mbmJzcDsobWFudWFsKSZuYnNwOwomZ3Q7SE5BJm5ic3A7c2V0dGluZ3MmbmJzcDthcmUmbmJz
+cDtuZWVkZWQuCiZndDsKPGJyPlRoYW5rIHlvdSBmb3IgeW91ciByZXBseSE8YnI+SSBqdXN0IHVz
+ZWQgb2xzcmQuIEkgYW0gYSBuZXdiaWUgZm9yIEJBVE1BTi4gSSB3YW50IHRvIHRyeSBpdC48YnI+
+PGJyPkZyb20gb3Blbi1tZXNoLm5ldCBhbmQgeW91ciBkZXNjcmlwdGlvbiBJIGFsbW9zdCBrbm93
+IGJhdG1hbi1hZHYgaXMgb24gbGF5ZXIgMiAuIEJ1dCBzb21lIGFwcGxpY2F0aW9ucyBuZWVkIElQ
+IGFkZHJlc3NlcywgPGJyPnNvIHVzZSBESENQIHNlcnZlciB0byBhbGxvY2F0ZSBJUCBhZGRyZXNz
+IGluIHRoZSBzYW1lIG5ldHdvcmssIG9yIGNvbmZpZyBtYW51YWxseT88YnI+Q291bGQgeW91IGdp
+dmUgbWUgYSBndWlkZSBkb2N1bWVudCBhYm91dCBzZXR0aW5nIGFuZCBjb25maWcgc3RlcHMgb2Yg
+YSBtZXNoIG5ldHdvcmsgIChhYm91dCAzMCBub2RlcykgdXNpbmcgYmF0bWFuLWFkdiAgaW4gZGV0
+YWlsLiA8YnI+PGJyPmluICJSRUFETUUiIDo8YnI+IyBpbnNtb2QgYmF0bWFuLWFkdi5rbzxicj4j
+IGVjaG8gd2xhbjAgJmd0OyAvcHJvYy9uZXQvYmF0bWFuLWFkdi9pbnRlcmZhY2VzPGJyPlRoZSBt
+b2R1bGUgd2lsbCBjcmVhdGUgYSBuZXcgaW50ZXJmYWNlICdiYXQwJzxicj48YnI+V2hhdCdzIHRo
+ZSBkaWZmZXJlbmNlIGJldHdlZW4gJ3dsYW4wJyBhbmQgJ2JhdDAnPyA8YnI+U2hvdWxkIEkgYnJp
+ZGdlIHRoZSBub24tYmF0bWFuIGludGVyZmFjZSAoZS5nLiBldGgwIC4uLikgd2l0aCA8YnI+YmF0
+MCBvciB3bGFuMCA/ICAgY29uZmlnIHRoZSBJUCBhZGRyZXNzIG9mIHdsYW4wICwgYmF0MCBzZXBh
+cmF0ZWx5ID88YnI+PGJyPi0tPGJyPld1PGJyPjwvcHJlPjxicj48YnI+PHNwYW4gdGl0bGU9Im5l
+dGVhc2Vmb290ZXIiLz48L3NwYW4+
+------=_Part_159723_13502016.1260897227505--
 
