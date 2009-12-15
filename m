@@ -1,11 +1,14 @@
-Return-Path: <linuxer@126.com>
-Date: Tue, 15 Dec 2009 17:35:28 +0800 (CST)
-From: "wu xiaofei" <linuxer@126.com>
-Message-ID: <14202394.464551260869728978.JavaMail.coremail@bj126app27.126.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 15 Dec 2009 19:51:04 +0800
+References: <14202394.464551260869728978.JavaMail.coremail@bj126app27.126.com>
+In-Reply-To: <14202394.464551260869728978.JavaMail.coremail@bj126app27.126.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_121533_6912574.1260869728977"
-Subject: [B.A.T.M.A.N.] Does batman-adv  support gateway ?
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912151951.04568.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Does batman-adv  support gateway ?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,28 +20,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-------=_Part_121533_6912574.1260869728977
-Content-Type: text/plain; charset=gbk
-Content-Transfer-Encoding: 7bit
-
-
-Does batman-adv  support gateway ? Should all nodes' interfaces(batman-adv interface , non batman-adv interface) be in the same network(e.g. 192.168.1.0/24)   or  use "HNA" to announce different networks? (some nodes have multi interfaces)
-
-Olsrd can use "HNA" to announce  'non-olsrd interface' in different network  from 'olsrd interface' , so other nodes know how to get to that network.
-
-How to config the IP address of a node with two interfaces running batman-adv at the same time?
-
-
---
-Wu
+On Tuesday 15 December 2009 17:35:28 wu xiaofei wrote:
+> Does batman-adv  support gateway ? Should all nodes' interfaces(batman-adv
+>  interface , non batman-adv interface) be in the same network(e.g.
+>  192.168.1.0/24)   or  use "HNA" to announce different networks? (some
+>  nodes have multi interfaces)
+> 
+> Olsrd can use "HNA" to announce  'non-olsrd interface' in different network
+>   from 'olsrd interface' , so other nodes know how to get to that network.
+> 
+> How to config the IP address of a node with two interfaces running
+>  batman-adv at the same time?
 
 
-------=_Part_121533_6912574.1260869728977
-Content-Type: text/html; charset=gbk
-Content-Transfer-Encoding: 7bit
+Hey,
 
-<br>Does batman-adv&nbsp; support gateway ? Should all nodes' interfaces(batman-adv interface , non batman-adv interface) be in the same network(e.g. 192.168.1.0/24)&nbsp;&nbsp; or&nbsp; use "HNA" to announce different networks? (some nodes have multi interfaces)<br><br>Olsrd can use "HNA" to announce&nbsp; 'non-olsrd interface' in different network&nbsp; from 'olsrd interface' , so other nodes know how to get to that network.<br><br>How to config the IP address of a node with two interfaces running batman-adv at the same time?<br><br><br>--<br>Wu<br><br><br><br><span title="neteasefooter"/></span>
-------=_Part_121533_6912574.1260869728977--
+are sure you want to know about batman-adv ? Advanced operates on layer 2 (mac 
+address layer) and does not care about IP addresses. If you want to let non-
+batman nodes join the network you simply bridge the interfaces. No (manual) 
+HNA settings are needed.
 
+If you are interested in the batman daemon (layer 3 - ip layer) I suggest you 
+read through our documentation: http://www.open-mesh.net/wiki/UserDocs
+
+Regards,
+Marek
