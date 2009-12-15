@@ -1,15 +1,11 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 14 Dec 2009 23:25:50 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20091214222550.GC2155@pandem0nium>
-References: <1260471657-25962-1-git-send-email-sven.eckelmann@gmx.de>
+Return-Path: <linuxer@126.com>
+Date: Tue, 15 Dec 2009 17:35:28 +0800 (CST)
+From: "wu xiaofei" <linuxer@126.com>
+Message-ID: <14202394.464551260869728978.JavaMail.coremail@bj126app27.126.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="JgQwtEuHJzHdouWu"
-Content-Disposition: inline
-In-Reply-To: <1260471657-25962-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] [batman-adv] Remove NULL pointer
-	check	before calling kfree
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_121533_6912574.1260869728977"
+Subject: [B.A.T.M.A.N.] Does batman-adv  support gateway ?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,65 +17,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.net>
+
+------=_Part_121533_6912574.1260869728977
+Content-Type: text/plain; charset=gbk
+Content-Transfer-Encoding: 7bit
 
 
---JgQwtEuHJzHdouWu
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Does batman-adv  support gateway ? Should all nodes' interfaces(batman-adv interface , non batman-adv interface) be in the same network(e.g. 192.168.1.0/24)   or  use "HNA" to announce different networks? (some nodes have multi interfaces)
 
-Hello Sven,
+Olsrd can use "HNA" to announce  'non-olsrd interface' in different network  from 'olsrd interface' , so other nodes know how to get to that network.
 
-thank you, applied in svn revision r1493.
+How to config the IP address of a node with two interfaces running batman-adv at the same time?
 
-best regards
-	Simon
 
-On Thu, Dec 10, 2009 at 08:00:57PM +0100, Sven Eckelmann wrote:
-> It is safe to call kfree(NULL) which makes this extra check unneeded. It
-> was found using checkpatch.pl from linux-2.6
->=20
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-> ---
->  batman-adv-kernelland/hard-interface.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
->=20
-> diff --git a/batman-adv-kernelland/hard-interface.c b/batman-adv-kernella=
-nd/hard-interface.c
-> index e9cb977..28d02f6 100644
-> --- a/batman-adv-kernelland/hard-interface.c
-> +++ b/batman-adv-kernelland/hard-interface.c
-> @@ -399,8 +399,7 @@ int hardif_add_interface(char *dev, int if_num)
->  	return 1;
-> =20
->  out:
-> -	if (batman_if->packet_buff)
-> -		kfree(batman_if->packet_buff);
-> +	kfree(batman_if->packet_buff);
->  	kfree(batman_if);
->  	kfree(dev);
->  	return -1;
-> --=20
-> 1.6.5.4
->=20
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@lists.open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->=20
+--
+Wu
 
---JgQwtEuHJzHdouWu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+------=_Part_121533_6912574.1260869728977
+Content-Type: text/html; charset=gbk
+Content-Transfer-Encoding: 7bit
 
-iEYEARECAAYFAksmu24ACgkQrzg/fFk7axZ+AgCg00/Fvs/ElwWlTneccJbS3DBW
-D50An192TITSvLioGz9Llwn7ax8vn2ks
-=ZkxL
------END PGP SIGNATURE-----
+<br>Does batman-adv&nbsp; support gateway ? Should all nodes' interfaces(batman-adv interface , non batman-adv interface) be in the same network(e.g. 192.168.1.0/24)&nbsp;&nbsp; or&nbsp; use "HNA" to announce different networks? (some nodes have multi interfaces)<br><br>Olsrd can use "HNA" to announce&nbsp; 'non-olsrd interface' in different network&nbsp; from 'olsrd interface' , so other nodes know how to get to that network.<br><br>How to config the IP address of a node with two interfaces running batman-adv at the same time?<br><br><br>--<br>Wu<br><br><br><br><span title="neteasefooter"/></span>
+------=_Part_121533_6912574.1260869728977--
 
---JgQwtEuHJzHdouWu--
