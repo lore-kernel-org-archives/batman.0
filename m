@@ -1,13 +1,21 @@
-Return-Path: <Eric.Conner@QinetiQ-NA.com>
-Content-class: urn:content-classes:message
+Return-Path: <jroland@linux-migration.net>
+Message-ID: <4B29576E.8080206@linux-migration.net>
+Date: Wed, 16 Dec 2009 15:55:58 -0600
+From: Jon Roland <jroland@linux-migration.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CA7E97.0BEEFA69"
-Date: Wed, 16 Dec 2009 16:30:51 -0500
-Message-ID: <94CAE17FD1DB4640BF8FF28D61FDFA8A22BEF4@RESQNAOEX01.qnao.net>
-From: "Conner, Eric" <Eric.Conner@QinetiQ-NA.com>
-Subject: [B.A.T.M.A.N.] required network to run
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+References: <391345.99048.qm@web111612.mail.gq1.yahoo.com>
+	<200912092142.07700.onelektra@gmx.net>
+	<375210.41936.qm@web111602.mail.gq1.yahoo.com>
+	<200912111235.59060.onelektra@gmx.net>
+	<4B291367.1050906@linux-migration.net>
+	<20091216184344.GK29768@lunn.ch>
+In-Reply-To: <20091216184344.GK29768@lunn.ch>
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] general theory question RE: dhcp on a peer only
+ mesh
+Reply-To: jroland@linux-migration.net,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.net>
@@ -18,124 +26,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01CA7E97.0BEEFA69
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-I am new to ad-hoc mobile networking, and have a few questions.  I am
-just a little confused as to where batman fits in. Why do I need an
-active network to attach the batmand to?  If I'm in a network can't I
-see all the other nodes already?  What is batman buying for me if I have
-to create my own ad-hoc network?  If I don't have to create my own
-ad-hoc network, how do I set up my linux boxes so that they have an
-active network that will discover the nodes and allow the batmand to
-run?
-
-=20
-
-Thanks for your help
-Eric
-
-=20
-
-=20
-
-
-------_=_NextPart_001_01CA7E97.0BEEFA69
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
 <head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-p.section1, li.section1, div.section1
-	{mso-margin-top-alt:auto;
-	margin-right:0in;
-	mso-margin-bottom-alt:auto;
-	margin-left:0in;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="Content-Type">
 </head>
+<body text="#000000" bgcolor="#ffffff">
+Exactly my point. If enough open mesh networks proliferate they will
+eventually all mesh with one another and if we don't have a way to cope
+with it, we will have a severe performance problem.<br>
+<br>
+Our present financial crisis arose from the use by hedge fund managers
+of the Black-Sholes algorithm that promised its users that it would
+"hardly ever fail", but for which I showed if enough players used it,
+failure would be inevitable and disastrous.<br>
+<br>
+We need solutions that can scale to any possible size.<br>
+<br>
+On 12/16/2009 12:43 PM, Andrew Lunn wrote:<br>
+<blockquote type="cite">
+  <pre wrap="">So you are proposing a flat layer 2 network with billions of
+nodes. What do you think will happen to performance when billions of
+nodes receive every ARP broadcast?
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+  </pre>
+</blockquote>
+<pre class="moz-signature" cols="80">-- Jon
 
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I am new to ad-hoc mobile networking, and have a few
-questions. &nbsp;I am just a little confused as to where batman fits in. =
-Why do I
-need an active network to attach the batmand to? &nbsp;If I&#8217;m in a =
-network can&#8217;t
-I see all the other nodes already? &nbsp;What is batman buying for me if =
-I have to
-create my own ad-hoc network? &nbsp;If I don&#8217;t have to create my =
-own ad-hoc
-network, how do I set up my linux boxes so that they have an active =
-network
-that will discover the nodes and allow the batmand to =
-run?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks for your help<br>
-Eric<o:p></o:p></span></font></p>
-
-<p class=3Dsection1 style=3D'margin:0in;margin-bottom:.0001pt'><font =
-size=3D3
-face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
+----------------------------------------------------------------------
+Linux Migration Network 2900 W Anderson Ln C-200-322, Austin, TX 78757
+512/299-5001    <a class="moz-txt-link-abbreviated" href="http://www.linux-migration.net">www.linux-migration.net</a>    <a class="moz-txt-link-abbreviated" href="mailto:jroland@linux-migration.net">jroland@linux-migration.net</a>
+----------------------------------------------------------------------
+</pre>
 </body>
-
 </html>
-
-------_=_NextPart_001_01CA7E97.0BEEFA69--
