@@ -1,11 +1,9 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 17 Dec 2009 09:03:36 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20091217080336.GL4648@lunn.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] We made LWN!
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Thu, 17 Dec 2009 13:11:55 +0100
+Message-Id: <1261051915-13960-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Use forw_bcast_list_lock always
+	in disabled interrupt context
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,14 +15,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
-Hi Folks
+forw_bcast_list_lock is spin_locked in both process and softirq context.
+SoftIRQ calls the spinlock with disabled IRQ and normal process context
+with enabled IRQs.
 
-For those of you with an LWN subscription, take a look at:
+When process context is inside an spin_locked area protected by
+forw_bcast_list_lock and gets interrupted by an IRQ, it could happen
+that something tries to lock forw_bcast_list_lock again in SoftIRQ
+context. It cannot proceed further since the lock is already taken
+somewhere else, but no reschedule will happen inside the SoftIRQ
+context. This leads to an complete kernel hang without any chance of
+resurrection.
 
-http://lwn.net/Articles/366084/
+All functions called in process context must disable IRQs when they try
+to get get that lock to to prevent any reschedule due to IRQs.
 
-We get a one line mention in the section about the 2.6.33 merge window :-)
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv-kernelland/send.c |   19 +++++++++++--------
+ 1 files changed, 11 insertions(+), 8 deletions(-)
 
-   Andrew
+diff --git a/batman-adv-kernelland/send.c b/batman-adv-kernelland/send.c
+index fc4953f..49b1534 100644
+--- a/batman-adv-kernelland/send.c
++++ b/batman-adv-kernelland/send.c
+@@ -338,12 +338,13 @@ static void forw_packet_free(struct forw_packet *forw_packet)
+ static void _add_bcast_packet_to_list(struct forw_packet *forw_packet,
+ 				      unsigned long send_time)
+ {
++	unsigned long flags;
+ 	INIT_HLIST_NODE(&forw_packet->list);
+ 
+ 	/* add new packet to packet list */
+-	spin_lock(&forw_bcast_list_lock);
++	spin_lock_irqsave(&forw_bcast_list_lock, flags);
+ 	hlist_add_head(&forw_packet->list, &forw_bcast_list);
+-	spin_unlock(&forw_bcast_list_lock);
++	spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
+ 
+ 	/* start timer for this packet */
+ 	INIT_DELAYED_WORK(&forw_packet->delayed_work,
+@@ -382,10 +383,11 @@ void send_outstanding_bcast_packet(struct work_struct *work)
+ 		container_of(work, struct delayed_work, work);
+ 	struct forw_packet *forw_packet =
+ 		container_of(delayed_work, struct forw_packet, delayed_work);
++	unsigned long flags;
+ 
+-	spin_lock(&forw_bcast_list_lock);
++	spin_lock_irqsave(&forw_bcast_list_lock, flags);
+ 	hlist_del(&forw_packet->list);
+-	spin_unlock(&forw_bcast_list_lock);
++	spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
+ 
+ 	/* rebroadcast packet */
+ 	rcu_read_lock();
+@@ -436,24 +438,25 @@ void purge_outstanding_packets(void)
+ {
+ 	struct forw_packet *forw_packet;
+ 	struct hlist_node *tmp_node, *safe_tmp_node;
++	unsigned long flags;
+ 
+ 	bat_dbg(DBG_BATMAN, "purge_outstanding_packets()\n");
+ 
+ 	/* free bcast list */
+-	spin_lock(&forw_bcast_list_lock);
++	spin_lock_irqsave(&forw_bcast_list_lock, flags);
+ 	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node,
+ 				  &forw_bcast_list, list) {
+ 
+-		spin_unlock(&forw_bcast_list_lock);
++		spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
+ 
+ 		/**
+ 		 * send_outstanding_bcast_packet() will lock the list to
+ 		 * delete the item from the list
+ 		 */
+ 		cancel_delayed_work_sync(&forw_packet->delayed_work);
+-		spin_lock(&forw_bcast_list_lock);
++		spin_lock_irqsave(&forw_bcast_list_lock, flags);
+ 	}
+-	spin_unlock(&forw_bcast_list_lock);
++	spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
+ 
+ 	/* free batman packet list */
+ 	spin_lock(&forw_bat_list_lock);
+-- 
+1.6.5.4
+
