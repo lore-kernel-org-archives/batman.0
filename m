@@ -1,13 +1,16 @@
-Return-Path: <breno@freeunix.com.br>
-MIME-Version: 1.0
-In-Reply-To: <20091219004443.GA26489@pandem0nium>
+Return-Path: <linus.luessing@web.de>
+Date: Sat, 19 Dec 2009 20:15:59 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20091219191559.GA2932@Linus-Debian>
 References: <94CAE17FD1DB4640BF8FF28D61FDFA8A22C241@RESQNAOEX01.qnao.net>
 	<20091219004443.GA26489@pandem0nium>
-Date: Sat, 19 Dec 2009 15:25:55 -0300
-Message-ID: <2ced936d0912191025k5fbdbf45s2c1b16d241850549@mail.gmail.com>
-From: Breno Jacinto <breno@freeunix.com.br>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+	<2ced936d0912191025k5fbdbf45s2c1b16d241850549@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="XsQoSWH+UP9D9v3l"
+Content-Disposition: inline
+In-Reply-To: <2ced936d0912191025k5fbdbf45s2c1b16d241850549@mail.gmail.com>
+Sender: linus.luessing@web.de
 Subject: Re: [B.A.T.M.A.N.] wireless adapter and linux kernel version
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -22,118 +25,44 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Hi Eric,
 
-    I've been through your same situation, under a very stressful
-circumstance: implementing my master thesis. I found out that that
-most adapters really suck at implementing ad-hoc mode. However, there
-are some very decent adapters that are cheap and have very stable
-drivers.
+--XsQoSWH+UP9D9v3l
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 
-* Atheros: As Simon said, it is one of the best. Most laptops come
-with some sort of atheros chipset built in. I was not happy on finding
-external adapters with atheros chipsets, but that was about a year
-ago. Things may have changed.
+> * Alfa Networks AWUS036H: Very, very good... but a little expensive
+> (at least here in Brazil). The best driver for this adapter is the one
+> with the Backtrack distribution (www.remote-exploit.org). Since it is
+> used a lot for Wardriving, etc.. monitor and ad-hoc mode is very
+> stable. USB.
+Haven't tried the driver which is in Backtrack yet. But the
+current one shipped with Debian unstable does not allow ad-hoc
+mode, just managed and monitor mode (with packet injection
+possibilities).
 
-* Edimax EW-7318USg (Ralink chipset): Today, it is one of the best. No
-cell-splits, no hassles, no problems. Rock-solid driver, works
-"plug-n-p=C4=BAay" on Ubuntu 9.04 and 9.10. In addition, it's very cheap
-and supports external antennas. USB.
+Cheers, Linus
 
-* Alfa Networks AWUS036H: Very, very good... but a little expensive
-(at least here in Brazil). The best driver for this adapter is the one
-with the Backtrack distribution (www.remote-exploit.org). Since it is
-used a lot for Wardriving, etc.. monitor and ad-hoc mode is very
-stable. USB.
+--XsQoSWH+UP9D9v3l
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-     My experience with these three adapters was awesome. They saved me :).
+iQIcBAEBAgAGBQJLLSZvAAoJEBKw7u43QNpfye8QAKhlS9w9wy/ekMpg85FlHOdw
+oKMzYzxrH1CO71esCQ3TNSoqlvYW3kueT0xtiifg4utz0H0pzRdVAxO6v37pETuo
+jlNOr3IkEivJXbTg1Rcn6btQT5xv39oNbXOaEAp3oMBAjxx4uOKTYfehVjhMenmm
+wZIeY4zhXaql/mZlZvIhiBqIfz+tkajulPI4cXnWmNKBMX0pyuIW3ceo8elPgCUz
+e7Ws5liik349Cp19ZVQS8VtDEgsFVWO6LwpdLYOPGMfiVzp9LOyj+QpiypkiarKa
+0AS9/dUp7zRyNhobZZ5UzFvJFzi2DQdQdwuyyn02TSYdNg7Hwfa8sTh5nquVrrL0
+Kh94sUCGRm8/DIR2HTM8NV/qFsk1KAT/0PE62oDu245mFejWQbYKycjapx2QiN0K
+H8kQRkUWQ+ltdFFc1HyeZyKbzO3Z0vgMF9b75HBOXEg4wTeQ++Ls4EwDXlA+CGWr
+3Dm62i1m9+MABYABD6NXxKce9L4ecW7OUKIJzXgvAWRZGVAvuMub19OhLLQCyd65
+8NIFBlnjmYGe+YK4l10P7KFXbiBp1fI+n38sTYc+jv0egC/Rnwy0Wf19Aw6SY6TR
+COd5EfVF0XYLqs6Zmv4alUK5sxLBdDn7UpNRSCkv3BtpBFBgD5TqxW7qmfQ2IYm0
+IKL2fgKIjFxLZFi8zu5P
+=qbWK
+-----END PGP SIGNATURE-----
 
-     Hey guys, perhaps this kind of information should be on the wiki.
-That may help a lot of people. I could elaborate into more details if
-you guys are interested.
-
-
-best regards,
-
---=20
---=20
-:: Breno Jacinto ::
-:: breno - at - gprt.ufpe.br ::
-:: FingerPrint ::
-   2F15 8A61 F566 E442 8581
-   E3C0 EFF4 E202 74B7 7484
-:: Persistir no dif=C3=ADcil =C3=A9 a =C3=BAnica maneira de torn=C3=A1-lo f=
-=C3=A1cil algum dia.  ::
-
-
-
-2009/12/18 Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>:
-> Hi Eric,
->
-> there are a lot of wifi cards and drivers which don't support ad-hoc mode=
-.
-> I had bad experience with RTL based wifi cards. More info about drivers a=
-nd
-> supported modes can be found here:
->
-> http://linuxwireless.org/en/users/Drivers
->
-> Try to use Atheros based cards, most of them support Ad-Hoc mode.
->
-> best regards,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0Simon
->
-> On Fri, Dec 18, 2009 at 04:45:50PM -0500, Conner, Eric wrote:
->> I have been trying to get my wireless network to establish an ad-hoc
->> network and I just can't seem to do it. =C2=A0It appears the linux 2.6.3=
-1
->> kernel does not support the RealTek 8185L (Encore ENLWI-G2) wireless
->> card I have. =C2=A0The drivers it does install are older and seem to not
->> support Ad-Hoc networking.
->>
->>
->>
->> Can anyone recommend a wireless card and/or a linux distro that easily
->> supports ad-hoc networking? =C2=A0I have the tried latest openSuse and U=
-buntu
->> distros.
->>
->>
->>
->> Is this a common problem with Linux? =C2=A0I have set up wireless ad-hoc
->> networks before in windows and never really had a problem.
->>
->>
->>
->> Or better yet - does anyone have patches to the realtek 8185L drivers to
->> use the net_device_ops struct as opposed to the deprecated net_device
->> struct?
->>
->>
->>
->> Thanks
->>
->> Eric
->>
->
->> _______________________________________________
->> B.A.T.M.A.N mailing list
->> B.A.T.M.A.N@lists.open-mesh.net
->> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
->
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.9 (GNU/Linux)
->
-> iEYEARECAAYFAkssIfsACgkQrzg/fFk7axaMgACeODNzgJWBIx/LJO33DRxaT1Eu
-> ezkAn2D7cFaCEDQ+G3VyVMmqb7MOppFN
-> =3Dm/SP
-> -----END PGP SIGNATURE-----
->
-> _______________________________________________
-> B.A.T.M.A.N mailing list
-> B.A.T.M.A.N@lists.open-mesh.net
-> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
->
->
+--XsQoSWH+UP9D9v3l--
