@@ -1,14 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 20 Dec 2009 01:11:07 +0800
-Message-Id: <1261242667-11525-5-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1261242667-11525-4-git-send-email-lindner_marek@yahoo.de>
-References: <200912200101.55746.lindner_marek@yahoo.de>
-	<1261242667-11525-1-git-send-email-lindner_marek@yahoo.de>
-	<1261242667-11525-2-git-send-email-lindner_marek@yahoo.de>
-	<1261242667-11525-3-git-send-email-lindner_marek@yahoo.de>
-	<1261242667-11525-4-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 5/5] batctl: adjust vis data file path
+Date: Sun, 20 Dec 2009 01:21:32 +0800
+References: <Pine.LNX.3.95.1091219064603.3571E-100000@nei>
+In-Reply-To: <Pine.LNX.3.95.1091219064603.3571E-100000@nei>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912200121.32560.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Mesh network advice
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,31 +20,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-The kernel module changed the vis data file path which need to be changed
-in batctl as well. This patch depends on the "splitting /proc vis file into
-vis_server and vis_data" patch.
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- batctl/vis.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hey,
 
-diff --git a/batctl/vis.c b/batctl/vis.c
-index 450310c..f1e95ee 100644
---- a/batctl/vis.c
-+++ b/batctl/vis.c
-@@ -185,7 +185,7 @@ open_vis(void)
- 
-   strncpy(full_path, PROC_ROOT_PATH, strlen(PROC_ROOT_PATH));
-   full_path[strlen(PROC_ROOT_PATH)] = '\0';
--  strncat(full_path, "vis", sizeof(full_path) - strlen(full_path));
-+  strncat(full_path, "vis_data", sizeof(full_path) - strlen(full_path));
- 
-   return fopen(full_path, "r");
- }
--- 
-1.6.5.7
+>    This whole feature stuff is still confusing to me.
+> 
+>    I wondering how to make it more obvious to mere users?
 
+could you be a bit more specific ? What exactly is not obvious ? We always try 
+our best to keep our stuff as simple as possible.  :)
+
+
+>    Also, I am into wireless connected sensor systems, so it would be nice
+> if each node had a provision to address multiple local sensors which might
+> be connected VIA serial port, local ethernet port or just i/o pins and
+> then access those from either another local mesh node or the greater
+> internet.
+> 
+>    I have yet to get the latest open-mesh hardware to see what pins are
+> available on their PCB?
+
+Are you sure this is right mailing list to ask this question ? The hardware is 
+coming from open-mesh.com and not from open-mesh.org.  ;)
+
+Regards,
+Marek
