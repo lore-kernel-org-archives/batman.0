@@ -1,14 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 20 Dec 2009 01:11:06 +0800
-Message-Id: <1261242667-11525-4-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1261242667-11525-3-git-send-email-lindner_marek@yahoo.de>
+Date: Sun, 20 Dec 2009 01:11:07 +0800
+Message-Id: <1261242667-11525-5-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1261242667-11525-4-git-send-email-lindner_marek@yahoo.de>
 References: <200912200101.55746.lindner_marek@yahoo.de>
 	<1261242667-11525-1-git-send-email-lindner_marek@yahoo.de>
 	<1261242667-11525-2-git-send-email-lindner_marek@yahoo.de>
 	<1261242667-11525-3-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: splitting /proc vis file
-	into vis_server and vis_data
+	<1261242667-11525-4-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH 5/5] batctl: adjust vis data file path
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,382 +23,28 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.net
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-The /proc vis file was used to enable/disable the vis server and to output
-the vis data at the same time. This behaviour was confusing and lacked a
-proper method to display the current vis server status.
-This patch seperates the 2 functionalities:
-* use vis_server to enable/disable the vis server and to retrieve its status
-* use vis_data to retrieve the vis raw data (if the server is enabled)
+The kernel module changed the vis data file path which need to be changed
+in batctl as well. This patch depends on the "splitting /proc vis file into
+vis_server and vis_data" patch.
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- batman-adv-kernelland/proc.c  |  172 +++++++++++++++++------------------------
- batman-adv-kernelland/proc.h  |    4 +-
- batman-adv-kernelland/types.h |   10 +++
- batman-adv-kernelland/vis.c   |   62 +++++++++++++++
- batman-adv-kernelland/vis.h   |    6 ++
- 5 files changed, 151 insertions(+), 103 deletions(-)
+ batctl/vis.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/batman-adv-kernelland/proc.c b/batman-adv-kernelland/proc.c
-index d98f86a..9cfab8f 100644
---- a/batman-adv-kernelland/proc.c
-+++ b/batman-adv-kernelland/proc.c
-@@ -33,7 +33,7 @@ static struct proc_dir_entry *proc_batman_dir, *proc_interface_file;
- static struct proc_dir_entry *proc_orig_interval_file, *proc_originators_file;
- static struct proc_dir_entry *proc_transt_local_file;
- static struct proc_dir_entry *proc_transt_global_file;
--static struct proc_dir_entry *proc_vis_file;
-+static struct proc_dir_entry *proc_vis_srv_file, *proc_vis_data_file;
- static struct proc_dir_entry *proc_aggr_file;
+diff --git a/batctl/vis.c b/batctl/vis.c
+index 450310c..f1e95ee 100644
+--- a/batctl/vis.c
++++ b/batctl/vis.c
+@@ -185,7 +185,7 @@ open_vis(void)
  
- static int proc_interfaces_read(struct seq_file *seq, void *offset)
-@@ -320,79 +320,55 @@ static int proc_transt_global_open(struct inode *inode, struct file *file)
- 	return single_open(file, proc_transt_global_read, NULL);
+   strncpy(full_path, PROC_ROOT_PATH, strlen(PROC_ROOT_PATH));
+   full_path[strlen(PROC_ROOT_PATH)] = '\0';
+-  strncat(full_path, "vis", sizeof(full_path) - strlen(full_path));
++  strncat(full_path, "vis_data", sizeof(full_path) - strlen(full_path));
+ 
+   return fopen(full_path, "r");
  }
- 
--/* While scanning for vis-entries of a particular vis-originator
-- * this list collects its interfaces to create a subgraph/cluster
-- * out of them later
-- */
--struct if_list_entry {
--	uint8_t addr[ETH_ALEN];
--	bool primary;
--	struct hlist_node list;
--};
--
--/* insert interface to the list of interfaces of one originator, if it
-- * does not already exist in the list */
--static void proc_vis_insert_interface(const uint8_t *interface,
--				      struct hlist_head *if_list,
--				      bool primary)
-+/* setting the mode of the vis server by the user */
-+static ssize_t proc_vis_srv_write(struct file *file, const char __user * buffer,
-+			      size_t count, loff_t *ppos)
- {
--	struct if_list_entry *entry;
--	struct hlist_node *pos;
-+	char *vis_mode_string;
-+	int not_copied = 0;
- 
--	hlist_for_each_entry(entry, pos, if_list, list) {
--		if (compare_orig(entry->addr, (void *)interface))
--			return;
--	}
-+	vis_mode_string = kmalloc(count, GFP_KERNEL);
- 
--	/* its a new address, add it to the list */
--	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
--	if (!entry)
--		return;
--	memcpy(entry->addr, interface, ETH_ALEN);
--	entry->primary = primary;
--	hlist_add_head(&entry->list, if_list);
-+	if (!vis_mode_string)
-+		return -ENOMEM;
-+
-+	not_copied = copy_from_user(vis_mode_string, buffer, count);
-+	vis_mode_string[count - not_copied - 1] = 0;
-+
-+	if ((strcmp(vis_mode_string, "client") == 0) ||
-+			(strcmp(vis_mode_string, "disabled") == 0)) {
-+		printk(KERN_INFO "batman-adv:Setting VIS mode to client (disabling vis server)\n");
-+		vis_set_mode(VIS_TYPE_CLIENT_UPDATE);
-+	} else if ((strcmp(vis_mode_string, "server") == 0) ||
-+			(strcmp(vis_mode_string, "enabled") == 0)) {
-+		printk(KERN_INFO "batman-adv:Setting VIS mode to server (enabling vis server)\n");
-+		vis_set_mode(VIS_TYPE_SERVER_SYNC);
-+	} else
-+		printk(KERN_ERR "batman-adv:Unknown VIS mode: %s\n",
-+		       vis_mode_string);
-+
-+	kfree(vis_mode_string);
-+	return count;
- }
- 
--static void proc_vis_read_prim_sec(struct seq_file *seq,
--				   struct hlist_head *if_list)
-+static int proc_vis_srv_read(struct seq_file *seq, void *offset)
- {
--	struct if_list_entry *entry;
--	struct hlist_node *pos, *n;
--	char tmp_addr_str[ETH_STR_LEN];
-+	int vis_server = is_vis_server();
- 
--	hlist_for_each_entry_safe(entry, pos, n, if_list, list) {
--		if (entry->primary) {
--			seq_printf(seq, "PRIMARY, ");
--		} else {
--			addr_to_string(tmp_addr_str, entry->addr);
--			seq_printf(seq, "SEC %s, ", tmp_addr_str);
--		}
-+	seq_printf(seq, "[%c] client mode (server disabled) \n",
-+			(!vis_server) ? 'x' : ' ');
-+	seq_printf(seq, "[%c] server mode (server enabled) \n",
-+			(vis_server) ? 'x' : ' ');
- 
--		hlist_del(&entry->list);
--		kfree(entry);
--	}
-+	return 0;
- }
- 
--/* read an entry  */
--static void proc_vis_read_entry(struct seq_file *seq,
--				struct vis_info_entry *entry,
--				struct hlist_head *if_list,
--				uint8_t *vis_orig)
-+static int proc_vis_srv_open(struct inode *inode, struct file *file)
- {
--	char to[40];
--
--	addr_to_string(to, entry->dest);
--	if (entry->quality == 0) {
--		proc_vis_insert_interface(vis_orig, if_list, true);
--		seq_printf(seq, "HNA %s, ", to);
--	} else {
--		proc_vis_insert_interface(entry->src, if_list,
--					  compare_orig(entry->src, vis_orig));
--		seq_printf(seq, "TQ %s %d, ", to, entry->quality);
--	}
-+	return single_open(file, proc_vis_srv_read, NULL);
- }
- 
--static int proc_vis_read(struct seq_file *seq, void *offset)
-+static int proc_vis_data_read(struct seq_file *seq, void *offset)
- {
- 	HASHIT(hashit);
- 	struct vis_info *info;
-@@ -432,38 +408,9 @@ end:
- 	return 0;
- }
- 
--/* setting the mode of the vis server by the user */
--static ssize_t proc_vis_write(struct file *file, const char __user * buffer,
--			      size_t count, loff_t *ppos)
-+static int proc_vis_data_open(struct inode *inode, struct file *file)
- {
--	char *vis_mode_string;
--	int not_copied = 0;
--
--	vis_mode_string = kmalloc(count, GFP_KERNEL);
--
--	if (!vis_mode_string)
--		return -ENOMEM;
--
--	not_copied = copy_from_user(vis_mode_string, buffer, count);
--	vis_mode_string[count - not_copied - 1] = 0;
--
--	if (strcmp(vis_mode_string, "client") == 0) {
--		printk(KERN_INFO "batman-adv:Setting VIS mode to client\n");
--		vis_set_mode(VIS_TYPE_CLIENT_UPDATE);
--	} else if (strcmp(vis_mode_string, "server") == 0) {
--		printk(KERN_INFO "batman-adv:Setting VIS mode to server\n");
--		vis_set_mode(VIS_TYPE_SERVER_SYNC);
--	} else
--		printk(KERN_ERR "batman-adv:Unknown VIS mode: %s\n",
--		       vis_mode_string);
--
--	kfree(vis_mode_string);
--	return count;
--}
--
--static int proc_vis_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, proc_vis_read, NULL);
-+	return single_open(file, proc_vis_data_read, NULL);
- }
- 
- static int proc_aggr_read(struct seq_file *seq, void *offset)
-@@ -529,11 +476,20 @@ static const struct file_operations proc_aggr_fops = {
- 	.release	= single_release,
- };
- 
--static const struct file_operations proc_vis_fops = {
-+static const struct file_operations proc_vis_srv_fops = {
- 	.owner		= THIS_MODULE,
--	.open		= proc_vis_open,
-+	.open		= proc_vis_srv_open,
- 	.read		= seq_read,
--	.write		= proc_vis_write,
-+	.write		= proc_vis_srv_write,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static const struct file_operations proc_vis_data_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= proc_vis_data_open,
-+	.read		= seq_read,
-+	.write		= proc_dummy_write,
- 	.llseek		= seq_lseek,
- 	.release	= single_release,
- };
-@@ -600,8 +556,11 @@ void cleanup_procfs(void)
- 	if (proc_interface_file)
- 		remove_proc_entry(PROC_FILE_INTERFACES, proc_batman_dir);
- 
--	if (proc_vis_file)
--		remove_proc_entry(PROC_FILE_VIS, proc_batman_dir);
-+	if (proc_vis_data_file)
-+		remove_proc_entry(PROC_FILE_VIS_DATA, proc_batman_dir);
-+
-+	if (proc_vis_srv_file)
-+		remove_proc_entry(PROC_FILE_VIS_SRV, proc_batman_dir);
- 
- 	if (proc_aggr_file)
- 		remove_proc_entry(PROC_FILE_AGGR, proc_batman_dir);
-@@ -679,12 +638,23 @@ int setup_procfs(void)
- 		return -EFAULT;
- 	}
- 
--	proc_vis_file = create_proc_entry(PROC_FILE_VIS, S_IWUSR | S_IRUGO,
-+	proc_vis_srv_file = create_proc_entry(PROC_FILE_VIS_SRV,
-+						S_IWUSR | S_IRUGO,
-+						proc_batman_dir);
-+	if (proc_vis_srv_file) {
-+		proc_vis_srv_file->proc_fops = &proc_vis_srv_fops;
-+	} else {
-+		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_VIS_SRV);
-+		cleanup_procfs();
-+		return -EFAULT;
-+	}
-+
-+	proc_vis_data_file = create_proc_entry(PROC_FILE_VIS_DATA, S_IRUGO,
- 					  proc_batman_dir);
--	if (proc_vis_file) {
--		proc_vis_file->proc_fops = &proc_vis_fops;
-+	if (proc_vis_data_file) {
-+		proc_vis_data_file->proc_fops = &proc_vis_data_fops;
- 	} else {
--		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_VIS);
-+		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_VIS_DATA);
- 		cleanup_procfs();
- 		return -EFAULT;
- 	}
-diff --git a/batman-adv-kernelland/proc.h b/batman-adv-kernelland/proc.h
-index 761c5f8..cd690e0 100644
---- a/batman-adv-kernelland/proc.h
-+++ b/batman-adv-kernelland/proc.h
-@@ -31,8 +31,8 @@
- #define PROC_FILE_LOG_LEVEL "log_level"
- #define PROC_FILE_TRANST_LOCAL "transtable_local"
- #define PROC_FILE_TRANST_GLOBAL "transtable_global"
--#define PROC_FILE_VIS "vis"
--#define PROC_FILE_VIS_FORMAT "vis_format"
-+#define PROC_FILE_VIS_SRV "vis_server"
-+#define PROC_FILE_VIS_DATA "vis_data"
- #define PROC_FILE_AGGR "aggregate_ogm"
- 
- void cleanup_procfs(void);
-diff --git a/batman-adv-kernelland/types.h b/batman-adv-kernelland/types.h
-index 9739358..d708e6f 100644
---- a/batman-adv-kernelland/types.h
-+++ b/batman-adv-kernelland/types.h
-@@ -121,4 +121,14 @@ struct forw_packet {               /* structure for forw_list maintaining packet
- 	struct batman_if *if_incoming;
- };
- 
-+/* While scanning for vis-entries of a particular vis-originator
-+ * this list collects its interfaces to create a subgraph/cluster
-+ * out of them later
-+ */
-+struct if_list_entry {
-+	uint8_t addr[ETH_ALEN];
-+	bool primary;
-+	struct hlist_node list;
-+};
-+
- #endif
-diff --git a/batman-adv-kernelland/vis.c b/batman-adv-kernelland/vis.c
-index ac7c7c5..daa4a49 100644
---- a/batman-adv-kernelland/vis.c
-+++ b/batman-adv-kernelland/vis.c
-@@ -114,6 +114,68 @@ static int vis_info_choose(void *data, int size)
- 	return hash % size;
- }
- 
-+/* insert interface to the list of interfaces of one originator, if it
-+ * does not already exist in the list */
-+static void proc_vis_insert_interface(const uint8_t *interface,
-+				      struct hlist_head *if_list,
-+				      bool primary)
-+{
-+	struct if_list_entry *entry;
-+	struct hlist_node *pos;
-+
-+	hlist_for_each_entry(entry, pos, if_list, list) {
-+		if (compare_orig(entry->addr, (void *)interface))
-+			return;
-+	}
-+
-+	/* its a new address, add it to the list */
-+	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
-+	if (!entry)
-+		return;
-+	memcpy(entry->addr, interface, ETH_ALEN);
-+	entry->primary = primary;
-+	hlist_add_head(&entry->list, if_list);
-+}
-+
-+void proc_vis_read_prim_sec(struct seq_file *seq,
-+			    struct hlist_head *if_list)
-+{
-+	struct if_list_entry *entry;
-+	struct hlist_node *pos, *n;
-+	char tmp_addr_str[ETH_STR_LEN];
-+
-+	hlist_for_each_entry_safe(entry, pos, n, if_list, list) {
-+		if (entry->primary) {
-+			seq_printf(seq, "PRIMARY, ");
-+		} else {
-+			addr_to_string(tmp_addr_str, entry->addr);
-+			seq_printf(seq, "SEC %s, ", tmp_addr_str);
-+		}
-+
-+		hlist_del(&entry->list);
-+		kfree(entry);
-+	}
-+}
-+
-+/* read an entry  */
-+void proc_vis_read_entry(struct seq_file *seq,
-+				struct vis_info_entry *entry,
-+				struct hlist_head *if_list,
-+				uint8_t *vis_orig)
-+{
-+	char to[40];
-+
-+	addr_to_string(to, entry->dest);
-+	if (entry->quality == 0) {
-+		proc_vis_insert_interface(vis_orig, if_list, true);
-+		seq_printf(seq, "HNA %s, ", to);
-+	} else {
-+		proc_vis_insert_interface(entry->src, if_list,
-+					  compare_orig(entry->src, vis_orig));
-+		seq_printf(seq, "TQ %s %d, ", to, entry->quality);
-+	}
-+}
-+
- /* tries to add one entry to the receive list. */
- static void recv_list_add(struct list_head *recv_list, char *mac)
- {
-diff --git a/batman-adv-kernelland/vis.h b/batman-adv-kernelland/vis.h
-index ff88a43..2e24258 100644
---- a/batman-adv-kernelland/vis.h
-+++ b/batman-adv-kernelland/vis.h
-@@ -50,6 +50,12 @@ extern spinlock_t vis_hash_lock;
- 
- void vis_set_mode(int mode);
- int is_vis_server(void);
-+void proc_vis_read_entry(struct seq_file *seq,
-+				struct vis_info_entry *entry,
-+				struct hlist_head *if_list,
-+				uint8_t *vis_orig);
-+void proc_vis_read_prim_sec(struct seq_file *seq,
-+			    struct hlist_head *if_list);
- void receive_server_sync_packet(struct vis_packet *vis_packet,
- 				int vis_info_len);
- void receive_client_update_packet(struct vis_packet *vis_packet,
 -- 
 1.6.5.7
 
