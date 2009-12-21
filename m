@@ -1,16 +1,15 @@
-Return-Path: <bittorf@bluebottle.com>
-Date: Mon, 21 Dec 2009 10:23:59 +0100
-From: Bastian Bittorf <bittorf@bluebottle.com>
-Message-ID: <20091221092358.GF26298@alix.l28.local>
+Return-Path: <onelektra@gmx.net>
+From: elektra <onelektra@gmx.net>
+Date: Mon, 21 Dec 2009 15:00:03 +0100
 References: <94CAE17FD1DB4640BF8FF28D61FDFA8A22C241@RESQNAOEX01.qnao.net>
-	<2ced936d0912191025k5fbdbf45s2c1b16d241850549@mail.gmail.com>
-	<20091219191559.GA2932@Linus-Debian>
 	<200912201601.05350.onelektra@gmx.net>
+	<20091221092358.GF26298@alix.l28.local>
+In-Reply-To: <20091221092358.GF26298@alix.l28.local>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vKFfOv5t3oGVpiF+"
-Content-Disposition: inline
-In-Reply-To: <200912201601.05350.onelektra@gmx.net>
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912211500.03724.onelektra@gmx.net>
 Subject: Re: [B.A.T.M.A.N.] wireless adapter and linux kernel version
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -25,41 +24,31 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
+Hello Bastian -
 
---vKFfOv5t3oGVpiF+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+well, one might argue about that. The IBSSID is not a MAC address, IMHO. The 
+IBSSID uses a EUI-48 identifier format. In master mode the BSSID is derived 
+from the AP NICs MAC address. So if you override the factory MAC with a 
+locally configured MAC of your APs NIC, you ought to use 02: rather than 00:, 
+true.
 
-* elektra <onelektra@gmx.net> [20.12.2009 16:00]:
->=20
-> iwconfig <interface> ap 01:CA:FF:EE:BA:BE
->
+However IBSSID's according to 802.11 protocol ought to be randomly generated - 
+and most drivers do just that, regardless whether they begin with 02: or not. 
+(I think the old Orinoco firmware did it that way, but I'm not sure)
 
-hi elektra,
+So I think it is OK to use whatever you like and is easy to remember, except 
+00:00:00:00:00:00 or FF:FF:FF:FF:FF:FF
 
-please don't do the mistake again:
+> so use: 02:BE:EF:CA:FF:EE 8-)
 
-ad-hoc cell's must begin with 02: to keep it clean.
-(means IMHO: unicast + locally administered)
+Of course. 
 
-http://en.wikipedia.org/wiki/MAC_address
+The problem with the popular IBSSID 02:CA:FF:EE:BA:BE is that you get strange 
+effects if you have two different ad-hoc cells in range, which are accidently 
+using the same IBSSID...
 
-so use: 02:BE:EF:CA:FF:EE 8-)
+Cheers,
+Elektra
 
-bye, Bastian. - cu @ 26c3
+(cu @26c3:)
 
---vKFfOv5t3oGVpiF+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAksvPq0ACgkQDonSpHhHLlxpLwCeIr5bLjWFR7UkkIXAugqjb9Rz
-NrEAniIvfI58h0XwLg3dwjrlqdEtKrLV
-=zBCn
------END PGP SIGNATURE-----
-
---vKFfOv5t3oGVpiF+--
