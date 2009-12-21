@@ -1,16 +1,12 @@
-Return-Path: <onelektra@gmx.net>
-From: elektra <onelektra@gmx.net>
-Date: Mon, 21 Dec 2009 15:00:03 +0100
-References: <94CAE17FD1DB4640BF8FF28D61FDFA8A22C241@RESQNAOEX01.qnao.net>
-	<200912201601.05350.onelektra@gmx.net>
-	<20091221092358.GF26298@alix.l28.local>
-In-Reply-To: <20091221092358.GF26298@alix.l28.local>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Mon, 21 Dec 2009 21:34:04 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20091221203403.GA3468@pandem0nium>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912211500.03724.onelektra@gmx.net>
-Subject: Re: [B.A.T.M.A.N.] wireless adapter and linux kernel version
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] we are on our way into 2.6.33
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,33 +18,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
-Hello Bastian -
 
-well, one might argue about that. The IBSSID is not a MAC address, IMHO. The 
-IBSSID uses a EUI-48 identifier format. In master mode the BSSID is derived 
-from the AP NICs MAC address. So if you override the factory MAC with a 
-locally configured MAC of your APs NIC, you ought to use 02: rather than 00:, 
-true.
+--mYCpIKhGyMATD0i+
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-However IBSSID's according to 802.11 protocol ought to be randomly generated - 
-and most drivers do just that, regardless whether they begin with 02: or not. 
-(I think the old Orinoco firmware did it that way, but I'm not sure)
+Hello,
 
-So I think it is OK to use whatever you like and is easy to remember, except 
-00:00:00:00:00:00 or FF:FF:FF:FF:FF:FF
+just for your information (some of you probably already know it), we are
+on our way into the Linux mainline kernel, as you can see in the diffstat f=
+or=20
+2.6.33-rc1:
 
-> so use: 02:BE:EF:CA:FF:EE 8-)
+http://www.kernel.org/diff/diffview.cgi?file=3D/pub/linux/kernel/v2.6/testi=
+ng/patch-2.6.33-rc1.bz2
 
-Of course. 
+(yes, it's huge, just search for batman-adv).
 
-The problem with the popular IBSSID 02:CA:FF:EE:BA:BE is that you get strange 
-effects if you have two different ad-hoc cells in range, which are accidently 
-using the same IBSSID...
+Thanks for your hard work, especially Andrew Lunn!
 
 Cheers,
-Elektra
+	Simon
 
-(cu @26c3:)
+--mYCpIKhGyMATD0i+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAksv27sACgkQrzg/fFk7axYv6gCfekNMTLi7Th5XPvED6ClMaDDc
+bwQAnAvLnyDK1q2o4TQ6xolqXiaZcqPB
+=3idA
+-----END PGP SIGNATURE-----
+
+--mYCpIKhGyMATD0i+--
