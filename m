@@ -1,12 +1,14 @@
-Return-Path: <Eric.Conner@QinetiQ-NA.com>
-Content-class: urn:content-classes:message
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Wed, 23 Dec 2009 14:36:30 +0100
+References: <94CAE17FD1DB4640BF8FF28D61FDFA8A27301B@RESQNAOEX01.qnao.net>
+In-Reply-To: <94CAE17FD1DB4640BF8FF28D61FDFA8A27301B@RESQNAOEX01.qnao.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CA83D3.EA429329"
-Date: Wed, 23 Dec 2009 08:29:10 -0500
-Message-ID: <94CAE17FD1DB4640BF8FF28D61FDFA8A27301B@RESQNAOEX01.qnao.net>
-From: "Conner, Eric" <Eric.Conner@QinetiQ-NA.com>
-Subject: [B.A.T.M.A.N.] can't start batmand
+Content-Type: multipart/signed; boundary="nextPart1444096.X6LqQK5xOH";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912231436.36971.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] can't start batmand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,159 +21,44 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.net
+Cc: "Conner, Eric" <Eric.Conner@qinetiq-na.com>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01CA83D3.EA429329
-Content-Type: text/plain;
-	charset="us-ascii"
+--nextPart1444096.X6LqQK5xOH
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-I tried to start batmand with=20
+Conner, Eric wrote:
+> Does anyone know what is the cause and/or solution to this problem?
+Either iptables is not installed, iptables not installed in a path which is=
+ is=20
+part of $PATH, batmand is not started as root or which is not installed/not=
+ a=20
+builtin function of the shell.
 
-=20
+Best regards,
+	Sven
 
-batmand wlan0
+--nextPart1444096.X6LqQK5xOH
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-=20
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-got back and error stating
+iQIcBAABCgAGBQJLMhzfAAoJEF2HCgfBJntGDwUQAMq6JknViVBnoOQnlXTHtHKM
+cSoepezL5WXiqe4If5nQ2ZCgRKapwB+lRQXnwWUcc1uk69I2Q32fZd2i3P1sBkWK
+FRGGidNXtwR4wbfhpnI5VoJpzJc7Qe/Z0v0JuyAgqedVOeER0Nh2WTGyig6fqfaO
+Ae1ytAbG1a090YiDV39IJ9xeOLn+DHBfCefprSCgGEV/cCHeBFoMAQWl5pClYHwt
+1OIvh4bCjCVk/Dp//Bkbo837K8hr/ihiFYRFJbv6aTqWZs9bhbvC93KI9AZmNbg3
+83akZPDj57AIbgne/kXyCeVNPB9knkEW+Z6FEv2AAuFjMUFuUt4tS0q0+FgOiNpo
+8Mka4KA1aCpIdsHFN8L7ql2dJsqEvaiK311PL7ivMNs6QmNmbmeOZtmDWcT2HRtv
+2Dg0P2domeNRVe+OFGFv7vm1WNz/tmg42U+mPaCYHD943ktn1gFcnGFUnsxDVrM0
+NzVBKdEDn38o7v88FhNx4vd+03+cV46YssJNZcRtYwXDoVbdrrIjVXstJFMicCiQ
+H65Nn17MLVBt0dPGSF1HaRbDC6j8hQWzpFaO3bePWlRYjFW0I50+rTthHruIA6Zy
+FB3M4EuYvOpxBm3Wm05FD6aUHsqVUlYj7dPC7QqOSb6S7Vh83NpnSKJ1Hr3WsLQZ
+KzgykzZQ6f861cbFbpUw
+=xuNa
+-----END PGP SIGNATURE-----
 
-=20
-
-which iptables > /dev/null returned an error
-
-=20
-
-Does anyone know what is the cause and/or solution to this problem?
-
-=20
-
-Thanks
-
-Eric
-
-=20
-
-
-------_=_NextPart_001_01CA83D3.EA429329
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:10.0pt;
-	font-family:"Courier New";}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-p.section1, li.section1, div.section1
-	{mso-margin-top-alt:auto;
-	margin-right:0in;
-	mso-margin-bottom-alt:auto;
-	margin-left:0in;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I tried to start batmand with =
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;
-font-family:"Courier New"'>batmand wlan0<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>got back and error =
-stating<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;
-font-family:"Courier New"'>which iptables &gt; /dev/null returned an =
-error<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Does anyone know what is the cause and/or solution to =
-this
-problem?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Eric<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01CA83D3.EA429329--
+--nextPart1444096.X6LqQK5xOH--
