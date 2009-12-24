@@ -1,13 +1,15 @@
-Return-Path: <Eric.Conner@QinetiQ-NA.com>
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CA84B5.FDA0EE53"
-Date: Thu, 24 Dec 2009 11:26:57 -0500
-Message-ID: <94CAE17FD1DB4640BF8FF28D61FDFA8A082C7E@RESQNAOEX01.qnao.net>
-References: <94CAE17FD1DB4640BF8FF28D61FDFA8A27301B@RESQNAOEX01.qnao.net><200912231436.36971.sven.eckelmann@gmx.de><94CAE17FD1DB4640BF8FF28D61FDFA8A27303A@RESQNAOEX01.qnao.net>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Thu, 24 Dec 2009 17:35:29 +0100
+References: <94CAE17FD1DB4640BF8FF28D61FDFA8A27301B@RESQNAOEX01.qnao.net>
 	<200912241656.56674.lindner_marek@yahoo.de>
-From: "Conner, Eric" <Eric.Conner@QinetiQ-NA.com>
+	<94CAE17FD1DB4640BF8FF28D61FDFA8A082C7E@RESQNAOEX01.qnao.net>
+In-Reply-To: <94CAE17FD1DB4640BF8FF28D61FDFA8A082C7E@RESQNAOEX01.qnao.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart25763204.4exHhHp7mv";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912241735.47412.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [BULK]  Re:  [BULK]  Re:  can't start batmand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -20,86 +22,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>, b.a.t.m.a.n@lists.open-mesh.net
-
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01CA84B5.FDA0EE53
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-How do I go about enabling these features?
-=20
-Thanks
-Eric
-=20
-
-________________________________
-
-From: b.a.t.m.a.n-bounces@lists.open-mesh.net on behalf of Marek Lindner
-Sent: Thu 12/24/2009 3:56 AM
 To: b.a.t.m.a.n@lists.open-mesh.net
-Subject: [BULK] Re: [B.A.T.M.A.N.] [BULK] Re: can't start batmand
+Cc: "Conner, Eric" <Eric.Conner@qinetiq-na.com>
 
-
-
-On Wednesday 23 December 2009 22:56:11 Conner, Eric wrote:
-> thanks for the info...I got passed that by installing iptables.
-
-iptables is optional but should help you to avoid well-known issues .
-
-
-> Now I get a second error
->
-> Error can't flush routing rules: operation not supported
-
-batmand requires the kernel policy routing features enabled.
-
-Regards,
-Marek
-_______________________________________________
-B.A.T.M.A.N mailing list
-B.A.T.M.A.N@lists.open-mesh.net
-https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
-
-
-
-------_=_NextPart_001_01CA84B5.FDA0EE53
-Content-Type: text/html;
-	charset="iso-8859-1"
+--nextPart25763204.4exHhHp7mv
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-<HTML dir=3Dltr><HEAD><TITLE>[BULK] Re: [B.A.T.M.A.N.] [BULK] Re: can't =
-start batmand</TITLE>=0A=
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
-<META content=3D"MSHTML 6.00.6000.16945" name=3DGENERATOR></HEAD>=0A=
-<BODY>=0A=
-<DIV id=3DidOWAReplyText69054 dir=3Dltr>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>How do I go =
-about enabling these features?</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>Thanks</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>Eric</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></DIV>=0A=
-<DIV dir=3Dltr><BR>=0A=
-<HR tabIndex=3D-1>=0A=
-<FONT face=3DTahoma size=3D2><B>From:</B> =
-b.a.t.m.a.n-bounces@lists.open-mesh.net on behalf of Marek =
-Lindner<BR><B>Sent:</B> Thu 12/24/2009 3:56 AM<BR><B>To:</B> =
-b.a.t.m.a.n@lists.open-mesh.net<BR><B>Subject:</B> [BULK] Re: =
-[B.A.T.M.A.N.] [BULK] Re: can't start batmand<BR></FONT><BR></DIV>=0A=
-<DIV>=0A=
-<P><FONT size=3D2>On Wednesday 23 December 2009 22:56:11 Conner, Eric =
-wrote:<BR>&gt; thanks for the info...I got passed that by installing =
-iptables.<BR><BR>iptables is optional but should help you to avoid =
-well-known issues .<BR><BR><BR>&gt; Now I get a second =
-error<BR>&gt;<BR>&gt; Error can't flush routing rules: operation not =
-supported<BR><BR>batmand requires the kernel policy routing features =
-enabled.<BR><BR>Regards,<BR>Marek<BR>____________________________________=
-___________<BR>B.A.T.M.A.N mailing =
-list<BR>B.A.T.M.A.N@lists.open-mesh.net<BR><A =
-href=3D"https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n">https://list=
-s.open-mesh.net/mm/listinfo/b.a.t.m.a.n</A><BR></FONT></P></DIV></BODY></=
-HTML>
-------_=_NextPart_001_01CA84B5.FDA0EE53--
+Conner, Eric wrote:
+[...]
+> > Now I get a second error
+> >
+> > Error can't flush routing rules: operation not supported
+>=20
+> batmand requires the kernel policy routing features enabled.
+> How do I go about enabling these features?
+
+It is called "IP: policy routing" and can be found in kernels menuconfig un=
+der
+
+=2D> Networking support (NET [=3Dy])                                       =
+                                                                           =
+                                           =20
+  -> Networking options
+    -> TCP/IP networking (INET [=3Dy])
+
+The option is called IP_MULTIPLE_TABLES in .config. So just enable it,=20
+recompile your kernel, install it and reboot with it.
+
+Best regards,
+	Sven
+
+--nextPart25763204.4exHhHp7mv
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJLM5hRAAoJEF2HCgfBJntG0ggQAKSM3zBUiurLLZ4kb2LlHKCK
+9w9FVFgXdCXmGSpJFVE+lSinXbXFMRqr8BqJ5uE1joEM39Yo+POUkyF1w4S82Gco
+dgN0P77EP40kM4JcKxDFhnXvRgW+It2tM11fhbf3Sw2Ox/mA2wYglNRiEfUdF1qe
+JtHsxfZQxnCvdmapfexfx909+Ykz8f5DiOVOTQk3oc7MmeR56nlAinIIkUP64xPD
+tTzfzzF7HAFWK7atFpDZuPIZaPvvDI/cgPTH1vec+B4kOWjn+7Zk8knmKcBWDhpE
+nXky3qCSJrkZEF5K6SuBne3HM+1s8YOFqmseAvd/10L0PplTJZCpUGNFowABBYmU
+oprhERzHsqQ9umZnQ7S6bGXnee3GOpsL1HTG/3DIM1LXb8CZR1AZ2ChgnCPuUuNO
+JzjeE/zriQ6ir/YqvS2U/ErW8y+HWA2eajjdoDEoyAnAR2P5D/O0NmRQ0NFbpYsT
+cfybp/3dabv0IgJk+mWG2BJVq1mlVuD+k1BIlTvQ+Doi/S5QLEwB8WCZArFSfqqj
+P8mbAcNGhkW28mtceZ/yl1s+xwOqJEqc/TYfpZJleuvzNagKc2c2d+Xwr3ZdYzhq
+cUEaDuc+9UIp3Ja1DcUSgjLrGUENnTgV3AGLrb8LdKjx4mY2LBUFhQcBfJWCjTmx
+AiJpumUL0pHpx+sXdXKt
+=IQCe
+-----END PGP SIGNATURE-----
+
+--nextPart25763204.4exHhHp7mv--
