@@ -1,13 +1,14 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 27 Dec 2009 18:23:56 +0100
+Date: Mon, 28 Dec 2009 16:10:08 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20091227172356.GA11615@pandem0nium>
+Message-ID: <20091228151008.GA15872@pandem0nium>
+References: <20091227172356.GA11615@pandem0nium>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="EeQfGwPcQSOJBaQU"
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: receive packets directly using
-	skbs
+In-Reply-To: <20091227172356.GA11615@pandem0nium>
+Subject: [B.A.T.M.A.N.] [PATCHv2 no pgp] batman-adv: receive packets
+	directly using skbs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,13 +20,7 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
-
-
---EeQfGwPcQSOJBaQU
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
 This patch removes the (ugly and racy) packet receiving thread and the
 kernel socket usage. Instead, packets are received directly by registering
@@ -64,9 +59,7 @@ Things changed from the first version are:
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
 Index: a/batman-adv-kernelland/types.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/types.h	(revision 1507)
 +++ b/batman-adv-kernelland/types.h	(working copy)
 @@ -39,7 +39,6 @@
@@ -86,9 +79,7 @@ Index: a/batman-adv-kernelland/types.h
  	uint16_t packet_len;
  	uint32_t direct_link_flags;
 Index: a/batman-adv-kernelland/send.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/send.c	(revision 1507)
 +++ b/batman-adv-kernelland/send.c	(working copy)
 @@ -23,6 +23,7 @@
@@ -102,7 +93,7 @@ Index: a/batman-adv-kernelland/send.c
 @@ -58,53 +59,71 @@
  	return send_time;
  }
-=20
+ 
 -/* sends a raw packet. */
 -void send_raw_packet(unsigned char *pack_buff, int pack_buff_len,
 -		     struct batman_if *batman_if, uint8_t *dst_addr)
@@ -116,51 +107,50 @@ Index: a/batman-adv-kernelland/send.c
 -	struct sk_buff *skb;
 -	int retval;
 -	char *data;
-=20
- 	if (batman_if->if_active !=3D IF_ACTIVE)
+ 
+ 	if (batman_if->if_active != IF_ACTIVE)
 -		return;
 +		goto send_skb_err;
-=20
+ 
 +	if (unlikely(!batman_if->net_dev))
 +		goto send_skb_err;
 +
  	if (!(batman_if->net_dev->flags & IFF_UP)) {
  		printk(KERN_WARNING
- 		       "batman-adv:Interface %s is not up - can't send packet via that i=
-nterface!\n",
+ 		       "batman-adv:Interface %s is not up - can't send packet via that interface!\n",
  		       batman_if->dev);
 -		return;
 +		goto send_skb_err;
  	}
-=20
--	skb =3D dev_alloc_skb(pack_buff_len + sizeof(struct ethhdr));
+ 
+-	skb = dev_alloc_skb(pack_buff_len + sizeof(struct ethhdr));
 -	if (!skb)
 -		return;
--	data =3D skb_put(skb, pack_buff_len + sizeof(struct ethhdr));
+-	data = skb_put(skb, pack_buff_len + sizeof(struct ethhdr));
 +	/* push to the ethernet header. */
 +	if (my_skb_push(skb, sizeof(struct ethhdr)) < 0)
 +		goto send_skb_err;
-=20
+ 
 -	memcpy(data + sizeof(struct ethhdr), pack_buff, pack_buff_len);
 +	skb_reset_mac_header(skb);
-=20
--	ethhdr =3D (struct ethhdr *) data;
-+	ethhdr =3D (struct ethhdr *) skb_mac_header(skb);
+ 
+-	ethhdr = (struct ethhdr *) data;
++	ethhdr = (struct ethhdr *) skb_mac_header(skb);
  	memcpy(ethhdr->h_source, batman_if->net_dev->dev_addr, ETH_ALEN);
  	memcpy(ethhdr->h_dest, dst_addr, ETH_ALEN);
- 	ethhdr->h_proto =3D __constant_htons(ETH_P_BATMAN);
-=20
+ 	ethhdr->h_proto = __constant_htons(ETH_P_BATMAN);
+ 
 -	skb_reset_mac_header(skb);
  	skb_set_network_header(skb, ETH_HLEN);
- 	skb->priority =3D TC_PRIO_CONTROL;
- 	skb->protocol =3D __constant_htons(ETH_P_BATMAN);
+ 	skb->priority = TC_PRIO_CONTROL;
+ 	skb->protocol = __constant_htons(ETH_P_BATMAN);
 +
- 	skb->dev =3D batman_if->net_dev;
-=20
+ 	skb->dev = batman_if->net_dev;
+ 
  	/* dev_queue_xmit() returns a negative result on error.	 However on
  	 * congestion and traffic shaping, it drops and returns NET_XMIT_DROP
  	 * (which is > 0). This will not be treated as an error. */
--	retval =3D dev_queue_xmit(skb);
+-	retval = dev_queue_xmit(skb);
 -	if (retval < 0)
 -		printk(KERN_WARNING
 -		       "batman-adv:Can't write to raw socket: %i\n",
@@ -171,7 +161,7 @@ nterface!\n",
 +	kfree_skb(skb);
 +	return NET_XMIT_DROP;
  }
-=20
+ 
 +/* sends a raw packet. */
 +void send_raw_packet(unsigned char *pack_buff, int pack_buff_len,
 +		     struct batman_if *batman_if, uint8_t *dst_addr)
@@ -179,10 +169,10 @@ nterface!\n",
 +	struct sk_buff *skb;
 +	char *data;
 +
-+	skb =3D dev_alloc_skb(pack_buff_len + sizeof(struct ethhdr));
++	skb = dev_alloc_skb(pack_buff_len + sizeof(struct ethhdr));
 +	if (!skb)
 +		return;
-+	data =3D skb_put(skb, pack_buff_len + sizeof(struct ethhdr));
++	data = skb_put(skb, pack_buff_len + sizeof(struct ethhdr));
 +	memcpy(data + sizeof(struct ethhdr), pack_buff, pack_buff_len);
 +	/* pull back to the batman "network header" */
 +	skb_pull(skb, sizeof(struct ethhdr));
@@ -193,7 +183,7 @@ nterface!\n",
  static void send_packet_to_if(struct forw_packet *forw_packet,
  			      struct batman_if *batman_if)
 @@ -331,6 +350,8 @@
-=20
+ 
  static void forw_packet_free(struct forw_packet *forw_packet)
  {
 +	if (forw_packet->skb)
@@ -204,40 +194,40 @@ nterface!\n",
 @@ -353,7 +374,7 @@
  			   send_time);
  }
-=20
+ 
 -void add_bcast_packet_to_list(unsigned char *packet_buff, int packet_len)
 +void add_bcast_packet_to_list(struct sk_buff *skb)
  {
  	struct forw_packet *forw_packet;
-=20
+ 
 @@ -361,15 +382,17 @@
  	if (!forw_packet)
  		return;
-=20
--	forw_packet->packet_buff =3D kmalloc(packet_len, GFP_ATOMIC);
+ 
+-	forw_packet->packet_buff = kmalloc(packet_len, GFP_ATOMIC);
 -	if (!forw_packet->packet_buff) {
-+	skb =3D skb_copy(skb, GFP_ATOMIC);
++	skb = skb_copy(skb, GFP_ATOMIC);
 +	if (!skb) {
  		kfree(forw_packet);
  		return;
  	}
-=20
--	forw_packet->packet_len =3D packet_len;
+ 
+-	forw_packet->packet_len = packet_len;
 -	memcpy(forw_packet->packet_buff, packet_buff, forw_packet->packet_len);
 +	skb_reset_mac_header(skb);
-=20
-+	forw_packet->skb =3D skb;
-+	forw_packet->packet_buff =3D NULL;
+ 
++	forw_packet->skb = skb;
++	forw_packet->packet_buff = NULL;
 +
  	/* how often did we send the bcast packet ? */
- 	forw_packet->num_packets =3D 0;
-=20
+ 	forw_packet->num_packets = 0;
+ 
 @@ -384,6 +407,7 @@
- 	struct forw_packet *forw_packet =3D
+ 	struct forw_packet *forw_packet =
  		container_of(delayed_work, struct forw_packet, delayed_work);
  	unsigned long flags;
 +	struct sk_buff *skb1;
-=20
+ 
  	spin_lock_irqsave(&forw_bcast_list_lock, flags);
  	hlist_del(&forw_packet->list);
 @@ -392,8 +416,10 @@
@@ -247,21 +237,19 @@ nterface!\n",
 -		send_raw_packet(forw_packet->packet_buff,
 -				forw_packet->packet_len,
 +		/* send a copy of the saved skb */
-+		skb1 =3D skb_copy(forw_packet->skb, GFP_ATOMIC);
++		skb1 = skb_copy(forw_packet->skb, GFP_ATOMIC);
 +		if (skb1)
 +			send_skb_packet(skb1,
  				batman_if, broadcastAddr);
  	}
  	rcu_read_unlock();
 Index: a/batman-adv-kernelland/send.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/send.h	(revision 1507)
 +++ b/batman-adv-kernelland/send.h	(working copy)
 @@ -22,6 +22,9 @@
  #include "types.h"
-=20
+ 
  void send_own_packet_work(struct work_struct *work);
 +int send_skb_packet(struct sk_buff *skb,
 +				struct batman_if *batman_if,
@@ -279,9 +267,7 @@ Index: a/batman-adv-kernelland/send.h
  void send_outstanding_bat_packet(struct work_struct *work);
  void purge_outstanding_packets(void);
 Index: a/batman-adv-kernelland/soft-interface.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/soft-interface.c	(revision 1507)
 +++ b/batman-adv-kernelland/soft-interface.c	(working copy)
 @@ -34,7 +34,6 @@
@@ -289,40 +275,40 @@ Index: a/batman-adv-kernelland/soft-interface.c
  static int32_t skb_packets;
  static int32_t skb_bad_packets;
 -static int32_t lock_dropped;
-=20
+ 
  unsigned char mainIfAddr[ETH_ALEN];
  static unsigned char mainIfAddr_default[ETH_ALEN];
 @@ -67,12 +66,12 @@
- 	return (memcmp(mainIfAddr, mainIfAddr_default, ETH_ALEN) !=3D 0 ? 1 : 0);
+ 	return (memcmp(mainIfAddr, mainIfAddr_default, ETH_ALEN) != 0 ? 1 : 0);
  }
-=20
+ 
 -static int my_skb_push(struct sk_buff *skb, unsigned int len)
 +int my_skb_push(struct sk_buff *skb, unsigned int len)
  {
- 	int result =3D 0;
-=20
+ 	int result = 0;
+ 
  	skb_packets++;
 -	if (skb->data - len < skb->head) {
 +	if (skb_headroom(skb) < len) {
  		skb_bad_packets++;
- 		result =3D pskb_expand_head(skb, len, 0, GFP_ATOMIC);
-=20
+ 		result = pskb_expand_head(skb, len, 0, GFP_ATOMIC);
+ 
 @@ -169,6 +168,8 @@
  	struct orig_node *orig_node;
- 	struct ethhdr *ethhdr =3D (struct ethhdr *)skb->data;
- 	struct bat_priv *priv =3D netdev_priv(dev);
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
+ 	struct bat_priv *priv = netdev_priv(dev);
 +	struct batman_if *batman_if;
 +	uint8_t dstaddr[6];
- 	int data_len =3D skb->len;
-=20
- 	if (atomic_read(&module_state) !=3D MODULE_ACTIVE)
+ 	int data_len = skb->len;
+ 
+ 	if (atomic_read(&module_state) != MODULE_ACTIVE)
 @@ -185,7 +186,6 @@
  			goto dropped;
-=20
- 		bcast_packet =3D (struct bcast_packet *)skb->data;
+ 
+ 		bcast_packet = (struct bcast_packet *)skb->data;
 -
- 		bcast_packet->version =3D COMPAT_VERSION;
-=20
+ 		bcast_packet->version = COMPAT_VERSION;
+ 
  		/* batman packet type: broadcast */
 @@ -194,27 +194,21 @@
  		/* hw address of first interface is the orig mac because only
@@ -330,17 +316,17 @@ Index: a/batman-adv-kernelland/soft-interface.c
  		memcpy(bcast_packet->orig, mainIfAddr, ETH_ALEN);
 +
  		/* set broadcast sequence number */
- 		bcast_packet->seqno =3D htons(bcast_seqno);
-=20
+ 		bcast_packet->seqno = htons(bcast_seqno);
+ 
  		bcast_seqno++;
-=20
+ 
  		/* broadcast packet */
 -		add_bcast_packet_to_list(skb->data, skb->len);
 +		add_bcast_packet_to_list(skb);
 +		/* a copy is stored in the bcast list, therefore removing
 +		 * the original skb. */
 +		kfree_skb(skb);
-=20
+ 
  	/* unicast packet */
  	} else {
 -
@@ -350,26 +336,25 @@ Index: a/batman-adv-kernelland/soft-interface.c
 -		 * dropping */
 -		if (!spin_trylock(&orig_hash_lock)) {
 -			lock_dropped++;
--			printk(KERN_WARNING "batman-adv:%d packets dropped because lock was hol=
-d\n", lock_dropped);
+-			printk(KERN_WARNING "batman-adv:%d packets dropped because lock was hold\n", lock_dropped);
 -			goto dropped;
 -		}
 -
 +		spin_lock(&orig_hash_lock);
  		/* get routing information */
- 		orig_node =3D ((struct orig_node *)hash_find(orig_hash,
+ 		orig_node = ((struct orig_node *)hash_find(orig_hash,
  							   ethhdr->h_dest));
 @@ -243,14 +237,17 @@
- 			if (orig_node->batman_if->if_active !=3D IF_ACTIVE)
+ 			if (orig_node->batman_if->if_active != IF_ACTIVE)
  				goto unlock;
-=20
+ 
 -			send_raw_packet(skb->data, skb->len,
 -					orig_node->batman_if,
 -					orig_node->router->addr);
 +			/* don't lock while sending the packets ... we therefore
 +			 * copy the required data before sending */
 +
-+			batman_if =3D orig_node->batman_if;
++			batman_if = orig_node->batman_if;
 +			memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
 +			spin_unlock(&orig_hash_lock);
 +
@@ -380,7 +365,7 @@ d\n", lock_dropped);
 -
 -		spin_unlock(&orig_hash_lock);
  	}
-=20
+ 
  	priv->stats.tx_packets++;
 @@ -262,38 +259,40 @@
  dropped:
@@ -389,15 +374,15 @@ d\n", lock_dropped);
 -	kfree_skb(skb);
  	return 0;
  }
-=20
+ 
 -void interface_rx(struct net_device *dev, void *packet, int packet_len)
 +void interface_rx(struct sk_buff *skb, int hdr_size)
  {
 -	struct sk_buff *skb;
-+	struct net_device *dev =3D soft_device;
- 	struct bat_priv *priv =3D netdev_priv(dev);
-=20
--	skb =3D dev_alloc_skb(packet_len);
++	struct net_device *dev = soft_device;
+ 	struct bat_priv *priv = netdev_priv(dev);
+ 
+-	skb = dev_alloc_skb(packet_len);
 -
 -	if (!skb) {
 -		priv->stats.rx_dropped++;
@@ -409,46 +394,44 @@ d\n", lock_dropped);
  	}
 +	skb_pull_rcsum(skb, hdr_size);
 +/*	skb_set_mac_header(skb, -sizeof(struct ethhdr));*/
-=20
+ 
 -	memcpy(skb_put(skb, packet_len), packet, packet_len);
 -
 -	/* Write metadata, and then pass to the receive level */
- 	skb->dev =3D dev;
- 	skb->protocol =3D eth_type_trans(skb, dev);
--	skb->ip_summed =3D CHECKSUM_UNNECESSARY;
-=20
+ 	skb->dev = dev;
+ 	skb->protocol = eth_type_trans(skb, dev);
+-	skb->ip_summed = CHECKSUM_UNNECESSARY;
+ 
 +	/* should not be neccesary anymore as we use skb_pull_rcsum()
 +	 * TODO: please verify this and remove this TODO
 +	 * -- Dec 21st 2009, Simon Wunderlich */
 +
-+/*	skb->ip_summed =3D CHECKSUM_UNNECESSARY;*/
++/*	skb->ip_summed = CHECKSUM_UNNECESSARY;*/
 +
 +	/* TODO: set skb->pkt_type to PACKET_BROADCAST, PACKET_MULTICAST,
 +	 * PACKET_OTHERHOST or PACKET_HOST */
 +
  	priv->stats.rx_packets++;
--	priv->stats.rx_bytes +=3D packet_len;
-+	priv->stats.rx_bytes +=3D skb->len;
-=20
- 	dev->last_rx =3D jiffies;
-=20
+-	priv->stats.rx_bytes += packet_len;
++	priv->stats.rx_bytes += skb->len;
+ 
+ 	dev->last_rx = jiffies;
+ 
  	netif_rx(skb);
 -
 -out:
 -	return;
  }
-=20
+ 
  /* ethtool */
 Index: a/batman-adv-kernelland/hard-interface.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/hard-interface.c	(revision 1507)
 +++ b/batman-adv-kernelland/hard-interface.c	(working copy)
 @@ -153,9 +153,6 @@
- 	if (batman_if->if_active !=3D IF_ACTIVE)
+ 	if (batman_if->if_active != IF_ACTIVE)
  		return;
-=20
+ 
 -	if (batman_if->raw_sock)
 -		sock_release(batman_if->raw_sock);
 -
@@ -458,13 +441,13 @@ Index: a/batman-adv-kernelland/hard-interface.c
 @@ -164,9 +161,6 @@
  	if (batman_if->net_dev)
  		dev_put(batman_if->net_dev);
-=20
--	batman_if->raw_sock =3D NULL;
--	batman_if->net_dev =3D NULL;
+ 
+-	batman_if->raw_sock = NULL;
+-	batman_if->net_dev = NULL;
 -
- 	batman_if->if_active =3D IF_INACTIVE;
+ 	batman_if->if_active = IF_INACTIVE;
  	active_ifs--;
-=20
+ 
 @@ -177,9 +171,6 @@
  /* (re)activate given interface. */
  static void hardif_activate_interface(struct batman_if *batman_if)
@@ -472,14 +455,14 @@ Index: a/batman-adv-kernelland/hard-interface.c
 -	struct sockaddr_ll bind_addr;
 -	int retval;
 -
- 	if (batman_if->if_active !=3D IF_INACTIVE)
+ 	if (batman_if->if_active != IF_INACTIVE)
  		return;
-=20
+ 
 @@ -191,35 +182,8 @@
  	if (!batman_if->net_dev)
  		goto dev_err;
-=20
--	retval =3D sock_create_kern(PF_PACKET, SOCK_RAW,
+ 
+-	retval = sock_create_kern(PF_PACKET, SOCK_RAW,
 -				  __constant_htons(ETH_P_BATMAN),
 -				  &batman_if->raw_sock);
 -
@@ -489,11 +472,11 @@ Index: a/batman-adv-kernelland/hard-interface.c
 -		goto sock_err;
 -	}
 -
--	bind_addr.sll_family =3D AF_PACKET;
--	bind_addr.sll_ifindex =3D batman_if->net_dev->ifindex;
--	bind_addr.sll_protocol =3D 0;	/* is set by the kernel */
+-	bind_addr.sll_family = AF_PACKET;
+-	bind_addr.sll_ifindex = batman_if->net_dev->ifindex;
+-	bind_addr.sll_protocol = 0;	/* is set by the kernel */
 -
--	retval =3D kernel_bind(batman_if->raw_sock,
+-	retval = kernel_bind(batman_if->raw_sock,
 -			     (struct sockaddr *)&bind_addr, sizeof(bind_addr));
 -
 -	if (retval < 0) {
@@ -503,39 +486,39 @@ Index: a/batman-adv-kernelland/hard-interface.c
 -	}
 -
  	check_known_mac_addr(batman_if->net_dev->dev_addr);
-=20
--	batman_if->raw_sock->sk->sk_user_data =3D
+ 
+-	batman_if->raw_sock->sk->sk_user_data =
 -		batman_if->raw_sock->sk->sk_data_ready;
--	batman_if->raw_sock->sk->sk_data_ready =3D batman_data_ready;
+-	batman_if->raw_sock->sk->sk_data_ready = batman_data_ready;
 -
  	addr_to_string(batman_if->addr_str, batman_if->net_dev->dev_addr);
-=20
+ 
  	memcpy(((struct batman_packet *)(batman_if->packet_buff))->orig,
 @@ -239,12 +203,7 @@
-=20
+ 
  	return;
-=20
+ 
 -bind_err:
 -	sock_release(batman_if->raw_sock);
 -sock_err:
 -	dev_put(batman_if->net_dev);
  dev_err:
--	batman_if->raw_sock =3D NULL;
- 	batman_if->net_dev =3D NULL;
+-	batman_if->raw_sock = NULL;
+ 	batman_if->net_dev = NULL;
  }
-=20
+ 
 @@ -327,7 +286,6 @@
  		return -1;
  	}
-=20
--	batman_if->raw_sock =3D NULL;
- 	batman_if->net_dev =3D NULL;
-=20
- 	if ((if_num =3D=3D 0) && (num_hna > 0))
+ 
+-	batman_if->raw_sock = NULL;
+ 	batman_if->net_dev = NULL;
+ 
+ 	if ((if_num == 0) && (num_hna > 0))
 @@ -443,6 +401,111 @@
  	return NOTIFY_DONE;
  }
-=20
+ 
 +/* find batman interface by netdev. assumes rcu_read_lock on */
 +struct batman_if *find_batman_if(struct net_device *dev)
 +{
@@ -543,7 +526,7 @@ Index: a/batman-adv-kernelland/hard-interface.c
 +
 +	rcu_read_lock();
 +	list_for_each_entry_rcu(batman_if, &if_list, list) {
-+		if (batman_if->net_dev =3D=3D dev) {
++		if (batman_if->net_dev == dev) {
 +			rcu_read_unlock();
 +			return batman_if;
 +		}
@@ -563,9 +546,9 @@ Index: a/batman-adv-kernelland/hard-interface.c
 +	struct net_device_stats *stats;
 +	int ret;
 +
-+    skb =3D skb_share_check(skb, GFP_ATOMIC);
++    skb = skb_share_check(skb, GFP_ATOMIC);
 +
-+    if (skb =3D=3D NULL)
++    if (skb == NULL)
 +		goto err_free;
 +
 +	/* packet should hold at least type and version */
@@ -573,21 +556,21 @@ Index: a/batman-adv-kernelland/hard-interface.c
 +		goto err_free;
 +
 +	/* expect a valid ethernet header here. */
-+	if (unlikely(skb->mac_len !=3D sizeof(struct ethhdr)
++	if (unlikely(skb->mac_len != sizeof(struct ethhdr)
 +				|| !skb_mac_header(skb)))
 +		goto err_free;
 +
-+	batman_if =3D find_batman_if(skb->dev);
++	batman_if = find_batman_if(skb->dev);
 +	if (!batman_if)
 +		goto err_free;
 +
-+    stats =3D &skb->dev->stats;
++    stats = &skb->dev->stats;
 +    stats->rx_packets++;
-+    stats->rx_bytes +=3D skb->len;
++    stats->rx_bytes += skb->len;
 +
-+	batman_packet =3D (struct batman_packet *)skb->data;
++	batman_packet = (struct batman_packet *)skb->data;
 +
-+	if (batman_packet->version !=3D COMPAT_VERSION) {
++	if (batman_packet->version != COMPAT_VERSION) {
 +		bat_dbg(DBG_BATMAN,
 +			"Drop packet: incompatible batman version (%i)\n",
 +			batman_packet->version);
@@ -600,32 +583,32 @@ Index: a/batman-adv-kernelland/hard-interface.c
 +	switch (batman_packet->packet_type) {
 +		/* batman originator packet */
 +	case BAT_PACKET:
-+		ret =3D recv_bat_packet(skb, batman_if);
++		ret = recv_bat_packet(skb, batman_if);
 +		break;
 +
 +		/* batman icmp packet */
 +	case BAT_ICMP:
-+		ret =3D recv_icmp_packet(skb);
++		ret = recv_icmp_packet(skb);
 +		break;
 +
 +		/* unicast packet */
 +	case BAT_UNICAST:
-+		ret =3D recv_unicast_packet(skb);
++		ret = recv_unicast_packet(skb);
 +		break;
 +
 +		/* broadcast packet */
 +	case BAT_BCAST:
-+		ret =3D recv_bcast_packet(skb);
++		ret = recv_bcast_packet(skb);
 +		break;
 +
 +		/* vis packet */
 +	case BAT_VIS:
-+		ret =3D recv_vis_packet(skb);
++		ret = recv_vis_packet(skb);
 +		break;
 +	default:
-+		ret =3D NET_RX_DROP;
++		ret = NET_RX_DROP;
 +	}
-+	if (ret =3D=3D NET_RX_DROP)
++	if (ret == NET_RX_DROP)
 +		kfree_skb(skb);
 +
 +	/* return NET_RX_SUCCESS in any case as we
@@ -641,13 +624,11 @@ Index: a/batman-adv-kernelland/hard-interface.c
 +}
 +
 +
- struct notifier_block hard_if_notifier =3D {
- 	.notifier_call =3D hard_if_event,
+ struct notifier_block hard_if_notifier = {
+ 	.notifier_call = hard_if_event,
  };
 Index: a/batman-adv-kernelland/soft-interface.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/soft-interface.h	(revision 1507)
 +++ b/batman-adv-kernelland/soft-interface.h	(working copy)
 @@ -28,6 +28,7 @@
@@ -657,12 +638,10 @@ Index: a/batman-adv-kernelland/soft-interface.h
 -void interface_rx(struct net_device *dev, void *packet, int packet_len);
 +void interface_rx(struct sk_buff *skb, int hdr_size);
 +int my_skb_push(struct sk_buff *skb, unsigned int len);
-=20
+ 
  extern unsigned char mainIfAddr[];
 Index: a/batman-adv-kernelland/hard-interface.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/hard-interface.h	(revision 1507)
 +++ b/batman-adv-kernelland/hard-interface.h	(working copy)
 @@ -32,5 +32,9 @@
@@ -676,57 +655,54 @@ Index: a/batman-adv-kernelland/hard-interface.h
  int hardif_min_mtu(void);
  void update_min_mtu(void);
 Index: a/batman-adv-kernelland/main.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/main.c	(revision 1507)
 +++ b/batman-adv-kernelland/main.c	(working copy)
 @@ -50,11 +50,14 @@
-=20
+ 
  struct net_device *soft_device;
-=20
+ 
 -static struct task_struct *kthread_task;
 -
- unsigned char broadcastAddr[] =3D {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+ unsigned char broadcastAddr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
  atomic_t module_state;
-=20
-+static struct packet_type batman_adv_packet_type __read_mostly =3D {
-+	.type =3D cpu_to_be16(ETH_P_BATMAN),
-+	.func =3D batman_skb_recv,
+ 
++static struct packet_type batman_adv_packet_type __read_mostly = {
++	.type = cpu_to_be16(ETH_P_BATMAN),
++	.func = batman_skb_recv,
 +};
 +
  struct workqueue_struct *bat_event_workqueue;
-=20
+ 
  #ifdef CONFIG_BATMAN_ADV_DEBUG
 @@ -113,6 +116,7 @@
  	}
-=20
+ 
  	register_netdevice_notifier(&hard_if_notifier);
 +	dev_add_pack(&batman_adv_packet_type);
-=20
- 	printk(KERN_INFO "batman-adv:B.A.T.M.A.N. advanced %s%s (compatibility ve=
-rsion %i) loaded \n",
+ 
+ 	printk(KERN_INFO "batman-adv:B.A.T.M.A.N. advanced %s%s (compatibility version %i) loaded \n",
  		  SOURCE_VERSION, REVISION_VERSION_STR, COMPAT_VERSION);
 @@ -135,6 +139,8 @@
- 		soft_device =3D NULL;
+ 		soft_device = NULL;
  	}
-=20
+ 
 +	dev_remove_pack(&batman_adv_packet_type);
 +
  	unregister_netdevice_notifier(&hard_if_notifier);
  	cleanup_procfs();
-=20
+ 
 @@ -162,16 +168,6 @@
  	if (vis_init() < 1)
  		goto err;
-=20
+ 
 -	/* (re)start kernel thread for packet processing */
 -	if (!kthread_task) {
--		kthread_task =3D kthread_run(packet_recv_thread, NULL, "batman-adv");
+-		kthread_task = kthread_run(packet_recv_thread, NULL, "batman-adv");
 -
 -		if (IS_ERR(kthread_task)) {
 -			printk(KERN_ERR "batman-adv:Unable to start packet receive thread\n");
--			kthread_task =3D NULL;
+-			kthread_task = NULL;
 -		}
 -	}
 -
@@ -734,46 +710,42 @@ rsion %i) loaded \n",
  	atomic_set(&module_state, MODULE_ACTIVE);
  	goto end;
 @@ -193,15 +189,8 @@
-=20
+ 
  	vis_quit();
-=20
+ 
 -	/* deactivate kernel thread for packet processing (if running) */
 -	if (kthread_task) {
 -		atomic_set(&exit_cond, 1);
 -		wake_up_interruptible(&thread_wait);
 -		kthread_stop(kthread_task);
 +	/* TODO: unregister BATMAN pack */
-=20
--		kthread_task =3D NULL;
+ 
+-		kthread_task = NULL;
 -	}
 -
  	originator_free();
-=20
+ 
  	hna_local_free();
 Index: a/batman-adv-kernelland/aggregation.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/aggregation.c	(revision 1507)
 +++ b/batman-adv-kernelland/aggregation.c	(working copy)
 @@ -115,6 +115,7 @@
  	       packet_buff,
  	       forw_packet_aggr->packet_len);
-=20
-+	forw_packet_aggr->skb =3D NULL;
- 	forw_packet_aggr->own =3D own_packet;
- 	forw_packet_aggr->if_incoming =3D if_incoming;
- 	forw_packet_aggr->num_packets =3D 0;
+ 
++	forw_packet_aggr->skb = NULL;
+ 	forw_packet_aggr->own = own_packet;
+ 	forw_packet_aggr->if_incoming = if_incoming;
+ 	forw_packet_aggr->num_packets = 0;
 Index: a/batman-adv-kernelland/routing.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/routing.c	(revision 1507)
 +++ b/batman-adv-kernelland/routing.c	(working copy)
 @@ -36,8 +36,8 @@
-=20
+ 
  DECLARE_WAIT_QUEUE_HEAD(thread_wait);
-=20
+ 
 -static atomic_t data_ready_cond;
  atomic_t exit_cond;
 +
@@ -782,7 +754,7 @@ Index: a/batman-adv-kernelland/routing.c
  	HASHIT(hashit);
 @@ -351,10 +351,9 @@
  }
-=20
+ 
  void receive_bat_packet(struct ethhdr *ethhdr,
 -			struct batman_packet *batman_packet,
 -			unsigned char *hna_buff,
@@ -797,7 +769,7 @@ Index: a/batman-adv-kernelland/routing.c
 @@ -549,61 +548,56 @@
  				0, hna_buff_len, if_incoming);
  }
-=20
+ 
 -
 -static int receive_raw_packet(struct socket *raw_sock,
 -			      unsigned char *packet_buff, int packet_buff_len)
@@ -807,19 +779,19 @@ Index: a/batman-adv-kernelland/routing.c
 -	struct kvec iov;
 -	struct msghdr msg;
 +	struct ethhdr *ethhdr;
-=20
--	iov.iov_base =3D packet_buff;
--	iov.iov_len =3D packet_buff_len;
+ 
+-	iov.iov_base = packet_buff;
+-	iov.iov_len = packet_buff_len;
 +	/* drop packet if it has not necessary minimum size */
 +	if (skb_headlen(skb) < sizeof(struct batman_packet))
 +		return NET_RX_DROP;
-=20
--	msg.msg_flags =3D MSG_DONTWAIT;	/* non-blocking */
--	msg.msg_name =3D NULL;
--	msg.msg_namelen =3D 0;
--	msg.msg_control =3D NULL;
-+	ethhdr =3D (struct ethhdr *)skb_mac_header(skb);
-=20
+ 
+-	msg.msg_flags = MSG_DONTWAIT;	/* non-blocking */
+-	msg.msg_name = NULL;
+-	msg.msg_namelen = 0;
+-	msg.msg_control = NULL;
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 
 -	return kernel_recvmsg(raw_sock, &msg, &iov, 1, packet_buff_len,
 -			      MSG_DONTWAIT);
 -}
@@ -833,12 +805,12 @@ Index: a/batman-adv-kernelland/routing.c
  	if (!is_bcast(ethhdr->h_dest))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
  	/* packet with broadcast sender address */
  	if (is_bcast(ethhdr->h_source))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
 -	/* drop packet if it has not at least one batman packet as payload */
 -	if (result < sizeof(struct ethhdr) + sizeof(struct batman_packet))
 -		return;
@@ -860,7 +832,7 @@ Index: a/batman-adv-kernelland/routing.c
 +	kfree_skb(skb);
 +	return NET_RX_SUCCESS;
  }
-=20
+ 
 -static void recv_my_icmp_packet(struct ethhdr *ethhdr,
 -				struct icmp_packet *icmp_packet,
 -				unsigned char *packet_buff,
@@ -872,57 +844,57 @@ Index: a/batman-adv-kernelland/routing.c
 +	struct ethhdr *ethhdr;
 +	struct sk_buff *skb_old;
 +	int ret;
-=20
-+	icmp_packet =3D (struct icmp_packet *) skb->data;
-+	ethhdr =3D (struct ethhdr *)skb_mac_header(skb);
+ 
++	icmp_packet = (struct icmp_packet *) skb->data;
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
 +
  	/* add data to device queue */
- 	if (icmp_packet->msg_type !=3D ECHO_REQUEST) {
+ 	if (icmp_packet->msg_type != ECHO_REQUEST) {
  		bat_device_receive_packet(icmp_packet);
 -		return;
 +		return NET_RX_DROP;
  	}
-=20
+ 
  	/* answer echo request (ping) */
 @@ -611,34 +605,50 @@
  	spin_lock(&orig_hash_lock);
- 	orig_node =3D ((struct orig_node *)hash_find(orig_hash,
+ 	orig_node = ((struct orig_node *)hash_find(orig_hash,
  						   icmp_packet->orig));
-+	ret =3D NET_RX_DROP;
-=20
- 	if ((orig_node !=3D NULL) &&
- 	    (orig_node->batman_if !=3D NULL) &&
- 	    (orig_node->router !=3D NULL)) {
++	ret = NET_RX_DROP;
+ 
+ 	if ((orig_node != NULL) &&
+ 	    (orig_node->batman_if != NULL) &&
+ 	    (orig_node->router != NULL)) {
 +
 +		/* create a copy of the skb, if needed, to modify it. */
-+		skb_old =3D NULL;
++		skb_old = NULL;
 +		if (!skb_clone_writable(skb, sizeof(struct icmp_packet))) {
-+			skb_old =3D skb;
-+			skb =3D skb_copy(skb, GFP_ATOMIC);
++			skb_old = skb;
++			skb = skb_copy(skb, GFP_ATOMIC);
 +			if (!skb)
 +				return NET_RX_DROP;
-+			icmp_packet =3D (struct icmp_packet *) skb->data;
++			icmp_packet = (struct icmp_packet *) skb->data;
 +			kfree_skb(skb_old);
 +		}
 +
  		memcpy(icmp_packet->dst, icmp_packet->orig, ETH_ALEN);
  		memcpy(icmp_packet->orig, ethhdr->h_dest, ETH_ALEN);
- 		icmp_packet->msg_type =3D ECHO_REPLY;
- 		icmp_packet->ttl =3D TTL;
-=20
+ 		icmp_packet->msg_type = ECHO_REPLY;
+ 		icmp_packet->ttl = TTL;
+ 
 -		send_raw_packet(packet_buff + sizeof(struct ethhdr),
 -				result - sizeof(struct ethhdr),
 +		send_skb_packet(skb,
  				orig_node->batman_if,
  				orig_node->router->addr);
-+		ret =3D NET_RX_SUCCESS;
++		ret = NET_RX_SUCCESS;
  	}
-=20
+ 
  	spin_unlock(&orig_hash_lock);
 -	return;
 +	return ret;
  }
-=20
+ 
 -static void recv_icmp_ttl_exceeded(struct icmp_packet *icmp_packet,
 -				   struct ethhdr *ethhdr,
 -				   unsigned char *packet_buff,
@@ -936,59 +908,59 @@ Index: a/batman-adv-kernelland/routing.c
 +	struct ethhdr *ethhdr;
 +	struct sk_buff *skb_old;
 +	int ret;
-=20
-+	icmp_packet =3D (struct icmp_packet *) skb->data;
-+	ethhdr =3D (struct ethhdr *) skb_mac_header(skb);
+ 
++	icmp_packet = (struct icmp_packet *) skb->data;
++	ethhdr = (struct ethhdr *) skb_mac_header(skb);
 +
  	addr_to_string(src_str, icmp_packet->orig);
  	addr_to_string(dst_str, icmp_packet->dst);
-=20
+ 
 @@ -646,72 +656,86 @@
-=20
+ 
  	/* send TTL exceeded if packet is an echo request (traceroute) */
- 	if (icmp_packet->msg_type !=3D ECHO_REQUEST)
+ 	if (icmp_packet->msg_type != ECHO_REQUEST)
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
  	/* get routing information */
  	spin_lock(&orig_hash_lock);
- 	orig_node =3D ((struct orig_node *)
+ 	orig_node = ((struct orig_node *)
  		     hash_find(orig_hash, icmp_packet->orig));
-+	ret =3D NET_RX_DROP;
-=20
- 	if ((orig_node !=3D NULL) &&
- 	    (orig_node->batman_if !=3D NULL) &&
- 	    (orig_node->router !=3D NULL)) {
++	ret = NET_RX_DROP;
+ 
+ 	if ((orig_node != NULL) &&
+ 	    (orig_node->batman_if != NULL) &&
+ 	    (orig_node->router != NULL)) {
 +
 +		/* create a copy of the skb, if needed, to modify it. */
 +		if (!skb_clone_writable(skb, sizeof(struct icmp_packet))) {
-+			skb_old =3D skb;
-+			skb =3D skb_copy(skb, GFP_ATOMIC);
++			skb_old = skb;
++			skb = skb_copy(skb, GFP_ATOMIC);
 +			if (!skb)
 +				return NET_RX_DROP;
-+			icmp_packet =3D (struct icmp_packet *) skb->data;
++			icmp_packet = (struct icmp_packet *) skb->data;
 +			kfree_skb(skb_old);
 +		}
 +
  		memcpy(icmp_packet->dst, icmp_packet->orig, ETH_ALEN);
  		memcpy(icmp_packet->orig, ethhdr->h_dest, ETH_ALEN);
- 		icmp_packet->msg_type =3D TTL_EXCEEDED;
- 		icmp_packet->ttl =3D TTL;
-=20
+ 		icmp_packet->msg_type = TTL_EXCEEDED;
+ 		icmp_packet->ttl = TTL;
+ 
 -		send_raw_packet(packet_buff + sizeof(struct ethhdr),
 -				result - sizeof(struct ethhdr),
 +		send_skb_packet(skb,
  				orig_node->batman_if,
  				orig_node->router->addr);
-+		ret =3D NET_RX_SUCCESS;
-=20
++		ret = NET_RX_SUCCESS;
+ 
  	}
-=20
+ 
  	spin_unlock(&orig_hash_lock);
 +	return ret;
  }
-=20
-=20
+ 
+ 
 -
 -static void recv_icmp_packet(struct ethhdr *ethhdr,
 -			     unsigned char *packet_buff,
@@ -1000,86 +972,86 @@ Index: a/batman-adv-kernelland/routing.c
 +	struct ethhdr *ethhdr;
  	struct orig_node *orig_node;
 +	struct sk_buff *skb_old;
-+	int hdr_size =3D sizeof(struct icmp_packet);
++	int hdr_size = sizeof(struct icmp_packet);
 +	int ret;
-=20
+ 
 +	/* drop packet if it has not necessary minimum size */
 +	if (skb_headlen(skb) < hdr_size)
 +		return NET_RX_DROP;
 +
-+	ethhdr =3D (struct ethhdr *)skb_mac_header(skb);
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
 +
  	/* packet with unicast indication but broadcast recipient */
  	if (is_bcast(ethhdr->h_dest))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
  	/* packet with broadcast sender address */
  	if (is_bcast(ethhdr->h_source))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
  	/* not for me */
  	if (!is_my_mac(ethhdr->h_dest))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
 -	/* drop packet if it has not necessary minimum size */
 -	if (result < sizeof(struct ethhdr) + sizeof(struct icmp_packet))
 -		return;
-+	icmp_packet =3D (struct icmp_packet *) skb->data;
-=20
--	icmp_packet =3D (struct icmp_packet *)
++	icmp_packet = (struct icmp_packet *) skb->data;
+ 
+-	icmp_packet = (struct icmp_packet *)
 -		(packet_buff + sizeof(struct ethhdr));
 -
  	/* packet for me */
  	if (is_my_mac(icmp_packet->dst))
 -		recv_my_icmp_packet(ethhdr, icmp_packet, packet_buff, result);
 +		return recv_my_icmp_packet(skb);
-=20
+ 
  	/* TTL exceeded */
  	if (icmp_packet->ttl < 2) {
 -		recv_icmp_ttl_exceeded(icmp_packet, ethhdr, packet_buff, result,
 -				       batman_if);
 -		return;
 +		return recv_icmp_ttl_exceeded(skb);
-=20
+ 
  	}
-=20
-+	ret =3D NET_RX_DROP;
+ 
++	ret = NET_RX_DROP;
 +
  	/* get routing information */
  	spin_lock(&orig_hash_lock);
- 	orig_node =3D ((struct orig_node *)
+ 	orig_node = ((struct orig_node *)
 @@ -721,65 +745,77 @@
- 	    (orig_node->batman_if !=3D NULL) &&
- 	    (orig_node->router !=3D NULL)) {
-=20
+ 	    (orig_node->batman_if != NULL) &&
+ 	    (orig_node->router != NULL)) {
+ 
 +		/* create a copy of the skb, if needed, to modify it. */
 +		if (!skb_clone_writable(skb, sizeof(struct icmp_packet))) {
-+			skb_old =3D skb;
-+			skb =3D skb_copy(skb, GFP_ATOMIC);
++			skb_old = skb;
++			skb = skb_copy(skb, GFP_ATOMIC);
 +			if (!skb)
 +				return NET_RX_DROP;
-+			icmp_packet =3D (struct icmp_packet *) skb->data;
++			icmp_packet = (struct icmp_packet *) skb->data;
 +			kfree_skb(skb_old);
 +		}
 +
  		/* decrement ttl */
  		icmp_packet->ttl--;
-=20
+ 
  		/* route it */
 -		send_raw_packet(packet_buff + sizeof(struct ethhdr),
 -				result - sizeof(struct ethhdr),
 +		send_skb_packet(skb,
  				orig_node->batman_if,
  				orig_node->router->addr);
-+		ret =3D NET_RX_SUCCESS;
++		ret = NET_RX_SUCCESS;
  	}
  	spin_unlock(&orig_hash_lock);
 +	return ret;
  }
-=20
+ 
 -static void recv_unicast_packet(struct ethhdr *ethhdr,
 -				unsigned char *packet_buff,
 -				int result,
@@ -1089,41 +1061,41 @@ Index: a/batman-adv-kernelland/routing.c
  	struct unicast_packet *unicast_packet;
  	unsigned char src_str[ETH_STR_LEN], dst_str[ETH_STR_LEN];
  	struct orig_node *orig_node;
--	int hdr_size =3D sizeof(struct ethhdr) + sizeof(struct unicast_packet);
+-	int hdr_size = sizeof(struct ethhdr) + sizeof(struct unicast_packet);
 +	struct ethhdr *ethhdr;
 +	struct batman_if *batman_if;
 +	struct sk_buff *skb_old;
 +	uint8_t dstaddr[ETH_ALEN];
-+	int hdr_size =3D sizeof(struct unicast_packet);
++	int hdr_size = sizeof(struct unicast_packet);
 +	int ret;
-=20
+ 
 +	/* drop packet if it has not necessary minimum size */
 +	if (skb_headlen(skb) < hdr_size)
 +		return NET_RX_DROP;
 +
-+	ethhdr =3D (struct ethhdr *) skb_mac_header(skb);
++	ethhdr = (struct ethhdr *) skb_mac_header(skb);
 +
  	/* packet with unicast indication but broadcast recipient */
  	if (is_bcast(ethhdr->h_dest))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
  	/* packet with broadcast sender address */
  	if (is_bcast(ethhdr->h_source))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
  	/* not for me */
  	if (!is_my_mac(ethhdr->h_dest))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
 -	/* drop packet if it has not necessary minimum size */
 -	if (result < hdr_size)
 -		return;
-+	unicast_packet =3D (struct unicast_packet *) skb->data;
-=20
--	unicast_packet =3D (struct unicast_packet *)
++	unicast_packet = (struct unicast_packet *) skb->data;
+ 
+-	unicast_packet = (struct unicast_packet *)
 -		(packet_buff + sizeof(struct ethhdr));
 -
  	/* packet for me */
@@ -1135,7 +1107,7 @@ Index: a/batman-adv-kernelland/routing.c
 +		interface_rx(skb, hdr_size);
 +		return NET_RX_SUCCESS;
  	}
-=20
+ 
  	/* TTL exceeded */
  	if (unicast_packet->ttl < 2) {
 -		addr_to_string(src_str, ((struct ethhdr *)
@@ -1143,40 +1115,39 @@ Index: a/batman-adv-kernelland/routing.c
 -		addr_to_string(dst_str, unicast_packet->dest);
 +		addr_to_string(src_str, ethhdr->h_source);
 +		addr_to_string(dst_str, ethhdr->h_dest);
-=20
- 		printk(KERN_WARNING "batman-adv:Warning - can't send packet from %s to %=
-s: ttl exceeded\n", src_str, dst_str);
+ 
+ 		printk(KERN_WARNING "batman-adv:Warning - can't send packet from %s to %s: ttl exceeded\n", src_str, dst_str);
 -		return;
 +		return NET_RX_DROP;
  	}
-=20
-+	ret =3D NET_RX_DROP;
+ 
++	ret = NET_RX_DROP;
  	/* get routing information */
  	spin_lock(&orig_hash_lock);
- 	orig_node =3D ((struct orig_node *)
+ 	orig_node = ((struct orig_node *)
 @@ -788,50 +824,64 @@
- 	if ((orig_node !=3D NULL) &&
- 	    (orig_node->batman_if !=3D NULL) &&
- 	    (orig_node->router !=3D NULL)) {
+ 	if ((orig_node != NULL) &&
+ 	    (orig_node->batman_if != NULL) &&
+ 	    (orig_node->router != NULL)) {
 +
 +		/* don't lock while sending the packets ... we therefore
 +		 * copy the required data before sending */
-+		batman_if =3D orig_node->batman_if;
++		batman_if = orig_node->batman_if;
 +		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
 +		spin_unlock(&orig_hash_lock);
 +
 +		/* create a copy of the skb, if needed, to modify it. */
 +		if (!skb_clone_writable(skb, sizeof(struct unicast_packet))) {
-+			skb_old =3D skb;
-+			skb =3D skb_copy(skb, GFP_ATOMIC);
++			skb_old = skb;
++			skb = skb_copy(skb, GFP_ATOMIC);
 +			if (!skb)
 +				return NET_RX_DROP;
-+			unicast_packet =3D (struct unicast_packet *) skb->data;
++			unicast_packet = (struct unicast_packet *) skb->data;
 +			kfree_skb(skb_old);
 +		}
  		/* decrement ttl */
  		unicast_packet->ttl--;
-=20
+ 
  		/* route it */
 -		send_raw_packet(packet_buff + sizeof(struct ethhdr),
 -				result - sizeof(struct ethhdr),
@@ -1185,13 +1156,13 @@ s: ttl exceeded\n", src_str, dst_str);
 -	}
 -	spin_unlock(&orig_hash_lock);
 +		send_skb_packet(skb, batman_if, dstaddr);
-+		ret =3D NET_RX_SUCCESS;
++		ret = NET_RX_SUCCESS;
 +	} else
 +		spin_unlock(&orig_hash_lock);
 +	return ret;
  }
-=20
-=20
+ 
+ 
 -static void recv_bcast_packet(struct ethhdr *ethhdr,
 -			      unsigned char *packet_buff,
 -			      int result,
@@ -1200,26 +1171,26 @@ s: ttl exceeded\n", src_str, dst_str);
  {
  	struct orig_node *orig_node;
  	struct bcast_packet *bcast_packet;
--	int hdr_size =3D sizeof(struct ethhdr) + sizeof(struct bcast_packet);
+-	int hdr_size = sizeof(struct ethhdr) + sizeof(struct bcast_packet);
 +	struct ethhdr *ethhdr;
-+	int hdr_size =3D sizeof(struct bcast_packet);
-=20
++	int hdr_size = sizeof(struct bcast_packet);
+ 
 +	/* drop packet if it has not necessary minimum size */
 +	if (skb_headlen(skb) < hdr_size)
 +		return NET_RX_DROP;
 +
-+	ethhdr =3D (struct ethhdr *)skb_mac_header(skb);
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
 +
  	/* packet with broadcast indication but unicast recipient */
  	if (!is_bcast(ethhdr->h_dest))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
  	/* packet with broadcast sender address */
  	if (is_bcast(ethhdr->h_source))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
 -	/* drop packet if it has not necessary minimum size */
 -	if (result < hdr_size)
 -		return;
@@ -1228,26 +1199,26 @@ s: ttl exceeded\n", src_str, dst_str);
  	if (is_my_mac(ethhdr->h_source))
 -		return;
 +		return NET_RX_DROP;
-=20
--	bcast_packet =3D (struct bcast_packet *)
+ 
+-	bcast_packet = (struct bcast_packet *)
 -		(packet_buff + sizeof(struct ethhdr));
-+	bcast_packet =3D (struct bcast_packet *) skb->data;
-=20
++	bcast_packet = (struct bcast_packet *) skb->data;
+ 
  	/* ignore broadcasts originated by myself */
  	if (is_my_mac(bcast_packet->orig))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
  	spin_lock(&orig_hash_lock);
- 	orig_node =3D ((struct orig_node *)
+ 	orig_node = ((struct orig_node *)
 @@ -839,7 +889,7 @@
-=20
- 	if (orig_node =3D=3D NULL) {
+ 
+ 	if (orig_node == NULL) {
  		spin_unlock(&orig_hash_lock);
 -		return;
 +		return NET_RX_DROP;
  	}
-=20
+ 
  	/* check flood history */
 @@ -847,7 +897,7 @@
  			   orig_node->last_bcast_seqno,
@@ -1256,105 +1227,105 @@ s: ttl exceeded\n", src_str, dst_str);
 -		return;
 +		return NET_RX_DROP;
  	}
-=20
+ 
  	/* mark broadcast in flood history */
 @@ -858,208 +908,57 @@
-=20
+ 
  	spin_unlock(&orig_hash_lock);
-=20
+ 
 +	/* rebroadcast packet */
 +	add_bcast_packet_to_list(skb);
 +
  	/* broadcast for me */
 -	interface_rx(soft_device, packet_buff + hdr_size, result - hdr_size);
 +	interface_rx(skb, hdr_size);
-=20
+ 
 -	/* rebroadcast packet */
 -	add_bcast_packet_to_list(packet_buff + sizeof(struct ethhdr),
 -				 result - sizeof(struct ethhdr));
 +	return NET_RX_SUCCESS;
  }
-=20
+ 
 -static void recv_vis_packet(struct ethhdr *ethhdr,
 -			    unsigned char *packet_buff,
 -			    int result)
 +int recv_vis_packet(struct sk_buff *skb)
  {
  	struct vis_packet *vis_packet;
--	int hdr_size =3D sizeof(struct ethhdr) + sizeof(struct vis_packet);
+-	int hdr_size = sizeof(struct ethhdr) + sizeof(struct vis_packet);
 -	int vis_info_len;
 +	struct ethhdr *ethhdr;
-+	int hdr_size =3D sizeof(struct vis_packet);
++	int hdr_size = sizeof(struct vis_packet);
 +	int ret;
-=20
+ 
 -	/* drop if too short. */
 -	if (result < hdr_size)
 -		return;
 +	if (skb_headlen(skb) < hdr_size)
 +		return NET_RX_DROP;
-=20
-+	vis_packet =3D (struct vis_packet *) skb->data;
-+	ethhdr =3D (struct ethhdr *)skb_mac_header(skb);
+ 
++	vis_packet = (struct vis_packet *) skb->data;
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
 +
  	/* not for me */
  	if (!is_my_mac(ethhdr->h_dest))
 -		return;
 +		return NET_RX_DROP;
-=20
--	vis_packet =3D (struct vis_packet *)(packet_buff + sizeof(struct ethhdr));
--	vis_info_len =3D result  - hdr_size;
+ 
+-	vis_packet = (struct vis_packet *)(packet_buff + sizeof(struct ethhdr));
+-	vis_info_len = result  - hdr_size;
 -
  	/* ignore own packets */
  	if (is_my_mac(vis_packet->vis_orig))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
  	if (is_my_mac(vis_packet->sender_orig))
 -		return;
 +		return NET_RX_DROP;
-=20
+ 
  	switch (vis_packet->vis_type) {
  	case VIS_TYPE_SERVER_SYNC:
 -		receive_server_sync_packet(vis_packet, vis_info_len);
 +		/* TODO: handle fragmented skbs properly */
 +		receive_server_sync_packet(vis_packet, skb_headlen(skb));
-+		ret =3D NET_RX_SUCCESS;
++		ret = NET_RX_SUCCESS;
  		break;
-=20
+ 
  	case VIS_TYPE_CLIENT_UPDATE:
 -		receive_client_update_packet(vis_packet, vis_info_len);
 +		/* TODO: handle fragmented skbs properly */
 +		receive_client_update_packet(vis_packet, skb_headlen(skb));
-+		ret =3D NET_RX_SUCCESS;
++		ret = NET_RX_SUCCESS;
  		break;
-=20
+ 
  	default:	/* ignore unknown packet */
-+		ret =3D NET_RX_DROP;
++		ret = NET_RX_DROP;
  		break;
  	}
 +	return ret;
  }
-=20
+ 
 -static int recv_one_packet(struct batman_if *batman_if,
 -			   unsigned char *packet_buff)
 -{
 -	int result;
 -	struct ethhdr *ethhdr;
 -	struct batman_packet *batman_packet;
-=20
--	result =3D receive_raw_packet(batman_if->raw_sock, packet_buff,
+ 
+-	result = receive_raw_packet(batman_if->raw_sock, packet_buff,
 -				    PACKBUFF_SIZE);
--	if (result <=3D 0)
+-	if (result <= 0)
 -		return result;
 -
 -	if (result < sizeof(struct ethhdr) + 2)
 -		return 0;
 -
--	ethhdr =3D (struct ethhdr *)packet_buff;
--	batman_packet =3D (struct batman_packet *)
+-	ethhdr = (struct ethhdr *)packet_buff;
+-	batman_packet = (struct batman_packet *)
 -		(packet_buff + sizeof(struct ethhdr));
 -
--	if (batman_packet->version !=3D COMPAT_VERSION) {
+-	if (batman_packet->version != COMPAT_VERSION) {
 -		bat_dbg(DBG_BATMAN,
 -			"Drop packet: incompatible batman version (%i)\n",
 -			batman_packet->version);
@@ -1395,10 +1366,10 @@ s: ttl exceeded\n", src_str, dst_str);
 -static int discard_one_packet(struct batman_if *batman_if,
 -			      unsigned char *packet_buff)
 -{
--	int result =3D -EAGAIN;
+-	int result = -EAGAIN;
 -
 -	if (batman_if->raw_sock) {
--			result =3D receive_raw_packet(batman_if->raw_sock,
+-			result = receive_raw_packet(batman_if->raw_sock,
 -						    packet_buff,
 -						    PACKBUFF_SIZE);
 -	}
@@ -1408,7 +1379,7 @@ s: ttl exceeded\n", src_str, dst_str);
 -
 -static bool is_interface_active(struct batman_if *batman_if)
 -{
--	if (batman_if->if_active !=3D IF_ACTIVE)
+-	if (batman_if->if_active != IF_ACTIVE)
 -		return false;
 -
 -	return true;
@@ -1422,18 +1393,17 @@ s: ttl exceeded\n", src_str, dst_str);
 -
 -	do {
 -		if (is_interface_active(batman_if))
--			result =3D recv_one_packet(batman_if, packet_buff);
+-			result = recv_one_packet(batman_if, packet_buff);
 -		else
--			result =3D discard_one_packet(batman_if, packet_buff);
--	} while (result >=3D 0);
+-			result = discard_one_packet(batman_if, packet_buff);
+-	} while (result >= 0);
 -
 -	/* we perform none blocking reads, so EAGAIN indicates there
 -	   are no more packets to read. Anything else is a real
 -	   error.*/
 -
--	if ((result < 0) && (result !=3D -EAGAIN))
--		printk(KERN_ERR "batman-adv:Could not receive packet from interface %s: =
-%i\n", batman_if->dev, result);
+-	if ((result < 0) && (result != -EAGAIN))
+-		printk(KERN_ERR "batman-adv:Could not receive packet from interface %s: %i\n", batman_if->dev, result);
 -}
 -
 -static void service_interfaces(unsigned char *packet_buffer)
@@ -1455,10 +1425,9 @@ s: ttl exceeded\n", src_str, dst_str);
 -
 -	atomic_set(&data_ready_cond, 0);
 -	atomic_set(&exit_cond, 0);
--	packet_buff =3D kmalloc(PACKBUFF_SIZE, GFP_KERNEL);
+-	packet_buff = kmalloc(PACKBUFF_SIZE, GFP_KERNEL);
 -	if (!packet_buff) {
--		printk(KERN_ERR"batman-adv:Could allocate memory for the packet buffer. =
-:(\n");
+-		printk(KERN_ERR"batman-adv:Could allocate memory for the packet buffer. :(\n");
 -		return -1;
 -	}
 -
@@ -1487,7 +1456,7 @@ s: ttl exceeded\n", src_str, dst_str);
 -
 -void batman_data_ready(struct sock *sk, int len)
 -{
--	void (*data_ready)(struct sock *, int) =3D sk->sk_user_data;
+-	void (*data_ready)(struct sock *, int) = sk->sk_user_data;
 -
 -	data_ready(sk, len);
 -
@@ -1495,14 +1464,12 @@ s: ttl exceeded\n", src_str, dst_str);
 -	wake_up_interruptible(&thread_wait);
 -}
 Index: a/batman-adv-kernelland/routing.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+===================================================================
 --- a/batman-adv-kernelland/routing.h	(revision 1507)
 +++ b/batman-adv-kernelland/routing.h	(working copy)
 @@ -25,8 +25,6 @@
  extern atomic_t exit_cond;
-=20
+ 
  void slide_own_bcast_window(struct batman_if *batman_if);
 -void batman_data_ready(struct sock *sk, int len);
 -int packet_recv_thread(void *data);
@@ -1523,17 +1490,3 @@ Index: a/batman-adv-kernelland/routing.h
 +
 
 
---EeQfGwPcQSOJBaQU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAks3mCwACgkQrzg/fFk7axafJwCgnVKVs2RBguT1vDSePMdClATh
-v2wAoIA9O8IFTA9zyyP4yevMP8A7B5lh
-=Pyre
------END PGP SIGNATURE-----
-
---EeQfGwPcQSOJBaQU--
