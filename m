@@ -1,16 +1,12 @@
-Return-Path: <sven.eckelmann@gmx.de>
-Date: Tue, 29 Dec 2009 16:43:28 +0100
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20091229154328.GA17851@WGT634U>
-References: <20091227172356.GA11615@pandem0nium>
-	<20091228151008.GA15872@pandem0nium>
+Return-Path: <Eric.Conner@QinetiQ-NA.com>
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="DocE+STaALJfprDB"
-Content-Disposition: inline
-In-Reply-To: <20091228151008.GA15872@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 no pgp] batman-adv: receive
-	packets	directly using skbs
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CA88A0.80C24386"
+Date: Tue, 29 Dec 2009 11:03:48 -0500
+Message-ID: <94CAE17FD1DB4640BF8FF28D61FDFA8A273262@RESQNAOEX01.qnao.net>
+From: "Conner, Eric" <Eric.Conner@QinetiQ-NA.com>
+Subject: [B.A.T.M.A.N.] avahi over batmand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,165 +18,161 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
+This is a multi-part message in MIME format.
 
---DocE+STaALJfprDB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+------_=_NextPart_001_01CA88A0.80C24386
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Dec 28, 2009 at 04:10:08PM +0100, Simon Wunderlich wrote:
-> This patch removes the (ugly and racy) packet receiving thread and the
-> kernel socket usage. Instead, packets are received directly by registering
-> the ethernet type and handling skbs instead of self-allocated buffers.
->=20
-> Some consequences and comments:
->  * we don't copy the payload data when forwarding/sending/receiving data
->    anymore. This should boost performance.
->  * packets from/to different interfaces can be (theoretically) processed
->    simultaneously. Only the big originator hash lock might be in the way.
->  * this might introduce new race conditions.
->  * aggregation and vis code still use packet buffers and are not (yet)
->    converted.
->=20
-> This is the second version of this patch to be released, i would consider
-> it experimental and would hereby like to as for reviews before committing
-> it. Some things you might want to test:
->=20
->  * performace differences (are there any?)
->  * do all components still work? (vis, batctl ping, ...)
->  * do high load situations or multiple interfaces cause problems
->  * any memory leaks i might have overlooked?
->=20
-> I did some tests on my 9 node qemu environment and could confirm that
-> usual sending/receiving, forwarding, vis, batctl ping etc works. However
-> i can not talk about the performance from this setup.
->=20
-> Things changed from the first version are:
->  * always keep the skb->data at the batman header within the packet
->    handling functions
->  * use skb_copy() before modifying the data, if needed
->  * more fragmentation friendly header handling
->  * use skb_headlen() instead of asking skb->len
->  * fix some small bugs (use kfree(skb) -> kfree_skb(skb))
->=20
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Can avahi work over batmand or do I need batman-adv in order to run
+avahi?
 
-This patch looks better to me, but your tests yesterday showed that there i=
-s a
-possible deadlock due to the usage of spinlocks with disabled and enabled i=
-rqs.
-I know that you started to convert all spin_lock to spin_lock_irqsave, but =
-this
-may include locks which aren't affected by the wo-irqs/w-irqs situation.
+=20
 
-I try to summarize where each lock is used so we can decide if it is ok to
-revert some of them to spin_lock again. This should also resolve a request I
-got from Andrew some time ago.
+I have a test set up with 3 nodes all running the linux 2.6.31 kernel
+with batmand and an ad-hoc network.  BATMAN tells me that all the nodes
+are connected through the center point which is the hop for nodes 1 and
+3.  I can ping all 3 nodes but only when the BATMAN daemon is running.
+However when I browse avahi services (avahi-browse -avr) from the end
+points, I can not see the services from the opposite end point (i.e.
+node 1 can only see the services from itself and node 2 not the services
+from node 3 and node 3 can only see its services and those on node 2,
+but not from node 1).
 
- - vis_hash_lock
-   - vis_set_mode()
-   - is_vis_server()
-   - receive_client_update_packet()
-   - send_vis_packets()
-   - vis_init()
-   - vis_quit()
+=20
 
-   -> receive function is called with disable irq -> so we must
-      use spin_lock_irqsave
+Is there something special I can do with avahi or batman to get node 1
+to see the avahi services on node 3 and vice versa?
 
- - hna_global_hash_lock
-   - hna_local_add
-   - hna_global_add_orig
-   - hna_global_fill_buffer_text
-   - hna_global_del_orig
-   - transtable_search
+=20
 
-   -> add functions are used when we update routes after we received a bat
-      packet. So this must disable irqs too
+Thanks
+Eric
 
- - hna_local_hash_lock
-   - hna_local_add
-   - hna_local_fill_buffer
-   - hna_local_fill_buffer_text
-   - hna_local_purge
-   - hna_global_add_orig
-   - generate_vis_packet
+=20
 
-   -> add functions are used when we update routes after we received a bat
-      packet. So this must disable irqs too
 
- - forw_bcast_list_lock
-   - _add_bcast_packet_to_list
-   - send_outstanding_bcast_packet
-   - purge_outstanding_packets
+------_=_NextPart_001_01CA88A0.80C24386
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-   -> Was already changed to irqsave in
-      "batman-adv: Use forw_bcast_list_lock always in disabled interrupt co=
-ntext"
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
- - forw_bat_list_lock
-   - new_aggregated_packet
-   - add_bat_packet_to_list
-   - send_outstanding_bat_packet
-   - purge_outstanding_packets
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+p.section1, li.section1, div.section1
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
 
-   -> for example add_bat_packet_to_list is called by schedule_forward_pack=
-et
-      which is called by receive_bat_packet - called by
-	  receive_aggr_bat_packet - called by recv_bat_packet (called with disabled
-	  irqs). So we must use irqsave
+</head>
 
- - orig_hash_lock
-   - bat_device_write
-   - hardif_add_interface
-   - originator_init
-   - originator_free
-   - purge_orig
-   - proc_originators_read
-   - slide_own_bcast_window
-   - recv_bat_packet
-   - recv_my_icmp_packet
-   - recv_icmp_ttl_exceeded
-   - recv_icmp_packet
-   - recv_unicast_packet
-   - recv_bcast_packet
-   - interface_tx
-   - generate_vis_packet
-   - broadcast_vis_packet
-   - unicast_vis_packet
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
 
-   -> for example all recv_ functions are called with disabled irqs. So we
-      must use irqsave
+<div class=3DSection1>
 
-So it is complete correct to use irqsave everywhere (as you have commited it
-now).
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Can avahi work over batmand or do I need batman-adv =
+in order
+to run avahi?<o:p></o:p></span></font></p>
 
-Best regards,
-	Sven
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
 
---DocE+STaALJfprDB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I have a test set up with 3 nodes all running the =
+linux 2.6.31
+kernel with batmand and an ad-hoc network. &nbsp;BATMAN tells me that =
+all the nodes
+are connected through the center point which is the hop for nodes 1 and =
+3. &nbsp;I
+can ping all 3 nodes but only when the BATMAN daemon is running. =
+&nbsp;However when
+I browse avahi services (</span></font><font size=3D2 face=3D"Courier =
+New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>avahi-browse =
+&#8211;avr</span></font><font
+size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>) from the
+end points, I can not see the services from the opposite end point (i.e. =
+node 1
+can only see the services from itself and node 2 not the services from =
+node 3 and
+node 3 can only see its services and those on node 2, but not from node =
+1).<o:p></o:p></span></font></p>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
 
-iQIcBAEBCgAGBQJLOiObAAoJEF2HCgfBJntGLTIP/1vEWHK8Go8Eiv8ZM3CEEaNu
-r2mMR8OY5cSYE7XCWcK1dEePugDIJauBCj+WabWe1Zj8p3tRmPLyBsF5nzUEXVC9
-h5XY6VyOuxuH/FJJFFBtszl7l7xQiIbHd4ef9HOarnNHBwwUhJDN3PlDnJBYcJxr
-5aHaGD3/XuTn9T5leTK5ITaf5Wi1D2j+T4FT0OL+eoboHvPKV3cBIOf1YSmxPaI3
-/vj2+wfieYIg28oHzuZ8ijYSA0z3Yfead3DIKvnJFtNBRTRhT07+f9ZJvKFlEo09
-pNey9ddoYnN0pVx6US9ePgrF/1xAOoiu6wImpkvsqxo0Lu0C7+EB7WOCkeIyX3+p
-G39EflEHddL2u7MVl5xAHjuZUW5kicLTIj/Bf0RKz//suOXWgBpTNExlo6YF9aSr
-Zg+c9hSbZTEjhtP19BHd/hxKlbe7bcNvFWPHQbzUFxhnnafQ6b47a5b4Bph003T9
-YADHKnD1Bgby4VjodIW8UrUERs3MP92edzumgWRyyo7R8kMqF9epX0BGuJGUBPfy
-Bze/Y+FmXP4UWX4zL9Wn2Iu0tXoOp9cqyKCHNBo6gZP3w2Zi6ypZh9IkGOZDT5HJ
-pQ0Rkq5CRIurPfdJlxzQchGNEfI3bfqt8f6VmO9RnlG2q2seNCuwqRJtgRkNvjd2
-vZYizSHmvAT84qRJ4kkE
-=j7hO
------END PGP SIGNATURE-----
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Is there something special I can do with avahi or =
+batman to
+get node 1 to see the avahi services on node 3 and vice =
+versa?<o:p></o:p></span></font></p>
 
---DocE+STaALJfprDB--
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks<br>
+Eric<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01CA88A0.80C24386--
