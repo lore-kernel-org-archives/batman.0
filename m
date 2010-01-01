@@ -1,11 +1,14 @@
-Return-Path: <andrew@lunn.ch>
-Date: Fri, 1 Jan 2010 18:52:59 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100101175259.GB31328@lunn.ch>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Fri, 1 Jan 2010 19:27:35 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20100101182735.GF16855@pandem0nium>
+References: <94CAE17FD1DB4640BF8FF28D61FDFA8A2733C7@RESQNAOEX01.qnao.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ChQOR20MqfxkMJg9"
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] Missing unlocks
+In-Reply-To: <94CAE17FD1DB4640BF8FF28D61FDFA8A2733C7@RESQNAOEX01.qnao.net>
+Subject: Re: [B.A.T.M.A.N.] batmand advanced recipe for bitbake
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,32 +20,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Cc: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Hi Simon
 
-I just built batman-adv with make C=1 so that sparse it used to check
-the code. It found a few missing unlocks...
+--ChQOR20MqfxkMJg9
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-drivers/staging/batman-adv/routing.c:585:12: warning: context imbalance in 'recv_my_icmp_packet' - different lock contexts for basic block
+Hello Eric,
 
-This is the return if the skb_copy() fails.
+i'm not aware of bitbake receipts, but we would be happy to link it if
+you find one or write it.=20
 
-drivers/staging/batman-adv/routing.c:640:12: warning: context imbalance in 'recv_icmp_ttl_exceeded' - different lock contexts for basic block
+best regards
+	Simon
 
-Same again.
+On Wed, Dec 30, 2009 at 10:12:12PM -0500, Conner, Eric wrote:
+> Has anyone created a BATMAN Advanced recipe for bitbake
+> openembedded.dev?
+>=20
+> =20
+>=20
+> thanks
+>=20
 
-drivers/staging/batman-adv/routing.c:695:5: warning: context imbalance in 'recv_icmp_packet' - different lock contexts for basic block
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@lists.open-mesh.net
+> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
-and same again...
 
-in each case you are missing a 
+--ChQOR20MqfxkMJg9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-spin_unlock_irqrestore(&orig_hash_lock, flags);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-before the 
+iEYEARECAAYFAks+PpcACgkQrzg/fFk7axY1KACgrn3AEILbgG0/LmTX1bWfIv2T
+VewAoPAPy8gSpibV8Y7ZsPZw3T7B2yGk
+=6lHk
+-----END PGP SIGNATURE-----
 
-return NET_RX_DROP;
-
-    Andrew
+--ChQOR20MqfxkMJg9--
