@@ -1,14 +1,15 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Fri, 1 Jan 2010 17:40:33 +0100
+Date: Fri, 1 Jan 2010 17:56:19 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20100101164033.GC16855@pandem0nium>
-References: <20091231034120.GC18781@Sellars>
+Message-ID: <20100101165619.GD16855@pandem0nium>
+References: <20091231033955.GB18781@Sellars>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Qbvjkv9qwOGw/5Fx"
+	protocol="application/pgp-signature"; boundary="P+33d92oIH25kiaB"
 Content-Disposition: inline
-In-Reply-To: <20091231034120.GC18781@Sellars>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Remove unused variable
+In-Reply-To: <20091231033955.GB18781@Sellars>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: No deact of
+	aggregation	on wrong input
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,43 +24,81 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
 
---Qbvjkv9qwOGw/5Fx
+--P+33d92oIH25kiaB
 Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hey Linus,
+Hello Linus,
 
-sorry, i have not seen your patch and checked this in myself (r1525). Thank=
-s=20
-for reporting it anyway. :)
+thank you for the patch, applied with minor style changes in svn revision 1=
+528.
 
 best regards,
 	Simon
 
-On Thu, Dec 31, 2009 at 04:41:20AM +0100, =3D?UTF-8?q?Linus=3D20L=3DC3=3DBC=
+On Thu, Dec 31, 2009 at 04:39:55AM +0100, =3D?UTF-8?q?Linus=3D20L=3DC3=3DBC=
 ssing?=3D wrote:
-> The variable 'flag' is never being used in this function, therefore
-> removing it.
+> A non-integer changes the aggregation mode. Therefore this patch changes
+> the behaviour to explicitly check strict_strtoul()'s return code.
 >=20
 > Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
 > ---
->  soft-interface.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
+>  proc.c |   24 ++++++++++++------------
+>  1 files changed, 12 insertions(+), 12 deletions(-)
 >=20
-> diff --git a/soft-interface.c b/soft-interface.c
-> index 4d4d542..bc0217b 100644
-> --- a/soft-interface.c
-> +++ b/soft-interface.c
-> @@ -148,7 +148,6 @@ struct net_device_stats *interface_stats(struct net_d=
-evice *dev)
->  int interface_set_mac_addr(struct net_device *dev, void *p)
->  {
->  	struct sockaddr *addr =3D p;
-> -	unsigned long flags;
+> diff --git a/proc.c b/proc.c
+> index e7b7bf3..232efe3 100644
+> --- a/proc.c
+> +++ b/proc.c
+> @@ -433,6 +433,7 @@ static ssize_t proc_aggr_write(struct file *file, con=
+st char __user *buffer,
+>  	char *aggr_string;
+>  	int not_copied =3D 0;
+>  	unsigned long aggregation_enabled_tmp;
+> +	int retval;
 > =20
->  	if (!is_valid_ether_addr(addr->sa_data))
->  		return -EADDRNOTAVAIL;
+>  	aggr_string =3D kmalloc(count, GFP_KERNEL);
+> =20
+> @@ -442,22 +443,21 @@ static ssize_t proc_aggr_write(struct file *file, c=
+onst char __user *buffer,
+>  	not_copied =3D copy_from_user(aggr_string, buffer, count);
+>  	aggr_string[count - not_copied - 1] =3D 0;
+> =20
+> -	strict_strtoul(aggr_string, 10, &aggregation_enabled_tmp);
+> +	retval =3D strict_strtoul(aggr_string, 10, &aggregation_enabled_tmp);
+> =20
+> -	if ((aggregation_enabled_tmp !=3D 0) && (aggregation_enabled_tmp !=3D 1=
+)) {
+> +	if (retval =3D=3D -EINVAL || aggregation_enabled_tmp > 1) {
+>  		printk(KERN_ERR "batman-adv:Aggregation can only be enabled (1) or dis=
+abled (0), given value: %li\n", aggregation_enabled_tmp);
+> -		goto end;
+> +	}
+> +	else {
+> +		printk(KERN_INFO "batman-adv:Changing aggregation from: %s (%i) to: %s=
+ (%li)\n",
+> +		       (atomic_read(&aggregation_enabled) =3D=3D 1 ?
+> +			"enabled" : "disabled"),
+> +		       atomic_read(&aggregation_enabled),
+> +		       (aggregation_enabled_tmp =3D=3D 1 ? "enabled" : "disabled"),
+> +		       aggregation_enabled_tmp);
+> +		atomic_set(&aggregation_enabled, (unsigned)aggregation_enabled_tmp);
+>  	}
+> =20
+> -	printk(KERN_INFO "batman-adv:Changing aggregation from: %s (%i) to: %s =
+(%li)\n",
+> -	       (atomic_read(&aggregation_enabled) =3D=3D 1 ?
+> -		"enabled" : "disabled"),
+> -	       atomic_read(&aggregation_enabled),
+> -	       (aggregation_enabled_tmp =3D=3D 1 ? "enabled" : "disabled"),
+> -	       aggregation_enabled_tmp);
+> -
+> -	atomic_set(&aggregation_enabled, (unsigned)aggregation_enabled_tmp);
+> -end:
+>  	kfree(aggr_string);
+>  	return count;
+>  }
 > --=20
 > 1.6.5.7
 >=20
@@ -68,7 +107,7 @@ evice *dev)
 > B.A.T.M.A.N@lists.open-mesh.net
 > https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
 
---Qbvjkv9qwOGw/5Fx
+--P+33d92oIH25kiaB
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -76,9 +115,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAks+JYEACgkQrzg/fFk7axbW2QCeIv2/2D06d9bdOsfwdJJ5Epgu
-dYsAoLKxapu3RZ2+7tKf3dH8krkMuHwf
-=PYcV
+iEYEARECAAYFAks+KTMACgkQrzg/fFk7axZexACgnzbk7b/XotTAREyW7lJX3uk9
+8L4AoMJdCYn0MWmzmWpl1977wp4zP944
+=fGbp
 -----END PGP SIGNATURE-----
 
---Qbvjkv9qwOGw/5Fx--
+--P+33d92oIH25kiaB--
