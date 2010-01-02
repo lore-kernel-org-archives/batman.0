@@ -1,8 +1,8 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Sat,  2 Jan 2010 11:30:45 +0100
-Message-Id: <1262428252-26439-10-git-send-email-andrew@lunn.ch>
-In-Reply-To: <1262428252-26439-9-git-send-email-andrew@lunn.ch>
+Date: Sat,  2 Jan 2010 11:30:50 +0100
+Message-Id: <1262428252-26439-15-git-send-email-andrew@lunn.ch>
+In-Reply-To: <1262428252-26439-14-git-send-email-andrew@lunn.ch>
 References: <1262428252-26439-1-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-2-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-3-git-send-email-andrew@lunn.ch>
@@ -12,9 +12,14 @@ References: <1262428252-26439-1-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-7-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-8-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-9-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-10-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-11-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-12-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-13-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-14-git-send-email-andrew@lunn.ch>
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 10/17] Staging: batman-adv: remove obsoleted
-	vis_format /proc file
+Subject: [B.A.T.M.A.N.] [PATCH 15/17] Staging: batman-adv: Use printk(%pM)
+	for MAC addresses
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,169 +32,622 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: gregkh@suse.de
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
+Cc: b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-From: Linus Luessing <linus.luessing@web.de>
+printk() since kernel version 2.6.29 has supported printing MAC
+addresses directly, as an extension to the %p processing. This patch
+makes use of this for printk() and bat_dbg(). This will remove the
+overhead of using addr_to_string() which is normally never actually
+output.
 
-batman-adv used to export the vis data using different formats that were
-switchable via /proc/net/batman-adv/vis_format. The various formats moved
-to user space and rendered this configuration switch useless.
+Fixed a typo found by Gus Wirth.
 
-Signed-off-by: Linus Luessing <linus.luessing@web.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- drivers/staging/batman-adv/proc.c |   79 +------------------------------------
- drivers/staging/batman-adv/vis.h  |    5 --
- 2 files changed, 1 insertions(+), 83 deletions(-)
+ drivers/staging/batman-adv/TODO                |    4 -
+ drivers/staging/batman-adv/compat.h            |   82 ++++++++++++++++++-----
+ drivers/staging/batman-adv/device.c            |    1 +
+ drivers/staging/batman-adv/hard-interface.c    |   14 ++--
+ drivers/staging/batman-adv/main.c              |    2 +-
+ drivers/staging/batman-adv/originator.c        |   17 ++----
+ drivers/staging/batman-adv/routing.c           |   66 ++++++--------------
+ drivers/staging/batman-adv/send.c              |   13 +---
+ drivers/staging/batman-adv/translation-table.c |   34 +++-------
+ 9 files changed, 111 insertions(+), 122 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/proc.c b/drivers/staging/batman-adv/proc.c
-index 352b883..f1adf57 100644
---- a/drivers/staging/batman-adv/proc.c
-+++ b/drivers/staging/batman-adv/proc.c
-@@ -29,13 +29,11 @@
- #include "vis.h"
- #include "compat.h"
+diff --git a/drivers/staging/batman-adv/TODO b/drivers/staging/batman-adv/TODO
+index b1e369c..2122adc 100644
+--- a/drivers/staging/batman-adv/TODO
++++ b/drivers/staging/batman-adv/TODO
+@@ -17,10 +17,6 @@
+ -> transtable_global (read-only) [outputs the global translation table]
+ -> transtable_local (read-only) [outputs the local translation table]
  
--static uint8_t vis_format = DOT_DRAW;
+-=> logging
+-* make use of printk %pM support instead of converting mac addresses
+-* manually
 -
- static struct proc_dir_entry *proc_batman_dir, *proc_interface_file;
- static struct proc_dir_entry *proc_orig_interval_file, *proc_originators_file;
- static struct proc_dir_entry *proc_transt_local_file;
- static struct proc_dir_entry *proc_transt_global_file;
--static struct proc_dir_entry *proc_vis_file, *proc_vis_format_file;
-+static struct proc_dir_entry *proc_vis_file;
- static struct proc_dir_entry *proc_aggr_file;
+ => strip out all backward compatibility support to older kernels
+    (only found in compat.h)
  
- static int proc_interfaces_read(struct seq_file *seq, void *offset)
-@@ -401,11 +399,8 @@ static int proc_vis_read(struct seq_file *seq, void *offset)
- 	struct vis_info_entry *entries;
- 	HLIST_HEAD(vis_if_list);
- 	int i;
--	uint8_t current_format;
- 	char tmp_addr_str[ETH_STR_LEN];
+diff --git a/drivers/staging/batman-adv/compat.h b/drivers/staging/batman-adv/compat.h
+index f4e0a45..ded1e6e 100644
+--- a/drivers/staging/batman-adv/compat.h
++++ b/drivers/staging/batman-adv/compat.h
+@@ -35,41 +35,87 @@
+ #define list_first_entry(ptr, type, member) \
+ 	list_entry((ptr)->next, type, member)
  
--	current_format = vis_format;
--
- 	rcu_read_lock();
- 	if (list_empty(&if_list) || (!is_vis_server())) {
- 		rcu_read_unlock();
-@@ -471,55 +466,6 @@ static int proc_vis_open(struct inode *inode, struct file *file)
- 	return single_open(file, proc_vis_read, NULL);
- }
+-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 22) */
++#define skb_mac_header(_skb) \
++    ((_skb)->mac.raw)
  
--static int proc_vis_format_read(struct seq_file *seq, void *offset)
--{
--	uint8_t current_format = vis_format;
--
--	seq_printf(seq, "[%c] %s\n",
--		   (current_format == DOT_DRAW) ? 'x' : ' ',
--		   VIS_FORMAT_DD_NAME);
--	seq_printf(seq, "[%c] %s\n",
--		   (current_format == JSON) ? 'x' : ' ',
--		   VIS_FORMAT_JSON_NAME);
--	return 0;
--}
--
--static int proc_vis_format_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, proc_vis_format_read, NULL);
--}
--
--static ssize_t proc_vis_format_write(struct file *file,
--				     const char __user *buffer,
--				     size_t count, loff_t *ppos)
--{
--	char *vis_format_string;
--	int not_copied = 0;
--
--	vis_format_string = kmalloc(count, GFP_KERNEL);
--
--	if (!vis_format_string)
--		return -ENOMEM;
--
--	not_copied = copy_from_user(vis_format_string, buffer, count);
--	vis_format_string[count - not_copied - 1] = 0;
--
--	if (strcmp(vis_format_string, VIS_FORMAT_DD_NAME) == 0) {
--		printk(KERN_INFO "batman-adv:Setting VIS output format to: %s\n",
--		       VIS_FORMAT_DD_NAME);
--		vis_format = DOT_DRAW;
--	} else if (strcmp(vis_format_string, VIS_FORMAT_JSON_NAME) == 0) {
--		printk(KERN_INFO "batman-adv:Setting VIS output format to: %s\n",
--		       VIS_FORMAT_JSON_NAME);
--		vis_format = JSON;
--	} else
--		printk(KERN_ERR "batman-adv:Unknown VIS output format: %s\n",
--		       vis_format_string);
--
--	kfree(vis_format_string);
--	return count;
--}
--
- static int proc_aggr_read(struct seq_file *seq, void *offset)
++#define skb_network_header(_skb) \
++    ((_skb)->nh.raw)
++
++#define skb_mac_header(_skb) \
++    ((_skb)->mac.raw)
++
++#endif /* < KERNEL_VERSION(2,6,22) */
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 23)
++
++static inline int skb_clone_writable(struct sk_buff *skb, unsigned int len)
++{
++	/* skb->hdr_len not available, just "not writable" to enforce a copy */
++	return 0;
++}
++
++#define cancel_delayed_work_sync(wq) cancel_rearming_delayed_work(wq)
++
++#endif /* < KERNEL_VERSION(2, 6, 23) */
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
++
++#define strict_strtoul(cp, base, res) \
++	({ \
++	int ret = 0; \
++	char *endp; \
++	*res = simple_strtoul(cp, &endp, base); \
++	if (cp == endp) \
++		ret = -EINVAL; \
++	ret; \
++})
++
++#endif /* < KERNEL_VERSION(2, 6, 25) */
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26)
+ 
++static const char hex_asc[] = "0123456789abcdef";
++#define hex_asc_lo(x)   hex_asc[((x) & 0x0f)]
++#define hex_asc_hi(x)   hex_asc[((x) & 0xf0) >> 4]
++static inline char *pack_hex_byte(char *buf, u8 byte)
++{
++    *buf++ = hex_asc_hi(byte);
++    *buf++ = hex_asc_lo(byte);
++    return buf;
++}
++
+ #define device_create(_cls, _parent, _devt, _device, _fmt) \
+ 	class_device_create(_cls, _parent, _devt, _device, _fmt)
+ 
+ #define device_destroy(_cls, _device) \
+ 	class_device_destroy(_cls, _device)
+ 
+-#else
++#endif /* < KERNEL_VERSION(2, 6, 26) */
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 27)
+ 
++#ifndef dereference_function_descriptor
++#define dereference_function_descriptor(p) (p)
++#endif
++
++#ifndef device_create
+ #define device_create(_cls, _parent, _devt, _device, _fmt) \
+ 	device_create_drvdata(_cls, _parent, _devt, _device, _fmt)
++#endif
+ 
+-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 27) */
++#endif /* < KERNEL_VERSION(2, 6, 27) */
+ 
+-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26) */
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 29)
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 23)
++asmlinkage int bat_printk(const char *fmt, ...);
++#define printk bat_printk
+ 
+-#define cancel_delayed_work_sync(wq) cancel_rearming_delayed_work(wq)
++static inline struct net_device_stats *dev_get_stats(struct net_device *dev)
++{
++	if (dev->get_stats)
++		return dev->get_stats(dev);
++	else
++		return NULL;
++}
+ 
+-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 23) */
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
+-#define strict_strtoul(cp, base, res) \
+-	({ \
+-	int ret = 0; \
+-	char *endp; \
+-	*res = simple_strtoul(cp, &endp, base); \
+-	if (cp == endp) \
+-		ret = -EINVAL; \
+-	ret; \
+-})
+-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25) */
++#endif /* < KERNEL_VERSION(2, 6, 29) */
+diff --git a/drivers/staging/batman-adv/device.c b/drivers/staging/batman-adv/device.c
+index ab2b0b1..72306ac 100644
+--- a/drivers/staging/batman-adv/device.c
++++ b/drivers/staging/batman-adv/device.c
+@@ -19,6 +19,7 @@
+  *
+  */
+ 
++#include <linux/device.h>
+ #include "main.h"
+ #include "device.h"
+ #include "send.h"
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index cc59c30..db264bd 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -74,7 +74,6 @@ int hardif_min_mtu(void)
+ static void check_known_mac_addr(uint8_t *addr)
  {
- 	seq_printf(seq, "%i\n", atomic_read(&aggregation_enabled));
-@@ -583,15 +529,6 @@ static const struct file_operations proc_aggr_fops = {
- 	.release	= single_release,
+ 	struct batman_if *batman_if;
+-	char mac_string[ETH_STR_LEN];
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+@@ -85,9 +84,8 @@ static void check_known_mac_addr(uint8_t *addr)
+ 		if (!compare_orig(batman_if->net_dev->dev_addr, addr))
+ 			continue;
+ 
+-		addr_to_string(mac_string, addr);
+-		printk(KERN_WARNING "batman-adv:The newly added mac address (%s) already exists on: %s\n",
+-		       mac_string, batman_if->dev);
++		printk(KERN_WARNING "batman-adv:The newly added mac address (%pM) already exists on: %s\n",
++		       addr, batman_if->dev);
+ 		printk(KERN_WARNING "batman-adv:It is strongly recommended to keep mac addresses unique to avoid problems!\n");
+ 	}
+ 	rcu_read_unlock();
+@@ -447,9 +445,11 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 	if (!batman_if)
+ 		goto err_free;
+ 
+-    stats = &skb->dev->stats;
+-    stats->rx_packets++;
+-    stats->rx_bytes += skb->len;
++    stats = (struct net_device_stats *) dev_get_stats(skb->dev);
++	if (stats) {
++		stats->rx_packets++;
++		stats->rx_bytes += skb->len;
++	}
+ 
+ 	batman_packet = (struct batman_packet *)skb->data;
+ 
+diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
+index c733504..1d80ea3 100644
+--- a/drivers/staging/batman-adv/main.c
++++ b/drivers/staging/batman-adv/main.c
+@@ -54,7 +54,7 @@ unsigned char broadcastAddr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+ atomic_t module_state;
+ 
+ static struct packet_type batman_adv_packet_type __read_mostly = {
+-	.type = cpu_to_be16(ETH_P_BATMAN),
++	.type = __constant_htons(ETH_P_BATMAN),
+ 	.func = batman_skb_recv,
  };
  
--static const struct file_operations proc_vis_format_fops = {
--	.owner		= THIS_MODULE,
--	.open		= proc_vis_format_open,
--	.read		= seq_read,
--	.write		= proc_vis_format_write,
--	.llseek		= seq_lseek,
--	.release	= single_release,
--};
--
- static const struct file_operations proc_vis_fops = {
- 	.owner		= THIS_MODULE,
- 	.open		= proc_vis_open,
-@@ -666,9 +603,6 @@ void cleanup_procfs(void)
- 	if (proc_vis_file)
- 		remove_proc_entry(PROC_FILE_VIS, proc_batman_dir);
+diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
+index 3fa7baf..85c3d1f 100644
+--- a/drivers/staging/batman-adv/originator.c
++++ b/drivers/staging/batman-adv/originator.c
+@@ -26,6 +26,7 @@
+ #include "hash.h"
+ #include "translation-table.h"
+ #include "routing.h"
++#include "compat.h"
  
--	if (proc_vis_format_file)
--		remove_proc_entry(PROC_FILE_VIS_FORMAT, proc_batman_dir);
--
- 	if (proc_aggr_file)
- 		remove_proc_entry(PROC_FILE_AGGR, proc_batman_dir);
  
-@@ -755,17 +689,6 @@ int setup_procfs(void)
- 		return -EFAULT;
+ static DECLARE_DELAYED_WORK(purge_orig_wq, purge_orig);
+@@ -121,7 +122,6 @@ struct orig_node *get_orig_node(uint8_t *addr)
+ {
+ 	struct orig_node *orig_node;
+ 	struct hashtable_t *swaphash;
+-	char orig_str[ETH_STR_LEN];
+ 	int size;
+ 
+ 	orig_node = ((struct orig_node *)hash_find(orig_hash, addr));
+@@ -129,8 +129,7 @@ struct orig_node *get_orig_node(uint8_t *addr)
+ 	if (orig_node != NULL)
+ 		return orig_node;
+ 
+-	addr_to_string(orig_str, addr);
+-	bat_dbg(DBG_BATMAN, "Creating new originator: %s \n", orig_str);
++	bat_dbg(DBG_BATMAN, "Creating new originator: %pM \n", addr);
+ 
+ 	orig_node = kmalloc(sizeof(struct orig_node), GFP_ATOMIC);
+ 	if (!orig_node)
+@@ -186,7 +185,6 @@ static bool purge_orig_neighbors(struct orig_node *orig_node,
+ 				 struct neigh_node **best_neigh_node)
+ {
+ 	struct list_head *list_pos, *list_pos_tmp;
+-	char neigh_str[ETH_STR_LEN], orig_str[ETH_STR_LEN];
+ 	struct neigh_node *neigh_node;
+ 	bool neigh_purged = false;
+ 
+@@ -201,9 +199,7 @@ static bool purge_orig_neighbors(struct orig_node *orig_node,
+ 			       (neigh_node->last_valid +
+ 				((PURGE_TIMEOUT * HZ) / 1000)))) {
+ 
+-			addr_to_string(neigh_str, neigh_node->addr);
+-			addr_to_string(orig_str, orig_node->orig);
+-			bat_dbg(DBG_BATMAN, "neighbor timeout: originator %s, neighbor: %s, last_valid %lu\n", orig_str, neigh_str, (neigh_node->last_valid / HZ));
++			bat_dbg(DBG_BATMAN, "neighbor timeout: originator %pM, neighbor: %pM, last_valid %lu\n", orig_node->orig, neigh_node->addr, (neigh_node->last_valid / HZ));
+ 
+ 			neigh_purged = true;
+ 			list_del(list_pos);
+@@ -221,17 +217,14 @@ static bool purge_orig_neighbors(struct orig_node *orig_node,
+ static bool purge_orig_node(struct orig_node *orig_node)
+ {
+ 	struct neigh_node *best_neigh_node;
+-	char orig_str[ETH_STR_LEN];
+-
+-	addr_to_string(orig_str, orig_node->orig);
+ 
+ 	if (time_after(jiffies,
+ 		       (orig_node->last_valid +
+ 			((2 * PURGE_TIMEOUT * HZ) / 1000)))) {
+ 
+ 		bat_dbg(DBG_BATMAN,
+-			"Originator timeout: originator %s, last_valid %lu\n",
+-			orig_str, (orig_node->last_valid / HZ));
++			"Originator timeout: originator %pM, last_valid %lu\n",
++			orig_node->orig, (orig_node->last_valid / HZ));
+ 		return true;
+ 	} else {
+ 		if (purge_orig_neighbors(orig_node, &best_neigh_node))
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index 9cf1ee5..bab7a73 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -80,32 +80,24 @@ static void update_route(struct orig_node *orig_node,
+ 			 struct neigh_node *neigh_node,
+ 			 unsigned char *hna_buff, int hna_buff_len)
+ {
+-	char orig_str[ETH_STR_LEN], neigh_str[ETH_STR_LEN];
+-	char router_str[ETH_STR_LEN];
+-
+-	addr_to_string(orig_str, orig_node->orig);
+-
+ 	/* route deleted */
+ 	if ((orig_node->router != NULL) && (neigh_node == NULL)) {
+ 
+-		bat_dbg(DBG_ROUTES, "Deleting route towards: %s\n",
+-			orig_str);
++		bat_dbg(DBG_ROUTES, "Deleting route towards: %pM\n",
++			orig_node->orig);
+ 		hna_global_del_orig(orig_node, "originator timed out");
+ 
+ 		/* route added */
+ 	} else if ((orig_node->router == NULL) && (neigh_node != NULL)) {
+ 
+-		addr_to_string(neigh_str, neigh_node->addr);
+ 		bat_dbg(DBG_ROUTES,
+-			"Adding route towards: %s (via %s)\n",
+-			orig_str, neigh_str);
++			"Adding route towards: %pM (via %pM)\n",
++			orig_node->orig, neigh_node->addr);
+ 		hna_global_add_orig(orig_node, hna_buff, hna_buff_len);
+ 
+ 		/* route changed */
+ 	} else {
+-		addr_to_string(neigh_str, neigh_node->addr);
+-		addr_to_string(router_str, orig_node->router->addr);
+-		bat_dbg(DBG_ROUTES, "Changing route towards: %s (now via %s - was via %s)\n", orig_str, neigh_str, router_str);
++		bat_dbg(DBG_ROUTES, "Changing route towards: %pM (now via %pM - was via %pM)\n", orig_node->orig, neigh_node->addr, orig_node->router->addr);
  	}
  
--	proc_vis_format_file = create_proc_entry(PROC_FILE_VIS_FORMAT,
--						 S_IWUSR | S_IRUGO,
--						 proc_batman_dir);
--	if (proc_vis_format_file) {
--		proc_vis_format_file->proc_fops = &proc_vis_format_fops;
--	} else {
--		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_VIS_FORMAT);
--		cleanup_procfs();
--		return -EFAULT;
--	}
--
- 	proc_aggr_file = create_proc_entry(PROC_FILE_AGGR, S_IWUSR | S_IRUGO,
- 					   proc_batman_dir);
- 	if (proc_aggr_file) {
-diff --git a/drivers/staging/batman-adv/vis.h b/drivers/staging/batman-adv/vis.h
-index 276faba..ff88a43 100644
---- a/drivers/staging/batman-adv/vis.h
-+++ b/drivers/staging/batman-adv/vis.h
-@@ -45,11 +45,6 @@ struct recvlist_node {
- 	uint8_t mac[ETH_ALEN];
- };
+ 	if (neigh_node != NULL)
+@@ -138,12 +130,8 @@ static int isBidirectionalNeigh(struct orig_node *orig_node,
+ 				struct batman_if *if_incoming)
+ {
+ 	struct neigh_node *neigh_node = NULL, *tmp_neigh_node = NULL;
+-	char orig_str[ETH_STR_LEN], neigh_str[ETH_STR_LEN];
+ 	unsigned char total_count;
  
--enum vis_formats {
--	DOT_DRAW,
--	JSON,
--};
+-	addr_to_string(orig_str, orig_node->orig);
+-	addr_to_string(neigh_str, orig_neigh_node->orig);
 -
- extern struct hashtable_t *vis_hash;
- extern spinlock_t vis_hash_lock;
+ 	if (orig_node == orig_neigh_node) {
+ 		list_for_each_entry(tmp_neigh_node,
+ 				    &orig_node->neigh_list,
+@@ -227,8 +215,8 @@ static int isBidirectionalNeigh(struct orig_node *orig_node,
+ 			      orig_neigh_node->tq_asym_penalty) /
+ 			     (TQ_MAX_VALUE *	 TQ_MAX_VALUE));
  
+-	bat_dbg(DBG_BATMAN, "bidirectional: orig = %-15s neigh = %-15s => own_bcast = %2i, real recv = %2i, local tq: %3i, asym_penalty: %3i, total tq: %3i \n",
+-		orig_str, neigh_str, total_count,
++	bat_dbg(DBG_BATMAN, "bidirectional: orig = %-15pM neigh = %-15pM => own_bcast = %2i, real recv = %2i, local tq: %3i, asym_penalty: %3i, total tq: %3i \n",
++		orig_node->orig, orig_neigh_node->orig, total_count,
+ 		neigh_node->real_packet_count, orig_neigh_node->tq_own,
+ 		orig_neigh_node->tq_asym_penalty, batman_packet->tq);
+ 
+@@ -372,8 +360,6 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ {
+ 	struct batman_if *batman_if;
+ 	struct orig_node *orig_neigh_node, *orig_node;
+-	char orig_str[ETH_STR_LEN], prev_sender_str[ETH_STR_LEN];
+-	char neigh_str[ETH_STR_LEN];
+ 	char has_directlink_flag;
+ 	char is_my_addr = 0, is_my_orig = 0, is_my_oldorig = 0;
+ 	char is_broadcast = 0, is_bidirectional, is_single_hop_neigh;
+@@ -398,20 +384,16 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 	/* could be changed by schedule_own_packet() */
+ 	if_incoming_seqno = atomic_read(&if_incoming->seqno);
+ 
+-	addr_to_string(orig_str, batman_packet->orig);
+-	addr_to_string(prev_sender_str, batman_packet->prev_sender);
+-	addr_to_string(neigh_str, ethhdr->h_source);
+-
+ 	has_directlink_flag = (batman_packet->flags & DIRECTLINK ? 1 : 0);
+ 
+ 	is_single_hop_neigh = (compare_orig(ethhdr->h_source,
+ 					    batman_packet->orig) ? 1 : 0);
+ 
+-	bat_dbg(DBG_BATMAN, "Received BATMAN packet via NB: %s, IF: %s [%s] (from OG: %s, via prev OG: %s, seqno %d, tq %d, TTL %d, V %d, IDF %d) \n",
+-		neigh_str, if_incoming->dev, if_incoming->addr_str,
+-		orig_str, prev_sender_str, batman_packet->seqno,
+-		batman_packet->tq, batman_packet->ttl, batman_packet->version,
+-		has_directlink_flag);
++	bat_dbg(DBG_BATMAN, "Received BATMAN packet via NB: %pM, IF: %s [%s] (from OG: %pM, via prev OG: %pM, seqno %d, tq %d, TTL %d, V %d, IDF %d) \n",
++		ethhdr->h_source, if_incoming->dev, if_incoming->addr_str,
++		batman_packet->orig, batman_packet->prev_sender,
++		batman_packet->seqno, batman_packet->tq, batman_packet->ttl,
++		batman_packet->version, has_directlink_flag);
+ 
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+ 		if (batman_if->if_active != IF_ACTIVE)
+@@ -442,13 +424,13 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 
+ 	if (is_my_addr) {
+ 		bat_dbg(DBG_BATMAN,
+-			"Drop packet: received my own broadcast (sender: %s)\n",
+-			neigh_str);
++			"Drop packet: received my own broadcast (sender: %pM)\n",
++			ethhdr->h_source);
+ 		return;
+ 	}
+ 
+ 	if (is_broadcast) {
+-		bat_dbg(DBG_BATMAN, "Drop packet: ignoring all packets with broadcast source addr (sender: %s) \n", neigh_str);
++		bat_dbg(DBG_BATMAN, "Drop packet: ignoring all packets with broadcast source addr (sender: %pM) \n", ethhdr->h_source);
+ 		return;
+ 	}
+ 
+@@ -488,7 +470,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 	}
+ 
+ 	if (is_my_oldorig) {
+-		bat_dbg(DBG_BATMAN, "Drop packet: ignoring all rebroadcast echos (sender: %s) \n", neigh_str);
++		bat_dbg(DBG_BATMAN, "Drop packet: ignoring all rebroadcast echos (sender: %pM) \n", ethhdr->h_source);
+ 		return;
+ 	}
+ 
+@@ -506,7 +488,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 	    !(compare_orig(batman_packet->orig, batman_packet->prev_sender)) &&
+ 	    (compare_orig(orig_node->router->addr,
+ 			  orig_node->router->orig_node->router->addr))) {
+-		bat_dbg(DBG_BATMAN, "Drop packet: ignoring all rebroadcast packets that may make me loop (sender: %s) \n", neigh_str);
++		bat_dbg(DBG_BATMAN, "Drop packet: ignoring all rebroadcast packets that may make me loop (sender: %pM) \n", ethhdr->h_source);
+ 		return;
+ 	}
+ 
+@@ -666,7 +648,6 @@ static int recv_my_icmp_packet(struct sk_buff *skb)
+ 
+ static int recv_icmp_ttl_exceeded(struct sk_buff *skb)
+ {
+-	unsigned char src_str[ETH_STR_LEN], dst_str[ETH_STR_LEN];
+ 	struct orig_node *orig_node;
+ 	struct icmp_packet *icmp_packet;
+ 	struct ethhdr *ethhdr;
+@@ -679,10 +660,7 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb)
+ 	icmp_packet = (struct icmp_packet *) skb->data;
+ 	ethhdr = (struct ethhdr *) skb_mac_header(skb);
+ 
+-	addr_to_string(src_str, icmp_packet->orig);
+-	addr_to_string(dst_str, icmp_packet->dst);
+-
+-	printk(KERN_WARNING "batman-adv:Warning - can't send packet from %s to %s: ttl exceeded\n", src_str, dst_str);
++	printk(KERN_WARNING "batman-adv:Warning - can't send packet from %pM to %pM: ttl exceeded\n", icmp_packet->orig, icmp_packet->dst);
+ 
+ 	/* send TTL exceeded if packet is an echo request (traceroute) */
+ 	if (icmp_packet->msg_type != ECHO_REQUEST)
+@@ -812,7 +790,6 @@ int recv_icmp_packet(struct sk_buff *skb)
+ int recv_unicast_packet(struct sk_buff *skb)
+ {
+ 	struct unicast_packet *unicast_packet;
+-	unsigned char src_str[ETH_STR_LEN], dst_str[ETH_STR_LEN];
+ 	struct orig_node *orig_node;
+ 	struct ethhdr *ethhdr;
+ 	struct batman_if *batman_if;
+@@ -850,10 +827,7 @@ int recv_unicast_packet(struct sk_buff *skb)
+ 
+ 	/* TTL exceeded */
+ 	if (unicast_packet->ttl < 2) {
+-		addr_to_string(src_str, ethhdr->h_source);
+-		addr_to_string(dst_str, ethhdr->h_dest);
+-
+-		printk(KERN_WARNING "batman-adv:Warning - can't send packet from %s to %s: ttl exceeded\n", src_str, dst_str);
++		printk(KERN_WARNING "batman-adv:Warning - can't send packet from %pM to %pM: ttl exceeded\n", ethhdr->h_source, unicast_packet->dest);
+ 		return NET_RX_DROP;
+ 	}
+ 
+@@ -1005,5 +979,3 @@ int recv_vis_packet(struct sk_buff *skb)
+ 	}
+ 	return ret;
+ }
+-
+-
+diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
+index fd48f3f..edfdd5d 100644
+--- a/drivers/staging/batman-adv/send.c
++++ b/drivers/staging/batman-adv/send.c
+@@ -132,7 +132,6 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
+ 	uint8_t packet_num;
+ 	int16_t buff_pos;
+ 	struct batman_packet *batman_packet;
+-	char orig_str[ETH_STR_LEN];
+ 
+ 	if (batman_if->if_active != IF_ACTIVE)
+ 		return;
+@@ -154,15 +153,14 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
+ 		else
+ 			batman_packet->flags &= ~DIRECTLINK;
+ 
+-		addr_to_string(orig_str, batman_packet->orig);
+ 		fwd_str = (packet_num > 0 ? "Forwarding" : (forw_packet->own ?
+ 							    "Sending own" :
+ 							    "Forwarding"));
+ 		bat_dbg(DBG_BATMAN,
+-			"%s %spacket (originator %s, seqno %d, TQ %d, TTL %d, IDF %s) on interface %s [%s]\n",
++			"%s %spacket (originator %pM, seqno %d, TQ %d, TTL %d, IDF %s) on interface %s [%s]\n",
+ 			fwd_str,
+ 			(packet_num > 0 ? "aggregated " : ""),
+-			orig_str, ntohs(batman_packet->seqno),
++			batman_packet->orig, ntohs(batman_packet->seqno),
+ 			batman_packet->tq, batman_packet->ttl,
+ 			(batman_packet->flags & DIRECTLINK ?
+ 			 "on" : "off"),
+@@ -186,7 +184,6 @@ static void send_packet(struct forw_packet *forw_packet)
+ 	struct batman_if *batman_if;
+ 	struct batman_packet *batman_packet =
+ 		(struct batman_packet *)(forw_packet->packet_buff);
+-	char orig_str[ETH_STR_LEN];
+ 	unsigned char directlink = (batman_packet->flags & DIRECTLINK ? 1 : 0);
+ 
+ 	if (!forw_packet->if_incoming) {
+@@ -197,8 +194,6 @@ static void send_packet(struct forw_packet *forw_packet)
+ 	if (forw_packet->if_incoming->if_active != IF_ACTIVE)
+ 		return;
+ 
+-	addr_to_string(orig_str, batman_packet->orig);
+-
+ 	/* multihomed peer assumed */
+ 	/* non-primary OGMs are only broadcasted on their interface */
+ 	if ((directlink && (batman_packet->ttl == 1)) ||
+@@ -206,9 +201,9 @@ static void send_packet(struct forw_packet *forw_packet)
+ 
+ 		/* FIXME: what about aggregated packets ? */
+ 		bat_dbg(DBG_BATMAN,
+-			"%s packet (originator %s, seqno %d, TTL %d) on interface %s [%s]\n",
++			"%s packet (originator %pM, seqno %d, TTL %d) on interface %s [%s]\n",
+ 			(forw_packet->own ? "Sending own" : "Forwarding"),
+-			orig_str, ntohs(batman_packet->seqno),
++			batman_packet->orig, ntohs(batman_packet->seqno),
+ 			batman_packet->ttl, forw_packet->if_incoming->dev,
+ 			forw_packet->if_incoming->addr_str);
+ 
+diff --git a/drivers/staging/batman-adv/translation-table.c b/drivers/staging/batman-adv/translation-table.c
+index 53a054e..398a808 100644
+--- a/drivers/staging/batman-adv/translation-table.c
++++ b/drivers/staging/batman-adv/translation-table.c
+@@ -61,7 +61,6 @@ void hna_local_add(uint8_t *addr)
+ 	struct hna_local_entry *hna_local_entry;
+ 	struct hna_global_entry *hna_global_entry;
+ 	struct hashtable_t *swaphash;
+-	char hna_str[ETH_STR_LEN];
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&hna_local_hash_lock, flags);
+@@ -74,19 +73,17 @@ void hna_local_add(uint8_t *addr)
+ 		return;
+ 	}
+ 
+-	addr_to_string(hna_str, addr);
+-
+ 	/* only announce as many hosts as possible in the batman-packet and
+ 	   space in batman_packet->num_hna That also should give a limit to
+ 	   MAC-flooding. */
+ 	if ((num_hna + 1 > (ETH_DATA_LEN - BAT_PACKET_LEN) / ETH_ALEN) ||
+ 	    (num_hna + 1 > 255)) {
+-		bat_dbg(DBG_ROUTES, "Can't add new local hna entry (%s): number of local hna entries exceeds packet size \n", hna_str);
++		bat_dbg(DBG_ROUTES, "Can't add new local hna entry (%pM): number of local hna entries exceeds packet size \n", addr);
+ 		return;
+ 	}
+ 
+-	bat_dbg(DBG_ROUTES, "Creating new local hna entry: %s \n",
+-		hna_str);
++	bat_dbg(DBG_ROUTES, "Creating new local hna entry: %pM \n",
++		addr);
+ 
+ 	hna_local_entry = kmalloc(sizeof(struct hna_local_entry), GFP_ATOMIC);
+ 	if (!hna_local_entry)
+@@ -201,11 +198,8 @@ static void _hna_local_del(void *data)
+ static void hna_local_del(struct hna_local_entry *hna_local_entry,
+ 			  char *message)
+ {
+-	char hna_str[ETH_STR_LEN];
+-
+-	addr_to_string(hna_str, hna_local_entry->addr);
+-	bat_dbg(DBG_ROUTES, "Deleting local hna entry (%s): %s \n",
+-		hna_str, message);
++	bat_dbg(DBG_ROUTES, "Deleting local hna entry (%pM): %s \n",
++		hna_local_entry->addr, message);
+ 
+ 	hash_remove(hna_local_hash, hna_local_entry->addr);
+ 	_hna_local_del(hna_local_entry);
+@@ -278,13 +272,10 @@ void hna_global_add_orig(struct orig_node *orig_node,
+ 	struct hna_global_entry *hna_global_entry;
+ 	struct hna_local_entry *hna_local_entry;
+ 	struct hashtable_t *swaphash;
+-	char hna_str[ETH_STR_LEN], orig_str[ETH_STR_LEN];
+ 	int hna_buff_count = 0;
+ 	unsigned long flags;
+ 	unsigned char *hna_ptr;
+ 
+-	addr_to_string(orig_str, orig_node->orig);
+-
+ 	while ((hna_buff_count + 1) * ETH_ALEN <= hna_buff_len) {
+ 		spin_lock_irqsave(&hna_global_hash_lock, flags);
+ 
+@@ -304,10 +295,9 @@ void hna_global_add_orig(struct orig_node *orig_node,
+ 
+ 			memcpy(hna_global_entry->addr, hna_ptr, ETH_ALEN);
+ 
+-			addr_to_string(hna_str, hna_global_entry->addr);
+ 			bat_dbg(DBG_ROUTES,
+-				"Creating new global hna entry: %s (via %s)\n",
+-				hna_str, orig_str);
++				"Creating new global hna entry: %pM (via %pM)\n",
++				hna_global_entry->addr, orig_node->orig);
+ 
+ 			spin_lock_irqsave(&hna_global_hash_lock, flags);
+ 			hash_add(hna_global_hash, hna_global_entry);
+@@ -399,13 +389,9 @@ int hna_global_fill_buffer_text(unsigned char *buff, int buff_len)
+ void _hna_global_del_orig(struct hna_global_entry *hna_global_entry,
+ 			  char *message)
+ {
+-	char hna_str[ETH_STR_LEN], orig_str[ETH_STR_LEN];
+-
+-	addr_to_string(orig_str, hna_global_entry->orig_node->orig);
+-	addr_to_string(hna_str, hna_global_entry->addr);
+-
+-	bat_dbg(DBG_ROUTES, "Deleting global hna entry %s (via %s): %s \n",
+-		hna_str, orig_str, message);
++	bat_dbg(DBG_ROUTES, "Deleting global hna entry %pM (via %pM): %s \n",
++		hna_global_entry->addr, hna_global_entry->orig_node->orig,
++		message);
+ 
+ 	hash_remove(hna_global_hash, hna_global_entry->addr);
+ 	kfree(hna_global_entry);
 -- 
 1.6.5.7
 
