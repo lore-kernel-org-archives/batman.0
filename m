@@ -1,14 +1,24 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Fri, 1 Jan 2010 20:53:25 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20100101195325.GA20226@pandem0nium>
-References: <20100101175259.GB31328@lunn.ch>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
-Content-Disposition: inline
-In-Reply-To: <20100101175259.GB31328@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] Missing unlocks
+Return-Path: <andrew@lunn.ch>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Sat,  2 Jan 2010 11:30:49 +0100
+Message-Id: <1262428252-26439-14-git-send-email-andrew@lunn.ch>
+In-Reply-To: <1262428252-26439-13-git-send-email-andrew@lunn.ch>
+References: <1262428252-26439-1-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-2-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-3-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-4-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-5-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-6-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-7-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-8-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-9-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-10-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-11-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-12-git-send-email-andrew@lunn.ch>
+	<1262428252-26439-13-git-send-email-andrew@lunn.ch>
+Sender: Andrew Lunn <andrew@lunn.ch>
+Subject: [B.A.T.M.A.N.] [PATCH 14/17] Staging: batman-adv: Allow the MAC
+	address to be set
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,66 +30,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: Andrew Lunn <andrew@lunn.ch>, "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: gregkh@suse.de
+Cc: b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
+Some embedded devices have very limited sources of entropy for the
+random number generator. It has been observed that the random MAC
+address on the interface bat0 is not always random. When testing with
+a collection of identical hardware, sometimes the bat0 device the same
+MAC address on multiple devices, causing mayhem. This patch allows the
+MAC address to be set by the user.
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ drivers/staging/batman-adv/soft-interface.c    |   13 +++++++++++--
+ drivers/staging/batman-adv/translation-table.c |   15 +++++++++++++++
+ drivers/staging/batman-adv/translation-table.h |    1 +
+ 3 files changed, 27 insertions(+), 2 deletions(-)
 
-Hello Andrew,
+diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
+index 8ae3483..bc0217b 100644
+--- a/drivers/staging/batman-adv/soft-interface.c
++++ b/drivers/staging/batman-adv/soft-interface.c
+@@ -145,9 +145,18 @@ struct net_device_stats *interface_stats(struct net_device *dev)
+ 	return &priv->stats;
+ }
+ 
+-int interface_set_mac_addr(struct net_device *dev, void *addr)
++int interface_set_mac_addr(struct net_device *dev, void *p)
+ {
+-	return -EBUSY;
++	struct sockaddr *addr = p;
++
++	if (!is_valid_ether_addr(addr->sa_data))
++		return -EADDRNOTAVAIL;
++
++	hna_local_remove(dev->dev_addr, "mac address changed");
++	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
++	hna_local_add(dev->dev_addr);
++
++	return 0;
+ }
+ 
+ int interface_change_mtu(struct net_device *dev, int new_mtu)
+diff --git a/drivers/staging/batman-adv/translation-table.c b/drivers/staging/batman-adv/translation-table.c
+index 8c8136b..53a054e 100644
+--- a/drivers/staging/batman-adv/translation-table.c
++++ b/drivers/staging/batman-adv/translation-table.c
+@@ -211,6 +211,21 @@ static void hna_local_del(struct hna_local_entry *hna_local_entry,
+ 	_hna_local_del(hna_local_entry);
+ }
+ 
++void hna_local_remove(uint8_t *addr, char *message)
++{
++	struct hna_local_entry *hna_local_entry;
++	unsigned long flags;
++
++	spin_lock_irqsave(&hna_local_hash_lock, flags);
++
++	hna_local_entry = (struct hna_local_entry *)
++		hash_find(hna_local_hash, addr);
++	if (hna_local_entry)
++		hna_local_del(hna_local_entry, message);
++
++	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
++}
++
+ void hna_local_purge(struct work_struct *work)
+ {
+ 	struct hna_local_entry *hna_local_entry;
+diff --git a/drivers/staging/batman-adv/translation-table.h b/drivers/staging/batman-adv/translation-table.h
+index f7da811..281125b 100644
+--- a/drivers/staging/batman-adv/translation-table.h
++++ b/drivers/staging/batman-adv/translation-table.h
+@@ -23,6 +23,7 @@
+ 
+ int hna_local_init(void);
+ void hna_local_add(uint8_t *addr);
++void hna_local_remove(uint8_t *addr, char *message);
+ int hna_local_fill_buffer(unsigned char *buff, int buff_len);
+ int hna_local_fill_buffer_text(unsigned char *buff, int buff_len);
+ void hna_local_purge(struct work_struct *work);
+-- 
+1.6.5.7
 
-thank you, i've commited a patch for this in revision 1529. This should fix=
- this bug
-and make sparse happy. :)
-
-best regards,
-	Simon
-
-On Fri, Jan 01, 2010 at 06:52:59PM +0100, Andrew Lunn wrote:
-> Hi Simon
->=20
-> I just built batman-adv with make C=3D1 so that sparse it used to check
-> the code. It found a few missing unlocks...
->=20
-> drivers/staging/batman-adv/routing.c:585:12: warning: context imbalance i=
-n 'recv_my_icmp_packet' - different lock contexts for basic block
->=20
-> This is the return if the skb_copy() fails.
->=20
-> drivers/staging/batman-adv/routing.c:640:12: warning: context imbalance i=
-n 'recv_icmp_ttl_exceeded' - different lock contexts for basic block
->=20
-> Same again.
->=20
-> drivers/staging/batman-adv/routing.c:695:5: warning: context imbalance in=
- 'recv_icmp_packet' - different lock contexts for basic block
->=20
-> and same again...
->=20
-> in each case you are missing a=20
->=20
-> spin_unlock_irqrestore(&orig_hash_lock, flags);
->=20
-> before the=20
->=20
-> return NET_RX_DROP;
->=20
->     Andrew
->=20
-
---azLHFNyN32YCQGCU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAks+UrUACgkQrzg/fFk7axbpGQCfV3zRL1RocxBCjZ6lh7pUwnCg
-F8MAniMru40c8laMojVIy+YqGWv1Xttz
-=hjXd
------END PGP SIGNATURE-----
-
---azLHFNyN32YCQGCU--
