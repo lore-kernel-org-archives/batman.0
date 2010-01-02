@@ -1,8 +1,8 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Sat,  2 Jan 2010 11:30:46 +0100
-Message-Id: <1262428252-26439-11-git-send-email-andrew@lunn.ch>
-In-Reply-To: <1262428252-26439-10-git-send-email-andrew@lunn.ch>
+Date: Sat,  2 Jan 2010 11:30:45 +0100
+Message-Id: <1262428252-26439-10-git-send-email-andrew@lunn.ch>
+In-Reply-To: <1262428252-26439-9-git-send-email-andrew@lunn.ch>
 References: <1262428252-26439-1-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-2-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-3-git-send-email-andrew@lunn.ch>
@@ -12,10 +12,9 @@ References: <1262428252-26439-1-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-7-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-8-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-9-git-send-email-andrew@lunn.ch>
-	<1262428252-26439-10-git-send-email-andrew@lunn.ch>
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 11/17] Staging: batman-adv: splitting /proc
-	vis file into vis_server and vis_data
+Subject: [B.A.T.M.A.N.] [PATCH 10/17] Staging: batman-adv: remove obsoleted
+	vis_format /proc file
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -30,385 +29,167 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: gregkh@suse.de
 Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+From: Linus Luessing <linus.luessing@web.de>
 
-The /proc vis file was used to enable/disable the vis server and to output
-the vis data at the same time. This behaviour was confusing and lacked a
-proper method to display the current vis server status.
-This patch seperates the 2 functionalities:
-* use vis_server to enable/disable the vis server and to retrieve its status
-* use vis_data to retrieve the vis raw data (if the server is enabled)
+batman-adv used to export the vis data using different formats that were
+switchable via /proc/net/batman-adv/vis_format. The various formats moved
+to user space and rendered this configuration switch useless.
 
+Signed-off-by: Linus Luessing <linus.luessing@web.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/proc.c  |  172 +++++++++++++++---------------------
- drivers/staging/batman-adv/proc.h  |    4 +-
- drivers/staging/batman-adv/types.h |   10 ++
- drivers/staging/batman-adv/vis.c   |   62 +++++++++++++
- drivers/staging/batman-adv/vis.h   |    6 ++
- 5 files changed, 151 insertions(+), 103 deletions(-)
+ drivers/staging/batman-adv/proc.c |   79 +------------------------------------
+ drivers/staging/batman-adv/vis.h  |    5 --
+ 2 files changed, 1 insertions(+), 83 deletions(-)
 
 diff --git a/drivers/staging/batman-adv/proc.c b/drivers/staging/batman-adv/proc.c
-index f1adf57..d9fde94 100644
+index 352b883..f1adf57 100644
 --- a/drivers/staging/batman-adv/proc.c
 +++ b/drivers/staging/batman-adv/proc.c
-@@ -33,7 +33,7 @@ static struct proc_dir_entry *proc_batman_dir, *proc_interface_file;
+@@ -29,13 +29,11 @@
+ #include "vis.h"
+ #include "compat.h"
+ 
+-static uint8_t vis_format = DOT_DRAW;
+-
+ static struct proc_dir_entry *proc_batman_dir, *proc_interface_file;
  static struct proc_dir_entry *proc_orig_interval_file, *proc_originators_file;
  static struct proc_dir_entry *proc_transt_local_file;
  static struct proc_dir_entry *proc_transt_global_file;
--static struct proc_dir_entry *proc_vis_file;
-+static struct proc_dir_entry *proc_vis_srv_file, *proc_vis_data_file;
+-static struct proc_dir_entry *proc_vis_file, *proc_vis_format_file;
++static struct proc_dir_entry *proc_vis_file;
  static struct proc_dir_entry *proc_aggr_file;
  
  static int proc_interfaces_read(struct seq_file *seq, void *offset)
-@@ -320,79 +320,55 @@ static int proc_transt_global_open(struct inode *inode, struct file *file)
- 	return single_open(file, proc_transt_global_read, NULL);
- }
+@@ -401,11 +399,8 @@ static int proc_vis_read(struct seq_file *seq, void *offset)
+ 	struct vis_info_entry *entries;
+ 	HLIST_HEAD(vis_if_list);
+ 	int i;
+-	uint8_t current_format;
+ 	char tmp_addr_str[ETH_STR_LEN];
  
--/* While scanning for vis-entries of a particular vis-originator
-- * this list collects its interfaces to create a subgraph/cluster
-- * out of them later
-- */
--struct if_list_entry {
--	uint8_t addr[ETH_ALEN];
--	bool primary;
--	struct hlist_node list;
--};
+-	current_format = vis_format;
 -
--/* insert interface to the list of interfaces of one originator, if it
-- * does not already exist in the list */
--static void proc_vis_insert_interface(const uint8_t *interface,
--				      struct hlist_head *if_list,
--				      bool primary)
-+/* setting the mode of the vis server by the user */
-+static ssize_t proc_vis_srv_write(struct file *file, const char __user * buffer,
-+			      size_t count, loff_t *ppos)
- {
--	struct if_list_entry *entry;
--	struct hlist_node *pos;
-+	char *vis_mode_string;
-+	int not_copied = 0;
- 
--	hlist_for_each_entry(entry, pos, if_list, list) {
--		if (compare_orig(entry->addr, (void *)interface))
--			return;
--	}
-+	vis_mode_string = kmalloc(count, GFP_KERNEL);
- 
--	/* its a new address, add it to the list */
--	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
--	if (!entry)
--		return;
--	memcpy(entry->addr, interface, ETH_ALEN);
--	entry->primary = primary;
--	hlist_add_head(&entry->list, if_list);
-+	if (!vis_mode_string)
-+		return -ENOMEM;
-+
-+	not_copied = copy_from_user(vis_mode_string, buffer, count);
-+	vis_mode_string[count - not_copied - 1] = 0;
-+
-+	if ((strcmp(vis_mode_string, "client") == 0) ||
-+			(strcmp(vis_mode_string, "disabled") == 0)) {
-+		printk(KERN_INFO "batman-adv:Setting VIS mode to client (disabling vis server)\n");
-+		vis_set_mode(VIS_TYPE_CLIENT_UPDATE);
-+	} else if ((strcmp(vis_mode_string, "server") == 0) ||
-+			(strcmp(vis_mode_string, "enabled") == 0)) {
-+		printk(KERN_INFO "batman-adv:Setting VIS mode to server (enabling vis server)\n");
-+		vis_set_mode(VIS_TYPE_SERVER_SYNC);
-+	} else
-+		printk(KERN_ERR "batman-adv:Unknown VIS mode: %s\n",
-+		       vis_mode_string);
-+
-+	kfree(vis_mode_string);
-+	return count;
+ 	rcu_read_lock();
+ 	if (list_empty(&if_list) || (!is_vis_server())) {
+ 		rcu_read_unlock();
+@@ -471,55 +466,6 @@ static int proc_vis_open(struct inode *inode, struct file *file)
+ 	return single_open(file, proc_vis_read, NULL);
  }
  
--static void proc_vis_read_prim_sec(struct seq_file *seq,
--				   struct hlist_head *if_list)
-+static int proc_vis_srv_read(struct seq_file *seq, void *offset)
- {
--	struct if_list_entry *entry;
--	struct hlist_node *pos, *n;
--	char tmp_addr_str[ETH_STR_LEN];
-+	int vis_server = is_vis_server();
- 
--	hlist_for_each_entry_safe(entry, pos, n, if_list, list) {
--		if (entry->primary) {
--			seq_printf(seq, "PRIMARY, ");
--		} else {
--			addr_to_string(tmp_addr_str, entry->addr);
--			seq_printf(seq, "SEC %s, ", tmp_addr_str);
--		}
-+	seq_printf(seq, "[%c] client mode (server disabled) \n",
-+			(!vis_server) ? 'x' : ' ');
-+	seq_printf(seq, "[%c] server mode (server enabled) \n",
-+			(vis_server) ? 'x' : ' ');
- 
--		hlist_del(&entry->list);
--		kfree(entry);
--	}
-+	return 0;
- }
- 
--/* read an entry  */
--static void proc_vis_read_entry(struct seq_file *seq,
--				struct vis_info_entry *entry,
--				struct hlist_head *if_list,
--				uint8_t *vis_orig)
-+static int proc_vis_srv_open(struct inode *inode, struct file *file)
- {
--	char to[40];
+-static int proc_vis_format_read(struct seq_file *seq, void *offset)
+-{
+-	uint8_t current_format = vis_format;
 -
--	addr_to_string(to, entry->dest);
--	if (entry->quality == 0) {
--		proc_vis_insert_interface(vis_orig, if_list, true);
--		seq_printf(seq, "HNA %s, ", to);
--	} else {
--		proc_vis_insert_interface(entry->src, if_list,
--					  compare_orig(entry->src, vis_orig));
--		seq_printf(seq, "TQ %s %d, ", to, entry->quality);
--	}
-+	return single_open(file, proc_vis_srv_read, NULL);
- }
- 
--static int proc_vis_read(struct seq_file *seq, void *offset)
-+static int proc_vis_data_read(struct seq_file *seq, void *offset)
- {
- 	HASHIT(hashit);
- 	struct vis_info *info;
-@@ -432,38 +408,9 @@ end:
- 	return 0;
- }
- 
--/* setting the mode of the vis server by the user */
--static ssize_t proc_vis_write(struct file *file, const char __user * buffer,
--			      size_t count, loff_t *ppos)
-+static int proc_vis_data_open(struct inode *inode, struct file *file)
- {
--	char *vis_mode_string;
+-	seq_printf(seq, "[%c] %s\n",
+-		   (current_format == DOT_DRAW) ? 'x' : ' ',
+-		   VIS_FORMAT_DD_NAME);
+-	seq_printf(seq, "[%c] %s\n",
+-		   (current_format == JSON) ? 'x' : ' ',
+-		   VIS_FORMAT_JSON_NAME);
+-	return 0;
+-}
+-
+-static int proc_vis_format_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, proc_vis_format_read, NULL);
+-}
+-
+-static ssize_t proc_vis_format_write(struct file *file,
+-				     const char __user *buffer,
+-				     size_t count, loff_t *ppos)
+-{
+-	char *vis_format_string;
 -	int not_copied = 0;
 -
--	vis_mode_string = kmalloc(count, GFP_KERNEL);
+-	vis_format_string = kmalloc(count, GFP_KERNEL);
 -
--	if (!vis_mode_string)
+-	if (!vis_format_string)
 -		return -ENOMEM;
 -
--	not_copied = copy_from_user(vis_mode_string, buffer, count);
--	vis_mode_string[count - not_copied - 1] = 0;
+-	not_copied = copy_from_user(vis_format_string, buffer, count);
+-	vis_format_string[count - not_copied - 1] = 0;
 -
--	if (strcmp(vis_mode_string, "client") == 0) {
--		printk(KERN_INFO "batman-adv:Setting VIS mode to client\n");
--		vis_set_mode(VIS_TYPE_CLIENT_UPDATE);
--	} else if (strcmp(vis_mode_string, "server") == 0) {
--		printk(KERN_INFO "batman-adv:Setting VIS mode to server\n");
--		vis_set_mode(VIS_TYPE_SERVER_SYNC);
+-	if (strcmp(vis_format_string, VIS_FORMAT_DD_NAME) == 0) {
+-		printk(KERN_INFO "batman-adv:Setting VIS output format to: %s\n",
+-		       VIS_FORMAT_DD_NAME);
+-		vis_format = DOT_DRAW;
+-	} else if (strcmp(vis_format_string, VIS_FORMAT_JSON_NAME) == 0) {
+-		printk(KERN_INFO "batman-adv:Setting VIS output format to: %s\n",
+-		       VIS_FORMAT_JSON_NAME);
+-		vis_format = JSON;
 -	} else
--		printk(KERN_ERR "batman-adv:Unknown VIS mode: %s\n",
--		       vis_mode_string);
+-		printk(KERN_ERR "batman-adv:Unknown VIS output format: %s\n",
+-		       vis_format_string);
 -
--	kfree(vis_mode_string);
+-	kfree(vis_format_string);
 -	return count;
 -}
 -
--static int proc_vis_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, proc_vis_read, NULL);
-+	return single_open(file, proc_vis_data_read, NULL);
- }
- 
  static int proc_aggr_read(struct seq_file *seq, void *offset)
-@@ -529,11 +476,20 @@ static const struct file_operations proc_aggr_fops = {
+ {
+ 	seq_printf(seq, "%i\n", atomic_read(&aggregation_enabled));
+@@ -583,15 +529,6 @@ static const struct file_operations proc_aggr_fops = {
  	.release	= single_release,
  };
  
--static const struct file_operations proc_vis_fops = {
-+static const struct file_operations proc_vis_srv_fops = {
+-static const struct file_operations proc_vis_format_fops = {
+-	.owner		= THIS_MODULE,
+-	.open		= proc_vis_format_open,
+-	.read		= seq_read,
+-	.write		= proc_vis_format_write,
+-	.llseek		= seq_lseek,
+-	.release	= single_release,
+-};
+-
+ static const struct file_operations proc_vis_fops = {
  	.owner		= THIS_MODULE,
--	.open		= proc_vis_open,
-+	.open		= proc_vis_srv_open,
- 	.read		= seq_read,
--	.write		= proc_vis_write,
-+	.write		= proc_vis_srv_write,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static const struct file_operations proc_vis_data_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= proc_vis_data_open,
-+	.read		= seq_read,
-+	.write		= proc_dummy_write,
- 	.llseek		= seq_lseek,
- 	.release	= single_release,
- };
-@@ -600,8 +556,11 @@ void cleanup_procfs(void)
- 	if (proc_interface_file)
- 		remove_proc_entry(PROC_FILE_INTERFACES, proc_batman_dir);
+ 	.open		= proc_vis_open,
+@@ -666,9 +603,6 @@ void cleanup_procfs(void)
+ 	if (proc_vis_file)
+ 		remove_proc_entry(PROC_FILE_VIS, proc_batman_dir);
  
--	if (proc_vis_file)
--		remove_proc_entry(PROC_FILE_VIS, proc_batman_dir);
-+	if (proc_vis_data_file)
-+		remove_proc_entry(PROC_FILE_VIS_DATA, proc_batman_dir);
-+
-+	if (proc_vis_srv_file)
-+		remove_proc_entry(PROC_FILE_VIS_SRV, proc_batman_dir);
- 
+-	if (proc_vis_format_file)
+-		remove_proc_entry(PROC_FILE_VIS_FORMAT, proc_batman_dir);
+-
  	if (proc_aggr_file)
  		remove_proc_entry(PROC_FILE_AGGR, proc_batman_dir);
-@@ -679,12 +638,23 @@ int setup_procfs(void)
+ 
+@@ -755,17 +689,6 @@ int setup_procfs(void)
  		return -EFAULT;
  	}
  
--	proc_vis_file = create_proc_entry(PROC_FILE_VIS, S_IWUSR | S_IRUGO,
-+	proc_vis_srv_file = create_proc_entry(PROC_FILE_VIS_SRV,
-+						S_IWUSR | S_IRUGO,
-+						proc_batman_dir);
-+	if (proc_vis_srv_file) {
-+		proc_vis_srv_file->proc_fops = &proc_vis_srv_fops;
-+	} else {
-+		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_VIS_SRV);
-+		cleanup_procfs();
-+		return -EFAULT;
-+	}
-+
-+	proc_vis_data_file = create_proc_entry(PROC_FILE_VIS_DATA, S_IRUGO,
- 					  proc_batman_dir);
--	if (proc_vis_file) {
--		proc_vis_file->proc_fops = &proc_vis_fops;
-+	if (proc_vis_data_file) {
-+		proc_vis_data_file->proc_fops = &proc_vis_data_fops;
- 	} else {
--		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_VIS);
-+		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_VIS_DATA);
- 		cleanup_procfs();
- 		return -EFAULT;
- 	}
-diff --git a/drivers/staging/batman-adv/proc.h b/drivers/staging/batman-adv/proc.h
-index 761c5f8..cd690e0 100644
---- a/drivers/staging/batman-adv/proc.h
-+++ b/drivers/staging/batman-adv/proc.h
-@@ -31,8 +31,8 @@
- #define PROC_FILE_LOG_LEVEL "log_level"
- #define PROC_FILE_TRANST_LOCAL "transtable_local"
- #define PROC_FILE_TRANST_GLOBAL "transtable_global"
--#define PROC_FILE_VIS "vis"
--#define PROC_FILE_VIS_FORMAT "vis_format"
-+#define PROC_FILE_VIS_SRV "vis_server"
-+#define PROC_FILE_VIS_DATA "vis_data"
- #define PROC_FILE_AGGR "aggregate_ogm"
- 
- void cleanup_procfs(void);
-diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
-index 9739358..d708e6f 100644
---- a/drivers/staging/batman-adv/types.h
-+++ b/drivers/staging/batman-adv/types.h
-@@ -121,4 +121,14 @@ struct forw_packet {               /* structure for forw_list maintaining packet
- 	struct batman_if *if_incoming;
- };
- 
-+/* While scanning for vis-entries of a particular vis-originator
-+ * this list collects its interfaces to create a subgraph/cluster
-+ * out of them later
-+ */
-+struct if_list_entry {
-+	uint8_t addr[ETH_ALEN];
-+	bool primary;
-+	struct hlist_node list;
-+};
-+
- #endif
-diff --git a/drivers/staging/batman-adv/vis.c b/drivers/staging/batman-adv/vis.c
-index 0eb23d2..3c66645 100644
---- a/drivers/staging/batman-adv/vis.c
-+++ b/drivers/staging/batman-adv/vis.c
-@@ -114,6 +114,68 @@ static int vis_info_choose(void *data, int size)
- 	return hash % size;
- }
- 
-+/* insert interface to the list of interfaces of one originator, if it
-+ * does not already exist in the list */
-+static void proc_vis_insert_interface(const uint8_t *interface,
-+				      struct hlist_head *if_list,
-+				      bool primary)
-+{
-+	struct if_list_entry *entry;
-+	struct hlist_node *pos;
-+
-+	hlist_for_each_entry(entry, pos, if_list, list) {
-+		if (compare_orig(entry->addr, (void *)interface))
-+			return;
-+	}
-+
-+	/* its a new address, add it to the list */
-+	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
-+	if (!entry)
-+		return;
-+	memcpy(entry->addr, interface, ETH_ALEN);
-+	entry->primary = primary;
-+	hlist_add_head(&entry->list, if_list);
-+}
-+
-+void proc_vis_read_prim_sec(struct seq_file *seq,
-+			    struct hlist_head *if_list)
-+{
-+	struct if_list_entry *entry;
-+	struct hlist_node *pos, *n;
-+	char tmp_addr_str[ETH_STR_LEN];
-+
-+	hlist_for_each_entry_safe(entry, pos, n, if_list, list) {
-+		if (entry->primary) {
-+			seq_printf(seq, "PRIMARY, ");
-+		} else {
-+			addr_to_string(tmp_addr_str, entry->addr);
-+			seq_printf(seq, "SEC %s, ", tmp_addr_str);
-+		}
-+
-+		hlist_del(&entry->list);
-+		kfree(entry);
-+	}
-+}
-+
-+/* read an entry  */
-+void proc_vis_read_entry(struct seq_file *seq,
-+				struct vis_info_entry *entry,
-+				struct hlist_head *if_list,
-+				uint8_t *vis_orig)
-+{
-+	char to[40];
-+
-+	addr_to_string(to, entry->dest);
-+	if (entry->quality == 0) {
-+		proc_vis_insert_interface(vis_orig, if_list, true);
-+		seq_printf(seq, "HNA %s, ", to);
-+	} else {
-+		proc_vis_insert_interface(entry->src, if_list,
-+					  compare_orig(entry->src, vis_orig));
-+		seq_printf(seq, "TQ %s %d, ", to, entry->quality);
-+	}
-+}
-+
- /* tries to add one entry to the receive list. */
- static void recv_list_add(struct list_head *recv_list, char *mac)
- {
+-	proc_vis_format_file = create_proc_entry(PROC_FILE_VIS_FORMAT,
+-						 S_IWUSR | S_IRUGO,
+-						 proc_batman_dir);
+-	if (proc_vis_format_file) {
+-		proc_vis_format_file->proc_fops = &proc_vis_format_fops;
+-	} else {
+-		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_VIS_FORMAT);
+-		cleanup_procfs();
+-		return -EFAULT;
+-	}
+-
+ 	proc_aggr_file = create_proc_entry(PROC_FILE_AGGR, S_IWUSR | S_IRUGO,
+ 					   proc_batman_dir);
+ 	if (proc_aggr_file) {
 diff --git a/drivers/staging/batman-adv/vis.h b/drivers/staging/batman-adv/vis.h
-index ff88a43..2e24258 100644
+index 276faba..ff88a43 100644
 --- a/drivers/staging/batman-adv/vis.h
 +++ b/drivers/staging/batman-adv/vis.h
-@@ -50,6 +50,12 @@ extern spinlock_t vis_hash_lock;
+@@ -45,11 +45,6 @@ struct recvlist_node {
+ 	uint8_t mac[ETH_ALEN];
+ };
  
- void vis_set_mode(int mode);
- int is_vis_server(void);
-+void proc_vis_read_entry(struct seq_file *seq,
-+				struct vis_info_entry *entry,
-+				struct hlist_head *if_list,
-+				uint8_t *vis_orig);
-+void proc_vis_read_prim_sec(struct seq_file *seq,
-+			    struct hlist_head *if_list);
- void receive_server_sync_packet(struct vis_packet *vis_packet,
- 				int vis_info_len);
- void receive_client_update_packet(struct vis_packet *vis_packet,
+-enum vis_formats {
+-	DOT_DRAW,
+-	JSON,
+-};
+-
+ extern struct hashtable_t *vis_hash;
+ extern spinlock_t vis_hash_lock;
+ 
 -- 
 1.6.5.7
 
