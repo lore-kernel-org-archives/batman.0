@@ -1,22 +1,14 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Sat,  2 Jan 2010 11:30:47 +0100
-Message-Id: <1262428252-26439-12-git-send-email-andrew@lunn.ch>
-In-Reply-To: <1262428252-26439-11-git-send-email-andrew@lunn.ch>
+Date: Sat,  2 Jan 2010 11:30:39 +0100
+Message-Id: <1262428252-26439-4-git-send-email-andrew@lunn.ch>
+In-Reply-To: <1262428252-26439-3-git-send-email-andrew@lunn.ch>
 References: <1262428252-26439-1-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-2-git-send-email-andrew@lunn.ch>
 	<1262428252-26439-3-git-send-email-andrew@lunn.ch>
-	<1262428252-26439-4-git-send-email-andrew@lunn.ch>
-	<1262428252-26439-5-git-send-email-andrew@lunn.ch>
-	<1262428252-26439-6-git-send-email-andrew@lunn.ch>
-	<1262428252-26439-7-git-send-email-andrew@lunn.ch>
-	<1262428252-26439-8-git-send-email-andrew@lunn.ch>
-	<1262428252-26439-9-git-send-email-andrew@lunn.ch>
-	<1262428252-26439-10-git-send-email-andrew@lunn.ch>
-	<1262428252-26439-11-git-send-email-andrew@lunn.ch>
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 12/17] Staging: batman-adv: check all
-	kmalloc()s
+Subject: [B.A.T.M.A.N.] [PATCH 04/17] Staging: batman-adv: initialize static
+	hash iterators
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -33,176 +25,389 @@ Cc: b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
 From: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-there are some kmallocs left which are not checked whether they succeeds or
-not, which might lead to corrupted data structures if the system memory is
-full. This patch should clean up the remaining unchecked kmalloc()s.
+instead of dynamically registering hash iterators, calling functions are
+changed to register the iterator objects statically. The two advantages are:
+
+ * no memory leaks when aborting from hash_iterate()
+ * no calls to kmalloc/kfree, therefore a little faster/safer
+
+Tested with 9 QEMU instances, no obvious regression found.
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/originator.c        |   22 ++++++++++++++++++-
- drivers/staging/batman-adv/routing.c           |   27 +++++++++++++++++++----
- drivers/staging/batman-adv/translation-table.c |   18 ++++++++-------
- 3 files changed, 53 insertions(+), 14 deletions(-)
+ drivers/staging/batman-adv/hard-interface.c    |    6 ++--
+ drivers/staging/batman-adv/hash.c              |   23 ++++++-----------
+ drivers/staging/batman-adv/hash.h              |    5 +++
+ drivers/staging/batman-adv/originator.c        |    8 +++---
+ drivers/staging/batman-adv/proc.c              |   12 ++++----
+ drivers/staging/batman-adv/routing.c           |    6 ++--
+ drivers/staging/batman-adv/translation-table.c |   24 ++++++++--------
+ drivers/staging/batman-adv/vis.c               |   33 +++++++++++------------
+ 8 files changed, 57 insertions(+), 60 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
-index f2b295b..849e480 100644
---- a/drivers/staging/batman-adv/originator.c
-+++ b/drivers/staging/batman-adv/originator.c
-@@ -77,6 +77,9 @@ create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
- 	bat_dbg(DBG_BATMAN, "Creating new last-hop neighbor of originator\n");
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index 28d02f6..7c88592 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -318,7 +318,7 @@ int hardif_add_interface(char *dev, int if_num)
+ 	struct batman_if *batman_if;
+ 	struct batman_packet *batman_packet;
+ 	struct orig_node *orig_node;
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
  
- 	neigh_node = kmalloc(sizeof(struct neigh_node), GFP_ATOMIC);
-+	if (!neigh_node)
-+		return NULL;
-+
- 	memset(neigh_node, 0, sizeof(struct neigh_node));
- 	INIT_LIST_HEAD(&neigh_node->list);
+ 	batman_if = kmalloc(sizeof(struct batman_if), GFP_KERNEL);
  
-@@ -127,6 +130,9 @@ struct orig_node *get_orig_node(uint8_t *addr)
- 	bat_dbg(DBG_BATMAN, "Creating new originator: %s \n", orig_str);
+@@ -377,8 +377,8 @@ int hardif_add_interface(char *dev, int if_num)
+ 	 * if_num */
+ 	spin_lock(&orig_hash_lock);
  
- 	orig_node = kmalloc(sizeof(struct orig_node), GFP_ATOMIC);
-+	if (!orig_node)
-+		return NULL;
-+
- 	memset(orig_node, 0, sizeof(struct orig_node));
- 	INIT_LIST_HEAD(&orig_node->neigh_list);
- 
-@@ -138,13 +144,20 @@ struct orig_node *get_orig_node(uint8_t *addr)
- 	size = num_ifs * sizeof(TYPE_OF_WORD) * NUM_WORDS;
- 
- 	orig_node->bcast_own = kmalloc(size, GFP_ATOMIC);
-+	if (!orig_node->bcast_own)
-+		goto free_orig_node;
-+
- 	memset(orig_node->bcast_own, 0, size);
- 
- 	size = num_ifs * sizeof(uint8_t);
- 	orig_node->bcast_own_sum = kmalloc(size, GFP_ATOMIC);
-+	if (!orig_node->bcast_own_sum)
-+		goto free_bcast_own;
-+
- 	memset(orig_node->bcast_own_sum, 0, size);
- 
--	hash_add(orig_hash, orig_node);
-+	if (hash_add(orig_hash, orig_node) < 0)
-+		goto free_bcast_own_sum;
- 
- 	if (orig_hash->elements * 4 > orig_hash->size) {
- 		swaphash = hash_resize(orig_hash, orig_hash->size * 2);
-@@ -157,6 +170,13 @@ struct orig_node *get_orig_node(uint8_t *addr)
- 	}
- 
- 	return orig_node;
-+free_bcast_own_sum:
-+	kfree(orig_node->bcast_own_sum);
-+free_bcast_own:
-+	kfree(orig_node->bcast_own);
-+free_orig_node:
-+	kfree(orig_node);
-+	return NULL;
+-	while (NULL != (hashit = hash_iterate(orig_hash, hashit))) {
+-		orig_node = hashit->bucket->data;
++	while (hash_iterate(orig_hash, &hashit)) {
++		orig_node = hashit.bucket->data;
+ 		if (resize_orig(orig_node, if_num) == -1) {
+ 			spin_unlock(&orig_hash_lock);
+ 			goto out;
+diff --git a/drivers/staging/batman-adv/hash.c b/drivers/staging/batman-adv/hash.c
+index 61cb4a2..5a2018d 100644
+--- a/drivers/staging/batman-adv/hash.c
++++ b/drivers/staging/batman-adv/hash.c
+@@ -64,24 +64,18 @@ void hash_destroy(struct hashtable_t *hash)
+ 	kfree(hash);
  }
  
- static bool purge_orig_neighbors(struct orig_node *orig_node,
+-/* iterate though the hash. first element is selected with iter_in NULL.  use
+- * the returned iterator to access the elements until hash_it_t returns NULL. */
++/* iterate though the hash. First element is selected if an iterator
++ * initialized with HASHIT() is supplied as iter. Use the returned
++ * (or supplied) iterator to access the elements until hash_iterate returns
++ * NULL. */
++
+ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
+-			       struct hash_it_t *iter_in)
++			       struct hash_it_t *iter)
+ {
+-	struct hash_it_t *iter;
+-
+ 	if (!hash)
+ 		return NULL;
+-
+-	if (iter_in == NULL) {
+-		iter = kmalloc(sizeof(struct hash_it_t), GFP_ATOMIC);
+-		iter->index = -1;
+-		iter->bucket = NULL;
+-		iter->prev_bucket = NULL;
+-	} else {
+-		iter = iter_in;
+-	}
++	if (!iter)
++		return NULL;
+ 
+ 	/* sanity checks first (if our bucket got deleted in the last
+ 	 * iteration): */
+@@ -139,7 +133,6 @@ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
+ 	}
+ 
+ 	/* nothing to iterate over anymore */
+-	kfree(iter);
+ 	return NULL;
+ }
+ 
+diff --git a/drivers/staging/batman-adv/hash.h b/drivers/staging/batman-adv/hash.h
+index bb60f08..a70d6d6 100644
+--- a/drivers/staging/batman-adv/hash.h
++++ b/drivers/staging/batman-adv/hash.h
+@@ -21,6 +21,11 @@
+ 
+ #ifndef _BATMAN_HASH_H
+ #define _BATMAN_HASH_H
++#define HASHIT(name) struct hash_it_t name = { \
++		.index = -1, .bucket = NULL, \
++		.prev_bucket = NULL, \
++		.first_bucket = NULL }
++
+ 
+ typedef int (*hashdata_compare_cb)(void *, void *);
+ typedef int (*hashdata_choose_cb)(void *, int);
+diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
+index 80106f7..9ac8da3 100644
+--- a/drivers/staging/batman-adv/originator.c
++++ b/drivers/staging/batman-adv/originator.c
+@@ -221,16 +221,16 @@ static bool purge_orig_node(struct orig_node *orig_node)
+ 
+ void purge_orig(struct work_struct *work)
+ {
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	struct orig_node *orig_node;
+ 
+ 	spin_lock(&orig_hash_lock);
+ 
+ 	/* for all origins... */
+-	while (NULL != (hashit = hash_iterate(orig_hash, hashit))) {
+-		orig_node = hashit->bucket->data;
++	while (hash_iterate(orig_hash, &hashit)) {
++		orig_node = hashit.bucket->data;
+ 		if (purge_orig_node(orig_node)) {
+-			hash_remove_bucket(orig_hash, hashit);
++			hash_remove_bucket(orig_hash, &hashit);
+ 			free_orig_node(orig_node);
+ 		}
+ 	}
+diff --git a/drivers/staging/batman-adv/proc.c b/drivers/staging/batman-adv/proc.c
+index f476d9c..f693a0e 100644
+--- a/drivers/staging/batman-adv/proc.c
++++ b/drivers/staging/batman-adv/proc.c
+@@ -186,7 +186,7 @@ static int proc_orig_interval_open(struct inode *inode, struct file *file)
+ 
+ static int proc_originators_read(struct seq_file *seq, void *offset)
+ {
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	struct orig_node *orig_node;
+ 	struct neigh_node *neigh_node;
+ 	int batman_count = 0;
+@@ -215,9 +215,9 @@ static int proc_originators_read(struct seq_file *seq, void *offset)
+ 	rcu_read_unlock();
+ 	spin_lock(&orig_hash_lock);
+ 
+-	while (NULL != (hashit = hash_iterate(orig_hash, hashit))) {
++	while (hash_iterate(orig_hash, &hashit)) {
+ 
+-		orig_node = hashit->bucket->data;
++		orig_node = hashit.bucket->data;
+ 
+ 		if (!orig_node->router)
+ 			continue;
+@@ -413,7 +413,7 @@ static void proc_vis_read_entry(struct seq_file *seq,
+ 
+ static int proc_vis_read(struct seq_file *seq, void *offset)
+ {
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	struct vis_info *info;
+ 	struct vis_info_entry *entries;
+ 	struct vis_if_list *if_entries = NULL;
+@@ -440,8 +440,8 @@ static int proc_vis_read(struct seq_file *seq, void *offset)
+ 		seq_printf(seq, "digraph {\n");
+ 
+ 	spin_lock(&vis_hash_lock);
+-	while (NULL != (hashit = hash_iterate(vis_hash, hashit))) {
+-		info = hashit->bucket->data;
++	while (hash_iterate(vis_hash, &hashit)) {
++		info = hashit.bucket->data;
+ 		entries = (struct vis_info_entry *)
+ 			((char *)info + sizeof(struct vis_info));
+ 
 diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
-index adde460..25a1424 100644
+index 87d7552..89d7faa 100644
 --- a/drivers/staging/batman-adv/routing.c
 +++ b/drivers/staging/batman-adv/routing.c
-@@ -154,11 +154,14 @@ static int isBidirectionalNeigh(struct orig_node *orig_node,
- 				neigh_node = tmp_neigh_node;
- 		}
+@@ -40,14 +40,14 @@ static atomic_t data_ready_cond;
+ atomic_t exit_cond;
+ void slide_own_bcast_window(struct batman_if *batman_if)
+ {
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	struct orig_node *orig_node;
+ 	TYPE_OF_WORD *word;
  
--		if (neigh_node == NULL)
-+		if (!neigh_node)
- 			neigh_node = create_neighbor(orig_node,
- 						     orig_neigh_node,
- 						     orig_neigh_node->orig,
- 						     if_incoming);
-+		/* create_neighbor failed, return 0 */
-+		if (!neigh_node)
-+			return 0;
+ 	spin_lock(&orig_hash_lock);
  
- 		neigh_node->last_valid = jiffies;
- 	} else {
-@@ -172,11 +175,14 @@ static int isBidirectionalNeigh(struct orig_node *orig_node,
- 				neigh_node = tmp_neigh_node;
- 		}
+-	while (NULL != (hashit = hash_iterate(orig_hash, hashit))) {
+-		orig_node = hashit->bucket->data;
++	while (hash_iterate(orig_hash, &hashit)) {
++		orig_node = hashit.bucket->data;
+ 		word = &(orig_node->bcast_own[batman_if->if_num * NUM_WORDS]);
  
--		if (neigh_node == NULL)
-+		if (!neigh_node)
- 			neigh_node = create_neighbor(orig_neigh_node,
- 						     orig_neigh_node,
- 						     orig_neigh_node->orig,
- 						     if_incoming);
-+		/* create_neighbor failed, return 0 */
-+		if (!neigh_node)
-+			return 0;
- 	}
- 
- 	orig_node->last_valid = jiffies;
-@@ -260,11 +266,19 @@ static void update_orig(struct orig_node *orig_node, struct ethhdr *ethhdr,
- 			ring_buffer_avg(tmp_neigh_node->tq_recv);
- 	}
- 
--	if (neigh_node == NULL)
-+	if (!neigh_node) {
-+		struct orig_node *orig_tmp;
-+
-+		orig_tmp = get_orig_node(ethhdr->h_source);
-+		if (!orig_tmp)
-+			return;
-+
- 		neigh_node = create_neighbor(orig_node,
--					     get_orig_node(ethhdr->h_source),
-+					     orig_tmp,
- 					     ethhdr->h_source, if_incoming);
--	else
-+		if (!neigh_node)
-+			return;
-+	} else
- 		bat_dbg(DBG_BATMAN,
- 			"Updating existing last-hop neighbor of originator\n");
- 
-@@ -444,6 +458,9 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 
- 		orig_neigh_node = get_orig_node(ethhdr->h_source);
- 
-+		if (!orig_neigh_node)
-+			return;
-+
- 		/* neighbor has to indicate direct link and it has to
- 		 * come via the corresponding interface */
- 		/* if received seqno equals last send seqno save new
+ 		bit_get_packet(word, 1, 0);
 diff --git a/drivers/staging/batman-adv/translation-table.c b/drivers/staging/batman-adv/translation-table.c
-index 088715b..8c8136b 100644
+index c7122da..088715b 100644
 --- a/drivers/staging/batman-adv/translation-table.c
 +++ b/drivers/staging/batman-adv/translation-table.c
-@@ -317,14 +317,16 @@ void hna_global_add_orig(struct orig_node *orig_node,
- 		hna_buff_count++;
- 	}
+@@ -134,18 +134,18 @@ void hna_local_add(uint8_t *addr)
+ int hna_local_fill_buffer(unsigned char *buff, int buff_len)
+ {
+ 	struct hna_local_entry *hna_local_entry;
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	int i = 0;
+ 	unsigned long flags;
  
--	orig_node->hna_buff_len = hna_buff_len;
--
--	if (orig_node->hna_buff_len > 0) {
--		orig_node->hna_buff = kmalloc(orig_node->hna_buff_len,
--					      GFP_ATOMIC);
--		memcpy(orig_node->hna_buff, hna_buff, orig_node->hna_buff_len);
--	} else {
--		orig_node->hna_buff = NULL;
-+	/* initialize, and overwrite if malloc succeeds */
-+	orig_node->hna_buff = NULL;
-+	orig_node->hna_buff_len = 0;
-+
-+	if (hna_buff_len > 0) {
-+		orig_node->hna_buff = kmalloc(hna_buff_len, GFP_ATOMIC);
-+		if (orig_node->hna_buff) {
-+			memcpy(orig_node->hna_buff, hna_buff, hna_buff_len);
-+			orig_node->hna_buff_len = hna_buff_len;
-+		}
- 	}
+ 	spin_lock_irqsave(&hna_local_hash_lock, flags);
+ 
+-	while (NULL != (hashit = hash_iterate(hna_local_hash, hashit))) {
++	while (hash_iterate(hna_local_hash, &hashit)) {
+ 
+ 		if (buff_len < (i + 1) * ETH_ALEN)
+ 			break;
+ 
+-		hna_local_entry = hashit->bucket->data;
++		hna_local_entry = hashit.bucket->data;
+ 		memcpy(buff + (i * ETH_ALEN), hna_local_entry->addr, ETH_ALEN);
+ 
+ 		i++;
+@@ -163,18 +163,18 @@ int hna_local_fill_buffer(unsigned char *buff, int buff_len)
+ int hna_local_fill_buffer_text(unsigned char *buff, int buff_len)
+ {
+ 	struct hna_local_entry *hna_local_entry;
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	int bytes_written = 0;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&hna_local_hash_lock, flags);
+ 
+-	while (NULL != (hashit = hash_iterate(hna_local_hash, hashit))) {
++	while (hash_iterate(hna_local_hash, &hashit)) {
+ 
+ 		if (buff_len < bytes_written + ETH_STR_LEN + 4)
+ 			break;
+ 
+-		hna_local_entry = hashit->bucket->data;
++		hna_local_entry = hashit.bucket->data;
+ 
+ 		bytes_written += snprintf(buff + bytes_written, ETH_STR_LEN + 4,
+ 					  " * %02x:%02x:%02x:%02x:%02x:%02x\n",
+@@ -214,14 +214,14 @@ static void hna_local_del(struct hna_local_entry *hna_local_entry,
+ void hna_local_purge(struct work_struct *work)
+ {
+ 	struct hna_local_entry *hna_local_entry;
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	unsigned long flags;
+ 	unsigned long timeout;
+ 
+ 	spin_lock_irqsave(&hna_local_hash_lock, flags);
+ 
+-	while (NULL != (hashit = hash_iterate(hna_local_hash, hashit))) {
+-		hna_local_entry = hashit->bucket->data;
++	while (hash_iterate(hna_local_hash, &hashit)) {
++		hna_local_entry = hashit.bucket->data;
+ 
+ 		timeout = hna_local_entry->last_seen +
+ 			((LOCAL_HNA_TIMEOUT / 1000) * HZ);
+@@ -345,17 +345,17 @@ void hna_global_add_orig(struct orig_node *orig_node,
+ int hna_global_fill_buffer_text(unsigned char *buff, int buff_len)
+ {
+ 	struct hna_global_entry *hna_global_entry;
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	int bytes_written = 0;
+ 	unsigned long flags;
  
  	spin_lock_irqsave(&hna_global_hash_lock, flags);
+ 
+-	while (NULL != (hashit = hash_iterate(hna_global_hash, hashit))) {
++	while (hash_iterate(hna_global_hash, &hashit)) {
+ 		if (buff_len < bytes_written + (2 * ETH_STR_LEN) + 10)
+ 			break;
+ 
+-		hna_global_entry = hashit->bucket->data;
++		hna_global_entry = hashit.bucket->data;
+ 
+ 		bytes_written += snprintf(buff + bytes_written,
+ 					  (2 * ETH_STR_LEN) + 10,
+diff --git a/drivers/staging/batman-adv/vis.c b/drivers/staging/batman-adv/vis.c
+index c26d48c..ac7c7c5 100644
+--- a/drivers/staging/batman-adv/vis.c
++++ b/drivers/staging/batman-adv/vis.c
+@@ -266,12 +266,12 @@ end:
+  * Must be called with the originator hash locked */
+ static int find_best_vis_server(struct vis_info *info)
+ {
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	struct orig_node *orig_node;
+ 	int best_tq = -1;
+ 
+-	while (NULL != (hashit = hash_iterate(orig_hash, hashit))) {
+-		orig_node = hashit->bucket->data;
++	while (hash_iterate(orig_hash, &hashit)) {
++		orig_node = hashit.bucket->data;
+ 		if ((orig_node != NULL) &&
+ 		    (orig_node->router != NULL) &&
+ 		    (orig_node->flags & VIS_SERVER) &&
+@@ -297,7 +297,8 @@ static bool vis_packet_full(struct vis_info *info)
+  * returns 0 on success, -1 if no packet could be generated */
+ static int generate_vis_packet(void)
+ {
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit_local);
++	HASHIT(hashit_global);
+ 	struct orig_node *orig_node;
+ 	struct vis_info *info = (struct vis_info *)my_vis_info;
+ 	struct vis_info_entry *entry, *entry_array;
+@@ -320,13 +321,12 @@ static int generate_vis_packet(void)
+ 			return -1;
+ 		}
+ 	}
+-	hashit = NULL;
+ 
+ 	entry_array = (struct vis_info_entry *)
+ 		((char *)info + sizeof(struct vis_info));
+ 
+-	while (NULL != (hashit = hash_iterate(orig_hash, hashit))) {
+-		orig_node = hashit->bucket->data;
++	while (hash_iterate(orig_hash, &hashit_global)) {
++		orig_node = hashit_global.bucket->data;
+ 		if (orig_node->router != NULL
+ 			&& compare_orig(orig_node->router->addr, orig_node->orig)
+ 			&& orig_node->batman_if
+@@ -349,10 +349,9 @@ static int generate_vis_packet(void)
+ 
+ 	spin_unlock(&orig_hash_lock);
+ 
+-	hashit = NULL;
+ 	spin_lock_irqsave(&hna_local_hash_lock, flags);
+-	while (NULL != (hashit = hash_iterate(hna_local_hash, hashit))) {
+-		hna_local_entry = hashit->bucket->data;
++	while (hash_iterate(hna_local_hash, &hashit_local)) {
++		hna_local_entry = hashit_local.bucket->data;
+ 		entry = &entry_array[info->packet.entries];
+ 		memset(entry->src, 0, ETH_ALEN);
+ 		memcpy(entry->dest, hna_local_entry->addr, ETH_ALEN);
+@@ -370,16 +369,16 @@ static int generate_vis_packet(void)
+ 
+ static void purge_vis_packets(void)
+ {
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	struct vis_info *info;
+ 
+-	while (NULL != (hashit = hash_iterate(vis_hash, hashit))) {
+-		info = hashit->bucket->data;
++	while (hash_iterate(vis_hash, &hashit)) {
++		info = hashit.bucket->data;
+ 		if (info == my_vis_info)	/* never purge own data. */
+ 			continue;
+ 		if (time_after(jiffies,
+ 			       info->first_seen + (VIS_TIMEOUT/1000)*HZ)) {
+-			hash_remove_bucket(vis_hash, hashit);
++			hash_remove_bucket(vis_hash, &hashit);
+ 			free_info(info);
+ 		}
+ 	}
+@@ -387,14 +386,14 @@ static void purge_vis_packets(void)
+ 
+ static void broadcast_vis_packet(struct vis_info *info, int packet_length)
+ {
+-	struct hash_it_t *hashit = NULL;
++	HASHIT(hashit);
+ 	struct orig_node *orig_node;
+ 
+ 	spin_lock(&orig_hash_lock);
+ 
+ 	/* send to all routers in range. */
+-	while (NULL != (hashit = hash_iterate(orig_hash, hashit))) {
+-		orig_node = hashit->bucket->data;
++	while (hash_iterate(orig_hash, &hashit)) {
++		orig_node = hashit.bucket->data;
+ 
+ 		/* if it's a vis server and reachable, send it. */
+ 		if (orig_node &&
 -- 
 1.6.5.7
 
