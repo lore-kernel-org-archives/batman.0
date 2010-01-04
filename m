@@ -1,16 +1,12 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 4 Jan 2010 18:02:34 +0100
-References: <201001042344.02273.lindner_marek@yahoo.de>
-	<201001041755.40243.sven.eckelmann@gmx.de>
-	<de7865071001040856u1b661bdcxb319ffe60b2b367b@mail.gmail.com>
-In-Reply-To: <de7865071001040856u1b661bdcxb319ffe60b2b367b@mail.gmail.com>
+Return-Path: <Eric.Conner@QinetiQ-NA.com>
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5989614.dx9IenDoZZ";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001041802.34477.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv gateway support
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CA8D63.08151F50"
+Date: Mon, 4 Jan 2010 12:26:19 -0500
+Message-ID: <94CAE17FD1DB4640BF8FF28D61FDFA8A273519@RESQNAOEX01.qnao.net>
+From: "Conner, Eric" <Eric.Conner@QinetiQ-NA.com>
+Subject: [B.A.T.M.A.N.] sha256 for batmand advanced
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,43 +18,102 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: predrag balorda <predrag.balorda@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.net
 
---nextPart5989614.dx9IenDoZZ
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+This is a multi-part message in MIME format.
 
-predrag balorda wrote:
-> I've done it 3 times in the last few days and nothing ever happened.
-> Just as I wrote to the list a removal confirmation arrived.
+------_=_NextPart_001_01CA8D63.08151F50
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Yes, I did it for you as explained.
+Does anyone have a sha256 for batmand-adv-kernelland-0.2.tar.gz?
 
-Best regards,
-	Sven
+=20
 
---nextPart5989614.dx9IenDoZZ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Thanks
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+=20
 
-iQIcBAABCgAGBQJLQh8qAAoJEF2HCgfBJntGolAQALK6+2nS8pSqTW1ws46DZ/G3
-s/zDNhgQ+wK+rXBmxeEh/eaxu3Z5dNDeBTjam0bTPLYZMV12hyMukQHziZIzMtHw
-gyKwKDlzsgRfYk7ZDKkc/V0F0Mm+6tJVJpD9sEk3iMocANlJOgZLcltyA5lXJKng
-HmfEB/lafwQ1Lm/HEZzKjF+HgKYwqFg2VDUUYgvG8uKqzMpGK7mIY0b2GENpH7QJ
-AQOhJzN/GnL7iII4/YhGLq0yIqtT5sfQzoaOyRryl9hRN91HQLWbgnbtpMnhpfDn
-EgIX8Nabw1Ygd06h7Xg3QZ188E2PjSaOV0MHOPQfaueq3PtDYgWh8868uEWIpLpL
-u5O1h09VCTas/wz/NEb+MqHbRbVZArH/+m8ApYpjyFMRbq8GgCoYkoOVSfHscqHh
-abLBfzyJwHDPIv+n8DAVqAB7xIFFBk4yMo+GBPK81l8Q2eFLnUsgHe6ocvSoXGK1
-3J4T/HYSpRtcS3s3nK5MqfBmJ/whT4oxlr1AbzaB+rxv+LQUEhUEU44rcY0/nS0y
-Pz+fQPyFLI3OUS+yMvdxcqjJEawoFcnkn4vt+VHyJIb3WcUiwFlX5cKGFKRRnMK+
-E8n4Tex07KMvERwoS6yTdpL5HTu2OEV+gzoqCckXVaYeAxANdZvfLarMPPhYTJ/c
-q+GKw6TRFEUBCuw3VRXq
-=oePV
------END PGP SIGNATURE-----
 
---nextPart5989614.dx9IenDoZZ--
+------_=_NextPart_001_01CA8D63.08151F50
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+p.section1, li.section1, div.section1
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Does anyone have a sha256 for
+batmand-adv-kernelland-0.2.tar.gz?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01CA8D63.08151F50--
