@@ -1,11 +1,13 @@
-Return-Path: <don@dis.org.nz>
-MIME-Version: 1.0
-In-Reply-To: <201001042344.02273.lindner_marek@yahoo.de>
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 4 Jan 2010 21:58:27 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100104205827.GB9585@lunn.ch>
 References: <201001042344.02273.lindner_marek@yahoo.de>
-Date: Tue, 5 Jan 2010 09:23:42 +1300
-Message-ID: <591bc9931001041223m13d96837o4d4f95afa08e42e2@mail.gmail.com>
-From: Donald Gordon <don@dis.org.nz>
-Content-Type: multipart/alternative; boundary=00504502e2d557e9b9047c5c7fdc
+	<591bc9931001041223m13d96837o4d4f95afa08e42e2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <591bc9931001041223m13d96837o4d4f95afa08e42e2@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] batman-adv gateway support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
@@ -20,47 +22,21 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
---00504502e2d557e9b9047c5c7fdc
-Content-Type: text/plain; charset=ISO-8859-1
-
-Hi
-
-On Tue, Jan 5, 2010 at 4:44 AM, Marek Lindner <lindner_marek@yahoo.de>wrote:
-
->
-> * The third patch checks whether locally received packets are DHCP queries
-> and
-> forwards them via uncicast to the best gateway instead of broadcasting
-> them.
->
 > Would it be possible to decide via a more general mechanism, maybe via a
-BPF filter, which packets get sent to the gateway?  For instance, it would
-be nice to be able to say that all ARP requests for *.*.*.1 also got sent to
-the gateway direct :-)  This would also make adding IPv6 support trivial,
-it'd just be another (or a more complex) BPF filter.
+> BPF filter, which packets get sent to the gateway?  For instance, it would
+> be nice to be able to say that all ARP requests for *.*.*.1 also got sent to
+> the gateway direct :-)  This would also make adding IPv6 support trivial,
+> it'd just be another (or a more complex) BPF filter.
 
-donald
+BPF for outgoing packets? Different. I've only ever seen it used for
+filtering incoming packets. ARP requests for *.*.*.1? I don't get
+that. There should only be one host in the subnet which matches
+*.*.*.1/24, so its going to reply anyway. What are you trying to
+achieve here?
 
---00504502e2d557e9b9047c5c7fdc
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Also, how would you handle the gateway sending back an ICMP redirect
+because it is the wrong gateway for a given destination, or not a
+gateway at all? In the network i use most, *.*.*.5/24 happens to be
+the gateway, not *.*.*.1. 
 
-Hi<br><br><div class=3D"gmail_quote">On Tue, Jan 5, 2010 at 4:44 AM, Marek =
-Lindner <span dir=3D"ltr">&lt;<a href=3D"mailto:lindner_marek@yahoo.de">lin=
-dner_marek@yahoo.de</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quo=
-te" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt=
- 0.8ex; padding-left: 1ex;">
-<br>
-* The third patch checks whether locally received packets are DHCP queries =
-and<br>
-forwards them via uncicast to the best gateway instead of broadcasting them=
-.<br>
-<br></blockquote><div>Would it be possible to decide via a more general mec=
-hanism, maybe via
-a BPF filter, which packets get sent to the gateway?=A0 For instance, it
-would be nice to be able to say that all ARP requests for *.*.*.1 also
-got sent to the gateway direct :-)=A0 This would also make adding IPv6 supp=
-ort trivial, it&#39;d just be another (or a more complex) BPF filter.<br><b=
-r>donald<br></div></div>
-
---00504502e2d557e9b9047c5c7fdc--
+    Andrew
