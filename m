@@ -1,11 +1,13 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon,  4 Jan 2010 23:46:15 +0800
-Message-Id: <1262619976-5632-2-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1262619976-5632-1-git-send-email-lindner_marek@yahoo.de>
+Date: Mon,  4 Jan 2010 23:46:16 +0800
+Message-Id: <1262619976-5632-3-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1262619976-5632-2-git-send-email-lindner_marek@yahoo.de>
 References: <201001042344.02273.lindner_marek@yahoo.de>
 	<1262619976-5632-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batctl: add support for gateway mode
+	<1262619976-5632-2-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: send DHCP requests directly
+	to the chosen gw
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,126 +22,152 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.net
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
----
- batctl/main.c       |   10 ++++++++++
- batctl/man/batctl.8 |    6 ++++++
- batctl/proc.c       |   16 ++++++++++++++++
- batctl/proc.h       |    8 ++++----
- 4 files changed, 36 insertions(+), 4 deletions(-)
+If the gateway client mode is active batman-adv will send the broadcasted
+DHCP requests via unicast to the currently selected best gateway. Therefore
+attached clients can profit from batman's knowledge about the network
+topology.
 
-diff --git a/batctl/main.c b/batctl/main.c
-index 8be1d05..6e4493d 100644
---- a/batctl/main.c
-+++ b/batctl/main.c
-@@ -46,6 +46,8 @@ void print_usage(void) {
- 	printf(" \tinterval|it   [orig_interval]   \tdisplay or modify the originator interval in ms\n");
- 	printf(" \tloglevel|ll   [level]           \tdisplay or modify the log level\n");
- 	printf(" \tlog|l                           \tread the log produced by the kernel module\n");
-+	printf(" \tgw_mode|gw    [mode]            \tdisplay or modify the gateway mode\n");
-+	printf(" \tgw_srv_list|gwl                 \tdisplay the gateway server list\n");
- 	printf(" \ttranslocal|tl                   \tdisplay the local translation table\n");
- 	printf(" \ttransglobal|tg                  \tdisplay the global translation table\n");
- 	printf(" \tvis_server|vs [enable|disable]  \tdisplay or modify the status of the VIS server\n");
-@@ -130,6 +132,14 @@ int main(int argc, char **argv)
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ batman-adv-kernelland/gateway_client.c |   45 ++++++++++++++++++++++++++++++++
+ batman-adv-kernelland/gateway_client.h |    2 +
+ batman-adv-kernelland/soft-interface.c |   17 ++++++++++--
+ 3 files changed, 61 insertions(+), 3 deletions(-)
+
+diff --git a/batman-adv-kernelland/gateway_client.c b/batman-adv-kernelland/gateway_client.c
+index 55789ad..434af2b 100644
+--- a/batman-adv-kernelland/gateway_client.c
++++ b/batman-adv-kernelland/gateway_client.c
+@@ -20,6 +20,8 @@
+ #include "main.h"
+ #include "gateway_client.h"
+ #include "gateway_common.h"
++#include <linux/ip.h>
++#include <linux/udp.h>
  
- 		ret = vis_data(argc - 1, argv + 1);
+ LIST_HEAD(gw_list);
+ DEFINE_SPINLOCK(curr_gw_lock);
+@@ -27,6 +29,20 @@ DEFINE_SPINLOCK(gw_list_lock);
+ atomic_t gw_clnt_class;
+ static struct gw_node *curr_gateway;
  
-+	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
-+
-+		ret = handle_proc_setting(argc - 1, argv + 1, PROC_GW_MODE, gw_mode_usage);
-+
-+	} else if ((strcmp(argv[1], "gw_srv_list") == 0) || (strcmp(argv[1], "gwl") == 0)) {
-+
-+		ret = handle_table(argc - 1, argv + 1, PROC_GW_SRV_LIST, gw_srv_list_usage);
-+
- 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
- 
- 		ret = handle_proc_setting(argc - 1, argv + 1, PROC_AGGR, aggregation_usage);
-diff --git a/batctl/man/batctl.8 b/batctl/man/batctl.8
-index 304168c..61e7958 100644
---- a/batctl/man/batctl.8
-+++ b/batctl/man/batctl.8
-@@ -57,6 +57,12 @@ If no parameter is given the current log level settings are displayed otherwise
- .IP "\fBlog|l\fP	"
- Once started batctl will continuously read the log produced by the kernel module (the amount of log message can be influenced by modifying the log level). Whenever there are new log messages sent by the kernel batctl will display it. Use the "\-b" option to let batctl exit after the existing log buffer has been displayed. If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
- .br
-+.IP "\fBgw_mode|gw	[off|client|server]\fP"
-+If no parameter is given the current gateway mode is displayed otherwise the parameter is used to set the gateway mode.
-+.br
-+.IP "\fBgw_srv_list|gwl\fP"
-+Once started batctl will refresh the displayed gateway server list every second. Use the "\-b" option to let batctl display the list only once (useful for scripts). If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
-+.br
- .IP "\fBtranslocal|tl\fP"
- Once started batctl will refresh the displayed local translation table every second. Use the "\-b" option to let batctl display the table only once (useful for scripts). If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
- .br
-diff --git a/batctl/proc.c b/batctl/proc.c
-index d73a9fa..7ae19b4 100644
---- a/batctl/proc.c
-+++ b/batctl/proc.c
-@@ -95,6 +95,15 @@ void trans_global_usage(void)
- 	printf(" \t -n don't replace mac addresses with bat-host names\n");
- }
- 
-+void gw_srv_list_usage(void)
++void *gw_get_selected(void)
 +{
-+	printf("Usage: batctl [options] gw_srv_list \n");
-+	printf("options:\n");
-+	printf(" \t -b batch mode - read the gateway server list once and quit\n");
-+	printf(" \t -h print this help\n");
-+	printf(" \t -n don't replace mac addresses with bat-host names\n");
++	struct gw_node *curr_gateway_tmp = NULL;
++
++	spin_lock(&curr_gw_lock);
++	curr_gateway_tmp = curr_gateway;
++	spin_unlock(&curr_gw_lock);
++
++	if (!curr_gateway_tmp)
++		return NULL;
++
++	return curr_gateway_tmp->orig_node;
 +}
 +
- void orig_interval_usage(void)
+ void gw_deselect(void)
  {
- 	printf("Usage: batctl [options] interval \n");
-@@ -116,6 +125,13 @@ void aggregation_usage(void)
- 	printf(" \t -h print this help\n");
+ 	spin_lock(&curr_gw_lock);
+@@ -333,3 +349,32 @@ int gw_client_fill_buffer_text(unsigned char *buff, int buff_len)
+ 
+ 	return bytes_written;
  }
- 
-+void gw_mode_usage(void)
-+{
-+	printf("Usage: batctl [options] gw_mode [mode]\n");
-+	printf("options:\n");
-+	printf(" \t -h print this help\n");
-+}
 +
- int handle_table(int argc, char **argv, char *file_path, void table_usage(void))
- {
- 	int optchar, read_opt = CLR_CONT_READ | USE_BAT_HOSTS;
-diff --git a/batctl/proc.h b/batctl/proc.h
-index ad00136..d867b78 100644
---- a/batctl/proc.h
-+++ b/batctl/proc.h
-@@ -19,19 +19,17 @@
-  *
-  */
++bool gw_is_target(struct sk_buff *skb)
++{
++	struct ethhdr *ethhdr;
++	struct iphdr *iphdr;
++	struct udphdr *udphdr;
++
++	if (atomic_read(&gw_mode) != GW_MODE_CLIENT)
++		return false;
++
++	if (!curr_gateway)
++		return false;
++
++	ethhdr = (struct ethhdr *)skb->data;
++	if (ntohs(ethhdr->h_proto) != ETH_P_IP)
++		return false;
++
++	iphdr = (struct iphdr *)(skb->data + ETH_HLEN);
++
++	if (iphdr->protocol != IPPROTO_UDP)
++		return false;
++
++	udphdr = (struct udphdr *)(skb->data + ETH_HLEN + (iphdr->ihl * 4));
++
++	if (ntohs(udphdr->dest) != 67)
++		return false;
++
++	return true;
++}
+diff --git a/batman-adv-kernelland/gateway_client.h b/batman-adv-kernelland/gateway_client.h
+index 5eb1e4c..fc7a0df 100644
+--- a/batman-adv-kernelland/gateway_client.h
++++ b/batman-adv-kernelland/gateway_client.h
+@@ -21,9 +21,11 @@ extern atomic_t gw_clnt_class;
  
--
--
- #define PROC_ROOT_PATH "/proc/net/batman-adv/"
- #define PROC_INTERFACES "interfaces"
- #define PROC_ORIGINATORS "originators"
- #define PROC_ORIG_INTERVAL "orig_interval"
--#define PROC_GATEWAYS "gateways"
- #define PROC_TRANSTABLE_LOCAL "transtable_local"
- #define PROC_TRANSTABLE_GLOBAL "transtable_global"
- #define PROC_VIS_SERVER "vis_server"
- #define PROC_VIS_DATA "vis_data"
- #define PROC_AGGR "aggregate_ogm"
--
-+#define PROC_GW_MODE "gateway_mode"
-+#define PROC_GW_SRV_LIST "gateway_srv_list"
+ void gw_deselect(void);
+ void gw_election(void);
++void *gw_get_selected(void);
+ void gw_check_election(struct orig_node *orig_node);
+ void gw_node_update(struct orig_node *orig_node, uint8_t new_gwflags);
+ void gw_node_delete(struct orig_node *orig_node);
+ void gw_node_purge_deleted(void);
+ void gw_node_list_free(void);
+ int gw_client_fill_buffer_text(unsigned char *buff, int buff_len);
++bool gw_is_target(struct sk_buff *skb);
+diff --git a/batman-adv-kernelland/soft-interface.c b/batman-adv-kernelland/soft-interface.c
+index ee9aa39..80f7a23 100644
+--- a/batman-adv-kernelland/soft-interface.c
++++ b/batman-adv-kernelland/soft-interface.c
+@@ -26,6 +26,7 @@
+ #include "translation-table.h"
+ #include "types.h"
+ #include "hash.h"
++#include "gateway_client.h"
+ #include <linux/ethtool.h>
+ #include <linux/etherdevice.h>
+ #include "compat.h"
+@@ -181,6 +182,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+ 	uint8_t dstaddr[6];
+ 	int data_len = skb->len;
+ 	unsigned long flags;
++	bool bcast_dst = false, do_bcast = true;
  
- int interface(int argc, char **argv);
+ 	if (atomic_read(&module_state) != MODULE_ACTIVE)
+ 		goto dropped;
+@@ -189,9 +191,14 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+ 	/* TODO: check this for locks */
+ 	hna_local_add(ethhdr->h_source);
  
-@@ -41,5 +39,7 @@ void trans_global_usage(void);
- void orig_interval_usage(void);
- void vis_server_usage(void);
- void aggregation_usage(void);
-+void gw_mode_usage(void);
-+void gw_srv_list_usage(void);
- int handle_table(int argc, char **argv, char *file_path, void table_usage(void));
- int handle_proc_setting(int argc, char **argv, char *file_path, void setting_usage(void));
+-	/* ethernet packet should be broadcasted */
+-	if (is_bcast(ethhdr->h_dest) || is_mcast(ethhdr->h_dest)) {
++	if (is_bcast(ethhdr->h_dest) || is_mcast(ethhdr->h_dest))
++		bcast_dst = true;
++
++	if ((bcast_dst) && gw_is_target(skb))
++		do_bcast = false;
+ 
++	/* ethernet packet should be broadcasted */
++	if (bcast_dst && do_bcast) {
+ 		if (my_skb_push(skb, sizeof(struct bcast_packet)) < 0)
+ 			goto dropped;
+ 
+@@ -219,8 +226,12 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+ 	/* unicast packet */
+ 	} else {
+ 		spin_lock_irqsave(&orig_hash_lock, flags);
++
+ 		/* get routing information */
+-		orig_node = ((struct orig_node *)hash_find(orig_hash,
++		if (bcast_dst)
++			orig_node = (struct orig_node *)gw_get_selected();
++		else
++			orig_node = ((struct orig_node *)hash_find(orig_hash,
+ 							   ethhdr->h_dest));
+ 
+ 		/* check for hna host */
 -- 
 1.6.5.7
 
