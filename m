@@ -1,17 +1,12 @@
-Return-Path: <andrew@lunn.ch>
-Date: Mon, 4 Jan 2010 20:11:55 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100104191155.GA32331@lunn.ch>
-References: <1262454706-6137-1-git-send-email-sven.eckelmann@gmx.de>
-	<201001040814.35799.lindner_marek@yahoo.de>
-	<20100104062025.GA3750@lunn.ch>
-	<201001041831.49389.lindner_marek@yahoo.de>
-	<20100104105146.GA25037@lunn.ch>
+Return-Path: <don@dis.org.nz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100104105146.GA25037@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] Correct smaller typographical errors
+In-Reply-To: <201001042344.02273.lindner_marek@yahoo.de>
+References: <201001042344.02273.lindner_marek@yahoo.de>
+Date: Tue, 5 Jan 2010 09:23:42 +1300
+Message-ID: <591bc9931001041223m13d96837o4d4f95afa08e42e2@mail.gmail.com>
+From: Donald Gordon <don@dis.org.nz>
+Content-Type: multipart/alternative; boundary=00504502e2d557e9b9047c5c7fdc
+Subject: Re: [B.A.T.M.A.N.] batman-adv gateway support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,193 +20,47 @@ List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-Hi folks
+--00504502e2d557e9b9047c5c7fdc
+Content-Type: text/plain; charset=ISO-8859-1
 
-Here is the re-worked batctl.8 file. I made quite a lot of
-changes. Since the diff will be bigger than the plain file, here is
-the plain file.
+Hi
 
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
----
-.\"                                      Hey, EMACS: -*- nroff -*-
-.\" First parameter, NAME, should be all caps
-.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
-.\" other parameters are allowed: see man(7), man(1)
-.TH "BATCTL" "8" "Jan 04, 2010" "Linux" "B.A.T.M.A.N. Advanced Control Tool"
-.\" Please adjust this date whenever revising the manpage.
-.\"
-.\" Some roff macros, for reference:
-.\" .nh        disable hyphenation
-.\" .hy        enable hyphenation
-.\" .ad l      left justify
-.\" .ad b      justify to both left and right margins
-.\" .nf        disable filling
-.\" .fi        enable filling
-.\" .br        insert line break
-.\" .sp <n>    insert n+1 empty lines
-.\" for manpage-specific macros, see man(7)
-.\" --------------------------------------------------------------------------
-.\" Process this file with
-.\" groff -man batctl.8 -Tutf8
-.\" --------------------------------------------------------------------------
-.ad l
-.SH NAME
-batctl \- B.A.T.M.A.N. advanced control and management tool
-.SH SYNOPSIS
-.B batctl
-.I [\fIbatctl\-options\fP]\ \fIcommand\fP\ [\fIcommand\-options\fP]
-.br
-.SH DESCRIPTION
-batctl offers a convenient way to configure the batman\-adv kernel
-module as well as displaying debug information such as originator
-tables, translation tables and the debug log. In combination with a
-bat\-hosts file batctl allows the use of host names instead of MAC
-addresses.
-.PP
-B.A.T.M.A.N. advanced operates on layer 2. Thus all hosts
-participating in the virtual switched network are transparently
-connected together for all protocols above layer 2. Therefore the
-common diagnosis tools do not work as expected. To overcome these
-problems batctl contains the commands \fBping\fP, \fBtraceroute\fP,
-\fBtcpdump\fP which provide similar functionality to the normal
-\fBping\fP(1), \fBtraceroute\fP(1), \fBtcpdump\fP(1) commands, but
-modified to layer 2 behaviour or using the B.A.T.M.A.N. advanced
-protocol.
-.PP
-.PP
-.SH OPTIONS
-.TP
-.I \fBbatctl\-options:
-\-h	print general batctl help
-.br
-\-v	print batctl version
-.br
-.TP
-.I \fBcommands:
-.IP "\fBinterface\fP|\fBif\fP	[\fBnone\fP|\fIinterface\fP]"
-If no parameter is given the current interface settings are displayed
-otherwise the parameter(s) are added as new interfaces. Use the "none"
-keyword to deactivate all interfaces.
-.br
-.IP "\fBoriginators\fP|\fBo\fP   [\fB\-b\fP][\fB\-n\fP]"
-Display the originator table. Once started batctl will refresh the
-displayed originator table every second. The "\-b" option causes the
-table to be displayed only once (useful for scripts). If "\-n" is
-given batctl will not replace the MAC addresses with bat\-host names
-in the output.
-.br
-.IP "\fBinterval\fP|\fBit\fP	[\fIorig_interval\fP]"
-If no parameter is given the current originator interval setting is
-displayed otherwise the parameter is used to set the originator
-interval. The interval is in units of milliseconds.
-.br
-.IP "\fBloglevel\fP|\fBll\fP	[\fIlevel\fP]"
-If no parameter is given the current log level settings are displayed
-otherwise the parameter is used to set the log level. Level 0 disables
-all logging. Level 1 enables messages related to routing / flooding /
-broadcasting. Level 2 enables messages related to route or hna added /
-changed / deleted. Level 3 enables all messages. The messages are sent
-to the kernel log. Use \fBdmesg\fP(1) to see them.
-.br
-.IP "\fBlog\fP|\fBl\fP           [\fIlogfile\fP][\fB\-b\fP][\fB\-n\fP]\fP"
-batctl will read the file logfile, or stdin if the logfile parameter
-is not given, applying filtering so only the B.A.T.M.A.N. Advanced
-messages are displayed. Whenever there are new log messages appended
-to the file batctl will display them. The option "\-b" causes batctl
-to exit once the end of the file has been reached. If "\-n" is given
-batctl will not replace the MAC addresses with bat\-host names in the
-output.
-.br
-.IP "\fBtranslocal\fP|\fBtl\fP   [\fB\-b\fP][\fB\-n\fP]"
-Display the local translation table. batctl will refresh the
-displayed table every second. The "\-b" option causes the table to be
-displayed only once (useful for scripts). If "\-n" is given batctl
-will not replace the MAC addresses with bat\-host names in the output.
-.br
-.IP "\fBtransglobal\fP|\fBtg\fP  [\fB\-b\fP][\fB\-n\fP]"
-Display the global translation table. batctl will refresh the
-displayed table every second. The "\-b" option causes the table to be
-displayed only once (useful for scripts). If "\-n" is given batctl
-will not replace the MAC addresses with bat\-host names in the output.
-.br
-.IP "\fBvis dot\fP         [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-h\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
-Display the visualisation data in graphviz \fBdot\fP(1) format. If
-"\-\-numbers" or "\-n" is given batctl will not replace the MAC
-addresses with bat-host names in the output. With "\-\-no-HNA" or
-"\-h" the HNA entries are not displayed, so the pure mesh topology can
-be seen. With "\-\-no-2nd" or "\-2" a dot cluster is not formed around
-primary and secondary addresses from the same device.
-.br
-.IP "\fBvis json\fP        [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-h\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
-Display the visualisation data in JSON format. If "\-\-numbers" or
-"\-n" is given batctl will not replace the MAC addresses with bat-host
-names in the output. With "\-\-no-HNA" or "\-h" the HNA entries are
-not displayed, so the pure mesh topology can be seen. With
-"\-\-no-2nd" or "\-2" a dot cluster is not formed around primary and
-secondary addresses from the same device.
-.br
-.IP "\fBaggregation\fP|\fBag\fP	[\fB1\fP|\fB0\fP]"
-If no parameter is given the current aggregation setting is displayed.
-Otherwise the parameter is used to enable or disable packet
-aggregation.
-.br
-.IP "\fBping\fP|\fBp\fP	[\fB\-c \fP\fIcount\fP][\fB\-i \fP\fIinterval\fP][\fB\-t \fP\fItime\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
-Layer 2 ping of a MAC address or bat\-host name.  batctl will try to
-find the bat\-host name if the given parameter was not a MAC
-address. The "\-c" option tells batctl how man pings should be sent
-before the program exits. Without the "\-c" option batctl will continue
-pinging without end. Use CTRL + C to stop it.  With "\-i" and "\-t"
-you can set the default interval between pings and the timeout time
-for replies, both in seconds.
-.br
-.IP "\fBtraceroute\fP|\fBtr\fP	[\fB\-n\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
-Layer 2 traceroute to a MAC address or bat\-host name. batctl will try
-to find the bat\-host name if the given parameter was not a MAC
-address. batctl will send 3 packets to each host and display the
-response time. If "\-n" is given batctl will not replace the MAC
-addresses with bat\-host names in the output.
-.br
-.IP "\fBtcpdump\fP|\fBtd\fP	[\fB\-p \fP\fIfilter\fP][\fB\-n\fP] \fIinterface ...\fP"
-batctl will display all packets that are seen on the given
-interface(s). The "\-p" options allows the filtering of certain packet
-types: 1 - batman ogm packets, 2 - batman icmp packets, 4 - unicast
-packets, 8 - broadcast packets, 16 - vis packets, and 32 - none batman
-packets. These numbers can be added to filter more than one packet
-type, e.g. use "\-p 3" to display batman ogm packets and batman icmp
-packets only. If "\-n" is given batctl will not replace the MAC
-addresses with bat\-host names in the output.
-.br
-.IP "\fBbisect\fP		[\fB\-l \fP\fIMAC\fP][\fB\-t \fP\fIMAC\fP][\fB\-r \fP\fIMAC\fP][\fB\-s \fP\fImin\fP [\fB\- \fP\fImax\fP]][\fB\-o \fP\fIMAC\fP][\fB\-n\fP] \fIlogfile1\fP [\fIlogfile2\fP ... \fIlogfileN\fP]"
-Analyses the logfiles to build a small internal database of all sent
-sequence numbers and routing table changes. This database can then be
-analyzed in a number of different ways. With "\-l" the database can be
-used to search for routing loops. Use "\-t" to trace OGMs of a host
-throughout the network. Use "\-r" to display routing tables of the
-nodes. The option "\-s" can be used to limit the output to a range of
-sequence numbers, between min and max, or to one specific sequence
-number, min. Furthermore using "\-o" you can filter the output to a
-specified originator. If "\-n" is given batctl will not replace the
-MAC addresses with bat\-host names in the output.
-.br
-.SH FILES
-.TP
-.I "\fBbat-hosts\fP"
-This file is similar to the /etc/hosts file. You can write one MAC
-address and one host name per line. batctl will search for bat-hosts
-in /etc, your home directory and the current directory. The found data
-is used to match MAC address to your provided host name or replace MAC
-addresses in debug output and logs. Host names are much easier to
-remember than MAC addresses.
-.SH SEE ALSO
-.BR ping (1),
-.BR traceroute (1),
-.BR tcpdump (1),
-.BR dmesg (1),
-.BR dot (1)
-.SH AUTHOR
-batctl was written by Andreas Langer <a.langer@q-dsl.de> and Marek
-Lindner <lindner_marek@yahoo.de>.
-.PP
-This manual page was written by Simon Wunderlich
-<siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de> and
-Andrew Lunn <andrew@lunn.ch>
+On Tue, Jan 5, 2010 at 4:44 AM, Marek Lindner <lindner_marek@yahoo.de>wrote:
+
+>
+> * The third patch checks whether locally received packets are DHCP queries
+> and
+> forwards them via uncicast to the best gateway instead of broadcasting
+> them.
+>
+> Would it be possible to decide via a more general mechanism, maybe via a
+BPF filter, which packets get sent to the gateway?  For instance, it would
+be nice to be able to say that all ARP requests for *.*.*.1 also got sent to
+the gateway direct :-)  This would also make adding IPv6 support trivial,
+it'd just be another (or a more complex) BPF filter.
+
+donald
+
+--00504502e2d557e9b9047c5c7fdc
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi<br><br><div class=3D"gmail_quote">On Tue, Jan 5, 2010 at 4:44 AM, Marek =
+Lindner <span dir=3D"ltr">&lt;<a href=3D"mailto:lindner_marek@yahoo.de">lin=
+dner_marek@yahoo.de</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quo=
+te" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt=
+ 0.8ex; padding-left: 1ex;">
+<br>
+* The third patch checks whether locally received packets are DHCP queries =
+and<br>
+forwards them via uncicast to the best gateway instead of broadcasting them=
+.<br>
+<br></blockquote><div>Would it be possible to decide via a more general mec=
+hanism, maybe via
+a BPF filter, which packets get sent to the gateway?=A0 For instance, it
+would be nice to be able to say that all ARP requests for *.*.*.1 also
+got sent to the gateway direct :-)=A0 This would also make adding IPv6 supp=
+ort trivial, it&#39;d just be another (or a more complex) BPF filter.<br><b=
+r>donald<br></div></div>
+
+--00504502e2d557e9b9047c5c7fdc--
