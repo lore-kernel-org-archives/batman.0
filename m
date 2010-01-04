@@ -1,11 +1,17 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 4 Jan 2010 19:27:10 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20100104182710.GA24091@pandem0nium>
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 4 Jan 2010 20:11:55 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100104191155.GA32331@lunn.ch>
+References: <1262454706-6137-1-git-send-email-sven.eckelmann@gmx.de>
+	<201001040814.35799.lindner_marek@yahoo.de>
+	<20100104062025.GA3750@lunn.ch>
+	<201001041831.49389.lindner_marek@yahoo.de>
+	<20100104105146.GA25037@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add bonding functionality
+In-Reply-To: <20100104105146.GA25037@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] Correct smaller typographical errors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.net>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,664 +23,195 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.net>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=help>
 List-Subscribe: <https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.net?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
-This patch introduces bonding functionality to batman-advanced, targeted 
-for the 0.3 release. As we are able to route the payload traffic as we 
-want, we may use multiple interfaces on multihomed hosts to transfer data 
-to achieve higher bandwidth. This can be considered as "light Multi Path 
-Routing" for single hop connections.
+Hi folks
 
-To detect which interfaces of a peer node belong to the same host, a      
-new flag PRIMARIES_FIRST_HOP is introduced. This flag is set on the first hop
-of OGMs of the primary (first) interface, which is broadcasted on all   
-interfaces. When receiving such an OGM, we can learn which interfaces
-belong to the same host (by assigning them to the primary originator).
+Here is the re-worked batctl.8 file. I made quite a lot of
+changes. Since the diff will be bigger than the plain file, here is
+the plain file.
 
-Bonding works by sending packets in a round-robin fashion to the available
-neighbors, if multiple interfaces are available. The neighbors should be
-almost equally good to reach.
-
-To avoid interferences (i.e. sending on the same channel), only neighbors 
-with different mac addresses and interfaces are considered as candidates.
-
-Bonding is deactivated by default, and can be activated by 
-
-echo 1 > /proc/net/batman-adv/bonding
-
-for each individual node.
-
-Any suggestions or comments are welcome.
-
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
-
-Index: a/batman-adv-kernelland/types.h
-===================================================================
---- a/batman-adv-kernelland/types.h	(revision 1532)
-+++ b/batman-adv-kernelland/types.h	(working copy)
-@@ -48,6 +48,7 @@
- 
- struct orig_node {               /* structure for orig_list maintaining nodes of mesh */
- 	uint8_t orig[ETH_ALEN];
-+	uint8_t primary_addr[ETH_ALEN];	/* hosts primary interface address */
- 	struct neigh_node *router;
- 	struct batman_if *batman_if;
- 	TYPE_OF_WORD *bcast_own;
-@@ -64,6 +65,10 @@
- 	TYPE_OF_WORD bcast_bits[NUM_WORDS];
- 	uint16_t last_bcast_seqno;  /* last broadcast sequence number received by this host */
- 	struct list_head neigh_list;
-+	struct {
-+		uint8_t candidates;	/* how many candidates are available */
-+		struct neigh_node *selected;	/* next bonding candidate */
-+	} bond;
- };
- 
- struct neigh_node {
-@@ -74,6 +79,7 @@
- 	uint8_t tq_index;
- 	uint8_t tq_avg;
- 	uint8_t last_ttl;
-+	struct neigh_node *next_bond_candidate;
- 	unsigned long last_valid;            /* when last packet via this neighbor was received */
- 	TYPE_OF_WORD real_bits[NUM_WORDS];
- 	struct orig_node *orig_node;
-Index: a/batman-adv-kernelland/packet.h
-===================================================================
---- a/batman-adv-kernelland/packet.h	(revision 1532)
-+++ b/batman-adv-kernelland/packet.h	(working copy)
-@@ -31,6 +31,7 @@
- #define COMPAT_VERSION 8
- #define DIRECTLINK 0x40
- #define VIS_SERVER 0x20
-+#define PRIMARIES_FIRST_HOP 0x10
- 
- /* ICMP message types */
- #define ECHO_REPLY 0
-Index: a/batman-adv-kernelland/send.c
-===================================================================
---- a/batman-adv-kernelland/send.c	(revision 1532)
-+++ b/batman-adv-kernelland/send.c	(working copy)
-@@ -275,9 +275,9 @@
- 	batman_packet->seqno = htons((uint16_t)atomic_read(&batman_if->seqno));
- 
- 	if (is_vis_server())
--		batman_packet->flags = VIS_SERVER;
-+		batman_packet->flags |= VIS_SERVER;
- 	else
--		batman_packet->flags = 0;
-+		batman_packet->flags &= ~VIS_SERVER;
- 
- 	/* could be read by receive_bat_packet() */
- 	atomic_inc(&batman_if->seqno);
-@@ -332,6 +332,8 @@
- 
- 	batman_packet->seqno = htons(batman_packet->seqno);
- 
-+	/* switch of primaries first hop flag when forwarding */
-+	batman_packet->flags &= ~PRIMARIES_FIRST_HOP;
- 	if (directlink)
- 		batman_packet->flags |= DIRECTLINK;
- 	else
-Index: a/batman-adv-kernelland/proc.c
-===================================================================
---- a/batman-adv-kernelland/proc.c	(revision 1532)
-+++ b/batman-adv-kernelland/proc.c	(working copy)
-@@ -35,6 +35,7 @@
- static struct proc_dir_entry *proc_transt_global_file;
- static struct proc_dir_entry *proc_vis_srv_file, *proc_vis_data_file;
- static struct proc_dir_entry *proc_aggr_file;
-+static struct proc_dir_entry *proc_bond_file;
- 
- static int proc_interfaces_read(struct seq_file *seq, void *offset)
- {
-@@ -462,6 +463,53 @@
- 	return single_open(file, proc_aggr_read, NULL);
- }
- 
-+static int proc_bond_read(struct seq_file *seq, void *offset)
-+{
-+	seq_printf(seq, "%i\n", atomic_read(&bonding_enabled));
-+
-+	return 0;
-+}
-+
-+static ssize_t proc_bond_write(struct file *file, const char __user *buffer,
-+			       size_t count, loff_t *ppos)
-+{
-+	char *bond_string;
-+	int not_copied = 0;
-+	unsigned long bonding_enabled_tmp;
-+	int retval;
-+
-+	bond_string = kmalloc(count, GFP_KERNEL);
-+
-+	if (!bond_string)
-+		return -ENOMEM;
-+
-+	not_copied = copy_from_user(bond_string, buffer, count);
-+	bond_string[count - not_copied - 1] = 0;
-+
-+	retval = strict_strtoul(bond_string, 10, &bonding_enabled_tmp);
-+
-+	if (retval || bonding_enabled_tmp > 1) {
-+		printk(KERN_ERR "batman-adv: Bonding can only be enabled (1) or disabled (0), given value: %li\n", bonding_enabled_tmp);
-+	} else {
-+		printk(KERN_INFO "batman-adv:Changing bonding from: %s (%i) to: %s (%li)\n",
-+		       (atomic_read(&bonding_enabled) == 1 ?
-+			"enabled" : "disabled"),
-+		       atomic_read(&bonding_enabled),
-+		       (bonding_enabled_tmp == 1 ? "enabled" : "disabled"),
-+		       bonding_enabled_tmp);
-+		atomic_set(&bonding_enabled,
-+						(unsigned)bonding_enabled_tmp);
-+	}
-+
-+	kfree(bond_string);
-+	return count;
-+}
-+
-+static int proc_bond_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, proc_bond_read, NULL);
-+}
-+
- /* satisfying different prototypes ... */
- static ssize_t proc_dummy_write(struct file *file, const char __user *buffer,
- 				size_t count, loff_t *ppos)
-@@ -478,6 +526,15 @@
- 	.release	= single_release,
- };
- 
-+static const struct file_operations proc_bond_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= proc_bond_open,
-+	.read		= seq_read,
-+	.write		= proc_bond_write,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
- static const struct file_operations proc_vis_srv_fops = {
- 	.owner		= THIS_MODULE,
- 	.open		= proc_vis_srv_open,
-@@ -567,6 +624,10 @@
- 	if (proc_aggr_file)
- 		remove_proc_entry(PROC_FILE_AGGR, proc_batman_dir);
- 
-+	if (proc_bond_file)
-+		remove_proc_entry(PROC_FILE_BOND, proc_batman_dir);
-+
-+
- 	if (proc_batman_dir)
- #ifdef __NET_NET_NAMESPACE_H
- 		remove_proc_entry(PROC_ROOT_DIR, init_net.proc_net);
-@@ -671,5 +732,15 @@
- 		return -EFAULT;
- 	}
- 
-+	proc_bond_file = create_proc_entry(PROC_FILE_BOND, S_IWUSR | S_IRUGO,
-+					   proc_batman_dir);
-+	if (proc_bond_file) {
-+		proc_bond_file->proc_fops = &proc_bond_fops;
-+	} else {
-+		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_BOND);
-+		cleanup_procfs();
-+		return -EFAULT;
-+	}
-+
- 	return 0;
- }
-Index: a/batman-adv-kernelland/proc.h
-===================================================================
---- a/batman-adv-kernelland/proc.h	(revision 1532)
-+++ b/batman-adv-kernelland/proc.h	(working copy)
-@@ -34,6 +34,7 @@
- #define PROC_FILE_VIS_SRV "vis_server"
- #define PROC_FILE_VIS_DATA "vis_data"
- #define PROC_FILE_AGGR "aggregate_ogm"
-+#define PROC_FILE_BOND "bonding"
- 
- void cleanup_procfs(void);
- int setup_procfs(void);
-Index: a/batman-adv-kernelland/soft-interface.c
-===================================================================
---- a/batman-adv-kernelland/soft-interface.c	(revision 1532)
-+++ b/batman-adv-kernelland/soft-interface.c	(working copy)
-@@ -22,6 +22,7 @@
- #include "main.h"
- #include "soft-interface.h"
- #include "hard-interface.h"
-+#include "routing.h"
- #include "send.h"
- #include "translation-table.h"
- #include "types.h"
-@@ -170,11 +171,14 @@
- 	return 0;
- }
- 
-+
-+
- int interface_tx(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct unicast_packet *unicast_packet;
- 	struct bcast_packet *bcast_packet;
- 	struct orig_node *orig_node;
-+	struct neigh_node *router;
- 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
- 	struct bat_priv *priv = netdev_priv(dev);
- 	struct batman_if *batman_if;
-@@ -227,37 +231,36 @@
- 		if (!orig_node)
- 			orig_node = transtable_search(ethhdr->h_dest);
- 
--		if ((orig_node) &&
--		    (orig_node->batman_if) &&
--		    (orig_node->router)) {
--			if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
--				goto unlock;
-+		router = find_router(orig_node);
- 
--			unicast_packet = (struct unicast_packet *)skb->data;
-+		if (!router)
-+			goto unlock;
- 
--			unicast_packet->version = COMPAT_VERSION;
--			/* batman packet type: unicast */
--			unicast_packet->packet_type = BAT_UNICAST;
--			/* set unicast ttl */
--			unicast_packet->ttl = TTL;
--			/* copy the destination for faster routing */
--			memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
-+		/* don't lock while sending the packets ... we therefore
-+		 * copy the required data before sending */
- 
--			/* net_dev won't be available when not active */
--			if (orig_node->batman_if->if_active != IF_ACTIVE)
--				goto unlock;
-+		batman_if = router->if_incoming;
-+		memcpy(dstaddr, router->addr, ETH_ALEN);
- 
--			/* don't lock while sending the packets ... we therefore
--			 * copy the required data before sending */
-+		spin_unlock_irqrestore(&orig_hash_lock, flags);
- 
--			batman_if = orig_node->batman_if;
--			memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
--			spin_unlock_irqrestore(&orig_hash_lock, flags);
-+		if (batman_if->if_active != IF_ACTIVE)
-+			goto dropped;
- 
--			send_skb_packet(skb, batman_if, dstaddr);
--		} else {
--			goto unlock;
--		}
-+		if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
-+			goto dropped;
-+
-+		unicast_packet = (struct unicast_packet *)skb->data;
-+
-+		unicast_packet->version = COMPAT_VERSION;
-+		/* batman packet type: unicast */
-+		unicast_packet->packet_type = BAT_UNICAST;
-+		/* set unicast ttl */
-+		unicast_packet->ttl = TTL;
-+		/* copy the destination for faster routing */
-+		memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
-+
-+		send_skb_packet(skb, batman_if, dstaddr);
- 	}
- 
- 	priv->stats.tx_packets++;
-Index: a/batman-adv-kernelland/hard-interface.c
-===================================================================
---- a/batman-adv-kernelland/hard-interface.c	(revision 1532)
-+++ b/batman-adv-kernelland/hard-interface.c	(working copy)
-@@ -312,9 +312,9 @@
- 	batman_packet = (struct batman_packet *)(batman_if->packet_buff);
- 	batman_packet->packet_type = BAT_PACKET;
- 	batman_packet->version = COMPAT_VERSION;
--	batman_packet->flags = 0x00;
--	batman_packet->ttl = (batman_if->if_num > 0 ? 2 : TTL);
--	batman_packet->flags = 0;
-+	batman_packet->flags = batman_if->if_num > 0 ?
-+			0x00 : PRIMARIES_FIRST_HOP;
-+	batman_packet->ttl = batman_if->if_num > 0 ? 2 : TTL;
- 	batman_packet->tq = TQ_MAX_VALUE;
- 	batman_packet->num_hna = 0;
- 
-Index: a/batman-adv-kernelland/originator.c
-===================================================================
---- a/batman-adv-kernelland/originator.c	(revision 1532)
-+++ b/batman-adv-kernelland/originator.c	(working copy)
-@@ -221,10 +221,15 @@
- 			orig_node->orig, (orig_node->last_valid / HZ));
- 		return true;
- 	} else {
--		if (purge_orig_neighbors(orig_node, &best_neigh_node))
-+		if (purge_orig_neighbors(orig_node, &best_neigh_node)) {
- 			update_routes(orig_node, best_neigh_node,
- 				      orig_node->hna_buff,
- 				      orig_node->hna_buff_len);
-+			/* set bonding candidates to zero. Will be updated
-+			 * at the next incoming packet for this originator. */
-+
-+			orig_node->bond.candidates = 0;
-+		}
- 	}
- 	return false;
- }
-Index: a/batman-adv-kernelland/main.c
-===================================================================
---- a/batman-adv-kernelland/main.c	(revision 1532)
-+++ b/batman-adv-kernelland/main.c	(working copy)
-@@ -45,6 +45,7 @@
- atomic_t originator_interval;
- atomic_t vis_interval;
- atomic_t aggregation_enabled;
-+atomic_t bonding_enabled;
- int16_t num_hna;
- int16_t num_ifs;
- 
-@@ -85,6 +86,7 @@
- 	atomic_set(&vis_interval, 1000);/* TODO: raise this later, this is only
- 					 * for debugging now. */
- 	atomic_set(&aggregation_enabled, 1);
-+	atomic_set(&bonding_enabled, 0);
- 
- 	/* the name should not be longer than 10 chars - see
- 	 * http://lwn.net/Articles/23634/ */
-Index: a/batman-adv-kernelland/routing.c
-===================================================================
---- a/batman-adv-kernelland/routing.c	(revision 1532)
-+++ b/batman-adv-kernelland/routing.c	(working copy)
-@@ -352,6 +352,106 @@
- 	return is_duplicate;
- }
- 
-+/* mark possible bonding candidates in the neighbor list */
-+static void update_bonding(struct orig_node *orig_node,
-+				struct orig_node *orig_neigh_node,
-+				struct batman_packet *batman_packet)
-+{
-+	int candidates;
-+	int interference_candidate;
-+	int best_tq;
-+	struct neigh_node *tmp_neigh_node, *tmp_neigh_node2;
-+    struct neigh_node *first_candidate, *last_candidate;
-+
-+	/* don't care if bonding is not enabled */
-+	if (!atomic_read(&bonding_enabled)) {
-+		orig_node->bond.candidates = 0;
-+		return;
-+	}
-+
-+	if (batman_packet->flags & PRIMARIES_FIRST_HOP)
-+		memcpy(orig_neigh_node->primary_addr,
-+						orig_node->orig, ETH_ALEN);
-+	 else
-+		return;
-+
-+	/* update the candidates for this originator */
-+	if (!orig_node->router) {
-+		orig_node->bond.candidates = 0;
-+		return;
-+	}
-+
-+	best_tq = orig_node->router->tq_avg;
-+
-+	/* update bonding candidates */
-+
-+	candidates = 0;
-+
-+	/* mark other nodes which also received "PRIMARIES FIRST HOP" packets
-+	 * as "bonding partner" */
-+
-+	/* first, zero the list */
-+	list_for_each_entry(tmp_neigh_node, &orig_node->neigh_list, list) {
-+		tmp_neigh_node->next_bond_candidate = NULL;
-+	}
-+
-+	first_candidate = NULL;
-+	last_candidate = NULL;
-+	list_for_each_entry(tmp_neigh_node, &orig_node->neigh_list, list) {
-+
-+		/* only consider if it has the same primary address ...  */
-+		if (memcmp(orig_node->orig,
-+				tmp_neigh_node->orig_node->primary_addr,
-+				ETH_ALEN) != 0)
-+			continue;
-+
-+		/* ... and is good enough to be considered */
-+		if (tmp_neigh_node->tq_avg < best_tq - BONDING_TQ_THRESHOLD)
-+			continue;
-+
-+		/* check if we have another candidate with the same
-+		 * mac address or interface. If we do, we won't
-+		 * select this candidate because of possible interference. */
-+
-+		interference_candidate = 0;
-+		list_for_each_entry(tmp_neigh_node2,
-+				&orig_node->neigh_list, list) {
-+
-+			if (tmp_neigh_node2 == tmp_neigh_node)
-+				continue;
-+
-+			if ((tmp_neigh_node->if_incoming ==
-+				tmp_neigh_node2->if_incoming)
-+				|| (memcmp(tmp_neigh_node->addr,
-+				tmp_neigh_node2->addr, ETH_ALEN) == 0)) {
-+
-+				interference_candidate = 1;
-+				break;
-+			}
-+		}
-+		/* don't care further if it is an interference candidate */
-+		if (interference_candidate)
-+			continue;
-+
-+		if (first_candidate == NULL) {
-+			first_candidate = tmp_neigh_node;
-+			tmp_neigh_node->next_bond_candidate = first_candidate;
-+		} else
-+			tmp_neigh_node->next_bond_candidate = last_candidate;
-+
-+		last_candidate = tmp_neigh_node;
-+
-+		candidates++;
-+	}
-+
-+	if (candidates > 0) {
-+		first_candidate->next_bond_candidate = last_candidate;
-+		orig_node->bond.selected = first_candidate;
-+	}
-+
-+	orig_node->bond.candidates = candidates;
-+}
-+
- void receive_bat_packet(struct ethhdr *ethhdr,
- 				struct batman_packet *batman_packet,
- 				unsigned char *hna_buff, int hna_buff_len,
-@@ -518,6 +618,8 @@
- 		update_orig(orig_node, ethhdr, batman_packet,
- 			    if_incoming, hna_buff, hna_buff_len, is_duplicate);
- 
-+	update_bonding(orig_node, orig_neigh_node, batman_packet);
-+
- 	/* is single hop (direct) neighbor */
- 	if (is_single_hop_neigh) {
- 
-@@ -788,16 +890,67 @@
- 	return ret;
- }
- 
-+/* find a suitable router for this originator, and use
-+ * bonding if possible. */
-+struct neigh_node *find_router(struct orig_node *orig_node)
-+{
-+	struct orig_node *primary_orig_node;
-+	struct orig_node *router_orig;
-+	struct neigh_node *router;
-+	static uint8_t zero_mac[ETH_ALEN] = {0, 0, 0, 0, 0, 0};
-+
-+	if (!orig_node)
-+		return NULL;
-+
-+	if (!orig_node->router)
-+		return NULL;
-+
-+	/* don't care if bonding is not enabled */
-+	if (!atomic_read(&bonding_enabled))
-+		return orig_node->router;
-+
-+	router_orig = orig_node->router->orig_node;
-+
-+	/* if we have something in the primary_addr, we can search
-+	 * for a potential bonding candidate. */
-+	if (memcmp(router_orig->primary_addr, zero_mac, ETH_ALEN) == 0)
-+		return orig_node->router;
-+
-+	/* find the orig_node which has the primary interface. might
-+	 * even be the same as our orig_node in many cases */
-+
-+	primary_orig_node = hash_find(orig_hash, router_orig->primary_addr);
-+	if (!primary_orig_node)
-+		return orig_node->router;
-+
-+	/* with less than 2 candidates, we can't do any
-+	 * bonding and prefer the original router. */
-+
-+	if (primary_orig_node->bond.candidates < 2)
-+		return orig_node->router;
-+
-+	router = primary_orig_node->bond.selected;
-+
-+	/* sanity check - this should never happen. */
-+	if (!router)
-+		return orig_node->router;
-+
-+	/* select the next bonding partner ... */
-+	primary_orig_node->bond.selected = router->next_bond_candidate;
-+
-+	return router;
-+}
-+
- int recv_unicast_packet(struct sk_buff *skb)
- {
- 	struct unicast_packet *unicast_packet;
- 	struct orig_node *orig_node;
-+	struct neigh_node *router;
- 	struct ethhdr *ethhdr;
- 	struct batman_if *batman_if;
- 	struct sk_buff *skb_old;
- 	uint8_t dstaddr[ETH_ALEN];
- 	int hdr_size = sizeof(struct unicast_packet);
--	int ret;
- 	unsigned long flags;
- 
- 	/* drop packet if it has not necessary minimum size */
-@@ -832,42 +985,43 @@
- 		return NET_RX_DROP;
- 	}
- 
--	ret = NET_RX_DROP;
- 	/* get routing information */
- 	spin_lock_irqsave(&orig_hash_lock, flags);
- 	orig_node = ((struct orig_node *)
- 		     hash_find(orig_hash, unicast_packet->dest));
- 
--	if ((orig_node != NULL) &&
--	    (orig_node->batman_if != NULL) &&
--	    (orig_node->router != NULL)) {
-+	router = find_router(orig_node);
- 
--		/* don't lock while sending the packets ... we therefore
--		 * copy the required data before sending */
--		batman_if = orig_node->batman_if;
--		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
--		spin_unlock_irqrestore(&orig_hash_lock, flags);
-+	if (!router) {
-+		spin_lock_irqsave(&orig_hash_lock, flags);
-+		return NET_RX_DROP;
-+	}
- 
--		/* create a copy of the skb, if needed, to modify it. */
--		if (!skb_clone_writable(skb, sizeof(struct unicast_packet))) {
--			skb_old = skb;
--			skb = skb_copy(skb, GFP_ATOMIC);
--			if (!skb)
--				return NET_RX_DROP;
--			unicast_packet = (struct unicast_packet *) skb->data;
--			kfree_skb(skb_old);
--		}
--		/* decrement ttl */
--		unicast_packet->ttl--;
-+	/* don't lock while sending the packets ... we therefore
-+	 * copy the required data before sending */
- 
--		/* route it */
--		send_skb_packet(skb, batman_if, dstaddr);
--		ret = NET_RX_SUCCESS;
-+	batman_if = router->if_incoming;
-+	memcpy(dstaddr, router->addr, ETH_ALEN);
- 
--	} else
--		spin_unlock_irqrestore(&orig_hash_lock, flags);
-+	spin_unlock_irqrestore(&orig_hash_lock, flags);
- 
--	return ret;
-+	/* create a copy of the skb, if needed, to modify it. */
-+	if (!skb_clone_writable(skb, sizeof(struct unicast_packet))) {
-+		skb_old = skb;
-+		skb = skb_copy(skb, GFP_ATOMIC);
-+		if (!skb)
-+			return NET_RX_DROP;
-+		unicast_packet = (struct unicast_packet *) skb->data;
-+		kfree_skb(skb_old);
-+	}
-+
-+	/* decrement ttl */
-+	unicast_packet->ttl--;
-+
-+	/* route it */
-+	send_skb_packet(skb, batman_if, dstaddr);
-+
-+	return NET_RX_SUCCESS;
- }
- 
- 
-Index: a/batman-adv-kernelland/main.h
-===================================================================
---- a/batman-adv-kernelland/main.h	(revision 1532)
-+++ b/batman-adv-kernelland/main.h	(working copy)
-@@ -58,6 +58,11 @@
- #define LOG_BUF_LEN 8192	  /* has to be a power of 2 */
- #define ETH_STR_LEN 20
- 
-+/* how much worse secondary interfaces may be to
-+ * to be considered as bonding candidates */
-+
-+#define BONDING_TQ_THRESHOLD	50
-+
- #define MAX_AGGREGATION_BYTES 512 /* should not be bigger than 512 bytes or
- 				   * change the size of
- 				   * forw_packet->direct_link_flags */
-@@ -131,6 +136,7 @@
- extern atomic_t originator_interval;
- extern atomic_t vis_interval;
- extern atomic_t aggregation_enabled;
-+extern atomic_t bonding_enabled;
- extern int16_t num_hna;
- extern int16_t num_ifs;
- 
-Index: a/batman-adv-kernelland/routing.h
-===================================================================
---- a/batman-adv-kernelland/routing.h	(revision 1532)
-+++ b/batman-adv-kernelland/routing.h	(working copy)
-@@ -38,3 +38,4 @@
- int recv_vis_packet(struct sk_buff *skb);
- int recv_bat_packet(struct sk_buff *skb,
- 				struct batman_if *batman_if);
-+struct neigh_node *find_router(struct orig_node *orig_node);
-
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH "BATCTL" "8" "Jan 04, 2010" "Linux" "B.A.T.M.A.N. Advanced Control Tool"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.\" --------------------------------------------------------------------------
+.\" Process this file with
+.\" groff -man batctl.8 -Tutf8
+.\" --------------------------------------------------------------------------
+.ad l
+.SH NAME
+batctl \- B.A.T.M.A.N. advanced control and management tool
+.SH SYNOPSIS
+.B batctl
+.I [\fIbatctl\-options\fP]\ \fIcommand\fP\ [\fIcommand\-options\fP]
+.br
+.SH DESCRIPTION
+batctl offers a convenient way to configure the batman\-adv kernel
+module as well as displaying debug information such as originator
+tables, translation tables and the debug log. In combination with a
+bat\-hosts file batctl allows the use of host names instead of MAC
+addresses.
+.PP
+B.A.T.M.A.N. advanced operates on layer 2. Thus all hosts
+participating in the virtual switched network are transparently
+connected together for all protocols above layer 2. Therefore the
+common diagnosis tools do not work as expected. To overcome these
+problems batctl contains the commands \fBping\fP, \fBtraceroute\fP,
+\fBtcpdump\fP which provide similar functionality to the normal
+\fBping\fP(1), \fBtraceroute\fP(1), \fBtcpdump\fP(1) commands, but
+modified to layer 2 behaviour or using the B.A.T.M.A.N. advanced
+protocol.
+.PP
+.PP
+.SH OPTIONS
+.TP
+.I \fBbatctl\-options:
+\-h	print general batctl help
+.br
+\-v	print batctl version
+.br
+.TP
+.I \fBcommands:
+.IP "\fBinterface\fP|\fBif\fP	[\fBnone\fP|\fIinterface\fP]"
+If no parameter is given the current interface settings are displayed
+otherwise the parameter(s) are added as new interfaces. Use the "none"
+keyword to deactivate all interfaces.
+.br
+.IP "\fBoriginators\fP|\fBo\fP   [\fB\-b\fP][\fB\-n\fP]"
+Display the originator table. Once started batctl will refresh the
+displayed originator table every second. The "\-b" option causes the
+table to be displayed only once (useful for scripts). If "\-n" is
+given batctl will not replace the MAC addresses with bat\-host names
+in the output.
+.br
+.IP "\fBinterval\fP|\fBit\fP	[\fIorig_interval\fP]"
+If no parameter is given the current originator interval setting is
+displayed otherwise the parameter is used to set the originator
+interval. The interval is in units of milliseconds.
+.br
+.IP "\fBloglevel\fP|\fBll\fP	[\fIlevel\fP]"
+If no parameter is given the current log level settings are displayed
+otherwise the parameter is used to set the log level. Level 0 disables
+all logging. Level 1 enables messages related to routing / flooding /
+broadcasting. Level 2 enables messages related to route or hna added /
+changed / deleted. Level 3 enables all messages. The messages are sent
+to the kernel log. Use \fBdmesg\fP(1) to see them.
+.br
+.IP "\fBlog\fP|\fBl\fP           [\fIlogfile\fP][\fB\-b\fP][\fB\-n\fP]\fP"
+batctl will read the file logfile, or stdin if the logfile parameter
+is not given, applying filtering so only the B.A.T.M.A.N. Advanced
+messages are displayed. Whenever there are new log messages appended
+to the file batctl will display them. The option "\-b" causes batctl
+to exit once the end of the file has been reached. If "\-n" is given
+batctl will not replace the MAC addresses with bat\-host names in the
+output.
+.br
+.IP "\fBtranslocal\fP|\fBtl\fP   [\fB\-b\fP][\fB\-n\fP]"
+Display the local translation table. batctl will refresh the
+displayed table every second. The "\-b" option causes the table to be
+displayed only once (useful for scripts). If "\-n" is given batctl
+will not replace the MAC addresses with bat\-host names in the output.
+.br
+.IP "\fBtransglobal\fP|\fBtg\fP  [\fB\-b\fP][\fB\-n\fP]"
+Display the global translation table. batctl will refresh the
+displayed table every second. The "\-b" option causes the table to be
+displayed only once (useful for scripts). If "\-n" is given batctl
+will not replace the MAC addresses with bat\-host names in the output.
+.br
+.IP "\fBvis dot\fP         [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-h\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
+Display the visualisation data in graphviz \fBdot\fP(1) format. If
+"\-\-numbers" or "\-n" is given batctl will not replace the MAC
+addresses with bat-host names in the output. With "\-\-no-HNA" or
+"\-h" the HNA entries are not displayed, so the pure mesh topology can
+be seen. With "\-\-no-2nd" or "\-2" a dot cluster is not formed around
+primary and secondary addresses from the same device.
+.br
+.IP "\fBvis json\fP        [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-h\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
+Display the visualisation data in JSON format. If "\-\-numbers" or
+"\-n" is given batctl will not replace the MAC addresses with bat-host
+names in the output. With "\-\-no-HNA" or "\-h" the HNA entries are
+not displayed, so the pure mesh topology can be seen. With
+"\-\-no-2nd" or "\-2" a dot cluster is not formed around primary and
+secondary addresses from the same device.
+.br
+.IP "\fBaggregation\fP|\fBag\fP	[\fB1\fP|\fB0\fP]"
+If no parameter is given the current aggregation setting is displayed.
+Otherwise the parameter is used to enable or disable packet
+aggregation.
+.br
+.IP "\fBping\fP|\fBp\fP	[\fB\-c \fP\fIcount\fP][\fB\-i \fP\fIinterval\fP][\fB\-t \fP\fItime\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
+Layer 2 ping of a MAC address or bat\-host name.  batctl will try to
+find the bat\-host name if the given parameter was not a MAC
+address. The "\-c" option tells batctl how man pings should be sent
+before the program exits. Without the "\-c" option batctl will continue
+pinging without end. Use CTRL + C to stop it.  With "\-i" and "\-t"
+you can set the default interval between pings and the timeout time
+for replies, both in seconds.
+.br
+.IP "\fBtraceroute\fP|\fBtr\fP	[\fB\-n\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
+Layer 2 traceroute to a MAC address or bat\-host name. batctl will try
+to find the bat\-host name if the given parameter was not a MAC
+address. batctl will send 3 packets to each host and display the
+response time. If "\-n" is given batctl will not replace the MAC
+addresses with bat\-host names in the output.
+.br
+.IP "\fBtcpdump\fP|\fBtd\fP	[\fB\-p \fP\fIfilter\fP][\fB\-n\fP] \fIinterface ...\fP"
+batctl will display all packets that are seen on the given
+interface(s). The "\-p" options allows the filtering of certain packet
+types: 1 - batman ogm packets, 2 - batman icmp packets, 4 - unicast
+packets, 8 - broadcast packets, 16 - vis packets, and 32 - none batman
+packets. These numbers can be added to filter more than one packet
+type, e.g. use "\-p 3" to display batman ogm packets and batman icmp
+packets only. If "\-n" is given batctl will not replace the MAC
+addresses with bat\-host names in the output.
+.br
+.IP "\fBbisect\fP		[\fB\-l \fP\fIMAC\fP][\fB\-t \fP\fIMAC\fP][\fB\-r \fP\fIMAC\fP][\fB\-s \fP\fImin\fP [\fB\- \fP\fImax\fP]][\fB\-o \fP\fIMAC\fP][\fB\-n\fP] \fIlogfile1\fP [\fIlogfile2\fP ... \fIlogfileN\fP]"
+Analyses the logfiles to build a small internal database of all sent
+sequence numbers and routing table changes. This database can then be
+analyzed in a number of different ways. With "\-l" the database can be
+used to search for routing loops. Use "\-t" to trace OGMs of a host
+throughout the network. Use "\-r" to display routing tables of the
+nodes. The option "\-s" can be used to limit the output to a range of
+sequence numbers, between min and max, or to one specific sequence
+number, min. Furthermore using "\-o" you can filter the output to a
+specified originator. If "\-n" is given batctl will not replace the
+MAC addresses with bat\-host names in the output.
+.br
+.SH FILES
+.TP
+.I "\fBbat-hosts\fP"
+This file is similar to the /etc/hosts file. You can write one MAC
+address and one host name per line. batctl will search for bat-hosts
+in /etc, your home directory and the current directory. The found data
+is used to match MAC address to your provided host name or replace MAC
+addresses in debug output and logs. Host names are much easier to
+remember than MAC addresses.
+.SH SEE ALSO
+.BR ping (1),
+.BR traceroute (1),
+.BR tcpdump (1),
+.BR dmesg (1),
+.BR dot (1)
+.SH AUTHOR
+batctl was written by Andreas Langer <a.langer@q-dsl.de> and Marek
+Lindner <lindner_marek@yahoo.de>.
+.PP
+This manual page was written by Simon Wunderlich
+<siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de> and
+Andrew Lunn <andrew@lunn.ch>
