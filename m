@@ -1,10 +1,14 @@
-Return-Path: <ecforusers@gmail.com>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Tue, 5 Jan 2010 22:20:27 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20100105212027.GA28353@pandem0nium>
+References: <94CAE17FD1DB4640BF8FF28D61FDFA8A273698@RESQNAOEX01.qnao.net>
 MIME-Version: 1.0
-Date: Tue, 5 Jan 2010 12:35:49 -0500
-Message-ID: <5522db2e1001050935j3ea06437k3ffe0119d34d93b3@mail.gmail.com>
-From: Eric Smith <ecforusers@gmail.com>
-Content-Type: multipart/alternative; boundary=001636c5971bcf483b047c6e44db
-Subject: [B.A.T.M.A.N.] mdns over batman-adv
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="VS++wcV0S1rZb1Fb"
+Content-Disposition: inline
+In-Reply-To: <94CAE17FD1DB4640BF8FF28D61FDFA8A273698@RESQNAOEX01.qnao.net>
+Subject: Re: [B.A.T.M.A.N.] batman adv to batmand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,28 +20,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---001636c5971bcf483b047c6e44db
-Content-Type: text/plain; charset=ISO-8859-1
 
-I am using batman-adv and can see multiple nodes in my ad-hoc network.
- However I can't seem to see the avahi services of the nodes that require a
-hop.  Is there some configuration I need to get this to work?
-
-If avahi doesn't work, would bonjour or JmDNS work better?
-
-Thanks
-
---001636c5971bcf483b047c6e44db
-Content-Type: text/html; charset=ISO-8859-1
+--VS++wcV0S1rZb1Fb
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-I am using batman-adv and can see multiple nodes in my ad-hoc network. =A0H=
-owever I can&#39;t seem to see the avahi services of the nodes that require=
- a hop. =A0Is there some configuration I need to get this to work?<div><br>=
-</div>
-<div>If avahi doesn&#39;t work, would bonjour or JmDNS work better?</div><d=
-iv><br></div><div>Thanks</div>
+no, they operate on different layers.
 
---001636c5971bcf483b047c6e44db--
+On Tue, Jan 05, 2010 at 09:00:15AM -0500, Conner, Eric wrote:
+> Can batman adv nodes see batmand nodes and vice versa?
+>=20
+> =20
+>=20
+> =20
+>=20
+> =20
+>=20
+> Eric C. Conner
+>=20
+> Senior Software Engineer
+>=20
+> QinetiQ North America
+>=20
+> Technology Solutions Group
+>=20
+> 110 Corporate Dr.; Unit 2
+>=20
+> Portsmouth, NH 03801=20
+>=20
+> =20
+>=20
+> Work: (603)427-0205 ext. 208
+>=20
+> =20
+>=20
+> Eric.Conner@qinetiq-na.com
+>=20
+> www.qinetiq-na.com
+>=20
+> =20
+>=20
+> =20
+>=20
+
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@lists.open-mesh.org
+> https://lists.open-mesh.net/mm/listinfo/b.a.t.m.a.n
+
+
+--VS++wcV0S1rZb1Fb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAktDrRsACgkQrzg/fFk7axaCewCfQlhKWPMrthUqBG14V7z7SYSz
+DesAn2GPu6DxYwEAFHWJR2zjneHxYszy
+=qgqc
+-----END PGP SIGNATURE-----
+
+--VS++wcV0S1rZb1Fb--
