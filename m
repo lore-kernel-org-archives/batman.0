@@ -1,17 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 7 Jan 2010 13:23:28 +0800
-References: <20091231033752.GA18781@Sellars>
-	<201001030326.02365.lindner_marek@yahoo.de>
-	<20100105042058.GA3102@Linus-Debian>
-In-Reply-To: <20100105042058.GA3102@Linus-Debian>
+Return-Path: <andrew@lunn.ch>
+Date: Thu, 7 Jan 2010 07:15:36 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100107061536.GF7597@lunn.ch>
+References: <1262454706-6137-1-git-send-email-sven.eckelmann@gmx.de>
+	<20100104105146.GA25037@lunn.ch> <20100104191155.GA32331@lunn.ch>
+	<201001071259.14064.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201001071323.28234.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: atomic variable for
-	vis-srv activation
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001071259.14064.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Correct smaller typographical errors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,49 +21,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday 05 January 2010 12:20:58 Linus L=FCssing wrote:
-> Hmm, so far we are having too modes only, vis server being enabled
-> or disabled. But in those packet functions we are talking about
-> types (two ones only so far again) instead. In the second one I found it
-> ok to use the defines, but for the proc.c switching, I found a
-> simple 0 or 1 more intuitive, as you already know that this
-> function is for enabling/disabling the vis server and you don't
-> have to wonder about a certain vis-types field in the vis-packet
-> format. Hmm, I'm also wondering, are there any plans for
-> introducing other vis_types? (What would you think about changing
-> the 8 bits vis_type field to flags instead?)
+On Thu, Jan 07, 2010 at 12:59:13PM +0800, Marek Lindner wrote:
+> On Tuesday 05 January 2010 03:11:55 Andrew Lunn wrote:
+> > Here is the re-worked batctl.8 file. I made quite a lot of
+> > changes. Since the diff will be bigger than the plain file, here is
+> > the plain file.
+> 
+> Applied in rev 1533. Thanks for the review!
+> 
+> By the way, batctl vis still has "-h" as an option which does not show the 
+> help output. This is rather unusual. Do you mind choosing another letter ? 
+> I asked that before but maybe it got lost in the stream of mails.  :)
 
-I think using defines instead of hard-coded values always is the better cho=
-ice.=20
-Even if it is more intuitive for you now you never know when this code is=20
-going to be extended. In addition, you still want to understand the code in=
- 6=20
-months and/or make it easier of others to understand.
+batctl: VIS subcommand uses -h for help/usage.
 
-Whether it makes sense to rename more variables / defines is another discus=
-sion=20
-and belongs into another patch. :)
-
-
-> Damn it, you are right :). I assume, that it'd be ok to remove the default
-> value being set in vis_init and explicitly setting this field
-> every time a new vis packet gets generated in generate_vis_packet()
-> (instead of updating this variable from proc.c too)?
-
-I think a default value is good to have.  ;-)
-generate_vis_packet() looks like a good place to update the packet's variab=
-le.
-
-
-> Yes, sorry, you're right I'd removed the
-> server/client/enabled/disabled things and added just 0/1 as input
-> values for proc to make the syntax similar to the aggregation
-> stuff and simple in general for the kernel module. I'm going to put
-> that in a seperate patch.
-
-Great.
-
-Regards,
-Marek
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+Index: batctl/vis.c
+===================================================================
+--- batctl/vis.c	(revision 1534)
++++ batctl/vis.c	(working copy)
+@@ -55,9 +55,9 @@
+ 
+ static void usage(void)
+ {
+-	printf("batctl vis dot {--no-HNA|-h} {--no-2nd|-2} {--numbers|-n}\n");
++	printf("batctl vis dot {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
+ 	printf("or\n");
+-	printf("batctl vis json {--no-HNA|-h} {--no-2nd|-2} {--numbers|-n}\n");
++	printf("batctl vis json {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
+ }
+ 
+ static void dot_print_tq(char *orig, char *from, const long tq)
+@@ -271,18 +271,18 @@
+ 	while (1) {
+ 		int option_index = 0;
+ 		static struct option long_options[] = {
+-			{"no-HNA", 0, 0, 'h'},
++			{"no-HNA", 0, 0, 'H'},
+ 			{"no-2nd", 0, 0, '2'},
+ 			{"numbers", 0, 0, 'n'},
+ 			{0, 0, 0, 0}
+ 		};
+ 
+-		c = getopt_long(argc, argv, "h2n", long_options, &option_index);
++		c = getopt_long(argc, argv, "hH2n", long_options, &option_index);
+ 		if (c == -1)
+ 			break;
+ 
+ 		switch (c) {
+-		case 'h':
++		case 'H':
+ 			with_HNA = false;
+ 			break;
+ 		case '2':
+@@ -291,6 +291,7 @@
+ 		case 'n':
+ 			with_names = false;
+ 			break;
++		case 'h':
+ 		default:
+ 			usage();
+ 			return -1;
+Index: batctl/man/batctl.8
+===================================================================
+--- batctl/man/batctl.8	(revision 1534)
++++ batctl/man/batctl.8	(working copy)
+@@ -99,18 +99,18 @@
+ displayed only once (useful for scripts). If "\-n" is given batctl
+ will not replace the MAC addresses with bat\-host names in the output.
+ .br
+-.IP "\fBvis dot\fP         [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-h\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
++.IP "\fBvis dot\fP         [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
+ Display the visualisation data in graphviz \fBdot\fP(1) format. If
+ "\-\-numbers" or "\-n" is given batctl will not replace the MAC
+ addresses with bat-host names in the output. With "\-\-no-HNA" or
+-"\-h" the HNA entries are not displayed, so the pure mesh topology can
++"\-H" the HNA entries are not displayed, so the pure mesh topology can
+ be seen. With "\-\-no-2nd" or "\-2" a dot cluster is not formed around
+ primary and secondary addresses from the same device.
+ .br
+-.IP "\fBvis json\fP        [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-h\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
++.IP "\fBvis json\fP        [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
+ Display the visualisation data in JSON format. If "\-\-numbers" or
+ "\-n" is given batctl will not replace the MAC addresses with bat-host
+-names in the output. With "\-\-no-HNA" or "\-h" the HNA entries are
++names in the output. With "\-\-no-HNA" or "\-H" the HNA entries are
+ not displayed, so the pure mesh topology can be seen. With
+ "\-\-no-2nd" or "\-2" a dot cluster is not formed around primary and
+ secondary addresses from the same device.
