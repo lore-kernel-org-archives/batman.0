@@ -1,13 +1,16 @@
-Return-Path: <alx@dd19.de>
-Message-Id: <DE721D43-8031-4174-8357-DE4A475A7898@dd19.de>
-From: Alex Morlang <alx@dd19.de>
-In-Reply-To: <200912181714.58212.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 7 Jan 2010 21:33:06 +0800
+References: <1262454706-6137-1-git-send-email-sven.eckelmann@gmx.de>
+	<201001071259.14064.lindner_marek@yahoo.de>
+	<20100107061536.GF7597@lunn.ch>
+In-Reply-To: <20100107061536.GF7597@lunn.ch>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v936)
-Date: Thu, 7 Jan 2010 08:44:36 +0100
-References: <200912181714.58212.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. V outlook
+Message-Id: <201001072133.07084.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Correct smaller typographical errors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,26 +22,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Thursday 07 January 2010 14:15:36 Andrew Lunn wrote:
+> batctl: VIS subcommand uses -h for help/usage.
+> 
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 
-Am 18.12.2009 um 10:14 schrieb Marek Lindner:
+Thanks for the quick fix (applied in rev 1535)!
 
->
-> Hey,
->
-> I wrote a summary regarding the current ideas how B.A.T.M.A.N. V  
-> could look
-> like: http://www.open-mesh.net/wiki/2009-12-18-batman-v-outlook
->
-> Feedback welcome!
->
-
-are you considering attaching metrics to HNA?
-
-How about ipv6?
-
-> Cheers,
-> Marek
-
-Gruss, Alex
+Regards,
+Marek
