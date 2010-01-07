@@ -1,12 +1,10 @@
-Return-Path: <zoobab@gmail.com>
+Return-Path: <ecforusers@gmail.com>
 MIME-Version: 1.0
-Sender: zoobab@gmail.com
-Date: Thu, 7 Jan 2010 15:15:59 +0100
-Message-ID: <560c7c9a1001070615g7080633fm2878af30cd823087@mail.gmail.com>
-From: Benjamin Henrion <bh@udev.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] Wireless Battle Mesh v2.7182 next 26-28 Feb in
-	Hasselt (Belgium)
+Date: Thu, 7 Jan 2010 09:35:50 -0500
+Message-ID: <5522db2e1001070635m2f53c430sabf642e701ff24f4@mail.gmail.com>
+From: ecfu <ecforusers@gmail.com>
+Content-Type: multipart/alternative; boundary=0016e64ea928d1c2b5047c93fc33
+Subject: [B.A.T.M.A.N.] link local mcast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,22 +16,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Battle Mesh Organizers <battlemesh-organizers@ml.ninux.org>
-Cc: code31@code31.lahaag.org, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>, niouz@reseaucitoyen.be, Babel-users@lists.alioth.debian.org, OLSR discussion and development <olsr-users@olsr.org>
+To: batman users <b.a.t.m.a.n@lists.open-mesh.org>
 
-Join the Wireless Battle Mesh v2.7182 next 26-28 Feb in Hasselt (Belgium):
+--0016e64ea928d1c2b5047c93fc33
+Content-Type: text/plain; charset=ISO-8859-1
 
-http://hackerspace.be/Wireless_Battle_Mesh_v_2.7182
+Does Batman Adv provide correct mcast routing for link-local mcast groups?
 
-Please forward to your wireless mailing-lists, blogs, etc...
+--0016e64ea928d1c2b5047c93fc33
+Content-Type: text/html; charset=ISO-8859-1
 
--- 
-Benjamin Henrion <bhenrion at ffii.org>
-FFII Brussels - +32-484-566109 - +32-2-4148403
-"In July 2005, after several failed attempts to legalise software
-patents in Europe, the patent establishment changed its strategy.
-Instead of explicitly seeking to sanction the patentability of
-software, they are now seeking to create a central European patent
-court, which would establish and enforce patentability rules in their
-favor, without any possibility of correction by competing courts or
-democratically elected legislators."
+<span class="Apple-style-span" style="font-family: &#39;Times New Roman&#39;; font-size: medium; "><pre style="white-space: pre-wrap; ">Does Batman Adv provide correct mcast routing for link-local mcast groups?</pre></span>
+
+--0016e64ea928d1c2b5047c93fc33--
