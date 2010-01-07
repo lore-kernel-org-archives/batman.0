@@ -1,15 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 7 Jan 2010 21:23:31 +0800
-References: <200912181714.58212.lindner_marek@yahoo.de>
-	<DE721D43-8031-4174-8357-DE4A475A7898@dd19.de>
-In-Reply-To: <DE721D43-8031-4174-8357-DE4A475A7898@dd19.de>
+Return-Path: <zoobab@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001072123.32104.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. V outlook
+Sender: zoobab@gmail.com
+Date: Thu, 7 Jan 2010 15:15:59 +0100
+Message-ID: <560c7c9a1001070615g7080633fm2878af30cd823087@mail.gmail.com>
+From: Benjamin Henrion <bh@udev.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Wireless Battle Mesh v2.7182 next 26-28 Feb in
+	Hasselt (Belgium)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,23 +18,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Battle Mesh Organizers <battlemesh-organizers@ml.ninux.org>
+Cc: code31@code31.lahaag.org, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>, niouz@reseaucitoyen.be, Babel-users@lists.alioth.debian.org, OLSR discussion and development <olsr-users@olsr.org>
 
-On Thursday 07 January 2010 15:44:36 Alex Morlang wrote:
-> are you considering attaching metrics to HNA?
+Join the Wireless Battle Mesh v2.7182 next 26-28 Feb in Hasselt (Belgium):
 
-That is not necessary as each non-batman host is connected to a batman host 
-which has a metric. Therefore the implementation just needs to support the HNA 
-metric. The batman daemon does so since quite a long time. It is on the 
-feature list for batman-adv 0.3 but does not require any protocol changes 
-unless I miss your point.
+http://hackerspace.be/Wireless_Battle_Mesh_v_2.7182
 
+Please forward to your wireless mailing-lists, blogs, etc...
 
-> How about ipv6?
-
-I can't follow you here. The length of the protocol identifier (IPv4 
-address/IPv6 address/mac address/random number) is not relevant for the 
-routing protocol.
-
-Regards,
-Marek
+-- 
+Benjamin Henrion <bhenrion at ffii.org>
+FFII Brussels - +32-484-566109 - +32-2-4148403
+"In July 2005, after several failed attempts to legalise software
+patents in Europe, the patent establishment changed its strategy.
+Instead of explicitly seeking to sanction the patentability of
+software, they are now seeking to create a central European patent
+court, which would establish and enforce patentability rules in their
+favor, without any possibility of correction by competing courts or
+democratically elected legislators."
