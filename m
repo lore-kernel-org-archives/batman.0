@@ -1,17 +1,14 @@
-Return-Path: <alx@dd19.de>
-Message-Id: <FA411C2E-E989-4352-9ACC-3D8B7653031E@dd19.de>
-From: Alex Morlang <alx@dd19.de>
-In-Reply-To: <20100107211430.GA5373@pandem0nium>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v936)
-Date: Thu, 7 Jan 2010 23:39:37 +0100
-References: <200912181714.58212.lindner_marek@yahoo.de>
-	<DE721D43-8031-4174-8357-DE4A475A7898@dd19.de>
-	<201001072123.32104.lindner_marek@yahoo.de>
-	<914B198A-C2DA-4222-9306-B81CFFE88284@dd19.de>
-	<20100107211430.GA5373@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. V outlook
+Return-Path: <gwirth79@gmail.com>
+Message-ID: <4B47674B.6010508@gmail.com>
+Date: Fri, 08 Jan 2010 09:11:39 -0800
+From: Gus Wirth <gwirth79@gmail.com>
+MIME-Version: 1.0
+References: <200912181714.58212.lindner_marek@yahoo.de>	<DE721D43-8031-4174-8357-DE4A475A7898@dd19.de>	<201001072123.32104.lindner_marek@yahoo.de>	<914B198A-C2DA-4222-9306-B81CFFE88284@dd19.de>
+	<20100107214343.GA2554@Linus-Debian>
+In-Reply-To: <20100107214343.GA2554@Linus-Debian>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Maximum MTU (was Re:  B.A.T.M.A.N. V outlook)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,65 +20,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+On 01/07/2010 01:43 PM, Linus L=FCssing wrote:
+[snip]
+> In general, batman-adv adds a little header of 24 Bytes. But this
+> kind of extra cost also applies to packets between batman nodes,
+> not only when a packet comes from the connected network. So if you
+> are bridging any other networks/hosts into the mesh network (i.e.
+> bridging eth0 + bat0) does not matter, you should just a) increase
+> the MTU of the mesh-interfaces to 1524 which is usually not a
+> problem for wifi interfaces or b) decrease the MTU on all hosts to
+> 1476 (usually not so do-able).
 
-Am 07.01.2010 um 22:14 schrieb Simon Wunderlich:
+Would you happen to know what the maximum MTU you could use on the
+wireless interface?
 
-> Hello,
->
-> we probably did not make this very clear in the document, but we will
-> focus our work on batman-adv (layer 2) and will keep the batmand  
-> (layer 3)
-> as it is for now. As a consequence, some ideas for BATMAN V are  
-> layer 2
-> exclusive (mesh bonding, incoming interface based routing).
+For example, if I have an ethernet network that can support jumbo frames
+like on a gigabit interface, how large of an MTU could I use on the
+wireless interface. In my case I'm using Atheros wireless devices, so I
+don't know if that matters.
 
-thanks for that clarification.
-
->
-> On Thu, Jan 07, 2010 at 05:10:39PM +0100, Alex Morlang wrote:
->>
->> Am 07.01.2010 um 14:23 schrieb Marek Lindner:
->>
->>> On Thursday 07 January 2010 15:44:36 Alex Morlang wrote:
->>>> are you considering attaching metrics to HNA?
->>>
->>> That is not necessary as each non-batman host is connected to a  
->>> batman
->>> host
->>> which has a metric. Therefore the implementation just needs to  
->>> support
->>> the HNA
->>> metric. The batman daemon does so since quite a long time. It is on
->>> the
->>> feature list for batman-adv 0.3 but does not require any protocol
->>> changes
->>> unless I miss your point.
->>
->> maybe you do, as you might have costs between the connected network  
->> and
->> the connecting batman node.
->>
->> when you have more then one batman node connecting a network to the
->> mesh, this costs should be relevant.
->>
-> That might be true, however in batman-adv we are dynamically adding  
-> and
-> removing MAC addresses. IMHO, it would not make so much sense to
-> add custom metrics to each mac address. If you need to connect  
-> subnets,
-> it might be feasible to use something like BGP and extract batman  
-> metrics
-> out of the module.
-
-sure, but as i understand, you have no way of exporting STP and RSTP   
-path costs into batman, which could make sense in a mixed wired/ 
-wireless enviroment.
-...
-
-> best regards,
-> 	Simon
-
-Gruss, Alex
-
+Gus
