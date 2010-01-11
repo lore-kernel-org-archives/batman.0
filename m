@@ -1,13 +1,10 @@
-Return-Path: <andrew@lunn.ch>
-Date: Mon, 11 Jan 2010 09:06:43 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100111080643.GA7844@lunn.ch>
-References: <4B4AD36A.60209@gmail.com>
+Return-Path: <ecforusers@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B4AD36A.60209@gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Are older kernels abandoned?
+Date: Mon, 11 Jan 2010 09:45:07 -0500
+Message-ID: <5522db2e1001110645h64053e9bq59bdacdaeab2dbec@mail.gmail.com>
+From: ecfu <ecforusers@gmail.com>
+Content-Type: multipart/alternative; boundary=001636c5971b6741e8047ce495fe
+Subject: [B.A.T.M.A.N.] modprobe
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,28 +16,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: batman users <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sun, Jan 10, 2010 at 11:29:46PM -0800, Gus Wirth wrote:
-> Now that work is under way to incorporate B.A.T.M.A.N (batman-adv) into
-> the mainline Linux kernel, hopefully 2.6.33, will older kernels be
-> abandoned?
-> 
-> I have some embedded systems that are on 2.6.30.10 and running fine, and
-> I really don't want to have to put in a new kernel and recertify the
-> software just to get some improvements to B.A.T.M.A.N.
-> 
-> Is there any consideration to doing something similar to compat-wireless
-> but for B.A.T.M.A.N  (batman-adv) instead?
+--001636c5971b6741e8047ce495fe
+Content-Type: text/plain; charset=ISO-8859-1
 
-Older kernels are still supported. The development work is being
-performed in subversion. This tree has all the backwards compatibility
-code which allows it be compiled on some older kernels, currently
-2.6.20 - 2.6.32.
+The installation instructions say to use insmod to load the batman-adv
+module.  Can you use modprobe?
 
-I then take the code out of subversion and put it into git. The git
-repository has all this backwards compatibility removed in order that
-i can make clean patches for this development work for submission to
-mainline in 2.6.34.
+Basically I just want it to start when the system boots.  Is there an easy
+way to do this?
 
-  Andrew
+Thanks
+
+--001636c5971b6741e8047ce495fe
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+The installation instructions say to use insmod to load the batman-adv modu=
+le. =A0Can you use modprobe? =A0<div><br></div><div>Basically I just want i=
+t to start when the system boots. =A0Is there an easy way to do this?</div>=
+<div>
+<br></div><div>Thanks</div><div><br></div>
+
+--001636c5971b6741e8047ce495fe--
