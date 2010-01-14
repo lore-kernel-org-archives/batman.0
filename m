@@ -1,10 +1,13 @@
-Return-Path: <ecforusers@gmail.com>
+Return-Path: <andrew@lunn.ch>
+Date: Thu, 14 Jan 2010 21:03:59 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100114200359.GB24649@lunn.ch>
+References: <5522db2e1001140540p7af82ba9gd52b375d54a2441d@mail.gmail.com>
 MIME-Version: 1.0
-Date: Thu, 14 Jan 2010 08:40:25 -0500
-Message-ID: <5522db2e1001140540p7af82ba9gd52b375d54a2441d@mail.gmail.com>
-From: ecfu <ecforusers@gmail.com>
-Content-Type: multipart/alternative; boundary=00504501588e8c2589047d200782
-Subject: [B.A.T.M.A.N.] network down timeout
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5522db2e1001140540p7af82ba9gd52b375d54a2441d@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] network down timeout
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,24 +19,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: batman users <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---00504501588e8c2589047d200782
-Content-Type: text/plain; charset=ISO-8859-1
+On Thu, Jan 14, 2010 at 08:40:25AM -0500, ecfu wrote:
+> Is there a configuration setting for batman-adv to timeout on a connection?
+>  i.e. if I lose a node in my network, I noticed it took a long time for that
+> node to leave the originators list.  What is this based on or in other words
+> when does batman-adv declare the lost originator gone?
 
-Is there a configuration setting for batman-adv to timeout on a connection?
- i.e. if I lose a node in my network, I noticed it took a long time for that
-node to leave the originators list.  What is this based on or in other words
-when does batman-adv declare the lost originator gone?
+An originator is purged when it has not been heard from in 
 
---00504501588e8c2589047d200782
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+#define PURGE_TIMEOUT 200000      /* purge originators after time in ms if no
+                                   * valid packet comes in.
 
-Is there a configuration setting for batman-adv to timeout on a connection?=
- =A0i.e. if I lose a node in my network, I noticed it took a long time for =
-that node to leave the originators list. =A0What is this based on or in oth=
-er words when does batman-adv declare the lost originator gone?<div>
-<br></div><div><br></div>
+is 200s = 3.3 minutes.
 
---00504501588e8c2589047d200782--
+   Andrew
