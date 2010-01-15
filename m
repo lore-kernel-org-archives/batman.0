@@ -1,17 +1,17 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 15 Jan 2010 19:39:31 +0100
+Return-Path: <andrew@lunn.ch>
+Date: Fri, 15 Jan 2010 19:50:08 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100115185008.GG24649@lunn.ch>
 References: <20091231033752.GA18781@Sellars>
+	<1263185876-24214-1-git-send-email-linus.luessing@web.de>
 	<201001151124.25877.lindner_marek@yahoo.de>
 	<201001151934.41937.sven.eckelmann@gmx.de>
-In-Reply-To: <201001151934.41937.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1701910.hHz92kyjAd";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001151939.31483.sven.eckelmann@gmx.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001151934.41937.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: atomic variable for vis-srv
-	activation
+ activation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,40 +23,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net, Linus@open-mesh.net
 
---nextPart1701910.hHz92kyjAd
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jan 15, 2010 at 07:34:38PM +0100, Sven Eckelmann wrote:
+> Marek Lindner wrote:
+> > On Monday 11 January 2010 12:57:56 you wrote:
+> > > This fixes the bug discovered by Marek Lindner which did not allow
+> > > turning on the vis-server before an interface has been added. With this
+> > > patch we are using a global atomic variable for activating and
+> > > deactiating the vis-server-mode instead, which can be used before
+> > > inserting an interface.
+> > 
+> > Off-list:
+> > Wollte mir grad deinen Patch reinziehen, aber trotz "git send-email" ist
+> >  auch diese Mail is base64 encoded ?? Im Header sehe ich jedenfalls
+> >  "X-Mailer: git- send-email 1.6.6". Evtl. h?ngt das mit charset (utf8)
+> >  zusammen ?
+> 
+> Aaaalso. Ich habe ersteinmal keine Ahnung woher es kommt. git-format-patch
+> produziert sowas jedenfalls nicht. git-send-email eigentlich auch nicht (der 
+> bleibt immer bei "Content-Type: text/plain; ...". Wenn ich jetzt im Git 
+> Quellcode suche, dann finde ich auch nur funktionen um base64 in Mails zu 
+> dekodieren.
 
-Sorry for the german mail. This was intended to be off the list. I must=20
-accidentally brought that mail back to the mailinglist while playing with=20
-mailman.
+All the patches i've generated so far from git have been plain old
+ASCII, even though some contain extended characters, because of
+umlauts in names. So i agree with Sven, it is more likely to be a
+problem with the mail system somewhere, not git.
 
-Best regards,
-	Sven
-
---nextPart1701910.hHz92kyjAd
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJLULZjAAoJEF2HCgfBJntG5fQQAL9o5ZBrfDXrXdQDJy5HfsEn
-8TVwjLEeIQXXaNguaeEF0SRp+IiLkYEwwwC99HmidGdxGdTz6Nkfw0+gR3/G/1u+
-cWHI/OrtNp646EIEctkxNWjehVoqupldoHtopq+ZUW4349+JYEFr0tkRzya1BN17
-V5fgcUaGKSPvYYOQCZn42WXnysS7Ejca+HFBgEiQiBeqiQaV+F+m/jwA7C/lR8cX
-mwNLoUob++VTDX1pJvXyzvXA+X0EIzMzNCOnbULW3JFM411hkuWItpOVPjFfTpju
-rAvTRZyUziK/og506gq21ZrkJmVdciBqt67LQszMdlM66bArSd6HzdgjV+R1OjBG
-Yk5gDOJvkpaNosrakPd9SBsuIKjn9NqiEtvxlOpJc9E4m9bwwwtTK30LhpBa9uoa
-Ta+eWzNb83fb4RIi7axgzt1TWynfxa4V9ACPR5M8V6czcp9xYYPabqi63yPnX75m
-YYHphMKzG0ycWufdpbfaA9T23g2hsrcmTTVid49PIv3+YQXUJi0o99ybc6h51leH
-bCHsoAL+Qj5Lrgv19jcrx9YddmyIb1Wyly5dDj5JnRyUzxogFPBM1IXxyKF9zSjl
-1UAXkBxHY15qThy/6GL6dzoCliF1iTQAI0e5/VOqsmamdI/IOHaNGL4PtPq6Nhso
-Xt2qoAYGJsBHrtkF6mSd
-=K+VV
------END PGP SIGNATURE-----
-
---nextPart1701910.hHz92kyjAd--
+	Andrew
