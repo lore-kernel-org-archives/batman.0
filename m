@@ -1,15 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 18 Jan 2010 19:31:22 +0800
-References: <20100104182710.GA24091@pandem0nium>
-	<20100117201558.GA8696@pandem0nium>
-In-Reply-To: <20100117201558.GA8696@pandem0nium>
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 18 Jan 2010 12:39:54 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100118113954.GC7844@lunn.ch>
+References: <20100118112706.91160@gmx.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001181931.22344.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Add bonding functionality
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100118112706.91160@gmx.net>
+Subject: Re: [B.A.T.M.A.N.] batman-adv on different archs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,20 +21,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+> The problem comes when I try to add my little ARM based linux box
+> onto the group. Again same sources used (latest stable from the
+> wiki), crosscompiles fine and I can load the module as normal on the
+> box. Setup goes as it should on both the device and the laptop, and
+> both systems seems to be running smoothly. But my laptop can only
+> see the other laptop, and the device doesn't see anyone. The
+> wireless net is working and I can ping each device directly if I
+> assign IP's to the 'real' interfaces, but through bat0 nothing is
+> found. Any idea what is going wrong?
 
-Hi,
+What do you see in /proc/net/batman-adv/originiators on the three
+devices?
 
-> i've just committed this patch in revision 1551, as no further comments and
->  critiques came in. I would consider this patch rather simple, and as
->  experimental feature it is switched off by default anyways ... :)
-> 
-> I've changed only a small thing in the committed patch: When neighbors are
->  purged, the bonding candidate list gets updated instead of bonding
->  switched off.
+Is the ARM device running in big endian or little endian mode? 
 
-did not have the time to go through your patch in much detail. I just scrolled 
-over it and stumbled over routing.c line 1018. I guess you wanted to write:
-spin_*un*lock_irqsave(&orig_hash_lock, flags);
+Any kernel messages? 
 
-Regards,
-Marek
+You may want to rebuild the modules with debugging enabled, see the
+README and then enable it as described in the README.
+
+       Andrew
+
+
