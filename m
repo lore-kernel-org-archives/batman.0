@@ -1,11 +1,15 @@
-Return-Path: <ylonen@gmx.net>
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Mon, 18 Jan 2010 12:27:06 +0100
-From: =?iso-8859-1?Q?=22Juha_Yl=F6nen=22?= <ylonen@gmx.net>
-Message-ID: <20100118112706.91160@gmx.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 18 Jan 2010 19:31:22 +0800
+References: <20100104182710.GA24091@pandem0nium>
+	<20100117201558.GA8696@pandem0nium>
+In-Reply-To: <20100117201558.GA8696@pandem0nium>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] batman-adv on different archs
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001181931.22344.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Add bonding functionality
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,38 +21,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
 
 Hi,
 
-I've been trying to get my embedded project included in my mesh, but no suc=
-cess yet. Could anyone give a pointers what is going wrong?
+> i've just committed this patch in revision 1551, as no further comments and
+>  critiques came in. I would consider this patch rather simple, and as
+>  experimental feature it is switched off by default anyways ... :)
+> 
+> I've changed only a small thing in the committed patch: When neighbors are
+>  purged, the bonding candidate list gets updated instead of bonding
+>  switched off.
 
-I have batman-adv compiled on my laptop, and also for testing purposes on a=
-nother laptop, they see each other and everything is fine. I used the same =
-sources and compiled it cleanly on each.
+did not have the time to go through your patch in much detail. I just scrolled 
+over it and stumbled over routing.c line 1018. I guess you wanted to write:
+spin_*un*lock_irqsave(&orig_hash_lock, flags);
 
-The problem comes when I try to add my little ARM based linux box onto the =
-group. Again same sources used (latest stable from the wiki), crosscompiles=
- fine and I can load the module as normal on the box. Setup goes as it shou=
-ld on both the device and the laptop, and both systems seems to be running =
-smoothly. But my laptop can only see the other laptop, and the device doesn=
-'t see anyone. The wireless net is working and I can ping each device direc=
-tly if I assign IP's to the 'real' interfaces, but through bat0 nothing is =
-found. Any idea what is going wrong?
-
----
-
-I've also played with the batman daemon on the device, with it I the laptop=
- and device can see each other just fine. The problem there is that apparen=
-tly it doesn't really support multicast forwarding? i.e. If I have 3 device=
-s A-B-C, where A does not have direct link to C (batman routes through B), =
-sending a multicast from A can be received in B and vice versa, also same f=
-or C-B, but no messages from A to C. Will I have the same problem with batm=
-an-adv? Or can this be fixed on the daemon?
-
-Best Regards
-   Juha
---=20
-GRATIS f=FCr alle GMX-Mitglieder: Die maxdome Movie-FLAT!
-Jetzt freischalten unter http://portal.gmx.net/de/go/maxdome01
+Regards,
+Marek
