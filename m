@@ -1,15 +1,15 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 19 Jan 2010 16:11:27 +0100
+Date: Tue, 19 Jan 2010 18:12:59 +0100
 References: <20100118112706.91160@gmx.net>
-	<201001192007.38210.lindner_marek@yahoo.de>
-	<20100119145151.294630@gmx.net>
-In-Reply-To: <20100119145151.294630@gmx.net>
+	<201001191611.30799.sven.eckelmann@gmx.de>
+	<20100119153233.319500@gmx.net>
+In-Reply-To: <20100119153233.319500@gmx.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4128943.XGuJRCAdNv";
+Content-Type: multipart/signed; boundary="nextPart1340541.QXdipJ7yfG";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001191611.30799.sven.eckelmann@gmx.de>
+Message-Id: <201001191813.04466.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv on different archs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,72 +22,68 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Juha =?iso-8859-1?q?Yl=F6nen?= <ylonen@gmx.net>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4128943.XGuJRCAdNv
+--nextPart1340541.QXdipJ7yfG
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
 Juha Yl=F6nen wrote:
-> I got the latest trunk up and running, some changes were required to get =
-it
->  to crosscompile for ARM (and 2.6.24 kernel). Same behaviour as before,
->  device log shows a lot of activity, but laptop batman doesn't seem to be
->  doing much anything. I tried the wireshark and got a log ok (which shows=
- a
->  lot of multicast traffic from the device until I disabled the service) b=
-ut
->  I'm at loss to decipher possible batman packages. What should they look
->  like in wireshark? I only noticed couple of IPX packages from device to
->  (broadcast?) but nothing else. I attached the log file, is anyone able to
->  say if there are batman packages included?
+> > As far as I can see only data from 00:22:fa:dc:9a:ce can be seen (send
+> > from us
+> > aka laptop?). Have you tested if the adhoc connection between this two
+> > devices
+> > (arm <-> laptop) is really working (just set up the adhoc network as
+> > usual and
+> > then give them an ip instead of adding to
+> > /proc/net/batman-adv/interfaces. A
+> > simple ping test should be sufficient to say that it works(tm)).
+>=20
+> Yes, ad-hoc itself works pretty well. the device boots up to his default
+>  ad-hoc, and I've sent the module over with scp and did some configuring
+>  over ssh. I did run couple of tests with IP disabled in the interfaces
+>  (set up exactly as in the readme) but recently I've just kept them in the
+>  default setup with IP's, will it cause problems? The problem existed with
+>  non-IP interfaces too.
 
-There is a dissector for wireshark at
- http://gitorious.org/wireshark-batman-plugins/wireshark-batman-adv=20
-(compatible with 0.2, but haven't added new code to make it compatible with=
+batman-adv works on a lower level - so it shouldn't be a really problem in=
 =20
-new functionality in trunk). I will add support for protocol version 9 afte=
-r=20
-finishing some other non-paid work.
-
-Your log is for version 9 of the protocol (trunk). So it is harder to read =
-:)
-
-As far as I can see only data from 00:22:fa:dc:9a:ce can be seen (send from=
- us=20
-aka laptop?). Have you tested if the adhoc connection between this two devi=
-ces=20
-(arm <-> laptop) is really working (just set up the adhoc network as usual =
-and=20
-then give them an ip instead of adding to /proc/net/batman-adv/interfaces. =
-A=20
-simple ping test should be sufficient to say that it works(tm)).
+that situation. Maybe you can "tcpdump -s 0 -w test.dump" on the arm too. I=
+ am=20
+currently not sure why the arm cannot or doesn't send packets at all. The l=
+ogs=20
+in 20100118132935.91200@gmx.net say that it was send, but I currently don't=
+=20
+understand why they don't reach their destination. Maybe a dump from the ar=
+m=20
+reveals the problem - or at least we know if data gets send at all or if th=
+e=20
+data is stopped somewhere else.
 
 Best regards,
 	Sven
 
---nextPart4128943.XGuJRCAdNv
+--nextPart1340541.QXdipJ7yfG
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJLVcugAAoJEF2HCgfBJntG9WQQAIi48cJFg7ZJgF+Gsoyxbary
-im83AML+zTcOryZi1VikjvdUewoIfE8OxeCJREIw3X4MgUBEQTD1LMj5WdLTyAn2
-iVrujUn7AXhuH/eSrG/J1pRQrKMrCQmCEazBGMOeDIsu8Axlsr9MURwQY3jIIAKK
-F2pzw5w2FKB2wnqDKn/iJ8uEiENcM1ES1fm0hgRtA8YQr4y9EJyNkwyeltozP5an
-96mn3LZIeZQRGTCB/Knlfd7Z8AJDCR5SIaLelOpu8/GoQK0/KA6MTBOC0wW+l6H7
-thoA2Gx9Sk/Nq1lM+nOlnHv8LnzPp+Eita15umwnio6hkxB4nUvPaQZj0nNqZ/S5
-TJbsflWnhQlnBoSjgGKyUf780vU1qiUxkiWJXNhO4ioRrGQw8MKk2cpgWmwUiMAb
-hrl5UPmWcNS+SwvTeA2T9cYcXc0E6rgWUOQS0w/VLJ7oYSr4EJzauAsPa8zxtW8K
-HNOkqDC16X7TuNJK3Hyxr8NTbL5uSuyIpF+ExTdidz1GT7aze8wWorq3IUg3EbI6
-nA9okuUcvOxl4M+FdRmiZFOO1ofMqWT4dYw3nvXILrAFQ8C/eZS2bGyJ7UmCcGVE
-OXSiE8OOCvJ8hW2nxgpM9/4+YdXlOESaBdAJE1O0oMuL6bJNarU11TocTzjAg16I
-ZwqKfH0wBaCSoDmumrnO
-=gtSx
+iQIcBAABCgAGBQJLVegbAAoJEF2HCgfBJntGYnQP/jQeOonKJiH2Rp2DvPFkahKB
+56hpVD+BnWtHWqmZf3AxWe4XeWRtAlqvAV1ezL8Dj7BsxgcWFy3Ll7pmzpCGC1by
+PdFz3jjFAZn/QVyoul1F4DPRbSQIrcLrIcnjqZ67S/+rEZEnxap9FyOI6LoaCUzE
+PS5Fgu9n5tmWxyknk8xlKK6gTRboeRQuJMnkVoxbEXPM6DX4TbBLdLGKXOL7RvNs
+DTss6VKadTNxs/hMGnas+WrctuPR4uyfNhA8FxM+fr8LYAQkzIX5Noa7YxQs2Mas
+OOiINfjE465edDmz/2YQ7zt1+8tzW0+shi2Tf9ye4LL0lm2SaGlPvkWwOMfvRc08
+dVEdfHHBSZR5qsv8ErKNlvEDu2rcHlB2S6hKCwedpmZTBG29s7fJv8KAkjvL9t7g
+QggU+ipFLeWh2VdKP9Pz8T0V3aymNQ5TtRLKU5Mr748Js0zU4CN2JLlJCKUfAyvv
+Q0znl0NvTIvzuiYaYgMbLRf06JCvisAjGNHeOI6mvijWLe6d/IbjtmtJrzqMqvZ4
+jLP2DYY48vbdqjSZJQ/uBzF3HGpDKw5OF4y+4iN6mEGg6vgB8z8+VTNozeRZfHbs
+mEq1igbxV6HAYMtMUWLWl8NKuhVi00x2Fp1YSyhBsQZgc3T9abt0wEj3srwkvug0
+jX/8PEjolJ4lUxF2Dm2w
+=nyRB
 -----END PGP SIGNATURE-----
 
---nextPart4128943.XGuJRCAdNv--
+--nextPart1340541.QXdipJ7yfG--
