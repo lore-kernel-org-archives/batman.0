@@ -1,13 +1,15 @@
 Return-Path: <ylonen@gmx.net>
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 20 Jan 2010 14:12:34 +0100
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Wed, 20 Jan 2010 15:05:30 +0100
 From: =?iso-8859-1?Q?=22Juha_Yl=F6nen=22?= <ylonen@gmx.net>
-In-Reply-To: <201001201015.59477.lindner_marek@yahoo.de>
-Message-ID: <20100120131234.4760@gmx.net>
+In-Reply-To: <20100119193701.GA18515@pandem0nium>
+Message-ID: <20100120140530.4750@gmx.net>
 MIME-Version: 1.0
-References: <20100119145806.275330@gmx.net>
-	<201001201015.59477.lindner_marek@yahoo.de>
-Content-Transfer-Encoding: 7bit
+References: <20100118112706.91160@gmx.net>
+	<201001182138.32432.lindner_marek@yahoo.de>	<20100119074334.275290@gmx.net>
+	<201001192007.38210.lindner_marek@yahoo.de>	<20100119145151.294630@gmx.net>
+	<20100119193701.GA18515@pandem0nium>
+Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] batman-adv on different archs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,62 +26,30 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 
 
 -------- Original-Nachricht --------
-> Datum: Wed, 20 Jan 2010 10:15:59 +0800
-> Von: Marek Lindner <lindner_marek@yahoo.de>
+> Datum: Tue, 19 Jan 2010 20:37:01 +0100
+> Von: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
 >
-> Before we dive into debugging the code I'd suggest you send us your
-> complete 
-> interface configuration. Maybe the problem is much more simple than it
-> seems. 
-> Complete configuration means: brctl show, ifconfig, cat /proc/net/batman-
-> adv/interfaces (or batctl if) and ping output. 
+> just as a side note, would you mind sharing your changes which were
+> required to cross compile=20
+> for ARM? batman-adv is supposed to support 2.6.24, and if there is any
+> trouble with this
+> on ARM i'd like to add support for it.
 
-Here we go:
----
-##x> brctl show
-bridge name     bridge id               STP enabled     interfaces
-##> cat interfaces 
-[  active] eth1 00:11:f6:83:af:ab 
-##> ifconfig 
-bat0      Link encap:Ethernet  HWaddr 32:21:CA:8E:37:DC  
-          inet addr:10.0.1.39  Bcast:10.255.255.255  Mask:255.0.0.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1476  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:6 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000 
-          RX bytes:0 (0.0 B)  TX bytes:468 (468.0 B)
+Hi,
 
-eth1      Link encap:Ethernet  HWaddr 00:11:F6:83:AF:AB  
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:179 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:268 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000 
-          RX bytes:6086 (5.9 KiB)  TX bytes:10450 (10.2 KiB)
+I just took a fresh checkout and now it compiles without problems. The erro=
+rs I got were in gateway functionality, so I guess they were under developm=
+ent?
 
-lo        Link encap:Local Loopback  
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0 
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+It's still complining about the bat_printk:
+make[2]: *** No rule to make target `/home/ylo/batman-adv/trunk/batman-adv-=
+kernelland-ARM/bat_printk.o', needed by `/home/ylo/batman-adv/trunk/batman-=
+adv-kernelland-ARM/batman-adv.o'. Stop.
 
-##> route
-Kernel IP routing table
-Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
-10.0.0.0        *               255.0.0.0       U     0      0        0 bat0
-##> ping 10.0.1.40
-PING 10.0.1.40 (10.0.1.40): 56 data bytes
-
---- 10.0.1.40 ping statistics ---
-10 packets transmitted, 0 packets received, 100% packet loss
----
-
-I also checked the return value for dev_queue_xmit in send.c and it was 0. 
+but that's the same on x86, and I just removed bat_printk.o from the target=
+s.
 
 -Juha
-
--Juha
--- 
-Jetzt kostenlos herunterladen: Internet Explorer 8 und Mozilla Firefox 3.5 -
-sicherer, schneller und einfacher! http://portal.gmx.net/de/go/chbrowser
+--=20
+Hilfe f=FCr Haiti! Spende per SMS: Sende UI HAITI an die Nummer 81190.
+Von 5 Euro je SMS (zzgl. SMS-Geb=FChr) gehen 4,83 Euro an UNICEF.
