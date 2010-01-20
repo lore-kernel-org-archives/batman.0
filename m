@@ -1,18 +1,17 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 19 Jan 2010 20:37:01 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20100119193701.GA18515@pandem0nium>
-References: <20100118112706.91160@gmx.net>
-	<201001182138.32432.lindner_marek@yahoo.de>
-	<20100119074334.275290@gmx.net>
-	<201001192007.38210.lindner_marek@yahoo.de>
-	<20100119145151.294630@gmx.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 20 Jan 2010 09:20:34 +0800
+References: <20091231105246.GI8143@lunn.ch>
+	<20100101160502.GA16855@pandem0nium>
+In-Reply-To: <20100101160502.GA16855@pandem0nium>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
-Content-Disposition: inline
-In-Reply-To: <20100119145151.294630@gmx.net>
-Subject: Re: [B.A.T.M.A.N.] batman-adv on different archs
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001200920.34384.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.]
+ =?iso-8859-15?q?=5BPatch_1/1=5D_Staging=3A_batman-?=
+ =?iso-8859-15?q?adv=3A_Use=09printk_=28=25pM=29_for_MAC_addresses?=
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,72 +23,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
 
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hey,
 
-Hello,
+> thank you for the patch, it is committed now in r1526. I've added some
+> changes to your patch to allow compatibility for all currently suported
+> kernels again. This includes:
+> 
+>  * removing ipv4/ipv6 printing support in bat_printk
+>  * pack_hex_byte() (used in bat_printk()) was missing in older kernels
+>  * various stuff in compat.h to avoid regressions from my skb patch
+>  * skb->dev->stats was not available in older kernels
 
-just as a side note, would you mind sharing your changes which were require=
-d to cross compile=20
-for ARM? batman-adv is supposed to support 2.6.24, and if there is any trou=
-ble with this
-on ARM i'd like to add support for it.
+it seems you forgot to upload the bat_printk.c file ...  :)
 
-Thank you very much,
-	Simon
-
-On Tue, Jan 19, 2010 at 03:51:51PM +0100, "Juha Yl=C3=B6nen" wrote:
->=20
-> -------- Original-Nachricht --------
-> > Datum: Tue, 19 Jan 2010 20:07:38 +0800
-> > Von: Marek Lindner <lindner_marek@yahoo.de>
-> >
-> > It confirmed what we saw in the other logs: This device (the laptop?) d=
-oes
-> > not=20
-> > see the packets from the other side, therefore the protocol correctly
-> > assumes =20
-> > a dead link. There might be 2 reasons: either the wifi layer does not
-> > really=20
-> > work or batman-adv drops the packets without any further warning.=20
-> > You can try the latest trunk and/or run batctl/wireshark on the laptop =
-to=20
-> > deep-inspect the packets. Feel free to share the logs with us.
->=20
-> I got the latest trunk up and running, some changes were required to get =
-it to crosscompile for ARM (and 2.6.24 kernel). Same behaviour as before, d=
-evice log shows a lot of activity, but laptop batman doesn't seem to be doi=
-ng much anything. I tried the wireshark and got a log ok (which shows a lot=
- of multicast traffic from the device until I disabled the service) but I'm=
- at loss to decipher possible batman packages. What should they look like i=
-n wireshark? I only noticed couple of IPX packages from device to (broadcas=
-t?) but nothing else. I attached the log file, is anyone able to say if the=
-re are batman packages included?
->=20
-> -Juha
-> --=20
-> Jetzt kostenlos herunterladen: Internet Explorer 8 und Mozilla Firefox 3.=
-5 -
-> sicherer, schneller und einfacher! http://portal.gmx.net/de/go/chbrowser
-
-
-
---45Z9DzgjV8m4Oswq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktWCd0ACgkQrzg/fFk7axaWQQCfeQosqc3o+58vSJe18jnU2qsQ
-OQAAoOqGvAVItmWAV+oIiq0o8IIOO9NE
-=+40r
------END PGP SIGNATURE-----
-
---45Z9DzgjV8m4Oswq--
+Cheers,
+Marek
