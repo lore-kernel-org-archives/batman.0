@@ -1,14 +1,15 @@
-Return-Path: <ylonen@gmx.net>
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Thu, 21 Jan 2010 15:12:27 +0100
-From: =?iso-8859-1?Q?=22Juha_Yl=F6nen=22?= <ylonen@gmx.net>
-In-Reply-To: <201001210632.19709.lindner_marek@yahoo.de>
-Message-ID: <20100121141227.319490@gmx.net>
-MIME-Version: 1.0
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Thu, 21 Jan 2010 16:29:34 +0100
 References: <20100119145806.275330@gmx.net>
-	<201001201015.59477.lindner_marek@yahoo.de>	<20100120131234.4760@gmx.net>
 	<201001210632.19709.lindner_marek@yahoo.de>
-Content-Transfer-Encoding: quoted-printable
+	<20100121141227.319490@gmx.net>
+In-Reply-To: <20100121141227.319490@gmx.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2193935.oPNt4YLSRY";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001211629.37747.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv on different archs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,149 +22,194 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+
+--nextPart2193935.oPNt4YLSRY
+Content-Type: multipart/mixed;
+  boundary="Boundary-01=_fLHWLlZDt25DNUz"
+Content-Transfer-Encoding: 7bit
 
 
--------- Original-Nachricht --------
-> Datum: Thu, 21 Jan 2010 06:32:19 +0800
-> Von: Marek Lindner <lindner_marek@yahoo.de>
+--Boundary-01=_fLHWLlZDt25DNUz
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Hi,
+Juha Yl=F6nen wrote:
+> Yeah, I've been lurking there for a while, but being so much on/off from
+>  the computer lately it's been easier to email. I'll certainly begin
+>  bugging You through irc once I have time to sit down for a while..=3D)
 
-Ok, here's another set:
----IN ARM DEVICE---
-##> ifconfig
-bat0      Link encap:Ethernet  HWaddr BE:8F:67:10:32:A9 =20
-          inet addr:10.1.1.33  Bcast:10.255.255.255  Mask:255.0.0.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1476  Metric:1
-          RX packets:12 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:9 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:768 (768.0 B)  TX bytes:378 (378.0 B)
+It would help a lot. We are currently waiting for a lot more information fr=
+om=20
+you.
 
-eth1      Link encap:Ethernet  HWaddr 00:11:F6:83:AF:1C =20
-          inet addr:10.0.1.33  Bcast:10.0.1.255  Mask:255.255.255.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:9842 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:17276 errors:5 dropped:0 overruns:0 carrier:5
-          collisions:0 txqueuelen:1000=20
-          RX bytes:320656 (313.1 KiB)  TX bytes:3038557 (2.8 MiB)
+I think it isn't really a big endian vs. little endian problem. I have=20
+installed batman-adv 1559 on a powerpc and on my amd64. Both can talk to ea=
+ch=20
+other without problems.
 
-lo        Link encap:Local Loopback =20
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:7 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:7 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:784 (784.0 B)  TX bytes:784 (784.0 B)
-##> cat /proc/net/batman-adv/interfaces=20
-[  active] eth1 00:11:f6:83:af:1c=20
-##> cat /proc/net/batman-adv/originators=20
-  Originator     (#/255)           Nexthop [outgoingIF]:   Potential nextho=
-ps ... [B.A.T.M.A.N. adv 0.3.0-alpha r1559, MainIF/MAC: eth1/00:11:f6:83:af=
-:1c]=20
-No batman nodes in range ...=20
-##> route
-Kernel IP routing table
-Destination     Gateway         Genmask         Flags Metric Ref    Use Ifa=
-ce
-10.0.1.0        *               255.255.255.0   U     0      0        0 eth1
-10.0.0.0        *               255.0.0.0       U     0      0        0 bat0
-224.0.0.0       *               240.0.0.0       U     0      0        0 eth1
-##> ping -c 3 10.0.1.40
-PING 10.0.1.40 (10.0.1.40): 56 data bytes
-64 bytes from 10.0.1.40: seq=3D0 ttl=3D64 time=3D19.123 ms
-64 bytes from 10.0.1.40: seq=3D1 ttl=3D64 time=3D7.077 ms
-64 bytes from 10.0.1.40: seq=3D2 ttl=3D64 time=3D7.239 ms
+Do you have any filters installed which could filter out the ethernet frame=
+s?=20
+Does your hardware on arm transport non-standard ethernet types? A tcpdump =
+on=20
+both sides which we can compare would help a lot.
 
---- 10.0.1.40 ping statistics ---
-3 packets transmitted, 3 packets received, 0% packet loss
-round-trip min/avg/max =3D 7.077/11.146/19.123 ms
----
-And the same set from the laptop counterpart:
----LAPTOP---
-ylo@ylo-laptop:~$ ifconfig=20
-bat0      Link encap:Ethernet  HWaddr 26:22:26:1b:f4:f5 =20
-          inet addr:10.1.1.40  Bcast:10.255.255.255  Mask:255.0.0.0
-          inet6 addr: fe80::2422:26ff:fe1b:f4f5/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1476  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:12 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:0 (0.0 B)  TX bytes:936 (936.0 B)
+I usually use a small test program to send raw ethernet packets from one ho=
+st=20
+to another (one sided ping test). It helps a lot to find one directional=20
+problems.
 
-eth0      Link encap:Ethernet  HWaddr 00:24:7e:68:bf:10 =20
-          inet addr:10.10.10.126  Bcast:10.10.10.255  Mask:255.255.255.0
-          inet6 addr: fe80::224:7eff:fe68:bf10/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:1370811 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:613889 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:100=20
-          RX bytes:1847455539 (1.8 GB)  TX bytes:54536457 (54.5 MB)
-          Memory:fc000000-fc020000=20
+On one side you must use `./rawsend DEVICE` and on the other
+`./rawsend DEVICE TARGET-MAC`
 
-lo        Link encap:Local Loopback =20
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          inet6 addr: ::1/128 Scope:Host
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:3060 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:3060 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:817467 (817.4 KB)  TX bytes:817467 (817.4 KB)
+Best regards,
+	Sven
 
-wlan0     Link encap:Ethernet  HWaddr 00:22:fa:dc:9a:ce =20
-          inet addr:10.0.1.40  Bcast:10.0.1.255  Mask:255.255.255.0
-          inet6 addr: fe80::222:faff:fedc:9ace/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:37473 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:5862 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:10662970 (10.6 MB)  TX bytes:539481 (539.4 KB)
+--Boundary-01=_fLHWLlZDt25DNUz
+Content-Type: text/x-csrc;
+  charset="UTF-8";
+  name="rawsend.c"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="rawsend.c"
 
-wmaster0  Link encap:UNSPEC  HWaddr 00-22-FA-DC-9A-CE-61-63-00-00-00-00-00-=
-00-00-00 =20
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-ylo@ylo-laptop:~$ cat /proc/net/batman-adv/interfaces=20
-[  active] wlan0 00:22:fa:dc:9a:ce=20
-ylo@ylo-laptop:~$ cat /proc/net/batman-adv/originators=20
-  Originator     (#/255)           Nexthop [outgoingIF]:   Potential nextho=
-ps ... [B.A.T.M.A.N. adv 0.3.0-alpha r1559, MainIF/MAC: wlan0/00:22:fa:dc:9=
-a:ce]=20
-No batman nodes in range ...=20
-ylo@ylo-laptop:~$ route
-Kernel IP routing table
-Destination     Gateway         Genmask         Flags Metric Ref    Use Ifa=
-ce
-10.0.1.0        *               255.255.255.0   U     0      0        0 wla=
-n0
-10.10.10.0      *               255.255.255.0   U     0      0        0 eth0
-link-local      *               255.255.0.0     U     1000   0        0 eth0
-10.0.0.0        *               255.0.0.0       U     0      0        0 bat0
-default         10.10.10.1      0.0.0.0         UG    100    0        0 eth0
-ylo@ylo-laptop:~$ ping -c 3 10.0.1.33
-PING 10.0.1.33 (10.0.1.33) 56(84) bytes of data.
-64 bytes from 10.0.1.33: icmp_seq=3D1 ttl=3D64 time=3D6.08 ms
-64 bytes from 10.0.1.33: icmp_seq=3D2 ttl=3D64 time=3D5.71 ms
-64 bytes from 10.0.1.33: icmp_seq=3D3 ttl=3D64 time=3D5.59 ms
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <net/if.h>=20
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netpacket/packet.h>
+#include <net/ethernet.h>
+#include <stdint.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
---- 10.0.1.33 ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 2002ms
-rtt min/avg/max/mdev =3D 5.596/5.797/6.082/0.224 ms
----
+int getmac(const char *src, unsigned char *dst)
+{
+	unsigned int n[6];
+	int i;
+	if (sscanf(src, "%x:%x:%x:%x:%x:%x",
+	    &n[0], &n[1], &n[2], &n[3], &n[4], &n[5]) !=3D 6) {
+		if(sscanf(src, "%2x%2x.%2x%2x.%2x%2x",
+		   &n[0], &n[1], &n[2], &n[3], &n[4], &n[5]) !=3D 6) {
+			return 1;
+		}
+	}
 
-> It might be useful to join us on irc to speed things up. Is that an option
-> for=20
-> you ? We idle in #batman on irc.freenode.org.
+	for (i =3D 0; i < 6; i++) {
+		if (n[i] <=3D 255)
+			dst[i] =3D (unsigned char)n[i];
+		else
+			return 1;
+	}
 
-Yeah, I've been lurking there for a while, but being so much on/off from th=
-e computer lately it's been easier to email. I'll certainly begin bugging Y=
-ou through irc once I have time to sit down for a while..=3D)
+	return 0;
+}
 
--Juha
---=20
-Haiti-Nothilfe! Helfen Sie per SMS: Sende UIHAITI an die Nummer 81190.
-Von 5 Euro je SMS (zzgl. SMS-Geb=FChr) gehen 4,83 Euro an UNICEF.
+int main(int argc, char *argv[])
+{
+	int rawsock;
+	uint16_t type =3D 0x1337;
+	struct ifreq req;
+	struct sockaddr_ll addr;
+	struct iovec vector[2];
+	char buf[256];
+	size_t size =3D 256;
+	struct ether_header header;
+
+	if (argc !=3D 2 && argc !=3D 3) {
+		fprintf(stderr, "Usage: %s DEVICE [DST-MAC]\n", argv[0]);
+		return 1;
+	}
+
+	if ((rawsock =3D socket(PF_PACKET, SOCK_RAW, htons(type))) < 0 ) {
+			fprintf(stderr, "Could not open raw socket\n");
+			return 1;
+	}
+
+	strncpy(req.ifr_name, argv[1], IFNAMSIZ);
+	if (ioctl(rawsock, SIOCGIFINDEX, &req) < 0) {
+		fprintf(stderr, "Could not find device %s\n", argv[1]);
+		return 1;
+	}
+
+	addr.sll_family =3D AF_PACKET;
+	addr.sll_protocol =3D htons(type);
+	addr.sll_ifindex  =3D req.ifr_ifindex;
+
+	if (bind(rawsock, (struct sockaddr *)&addr, sizeof(addr)) < 0 ) {
+		fprintf(stderr, "Could not bind to device %s\n", argv[1]);
+		return 1;
+	}
+
+	strncpy(req.ifr_name, argv[1], IFNAMSIZ);
+	if (ioctl(rawsock, SIOCGIFHWADDR, &req) < 0) {
+		fprintf(stderr, "Could not get hwaddr of device %s\n", argv[1]);
+		return 1;
+	}
+
+	if (argc =3D=3D 2) {
+		vector[0].iov_base =3D &header;
+		vector[0].iov_len  =3D sizeof(struct ether_header);
+		vector[1].iov_base =3D buf;
+		vector[1].iov_len  =3D size;
+
+		if (readv(rawsock, vector, 2) < 0) {
+			close(rawsock);
+			fprintf(stderr, "Could not receive message\n");
+			return 1;
+		}
+		printf("Received message\n");
+	} else if (argc =3D=3D 3) {
+		vector[0].iov_base =3D &header;
+		vector[0].iov_len  =3D sizeof(struct ether_header);
+		vector[1].iov_base =3D buf;
+		vector[1].iov_len  =3D size;
+
+		header.ether_type =3D htons(type);
+
+		memcpy(header.ether_shost, req.ifr_hwaddr.sa_data, ETH_ALEN);
+
+		if (getmac(argv[2], header.ether_dhost)) {
+			close(rawsock);
+			fprintf(stderr, "Could not parse mac address %s\n", argv[2]);
+			return 1;
+		}
+		if (writev(rawsock, vector, 2) < 0) {
+			close(rawsock);
+			fprintf(stderr, "Could not send message\n");
+			return 1;
+		}
+	}
+	close(rawsock);
+	return 0;
+}
+
+--Boundary-01=_fLHWLlZDt25DNUz--
+
+--nextPart2193935.oPNt4YLSRY
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJLWHLfAAoJEF2HCgfBJntGX6gQAMAPDBgeY0qzgWmRKzDI7HKk
+deWr1bwuNbN5Hogf8lpxhG4XhnTgvzFpXtsll+ncxDz1Vj43XZNe6XQjLxhU96Om
+RQLDl9QFkW/Pj6pqlO9QO9+yqQyFWSdb8Isz0rlb4boRro8AEp8/4Bsbb0RUPrWq
+LZq8G6ziMumsB40o7HFtFMLxysE8WRJ5n03QcwZk91NrN92HsoKP56NtrptdA/ds
+dGc5N/Y6iiVvZzn500xOV02lft92kOeigcH21UxygLihOR/QAccGHAtSdyfg33yn
+L77YF9cgZDIjXPfPsukkYjMcdrlS+XT21KUVN5HXrkuz/PHQY4NZ3F2+lfxAKM+4
+RSw/qukObFHGGZfnagZI5H6TKp3PjbHM4F1YaNla/joHn4aKvQXoJsqywubh92Rc
+ynOl1PvVKeKB0jAhiF41SYeQNeMTAwRIc92aoSOJsyFmBRwcz7gY/zWa1IKrdGtu
+8NSXhgozxa88vw/92It4p6T7/EqYpnLXSOb7rcc2VfDJWecpqXoz/mTRpP5F6c3v
+B2fcqWoeFxy+QkoYd8MbmdT0T4i2qKz8lC4dxtcUepODCMpbwmJZujYdPf1AASGN
+5R1yyLOVvmi8frUVnW0Mic8AtvTv9Awo0WWH2Ngtei61TQi+ftxq/5bzR3hbhodv
+1v585tWGfJGOe8u88xSd
+=JNPg
+-----END PGP SIGNATURE-----
+
+--nextPart2193935.oPNt4YLSRY--
