@@ -1,13 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 22 Jan 2010 13:16:09 +0100
-References: <20100121190251.179780@gmx.net>
-In-Reply-To: <20100121190251.179780@gmx.net>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Fri, 22 Jan 2010 19:26:19 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20100122182619.GA6956@pandem0nium>
+References: <20100119145806.275330@gmx.net> <20100121141227.319490@gmx.net>
+	<4B588C35.2020409@gmail.com>
+	<201001211932.13914.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3269397.VM0Exk1WP2";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001221316.10168.sven.eckelmann@gmx.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="5mCyUwZo2JvN/JJP"
+Content-Disposition: inline
+In-Reply-To: <201001211932.13914.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv on different archs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,57 +22,100 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart3269397.VM0Exk1WP2
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+
+--5mCyUwZo2JvN/JJP
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Juha Yl=F6nen wrote:
-> This looks interesting, I've had problems with the wlan driver before but
->  it has been quite stable for a while. Wlan chip in use is CSR UniFi 1050,
->  with driver compiled from CSR supplied sources.
+Hello,
 
-Cannot find the driver at http://www.csr.com/products/UF1050_over.htm
+maybe just an idea, but could it be that we have a regression from the skb
+patch that some skb headers are wrong?=20
 
-> I'll try your rawsend and ping capturing during the weekend. Sorry for the
->  bother in advance if this turns out to be due the crappy wlan driver (as
->  said, it has been giving problems earlier, though I haven't seen any
->  packet mangling before).
+An idea would be to compare the behaviour with the batman-adv 0.2 release
+or an revision < 1517, which still uses raw sockets instead of working=20
+directly on the skb.
 
-So please test and capture=20
- * rawsend from ARM
- * ping between laptop and arm=20
- * a "ping -s 1" between laptop and arm
+regards,
+	Simon
 
-I hope that tests help to see were the problem really is. If the ping -s 1=
+On Thu, Jan 21, 2010 at 07:32:10PM +0100, Sven Eckelmann wrote:
+> Gus Wirth wrote:
+> > Your routes are all messed up. You have class C addresses subsumed
+> > inside class A address space, which causes undefined behavior.
+> >=20
+> > Give your routes different address spaces, something like one in the
+> > 192.168.xx.xx, another 172.16.xx.xx, and the 10.xx.xx.xx so the routes
+> > can be sorted out properly.
+> >=20
+> > Also, why does the laptop wlan0 have an IP address? If it is part of the
+> > mesh through bat0 it should not have an IP address, only add it as an
+> > interface to bat0.
+>=20
+> Yes, but doesn't explain why there is no batman-adv packet from ARM reach=
+ing=20
+> the laptop and the other way around. batman-adv is a layer bellow and has=
 =20
-works, can you please also capture a some packets of batman-adv 0.2?
+> nearly nothing to do with the stuff which runs over it (the only thing wh=
+ich=20
+> accesses the layer over it should be the gateway stuff).
+>=20
+> @Juha, I found time and looked a little bit at the stuff which came from =
+the=20
+> ARM in the last log. Wireshark means that it is a Raw ethernet packet. An=
+d=20
+> thinks that the stuff attached is a IPX packet.... but reading the raw da=
+ta=20
+> reveals that it should be the batman-packet.... with extra data between t=
+he=20
+> ethernet header and the actual batman-adv packet. So the problem looks to=
+ me a=20
+> little bit like hardware of the arm does something very stupid to our pac=
+kets.
+>=20
+> I've attach a small picture to explain what I mean. The green part it the=
+=20
+> normal receiver and sender stuff for ethernet. The orange part is not=20
+> explainable for me... Have we forgot some alignment stuff? Is your card a=
+dding=20
+> some extra data? I am not sure what that could mean right now.
+> The red thing is the ethernet type for batman-adv, pink the type of batma=
+n-adv=20
+> packet, yellow the protocol version and light blue the flags for that pac=
+ket.=20
+> I don't know more color - so just marked the rest of the packet blue. The=
+=20
+> amount of bytes are correct and it looks fine to me.
+>=20
+> As anyone a good idea? Maybe a small capture of a normal ping test and a=
+=20
+> rawsend test between the both could help to understand the problem better=
+=2E And=20
+> can you maybe tell us what kind of hardware is used inside the arm for th=
+e=20
+> eth1 device?
+>=20
+> Best regards,
+> 	Sven
 
-Best regards,
-	Sven
 
---nextPart3269397.VM0Exk1WP2
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+
+
+
+--5mCyUwZo2JvN/JJP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iQIcBAABCgAGBQJLWZcJAAoJEF2HCgfBJntGVYAP/2lMYlmKoDk5xJ8Fha4QRVC0
-aYTdJvRCiIqjwyXOj0KGx+zuwvYf18kvhwYvgms3qCY3Ad9tIk5FIa/2pm9BhQwJ
-hVWDHFtbdJt6bix+F730OCnlsCkZhCERmyFO8dXPXK3USGTR/G0q6GkPYA2A1lEO
-sbjXJ4TyyWc+q8xsGASpsMaMsqWfobzU0WhJuyTmL3jaQltFSqg5SFn6GTIM1Nx3
-f82WIZ9aQVfOGVZTp1khw5MWCNUx7OVbhmXpF+Y2g4gGdvP1TgUE2tMslgyQbwGy
-31FW8tQedc7a7kzQlAcQY4j8IggJQbAdqemsROUjBNvYsKxqJOujV8Ie8+7WxxBa
-ronmOKh91PleC7IidohLEdHSBApG+lVimFQbZ8uZIcGV3P+lv4XbrFyJzf3IX+il
-TVwM9uPhbr1MdhWyyn8X1Epd+Gj6Bz9b360r7VzkR+dVRs4dMEkTyAMpSjEb/aDz
-RDQ6IO3/kqBkAz3epoIBDCNNlhOMS8ayVoI+KCc+ujgVPRSdi3xiDMf11Brv978e
-kIdzeTKMlpzcky2t+1WEe2FmJvqD9WLos+e0nvJlw+qgoKyq+hED78cpiZe5wZaw
-lU5IZgLJTiNCDekx9MX5l+EHpvc6V+oir73Fa3O1PGddfmLm+JgKDUuPy7zB/SrH
-Me29SjPzQFFOTigyDVJk
-=KAfs
+iEYEARECAAYFAktZ7csACgkQrzg/fFk7axYscgCdF1GMYj44V17JF/7Ky7qT5v7h
+RN0AoLmdt/xGxjSDiYb0zAehXqFEUKUa
+=t263
 -----END PGP SIGNATURE-----
 
---nextPart3269397.VM0Exk1WP2--
+--5mCyUwZo2JvN/JJP--
