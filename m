@@ -1,14 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun, 24 Jan 2010 23:03:48 +0100
-References: <20100124211718.37790@gmx.net>
-In-Reply-To: <20100124211718.37790@gmx.net>
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 25 Jan 2010 07:46:51 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100125064651.GR24649@lunn.ch>
+References: <20100123174616.GA4795@Sellars> <20100123181048.GO24649@lunn.ch>
+	<20100124204212.GA4350@Sellars> <20100124210010.GB17803@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2458833.SkGjmqWLpB";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001242303.56730.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv on different archs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100124210010.GB17803@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] bat_events: page allocation failure (batman-adv
+ maint)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,68 +21,113 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2458833.SkGjmqWLpB
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Sun, Jan 24, 2010 at 10:00:10PM +0100, Andrew Lunn wrote:
+> On Sun, Jan 24, 2010 at 09:42:12PM +0100, Linus L??ssing wrote:
+> > Hi Andrew,
+> > 
+> > Here is the output with the symbols inserted. I can reproduce this
+> > memory leak very reliable now, by just activating the vis server
+> > (didn't do that with the logs I've posted before) in a couple of
+> > minutes. free is showing a nice countdown then :).
+> 
+> So it is vis server functionality which is leaking? If vis server is
+> not enabled, there is no leak?
+> 
+> If so, we don't need kmemcheck. I expect just looking at the vis code
+> is probably enough to find the missing free.
 
-Juha Yl=F6nen wrote:
-> > So please test and capture
-> >  * rawsend from ARM
-> >  * ping between laptop and arm
-> >  * a "ping -s 1" between laptop and arm
-> >
-> > I hope that tests help to see were the problem really is. If the ping -s
-> > 1 works, can you please also capture a some packets of batman-adv 0.2?
->=20
-> Logs for all cases attached. I pinged from arm to laptop, would you have
->  liked it in the other direction too?
+It looks pretty obvious:
 
-No, one direction is ok. What we can see here is that we have a < 50 bytes=
-=20
-packet and it is seems to be send correctly. So maybe the problem is not=20
-related to "small" packets.
+Working our way via the call stack:
 
-> Rawsend from arm->laptop didn't work, the packets end up in the laptop as
->  llc packets, so apparently they were mangled by the driver. rawsend from
->  laptop->arm worked fine, which is included in the rawsend.log file.
+In batman_skb_recv() we have:
 
-Ok, so we have a real simple example here. We see that we have a "large"=20
-ethernet frame (unlike batman-adv) and a "unnormal" ethernet type. So maybe=
-=20
-you could forward rawsend.log and rawsend.c to the driver developers. They=
-=20
-should be able to find and fix the problem with such a real small example. =
-Or=20
-does anyone see a related problem in rawsend.c?
+        case BAT_VIS:
+                ret = recv_vis_packet(skb);
+                break;
+        default:
+                ret = NET_RX_DROP;
+        }
+        if (ret == NET_RX_DROP)
+                kfree_skb(skb);
 
-What is the batmand stuff for?
+i.e. the packet is only freed if recv_vis_packet() returns NET_RX_DROP
 
-Best regards,
-	Sven
 
---nextPart2458833.SkGjmqWLpB
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+In recv_vis_packet() we have:
+       switch (vis_packet->vis_type) {
+        case VIS_TYPE_SERVER_SYNC:
+                /* TODO: handle fragmented skbs properly */
+                receive_server_sync_packet(vis_packet, skb_headlen(skb));
+                ret = NET_RX_SUCCESS;
+                break;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+        case VIS_TYPE_CLIENT_UPDATE:
+                /* TODO: handle fragmented skbs properly */
+                receive_client_update_packet(vis_packet, skb_headlen(skb));
+                ret = NET_RX_SUCCESS;
+                break;
 
-iQIcBAABCgAGBQJLXMPEAAoJEF2HCgfBJntGTa8P/1gleYGZxL4cN8QgjjXyr18E
-r2Pw+4NIrYOtmHGq9rkqWXXc3IgtFWhTACAyFei1ONX2hGvKwiVjmbbqaj0lFS4k
-JKlFM7dMKYDYQ1gEASuSugib7gWQblhhElXJCXA+oOVICYBNPTe0fpqlkNluZ19Y
-rvZmvuh2Ss6tN+yY9jfZbo8n3gHOguYCKfX1F60M1JS6HVho7R5JcdyOElC7hN6G
-SigKVesbvD/bKHrwg2Oeze0WubLA+IoGdl1B4czfmiWIYgK7p9MgzxzFh6Jr7tqM
-4jlGOS39H8mlTFQu2AO/sqtRWLc6CfRmH4WjXp75st4c1+sUO0h5dvogbemU9pYq
-p1YfhycJwIhspnCOaN8jhA5+siSdb/PaSXUbtNZO/m7u0BeCZKSsCtwshfzzvj2e
-otmPGoux95prkF0PtK62Z2B8XLqvhgI5u0fSMR2winZIxJkcxzTxJ9eQO90PcHg/
-5BDuTY4pCFesX9eyn3qmcE/xlu0tiCljL55w9ZwxfKoOPdhgrJmCjhpCUWdpsdOh
-uhlhvIl8zOe3285gN3o5KxJ9KQVfs3j+bdcEcqhf5iUFAASqbP+0qlhjf3usWj1k
-cIeJdSMjVt0qw9qrShjY4rFXiu6JxPu9yE8j3IQajzHcpsphQ+dor6sXD3/9H9Lb
-pYyDnoHEhtgA4NfUGnEr
-=9JN0
------END PGP SIGNATURE-----
+        default:        /* ignore unknown packet */
+                ret = NET_RX_DROP;
+                break;
+        }
+        return ret;
 
---nextPart2458833.SkGjmqWLpB--
+i.e. receive_client_update_packet() and receive_server_sync_packet()
+need to sometime result in the packet being freed. batman_skb_recv()
+will not free the packet.
+
+void receive_server_sync_packet(struct vis_packet *vis_packet, int vis_info_len)
+{
+        struct vis_info *info;
+        int is_new;
+        unsigned long flags;
+        int vis_server = atomic_read(&vis_mode);
+
+        spin_lock_irqsave(&vis_hash_lock, flags);
+        info = add_packet(vis_packet, vis_info_len, &is_new);
+        if (info == NULL)
+                goto end;
+
+        /* only if we are server ourselves and packet is newer than the one in
+         * hash.*/
+        if (vis_server == VIS_TYPE_SERVER_SYNC && is_new) {
+                memcpy(info->packet.target_orig, broadcastAddr, ETH_ALEN);
+                if (list_empty(&info->send_list))
+                        list_add_tail(&info->send_list, &send_list);
+        }
+end:
+        spin_unlock_irqrestore(&vis_hash_lock, flags);
+}
+
+No free here. vis_packet is a pointer into the skbuf, but we never add
+vis_packet to any queue here, just info is queued.
+
+add_packet():
+
+        info = kmalloc(sizeof(struct vis_info) + vis_info_len, GFP_ATOMIC);
+        if (info == NULL)
+                return NULL;
+
+        INIT_LIST_HEAD(&info->send_list);
+        INIT_LIST_HEAD(&info->recv_list);
+        info->first_seen = jiffies;
+        memcpy(&info->packet, vis_packet,
+               sizeof(struct vis_packet) + vis_info_len);
+
+We allocate memory can copy the contents of the packet into the
+allocated memory. So again, the skbuf is not queued.
+
+As far as i can see, the skbuf is never put on a queue. We just copy
+the needed data out of it. This means the skbuf does need freeing.
+
+I had a very quick look at receive_client_update_packet(). It seems to
+have the same structure.
+
+I will submit a fix for this soon. Is there any other similar code
+which might have the same bug?
+
+      Andrew
