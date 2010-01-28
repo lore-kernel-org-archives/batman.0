@@ -1,16 +1,13 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 28 Jan 2010 07:29:46 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100128062946.GA14813@lunn.ch>
-References: <20100123174616.GA4795@Sellars>
-	<201001261516.39057.lindner_marek@yahoo.de>
-	<20100127001049.GA15002@Linus-Debian>
-	<201001280809.58159.lindner_marek@yahoo.de>
+Return-Path: <gwirth79@gmail.com>
+Message-ID: <4B61351A.5030605@gmail.com>
+Date: Wed, 27 Jan 2010 22:56:26 -0800
+From: Gus Wirth <gwirth79@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001280809.58159.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] slowpath warning
+References: <5522db2e1001261326g7068972fq9c82780bcf5dc99e@mail.gmail.com>
+In-Reply-To: <5522db2e1001261326g7068972fq9c82780bcf5dc99e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] batman-adv and IPSec
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,25 +21,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thu, Jan 28, 2010 at 08:09:57AM +0800, Marek Lindner wrote:
-> 
-> Hi,
-> 
-> > nope, does not seem to work, still the same issue
-> > I also tried it on my laptop here with the patch installed 
-> > and it is a very similar call trace, although here it is 
-> > send_vis_packets instead of vis_quit in the call trace.
-> 
-> you should take the stack trace with a grain of salt. Stack tracing such an 
-> issue is a quite tricky thing, hence can not be fully trusted. Since the skb 
-> changes the code runs in interrupt context which probably introduced this bug. 
-> All previous warnings of this kind were related to holding a lock while 
-> sending packets. My patch unlocked the problematic orig_hash - maybe that was 
-> not enough ? By adding retrun statements at the beginning of the vis send 
-> function you might be able to get down to the problem.
+On 01/26/2010 01:26 PM, ecfu wrote:
+> Can I use IPSec with batman-adv?  Has anyone ever done this?  Is there
+> anything special that needs to be done or because I am using batman-adv,
+> this is transparent?
 
-It might also be worth running lockdep on the code. Normally you don^t
-need the actually lockup, you just need to execute the code path that
-would lockup under whatever conditions are required for it to lockup.
+IPSec is basically IP inside IP. Since batman-adv works on the layer 2
+level (ethernet frames) you shouldn't have to worry about. It should
+"Just Work"
 
-      Andrew
+Gus
