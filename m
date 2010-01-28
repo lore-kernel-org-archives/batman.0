@@ -1,11 +1,14 @@
-Return-Path: <gwirth79@gmail.com>
-Message-ID: <4B60DB79.9020407@gmail.com>
-Date: Wed, 27 Jan 2010 16:34:01 -0800
-From: Gus Wirth <gwirth79@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 28 Jan 2010 09:11:05 +0800
+References: <4B60DB79.9020407@gmail.com>
+In-Reply-To: <4B60DB79.9020407@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] git changes break OpenWRT package
+Message-Id: <201001280911.05308.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] git changes break OpenWRT package
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,24 +20,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-It seems that changes made to the git sources have broken OpenWRT
-batman-adv package. The OpenWRT package points to:
+On Thursday 28 January 2010 08:34:01 Gus Wirth wrote:
+> Or since the kernel module can be built from source checked out from
+> subversion, I guess the batman-adv package can be redone to only use the
+> subversion code and not any maintenance code. Has anyone done this yet?
+> I can't tell who created the original package so I suspect it is someone
+> here.
 
-http://git.open-mesh.org/snapshots
+Wow - you are quick!
+We are currently reworking the OpenWRT source package to offer more 
+functionality (e.g. downloading from different git branches), hence a few 
+things changed. I'm still testing the latest changes to make sure everything 
+works. I'll upload the new stuff in a couple of hours. If you can't wait that 
+long here is the new URL:
+http://git.open-mesh.org/snapshot/$git_hash/$any_name_you_want
 
-for kernel code. But that directory has been cleaned out. There also
-doesn't appear to be any backup packages at:
-
-http://downloads.openwrt.org/sources
-
-Is there any way to put the old snapshots back?
-
-Or since the kernel module can be built from source checked out from
-subversion, I guess the batman-adv package can be redone to only use the
-subversion code and not any maintenance code. Has anyone done this yet?
-I can't tell who created the original package so I suspect it is someone
-here.
-
-Gus
+Regards,
+Marek
