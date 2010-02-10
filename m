@@ -1,16 +1,13 @@
-Return-Path: <jcpuigpinos@gmail.com>
+Return-Path: <x@muc.ccc.de>
+Message-ID: <4B7301BC.7080809@muc.ccc.de>
+Date: Wed, 10 Feb 2010 19:58:04 +0100
+From: x@muc.ccc.de
 MIME-Version: 1.0
-In-Reply-To: <201002100833.10339.sven.eckelmann@gmx.de>
-References: <d5bba6ce1002071451y31c95ff5hd0ae0002960533bf@mail.gmail.com>
-	<201002101107.22159.lindner_marek@yahoo.de>
-	<201002100833.10339.sven.eckelmann@gmx.de>
-Date: Wed, 10 Feb 2010 13:39:13 -0200
-Message-ID: <d5bba6ce1002100739q255aff6fk4deabcbe0e63685@mail.gmail.com>
-From: Julio Cesar Puigpinos <jcpuigpinos@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+References: <4B6F288E.8050406@muc.ccc.de> <20100210024321.GB2112@Linus-Debian>
+In-Reply-To: <20100210024321.GB2112@Linus-Debian>
+Content-Type: text/plain; charset="iso-8859-15"
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] 403 Forbidden message while trying to download
-	BMX pdf file
+Subject: Re: [B.A.T.M.A.N.] batman-adv 0.2 on openwrt
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,32 +19,125 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-2010/2/10 Sven Eckelmann :
-> Marek Lindner wrote:
->> On Monday 08 February 2010 06:51:35 Julio Cesar Puigpinos wrote:
->> > While trying to download the BMX documentation
->> > http://downloads.open-mesh.net/batman/misc/bmx.pdf I get a 403
->> > Forbidden message.
->> >
->> > Is there another link or can it be fixed?
->>
->> It certainly can be fixed but I lack a good internet connection at the
->> =A0moment. I'll do it as soon as I'm connected once more. =A0;-)
->
-> fixed
+hi!
 
-Thank you :)
+Linus L=FCssing wrote:
+> please try the patch I've posted here:
 
-> Best regards,
-> =A0 =A0 =A0 =A0Sven
+i tested the patch, and the box doesn't freeze anymore when loading the mod=
+ule!
+then i bring up the interfaces (bat0 and ath1) - ok.
+then i echo ath1 >/proc/net/batman-adv/interfaces - then this happens:
 
-         Saludos, Julio
+------------[ cut here ]------------
+WARNING: at net/core/dev.c:1454 ()
+Modules linked in: batman_adv w1_therm cdc_ether usb_storage usbserial usbn=
+et wire ehci_hcd ath_pci ath_hal(P) ip6t_mh nf_nat_tftp nf_conntrack_tftp n=
+f_nat_irc
+nf_conntrack_irc nf_nat_ftp nf_conntrack_ftp ipt_MASQUERADE iptable_nat nf_=
+nat xt_state nf_conntrack_ipv4 nf_conntrack sd_mod ipt_REJECT xt_TCPMSS ipt=
+_LOG xt_multiport xt_mac xt_limit iptable_mangle iptable_filter ip_tables x=
+t_tcpudp x_tables tun ppp_async ppp_generic slhc crc_ccitt usbcore scsi_mod=
+ [last unloaded: batman_adv]
+Function entered at [<c0023890>] from [<c0030234>]
+Function entered at [<c00301f0>] from [<c013c348>]
+ r6:00004305 r5:c7216d80 r4:c7216d80
+Function entered at [<c013c2c0>] from [<c013c60c>]
+ r7:c71bd000 r6:c7f997c0 r5:c7216d80 r4:c71bd000
+Function entered at [<c013c484>] from [<c013f154>]
+ r7:bf081ba0 r6:c7f997c0 r5:c7216d80 r4:c71bd000
+Function entered at [<c013ef7c>] from [<bf078f8c>]
+ r8:bf081ba0 r7:bf081ba0 r6:c7f997c0 r5:c7216d80 r4:c71efe60
+Function entered at [<bf078ec8>] from [<bf07900c>]
+ r7:c7f997c0 r6:c7f5b200 r5:00000016 r4:c7216d80
+Function entered at [<bf078fa8>] from [<bf07917c>]
+ r8:00000000 r7:00000000 r6:00000001 r5:c7f997c0 r4:c715dba0
+Function entered at [<bf079010>] from [<c003f830>]
+ r6:c00401a0 r5:c71e8000 r4:c7167cc0
+Function entered at [<c003f784>] from [<c0040248>]
+ r5:c7167cc0 r4:c7167cc8
+Function entered at [<c00401a0>] from [<c00432b8>]
+ r5:c7167cc0 r4:c71e8000
+Function entered at [<c0043260>] from [<c0033214>]
+ r6:00000000 r5:00000000 r4:00000000
+---[ end trace da97f061c7bedcb9 ]---
+Unable to handle kernel paging request at virtual address 6e2d6164
+pgd =3D c0004000
+[6e2d6164] *pgd=3D00000000
+Internal error: Oops: f5 [#1]
+Modules linked in: batman_adv w1_therm cdc_ether usb_storage usbserial usbn=
+et wire ehci_hcd ath_pci ath_hal(P) ip6t_mh nf_nat_tftp nf_conntrack_tftp n=
+f_nat_irc nf_conntrack_irc nf_nat_ftp nf_conntrack_ftp ipt_MASQUERADE iptab=
+le_nat nf_nat xt_state nf_conntrack_ipv4 nf_conntrack sd_mod ipt_REJECT xt_=
+TCPMSS ipt_LOG xt_multiport xt_mac xt_limit iptable_mangle iptable_filter i=
+p_tables xt_tcpudp x_tables tun ppp_async ppp_generic slhc crc_ccitt usbcor=
+e scsi_mod [last unloaded: batman_adv]
+CPU: 0    Tainted: P        W  (2.6.26.8 #5)
+pc : [<c005e634>]    lr : [<c0136788>]    psr: 80000013
+sp : c71e9e8c  ip : c71e9e9c  fp : c71e9e98
+r10: 00000000  r9 : 00000000  r8 : bf081ba0
+r7 : c71bd000  r6 : c7f997c0  r5 : c7216d80  r4 : 00000001
+r3 : 0000ffff  r2 : c71efe60  r1 : c71efe1e  r0 : 6e2d6164
+Flags: Nzcv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
+Control: 000039ff  Table: 07ed8000  DAC: 00000017
+Process bat_events (pid: 3001, stack limit =3D 0xc71e8260)
+Stack: (0xc71e9e8c to 0xc71ea000)
+9e80:                            c71e9eb0 c71e9e9c c0136788 c005e634 c7216d=
+80
+9ea0: c7216d80 c71e9ec4 c71e9eb4 c0136e98 c0136724 c7216d80 c71e9ed8 c71e9e=
+c8
+9ec0: c0136598 c0136e00 c71bd000 c71e9ee8 c71e9edc c0136694 c0136590 c71e9f=
+10
+9ee0: c71e9eec c013c6ec c0136654 c0136724 c7216d80 c71bd000 c7216d80 c7f997=
+c0
+9f00: bf081ba0 c71e9f34 c71e9f14 c013f154 c013c490 c71efe60 c7216d80 c7f997=
+c0
+9f20: bf081ba0 bf081ba0 c71e9f54 c71e9f38 bf078f8c c013ef88 c7216d80 000000=
+16
+9f40: c7f5b200 c7f997c0 c71e9f78 c71e9f58 bf07900c bf078ed4 c715dba0 c7f997=
+c0
+9f60: 00000001 00000000 00000000 c71e9f94 c71e9f7c bf07917c bf078fb4 c7167c=
+c0
+9f80: c71e8000 c00401a0 c71e9fac c71e9f98 c003f830 bf07901c c7167cc8 c7167c=
+c0
+9fa0: c71e9fd8 c71e9fb0 c0040248 c003f790 00000000 c7f6b200 c00435f4 c71e9f=
+bc
+9fc0: c71e9fbc c71e8000 c7167cc0 c71e9ff4 c71e9fdc c00432b8 c00401ac 000000=
+00
+9fe0: 00000000 00000000 00000000 c71e9ff8 c0033214 c004326c 00000000 000000=
+00
+Backtrace:
+Function entered at [<c005e628>] from [<c0136788>]
+Function entered at [<c0136718>] from [<c0136e98>]
+ r5:c7216d80 r4:c7216d80
+Function entered at [<c0136df4>] from [<c0136598>]
+ r4:c7216d80
+Function entered at [<c0136584>] from [<c0136694>]
+ r4:c71bd000
+Function entered at [<c0136648>] from [<c013c6ec>]
+Function entered at [<c013c484>] from [<c013f154>]
+ r7:bf081ba0 r6:c7f997c0 r5:c7216d80 r4:c71bd000
+Function entered at [<c013ef7c>] from [<bf078f8c>]
+ r8:bf081ba0 r7:bf081ba0 r6:c7f997c0 r5:c7216d80 r4:c71efe60
+Function entered at [<bf078ec8>] from [<bf07900c>]
+ r7:c7f997c0 r6:c7f5b200 r5:00000016 r4:c7216d80
+Function entered at [<bf078fa8>] from [<bf07917c>]
+ r8:00000000 r7:00000000 r6:00000001 r5:c7f997c0 r4:c715dba0
+Function entered at [<bf079010>] from [<c003f830>]
+ r6:c00401a0 r5:c71e8000 r4:c7167cc0
+Function entered at [<c003f784>] from [<c0040248>]
+ r5:c7167cc0 r4:c7167cc8
+Function entered at [<c00401a0>] from [<c00432b8>]
+ r5:c7167cc0 r4:c71e8000
+Function entered at [<c0043260>] from [<c0033214>]
+ r6:00000000 r5:00000000 r4:00000000
+Code: e89da800 e1a0c00d e92dd800 e24cb004 (e5903000)
+Kernel panic - not syncing: Fatal exception in interrupt
 
---=20
-www.lugro-mesh.org.ar/        Wireless Mesh Networks Group
-www.lugro.org.ar                   GNU/Linux User Group Rosario, Argentina
-Slackware rulez :P             www.slackware.org
-NO A LA MATRICULA!!!: http://noalamatricula.wordpress.com/
+hope this helps in some way.
+
+regards,
+
+	Chris
