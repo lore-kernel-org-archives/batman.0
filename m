@@ -1,16 +1,16 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Wed, 10 Feb 2010 16:08:27 +0100
-Message-Id: <1265814507-29885-2-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1265814507-29885-1-git-send-email-linus.luessing@web.de>
-References: <20100210131150.GE2900@lunn.ch>
-	<1265814507-29885-1-git-send-email-linus.luessing@web.de>
+Return-Path: <jcpuigpinos@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: remove "foo" from bat_printk
-	strings
+In-Reply-To: <201002100833.10339.sven.eckelmann@gmx.de>
+References: <d5bba6ce1002071451y31c95ff5hd0ae0002960533bf@mail.gmail.com>
+	<201002101107.22159.lindner_marek@yahoo.de>
+	<201002100833.10339.sven.eckelmann@gmx.de>
+Date: Wed, 10 Feb 2010 13:39:13 -0200
+Message-ID: <d5bba6ce1002100739q255aff6fk4deabcbe0e63685@mail.gmail.com>
+From: Julio Cesar Puigpinos <jcpuigpinos@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] 403 Forbidden message while trying to download
+	BMX pdf file
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,27 +22,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven.eckelmann@gmx.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-Some missed debug output, removing it.
+2010/2/10 Sven Eckelmann :
+> Marek Lindner wrote:
+>> On Monday 08 February 2010 06:51:35 Julio Cesar Puigpinos wrote:
+>> > While trying to download the BMX documentation
+>> > http://downloads.open-mesh.net/batman/misc/bmx.pdf I get a 403
+>> > Forbidden message.
+>> >
+>> > Is there another link or can it be fixed?
+>>
+>> It certainly can be fixed but I lack a good internet connection at the
+>> =A0moment. I'll do it as soon as I'm connected once more. =A0;-)
+>
+> fixed
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
----
- bat_printk.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Thank you :)
 
-diff --git a/bat_printk.c b/bat_printk.c
-index 845391d..55c351a 100644
---- a/bat_printk.c
-+++ b/bat_printk.c
-@@ -857,5 +857,5 @@ asmlinkage int bat_printk(const char *fmt, ...)
- 	r = bat_vsnprintf(buf, sizeof(buf), fmt, args);
- 	va_end(args);
- 
--	return printk("foo:%s", buf);
-+	return printk("%s", buf);
- }
--- 
-1.6.6.1
+> Best regards,
+> =A0 =A0 =A0 =A0Sven
 
+         Saludos, Julio
+
+--=20
+www.lugro-mesh.org.ar/        Wireless Mesh Networks Group
+www.lugro.org.ar                   GNU/Linux User Group Rosario, Argentina
+Slackware rulez :P             www.slackware.org
+NO A LA MATRICULA!!!: http://noalamatricula.wordpress.com/
