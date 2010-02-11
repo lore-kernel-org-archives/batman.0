@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 11 Feb 2010 17:00:18 +0800
-References: <4B6F288E.8050406@muc.ccc.de> <4B7301BC.7080809@muc.ccc.de>
-	<20100211023909.GB6493@Linus-Debian>
-In-Reply-To: <20100211023909.GB6493@Linus-Debian>
+Date: Thu, 11 Feb 2010 17:20:16 +0800
+References: <20100208193848.GA8545@Sellars>
+	<20100211022543.GA6493@Linus-Debian>
+In-Reply-To: <20100211022543.GA6493@Linus-Debian>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201002111700.18403.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv 0.2 on openwrt
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002111720.16266.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] race condition with activate_module?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,16 +23,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday 11 February 2010 10:39:09 Linus L=FCssing wrote:
-> If I remember right, then you were saying that you're using the
-> 8.09.2 release of OpenWRT. Otherwise you could have activated
-> "Compile the kernel with symbol table information" under "make
-> menuconfig" --> "Global build settings" to add some function names
-> to those nice numbers :)
 
-You can activate these settings manually:
-make kernel_menuconfig ---> General setup  ---> Configure standard kernel=20
-features (for small systems)  ---> Load all symbols for debugging/ksymoops
+Hi,
+
+>I think I've seen this bug a couple of times but I've never been
+>able to reproduce it. Now I added a little patch to slow down the
+>activate_module() procedure and the bug occures every time now. My
+>question is, did I make a race condition apparent or did I introduce
+>a bug with this patch?
+
+the race condition existed before - you just make it more visible. No matter 
+how slow the code is being processed it should not lead to a crash.
+
+
+> Okay, I could narrow it down a little further: There is a problem
+> with the num_ifs variable. When activate_module() gets called in
+> proc_interfaces_write() and an ogm of a neighbour arrives after
+> this for the first time but before we've set 'num_ifs = if_num + 1;',
+> then we're not allocating enough space in get_orig_node(), leading
+> to a kernel panic.
+
+I think you managed to uncover 2 race conditions:
+* receiving a packet before the module is fully initialized
+* concurrent activate_module() calls
+
+Better than introducing some locking code which would need to halt the whole 
+module we should make sure that batman-adv does not process packets before its 
+initialization is complete.
 
 Regards,
 Marek
