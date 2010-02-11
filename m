@@ -1,16 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 11 Feb 2010 11:01:56 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100211100156.GI2900@lunn.ch>
-References: <20100123174616.GA4795@Sellars> <20100126061311.GA12697@Sellars>
-	<20100129082545.GI7844@lunn.ch>
-	<201001291659.59677.lindner_marek@yahoo.de>
-	<20100130165059.GV24649@lunn.ch> <20100211094659.GH2900@lunn.ch>
+Return-Path: <x@muc.ccc.de>
+Message-ID: <4B740D82.3030101@muc.ccc.de>
+Date: Thu, 11 Feb 2010 15:00:34 +0100
+From: x@muc.ccc.de
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100211094659.GH2900@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] slowpath warning
+References: <4B6F288E.8050406@muc.ccc.de>
+	<20100210024321.GB2112@Linus-Debian>	<4B7301BC.7080809@muc.ccc.de>
+	<20100211023909.GB6493@Linus-Debian>
+In-Reply-To: <20100211023909.GB6493@Linus-Debian>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] batman-adv 0.2 on openwrt
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,14 +23,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thu, Feb 11, 2010 at 10:46:59AM +0100, Andrew Lunn wrote:
-> Hi Linus
-> 
-> Here is a new version of the patch. I've tested it this time using
-> five UML machines. It should not immediately opps now. 
+hi!
 
-Instead is will leak memory and crash after a while...
+Linus Lüssing wrote:
+> Argh, okay. I guess, you had batman-adv on your laptops already
+> running and the wifi interfaces up when starting batman-adv on
+> your laptop, right?
 
-I will try to find the memory leak.
+possible, i did not check whether bat0/wlan0 was up or down on my laptop (2nd one wasn't running) when i loaded the batman-adv r1568+patch module.
+so i tried it again, after making sure the laptop (and nothing else) was running batman-adv.
+but immediately after echo ath1 >/proc/net/batman-adv/interfaces the kernel paniced again.
+this time, right before the panic, i also got:
 
-  Andrew
+foo:<6>batman-adv:Adding interface: ath1
+foo:<6>batman-adv:Interface activated: ath1
+
+(i didn't remove the foo: when patching, but i did add the ifdef printk undef printk).
+
+> If I remember right, then you were saying that you're using the
+> 8.09.2 release of OpenWRT. Otherwise you could have activated
+> "Compile the kernel with symbol table information" under "make
+> menuconfig" --> "Global build settings" to add some function names
+> to those nice numbers :)
+
+i guess this needs a kernel compile, just compiling the module after setting these options will probably not work or not help?
+i can't compile a kernel for the box because i wasn't able to find the config and possible patches used to build the cambria kernel, so i'm currently kind of stuck with the released 8.09.2 binary kernel...
+
+regards,
+
+	Chris
