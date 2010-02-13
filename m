@@ -1,13 +1,17 @@
-Return-Path: <x@muc.ccc.de>
-Message-ID: <4B763CF6.20302@muc.ccc.de>
-Date: Sat, 13 Feb 2010 06:47:34 +0100
-From: x@muc.ccc.de
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 14 Feb 2010 00:02:35 +0800
+References: <20100210131150.GE2900@lunn.ch>
+	<1265814507-29885-1-git-send-email-linus.luessing@web.de>
+	<1265814507-29885-2-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1265814507-29885-2-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-References: <4B6F288E.8050406@muc.ccc.de> <20100212234532.GB24515@Sellars>
-In-Reply-To: <20100212234532.GB24515@Sellars>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv 0.2 on openwrt
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201002140002.35263.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: remove "foo" from
+	bat_printk strings
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,19 +25,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-hi!
+On Wednesday 10 February 2010 23:08:27 Linus L=C3=BCssing wrote:
+> Some missed debug output, removing it.
+>=20
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
+> Signed-off-by: Andrew Lunn <andrew@lunn.c
 
-Linus Lüssing wrote:
-> Ehm, and another question. You said, that there's no bridging
-> involved. However I see two mac addresses being announced by one
-> of your laptops (B.A.T.M.A.N., Orig: Azurewav_8b:81:18
-> (00:25:d3:8b:81:18)):
-> - B.A.T.M.A.N. HNA: 0a:51:61:16:a1:51 (0a:51:61:16:a1:51)
-> - B.A.T.M.A.N. HNA: 26:46:d1:f8:8c:54 (26:46:d1:f8:8c:54)
-> Any idea where the first one might come from?
+I applied both patches.
 
-hmm, can't find any of these macs in the setup. i checked the prefixes, and both ouis are local. so i guess they're the macs of bat0 interfaces (and which changed over reboots). one of them probably the local interface, and the other one probably a batman-switched one of the other laptop's bat0 (i tested both with all nodes within each other's reach, and with two nodes not within each other's reach)?
-
-regards,
-
-	Chris
+Thanks,
+Marek
