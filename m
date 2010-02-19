@@ -1,15 +1,16 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Fri, 19 Feb 2010 16:18:08 +0100
-Message-Id: <1266592691-13090-5-git-send-email-andrew@lunn.ch>
-In-Reply-To: <1266592691-13090-4-git-send-email-andrew@lunn.ch>
+Date: Fri, 19 Feb 2010 16:18:09 +0100
+Message-Id: <1266592691-13090-6-git-send-email-andrew@lunn.ch>
+In-Reply-To: <1266592691-13090-5-git-send-email-andrew@lunn.ch>
 References: <1266592691-13090-1-git-send-email-andrew@lunn.ch>
 	<1266592691-13090-2-git-send-email-andrew@lunn.ch>
 	<1266592691-13090-3-git-send-email-andrew@lunn.ch>
 	<1266592691-13090-4-git-send-email-andrew@lunn.ch>
+	<1266592691-13090-5-git-send-email-andrew@lunn.ch>
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 5/8] Staging: batman-adv: atomic variable for
-	vis-srv activation
+Subject: [B.A.T.M.A.N.] [PATCH 6/8] Staging: batman-adv: Fix skbuff leak in
+	VIS code.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,253 +25,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: gregkh@suse.de
 Cc: devel@linuxdriverproject.org, b.a.t.m.a.n@lists.open-mesh.net
 
-From: Linus Luessing <linus.luessing@web.de>
+The vis code takes a copy of the data inside the skbuf if it is interesting
+for us, so we always need to release the skbuf.
 
-This fixes the bug discovered by Marek Lindner which did not allow
-turning on the vis-server before an interface has been added. With this
-patch we are using a global atomic variable for activating and
-deactiating the vis-server-mode, which can be used before
-inserting an interface.
-
-Signed-off-by: Linus Luessing <linus.luessing@web.de>
+Reported-by: Linus Luessing <linus.luessing@web.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/main.c |    2 +
- drivers/staging/batman-adv/main.h |    1 +
- drivers/staging/batman-adv/proc.c |   15 +++++------
- drivers/staging/batman-adv/send.c |    3 +-
- drivers/staging/batman-adv/vis.c  |   46 +++++--------------------------------
- drivers/staging/batman-adv/vis.h  |    2 -
- 6 files changed, 18 insertions(+), 51 deletions(-)
+ drivers/staging/batman-adv/routing.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
-index 3f78075..2e0b482 100644
---- a/drivers/staging/batman-adv/main.c
-+++ b/drivers/staging/batman-adv/main.c
-@@ -43,6 +43,7 @@ DEFINE_SPINLOCK(forw_bcast_list_lock);
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index 7dc9aef..d89048b 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -939,7 +939,6 @@ int recv_vis_packet(struct sk_buff *skb)
+ 	struct vis_packet *vis_packet;
+ 	struct ethhdr *ethhdr;
+ 	int hdr_size = sizeof(struct vis_packet);
+-	int ret;
  
- atomic_t originator_interval;
- atomic_t vis_interval;
-+atomic_t vis_mode;
- atomic_t aggregation_enabled;
- int16_t num_hna;
- int16_t num_ifs;
-@@ -83,6 +84,7 @@ int init_module(void)
- 	atomic_set(&originator_interval, 1000);
- 	atomic_set(&vis_interval, 1000);/* TODO: raise this later, this is only
- 					 * for debugging now. */
-+	atomic_set(&vis_mode, VIS_TYPE_CLIENT_UPDATE);
- 	atomic_set(&aggregation_enabled, 1);
+ 	if (skb_headlen(skb) < hdr_size)
+ 		return NET_RX_DROP;
+@@ -962,18 +961,18 @@ int recv_vis_packet(struct sk_buff *skb)
+ 	case VIS_TYPE_SERVER_SYNC:
+ 		/* TODO: handle fragmented skbs properly */
+ 		receive_server_sync_packet(vis_packet, skb_headlen(skb));
+-		ret = NET_RX_SUCCESS;
+ 		break;
  
- 	/* the name should not be longer than 10 chars - see
-diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
-index eb6a702..deb41f5 100644
---- a/drivers/staging/batman-adv/main.h
-+++ b/drivers/staging/batman-adv/main.h
-@@ -130,6 +130,7 @@ extern spinlock_t forw_bcast_list_lock;
+ 	case VIS_TYPE_CLIENT_UPDATE:
+ 		/* TODO: handle fragmented skbs properly */
+ 		receive_client_update_packet(vis_packet, skb_headlen(skb));
+-		ret = NET_RX_SUCCESS;
+ 		break;
  
- extern atomic_t originator_interval;
- extern atomic_t vis_interval;
-+extern atomic_t vis_mode;
- extern atomic_t aggregation_enabled;
- extern int16_t num_hna;
- extern int16_t num_ifs;
-diff --git a/drivers/staging/batman-adv/proc.c b/drivers/staging/batman-adv/proc.c
-index 68c36b0..0eadc6b 100644
---- a/drivers/staging/batman-adv/proc.c
-+++ b/drivers/staging/batman-adv/proc.c
-@@ -338,11 +338,11 @@ static ssize_t proc_vis_srv_write(struct file *file, const char __user * buffer,
- 	if ((strcmp(vis_mode_string, "client") == 0) ||
- 			(strcmp(vis_mode_string, "disabled") == 0)) {
- 		printk(KERN_INFO "batman-adv:Setting VIS mode to client (disabling vis server)\n");
--		vis_set_mode(VIS_TYPE_CLIENT_UPDATE);
-+		atomic_set(&vis_mode, VIS_TYPE_CLIENT_UPDATE);
- 	} else if ((strcmp(vis_mode_string, "server") == 0) ||
- 			(strcmp(vis_mode_string, "enabled") == 0)) {
- 		printk(KERN_INFO "batman-adv:Setting VIS mode to server (enabling vis server)\n");
--		vis_set_mode(VIS_TYPE_SERVER_SYNC);
-+		atomic_set(&vis_mode, VIS_TYPE_SERVER_SYNC);
- 	} else
- 		printk(KERN_ERR "batman-adv:Unknown VIS mode: %s\n",
- 		       vis_mode_string);
-@@ -353,12 +353,12 @@ static ssize_t proc_vis_srv_write(struct file *file, const char __user * buffer,
- 
- static int proc_vis_srv_read(struct seq_file *seq, void *offset)
- {
--	int vis_server = is_vis_server();
-+	int vis_server = atomic_read(&vis_mode);
- 
- 	seq_printf(seq, "[%c] client mode (server disabled) \n",
--			(!vis_server) ? 'x' : ' ');
-+			(vis_server == VIS_TYPE_CLIENT_UPDATE) ? 'x' : ' ');
- 	seq_printf(seq, "[%c] server mode (server enabled) \n",
--			(vis_server) ? 'x' : ' ');
-+			(vis_server == VIS_TYPE_SERVER_SYNC) ? 'x' : ' ');
- 
- 	return 0;
- }
-@@ -377,9 +377,10 @@ static int proc_vis_data_read(struct seq_file *seq, void *offset)
- 	int i;
- 	char tmp_addr_str[ETH_STR_LEN];
- 	unsigned long flags;
-+	int vis_server = atomic_read(&vis_mode);
- 
- 	rcu_read_lock();
--	if (list_empty(&if_list) || (!is_vis_server())) {
-+	if (list_empty(&if_list) || (vis_server == VIS_TYPE_CLIENT_UPDATE)) {
- 		rcu_read_unlock();
- 		goto end;
+ 	default:	/* ignore unknown packet */
+-		ret = NET_RX_DROP;
+ 		break;
  	}
-@@ -672,5 +673,3 @@ int setup_procfs(void)
- 
- 	return 0;
- }
--
--
-diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
-index 944b2cd..2a9fac8 100644
---- a/drivers/staging/batman-adv/send.c
-+++ b/drivers/staging/batman-adv/send.c
-@@ -248,6 +248,7 @@ void schedule_own_packet(struct batman_if *batman_if)
- {
- 	unsigned long send_time;
- 	struct batman_packet *batman_packet;
-+	int vis_server = atomic_read(&vis_mode);
- 
- 	/**
- 	 * the interface gets activated here to avoid race conditions between
-@@ -272,7 +273,7 @@ void schedule_own_packet(struct batman_if *batman_if)
- 	/* change sequence number to network order */
- 	batman_packet->seqno = htons((uint16_t)atomic_read(&batman_if->seqno));
- 
--	if (is_vis_server())
-+	if (vis_server == VIS_TYPE_SERVER_SYNC)
- 		batman_packet->flags = VIS_SERVER;
- 	else
- 		batman_packet->flags = 0;
-diff --git a/drivers/staging/batman-adv/vis.c b/drivers/staging/batman-adv/vis.c
-index ec8bb3f..fedec1b 100644
---- a/drivers/staging/batman-adv/vis.c
-+++ b/drivers/staging/batman-adv/vis.c
-@@ -48,41 +48,6 @@ static void free_info(void *data)
- 	kfree(info);
- }
- 
--/* set the mode of the visualization to client or server */
--void vis_set_mode(int mode)
--{
--	unsigned long flags;
--	spin_lock_irqsave(&vis_hash_lock, flags);
--
--	if (my_vis_info != NULL)
--		my_vis_info->packet.vis_type = mode;
--
--	spin_unlock_irqrestore(&vis_hash_lock, flags);
--}
--
--/* is_vis_server(), locked outside */
--static int is_vis_server_locked(void)
--{
--	if (my_vis_info != NULL)
--		if (my_vis_info->packet.vis_type == VIS_TYPE_SERVER_SYNC)
--			return 1;
--
--	return 0;
--}
--
--/* get the current set mode */
--int is_vis_server(void)
--{
--	int ret = 0;
--	unsigned long flags;
--
--	spin_lock_irqsave(&vis_hash_lock, flags);
--	ret = is_vis_server_locked();
--	spin_unlock_irqrestore(&vis_hash_lock, flags);
--
 -	return ret;
--}
--
- /* Compare two vis packets, used by the hashing algorithm */
- static int vis_info_cmp(void *data1, void *data2)
- {
-@@ -271,6 +236,7 @@ void receive_server_sync_packet(struct vis_packet *vis_packet, int vis_info_len)
- 	struct vis_info *info;
- 	int is_new;
- 	unsigned long flags;
-+	int vis_server = atomic_read(&vis_mode);
- 
- 	spin_lock_irqsave(&vis_hash_lock, flags);
- 	info = add_packet(vis_packet, vis_info_len, &is_new);
-@@ -279,7 +245,7 @@ void receive_server_sync_packet(struct vis_packet *vis_packet, int vis_info_len)
- 
- 	/* only if we are server ourselves and packet is newer than the one in
- 	 * hash.*/
--	if (is_vis_server_locked() && is_new) {
-+	if (vis_server == VIS_TYPE_SERVER_SYNC && is_new) {
- 		memcpy(info->packet.target_orig, broadcastAddr, ETH_ALEN);
- 		if (list_empty(&info->send_list))
- 			list_add_tail(&info->send_list, &send_list);
-@@ -295,6 +261,7 @@ void receive_client_update_packet(struct vis_packet *vis_packet,
- 	struct vis_info *info;
- 	int is_new;
- 	unsigned long flags;
-+	int vis_server = atomic_read(&vis_mode);
- 
- 	/* clients shall not broadcast. */
- 	if (is_bcast(vis_packet->target_orig))
-@@ -308,7 +275,7 @@ void receive_client_update_packet(struct vis_packet *vis_packet,
- 
- 
- 	/* send only if we're the target server or ... */
--	if (is_vis_server_locked() &&
-+	if (vis_server == VIS_TYPE_SERVER_SYNC  &&
- 	    is_my_mac(info->packet.target_orig) &&
- 	    is_new) {
- 		info->packet.vis_type = VIS_TYPE_SERVER_SYNC;	/* upgrade! */
-@@ -372,6 +339,7 @@ static int generate_vis_packet(void)
- 	unsigned long flags;
- 
- 	info->first_seen = jiffies;
-+	info->packet.vis_type = atomic_read(&vis_mode);
- 
- 	spin_lock_irqsave(&orig_hash_lock, flags);
- 	memcpy(info->packet.target_orig, broadcastAddr, ETH_ALEN);
-@@ -379,7 +347,7 @@ static int generate_vis_packet(void)
- 	info->packet.seqno++;
- 	info->packet.entries = 0;
- 
--	if (!is_vis_server_locked()) {
-+	if (info->packet.vis_type == VIS_TYPE_CLIENT_UPDATE) {
- 		best_tq = find_best_vis_server(info);
- 		if (best_tq < 0) {
- 			spin_unlock_irqrestore(&orig_hash_lock, flags);
-@@ -577,7 +545,6 @@ int vis_init(void)
- 	INIT_LIST_HEAD(&my_vis_info->send_list);
- 	my_vis_info->packet.version = COMPAT_VERSION;
- 	my_vis_info->packet.packet_type = BAT_VIS;
--	my_vis_info->packet.vis_type = VIS_TYPE_CLIENT_UPDATE;
- 	my_vis_info->packet.ttl = TTL;
- 	my_vis_info->packet.seqno = 0;
- 	my_vis_info->packet.entries = 0;
-@@ -628,4 +595,3 @@ static void start_vis_timer(void)
- 	queue_delayed_work(bat_event_workqueue, &vis_timer_wq,
- 			   (atomic_read(&vis_interval) * HZ) / 1000);
++
++	/* We take a copy of the data in the packet, so we should
++	   always free the skbuf. */
++	return NET_RX_DROP;
  }
--
-diff --git a/drivers/staging/batman-adv/vis.h b/drivers/staging/batman-adv/vis.h
-index 2e24258..0cdafde 100644
---- a/drivers/staging/batman-adv/vis.h
-+++ b/drivers/staging/batman-adv/vis.h
-@@ -48,8 +48,6 @@ struct recvlist_node {
- extern struct hashtable_t *vis_hash;
- extern spinlock_t vis_hash_lock;
- 
--void vis_set_mode(int mode);
--int is_vis_server(void);
- void proc_vis_read_entry(struct seq_file *seq,
- 				struct vis_info_entry *entry,
- 				struct hlist_head *if_list,
 -- 
 1.6.6.2
 
