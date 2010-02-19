@@ -1,18 +1,19 @@
-Return-Path: <andrew@lunn.ch>
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Fri, 19 Feb 2010 16:18:11 +0100
-Message-Id: <1266592691-13090-8-git-send-email-andrew@lunn.ch>
-In-Reply-To: <1266592691-13090-7-git-send-email-andrew@lunn.ch>
-References: <1266592691-13090-1-git-send-email-andrew@lunn.ch>
-	<1266592691-13090-2-git-send-email-andrew@lunn.ch>
-	<1266592691-13090-3-git-send-email-andrew@lunn.ch>
-	<1266592691-13090-4-git-send-email-andrew@lunn.ch>
-	<1266592691-13090-5-git-send-email-andrew@lunn.ch>
-	<1266592691-13090-6-git-send-email-andrew@lunn.ch>
-	<1266592691-13090-7-git-send-email-andrew@lunn.ch>
-Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 8/8] Staging: batman-adv: fix module
-	initialization
+Return-Path: <linus.luessing@web.de>
+Date: Fri, 19 Feb 2010 18:19:05 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20100219171905.GA17836@Linus-Debian>
+References: <20100123174616.GA4795@Sellars> <20100126061311.GA12697@Sellars>
+	<20100129082545.GI7844@lunn.ch>
+	<201001291659.59677.lindner_marek@yahoo.de>
+	<20100130165059.GV24649@lunn.ch> <20100211094659.GH2900@lunn.ch>
+	<20100211100156.GI2900@lunn.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
+Content-Disposition: inline
+In-Reply-To: <20100211100156.GI2900@lunn.ch>
+Sender: linus.luessing@web.de
+Subject: Re: [B.A.T.M.A.N.] slowpath warning
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,89 +25,122 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: gregkh@suse.de
-Cc: devel@linuxdriverproject.org, b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
 
-Make sure that batman-adv does not process packets before its
-initialization is complete. Some sanity checks added to the receiver
-function.
+--WIyZ46R2i8wDzkSu
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
----
- drivers/staging/batman-adv/hard-interface.c |    7 +++++++
- drivers/staging/batman-adv/proc.c           |   17 ++++++-----------
- 2 files changed, 13 insertions(+), 11 deletions(-)
+Hi Andrew,
 
-diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
-index 0f94158..befd488 100644
---- a/drivers/staging/batman-adv/hard-interface.c
-+++ b/drivers/staging/batman-adv/hard-interface.c
-@@ -432,6 +432,9 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 	if (!skb)
- 		goto err_out;
- 
-+	if (atomic_read(&module_state) != MODULE_ACTIVE)
-+		goto err_free;
-+
- 	/* packet should hold at least type and version */
- 	if (unlikely(skb_headlen(skb) < 2))
- 		goto err_free;
-@@ -445,6 +448,10 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 	if (!batman_if)
- 		goto err_free;
- 
-+	/* discard frames on not active interfaces */
-+	if (batman_if->if_active != IF_ACTIVE)
-+		goto err_free;
-+
- 	stats = (struct net_device_stats *)dev_get_stats(skb->dev);
- 	if (stats) {
- 		stats->rx_packets++;
-diff --git a/drivers/staging/batman-adv/proc.c b/drivers/staging/batman-adv/proc.c
-index 0eadc6b..7de60e8 100644
---- a/drivers/staging/batman-adv/proc.c
-+++ b/drivers/staging/batman-adv/proc.c
-@@ -63,7 +63,7 @@ static ssize_t proc_interfaces_write(struct file *instance,
- 				     size_t count, loff_t *data)
- {
- 	char *if_string, *colon_ptr = NULL, *cr_ptr = NULL;
--	int not_copied = 0, if_num = 0;
-+	int not_copied = 0, if_num = 0, add_success;
- 	struct batman_if *batman_if = NULL;
- 
- 	if_string = kmalloc(count, GFP_KERNEL);
-@@ -109,22 +109,17 @@ static ssize_t proc_interfaces_write(struct file *instance,
- 	}
- 	rcu_read_unlock();
- 
--	hardif_add_interface(if_string, if_num);
-+	add_success = hardif_add_interface(if_string, if_num);
-+	if (add_success < 0)
-+		goto end;
-+
-+	num_ifs = if_num + 1;
- 
- 	if ((atomic_read(&module_state) == MODULE_INACTIVE) &&
- 	    (hardif_get_active_if_num() > 0))
- 		activate_module();
- 
--	rcu_read_lock();
--	if (list_empty(&if_list)) {
--		rcu_read_unlock();
--		goto end;
--	}
--	rcu_read_unlock();
--
--	num_ifs = if_num + 1;
- 	return count;
--
- end:
- 	kfree(if_string);
- 	return count;
--- 
-1.6.6.2
+Sorry, didn't have the time to try your patch any earlier, I'm
+right in the middle of my exams :).
+Your patch already looks quite good, I couldn't reproduce any
+memory leaks or crashes here (tried that with three routers and 1
+or 2 vis servers activated, also activating/deactivating them a
+lot, no problems with that). And yes, the slow-path warning has
+gone with your patch.
+However, I'm having some weird output when connecting two routers
+over wifi _and_ over ethernet cable. The setup:
 
+Before plugging in the cable:
+r1-ath1 <-- wifi --> r2-ath1
+------------
+root@OpenWrt:~# batctl vd dot
+digraph {
+        "r1-ath1" -> "r2-ath1" [label=3D"1.32"]
+        "r1-ath1" -> "r1-hna" [label=3D"HNA"]
+        "r1-ath1" -> "5a:2e:1e:1f:64:6b" [label=3D"HNA"]
+        subgraph "cluster_r1-ath1" {
+                "r1-ath1" [peripheries=3D2]
+        }
+        "r2-ath1" -> "r1-ath1" [label=3D"1.11"]
+        "r2-ath1" -> "r2-hna" [label=3D"HNA"]
+        "r2-ath1" -> "82:31:95:f9:14:6f" [label=3D"HNA"]
+        subgraph "cluster_r2-ath1" {
+                "r2-ath1" [peripheries=3D2]
+        }
+}
+------------
+After plugging in the cable:
+r1-ath1 <-- wifi --> r2-ath1 +
+r1-eth0.3 <-- cable --> r2-eth0.3
+------------
+root@OpenWrt:~# batctl vd dot
+digraph {
+        "r1-ath1" -> "r2-ath1" [label=3D"1.0"]
+        "r1-ath1" -> "r2-eth0.3" [label=3D"1.66"]
+        "r1-ath1" -> "r1-hna" [label=3D"HNA"]
+        "r1-ath1" -> "5a:2e:1e:1f:64:6b" [label=3D"HNA"]
+        subgraph "cluster_r1-ath1" {
+                "r1-ath1" [peripheries=3D2]
+                "r1-eth0.3"
+        }
+        subgraph "cluster_r1-ath1" {
+                "r1-ath1" [peripheries=3D2]
+        }
+        "r2-ath1" -> "r1-ath1" [label=3D"1.0"]
+        "r2-ath1" -> "r1-eth0.3" [label=3D"1.15"]
+        "r2-ath1" -> "r2-hna" [label=3D"HNA"]
+        "r2-ath1" -> "82:31:95:f9:14:6f" [label=3D"HNA"]
+        subgraph "cluster_r2-ath1" {
+                "r2-ath1" [peripheries=3D2]
+                "r2-eth0.3"
+        }
+        subgraph "cluster_r2-ath1" {
+                "r2-ath1" [peripheries=3D2]
+        }
+}
+root@OpenWrt:~# cat /proc/net/batman-adv/vis_data
+06:22:b0:98:87:dd,TQ 04:22:b0:98:87:fa 251, HNA 00:22:b0:98:87:dd, HNA 5a:2=
+e:1e:1f:64:6b, PRIMARY, SEC 04:22:b0:98:87:de,
+06:22:b0:98:87:f9,TQ 06:22:b0:98:87:dd 255, TQ 04:22:b0:98:87:de 251, HNA 0=
+0:22:b0:98:87:f9, HNA 82:31:95:f9:14:6f, SEC 04:22:b0:98:87:fa, PRIMARY,
+----------
+So the second 'subgraph "cluster_r1-ath1"' is obviously
+unnecessary. Also "r1-ath1" -> "r2-eth0.3" looks wrong, should be
+"r1-eth0.3" -> "r2-eth0.3" instead (and the same with r2 a few
+lines later).
+
+Cheers, Linus
+
+On Thu, Feb 11, 2010 at 11:01:56AM +0100, Andrew Lunn wrote:
+> On Thu, Feb 11, 2010 at 10:46:59AM +0100, Andrew Lunn wrote:
+> > Hi Linus
+> >=20
+> > Here is a new version of the patch. I've tested it this time using
+> > five UML machines. It should not immediately opps now.=20
+>=20
+> Instead is will leak memory and crash after a while...
+>=20
+> I will try to find the memory leak.
+>=20
+>   Andrew
+>=20
+
+--WIyZ46R2i8wDzkSu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAEBAgAGBQJLfsgJAAoJEBKw7u43QNpfVbIP/3Zw5YGrKBowmXDmTHyxM4Et
+fvaMhXd+q7s1tPTdt7ejxxG5OGh4aiVWSIo/8vfudIGYGuMd131Z/ByMC6jekFzJ
+zQXfQ6V0i9DS1cljXMijoYZK8Rl7ZVw3eZDFzBsEXrfvXEJT3hdjrqTJHzopr2lX
+K+Roy3IyW3BIvSkth1qDdgj65JJhXB/jKt77e/fwzLA24e5e1s+RTEFFDYF1Z5mm
+gDtHCDns+JNrJo6qoWpAapMKj1WRFOA6bzSAdDojUByll9PbxOYIJNi6Dzhyy4rc
+ua5vWROni9pVixmSsdUNbm42WLedpSy5OW3XMMYPj4fzxtmfYDCftMdlP5HWN6bn
+MXFNqDmCUCSSAHycejRkVeBEfs6oF9sMiWYk1uTK+v9Ubdd20Ydjpaut07AJK50f
+CcdvtnpsFo7zS8+7gGrxa0Y+Rdxbz89ZzEc8X4EgodqJeInEGKiUi4Hz5lTAVqMv
+wZ9SvFb52XvoxMamPKWfD67GBq8PeDKyx1z3OnYEo8z3xXJNnfSwhF8okmQOtYhQ
+KsXBCr4Il88k10wY/btfvrc+ETb1gTjXuGjh11mNOaC4AnagTuefMuPyl7DlMCMC
+3I5L4orUSnrsgDtpUD+mA3cQ6EJwp1I+axI1B440qF4xpPunyNuvx4vVYDjnkAS6
+USOuHPQROGAv6+akz5zW
+=31WT
+-----END PGP SIGNATURE-----
+
+--WIyZ46R2i8wDzkSu--
