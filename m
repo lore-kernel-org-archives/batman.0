@@ -1,16 +1,12 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 27 Feb 2010 13:44:36 +0800
-References: <1267235382-4026-1-git-send-email-linus.luessing@web.de>
-	<20100227021157.GA4116@Linus-Debian>
-In-Reply-To: <20100227021157.GA4116@Linus-Debian>
+Date: Sun, 28 Feb 2010 04:30:09 +0800
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002271344.36630.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: only modify hna-table on
-	active module
+Message-Id: <201002280430.09575.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] reorganized kernel interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,23 +21,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-Hey,
+Hi folks,
 
-nice patch and this time well formatted.  ;-)
-Applied in 1578.
+during the last batman developer meeting in Bruxelles we decided that it is 
+time to reorganize the batman-adv kernel interface to address numerous issues 
+and feature requests we have been hearing about throughout the last year. The 
+required changes are extensive, therefore it will take a while to get it all 
+sorted out.
 
-> Just for some more clarification about this bug (have a look at
-> the attached call trace): It always occurs when I haven't put an
-> interface into batman-adv and when I'm then changing the
-> mac-address of bat0. I've now added a little check in
-> interface_set_mac_addr() which seems to work nicely here in my
-> setup. I'm also wondering if we should add another sanity check
-> somewhere in hna_local_add() to directly avoid any racy null
-> pointer dereferences in there.
+Specifically we are targeting the following items:
+* People with larger layer2 meshes have expressed the idea of having multiple 
+meshes running on the same device in order to build a node which sits 
+inbetween 2 (or more) mesh networks and routes the traffic from one to the other 
+(thereby reducing the overhead). Due to code limitations batman-adv can only 
+create a single mesh on a machine. There are numerous global variables and 
+functions that need to be modfied in order to support multiple meshes.
 
-I'm not sure it is a good place to put such a check since hna_local_add() is 
-more of a library function which does not know much about the context. 
-However, it could check whether the hna_local_hash had been initialized.
+* Despite the fact that we have a growing number of events which would allow 
+user space applications to implement some intelligence to improve the mesh 
+experience batman-adv has no way of communicating these events back to 
+applications. To address this issue we will be moving batman-adv from /proc to 
+sysfs which empowers batman-adv to trigger uevents that can be handled from 
+user space.
+
+* Since batman-adv's existence its parameter always were configurable using 
+simple commands like echo or cat. Although this interface was easy it is not 
+possible to direct error messages back to the shell, In case you misspelled a 
+parameter you had to check the system logs to learn about it. The following 
+patch introduces a way of exporting "allowed values", so that user space 
+applications can parse it and alert the user immediately. See batctl as an 
+example.
+
+Please review and comment the following patches. As soon as those were 
+digested I will send more.
+
+Known issues:
+* When sending a wrong input value to aggregate_ogm or bonding the kernel 
+processes the input 3 times.
 
 Cheers,
 Marek
+
