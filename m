@@ -1,17 +1,17 @@
-Return-Path: <andrew@lunn.ch>
-Date: Mon, 1 Mar 2010 07:06:51 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100301060651.GD15286@lunn.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 1 Mar 2010 15:17:31 +0800
 References: <201002280430.09575.lindner_marek@yahoo.de>
-	<1267302649-22040-1-git-send-email-lindner_marek@yahoo.de>
-	<1267302649-22040-2-git-send-email-lindner_marek@yahoo.de>
 	<20100301015103.GA6602@Linus-Debian>
+	<20100301060651.GD15286@lunn.ch>
+In-Reply-To: <20100301060651.GD15286@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100301015103.GA6602@Linus-Debian>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003011517.31360.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batctl: follow /proc to sysfs
- conversion & introduce input validation
+	conversion & introduce input validation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,24 +25,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-> The second thing is, I'm getting two harmless compile time
-> warnings on the Debian stable VM here:
-> - bat-hosts.c:79/functions.c:174: warning: implicit declaration of function
->   getline
+On Monday 01 March 2010 14:06:51 Andrew Lunn wrote:
+> BTW: batctl has used this for a while now. Anybody had problems with
+> this GNU extension? Is it available for all the C libraries used in
+> embedded systems which use BATMAN?
 
-getline(3) is a GNU extension. The man page says:
+I used it since a while on OpenWRT and it works fine for me.
 
-#define _GNU_SOURCE
-#include <stdio.h>
-
-ssize_t getline(char **lineptr, size_t *n, FILE *stream);
-
-I guess it compiles fine on uclibc without the _GNU_SOURCE, but glibc
-wants you to explicitly enable the extension so you know you are not
-POSIX compatible.
-
-BTW: batctl has used this for a while now. Anybody had problems with
-this GNU extension? Is it available for all the C libraries used in
-embedded systems which use BATMAN?
-
-      Andrew
+Cheers,
+Marek
