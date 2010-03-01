@@ -1,18 +1,17 @@
 Return-Path: <andrew@lunn.ch>
-Date: Mon, 1 Mar 2010 06:59:55 +0100
+Date: Mon, 1 Mar 2010 07:06:51 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100301055955.GC15286@lunn.ch>
-References: <20100123174616.GA4795@Sellars> <20100126061311.GA12697@Sellars>
-	<20100129082545.GI7844@lunn.ch>
-	<201001291659.59677.lindner_marek@yahoo.de>
-	<20100130165059.GV24649@lunn.ch> <20100211094659.GH2900@lunn.ch>
-	<20100211100156.GI2900@lunn.ch>
-	<20100228163428.GA15370@pandem0nium>
+Message-ID: <20100301060651.GD15286@lunn.ch>
+References: <201002280430.09575.lindner_marek@yahoo.de>
+	<1267302649-22040-1-git-send-email-lindner_marek@yahoo.de>
+	<1267302649-22040-2-git-send-email-lindner_marek@yahoo.de>
+	<20100301015103.GA6602@Linus-Debian>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100228163428.GA15370@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] slowpath warning
+In-Reply-To: <20100301015103.GA6602@Linus-Debian>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batctl: follow /proc to sysfs
+ conversion & introduce input validation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,42 +25,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Simon
+> The second thing is, I'm getting two harmless compile time
+> warnings on the Debian stable VM here:
+> - bat-hosts.c:79/functions.c:174: warning: implicit declaration of function
+>   getline
 
-> @@ -503,15 +550,23 @@
->  	unsigned long flags;
->  
->  	spin_lock_irqsave(&vis_hash_lock, flags);
-> +
->  	purge_vis_packets();
->  
-> -	if (generate_vis_packet() == 0)
-> +	if (generate_vis_packet() == 0) {
->  		/* schedule if generation was successful */
-> +		kref_get(&my_vis_info->refcount);
->  		list_add_tail(&my_vis_info->send_list, &send_list);
-> +	}
->  
->  	list_for_each_entry_safe(info, temp, &send_list, send_list) {
-> +		spin_unlock_irqrestore(&vis_hash_lock, flags);
-> +
-> +		send_vis_packet(info);
-> +
-> +		spin_lock_irqsave(&vis_hash_lock, flags);
->  		list_del_init(&info->send_list);
-> -		send_vis_packet(info);
-> +		kref_put(&info->refcount, free_info);
->  	}
->  	spin_unlock_irqrestore(&vis_hash_lock, flags);
->  	start_vis_timer();
+getline(3) is a GNU extension. The man page says:
 
-Although you say this works, i just looks wrong. It looks
-unbalanced. Where is the kref_put for my_vis_info->refcount?  There is
-a kref_put inside what looks like a loop, but no kref_get inside the
-loop. 
+#define _GNU_SOURCE
+#include <stdio.h>
 
-Can you explain this is more detail? Can we make it look correctly
-balanced?
+ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
-	Thanks
-		Andrew
+I guess it compiles fine on uclibc without the _GNU_SOURCE, but glibc
+wants you to explicitly enable the extension so you know you are not
+POSIX compatible.
+
+BTW: batctl has used this for a while now. Anybody had problems with
+this GNU extension? Is it available for all the C libraries used in
+embedded systems which use BATMAN?
+
+      Andrew
