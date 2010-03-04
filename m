@@ -1,20 +1,13 @@
 Return-Path: <andrew@lunn.ch>
-Date: Thu, 4 Mar 2010 09:57:24 +0100
+Date: Thu, 4 Mar 2010 10:03:55 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100304085724.GA29010@lunn.ch>
-References: <20100130165059.GV24649@lunn.ch> <20100211094659.GH2900@lunn.ch>
-	<20100211100156.GI2900@lunn.ch>
-	<20100228163428.GA15370@pandem0nium>
-	<20100301055955.GC15286@lunn.ch>
-	<20100301165706.GA11578@pandem0nium> <20100302064308.GA733@lunn.ch>
-	<20100302211324.GA15885@pandem0nium>
-	<20100302214349.GB4436@Linus-Debian>
-	<20100304002620.GC24284@Linus-Debian>
+Message-ID: <20100304090355.GB29010@lunn.ch>
+References: <20100303233946.GA24284@Linus-Debian>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100304002620.GC24284@Linus-Debian>
-Subject: Re: [B.A.T.M.A.N.] slowpath warning
+In-Reply-To: <20100303233946.GA24284@Linus-Debian>
+Subject: Re: [B.A.T.M.A.N.] vis packet format
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,17 +21,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thu, Mar 04, 2010 at 01:26:20AM +0100, Linus L??ssing wrote:
-> I've been running 3 qemu x86 instances with Debian stable here
-> (2.6.26 kernel) as well as 3 Atheros ap61 / mips based routers with
-> OpenWRT (rev. 19468, 2.6.30.10 kernel) for 22 hours. None of them
-> crashed with Andrew's patch... so, sorry, still can't reproduce the
-> bug you're talking about.
+On Thu, Mar 04, 2010 at 12:39:46AM +0100, Linus L??ssing wrote:
+> Hi,
+> 
+> Marek and I have been chatting a little about the buggy vis raw
+> output yesterday. And there was either the option to sort the
+> mixed list on the receiving vis server or on the sender already.
+> For the second option there was also the idea of changing the vis
+> packet format accordingly to also save some more overhead.
 
-If you cannot reproduce it, its probably fixed :-)
+A comment about the mainline development process. Changes which are
+clearly bug fixes we should be able to get merged into the -rc kernels
+at any time. Changes which look like development work have to wait
+until the next merge window.
 
-Marek, could you commit the patch.
+This vis problem about it showing the wrong interface will be in
+-rc1. It would be nice to get it fixed. We are more likely to get such
+a fix accepted if it is small and looks like a bug fix. I expect it
+will get rejected if it is big and looks like development work.
 
-       Thanks
-          Andrew
+So can we develop two fixes? Something small and simple for -rc1 and
+an optimizing fix which will go into linux-next and then into mainline
+during the next merge window?
 
+       Andrew
