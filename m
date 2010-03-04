@@ -1,11 +1,12 @@
 Return-Path: <post@tiwoc.de>
-Message-ID: <4B8FA44B.3020808@tiwoc.de>
-Date: Thu, 04 Mar 2010 13:15:07 +0100
+Message-ID: <4B8FA639.5000502@tiwoc.de>
+Date: Thu, 04 Mar 2010 13:23:21 +0100
 From: Daniel Seither <post@tiwoc.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: include ping -R in manpage
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: avoid parsing bat-hosts multiple
+	times
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,29 +20,72 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This patch adds documentation for the ping -R option to the batctl manpage.
+Currently, running batctl from the home directory leads to warnings
+("Warning - mac already known") if ~/bat-hosts exists. This is caused by
+batctl parsing both "~/bat-hosts" and "bat-hosts" which happen to be the
+same file when the working directory is ~
+
+This patch adds duplicate file name detection to bat_hosts_init() to
+avoid these warnings.
 
 Signed-off-by: Daniel Seither <post@tiwoc.de>
 ---
-Index: batctl/man/batctl.8
+Index: batctl/bat-hosts.c
 ===================================================================
---- batctl/man/batctl.8	(revision 1579)
-+++ batctl/man/batctl.8	(working copy)
-@@ -126,14 +126,15 @@
- Otherwise the parameter is used to enable or disable packet
- aggregation.
- .br
--.IP "\fBping\fP|\fBp\fP [\fB\-c \fP\fIcount\fP][\fB\-i \fP\fIinterval\fP][\fB\-t \fP\fItime\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
-+.IP "\fBping\fP|\fBp\fP [\fB\-c \fP\fIcount\fP][\fB\-i \fP\fIinterval\fP][\fB\-t \fP\fItime\fP][\fB\-R\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
- Layer 2 ping of a MAC address or bat\-host name.  batctl will try to
- find the bat\-host name if the given parameter was not a MAC
- address. The "\-c" option tells batctl how man pings should be sent
- before the program exits. Without the "\-c" option batctl will continue
- pinging without end. Use CTRL + C to stop it.  With "\-i" and "\-t"
- you can set the default interval between pings and the timeout time
--for replies, both in seconds.
-+for replies, both in seconds. When run with "\-R", the route taken by
-+the ping messages will be recorded.
- .br
- .IP "\fBtraceroute\fP|\fBtr\fP  [\fB\-n\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
- Layer 2 traceroute to a MAC address or bat\-host name. batctl will try
+--- batctl/bat-hosts.c	(revision 1579)
++++ batctl/bat-hosts.c	(working copy)
+@@ -23,6 +23,7 @@
+
+ #include <stdio.h>
+ #include <stdint.h>
++#include <limits.h>
+ #include <stdlib.h>
+ #include <errno.h>
+ #include <string.h>
+@@ -144,9 +145,11 @@
+
+ void bat_hosts_init(void)
+ {
+-	unsigned int i;
++	unsigned int i, j, parse;
+ 	char confdir[CONF_DIR_LEN];
+ 	char *homedir;
++	size_t locations = sizeof(bat_hosts_path) / sizeof(char *);
++	char normalized[locations][PATH_MAX];
+
+ 	host_hash = hash_new(64, compare_mac, choose_mac);
+
+@@ -157,7 +160,7 @@
+
+ 	homedir = getenv("HOME");
+
+-	for (i = 0; i < sizeof(bat_hosts_path) / sizeof(char *); i++) {
++	for (i = 0; i < locations; i++) {
+ 		strcpy(confdir, "");
+
+ 		if (strlen(bat_hosts_path[i]) >= 2
+@@ -169,8 +172,22 @@
+ 			strncpy(confdir, bat_hosts_path[i], CONF_DIR_LEN);
+ 			confdir[CONF_DIR_LEN - 1] = '\0';
+ 		}
+-
+-		parse_hosts_file(&host_hash, confdir);
++		
++		if (realpath(confdir, normalized[i]) == NULL) {
++			normalized[i][0] = '\0';
++			continue;
++		}
++		
++		/* check for duplicates: don't parse the same file twice */	
++		parse = 1;
++		for (j = 0; j < i; j++)
++			if (strncmp(normalized[i], normalized[j], CONF_DIR_LEN) == 0) {
++				parse = 0;
++				break;
++			}
++	
++		if (parse && (normalized[i][0] != '\0'))
++			parse_hosts_file(&host_hash, normalized[i]);
+ 	}
+ }
+
