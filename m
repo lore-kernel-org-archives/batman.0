@@ -1,15 +1,22 @@
 Return-Path: <linus.luessing@web.de>
-Date: Thu, 4 Mar 2010 01:06:32 +0100
+Date: Thu, 4 Mar 2010 01:26:20 +0100
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20100304000632.GB24284@Linus-Debian>
-References: <20100303233946.GA24284@Linus-Debian>
+Message-ID: <20100304002620.GC24284@Linus-Debian>
+References: <201001291659.59677.lindner_marek@yahoo.de>
+	<20100130165059.GV24649@lunn.ch> <20100211094659.GH2900@lunn.ch>
+	<20100211100156.GI2900@lunn.ch>
+	<20100228163428.GA15370@pandem0nium>
+	<20100301055955.GC15286@lunn.ch>
+	<20100301165706.GA11578@pandem0nium> <20100302064308.GA733@lunn.ch>
+	<20100302211324.GA15885@pandem0nium>
+	<20100302214349.GB4436@Linus-Debian>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="p2kqVDKq5asng8Dg"
+	protocol="application/pgp-signature"; boundary="J5MfuwkIyy7RmF4Q"
 Content-Disposition: inline
-In-Reply-To: <20100303233946.GA24284@Linus-Debian>
+In-Reply-To: <20100302214349.GB4436@Linus-Debian>
 Sender: linus.luessing@web.de
-Subject: Re: [B.A.T.M.A.N.] vis packet format
+Subject: Re: [B.A.T.M.A.N.] slowpath warning
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,23 +28,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---p2kqVDKq5asng8Dg
+--J5MfuwkIyy7RmF4Q
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 
-And maybe the last explanation about the "buggy vis output" wasn't
-clear enough. With the current vis raw output we're loosing the
-information with _which_ interface we are seeing another nodes's
-interface (currently we are always starting a vis raw output line
-with the primary interface mac instead of the according
-interface's mac).
+I've been running 3 qemu x86 instances with Debian stable here
+(2.6.26 kernel) as well as 3 Atheros ap61 / mips based routers with
+OpenWRT (rev. 19468, 2.6.30.10 kernel) for 22 hours. None of them
+crashed with Andrew's patch... so, sorry, still can't reproduce the
+bug you're talking about.
 
 Cheers, Linus
 
---p2kqVDKq5asng8Dg
+--J5MfuwkIyy7RmF4Q
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -45,19 +51,19 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAEBAgAGBQJLjvmIAAoJEBKw7u43QNpfrc4P/3uTf6aZ/7EmUcrNzfi3F1dR
-5sPyi02+xgZUQCvZYAlhvXSTX3ZmGM4ifQ2zR8k8eZhejYIGz4UMr+a62Yuxk7um
-G69FZPLOoNM231/nzTAq2+6l+CJaDVa1ES246RQiS6clKYz5eGCj8N6XG9xraeto
-23tmUvpJ2pWo4I2GcUqDFSgFOEN+KQMv5afcOuptQOakkaonKYJPR3VWHmbd8NL6
-oyvWLW474lWVhk380+C/R5rbhuMTTlUSOMShrORHTVaFAKtHB/kqzb37o4in/O9q
-H3cCy37AmUHWDaPQRKILxhHhgFraYdZYKcY25IXcI0ZnKLZhT1Dh9pfgoXStipVM
-yy+Ruc7EpHYzb7TTn0mRXqfgPBxiHNxyS7MsL4lhYKzz7v0mE3XOLzyJ3Sa40gBa
-KEKHNTM0EXM60GfAJ2kP/No5KWUo8SyfGgX2aYb4Pv+xaiVEukl5Z8S6saB6wS73
-DaAc0x9EF5pVaz5F6r23U+y6IFrz9H8a76ZH7Jn+88cWJwA7DFo0RboLakL/QH7F
-T2LjIZS0SpxOXD8e9VJngvfWxxgDsArfVvvUTP5ZIbB203/qZsqfHOR7dNw1mn7W
-2yv++8cNiI4BgpolLR7cJHNLmwS+Z2cfG/gDDqZcCiQshlDW07n1aRZvmH0Pvddr
-PXkcfdirHfquicNrPHpK
-=i7EV
+iQIcBAEBAgAGBQJLjv4sAAoJEBKw7u43QNpf0uQQALfQM6DUFNKSmiea2q3wjQr8
+lwHQdHCYwwVfwfmH98r3/G1v9kRiXagE1+1/SNDAgjKPl6ezfrkGB0w9yozDxJNn
+Oo1AeQUzqg+C+0Nd22nizcN/hYS6yubRD17jr1vNfBUeu/ych9ReCdXh704jPBPx
+5I3jiiXNEoiNICG86G2ef4w+vIY6aFBaDq4V62jisVLlNpCe3ePY6zL0wpJ+qXdY
+v1Nh0RWn7m2lCPKXp5OhloUSq/qaPUzhBx2chtRe54L+D5sjrFpxpJlqlpJ0A9/D
+gydwxvpZI5nBH4oKICaaoHVXibV/lBZycGFfr0jnupIps8yA2W3fCAk+GqL59KJT
+MAVSeIzri1lWHM1bp36zNJR9gCsRMJuRPqfRlw9d7UnZVLvQQ5AfzRXEo9xCNpd0
+vip39/+m6kRJX4/2dkwnpwzc3ietfZ+yWn43SsvrLM82xrx1eIth0+r/+SzmwoxE
+xZlD4aqWzl7D5q/3GsBZ8DQ1A8OCbqL43QFuGvE4zekOf3O7KQf1XLtdEzPDTlJt
+4v/cx+luPDJ3gdahnUIbE7eQTAgpY+6+2z4iUrkHuhi/uWGTsHdONfCG5jZ3XX4o
+b8q8VrPtxqIrQI2ZBSBu0FOrdllmbKrCXFRunnUvFddYr+rtWDSmPBGq9soGEFcL
+1U/qE28JTwde8ga6Iidr
+=t4sH
 -----END PGP SIGNATURE-----
 
---p2kqVDKq5asng8Dg--
+--J5MfuwkIyy7RmF4Q--
