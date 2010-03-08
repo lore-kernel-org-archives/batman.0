@@ -1,11 +1,14 @@
-Return-Path: <andrew@lunn.ch>
-Date: Mon, 8 Mar 2010 16:12:44 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100308151244.GA4468@lunn.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 8 Mar 2010 23:21:02 +0800
+References: <20100308151244.GA4468@lunn.ch>
+In-Reply-To: <20100308151244.GA4468@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] FWD: batman: potential null dereference
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003082321.03064.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] FWD: batman: potential null dereference
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,42 +20,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Does somebody have time to look at this?
+On Monday 08 March 2010 23:12:44 Andrew Lunn wrote:
+> Does somebody have time to look at this?
 
-     Andrew
+As far as I understand the question is: What happens if 
+!orig_node->router && !neigh_node go into update_route() ?
 
------ Forwarded message from Dan Carpenter <error27@gmail.com> -----
+Fairly easy to answer: Only update_routes() (note the "s") calls 
+update_route() which checks for this case:
 
-Date: Mon, 8 Mar 2010 16:07:01 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: andrew@lunn.ch
-Cc: kernel-janitors@vger.kernel.org
-Subject: batman: potential null dereference
-X-Spam-Status: No, score=2.9 required=4.0 tests=BAYES_00,FREEMAIL_FROM,
-	RCVD_IN_BL_SPAMCOP_NET,RCVD_IN_DNSWL_NONE,RCVD_IN_SORBS_WEB autolearn=no
-	version=3.3.0
+if (orig_node->router != neigh_node)
+	update_route()
 
-drivers/staging/batman-adv/routing.c
-    88          } else if ((orig_node->router == NULL) && (neigh_node != NULL)) {
-                            ^^^^^^^^^^^^^^^^^^^^^^^^^
-    89  
-    90                  bat_dbg(DBG_ROUTES,
-    91                          "Adding route towards: %pM (via %pM)\n",
-    92                          orig_node->orig, neigh_node->addr);
-    93                  hna_global_add_orig(orig_node, hna_buff, hna_buff_len);
-    94  
-    95                  /* route changed */
-    96          } else {
-    97                  bat_dbg(DBG_ROUTES, "Changing route towards: %pM (now via %pM - was via %pM)\n", 
-orig_node->orig, neigh_node->addr, orig_node->router->addr);
-                                   ^^^^^^^^^^^^^^^^^^^^^^^									
-    98          }
+Not very obvious though ...
 
-This could fail if debugging is enabled and neigh_node is null.
 
-regards,
-dan carpenter
+Regards,
+Marek
 
------ End forwarded message -----
+
+PS: Can we somehow better communicate that we have a mailing list for these 
+kind of questions ?
+
