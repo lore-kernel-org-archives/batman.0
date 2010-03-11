@@ -1,15 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 12 Mar 2010 03:20:04 +0800
-References: <201003030640.16085.lindner_marek@yahoo.de>
-	<20100309213501.GA30949@Linus-Debian>
-In-Reply-To: <20100309213501.GA30949@Linus-Debian>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Thu, 11 Mar 2010 22:19:06 +0100
+Message-Id: <1268342346-13713-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1268325529-10998-1-git-send-email-linus.luessing@web.de>
+References: <1268325529-10998-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003120320.04486.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] reorganized kernel interface patches (version 2)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fixing wrap-around bug in vis
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,25 +20,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+When the seqno for a vis packet had a wrap around from i.e. 255 to 0,
+add_packet() would falsely claim the older packet with the seqno 255 as
+newer as the one with the seqno of 0 and would therefore ignore the new
+packet. This happens with all following vis packets until the old vis
+packet expires after 180 seconds timeout. This patch fixes this issue
+and gets rid of these highly undesired 3min. breaks for the vis-server.
 
-Hey,
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+ batman-adv-kernelland/vis.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-> those patches look quite good to me now, seems to work here as
-> expected.
+diff --git a/batman-adv-kernelland/vis.c b/batman-adv-kernelland/vis.c
+index fa8a487..5735a6a 100644
+--- a/batman-adv-kernelland/vis.c
++++ b/batman-adv-kernelland/vis.c
+@@ -213,7 +213,8 @@ static struct vis_info *add_packet(struct vis_packet *vis_packet,
+ 	old_info = hash_find(vis_hash, &search_elem);
+ 
+ 	if (old_info != NULL) {
+-		if (vis_packet->seqno - old_info->packet.seqno <= 0) {
++		if (vis_packet->seqno - old_info->packet.seqno
++		    <= 1 << 7 * sizeof(vis_packet->seqno)) {
+ 			if (old_info->packet.seqno == vis_packet->seqno) {
+ 				recv_list_add(&old_info->recv_list,
+ 					      vis_packet->sender_orig);
+-- 
+1.7.0
 
-thanks for the review. Since there have been no further complains I committed 
-the patches.
-
-
-> Just one note: One of those warnings has gone now with the
-> _GNU_SOURCE stuff. However, getline is also being used in
-> funcitions.c:174 (so adding the define to functions.c too, got rid
-> of the second warning for instance).
-
-I made a seperate patch for the _GNU_SOURCE stuff as this does not really part 
-of the sysfs conversion. 
-
-Regards,
-Marek
