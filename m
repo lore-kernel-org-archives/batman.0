@@ -1,15 +1,15 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 11 Mar 2010 23:33:14 +0100
+Date: Fri, 12 Mar 2010 00:04:47 +0100
 References: <1268325529-10998-1-git-send-email-linus.luessing@web.de>
-	<1268342346-13713-1-git-send-email-linus.luessing@web.de>
 	<201003112306.48652.sven.eckelmann@gmx.de>
-In-Reply-To: <201003112306.48652.sven.eckelmann@gmx.de>
+	<201003112333.15318.sven.eckelmann@gmx.de>
+In-Reply-To: <201003112333.15318.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3424493.6YdsMTFPEd";
+Content-Type: multipart/signed; boundary="nextPart2173886.ut4C9Vc1nd";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003112333.15318.sven.eckelmann@gmx.de>
+Message-Id: <201003120004.48753.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fixing wrap-around bug in vis
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,49 +24,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3424493.6YdsMTFPEd
+--nextPart2173886.ut4C9Vc1nd
 Content-Type: Text/Plain;
   charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
 Sven Eckelmann wrote:
-> #define seq_before(x,y) ((x - y) >=3D 1 << 7 + 8 * (sizeof(x) - 1))
-> #define seq_after(x,y) ((y - x) >=3D 1 << 7 + 8 * (sizeof(x) - 1))
-> ....
+> That must be
+> #define seq_before(x,y) ((x - y) > 1 << 7 + 8 * (sizeof(x) - 1))
+> #define seq_after(x,y) ((y - x) > 1 << 7 + 8 * (sizeof(x) - 1))
 
-That must be=20
+Nearly correct but accidentally  deleted a =
+
 #define seq_before(x,y) ((x - y) > 1 << 7 + 8 * (sizeof(x) - 1))
-#define seq_after(x,y) ((y - x) > 1 << 7 + 8 * (sizeof(x) - 1))
-
-Or otherwise it would be wrong balanced between equal, after and before. In=
-=20
-other words: For every x in N0 and y in N0 is only one true of (x =3D=3D y)=
- or=20
-seq_before(x, y) or seq_after(x, y) after the change of >=3D to >
+#define seq_after(x,y) ((y - x) >= 1 << 7 + 8 * (sizeof(x) - 1))
 
 Best regards,
 	Sven
 
---nextPart3424493.6YdsMTFPEd
+--nextPart2173886.ut4C9Vc1nd
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJLmW+qAAoJEF2HCgfBJntGwAkQAMWn48ncfR2wxnoim567RZ09
-ihuk1AJjikv0+3SUTZn68uz2kf7DEr/APP11LHljaCPTMrMvdftSqniQNd2xgxt0
-ekhXXFKrAFG2flP2RSMJCO7b3zC0QqX4uQqIRPqS1usMYBIa1gkAxR3gGzIqGxy0
-wIJ5/bBHAO4moJh+WBmjjP/NSMYCtlNwAn/3qbCQf3wOd58q/5d5rTfbPJ8W46BN
-7ik8G/1WI3mSLmH2Dvp6WgnBkNVsVUuSyySughcp1pDpzd9ICS5xkfqzQ6ht8Dtm
-1b4eTsOOveTyTuW7oaORk971uNczaT+0CKBaEB6PDPVNDTJCoRmlvcyyLO2pM4pj
-sBIKW7mo3EkrYteXynQRj5B95xXCF0/6rE0RrWDTLx/epkdUr0r4i3nZ++kTqyYV
-LilrPFlh8BPvm9B1+mEpTVx83O8MEqx3N2Ua06dNv9As4n/09TPtWLHNtilLIsOc
-3ZV3FVUVftchSJu805f05kGc6anN/V7SpVzHWLY/DqDJgIgKD0H497UghquAZf2E
-RytuMxtpUfdSrv6oWxCfx7oBf3XEf8UzFtb5wShc+NuM5Fa9BiAnxuyZJ1lsKEAB
-RiVidS3Ns0WXNyr/NQ0Sv2f9iOMTuT0Tvw+8ENDNbGWB34MerUhMAqxTUnK0xa6U
-zRbnZ3PLF+AB2VcEwu6t
-=Sqw0
+iQIcBAABCgAGBQJLmXcQAAoJEF2HCgfBJntGwYsQAI31EY/bdYEaZeY5Clfue7C/
+sodjNXgbIQNLqExtQOXQPbDdpl7eSdRTYoWY5JlJOKjE/wzOWTWAdRsprrUq/bHe
+2h9pwht2UrKtoz2/6ZBb3p2LLs6G+4/iW6ctZkdsVPSwTftrmJlnbG4Q3OZBuxE4
+fLtvcDAOnf74OYn1UofnaS1pR5md9VNaAh+FjkiHGyBZaFCOgYuxL3tvJ9xJ5z7w
+an3vmoTADl71WBeSm0zBsCYpbtu+F+/4Kx8+8MtqLJBeubxMggiKu/9ZkmIz2L8V
++uauWTDjIG64Vs2TKF/krmHz0uyzvbz0f1b2IH4BFxoBgyl7tA8VsFuuQJh8PqNk
+bvxo6D/a5G9OZOx/cyhiwPoKj/5plIkA48DnDRiYI3VsGCb1B46I9mkIewIICA//
+vqlx6F4IXL7g8luwK4hpJ2cwFwYSxfEhs1p1+ISTfqIjVbdmumXMhjRDwKlacSGm
+bwLpL0R+QOYeXPDK+692Wk3Jy5nAZhTf3m+pTrKt7KXz/0WRqq9yz4Ynu6+FIePd
+Zb7oH40bj5DWdFs67CHAm0EzAgHpYBw9Vug9EY3sonWdyu6PQTF7jP+totjiz5i/
+pYqHr1q7Q2T/jCA2yHWfwo+nzVnoMNUvUFr1Mw+mCikivy+3+XgiZZfwC18S3cxZ
+MORw/I3ctbLzyd1KhHjc
+=MqQP
 -----END PGP SIGNATURE-----
 
---nextPart3424493.6YdsMTFPEd--
+--nextPart2173886.ut4C9Vc1nd--
