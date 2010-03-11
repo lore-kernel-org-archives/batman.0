@@ -1,11 +1,14 @@
-Return-Path: <michaelfazio@me.com>
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Message-id: <8D692389-52C5-4CCB-BE58-D4B2E4D07161@me.com>
-From: Michael Fazio <michaelfazio@me.com>
-Date: Thu, 11 Mar 2010 22:12:34 +0800
-Subject: [B.A.T.M.A.N.] B.A.T.M.A.N Suitability for MAGIC 2010
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Thu, 11 Mar 2010 17:38:49 +0100
+Message-Id: <1268325529-10998-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <20100309230308.GB30949@Linus-Debian>
+References: <20100309230308.GB30949@Linus-Debian>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fixing wrap-around bug in vis
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,55 +22,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hello,
+When the seqno for a vis packet had a wrap around from i.e. 255 to 0,
+add_packet() would falsely claim the older packet with the seqno 255 as
+newer as the one with the seqno of 0 and would therefore ignore the new
+packet. This happens with all following vis packets until the old vis
+packet expires after 180 seconds timeout. This patch fixes this issue
+and gets rid of these highly undesired 3min. breaks for the vis-server.
 
-		My name is Michael. I am currently working on a large robotics  
-project and I am thinking of using B.A.T.M.A.N to facilitate a MANET  
-to communicate between a number of bots and a base station. I was  
-hoping to get a bit of information regarding the suitability of  
-B.A.T.M.A.N for such an application. Any information would be helpful  
-(general or specific). Here are some of the details of our project.
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+ batman-adv-kernelland/packet.h |    3 ++-
+ batman-adv-kernelland/vis.c    |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-We will be using up-to 14 bots in our project (each must be network  
-aware).
-The area that our bots will be operating in is approximately the size  
-of a football field.
-There are both indoor and outdoor areas that must be navigated with a  
-significant amount of obstacles.
-We will be using 802.11a,b,g and possibly n as well as one or more  
-long range VHF links which I am hoping to setup as additional entry  
-points to our bot network.
-We have various types of data to be communicated on our network  
-including, GPS, basic telemetry, control message, imagery, UAV feeds,  
-point cloud info etc.
-Some data such as GPS and telemetry is realtime and need not be  
-reliable (we are considering simply UDP broadcasting this data). Other  
-data such as imagery and control messages will require stable links  
-and need to be relatively reliable.
-We are not yet sure if we will be deploying any specific middleware  
-technology although I am partial to pub/sub middleware. Are there any  
-such middleware that can complement B.A.T.M.A.N?
+diff --git a/batman-adv-kernelland/packet.h b/batman-adv-kernelland/packet.h
+index c8b973f..df38883 100644
+--- a/batman-adv-kernelland/packet.h
++++ b/batman-adv-kernelland/packet.h
+@@ -106,7 +106,8 @@ struct vis_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;        /* batman version field */
+ 	uint8_t  vis_type;	 /* which type of vis-participant sent this? */
+-	uint8_t  seqno;		 /* sequence number */
++	uint8_t  seqno;		 /* sequence number
++				  * (add_packet() expects uint8_t) */
+ 	uint8_t  entries;	 /* number of entries behind this struct */
+ 	uint8_t  ttl;		 /* TTL */
+ 	uint8_t  vis_orig[6];	 /* originator that informs about its
+diff --git a/batman-adv-kernelland/vis.c b/batman-adv-kernelland/vis.c
+index fa8a487..6cab4ba 100644
+--- a/batman-adv-kernelland/vis.c
++++ b/batman-adv-kernelland/vis.c
+@@ -213,7 +213,8 @@ static struct vis_info *add_packet(struct vis_packet *vis_packet,
+ 	old_info = hash_find(vis_hash, &search_elem);
+ 
+ 	if (old_info != NULL) {
+-		if (vis_packet->seqno - old_info->packet.seqno <= 0) {
++		/* seqno is uint8_t, therefore checking for 127 */
++		if ((vis_packet->seqno - old_info->packet.seqno) > 127) {
+ 			if (old_info->packet.seqno == vis_packet->seqno) {
+ 				recv_list_add(&old_info->recv_list,
+ 					      vis_packet->sender_orig);
+-- 
+1.7.0
 
-I was hoping to know what type of issues I might run into using  
-B.A.T.M.A.N adv in such a scenario. For instance, what kind of  
-throughput might I expect in the described environment? Link stability  
-issues? General suitability? How would B.A.T.M.A.N compare to OLSR or  
-Babel? I am really interested in anything that anyone has to offer.
-
-The reason I am pushing for B.A.T.M.A.N is because of the ability for  
-us to develop our application layer using IPv4 TCP/UDP on-top of a  
-mesh network driven by routers running openWRT & B.A.T.M.A.N. I want  
-to take as much network layer knowledge away from out application layer.
-
-Also, does anyone know of other similar usages of B.A.T.M.A.N?
-
-I have a bunch of studies from various organizations comparing  
-B.A.T.M.A.N to other solutions but I would really appreciate to hear  
-what the mail list users have to say about their own experiences with  
-B.A.T.M.A.N.
-
-I hope this is the right place to be asking all these questions!
-
-Thanks Batmen & Batwomen!
-
-Michael
