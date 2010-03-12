@@ -1,16 +1,16 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 12 Mar 2010 20:09:02 +0100
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Fri, 12 Mar 2010 21:57:40 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20100312205740.GA20427@pandem0nium>
 References: <1268325529-10998-1-git-send-email-linus.luessing@web.de>
-	<201003121004.56182.sven.eckelmann@gmx.de>
-	<201003121616.07084.sven.eckelmann@gmx.de>
-In-Reply-To: <201003121616.07084.sven.eckelmann@gmx.de>
+	<1268342346-13713-1-git-send-email-linus.luessing@web.de>
+	<201003112306.48652.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2794967.WhcYXabcJT";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003122009.02956.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fixing wrap-around bug in vis
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="HlL+5n6rz5pIUxbD"
+Content-Disposition: inline
+In-Reply-To: <201003112306.48652.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fixing wrap-around bug in	vis
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,227 +22,91 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-
---nextPart2794967.WhcYXabcJT
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_OFpmL899hSyLK9w"
-Content-Transfer-Encoding: 7bit
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---Boundary-01=_OFpmL899hSyLK9w
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+--HlL+5n6rz5pIUxbD
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-
-Sven Eckelmann wrote:
-> Sven Eckelmann wrote:
-> > Now it gets real cruel, but who cares... C++ wasn't accept in the kerne=
-l,
-> >  so we have to deal with it using some GNUish stuff.
-> >
-> > #define seq_before(x,y) ({typeof(x) _dummy =3D (x - y); \
-> >                           _dummy > 1u << (7u + 8u * (sizeof(_dummy) -
-> >  1u));}) #define seq_after(x,y) ({typeof(x) _dummy =3D (y - x); \
-> >                          _dummy >=3D 1u << (7u + 8u * (sizeof(_dummy) -
-> >  1u));})
->=20
-> After a small discussion with Marek I would like to suggest a easier
->  readable and symmetric definition
->=20
-> /* Returns the smallest signed integer in two's complement with the sizeof
->  x */
-> #define smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
->=20
-> /* Checks if a sequence number x is a predecessor/successor of y.
->    they handle overflows/underflows and can correctly check for a
->    predecessor/successor unless the variable sequence number has grown by
->    more then 2**(bitwidth(x)-1)-1.
->    This means that for an uint8_t with the maximum value 255, it would
->  think: * when adding nothing - it is neither a predecessor nor a success=
-or
->  * before adding more than 127 to the starting value - it is a predecesso=
-r,
->  * when adding 128 - it is neither a predecessor nor a successor, * after
->  adding more than 127 to the starting value - it is a successor */ #define
->  seq_before(x,y) ({typeof(x) _dummy =3D (x - y); \
->                          _dummy > smallest_signed_int(_dummy); })
-> #define seq_after(x,y) seq_before(y,x)
-
-@Linus: Here a small testcase - just as prove that I tested it this time :D
-
-Best regards,
-	Sven
-
---Boundary-01=_OFpmL899hSyLK9w
-Content-Type: text/x-csrc;
-  charset="UTF-8";
-  name="seq_before_test.c"
 Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="seq_before_test.c"
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
+Hey,
 
+nice catch!
 
-/* Returns the smallest signed integer in two's complement with the sizeof =
-x=20
-*/
-#define smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
+I'd like to join the party and propose this version:
 
-/* Checks if a sequence number x is a predecessor/successor of y.
-   they handle overflows/underflows and can correctly check for a
-   predecessor/successor unless the variable sequence number has grown by
-   more then 2**(bitwidth(x)-1)-1.
-   This means that for an uint8_t with the maximum value 255, it would thin=
-k:
-    * when adding nothing - it is neither a predecessor nor a successor
-    * before adding more than 127 to the starting value - it is a predecess=
-or,
-    * when adding 128 - it is neither a predecessor nor a successor,
-    * after adding more than 127 to the starting value - it is a successor =
-*/
-#define seq_before(x,y) ({typeof(x) _dummy =3D (x - y); \
-                         _dummy > smallest_signed_int(_dummy); })
+#define seq_before(x,y) ((int8_t) (x - y) < 0)
 #define seq_after(x,y) seq_before(y,x)
 
-#define type uint8_t
+Not so much bitshifting and may a little bit easier to=20
+understand, but also not general and does not pass Svens regression test ..=
+=2E :(
 
-int main(void) {
-	int first_round =3D 1;
-	type x, y, i;
-	type parts =3D ((type)~0u >> 1); /* 2**(bitwidth(type)-1)-1 */
-	int error =3D 0;
+Wrong seq_before(0, 128) =3D=3D true
+Wrong seq_after(0, 128) =3D=3D true
+Wrong seq_before(1, 129) =3D=3D true
+Wrong seq_after(1, 129) =3D=3D true
+Wrong seq_before(2, 130) =3D=3D true
+Wrong seq_after(2, 130) =3D=3D true
+Wrong seq_before(3, 131) =3D=3D true
+Wrong seq_after(3, 131) =3D=3D true
+Wrong seq_before(4, 132) =3D=3D true
+Wrong seq_after(4, 132) =3D=3D true
+Wrong seq_before(5, 133) =3D=3D true
+Wrong seq_after(5, 133) =3D=3D true
 
-	for (x =3D 0; first_round || x !=3D 0; x++) {
-		first_round =3D 0;
+What do you think?  ;)
 
-		y =3D x;
+best regards
+	Simon
 
-		/* Equal */
-		{
-			if (seq_before(x, y)) {
-				printf("Wrong seq_before(%u, %u) =3D=3D true\n", x, y);
-				error =3D 1;
-			}
-			if (seq_after(x, y)) {
-				printf("Wrong seq_after(%u, %u) =3D=3D true\n", x, y);
-				error =3D 1;
-			}
-			y++;
-		}
+On Thu, Mar 11, 2010 at 11:06:42PM +0100, Sven Eckelmann wrote:
+> Linus L=C3=BCssing wrote:
+> > -               if (vis_packet->seqno - old_info->packet.seqno <=3D 0) {
+> > +               if (vis_packet->seqno - old_info->packet.seqno
+> > +                   <=3D 1 << 7 * sizeof(vis_packet->seqno)) {
+>=20
+> Shouldn't that be=20
+>  1 << 7 + 8 * (sizeof(vis_packet->seqno) - 1))?
+>=20
+> Otherwise you would have left the the sizeof(vis_packet->seqno) most=20
+> significant bits 0 and the rest one. And maybe a seq_before/seq_after sta=
+tic=20
+> inline function could be created to make this thing a lot more readable. =
+You=20
+> could also do that in a macro if you don't want to assume the type of=20
+> vis_packet->seqno... which is probably what you tried by using sizeof
+>=20
+> #define seq_before(x,y) ((x - y) >=3D 1 << 7 + 8 * (sizeof(x) - 1))
+> #define seq_after(x,y) ((y - x) >=3D 1 << 7 + 8 * (sizeof(x) - 1))
+> ....
+>=20
+> And maybe you see here that the equal part which is needed bellow that li=
+ne=20
+> isn't possible. So it must be changed to=20
+>=20
+> if (!seq_after(vis_packet->seqno, old_info->packet.seqno))
+>=20
+> I hope that this is right - please check twice.
+>=20
+>=20
+> Best regards,
+> 	Sven
 
-		/* Successor */
-		for (i =3D 0; i < parts; i++) {
-			if (!seq_before(x, y)) {
-				printf("Wrong seq_before(%u, %u) =3D=3D true\n", x, y);
-				error =3D 1;
-			}
-			if (seq_after(x, y)) {
-				printf("Wrong seq_after(%u, %u) =3D=3D true\n", x, y);
-				error =3D 1;
-			}
-			y++;
-		}
 
-		/* Undefined */
-		{
-			if (seq_before(x, y)) {
-				printf("Wrong seq_before(%u, %u) =3D=3D true\n", x, y);
-				error =3D 1;
-			}
-			if (seq_after(x, y)) {
-				printf("Wrong seq_after(%u, %u) =3D=3D true\n", x, y);
-				error =3D 1;
-			}
-			y++;
-		}
 
-		/* Predecessor */
-		for (i =3D 0; i < parts; i++) {
-			if (seq_before(x, y)) {
-				printf("Wrong seq_before(%u, %u) =3D=3D true\n", x, y);
-				error =3D 1;
-			}
-			if (!seq_after(x, y)) {
-				printf("Wrong seq_after(%u, %u) =3D=3D false\n", x, y);
-				error =3D 1;
-			}
-			y++;
-		}
-	=09
-		if (x !=3D y) {
-			printf("In round %u only tested till %u\n", x, y);
-			error =3D 1;
-		}
-
-	}
-
-	if (first_round) {
-		printf("Not done a single test\n");
-		error =3D 1;
-	}
-=09
-
-	/* 0 is successor of 0-1 */
-	{
-		x =3D (type)~0u;
-		y =3D 0;
-		if (!seq_before(x, y)) {
-			printf("Wrong seq_before(%u, %u) =3D=3D false\n", x, y);
-			error =3D 1;
-		}
-		if (seq_after(x, y)) {
-			printf("Wrong seq_after(%u, %u) =3D=3D true\n", x, y);
-			error =3D 1;
-		}
-		y++;
-	}
-=09
-=09
-	/* 0 is predecessor of 1 */
-	{
-		x =3D 1;
-		y =3D 0;
-		if (seq_before(x, y)) {
-			printf("Wrong seq_before(%u, %u) =3D=3D true\n", x, y);
-			error =3D 1;
-		}
-		if (!seq_after(x, y)) {
-			printf("Wrong seq_after(%u, %u) =3D=3D false\n", x, y);
-			error =3D 1;
-		}
-		y++;
-	}
-
-	return error;
-}
-
---Boundary-01=_OFpmL899hSyLK9w--
-
---nextPart2794967.WhcYXabcJT
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+--HlL+5n6rz5pIUxbD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iQIcBAABCgAGBQJLmpFOAAoJEF2HCgfBJntGhMcP/06HeeyaiLQoYdzBu2Aa4o5Y
-rGi/p04AwpeJ9dvjoIPanMsgCqQFsgcGuofzgdslSU73oqq5lCgjl5DsUsYZbhN1
-OGVs0aqSA/V5AWEM7ziTAj6flUuulzjh/O6oKD3tNat5x/0thW2p3lbzV887kggv
-cbmeNVNf0Q0xYKBYB4757tTtjJuHeMTrz8eMCE4dFkx0L/zg2YGkq+TTv7yOn2cO
-84WOWjbF4FUyCnSRM8YxGlC5yorzjPRvZ93idswi/G0clvDxHElZNwBZlJdYbxPC
-WGuJp6wPg63sciBFggRsFg16K7T8x+Ml0vgmbE3Hnuj11GPxAHy6YySkD5MOilvd
-9rb/5Hcf1k/x/lXMu3ygMdi/PrXJ+5S8yBpU3xLWzgPXpAxLMe2bQKjtceM5qO+/
-zmcFn/7fP/6lBI+ueNFsExBEaDdNY+k/sxlnSGOaitHd7oOeYsd8alEQmR5gVVLz
-o8XhxDLg96B5Ajh0NR+wq1vHQZT6hemHNhx5kFZx3u+v7y8fbFw4fWmihIhBzWRC
-WgHxBHKDzLGk98Xt52uDPJ8jkMKq20tSM8e9aWw6txuB/woIS5cnNBFUXZedvjpH
-SC8EPw7njbC37iu3lye2MMjAatLwRDQPLo0zN+iZDv3GbvxUcXnEErNE5uXZ0Rv0
-NAq4TUQU2xP2nvfXqggN
-=vCxs
+iEYEARECAAYFAkuaqsQACgkQrzg/fFk7axayowCdFYWggePnC3yQLONXkNHvmYe1
+B3cAoJQpYzxmYzHl/kwnARss1SQYH5lC
+=xuc1
 -----END PGP SIGNATURE-----
 
---nextPart2794967.WhcYXabcJT--
+--HlL+5n6rz5pIUxbD--
