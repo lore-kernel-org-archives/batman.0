@@ -1,17 +1,11 @@
-Return-Path: <sven.eckelmann@gmx.de>
-Date: Fri, 12 Mar 2010 22:06:12 +0100
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20100312210611.GA12732@sven-atom.lazhur.ath.cx>
-References: <1268325529-10998-1-git-send-email-linus.luessing@web.de>
-	<1268342346-13713-1-git-send-email-linus.luessing@web.de>
-	<201003112306.48652.sven.eckelmann@gmx.de>
-	<20100312205740.GA20427@pandem0nium>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
-Content-Disposition: inline
-In-Reply-To: <20100312205740.GA20427@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fixing wrap-around bug in	vis
+Return-Path: <batman@kevinsteen.net>
+From: Kevin Steen <batman@kevinsteen.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 14 Mar 2010 00:35:50 +0000
+Message-ID: <1268526950.4592.32.camel@rover>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] Strange sequence numbers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,72 +17,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+I've been lurking on this list for a few weeks, but finally tried
+compiling and running the batman-adv module from the svn sources.
 
---NzB8fVQJ5HfG6fxh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It seems to work fine between my two test machines so far, but I noticed
+some weird sequence numbers when doing a dump with 'batctl td'. In the
+sequence below, I had 'rover' running and active on rover's eth0, then I
+activated the eth1 interface on hilltop for a few seconds, then
+de-activated it. 
 
-On Fri, Mar 12, 2010 at 09:57:40PM +0100, Simon Wunderlich wrote:
-> #define seq_before(x,y) ((int8_t) (x - y) < 0)
-> #define seq_after(x,y) seq_before(y,x)
->=20
-> Not so much bitshifting and may a little bit easier to=20
-> understand, but also not general and does not pass Svens regression test =
-=2E.. :(
->=20
-> Wrong seq_before(0, 128) =3D=3D true
-> Wrong seq_after(0, 128) =3D=3D true
-> Wrong seq_before(1, 129) =3D=3D true
-> Wrong seq_after(1, 129) =3D=3D true
-> Wrong seq_before(2, 130) =3D=3D true
-> Wrong seq_after(2, 130) =3D=3D true
-> Wrong seq_before(3, 131) =3D=3D true
-> Wrong seq_after(3, 131) =3D=3D true
-> Wrong seq_before(4, 132) =3D=3D true
-> Wrong seq_after(4, 132) =3D=3D true
-> Wrong seq_before(5, 133) =3D=3D true
-> Wrong seq_after(5, 133) =3D=3D true
->=20
-> What do you think?  ;)
+It seems like when rover re-sends the OGM from hilltop, it gets the
+sequence number wrong (1->256, 2->512, 3->768). Is this my lack of
+understanding of how it should work, a bug in batctl's display or a bug
+in batman-adv?
 
-This is the version which also was mentioned by andrew - which has the
-advantage that it doesn't have "complicated" code, but isn't general purpose
-for unsigned ints. The only reason I started with the more complicated stuff
-was that Linus tried to make it easier to change the packet definition
-without ruining the code at different places.
+rover is kernel 2.6.31-20-generic (Ubuntu karmic),
+hilltop is kernel 2.6.26-2-686 (Debian lenny)
 
-That it doesn't pass the test is only the due to my symmetric definition of=
- the
-operation. I am not really intrested in changing that code, but to support
-Linus.
+$ ./batctl td eth1
+23:37:22.022554 BAT rover-eth0: OGM via neigh rover-eth0, seqno 481, tq 255, ttl 50, v 9, flags [..F], length 42
+23:37:23.002547 BAT rover-eth0: OGM via neigh rover-eth0, seqno 482, tq 255, ttl 50, v 9, flags [..F], length 42
+23:37:23.982469 BAT rover-eth0: OGM via neigh rover-eth0, seqno 483, tq 255, ttl 50, v 9, flags [..F], length 42
+23:37:24.962417 BAT rover-eth0: OGM via neigh rover-eth0, seqno 484, tq 255, ttl 50, v 9, flags [..F], length 42
+23:37:25.962320 BAT rover-eth0: OGM via neigh rover-eth0, seqno 485, tq 255, ttl 50, v 9, flags [..F], length 42
+23:37:26.943490 BAT rover-eth0: OGM via neigh rover-eth0, seqno 486, tq   0, ttl 49, v 9, flags [D..], length 42
+23:37:27.041437 BAT rover-eth0: OGM via neigh hilltop-eth1, seqno 486, tq   0, ttl 49, v 9, flags [D..], length 28
+23:37:27.893422 BAT hilltop-eth1: OGM via neigh hilltop-eth1, seqno 1, tq 255, ttl 50, v 9, flags [..F], length 22
+23:37:27.922233 BAT rover-eth0: OGM via neigh rover-eth0, seqno 487, tq   0, ttl 49, v 9, flags [D..], length 42
+23:37:27.978267 BAT hilltop-eth1: OGM via neigh rover-eth0, seqno 256, tq  10, ttl 49, v 9, flags [D..], length 42
+23:37:28.025425 BAT rover-eth0: OGM via neigh hilltop-eth1, seqno 487, tq   0, ttl 49, v 9, flags [D..], length 28
+23:37:28.873428 BAT hilltop-eth1: OGM via neigh hilltop-eth1, seqno 2, tq 255, ttl 50, v 9, flags [..F], length 28
+23:37:28.902203 BAT rover-eth0: OGM via neigh rover-eth0, seqno 488, tq  10, ttl 49, v 9, flags [D..], length 42
+23:37:28.958188 BAT hilltop-eth1: OGM via neigh rover-eth0, seqno 512, tq  21, ttl 49, v 9, flags [D..], length 42
+23:37:29.005443 BAT rover-eth0: OGM via neigh hilltop-eth1, seqno 488, tq  10, ttl 49, v 9, flags [D..], length 28
+23:37:29.873428 BAT hilltop-eth1: OGM via neigh hilltop-eth1, seqno 3, tq 255, ttl 50, v 9, flags [..F], length 28
+23:37:29.902152 BAT rover-eth0: OGM via neigh rover-eth0, seqno 489, tq  22, ttl 49, v 9, flags [D..], length 42
+23:37:29.970180 BAT hilltop-eth1: OGM via neigh rover-eth0, seqno 768, tq  30, ttl 49, v 9, flags [D..], length 42
+23:37:30.009433 BAT rover-eth0: OGM via neigh hilltop-eth1, seqno 489, tq  22, ttl 49, v 9, flags [D..], length 28
+23:37:30.882142 BAT rover-eth0: OGM via neigh rover-eth0, seqno 490, tq 255, ttl 50, v 9, flags [..F], length 42
+23:37:31.882087 BAT rover-eth0: OGM via neigh rover-eth0, seqno 491, tq 255, ttl 50, v 9, flags [..F], length 42
+23:37:32.862046 BAT rover-eth0: OGM via neigh rover-eth0, seqno 492, tq 255, ttl 50, v 9, flags [..F], length 42
+23:37:33.861989 BAT rover-eth0: OGM via neigh rover-eth0, seqno 493, tq 255, ttl 50, v 9, flags [..F], length 42
+23:37:34.861946 BAT rover-eth0: OGM via neigh rover-eth0, seqno 494, tq 255, ttl 50, v 9, flags [..F], length 42
 
-Best regards,
-	Sven
+-Kevin
 
---NzB8fVQJ5HfG6fxh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAEBCgAGBQJLmqzDAAoJEF2HCgfBJntGfo0QAIU1ZtK67JE8LZpHR/yyUGLv
-tui60MY+PrmEyoOeYqXrg7WwXoNJYqhqVeeg5ApGzeZkPDPWNCfdpm86p5SFVhfM
-iLAnS/I8jnopBkpoHil6CJRpCHUxy4Hu3Nb4qal64cgbpA34U0QumW15t+BS3OTt
-2XYiLM1dtDkHWnVl8L/9/VCYGRTrWxWOCQi7xYooU06gS8P+wzWhgpSOoNAPqlAE
-lSKsItVmh9wxO6g9tb6J6bzLPQBNDuREcyKZOhNHtbJ+mROICqOdvdLDzlsbFM7z
-bLr6SxLQutyGdaNguX9bvnTtsdOtS/PbKnyFn8mOuw8ningXdMid+7E2HD7KfYyZ
-xZbKgH1MoGKUW25IJ4bi3xPqX8j5fTR3CJLAOe3K9+V3mKPXr++0aQ7TfYa0CKj9
-y1hFR0VXahr82bEikFpGzv5BoJGy8W7ZnaWrWdu2K1R8MtKWTQweygXVEGj73FPy
-91In/FffKvHhLZSgXYxUPvTxWVWAED/+ORAeCKL3mBlnx3WSzaL1bqJ8hR/uo/8L
-SEZthZiMUtLTXBaRhsTlLyI7oCDP0FcWT7EIFl3ca7Vgj0A+hrjEHzfxSLDtLHqj
-nET8vyIaZYQXu+GWaRgQpM4NuSgkOHSGu72L30H4sVYHwDnLjveFU+AksHG7VLRI
-HxXpnZLPTiIuBn4uSGLQ
-=e0RX
------END PGP SIGNATURE-----
-
---NzB8fVQJ5HfG6fxh--
