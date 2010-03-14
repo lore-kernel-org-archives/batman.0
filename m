@@ -1,15 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
-Date: Sun, 14 Mar 2010 16:50:26 +0100
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20100314155025.GA18908@sven-atom.lazhur.ath.cx>
-References: <1268526950.4592.32.camel@rover>
-	<20100314120410.GA16678@sven-atom.lazhur.ath.cx>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="AqsLC8rIMeq19msA"
-Content-Disposition: inline
-In-Reply-To: <20100314120410.GA16678@sven-atom.lazhur.ath.cx>
-Subject: Re: [B.A.T.M.A.N.] Strange sequence numbers
+Date: Sun, 14 Mar 2010 18:08:15 +0100
+Message-Id: <1268586495-20099-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <20100314155025.GA18908@sven-atom.lazhur.ath.cx>
+References: <20100314155025.GA18908@sven-atom.lazhur.ath.cx>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Clone shared bat packets before
+	modifying them
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,57 +17,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org, Kevin Steen <batman@kevinsteen.net>
 
+"tcpdump" and "batctl td" will receive packets with a wrong sequence
+number on systems with a different endianess than network byte order.
+This happens due to the reordering of bytes in the function which
+handles aggregated bat packets. The function which receives the bat
+packets must ensure that these buffers aren't shared with anything else
+before that function tries to write into it. Otherwise it has to copy
+the buffers so it is save again to change them.
 
---AqsLC8rIMeq19msA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv-kernelland/routing.c |   16 ++++++++++++----
+ 1 files changed, 12 insertions(+), 4 deletions(-)
 
-On Sun, Mar 14, 2010 at 01:04:10PM +0100, Sven Eckelmann wrote:
-> Thanks for testing the code. I doubt that this is a bug in the batman-adv code.
-> Can you please make a capture of the raw packet data using tcpdump and/or
-> wireshark? I think that this is a batctl bug, but I don't have time to check it
-> right now. You can do the comparison by yourself using the wireshark-batman-adv
-> dissector linked in the open-mesh.net wiki.
+diff --git a/batman-adv-kernelland/routing.c b/batman-adv-kernelland/routing.c
+index 8610b22..0051259 100644
+--- a/batman-adv-kernelland/routing.c
++++ b/batman-adv-kernelland/routing.c
+@@ -680,6 +680,7 @@ int recv_bat_packet(struct sk_buff *skb,
+ {
+ 	struct ethhdr *ethhdr;
+ 	unsigned long flags;
++	struct sk_buff *skb_old;
+ 
+ 	/* drop packet if it has not necessary minimum size */
+ 	if (skb_headlen(skb) < sizeof(struct batman_packet))
+@@ -695,12 +696,19 @@ int recv_bat_packet(struct sk_buff *skb,
+ 	if (is_bcast(ethhdr->h_source))
+ 		return NET_RX_DROP;
+ 
+-	spin_lock_irqsave(&orig_hash_lock, flags);
+ 	/* TODO: we use headlen instead of "length", because
+ 	 * only this data is paged in. */
+-	/* TODO: is another skb_copy needed here? there will be
+-	 * written on the data, but nobody (?) should further use
+-	 * this data */
++
++	/* create a copy of the skb, if needed, to modify it. */
++	if (!skb_clone_writable(skb, skb_headlen(skb))) {
++		skb_old = skb;
++		skb = skb_copy(skb, GFP_ATOMIC);
++		if (!skb)
++			return NET_RX_DROP;
++		kfree_skb(skb_old);
++	}
++
++	spin_lock_irqsave(&orig_hash_lock, flags);
+ 	receive_aggr_bat_packet(ethhdr,
+ 				skb->data,
+ 				skb_headlen(skb),
+-- 
+1.7.0
 
-Just checked the output of a uml tcpdump versus a tcpdump of the corresponding
-tap device on the host. The result on the host ist correct and the output from
-the uml has the two bytes from the sequence number exchanged. So it seems that
-the skb is changed without cloning the data which is changed.
-
-The problem appears when data is resend by the other node and we retreive them.
-It doesn't seem to happen when we receive data from the other node with the
-originator also being the other node. This is not the data the network really
-sees - only tcpdump will see it.
-
-So it is real a problem with batman-adv and not batctl (the code of batctl
-isn't that complex that it could create such a problem).
-
-Best regards,
-	Sven
-
---AqsLC8rIMeq19msA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAEBCgAGBQJLnQXBAAoJEF2HCgfBJntGH5QQAMXQ0WY9bV45dLoSCk+UXf5r
-aUpb4899D1z6FPGbz7QbabN2cMCCyRiJVEQehNuj78WzwUDBTxQUkVt2KqFBLsqP
-A2jWUToIIAi2w5sWQ2l37cJpgtdWIqp1dwKCc7xSxypMxaZ2uSRhdHE9O39LHQfz
-5jayMzF4j0ov5JPhcCRmO42rpC537XWDHz0OUCNrEmRVZSC8WK4kZR6Owsj+72hM
-fOkZXfdG/kQvhNvmxlp337sWYbfDH300R19dzqpRUM+yiNdemh2AFYYjEwxOY07V
-TkQBX7KZZqD/QSd0UkIK+29+yNs9Ax3RnesR3z9xlen5VdU1KFhvdiKEHXvpY8Xx
-NDOjEPoHiBQFj5nMU2gB+Q2/pmk4HcnYyEK6dY1GjMN05inHZfrswUgBSzI0zEkw
-mD1m6CrJdjdT3KJoQTUjkPoch21sach/etmyLOwwMPC3o2j6vP73CBgi/KQn8Hnr
-qjGgEA8rYJ9md6PyQSvPCkWB0PMOWEhj0Yvm/0ocrUf5lR+x0ngyMhuWPSdickLH
-qobZcbihcmwSQusx1a+ex0sfi/TUlz8vhXByyzK0yamBQFr2ITnLBD6PE1arpf9j
-cSUCN8NI5JatEC+YD739SttnvYJmQ79tGddZMf79TQo/HSM/Ywvc0Ov8qfo3RdSl
-9IMX5sRC8T89Q4sD8No7
-=oXDi
------END PGP SIGNATURE-----
-
---AqsLC8rIMeq19msA--
