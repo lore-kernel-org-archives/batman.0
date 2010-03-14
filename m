@@ -1,14 +1,14 @@
-Return-Path: <sven.eckelmann@gmx.de>
-Date: Sun, 14 Mar 2010 13:04:10 +0100
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20100314120410.GA16678@sven-atom.lazhur.ath.cx>
-References: <1268526950.4592.32.camel@rover>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Sun, 14 Mar 2010 16:46:28 +0100
+Message-Id: <1268581588-5153-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <201003122009.02956.sven.eckelmann@gmx.de>
+References: <201003122009.02956.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="ZPt4rx8FFjLCG7dd"
-Content-Disposition: inline
-In-Reply-To: <1268526950.4592.32.camel@rover>
-Subject: Re: [B.A.T.M.A.N.] Strange sequence numbers
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fixing wrap-around bug in vis
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,85 +20,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
+When the seqno for a vis packet had a wrap around from i.e. 255 to 0,
+add_packet() would falsely claim the older packet with the seqno 255 as
+newer as the one with the seqno of 0 and would therefore ignore the new
+packet. This happens with all following vis packets until the old vis
+packet expires after 180 seconds timeout. This patch fixes this issue
+and gets rid of these highly undesired 3min. breaks for the vis-server.
 
---ZPt4rx8FFjLCG7dd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv-kernelland/vis.c |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletions(-)
 
-On Sun, Mar 14, 2010 at 12:35:50AM +0000, Kevin Steen wrote:
-> I've been lurking on this list for a few weeks, but finally tried
-> compiling and running the batman-adv module from the svn sources.
->=20
-> It seems to work fine between my two test machines so far, but I noticed
-> some weird sequence numbers when doing a dump with 'batctl td'. In the
-> sequence below, I had 'rover' running and active on rover's eth0, then I
-> activated the eth1 interface on hilltop for a few seconds, then
-> de-activated it.=20
->=20
-> It seems like when rover re-sends the OGM from hilltop, it gets the
-> sequence number wrong (1->256, 2->512, 3->768). Is this my lack of
-> understanding of how it should work, a bug in batctl's display or a bug
-> in batman-adv?
->=20
-> rover is kernel 2.6.31-20-generic (Ubuntu karmic),
-> hilltop is kernel 2.6.26-2-686 (Debian lenny)
->=20
-> $ ./batctl td eth1
-> 23:37:22.022554 BAT rover-eth0: OGM via neigh rover-eth0, seqno 481, tq 2=
-55, ttl 50, v 9, flags [..F], length 42
-> 23:37:23.002547 BAT rover-eth0: OGM via neigh rover-eth0, seqno 482, tq 2=
-55, ttl 50, v 9, flags [..F], length 42
-> 23:37:23.982469 BAT rover-eth0: OGM via neigh rover-eth0, seqno 483, tq 2=
-55, ttl 50, v 9, flags [..F], length 42
-> 23:37:24.962417 BAT rover-eth0: OGM via neigh rover-eth0, seqno 484, tq 2=
-55, ttl 50, v 9, flags [..F], length 42
-> 23:37:25.962320 BAT rover-eth0: OGM via neigh rover-eth0, seqno 485, tq 2=
-55, ttl 50, v 9, flags [..F], length 42
-> 23:37:26.943490 BAT rover-eth0: OGM via neigh rover-eth0, seqno 486, tq  =
- 0, ttl 49, v 9, flags [D..], length 42
-> 23:37:27.041437 BAT rover-eth0: OGM via neigh hilltop-eth1, seqno 486, tq=
-   0, ttl 49, v 9, flags [D..], length 28
-> 23:37:27.893422 BAT hilltop-eth1: OGM via neigh hilltop-eth1, seqno 1, tq=
- 255, ttl 50, v 9, flags [..F], length 22
-> 23:37:27.922233 BAT rover-eth0: OGM via neigh rover-eth0, seqno 487, tq  =
- 0, ttl 49, v 9, flags [D..], length 42
+diff --git a/batman-adv-kernelland/vis.c b/batman-adv-kernelland/vis.c
+index fa8a487..5fd8710 100644
+--- a/batman-adv-kernelland/vis.c
++++ b/batman-adv-kernelland/vis.c
+@@ -28,6 +28,22 @@
+ #include "hash.h"
+ #include "compat.h"
+ 
++/* Returns the smallest signed integer in two's complement with the sizeof x */
++#define smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
++
++/* Checks if a sequence number x is a predecessor/successor of y.
++   they handle overflows/underflows and can correctly check for a
++   predecessor/successor unless the variable sequence number has grown by
++   more then 2**(bitwidth(x)-1)-1.
++   This means that for a uint8_t with the maximum value 255, it would think:
++    * when adding nothing - it is neither a predecessor nor a successor
++    * before adding more than 127 to the starting value - it is a predecessor,
++    * when adding 128 - it is neither a predecessor nor a successor,
++    * after adding more than 127 to the starting value - it is a successor */
++#define seq_before(x,y) ({typeof(x) _dummy = (x - y); \
++                         _dummy > smallest_signed_int(_dummy); })
++#define seq_after(x,y) seq_before(y,x)
++
+ struct hashtable_t *vis_hash;
+ DEFINE_SPINLOCK(vis_hash_lock);
+ static DEFINE_SPINLOCK(recv_list_lock);
+@@ -213,7 +229,7 @@ static struct vis_info *add_packet(struct vis_packet *vis_packet,
+ 	old_info = hash_find(vis_hash, &search_elem);
+ 
+ 	if (old_info != NULL) {
+-		if (vis_packet->seqno - old_info->packet.seqno <= 0) {
++		if (!seq_after(vis_packet->seqno, old_info->packet.seqno)) {
+ 			if (old_info->packet.seqno == vis_packet->seqno) {
+ 				recv_list_add(&old_info->recv_list,
+ 					      vis_packet->sender_orig);
+-- 
+1.7.0
 
-Thanks for testing the code. I doubt that this is a bug in the batman-adv c=
-ode.
-Can you please make a capture of the raw packet data using tcpdump and/or
-wireshark? I think that this is a batctl bug, but I don't have time to chec=
-k it
-right now. You can do the comparison by yourself using the wireshark-batman=
--adv
-dissector linked in the open-mesh.net wiki.
-
-Best regards,
-	Sven
-
---ZPt4rx8FFjLCG7dd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAEBCgAGBQJLnNC5AAoJEF2HCgfBJntGkSMQALVq56FiTDGU/XMB00Hpnm+c
-7tzSNrMlZ0+viXLIwK7EITdMNFENPDkQuOtXTSp3Gqr6tz/k+7YGjtOSIwgDz7Pi
-VwJsWTdTUIP4EptGC6e2IaJ8w0EN9RQOMee9UHkQJBe49On/4NRQyQl847ppHqLk
-4wd59nUO1+aU93Rd9NlebWquXIRxkfrfO3DrKYaEjiEkykDiHAm17+hwv8Mvhtwg
-64eKb25jG3LREswT9l5ZXIzFJ+vtP5UXmmx4mJcx3WEbr9j2EOJNzcA/UQGWO1KN
-iAPl6CQ/cRsb2SGijev3Bz8WJawNYap0llvJOgoKtSPqZFqr1QPrgb0DJYJoh2Gm
-NIncUtuhreUlTdjaj0Q7utX4NkM+Cpl5Qh4Q91KF67BoXlPP/l0Ovm7nE1WwwfLQ
-AyWM0HZXBJci7sFHxx8//dURbuyfMW3f2uK/dLdcNOGsw6+9M3MMyWwdZcrmxLBv
-8w0khZslRqzBorfZEQaeteK47YjTZrY82LsxVI+5D4aMnlIXHy/UbcZA/75L7g2I
-3Uu6P10thA06B9yCShVCTv0LU21fsCzb37OMxtqOHrKx8WWtquFLpkc3RxRQrq78
-HI54ZF+FY19AzYW4BK8e0eG4JGEUOX6yg0jZh1xWBn7KDOdEzQpQBvftA2Q9N2TB
-rFi5b74CyE/QPKlQrTHE
-=fuK4
------END PGP SIGNATURE-----
-
---ZPt4rx8FFjLCG7dd--
