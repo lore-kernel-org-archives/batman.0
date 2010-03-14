@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun, 14 Mar 2010 18:08:15 +0100
-Message-Id: <1268586495-20099-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun, 14 Mar 2010 18:15:55 +0100
+Message-Id: <1268586955-29220-1-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <20100314155025.GA18908@sven-atom.lazhur.ath.cx>
 References: <20100314155025.GA18908@sven-atom.lazhur.ath.cx>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Clone shared bat packets before
-	modifying them
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Clone shared bat packets
+	before modifying them
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,7 +17,7 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Kevin Steen <batman@kevinsteen.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 "tcpdump" and "batctl td" will receive packets with a wrong sequence
 number on systems with a different endianess than network byte order.
@@ -27,6 +27,7 @@ packets must ensure that these buffers aren't shared with anything else
 before that function tries to write into it. Otherwise it has to copy
 the buffers so it is save again to change them.
 
+Reported-by: Kevin Steen <batman@kevinsteen.net>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
  batman-adv-kernelland/routing.c |   16 ++++++++++++----
