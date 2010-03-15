@@ -1,10 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 15 Mar 2010 09:03:06 +0800
-Message-Id: <1268614986-17280-3-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <201003150902.33262.lindner_marek@yahoo.de>
-References: <201003150902.33262.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batctl: update man page
+Return-Path: <michaelfazio@me.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+Message-id: <59537C95-BCEC-4E94-9E59-E0E96D289776@me.com>
+From: Michael Fazio <michaelfazio@me.com>
+In-reply-to: <20100314204138.GA6096@Linus-Debian>
+Content-transfer-encoding: quoted-printable
+Date: Mon, 15 Mar 2010 19:23:53 +0800
+References: <8D692389-52C5-4CCB-BE58-D4B2E4D07161@me.com>
+	<20100314204138.GA6096@Linus-Debian>
+Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N Suitability for MAGIC 2010
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,203 +20,172 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- batctl/man/batctl.8 |  138 ++++++++++++++++++++++++++++----------------------
- 1 files changed, 77 insertions(+), 61 deletions(-)
+Hi Linus (and others who responded),
 
-diff --git a/batctl/man/batctl.8 b/batctl/man/batctl.8
-index 43fce87..43af853 100644
---- a/batctl/man/batctl.8
-+++ b/batctl/man/batctl.8
-@@ -53,53 +53,78 @@ protocol.
- .br
- .TP
- .I \fBcommands:
--.IP "\fBinterface\fP|\fBif\fP   [\fBnone\fP|\fIinterface\fP]"
-+.IP "\fBinterface\fP|\fBif\fP     [\fBnone\fP|\fBinterface\fP]"
- If no parameter is given the current interface settings are displayed
- otherwise the parameter(s) are added as new interfaces. Use the "none"
- keyword to deactivate all interfaces.
- .br
--.IP "\fBoriginators\fP|\fBo\fP   [\fB\-b\fP][\fB\-n\fP]"
--Display the originator table. Once started batctl will refresh the
--displayed originator table every second. The "\-b" option causes the
--table to be displayed only once (useful for scripts). If "\-n" is
--given batctl will not replace the MAC addresses with bat\-host names
--in the output.
--.br
--.IP "\fBinterval\fP|\fBit\fP    [\fIorig_interval\fP]"
--If no parameter is given the current originator interval setting is
--displayed otherwise the parameter is used to set the originator
--interval. The interval is in units of milliseconds.
--.br
--.IP "\fBloglevel\fP|\fBll\fP    [\fIlevel\fP]"
--If no parameter is given the current log level settings are displayed
--otherwise the parameter is used to set the log level. Level 0 disables
--all logging. Level 1 enables messages related to routing / flooding /
--broadcasting. Level 2 enables messages related to route or hna added /
--changed / deleted. Level 3 enables all messages. The messages are sent
--to the kernel log. Use \fBdmesg\fP(1) to see them.
--.br
--.IP "\fBlog\fP|\fBl\fP           [\fIlogfile\fP][\fB\-b\fP][\fB\-n\fP]\fP"
--batctl will read the file logfile, or stdin if the logfile parameter
--is not given, applying filtering so only the B.A.T.M.A.N. Advanced
--messages are displayed. Whenever there are new log messages appended
--to the file batctl will display them. The option "\-b" causes batctl
--to exit once the end of the file has been reached. If "\-n" is given
--batctl will not replace the MAC addresses with bat\-host names in the
--output.
--.br
--.IP "\fBtranslocal\fP|\fBtl\fP   [\fB\-b\fP][\fB\-n\fP]"
--Display the local translation table. batctl will refresh the
--displayed table every second. The "\-b" option causes the table to be
--displayed only once (useful for scripts). If "\-n" is given batctl
--will not replace the MAC addresses with bat\-host names in the output.
--.br
--.IP "\fBtransglobal\fP|\fBtg\fP  [\fB\-b\fP][\fB\-n\fP]"
--Display the global translation table. batctl will refresh the
--displayed table every second. The "\-b" option causes the table to be
--displayed only once (useful for scripts). If "\-n" is given batctl
--will not replace the MAC addresses with bat\-host names in the output.
--.br
--.IP "\fBvis dot\fP         [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
-+.IP "\fBoriginators\fP|\fBo\fP    [\fB\-b\fP][\fB\-n\fP]"
-+Once started batctl will display the list of announced gateways in the network. Use the "\-w" option to let batctl refresh the list every second. If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output.
-+.br
-+.IP "\fBinterval\fP|\fBit\fP      [\fBorig_interval\fP]"
-+If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the originator interval. The interval is in units of milliseconds.
-+.br
-+.IP "\fBloglevel\fP|\fBll\fP      [\fBlevel\fP]"
-+If no parameter is given the current log level settings are displayed otherwise the parameter is used to set the log level. Level 0 disables all logging. Level 1 enables messages related to routing / flooding / broadcasting. Level 2 enables messages related to route or hna added / changed / deleted. Level 3 enables all messages. The messages are sent to the kernel log. Use \fBdmesg\fP(1) to see them. Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options won't be available.
-+.br
-+.IP "\fBlog\fP|\fBl\fP            [\fBlogfile\fP][\fB\-b\fP][\fB\-n\fP]\fP"
-+batctl will read the file logfile, or stdin if the logfile parameter is not given, applying filtering so only the B.A.T.M.A.N. Advanced messages are displayed. Once the end of the file has been reached batctl will exit unless the option "\-w" was specified which causes batctl to continue reading the file and print log output whenever new log data has been appended to the file.
-+.br
-+.IP "\fBgw_mode|gw\fP       [\fBoff\fP|\fBclient\fP|\fBserver\fP] [\fBgw_class\fP]\fP"
-+If no parameter is given the current gateway mode is displayed otherwise the parameter is used to set the gateway mode. The second (optional) argument specifies the gateway class. Its function depends on whether the node is a server or a client. If the node is a server this parameter is used to inform other nodes in the network about this node's internet connection bandwidth. Just enter any number (optionally followed by "kbit" or "mbit") and the batman-adv module will guess your appropriate gateway class. Use "/" to separate the down\(hy and upload rates. You can omit the upload rate and the module will assume an upload of download / 5.
-+.RS 17
-+default: 2000 \-> gateway class 20
-+.RE
-+.RS 16
-+examples: 5000 \-> gateway class 49
-+.RE
-+.RS 25
-+ 5000kbit
-+ 5mbit
-+ 5mbit/1024
-+ 5mbit/1024kbit
-+ 5mbit/1mbit
-+.RE
-+.RS 7
-+If the node is a gateway client the parameter will decide which criterias to consider when the batman-adv module has to choose between different internet connections announced by the aforementioned servers.
-+.RE
-+.RS 17
-+default: 20 \-> late switch (TQ 20)
-+.RE
-+.RS 16
-+examples:  1 -> fast connection
-+.RS 16
-+consider the gateway's advertised throughput as well as the link quality towards the gateway
-+.RE
-+.RE
-+.RS 25
-+ 2  \-> stable connection
-+.RS 7
-+chooses the gateway with the best link quality and stick with it (ignore the advertised throughput)
-+.RE
-+ 3  \-> fast switch connection
-+.RS 7
-+chooses the gateway with the best link quality but switches to another gateway as soon as a better one is found
-+.RE
-+ XX \-> late switch connection
-+.RS 7
-+chooses the gateway with the best link quality but switches to another gateway as soon as a better one is found which is at least XX TQ better than the currently selected gateway (XX has to be a number between 3 and 256).
-+.RE
-+.RE
-+.br
-+.IP "\fBgateways|gwl\fP     [\fB\-w\fP][\fB\-n\fP]"
-+Once started batctl will display the list of announced gateways in the network. Use the "\-w" option to let batctl refresh the list every second. If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
-+.br
-+.IP "\fBtranslocal\fP|\fBtl\fP    [\fB\-w\fP][\fB\-n\fP]"
-+Display the local translation table. batctl will refresh the displayed table every second if the "\-w" option was given. Use "\-n" to let batctl not replace the MAC addresses with bat\-host names in the output.
-+.br
-+.IP "\fBtransglobal\fP|\fBtg\fP   [\fB\-w\fP][\fB\-n\fP]"
-+Display the global translation table. batctl will refresh the displayed table every second if the "\-w" option was given. Use "\-n" to let batctl not replace the MAC addresses with bat\-host names in the output.
-+.br
-+.IP "\fBvis_mode|vm\fP	  [\fBmode\fP]\fP"
-+If no parameter is given the current vis mode is displayed otherwise the parameter is used to set the vis mode.
-+.br
-+.IP "\fBvis_data|vd dot\fP  [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
- Display the visualisation data in graphviz \fBdot\fP(1) format. If
- "\-\-numbers" or "\-n" is given batctl will not replace the MAC
- addresses with bat-host names in the output. With "\-\-no-HNA" or
-@@ -107,7 +132,7 @@ addresses with bat-host names in the output. With "\-\-no-HNA" or
- be seen. With "\-\-no-2nd" or "\-2" a dot cluster is not formed around
- primary and secondary addresses from the same device.
- .br
--.IP "\fBvis json\fP        [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
-+.IP "\fBvis_data|vd json\fP [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
- Display the visualisation data in JSON format. If "\-\-numbers" or
- "\-n" is given batctl will not replace the MAC addresses with bat-host
- names in the output. With "\-\-no-HNA" or "\-H" the HNA entries are
-@@ -115,22 +140,13 @@ not displayed, so the pure mesh topology can be seen. With
- "\-\-no-2nd" or "\-2" a dot cluster is not formed around primary and
- secondary addresses from the same device.
- .br
--.IP "\fBgw_mode|gw	[off|client|server]\fP"
--If no parameter is given the current gateway mode is displayed otherwise the parameter is used to set the gateway mode.
-+.IP "\fBaggregation\fP|\fBag\fP   [\fB1\fP|\fB0\fP]"
-+If no parameter is given the current aggregation setting is displayed. Otherwise the parameter is used to enable or disable packet aggregation.
- .br
--.IP "\fBgw_srv_list|gwl\fP"
--Once started batctl will refresh the displayed gateway server list every second. Use the "\-b" option to let batctl display the list only once (useful for scripts). If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
-+.IP "\fBbonding\fP|\fBb\fP        [\fB1\fP|\fB0\fP]"
-+If no parameter is given the current bonding mode setting is displayed. Otherwise the parameter is used to enable or disable the bonding mode.
- .br
--.IP "\fBaggregation\fP|\fBag\fP [\fB1\fP|\fB0\fP]"
--If no parameter is given the current aggregation setting is displayed.
--Otherwise the parameter is used to enable or disable packet
--aggregation.
--.br
--.IP "\fBbonding\fP|\fBb\fP [\fB1\fP|\fB0\fP]"
--If no parameter is given the current bonding mode setting is displayed.
--Otherwise the parameter is used to enable or disable the bonding mode.
--.br
--.IP "\fBping\fP|\fBp\fP [\fB\-c \fP\fIcount\fP][\fB\-i \fP\fIinterval\fP][\fB\-t \fP\fItime\fP][\fB\-R\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
-+.IP "\fBping\fP|\fBp\fP           [\fB\-c count\fP][\fB\-i interval\fP][\fB\-t time\fP][\fB\-R\fP] \fBMAC_address\fP|\fBbat\-host_name\fP"
- Layer 2 ping of a MAC address or bat\-host name.  batctl will try to
- find the bat\-host name if the given parameter was not a MAC
- address. The "\-c" option tells batctl how man pings should be sent
-@@ -140,14 +156,14 @@ you can set the default interval between pings and the timeout time
- for replies, both in seconds. When run with "\-R", the route taken by
- the ping messages will be recorded.
- .br
--.IP "\fBtraceroute\fP|\fBtr\fP  [\fB\-n\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
-+.IP "\fBtraceroute\fP|\fBtr\fP    [\fB\-n\fP] \fBMAC_address\fP|\fBbat\-host_name\fP"
- Layer 2 traceroute to a MAC address or bat\-host name. batctl will try
- to find the bat\-host name if the given parameter was not a MAC
- address. batctl will send 3 packets to each host and display the
- response time. If "\-n" is given batctl will not replace the MAC
- addresses with bat\-host names in the output.
- .br
--.IP "\fBtcpdump\fP|\fBtd\fP     [\fB\-p \fP\fIfilter\fP][\fB\-n\fP] \fIinterface ...\fP"
-+.IP "\fBtcpdump\fP|\fBtd\fP       [\fB\-p filter\fP][\fB\-n\fP] \fBinterface ...\fP"
- batctl will display all packets that are seen on the given
- interface(s). The "\-p" options allows the filtering of certain packet
- types: 1 - batman ogm packets, 2 - batman icmp packets, 4 - unicast
-@@ -157,7 +173,7 @@ type, e.g. use "\-p 3" to display batman ogm packets and batman icmp
- packets only. If "\-n" is given batctl will not replace the MAC
- addresses with bat\-host names in the output.
- .br
--.IP "\fBbisect\fP               [\fB\-l \fP\fIMAC\fP][\fB\-t \fP\fIMAC\fP][\fB\-r \fP\fIMAC\fP][\fB\-s \fP\fImin\fP [\fB\- \fP\fImax\fP]][\fB\-o \fP\fIMAC\fP][\fB\-n\fP] \fIlogfile1\fP [\fIlogfile2\fP ... \fIlogfileN\fP]"
-+.IP "\fBbisect\fP           [\fB\-l MAC\fP][\fB\-t MAC\fP][\fB\-r MAC\fP][\fB\-s min\fP [\fB\- max\fP]][\fB\-o MAC\fP][\fB\-n\fP] \fBlogfile1\fP [\fBlogfile2\fP ... \fBlogfileN\fP]"
- Analyses the logfiles to build a small internal database of all sent
- sequence numbers and routing table changes. This database can then be
- analyzed in a number of different ways. With "\-l" the database can be
--- 
-1.7.0
+									=
+Well I don't remember mentioning MAGIC 2010, but you are =20
+correct, the project is MAGIC 2010. Good investigatory work! :) Right =20=
+
+now, the use of B.A.T.M.A.N, OLSR, and Babel are possibilities but no =20=
+
+decision has been made regarding their eventual use.
+
+The reason I was looking into these technologies is because of the =20
+"seamlessness" of their operation and the fact they enable multi-hop =20
+routing for IPv4 in ad-hoc network setups. The hidden node problem =20
+could be a show stopper as some of the data we are transferring such =20
+as streaming video and manual control of UGVs require relatively =20
+stable and continuous channels of communication. Furthermore, message =20=
+
+passing may not necessarily be done with the use of a middleware. =20
+Realtime unreliable data such as GPS and telemetry information may =20
+simply be pushed onto the network in UDP packets. I would prefer to =20
+use a nice middleware that performs well in MANET environments and I =20
+am still evaluating the possibility of this. If you have any =20
+recommendations that would be good!
+
+Further on the topic of using BSS. We do expect wifi dead-spots and we =20=
+
+must absolutely try to minimize these. So the multi-hop nature of =20
+something like B.A.T.M.A.N (i was hoping) would help in that regard.
+
+I can't guarantee that we will use B.A.T.M.A.N but I will try to =20
+evaluate it in the field eventually.
+
+Thanks!
+
+Michael
+
+On 15/03/2010, at 4:41 AM, Linus L=FCssing wrote:
+
+> Hi Michael,
+>
+>> My name is Michael. I am currently working on a large robotics
+>> project and I am thinking of using B.A.T.M.A.N to facilitate a MANET
+>> to communicate between a number of bots and a base station. I was
+>> hoping to get a bit of information regarding the suitability of
+>> B.A.T.M.A.N for such an application. Any information would be helpful
+>> (general or specific). Here are some of the details of our project.
+>
+> Your project sounds very exciting! I had a little look at the MAGIC =20=
+
+> 2010
+> website and what it says about the tasks that have to be done and =20
+> what kind of
+> time span and how much mobility we're talking about here and what =20
+> the specific
+> tasks are on the MAGIC 2010 website. However, I/we have little =20
+> experience with
+> such challenges and setups. Most people use batman to create =20
+> wireless networks
+> within buildings / houses / cities. Could you tell us a bit more =20
+> about why you
+> want to run mesh on the robots itself and not using the common =20
+> infrastucture
+> mode on the base station for example (as I assume this has been used =20=
+
+> in robotic
+> challenges before)? Have other people tried mesh on bots before and =20=
+
+> what were/are
+> the problems you expect?
+>
+> So far, I haven't heard of anyone using B.A.T.M.A.N. in a robotics =20
+> scenario
+> before, though I've always been interested in seeing B.A.T.M.A.N. in a
+> swarm-robotics scenario one day :).
+>
+>> We have various types of data to be communicated on our network
+>> including, GPS, basic telemetry, control message, imagery, UAV feeds,
+>> point cloud info etc.
+>> Some data such as GPS and telemetry is realtime and need not be
+>> reliable (we are considering simply UDP broadcasting this data). =20
+>> Other
+>> data such as imagery and control messages will require stable links
+>> and need to be relatively reliable.
+>> We are not yet sure if we will be deploying any specific middleware
+>> technology although I am partial to pub/sub middleware. Are there any
+>> such middleware that can complement B.A.T.M.A.N?
+>
+> 14 mobile bots should be perfectly fine for batman to handle. Like =20
+> most routing
+> protocols, batman does not interact with other software components =20
+> directly.
+> It will try to be as invisible as possible and allows all standard =20
+> network
+> operations to behave as expected. Nothing special or fancy required =20=
+
+> here.
+>
+> On the other hand it is important to realize that batman comes in 2 =20=
+
+> flavors:
+> * The batman daemon operating on layer 3 (like most other routing =20
+> protocols
+> do).
+> * The batman-adv kernel module building a layer 2 network across the =20=
+
+> wifi
+> nodes.
+>
+> The later comes with some handy features you might want to look at. =20=
+
+> Unlike the
+> layer 3 routing protocols it does not only decide about the routing =20=
+
+> of the
+> traffic but handles the traffic forwarding itself. Therefore, it can =20=
+
+> be optimized
+> for your traffic needs. For example, broadcasting UDP messages over =20=
+
+> wifi is not
+> as easy as it sounds (broadcasted packets are getting lost more =20
+> often than unicast
+> packets here). batman-adv already has a feature built-in to send =20
+> broadcasts up to
+> 3 times along each hop to increase the probability of getting the =20
+> data transmitted.
+>
+>> I was hoping to know what type of issues I might run into using
+>> B.A.T.M.A.N adv in such a scenario. For instance, what kind of
+>> throughput might I expect in the described environment? Link =20
+>> stability
+>> issues? General suitability? How would B.A.T.M.A.N compare to OLSR or
+>> Babel? I am really interested in anything that anyone has to offer.
+>
+> Usually in mesh networks the rule so far was, that you can expect =20
+> about half
+> of the bandwidth with each additional hop starting with ~25MBit/s =20
+> payload
+> throughput in 802.11a/g networks for direct neighbours. In 802.11n =20
+> you can
+> expect a maximum capacity of ~100MBit/s in ideal conditions with a =20
+> wifi card
+> capable of 3x3:3or 4x4:4 settings as far as I know.
+> For QoS there seems to be the 802.11e standard especially for wifi =20
+> networks,
+> but I have no experiences with that one.
+> I can't say that much for the protocol comparision as I haven't been
+> using/testing current implementations of OLSR or BABEL lately and =20
+> I'm also
+> only aware of two comparison papers. I think it comes down to try =20
+> what works
+> best for you and what your requirements are.
+>
+> When you start your tests you might want to reduce the originator =20
+> interval to
+> 50ms (the minimum value) to make sure the routing entries are =20
+> updated quite
+> often. Batman's default settings are optimized for less traffic but =20=
+
+> slower
+> updates. Buildings tend to move much less. ;-)
+>
+> Hope I could answer most of your questions so far. More questions
+> always welcome :).
+>
+> Cheers, Linus
 
