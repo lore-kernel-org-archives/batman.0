@@ -1,9 +1,17 @@
 Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Sat, 20 Mar 2010 04:31:47 +0100
-Message-Id: <1269055908-20369-1-git-send-email-linus.luessing@web.de>
+Date: Sat, 20 Mar 2010 10:36:15 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20100320093615.GA3753@Linus-Debian>
+References: <1269055908-20369-1-git-send-email-linus.luessing@web.de>
+	<1269055908-20369-2-git-send-email-linus.luessing@web.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="DocE+STaALJfprDB"
+Content-Disposition: inline
+In-Reply-To: <1269055908-20369-2-git-send-email-linus.luessing@web.de>
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix aggregation timing bug
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix aggregation
+	direct-link bug
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,76 +24,44 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
 
-batman-adv aggregates routing packets to reduce the number of packets in
-the air. Every outgoing packet is compared with other packets in the
-buffer to determine whether it can be aggregated or not. Packets sent
-at a lower interval can be held back longer to maximize the aggregation.
-Due to insufficient checking batman-adv held back all packets for a
-certain time depending on its own lowest interval rate which slowed
-down all other nodes.
+--DocE+STaALJfprDB
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 
-Reported-by: Linus Luessing <linus.luessing@web.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- aggregation.c |   12 ++++++++++++
- send.c        |   10 +---------
- 2 files changed, 13 insertions(+), 9 deletions(-)
+And there are two more things I'm wondering about:
+- Why should primary interface OGMs from a different originator
+  which already travelled over 49 hops not be aggregated to other
+  primary interface OGMs?
+- Why should secondary interface OGMs from neighbours not be
+  aggregated on our own, neighboring secondary interface OGMs?
+As far as I can tell, those two combinations are not being
+aggregated at the moment. Is there a reason why they shouldn't?
 
-diff --git a/batman-adv-kernelland/aggregation.c b/batman-adv-kernelland/aggregation.c
-index a829814..0635b5a 100644
---- a/batman-adv-kernelland/aggregation.c
-+++ b/batman-adv-kernelland/aggregation.c
-@@ -52,6 +52,8 @@ static bool can_aggregate_with(struct batman_packet *new_batman_packet,
- 	 */
- 
- 	if (time_before(send_time, forw_packet->send_time) &&
-+	    time_after_eq(send_time + msecs_to_jiffies(MAX_AGGREGATION_MS),
-+					forw_packet->send_time) &&
- 	    (aggregated_bytes <= MAX_AGGREGATION_BYTES)) {
- 
- 		/**
-@@ -196,6 +198,16 @@ void add_bat_packet_to_list(unsigned char *packet_buff, int packet_len,
- 	if (forw_packet_aggr == NULL) {
- 		/* the following section can run without the lock */
- 		spin_unlock_irqrestore(&forw_bat_list_lock, flags);
-+
-+		/**
-+		 * if we could not aggregate this packet with one of the others
-+		 * we hold it back for a while, so that it might be aggregated
-+		 * later on
-+		 */
-+		if ((!own_packet) &&
-+		    (atomic_read(&bat_priv->aggregation_enabled)))
-+			send_time += msecs_to_jiffies(MAX_AGGREGATION_MS);
-+
- 		new_aggregated_packet(packet_buff, packet_len,
- 				      send_time, direct_link,
- 				      if_incoming, own_packet);
-diff --git a/batman-adv-kernelland/send.c b/batman-adv-kernelland/send.c
-index 1c82f43..4320855 100644
---- a/batman-adv-kernelland/send.c
-+++ b/batman-adv-kernelland/send.c
-@@ -49,15 +49,7 @@ static unsigned long own_send_time(void)
- /* when do we schedule a forwarded packet to be sent */
- static unsigned long forward_send_time(struct bat_priv *bat_priv)
- {
--	unsigned long send_time = jiffies; /* Starting now plus... */
--
--	if (atomic_read(&bat_priv->aggregation_enabled))
--		send_time += (((MAX_AGGREGATION_MS - (JITTER/2) +
--				(random32() % JITTER)) * HZ) / 1000);
--	else
--		send_time += (((random32() % (JITTER/2)) * HZ) / 1000);
--
--	return send_time;
-+	return jiffies + (((random32() % (JITTER/2)) * HZ) / 1000);
- }
- 
- /* send out an already prepared packet to the given address via the
--- 
-1.7.0
+Cheers, Linus
 
+--DocE+STaALJfprDB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAEBAgAGBQJLpJcOAAoJEBKw7u43QNpfeJsP/j8YINV7BTDepNwuroc4mdLq
+uHur3BI7Lk6WMs/JvmxbttajMrWfhEud8a+sS88CTs95RTRTXgvhsva2WxLLCBHX
+BE+Dn7TV05g302bEDqYvLc9Mo4FMj44YjCrv3+qXSIuxvQfKKNvb2u9ZEQQ3oAgK
+tKElNJBt3fBPuRTb/gvwkxe7ykjiVvite2IJ9JILaGYPlULr9BYhYrB4AQ8W/Npj
+QSpg74PrQPwDXC1XQ+wxH/nBLTSB28q0+yU5pwABEqNbmVDNpi/7qPLd9ZFASVEP
+liCFXQreImSAVKfhLsPvY2jdJiRlPxsz4YIVtBwLUL5ramjF8os8dh8tiwMXKn9i
+qt8Ja1zh3Vo36Uda2JBcUtenUkJaMgOcBkM8ScELvjJ6jgqZWDe2vglBARLMbFlv
+FxO/M+PUzdAppRaQ9t1SUsT+nLVJkX7sxKhXSsBa8AZ/AcIr2UM/opiOQW02PejC
+zw0rPtBLNrl73BB8atoUkXCIMDFi0x/KNeGC1rKYzZManCflDK4ttqa+ng4ITwAc
+gewimaZF8O1dqcRmSW08jpimMW2ijJ/WwjsLxoa5WFF8FSVN8XXiv0zQF0yciVNp
+bAfSC82KhapZ9t6NmLC8JWY5kisYQHA0kqnsoCjV5IadW4U6gRIAOwaF333rmP2j
+yGpLoGPMXFYyC50pdLnm
+=4hCK
+-----END PGP SIGNATURE-----
+
+--DocE+STaALJfprDB--
