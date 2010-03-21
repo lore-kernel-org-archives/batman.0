@@ -1,17 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 20 Mar 2010 22:48:52 +0800
-References: <1269055908-20369-1-git-send-email-linus.luessing@web.de>
-	<1269055908-20369-2-git-send-email-linus.luessing@web.de>
-	<20100320093615.GA3753@Linus-Debian>
-In-Reply-To: <20100320093615.GA3753@Linus-Debian>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Sun, 21 Mar 2010 20:02:15 +0100
+Message-Id: <1269198135-5077-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003202248.52191.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix aggregation
-	direct-link bug
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove dead max addr #define
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,23 +18,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+It's not being used anywhere and just misleading, therefore removing it.
 
-Hi,
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+ main.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-thanks for your patch and for testing mine. I applied both of them.
+diff --git a/main.h b/main.h
+index 307a6e6..17d26be 100644
+--- a/main.h
++++ b/main.h
+@@ -34,8 +34,6 @@
+ #define TQ_MAX_VALUE 255
+ #define JITTER 20
+ #define TTL 50			  /* Time To Live of broadcast messages */
+-#define MAX_ADDR 16		  /* number of interfaces which can be added to
+-				   * batman. */
+ 
+ #define PURGE_TIMEOUT 200000	  /* purge originators after time in ms if no
+ 				   * valid packet comes in -> TODO: check
+-- 
+1.7.0
 
-> And there are two more things I'm wondering about:
-> - Why should primary interface OGMs from a different originator
->   which already travelled over 49 hops not be aggregated to other
->   primary interface OGMs?
-> - Why should secondary interface OGMs from neighbours not be
->   aggregated on our own, neighboring secondary interface OGMs?
-> As far as I can tell, those two combinations are not being
-> aggregated at the moment. Is there a reason why they shouldn't?
-
-Well, well - we happily apply more of your patches.  ;-)
-
-Cheers,
-Marek
