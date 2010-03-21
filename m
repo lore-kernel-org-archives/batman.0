@@ -1,13 +1,15 @@
 Return-Path: <linus.luessing@web.de>
-Date: Sun, 21 Mar 2010 21:26:33 +0100
+Date: Sun, 21 Mar 2010 21:52:36 +0100
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20100321202626.GA6101@Linus-Debian>
+Message-ID: <20100321205236.GA6356@Linus-Debian>
+References: <20100321202626.GA6101@Linus-Debian>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="wULyF7TL5taEdwHz"
+	protocol="application/pgp-signature"; boundary="ZJcv+A0YCCLh2VIg"
 Content-Disposition: inline
+In-Reply-To: <20100321202626.GA6101@Linus-Debian>
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] batctl manpage adjustments
+Subject: Re: [B.A.T.M.A.N.] batctl manpage adjustments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,27 +24,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---wULyF7TL5taEdwHz
-Content-Type: multipart/mixed; boundary="QRj9sO5tAVLaXnSD"
+--ZJcv+A0YCCLh2VIg
+Content-Type: multipart/mixed; boundary="5G06lTa6Jq83wMTw"
 Content-Disposition: inline
 
 
---QRj9sO5tAVLaXnSD
+--5G06lTa6Jq83wMTw
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 
-So here are the few modifications made to the batctl manpage.
+Second try, the new format for the vis settings now added.
 
-Cheers, Linus :)
+Cheers, Linus
 
---QRj9sO5tAVLaXnSD
+--5G06lTa6Jq83wMTw
 Content-Type: text/x-diff; charset=utf-8
 Content-Disposition: attachment; filename="batctl-manpage.patch"
+Content-Transfer-Encoding: quoted-printable
 
-batctl: Adjust layout of and add -w option to manpage
+batctl: adjust "-w" option, vis options and minor layout things
 
-Index: man/batctl.8
-===================================================================
+This patch adds documentation for the new way of enabling/disabling
+and handling the vis server. It also adds documentation for the change
+=66rom "-b" to "-w" in the according options. Furthermore, the sub-option
+alignment has been altered in some places.
+
+Signed-Off-by: Linus L=C3=BCssing <linus.luessing@web.de>
+Index: batctl.8
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 --- man/batctl.8	(revision 1602)
 +++ man/batctl.8	(working copy)
 @@ -58,10 +58,9 @@
@@ -59,7 +70,7 @@ Index: man/batctl.8
  given batctl will not replace the MAC addresses with bat\-host names
  in the output.
  .br
-@@ -73,33 +72,33 @@
+@@ -73,42 +72,38 @@
  .IP "\fBloglevel\fP|\fBll\fP    [\fIlevel\fP]"
  If no parameter is given the current log level settings are displayed
  otherwise the parameter is used to set the log level. Level 0 disables
@@ -67,7 +78,8 @@ Index: man/batctl.8
 -broadcasting. Level 2 enables messages related to route or hna added /
 -changed / deleted. Level 3 enables all messages. The messages are sent
 -to the kernel log. Use \fBdmesg\fP(1) to see them.
-+all verbose logging. Level 1 enables messages related to routing / flooding / broadcasting.
++all verbose logging. Level 1 enables messages related to routing / floodin=
+g / broadcasting.
 +Level 2 enables messages related to route or hna added / changed / deleted.
 +Level 3 enables all messages. The messages are sent to the kernel log.
 +Use \fBdmesg\fP(1) to see them. Make sure to have debugging output
@@ -109,50 +121,66 @@ Index: man/batctl.8
 +refresh the list every second. If "\-n" is given batctl will not replace
 +the MAC addresses with bat\-host names in the output.
  .br
--.IP "\fBvis dot\fP         [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
-+.IP "\fBvis dot\fP        [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
- Display the visualisation data in graphviz \fBdot\fP(1) format. If
- "\-\-numbers" or "\-n" is given batctl will not replace the MAC
- addresses with bat-host names in the output. With "\-\-no-HNA" or
-@@ -107,7 +106,7 @@
- be seen. With "\-\-no-2nd" or "\-2" a dot cluster is not formed around
- primary and secondary addresses from the same device.
+-.IP "\fBvis dot\fP         [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-=
+no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
+-Display the visualisation data in graphviz \fBdot\fP(1) format. If
+-"\-\-numbers" or "\-n" is given batctl will not replace the MAC
+-addresses with bat-host names in the output. With "\-\-no-HNA" or
+-"\-H" the HNA entries are not displayed, so the pure mesh topology can
+-be seen. With "\-\-no-2nd" or "\-2" a dot cluster is not formed around
+-primary and secondary addresses from the same device.
++.IP "\fBvis_server\fP|\fBvs\fP  [\fBenabled\fP|\fBdisabled\fP]"
++If no parameter is given the current vis server setting is displayed.
++Otherwise the parameter is used to enable or disable the vis server.
  .br
--.IP "\fBvis json\fP        [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
-+.IP "\fBvis json\fP       [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
- Display the visualisation data in JSON format. If "\-\-numbers" or
+-.IP "\fBvis json\fP        [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-=
+no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
+-Display the visualisation data in JSON format. If "\-\-numbers" or
++.IP "\fBvis_data\fP|\fBvd\fP    \fBdot|\fBjson [\fB\-n\fP|\fB\-\-numbers\f=
+P][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
++Display the visualisation data in \fBdot\fP(1) or JSON format. If "\-\-num=
+bers" or=20
  "\-n" is given batctl will not replace the MAC addresses with bat-host
  names in the output. With "\-\-no-HNA" or "\-H" the HNA entries are
-@@ -129,14 +128,14 @@
+ not displayed, so the pure mesh topology can be seen. With
+@@ -129,14 +124,14 @@
  you can set the default interval between pings and the timeout time
  for replies, both in seconds.
  .br
--.IP "\fBtraceroute\fP|\fBtr\fP  [\fB\-n\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
-+.IP "\fBtraceroute\fP|\fBtr\fP  [\fB\-n\fP] \fIMAC_address\fP|\fBbat\-host_name\fP"
+-.IP "\fBtraceroute\fP|\fBtr\fP  [\fB\-n\fP] \fIMAC_address\fP|\fIbat\-host=
+_name\fP"
++.IP "\fBtraceroute\fP|\fBtr\fP  [\fB\-n\fP] \fIMAC_address\fP|\fBbat\-host=
+_name\fP"
  Layer 2 traceroute to a MAC address or bat\-host name. batctl will try
  to find the bat\-host name if the given parameter was not a MAC
  address. batctl will send 3 packets to each host and display the
  response time. If "\-n" is given batctl will not replace the MAC
  addresses with bat\-host names in the output.
  .br
--.IP "\fBtcpdump\fP|\fBtd\fP     [\fB\-p \fP\fIfilter\fP][\fB\-n\fP] \fIinterface ...\fP"
-+.IP "\fBtcpdump\fP|\fBtd\fP     [\fB\-p \fP\fIfilter\fP][\fB\-n\fP] \fBinterface ...\fP"
+-.IP "\fBtcpdump\fP|\fBtd\fP     [\fB\-p \fP\fIfilter\fP][\fB\-n\fP] \fIint=
+erface ...\fP"
++.IP "\fBtcpdump\fP|\fBtd\fP     [\fB\-p \fP\fIfilter\fP][\fB\-n\fP] \fBint=
+erface ...\fP"
  batctl will display all packets that are seen on the given
  interface(s). The "\-p" options allows the filtering of certain packet
  types: 1 - batman ogm packets, 2 - batman icmp packets, 4 - unicast
-@@ -146,7 +145,7 @@
+@@ -146,7 +141,7 @@
  packets only. If "\-n" is given batctl will not replace the MAC
  addresses with bat\-host names in the output.
  .br
--.IP "\fBbisect\fP               [\fB\-l \fP\fIMAC\fP][\fB\-t \fP\fIMAC\fP][\fB\-r \fP\fIMAC\fP][\fB\-s \fP\fImin\fP [\fB\- \fP\fImax\fP]][\fB\-o \fP\fIMAC\fP][\fB\-n\fP] \fIlogfile1\fP [\fIlogfile2\fP ... \fIlogfileN\fP]"
-+.IP "\fBbisect\fP         [\fB\-l \fP\fIMAC\fP][\fB\-t \fP\fIMAC\fP][\fB\-r \fP\fIMAC\fP][\fB\-s \fP\fImin\fP [\fB\- \fP\fImax\fP]][\fB\-o \fP\fIMAC\fP][\fB\-n\fP] \fIlogfile1\fP [\fIlogfile2\fP ... \fIlogfileN\fP]"
+-.IP "\fBbisect\fP               [\fB\-l \fP\fIMAC\fP][\fB\-t \fP\fIMAC\fP]=
+[\fB\-r \fP\fIMAC\fP][\fB\-s \fP\fImin\fP [\fB\- \fP\fImax\fP]][\fB\-o \fP\=
+fIMAC\fP][\fB\-n\fP] \fIlogfile1\fP [\fIlogfile2\fP ... \fIlogfileN\fP]"
++.IP "\fBbisect\fP         [\fB\-l \fP\fIMAC\fP][\fB\-t \fP\fIMAC\fP][\fB\-=
+r \fP\fIMAC\fP][\fB\-s \fP\fImin\fP [\fB\- \fP\fImax\fP]][\fB\-o \fP\fIMAC\=
+fP][\fB\-n\fP] \fIlogfile1\fP [\fIlogfile2\fP ... \fIlogfileN\fP]"
  Analyses the logfiles to build a small internal database of all sent
  sequence numbers and routing table changes. This database can then be
  analyzed in a number of different ways. With "\-l" the database can be
 
---QRj9sO5tAVLaXnSD--
+--5G06lTa6Jq83wMTw--
 
---wULyF7TL5taEdwHz
+--ZJcv+A0YCCLh2VIg
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -160,19 +188,19 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAEBAgAGBQJLpoD5AAoJEBKw7u43QNpfgZMP/0Lw2FnuOXrDuGVlgp/SI32k
-wEBcp233KNJVZXWS9C3DguFIAUozapNjaF+kz9lp8B3iGrueq9pXkLxcydy81csn
-azRHYQAiXf5gYGsbCUMjFHhUOghYK809JTk7bAIBtGsSASCTIKl9UZSBBSaUNsCD
-kz16XBxSptKCLSH0d6tX4D7MGk0dEkNLZfkBSdeykj7JSLu6UqHezVGAEmXXC5VF
-4KAi9SkZ33Omy7Ac0u5UtCsS9OCt5CjbIhPlJ+AvheVh92RFp0xXEOb+EyectXNy
-gZtJDd+wwJQg+1B2OTHxYXEZb9crio/AfcCCzxqsMH7NALN21BSkFUgJPT60hNiB
-j/tQajb6weOt6IfEXOXx2MlDewlPmeAy43x0kER19DUtdc+/awCk4dv9MPWaAeuu
-hJARvHi33NeDb399HOWaVPczII6rJYd6o60gjnnp3VURwKCRpK3982kloCozR0ge
-t+T5Y2pXDfXHQ2N+qzzZF6i4oTbR/7DlzFrMqknU7MA53L8bUqk73q+6kqkKVm6D
-oEKDtGqa0X4VGdSpe7usfD9hHBPw91D9uAUFrmC96C4JD6iE6XhmkrzONKkgxbHR
-/YePB0To0/wKGTfNA/NpjSlqdJSC1HqITyqvqC3IQFCBYhviUVrGbzzQDNebtQvf
-vp/2Nwcd9PpJWcI85tRV
-=8PZj
+iQIcBAEBAgAGBQJLpocUAAoJEBKw7u43QNpf0FQP/2/KdJwa8SV/zuS9tXCl5jcU
+7yLag+wM+S8JCKov43dik/YTlfQwPZKCcq1o64Q8TMJZjhrWOd4wIo4SfbdkzozL
+3WLyw2qB5slvkZMe4gu4iZJW7SM7u9OG6P9TIH7SQp4w6MbV4PXIDaxt4C4a3+pI
+Tn15XoD/in1NLjO9YQHbmCOi3uzUhYb4lSiBnlWgSmyax6FQ5mfTt8cgVK6DpBBM
+1yC2vYNv3kXvg4a8kyBgrJvQwdwJtHBYuSHZBJc+7m/SxzKafxH6DrFbluq7ZK42
+NJ+mVagip/vat+5HGWguVdBe5iKSL0I905DY9YlAtGECrExInSaqBmL/v1tnvG8q
+kl09d8CZSWPZtg3kWH1ljuO8HZs3vkanua9unByyLau9XxTgHHaVDI5bjtAoiWHn
+VjnUkPUZNuxTIzuG8HyRFhGk9/MqlkswN3IV0N9/pbeDkMYX1Bo5kx9rZxEg++WO
+J2Ct5MLOyXM0vuwDsIpCJ0j4Ry9+kpCPCykw3bkKT0qYymiTE8Y5OMZVb3/8AwQp
+b3Et7Ir120juI35pEdeLCdQaF8d9gD9Q5JEnn/qCgCH1w61jGmpOw7+J714/lAYG
+jDhxWrWxBXP7TV+jccw18LNUyrmTgiJU6I3XUUgEUi9TWpK8+ei1bRnyswAyQIDR
+nFCq0cGH7HBLMIQXryYc
+=NexF
 -----END PGP SIGNATURE-----
 
---wULyF7TL5taEdwHz--
+--ZJcv+A0YCCLh2VIg--
