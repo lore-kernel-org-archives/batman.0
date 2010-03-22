@@ -1,12 +1,15 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Mon, 22 Mar 2010 22:46:14 +0100
-Message-Id: <1269294375-11043-3-git-send-email-andrew@lunn.ch>
+Date: Mon, 22 Mar 2010 22:46:15 +0100
+Message-Id: <1269294375-11043-4-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1269294375-11043-1-git-send-email-andrew@lunn.ch>
 References: <1269294375-11043-1-git-send-email-andrew@lunn.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] Staging: batman-adv: Fix VIS output bug
-	for secondary interfaces
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] Staging: batman-adv: Fixing wrap-around
+	bug in vis
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,227 +24,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: gregkh@suse.de
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-From: Linus Luessing <linus.luessing@web.de>
+From: Linus Lüssing <linus.luessing@web.de>
 
-TQ and HNA records for originators on secondary interfaces were
-wrongly being included on the primary interface. Ensure we output a
-line for each source interface on every node, so we correctly separate
-primary and secondary interface records.
+When the seqno for a vis packet had a wrap around from i.e. 255 to 0,
+add_packet() would falsely claim the older packet with the seqno 255 as
+newer as the one with the seqno of 0 and would therefore ignore the new
+packet. This happens with all following vis packets until the old vis
+packet expires after 180 seconds timeout. This patch fixes this issue
+and gets rid of these highly undesired 3min. breaks for the vis-server.
 
-Signed-off-by: Linus Luessing <linus.luessing@web.de>
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/proc.c |   51 +++++++++++++++++++++++++-----------
- drivers/staging/batman-adv/vis.c  |   25 ++++++-----------
- drivers/staging/batman-adv/vis.h  |    7 +++-
- 3 files changed, 49 insertions(+), 34 deletions(-)
+ drivers/staging/batman-adv/vis.c |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/proc.c b/drivers/staging/batman-adv/proc.c
-index 7de60e8..c9366bc 100644
---- a/drivers/staging/batman-adv/proc.c
-+++ b/drivers/staging/batman-adv/proc.c
-@@ -41,7 +41,7 @@ static int proc_interfaces_read(struct seq_file *seq, void *offset)
- 
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(batman_if, &if_list, list) {
--		seq_printf(seq, "[%8s] %s %s \n",
-+		seq_printf(seq, "[%8s] %s %s\n",
- 			   (batman_if->if_active == IF_ACTIVE ?
- 			    "active" : "inactive"),
- 			   batman_if->dev,
-@@ -188,18 +188,18 @@ static int proc_originators_read(struct seq_file *seq, void *offset)
- 	rcu_read_lock();
- 	if (list_empty(&if_list)) {
- 		rcu_read_unlock();
--		seq_printf(seq, "BATMAN disabled - please specify interfaces to enable it \n");
-+		seq_printf(seq, "BATMAN disabled - please specify interfaces to enable it\n");
- 		goto end;
- 	}
- 
- 	if (((struct batman_if *)if_list.next)->if_active != IF_ACTIVE) {
- 		rcu_read_unlock();
--		seq_printf(seq, "BATMAN disabled - primary interface not active \n");
-+		seq_printf(seq, "BATMAN disabled - primary interface not active\n");
- 		goto end;
- 	}
- 
- 	seq_printf(seq,
--		   "  %-14s (%s/%i) %17s [%10s]: %20s ... [B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s] \n",
-+		   "  %-14s (%s/%i) %17s [%10s]: %20s ... [B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s]\n",
- 		   "Originator", "#", TQ_MAX_VALUE, "Nexthop", "outgoingIF",
- 		   "Potential nexthops", SOURCE_VERSION, REVISION_VERSION_STR,
- 		   ((struct batman_if *)if_list.next)->dev,
-@@ -240,7 +240,7 @@ static int proc_originators_read(struct seq_file *seq, void *offset)
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
- 
- 	if (batman_count == 0)
--		seq_printf(seq, "No batman nodes in range ... \n");
-+		seq_printf(seq, "No batman nodes in range ...\n");
- 
- end:
- 	return 0;
-@@ -262,7 +262,7 @@ static int proc_transt_local_read(struct seq_file *seq, void *offset)
- 	rcu_read_lock();
- 	if (list_empty(&if_list)) {
- 		rcu_read_unlock();
--		seq_printf(seq, "BATMAN disabled - please specify interfaces to enable it \n");
-+		seq_printf(seq, "BATMAN disabled - please specify interfaces to enable it\n");
- 		goto end;
- 	}
- 
-@@ -294,7 +294,7 @@ static int proc_transt_global_read(struct seq_file *seq, void *offset)
- 	rcu_read_lock();
- 	if (list_empty(&if_list)) {
- 		rcu_read_unlock();
--		seq_printf(seq, "BATMAN disabled - please specify interfaces to enable it \n");
-+		seq_printf(seq, "BATMAN disabled - please specify interfaces to enable it\n");
- 		goto end;
- 	}
- 	rcu_read_unlock();
-@@ -350,9 +350,9 @@ static int proc_vis_srv_read(struct seq_file *seq, void *offset)
- {
- 	int vis_server = atomic_read(&vis_mode);
- 
--	seq_printf(seq, "[%c] client mode (server disabled) \n",
-+	seq_printf(seq, "[%c] client mode (server disabled)\n",
- 			(vis_server == VIS_TYPE_CLIENT_UPDATE) ? 'x' : ' ');
--	seq_printf(seq, "[%c] server mode (server enabled) \n",
-+	seq_printf(seq, "[%c] server mode (server enabled)\n",
- 			(vis_server == VIS_TYPE_SERVER_SYNC) ? 'x' : ' ');
- 
- 	return 0;
-@@ -369,6 +369,8 @@ static int proc_vis_data_read(struct seq_file *seq, void *offset)
- 	struct vis_info *info;
- 	struct vis_info_entry *entries;
- 	HLIST_HEAD(vis_if_list);
-+	struct if_list_entry *entry;
-+	struct hlist_node *pos, *n;
- 	int i;
- 	char tmp_addr_str[ETH_STR_LEN];
- 	unsigned long flags;
-@@ -387,17 +389,34 @@ static int proc_vis_data_read(struct seq_file *seq, void *offset)
- 		info = hashit.bucket->data;
- 		entries = (struct vis_info_entry *)
- 			((char *)info + sizeof(struct vis_info));
--		addr_to_string(tmp_addr_str, info->packet.vis_orig);
--		seq_printf(seq, "%s,", tmp_addr_str);
- 
- 		for (i = 0; i < info->packet.entries; i++) {
--			proc_vis_read_entry(seq, &entries[i], &vis_if_list,
--					    info->packet.vis_orig);
-+			if (entries[i].quality == 0)
-+				continue;
-+			proc_vis_insert_interface(entries[i].src, &vis_if_list,
-+				compare_orig(entries[i].src,
-+						info->packet.vis_orig));
- 		}
- 
--		/* add primary/secondary records */
--		proc_vis_read_prim_sec(seq, &vis_if_list);
--		seq_printf(seq, "\n");
-+		hlist_for_each_entry(entry, pos, &vis_if_list, list) {
-+			addr_to_string(tmp_addr_str, entry->addr);
-+			seq_printf(seq, "%s,", tmp_addr_str);
-+
-+			for (i = 0; i < info->packet.entries; i++)
-+				proc_vis_read_entry(seq, &entries[i],
-+						entry->addr, entry->primary);
-+
-+			/* add primary/secondary records */
-+			if (compare_orig(entry->addr, info->packet.vis_orig))
-+				proc_vis_read_prim_sec(seq, &vis_if_list);
-+
-+			seq_printf(seq, "\n");
-+		}
-+
-+		hlist_for_each_entry_safe(entry, pos, n, &vis_if_list, list) {
-+			hlist_del(&entry->list);
-+			kfree(entry);
-+		}
- 	}
- 	spin_unlock_irqrestore(&vis_hash_lock, flags);
- 
 diff --git a/drivers/staging/batman-adv/vis.c b/drivers/staging/batman-adv/vis.c
-index 0b5c63f..222db01 100644
+index 222db01..28eac7e 100644
 --- a/drivers/staging/batman-adv/vis.c
 +++ b/drivers/staging/batman-adv/vis.c
-@@ -86,7 +86,7 @@ static int vis_info_choose(void *data, int size)
+@@ -27,6 +27,22 @@
+ #include "hard-interface.h"
+ #include "hash.h"
  
- /* insert interface to the list of interfaces of one originator, if it
-  * does not already exist in the list */
--static void proc_vis_insert_interface(const uint8_t *interface,
-+void proc_vis_insert_interface(const uint8_t *interface,
- 				      struct hlist_head *if_list,
- 				      bool primary)
- {
-@@ -111,39 +111,32 @@ void proc_vis_read_prim_sec(struct seq_file *seq,
- 			    struct hlist_head *if_list)
- {
- 	struct if_list_entry *entry;
--	struct hlist_node *pos, *n;
-+	struct hlist_node *pos;
- 	char tmp_addr_str[ETH_STR_LEN];
++/* Returns the smallest signed integer in two's complement with the sizeof x */
++#define smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
++
++/* Checks if a sequence number x is a predecessor/successor of y.
++   they handle overflows/underflows and can correctly check for a
++   predecessor/successor unless the variable sequence number has grown by
++   more then 2**(bitwidth(x)-1)-1.
++   This means that for a uint8_t with the maximum value 255, it would think:
++    * when adding nothing - it is neither a predecessor nor a successor
++    * before adding more than 127 to the starting value - it is a predecessor,
++    * when adding 128 - it is neither a predecessor nor a successor,
++    * after adding more than 127 to the starting value - it is a successor */
++#define seq_before(x, y) ({typeof(x) _dummy = (x - y); \
++			  _dummy > smallest_signed_int(_dummy); })
++#define seq_after(x, y) seq_before(y, x)
++
+ struct hashtable_t *vis_hash;
+ DEFINE_SPINLOCK(vis_hash_lock);
+ static DEFINE_SPINLOCK(recv_list_lock);
+@@ -212,7 +228,7 @@ static struct vis_info *add_packet(struct vis_packet *vis_packet,
+ 	old_info = hash_find(vis_hash, &search_elem);
  
--	hlist_for_each_entry_safe(entry, pos, n, if_list, list) {
--		if (entry->primary) {
-+	hlist_for_each_entry(entry, pos, if_list, list) {
-+		if (entry->primary)
- 			seq_printf(seq, "PRIMARY, ");
--		} else {
-+		else {
- 			addr_to_string(tmp_addr_str, entry->addr);
- 			seq_printf(seq, "SEC %s, ", tmp_addr_str);
- 		}
--
--		hlist_del(&entry->list);
--		kfree(entry);
- 	}
- }
- 
- /* read an entry  */
- void proc_vis_read_entry(struct seq_file *seq,
- 				struct vis_info_entry *entry,
--				struct hlist_head *if_list,
--				uint8_t *vis_orig)
-+				uint8_t *src,
-+				bool primary)
- {
- 	char to[40];
- 
- 	addr_to_string(to, entry->dest);
--	if (entry->quality == 0) {
--		proc_vis_insert_interface(vis_orig, if_list, true);
-+	if (primary && entry->quality == 0)
- 		seq_printf(seq, "HNA %s, ", to);
--	} else {
--		proc_vis_insert_interface(entry->src, if_list,
--					  compare_orig(entry->src, vis_orig));
-+	else if (compare_orig(entry->src, src))
- 		seq_printf(seq, "TQ %s %d, ", to, entry->quality);
--	}
- }
- 
- /* add the info packet to the send list, if it was not
-diff --git a/drivers/staging/batman-adv/vis.h b/drivers/staging/batman-adv/vis.h
-index 465da47..a1f92a4 100644
---- a/drivers/staging/batman-adv/vis.h
-+++ b/drivers/staging/batman-adv/vis.h
-@@ -49,10 +49,13 @@ struct recvlist_node {
- extern struct hashtable_t *vis_hash;
- extern spinlock_t vis_hash_lock;
- 
-+void proc_vis_insert_interface(const uint8_t *interface,
-+				      struct hlist_head *if_list,
-+				      bool primary);
- void proc_vis_read_entry(struct seq_file *seq,
- 				struct vis_info_entry *entry,
--				struct hlist_head *if_list,
--				uint8_t *vis_orig);
-+				uint8_t *src,
-+				bool primary);
- void proc_vis_read_prim_sec(struct seq_file *seq,
- 			    struct hlist_head *if_list);
- void receive_server_sync_packet(struct vis_packet *vis_packet,
+ 	if (old_info != NULL) {
+-		if (vis_packet->seqno - old_info->packet.seqno <= 0) {
++		if (!seq_after(vis_packet->seqno, old_info->packet.seqno)) {
+ 			if (old_info->packet.seqno == vis_packet->seqno) {
+ 				recv_list_add(&old_info->recv_list,
+ 					      vis_packet->sender_orig);
 -- 
 1.7.0
 
