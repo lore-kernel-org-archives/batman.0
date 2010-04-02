@@ -1,12 +1,14 @@
-Return-Path: <clemens-john@gmx.de>
-From: Clemens John <clemens-john@gmx.de>
-Date: Fri, 2 Apr 2010 17:43:48 +0200
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 3 Apr 2010 00:00:16 +0800
+References: <201004020054.08840.clemens-john@gmx.de>
+In-Reply-To: <201004020054.08840.clemens-john@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11343407.53q0TjBpvD";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201004021744.01077.clemens-john@gmx.de>
-Subject: [B.A.T.M.A.N.] Batman Advanced Internet Gateway
+Message-Id: <201004030000.16637.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Problems connecting VPN and WLAN with Batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,43 +20,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart11343407.53q0TjBpvD
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-on https://www.open-mesh.org/wiki/batman-adv stands, that the upcoming batm=
-an-
-adv 0.3 supports advanced gateway  handling.
+> The problem is, that I have a vpn network on tap0 (10.18.0.0/24) and I
+>  dont  know how I can link this two networks/interfaces to each other with
+>  batman. I tried to assign tap0 to batman, but this doesnt work.
+> 
+> I want to be able to ping hosts that uses batman in the vpn and in the
+>  wlan  network. How can I do this?
 
-We are testing Batman Advanced as described in my other thread and I want t=
-o=20
-share my Internetconnection on our network. How do I do this with Batman=20
-Advanced?
+I have been reading the other mails but I don't fully understand what you are 
+trying to achieve here. Nevertheless, I'll try to write something. If I got it 
+all wrong, please let me know.  :-)
 
-Is there already a working Batman Advanced version that supports Internet=20
-connection sharing (Maybe Trunk? Which revision?)?
-In Olsr there was the dyn_gateway_plugin. How can I have something like it=
-=B4s=20
-functionality in Batman Advanced?
+It is important to keep in mind that IP addresses are totally irrelevant to 
+make this setup work. I mention this since you seem to have experience with 
+layer 3 routing. Even if the tap interfaces had no IP addresses batman-adv 
+would route the traffic through. Unless you need to access services on the VPN 
+interfaces via IPs you can safely run them without.
 
-Thanks
-=46loh1111
+If you IP networks don't share the same broadcast domain (e.g. 10.18.1.0/24 vs 
+10.18.0.0/24) batman-adv won't propate IP routing entries because it assumes 
+that is what you want. To resolve this you have 2 choices:
 
---nextPart11343407.53q0TjBpvD
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+The easy way:
+Move all nodes into the same broadcast domain. All nodes will be able to 
+communicate with each other without problems. Disadvantage: If you have many 
+nodes (100+) in close range it will create considerable (ethernet) broadcast 
+overhead.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+The routing way:
+Let your VPN nodes know how to reach to "other" IP networks by adding routing 
+entries. Naturally, this will reduce the broadcast overhead but requires a 
+mechanism to distribute the routes (as batman-adv won't do it for you). There 
+a couple of standard ways you can choose from. Depending on your setup & needs 
+one or the other might be more interesting to use which brings us back to my 
+initial question.  :-)
 
-iEYEABECAAYFAku2ELQACgkQZgdHbA22lqMgyQCfb6euH57nh1WGVNwOgWnXcTVb
-GagAn0SDQTAAZGLqaqoZ/XJJq8dN9GKU
-=Z4wr
------END PGP SIGNATURE-----
-
---nextPart11343407.53q0TjBpvD--
+Regards,
+Marek
