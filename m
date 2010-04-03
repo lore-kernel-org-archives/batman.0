@@ -1,14 +1,16 @@
-Return-Path: <alx@dd19.de>
-Message-Id: <0EA2B96C-69B9-49DD-98B3-FF7156712C42@dd19.de>
-From: Alex Morlang <alx@dd19.de>
-In-Reply-To: <201004030008.21717.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
-Content-Transfer-Encoding: quoted-printable
-Mime-Version: 1.0 (Apple Message framework v936)
-Date: Fri, 2 Apr 2010 19:36:49 +0200
-References: <201004021744.01077.clemens-john@gmx.de>
-	<201004030008.21717.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Batman Advanced Internet Gateway
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 3 Apr 2010 12:54:02 +0800
+References: <201004020054.08840.clemens-john@gmx.de>
+	<201004030000.16637.lindner_marek@yahoo.de>
+	<4BB61A71.9070702@nord-west.org>
+In-Reply-To: <4BB61A71.9070702@nord-west.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201004031254.02506.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Problems connecting VPN and WLAN with Batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,79 +24,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Saturday 03 April 2010 00:25:21 Bjoern Franke wrote:
+> Which ways are you thinking of?
+> 
+> Our initial problem is:
+> - several node-clouds, connected via openvpn
+> - these nodes also use the vpn as a gateway in the world wide web
+> - the gateway also monitores the nodes, so it must be able to access the
+> nodes, but it runs in openvz VE, so the kernelland-module is not usable
 
-Am 02.04.2010 um 18:08 schrieb Marek Lindner:
+Ok, since your setup is rather small I would suggest going with the easiest 
+solution possible. I'm always a big fan of making little steps that work well 
+instead of aiming for the big goal which you never reach because you die in 
+the process of getting there.
 
->
-> Hi,
->
->> We are testing Batman Advanced as described in my other thread and =20=
+In a classical batman-adv setup the router(s) with the internet connection run 
+a DHCP server and provide IPs/default route/etc for all the nodes & wifi-
+clients in range. 
 
->> I want
->> to share my Internetconnection on our network. How do I do this with
->> Batman Advanced?
->>
->> Is there already a working Batman Advanced version that supports =20
->> Internet
->> connection sharing (Maybe Trunk? Which revision?)?
->> In Olsr there was the dyn_gateway_plugin. How can I have something =20=
+To connect the VPNs I see 2 feasible approaches:
+* You run batman-adv over the VPN which will bring some overhead since the 
+routing messages will be relayed over the VPN. Depending on the number of 
+nodes this may or may not be an issue. To keep things simple all nodes run in 
+the same IP address space.
+* Alternatively you can route over the VPN network. The tap0 interface would 
+not be added to batman-adv. Instead each VPN endpoint needs routing entries 
+(over tap0) to the other clouds which you can propagate by pushing the routes 
+from the openvpn server. Each cloud should have its own IP address space.
 
->> like
->> it=B4s functionality in Batman Advanced?
->
-> I'm not familiar with the dyn_gateway_plugin plugin - what is it =20
-> good for ?
->
-in olsr, an internet uplink announced as a 0.0.0.0/0 HNA. As we can =20
-announce a 10.23.42.0/24, we can announce the whole ipv4 or ipv6 =20
-internet, that is  basically an uplink.
-
-Trouble starts, when some node is annoncing a 0.0.0.0/0 HNA without =20
-actually providing internet uplink, like when DSL is down, etc. Then, =20=
-
-the node will bekome a blackhole for outbound traffic.
-
-the dyn_gateway plugin tests for a defaultroute and pings over the =20
-defaultroute to check for internet connectivity and does the =20
-announcement of the 0/0 HNA.
-
-batman3 has integrated tunnel, so everybody can choose their gateway. =20=
-
-in this case, a failing gateway is not as disturbing as in olsr.
-
-Now, Henning&Markus are introducing smartgateways, which is basically =20=
-
-the same thing as batman3 does, announcing tunnelpartner and setting =20
-up an ipip interface.
-
-Combined with the dyn_gw plugin, any node can automatically choose its =20=
-
-gateway based on bandwith, distance and reliability.
-
-This clearly shows, how much we all can learn from each other, soon as =20=
-
-we start listening.
-
-
-> The "advanced gateway handling" tries to deal with multiple gateways =20=
-
-> in the
-> same mesh network in a smart way. AFAIK olsrd never had this =20
-> functionality, so
-> it is unlikely that you will miss it.  :-)
-
-actually, finding a defaultroute is one of the main tasks for all =20
-routing protocols in the last 30 years except for batman-adv and =20
-netsukkuku.
-
->
-> As soon as your router has an internet connection and "shares" it =20
-> (firewall,
-> NAT, etc) everybody will be able to use it. You can do this with all =20=
-
-> batman-
-> adv versions out there - no need to go to the trunk.
->
-> Regards,
-> Marek
-Gruss, Alex=
+Regards,
+Marek
