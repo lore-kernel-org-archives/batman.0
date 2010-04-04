@@ -1,15 +1,15 @@
-Return-Path: <bethencourt@gmail.com>
-MIME-Version: 1.0
-Sender: bethencourt@gmail.com
-In-Reply-To: <201004042242.27430.lindner_marek@yahoo.de>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sun, 4 Apr 2010 17:14:05 +0200
 References: <1270341625-28764-1-git-send-email-luisbg@ubuntu.com>
-	<201004041330.37112.sven.eckelmann@gmx.de>
-	<g2o506b70dc1004040539weff4c04akcbde4ef62dcdaeb@mail.gmail.com>
 	<201004042242.27430.lindner_marek@yahoo.de>
-Date: Sun, 4 Apr 2010 16:02:52 +0100
-Message-ID: <h2n506b70dc1004040802sea2fe64awc5e88064255a2e0c@mail.gmail.com>
-From: Luis de Bethencourt <luisbg@ubuntu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<h2n506b70dc1004040802sea2fe64awc5e88064255a2e0c@mail.gmail.com>
+In-Reply-To: <h2n506b70dc1004040802sea2fe64awc5e88064255a2e0c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart16963542.SGuaa8InLp";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <201004041714.14326.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] Staging: batman-adv: fix whitespace
 	style issues
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,50 +23,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Luis de Bethencourt <luisbg@ubuntu.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-On Sun, Apr 4, 2010 at 3:42 PM, Marek Lindner <lindner_marek@yahoo.de> wrote:
-> On Sunday 04 April 2010 20:39:49 Luis de Bethencourt wrote:
->> Honestly, I don't understand the intention of the whitespaces you are
->> talking about. Userspace applications have to split the string after
->> each whitespace because there is a \n there, my fix just suggested to
->> split the line before the whitespace since I see no need for it.
->>
->> So am I missunderstanding and there is a need for that whitespace?
->> Same question asked differently: Will there be any difference in the
->> print out if the line is broken before the whitespace instead of
->> after?
->
-> Let's take this string as an example:
-> "commands: enable, disable, 0, 1 \n"
-> The batctl code uses strchr() to jump to each whitespace location within the
-> string and handle each word individually. By removing the last whitespace the
-> code will not handle "1" because there is not more whitespace. See
-> handle_sys_setting() in http://www.open-mesh.org/browser/trunk/batctl/sys.c
->
-> That is not tragic but the batctl code needs to be changed as well if the
-> whitespace is removed.
->
-> Regards,
-> Marek
->
+--nextPart16963542.SGuaa8InLp
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Ohhhhhh... I wasn't aware of that.
+On Sunday 04 April 2010 17:02:52 Luis de Bethencourt wrote:
+> Sven,
+>=20
+> Should I redo the patch you sent taking out the changes that are
+> affected by the above?
 
-In this case the whitespace is needed to separate 1 from \n. Being
-this the case you are correct, I agree with you that keeping those
-whitespaces is a small cost compared to changing the logic of how
-batctl works.
+No, Marek or I or someone who is faster will do the changes needed in batct=
+l.=20
+It is high on my agenta and not really complicated. Just have to make it at=
+=20
+the same time the whitespace patch gets applied.
 
-I stand corrected :P
+Best regards,
+	Sven
 
-Thanks for taking the time of writing the example Marek.
+--nextPart16963542.SGuaa8InLp
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Sven,
+iQIcBAABCgAGBQJLuKy/AAoJEF2HCgfBJntGCvwQALk1TSS2hi4JDBty7JT/rfKq
+BmJHJ54npUQjbpVZxmwxOGDAGfygVNAkln2q6p7lV+BCwhCPli1SIKHpWNyZpkxh
+Q2wnl8CwfOEs/OY4Xi2HdIP4JEyfVjcni3farK210NN+hCCEJEWTjjV8FpiMzzY7
+5zlVUDbAmxX4MMfY+05YNB6yStagjYEysvrUq+r5YfvJkaN7qBNGrTH/38qYsnCZ
+YyjcucgImggzDY1p22z21wuVAc+aniQp+YUR1eKoBiWjAyQDelEUIne+Ww2mh1Hu
+CGDyj+Bz2V5ph+6nd/lFas1ljUs5LCMOEsEoWigsCiIBW+b++xJ58oEYFwQ0uz1J
+ExipUo+d6/HdtRMZXaOA5Tege2G90rkNlgrXES+GiFg5corlYswGa642Kc4QVfJa
+0G9ahWuGwlLz6TV1p+nuOTItOHPQsu7YDr+NU4C+bBI3YpFVyf9aVIEcx5fyPsHR
+77YiHfFGvzdSlFjLry+91+gKxmpiNCmvwZXmKYpu6BWfJ4mk0wPyoXs0Fdc/4cgW
+hHzWL8OWrIw99fwjlaRT5Y9ogeRJK8+ywHvaFrTabBMtIRNq8ARnZvQNjS8zXGLI
+6dwm+GZiN91rWQvCzkx+nzbG+xNbgp2K4ccswcKs4lLJ4r1w1+CMlS+WzC+YdsH8
+ZLiF6kYkfLx8sCTl2kNw
+=z0Gn
+-----END PGP SIGNATURE-----
 
-Should I redo the patch you sent taking out the changes that are
-affected by the above?
-
-Luis
+--nextPart16963542.SGuaa8InLp--
