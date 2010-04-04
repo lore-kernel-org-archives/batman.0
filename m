@@ -1,16 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 4 Apr 2010 23:54:21 +0800
-References: <201004020054.08840.clemens-john@gmx.de>
-	<201004031254.02506.lindner_marek@yahoo.de>
-	<201004041741.56665.clemens-john@gmx.de>
-In-Reply-To: <201004041741.56665.clemens-john@gmx.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201004042354.22005.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Problems connecting VPN and WLAN with Batman-adv
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sun,  4 Apr 2010 18:33:57 +0200
+Message-Id: <1270398837-17050-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1270345460-20555-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1270345460-20555-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: Parse allowed settings for sysfs
+	without whitespace before newline
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,28 +17,114 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sunday 04 April 2010 23:41:52 Clemens John wrote:
-> root@OpenWrt:~# route 
-> Kernel IP routing table
-> Destination     Gateway         Genmask         Flags Metric Ref    Use
->  Iface
->  192.168.178.0   *               255.255.255.0   U     0      0        0
->  eth0
->  10.18.0.0       *               255.255.0.0     U     0      0       0
->  br-mesh
->  10.18.0.0       *               255.255.0.0     U     0      0        0
->  tap0 default         192.168.178.1   0.0.0.0         UG    0      0   0
->  eth0
+The current settings parser assumes that a newline is at the end of each
+line starting with "commands:". Luis de Bethencourt reported that this
+is a bad coding style and should be avoided.
 
-Which interfaces did you add to batman-adv ? I guess ath1 & tap0 ?
-Can you please post "batctl if" just to be sure ?!
+To parse the new settings lines we must also check for \n and not only
+for single whitespaces. After each check it must be ensured that the old
+character is placed again at the old place and the line seems to be
+unmodified to the user.
 
-If you added tap0 you should not "use" this interface directly anymore (don't 
-assign IP address, etc). batman-adv behaves like an ordinary bridge - all 
-bridged interfaces are to be ignored. Only the bridge interface itself (bat0 
-in our case) can be used. 
+For old versions with extra whitespace before a newline an extra check
+must be applied to not allow commands with empty parameter like in
+ batctl vis_mode ''
 
-Regards,
-Marek
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batctl/functions.c |   18 ++++++++++++++++++
+ batctl/functions.h |    1 +
+ batctl/sys.c       |   13 +++++++++----
+ 3 files changed, 28 insertions(+), 4 deletions(-)
+
+diff --git a/batctl/functions.c b/batctl/functions.c
+index 7d8be51..e5fe670 100644
+--- a/batctl/functions.c
++++ b/batctl/functions.c
+@@ -311,3 +311,21 @@ out:
+ 		close(fd);
+ 	return res;
+ }
++
++char *strchr_anyof(const char *s, const char *n)
++{
++	char *cur, *first = NULL;
++	size_t i, len;
++
++	if (s == NULL || n == NULL)
++		return first;
++
++	len = strlen(n);
++	for (i = 0; i < len; i++) {
++		cur = strchr(s, n[i]);
++		if (cur != NULL && (cur < first || first == NULL))
++			first = cur;
++	}
++
++	return first;
++}
+diff --git a/batctl/functions.h b/batctl/functions.h
+index 63740d2..14b8478 100644
+--- a/batctl/functions.h
++++ b/batctl/functions.h
+@@ -37,6 +37,7 @@ char *get_name_by_macstr(char *mac_str, int read_opt);
+ int read_file(char *dir, char *path, int read_opt);
+ int write_file(char *dir, char *fname, char *arg1, char *arg2);
+ int check_proc_dir(char *dir);
++char *strchr_anyof(const char *s, const char *n);
+ 
+ extern char *line_ptr;
+ 
+diff --git a/batctl/sys.c b/batctl/sys.c
+index 1b0b784..5f44c6a 100644
+--- a/batctl/sys.c
++++ b/batctl/sys.c
+@@ -335,6 +335,7 @@ void orig_interval_usage(void)
+ int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usage(void))
+ {
+ 	int optchar, res;
++	char space_char;
+ 	char *space_ptr, *comma_char, *cmds = NULL;
+ 
+ 	while ((optchar = getopt(argc, argv, "h")) != -1) {
+@@ -355,15 +356,19 @@ int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usag
+ 	if (res != EXIT_SUCCESS)
+ 		return res;
+ 
+-	while ((space_ptr = strchr(line_ptr, ' ')) != NULL) {
++	while ((space_ptr = strchr_anyof(line_ptr, " \n")) != NULL) {
++		space_char = *space_ptr;
+ 		*space_ptr = '\0';
++		comma_char = NULL;
+ 
+ 		if (strncmp(line_ptr, SEARCH_ARGS_TAG, strlen(SEARCH_ARGS_TAG)) == 0) {
+ 			cmds = space_ptr + 1;
+ 			goto next;
+ 		}
+ 
+-		comma_char = NULL;
++		if (strlen(line_ptr) == 0)
++			goto next;
++
+ 		if (line_ptr[strlen(line_ptr) - 1] == ',') {
+ 			comma_char = line_ptr + strlen(line_ptr) - 1;
+ 			*comma_char = '\0';
+@@ -372,11 +377,11 @@ int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usag
+ 		if (strcmp(line_ptr, argv[1]) == 0)
+ 			goto write_file;
+ 
+-		*space_ptr = ' ';
++next:
++		*space_ptr = space_char;
+ 		if (comma_char)
+ 			*comma_char = ',';
+ 
+-next:
+ 		line_ptr = space_ptr + 1;
+ 	}
+ 
+-- 
+1.7.0.3
+
