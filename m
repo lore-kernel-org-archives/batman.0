@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 4 Apr 2010 10:48:54 +0800
-References: <201004040312.28481.sven.eckelmann@gmx.de>
-	<1270345460-20555-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1270345460-20555-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun, 4 Apr 2010 10:58:33 +0800
+References: <4BB70C4B.5000909@nord-west.org>
+	<201004031841.46758.sven.eckelmann@gmx.de>
+	<201004040029.26465.sven.eckelmann@gmx.de>
+In-Reply-To: <201004040029.26465.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201004041048.54962.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2-trunk] Staging: batman-adv: fix
-	whitespace style issues
+Message-Id: <201004041058.33336.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] running batman-adv in a openvz VE
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,37 +22,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Luis de Bethencourt <luisbg@ubuntu.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday 04 April 2010 09:44:20 Sven Eckelmann wrote:
-> From: Luis de Bethencourt <luisbg@ubuntu.com>
-> 
-> This patch fixes the 31 unnecessary whitespaces before a quoted
-> newline that the batman-adv files had.
-> 
-> Signed-off-by: Luis de Bethencourt <luisbg@ubuntu.com>
-> [sven.eckelmann@gmx.de: Redone to apply against current version]
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-> ---
-> Changes are done with "reorganized kernel interface patches (version 3)"
-> applied.
->
-> --- a/batman-adv-kernelland/bat_sysfs.c
-> +++ b/batman-adv-kernelland/bat_sysfs.c
-> @@ -77,7 +77,7 @@ static ssize_t show_aggr_ogm(struct kobject *kobj, struct
->  attribute *attr, struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
->         int aggr_status = atomic_read(&bat_priv->aggregation_enabled);
->  
-> -       return sprintf(buff, "status: %s\ncommands: enable, disable, 0, 1
->  \n", +       return sprintf(buff, "status: %s\ncommands: enable, disable,
->  0, 1\n", aggr_status == 0 ? "disabled" : "enabled"); }
+On Sunday 04 April 2010 06:29:24 Sven Eckelmann wrote:
+> Also we only use init_net in hard_interface.c when we add a 
+> interface - so the actual namespace should not be a problem. But I am a
+>  little  bit curious why we only deactivate the interface in  hard_if_event
+>  when it gets NETDEV_UNREGISTER. I would think that batman_if->net_dev of
+>  that interface isn't valid anymore and we aren't allowed to access it. So
+>  removing it should be the right choice.
 
-The whitespaces in bat_sysfs.c after the "commands" string are intentional. 
-Userspace applications can simply split the string after each whitespace. Of 
-course, it can be done differently but it only "costs" us a whitespace. I was 
-not aware this would be an issue. Can we keep it or should we change e.g. 
-batctl ?
+The idea was to support some buggy (wifi) drivers better. Back in the layer 3 
+days I had a driver (not exactly sure which one) that would disappear for a 
+second and then come back immediately afterwards. In that case we don't want 
+to purge all routing information over and over again.
 
-Cheers,
+
+> I started to write some tests, but then noticed quite fast that (at least
+>  in  0.2.1) all variables to store the proc filesystem information are
+>  global variables - which will not work.
+
+Yes, this is why I mentioned the multiple mesh support in one of my earlier 
+mails. The current stable module (0.2.x) is pretty static and cluttered with 
+global variables which I started to clean up.
+
+On the other hand I don't think it is worthwhile to invest much time into the 
+proc-fs implementation since it is phasing out. I even thought about 
+backporting the sysfs patches to the 0.2.2 branch, so that we can have all 
+kernel interface changes while batman-adv resides in the staging tree. Later 
+it will be much harder.
+
+Regards,
 Marek
