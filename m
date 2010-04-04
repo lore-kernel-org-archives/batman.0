@@ -1,18 +1,16 @@
-Return-Path: <bethencourt@gmail.com>
-MIME-Version: 1.0
-Sender: bethencourt@gmail.com
-In-Reply-To: <201004041330.37112.sven.eckelmann@gmx.de>
+Return-Path: <andrew@lunn.ch>
+Date: Sun, 4 Apr 2010 15:56:21 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100404135621.GA16351@lunn.ch>
 References: <1270341625-28764-1-git-send-email-luisbg@ubuntu.com>
-	<201004041246.38682.sven.eckelmann@gmx.de>
-	<t2v506b70dc1004040410qbae117b7r3e6c02ccb616c73a@mail.gmail.com>
-	<201004041330.37112.sven.eckelmann@gmx.de>
-Date: Sun, 4 Apr 2010 13:39:49 +0100
-Message-ID: <g2o506b70dc1004040539weff4c04akcbde4ef62dcdaeb@mail.gmail.com>
-From: Luis de Bethencourt <luisbg@ubuntu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+	<201004040312.28481.sven.eckelmann@gmx.de>
+	<p2x506b70dc1004031845p81705070o325d93f839c80e9a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p2x506b70dc1004031845p81705070o325d93f839c80e9a@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] Staging: batman-adv: fix whitespace
-	style issues
+ style issues
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,69 +22,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>, Marek Lindner <lindner_marek@yahoo.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: devel@driverdev.osuosl.org, gregkh@suse.de, linux-kernel@vger.kernel.org
 
-On Sun, Apr 4, 2010 at 12:30 PM, Sven Eckelmann <sven.eckelmann@gmx.de> wro=
-te:
-> On Sunday 04 April 2010 13:10:12 you wrote:
->
->> Thanks a lot for the help Sven.
->>
->> My patch didn't include changes to bat_sysfs.c, where are this changes
->> coming from? Sorry if I'm missing something obvious.
->
-> Correct, that was part of the redoing of your changes. bat_sysfs.c is onl=
-y
-> part of the current development version and not in your patch (you still =
-had
-> the /proc stuff).
->
-> But maybe you could explain to Marek why it is important/correct/good/...=
- to
-> have no whitespaces before \n or if the part for /proc or /sys files can =
-be
-> ignored.
->
-> Best regards,
-> =A0 =A0 =A0 =A0Sven
->
+> Sorry about the conflict, thanks for redoing the changes. Where can I
+> find the current and development branches? I want to avoid doing this
+> mistake again in the future. Specially since I'm planning on doing
+> some janitorial work on Staging for a while if it's OK with you guys.
+> I see it as nice experience and practice while learning and getting
+> ready for more valuable contributions :)
 
-I saw the bat_sysfs.c in the redoing of the changes. It is OK with me.
+Sven has told you about how batman uses different repositories. You
+can find some more information at:
 
-IMHO a whitespace before a \n is unneccesary, since it is a blank
-character at the end of the line. Like adding a 0 at the left of a
-number.
-The obvious minor issue to try and avoid is space since having a big
-number of these can bloat slightly the size of code/kernel. But the
-whitespace can create other bigger issues, an example is when the
-whitespace coincidentally falls one character out of the length of the
-terminal, this will screw up the line break formatting in an ugly way.
+http://www.open-mesh.org/wiki/UsingBatmanGit
 
-I think these are the reasons why the coding style guidelines of the
-Linux Kernel ask to avoid these whitespaces. Which also means removing
-this helps the consistency of the kernel's code.
+When working on other staging drivers i suggest you work on either the
+linux-next tree, or contact the driver maintainers and ask if they
+have there own development tree. Staging drivers tend to be fast
+moving. They change a lot. What is in the current release kernel,
+which is effectively 3 months old, can be very different to the latest
+development version. I've received many patches to things we have
+fixed months ago and are either waiting in linux-next for the next
+kernel release, or our in or development tree. I'm sure the same
+applies to other drivers in staging.
 
-> Marek wrote:
-> The whitespaces in bat_sysfs.c after the "commands" string are intentiona=
-l.
-> Userspace applications can simply split the string after each whitespace.=
- Of
-> course, it can be done differently but it only "costs" us a whitespace. I=
- was
-> not aware this would be an issue. Can we keep it or should we change e.g.
-> batctl ?
+Another option for interesting work to get involved in the kernel is
+to ask GregKH if there is a staging driver which is not being actively
+worked on. Some drivers just get dumped there and nobody spends the
+time and effort needed to get them merged. After a while they get
+thrown out of the staging. You could adopt such a driver, get hold of
+the hardware and do the work needed to get it out of staging and into
+the main tree.
 
-Honestly, I don't understand the intention of the whitespaces you are
-talking about. Userspace applications have to split the string after
-each whitespace because there is a \n there, my fix just suggested to
-split the line before the whitespace since I see no need for it.
-
-So am I missunderstanding and there is a need for that whitespace?
-Same question asked differently: Will there be any difference in the
-print out if the line is broken before the whitespace instead of
-after?
-
-If so, please show me an example :)
-
-Luis
+    Andrew
