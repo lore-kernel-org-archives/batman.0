@@ -1,16 +1,12 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 5 Apr 2010 17:06:05 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20100405150605.GA15893@pandem0nium>
-References: <20100405024603.GA11965@pandem0nium>
-	<201004051321.45958.sven.eckelmann@gmx.de>
-	<20100405144035.GA13768@pandem0nium>
+Return-Path: <pbeddy@treverton.co.za>
+From: "Patrick Beddy" <pbeddy@treverton.co.za>
+Date: Mon, 05 Apr 2010 17:13:02 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20100405144035.GA13768@pandem0nium>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Limit queue lengths for	batman
-	and broadcast packets
+Message-ID: <4BB9FDFE.25617.3ED974FA@pbeddy.treverton.co.za>
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+Subject: [B.A.T.M.A.N.] Multiple gateways and WRT54GL's
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,162 +18,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch limits the queue lengths of batman and broadcast packets. BATMAN
-packets are held back for aggregation and jittered to avoid interferences.
-Broadcast packets are stored to be sent out multiple times to increase
-the probability to be received by other nodes in lossy environments.
+Please forgive this very "newbie" question, but it is one to which I cannot find an answer on 
+this site:
 
-Especially in extreme cases like broadcast storms, the queues have been seen
-to run full, eating up all the memory and triggering the infamous OOM killer.
-With the queue length limits introduced in this patch, this problem is
-avoided.
+I manage a campus network which runs a fibre backbone between critical points. I wish to 
+impliment a wireless mesh to link non-critical points and "fill-the-gaps" so to speak. It is thus 
+possible that more than one wireless point could act as a gateway to the main network. I 
+understand that the B.A.T.M.A.N. protocol offers the most promising means of achieving this 
+objective.
 
-Each queue is limited to 256 entries for now, resulting in 1 MB of maximum
-space available in total for typical setups (assuming one packet including
-overhead does not require more than 2000 byte). This should also be reasonable
-for smaller routers, otherwise the defines can be tweaked later.
+1: Do I have to use the Advanced version of B.A.T.M.A.N. to make this possible, of will the 
+"standard" version work?
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
-Index: a/batman-adv-kernelland/send.c
-===================================================================
---- a/batman-adv-kernelland/send.c	(revision 1616)
-+++ a/batman-adv-kernelland/send.c	(working copy)
-@@ -378,16 +378,25 @@
- 			   send_time);
- }
- 
-+#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
- void add_bcast_packet_to_list(struct sk_buff *skb)
- {
- 	struct forw_packet *forw_packet;
- 
-+	if (!atomic_dec_not_zero(&bcast_queue_left)) {
-+		bat_dbg(DBG_BATMAN, "bcast packet queue full\n");
-+		return;
-+	}
-+
- 	forw_packet = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
--	if (!forw_packet)
-+	if (!forw_packet) {
-+		atomic_inc(&bcast_queue_left);
- 		return;
-+	}
- 
- 	skb = skb_copy(skb, GFP_ATOMIC);
- 	if (!skb) {
-+		atomic_inc(&bcast_queue_left);
- 		kfree(forw_packet);
- 		return;
- 	}
-@@ -435,8 +444,10 @@
- 	if ((forw_packet->num_packets < 3) &&
- 	    (atomic_read(&module_state) != MODULE_DEACTIVATING))
- 		_add_bcast_packet_to_list(forw_packet, ((5 * HZ) / 1000));
--	else
-+	else {
- 		forw_packet_free(forw_packet);
-+		atomic_inc(&bcast_queue_left);
-+	}
- }
- 
- void send_outstanding_bat_packet(struct work_struct *work)
-@@ -462,6 +473,10 @@
- 	    (atomic_read(&module_state) != MODULE_DEACTIVATING))
- 		schedule_own_packet(forw_packet->if_incoming);
- 
-+	/* don't count own packet */
-+	if (!forw_packet->own)
-+		atomic_inc(&batman_queue_left);
-+
- 	forw_packet_free(forw_packet);
- }
- 
-Index: a/batman-adv-kernelland/main.c
-===================================================================
---- a/batman-adv-kernelland/main.c	(revision 1616)
-+++ a/batman-adv-kernelland/main.c	(working copy)
-@@ -46,6 +46,9 @@
- 
- atomic_t originator_interval;
- atomic_t vis_interval;
-+atomic_t bcast_queue_left;
-+atomic_t batman_queue_left;
-+
- int16_t num_hna;
- int16_t num_ifs;
- 
-@@ -85,6 +88,8 @@
- 	atomic_set(&originator_interval, 1000);
- 	atomic_set(&vis_interval, 1000);/* TODO: raise this later, this is only
- 					 * for debugging now. */
-+	atomic_set(&bcast_queue_left, BCAST_QUEUE_LEN);
-+	atomic_set(&batman_queue_left, BATMAN_QUEUE_LEN);
- 
- 	/* the name should not be longer than 10 chars - see
- 	 * http://lwn.net/Articles/23634/ */
-Index: a/batman-adv-kernelland/aggregation.c
-===================================================================
---- a/batman-adv-kernelland/aggregation.c	(revision 1616)
-+++ a/batman-adv-kernelland/aggregation.c	(working copy)
-@@ -95,6 +95,7 @@
- 	return false;
- }
- 
-+#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
- /* create a new aggregated packet and add this packet to it */
- static void new_aggregated_packet(unsigned char *packet_buff,
- 			   int packet_len,
-@@ -106,13 +107,26 @@
- 	struct forw_packet *forw_packet_aggr;
- 	unsigned long flags;
- 
-+	/* own packet should always be scheduled */
-+	if (!own_packet) {
-+		if (!atomic_dec_not_zero(&batman_queue_left)) {
-+			bat_dbg(DBG_BATMAN, "batman packet queue full\n");
-+			return;
-+		}
-+	}
-+
- 	forw_packet_aggr = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
--	if (!forw_packet_aggr)
-+	if (!forw_packet_aggr) {
-+		if (!own_packet)
-+			atomic_inc(&batman_queue_left);
- 		return;
-+	}
- 
- 	forw_packet_aggr->packet_buff = kmalloc(MAX_AGGREGATION_BYTES,
- 						GFP_ATOMIC);
- 	if (!forw_packet_aggr->packet_buff) {
-+		if (!own_packet)
-+			atomic_inc(&batman_queue_left);
- 		kfree(forw_packet_aggr);
- 		return;
- 	}
-Index: a/batman-adv-kernelland/main.h
-===================================================================
---- a/batman-adv-kernelland/main.h	(revision 1616)
-+++ a/batman-adv-kernelland/main.h	(working copy)
-@@ -70,6 +70,8 @@
- #define MODULE_ACTIVE 1
- #define MODULE_DEACTIVATING 2
- 
-+#define BCAST_QUEUE_LEN		256
-+#define BATMAN_QUEUE_LEN 	256
- 
- /*
-  * Debug Messages
-@@ -133,6 +135,8 @@
- 
- extern atomic_t originator_interval;
- extern atomic_t vis_interval;
-+extern atomic_t bcast_queue_left;
-+extern atomic_t batman_queue_left;
- extern int16_t num_hna;
- extern int16_t num_ifs;
- 
+2: I have purchased a few WRT54GL-EU routers with which to test the implimentation. Are 
+there any pre-compiled versions of the binaries available, or do I have to use a PC running 
+Linux to compile my own binaries?
 
+Many thanks
+
+
+
+
+==================================================
+Please report any abuse sent from any Treverton user to
+       abuse@treverton.co.za
+==================================================
