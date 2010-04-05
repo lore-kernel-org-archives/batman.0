@@ -1,12 +1,16 @@
-Return-Path: <pbeddy@treverton.co.za>
-From: "Patrick Beddy" <pbeddy@treverton.co.za>
-Date: Mon, 05 Apr 2010 17:13:02 +0200
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 6 Apr 2010 04:47:55 +0800
+References: <201003241252.18954.lindner_marek@yahoo.de>
+	<20100401172810.GA28422@Linus-Debian>
+	<201004031744.28756.lindner_marek@yahoo.de>
+In-Reply-To: <201004031744.28756.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Message-ID: <4BB9FDFE.25617.3ED974FA@pbeddy.treverton.co.za>
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-Subject: [B.A.T.M.A.N.] Multiple gateways and WRT54GL's
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201004060447.56173.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] reorganized kernel interface patches (version 3)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,30 +22,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Please forgive this very "newbie" question, but it is one to which I cannot find an answer on 
-this site:
+On Saturday 03 April 2010 17:44:28 Marek Lindner wrote:
+> I tried that but it does not crash at my end. Maybe you did more than you
+> think to provoke this crash ? In my test setup I have 2 nodes with 3
+> interfaces each. I ran your command several times without seeing any odd
+> behaviour.
 
-I manage a campus network which runs a fibre backbone between critical points. I wish to 
-impliment a wireless mesh to link non-critical points and "fill-the-gaps" so to speak. It is thus 
-possible that more than one wireless point could act as a gateway to the main network. I 
-understand that the B.A.T.M.A.N. protocol offers the most promising means of achieving this 
-objective.
+Ok, we found the bug and fixed it.
+The sysfs changes are complete now and can be found in the trunk.
 
-1: Do I have to use the Advanced version of B.A.T.M.A.N. to make this possible, of will the 
-"standard" version work?
-
-2: I have purchased a few WRT54GL-EU routers with which to test the implimentation. Are 
-there any pre-compiled versions of the binaries available, or do I have to use a PC running 
-Linux to compile my own binaries?
-
-Many thanks
-
-
-
-
-==================================================
-Please report any abuse sent from any Treverton user to
-       abuse@treverton.co.za
-==================================================
+Regards,
+Marek
