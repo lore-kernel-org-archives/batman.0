@@ -1,13 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 6 Apr 2010 13:44:09 +0800
+Return-Path: <bittorf@bluebottle.com>
+Date: Tue, 6 Apr 2010 10:10:57 +0200
+From: Bastian Bittorf <bittorf@bluebottle.com>
+Message-ID: <20100406081057.GF16174@alix.l28.local>
 References: <4BB9FDFE.25617.3ED974FA@pbeddy.treverton.co.za>
-In-Reply-To: <4BB9FDFE.25617.3ED974FA@pbeddy.treverton.co.za>
+	<201004061344.10152.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201004061344.10152.lindner_marek@yahoo.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7cm2iqirTL37Ot+N"
+Content-Disposition: inline
+In-Reply-To: <201004061344.10152.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Multiple gateways and WRT54GL's
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,39 +24,35 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-Hi,
+--7cm2iqirTL37Ot+N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> I manage a campus network which runs a fibre backbone between critical
->  points. I wish to  impliment a wireless mesh to link non-critical points
->  and "fill-the-gaps" so to speak. It is thus possible that more than one
->  wireless point could act as a gateway to the main network. I understand
->  that the B.A.T.M.A.N. protocol offers the most promising means of
->  achieving this objective.
+* Marek Lindner <lindner_marek@yahoo.de> [06.04.2010 07:50]:
 
-you can use meshing to build a chain of wireless routers covering a certain 
-area. If you only have a single AP at the end of your fibre there is no need to 
-mesh.
+> the WRT54G still depends on the precompiled proprietary wifi driver only=
+=20
+> available for linux 2.4.20. OpenWRT tries to move to the open driver but =
+I=20
 
+this is an old rumour since some days, the new kamikaze-release
+"backfire" now fully supports the wrt54gl's wifi (b43+mac80211) with
+an opensource driver which make's it possible to use kernel 2.6.32+
 
-> 1: Do I have to use the Advanced version of B.A.T.M.A.N. to make this
->  possible, of will the  "standard" version work?
-> 
-> 2: I have purchased a few WRT54GL-EU routers with which to test the
->  implimentation. Are  there any pre-compiled versions of the binaries
->  available, or do I have to use a PC running Linux to compile my own
->  binaries?
+bye, Bastian
 
-Both implementations can be used to build the mesh but it is a bit hard to 
-give advice on which might be more suitable for your setup since we don't have 
-much information regarding your requirements. The "standard" batman operates 
-on layer 3 whereas advanced operates on layer 2 (each having its advantages & 
-disadvantages). 
+--7cm2iqirTL37Ot+N
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Note: As batman-adv is a kernel module it heavily depends on the kernel 
-version you run on the nodes. A linux not older than 2.6.20 is required. AFAIK 
-the WRT54G still depends on the precompiled proprietary wifi driver only 
-available for linux 2.4.20. OpenWRT tries to move to the open driver but I 
-don't know how well it works.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Regards,
-Marek
+iEYEARECAAYFAku67JEACgkQDonSpHhHLly+LQCdHflsyoz8JSkT3efxY3L9Oicr
+M4MAni2u75iwcHoMGuul68gxpuS/nGxt
+=EoCX
+-----END PGP SIGNATURE-----
+
+--7cm2iqirTL37Ot+N--
