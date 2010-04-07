@@ -1,19 +1,17 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 6 Apr 2010 21:52:36 +0200
+Date: Wed, 7 Apr 2010 10:11:23 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20100406195236.GA23833@pandem0nium>
-References: <20100404220120.GA9171@pandem0nium>
-	<20100406093331.GA24150@Sellars>
-	<20100406104129.GA19923@pandem0nium>
-	<20100406131105.GA28505@Sellars>
-	<20100406175809.GA21016@pandem0nium>
-	<20100406192842.GA23345@pandem0nium>
+Message-ID: <20100407081123.GA2378@pandem0nium>
+References: <20100405024603.GA11965@pandem0nium>
+	<201004051321.45958.sven.eckelmann@gmx.de>
+	<20100405144035.GA13768@pandem0nium>
+	<20100405150605.GA15893@pandem0nium>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <20100406192842.GA23345@pandem0nium>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Reorganize sequence number
-	handling
+In-Reply-To: <20100405150605.GA15893@pandem0nium>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Limit queue lengths for batman
+	and broadcast	packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,367 +25,214 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-BATMAN and broadcast packets are tracked with a sequence number window of
-currently 64 entries to measure and avoid duplicates. Packets which have a 
-sequence number smaller than the newest received packet minus 64 are not
-within this sequence number window anymore and are called "old packets" from
-now on.
+This patch limits the queue lengths of batman and broadcast packets. BATMAN
+packets are held back for aggregation and jittered to avoid interferences.
+Broadcast packets are stored to be sent out multiple times to increase
+the probability to be received by other nodes in lossy environments.
 
-When old packets are received, the routing code assumes that the host of the 
-originator has been restarted. This assumption however might be wrong as 
-packets can also be delayed by NIC drivers, e.g. because of long queues or 
-collision detection in dense WiFi environments. This behaviour can be 
-reproduced by doing a broadcast ping flood in a dense node environment.
+Especially in extreme cases like broadcast storms, the queues have been seen
+to run full, eating up all the memory and triggering the infamous OOM killer.
+With the queue length limits introduced in this patch, this problem is
+avoided.
 
-The effect is that the sequence number window is jumping forth and back, 
-accepting and forwarding any packet (because packets are assumed to be "new")
-and causing loops.
+Each queue is limited to 256 entries for now, resulting in 1 MB of maximum
+space available in total for typical setups (assuming one packet including
+overhead does not require more than 2000 byte). This should also be reasonable
+for smaller routers, otherwise the defines can be tweaked later.
 
-To overcome this problem, the sequence number handling has been reorganized.
-When an old packet is received, the window is reset back only once. Other old
-packets are dropped for (currently) 30 seconds to "protect" the new sequence
-number and avoid the hopping as described above.
-
-The reorganization brings some code cleanups (at least i hope you feel the
-same) and also fixes a bug in count_real_packets() which falsely updated 
-the last_real_seqno for slightly older packets within the seqno window
-if they are no duplicates.
-
-This second version of the patch also fixes a problem where for seq_diff==64
-bit_shift() reads from outside of the seqno window, and removes the loop
-for seq_diff == -64 which was present in the first patch.
+This third version of the patch does not increase the local broadcast 
+sequence number when the queue is already full.
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
-Index: a/batman-adv-kernelland/types.h
+Index: a/batman-adv-kernelland/send.c
 ===================================================================
---- a/batman-adv-kernelland/types.h	(revision 1616)
-+++ a/batman-adv-kernelland/types.h	(working copy)
-@@ -55,6 +55,10 @@
- 	uint8_t tq_own;
- 	int tq_asym_penalty;
- 	unsigned long last_valid;        /* when last packet from this node was received */
-+	unsigned long bcast_seqno_reset; /* time when the broadcast
-+					    seqno window was reset. */
-+	unsigned long batman_seqno_reset;/* time when the batman seqno
-+					    window was reset. */
- 	uint8_t gw_flags;      /* flags related to gateway class */
- 	uint8_t flags;    /* for now only VIS_SERVER flag. */
- 	unsigned char *hna_buff;
-Index: a/batman-adv-kernelland/bitarray.c
-===================================================================
---- a/batman-adv-kernelland/bitarray.c	(revision 1616)
-+++ a/batman-adv-kernelland/bitarray.c	(working copy)
-@@ -68,7 +68,7 @@
- 	int32_t word_offset, word_num;
- 	int32_t i;
- 
--	if (n <= 0)
-+	if (n <= 0 || n >= TQ_LOCAL_WINDOW_SIZE)
- 		return;
- 
- 	word_offset = n % WORD_BIT_SIZE;/* shift how much inside each word */
-@@ -111,48 +111,74 @@
- 		seq_bits[i] = 0;
+--- a/batman-adv-kernelland/send.c	(revision 1616)
++++ a/batman-adv-kernelland/send.c	(working copy)
+@@ -378,18 +378,35 @@
+ 			   send_time);
  }
  
-+static void bit_reset_window(TYPE_OF_WORD *seq_bits)
-+{
-+	int i;
-+	for (i = 0; i < NUM_WORDS; i++)
-+		seq_bits[i] = 0;
-+}
- 
--/* receive and process one packet, returns 1 if received seq_num is considered
-- * new, 0 if old  */
-+
-+/* receive and process one packet within the sequence number window.
+-void add_bcast_packet_to_list(struct sk_buff *skb)
++#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
++/* add a broadcast packet to the queue and setup timers. broadcast packets
++ * are sent multiple times to increase probability for beeing received.
 + *
-+ * returns:
-+ *  1 if the window was moved (either new or very old)
-+ *  0 if the window was not moved/shifted.
-+ */
- char bit_get_packet(TYPE_OF_WORD *seq_bits, int16_t seq_num_diff,
- 		    int8_t set_mark)
++ * This function returns NETDEV_TX_OK on success and NETDEV_TX_BUSY on
++ * errors.
++ *
++ * The skb is not consumed, so the caller should make sure that the
++ * skb is freed. */
++int add_bcast_packet_to_list(struct sk_buff *skb)
  {
--	int i;
-+	/* sequence number is slightly older. We already got a sequence number
-+	 * higher than this one, so we just mark it. */
+ 	struct forw_packet *forw_packet;
  
--	/* we already got a sequence number higher than this one, so we just
--	 * mark it. this should wrap around the integer just fine */
--	if ((seq_num_diff < 0) && (seq_num_diff >= -TQ_LOCAL_WINDOW_SIZE)) {
-+	if ((seq_num_diff <= 0) && (seq_num_diff > -TQ_LOCAL_WINDOW_SIZE)) {
- 		if (set_mark)
- 			bit_mark(seq_bits, -seq_num_diff);
- 		return 0;
- 	}
- 
--	/* it seems we missed a lot of packets or the other host restarted */
--	if ((seq_num_diff > TQ_LOCAL_WINDOW_SIZE) ||
--	    (seq_num_diff < -TQ_LOCAL_WINDOW_SIZE)) {
-+	/* sequence number is slightly newer, so we shift the window and
-+	 * set the mark if required */
- 
--		if (seq_num_diff > TQ_LOCAL_WINDOW_SIZE)
--			bat_dbg(DBG_BATMAN,
--				"We missed a lot of packets (%i) !\n",
--				seq_num_diff-1);
-+	if ((seq_num_diff > 0) && (seq_num_diff < TQ_LOCAL_WINDOW_SIZE)) {
-+		bit_shift(seq_bits, seq_num_diff);
- 
--		if (-seq_num_diff > TQ_LOCAL_WINDOW_SIZE)
--			bat_dbg(DBG_BATMAN,
--				"Other host probably restarted !\n");
-+		if (set_mark)
-+			bit_mark(seq_bits, 0);
-+		return 1;
++	if (!atomic_dec_not_zero(&bcast_queue_left)) {
++		bat_dbg(DBG_BATMAN, "bcast packet queue full\n");
++		return NETDEV_TX_BUSY;
 +	}
- 
--		for (i = 0; i < NUM_WORDS; i++)
--			seq_bits[i] = 0;
-+	/* sequence number is much newer, probably missed a lot of packets */
- 
-+	if (seq_num_diff >= TQ_LOCAL_WINDOW_SIZE) {
-+		bat_dbg(DBG_BATMAN,
-+			"We missed a lot of packets (%i) !\n",
-+			seq_num_diff - 1);
-+		bit_reset_window(seq_bits);
- 		if (set_mark)
--			seq_bits[0] = 1;  /* we only have the latest packet */
--	} else {
--		bit_shift(seq_bits, seq_num_diff);
-+			bit_mark(seq_bits, 0);
-+		return 1;
-+	}
- 
-+	/* received a much older packet. The other host either restarted
-+	 * or the old packet got delayed somewhere in the network. The
-+	 * packet should be dropped without calling this function if the
-+	 * seqno window is protected. */
 +
-+	if (seq_num_diff <= -TQ_LOCAL_WINDOW_SIZE) {
-+
-+		bat_dbg(DBG_BATMAN,
-+			"Other host probably restarted!\n");
-+
-+		bit_reset_window(seq_bits);
- 		if (set_mark)
- 			bit_mark(seq_bits, 0);
-+
-+		return 1;
- 	}
- 
--	return 1;
-+	/* never reached */
-+	return 0;
- }
- 
- /* count the hamming weight, how many good packets did we receive? just count
-Index: a/batman-adv-kernelland/originator.c
-===================================================================
---- a/batman-adv-kernelland/originator.c	(revision 1616)
-+++ a/batman-adv-kernelland/originator.c	(working copy)
-@@ -141,6 +141,8 @@
- 	orig_node->router = NULL;
- 	orig_node->batman_if = NULL;
- 	orig_node->hna_buff = NULL;
-+	orig_node->bcast_seqno_reset = jiffies;
-+	orig_node->batman_seqno_reset = jiffies;
- 
- 	size = num_ifs * sizeof(TYPE_OF_WORD) * NUM_WORDS;
- 
-Index: a/batman-adv-kernelland/routing.c
-===================================================================
---- a/batman-adv-kernelland/routing.c	(revision 1616)
-+++ a/batman-adv-kernelland/routing.c	(working copy)
-@@ -323,6 +323,37 @@
- 		gw_check_election(bat_priv, orig_node);
- }
- 
-+/* checks whether the host restarted and is in the protection time.
-+ * returns:
-+ *  0 if the packet is to be accepted
-+ *  1 if the packet is to be ignored.
-+ */
-+static int window_protected(int16_t seq_num_diff,
-+				unsigned long *last_reset)
-+{
-+	if (seq_num_diff <= -TQ_LOCAL_WINDOW_SIZE) {
-+		if (time_after(jiffies, *last_reset +
-+			msecs_to_jiffies(RESET_PROTECTION_MS))) {
-+
-+			*last_reset = jiffies;
-+			bat_dbg(DBG_BATMAN,
-+				"old packet received, start protection\n");
-+
-+			return 0;
-+		} else
-+			return 1;
-+	}
-+	return 0;
-+}
-+
-+/* processes a batman packet for all interfaces, adjusts the sequence number and
-+ * finds out whether it is a duplicate.
-+ * returns:
-+ *   1 the packet is a duplicate
-+ *   0 the packet has not yet been received
-+ *  -1 the packet is old and has been received while the seqno window
-+ *     was protected. Caller should drop it.
-+ */
- static char count_real_packets(struct ethhdr *ethhdr,
- 			       struct batman_packet *batman_packet,
- 			       struct batman_if *if_incoming)
-@@ -330,31 +361,41 @@
- 	struct orig_node *orig_node;
- 	struct neigh_node *tmp_neigh_node;
- 	char is_duplicate = 0;
--	uint16_t seq_diff;
-+	int16_t seq_diff;
-+	int need_update = 0;
-+	int set_mark;
- 
- 	orig_node = get_orig_node(batman_packet->orig);
- 	if (orig_node == NULL)
- 		return 0;
- 
-+	seq_diff = batman_packet->seqno - orig_node->last_real_seqno;
-+
-+	/* signalize caller that the packet is to be dropped. */
-+	if (window_protected(seq_diff, &orig_node->batman_seqno_reset))
-+		return -1;
-+
- 	list_for_each_entry(tmp_neigh_node, &orig_node->neigh_list, list) {
- 
--		if (!is_duplicate)
--			is_duplicate =
--				get_bit_status(tmp_neigh_node->real_bits,
-+		is_duplicate |= get_bit_status(tmp_neigh_node->real_bits,
- 					       orig_node->last_real_seqno,
- 					       batman_packet->seqno);
--		seq_diff = batman_packet->seqno - orig_node->last_real_seqno;
-+
- 		if (compare_orig(tmp_neigh_node->addr, ethhdr->h_source) &&
- 		    (tmp_neigh_node->if_incoming == if_incoming))
--			bit_get_packet(tmp_neigh_node->real_bits, seq_diff, 1);
-+			set_mark = 1;
- 		else
--			bit_get_packet(tmp_neigh_node->real_bits, seq_diff, 0);
-+			set_mark = 0;
- 
-+		/* if the window moved, set the update flag. */
-+		need_update |= bit_get_packet(tmp_neigh_node->real_bits,
-+						seq_diff, set_mark);
-+
- 		tmp_neigh_node->real_packet_count =
- 			bit_packet_count(tmp_neigh_node->real_bits);
- 	}
- 
--	if (!is_duplicate) {
-+	if (need_update) {
- 		bat_dbg(DBG_BATMAN, "updating last_seqno: old %d, new %d\n",
- 			orig_node->last_real_seqno, batman_packet->seqno);
- 		orig_node->last_real_seqno = batman_packet->seqno;
-@@ -587,24 +628,27 @@
- 		return;
- 	}
- 
--	if (batman_packet->tq == 0) {
--		count_real_packets(ethhdr, batman_packet, if_incoming);
--
--		bat_dbg(DBG_BATMAN, "Drop packet: originator packet with tq equal 0\n");
+ 	forw_packet = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
+-	if (!forw_packet)
 -		return;
--	}
--
- 	if (is_my_oldorig) {
- 		bat_dbg(DBG_BATMAN, "Drop packet: ignoring all rebroadcast echos (sender: %pM)\n", ethhdr->h_source);
- 		return;
++	if (!forw_packet) {
++		atomic_inc(&bcast_queue_left);
++		return NETDEV_TX_BUSY;
++	}
+ 
+ 	skb = skb_copy(skb, GFP_ATOMIC);
+ 	if (!skb) {
++		atomic_inc(&bcast_queue_left);
+ 		kfree(forw_packet);
+-		return;
++		return NETDEV_TX_BUSY;
  	}
  
--	is_duplicate = count_real_packets(ethhdr, batman_packet, if_incoming);
--
- 	orig_node = get_orig_node(batman_packet->orig);
- 	if (orig_node == NULL)
- 		return;
+ 	skb_reset_mac_header(skb);
+@@ -401,6 +418,7 @@
+ 	forw_packet->num_packets = 0;
  
-+	is_duplicate = count_real_packets(ethhdr, batman_packet, if_incoming);
-+
-+	if (is_duplicate == -1) {
-+		bat_dbg(DBG_BATMAN, "Drop packet: packet within seqno protection time (sender: %pM)\n", ethhdr->h_source);
-+		return;
-+	}
-+
-+	if (batman_packet->tq == 0) {
-+		bat_dbg(DBG_BATMAN,	"Drop packet: originator packet with tq equal 0\n");
-+		return;
-+	}
-+
- 	/* avoid temporary routing loops */
- 	if ((orig_node->router) &&
- 	    (orig_node->router->orig_node->router) &&
-@@ -1081,13 +1125,13 @@
- 	return NET_RX_SUCCESS;
+ 	_add_bcast_packet_to_list(forw_packet, 1);
++	return NETDEV_TX_OK;
  }
  
--
- int recv_bcast_packet(struct sk_buff *skb)
- {
- 	struct orig_node *orig_node;
- 	struct bcast_packet *bcast_packet;
- 	struct ethhdr *ethhdr;
- 	int hdr_size = sizeof(struct bcast_packet);
-+	int16_t seq_diff;
+ void send_outstanding_bcast_packet(struct work_struct *work)
+@@ -435,8 +453,10 @@
+ 	if ((forw_packet->num_packets < 3) &&
+ 	    (atomic_read(&module_state) != MODULE_DEACTIVATING))
+ 		_add_bcast_packet_to_list(forw_packet, ((5 * HZ) / 1000));
+-	else
++	else {
+ 		forw_packet_free(forw_packet);
++		atomic_inc(&bcast_queue_left);
++	}
+ }
+ 
+ void send_outstanding_bat_packet(struct work_struct *work)
+@@ -462,6 +482,10 @@
+ 	    (atomic_read(&module_state) != MODULE_DEACTIVATING))
+ 		schedule_own_packet(forw_packet->if_incoming);
+ 
++	/* don't count own packet */
++	if (!forw_packet->own)
++		atomic_inc(&batman_queue_left);
++
+ 	forw_packet_free(forw_packet);
+ }
+ 
+Index: a/batman-adv-kernelland/send.h
+===================================================================
+--- a/batman-adv-kernelland/send.h	(revision 1616)
++++ a/batman-adv-kernelland/send.h	(working copy)
+@@ -33,7 +33,7 @@
+ 			     struct batman_packet *batman_packet,
+ 			     uint8_t directlink, int hna_buff_len,
+ 			     struct batman_if *if_outgoing);
+-void add_bcast_packet_to_list(struct sk_buff *skb);
++int  add_bcast_packet_to_list(struct sk_buff *skb);
+ void send_outstanding_bcast_packet(struct work_struct *work);
+ void send_outstanding_bat_packet(struct work_struct *work);
+ void purge_outstanding_packets(void);
+Index: a/batman-adv-kernelland/soft-interface.c
+===================================================================
+--- a/batman-adv-kernelland/soft-interface.c	(revision 1616)
++++ a/batman-adv-kernelland/soft-interface.c	(working copy)
+@@ -227,10 +227,10 @@
+ 		/* set broadcast sequence number */
+ 		bcast_packet->seqno = htons(bcast_seqno);
+ 
+-		bcast_seqno++;
++		/* broadcast packet. on success, increase seqno. */
++		if (add_bcast_packet_to_list(skb) == NETDEV_TX_OK)
++			bcast_seqno++;
+ 
+-		/* broadcast packet */
+-		add_bcast_packet_to_list(skb);
+ 		/* a copy is stored in the bcast list, therefore removing
+ 		 * the original skb. */
+ 		kfree_skb(skb);
+Index: a/batman-adv-kernelland/main.c
+===================================================================
+--- a/batman-adv-kernelland/main.c	(revision 1616)
++++ a/batman-adv-kernelland/main.c	(working copy)
+@@ -46,6 +46,9 @@
+ 
+ atomic_t originator_interval;
+ atomic_t vis_interval;
++atomic_t bcast_queue_left;
++atomic_t batman_queue_left;
++
+ int16_t num_hna;
+ int16_t num_ifs;
+ 
+@@ -85,6 +88,8 @@
+ 	atomic_set(&originator_interval, 1000);
+ 	atomic_set(&vis_interval, 1000);/* TODO: raise this later, this is only
+ 					 * for debugging now. */
++	atomic_set(&bcast_queue_left, BCAST_QUEUE_LEN);
++	atomic_set(&batman_queue_left, BATMAN_QUEUE_LEN);
+ 
+ 	/* the name should not be longer than 10 chars - see
+ 	 * http://lwn.net/Articles/23634/ */
+Index: a/batman-adv-kernelland/aggregation.c
+===================================================================
+--- a/batman-adv-kernelland/aggregation.c	(revision 1616)
++++ a/batman-adv-kernelland/aggregation.c	(working copy)
+@@ -95,6 +95,7 @@
+ 	return false;
+ }
+ 
++#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
+ /* create a new aggregated packet and add this packet to it */
+ static void new_aggregated_packet(unsigned char *packet_buff,
+ 			   int packet_len,
+@@ -106,13 +107,26 @@
+ 	struct forw_packet *forw_packet_aggr;
  	unsigned long flags;
  
- 	/* drop packet if it has not necessary minimum size */
-@@ -1123,7 +1167,7 @@
- 		return NET_RX_DROP;
- 	}
- 
--	/* check flood history */
-+	/* check whether the packet is a duplicate */
- 	if (get_bit_status(orig_node->bcast_bits,
- 			   orig_node->last_bcast_seqno,
- 			   ntohs(bcast_packet->seqno))) {
-@@ -1131,14 +1175,20 @@
- 		return NET_RX_DROP;
- 	}
- 
--	/* mark broadcast in flood history */
--	if (bit_get_packet(orig_node->bcast_bits,
--			   ntohs(bcast_packet->seqno) -
--			   orig_node->last_bcast_seqno, 1))
-+	seq_diff = ntohs(bcast_packet->seqno) - orig_node->last_bcast_seqno;
-+
-+	/* check whether the packet is old and the host just restarted. */
-+	if (window_protected(seq_diff, &orig_node->bcast_seqno_reset)) {
-+		spin_unlock_irqrestore(&orig_hash_lock, flags);
-+		return NET_RX_DROP;
++	/* own packet should always be scheduled */
++	if (!own_packet) {
++		if (!atomic_dec_not_zero(&batman_queue_left)) {
++			bat_dbg(DBG_BATMAN, "batman packet queue full\n");
++			return;
++		}
 +	}
 +
-+	/* mark broadcast in flood history, update window position
-+	 * if required. */
-+	if (bit_get_packet(orig_node->bcast_bits, seq_diff, 1))
- 		orig_node->last_bcast_seqno = ntohs(bcast_packet->seqno);
+ 	forw_packet_aggr = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
+-	if (!forw_packet_aggr)
++	if (!forw_packet_aggr) {
++		if (!own_packet)
++			atomic_inc(&batman_queue_left);
+ 		return;
++	}
  
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
--
- 	/* rebroadcast packet */
- 	add_bcast_packet_to_list(skb);
- 
+ 	forw_packet_aggr->packet_buff = kmalloc(MAX_AGGREGATION_BYTES,
+ 						GFP_ATOMIC);
+ 	if (!forw_packet_aggr->packet_buff) {
++		if (!own_packet)
++			atomic_inc(&batman_queue_left);
+ 		kfree(forw_packet_aggr);
+ 		return;
+ 	}
 Index: a/batman-adv-kernelland/main.h
 ===================================================================
 --- a/batman-adv-kernelland/main.h	(revision 1616)
 +++ a/batman-adv-kernelland/main.h	(working copy)
-@@ -66,6 +66,9 @@
- 				   * forw_packet->direct_link_flags */
- #define MAX_AGGREGATION_MS 100
- 
-+#define RESET_PROTECTION_MS 30000
-+/* don't reset again within 30 seconds */
-+
- #define MODULE_INACTIVE 0
+@@ -70,6 +70,8 @@
  #define MODULE_ACTIVE 1
  #define MODULE_DEACTIVATING 2
-
+ 
++#define BCAST_QUEUE_LEN		256
++#define BATMAN_QUEUE_LEN 	256
+ 
+ /*
+  * Debug Messages
+@@ -133,6 +135,8 @@
+ 
+ extern atomic_t originator_interval;
+ extern atomic_t vis_interval;
++extern atomic_t bcast_queue_left;
++extern atomic_t batman_queue_left;
+ extern int16_t num_hna;
+ extern int16_t num_ifs;
+ 
