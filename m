@@ -1,16 +1,9 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 26 Apr 2010 00:04:25 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20100425220425.GA6389@pandem0nium>
-References: <20100425165152.GA1577@pandem0nium>
-	<201004252248.20341.sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9amGYk9869ThD9tj"
-Content-Disposition: inline
-In-Reply-To: <201004252248.20341.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] 32bit sequence number and TTL
-	for	broadcasts
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon, 26 Apr 2010 01:24:13 +0200
+Message-Id: <1272237853-26242-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Update pointer to ethhdr after
+	skb_copy
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,78 +15,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+We must ensure that all pointer to a socket buffer are updated when we
+copy a socket buffer and free our reference to the old one.
+Another part of the kernel could also free its reference which maybe
+removes the buffer completely. In that situation we would would feed
+wrong information to the routing algorithm after the memory area is
+written again by someone else.
 
---9amGYk9869ThD9tj
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv-kernelland/routing.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-Hello Sven,
+diff --git a/batman-adv-kernelland/routing.c b/batman-adv-kernelland/routing.c
+index d717999..53749d3 100644
+--- a/batman-adv-kernelland/routing.c
++++ b/batman-adv-kernelland/routing.c
+@@ -747,6 +747,7 @@ int recv_bat_packet(struct sk_buff *skb,
+ 		skb = skb_copy(skb, GFP_ATOMIC);
+ 		if (!skb)
+ 			return NET_RX_DROP;
++		ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 		kfree_skb(skb_old);
+ 	}
+ 
+@@ -805,6 +806,7 @@ static int recv_my_icmp_packet(struct sk_buff *skb, size_t icmp_len)
+ 			if (!skb)
+ 				return NET_RX_DROP;
+ 			icmp_packet = (struct icmp_packet_rr *)skb->data;
++			ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 			kfree_skb(skb_old);
+ 		}
+ 
+@@ -865,6 +867,7 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb, size_t icmp_len)
+ 			if (!skb)
+ 				return NET_RX_DROP;
+ 			icmp_packet = (struct icmp_packet *) skb->data;
++			ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 			kfree_skb(skb_old);
+ 		}
+ 
+@@ -960,6 +963,7 @@ int recv_icmp_packet(struct sk_buff *skb)
+ 			if (!skb)
+ 				return NET_RX_DROP;
+ 			icmp_packet = (struct icmp_packet_rr *)skb->data;
++			ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 			kfree_skb(skb_old);
+ 		}
+ 
+@@ -1106,6 +1110,7 @@ int recv_unicast_packet(struct sk_buff *skb)
+ 		if (!skb)
+ 			return NET_RX_DROP;
+ 		unicast_packet = (struct unicast_packet *) skb->data;
++		ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 		kfree_skb(skb_old);
+ 	}
+ 
+-- 
+1.7.0.5
 
-thank you for your review. I've compiled and tested it in my openwrt qemu=
-=20
-build environment, which is built on linux 2.6.31.1.
-
-I have not checked it on any other platforms so far.
-
-best regards,
-	Simon
-
-On Sun, Apr 25, 2010 at 10:48:13PM +0200, Sven Eckelmann wrote:
-> First thing: it doesn't compile here :( (UML), but I am quite unsure if t=
-his=20
-> is a UML problem like many other things or a bigger problem.... it seems =
-that=20
-> it is uml specific as ATOMIC64_INIT and other thingss are defined, but th=
-e=20
-> implementation of specific functions are missing... but this is not the f=
-irst=20
-> time such thing happens with uml. Maybe someone with some time can check=
-=20
-> different openwrt builds.
->=20
-> For example other architecture seems to use the generic implementation of=
- it:
->  * arm
->  * parisc
->  * powerpc
->  * sh
->=20
-> UML in contrast uses a x86 specific header for it, but doesn't compile th=
-e=20
-> actual lib/atomic64_32.c file
->=20
-> I will check if this is maybe gone with a never version of linux (still=
-=20
-> running 2.6.32 in my uml), but the rest looks fine to me.
->=20
-> By the way, on which platforms have you checked it? I've just noticed ano=
-ther=20
-> problem with copied skbs which prevents the discovery of other nodes - no=
-t=20
-> specific to that commit. I haven't finished the debugging of that problem=
- and=20
-> will change the wireshark dissector before doing that.
->=20
-> Best regards,
-> 	Sven
-
-
-
---9amGYk9869ThD9tj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkvUvGkACgkQrzg/fFk7axbN1ACdGrg74Eo3hzMXgIxCVcOYRxfK
-zB8AoJLSt0GGW5yyECynqyYpvW99TTsv
-=qbks
------END PGP SIGNATURE-----
-
---9amGYk9869ThD9tj--
