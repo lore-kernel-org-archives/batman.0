@@ -1,12 +1,13 @@
-Return-Path: <adebex@gmail.com>
-From: Adrian Byszuk <adebex@gmail.com>
-Date: Sun, 25 Apr 2010 21:36:25 +0200
+Return-Path: <andrew@lunn.ch>
+Date: Sun, 25 Apr 2010 21:53:17 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100425195317.GA3734@lunn.ch>
+References: <201004252136.25395.adebex@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201004252136.25395.adebex@gmail.com>
-Subject: [B.A.T.M.A.N.] Security & node authentication in BATMAN network
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201004252136.25395.adebex@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Security & node authentication in BATMAN network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,32 +19,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "B.A.T.M.A.N. Mailing List" <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello,
+> 1. Does BATMAN provide any method of *authenticating* nodes?
 
-I'm currently working on project (part of my Bachelor work) which will use to 
-transfer very sensitive data over the network, and I'd like to use mesh 
-networks to transfer this data. Additionally, it should also be possible for 
-"normal people" to connect to this network (e.g. to surf internet). 
-Preliminary, I've chosen BATMAN to build this network. But I've got a few 
-questions regarding security of this solution:
+> As I've said earlier, sometimes transferred data will be highly
+> sensitive (for example: information of patients health in hospital),
+> so it's absolutely critical to not allow leaking this information.
 
-1. Does BATMAN provide any method of *authenticating* nodes?
-As I've said earlier, sometimes transferred data will be highly sensitive (for 
-example: information of patients health in hospital), so it's absolutely 
-critical to not allow leaking this information. I can imagine situation when 
-some fake nodes claim "Hey, I'm the server collecting this data"...
-I think this is also important when someone would try to destroy our mesh 
-network by placing some fake nodes in it.
-2. If point nr one isn't possible, maybe there is some other way to ensure 
-security? I don't know too much about security or cryptography, but I can 
-think of solutions such as openVPN or IPsec.
+For this sort of application you need end-to-end security. That is,
+your end devices authenticate each other, probably using
+certificates. They then negotiate a key and then encrypt all the
+traffic end-to-end. It does not matter if the data leaks, since its
+not practical for anybody to decode it. You then don't care about you
+mesh, its just an untrusted data pipe from A to B.
 
-Generally, the goal is to assert security of transmitting some data *without* 
-losing open characteristics of mesh network.
+You should probably get a good book on security and learn all about
+what Alice and Bob need to do.
 
-I will very thankful for any answers.
+The mesh itself is not important. You cannot trust it, hence its not
+important.
 
-Kind regards,
-Adrian
+      Andrew
