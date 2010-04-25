@@ -1,13 +1,15 @@
-Return-Path: <daniel.golle@gmail.com>
-References: <201004252136.25395.adebex@gmail.com>
-In-Reply-To: <201004252136.25395.adebex@gmail.com>
-Mime-Version: 1.0 (Apple Message framework v1078)
-Message-Id: <8B0EF841-727E-4805-BB43-D779DB6948F3@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-From: Daniel Golle <daniel.golle@gmail.com>
-Date: Sun, 25 Apr 2010 22:13:37 +0200
-Subject: Re: [B.A.T.M.A.N.] Security & node authentication in BATMAN network
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sun, 25 Apr 2010 22:48:13 +0200
+References: <20100425165152.GA1577@pandem0nium>
+In-Reply-To: <20100425165152.GA1577@pandem0nium>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4502828.oQz8DXYucs";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201004252248.20341.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] 32bit sequence number and TTL for
+	broadcasts
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,90 +21,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-hi adrian,
+--nextPart4502828.oQz8DXYucs
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
+=46irst thing: it doesn't compile here :( (UML), but I am quite unsure if t=
+his=20
+is a UML problem like many other things or a bigger problem.... it seems th=
+at=20
+it is uml specific as ATOMIC64_INIT and other thingss are defined, but the=
+=20
+implementation of specific functions are missing... but this is not the fir=
+st=20
+time such thing happens with uml. Maybe someone with some time can check=20
+different openwrt builds.
 
-there is no authentication, encryption whatsoever built in batman. u can =
-use various ways to secure the services you want to run over an insecure =
-channel like WiFi:
-1. the easiest way is to use a transport layer authentication and =
-encryption mechanism. to do this, u have to setup wpa_supplicant and set =
-a shared key (WPA-NONE method, see wpa_supplicant docs for details about =
-using WPA with Ad-Hoc networks). after setting up wpa_supplicant on all =
-nodes, all traffic gets encrypted using the previously setup shared key. =
-this method is neither elegant nor particularly flexible, and by far not =
-as secure as "traditional" WPA2-PSK, as rekeying cannot be carried out =
-(therefore WPA-NONE...)
-the future will hopefully bring WiFi Direct, a new WiFi standard to =
-secure Ad-Hoc networks using a one-button method (a la WPS)...
-2. use IP-Layer security mechanisms (IPSec)
-setup an IPSec stack in transport mode on all nodes. this method allows =
-using individual certificates for all clients (i.e. u gonna built an =
-PKI) and is way more flexible and by magnitudes more secure than using =
-just a single shared secret, even when things like proper WPA in Ad-Hoc =
-networks might come up in future.
-IPSec, however, is known to be horrible to setup and imho worth the =
-effort only if there a a few hundret to thousand participating nodes. =
-personally, i do have some basic experience with setting up IPSec on =
-openwrt and i can assist u if help is needed.
-3. (or 2a?) built a VPN running on top of the mesh
-while this might sound like an easy task on the first look -- OpenVPN =
-can be setup within minutes -- it might not be as simple... Most VPN =
-solutions known to me rely central infrastructure (i.e. one or more VPN =
-server reachable for the clients)
-4. secure your services, for example using using Kerberos
+=46or example other architecture seems to use the generic implementation of=
+ it:
+ * arm
+ * parisc
+ * powerpc
+ * sh
 
-if u'd ask me, the best is to use either Kerberos (if possible with the =
-services u plan to use) or IPSec transport authentication/encryption or =
-even both (they might share one central directory service feeding both, =
-Kerberos and IKE, but we won't get there too soon...)
+UML in contrast uses a x86 specific header for it, but doesn't compile the=
+=20
+actual lib/atomic64_32.c file
 
-good luck!
+I will check if this is maybe gone with a never version of linux (still=20
+running 2.6.32 in my uml), but the rest looks fine to me.
 
+By the way, on which platforms have you checked it? I've just noticed anoth=
+er=20
+problem with copied skbs which prevents the discovery of other nodes - not=
+=20
+specific to that commit. I haven't finished the debugging of that problem a=
+nd=20
+will change the wireshark dissector before doing that.
 
-regards
+Best regards,
+	Sven
 
-daniel
-On Apr 25, 2010, at 9:36 PM, Adrian Byszuk wrote:
+--nextPart4502828.oQz8DXYucs
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> Hello,
->=20
-> I'm currently working on project (part of my Bachelor work) which will =
-use to=20
-> transfer very sensitive data over the network, and I'd like to use =
-mesh=20
-> networks to transfer this data. Additionally, it should also be =
-possible for=20
-> "normal people" to connect to this network (e.g. to surf internet).=20
-> Preliminary, I've chosen BATMAN to build this network. But I've got a =
-few=20
-> questions regarding security of this solution:
->=20
-> 1. Does BATMAN provide any method of *authenticating* nodes?
-> As I've said earlier, sometimes transferred data will be highly =
-sensitive (for=20
-> example: information of patients health in hospital), so it's =
-absolutely=20
-> critical to not allow leaking this information. I can imagine =
-situation when=20
-> some fake nodes claim "Hey, I'm the server collecting this data"...
-> I think this is also important when someone would try to destroy our =
-mesh=20
-> network by placing some fake nodes in it.
-> 2. If point nr one isn't possible, maybe there is some other way to =
-ensure=20
-> security? I don't know too much about security or cryptography, but I =
-can=20
-> think of solutions such as openVPN or IPsec.
->=20
-> Generally, the goal is to assert security of transmitting some data =
-*without*=20
-> losing open characteristics of mesh network.
->=20
-> I will very thankful for any answers.
->=20
-> Kind regards,
-> Adrian
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iQIcBAABCgAGBQJL1KqNAAoJEF2HCgfBJntGeLcP/1HsrBUTAnVoxqnvxLspXWfx
+cfaWxIAt79GNhzYVop1zl0Dk0Cvpy2n4W0d6HU/WYsWzvrkVkpFiWYmieCetNMNU
+pKRQ9f0AAORi7n9AoOujqb/V9tIA6yYCRutU4RHoZZmb4T2UMiPI+GZuf6DUTv/q
+WOmkCi3Ccv2eSBLwkpEPFwhVDskn8+dS90dE1SiNh4XLLviEa4SA9GQNznfHScEM
+QcypWgETT30PysifmclMV1lZEFl5J81r/3uYoJ2K1RxyvPnzTCBw5SCTylLIFfzX
+1sJwwyYpdj7IN4DZMRrAUoM/zAQNX94cvMwKuWhbqE9Lm6hCbC+dzb3vabjkvhvM
+2OY63zhsQWWLW9ohFTOHDtIGC9TjcQBeHqJTWbfhsaKTCWwNXU0VEChiPW2sEN+a
+4Dto1xlFdoYwhOzSgEBBWZffNt4odgbr0YHw28sajcF5tM57qxEawLbFv9TOKMqh
+aGpXU3aFZ51g/M4kl9k5XcQb0JBBKLXLXcg820VAY1nKHAo+ynl6hY+JntgkFO+g
+u3c/0mfv5R41mxQeAuoKwFVwTwZBz/6Co0sqaILaVx7Jxc4JAGEBQ+XIKnHMOe7Q
+LRVQapO4Y3BNs6cRBqfzZKjuo0yo6lYwU9G9E+cSsaulJnfXdTf9GD0jCkIax509
+CcKx1IKl/okraM18PZwk
+=WWxb
+-----END PGP SIGNATURE-----
+
+--nextPart4502828.oQz8DXYucs--
