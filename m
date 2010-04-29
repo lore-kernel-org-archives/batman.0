@@ -1,12 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 29 Apr 2010 16:21:01 +0200
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3328355.SppiX5N4jC";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201004291621.08579.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] Checkpatch cleanups
+Date: Thu, 29 Apr 2010 16:22:23 +0200
+Message-Id: <1272550944-8522-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <201004291621.08579.sven.eckelmann@gmx.de>
+References: <201004291621.08579.sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH-maint 1/2] batman-adv: Fix whitespace
+	problems criticized by checkpatch.pl
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,58 +19,102 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3328355.SppiX5N4jC
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Trailing spaces at the end of a line or before a tab are against
+Documentation/CodingStyle "3.1: Spaces" and should be avoided. It is
+also common style to add a single space after commas unless it is
+followed either by a newline or a tab.
 
-Hi,
+Reported-by: Mikal Sande <mikal.sande@gmail.com>
+Reported-by: Luis de Bethencourt <luisbg@ubuntu.com>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ bitarray.c   |    2 +-
+ main.h       |    2 +-
+ originator.c |    4 ++--
+ types.h      |    4 ++--
+ vis.c        |    6 +++---
+ 5 files changed, 9 insertions(+), 9 deletions(-)
 
-last year in December we decided that it is not worth to strictly follow the
-80 chars per line rule in the linux coding style document. But after receiv=
-ing
-3 patches in the last month to fix such or similar problems (which could not
-be merged due to other changes already applied to both branches) I want to
-propose following patches which try to resolve these problems in files which
-get submitted to the mainline kernel.
+diff --git a/bitarray.c b/bitarray.c
+index 437cff8..2fef6e3 100644
+--- a/bitarray.c
++++ b/bitarray.c
+@@ -150,7 +150,7 @@ char bit_get_packet(TYPE_OF_WORD *seq_bits, int16_t seq_num_diff,
+ 
+ 	/* sequence number is much newer, probably missed a lot of packets */
+ 
+-	if ((seq_num_diff >= TQ_LOCAL_WINDOW_SIZE) 
++	if ((seq_num_diff >= TQ_LOCAL_WINDOW_SIZE)
+ 		|| (seq_num_diff < EXPECTED_SEQNO_RANGE)) {
+ 		bat_dbg(DBG_BATMAN,
+ 			"We missed a lot of packets (%i) !\n",
+diff --git a/main.h b/main.h
+index 2ce3b45..a2e819b 100644
+--- a/main.h
++++ b/main.h
+@@ -70,7 +70,7 @@
+ #define MODULE_DEACTIVATING 2
+ 
+ #define BCAST_QUEUE_LEN		256
+-#define BATMAN_QUEUE_LEN 	256
++#define BATMAN_QUEUE_LEN	256
+ 
+ /*
+  * Debug Messages
+diff --git a/originator.c b/originator.c
+index 9ccb486..3a9430c 100644
+--- a/originator.c
++++ b/originator.c
+@@ -298,7 +298,7 @@ ssize_t orig_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 
+ 	rcu_read_lock();
+ 	hdr_len = sprintf(buff,
+-		   "  %-14s (%s/%i) %17s [%10s]: %20s ... [B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)] \n",
++		   "  %-14s (%s/%i) %17s [%10s]: %20s ... [B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)]\n",
+ 		   "Originator", "#", TQ_MAX_VALUE, "Nexthop", "outgoingIF",
+ 		   "Potential nexthops", SOURCE_VERSION, REVISION_VERSION_STR,
+ 		   bat_priv->primary_if->dev, bat_priv->primary_if->addr_str,
+@@ -355,7 +355,7 @@ ssize_t orig_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 
+ 	if ((batman_count == 0) && (off == 0))
+ 		bytes_written += sprintf(buff + bytes_written,
+-					"No batman nodes in range ... \n");
++					"No batman nodes in range ...\n");
+ 
+ 	return bytes_written;
+ }
+diff --git a/types.h b/types.h
+index c926219..c0ede3c 100644
+--- a/types.h
++++ b/types.h
+@@ -59,8 +59,8 @@ struct orig_node {               /* structure for orig_list maintaining nodes of
+ 					    seqno window was reset. */
+ 	unsigned long batman_seqno_reset;/* time when the batman seqno
+ 					    window was reset. */
+-/*	uint8_t  gwflags;      * flags related to gateway functions: gateway class */
+-	uint8_t  flags;    		/* for now only VIS_SERVER flag. */
++/*	uint8_t  gwflags;		  * flags related to gateway functions: gateway class */
++	uint8_t  flags;			 /* for now only VIS_SERVER flag. */
+ 	unsigned char *hna_buff;
+ 	int16_t  hna_buff_len;
+ 	uint16_t last_real_seqno;   /* last and best known squence number */
+diff --git a/vis.c b/vis.c
+index 3144439..b9fa04c 100644
+--- a/vis.c
++++ b/vis.c
+@@ -40,9 +40,9 @@
+     * before adding more than 127 to the starting value - it is a predecessor,
+     * when adding 128 - it is neither a predecessor nor a successor,
+     * after adding more than 127 to the starting value - it is a successor */
+-#define seq_before(x,y) ({typeof(x) _dummy = (x - y); \
+-                         _dummy > smallest_signed_int(_dummy); })
+-#define seq_after(x,y) seq_before(y,x)
++#define seq_before(x, y) ({typeof(x) _dummy = (x - y); \
++			_dummy > smallest_signed_int(_dummy); })
++#define seq_after(x, y) seq_before(y, x)
+ 
+ struct hashtable_t *vis_hash;
+ DEFINE_SPINLOCK(vis_hash_lock);
+-- 
+1.7.1
 
-=46or trunk:
-[PATCH-trunk 1/2] batman-adv: Fix whitespace problems criticized by checkpa=
-tch.pl                                                                     =
-                                          =20
-[PATCH-trunk 2/2] batman-adv: Reduce max characters on a line to 80        =
-                                                                           =
-                                          =20
-
-=46or maint branch:
-[PATCH-maint 1/2] batman-adv: Fix whitespace problems criticized by checkpa=
-tch.pl                                                                     =
-                                          =20
-[PATCH-maint 2/2] batman-adv: Reduce max characters on a line to 80
-
-Best regards,
-	Sven
-
---nextPart3328355.SppiX5N4jC
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJL2ZXOAAoJEF2HCgfBJntG65gP/j2dRs9p2DzfrhQ+FaBbfoVt
-jeolEUNFGNry7m7aZtvNvez1qssIAHsHOpeYkztHzK8YY+AgjhPA/Y+emCitMGZS
-l728so2byMFS33A/nsMgzMH12DJ68LB3wYjgyfXeFHnEIZDgvpaDNZ6XlP+px4ea
-7/0xbs385rqUQJc1eV3YyEGSlCpQRzRdrnxahs297VWDJBAbDIypGo2r2NjZFgUT
-BiaaG4vmsUDmErURCfwbXGIUIwaYsViMyiHAxbYzNIxPIKDBHGIGhPAoSzy/NHIg
-Rhrt5TsiR9DvXugX69gBI9XksVwOTMOEfDz6MlC+VNHG/kpcmB38oK4VgoFSVecH
-QJ3cs9bdmJgMa6PUWV1coz4iHSkcf9Yunnq3YJarkVZpcgL35JYe0PpmYaLrXI1Z
-L3J/S2rK5dhqKRsRaOE3O3eA597PMckGr/4JEzqwQevgnpZ1N9+umMG03M9SlSQO
-dGm4rTIhrFEXjajED1O/POkNbzZFEZLIhXxStm0NwDSZ3XwM+NC0bMSF99y3Qy9m
-mlIgpscAtD7T+vBv4gZxMBmuIcVotYQwzHzjFiMZVWMjj4NITuwanbCvBuA0fkQY
-zv2EfeYt8Pt6oOXh+bVJkuSzs027Cm3/tKA7sGoEb7UG+tbA5K+CPOLj3ydV076H
-jh1r72dNnBN+JjlGoXry
-=fAxa
------END PGP SIGNATURE-----
-
---nextPart3328355.SppiX5N4jC--
