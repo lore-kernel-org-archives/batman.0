@@ -1,13 +1,13 @@
-Return-Path: <andrew@lunn.ch>
-Date: Fri, 30 Apr 2010 07:03:44 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100430050344.GG3734@lunn.ch>
+Return-Path: <greg@kroah.com>
+Date: Fri, 30 Apr 2010 07:45:26 -0700
+From: Greg KH <greg@kroah.com>
+Message-ID: <20100430144526.GI1824@kroah.com>
 References: <1269294375-11043-1-git-send-email-andrew@lunn.ch>
-	<20100429193015.GA18882@kroah.com>
+	<20100429193015.GA18882@kroah.com> <20100430050344.GG3734@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100429193015.GA18882@kroah.com>
+In-Reply-To: <20100430050344.GG3734@lunn.ch>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 0/3] Staging: Batman-adv: Bug fixes for
 	2.6.34-rc2.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,28 +21,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Greg KH <greg@kroah.com>
+To: Andrew Lunn <andrew@lunn.ch>
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-On Thu, Apr 29, 2010 at 12:30:15PM -0700, Greg KH wrote:
-> On Mon, Mar 22, 2010 at 10:46:12PM +0100, Andrew Lunn wrote:
-> > Hi Greg
+On Fri, Apr 30, 2010 at 07:03:44AM +0200, Andrew Lunn wrote:
+> On Thu, Apr 29, 2010 at 12:30:15PM -0700, Greg KH wrote:
+> > On Mon, Mar 22, 2010 at 10:46:12PM +0100, Andrew Lunn wrote:
+> > > Hi Greg
+> > > 
+> > > Here are three patches against 2.6.34-rc2 which we would like including 
+> > > into the next -rc kernel. All three are bug fixes, with the first being a
+> > > regression relative to 2.6.33 and the second two being older bugs, prescent 
+> > > in 2.6.33.
 > > 
-> > Here are three patches against 2.6.34-rc2 which we would like including 
-> > into the next -rc kernel. All three are bug fixes, with the first being a
-> > regression relative to 2.6.33 and the second two being older bugs, prescent 
-> > in 2.6.33.
+> > In looking at these more, they are a bit too big to take now for 2.6.34.
+> > The first one is a regression, which is fine, but you also fixed up code
+> > at the same time, which I can't take this late in the merge cycle.
+> > 
+> > So, mind if I just push these for .35, and then add them to .34 through
+> > the -stable tree for .34 when that opens up?
 > 
-> In looking at these more, they are a bit too big to take now for 2.6.34.
-> The first one is a regression, which is fine, but you also fixed up code
-> at the same time, which I can't take this late in the merge cycle.
+> That is O.K.
 > 
-> So, mind if I just push these for .35, and then add them to .34 through
-> the -stable tree for .34 when that opens up?
+> Do i need to repost them to stable@kernel.org?
 
-That is O.K.
+No, I'll handle that.
 
-Do i need to repost them to stable@kernel.org?
+thanks,
 
-   Thanks
-	Andrew
+greg k-h
