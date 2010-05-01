@@ -1,16 +1,16 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 1 May 2010 15:28:30 +0200
+Date: Sat, 1 May 2010 15:33:39 +0200
 References: <1272719410-406-1-git-send-email-andrew@lunn.ch>
-	<1272719410-406-5-git-send-email-andrew@lunn.ch>
-In-Reply-To: <1272719410-406-5-git-send-email-andrew@lunn.ch>
+	<1272719410-406-4-git-send-email-andrew@lunn.ch>
+In-Reply-To: <1272719410-406-4-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1856934.FYrazMZk8O";
+Content-Type: multipart/signed; boundary="nextPart4040009.B7kLr0Ti5o";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201005011528.33100.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: include cleanup: Update
-	gfp.h and slab.h includes to prepare for breaking implicit...
+Message-Id: <201005011533.41592.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: whitespace fixes from
+	mainline.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,59 +25,62 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: lindner_marek@yahoo.de, b.a.t.m.a.n@lists.open-mesh.net
 
---nextPart1856934.FYrazMZk8O
+--nextPart4040009.B7kLr0Ti5o
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
 Andrew Lunn wrote:
-> diff --git a/device.c b/device.c
-> index 5f7655b..b2ecba2 100644
-> --- a/device.c
-> +++ b/device.c
-> @@ -20,6 +20,7 @@
->   */
+> The mainline driver has some whitespace patches which are not in
+> maint. This patch brings imports them.
 >=20
->  #include <linux/device.h>
-> +#include <linux/slab.h>
->  #include "main.h"
->  #include "device.h"
->  #include "send.h"
-> @@ -27,8 +28,6 @@
->  #include "hash.h"
->  #include "hard-interface.h"
->=20
-> -#include "compat.h"
-> -
->  static struct class *batman_class;
->=20
->  static int Major;	/* Major number assigned to our device driver */
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 
-Can you explain why it is here ok to remove compat.h in maint?
+Please be aware that this one conflicts heavily with=20
+ * [PATCH-maint 1/2] batman-adv: Fix whitespace problems criticized by chec=
+kpatch.pl
+ * [PATCH-maint 2/2v2] batman-adv: Reduce max characters on a line to 80
+
+Only following part seems to be new:
+
+> diff --git a/send.c b/send.c
+> index caec6ef..8413ddc 100644
+> --- a/send.c
+> +++ b/send.c
+> @@ -128,7 +128,8 @@ static void send_packet_to_if(struct forw_packet
+> *forw_packet, if (batman_if->if_status !=3D IF_ACTIVE)
+>  		return;
+>=20
+> -	packet_num =3D buff_pos =3D 0;
+> +	packet_num =3D 0;
+> +	buff_pos =3D 0;
+>  	batman_packet =3D (struct batman_packet *)
+>  		(forw_packet->packet_buff);
+>=20
 
 Best regards,
 	Sven
 
---nextPart1856934.FYrazMZk8O
+--nextPart4040009.B7kLr0Ti5o
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJL3Cx/AAoJEF2HCgfBJntGWgYP/R7YOFNe1n3Vl7Ll94Tae+1W
-nACEPxZhArx8WQ8NXRzSkrh4igHaoMEOHJDywOFW3wX6l1fGXU1WiervuG1ZGxiH
-CoH5kHcM5QHXyO7pwt1k7TIRNAg/Ce9LktODjJFugzvkL4ekdYp7abeFSPGLX6o5
-ZgTtYxhKOHbuXWsxtw3kymOhZsk7ywFEmhlPunRB4KGx8PAiW68GnSrPWpyGf8kP
-aYYPj24F3k7wJWV2Ugw/v8wh0YcikDclAio6HfvQawGkV/JXbW7+ZS67a/agVLvL
-pDWqVTRB3z64m62EnXRCrgTyPsYOwfwsNNpl5JmOyGrdAQqkZJ6/I2CMZVpWqrDQ
-JxeQiIpFzG/ZvXgZwc8FodMmeXdlIY34YP0xVPjPHttNpUaVWPl7QWAQ68R2DGTR
-RCGh0RDTILNqSQK/+WL6nyRvNO1Gu9NvMqQhn8+n5sUI0DalTEgGRLIVKucGiMGI
-J+T/VHyOWkPbVR2cVujwZNAoAi6AhysNV51ThRRFH/+OOV6celYlUCdbjPr9c+Rj
-BinPpsZeRRYHknEJXtGGl3hBS86Kiz9ApyFyT0hbTEn8yUPmrNhL3rJswF+Fo5+5
-t77JQNgYjhtAz2dlUdS4WgmRnyLfUsx8up0r8pVZk/5AKrZCzjNdoQ+I/2XOvQW3
-Ir+K6gofgUztISRx8vLu
-=grwf
+iQIcBAABCgAGBQJL3C20AAoJEF2HCgfBJntGNWIQALIOGNV4cnZopwd41gQzKC2i
+xa4xjXWNnpYTjImUQLDQ1tBYyX8saUVcUVk5TOvgxwVSup3g82+0Xcejam+Y6Bq/
+mOphIGYnFkwk3/164a5xQeAVohDzDM7AiuxWxz2DixDFRPqwN7aoV8nR9APmfWXs
+M2JEIFLakI80KCSJ/GFwx3foKpvH34CbFjXO1qnAkSGmZGQFDTd8c8gJ1HriwdIw
+kITmBk8kHok5MbIsX5li2oUma0RBv+P2b8hqocxhxvF4hAp8c0VFMvVBPfhbzBqD
+dhU4Tb/lMj8VIeH0+Q8zL0LnUKmt39cK2tiply+akSX/+qAMXP1m5ztLfYA7nDCH
+g8ktYC6ZXm2oh8Im4CMjL3qXCPbQ84YOlm9NDyAaHzhXdnigUO2PXAMhLFw9BJoK
+A4bHiblaRxOytNIk51PTgzZux3dahdmCcxLzp5LcG5QvKYVlknWe7q9gFALMhPNG
+jt5rGKmI6s0riQcCZSyTN3T0f46cYaYYcFzr5OHM0hiuMxYDKc3mlNNalaEDJ/hd
+bfwFueOPesp3TkaF9xXvZ0uuqsJNX5Tb4FLNjzJ5m3s8DF8R5eDexqEJegnBHV5I
+mAy0KKznr3ENAnUtVgDDmtQQ2ImKnHWvwc0MjOiBGpvKw1MwSSdaRjMrp6bveXK8
+zp1Cy0eldU/BoqQRjo6R
+=aOLr
 -----END PGP SIGNATURE-----
 
---nextPart1856934.FYrazMZk8O--
+--nextPart4040009.B7kLr0Ti5o--
