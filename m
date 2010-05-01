@@ -1,12 +1,12 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Sat,  1 May 2010 15:10:07 +0200
-Message-Id: <1272719410-406-2-git-send-email-andrew@lunn.ch>
+Date: Sat,  1 May 2010 15:10:09 +0200
+Message-Id: <1272719410-406-4-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1272719410-406-1-git-send-email-andrew@lunn.ch>
 References: <1272719410-406-1-git-send-email-andrew@lunn.ch>
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: Update README to match
-	mainline README.
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: whitespace fixes from
+	mainline.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,73 +21,91 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: lindner_marek@yahoo.de
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
+The mainline driver has some whitespace patches which are not in
+maint. This patch brings imports them.
+
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- README |   35 +++++++++--------------------------
- 1 files changed, 9 insertions(+), 26 deletions(-)
+ bitarray.c |    2 +-
+ main.h     |    4 ++--
+ routing.c  |    3 ++-
+ send.c     |    3 ++-
+ vis.c      |    6 +++---
+ 5 files changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/README b/README
-index 4c2a6c6..e2a7271 100644
---- a/README
-+++ b/README
-@@ -15,19 +15,6 @@ above B.A.T.M.A.N. Advanced, prominent examples are: IPv4, IPv6, DHCP, IPX.
- This is batman-advanced implemented as Linux kernel driver. It does not depend
- on any network (other) driver, and can be used on wifi as well as ethernet,
- vpn, etc ... (anything with ethernet-style layer 2).
--It compiles against and should work with Linux 2.6.20 - 2.6.33. Supporting older
--versions is not planned, but it's probably easy to backport it. If you work on a
--backport, feel free to contact us.  :-)
--
--COMPILE
---------
--To compile against your currently installed kernel, just type:
--
--# make
--
--if you want to compile against some other kernel, use:
--
--# make KERNELPATH=/path/to/kernel
+diff --git a/bitarray.c b/bitarray.c
+index 437cff8..2fef6e3 100644
+--- a/bitarray.c
++++ b/bitarray.c
+@@ -150,7 +150,7 @@ char bit_get_packet(TYPE_OF_WORD *seq_bits, int16_t seq_num_diff,
  
- USAGE
- -----
-@@ -123,15 +110,11 @@ dmesg | grep batman-adv
+ 	/* sequence number is much newer, probably missed a lot of packets */
  
- When investigating problems with your mesh network it is sometimes
- necessary to see more detail debug messages. This must be enabled when
--compiling the batman-adv module. When building batman-adv as part of
--kernel, use "make menuconfig" and enable the option
--"B.A.T.M.A.N. debugging". When compiling outside of the kernel tree it
--is necessary to edit the file Makefile.kbuild and uncomment the line
--
--#EXTRA_CFLAGS += -DCONFIG_BATMAN_ADV_DEBUG
-+compiling the batman-adv module. Use "make menuconfig" and enable the
-+option "B.A.T.M.A.N. debugging".
+-	if ((seq_num_diff >= TQ_LOCAL_WINDOW_SIZE) 
++	if ((seq_num_diff >= TQ_LOCAL_WINDOW_SIZE)
+ 		|| (seq_num_diff < EXPECTED_SEQNO_RANGE)) {
+ 		bat_dbg(DBG_BATMAN,
+ 			"We missed a lot of packets (%i) !\n",
+diff --git a/main.h b/main.h
+index 2ce3b45..55e2214 100644
+--- a/main.h
++++ b/main.h
+@@ -69,8 +69,8 @@
+ #define MODULE_ACTIVE 1
+ #define MODULE_DEACTIVATING 2
  
- The additional debug output is by default disabled. It can be enabled
--either at kernel modules load time or during run time. To enable debug
-+either at kernel module load time or during run time. To enable debug
- output at module load time, add the module parameter debug=<value>.
- <value> can take one of four values.
+-#define BCAST_QUEUE_LEN		256
+-#define BATMAN_QUEUE_LEN 	256
++#define BCAST_QUEUE_LEN 256
++#define BATMAN_QUEUE_LE	256
  
-@@ -160,12 +143,12 @@ to see the debug messages.
- BATCTL
- ------
+ /*
+  * Debug Messages
+diff --git a/routing.c b/routing.c
+index 0ab8f89..cd2b4d6 100644
+--- a/routing.c
++++ b/routing.c
+@@ -875,7 +875,8 @@ int recv_unicast_packet(struct sk_buff *skb)
  
--B.A.T.M.A.N.  advanced  operates on layer 2 and thus all hosts partici-
--pating in the virtual switch are completely transparent for all  proto-
--cols above layer 2. Therefore the common diagnosis tools do not work as
--expected. To overcome these problems batctl was created. At the  moment
--the  batctl contains ping, traceroute, tcpdump and interfaces to the
--kernel module settings.
-+B.A.T.M.A.N.  advanced operates on layer 2 and thus all hosts
-+participating in the virtual switch are completely transparent for all
-+protocols above layer 2. Therefore the common diagnosis tools do not
-+work as expected. To overcome these problems batctl was created. At
-+the moment the batctl contains ping, traceroute, tcpdump and
-+interfaces to the kernel module settings.
+ 	/* TTL exceeded */
+ 	if (unicast_packet->ttl < 2) {
+-		printk(KERN_WARNING "batman-adv:Warning - can't forward unicast packet from %pM to %pM: ttl exceeded\n", ethhdr->h_source, unicast_packet->dest);
++		printk(KERN_WARNING "batman-adv:Warning - can't forward unicast packet from %pM to %pM: ttl exceeded\n",
++		       ethhdr->h_source, unicast_packet->dest);
+ 		return NET_RX_DROP;
+ 	}
  
- For more information, please see the manpage (man batctl).
+diff --git a/send.c b/send.c
+index caec6ef..8413ddc 100644
+--- a/send.c
++++ b/send.c
+@@ -128,7 +128,8 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
+ 	if (batman_if->if_status != IF_ACTIVE)
+ 		return;
  
+-	packet_num = buff_pos = 0;
++	packet_num = 0;
++	buff_pos = 0;
+ 	batman_packet = (struct batman_packet *)
+ 		(forw_packet->packet_buff);
+ 
+diff --git a/vis.c b/vis.c
+index bac1401..ff511ca 100644
+--- a/vis.c
++++ b/vis.c
+@@ -40,9 +40,9 @@
+     * before adding more than 127 to the starting value - it is a predecessor,
+     * when adding 128 - it is neither a predecessor nor a successor,
+     * after adding more than 127 to the starting value - it is a successor */
+-#define seq_before(x,y) ({typeof(x) _dummy = (x - y); \
+-                         _dummy > smallest_signed_int(_dummy); })
+-#define seq_after(x,y) seq_before(y,x)
++#define seq_before(x, y) ({typeof(x) _dummy = (x - y); \
++			  _dummy > smallest_signed_int(_dummy); })
++#define seq_after(x, y) seq_before(y, x)
+ 
+ struct hashtable_t *vis_hash;
+ DEFINE_SPINLOCK(vis_hash_lock);
 -- 
 1.7.1
 
