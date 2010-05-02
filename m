@@ -1,12 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 3 May 2010 00:12:09 +0200
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5650455.0rTKAUXlgh";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201005030012.18621.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] Merging of changes only in maint back to trunk
+Date: Mon,  3 May 2010 00:14:16 +0200
+Message-Id: <1272838458-13899-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <201005030012.18621.sven.eckelmann@gmx.de>
+References: <201005030012.18621.sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Merge CHANGELOG with 0.2.1
+	release
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,62 +18,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
---nextPart5650455.0rTKAUXlgh
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv-kernelland/CHANGELOG |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-I worked today on a small project [1] to recreated all current features for=
-=20
-0.3 on top of the current changeset in maint. This would be handy when Andr=
-ew=20
-Lunn will send them to the kernel folks.
+diff --git a/batman-adv-kernelland/CHANGELOG b/batman-adv-kernelland/CHANGELOG
+index 8a18163..c8f9d9e 100644
+--- a/batman-adv-kernelland/CHANGELOG
++++ b/batman-adv-kernelland/CHANGELOG
+@@ -1,3 +1,17 @@
++batman-adv 0.2.1:
++
++* support latest kernels (2.6.20 - 2.6.33)
++* receive packets directly using skbs, remove old sockets and threads
++* fix various regressions in the vis server
++* don't disable interrupts while sending
++* replace internal logging mechanism with standard kernel logging
++* move vis formats into userland, one general format remains in the kernel
++* allow MAC address to be set, correctly initialize them
++* code refactoring and cleaning for coding style
++* many bugs (null pointers, locking, hash iterators) squashed
++
++ -- Sun, 21 Mar 2010 20:46:47 +0100
++
+ batman-adv 0.2:
+ 
+ * support latest kernels (2.6.20 - 2.6.31)
+-- 
+1.7.1
 
-I discovered several small differences between maint and master which resul=
-ts=20
-in slightly different content in the rebase branch. This comes from the=20
-missing merged README and CHANGELOG and some inconsistent changes in my "80=
-=20
-chars per line" patch. I would like to encourage to merge that changes even=
- if=20
-the README has currently some outdated information.
-
-I would also want to ask Daniel Seither, Simon Wunderlich and Marek Lindner=
- to=20
-check if I accidentally changed their patches in a way they don't want to=20
-support. I know that the commit messages aren't up to date, but would like =
-to=20
-receive any kind of corrections for them.
-
-Best regards,
-	Sven
-
-[1] http://git.open-mesh.net/?p=3Decsv/master-rebase.git;a=3Dsummary
-
---nextPart5650455.0rTKAUXlgh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJL3fi6AAoJEF2HCgfBJntGRWMP/1Qldl5ap9VWh+WHmSyh5wg2
-k4f1iTThCzRRYVkUpAZJGR8s1TY9EG7WVVb90cygDqenkihLLTCb5xWqt3X4v+7e
-x0QmFUJgbOGIvU3SqgUo1EvteP0Hh2Uc4wHCaKYWRk8P0vRJE/A2wcX2B4HkjS+/
-x3Gj3LPcSEjnum+w3TnPsyRBUulYPGm0viAH1NTAQE7IAIklyNd2+COE9eFhMdYl
-ogKxGpnxUzk4K5lRrJ3vGOwY9i+g4Y4ovVdXo4CZNOOZK2BEEtZoE66kdDp4UBse
-6EoiBt6ha+m9bW/WoDPfhBwRHZ3QqTG8J18zZnKcKoSwzpNLAukxKb1JQYH5tjXD
-vsv2NumHHiDFAWXJTO2kU5OqMC9HFWTMXA/jcvZRfJfjq/BGI8duJu1/cP3kiVmu
-Yv+Ozz7f6m7TgqP5a13MS7rJeLtI+7ehna/TuBtb+7D4W+L9EvTudT5HHbiN/10E
-9/qOJiJMLc0V3Bf0jGFCSHof4wekygp6GUQVfu5mQRIVV9LzTxxeZFS9DWBgUKVE
-0PpNPfrTL7/+YGxslz8MxjBmTUNamAzsH39tNxeS1hECJafEt1Qt8Nzjlj0gyZyN
-P6YklZN0Y5fLE6N9xNsFg5djdtGOEGAZPyGfGQ4qYZdNbSX7Tb0+I3Dozt9LYqnl
-wbGdodphJIHa7vWA1rmU
-=rOPi
------END PGP SIGNATURE-----
-
---nextPart5650455.0rTKAUXlgh--
