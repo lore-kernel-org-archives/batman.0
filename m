@@ -1,14 +1,13 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 3 May 2010 09:43:09 +0200
-References: <201005030933.39124.lindner_marek@yahoo.de>
-In-Reply-To: <201005030933.39124.lindner_marek@yahoo.de>
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 3 May 2010 10:03:01 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100503080301.GE10849@lunn.ch>
+References: <201005030828.08856.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2516933.M6cZ5IFvNE";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201005030943.10642.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] updated README
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201005030828.08856.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] sysfs compat
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,55 +19,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2516933.M6cZ5IFvNE
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> At some point we have to start thinking about how many versions we
+> want to support. Each new kernel brings more changes which need to
+> be dealt with.  Right now, the required effort is still at a
+> sustainable level but the gap is growing. On one hand it is a nice
+> playground to expand our knowledge about macros and demonstrate what
+> nasty things you can do (see the second patch as an example).  ;-)
+> On the other hand it always requires a serious amount of time and
+> effort. It only makes sense if at least some people are using
+> it. Opinions ?
 
-Marek Lindner wrote:
-> Hey,
->=20
-> Andrew pointed out that our README would need a little bit of love. I spe=
-nt
-> some time to get the text into a decent shape. I attached the full file f=
-or
-> a review. Let me know if you find anything.  :)
+I guess the problem here is devices which cannot use modern kernels.
 
-Sounds good, but noticed some small typos:
+Why can a device not use a modern kernel?
 
- * exmaple -> example
- * seperated -> separated
- * preceeding -> preceding
+1) Binary only drivers which work only for a specific kernel. I guess
+   the biggest problem here is broadcom devices? What is the current
+   state here? How good is the native linux broadcom driver? Are there
+   other chipsets without an open driver?
 
-And maybe you should increase "Linux 2.6.20" to "Linux 2.6.21" with your=20
-newest backporting efforts.
+2) The need to use a vendor kernel since the mainline kernel does not
+   have the necessary support. How big a problem is this?
 
-Best regards,
-	Sven
+What other reasons are there not to use a modern kernel?
 
---nextPart2516933.M6cZ5IFvNE
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJL3n6NAAoJEF2HCgfBJntG94EP/R3J4B/uBKQuCo3hLLJWUs5a
-xDf2sshshBlGZCMHf6vikF0kg+55x/do9av5+8l8Y2GMF+zNdHxgqG/lnBH5pNQ/
-JCxJP5/EXxxsv3IZa8/8Plz/XzHWfktZVdLXyPq3C8xR0sfELU0lLKKPQmSY5jRE
-J8EniiqzhHDqY4sWbI5POLe46Gn7ZQiRgZoUUsEPnkwaodu6xp9v/TFKSh+vUnYz
-VMLaC3yGXJ9TgtniAmYkc6I1zpvLeBfuIdI1+yPD1ouNjeV75pADQt4S1/kLWJsX
-T0dL4UDYN5JnjsEGABnaNITxzAE2vCpSljRJpGnHH+fgs70fjIcbiicG3k8Sr8uK
-0yqWMimRlIPxqrXDzlRWbkNNVe0fq9IudQs0N6YSKZrbljHyfbXMhfotzkK7kSsh
-gsi8DHDJtRf7/RsGPVr9T+r8rCCMVYck2kqHCfxosRWfURWHVZPfsDMwvJPC33FS
-ZEj8p28wf4VM2t0LxMcFVECAPGrXp+ilibb/TZzCIF3mQQReevW8HkjDb/ggrFJY
-rzIxa+DPAf31+YuLj3hd1dJGZ6Jtz+nSyH1gpeiBojDtQPUGQS/1mPxht5Ys/0hJ
-omIkLwwGTkDgPjfzKz7S6F2i8558PaXFm2lmnwHMQbjTmTICWpDSP15U2Acs2R25
-INc98qwJN3xuYEZGq6Yp
-=6PU5
------END PGP SIGNATURE-----
-
---nextPart2516933.M6cZ5IFvNE--
+   Andrew
+    
