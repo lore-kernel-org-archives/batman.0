@@ -1,12 +1,10 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 3 May 2010 08:28:08 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201005030828.08856.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] sysfs compat
+Date: Mon,  3 May 2010 08:28:37 +0800
+Message-Id: <1272846518-2589-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <201005030828.08856.lindner_marek@yahoo.de>
+References: <201005030828.08856.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: adding MAC_FMT compatibility
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,25 +16,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.net
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
+Kernel older than 2.6.24 do not have the MAC_FMT definition,
+therefore we need to add it to our compat layer.
 
-Hi,
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ batman-adv-kernelland/compat.h |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-the current trunk contains some code which breaks our backward compatibility, 
-especially the sysfs API seem to be troublesome. I made 2 patches that address 
-the issue on my 2.6.21 test system. It would be nice if you could test them on 
-your system as well. I'd be particularly interested in kernels older than 
-2.6.25. Does someone have a 2.6.20 system ?
+diff --git a/batman-adv-kernelland/compat.h b/batman-adv-kernelland/compat.h
+index 2e3aded..4eaa128 100644
+--- a/batman-adv-kernelland/compat.h
++++ b/batman-adv-kernelland/compat.h
+@@ -62,6 +62,12 @@ static inline int skb_clone_writable(struct sk_buff *skb, unsigned int len)
+ 
+ #endif /* < KERNEL_VERSION(2, 6, 23) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 24)
++
++#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
++
++#endif /* < KERNEL_VERSION(2, 6, 24) */
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
+ 
+ #define strict_strtoul(cp, base, res) \
+-- 
+1.7.0
 
-At some point we have to start thinking about how many versions we want to 
-support. Each new kernel brings more changes which need to be dealt with. 
-Right now, the required effort is still at a sustainable level but the gap is 
-growing. On one hand it is a nice playground to expand our knowledge about 
-macros and demonstrate what nasty things you can do (see the second patch as 
-an example).  ;-)
-On the other hand it always requires a serious amount of time and effort. It 
-only makes sense if at least some people are using it. Opinions ?
-
-Regards,
-Marek
