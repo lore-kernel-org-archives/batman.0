@@ -1,11 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 3 May 2010 09:33:38 +0800
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon, 3 May 2010 09:43:09 +0200
+References: <201005030933.39124.lindner_marek@yahoo.de>
+In-Reply-To: <201005030933.39124.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_zfi3LEfUEeSib8v"
-Message-Id: <201005030933.39124.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] updated README
+Content-Type: multipart/signed; boundary="nextPart2516933.M6cZ5IFvNE";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201005030943.10642.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] updated README
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,265 +21,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
---Boundary-00=_zfi3LEfUEeSib8v
-Content-Type: text/plain;
+--nextPart2516933.M6cZ5IFvNE
+Content-Type: Text/Plain;
   charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-
-Hey,
-
-Andrew pointed out that our README would need a little bit of love. I spent 
-some time to get the text into a decent shape. I attached the full file for a 
-review. Let me know if you find anything.  :)
-
-Cheers,
-Marek
-
---Boundary-00=_zfi3LEfUEeSib8v
-Content-Type: text/x-readme;
-  charset="UTF-8";
-  name="README"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="README"
-
-[state: 03-05-2010]
-
-BATMAN-ADV
-----------
-
-Batman advanced is a new approach to wireless networking which does no longer
-operate on the IP basis. Unlike the batman daemon, which exchanges
-information using UDP packets and sets routing tables, batman-advanced operates
-on ISO/OSI Layer 2 only and uses and routes (or better: bridges) Ethernet
-Frames. It emulates a virtual network switch of all nodes participating.
-Therefore all nodes appear to be link local, thus all higher operating
-protocols won't be affected by any changes within the network. You can run
-almost any protocol above batman advanced, prominent examples are: IPv4, IPv6,
-DHCP, IPX.
-
-Batman advanced was implemented as a Linux kernel driver to reduce the overhead
-to a minimum. It does not depend on any (other) network driver, and can be used
-on wifi as well as ethernet lan, vpn, etc ... (anything with ethernet-style
-layer 2). It compiles against and should work with Linux 2.6.20 - 2.6.33.
-Supporting older versions is not planned, but it's probably easy to backport it.
-If you work on a backport, feel free to contact us.  :-)
-
-
-COMPILE
--------
-To compile against your currently installed kernel, just type:
-
-# make
-
-if you want to compile against some other kernel, use:
-
-# make KERNELPATH=/path/to/kernel
-
-
-CONFIGURATION
--------------
-
-Load the batman-adv module into your kernel:
-
-# insmod batman-adv.ko
-
-The module is now waiting for activation. You must add some interfaces on which
-batman can operate. After loading the module batman advanced will scan your
-systems interfaces to search for compatible interfaces. Once found, it will
-create subfolders in the /sys directories of each supported interface, e.g.
-
-# ls /sys/class/net/eth0/batman_adv/
-
-If an interface does not have the "batman_adv" subfolder it probably is not
-supported. Not supported interfaces are: loopback, non-ethernet and batman's
-own interfaces.
-
-Note: After the module was loaded it will continuously watch for new interfaces
-to verify the compatibility. There is no need to reload the module if you plug
-your USB wifi adapter into your machine after batman advanced was initially
-loaded.
-
-To activate a given interface simply write "bat0" into its "mesh_iface" file
-inside the batman_adv subfolder:
-
-# echo bat0 > /sys/class/net/eth0/batman_adv/mesh_iface
-
-Repeat this step for all interfaces you wish to add.
-Now batman starts using/broadcasting on this/these interface(s).
-
-By reading the "iface_status" file you can check its status:
-
-# cat /sys/class/net/eth0/batman_adv/iface_status
-
-To deactivate an interface you have to write "none" into its "mesh_iface" file:
-
-# echo none > /sys/class/net/eth0/batman_adv/mesh_iface
-
-
-All mesh wide settings can be found in batman's own interface folder:
-
-# ls /sys/class/net/bat0/mesh/
-
-Some of the files contain all sort of status information regarding the mesh
-network. For exmaple, you can view the table of originators (mesh participants)
-with:
-
-# cat /sys/class/net/bat0/mesh/originators
-
-Other files allow to change batman's behaviour to better fit your requirements.
-For instance, you can check the current originator interval (value in
-milliseconds which determines how often batman sends its broadcast packets):
-
-# cat /sys/class/net/bat0/mesh/orig_interval
-
-and also change its value:
-
-# echo 3000 > /sys/class/net/bat0/mesh/orig_interval
-
-In very mobile scenarios, you might want to adjust the originator interval to a
-lower value. This will make the mesh more responsive to topology changes, but
-will also increase the overhead.
-
-
-USAGE
------
-
-To make use of your newly created mesh, batman advanced provides a new
-interface "bat0" which you should use from this point on. All interfaces added
-to batman advanced are not relevant any longer because batman handles them for
-you. Basically, one "hands over" the data by using the batman interface and
-batman will make sure it reaches its destination.
-
-The "bat0" interface can be used like any other regular interface. It needs an
-IP address which can be either statically configured or dynamically (by using
-DHCP or similar services):
-
-# NodeA: ifconfig bat0 192.168.0.1 up
-# NodeB: ifconfig bat0 192.168.0.2 up
-# NodeB: ping 192.168.0.1
-
-Note: In order to avoid problems remove all IP addresses previously assigned to
-interfaces now used by batman advanced, e.g.
-
-# ifconfig eth0 0.0.0.0
-
-
-VISUALIZATION
--------------
-
-If you want topology visualization, at least one mesh node must be configured
-as VIS-server:
-
-# echo "server" > /sys/class/net/bat0/mesh/vis_mode
-
-Each node is either configured as "server" or as "client" (default: "client").
-Clients send their topology data to the server next to them, and server
-synchronize with other servers. If there is no server configured (default)
-within the mesh, no topology information will be transmitted. With these
-"synchronizing servers", there can be 1 or more vis servers sharing the same
-(or at least very similar) data.
-
-When configured as server, you can get a topology snapshot of your mesh:
-
-# cat /sys/class/net/bat0/mesh/vis_data
-
-This raw output is intended to be easily parsable and convertable with other
-tools. Have a look at the batctl README if you want a vis output in dot or json
-format for instance and how those outputs could then be visualised in an image.
-
-The raw format consists of comma seperated values per entry where each entry is
-giving information about a certain source interface. Each entry can/has to have
-the following values:
--> "mac" -> mac address of an originator's source interface
-           (each line begins with it)
--> "TQ mac value" -> src mac's link quality towards mac address of a neighbor
-                     originator's interface which is being used for routing
--> "HNA mac" -> HNA announced by source mac
--> "PRIMARY" -> this is a primary interface
--> "SEC mac" -> secondary mac address of source (requires preceeding PRIMARY)
-
-The TQ value has a range from 4 to 255 with 255 being the best.
-The HNA entries are showing which hosts are connected to the mesh via bat0
-or being bridged into the mesh network.
-The PRIMARY/SEC values are only applied on primary interfaces
-
-
-LOGGING/DEBUGGING
------------------
-
-All error messages, warnings and information messages are sent to the kernel
-log. Depending on your operating system distribution this can be read in one of
-a number of ways. Try using the commands: dmesg, logread, or looking in the
-files /var/log/kern.log or /var/log/syslog. All batman-adv messages are
-prefixed with "batman-adv:" So to see just these messages try
-
-# dmesg | grep batman-adv
-
-When investigating problems with your mesh network it is sometimes necessary to
-see more detail debug messages. This must be enabled when compiling the
-batman-adv module. When building batman-adv as part of kernel, use
-"make menuconfig" and enable the option "B.A.T.M.A.N. debugging". When
-compiling outside of the kernel tree it is necessary to edit the file
-Makefile.kbuild and uncomment the line
-
-#EXTRA_CFLAGS += -DCONFIG_BATMAN_ADV_DEBUG
-
-The additional debug output is by default disabled. It can be enabled either at
-kernel modules load time or during run time. To enable debug output at module
-load time, add the module parameter debug=<value>.
-<value> can take one of four values.
-
-0 - All debug output disabled
-1 - Enable messages related to routing / flooding / broadcasting
-2 - Enable route or hna added / changed / deleted
-3 - Enable all messages
-
-e.g.
-
-# modprobe batman-adv debug=2
-
-will load the module and enable debug messages for when routes or HNAs change.
-
-The debug output can also be changed at runtime using the file
-/sys/module/batman-adv/parameters/debug. e.g.
-
-# echo 2 > /sys/module/batman-adv/parameters/debug
-
-enables debug messages for when routes or HNAs
-
-The debug output is sent to the kernel logs. So try dmesg, logread, etc to see
-the debug messages.
-
-
-BATCTL
-------
-
-As batman advanced operates on layer 2 all hosts participating in the virtual
-switch are completely transparent for all  protocols above layer 2. Therefore
-the common diagnosis tools do not work as expected. To overcome these problems
-batctl was created. At the  moment the  batctl contains ping, traceroute,
-tcpdump and interfaces to the kernel module settings.
-
-For more information, please see the manpage (man batctl).
-
-batctl is available on http://www.open-mesh.org/
-
-
-CONTACT
--------
-
-Please send us comments, experiences, questions, anything :)
-
-IRC:             #batman on irc.freenode.org
-Mailing-list:    b.a.t.m.a.n@open-mesh.net
-(optional subscription at https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n)
-
-You can also contact the Authors:
-
-Marek Lindner <lindner_marek@yahoo.de>
-Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-
---Boundary-00=_zfi3LEfUEeSib8v--
+Content-Transfer-Encoding: quoted-printable
+
+Marek Lindner wrote:
+> Hey,
+>=20
+> Andrew pointed out that our README would need a little bit of love. I spe=
+nt
+> some time to get the text into a decent shape. I attached the full file f=
+or
+> a review. Let me know if you find anything.  :)
+
+Sounds good, but noticed some small typos:
+
+ * exmaple -> example
+ * seperated -> separated
+ * preceeding -> preceding
+
+And maybe you should increase "Linux 2.6.20" to "Linux 2.6.21" with your=20
+newest backporting efforts.
+
+Best regards,
+	Sven
+
+--nextPart2516933.M6cZ5IFvNE
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJL3n6NAAoJEF2HCgfBJntG94EP/R3J4B/uBKQuCo3hLLJWUs5a
+xDf2sshshBlGZCMHf6vikF0kg+55x/do9av5+8l8Y2GMF+zNdHxgqG/lnBH5pNQ/
+JCxJP5/EXxxsv3IZa8/8Plz/XzHWfktZVdLXyPq3C8xR0sfELU0lLKKPQmSY5jRE
+J8EniiqzhHDqY4sWbI5POLe46Gn7ZQiRgZoUUsEPnkwaodu6xp9v/TFKSh+vUnYz
+VMLaC3yGXJ9TgtniAmYkc6I1zpvLeBfuIdI1+yPD1ouNjeV75pADQt4S1/kLWJsX
+T0dL4UDYN5JnjsEGABnaNITxzAE2vCpSljRJpGnHH+fgs70fjIcbiicG3k8Sr8uK
+0yqWMimRlIPxqrXDzlRWbkNNVe0fq9IudQs0N6YSKZrbljHyfbXMhfotzkK7kSsh
+gsi8DHDJtRf7/RsGPVr9T+r8rCCMVYck2kqHCfxosRWfURWHVZPfsDMwvJPC33FS
+ZEj8p28wf4VM2t0LxMcFVECAPGrXp+ilibb/TZzCIF3mQQReevW8HkjDb/ggrFJY
+rzIxa+DPAf31+YuLj3hd1dJGZ6Jtz+nSyH1gpeiBojDtQPUGQS/1mPxht5Ys/0hJ
+omIkLwwGTkDgPjfzKz7S6F2i8558PaXFm2lmnwHMQbjTmTICWpDSP15U2Acs2R25
+INc98qwJN3xuYEZGq6Yp
+=6PU5
+-----END PGP SIGNATURE-----
+
+--nextPart2516933.M6cZ5IFvNE--
