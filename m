@@ -1,14 +1,14 @@
-Return-Path: <ordex@ritirata.org>
-Date: Tue, 4 May 2010 10:58:11 +0200
-From: Antonio Quartulli <ordex@ritirata.org>
-Message-ID: <20100504085811.GA10452@ritirata.org>
-References: <Pine.LNX.3.95.1100503165208.1466E-100000@nei>
-	<201005040959.43700.lindner_marek@yahoo.de>
+Return-Path: <fboehm@aon.at>
+Message-ID: <4BE0014E.8080204@aon.at>
+Date: Tue, 04 May 2010 13:13:18 +0200
+From: =?ISO-8859-15?Q?Franz_B=F6hm?= <fboehm@aon.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201005040959.43700.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] real-time link monitor (was: updated README)
+References: <201005030828.08856.lindner_marek@yahoo.de>	<20100503204020.GA30927@pandem0nium>
+	<201005041021.30248.lindner_marek@yahoo.de>
+In-Reply-To: <201005041021.30248.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] sysfs compat
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,36 +22,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On mar, mag 04, 2010 at 09:59:43 +0800, Marek Lindner wrote:
-> 
+Of course you are right Marek. I don't want to stay with 2.6.14 and will 
+switch to a kernel >2.6.21 asap.
+
+I wanted to say that it's suddenly more a general problem using chip 
+supplier or third party SDK's for embedded systems and being constrained 
+to use quite old kernels.
+
+Regards,
+Franz
+
+
+Marek Lindner schrieb:
 > Hi,
 > 
-> >    I *DO* have it running on a pair of Meraki minis with villagetelco
-> > software. Seems to work *VERY* well.
+>> Marek, i've tested your patches with all major kernel releases from 2.6.20
+>> to  2.6.33. What i have seen is:
+>>
+>>  * 2.6.20 fails for various reasons
+>>  * 2.6.23 and 2.6.24 show some warnings
+>>  * all other kernel versions are fine
+>>
+>> The warnings for 23 and 24 can be fixed by moving the *_read() defines
+>> from  "< 2.6.25" to "< 2.6.23". If you integrate this modification into
+>> your patch, you will gain my blessing and my sign-off. :)
 > 
-> glad to hear that !
 > 
+> thanks for testing. I followed your suggestion before pushing the patches. :)
 > 
-> >    I always seem to be looking for a real-time quality monitor so I can
-> > adjust antennas, check range, watch radios change by themselves, etc.
-> > i.e.- A real-time chart recorder widget. Thus my suggestion.
+> Since 2.6.20 does not work at this point I removed it from the list of 
+> supported kernel versions. Unfortunately, many embedded system vendors do not 
+> bother to bring their drivers upstream and instead, publish "code blobs" 
+> limited to an old linux version. So, it makes sense for us to offer support for 
+> older versions as well. We could remove old versions if the effort is getting 
+> too high (as we just did with 2.6.20).
 > 
-> You are not the first one with such a feature request but let me point out that 
-> batman is not the right tool for the job. If you want to finetune antennas 
-> batman is way too slow and imprecise, since all it does is measuring packet 
-> loss within a certain time frame. Deriving antenna directions from that is 
-> more magic than real sience.
-> 
-> I'd rather suggest a tool like "horst" (Highly Optimized Radio Scanning Tool - 
-> http://br1.einfach.org/tech/horst/) which hooks into your wifi driver to 
-> retrieve real-time data about the link quality to your neighbors. Of course, 
-> such a tool is highly dependend on the wifi driver and probably does not 
-> support all the drivers in the world but I'm sure it can be extended.
-
-Hi, thank you very much for your suggestion!
-It is very usefull here! :)
-
-
+> @Franz: I know you are stuck at 2.6.14 or something similar with your Atheros 
+> system but I don't think it is feasible for us to "go down" that far (unless 
+> you find a way). It might be easier to try pushing your Atheros beyong the 
+> current 2.6.21 minimum.
 > 
 > Regards,
 > Marek
+> 
