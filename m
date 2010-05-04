@@ -1,15 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 4 May 2010 09:49:01 +0800
-References: <201005030933.39124.lindner_marek@yahoo.de>
-	<20100503165539.GW3734@lunn.ch>
-In-Reply-To: <20100503165539.GW3734@lunn.ch>
+Date: Tue, 4 May 2010 09:59:43 +0800
+References: <Pine.LNX.3.95.1100503165208.1466E-100000@nei>
+In-Reply-To: <Pine.LNX.3.95.1100503165208.1466E-100000@nei>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201005040949.02215.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] updated README
+Message-Id: <201005040959.43700.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] real-time link monitor (was: updated README)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,19 +25,27 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 
 Hi,
 
-> I reviewed it and made some changes. There are also some suggestion
-> inside [ ] marks.
+>    I *DO* have it running on a pair of Meraki minis with villagetelco
+> software. Seems to work *VERY* well.
 
-thanks for all the input so far. 
+glad to hear that !
 
-Changelog:
-* typos found by Sven and Andrew corrected
-* some output added as suggested by Andrew
-* increased "Linux 2.6.20" to "Linux 2.6.21" since we don't support 2.6.20 at 
-this moment
-* piped the README through nroff to get a consistent look & feel
 
-The file is in the repos now.
+>    I always seem to be looking for a real-time quality monitor so I can
+> adjust antennas, check range, watch radios change by themselves, etc.
+> i.e.- A real-time chart recorder widget. Thus my suggestion.
 
-Cheers,
+You are not the first one with such a feature request but let me point out that 
+batman is not the right tool for the job. If you want to finetune antennas 
+batman is way too slow and imprecise, since all it does is measuring packet 
+loss within a certain time frame. Deriving antenna directions from that is 
+more magic than real sience.
+
+I'd rather suggest a tool like "horst" (Highly Optimized Radio Scanning Tool - 
+http://br1.einfach.org/tech/horst/) which hooks into your wifi driver to 
+retrieve real-time data about the link quality to your neighbors. Of course, 
+such a tool is highly dependend on the wifi driver and probably does not 
+support all the drivers in the world but I'm sure it can be extended.
+
+Regards,
 Marek
