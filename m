@@ -1,13 +1,10 @@
-Return-Path: <fboehm@aon.at>
-Message-ID: <4BE05AA8.1010805@aon.at>
-Date: Tue, 04 May 2010 19:34:32 +0200
-From: =?ISO-8859-15?Q?Franz_B=F6hm?= <fboehm@aon.at>
-MIME-Version: 1.0
-References: <201005030828.08856.lindner_marek@yahoo.de>	<201005041340.07717.onelektra@gmx.net>
-	<4BE014CC.50904@aon.at> <201005041505.34855.onelektra@gmx.net>
+Return-Path: <xxx@nei.mv.com>
+Date: Tue, 4 May 2010 19:59:38 -0400 (EDT)
+From: RHS Linux User <xxx@nei.mv.com>
 In-Reply-To: <201005041505.34855.onelektra@gmx.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <Pine.LNX.3.95.1100504195051.1466F-100000@nei>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Subject: Re: [B.A.T.M.A.N.] sysfs compat
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,35 +19,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Elektra,
 
-as far as I know there is no 100% open source driver for Atheros AR9280 
-that is compliant with ETSI regulations. Please correct me if I am wrong.
+Hi All,
 
-Interestingly there is also no 5GHz support in OpenWrt 10.03 because of 
-regulatory issues.
+   I used to run one of "THE" compliance labs....
 
-Sorry Elektra, but it's irrelevant what you can do with all those 
-wireless stuff around. You can also use a kitchen knife as a weapon. 
-It's only a matter of being compliant with laws if you want to get your 
-product on the market.
+   Who really cares about compliance ??!!  The real question is does it
+work, does it *REALLY* work !!  Can you reset it reliably? Can you debug
+it?
 
-For example you need reverse polarity connectors (RP-SMA, ...) to make 
-it harder for people to attach some self constructed antennas. This is 
-simply a FCC regulation every certified product has to obey.
+   I too ONLY consider open source as even worth spending my time
+with.
 
-As I already said, this is only applicable for commercial products. But 
-also OpenWrt seems to be worried about regulations.
+   The original Atheros driver for MITs roofnet was 50% of the size
+of their "regular" OEM driver. And it worked pretty well !! Pretty
+telling. AFAIK the MIT sources were never leaked to the web?
 
-This discussion is off topic and also not BATMAN relevant. So I would 
-say we shouldn't go further into detail about regulation good, bad, yes 
-or no.
+   I keep thinking someone *SHOULD* do a WIFI interface to ethernet with
+an open radio and and open VHDL fpga design. That way we could all see
+what was *REALLY* happending with the RF !  MUCH better than ANY analyser
+out there.
 
-Regards,
-Franz
+   And it would just get better and become more reliable over time.
+
+   Hurrah for open source!
+
+   Wiz
 
 
-elektra schrieb:
+On Tue, 4 May 2010, elektra wrote:
+
 > Hi Franz -
 > 
 > there are certified devices out there, running OpenWrt / open-source drivers. 
@@ -81,3 +79,4 @@ elektra schrieb:
 > Cheers,
 > Elektra
 > 
+
