@@ -1,10 +1,14 @@
-Return-Path: <xxx@nei.mv.com>
-Date: Mon, 3 May 2010 16:56:58 -0400 (EDT)
-From: RHS Linux User <xxx@nei.mv.com>
-In-Reply-To: <201005032014.18717.lindner_marek@yahoo.de>
-Message-ID: <Pine.LNX.3.95.1100503165208.1466E-100000@nei>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 4 May 2010 09:49:01 +0800
+References: <201005030933.39124.lindner_marek@yahoo.de>
+	<20100503165539.GW3734@lunn.ch>
+In-Reply-To: <20100503165539.GW3734@lunn.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201005040949.02215.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] updated README
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,37 +24,21 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-Hi Marek,
+Hi,
 
-   Alas, I don't know enough about how it works to be of much help.
+> I reviewed it and made some changes. There are also some suggestion
+> inside [ ] marks.
 
-   I *DO* have it running on a pair of Meraki minis with villagetelco
-software. Seems to work *VERY* well.
+thanks for all the input so far. 
 
-   I always seem to be looking for a real-time quality monitor so I can
-adjust antennas, check range, watch radios change by themselves, etc. 
-i.e.- A real-time chart recorder widget. Thus my suggestion. 
+Changelog:
+* typos found by Sven and Andrew corrected
+* some output added as suggested by Andrew
+* increased "Linux 2.6.20" to "Linux 2.6.21" since we don't support 2.6.20 at 
+this moment
+* piped the README through nroff to get a consistent look & feel
 
-   Congratulations to all :).
+The file is in the repos now.
 
-   warm regards,
-   Wiz
-
-On Mon, 3 May 2010, Marek Lindner wrote:
-
-> 
-> Hi,
-> 
-> >    I wonder if a brief explanation of how TQ is determined belongs here
-> > too?
-> 
-> I find it quite hard write a short paragraph about the TQ stuff, since I either 
-> end up simplifying the whole matter or writing too much text. On top of that, 
-> I'm not so sure what the casual reader would expect to find in the README 
-> regarding the routing algo. Maybe you could draft something and we go from 
-> there ?
-> 
-> Cheers,
-> Marek
-> 
-
+Cheers,
+Marek
