@@ -1,15 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 4 May 2010 10:21:29 +0800
-References: <201005030828.08856.lindner_marek@yahoo.de>
-	<20100503204020.GA30927@pandem0nium>
-In-Reply-To: <20100503204020.GA30927@pandem0nium>
+Return-Path: <andrew@lunn.ch>
+Date: Tue, 4 May 2010 07:14:36 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100504051436.GX3734@lunn.ch>
+References: <201005030933.39124.lindner_marek@yahoo.de>
+	<20100503165539.GW3734@lunn.ch>
+	<201005040949.02215.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201005041021.30248.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] sysfs compat
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201005040949.02215.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] updated README
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,34 +23,22 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Marek
 
-Hi,
+> * piped the README through nroff to get a consistent look & feel
 
-> Marek, i've tested your patches with all major kernel releases from 2.6.20
-> to  2.6.33. What i have seen is:
-> 
->  * 2.6.20 fails for various reasons
->  * 2.6.23 and 2.6.24 show some warnings
->  * all other kernel versions are fine
-> 
-> The warnings for 23 and 24 can be fixed by moving the *_read() defines
-> from  "< 2.6.25" to "< 2.6.23". If you integrate this modification into
-> your patch, you will gain my blessing and my sign-off. :)
+It looks like this stage made use of UTF-8, or some sort of extended
+character set:
 
+vpn,  etc ... (anything with ethernet<E2><80><90>style layer 2). It compiles
+against and should work with Linux 2.6.21 <E2><80><90>  2.6.33.   Supporting
+older versions is not planned, but it<E2><80><99>s probably easy to backport
 
-thanks for testing. I followed your suggestion before pushing the patches. :)
+I don't have a locale set, being an English speaker and not needing
+umlauts, accents, etc. I guess most embedded systems also don't have
+locale support.
 
-Since 2.6.20 does not work at this point I removed it from the list of 
-supported kernel versions. Unfortunately, many embedded system vendors do not 
-bother to bring their drivers upstream and instead, publish "code blobs" 
-limited to an old linux version. So, it makes sense for us to offer support for 
-older versions as well. We could remove old versions if the effort is getting 
-too high (as we just did with 2.6.20).
+Could we have a 7-bit clean README?
 
-@Franz: I know you are stuck at 2.6.14 or something similar with your Atheros 
-system but I don't think it is feasible for us to "go down" that far (unless 
-you find a way). It might be easier to try pushing your Atheros beyong the 
-current 2.6.21 minimum.
-
-Regards,
-Marek
+      Thanks
+	Andrew
