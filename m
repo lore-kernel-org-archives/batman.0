@@ -1,12 +1,12 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Thu,  6 May 2010 22:18:42 +0200
-Message-Id: <1273177132-8792-17-git-send-email-andrew@lunn.ch>
+Date: Thu,  6 May 2010 22:18:43 +0200
+Message-Id: <1273177132-8792-18-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 References: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 16/26] staging:batman-adv: remove redundant
-	pointer to originator interface
+Subject: [B.A.T.M.A.N.] [PATCH 17/26] staging:batman-adv: move /proc
+	interface handling to /sys
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,209 +23,1864 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
 
 From: Marek Lindner <lindner_marek@yahoo.de>
 
+Instead of having a single /proc file "interfaces" in which you have
+to echo the wanted interface batman-adv will create a subfolder in each
+suitable /sys/class/net folder. This subfolder contains files for the
+interface specific settings. For example, mesh_iface to add/remove an
+interface from a virtual mesh network (at the moment only bat0 is
+supported).
+
+Example:
+echo bat0 > /sys/class/net/eth0/batman-adv/mesh_iface
+
+to deactivate:
+echo none > /sys/class/net/eth0/batman-adv/mesh_iface
+
+Interfaces which are not compatible with batman-adv won't contain the
+batman-adv folder, therefore can't be activated. Not supported are:
+loopback, non-ethernet, non-ARP and virtual mesh network interfaces
+
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/device.c         |    2 +-
- drivers/staging/batman-adv/originator.c     |    1 -
- drivers/staging/batman-adv/routing.c        |   17 ++++-------------
- drivers/staging/batman-adv/soft-interface.c |    5 ++---
- drivers/staging/batman-adv/types.h          |    1 -
- drivers/staging/batman-adv/vis.c            |   15 +++++++--------
- 6 files changed, 14 insertions(+), 27 deletions(-)
+ drivers/staging/batman-adv/Makefile            |    2 +-
+ drivers/staging/batman-adv/bat_sysfs.c         |  147 +++++++
+ drivers/staging/batman-adv/bat_sysfs.h         |    3 +
+ drivers/staging/batman-adv/device.c            |    2 +-
+ drivers/staging/batman-adv/hard-interface.c    |  515 ++++++++++++------------
+ drivers/staging/batman-adv/hard-interface.h    |   18 +-
+ drivers/staging/batman-adv/main.c              |   21 +-
+ drivers/staging/batman-adv/main.h              |    3 +-
+ drivers/staging/batman-adv/originator.c        |  193 ++++++++-
+ drivers/staging/batman-adv/originator.h        |    2 +
+ drivers/staging/batman-adv/proc.c              |  170 --------
+ drivers/staging/batman-adv/proc.h              |   30 --
+ drivers/staging/batman-adv/routing.c           |    6 +-
+ drivers/staging/batman-adv/send.c              |   59 ++-
+ drivers/staging/batman-adv/send.h              |    2 +-
+ drivers/staging/batman-adv/soft-interface.c    |    2 +-
+ drivers/staging/batman-adv/translation-table.c |   14 +-
+ drivers/staging/batman-adv/types.h             |    5 +-
+ drivers/staging/batman-adv/vis.c               |    9 +-
+ 19 files changed, 670 insertions(+), 533 deletions(-)
+ delete mode 100644 drivers/staging/batman-adv/proc.c
+ delete mode 100644 drivers/staging/batman-adv/proc.h
 
+diff --git a/drivers/staging/batman-adv/Makefile b/drivers/staging/batman-adv/Makefile
+index 9ad0429..f25068c 100644
+--- a/drivers/staging/batman-adv/Makefile
++++ b/drivers/staging/batman-adv/Makefile
+@@ -19,4 +19,4 @@
+ #
+ 
+ obj-m += batman-adv.o
+-batman-adv-objs := main.o proc.o send.o routing.o soft-interface.o device.o translation-table.o bitarray.o hash.o ring_buffer.o vis.o hard-interface.o aggregation.o originator.o bat_sysfs.o
++batman-adv-objs := main.o send.o routing.o soft-interface.o device.o translation-table.o bitarray.o hash.o ring_buffer.o vis.o hard-interface.o aggregation.o originator.o bat_sysfs.o
+diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
+index ea7ce77..1811c8d 100644
+--- a/drivers/staging/batman-adv/bat_sysfs.c
++++ b/drivers/staging/batman-adv/bat_sysfs.c
+@@ -36,6 +36,14 @@ struct bat_attribute {
+ 			 char *buf, size_t count);
+ };
+ 
++struct hardif_attribute {
++	struct attribute attr;
++	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
++			char *buf);
++	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
++			 char *buf, size_t count);
++};
++
+ #define BAT_ATTR(_name, _mode, _show, _store)	\
+ struct bat_attribute bat_attr_##_name = {	\
+ 	.attr = {.name = __stringify(_name),	\
+@@ -52,6 +60,14 @@ struct bin_attribute bat_attr_##_name = {		\
+ 	.write = _write,				\
+ };
+ 
++#define HARDIF_ATTR(_name, _mode, _show, _store)	\
++struct hardif_attribute hardif_attr_##_name = {		\
++	.attr = {.name = __stringify(_name),		\
++		 .mode = _mode },			\
++	.show   = _show,				\
++	.store  = _store,				\
++};
++
+ static ssize_t show_aggr_ogm(struct kobject *kobj, struct attribute *attr,
+ 			     char *buff)
+ {
+@@ -275,6 +291,8 @@ int sysfs_add_meshif(struct net_device *dev)
+ 	atomic_set(&bat_priv->aggregation_enabled, 1);
+ 	atomic_set(&bat_priv->vis_mode, VIS_TYPE_CLIENT_UPDATE);
+ 	atomic_set(&bat_priv->orig_interval, 1000);
++	bat_priv->primary_if = NULL;
++	bat_priv->num_ifaces = 0;
+ 
+ 	bat_priv->mesh_obj = kobject_create_and_add(SYSFS_IF_MESH_SUBDIR,
+ 						    batif_kobject);
+@@ -335,3 +353,132 @@ void sysfs_del_meshif(struct net_device *dev)
+ 	kobject_put(bat_priv->mesh_obj);
+ 	bat_priv->mesh_obj = NULL;
+ }
++
++static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
++			       char *buff)
++{
++	struct device *dev = to_dev(kobj->parent);
++	struct net_device *net_dev = to_net_dev(dev);
++	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
++
++	if (!batman_if)
++		return 0;
++
++	return sprintf(buff, "status: %s\ncommands: none, bat0 \n",
++		       batman_if->if_status == IF_NOT_IN_USE ?
++							"none" : "bat0");
++}
++
++static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
++				char *buff, size_t count)
++{
++	struct device *dev = to_dev(kobj->parent);
++	struct net_device *net_dev = to_net_dev(dev);
++	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
++	int status_tmp = -1;
++
++	if (!batman_if)
++		return count;
++
++	if (strncmp(buff, "none", 4) == 0)
++		status_tmp = IF_NOT_IN_USE;
++
++	if (strncmp(buff, "bat0", 4) == 0)
++		status_tmp = IF_I_WANT_YOU;
++
++	if (status_tmp < 0) {
++		if (buff[count - 1] == '\n')
++			buff[count - 1] = '\0';
++
++		printk(KERN_ERR "batman-adv:Invalid parameter for 'mesh_iface' setting received: %s\n",
++		       buff);
++		return -EINVAL;
++	}
++
++	if ((batman_if->if_status == status_tmp) ||
++	    ((status_tmp == IF_I_WANT_YOU) &&
++	     (batman_if->if_status != IF_NOT_IN_USE)))
++		return count;
++
++	if (status_tmp == IF_I_WANT_YOU)
++		status_tmp = hardif_enable_interface(batman_if);
++	else
++		hardif_disable_interface(batman_if);
++
++	return (status_tmp < 0 ? status_tmp : count);
++}
++
++static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
++				 char *buff)
++{
++	struct device *dev = to_dev(kobj->parent);
++	struct net_device *net_dev = to_net_dev(dev);
++	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
++
++	if (!batman_if)
++		return 0;
++
++	switch (batman_if->if_status) {
++	case IF_TO_BE_REMOVED:
++		return sprintf(buff, "disabling\n");
++	case IF_INACTIVE:
++		return sprintf(buff, "inactive\n");
++	case IF_ACTIVE:
++		return sprintf(buff, "active\n");
++	case IF_TO_BE_ACTIVATED:
++		return sprintf(buff, "enabling\n");
++	case IF_NOT_IN_USE:
++	default:
++		return sprintf(buff, "not in use\n");
++	}
++}
++
++static HARDIF_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
++		   show_mesh_iface, store_mesh_iface);
++static HARDIF_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
++
++static struct hardif_attribute *batman_attrs[] = {
++	&hardif_attr_mesh_iface,
++	&hardif_attr_iface_status,
++	NULL,
++};
++
++int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
++{
++	struct kobject *hardif_kobject = &dev->dev.kobj;
++	struct hardif_attribute **hardif_attr;
++	int err;
++
++	*hardif_obj = kobject_create_and_add(SYSFS_IF_BAT_SUBDIR,
++						    hardif_kobject);
++
++	if (!*hardif_obj) {
++		printk(KERN_ERR "batman-adv:Can't add sysfs directory: %s/%s\n",
++		       dev->name, SYSFS_IF_BAT_SUBDIR);
++		goto out;
++	}
++
++	for (hardif_attr = batman_attrs; *hardif_attr; ++hardif_attr) {
++		err = sysfs_create_file(*hardif_obj, &((*hardif_attr)->attr));
++		if (err) {
++			printk(KERN_ERR "batman-adv:Can't add sysfs file: %s/%s/%s\n",
++			       dev->name, SYSFS_IF_BAT_SUBDIR,
++			       ((*hardif_attr)->attr).name);
++			goto rem_attr;
++		}
++	}
++
++	return 0;
++
++rem_attr:
++	for (hardif_attr = batman_attrs; *hardif_attr; ++hardif_attr)
++		sysfs_remove_file(*hardif_obj, &((*hardif_attr)->attr));
++out:
++	return -ENOMEM;
++}
++
++void sysfs_del_hardif(struct kobject **hardif_obj)
++{
++	kobject_put(*hardif_obj);
++	*hardif_obj = NULL;
++}
+diff --git a/drivers/staging/batman-adv/bat_sysfs.h b/drivers/staging/batman-adv/bat_sysfs.h
+index 671ebd1..e189341 100644
+--- a/drivers/staging/batman-adv/bat_sysfs.h
++++ b/drivers/staging/batman-adv/bat_sysfs.h
+@@ -21,6 +21,9 @@
+ 
+ 
+ #define SYSFS_IF_MESH_SUBDIR "mesh"
++#define SYSFS_IF_BAT_SUBDIR "batman_adv"
+ 
+ int sysfs_add_meshif(struct net_device *dev);
+ void sysfs_del_meshif(struct net_device *dev);
++int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev);
++void sysfs_del_hardif(struct kobject **hardif_obj);
 diff --git a/drivers/staging/batman-adv/device.c b/drivers/staging/batman-adv/device.c
-index 9887f05..c419c62 100644
+index c419c62..b2ecba2 100644
 --- a/drivers/staging/batman-adv/device.c
 +++ b/drivers/staging/batman-adv/device.c
-@@ -250,7 +250,7 @@ ssize_t bat_device_write(struct file *file, const char __user *buff,
- 	if (!orig_node->router)
- 		goto unlock;
+@@ -258,7 +258,7 @@ ssize_t bat_device_write(struct file *file, const char __user *buff,
+ 	if (!batman_if)
+ 		goto dst_unreach;
  
--	batman_if = orig_node->batman_if;
-+	batman_if = orig_node->router->if_incoming;
- 	memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+-	if (batman_if->if_active != IF_ACTIVE)
++	if (batman_if->if_status != IF_ACTIVE)
+ 		goto dst_unreach;
  
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
-diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
-index 684db75..4152701 100644
---- a/drivers/staging/batman-adv/originator.c
-+++ b/drivers/staging/batman-adv/originator.c
-@@ -137,7 +137,6 @@ struct orig_node *get_orig_node(uint8_t *addr)
+ 	memcpy(icmp_packet.orig,
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index cb9e927..b82cae7 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -25,22 +25,21 @@
+ #include "send.h"
+ #include "translation-table.h"
+ #include "routing.h"
++#include "bat_sysfs.h"
++#include "originator.h"
+ #include "hash.h"
  
- 	memcpy(orig_node->orig, addr, ETH_ALEN);
- 	orig_node->router = NULL;
--	orig_node->batman_if = NULL;
- 	orig_node->hna_buff = NULL;
+-#define MIN(x, y) ((x) < (y) ? (x) : (y))
+-
+-static char avail_ifs;
+-static char active_ifs;
++#include <linux/if_arp.h>
  
- 	size = num_ifs * sizeof(TYPE_OF_WORD) * NUM_WORDS;
-diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
-index 8c055a1..0a9f52b 100644
---- a/drivers/staging/batman-adv/routing.c
-+++ b/drivers/staging/batman-adv/routing.c
-@@ -97,11 +97,6 @@ static void update_route(struct orig_node *orig_node,
- 		bat_dbg(DBG_ROUTES, "Changing route towards: %pM (now via %pM - was via %pM)\n", orig_node->orig, neigh_node->addr, orig_node->router->addr);
+-static void hardif_free_interface(struct rcu_head *rcu);
++#define MIN(x, y) ((x) < (y) ? (x) : (y))
+ 
+-static struct batman_if *get_batman_if_by_name(char *name)
++struct batman_if *get_batman_if_by_netdev(struct net_device *net_dev)
+ {
+ 	struct batman_if *batman_if;
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+-		if (strncmp(batman_if->dev, name, IFNAMSIZ) == 0)
++		if (batman_if->net_dev == net_dev)
+ 			goto out;
  	}
  
--	if (neigh_node != NULL)
--		orig_node->batman_if = neigh_node->if_incoming;
--	else
--		orig_node->batman_if = NULL;
--
- 	orig_node->router = neigh_node;
+@@ -51,23 +50,90 @@ out:
+ 	return batman_if;
  }
  
-@@ -616,12 +611,11 @@ static int recv_my_icmp_packet(struct sk_buff *skb)
- 	ret = NET_RX_DROP;
+-int hardif_min_mtu(void)
++static int is_valid_iface(struct net_device *net_dev)
++{
++	if (net_dev->flags & IFF_LOOPBACK)
++		return 0;
++
++	if (net_dev->type != ARPHRD_ETHER)
++		return 0;
++
++	if (net_dev->addr_len != ETH_ALEN)
++		return 0;
++
++	/* no batman over batman */
++#ifdef HAVE_NET_DEVICE_OPS
++	if (net_dev->netdev_ops->ndo_start_xmit == interface_tx)
++		return 0;
++#else
++	if (net_dev->hard_start_xmit == interface_tx)
++		return 0;
++#endif
++
++	/* Device is being bridged */
++	/* if (net_dev->br_port != NULL)
++		return 0; */
++
++	return 1;
++}
++
++static struct batman_if *get_active_batman_if(void)
+ {
+ 	struct batman_if *batman_if;
+-	/* allow big frames if all devices are capable to do so
+-	 * (have MTU > 1500 + BAT_HEADER_LEN) */
+-	int min_mtu = ETH_DATA_LEN;
  
- 	if ((orig_node != NULL) &&
--	    (orig_node->batman_if != NULL) &&
- 	    (orig_node->router != NULL)) {
++	/* TODO: should check interfaces belonging to bat_priv */
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+-		if ((batman_if->if_active == IF_ACTIVE) ||
+-		    (batman_if->if_active == IF_TO_BE_ACTIVATED))
+-			min_mtu = MIN(batman_if->net_dev->mtu - BAT_HEADER_LEN,
+-				      min_mtu);
++		if (batman_if->if_status == IF_ACTIVE)
++			goto out;
+ 	}
++
++	batman_if = NULL;
++
++out:
+ 	rcu_read_unlock();
++	return batman_if;
++}
  
- 		/* don't lock while sending the packets ... we therefore
- 		 * copy the required data before sending */
--		batman_if = orig_node->batman_if;
-+		batman_if = orig_node->router->if_incoming;
- 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
- 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+-	return min_mtu;
++static void set_primary_if(struct bat_priv *bat_priv,
++			   struct batman_if *batman_if)
++{
++	struct batman_packet *batman_packet;
++
++	bat_priv->primary_if = batman_if;
++
++	if (!bat_priv->primary_if)
++		return;
++
++	set_main_if_addr(batman_if->net_dev->dev_addr);
++
++	batman_packet = (struct batman_packet *)(batman_if->packet_buff);
++	batman_packet->flags = 0;
++	batman_packet->ttl = TTL;
++
++	/***
++	 * hacky trick to make sure that we send the HNA information via
++	 * our new primary interface
++	 */
++	atomic_set(&hna_local_changed, 1);
++}
++
++static bool hardif_is_iface_up(struct batman_if *batman_if)
++{
++	if (batman_if->net_dev->flags & IFF_UP)
++		return true;
++
++	return false;
++}
++
++static void update_mac_addresses(struct batman_if *batman_if)
++{
++	addr_to_string(batman_if->addr_str, batman_if->net_dev->dev_addr);
++
++	memcpy(((struct batman_packet *)(batman_if->packet_buff))->orig,
++	       batman_if->net_dev->dev_addr, ETH_ALEN);
++	memcpy(((struct batman_packet *)(batman_if->packet_buff))->prev_sender,
++	       batman_if->net_dev->dev_addr, ETH_ALEN);
+ }
  
-@@ -678,12 +672,11 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb)
- 	ret = NET_RX_DROP;
+ static void check_known_mac_addr(uint8_t *addr)
+@@ -76,8 +142,8 @@ static void check_known_mac_addr(uint8_t *addr)
  
- 	if ((orig_node != NULL) &&
--	    (orig_node->batman_if != NULL) &&
- 	    (orig_node->router != NULL)) {
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+-		if ((batman_if->if_active != IF_ACTIVE) &&
+-		    (batman_if->if_active != IF_TO_BE_ACTIVATED))
++		if ((batman_if->if_status != IF_ACTIVE) &&
++		    (batman_if->if_status != IF_TO_BE_ACTIVATED))
+ 			continue;
  
- 		/* don't lock while sending the packets ... we therefore
- 		 * copy the required data before sending */
--		batman_if = orig_node->batman_if;
-+		batman_if = orig_node->router->if_incoming;
- 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
- 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 		if (!compare_orig(batman_if->net_dev->dev_addr, addr))
+@@ -90,6 +156,25 @@ static void check_known_mac_addr(uint8_t *addr)
+ 	rcu_read_unlock();
+ }
  
-@@ -760,12 +753,11 @@ int recv_icmp_packet(struct sk_buff *skb)
- 		     hash_find(orig_hash, icmp_packet->dst));
++int hardif_min_mtu(void)
++{
++	struct batman_if *batman_if;
++	/* allow big frames if all devices are capable to do so
++	 * (have MTU > 1500 + BAT_HEADER_LEN) */
++	int min_mtu = ETH_DATA_LEN;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(batman_if, &if_list, list) {
++		if ((batman_if->if_status == IF_ACTIVE) ||
++		    (batman_if->if_status == IF_TO_BE_ACTIVATED))
++			min_mtu = MIN(batman_if->net_dev->mtu - BAT_HEADER_LEN,
++				      min_mtu);
++	}
++	rcu_read_unlock();
++
++	return min_mtu;
++}
++
+ /* adjusts the MTU if a new interface with a smaller MTU appeared. */
+ void update_min_mtu(void)
+ {
+@@ -100,322 +185,246 @@ void update_min_mtu(void)
+ 		soft_device->mtu = min_mtu;
+ }
  
- 	if ((orig_node != NULL) &&
--	    (orig_node->batman_if != NULL) &&
- 	    (orig_node->router != NULL)) {
+-/* checks if the interface is up. (returns 1 if it is) */
+-static int hardif_is_interface_up(char *dev)
++static void hardif_activate_interface(struct bat_priv *bat_priv,
++				      struct batman_if *batman_if)
+ {
+-	struct net_device *net_dev;
++	if (batman_if->if_status != IF_INACTIVE)
++		return;
  
- 		/* don't lock while sending the packets ... we therefore
- 		 * copy the required data before sending */
--		batman_if = orig_node->batman_if;
-+		batman_if = orig_node->router->if_incoming;
- 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
- 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+-	/**
+-	 * if we already have an interface in our interface list and
+-	 * the current interface is not the primary interface and
+-	 * the primary interface is not up and
+-	 * the primary interface has never been up - don't activate any
+-	 * secondary interface !
+-	 */
++	dev_hold(batman_if->net_dev);
  
-@@ -844,12 +836,11 @@ int recv_unicast_packet(struct sk_buff *skb)
- 		     hash_find(orig_hash, unicast_packet->dest));
+-	rcu_read_lock();
+-	if ((!list_empty(&if_list)) &&
+-	    strncmp(((struct batman_if *)if_list.next)->dev, dev, IFNAMSIZ) &&
+-	    !(((struct batman_if *)if_list.next)->if_active == IF_ACTIVE) &&
+-	    !(((struct batman_if *)if_list.next)->if_active == IF_TO_BE_ACTIVATED) &&
+-	    (!main_if_was_up())) {
+-		rcu_read_unlock();
+-		goto end;
+-	}
+-	rcu_read_unlock();
++	update_mac_addresses(batman_if);
++	batman_if->if_status = IF_TO_BE_ACTIVATED;
  
- 	if ((orig_node != NULL) &&
--	    (orig_node->batman_if != NULL) &&
- 	    (orig_node->router != NULL)) {
+-#ifdef __NET_NET_NAMESPACE_H
+-	net_dev = dev_get_by_name(&init_net, dev);
+-#else
+-	net_dev = dev_get_by_name(dev);
+-#endif
+-	if (!net_dev)
+-		goto end;
++	/**
++	 * the first active interface becomes our primary interface or
++	 * the next active interface after the old primay interface was removed
++	 */
++	if (!bat_priv->primary_if)
++		set_primary_if(bat_priv, batman_if);
  
- 		/* don't lock while sending the packets ... we therefore
- 		 * copy the required data before sending */
--		batman_if = orig_node->batman_if;
-+		batman_if = orig_node->router->if_incoming;
- 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
- 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+-	if (!(net_dev->flags & IFF_UP))
+-		goto failure;
++	printk(KERN_INFO "batman-adv:Interface activated: %s\n",
++	       batman_if->dev);
  
+-	dev_put(net_dev);
+-	return 1;
++	if (atomic_read(&module_state) == MODULE_INACTIVE)
++		activate_module();
+ 
+-failure:
+-	dev_put(net_dev);
+-end:
+-	return 0;
++	update_min_mtu();
++	return;
+ }
+ 
+-/* deactivates the interface. */
+-void hardif_deactivate_interface(struct batman_if *batman_if)
++static void hardif_deactivate_interface(struct batman_if *batman_if)
+ {
+-	if (batman_if->if_active != IF_ACTIVE)
++	if ((batman_if->if_status != IF_ACTIVE) &&
++	   (batman_if->if_status != IF_TO_BE_ACTIVATED))
+ 		return;
+ 
+-	/**
+-	 * batman_if->net_dev has been acquired by dev_get_by_name() in
+-	 * proc_interfaces_write() and has to be unreferenced.
+-	 */
+-
+-	if (batman_if->net_dev)
+-		dev_put(batman_if->net_dev);
++	dev_put(batman_if->net_dev);
+ 
+-	batman_if->if_active = IF_INACTIVE;
+-	active_ifs--;
++	batman_if->if_status = IF_INACTIVE;
+ 
+ 	printk(KERN_INFO "batman-adv:Interface deactivated: %s\n",
+-		  batman_if->dev);
++	       batman_if->dev);
++
++	update_min_mtu();
+ }
+ 
+-/* (re)activate given interface. */
+-static void hardif_activate_interface(struct batman_if *batman_if)
++int hardif_enable_interface(struct batman_if *batman_if)
+ {
+-	if (batman_if->if_active != IF_INACTIVE)
+-		return;
+-
+-#ifdef __NET_NET_NAMESPACE_H
+-	batman_if->net_dev = dev_get_by_name(&init_net, batman_if->dev);
+-#else
+-	batman_if->net_dev = dev_get_by_name(batman_if->dev);
+-#endif
+-	if (!batman_if->net_dev)
+-		goto dev_err;
++	/* FIXME: each batman_if will be attached to a softif */
++	struct bat_priv *bat_priv = netdev_priv(soft_device);
++	struct batman_packet *batman_packet;
+ 
+-	check_known_mac_addr(batman_if->net_dev->dev_addr);
++	if (batman_if->if_status != IF_NOT_IN_USE)
++		goto out;
+ 
+-	addr_to_string(batman_if->addr_str, batman_if->net_dev->dev_addr);
++	batman_if->packet_len = BAT_PACKET_LEN;
++	batman_if->packet_buff = kmalloc(batman_if->packet_len, GFP_ATOMIC);
+ 
+-	memcpy(((struct batman_packet *)(batman_if->packet_buff))->orig,
+-	       batman_if->net_dev->dev_addr, ETH_ALEN);
+-	memcpy(((struct batman_packet *)(batman_if->packet_buff))->prev_sender,
+-	       batman_if->net_dev->dev_addr, ETH_ALEN);
++	if (!batman_if->packet_buff) {
++		printk(KERN_ERR "batman-adv:Can't add interface packet (%s): out of memory\n",
++		       batman_if->dev);
++		goto err;
++	}
+ 
+-	batman_if->if_active = IF_TO_BE_ACTIVATED;
+-	active_ifs++;
++	batman_packet = (struct batman_packet *)(batman_if->packet_buff);
++	batman_packet->packet_type = BAT_PACKET;
++	batman_packet->version = COMPAT_VERSION;
++	batman_packet->flags = 0;
++	batman_packet->ttl = 2;
++	batman_packet->tq = TQ_MAX_VALUE;
++	batman_packet->num_hna = 0;
+ 
+-	/* save the mac address if it is our primary interface */
+-	if (batman_if->if_num == 0)
+-		set_main_if_addr(batman_if->net_dev->dev_addr);
++	batman_if->if_num = bat_priv->num_ifaces;
++	bat_priv->num_ifaces++;
++	batman_if->if_status = IF_INACTIVE;
++	orig_hash_add_if(batman_if, bat_priv->num_ifaces);
+ 
+-	printk(KERN_INFO "batman-adv:Interface activated: %s\n",
+-		  batman_if->dev);
++	atomic_set(&batman_if->seqno, 1);
++	printk(KERN_INFO "batman-adv:Adding interface: %s\n", batman_if->dev);
+ 
+-	return;
++	if (hardif_is_iface_up(batman_if))
++		hardif_activate_interface(bat_priv, batman_if);
++	else
++		printk(KERN_ERR "batman-adv:Not using interface %s (retrying later): interface not active\n", batman_if->dev);
+ 
+-dev_err:
+-	batman_if->net_dev = NULL;
+-}
++	/* begin scheduling originator messages on that interface */
++	schedule_own_packet(batman_if);
+ 
+-static void hardif_free_interface(struct rcu_head *rcu)
+-{
+-	struct batman_if *batman_if = container_of(rcu, struct batman_if, rcu);
++out:
++	return 0;
+ 
+-	kfree(batman_if->packet_buff);
+-	kfree(batman_if->dev);
+-	kfree(batman_if);
++err:
++	return -ENOMEM;
+ }
+ 
+-/**
+- * called by
+- *  - echo '' > /proc/.../interfaces
+- *  - modprobe -r batman-adv-core
+- */
+-/* removes and frees all interfaces */
+-void hardif_remove_interfaces(void)
++void hardif_disable_interface(struct batman_if *batman_if)
+ {
+-	struct batman_if *batman_if = NULL;
+-
+-	avail_ifs = 0;
+-
+-	/* no lock needed - we don't delete somewhere else */
+-	list_for_each_entry(batman_if, &if_list, list) {
+-
+-		list_del_rcu(&batman_if->list);
++	/* FIXME: each batman_if will be attached to a softif */
++	struct bat_priv *bat_priv = netdev_priv(soft_device);
+ 
+-		/* first deactivate interface */
+-		if (batman_if->if_active != IF_INACTIVE)
+-			hardif_deactivate_interface(batman_if);
+-
+-		call_rcu(&batman_if->rcu, hardif_free_interface);
+-	}
+-}
+-
+-static int resize_orig(struct orig_node *orig_node, int if_num)
+-{
+-	void *data_ptr;
++	if (batman_if->if_status == IF_ACTIVE)
++		hardif_deactivate_interface(batman_if);
+ 
+-	data_ptr = kmalloc((if_num + 1) * sizeof(TYPE_OF_WORD) * NUM_WORDS,
+-			   GFP_ATOMIC);
+-	if (!data_ptr) {
+-		printk(KERN_ERR "batman-adv:Can't resize orig: out of memory\n");
+-		return -1;
+-	}
++	if (batman_if->if_status != IF_INACTIVE)
++		return;
+ 
+-	memcpy(data_ptr, orig_node->bcast_own,
+-	       if_num * sizeof(TYPE_OF_WORD) * NUM_WORDS);
+-	kfree(orig_node->bcast_own);
+-	orig_node->bcast_own = data_ptr;
++	printk(KERN_INFO "batman-adv:Removing interface: %s\n", batman_if->dev);
++	bat_priv->num_ifaces--;
++	orig_hash_del_if(batman_if, bat_priv->num_ifaces);
+ 
+-	data_ptr = kmalloc((if_num + 1) * sizeof(uint8_t), GFP_ATOMIC);
+-	if (!data_ptr) {
+-		printk(KERN_ERR "batman-adv:Can't resize orig: out of memory\n");
+-		return -1;
+-	}
++	if (batman_if == bat_priv->primary_if)
++		set_primary_if(bat_priv, get_active_batman_if());
+ 
+-	memcpy(data_ptr, orig_node->bcast_own_sum, if_num * sizeof(uint8_t));
+-	kfree(orig_node->bcast_own_sum);
+-	orig_node->bcast_own_sum = data_ptr;
++	kfree(batman_if->packet_buff);
++	batman_if->packet_buff = NULL;
++	batman_if->if_status = IF_NOT_IN_USE;
+ 
+-	return 0;
++	if ((atomic_read(&module_state) == MODULE_ACTIVE) &&
++	    (bat_priv->num_ifaces == 0))
++		deactivate_module();
+ }
+ 
+-
+-/* adds an interface the interface list and activate it, if possible */
+-int hardif_add_interface(char *dev, int if_num)
++static struct batman_if *hardif_add_interface(struct net_device *net_dev)
+ {
+ 	struct batman_if *batman_if;
+-	struct batman_packet *batman_packet;
+-	struct orig_node *orig_node;
+-	unsigned long flags;
+-	HASHIT(hashit);
++	int ret;
+ 
+-	batman_if = kmalloc(sizeof(struct batman_if), GFP_KERNEL);
++	ret = is_valid_iface(net_dev);
++	if (ret != 1)
++		goto out;
+ 
++	batman_if = kmalloc(sizeof(struct batman_if), GFP_ATOMIC);
+ 	if (!batman_if) {
+-		printk(KERN_ERR "batman-adv:Can't add interface (%s): out of memory\n", dev);
+-		return -1;
+-	}
+-
+-	batman_if->net_dev = NULL;
+-
+-	if ((if_num == 0) && (num_hna > 0))
+-		batman_if->packet_len = BAT_PACKET_LEN + num_hna * ETH_ALEN;
+-	else
+-		batman_if->packet_len = BAT_PACKET_LEN;
+-
+-	batman_if->packet_buff = kmalloc(batman_if->packet_len, GFP_KERNEL);
+-
+-	if (!batman_if->packet_buff) {
+-		printk(KERN_ERR "batman-adv:Can't add interface packet (%s): out of memory\n", dev);
++		printk(KERN_ERR "batman-adv:Can't add interface (%s): out of memory\n",
++		       net_dev->name);
+ 		goto out;
+ 	}
+ 
+-	batman_if->if_num = if_num;
+-	batman_if->dev = dev;
+-	batman_if->if_active = IF_INACTIVE;
+-	INIT_RCU_HEAD(&batman_if->rcu);
++	batman_if->dev = kstrdup(net_dev->name, GFP_ATOMIC);
++	if (!batman_if->dev)
++		goto free_if;
+ 
+-	printk(KERN_INFO "batman-adv:Adding interface: %s\n", dev);
+-	avail_ifs++;
++	ret = sysfs_add_hardif(&batman_if->hardif_obj, net_dev);
++	if (ret)
++		goto free_dev;
+ 
++	batman_if->if_num = -1;
++	batman_if->net_dev = net_dev;
++	batman_if->if_status = IF_NOT_IN_USE;
++	INIT_RCU_HEAD(&batman_if->rcu);
+ 	INIT_LIST_HEAD(&batman_if->list);
+ 
+-	batman_packet = (struct batman_packet *)(batman_if->packet_buff);
+-	batman_packet->packet_type = BAT_PACKET;
+-	batman_packet->version = COMPAT_VERSION;
+-	batman_packet->flags = 0x00;
+-	batman_packet->ttl = (batman_if->if_num > 0 ? 2 : TTL);
+-	batman_packet->flags = 0;
+-	batman_packet->tq = TQ_MAX_VALUE;
+-	batman_packet->num_hna = 0;
+-
+-	if (batman_if->packet_len != BAT_PACKET_LEN) {
+-		unsigned char *hna_buff;
+-		int hna_len;
+-
+-		hna_buff = batman_if->packet_buff + BAT_PACKET_LEN;
+-		hna_len = batman_if->packet_len - BAT_PACKET_LEN;
+-		batman_packet->num_hna = hna_local_fill_buffer(hna_buff,
+-							       hna_len);
+-	}
+-
+-	atomic_set(&batman_if->seqno, 1);
++	check_known_mac_addr(batman_if->net_dev->dev_addr);
++	list_add_tail_rcu(&batman_if->list, &if_list);
++	return batman_if;
+ 
+-	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
+-	 * if_num */
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++free_dev:
++	kfree(batman_if->dev);
++free_if:
++	kfree(batman_if);
++out:
++	return NULL;
++}
+ 
+-	while (hash_iterate(orig_hash, &hashit)) {
+-		orig_node = hashit.bucket->data;
+-		if (resize_orig(orig_node, if_num) == -1) {
+-			spin_unlock_irqrestore(&orig_hash_lock, flags);
+-			goto out;
+-		}
+-	}
++static void hardif_free_interface(struct rcu_head *rcu)
++{
++	struct batman_if *batman_if = container_of(rcu, struct batman_if, rcu);
+ 
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	/* delete all references to this batman_if */
++	purge_orig(NULL);
++	purge_outstanding_packets(batman_if);
+ 
+-	if (!hardif_is_interface_up(batman_if->dev))
+-		printk(KERN_ERR "batman-adv:Not using interface %s (retrying later): interface not active\n", batman_if->dev);
+-	else
+-		hardif_activate_interface(batman_if);
++	kfree(batman_if->dev);
++	kfree(batman_if);
++}
+ 
+-	list_add_tail_rcu(&batman_if->list, &if_list);
++static void hardif_remove_interface(struct batman_if *batman_if)
++{
++	/* first deactivate interface */
++	if (batman_if->if_status != IF_NOT_IN_USE)
++		hardif_disable_interface(batman_if);
+ 
+-	/* begin sending originator messages on that interface */
+-	schedule_own_packet(batman_if);
+-	return 1;
++	if (batman_if->if_status != IF_NOT_IN_USE)
++		return;
+ 
+-out:
+-	kfree(batman_if->packet_buff);
+-	kfree(batman_if);
+-	kfree(dev);
+-	return -1;
++	batman_if->if_status = IF_TO_BE_REMOVED;
++	list_del_rcu(&batman_if->list);
++	sysfs_del_hardif(&batman_if->hardif_obj);
++	call_rcu(&batman_if->rcu, hardif_free_interface);
+ }
+ 
+-char hardif_get_active_if_num(void)
++void hardif_remove_interfaces(void)
+ {
+-	return active_ifs;
++	struct batman_if *batman_if, *batman_if_tmp;
++
++	list_for_each_entry_safe(batman_if, batman_if_tmp, &if_list, list)
++		hardif_remove_interface(batman_if);
+ }
+ 
+ static int hard_if_event(struct notifier_block *this,
+-			    unsigned long event, void *ptr)
++			 unsigned long event, void *ptr)
+ {
+-	struct net_device *dev = (struct net_device *)ptr;
+-	struct batman_if *batman_if = get_batman_if_by_name(dev->name);
++	struct net_device *net_dev = (struct net_device *)ptr;
++	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
++	/* FIXME: each batman_if will be attached to a softif */
++	struct bat_priv *bat_priv = netdev_priv(soft_device);
++
++	if (!batman_if)
++		batman_if = hardif_add_interface(net_dev);
+ 
+ 	if (!batman_if)
+ 		goto out;
+ 
+ 	switch (event) {
++	case NETDEV_REGISTER:
++		break;
++	case NETDEV_UP:
++		hardif_activate_interface(bat_priv, batman_if);
++		break;
+ 	case NETDEV_GOING_DOWN:
+ 	case NETDEV_DOWN:
+-	case NETDEV_UNREGISTER:
+ 		hardif_deactivate_interface(batman_if);
+ 		break;
+-	case NETDEV_UP:
+-		hardif_activate_interface(batman_if);
+-		if ((atomic_read(&module_state) == MODULE_INACTIVE) &&
+-		    (hardif_get_active_if_num() > 0)) {
+-			activate_module();
+-		}
++	case NETDEV_UNREGISTER:
++		hardif_remove_interface(batman_if);
++		break;
++	case NETDEV_CHANGENAME:
++		break;
++	case NETDEV_CHANGEADDR:
++		check_known_mac_addr(batman_if->net_dev->dev_addr);
++		update_mac_addresses(batman_if);
++		if (batman_if == bat_priv->primary_if)
++			set_primary_if(bat_priv, batman_if);
+ 		break;
+-	/* NETDEV_CHANGEADDR - mac address change - what are we doing here ? */
+ 	default:
+ 		break;
+ 	};
+ 
+-	update_min_mtu();
+-
+ out:
+ 	return NOTIFY_DONE;
+ }
+ 
+-/* find batman interface by netdev. assumes rcu_read_lock on */
+-static struct batman_if *find_batman_if(struct net_device *dev)
+-{
+-	struct batman_if *batman_if;
+-
+-	rcu_read_lock();
+-	list_for_each_entry_rcu(batman_if, &if_list, list) {
+-		if (batman_if->net_dev == dev) {
+-			rcu_read_unlock();
+-			return batman_if;
+-		}
+-	}
+-	rcu_read_unlock();
+-	return NULL;
+-}
+-
+-
+ /* receive a packet with the batman ethertype coming on a hard
+  * interface */
+ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+@@ -444,12 +453,12 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 				|| !skb_mac_header(skb)))
+ 		goto err_free;
+ 
+-	batman_if = find_batman_if(skb->dev);
++	batman_if = get_batman_if_by_netdev(skb->dev);
+ 	if (!batman_if)
+ 		goto err_free;
+ 
+ 	/* discard frames on not active interfaces */
+-	if (batman_if->if_active != IF_ACTIVE)
++	if (batman_if->if_status != IF_ACTIVE)
+ 		goto err_free;
+ 
+ 	stats = (struct net_device_stats *)dev_get_stats(skb->dev);
+diff --git a/drivers/staging/batman-adv/hard-interface.h b/drivers/staging/batman-adv/hard-interface.h
+index 4100a27..1e5fc3e 100644
+--- a/drivers/staging/batman-adv/hard-interface.h
++++ b/drivers/staging/batman-adv/hard-interface.h
+@@ -19,19 +19,19 @@
+  *
+  */
+ 
+-#define IF_INACTIVE 0
+-#define IF_ACTIVE 1
+-/* #define IF_TO_BE_DEACTIVATED 2 - not needed anymore */
+-#define IF_TO_BE_ACTIVATED 3
++#define IF_NOT_IN_USE 0
++#define IF_TO_BE_REMOVED 1
++#define IF_INACTIVE 2
++#define IF_ACTIVE 3
++#define IF_TO_BE_ACTIVATED 4
++#define IF_I_WANT_YOU 5
+ 
+ extern struct notifier_block hard_if_notifier;
+ 
++struct batman_if *get_batman_if_by_netdev(struct net_device *net_dev);
++int hardif_enable_interface(struct batman_if *batman_if);
++void hardif_disable_interface(struct batman_if *batman_if);
+ void hardif_remove_interfaces(void);
+-int hardif_add_interface(char *dev, int if_num);
+-void hardif_deactivate_interface(struct batman_if *batman_if);
+-char hardif_get_active_if_num(void);
+-void hardif_check_interfaces_status(void);
+-void hardif_check_interfaces_status_wq(struct work_struct *work);
+ int batman_skb_recv(struct sk_buff *skb,
+ 				struct net_device *dev,
+ 				struct packet_type *ptype,
+diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
+index 7d72685..c1e57aa 100644
+--- a/drivers/staging/batman-adv/main.c
++++ b/drivers/staging/batman-adv/main.c
+@@ -20,7 +20,6 @@
+  */
+ 
+ #include "main.h"
+-#include "proc.h"
+ #include "bat_sysfs.h"
+ #include "routing.h"
+ #include "send.h"
+@@ -44,7 +43,6 @@ DEFINE_SPINLOCK(forw_bcast_list_lock);
+ 
+ atomic_t vis_interval;
+ int16_t num_hna;
+-int16_t num_ifs;
+ 
+ struct net_device *soft_device;
+ 
+@@ -89,10 +87,6 @@ int init_module(void)
+ 	if (!bat_event_workqueue)
+ 		return -ENOMEM;
+ 
+-	retval = setup_procfs();
+-	if (retval < 0)
+-		return retval;
+-
+ 	bat_device_init();
+ 
+ 	/* initialize layer 2 interface */
+@@ -135,7 +129,10 @@ end:
+ 
+ void cleanup_module(void)
+ {
+-	shutdown_module();
++	deactivate_module();
++
++	unregister_netdevice_notifier(&hard_if_notifier);
++	hardif_remove_interfaces();
+ 
+ 	if (soft_device) {
+ 		sysfs_del_meshif(soft_device);
+@@ -145,9 +142,6 @@ void cleanup_module(void)
+ 
+ 	dev_remove_pack(&batman_adv_packet_type);
+ 
+-	unregister_netdevice_notifier(&hard_if_notifier);
+-	cleanup_procfs();
+-
+ 	destroy_workqueue(bat_event_workqueue);
+ 	bat_event_workqueue = NULL;
+ }
+@@ -178,17 +172,17 @@ void activate_module(void)
+ 
+ err:
+ 	printk(KERN_ERR "batman-adv:Unable to allocate memory for mesh information structures: out of mem ?\n");
+-	shutdown_module();
++	deactivate_module();
+ end:
+ 	return;
+ }
+ 
+ /* shuts down the whole module.*/
+-void shutdown_module(void)
++void deactivate_module(void)
+ {
+ 	atomic_set(&module_state, MODULE_DEACTIVATING);
+ 
+-	purge_outstanding_packets();
++	purge_outstanding_packets(NULL);
+ 	flush_workqueue(bat_event_workqueue);
+ 
+ 	vis_quit();
+@@ -203,7 +197,6 @@ void shutdown_module(void)
+ 	synchronize_net();
+ 	bat_device_destroy();
+ 
+-	hardif_remove_interfaces();
+ 	synchronize_rcu();
+ 	atomic_set(&module_state, MODULE_INACTIVE);
+ }
+diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
+index 59a70c7..247196c 100644
+--- a/drivers/staging/batman-adv/main.h
++++ b/drivers/staging/batman-adv/main.h
+@@ -129,7 +129,6 @@ extern spinlock_t forw_bcast_list_lock;
+ 
+ extern atomic_t vis_interval;
+ extern int16_t num_hna;
+-extern int16_t num_ifs;
+ 
+ extern struct net_device *soft_device;
+ 
+@@ -138,7 +137,7 @@ extern atomic_t module_state;
+ extern struct workqueue_struct *bat_event_workqueue;
+ 
+ void activate_module(void);
+-void shutdown_module(void);
++void deactivate_module(void);
+ void inc_module_count(void);
+ void dec_module_count(void);
+ int addr_to_string(char *buff, uint8_t *addr);
+diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
+index 4152701..44bbe89 100644
+--- a/drivers/staging/batman-adv/originator.c
++++ b/drivers/staging/batman-adv/originator.c
+@@ -118,6 +118,8 @@ void free_orig_node(void *data)
+  * address if it does not exits */
+ struct orig_node *get_orig_node(uint8_t *addr)
+ {
++	/* FIXME: each batman_if will be attached to a softif */
++	struct bat_priv *bat_priv = netdev_priv(soft_device);
+ 	struct orig_node *orig_node;
+ 	struct hashtable_t *swaphash;
+ 	int size;
+@@ -139,13 +141,13 @@ struct orig_node *get_orig_node(uint8_t *addr)
+ 	orig_node->router = NULL;
+ 	orig_node->hna_buff = NULL;
+ 
+-	size = num_ifs * sizeof(TYPE_OF_WORD) * NUM_WORDS;
++	size = bat_priv->num_ifaces * sizeof(TYPE_OF_WORD) * NUM_WORDS;
+ 
+ 	orig_node->bcast_own = kzalloc(size, GFP_ATOMIC);
+ 	if (!orig_node->bcast_own)
+ 		goto free_orig_node;
+ 
+-	size = num_ifs * sizeof(uint8_t);
++	size = bat_priv->num_ifaces * sizeof(uint8_t);
+ 	orig_node->bcast_own_sum = kzalloc(size, GFP_ATOMIC);
+ 	if (!orig_node->bcast_own_sum)
+ 		goto free_bcast_own;
+@@ -182,16 +184,25 @@ static bool purge_orig_neighbors(struct orig_node *orig_node,
+ 
+ 	*best_neigh_node = NULL;
+ 
+-
+ 	/* for all neighbors towards this originator ... */
+ 	list_for_each_safe(list_pos, list_pos_tmp, &orig_node->neigh_list) {
+ 		neigh_node = list_entry(list_pos, struct neigh_node, list);
+ 
+-		if (time_after(jiffies,
++		if ((time_after(jiffies,
+ 			       (neigh_node->last_valid +
+-				((PURGE_TIMEOUT * HZ) / 1000)))) {
+-
+-			bat_dbg(DBG_BATMAN, "neighbor timeout: originator %pM, neighbor: %pM, last_valid %lu\n", orig_node->orig, neigh_node->addr, (neigh_node->last_valid / HZ));
++				((PURGE_TIMEOUT * HZ) / 1000)))) ||
++		    (neigh_node->if_incoming->if_status ==
++						IF_TO_BE_REMOVED)) {
++
++			if (neigh_node->if_incoming->if_status ==
++							IF_TO_BE_REMOVED)
++				bat_dbg(DBG_BATMAN, "neighbor purge: originator %pM, neighbor: %pM, iface: %s\n",
++					orig_node->orig, neigh_node->addr,
++					neigh_node->if_incoming->dev);
++			else
++				bat_dbg(DBG_BATMAN, "neighbor timeout: originator %pM, neighbor: %pM, last_valid: %lu\n",
++					orig_node->orig, neigh_node->addr,
++					(neigh_node->last_valid / HZ));
+ 
+ 			neigh_purged = true;
+ 			list_del(list_pos);
+@@ -246,13 +257,17 @@ void purge_orig(struct work_struct *work)
+ 
+ 	spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 
+-	start_purge_timer();
++	/* if work == NULL we were not called by the timer
++	 * and thus do not need to re-arm the timer */
++	if (work)
++		start_purge_timer();
+ }
+ 
+ ssize_t orig_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 			      size_t count, loff_t off)
+ {
+ 	HASHIT(hashit);
++	struct bat_priv *bat_priv = netdev_priv(net_dev);
+ 	struct orig_node *orig_node;
+ 	struct neigh_node *neigh_node;
+ 	size_t hdr_len, tmp_len;
+@@ -260,10 +275,7 @@ ssize_t orig_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 	unsigned long flags;
+ 	char orig_str[ETH_STR_LEN], router_str[ETH_STR_LEN];
+ 
+-	rcu_read_lock();
+-	if (list_empty(&if_list)) {
+-		rcu_read_unlock();
+-
++	if (!bat_priv->primary_if) {
+ 		if (off == 0)
+ 			return sprintf(buff,
+ 				       "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+@@ -272,9 +284,7 @@ ssize_t orig_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 		return 0;
+ 	}
+ 
+-	if (((struct batman_if *)if_list.next)->if_active != IF_ACTIVE) {
+-		rcu_read_unlock();
+-
++	if (bat_priv->primary_if->if_status != IF_ACTIVE) {
+ 		if (off == 0)
+ 			return sprintf(buff,
+ 				       "BATMAN mesh %s disabled - primary interface not active\n",
+@@ -283,12 +293,12 @@ ssize_t orig_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 		return 0;
+ 	}
+ 
++	rcu_read_lock();
+ 	hdr_len = sprintf(buff,
+ 		   "  %-14s (%s/%i) %17s [%10s]: %20s ... [B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)] \n",
+ 		   "Originator", "#", TQ_MAX_VALUE, "Nexthop", "outgoingIF",
+ 		   "Potential nexthops", SOURCE_VERSION, REVISION_VERSION_STR,
+-		   ((struct batman_if *)if_list.next)->dev,
+-		   ((struct batman_if *)if_list.next)->addr_str,
++		   bat_priv->primary_if->dev, bat_priv->primary_if->addr_str,
+ 		   net_dev->name);
+ 	rcu_read_unlock();
+ 
+@@ -347,3 +357,152 @@ ssize_t orig_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 	return bytes_written;
+ }
+ 
++static int orig_node_add_if(struct orig_node *orig_node, int max_if_num)
++{
++	void *data_ptr;
++
++	data_ptr = kmalloc(max_if_num * sizeof(TYPE_OF_WORD) * NUM_WORDS,
++			   GFP_ATOMIC);
++	if (!data_ptr) {
++		printk(KERN_ERR "batman-adv:Can't resize orig: out of memory\n");
++		return -1;
++	}
++
++	memcpy(data_ptr, orig_node->bcast_own,
++	       (max_if_num - 1) * sizeof(TYPE_OF_WORD) * NUM_WORDS);
++	kfree(orig_node->bcast_own);
++	orig_node->bcast_own = data_ptr;
++
++	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
++	if (!data_ptr) {
++		printk(KERN_ERR "batman-adv:Can't resize orig: out of memory\n");
++		return -1;
++	}
++
++	memcpy(data_ptr, orig_node->bcast_own_sum,
++	       (max_if_num - 1) * sizeof(uint8_t));
++	kfree(orig_node->bcast_own_sum);
++	orig_node->bcast_own_sum = data_ptr;
++
++	return 0;
++}
++
++int orig_hash_add_if(struct batman_if *batman_if, int max_if_num)
++{
++	struct orig_node *orig_node;
++	HASHIT(hashit);
++
++	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
++	 * if_num */
++	spin_lock(&orig_hash_lock);
++
++	while (hash_iterate(orig_hash, &hashit)) {
++		orig_node = hashit.bucket->data;
++
++		if (orig_node_add_if(orig_node, max_if_num) == -1)
++			goto err;
++	}
++
++	spin_unlock(&orig_hash_lock);
++	return 0;
++
++err:
++	spin_unlock(&orig_hash_lock);
++	return -ENOMEM;
++}
++
++static int orig_node_del_if(struct orig_node *orig_node,
++		     int max_if_num, int del_if_num)
++{
++	void *data_ptr = NULL;
++	int chunk_size;
++
++	/* last interface was removed */
++	if (max_if_num == 0)
++		goto free_bcast_own;
++
++	chunk_size = sizeof(TYPE_OF_WORD) * NUM_WORDS;
++	data_ptr = kmalloc(max_if_num * chunk_size, GFP_ATOMIC);
++	if (!data_ptr) {
++		printk(KERN_ERR "batman-adv:Can't resize orig: out of memory\n");
++		return -1;
++	}
++
++	/* copy first part */
++	memcpy(data_ptr, orig_node->bcast_own, del_if_num * chunk_size);
++
++	/* copy second part */
++	memcpy(data_ptr,
++	       orig_node->bcast_own + ((del_if_num + 1) * chunk_size),
++	       (max_if_num - del_if_num) * chunk_size);
++
++free_bcast_own:
++	kfree(orig_node->bcast_own);
++	orig_node->bcast_own = data_ptr;
++
++	if (max_if_num == 0)
++		goto free_own_sum;
++
++	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
++	if (!data_ptr) {
++		printk(KERN_ERR "batman-adv:Can't resize orig: out of memory\n");
++		return -1;
++	}
++
++	memcpy(data_ptr, orig_node->bcast_own_sum,
++	       del_if_num * sizeof(uint8_t));
++
++	memcpy(data_ptr,
++	       orig_node->bcast_own_sum + ((del_if_num + 1) * sizeof(uint8_t)),
++	       (max_if_num - del_if_num) * sizeof(uint8_t));
++
++free_own_sum:
++	kfree(orig_node->bcast_own_sum);
++	orig_node->bcast_own_sum = data_ptr;
++
++	return 0;
++}
++
++int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
++{
++	struct batman_if *batman_if_tmp;
++	struct orig_node *orig_node;
++	HASHIT(hashit);
++	int ret;
++
++	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
++	 * if_num */
++	spin_lock(&orig_hash_lock);
++
++	while (hash_iterate(orig_hash, &hashit)) {
++		orig_node = hashit.bucket->data;
++
++		ret = orig_node_del_if(orig_node, max_if_num,
++				       batman_if->if_num);
++
++		if (ret == -1)
++			goto err;
++	}
++
++	/* renumber remaining batman interfaces _inside_ of orig_hash_lock */
++	rcu_read_lock();
++	list_for_each_entry_rcu(batman_if_tmp, &if_list, list) {
++		if (batman_if_tmp->if_status == IF_NOT_IN_USE)
++			continue;
++
++		if (batman_if == batman_if_tmp)
++			continue;
++
++		if (batman_if_tmp->if_num > batman_if->if_num)
++			batman_if_tmp->if_num--;
++	}
++	rcu_read_unlock();
++
++	batman_if->if_num = -1;
++	spin_unlock(&orig_hash_lock);
++	return 0;
++
++err:
++	spin_unlock(&orig_hash_lock);
++	return -ENOMEM;
++}
+diff --git a/drivers/staging/batman-adv/originator.h b/drivers/staging/batman-adv/originator.h
+index 745b4b0..afbc7c0 100644
+--- a/drivers/staging/batman-adv/originator.h
++++ b/drivers/staging/batman-adv/originator.h
+@@ -30,3 +30,5 @@ create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
+ 		uint8_t *neigh, struct batman_if *if_incoming);
+ ssize_t orig_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 			      size_t count, loff_t off);
++int orig_hash_add_if(struct batman_if *batman_if, int max_if_num);
++int orig_hash_del_if(struct batman_if *batman_if, int max_if_num);
+diff --git a/drivers/staging/batman-adv/proc.c b/drivers/staging/batman-adv/proc.c
+deleted file mode 100644
+index 25b24fe..0000000
+--- a/drivers/staging/batman-adv/proc.c
++++ /dev/null
+@@ -1,170 +0,0 @@
+-/*
+- * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+- * 02110-1301, USA
+- *
+- */
+-
+-#include "main.h"
+-#include "proc.h"
+-#include "routing.h"
+-#include "translation-table.h"
+-#include "hard-interface.h"
+-#include "types.h"
+-#include "hash.h"
+-#include "vis.h"
+-
+-static struct proc_dir_entry *proc_batman_dir, *proc_interface_file;
+-
+-static int proc_interfaces_read(struct seq_file *seq, void *offset)
+-{
+-	struct batman_if *batman_if;
+-
+-	rcu_read_lock();
+-	list_for_each_entry_rcu(batman_if, &if_list, list) {
+-		seq_printf(seq, "[%8s] %s %s\n",
+-			   (batman_if->if_active == IF_ACTIVE ?
+-			    "active" : "inactive"),
+-			   batman_if->dev,
+-			   (batman_if->if_active == IF_ACTIVE ?
+-			    batman_if->addr_str : " "));
+-	}
+-	rcu_read_unlock();
+-
+-	return 0;
+-}
+-
+-static int proc_interfaces_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, proc_interfaces_read, NULL);
+-}
+-
+-static ssize_t proc_interfaces_write(struct file *instance,
+-				     const char __user *userbuffer,
+-				     size_t count, loff_t *data)
+-{
+-	char *if_string, *colon_ptr = NULL, *cr_ptr = NULL;
+-	int not_copied = 0, if_num = 0, add_success;
+-	struct batman_if *batman_if = NULL;
+-
+-	if_string = kmalloc(count, GFP_KERNEL);
+-
+-	if (!if_string)
+-		return -ENOMEM;
+-
+-	if (count > IFNAMSIZ - 1) {
+-		printk(KERN_WARNING "batman-adv:Can't add interface: device name is too long\n");
+-		goto end;
+-	}
+-
+-	not_copied = copy_from_user(if_string, userbuffer, count);
+-	if_string[count - not_copied - 1] = 0;
+-
+-	colon_ptr = strchr(if_string, ':');
+-	if (colon_ptr)
+-		*colon_ptr = 0;
+-
+-	if (!colon_ptr) {
+-		cr_ptr = strchr(if_string, '\n');
+-		if (cr_ptr)
+-			*cr_ptr = 0;
+-	}
+-
+-	if (strlen(if_string) == 0) {
+-		shutdown_module();
+-		num_ifs = 0;
+-		goto end;
+-	}
+-
+-	/* add interface */
+-	rcu_read_lock();
+-	list_for_each_entry_rcu(batman_if, &if_list, list) {
+-		if (strncmp(batman_if->dev, if_string, count) == 0) {
+-			printk(KERN_ERR "batman-adv:Given interface is already active: %s\n", if_string);
+-			rcu_read_unlock();
+-			goto end;
+-
+-		}
+-
+-		if_num++;
+-	}
+-	rcu_read_unlock();
+-
+-	add_success = hardif_add_interface(if_string, if_num);
+-	if (add_success < 0)
+-		goto end;
+-
+-	num_ifs = if_num + 1;
+-
+-	if ((atomic_read(&module_state) == MODULE_INACTIVE) &&
+-	    (hardif_get_active_if_num() > 0))
+-		activate_module();
+-
+-	return count;
+-end:
+-	kfree(if_string);
+-	return count;
+-}
+-
+-static const struct file_operations proc_interfaces_fops = {
+-	.owner		= THIS_MODULE,
+-	.open		= proc_interfaces_open,
+-	.read		= seq_read,
+-	.write		= proc_interfaces_write,
+-	.llseek		= seq_lseek,
+-	.release	= single_release,
+-};
+-
+-void cleanup_procfs(void)
+-{
+-	if (proc_interface_file)
+-		remove_proc_entry(PROC_FILE_INTERFACES, proc_batman_dir);
+-
+-	if (proc_batman_dir)
+-#ifdef __NET_NET_NAMESPACE_H
+-		remove_proc_entry(PROC_ROOT_DIR, init_net.proc_net);
+-#else
+-		remove_proc_entry(PROC_ROOT_DIR, proc_net);
+-#endif
+-}
+-
+-int setup_procfs(void)
+-{
+-#ifdef __NET_NET_NAMESPACE_H
+-	proc_batman_dir = proc_mkdir(PROC_ROOT_DIR, init_net.proc_net);
+-#else
+-	proc_batman_dir = proc_mkdir(PROC_ROOT_DIR, proc_net);
+-#endif
+-
+-	if (!proc_batman_dir) {
+-		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s' folder failed\n", PROC_ROOT_DIR);
+-		return -EFAULT;
+-	}
+-
+-	proc_interface_file = create_proc_entry(PROC_FILE_INTERFACES,
+-						S_IWUSR | S_IRUGO,
+-						proc_batman_dir);
+-	if (proc_interface_file) {
+-		proc_interface_file->proc_fops = &proc_interfaces_fops;
+-	} else {
+-		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_INTERFACES);
+-		cleanup_procfs();
+-		return -EFAULT;
+-	}
+-
+-	return 0;
+-}
+diff --git a/drivers/staging/batman-adv/proc.h b/drivers/staging/batman-adv/proc.h
+deleted file mode 100644
+index 6f4f5b3..0000000
+--- a/drivers/staging/batman-adv/proc.h
++++ /dev/null
+@@ -1,30 +0,0 @@
+-/*
+- * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+- * 02110-1301, USA
+- *
+- */
+-
+-#include <linux/proc_fs.h>
+-#include <linux/seq_file.h>
+-
+-#define PROC_ROOT_DIR "batman-adv"
+-#define PROC_FILE_INTERFACES "interfaces"
+-
+-void cleanup_procfs(void);
+-int setup_procfs(void);
+-
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index 0a9f52b..7b8aa27 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -205,7 +205,7 @@ static int isBidirectionalNeigh(struct orig_node *orig_node,
+ 	batman_packet->tq = ((batman_packet->tq *
+ 			      orig_neigh_node->tq_own *
+ 			      orig_neigh_node->tq_asym_penalty) /
+-			     (TQ_MAX_VALUE *	 TQ_MAX_VALUE));
++			     (TQ_MAX_VALUE * TQ_MAX_VALUE));
+ 
+ 	bat_dbg(DBG_BATMAN, "bidirectional: orig = %-15pM neigh = %-15pM => own_bcast = %2i, real recv = %2i, local tq: %3i, asym_penalty: %3i, total tq: %3i\n",
+ 		orig_node->orig, orig_neigh_node->orig, total_count,
+@@ -387,7 +387,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 		batman_packet->version, has_directlink_flag);
+ 
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+-		if (batman_if->if_active != IF_ACTIVE)
++		if (batman_if->if_status != IF_ACTIVE)
+ 			continue;
+ 
+ 		if (compare_orig(ethhdr->h_source,
+@@ -893,7 +893,7 @@ int recv_bcast_packet(struct sk_buff *skb)
+ 	if (is_my_mac(ethhdr->h_source))
+ 		return NET_RX_DROP;
+ 
+-	bcast_packet = (struct bcast_packet *) skb->data;
++	bcast_packet = (struct bcast_packet *)skb->data;
+ 
+ 	/* ignore broadcasts originated by myself */
+ 	if (is_my_mac(bcast_packet->orig))
+diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
+index de2344a..31d86ae 100644
+--- a/drivers/staging/batman-adv/send.c
++++ b/drivers/staging/batman-adv/send.c
+@@ -57,7 +57,7 @@ int send_skb_packet(struct sk_buff *skb,
+ {
+ 	struct ethhdr *ethhdr;
+ 
+-	if (batman_if->if_active != IF_ACTIVE)
++	if (batman_if->if_status != IF_ACTIVE)
+ 		goto send_skb_err;
+ 
+ 	if (unlikely(!batman_if->net_dev))
+@@ -123,7 +123,7 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
+ 	int16_t buff_pos;
+ 	struct batman_packet *batman_packet;
+ 
+-	if (batman_if->if_active != IF_ACTIVE)
++	if (batman_if->if_status != IF_ACTIVE)
+ 		return;
+ 
+ 	packet_num = 0;
+@@ -182,7 +182,7 @@ static void send_packet(struct forw_packet *forw_packet)
+ 		return;
+ 	}
+ 
+-	if (forw_packet->if_incoming->if_active != IF_ACTIVE)
++	if (forw_packet->if_incoming->if_status != IF_ACTIVE)
+ 		return;
+ 
+ 	/* multihomed peer assumed */
+@@ -243,7 +243,13 @@ void schedule_own_packet(struct batman_if *batman_if)
+ 	struct bat_priv *bat_priv = netdev_priv(soft_device);
+ 	unsigned long send_time;
+ 	struct batman_packet *batman_packet;
+-	int vis_server = atomic_read(&bat_priv->vis_mode);
++	int vis_server;
++
++	if ((batman_if->if_status == IF_NOT_IN_USE) ||
++	    (batman_if->if_status == IF_TO_BE_REMOVED))
++		return;
++
++	vis_server = atomic_read(&bat_priv->vis_mode);
+ 
+ 	/**
+ 	 * the interface gets activated here to avoid race conditions between
+@@ -252,11 +258,12 @@ void schedule_own_packet(struct batman_if *batman_if)
+ 	 * outdated packets (especially uninitialized mac addresses) in the
+ 	 * packet queue
+ 	 */
+-	if (batman_if->if_active == IF_TO_BE_ACTIVATED)
+-		batman_if->if_active = IF_ACTIVE;
++	if (batman_if->if_status == IF_TO_BE_ACTIVATED)
++		batman_if->if_status = IF_ACTIVE;
+ 
+ 	/* if local hna has changed and interface is a primary interface */
+-	if ((atomic_read(&hna_local_changed)) && (batman_if->if_num == 0))
++	if ((atomic_read(&hna_local_changed)) &&
++	    (batman_if == bat_priv->primary_if))
+ 		rebuild_batman_packet(batman_if);
+ 
+ 	/**
+@@ -374,13 +381,11 @@ void add_bcast_packet_to_list(struct sk_buff *skb)
+ 
+ 	forw_packet = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
+ 	if (!forw_packet)
+-		return;
++		goto out;
+ 
+ 	skb = skb_copy(skb, GFP_ATOMIC);
+-	if (!skb) {
+-		kfree(forw_packet);
+-		return;
+-	}
++	if (!skb)
++		goto packet_free;
+ 
+ 	skb_reset_mac_header(skb);
+ 
+@@ -391,6 +396,12 @@ void add_bcast_packet_to_list(struct sk_buff *skb)
+ 	forw_packet->num_packets = 0;
+ 
+ 	_add_bcast_packet_to_list(forw_packet, 1);
++	return;
++
++packet_free:
++	kfree(forw_packet);
++out:
++	return;
+ }
+ 
+ void send_outstanding_bcast_packet(struct work_struct *work)
+@@ -455,19 +466,31 @@ void send_outstanding_bat_packet(struct work_struct *work)
+ 	forw_packet_free(forw_packet);
+ }
+ 
+-void purge_outstanding_packets(void)
++void purge_outstanding_packets(struct batman_if *batman_if)
+ {
+ 	struct forw_packet *forw_packet;
+ 	struct hlist_node *tmp_node, *safe_tmp_node;
+ 	unsigned long flags;
+ 
+-	bat_dbg(DBG_BATMAN, "purge_outstanding_packets()\n");
++	if (batman_if)
++		bat_dbg(DBG_BATMAN, "purge_outstanding_packets(): %s\n",
++			batman_if->dev);
++	else
++		bat_dbg(DBG_BATMAN, "purge_outstanding_packets()\n");
+ 
+ 	/* free bcast list */
+ 	spin_lock_irqsave(&forw_bcast_list_lock, flags);
+ 	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node,
+ 				  &forw_bcast_list, list) {
+ 
++		/**
++		 * if purge_outstanding_packets() was called with an argmument
++		 * we delete only packets belonging to the given interface
++		 */
++		if ((batman_if) &&
++		    (forw_packet->if_incoming != batman_if))
++			continue;
++
+ 		spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
+ 
+ 		/**
+@@ -484,6 +507,14 @@ void purge_outstanding_packets(void)
+ 	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node,
+ 				  &forw_bat_list, list) {
+ 
++		/**
++		 * if purge_outstanding_packets() was called with an argmument
++		 * we delete only packets belonging to the given interface
++		 */
++		if ((batman_if) &&
++		    (forw_packet->if_incoming != batman_if))
++			continue;
++
+ 		spin_unlock_irqrestore(&forw_bat_list_lock, flags);
+ 
+ 		/**
+diff --git a/drivers/staging/batman-adv/send.h b/drivers/staging/batman-adv/send.h
+index b2ddf63..b84a470 100644
+--- a/drivers/staging/batman-adv/send.h
++++ b/drivers/staging/batman-adv/send.h
+@@ -36,4 +36,4 @@ void schedule_forward_packet(struct orig_node *orig_node,
+ void add_bcast_packet_to_list(struct sk_buff *skb);
+ void send_outstanding_bcast_packet(struct work_struct *work);
+ void send_outstanding_bat_packet(struct work_struct *work);
+-void purge_outstanding_packets(void);
++void purge_outstanding_packets(struct batman_if *batman_if);
 diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
-index 829deb6..4cdebe5 100644
+index 4cdebe5..681a0ad 100644
 --- a/drivers/staging/batman-adv/soft-interface.c
 +++ b/drivers/staging/batman-adv/soft-interface.c
-@@ -236,7 +236,6 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
- 			orig_node = transtable_search(ethhdr->h_dest);
- 
- 		if ((orig_node) &&
--		    (orig_node->batman_if) &&
- 		    (orig_node->router)) {
- 			if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
- 				goto unlock;
-@@ -252,13 +251,13 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+@@ -251,7 +251,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
  			memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
  
  			/* net_dev won't be available when not active */
--			if (orig_node->batman_if->if_active != IF_ACTIVE)
-+			if (orig_node->router->if_incoming->if_active != IF_ACTIVE)
+-			if (orig_node->router->if_incoming->if_active != IF_ACTIVE)
++			if (orig_node->router->if_incoming->if_status != IF_ACTIVE)
  				goto unlock;
  
  			/* don't lock while sending the packets ... we therefore
- 			 * copy the required data before sending */
+diff --git a/drivers/staging/batman-adv/translation-table.c b/drivers/staging/batman-adv/translation-table.c
+index b735200..c7a6635 100644
+--- a/drivers/staging/batman-adv/translation-table.c
++++ b/drivers/staging/batman-adv/translation-table.c
+@@ -159,16 +159,14 @@ int hna_local_fill_buffer(unsigned char *buff, int buff_len)
+ int hna_local_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 			       size_t count, loff_t off)
+ {
++	struct bat_priv *bat_priv = netdev_priv(net_dev);
+ 	struct hna_local_entry *hna_local_entry;
+ 	HASHIT(hashit);
+ 	int bytes_written = 0;
+ 	unsigned long flags;
+ 	size_t hdr_len;
  
--			batman_if = orig_node->batman_if;
-+			batman_if = orig_node->router->if_incoming;
- 			memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
- 			spin_unlock_irqrestore(&orig_hash_lock, flags);
+-	rcu_read_lock();
+-	if (list_empty(&if_list)) {
+-		rcu_read_unlock();
+-
++	if (!bat_priv->primary_if) {
+ 		if (off == 0)
+ 			return sprintf(buff,
+ 				       "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+@@ -176,7 +174,6 @@ int hna_local_fill_buffer_text(struct net_device *net_dev, char *buff,
  
+ 		return 0;
+ 	}
+-	rcu_read_unlock();
+ 
+ 	hdr_len = sprintf(buff,
+ 			  "Locally retrieved addresses (from %s) announced via HNA:\n",
+@@ -376,16 +373,14 @@ void hna_global_add_orig(struct orig_node *orig_node,
+ int hna_global_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 				size_t count, loff_t off)
+ {
++	struct bat_priv *bat_priv = netdev_priv(net_dev);
+ 	struct hna_global_entry *hna_global_entry;
+ 	HASHIT(hashit);
+ 	int bytes_written = 0;
+ 	unsigned long flags;
+ 	size_t hdr_len;
+ 
+-	rcu_read_lock();
+-	if (list_empty(&if_list)) {
+-		rcu_read_unlock();
+-
++	if (!bat_priv->primary_if) {
+ 		if (off == 0)
+ 			return sprintf(buff,
+ 				       "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+@@ -393,7 +388,6 @@ int hna_global_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 
+ 		return 0;
+ 	}
+-	rcu_read_unlock();
+ 
+ 	hdr_len = sprintf(buff,
+ 			  "Globally announced HNAs received via the mesh %s (translation table):\n",
 diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
-index a8c6ad7..ffaa16c 100644
+index ffaa16c..eba1fa6 100644
 --- a/drivers/staging/batman-adv/types.h
 +++ b/drivers/staging/batman-adv/types.h
-@@ -49,7 +49,6 @@ struct batman_if {
- struct orig_node {               /* structure for orig_list maintaining nodes of mesh */
- 	uint8_t orig[ETH_ALEN];
- 	struct neigh_node *router;
--	struct batman_if *batman_if;
- 	TYPE_OF_WORD *bcast_own;
- 	uint8_t *bcast_own_sum;
- 	uint8_t tq_own;
+@@ -36,12 +36,13 @@ struct batman_if {
+ 	struct list_head list;
+ 	int16_t if_num;
+ 	char *dev;
+-	char if_active;
++	char if_status;
+ 	char addr_str[ETH_STR_LEN];
+ 	struct net_device *net_dev;
+ 	atomic_t seqno;
+ 	unsigned char *packet_buff;
+ 	int packet_len;
++	struct kobject *hardif_obj;
+ 	struct rcu_head rcu;
+ 
+ };
+@@ -84,6 +85,8 @@ struct bat_priv {
+ 	atomic_t aggregation_enabled;
+ 	atomic_t vis_mode;
+ 	atomic_t orig_interval;
++	char num_ifaces;
++	struct batman_if *primary_if;
+ 	struct kobject *mesh_obj;
+ };
+ 
 diff --git a/drivers/staging/batman-adv/vis.c b/drivers/staging/batman-adv/vis.c
-index 5edeb32..57d69d7 100644
+index 57d69d7..b6ff031 100644
 --- a/drivers/staging/batman-adv/vis.c
 +++ b/drivers/staging/batman-adv/vis.c
-@@ -498,14 +498,14 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
+@@ -173,13 +173,10 @@ ssize_t vis_fill_buffer_text(struct net_device *net_dev, char *buff,
+ 	unsigned long flags;
+ 	int vis_server = atomic_read(&bat_priv->vis_mode);
+ 
+-	rcu_read_lock();
+-	if (list_empty(&if_list) || (vis_server == VIS_TYPE_CLIENT_UPDATE)) {
+-		rcu_read_unlock();
++	if ((!bat_priv->primary_if) ||
++	    (vis_server == VIS_TYPE_CLIENT_UPDATE))
+ 		return 0;
+-	}
+ 
+-	rcu_read_unlock();
+ 	hdr_len = 0;
+ 
+ 	spin_lock_irqsave(&vis_hash_lock, flags);
+@@ -498,7 +495,7 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
  		if (orig_node->router != NULL
  			&& compare_orig(orig_node->router->addr,
  					orig_node->orig)
--			&& orig_node->batman_if
--			&& (orig_node->batman_if->if_active == IF_ACTIVE)
-+			&& (orig_node->router->if_incoming->if_active ==
-+								IF_ACTIVE)
+-			&& (orig_node->router->if_incoming->if_active ==
++			&& (orig_node->router->if_incoming->if_status ==
+ 								IF_ACTIVE)
  		    && orig_node->router->tq_avg > 0) {
- 
- 			/* fill one entry into buffer. */
- 			entry = &entry_array[info->packet.entries];
- 			memcpy(entry->src,
--			       orig_node->batman_if->net_dev->dev_addr,
-+			     orig_node->router->if_incoming->net_dev->dev_addr,
- 			       ETH_ALEN);
- 			memcpy(entry->dest, orig_node->orig, ETH_ALEN);
- 			entry->quality = orig_node->router->tq_avg;
-@@ -573,8 +573,7 @@ static void broadcast_vis_packet(struct vis_info *info, int packet_length)
- 		orig_node = hashit.bucket->data;
- 
- 		/* if it's a vis server and reachable, send it. */
--		if ((!orig_node) || (!orig_node->batman_if) ||
--		    (!orig_node->router))
-+		if ((!orig_node) || (!orig_node->router))
- 			continue;
- 		if (!(orig_node->flags & VIS_SERVER))
- 			continue;
-@@ -584,7 +583,7 @@ static void broadcast_vis_packet(struct vis_info *info, int packet_length)
- 			continue;
- 
- 		memcpy(info->packet.target_orig, orig_node->orig, ETH_ALEN);
--		batman_if = orig_node->batman_if;
-+		batman_if = orig_node->router->if_incoming;
- 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
- 		spin_unlock_irqrestore(&orig_hash_lock, flags);
- 
-@@ -609,12 +608,12 @@ static void unicast_vis_packet(struct vis_info *info, int packet_length)
- 	orig_node = ((struct orig_node *)
- 		     hash_find(orig_hash, info->packet.target_orig));
- 
--	if ((!orig_node) || (!orig_node->batman_if) || (!orig_node->router))
-+	if ((!orig_node) || (!orig_node->router))
- 		goto out;
- 
- 	/* don't lock while sending the packets ... we therefore
- 	 * copy the required data before sending */
--	batman_if = orig_node->batman_if;
-+	batman_if = orig_node->router->if_incoming;
- 	memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
  
 -- 
 1.7.1
