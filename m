@@ -1,15 +1,12 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Thu,  6 May 2010 22:18:33 +0200
-Message-Id: <1273177132-8792-8-git-send-email-andrew@lunn.ch>
+Date: Thu,  6 May 2010 22:18:34 +0200
+Message-Id: <1273177132-8792-9-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 References: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 07/26] staging:batman-adv: Remove dead max
-	addr and obsolete VIS_FORMAT strings
+Subject: [B.A.T.M.A.N.] [PATCH 08/26] staging:batman-adv: Add 0.2.1 changes
+	to the CHANGELOG
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,43 +23,34 @@ Cc: b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
 From: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Max address is not being used anywhere and just misleading, therefore
-removing it. VIS_FORMAT string is now obsolete, so also remove it.
-
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/main.h |    2 --
- drivers/staging/batman-adv/vis.h  |    2 --
- 2 files changed, 0 insertions(+), 4 deletions(-)
+ drivers/staging/batman-adv/CHANGELOG |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
-index 5fdf5af..2494f5a 100644
---- a/drivers/staging/batman-adv/main.h
-+++ b/drivers/staging/batman-adv/main.h
-@@ -34,8 +34,6 @@
- #define TQ_MAX_VALUE 255
- #define JITTER 20
- #define TTL 50			  /* Time To Live of broadcast messages */
--#define MAX_ADDR 16		  /* number of interfaces which can be added to
--				   * batman. */
+diff --git a/drivers/staging/batman-adv/CHANGELOG b/drivers/staging/batman-adv/CHANGELOG
+index 8a18163..c8f9d9e 100644
+--- a/drivers/staging/batman-adv/CHANGELOG
++++ b/drivers/staging/batman-adv/CHANGELOG
+@@ -1,3 +1,17 @@
++batman-adv 0.2.1:
++
++* support latest kernels (2.6.20 - 2.6.33)
++* receive packets directly using skbs, remove old sockets and threads
++* fix various regressions in the vis server
++* don't disable interrupts while sending
++* replace internal logging mechanism with standard kernel logging
++* move vis formats into userland, one general format remains in the kernel
++* allow MAC address to be set, correctly initialize them
++* code refactoring and cleaning for coding style
++* many bugs (null pointers, locking, hash iterators) squashed
++
++ -- Sun, 21 Mar 2010 20:46:47 +0100
++
+ batman-adv 0.2:
  
- #define PURGE_TIMEOUT 200000	  /* purge originators after time in ms if no
- 				   * valid packet comes in -> TODO: check
-diff --git a/drivers/staging/batman-adv/vis.h b/drivers/staging/batman-adv/vis.h
-index 98d8972..4e417fb 100644
---- a/drivers/staging/batman-adv/vis.h
-+++ b/drivers/staging/batman-adv/vis.h
-@@ -20,8 +20,6 @@
-  */
- 
- #define VIS_TIMEOUT		200000
--#define VIS_FORMAT_DD_NAME	"dot_draw"
--#define VIS_FORMAT_JSON_NAME	"json"
- 
- struct vis_info {
- 	unsigned long       first_seen;
+ * support latest kernels (2.6.20 - 2.6.31)
 -- 
 1.7.1
 
