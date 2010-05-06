@@ -1,15 +1,14 @@
-Return-Path: <greg@kroah.com>
-Date: Thu, 6 May 2010 13:41:33 -0700
-From: Greg KH <greg@kroah.com>
-Message-ID: <20100506204133.GA19717@kroah.com>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Thu, 6 May 2010 23:44:06 +0200
 References: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
-	<1273177132-8792-14-git-send-email-andrew@lunn.ch>
+In-Reply-To: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1273177132-8792-14-git-send-email-andrew@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 13/26] staging:batman-adv: convert
- multiple /proc files to use sysfs
+Content-Type: multipart/signed; boundary="nextPart1845311.dgafzuLeyx";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201005062344.57242.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 00/26] staging:batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,29 +20,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Marek Lindner <lindner_marek@yahoo.de>, gregkh@suse.de, b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On Thu, May 06, 2010 at 10:18:39PM +0200, Andrew Lunn wrote:
-> From: Marek Lindner <lindner_marek@yahoo.de>
-> 
-> This is the first patch in a series of patches which aim to convert
-> all batman-adv /proc files to sysfs. To keep the changes in a
-> digestable size it has been split up into smaller chunks. During
-> the transition period batman-adv will use /proc as well as sysfs.
-> 
-> As a first step the following files have been converted:
-> aggregate_ogm, originators, transtable_global, transtable_local
+--nextPart1845311.dgafzuLeyx
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Please document all sysfs files with a Documentation/ABI/ entry.  You
-can put it in the drivers/staging/batman-adv/ directory for now.
+Andrew Lunn wrote:
+>=20
+> Marek Lindner (9):
+>   staging:batman-adv: fix aggregation timing bug
+>   staging:batman-adv: fix whitespace style issues
+>   staging:batman-adv: convert multiple /proc files to use sysfs
+>   staging:batman-adv: convert more files from /proc to /sys
+>   staging:batman-adv: move originator interval setting from /proc to
+>     /sys
+>   staging:batman-adv: remove redundant pointer to originator interface
+>   staging:batman-adv: move /proc interface handling to /sys
+>   staging:batman-adv: Fix whitespace problems criticized by
+>     checkpatch.pl
+>   staging:batman-adv: Reduce max characters on a line to 80
 
-Also note, binary sysfs files are for things that are "pass-through",
-not for things that you try to intrepret like I think you are doing
-here.  What's wrong with configfs for something like this?
+Am I the only one who thinks that Marek takes credits for too many patches?=
+=20
+Yes, we all have to praise him for his work, but just noticed those minor=20
+glitches:
+ * fix whitespace style issues
+   - work from Luis de Bethencourt <luisbg@ubuntu.com>
+ * Fix whitespace problems criticized by
+   Reduce max characters on a line to 80
+   - work from me... somewhat
 
-Note, I still applied the patch :)
+Not that I really want credit for those patches (maybe I should have submit=
+ted=20
+them under a different name.....), but that didn't happen in the past and n=
+ow=20
+more than one time in a row. What happened here? git-am's fault?
 
-thanks,
+And thanks to Andrew for the preparation and submission of that huge patchs=
+et.=20
+Some patches are missing the signed-off-by line from you or have typos insi=
+de=20
+that line. Maybe you can use `git format-patch --signoff` to get that=20
+automatically added if it is missing.
 
-greg k-h
+Best regards,
+	Sven
+
+--nextPart1845311.dgafzuLeyx
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJL4zgnAAoJEF2HCgfBJntGeIUP/0/hNW4QNGxD5dtl/Rhtd2pP
+92Wrh0PRn70P0YkP2XGVac2lt1d4zLUmzm6NHG6Chq0Fz4xjnEd1eGLgTJuIjjQD
+AUMciEKsS39zh/CyYXm3ZSziU8MMaXADw4oPgkpIbO5Dgt7A8aVM0UyQq0RWArKT
+k8BJszR96CsJenYU+SNhrhjZlSjfeM3Op5541aN47yuz3oTHuyYgZwUxrhb/UPsh
+iUDzHFAkN9KeoCFJ7I1j4X7vOok775Ss45TgU5qOYEkFpA1BREKnI7AVlM1LhWfj
+mGAFY404pSbX5uZyEwekqu+tbf/2nrkxl5M9gBTnq5HRc9JceSkKx1jvUbtb4c9X
+Eieg6cwLR7q8bkvL1AfGmjawbR6r/5yN9S2c/IEnG3WdkpOnxKw7+m0vM2Kn0jJC
+0jfpFNe5MsFsUDeMJ8dzXWtKto7LKep/BAAxld7cNpQubflVh54DNzAQHY9Ovl2Z
+KhHzn1wyrm+AEeG+axHf7t127oNEJ4WNu/b9ojB/jRjKszUtpR2FUMeZ252TwFAR
+tu/267bQeAJM2VtP6JxmLgUj1gwdDl4+A8Zt8/D/GUEtIo2G6iHAHhLY5hlmdmR0
+C5WCOFE85YFNlhDRYvhGuESFFNRmy4xpSOtPV8y883lISImRqLKG3ZtFkhoydM4Z
+KBRkR53+GtO91V053W6n
+=iAri
+-----END PGP SIGNATURE-----
+
+--nextPart1845311.dgafzuLeyx--
