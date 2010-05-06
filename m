@@ -1,11 +1,15 @@
-Return-Path: <xxx@nei.mv.com>
-Date: Tue, 4 May 2010 19:59:38 -0400 (EDT)
-From: RHS Linux User <xxx@nei.mv.com>
-In-Reply-To: <201005041505.34855.onelektra@gmx.net>
-Message-ID: <Pine.LNX.3.95.1100504195051.1466F-100000@nei>
+Return-Path: <andrew@lunn.ch>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Thu,  6 May 2010 22:18:27 +0200
+Message-Id: <1273177132-8792-2-git-send-email-andrew@lunn.ch>
+In-Reply-To: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
+References: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Subject: Re: [B.A.T.M.A.N.] sysfs compat
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Sender: Andrew Lunn <andrew@lunn.ch>
+Subject: [B.A.T.M.A.N.] [PATCH 01/26] staging:batman-adv: only modify
+	hna-table on active module
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,66 +21,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: gregkh@suse.de
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
+From: Linus Lüssing <linus.luessing@web.de>
 
-Hi All,
+If we haven't set the module to MODULE_ACTIVE state before (in general,
+no interface has yet been added to batman-adv) then the hna table is not
+initialised yet. If the kernel changes the mac address of the bat0
+interface at this moment then an hna_local_add() called by interface_set_mac_addr()
+then resulted in a null pointer derefernce. With this patch we are now
+explicitly checking before if the state is MODULE_ACTIVE right now so
+that we can assume having an initialised hna table.
 
-   I used to run one of "THE" compliance labs....
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+ drivers/staging/batman-adv/soft-interface.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-   Who really cares about compliance ??!!  The real question is does it
-work, does it *REALLY* work !!  Can you reset it reliably? Can you debug
-it?
-
-   I too ONLY consider open source as even worth spending my time
-with.
-
-   The original Atheros driver for MITs roofnet was 50% of the size
-of their "regular" OEM driver. And it worked pretty well !! Pretty
-telling. AFAIK the MIT sources were never leaked to the web?
-
-   I keep thinking someone *SHOULD* do a WIFI interface to ethernet with
-an open radio and and open VHDL fpga design. That way we could all see
-what was *REALLY* happending with the RF !  MUCH better than ANY analyser
-out there.
-
-   And it would just get better and become more reliable over time.
-
-   Hurrah for open source!
-
-   Wiz
-
-
-On Tue, 4 May 2010, elektra wrote:
-
-> Hi Franz -
-> 
-> there are certified devices out there, running OpenWrt / open-source drivers. 
-> May I ask, what particular regulator issues you have in mind, that a open-
-> source driver can not comply with? Read: Are you sure you don't get the 
-> regulators blessing for your product with a open-source driver?
-> 
-> Besides: Do you know this song by Eric Idle, regarding the FCC?
-> 
-> http://www.youtube.com/watch?v=F4ajZ-5kTXk
-> 
-> A few memes:
-> 
-> Any product can be tampered with.
-> 
-> In many certified devices you can simply switch the reg domain. Then choose 
-> Japan, for example. Now you can transmit on channel 14 in the 2.4GHz range. 
-> Not so legal anywhere outside of Nippon. 
-> 
-> The old Broadcom chipset / proprietary driver can be configured to transmit at 
-> 250mW with the proprietary closed source driver. Hence you can transmit at 
-> ~25dbm EIRP (with the stock antennas), far beyond the ETSI regulations of 
-> 20dBm EIRP.
-> 
-> Any device with a external antenna connector can be used together with a high-
-> gain antenna. Again you get far beyond the legal limits.
-> 
-> Cheers,
-> Elektra
-> 
+diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
+index 0e2307f..a42b21f 100644
+--- a/drivers/staging/batman-adv/soft-interface.c
++++ b/drivers/staging/batman-adv/soft-interface.c
+@@ -152,9 +152,13 @@ int interface_set_mac_addr(struct net_device *dev, void *p)
+ 	if (!is_valid_ether_addr(addr->sa_data))
+ 		return -EADDRNOTAVAIL;
+ 
+-	hna_local_remove(dev->dev_addr, "mac address changed");
++	/* only modify hna-table if it has been initialised before */
++	if (atomic_read(&module_state) == MODULE_ACTIVE) {
++		hna_local_remove(dev->dev_addr, "mac address changed");
++		hna_local_add(addr->sa_data);
++	}
++
+ 	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
+-	hna_local_add(dev->dev_addr);
+ 
+ 	return 0;
+ }
+-- 
+1.7.1
 
