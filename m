@@ -1,12 +1,11 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Thu,  6 May 2010 22:18:46 +0200
-Message-Id: <1273177132-8792-21-git-send-email-andrew@lunn.ch>
+Date: Thu,  6 May 2010 22:18:52 +0200
+Message-Id: <1273177132-8792-27-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 References: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 20/26] staging:batman-adv: Limit queue
-	lengths for batman and broadcast packets
+Subject: [B.A.T.M.A.N.] [PATCH 26/26] staging:batman-adv: updating README
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,230 +18,361 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: gregkh@suse.de
-Cc: b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.net, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-
-This patch limits the queue lengths of batman and broadcast packets. BATMAN
-packets are held back for aggregation and jittered to avoid interferences.
-Broadcast packets are stored to be sent out multiple times to increase
-the probability to be received by other nodes in lossy environments.
-
-Especially in extreme cases like broadcast storms, the queues have been seen
-to run full, eating up all the memory and triggering the infamous OOM killer.
-With the queue length limits introduced in this patch, this problem is
-avoided.
-
-Each queue is limited to 256 entries for now, resulting in 1 MB of maximum
-space available in total for typical setups (assuming one packet including
-overhead does not require more than 2000 byte). This should also be reasonable
-for smaller routers, otherwise the defines can be tweaked later.
-
-This third version of the patch does not increase the local broadcast
-sequence number when the queue is already full.
-
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/aggregation.c    |   16 ++++++++++++-
- drivers/staging/batman-adv/main.c           |    5 ++++
- drivers/staging/batman-adv/main.h           |    4 +++
- drivers/staging/batman-adv/send.c           |   33 ++++++++++++++++++++++----
- drivers/staging/batman-adv/send.h           |    2 +-
- drivers/staging/batman-adv/soft-interface.c |    6 ++--
- 6 files changed, 56 insertions(+), 10 deletions(-)
+ drivers/staging/batman-adv/README |  275 +++++++++++++++++++++++--------------
+ 1 files changed, 173 insertions(+), 102 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/aggregation.c b/drivers/staging/batman-adv/aggregation.c
-index a5818ff..ce8b8a6 100644
---- a/drivers/staging/batman-adv/aggregation.c
-+++ b/drivers/staging/batman-adv/aggregation.c
-@@ -95,6 +95,7 @@ static bool can_aggregate_with(struct batman_packet *new_batman_packet,
- 	return false;
- }
+diff --git a/drivers/staging/batman-adv/README b/drivers/staging/batman-adv/README
+index e2a7271..14244a2 100644
+--- a/drivers/staging/batman-adv/README
++++ b/drivers/staging/batman-adv/README
+@@ -1,169 +1,240 @@
+-[state: 22-03-2010]
++[state: 03-05-2010]
  
-+#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
- /* create a new aggregated packet and add this packet to it */
- static void new_aggregated_packet(unsigned char *packet_buff,
- 			   int packet_len,
-@@ -106,13 +107,26 @@ static void new_aggregated_packet(unsigned char *packet_buff,
- 	struct forw_packet *forw_packet_aggr;
- 	unsigned long flags;
+ BATMAN-ADV
+ ----------
  
-+	/* own packet should always be scheduled */
-+	if (!own_packet) {
-+		if (!atomic_dec_not_zero(&batman_queue_left)) {
-+			bat_dbg(DBG_BATMAN, "batman packet queue full\n");
-+			return;
-+		}
-+	}
+-Batman-advanced is a new approach to wireless networking which does no longer
+-operate on the IP basis. Unlike B.A.T.M.A.N, which exchanges information
+-using UDP packets and sets routing tables, batman-advanced operates on ISO/OSI
+-Layer 2 only and uses and routes (or better: bridges) Ethernet Frames. It
+-emulates a virtual network switch of all nodes participating. Therefore all
+-nodes appear to be link local, thus all higher operating protocols won't be
+-affected by any changes within the network. You can run almost any protocol
+-above B.A.T.M.A.N. Advanced, prominent examples are: IPv4, IPv6, DHCP, IPX.
++Batman  advanced  is  a new approach to wireless networking which
++does no longer operate on the IP basis. Unlike the batman daemon,
++which  exchanges  information  using UDP packets and sets routing
++tables, batman-advanced operates on ISO/OSI Layer 2 only and uses
++and  routes  (or  better: bridges) Ethernet Frames. It emulates a
++virtual network switch of all nodes participating.  Therefore all
++nodes  appear  to be link local, thus all higher operating proto-
++cols won't be affected by any changes within the network. You can
++run almost any protocol above batman advanced, prominent examples
++are: IPv4, IPv6, DHCP, IPX.
+ 
+-This is batman-advanced implemented as Linux kernel driver. It does not depend
+-on any network (other) driver, and can be used on wifi as well as ethernet,
+-vpn, etc ... (anything with ethernet-style layer 2).
++Batman advanced was implemented as a Linux kernel driver  to  re-
++duce the overhead to a minimum. It does not depend on any (other)
++network driver, and can be used on wifi as well as ethernet  lan,
++vpn,  etc ... (anything with ethernet-style layer 2).
+ 
+-USAGE
+------
++CONFIGURATION
++-------------
+ 
+-insmod the batman-adv.ko in your kernel:
++Load the batman-adv module into your kernel:
+ 
+ # insmod batman-adv.ko
+ 
+-the module is now waiting for activation. You must add some interfaces
+-on which batman can operate. Each interface must be added separately:
++The  module  is now waiting for activation. You must add some in-
++terfaces on which batman can operate. After  loading  the  module
++batman  advanced  will scan your systems interfaces to search for
++compatible interfaces. Once found, it will create  subfolders  in
++the /sys directories of each supported interface, e.g.
+ 
+-# echo wlan0 > /proc/net/batman-adv/interfaces
++# ls /sys/class/net/eth0/batman_adv/
++# iface_status  mesh_iface
+ 
+-( # echo wlan1 > /proc/net/batman-adv/interfaces )
+-( # echo eth0 > /proc/net/batman-adv/interfaces )
+-( ... )
++If an interface does not have the "batman_adv" subfolder it prob-
++ably is not supported. Not supported  interfaces  are:  loopback,
++non-ethernet and batman's own interfaces.
+ 
+-Now batman starts broadcasting on this interface.
+-You can now view the table of originators (mesh participants) with:
++Note:  After the module was loaded it will continuously watch for
++new interfaces to verify the compatibility. There is no  need  to
++reload the module if you plug your USB wifi adapter into your ma-
++chine after batman advanced was initially loaded.
+ 
+-# cat /proc/net/batman-adv/originators
++To activate a  given  interface  simply  write  "bat0"  into  its
++"mesh_iface" file inside the batman_adv subfolder:
+ 
+-The module will create a new interface "bat0", which can be used as a
+-regular interface:
++# echo bat0 > /sys/class/net/eth0/batman_adv/mesh_iface
+ 
+-# ifconfig bat0 inet 192.168.0.1 up
+-# ping 192.168.0.2
+-...
++Repeat  this step for all interfaces you wish to add.  Now batman
++starts using/broadcasting on this/these interface(s).
+ 
+----
+-If you want topology visualization, your meshnode must be configured
+-as VIS-server:
++By reading the "iface_status" file you can check its status:
+ 
+-# echo "server" > /proc/net/batman-adv/vis_server
++# cat /sys/class/net/eth0/batman_adv/iface_status
++# active
+ 
+-Each node is either configured as "server" or as "client" (default:
+-"client"). Clients send their topology data to the server next to them,
+-and server synchronize with other servers. If there is no server
+-configured (default) within the mesh, no topology information will be
+-transmitted. With these "synchronizing servers", there can be 1 or
+-more vis servers sharing the same (or at least very similar) data.
++To deactivate an interface you have  to  write  "none"  into  its
++"mesh_iface" file:
+ 
+-When configured as server, you can get a topology snapshot of your mesh:
++# echo none > /sys/class/net/eth0/batman_adv/mesh_iface
+ 
+-# cat /proc/net/batman-adv/vis_data
+ 
+-This raw output is intended to be easily parsable and convertable with
+-other tools. Have a look at the batctl README if you want a vis output
+-in dot or json format for instance and how those outputs could then be
+-visualised in an image.
++All  mesh  wide  settings  can be found in batman's own interface
++folder:
 +
- 	forw_packet_aggr = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
--	if (!forw_packet_aggr)
-+	if (!forw_packet_aggr) {
-+		if (!own_packet)
-+			atomic_inc(&batman_queue_left);
- 		return;
-+	}
- 
- 	forw_packet_aggr->packet_buff = kmalloc(MAX_AGGREGATION_BYTES,
- 						GFP_ATOMIC);
- 	if (!forw_packet_aggr->packet_buff) {
-+		if (!own_packet)
-+			atomic_inc(&batman_queue_left);
- 		kfree(forw_packet_aggr);
- 		return;
- 	}
-diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
-index c1e57aa..aa072d1 100644
---- a/drivers/staging/batman-adv/main.c
-+++ b/drivers/staging/batman-adv/main.c
-@@ -42,6 +42,9 @@ DEFINE_SPINLOCK(forw_bat_list_lock);
- DEFINE_SPINLOCK(forw_bcast_list_lock);
- 
- atomic_t vis_interval;
-+atomic_t bcast_queue_left;
-+atomic_t batman_queue_left;
++#  ls  /sys/class/net/bat0/mesh/
++#  aggregate_ogm   originators        transtable_global  vis_mode
++#  orig_interval   transtable_local   vis_data
 +
- int16_t num_hna;
- 
- struct net_device *soft_device;
-@@ -79,6 +82,8 @@ int init_module(void)
- 
- 	atomic_set(&vis_interval, 1000);/* TODO: raise this later, this is only
- 					 * for debugging now. */
-+	atomic_set(&bcast_queue_left, BCAST_QUEUE_LEN);
-+	atomic_set(&batman_queue_left, BATMAN_QUEUE_LEN);
- 
- 	/* the name should not be longer than 10 chars - see
- 	 * http://lwn.net/Articles/23634/ */
-diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
-index 58c1ec1..6749ce0 100644
---- a/drivers/staging/batman-adv/main.h
-+++ b/drivers/staging/batman-adv/main.h
-@@ -69,6 +69,8 @@
- #define MODULE_ACTIVE 1
- #define MODULE_DEACTIVATING 2
- 
-+#define BCAST_QUEUE_LEN 256
-+#define BATMAN_QUEUE_LE	256
- 
- /*
-  * Debug Messages
-@@ -132,6 +134,8 @@ extern spinlock_t forw_bat_list_lock;
- extern spinlock_t forw_bcast_list_lock;
- 
- extern atomic_t vis_interval;
-+extern atomic_t bcast_queue_left;
-+extern atomic_t batman_queue_left;
- extern int16_t num_hna;
- 
- extern struct net_device *soft_device;
-diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
-index 31d86ae..f58a9ed 100644
---- a/drivers/staging/batman-adv/send.c
-+++ b/drivers/staging/batman-adv/send.c
-@@ -375,13 +375,28 @@ static void _add_bcast_packet_to_list(struct forw_packet *forw_packet,
- 			   send_time);
- }
- 
--void add_bcast_packet_to_list(struct sk_buff *skb)
-+#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
-+/* add a broadcast packet to the queue and setup timers. broadcast packets
-+ * are sent multiple times to increase probability for beeing received.
-+ *
-+ * This function returns NETDEV_TX_OK on success and NETDEV_TX_BUSY on
-+ * errors.
-+ *
-+ * The skb is not consumed, so the caller should make sure that the
-+ * skb is freed. */
-+int add_bcast_packet_to_list(struct sk_buff *skb)
- {
- 	struct forw_packet *forw_packet;
- 
-+	if (!atomic_dec_not_zero(&bcast_queue_left)) {
-+		bat_dbg(DBG_BATMAN, "bcast packet queue full\n");
-+		goto out;
-+	}
 +
- 	forw_packet = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
++Some of the files contain all sort of status information  regard-
++ing  the  mesh  network.  For  example, you can view the table of
++originators (mesh participants) with:
 +
- 	if (!forw_packet)
--		goto out;
-+		goto out_and_inc;
- 
- 	skb = skb_copy(skb, GFP_ATOMIC);
- 	if (!skb)
-@@ -396,12 +411,14 @@ void add_bcast_packet_to_list(struct sk_buff *skb)
- 	forw_packet->num_packets = 0;
- 
- 	_add_bcast_packet_to_list(forw_packet, 1);
--	return;
-+	return NETDEV_TX_OK;
- 
- packet_free:
- 	kfree(forw_packet);
-+out_and_inc:
-+	atomic_inc(&bcast_queue_left);
- out:
--	return;
-+	return NETDEV_TX_BUSY;
- }
- 
- void send_outstanding_bcast_packet(struct work_struct *work)
-@@ -436,8 +453,10 @@ void send_outstanding_bcast_packet(struct work_struct *work)
- 	if ((forw_packet->num_packets < 3) &&
- 	    (atomic_read(&module_state) != MODULE_DEACTIVATING))
- 		_add_bcast_packet_to_list(forw_packet, ((5 * HZ) / 1000));
--	else
-+	else {
- 		forw_packet_free(forw_packet);
-+		atomic_inc(&bcast_queue_left);
-+	}
- }
- 
- void send_outstanding_bat_packet(struct work_struct *work)
-@@ -463,6 +482,10 @@ void send_outstanding_bat_packet(struct work_struct *work)
- 	    (atomic_read(&module_state) != MODULE_DEACTIVATING))
- 		schedule_own_packet(forw_packet->if_incoming);
- 
-+	/* don't count own packet */
-+	if (!forw_packet->own)
-+		atomic_inc(&batman_queue_left);
++# cat /sys/class/net/bat0/mesh/originators
 +
- 	forw_packet_free(forw_packet);
- }
++Other files allow to change batman's behaviour to better fit your
++requirements.  For instance, you can check the current originator
++interval (value in milliseconds which determines how often batman
++sends its broadcast packets):
++
++# cat /sys/class/net/bat0/mesh/orig_interval
++# status: 1000
++
++and also change its value:
++
++# echo 3000 > /sys/class/net/bat0/mesh/orig_interval
  
-diff --git a/drivers/staging/batman-adv/send.h b/drivers/staging/batman-adv/send.h
-index b84a470..feaa2fc 100644
---- a/drivers/staging/batman-adv/send.h
-+++ b/drivers/staging/batman-adv/send.h
-@@ -33,7 +33,7 @@ void schedule_forward_packet(struct orig_node *orig_node,
- 			     struct batman_packet *batman_packet,
- 			     uint8_t directlink, int hna_buff_len,
- 			     struct batman_if *if_outgoing);
--void add_bcast_packet_to_list(struct sk_buff *skb);
-+int  add_bcast_packet_to_list(struct sk_buff *skb);
- void send_outstanding_bcast_packet(struct work_struct *work);
- void send_outstanding_bat_packet(struct work_struct *work);
- void purge_outstanding_packets(struct batman_if *batman_if);
-diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
-index 681a0ad..14b5cca 100644
---- a/drivers/staging/batman-adv/soft-interface.c
-+++ b/drivers/staging/batman-adv/soft-interface.c
-@@ -216,10 +216,10 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
- 		/* set broadcast sequence number */
- 		bcast_packet->seqno = htons(bcast_seqno);
+-The raw format consists of comma seperated values per entry where each
+-entry is giving information about a certain source interface. Each entry
+-can/has to have the following values:
+--> "mac" -> mac address of an originator's source interface
+-           (each line begins with it)
+--> "TQ mac value" -> src mac's link quality towards mac address of a neighbor
+-                     originator's interface which is being used for routing
+--> "HNA mac" -> HNA announced by source mac
+--> "PRIMARY" -> this is a primary interface
+--> "SEC mac" -> secondary mac address of source (requires preceeding
+--> PRIMARY)
+-
+-The TQ value has a range from 4 to 255 with 255 being the best.
+-The HNA entries are showing which hosts are connected to the mesh via bat0
+-or being bridged into the mesh network.
+-The PRIMARY/SEC values are only applied on primary interfaces
+-
+----
+ In very mobile scenarios, you might want to adjust the originator
+-interval to a lower value. This will make the mesh more responsive to
+-topology changes, but will also increase the overhead. Please make sure
+-that all nodes in your mesh use the same interval. The default value
+-is 1000 ms (1 second).
++interval to a lower value. This will make the mesh  more  respon-
++sive to topology changes, but will also increase the overhead.
++
++
++USAGE
++-----
++
++To  make use of your newly created mesh, batman advanced provides
++a new interface "bat0" which you should use from this  point  on.
++All  interfaces  added  to  batman  advanced are not relevant any
++longer because batman handles them for you. Basically, one "hands
++over" the data by using the batman interface and batman will make
++sure it reaches its destination.
  
--		bcast_seqno++;
-+		/* broadcast packet. on success, increase seqno. */
-+		if (add_bcast_packet_to_list(skb) == NETDEV_TX_OK)
-+			bcast_seqno++;
+-# echo 1000 > /proc/net/batman-adv/orig_interval
++The "bat0" interface can be used like any  other  regular  inter-
++face.  It needs an IP address which can be either statically con-
++figured or dynamically (by using DHCP or similar services):
  
--		/* broadcast packet */
--		add_bcast_packet_to_list(skb);
- 		/* a copy is stored in the bcast list, therefore removing
- 		 * the original skb. */
- 		kfree_skb(skb);
+-To deactivate batman, do:
++# NodeA: ifconfig bat0 192.168.0.1
++# NodeB: ifconfig bat0 192.168.0.2
++# NodeB: ping 192.168.0.1
++
++Note:  In  order to avoid problems remove all IP addresses previ-
++ously assigned to interfaces now used by batman advanced, e.g.
++
++# ifconfig eth0 0.0.0.0
++
++
++VISUALIZATION
++-------------
++
++If you want topology visualization, at least one mesh  node  must
++be configured as VIS-server:
++
++# echo "server" > /sys/class/net/bat0/mesh/vis_mode
++
++Each  node  is  either configured as "server" or as "client" (de-
++fault: "client").  Clients send their topology data to the server
++next to them, and server synchronize with other servers. If there
++is no server configured (default) within the  mesh,  no  topology
++information   will  be  transmitted.  With  these  "synchronizing
++servers", there can be 1 or more vis servers sharing the same (or
++at least very similar) data.
++
++When  configured  as  server,  you can get a topology snapshot of
++your mesh:
++
++# cat /sys/class/net/bat0/mesh/vis_data
++
++This raw output is intended to be easily parsable and convertable
++with  other tools. Have a look at the batctl README if you want a
++vis output in dot or json format for instance and how those  out-
++puts could then be visualised in an image.
++
++The raw format consists of comma separated values per entry where
++each entry is giving information about a  certain  source  inter-
++face.  Each  entry can/has to have the following values:
++-> "mac" - mac address of an originator's source interface
++           (each line begins with it)
++-> "TQ mac  value"  -  src mac's link quality towards mac address
++                       of a neighbor originator's interface which
++                       is being used for routing
++-> "HNA mac" - HNA announced by source mac
++-> "PRIMARY" - this  is a primary interface
++-> "SEC mac" - secondary mac address of source
++               (requires preceding PRIMARY)
++
++The TQ value has a range from 4 to 255 with 255 being  the  best.
++The HNA entries are showing which hosts are connected to the mesh
++via bat0 or being bridged into the mesh network.  The PRIMARY/SEC
++values are only applied on primary interfaces
+ 
+-# echo "" > /proc/net/batman-adv/interfaces
+ 
+ LOGGING/DEBUGGING
+ -----------------
+ 
+-All error messages, warnings and information messages are sent to the
+-kernel log. Depending on your operating system distribution this can be
+-read in one of a number of ways. Try using the commands: dmesg,
+-logread, or looking in the files /var/log/kern.log or
+-/var/log/syslog. All batman-adv messages are prefixed with
++All error messages, warnings and information messages are sent to
++the kernel log. Depending on your operating  system  distribution
++this  can  be read in one of a number of ways. Try using the com-
++mands: dmesg, logread, or looking in the files  /var/log/kern.log
++or  /var/log/syslog.  All  batman-adv  messages are prefixed with
+ "batman-adv:" So to see just these messages try
+ 
+-dmesg | grep batman-adv
++# dmesg | grep batman-adv
+ 
+-When investigating problems with your mesh network it is sometimes
+-necessary to see more detail debug messages. This must be enabled when
+-compiling the batman-adv module. Use "make menuconfig" and enable the
++When investigating problems with your mesh network  it  is  some-
++times  necessary  to see more detail debug messages. This must be
++enabled when compiling the batman-adv module. When building  bat-
++man-adv  as  part of kernel, use "make menuconfig" and enable the
+ option "B.A.T.M.A.N. debugging".
+ 
+-The additional debug output is by default disabled. It can be enabled
+-either at kernel module load time or during run time. To enable debug
+-output at module load time, add the module parameter debug=<value>.
+-<value> can take one of four values.
++The additional debug output is by default disabled. It can be en-
++abled  either  at kernel modules load time or during run time. To
++enable debug output at module load time, add the module parameter
++debug=<value>.  <value> can take one of four values.
+ 
+-0 - All debug output disabled
++0 - All  debug  output  disabled
+ 1 - Enable messages related to routing / flooding / broadcasting
+ 2 - Enable route or hna added / changed / deleted
+ 3 - Enable all messages
+ 
+ e.g.
+ 
+-modprobe batman-adv debug=2
++# modprobe batman-adv debug=2
+ 
+-will load the module and enable debug messages for when routes or HNAs
+-change.
++will load the module and enable debug messages for when routes or
++HNAs change.
+ 
+-The debug output can also be changed at runtime using the file
++The debug output can also be changed at runtime  using  the  file
+ /sys/module/batman-adv/parameters/debug. e.g.
+ 
+-echo 2 > /sys/module/batman-adv/parameters/debug
++# echo 2 > /sys/module/batman-adv/parameters/debug
+ 
+ enables debug messages for when routes or HNAs
+ 
+-The debug output is sent to the kernel logs. So try dmesg, logread etc
+-to see the debug messages.
++The  debug  output  is sent to the kernel logs. So try dmesg, lo-
++gread, etc to see the debug messages.
++
+ 
+ BATCTL
+ ------
+ 
+-B.A.T.M.A.N.  advanced operates on layer 2 and thus all hosts
+-participating in the virtual switch are completely transparent for all
+-protocols above layer 2. Therefore the common diagnosis tools do not
+-work as expected. To overcome these problems batctl was created. At
+-the moment the batctl contains ping, traceroute, tcpdump and
++As batman advanced operates on layer 2 all hosts participating in
++the  virtual switch are completely transparent for all  protocols
++above layer 2. Therefore the common diagnosis tools do  not  work
++as  expected.  To  overcome these problems batctl was created. At
++the  moment the  batctl contains ping,  traceroute,  tcpdump  and
+ interfaces to the kernel module settings.
+ 
+ For more information, please see the manpage (man batctl).
+ 
+-batctl is available on http://www.open-mesh.net/
++batctl is available on http://www.open-mesh.org/
++
+ 
+ CONTACT
+ -------
+ 
+ Please send us comments, experiences, questions, anything :)
+ 
+-IRC:             #batman on irc.freenode.org
+-Mailing-list:    b.a.t.m.a.n@open-mesh.net
+-(subscription at https://list.open-mesh.net/mm/listinfo/b.a.t.m.a.n )
++IRC:            #batman   on   irc.freenode.org
++Mailing-list:   b.a.t.m.a.n@open-mesh.net (optional  subscription
++          at https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n)
+ 
+ You can also contact the Authors:
+ 
+-Marek Lindner <lindner_marek@yahoo.de>
+-Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
++Marek  Lindner  <lindner_marek@yahoo.de>
++Simon  Wunderlich  <siwu@hrz.tu-chemnitz.de>
++
 -- 
 1.7.1
 
