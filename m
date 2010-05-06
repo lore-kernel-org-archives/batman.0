@@ -1,12 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Thu,  6 May 2010 22:18:49 +0200
-Message-Id: <1273177132-8792-24-git-send-email-andrew@lunn.ch>
-In-Reply-To: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
+Return-Path: <greg@kroah.com>
+Date: Thu, 6 May 2010 13:41:33 -0700
+From: Greg KH <greg@kroah.com>
+Message-ID: <20100506204133.GA19717@kroah.com>
 References: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
-Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 23/26] staging:batman-adv: Update TODO file
-	to reflect current state.
+	<1273177132-8792-14-git-send-email-andrew@lunn.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1273177132-8792-14-git-send-email-andrew@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 13/26] staging:batman-adv: convert
+ multiple /proc files to use sysfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,47 +21,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: gregkh@suse.de
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Marek Lindner <lindner_marek@yahoo.de>, gregkh@suse.de, b.a.t.m.a.n@lists.open-mesh.net
 
-Not much left to do on the TODO list :-)
+On Thu, May 06, 2010 at 10:18:39PM +0200, Andrew Lunn wrote:
+> From: Marek Lindner <lindner_marek@yahoo.de>
+> 
+> This is the first patch in a series of patches which aim to convert
+> all batman-adv /proc files to sysfs. To keep the changes in a
+> digestable size it has been split up into smaller chunks. During
+> the transition period batman-adv will use /proc as well as sysfs.
+> 
+> As a first step the following files have been converted:
+> aggregate_ogm, originators, transtable_global, transtable_local
 
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
----
- drivers/staging/batman-adv/TODO |   23 +++--------------------
- 1 files changed, 3 insertions(+), 20 deletions(-)
+Please document all sysfs files with a Documentation/ABI/ entry.  You
+can put it in the drivers/staging/batman-adv/ directory for now.
 
-diff --git a/drivers/staging/batman-adv/TODO b/drivers/staging/batman-adv/TODO
-index 2f15136..518db7f 100644
---- a/drivers/staging/batman-adv/TODO
-+++ b/drivers/staging/batman-adv/TODO
-@@ -1,23 +1,6 @@
--=> proc interface
--* implement new interface to add/delete interfaces and setting options
--* /proc/sys/net/batman-adv/ as main folder
--* in interfaces/ list every available interface of the host
--* each interfaces/$iface/ contains the following files:
---> enable (def: 0) [add/remove this interface to batman-adv]
---> ogm_interval (def: 1000) [ogm interval of that interface]
---> context (def: bat0) [later we want to support multiple mesh instances via
---> bat0/bat1/bat2/..]
---> status (read-only) [outputs the interface status from batman's
---> perspective]
--* in mesh/batX/ list every available mesh subnet
---> vis_server (def: 0) [enable/disable vis server for that mesh]
---> vis_data (read-only) [outputs the vis data in a raw format]
---> aggregate_ogm (def: 1) [enable/disable ogm aggregation for that mesh]
---> originators (read-only) [outputs the originator table]
---> transtable_global (read-only) [outputs the global translation table]
---> transtable_local (read-only) [outputs the local translation table]
--
--=> fix checkpatch.pl errors
-+Request a review.
-+Process the comments from the review.
-+Move into mainline proper.
- 
- Please send all patches to:
- 	Marek Lindner <lindner_marek@yahoo.de>
--- 
-1.7.1
+Also note, binary sysfs files are for things that are "pass-through",
+not for things that you try to intrepret like I think you are doing
+here.  What's wrong with configfs for something like this?
 
+Note, I still applied the patch :)
+
+thanks,
+
+greg k-h
