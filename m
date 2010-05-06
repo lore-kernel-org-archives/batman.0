@@ -1,12 +1,12 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Thu,  6 May 2010 22:18:41 +0200
-Message-Id: <1273177132-8792-16-git-send-email-andrew@lunn.ch>
+Date: Thu,  6 May 2010 22:18:42 +0200
+Message-Id: <1273177132-8792-17-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 References: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 15/26] staging:batman-adv: move originator
-	interval setting from /proc to /sys
+Subject: [B.A.T.M.A.N.] [PATCH 16/26] staging:batman-adv: remove redundant
+	pointer to originator interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,276 +26,206 @@ From: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/bat_sysfs.c |   47 ++++++++++++++++++++
- drivers/staging/batman-adv/main.c      |    2 -
- drivers/staging/batman-adv/main.h      |    1 -
- drivers/staging/batman-adv/proc.c      |   75 --------------------------------
- drivers/staging/batman-adv/proc.h      |    1 -
- drivers/staging/batman-adv/send.c      |    6 +-
- drivers/staging/batman-adv/types.h     |    1 +
- 7 files changed, 51 insertions(+), 82 deletions(-)
+ drivers/staging/batman-adv/device.c         |    2 +-
+ drivers/staging/batman-adv/originator.c     |    1 -
+ drivers/staging/batman-adv/routing.c        |   17 ++++-------------
+ drivers/staging/batman-adv/soft-interface.c |    5 ++---
+ drivers/staging/batman-adv/types.h          |    1 -
+ drivers/staging/batman-adv/vis.c            |   15 +++++++--------
+ 6 files changed, 14 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
-index c14ab47..ea7ce77 100644
---- a/drivers/staging/batman-adv/bat_sysfs.c
-+++ b/drivers/staging/batman-adv/bat_sysfs.c
-@@ -153,13 +153,59 @@ static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
- 	return count;
- }
+diff --git a/drivers/staging/batman-adv/device.c b/drivers/staging/batman-adv/device.c
+index 9887f05..c419c62 100644
+--- a/drivers/staging/batman-adv/device.c
++++ b/drivers/staging/batman-adv/device.c
+@@ -250,7 +250,7 @@ ssize_t bat_device_write(struct file *file, const char __user *buff,
+ 	if (!orig_node->router)
+ 		goto unlock;
  
-+static ssize_t show_orig_interval(struct kobject *kobj, struct attribute *attr,
-+				 char *buff)
-+{
-+	struct device *dev = to_dev(kobj->parent);
-+	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
-+
-+	return sprintf(buff, "status: %i\n",
-+		       atomic_read(&bat_priv->orig_interval));
-+}
-+
-+static ssize_t store_orig_interval(struct kobject *kobj, struct attribute *attr,
-+				  char *buff, size_t count)
-+{
-+	struct device *dev = to_dev(kobj->parent);
-+	struct net_device *net_dev = to_net_dev(dev);
-+	struct bat_priv *bat_priv = netdev_priv(net_dev);
-+	unsigned long orig_interval_tmp;
-+	int ret;
-+
-+	ret = strict_strtoul(buff, 10, &orig_interval_tmp);
-+	if (ret) {
-+		printk(KERN_INFO "batman-adv:Invalid parameter for 'orig_interval' setting on mesh %s received: %s\n",
-+		       net_dev->name, buff);
-+		return -EINVAL;
-+	}
-+
-+	if (orig_interval_tmp <= JITTER * 2) {
-+		printk(KERN_INFO "batman-adv:New originator interval too small: %li (min: %i)\n",
-+		       orig_interval_tmp, JITTER * 2);
-+		return -EINVAL;
-+	}
-+
-+	if (atomic_read(&bat_priv->orig_interval) == orig_interval_tmp)
-+		return count;
-+
-+	printk(KERN_INFO "batman-adv:Changing originator interval from: %i to: %li on mesh: %s\n",
-+	       atomic_read(&bat_priv->orig_interval),
-+	       orig_interval_tmp, net_dev->name);
-+
-+	atomic_set(&bat_priv->orig_interval, orig_interval_tmp);
-+	return count;
-+}
-+
- static BAT_ATTR(aggregate_ogm, S_IRUGO | S_IWUSR,
- 		show_aggr_ogm, store_aggr_ogm);
- static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
-+static BAT_ATTR(orig_interval, S_IRUGO | S_IWUSR,
-+		show_orig_interval, store_orig_interval);
+-	batman_if = orig_node->batman_if;
++	batman_if = orig_node->router->if_incoming;
+ 	memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
  
- static struct bat_attribute *mesh_attrs[] = {
- 	&bat_attr_aggregate_ogm,
- 	&bat_attr_vis_mode,
-+	&bat_attr_orig_interval,
- 	NULL,
- };
+ 	spin_unlock_irqrestore(&orig_hash_lock, flags);
+diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
+index 684db75..4152701 100644
+--- a/drivers/staging/batman-adv/originator.c
++++ b/drivers/staging/batman-adv/originator.c
+@@ -137,7 +137,6 @@ struct orig_node *get_orig_node(uint8_t *addr)
  
-@@ -228,6 +274,7 @@ int sysfs_add_meshif(struct net_device *dev)
- 		  routine as soon as we have it */
- 	atomic_set(&bat_priv->aggregation_enabled, 1);
- 	atomic_set(&bat_priv->vis_mode, VIS_TYPE_CLIENT_UPDATE);
-+	atomic_set(&bat_priv->orig_interval, 1000);
+ 	memcpy(orig_node->orig, addr, ETH_ALEN);
+ 	orig_node->router = NULL;
+-	orig_node->batman_if = NULL;
+ 	orig_node->hna_buff = NULL;
  
- 	bat_priv->mesh_obj = kobject_create_and_add(SYSFS_IF_MESH_SUBDIR,
- 						    batif_kobject);
-diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
-index 54e8cd5..7d72685 100644
---- a/drivers/staging/batman-adv/main.c
-+++ b/drivers/staging/batman-adv/main.c
-@@ -42,7 +42,6 @@ DEFINE_SPINLOCK(orig_hash_lock);
- DEFINE_SPINLOCK(forw_bat_list_lock);
- DEFINE_SPINLOCK(forw_bcast_list_lock);
- 
--atomic_t originator_interval;
- atomic_t vis_interval;
- int16_t num_hna;
- int16_t num_ifs;
-@@ -80,7 +79,6 @@ int init_module(void)
- 
- 	atomic_set(&module_state, MODULE_INACTIVE);
- 
--	atomic_set(&originator_interval, 1000);
- 	atomic_set(&vis_interval, 1000);/* TODO: raise this later, this is only
- 					 * for debugging now. */
- 
-diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
-index b2283a7..59a70c7 100644
---- a/drivers/staging/batman-adv/main.h
-+++ b/drivers/staging/batman-adv/main.h
-@@ -127,7 +127,6 @@ extern spinlock_t orig_hash_lock;
- extern spinlock_t forw_bat_list_lock;
- extern spinlock_t forw_bcast_list_lock;
- 
--extern atomic_t originator_interval;
- extern atomic_t vis_interval;
- extern int16_t num_hna;
- extern int16_t num_ifs;
-diff --git a/drivers/staging/batman-adv/proc.c b/drivers/staging/batman-adv/proc.c
-index cbea642..25b24fe 100644
---- a/drivers/staging/batman-adv/proc.c
-+++ b/drivers/staging/batman-adv/proc.c
-@@ -29,7 +29,6 @@
- #include "vis.h"
- 
- static struct proc_dir_entry *proc_batman_dir, *proc_interface_file;
--static struct proc_dir_entry *proc_orig_interval_file;
- 
- static int proc_interfaces_read(struct seq_file *seq, void *offset)
- {
-@@ -121,57 +120,6 @@ end:
- 	return count;
- }
- 
--static int proc_orig_interval_read(struct seq_file *seq, void *offset)
--{
--	seq_printf(seq, "%i\n", atomic_read(&originator_interval));
--
--	return 0;
--}
--
--static ssize_t proc_orig_interval_write(struct file *file,
--					const char __user *buffer,
--					size_t count, loff_t *ppos)
--{
--	char *interval_string;
--	int not_copied = 0;
--	unsigned long originator_interval_tmp;
--	int retval;
--
--	interval_string = kmalloc(count, GFP_KERNEL);
--
--	if (!interval_string)
--		return -ENOMEM;
--
--	not_copied = copy_from_user(interval_string, buffer, count);
--	interval_string[count - not_copied - 1] = 0;
--
--	retval = strict_strtoul(interval_string, 10, &originator_interval_tmp);
--	if (retval) {
--		printk(KERN_ERR "batman-adv:New originator interval invalid\n");
--		goto end;
--	}
--
--	if (originator_interval_tmp <= JITTER * 2) {
--		printk(KERN_WARNING "batman-adv:New originator interval too small: %li (min: %i)\n",
--		       originator_interval_tmp, JITTER * 2);
--		goto end;
--	}
--
--	printk(KERN_INFO "batman-adv:Changing originator interval from: %i to: %li\n",
--	       atomic_read(&originator_interval), originator_interval_tmp);
--
--	atomic_set(&originator_interval, originator_interval_tmp);
--
--end:
--	kfree(interval_string);
--	return count;
--}
--
--static int proc_orig_interval_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, proc_orig_interval_read, NULL);
--}
--
- static const struct file_operations proc_interfaces_fops = {
- 	.owner		= THIS_MODULE,
- 	.open		= proc_interfaces_open,
-@@ -181,20 +129,8 @@ static const struct file_operations proc_interfaces_fops = {
- 	.release	= single_release,
- };
- 
--static const struct file_operations proc_orig_interval_fops = {
--	.owner		= THIS_MODULE,
--	.open		= proc_orig_interval_open,
--	.read		= seq_read,
--	.write		= proc_orig_interval_write,
--	.llseek		= seq_lseek,
--	.release	= single_release,
--};
--
- void cleanup_procfs(void)
- {
--	if (proc_orig_interval_file)
--		remove_proc_entry(PROC_FILE_ORIG_INTERVAL, proc_batman_dir);
--
- 	if (proc_interface_file)
- 		remove_proc_entry(PROC_FILE_INTERFACES, proc_batman_dir);
- 
-@@ -230,16 +166,5 @@ int setup_procfs(void)
- 		return -EFAULT;
+ 	size = num_ifs * sizeof(TYPE_OF_WORD) * NUM_WORDS;
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index 8c055a1..0a9f52b 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -97,11 +97,6 @@ static void update_route(struct orig_node *orig_node,
+ 		bat_dbg(DBG_ROUTES, "Changing route towards: %pM (now via %pM - was via %pM)\n", orig_node->orig, neigh_node->addr, orig_node->router->addr);
  	}
  
--	proc_orig_interval_file = create_proc_entry(PROC_FILE_ORIG_INTERVAL,
--						    S_IWUSR | S_IRUGO,
--						    proc_batman_dir);
--	if (proc_orig_interval_file) {
--		proc_orig_interval_file->proc_fops = &proc_orig_interval_fops;
--	} else {
--		printk(KERN_ERR "batman-adv: Registering the '/proc/net/%s/%s' file failed\n", PROC_ROOT_DIR, PROC_FILE_ORIG_INTERVAL);
--		cleanup_procfs();
--		return -EFAULT;
--	}
+-	if (neigh_node != NULL)
+-		orig_node->batman_if = neigh_node->if_incoming;
+-	else
+-		orig_node->batman_if = NULL;
 -
- 	return 0;
- }
-diff --git a/drivers/staging/batman-adv/proc.h b/drivers/staging/batman-adv/proc.h
-index 6a972a6..6f4f5b3 100644
---- a/drivers/staging/batman-adv/proc.h
-+++ b/drivers/staging/batman-adv/proc.h
-@@ -24,7 +24,6 @@
- 
- #define PROC_ROOT_DIR "batman-adv"
- #define PROC_FILE_INTERFACES "interfaces"
--#define PROC_FILE_ORIG_INTERVAL "orig_interval"
- 
- void cleanup_procfs(void);
- int setup_procfs(void);
-diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
-index a00aa88..de2344a 100644
---- a/drivers/staging/batman-adv/send.c
-+++ b/drivers/staging/batman-adv/send.c
-@@ -36,10 +36,10 @@ static uint8_t hop_penalty(const uint8_t tq)
+ 	orig_node->router = neigh_node;
  }
  
- /* when do we schedule our own packet to be sent */
--static unsigned long own_send_time(void)
-+static unsigned long own_send_time(struct bat_priv *bat_priv)
- {
- 	return jiffies +
--		(((atomic_read(&originator_interval) - JITTER +
-+		(((atomic_read(&bat_priv->orig_interval) - JITTER +
- 		   (random32() % 2*JITTER)) * HZ) / 1000);
- }
+@@ -616,12 +611,11 @@ static int recv_my_icmp_packet(struct sk_buff *skb)
+ 	ret = NET_RX_DROP;
  
-@@ -277,7 +277,7 @@ void schedule_own_packet(struct batman_if *batman_if)
- 	atomic_inc(&batman_if->seqno);
+ 	if ((orig_node != NULL) &&
+-	    (orig_node->batman_if != NULL) &&
+ 	    (orig_node->router != NULL)) {
  
- 	slide_own_bcast_window(batman_if);
--	send_time = own_send_time();
-+	send_time = own_send_time(bat_priv);
- 	add_bat_packet_to_list(bat_priv,
- 			       batman_if->packet_buff,
- 			       batman_if->packet_len,
+ 		/* don't lock while sending the packets ... we therefore
+ 		 * copy the required data before sending */
+-		batman_if = orig_node->batman_if;
++		batman_if = orig_node->router->if_incoming;
+ 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+ 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 
+@@ -678,12 +672,11 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb)
+ 	ret = NET_RX_DROP;
+ 
+ 	if ((orig_node != NULL) &&
+-	    (orig_node->batman_if != NULL) &&
+ 	    (orig_node->router != NULL)) {
+ 
+ 		/* don't lock while sending the packets ... we therefore
+ 		 * copy the required data before sending */
+-		batman_if = orig_node->batman_if;
++		batman_if = orig_node->router->if_incoming;
+ 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+ 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 
+@@ -760,12 +753,11 @@ int recv_icmp_packet(struct sk_buff *skb)
+ 		     hash_find(orig_hash, icmp_packet->dst));
+ 
+ 	if ((orig_node != NULL) &&
+-	    (orig_node->batman_if != NULL) &&
+ 	    (orig_node->router != NULL)) {
+ 
+ 		/* don't lock while sending the packets ... we therefore
+ 		 * copy the required data before sending */
+-		batman_if = orig_node->batman_if;
++		batman_if = orig_node->router->if_incoming;
+ 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+ 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 
+@@ -844,12 +836,11 @@ int recv_unicast_packet(struct sk_buff *skb)
+ 		     hash_find(orig_hash, unicast_packet->dest));
+ 
+ 	if ((orig_node != NULL) &&
+-	    (orig_node->batman_if != NULL) &&
+ 	    (orig_node->router != NULL)) {
+ 
+ 		/* don't lock while sending the packets ... we therefore
+ 		 * copy the required data before sending */
+-		batman_if = orig_node->batman_if;
++		batman_if = orig_node->router->if_incoming;
+ 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+ 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 
+diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
+index 829deb6..4cdebe5 100644
+--- a/drivers/staging/batman-adv/soft-interface.c
++++ b/drivers/staging/batman-adv/soft-interface.c
+@@ -236,7 +236,6 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+ 			orig_node = transtable_search(ethhdr->h_dest);
+ 
+ 		if ((orig_node) &&
+-		    (orig_node->batman_if) &&
+ 		    (orig_node->router)) {
+ 			if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
+ 				goto unlock;
+@@ -252,13 +251,13 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+ 			memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
+ 
+ 			/* net_dev won't be available when not active */
+-			if (orig_node->batman_if->if_active != IF_ACTIVE)
++			if (orig_node->router->if_incoming->if_active != IF_ACTIVE)
+ 				goto unlock;
+ 
+ 			/* don't lock while sending the packets ... we therefore
+ 			 * copy the required data before sending */
+ 
+-			batman_if = orig_node->batman_if;
++			batman_if = orig_node->router->if_incoming;
+ 			memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+ 			spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 
 diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
-index e8d2e8c..a8c6ad7 100644
+index a8c6ad7..ffaa16c 100644
 --- a/drivers/staging/batman-adv/types.h
 +++ b/drivers/staging/batman-adv/types.h
-@@ -84,6 +84,7 @@ struct bat_priv {
- 	struct net_device_stats stats;
- 	atomic_t aggregation_enabled;
- 	atomic_t vis_mode;
-+	atomic_t orig_interval;
- 	struct kobject *mesh_obj;
- };
+@@ -49,7 +49,6 @@ struct batman_if {
+ struct orig_node {               /* structure for orig_list maintaining nodes of mesh */
+ 	uint8_t orig[ETH_ALEN];
+ 	struct neigh_node *router;
+-	struct batman_if *batman_if;
+ 	TYPE_OF_WORD *bcast_own;
+ 	uint8_t *bcast_own_sum;
+ 	uint8_t tq_own;
+diff --git a/drivers/staging/batman-adv/vis.c b/drivers/staging/batman-adv/vis.c
+index 5edeb32..57d69d7 100644
+--- a/drivers/staging/batman-adv/vis.c
++++ b/drivers/staging/batman-adv/vis.c
+@@ -498,14 +498,14 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
+ 		if (orig_node->router != NULL
+ 			&& compare_orig(orig_node->router->addr,
+ 					orig_node->orig)
+-			&& orig_node->batman_if
+-			&& (orig_node->batman_if->if_active == IF_ACTIVE)
++			&& (orig_node->router->if_incoming->if_active ==
++								IF_ACTIVE)
+ 		    && orig_node->router->tq_avg > 0) {
+ 
+ 			/* fill one entry into buffer. */
+ 			entry = &entry_array[info->packet.entries];
+ 			memcpy(entry->src,
+-			       orig_node->batman_if->net_dev->dev_addr,
++			     orig_node->router->if_incoming->net_dev->dev_addr,
+ 			       ETH_ALEN);
+ 			memcpy(entry->dest, orig_node->orig, ETH_ALEN);
+ 			entry->quality = orig_node->router->tq_avg;
+@@ -573,8 +573,7 @@ static void broadcast_vis_packet(struct vis_info *info, int packet_length)
+ 		orig_node = hashit.bucket->data;
+ 
+ 		/* if it's a vis server and reachable, send it. */
+-		if ((!orig_node) || (!orig_node->batman_if) ||
+-		    (!orig_node->router))
++		if ((!orig_node) || (!orig_node->router))
+ 			continue;
+ 		if (!(orig_node->flags & VIS_SERVER))
+ 			continue;
+@@ -584,7 +583,7 @@ static void broadcast_vis_packet(struct vis_info *info, int packet_length)
+ 			continue;
+ 
+ 		memcpy(info->packet.target_orig, orig_node->orig, ETH_ALEN);
+-		batman_if = orig_node->batman_if;
++		batman_if = orig_node->router->if_incoming;
+ 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+ 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 
+@@ -609,12 +608,12 @@ static void unicast_vis_packet(struct vis_info *info, int packet_length)
+ 	orig_node = ((struct orig_node *)
+ 		     hash_find(orig_hash, info->packet.target_orig));
+ 
+-	if ((!orig_node) || (!orig_node->batman_if) || (!orig_node->router))
++	if ((!orig_node) || (!orig_node->router))
+ 		goto out;
+ 
+ 	/* don't lock while sending the packets ... we therefore
+ 	 * copy the required data before sending */
+-	batman_if = orig_node->batman_if;
++	batman_if = orig_node->router->if_incoming;
+ 	memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+ 	spin_unlock_irqrestore(&orig_hash_lock, flags);
  
 -- 
 1.7.1
