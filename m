@@ -1,12 +1,12 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Thu,  6 May 2010 22:18:48 +0200
-Message-Id: <1273177132-8792-23-git-send-email-andrew@lunn.ch>
+Date: Thu,  6 May 2010 22:18:49 +0200
+Message-Id: <1273177132-8792-24-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 References: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 22/26] staging:batman-adv: Update pointer to
-	ethhdr after skb_copy
+Subject: [B.A.T.M.A.N.] [PATCH 23/26] staging:batman-adv: Update TODO file
+	to reflect current state.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,92 +21,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: gregkh@suse.de
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Not much left to do on the TODO list :-)
 
-We must ensure that all pointer to a socket buffer are updated when we
-copy a socket buffer and free our reference to the old one.
-Another part of the kernel could also free its reference which maybe
-removes the buffer completely. In that situation we would would feed
-wrong information to the routing algorithm after the memory area is
-written again by someone else.
-
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/routing.c |   18 ++++++++++++------
- 1 files changed, 12 insertions(+), 6 deletions(-)
+ drivers/staging/batman-adv/TODO |   23 +++--------------------
+ 1 files changed, 3 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
-index bf67059..919a4f8 100644
---- a/drivers/staging/batman-adv/routing.c
-+++ b/drivers/staging/batman-adv/routing.c
-@@ -614,6 +614,7 @@ int recv_bat_packet(struct sk_buff *skb,
- 		skb = skb_copy(skb, GFP_ATOMIC);
- 		if (!skb)
- 			return NET_RX_DROP;
-+		ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 		kfree_skb(skb_old);
- 	}
+diff --git a/drivers/staging/batman-adv/TODO b/drivers/staging/batman-adv/TODO
+index 2f15136..518db7f 100644
+--- a/drivers/staging/batman-adv/TODO
++++ b/drivers/staging/batman-adv/TODO
+@@ -1,23 +1,6 @@
+-=> proc interface
+-* implement new interface to add/delete interfaces and setting options
+-* /proc/sys/net/batman-adv/ as main folder
+-* in interfaces/ list every available interface of the host
+-* each interfaces/$iface/ contains the following files:
+--> enable (def: 0) [add/remove this interface to batman-adv]
+--> ogm_interval (def: 1000) [ogm interval of that interface]
+--> context (def: bat0) [later we want to support multiple mesh instances via
+--> bat0/bat1/bat2/..]
+--> status (read-only) [outputs the interface status from batman's
+--> perspective]
+-* in mesh/batX/ list every available mesh subnet
+--> vis_server (def: 0) [enable/disable vis server for that mesh]
+--> vis_data (read-only) [outputs the vis data in a raw format]
+--> aggregate_ogm (def: 1) [enable/disable ogm aggregation for that mesh]
+--> originators (read-only) [outputs the originator table]
+--> transtable_global (read-only) [outputs the global translation table]
+--> transtable_local (read-only) [outputs the local translation table]
+-
+-=> fix checkpatch.pl errors
++Request a review.
++Process the comments from the review.
++Move into mainline proper.
  
-@@ -639,8 +640,8 @@ static int recv_my_icmp_packet(struct sk_buff *skb)
- 	unsigned long flags;
- 	uint8_t dstaddr[ETH_ALEN];
- 
--	icmp_packet = (struct icmp_packet *) skb->data;
--	ethhdr = (struct ethhdr *) skb_mac_header(skb);
-+	icmp_packet = (struct icmp_packet *)skb->data;
-+	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	/* add data to device queue */
- 	if (icmp_packet->msg_type != ECHO_REQUEST) {
-@@ -671,7 +672,9 @@ static int recv_my_icmp_packet(struct sk_buff *skb)
- 			skb = skb_copy(skb, GFP_ATOMIC);
- 			if (!skb)
- 				return NET_RX_DROP;
--			icmp_packet = (struct icmp_packet *) skb->data;
-+
-+			icmp_packet = (struct icmp_packet *)skb->data;
-+			ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 			kfree_skb(skb_old);
- 		}
- 
-@@ -732,6 +735,7 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb)
- 			if (!skb)
- 				return NET_RX_DROP;
- 			icmp_packet = (struct icmp_packet *) skb->data;
-+			ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 			kfree_skb(skb_old);
- 		}
- 
-@@ -780,7 +784,7 @@ int recv_icmp_packet(struct sk_buff *skb)
- 	if (!is_my_mac(ethhdr->h_dest))
- 		return NET_RX_DROP;
- 
--	icmp_packet = (struct icmp_packet *) skb->data;
-+	icmp_packet = (struct icmp_packet *)skb->data;
- 
- 	/* packet for me */
- 	if (is_my_mac(icmp_packet->dst))
-@@ -812,7 +816,8 @@ int recv_icmp_packet(struct sk_buff *skb)
- 			skb = skb_copy(skb, GFP_ATOMIC);
- 			if (!skb)
- 				return NET_RX_DROP;
--			icmp_packet = (struct icmp_packet *) skb->data;
-+			icmp_packet = (struct icmp_packet *)skb->data;
-+			ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 			kfree_skb(skb_old);
- 		}
- 
-@@ -895,7 +900,8 @@ int recv_unicast_packet(struct sk_buff *skb)
- 			skb = skb_copy(skb, GFP_ATOMIC);
- 			if (!skb)
- 				return NET_RX_DROP;
--			unicast_packet = (struct unicast_packet *) skb->data;
-+			unicast_packet = (struct unicast_packet *)skb->data;
-+			ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 			kfree_skb(skb_old);
- 		}
- 		/* decrement ttl */
+ Please send all patches to:
+ 	Marek Lindner <lindner_marek@yahoo.de>
 -- 
 1.7.1
 
