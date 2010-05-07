@@ -1,12 +1,12 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Fri,  7 May 2010 21:47:23 +0200
-Message-Id: <1273261651-21378-19-git-send-email-andrew@lunn.ch>
+Date: Fri,  7 May 2010 21:47:24 +0200
+Message-Id: <1273261651-21378-20-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1273261651-21378-1-git-send-email-andrew@lunn.ch>
 References: <1273261651-21378-1-git-send-email-andrew@lunn.ch>
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 18/26] Staging: batman-adv: fix whitespace
-	style issues
+Subject: [B.A.T.M.A.N.] [PATCH 19/26] Staging: batman-adv: Reorganize
+	sequence number handling
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,52 +19,390 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
+Cc: b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
+From: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-This patch fixes unnecessary whitespaces before a quoted
-newline that the remaining batman-adv files had.
+BATMAN and broadcast packets are tracked with a sequence number window of
+currently 64 entries to measure and avoid duplicates. Packets which have a
+sequence number smaller than the newest received packet minus 64 are not
+within this sequence number window anymore and are called "old packets"
+from now on.
 
-Reported-by: Luis de Bethencourt <luisbg@ubuntu.com>
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+When old packets are received, the routing code assumes that the host of the
+originator has been restarted. This assumption however might be wrong as
+packets can also be delayed by NIC drivers, e.g. because of long queues or
+collision detection in dense WiFi? environments. This behaviour can be
+reproduced by doing a broadcast ping flood in a dense node environment.
+
+The effect is that the sequence number window is jumping forth and back,
+accepting and forwarding any packet (because packets are assumed to be "new")
+and causing loops.
+
+To overcome this problem, the sequence number handling has been reorganized.
+When an old packet is received, the window is reset back only once. Other old
+packets are dropped for (currently) 30 seconds to "protect" the new sequence
+number and avoid the hopping as described above.
+
+The reorganization brings some code cleanups (at least i hope you feel the
+same) and also fixes a bug in count_real_packets() which falsely updated
+the last_real_seqno for slightly older packets within the seqno window
+if they are no duplicates.
+
+This second version of the patch also fixes a problem where for seq_diff==64
+bit_shift() reads from outside of the seqno window, and removes the loop
+for seq_diff == -64 which was present in the first patch.
+
+The third iteration also adds a window for the next expected sequence numbers.
+This minimizes sequence number flapping for packets with very big differences
+(e.g. 3 packets with seqno 0, 25000 and 50000 might still cause problems
+without this window).
+
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/bat_sysfs.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/staging/batman-adv/bitarray.c   |   74 ++++++++++++++++-------
+ drivers/staging/batman-adv/main.h       |    4 +
+ drivers/staging/batman-adv/originator.c |    2 +
+ drivers/staging/batman-adv/routing.c    |   99 +++++++++++++++++++++++--------
+ drivers/staging/batman-adv/types.h      |    4 +
+ 5 files changed, 136 insertions(+), 47 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
-index 1811c8d..e2c000b 100644
---- a/drivers/staging/batman-adv/bat_sysfs.c
-+++ b/drivers/staging/batman-adv/bat_sysfs.c
-@@ -75,7 +75,7 @@ static ssize_t show_aggr_ogm(struct kobject *kobj, struct attribute *attr,
- 	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
- 	int aggr_status = atomic_read(&bat_priv->aggregation_enabled);
+diff --git a/drivers/staging/batman-adv/bitarray.c b/drivers/staging/batman-adv/bitarray.c
+index 7848305..2fef6e3 100644
+--- a/drivers/staging/batman-adv/bitarray.c
++++ b/drivers/staging/batman-adv/bitarray.c
+@@ -68,7 +68,7 @@ void bit_shift(TYPE_OF_WORD *seq_bits, int32_t n)
+ 	int32_t word_offset, word_num;
+ 	int32_t i;
  
--	return sprintf(buff, "status: %s\ncommands: enable, disable, 0, 1 \n",
-+	return sprintf(buff, "status: %s\ncommands: enable, disable, 0, 1\n",
- 		       aggr_status == 0 ? "disabled" : "enabled");
+-	if (n <= 0)
++	if (n <= 0 || n >= TQ_LOCAL_WINDOW_SIZE)
+ 		return;
+ 
+ 	word_offset = n % WORD_BIT_SIZE;/* shift how much inside each word */
+@@ -111,48 +111,76 @@ void bit_shift(TYPE_OF_WORD *seq_bits, int32_t n)
+ 		seq_bits[i] = 0;
  }
  
-@@ -123,7 +123,7 @@ static ssize_t show_vis_mode(struct kobject *kobj, struct attribute *attr,
- 	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
- 	int vis_mode = atomic_read(&bat_priv->vis_mode);
++static void bit_reset_window(TYPE_OF_WORD *seq_bits)
++{
++	int i;
++	for (i = 0; i < NUM_WORDS; i++)
++		seq_bits[i] = 0;
++}
++
  
--	return sprintf(buff, "status: %s\ncommands: client, server, %d, %d \n",
-+	return sprintf(buff, "status: %s\ncommands: client, server, %d, %d\n",
- 		       vis_mode == VIS_TYPE_CLIENT_UPDATE ?
- 							"client" : "server",
- 		       VIS_TYPE_SERVER_SYNC, VIS_TYPE_CLIENT_UPDATE);
-@@ -364,7 +364,7 @@ static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
- 	if (!batman_if)
+-/* receive and process one packet, returns 1 if received seq_num is considered
+- * new, 0 if old  */
++/* receive and process one packet within the sequence number window.
++ *
++ * returns:
++ *  1 if the window was moved (either new or very old)
++ *  0 if the window was not moved/shifted.
++ */
+ char bit_get_packet(TYPE_OF_WORD *seq_bits, int16_t seq_num_diff,
+ 		    int8_t set_mark)
+ {
+-	int i;
++	/* sequence number is slightly older. We already got a sequence number
++	 * higher than this one, so we just mark it. */
+ 
+-	/* we already got a sequence number higher than this one, so we just
+-	 * mark it. this should wrap around the integer just fine */
+-	if ((seq_num_diff < 0) && (seq_num_diff >= -TQ_LOCAL_WINDOW_SIZE)) {
++	if ((seq_num_diff <= 0) && (seq_num_diff > -TQ_LOCAL_WINDOW_SIZE)) {
+ 		if (set_mark)
+ 			bit_mark(seq_bits, -seq_num_diff);
+ 		return 0;
+ 	}
+ 
+-	/* it seems we missed a lot of packets or the other host restarted */
+-	if ((seq_num_diff > TQ_LOCAL_WINDOW_SIZE) ||
+-	    (seq_num_diff < -TQ_LOCAL_WINDOW_SIZE)) {
++	/* sequence number is slightly newer, so we shift the window and
++	 * set the mark if required */
+ 
+-		if (seq_num_diff > TQ_LOCAL_WINDOW_SIZE)
+-			bat_dbg(DBG_BATMAN,
+-				"We missed a lot of packets (%i) !\n",
+-				seq_num_diff-1);
++	if ((seq_num_diff > 0) && (seq_num_diff < TQ_LOCAL_WINDOW_SIZE)) {
++		bit_shift(seq_bits, seq_num_diff);
+ 
+-		if (-seq_num_diff > TQ_LOCAL_WINDOW_SIZE)
+-			bat_dbg(DBG_BATMAN,
+-				"Other host probably restarted !\n");
++		if (set_mark)
++			bit_mark(seq_bits, 0);
++		return 1;
++	}
+ 
+-		for (i = 0; i < NUM_WORDS; i++)
+-			seq_bits[i] = 0;
++	/* sequence number is much newer, probably missed a lot of packets */
+ 
++	if ((seq_num_diff >= TQ_LOCAL_WINDOW_SIZE)
++		|| (seq_num_diff < EXPECTED_SEQNO_RANGE)) {
++		bat_dbg(DBG_BATMAN,
++			"We missed a lot of packets (%i) !\n",
++			seq_num_diff - 1);
++		bit_reset_window(seq_bits);
+ 		if (set_mark)
+-			seq_bits[0] = 1;  /* we only have the latest packet */
+-	} else {
+-		bit_shift(seq_bits, seq_num_diff);
++			bit_mark(seq_bits, 0);
++		return 1;
++	}
++
++	/* received a much older packet. The other host either restarted
++	 * or the old packet got delayed somewhere in the network. The
++	 * packet should be dropped without calling this function if the
++	 * seqno window is protected. */
++
++	if ((seq_num_diff <= -TQ_LOCAL_WINDOW_SIZE)
++		|| (seq_num_diff >= EXPECTED_SEQNO_RANGE)) {
+ 
++		bat_dbg(DBG_BATMAN,
++			"Other host probably restarted!\n");
++
++		bit_reset_window(seq_bits);
+ 		if (set_mark)
+ 			bit_mark(seq_bits, 0);
++
++		return 1;
+ 	}
+ 
+-	return 1;
++	/* never reached */
++	return 0;
+ }
+ 
+ /* count the hamming weight, how many good packets did we receive? just count
+diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
+index 247196c..58c1ec1 100644
+--- a/drivers/staging/batman-adv/main.h
++++ b/drivers/staging/batman-adv/main.h
+@@ -61,6 +61,10 @@
+ 				   * forw_packet->direct_link_flags */
+ #define MAX_AGGREGATION_MS 100
+ 
++#define RESET_PROTECTION_MS 30000
++#define EXPECTED_SEQNO_RANGE	4096
++/* don't reset again within 30 seconds */
++
+ #define MODULE_INACTIVE 0
+ #define MODULE_ACTIVE 1
+ #define MODULE_DEACTIVATING 2
+diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
+index 44bbe89..01d71d7 100644
+--- a/drivers/staging/batman-adv/originator.c
++++ b/drivers/staging/batman-adv/originator.c
+@@ -140,6 +140,8 @@ struct orig_node *get_orig_node(uint8_t *addr)
+ 	memcpy(orig_node->orig, addr, ETH_ALEN);
+ 	orig_node->router = NULL;
+ 	orig_node->hna_buff = NULL;
++	orig_node->bcast_seqno_reset = jiffies - msecs_to_jiffies(RESET_PROTECTION_MS) - 1;
++	orig_node->batman_seqno_reset = jiffies - msecs_to_jiffies(RESET_PROTECTION_MS) - 1;
+ 
+ 	size = bat_priv->num_ifaces * sizeof(TYPE_OF_WORD) * NUM_WORDS;
+ 
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index 7b8aa27..bf67059 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -304,6 +304,38 @@ update_hna:
+ 	update_routes(orig_node, orig_node->router, hna_buff, tmp_hna_buff_len);
+ }
+ 
++/* checks whether the host restarted and is in the protection time.
++ * returns:
++ *  0 if the packet is to be accepted
++ *  1 if the packet is to be ignored.
++ */
++static int window_protected(int16_t seq_num_diff,
++				unsigned long *last_reset)
++{
++	if ((seq_num_diff <= -TQ_LOCAL_WINDOW_SIZE)
++		|| (seq_num_diff >= EXPECTED_SEQNO_RANGE)) {
++		if (time_after(jiffies, *last_reset +
++			msecs_to_jiffies(RESET_PROTECTION_MS))) {
++
++			*last_reset = jiffies;
++			bat_dbg(DBG_BATMAN,
++				"old packet received, start protection\n");
++
++			return 0;
++		} else
++			return 1;
++	}
++	return 0;
++}
++
++/* processes a batman packet for all interfaces, adjusts the sequence number and
++ * finds out whether it is a duplicate.
++ * returns:
++ *   1 the packet is a duplicate
++ *   0 the packet has not yet been received
++ *  -1 the packet is old and has been received while the seqno window
++ *     was protected. Caller should drop it.
++ */
+ static char count_real_packets(struct ethhdr *ethhdr,
+ 			       struct batman_packet *batman_packet,
+ 			       struct batman_if *if_incoming)
+@@ -311,31 +343,41 @@ static char count_real_packets(struct ethhdr *ethhdr,
+ 	struct orig_node *orig_node;
+ 	struct neigh_node *tmp_neigh_node;
+ 	char is_duplicate = 0;
+-	uint16_t seq_diff;
++	int16_t seq_diff;
++	int need_update = 0;
++	int set_mark;
+ 
+ 	orig_node = get_orig_node(batman_packet->orig);
+ 	if (orig_node == NULL)
  		return 0;
  
--	return sprintf(buff, "status: %s\ncommands: none, bat0 \n",
-+	return sprintf(buff, "status: %s\ncommands: none, bat0\n",
- 		       batman_if->if_status == IF_NOT_IN_USE ?
- 							"none" : "bat0");
++	seq_diff = batman_packet->seqno - orig_node->last_real_seqno;
++
++	/* signalize caller that the packet is to be dropped. */
++	if (window_protected(seq_diff, &orig_node->batman_seqno_reset))
++		return -1;
++
+ 	list_for_each_entry(tmp_neigh_node, &orig_node->neigh_list, list) {
+ 
+-		if (!is_duplicate)
+-			is_duplicate =
+-				get_bit_status(tmp_neigh_node->real_bits,
++		is_duplicate |= get_bit_status(tmp_neigh_node->real_bits,
+ 					       orig_node->last_real_seqno,
+ 					       batman_packet->seqno);
+-		seq_diff = batman_packet->seqno - orig_node->last_real_seqno;
++
+ 		if (compare_orig(tmp_neigh_node->addr, ethhdr->h_source) &&
+ 		    (tmp_neigh_node->if_incoming == if_incoming))
+-			bit_get_packet(tmp_neigh_node->real_bits, seq_diff, 1);
++			set_mark = 1;
+ 		else
+-			bit_get_packet(tmp_neigh_node->real_bits, seq_diff, 0);
++			set_mark = 0;
++
++		/* if the window moved, set the update flag. */
++		need_update |= bit_get_packet(tmp_neigh_node->real_bits,
++						seq_diff, set_mark);
+ 
+ 		tmp_neigh_node->real_packet_count =
+ 			bit_packet_count(tmp_neigh_node->real_bits);
+ 	}
+ 
+-	if (!is_duplicate) {
++	if (need_update) {
+ 		bat_dbg(DBG_BATMAN, "updating last_seqno: old %d, new %d\n",
+ 			orig_node->last_real_seqno, batman_packet->seqno);
+ 		orig_node->last_real_seqno = batman_packet->seqno;
+@@ -453,24 +495,27 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 		return;
+ 	}
+ 
+-	if (batman_packet->tq == 0) {
+-		count_real_packets(ethhdr, batman_packet, if_incoming);
+-
+-		bat_dbg(DBG_BATMAN, "Drop packet: originator packet with tq equal 0\n");
+-		return;
+-	}
+-
+ 	if (is_my_oldorig) {
+ 		bat_dbg(DBG_BATMAN, "Drop packet: ignoring all rebroadcast echos (sender: %pM)\n", ethhdr->h_source);
+ 		return;
+ 	}
+ 
+-	is_duplicate = count_real_packets(ethhdr, batman_packet, if_incoming);
+-
+ 	orig_node = get_orig_node(batman_packet->orig);
+ 	if (orig_node == NULL)
+ 		return;
+ 
++	is_duplicate = count_real_packets(ethhdr, batman_packet, if_incoming);
++
++	if (is_duplicate == -1) {
++		bat_dbg(DBG_BATMAN, "Drop packet: packet within seqno protection time (sender: %pM)\n", ethhdr->h_source);
++		return;
++	}
++
++	if (batman_packet->tq == 0) {
++		bat_dbg(DBG_BATMAN,	"Drop packet: originator packet with tq equal 0\n");
++		return;
++	}
++
+ 	/* avoid temporary routing loops */
+ 	if ((orig_node->router) &&
+ 	    (orig_node->router->orig_node->router) &&
+@@ -866,13 +911,13 @@ int recv_unicast_packet(struct sk_buff *skb)
+ 	return ret;
  }
+ 
+-
+ int recv_bcast_packet(struct sk_buff *skb)
+ {
+ 	struct orig_node *orig_node;
+ 	struct bcast_packet *bcast_packet;
+ 	struct ethhdr *ethhdr;
+ 	int hdr_size = sizeof(struct bcast_packet);
++	int16_t seq_diff;
+ 	unsigned long flags;
+ 
+ 	/* drop packet if it has not necessary minimum size */
+@@ -908,7 +953,7 @@ int recv_bcast_packet(struct sk_buff *skb)
+ 		return NET_RX_DROP;
+ 	}
+ 
+-	/* check flood history */
++	/* check whether the packet is a duplicate */
+ 	if (get_bit_status(orig_node->bcast_bits,
+ 			   orig_node->last_bcast_seqno,
+ 			   ntohs(bcast_packet->seqno))) {
+@@ -916,14 +961,20 @@ int recv_bcast_packet(struct sk_buff *skb)
+ 		return NET_RX_DROP;
+ 	}
+ 
+-	/* mark broadcast in flood history */
+-	if (bit_get_packet(orig_node->bcast_bits,
+-			   ntohs(bcast_packet->seqno) -
+-			   orig_node->last_bcast_seqno, 1))
++	seq_diff = ntohs(bcast_packet->seqno) - orig_node->last_bcast_seqno;
++
++	/* check whether the packet is old and the host just restarted. */
++	if (window_protected(seq_diff, &orig_node->bcast_seqno_reset)) {
++		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		return NET_RX_DROP;
++	}
++
++	/* mark broadcast in flood history, update window position
++	 * if required. */
++	if (bit_get_packet(orig_node->bcast_bits, seq_diff, 1))
+ 		orig_node->last_bcast_seqno = ntohs(bcast_packet->seqno);
+ 
+ 	spin_unlock_irqrestore(&orig_hash_lock, flags);
+-
+ 	/* rebroadcast packet */
+ 	add_bcast_packet_to_list(skb);
+ 
+diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
+index eba1fa6..c926219 100644
+--- a/drivers/staging/batman-adv/types.h
++++ b/drivers/staging/batman-adv/types.h
+@@ -55,6 +55,10 @@ struct orig_node {               /* structure for orig_list maintaining nodes of
+ 	uint8_t tq_own;
+ 	int tq_asym_penalty;
+ 	unsigned long last_valid;        /* when last packet from this node was received */
++	unsigned long bcast_seqno_reset; /* time when the broadcast
++					    seqno window was reset. */
++	unsigned long batman_seqno_reset;/* time when the batman seqno
++					    window was reset. */
+ /*	uint8_t  gwflags;      * flags related to gateway functions: gateway class */
+ 	uint8_t  flags;    		/* for now only VIS_SERVER flag. */
+ 	unsigned char *hna_buff;
 -- 
 1.7.1
 
