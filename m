@@ -1,9 +1,15 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Fri,  7 May 2010 21:47:05 +0200
-Message-Id: <1273261651-21378-1-git-send-email-andrew@lunn.ch>
+Date: Fri,  7 May 2010 21:47:12 +0200
+Message-Id: <1273261651-21378-8-git-send-email-andrew@lunn.ch>
+In-Reply-To: <1273261651-21378-1-git-send-email-andrew@lunn.ch>
+References: <1273261651-21378-1-git-send-email-andrew@lunn.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 00/26] Staging: batman-adv: linux-next
+Subject: [B.A.T.M.A.N.] [PATCH 07/26] Staging: batman-adv: Remove dead max
+	addr and obsolete VIS_FORMAT strings
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,54 +22,47 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+Cc: b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Hi Greg.
+From: Linus Lüssing <linus.luessing@web.de>
 
-Here are the patches again, this time with the right authorship. Sorry
-we messed it up and caused you extra work.
+Max address is not being used anywhere and just misleading, therefore
+removing it. VIS_FORMAT string is now obsolete, so also remove it.
 
-     Thanks
-	Andrew
-
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+---
+ drivers/staging/batman-adv/main.h |    2 --
+ drivers/staging/batman-adv/vis.h  |    2 --
+ 2 files changed, 0 insertions(+), 4 deletions(-)
 
-Andrew Lunn (2):
-      Staging: batman-adv: Update TODO file to reflect current state.
-      Staging: batman-adv: updating README
+diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
+index 5fdf5af..2494f5a 100644
+--- a/drivers/staging/batman-adv/main.h
++++ b/drivers/staging/batman-adv/main.h
+@@ -34,8 +34,6 @@
+ #define TQ_MAX_VALUE 255
+ #define JITTER 20
+ #define TTL 50			  /* Time To Live of broadcast messages */
+-#define MAX_ADDR 16		  /* number of interfaces which can be added to
+-				   * batman. */
+ 
+ #define PURGE_TIMEOUT 200000	  /* purge originators after time in ms if no
+ 				   * valid packet comes in -> TODO: check
+diff --git a/drivers/staging/batman-adv/vis.h b/drivers/staging/batman-adv/vis.h
+index 98d8972..4e417fb 100644
+--- a/drivers/staging/batman-adv/vis.h
++++ b/drivers/staging/batman-adv/vis.h
+@@ -20,8 +20,6 @@
+  */
+ 
+ #define VIS_TIMEOUT		200000
+-#define VIS_FORMAT_DD_NAME	"dot_draw"
+-#define VIS_FORMAT_JSON_NAME	"json"
+ 
+ struct vis_info {
+ 	unsigned long       first_seen;
+-- 
+1.7.1
 
-Dan Carpenter (1):
-      Staging: batman-adv: cleanup: change test for end of array
-
-Linus L?ssing (4):
-      Staging: batman-adv: only modify hna-table on active module
-      Staging: batman-adv: Fix aggregation direct-link bug
-      Staging: batman-adv: Remove dead max addr and obsolete VIS_FORMAT strings
-      Staging: batman-adv: Update README about vis raw output
-
-Luis de Bethencourt (1):
-      Staging: batman-adv: fix whitespace style issues
-
-Marek Lindner (6):
-      Staging: batman-adv: fix aggregation timing bug
-      Staging: batman-adv: convert multiple /proc files to use sysfs
-      Staging: batman-adv: convert more files from /proc to /sys
-      Staging: batman-adv: move originator interval setting from /proc to /sys
-      Staging: batman-adv: remove redundant pointer to originator interface
-      Staging: batman-adv: move /proc interface handling to /sys
-
-Simon Wunderlich (7):
-      Staging: batman-adv: Update copyright years
-      Staging: batman-adv: remove the beta from main.h for release
-      Staging: batman-adv: Add 0.2.1 changes to the CHANGELOG
-      Staging: batman-adv: Changing version to 0.2.2-beta
-      Staging: batman-adv: Reorganize sequence number handling
-      Staging: batman-adv: Limit queue lengths for batman and broadcast packets
-      Staging: batman-adv: kfree_skb() in interface_tx() in error case
-
-Sven Eckelmann (5):
-      Staging: batman-adv: Clone shared bat packets before modifying them
-      Staging: batman-adv: fix whitespace style issues
-      Staging: batman-adv: Update pointer to ethhdr after skb_copy
-      Staging: batman-adv: Fix whitespace problems criticized by checkpatch.pl
-      Staging: batman-adv: Reduce max characters on a line to 80
