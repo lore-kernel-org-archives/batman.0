@@ -1,17 +1,9 @@
-Return-Path: <bethencourt@gmail.com>
-MIME-Version: 1.0
-Sender: bethencourt@gmail.com
-In-Reply-To: <20100507175607.GA3734@lunn.ch>
-References: <201005072243.12054.lindner_marek@yahoo.de>
-	<20100507152606.GA18943@kroah.com>
-	<y2x506b70dc1005071041zb0659d46n73f4faf14625ec41@mail.gmail.com>
-	<20100507175607.GA3734@lunn.ch>
-Date: Fri, 7 May 2010 19:54:36 +0100
-Message-ID: <g2t506b70dc1005071154q6764e0bapdc4f8a3a48b4d3d4@mail.gmail.com>
-From: Luis de Bethencourt <luisbg@ubuntu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] batman patch authorship mangled
+Return-Path: <andrew@lunn.ch>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Fri,  7 May 2010 21:47:05 +0200
+Message-Id: <1273261651-21378-1-git-send-email-andrew@lunn.ch>
+Sender: Andrew Lunn <andrew@lunn.ch>
+Subject: [B.A.T.M.A.N.] [PATCH 00/26] Staging: batman-adv: linux-next
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,28 +15,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.net, Greg KH <greg@kroah.com>, Marek Lindner <lindner_marek@yahoo.de>
+To: greg@kroah.com
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-On Fri, May 7, 2010 at 6:56 PM, Andrew Lunn <andrew@lunn.ch> wrote:
->> Greg, wait!
->>
->> No need for this. I understand the problem, can imagine why it
->> happened and I don't mind the wrong authorship. I prefer avoiding the
->> general head-ache of rebasing the whole tree.
->>
->> To be honest I noticed this in yesterday's emails but I decided to not
->> mention it.
->>
->> Marek,
->> Any beers for me then :P
->
-> So, i will wait until somebody has time to visit the post office and
-> work out which is cheaper: Beer to Greg, or Beer to Luis.
->
-> =A0 =A0 Andrew
->
+Hi Greg.
 
-Make it for Greg :)
+Here are the patches again, this time with the right authorship. Sorry
+we messed it up and caused you extra work.
 
-Luis
+     Thanks
+	Andrew
+
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+
+Andrew Lunn (2):
+      Staging: batman-adv: Update TODO file to reflect current state.
+      Staging: batman-adv: updating README
+
+Dan Carpenter (1):
+      Staging: batman-adv: cleanup: change test for end of array
+
+Linus L?ssing (4):
+      Staging: batman-adv: only modify hna-table on active module
+      Staging: batman-adv: Fix aggregation direct-link bug
+      Staging: batman-adv: Remove dead max addr and obsolete VIS_FORMAT strings
+      Staging: batman-adv: Update README about vis raw output
+
+Luis de Bethencourt (1):
+      Staging: batman-adv: fix whitespace style issues
+
+Marek Lindner (6):
+      Staging: batman-adv: fix aggregation timing bug
+      Staging: batman-adv: convert multiple /proc files to use sysfs
+      Staging: batman-adv: convert more files from /proc to /sys
+      Staging: batman-adv: move originator interval setting from /proc to /sys
+      Staging: batman-adv: remove redundant pointer to originator interface
+      Staging: batman-adv: move /proc interface handling to /sys
+
+Simon Wunderlich (7):
+      Staging: batman-adv: Update copyright years
+      Staging: batman-adv: remove the beta from main.h for release
+      Staging: batman-adv: Add 0.2.1 changes to the CHANGELOG
+      Staging: batman-adv: Changing version to 0.2.2-beta
+      Staging: batman-adv: Reorganize sequence number handling
+      Staging: batman-adv: Limit queue lengths for batman and broadcast packets
+      Staging: batman-adv: kfree_skb() in interface_tx() in error case
+
+Sven Eckelmann (5):
+      Staging: batman-adv: Clone shared bat packets before modifying them
+      Staging: batman-adv: fix whitespace style issues
+      Staging: batman-adv: Update pointer to ethhdr after skb_copy
+      Staging: batman-adv: Fix whitespace problems criticized by checkpatch.pl
+      Staging: batman-adv: Reduce max characters on a line to 80
