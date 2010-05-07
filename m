@@ -1,12 +1,15 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Fri,  7 May 2010 21:47:16 +0200
-Message-Id: <1273261651-21378-12-git-send-email-andrew@lunn.ch>
+Date: Fri,  7 May 2010 21:47:09 +0200
+Message-Id: <1273261651-21378-5-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1273261651-21378-1-git-send-email-andrew@lunn.ch>
 References: <1273261651-21378-1-git-send-email-andrew@lunn.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 11/26] Staging: batman-adv: cleanup: change
-	test for end of array
+Subject: [B.A.T.M.A.N.] [PATCH 04/26] Staging: batman-adv: Fix aggregation
+	direct-link bug
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,58 +22,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net, Dan Carpenter <error27@gmail.com>
+Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
 
-From: Dan Carpenter <error27@gmail.com>
+From: Linus Lüssing <linus.luessing@web.de>
 
-The code here is testing to see if "i" is passed the end of the array.
-The original code works probably, but it's not the cleanest way.
+So far, neighbour's secondary interface OGMs can involuntarily
+piggyback on primary interface OGMs that arrived on the same secondary
+interface before. Secondary interface OGMs should NEVER leave their
+direct neighbour broadcast domain! This patch ensures that secondary
+interface OGMs can only be aggregated to other secondary interface OGMs.
 
-Andrew Lunn suggested that I also remove all the hard coded references
-to 256 so I have done that as well.
-
-Signed-off-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/device.c |   11 ++++-------
- 1 files changed, 4 insertions(+), 7 deletions(-)
+ drivers/staging/batman-adv/aggregation.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/device.c b/drivers/staging/batman-adv/device.c
-index c82a5af..fbfe234 100644
---- a/drivers/staging/batman-adv/device.c
-+++ b/drivers/staging/batman-adv/device.c
-@@ -44,10 +44,7 @@ static struct device_client *device_client_hash[256];
- 
- void bat_device_init(void)
- {
--	int i;
+diff --git a/drivers/staging/batman-adv/aggregation.c b/drivers/staging/batman-adv/aggregation.c
+index d25e5a8..e1bd321 100644
+--- a/drivers/staging/batman-adv/aggregation.c
++++ b/drivers/staging/batman-adv/aggregation.c
+@@ -81,9 +81,15 @@ static bool can_aggregate_with(struct batman_packet *new_batman_packet,
+ 		 * interface only - we still can aggregate */
+ 		if ((directlink) &&
+ 		    (new_batman_packet->ttl == 1) &&
+-		    (forw_packet->if_incoming == if_incoming))
++		    (forw_packet->if_incoming == if_incoming) &&
++
++		    /* packets from direct neighbors or
++		     * own secondary interface packets
++		     * (= secondary interface packets in general) */
++		    (batman_packet->flags & DIRECTLINK ||
++		     (forw_packet->own &&
++		      forw_packet->if_incoming->if_num != 0)))
+ 			return true;
 -
--	for (i = 0; i < 256; i++)
--		device_client_hash[i] = NULL;
-+	memset(device_client_hash, 0, sizeof(device_client_hash));
- }
- 
- int bat_device_setup(void)
-@@ -103,15 +100,15 @@ int bat_device_open(struct inode *inode, struct file *file)
- 	if (!device_client)
- 		return -ENOMEM;
- 
--	for (i = 0; i < 256; i++) {
-+	for (i = 0; i < ARRAY_SIZE(device_client_hash); i++) {
- 		if (!device_client_hash[i]) {
- 			device_client_hash[i] = device_client;
- 			break;
- 		}
  	}
  
--	if (device_client_hash[i] != device_client) {
--		printk(KERN_ERR "batman-adv:Error - can't add another packet client: maximum number of clients reached \n");
-+	if (i == ARRAY_SIZE(device_client_hash)) {
-+		printk(KERN_ERR "batman-adv:Error - can't add another packet client: maximum number of clients reached\n");
- 		kfree(device_client);
- 		return -EXFULL;
- 	}
+ 	return false;
+@@ -204,7 +210,7 @@ void add_bat_packet_to_list(unsigned char *packet_buff, int packet_len,
+ 		 * later on
+ 		 */
+ 		if ((!own_packet) &&
+-		    (atomic_read(&bat_priv->aggregation_enabled)))
++		    (atomic_read(&aggregation_enabled)))
+ 			send_time += msecs_to_jiffies(MAX_AGGREGATION_MS);
+ 
+ 		new_aggregated_packet(packet_buff, packet_len,
 -- 
 1.7.1
 
