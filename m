@@ -1,15 +1,15 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Fri,  7 May 2010 21:47:14 +0200
-Message-Id: <1273261651-21378-10-git-send-email-andrew@lunn.ch>
+Date: Fri,  7 May 2010 21:47:06 +0200
+Message-Id: <1273261651-21378-2-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1273261651-21378-1-git-send-email-andrew@lunn.ch>
 References: <1273261651-21378-1-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: Andrew Lunn <andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 09/26] Staging: batman-adv: Update README
-	about vis raw output
+Subject: [B.A.T.M.A.N.] [PATCH 01/26] Staging: batman-adv: only modify
+	hna-table on active module
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,84 +22,45 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
 
 From: Linus Lüssing <linus.luessing@web.de>
 
-We are now having a newer, more neutral vis output so that we won't have
-to change the kernelmodule for adding support of new vis output formats.
-This patch adds an explanation about this in the README file of
-batman-adv and removes the description about the dot/json format (they
-will be added to the README of batctl).
+If we haven't set the module to MODULE_ACTIVE state before (in general,
+no interface has yet been added to batman-adv) then the hna table is not
+initialised yet. If the kernel changes the mac address of the bat0
+interface at this moment then an hna_local_add() called by interface_set_mac_addr()
+then resulted in a null pointer derefernce. With this patch we are now
+explicitly checking before if the state is MODULE_ACTIVE right now so
+that we can assume having an initialised hna table.
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/staging/batman-adv/README |   36 ++++++++++++++++++++++++++++--------
- 1 files changed, 28 insertions(+), 8 deletions(-)
+ drivers/staging/batman-adv/soft-interface.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/README b/drivers/staging/batman-adv/README
-index 7d666ad..e2a7271 100644
---- a/drivers/staging/batman-adv/README
-+++ b/drivers/staging/batman-adv/README
-@@ -1,4 +1,4 @@
--[state: 06-01-2010]
-+[state: 22-03-2010]
+diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
+index 0e2307f..a42b21f 100644
+--- a/drivers/staging/batman-adv/soft-interface.c
++++ b/drivers/staging/batman-adv/soft-interface.c
+@@ -152,9 +152,13 @@ int interface_set_mac_addr(struct net_device *dev, void *p)
+ 	if (!is_valid_ether_addr(addr->sa_data))
+ 		return -EADDRNOTAVAIL;
  
- BATMAN-ADV
- ----------
-@@ -44,10 +44,11 @@ regular interface:
- # ping 192.168.0.2
- ...
- 
-+---
- If you want topology visualization, your meshnode must be configured
- as VIS-server:
- 
--# echo "server" > /proc/net/batman-adv/vis
-+# echo "server" > /proc/net/batman-adv/vis_server
- 
- Each node is either configured as "server" or as "client" (default:
- "client"). Clients send their topology data to the server next to them,
-@@ -58,12 +59,31 @@ more vis servers sharing the same (or at least very similar) data.
- 
- When configured as server, you can get a topology snapshot of your mesh:
- 
--# cat /proc/net/batman-adv/vis
--
--The output is in a generic raw format. Use the batctl tool (See below)
--to convert this to other formats more suitable for graphing, eg
--graphviz dot, or JSON data-interchange format.
--
-+# cat /proc/net/batman-adv/vis_data
+-	hna_local_remove(dev->dev_addr, "mac address changed");
++	/* only modify hna-table if it has been initialised before */
++	if (atomic_read(&module_state) == MODULE_ACTIVE) {
++		hna_local_remove(dev->dev_addr, "mac address changed");
++		hna_local_add(addr->sa_data);
++	}
 +
-+This raw output is intended to be easily parsable and convertable with
-+other tools. Have a look at the batctl README if you want a vis output
-+in dot or json format for instance and how those outputs could then be
-+visualised in an image.
-+
-+The raw format consists of comma seperated values per entry where each
-+entry is giving information about a certain source interface. Each entry
-+can/has to have the following values:
-+-> "mac" -> mac address of an originator's source interface
-+           (each line begins with it)
-+-> "TQ mac value" -> src mac's link quality towards mac address of a neighbor
-+                     originator's interface which is being used for routing
-+-> "HNA mac" -> HNA announced by source mac
-+-> "PRIMARY" -> this is a primary interface
-+-> "SEC mac" -> secondary mac address of source (requires preceeding
-+-> PRIMARY)
-+
-+The TQ value has a range from 4 to 255 with 255 being the best.
-+The HNA entries are showing which hosts are connected to the mesh via bat0
-+or being bridged into the mesh network.
-+The PRIMARY/SEC values are only applied on primary interfaces
-+
-+---
- In very mobile scenarios, you might want to adjust the originator
- interval to a lower value. This will make the mesh more responsive to
- topology changes, but will also increase the overhead. Please make sure
+ 	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
+-	hna_local_add(dev->dev_addr);
+ 
+ 	return 0;
+ }
 -- 
 1.7.1
 
