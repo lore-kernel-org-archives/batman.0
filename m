@@ -1,17 +1,11 @@
-Return-Path: <greg@kroah.com>
-Date: Fri, 14 May 2010 09:10:01 -0700
-From: Greg KH <greg@kroah.com>
-Message-ID: <20100514161001.GA29463@kroah.com>
-References: <1273177132-8792-1-git-send-email-andrew@lunn.ch>
-	<201005122056.05476.sven.eckelmann@gmx.de>
-	<20100512191720.GB30678@kroah.com>
-	<201005130751.06747.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201005130751.06747.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 13/26] staging:batman-adv: convert
- multiple /proc files to use sysfs
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sun, 16 May 2010 15:02:12 +0200
+Message-Id: <1274014932-2792-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1273868969293@kroah.org>
+References: <1273868969293@kroah.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove all rcu head
+	initializations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,32 +17,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>
-Cc: gregkh@suse.de, b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thu, May 13, 2010 at 07:51:05AM +0800, Marek Lindner wrote:
-> > The others are all single-value files, right?  Or did I miss something?
-> > If they are single-value files, then yes, they can stay in sysfs, unless
-> > you feel they are debug-type things, then debugfs is the place for them
-> > (debugfs makes is trivial to handle single value files, even easier than
-> > sysfs.)
-> 
-> Well, now that you mention it ..  :-)
-> Next to the sysfs interface batman creates a file in /dev (/dev/batman-adv at 
-> the moment) that is used to inject (debug) packets into the mesh from user 
-> space. Due to our ongoing mesh abstraction effort we would need to create one 
-> file per virtual mesh which is little bit messy in /dev (although doable). I'd 
-> like to get it out of there - can/should we move it to debugfs ? The initial 
-> reason to choose /dev was the ability get the open() and close() syscalls 
-> because we need to maintain a state for each user.
+From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Yes, that sounds like debugfs might work for you there.
+Remove all rcu head inits. We don't care about the RCU head state before
+passing it to call_rcu() anyway. Only leave the "on_stack" variants so
+debugobjects can keep track of objects on stack.
 
-Just remember the one rule of debugfs:
-	There are no rules for debugfs
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
+Cc: Sven Eckelmann <sven.eckelmann@gmx.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+I've tried to check if the initialisation was always done in call_rcu in all
+implementations since 2.6.21. This assumption seems to be correct. I've
+already applied it to the maint branch and it must only be applied to the
+trunk.
 
-If you are ok with that, then by all means, use it :)
+ hard-interface.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-thanks,
+diff --git a/hard-interface.c b/hard-interface.c
+index c17ad85..bc2bd12 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -341,7 +341,6 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
+ 	batman_if->if_num = -1;
+ 	batman_if->net_dev = net_dev;
+ 	batman_if->if_status = IF_NOT_IN_USE;
+-	INIT_RCU_HEAD(&batman_if->rcu);
+ 	INIT_LIST_HEAD(&batman_if->list);
+ 
+ 	check_known_mac_addr(batman_if->net_dev->dev_addr);
+-- 
+1.7.1
 
-greg k-h
