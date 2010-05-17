@@ -1,16 +1,11 @@
-Return-Path: <ordex@ritirata.org>
-Date: Mon, 17 May 2010 09:20:41 +0200
-From: Antonio Quartulli <ordex@ritirata.org>
-Message-ID: <20100517072041.GA23674@ritirata.org>
-References: <20100508170755.GA27599@ritirata.org>
-	<201005170337.45135.lindner_marek@yahoo.de>
-	<20100516212754.GB2364@ritirata.org>
-	<201005170653.01657.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201005170653.01657.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Blocking OGMs from a node for testing purpose
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon, 17 May 2010 11:58:50 +0200
+Message-Id: <1274090330-22874-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1274014932-2792-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1274014932-2792-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: remove all rcu head
+	initializations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,34 +17,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On lun, mag 17, 2010 at 06:53:01 +0800, Marek Lindner wrote:
-> On Monday 17 May 2010 05:27:55 Antonio Quartulli wrote:
-> > It is what i described just a few rows before..the problem is that
-> > adding wlan0 interface to a eth-bridge (using cfg80211 driver) is not
-> > possible (due to operation not permitted error, probably because devs
-> > don't want to do that :P) either with iwlagn or rt2x00
-> 
-> Ok, I did not quite get that the first time but it seems you are right: The wifi 
-> stack sets IFF_DONT_BRIDGE on any wifi interface in adhoc or station mode to 
-> keep it from being added to a bridge. Normally, this would be a very correct 
-> behaviour ..
-> 
-> Then we have to add ebtables support by calling some ebtables hooks that will 
-> tell us whether or not to drop the packet ? Is that possible (I'm not the 
-> ebtables expert here) ?  :-)
-> 
-I'm not an expert too :P But it would be very nice, in this way bat0
-could be controlled like a bridge.
+From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Thanks.
+Remove all rcu head inits. We don't care about the RCU head state before
+passing it to call_rcu() anyway. Only leave the "on_stack" variants so
+debugobjects can keep track of objects on stack.
 
-> Cheers,
-> Marek
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
+Cc: Sven Eckelmann <sven.eckelmann@gmx.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+I've tried to check if the initialisation was always done in call_rcu in all
+implementations since 2.6.21. This assumption seems to be correct. I've
+already applied it to the maint branch and it must only be applied to the
+trunk.
 
+v2: I've accidently send the version of maint instead the version for trunk.
+There were no real differences, but the paths.
+
+ batman-adv-kernelland/hard-interface.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/batman-adv-kernelland/hard-interface.c b/batman-adv-kernelland/hard-interface.c
+index 5123176..cc7fbae 100644
+--- a/batman-adv-kernelland/hard-interface.c
++++ b/batman-adv-kernelland/hard-interface.c
+@@ -341,7 +341,6 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
+ 	batman_if->if_num = -1;
+ 	batman_if->net_dev = net_dev;
+ 	batman_if->if_status = IF_NOT_IN_USE;
+-	INIT_RCU_HEAD(&batman_if->rcu);
+ 	INIT_LIST_HEAD(&batman_if->list);
+ 
+ 	check_known_mac_addr(batman_if->net_dev->dev_addr);
 -- 
-Antonio Quartulli
+1.7.1
 
-Ognuno di noi, da solo, non vale nulla 
-Ernesto "Che" Guevara
