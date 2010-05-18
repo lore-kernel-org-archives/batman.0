@@ -1,11 +1,14 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 17 May 2010 19:52:09 +0200
-Message-Id: <1274118729-27777-2-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <201005171951.21349.sven.eckelmann@gmx.de>
+Date: Tue, 18 May 2010 22:35:14 +0200
 References: <201005171951.21349.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCHv0 2/2] batctl: Use socket in debugfs instead
-	of batman-adv device
+In-Reply-To: <201005171951.21349.sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart74971968.WJQVX5dp78";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201005182235.22328.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] Converting from /dev to debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,503 +22,60 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The batman-adv device which was only usable for a single batX net device
-was replaced with a file in debugfs which can be used the same way as
-/dev/batman-adv before.
+--nextPart74971968.WJQVX5dp78
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-It seems that the debugfs has no 100% common mount path in current
-distributions and maybe isn't mounted at all. So before we try to access
-a batman file in debugfs, we have to search for the mountpoint in
-/proc/mounts and maybe mount it manually in /sys/kernel/debug.
+Sven Eckelmann wrote:
+> Unfortunately I am not able to continue it today, but don't want to stop
+> other people working on similar things. I will attach v0 (aka works for
+> me, but maybe not perfect/good enough) versions of these patches to
+> support them. Please feel free to discuss the patches.
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batctl/Makefile     |    4 +-
- batctl/debugfs.c    |  269 +++++++++++++++++++++++++++++++++++++++++++++++++++
- batctl/debugfs.h    |   46 +++++++++
- batctl/main.h       |    2 +-
- batctl/ping.c       |   21 +++-
- batctl/traceroute.c |   21 +++-
- 6 files changed, 350 insertions(+), 13 deletions(-)
- create mode 100644 batctl/debugfs.c
- create mode 100644 batctl/debugfs.h
+I converted the remaining files from sysfs to debugfs, but I noticed that=20
+there is a problem with the output functions (see  "BUG" comments in patch =
+3).=20
+The problem is that we may sleep during the prints in the output functions,=
+=20
+but we disabled interrupts.... which is bad. This problem was also their=20
+before we converted from /proc to /sys. It seems that it was first introduc=
+ed=20
+in r1517. The old way for hna_global_fill_buffer_text=20
+hna_local_fill_buffer_text solved it, but restricted the output to 4096 byt=
+es.=20
+So we could either stay with a "slow" and maybe inconsistent output or=20
+restricted output length or copy the data to a local buffer and then creati=
+ng=20
+the output without spinlock or something completely different.
 
-diff --git a/batctl/Makefile b/batctl/Makefile
-index db375f7..bc591da 100644
---- a/batctl/Makefile
-+++ b/batctl/Makefile
-@@ -39,8 +39,8 @@ SRC_FILES = "\(\.c\)\|\(\.h\)\|\(Makefile\)\|\(INSTALL\)\|\(LIESMICH\)\|\(README
- EXTRA_MODULES_C := bisect.c
- EXTRA_MODULES_H := bisect.h
- 
--SRC_C = main.c bat-hosts.c functions.c sys.c ping.c traceroute.c tcpdump.c list-batman.c hash.c vis.c $(EXTRA_MODULES_C)
--SRC_H = main.h bat-hosts.h functions.h sys.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h vis.h $(EXTRA_MODULES_H)
-+SRC_C = main.c bat-hosts.c functions.c sys.c ping.c traceroute.c tcpdump.c list-batman.c hash.c vis.c debugfs.c $(EXTRA_MODULES_C)
-+SRC_H = main.h bat-hosts.h functions.h sys.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h vis.h debugfs.h $(EXTRA_MODULES_H)
- SRC_O = $(SRC_C:.c=.o)
- 
- PACKAGE_NAME = batctl
-diff --git a/batctl/debugfs.c b/batctl/debugfs.c
-new file mode 100644
-index 0000000..cfe1254
---- /dev/null
-+++ b/batctl/debugfs.c
-@@ -0,0 +1,269 @@
-+/*
-+ * Copyright (C) 2009 Clark Williams <williams@redhat.com>
-+ * Copyright (C) 2009 Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ */
-+
-+#include "debugfs.h"
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <errno.h>
-+#include <linux/magic.h>
-+#include <sys/vfs.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <fcntl.h>
-+#include <unistd.h>
-+
-+#ifndef DEBUGFS_MAGIC
-+#define DEBUGFS_MAGIC          0x64626720
-+#endif
-+
-+static int debugfs_premounted;
-+static char debugfs_mountpoint[MAX_PATH+1];
-+
-+static const char *debugfs_known_mountpoints[] = {
-+	"/sys/kernel/debug/",
-+	"/debug/",
-+	0,
-+};
-+
-+/* use this to force a umount */
-+void debugfs_force_cleanup(void)
-+{
-+	debugfs_find_mountpoint();
-+	debugfs_premounted = 0;
-+	debugfs_umount();
-+}
-+
-+/* construct a full path to a debugfs element */
-+int debugfs_make_path(const char *element, char *buffer, int size)
-+{
-+	int len;
-+
-+	if (strlen(debugfs_mountpoint) == 0) {
-+		buffer[0] = '\0';
-+		return -1;
-+	}
-+
-+	len = strlen(debugfs_mountpoint) + strlen(element) + 1;
-+	if (len >= size)
-+		return len+1;
-+
-+	snprintf(buffer, size-1, "%s/%s", debugfs_mountpoint, element);
-+	return 0;
-+}
-+
-+static int debugfs_found;
-+
-+/* find the path to the mounted debugfs */
-+const char *debugfs_find_mountpoint(void)
-+{
-+	const char **ptr;
-+	char type[100];
-+	FILE *fp;
-+
-+	if (debugfs_found)
-+		return (const char *) debugfs_mountpoint;
-+
-+	ptr = debugfs_known_mountpoints;
-+	while (*ptr) {
-+		if (debugfs_valid_mountpoint(*ptr) == 0) {
-+			debugfs_found = 1;
-+			strcpy(debugfs_mountpoint, *ptr);
-+			return debugfs_mountpoint;
-+		}
-+		ptr++;
-+	}
-+
-+	/* give up and parse /proc/mounts */
-+	fp = fopen("/proc/mounts", "r");
-+	if (fp == NULL) {
-+		printf("Error - can't open /proc/mounts for read: %s\n",
-+		       strerror(errno));
-+		return NULL;
-+	}
-+
-+	while (fscanf(fp, "%*s %"
-+		      STR(MAX_PATH)
-+		      "s %99s %*s %*d %*d\n",
-+		      debugfs_mountpoint, type) == 2) {
-+		if (strcmp(type, "debugfs") == 0)
-+			break;
-+	}
-+	fclose(fp);
-+
-+	if (strcmp(type, "debugfs") != 0)
-+		return NULL;
-+
-+	debugfs_found = 1;
-+
-+	return debugfs_mountpoint;
-+}
-+
-+/* verify that a mountpoint is actually a debugfs instance */
-+
-+int debugfs_valid_mountpoint(const char *debugfs)
-+{
-+	struct statfs st_fs;
-+
-+	if (statfs(debugfs, &st_fs) < 0)
-+		return -ENOENT;
-+	else if (st_fs.f_type != (long) DEBUGFS_MAGIC)
-+		return -ENOENT;
-+
-+	return 0;
-+}
-+
-+
-+int debugfs_valid_entry(const char *path)
-+{
-+	struct stat st;
-+
-+	if (stat(path, &st))
-+		return -errno;
-+
-+	return 0;
-+}
-+
-+/* mount the debugfs somewhere if it's not mounted */
-+
-+char *debugfs_mount(const char *mountpoint)
-+{
-+	/* see if it's already mounted */
-+	if (debugfs_find_mountpoint()) {
-+		debugfs_premounted = 1;
-+		return debugfs_mountpoint;
-+	}
-+
-+	/* if not mounted and no argument */
-+	if (mountpoint == NULL)
-+		mountpoint = "/sys/kernel/debug";
-+
-+	if (mount(NULL, mountpoint, "debugfs", 0, NULL) < 0)
-+		return NULL;
-+
-+	/* save the mountpoint */
-+	strncpy(debugfs_mountpoint, mountpoint, sizeof(debugfs_mountpoint));
-+	debugfs_found = 1;
-+
-+	return debugfs_mountpoint;
-+}
-+
-+/* umount the debugfs */
-+
-+int debugfs_umount(void)
-+{
-+	char umountcmd[128];
-+	int ret;
-+
-+	/* if it was already mounted, leave it */
-+	if (debugfs_premounted)
-+		return 0;
-+
-+	/* make sure it's a valid mount point */
-+	ret = debugfs_valid_mountpoint(debugfs_mountpoint);
-+	if (ret)
-+		return ret;
-+
-+	snprintf(umountcmd, sizeof(umountcmd),
-+		 "/bin/umount %s", debugfs_mountpoint);
-+	return system(umountcmd);
-+}
-+
-+int debugfs_write(const char *entry, const char *value)
-+{
-+	char path[MAX_PATH+1];
-+	int ret, count;
-+	int fd;
-+
-+	/* construct the path */
-+	snprintf(path, sizeof(path), "%s/%s", debugfs_mountpoint, entry);
-+
-+	/* verify that it exists */
-+	ret = debugfs_valid_entry(path);
-+	if (ret)
-+		return ret;
-+
-+	/* get how many chars we're going to write */
-+	count = strlen(value);
-+
-+	/* open the debugfs entry */
-+	fd = open(path, O_RDWR);
-+	if (fd < 0)
-+		return -errno;
-+
-+	while (count > 0) {
-+		/* write it */
-+		ret = write(fd, value, count);
-+		if (ret <= 0) {
-+			if (ret == EAGAIN)
-+				continue;
-+			close(fd);
-+			return -errno;
-+		}
-+		count -= ret;
-+	}
-+
-+	/* close it */
-+	close(fd);
-+
-+	/* return success */
-+	return 0;
-+}
-+
-+/*
-+ * read a debugfs entry
-+ * returns the number of chars read or a negative errno
-+ */
-+int debugfs_read(const char *entry, char *buffer, size_t size)
-+{
-+	char path[MAX_PATH+1];
-+	int ret;
-+	int fd;
-+
-+	/* construct the path */
-+	snprintf(path, sizeof(path), "%s/%s", debugfs_mountpoint, entry);
-+
-+	/* verify that it exists */
-+	ret = debugfs_valid_entry(path);
-+	if (ret)
-+		return ret;
-+
-+	/* open the debugfs entry */
-+	fd = open(path, O_RDONLY);
-+	if (fd < 0)
-+		return -errno;
-+
-+	do {
-+		/* read it */
-+		ret = read(fd, buffer, size);
-+		if (ret == 0) {
-+			close(fd);
-+			return EOF;
-+		}
-+	} while (ret < 0 && errno == EAGAIN);
-+
-+	/* close it */
-+	close(fd);
-+
-+	/* make *sure* there's a null character at the end */
-+	buffer[ret] = '\0';
-+
-+	/* return the number of chars read */
-+	return ret;
-+}
-diff --git a/batctl/debugfs.h b/batctl/debugfs.h
-new file mode 100644
-index 0000000..45f6339
---- /dev/null
-+++ b/batctl/debugfs.h
-@@ -0,0 +1,46 @@
-+/*
-+ * Copyright (C) 2009 Clark Williams <williams@redhat.com>
-+ * Copyright (C) 2009 Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ */
-+
-+#ifndef __DEBUGFS_H__
-+#define __DEBUGFS_H__
-+
-+#include <sys/mount.h>
-+#include <string.h>
-+
-+#ifndef MAX_PATH
-+# define MAX_PATH 256
-+#endif
-+
-+#ifndef STR
-+# define _STR(x) #x
-+# define STR(x) _STR(x)
-+#endif
-+
-+extern const char *debugfs_find_mountpoint(void);
-+extern int debugfs_valid_mountpoint(const char *debugfs);
-+extern int debugfs_valid_entry(const char *path);
-+extern char *debugfs_mount(const char *mountpoint);
-+extern int debugfs_umount(void);
-+extern int debugfs_write(const char *entry, const char *value);
-+extern int debugfs_read(const char *entry, char *buffer, size_t size);
-+extern void debugfs_force_cleanup(void);
-+extern int debugfs_make_path(const char *element, char *buffer, int size);
-+
-+#endif /* __DEBUGFS_H__ */
-diff --git a/batctl/main.h b/batctl/main.h
-index 9c83a7e..2fe603e 100644
---- a/batctl/main.h
-+++ b/batctl/main.h
-@@ -23,4 +23,4 @@
- 
- #define SOURCE_VERSION "0.3.0-alpha"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
- 
--#define BAT_DEVICE "/dev/batman-adv"
-+#define SOCKET_PATH "batman_adv/bat0/socket"
-diff --git a/batctl/ping.c b/batctl/ping.c
-index 0352870..9df5c07 100644
---- a/batctl/ping.c
-+++ b/batctl/ping.c
-@@ -35,6 +35,7 @@
- #include "functions.h"
- #include "packet.h"
- #include "bat-hosts.h"
-+#include "debugfs.h"
- 
- 
- char is_aborted = 0;
-@@ -79,6 +80,8 @@ int ping(int argc, char **argv)
- 	float min = 0.0, max = 0.0, avg = 0.0;
- 	uint8_t last_rr_cur = 0, last_rr[BAT_RR_LEN][ETH_ALEN];
- 	size_t packet_len;
-+	char *debugfs_mnt;
-+	char icmp_socket[MAX_PATH+1];
- 
- 	while ((optchar = getopt(argc, argv, "hc:i:t:R")) != -1) {
- 		switch (optchar) {
-@@ -139,11 +142,19 @@ int ping(int argc, char **argv)
- 	signal(SIGINT, sig_handler);
- 	signal(SIGTERM, sig_handler);
- 
--	ping_fd = open(BAT_DEVICE, O_RDWR);
-+	debugfs_mnt = debugfs_mount(NULL);
-+	if (!debugfs_mnt) {
-+		printf("Error - can't mount or find debugfs\n");
-+		goto out;
-+	}
-+
-+	debugfs_make_path(SOCKET_PATH, icmp_socket, sizeof(icmp_socket));
-+
-+	ping_fd = open(icmp_socket, O_RDWR);
- 
- 	if (ping_fd < 0) {
--		printf("Error - can't open a connection to the batman adv kernel module via the device '%s': %s\n",
--				BAT_DEVICE, strerror(errno));
-+		printf("Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
-+				icmp_socket, strerror(errno));
- 		printf("Check whether the module is loaded and active.\n");
- 		goto out;
- 	}
-@@ -177,7 +188,7 @@ int ping(int argc, char **argv)
- 		icmp_packet_out.seqno = htons(++seq_counter);
- 
- 		if (write(ping_fd, (char *)&icmp_packet_out, packet_len) < 0) {
--			printf("Error - can't write to batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
-+			printf("Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
- 			goto sleep;
- 		}
- 
-@@ -207,7 +218,7 @@ int ping(int argc, char **argv)
- 		read_len = read(ping_fd, (char *)&icmp_packet_in, packet_len);
- 
- 		if (read_len < 0) {
--			printf("Error - can't read from batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
-+			printf("Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
- 			goto sleep;
- 		}
- 
-diff --git a/batctl/traceroute.c b/batctl/traceroute.c
-index b9b838e..00fcd89 100644
---- a/batctl/traceroute.c
-+++ b/batctl/traceroute.c
-@@ -34,6 +34,7 @@
- #include "functions.h"
- #include "packet.h"
- #include "bat-hosts.h"
-+#include "debugfs.h"
- 
- 
- #define TTL_MAX 50
-@@ -59,6 +60,8 @@ int traceroute(int argc, char **argv)
- 	int ret = EXIT_FAILURE, res, trace_fd = 0, i;
- 	int found_args = 1, optchar, seq_counter = 0, read_opt = USE_BAT_HOSTS;
- 	double time_delta;
-+	char *debugfs_mnt;
-+	char icmp_socket[MAX_PATH+1];
- 
- 	while ((optchar = getopt(argc, argv, "hn")) != -1) {
- 		switch (optchar) {
-@@ -99,11 +102,19 @@ int traceroute(int argc, char **argv)
- 
- 	mac_string = ether_ntoa_long(dst_mac);
- 
--	trace_fd = open(BAT_DEVICE, O_RDWR);
-+	debugfs_mnt = debugfs_mount(NULL);
-+	if (!debugfs_mnt) {
-+		printf("Error - can't mount or find debugfs\n");
-+		goto out;
-+	}
-+
-+	debugfs_make_path(SOCKET_PATH, icmp_socket, sizeof(icmp_socket));
-+
-+	trace_fd = open(icmp_socket, O_RDWR);
- 
- 	if (trace_fd < 0) {
--		printf("Error - can't open a connection to the batman adv kernel module via the device '%s': %s\n",
--				BAT_DEVICE, strerror(errno));
-+		printf("Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
-+				icmp_socket, strerror(errno));
- 		printf("Check whether the module is loaded and active.\n");
- 		goto out;
- 	}
-@@ -123,7 +134,7 @@ int traceroute(int argc, char **argv)
- 			icmp_packet_out.seqno = htons(++seq_counter);
- 
- 			if (write(trace_fd, (char *)&icmp_packet_out, sizeof(icmp_packet_out)) < 0) {
--				printf("Error - can't write to batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
-+				printf("Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
- 				continue;
- 			}
- 
-@@ -149,7 +160,7 @@ int traceroute(int argc, char **argv)
- 			read_len = read(trace_fd, (char *)&icmp_packet_in, sizeof(icmp_packet_in));
- 
- 			if (read_len < 0) {
--				printf("Error - can't read from batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
-+				printf("Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
- 				continue;
- 			}
- 
--- 
-1.7.1
+The patches are for trunk, but I would provide backported versions when the=
+=20
+patches are discussed and we could solve the problem in a sane way.
 
+Best regards,
+	Sven
+
+--nextPart74971968.WJQVX5dp78
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJL8voDAAoJEF2HCgfBJntG33wP/RyBOom+ESKG/hGMDX3uGVQc
+QCTo+9MfI9j+gJlBQgGkMxNxOgIHJRAXB3LPv0TqHnAVlLP7FumLtjdegkGF/xaJ
+j2pu64wddvQSC/Kv4XUSwG23q92eZ/Rwwnk8FRukESxv+zKatPjPQJO6YNpBeelN
+ZTC1P0bSAgNJGcTzH43kGRqChQ7IVmbBFzKjEf8Op7WsxcmVMiobcYLFAOSC9XK/
+ZpepV+xLV+7APrIEf1q6MoKG/1jD07I4f7YLrV5kAJZs2AWMuM1lJDlIZeHooU4w
+VPiKFVO+sWjWWLN80r2FUxj1JGFtQSWy0lMR0LWL+Nxt5pbywkLpcirDq2HpKPvL
+o0WuSwfp5FGKYgaE4Y7o6LWxWQN2Vl+tnAv3kKM/g1Tx8ieMeyFbH2QPafrBcYDh
+fwI5RoGQguXi2eWBHoJ4mZXWip09kzWMcYGMzcgY1pwXwDaNcPCe5Jjn620mVnJ0
+IxADW/pBAjSist4vK/fdKhrNWIps50P5buvKBo14U5uqSz5cuQnWKze8T8+PoZOA
+Y8QKQwJKOXnb2QEt6fKGlqdM1UCLfdBJXRfLhkv2OjpEbI6cQhwvyW52BpVXNnmI
+e5HrRnIo/4CxZUwPQFoRbH59A7ErPkm6Jf9x2T7FMK8ZfTmPIa7wgAFUVIE/ynQb
+6LxPxsrwhV2jYAQhj9nd
+=A7Kr
+-----END PGP SIGNATURE-----
+
+--nextPart74971968.WJQVX5dp78--
