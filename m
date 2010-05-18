@@ -1,10 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 18 May 2010 22:37:08 +0200
-Message-Id: <1274215029-7733-3-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <201005182235.22328.sven.eckelmann@gmx.de>
-References: <201005182235.22328.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCHv1 3/4] batman-adv: Move tables from sysfs to
+Date: Tue, 18 May 2010 22:45:54 +0200
+Message-Id: <1274215554-12597-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1274215029-7733-3-git-send-email-sven.eckelmann@gmx.de>
+References: <1274215029-7733-3-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2 3/4] batman-adv: Move tables from sysfs to
 	debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -26,6 +26,8 @@ must place them in a filesystem without such a restriction.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
+Just fixed a return type which created a compiler warning.
+
  batman-adv-kernelland/bat_debugfs.c       |   79 ++++++++++++++++++++
  batman-adv-kernelland/bat_sysfs.c         |   91 -----------------------
  batman-adv-kernelland/gateway_client.c    |   64 +++++-----------
@@ -738,7 +740,7 @@ index 8f412fc..8b3429e 100644
  			  char *orig_str);
  void hna_global_del_orig(struct orig_node *orig_node, char *message);
 diff --git a/batman-adv-kernelland/vis.c b/batman-adv-kernelland/vis.c
-index 6b719bd..cb811ad 100644
+index 6b719bd..ab5d76a 100644
 --- a/batman-adv-kernelland/vis.c
 +++ b/batman-adv-kernelland/vis.c
 @@ -124,52 +124,50 @@ static void vis_data_insert_interface(const uint8_t *interface,
@@ -772,8 +774,8 @@ index 6b719bd..cb811ad 100644
 -static ssize_t vis_data_read_entry(char *buff, struct vis_info_entry *entry,
 -				   uint8_t *src, bool primary)
 +static int vis_data_read_entry(struct seq_file *seq,
-+						  struct vis_info_entry *entry,
-+						  uint8_t *src, bool primary)
++			       struct vis_info_entry *entry,
++			       uint8_t *src, bool primary)
  {
  	char to[40];
  
@@ -790,7 +792,7 @@ index 6b719bd..cb811ad 100644
  
 -ssize_t vis_fill_buffer_text(struct net_device *net_dev, char *buff,
 -			      size_t count, loff_t off)
-+ssize_t vis_seq_print_text(struct seq_file *seq, void *offset)
++int vis_seq_print_text(struct seq_file *seq, void *offset)
  {
  	HASHIT(hashit);
  	struct vis_info *info;
@@ -873,7 +875,7 @@ index 6b719bd..cb811ad 100644
  
  /* add the info packet to the send list, if it was not
 diff --git a/batman-adv-kernelland/vis.h b/batman-adv-kernelland/vis.h
-index 9c1fd77..5f5751c 100644
+index 9c1fd77..5dd6521 100644
 --- a/batman-adv-kernelland/vis.h
 +++ b/batman-adv-kernelland/vis.h
 @@ -47,8 +47,7 @@ struct recvlist_node {
@@ -882,7 +884,7 @@ index 9c1fd77..5f5751c 100644
  
 -ssize_t vis_fill_buffer_text(struct net_device *net_dev, char *buff,
 -			      size_t count, loff_t off);
-+ssize_t vis_seq_print_text(struct seq_file *seq, void *offset);
++int vis_seq_print_text(struct seq_file *seq, void *offset);
  void receive_server_sync_packet(struct bat_priv *bat_priv,
  				struct vis_packet *vis_packet,
  				int vis_info_len);
