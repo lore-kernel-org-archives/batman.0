@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 18 May 2010 22:37:07 +0200
-Message-Id: <1274215029-7733-2-git-send-email-sven.eckelmann@gmx.de>
+Date: Tue, 18 May 2010 22:37:09 +0200
+Message-Id: <1274215029-7733-4-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <201005182235.22328.sven.eckelmann@gmx.de>
 References: <201005182235.22328.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCHv1 2/4] batctl: Use socket in debugfs instead
-	of batman-adv device
+Subject: [B.A.T.M.A.N.] [PATCHv1 4/4] batctl: Get tables from debugfs
+	instead of sysfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,51 +19,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The batman-adv device which was only usable for a single batX net device
-was replaced with a file in debugfs which can be used the same way as
-/dev/batman-adv before.
-
-It seems that the debugfs has no 100% common mount path in current
-distributions and maybe isn't mounted at all. So before we try to access
-a batman file in debugfs, we have to search for the mountpoint in
-/proc/mounts and maybe mount it manually in /sys/kernel/debug.
+batctl must read the tables exported by batman-adv from debugfs as the
+old files in /sys/class/net/bat0/mesh/ were removed to follow the sysfs
+guidelines.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batctl/Makefile     |    4 +-
- batctl/debugfs.c    |  269 +++++++++++++++++++++++++++++++++++++++++++++++++++
- batctl/debugfs.h    |   46 +++++++++
- batctl/main.h       |    2 +-
- batctl/ping.c       |   21 +++-
- batctl/traceroute.c |   21 +++-
- 6 files changed, 350 insertions(+), 13 deletions(-)
- create mode 100644 batctl/debugfs.c
- create mode 100644 batctl/debugfs.h
+ batctl/Makefile |    4 +-
+ batctl/debug.c  |  103 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ batctl/debug.h  |   34 ++++++++++++++++++
+ batctl/main.c   |    9 +++--
+ batctl/sys.c    |   60 --------------------------------
+ batctl/sys.h    |   10 -----
+ batctl/vis.c    |   20 ++++++-----
+ 7 files changed, 155 insertions(+), 85 deletions(-)
+ create mode 100644 batctl/debug.c
+ create mode 100644 batctl/debug.h
 
 diff --git a/batctl/Makefile b/batctl/Makefile
-index db375f7..bc591da 100644
+index bc591da..985f1d8 100644
 --- a/batctl/Makefile
 +++ b/batctl/Makefile
 @@ -39,8 +39,8 @@ SRC_FILES = "\(\.c\)\|\(\.h\)\|\(Makefile\)\|\(INSTALL\)\|\(LIESMICH\)\|\(README
  EXTRA_MODULES_C := bisect.c
  EXTRA_MODULES_H := bisect.h
  
--SRC_C = main.c bat-hosts.c functions.c sys.c ping.c traceroute.c tcpdump.c list-batman.c hash.c vis.c $(EXTRA_MODULES_C)
--SRC_H = main.h bat-hosts.h functions.h sys.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h vis.h $(EXTRA_MODULES_H)
-+SRC_C = main.c bat-hosts.c functions.c sys.c ping.c traceroute.c tcpdump.c list-batman.c hash.c vis.c debugfs.c $(EXTRA_MODULES_C)
-+SRC_H = main.h bat-hosts.h functions.h sys.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h vis.h debugfs.h $(EXTRA_MODULES_H)
+-SRC_C = main.c bat-hosts.c functions.c sys.c ping.c traceroute.c tcpdump.c list-batman.c hash.c vis.c debugfs.c $(EXTRA_MODULES_C)
+-SRC_H = main.h bat-hosts.h functions.h sys.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h vis.h debugfs.h $(EXTRA_MODULES_H)
++SRC_C = main.c bat-hosts.c functions.c sys.c debug.c ping.c traceroute.c tcpdump.c list-batman.c hash.c vis.c debugfs.c $(EXTRA_MODULES_C)
++SRC_H = main.h bat-hosts.h functions.h sys.h debug.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h vis.h debugfs.h $(EXTRA_MODULES_H)
  SRC_O = $(SRC_C:.c=.o)
  
  PACKAGE_NAME = batctl
-diff --git a/batctl/debugfs.c b/batctl/debugfs.c
+diff --git a/batctl/debug.c b/batctl/debug.c
 new file mode 100644
-index 0000000..cfe1254
+index 0000000..e8edb9d
 --- /dev/null
-+++ b/batctl/debugfs.c
-@@ -0,0 +1,269 @@
++++ b/batctl/debug.c
+@@ -0,0 +1,103 @@
 +/*
-+ * Copyright (C) 2009 Clark Williams <williams@redhat.com>
-+ * Copyright (C) 2009 Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
++ * Copyright (C) 2009-2010 B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner <lindner_marek@yahoo.de>
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -81,264 +78,99 @@ index 0000000..cfe1254
 + *
 + */
 +
-+#include "debugfs.h"
++
++#include <unistd.h>
 +#include <stdio.h>
 +#include <stdlib.h>
++#include <string.h>
 +#include <errno.h>
-+#include <linux/magic.h>
-+#include <sys/vfs.h>
 +#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <fcntl.h>
-+#include <unistd.h>
++#include <dirent.h>
 +
-+#ifndef DEBUGFS_MAGIC
-+#define DEBUGFS_MAGIC          0x64626720
-+#endif
++#include "main.h"
++#include "debug.h"
++#include "debugfs.h"
++#include "functions.h"
 +
-+static int debugfs_premounted;
-+static char debugfs_mountpoint[MAX_PATH+1];
-+
-+static const char *debugfs_known_mountpoints[] = {
-+	"/sys/kernel/debug/",
-+	"/debug/",
-+	0,
-+};
-+
-+/* use this to force a umount */
-+void debugfs_force_cleanup(void)
++void originators_usage(void)
 +{
-+	debugfs_find_mountpoint();
-+	debugfs_premounted = 0;
-+	debugfs_umount();
++	printf("Usage: batctl [options] originators \n");
++	printf("options:\n");
++	printf(" \t -h print this help\n");
++	printf(" \t -n don't replace mac addresses with bat-host names\n");
++	printf(" \t -w watch mode - refresh the originator table continuously\n");
 +}
 +
-+/* construct a full path to a debugfs element */
-+int debugfs_make_path(const char *element, char *buffer, int size)
++void trans_local_usage(void)
 +{
-+	int len;
-+
-+	if (strlen(debugfs_mountpoint) == 0) {
-+		buffer[0] = '\0';
-+		return -1;
-+	}
-+
-+	len = strlen(debugfs_mountpoint) + strlen(element) + 1;
-+	if (len >= size)
-+		return len+1;
-+
-+	snprintf(buffer, size-1, "%s/%s", debugfs_mountpoint, element);
-+	return 0;
++	printf("Usage: batctl [options] translocal \n");
++	printf("options:\n");
++	printf(" \t -h print this help\n");
++	printf(" \t -n don't replace mac addresses with bat-host names\n");
++	printf(" \t -w watch mode - refresh the local translation table continuously\n");
 +}
 +
-+static int debugfs_found;
-+
-+/* find the path to the mounted debugfs */
-+const char *debugfs_find_mountpoint(void)
++void trans_global_usage(void)
 +{
-+	const char **ptr;
-+	char type[100];
-+	FILE *fp;
++	printf("Usage: batctl [options] transglobal \n");
++	printf("options:\n");
++	printf(" \t -h print this help\n");
++	printf(" \t -n don't replace mac addresses with bat-host names\n");
++	printf(" \t -w watch mode - refresh the global translation table continuously\n");
++}
 +
-+	if (debugfs_found)
-+		return (const char *) debugfs_mountpoint;
++void gateways_usage(void)
++{
++	printf("Usage: batctl [options] gateways \n");
++	printf("options:\n");
++	printf(" \t -h print this help\n");
++	printf(" \t -n don't replace mac addresses with bat-host names\n");
++	printf(" \t -w watch mode - refresh the gateway server list continuously\n");
++}
 +
-+	ptr = debugfs_known_mountpoints;
-+	while (*ptr) {
-+		if (debugfs_valid_mountpoint(*ptr) == 0) {
-+			debugfs_found = 1;
-+			strcpy(debugfs_mountpoint, *ptr);
-+			return debugfs_mountpoint;
-+		}
-+		ptr++;
-+	}
++int handle_debug_table(int argc, char **argv, char *file_path, void table_usage(void))
++{
++	int optchar, read_opt = USE_BAT_HOSTS;
++	char full_path[MAX_PATH+1];
++	char *debugfs_mnt;
 +
-+	/* give up and parse /proc/mounts */
-+	fp = fopen("/proc/mounts", "r");
-+	if (fp == NULL) {
-+		printf("Error - can't open /proc/mounts for read: %s\n",
-+		       strerror(errno));
-+		return NULL;
-+	}
-+
-+	while (fscanf(fp, "%*s %"
-+		      STR(MAX_PATH)
-+		      "s %99s %*s %*d %*d\n",
-+		      debugfs_mountpoint, type) == 2) {
-+		if (strcmp(type, "debugfs") == 0)
++	while ((optchar = getopt(argc, argv, "hnw")) != -1) {
++		switch (optchar) {
++		case 'h':
++			table_usage();
++			return EXIT_SUCCESS;
++		case 'n':
++			read_opt &= ~USE_BAT_HOSTS;
 +			break;
-+	}
-+	fclose(fp);
-+
-+	if (strcmp(type, "debugfs") != 0)
-+		return NULL;
-+
-+	debugfs_found = 1;
-+
-+	return debugfs_mountpoint;
-+}
-+
-+/* verify that a mountpoint is actually a debugfs instance */
-+
-+int debugfs_valid_mountpoint(const char *debugfs)
-+{
-+	struct statfs st_fs;
-+
-+	if (statfs(debugfs, &st_fs) < 0)
-+		return -ENOENT;
-+	else if (st_fs.f_type != (long) DEBUGFS_MAGIC)
-+		return -ENOENT;
-+
-+	return 0;
-+}
-+
-+
-+int debugfs_valid_entry(const char *path)
-+{
-+	struct stat st;
-+
-+	if (stat(path, &st))
-+		return -errno;
-+
-+	return 0;
-+}
-+
-+/* mount the debugfs somewhere if it's not mounted */
-+
-+char *debugfs_mount(const char *mountpoint)
-+{
-+	/* see if it's already mounted */
-+	if (debugfs_find_mountpoint()) {
-+		debugfs_premounted = 1;
-+		return debugfs_mountpoint;
-+	}
-+
-+	/* if not mounted and no argument */
-+	if (mountpoint == NULL)
-+		mountpoint = "/sys/kernel/debug";
-+
-+	if (mount(NULL, mountpoint, "debugfs", 0, NULL) < 0)
-+		return NULL;
-+
-+	/* save the mountpoint */
-+	strncpy(debugfs_mountpoint, mountpoint, sizeof(debugfs_mountpoint));
-+	debugfs_found = 1;
-+
-+	return debugfs_mountpoint;
-+}
-+
-+/* umount the debugfs */
-+
-+int debugfs_umount(void)
-+{
-+	char umountcmd[128];
-+	int ret;
-+
-+	/* if it was already mounted, leave it */
-+	if (debugfs_premounted)
-+		return 0;
-+
-+	/* make sure it's a valid mount point */
-+	ret = debugfs_valid_mountpoint(debugfs_mountpoint);
-+	if (ret)
-+		return ret;
-+
-+	snprintf(umountcmd, sizeof(umountcmd),
-+		 "/bin/umount %s", debugfs_mountpoint);
-+	return system(umountcmd);
-+}
-+
-+int debugfs_write(const char *entry, const char *value)
-+{
-+	char path[MAX_PATH+1];
-+	int ret, count;
-+	int fd;
-+
-+	/* construct the path */
-+	snprintf(path, sizeof(path), "%s/%s", debugfs_mountpoint, entry);
-+
-+	/* verify that it exists */
-+	ret = debugfs_valid_entry(path);
-+	if (ret)
-+		return ret;
-+
-+	/* get how many chars we're going to write */
-+	count = strlen(value);
-+
-+	/* open the debugfs entry */
-+	fd = open(path, O_RDWR);
-+	if (fd < 0)
-+		return -errno;
-+
-+	while (count > 0) {
-+		/* write it */
-+		ret = write(fd, value, count);
-+		if (ret <= 0) {
-+			if (ret == EAGAIN)
-+				continue;
-+			close(fd);
-+			return -errno;
++		case 'w':
++			read_opt |= CLR_CONT_READ;
++			break;
++		default:
++			table_usage();
++			return EXIT_FAILURE;
 +		}
-+		count -= ret;
 +	}
 +
-+	/* close it */
-+	close(fd);
++	debugfs_mnt = debugfs_mount(NULL);
++	if (!debugfs_mnt) {
++		printf("Error - can't mount or find debugfs\n");
++		return EXIT_FAILURE;
++	}
 +
-+	/* return success */
-+	return 0;
++	debugfs_make_path(DEBUG_BATIF_PATH "/", full_path, sizeof(full_path));
++	return read_file(full_path, file_path, read_opt);
 +}
-+
-+/*
-+ * read a debugfs entry
-+ * returns the number of chars read or a negative errno
-+ */
-+int debugfs_read(const char *entry, char *buffer, size_t size)
-+{
-+	char path[MAX_PATH+1];
-+	int ret;
-+	int fd;
-+
-+	/* construct the path */
-+	snprintf(path, sizeof(path), "%s/%s", debugfs_mountpoint, entry);
-+
-+	/* verify that it exists */
-+	ret = debugfs_valid_entry(path);
-+	if (ret)
-+		return ret;
-+
-+	/* open the debugfs entry */
-+	fd = open(path, O_RDONLY);
-+	if (fd < 0)
-+		return -errno;
-+
-+	do {
-+		/* read it */
-+		ret = read(fd, buffer, size);
-+		if (ret == 0) {
-+			close(fd);
-+			return EOF;
-+		}
-+	} while (ret < 0 && errno == EAGAIN);
-+
-+	/* close it */
-+	close(fd);
-+
-+	/* make *sure* there's a null character at the end */
-+	buffer[ret] = '\0';
-+
-+	/* return the number of chars read */
-+	return ret;
-+}
-diff --git a/batctl/debugfs.h b/batctl/debugfs.h
+\ No newline at end of file
+diff --git a/batctl/debug.h b/batctl/debug.h
 new file mode 100644
-index 0000000..45f6339
+index 0000000..8b03b10
 --- /dev/null
-+++ b/batctl/debugfs.h
-@@ -0,0 +1,46 @@
++++ b/batctl/debug.h
+@@ -0,0 +1,34 @@
 +/*
-+ * Copyright (C) 2009 Clark Williams <williams@redhat.com>
-+ * Copyright (C) 2009 Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
++ * Copyright (C) 2009-2010 B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner <lindner_marek@yahoo.de>
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -356,166 +188,215 @@ index 0000000..45f6339
 + *
 + */
 +
-+#ifndef __DEBUGFS_H__
-+#define __DEBUGFS_H__
 +
-+#include <sys/mount.h>
-+#include <string.h>
++#define DEBUG_BATIF_PATH "batman_adv/bat0"
++#define DEBUG_ORIGINATORS "originators"
++#define DEBUG_TRANSTABLE_LOCAL "transtable_local"
++#define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
++#define DEBUG_GATEWAYS "gateways"
++#define DEBUG_VIS_DATA "vis_data"
 +
-+#ifndef MAX_PATH
-+# define MAX_PATH 256
-+#endif
-+
-+#ifndef STR
-+# define _STR(x) #x
-+# define STR(x) _STR(x)
-+#endif
-+
-+extern const char *debugfs_find_mountpoint(void);
-+extern int debugfs_valid_mountpoint(const char *debugfs);
-+extern int debugfs_valid_entry(const char *path);
-+extern char *debugfs_mount(const char *mountpoint);
-+extern int debugfs_umount(void);
-+extern int debugfs_write(const char *entry, const char *value);
-+extern int debugfs_read(const char *entry, char *buffer, size_t size);
-+extern void debugfs_force_cleanup(void);
-+extern int debugfs_make_path(const char *element, char *buffer, int size);
-+
-+#endif /* __DEBUGFS_H__ */
-diff --git a/batctl/main.h b/batctl/main.h
-index 9c83a7e..2fe603e 100644
---- a/batctl/main.h
-+++ b/batctl/main.h
-@@ -23,4 +23,4 @@
++void originators_usage(void);
++void trans_local_usage(void);
++void trans_global_usage(void);
++void gateways_usage(void);
++int handle_debug_table(int argc, char **argv, char *file_path, void table_usage(void));
+diff --git a/batctl/main.c b/batctl/main.c
+index 1cabcdd..19b889a 100644
+--- a/batctl/main.c
++++ b/batctl/main.c
+@@ -30,6 +30,7 @@
  
- #define SOURCE_VERSION "0.3.0-alpha"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
+ #include "main.h"
+ #include "sys.h"
++#include "debug.h"
+ #include "ping.h"
+ #include "traceroute.h"
+ #include "tcpdump.h"
+@@ -102,15 +103,15 @@ int main(int argc, char **argv)
  
--#define BAT_DEVICE "/dev/batman-adv"
-+#define SOCKET_PATH "batman_adv/bat0/socket"
-diff --git a/batctl/ping.c b/batctl/ping.c
-index 0352870..9df5c07 100644
---- a/batctl/ping.c
-+++ b/batctl/ping.c
-@@ -35,6 +35,7 @@
+ 	} else if ((strcmp(argv[1], "originators") == 0) || (strcmp(argv[1], "o") == 0)) {
+ 
+-		ret = handle_sys_table(argc - 1, argv + 1, SYS_ORIGINATORS, originators_usage);
++		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_ORIGINATORS, originators_usage);
+ 
+ 	} else if ((strcmp(argv[1], "translocal") == 0) || (strcmp(argv[1], "tl") == 0)) {
+ 
+-		ret = handle_sys_table(argc - 1, argv + 1, SYS_TRANSTABLE_LOCAL, trans_local_usage);
++		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_TRANSTABLE_LOCAL, trans_local_usage);
+ 
+ 	} else if ((strcmp(argv[1], "transglobal") == 0) || (strcmp(argv[1], "tg") == 0)) {
+ 
+-		ret = handle_sys_table(argc - 1, argv + 1, SYS_TRANSTABLE_GLOBAL, trans_global_usage);
++		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_TRANSTABLE_GLOBAL, trans_global_usage);
+ 
+ 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
+ 
+@@ -138,7 +139,7 @@ int main(int argc, char **argv)
+ 
+ 	} else if ((strcmp(argv[1], "gateways") == 0) || (strcmp(argv[1], "gwl") == 0)) {
+ 
+-		ret = handle_sys_table(argc - 1, argv + 1, SYS_GATEWAYS, gateways_usage);
++		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_GATEWAYS, gateways_usage);
+ 
+ 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
+ 
+diff --git a/batctl/sys.c b/batctl/sys.c
+index 4c4312a..a6bc781 100644
+--- a/batctl/sys.c
++++ b/batctl/sys.c
+@@ -242,66 +242,6 @@ out:
+ 	return res;
+ }
+ 
+-void originators_usage(void)
+-{
+-	printf("Usage: batctl [options] originators \n");
+-	printf("options:\n");
+-	printf(" \t -h print this help\n");
+-	printf(" \t -n don't replace mac addresses with bat-host names\n");
+-	printf(" \t -w watch mode - refresh the originator table continuously\n");
+-}
+-
+-void trans_local_usage(void)
+-{
+-	printf("Usage: batctl [options] translocal \n");
+-	printf("options:\n");
+-	printf(" \t -h print this help\n");
+-	printf(" \t -n don't replace mac addresses with bat-host names\n");
+-	printf(" \t -w watch mode - refresh the local translation table continuously\n");
+-}
+-
+-void trans_global_usage(void)
+-{
+-	printf("Usage: batctl [options] transglobal \n");
+-	printf("options:\n");
+-	printf(" \t -h print this help\n");
+-	printf(" \t -n don't replace mac addresses with bat-host names\n");
+-	printf(" \t -w watch mode - refresh the global translation table continuously\n");
+-}
+-
+-void gateways_usage(void)
+-{
+-	printf("Usage: batctl [options] gateways \n");
+-	printf("options:\n");
+-	printf(" \t -h print this help\n");
+-	printf(" \t -n don't replace mac addresses with bat-host names\n");
+-	printf(" \t -w watch mode - refresh the gateway server list continuously\n");
+-}
+-
+-int handle_sys_table(int argc, char **argv, char *file_path, void table_usage(void))
+-{
+-	int optchar, read_opt = USE_BAT_HOSTS;
+-
+-	while ((optchar = getopt(argc, argv, "hnw")) != -1) {
+-		switch (optchar) {
+-		case 'h':
+-			table_usage();
+-			return EXIT_SUCCESS;
+-		case 'n':
+-			read_opt &= ~USE_BAT_HOSTS;
+-			break;
+-		case 'w':
+-			read_opt |= CLR_CONT_READ;
+-			break;
+-		default:
+-			table_usage();
+-			return EXIT_FAILURE;
+-		}
+-	}
+-
+-	return read_file(SYS_BATIF_PATH, file_path, read_opt);
+-}
+-
+ void aggregation_usage(void)
+ {
+ 	printf("Usage: batctl [options] aggregation [0|1]\n");
+diff --git a/batctl/sys.h b/batctl/sys.h
+index 6d78622..622f110 100644
+--- a/batctl/sys.h
++++ b/batctl/sys.h
+@@ -24,31 +24,21 @@
+ #define SYS_BATIF_PATH "/sys/class/net/bat0/mesh/"
+ #define SYS_LOG_LEVEL "parameters/debug"
+ #define SYS_LOG "log"
+-#define SYS_ORIGINATORS "originators"
+-#define SYS_TRANSTABLE_LOCAL "transtable_local"
+-#define SYS_TRANSTABLE_GLOBAL "transtable_global"
+ #define SYS_AGGR "aggregate_ogm"
+ #define SYS_BONDING "bonding"
+ #define SYS_GW_MODE "gw_mode"
+-#define SYS_GATEWAYS "gateways"
+ #define SYS_VIS_MODE "vis_mode"
+-#define SYS_VIS_DATA "vis_data"
+ #define SYS_ORIG_INTERVAL "orig_interval"
+ #define SYS_IFACE_PATH "/sys/class/net"
+ #define SYS_MESH_IFACE_FMT SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
+ #define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
+ 
+-void originators_usage(void);
+-void trans_local_usage(void);
+-void trans_global_usage(void);
+ void aggregation_usage(void);
+ void bonding_usage(void);
+ void gw_mode_usage(void);
+-void gateways_usage(void);
+ void vis_mode_usage(void);
+ void orig_interval_usage(void);
+ int log_print(int argc, char **argv);
+ int interface(int argc, char **argv);
+ int handle_loglevel(int argc, char **argv);
+-int handle_sys_table(int argc, char **argv, char *file_path, void table_usage(void));
+ int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usage(void));
+diff --git a/batctl/vis.c b/batctl/vis.c
+index 9565329..c06beb1 100644
+--- a/batctl/vis.c
++++ b/batctl/vis.c
+@@ -29,7 +29,8 @@
+ #include "vis.h"
  #include "functions.h"
- #include "packet.h"
  #include "bat-hosts.h"
+-#include "sys.h"
++#include "debug.h"
 +#include "debugfs.h"
  
+ #define TQ_MAX_VALUE 255
  
- char is_aborted = 0;
-@@ -79,6 +80,8 @@ int ping(int argc, char **argv)
- 	float min = 0.0, max = 0.0, avg = 0.0;
- 	uint8_t last_rr_cur = 0, last_rr[BAT_RR_LEN][ETH_ALEN];
- 	size_t packet_len;
+@@ -55,9 +56,9 @@ static bool with_names = true;
+ 
+ static void usage(void)
+ {
+-	printf("batctl vis dot {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
++	printf("batctl vis_data dot {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
+ 	printf("or\n");
+-	printf("batctl vis json {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
++	printf("batctl vis_data json {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
+ }
+ 
+ static void dot_print_tq(char *orig, char *from, const long tq)
+@@ -163,15 +164,16 @@ const struct funcs json_funcs = { json_print_tq,
+ 
+ static FILE *open_vis(void)
+ {
+-	char full_path[500];
++	char full_path[MAX_PATH+1];
 +	char *debugfs_mnt;
-+	char icmp_socket[MAX_PATH+1];
  
- 	while ((optchar = getopt(argc, argv, "hc:i:t:R")) != -1) {
- 		switch (optchar) {
-@@ -139,11 +142,19 @@ int ping(int argc, char **argv)
- 	signal(SIGINT, sig_handler);
- 	signal(SIGTERM, sig_handler);
- 
--	ping_fd = open(BAT_DEVICE, O_RDWR);
+-	if (check_proc_dir("/proc") != EXIT_SUCCESS)
 +	debugfs_mnt = debugfs_mount(NULL);
 +	if (!debugfs_mnt) {
 +		printf("Error - can't mount or find debugfs\n");
-+		goto out;
+ 		return NULL;
 +	}
-+
-+	debugfs_make_path(SOCKET_PATH, icmp_socket, sizeof(icmp_socket));
-+
-+	ping_fd = open(icmp_socket, O_RDWR);
  
- 	if (ping_fd < 0) {
--		printf("Error - can't open a connection to the batman adv kernel module via the device '%s': %s\n",
--				BAT_DEVICE, strerror(errno));
-+		printf("Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
-+				icmp_socket, strerror(errno));
- 		printf("Check whether the module is loaded and active.\n");
- 		goto out;
- 	}
-@@ -177,7 +188,7 @@ int ping(int argc, char **argv)
- 		icmp_packet_out.seqno = htons(++seq_counter);
+-	strncpy(full_path, SYS_BATIF_PATH, strlen(SYS_BATIF_PATH));
+-	full_path[strlen(SYS_BATIF_PATH)] = '\0';
+-	strncat(full_path, SYS_VIS_DATA,
+-		sizeof(full_path) - strlen(full_path));
++	debugfs_make_path(DEBUG_BATIF_PATH "/" DEBUG_VIS_DATA, full_path, sizeof(full_path));
  
- 		if (write(ping_fd, (char *)&icmp_packet_out, packet_len) < 0) {
--			printf("Error - can't write to batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
-+			printf("Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
- 			goto sleep;
- 		}
- 
-@@ -207,7 +218,7 @@ int ping(int argc, char **argv)
- 		read_len = read(ping_fd, (char *)&icmp_packet_in, packet_len);
- 
- 		if (read_len < 0) {
--			printf("Error - can't read from batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
-+			printf("Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
- 			goto sleep;
- 		}
- 
-diff --git a/batctl/traceroute.c b/batctl/traceroute.c
-index b9b838e..00fcd89 100644
---- a/batctl/traceroute.c
-+++ b/batctl/traceroute.c
-@@ -34,6 +34,7 @@
- #include "functions.h"
- #include "packet.h"
- #include "bat-hosts.h"
-+#include "debugfs.h"
- 
- 
- #define TTL_MAX 50
-@@ -59,6 +60,8 @@ int traceroute(int argc, char **argv)
- 	int ret = EXIT_FAILURE, res, trace_fd = 0, i;
- 	int found_args = 1, optchar, seq_counter = 0, read_opt = USE_BAT_HOSTS;
- 	double time_delta;
-+	char *debugfs_mnt;
-+	char icmp_socket[MAX_PATH+1];
- 
- 	while ((optchar = getopt(argc, argv, "hn")) != -1) {
- 		switch (optchar) {
-@@ -99,11 +102,19 @@ int traceroute(int argc, char **argv)
- 
- 	mac_string = ether_ntoa_long(dst_mac);
- 
--	trace_fd = open(BAT_DEVICE, O_RDWR);
-+	debugfs_mnt = debugfs_mount(NULL);
-+	if (!debugfs_mnt) {
-+		printf("Error - can't mount or find debugfs\n");
-+		goto out;
-+	}
-+
-+	debugfs_make_path(SOCKET_PATH, icmp_socket, sizeof(icmp_socket));
-+
-+	trace_fd = open(icmp_socket, O_RDWR);
- 
- 	if (trace_fd < 0) {
--		printf("Error - can't open a connection to the batman adv kernel module via the device '%s': %s\n",
--				BAT_DEVICE, strerror(errno));
-+		printf("Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
-+				icmp_socket, strerror(errno));
- 		printf("Check whether the module is loaded and active.\n");
- 		goto out;
- 	}
-@@ -123,7 +134,7 @@ int traceroute(int argc, char **argv)
- 			icmp_packet_out.seqno = htons(++seq_counter);
- 
- 			if (write(trace_fd, (char *)&icmp_packet_out, sizeof(icmp_packet_out)) < 0) {
--				printf("Error - can't write to batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
-+				printf("Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
- 				continue;
- 			}
- 
-@@ -149,7 +160,7 @@ int traceroute(int argc, char **argv)
- 			read_len = read(trace_fd, (char *)&icmp_packet_in, sizeof(icmp_packet_in));
- 
- 			if (read_len < 0) {
--				printf("Error - can't read from batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
-+				printf("Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
- 				continue;
- 			}
- 
+ 	return fopen(full_path, "r");
+ }
 -- 
 1.7.1
 
