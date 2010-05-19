@@ -1,9 +1,8 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 19 May 2010 13:43:48 +0200
-Message-Id: <1274269428-13203-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Call unregister_netdev on
-	failures to get rtnl lock
+Date: Wed, 19 May 2010 16:02:02 +0200
+Message-Id: <1274277722-25571-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Don't call free_netdev twice
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,30 +16,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-We must call unregister_netdev when we couldn't initialise the
-batman-adv module and the soft_device was registered. There are two
-version of the function which we can use:
- * unregister_netdevice - removes device
- * unregister_netdev - takes rtnl semaphore and remove device
-
-We don't hold the semaphore in a error case. So we must use
-unregister_netdev.
+Free_netdev is registered as destructor in interface_setup for every
+soft_device. This destructor is automatically called from
+unregister_netdev and we must not call it again for the freed
+net_device.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv-kernelland/main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ batman-adv-kernelland/main.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 diff --git a/batman-adv-kernelland/main.c b/batman-adv-kernelland/main.c
-index cbabba6..51856a7 100644
+index 51856a7..c9132c0 100644
 --- a/batman-adv-kernelland/main.c
 +++ b/batman-adv-kernelland/main.c
-@@ -129,7 +129,7 @@ int init_module(void)
- unreg_sysfs:
+@@ -130,6 +130,9 @@ unreg_sysfs:
  	sysfs_del_meshif(soft_device);
  unreg_soft_device:
--	unregister_netdevice(soft_device);
-+	unregister_netdev(soft_device);
+ 	unregister_netdev(soft_device);
++	soft_device = NULL;
++	return -ENOMEM;
++
  free_soft_device:
  	free_netdev(soft_device);
  	soft_device = NULL;
