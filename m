@@ -1,13 +1,14 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 20 May 2010 18:51:46 +0200
+Date: Thu, 20 May 2010 19:00:01 +0200
 References: <4BF56357.3000208@tiwoc.de>
-In-Reply-To: <4BF56357.3000208@tiwoc.de>
+	<201005201851.54709.sven.eckelmann@gmx.de>
+In-Reply-To: <201005201851.54709.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2018573.KhmultgirD";
+Content-Type: multipart/signed; boundary="nextPart2251512.esiSU4xTcy";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201005201851.54709.sven.eckelmann@gmx.de>
+Message-Id: <201005201900.01910.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: Correct mdev calculation in
 	ping subcommand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,46 +24,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2018573.KhmultgirD
+--nextPart2251512.esiSU4xTcy
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Daniel Seither wrote:
-> Fixes the calculation of the mean absolute deviation (mdev)
-> of the roundtrip times. mdev was previously calculated by
-> computing the difference of maximum and minimum round trip times.
+Sven Eckelmann wrote:
+> Daniel Seither wrote:
+> > Fixes the calculation of the mean absolute deviation (mdev)
+> > of the roundtrip times. mdev was previously calculated by
+> > computing the difference of maximum and minimum round trip times.
+> >=20
+> > The calculation is now done using the same formula as in the iputils
+> > ping program.
+> >=20
+> > Signed-off-by: Daniel Seither <post@tiwoc.de>
 >=20
-> The calculation is now done using the same formula as in the iputils
-> ping program.
->=20
-> Signed-off-by: Daniel Seither <post@tiwoc.de>
+> Acked-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 
-Acked-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+Ok, have a small suggestion. Please check that mdev - ... is positive.=20
+Otherwise we would have something like (mdev - avg * avg =3D=3D -0.000.....=
+,=20
+sqrt(...) =3D=3D NaN):
 
-Thanks a lot for your contributions,
+PING 02:00:00:00:00:02 (02:00:00:00:00:02) 19(47) bytes of data
+19 bytes from 02:00:00:00:00:02 icmp_seq=3D1 ttl=3D50 time=3D0.10 ms
+=2D-- 02:00:00:00:00:02 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss
+rtt min/avg/max/mdev =3D 0.101/0.101/0.101/nan ms
+
+Best regards,
 	Sven
 
---nextPart2018573.KhmultgirD
+--nextPart2251512.esiSU4xTcy
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJL9WijAAoJEF2HCgfBJntGvpgQALTvmBARF00Ju9Dhdnww4mbT
-WBAJqynqzndNZdzfQ8pgqLZmbCXqs+odIAsJwRZ6HM81JejTu5mZS4Ukd7mxbhfd
-W3hrOtjGoJbcMrXHYrcxX8Ys554L3aGjq/EkmGaz56fZq5nOcT03Jg/KITzuF0el
-jmEhoVNzNPJq8B8D4nCVX0hZZprPkrbvVszR2jxoqild1tmeRuHTGvDQiR36jKXG
-kvN+ksN425N9Hl+NQSq0KnXzruog5aioMX4i4fz9RAfZMD/7CekbgcFXi8h1NNaq
-A508Q5LN/XKpHSpYXsQQw/JsXgQk/NF9iE3qtPcE6qXW+Fh7U9WAFXyMoqo6MF1C
-qWBdBvLQ1FVCjpVexvxDIT0tkWsse0G91MstCtGZflIo/qhlwj9wdQL4OByVpD3H
-ZitcEY64HsUyEBMTq1l4szq4ri438eGxFAgEikAuAtFc8+CqAzd+DYA76Kf7MRMk
-FQWqmXLLhFG0E4MJxRqV6VFTZy9ZS82vKjrk2EhVONiIOVvVbpwGdbvASNVDuxKT
-HXRef6oI3S6X5yq3pt0Zz9VFFdCb5QtWiltB/A5MpIQZ8smD8Zf5ic9dqyz46HWq
-pzK9AMZABDcbelp5niI+JbKoCzLQADBNeYSmT3YLMuP9QKDedG+wJCRvHPjTZl9P
-O0CGKKXZTRs8VimEszBu
-=4z+i
+iQIcBAABCgAGBQJL9WqRAAoJEF2HCgfBJntGAGAQAKqFdBSXFFkihHkR65+cAuMQ
+wuYzG+HprZxZS8Vumyq6CEbil/6hmCcIHi5cD5+xN2fflSFcWHsvvoUSXLvZETYf
+kXAgs2hM2wy1FCVF14241NJ789NeRd8o+NRlcIFdNGZT8R6EchJh01zJRj8wZOGA
++eZ+9PcjW+BhVWJj+kq+egOyCWynyDVs+Pqtvb588OMb9/Y5aVmnp8haDeYO4WfX
+mSbvkFVX3fq745TMw7Lll2AdhPaRQtYraXd+y/VKcH0P9sbyRgceeO9EEO/ClpSN
+uV5VpGh0G1kLaUJGXTPyKy0fwZ/loYgbdZ++Taf8ctEtKIC18Uo6rJAn7C+uWan/
+MDusMdIid22NmrC691TCDlwW2j7ij5+YLoqrKlvbR7XfdE92A07t9zLca9qZ9xeI
+pvl0vVHKU3ZbfWfmmFjDrtulH94XnQPayXeNOwz1e7MgBtKQ884Mf7fM1IEw+tyi
+GEraGOJRD2J9+lYRvzex570b2FhP8cD0Rq4c/o7mExjiNG015FRDuCLEs7nPna2u
+jgQVS2SWxI5OVDYkDnfufnPXt6k+Js/26A8H6uu0WiORwuNNdrJV6sAMgkwuvdF4
+NCqQ8o4epPElbyXaDbvxhKQQhCPVrSD2EkJPvL9I1HKd2IFBX5ErsBjqnMALHJCo
+xI1ShPPdapYu5FqyyYDX
+=e+Lh
 -----END PGP SIGNATURE-----
 
---nextPart2018573.KhmultgirD--
+--nextPart2251512.esiSU4xTcy--
