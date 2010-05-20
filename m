@@ -1,13 +1,11 @@
 Return-Path: <post@tiwoc.de>
-Message-ID: <4BF55F11.9070704@tiwoc.de>
-Date: Thu, 20 May 2010 18:10:57 +0200
+Message-ID: <4BF56357.3000208@tiwoc.de>
+Date: Thu, 20 May 2010 18:29:11 +0200
 From: Daniel Seither <post@tiwoc.de>
 MIME-Version: 1.0
-References: <4BF55C08.7010704@tiwoc.de>
-In-Reply-To: <4BF55C08.7010704@tiwoc.de>
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Correct mdev calculation in ping
+Subject: [B.A.T.M.A.N.] [PATCHv2] batctl: Correct mdev calculation in ping
  subcommand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,18 +20,76 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Sorry, I sent the wrong version of the patch. I'll send a fixed patch in
-a minute...
+Fixes the calculation of the mean absolute deviation (mdev)
+of the roundtrip times. mdev was previously calculated by
+computing the difference of maximum and minimum round trip times.
 
-- Daniel
+The calculation is now done using the same formula as in the iputils
+ping program.
 
-Am 20.05.2010 17:58, schrieb Daniel Seither:
-> Fixes the calculation of the mean absolute deviation (mdev)
-> of the roundtrip times. mdev was previously calculated by
-> computing the difference of maximum and minimum round trip times.
-> 
-> The calculation is now done using the same formula as in the iputils
-> ping program.
-> 
-> Signed-off-by: Daniel Seither <post@tiwoc.de>
-> ---
+Signed-off-by: Daniel Seither <post@tiwoc.de>
+---
+Index: Makefile
+===================================================================
+--- Makefile	(revision 1659)
++++ Makefile	(working copy)
+@@ -28,7 +28,7 @@
+ CC = gcc
+ CFLAGS += -pedantic -Wall -W -g3 -std=gnu99 -Os -fno-strict-aliasing
+ EXTRA_CFLAGS = -DREVISION_VERSION=$(REVISION_VERSION)
+-LDFLAGS +=
++LDFLAGS += -lm
+
+ SBINDIR = $(INSTALL_PREFIX)/usr/sbin
+
+Index: ping.c
+===================================================================
+--- ping.c	(revision 1659)
++++ ping.c	(working copy)
+@@ -29,6 +29,7 @@
+ #include <signal.h>
+ #include <fcntl.h>
+ #include <string.h>
++#include <math.h>
+
+ #include "main.h"
+ #include "ping.h"
+@@ -76,7 +77,7 @@
+ 	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
+ 	char *dst_string, *mac_string, *rr_string;
+ 	double time_delta;
+-	float min = 0.0, max = 0.0, avg = 0.0;
++	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
+ 	uint8_t last_rr_cur = 0, last_rr[BAT_RR_LEN][ETH_ALEN];
+ 	size_t packet_len;
+
+@@ -260,6 +261,7 @@
+ 			if (time_delta > max)
+ 				max = time_delta;
+ 			avg += time_delta;
++			mdev += time_delta * time_delta;
+ 			packets_in++;
+ 			break;
+ 		case DESTINATION_UNREACHABLE:
+@@ -289,11 +291,20 @@
+ 	else
+ 		packets_loss = ((packets_out - packets_in) * 100) / packets_out;
+
++	if (packets_in) {
++		avg /= packets_in;
++		mdev /= packets_in;
++		mdev = sqrt(mdev - avg * avg);
++	} else {
++		avg = 0.0;
++		mdev = 0.0;
++	}
++
+ 	printf("--- %s ping statistics ---\n", dst_string);
+ 	printf("%u packets transmitted, %u received, %u%% packet loss\n",
+ 		packets_out, packets_in, packets_loss);
+ 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
+-		min, (packets_in ? (avg / packets_in) : 0.000), max, (max - min));
++		min, avg, max, mdev);
+
+ 	ret = EXIT_SUCCESS;
+
