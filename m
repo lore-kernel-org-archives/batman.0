@@ -1,17 +1,11 @@
-Return-Path: <ordex@ritirata.org>
-Date: Fri, 21 May 2010 20:45:33 +0200
-From: Antonio Quartulli <ordex@ritirata.org>
-Message-ID: <20100521183148.GA17533@ritirata.org>
-References: <20100517072041.GA23674@ritirata.org>
-	<1274232349-10414-1-git-send-email-linus.luessing@web.de>
-	<20100521082127.GA7802@ritirata.org>
-	<175836929.848340.1274437048158.JavaMail.fmail@mwmweb020>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 22 May 2010 06:53:15 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <175836929.848340.1274437048158.JavaMail.fmail@mwmweb020>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Adding netfilter-bridge hooks
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_b7w9LI/SVPUxaHz"
+Message-Id: <201005220653.15929.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] sysfs & debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,56 +19,83 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On ven, mag 21, 2010 at 12:17:28 +0200, Linus L=FCssing wrote:
-> >
-> >I gave a try to this patch, but I see something strange.
-> >After enabling a simple ebtables rule:
-> >ebtables -A INPUT -s MAC -j DROP
-> >and
-> >ebtables -A FORWARD -s MAC -j DROP (to be sure..)
-> >
-> >I saw that batman ping was timing out, while the "originator list" (shown
-> >with batctl o) is still filled with the other node entry...
->=20
-> Hi Antonio,
->=20
-> thanks for trying the patch! In my case, it worked, I tried it with
-> ebtables -I INPUT -s MAC -j DROP or
-> ebtables -I INPUT -p 0x4305 -j DROP
-> (and the same for -I OUTPUT)
->=20
-> batctl td reported, that it's not receiving any batman packets anymore an=
-d also
-> the originator table was empty after a couple of minutes.
->=20
-> Hmm, and also that batping is timing out for you seems to indicate that i=
-t should work
-> on your side. Could you check with batctl td too? How long have you been =
-waiting for
-> the originator table to clear? (dead nodes are not being cleared immediat=
-ely in batman,
-> as they don't harm the routing decisions and we still need the last measu=
-rements in case they
-> might get alive again)
->=20
-> Cheers, Linus
+--Boundary-00=_b7w9LI/SVPUxaHz
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Hi Linus,
-	I thought that the dead node should be pushed away after a
-while, not 3 minutes. So that was my mistake...indeed everything was workin=
-g correctly!
 
-I tried it again five minutes ago, and everything went as I expected!
+Hi,
 
-Thanks very much!
+thanks to Sven's patches we made the transition to debugfs rather quickly. All 
+batman tables (originator table / gateway table / translation tables) and the 
+vis data output have been relocated to debugfs. Even the former batman device 
+(used for layer2 icmp data) has been moved to debugfs which brings us an 
+important step closer to the multiple mesh support.
 
-Regards
+@Andrew: I attached the revised sysfs ABI files. Do you think it is feasible to 
+get these last patches into 2.6.35 ?
 
-P.S. batctl td was not so usefull since I have to point it to wlan0..and
-obviously I can see all the packets there.
+Cheers,
+Marek
 
---=20
-Antonio Quartulli
+--Boundary-00=_b7w9LI/SVPUxaHz
+Content-Type: text/plain;
+  charset="UTF-8";
+  name="sysfs-class-net-batman-adv"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="sysfs-class-net-batman-adv"
 
-Ognuno di noi, da solo, non vale nulla=20
-Ernesto "Che" Guevara
+
+What:           /sys/class/net/<iface>/batman-adv/mesh_iface
+Date:           May 2010
+Contact:        Marek Lindner <lindner_marek@yahoo.de>
+Description:
+                The /sys/class/net/<iface>/batman-adv/mesh_iface file
+                displays the batman mesh interface this <iface>
+                currently is associated with.
+
+What:           /sys/class/net/<iface>/batman-adv/iface_status
+Date:           May 2010
+Contact:        Marek Lindner <lindner_marek@yahoo.de>
+Description:
+                Indicates the status of <iface> as it is seen by batman.
+
+--Boundary-00=_b7w9LI/SVPUxaHz
+Content-Type: text/plain;
+  charset="UTF-8";
+  name="sysfs-class-net-mesh"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="sysfs-class-net-mesh"
+
+
+What:           /sys/class/net/<mesh_iface>/mesh/aggregated_ogms
+Date:           May 2010
+Contact:        Marek Lindner <lindner_marek@yahoo.de>
+Description:
+                Indicates whether the batman protocol messages of the
+                mesh <mesh_iface> shall be aggregated or not.
+
+What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
+Date:           May 2010
+Contact:        Marek Lindner <lindner_marek@yahoo.de>
+Description:
+                Defines the interval in milliseconds in which batman
+                sends its protocol messages.
+
+What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
+Date:           May 2010
+Contact:        Marek Lindner <lindner_marek@yahoo.de>
+Description:
+                Each batman node only maintains information about its
+                own local neighborhood, therefore generating graphs
+                showing the topology of the entire mesh is not easily
+                feasible without having a central instance to collect
+                the local topologies from all nodes. This file allows
+                to activate the collecting (server) mode. Once
+                activated the topology can be retrieved by reading
+                the vis_data file.
+
+--Boundary-00=_b7w9LI/SVPUxaHz--
