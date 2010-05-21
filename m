@@ -1,15 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 21 May 2010 10:08:08 +0200
-References: <4BF63AD1.2030105@tiwoc.de>
-In-Reply-To: <4BF63AD1.2030105@tiwoc.de>
+Return-Path: <ordex@ritirata.org>
+Date: Fri, 21 May 2010 10:21:28 +0200
+From: Antonio Quartulli <ordex@ritirata.org>
+Message-ID: <20100521082127.GA7802@ritirata.org>
+References: <20100517072041.GA23674@ritirata.org>
+	<1274232349-10414-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5045983.U1OKnEoyTy";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201005211008.16487.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batctl: Correct mdev calculation in
-	ping subcommand
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1274232349-10414-1-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Adding netfilter-bridge hooks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,50 +21,121 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart5045983.U1OKnEoyTy
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Hi all,
 
-Daniel Seither wrote:
-> Fixes the calculation of the mean absolute deviation (mdev)
-> of the roundtrip times. mdev was previously calculated by
-> computing the difference of maximum and minimum round trip times.
+On Wed, May 19, 2010 at 03:25:49AM +0200, Linus L=FCssing wrote:
+> batman-adv is receiving and sending the packets of its own ether type
+> on a very early/low level. Therefore we need to add explicit hooks to
+> give netfilter/ebtables a chance to filter them.
 >=20
-> The calculation is now done using the same formula as in the iputils
-> ping program.
+> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
+> Reported-by: Antonio Quartulli <ordex@ritirata.org>
+> ---
+>  batman-adv-kernelland/hard-interface.c |   17 +++++++++++++++--
+>  batman-adv-kernelland/send.c           |    8 ++++++--
+>  2 files changed, 21 insertions(+), 4 deletions(-)
 >=20
-> Signed-off-by: Daniel Seither <post@tiwoc.de>
+> diff --git a/batman-adv-kernelland/hard-interface.c b/batman-adv-kernella=
+nd/hard-interface.c
+> index cc7fbae..6a64930 100644
+> --- a/batman-adv-kernelland/hard-interface.c
+> +++ b/batman-adv-kernelland/hard-interface.c
+> @@ -28,9 +28,11 @@
+>  #include "bat_sysfs.h"
+>  #include "originator.h"
+>  #include "hash.h"
+> -#include "compat.h"
+> =20
+>  #include <linux/if_arp.h>
+> +#include <linux/netfilter_bridge.h>
+> +
+> +#include "compat.h"
+> =20
+>  #define MIN(x, y) ((x) < (y) ? (x) : (y))
+> =20
+> @@ -433,6 +435,11 @@ out:
+>  	return NOTIFY_DONE;
+>  }
+> =20
+> +int batman_skb_recv_finish(struct sk_buff *skb)
+> +{
+> +	return NF_ACCEPT;
+> +}
+> +
+>  /* receive a packet with the batman ethertype coming on a hard
+>   * interface */
+>  int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+> @@ -452,6 +459,13 @@ int batman_skb_recv(struct sk_buff *skb, struct net_=
+device *dev,
+>  	if (atomic_read(&module_state) !=3D MODULE_ACTIVE)
+>  		goto err_free;
+> =20
+> +	/* if netfilter/ebtables wants to block incoming batman
+> +	 * packets then give them a chance to do so here */
+> +	ret =3D NF_HOOK(PF_BRIDGE, NF_BR_LOCAL_IN, skb, dev, NULL,
+> +		      batman_skb_recv_finish);
+> +	if (ret !=3D 1)
+> +		goto err_out;
+> +
+>  	/* packet should hold at least type and version */
+>  	if (unlikely(skb_headlen(skb) < 2))
+>  		goto err_free;
+> @@ -531,7 +545,6 @@ err_out:
+>  	return NET_RX_DROP;
+>  }
+> =20
+> -
+>  struct notifier_block hard_if_notifier =3D {
+>  	.notifier_call =3D hard_if_event,
+>  };
+> diff --git a/batman-adv-kernelland/send.c b/batman-adv-kernelland/send.c
+> index 99d11fe..b0d3627 100644
+> --- a/batman-adv-kernelland/send.c
+> +++ b/batman-adv-kernelland/send.c
+> @@ -29,6 +29,7 @@
+>  #include "vis.h"
+>  #include "aggregation.h"
+>  #include "gateway_common.h"
+> +#include <linux/netfilter_bridge.h>
+> =20
+>  #include "compat.h"
+> =20
+> @@ -93,9 +94,12 @@ int send_skb_packet(struct sk_buff *skb,
+> =20
+>  	/* dev_queue_xmit() returns a negative result on error.	 However on
+>  	 * congestion and traffic shaping, it drops and returns NET_XMIT_DROP
+> -	 * (which is > 0). This will not be treated as an error. */
+> +	 * (which is > 0). This will not be treated as an error.
+> +	 * Also, if netfilter/ebtables wants to block outgoing batman
+> +	 * packets then giving them a chance to do so here */
+> =20
+> -	return dev_queue_xmit(skb);
+> +	return NF_HOOK(PF_BRIDGE, NF_BR_LOCAL_OUT, skb, NULL, skb->dev,
+> +		       dev_queue_xmit);
+>  send_skb_err:
+>  	kfree_skb(skb);
+>  	return NET_XMIT_DROP;
+> --=20
+> 1.5.6.5
 
-Thanks for the adjustment. :)
+I gave a try to this patch, but I see something strange.
+After enabling a simple ebtables rule:
+ebtables -A INPUT -s MAC -j DROP
+and
+ebtables -A FORWARD -s MAC -j DROP (to be sure..)
 
-Acked-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+I saw that batman ping was timing out, while the "originator list" (shown
+with batctl o) is still filled with the other node entry...
 
-Best regards,
-	Sven
+I did something wrong?
 
---nextPart5045983.U1OKnEoyTy
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Regards
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJL9j9oAAoJEF2HCgfBJntGop0P/ighEPOSPo9X31kJvt1H2X6h
-BUAy53CYgOgj/e490SpNBROeAN95W+PX4A7e/KtJ58AcfO/4Gx5huPNrm2dal5dV
-tQNLCG3GDRJ3w3O6Rd9Oa3VcxA9EH17Hd+cFrt6DW2AtH85I7QvtvaXMcT9IJ140
-h7WcUrVIcXa0snmYN1hn+u7OJbPB1IgaZpRFdrADeD5q5RoD8SH4UsOpnQQvjnnQ
-oKp9XJBKhy35SS55sk3TJsHQm0YE0Z4xxhaQm0fCfHwVa4MK1F2LMeieauLjP53i
-SCBOD6s/otMzBOQvV7ySWSf+zySNUu7vJ1RnJ3SJceI9eK6ntoU8vk9DhNCgOI8I
-N6cx3/iVl/g5pI5c99Zh1a1Lf/MaaDqCT9aXUpQdT1bfq3HYN27PNyQ6z4nqDCmD
-H2mBm+D08dxjmzNi2huOpTKEmPAjSwXHjKdpdRiyVbTsSGJ0nHD6Vza3BBA/wUkL
-fpkBqkbQCaewvA1l5iFFdWC6/WXqXOEpxQ2lkA+2PA9TWDVOhNWmAJpHFgOjVNml
-KIAUn6wfVcZAMGl7H4vplwcaUqhmyFLoZQbE5wnjXctwzAvku7oxzxEGNDqixChQ
-kZ8QcWv49f/LlQTLHX0i+Sk4/Tjy+RG/CeofC79Oef+SjXSPD63KySwx5c1zAwqT
-Hk+OiF/wSYtDWc008pS8
-=pIDc
------END PGP SIGNATURE-----
+--=20
+Antonio Quartulli
 
---nextPart5045983.U1OKnEoyTy--
+Ognuno di noi, da solo, non vale nulla=20
+Ernesto "Che" Guevara
