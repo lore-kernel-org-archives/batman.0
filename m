@@ -1,15 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 21 May 2010 18:10:11 +0800
-References: <4BF63AD1.2030105@tiwoc.de>
-In-Reply-To: <4BF63AD1.2030105@tiwoc.de>
+Date: Fri, 21 May 2010 18:56:08 +0800
+References: <1274277722-25571-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1274277722-25571-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201005211810.12064.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batctl: Correct mdev calculation in
-	ping subcommand
+Message-Id: <201005211856.08859.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Don't call free_netdev twice
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,16 +22,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday 21 May 2010 15:48:33 Daniel Seither wrote:
-> Fixes the calculation of the mean absolute deviation (mdev)
-> of the roundtrip times. mdev was previously calculated by
-> computing the difference of maximum and minimum round trip times.
-> 
-> The calculation is now done using the same formula as in the iputils
-> ping program.
+On Wednesday 19 May 2010 22:02:02 Sven Eckelmann wrote:
+> Free_netdev is registered as destructor in interface_setup for every
+> soft_device. This destructor is automatically called from
+> unregister_netdev and we must not call it again for the freed
+> net_device.
 
-Your patch was applied in revision 1663. I also pushed it into the maintenance 
-branch, since it does not break any compatibility.
+Applied in rev 1665.
 
 Thanks,
 Marek
