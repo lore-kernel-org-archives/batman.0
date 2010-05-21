@@ -1,17 +1,12 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 20 May 2010 20:06:27 +0200
-References: <4BF56357.3000208@tiwoc.de>
-	<201005201900.01910.sven.eckelmann@gmx.de>
-	<4BF5782D.8010207@tiwoc.de>
-In-Reply-To: <4BF5782D.8010207@tiwoc.de>
+Return-Path: <post@tiwoc.de>
+Message-ID: <4BF63AD1.2030105@tiwoc.de>
+Date: Fri, 21 May 2010 09:48:33 +0200
+From: Daniel Seither <post@tiwoc.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8519443.KZA165rFfV";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Message-Id: <201005202006.33313.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: Correct mdev calculation in
-	ping subcommand
+Subject: [B.A.T.M.A.N.] [PATCHv3] batctl: Correct mdev calculation in ping
+	subcommand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,84 +18,82 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart8519443.KZA165rFfV
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Fixes the calculation of the mean absolute deviation (mdev)
+of the roundtrip times. mdev was previously calculated by
+computing the difference of maximum and minimum round trip times.
 
-Daniel Seither wrote:
-> Am 20.05.2010 19:00, schrieb Sven Eckelmann:
-> > Sven Eckelmann wrote:
-> > Ok, have a small suggestion. Please check that mdev - ... is positive.
-> > Otherwise we would have something like (mdev - avg * avg =3D=3D -0.000.=
-=2E...,
-> > sqrt(...) =3D=3D NaN):
-> >=20
-> > PING 02:00:00:00:00:02 (02:00:00:00:00:02) 19(47) bytes of data
-> > 19 bytes from 02:00:00:00:00:02 icmp_seq=3D1 ttl=3D50 time=3D0.10 ms
-> > --- 02:00:00:00:00:02 ping statistics ---
-> > 1 packets transmitted, 1 received, 0% packet loss
-> > rtt min/avg/max/mdev =3D 0.101/0.101/0.101/nan ms
->=20
-> There seems to be a problem with the floats... The value of mdev - avg^2
-> cannot become negative if computed with infinite precision. In this
-> case, it seems to be slightly less than zero because of rounding errors.
-> In iputils' ping, all calculations are done using integers which
-> prevents this kind of problems.
+The calculation is now done using the same formula as in the iputils
+ping program.
 
-Correct. Because of that I recommended to check before calling sqrt.
+Signed-off-by: Daniel Seither <post@tiwoc.de>
+---
+Index: Makefile
+===================================================================
+--- Makefile	(revision 1659)
++++ Makefile	(working copy)
+@@ -28,7 +28,7 @@
+ CC = gcc
+ CFLAGS += -pedantic -Wall -W -g3 -std=gnu99 -Os -fno-strict-aliasing
+ EXTRA_CFLAGS = -DREVISION_VERSION=$(REVISION_VERSION)
+-LDFLAGS +=
++LDFLAGS += -lm
 
-> I think there are two solutions for the problem you discovered:
->=20
-> 1) check whether the difference is <=3D 0 (easy)
->=20
-> 2) rewrite the time measurement to use integers (more code to change,
-> but calculations will be exact)
->=20
-> Please check whether replacing the line calling sqrt by the following
-> code fixes the problem for you (first solution):
->=20
-> 		mdev =3D mdev - avg * avg;
-> 		if (mdev > 0.0)
-> 			mdev =3D sqrt(mdev);
-> 		else
-> 			mdev =3D 0.0;
+ SBINDIR = $(INSTALL_PREFIX)/usr/sbin
 
-Already done that - that's why I recommended it :)
+Index: ping.c
+===================================================================
+--- ping.c	(revision 1659)
++++ ping.c	(working copy)
+@@ -29,6 +29,7 @@
+ #include <signal.h>
+ #include <fcntl.h>
+ #include <string.h>
++#include <math.h>
 
-> Or should we aim for the second solution?
+ #include "main.h"
+ #include "ping.h"
+@@ -76,7 +77,7 @@
+ 	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
+ 	char *dst_string, *mac_string, *rr_string;
+ 	double time_delta;
+-	float min = 0.0, max = 0.0, avg = 0.0;
++	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
+ 	uint8_t last_rr_cur = 0, last_rr[BAT_RR_LEN][ETH_ALEN];
+ 	size_t packet_len;
 
-I think the first solution is good enough for now. Please send the patch ag=
-ain=20
-with that fix and it is ok for now. If you want you can rewrite the code la=
-ter=20
-to use only integers.
+@@ -260,6 +261,7 @@
+ 			if (time_delta > max)
+ 				max = time_delta;
+ 			avg += time_delta;
++			mdev += time_delta * time_delta;
+ 			packets_in++;
+ 			break;
+ 		case DESTINATION_UNREACHABLE:
+@@ -289,11 +291,24 @@
+ 	else
+ 		packets_loss = ((packets_out - packets_in) * 100) / packets_out;
 
-Best regards,
-	Sven
++	if (packets_in) {
++		avg /= packets_in;
++		mdev /= packets_in;
++		mdev = mdev - avg * avg;
++		if (mdev > 0.0)
++			mdev = sqrt(mdev);
++		else
++			mdev = 0.0;
++	} else {
++		avg = 0.0;
++		mdev = 0.0;
++	}
++
+ 	printf("--- %s ping statistics ---\n", dst_string);
+ 	printf("%u packets transmitted, %u received, %u%% packet loss\n",
+ 		packets_out, packets_in, packets_loss);
+ 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
+-		min, (packets_in ? (avg / packets_in) : 0.000), max, (max - min));
++		min, avg, max, mdev);
 
---nextPart8519443.KZA165rFfV
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+ 	ret = EXIT_SUCCESS;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJL9XojAAoJEF2HCgfBJntGstIQAJBzDF/G08juKhO0zplpXyWw
-lmVdqoXRhG7qJuFKgH9yUoGmFOhRgRx/mhw9iZymdHnNCLzPKgFdKLaYJsj14uEP
-O01KilXbL4R+VI74sgjjgydBUAA0do4Bu8tH9wjJacavCr0awso/E5CxbqjSIoao
-l27oVFCkq8NJUliuG9Q5wKQmThQRhrQZktcGueNhxViPwNnsa8T67i1vPzdip4l8
-KL5837EyjSBieiCf2ziUXcbaASEAP32AAfLAxIaXski7l5pRscUmmPVl4ybt7MHR
-9QHxg5inKcHDkSPzmKG1ydOja4sxZdFjN3XGsfXBNbMmR0zyYtYy/FZcebX7AV3r
-X5yvVgvmLJVzqaylagNxXSr7P4MzSqsZCGjOGLGZU7czNhwKu2vnP86Nj3goH0lD
-zs4/zg7zJG2c2wsZjc8yrepCVZTI/ZbzdadBFdMqnBXCXdkEsF32N+jMzGlVu1gE
-NgreffCuxXpzMuANm9fQh0P2hTNYdxz1o0ZRX+QIn1yJfgkuR+xJoBQ1b9uD3jY0
-T4jiyOs0/9hdHAZzwo9Cjb/aPWQIUNbY0bq5U63qi3LCSXh+afqefsHNreBe0y2r
-x51M19N+12JTyuCwp+Ba/3wQNoNuCjQOnC81NYYHBU/iqApVzrbqvoLzHqeGyffT
-qRhcm93INQsb2U4/ugE3
-=2JAk
------END PGP SIGNATURE-----
-
---nextPart8519443.KZA165rFfV--
