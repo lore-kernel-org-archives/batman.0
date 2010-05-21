@@ -1,12 +1,15 @@
-Return-Path: <post@tiwoc.de>
-Message-ID: <4BF63AD1.2030105@tiwoc.de>
-Date: Fri, 21 May 2010 09:48:33 +0200
-From: Daniel Seither <post@tiwoc.de>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Fri, 21 May 2010 10:08:08 +0200
+References: <4BF63AD1.2030105@tiwoc.de>
+In-Reply-To: <4BF63AD1.2030105@tiwoc.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: multipart/signed; boundary="nextPart5045983.U1OKnEoyTy";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCHv3] batctl: Correct mdev calculation in ping
-	subcommand
+Message-Id: <201005211008.16487.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batctl: Correct mdev calculation in
+	ping subcommand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,82 +21,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Fixes the calculation of the mean absolute deviation (mdev)
-of the roundtrip times. mdev was previously calculated by
-computing the difference of maximum and minimum round trip times.
+--nextPart5045983.U1OKnEoyTy
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-The calculation is now done using the same formula as in the iputils
-ping program.
+Daniel Seither wrote:
+> Fixes the calculation of the mean absolute deviation (mdev)
+> of the roundtrip times. mdev was previously calculated by
+> computing the difference of maximum and minimum round trip times.
+>=20
+> The calculation is now done using the same formula as in the iputils
+> ping program.
+>=20
+> Signed-off-by: Daniel Seither <post@tiwoc.de>
 
-Signed-off-by: Daniel Seither <post@tiwoc.de>
----
-Index: Makefile
-===================================================================
---- Makefile	(revision 1659)
-+++ Makefile	(working copy)
-@@ -28,7 +28,7 @@
- CC = gcc
- CFLAGS += -pedantic -Wall -W -g3 -std=gnu99 -Os -fno-strict-aliasing
- EXTRA_CFLAGS = -DREVISION_VERSION=$(REVISION_VERSION)
--LDFLAGS +=
-+LDFLAGS += -lm
+Thanks for the adjustment. :)
 
- SBINDIR = $(INSTALL_PREFIX)/usr/sbin
+Acked-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 
-Index: ping.c
-===================================================================
---- ping.c	(revision 1659)
-+++ ping.c	(working copy)
-@@ -29,6 +29,7 @@
- #include <signal.h>
- #include <fcntl.h>
- #include <string.h>
-+#include <math.h>
+Best regards,
+	Sven
 
- #include "main.h"
- #include "ping.h"
-@@ -76,7 +77,7 @@
- 	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
- 	char *dst_string, *mac_string, *rr_string;
- 	double time_delta;
--	float min = 0.0, max = 0.0, avg = 0.0;
-+	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
- 	uint8_t last_rr_cur = 0, last_rr[BAT_RR_LEN][ETH_ALEN];
- 	size_t packet_len;
+--nextPart5045983.U1OKnEoyTy
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-@@ -260,6 +261,7 @@
- 			if (time_delta > max)
- 				max = time_delta;
- 			avg += time_delta;
-+			mdev += time_delta * time_delta;
- 			packets_in++;
- 			break;
- 		case DESTINATION_UNREACHABLE:
-@@ -289,11 +291,24 @@
- 	else
- 		packets_loss = ((packets_out - packets_in) * 100) / packets_out;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-+	if (packets_in) {
-+		avg /= packets_in;
-+		mdev /= packets_in;
-+		mdev = mdev - avg * avg;
-+		if (mdev > 0.0)
-+			mdev = sqrt(mdev);
-+		else
-+			mdev = 0.0;
-+	} else {
-+		avg = 0.0;
-+		mdev = 0.0;
-+	}
-+
- 	printf("--- %s ping statistics ---\n", dst_string);
- 	printf("%u packets transmitted, %u received, %u%% packet loss\n",
- 		packets_out, packets_in, packets_loss);
- 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
--		min, (packets_in ? (avg / packets_in) : 0.000), max, (max - min));
-+		min, avg, max, mdev);
+iQIcBAABCgAGBQJL9j9oAAoJEF2HCgfBJntGop0P/ighEPOSPo9X31kJvt1H2X6h
+BUAy53CYgOgj/e490SpNBROeAN95W+PX4A7e/KtJ58AcfO/4Gx5huPNrm2dal5dV
+tQNLCG3GDRJ3w3O6Rd9Oa3VcxA9EH17Hd+cFrt6DW2AtH85I7QvtvaXMcT9IJ140
+h7WcUrVIcXa0snmYN1hn+u7OJbPB1IgaZpRFdrADeD5q5RoD8SH4UsOpnQQvjnnQ
+oKp9XJBKhy35SS55sk3TJsHQm0YE0Z4xxhaQm0fCfHwVa4MK1F2LMeieauLjP53i
+SCBOD6s/otMzBOQvV7ySWSf+zySNUu7vJ1RnJ3SJceI9eK6ntoU8vk9DhNCgOI8I
+N6cx3/iVl/g5pI5c99Zh1a1Lf/MaaDqCT9aXUpQdT1bfq3HYN27PNyQ6z4nqDCmD
+H2mBm+D08dxjmzNi2huOpTKEmPAjSwXHjKdpdRiyVbTsSGJ0nHD6Vza3BBA/wUkL
+fpkBqkbQCaewvA1l5iFFdWC6/WXqXOEpxQ2lkA+2PA9TWDVOhNWmAJpHFgOjVNml
+KIAUn6wfVcZAMGl7H4vplwcaUqhmyFLoZQbE5wnjXctwzAvku7oxzxEGNDqixChQ
+kZ8QcWv49f/LlQTLHX0i+Sk4/Tjy+RG/CeofC79Oef+SjXSPD63KySwx5c1zAwqT
+Hk+OiF/wSYtDWc008pS8
+=pIDc
+-----END PGP SIGNATURE-----
 
- 	ret = EXIT_SUCCESS;
-
+--nextPart5045983.U1OKnEoyTy--
