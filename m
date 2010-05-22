@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 22 May 2010 16:17:04 +0200
-Message-Id: <1274537833-2512-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 22 May 2010 16:17:05 +0200
+Message-Id: <1274537833-2512-2-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <201005221616.46785.sven.eckelmann@gmx.de>
 References: <201005221616.46785.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 01/10] Staging: batman-adv: remove redundant
-	struct declaration
+Subject: [B.A.T.M.A.N.] [PATCH 02/10] Staging: batman-adv: fix rogue packets
+	on shutdown
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,141 +22,76 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
 
 From: Marek Lindner <lindner_marek@yahoo.de>
 
-The hardif_attr and the bat_attr struct share the same attributes,
-hence it is not necessary to specify 2 different structs.
+On module shutdown batman-adv would purge the internal packet
+queue by sending all remaining packets which could confuse
+other nodes. Now, the packets are silently discarded.
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/bat_sysfs.c |   48 ++++++++------------------------
- drivers/staging/batman-adv/bat_sysfs.h |   13 ++++++++
- 2 files changed, 25 insertions(+), 36 deletions(-)
+ drivers/staging/batman-adv/send.c |   24 +++++++++++++++---------
+ 1 files changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
-index e2c000b..065a212 100644
---- a/drivers/staging/batman-adv/bat_sysfs.c
-+++ b/drivers/staging/batman-adv/bat_sysfs.c
-@@ -28,22 +28,6 @@
+diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
+index d8536e2..ac69ed8 100644
+--- a/drivers/staging/batman-adv/send.c
++++ b/drivers/staging/batman-adv/send.c
+@@ -440,6 +440,9 @@ void send_outstanding_bcast_packet(struct work_struct *work)
+ 	hlist_del(&forw_packet->list);
+ 	spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
  
- #define to_dev(obj)     container_of(obj, struct device, kobj)
++	if (atomic_read(&module_state) == MODULE_DEACTIVATING)
++		goto out;
++
+ 	/* rebroadcast packet */
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+@@ -453,15 +456,15 @@ void send_outstanding_bcast_packet(struct work_struct *work)
  
--struct bat_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
--			char *buf);
--	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
--			 char *buf, size_t count);
--};
--
--struct hardif_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
--			char *buf);
--	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
--			 char *buf, size_t count);
--};
--
- #define BAT_ATTR(_name, _mode, _show, _store)	\
- struct bat_attribute bat_attr_##_name = {	\
- 	.attr = {.name = __stringify(_name),	\
-@@ -60,14 +44,6 @@ struct bin_attribute bat_attr_##_name = {		\
- 	.write = _write,				\
- };
+ 	forw_packet->num_packets++;
  
--#define HARDIF_ATTR(_name, _mode, _show, _store)	\
--struct hardif_attribute hardif_attr_##_name = {		\
--	.attr = {.name = __stringify(_name),		\
--		 .mode = _mode },			\
--	.show   = _show,				\
--	.store  = _store,				\
--};
--
- static ssize_t show_aggr_ogm(struct kobject *kobj, struct attribute *attr,
- 			     char *buff)
- {
-@@ -433,20 +409,20 @@ static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
+-	/* if we still have some more bcasts to send and we are not shutting
+-	 * down */
+-	if ((forw_packet->num_packets < 3) &&
+-	    (atomic_read(&module_state) != MODULE_DEACTIVATING))
++	/* if we still have some more bcasts to send */
++	if (forw_packet->num_packets < 3) {
+ 		_add_bcast_packet_to_list(forw_packet, ((5 * HZ) / 1000));
+-	else {
+-		forw_packet_free(forw_packet);
+-		atomic_inc(&bcast_queue_left);
++		return;
  	}
++
++out:
++	forw_packet_free(forw_packet);
++	atomic_inc(&bcast_queue_left);
  }
  
--static HARDIF_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
--		   show_mesh_iface, store_mesh_iface);
--static HARDIF_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
-+static BAT_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
-+		show_mesh_iface, store_mesh_iface);
-+static BAT_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
+ void send_outstanding_bat_packet(struct work_struct *work)
+@@ -476,6 +479,9 @@ void send_outstanding_bat_packet(struct work_struct *work)
+ 	hlist_del(&forw_packet->list);
+ 	spin_unlock_irqrestore(&forw_bat_list_lock, flags);
  
--static struct hardif_attribute *batman_attrs[] = {
--	&hardif_attr_mesh_iface,
--	&hardif_attr_iface_status,
-+static struct bat_attribute *batman_attrs[] = {
-+	&bat_attr_mesh_iface,
-+	&bat_attr_iface_status,
- 	NULL,
- };
- 
- int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- {
- 	struct kobject *hardif_kobject = &dev->dev.kobj;
--	struct hardif_attribute **hardif_attr;
-+	struct bat_attribute **bat_attr;
- 	int err;
- 
- 	*hardif_obj = kobject_create_and_add(SYSFS_IF_BAT_SUBDIR,
-@@ -458,12 +434,12 @@ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- 		goto out;
- 	}
- 
--	for (hardif_attr = batman_attrs; *hardif_attr; ++hardif_attr) {
--		err = sysfs_create_file(*hardif_obj, &((*hardif_attr)->attr));
-+	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr) {
-+		err = sysfs_create_file(*hardif_obj, &((*bat_attr)->attr));
- 		if (err) {
- 			printk(KERN_ERR "batman-adv:Can't add sysfs file: %s/%s/%s\n",
- 			       dev->name, SYSFS_IF_BAT_SUBDIR,
--			       ((*hardif_attr)->attr).name);
-+			       ((*bat_attr)->attr).name);
- 			goto rem_attr;
- 		}
- 	}
-@@ -471,8 +447,8 @@ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- 	return 0;
- 
- rem_attr:
--	for (hardif_attr = batman_attrs; *hardif_attr; ++hardif_attr)
--		sysfs_remove_file(*hardif_obj, &((*hardif_attr)->attr));
-+	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr)
-+		sysfs_remove_file(*hardif_obj, &((*bat_attr)->attr));
- out:
- 	return -ENOMEM;
- }
-diff --git a/drivers/staging/batman-adv/bat_sysfs.h b/drivers/staging/batman-adv/bat_sysfs.h
-index e189341..cb45a91 100644
---- a/drivers/staging/batman-adv/bat_sysfs.h
-+++ b/drivers/staging/batman-adv/bat_sysfs.h
-@@ -20,10 +20,23 @@
-  */
- 
- 
-+#ifndef BAT_SYSFS_H
-+#define BAT_SYSFS_H
++	if (atomic_read(&module_state) == MODULE_DEACTIVATING)
++		goto out;
 +
- #define SYSFS_IF_MESH_SUBDIR "mesh"
- #define SYSFS_IF_BAT_SUBDIR "batman_adv"
+ 	send_packet(forw_packet);
  
-+struct bat_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
-+			char *buf);
-+	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
-+			 char *buf, size_t count);
-+};
-+
- int sysfs_add_meshif(struct net_device *dev);
- void sysfs_del_meshif(struct net_device *dev);
- int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev);
- void sysfs_del_hardif(struct kobject **hardif_obj);
-+
-+#endif
+ 	/**
+@@ -483,10 +489,10 @@ void send_outstanding_bat_packet(struct work_struct *work)
+ 	 * to determine the queues wake up time unless we are
+ 	 * shutting down
+ 	 */
+-	if ((forw_packet->own) &&
+-	    (atomic_read(&module_state) != MODULE_DEACTIVATING))
++	if (forw_packet->own)
+ 		schedule_own_packet(forw_packet->if_incoming);
+ 
++out:
+ 	/* don't count own packet */
+ 	if (!forw_packet->own)
+ 		atomic_inc(&batman_queue_left);
 -- 
 1.7.1
 
