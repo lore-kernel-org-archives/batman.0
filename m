@@ -1,11 +1,14 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 22 May 2010 16:17:11 +0200
-Message-Id: <1274537833-2512-8-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 22 May 2010 16:17:12 +0200
+Message-Id: <1274537833-2512-9-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <201005221616.46785.sven.eckelmann@gmx.de>
 References: <201005221616.46785.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 08/10] Staging: batman-adv: convert all sysfs
-	files to single value files
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 09/10] Staging: batman-adv: Adding
+	netfilter-bridge hooks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,104 +21,96 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: gregkh@suse.de
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+From: Linus Lüssing <linus.luessing@web.de>
 
-This patch removes the extra usage output which came when
-the sysfs files were read.
+batman-adv is receiving and sending the packets of its own ether type
+on a very early/low level. Therefore we need to add explicit hooks to
+give netfilter/ebtables a chance to filter them.
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Reported-by: Antonio Quartulli <ordex@ritirata.org>
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/bat_sysfs.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/staging/batman-adv/hard-interface.c |   14 +++++++++++++-
+ drivers/staging/batman-adv/send.c           |    9 +++++++--
+ 2 files changed, 20 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
-index 651bdb4..b961817 100644
---- a/drivers/staging/batman-adv/bat_sysfs.c
-+++ b/drivers/staging/batman-adv/bat_sysfs.c
-@@ -36,18 +36,18 @@ struct bat_attribute bat_attr_##_name = {	\
- 	.store  = _store,			\
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index 7a582e8..66f5550 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -30,6 +30,7 @@
+ #include "hash.h"
+ 
+ #include <linux/if_arp.h>
++#include <linux/netfilter_bridge.h>
+ 
+ #define MIN(x, y) ((x) < (y) ? (x) : (y))
+ 
+@@ -432,6 +433,11 @@ out:
+ 	return NOTIFY_DONE;
+ }
+ 
++int batman_skb_recv_finish(struct sk_buff *skb)
++{
++	return NF_ACCEPT;
++}
++
+ /* receive a packet with the batman ethertype coming on a hard
+  * interface */
+ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+@@ -451,6 +457,13 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 	if (atomic_read(&module_state) != MODULE_ACTIVE)
+ 		goto err_free;
+ 
++	/* if netfilter/ebtables wants to block incoming batman
++	 * packets then give them a chance to do so here */
++	ret = NF_HOOK(PF_BRIDGE, NF_BR_LOCAL_IN, skb, dev, NULL,
++		      batman_skb_recv_finish);
++	if (ret != 1)
++		goto err_out;
++
+ 	/* packet should hold at least type and version */
+ 	if (unlikely(skb_headlen(skb) < 2))
+ 		goto err_free;
+@@ -530,7 +543,6 @@ err_out:
+ 	return NET_RX_DROP;
+ }
+ 
+-
+ struct notifier_block hard_if_notifier = {
+ 	.notifier_call = hard_if_event,
  };
+diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
+index ac69ed8..7365f6d 100644
+--- a/drivers/staging/batman-adv/send.c
++++ b/drivers/staging/batman-adv/send.c
+@@ -29,6 +29,8 @@
+ #include "vis.h"
+ #include "aggregation.h"
  
--static ssize_t show_aggr_ogm(struct kobject *kobj, struct attribute *attr,
-+static ssize_t show_aggr_ogms(struct kobject *kobj, struct attribute *attr,
- 			     char *buff)
++#include <linux/netfilter_bridge.h>
++
+ /* apply hop penalty for a normal link */
+ static uint8_t hop_penalty(const uint8_t tq)
  {
- 	struct device *dev = to_dev(kobj->parent);
- 	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
- 	int aggr_status = atomic_read(&bat_priv->aggregation_enabled);
+@@ -90,9 +92,12 @@ int send_skb_packet(struct sk_buff *skb,
  
--	return sprintf(buff, "status: %s\ncommands: enable, disable, 0, 1\n",
-+	return sprintf(buff, "%s\n",
- 		       aggr_status == 0 ? "disabled" : "enabled");
- }
+ 	/* dev_queue_xmit() returns a negative result on error.	 However on
+ 	 * congestion and traffic shaping, it drops and returns NET_XMIT_DROP
+-	 * (which is > 0). This will not be treated as an error. */
++	 * (which is > 0). This will not be treated as an error.
++	 * Also, if netfilter/ebtables wants to block outgoing batman
++	 * packets then giving them a chance to do so here */
  
--static ssize_t store_aggr_ogm(struct kobject *kobj, struct attribute *attr,
-+static ssize_t store_aggr_ogms(struct kobject *kobj, struct attribute *attr,
- 			      char *buff, size_t count)
- {
- 	struct device *dev = to_dev(kobj->parent);
-@@ -91,10 +91,9 @@ static ssize_t show_vis_mode(struct kobject *kobj, struct attribute *attr,
- 	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
- 	int vis_mode = atomic_read(&bat_priv->vis_mode);
- 
--	return sprintf(buff, "status: %s\ncommands: client, server, %d, %d\n",
-+	return sprintf(buff, "%s\n",
- 		       vis_mode == VIS_TYPE_CLIENT_UPDATE ?
--							"client" : "server",
--		       VIS_TYPE_SERVER_SYNC, VIS_TYPE_CLIENT_UPDATE);
-+							"client" : "server");
- }
- 
- static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
-@@ -109,7 +108,8 @@ static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
- 	ret = strict_strtoul(buff, 10, &val);
- 
- 	if (((count == 2) && (!ret) && (val == VIS_TYPE_CLIENT_UPDATE)) ||
--	    (strncmp(buff, "client", 6) == 0))
-+	    (strncmp(buff, "client", 6) == 0) ||
-+	    (strncmp(buff, "off", 3) == 0))
- 		vis_mode_tmp = VIS_TYPE_CLIENT_UPDATE;
- 
- 	if (((count == 2) && (!ret) && (val == VIS_TYPE_SERVER_SYNC)) ||
-@@ -143,7 +143,7 @@ static ssize_t show_orig_interval(struct kobject *kobj, struct attribute *attr,
- 	struct device *dev = to_dev(kobj->parent);
- 	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
- 
--	return sprintf(buff, "status: %i\n",
-+	return sprintf(buff, "%i\n",
- 		       atomic_read(&bat_priv->orig_interval));
- }
- 
-@@ -180,14 +180,14 @@ static ssize_t store_orig_interval(struct kobject *kobj, struct attribute *attr,
- 	return count;
- }
- 
--static BAT_ATTR(aggregate_ogm, S_IRUGO | S_IWUSR,
--		show_aggr_ogm, store_aggr_ogm);
-+static BAT_ATTR(aggregated_ogms, S_IRUGO | S_IWUSR,
-+		show_aggr_ogms, store_aggr_ogms);
- static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
- static BAT_ATTR(orig_interval, S_IRUGO | S_IWUSR,
- 		show_orig_interval, store_orig_interval);
- 
- static struct bat_attribute *mesh_attrs[] = {
--	&bat_attr_aggregate_ogm,
-+	&bat_attr_aggregated_ogms,
- 	&bat_attr_vis_mode,
- 	&bat_attr_orig_interval,
- 	NULL,
-@@ -261,7 +261,7 @@ static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
- 	if (!batman_if)
- 		return 0;
- 
--	return sprintf(buff, "status: %s\ncommands: none, bat0\n",
-+	return sprintf(buff, "%s\n",
- 		       batman_if->if_status == IF_NOT_IN_USE ?
- 							"none" : "bat0");
- }
+-	return dev_queue_xmit(skb);
++	return NF_HOOK(PF_BRIDGE, NF_BR_LOCAL_OUT, skb, NULL, skb->dev,
++		       dev_queue_xmit);
+ send_skb_err:
+ 	kfree_skb(skb);
+ 	return NET_XMIT_DROP;
 -- 
 1.7.1
 
