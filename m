@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 22 May 2010 17:48:46 +0200
-Message-Id: <1274543327-2258-3-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 22 May 2010 17:48:47 +0200
+Message-Id: <1274543327-2258-4-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <201005221748.17663.sven.eckelmann@gmx.de>
 References: <201005221748.17663.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/4] Staging: batman-adv: Don't call
-	free_netdev twice
+Subject: [B.A.T.M.A.N.] [PATCH 4/4] Staging: batman-adv: Don't allocate icmp
+	packet with GFP_KERNEL
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,30 +20,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: gregkh@suse.de
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-Free_netdev is registered as destructor in interface_setup for every
-soft_device. This destructor is automatically called from
-unregister_netdev and we must not call it again for the freed
-net_device.
+A new buffer for a packet is created when a icmp packet is received.
+This happens in a context with disabled irq. Thus we are not allowed to
+sleep or call function which might sleep. kmalloc must be called with
+GFP_ATOMIC instead of GFP_KERNEL to ensure that it does not sleep.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/main.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/staging/batman-adv/device.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
-index 50a66b4..74c70d5 100644
---- a/drivers/staging/batman-adv/main.c
-+++ b/drivers/staging/batman-adv/main.c
-@@ -128,6 +128,9 @@ int init_module(void)
+diff --git a/drivers/staging/batman-adv/device.c b/drivers/staging/batman-adv/device.c
+index ad82ec4..7eb6559 100644
+--- a/drivers/staging/batman-adv/device.c
++++ b/drivers/staging/batman-adv/device.c
+@@ -309,7 +309,7 @@ void bat_device_add_packet(struct device_client *device_client,
+ 	struct device_packet *device_packet;
+ 	unsigned long flags;
  
- unreg_soft_device:
- 	unregister_netdev(soft_device);
-+	soft_device = NULL;
-+	return -ENOMEM;
-+
- free_soft_device:
- 	free_netdev(soft_device);
- 	soft_device = NULL;
+-	device_packet = kmalloc(sizeof(struct device_packet), GFP_KERNEL);
++	device_packet = kmalloc(sizeof(struct device_packet), GFP_ATOMIC);
+ 
+ 	if (!device_packet)
+ 		return;
 -- 
 1.7.1
 
