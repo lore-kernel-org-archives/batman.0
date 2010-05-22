@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 22 May 2010 17:48:45 +0200
-Message-Id: <1274543327-2258-2-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 22 May 2010 17:48:46 +0200
+Message-Id: <1274543327-2258-3-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <201005221748.17663.sven.eckelmann@gmx.de>
 References: <201005221748.17663.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] Staging: batman-adv: Call
-	unregister_netdev on failures to get rtnl lock
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] Staging: batman-adv: Don't call
+	free_netdev twice
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,30 +20,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: gregkh@suse.de
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-We must call unregister_netdev when we couldn't initialise the
-batman-adv module and the soft_device was registered. There are two
-version of the function which we can use:
- * unregister_netdevice - removes device
- * unregister_netdev - takes rtnl semaphore and remove device
-
-We don't hold the semaphore in an error situation. So we must use
-unregister_netdev.
+Free_netdev is registered as destructor in interface_setup for every
+soft_device. This destructor is automatically called from
+unregister_netdev and we must not call it again for the freed
+net_device.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/staging/batman-adv/main.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
-index 9d13979..50a66b4 100644
+index 50a66b4..74c70d5 100644
 --- a/drivers/staging/batman-adv/main.c
 +++ b/drivers/staging/batman-adv/main.c
-@@ -127,7 +127,7 @@ int init_module(void)
- 	return 0;
+@@ -128,6 +128,9 @@ int init_module(void)
  
  unreg_soft_device:
--	unregister_netdevice(soft_device);
-+	unregister_netdev(soft_device);
+ 	unregister_netdev(soft_device);
++	soft_device = NULL;
++	return -ENOMEM;
++
  free_soft_device:
  	free_netdev(soft_device);
  	soft_device = NULL;
