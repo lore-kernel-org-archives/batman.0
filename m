@@ -1,11 +1,12 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 22 May 2010 17:48:47 +0200
-Message-Id: <1274543327-2258-4-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <201005221748.17663.sven.eckelmann@gmx.de>
-References: <201005221748.17663.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] Staging: batman-adv: Don't allocate icmp
-	packet with GFP_KERNEL
+Date: Sat, 22 May 2010 17:53:53 +0200
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1634122.27galRBN9d";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201005221753.54176.sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 00/26] Staging: batman-adv for 2.6.36
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +21,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: gregkh@suse.de
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-A new buffer for a packet is created when a icmp packet is received.
-This happens in a context with disabled irq. Thus we are not allowed to
-sleep or call function which might sleep. kmalloc must be called with
-GFP_ATOMIC instead of GFP_KERNEL to ensure that it does not sleep.
+--nextPart1634122.27galRBN9d
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- drivers/staging/batman-adv/device.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hi,
 
-diff --git a/drivers/staging/batman-adv/device.c b/drivers/staging/batman-adv/device.c
-index ad82ec4..7eb6559 100644
---- a/drivers/staging/batman-adv/device.c
-+++ b/drivers/staging/batman-adv/device.c
-@@ -309,7 +309,7 @@ void bat_device_add_packet(struct device_client *device_client,
- 	struct device_packet *device_packet;
- 	unsigned long flags;
- 
--	device_packet = kmalloc(sizeof(struct device_packet), GFP_KERNEL);
-+	device_packet = kmalloc(sizeof(struct device_packet), GFP_ATOMIC);
- 
- 	if (!device_packet)
- 		return;
--- 
-1.7.1
+here are the patches for 2.6.36 split from the old patchset.
 
+Linus L=FCssing (1):
+      Staging: batman-adv: Adding netfilter-bridge hooks
+
+Marek Lindner (3):
+      Staging: batman-adv: remove redundant struct declaration
+      Staging: batman-adv: convert all sysfs files to single value files
+      Staging: batman-adv: Add information about batman-adv sysfs entries
+
+Sven Eckelmann (2):
+      Staging: batman-adv: Move device for icmp injection to debugfs
+      Staging: batman-adv: Move tables from sysfs to debugfs
+
+Best regards,
+	Sven
+
+--nextPart1634122.27galRBN9d
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJL9/4RAAoJEF2HCgfBJntGbtYP/3pdDjG10DsTiXz57ip6J4VQ
+McsZrxzRzMCOtADFfpmPsLsPiQm+qigUIAQs3Vn/q8DVpq/c4Gx3OshBDJDTTwhN
+fdSb/pTm42ECnA0RDUEWJurXeLVfH3uxkO26pFCIQwO+1IwbmcvdNO/MS2Anyz5b
+J0OqcAUtiymHIKqY1WZYMEL44UkvdcJuX4K0PF+ST3+dwYj3KV90szRT/DzFn11E
++E5SjhnfnI6SRAfNVVdymqeykFVt1PO0g3jIR3+yO54aADpVC0i/cUcfACSFU/PE
+lBj+Kvjzv1LCzYkhgVBquZ0kPKH2bKBFE31d0kzWZtB/KlcdHwU4LEhXKRwXeEsK
+N7EsusjGHkRrTW3LtTc6387BO9asaKpo8oT6Xy64PEO/QA89RQ9iniz3WHthcATk
+N1o7dBgmqye8YbIea+//5aYFn/FyyTOJGWZCXHZ9+VzPdSnUvKBv4dc95PYoqyXe
+n/M96xDevUOULLOoeUFdgR2Z766mFpOsAqVhybTkS9ahDcSoo7oLPZ2nY6SnsYB+
+zOtImnkl1+IM5Jd6Mql3cN/C1XeMyEeRhLo43nHzvXxvFYskTyL8qEpOAbpozxpz
+dzpuGwqearmoOxAz/lsulbsXbroaxLiVATkEUj4WuQQNagurJ4DxLthG6y7/UfdD
+1lBBRTsEUboMjtOCeMDt
+=y332
+-----END PGP SIGNATURE-----
+
+--nextPart1634122.27galRBN9d--
