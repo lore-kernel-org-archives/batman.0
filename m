@@ -1,12 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 22 May 2010 17:48:16 +0200
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11186557.WFDRSgSa2n";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201005221748.17663.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 00/26] Staging: batman-adv for 2.6.35
+Date: Sat, 22 May 2010 17:48:44 +0200
+Message-Id: <1274543327-2258-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <201005221748.17663.sven.eckelmann@gmx.de>
+References: <201005221748.17663.sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] Staging: batman-adv: fix rogue packets
+	on shutdown
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,48 +18,80 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: gregkh@suse.de
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
 
---nextPart11186557.WFDRSgSa2n
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+From: Marek Lindner <lindner_marek@yahoo.de>
 
-Hi,
+On module shutdown batman-adv would purge the internal packet
+queue by sending all remaining packets which could confuse
+other nodes. Now, the packets are silently discarded.
 
-here are the patches which fixes different bugs backported for 2.6.35
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ drivers/staging/batman-adv/send.c |   24 +++++++++++++++---------
+ 1 files changed, 15 insertions(+), 9 deletions(-)
 
-Marek Lindner (1):
-      Staging: batman-adv: fix rogue packets on shutdown
+diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
+index d8536e2..ac69ed8 100644
+--- a/drivers/staging/batman-adv/send.c
++++ b/drivers/staging/batman-adv/send.c
+@@ -440,6 +440,9 @@ void send_outstanding_bcast_packet(struct work_struct *work)
+ 	hlist_del(&forw_packet->list);
+ 	spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
+ 
++	if (atomic_read(&module_state) == MODULE_DEACTIVATING)
++		goto out;
++
+ 	/* rebroadcast packet */
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+@@ -453,15 +456,15 @@ void send_outstanding_bcast_packet(struct work_struct *work)
+ 
+ 	forw_packet->num_packets++;
+ 
+-	/* if we still have some more bcasts to send and we are not shutting
+-	 * down */
+-	if ((forw_packet->num_packets < 3) &&
+-	    (atomic_read(&module_state) != MODULE_DEACTIVATING))
++	/* if we still have some more bcasts to send */
++	if (forw_packet->num_packets < 3) {
+ 		_add_bcast_packet_to_list(forw_packet, ((5 * HZ) / 1000));
+-	else {
+-		forw_packet_free(forw_packet);
+-		atomic_inc(&bcast_queue_left);
++		return;
+ 	}
++
++out:
++	forw_packet_free(forw_packet);
++	atomic_inc(&bcast_queue_left);
+ }
+ 
+ void send_outstanding_bat_packet(struct work_struct *work)
+@@ -476,6 +479,9 @@ void send_outstanding_bat_packet(struct work_struct *work)
+ 	hlist_del(&forw_packet->list);
+ 	spin_unlock_irqrestore(&forw_bat_list_lock, flags);
+ 
++	if (atomic_read(&module_state) == MODULE_DEACTIVATING)
++		goto out;
++
+ 	send_packet(forw_packet);
+ 
+ 	/**
+@@ -483,10 +489,10 @@ void send_outstanding_bat_packet(struct work_struct *work)
+ 	 * to determine the queues wake up time unless we are
+ 	 * shutting down
+ 	 */
+-	if ((forw_packet->own) &&
+-	    (atomic_read(&module_state) != MODULE_DEACTIVATING))
++	if (forw_packet->own)
+ 		schedule_own_packet(forw_packet->if_incoming);
+ 
++out:
+ 	/* don't count own packet */
+ 	if (!forw_packet->own)
+ 		atomic_inc(&batman_queue_left);
+-- 
+1.7.1
 
-Sven Eckelmann (3):
-      Staging: batman-adv: Call unregister_netdev on failures to get rtnl lock
-      Staging: batman-adv: Don't call free_netdev twice
-      Staging: batman-adv: Don't allocate icmp packet with GFP_KERNEL
-
-thanks,
-	Sven
-
---nextPart11186557.WFDRSgSa2n
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJL9/zAAAoJEF2HCgfBJntGPeIP/jTN7rgP88iZFuE25UH/UBSE
-fC5HMLmjkV9wQXeRq+k2YcpFr9mKWbtfzkT6JtlpQ7VTz9JrftbwDX5/soBuLPGf
-WopFK49iRG+uLoW3x5rCOSTIubocp9SX6X82TAyEngPkZfHlexZpLX4D4lkqWOEC
-X4Kdj3Im22YO8MDHmmkw0WCF3rzKbqJ/0S1VrqIndMhCKoYDJGjdqT2G6jigWh1N
-6benj/9UYr5sHD90lBGio3iqNYAaWuWhM0d3bcabCbMvJwG5m7hDrgIjcbfPs5jl
-71jhkAEtJ+dC/q8FsxYsFmjL5pNewixXUjvTqUhoN29970XX3VQokKrmr3KX2xyl
-igDtb7xJH9NvietjaZF412+OiZUSkUool6FYLZAzi/wEjHIU7W54ORbWEuydUmDh
-zhDgCD/jwq9D6S2r9ht011mvQ2Yr66zFlHR3PFcGCBVQYdqiunV98e67qpze0AbE
-FqZu1q+a/mR5LmaQ+q9cv2fyrqnxEKVUuzSbD0IbA1LFh2adaFy7Gz6RnucHtHXZ
-Fk59cGQ2PYfhuaod9lVeSY75UFauuXryOGaIiDqfnxapdfopHu/P06EzMRAmVSz2
-9crN/xnj/7D/rtdFrRuesaOOXfr6t24KfD1kBagKTnxgyNgIpR8XRR4tW3beZvW+
-74WmGgsixEp3TNCz+rNU
-=Vvy5
------END PGP SIGNATURE-----
-
---nextPart11186557.WFDRSgSa2n--
