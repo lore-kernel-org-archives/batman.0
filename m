@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 22 May 2010 17:54:39 +0200
-Message-Id: <1274543684-4919-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 22 May 2010 17:54:40 +0200
+Message-Id: <1274543684-4919-2-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <201005221753.54176.sven.eckelmann@gmx.de>
 References: <201005221753.54176.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/6] Staging: batman-adv: remove redundant
-	struct declaration
+Subject: [B.A.T.M.A.N.] [PATCH 2/6] Staging: batman-adv: Move device for
+	icmp injection to debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,145 +18,1071 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: gregkh@suse.de
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+batctl uses /dev/batman-adv to send special batman-adv icmp packets to
+other nodes in the mesh. To get it working with multiple batX devices we
+must ensure that every mesh device can have their own socket which is
+used to inject those packets in exactly one mesh.
 
-The hardif_attr and the bat_attr struct share the same attributes,
-hence it is not necessary to specify 2 different structs.
+The current implementation still doesn't allow to use complete separated
+meshes as we rely on structures which are not part of the private data
+of a batman device.
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/bat_sysfs.c |   48 ++++++++------------------------
- drivers/staging/batman-adv/bat_sysfs.h |   13 ++++++++
- 2 files changed, 25 insertions(+), 36 deletions(-)
+ drivers/staging/batman-adv/Makefile      |    2 +-
+ drivers/staging/batman-adv/bat_debugfs.c |   77 +++++++
+ drivers/staging/batman-adv/bat_debugfs.h |   33 +++
+ drivers/staging/batman-adv/device.c      |  354 ------------------------------
+ drivers/staging/batman-adv/device.h      |   36 ---
+ drivers/staging/batman-adv/icmp_socket.c |  328 +++++++++++++++++++++++++++
+ drivers/staging/batman-adv/icmp_socket.h |   28 +++
+ drivers/staging/batman-adv/main.c        |   21 ++-
+ drivers/staging/batman-adv/routing.c     |    4 +-
+ drivers/staging/batman-adv/types.h       |    5 +-
+ 10 files changed, 486 insertions(+), 402 deletions(-)
+ create mode 100644 drivers/staging/batman-adv/bat_debugfs.c
+ create mode 100644 drivers/staging/batman-adv/bat_debugfs.h
+ delete mode 100644 drivers/staging/batman-adv/device.c
+ delete mode 100644 drivers/staging/batman-adv/device.h
+ create mode 100644 drivers/staging/batman-adv/icmp_socket.c
+ create mode 100644 drivers/staging/batman-adv/icmp_socket.h
 
-diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
-index e2c000b..065a212 100644
---- a/drivers/staging/batman-adv/bat_sysfs.c
-+++ b/drivers/staging/batman-adv/bat_sysfs.c
-@@ -28,22 +28,6 @@
+diff --git a/drivers/staging/batman-adv/Makefile b/drivers/staging/batman-adv/Makefile
+index f25068c..654c4d2 100644
+--- a/drivers/staging/batman-adv/Makefile
++++ b/drivers/staging/batman-adv/Makefile
+@@ -19,4 +19,4 @@
+ #
  
- #define to_dev(obj)     container_of(obj, struct device, kobj)
- 
--struct bat_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
--			char *buf);
--	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
--			 char *buf, size_t count);
--};
--
--struct hardif_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
--			char *buf);
--	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
--			 char *buf, size_t count);
--};
--
- #define BAT_ATTR(_name, _mode, _show, _store)	\
- struct bat_attribute bat_attr_##_name = {	\
- 	.attr = {.name = __stringify(_name),	\
-@@ -60,14 +44,6 @@ struct bin_attribute bat_attr_##_name = {		\
- 	.write = _write,				\
- };
- 
--#define HARDIF_ATTR(_name, _mode, _show, _store)	\
--struct hardif_attribute hardif_attr_##_name = {		\
--	.attr = {.name = __stringify(_name),		\
--		 .mode = _mode },			\
--	.show   = _show,				\
--	.store  = _store,				\
--};
--
- static ssize_t show_aggr_ogm(struct kobject *kobj, struct attribute *attr,
- 			     char *buff)
- {
-@@ -433,20 +409,20 @@ static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
- 	}
- }
- 
--static HARDIF_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
--		   show_mesh_iface, store_mesh_iface);
--static HARDIF_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
-+static BAT_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
-+		show_mesh_iface, store_mesh_iface);
-+static BAT_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
- 
--static struct hardif_attribute *batman_attrs[] = {
--	&hardif_attr_mesh_iface,
--	&hardif_attr_iface_status,
-+static struct bat_attribute *batman_attrs[] = {
-+	&bat_attr_mesh_iface,
-+	&bat_attr_iface_status,
- 	NULL,
- };
- 
- int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- {
- 	struct kobject *hardif_kobject = &dev->dev.kobj;
--	struct hardif_attribute **hardif_attr;
-+	struct bat_attribute **bat_attr;
- 	int err;
- 
- 	*hardif_obj = kobject_create_and_add(SYSFS_IF_BAT_SUBDIR,
-@@ -458,12 +434,12 @@ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- 		goto out;
- 	}
- 
--	for (hardif_attr = batman_attrs; *hardif_attr; ++hardif_attr) {
--		err = sysfs_create_file(*hardif_obj, &((*hardif_attr)->attr));
-+	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr) {
-+		err = sysfs_create_file(*hardif_obj, &((*bat_attr)->attr));
- 		if (err) {
- 			printk(KERN_ERR "batman-adv:Can't add sysfs file: %s/%s/%s\n",
- 			       dev->name, SYSFS_IF_BAT_SUBDIR,
--			       ((*hardif_attr)->attr).name);
-+			       ((*bat_attr)->attr).name);
- 			goto rem_attr;
- 		}
- 	}
-@@ -471,8 +447,8 @@ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- 	return 0;
- 
- rem_attr:
--	for (hardif_attr = batman_attrs; *hardif_attr; ++hardif_attr)
--		sysfs_remove_file(*hardif_obj, &((*hardif_attr)->attr));
-+	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr)
-+		sysfs_remove_file(*hardif_obj, &((*bat_attr)->attr));
- out:
- 	return -ENOMEM;
- }
-diff --git a/drivers/staging/batman-adv/bat_sysfs.h b/drivers/staging/batman-adv/bat_sysfs.h
-index e189341..cb45a91 100644
---- a/drivers/staging/batman-adv/bat_sysfs.h
-+++ b/drivers/staging/batman-adv/bat_sysfs.h
-@@ -20,10 +20,23 @@
-  */
- 
- 
-+#ifndef BAT_SYSFS_H
-+#define BAT_SYSFS_H
+ obj-m += batman-adv.o
+-batman-adv-objs := main.o send.o routing.o soft-interface.o device.o translation-table.o bitarray.o hash.o ring_buffer.o vis.o hard-interface.o aggregation.o originator.o bat_sysfs.o
++batman-adv-objs := main.o bat_debugfs.o bat_sysfs.o send.o routing.o soft-interface.o icmp_socket.o translation-table.o bitarray.o hash.o ring_buffer.o vis.o hard-interface.o aggregation.o originator.o
+diff --git a/drivers/staging/batman-adv/bat_debugfs.c b/drivers/staging/batman-adv/bat_debugfs.c
+new file mode 100644
+index 0000000..d5b28eb
+--- /dev/null
++++ b/drivers/staging/batman-adv/bat_debugfs.c
+@@ -0,0 +1,77 @@
++/*
++ * Copyright (C) 2010 B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
++ *
++ */
 +
- #define SYSFS_IF_MESH_SUBDIR "mesh"
- #define SYSFS_IF_BAT_SUBDIR "batman_adv"
- 
-+struct bat_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
-+			char *buf);
-+	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
-+			 char *buf, size_t count);
-+};
++#include <linux/debugfs.h>
 +
- int sysfs_add_meshif(struct net_device *dev);
- void sysfs_del_meshif(struct net_device *dev);
- int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev);
- void sysfs_del_hardif(struct kobject **hardif_obj);
++#include "main.h"
++#include "bat_debugfs.h"
++#include "translation-table.h"
++#include "originator.h"
++#include "hard-interface.h"
++#include "vis.h"
++#include "icmp_socket.h"
++
++static struct dentry *bat_debugfs;
++
++void debugfs_init(void)
++{
++	bat_debugfs = debugfs_create_dir(DEBUGFS_BAT_SUBDIR, NULL);
++}
++
++void debugfs_destroy(void)
++{
++	if (bat_debugfs) {
++		debugfs_remove_recursive(bat_debugfs);
++		bat_debugfs = NULL;
++	}
++}
++
++int debugfs_add_meshif(struct net_device *dev)
++{
++	struct bat_priv *bat_priv = netdev_priv(dev);
++
++	if (!bat_debugfs)
++		goto out;
++
++	bat_priv->debug_dir = debugfs_create_dir(dev->name, bat_debugfs);
++	if (!bat_priv->debug_dir)
++		goto out;
++
++	bat_socket_setup(bat_priv);
++
++	return 0;
++out:
++#ifdef CONFIG_DEBUG_FS
++	return -ENOMEM;
++#else
++	return 0;
++#endif /* CONFIG_DEBUG_FS */
++}
++
++void debugfs_del_meshif(struct net_device *dev)
++{
++	struct bat_priv *bat_priv = netdev_priv(dev);
++
++	if (bat_debugfs) {
++		debugfs_remove_recursive(bat_priv->debug_dir);
++		bat_priv->debug_dir = NULL;
++	}
++}
+diff --git a/drivers/staging/batman-adv/bat_debugfs.h b/drivers/staging/batman-adv/bat_debugfs.h
+new file mode 100644
+index 0000000..5cdd332
+--- /dev/null
++++ b/drivers/staging/batman-adv/bat_debugfs.h
+@@ -0,0 +1,33 @@
++/*
++ * Copyright (C) 2010 B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
++ *
++ */
++
++
++#ifndef BAT_DEBUGFS_H
++#define BAT_DEBUGFS_H
++
++#define DEBUGFS_BAT_SUBDIR "batman_adv"
++
++void debugfs_init(void);
++void debugfs_destroy(void);
++int debugfs_add_meshif(struct net_device *dev);
++void debugfs_del_meshif(struct net_device *dev);
 +
 +#endif
+diff --git a/drivers/staging/batman-adv/device.c b/drivers/staging/batman-adv/device.c
+deleted file mode 100644
+index 7eb6559..0000000
+--- a/drivers/staging/batman-adv/device.c
++++ /dev/null
+@@ -1,354 +0,0 @@
+-/*
+- * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+- * 02110-1301, USA
+- *
+- */
+-
+-#include <linux/device.h>
+-#include <linux/slab.h>
+-#include "main.h"
+-#include "device.h"
+-#include "send.h"
+-#include "types.h"
+-#include "hash.h"
+-#include "hard-interface.h"
+-
+-static struct class *batman_class;
+-
+-static int Major;	/* Major number assigned to our device driver */
+-
+-static const struct file_operations fops = {
+-	.open = bat_device_open,
+-	.release = bat_device_release,
+-	.read = bat_device_read,
+-	.write = bat_device_write,
+-	.poll = bat_device_poll,
+-};
+-
+-static struct device_client *device_client_hash[256];
+-
+-void bat_device_init(void)
+-{
+-	memset(device_client_hash, 0, sizeof(device_client_hash));
+-}
+-
+-int bat_device_setup(void)
+-{
+-	int tmp_major;
+-
+-	if (Major)
+-		return 1;
+-
+-	/* register our device - kernel assigns a free major number */
+-	tmp_major = register_chrdev(0, DRIVER_DEVICE, &fops);
+-	if (tmp_major < 0) {
+-		printk(KERN_ERR "batman-adv:"
+-		       "Registering the character device failed with %d\n",
+-			  tmp_major);
+-		return 0;
+-	}
+-
+-	batman_class = class_create(THIS_MODULE, "batman-adv");
+-
+-	if (IS_ERR(batman_class)) {
+-		printk(KERN_ERR "batman-adv:"
+-		       "Could not register class 'batman-adv'\n");
+-		return 0;
+-	}
+-
+-	device_create(batman_class, NULL, MKDEV(tmp_major, 0), NULL,
+-		      "batman-adv");
+-
+-	Major = tmp_major;
+-	return 1;
+-}
+-
+-void bat_device_destroy(void)
+-{
+-	if (!Major)
+-		return;
+-
+-	device_destroy(batman_class, MKDEV(Major, 0));
+-	class_destroy(batman_class);
+-
+-	/* Unregister the device */
+-	unregister_chrdev(Major, DRIVER_DEVICE);
+-
+-	Major = 0;
+-}
+-
+-int bat_device_open(struct inode *inode, struct file *file)
+-{
+-	unsigned int i;
+-	struct device_client *device_client;
+-
+-	device_client = kmalloc(sizeof(struct device_client), GFP_KERNEL);
+-
+-	if (!device_client)
+-		return -ENOMEM;
+-
+-	for (i = 0; i < ARRAY_SIZE(device_client_hash); i++) {
+-		if (!device_client_hash[i]) {
+-			device_client_hash[i] = device_client;
+-			break;
+-		}
+-	}
+-
+-	if (i == ARRAY_SIZE(device_client_hash)) {
+-		printk(KERN_ERR "batman-adv:"
+-		       "Error - can't add another packet client: "
+-		       "maximum number of clients reached\n");
+-		kfree(device_client);
+-		return -EXFULL;
+-	}
+-
+-	INIT_LIST_HEAD(&device_client->queue_list);
+-	device_client->queue_len = 0;
+-	device_client->index = i;
+-	spin_lock_init(&device_client->lock);
+-	init_waitqueue_head(&device_client->queue_wait);
+-
+-	file->private_data = device_client;
+-
+-	inc_module_count();
+-	return 0;
+-}
+-
+-int bat_device_release(struct inode *inode, struct file *file)
+-{
+-	struct device_client *device_client =
+-		(struct device_client *)file->private_data;
+-	struct device_packet *device_packet;
+-	struct list_head *list_pos, *list_pos_tmp;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&device_client->lock, flags);
+-
+-	/* for all packets in the queue ... */
+-	list_for_each_safe(list_pos, list_pos_tmp, &device_client->queue_list) {
+-		device_packet = list_entry(list_pos,
+-					   struct device_packet, list);
+-
+-		list_del(list_pos);
+-		kfree(device_packet);
+-	}
+-
+-	device_client_hash[device_client->index] = NULL;
+-	spin_unlock_irqrestore(&device_client->lock, flags);
+-
+-	kfree(device_client);
+-	dec_module_count();
+-
+-	return 0;
+-}
+-
+-ssize_t bat_device_read(struct file *file, char __user *buf, size_t count,
+-			loff_t *ppos)
+-{
+-	struct device_client *device_client =
+-		(struct device_client *)file->private_data;
+-	struct device_packet *device_packet;
+-	int error;
+-	unsigned long flags;
+-
+-	if ((file->f_flags & O_NONBLOCK) && (device_client->queue_len == 0))
+-		return -EAGAIN;
+-
+-	if ((!buf) || (count < sizeof(struct icmp_packet)))
+-		return -EINVAL;
+-
+-	if (!access_ok(VERIFY_WRITE, buf, count))
+-		return -EFAULT;
+-
+-	error = wait_event_interruptible(device_client->queue_wait,
+-					 device_client->queue_len);
+-
+-	if (error)
+-		return error;
+-
+-	spin_lock_irqsave(&device_client->lock, flags);
+-
+-	device_packet = list_first_entry(&device_client->queue_list,
+-					 struct device_packet, list);
+-	list_del(&device_packet->list);
+-	device_client->queue_len--;
+-
+-	spin_unlock_irqrestore(&device_client->lock, flags);
+-
+-	error = __copy_to_user(buf, &device_packet->icmp_packet,
+-			       sizeof(struct icmp_packet));
+-
+-	kfree(device_packet);
+-
+-	if (error)
+-		return error;
+-
+-	return sizeof(struct icmp_packet);
+-}
+-
+-ssize_t bat_device_write(struct file *file, const char __user *buff,
+-			 size_t len, loff_t *off)
+-{
+-	struct device_client *device_client =
+-		(struct device_client *)file->private_data;
+-	struct icmp_packet icmp_packet;
+-	struct orig_node *orig_node;
+-	struct batman_if *batman_if;
+-	uint8_t dstaddr[ETH_ALEN];
+-	unsigned long flags;
+-
+-	if (len < sizeof(struct icmp_packet)) {
+-		bat_dbg(DBG_BATMAN, "batman-adv:"
+-			"Error - can't send packet from char device: "
+-			"invalid packet size\n");
+-		return -EINVAL;
+-	}
+-
+-	if (!access_ok(VERIFY_READ, buff, sizeof(struct icmp_packet)))
+-		return -EFAULT;
+-
+-	if (__copy_from_user(&icmp_packet, buff, sizeof(icmp_packet)))
+-		return -EFAULT;
+-
+-	if (icmp_packet.packet_type != BAT_ICMP) {
+-		bat_dbg(DBG_BATMAN, "batman-adv:"
+-			"Error - can't send packet from char device: "
+-			"got bogus packet type (expected: BAT_ICMP)\n");
+-		return -EINVAL;
+-	}
+-
+-	if (icmp_packet.msg_type != ECHO_REQUEST) {
+-		bat_dbg(DBG_BATMAN, "batman-adv:"
+-			"Error - can't send packet from char device: "
+-			"got bogus message type (expected: ECHO_REQUEST)\n");
+-		return -EINVAL;
+-	}
+-
+-	icmp_packet.uid = device_client->index;
+-
+-	if (icmp_packet.version != COMPAT_VERSION) {
+-		icmp_packet.msg_type = PARAMETER_PROBLEM;
+-		icmp_packet.ttl = COMPAT_VERSION;
+-		bat_device_add_packet(device_client, &icmp_packet);
+-		goto out;
+-	}
+-
+-	if (atomic_read(&module_state) != MODULE_ACTIVE)
+-		goto dst_unreach;
+-
+-	spin_lock_irqsave(&orig_hash_lock, flags);
+-	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet.dst));
+-
+-	if (!orig_node)
+-		goto unlock;
+-
+-	if (!orig_node->router)
+-		goto unlock;
+-
+-	batman_if = orig_node->router->if_incoming;
+-	memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+-
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
+-
+-	if (!batman_if)
+-		goto dst_unreach;
+-
+-	if (batman_if->if_status != IF_ACTIVE)
+-		goto dst_unreach;
+-
+-	memcpy(icmp_packet.orig,
+-	       batman_if->net_dev->dev_addr,
+-	       ETH_ALEN);
+-
+-	send_raw_packet((unsigned char *)&icmp_packet,
+-			sizeof(struct icmp_packet),
+-			batman_if, dstaddr);
+-
+-	goto out;
+-
+-unlock:
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
+-dst_unreach:
+-	icmp_packet.msg_type = DESTINATION_UNREACHABLE;
+-	bat_device_add_packet(device_client, &icmp_packet);
+-out:
+-	return len;
+-}
+-
+-unsigned int bat_device_poll(struct file *file, poll_table *wait)
+-{
+-	struct device_client *device_client =
+-		(struct device_client *)file->private_data;
+-
+-	poll_wait(file, &device_client->queue_wait, wait);
+-
+-	if (device_client->queue_len > 0)
+-		return POLLIN | POLLRDNORM;
+-
+-	return 0;
+-}
+-
+-void bat_device_add_packet(struct device_client *device_client,
+-			   struct icmp_packet *icmp_packet)
+-{
+-	struct device_packet *device_packet;
+-	unsigned long flags;
+-
+-	device_packet = kmalloc(sizeof(struct device_packet), GFP_ATOMIC);
+-
+-	if (!device_packet)
+-		return;
+-
+-	INIT_LIST_HEAD(&device_packet->list);
+-	memcpy(&device_packet->icmp_packet, icmp_packet,
+-	       sizeof(struct icmp_packet));
+-
+-	spin_lock_irqsave(&device_client->lock, flags);
+-
+-	/* while waiting for the lock the device_client could have been
+-	 * deleted */
+-	if (!device_client_hash[icmp_packet->uid]) {
+-		spin_unlock_irqrestore(&device_client->lock, flags);
+-		kfree(device_packet);
+-		return;
+-	}
+-
+-	list_add_tail(&device_packet->list, &device_client->queue_list);
+-	device_client->queue_len++;
+-
+-	if (device_client->queue_len > 100) {
+-		device_packet = list_first_entry(&device_client->queue_list,
+-						 struct device_packet, list);
+-
+-		list_del(&device_packet->list);
+-		kfree(device_packet);
+-		device_client->queue_len--;
+-	}
+-
+-	spin_unlock_irqrestore(&device_client->lock, flags);
+-
+-	wake_up(&device_client->queue_wait);
+-}
+-
+-void bat_device_receive_packet(struct icmp_packet *icmp_packet)
+-{
+-	struct device_client *hash = device_client_hash[icmp_packet->uid];
+-
+-	if (hash)
+-		bat_device_add_packet(hash, icmp_packet);
+-}
+diff --git a/drivers/staging/batman-adv/device.h b/drivers/staging/batman-adv/device.h
+deleted file mode 100644
+index eb14b37..0000000
+--- a/drivers/staging/batman-adv/device.h
++++ /dev/null
+@@ -1,36 +0,0 @@
+-/*
+- * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+- * 02110-1301, USA
+- *
+- */
+-
+-#include "types.h"
+-
+-void bat_device_init(void);
+-int bat_device_setup(void);
+-void bat_device_destroy(void);
+-int bat_device_open(struct inode *inode, struct file *file);
+-int bat_device_release(struct inode *inode, struct file *file);
+-ssize_t bat_device_read(struct file *file, char __user *buf, size_t count,
+-			loff_t *ppos);
+-ssize_t bat_device_write(struct file *file, const char __user *buff,
+-			 size_t len, loff_t *off);
+-unsigned int bat_device_poll(struct file *file, poll_table *wait);
+-void bat_device_add_packet(struct device_client *device_client,
+-			   struct icmp_packet *icmp_packet);
+-void bat_device_receive_packet(struct icmp_packet *icmp_packet);
+diff --git a/drivers/staging/batman-adv/icmp_socket.c b/drivers/staging/batman-adv/icmp_socket.c
+new file mode 100644
+index 0000000..f1d790b
+--- /dev/null
++++ b/drivers/staging/batman-adv/icmp_socket.c
+@@ -0,0 +1,328 @@
++/*
++ * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
++ *
++ */
++
++#include <linux/debugfs.h>
++#include <linux/slab.h>
++#include "main.h"
++#include "icmp_socket.h"
++#include "send.h"
++#include "types.h"
++#include "hash.h"
++#include "hard-interface.h"
++
++
++static struct socket_client *socket_client_hash[256];
++
++static void bat_socket_add_packet(struct socket_client *socket_client,
++				  struct icmp_packet *icmp_packet);
++
++void bat_socket_init(void)
++{
++	memset(socket_client_hash, 0, sizeof(socket_client_hash));
++}
++
++static int bat_socket_open(struct inode *inode, struct file *file)
++{
++	unsigned int i;
++	struct socket_client *socket_client;
++
++	socket_client = kmalloc(sizeof(struct socket_client), GFP_KERNEL);
++
++	if (!socket_client)
++		return -ENOMEM;
++
++	for (i = 0; i < ARRAY_SIZE(socket_client_hash); i++) {
++		if (!socket_client_hash[i]) {
++			socket_client_hash[i] = socket_client;
++			break;
++		}
++	}
++
++	if (i == ARRAY_SIZE(socket_client_hash)) {
++		printk(KERN_ERR "batman-adv:"
++		       "Error - can't add another packet client: "
++		       "maximum number of clients reached\n");
++		kfree(socket_client);
++		return -EXFULL;
++	}
++
++	INIT_LIST_HEAD(&socket_client->queue_list);
++	socket_client->queue_len = 0;
++	socket_client->index = i;
++	spin_lock_init(&socket_client->lock);
++	init_waitqueue_head(&socket_client->queue_wait);
++
++	file->private_data = socket_client;
++
++	inc_module_count();
++	return 0;
++}
++
++static int bat_socket_release(struct inode *inode, struct file *file)
++{
++	struct socket_client *socket_client =
++		(struct socket_client *)file->private_data;
++	struct socket_packet *socket_packet;
++	struct list_head *list_pos, *list_pos_tmp;
++	unsigned long flags;
++
++	spin_lock_irqsave(&socket_client->lock, flags);
++
++	/* for all packets in the queue ... */
++	list_for_each_safe(list_pos, list_pos_tmp, &socket_client->queue_list) {
++		socket_packet = list_entry(list_pos,
++					   struct socket_packet, list);
++
++		list_del(list_pos);
++		kfree(socket_packet);
++	}
++
++	socket_client_hash[socket_client->index] = NULL;
++	spin_unlock_irqrestore(&socket_client->lock, flags);
++
++	kfree(socket_client);
++	dec_module_count();
++
++	return 0;
++}
++
++static ssize_t bat_socket_read(struct file *file, char __user *buf,
++			       size_t count, loff_t *ppos)
++{
++	struct socket_client *socket_client =
++		(struct socket_client *)file->private_data;
++	struct socket_packet *socket_packet;
++	int error;
++	unsigned long flags;
++
++	if ((file->f_flags & O_NONBLOCK) && (socket_client->queue_len == 0))
++		return -EAGAIN;
++
++	if ((!buf) || (count < sizeof(struct icmp_packet)))
++		return -EINVAL;
++
++	if (!access_ok(VERIFY_WRITE, buf, count))
++		return -EFAULT;
++
++	error = wait_event_interruptible(socket_client->queue_wait,
++					 socket_client->queue_len);
++
++	if (error)
++		return error;
++
++	spin_lock_irqsave(&socket_client->lock, flags);
++
++	socket_packet = list_first_entry(&socket_client->queue_list,
++					 struct socket_packet, list);
++	list_del(&socket_packet->list);
++	socket_client->queue_len--;
++
++	spin_unlock_irqrestore(&socket_client->lock, flags);
++
++	error = __copy_to_user(buf, &socket_packet->icmp_packet,
++			       sizeof(struct icmp_packet));
++
++	kfree(socket_packet);
++
++	if (error)
++		return error;
++
++	return sizeof(struct icmp_packet);
++}
++
++static ssize_t bat_socket_write(struct file *file, const char __user *buff,
++				size_t len, loff_t *off)
++{
++	struct socket_client *socket_client =
++		(struct socket_client *)file->private_data;
++	struct icmp_packet icmp_packet;
++	struct orig_node *orig_node;
++	struct batman_if *batman_if;
++	uint8_t dstaddr[ETH_ALEN];
++	unsigned long flags;
++
++	if (len < sizeof(struct icmp_packet)) {
++		bat_dbg(DBG_BATMAN, "batman-adv:"
++			"Error - can't send packet from char device: "
++			"invalid packet size\n");
++		return -EINVAL;
++	}
++
++	if (!access_ok(VERIFY_READ, buff, sizeof(struct icmp_packet)))
++		return -EFAULT;
++
++	if (__copy_from_user(&icmp_packet, buff, sizeof(icmp_packet)))
++		return -EFAULT;
++
++	if (icmp_packet.packet_type != BAT_ICMP) {
++		bat_dbg(DBG_BATMAN, "batman-adv:"
++			"Error - can't send packet from char device: "
++			"got bogus packet type (expected: BAT_ICMP)\n");
++		return -EINVAL;
++	}
++
++	if (icmp_packet.msg_type != ECHO_REQUEST) {
++		bat_dbg(DBG_BATMAN, "batman-adv:"
++			"Error - can't send packet from char device: "
++			"got bogus message type (expected: ECHO_REQUEST)\n");
++		return -EINVAL;
++	}
++
++	icmp_packet.uid = socket_client->index;
++
++	if (icmp_packet.version != COMPAT_VERSION) {
++		icmp_packet.msg_type = PARAMETER_PROBLEM;
++		icmp_packet.ttl = COMPAT_VERSION;
++		bat_socket_add_packet(socket_client, &icmp_packet);
++		goto out;
++	}
++
++	if (atomic_read(&module_state) != MODULE_ACTIVE)
++		goto dst_unreach;
++
++	spin_lock_irqsave(&orig_hash_lock, flags);
++	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet.dst));
++
++	if (!orig_node)
++		goto unlock;
++
++	if (!orig_node->router)
++		goto unlock;
++
++	batman_if = orig_node->router->if_incoming;
++	memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
++
++	spin_unlock_irqrestore(&orig_hash_lock, flags);
++
++	if (!batman_if)
++		goto dst_unreach;
++
++	if (batman_if->if_status != IF_ACTIVE)
++		goto dst_unreach;
++
++	memcpy(icmp_packet.orig,
++	       batman_if->net_dev->dev_addr,
++	       ETH_ALEN);
++
++	send_raw_packet((unsigned char *)&icmp_packet,
++			sizeof(struct icmp_packet),
++			batman_if, dstaddr);
++
++	goto out;
++
++unlock:
++	spin_unlock_irqrestore(&orig_hash_lock, flags);
++dst_unreach:
++	icmp_packet.msg_type = DESTINATION_UNREACHABLE;
++	bat_socket_add_packet(socket_client, &icmp_packet);
++out:
++	return len;
++}
++
++static unsigned int bat_socket_poll(struct file *file, poll_table *wait)
++{
++	struct socket_client *socket_client =
++		(struct socket_client *)file->private_data;
++
++	poll_wait(file, &socket_client->queue_wait, wait);
++
++	if (socket_client->queue_len > 0)
++		return POLLIN | POLLRDNORM;
++
++	return 0;
++}
++
++static const struct file_operations fops = {
++	.owner = THIS_MODULE,
++	.open = bat_socket_open,
++	.release = bat_socket_release,
++	.read = bat_socket_read,
++	.write = bat_socket_write,
++	.poll = bat_socket_poll,
++};
++
++int bat_socket_setup(struct bat_priv *bat_priv)
++{
++	struct dentry *d;
++
++	if (!bat_priv->debug_dir)
++		goto err;
++
++	d = debugfs_create_file(ICMP_SOCKET, S_IFREG | S_IWUSR | S_IRUSR,
++				bat_priv->debug_dir, NULL, &fops);
++	if (d)
++		goto err;
++
++	return 0;
++
++err:
++	return 1;
++}
++
++static void bat_socket_add_packet(struct socket_client *socket_client,
++				  struct icmp_packet *icmp_packet)
++{
++	struct socket_packet *socket_packet;
++	unsigned long flags;
++
++	socket_packet = kmalloc(sizeof(struct socket_packet), GFP_ATOMIC);
++
++	if (!socket_packet)
++		return;
++
++	INIT_LIST_HEAD(&socket_packet->list);
++	memcpy(&socket_packet->icmp_packet, icmp_packet,
++	       sizeof(struct icmp_packet));
++
++	spin_lock_irqsave(&socket_client->lock, flags);
++
++	/* while waiting for the lock the socket_client could have been
++	 * deleted */
++	if (!socket_client_hash[icmp_packet->uid]) {
++		spin_unlock_irqrestore(&socket_client->lock, flags);
++		kfree(socket_packet);
++		return;
++	}
++
++	list_add_tail(&socket_packet->list, &socket_client->queue_list);
++	socket_client->queue_len++;
++
++	if (socket_client->queue_len > 100) {
++		socket_packet = list_first_entry(&socket_client->queue_list,
++						 struct socket_packet, list);
++
++		list_del(&socket_packet->list);
++		kfree(socket_packet);
++		socket_client->queue_len--;
++	}
++
++	spin_unlock_irqrestore(&socket_client->lock, flags);
++
++	wake_up(&socket_client->queue_wait);
++}
++
++void bat_socket_receive_packet(struct icmp_packet *icmp_packet)
++{
++	struct socket_client *hash = socket_client_hash[icmp_packet->uid];
++
++	if (hash)
++		bat_socket_add_packet(hash, icmp_packet);
++}
+diff --git a/drivers/staging/batman-adv/icmp_socket.h b/drivers/staging/batman-adv/icmp_socket.h
+new file mode 100644
+index 0000000..5ad73da
+--- /dev/null
++++ b/drivers/staging/batman-adv/icmp_socket.h
+@@ -0,0 +1,28 @@
++/*
++ * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
++ *
++ */
++
++#include "types.h"
++
++#define ICMP_SOCKET "socket"
++
++void bat_socket_init(void);
++int bat_socket_setup(struct bat_priv *bat_priv);
++void bat_socket_receive_packet(struct icmp_packet *icmp_packet);
+diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
+index 74c70d5..1d52018 100644
+--- a/drivers/staging/batman-adv/main.c
++++ b/drivers/staging/batman-adv/main.c
+@@ -21,11 +21,12 @@
+ 
+ #include "main.h"
+ #include "bat_sysfs.h"
++#include "bat_debugfs.h"
+ #include "routing.h"
+ #include "send.h"
+ #include "originator.h"
+ #include "soft-interface.h"
+-#include "device.h"
++#include "icmp_socket.h"
+ #include "translation-table.h"
+ #include "hard-interface.h"
+ #include "types.h"
+@@ -92,7 +93,8 @@ int init_module(void)
+ 	if (!bat_event_workqueue)
+ 		return -ENOMEM;
+ 
+-	bat_device_init();
++	bat_socket_init();
++	debugfs_init();
+ 
+ 	/* initialize layer 2 interface */
+ 	soft_device = alloc_netdev(sizeof(struct bat_priv) , "bat%d",
+@@ -117,6 +119,11 @@ int init_module(void)
+ 	if (retval < 0)
+ 		goto unreg_soft_device;
+ 
++	retval = debugfs_add_meshif(soft_device);
++
++	if (retval < 0)
++		goto unreg_sysfs;
++
+ 	register_netdevice_notifier(&hard_if_notifier);
+ 	dev_add_pack(&batman_adv_packet_type);
+ 
+@@ -126,6 +133,8 @@ int init_module(void)
+ 
+ 	return 0;
+ 
++unreg_sysfs:
++	sysfs_del_meshif(soft_device);
+ unreg_soft_device:
+ 	unregister_netdev(soft_device);
+ 	soft_device = NULL;
+@@ -146,6 +155,7 @@ void cleanup_module(void)
+ 	hardif_remove_interfaces();
+ 
+ 	if (soft_device) {
++		debugfs_del_meshif(soft_device);
+ 		sysfs_del_meshif(soft_device);
+ 		unregister_netdev(soft_device);
+ 		soft_device = NULL;
+@@ -157,7 +167,7 @@ void cleanup_module(void)
+ 	bat_event_workqueue = NULL;
+ }
+ 
+-/* activates the module, creates bat device, starts timer ... */
++/* activates the module, starts timer ... */
+ void activate_module(void)
+ {
+ 	if (originator_init() < 1)
+@@ -171,9 +181,6 @@ void activate_module(void)
+ 
+ 	hna_local_add(soft_device->dev_addr);
+ 
+-	if (bat_device_setup() < 1)
+-		goto end;
+-
+ 	if (vis_init() < 1)
+ 		goto err;
+ 
+@@ -208,7 +215,7 @@ void deactivate_module(void)
+ 	hna_global_free();
+ 
+ 	synchronize_net();
+-	bat_device_destroy();
++	debugfs_destroy();
+ 
+ 	synchronize_rcu();
+ 	atomic_set(&module_state, MODULE_INACTIVE);
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index 066dc8b..d4bdca9 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -25,7 +25,7 @@
+ #include "hash.h"
+ #include "soft-interface.h"
+ #include "hard-interface.h"
+-#include "device.h"
++#include "icmp_socket.h"
+ #include "translation-table.h"
+ #include "originator.h"
+ #include "types.h"
+@@ -668,7 +668,7 @@ static int recv_my_icmp_packet(struct sk_buff *skb)
+ 
+ 	/* add data to device queue */
+ 	if (icmp_packet->msg_type != ECHO_REQUEST) {
+-		bat_device_receive_packet(icmp_packet);
++		bat_socket_receive_packet(icmp_packet);
+ 		return NET_RX_DROP;
+ 	}
+ 
+diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
+index 86007c7..751cd63 100644
+--- a/drivers/staging/batman-adv/types.h
++++ b/drivers/staging/batman-adv/types.h
+@@ -106,9 +106,10 @@ struct bat_priv {
+ 	char num_ifaces;
+ 	struct batman_if *primary_if;
+ 	struct kobject *mesh_obj;
++	struct dentry *debug_dir;
+ };
+ 
+-struct device_client {
++struct socket_client {
+ 	struct list_head queue_list;
+ 	unsigned int queue_len;
+ 	unsigned char index;
+@@ -116,7 +117,7 @@ struct device_client {
+ 	wait_queue_head_t queue_wait;
+ };
+ 
+-struct device_packet {
++struct socket_packet {
+ 	struct list_head list;
+ 	struct icmp_packet icmp_packet;
+ };
 -- 
 1.7.1
 
