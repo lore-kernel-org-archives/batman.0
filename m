@@ -1,12 +1,14 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 27 May 2010 17:07:00 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100527150700.GA29869@lunn.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 27 May 2010 23:30:15 +0800
 References: <20100527162350.75bef379@rechenknecht>
+	<20100527150700.GA29869@lunn.ch>
+In-Reply-To: <20100527150700.GA29869@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100527162350.75bef379@rechenknecht>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201005272330.15388.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Layer 2 fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,19 +23,14 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thu, May 27, 2010 at 04:23:50PM +0200, Andreas Langer wrote:
-> Hello,
-> i looked into the problem of fragmenting packets on layer2 to solve the mtu issue. I found a
-> unforeseen problem : oversized packets will be dropped by the bridge module ( if bat0 is in a
-> bridge ). I think the reason can be found here net/bridge/br_forward.c on line 44
-> 
-> 43         /* drop mtu oversized packets except gso */
-> 44         if (packet_length(skb) > skb->dev->mtu && !skb_is_gso(skb))
-> 45                 kfree_skb(skb);
+On Thursday 27 May 2010 23:07:00 Andrew Lunn wrote:
+> I don't quite understand the problem. If you have implemented
+> fragmentation, you will naturally increase the MTU on bat0 so that it
+> is the standard for Ethernet. So this statement will not trigger.
 
+AFAIK batman-adv determines the minimal MTU automatically, so that you can't 
+simply increase the mtu on bat0. But you are right - if the fragmentation is 
+enabled batman-adv could allow higher mtu values.
 
-I don't quite understand the problem. If you have implemented
-fragmentation, you will naturally increase the MTU on bat0 so that it
-is the standard for Ethernet. So this statement will not trigger.
-
-   Andrew
+Cheers,
+Marek
