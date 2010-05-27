@@ -1,14 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 27 May 2010 17:42:36 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100527154236.GA26610@lunn.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 28 May 2010 00:12:40 +0800
 References: <20100527162350.75bef379@rechenknecht>
-	<20100527150700.GA29869@lunn.ch>
 	<201005272330.15388.lindner_marek@yahoo.de>
+	<20100527154236.GA26610@lunn.ch>
+In-Reply-To: <20100527154236.GA26610@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201005272330.15388.lindner_marek@yahoo.de>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201005280012.41540.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Layer 2 fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,26 +24,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thu, May 27, 2010 at 11:30:15PM +0800, Marek Lindner wrote:
-> On Thursday 27 May 2010 23:07:00 Andrew Lunn wrote:
-> > I don't quite understand the problem. If you have implemented
-> > fragmentation, you will naturally increase the MTU on bat0 so that it
-> > is the standard for Ethernet. So this statement will not trigger.
+On Thursday 27 May 2010 23:42:36 Andrew Lunn wrote:
+> We discussed this a while ago. Actually fragmentation should be
+> considered the last resort. It if first better to try header
+> compression, to make the frame small enough that it can be sent
+> without fragmentation. I think you had a quick look at using the PPP
+> compression code, but i guess it did not go any further.
 > 
-> AFAIK batman-adv determines the minimal MTU automatically, so that you can't 
-> simply increase the mtu on bat0. But you are right - if the fragmentation is 
-> enabled batman-adv could allow higher mtu values.
+> We only need to fragment when compression is not possible.
 
-We discussed this a while ago. Actually fragmentation should be
-considered the last resort. It if first better to try header
-compression, to make the frame small enough that it can be sent
-without fragmentation. I think you had a quick look at using the PPP
-compression code, but i guess it did not go any further.
+I read about the compression and I still think it is a good idea. 
+Unfortunately, it requires deep packet inspection and would only work for 99% 
+of the IPv4 traffic. Besides, both solutions do not exclude each other.
 
-We only need to fragment when compression is not possible. 
-
-In either case, we should remove the automatic MTU calculation, and
-just offer the default for Ethernet. Let the compression and
-fragmentation code solve any differences.
-
-	      Andrew
+Regards,
+Marek
