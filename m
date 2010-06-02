@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu,  3 Jun 2010 00:58:35 +0200
-Message-Id: <1275519516-21394-2-git-send-email-sven.eckelmann@gmx.de>
+Date: Thu,  3 Jun 2010 00:58:36 +0200
+Message-Id: <1275519516-21394-3-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1275519516-21394-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1275519516-21394-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Correct gw_speed down bit
-	mask
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-experimental: Correct gw_speed
+	down bit mask
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,23 +25,24 @@ speed.
 
 Reported-By: Bill Meier <wmeier@newsguy.com>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+Cc: Axel Neumann <neumann@cgws.de>
 ---
- batman-adv-kernelland/gateway_common.c |    2 +-
+ batman-experimental/posix/tunnel.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/batman-adv-kernelland/gateway_common.c b/batman-adv-kernelland/gateway_common.c
-index d542306..270cf3d 100644
---- a/batman-adv-kernelland/gateway_common.c
-+++ b/batman-adv-kernelland/gateway_common.c
-@@ -63,7 +63,7 @@ static void kbit_to_gw_srv_class(int down, int up, long *gw_srv_class)
- void gw_srv_class_to_kbit(uint8_t gw_srv_class, int *down, int *up)
- {
- 	char sbit = (gw_srv_class & 0x80) >> 7;
--	char dpart = (gw_srv_class & 0x7C) >> 3;
-+	char dpart = (gw_srv_class & 0x78) >> 3;
- 	char upart = (gw_srv_class & 0x07);
+diff --git a/batman-experimental/posix/tunnel.c b/batman-experimental/posix/tunnel.c
+index 8911dcc..c1aba5c 100644
+--- a/batman-experimental/posix/tunnel.c
++++ b/batman-experimental/posix/tunnel.c
+@@ -466,7 +466,7 @@ static int8_t set_tun_addr( int32_t fd, uint32_t tun_addr, char *tun_dev ) {
+ static void get_gw_speeds( unsigned char class, int *down, int *up ) {
  
- 	if (!gw_srv_class) {
+ 	char sbit    = (class&0x80)>>7;
+-	char dpart   = (class&0x7C)>>3;
++	char dpart   = (class&0x78)>>3;
+ 	char upart   = (class&0x07);
+ 
+ 	*down= 32*(sbit+2)*(1<<dpart);
 -- 
 1.7.1
 
