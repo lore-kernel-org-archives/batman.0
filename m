@@ -1,14 +1,14 @@
-Return-Path: <andrew@lunn.ch>
-Date: Wed, 2 Jun 2010 07:31:44 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100602053144.GB31330@lunn.ch>
-References: <4C058626.4060108@interia.pl>
+Return-Path: <post@tiwoc.de>
+Message-ID: <4C061EE4.1040601@tiwoc.de>
+Date: Wed, 02 Jun 2010 11:05:40 +0200
+From: Daniel Seither <post@tiwoc.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+References: <4C058626.4060108@interia.pl>
 In-Reply-To: <4C058626.4060108@interia.pl>
-Subject: Re: [B.A.T.M.A.N.] building testbed for batman-adv and expected
- performance/throughput
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] building testbed for batman-adv and
+	expected	performance/throughput
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,47 +20,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Krzysztof Urbas <krzysu@interia.pl>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, Jun 02, 2010 at 12:13:58AM +0200, Krzysztof Urbas wrote:
-> Hello,
-> I am writing my master thesis about performance of BATMAN routing
-> protocol and so I build a simple testbed consisting of 4 nodes and
-> configured them to run batman-adv. But results of my tests are quite
-> strange and I don't really know what should I expected.
+Hello!
 
-Hi Krysztof
+Am 02.06.2010 00:13, schrieb Krzysztof Urbas:
+> So my questions are:
+> 1. Do you have any suggestions how to build multi-hop testbed in
+> laboratory environment (in one room)?
 
-What is your definition of "performance of BATMAN routing protocol"?
-What are you interested in?
+A multi-hop testbed in a single room will probably only work if you use
+attenuators between your device and the antenna. This setup was used in
+the following paper:
+http://wirelessafrica.meraka.org.za/wiki/images/9/98/Batman_ifip.pdf
 
-Building a testbed using real hardware is actually very hard. There is
-so much radio pollution in the 2.4GHz band you can never have
-reproducibility and your bandwidths measurements are mostly
-meaningless. The question is, do you want real world measurements,
-where pollution is normal, or do you want ideal world measurements?
+If your testbed should be more realistic, you really need to distribute
+your devices over a larger area, but with only 4 nodes, interesting
+multi-hop connections will be rather hard to achieve. If there's only
+one possible path for the signal, a routing protocol cannot show how
+reliably it choses a stable path.
 
-A few suggestions:
+> 2. How to make testing proces more automatic (some kind of central
+> server to run tests and collect data)?
 
-Move to 5GHz. There is less pollution, but still some, so your
-reproducibility will improve.
+Use Ethernet to connect your devices so you can manage your experiments
+out of band. With pssh or cssh, the same command can be run on multiple
+nodes at the same time (if you need that). With pssh, you can even
+push/retrieve data to/from multiple nodes.
 
-Throw away the antennas and use coax cables, splitters and
-attenuators. By moving to a wired system, you should be able to block
-much of the interference from pollution. It will not be perfect, since
-the devices themselves are generally not very well shielded, but it
-will make it better. It also gives you better control of the mesh,
-since you can determine the attenuation between nodes.
+* http://code.google.com/p/parallel-ssh/
+* http://sourceforge.net/apps/mediawiki/clusterssh/index.php?title=Main_Page
 
-To make your test setup easier to use, add more linux boxes. Each
-wireless node should be connected to a linux box as source/sink of the
-traffic. Using a second interface network these boxes together on a
-separate network. You can then manage these boxes remotely using the
-management network, performing tests over the mesh network.
+> 5. Do you have any other
+> suggestions/observations/conclusions/example_data from your tests?
 
-Throw away the hardware and use a software only solution. People have
-used qemu to emulate nodes and bridged them together. Take a look at:
+TCP over lossy (wireless!) networks is a big problem since TCP's
+congestion control algorithm interprets packet loss as congestion, which
+is great for wired networks but in most cases wrong for wireless. This
+can seriously impair throughput.
 
-http://www.open-mesh.org/wiki/Emulation
+A second factor for low througput: A station that forwards data
+communicates with all of its neighbors on the same channel which means
+that while sending, it cannot receive data at the same time. This can
+impact performance quite seriously.
 
-	Andrew
+There's literature (try Google Scholar) on both problems.
+
+Regards,
+Daniel
