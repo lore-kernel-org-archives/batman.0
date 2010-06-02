@@ -1,12 +1,8 @@
-Return-Path: <joe@perches.com>
-From: Joe Perches <joe@perches.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 02 Jun 2010 13:10:18 -0700
-Message-ID: <1275509418.23599.42.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH] drivers/staging/batman-adv: Convert MAC_FMT
-	to %pM
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Thu,  3 Jun 2010 00:58:34 +0200
+Message-Id: <1275519516-21394-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman: Correct gw_speed down bit mask
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,74 +14,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Andrew Lunn <andrew@lunn.ch>, Greg Kroah-Hartman <gregkh@suse.de>
-Cc: devel <devel@driverdev.osuosl.org>, b.a.t.m.a.n@lists.open-mesh.net, linux-kernel@vger.kernel.org
+To: b.a.t.m.a.n@open-mesh.net
 
-Remove the last uses of MAC_FMT
+We want to get bits .OOOO... and not as the mask would suggest .OOOOO..
+when we decode the encoded bits for the download part of the gateway
+speed.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Reported-By: Bill Meier <wmeier@newsguy.com>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/main.c              |    3 +-
- drivers/staging/batman-adv/translation-table.c |   25 ++++-------------------
- 2 files changed, 6 insertions(+), 22 deletions(-)
+ batman/batman.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
-index 74c70d5..72851cd 100644
---- a/drivers/staging/batman-adv/main.c
-+++ b/drivers/staging/batman-adv/main.c
-@@ -226,8 +226,7 @@ void dec_module_count(void)
- 
- int addr_to_string(char *buff, uint8_t *addr)
+diff --git a/batman/batman.c b/batman/batman.c
+index 4374af5..ab689b2 100644
+--- a/batman/batman.c
++++ b/batman/batman.c
+@@ -482,7 +482,7 @@ void update_gw_list(struct orig_node *orig_node, uint8_t new_gwflags, uint16_t g
+ void get_gw_speeds(unsigned char gw_class, int *down, int *up)
  {
--	return sprintf(buff, MAC_FMT,
--		       addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-+	return sprintf(buff, "%pM", addr);
- }
+ 	char sbit = (gw_class & 0x80) >> 7;
+-	char dpart = (gw_class & 0x7C) >> 3;
++	char dpart = (gw_class & 0x78) >> 3;
+ 	char upart = (gw_class & 0x07);
  
- /* returns 1 if they are the same originator */
-diff --git a/drivers/staging/batman-adv/translation-table.c b/drivers/staging/batman-adv/translation-table.c
-index e01ff21..63d0967 100644
---- a/drivers/staging/batman-adv/translation-table.c
-+++ b/drivers/staging/batman-adv/translation-table.c
-@@ -202,13 +202,8 @@ int hna_local_fill_buffer_text(struct net_device *net_dev, char *buff,
- 		hna_local_entry = hashit.bucket->data;
- 
- 		bytes_written += snprintf(buff + bytes_written, 22,
--					  " * " MAC_FMT "\n",
--					  hna_local_entry->addr[0],
--					  hna_local_entry->addr[1],
--					  hna_local_entry->addr[2],
--					  hna_local_entry->addr[3],
--					  hna_local_entry->addr[4],
--					  hna_local_entry->addr[5]);
-+					  " * %pM\n",
-+					  hna_local_entry->addr);
- 	}
- 
- 	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
-@@ -420,19 +415,9 @@ int hna_global_fill_buffer_text(struct net_device *net_dev, char *buff,
- 		hna_global_entry = hashit.bucket->data;
- 
- 		bytes_written += snprintf(buff + bytes_written, 44,
--					  " * " MAC_FMT " via " MAC_FMT "\n",
--					  hna_global_entry->addr[0],
--					  hna_global_entry->addr[1],
--					  hna_global_entry->addr[2],
--					  hna_global_entry->addr[3],
--					  hna_global_entry->addr[4],
--					  hna_global_entry->addr[5],
--					  hna_global_entry->orig_node->orig[0],
--					  hna_global_entry->orig_node->orig[1],
--					  hna_global_entry->orig_node->orig[2],
--					  hna_global_entry->orig_node->orig[3],
--					  hna_global_entry->orig_node->orig[4],
--					  hna_global_entry->orig_node->orig[5]);
-+					  " * %pM via %pM\n",
-+					  hna_global_entry->addr,
-+					  hna_global_entry->orig_node->orig);
- 	}
- 
- 	spin_unlock_irqrestore(&hna_global_hash_lock, flags);
-
-
+ 	*down = 32 * (sbit + 2) * (1 << dpart);
+-- 
+1.7.1
 
