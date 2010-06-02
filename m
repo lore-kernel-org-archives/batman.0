@@ -1,8 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu,  3 Jun 2010 00:58:34 +0200
-Message-Id: <1275519516-21394-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman: Correct gw_speed down bit mask
+Date: Thu,  3 Jun 2010 00:58:35 +0200
+Message-Id: <1275519516-21394-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1275519516-21394-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1275519516-21394-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Correct gw_speed down bit
+	mask
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,22 +26,22 @@ speed.
 Reported-By: Bill Meier <wmeier@newsguy.com>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman/batman.c |    2 +-
+ batman-adv-kernelland/gateway_common.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/batman/batman.c b/batman/batman.c
-index 4374af5..ab689b2 100644
---- a/batman/batman.c
-+++ b/batman/batman.c
-@@ -482,7 +482,7 @@ void update_gw_list(struct orig_node *orig_node, uint8_t new_gwflags, uint16_t g
- void get_gw_speeds(unsigned char gw_class, int *down, int *up)
+diff --git a/batman-adv-kernelland/gateway_common.c b/batman-adv-kernelland/gateway_common.c
+index d542306..270cf3d 100644
+--- a/batman-adv-kernelland/gateway_common.c
++++ b/batman-adv-kernelland/gateway_common.c
+@@ -63,7 +63,7 @@ static void kbit_to_gw_srv_class(int down, int up, long *gw_srv_class)
+ void gw_srv_class_to_kbit(uint8_t gw_srv_class, int *down, int *up)
  {
- 	char sbit = (gw_class & 0x80) >> 7;
--	char dpart = (gw_class & 0x7C) >> 3;
-+	char dpart = (gw_class & 0x78) >> 3;
- 	char upart = (gw_class & 0x07);
+ 	char sbit = (gw_srv_class & 0x80) >> 7;
+-	char dpart = (gw_srv_class & 0x7C) >> 3;
++	char dpart = (gw_srv_class & 0x78) >> 3;
+ 	char upart = (gw_srv_class & 0x07);
  
- 	*down = 32 * (sbit + 2) * (1 << dpart);
+ 	if (!gw_srv_class) {
 -- 
 1.7.1
 
