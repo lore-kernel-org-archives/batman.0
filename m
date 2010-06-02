@@ -1,15 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 3 Jun 2010 01:23:11 +0200
+Return-Path: <joe@perches.com>
+From: Joe Perches <joe@perches.com>
+In-Reply-To: <201006030123.25027.sven.eckelmann@gmx.de>
 References: <1275509418.23599.42.camel@Joe-Laptop.home>
-In-Reply-To: <1275509418.23599.42.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2454656.PmTjFHm0mn";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
+	<201006030123.25027.sven.eckelmann@gmx.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 02 Jun 2010 16:32:02 -0700
+Message-ID: <1275521522.23599.88.camel@Joe-Laptop.home>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <201006030123.25027.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] drivers/staging/batman-adv: Convert
-	MAC_FMT to %pM
+ MAC_FMT to %pM
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,81 +21,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: devel <devel@driverdev.osuosl.org>, b.a.t.m.a.n@lists.open-mesh.net, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Joe Perches <joe@perches.com>, Marek Lindner <lindner_marek@yahoo.de>
+To: Sven Eckelmann <sven.eckelmann@gmx.de>
+Cc: devel <devel@driverdev.osuosl.org>, Greg Kroah-Hartman <gregkh@suse.de>, b.a.t.m.a.n@lists.open-mesh.net, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart2454656.PmTjFHm0mn
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2010-06-03 at 01:23 +0200, Sven Eckelmann wrote:
+> You've also changed the output. So you may partly broke batctl too (have to 
+> check that first).
 
-Joe Perches wrote:
-> Remove the last uses of MAC_FMT
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/staging/batman-adv/main.c              |    3 +-
->  drivers/staging/batman-adv/translation-table.c |   25
-> ++++------------------- 2 files changed, 6 insertions(+), 22 deletions(-)
->=20
-> diff --git a/drivers/staging/batman-adv/main.c
-> b/drivers/staging/batman-adv/main.c index 74c70d5..72851cd 100644
-> --- a/drivers/staging/batman-adv/main.c
-> +++ b/drivers/staging/batman-adv/main.c
-> @@ -226,8 +226,7 @@ void dec_module_count(void)
->=20
->  int addr_to_string(char *buff, uint8_t *addr)
->  {
-> -	return sprintf(buff, MAC_FMT,
-> -		       addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-> +	return sprintf(buff, "%pM", addr);
->  }
-[...]
+There was no change in output.
+MAC_FMT output is the same as %pM
 
-Thanks for your patch.
+cheers, Joe
 
-We must currently support older kernels which doesn't support %pM. Thats wh=
-y=20
-we have an extra wrapper for printk in the out-of-kernel module. The same=20
-would have to be done for sprintf as well. Most of the developers are=20
-currently attending the Wireless Battle Mesh v3 - so the processing of that=
-=20
-patch is delayed a little bit.
-
-The same problem arises with your patch "Use (pr|netdev)_<level> macro help=
-er"=20
-(which seems to be added in 2.6.34). But I think we could add a wrapper for=
-=20
-older kernels easily - but as mentioned before this is probably postponed=20
-until next week or so.
-
-You've also changed the output. So you may partly broke batctl too (have to=
-=20
-check that first).
-
-Best regards,
-	Sven
-
---nextPart2454656.PmTjFHm0mn
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMBufgAAoJEF2HCgfBJntGzcQP/RLrsw4qFAPlm/k4awUVVu5j
-mJe43dBmEwxpdU8tp1RwfUSBCn+EKLcSx74IRnZVi2JY5cj/hLS3DqPZ2gjEJEOB
-N/7zWz8NCvugaRIkIFGkgfX4lRV+mbWoqxusYaFSQ8ngkM/n1kLNC/gjsz/o8cCE
-EM8vCZTWTplCiE8e48CHVO7TwAGhCho33SPBx6jwkhtVpvGRLYrscMxV57/Oz8xf
-I+/h/3S2IImQbNvL+HzV0DgTbtZIjD6riEVE2XOktekq4j2m+FuTDEZT3Ksg+Wxu
-LMpbr3ZNT9g/CE1mbsErTeYVziWcY72y7yxQcRDdhMvAuew70nQY9PrXy1B+YYix
-zNuWI2AChDDv0ar5QVNiiOfJV4uHbKjGjRmkLepes0Ev2hxQnyXEUksjWCZuIEmw
-mGqFfodfCysNmnBXYK5l9GEjjGkU7zMrIyWD+zNI83MSSMPZVx53kbEvFKIYvbIB
-ib2HDAY8ek0O8mApL0pb/qhekQLIQUwTcHqvbTgIwr47lWagzM9nxaxPtONGQg8b
-Z1TBETh6+xJxF8s/W2Mv01jn2d2X5Yg2QumhhYVwgLhE/bx38QuOfGeM5+v9AqYv
-58p9PvMOqtoGOSlrpuSL48piaXhc2S5DktThLzpFFvr2F50TuIjax0+j0tMnlWs1
-c+TrrlLd5bygFdwm98bj
-=ZY5k
------END PGP SIGNATURE-----
-
---nextPart2454656.PmTjFHm0mn--
