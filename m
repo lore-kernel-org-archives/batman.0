@@ -1,10 +1,14 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu,  3 Jun 2010 16:44:05 +0200
-Message-Id: <1275576246-29381-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1275575978-29121-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1275575978-29121-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH-maint] drivers/staging/batman-adv: Convert
+Date: Thu, 3 Jun 2010 15:58:29 +0200
+References: <1275509418.23599.42.camel@Joe-Laptop.home>
+In-Reply-To: <1275509418.23599.42.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart8129949.8OlROn3zHO";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201006031558.36936.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] drivers/staging/batman-adv: Convert
 	MAC_FMT to %pM
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -17,170 +21,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
-Cc: Joe Perches <joe@perches.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: devel <devel@driverdev.osuosl.org>, b.a.t.m.a.n@lists.open-mesh.net, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Joe Perches <joe@perches.com>, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Joe Perches <joe@perches.com>
+--nextPart8129949.8OlROn3zHO
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Remove the last uses of MAC_FMT
+Joe Perches wrote:
+> Remove the last uses of MAC_FMT
+>=20
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/staging/batman-adv/main.c              |    3 +-
+>  drivers/staging/batman-adv/translation-table.c |   25
+> ++++------------------- 2 files changed, 6 insertions(+), 22 deletions(-)
 
-Signed-off-by: Joe Perches <joe@perches.com>
-[sven.eckelmann@gmx.de: Adapted for current batman-adv version]
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- Marek, please check with your 2.6.21 nodes if it works (just did some quick
- tests).
+Just noticed that this patch collides with another one which is waiting in=
+=20
+GregKH's queue. I will try to rewrite it on top of that. I hope that this i=
+s=20
+ok for you.
 
- bat_printk.c        |   50 ++++++++++++++++++++++++++++++++++++++++++++++++++
- compat.h            |   12 ++++++------
- main.c              |    3 +--
- translation-table.c |   24 ++++--------------------
- 4 files changed, 61 insertions(+), 28 deletions(-)
+Best regards,
+	Sven
 
-diff --git a/bat_printk.c b/bat_printk.c
-index 55c351a..4a02d7e 100644
---- a/bat_printk.c
-+++ b/bat_printk.c
-@@ -859,3 +859,53 @@ asmlinkage int bat_printk(const char *fmt, ...)
- 
- 	return printk("%s", buf);
- }
-+
-+/**
-+ * sprintf - Format a string and place it in a buffer
-+ * @buf: The buffer to place the result into
-+ * @fmt: The format string to use
-+ * @...: Arguments for the format string
-+ *
-+ * The function returns the number of characters written
-+ * into @buf. Use snprintf() or scnprintf() in order to avoid
-+ * buffer overflows.
-+ *
-+ * See the vsnprintf() documentation for format string extensions over C99.
-+ */
-+int bat_sprintf(char *buf, const char *fmt, ...)
-+{
-+	va_list args;
-+	int i;
-+
-+	va_start(args, fmt);
-+	i = bat_vsnprintf(buf, INT_MAX, fmt, args);
-+	va_end(args);
-+
-+	return i;
-+}
-+
-+/**
-+ * snprintf - Format a string and place it in a buffer
-+ * @buf: The buffer to place the result into
-+ * @size: The size of the buffer, including the trailing null space
-+ * @fmt: The format string to use
-+ * @...: Arguments for the format string
-+ *
-+ * The return value is the number of characters which would be
-+ * generated for the given input, excluding the trailing null,
-+ * as per ISO C99.  If the return is greater than or equal to
-+ * @size, the resulting string is truncated.
-+ *
-+ * See the vsnprintf() documentation for format string extensions over C99.
-+ */
-+int bat_snprintf(char *buf, size_t size, const char *fmt, ...)
-+{
-+	va_list args;
-+	int i;
-+
-+	va_start(args, fmt);
-+	i = bat_vsnprintf(buf, size, fmt, args);
-+	va_end(args);
-+
-+	return i;
-+}
-diff --git a/compat.h b/compat.h
-index ae967aa..144e25a 100644
---- a/compat.h
-+++ b/compat.h
-@@ -70,12 +70,6 @@ static inline int skb_clone_writable(struct sk_buff *skb, unsigned int len)
- 
- #endif /* < KERNEL_VERSION(2, 6, 23) */
- 
--#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 24)
--
--#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
--
--#endif /* < KERNEL_VERSION(2, 6, 24) */
--
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
- 
- #define strict_strtoul(cp, base, res) \
-@@ -231,6 +225,12 @@ next_sibling:
- asmlinkage int bat_printk(const char *fmt, ...);
- #define printk bat_printk
- 
-+int bat_sprintf(char *buf, const char *fmt, ...);
-+#define sprintf bat_sprintf
-+
-+int bat_snprintf(char *buf, size_t size, const char *fmt, ...);
-+#define snprintf bat_snprintf
-+
- static inline struct net_device_stats *dev_get_stats(struct net_device *dev)
- {
- 	if (dev->get_stats)
-diff --git a/main.c b/main.c
-index d9c6ec7..05744e7 100644
---- a/main.c
-+++ b/main.c
-@@ -231,8 +231,7 @@ void dec_module_count(void)
- 
- int addr_to_string(char *buff, uint8_t *addr)
- {
--	return sprintf(buff, MAC_FMT,
--		       addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-+	return sprintf(buff, "%pM", addr);
- }
- 
- /* returns 1 if they are the same originator */
-diff --git a/translation-table.c b/translation-table.c
-index 009789e..8edc175 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -200,13 +200,8 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
- 	while (hash_iterate(hna_local_hash, &hashit)) {
- 		hna_local_entry = hashit.bucket->data;
- 
--		pos += snprintf(buff + pos, 22, " * " MAC_FMT "\n",
--				hna_local_entry->addr[0],
--				hna_local_entry->addr[1],
--				hna_local_entry->addr[2],
--				hna_local_entry->addr[3],
--				hna_local_entry->addr[4],
--				hna_local_entry->addr[5]);
-+		pos += snprintf(buff + pos, 22, " * %pM\n",
-+				hna_local_entry->addr);
- 	}
- 
- 	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
-@@ -418,19 +413,8 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
- 		hna_global_entry = hashit.bucket->data;
- 
- 		pos += snprintf(buff + pos, 44,
--				" * " MAC_FMT " via " MAC_FMT "\n",
--				hna_global_entry->addr[0],
--				hna_global_entry->addr[1],
--				hna_global_entry->addr[2],
--				hna_global_entry->addr[3],
--				hna_global_entry->addr[4],
--				hna_global_entry->addr[5],
--				hna_global_entry->orig_node->orig[0],
--				hna_global_entry->orig_node->orig[1],
--				hna_global_entry->orig_node->orig[2],
--				hna_global_entry->orig_node->orig[3],
--				hna_global_entry->orig_node->orig[4],
--				hna_global_entry->orig_node->orig[5]);
-+				" * %pM via %pM\n", hna_global_entry->addr,
-+				hna_global_entry->orig_node->orig);
- 	}
- 
- 	spin_unlock_irqrestore(&hna_global_hash_lock, flags);
--- 
-1.7.1
+--nextPart8129949.8OlROn3zHO
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMB7UGAAoJEF2HCgfBJntG5uEQAL4dRnjbahN6EinvUsOyp8so
+elB7rxfPCt7z1gxUXKpuoYiSHTQYUurjsWJFuJViXkdOZ+0nnmkMNsplUPCB8t/z
+mWv/soU9PiNijUgvMTEiK1+PTkIIS0xtGssGl323kkVDYt+3Ru3fgDPNVs+Tm6CC
++fFz2p1qp/Te6D/7CBsX66GDUI73Fd0sQWmD0+NSAP403mdgCulWS8nN/oiHVpdr
+rwNHGvCQZlPXaGkIcCl9C9PIKeIBAtkhey04IMS+C1c6sI5Es9Usr1y0Pl+MA4to
+EI93zRUcmhNyslknRddLhssa4PRAwmgNcprBvP1vbk3NYQdLe9VppUCrgigzujX4
+JwK2y7crLXQc89G0KipFBPbWkHVyoInIL5J07nzikHjmnaeJEsX4V/6AgIwxwbMt
+r6lDfC4aHXT6LeJQx7RVIUkRrPLAEwOvZsbjom6/5Sc4CAkaA0aAUKy0VXSsjXdO
+c+1xkc5JVxYlzoKi+FdohnsQxg+/ZN/vwAYmd0J6gbhYTkszbze69K+iNXs5bYHn
+6rZX4NFvnEAtLOUJXD00RDq6l31ZdwlAVmExAdZ8z43qiB41vRgpCnEwZnEoREU+
++ezUtYnB1FVx9+QVswHJ0oHNqityNCpq9b/aqdKncX38ilOUkRC0LvBfeteBttev
+xMa54O8pfsfWsuYEohQu
+=FALl
+-----END PGP SIGNATURE-----
+
+--nextPart8129949.8OlROn3zHO--
