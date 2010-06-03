@@ -1,16 +1,17 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 3 Jun 2010 16:51:07 +0200
+Return-Path: <gregkh@suse.de>
+Date: Thu, 3 Jun 2010 07:45:04 -0700
+From: Greg KH <gregkh@suse.de>
+Message-ID: <20100603144504.GC17831@suse.de>
 References: <1275509418.23599.42.camel@Joe-Laptop.home>
-	<1275575978-29121-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1275575978-29121-1-git-send-email-sven.eckelmann@gmx.de>
+	<201006030156.42370.sven.eckelmann@gmx.de>
+	<1275524401.23599.116.camel@Joe-Laptop.home>
+	<201006031715.54584.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart106327641.mWXdBS3l1x";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201006031651.08729.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH-trunk] drivers/staging/batman-adv:
-	Convert MAC_FMT to %pM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201006031715.54584.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] drivers/staging/batman-adv: Convert
+ MAC_FMT to %pM
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,49 +23,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: Marek Lindner <lindner_marek@yahoo.de>
+Cc: devel <devel@driverdev.osuosl.org>, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Joe Perches <joe@perches.com>
 
---nextPart106327641.mWXdBS3l1x
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Thu, Jun 03, 2010 at 05:15:53PM +0800, Marek Lindner wrote:
+> On Thursday 03 June 2010 08:20:01 Joe Perches wrote:
+> > The patch changes the prefix from "batman-adv:" to "batman_adv: "
+> > so yes, it would break as-is.
+> > 
+> > I think the concept is broken though, I believe dmesg output
+> > specifically is not guaranteed to remain stable, and batman should
+> > use some other, perhaps private, logger based on ethtool events.
+> 
+> I think changing a dash to an underscore is not such a big deal (I did not 
+> check the rest of the patch yet). But I'm interested to hear more about your 
+> "private logger" idea because the current solution is far from being perfect. 
+> As we have to debug the routing protocol every now and then it would be very 
+> helpful to get direct access to some internal logging facility. In fact, that 
+> existed before (inside of /proc) but was removed to be more compliant with the 
+> linux kernel and the existing log facilities.
 
-Sven Eckelmann wrote:
-> From: Joe Perches <joe@perches.com>
->=20
-> Remove the last uses of MAC_FMT
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
-> [sven.eckelmann@gmx.de: Adapted for current batman-adv version]
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-> ---
+You can always use debugfs if you like for something like this.
 
-Marek, can you please remove the "drivers/staging/" in the subject before=20
-amending both patches? Missed it :(
+Or tie into the profile/perf subsystem, that might be even easier.
 
-Best regards,
-	Sven
+thanks,
 
---nextPart106327641.mWXdBS3l1x
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMB8FbAAoJEF2HCgfBJntGtLcP/ieNbHFdx72HK6wH+qe5W/8a
-723f8kUqnjTfnND2eF1hStPSZsePfaoJhWyyXAueCGIsRkD5R1ThfObanddd7Byx
-yQfN2ed1+m76C3W3W5DuiDSYUOUYEsZPYMeCBrsQBd7y4FsKm9xlnCEWrbz/6eyf
-8Et7bjCE7L+LIUJZxBAlOKeJHuwB/ARa+PGV31utdNwT8i1WRrLZw20zNLt0UFRM
-S7vYxh9R8+zVfwQweqcM5NjrKZp55K5IwwUdB2WFgwXlOmLa5JX4WQWLvc4Uy+uf
-Sl8u1/GAVb78Akm9FHZ6XIOXZd1OAyqftIRYUMgObF9TYC+d5J1D8ARmVjphWqrZ
-5/tg6E/vVKuVNCixYULMoR0Ak1oIrcqt22PN7GNmxJDjEQWK1a436Ewp/r2bzhp4
-ARE/mI+hDZcdo+YxbrUmcXWVJmdKAds44h6RXm/JCP8PFJFSO4prQscfW8ltohy+
-4YLl/If0qeSetbwDRGBMfC10E9a2G+cqGt6nzFg7zToyXxxUVU1IdGcqV+/TZWxA
-n5YWeD/hHFmrevw6AABdnbhA1I5MQz/rSFIQpAiNGS3JwtUw1nxuijKAd5JYlANT
-hfUinTs8TQowIjkhdW+SMkkChGaVosH92h6BSQsOVfV6wuA9XCqPVDBy3POnedTi
-/co2JoK+JXymfBADIRZJ
-=HsGg
------END PGP SIGNATURE-----
-
---nextPart106327641.mWXdBS3l1x--
+greg k-h
