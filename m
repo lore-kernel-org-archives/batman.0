@@ -1,15 +1,16 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 3 Jun 2010 15:58:29 +0200
+Date: Thu, 3 Jun 2010 16:51:07 +0200
 References: <1275509418.23599.42.camel@Joe-Laptop.home>
-In-Reply-To: <1275509418.23599.42.camel@Joe-Laptop.home>
+	<1275575978-29121-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1275575978-29121-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8129949.8OlROn3zHO";
+Content-Type: multipart/signed; boundary="nextPart106327641.mWXdBS3l1x";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201006031558.36936.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] drivers/staging/batman-adv: Convert
-	MAC_FMT to %pM
+Message-Id: <201006031651.08729.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH-trunk] drivers/staging/batman-adv:
+	Convert MAC_FMT to %pM
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,52 +22,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: devel <devel@driverdev.osuosl.org>, b.a.t.m.a.n@lists.open-mesh.net, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Joe Perches <joe@perches.com>, Marek Lindner <lindner_marek@yahoo.de>
+To: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart8129949.8OlROn3zHO
+--nextPart106327641.mWXdBS3l1x
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Joe Perches wrote:
+Sven Eckelmann wrote:
+> From: Joe Perches <joe@perches.com>
+>=20
 > Remove the last uses of MAC_FMT
 >=20
 > Signed-off-by: Joe Perches <joe@perches.com>
+> [sven.eckelmann@gmx.de: Adapted for current batman-adv version]
+> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 > ---
->  drivers/staging/batman-adv/main.c              |    3 +-
->  drivers/staging/batman-adv/translation-table.c |   25
-> ++++------------------- 2 files changed, 6 insertions(+), 22 deletions(-)
 
-Just noticed that this patch collides with another one which is waiting in=
-=20
-GregKH's queue. I will try to rewrite it on top of that. I hope that this i=
-s=20
-ok for you.
+Marek, can you please remove the "drivers/staging/" in the subject before=20
+amending both patches? Missed it :(
 
 Best regards,
 	Sven
 
---nextPart8129949.8OlROn3zHO
+--nextPart106327641.mWXdBS3l1x
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJMB7UGAAoJEF2HCgfBJntG5uEQAL4dRnjbahN6EinvUsOyp8so
-elB7rxfPCt7z1gxUXKpuoYiSHTQYUurjsWJFuJViXkdOZ+0nnmkMNsplUPCB8t/z
-mWv/soU9PiNijUgvMTEiK1+PTkIIS0xtGssGl323kkVDYt+3Ru3fgDPNVs+Tm6CC
-+fFz2p1qp/Te6D/7CBsX66GDUI73Fd0sQWmD0+NSAP403mdgCulWS8nN/oiHVpdr
-rwNHGvCQZlPXaGkIcCl9C9PIKeIBAtkhey04IMS+C1c6sI5Es9Usr1y0Pl+MA4to
-EI93zRUcmhNyslknRddLhssa4PRAwmgNcprBvP1vbk3NYQdLe9VppUCrgigzujX4
-JwK2y7crLXQc89G0KipFBPbWkHVyoInIL5J07nzikHjmnaeJEsX4V/6AgIwxwbMt
-r6lDfC4aHXT6LeJQx7RVIUkRrPLAEwOvZsbjom6/5Sc4CAkaA0aAUKy0VXSsjXdO
-c+1xkc5JVxYlzoKi+FdohnsQxg+/ZN/vwAYmd0J6gbhYTkszbze69K+iNXs5bYHn
-6rZX4NFvnEAtLOUJXD00RDq6l31ZdwlAVmExAdZ8z43qiB41vRgpCnEwZnEoREU+
-+ezUtYnB1FVx9+QVswHJ0oHNqityNCpq9b/aqdKncX38ilOUkRC0LvBfeteBttev
-xMa54O8pfsfWsuYEohQu
-=FALl
+iQIcBAABCgAGBQJMB8FbAAoJEF2HCgfBJntGtLcP/ieNbHFdx72HK6wH+qe5W/8a
+723f8kUqnjTfnND2eF1hStPSZsePfaoJhWyyXAueCGIsRkD5R1ThfObanddd7Byx
+yQfN2ed1+m76C3W3W5DuiDSYUOUYEsZPYMeCBrsQBd7y4FsKm9xlnCEWrbz/6eyf
+8Et7bjCE7L+LIUJZxBAlOKeJHuwB/ARa+PGV31utdNwT8i1WRrLZw20zNLt0UFRM
+S7vYxh9R8+zVfwQweqcM5NjrKZp55K5IwwUdB2WFgwXlOmLa5JX4WQWLvc4Uy+uf
+Sl8u1/GAVb78Akm9FHZ6XIOXZd1OAyqftIRYUMgObF9TYC+d5J1D8ARmVjphWqrZ
+5/tg6E/vVKuVNCixYULMoR0Ak1oIrcqt22PN7GNmxJDjEQWK1a436Ewp/r2bzhp4
+ARE/mI+hDZcdo+YxbrUmcXWVJmdKAds44h6RXm/JCP8PFJFSO4prQscfW8ltohy+
+4YLl/If0qeSetbwDRGBMfC10E9a2G+cqGt6nzFg7zToyXxxUVU1IdGcqV+/TZWxA
+n5YWeD/hHFmrevw6AABdnbhA1I5MQz/rSFIQpAiNGS3JwtUw1nxuijKAd5JYlANT
+hfUinTs8TQowIjkhdW+SMkkChGaVosH92h6BSQsOVfV6wuA9XCqPVDBy3POnedTi
+/co2JoK+JXymfBADIRZJ
+=HsGg
 -----END PGP SIGNATURE-----
 
---nextPart8129949.8OlROn3zHO--
+--nextPart106327641.mWXdBS3l1x--
