@@ -1,10 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu,  3 Jun 2010 16:39:38 +0200
-Message-Id: <1275575978-29121-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1275509418.23599.42.camel@Joe-Laptop.home>
-References: <1275509418.23599.42.camel@Joe-Laptop.home>
-Subject: [B.A.T.M.A.N.] [PATCH-trunk] drivers/staging/batman-adv: Convert
+Date: Thu,  3 Jun 2010 16:44:05 +0200
+Message-Id: <1275576246-29381-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1275575978-29121-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1275575978-29121-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH-maint] drivers/staging/batman-adv: Convert
 	MAC_FMT to %pM
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,16 +28,19 @@ Signed-off-by: Joe Perches <joe@perches.com>
 [sven.eckelmann@gmx.de: Adapted for current batman-adv version]
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv-kernelland/bat_printk.c        |   50 +++++++++++++++++++++++++++++
- batman-adv-kernelland/compat.h            |   12 +++---
- batman-adv-kernelland/main.c              |    3 +-
- batman-adv-kernelland/translation-table.c |   24 ++-----------
+ Marek, please check with your 2.6.21 nodes if it works (just did some quick
+ tests).
+
+ bat_printk.c        |   50 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ compat.h            |   12 ++++++------
+ main.c              |    3 +--
+ translation-table.c |   24 ++++--------------------
  4 files changed, 61 insertions(+), 28 deletions(-)
 
-diff --git a/batman-adv-kernelland/bat_printk.c b/batman-adv-kernelland/bat_printk.c
+diff --git a/bat_printk.c b/bat_printk.c
 index 55c351a..4a02d7e 100644
---- a/batman-adv-kernelland/bat_printk.c
-+++ b/batman-adv-kernelland/bat_printk.c
+--- a/bat_printk.c
++++ b/bat_printk.c
 @@ -859,3 +859,53 @@ asmlinkage int bat_printk(const char *fmt, ...)
  
  	return printk("%s", buf);
@@ -92,11 +95,11 @@ index 55c351a..4a02d7e 100644
 +
 +	return i;
 +}
-diff --git a/batman-adv-kernelland/compat.h b/batman-adv-kernelland/compat.h
-index a211a36..614d116 100644
---- a/batman-adv-kernelland/compat.h
-+++ b/batman-adv-kernelland/compat.h
-@@ -74,12 +74,6 @@ static inline int skb_clone_writable(struct sk_buff *skb, unsigned int len)
+diff --git a/compat.h b/compat.h
+index ae967aa..144e25a 100644
+--- a/compat.h
++++ b/compat.h
+@@ -70,12 +70,6 @@ static inline int skb_clone_writable(struct sk_buff *skb, unsigned int len)
  
  #endif /* < KERNEL_VERSION(2, 6, 23) */
  
@@ -109,7 +112,7 @@ index a211a36..614d116 100644
  #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
  
  #define strict_strtoul(cp, base, res) \
-@@ -235,6 +229,12 @@ next_sibling:
+@@ -231,6 +225,12 @@ next_sibling:
  asmlinkage int bat_printk(const char *fmt, ...);
  #define printk bat_printk
  
@@ -122,11 +125,11 @@ index a211a36..614d116 100644
  static inline struct net_device_stats *dev_get_stats(struct net_device *dev)
  {
  	if (dev->get_stats)
-diff --git a/batman-adv-kernelland/main.c b/batman-adv-kernelland/main.c
-index c9132c0..20a0d54 100644
---- a/batman-adv-kernelland/main.c
-+++ b/batman-adv-kernelland/main.c
-@@ -227,8 +227,7 @@ void dec_module_count(void)
+diff --git a/main.c b/main.c
+index d9c6ec7..05744e7 100644
+--- a/main.c
++++ b/main.c
+@@ -231,8 +231,7 @@ void dec_module_count(void)
  
  int addr_to_string(char *buff, uint8_t *addr)
  {
@@ -136,10 +139,10 @@ index c9132c0..20a0d54 100644
  }
  
  /* returns 1 if they are the same originator */
-diff --git a/batman-adv-kernelland/translation-table.c b/batman-adv-kernelland/translation-table.c
+diff --git a/translation-table.c b/translation-table.c
 index 009789e..8edc175 100644
---- a/batman-adv-kernelland/translation-table.c
-+++ b/batman-adv-kernelland/translation-table.c
+--- a/translation-table.c
++++ b/translation-table.c
 @@ -200,13 +200,8 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
  	while (hash_iterate(hna_local_hash, &hashit)) {
  		hna_local_entry = hashit.bucket->data;
