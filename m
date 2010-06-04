@@ -1,14 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 3 Jun 2010 20:21:46 +0200
-References: <AANLkTinAPbbwB4CYulAsvIUkueDK18-TkdgfD5uHwAcP@mail.gmail.com>
-In-Reply-To: <AANLkTinAPbbwB4CYulAsvIUkueDK18-TkdgfD5uHwAcP@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3918577.TYMqaTcUON";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201006032021.53077.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] How to connect to the 102.x.x.x net from eth0?
+Date: Fri,  4 Jun 2010 16:18:57 +0200
+Message-Id: <1275661137-28878-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1275509418.23599.42.camel@Joe-Laptop.home>
+References: <1275509418.23599.42.camel@Joe-Laptop.home>
+Subject: [B.A.T.M.A.N.] [PATCHv2-trunk] batman-adv: Convert MAC_FMT to %pM
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,70 +16,170 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Vernon Cole <vernondcole@gmail.com>
+To: b.a.t.m.a.n@lists.open-mesh.net
+Cc: Joe Perches <joe@perches.com>
 
---nextPart3918577.TYMqaTcUON
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+From: Joe Perches <joe@perches.com>
 
-Vernon Cole wrote:
-> I am new here and can't find this in the documentation...
->=20
->  I have a Linux box connected to the ethernet port of a mesh router.
-> If I let it use dhcp, it connects to the internet just fine via
-> wireless link to one of  my other two open-mesh routers, both of which
-> are connected to Internet gateways.
->    I want to enable a splash screen on the 101.x.x.x network, so that
-> I can share it openly. If I do that, I must also "log in" my hardwired
-> box, which makes it not work for my needs.
->    The 102.x.x.x network works just fine via wireless (I am using it
-> to type this message) but I cannot figure how how to connect to 102.x
-> using the hard line to eth0.
->  I notice on the dashboard that there is a *future* switch to turn on
-> a "bridge" mode.  That sounds like what I am trying to do.  I want to
-> inter-tie two hardwire networks on 102.x while letting outsiders use
-> 101.x as an isolated v-lan on the same mesh.
->    How do I convince an open-mesh router to enable access to 102.x
-> from the ethernet port? I am not good enough at command line Linux
-> interface configuration and routing and iptables to figure this out on
-> my own. (Hard addressing and static routes would be fine.)
+Remove the last uses of MAC_FMT
 
+Signed-off-by: Joe Perches <joe@perches.com>
+[sven.eckelmann@gmx.de: Adapted for current batman-adv version]
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ Marek, can you please test it with 2.6.21?
+ It was rebased on top of "bonding and interface alternating"
 
-How it this related to batman(-adv|-experimental) or the tools provided on=
-=20
-open-mesh.org?
+ batman-adv-kernelland/bat_printk.c        |   50 +++++++++++++++++++++++++++++
+ batman-adv-kernelland/compat.h            |   12 +++---
+ batman-adv-kernelland/main.c              |    3 +-
+ batman-adv-kernelland/translation-table.c |   24 ++-----------
+ 4 files changed, 61 insertions(+), 28 deletions(-)
 
-Please use the technical support [1] of open-mesh.com for your open-mesh.co=
-m=20
-hardware or software.
+diff --git a/batman-adv-kernelland/bat_printk.c b/batman-adv-kernelland/bat_printk.c
+index 55c351a..4a02d7e 100644
+--- a/batman-adv-kernelland/bat_printk.c
++++ b/batman-adv-kernelland/bat_printk.c
+@@ -859,3 +859,53 @@ asmlinkage int bat_printk(const char *fmt, ...)
+ 
+ 	return printk("%s", buf);
+ }
++
++/**
++ * sprintf - Format a string and place it in a buffer
++ * @buf: The buffer to place the result into
++ * @fmt: The format string to use
++ * @...: Arguments for the format string
++ *
++ * The function returns the number of characters written
++ * into @buf. Use snprintf() or scnprintf() in order to avoid
++ * buffer overflows.
++ *
++ * See the vsnprintf() documentation for format string extensions over C99.
++ */
++int bat_sprintf(char *buf, const char *fmt, ...)
++{
++	va_list args;
++	int i;
++
++	va_start(args, fmt);
++	i = bat_vsnprintf(buf, INT_MAX, fmt, args);
++	va_end(args);
++
++	return i;
++}
++
++/**
++ * snprintf - Format a string and place it in a buffer
++ * @buf: The buffer to place the result into
++ * @size: The size of the buffer, including the trailing null space
++ * @fmt: The format string to use
++ * @...: Arguments for the format string
++ *
++ * The return value is the number of characters which would be
++ * generated for the given input, excluding the trailing null,
++ * as per ISO C99.  If the return is greater than or equal to
++ * @size, the resulting string is truncated.
++ *
++ * See the vsnprintf() documentation for format string extensions over C99.
++ */
++int bat_snprintf(char *buf, size_t size, const char *fmt, ...)
++{
++	va_list args;
++	int i;
++
++	va_start(args, fmt);
++	i = bat_vsnprintf(buf, size, fmt, args);
++	va_end(args);
++
++	return i;
++}
+diff --git a/batman-adv-kernelland/compat.h b/batman-adv-kernelland/compat.h
+index a211a36..614d116 100644
+--- a/batman-adv-kernelland/compat.h
++++ b/batman-adv-kernelland/compat.h
+@@ -74,12 +74,6 @@ static inline int skb_clone_writable(struct sk_buff *skb, unsigned int len)
+ 
+ #endif /* < KERNEL_VERSION(2, 6, 23) */
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 24)
+-
+-#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
+-
+-#endif /* < KERNEL_VERSION(2, 6, 24) */
+-
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
+ 
+ #define strict_strtoul(cp, base, res) \
+@@ -235,6 +229,12 @@ next_sibling:
+ asmlinkage int bat_printk(const char *fmt, ...);
+ #define printk bat_printk
+ 
++int bat_sprintf(char *buf, const char *fmt, ...);
++#define sprintf bat_sprintf
++
++int bat_snprintf(char *buf, size_t size, const char *fmt, ...);
++#define snprintf bat_snprintf
++
+ static inline struct net_device_stats *dev_get_stats(struct net_device *dev)
+ {
+ 	if (dev->get_stats)
+diff --git a/batman-adv-kernelland/main.c b/batman-adv-kernelland/main.c
+index c9132c0..20a0d54 100644
+--- a/batman-adv-kernelland/main.c
++++ b/batman-adv-kernelland/main.c
+@@ -227,8 +227,7 @@ void dec_module_count(void)
+ 
+ int addr_to_string(char *buff, uint8_t *addr)
+ {
+-	return sprintf(buff, MAC_FMT,
+-		       addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
++	return sprintf(buff, "%pM", addr);
+ }
+ 
+ /* returns 1 if they are the same originator */
+diff --git a/batman-adv-kernelland/translation-table.c b/batman-adv-kernelland/translation-table.c
+index 009789e..8edc175 100644
+--- a/batman-adv-kernelland/translation-table.c
++++ b/batman-adv-kernelland/translation-table.c
+@@ -200,13 +200,8 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	while (hash_iterate(hna_local_hash, &hashit)) {
+ 		hna_local_entry = hashit.bucket->data;
+ 
+-		pos += snprintf(buff + pos, 22, " * " MAC_FMT "\n",
+-				hna_local_entry->addr[0],
+-				hna_local_entry->addr[1],
+-				hna_local_entry->addr[2],
+-				hna_local_entry->addr[3],
+-				hna_local_entry->addr[4],
+-				hna_local_entry->addr[5]);
++		pos += snprintf(buff + pos, 22, " * %pM\n",
++				hna_local_entry->addr);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
+@@ -418,19 +413,8 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
+ 		hna_global_entry = hashit.bucket->data;
+ 
+ 		pos += snprintf(buff + pos, 44,
+-				" * " MAC_FMT " via " MAC_FMT "\n",
+-				hna_global_entry->addr[0],
+-				hna_global_entry->addr[1],
+-				hna_global_entry->addr[2],
+-				hna_global_entry->addr[3],
+-				hna_global_entry->addr[4],
+-				hna_global_entry->addr[5],
+-				hna_global_entry->orig_node->orig[0],
+-				hna_global_entry->orig_node->orig[1],
+-				hna_global_entry->orig_node->orig[2],
+-				hna_global_entry->orig_node->orig[3],
+-				hna_global_entry->orig_node->orig[4],
+-				hna_global_entry->orig_node->orig[5]);
++				" * %pM via %pM\n", hna_global_entry->addr,
++				hna_global_entry->orig_node->orig);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&hna_global_hash_lock, flags);
+-- 
+1.7.1
 
-Best regards,
-	Sven
-
-[1]  https://www.open-mesh.com/store/pages.php?pageid=3D2
-
---nextPart3918577.TYMqaTcUON
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMB/K7AAoJEF2HCgfBJntGj00P+wbL4IM9YhI8lAMe+Bm1JQEM
-3+GClao9n+fusD7hyNMudGutqwk56/uVIXJjA4k+TtayQ5LAdFtooDpDhpaW5Y3j
-JuQ4Ig4vsKGtGUgSqFZupgSfJcHHumKQQjSblq3fjPV5x9T//aQtUlPpzMgXbte5
-K9xxgLWhPknYygWEPv2hmCS0EZClFKVYpjHVlU4wcrSvL8AzFadUepzx1W/jYmRM
-KeaI/tflR4IiVUt4mGX0sKmAAv2okqR6/pdfXUivTedLhrgWNLX6MB/Cjs4zHS1i
-vYCc2PruLiwLf4glYypL6Fj94V3WNyzBZkie1KRvh79HUKoi1d04v71Kos84yiy3
-OSCLiM+QewUdtqMnXOuUWg/USHTeXWJ6mG816PGgpf6rmVGqhCeNIhdiwUYkIwP/
-odBv2dRciKrX8sgGle+dLTdPrAXHy/HmOvGzCocfki3L1xDcjm2dReNhS0jNHxdt
-xIDhCW69i+m2Wwu2AJU7I/0H1LiaR1kZ96Ajll5MKyJG2qPpTlo224vERS9QBj1p
-saP5MdYKwANuLOjP8zbHUy6CV/z3hT7pRtwqQcxhGPbaBA8nmZ3cGDdhjzFYEqBr
-eXTMStMrcou1Z3/EuCHizi9XqRhHnOf9Ye9uDk9JrHZDp8fgfSD+3HSRxGhaVl/O
-Evz/YmgAArrVQZXdfuRt
-=TVuI
------END PGP SIGNATURE-----
-
---nextPart3918577.TYMqaTcUON--
