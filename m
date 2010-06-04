@@ -1,9 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri,  4 Jun 2010 16:20:34 +0200
-Message-Id: <1275661235-29030-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1275509466.23599.43.camel@Joe-Laptop.home>
-References: <1275509466.23599.43.camel@Joe-Laptop.home>
+Date: Fri,  4 Jun 2010 16:21:04 +0200
+Message-Id: <1275661264-29089-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1275661235-29030-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1275661235-29030-1-git-send-email-sven.eckelmann@gmx.de>
 Subject: [B.A.T.M.A.N.] [PATCHv2-trunk] batman-adv: Use (pr|netdev)_<level>
 	macro helpers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
