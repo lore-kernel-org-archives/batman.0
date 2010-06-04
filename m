@@ -1,9 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri,  4 Jun 2010 16:18:57 +0200
-Message-Id: <1275661137-28878-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1275509418.23599.42.camel@Joe-Laptop.home>
-References: <1275509418.23599.42.camel@Joe-Laptop.home>
+Date: Fri,  4 Jun 2010 16:19:43 +0200
+Message-Id: <1275661183-28966-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1275661137-28878-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1275661137-28878-1-git-send-email-sven.eckelmann@gmx.de>
 Subject: [B.A.T.M.A.N.] [PATCHv2-trunk] batman-adv: Convert MAC_FMT to %pM
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
