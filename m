@@ -1,8 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  6 Jun 2010 01:16:55 +0200
-Message-Id: <1275779815-23681-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH-trunk] batman-adv: Remove unused code from
+Date: Sun,  6 Jun 2010 01:17:04 +0200
+Message-Id: <1275779824-23722-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1275779815-23681-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1275779815-23681-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: Remove unused code from
 	compat.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,14 +21,14 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv-kernelland/compat.h |   14 --------------
+ compat.h |   14 --------------
  1 files changed, 0 insertions(+), 14 deletions(-)
 
-diff --git a/batman-adv-kernelland/compat.h b/batman-adv-kernelland/compat.h
-index 614d116..af0e9d8 100644
---- a/batman-adv-kernelland/compat.h
-+++ b/batman-adv-kernelland/compat.h
-@@ -43,9 +43,6 @@
+diff --git a/compat.h b/compat.h
+index 144e25a..9307976 100644
+--- a/compat.h
++++ b/compat.h
+@@ -39,9 +39,6 @@
  #define skb_mac_header(_skb) \
      ((_skb)->mac.raw)
  
@@ -36,7 +38,7 @@ index 614d116..af0e9d8 100644
  #define skb_mac_header(_skb) \
      ((_skb)->mac.raw)
  
-@@ -53,17 +50,6 @@
+@@ -49,17 +46,6 @@
  
  #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 23)
  
