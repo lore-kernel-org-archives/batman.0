@@ -1,8 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  6 Jun 2010 01:03:59 +0200
-Message-Id: <1275779039-22946-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH-trunk] batman-adv: Mark locally used symbols
+Date: Sun,  6 Jun 2010 01:04:12 +0200
+Message-Id: <1275779052-22981-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1275779039-22946-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1275779039-22946-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: Mark locally used symbols
 	as static
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -31,29 +33,29 @@ and functions with declarations but missing definitions
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv-kernelland/bitarray.c          |    2 +-
- batman-adv-kernelland/bitarray.h          |    3 -
- batman-adv-kernelland/hard-interface.c    |    2 +-
- batman-adv-kernelland/hash.c              |    2 +-
- batman-adv-kernelland/hash.h              |    6 --
- batman-adv-kernelland/originator.c        |   32 +++++-----
- batman-adv-kernelland/originator.h        |    2 -
- batman-adv-kernelland/routing.c           |    2 +-
- batman-adv-kernelland/routing.h           |    2 -
- batman-adv-kernelland/send.c              |    4 +-
- batman-adv-kernelland/send.h              |    2 -
- batman-adv-kernelland/soft-interface.c    |  104 ++++++++++++++---------------
- batman-adv-kernelland/soft-interface.h    |    6 --
- batman-adv-kernelland/translation-table.c |    9 ++-
- batman-adv-kernelland/translation-table.h |    3 -
- batman-adv-kernelland/vis.c               |    4 +-
- batman-adv-kernelland/vis.h               |    3 -
+ bitarray.c          |    2 +-
+ bitarray.h          |    3 -
+ hard-interface.c    |    2 +-
+ hash.c              |    2 +-
+ hash.h              |    6 ---
+ originator.c        |   32 ++++++++--------
+ originator.h        |    2 -
+ routing.c           |    2 +-
+ routing.h           |    2 -
+ send.c              |    4 +-
+ send.h              |    2 -
+ soft-interface.c    |  104 ++++++++++++++++++++++++---------------------------
+ soft-interface.h    |    6 ---
+ translation-table.c |    9 +++-
+ translation-table.h |    3 -
+ vis.c               |    4 +-
+ vis.h               |    3 -
  17 files changed, 80 insertions(+), 108 deletions(-)
 
-diff --git a/batman-adv-kernelland/bitarray.c b/batman-adv-kernelland/bitarray.c
-index a607827..c10fe03 100644
---- a/batman-adv-kernelland/bitarray.c
-+++ b/batman-adv-kernelland/bitarray.c
+diff --git a/bitarray.c b/bitarray.c
+index 2fef6e3..cfca033 100644
+--- a/bitarray.c
++++ b/bitarray.c
 @@ -63,7 +63,7 @@ void bit_mark(TYPE_OF_WORD *seq_bits, int32_t n)
  }
  
@@ -63,11 +65,11 @@ index a607827..c10fe03 100644
  {
  	int32_t word_offset, word_num;
  	int32_t i;
-diff --git a/batman-adv-kernelland/bitarray.h b/batman-adv-kernelland/bitarray.h
-index 4c351eb..dad13bf 100644
---- a/batman-adv-kernelland/bitarray.h
-+++ b/batman-adv-kernelland/bitarray.h
-@@ -32,9 +32,6 @@ uint8_t get_bit_status(TYPE_OF_WORD *seq_bits, uint32_t last_seqno,
+diff --git a/bitarray.h b/bitarray.h
+index 76ad24c..4dd1e7c 100644
+--- a/bitarray.h
++++ b/bitarray.h
+@@ -32,9 +32,6 @@ uint8_t get_bit_status(TYPE_OF_WORD *seq_bits, uint16_t last_seqno,
  /* turn corresponding bit on, so we can remember that we got the packet */
  void bit_mark(TYPE_OF_WORD *seq_bits, int32_t n);
  
@@ -77,10 +79,10 @@ index 4c351eb..dad13bf 100644
  
  /* receive and process one packet, returns 1 if received seq_num is considered
   * new, 0 if old  */
-diff --git a/batman-adv-kernelland/hard-interface.c b/batman-adv-kernelland/hard-interface.c
-index ad2e496..70fd314 100644
---- a/batman-adv-kernelland/hard-interface.c
-+++ b/batman-adv-kernelland/hard-interface.c
+diff --git a/hard-interface.c b/hard-interface.c
+index 55a8da8..259f0e1 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
 @@ -435,7 +435,7 @@ out:
  	return NOTIFY_DONE;
  }
@@ -90,10 +92,10 @@ index ad2e496..70fd314 100644
  {
  	return NF_ACCEPT;
  }
-diff --git a/batman-adv-kernelland/hash.c b/batman-adv-kernelland/hash.c
+diff --git a/hash.c b/hash.c
 index d4a4adc..1286f8f 100644
---- a/batman-adv-kernelland/hash.c
-+++ b/batman-adv-kernelland/hash.c
+--- a/hash.c
++++ b/hash.c
 @@ -23,7 +23,7 @@
  #include "hash.h"
  
@@ -103,10 +105,10 @@ index d4a4adc..1286f8f 100644
  {
  	int i;
  
-diff --git a/batman-adv-kernelland/hash.h b/batman-adv-kernelland/hash.h
+diff --git a/hash.h b/hash.h
 index ea6d21e..0505595 100644
---- a/batman-adv-kernelland/hash.h
-+++ b/batman-adv-kernelland/hash.h
+--- a/hash.h
++++ b/hash.h
 @@ -56,9 +56,6 @@ struct hashtable_t {
  				     * argument and the size the second */
  };
@@ -125,11 +127,11 @@ index ea6d21e..0505595 100644
 -/* print the hash table for debugging */
 -void hash_debug(struct hashtable_t *hash);
  #endif
-diff --git a/batman-adv-kernelland/originator.c b/batman-adv-kernelland/originator.c
-index 28e35b6..89b7cca 100644
---- a/batman-adv-kernelland/originator.c
-+++ b/batman-adv-kernelland/originator.c
-@@ -58,21 +58,6 @@ err:
+diff --git a/originator.c b/originator.c
+index 183b7a1..53a3727 100644
+--- a/originator.c
++++ b/originator.c
+@@ -57,21 +57,6 @@ err:
  	return 0;
  }
  
@@ -151,7 +153,7 @@ index 28e35b6..89b7cca 100644
  struct neigh_node *
  create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
  		uint8_t *neigh, struct batman_if *if_incoming)
-@@ -95,7 +80,7 @@ create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
+@@ -94,7 +79,7 @@ create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
  	return neigh_node;
  }
  
@@ -160,7 +162,7 @@ index 28e35b6..89b7cca 100644
  {
  	struct list_head *list_pos, *list_pos_tmp;
  	struct neigh_node *neigh_node;
-@@ -116,6 +101,21 @@ void free_orig_node(void *data)
+@@ -115,6 +100,21 @@ void free_orig_node(void *data)
  	kfree(orig_node);
  }
  
@@ -182,10 +184,10 @@ index 28e35b6..89b7cca 100644
  /* this function finds or creates an originator entry for the given
   * address if it does not exits */
  struct orig_node *get_orig_node(uint8_t *addr)
-diff --git a/batman-adv-kernelland/originator.h b/batman-adv-kernelland/originator.h
+diff --git a/originator.h b/originator.h
 index e91e8a1..6632538 100644
---- a/batman-adv-kernelland/originator.h
-+++ b/batman-adv-kernelland/originator.h
+--- a/originator.h
++++ b/originator.h
 @@ -20,10 +20,8 @@
   */
  
@@ -197,23 +199,23 @@ index e91e8a1..6632538 100644
  struct orig_node *get_orig_node(uint8_t *addr);
  struct neigh_node *
  create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
-diff --git a/batman-adv-kernelland/routing.c b/batman-adv-kernelland/routing.c
-index b906f79..8800257 100644
---- a/batman-adv-kernelland/routing.c
-+++ b/batman-adv-kernelland/routing.c
-@@ -35,7 +35,7 @@
+diff --git a/routing.c b/routing.c
+index e9b0377..7ffe4f6 100644
+--- a/routing.c
++++ b/routing.c
+@@ -34,7 +34,7 @@
+ #include "aggregation.h"
  #include "compat.h"
- #include "gateway_client.h"
  
 -DECLARE_WAIT_QUEUE_HEAD(thread_wait);
 +static DECLARE_WAIT_QUEUE_HEAD(thread_wait);
  
  void slide_own_bcast_window(struct batman_if *batman_if)
  {
-diff --git a/batman-adv-kernelland/routing.h b/batman-adv-kernelland/routing.h
-index d14c405..43387a2 100644
---- a/batman-adv-kernelland/routing.h
-+++ b/batman-adv-kernelland/routing.h
+diff --git a/routing.h b/routing.h
+index 8288dec..c6850d2 100644
+--- a/routing.h
++++ b/routing.h
 @@ -21,8 +21,6 @@
  
  #include "types.h"
@@ -223,10 +225,10 @@ index d14c405..43387a2 100644
  void slide_own_bcast_window(struct batman_if *batman_if);
  void receive_bat_packet(struct ethhdr *ethhdr,
  				struct batman_packet *batman_packet,
-diff --git a/batman-adv-kernelland/send.c b/batman-adv-kernelland/send.c
-index 8df44a6..7db86c2 100644
---- a/batman-adv-kernelland/send.c
-+++ b/batman-adv-kernelland/send.c
+diff --git a/send.c b/send.c
+index 197fce1..10095e1 100644
+--- a/send.c
++++ b/send.c
 @@ -33,6 +33,8 @@
  
  #include "compat.h"
@@ -236,7 +238,7 @@ index 8df44a6..7db86c2 100644
  /* apply hop penalty for a normal link */
  static uint8_t hop_penalty(const uint8_t tq)
  {
-@@ -448,7 +450,7 @@ out:
+@@ -433,7 +435,7 @@ out:
  	return NETDEV_TX_BUSY;
  }
  
@@ -245,10 +247,10 @@ index 8df44a6..7db86c2 100644
  {
  	struct batman_if *batman_if;
  	struct delayed_work *delayed_work =
-diff --git a/batman-adv-kernelland/send.h b/batman-adv-kernelland/send.h
+diff --git a/send.h b/send.h
 index feaa2fc..0a0990d 100644
---- a/batman-adv-kernelland/send.h
-+++ b/batman-adv-kernelland/send.h
+--- a/send.h
++++ b/send.h
 @@ -21,7 +21,6 @@
  
  #include "types.h"
@@ -264,11 +266,11 @@ index feaa2fc..0a0990d 100644
 -void send_outstanding_bcast_packet(struct work_struct *work);
  void send_outstanding_bat_packet(struct work_struct *work);
  void purge_outstanding_packets(struct batman_if *batman_if);
-diff --git a/batman-adv-kernelland/soft-interface.c b/batman-adv-kernelland/soft-interface.c
-index cfa40b6..6d8cab7 100644
---- a/batman-adv-kernelland/soft-interface.c
-+++ b/batman-adv-kernelland/soft-interface.c
-@@ -39,7 +39,6 @@ static int32_t skb_packets;
+diff --git a/soft-interface.c b/soft-interface.c
+index ea1858c..7be255d 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -37,7 +37,6 @@ static int32_t skb_packets;
  static int32_t skb_bad_packets;
  
  unsigned char mainIfAddr[ETH_ALEN];
@@ -276,7 +278,7 @@ index cfa40b6..6d8cab7 100644
  static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd);
  static void bat_get_drvinfo(struct net_device *dev,
  			    struct ethtool_drvinfo *info);
-@@ -64,11 +63,6 @@ void set_main_if_addr(uint8_t *addr)
+@@ -62,11 +61,6 @@ void set_main_if_addr(uint8_t *addr)
  	memcpy(mainIfAddr, addr, ETH_ALEN);
  }
  
@@ -288,7 +290,7 @@ index cfa40b6..6d8cab7 100644
  int my_skb_push(struct sk_buff *skb, unsigned int len)
  {
  	int result = 0;
-@@ -86,69 +80,25 @@ int my_skb_push(struct sk_buff *skb, unsigned int len)
+@@ -84,69 +78,25 @@ int my_skb_push(struct sk_buff *skb, unsigned int len)
  	return 0;
  }
  
@@ -362,7 +364,7 @@ index cfa40b6..6d8cab7 100644
  {
  	struct sockaddr *addr = p;
  
-@@ -166,7 +116,7 @@ int interface_set_mac_addr(struct net_device *dev, void *p)
+@@ -164,7 +114,7 @@ int interface_set_mac_addr(struct net_device *dev, void *p)
  	return 0;
  }
  
@@ -371,7 +373,7 @@ index cfa40b6..6d8cab7 100644
  {
  	/* check ranges */
  	if ((new_mtu < 68) || (new_mtu > hardif_min_mtu()))
-@@ -328,6 +278,50 @@ void interface_rx(struct sk_buff *skb, int hdr_size)
+@@ -316,6 +266,50 @@ void interface_rx(struct sk_buff *skb, int hdr_size)
  	netif_rx(skb);
  }
  
@@ -422,10 +424,10 @@ index cfa40b6..6d8cab7 100644
  /* ethtool */
  static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
  {
-diff --git a/batman-adv-kernelland/soft-interface.h b/batman-adv-kernelland/soft-interface.h
+diff --git a/soft-interface.h b/soft-interface.h
 index e7f59af..3852c57 100644
---- a/batman-adv-kernelland/soft-interface.h
-+++ b/batman-adv-kernelland/soft-interface.h
+--- a/soft-interface.h
++++ b/soft-interface.h
 @@ -20,13 +20,7 @@
   */
  
@@ -440,10 +442,10 @@ index e7f59af..3852c57 100644
  int interface_tx(struct sk_buff *skb, struct net_device *dev);
  void interface_rx(struct sk_buff *skb, int hdr_size);
  int my_skb_push(struct sk_buff *skb, unsigned int len);
-diff --git a/batman-adv-kernelland/translation-table.c b/batman-adv-kernelland/translation-table.c
+diff --git a/translation-table.c b/translation-table.c
 index 8edc175..619a9a8 100644
---- a/batman-adv-kernelland/translation-table.c
-+++ b/batman-adv-kernelland/translation-table.c
+--- a/translation-table.c
++++ b/translation-table.c
 @@ -33,7 +33,10 @@ atomic_t hna_local_changed;
  DEFINE_SPINLOCK(hna_local_hash_lock);
  static DEFINE_SPINLOCK(hna_global_hash_lock);
@@ -475,10 +477,10 @@ index 8edc175..619a9a8 100644
  {
  	bat_dbg(DBG_ROUTES, "Deleting global hna entry %pM (via %pM): %s\n",
  		hna_global_entry->addr, hna_global_entry->orig_node->orig,
-diff --git a/batman-adv-kernelland/translation-table.h b/batman-adv-kernelland/translation-table.h
+diff --git a/translation-table.h b/translation-table.h
 index 8b3429e..232208f 100644
---- a/batman-adv-kernelland/translation-table.h
-+++ b/batman-adv-kernelland/translation-table.h
+--- a/translation-table.h
++++ b/translation-table.h
 @@ -26,14 +26,11 @@ void hna_local_add(uint8_t *addr);
  void hna_local_remove(uint8_t *addr, char *message);
  int hna_local_fill_buffer(unsigned char *buff, int buff_len);
@@ -494,10 +496,10 @@ index 8b3429e..232208f 100644
  void hna_global_del_orig(struct orig_node *orig_node, char *message);
  void hna_global_free(void);
  struct orig_node *transtable_search(uint8_t *addr);
-diff --git a/batman-adv-kernelland/vis.c b/batman-adv-kernelland/vis.c
-index 68ee903..9e53462 100644
---- a/batman-adv-kernelland/vis.c
-+++ b/batman-adv-kernelland/vis.c
+diff --git a/vis.c b/vis.c
+index ba9a055..22bbabc 100644
+--- a/vis.c
++++ b/vis.c
 @@ -44,8 +44,8 @@
  			_dummy > smallest_signed_int(_dummy); })
  #define seq_after(x, y) seq_before(y, x)
@@ -509,10 +511,10 @@ index 68ee903..9e53462 100644
  static DEFINE_SPINLOCK(recv_list_lock);
  static struct vis_info *my_vis_info;
  static struct list_head send_list;	/* always locked with vis_hash_lock */
-diff --git a/batman-adv-kernelland/vis.h b/batman-adv-kernelland/vis.h
+diff --git a/vis.h b/vis.h
 index 5dd6521..1cfadce 100644
---- a/batman-adv-kernelland/vis.h
-+++ b/batman-adv-kernelland/vis.h
+--- a/vis.h
++++ b/vis.h
 @@ -44,9 +44,6 @@ struct recvlist_node {
  	uint8_t mac[ETH_ALEN];
  };
