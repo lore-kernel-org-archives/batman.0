@@ -1,8 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  6 Jun 2010 21:03:03 +0200
-Message-Id: <1275850985-27105-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.35
+Date: Sun,  6 Jun 2010 21:03:04 +0200
+Message-Id: <1275850985-27105-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1275850985-27105-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1275850985-27105-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] Staging: batman-adv: return -EFAULT on
+	copy_to_user errors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,23 +18,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: gregkh@suse.de, b.a.t.m.a.n@lists.open-mesh.net
+Cc: Dan Carpenter <error27@gmail.com>
 
-Hi,
+From: Dan Carpenter <error27@gmail.com>
 
-here are some patches which fixes different bugs in 2.6.35. These patches
-collide with patches you already have received for 2.6.36. I will resend those
-patches with resolved merge problems.
+copy_to_user() returns the number of bites remaining but we want to
+return a negative error code here.
 
-Best regards,
-	Sven Eckelmann
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ drivers/staging/batman-adv/device.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- drivers/staging/batman-adv/bat_sysfs.c |   24 ++++++++++++------------
- drivers/staging/batman-adv/device.c    |    2 +-
- 2 files changed, 13 insertions(+), 13 deletions(-)
-
-Dan Carpenter (1):
-      Staging: batman-adv: return -EFAULT on copy_to_user errors
-
-Javier Martinez Canillas (1):
-      Staging: batman-adv: fix function prototype
+diff --git a/drivers/staging/batman-adv/device.c b/drivers/staging/batman-adv/device.c
+index 7eb6559..32204b5 100644
+--- a/drivers/staging/batman-adv/device.c
++++ b/drivers/staging/batman-adv/device.c
+@@ -196,7 +196,7 @@ ssize_t bat_device_read(struct file *file, char __user *buf, size_t count,
+ 	kfree(device_packet);
+ 
+ 	if (error)
+-		return error;
++		return -EFAULT;
+ 
+ 	return sizeof(struct icmp_packet);
+ }
+-- 
+1.7.1
 
