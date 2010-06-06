@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  6 Jun 2010 21:28:18 +0200
-Message-Id: <1275852501-28523-7-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun,  6 Jun 2010 21:28:19 +0200
+Message-Id: <1275852501-28523-8-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 6/9] Staging: batman-adv: Add information
-	about batman-adv sysfs entries
+Subject: [B.A.T.M.A.N.] [PATCH 7/9] Staging: batman-adv: remove superfluous
+	hint to "translation table"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,70 +22,27 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 From: Marek Lindner <lindner_marek@yahoo.de>
 
-Add documents about new sysfs entries in
- * /sys/class/net/<iface>/batman-adv/mesh_iface
- * /sys/class/net/<mesh_iface>/mesh/vis_mode
-
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+[sven.eckelmann@gmx.de: Rework on top of current version]
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- .../staging/batman-adv/sysfs-class-net-batman-adv  |   14 +++++++++++
- drivers/staging/batman-adv/sysfs-class-net-mesh    |   25 ++++++++++++++++++++
- 2 files changed, 39 insertions(+), 0 deletions(-)
- create mode 100644 drivers/staging/batman-adv/sysfs-class-net-batman-adv
- create mode 100644 drivers/staging/batman-adv/sysfs-class-net-mesh
+ drivers/staging/batman-adv/translation-table.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/sysfs-class-net-batman-adv b/drivers/staging/batman-adv/sysfs-class-net-batman-adv
-new file mode 100644
-index 0000000..38dd762
---- /dev/null
-+++ b/drivers/staging/batman-adv/sysfs-class-net-batman-adv
-@@ -0,0 +1,14 @@
-+
-+What:           /sys/class/net/<iface>/batman-adv/mesh_iface
-+Date:           May 2010
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+                The /sys/class/net/<iface>/batman-adv/mesh_iface file
-+                displays the batman mesh interface this <iface>
-+                currently is associated with.
-+
-+What:           /sys/class/net/<iface>/batman-adv/iface_status
-+Date:           May 2010
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+                Indicates the status of <iface> as it is seen by batman.
-diff --git a/drivers/staging/batman-adv/sysfs-class-net-mesh b/drivers/staging/batman-adv/sysfs-class-net-mesh
-new file mode 100644
-index 0000000..c75a87b
---- /dev/null
-+++ b/drivers/staging/batman-adv/sysfs-class-net-mesh
-@@ -0,0 +1,25 @@
-+
-+What:           /sys/class/net/<mesh_iface>/mesh/aggregated_ogms
-+Date:           May 2010
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+                Indicates whether the batman protocol messages of the
-+                mesh <mesh_iface> shall be aggregated or not.
-+
-+What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
-+Date:           May 2010
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+                Defines the interval in milliseconds in which batman
-+                sends its protocol messages.
-+
-+What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
-+Date:           May 2010
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+                Each batman node only maintains information about its
-+                own local neighborhood, therefore generating graphs
-+                showing the topology of the entire mesh is not easily
-+                feasible without having a central instance to collect
-+                the local topologies from all nodes. This file allows
-+                to activate the collecting (server) mode.
+diff --git a/drivers/staging/batman-adv/translation-table.c b/drivers/staging/batman-adv/translation-table.c
+index 604122c..5a0264a 100644
+--- a/drivers/staging/batman-adv/translation-table.c
++++ b/drivers/staging/batman-adv/translation-table.c
+@@ -395,8 +395,7 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
+ 				  net_dev->name);
+ 	}
+ 
+-	seq_printf(seq, "Globally announced HNAs received via the mesh %s "
+-			"(translation table):\n",
++	seq_printf(seq, "Globally announced HNAs received via the mesh %s\n",
+ 		   net_dev->name);
+ 
+ 	spin_lock_irqsave(&hna_global_hash_lock, flags);
 -- 
 1.7.1
 
