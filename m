@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  6 Jun 2010 21:28:13 +0200
-Message-Id: <1275852501-28523-2-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun,  6 Jun 2010 21:28:16 +0200
+Message-Id: <1275852501-28523-5-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/9] Staging: batman-adv: remove redundant
-	struct declaration
+Subject: [B.A.T.M.A.N.] [PATCH 4/9] Staging: batman-adv: convert all sysfs
+	files to single value files
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,141 +22,100 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 From: Marek Lindner <lindner_marek@yahoo.de>
 
-The hardif_attr and the bat_attr struct share the same attributes,
-hence it is not necessary to specify 2 different structs.
+This patch removes the extra usage output which came when
+the sysfs files were read.
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/bat_sysfs.c |   48 ++++++++------------------------
- drivers/staging/batman-adv/bat_sysfs.h |   13 ++++++++
- 2 files changed, 25 insertions(+), 36 deletions(-)
+ drivers/staging/batman-adv/bat_sysfs.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
-index 212bc21..ffb8ea2 100644
+index 651bdb4..b961817 100644
 --- a/drivers/staging/batman-adv/bat_sysfs.c
 +++ b/drivers/staging/batman-adv/bat_sysfs.c
-@@ -28,22 +28,6 @@
- 
- #define to_dev(obj)     container_of(obj, struct device, kobj)
- 
--struct bat_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
--			char *buf);
--	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
--			 char *buf, size_t count);
--};
--
--struct hardif_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
--			char *buf);
--	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
--			 char *buf, size_t count);
--};
--
- #define BAT_ATTR(_name, _mode, _show, _store)	\
- struct bat_attribute bat_attr_##_name = {	\
- 	.attr = {.name = __stringify(_name),	\
-@@ -60,14 +44,6 @@ struct bin_attribute bat_attr_##_name = {		\
- 	.write = _write,				\
+@@ -36,18 +36,18 @@ struct bat_attribute bat_attr_##_name = {	\
+ 	.store  = _store,			\
  };
  
--#define HARDIF_ATTR(_name, _mode, _show, _store)	\
--struct hardif_attribute hardif_attr_##_name = {		\
--	.attr = {.name = __stringify(_name),		\
--		 .mode = _mode },			\
--	.show   = _show,				\
--	.store  = _store,				\
--};
--
- static ssize_t show_aggr_ogm(struct kobject *kobj, struct attribute *attr,
+-static ssize_t show_aggr_ogm(struct kobject *kobj, struct attribute *attr,
++static ssize_t show_aggr_ogms(struct kobject *kobj, struct attribute *attr,
  			     char *buff)
  {
-@@ -433,20 +409,20 @@ static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
- 	}
+ 	struct device *dev = to_dev(kobj->parent);
+ 	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
+ 	int aggr_status = atomic_read(&bat_priv->aggregation_enabled);
+ 
+-	return sprintf(buff, "status: %s\ncommands: enable, disable, 0, 1\n",
++	return sprintf(buff, "%s\n",
+ 		       aggr_status == 0 ? "disabled" : "enabled");
  }
  
--static HARDIF_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
--		   show_mesh_iface, store_mesh_iface);
--static HARDIF_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
-+static BAT_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
-+		show_mesh_iface, store_mesh_iface);
-+static BAT_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
- 
--static struct hardif_attribute *batman_attrs[] = {
--	&hardif_attr_mesh_iface,
--	&hardif_attr_iface_status,
-+static struct bat_attribute *batman_attrs[] = {
-+	&bat_attr_mesh_iface,
-+	&bat_attr_iface_status,
- 	NULL,
- };
- 
- int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
+-static ssize_t store_aggr_ogm(struct kobject *kobj, struct attribute *attr,
++static ssize_t store_aggr_ogms(struct kobject *kobj, struct attribute *attr,
+ 			      char *buff, size_t count)
  {
- 	struct kobject *hardif_kobject = &dev->dev.kobj;
--	struct hardif_attribute **hardif_attr;
-+	struct bat_attribute **bat_attr;
- 	int err;
+ 	struct device *dev = to_dev(kobj->parent);
+@@ -91,10 +91,9 @@ static ssize_t show_vis_mode(struct kobject *kobj, struct attribute *attr,
+ 	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
+ 	int vis_mode = atomic_read(&bat_priv->vis_mode);
  
- 	*hardif_obj = kobject_create_and_add(SYSFS_IF_BAT_SUBDIR,
-@@ -458,12 +434,12 @@ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- 		goto out;
- 	}
- 
--	for (hardif_attr = batman_attrs; *hardif_attr; ++hardif_attr) {
--		err = sysfs_create_file(*hardif_obj, &((*hardif_attr)->attr));
-+	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr) {
-+		err = sysfs_create_file(*hardif_obj, &((*bat_attr)->attr));
- 		if (err) {
- 			printk(KERN_ERR "batman-adv:Can't add sysfs file: %s/%s/%s\n",
- 			       dev->name, SYSFS_IF_BAT_SUBDIR,
--			       ((*hardif_attr)->attr).name);
-+			       ((*bat_attr)->attr).name);
- 			goto rem_attr;
- 		}
- 	}
-@@ -471,8 +447,8 @@ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- 	return 0;
- 
- rem_attr:
--	for (hardif_attr = batman_attrs; *hardif_attr; ++hardif_attr)
--		sysfs_remove_file(*hardif_obj, &((*hardif_attr)->attr));
-+	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr)
-+		sysfs_remove_file(*hardif_obj, &((*bat_attr)->attr));
- out:
- 	return -ENOMEM;
+-	return sprintf(buff, "status: %s\ncommands: client, server, %d, %d\n",
++	return sprintf(buff, "%s\n",
+ 		       vis_mode == VIS_TYPE_CLIENT_UPDATE ?
+-							"client" : "server",
+-		       VIS_TYPE_SERVER_SYNC, VIS_TYPE_CLIENT_UPDATE);
++							"client" : "server");
  }
-diff --git a/drivers/staging/batman-adv/bat_sysfs.h b/drivers/staging/batman-adv/bat_sysfs.h
-index e189341..cb45a91 100644
---- a/drivers/staging/batman-adv/bat_sysfs.h
-+++ b/drivers/staging/batman-adv/bat_sysfs.h
-@@ -20,10 +20,23 @@
-  */
  
+ static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
+@@ -109,7 +108,8 @@ static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
+ 	ret = strict_strtoul(buff, 10, &val);
  
-+#ifndef BAT_SYSFS_H
-+#define BAT_SYSFS_H
-+
- #define SYSFS_IF_MESH_SUBDIR "mesh"
- #define SYSFS_IF_BAT_SUBDIR "batman_adv"
+ 	if (((count == 2) && (!ret) && (val == VIS_TYPE_CLIENT_UPDATE)) ||
+-	    (strncmp(buff, "client", 6) == 0))
++	    (strncmp(buff, "client", 6) == 0) ||
++	    (strncmp(buff, "off", 3) == 0))
+ 		vis_mode_tmp = VIS_TYPE_CLIENT_UPDATE;
  
-+struct bat_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
-+			char *buf);
-+	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
-+			 char *buf, size_t count);
-+};
-+
- int sysfs_add_meshif(struct net_device *dev);
- void sysfs_del_meshif(struct net_device *dev);
- int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev);
- void sysfs_del_hardif(struct kobject **hardif_obj);
-+
-+#endif
+ 	if (((count == 2) && (!ret) && (val == VIS_TYPE_SERVER_SYNC)) ||
+@@ -143,7 +143,7 @@ static ssize_t show_orig_interval(struct kobject *kobj, struct attribute *attr,
+ 	struct device *dev = to_dev(kobj->parent);
+ 	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
+ 
+-	return sprintf(buff, "status: %i\n",
++	return sprintf(buff, "%i\n",
+ 		       atomic_read(&bat_priv->orig_interval));
+ }
+ 
+@@ -180,14 +180,14 @@ static ssize_t store_orig_interval(struct kobject *kobj, struct attribute *attr,
+ 	return count;
+ }
+ 
+-static BAT_ATTR(aggregate_ogm, S_IRUGO | S_IWUSR,
+-		show_aggr_ogm, store_aggr_ogm);
++static BAT_ATTR(aggregated_ogms, S_IRUGO | S_IWUSR,
++		show_aggr_ogms, store_aggr_ogms);
+ static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
+ static BAT_ATTR(orig_interval, S_IRUGO | S_IWUSR,
+ 		show_orig_interval, store_orig_interval);
+ 
+ static struct bat_attribute *mesh_attrs[] = {
+-	&bat_attr_aggregate_ogm,
++	&bat_attr_aggregated_ogms,
+ 	&bat_attr_vis_mode,
+ 	&bat_attr_orig_interval,
+ 	NULL,
+@@ -261,7 +261,7 @@ static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 	if (!batman_if)
+ 		return 0;
+ 
+-	return sprintf(buff, "status: %s\ncommands: none, bat0\n",
++	return sprintf(buff, "%s\n",
+ 		       batman_if->if_status == IF_NOT_IN_USE ?
+ 							"none" : "bat0");
+ }
 -- 
 1.7.1
 
