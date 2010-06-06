@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  6 Jun 2010 21:28:12 +0200
-Message-Id: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (renewed)
+Date: Sun,  6 Jun 2010 21:28:13 +0200
+Message-Id: <1275852501-28523-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/9] Staging: batman-adv: remove redundant
+	struct declaration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,65 +18,145 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: gregkh@suse.de, b.a.t.m.a.n@lists.open-mesh.net
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Hi,
+From: Marek Lindner <lindner_marek@yahoo.de>
 
-here are patches targetted for 2.6.36. These replace all patches send to you
-for 2.6.36 in mails following
-1275850985-27105-1-git-send-email-sven.eckelmann@gmx.de due to conflicting
-changes for 2.6.35 from Dan Carpenter and Javier Martinez Canillas.
+The hardif_attr and the bat_attr struct share the same attributes,
+hence it is not necessary to specify 2 different structs.
 
-There are also 3 new patches (7-9).
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ drivers/staging/batman-adv/bat_sysfs.c |   48 ++++++++------------------------
+ drivers/staging/batman-adv/bat_sysfs.h |   13 ++++++++
+ 2 files changed, 25 insertions(+), 36 deletions(-)
 
-Maybe we could time our patches for upcoming kernels. Is there a specific point
-where you start to insert new patches for the next kernel into staging-next?
-Currently we know that it should be at least a week before a kernel is released
-to allow other people to test changes in linux-next. 
-
-Best regards,
-	Sven
-
- drivers/staging/batman-adv/Makefile                |    2 +-
- drivers/staging/batman-adv/bat_debugfs.c           |  148 ++++++++
- drivers/staging/batman-adv/bat_debugfs.h           |   33 ++
- drivers/staging/batman-adv/bat_sysfs.c             |  151 ++-------
- drivers/staging/batman-adv/bat_sysfs.h             |   13 +
- drivers/staging/batman-adv/device.c                |  354 --------------------
- drivers/staging/batman-adv/device.h                |   36 --
- drivers/staging/batman-adv/hard-interface.c        |   14 +-
- drivers/staging/batman-adv/icmp_socket.c           |  328 ++++++++++++++++++
- drivers/staging/batman-adv/icmp_socket.h           |   28 ++
- drivers/staging/batman-adv/main.c                  |   27 +-
- drivers/staging/batman-adv/main.h                  |    6 +-
- drivers/staging/batman-adv/originator.c            |   64 +---
- drivers/staging/batman-adv/originator.h            |    3 +-
- drivers/staging/batman-adv/routing.c               |    4 +-
- drivers/staging/batman-adv/send.c                  |    9 +-
- .../staging/batman-adv/sysfs-class-net-batman-adv  |   14 +
- drivers/staging/batman-adv/sysfs-class-net-mesh    |   25 ++
- drivers/staging/batman-adv/translation-table.c     |  132 ++++----
- drivers/staging/batman-adv/translation-table.h     |    6 +-
- drivers/staging/batman-adv/types.h                 |    5 +-
- drivers/staging/batman-adv/vis.c                   |  115 +++++--
- drivers/staging/batman-adv/vis.h                   |    3 +-
- 23 files changed, 821 insertions(+), 699 deletions(-)
-
-Joe Perches (1):
-      Staging: batman-adv: Convert MAC_FMT to %pM
-
-Linus Lüssing (1):
-      Staging: batman-adv: Adding netfilter-bridge hooks
-
-Marek Lindner (4):
-      Staging: batman-adv: remove redundant struct declaration
-      Staging: batman-adv: convert all sysfs files to single value files
-      Staging: batman-adv: Add information about batman-adv sysfs entries
-      Staging: batman-adv: remove superfluous hint to "translation table"
-
-Simon Wunderlich (1):
-      Staging: batman-adv: convert vis_interval into define
-
-Sven Eckelmann (2):
-      Staging: batman-adv: Move device for icmp injection to debugfs
-      Staging: batman-adv: Move tables from sysfs to debugfs
+diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
+index 212bc21..ffb8ea2 100644
+--- a/drivers/staging/batman-adv/bat_sysfs.c
++++ b/drivers/staging/batman-adv/bat_sysfs.c
+@@ -28,22 +28,6 @@
+ 
+ #define to_dev(obj)     container_of(obj, struct device, kobj)
+ 
+-struct bat_attribute {
+-	struct attribute attr;
+-	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
+-			char *buf);
+-	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
+-			 char *buf, size_t count);
+-};
+-
+-struct hardif_attribute {
+-	struct attribute attr;
+-	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
+-			char *buf);
+-	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
+-			 char *buf, size_t count);
+-};
+-
+ #define BAT_ATTR(_name, _mode, _show, _store)	\
+ struct bat_attribute bat_attr_##_name = {	\
+ 	.attr = {.name = __stringify(_name),	\
+@@ -60,14 +44,6 @@ struct bin_attribute bat_attr_##_name = {		\
+ 	.write = _write,				\
+ };
+ 
+-#define HARDIF_ATTR(_name, _mode, _show, _store)	\
+-struct hardif_attribute hardif_attr_##_name = {		\
+-	.attr = {.name = __stringify(_name),		\
+-		 .mode = _mode },			\
+-	.show   = _show,				\
+-	.store  = _store,				\
+-};
+-
+ static ssize_t show_aggr_ogm(struct kobject *kobj, struct attribute *attr,
+ 			     char *buff)
+ {
+@@ -433,20 +409,20 @@ static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
+ 	}
+ }
+ 
+-static HARDIF_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
+-		   show_mesh_iface, store_mesh_iface);
+-static HARDIF_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
++static BAT_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
++		show_mesh_iface, store_mesh_iface);
++static BAT_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
+ 
+-static struct hardif_attribute *batman_attrs[] = {
+-	&hardif_attr_mesh_iface,
+-	&hardif_attr_iface_status,
++static struct bat_attribute *batman_attrs[] = {
++	&bat_attr_mesh_iface,
++	&bat_attr_iface_status,
+ 	NULL,
+ };
+ 
+ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
+ {
+ 	struct kobject *hardif_kobject = &dev->dev.kobj;
+-	struct hardif_attribute **hardif_attr;
++	struct bat_attribute **bat_attr;
+ 	int err;
+ 
+ 	*hardif_obj = kobject_create_and_add(SYSFS_IF_BAT_SUBDIR,
+@@ -458,12 +434,12 @@ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
+ 		goto out;
+ 	}
+ 
+-	for (hardif_attr = batman_attrs; *hardif_attr; ++hardif_attr) {
+-		err = sysfs_create_file(*hardif_obj, &((*hardif_attr)->attr));
++	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr) {
++		err = sysfs_create_file(*hardif_obj, &((*bat_attr)->attr));
+ 		if (err) {
+ 			printk(KERN_ERR "batman-adv:Can't add sysfs file: %s/%s/%s\n",
+ 			       dev->name, SYSFS_IF_BAT_SUBDIR,
+-			       ((*hardif_attr)->attr).name);
++			       ((*bat_attr)->attr).name);
+ 			goto rem_attr;
+ 		}
+ 	}
+@@ -471,8 +447,8 @@ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
+ 	return 0;
+ 
+ rem_attr:
+-	for (hardif_attr = batman_attrs; *hardif_attr; ++hardif_attr)
+-		sysfs_remove_file(*hardif_obj, &((*hardif_attr)->attr));
++	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr)
++		sysfs_remove_file(*hardif_obj, &((*bat_attr)->attr));
+ out:
+ 	return -ENOMEM;
+ }
+diff --git a/drivers/staging/batman-adv/bat_sysfs.h b/drivers/staging/batman-adv/bat_sysfs.h
+index e189341..cb45a91 100644
+--- a/drivers/staging/batman-adv/bat_sysfs.h
++++ b/drivers/staging/batman-adv/bat_sysfs.h
+@@ -20,10 +20,23 @@
+  */
+ 
+ 
++#ifndef BAT_SYSFS_H
++#define BAT_SYSFS_H
++
+ #define SYSFS_IF_MESH_SUBDIR "mesh"
+ #define SYSFS_IF_BAT_SUBDIR "batman_adv"
+ 
++struct bat_attribute {
++	struct attribute attr;
++	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
++			char *buf);
++	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
++			 char *buf, size_t count);
++};
++
+ int sysfs_add_meshif(struct net_device *dev);
+ void sysfs_del_meshif(struct net_device *dev);
+ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev);
+ void sysfs_del_hardif(struct kobject **hardif_obj);
++
++#endif
+-- 
+1.7.1
 
