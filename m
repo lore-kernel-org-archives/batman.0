@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  6 Jun 2010 21:03:05 +0200
-Message-Id: <1275850985-27105-3-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1275850985-27105-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1275850985-27105-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] Staging: batman-adv: fix function
-	prototype
+Date: Sun,  6 Jun 2010 21:28:12 +0200
+Message-Id: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (renewed)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,78 +18,65 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: gregkh@suse.de, b.a.t.m.a.n@lists.open-mesh.net
-Cc: Javier Martinez Canillas <martinez.javier@gmail.com>
 
-From: Javier Martinez Canillas <martinez.javier@gmail.com>
+Hi,
 
-In today linux-next I got a compile warning in staging/batman-adv.
+here are patches targetted for 2.6.36. These replace all patches send to you
+for 2.6.36 in mails following
+1275850985-27105-1-git-send-email-sven.eckelmann@gmx.de due to conflicting
+changes for 2.6.35 from Dan Carpenter and Javier Martinez Canillas.
 
-This is due a struct bin_attribute read function prototype change and the driver was not updated.
+There are also 3 new patches (7-9).
 
-This patch solves the issue
+Maybe we could time our patches for upcoming kernels. Is there a specific point
+where you start to insert new patches for the next kernel into staging-next?
+Currently we know that it should be at least a week before a kernel is released
+to allow other people to test changes in linux-next. 
 
-Signed-off-by: Javier Martinez Canillas <martinez.javier@gmail.com>
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- drivers/staging/batman-adv/bat_sysfs.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+Best regards,
+	Sven
 
-diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
-index e2c000b..212bc21 100644
---- a/drivers/staging/batman-adv/bat_sysfs.c
-+++ b/drivers/staging/batman-adv/bat_sysfs.c
-@@ -225,9 +225,9 @@ static struct bat_attribute *mesh_attrs[] = {
- 	NULL,
- };
- 
--static ssize_t transtable_local_read(struct kobject *kobj,
--			       struct bin_attribute *bin_attr,
--			       char *buff, loff_t off, size_t count)
-+static ssize_t transtable_local_read(struct file *filp, struct kobject *kobj,
-+				  struct bin_attribute *bin_attr,
-+				  char *buff, loff_t off, size_t count)
- {
- 	struct device *dev = to_dev(kobj->parent);
- 	struct net_device *net_dev = to_net_dev(dev);
-@@ -235,9 +235,9 @@ static ssize_t transtable_local_read(struct kobject *kobj,
- 	return hna_local_fill_buffer_text(net_dev, buff, count, off);
- }
- 
--static ssize_t transtable_global_read(struct kobject *kobj,
--			       struct bin_attribute *bin_attr,
--			       char *buff, loff_t off, size_t count)
-+static ssize_t transtable_global_read(struct file *filp, struct kobject *kobj,
-+				  struct bin_attribute *bin_attr,
-+				  char *buff, loff_t off, size_t count)
- {
- 	struct device *dev = to_dev(kobj->parent);
- 	struct net_device *net_dev = to_net_dev(dev);
-@@ -245,9 +245,9 @@ static ssize_t transtable_global_read(struct kobject *kobj,
- 	return hna_global_fill_buffer_text(net_dev, buff, count, off);
- }
- 
--static ssize_t originators_read(struct kobject *kobj,
--			       struct bin_attribute *bin_attr,
--			       char *buff, loff_t off, size_t count)
-+static ssize_t originators_read(struct file *filp, struct kobject *kobj,
-+				  struct bin_attribute *bin_attr,
-+				  char *buff, loff_t off, size_t count)
- {
- 	struct device *dev = to_dev(kobj->parent);
- 	struct net_device *net_dev = to_net_dev(dev);
-@@ -255,9 +255,9 @@ static ssize_t originators_read(struct kobject *kobj,
- 	return orig_fill_buffer_text(net_dev, buff, count, off);
- }
- 
--static ssize_t vis_data_read(struct kobject *kobj,
--			     struct bin_attribute *bin_attr,
--			     char *buff, loff_t off, size_t count)
-+static ssize_t vis_data_read(struct file *filp, struct kobject *kobj,
-+				  struct bin_attribute *bin_attr,
-+				  char *buff, loff_t off, size_t count)
- {
- 	struct device *dev = to_dev(kobj->parent);
- 	struct net_device *net_dev = to_net_dev(dev);
--- 
-1.7.1
+ drivers/staging/batman-adv/Makefile                |    2 +-
+ drivers/staging/batman-adv/bat_debugfs.c           |  148 ++++++++
+ drivers/staging/batman-adv/bat_debugfs.h           |   33 ++
+ drivers/staging/batman-adv/bat_sysfs.c             |  151 ++-------
+ drivers/staging/batman-adv/bat_sysfs.h             |   13 +
+ drivers/staging/batman-adv/device.c                |  354 --------------------
+ drivers/staging/batman-adv/device.h                |   36 --
+ drivers/staging/batman-adv/hard-interface.c        |   14 +-
+ drivers/staging/batman-adv/icmp_socket.c           |  328 ++++++++++++++++++
+ drivers/staging/batman-adv/icmp_socket.h           |   28 ++
+ drivers/staging/batman-adv/main.c                  |   27 +-
+ drivers/staging/batman-adv/main.h                  |    6 +-
+ drivers/staging/batman-adv/originator.c            |   64 +---
+ drivers/staging/batman-adv/originator.h            |    3 +-
+ drivers/staging/batman-adv/routing.c               |    4 +-
+ drivers/staging/batman-adv/send.c                  |    9 +-
+ .../staging/batman-adv/sysfs-class-net-batman-adv  |   14 +
+ drivers/staging/batman-adv/sysfs-class-net-mesh    |   25 ++
+ drivers/staging/batman-adv/translation-table.c     |  132 ++++----
+ drivers/staging/batman-adv/translation-table.h     |    6 +-
+ drivers/staging/batman-adv/types.h                 |    5 +-
+ drivers/staging/batman-adv/vis.c                   |  115 +++++--
+ drivers/staging/batman-adv/vis.h                   |    3 +-
+ 23 files changed, 821 insertions(+), 699 deletions(-)
+
+Joe Perches (1):
+      Staging: batman-adv: Convert MAC_FMT to %pM
+
+Linus Lüssing (1):
+      Staging: batman-adv: Adding netfilter-bridge hooks
+
+Marek Lindner (4):
+      Staging: batman-adv: remove redundant struct declaration
+      Staging: batman-adv: convert all sysfs files to single value files
+      Staging: batman-adv: Add information about batman-adv sysfs entries
+      Staging: batman-adv: remove superfluous hint to "translation table"
+
+Simon Wunderlich (1):
+      Staging: batman-adv: convert vis_interval into define
+
+Sven Eckelmann (2):
+      Staging: batman-adv: Move device for icmp injection to debugfs
+      Staging: batman-adv: Move tables from sysfs to debugfs
 
