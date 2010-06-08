@@ -1,11 +1,14 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  6 Jun 2010 21:28:14 +0200
-Message-Id: <1275852501-28523-3-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/9] Staging: batman-adv: Move device for
-	icmp injection to debugfs
+Return-Path: <neumann@cgws.de>
+From: Axel Neumann <neumann@cgws.de>
+Date: Tue, 8 Jun 2010 18:32:39 +0200
+References: <4C07CD29.7000505@gmail.com>
+In-Reply-To: <4C07CD29.7000505@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201006081832.39301.neumann@cgws.de>
+Subject: Re: [B.A.T.M.A.N.] BMX, client node doesn't choose a gateway node.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,1071 +20,415 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: gregkh@suse.de, b.a.t.m.a.n@lists.open-mesh.net
+To: sebastian.criado@gmail.com, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-batctl uses /dev/batman-adv to send special batman-adv icmp packets to
-other nodes in the mesh. To get it working with multiple batX devices we
-must ensure that every mesh device can have their own socket which is
-used to inject those packets in exactly one mesh.
+On Donnerstag 03 Juni 2010, Sebasti=E1n D. Criado wrote:
+> Hello,
+>=20
+> I'm having a problem with BMX when trying to make a client node
+> connect to a gateway node.
+>=20
+> It's BatMan-eXp 0.3-rc1 rv1636 (compatibility version 10).
+>=20
+=2E..
+>=20
+> The start of the client node it's made with: /usr/sbin/bmxd dev=3Dath2
+> -o 2000 -r 1
+>=20
+I could reproduce the problem. There is someting strange with -r [0..2]. On=
+ly=20
+=2Dr 3 seems working as expected in the current code.
 
-The current implementation still doesn't allow to use complete separated
-meshes as we rely on structures which are not part of the private data
-of a batman device.
+Can you confirm if -r 3 works fine in your setup?
+Meanwhile I'll check the code whats going on there...=20
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- drivers/staging/batman-adv/Makefile      |    2 +-
- drivers/staging/batman-adv/bat_debugfs.c |   77 +++++++
- drivers/staging/batman-adv/bat_debugfs.h |   33 +++
- drivers/staging/batman-adv/device.c      |  354 ------------------------------
- drivers/staging/batman-adv/device.h      |   36 ---
- drivers/staging/batman-adv/icmp_socket.c |  328 +++++++++++++++++++++++++++
- drivers/staging/batman-adv/icmp_socket.h |   28 +++
- drivers/staging/batman-adv/main.c        |   21 ++-
- drivers/staging/batman-adv/routing.c     |    4 +-
- drivers/staging/batman-adv/types.h       |    5 +-
- 10 files changed, 486 insertions(+), 402 deletions(-)
- create mode 100644 drivers/staging/batman-adv/bat_debugfs.c
- create mode 100644 drivers/staging/batman-adv/bat_debugfs.h
- delete mode 100644 drivers/staging/batman-adv/device.c
- delete mode 100644 drivers/staging/batman-adv/device.h
- create mode 100644 drivers/staging/batman-adv/icmp_socket.c
- create mode 100644 drivers/staging/batman-adv/icmp_socket.h
+Thanks for the report and sorry for the late response.
+cu
+/axel
 
-diff --git a/drivers/staging/batman-adv/Makefile b/drivers/staging/batman-adv/Makefile
-index f25068c..654c4d2 100644
---- a/drivers/staging/batman-adv/Makefile
-+++ b/drivers/staging/batman-adv/Makefile
-@@ -19,4 +19,4 @@
- #
- 
- obj-m += batman-adv.o
--batman-adv-objs := main.o send.o routing.o soft-interface.o device.o translation-table.o bitarray.o hash.o ring_buffer.o vis.o hard-interface.o aggregation.o originator.o bat_sysfs.o
-+batman-adv-objs := main.o bat_debugfs.o bat_sysfs.o send.o routing.o soft-interface.o icmp_socket.o translation-table.o bitarray.o hash.o ring_buffer.o vis.o hard-interface.o aggregation.o originator.o
-diff --git a/drivers/staging/batman-adv/bat_debugfs.c b/drivers/staging/batman-adv/bat_debugfs.c
-new file mode 100644
-index 0000000..d5b28eb
---- /dev/null
-+++ b/drivers/staging/batman-adv/bat_debugfs.c
-@@ -0,0 +1,77 @@
-+/*
-+ * Copyright (C) 2010 B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ */
-+
-+#include <linux/debugfs.h>
-+
-+#include "main.h"
-+#include "bat_debugfs.h"
-+#include "translation-table.h"
-+#include "originator.h"
-+#include "hard-interface.h"
-+#include "vis.h"
-+#include "icmp_socket.h"
-+
-+static struct dentry *bat_debugfs;
-+
-+void debugfs_init(void)
-+{
-+	bat_debugfs = debugfs_create_dir(DEBUGFS_BAT_SUBDIR, NULL);
-+}
-+
-+void debugfs_destroy(void)
-+{
-+	if (bat_debugfs) {
-+		debugfs_remove_recursive(bat_debugfs);
-+		bat_debugfs = NULL;
-+	}
-+}
-+
-+int debugfs_add_meshif(struct net_device *dev)
-+{
-+	struct bat_priv *bat_priv = netdev_priv(dev);
-+
-+	if (!bat_debugfs)
-+		goto out;
-+
-+	bat_priv->debug_dir = debugfs_create_dir(dev->name, bat_debugfs);
-+	if (!bat_priv->debug_dir)
-+		goto out;
-+
-+	bat_socket_setup(bat_priv);
-+
-+	return 0;
-+out:
-+#ifdef CONFIG_DEBUG_FS
-+	return -ENOMEM;
-+#else
-+	return 0;
-+#endif /* CONFIG_DEBUG_FS */
-+}
-+
-+void debugfs_del_meshif(struct net_device *dev)
-+{
-+	struct bat_priv *bat_priv = netdev_priv(dev);
-+
-+	if (bat_debugfs) {
-+		debugfs_remove_recursive(bat_priv->debug_dir);
-+		bat_priv->debug_dir = NULL;
-+	}
-+}
-diff --git a/drivers/staging/batman-adv/bat_debugfs.h b/drivers/staging/batman-adv/bat_debugfs.h
-new file mode 100644
-index 0000000..5cdd332
---- /dev/null
-+++ b/drivers/staging/batman-adv/bat_debugfs.h
-@@ -0,0 +1,33 @@
-+/*
-+ * Copyright (C) 2010 B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ */
-+
-+
-+#ifndef BAT_DEBUGFS_H
-+#define BAT_DEBUGFS_H
-+
-+#define DEBUGFS_BAT_SUBDIR "batman_adv"
-+
-+void debugfs_init(void);
-+void debugfs_destroy(void);
-+int debugfs_add_meshif(struct net_device *dev);
-+void debugfs_del_meshif(struct net_device *dev);
-+
-+#endif
-diff --git a/drivers/staging/batman-adv/device.c b/drivers/staging/batman-adv/device.c
-deleted file mode 100644
-index 32204b5..0000000
---- a/drivers/staging/batman-adv/device.c
-+++ /dev/null
-@@ -1,354 +0,0 @@
--/*
-- * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
-- *
-- * Marek Lindner
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of version 2 of the GNU General Public
-- * License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-- * 02110-1301, USA
-- *
-- */
--
--#include <linux/device.h>
--#include <linux/slab.h>
--#include "main.h"
--#include "device.h"
--#include "send.h"
--#include "types.h"
--#include "hash.h"
--#include "hard-interface.h"
--
--static struct class *batman_class;
--
--static int Major;	/* Major number assigned to our device driver */
--
--static const struct file_operations fops = {
--	.open = bat_device_open,
--	.release = bat_device_release,
--	.read = bat_device_read,
--	.write = bat_device_write,
--	.poll = bat_device_poll,
--};
--
--static struct device_client *device_client_hash[256];
--
--void bat_device_init(void)
--{
--	memset(device_client_hash, 0, sizeof(device_client_hash));
--}
--
--int bat_device_setup(void)
--{
--	int tmp_major;
--
--	if (Major)
--		return 1;
--
--	/* register our device - kernel assigns a free major number */
--	tmp_major = register_chrdev(0, DRIVER_DEVICE, &fops);
--	if (tmp_major < 0) {
--		printk(KERN_ERR "batman-adv:"
--		       "Registering the character device failed with %d\n",
--			  tmp_major);
--		return 0;
--	}
--
--	batman_class = class_create(THIS_MODULE, "batman-adv");
--
--	if (IS_ERR(batman_class)) {
--		printk(KERN_ERR "batman-adv:"
--		       "Could not register class 'batman-adv'\n");
--		return 0;
--	}
--
--	device_create(batman_class, NULL, MKDEV(tmp_major, 0), NULL,
--		      "batman-adv");
--
--	Major = tmp_major;
--	return 1;
--}
--
--void bat_device_destroy(void)
--{
--	if (!Major)
--		return;
--
--	device_destroy(batman_class, MKDEV(Major, 0));
--	class_destroy(batman_class);
--
--	/* Unregister the device */
--	unregister_chrdev(Major, DRIVER_DEVICE);
--
--	Major = 0;
--}
--
--int bat_device_open(struct inode *inode, struct file *file)
--{
--	unsigned int i;
--	struct device_client *device_client;
--
--	device_client = kmalloc(sizeof(struct device_client), GFP_KERNEL);
--
--	if (!device_client)
--		return -ENOMEM;
--
--	for (i = 0; i < ARRAY_SIZE(device_client_hash); i++) {
--		if (!device_client_hash[i]) {
--			device_client_hash[i] = device_client;
--			break;
--		}
--	}
--
--	if (i == ARRAY_SIZE(device_client_hash)) {
--		printk(KERN_ERR "batman-adv:"
--		       "Error - can't add another packet client: "
--		       "maximum number of clients reached\n");
--		kfree(device_client);
--		return -EXFULL;
--	}
--
--	INIT_LIST_HEAD(&device_client->queue_list);
--	device_client->queue_len = 0;
--	device_client->index = i;
--	spin_lock_init(&device_client->lock);
--	init_waitqueue_head(&device_client->queue_wait);
--
--	file->private_data = device_client;
--
--	inc_module_count();
--	return 0;
--}
--
--int bat_device_release(struct inode *inode, struct file *file)
--{
--	struct device_client *device_client =
--		(struct device_client *)file->private_data;
--	struct device_packet *device_packet;
--	struct list_head *list_pos, *list_pos_tmp;
--	unsigned long flags;
--
--	spin_lock_irqsave(&device_client->lock, flags);
--
--	/* for all packets in the queue ... */
--	list_for_each_safe(list_pos, list_pos_tmp, &device_client->queue_list) {
--		device_packet = list_entry(list_pos,
--					   struct device_packet, list);
--
--		list_del(list_pos);
--		kfree(device_packet);
--	}
--
--	device_client_hash[device_client->index] = NULL;
--	spin_unlock_irqrestore(&device_client->lock, flags);
--
--	kfree(device_client);
--	dec_module_count();
--
--	return 0;
--}
--
--ssize_t bat_device_read(struct file *file, char __user *buf, size_t count,
--			loff_t *ppos)
--{
--	struct device_client *device_client =
--		(struct device_client *)file->private_data;
--	struct device_packet *device_packet;
--	int error;
--	unsigned long flags;
--
--	if ((file->f_flags & O_NONBLOCK) && (device_client->queue_len == 0))
--		return -EAGAIN;
--
--	if ((!buf) || (count < sizeof(struct icmp_packet)))
--		return -EINVAL;
--
--	if (!access_ok(VERIFY_WRITE, buf, count))
--		return -EFAULT;
--
--	error = wait_event_interruptible(device_client->queue_wait,
--					 device_client->queue_len);
--
--	if (error)
--		return error;
--
--	spin_lock_irqsave(&device_client->lock, flags);
--
--	device_packet = list_first_entry(&device_client->queue_list,
--					 struct device_packet, list);
--	list_del(&device_packet->list);
--	device_client->queue_len--;
--
--	spin_unlock_irqrestore(&device_client->lock, flags);
--
--	error = __copy_to_user(buf, &device_packet->icmp_packet,
--			       sizeof(struct icmp_packet));
--
--	kfree(device_packet);
--
--	if (error)
--		return -EFAULT;
--
--	return sizeof(struct icmp_packet);
--}
--
--ssize_t bat_device_write(struct file *file, const char __user *buff,
--			 size_t len, loff_t *off)
--{
--	struct device_client *device_client =
--		(struct device_client *)file->private_data;
--	struct icmp_packet icmp_packet;
--	struct orig_node *orig_node;
--	struct batman_if *batman_if;
--	uint8_t dstaddr[ETH_ALEN];
--	unsigned long flags;
--
--	if (len < sizeof(struct icmp_packet)) {
--		bat_dbg(DBG_BATMAN, "batman-adv:"
--			"Error - can't send packet from char device: "
--			"invalid packet size\n");
--		return -EINVAL;
--	}
--
--	if (!access_ok(VERIFY_READ, buff, sizeof(struct icmp_packet)))
--		return -EFAULT;
--
--	if (__copy_from_user(&icmp_packet, buff, sizeof(icmp_packet)))
--		return -EFAULT;
--
--	if (icmp_packet.packet_type != BAT_ICMP) {
--		bat_dbg(DBG_BATMAN, "batman-adv:"
--			"Error - can't send packet from char device: "
--			"got bogus packet type (expected: BAT_ICMP)\n");
--		return -EINVAL;
--	}
--
--	if (icmp_packet.msg_type != ECHO_REQUEST) {
--		bat_dbg(DBG_BATMAN, "batman-adv:"
--			"Error - can't send packet from char device: "
--			"got bogus message type (expected: ECHO_REQUEST)\n");
--		return -EINVAL;
--	}
--
--	icmp_packet.uid = device_client->index;
--
--	if (icmp_packet.version != COMPAT_VERSION) {
--		icmp_packet.msg_type = PARAMETER_PROBLEM;
--		icmp_packet.ttl = COMPAT_VERSION;
--		bat_device_add_packet(device_client, &icmp_packet);
--		goto out;
--	}
--
--	if (atomic_read(&module_state) != MODULE_ACTIVE)
--		goto dst_unreach;
--
--	spin_lock_irqsave(&orig_hash_lock, flags);
--	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet.dst));
--
--	if (!orig_node)
--		goto unlock;
--
--	if (!orig_node->router)
--		goto unlock;
--
--	batman_if = orig_node->router->if_incoming;
--	memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
--
--	spin_unlock_irqrestore(&orig_hash_lock, flags);
--
--	if (!batman_if)
--		goto dst_unreach;
--
--	if (batman_if->if_status != IF_ACTIVE)
--		goto dst_unreach;
--
--	memcpy(icmp_packet.orig,
--	       batman_if->net_dev->dev_addr,
--	       ETH_ALEN);
--
--	send_raw_packet((unsigned char *)&icmp_packet,
--			sizeof(struct icmp_packet),
--			batman_if, dstaddr);
--
--	goto out;
--
--unlock:
--	spin_unlock_irqrestore(&orig_hash_lock, flags);
--dst_unreach:
--	icmp_packet.msg_type = DESTINATION_UNREACHABLE;
--	bat_device_add_packet(device_client, &icmp_packet);
--out:
--	return len;
--}
--
--unsigned int bat_device_poll(struct file *file, poll_table *wait)
--{
--	struct device_client *device_client =
--		(struct device_client *)file->private_data;
--
--	poll_wait(file, &device_client->queue_wait, wait);
--
--	if (device_client->queue_len > 0)
--		return POLLIN | POLLRDNORM;
--
--	return 0;
--}
--
--void bat_device_add_packet(struct device_client *device_client,
--			   struct icmp_packet *icmp_packet)
--{
--	struct device_packet *device_packet;
--	unsigned long flags;
--
--	device_packet = kmalloc(sizeof(struct device_packet), GFP_ATOMIC);
--
--	if (!device_packet)
--		return;
--
--	INIT_LIST_HEAD(&device_packet->list);
--	memcpy(&device_packet->icmp_packet, icmp_packet,
--	       sizeof(struct icmp_packet));
--
--	spin_lock_irqsave(&device_client->lock, flags);
--
--	/* while waiting for the lock the device_client could have been
--	 * deleted */
--	if (!device_client_hash[icmp_packet->uid]) {
--		spin_unlock_irqrestore(&device_client->lock, flags);
--		kfree(device_packet);
--		return;
--	}
--
--	list_add_tail(&device_packet->list, &device_client->queue_list);
--	device_client->queue_len++;
--
--	if (device_client->queue_len > 100) {
--		device_packet = list_first_entry(&device_client->queue_list,
--						 struct device_packet, list);
--
--		list_del(&device_packet->list);
--		kfree(device_packet);
--		device_client->queue_len--;
--	}
--
--	spin_unlock_irqrestore(&device_client->lock, flags);
--
--	wake_up(&device_client->queue_wait);
--}
--
--void bat_device_receive_packet(struct icmp_packet *icmp_packet)
--{
--	struct device_client *hash = device_client_hash[icmp_packet->uid];
--
--	if (hash)
--		bat_device_add_packet(hash, icmp_packet);
--}
-diff --git a/drivers/staging/batman-adv/device.h b/drivers/staging/batman-adv/device.h
-deleted file mode 100644
-index eb14b37..0000000
---- a/drivers/staging/batman-adv/device.h
-+++ /dev/null
-@@ -1,36 +0,0 @@
--/*
-- * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
-- *
-- * Marek Lindner
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of version 2 of the GNU General Public
-- * License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-- * 02110-1301, USA
-- *
-- */
--
--#include "types.h"
--
--void bat_device_init(void);
--int bat_device_setup(void);
--void bat_device_destroy(void);
--int bat_device_open(struct inode *inode, struct file *file);
--int bat_device_release(struct inode *inode, struct file *file);
--ssize_t bat_device_read(struct file *file, char __user *buf, size_t count,
--			loff_t *ppos);
--ssize_t bat_device_write(struct file *file, const char __user *buff,
--			 size_t len, loff_t *off);
--unsigned int bat_device_poll(struct file *file, poll_table *wait);
--void bat_device_add_packet(struct device_client *device_client,
--			   struct icmp_packet *icmp_packet);
--void bat_device_receive_packet(struct icmp_packet *icmp_packet);
-diff --git a/drivers/staging/batman-adv/icmp_socket.c b/drivers/staging/batman-adv/icmp_socket.c
-new file mode 100644
-index 0000000..d4411cb
---- /dev/null
-+++ b/drivers/staging/batman-adv/icmp_socket.c
-@@ -0,0 +1,328 @@
-+/*
-+ * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ */
-+
-+#include <linux/debugfs.h>
-+#include <linux/slab.h>
-+#include "main.h"
-+#include "icmp_socket.h"
-+#include "send.h"
-+#include "types.h"
-+#include "hash.h"
-+#include "hard-interface.h"
-+
-+
-+static struct socket_client *socket_client_hash[256];
-+
-+static void bat_socket_add_packet(struct socket_client *socket_client,
-+				  struct icmp_packet *icmp_packet);
-+
-+void bat_socket_init(void)
-+{
-+	memset(socket_client_hash, 0, sizeof(socket_client_hash));
-+}
-+
-+static int bat_socket_open(struct inode *inode, struct file *file)
-+{
-+	unsigned int i;
-+	struct socket_client *socket_client;
-+
-+	socket_client = kmalloc(sizeof(struct socket_client), GFP_KERNEL);
-+
-+	if (!socket_client)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < ARRAY_SIZE(socket_client_hash); i++) {
-+		if (!socket_client_hash[i]) {
-+			socket_client_hash[i] = socket_client;
-+			break;
-+		}
-+	}
-+
-+	if (i == ARRAY_SIZE(socket_client_hash)) {
-+		printk(KERN_ERR "batman-adv:"
-+		       "Error - can't add another packet client: "
-+		       "maximum number of clients reached\n");
-+		kfree(socket_client);
-+		return -EXFULL;
-+	}
-+
-+	INIT_LIST_HEAD(&socket_client->queue_list);
-+	socket_client->queue_len = 0;
-+	socket_client->index = i;
-+	spin_lock_init(&socket_client->lock);
-+	init_waitqueue_head(&socket_client->queue_wait);
-+
-+	file->private_data = socket_client;
-+
-+	inc_module_count();
-+	return 0;
-+}
-+
-+static int bat_socket_release(struct inode *inode, struct file *file)
-+{
-+	struct socket_client *socket_client =
-+		(struct socket_client *)file->private_data;
-+	struct socket_packet *socket_packet;
-+	struct list_head *list_pos, *list_pos_tmp;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&socket_client->lock, flags);
-+
-+	/* for all packets in the queue ... */
-+	list_for_each_safe(list_pos, list_pos_tmp, &socket_client->queue_list) {
-+		socket_packet = list_entry(list_pos,
-+					   struct socket_packet, list);
-+
-+		list_del(list_pos);
-+		kfree(socket_packet);
-+	}
-+
-+	socket_client_hash[socket_client->index] = NULL;
-+	spin_unlock_irqrestore(&socket_client->lock, flags);
-+
-+	kfree(socket_client);
-+	dec_module_count();
-+
-+	return 0;
-+}
-+
-+static ssize_t bat_socket_read(struct file *file, char __user *buf,
-+			       size_t count, loff_t *ppos)
-+{
-+	struct socket_client *socket_client =
-+		(struct socket_client *)file->private_data;
-+	struct socket_packet *socket_packet;
-+	int error;
-+	unsigned long flags;
-+
-+	if ((file->f_flags & O_NONBLOCK) && (socket_client->queue_len == 0))
-+		return -EAGAIN;
-+
-+	if ((!buf) || (count < sizeof(struct icmp_packet)))
-+		return -EINVAL;
-+
-+	if (!access_ok(VERIFY_WRITE, buf, count))
-+		return -EFAULT;
-+
-+	error = wait_event_interruptible(socket_client->queue_wait,
-+					 socket_client->queue_len);
-+
-+	if (error)
-+		return error;
-+
-+	spin_lock_irqsave(&socket_client->lock, flags);
-+
-+	socket_packet = list_first_entry(&socket_client->queue_list,
-+					 struct socket_packet, list);
-+	list_del(&socket_packet->list);
-+	socket_client->queue_len--;
-+
-+	spin_unlock_irqrestore(&socket_client->lock, flags);
-+
-+	error = __copy_to_user(buf, &socket_packet->icmp_packet,
-+			       sizeof(struct icmp_packet));
-+
-+	kfree(socket_packet);
-+
-+	if (error)
-+		return -EFAULT;
-+
-+	return sizeof(struct icmp_packet);
-+}
-+
-+static ssize_t bat_socket_write(struct file *file, const char __user *buff,
-+				size_t len, loff_t *off)
-+{
-+	struct socket_client *socket_client =
-+		(struct socket_client *)file->private_data;
-+	struct icmp_packet icmp_packet;
-+	struct orig_node *orig_node;
-+	struct batman_if *batman_if;
-+	uint8_t dstaddr[ETH_ALEN];
-+	unsigned long flags;
-+
-+	if (len < sizeof(struct icmp_packet)) {
-+		bat_dbg(DBG_BATMAN, "batman-adv:"
-+			"Error - can't send packet from char device: "
-+			"invalid packet size\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!access_ok(VERIFY_READ, buff, sizeof(struct icmp_packet)))
-+		return -EFAULT;
-+
-+	if (__copy_from_user(&icmp_packet, buff, sizeof(icmp_packet)))
-+		return -EFAULT;
-+
-+	if (icmp_packet.packet_type != BAT_ICMP) {
-+		bat_dbg(DBG_BATMAN, "batman-adv:"
-+			"Error - can't send packet from char device: "
-+			"got bogus packet type (expected: BAT_ICMP)\n");
-+		return -EINVAL;
-+	}
-+
-+	if (icmp_packet.msg_type != ECHO_REQUEST) {
-+		bat_dbg(DBG_BATMAN, "batman-adv:"
-+			"Error - can't send packet from char device: "
-+			"got bogus message type (expected: ECHO_REQUEST)\n");
-+		return -EINVAL;
-+	}
-+
-+	icmp_packet.uid = socket_client->index;
-+
-+	if (icmp_packet.version != COMPAT_VERSION) {
-+		icmp_packet.msg_type = PARAMETER_PROBLEM;
-+		icmp_packet.ttl = COMPAT_VERSION;
-+		bat_socket_add_packet(socket_client, &icmp_packet);
-+		goto out;
-+	}
-+
-+	if (atomic_read(&module_state) != MODULE_ACTIVE)
-+		goto dst_unreach;
-+
-+	spin_lock_irqsave(&orig_hash_lock, flags);
-+	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet.dst));
-+
-+	if (!orig_node)
-+		goto unlock;
-+
-+	if (!orig_node->router)
-+		goto unlock;
-+
-+	batman_if = orig_node->router->if_incoming;
-+	memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
-+
-+	spin_unlock_irqrestore(&orig_hash_lock, flags);
-+
-+	if (!batman_if)
-+		goto dst_unreach;
-+
-+	if (batman_if->if_status != IF_ACTIVE)
-+		goto dst_unreach;
-+
-+	memcpy(icmp_packet.orig,
-+	       batman_if->net_dev->dev_addr,
-+	       ETH_ALEN);
-+
-+	send_raw_packet((unsigned char *)&icmp_packet,
-+			sizeof(struct icmp_packet),
-+			batman_if, dstaddr);
-+
-+	goto out;
-+
-+unlock:
-+	spin_unlock_irqrestore(&orig_hash_lock, flags);
-+dst_unreach:
-+	icmp_packet.msg_type = DESTINATION_UNREACHABLE;
-+	bat_socket_add_packet(socket_client, &icmp_packet);
-+out:
-+	return len;
-+}
-+
-+static unsigned int bat_socket_poll(struct file *file, poll_table *wait)
-+{
-+	struct socket_client *socket_client =
-+		(struct socket_client *)file->private_data;
-+
-+	poll_wait(file, &socket_client->queue_wait, wait);
-+
-+	if (socket_client->queue_len > 0)
-+		return POLLIN | POLLRDNORM;
-+
-+	return 0;
-+}
-+
-+static const struct file_operations fops = {
-+	.owner = THIS_MODULE,
-+	.open = bat_socket_open,
-+	.release = bat_socket_release,
-+	.read = bat_socket_read,
-+	.write = bat_socket_write,
-+	.poll = bat_socket_poll,
-+};
-+
-+int bat_socket_setup(struct bat_priv *bat_priv)
-+{
-+	struct dentry *d;
-+
-+	if (!bat_priv->debug_dir)
-+		goto err;
-+
-+	d = debugfs_create_file(ICMP_SOCKET, S_IFREG | S_IWUSR | S_IRUSR,
-+				bat_priv->debug_dir, NULL, &fops);
-+	if (d)
-+		goto err;
-+
-+	return 0;
-+
-+err:
-+	return 1;
-+}
-+
-+static void bat_socket_add_packet(struct socket_client *socket_client,
-+				  struct icmp_packet *icmp_packet)
-+{
-+	struct socket_packet *socket_packet;
-+	unsigned long flags;
-+
-+	socket_packet = kmalloc(sizeof(struct socket_packet), GFP_ATOMIC);
-+
-+	if (!socket_packet)
-+		return;
-+
-+	INIT_LIST_HEAD(&socket_packet->list);
-+	memcpy(&socket_packet->icmp_packet, icmp_packet,
-+	       sizeof(struct icmp_packet));
-+
-+	spin_lock_irqsave(&socket_client->lock, flags);
-+
-+	/* while waiting for the lock the socket_client could have been
-+	 * deleted */
-+	if (!socket_client_hash[icmp_packet->uid]) {
-+		spin_unlock_irqrestore(&socket_client->lock, flags);
-+		kfree(socket_packet);
-+		return;
-+	}
-+
-+	list_add_tail(&socket_packet->list, &socket_client->queue_list);
-+	socket_client->queue_len++;
-+
-+	if (socket_client->queue_len > 100) {
-+		socket_packet = list_first_entry(&socket_client->queue_list,
-+						 struct socket_packet, list);
-+
-+		list_del(&socket_packet->list);
-+		kfree(socket_packet);
-+		socket_client->queue_len--;
-+	}
-+
-+	spin_unlock_irqrestore(&socket_client->lock, flags);
-+
-+	wake_up(&socket_client->queue_wait);
-+}
-+
-+void bat_socket_receive_packet(struct icmp_packet *icmp_packet)
-+{
-+	struct socket_client *hash = socket_client_hash[icmp_packet->uid];
-+
-+	if (hash)
-+		bat_socket_add_packet(hash, icmp_packet);
-+}
-diff --git a/drivers/staging/batman-adv/icmp_socket.h b/drivers/staging/batman-adv/icmp_socket.h
-new file mode 100644
-index 0000000..5ad73da
---- /dev/null
-+++ b/drivers/staging/batman-adv/icmp_socket.h
-@@ -0,0 +1,28 @@
-+/*
-+ * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ */
-+
-+#include "types.h"
-+
-+#define ICMP_SOCKET "socket"
-+
-+void bat_socket_init(void);
-+int bat_socket_setup(struct bat_priv *bat_priv);
-+void bat_socket_receive_packet(struct icmp_packet *icmp_packet);
-diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
-index 74c70d5..1d52018 100644
---- a/drivers/staging/batman-adv/main.c
-+++ b/drivers/staging/batman-adv/main.c
-@@ -21,11 +21,12 @@
- 
- #include "main.h"
- #include "bat_sysfs.h"
-+#include "bat_debugfs.h"
- #include "routing.h"
- #include "send.h"
- #include "originator.h"
- #include "soft-interface.h"
--#include "device.h"
-+#include "icmp_socket.h"
- #include "translation-table.h"
- #include "hard-interface.h"
- #include "types.h"
-@@ -92,7 +93,8 @@ int init_module(void)
- 	if (!bat_event_workqueue)
- 		return -ENOMEM;
- 
--	bat_device_init();
-+	bat_socket_init();
-+	debugfs_init();
- 
- 	/* initialize layer 2 interface */
- 	soft_device = alloc_netdev(sizeof(struct bat_priv) , "bat%d",
-@@ -117,6 +119,11 @@ int init_module(void)
- 	if (retval < 0)
- 		goto unreg_soft_device;
- 
-+	retval = debugfs_add_meshif(soft_device);
-+
-+	if (retval < 0)
-+		goto unreg_sysfs;
-+
- 	register_netdevice_notifier(&hard_if_notifier);
- 	dev_add_pack(&batman_adv_packet_type);
- 
-@@ -126,6 +133,8 @@ int init_module(void)
- 
- 	return 0;
- 
-+unreg_sysfs:
-+	sysfs_del_meshif(soft_device);
- unreg_soft_device:
- 	unregister_netdev(soft_device);
- 	soft_device = NULL;
-@@ -146,6 +155,7 @@ void cleanup_module(void)
- 	hardif_remove_interfaces();
- 
- 	if (soft_device) {
-+		debugfs_del_meshif(soft_device);
- 		sysfs_del_meshif(soft_device);
- 		unregister_netdev(soft_device);
- 		soft_device = NULL;
-@@ -157,7 +167,7 @@ void cleanup_module(void)
- 	bat_event_workqueue = NULL;
- }
- 
--/* activates the module, creates bat device, starts timer ... */
-+/* activates the module, starts timer ... */
- void activate_module(void)
- {
- 	if (originator_init() < 1)
-@@ -171,9 +181,6 @@ void activate_module(void)
- 
- 	hna_local_add(soft_device->dev_addr);
- 
--	if (bat_device_setup() < 1)
--		goto end;
--
- 	if (vis_init() < 1)
- 		goto err;
- 
-@@ -208,7 +215,7 @@ void deactivate_module(void)
- 	hna_global_free();
- 
- 	synchronize_net();
--	bat_device_destroy();
-+	debugfs_destroy();
- 
- 	synchronize_rcu();
- 	atomic_set(&module_state, MODULE_INACTIVE);
-diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
-index 066dc8b..d4bdca9 100644
---- a/drivers/staging/batman-adv/routing.c
-+++ b/drivers/staging/batman-adv/routing.c
-@@ -25,7 +25,7 @@
- #include "hash.h"
- #include "soft-interface.h"
- #include "hard-interface.h"
--#include "device.h"
-+#include "icmp_socket.h"
- #include "translation-table.h"
- #include "originator.h"
- #include "types.h"
-@@ -668,7 +668,7 @@ static int recv_my_icmp_packet(struct sk_buff *skb)
- 
- 	/* add data to device queue */
- 	if (icmp_packet->msg_type != ECHO_REQUEST) {
--		bat_device_receive_packet(icmp_packet);
-+		bat_socket_receive_packet(icmp_packet);
- 		return NET_RX_DROP;
- 	}
- 
-diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
-index 86007c7..751cd63 100644
---- a/drivers/staging/batman-adv/types.h
-+++ b/drivers/staging/batman-adv/types.h
-@@ -106,9 +106,10 @@ struct bat_priv {
- 	char num_ifaces;
- 	struct batman_if *primary_if;
- 	struct kobject *mesh_obj;
-+	struct dentry *debug_dir;
- };
- 
--struct device_client {
-+struct socket_client {
- 	struct list_head queue_list;
- 	unsigned int queue_len;
- 	unsigned char index;
-@@ -116,7 +117,7 @@ struct device_client {
- 	wait_queue_head_t queue_wait;
- };
- 
--struct device_packet {
-+struct socket_packet {
- 	struct list_head list;
- 	struct icmp_packet icmp_packet;
- };
--- 
-1.7.1
+
+
+
+>=20
+>=20
+> Here it's data from the debug:
+>=20
+> bmxd -cd1
+> Originator       brc          Nexthop [outgoingIF]    Potential nexthops
+> ... [MainIF/IP: ath2/5.217.236.96, UT:  0:00:14:26]
+> 5.170.251.84    ( 87)   5.217.134.125 [      ath2]      5.255.22.64 ( 84)
+> 5.217.134.125   ( 98)   5.217.134.125 [      ath2]      5.255.22.64 ( 98)
+> 5.255.22.64     ( 99)     5.255.22.64 [      ath2]    5.217.134.125 ( 92)
+>=20
+> bmxd -cd2
+>   Originator         bestNextHop   #         preferred gateway: 0.0.0.0
+>    5.217.134.125     5.217.134.125  98, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.255.22.64         5.255.22.64  99, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.170.251.84      5.217.134.125  86, gw_class 169 - 3MBit/768KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>=20
+>=20
+> bmxd -cd4
+>=20
+> ------------------ DEBUG ------------------
+> Outstanding OGM for sending:
+> 5.255.22.64       (seqno 13462  ttl  49)  at 899745
+> 5.217.236.96      (seqno 60294  ttl  50)  at 900000
+> 5.217.134.125     (seqno 35844  ttl  49)  at 900086
+>=20
+> BMX 0.3-rc1 rv1636, 5.217.236.96, LWS 20, PWS 100, OGI 2000ms, UT
+> 0:00:15:00, CPU 1.1
+>=20
+> Neighbor        viaIF      Originator      RTQ  RQ  TQ       lseq lvld
+> rid nid
+> 5.217.134.125   ath2       5.217.134.125    99 100  99      35844    0
+>  7   1
+> 5.255.22.64     ath2       5.255.22.64     100 100 100      13462    0
+>  2   2
+>=20
+> Originator      outgoingIF bestNextHop      TQ(rcnt) knownSince
+> lsqn(diff) lvld pws ~ogi cpu hop
+> 5.170.251.84    ath2       5.217.134.125    88  93   0:00:13:24 57688
+> 0     1 100 2013   1   2
+> 5.217.134.125   ath2       5.217.134.125    98  99   0:00:14:58 35844
+> 0     0 100 2026   9   1
+> 5.255.22.64     ath2       5.255.22.64      99 100   0:00:14:59 13462
+> 0     0 100 1973   1   1
+>        3 known Originator(s), averages:     95  97
+>       0 100 2004   3   1
+>=20
+> Originator      Announced networks HNAs:  network/netmask or
+> interface/IF (B:blocked)...
+>=20
+>   Originator         bestNextHop   #         preferred gateway: 0.0.0.0
+>    5.217.134.125     5.217.134.125  98, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.255.22.64         5.255.22.64  99, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.170.251.84      5.217.134.125  88, gw_class 169 - 3MBit/768KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>=20
+> Originator      Announced services ip:port:seqno ...
+>=20
+> --------------- END DEBUG ---------------
+> ------------------ DEBUG ------------------
+> Outstanding OGM for sending:
+> 5.170.251.84      (seqno 57689  ttl  48)  at 900886
+> 5.217.236.96      (seqno 60295  ttl  50)  at 902000
+>=20
+> BMX 0.3-rc1 rv1636, 5.217.236.96, LWS 20, PWS 100, OGI 2000ms, UT
+> 0:00:15:01, CPU 1.1
+>=20
+> Neighbor        viaIF      Originator      RTQ  RQ  TQ       lseq lvld
+> rid nid
+> 5.217.134.125   ath2       5.217.134.125    99 100  99      35844    1
+>  7   1
+> 5.255.22.64     ath2       5.255.22.64     100 100 100      13462    1
+>  2   2
+>=20
+> Originator      outgoingIF bestNextHop      TQ(rcnt) knownSince
+> lsqn(diff) lvld pws ~ogi cpu hop
+> 5.170.251.84    ath2       5.217.134.125    88  94   0:00:13:25 57689
+> 0     0 100 1985   1   2
+> 5.217.134.125   ath2       5.217.134.125    98  99   0:00:14:59 35844
+> 0     1 100 2026   9   1
+> 5.255.22.64     ath2       5.255.22.64      99 100   0:00:15:00 13462
+> 0     1 100 1973   1   1
+>        3 known Originator(s), averages:     95  97
+>       0 100 1994   3   1
+>=20
+> Originator      Announced networks HNAs:  network/netmask or
+> interface/IF (B:blocked)...
+>=20
+>   Originator         bestNextHop   #         preferred gateway: 0.0.0.0
+>    5.217.134.125     5.217.134.125  98, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.255.22.64         5.255.22.64  99, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.170.251.84      5.217.134.125  88, gw_class 169 - 3MBit/768KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>=20
+> Originator      Announced services ip:port:seqno ...
+>=20
+> --------------- END DEBUG ---------------
+> ------------------ DEBUG ------------------
+> Outstanding OGM for sending:
+> 5.217.134.125     (seqno 35845  ttl  49)  at 902186
+> 5.217.236.96      (seqno 60296  ttl  50)  at 904000
+>=20
+> BMX 0.3-rc1 rv1636, 5.217.236.96, LWS 20, PWS 100, OGI 2000ms, UT
+> 0:00:15:02, CPU 0.9
+>=20
+> Neighbor        viaIF      Originator      RTQ  RQ  TQ       lseq lvld
+> rid nid
+> 5.217.134.125   ath2       5.217.134.125    99 100  99      35845    0
+>  7   1
+> 5.255.22.64     ath2       5.255.22.64     100 100 100      13463    1
+>  2   2
+>=20
+> Originator      outgoingIF bestNextHop      TQ(rcnt) knownSince
+> lsqn(diff) lvld pws ~ogi cpu hop
+> 5.170.251.84    ath2       5.217.134.125    88  94   0:00:13:26 57689
+> 0     2 100 1985   1   2
+> 5.217.134.125   ath2       5.217.134.125    98  99   0:00:15:00 35845
+> 0     0 100 2035   3   1
+> 5.255.22.64     ath2       5.255.22.64      99 100   0:00:15:01 13463
+> 0     1 100 1977   1   1
+>        3 known Originator(s), averages:     95  97
+>       1 100 1999   1   1
+>=20
+> Originator      Announced networks HNAs:  network/netmask or
+> interface/IF (B:blocked)...
+>=20
+>   Originator         bestNextHop   #         preferred gateway: 0.0.0.0
+>    5.217.134.125     5.217.134.125  98, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.255.22.64         5.255.22.64  99, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.170.251.84      5.217.134.125  88, gw_class 169 - 3MBit/768KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>=20
+> Originator      Announced services ip:port:seqno ...
+>=20
+> --------------- END DEBUG ---------------
+> ------------------ DEBUG ------------------
+> Outstanding OGM for sending:
+> 5.255.22.64       (seqno 13464  ttl  49)  at 903665
+> 5.217.236.96      (seqno 60296  ttl  50)  at 904000
+>=20
+> BMX 0.3-rc1 rv1636, 5.217.236.96, LWS 20, PWS 100, OGI 2000ms, UT
+> 0:00:15:04, CPU 0.9
+>=20
+> Neighbor        viaIF      Originator      RTQ  RQ  TQ       lseq lvld
+> rid nid
+> 5.217.134.125   ath2       5.217.134.125    99 100  99      35845    1
+>  7   1
+> 5.255.22.64     ath2       5.255.22.64     100 100 100      13464    0
+>  2   2
+>=20
+> Originator      outgoingIF bestNextHop      TQ(rcnt) knownSince
+> lsqn(diff) lvld pws ~ogi cpu hop
+> 5.170.251.84    ath2       5.217.134.125    88  95   0:00:13:28 57690
+> 0     0 100 2018   1   2
+> 5.217.134.125   ath2       5.217.134.125    98  99   0:00:15:02 35845
+> 0     1 100 2035   3   1
+> 5.255.22.64     ath2       5.255.22.64      99 100   0:00:15:03 13464
+> 0     0 100 1970   3   1
+>        3 known Originator(s), averages:     95  98
+>       0 100 2007   2   1
+>=20
+> Originator      Announced networks HNAs:  network/netmask or
+> interface/IF (B:blocked)...
+>=20
+>   Originator         bestNextHop   #         preferred gateway: 0.0.0.0
+>    5.217.134.125     5.217.134.125  98, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.255.22.64         5.255.22.64  99, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.170.251.84      5.217.134.125  88, gw_class 169 - 3MBit/768KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>=20
+> Originator      Announced services ip:port:seqno ...
+>=20
+> --------------- END DEBUG ---------------
+> ------------------ DEBUG ------------------
+> Outstanding OGM for sending:
+> 5.170.251.84      (seqno 57691  ttl  48)  at 904905
+> 5.217.236.96      (seqno 60297  ttl  50)  at 906000
+>=20
+> BMX 0.3-rc1 rv1636, 5.217.236.96, LWS 20, PWS 100, OGI 2000ms, UT
+> 0:00:15:05, CPU 0.9
+>=20
+> Neighbor        viaIF      Originator      RTQ  RQ  TQ       lseq lvld
+> rid nid
+> 5.217.134.125   ath2       5.217.134.125    99 100  99      35846    1
+>  7   1
+> 5.255.22.64     ath2       5.255.22.64     100 100 100      13464    1
+>  2   2
+>=20
+> Originator      outgoingIF bestNextHop      TQ(rcnt) knownSince
+> lsqn(diff) lvld pws ~ogi cpu hop
+> 5.170.251.84    ath2       5.217.134.125    88  95   0:00:13:29 57691
+> 0     0 100 1987   1   2
+> 5.217.134.125   ath2       5.217.134.125    98  99   0:00:15:03 35846
+> 0     1 100 2031   3   1
+> 5.255.22.64     ath2       5.255.22.64      99 100   0:00:15:04 13464
+> 0     1 100 1970   3   1
+>        3 known Originator(s), averages:     95  98
+>       0 100 1996   2   1
+>=20
+> Originator      Announced networks HNAs:  network/netmask or
+> interface/IF (B:blocked)...
+>=20
+>   Originator         bestNextHop   #         preferred gateway: 0.0.0.0
+>    5.217.134.125     5.217.134.125  98, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.255.22.64         5.255.22.64  99, gw_class 25 - 512KBit/128KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>    5.170.251.84      5.217.134.125  88, gw_class 169 - 3MBit/768KBit,
+> reliability: 0, supported tunnel types 2WT, 1WT
+>=20
+> Originator      Announced services ip:port:seqno ...
+>=20
+> --------------- END DEBUG ---------------
+>=20
+>=20
+> bmxd -cd5
+>=20
+> Memory usage information:
+>    tag:  504, num malloc:    1, bytes per malloc:   44, total:     44
+>    tag:  123, num malloc:    4, bytes per malloc:   10, total:     40
+>    tag:  103, num malloc:    4, bytes per malloc:   16, total:     64
+>    tag:  428, num malloc:    2, bytes per malloc:   20, total:     40
+>    tag:  403, num malloc:    8, bytes per malloc:   44, total:    352
+>    tag:  429, num malloc:    4, bytes per malloc:    8, total:     32
+>    tag:  327, num malloc:   14, bytes per malloc:   16, total:    224
+>    tag:  402, num malloc:    4, bytes per malloc:  104, total:    416
+>    tag:  209, num malloc:    1, bytes per malloc: 1045, total:   1045
+>    tag:  742, num malloc:    8, bytes per malloc:   16, total:    128
+>    tag:  741, num malloc:    2, bytes per malloc:   24, total:     48
+>    tag:  206, num malloc:    1, bytes per malloc: 1200, total:   1200
+>    tag:  778, num malloc:    5, bytes per malloc:    5, total:     25
+>    tag:  777, num malloc:    5, bytes per malloc:   24, total:    120
+>    tag:  201, num malloc:    1, bytes per malloc:   20, total:     20
+>    tag:  109, num malloc:    3, bytes per malloc:   16, total:     48
+>    tag:  312, num malloc:    4, bytes per malloc:   24, total:     96
+>    tag:  315, num malloc:    3, bytes per malloc:   12, total:     36
+>=20
+> bmxd -cd8
+> BMX 0.3-rc1 rv1636, 5.217.236.96, LWS 20, PWS 100, OGI 2000ms, UT
+> 0:00:05:19, CPU 3.0
+>=20
+> Neighbor        viaIF      Originator      RTQ  RQ  TQ       lseq lvld
+> rid nid
+> 5.217.134.125   ath2       5.217.134.125   100 100 100      36095    0
+>  7   2
+> 5.255.22.64     ath2       5.255.22.64     100 100 100      13711    1
+>  2   1
+>=20
+> Originator      outgoingIF bestNextHop      TQ(rcnt) knownSince
+> lsqn(diff) lvld pws ~ogi cpu hop
+> 5.170.251.84    ath2       5.217.134.125    86  99   0:00:03:40 57940
+> 0     0 100 2010   1   2
+> 5.211.219.234   ath2       5.217.134.125     3  12   0:00:01:33 26027
+> 0    62 100 1000   1   2
+> 5.217.134.125   ath2       5.217.134.125    88 100   0:00:05:18 36095
+> 0     0 100 1971   3   1
+> 5.255.22.64     ath2       5.217.134.125    88  99   0:00:05:17 13711
+> 0     1 100 2003   1   2
+>        4 known Originator(s), averages:     66  77
+>      15 100 1746   1   1
+>=20
+> bmxd -cd10
+> Neighbor        viaIF      Originator      RTQ  RQ  TQ       lseq lvld
+> rid nid
+> 5.217.134.125   ath2       5.217.134.125   100 100 100      36117    0
+>  7   2
+> 5.255.22.64     ath2       5.255.22.64     100 100 100      13733    1
+>  2   1
+>=20
+>=20
+> /usr/sbin/bmxd dev=3Dath2 -o 2000 -r 1 -d 3
+> [2718        0] INFO  resetting muted dbg history
+> [2718        0] INFO  BatMan-eXp 0.3-rc1 rv1636 (compatibility version
+> 10): /usr/sbin/bmxd dev=3Dath2 -o 2000 -r 1 -d 3
+> [2718        0] INFO  add rule from 0.0.0.0/0  table 64  prio 6400  iif
+> (null)  type 1
+> [2718        0] INFO  add rule from 0.0.0.0/0  table 65  prio 6401  iif
+> (null)  type 1
+> [2718        0] INFO   add route to       127.0.0.0/8   table 65  via
+> 0.0.0.0          dev lo         ifi  0  RTN_THROW   TRACK_MY_HNA
+> [2718        0] INFO   add route to   10.236.96.192/26  table 65  via
+> 0.0.0.0          dev eth0       ifi  0  RTN_THROW   TRACK_MY_HNA
+> [2718        0] INFO   add route to     10.236.96.0/25  table 65  via
+> 0.0.0.0          dev ath0       ifi  0  RTN_THROW   TRACK_MY_HNA
+> [2718        0] INFO   add route to   10.236.96.128/26  table 65  via
+> 0.0.0.0          dev ath1       ifi  0  RTN_THROW   TRACK_MY_HNA
+> [2718        0] INFO  enabled wireless dev ath2 5.217.236.96/8 brc
+> 5.255.255.255 (use ath2 /l=3D1 to optimize for ethernet)
+> [2718      186] INFO  get_lndev(): creating new lndev      5.255.22.64
+>      ath2 5.217.236.96
+> [2718      186] INFO  found new gateway 5.255.22.64, announced by
+> 5.255.22.64 -> class: 25 - 512KBit/128KBit, new supported tunnel types
+> TWT, OWT
+> [2718     1744] INFO  get_lndev(): creating new lndev    5.217.134.125
+>      ath2 5.217.236.96
+> [2718     1744] INFO  found new gateway 5.217.134.125, announced by
+> 5.217.134.125 -> class: 25 - 512KBit/128KBit, new supported tunnel types
+> TWT, OWT
+> [2718    97400] INFO  change route to 5.217.134.125   via 5.217.134.125
+>   ath2   2 / 100 (prev. via 0.0.0.0         --   0)
+> [2718    97846] INFO  change route to 5.255.22.64     via 5.255.22.64
+>   ath2   2 / 100 (prev. via 0.0.0.0         --   0)
+> [2718    99630] INFO  found new gateway 5.170.251.84, announced by
+> 5.170.251.84 -> class: 169 - 3MBit/768KBit, new supported tunnel types
+> TWT, OWT
+> [2718   101616] INFO  change route to 5.170.251.84    via 5.255.22.64
+>   ath2   1 / 100 (prev. via 0.0.0.0         --   0)
+> [2718   103160] INFO  change route to 5.170.251.84    via 5.217.134.125
+>   ath2   2 / 100 (prev. via 5.255.22.64     ath2   1)
+> [2718   113731] INFO  change route to 5.255.22.64     via 5.217.134.125
+>   ath2  12 / 100 (prev. via 5.255.22.64     ath2   9)
+> [2718   121286] INFO  change route to 5.217.134.125   via 5.255.22.64
+>   ath2  19 / 100 (prev. via 5.217.134.125   ath2  17)
+> [2718   134729] INFO  change route to 5.170.251.84    via 5.255.22.64
+>   ath2  25 / 100 (prev. via 5.217.134.125   ath2  23)
+> [2718   141059] INFO  change route to 5.217.134.125   via 5.217.134.125
+>   ath2  31 / 100 (prev. via 5.255.22.64     ath2  30)
+> [2718   144809] INFO  change route to 5.170.251.84    via 5.217.134.125
+>   ath2  27 / 100 (prev. via 5.255.22.64     ath2  25)
+> [2718   226464] INFO  change route to 5.211.219.234   via 5.217.134.125
+>   ath2   2 / 100 (prev. via 0.0.0.0         --   0)
+> [2718   226464] INFO  found new gateway 5.211.219.234, announced by
+> 5.211.219.234 -> class: 161 - 1536KBit/384KBit, new supported tunnel
+> types TWT, OWT
+> [2718   357780] INFO  change route to 5.211.219.234   via 0.0.0.0
+>   --   0 / 100 (prev. via 5.217.134.125   ath2   0)
+> [2718   357780] INFO  Gateway class of originator 5.211.219.234 changed
+> from 161 to 0, port 4306, addr 5.211.219.234, new supported tunnel types
+> -, -
+> [2718   357780] INFO  Gateway 5.211.219.234 removed from gateway list
+> [2718   378477] INFO  change route to 5.255.22.64     via 5.255.22.64
+>   ath2  93 / 100 (prev. via 5.217.134.125   ath2  92)
+>=20
+> *(CTRL+C pressed)
+>=20
+> ^C[2718   490754] ERROR handler(): called with signal 2
+> [2718   490814] WARN  can't select! Waiting a moment! errno: Interrupted
+> system call
+> [2718   490818] INFO  change route to 5.170.251.84    via 0.0.0.0
+>   --   0 / 100 (prev. via 5.217.134.125   ath2   0)
+> [2718   490818] INFO  Gateway class of originator 5.170.251.84 changed
+> from 169 to 0, port 4306, addr 5.170.251.84, new supported tunnel types -,
+>  - [2718   490818] INFO  Gateway 5.170.251.84 removed from gateway list
+>  [2718   490818] INFO  change route to 5.217.134.125   via 0.0.0.0
+>   --   0 / 100 (prev. via 5.217.134.125   ath2   0)
+> [2718   490818] INFO  Gateway class of originator 5.217.134.125 changed
+> from 25 to 0, port 4306, addr 5.217.134.125, new supported tunnel types -,
+>  - [2718   490818] INFO  Gateway 5.217.134.125 removed from gateway list
+>  [2718   490818] INFO  change route to 5.255.22.64     via 0.0.0.0
+>   --   0 / 100 (prev. via 5.255.22.64     ath2   0)
+> [2718   490818] INFO  Gateway class of originator 5.255.22.64 changed
+> from 25 to 0, port 4306, addr 5.255.22.64, new supported tunnel types -, -
+> [2718   490818] INFO  Gateway 5.255.22.64 removed from gateway list
+> [2718   490818] INFO  deactivating plugin bmx_hna_plugin
+> [2718   490818] INFO  deactivating plugin bmx_vis_plugin
+> [2718   490818] INFO  deactivating plugin bmx_tunnel_plugin
+> [2718   490818] INFO  deactivating plugin bmx_srv_plugin
+> [2718   490818] INFO   del route to       127.0.0.0/8   table 65  via
+> 0.0.0.0          dev (null)     ifi  0  RTN_THROW   TRACK_MY_HNA
+> [2718   490818] INFO   del route to   10.236.96.192/26  table 65  via
+> 0.0.0.0          dev (null)     ifi  0  RTN_THROW   TRACK_MY_HNA
+> [2718   490818] INFO   del route to     10.236.96.0/25  table 65  via
+> 0.0.0.0          dev (null)     ifi  0  RTN_THROW   TRACK_MY_HNA
+> [2718   490818] INFO   del route to   10.236.96.128/26  table 65  via
+> 0.0.0.0          dev (null)     ifi  0  RTN_THROW   TRACK_MY_HNA
+> [2718   490818] INFO  del rule from 0.0.0.0/0  table 64  prio 6400  iif
+> (null)  type 1
+> [2718   490818] INFO  del rule from 0.0.0.0/0  table 65  prio 6401  iif
+> (null)  type 1
+> [2718   490818] WARN  deactivating IF ath2       5.217.236.96
+>=20
 
