@@ -1,16 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-Date: Thu, 17 Jun 2010 17:19:52 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20100617151952.GA23827@Sellars>
+Return-Path: <clemens-john@gmx.de>
+From: Clemens John <clemens-john@gmx.de>
+Date: Thu, 17 Jun 2010 18:16:42 +0200
 References: <201006171018.47209.clemens-john@gmx.de>
-	<201006171220.03431.clemens-john@gmx.de>
-	<20100617120708.GA23608@Sellars>
 	<201006171619.49916.clemens-john@gmx.de>
+	<20100617151952.GA23827@Sellars>
+In-Reply-To: <20100617151952.GA23827@Sellars>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <201006171619.49916.clemens-john@gmx.de>
-Sender: linus.luessing@web.de
+Content-Type: multipart/signed; boundary="nextPart1972405.dYIOkMQ71I";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <201006171816.46615.clemens-john@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] MTU/connection problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,66 +24,35 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Clemens,
+--nextPart1972405.dYIOkMQ71I
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-wow, you're quick and eager, great spirit (woops, guess there is
-too much soccer talking around here during these days again :D)!
-Well, anyway, we'll get your setup fitting your needs, no worries
-:). Therefore, what are your plans for 20.00 tonight yet?
-It might be easier to discuss these things then via irc. Your goal
-might also not be 100% clear yet and from my guesses so far 
-at least three possible ways come to my mind and others might have
-even different ideas for solutions :) (which are simpler than the
-ones I usually come up with :P).
-So chatting would be great to avoid misunderstandings. Marek
-and me and probably some more would be there then.
-> We tried tinc now, but the problem does still exist.
-> Our Tinc config looks like this:
-> 
-> ----------
-> root@OpenWrt:~# cat /etc/tinc/batvpn/tinc.conf 
-> Hostnames=yes
-> Mode=Switch
-> name=floh1111
-> ConnectTo=batgw
-> #ConnectTo=harlingen
-> -----------
-> 
-> Normal ping over vpn till package size 1453 works.
-> If I increase the package size to 1454 ping fails.
-> 
-> All devices have an mtu of 1530 except bat0 and br-mesh which have an mtu of 
-> 1500.
-> Batman is running on the tinc device tap0 and our bridge looks like this:
-> 
-> ---------
-> config 'interface' 'mesh'
->         option 'type' 'bridge'
->         option 'ifname' 'ath0 bat0'
->         option 'proto' 'static'
->         option 'ipaddr' '10.18.1.101'
->         option 'netmask' '255.255.128.0'
->         option 'mtu' '1500'
->         option 'dns'   '10.18.0.1 10.18.0.254'
-> --------------
-This feature of tinc only works on IP packets, not batman-adv
-ethernetframes. Sorry for not stating that before, thought you'd
-have a different / easier setup: sending ip packets over the vpn
-and just bridging the clients into the same subnet (so bridging
-ath0 + bat0 + tap0 and not adding tap0 into batman-adv). I think
-in version 1.0.12 of tinc, you also still had to enable
-PMTUDiscovery in the tinc.conf explicitly, also only 1.0.13 has a
-working implementation of the TCP mss tempering.
+On Thursday 17 June 2010 17:19:52 Linus L=C3=BCssing wrote:
+> Hi Clemens,
+>=20
+> wow, you're quick and eager, great spirit (woops, guess there is
+> too much soccer talking around here during these days again :D)!
+> Well, anyway, we'll get your setup fitting your needs, no worries
+>=20
+> :). Therefore, what are your plans for 20.00 tonight yet?
 
-Anyway, this or your current setup, they both have pros and cons
-which we should talk about on irc, I guess :).
+Sry tonight I=C2=B4m busy. But tomorrow same time?
 
-Cheers, Linus
-> 
-> If I decrease the mtu on the client that has no batman advanced to 1481, 
-> everything works fine.
-> 
-> Think we need help again^^
-> Clemens
+Greetings
+Clemens
 
+--nextPart1972405.dYIOkMQ71I
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkwaSmoACgkQZgdHbA22lqMX9gCeOSQSTp9SM9R4NsJuL8vDb9kZ
+vmQAoJsN3a8GLmyMxjLgHQ/q59/GkAvE
+=HVJO
+-----END PGP SIGNATURE-----
+
+--nextPart1972405.dYIOkMQ71I--
