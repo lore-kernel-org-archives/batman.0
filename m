@@ -1,15 +1,15 @@
-Return-Path: <clemens-john@gmx.de>
-From: Clemens John <clemens-john@gmx.de>
-Date: Thu, 17 Jun 2010 18:16:42 +0200
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 17 Jun 2010 20:43:59 +0200
 References: <201006171018.47209.clemens-john@gmx.de>
-	<201006171619.49916.clemens-john@gmx.de>
 	<20100617151952.GA23827@Sellars>
-In-Reply-To: <20100617151952.GA23827@Sellars>
+	<201006171816.46615.clemens-john@gmx.de>
+In-Reply-To: <201006171816.46615.clemens-john@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1972405.dYIOkMQ71I";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <201006171816.46615.clemens-john@gmx.de>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201006172043.59700.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] MTU/connection problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,35 +24,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1972405.dYIOkMQ71I
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Thursday 17 June 2010 17:19:52 Linus L=C3=BCssing wrote:
-> Hi Clemens,
+On Thursday 17 June 2010 18:16:42 Clemens John wrote:
+> > :). Therefore, what are your plans for 20.00 tonight yet?
 >=20
-> wow, you're quick and eager, great spirit (woops, guess there is
-> too much soccer talking around here during these days again :D)!
-> Well, anyway, we'll get your setup fitting your needs, no worries
->=20
-> :). Therefore, what are your plans for 20.00 tonight yet?
+> Sry tonight I=B4m busy. But tomorrow same time?
 
-Sry tonight I=C2=B4m busy. But tomorrow same time?
+Sure, tomorrow is fine as well.
 
-Greetings
-Clemens
-
---nextPart1972405.dYIOkMQ71I
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkwaSmoACgkQZgdHbA22lqMX9gCeOSQSTp9SM9R4NsJuL8vDb9kZ
-vmQAoJsN3a8GLmyMxjLgHQ/q59/GkAvE
-=HVJO
------END PGP SIGNATURE-----
-
---nextPart1972405.dYIOkMQ71I--
+Regards,
+Marek
