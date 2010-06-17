@@ -1,17 +1,12 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 17 Jun 2010 09:25:57 +0200
-References: <1276727961-18719-1-git-send-email-sven.eckelmann@gmx.de>
-	<201006170110.19294.sven.eckelmann@gmx.de>
-	<20100617054257.GA15420@lunn.ch>
-In-Reply-To: <20100617054257.GA15420@lunn.ch>
+Return-Path: <clemens-john@gmx.de>
+From: Clemens John <clemens-john@gmx.de>
+Date: Thu, 17 Jun 2010 10:18:40 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2476727.VzfnARrv6C";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Type: multipart/signed; boundary="nextPart1318298.QiiENhNuWK";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201006170925.59150.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: use rx_handler_data pointer
-	to store net_bridge_port pointer
+Message-Id: <201006171018.47209.clemens-john@gmx.de>
+Subject: [B.A.T.M.A.N.] MTU/connection problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,62 +18,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: b.a.t.m.a.n@lists.open-mesh.net
 
---nextPart2476727.VzfnARrv6C
-Content-Type: Text/Plain;
-  charset="us-ascii"
+--nextPart1318298.QiiENhNuWK
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-Andrew Lunn wrote:
-> > --- a/batman-adv-kernelland/hard-interface.h
-> > +++ b/batman-adv-kernelland/hard-interface.h
-> > @@ -38,3 +38,8 @@ int batman_skb_recv(struct sk_buff *skb,
-> >=20
-> >  				struct net_device *orig_dev);
-> > =20
-> >  int hardif_min_mtu(void);
-> >  void update_min_mtu(void);
-> >=20
-> > +
-> > +#ifndef netdev_isbridged
-> > +#define netdev_isbridged(netdev) \
-> > +	((net_dev)->priv_flags & IFF_BRIDGE_PORT)
-> > +#endif
->=20
-> Maybe this could be pushed upstream? Seems like a useful bit of code
-> in general?
+Hi,
 
-I don't think so. It is only used in ~7 places in the whole kernel. If you=
+I have a problem to connect to the Internet. We are using Batman advanced=20
+0.2.1 and IPv4 here in oldenburg. Our setup looks like this:
+
+Laptop-[wifi]->Fonera-[wifi]->Dir300-->OpenVPN-->
+virtual OpenWrt machine-->internet.
+
+The default route of the laptop goes to the virtual OpenWrt machine wich=20
+provides an Internet connection.
+
+I can acces google (wget google.de) but not heise.de or golem.de. I=B4m not=
 =20
-want then please feel free to add something like this and submit it to Davi=
-d=20
-S. Miller.
+verry familar with network configurations but I heared that this might be a=
+n=20
+mtu problem.
 
-Best regards,
-	Sven
+All devices in the network (tap0, ath0, ath1, wifi0) have an mtu of 1524 ex=
+cept=20
+bat0 and br-mesh which have an mtu of 1500.
 
---nextPart2476727.VzfnARrv6C
+Our routers are configured to bridge connections from non batman devices (l=
+ike=20
+the laptop) to bat0. This is done in the device "br-mesh".
+
+Everythink works fine, except I can=B4t connect to internet websites that a=
+re not=20
+google.de.
+
+When I decrease the mtu of the wireless device of the laptop to 1476=20
+everything works fine.
+But I have to do this by hand and on a client this is bad.
+
+Does anybody know what I=B4m doing wrong?
+
+Greetings
+Clemens
+
+--nextPart1318298.QiiENhNuWK
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJMGc4GAAoJEF2HCgfBJntG5FMP/3iPHCbTIN/2wZTiIu9gQftP
-O1gqN5JAQrWPdA046K71ml0b6tjjNPCUIAMb+/iziI4Pwllxd5TBBa7JeiJZ4+ep
-ZyEeRXsfl2YLxZBifL0amW2dhlidreJEqi7MkDfxIF0cyb8x/DxCHW2VvqHhpTrG
-NeliN7ldNOVeMRf4RxaCubTp7DtQcOhbyyA9db48Fx8X7OROUl37MZuEzRKZkjPD
-ZPDhyc6fVWPsP+qt9toVyC9yjX9l9Cy2V+TaIB8uqO/IhU9ZInAiUy+dxLJT+nmI
-AddCBGoC1wLRHWXcOYEe5lm59v/kKu5aDtiw2k8P8I7ZgucjLa01FrFjjjo8b9B1
-5sjMbUsT3k7lKMtGGO4IL4dvnV3qKRr7w05LGsgkGHbUFlKJ2R1q1frRydudbq2x
-o1050YOhkkAAzUCkwAwepl6bTeMe+fh8HoJHm3ZJWcLR4SGKDgKJqNEcTGaeVVFe
-Y7z0iU4v2DVkQhlTdms7qQb5SSbQqkZIOaou6rM5bl1uuBq6B43QT1VmMdoG1zc3
-TRfBG4xpE3GP1XNrUOGmE8MJufDZcnVjNFCaDo9SrbFnWp3o0xx2JN6ec2L689Ky
-wEap+IBF2ah0a+Tkz+bYi6gmZriE69z/PvpcMNgZNduaDE+MlD2GAqnL/WypPU7v
-s+0WDPyctVYUFAtqH/mn
-=qhQB
+iEYEABECAAYFAkwZ2mAACgkQZgdHbA22lqP6rwCfd4dsAQn3YEOMgOpheLAVp5af
+mn8AoIobqNa22nh3Ky37zBInyUyrKPUn
+=dVI2
 -----END PGP SIGNATURE-----
 
---nextPart2476727.VzfnARrv6C--
+--nextPart1318298.QiiENhNuWK--
