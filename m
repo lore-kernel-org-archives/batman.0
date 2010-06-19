@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 19 Jun 2010 02:51:50 +0200
-Message-Id: <1276908713-28365-6-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 19 Jun 2010 02:51:51 +0200
+Message-Id: <1276908713-28365-7-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 5/8] Staging: batman-adv: 32bit sequence
-	number and TTL for broadcasts
+Subject: [B.A.T.M.A.N.] [PATCH 6/8] Staging: batman-adv: Add bonding
+	functionality
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,372 +22,671 @@ Cc: b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
 From: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-This patch changes the sequence number range from 8 or 16 bit to 32 bit.
-This should avoid problems with the sequence number sliding window algorithm
-which we had seen in the past for broadcast floods or malicious packet
-injections. We can not assure 100% security with this patch, but it is quite
-an improvement over the old 16 bit sequence numbers:
+This patch introduces bonding functionality to batman-advanced, targeted
+for the 0.3 release. As we are able to route the payload traffic as we
+want, we may use multiple interfaces on multihomed hosts to transfer data
+to achieve higher bandwidth. This can be considered as "light Multi Path
+Routing" for single hop connections.
 
- * expected window size can be increased (4096 -> 65536)
- * 64k packets in the right order would now be needed to cause a loop,
-   which seems practically impossible.
+To detect which interfaces of a peer node belong to the same host, a
+new flag PRIMARIES_FIRST_HOP is introduced. This flag is set on the first hop
+of OGMs of the primary (first) interface, which is broadcasted on all
+interfaces. When receiving such an OGM, we can learn which interfaces
+belong to the same host (by assigning them to the primary originator).
 
-Furthermore, a TTL field has been added to the broadcast packet type, just to
-make sure.
+Bonding works by sending packets in a round-robin fashion to the available
+interfaces of a neighbor host, if multiple interfaces are available. The
+neighbor interfaces should be almost equally good to reach.
 
-These changes required to increase the compatibility level once again.
+To avoid interferences (i.e. sending on the same channel), only neighbor
+interfaces with different mac addresses and different outgoing interfaces
+are considered as candidates.
+
+Bonding is deactivated by default, and can be activated by
+
+echo 1 > /sys/class/net/bat0/mesh/bonding
+
+for each individual node.
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-[sven.eckelmann@gmx.de: Change atomic64_* back to atomic_*, Rework on
-top of current version]
+[sven.eckelmann@gmx.de: Rework on top of current version]
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/aggregation.c    |    4 ++--
- drivers/staging/batman-adv/bitarray.c       |    8 ++++----
- drivers/staging/batman-adv/bitarray.h       |    6 +++---
- drivers/staging/batman-adv/main.h           |    2 +-
- drivers/staging/batman-adv/packet.h         |    9 +++++----
- drivers/staging/batman-adv/routing.c        |   17 ++++++++++-------
- drivers/staging/batman-adv/send.c           |   15 ++++++++++-----
- drivers/staging/batman-adv/soft-interface.c |    5 +++--
- drivers/staging/batman-adv/types.h          |    6 +++---
- drivers/staging/batman-adv/vis.c            |    5 +++--
- 10 files changed, 44 insertions(+), 33 deletions(-)
+ drivers/staging/batman-adv/bat_sysfs.c      |   52 ++++++
+ drivers/staging/batman-adv/hard-interface.c |    2 +-
+ drivers/staging/batman-adv/main.h           |    5 +
+ drivers/staging/batman-adv/originator.c     |    8 +-
+ drivers/staging/batman-adv/packet.h         |    1 +
+ drivers/staging/batman-adv/routing.c        |  242 +++++++++++++++++++++++---
+ drivers/staging/batman-adv/routing.h        |    3 +
+ drivers/staging/batman-adv/send.c           |    4 +-
+ drivers/staging/batman-adv/soft-interface.c |   60 ++++----
+ drivers/staging/batman-adv/types.h          |   11 ++
+ 10 files changed, 327 insertions(+), 61 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/aggregation.c b/drivers/staging/batman-adv/aggregation.c
-index ce8b8a6..3a5c349 100644
---- a/drivers/staging/batman-adv/aggregation.c
-+++ b/drivers/staging/batman-adv/aggregation.c
-@@ -252,9 +252,9 @@ void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff,
- 	while (aggregated_packet(buff_pos, packet_len,
- 				 batman_packet->num_hna)) {
+diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
+index b8ccb75..4e9c71d 100644
+--- a/drivers/staging/batman-adv/bat_sysfs.c
++++ b/drivers/staging/batman-adv/bat_sysfs.c
+@@ -84,6 +84,55 @@ static ssize_t store_aggr_ogms(struct kobject *kobj, struct attribute *attr,
+ 	return count;
+ }
  
--		/* network to host order for our 16bit seqno, and the
-+		/* network to host order for our 32bit seqno, and the
- 		   orig_interval. */
--		batman_packet->seqno = ntohs(batman_packet->seqno);
-+		batman_packet->seqno = ntohl(batman_packet->seqno);
- 
- 		hna_buff = packet_buff + buff_pos + BAT_PACKET_LEN;
- 		receive_bat_packet(ethhdr, batman_packet,
-diff --git a/drivers/staging/batman-adv/bitarray.c b/drivers/staging/batman-adv/bitarray.c
-index cfca033..c10fe03 100644
---- a/drivers/staging/batman-adv/bitarray.c
-+++ b/drivers/staging/batman-adv/bitarray.c
-@@ -24,10 +24,10 @@
- 
- /* returns true if the corresponding bit in the given seq_bits indicates true
-  * and curr_seqno is within range of last_seqno */
--uint8_t get_bit_status(TYPE_OF_WORD *seq_bits, uint16_t last_seqno,
--		       uint16_t curr_seqno)
-+uint8_t get_bit_status(TYPE_OF_WORD *seq_bits, uint32_t last_seqno,
-+		       uint32_t curr_seqno)
++static ssize_t show_bond(struct kobject *kobj, struct attribute *attr,
++			     char *buff)
++{
++	struct device *dev = to_dev(kobj->parent);
++	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
++	int bond_status = atomic_read(&bat_priv->bonding_enabled);
++
++	return sprintf(buff, "%s\n",
++		       bond_status == 0 ? "disabled" : "enabled");
++}
++
++static ssize_t store_bond(struct kobject *kobj, struct attribute *attr,
++			  char *buff, size_t count)
++{
++	struct device *dev = to_dev(kobj->parent);
++	struct net_device *net_dev = to_net_dev(dev);
++	struct bat_priv *bat_priv = netdev_priv(net_dev);
++	int bonding_enabled_tmp = -1;
++
++	if (((count == 2) && (buff[0] == '1')) ||
++	    (strncmp(buff, "enable", 6) == 0))
++		bonding_enabled_tmp = 1;
++
++	if (((count == 2) && (buff[0] == '0')) ||
++	    (strncmp(buff, "disable", 7) == 0))
++		bonding_enabled_tmp = 0;
++
++	if (bonding_enabled_tmp < 0) {
++		if (buff[count - 1] == '\n')
++			buff[count - 1] = '\0';
++
++		printk(KERN_ERR "batman-adv:Invalid parameter for 'bonding' setting on mesh %s received: %s\n",
++		       net_dev->name, buff);
++		return -EINVAL;
++	}
++
++	if (atomic_read(&bat_priv->bonding_enabled) == bonding_enabled_tmp)
++		return count;
++
++	printk(KERN_INFO "batman-adv:Changing bonding from: %s to: %s on mesh: %s\n",
++	       atomic_read(&bat_priv->bonding_enabled) == 1 ?
++	       "enabled" : "disabled",
++	       bonding_enabled_tmp == 1 ? "enabled" : "disabled",
++	       net_dev->name);
++
++	atomic_set(&bat_priv->bonding_enabled, (unsigned)bonding_enabled_tmp);
++	return count;
++}
++
+ static ssize_t show_vis_mode(struct kobject *kobj, struct attribute *attr,
+ 			     char *buff)
  {
--	int16_t diff, word_offset, word_num;
-+	int32_t diff, word_offset, word_num;
+@@ -182,12 +231,14 @@ static ssize_t store_orig_interval(struct kobject *kobj, struct attribute *attr,
  
- 	diff = last_seqno - curr_seqno;
- 	if (diff < 0 || diff >= TQ_LOCAL_WINDOW_SIZE) {
-@@ -125,7 +125,7 @@ static void bit_reset_window(TYPE_OF_WORD *seq_bits)
-  *  1 if the window was moved (either new or very old)
-  *  0 if the window was not moved/shifted.
-  */
--char bit_get_packet(TYPE_OF_WORD *seq_bits, int16_t seq_num_diff,
-+char bit_get_packet(TYPE_OF_WORD *seq_bits, int32_t seq_num_diff,
- 		    int8_t set_mark)
- {
- 	/* sequence number is slightly older. We already got a sequence number
-diff --git a/drivers/staging/batman-adv/bitarray.h b/drivers/staging/batman-adv/bitarray.h
-index 4dd1e7c..dad13bf 100644
---- a/drivers/staging/batman-adv/bitarray.h
-+++ b/drivers/staging/batman-adv/bitarray.h
-@@ -26,8 +26,8 @@
+ static BAT_ATTR(aggregated_ogms, S_IRUGO | S_IWUSR,
+ 		show_aggr_ogms, store_aggr_ogms);
++static BAT_ATTR(bonding, S_IRUGO | S_IWUSR, show_bond, store_bond);
+ static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
+ static BAT_ATTR(orig_interval, S_IRUGO | S_IWUSR,
+ 		show_orig_interval, store_orig_interval);
  
- /* returns true if the corresponding bit in the given seq_bits indicates true
-  * and curr_seqno is within range of last_seqno */
--uint8_t get_bit_status(TYPE_OF_WORD *seq_bits, uint16_t last_seqno,
--					   uint16_t curr_seqno);
-+uint8_t get_bit_status(TYPE_OF_WORD *seq_bits, uint32_t last_seqno,
-+					   uint32_t curr_seqno);
+ static struct bat_attribute *mesh_attrs[] = {
+ 	&bat_attr_aggregated_ogms,
++	&bat_attr_bonding,
+ 	&bat_attr_vis_mode,
+ 	&bat_attr_orig_interval,
+ 	NULL,
+@@ -203,6 +254,7 @@ int sysfs_add_meshif(struct net_device *dev)
+ 	/* FIXME: should be done in the general mesh setup
+ 		  routine as soon as we have it */
+ 	atomic_set(&bat_priv->aggregation_enabled, 1);
++	atomic_set(&bat_priv->bonding_enabled, 0);
+ 	atomic_set(&bat_priv->vis_mode, VIS_TYPE_CLIENT_UPDATE);
+ 	atomic_set(&bat_priv->orig_interval, 1000);
+ 	bat_priv->primary_if = NULL;
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index c7a1c31..028a7ea 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -109,7 +109,7 @@ static void set_primary_if(struct bat_priv *bat_priv,
+ 	set_main_if_addr(batman_if->net_dev->dev_addr);
  
- /* turn corresponding bit on, so we can remember that we got the packet */
- void bit_mark(TYPE_OF_WORD *seq_bits, int32_t n);
-@@ -35,7 +35,7 @@ void bit_mark(TYPE_OF_WORD *seq_bits, int32_t n);
+ 	batman_packet = (struct batman_packet *)(batman_if->packet_buff);
+-	batman_packet->flags = 0;
++	batman_packet->flags = PRIMARIES_FIRST_HOP;
+ 	batman_packet->ttl = TTL;
  
- /* receive and process one packet, returns 1 if received seq_num is considered
-  * new, 0 if old  */
--char bit_get_packet(TYPE_OF_WORD *seq_bits, int16_t seq_num_diff,
-+char bit_get_packet(TYPE_OF_WORD *seq_bits, int32_t seq_num_diff,
- 					int8_t set_mark);
- 
- /* count the hamming weight, how many good packets did we receive? */
+ 	/***
 diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
-index f70d99a..145ac51 100644
+index 145ac51..fe5ee51 100644
 --- a/drivers/staging/batman-adv/main.h
 +++ b/drivers/staging/batman-adv/main.h
-@@ -65,7 +65,7 @@
- #define MAX_AGGREGATION_MS 100
+@@ -59,6 +59,11 @@
  
- #define RESET_PROTECTION_MS 30000
--#define EXPECTED_SEQNO_RANGE	4096
-+#define EXPECTED_SEQNO_RANGE	65536
- /* don't reset again within 30 seconds */
+ #define VIS_INTERVAL 5000	/* 5 seconds */
  
- #define MODULE_INACTIVE 0
++/* how much worse secondary interfaces may be to
++ * to be considered as bonding candidates */
++
++#define BONDING_TQ_THRESHOLD	50
++
+ #define MAX_AGGREGATION_BYTES 512 /* should not be bigger than 512 bytes or
+ 				   * change the size of
+ 				   * forw_packet->direct_link_flags */
+diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
+index 1f6cbe8..195c1ee 100644
+--- a/drivers/staging/batman-adv/originator.c
++++ b/drivers/staging/batman-adv/originator.c
+@@ -226,6 +226,8 @@ static bool purge_orig_neighbors(struct orig_node *orig_node,
+ 
+ static bool purge_orig_node(struct orig_node *orig_node)
+ {
++	/* FIXME: each batman_if will be attached to a softif */
++	struct bat_priv *bat_priv = netdev_priv(soft_device);
+ 	struct neigh_node *best_neigh_node;
+ 
+ 	if (time_after(jiffies,
+@@ -237,10 +239,14 @@ static bool purge_orig_node(struct orig_node *orig_node)
+ 			orig_node->orig, (orig_node->last_valid / HZ));
+ 		return true;
+ 	} else {
+-		if (purge_orig_neighbors(orig_node, &best_neigh_node))
++		if (purge_orig_neighbors(orig_node, &best_neigh_node)) {
+ 			update_routes(orig_node, best_neigh_node,
+ 				      orig_node->hna_buff,
+ 				      orig_node->hna_buff_len);
++			/* update bonding candidates, we could have lost
++			 * some candidates. */
++			update_bonding_candidates(bat_priv, orig_node);
++		}
+ 	}
+ 
+ 	return false;
 diff --git a/drivers/staging/batman-adv/packet.h b/drivers/staging/batman-adv/packet.h
-index 152f57b..f0387ba 100644
+index f0387ba..d0d35ea 100644
 --- a/drivers/staging/batman-adv/packet.h
 +++ b/drivers/staging/batman-adv/packet.h
-@@ -28,7 +28,7 @@
- #define BAT_VIS       0x05
- 
- /* this file is included by batctl which needs these defines */
--#define COMPAT_VERSION 8
-+#define COMPAT_VERSION 11
+@@ -31,6 +31,7 @@
+ #define COMPAT_VERSION 11
  #define DIRECTLINK 0x40
  #define VIS_SERVER 0x20
++#define PRIMARIES_FIRST_HOP 0x10
  
-@@ -48,7 +48,7 @@ struct batman_packet {
- 	uint8_t  version;  /* batman version field */
- 	uint8_t  flags;    /* 0x40: DIRECTLINK flag, 0x20 VIS_SERVER flag... */
- 	uint8_t  tq;
--	uint16_t seqno;
-+	uint32_t seqno;
- 	uint8_t  orig[6];
- 	uint8_t  prev_sender[6];
- 	uint8_t  ttl;
-@@ -79,15 +79,16 @@ struct bcast_packet {
- 	uint8_t  packet_type;
- 	uint8_t  version;  /* batman version field */
- 	uint8_t  orig[6];
--	uint16_t seqno;
-+	uint8_t  ttl;
-+	uint32_t seqno;
- } __attribute__((packed));
- 
- struct vis_packet {
- 	uint8_t  packet_type;
- 	uint8_t  version;        /* batman version field */
- 	uint8_t  vis_type;	 /* which type of vis-participant sent this? */
--	uint8_t  seqno;		 /* sequence number */
- 	uint8_t  entries;	 /* number of entries behind this struct */
-+	uint32_t seqno;		 /* sequence number */
- 	uint8_t  ttl;		 /* TTL */
- 	uint8_t  vis_orig[6];	 /* originator that informs about its
- 				  * neighbors */
+ /* ICMP message types */
+ #define ECHO_REPLY 0
 diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
-index 480c645..9dbfabe 100644
+index 9dbfabe..6a2c2d1 100644
 --- a/drivers/staging/batman-adv/routing.c
 +++ b/drivers/staging/batman-adv/routing.c
-@@ -318,7 +318,7 @@ update_hna:
-  *  0 if the packet is to be accepted
-  *  1 if the packet is to be ignored.
-  */
--static int window_protected(int16_t seq_num_diff,
-+static int window_protected(int32_t seq_num_diff,
- 				unsigned long *last_reset)
+@@ -395,11 +395,132 @@ static char count_real_packets(struct ethhdr *ethhdr,
+ 	return is_duplicate;
+ }
+ 
++/* copy primary address for bonding */
++static void mark_bonding_address(struct bat_priv *bat_priv,
++				 struct orig_node *orig_node,
++				 struct orig_node *orig_neigh_node,
++				 struct batman_packet *batman_packet)
++
++{
++	/* don't care if bonding is not enabled */
++	if (!atomic_read(&bat_priv->bonding_enabled)) {
++		orig_node->bond.candidates = 0;
++		return;
++	}
++
++	if (batman_packet->flags & PRIMARIES_FIRST_HOP)
++		memcpy(orig_neigh_node->primary_addr,
++		       orig_node->orig, ETH_ALEN);
++
++	return;
++}
++
++/* mark possible bond.candidates in the neighbor list */
++void update_bonding_candidates(struct bat_priv *bat_priv,
++			       struct orig_node *orig_node)
++{
++	int candidates;
++	int interference_candidate;
++	int best_tq;
++	struct neigh_node *tmp_neigh_node, *tmp_neigh_node2;
++	struct neigh_node *first_candidate, *last_candidate;
++
++	/* don't care if bonding is not enabled */
++	if (!atomic_read(&bat_priv->bonding_enabled)) {
++		orig_node->bond.candidates = 0;
++		return;
++	}
++
++	/* update the candidates for this originator */
++	if (!orig_node->router) {
++		orig_node->bond.candidates = 0;
++		return;
++	}
++
++	best_tq = orig_node->router->tq_avg;
++
++	/* update bond.candidates */
++
++	candidates = 0;
++
++	/* mark other nodes which also received "PRIMARIES FIRST HOP" packets
++	 * as "bonding partner" */
++
++	/* first, zero the list */
++	list_for_each_entry(tmp_neigh_node, &orig_node->neigh_list, list) {
++		tmp_neigh_node->next_bond_candidate = NULL;
++	}
++
++	first_candidate = NULL;
++	last_candidate = NULL;
++	list_for_each_entry(tmp_neigh_node, &orig_node->neigh_list, list) {
++
++		/* only consider if it has the same primary address ...  */
++		if (memcmp(orig_node->orig,
++				tmp_neigh_node->orig_node->primary_addr,
++				ETH_ALEN) != 0)
++			continue;
++
++		/* ... and is good enough to be considered */
++		if (tmp_neigh_node->tq_avg < best_tq - BONDING_TQ_THRESHOLD)
++			continue;
++
++		/* check if we have another candidate with the same
++		 * mac address or interface. If we do, we won't
++		 * select this candidate because of possible interference. */
++
++		interference_candidate = 0;
++		list_for_each_entry(tmp_neigh_node2,
++				&orig_node->neigh_list, list) {
++
++			if (tmp_neigh_node2 == tmp_neigh_node)
++				continue;
++
++			/* we only care if the other candidate is even
++			 * considered as candidate. */
++			if (tmp_neigh_node2->next_bond_candidate == NULL)
++				continue;
++
++
++			if ((tmp_neigh_node->if_incoming ==
++				tmp_neigh_node2->if_incoming)
++				|| (memcmp(tmp_neigh_node->addr,
++				tmp_neigh_node2->addr, ETH_ALEN) == 0)) {
++
++				interference_candidate = 1;
++				break;
++			}
++		}
++		/* don't care further if it is an interference candidate */
++		if (interference_candidate)
++			continue;
++
++		if (first_candidate == NULL) {
++			first_candidate = tmp_neigh_node;
++			tmp_neigh_node->next_bond_candidate = first_candidate;
++		} else
++			tmp_neigh_node->next_bond_candidate = last_candidate;
++
++		last_candidate = tmp_neigh_node;
++
++		candidates++;
++	}
++
++	if (candidates > 0) {
++		first_candidate->next_bond_candidate = last_candidate;
++		orig_node->bond.selected = first_candidate;
++	}
++
++	orig_node->bond.candidates = candidates;
++}
++
+ void receive_bat_packet(struct ethhdr *ethhdr,
+ 				struct batman_packet *batman_packet,
+ 				unsigned char *hna_buff, int hna_buff_len,
+ 				struct batman_if *if_incoming)
  {
- 	if ((seq_num_diff <= -TQ_LOCAL_WINDOW_SIZE)
-@@ -352,7 +352,7 @@ static char count_real_packets(struct ethhdr *ethhdr,
++	/* FIXME: each orig_node->batman_if will be attached to a softif */
++	struct bat_priv *bat_priv = netdev_priv(soft_device);
+ 	struct batman_if *batman_if;
+ 	struct orig_node *orig_neigh_node, *orig_node;
+ 	char has_directlink_flag;
+@@ -577,6 +698,10 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 		update_orig(orig_node, ethhdr, batman_packet,
+ 			    if_incoming, hna_buff, hna_buff_len, is_duplicate);
+ 
++	mark_bonding_address(bat_priv, orig_node,
++			     orig_neigh_node, batman_packet);
++	update_bonding_candidates(bat_priv, orig_node);
++
+ 	/* is single hop (direct) neighbor */
+ 	if (is_single_hop_neigh) {
+ 
+@@ -859,16 +984,75 @@ int recv_icmp_packet(struct sk_buff *skb)
+ 	return ret;
+ }
+ 
++/* find a suitable router for this originator, and use
++ * bonding if possible. */
++struct neigh_node *find_router(struct orig_node *orig_node)
++{
++	/* FIXME: each orig_node->batman_if will be attached to a softif */
++	struct bat_priv *bat_priv = netdev_priv(soft_device);
++	struct orig_node *primary_orig_node;
++	struct orig_node *router_orig;
++	struct neigh_node *router;
++	static uint8_t zero_mac[ETH_ALEN] = {0, 0, 0, 0, 0, 0};
++
++	if (!orig_node)
++		return NULL;
++
++	if (!orig_node->router)
++		return NULL;
++
++	/* don't care if bonding is not enabled */
++	if (!atomic_read(&bat_priv->bonding_enabled))
++		return orig_node->router;
++
++	router_orig = orig_node->router->orig_node;
++
++	/* if we have something in the primary_addr, we can search
++	 * for a potential bonding candidate. */
++	if (memcmp(router_orig->primary_addr, zero_mac, ETH_ALEN) == 0)
++		return orig_node->router;
++
++	/* find the orig_node which has the primary interface. might
++	 * even be the same as our router_orig in many cases */
++
++	if (memcmp(router_orig->primary_addr,
++				router_orig->orig, ETH_ALEN) == 0) {
++		primary_orig_node = router_orig;
++	} else {
++		primary_orig_node = hash_find(orig_hash,
++						router_orig->primary_addr);
++		if (!primary_orig_node)
++			return orig_node->router;
++	}
++
++	/* with less than 2 candidates, we can't do any
++	 * bonding and prefer the original router. */
++
++	if (primary_orig_node->bond.candidates < 2)
++		return orig_node->router;
++
++	router = primary_orig_node->bond.selected;
++
++	/* sanity check - this should never happen. */
++	if (!router)
++		return orig_node->router;
++
++	/* select the next bonding partner ... */
++	primary_orig_node->bond.selected = router->next_bond_candidate;
++
++	return router;
++}
++
+ int recv_unicast_packet(struct sk_buff *skb)
+ {
+ 	struct unicast_packet *unicast_packet;
  	struct orig_node *orig_node;
- 	struct neigh_node *tmp_neigh_node;
- 	char is_duplicate = 0;
--	int16_t seq_diff;
-+	int32_t seq_diff;
- 	int need_update = 0;
- 	int set_mark;
- 
-@@ -406,7 +406,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 	char is_my_addr = 0, is_my_orig = 0, is_my_oldorig = 0;
- 	char is_broadcast = 0, is_bidirectional, is_single_hop_neigh;
- 	char is_duplicate;
--	unsigned short if_incoming_seqno;
-+	uint32_t if_incoming_seqno;
- 
- 	/* Silently drop when the batman packet is actually not a
- 	 * correct packet.
-@@ -950,7 +950,7 @@ int recv_bcast_packet(struct sk_buff *skb)
- 	struct bcast_packet *bcast_packet;
++	struct neigh_node *router;
  	struct ethhdr *ethhdr;
- 	int hdr_size = sizeof(struct bcast_packet);
--	int16_t seq_diff;
-+	int32_t seq_diff;
+ 	struct batman_if *batman_if;
+ 	struct sk_buff *skb_old;
+ 	uint8_t dstaddr[ETH_ALEN];
+ 	int hdr_size = sizeof(struct unicast_packet);
+-	int ret;
  	unsigned long flags;
  
  	/* drop packet if it has not necessary minimum size */
-@@ -977,6 +977,9 @@ int recv_bcast_packet(struct sk_buff *skb)
- 	if (is_my_mac(bcast_packet->orig))
- 		return NET_RX_DROP;
- 
-+	if (bcast_packet->ttl < 2)
-+		return NET_RX_DROP;
-+
- 	spin_lock_irqsave(&orig_hash_lock, flags);
- 	orig_node = ((struct orig_node *)
- 		     hash_find(orig_hash, bcast_packet->orig));
-@@ -989,12 +992,12 @@ int recv_bcast_packet(struct sk_buff *skb)
- 	/* check whether the packet is a duplicate */
- 	if (get_bit_status(orig_node->bcast_bits,
- 			   orig_node->last_bcast_seqno,
--			   ntohs(bcast_packet->seqno))) {
-+			   ntohl(bcast_packet->seqno))) {
- 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+@@ -906,42 +1090,44 @@ int recv_unicast_packet(struct sk_buff *skb)
  		return NET_RX_DROP;
  	}
  
--	seq_diff = ntohs(bcast_packet->seqno) - orig_node->last_bcast_seqno;
-+	seq_diff = ntohl(bcast_packet->seqno) - orig_node->last_bcast_seqno;
+-	ret = NET_RX_DROP;
+ 	/* get routing information */
+ 	spin_lock_irqsave(&orig_hash_lock, flags);
+ 	orig_node = ((struct orig_node *)
+ 		     hash_find(orig_hash, unicast_packet->dest));
  
- 	/* check whether the packet is old and the host just restarted. */
- 	if (window_protected(seq_diff, &orig_node->bcast_seqno_reset)) {
-@@ -1005,7 +1008,7 @@ int recv_bcast_packet(struct sk_buff *skb)
- 	/* mark broadcast in flood history, update window position
- 	 * if required. */
- 	if (bit_get_packet(orig_node->bcast_bits, seq_diff, 1))
--		orig_node->last_bcast_seqno = ntohs(bcast_packet->seqno);
-+		orig_node->last_bcast_seqno = ntohl(bcast_packet->seqno);
+-	if ((orig_node != NULL) &&
+-	    (orig_node->router != NULL)) {
++	router = find_router(orig_node);
  
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
- 	/* rebroadcast packet */
+-		/* don't lock while sending the packets ... we therefore
+-		 * copy the required data before sending */
+-		batman_if = orig_node->router->if_incoming;
+-		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
++	if (!router) {
+ 		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		return NET_RX_DROP;
++	}
+ 
+-		/* create a copy of the skb, if needed, to modify it. */
+-		if (!skb_clone_writable(skb, sizeof(struct unicast_packet))) {
+-			skb_old = skb;
+-			skb = skb_copy(skb, GFP_ATOMIC);
+-			if (!skb)
+-				return NET_RX_DROP;
+-			unicast_packet = (struct unicast_packet *)skb->data;
+-			ethhdr = (struct ethhdr *)skb_mac_header(skb);
+-			kfree_skb(skb_old);
+-		}
+-		/* decrement ttl */
+-		unicast_packet->ttl--;
+-
+-		/* route it */
+-		send_skb_packet(skb, batman_if, dstaddr);
+-		ret = NET_RX_SUCCESS;
+-
+-	} else
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++	/* don't lock while sending the packets ... we therefore
++	 * copy the required data before sending */
++
++	batman_if = router->if_incoming;
++	memcpy(dstaddr, router->addr, ETH_ALEN);
++
++	spin_unlock_irqrestore(&orig_hash_lock, flags);
++
++	/* create a copy of the skb, if needed, to modify it. */
++	if (!skb_clone_writable(skb, sizeof(struct unicast_packet))) {
++		skb_old = skb;
++		skb = skb_copy(skb, GFP_ATOMIC);
++		if (!skb)
++			return NET_RX_DROP;
++		unicast_packet = (struct unicast_packet *) skb->data;
++		ethhdr = (struct ethhdr *)skb_mac_header(skb);
++		kfree_skb(skb_old);
++	}
++
++	/* decrement ttl */
++	unicast_packet->ttl--;
++
++	/* route it */
++	send_skb_packet(skb, batman_if, dstaddr);
+ 
+-	return ret;
++	return NET_RX_SUCCESS;
+ }
+ 
+ int recv_bcast_packet(struct sk_buff *skb)
+diff --git a/drivers/staging/batman-adv/routing.h b/drivers/staging/batman-adv/routing.h
+index c6850d2..0e33d22 100644
+--- a/drivers/staging/batman-adv/routing.h
++++ b/drivers/staging/batman-adv/routing.h
+@@ -35,3 +35,6 @@ int recv_bcast_packet(struct sk_buff *skb);
+ int recv_vis_packet(struct sk_buff *skb);
+ int recv_bat_packet(struct sk_buff *skb,
+ 				struct batman_if *batman_if);
++struct neigh_node *find_router(struct orig_node *orig_node);
++void update_bonding_candidates(struct bat_priv *bat_priv,
++			       struct orig_node *orig_node);
 diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
-index e8f0e2a..f2653dd 100644
+index f2653dd..e61a62c 100644
 --- a/drivers/staging/batman-adv/send.c
 +++ b/drivers/staging/batman-adv/send.c
-@@ -159,7 +159,7 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
- 			"%s %spacket (originator %pM, seqno %d, TQ %d, TTL %d,"
- 			" IDF %s) on interface %s [%s]\n",
- 			fwd_str, (packet_num > 0 ? "aggregated " : ""),
--			batman_packet->orig, ntohs(batman_packet->seqno),
-+			batman_packet->orig, ntohl(batman_packet->seqno),
- 			batman_packet->tq, batman_packet->ttl,
- 			(batman_packet->flags & DIRECTLINK ?
- 			 "on" : "off"),
-@@ -204,7 +204,7 @@ static void send_packet(struct forw_packet *forw_packet)
- 			"%s packet (originator %pM, seqno %d, TTL %d) "
- 			"on interface %s [%s]\n",
- 			(forw_packet->own ? "Sending own" : "Forwarding"),
--			batman_packet->orig, ntohs(batman_packet->seqno),
-+			batman_packet->orig, ntohl(batman_packet->seqno),
- 			batman_packet->ttl, forw_packet->if_incoming->dev,
- 			forw_packet->if_incoming->addr_str);
- 
-@@ -283,14 +283,14 @@ void schedule_own_packet(struct batman_if *batman_if)
- 	batman_packet = (struct batman_packet *)batman_if->packet_buff;
- 
- 	/* change sequence number to network order */
--	batman_packet->seqno = htons((uint16_t)atomic_read(&batman_if->seqno));
-+	batman_packet->seqno =
-+		htonl((uint32_t)atomic_read(&batman_if->seqno));
+@@ -287,7 +287,7 @@ void schedule_own_packet(struct batman_if *batman_if)
+ 		htonl((uint32_t)atomic_read(&batman_if->seqno));
  
  	if (vis_server == VIS_TYPE_SERVER_SYNC)
- 		batman_packet->flags = VIS_SERVER;
+-		batman_packet->flags = VIS_SERVER;
++		batman_packet->flags |= VIS_SERVER;
  	else
  		batman_packet->flags &= ~VIS_SERVER;
  
--	/* could be read by receive_bat_packet() */
- 	atomic_inc(&batman_if->seqno);
+@@ -349,6 +349,8 @@ void schedule_forward_packet(struct orig_node *orig_node,
  
- 	slide_own_bcast_window(batman_if);
-@@ -347,7 +347,7 @@ void schedule_forward_packet(struct orig_node *orig_node,
- 		in_tq, tq_avg, batman_packet->tq, in_ttl - 1,
- 		batman_packet->ttl);
+ 	batman_packet->seqno = htonl(batman_packet->seqno);
  
--	batman_packet->seqno = htons(batman_packet->seqno);
-+	batman_packet->seqno = htonl(batman_packet->seqno);
- 
++	/* switch of primaries first hop flag when forwarding */
++	batman_packet->flags &= ~PRIMARIES_FIRST_HOP;
  	if (directlink)
  		batman_packet->flags |= DIRECTLINK;
-@@ -399,6 +399,7 @@ static void _add_bcast_packet_to_list(struct forw_packet *forw_packet,
- int add_bcast_packet_to_list(struct sk_buff *skb)
- {
- 	struct forw_packet *forw_packet;
-+	struct bcast_packet *bcast_packet;
- 
- 	if (!atomic_dec_not_zero(&bcast_queue_left)) {
- 		bat_dbg(DBG_BATMAN, "bcast packet queue full\n");
-@@ -414,6 +415,10 @@ int add_bcast_packet_to_list(struct sk_buff *skb)
- 	if (!skb)
- 		goto packet_free;
- 
-+	/* as we have a copy now, it is safe to decrease the TTL */
-+	bcast_packet = (struct bcast_packet *)skb->data;
-+	bcast_packet->ttl--;
-+
- 	skb_reset_mac_header(skb);
- 
- 	forw_packet->skb = skb;
+ 	else
 diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
-index c483693..ce789a7 100644
+index ce789a7..37fd565 100644
 --- a/drivers/staging/batman-adv/soft-interface.c
 +++ b/drivers/staging/batman-adv/soft-interface.c
-@@ -30,7 +30,7 @@
- #include <linux/ethtool.h>
- #include <linux/etherdevice.h>
+@@ -22,6 +22,7 @@
+ #include "main.h"
+ #include "soft-interface.h"
+ #include "hard-interface.h"
++#include "routing.h"
+ #include "send.h"
+ #include "translation-table.h"
+ #include "types.h"
+@@ -129,6 +130,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+ 	struct unicast_packet *unicast_packet;
+ 	struct bcast_packet *bcast_packet;
+ 	struct orig_node *orig_node;
++	struct neigh_node *router;
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
+ 	struct bat_priv *priv = netdev_priv(dev);
+ 	struct batman_if *batman_if;
+@@ -186,38 +188,36 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+ 		if (!orig_node)
+ 			orig_node = transtable_search(ethhdr->h_dest);
  
--static uint16_t bcast_seqno = 1; /* give own bcast messages seq numbers to avoid
-+static uint32_t bcast_seqno = 1; /* give own bcast messages seq numbers to avoid
- 				  * broadcast storms */
- static int32_t skb_packets;
- static int32_t skb_bad_packets;
-@@ -155,6 +155,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+-		if ((orig_node) &&
+-		    (orig_node->router)) {
+-			struct neigh_node *router = orig_node->router;
++		router = find_router(orig_node);
  
- 		bcast_packet = (struct bcast_packet *)skb->data;
- 		bcast_packet->version = COMPAT_VERSION;
-+		bcast_packet->ttl = TTL;
+-			if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
+-				goto unlock;
+-
+-			unicast_packet = (struct unicast_packet *)skb->data;
+-
+-			unicast_packet->version = COMPAT_VERSION;
+-			/* batman packet type: unicast */
+-			unicast_packet->packet_type = BAT_UNICAST;
+-			/* set unicast ttl */
+-			unicast_packet->ttl = TTL;
+-			/* copy the destination for faster routing */
+-			memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
+-
+-			/* net_dev won't be available when not active */
+-			if (router->if_incoming->if_status != IF_ACTIVE)
+-				goto unlock;
+-
+-			/* don't lock while sending the packets ... we therefore
+-			 * copy the required data before sending */
+-
+-			batman_if = router->if_incoming;
+-			memcpy(dstaddr, router->addr, ETH_ALEN);
+-			spin_unlock_irqrestore(&orig_hash_lock, flags);
+-
+-			send_skb_packet(skb, batman_if, dstaddr);
+-		} else {
++		if (!router)
+ 			goto unlock;
+-		}
++
++		/* don't lock while sending the packets ... we therefore
++		 * copy the required data before sending */
++
++		batman_if = router->if_incoming;
++		memcpy(dstaddr, router->addr, ETH_ALEN);
++
++		spin_unlock_irqrestore(&orig_hash_lock, flags);
++
++		if (batman_if->if_status != IF_ACTIVE)
++			goto dropped;
++
++		if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
++			goto dropped;
++
++		unicast_packet = (struct unicast_packet *)skb->data;
++
++		unicast_packet->version = COMPAT_VERSION;
++		/* batman packet type: unicast */
++		unicast_packet->packet_type = BAT_UNICAST;
++		/* set unicast ttl */
++		unicast_packet->ttl = TTL;
++		/* copy the destination for faster routing */
++		memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
++
++		send_skb_packet(skb, batman_if, dstaddr);
+ 	}
  
- 		/* batman packet type: broadcast */
- 		bcast_packet->packet_type = BAT_BCAST;
-@@ -164,7 +165,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
- 		memcpy(bcast_packet->orig, mainIfAddr, ETH_ALEN);
- 
- 		/* set broadcast sequence number */
--		bcast_packet->seqno = htons(bcast_seqno);
-+		bcast_packet->seqno = htonl(bcast_seqno);
- 
- 		/* broadcast packet. on success, increase seqno. */
- 		if (add_bcast_packet_to_list(skb) == NETDEV_TX_OK)
+ 	priv->stats.tx_packets++;
 diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
-index 751cd63..d0af489 100644
+index d0af489..84c3f43 100644
 --- a/drivers/staging/batman-adv/types.h
 +++ b/drivers/staging/batman-adv/types.h
-@@ -72,11 +72,11 @@ struct orig_node {
- 	unsigned long batman_seqno_reset;
- 	uint8_t  flags;
- 	unsigned char *hna_buff;
--	int16_t  hna_buff_len;
--	uint16_t last_real_seqno;
-+	int16_t hna_buff_len;
-+	uint32_t last_real_seqno;
- 	uint8_t last_ttl;
+@@ -52,6 +52,7 @@ struct batman_if {
+ 
+ /**
+   *	orig_node - structure for orig_list maintaining nodes of mesh
++  *	@primary_addr: hosts primary interface address
+   *	@last_valid: when last packet from this node was received
+   *	@bcast_seqno_reset: time when the broadcast seqno window was reset
+   *	@batman_seqno_reset: time when the batman seqno window was reset
+@@ -59,9 +60,13 @@ struct batman_if {
+   *	@last_real_seqno: last and best known squence number
+   *	@last_ttl: ttl of last received packet
+   *	@last_bcast_seqno: last broadcast sequence number received by this host
++  *
++  *	@candidates: how many candidates are available
++  *	@selected: next bonding candidate
+  */
+ struct orig_node {
+ 	uint8_t orig[ETH_ALEN];
++	uint8_t primary_addr[ETH_ALEN];
+ 	struct neigh_node *router;
+ 	TYPE_OF_WORD *bcast_own;
+ 	uint8_t *bcast_own_sum;
+@@ -78,6 +83,10 @@ struct orig_node {
  	TYPE_OF_WORD bcast_bits[NUM_WORDS];
--	uint16_t last_bcast_seqno;
-+	uint32_t last_bcast_seqno;
+ 	uint32_t last_bcast_seqno;
  	struct list_head neigh_list;
++	struct {
++		uint8_t candidates;
++		struct neigh_node *selected;
++	} bond;
  };
  
-diff --git a/drivers/staging/batman-adv/vis.c b/drivers/staging/batman-adv/vis.c
-index 7bd553a..d9ab981 100644
---- a/drivers/staging/batman-adv/vis.c
-+++ b/drivers/staging/batman-adv/vis.c
-@@ -357,7 +357,8 @@ static struct vis_info *add_packet(struct vis_packet *vis_packet,
- 	old_info = hash_find(vis_hash, &search_elem);
- 
- 	if (old_info != NULL) {
--		if (!seq_after(vis_packet->seqno, old_info->packet.seqno)) {
-+		if (!seq_after(ntohl(vis_packet->seqno),
-+				ntohl(old_info->packet.seqno))) {
- 			if (old_info->packet.seqno == vis_packet->seqno) {
- 				recv_list_add(&old_info->recv_list,
- 					      vis_packet->sender_orig);
-@@ -525,7 +526,7 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
- 	spin_lock_irqsave(&orig_hash_lock, flags);
- 	memcpy(info->packet.target_orig, broadcastAddr, ETH_ALEN);
- 	info->packet.ttl = TTL;
--	info->packet.seqno++;
-+	info->packet.seqno = htonl(ntohl(info->packet.seqno) + 1);
- 	info->packet.entries = 0;
- 
- 	if (info->packet.vis_type == VIS_TYPE_CLIENT_UPDATE) {
+ /**
+@@ -92,6 +101,7 @@ struct neigh_node {
+ 	uint8_t tq_index;
+ 	uint8_t tq_avg;
+ 	uint8_t last_ttl;
++	struct neigh_node *next_bond_candidate;
+ 	unsigned long last_valid;
+ 	TYPE_OF_WORD real_bits[NUM_WORDS];
+ 	struct orig_node *orig_node;
+@@ -101,6 +111,7 @@ struct neigh_node {
+ struct bat_priv {
+ 	struct net_device_stats stats;
+ 	atomic_t aggregation_enabled;
++	atomic_t bonding_enabled;
+ 	atomic_t vis_mode;
+ 	atomic_t orig_interval;
+ 	char num_ifaces;
 -- 
 1.7.1
 
