@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 19 Jun 2010 02:51:45 +0200
-Message-Id: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (2)
+Date: Sat, 19 Jun 2010 02:51:46 +0200
+Message-Id: <1276908713-28365-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/8] Staging: batman-adv: Mark locally used
+	symbols as static
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,71 +20,498 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Greg KH <greg@kroah.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-Hi,
+Functions and variables which are used only inside one object file can
+be declared as static. This helped to find unused functions/variables
 
-here are patches targetted for 2.6.36. They are made on top of patches you have
-already received in 1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de :
+ * mainIfAddr_default
+ * main_if_was_up
 
- * Staging: batman-adv: remove redundant struct declaration
- * Staging: batman-adv: Move device for icmp injection to debugfs
- * Staging: batman-adv: Move tables from sysfs to debugfs
- * Staging: batman-adv: convert all sysfs files to single value files
- * Staging: batman-adv: Adding netfilter-bridge hooks
- * Staging: batman-adv: Add information about batman-adv sysfs entries
- * Staging: batman-adv: remove superfluous hint to "translation table"
- * Staging: batman-adv: convert vis_interval into define
- * Staging: batman-adv: Convert MAC_FMT to %pM
+and functions with declarations but missing definitions
 
-They also depend on patches not yet applied on 2.6.35, but sent to you:
+ * hash_debug
+ * orig_find
+ * send_own_packet_work
 
- * Staging: batman-adv: return -EFAULT on copy_to_user errors
- * Staging: batman-adv: fix function prototype
-
-thanks,
-	Sven
-
- drivers/staging/batman-adv/CHANGELOG           |   12 +
- drivers/staging/batman-adv/README              |    2 +-
- drivers/staging/batman-adv/aggregation.c       |    4 +-
- drivers/staging/batman-adv/bat_debugfs.c       |    2 +
- drivers/staging/batman-adv/bat_sysfs.c         |   54 ++++-
- drivers/staging/batman-adv/bitarray.c          |   10 +-
- drivers/staging/batman-adv/bitarray.h          |    9 +-
- drivers/staging/batman-adv/hard-interface.c    |    4 +-
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ drivers/staging/batman-adv/bitarray.c          |    2 +-
+ drivers/staging/batman-adv/bitarray.h          |    3 -
  drivers/staging/batman-adv/hash.c              |    2 +-
- drivers/staging/batman-adv/hash.h              |    6 -
- drivers/staging/batman-adv/icmp_socket.c       |   45 ++--
- drivers/staging/batman-adv/icmp_socket.h       |    3 +-
- drivers/staging/batman-adv/main.h              |    9 +-
- drivers/staging/batman-adv/originator.c        |   40 ++--
+ drivers/staging/batman-adv/hash.h              |    6 --
+ drivers/staging/batman-adv/originator.c        |   32 ++++----
  drivers/staging/batman-adv/originator.h        |    2 -
- drivers/staging/batman-adv/packet.h            |   27 ++-
- drivers/staging/batman-adv/routing.c           |  324 ++++++++++++++++++++----
- drivers/staging/batman-adv/routing.h           |    8 +-
- drivers/staging/batman-adv/send.c              |   23 ++-
+ drivers/staging/batman-adv/routing.c           |    2 +-
+ drivers/staging/batman-adv/routing.h           |    2 -
+ drivers/staging/batman-adv/send.c              |    4 +-
  drivers/staging/batman-adv/send.h              |    2 -
- drivers/staging/batman-adv/soft-interface.c    |  159 ++++++------
- drivers/staging/batman-adv/soft-interface.h    |    6 -
- drivers/staging/batman-adv/translation-table.c |    9 +-
+ drivers/staging/batman-adv/soft-interface.c    |  104 +++++++++++-------------
+ drivers/staging/batman-adv/soft-interface.h    |    6 --
+ drivers/staging/batman-adv/translation-table.c |    9 ++-
  drivers/staging/batman-adv/translation-table.h |    3 -
- drivers/staging/batman-adv/types.h             |   20 ++-
- drivers/staging/batman-adv/vis.c               |    9 +-
+ drivers/staging/batman-adv/vis.c               |    4 +-
  drivers/staging/batman-adv/vis.h               |    3 -
- 27 files changed, 562 insertions(+), 235 deletions(-)
+ 16 files changed, 79 insertions(+), 107 deletions(-)
 
-Daniel Seither (1):
-      Staging: batman-adv: record route for ICMP messages
-
-Linus Lüssing (1):
-      Staging: batman-adv: permit setting ogm interval to JITTER*2
-
-Simon Wunderlich (4):
-      Staging: batman-adv: Add release information for version 2010.0.0
-      Staging: batman-adv: 32bit sequence number and TTL for broadcasts
-      Staging: batman-adv: Add bonding functionality
-      Staging: batman-adv: bonding and interface alternating
-
-Sven Eckelmann (2):
-      Staging: batman-adv: Mark locally used symbols as static
-      Staging: batman-adv: Ignore debugfs on kernels without debugfs support
+diff --git a/drivers/staging/batman-adv/bitarray.c b/drivers/staging/batman-adv/bitarray.c
+index 2fef6e3..cfca033 100644
+--- a/drivers/staging/batman-adv/bitarray.c
++++ b/drivers/staging/batman-adv/bitarray.c
+@@ -63,7 +63,7 @@ void bit_mark(TYPE_OF_WORD *seq_bits, int32_t n)
+ }
+ 
+ /* shift the packet array by n places. */
+-void bit_shift(TYPE_OF_WORD *seq_bits, int32_t n)
++static void bit_shift(TYPE_OF_WORD *seq_bits, int32_t n)
+ {
+ 	int32_t word_offset, word_num;
+ 	int32_t i;
+diff --git a/drivers/staging/batman-adv/bitarray.h b/drivers/staging/batman-adv/bitarray.h
+index 76ad24c..4dd1e7c 100644
+--- a/drivers/staging/batman-adv/bitarray.h
++++ b/drivers/staging/batman-adv/bitarray.h
+@@ -32,9 +32,6 @@ uint8_t get_bit_status(TYPE_OF_WORD *seq_bits, uint16_t last_seqno,
+ /* turn corresponding bit on, so we can remember that we got the packet */
+ void bit_mark(TYPE_OF_WORD *seq_bits, int32_t n);
+ 
+-/* shift the packet array by n places. */
+-void bit_shift(TYPE_OF_WORD *seq_bits, int32_t n);
+-
+ 
+ /* receive and process one packet, returns 1 if received seq_num is considered
+  * new, 0 if old  */
+diff --git a/drivers/staging/batman-adv/hash.c b/drivers/staging/batman-adv/hash.c
+index d4a4adc..1286f8f 100644
+--- a/drivers/staging/batman-adv/hash.c
++++ b/drivers/staging/batman-adv/hash.c
+@@ -23,7 +23,7 @@
+ #include "hash.h"
+ 
+ /* clears the hash */
+-void hash_init(struct hashtable_t *hash)
++static void hash_init(struct hashtable_t *hash)
+ {
+ 	int i;
+ 
+diff --git a/drivers/staging/batman-adv/hash.h b/drivers/staging/batman-adv/hash.h
+index ea6d21e..0505595 100644
+--- a/drivers/staging/batman-adv/hash.h
++++ b/drivers/staging/batman-adv/hash.h
+@@ -56,9 +56,6 @@ struct hashtable_t {
+ 				     * argument and the size the second */
+ };
+ 
+-/* clears the hash */
+-void hash_init(struct hashtable_t *hash);
+-
+ /* allocates and clears the hash */
+ struct hashtable_t *hash_new(int size, hashdata_compare_cb compare,
+ 			     hashdata_choose_cb choose);
+@@ -98,7 +95,4 @@ struct hashtable_t *hash_resize(struct hashtable_t *hash, int size);
+  * the returned iterator to access the elements until hash_it_t returns NULL. */
+ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
+ 			       struct hash_it_t *iter_in);
+-
+-/* print the hash table for debugging */
+-void hash_debug(struct hashtable_t *hash);
+ #endif
+diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
+index c159707..1f6cbe8 100644
+--- a/drivers/staging/batman-adv/originator.c
++++ b/drivers/staging/batman-adv/originator.c
+@@ -56,21 +56,6 @@ err:
+ 	return 0;
+ }
+ 
+-void originator_free(void)
+-{
+-	unsigned long flags;
+-
+-	if (!orig_hash)
+-		return;
+-
+-	cancel_delayed_work_sync(&purge_orig_wq);
+-
+-	spin_lock_irqsave(&orig_hash_lock, flags);
+-	hash_delete(orig_hash, free_orig_node);
+-	orig_hash = NULL;
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
+-}
+-
+ struct neigh_node *
+ create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
+ 		uint8_t *neigh, struct batman_if *if_incoming)
+@@ -93,7 +78,7 @@ create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
+ 	return neigh_node;
+ }
+ 
+-void free_orig_node(void *data)
++static void free_orig_node(void *data)
+ {
+ 	struct list_head *list_pos, *list_pos_tmp;
+ 	struct neigh_node *neigh_node;
+@@ -114,6 +99,21 @@ void free_orig_node(void *data)
+ 	kfree(orig_node);
+ }
+ 
++void originator_free(void)
++{
++	unsigned long flags;
++
++	if (!orig_hash)
++		return;
++
++	cancel_delayed_work_sync(&purge_orig_wq);
++
++	spin_lock_irqsave(&orig_hash_lock, flags);
++	hash_delete(orig_hash, free_orig_node);
++	orig_hash = NULL;
++	spin_unlock_irqrestore(&orig_hash_lock, flags);
++}
++
+ /* this function finds or creates an originator entry for the given
+  * address if it does not exits */
+ struct orig_node *get_orig_node(uint8_t *addr)
+diff --git a/drivers/staging/batman-adv/originator.h b/drivers/staging/batman-adv/originator.h
+index e91e8a1..6632538 100644
+--- a/drivers/staging/batman-adv/originator.h
++++ b/drivers/staging/batman-adv/originator.h
+@@ -20,10 +20,8 @@
+  */
+ 
+ int originator_init(void);
+-void free_orig_node(void *data);
+ void originator_free(void);
+ void purge_orig(struct work_struct *work);
+-struct orig_node *orig_find(char *mac);
+ struct orig_node *get_orig_node(uint8_t *addr);
+ struct neigh_node *
+ create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index d4bdca9..480c645 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -33,7 +33,7 @@
+ #include "vis.h"
+ #include "aggregation.h"
+ 
+-DECLARE_WAIT_QUEUE_HEAD(thread_wait);
++static DECLARE_WAIT_QUEUE_HEAD(thread_wait);
+ 
+ void slide_own_bcast_window(struct batman_if *batman_if)
+ {
+diff --git a/drivers/staging/batman-adv/routing.h b/drivers/staging/batman-adv/routing.h
+index 8288dec..c6850d2 100644
+--- a/drivers/staging/batman-adv/routing.h
++++ b/drivers/staging/batman-adv/routing.h
+@@ -21,8 +21,6 @@
+ 
+ #include "types.h"
+ 
+-extern wait_queue_head_t thread_wait;
+-
+ void slide_own_bcast_window(struct batman_if *batman_if);
+ void receive_bat_packet(struct ethhdr *ethhdr,
+ 				struct batman_packet *batman_packet,
+diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
+index 7365f6d..e8f0e2a 100644
+--- a/drivers/staging/batman-adv/send.c
++++ b/drivers/staging/batman-adv/send.c
+@@ -31,6 +31,8 @@
+ 
+ #include <linux/netfilter_bridge.h>
+ 
++static void send_outstanding_bcast_packet(struct work_struct *work);
++
+ /* apply hop penalty for a normal link */
+ static uint8_t hop_penalty(const uint8_t tq)
+ {
+@@ -431,7 +433,7 @@ out:
+ 	return NETDEV_TX_BUSY;
+ }
+ 
+-void send_outstanding_bcast_packet(struct work_struct *work)
++static void send_outstanding_bcast_packet(struct work_struct *work)
+ {
+ 	struct batman_if *batman_if;
+ 	struct delayed_work *delayed_work =
+diff --git a/drivers/staging/batman-adv/send.h b/drivers/staging/batman-adv/send.h
+index feaa2fc..0a0990d 100644
+--- a/drivers/staging/batman-adv/send.h
++++ b/drivers/staging/batman-adv/send.h
+@@ -21,7 +21,6 @@
+ 
+ #include "types.h"
+ 
+-void send_own_packet_work(struct work_struct *work);
+ int send_skb_packet(struct sk_buff *skb,
+ 				struct batman_if *batman_if,
+ 				uint8_t *dst_addr);
+@@ -34,6 +33,5 @@ void schedule_forward_packet(struct orig_node *orig_node,
+ 			     uint8_t directlink, int hna_buff_len,
+ 			     struct batman_if *if_outgoing);
+ int  add_bcast_packet_to_list(struct sk_buff *skb);
+-void send_outstanding_bcast_packet(struct work_struct *work);
+ void send_outstanding_bat_packet(struct work_struct *work);
+ void purge_outstanding_packets(struct batman_if *batman_if);
+diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
+index 51c40b7..c483693 100644
+--- a/drivers/staging/batman-adv/soft-interface.c
++++ b/drivers/staging/batman-adv/soft-interface.c
+@@ -36,7 +36,6 @@ static int32_t skb_packets;
+ static int32_t skb_bad_packets;
+ 
+ unsigned char mainIfAddr[ETH_ALEN];
+-static unsigned char mainIfAddr_default[ETH_ALEN];
+ static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd);
+ static void bat_get_drvinfo(struct net_device *dev,
+ 			    struct ethtool_drvinfo *info);
+@@ -61,11 +60,6 @@ void set_main_if_addr(uint8_t *addr)
+ 	memcpy(mainIfAddr, addr, ETH_ALEN);
+ }
+ 
+-int main_if_was_up(void)
+-{
+-	return (memcmp(mainIfAddr, mainIfAddr_default, ETH_ALEN) != 0 ? 1 : 0);
+-}
+-
+ int my_skb_push(struct sk_buff *skb, unsigned int len)
+ {
+ 	int result = 0;
+@@ -83,69 +77,25 @@ int my_skb_push(struct sk_buff *skb, unsigned int len)
+ 	return 0;
+ }
+ 
+-#ifdef HAVE_NET_DEVICE_OPS
+-static const struct net_device_ops bat_netdev_ops = {
+-	.ndo_open = interface_open,
+-	.ndo_stop = interface_release,
+-	.ndo_get_stats = interface_stats,
+-	.ndo_set_mac_address = interface_set_mac_addr,
+-	.ndo_change_mtu = interface_change_mtu,
+-	.ndo_start_xmit = interface_tx,
+-	.ndo_validate_addr = eth_validate_addr
+-};
+-#endif
+-
+-void interface_setup(struct net_device *dev)
+-{
+-	struct bat_priv *priv = netdev_priv(dev);
+-	char dev_addr[ETH_ALEN];
+-
+-	ether_setup(dev);
+-
+-#ifdef HAVE_NET_DEVICE_OPS
+-	dev->netdev_ops = &bat_netdev_ops;
+-#else
+-	dev->open = interface_open;
+-	dev->stop = interface_release;
+-	dev->get_stats = interface_stats;
+-	dev->set_mac_address = interface_set_mac_addr;
+-	dev->change_mtu = interface_change_mtu;
+-	dev->hard_start_xmit = interface_tx;
+-#endif
+-	dev->destructor = free_netdev;
+-
+-	dev->mtu = hardif_min_mtu();
+-	dev->hard_header_len = BAT_HEADER_LEN; /* reserve more space in the
+-						* skbuff for our header */
+-
+-	/* generate random address */
+-	random_ether_addr(dev_addr);
+-	memcpy(dev->dev_addr, dev_addr, ETH_ALEN);
+-
+-	SET_ETHTOOL_OPS(dev, &bat_ethtool_ops);
+-
+-	memset(priv, 0, sizeof(struct bat_priv));
+-}
+-
+-int interface_open(struct net_device *dev)
++static int interface_open(struct net_device *dev)
+ {
+ 	netif_start_queue(dev);
+ 	return 0;
+ }
+ 
+-int interface_release(struct net_device *dev)
++static int interface_release(struct net_device *dev)
+ {
+ 	netif_stop_queue(dev);
+ 	return 0;
+ }
+ 
+-struct net_device_stats *interface_stats(struct net_device *dev)
++static struct net_device_stats *interface_stats(struct net_device *dev)
+ {
+ 	struct bat_priv *priv = netdev_priv(dev);
+ 	return &priv->stats;
+ }
+ 
+-int interface_set_mac_addr(struct net_device *dev, void *p)
++static int interface_set_mac_addr(struct net_device *dev, void *p)
+ {
+ 	struct sockaddr *addr = p;
+ 
+@@ -163,7 +113,7 @@ int interface_set_mac_addr(struct net_device *dev, void *p)
+ 	return 0;
+ }
+ 
+-int interface_change_mtu(struct net_device *dev, int new_mtu)
++static int interface_change_mtu(struct net_device *dev, int new_mtu)
+ {
+ 	/* check ranges */
+ 	if ((new_mtu < 68) || (new_mtu > hardif_min_mtu()))
+@@ -315,6 +265,50 @@ void interface_rx(struct sk_buff *skb, int hdr_size)
+ 	netif_rx(skb);
+ }
+ 
++#ifdef HAVE_NET_DEVICE_OPS
++static const struct net_device_ops bat_netdev_ops = {
++	.ndo_open = interface_open,
++	.ndo_stop = interface_release,
++	.ndo_get_stats = interface_stats,
++	.ndo_set_mac_address = interface_set_mac_addr,
++	.ndo_change_mtu = interface_change_mtu,
++	.ndo_start_xmit = interface_tx,
++	.ndo_validate_addr = eth_validate_addr
++};
++#endif
++
++void interface_setup(struct net_device *dev)
++{
++	struct bat_priv *priv = netdev_priv(dev);
++	char dev_addr[ETH_ALEN];
++
++	ether_setup(dev);
++
++#ifdef HAVE_NET_DEVICE_OPS
++	dev->netdev_ops = &bat_netdev_ops;
++#else
++	dev->open = interface_open;
++	dev->stop = interface_release;
++	dev->get_stats = interface_stats;
++	dev->set_mac_address = interface_set_mac_addr;
++	dev->change_mtu = interface_change_mtu;
++	dev->hard_start_xmit = interface_tx;
++#endif
++	dev->destructor = free_netdev;
++
++	dev->mtu = hardif_min_mtu();
++	dev->hard_header_len = BAT_HEADER_LEN; /* reserve more space in the
++						* skbuff for our header */
++
++	/* generate random address */
++	random_ether_addr(dev_addr);
++	memcpy(dev->dev_addr, dev_addr, ETH_ALEN);
++
++	SET_ETHTOOL_OPS(dev, &bat_ethtool_ops);
++
++	memset(priv, 0, sizeof(struct bat_priv));
++}
++
+ /* ethtool */
+ static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
+ {
+diff --git a/drivers/staging/batman-adv/soft-interface.h b/drivers/staging/batman-adv/soft-interface.h
+index e7f59af..3852c57 100644
+--- a/drivers/staging/batman-adv/soft-interface.h
++++ b/drivers/staging/batman-adv/soft-interface.h
+@@ -20,13 +20,7 @@
+  */
+ 
+ void set_main_if_addr(uint8_t *addr);
+-int main_if_was_up(void);
+ void interface_setup(struct net_device *dev);
+-int interface_open(struct net_device *dev);
+-int interface_release(struct net_device *dev);
+-struct net_device_stats *interface_stats(struct net_device *dev);
+-int interface_set_mac_addr(struct net_device *dev, void *addr);
+-int interface_change_mtu(struct net_device *dev, int new_mtu);
+ int interface_tx(struct sk_buff *skb, struct net_device *dev);
+ void interface_rx(struct sk_buff *skb, int hdr_size);
+ int my_skb_push(struct sk_buff *skb, unsigned int len);
+diff --git a/drivers/staging/batman-adv/translation-table.c b/drivers/staging/batman-adv/translation-table.c
+index d9233b0..9fd32a9 100644
+--- a/drivers/staging/batman-adv/translation-table.c
++++ b/drivers/staging/batman-adv/translation-table.c
+@@ -32,7 +32,10 @@ atomic_t hna_local_changed;
+ DEFINE_SPINLOCK(hna_local_hash_lock);
+ static DEFINE_SPINLOCK(hna_global_hash_lock);
+ 
++static void hna_local_purge(struct work_struct *work);
+ static DECLARE_DELAYED_WORK(hna_local_purge_wq, hna_local_purge);
++static void _hna_global_del_orig(struct hna_global_entry *hna_global_entry,
++				 char *message);
+ 
+ static void hna_local_start_timer(void)
+ {
+@@ -242,7 +245,7 @@ void hna_local_remove(uint8_t *addr, char *message)
+ 	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
+ }
+ 
+-void hna_local_purge(struct work_struct *work)
++static void hna_local_purge(struct work_struct *work)
+ {
+ 	struct hna_local_entry *hna_local_entry;
+ 	HASHIT(hashit);
+@@ -423,8 +426,8 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
+ 	return 0;
+ }
+ 
+-void _hna_global_del_orig(struct hna_global_entry *hna_global_entry,
+-			  char *message)
++static void _hna_global_del_orig(struct hna_global_entry *hna_global_entry,
++				 char *message)
+ {
+ 	bat_dbg(DBG_ROUTES, "Deleting global hna entry %pM (via %pM): %s\n",
+ 		hna_global_entry->addr, hna_global_entry->orig_node->orig,
+diff --git a/drivers/staging/batman-adv/translation-table.h b/drivers/staging/batman-adv/translation-table.h
+index 8b3429e..232208f 100644
+--- a/drivers/staging/batman-adv/translation-table.h
++++ b/drivers/staging/batman-adv/translation-table.h
+@@ -26,14 +26,11 @@ void hna_local_add(uint8_t *addr);
+ void hna_local_remove(uint8_t *addr, char *message);
+ int hna_local_fill_buffer(unsigned char *buff, int buff_len);
+ int hna_local_seq_print_text(struct seq_file *seq, void *offset);
+-void hna_local_purge(struct work_struct *work);
+ void hna_local_free(void);
+ int hna_global_init(void);
+ void hna_global_add_orig(struct orig_node *orig_node, unsigned char *hna_buff,
+ 			 int hna_buff_len);
+ int hna_global_seq_print_text(struct seq_file *seq, void *offset);
+-void _hna_global_del_orig(struct hna_global_entry *hna_global_entry,
+-			  char *orig_str);
+ void hna_global_del_orig(struct orig_node *orig_node, char *message);
+ void hna_global_free(void);
+ struct orig_node *transtable_search(uint8_t *addr);
+diff --git a/drivers/staging/batman-adv/vis.c b/drivers/staging/batman-adv/vis.c
+index c73774b..7bd553a 100644
+--- a/drivers/staging/batman-adv/vis.c
++++ b/drivers/staging/batman-adv/vis.c
+@@ -43,8 +43,8 @@
+ 			_dummy > smallest_signed_int(_dummy); })
+ #define seq_after(x, y) seq_before(y, x)
+ 
+-struct hashtable_t *vis_hash;
+-DEFINE_SPINLOCK(vis_hash_lock);
++static struct hashtable_t *vis_hash;
++static DEFINE_SPINLOCK(vis_hash_lock);
+ static DEFINE_SPINLOCK(recv_list_lock);
+ static struct vis_info *my_vis_info;
+ static struct list_head send_list;	/* always locked with vis_hash_lock */
+diff --git a/drivers/staging/batman-adv/vis.h b/drivers/staging/batman-adv/vis.h
+index 5dd6521..1cfadce 100644
+--- a/drivers/staging/batman-adv/vis.h
++++ b/drivers/staging/batman-adv/vis.h
+@@ -44,9 +44,6 @@ struct recvlist_node {
+ 	uint8_t mac[ETH_ALEN];
+ };
+ 
+-extern struct hashtable_t *vis_hash;
+-extern spinlock_t vis_hash_lock;
+-
+ int vis_seq_print_text(struct seq_file *seq, void *offset);
+ void receive_server_sync_packet(struct bat_priv *bat_priv,
+ 				struct vis_packet *vis_packet,
+-- 
+1.7.1
 
