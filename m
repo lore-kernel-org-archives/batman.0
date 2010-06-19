@@ -1,15 +1,13 @@
 Return-Path: <greg@kroah.com>
-Date: Fri, 18 Jun 2010 16:58:35 -0700
+Date: Fri, 18 Jun 2010 17:03:33 -0700
 From: Greg KH <greg@kroah.com>
-Message-ID: <20100618235835.GB1128@kroah.com>
+Message-ID: <20100619000333.GC1128@kroah.com>
 References: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
-	<1275852501-28523-3-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1275852501-28523-3-git-send-email-sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/9] Staging: batman-adv: Move device for
- icmp injection to debugfs
+In-Reply-To: <1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (renewed)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,27 +22,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Sven Eckelmann <sven.eckelmann@gmx.de>
 Cc: gregkh@suse.de, b.a.t.m.a.n@lists.open-mesh.net
 
-On Sun, Jun 06, 2010 at 09:28:14PM +0200, Sven Eckelmann wrote:
-> batctl uses /dev/batman-adv to send special batman-adv icmp packets to
-> other nodes in the mesh. To get it working with multiple batX devices we
-> must ensure that every mesh device can have their own socket which is
-> used to inject those packets in exactly one mesh.
+On Sun, Jun 06, 2010 at 09:28:12PM +0200, Sven Eckelmann wrote:
+> Hi,
 > 
-> The current implementation still doesn't allow to use complete separated
-> meshes as we rely on structures which are not part of the private data
-> of a batman device.
-> 
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+> here are patches targetted for 2.6.36. These replace all patches send to you
+> for 2.6.36 in mails following
+> 1275850985-27105-1-git-send-email-sven.eckelmann@gmx.de due to conflicting
+> changes for 2.6.35 from Dan Carpenter and Javier Martinez Canillas.
 
-This patch doesn't apply, I get the following error:
-patching file drivers/staging/batman-adv/Makefile
-patching file drivers/staging/batman-adv/bat_debugfs.c
-patching file drivers/staging/batman-adv/bat_debugfs.h
-patching file drivers/staging/batman-adv/device.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] ^C
+I could not apply the following patches for some odd reason:
+	2, 3, 4, 7, 9
 
-Any ideas?
+I applied the others.
 
-thanks,
+So you might want to resync on the my staging-next tree and see what
+went wrong.  Does it have something to do with the other batman patches
+I have in my staging.current tree to go to Linus?
+
+odd,
 
 greg k-h
