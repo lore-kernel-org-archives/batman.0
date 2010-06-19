@@ -1,14 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 20 Jun 2010 00:50:01 +0200
-References: <20100619151540.GA13957@Sellars>
-In-Reply-To: <20100619151540.GA13957@Sellars>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun, 20 Jun 2010 01:05:29 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20100619230529.GA25926@pandem0nium>
+References: <1276883644-3828-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201006200050.01891.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] still jiffies - msecs mixup?
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="qMm9M+Fa2AknHoGS"
+Content-Disposition: inline
+In-Reply-To: <1276883644-3828-1-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: permit setting ogm
+	interval	to JITTER*2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,37 +23,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday 19 June 2010 17:15:40 Linus L=C3=BCssing wrote:
-> schedule_own_packet() (/ schedule_forward_packet() )
->   -> send_time =3D own_global_send_time(bat_priv)
-> (/forward_send_time(bat_priv)) <- returns current jiffies +
-> orig_interval(in ms!) from bat_priv + jitter(in ms?)
 
-The orig_interval and jitter are transformed to jiffies (towards the end of=
- the=20
-line). It is not very obvious and might be susceptible for overflows. We=20
-probably should use msecs_to_jiffies() here.
+--qMm9M+Fa2AknHoGS
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Guess i forgot to mention that your patch was applied in r1701. :)
 
->   -> can_aggregate_with(send_time)
->      -> converts MAX_AGGREGATION_MS to jiffies, seems to expect send_time
-> to be in jiffies format
+Thank you,
+	Simon
 
-Correct - we have jiffies here.
-
-
->   -> new_aggregated_packet(send_time)
->      -> queue_delayed_work(send_time - jiffies),
->         -> so, queue_delayed_work(orig_interval + jitter -
-> time_diff_in_jiffies + MAX_AGGREGATION(in jiffies))? ---
+On Fri, Jun 18, 2010 at 07:54:04PM +0200, Linus L=C3=BCssing wrote:
+> When trying to set the originator interval to 40ms, we are asked to set
+> it to a minimum value of 40ms. This patch permits setting an
+> originator interval of JITTER*20 (40ms by default) now.
 >=20
-> Looks like we'd have some portions in the send_time still in
-> jiffies format, though it should be a time purely in msecs for
-> queue_delayed_work if I'm not mistaken.
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
+> ---
+>  bat_sysfs.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/bat_sysfs.c b/bat_sysfs.c
+> index 05703c1..68ce453 100644
+> --- a/bat_sysfs.c
+> +++ b/bat_sysfs.c
+> @@ -259,7 +259,7 @@ static ssize_t store_orig_interval(struct kobject *ko=
+bj, struct attribute *attr,
+>  		return -EINVAL;
+>  	}
+> =20
+> -	if (orig_interval_tmp <=3D JITTER * 2) {
+> +	if (orig_interval_tmp < JITTER * 2) {
+>  		printk(KERN_INFO "batman-adv:New originator interval too small: %li (m=
+in: %i)\n",
+>  		       orig_interval_tmp, JITTER * 2);
+>  		return -EINVAL;
+> --=20
+> 1.7.1
+>=20
+>=20
 
-You are mistaken.  :-)
-workqueue.c:323 [right above queue_delayed_work()] says:=20
-@delay: number of jiffies to wait before queueing
+--qMm9M+Fa2AknHoGS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Regards,
-Marek
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkwdTTkACgkQrzg/fFk7axYaRgCdGXFdU0sH6L6exSoszkgo41n3
+M9EAoIxWQstp/piqy8TVeL0kSo/62Fs/
+=3EXd
+-----END PGP SIGNATURE-----
+
+--qMm9M+Fa2AknHoGS--
