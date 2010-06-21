@@ -1,9 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 21 Jun 2010 12:06:47 +0200
-Message-Id: <1277114808-16584-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batctl: Remove dead code from old sysfs
-	parsing
+Date: Mon, 21 Jun 2010 12:06:48 +0200
+Message-Id: <1277114808-16584-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1277114808-16584-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1277114808-16584-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: Use NULL instead of 0 for
+	pointers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,58 +19,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The old batman-adv sysfs files provided all their available options
-inside their output. This made it necessary to parse the output to
-analyse it before we accept an input given to batctl.
-
-This functionality was removed as it wasn't the correct style according
-to the sysfs maintainer. Not all code related to that were removed right
-away when batctl was adopted to the new sysfs handling.
-
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- functions.c |   18 ------------------
- functions.h |    1 -
- 2 files changed, 0 insertions(+), 19 deletions(-)
+ debugfs.c |    2 +-
+ sys.c     |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/functions.c b/functions.c
-index 3bcb0b2..7be9511 100644
---- a/functions.c
-+++ b/functions.c
-@@ -303,21 +303,3 @@ out:
- 		close(fd);
- 	return res;
- }
--
--char *strchr_anyof(const char *s, const char *n)
--{
--	char *cur, *first = NULL;
--	size_t i, len;
--
--	if (s == NULL || n == NULL)
--		return first;
--
--	len = strlen(n);
--	for (i = 0; i < len; i++) {
--		cur = strchr(s, n[i]);
--		if (cur != NULL && (cur < first || first == NULL))
--			first = cur;
--	}
--
--	return first;
--}
-diff --git a/functions.h b/functions.h
-index 847a482..885df34 100644
---- a/functions.h
-+++ b/functions.h
-@@ -35,7 +35,6 @@ char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
- char *get_name_by_macstr(char *mac_str, int read_opt);
- int read_file(char *dir, char *path, int read_opt);
- int write_file(char *dir, char *fname, char *arg1, char *arg2);
--char *strchr_anyof(const char *s, const char *n);
+diff --git a/debugfs.c b/debugfs.c
+index 3b6e2bf..6d2222f 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -38,7 +38,7 @@ static char debugfs_mountpoint[MAX_PATH+1];
+ static const char *debugfs_known_mountpoints[] = {
+ 	"/sys/kernel/debug/",
+ 	"/debug/",
+-	0,
++	NULL,
+ };
  
- extern char *line_ptr;
+ /* use this to force a umount */
+diff --git a/sys.c b/sys.c
+index dfe3979..9137424 100644
+--- a/sys.c
++++ b/sys.c
+@@ -39,14 +39,14 @@ const char *sysfs_param_enable[] = {
+ 	"disable",
+ 	"1",
+ 	"0",
+-	0,
++	NULL,
+ };
  
+ const char *sysfs_param_server[] = {
+ 	"off",
+ 	"client",
+ 	"server",
+-	0,
++	NULL,
+ };
+ 
+ static void interface_usage(void)
 -- 
 1.7.1
 
