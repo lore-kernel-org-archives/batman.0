@@ -1,11 +1,13 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 21 Jun 2010 18:18:35 +0200
-Message-Id: <1277137115-10338-2-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1277137115-10338-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1277137115-10338-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Add support for git revision
-	string
+Return-Path: <greg@kroah.com>
+Date: Mon, 21 Jun 2010 15:34:27 -0700
+From: Greg KH <greg@kroah.com>
+Message-ID: <20100621223427.GA22687@kroah.com>
+References: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (2)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,90 +19,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven.eckelmann@gmx.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-The Makefile tries to find a version number which describes the state of
-the version somebody compiles. Currently this can only be a subversion
-revision. This must also be done for git as it is used to prepare the
-actual releases.
+On Sat, Jun 19, 2010 at 02:51:45AM +0200, Sven Eckelmann wrote:
+> Hi,
+> 
+> here are patches targetted for 2.6.36. They are made on top of patches you have
+> already received in 1275852501-28523-1-git-send-email-sven.eckelmann@gmx.de :
+> 
+>  * Staging: batman-adv: remove redundant struct declaration
+>  * Staging: batman-adv: Move device for icmp injection to debugfs
+>  * Staging: batman-adv: Move tables from sysfs to debugfs
+>  * Staging: batman-adv: convert all sysfs files to single value files
+>  * Staging: batman-adv: Adding netfilter-bridge hooks
+>  * Staging: batman-adv: Add information about batman-adv sysfs entries
+>  * Staging: batman-adv: remove superfluous hint to "translation table"
+>  * Staging: batman-adv: convert vis_interval into define
+>  * Staging: batman-adv: Convert MAC_FMT to %pM
+> 
+> They also depend on patches not yet applied on 2.6.35, but sent to you:
+> 
+>  * Staging: batman-adv: return -EFAULT on copy_to_user errors
+>  * Staging: batman-adv: fix function prototype
 
-The revision string consists of 4 parts:
- 1. last annotated tag name
- 2. number of commits inbetween last tag name and this commit
- 3. shortened sha1 sum of the commit
- 4. indicator whether the files where modified
+Something's still not right.  I applied the above 2 patches, and then
+tried to apply the 1/8 patch above:
+	Subject: [PATCH 1/8] Staging: batman-adv: Mark locally used symbols as static
 
-The first part is only shown when there was a tag before the commit or
-the current commit was tagged. Part two and three is only shown when the
-current commit is not tagged. The indicator is also only shown when the
-files were modified.
+It fails with:
+	patching file drivers/staging/batman-adv/bitarray.c
+	patching file drivers/staging/batman-adv/bitarray.h
+	patching file drivers/staging/batman-adv/hash.c
+	patching file drivers/staging/batman-adv/hash.h
+	patching file drivers/staging/batman-adv/originator.c
+	patching file drivers/staging/batman-adv/originator.h
+	patching file drivers/staging/batman-adv/routing.c
+	patching file drivers/staging/batman-adv/routing.h
+	patching file drivers/staging/batman-adv/send.c
+	patching file drivers/staging/batman-adv/send.h
+	patching file drivers/staging/batman-adv/soft-interface.c
+	patching file drivers/staging/batman-adv/soft-interface.h
+	patching file drivers/staging/batman-adv/translation-table.c
+	Hunk #2 succeeded at 250 (offset 5 lines).
+	Hunk #3 succeeded at 442 with fuzz 1 (offset 16 lines).
+	patching file drivers/staging/batman-adv/translation-table.h
+	Hunk #1 FAILED at 26.
+	1 out of 1 hunk FAILED -- saving rejects to file drivers/staging/batman-adv/translation-table.h.rej
+	patching file drivers/staging/batman-adv/vis.c
+	patching file drivers/staging/batman-adv/vis.h
+	Hunk #1 FAILED at 44.
+	1 out of 1 hunk FAILED -- saving rejects to file drivers/staging/batman-adv/vis.h.rej
 
-This should make it quite easy understandable for humans and still makes
-it possible to find the commit in the repository using standard git
-tools (for that purpose the "-dirty" string  must be ommited).
+So, any thoughts?
 
-A full example would be v2010.0.0-25-gdc3f30c-dirty
+confused,
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-adv/Makefile        |   30 +++++++++++++++++++-----------
- batman-adv/Makefile.kbuild |    2 +-
- 2 files changed, 20 insertions(+), 12 deletions(-)
-
-diff --git a/batman-adv/Makefile b/batman-adv/Makefile
-index 4f6a460..e52a2d3 100644
---- a/batman-adv/Makefile
-+++ b/batman-adv/Makefile
-@@ -29,17 +29,25 @@ endif
- 
- export KERNELPATH
- 
--REVISION=	$(shell if [ -d .svn ]; then \
--						if which svn > /dev/null; then \
--							svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'; \
--						fi; \
--					else \
--						if [ -d ~/.svk ]; then \
--							if which svk > /dev/null; then \
--								echo $$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
--							fi; \
--						fi; \
--					fi)
-+REVISION= $(shell	if [ -d .svn ]; then \
-+				if which svn > /dev/null; then \
-+					echo rv$$(svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'); \
-+				else \
-+					echo "[unknown]"; \
-+				fi; \
-+			elif [ -d .git ]; then \
-+				if which git > /dev/null; then \
-+					echo $$(git describe --always --dirty 2> /dev/null); \
-+				else \
-+					echo "[unknown]"; \
-+				fi; \
-+			elif [ -d ~/.svk ]; then \
-+				if which svk > /dev/null; then \
-+					echo rv$$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
-+				else \
-+					echo "[unknown]"; \
-+				fi; \
-+			fi)
- 
- NUM_CPUS = $(shell NUM_CPUS=`cat /proc/cpuinfo | grep -v 'model name' | grep processor | tail -1 | awk -F' ' '{print $$3}'`;echo `expr $$NUM_CPUS + 1`)
- 
-diff --git a/batman-adv/Makefile.kbuild b/batman-adv/Makefile.kbuild
-index d42f6a3..762ee4e 100644
---- a/batman-adv/Makefile.kbuild
-+++ b/batman-adv/Makefile.kbuild
-@@ -28,7 +28,7 @@ endif
- # EXTRA_CFLAGS += -DCONFIG_BATMAN_ADV_DEBUG
- 
- ifneq ($(REVISION),)
--EXTRA_CFLAGS += -DREVISION_VERSION=\"r$(REVISION)\"
-+EXTRA_CFLAGS += -DREVISION_VERSION=\"$(REVISION)\"
- endif
- 
- obj-m += batman-adv.o
--- 
-1.7.1
-
+greg k-h
