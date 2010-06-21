@@ -1,8 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 21 Jun 2010 18:18:34 +0200
-Message-Id: <1277137115-10338-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batctl: Add support for git revision
+Date: Mon, 21 Jun 2010 18:18:35 +0200
+Message-Id: <1277137115-10338-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1277137115-10338-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1277137115-10338-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Add support for git revision
 	string
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -37,39 +39,37 @@ This should make it quite easy understandable for humans and still makes
 it possible to find the commit in the repository using standard git
 tools (for that purpose the "-dirty" string  must be ommited).
 
-A full example would be v2010.0.0-15-g154f68a-dirty
+A full example would be v2010.0.0-25-gdc3f30c-dirty
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batctl/Makefile |   34 +++++++++++++++++++---------------
- 1 files changed, 19 insertions(+), 15 deletions(-)
+ batman-adv/Makefile        |   30 +++++++++++++++++++-----------
+ batman-adv/Makefile.kbuild |    2 +-
+ 2 files changed, 20 insertions(+), 12 deletions(-)
 
-diff --git a/batctl/Makefile b/batctl/Makefile
-index ab9c075..fde5486 100644
---- a/batctl/Makefile
-+++ b/batctl/Makefile
-@@ -47,23 +47,27 @@ PACKAGE_NAME = batctl
- BINARY_NAME = batctl
- SOURCE_VERSION_HEADER = main.h
+diff --git a/batman-adv/Makefile b/batman-adv/Makefile
+index 4f6a460..e52a2d3 100644
+--- a/batman-adv/Makefile
++++ b/batman-adv/Makefile
+@@ -29,17 +29,25 @@ endif
  
--REVISION = $(shell if [ -d .svn ]; then \
--					if which svn > /dev/null; then \
--						svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'; \
+ export KERNELPATH
+ 
+-REVISION=	$(shell if [ -d .svn ]; then \
+-						if which svn > /dev/null; then \
+-							svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'; \
+-						fi; \
 -					else \
--						echo "[unknown]"; \
--					fi ; \
+-						if [ -d ~/.svk ]; then \
+-							if which svk > /dev/null; then \
+-								echo $$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
+-							fi; \
+-						fi; \
+-					fi)
 +REVISION= $(shell	if [ -d .svn ]; then \
 +				if which svn > /dev/null; then \
 +					echo rv$$(svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'); \
- 				else \
--					if [ -d ~/.svk ]; then \
--						if which svk > /dev/null; then \
--							echo $$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
--						else \
--							echo "[unknown]"; \
--						fi; \
--					fi; \
--				fi)
++				else \
 +					echo "[unknown]"; \
 +				fi; \
 +			elif [ -d .git ]; then \
@@ -86,11 +86,21 @@ index ab9c075..fde5486 100644
 +				fi; \
 +			fi)
  
--REVISION_VERSION =\"\ rv$(REVISION)\"
-+REVISION_VERSION =\"\ $(REVISION)\"
+ NUM_CPUS = $(shell NUM_CPUS=`cat /proc/cpuinfo | grep -v 'model name' | grep processor | tail -1 | awk -F' ' '{print $$3}'`;echo `expr $$NUM_CPUS + 1`)
  
- BAT_VERSION = $(shell grep "^\#define SOURCE_VERSION " $(SOURCE_VERSION_HEADER) | sed -e '1p' -n | awk -F '"' '{print $$2}' | awk '{print $$1}')
- FILE_NAME = $(PACKAGE_NAME)_$(BAT_VERSION)-rv$(REVISION)_$@
+diff --git a/batman-adv/Makefile.kbuild b/batman-adv/Makefile.kbuild
+index d42f6a3..762ee4e 100644
+--- a/batman-adv/Makefile.kbuild
++++ b/batman-adv/Makefile.kbuild
+@@ -28,7 +28,7 @@ endif
+ # EXTRA_CFLAGS += -DCONFIG_BATMAN_ADV_DEBUG
+ 
+ ifneq ($(REVISION),)
+-EXTRA_CFLAGS += -DREVISION_VERSION=\"r$(REVISION)\"
++EXTRA_CFLAGS += -DREVISION_VERSION=\"$(REVISION)\"
+ endif
+ 
+ obj-m += batman-adv.o
 -- 
 1.7.1
 
