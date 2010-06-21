@@ -1,15 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 21 Jun 2010 16:24:28 +0200
-References: <201006211611.45412.clemens-john@gmx.de>
-In-Reply-To: <201006211611.45412.clemens-john@gmx.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201006211624.28747.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Cannot build actual OpenWrt Backfire branch with
-	Batman Advanced
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon, 21 Jun 2010 18:18:34 +0200
+Message-Id: <1277137115-10338-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batctl: Add support for git revision
+	string
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,37 +15,82 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+The Makefile tries to find a version number which describes the state of
+the version somebody compiles. Currently this can only be a subversion
+revision. This must also be done for git as it is used to prepare the
+actual releases.
 
-Hi,
+The revision string consists of 4 parts:
+ 1. last annotated tag name
+ 2. number of commits inbetween last tag name and this commit
+ 3. shortened sha1 sum of the commit
+ 4. indicator whether the files where modified
 
-> Checking out files from the svn repository...
-> svn: Write error: Broken pipe
-> svn: '/svn/batman/!svn/bc/1718/branches/batctl-0.2.x' path not found
-> svn: '/svn/batman/!svn/bc/1718/branches/batctl-0.2.x' path not found
-> make[3]: *** [/home/floh1111/openwrtbuild_luci/dl/batctl-maint-1611.tar.g=
-z]
+The first part is only shown when there was a tag before the commit or
+the current commit was tagged. Part two and three is only shown when the
+current commit is not tagged. The indicator is also only shown when the
+files were modified.
 
-hmm.., we recently moved the the batctl-0.2.x branch into the git repositor=
-y=20
-but retrieving an older version should be no problem. Not sure what is goin=
-g=20
-wrong here.
+This should make it quite easy understandable for humans and still makes
+it possible to find the commit in the repository using standard git
+tools (for that purpose the "-dirty" string  must be ommited).
 
+A full example would be v2010.0.0-15-g154f68a-dirty
 
-> Can someone fix this please?
->=20
-> What=B4s up with the latest release (Batman-adv 2010.0.0)?
-> Will I be able to build it with the Backfire branch? Maybe someone can
-> update the makefile?
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batctl/Makefile |   34 +++++++++++++++++++---------------
+ 1 files changed, 19 insertions(+), 15 deletions(-)
 
-It will be build with backfire, I have no doubt about that. Updating the=20
-Makefile is on our todo list but it will take a couple of days. Nico (from =
-the=20
-OpenWRT team) is helping us to reorganize & simplify the Makefile. We will=
-=20
-probably have it by the end of the week but help is always welcome.  :)
+diff --git a/batctl/Makefile b/batctl/Makefile
+index ab9c075..fde5486 100644
+--- a/batctl/Makefile
++++ b/batctl/Makefile
+@@ -47,23 +47,27 @@ PACKAGE_NAME = batctl
+ BINARY_NAME = batctl
+ SOURCE_VERSION_HEADER = main.h
+ 
+-REVISION = $(shell if [ -d .svn ]; then \
+-					if which svn > /dev/null; then \
+-						svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'; \
+-					else \
+-						echo "[unknown]"; \
+-					fi ; \
++REVISION= $(shell	if [ -d .svn ]; then \
++				if which svn > /dev/null; then \
++					echo rv$$(svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'); \
+ 				else \
+-					if [ -d ~/.svk ]; then \
+-						if which svk > /dev/null; then \
+-							echo $$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
+-						else \
+-							echo "[unknown]"; \
+-						fi; \
+-					fi; \
+-				fi)
++					echo "[unknown]"; \
++				fi; \
++			elif [ -d .git ]; then \
++				if which git > /dev/null; then \
++					echo $$(git describe --always --dirty 2> /dev/null); \
++				else \
++					echo "[unknown]"; \
++				fi; \
++			elif [ -d ~/.svk ]; then \
++				if which svk > /dev/null; then \
++					echo rv$$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
++				else \
++					echo "[unknown]"; \
++				fi; \
++			fi)
+ 
+-REVISION_VERSION =\"\ rv$(REVISION)\"
++REVISION_VERSION =\"\ $(REVISION)\"
+ 
+ BAT_VERSION = $(shell grep "^\#define SOURCE_VERSION " $(SOURCE_VERSION_HEADER) | sed -e '1p' -n | awk -F '"' '{print $$2}' | awk '{print $$1}')
+ FILE_NAME = $(PACKAGE_NAME)_$(BAT_VERSION)-rv$(REVISION)_$@
+-- 
+1.7.1
 
-Regards,
-Marek
