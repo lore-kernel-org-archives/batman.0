@@ -1,16 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 21 Jun 2010 11:04:53 +0200
-References: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
-	<1276908713-28365-7-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1276908713-28365-7-git-send-email-sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2320577.LQtM4tdsO6";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201006211104.54197.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 6/8] Staging: batman-adv: Add bonding
-	functionality
+Date: Mon, 21 Jun 2010 12:06:47 +0200
+Message-Id: <1277114808-16584-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batctl: Remove dead code from old sysfs
+	parsing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,60 +15,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, b.a.t.m.a.n@lists.open-mesh.net
-Cc: Greg KH <greg@kroah.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2320577.LQtM4tdsO6
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+The old batman-adv sysfs files provided all their available options
+inside their output. This made it necessary to parse the output to
+analyse it before we accept an input given to batctl.
 
-Sven Eckelmann wrote:
-> From: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
->=20
-[...]
-> Bonding is deactivated by default, and can be activated by
->=20
-> echo 1 > /sys/class/net/bat0/mesh/bonding
->=20
-> for each individual node.
->=20
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> [sven.eckelmann@gmx.de: Rework on top of current version]
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-> ---
+This functionality was removed as it wasn't the correct style according
+to the sysfs maintainer. Not all code related to that were removed right
+away when batctl was adopted to the new sysfs handling.
 
-I noticed that the bonding file in sysfs is not documented while working on
-batctl yesterday. Can you please provide a short text for
- http://git.kernel.org/?p=3Dlinux/kernel/git/next/linux-next.git;a=3Dblob;f=
-=3Ddrivers/staging/batman-adv/sysfs-class-net-mesh
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ functions.c |   18 ------------------
+ functions.h |    1 -
+ 2 files changed, 0 insertions(+), 19 deletions(-)
 
-It would be nice to have that on Friday because I wanted to submit some
-remaining patches for 2.6.36 on that date.
+diff --git a/functions.c b/functions.c
+index 3bcb0b2..7be9511 100644
+--- a/functions.c
++++ b/functions.c
+@@ -303,21 +303,3 @@ out:
+ 		close(fd);
+ 	return res;
+ }
+-
+-char *strchr_anyof(const char *s, const char *n)
+-{
+-	char *cur, *first = NULL;
+-	size_t i, len;
+-
+-	if (s == NULL || n == NULL)
+-		return first;
+-
+-	len = strlen(n);
+-	for (i = 0; i < len; i++) {
+-		cur = strchr(s, n[i]);
+-		if (cur != NULL && (cur < first || first == NULL))
+-			first = cur;
+-	}
+-
+-	return first;
+-}
+diff --git a/functions.h b/functions.h
+index 847a482..885df34 100644
+--- a/functions.h
++++ b/functions.h
+@@ -35,7 +35,6 @@ char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
+ char *get_name_by_macstr(char *mac_str, int read_opt);
+ int read_file(char *dir, char *path, int read_opt);
+ int write_file(char *dir, char *fname, char *arg1, char *arg2);
+-char *strchr_anyof(const char *s, const char *n);
+ 
+ extern char *line_ptr;
+ 
+-- 
+1.7.1
 
-thanks,
-	Sven
-
---nextPart2320577.LQtM4tdsO6
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMHys1AAoJEF2HCgfBJntGzocQAJel85ikpwj83rc+c7zfX0P8
-Ehk2V9uTbd0Zdvjv3pwyeeIEYZOIZk86gXfdnG0d2OFxUBInsEcUNakc0BzwMs5E
-JxZKdgYI7j7xU7nQw4hnmcJK+VYTiL/80bsBpRnZEaom5I2SsnTprPwab/PLqwws
-r3Yoz7t8lsetBzXEY82tNTqkoLsi1axCaNAgTBYoh4Y5n1duYxPh1Wk3vJ0nXWKX
-Idow31pIa1UNRYcdNaa063CWe/FGaIZviTvSFblDZXobMe/qzmdwAXKWl1hfKEbN
-jET8GVonP4DLzYOb0HIG8MomgkXPB/8VQls6M0Te0PVLzxFBc23nqqtLlfjaoREB
-/VEJQsBbjm5ZzRLfG2X796LYzyAe5srN6aidxA7Buzby8Gkv9xgyEK7YVHULq8Z1
-DS5SsxHuhwDbcRbiVyVwWxq/bKxgHx1a0QCzjVwUsxPkWO3xm60Rz4q/rqu3fnoC
-Ge/X6j9CQBwtDv/5aC12D0Zm5wcaODmU3Um/05nht+Zz7+Ql1O1PV8IlSaQ897rB
-8Weo1bvvECZS5D92vATnppkzvYGi1J4Zo9bvs79zXgIVSenw2/NLihbg7RJk7/mu
-HwHT8xA7/w2xAQVY62ePYg1N7THE2BneLdq73TKNV1xL8w0N5m88F+MYYIvdWJM2
-wWrnyVtUWRDh/jD3jLqx
-=eZVL
------END PGP SIGNATURE-----
-
---nextPart2320577.LQtM4tdsO6--
