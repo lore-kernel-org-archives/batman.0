@@ -1,14 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 22 Jun 2010 19:35:37 +0200
-References: <201006221931.38072.clemens-john@gmx.de>
-In-Reply-To: <201006221931.38072.clemens-john@gmx.de>
+Return-Path: <greg@kroah.com>
+Date: Tue, 22 Jun 2010 14:06:46 -0700
+From: Greg KH <greg@kroah.com>
+Message-ID: <20100622210646.GA22551@kroah.com>
+References: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
+	<201006220059.48628.sven.eckelmann@gmx.de>
+	<20100621231617.GA1346@kroah.com>
+	<201006220123.33682.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201006221935.37597.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Link quality
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201006220123.33682.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (2)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,19 +22,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven.eckelmann@gmx.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
+On Tue, Jun 22, 2010 at 01:23:32AM +0200, Sven Eckelmann wrote:
+> Greg KH wrote:
+> > So, to make it dirt-simple for me, so my simple mind can figure it out,
+> > can you resend the patches that I need to apply that are not in my
+> > staging-next tree?
+> 
+> Yes, of course. I will sent them as response to this mail.
 
-Hey,
+Thanks, I got them all and applied them.  Hopefully we should be all
+synced up now, right?
 
-> I=B4m using Batman advanced and with "batctl o" I can get originators.
-> Is there a way to get the link quality to this originators?
+So sorry for the confusion,
 
-I'm pushing people to provide proper documentation which is not easy, since=
-=20
-coding is much more fun than documenting. Please, also take the time to rea=
-d=20
-it: http://www.open-mesh.org/wiki/understand-your-batman-adv-network
-
-Cheers,
-Marek
+greg k-h
