@@ -1,18 +1,13 @@
-Return-Path: <greg@kroah.com>
-Date: Tue, 22 Jun 2010 14:37:53 -0700
-From: Greg KH <greg@kroah.com>
-Message-ID: <20100622213753.GB8117@kroah.com>
-References: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
-	<201006220059.48628.sven.eckelmann@gmx.de>
-	<20100621231617.GA1346@kroah.com>
-	<201006220123.33682.sven.eckelmann@gmx.de>
-	<20100622210646.GA22551@kroah.com>
-	<20100622212559.GA18633@sven-atom.lazhur.ath.cx>
+Return-Path: <gregkh@suse.de>
+Date: Tue, 22 Jun 2010 16:02:58 -0700
+From: Greg KH <gregkh@suse.de>
+Message-ID: <20100622230258.GD18495@suse.de>
+References: <201006101303.45771.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100622212559.GA18633@sven-atom.lazhur.ath.cx>
-Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (2)
+In-Reply-To: <201006101303.45771.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] batman-adv: Migration from staging to net
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,29 +20,28 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue, Jun 22, 2010 at 11:25:59PM +0200, Sven Eckelmann wrote:
-> On Tue, Jun 22, 2010 at 02:06:46PM -0700, Greg KH wrote:
-> > On Tue, Jun 22, 2010 at 01:23:32AM +0200, Sven Eckelmann wrote:
-> > > Greg KH wrote:
-> > > > So, to make it dirt-simple for me, so my simple mind can figure it out,
-> > > > can you resend the patches that I need to apply that are not in my
-> > > > staging-next tree?
-> > > 
-> > > Yes, of course. I will sent them as response to this mail.
-> > 
-> > Thanks, I got them all and applied them.  Hopefully we should be all
-> > synced up now, right?
+On Thu, Jun 10, 2010 at 01:03:36PM +0200, Sven Eckelmann wrote:
+> Hi,
 > 
-> The count seems to be correct - I have to check later if the content looks fine
-> too, but have not doubts that everything is fine.
+> the batman-adv developers had a smaller discussion what we wanted to achieve
+> in drivers/staging and if we have done everything we wanted to do. We think
+> that everything we wanted to do in staging is finished (the TODO file is
+> empty since a while), but that is just our opinion.
 > 
-> I was asked to remind you about the mail regarding the possibility to move from
-> staging to net.
+> So we wanted to ask you first if you see any showstopper which make batman-adv
+> insufficient for net before we would ask the net maintainer. Our personal
+> favorite kernel for the move would be 2.6.37. Before that we would have 2.6.35
+> (which is not completely correct using the sysfs infrastructure) and at least
+> some RCs of 2.6.36 (which moves the remaining wrong stuff from sysfs to
+> debugfs).
 
-Heh, yes, that's still in my queue, sorry, will go do that now...
+If everything is now moved into debugfs, and everything in sysfs is only
+"one-value-per-file" then I don't really have an objection.
 
-thanks,
+I would say let the networking developers start reviewing it.
+
+good luck,
 
 greg k-h
