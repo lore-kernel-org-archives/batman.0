@@ -1,16 +1,16 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 22 Jun 2010 01:23:32 +0200
-References: <1276908713-28365-1-git-send-email-sven.eckelmann@gmx.de>
-	<201006220059.48628.sven.eckelmann@gmx.de>
-	<20100621231617.GA1346@kroah.com>
-In-Reply-To: <20100621231617.GA1346@kroah.com>
+Return-Path: <linus.luessing@web.de>
+Date: Tue, 22 Jun 2010 16:42:19 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20100622144219.GA20481@Sellars>
+References: <201006211611.45412.clemens-john@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9605498.dDs0nxviK8";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201006220123.33682.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (2)
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201006211611.45412.clemens-john@gmx.de>
+Sender: linus.luessing@web.de
+Subject: Re: [B.A.T.M.A.N.] Cannot build actual OpenWrt Backfire branch with
+ Batman Advanced
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,44 +22,73 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Greg KH <greg@kroah.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart9605498.dDs0nxviK8
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Hi Clemens,
 
-Greg KH wrote:
-> So, to make it dirt-simple for me, so my simple mind can figure it out,
-> can you resend the patches that I need to apply that are not in my
-> staging-next tree?
+seems to have been some svn weirdness...
+with deleted branches you have to use
+'svn co -r 1611 "http://downloads.open-mesh.org/svn/batman/branches/batctl-0.2.x@1611"'
+(which I also didn't know before) instead of
+'svn co -r 1611 "http://downloads.open-mesh.org/svn/batman/branches/batctl-0.2.x"
 
-Yes, of course. I will sent them as response to this mail.
+Should be fixed in OpenWRT commit 21880 now. Please let us
+know, if it works for you too :).
 
-thanks,
-	Sven
+Cheers, Linus
 
---nextPart9605498.dDs0nxviK8
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+On Mon, Jun 21, 2010 at 04:11:40PM +0200, Clemens John wrote:
+> Hi,
+> 
+> I tried to build OpenWrt Backfire with Batman adv from an actual branch 5 
+> minutes ago and it fails with the following error  (seems to be a 
+> version/download problem):
+> 
+> ------------
+> --2010-06-21 16:03:50--  http://mirror2.openwrt.org/sources/batctl-
+> maint-1611.tar.gz
+> Resolving mirror2.openwrt.org... 88.198.39.176
+> Connecting to mirror2.openwrt.org|88.198.39.176|:80... connected.
+> HTTP request sent, awaiting response... 404 Not Found
+> 2010-06-21 16:03:50 ERROR 404: Not Found.
+> 
+> Download failed.
+> --2010-06-21 16:03:50--  http://downloads.openwrt.org/sources/batctl-
+> maint-1611.tar.gz
+> Resolving downloads.openwrt.org... 78.24.191.177
+> Connecting to downloads.openwrt.org|78.24.191.177|:80... connected.
+> HTTP request sent, awaiting response... 404 Not Found
+> 2010-06-21 16:03:50 ERROR 404: Not Found.
+> 
+> Download failed.
+> No more mirrors to try - giving up.
+> Checking out files from the svn repository...
+> svn: Write error: Broken pipe
+> svn: '/svn/batman/!svn/bc/1718/branches/batctl-0.2.x' path not found
+> svn: '/svn/batman/!svn/bc/1718/branches/batctl-0.2.x' path not found
+> make[3]: *** [/home/floh1111/openwrtbuild_luci/dl/batctl-maint-1611.tar.gz] 
+> Error 1
+> make[3]: Leaving directory 
+> `/home/floh1111/openwrtbuild_luci/feeds/packages/net/batman-advanced'
+> make[2]: *** [package/feeds/packages/batman-advanced/compile] Error 2
+> make[2]: Leaving directory `/home/floh1111/openwrtbuild_luci'
+> make[1]: *** [/home/floh1111/openwrtbuild_luci/staging_dir/target-
+> mips_uClibc-0.9.30.1/stamp/.package_compile] Error 2
+> make[1]: Leaving directory `/home/floh1111/openwrtbuild_luci'
+> make: *** [world] Fehler 2
+> -------
+> 
+> It seems to be that the source file saved in the makefile is not right.
+> https://dev.openwrt.org/browser/packages/net/batman-advanced/Makefile
+> 
+> Can someone fix this please?
+> 
+> Another question:
+> What´s up with the latest release (Batman-adv 2010.0.0)?
+> Will I be able to build it with the Backfire branch? Maybe someone can update 
+> the makefile?
+> 
+> Thanks
+> Clemens
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJMH/R0AAoJEF2HCgfBJntGkdIQAMxPTq+9cwNcWGz9hnLoiWJU
-rpBUny9Ujs0+oR38FeQ8h4hVi+sMqXNnaYVn4y9m11LqbpjV+KbbEXU8So0JAxWN
-2rCzn1/rqIly4hggAg3gLALn1d5XDf+hWIpImFjhA7bohIu6vb3Y0g0cJ2lSOFzh
-zPVxJXCNIdWZ46hUeXRD2cVFZc/duwM8DeVAvGUDJCz8q/anzNg3z7Ceu2rAYYcs
-TiWb669iMnO5zI1b398ivrQukSXgDJ+n3tVUxoWkfpax/f6hjLaQw6ZHc5LkhxaO
-lgMu6+4pNnTSfDCPZaBrhfNYdaCTWDpTMBs+Ouv3+o5o6bWCwVcBbbpB4h+51q2O
-Y85i9tgefTgkq4ttiIrY+0E/xykxZ33X8U3e7uYwRrya5lL4v8kHDjaJOvOUE0Ox
-I3jzZJOwYRYGNV6ZcS1vVAqsD+K3IiNY4PfcOyjOjT7Mh6Qa3Kmif4inKrBJoNuR
-5qQVmlXHjelUT07K75LGSI9shKhELjgt4QDuh0GlGreopUqJSIvKG55+zpE16r66
-kiIMr5glUFZcR4oyJbtycVZUgrEQGO4w+XYnWTz23QpkHkVgC/ifUhBBW4p6E9pq
-kz6G5dANJJ0dADfO9ygzih9QuzasneNYMnkkgUaxo0ZFafWBj01iFIs48B2h4Bn7
-i2ChJNWDGHHR7up0Yimv
-=P2QS
------END PGP SIGNATURE-----
-
---nextPart9605498.dDs0nxviK8--
