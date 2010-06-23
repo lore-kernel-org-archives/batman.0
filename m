@@ -1,9 +1,8 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 23 Jun 2010 17:35:26 +0200
-Message-Id: <1277307326-27514-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add include guards to all header
-	files
+Date: Wed, 23 Jun 2010 17:36:52 +0200
+Message-Id: <1277307412-27661-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Move printk to pr_* macros
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,436 +14,680 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-We include different header files indirectly to the same source file.
-This creates weird compiler errors from time to time. Include guards
-should prefend that functions/variables/... gets redefined by itself.
-
+Reported-by: Joe Perches <joe@perches.com>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/aggregation.h       |    5 +++++
- batman-adv/bat_debugfs.h       |    6 +++---
- batman-adv/bat_sysfs.h         |    6 +++---
- batman-adv/bitarray.h          |    4 ++++
- batman-adv/compat.h            |    5 +++++
- batman-adv/gateway_client.h    |    5 +++++
- batman-adv/gateway_common.h    |    5 +++++
- batman-adv/hard-interface.h    |    5 +++++
- batman-adv/hash.h              |    8 +++++---
- batman-adv/icmp_socket.h       |    5 +++++
- batman-adv/main.h              |    5 +++++
- batman-adv/originator.h        |    5 +++++
- batman-adv/packet.h            |    5 +++++
- batman-adv/ring_buffer.h       |    5 +++++
- batman-adv/routing.h           |    5 +++++
- batman-adv/send.h              |    5 +++++
- batman-adv/soft-interface.h    |    5 +++++
- batman-adv/translation-table.h |    5 +++++
- batman-adv/types.h             |    6 +++---
- batman-adv/vis.h               |    5 +++++
- 20 files changed, 93 insertions(+), 12 deletions(-)
+ batman-adv/bat_debugfs.c       |    7 ++--
+ batman-adv/bat_sysfs.c         |   74 +++++++++++++++++++--------------------
+ batman-adv/compat.h            |   13 +++++++
+ batman-adv/gateway_common.c    |   30 ++++++----------
+ batman-adv/hard-interface.c    |   29 ++++++----------
+ batman-adv/icmp_socket.c       |    5 +--
+ batman-adv/main.c              |   15 +++-----
+ batman-adv/main.h              |    2 +
+ batman-adv/originator.c        |   15 +++-----
+ batman-adv/routing.c           |   14 +++----
+ batman-adv/send.c              |   10 ++---
+ batman-adv/translation-table.c |    6 +--
+ batman-adv/vis.c               |    9 ++---
+ 13 files changed, 106 insertions(+), 123 deletions(-)
 
-diff --git a/batman-adv/aggregation.h b/batman-adv/aggregation.h
-index 84401ca..71a91b3 100644
---- a/batman-adv/aggregation.h
-+++ b/batman-adv/aggregation.h
-@@ -19,6 +19,9 @@
+diff --git a/batman-adv/bat_debugfs.c b/batman-adv/bat_debugfs.c
+index 4f99c5c..48521d9 100644
+--- a/batman-adv/bat_debugfs.c
++++ b/batman-adv/bat_debugfs.c
+@@ -19,9 +19,10 @@
   *
   */
  
-+#ifndef _NET_BATMAN_ADV_AGGREGATION_H_
-+#define _NET_BATMAN_ADV_AGGREGATION_H_
++#include "main.h"
 +
- #include "main.h"
+ #include <linux/debugfs.h>
  
- /* is there another aggregated packet here? */
-@@ -36,3 +39,5 @@ void add_bat_packet_to_list(struct bat_priv *bat_priv,
- 			    unsigned long send_time);
- void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff,
- 			     int packet_len, struct batman_if *if_incoming);
-+
-+#endif /* _NET_BATMAN_ADV_AGGREGATION_H_ */
-diff --git a/batman-adv/bat_debugfs.h b/batman-adv/bat_debugfs.h
-index 5cdd332..72df532 100644
---- a/batman-adv/bat_debugfs.h
-+++ b/batman-adv/bat_debugfs.h
-@@ -20,8 +20,8 @@
-  */
+-#include "main.h"
+ #include "bat_debugfs.h"
+ #include "translation-table.h"
+ #include "originator.h"
+@@ -317,8 +318,8 @@ int debugfs_add_meshif(struct net_device *dev)
+ 					  bat_priv->debug_dir,
+ 					  dev, &(*bat_debug)->fops);
+ 		if (!file) {
+-			printk(KERN_ERR "batman-adv:Can't add debugfs file: "
+-			       "%s/%s\n", dev->name, ((*bat_debug)->attr).name);
++			pr_err("Can't add debugfs file: %s/%s\n", dev->name,
++			       ((*bat_debug)->attr).name);
+ 			goto rem_attr;
+ 		}
+ 	}
+diff --git a/batman-adv/bat_sysfs.c b/batman-adv/bat_sysfs.c
+index 68ce453..b81572a 100644
+--- a/batman-adv/bat_sysfs.c
++++ b/batman-adv/bat_sysfs.c
+@@ -70,18 +70,18 @@ static ssize_t store_aggr_ogms(struct kobject *kobj, struct attribute *attr,
+ 		if (buff[count - 1] == '\n')
+ 			buff[count - 1] = '\0';
  
+-		printk(KERN_INFO "batman-adv:Invalid parameter for 'aggregate OGM' setting on mesh %s received: %s\n",
+-		       net_dev->name, buff);
++		pr_info("Invalid parameter for 'aggregate OGM' setting on mesh "
++			"%s received: %s\n", net_dev->name, buff);
+ 		return -EINVAL;
+ 	}
  
--#ifndef BAT_DEBUGFS_H
--#define BAT_DEBUGFS_H
-+#ifndef _NET_BATMAN_ADV_DEBUGFS_H_
-+#define _NET_BATMAN_ADV_DEBUGFS_H_
+ 	if (atomic_read(&bat_priv->aggregation_enabled) == aggr_tmp)
+ 		return count;
  
- #define DEBUGFS_BAT_SUBDIR "batman_adv"
+-	printk(KERN_INFO "batman-adv:Changing aggregation from: %s to: %s on mesh: %s\n",
+-	       atomic_read(&bat_priv->aggregation_enabled) == 1 ?
+-	       "enabled" : "disabled", aggr_tmp == 1 ? "enabled" : "disabled",
+-	       net_dev->name);
++	pr_info("Changing aggregation from: %s to: %s on mesh: %s\n",
++		atomic_read(&bat_priv->aggregation_enabled) == 1 ?
++		"enabled" : "disabled", aggr_tmp == 1 ? "enabled" : "disabled",
++		net_dev->name);
  
-@@ -30,4 +30,4 @@ void debugfs_destroy(void);
- int debugfs_add_meshif(struct net_device *dev);
- void debugfs_del_meshif(struct net_device *dev);
+ 	atomic_set(&bat_priv->aggregation_enabled, (unsigned)aggr_tmp);
+ 	return count;
+@@ -118,19 +118,19 @@ static ssize_t store_bond(struct kobject *kobj, struct attribute *attr,
+ 		if (buff[count - 1] == '\n')
+ 			buff[count - 1] = '\0';
  
--#endif
-+#endif /* _NET_BATMAN_ADV_DEBUGFS_H_ */
-diff --git a/batman-adv/bat_sysfs.h b/batman-adv/bat_sysfs.h
-index cb45a91..7f186c0 100644
---- a/batman-adv/bat_sysfs.h
-+++ b/batman-adv/bat_sysfs.h
-@@ -20,8 +20,8 @@
-  */
+-		printk(KERN_ERR "batman-adv:Invalid parameter for 'bonding' setting on mesh %s received: %s\n",
+-		       net_dev->name, buff);
++		pr_err("Invalid parameter for 'bonding' setting on mesh %s "
++		       "received: %s\n", net_dev->name, buff);
+ 		return -EINVAL;
+ 	}
  
+ 	if (atomic_read(&bat_priv->bonding_enabled) == bonding_enabled_tmp)
+ 		return count;
  
--#ifndef BAT_SYSFS_H
--#define BAT_SYSFS_H
-+#ifndef _NET_BATMAN_ADV_SYSFS_H_
-+#define _NET_BATMAN_ADV_SYSFS_H_
+-	printk(KERN_INFO "batman-adv:Changing bonding from: %s to: %s on mesh: %s\n",
+-	       atomic_read(&bat_priv->bonding_enabled) == 1 ?
+-	       "enabled" : "disabled",
+-	       bonding_enabled_tmp == 1 ? "enabled" : "disabled",
+-	       net_dev->name);
++	pr_info("Changing bonding from: %s to: %s on mesh: %s\n",
++		atomic_read(&bat_priv->bonding_enabled) == 1 ?
++		"enabled" : "disabled",
++		bonding_enabled_tmp == 1 ? "enabled" : "disabled",
++		net_dev->name);
  
- #define SYSFS_IF_MESH_SUBDIR "mesh"
- #define SYSFS_IF_BAT_SUBDIR "batman_adv"
-@@ -39,4 +39,4 @@ void sysfs_del_meshif(struct net_device *dev);
- int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev);
- void sysfs_del_hardif(struct kobject **hardif_obj);
+ 	atomic_set(&bat_priv->bonding_enabled, (unsigned)bonding_enabled_tmp);
+ 	return count;
+@@ -172,18 +172,18 @@ static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
+ 		if (buff[count - 1] == '\n')
+ 			buff[count - 1] = '\0';
  
--#endif
-+#endif /* _NET_BATMAN_ADV_SYSFS_H_ */
-diff --git a/batman-adv/bitarray.h b/batman-adv/bitarray.h
-index dad13bf..01897d6 100644
---- a/batman-adv/bitarray.h
-+++ b/batman-adv/bitarray.h
-@@ -19,6 +19,8 @@
-  *
-  */
+-		printk(KERN_INFO "batman-adv:Invalid parameter for 'vis mode' setting on mesh %s received: %s\n",
+-		       net_dev->name, buff);
++		pr_info("Invalid parameter for 'vis mode' setting on mesh %s "
++			"received: %s\n", net_dev->name, buff);
+ 		return -EINVAL;
+ 	}
  
-+#ifndef _NET_BATMAN_ADV_BITARRAY_H_
-+#define _NET_BATMAN_ADV_BITARRAY_H_
+ 	if (atomic_read(&bat_priv->vis_mode) == vis_mode_tmp)
+ 		return count;
  
- /* you should choose something big, if you don't want to waste cpu */
- #define TYPE_OF_WORD unsigned long
-@@ -40,3 +42,5 @@ char bit_get_packet(TYPE_OF_WORD *seq_bits, int32_t seq_num_diff,
+-	printk(KERN_INFO "batman-adv:Changing vis mode from: %s to: %s on mesh: %s\n",
+-	       atomic_read(&bat_priv->vis_mode) == VIS_TYPE_CLIENT_UPDATE ?
+-	       "client" : "server", vis_mode_tmp == VIS_TYPE_CLIENT_UPDATE ?
+-	       "client" : "server", net_dev->name);
++	pr_info("Changing vis mode from: %s to: %s on mesh: %s\n",
++		atomic_read(&bat_priv->vis_mode) == VIS_TYPE_CLIENT_UPDATE ?
++		"client" : "server", vis_mode_tmp == VIS_TYPE_CLIENT_UPDATE ?
++		"client" : "server", net_dev->name);
  
- /* count the hamming weight, how many good packets did we receive? */
- int  bit_packet_count(TYPE_OF_WORD *seq_bits);
-+
-+#endif /* _NET_BATMAN_ADV_BITARRAY_H_ */
+ 	atomic_set(&bat_priv->vis_mode, (unsigned)vis_mode_tmp);
+ 	return count;
+@@ -254,23 +254,23 @@ static ssize_t store_orig_interval(struct kobject *kobj, struct attribute *attr,
+ 
+ 	ret = strict_strtoul(buff, 10, &orig_interval_tmp);
+ 	if (ret) {
+-		printk(KERN_INFO "batman-adv:Invalid parameter for 'orig_interval' setting on mesh %s received: %s\n",
+-		       net_dev->name, buff);
++		pr_info("Invalid parameter for 'orig_interval' setting on mesh "
++			"%s received: %s\n", net_dev->name, buff);
+ 		return -EINVAL;
+ 	}
+ 
+ 	if (orig_interval_tmp < JITTER * 2) {
+-		printk(KERN_INFO "batman-adv:New originator interval too small: %li (min: %i)\n",
+-		       orig_interval_tmp, JITTER * 2);
++		pr_info("New originator interval too small: %li (min: %i)\n",
++			orig_interval_tmp, JITTER * 2);
+ 		return -EINVAL;
+ 	}
+ 
+ 	if (atomic_read(&bat_priv->orig_interval) == orig_interval_tmp)
+ 		return count;
+ 
+-	printk(KERN_INFO "batman-adv:Changing originator interval from: %i to: %li on mesh: %s\n",
+-	       atomic_read(&bat_priv->orig_interval),
+-	       orig_interval_tmp, net_dev->name);
++	pr_info("Changing originator interval from: %i to: %li on mesh: %s\n",
++		atomic_read(&bat_priv->orig_interval),
++		orig_interval_tmp, net_dev->name);
+ 
+ 	atomic_set(&bat_priv->orig_interval, orig_interval_tmp);
+ 	return count;
+@@ -317,8 +317,8 @@ int sysfs_add_meshif(struct net_device *dev)
+ 	bat_priv->mesh_obj = kobject_create_and_add(SYSFS_IF_MESH_SUBDIR,
+ 						    batif_kobject);
+ 	if (!bat_priv->mesh_obj) {
+-		printk(KERN_ERR "batman-adv:Can't add sysfs directory: %s/%s\n",
+-		       dev->name, SYSFS_IF_MESH_SUBDIR);
++		pr_err("Can't add sysfs directory: %s/%s\n", dev->name,
++		       SYSFS_IF_MESH_SUBDIR);
+ 		goto out;
+ 	}
+ 
+@@ -326,9 +326,8 @@ int sysfs_add_meshif(struct net_device *dev)
+ 		err = sysfs_create_file(bat_priv->mesh_obj,
+ 					&((*bat_attr)->attr));
+ 		if (err) {
+-			printk(KERN_ERR "batman-adv:Can't add sysfs file: %s/%s/%s\n",
+-			       dev->name, SYSFS_IF_MESH_SUBDIR,
+-			       ((*bat_attr)->attr).name);
++			pr_err("Can't add sysfs file: %s/%s/%s\n", dev->name,
++			       SYSFS_IF_MESH_SUBDIR, ((*bat_attr)->attr).name);
+ 			goto rem_attr;
+ 		}
+ 	}
+@@ -393,8 +392,8 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 		if (buff[count - 1] == '\n')
+ 			buff[count - 1] = '\0';
+ 
+-		printk(KERN_ERR "batman-adv:Invalid parameter for 'mesh_iface' setting received: %s\n",
+-		       buff);
++		pr_err("Invalid parameter for 'mesh_iface' setting received: "
++		       "%s\n", buff);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -456,17 +455,16 @@ int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
+ 						    hardif_kobject);
+ 
+ 	if (!*hardif_obj) {
+-		printk(KERN_ERR "batman-adv:Can't add sysfs directory: %s/%s\n",
+-		       dev->name, SYSFS_IF_BAT_SUBDIR);
++		pr_err("Can't add sysfs directory: %s/%s\n", dev->name,
++		       SYSFS_IF_BAT_SUBDIR);
+ 		goto out;
+ 	}
+ 
+ 	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr) {
+ 		err = sysfs_create_file(*hardif_obj, &((*bat_attr)->attr));
+ 		if (err) {
+-			printk(KERN_ERR "batman-adv:Can't add sysfs file: %s/%s/%s\n",
+-			       dev->name, SYSFS_IF_BAT_SUBDIR,
+-			       ((*bat_attr)->attr).name);
++			pr_err("Can't add sysfs file: %s/%s/%s\n", dev->name,
++			       SYSFS_IF_BAT_SUBDIR, ((*bat_attr)->attr).name);
+ 			goto rem_attr;
+ 		}
+ 	}
 diff --git a/batman-adv/compat.h b/batman-adv/compat.h
-index 8302a58..3cc0b52 100644
+index 8302a58..58ae850 100644
 --- a/batman-adv/compat.h
 +++ b/batman-adv/compat.h
-@@ -22,6 +22,9 @@
-  * of the Linux kernel.
-  */
+@@ -60,6 +60,19 @@ static inline int skb_clone_writable(struct sk_buff *skb, unsigned int len)
  
-+#ifndef _NET_BATMAN_ADV_COMPAT_H_
-+#define _NET_BATMAN_ADV_COMPAT_H_
+ #endif /* < KERNEL_VERSION(2, 6, 23) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 24)
 +
- #include <linux/version.h>	/* LINUX_VERSION_CODE */
- #include "bat_sysfs.h"		/* struct bat_attribute */
++#ifndef pr_fmt
++#define pr_fmt(fmt) fmt
++#endif
++
++#define pr_err(fmt, ...) \
++       printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_warning(fmt, ...) \
++       printk(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
++
++#endif /* < KERNEL_VERSION(2, 6, 24) */
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
  
-@@ -232,3 +235,5 @@ static inline struct net_device_stats *dev_get_stats(struct net_device *dev)
+ #define strict_strtoul(cp, base, res) \
+diff --git a/batman-adv/gateway_common.c b/batman-adv/gateway_common.c
+index 270cf3d..ff4bc82 100644
+--- a/batman-adv/gateway_common.c
++++ b/batman-adv/gateway_common.c
+@@ -87,16 +87,14 @@ static bool parse_gw_mode_tok(char *tokptr, long *gw_mode_tmp,
+ 	case GW_MODE_CLIENT:
+ 		ret = strict_strtoul(tokptr, 10, gw_class_tmp);
+ 		if (ret) {
+-			printk(KERN_ERR "batman-adv: "
+-			       "Client class of gateway mode invalid: %s\n",
++			pr_err("Client class of gateway mode invalid: %s\n",
+ 			       tokptr);
+ 			return false;
+ 		}
+ 
+ 		if (*gw_class_tmp > TQ_MAX_VALUE) {
+-			printk(KERN_ERR "batman-adv: Client class of gateway "
+-					"mode greater than %i: %ld\n",
+-					TQ_MAX_VALUE, *gw_class_tmp);
++			pr_err("Client class of gateway mode greater than %i: "
++			       "%ld\n", TQ_MAX_VALUE, *gw_class_tmp);
+ 			return false;
+ 		}
+ 
+@@ -121,8 +119,7 @@ static bool parse_gw_mode_tok(char *tokptr, long *gw_mode_tmp,
+ 
+ 		ret = strict_strtoul(tokptr, 10, down);
+ 		if (ret) {
+-			printk(KERN_ERR "batman-adv: "
+-			       "Download speed of gateway mode invalid: %s\n",
++			pr_err("Download speed of gateway mode invalid: %s\n",
+ 			       tokptr);
+ 			return false;
+ 		}
+@@ -147,9 +144,8 @@ static bool parse_gw_mode_tok(char *tokptr, long *gw_mode_tmp,
+ 
+ 			ret = strict_strtoul(slash_ptr + 1, 10, up);
+ 			if (ret) {
+-				printk(KERN_ERR "batman-adv: Upload speed of "
+-				       "gateway mode invalid: %s\n",
+-				       slash_ptr + 1);
++				pr_err("Upload speed of gateway mode invalid: "
++				       "%s\n", slash_ptr + 1);
+ 				return false;
+ 			}
+ 
+@@ -217,8 +213,7 @@ next:
+ 	}
+ 
+ 	if (!gw_mode_tmp_str) {
+-		printk(KERN_INFO "batman-adv: "
+-		       "Gateway mode can only be set to: '%s', '%s' or '%s' - "
++		pr_info("Gateway mode can only be set to: '%s', '%s' or '%s' - "
+ 		       "given value: %s\n",
+ 		       GW_MODE_OFF_NAME, GW_MODE_CLIENT_NAME,
+ 		       GW_MODE_SERVER_NAME, buff);
+@@ -242,8 +237,7 @@ next:
+ 		if ((gw_mode_tmp == GW_MODE_CLIENT) && (!gw_class_tmp))
+ 			gw_class_tmp = 20;
+ 
+-		printk(KERN_INFO "batman-adv: "
+-		       "Changing gateway mode from: '%s' to: '%s' "
++		pr_info("Changing gateway mode from: '%s' to: '%s' "
+ 		       "(gw_class: %ld)\n",
+ 		       gw_mode_curr_str, gw_mode_tmp_str, gw_class_tmp);
+ 		break;
+@@ -265,8 +259,7 @@ next:
+ 				     (int *)&down, (int *)&up);
+ 
+ 		gw_deselect();
+-		printk(KERN_INFO
+-		       "batman-adv: Changing gateway mode from: '%s' to: '%s' "
++		pr_info("Changing gateway mode from: '%s' to: '%s' "
+ 		       "(gw_class: %ld -> propagating: %ld%s/%ld%s)\n",
+ 		       gw_mode_curr_str, gw_mode_tmp_str, gw_class_tmp,
+ 		       (down > 2048 ? down / 1024 : down),
+@@ -275,9 +268,8 @@ next:
+ 		       (up > 2048 ? "MBit" : "KBit"));
+ 		break;
+ 	default:
+-		printk(KERN_INFO "batman-adv: "
+-			  "Changing gateway mode from: '%s' to: '%s'\n",
+-			  gw_mode_curr_str, gw_mode_tmp_str);
++		pr_info("Changing gateway mode from: '%s' to: '%s'\n",
++			gw_mode_curr_str, gw_mode_tmp_str);
+ 		break;
+ 	}
+ 
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index fe07c0e..ed2f637 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -152,12 +152,10 @@ static void check_known_mac_addr(uint8_t *addr)
+ 		if (!compare_orig(batman_if->net_dev->dev_addr, addr))
+ 			continue;
+ 
+-		printk(KERN_WARNING "batman-adv:"
+-		    "The newly added mac address (%pM) already exists on: %s\n",
+-		    addr, batman_if->dev);
+-		printk(KERN_WARNING "batman-adv:"
+-		    "It is strongly recommended to keep mac addresses unique"
+-		    "to avoid problems!\n");
++		pr_warning("The newly added mac address (%pM) already exists "
++			   "on: %s\n", addr, batman_if->dev);
++		pr_warning("It is strongly recommended to keep mac addresses "
++			   "unique to avoid problems!\n");
+ 	}
+ 	rcu_read_unlock();
  }
+@@ -209,8 +207,7 @@ static void hardif_activate_interface(struct bat_priv *bat_priv,
+ 	if (!bat_priv->primary_if)
+ 		set_primary_if(bat_priv, batman_if);
  
- #endif /* < KERNEL_VERSION(2, 6, 29) */
-+
-+#endif /* _NET_BATMAN_ADV_COMPAT_H_ */
-diff --git a/batman-adv/gateway_client.h b/batman-adv/gateway_client.h
-index 6a71cee..1c24187 100644
---- a/batman-adv/gateway_client.h
-+++ b/batman-adv/gateway_client.h
-@@ -19,6 +19,9 @@
+-	printk(KERN_INFO "batman-adv:Interface activated: %s\n",
+-	       batman_if->dev);
++	pr_info("Interface activated: %s\n", batman_if->dev);
+ 
+ 	if (atomic_read(&module_state) == MODULE_INACTIVE)
+ 		activate_module();
+@@ -229,8 +226,7 @@ static void hardif_deactivate_interface(struct batman_if *batman_if)
+ 
+ 	batman_if->if_status = IF_INACTIVE;
+ 
+-	printk(KERN_INFO "batman-adv:Interface deactivated: %s\n",
+-	       batman_if->dev);
++	pr_info("Interface deactivated: %s\n", batman_if->dev);
+ 
+ 	update_min_mtu();
+ }
+@@ -248,8 +244,7 @@ int hardif_enable_interface(struct batman_if *batman_if)
+ 	batman_if->packet_buff = kmalloc(batman_if->packet_len, GFP_ATOMIC);
+ 
+ 	if (!batman_if->packet_buff) {
+-		printk(KERN_ERR "batman-adv:"
+-		       "Can't add interface packet (%s): out of memory\n",
++		pr_err("Can't add interface packet (%s): out of memory\n",
+ 		       batman_if->dev);
+ 		goto err;
+ 	}
+@@ -268,13 +263,12 @@ int hardif_enable_interface(struct batman_if *batman_if)
+ 	orig_hash_add_if(batman_if, bat_priv->num_ifaces);
+ 
+ 	atomic_set(&batman_if->seqno, 1);
+-	printk(KERN_INFO "batman-adv:Adding interface: %s\n", batman_if->dev);
++	pr_info("Adding interface: %s\n", batman_if->dev);
+ 
+ 	if (hardif_is_iface_up(batman_if))
+ 		hardif_activate_interface(bat_priv, batman_if);
+ 	else
+-		printk(KERN_ERR "batman-adv:"
+-		       "Not using interface %s "
++		pr_err("Not using interface %s "
+ 		       "(retrying later): interface not active\n",
+ 		       batman_if->dev);
+ 
+@@ -299,7 +293,7 @@ void hardif_disable_interface(struct batman_if *batman_if)
+ 	if (batman_if->if_status != IF_INACTIVE)
+ 		return;
+ 
+-	printk(KERN_INFO "batman-adv:Removing interface: %s\n", batman_if->dev);
++	pr_info("Removing interface: %s\n", batman_if->dev);
+ 	bat_priv->num_ifaces--;
+ 	orig_hash_del_if(batman_if, bat_priv->num_ifaces);
+ 
+@@ -326,8 +320,7 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
+ 
+ 	batman_if = kmalloc(sizeof(struct batman_if), GFP_ATOMIC);
+ 	if (!batman_if) {
+-		printk(KERN_ERR "batman-adv:"
+-		       "Can't add interface (%s): out of memory\n",
++		pr_err("Can't add interface (%s): out of memory\n",
+ 		       net_dev->name);
+ 		goto out;
+ 	}
+diff --git a/batman-adv/icmp_socket.c b/batman-adv/icmp_socket.c
+index 484f021..a84e84d 100644
+--- a/batman-adv/icmp_socket.c
++++ b/batman-adv/icmp_socket.c
+@@ -19,9 +19,9 @@
   *
   */
  
-+#ifndef _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
-+#define _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
-+
- void gw_deselect(void);
- void gw_election(void);
- void *gw_get_selected(void);
-@@ -29,3 +32,5 @@ void gw_node_purge_deleted(void);
- void gw_node_list_free(void);
- int gw_client_seq_print_text(struct seq_file *seq, void *offset);
- bool gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb);
-+
-+#endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
-diff --git a/batman-adv/gateway_common.h b/batman-adv/gateway_common.h
-index b88eb50..13953af 100644
---- a/batman-adv/gateway_common.h
-+++ b/batman-adv/gateway_common.h
-@@ -19,6 +19,9 @@
-  *
-  */
- 
-+#ifndef _NET_BATMAN_ADV_GATEWAY_COMMON_H_
-+#define _NET_BATMAN_ADV_GATEWAY_COMMON_H_
-+
- enum gw_modes {
- 	GW_MODE_OFF,
- 	GW_MODE_CLIENT,
-@@ -31,3 +34,5 @@ enum gw_modes {
- 
- void gw_srv_class_to_kbit(uint8_t gw_class, int *down, int *up);
- ssize_t gw_mode_set(struct bat_priv *bat_priv, char *buff, size_t count);
-+
-+#endif /* _NET_BATMAN_ADV_GATEWAY_COMMON_H_ */
-diff --git a/batman-adv/hard-interface.h b/batman-adv/hard-interface.h
-index 1e5fc3e..d5640b0 100644
---- a/batman-adv/hard-interface.h
-+++ b/batman-adv/hard-interface.h
-@@ -19,6 +19,9 @@
-  *
-  */
- 
-+#ifndef _NET_BATMAN_ADV_HARD_INTERFACE_H_
-+#define _NET_BATMAN_ADV_HARD_INTERFACE_H_
-+
- #define IF_NOT_IN_USE 0
- #define IF_TO_BE_REMOVED 1
- #define IF_INACTIVE 2
-@@ -38,3 +41,5 @@ int batman_skb_recv(struct sk_buff *skb,
- 				struct net_device *orig_dev);
- int hardif_min_mtu(void);
- void update_min_mtu(void);
-+
-+#endif /* _NET_BATMAN_ADV_HARD_INTERFACE_H_ */
-diff --git a/batman-adv/hash.h b/batman-adv/hash.h
-index 0505595..c483e11 100644
---- a/batman-adv/hash.h
-+++ b/batman-adv/hash.h
-@@ -19,8 +19,9 @@
-  *
-  */
- 
--#ifndef _BATMAN_HASH_H
--#define _BATMAN_HASH_H
-+#ifndef _NET_BATMAN_ADV_HASH_H_
-+#define _NET_BATMAN_ADV_HASH_H_
-+
- #define HASHIT(name) struct hash_it_t name = { \
- 		.index = -1, .bucket = NULL, \
- 		.prev_bucket = NULL, \
-@@ -95,4 +96,5 @@ struct hashtable_t *hash_resize(struct hashtable_t *hash, int size);
-  * the returned iterator to access the elements until hash_it_t returns NULL. */
- struct hash_it_t *hash_iterate(struct hashtable_t *hash,
- 			       struct hash_it_t *iter_in);
--#endif
-+
-+#endif /* _NET_BATMAN_ADV_HASH_H_ */
-diff --git a/batman-adv/icmp_socket.h b/batman-adv/icmp_socket.h
-index 2dc954a..bf9b348 100644
---- a/batman-adv/icmp_socket.h
-+++ b/batman-adv/icmp_socket.h
-@@ -19,6 +19,9 @@
-  *
-  */
- 
-+#ifndef _NET_BATMAN_ADV_ICMP_SOCKET_H_
-+#define _NET_BATMAN_ADV_ICMP_SOCKET_H_
-+
++#include "main.h"
+ #include <linux/debugfs.h>
+ #include <linux/slab.h>
+-#include "main.h"
+ #include "icmp_socket.h"
+ #include "send.h"
  #include "types.h"
+@@ -60,8 +60,7 @@ static int bat_socket_open(struct inode *inode, struct file *file)
+ 	}
  
- #define ICMP_SOCKET "socket"
-@@ -27,3 +30,5 @@ void bat_socket_init(void);
- int bat_socket_setup(struct bat_priv *bat_priv);
- void bat_socket_receive_packet(struct icmp_packet_rr *icmp_packet,
- 			       size_t icmp_len);
-+
-+#endif /* _NET_BATMAN_ADV_ICMP_SOCKET_H_ */
+ 	if (i == ARRAY_SIZE(socket_client_hash)) {
+-		printk(KERN_ERR "batman-adv:"
+-		       "Error - can't add another packet client: "
++		pr_err("Error - can't add another packet client: "
+ 		       "maximum number of clients reached\n");
+ 		kfree(socket_client);
+ 		return -EXFULL;
+diff --git a/batman-adv/main.c b/batman-adv/main.c
+index dec1607..e3d4766 100644
+--- a/batman-adv/main.c
++++ b/batman-adv/main.c
+@@ -94,16 +94,14 @@ int init_module(void)
+ 				   interface_setup);
+ 
+ 	if (!soft_device) {
+-		printk(KERN_ERR "batman-adv:"
+-		       "Unable to allocate the batman interface\n");
++		pr_err("Unable to allocate the batman interface\n");
+ 		goto end;
+ 	}
+ 
+ 	retval = register_netdev(soft_device);
+ 
+ 	if (retval < 0) {
+-		printk(KERN_ERR "batman-adv:"
+-		       "Unable to register the batman interface: %i\n", retval);
++		pr_err("Unable to register the batman interface: %i\n", retval);
+ 		goto free_soft_device;
+ 	}
+ 
+@@ -120,9 +118,9 @@ int init_module(void)
+ 	register_netdevice_notifier(&hard_if_notifier);
+ 	dev_add_pack(&batman_adv_packet_type);
+ 
+-	printk(KERN_INFO "batman-adv:"
+-	       "B.A.T.M.A.N. advanced %s%s (compatibility version %i) loaded\n",
+-	       SOURCE_VERSION, REVISION_VERSION_STR, COMPAT_VERSION);
++	pr_info("B.A.T.M.A.N. advanced %s%s (compatibility version %i) "
++		"loaded\n", SOURCE_VERSION, REVISION_VERSION_STR,
++		COMPAT_VERSION);
+ 
+ 	return 0;
+ 
+@@ -182,8 +180,7 @@ void activate_module(void)
+ 	goto end;
+ 
+ err:
+-	printk(KERN_ERR "batman-adv:"
+-	       "Unable to allocate memory for mesh information structures: "
++	pr_err("Unable to allocate memory for mesh information structures: "
+ 	       "out of mem ?\n");
+ 	deactivate_module();
+ end:
 diff --git a/batman-adv/main.h b/batman-adv/main.h
-index cb17a9c..cb0135e 100644
+index 38e48e2..1cf402a 100644
 --- a/batman-adv/main.h
 +++ b/batman-adv/main.h
-@@ -19,6 +19,9 @@
-  *
-  */
+@@ -90,6 +90,8 @@
  
-+#ifndef _NET_BATMAN_ADV_MAIN_H_
-+#define _NET_BATMAN_ADV_MAIN_H_
-+
- /* Kernel Programming */
- #define LINUX
+ #define LOG_BUF_LEN 8192          /* has to be a power of 2 */
  
-@@ -160,3 +163,5 @@ int choose_orig(void *data, int32_t size);
- int is_my_mac(uint8_t *addr);
- int is_bcast(uint8_t *addr);
- int is_mcast(uint8_t *addr);
-+
-+#endif /* _NET_BATMAN_ADV_MAIN_H_ */
-diff --git a/batman-adv/originator.h b/batman-adv/originator.h
-index 6632538..e88411d 100644
---- a/batman-adv/originator.h
-+++ b/batman-adv/originator.h
-@@ -19,6 +19,9 @@
-  *
-  */
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt /* Append 'batman-adv: ' before
++					     * kernel messages */
  
-+#ifndef _NET_BATMAN_ADV_ORIGINATOR_H_
-+#define _NET_BATMAN_ADV_ORIGINATOR_H_
-+
- int originator_init(void);
- void originator_free(void);
- void purge_orig(struct work_struct *work);
-@@ -29,3 +32,5 @@ create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
- int orig_seq_print_text(struct seq_file *seq, void *offset);
- int orig_hash_add_if(struct batman_if *batman_if, int max_if_num);
- int orig_hash_del_if(struct batman_if *batman_if, int max_if_num);
-+
-+#endif /* _NET_BATMAN_ADV_ORIGINATOR_H_ */
-diff --git a/batman-adv/packet.h b/batman-adv/packet.h
-index 51375d2..e94960d 100644
---- a/batman-adv/packet.h
-+++ b/batman-adv/packet.h
-@@ -19,6 +19,9 @@
-  *
-  */
+ /*
+  *  Vis
+diff --git a/batman-adv/originator.c b/batman-adv/originator.c
+index 363a412..ec52a38 100644
+--- a/batman-adv/originator.c
++++ b/batman-adv/originator.c
+@@ -169,8 +169,7 @@ struct orig_node *get_orig_node(uint8_t *addr)
+ 		swaphash = hash_resize(orig_hash, orig_hash->size * 2);
  
-+#ifndef _NET_BATMAN_ADV_PACKET_H_
-+#define _NET_BATMAN_ADV_PACKET_H_
-+
- #define ETH_P_BATMAN  0x4305	/* unofficial/not registered Ethertype */
+ 		if (swaphash == NULL)
+-			printk(KERN_ERR
+-			       "batman-adv:Couldn't resize orig hash table\n");
++			pr_err("Couldn't resize orig hash table\n");
+ 		else
+ 			orig_hash = swaphash;
+ 	}
+@@ -364,8 +363,7 @@ static int orig_node_add_if(struct orig_node *orig_node, int max_if_num)
+ 	data_ptr = kmalloc(max_if_num * sizeof(TYPE_OF_WORD) * NUM_WORDS,
+ 			   GFP_ATOMIC);
+ 	if (!data_ptr) {
+-		printk(KERN_ERR
+-		       "batman-adv:Can't resize orig: out of memory\n");
++		pr_err("Can't resize orig: out of memory\n");
+ 		return -1;
+ 	}
  
- #define BAT_PACKET    0x01
-@@ -115,3 +118,5 @@ struct vis_packet {
- 	uint8_t  target_orig[6]; /* who should receive this packet */
- 	uint8_t  sender_orig[6]; /* who sent or rebroadcasted this packet */
- } __attribute__((packed));
-+
-+#endif /* _NET_BATMAN_ADV_PACKET_H_ */
-diff --git a/batman-adv/ring_buffer.h b/batman-adv/ring_buffer.h
-index b8c9456..6b0cb9a 100644
---- a/batman-adv/ring_buffer.h
-+++ b/batman-adv/ring_buffer.h
-@@ -19,5 +19,10 @@
-  *
-  */
+@@ -376,8 +374,7 @@ static int orig_node_add_if(struct orig_node *orig_node, int max_if_num)
  
-+#ifndef _NET_BATMAN_ADV_RING_BUFFER_H_
-+#define _NET_BATMAN_ADV_RING_BUFFER_H_
-+
- void ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index, uint8_t value);
- uint8_t ring_buffer_avg(uint8_t lq_recv[]);
-+
-+#endif /* _NET_BATMAN_ADV_RING_BUFFER_H_ */
-diff --git a/batman-adv/routing.h b/batman-adv/routing.h
-index 43387a2..3eac64e 100644
---- a/batman-adv/routing.h
-+++ b/batman-adv/routing.h
-@@ -19,6 +19,9 @@
-  *
-  */
+ 	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
+ 	if (!data_ptr) {
+-		printk(KERN_ERR
+-		       "batman-adv:Can't resize orig: out of memory\n");
++		pr_err("Can't resize orig: out of memory\n");
+ 		return -1;
+ 	}
  
-+#ifndef _NET_BATMAN_ADV_ROUTING_H_
-+#define _NET_BATMAN_ADV_ROUTING_H_
-+
- #include "types.h"
+@@ -426,8 +423,7 @@ static int orig_node_del_if(struct orig_node *orig_node,
+ 	chunk_size = sizeof(TYPE_OF_WORD) * NUM_WORDS;
+ 	data_ptr = kmalloc(max_if_num * chunk_size, GFP_ATOMIC);
+ 	if (!data_ptr) {
+-		printk(KERN_ERR
+-		       "batman-adv:Can't resize orig: out of memory\n");
++		pr_err("Can't resize orig: out of memory\n");
+ 		return -1;
+ 	}
  
- void slide_own_bcast_window(struct batman_if *batman_if);
-@@ -39,3 +42,5 @@ struct neigh_node *find_router(struct orig_node *orig_node,
- 		struct batman_if *recv_if);
- void update_bonding_candidates(struct bat_priv *bat_priv,
- 			       struct orig_node *orig_node);
-+
-+#endif /* _NET_BATMAN_ADV_ROUTING_H_ */
-diff --git a/batman-adv/send.h b/batman-adv/send.h
-index 0a0990d..b64c627 100644
---- a/batman-adv/send.h
-+++ b/batman-adv/send.h
-@@ -19,6 +19,9 @@
-  *
-  */
+@@ -448,8 +444,7 @@ free_bcast_own:
  
-+#ifndef _NET_BATMAN_ADV_SEND_H_
-+#define _NET_BATMAN_ADV_SEND_H_
-+
- #include "types.h"
+ 	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
+ 	if (!data_ptr) {
+-		printk(KERN_ERR
+-		       "batman-adv:Can't resize orig: out of memory\n");
++		pr_err("Can't resize orig: out of memory\n");
+ 		return -1;
+ 	}
  
- int send_skb_packet(struct sk_buff *skb,
-@@ -35,3 +38,5 @@ void schedule_forward_packet(struct orig_node *orig_node,
- int  add_bcast_packet_to_list(struct sk_buff *skb);
- void send_outstanding_bat_packet(struct work_struct *work);
- void purge_outstanding_packets(struct batman_if *batman_if);
-+
-+#endif /* _NET_BATMAN_ADV_SEND_H_ */
-diff --git a/batman-adv/soft-interface.h b/batman-adv/soft-interface.h
-index 0847e42..6364854 100644
---- a/batman-adv/soft-interface.h
-+++ b/batman-adv/soft-interface.h
-@@ -19,6 +19,9 @@
-  *
-  */
+diff --git a/batman-adv/routing.c b/batman-adv/routing.c
+index b629d8b..5dd4295 100644
+--- a/batman-adv/routing.c
++++ b/batman-adv/routing.c
+@@ -871,10 +871,9 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb, size_t icmp_len)
  
-+#ifndef _NET_BATMAN_ADV_SOFT_INTERFACE_H_
-+#define _NET_BATMAN_ADV_SOFT_INTERFACE_H_
-+
- void set_main_if_addr(uint8_t *addr);
- void interface_setup(struct net_device *dev);
- int interface_tx(struct sk_buff *skb, struct net_device *dev);
-@@ -26,3 +29,5 @@ void interface_rx(struct sk_buff *skb, int hdr_size);
- int my_skb_push(struct sk_buff *skb, unsigned int len);
+ 	/* send TTL exceeded if packet is an echo request (traceroute) */
+ 	if (icmp_packet->msg_type != ECHO_REQUEST) {
+-		printk(KERN_WARNING "batman-adv:"
+-		       "Warning - can't forward icmp packet from %pM to %pM: "
+-		       "ttl exceeded\n",
+-		       icmp_packet->orig, icmp_packet->dst);
++		pr_warning("Warning - can't forward icmp packet from %pM to "
++			   "%pM: ttl exceeded\n", icmp_packet->orig,
++			   icmp_packet->dst);
+ 		return NET_RX_DROP;
+ 	}
  
- extern unsigned char main_if_addr[];
-+
-+#endif /* _NET_BATMAN_ADV_SOFT_INTERFACE_H_ */
-diff --git a/batman-adv/translation-table.h b/batman-adv/translation-table.h
-index 232208f..fa93e37 100644
---- a/batman-adv/translation-table.h
-+++ b/batman-adv/translation-table.h
-@@ -19,6 +19,9 @@
-  *
-  */
+@@ -1146,10 +1145,9 @@ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if)
  
-+#ifndef _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
-+#define _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
-+
- #include "types.h"
+ 	/* TTL exceeded */
+ 	if (unicast_packet->ttl < 2) {
+-		printk(KERN_WARNING "batman-adv:Warning - "
+-		       "can't forward unicast packet from %pM to %pM: "
+-		       "ttl exceeded\n",
+-		       ethhdr->h_source, unicast_packet->dest);
++		pr_warning("Warning - can't forward unicast packet from %pM to "
++			   "%pM: ttl exceeded\n", ethhdr->h_source,
++			   unicast_packet->dest);
+ 		return NET_RX_DROP;
+ 	}
  
- int hna_local_init(void);
-@@ -38,3 +41,5 @@ struct orig_node *transtable_search(uint8_t *addr);
- extern spinlock_t hna_local_hash_lock;
- extern struct hashtable_t *hna_local_hash;
- extern atomic_t hna_local_changed;
-+
-+#endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
-diff --git a/batman-adv/types.h b/batman-adv/types.h
-index 75930cf..1daebed 100644
---- a/batman-adv/types.h
-+++ b/batman-adv/types.h
-@@ -23,8 +23,8 @@
+diff --git a/batman-adv/send.c b/batman-adv/send.c
+index ba032b9..cd6be2b 100644
+--- a/batman-adv/send.c
++++ b/batman-adv/send.c
+@@ -70,10 +70,8 @@ int send_skb_packet(struct sk_buff *skb,
+ 		goto send_skb_err;
  
+ 	if (!(batman_if->net_dev->flags & IFF_UP)) {
+-		printk(KERN_WARNING
+-		       "batman-adv:Interface %s "
+-		       "is not up - can't send packet via that interface!\n",
+-		       batman_if->dev);
++		pr_warning("Interface %s is not up - can't send packet via "
++			   "that interface!\n", batman_if->dev);
+ 		goto send_skb_err;
+ 	}
  
+@@ -192,8 +190,8 @@ static void send_packet(struct forw_packet *forw_packet)
+ 	unsigned char directlink = (batman_packet->flags & DIRECTLINK ? 1 : 0);
  
--#ifndef TYPES_H
--#define TYPES_H
-+#ifndef _NET_BATMAN_ADV_TYPES_H_
-+#define _NET_BATMAN_ADV_TYPES_H_
+ 	if (!forw_packet->if_incoming) {
+-		printk(KERN_ERR "batman-adv: Error - can't forward packet: "
+-		       "incoming iface not specified\n");
++		pr_err("Error - can't forward packet: incoming iface not "
++		       "specified\n");
+ 		return;
+ 	}
  
- #include "packet.h"
- #include "bitarray.h"
-@@ -184,4 +184,4 @@ struct if_list_entry {
- 	struct hlist_node list;
- };
+diff --git a/batman-adv/translation-table.c b/batman-adv/translation-table.c
+index 1223609..1513495 100644
+--- a/batman-adv/translation-table.c
++++ b/batman-adv/translation-table.c
+@@ -117,8 +117,7 @@ void hna_local_add(uint8_t *addr)
+ 				       hna_local_hash->size * 2);
  
--#endif
-+#endif /* _NET_BATMAN_ADV_TYPES_H_ */
-diff --git a/batman-adv/vis.h b/batman-adv/vis.h
-index e152cd7..bb13bf1 100644
---- a/batman-adv/vis.h
-+++ b/batman-adv/vis.h
-@@ -19,6 +19,9 @@
-  *
-  */
+ 		if (swaphash == NULL)
+-			printk(KERN_ERR "batman-adv:"
+-			       "Couldn't resize local hna hash table\n");
++			pr_err("Couldn't resize local hna hash table\n");
+ 		else
+ 			hna_local_hash = swaphash;
+ 	}
+@@ -373,8 +372,7 @@ void hna_global_add_orig(struct orig_node *orig_node,
+ 				       hna_global_hash->size * 2);
  
-+#ifndef _NET_BATMAN_ADV_VIS_H_
-+#define _NET_BATMAN_ADV_VIS_H_
-+
- #define VIS_TIMEOUT		200	/* timeout of vis packets in seconds */
+ 		if (swaphash == NULL)
+-			printk(KERN_ERR "batman-adv:"
+-			       "Couldn't resize global hna hash table\n");
++			pr_err("Couldn't resize global hna hash table\n");
+ 		else
+ 			hna_global_hash = swaphash;
+ 	}
+diff --git a/batman-adv/vis.c b/batman-adv/vis.c
+index 3832043..5c825b5 100644
+--- a/batman-adv/vis.c
++++ b/batman-adv/vis.c
+@@ -679,7 +679,7 @@ static void send_vis_packet(struct vis_info *info)
+ 	int packet_length;
  
- struct vis_info {
-@@ -53,3 +56,5 @@ void receive_client_update_packet(struct bat_priv *bat_priv,
- 				  int vis_info_len);
- int vis_init(void);
- void vis_quit(void);
-+
-+#endif /* _NET_BATMAN_ADV_VIS_H_ */
+ 	if (info->packet.ttl < 2) {
+-		printk(KERN_WARNING "batman-adv: Error - can't send vis packet: ttl exceeded\n");
++		pr_warning("Error - can't send vis packet: ttl exceeded\n");
+ 		return;
+ 	}
+ 
+@@ -741,13 +741,13 @@ int vis_init(void)
+ 
+ 	vis_hash = hash_new(256, vis_info_cmp, vis_info_choose);
+ 	if (!vis_hash) {
+-		printk(KERN_ERR "batman-adv:Can't initialize vis_hash\n");
++		pr_err("Can't initialize vis_hash\n");
+ 		goto err;
+ 	}
+ 
+ 	my_vis_info = kmalloc(1000, GFP_ATOMIC);
+ 	if (!my_vis_info) {
+-		printk(KERN_ERR "batman-adv:Can't initialize vis packet\n");
++		pr_err("Can't initialize vis packet\n");
+ 		goto err;
+ 	}
+ 
+@@ -768,8 +768,7 @@ int vis_init(void)
+ 	memcpy(my_vis_info->packet.sender_orig, main_if_addr, ETH_ALEN);
+ 
+ 	if (hash_add(vis_hash, my_vis_info) < 0) {
+-		printk(KERN_ERR
+-		       "batman-adv:Can't add own vis packet into hash\n");
++		pr_err("Can't add own vis packet into hash\n");
+ 		/* not in hash, need to remove it manually. */
+ 		kref_put(&my_vis_info->refcount, free_info);
+ 		goto err;
 -- 
 1.7.1
 
