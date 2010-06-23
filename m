@@ -1,8 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 23 Jun 2010 14:12:56 +0200
-Message-Id: <1277295179-30503-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: Use nproc to get number of
+Date: Wed, 23 Jun 2010 14:12:57 +0200
+Message-Id: <1277295179-30503-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1277295179-30503-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1277295179-30503-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 2/4] batctl:Use nproc to get number of
 	available processors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -42,22 +44,22 @@ just assume that a single processing unit is available.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/Makefile |    2 +-
+ batctl/Makefile |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/batman-adv/Makefile b/batman-adv/Makefile
-index 4f6a460..adfbbc9 100644
---- a/batman-adv/Makefile
-+++ b/batman-adv/Makefile
-@@ -41,7 +41,7 @@ REVISION=	$(shell if [ -d .svn ]; then \
- 						fi; \
- 					fi)
+diff --git a/batctl/Makefile b/batctl/Makefile
+index ab9c075..ef80d3c 100644
+--- a/batctl/Makefile
++++ b/batctl/Makefile
+@@ -67,7 +67,7 @@ REVISION_VERSION =\"\ rv$(REVISION)\"
  
+ BAT_VERSION = $(shell grep "^\#define SOURCE_VERSION " $(SOURCE_VERSION_HEADER) | sed -e '1p' -n | awk -F '"' '{print $$2}' | awk '{print $$1}')
+ FILE_NAME = $(PACKAGE_NAME)_$(BAT_VERSION)-rv$(REVISION)_$@
 -NUM_CPUS = $(shell NUM_CPUS=`cat /proc/cpuinfo | grep -v 'model name' | grep processor | tail -1 | awk -F' ' '{print $$3}'`;echo `expr $$NUM_CPUS + 1`)
 +NUM_CPUS = $(shell nproc 2> /dev/null || echo 1)
  
- include $(PWD)/Makefile.kbuild
  
+ all:
 -- 
 1.7.1
 
