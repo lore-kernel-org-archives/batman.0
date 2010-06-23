@@ -1,17 +1,17 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 23 Jun 2010 18:03:22 +0200
+Return-Path: <andrew@lunn.ch>
+Date: Wed, 23 Jun 2010 18:12:21 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100623161221.GN15420@lunn.ch>
 References: <201006231620.11058.lindner_marek@yahoo.de>
 	<1277302839-20197-1-git-send-email-lindner_marek@yahoo.de>
-	<20100623152359.GL15420@lunn.ch>
-In-Reply-To: <20100623152359.GL15420@lunn.ch>
+	<20100623150913.GJ15420@lunn.ch>
+	<201006231758.40146.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201006231803.22675.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201006231758.40146.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: add routing debug log
-	accessible via debugfs
+ accessible via debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,24 +23,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Marek Lindner <lindner_marek@yahoo.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday 23 June 2010 17:23:59 Andrew Lunn wrote:
-> > -		if (bat_debug_type(type))				\
-> > -			printk(KERN_DEBUG "batman-adv:" fmt, ## arg);	\
+On Wed, Jun 23, 2010 at 05:58:39PM +0200, Marek Lindner wrote:
+> On Wednesday 23 June 2010 17:09:13 Andrew Lunn wrote:
+> > There will be a ring buffer per mesh. When debugging problems between
+> > meshes it is likely both logs will be combined performing a merge
+> > based on the timestamp. However at this point you have lost
+> > information about which line belongs to which mesh. Could we maybe
+> > include the soft interface name in the output?
 > 
-> did you think about keeping this? Maybe use some of the spare bits of
-> debug to indicate what goes into the circular buffer and what goes to
-> the kernel log?
-> 
-> I don't see the two schemes are mutually exclusive. "Normal" kernel
-> hackers will look in the normal kernel logging places and could be a
-> bit surprised when its not there.
+> Actually, this information is (indirectly) present, since each log file resides 
+> inside debugfs/batman_adv/$mesh_if/log. It would be a little bit redundant to 
+> add this on every line, wouldn't you agree ? If someone merges 2 mesh files it 
+> still can be added ?
 
-Sven is in the progress of revising the "ordinary" printks to make them more 
-"kernel-ish". 
-Or do you think that normal kernel hackers would be interested in seeing the 
-routing debug messages in the standard kernel log as well ?
+It can be done, its just more complex. If it was in the line already, i could
+probably just do cat /debugfs/batman_adv/bat?/log | sort | less
 
-Regards,
-Marek
+Alternatively, batctl could add the interface name after the time
+stamp. But there is then no easy way with pipes to combine the output
+from two batctls and pass it to sort. So maybe batctl has to do it
+all?
+
+> You are right - we could leave it as jiffies. Might be the best solution.
+
+O.K.
+
+	Andrew
