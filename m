@@ -1,13 +1,15 @@
 Return-Path: <andrew@lunn.ch>
-Date: Wed, 23 Jun 2010 17:09:13 +0200
+Date: Wed, 23 Jun 2010 17:12:33 +0200
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100623150913.GJ15420@lunn.ch>
+Message-ID: <20100623151233.GK15420@lunn.ch>
 References: <201006231620.11058.lindner_marek@yahoo.de>
 	<1277302839-20197-1-git-send-email-lindner_marek@yahoo.de>
+	<20100623145154.GI15420@lunn.ch>
+	<201006231702.37242.lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1277302839-20197-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <201006231702.37242.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: add routing debug log
  accessible via debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,33 +23,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
+To: Marek Lindner <lindner_marek@yahoo.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Marek
+On Wed, Jun 23, 2010 at 05:02:36PM +0200, Marek Lindner wrote:
+> On Wednesday 23 June 2010 16:51:54 Andrew Lunn wrote:
+> > > +
+> > > +#ifdef CONFIG_BATMAN_ADV_DEBUG
+> > > +extern int debug;
+> > 
+> > What is debug used for now? Does it still have a purpose?
+> 
+> Oh yes, it does. You have to use it to configure the log level as before.
 
-> +int debug_log(struct bat_priv *bat_priv, char *fmt, ...)
-> +{
-> +	va_list args;
-> +	char tmp_log_buf[256];
-> +
-> +	va_start(args, fmt);
-> +	vscnprintf(tmp_log_buf, sizeof(tmp_log_buf), fmt, args);
-> +	fdebug_log(bat_priv->debug_log, "[%10u] %s",
-> +		   (jiffies / HZ), tmp_log_buf);
-> +	va_end(args);
+So you get one global setting, which affects all meshes? Should this
+maybe pushed into priv? Is there a use case for having different
+logging levels for different meshes in a node?
 
-Thinking forward to when we try to get multiple meshes working, or are
-trying to debug why they don't work together...
-
-There will be a ring buffer per mesh. When debugging problems between
-meshes it is likely both logs will be combined performing a merge
-based on the timestamp. However at this point you have lost
-information about which line belongs to which mesh. Could we maybe
-include the soft interface name in the output?
-
-Also, do you really want to do jiffies / HZ? You are throwing away
-useful information. Either keep it as jiffies, or scale the remainder
-to ms and print it as well?
-
-   Andrew
+	Andrew
