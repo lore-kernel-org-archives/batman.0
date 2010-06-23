@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 23 Jun 2010 17:58:39 +0200
+Date: Wed, 23 Jun 2010 18:00:13 +0200
 References: <201006231620.11058.lindner_marek@yahoo.de>
 	<1277302839-20197-1-git-send-email-lindner_marek@yahoo.de>
-	<20100623150913.GJ15420@lunn.ch>
-In-Reply-To: <20100623150913.GJ15420@lunn.ch>
+	<201006231717.35877.sven.eckelmann@gmx.de>
+In-Reply-To: <201006231717.35877.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201006231758.40146.lindner_marek@yahoo.de>
+Message-Id: <201006231800.14434.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: add routing debug log
 	accessible via debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,24 +25,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday 23 June 2010 17:09:13 Andrew Lunn wrote:
-> There will be a ring buffer per mesh. When debugging problems between
-> meshes it is likely both logs will be combined performing a merge
-> based on the timestamp. However at this point you have lost
-> information about which line belongs to which mesh. Could we maybe
-> include the soft interface name in the output?
+On Wednesday 23 June 2010 17:17:27 Sven Eckelmann wrote:
+> Can you please change that (at least the 'null' function) from a define to
+> an static inline function? Otherwise there are a lot of "unused" warning
+> when compiling without debug support.
+> 
+> static inline void bat_dbg(char type __attribute__((unused)),
+> 			   struct bat_priv *bat_priv __attribute__((unused)),
+> 			   char *fmt __attribute__((unused)), ...)
+> { }
 
-Actually, this information is (indirectly) present, since each log file resides 
-inside debugfs/batman_adv/$mesh_if/log. It would be a little bit redundant to 
-add this on every line, wouldn't you agree ? If someone merges 2 mesh files it 
-still can be added ?
+Sure, will do.
 
 
-> Also, do you really want to do jiffies / HZ? You are throwing away
-> useful information. Either keep it as jiffies, or scale the remainder
-> to ms and print it as well?
+> To you suggestion to add more information from kernel log to the debug log
+> - it seems to be interesting, but we must ensure that those information
+> are specific to a mesh device. I will sent a patch which modifies all
+> printks later. Maybe we could discuss where it would be a benefit and
+> where it is not needed (~54 printks are for discussion).
 
-You are right - we could leave it as jiffies. Might be the best solution.
+Yes, sounds good.
 
 Regards,
 Marek
