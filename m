@@ -1,11 +1,12 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 23 Jun 2010 14:12:59 +0200
-Message-Id: <1277295179-30503-4-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1277295179-30503-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1277295179-30503-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] vis: Use nproc to get number of
-	available processors
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 23 Jun 2010 16:20:10 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201006231620.11058.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] batman-adv debug logging
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,47 +20,15 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The current way of getting the number of cpus uses different assumptions which
-may or may not be true in the future:
- * /proc/cpuinfo exists
- * cpuinfo provides a list of all processing units
- * all processing units are available for the current process and its childs
- * the word 'processor' is only used in the cpu index and 'model name' lines
- * cpu index is strict monotonic increasing
- * lowest cpu index is 0 and highest cpu index is n-1 (n is the number of
-    processing units)
 
-At least the number of available processing units for the current process can
-be shown to be wrong. on current systems by assigning a singe cpu to a process
-and its childs:
+Hi,
 
-$ numactl --physcpubind=0 nproc
-1
+a couple of months ago a series of patches had been introduced which removed 
+the batman-adv log inside the proc filesystem and redirected the messages to 
+the standard linux logs. This allowed us to be more compliant with the linux 
+rules but also crippled our debugging mechanisms. The following patches re-
+introduce thedebug logging but inside debugfs which should be ok according to 
+Greg KH.
 
-$ numactl --physcpubind=0 sh -c 'NUM_CPUS=`cat /proc/cpuinfo | grep -v "model name" | grep processor | tail -1 | awk -F" " '\''{print $$3}'\''`;echo `expr $NUM_CPUS + 1`'
-4
-
-nproc is part of coreutils since version 8.1. On systems without nproc it will
-just assume that a single processing unit is available.
-
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- vis/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/vis/Makefile b/vis/Makefile
-index 675dcd8..a119758 100644
---- a/vis/Makefile
-+++ b/vis/Makefile
-@@ -49,7 +49,7 @@ REVISION_VERSION=\"\ rv$(REVISION)\"
- 
- VIS_VERSION=	$(shell grep "^\#define SOURCE_VERSION " $(SOURCE_VERSION_HEADER) | sed -e '1p' -n | awk -F '"' '{print $$2}' | awk '{print $$1}')
- FILE_NAME=	$(PACKAGE_NAME)_$(VIS_VERSION)-rv$(REVISION)_$@
--NUM_CPUS = $(shell NUM_CPUS=`cat /proc/cpuinfo | grep -v 'model name' | grep processor | tail -1 | awk -F' ' '{print $$3}'`;echo `expr $$NUM_CPUS + 1`)
-+NUM_CPUS = $(shell nproc 2> /dev/null || echo 1)
- 
- 
- all:
--- 
-1.7.1
-
+Feedback is welcome,  :-)
+Marek
