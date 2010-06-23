@@ -1,15 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 23 Jun 2010 09:47:59 +0200
-References: <201006101303.45771.sven.eckelmann@gmx.de>
-	<20100622230258.GD18495@suse.de>
-In-Reply-To: <20100622230258.GD18495@suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11509737.uCquxjz6nD";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201006230948.01188.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv: Migration from staging to net
+Date: Wed, 23 Jun 2010 14:12:56 +0200
+Message-Id: <1277295179-30503-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: Use nproc to get number of
+	available processors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,58 +15,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Greg KH <gregkh@suse.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart11509737.uCquxjz6nD
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+The current way of getting the number of cpus uses different assumptions which
+may or may not be true in the future:
+ * /proc/cpuinfo exists
+ * cpuinfo provides a list of all processing units
+ * all processing units are available for the current process and its childs
+ * the word 'processor' is only used in the cpu index and 'model name' lines
+ * cpu index is strict monotonic increasing
+ * lowest cpu index is 0 and highest cpu index is n-1 (n is the number of
+    processing units)
 
-Greg KH wrote:
-[...]
-> If everything is now moved into debugfs, and everything in sysfs is only
-> "one-value-per-file" then I don't really have an objection.
->=20
-> I would say let the networking developers start reviewing it.
+At least the number of available processing units for the current process can
+be shown to be wrong. on current systems by assigning a singe cpu to a process
+and its childs:
 
-Thanks for the response.
+$ numactl --physcpubind=0 nproc
+1
 
-Can please also make some comments about the last part of the mail (regardi=
-ng=20
-the merge process):
+$ numactl --physcpubind=0 sh -c 'NUM_CPUS=`cat /proc/cpuinfo | grep -v "model name" | grep processor | tail -1 | awk -F" " '\''{print $$3}'\''`;echo `expr $NUM_CPUS + 1`'
+4
 
-Sven Eckelmann wrote:
-> To the merge process itself. We should prepare a patch which adds
-> everything in net/batman-adv/ (and Documentation/ABI/testing/,
-> MAINTAINERS) and then send it to netdev@vger.kernel.org/David S. Miller.
-> After it was merged we just send you a patch which removes
-> drivers/staging/batman-adv. Is that correct (just searched for an example
-> and only found benet[1, 2])?
+nproc is part of coreutils since version 8.1. On systems without nproc it will
+just assume that a single processing unit is available.
 
-thanks,
-	Sven
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---nextPart11509737.uCquxjz6nD
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+diff --git a/batman-adv/Makefile b/batman-adv/Makefile
+index 4f6a460..adfbbc9 100644
+--- a/batman-adv/Makefile
++++ b/batman-adv/Makefile
+@@ -41,7 +41,7 @@ REVISION=	$(shell if [ -d .svn ]; then \
+ 						fi; \
+ 					fi)
+ 
+-NUM_CPUS = $(shell NUM_CPUS=`cat /proc/cpuinfo | grep -v 'model name' | grep processor | tail -1 | awk -F' ' '{print $$3}'`;echo `expr $$NUM_CPUS + 1`)
++NUM_CPUS = $(shell nproc 2> /dev/null || echo 1)
+ 
+ include $(PWD)/Makefile.kbuild
+ 
+-- 
+1.7.1
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMIbwwAAoJEF2HCgfBJntGJQoP/RSSiWTLEazzimzV79lX3L6o
-qzZn8f88Uw2mbVRU3uddz9bFrX/Kwc0EA9eB5M6bnVQvBVcx9MqhvDrm0G8GwrBA
-VJi/GMG9u3uX72+Z1EHhoE3bFbBQzzhHA6ThmxHoILMZdnpSX5OPmtknkB9ShMVv
-2PJin44jQ6QhoFhgDJdoNIHvHSSx6UF0t22qngfeR6As8KEieHC2Ml4wEzFdwAgr
-z6OYvmE8o8KZQVYoWYYLiZ6taTP5OPV/+LZs+eNMZRl42IfQK7l+6FDRaKkg6gsb
-ZyZ6Z4UyEBa1d7XjNJOxuYw4M+UQYEdsKY9DUg9eMbTvzSkbMzohrP8924cdVyrW
-x2ic6uY4fuY/khSuDX/R+zRn+fiOdnoIAofPX+JCcwZzDRiEjy/uRQ33sdzCkt6Z
-mH2KhifwOY3khHJsoql6/gtOs0ZPqCPK5rChMQ5R8RBhvCNGFYCzoqhF6r0w8Iic
-A1FuVNMwViTWfYoNc1dEk9T3l8F0ulyIKqz+FVPivJtOSMtx7KixdNo1Q3dRLOTc
-vSirO/ch+jvVpSw6/TIdVB42xIamKDttj+iIsZ+a5W2AP3Gw7Y1wPeMr3mbj1nYY
-+67HJf4NUhlC92yrT+5vd4YIUTBHIILDu3Rk32dxO/W3mIYHMk8TEJvySQWbkzTc
-eFoAnSb9SBHfumomo1oH
-=dxAK
------END PGP SIGNATURE-----
-
---nextPart11509737.uCquxjz6nD--
