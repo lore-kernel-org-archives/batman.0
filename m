@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 26 Jun 2010 00:28:22 +0200
-Message-Id: <1277504905-27672-6-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 26 Jun 2010 00:28:23 +0200
+Message-Id: <1277504905-27672-7-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1277504905-27672-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1277504905-27672-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 5/8] Staging: batman-adv: Add sysfs abi
-	documentation about bonding
+Subject: [B.A.T.M.A.N.] [PATCH 6/8] Staging: batman-adv: adapting source
+	version to revised versioning scheme
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,31 +22,31 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
 
 From: Marek Lindner <lindner_marek@yahoo.de>
 
+The new versioning scheme looks like this:
+* the trunk will simply be named "devel" followed by a revision number
+* the upcoming release branch will be "maint" followed by a revision
+  number
+* the releases will carry their respective names (e.g. 2010.0.0)
+
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/sysfs-class-net-mesh |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ drivers/staging/batman-adv/main.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/sysfs-class-net-mesh b/drivers/staging/batman-adv/sysfs-class-net-mesh
-index c75a87b..5aa1912 100644
---- a/drivers/staging/batman-adv/sysfs-class-net-mesh
-+++ b/drivers/staging/batman-adv/sysfs-class-net-mesh
-@@ -6,6 +6,14 @@ Description:
-                 Indicates whether the batman protocol messages of the
-                 mesh <mesh_iface> shall be aggregated or not.
+diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
+index 49aaec5..f6a1c04 100644
+--- a/drivers/staging/batman-adv/main.h
++++ b/drivers/staging/batman-adv/main.h
+@@ -27,7 +27,7 @@
+ #define DRIVER_DESC   "B.A.T.M.A.N. advanced"
+ #define DRIVER_DEVICE "batman-adv"
  
-+What:           /sys/class/net/<mesh_iface>/mesh/bonding
-+Date:           June 2010
-+Contact:        Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-+Description:
-+                Indicates whether the data traffic going through the
-+                mesh will be sent using multiple interfaces at the
-+                same time (if available).
-+
- What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
- Date:           May 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
+-#define SOURCE_VERSION "2010.0.0"
++#define SOURCE_VERSION "maint"
+ 
+ 
+ /* B.A.T.M.A.N. parameters */
 -- 
 1.7.1
 
