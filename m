@@ -1,11 +1,12 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 26 Jun 2010 00:28:25 +0200
-Message-Id: <1277504905-27672-9-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1277504905-27672-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1277504905-27672-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 8/8] Staging: batman-adv: fix early debugfs
-	deinitialization
+Date: Sat, 26 Jun 2010 02:14:05 +0200
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2289756.P0ndnIMc9G";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201006260214.06662.sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] Reviewing batman-adv for net/
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,42 +18,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: greg@kroah.com
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
+To: "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.net
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+--nextPart2289756.P0ndnIMc9G
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-The debugfs files are initialized at load time only but would get
-deinitialized when the module changed in it deactivate (sleeping)
-state. As a consequence the debugfs files are not accessible
-anymore.
+Hi,
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- drivers/staging/batman-adv/main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+batman-adv is a meshing protocol currently in drivers/staging/batman-adv. W=
+e=20
+asked GregKH recently [1] if he thinks that it is ok to send a patch to you=
+=20
+for review. He acknowledged that request and now we would like to ask you t=
+o=20
+review it.
 
-diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
-index ae88806..d7e2960 100644
---- a/drivers/staging/batman-adv/main.c
-+++ b/drivers/staging/batman-adv/main.c
-@@ -148,6 +148,7 @@ void cleanup_module(void)
- {
- 	deactivate_module();
- 
-+	debugfs_destroy();
- 	unregister_netdevice_notifier(&hard_if_notifier);
- 	hardif_remove_interfaces();
- 
-@@ -212,7 +213,6 @@ void deactivate_module(void)
- 	hna_global_free();
- 
- 	synchronize_net();
--	debugfs_destroy();
- 
- 	synchronize_rcu();
- 	atomic_set(&module_state, MODULE_INACTIVE);
--- 
-1.7.1
+I will send a patch referencing this mail. I hope you find time to send us=
+=20
+your opinion and ideas.
 
+thanks,
+	Sven
+
+[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-June/002881.html
+[2] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-June/002968.html
+
+--nextPart2289756.P0ndnIMc9G
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMJUZNAAoJEF2HCgfBJntGDZIP/3WJeq3Iko2YbUy9KUgNyRhR
+ByyNrLdYWAkWgGCuLeMylwcx1I5os/hDW4DnvIwcHVCJPOC1POOMsUX1tp/A/30L
+LA+N20XtcdV+zJifmrFDyy/9b++2Hbj+gmeBGCVOyty58BgmZvYvmzaWTsQ8VI49
+qkXPwzhiv/pf3hLMBxRELdwgGrRvvpvi8UdK+C3wa+TpphTm1FyUKQr9HDkZV5Zz
+Rl3X0fks5hed/iCi+Sn0Sl8jTc20vb+VG0p6UDosyMNPI1GBdrBBsbA92ZKebQ78
+IkSKLyI3ZjvvpQHsO/qn3YUEq1OVIbs1yxDiLbe++auxjxYQ0JyGWCG6mEiRgDu8
+42LCkOIJKrO6RmgVKKicYZTuNXQHtOoESXN18KgMlw5vA4Cke4St3GgdTrWOF1TP
+h9WG1juoMJLjVtTuZqF58gHq/pKkXUucnU4zhpcQpwDvgfJ2Vd6SUT+7IR1K6RO2
+p6hDIo71rqwdeRKXvWBJX4UygCoEeGh9A3Z3wGGz0lBFU1M+067H4030kfbzEEl6
++1hPA4k4z7djTwRIezNs9438yhfw9AqakCBo+T0xY3/GFJVOEbcwJ/Rx0ndyhhiQ
+u1Zk6K7+UpFMl5GlF67k25bdgy3KAORL4WqcZxb8K/Ambv0Na0YnDvaQkYxUiNhC
+LVgD5qBbAi2V5cNFaxS/
+=ozVD
+-----END PGP SIGNATURE-----
+
+--nextPart2289756.P0ndnIMc9G--
