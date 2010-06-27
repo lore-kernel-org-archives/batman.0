@@ -1,11 +1,14 @@
-Return-Path: <xxx@nei.mv.com>
-Date: Sun, 27 Jun 2010 14:12:48 -0400 (EDT)
-From: RHS Linux User <xxx@nei.mv.com>
-In-Reply-To: <201006270259.28362.lindner_marek@yahoo.de>
-Message-ID: <Pine.LNX.3.95.1100627140608.1393R-100000@nei>
+Return-Path: <hagen@jauu.net>
+Date: Mon, 28 Jun 2010 00:27:06 +0200
+From: Hagen Paul Pfeifer <hagen@jauu.net>
+Message-ID: <20100627222706.GC8285@nuttenaction>
+References: <201006260214.06662.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Subject: Re: [B.A.T.M.A.N.] batman-adv debug logging (v2)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <201006260214.06662.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] Reviewing batman-adv for net/
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,50 +20,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Sven Eckelmann <sven.eckelmann@gmx.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.net, "David S. Miller" <davem@davemloft.net>
+
+* Sven Eckelmann | 2010-06-26 02:14:05 [+0200]:
+
+>batman-adv is a meshing protocol currently in drivers/staging/batman-adv. =
+We=20
+>asked GregKH recently [1] if he thinks that it is ok to send a patch to yo=
+u=20
+>for review. He acknowledged that request and now we would like to ask you =
+to=20
+>review it.
+>
+>I will send a patch referencing this mail. I hope you find time to send us=
+=20
+>your opinion and ideas.
+
+Hello Sven,
+
+o Where are the advantages of BATMAN compared to OLSR? OLSR is standardized
+  by the IETF which is a great advantage compared to BATMAN. 20 byte IPv4
+	header respective 60 byte IPv6 header savings? Network protocol neutrality?
+	Where are the differences between BATMAN and 802.11s? Where are the
+	similarities? See commit 37c5798968d0ce4 of 802.11s
+
+o Are there any publications which describe the protocol behavior in detail?
+  I assume it is a pro-active protocol - similar to standard BATMAN -
+	but what about neighbor discovery, TC, HNA and the like? What about multic=
+ast
+	transport? It is difficult to rate the patchset if no one knowns what the
+	intended behavior is.
+
+o The major code is twisted about bookkeeping stuff, configuration aspects =
+and
+  so on. The minor codebase is about protocol processing. What about a
+	generalized architecture and a userspace implementation of the protocol? A=
+nd
+	communication via netlink sockets.
 
 
-Hi,
-
-   IMHO if the logs are more or less small put them into kernel log. 
-That's where I would first look for them.
-
-   If "big" into their own circular log. So I can leave them on and just
-look at them when I have a problem to (hopefully) see what led up to the
-problem.
-
-   Consider the case where I get an error fatal/non-fatal once every day
-or so. I just happen to be sitting there and want to stop and examine the
-history file. 
-
-   Comment: There have been a number of subtle Atheros bugs like this
-recently. No one knows what is going wrong and now what do we do? Or do we
-just grab at straws!!  
-
-   Wouldn't it be nice to put my multichannel recording oscilloscope
-probes on several software points and then just review the tracings after
-I notice a problem. 
-
-   Just MHO.
-
-   wiz
-
-
-On Sun, 27 Jun 2010, Marek Lindner wrote:
-
-> On Sunday 27 June 2010 02:47:16 RHS Linux User wrote:
-> >    Would have the debugging available VIA the "usual" kernel process mean
-> > I could more easily turn on debugging. That is to say: I think I have a
-> > problem, I turn on debugging without having to recompile, etc. I can now
-> > easily observe what is going wrong and solve my problem more easily?
-> 
-> No, debugging can be turned on/off at runtime no matter where the logs end up 
-> (given you enabled the debugging option at compile time). Both systems behave 
-> identical in this aspect.
-> The question is: Should the routing logs go into the standard linux log or in 
-> a seperate file that only contains batman stuff. 
-> 
-> Cheers,
-> Marek
-> 
-
+Cheers, Hagen
