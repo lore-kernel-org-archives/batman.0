@@ -1,11 +1,14 @@
-Return-Path: <an.langer@gmx.de>
-Date: Sun, 27 Jun 2010 17:27:33 +0200
-From: Andreas Langer <an.langer@gmx.de>
-Message-ID: <20100627172733.161fb037@rechenknecht>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sun, 27 Jun 2010 18:15:35 +0200
+References: <20100627172416.62e7554d@rechenknecht>
+In-Reply-To: <20100627172416.62e7554d@rechenknecht>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2364451.NxtxFzjxer";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] PATCH batctl fragmentation handling
+Message-Id: <201006271815.37040.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] PATCH fragmentation of unicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,121 +22,71 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Added options to enable/disable fragmentation
+--nextPart2364451.NxtxFzjxer
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Andreas Langer <an.langer at gmx.de>
----
- batctl/main.c |   29 +++++++++++++++++------------
- batctl/sys.c  |    7 +++++++
- batctl/sys.h  |    2 ++
- 3 files changed, 26 insertions(+), 12 deletions(-)
+Andreas Langer wrote:
+> If fragmentation is on, the mtu of the bat interface will be set to 1500
+> and bigger packets will be splitted in two parts. The receiver stores the
+> packets in a buffer list for each originator, which will be created with
+> the first fragmented packet. For this handling i added a sequenznumber and
+> the orig address to the unicast_packet definition.
+>=20
+> regards,
+> Andreas
+>=20
+> Signed-off-by: Andreas Langer <an.langer at gmx.de>
 
-diff --git a/batctl/main.c b/batctl/main.c
-index 0506dce..e2d8545 100644
---- a/batctl/main.c
-+++ b/batctl/main.c
-@@ -41,24 +41,25 @@
- void print_usage(void) {
- 	printf("Usage: batctl [options] commands \n");
- 	printf("commands:\n");
--	printf(" \tinterface|if   [add|del iface(s)]\tdisplay or modify the interface settings\n");
-+	printf(" \tinterface|if    [add|del iface(s)]\tdisplay or modify the interface
-settings\n"); printf(" \toriginators|o                    \tdisplay the originator table\n");
--	printf(" \tinterval|it    [orig_interval]   \tdisplay or modify the originator interval
-(in ms)\n");
--	printf(" \tloglevel|ll    [level]           \tdisplay or modify the log level\n");
-+	printf(" \tinterval|it     [orig_interval]   \tdisplay or modify the originator interval
-(in ms)\n");
-+	printf(" \tloglevel|ll     [level]           \tdisplay or modify the log level\n");
- 	printf(" \tlog|l                            \tread the log produced by the kernel
-module\n");
--	printf(" \tgw_mode|gw     [mode]            \tdisplay or modify the gateway mode\n");
-+	printf(" \tgw_mode|gw      [mode]            \tdisplay or modify the gateway mode\n");
- 	printf(" \tgateways|gwl                     \tdisplay the gateway server list\n");
- 	printf(" \ttranslocal|tl                    \tdisplay the local translation table\n");
- 	printf(" \ttransglobal|tg                   \tdisplay the global translation table\n");
--	printf(" \tvis_mode|vm    [mode]            \tdisplay or modify the status of the VIS
-server\n");
--	printf(" \tvis_data|vd    [dot|JSON]        \tdisplay the VIS data in dot or JSON
-format\n");
--	printf(" \taggregation|ag [0|1]             \tdisplay or modify the packet aggregation
-setting\n");
--	printf(" \tbonding|b      [0|1]             \tdisplay or modify the bonding mode
-setting\n");
-+	printf(" \tvis_mode|vm     [mode]            \tdisplay or modify the status of the VIS
-server\n");
-+	printf(" \tvis_data|vd     [dot|JSON]        \tdisplay the VIS data in dot or JSON
-format\n");
-+	printf(" \taggregation|ag  [0|1]             \tdisplay or modify the packet aggregation
-setting\n");
-+	printf(" \tbonding|b       [0|1]             \tdisplay or modify the bonding mode
-setting\n");
-+	printf(" \tfragmentation|f [0|1]             \tdisplay or modify the fragmentation mode
-setting\n"); printf("\n");
--	printf(" \tping|p         <destination>     \tping another batman adv host via layer 2\n");
--	printf(" \ttraceroute|tr  <destination>     \ttraceroute another batman adv host via layer
-2\n");
--	printf(" \ttcpdump|td     <interface>       \ttcpdump layer 2 traffic on the given
-interface\n");
--	printf(" \tbisect         <file1> .. <fileN>\tanalyze given log files for routing
-stability\n");
-+	printf(" \tping|p          <destination>     \tping another batman adv host via layer
-2\n");
-+	printf(" \ttraceroute|tr   <destination>     \ttraceroute another batman adv host via
-layer 2\n");
-+	printf(" \ttcpdump|td      <interface>       \ttcpdump layer 2 traffic on the given
-interface\n");
-+	printf(" \tbisect          <file1> .. <fileN>\tanalyze given log files for routing
-stability\n"); printf("options:\n");
- 	printf(" \t-h print this help (or 'batctl <command> -h' for the command specific help)\n");
- 	printf(" \t-v print version\n");
-@@ -149,6 +150,10 @@ int main(int argc, char **argv)
- 
- 		ret = handle_sys_setting(argc - 1, argv + 1, SYS_BONDING, bonding_usage,
-sysfs_param_enable); 
-+	} else if ((strcmp(argv[1], "fragmentation") == 0) || (strcmp(argv[1], "f") == 0)) {
-+
-+		ret = handle_sys_setting(argc - 1, argv + 1, SYS_FRAG, fragmentation_usage,
-sysfs_param_enable); +
- 	} else if ((strcmp(argv[1], "bisect") == 0)) {
- 
- 		ret = bisect(argc - 1, argv + 1);
-diff --git a/batctl/sys.c b/batctl/sys.c
-index 9137424..c928dd4 100644
---- a/batctl/sys.c
-+++ b/batctl/sys.c
-@@ -292,6 +292,13 @@ void orig_interval_usage(void)
- 	printf(" \t -h print this help\n");
- }
- 
-+void fragmentation_usage(void)
-+{
-+	printf("Usage: batctl [options] fragmentation [0|1]\n");
-+	printf("options:\n");
-+	printf(" \t -h print this help\n");
-+}
-+
- int handle_sys_setting(int argc, char **argv,
- 		       char *file_path, void setting_usage(void),
- 		       const char *sysfs_param[])
-diff --git a/batctl/sys.h b/batctl/sys.h
-index 3bbe030..fc10851 100644
---- a/batctl/sys.h
-+++ b/batctl/sys.h
-@@ -32,12 +32,14 @@
- #define SYS_IFACE_PATH "/sys/class/net"
- #define SYS_MESH_IFACE_FMT SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
- #define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
-+#define SYS_FRAG "fragmentation"
- 
- extern const char *sysfs_param_enable[];
- extern const char *sysfs_param_server[];
- 
- void aggregation_usage(void);
- void bonding_usage(void);
-+void fragmentation_usage(void);
- void gw_mode_usage(void);
- void vis_mode_usage(void);
- void orig_interval_usage(void);
--- 
-1.7.0.4
+This patch cannot be applied because the mailer added automatically wordwra=
+ps.
+Either find a way to forbid such a behavior for your mailer or try to use
+git-send-email. There are explanations how you do that can be found at
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dblob=
+;f=3DDocumentation/email-clients.txt
+
+And please try to check your patches with checkpatch.pl from the linux
+sources. You will notice that you've removed a newline after the function
+bat_set_rx_csum. This is important because we try to submit those patches to
+the mainline linux kernel.
+
+There are also other styling changes I don't understand. For example a newl=
+ine
+before create_neighbor. I haven't checked really more as I couldn't apply i=
+t.
+
+And can you try to add [] around PATCH in the summary line and remove the
+regards... stuff from the commits message? Otherwise it will be part of
+the commit message and the patch we send to the kernel folks.
+
+=46or more information please read
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dblob=
+;f=3DDocumentation/SubmittingPatches
+
+Best regards,
+	Sven
+
+--nextPart2364451.NxtxFzjxer
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMJ3koAAoJEF2HCgfBJntGB8MQAIayM92nNh/WVz/S6qXfrgAs
+RQAN5fnxqgL0/FmuzerCeDKzApQWxoORYIpNmU2uoJhly7WyPJumsGOGWmwT0mf4
+4ONkNPBdNLUILjKkVo6KrFjfjRcElPIXcoU2ggPD1FsQEjrCdC3uMK0mHJEDdu9R
+uWH4M9DIOvoVqzxHjTEs0v6Gwv3nt5g6fyjHYOwTSf5Kfj0WwjqUCyAOynwuUcKA
+ghRx4/5tK/yCMEQP79oO/d+v1sIJLbJmo8mGGoHppgqWitZEi4ou3ylVSawQ27TH
+bzLuWnR4G38Hr2SxzF3SqehZmYpi0vZxUWAfxBpmSiwIzw18GCnk3IkvhIW5R7A5
++D/RF0vWj2eALEkdvKTYcwWnWcafHZH3u3mhx7356wp3xWAulk/AJXgn10vR73Sg
+PAHrRo7cg4IEcrtWHGoVzkdnNof7WjU7dRm/qSYEtNWZX4z5qjcuQNe+mgYETg5N
+3Tg93NyBH1l6LCXGyjV1EwpIe0k4HFFk1mmUtDn3TUl6eHYYzosA4PlOX3ka8fGy
+CSJuWTEULc36+T293FQQ5w5UEL6IPqppUZFbJvoWA4+DYmAT7FNSrMRY/4Z+Klom
+QPOTMI8+jDYG7/dQrU8baiMiX83kEaodfQ4xCuTGxuQf23eBsIZIIlKRJ+zLUR97
+bRU/3jQ2atp372MwfFJe
+=458N
+-----END PGP SIGNATURE-----
+
+--nextPart2364451.NxtxFzjxer--
