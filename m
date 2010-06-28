@@ -1,15 +1,14 @@
-Return-Path: <hrogge@googlemail.com>
-From: Henning Rogge <hrogge@googlemail.com>
-Date: Mon, 28 Jun 2010 07:32:12 +0200
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon, 28 Jun 2010 10:55:45 +0200
 References: <201006260214.06662.sven.eckelmann@gmx.de>
 	<20100627222706.GC8285@nuttenaction>
-	<201006280115.25518.lindner_marek@yahoo.de>
-In-Reply-To: <201006280115.25518.lindner_marek@yahoo.de>
+In-Reply-To: <20100627222706.GC8285@nuttenaction>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart22418923.0Y6NxtKRFt";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Type: multipart/signed; boundary="nextPart1595958.o4dbsVBH37";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201006280732.17568.hrogge@googlemail.com>
+Message-Id: <201006281055.47004.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] Reviewing batman-adv for net/
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,62 +22,95 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, Hagen Paul Pfeifer <hagen@jauu.net>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, Hagen Paul Pfeifer <hagen@jauu.net>, b.a.t.m.a.n@lists.open-mesh.net, "David S. Miller" <davem@davemloft.net>
 
---nextPart22418923.0Y6NxtKRFt
+--nextPart1595958.o4dbsVBH37
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Am Montag 28 Juni 2010, 01:15:23 schrieb Marek Lindner:
-> the OLSR as standardized by the IETF is known to be flawed when used
-> outside of a simulator (even the IETF Manet people know this - I spoke
-> with one of them). We have assembled a few documents explaining some of
-> its weaknesses on our website (www.open-mesh.org) but I suggest you get in
-> touch with the folks of www.olsr.org. They can go into the details of why
-> they don't follow the RFC.
-OLSRv1 lacks the support for routing metrics in the IETF RFC document. Most=
+Hagen Paul Pfeifer wrote:
+
+Thanks for your comments. Marek already answered the first two questions, a=
+nd=20
+I will write something about the last part.
+
+[...]
+> o The major code is twisted about bookkeeping stuff, configuration aspects
+> and so on. The minor codebase is about protocol processing. What about a
+> generalized architecture and a userspace implementation of the protocol?
+> And communication via netlink sockets.
+
+Even if it sounds interesting to have a userspace implementation - it just=
+=20
+doesn't work. Maybe you have something different in mind - so please commen=
+t a=20
+little bit more about about your idea.
+
+There were different implementations for that protocol, first one was a=20
+complete userspace implementation - but it was just slow and not really=20
+usable. The second one was not using skb because it was only a port of the=
+=20
+userspace implementation to the kernel. It was faster (better throughput, n=
+ot=20
+as much latency added), but still we noticed that we couldn't saturate our=
+=20
+fast links due to the overhead we added. That was the time the current form=
  of=20
-the research groups began integrating routing metrics later, and OLSRv2 (wh=
-ich=20
-is worked on at the moment, 2 RFC's done, 1 at IESG, 1 as a draft) will=20
-contain specified ways to include a routing metric on a link and how to use=
-=20
-it. We were talking about the generic metric encoding some weeks ago on the=
-=20
-MANET WG list.
-
-Using hopcount metric (as described in the RFC 3626) will result in a "wors=
+processing and forwarding using skbs was implemented. It was quite plain to=
+ us=20
+that those "tiny" parts must be processed as fast as possible and we are no=
 t=20
-link first" strategy in wireless networks, because you always optimize for=
+able to communicate a lot inside the kernel to get the information we need =
+to=20
+forward packets or process new ones.
+
+So I would assume that when we communicate with userspace which does some=20
+processing of the incoming packets and changes them to get forwarded, we wo=
+uld=20
+have the same overhead problems as before. That means we add unnecessary=20
+latency and reduce the throughput a lot.
+
+It works quite well for layer 3 mesh protocols (olsr, batman, babel, bmx, .=
+=2E)=20
+because they must not care about the actual routing of the packets -=20
+everything is done by the IP routing code. But it does not work for things=
 =20
-long links which will break often.
+which must route ethernet frames as there does not exist such a framework a=
+nd=20
+it is hard to create one which everyone will like and has enough informatio=
+n=20
+to provide all features they need. Meshing with ethernet frames is relative=
+=20
+young (please correct me) and we see all the time that we need more things=
+=20
+which couldn't be done by layer 3 (or at least with a lot more work). An=20
+example would be interface interface alternating which can reduce=20
+interferences when communicating over many hops.
 
-It's not difficult to integrate a routing metric into OLSRv1, but in the ol=
-d=20
-OLSRv1 RFC (2003) there it's not specified. We (the olsr.org team) use a=20
-custom message format to add metric information to our hello/tc messages, t=
-he=20
-NRL use a different one for their own metric aware OLSR.
+thanks,
+	Sven
 
-Henning Rogge (olsr.org team)
-
-=2D-=20
-1) You can't win.
-2) You can't break even.
-3) You can't leave the game.
-=E2=80=94 The Laws of Thermodynamics, summarized
-
---nextPart22418923.0Y6NxtKRFt
+--nextPart1595958.o4dbsVBH37
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.15 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkwoM+EACgkQcenvcwAcHWdQQACcCJX6svQ2pz3BI4tuTqHlageW
-zXoAn0WLF3D+TRbrAhyXDaFdQVnnHGpQ
-=yUiS
+iQIcBAABCgAGBQJMKGOSAAoJEF2HCgfBJntGaQAP/ib3QmODfzwJIfDsWgOGUugR
+NR6M9pZRmFDRydblPoGJ2TZ/UCgsZQCps5hJ75S72NkfD3oVW9XowCWg0F2AMxgJ
+TbKO166TeTm7QsyVEvgpeKD/P4zSqMzn5ynCl0rl2IMviCZtS0JAPR3nmWZ+ybDB
+T5XqyTvmrpYCiPH5EKmLpBzgmsbTq38+W9fgcmMyMqMEmp6fUY3ce/Q14M+HVEPw
+v5nBNCNAz1fKS4VBlWMFE9YHBe3H1T+jIcZqz3+9JzncooZIhpZWBpbnZ2J5/sUz
+jI5J9XpcdRCNnOyjHNyI66KeupoagJZ0fajJi9Vv+8Kbz5g6togXdTmvUbngB+QR
+tpNl9nEWMcVkWpDTcHQhUVs0j4baJHm8C6V5K85elH6gtytI8SbqRawqMSZIzcZc
+ixX+i7IEfiUFK5YIkkZkZ+f9aggwnwzEjmWO3aOxqGOlZHC3RyqMK9AFTvfNb0r6
+zLY5cpsehEVge1pCOcQIyEKu32K34eT9TfOhjBnmvnMGcwQGidOXp27ljs/29oBU
+7J3N4IfOC8z3ei5twqWBI+qrcl31Jtaw3fq0P6LdwC7LxKh50GQt2H7pmIoqCMoQ
+rN1JWXiAh4YBVrEeFLjvJRI74tXRxfDNeHBoKsjMqq3bpBJ3cMfA27GumwFejHAw
+PqVHNU6eQ5/S4Xj/7wf/
+=z3N1
 -----END PGP SIGNATURE-----
 
---nextPart22418923.0Y6NxtKRFt--
+--nextPart1595958.o4dbsVBH37--
