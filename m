@@ -1,13 +1,14 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 28 Jun 2010 14:30:31 +0200
+Date: Mon, 28 Jun 2010 14:34:19 +0200
 References: <20100627172416.62e7554d@rechenknecht>
-In-Reply-To: <20100627172416.62e7554d@rechenknecht>
+	<201006271815.37040.sven.eckelmann@gmx.de>
+In-Reply-To: <201006271815.37040.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5738340.MWGtjUAcjn";
+Content-Type: multipart/signed; boundary="nextPart3518860.YxKET7FyLt";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201006281430.32776.sven.eckelmann@gmx.de>
+Message-Id: <201006281434.20396.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] PATCH fragmentation of unicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,79 +23,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart5738340.MWGtjUAcjn
+--nextPart3518860.YxKET7FyLt
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Marek has published some patches for the debugging infrastructure. Please=20
-adjust your patch for that.
+Sven Eckelmann wrote:
+> And can you try to add [] around PATCH in the summary line and remove the
+> regards... stuff from the commits message? Otherwise it will be part of
+> the commit message and the patch we send to the kernel folks.
 
-Andreas Langer wrote:
-> +	if (frag_enabled_tmp < 0) {
-> +		if (buff[count - 1] =3D=3D '\n')
-> +			buff[count - 1] =3D '\0';
-> +
-> +		printk(KERN_ERR "batman-adv:Invalid parameter for 'frag' setting on=20
-mesh
-> %s received: %s\n",
-> +		       net_dev->name, buff);
+Ah, forgot something. Could you also change the subject to include which pa=
+rts=20
+it touches ("batctl: ", "batman-adv: "). So the subject line should look=20
+something like:
 
-Please change the printk to a bat_err (remove the batman-adv: and the=20
-information on which mesh it happened).
+ * [PATCH] batman-adv: Implement fragmentation of unicast packets
+ * [PATCH] batctl: Add fragmentation handling
 
-> +	if (atomic_read(&bat_priv->frag_enabled) =3D=3D frag_enabled_tmp)
-> +		return count;
-> +
-> +	printk(KERN_INFO "batman-adv:Changing frag from: %s to: %s on mesh:
-> %s\n", +	       atomic_read(&bat_priv->frag_enabled) =3D=3D 1 ?
-> +	       "enabled" : "disabled",
-> +	       frag_enabled_tmp =3D=3D 1 ? "enabled" : "disabled",
-> +	       net_dev->name);
-
-That printk to a bat_err (remove the batman-adv: and the information on whi=
-ch=20
-mesh it happened).
-
->  	atomic_set(&batman_if->seqno, 1);
-> +	atomic_set(&batman_if->frag_seqno, 1);
->  	printk(KERN_INFO "batman-adv:Adding interface: %s\n", batman_if->dev);
-
-Please rebase your patch on top of the current trunk. Otherwise we have an=
+And why does your patch change the packet format and doesn't increase the=20
+COMPAT_VERSION to 12 (11 is currently used in maint)? Maybe there are other=
 =20
-merge failure here.
+changes coming which are merged at the same time... I am just being curious=
+=2E=20
+:)
 
-> +			if (!orig_node) {
-> +				printk(KERN_WARNING
-> +					"frag: couldn't find orig node\n");
-> +				return NET_RX_DROP;
-> +			}
-
-Please change the printk to pr_warning.
-
-Best regards,
+thanks,
 	Sven
 
---nextPart5738340.MWGtjUAcjn
+--nextPart3518860.YxKET7FyLt
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJMKJXoAAoJEF2HCgfBJntG3fkP/A3vCB5VsxluHFNgl1UlFDWr
-/ByzDkRPu00B+uQm8FFAJl3h46fYjnWExzpxRv1E7io7omDPuGSB12n5EYVAI5Ai
-RT3syzd3T0siZEETVpNW4616+w7NTKdF6hO98NCRdxzhfusCOAdD2wNr62gnI7UF
-n5/ACftiScevsheE6g+UMcMgiba5y5eKkKJ8+y1CFjwjOxOPrrdUnYn8EO1wIyHW
-V1w05TgM2NU7CamRIgShXHlRDsSlDyfkN7Q127tu0wqBB7/9hs+SaeSjMXOQxd6R
-dd9hgisjUW51ex9lYdEvz67Udg39HHit7axNwVQogkUVe0G64wDdK8KnsNupEknT
-/61l4crvEpwzC8lEDkorGxRNlPOX4i7nSOkhKWuG9MLFyGQIX9x0RdDEAVQ/Xj5p
-gmHn7/uavS1gyyKJdoBEBg0HdMtQSUo4yIAOO7fWIyTAt4903A3o2CAwrfcWbdIi
-zdhsa9Gxwt4VvAHsIYHEIKOr4Cq9a9STw4kuisCFMttHk3kj1C8FNnS1pGLGnOLd
-57aNbOLXL6if2OL85/B/1kccyAw8oyucyQAB0QaCmICBaCN8pbyD6kcKANZm++XX
-J2lF/125fx8wbigKqid+aFX2PN3v7yvlFUGliJHDHkItVUXegaE0l4qUdtDAg8MO
-Km2HIMblK1X0khRBYvBr
-=ZjEl
+iQIcBAABCgAGBQJMKJbMAAoJEF2HCgfBJntG5dgP/3EpNcXf1G/jEuroo7RpX+B4
++DXZg46W+8b6y0sjCjdChUtpnnM/I2S6S+j/UfTAIZ/9X3QjrUQCrXC2KQaKJ7gE
+h5gbEQk3QXne/SU7d+ZopRI9xPJHdDBHe2uGdrnNzMM9PwwkRWwJEZr/njByJDvS
+yjYdcO/EgKDNN7m691+fVl8IOIjuZTwSrR8bs3yjYRpK3PcwSTCNHJp/1xeXA+rv
+iYFLe5MARuhYQoFsaOYLjDh+Xj4z4xkAQ7Dg5VByUUuWBXkI4GttuSCfkeq4FJZ5
+E7iiJuWZ5AFhVe6k2+8DaUlXervyf7f00vp0AAItiDXzcPGDICr70maEtHe0jBW/
+XIAu/f2nx6RWrsOmd4en08hHIwqHYYtH54OtQhs2fnLc4TvcUpyYJMZF9EYA2KW1
+iLGIiWNWei+Ju0mbpg0oxlQzvwPBNH0mWNx4Yaovm38hYtRV+6SVRI+lqy/5L3im
+CQXlqmXecQkfujvEJn1VeWrEh0X+fXYjLSaZld6coq7AxnYDSl0oX+bNrhIkDL3v
+LFONFY4pTR8+/3AEV2zUeGwoIRFI68pjWjJXLFT1vvOW8O0SPb8yYjwcrTf2xCA+
+OMovoLjFdv1SEnacXHcuDS/cA8vqXJbKXfyp2fELLhJ9Pbpg/0QeZe9X8MqEU9er
+qMphivyqWY8qqHmiseIJ
+=4iUe
 -----END PGP SIGNATURE-----
 
---nextPart5738340.MWGtjUAcjn--
+--nextPart3518860.YxKET7FyLt--
