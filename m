@@ -1,12 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Wed, 30 Jun 2010 05:16:21 +0200
-Message-Id: <1277867781-10472-1-git-send-email-linus.luessing@web.de>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Wed, 30 Jun 2010 12:21:08 +0200
+References: <1277867781-10472-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1277867781-10472-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add last-seen in originator table
+Content-Type: multipart/signed; boundary="nextPart1354505.bf3h8iF8XO";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201006301221.09773.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Add last-seen in originator
+	table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,68 +23,53 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: mesh-node <mesh-node@mesh-node1.(none)>
+--nextPart1354505.bf3h8iF8XO
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Right now, there is no easy/intuitive way to find out whether a node
-might have vanished. This commit adds the time when a node was last seen
-to the originator table output, so that a common user is able to tell
-whether a node might have gone without having to wait PURGE_TIMEOUT
-seconds until that node gets "garbe-collected".
+Linus L=FCssing wrote:
+> From: mesh-node <mesh-node@mesh-node1.(none)>
+I think the person who applies this should remove the From and the next emp=
+ty=20
+line... or do you have a secret dwarf named mesh-node who works for you? :D
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- originator.c |   22 +++++++++++++++-------
- 1 files changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index c28c4f5..5343ab2 100644
---- a/originator.c
-+++ b/originator.c
-@@ -296,6 +296,8 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 	struct orig_node *orig_node;
- 	struct neigh_node *neigh_node;
- 	int batman_count = 0;
-+	int last_seen_secs;
-+	int last_seen_msecs;
- 	unsigned long flags;
- 	char orig_str[ETH_STR_LEN], router_str[ETH_STR_LEN];
- 
-@@ -312,12 +314,13 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 	}
- 
- 	rcu_read_lock();
--	seq_printf(seq, "  %-14s (%s/%i) %17s [%10s]: %20s "
--		   "... [B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)]\n",
--		   "Originator", "#", TQ_MAX_VALUE, "Nexthop", "outgoingIF",
--		   "Potential nexthops", SOURCE_VERSION, REVISION_VERSION_STR,
-+	seq_printf(seq, "[B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)]\n",
-+		   SOURCE_VERSION, REVISION_VERSION_STR,
- 		   bat_priv->primary_if->dev, bat_priv->primary_if->addr_str,
- 		   net_dev->name);
-+	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
-+		   "Originator", "last-seen", "#", TQ_MAX_VALUE, "Nexthop",
-+		   "outgoingIF", "Potential nexthops");
- 	rcu_read_unlock();
- 
- 	spin_lock_irqsave(&orig_hash_lock, flags);
-@@ -334,9 +337,14 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 
- 		addr_to_string(orig_str, orig_node->orig);
- 		addr_to_string(router_str, orig_node->router->addr);
--
--		seq_printf(seq, "%-17s  (%3i) %17s [%10s]:",
--			   orig_str, orig_node->router->tq_avg, router_str,
-+		last_seen_secs = jiffies_to_msecs(jiffies -
-+						orig_node->last_valid) / 1000;
-+		last_seen_msecs = jiffies_to_msecs(jiffies -
-+						orig_node->last_valid) % 1000;
-+
-+		seq_printf(seq, "%-17s %4i.%03is   (%3i) %17s [%10s]:",
-+			   orig_str, last_seen_secs, last_seen_msecs,
-+			   orig_node->router->tq_avg, router_str,
- 			   orig_node->router->if_incoming->dev);
- 
- 		list_for_each_entry(neigh_node, &orig_node->neigh_list, list) {
--- 
-1.7.1
+> Right now, there is no easy/intuitive way to find out whether a node
+> might have vanished. This commit adds the time when a node was last seen
+> to the originator table output, so that a common user is able to tell
+> whether a node might have gone without having to wait PURGE_TIMEOUT
+> seconds until that node gets "garbe-collected".
 
+The rest looks good, but was a little bit irritated about the change of the=
+=20
+table header (which makes sense to split it in two lines, but didn't expect=
+ed=20
+that this patch does that).
+
+Best regards,
+	Sven
+
+--nextPart1354505.bf3h8iF8XO
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMKxqVAAoJEF2HCgfBJntGgSMP/3gdIFCmdsJS1NzRWIyXC3q9
+Sxg9bEIJQksUSM9LgPRQYVUpRR0P+PVlAQFc9ol0kbeMptPSol/r+wWiXCExDC0Q
+Hn4ybOIQWPp7iTQc+ChGNos9AjU51VMKN0hCC9gGwjOPu1tM5odNY3NW//25avvv
+28o89PoG19IuLgJBQAL7xxkTdb/etUAbelETbaBBwXX4uj78Bnw9YqHADxRhuqn1
+EDbBZT9vKtN7R6VwAVgZCOIM8k0UkyGlOxUBfgO8yzvwc7pRI1SLDAOmfHf+En/R
+XB/Bel2aNuwQDhStPxOqiTeL691uSmI/e/becTbh0gm2yjDY9haXQWyRkBdsJFeo
+/qW6BNmA73BLhspQkZjxfp4RuDRe70d6gu43WdSwtD3UNz2+7DJK0aJJJP+ZLTGy
+9aNrp49ZrtVJz5W5HvRrM/oJgmg+l7SlzJjt2lrrn7XqvStNuJDs0yTw9riXnwpS
+BqbVXQC1FRxUgf2tjhuLdUWZykNW67RrE2q7tuj5ELr+lTP16m9ZI+rOCjMOgn1O
+bS4rekRfIiUxmNm99UIhfOPToj76+K73yhmmj4P+c1oYSiho/v7Rj5SixqA3jkra
+v0/XmVjSWhNSrqCZDatPVo9xjYqyElKRtxZYrPv+caR9htXiCoJYFPYF/RpgCJvd
+FKQ18hwuhXulmqwSt+hM
+=hGgu
+-----END PGP SIGNATURE-----
+
+--nextPart1354505.bf3h8iF8XO--
