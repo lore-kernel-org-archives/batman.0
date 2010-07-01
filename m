@@ -1,14 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 1 Jul 2010 12:21:52 +0200
-References: <FB833AE6C7173C449F93C243719A4C8F0974886B@Exchange2010.corit.local>
-In-Reply-To: <FB833AE6C7173C449F93C243719A4C8F0974886B@Exchange2010.corit.local>
+Date: Thu, 1 Jul 2010 17:33:47 +0200
+References: <1277920995-25503-1-git-send-email-linus.luessing@web.de>
+	<1277936963-29179-2-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1277936963-29179-2-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201007011221.53277.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Dual radio BATMAN Advanced implementation
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201007011733.48472.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Add timeout filtering option for
+	originators
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,18 +24,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday 01 July 2010 05:22:11 Matthew Anderson wrote:
-> I'm using OpenWRT with a 5.8GHz 802.11n radio for backhaul and 2.4GHz
-> 802.11b/g for serving non BATMAN clients. I'm going to run BATMAN Adv on
-> the backhaul network and bridge it to the client radio which would
-> effectively make it one giant layer 2 mesh. In this situation, would users
-> on the b/g radio's be able to roam between nodes? Am I better off removing
-> the bridge between the mesh and the client radio and use layer 3 routing
-> or NAT instead?
+On Thursday 01 July 2010 00:29:22 Linus L=C3=BCssing wrote:
+>  batctl/debug.c     |   23 ++++++++++++++++++++---
+>  batctl/functions.c |    9 ++++++++-
+>  batctl/functions.d |   40 ++++++++++++++++++++++++++++++++++++++++
+>  batctl/functions.h |    3 ++-
+>  batctl/sys.c       |    8 ++++----
+>  5 files changed, 74 insertions(+), 9 deletions(-)
+>  create mode 100644 batctl/functions.d
 
-You got it right - bridge the 2.4GHz network with batman's interface (bat0) 
-while batman itself runs on 5.8Ghz and your clients can happily roam around.
-Layer 3 routing or NAT is not the way to go if you want roaming.
+The float variant looks much better!
+Would you mind sending this patch again without functions.d ?
+How about mentioning this feature in the man page ?
 
 Cheers,
 Marek
