@@ -1,15 +1,14 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Fri,  2 Jul 2010 02:10:27 +0200
-Message-Id: <1278029427-23533-4-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1278029427-23533-1-git-send-email-linus.luessing@web.de>
-References: <1278029427-23533-1-git-send-email-linus.luessing@web.de>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun, 4 Jul 2010 23:57:41 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20100704215741.GA28501@pandem0nium>
+References: <20100630205846.230b2112@rechenknecht>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: Add manpage entry for -w [num] and
-	-t [num]
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
+Content-Disposition: inline
+In-Reply-To: <20100630205846.230b2112@rechenknecht>
+Subject: Re: [B.A.T.M.A.N.] batman adv unicast fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,52 +20,81 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This patch documents the new ability to specifiy a custom refresh
-interval and the new originator timeout filter in the manpage.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- batctl/man/batctl.8 |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+--huq684BweRXVnRxX
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/batctl/man/batctl.8 b/batctl/man/batctl.8
-index 8089b24..ccd3546 100644
---- a/batctl/man/batctl.8
-+++ b/batctl/man/batctl.8
-@@ -56,8 +56,8 @@ protocol.
- .IP "\fBinterface\fP|\fBif\fP     [\fBadd\fP|\fBdel iface(s)\fP]"
- If no parameter is given or the first parameter is neither "add" nor "del" the current interface settings are displayed. In order to add or delete interfaces specify "add" or "del" as first argument and append the interface names you wish to add or delete.
- .br
--.IP "\fBoriginators\fP|\fBo\fP    [\fB\-w\fP][\fB\-n\fP]"
--Once started batctl will display the list of announced gateways in the network. Use the "\-w" option to let batctl refresh the list every second. If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output.
-+.IP "\fBoriginators\fP|\fBo\fP    [\fB\-w\fP [\fI\interval\fP]][\fB\-n\fP][\fB\-t\fP]"
-+Once started batctl will display the list of announced gateways in the network. Use the "\-w" option to let batctl refresh the list every second or add a number to let it refresh at a custom interval in seconds (with optional decimal places). If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output. The "\-t" option filters all originators that have not been seen for the specified amount of seconds (with optional decimal places) from the output.
- .br
- .IP "\fBinterval\fP|\fBit\fP      [\fBorig_interval\fP]"
- If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the originator interval. The interval is in units of milliseconds.
-@@ -110,14 +110,14 @@ chooses the gateway with the best link quality but switches to another gateway a
- .RE
- .RE
- .br
--.IP "\fBgateways|gwl\fP     [\fB\-w\fP][\fB\-n\fP]"
--Once started batctl will display the list of announced gateways in the network. Use the "\-w" option to let batctl refresh the list every second. If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
-+.IP "\fBgateways|gwl\fP     [\fB\-w\fP [\fI\interval\fP]][\fB\-n\fP]"
-+Once started batctl will display the list of announced gateways in the network. Use the "\-w" option to let batctl refresh the list every second or add a number to let it refresh at a custom interval in seconds (with optional decimal places). If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
- .br
--.IP "\fBtranslocal\fP|\fBtl\fP    [\fB\-w\fP][\fB\-n\fP]"
--Display the local translation table. batctl will refresh the list every second if the "\-w" option was given. Use "\-n" to let batctl not replace the MAC addresses with bat\-host names in the output.
-+.IP "\fBtranslocal\fP|\fBtl\fP    [\fB\-w\fP [\fI\interval\fP]][\fB\-n\fP]"
-+Display the local translation table. batctl will refresh the list every second if the "\-w" option was given or add a number to let it refresh at a custom interval in seconds (with optional decimal places). Use "\-n" to let batctl not replace the MAC addresses with bat\-host names in the output.
- .br
--.IP "\fBtransglobal\fP|\fBtg\fP   [\fB\-w\fP][\fB\-n\fP]"
--Display the global translation table. batctl will refresh the list every second if the "\-w" option was given. Use "\-n" to let batctl not replace the MAC addresses with bat\-host names in the output.
-+.IP "\fBtransglobal\fP|\fBtg\fP   [\fB\-w\fP [\fI\interval\fP]][\fB\-n\fP]"
-+Display the global translation table. batctl will refresh the list every second if the "\-w" option was given or add a number to let it refresh at a custom interval in seconds (with optional decimal places). Use "\-n" to let batctl not replace the MAC addresses with bat\-host names in the output.
- .br
- .IP "\fBvis_mode|vm\fP	  [\fBmode\fP]\fP"
- If no parameter is given the current vis mode is displayed otherwise the parameter is used to set the vis mode.
--- 
-1.5.6.5
+Hello Andreas,
 
+thank you very much for your patch. I've tested the patchset in my KVM setu=
+p.
+The fragmentation seems to work fine over one or multiple hops if i use the
+same MTUs on all hosts, but some corner cases might not bet handled yet.=20
+
+For example:
+
+Host 1 has one interface with MTU 1500 to host 2.
+Host 2 has two interfaces, one with MTU 1500 (to host 1) and one interface
+with MTU 1470 (to host 3), which might be a VPN connection.
+Host 3 has one interface with MTU 1470 to host 2.
+
+Now i can send packets with size 1470 or 1440 from host 1 to host 3 without=
+=20
+problems, but packets with size 1450 fail. The reason for this might be tha=
+t=20
+host 1 sends the packet as is without fragmentation, but host 2 can not=20
+forward it because the MTU (1470) is too low, but does not fragment it.=20
+The packets therefore get dropped.=20
+(note: when i say packets of size xxxx i do: ping -M do -s xxxx)
+
+I've also tried to do a similar setup with MTUs 1530 and 1500 instead
+of 1500 and 1470, which should simulate a wifi network connected to a=20
+fast ethernet network, but unfortunately my KVM crashed with high MTUs,
+so i could not verify this setup yet.
+
+However, i think that scenarios like these, a high MTU medium connected
+to a low MTU medium are quite common. Linus has interconnected WiFi
+networks with VPN, and i've also used some WiFi network interconnected
+with fast Ethernet. If forwarding hosts could fragment packets on their
+own, this problem could be solved, right? What do you (or others) think?
+
+Just as a minor comment, the copyright year in your new files should just
+be 2010, not 2007 - 2010.
+
+best regards,
+	Simon
+
+On Wed, Jun 30, 2010 at 08:58:46PM +0200, Andreas Langer wrote:
+> Hi,
+>=20
+> things that changed since the last patch:
+> - with fragmentation enabled the mtu of batX is always ETH_DATA_LEN
+> - fragment if mtu of the outgoing interface is smaller the needed size
+> - add a new packet type for fragmentation
+> - new recv function for fragmented packets
+> - new route unicast packet function to share routing code
+> - increase compat number to 12
+>=20
+>=20
+> regards,
+> andreas
+>=20
+
+--huq684BweRXVnRxX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkwxA9UACgkQrzg/fFk7axbZagCgupP6/b6fQU1H00oAKxNBg9mh
+Kq4AoOIT2lAQP7Hx/diIyG2kU+MHhzRM
+=CKb/
+-----END PGP SIGNATURE-----
+
+--huq684BweRXVnRxX--
