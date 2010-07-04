@@ -1,14 +1,16 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 4 Jul 2010 23:57:41 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20100704215741.GA28501@pandem0nium>
+Return-Path: <sven.eckelmann@gmx.de>
+Date: Mon, 5 Jul 2010 00:40:28 +0200
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Message-ID: <20100704224028.GA18699@sven-atom.lazhur.ath.cx>
 References: <20100630205846.230b2112@rechenknecht>
+	<1277924436-29528-1-git-send-email-an.langer@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="9jxsPFA5p3P2qPhR"
 Content-Disposition: inline
-In-Reply-To: <20100630205846.230b2112@rechenknecht>
-Subject: Re: [B.A.T.M.A.N.] batman adv unicast fragmentation
+In-Reply-To: <1277924436-29528-1-git-send-email-an.langer@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batctl: layer2 unicast packet
+ fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,80 +23,78 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
 
---huq684BweRXVnRxX
-Content-Type: text/plain; charset=utf8
+--9jxsPFA5p3P2qPhR
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hello Andreas,
+On Wed, Jun 30, 2010 at 09:00:35PM +0200, Andreas Langer wrote:
+> - * Andreas Langer <a.langer@q-dsl.de>, Marek Lindner <lindner_marek@yaho=
+o.de>
+> + * Andreas Langer <an.langer@gmx.de>, Marek Lindner <lindner_marek@yahoo=
+=2Ede>
 
-thank you very much for your patch. I've tested the patchset in my KVM setu=
-p.
-The fragmentation seems to work fine over one or multiple hops if i use the
-same MTUs on all hosts, but some corner cases might not bet handled yet.=20
+Can you please make that an extra patch. Following files have outdated(?) e=
+mail
+information:
+ * batctl/tcpdump.c
+ * batctl/man/batctl.8
+ * batctl/main.c
+ * batctl/ping.c
+ * batctl/functions.c
+ * batctl/bat-hosts.c
+ * batctl/tcpdump.h
+ * batctl/traceroute.c
+ * batctl/main.h=20
+ * batman/man/batmand.8
+ * vis/vis.h
 
-For example:
+In s3d we have also:
+ * apps/meshs3d/meshs3d.h
+ * apps/meshs3d/process.c
+ * apps/meshs3d/main.c
+ * apps/meshs3d/net.c
+ * apps/s3dosm/structs.h
+ * apps/s3dosm/search.h
+ * apps/s3dosm/olsrs3d.h
+ * experimental/olsrs3d/structs.h
+ * experimental/olsrs3d/process.c
+ * experimental/olsrs3d/main.c
+ * experimental/olsrs3d/search.h
+ * experimental/olsrs3d/net.c
+ * experimental/olsrs3d/olsrs3d.h
+ * experimental/olsrs3d/search.c
+ * experimental/testvis/testvis.c
+ * libs3d/vector.c
+ * README
 
-Host 1 has one interface with MTU 1500 to host 2.
-Host 2 has two interfaces, one with MTU 1500 (to host 1) and one interface
-with MTU 1470 (to host 3), which might be a VPN connection.
-Host 3 has one interface with MTU 1470 to host 2.
+Best regards,
+	Sven
 
-Now i can send packets with size 1470 or 1440 from host 1 to host 3 without=
-=20
-problems, but packets with size 1450 fail. The reason for this might be tha=
-t=20
-host 1 sends the packet as is without fragmentation, but host 2 can not=20
-forward it because the MTU (1470) is too low, but does not fragment it.=20
-The packets therefore get dropped.=20
-(note: when i say packets of size xxxx i do: ping -M do -s xxxx)
-
-I've also tried to do a similar setup with MTUs 1530 and 1500 instead
-of 1500 and 1470, which should simulate a wifi network connected to a=20
-fast ethernet network, but unfortunately my KVM crashed with high MTUs,
-so i could not verify this setup yet.
-
-However, i think that scenarios like these, a high MTU medium connected
-to a low MTU medium are quite common. Linus has interconnected WiFi
-networks with VPN, and i've also used some WiFi network interconnected
-with fast Ethernet. If forwarding hosts could fragment packets on their
-own, this problem could be solved, right? What do you (or others) think?
-
-Just as a minor comment, the copyright year in your new files should just
-be 2010, not 2007 - 2010.
-
-best regards,
-	Simon
-
-On Wed, Jun 30, 2010 at 08:58:46PM +0200, Andreas Langer wrote:
-> Hi,
->=20
-> things that changed since the last patch:
-> - with fragmentation enabled the mtu of batX is always ETH_DATA_LEN
-> - fragment if mtu of the outgoing interface is smaller the needed size
-> - add a new packet type for fragmentation
-> - new recv function for fragmented packets
-> - new route unicast packet function to share routing code
-> - increase compat number to 12
->=20
->=20
-> regards,
-> andreas
->=20
-
---huq684BweRXVnRxX
+--9jxsPFA5p3P2qPhR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkwxA9UACgkQrzg/fFk7axbZagCgupP6/b6fQU1H00oAKxNBg9mh
-Kq4AoOIT2lAQP7Hx/diIyG2kU+MHhzRM
-=CKb/
+iQIcBAEBCgAGBQJMMQ3bAAoJEF2HCgfBJntGOroP/R4uSZyCK+nvWh70VFz3nDEi
+zUQOBwgYOTWArh5v4KnKdhgZVy+R1fpFEOXcIvUH14GMs94JYXyOp10gvzNLtOH8
+EyWi4rwWfKM01iYUaiyReCQgqFZ60PhpOSEydCCNi6CrAqshoxixZ61PdzBZpCpG
+draJZ6GJ9j/WMvs9nzZK9JhqXKKnUmaX/X8QqXmURVAbi/Vnqh7xh6m7HzOu8hty
+NFNV5zO3bkldLcP3Bl9yRzPZx8Kvz6wwobRHppNEDOnBWQ5aRuGaGWh96WRSpUqJ
+BGAVNIV4btY++1H4OqUwAh9MgTH4zHwj7zPvtNbNTOcWe+NTK+GRpGdJkgbyUA3g
+b5yYUKoX+TeO7dA2rkbQ2La9B4u8nZUSjuv6UhLVVs5iUNNZ20pHUMfVnZORVTg9
+ZWqMA2K+q11i0XOm5+7Lkhns46VzRJuhgX0RmLE2zpYvX8tWTup7yJRxVV2gK0u2
+Fz2cHXzON0ujitFL2XrpuU5iF1g7InGvlSt3kby9YPuArrXyrlZBLx0DUfZP/D4S
+/uezlYt20qE3ckJUviwEKdUCr05GG1Ipf7aIppjUPkUox7e51jO+XIzmTCJ8sCey
+yGBD6T0xQGGEEd66sJ9ewQaVAinq94CoB3yM3o/60BQzCTiJANCyiHbYR60ngCfX
+PFcVsxB8qRvqNFdtazQC
+=/bdY
 -----END PGP SIGNATURE-----
 
---huq684BweRXVnRxX--
+--9jxsPFA5p3P2qPhR--
