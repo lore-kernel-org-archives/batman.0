@@ -1,16 +1,15 @@
 Return-Path: <sven.eckelmann@gmx.de>
-Date: Mon, 5 Jul 2010 02:37:11 +0200
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20100705003711.GB18699@sven-atom.lazhur.ath.cx>
+Date: Mon, 5 Jul 2010 11:24:13 +0200
 References: <20100630205846.230b2112@rechenknecht>
-	<1277924436-29528-2-git-send-email-an.langer@gmx.de>
+	<20100704215741.GA28501@pandem0nium>
+In-Reply-To: <20100704215741.GA28501@pandem0nium>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="SkvwRMAIpAhPCcCJ"
-Content-Disposition: inline
-In-Reply-To: <1277924436-29528-2-git-send-email-an.langer@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: layer2 unicast packet
- fragmentation
+Content-Type: multipart/signed; boundary="nextPart2088213.uctSEiAObu";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201007051124.16464.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] batman adv unicast fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,212 +21,158 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-
---SkvwRMAIpAhPCcCJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--nextPart2088213.uctSEiAObu
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jun 30, 2010 at 09:00:36PM +0200, Andreas Langer wrote:
-> diff --git a/batman-adv/fragmentation.c b/batman-adv/fragmentation.c
-> new file mode 100644
-> index 0000000..f36ad0e
-> --- /dev/null
-> +++ b/batman-adv/fragmentation.c
-> @@ -0,0 +1,150 @@
-> +/*
-> + * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:\
+Simon Wunderlich wrote:
+> Hello Andreas,
+>=20
+> thank you very much for your patch. I've tested the patchset in my KVM
+> setup. The fragmentation seems to work fine over one or multiple hops if i
+> use the same MTUs on all hosts, but some corner cases might not bet
+> handled yet.
+>=20
+> For example:
+>=20
+> Host 1 has one interface with MTU 1500 to host 2.
+> Host 2 has two interfaces, one with MTU 1500 (to host 1) and one interface
+> with MTU 1470 (to host 3), which might be a VPN connection.
+> Host 3 has one interface with MTU 1470 to host 2.
+>=20
+> Now i can send packets with size 1470 or 1440 from host 1 to host 3 witho=
+ut
+> problems, but packets with size 1450 fail. The reason for this might be
+> that host 1 sends the packet as is without fragmentation, but host 2 can
+> not forward it because the MTU (1470) is too low, but does not fragment
+> it. The packets therefore get dropped.
+> (note: when i say packets of size xxxx i do: ping -M do -s xxxx)
 
-Can you please explain why the copyright already starts in 2007?
+I've checked some parts of the patch yesterday and would also say that this=
+ is
+a problem. Just to explain it a little bit further how I understood it (I a=
+m a
+little bit confused about your ping example because ping -s 1440 would crea=
+te
+a packet with the size
 
-> +	/* skb is alsways the first packet,tmp_skb always the second */
+  1440 (data)
++    8 (icmp header)
++   20 (ip header)
++   14 (included ethernet header)
++    9 (batman-adv unicast header)
+=3D=3D=3D=3D=3D=3D
+  1491
 
-alsways -> always?
-
-> +
-> +	/* move free entry to end */
-> +	tfp->skb =3D NULL;
-> +	tfp->seqno =3D 0;
-> +	list_move_tail(&tfp->list, head);
-> +
-> +	skb_pull(tmp_skb, sizeof(struct unicast_frag_packet));
-> +	pskb_expand_head(skb, 0, tmp_skb->len, GFP_ATOMIC);
-
-pskb_expand_head can fail (return !=3D 0). You cannot just write data in not
-allocated memory.
-
-> +	memcpy(skb_put(skb, tmp_skb->len), tmp_skb->data, tmp_skb->len);
-> +	kfree_skb(tmp_skb);
-> +	return skb;
-> +}
-> +
+Which means that we are over the mtu of 1470 between node2 and node3. Maybe
+you wanted to say that size xxxx means `ping -M do -s xxxx-28`. But that wo=
+uld
+also mean that 1470 is not big enough to get splitted in node1.
 
 
-> diff --git a/batman-adv/fragmentation.h b/batman-adv/fragmentation.h
-> new file mode 100644
-> index 0000000..d0acf73
-> --- /dev/null
-> +++ b/batman-adv/fragmentation.h
-> @@ -0,0 +1,34 @@
-> +/*
-> + * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
+So to my test scenario:
 
-Can you please explain why the copyright already starts in 2007?
+node1 <- mtu 1500 -> node2
 
-> --- a/batman-adv/hard-interface.c
-> +++ b/batman-adv/hard-interface.c
-> @@ -166,16 +166,18 @@ int hardif_min_mtu(void)
->  	/* allow big frames if all devices are capable to do so
->  	 * (have MTU > 1500 + BAT_HEADER_LEN) */
->  	int min_mtu =3D ETH_DATA_LEN;
-> +	/* FIXME: each batman_if will be attached to a softif */
-> +	struct bat_priv *bat_priv =3D netdev_priv(soft_device);
-> =20
->  	rcu_read_lock();
->  	list_for_each_entry_rcu(batman_if, &if_list, list) {
->  		if ((batman_if->if_status =3D=3D IF_ACTIVE) ||
->  		    (batman_if->if_status =3D=3D IF_TO_BE_ACTIVATED))
-> -			min_mtu =3D MIN(batman_if->net_dev->mtu - BAT_HEADER_LEN,
-> -				      min_mtu);
-> +			min_mtu =3D atomic_read(&bat_priv->frag_enabled) ?
-> +				ETH_DATA_LEN : MIN(batman_if->net_dev->mtu -
-> +				BAT_HEADER_LEN, min_mtu);
->  	}
->  	rcu_read_unlock();
+Each soft-interface (bat0) has now a interface_tx function which is called
+when data must be send over it (directly send and not when data must get
+routed). When node1 sends a packet which would have more than 1500 bytes (w=
+ith
+batman-adv-unicast-header and the included ethernet header) we would split =
+in
+two unicast-frag-packet with roughly the half size (size / 2 + 18 bytes
+unicast-frag packet).
 
-Why do you go through all devices if you already decided that the min_mtu is
-ETH_DATA_LEN when bat_priv->frag_enabled !=3D 0. The atomic_read ? x : y st=
-uff
-doesn't make the last statement more readable.
+So here an example on node1 to node2:
+ * ping -s 1472 (would need mtu of 1523) - two packets (775, 775)
+ * ping -s 1440 (would need mtu of 1491) - one packet (1491)
+ * ping -s 1449 (would need mtu of 1500) - one packet (1500)
+ * ping -s 1450 (would need mtu of 1501) - one packet (1501)  !!!!! error !=
+!!!
+ * ping -s 1451 (would need mtu of 1502) - one packet (1502)  !!!!! error !=
+!!!
+ * ping -s 1452 (would need mtu of 1503) - one packet (1503)  !!!!! error !=
+!!!
+ * ping -s 1453 (would need mtu of 1504) - one packet (1504)  !!!!! error !=
+!!!
+ * ping -s 1454 (would need mtu of 1505) - one packet (1505)  !!!!! error !=
+!!!
+ * ping -s 1455 (would need mtu of 1506) - two packets (766, 767)
 
-> -
->  	return min_mtu;
->  }
+We only accept packets with the the maximum data size of 1500 and 1501 is o=
+ver
+that.
 
-Is there a good reason to remove the newline?
-> =20
-> @@ -265,8 +267,30 @@ int hardif_enable_interface(struct batman_if *batman=
-_if)
->  	orig_hash_add_if(batman_if, bat_priv->num_ifaces);
-> =20
->  	atomic_set(&batman_if->seqno, 1);
-> +	atomic_set(&batman_if->frag_seqno, 1);
->  	bat_info(soft_device, "Adding interface: %s\n", batman_if->dev);
-> =20
-> +	if (atomic_read(&bat_priv->frag_enabled) && batman_if->net_dev->mtu <
-> +		ETH_DATA_LEN + BAT_HEADER_LEN)
-> +		bat_info(soft_device,
-> +			"The MTU of interface %s is too small (%i) to handle "
-> +			"the transport of batman-adv packets. Packets going "
-> +			"over this interface will be fragmented on layer2 "
-> +			"which could impact the performance. Setting the MTU "
-> +			"to %i would solve the problem.\n",
-> +			batman_if->dev, ETH_DATA_LEN + BAT_HEADER_LEN,
-> +			ETH_DATA_LEN + BAT_HEADER_LEN);
-> +
-> +	if (!atomic_read(&bat_priv->frag_enabled) && batman_if->net_dev->mtu <
-> +		ETH_DATA_LEN + BAT_HEADER_LEN)
-> +		bat_info(soft_device,
-> +			"The MTU of interface %s is too small (%i) to handle "
-> +			"the transport of batman-adv packets. If you experience"
-> +			" problems getting traffic through try increasing the "
-> +			"MTU to %i.\n",
-> +			batman_if->dev, ETH_DATA_LEN + BAT_HEADER_LEN,
-> +			ETH_DATA_LEN + BAT_HEADER_LEN);
-> +
-
-BAT_HEADER_LEN has implicit the type size_t. So please adjust the 4 %i to %=
-zi.
-
-> diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
-> index 0d89597..ccc97c6 100644
-> --- a/batman-adv/soft-interface.c
-> +++ b/batman-adv/soft-interface.c
-> @@ -216,20 +220,72 @@ int interface_tx(struct sk_buff *skb, struct net_de=
-vice *dev)
->  		if (batman_if->if_status !=3D IF_ACTIVE)
->  			goto dropped;
-> =20
-> -		if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
-> -			goto dropped;
-> +		if (atomic_read(&bat_priv->frag_enabled) &&
-> +		   data_len + sizeof(unicast_packet) >
-> +		   batman_if->net_dev->mtu) {
-> +
-> +			hdr_len =3D sizeof(struct unicast_frag_packet);
-> +
-> +			frag_skb =3D dev_alloc_skb(data_len / 2 + hdr_len + 1);
-
-Where does the "+ 1" come from? If it used to compensate uneven data_len, t=
-hen
-maybe the calculation should be changed to something like=20
-
-data_len - (data_len / 2) + hdr_len
-
-> +			skb_split(skb, frag_skb, data_len/2);
-> +
-> +			if (!(my_skb_push(frag_skb, hdr_len) >=3D 0 &&
-> +				my_skb_push(skb, hdr_len) >=3D 0)) {
-
-Didn't you wanted to check if one of the my_skb_push failed and not if both
-failed?
-
-> +
-> +				kfree_skb(frag_skb);
-> +				goto dropped;
-> +			}
-> +
-> +			ucast_frag1 =3D (struct unicast_frag_packet *)skb->data;
-> +			ucast_frag2 =3D
-> +				(struct unicast_frag_packet *)frag_skb->data;
-> +
-> +			ucast_frag1->version =3D COMPAT_VERSION;
-> +			ucast_frag1->packet_type =3D BAT_UNICAST_FRAG;
-> +			ucast_frag1->ttl =3D TTL;
-> +			memcpy(ucast_frag1->orig,
-> +				batman_if->net_dev->dev_addr, ETH_ALEN);
-> +			memcpy(ucast_frag1->dest, orig_node->orig, ETH_ALEN);
-> +
-> +			memcpy(ucast_frag2, ucast_frag1,
-> +			       sizeof(struct unicast_frag_packet));
-> +
-> +			ucast_frag1->flags |=3D UNI_FRAG_HEAD;
-> +			ucast_frag2->flags &=3D ~UNI_FRAG_HEAD;
-> +
-> +			/* no zero at seqno */
-> +			if (atomic_read(&batman_if->frag_seqno) =3D=3D FRAG_MAX_SEQ)
-> +				atomic_set(&batman_if->frag_seqno, 0);
-
-It is not a good idea to split two atomic_ operations which depends on each=
- other.
+It is quite easy to fix, because you misused sizeof in you check. So here s=
+ome
+kind of patch for your patch (as hint and not really a patch) :)
 
 Best regards,
 	Sven
 
---SkvwRMAIpAhPCcCJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+diff --git a/batman-adv/fragmentation.c b/batman-adv/fragmentation.c
+index f36ad0e..1a33eab 100644
+=2D-- a/batman-adv/fragmentation.c
++++ b/batman-adv/fragmentation.c
+@@ -74,8 +74,7 @@ void create_frag_buffer(struct list_head *head)
+ 	struct frag_packet_list_entry *tfp;
+=20
+ 	for (i =3D 0; i < FRAG_BUFFER_SIZE; i++) {
+=2D		tfp =3D kmalloc(sizeof(struct frag_packet_list_entry),
+=2D			GFP_ATOMIC);
++		tfp =3D kmalloc(sizeof(*tfp), GFP_ATOMIC);
+ 		tfp->skb =3D NULL;
+ 		tfp->seqno =3D 0;
+ 		INIT_LIST_HEAD(&tfp->list);
+diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
+index ccc97c6..8e3cc40 100644
+=2D-- a/batman-adv/soft-interface.c
++++ b/batman-adv/soft-interface.c
+@@ -221,7 +221,7 @@ int interface_tx(struct sk_buff *skb, struct net_device=
+ *dev)
+ 			goto dropped;
+=20
+ 		if (atomic_read(&bat_priv->frag_enabled) &&
+=2D		   data_len + sizeof(unicast_packet) >
++		   data_len + sizeof(*unicast_packet) >
+ 		   batman_if->net_dev->mtu) {
+=20
+ 			hdr_len =3D sizeof(struct unicast_frag_packet);
+@@ -247,8 +247,7 @@ int interface_tx(struct sk_buff *skb, struct net_device=
+ *dev)
+ 				batman_if->net_dev->dev_addr, ETH_ALEN);
+ 			memcpy(ucast_frag1->dest, orig_node->orig, ETH_ALEN);
+=20
+=2D			memcpy(ucast_frag2, ucast_frag1,
+=2D			       sizeof(struct unicast_frag_packet));
++			memcpy(ucast_frag2, ucast_frag1, sizeof(*ucast_frag1));
+=20
+ 			ucast_frag1->flags |=3D UNI_FRAG_HEAD;
+ 			ucast_frag2->flags &=3D ~UNI_FRAG_HEAD;
+
+--nextPart2088213.uctSEiAObu
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAEBCgAGBQJMMSk2AAoJEF2HCgfBJntGEd4QAKWn26YlrCeMqVtl+ZJ19Nz/
-3xzmE8a72P0ceSUziiMLZACerRpNl00eRu1aJHppJozwAq6hjKWpSIPvYdxK9kok
-pAShTO4B46EikLAbKW9sfOkdBMoSjkPakz7sohCEaM2uLJVJzo3uajnYpdjz15da
-7HSOJ0EIg+cjZwj+v2MlppwsHKybRYOSFG1oz5JiCj3kSfJHs0lJo9njnb58ckQG
-0tkSKkZpCw/lvhXH8q6BfDL5jt5MfLAdHAB+ngnVDk0juk+U0PyqCC7rZYHYAS2r
-vdTgKpKlqi38oMqc9nn3xe/+ELQSFlCSILDovcwJREBh7YpOEq9q4xUdUHHOjjRt
-VqXwCOME0lYvZ7Ek9Cds1AHjlAoE/lnmWq/58nw+wjyvWNHfL9jyn/BFr7fD9eAw
-wBSm2vxEYrBUcqwE3cCqHAvPMYfPCFy+AgndsUEE8ujuKWhhkI8TRu8FOGsFDIzm
-kCzCPn0h6y4WRMP6JHAuhdbbOmK7P9UtCOtSodD4+qGyEvWyN98JLm/BwSeQ0WeV
-ZvCs26GxHRzMAjbPaE53Oqgr6N6Yw/Vha+rmjiy+y9VUgbqIurz00asQCmWYEWCg
-T3y5FkqZuN1VDgip3U64zOHz+V4j6hz0JHHkqA0QFI9fYNCk83NdYPn68Ody+vdB
-bVmQivR0LBiQw7lqN2Wh
-=+abc
+iQIcBAABCgAGBQJMMaS+AAoJEF2HCgfBJntG2FsQALFImiurjE4OxyA5Filc345t
+TG29TfhghaL3TWZ/tFI8PxjphoewwDM1wulZ5ovA9mjnd6W0dXm+Oi1+tcPhOZBq
+RvW1O7WVsQIhQeu/DA3DSovmc7XCKIQM5VerYnT94mt3Uc6HMA8JfMagLP3efY03
+ywc1Sq1bEVa6Td8fY5m2DCjQivuCa7sQYkHdrY31foXMqPNZw94sVInRhnTEBhMB
+xt9GjLykqhNXDc7mDXVj+++fnsR+7DvHJFvUFxW1Z9KK6fjILFImV+7+h9JvBRwC
+7NvcYYs/mw/6RdjneV6Oi/MFQxbq1xy+hk7j8E8qUx0bXVl/7dRWJzimHXT0SI+X
+4jNrSyQ9Xb6J23Ht1pTns9XvMbJBQ2SpIpVMd6Kq4pioaYcJg4wCuerDvrEi0VAQ
+06isalIOnZ09mIc37HT05fKPoHsoc1G0bmgzU9URZWSsRTKVvuaQHLGZDbvgupA0
+DdBgHXmt4D6eRipw8RI5ilXvl4NmPxh+xTzwn3ui19xnkuHVsWb+EB7vTB/pLnKh
+06gasjDg0vksKw3PTiqi+cWXHIUEE2xZdEySE0adl+eomrK5RdISp/ZN1tmUBIHR
+NUKw8c04xP3u0W/DdILShH8S+6bInLgbzZ2M4qetKO8xmGQCiW2f53EX/yMddbRV
+v1aFpQQzvylGZ1wHB87W
+=aqqH
 -----END PGP SIGNATURE-----
 
---SkvwRMAIpAhPCcCJ--
+--nextPart2088213.uctSEiAObu--
