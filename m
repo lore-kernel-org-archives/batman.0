@@ -1,15 +1,16 @@
 Return-Path: <sven.eckelmann@gmx.de>
+Date: Mon, 5 Jul 2010 14:53:38 +0200
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 5 Jul 2010 11:24:13 +0200
+Message-ID: <20100705125338.GA5916@sven-atom.lazhur.ath.cx>
 References: <20100630205846.230b2112@rechenknecht>
-	<20100704215741.GA28501@pandem0nium>
-In-Reply-To: <20100704215741.GA28501@pandem0nium>
+	<1277924436-29528-2-git-send-email-an.langer@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2088213.uctSEiAObu";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201007051124.16464.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] batman adv unicast fragmentation
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="x+6KMIRAuhnl3hBn"
+Content-Disposition: inline
+In-Reply-To: <1277924436-29528-2-git-send-email-an.langer@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: layer2 unicast packet
+ fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,158 +22,101 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
---nextPart2088213.uctSEiAObu
-Content-Type: Text/Plain;
-  charset="us-ascii"
+
+--x+6KMIRAuhnl3hBn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Simon Wunderlich wrote:
-> Hello Andreas,
->=20
-> thank you very much for your patch. I've tested the patchset in my KVM
-> setup. The fragmentation seems to work fine over one or multiple hops if i
-> use the same MTUs on all hosts, but some corner cases might not bet
-> handled yet.
->=20
-> For example:
->=20
-> Host 1 has one interface with MTU 1500 to host 2.
-> Host 2 has two interfaces, one with MTU 1500 (to host 1) and one interface
-> with MTU 1470 (to host 3), which might be a VPN connection.
-> Host 3 has one interface with MTU 1470 to host 2.
->=20
-> Now i can send packets with size 1470 or 1440 from host 1 to host 3 witho=
-ut
-> problems, but packets with size 1450 fail. The reason for this might be
-> that host 1 sends the packet as is without fragmentation, but host 2 can
-> not forward it because the MTU (1470) is too low, but does not fragment
-> it. The packets therefore get dropped.
-> (note: when i say packets of size xxxx i do: ping -M do -s xxxx)
+On Wed, Jun 30, 2010 at 09:00:36PM +0200, Andreas Langer wrote:
+> diff --git a/batman-adv/fragmentation.h b/batman-adv/fragmentation.h
+> new file mode 100644
+> index 0000000..d0acf73
+> --- /dev/null
+> +++ b/batman-adv/fragmentation.h
+> @@ -0,0 +1,34 @@
+> +/*
+> + * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
+> + *
+> + * Andreas Langer
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of version 2 of the GNU General Public
+> + * License as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+> + * 02110-1301, USA
+> + *
+> + */
+> +
+> +#define FRAG_TIMEOUT 60000	/* purge frag list entrys after time in ms */
+> +#define FRAG_BUFFER_SIZE 6	/* number of list elements in buffer */
+> +#define FRAG_MAX_SEQ 65535
+> +
+> +extern struct sk_buff *merge_frag_packet(struct list_head *head,
+> +	struct frag_packet_list_entry *tfp,
+> +	struct sk_buff *skb);
+> +
+> +extern void create_frag_entry(struct list_head *head, struct sk_buff *sk=
+b);
+> +extern void create_frag_buffer(struct list_head *head);
+> +extern struct frag_packet_list_entry *search_frag_packet(struct list_hea=
+d *head,
+> +	struct unicast_frag_packet *up);
+> +extern void frag_list_free(struct list_head *head);
 
-I've checked some parts of the patch yesterday and would also say that this=
- is
-a problem. Just to explain it a little bit further how I understood it (I a=
-m a
-little bit confused about your ping example because ping -s 1440 would crea=
-te
-a packet with the size
+function declarations shouldn't be marked as extern. Can you please remove =
+that.=20
 
-  1440 (data)
-+    8 (icmp header)
-+   20 (ip header)
-+   14 (included ethernet header)
-+    9 (batman-adv unicast header)
-=3D=3D=3D=3D=3D=3D
-  1491
+> diff --git a/batman-adv/routing.h b/batman-adv/routing.h
+> index 3eac64e..35ca2af 100644
+> --- a/batman-adv/routing.h
+> +++ b/batman-adv/routing.h
+> @@ -34,6 +34,9 @@ void update_routes(struct orig_node *orig_node,
+>  				unsigned char *hna_buff, int hna_buff_len);
+>  int recv_icmp_packet(struct sk_buff *skb);
+>  int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+> +int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_i=
+f);
+> +int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
 
-Which means that we are over the mtu of 1470 between node2 and node3. Maybe
-you wanted to say that size xxxx means `ping -M do -s xxxx-28`. But that wo=
-uld
-also mean that 1470 is not big enough to get splitted in node1.
+route_unicast_packet is only used locally in routing.c. Please remove this
+function declaration and mark route_unicast_packet in routing.c as static.
 
-
-So to my test scenario:
-
-node1 <- mtu 1500 -> node2
-
-Each soft-interface (bat0) has now a interface_tx function which is called
-when data must be send over it (directly send and not when data must get
-routed). When node1 sends a packet which would have more than 1500 bytes (w=
-ith
-batman-adv-unicast-header and the included ethernet header) we would split =
-in
-two unicast-frag-packet with roughly the half size (size / 2 + 18 bytes
-unicast-frag packet).
-
-So here an example on node1 to node2:
- * ping -s 1472 (would need mtu of 1523) - two packets (775, 775)
- * ping -s 1440 (would need mtu of 1491) - one packet (1491)
- * ping -s 1449 (would need mtu of 1500) - one packet (1500)
- * ping -s 1450 (would need mtu of 1501) - one packet (1501)  !!!!! error !=
-!!!
- * ping -s 1451 (would need mtu of 1502) - one packet (1502)  !!!!! error !=
-!!!
- * ping -s 1452 (would need mtu of 1503) - one packet (1503)  !!!!! error !=
-!!!
- * ping -s 1453 (would need mtu of 1504) - one packet (1504)  !!!!! error !=
-!!!
- * ping -s 1454 (would need mtu of 1505) - one packet (1505)  !!!!! error !=
-!!!
- * ping -s 1455 (would need mtu of 1506) - two packets (766, 767)
-
-We only accept packets with the the maximum data size of 1500 and 1501 is o=
-ver
-that.
-
-It is quite easy to fix, because you misused sizeof in you check. So here s=
-ome
-kind of patch for your patch (as hint and not really a patch) :)
-
-Best regards,
+thanks,
 	Sven
 
-diff --git a/batman-adv/fragmentation.c b/batman-adv/fragmentation.c
-index f36ad0e..1a33eab 100644
-=2D-- a/batman-adv/fragmentation.c
-+++ b/batman-adv/fragmentation.c
-@@ -74,8 +74,7 @@ void create_frag_buffer(struct list_head *head)
- 	struct frag_packet_list_entry *tfp;
-=20
- 	for (i =3D 0; i < FRAG_BUFFER_SIZE; i++) {
-=2D		tfp =3D kmalloc(sizeof(struct frag_packet_list_entry),
-=2D			GFP_ATOMIC);
-+		tfp =3D kmalloc(sizeof(*tfp), GFP_ATOMIC);
- 		tfp->skb =3D NULL;
- 		tfp->seqno =3D 0;
- 		INIT_LIST_HEAD(&tfp->list);
-diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
-index ccc97c6..8e3cc40 100644
-=2D-- a/batman-adv/soft-interface.c
-+++ b/batman-adv/soft-interface.c
-@@ -221,7 +221,7 @@ int interface_tx(struct sk_buff *skb, struct net_device=
- *dev)
- 			goto dropped;
-=20
- 		if (atomic_read(&bat_priv->frag_enabled) &&
-=2D		   data_len + sizeof(unicast_packet) >
-+		   data_len + sizeof(*unicast_packet) >
- 		   batman_if->net_dev->mtu) {
-=20
- 			hdr_len =3D sizeof(struct unicast_frag_packet);
-@@ -247,8 +247,7 @@ int interface_tx(struct sk_buff *skb, struct net_device=
- *dev)
- 				batman_if->net_dev->dev_addr, ETH_ALEN);
- 			memcpy(ucast_frag1->dest, orig_node->orig, ETH_ALEN);
-=20
-=2D			memcpy(ucast_frag2, ucast_frag1,
-=2D			       sizeof(struct unicast_frag_packet));
-+			memcpy(ucast_frag2, ucast_frag1, sizeof(*ucast_frag1));
-=20
- 			ucast_frag1->flags |=3D UNI_FRAG_HEAD;
- 			ucast_frag2->flags &=3D ~UNI_FRAG_HEAD;
-
---nextPart2088213.uctSEiAObu
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+--x+6KMIRAuhnl3hBn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJMMaS+AAoJEF2HCgfBJntG2FsQALFImiurjE4OxyA5Filc345t
-TG29TfhghaL3TWZ/tFI8PxjphoewwDM1wulZ5ovA9mjnd6W0dXm+Oi1+tcPhOZBq
-RvW1O7WVsQIhQeu/DA3DSovmc7XCKIQM5VerYnT94mt3Uc6HMA8JfMagLP3efY03
-ywc1Sq1bEVa6Td8fY5m2DCjQivuCa7sQYkHdrY31foXMqPNZw94sVInRhnTEBhMB
-xt9GjLykqhNXDc7mDXVj+++fnsR+7DvHJFvUFxW1Z9KK6fjILFImV+7+h9JvBRwC
-7NvcYYs/mw/6RdjneV6Oi/MFQxbq1xy+hk7j8E8qUx0bXVl/7dRWJzimHXT0SI+X
-4jNrSyQ9Xb6J23Ht1pTns9XvMbJBQ2SpIpVMd6Kq4pioaYcJg4wCuerDvrEi0VAQ
-06isalIOnZ09mIc37HT05fKPoHsoc1G0bmgzU9URZWSsRTKVvuaQHLGZDbvgupA0
-DdBgHXmt4D6eRipw8RI5ilXvl4NmPxh+xTzwn3ui19xnkuHVsWb+EB7vTB/pLnKh
-06gasjDg0vksKw3PTiqi+cWXHIUEE2xZdEySE0adl+eomrK5RdISp/ZN1tmUBIHR
-NUKw8c04xP3u0W/DdILShH8S+6bInLgbzZ2M4qetKO8xmGQCiW2f53EX/yMddbRV
-v1aFpQQzvylGZ1wHB87W
-=aqqH
+iQIcBAEBCgAGBQJMMdXRAAoJEF2HCgfBJntGQd0P/3OgGLbETApOidbmeR/FbfHR
+Urx8NnzGQ2T3jCBp59UudYGmXoHO3S8MtaxTH6cYFnD+G7vfFdFqIegGYij04hnb
+2vHoRgifsfRa6AXKbUKZ+42AHBPQh/S46K3BA8NTUFzSgHTjUDadzBW/hmjL0p5i
+sPpUms5yn0lEel/lRX/5ZQ/zefsfVbLuro7xv2QJWtDxdRViyT/WT6/rwIo66aWe
+qQGh8uN5tTxEoUtck4EJGaCX8QR4ukiFN6qbYWFW4rUNTy2GdWKVaLOogc1HZ617
+3DoE8mTr6Ls08FcdZppkBoLJJwSiL0kw5IASaVRCQlaXdvdkr1aH5tOB1UsGXwHg
+YfYWjR3GS+k40S5W1f5M62Q5HscKRgdx8RTfmfmqCXvbCumvoCNq0WeaVqyNOe0V
+6DMKyPy23KJI83YVCYXKjcqq5okYvw1qHagFTTZr3K5iO33gtCevFT1bnuK2T+lO
+MvthHkrBQRK29FIkFkQylsxB6nP2sfAqoxjIcbHKdAIRqdbcqdHhTpQltmooQsSn
+yv5cbIk1jf/0o78b5NoK8LtB/qkZWap2UCsPrvpW5iHGHR1b3Uf1MXSl9puILoUm
+0K2ZASxT/z4f39zOVpzQlts2rNhmihar1hE4s5Dp+ysFvflNucV7uCHm0Ob4dZ36
+sSd9C+W2uqYjzG3J3QfG
+=tBbk
 -----END PGP SIGNATURE-----
 
---nextPart2088213.uctSEiAObu--
+--x+6KMIRAuhnl3hBn--
