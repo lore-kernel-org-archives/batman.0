@@ -1,14 +1,14 @@
-Return-Path: <an.langer@gmx.de>
-Date: Tue, 6 Jul 2010 20:17:53 +0200
-From: Andreas Langer <an.langer@gmx.de>
-Message-ID: <20100706201753.2bcbc369@rechenknecht>
-In-Reply-To: <20100706173956.GA9429@ritirata.org>
+Return-Path: <andrew@lunn.ch>
+Date: Tue, 6 Jul 2010 20:57:29 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100706185729.GB18453@lunn.ch>
 References: <20100706175814.6927f767@rechenknecht>
 	<1278431960-4636-2-git-send-email-an.langer@gmx.de>
 	<20100706173956.GA9429@ritirata.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100706173956.GA9429@ritirata.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: layer2 unicast packet
  fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,16 +22,9 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Antonio,
-thanks for the question. The timeout came up to my mind just in that moment.
-I don't know if 5000/10000 be a better value, has somebody else an opinion
-regarding that matter ?
-
-regards,
-Andreas
-
+On Tue, Jul 06, 2010 at 07:39:56PM +0200, Antonio Quartulli wrote:
 > Hi all, Hi Andreas,
 > 
 > > +#define FRAG_TIMEOUT 60000     /* purge frag list entrys after time in
@@ -42,10 +35,8 @@ Andreas
 > 
 > I think that in 60 seconds an host could receive a very large amount of
 > "orphan" packets in case of a bad link causing memory problems.
-> 
-> Could 5000/10000 be a better value?
-> 
-> Regards,
-> 
-> 
 
+It will not cause memory problems. The linked list is limited to
+FRAG_BUFFER_SIZE (6) segments. 
+
+    Andrew
