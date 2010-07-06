@@ -1,16 +1,15 @@
-Return-Path: <greg@kroah.com>
-Date: Tue, 6 Jul 2010 09:17:37 -0700
-From: Greg KH <greg@kroah.com>
-Message-ID: <20100706161737.GA16045@kroah.com>
-References: <1277504905-27672-1-git-send-email-sven.eckelmann@gmx.de>
-	<201007061504.09139.sven.eckelmann@gmx.de>
-	<20100706152008.GB12566@kroah.com>
-	<201007061736.14006.sven.eckelmann@gmx.de>
+Return-Path: <andrew@lunn.ch>
+Date: Tue, 6 Jul 2010 19:07:37 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20100706170737.GA18453@lunn.ch>
+References: <20100706175814.6927f767@rechenknecht>
+	<1278431960-4636-2-git-send-email-an.langer@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201007061736.14006.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (3)
+In-Reply-To: <1278431960-4636-2-git-send-email-an.langer@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: layer2 unicast packet
+ fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,35 +21,180 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tue, Jul 06, 2010 at 05:36:12PM +0200, Sven Eckelmann wrote:
-> Greg KH wrote:
-> > On Tue, Jul 06, 2010 at 03:04:07PM +0200, Sven Eckelmann wrote:
-> [...]
-> > > we send you those 10 patches 10 days ago and they don't seem to be merged
-> > > in you staging-next tree. Linus has already released -rc4 after his
-> > > vacation and it is unclear to me how long it takes until 2.6.35 is
-> > > released and I am not allowed to submit patches for 2.6.36.
-> > 
-> > It will be a few more weeks before .35 is released.  Please note that I
-> > was working on 5 stable kernel updates last week plus an extended
-> > holliday weekend here and then there's my "real job" that I also have to
-> > do :)
-> 
-> No, I didn't want to say that you are too slow. It is just hard to know how 
-> fast somebody can process something and if he has enough free time. If you 
-> would say that the weather is to good to do computer related work until 2.6.35 
-> then it would be fine too. :)
+> +struct frag_packet_list_entry *search_frag_packet(struct list_head *head,
+> +	struct unicast_frag_packet *up) {
+> +
+> +	struct frag_packet_list_entry *tfp;
+> +	struct unicast_frag_packet *tmp_up = NULL;
+> +
+> +	list_for_each_entry(tfp, head, list) {
+> +
+> +		if (!tfp->skb)
+> +			continue;
+> +
+> +		if (tfp->seqno == ntohs(up->seqno))
+> +			goto mov_tail;
 
-The weather is pretty nice here, finally, maybe I should take a few
-weeks off :)
+Please could you explain this last bit? If we have received a
+retransmit we move it to the tail of the list?
 
-Don't worry about pinging me if I haven't responded to a patch, it
-doesn't bother me at all.  In rare cases, I do miss them, so it can't
-hurt if you haven't gotten a response from me in a week.
+> +
+> +		tmp_up = (struct unicast_frag_packet *) tfp->skb->data;
+> +
+> +		if (up->flags & UNI_FRAG_HEAD) {
+> +
+> +			if (tfp->seqno == ntohs(up->seqno)+1) {
+> +				if (tmp_up->flags & UNI_FRAG_HEAD)
+> +					goto mov_tail;
+> +				else
+> +					goto ret_tfp;
+> +			}
+> +		} else {
+> +
+> +			if (tfp->seqno == ntohs(up->seqno)-1) {
+> +				if (tmp_up->flags & UNI_FRAG_HEAD)
+> +					goto ret_tfp;
+> +				else
+> +					goto mov_tail;
+> +			}
+> +		}
 
-thanks,
+How about simplifying this loop a little. Not tested, probably broken,
+but i hope expresses the idea:
 
-greg k-h
+	if (up->flags & UNI_FRAG_HEAD) {
+	      search_seqno = ntohs(up->seqno)+1
+	} else {
+	      search_seqno = ntohs(up->seqno)-1
+	}
+    
+	list_for_each_entry(tfp, head, list) {
+		if (!tfp->skb)
+			continue;
+		
+		/* Found the other fragment? */
+		if (tfp->seqno == search_seqno)
+		    /* Head and a tail? */
+		    if ((tmp_up->flags & UNI_FRAG_HEAD) != 
+ 		        (tfp->flags & UNI_FRAG_HEAD)
+		       return tfp;
+		    } else {
+		      /* Two heads or tails. Move to tail of list so it will 
+		         get recycled */
+		      list_move_tail(&tfp->list, head);
+		      return NULL;
+                    }
+        }
+	return NULL;
+
+Moving the ntohs() out of the loop should save a few cycles and it is
+hopefully a little bit more readable.
+
+> +	}
+> +	goto ret_null;
+> +
+> +ret_tfp:
+> +	return tfp;
+> +mov_tail:
+> +	list_move_tail(&tfp->list, head);
+> +ret_null:
+> +	return NULL;
+
+Assuming you don't like my re-write, could we remove ret_tfp and
+ret_null. I don't think they aid the understandability of the
+code. They are just return statements.
+
+> +}
+> +
+> +void frag_list_free(struct list_head *head)
+> +{
+> +
+> +	struct frag_packet_list_entry *pf, *tmp_pf;
+> +
+> +	if (!list_empty(head)) {
+> +
+> +		list_for_each_entry_safe(pf, tmp_pf, head, list) {
+> +			if (pf->skb)
+> +				kfree_skb(pf->skb);
+
+kfree_skb() is happy to take a NULL pointer. So there is no need to do
+the comparison here. It will get repeated inside kfree_skb(). This
+happens in a few places.
+
+> +			list_del(&pf->list);
+> +			kfree(pf);
+> +		}
+> +	}
+> +	return;
+
+
+> +int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+> +{
+> +	struct unicast_packet *unicast_packet;
+> +	struct ethhdr *ethhdr;
+> +	int hdr_size = sizeof(struct unicast_packet);
+> +
+> +	/* drop packet if it has not necessary minimum size */
+> +	if (skb_headlen(skb) < hdr_size)
+> +		return NET_RX_DROP;
+> +
+> +	ethhdr = (struct ethhdr *) skb_mac_header(skb);
+> +
+> +	/* packet with unicast indication but broadcast recipient */
+> +	if (is_bcast(ethhdr->h_dest))
+> +		return NET_RX_DROP;
+> +
+> +	/* packet with broadcast sender address */
+> +	if (is_bcast(ethhdr->h_source))
+> +		return NET_RX_DROP;
+> +
+> +	/* not for me */
+> +	if (!is_my_mac(ethhdr->h_dest))
+> +		return NET_RX_DROP;
+> +
+> +	unicast_packet = (struct unicast_packet *) skb->data;
+> +
+> +	/* packet for me */
+> +	if (is_my_mac(unicast_packet->dest)) {
+> +		interface_rx(skb, hdr_size);
+> +		return NET_RX_SUCCESS;
+> +	}
+> +
+> +	return route_unicast_packet(skb, recv_if, hdr_size);
+> +}
+> +
+> +int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
+> +{
+> +	struct unicast_frag_packet *unicast_packet;
+> +	struct orig_node *orig_node;
+> +	struct ethhdr *ethhdr;
+> +	struct frag_packet_list_entry *tmp_frag_entry;
+> +	int hdr_size = sizeof(struct unicast_frag_packet);
+> +	unsigned long flags;
+> +
+> +	/* drop packet if it has not necessary minimum size */
+> +	if (skb_headlen(skb) < hdr_size)
+> +		return NET_RX_DROP;
+> +
+> +	ethhdr = (struct ethhdr *) skb_mac_header(skb);
+> +
+> +	/* packet with unicast indication but broadcast recipient */
+> +	if (is_bcast(ethhdr->h_dest))
+> +		return NET_RX_DROP;
+> +
+> +	/* packet with broadcast sender address */
+> +	if (is_bcast(ethhdr->h_source))
+> +		return NET_RX_DROP;
+> +
+> +	/* not for me */
+> +	if (!is_my_mac(ethhdr->h_dest))
+> +		return NET_RX_DROP;
+> +
+
+There is some code here which is identical to
+recv_unicast_packet(). Could it be refactored into a helper function?
+
+
+       Andrew
