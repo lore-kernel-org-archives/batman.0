@@ -1,11 +1,14 @@
-Return-Path: <antoine@7degrees.co.za>
-From: Antoine van Gelder <antoine@7degrees.co.za>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Date: Tue, 6 Jul 2010 11:52:49 +0200
-Message-Id: <C996A616-0036-4092-B2E3-23A34FB14B95@7degrees.co.za>
-Mime-Version: 1.0 (Apple Message framework v1081)
-Subject: [B.A.T.M.A.N.] The great #batdroid hackathon of July 2010
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Tue, 6 Jul 2010 15:04:07 +0200
+References: <1277504905-27672-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1277504905-27672-1-git-send-email-sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2203135.jJj0XkDj1J";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201007061504.09139.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (3)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,85 +20,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: village-telco-dev@googlegroups.com, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Steve Song <steve.song@shuttleworthfoundation.org>, Neels van der Westhuizen <neels@rossum.co.za>, Edwin Blake <edwin@cs.uct.ac.za>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: greg@kroah.com
 
-Heya folks,
+--nextPart2203135.jJj0XkDj1J
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Over the weekend a team consisting of Tatenda Chipeperekwa, Veenesh =
-Jeena, Zaheer Abrahams from the UCT Honors program as well as YoursTruly =
-succeeded in writing an App which allows anyone with a rooted Android =
-handset to connect to a B.A.T.M.A.N. mesh network.
+Sven Eckelmann wrote:
+> Hi,
+>=20
+> here are patches targetted for 2.6.36. All patches needed for that patchs=
+et
+> are already part of your staging-next tree.
+>=20
+> All patches are cleanup patches and no new feature is added.
+>=20
+> thanks,
+> 	Sven
+>=20
+> Antonio Quartulli (1):
+>       Staging: batman-adv: Convert names from Java to C style
+>=20
+> Linus L=FCssing (1):
+>       Staging: batman-adv: Avoid rounding issues for local hna timeout
+>=20
+> Marek Lindner (4):
+>       Staging: batman-adv: replace manual calculation by msecs_to_jiffies=
+()
+> for better readability
+>       Staging: batman-adv: Add sysfs abi documentation
+> about bonding
+>       Staging: batman-adv: adapting source version to revised
+> versioning scheme Staging: batman-adv: fix early debugfs deinitialization
+>=20
+> Simon Wunderlich (1):
+>       Staging: batman-adv: Lower resolution for timeouts
+>=20
+> Sven Eckelmann (3):
+>       Staging: batman-adv: Add include guards to all header files
+>       Staging: batman-adv: Allow to build it inside the kernel
+>       Staging: batman-adv: Remove dependency to PROCFS
 
-Work began on Saturday morning by bringing up a simple mesh testbed =
-consisting of a Mesh Potato, an Ubiquity NS2 and a Linksys WRT54GL. The =
-rest of the day was spent manually configuring the test phones into =
-AdHoc mode and bringing the batmand mesh routing daemon up on both a HTC =
-Magic & a HTC Legend.=20
+Hi,
 
-After working our way through the traditional hacker supper of pizza and =
-soft drinks we started the hard work that would consume us for the rest =
-of the weekend, namely writing an App which could:
+we send you those 10 patches 10 days ago and they don't seem to be merged i=
+n=20
+you staging-next tree. Linus has already released -rc4 after his vacation a=
+nd=20
+it is unclear to me how long it takes until 2.6.35 is released and I am not=
+=20
+allowed to submit patches for 2.6.36.
 
-  a) reliably=20
-  b) on any Android handset
+Do you think that I can still submit some patches to you for 2.6.36 or shou=
+ld=20
+I wait for 2.6.37?
 
-...take the phone in&out of AdHoc mode and start&stop the B.A.T.M.A.N. =
-mesh routing daemon.
+The remaining patches are logging related. One patch moves the printk's to=
+=20
+pr_(err|info|warning) and bat_(warning|info|error) makros. The second one=20
+moves the logging of routing related information from kernel ring buffer to=
+ a=20
+private ringbuffer in debugfs for each batX device.
 
-What complicates this is that by default the Android software =
-distribution does not support AdHoc WiFi mode, to further complicate =
-matters is that the process to force the phones into AdHoc mode differs =
-for almost every different handset model!=20
+Best regards,
+	Sven
 
-OhNoes!!!
+--nextPart2203135.jJj0XkDj1J
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Fortunately the team of pure stupendous at =
-http://code.google.com/p/android-wifi-tether/, by releasing their work =
-under GPL3, have saved the collective posteriors of the community by =
-having done a staggering amount of work developing the scripts & code =
-which take away 99% of the pain from this process. If anyone is in a =
-position to call shots on this, please do consider contributing a cash =
-donation, filing some bugs or a bit of hacking time to the =
-android-wifi-tether project because their work has been absolutely key =
-to the team being able to bring B.A.T.M.A.N. up on Android in only a =
-weekend instead of a month of hacking followed by months and months of =
-testing and refinement.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-The rest of the evening and the next day was spent writing the App =
-front-end integrating the batmand daemon with the android-wifi-tether =
-code, banging on user interface design, conspicuous caffeine consumption =
-and general wizardry until, some time round eight'o'clock on Sunday =
-evening all the pieces finally came together and the team were able to =
-demonstrate a running B.A.T.D.R.O.I.D. on the mesh testbed!
+iQIcBAABCgAGBQJMMynIAAoJEF2HCgfBJntGTNMQAJllg1p0T/HwdgSrdcvi3YMk
+HuMk4T+qwQ+uIDGYCVJxtScYPVZPIhgGcEFbgbasGc1bzskx8jX25rzGQ+7bAL9H
+MGR8h4Jsgss6iNTLesXgahqENfBLlYEuNb5BeKIahjmFsblXD9lOJU4cd/yxtWTb
+ulUG2Ru//hnliswyULVYaddooX9/2WXzoEqs7ix6CG1HtLaQmQPSLGPtBIP346Qi
+v0T78SX+ZrHEky5+x4AyMG36jLFijIE96TFmeRv4CyhaE1lh1XOK12H6bREAj6+Q
+RBPffbXsggIC6cTWqQGZ3erMvUGoK3qxQ0TfwHDYUl3VMD1R2LXymV4WuWNTGMyJ
+QLoShdqSPPO7h6NgnCDIvUuZYg01U0PzOFDAyZ8xUX3YCaMr5X/GBWfajoY/S1EU
+6W5eqgBwHkbFPbNk+56l7e9y+5E1oqPnzrMIzobvBEhAgYPZ/oRZ/LwDyQPwbuUw
+SBoA2rkt5cSNXpmkhHHcAmIBdhPPZx7T4uyrMOxLf80Epnzk5h4tl/LSf1nMpbbc
+CQ1jQO/YB83Ib8rfcgo8s7UO46yWqTRg0dRG9ENmWUtYcpCTKZvlQAzivpXP4Lmu
+ZCoiSLx3SWAeWkxyNoy6wsXkqA06FrFTZsAsw5t2sI1L4yomKYMLM2ZQ/RrfmiGc
+mX/RPMWORVMtuXE1dVTz
+=JGXY
+-----END PGP SIGNATURE-----
 
-The code from the weekend is available at:
-
-  http://code.google.com/p/android-batdroid/
-
-Downloadable binaries to follow.
-
-There are also some photos from the weekend up at:
-  =20
-  http://www.flickr.com/photos/45478359@N06/sets/72157624433728942/
-
-Finally, mad props to:
-
-Neels from the Open Innovation Studio =
-(http://www.bym.co.za/projects/open-innovation-studio/) for creating a =
-beautiful space with stunning energy, amazing coffee and generously =
-sharing it with us for the weekend.
-
-Steve Song from VillageTelco (http://www.villagetelco.org) & =
-Shuttleworth Fondation (http://www.shuttleworthfoundation.org) for the =
-support that made the weekend possible.
-
- - antoine
-
-
---
-http://7degrees.co.za
-"Libr=E9 software for human education"
-
-
-
+--nextPart2203135.jJj0XkDj1J--
