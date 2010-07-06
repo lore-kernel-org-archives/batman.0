@@ -1,14 +1,17 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue,  6 Jul 2010 21:05:18 +0200
-Message-Id: <1278443118-19528-4-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1278443118-19528-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1278443118-19528-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Tue, 6 Jul 2010 21:13:11 +0200
+References: <20100706175814.6927f767@rechenknecht>
+	<20100706173956.GA9429@ritirata.org>
+	<20100706185729.GB18453@lunn.ch>
+In-Reply-To: <20100706185729.GB18453@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] Staging: batman-adv: Add last-seen in
-	originator table
+Content-Type: multipart/signed; boundary="nextPart2843739.We4bBgFHFV";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201007062113.12980.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: layer2 unicast packet
+	fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,74 +23,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: greg@kroah.com
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <linus.luessing@web.de>
+--nextPart2843739.We4bBgFHFV
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Right now, there is no easy/intuitive way to find out whether a node
-might have vanished. This commit adds the time when a node was last seen
-to the originator table output, so that a common user is able to tell
-whether a node might have gone without having to wait PURGE_TIMEOUT
-seconds until that node gets "garbe-collected".
-It also puts the the versioning information in an extra line, as
-the first one of this debug output would otherwise get too long.
+Andrew Lunn wrote:
+> On Tue, Jul 06, 2010 at 07:39:56PM +0200, Antonio Quartulli wrote:
+> > Hi all, Hi Andreas,
+> >=20
+> > > +#define FRAG_TIMEOUT 60000     /* purge frag list entrys after time =
+in
+> > > ms */
+> >=20
+> > Why did you choose a so large timeout? Is there a particular reason for
+> > that?
+> >=20
+> > I think that in 60 seconds an host could receive a very large amount of
+> > "orphan" packets in case of a bad link causing memory problems.
+>=20
+> It will not cause memory problems. The linked list is limited to
+> FRAG_BUFFER_SIZE (6) segments.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- drivers/staging/batman-adv/originator.c |   20 ++++++++++++++------
- 1 files changed, 14 insertions(+), 6 deletions(-)
+He didn't say that it will take all available system memory. There is still=
+=20
+the problem that the 6 slots per originator (so the memory per originator)=
+=20
+could be full when we have a bad link and a too big waiting time for missin=
+g=20
+fragments.
 
-diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
-index d2a5f20..28bb627 100644
---- a/drivers/staging/batman-adv/originator.c
-+++ b/drivers/staging/batman-adv/originator.c
-@@ -289,6 +289,8 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 	struct orig_node *orig_node;
- 	struct neigh_node *neigh_node;
- 	int batman_count = 0;
-+	int last_seen_secs;
-+	int last_seen_msecs;
- 	unsigned long flags;
- 	char orig_str[ETH_STR_LEN], router_str[ETH_STR_LEN];
- 
-@@ -305,12 +307,13 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 	}
- 
- 	rcu_read_lock();
--	seq_printf(seq, "  %-14s (%s/%i) %17s [%10s]: %20s "
--		   "... [B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)]\n",
--		   "Originator", "#", TQ_MAX_VALUE, "Nexthop", "outgoingIF",
--		   "Potential nexthops", SOURCE_VERSION, REVISION_VERSION_STR,
-+	seq_printf(seq, "[B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)]\n",
-+		   SOURCE_VERSION, REVISION_VERSION_STR,
- 		   bat_priv->primary_if->dev, bat_priv->primary_if->addr_str,
- 		   net_dev->name);
-+	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
-+		   "Originator", "last-seen", "#", TQ_MAX_VALUE, "Nexthop",
-+		   "outgoingIF", "Potential nexthops");
- 	rcu_read_unlock();
- 
- 	spin_lock_irqsave(&orig_hash_lock, flags);
-@@ -327,9 +330,14 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 
- 		addr_to_string(orig_str, orig_node->orig);
- 		addr_to_string(router_str, orig_node->router->addr);
-+		last_seen_secs = jiffies_to_msecs(jiffies -
-+						orig_node->last_valid) / 1000;
-+		last_seen_msecs = jiffies_to_msecs(jiffies -
-+						orig_node->last_valid) % 1000;
- 
--		seq_printf(seq, "%-17s  (%3i) %17s [%10s]:",
--			   orig_str, orig_node->router->tq_avg, router_str,
-+		seq_printf(seq, "%-17s %4i.%03is   (%3i) %17s [%10s]:",
-+			   orig_str, last_seen_secs, last_seen_msecs,
-+			   orig_node->router->tq_avg, router_str,
- 			   orig_node->router->if_incoming->dev);
- 
- 		list_for_each_entry(neigh_node, &orig_node->neigh_list, list) {
--- 
-1.7.1
+Best regards,
+	Sven
 
+--nextPart2843739.We4bBgFHFV
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMM4BIAAoJEF2HCgfBJntGUDgP/3ahF5mrhLJLKlV3zjSG/VyK
+lwfyEbJ/fPoC6DUdrPImYBIuTV/2IUGOfWRhs7tJxy2WUdEajNcqnezCkn6pVOSb
+uNgIW6CGPuPIwLBuUxeU2HC80VrtG5Po0QX7KsdNBb0ZFpald/b9INDhLQY8CsPe
+uCpYH+7g06cFGoNGjMfanW3EvEPqkgeG6v9Xa3GSvopegbd4f18ta2Bh5HJcn5OI
+wwMwo/S/Ok8TI1VtTT+Q/6pRUuV6NyF0hfdENtOmho5oz4pnow6WMQFBaYu9PPIn
+nSx9xyhh+pjwgDgwzI7lklgPeeMldTNX3/uIVdmcJ00ZJ8gQ4e69U2y0Uu/hN7bh
+80F9mYQkdPDdPmvZwSl2zNu0WUsfwtEA7vjPF94NoJfT8G59CiLn6OYijXEAaDK8
+0abL27ftW60OBRQHNKHu9SY5D1+RrRq6FFCxGToGR09pGt23EJDAYPASqgYgvzsb
+OETzuHdoZhyBGQQytwZgho1iKhSxAxHNCg6nrc1dqWSDn5idveO18THNpjG38eJg
+jKQX6JPFOsspIzLtv3FZmoD5drK44ZJM6jIOctKKFURXQUONW8W+YoSPwFWNzGW6
+Hld3+vZynC7gQ6mPL5uZFphKghlgeAhOHh2k7r22Szmafz2PJf5bc8hjOlipPk+G
+Iu9dgnn8ueBOHwAmfnSa
+=xFxC
+-----END PGP SIGNATURE-----
+
+--nextPart2843739.We4bBgFHFV--
