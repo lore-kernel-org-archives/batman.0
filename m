@@ -1,14 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 6 Jul 2010 23:42:49 +0200
-References: <C996A616-0036-4092-B2E3-23A34FB14B95@7degrees.co.za>
-In-Reply-To: <C996A616-0036-4092-B2E3-23A34FB14B95@7degrees.co.za>
+Return-Path: <clemens-john@gmx.de>
+From: Clemens John <clemens-john@gmx.de>
+Date: Tue, 6 Jul 2010 23:46:36 +0200
+References: <201007061948.05784.clemens-john@gmx.de>
+	<201007062215.45412.lindner_marek@yahoo.de>
+In-Reply-To: <201007062215.45412.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: multipart/signed; boundary="nextPart3448265.fTkZoJ2NUI";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201007062342.50060.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] The great #batdroid hackathon of July 2010
+Message-Id: <201007062346.43276.clemens-john@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] Batman advanced and internet gateways
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,35 +21,77 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Steve Song <steve.song@shuttleworthfoundation.org>, Neels van der Westhuizen <neels@rossum.co.za>, Edwin Blake <edwin@cs.uct.ac.za>, village-telco-dev@googlegroups.com
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+--nextPart3448265.fTkZoJ2NUI
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Hey all,
+Am Dienstag 06 Juli 2010, 22:15:45 schrieb Marek Lindner:
+> It requires each gateway to have a DHCP server running. The clients will
+> select their gateway and relay the dhcp requests via unicast to the
+> selected gateway only.
+> You only need to activate the gateway / client mode and have a dhcp server
+> running.
 
-> Over the weekend a team consisting of Tatenda Chipeperekwa, Veenesh Jeena,
-> Zaheer Abrahams from the UCT Honors program as well as YoursTruly
-> succeeded in writing an App which allows anyone with a rooted Android
-> handset to connect to a B.A.T.M.A.N. mesh network.
-> 
-> Work began on Saturday morning by bringing up a simple mesh testbed
-> consisting of a Mesh Potato, an Ubiquity NS2 and a Linksys WRT54GL. The
-> rest of the day was spent manually configuring the test phones into AdHoc
-> mode and bringing the batmand mesh routing daemon up on both a HTC Magic &
-> a HTC Legend.
+Okay I did this but I have some questions left:
 
-congratulations to all involved for the success of this project! It makes me 
-happy seeing people coming together to work on a project, especially when it 
-is about batman.  ;)
+Does the DHCP server on the gateway need to distribute IP-Adresses?
+If so I think they have to be distributet on the batman interface right?
 
-I experimented with mesh on the phones / mobile devices myself not so long ago 
-and noticed that the energy consumption is pretty high. Even if we had no mesh 
-the ad-hoc mode does not allow to save as much energy as the managed mode. Did 
-you notice the same thing ? How long does the battery last ?
+Does the Batman advanced interface on the clients need to request an IP-Adr=
+ess=20
+from the DHCP server or can I also set a static IP adress?
 
-In an environment which provides a "backbone" network (e.g. routers) batman-
-adv might be more suitable, since the clients do not need any mesh software 
-nor ad-hoc mode and still can roam around. Did you give it a try ?
+If the clients need to request an IP adress from the DHCP server, where is =
+the=20
+difference between requesting an IP without Batman advanced and with Batman=
+=20
+advanced? Does Batman advanced say from wich server to request the IP or wh=
+ich=20
+default route to choose?
 
-Regards,
-Marek
+>=20
+> > **If so why do you mix Layer 2 and Layer 3 now?
+>=20
+> If you don't want to mix layer2 / layer3 then just don't use this feature.
+> It is disabled per default.
+> If you have a better idea how to handle multiple gateways in a layer2 mesh
+> we are very open to your suggestions. :)
+
+Sry for this question we just discussed this on the last community meeting =
+and=20
+somebody wondered if this is the most beautiful way. Maybe it=B4s not but y=
+ou=20
+are right there is no other way.
+
+> Unfortunately, we did not get around finishing it to the point that we fe=
+el
+> comfortable with releasing this feature. I think the trunk is quite stable
+> but still lacks some things. E.g. blacklisting / whitelisting gateways,
+> IPv6, etc.
+
+Okay but it will 	likely be usable without crashing right?
+
+Last but not least:
+How can I configure batman advanced in /etc/config/batman-adv to enable gw=
+=20
+server/client mode?
+
+Greetings
+Clemens
+
+--nextPart3448265.fTkZoJ2NUI
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkwzpDwACgkQZgdHbA22lqPRBACghWDzvlHrJ3lGo9NpEa3/kHhU
+YlgAoLL2vg+xbeDoGQfiziyNOXTvNOm0
+=0lts
+-----END PGP SIGNATURE-----
+
+--nextPart3448265.fTkZoJ2NUI--
