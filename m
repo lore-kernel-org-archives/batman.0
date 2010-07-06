@@ -1,12 +1,15 @@
-Return-Path: <clemens-john@gmx.de>
-From: Clemens John <clemens-john@gmx.de>
-Date: Tue, 6 Jul 2010 19:47:59 +0200
+Return-Path: <ordex@ritirata.org>
+Date: Tue, 6 Jul 2010 19:39:56 +0200
+From: Antonio Quartulli <ordex@ritirata.org>
+Message-ID: <20100706173956.GA9429@ritirata.org>
+References: <20100706175814.6927f767@rechenknecht>
+	<1278431960-4636-2-git-send-email-an.langer@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11731094.05CITRpk1K";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <201007061948.05784.clemens-john@gmx.de>
-Subject: [B.A.T.M.A.N.] Batman advanced and internet gateways
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1278431960-4636-2-git-send-email-an.langer@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: layer2 unicast packet
+ fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,59 +21,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
---nextPart11731094.05CITRpk1K
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hi all, Hi Andreas,
 
-Hi,
+> +#define FRAG_TIMEOUT 60000     /* purge frag list entrys after time in
+> ms */
 
-I know I asked this question some time ago but I didn=B4t got it till now s=
-o I=20
-have to ask again.
-I know that Batman advanced does the meshing on layer 2 and has nothing to =
-do=20
-with layer 3.
+Why did you choose a so large timeout? Is there a particular reason for
+that?
 
-We have a wonderfull working Batman advanced network now which we use with=
-=20
-IPv4.
-Communication inside the networks works verry well and everything is fine.
+I think that in 60 seconds an host could receive a very large amount of
+"orphan" packets in case of a bad link causing memory problems.
 
-Now I want to go from the Batman advanced mesh network to the internet.=20
-Therefor we have several gateways which I can use to get into the internet.
-To use one of the gateways, I only have to set the default route of the mes=
-h-
-client to the gateways IPv4 address.
+Could 5000/10000 be a better value?
 
-How can I do this automatically and how can I automatically choose the best=
-=20
-gateway for my client? I know that Batman advanced does not do this for now=
-=20
-but I already saw something that sounded like made for this in the trunk=20
-version and on the manpage of batctl. The function is called gw_mode.
+Regards,
 
-*How do you this?
-*What do you recommend for this task?
-*What=B4s about the funktion in trunk? Is the function made for this?
-**If so why do you mix Layer 2 and Layer 3 now?
-**When do you think this function will be in the stable release?
 
-Sorry for so many questions but I=B4m a bit confused^^
-Clemens
+-- 
+Antonio Quartulli
 
---nextPart11731094.05CITRpk1K
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkwzbE8ACgkQZgdHbA22lqOTfACfYSxr17NmXXuhlw19aIt1i7re
-mfIAoOGEk08e6DGDMj/oMqaXfN0uQqiS
-=T/4k
------END PGP SIGNATURE-----
-
---nextPart11731094.05CITRpk1K--
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
