@@ -1,16 +1,16 @@
-Return-Path: <andrew@lunn.ch>
-Date: Wed, 7 Jul 2010 12:50:58 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20100707105058.GD18453@lunn.ch>
-References: <201007061948.05784.clemens-john@gmx.de>
-	<201007070021.43888.clemens-john@gmx.de>
-	<201007070030.30940.lindner_marek@yahoo.de>
-	<201007071233.56171.clemens-john@gmx.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 7 Jul 2010 12:40:27 +0200
+References: <20100706175814.6927f767@rechenknecht>
+	<1278431960-4636-2-git-send-email-an.langer@gmx.de>
+In-Reply-To: <1278431960-4636-2-git-send-email-an.langer@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201007071233.56171.clemens-john@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] Batman advanced and internet gateways
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201007071240.27837.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: layer2 unicast packet
+	fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,36 +24,35 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, Jul 07, 2010 at 12:33:47PM +0200, Clemens John wrote:
-> Am Mittwoch 07 Juli 2010, 00:30:30 schrieb Marek Lindner:
-> > > Now batman advanced nodes behind the VPN does not get listet in the
-> > > originator tables of nodes on the other side of the VPN.
-> > > But do they get listed on the gateway list? Can Batman advanced choose a
-> > > gateway behind the VPN?
-> > 
-> > No, because the gateway information travel with the OGMs which you don't
-> > have on your VPN. Sending dhcp requests via unicast also does not work
-> > because the VPN interfaces are not controlled by batman.
-> 
-> I just had another Idea but I?m not shure if this will work.
-> 
-> If we don?t use the Batman advanced gateway feature but run a DHCP Server on 
-> gateways only, would a client always choose the "nearest" DHCP server?
+On Tuesday, July 06, 2010 17:59:20 Andreas Langer wrote:
+> +       if (atomic_read(&bat_priv->frag_enabled) && batman_if->net_dev->mtu
+> < +               ETH_DATA_LEN + BAT_HEADER_LEN)
+> +               bat_info(soft_device,
+> +               "The MTU of interface %s is too small (%zi) to handle "
+> +               "the transport of batman-adv packets. Packets going "
+> +               "over this interface will be fragmented on layer2 "
+> +               "which could impact the performance. Setting the MTU "
+> +               "to %zi would solve the problem.\n",
+> +                batman_if->dev, ETH_DATA_LEN + BAT_HEADER_LEN,
+> +                ETH_DATA_LEN + BAT_HEADER_LEN);
 
-It will likely choose the first to reply. You cannot guarantee the
-first to reply is the nearest, it depends on what else they are is
-doing at the same time, e.g. the nearest could be busy moving packets
-between networks so has higher latency than an idle device a bit
-further away.
- 
-> If this works, is it possible that all dhcp servers distribute the same ip 
-> range? Will a client/server notice which IP?s are already assigned to clients?
+The required MTU gets printed twice here. I guess you wanted to print this:
+ batman_if->dev, batman_if->net_dev->mtu,
+ ETH_DATA_LEN + BAT_HEADER_LEN
 
-Not recommended. Often the server will test to see if the address is
-in use by ping'ing it, but this is not always implemented and is not a
-guaranteed to work in all conditions. It is much better to allocate to
-each server a unique range of addresses. These can however be inside
-the same subnet.
 
-    Andrew
+> +       if (!atomic_read(&bat_priv->frag_enabled) &&
+> batman_if->net_dev->mtu < +               ETH_DATA_LEN + BAT_HEADER_LEN)
+> +               bat_info(soft_device,
+> +               "The MTU of interface %s is too small (%zi) to handle "
+> +               "the transport of batman-adv packets. If you experience"
+> +               " problems getting traffic through try increasing the "
+> +                "MTU to %zi.\n",
+> +                batman_if->dev, ETH_DATA_LEN + BAT_HEADER_LEN,
+> +                ETH_DATA_LEN + BAT_HEADER_LEN);
+
+Here we have the same issue.
+
+Regards,
+Marek
 
