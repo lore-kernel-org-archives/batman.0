@@ -1,14 +1,16 @@
-Return-Path: <antoine@7degrees.co.za>
-Content-Type: text/plain; charset=iso-8859-1
-Mime-Version: 1.0 (Apple Message framework v1081)
-From: Antoine van Gelder <antoine@7degrees.co.za>
-In-Reply-To: <201007062342.50060.lindner_marek@yahoo.de>
-Date: Fri, 9 Jul 2010 20:01:04 +0200
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <C800700B-9FC9-4F2A-8B8A-4A86F4F7EE6B@7degrees.co.za>
-References: <C996A616-0036-4092-B2E3-23A34FB14B95@7degrees.co.za>
-	<201007062342.50060.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] The great #batdroid hackathon of July 2010
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sat, 10 Jul 2010 01:07:56 +0200
+References: <1277504905-27672-1-git-send-email-sven.eckelmann@gmx.de>
+	<201007061736.14006.sven.eckelmann@gmx.de>
+	<20100706161737.GA16045@kroah.com>
+In-Reply-To: <20100706161737.GA16045@kroah.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1518133.ufRQTmAym7";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201007100107.57451.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (3)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,61 +22,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Greg KH <greg@kroah.com>
 
+--nextPart1518133.ufRQTmAym7
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-On 06 Jul 2010, at 23:42 , Marek Lindner wrote:
->> Work began on Saturday morning by bringing up a simple mesh testbed
->> consisting of a Mesh Potato, an Ubiquity NS2 and a Linksys WRT54GL. =
-The
->> rest of the day was spent manually configuring the test phones into =
-AdHoc
->> mode and bringing the batmand mesh routing daemon up on both a HTC =
-Magic &
->> a HTC Legend.
+Greg KH wrote:
+> > No, I didn't want to say that you are too slow. It is just hard to know
+> > how fast somebody can process something and if he has enough free time.
+> > If you would say that the weather is to good to do computer related work
+> > until 2.6.35 then it would be fine too. :)
 >=20
-> congratulations to all involved for the success of this project! It =
-makes me=20
-> happy seeing people coming together to work on a project, especially =
-when it=20
-> is about batman.  ;)
+> The weather is pretty nice here, finally, maybe I should take a few
+> weeks off :)
+>=20
+> Don't worry about pinging me if I haven't responded to a patch, it
+> doesn't bother me at all.  In rare cases, I do miss them, so it can't
+> hurt if you haven't gotten a response from me in a week.
 
+Ok. Thanks a lot that you applied the patches so fast - even when the weath=
+er=20
+is so nice. :)
 
-Tx Marek :-)
+I have a small question about the topic "how to reduce the workload for you=
+".=20
+We send the patch which should integrate batman-adv into net/ around two we=
+eks=20
+ago to David S. Miller and the netdev@vger mailing list [1]. Some hours lat=
+er=20
+Hagen Paul Pfeifer responded with some questions and different ideas - whic=
+h=20
+we (batman developers and Henning Rogge from olsr) either answered and/or=20
+started to discuss them.
 
+The problem is that the discussion stopped quite fast... actually there was=
+=20
+only one mail from the netdev guys. This is quite irritating to me and the=
+=20
+question arose whether we did something terrible wrong when we send the pat=
+ch.
 
-> I experimented with mesh on the phones / mobile devices myself not so =
-long ago=20
-> and noticed that the energy consumption is pretty high. Even if we had =
-no mesh=20
-> the ad-hoc mode does not allow to save as much energy as the managed =
-mode. Did=20
-> you notice the same thing ? How long does the battery last ?
+Maybe you could give us a small hint how to proceed further. If we should=20
+wait, poke around or maybe submit it in a completely different way. It is n=
+ot=20
+about "getting it into net right away", but we would really like to get som=
+e=20
+responses so we can work on it to make it better.
 
+batman-adv works quite well for us - but that doesn't mean that it is good =
+in=20
+context of the current kernel development. And who should know it better th=
+an=20
+the netdev guys.
 
-I've noticed that uniformly power-saving modes for Android hardware have =
-utterly borked drivers.
+thanks for the mentoring,
+	Sven
 
-I'm lucky if I get 2 hours WiFi out of my phone on any mode.
+[1] http://kerneltrap.org/mailarchive/linux-netdev/2010/6/28/6280066/thread
 
-:-/
+--nextPart1518133.ufRQTmAym7
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> In an environment which provides a "backbone" network (e.g. routers) =
-batman-
-> adv might be more suitable, since the clients do not need any mesh =
-software=20
-> nor ad-hoc mode and still can roam around. Did you give it a try ?
+iQIcBAABCgAGBQJMN6vMAAoJEF2HCgfBJntGXZ8QAL6z8sMupswLEpYFECC5PmHo
+zC38qGB2HydihHODZoSvCcdJcE00qe1b/hzGnVBA5S3NhJAX8uyEEjc8Pn9oc4xg
+DvCZyPRTwVbRILHt8pBlkgLuZQjCnPdrSmxc0qR49G/VP23KnNjo7AqN65QGnpIN
+qF2OvFzpH6rlbtWkng1cq18F0i4EOZMFZckW6Zm+0a001I2cYRJpOYDpE65rGEgz
+VF6riAxOJxWSpl9HbYjj1jIEq+bs2lOSEY92Td6K0uQ020hnayp5oe+QX7Oq3iMD
+TNDQBLEucvSoEc/4Ul6YzudFnmGRlaX+5u695+e/gDvxSFT4W9hXz+730pJgTEt7
+k7ROL4B7982JGMN/O3maO7yA/lvhevQ/62D/QVKMCdQQ6f0Xr5xW0USGUIhMYcOb
+vOIh0bD6FpVmVKU9wd06cCLnXvTptqVCkF1OoGYD18VFlb8gvRjvTT3BgPwwI/mn
+RXLZO5XGP8xIgpq7g/M1e65CbIduYX3DlQoj/bOunyUspYn7BQmwJFcqq50e2Nmu
+DV33Blg9yB8job/3E2JaKkj3gN/k5Jss5ZIzI8I7H9dHzd5WE2GwtVLJAb58di+5
+NS64Ka+hOPgObsDrupO0PjkFNtdkGjVob/un5IhZYoXdmhoOZjD6S5+5zLx9JxDT
+mWXBSBALPq7zzQbb2ZMO
+=2P2M
+-----END PGP SIGNATURE-----
 
-
-Not yet - development focus so has been focused exclusively on vanilla =
-batmand - worth exploring though!
-
- - antoine
-
---
-http://7degrees.co.za
-"Libr=E9 software for human education"
-
-
-
+--nextPart1518133.ufRQTmAym7--
