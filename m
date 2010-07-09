@@ -1,9 +1,16 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri,  9 Jul 2010 01:00:18 +0200
-Message-Id: <1278630018-18345-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix 64 bit counters on 32 bit
-	arches
+Date: Fri, 9 Jul 2010 16:51:25 +0200
+References: <20100707193047.422ac235@rechenknecht>
+	<1278523926-29219-2-git-send-email-an.langer@gmx.de>
+In-Reply-To: <1278523926-29219-2-git-send-email-an.langer@gmx.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1545891.ytV0PlhGeu";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201007091651.27867.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: layer2 unicast packet
+	fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,74 +24,83 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
+--nextPart1545891.ytV0PlhGeu
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-There is a small possibility that a reader gets incorrect values on 32
-bit arches. SNMP applications could catch incorrect counters when a
-32bit high part is changed by another stats consumer/provider.
+Andreas Langer wrote:
+> +	if (atomic_read(&bat_priv->frag_enabled) && batman_if->net_dev->mtu <
+> +		ETH_DATA_LEN + BAT_HEADER_LEN)
+> +		bat_info(soft_device,
+> +			"The MTU of interface %s is too small (%zi) to handle "
+> +			"the transport of batman-adv packets. Packets going "
+> +			"over this interface will be fragmented on layer2 "
+> +			"which could impact the performance. Setting the MTU "
+> +			"to %zi would solve the problem.\n",
+> +			batman_if->dev, batman_if->net_dev->mtu,
+> +			ETH_DATA_LEN + BAT_HEADER_LEN);
+> +
+> +	if (!atomic_read(&bat_priv->frag_enabled) && batman_if->net_dev->mtu <
+> +		ETH_DATA_LEN + BAT_HEADER_LEN)
+> +		bat_info(soft_device,
+> +			"The MTU of interface %s is too small (%zi) to handle "
+> +			"the transport of batman-adv packets. If you experience"
+> +			" problems getting traffic through try increasing the "
+> +			"MTU to %zi.\n",
+> +			batman_if->dev, batman_if->net_dev->mtu,
+> +			ETH_DATA_LEN + BAT_HEADER_LEN);
+> +
+>  	if (hardif_is_iface_up(batman_if))
+>  		hardif_activate_interface(soft_device, bat_priv, batman_if);
 
-One way to solve this is to add a rtnl_link_stats64 param to all
-ndo_get_stats64() methods, and also add such a parameter to
-dev_get_stats().
 
-Rule is that we are not allowed to use dev->stats64 as a temporary
-storage for 64bit stats, but a caller provided area (usually on stack)
+Nach der Aenderung der Argumente muesstest du das erste %zi wieder in ein %i
+umaendern:
 
-Old drivers (only providing get_stats() method) need no changes.
-
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-[sven.eckelmann@gmx.de: Added compat.h defines for pre-2.6.36 kernels]
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
-This patch entered net-next-2.6 today. It is also part of maint and must be
-applied in trunk too.
-
-The original commit can be found using its SHA1
-28172739f0a276eb8d6ca917b3974c2edb036da3.
-
- batman-adv/compat.h         |    8 ++++++++
- batman-adv/hard-interface.c |    3 ++-
- 2 files changed, 10 insertions(+), 1 deletions(-)
-
-diff --git a/batman-adv/compat.h b/batman-adv/compat.h
-index 09016c8..103593d 100644
---- a/batman-adv/compat.h
-+++ b/batman-adv/compat.h
-@@ -249,4 +249,12 @@ static inline struct net_device_stats *dev_get_stats(struct net_device *dev)
- 
- #endif /* < KERNEL_VERSION(2, 6, 29) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
-+
-+#define dev_get_stats(x, y) dev_get_stats(x)
-+
-+#define rtnl_link_stats64 rtnl_link_stats __attribute__((unused))
-+
-+#endif /* < KERNEL_VERSION(2, 6, 36) */
-+
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
 diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index 5ff9dcb..6a37c33 100644
+index 1177e93..9dbbe2b 100644
 --- a/batman-adv/hard-interface.c
 +++ b/batman-adv/hard-interface.c
-@@ -445,6 +445,7 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 	struct batman_packet *batman_packet;
- 	struct batman_if *batman_if;
- 	struct net_device_stats *stats;
-+	struct rtnl_link_stats64 temp;
- 	int ret;
- 
- 	skb = skb_share_check(skb, GFP_ATOMIC);
-@@ -480,7 +481,7 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 	if (batman_if->if_status != IF_ACTIVE)
- 		goto err_free;
- 
--	stats = (struct net_device_stats *)dev_get_stats(skb->dev);
-+	stats = (struct net_device_stats *)dev_get_stats(skb->dev, &temp);
- 	if (stats) {
- 		stats->rx_packets++;
- 		stats->rx_bytes += skb->len;
--- 
-1.7.1
+@@ -276,7 +276,7 @@ int hardif_enable_interface(struct batman_if *batman_if)
+ 	if (atomic_read(&bat_priv->frag_enabled) && batman_if->net_dev->mtu <
+ 		ETH_DATA_LEN + BAT_HEADER_LEN)
+ 		bat_info(soft_device,
+-			"The MTU of interface %s is too small (%zi) to handle "
++			"The MTU of interface %s is too small (%i) to handle "
+ 			"the transport of batman-adv packets. Packets going "
+ 			"over this interface will be fragmented on layer2 "
+ 			"which could impact the performance. Setting the MTU "
+@@ -287,7 +287,7 @@ int hardif_enable_interface(struct batman_if *batman_if)
+ 	if (!atomic_read(&bat_priv->frag_enabled) && batman_if->net_dev->mtu <
+ 		ETH_DATA_LEN + BAT_HEADER_LEN)
+ 		bat_info(soft_device,
+-			"The MTU of interface %s is too small (%zi) to handle "
++			"The MTU of interface %s is too small (%i) to handle "
+ 			"the transport of batman-adv packets. If you experience"
+ 			" problems getting traffic through try increasing the "
+ 			"MTU to %zi.\n",
 
+--nextPart1545891.ytV0PlhGeu
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMNzduAAoJEF2HCgfBJntGGEQQAMavLucGuX9q0ZcRGIGOZoJC
+vtOCJp/uVrQf77NxYNJGyGaF6q1tuTlJZqtCVB+QETX+wcmcb1hOSwdFffSdsdgC
+OhAWTHf5UixVZB/sCXr/9bna6b2nRi/ZbrcR6FCGTgQDQSKyctqK0PjvTmvIb6AE
+nE/MSnikgaWT0sszB9X/bfYv5Srxf22wStniEL/TjhTZHcfWE22HYIDL0O8P59Ql
+XCOw88dETQwj/N02f89zLuDzY4tlxStSx7IR93+W7W4aDZnzqborON3kiHwUHZG5
+2LwHO0DMmuPnk+Ib4GYyPqAcSwqgD4KDO7xHOiGpyNs3VJmyYGs10Z22RU1RYRoH
+KTwiIbQInd3W3xXSzwu/kct7usIwLYmc+GKyN6YFJIzXT0bipEwChYLGmT1IsQ+r
+xbdPrL4JGghdFHU5gA33fR1kvcA0+3q7Wz6S0MMN0JaLN13itj8HdRbmyEXuwzL9
+w2xSw3ZbfMlmkHnjboLoDPR+v5KfCDsAKarWt/WVoPuIYkcxBOyA7BCfkH4EqNOQ
+m5O8yHbfypAbx6ynCoLXGYS4LuZrFJP3a1n0Sx68LCqj8II3sJ6eW6k8zHf15JVC
+NKK5naPjjOKtmWfx+iRPvHoank60MeOsMKLbaUtHyOcu+xzCso6TYJPn88onGpPS
+mOygPDQ+6FhAp3tYPGKf
+=qqcz
+-----END PGP SIGNATURE-----
+
+--nextPart1545891.ytV0PlhGeu--
