@@ -1,15 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 11 Jul 2010 16:35:13 +0200
-References: <1278630018-18345-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1278630018-18345-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun, 11 Jul 2010 16:37:19 +0200
+References: <20100707193047.422ac235@rechenknecht>
+In-Reply-To: <20100707193047.422ac235@rechenknecht>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201007111635.14157.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix 64 bit counters on 32
-	bit arches
+Message-Id: <201007111637.19762.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] batman adv unicast fragmentation (version 5)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,16 +22,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, July 09, 2010 01:00:18 Sven Eckelmann wrote:
-> There is a small possibility that a reader gets incorrect values on 32
-> bit arches. SNMP applications could catch incorrect counters when a
-> 32bit high part is changed by another stats consumer/provider.
-> 
-> One way to solve this is to add a rtnl_link_stats64 param to all
-> ndo_get_stats64() methods, and also add such a parameter to
-> dev_get_stats().
+On Wednesday, July 07, 2010 19:30:47 Andreas Langer wrote:
+> i changed a few things as noted. In fragmentation.c search_frag_packet, i
+> reduced the goto labels to one and a packet with the same seqno will
+> continue to be replaced. The rest was implemented as indicated.
 
-Applied in revision 1735.
+Since there were no more objections I applied your patch in revision 1736 & 
+1737 with the little modification suggested by Sven.
 
 Thanks,
 Marek
