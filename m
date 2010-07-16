@@ -1,15 +1,15 @@
-Return-Path: <al@blogmail.cc>
-Message-ID: <4C405B24.5010005@blogmail.cc>
-Date: Fri, 16 Jul 2010 15:14:12 +0200
-From: al <al@blogmail.cc>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Fri, 16 Jul 2010 21:47:37 +0200
+References: <1279291156-5297-1-git-send-email-sven.eckelmann@gmx.de>
+	<20100716.124105.124016801.davem@davemloft.net>
+In-Reply-To: <20100716.124105.124016801.davem@davemloft.net>
 MIME-Version: 1.0
-References: <4C4039EB.7090705@blogmail.cc>
-In-Reply-To: <4C4039EB.7090705@blogmail.cc>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] =?iso-8859-1?q?Invitation_=28it_was_=22Proposal=3A?=
- =?iso-8859-1?q?_Project_developement_of_a_free_phone_multimedia_network_o?=
- =?iso-8859-1?q?ver_WiFi_in_Gij=F3n_=28Asturias=2C_north_Spain=29=22=29?=
+Content-Type: multipart/signed; boundary="nextPart5791467.I1NLzPeQUm";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201007162147.38885.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/1] Reviewing batman-adv for net/
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,44 +21,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.net
 
-They told me that project is approved :D
+--nextPart5791467.I1NLzPeQUm
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Please, people that want to work on it fill in this form:
+David Miller wrote:
+> So, what't the point of saying "PATCH 0/1" here if you don't
+> say "PATCH 1/1" in the actual patch posting? :-)
 
-http://www2.laboralcentrodearte.org/article/convocatoria_de_colaboradores_s=
-ummerlab_nuevas_narrativas=20
+Sry, my fault. Happened when I removed another patch which wasn't for this ml.
 
+Best regards,
+	Sven
 
-El 16/07/10 12:52, al escribi=F3:
-> This is a mail for Axel (he has a 550 error in his mail account), but it
-> can be also a invitation for other of you :)
->
-> ----
-> Hallo Axel, =BFc=F3mo est=E1s?
->
-> I'm fine, here in Valldoreix, but I think that I'm going to Gij=F3n
-> (Asturias, north Spain) next 22th to this event:
->
-> New Narratives of Mobility
->
-> Workshop focused on mobile devices, experimental TV and the production
-> of new narratives.
-> at LABoral Centro de Arte y Creaci=F3n Industrial
->
-> http://www.laboralcentrodearte.org/profesionales/proximos/66
->
-> I sent a project called /Developement of a free phone multimedia network
-> over WiFi/ and it will work over Alix nodes with BMX protocol.
->
-> I would like that you was there if you want. We can host you in Gij=F3n
-> Center and maybe we can pay you the travel. For this we need that you
-> fill in this form (just today, last day, I'm sorry):
->
-> http://www2.laboralcentrodearte.org/article/convocatoria_de_colaboradores=
-_summerlab_nuevas_narrativas
->
->
-> Thanks for all, I hope see you in Gij=F3n!
+--nextPart5791467.I1NLzPeQUm
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMQLdaAAoJEF2HCgfBJntG+WwP/RohdTg1Z/6hDhs+8y9yyax+
+vCjnfo1ecKcrLNOKbNK6xz3KnMdHMT66XMnvYbb19HSbCXkSlAnKuPrdmV0zRh1X
+1NcsriBiATWgQDeGfMOgra95rUHFdAM76LkuaVdI8/bOJsZsazjTumiIWWkPrNWR
+lrPTawANUtMje7l4XeK+7bgC5t9RAAeB4UQE7TDZVqqmRurUNq37BE31VsTkZtwP
+icGBz6ZjYdHrTvUb9W92jNuhT/dv7FEdhAAeOA9hiyP9WCdl6RHKg9FqIpsBOTT1
+bzbvxXqvngw0UOl1EMl2i/CGivhXQ/YsO0FIWd5KMcaLFTupNfHE+rl5Nqc3/FCI
+/IxbFKtLGUFGPO8ESSOnNOXrtqwmEpkwVhn4x6UasiOmB5PO0r5FPR9UiOprb4uH
+F7RtAQpWH6862+CdaagADnln+lv3na8Orp517zhqe87asr0zTBjT24q0FMHSeU1G
+yy/rBgTWPXVwzFgCfbfHfy1WJ7qxQZorGpN49f+aoZpp5TKmklYeiTspZd8KgpRS
+oMLwh0CJEZ1Pp/JDVnCjVUN/l6jr1RX+8WwSVqiXnU7mkhGDqAoOz+dQdaUUOYwf
+YO8vpShNqMuZ6xGcW+1+jUwZSKbNqJhiicN4JLbafkoN/bO4gx0kzaeMUFChe2EM
+2D2i1ByykIpQIdjXxV+L
+=kICK
+-----END PGP SIGNATURE-----
+
+--nextPart5791467.I1NLzPeQUm--
