@@ -1,8 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 21 Jul 2010 00:25:19 +0200
-Message-Id: <1279664722-27500-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (5)
+Date: Wed, 21 Jul 2010 00:25:20 +0200
+Message-Id: <1279664722-27500-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1279664722-27500-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1279664722-27500-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] Staging: batman-adv: Don't increment
+	stats of foreign device
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,41 +20,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-Hi,
+The receive hook for batman-adv ethernet frames tried to get the last
+device which processed the skb before us. It only used that information
+to update the rx_bytes and rx_packets stat of that foreign device which
+already has updated it using its own receive functions.
 
-first thing: thanks for your help to get some review for batman-adv from davem
-and the netdev ml. I've added some new points to the TODO list. They are partly
-resolved or work is done to solve them, but will postpone them and get them
-hopefully ready and tested for 2.6.37.
-
-Nevertheless there are some smaller changes which want to resolve with 2.6.36.
-One is to allow to build it together with dt3155 directly into the kernel and
-the other one should fix that we try to change stats of a different device. The
-latter one will clash with an unlucky try by the netdev guys to change the
-behaviour of dev_get_stats and the batman-adv source code.
-
-This merge conflict is quite easy to resolve. Just delete the dev_get_stats
-line in hard-interface.c in batman_skb_recv and the new variable temp added by
-them.
-
-I can also provide a patch on top of linux-next instead of staging-next-2.6 if
-you would prefer it in this situation. I will call it
-"[PATCH-next 1/3] Staging: batman-adv: Don't increment stats of foreign device"
-
-I hope that it doesn't create more confusion as necessary. :)
-
-thanks,
-	Sven
-
-Randy Dunlap (1):
-      Staging: batman-adv: don't use default init_module/cleanup_module function names
-
-Sven Eckelmann (2):
-      Staging: batman-adv: Don't increment stats of foreign device
-      Staging: batman-adv: Update TODO with new points from review
-
- drivers/staging/batman-adv/TODO             |    9 ++++++---
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
  drivers/staging/batman-adv/hard-interface.c |    7 -------
- drivers/staging/batman-adv/main.c           |    7 +++++--
- 3 files changed, 11 insertions(+), 12 deletions(-)
+ 1 files changed, 0 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index 5cc369c..f6345c4 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -442,7 +442,6 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 	struct bat_priv *bat_priv = netdev_priv(soft_device);
+ 	struct batman_packet *batman_packet;
+ 	struct batman_if *batman_if;
+-	struct net_device_stats *stats;
+ 	int ret;
+ 
+ 	skb = skb_share_check(skb, GFP_ATOMIC);
+@@ -478,12 +477,6 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 	if (batman_if->if_status != IF_ACTIVE)
+ 		goto err_free;
+ 
+-	stats = (struct net_device_stats *)dev_get_stats(skb->dev);
+-	if (stats) {
+-		stats->rx_packets++;
+-		stats->rx_bytes += skb->len;
+-	}
+-
+ 	batman_packet = (struct batman_packet *)skb->data;
+ 
+ 	if (batman_packet->version != COMPAT_VERSION) {
+-- 
+1.7.1
 
