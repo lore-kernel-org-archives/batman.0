@@ -1,16 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 20 Jul 2010 10:28:10 +0200
-References: <1279291156-5297-1-git-send-email-sven.eckelmann@gmx.de>
-	<1279291156-5297-2-git-send-email-sven.eckelmann@gmx.de>
-	<20100719.212625.255369607.davem@davemloft.net>
-In-Reply-To: <20100719.212625.255369607.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5811515.oMvAPjbWXS";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201007201028.12470.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] net: Add batman-adv meshing protocol
+Date: Tue, 20 Jul 2010 11:03:09 +0200
+Message-Id: <1279616589-3086-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Calculate hamming weight using
+	optimized kernel functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,76 +15,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart5811515.oMvAPjbWXS
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+The Kernighan algorithm is not able to calculate the number of set bits
+in parallel and the compiler cannot replace it with optimized
+instructions.
 
-Thanks a lot for your review and for your hints.
+The kernel provides specialised functions for each cpu which can either
+use a software implementation or hardware instruction depending on the
+target cpu.
 
-David Miller wrote:
-> From: Sven Eckelmann <sven.eckelmann@gmx.de>
-> Date: Fri, 16 Jul 2010 16:39:16 +0200
-[...]
->=20
-> The kernel has a hamming weight library function which takes advantage
-> of population count instructions on cpus that suport it, and also has
-> a sw version than is faster than what you're doing here, please use
-> it.
->=20
-> The interfaces are called "hweight{8,16,32,64}()" where the number in
-> the name indicates the bit-size of the word the interface operates on.
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv/bitarray.c |   15 +++++----------
+ batman-adv/bitarray.h |    3 ++-
+ 2 files changed, 7 insertions(+), 11 deletions(-)
 
-Correct, the inner loop is a quite straight forward implementation without =
-any=20
-kind of optimization. I will change that.
+diff --git a/batman-adv/bitarray.c b/batman-adv/bitarray.c
+index dd4193c..9dbaf1e 100644
+--- a/batman-adv/bitarray.c
++++ b/batman-adv/bitarray.c
+@@ -22,6 +22,8 @@
+ #include "main.h"
+ #include "bitarray.h"
+ 
++#include <linux/bitops.h>
++
+ /* returns true if the corresponding bit in the given seq_bits indicates true
+  * and curr_seqno is within range of last_seqno */
+ uint8_t get_bit_status(TYPE_OF_WORD *seq_bits, uint32_t last_seqno,
+@@ -187,21 +189,14 @@ char bit_get_packet(TYPE_OF_WORD *seq_bits, int32_t seq_num_diff,
+ }
+ 
+ /* count the hamming weight, how many good packets did we receive? just count
+- * the 1's. The inner loop uses the Kernighan algorithm, see
+- * http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetKernighan
++ * the 1's.
+  */
+ int bit_packet_count(TYPE_OF_WORD *seq_bits)
+ {
+ 	int i, hamming = 0;
+-	TYPE_OF_WORD word;
+ 
+-	for (i = 0; i < NUM_WORDS; i++) {
+-		word = seq_bits[i];
++	for (i = 0; i < NUM_WORDS; i++)
++		hamming += hweight_long(seq_bits[i]);
+ 
+-		while (word) {
+-			word &= word-1;
+-			hamming++;
+-		}
+-	}
+ 	return hamming;
+ }
+diff --git a/batman-adv/bitarray.h b/batman-adv/bitarray.h
+index 01897d6..c0c1730 100644
+--- a/batman-adv/bitarray.h
++++ b/batman-adv/bitarray.h
+@@ -22,7 +22,8 @@
+ #ifndef _NET_BATMAN_ADV_BITARRAY_H_
+ #define _NET_BATMAN_ADV_BITARRAY_H_
+ 
+-/* you should choose something big, if you don't want to waste cpu */
++/* you should choose something big, if you don't want to waste cpu
++   and keep the type in sync with bit_packet_count */
+ #define TYPE_OF_WORD unsigned long
+ #define WORD_BIT_SIZE (sizeof(TYPE_OF_WORD) * 8)
+ 
+-- 
+1.7.1
 
-> I also notice that this code uses it's own internal buffering scheme
-> with kmalloc()'d buffers, then seperately allocates actual SKB's and
-> copies the data there.
->=20
-> Just use the SKB facilities how they were designed to be used, instead
-> of needlessly inventing new things.  Allocate your initial SKB and put
-> the initial forwarding header in it, then when you want to send a copy
-> off, skb_clone() it, and push the other bits you want at the head
-> and/or the tail of the cloned SKB, then simply send it off.
-
-Good catch. That comes from a time when batman-adv was a minimalistic=20
-conversation of the userspace proof of concept implementation. This happens=
-=20
-for example in vis.c, icmp_socket.c and send.c (just grepping for=20
-send_raw_packet is a good way to find those places). But is also happening=
-=20
-with batman_if->packet_buff in schedule_own_packet and similar places.
-
-I would leave that to the original author of those functions.
-
-thanks,
-	Sven
-
---nextPart5811515.oMvAPjbWXS
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMRV4bAAoJEF2HCgfBJntGScEQAMNQ+GiKsSZ78hHhaYGkkqqq
-xpif8B24NbB0s5hAquZcFQPJKHh+QDs54c0bQQxGmrNx4ycVo/vxEVIVbHdz13Ma
-b1tldA7FwbgLCgWlABC2Ozyj+6cmjpcis1MnL32uv1Tpg+bzOoXaooByxE6g6OnR
-z0Z6uJLw7OUX8z6rOy5rtBTK812fEJl3VjxJEg+BY/MZb4ljyGAONhigJvWyRcor
-7mXn5gsLQiRckWb4Be1bc5wFGgTdkUMAlOK1r95+rucUWMkPhfwqUo0wWXPr3SFh
-eRP61pjQDg3huTteokuPcc5kc9YZMFUKac3sJec6SjEoGJO56CbugW21rh/u6Vs1
-lbZjAvztMNa2WLW1Y8CvhdTzczMaDxz5C28djbrWSvDiY9EQxInFiXgoXv0k+VAx
-1bidgOfiCcE/0kH5LD+vgwagRn3vPNFo6660wiqTsTe9kWuhCYz5de67fdfC9sGK
-OwZziEr2LNWchxdzCVwcsIjbVbVR6dhDupRHQMT2pZDlR6Td2wzMiB4w7uBpZF6d
-PLC5eT+U9NcVgrJ9r9A3qfCZwrK605weE/fyZYDTY2u34gUxyYnetJq2roObVSwE
-IpTX7eMN7m78cwY/khgj9EzJm/SNQPoQuQHehqNDXZqMo3rvuUX7gY6t6DJ83Q0n
-gS6UQPYTMh6bzJ/acXMq
-=GhdV
------END PGP SIGNATURE-----
-
---nextPart5811515.oMvAPjbWXS--
