@@ -1,11 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 21 Jul 2010 00:25:22 +0200
-Message-Id: <1279664722-27500-4-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1279664722-27500-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1279664722-27500-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] Staging: batman-adv: Update TODO with
-	new points from review
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 22 Jul 2010 17:48:41 +0200
+References: <1279662144-17356-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1279662144-17356-1-git-send-email-sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201007221748.41802.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Don't increment stats of
+	foreign device
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,35 +21,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: greg@kroah.com
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-David S. Miller provided some new ideas and found problems in his review
-20100719.212625.255369607.davem@davemloft.net. These issues must be
-resolved before it can be merged into net.
+On Tuesday, July 20, 2010 23:42:24 Sven Eckelmann wrote:
+> The receive hook for batman-adv ethernet frames tried to get the last
+> device which processed the skb before us. It only used that information
+> to update the rx_bytes and rx_packets stat of that foreign device which
+> already has updated it using its own receive functions.
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- drivers/staging/batman-adv/TODO |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+Applied in revision 1739.
 
-diff --git a/drivers/staging/batman-adv/TODO b/drivers/staging/batman-adv/TODO
-index 518db7f..9c5aea2 100644
---- a/drivers/staging/batman-adv/TODO
-+++ b/drivers/staging/batman-adv/TODO
-@@ -1,6 +1,9 @@
--Request a review.
--Process the comments from the review.
--Move into mainline proper.
-+ * Use hweight* for hamming weight calculation
-+ * Save/cache packets direktly as skb instead of using a normal memory region
-+   and copying it in a skb using send_raw_packet and similar functions
-+ * Request a new review
-+ * Process the comments from the review
-+ * Move into mainline proper
- 
- Please send all patches to:
- 	Marek Lindner <lindner_marek@yahoo.de>
--- 
-1.7.1
-
+Thanks,
+Marek
