@@ -1,9 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 23 Jul 2010 22:26:25 +0200
-Message-Id: <1279916785-21758-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Directly prepare icmp packets in
-	socket buffer
+Date: Fri, 23 Jul 2010 22:38:32 +0200
+Message-Id: <1279917512-22144-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1279916785-21758-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1279916785-21758-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Directly prepare icmp packets
+	in socket buffer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,11 +27,13 @@ couldn't send the packet because we couldn't allocate the socket buffer.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
+ Resend because the last one went over the 80 chars line limit.
+
  batman-adv/icmp_socket.c |   58 +++++++++++++++++++++++++++++----------------
  1 files changed, 37 insertions(+), 21 deletions(-)
 
 diff --git a/batman-adv/icmp_socket.c b/batman-adv/icmp_socket.c
-index 6a014a3..181e7f5 100644
+index 6a014a3..1573784 100644
 --- a/batman-adv/icmp_socket.c
 +++ b/batman-adv/icmp_socket.c
 @@ -156,7 +156,8 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
@@ -106,7 +110,7 @@ index 6a014a3..181e7f5 100644
  
  	spin_lock_irqsave(&orig_hash_lock, flags);
 -	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet.dst));
-+	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet->dst));
++	orig_node = (struct orig_node *)hash_find(orig_hash, icmp_packet->dst);
  
  	if (!orig_node)
  		goto unlock;
