@@ -1,10 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 23 Jul 2010 22:38:32 +0200
-Message-Id: <1279917512-22144-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1279916785-21758-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1279916785-21758-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Directly prepare icmp packets
+Date: Fri, 23 Jul 2010 22:49:24 +0200
+Message-Id: <1279918164-22878-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1279917512-22144-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1279917512-22144-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Directly prepare icmp packets
 	in socket buffer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -27,13 +27,13 @@ couldn't send the packet because we couldn't allocate the socket buffer.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- Resend because the last one went over the 80 chars line limit.
+ Return -ENOMEM when dev_alloc_skb fails.
 
- batman-adv/icmp_socket.c |   58 +++++++++++++++++++++++++++++----------------
- 1 files changed, 37 insertions(+), 21 deletions(-)
+ batman-adv/icmp_socket.c |   60 +++++++++++++++++++++++++++++-----------------
+ 1 files changed, 38 insertions(+), 22 deletions(-)
 
 diff --git a/batman-adv/icmp_socket.c b/batman-adv/icmp_socket.c
-index 6a014a3..1573784 100644
+index 6a014a3..8e4316c 100644
 --- a/batman-adv/icmp_socket.c
 +++ b/batman-adv/icmp_socket.c
 @@ -156,7 +156,8 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
@@ -51,15 +51,17 @@ index 6a014a3..1573784 100644
  		packet_len = sizeof(struct icmp_packet_rr);
  
 -	if (!access_ok(VERIFY_READ, buff, packet_len))
+-		return -EFAULT;
 +	skb = dev_alloc_skb(packet_len + sizeof(struct ethhdr));
 +	if (!skb)
- 		return -EFAULT;
++		return -ENOMEM;
  
 -	if (__copy_from_user(&icmp_packet, buff, packet_len))
 -		return -EFAULT;
 +	skb_reserve(skb, sizeof(struct ethhdr));
 +	icmp_packet = (struct icmp_packet_rr *)skb_put(skb, packet_len);
-+
+ 
+-	if (icmp_packet.packet_type != BAT_ICMP) {
 +	if (!access_ok(VERIFY_READ, buff, packet_len)) {
 +		len = -EFAULT;
 +		goto free_skb;
@@ -69,8 +71,7 @@ index 6a014a3..1573784 100644
 +		len = -EFAULT;
 +		goto free_skb;
 +	}
- 
--	if (icmp_packet.packet_type != BAT_ICMP) {
++
 +	if (icmp_packet->packet_type != BAT_ICMP) {
  		bat_dbg(DBG_BATMAN, bat_priv,
  			"Error - can't send packet from char device: "
