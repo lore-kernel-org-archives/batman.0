@@ -1,15 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 22 Jul 2010 23:46:26 +0200
-References: <1279664722-27500-1-git-send-email-sven.eckelmann@gmx.de>
-	<20100722213007.GA26362@kroah.com>
-In-Reply-To: <20100722213007.GA26362@kroah.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart18822848.xiPRdgmlGx";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201007222346.28234.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (5)
+Date: Fri, 23 Jul 2010 11:38:44 +0200
+Message-Id: <1279877924-14638-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unnecessary casts of
+	private_data
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,59 +15,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Greg KH <greg@kroah.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.net
+Cc: Joe Perches <joe@perches.com>, Greg Kroah-Hartman <gregkh@suse.de>
 
---nextPart18822848.xiPRdgmlGx
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+From: Joe Perches <joe@perches.com>
 
-Greg KH wrote:
-[...]
-> > I can also provide a patch on top of linux-next instead of
-> > staging-next-2.6 if you would prefer it in this situation. I will call
-> > it
-> > "[PATCH-next 1/3] Staging: batman-adv: Don't increment stats of foreign
-> > device"
-> >=20
-> > I hope that it doesn't create more confusion as necessary. :)
->=20
-> I just applied the 3 patches, I shouldn't need to apply the other one on
-> top of -next, right?
+Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ This patch is already added to maint. Please also apply it to trunk.
 
-No, it was just in case that some merges happened before you apply them (an=
-d=20
-you would get the same situation as it is currently in linux-next).
+ batman-adv/bat_debugfs.c |    4 ++--
+ batman-adv/icmp_socket.c |   12 ++++--------
+ 2 files changed, 6 insertions(+), 10 deletions(-)
 
-I hope that the person who must resolve the merge conflict between staging-
-next and net-next does the right thing... but I am sure that everything wil=
-l=20
-work fine (it is relative trivial).
+diff --git a/batman-adv/bat_debugfs.c b/batman-adv/bat_debugfs.c
+index 83ec177..c73ce4a 100644
+--- a/batman-adv/bat_debugfs.c
++++ b/batman-adv/bat_debugfs.c
+@@ -107,7 +107,7 @@ static int log_release(struct inode *inode, struct file *file)
+ static ssize_t log_read(struct file *file, char __user *buf,
+ 			size_t count, loff_t *ppos)
+ {
+-	struct bat_priv *bat_priv = (struct bat_priv *)file->private_data;
++	struct bat_priv *bat_priv = file->private_data;
+ 	struct debug_log *debug_log = bat_priv->debug_log;
+ 	int error, i = 0;
+ 	char c;
+@@ -161,7 +161,7 @@ static ssize_t log_read(struct file *file, char __user *buf,
+ 
+ static unsigned int log_poll(struct file *file, poll_table *wait)
+ {
+-	struct bat_priv *bat_priv = (struct bat_priv *)file->private_data;
++	struct bat_priv *bat_priv = file->private_data;
+ 	struct debug_log *debug_log = bat_priv->debug_log;
+ 
+ 	poll_wait(file, &debug_log->queue_wait, wait);
+diff --git a/batman-adv/icmp_socket.c b/batman-adv/icmp_socket.c
+index a84e84d..6a014a3 100644
+--- a/batman-adv/icmp_socket.c
++++ b/batman-adv/icmp_socket.c
+@@ -80,8 +80,7 @@ static int bat_socket_open(struct inode *inode, struct file *file)
+ 
+ static int bat_socket_release(struct inode *inode, struct file *file)
+ {
+-	struct socket_client *socket_client =
+-		(struct socket_client *)file->private_data;
++	struct socket_client *socket_client = file->private_data;
+ 	struct socket_packet *socket_packet;
+ 	struct list_head *list_pos, *list_pos_tmp;
+ 	unsigned long flags;
+@@ -109,8 +108,7 @@ static int bat_socket_release(struct inode *inode, struct file *file)
+ static ssize_t bat_socket_read(struct file *file, char __user *buf,
+ 			       size_t count, loff_t *ppos)
+ {
+-	struct socket_client *socket_client =
+-		(struct socket_client *)file->private_data;
++	struct socket_client *socket_client = file->private_data;
+ 	struct socket_packet *socket_packet;
+ 	size_t packet_len;
+ 	int error;
+@@ -157,8 +155,7 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ {
+ 	/* FIXME: each orig_node->batman_if will be attached to a softif */
+ 	struct bat_priv *bat_priv = netdev_priv(soft_device);
+-	struct socket_client *socket_client =
+-		(struct socket_client *)file->private_data;
++	struct socket_client *socket_client = file->private_data;
+ 	struct icmp_packet_rr icmp_packet;
+ 	struct orig_node *orig_node;
+ 	struct batman_if *batman_if;
+@@ -249,8 +246,7 @@ out:
+ 
+ static unsigned int bat_socket_poll(struct file *file, poll_table *wait)
+ {
+-	struct socket_client *socket_client =
+-		(struct socket_client *)file->private_data;
++	struct socket_client *socket_client = file->private_data;
+ 
+ 	poll_wait(file, &socket_client->queue_wait, wait);
+ 
+-- 
+1.7.1
 
-thanks,
-	Sven
-
---nextPart18822848.xiPRdgmlGx
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMSLwzAAoJEF2HCgfBJntGnw4QAJ4AjZZvDZNciGeKkxM26PhI
-5JW73OiFfeStIhrWYEeYOVircaqpHAtmlZYVd3+SqDrYtOkWJLiwHjvdPDoVsrOy
-QDe4CUQjFXLGhnhjSUW1hoG4prMoyWRQNC1NzyzNPMswV/L8YcuORacwk0/mu5F3
-zbRLjGF5B4YNVdtZLqTbjKfXcpnR3LkrFZH9GYQeoWj3aUxfg419fcTLD2W5VgPj
-iFQm238JGM0UNtRNi41DH4IdpIQCuGnDQrfElri4Kp6uymNjJ8UB4qMp1+GNHwwm
-tRm+26Z+TZ0Dn30BAhBOt45oxWWvz0zXpQSWekf1bsGf/0FglzxSCStIh80AGq97
-ud6KRvmF7lJ4LuSBDYDPFDsyHAzberL5fDMo3pDKj4UDrVd19nCdqstlL88WYP3J
-tKhDOGBWtRA12ROowLOunwB4hUUtPhcrnZ9MPpKm4Ib6zNGIMm0gF6pInTeSn39N
-lC7W2x4XG6VXMUl0/PP72ghEOldfjLR2vgLfyNl7Uh0jbql6iKKVe5NnoeT37Rp8
-9qPRUV3y1itIXX9lvcRLM/6c4LJOCCcxKIx5qwcYFkrpOpUx6vxkNk1DxnnHJV35
-Q47ob86uznYEUE3e8IDHX1Le7j0iGVTnNnv9E4kINKtAZJq9qK4Bl9zXRGAK4YtJ
-+QjYmfmFGNtp9G1QqpY3
-=xm6r
------END PGP SIGNATURE-----
-
---nextPart18822848.xiPRdgmlGx--
