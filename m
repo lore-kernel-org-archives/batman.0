@@ -1,9 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 23 Jul 2010 11:38:44 +0200
-Message-Id: <1279877924-14638-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unnecessary casts of
-	private_data
+Date: Fri, 23 Jul 2010 22:26:25 +0200
+Message-Id: <1279916785-21758-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Directly prepare icmp packets in
+	socket buffer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,87 +15,131 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
-Cc: Joe Perches <joe@perches.com>, Greg Kroah-Hartman <gregkh@suse.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Joe Perches <joe@perches.com>
+It is unnecessary to generate an icmp packet in an extra memory region
+and than copying it to a new allocated skb.
 
-Signed-off-by: Joe Perches <joe@perches.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+This also resolved the problem that we do inform the user that we
+couldn't send the packet because we couldn't allocate the socket buffer.
+
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- This patch is already added to maint. Please also apply it to trunk.
+ batman-adv/icmp_socket.c |   58 +++++++++++++++++++++++++++++----------------
+ 1 files changed, 37 insertions(+), 21 deletions(-)
 
- batman-adv/bat_debugfs.c |    4 ++--
- batman-adv/icmp_socket.c |   12 ++++--------
- 2 files changed, 6 insertions(+), 10 deletions(-)
-
-diff --git a/batman-adv/bat_debugfs.c b/batman-adv/bat_debugfs.c
-index 83ec177..c73ce4a 100644
---- a/batman-adv/bat_debugfs.c
-+++ b/batman-adv/bat_debugfs.c
-@@ -107,7 +107,7 @@ static int log_release(struct inode *inode, struct file *file)
- static ssize_t log_read(struct file *file, char __user *buf,
- 			size_t count, loff_t *ppos)
- {
--	struct bat_priv *bat_priv = (struct bat_priv *)file->private_data;
-+	struct bat_priv *bat_priv = file->private_data;
- 	struct debug_log *debug_log = bat_priv->debug_log;
- 	int error, i = 0;
- 	char c;
-@@ -161,7 +161,7 @@ static ssize_t log_read(struct file *file, char __user *buf,
- 
- static unsigned int log_poll(struct file *file, poll_table *wait)
- {
--	struct bat_priv *bat_priv = (struct bat_priv *)file->private_data;
-+	struct bat_priv *bat_priv = file->private_data;
- 	struct debug_log *debug_log = bat_priv->debug_log;
- 
- 	poll_wait(file, &debug_log->queue_wait, wait);
 diff --git a/batman-adv/icmp_socket.c b/batman-adv/icmp_socket.c
-index a84e84d..6a014a3 100644
+index 6a014a3..181e7f5 100644
 --- a/batman-adv/icmp_socket.c
 +++ b/batman-adv/icmp_socket.c
-@@ -80,8 +80,7 @@ static int bat_socket_open(struct inode *inode, struct file *file)
- 
- static int bat_socket_release(struct inode *inode, struct file *file)
- {
--	struct socket_client *socket_client =
--		(struct socket_client *)file->private_data;
-+	struct socket_client *socket_client = file->private_data;
- 	struct socket_packet *socket_packet;
- 	struct list_head *list_pos, *list_pos_tmp;
- 	unsigned long flags;
-@@ -109,8 +108,7 @@ static int bat_socket_release(struct inode *inode, struct file *file)
- static ssize_t bat_socket_read(struct file *file, char __user *buf,
- 			       size_t count, loff_t *ppos)
- {
--	struct socket_client *socket_client =
--		(struct socket_client *)file->private_data;
-+	struct socket_client *socket_client = file->private_data;
- 	struct socket_packet *socket_packet;
- 	size_t packet_len;
- 	int error;
-@@ -157,8 +155,7 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
- {
+@@ -156,7 +156,8 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
  	/* FIXME: each orig_node->batman_if will be attached to a softif */
  	struct bat_priv *bat_priv = netdev_priv(soft_device);
--	struct socket_client *socket_client =
--		(struct socket_client *)file->private_data;
-+	struct socket_client *socket_client = file->private_data;
- 	struct icmp_packet_rr icmp_packet;
+ 	struct socket_client *socket_client = file->private_data;
+-	struct icmp_packet_rr icmp_packet;
++	struct sk_buff *skb;
++	struct icmp_packet_rr *icmp_packet;
  	struct orig_node *orig_node;
  	struct batman_if *batman_if;
-@@ -249,8 +246,7 @@ out:
+ 	size_t packet_len = sizeof(struct icmp_packet);
+@@ -173,40 +174,53 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 	if (len >= sizeof(struct icmp_packet_rr))
+ 		packet_len = sizeof(struct icmp_packet_rr);
  
- static unsigned int bat_socket_poll(struct file *file, poll_table *wait)
- {
--	struct socket_client *socket_client =
--		(struct socket_client *)file->private_data;
-+	struct socket_client *socket_client = file->private_data;
+-	if (!access_ok(VERIFY_READ, buff, packet_len))
++	skb = dev_alloc_skb(packet_len + sizeof(struct ethhdr));
++	if (!skb)
+ 		return -EFAULT;
  
- 	poll_wait(file, &socket_client->queue_wait, wait);
+-	if (__copy_from_user(&icmp_packet, buff, packet_len))
+-		return -EFAULT;
++	skb_reserve(skb, sizeof(struct ethhdr));
++	icmp_packet = (struct icmp_packet_rr *)skb_put(skb, packet_len);
++
++	if (!access_ok(VERIFY_READ, buff, packet_len)) {
++		len = -EFAULT;
++		goto free_skb;
++	}
++
++	if (__copy_from_user(icmp_packet, buff, packet_len)) {
++		len = -EFAULT;
++		goto free_skb;
++	}
  
+-	if (icmp_packet.packet_type != BAT_ICMP) {
++	if (icmp_packet->packet_type != BAT_ICMP) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+ 			"Error - can't send packet from char device: "
+ 			"got bogus packet type (expected: BAT_ICMP)\n");
+-		return -EINVAL;
++		len = -EINVAL;
++		goto free_skb;
+ 	}
+ 
+-	if (icmp_packet.msg_type != ECHO_REQUEST) {
++	if (icmp_packet->msg_type != ECHO_REQUEST) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+ 			"Error - can't send packet from char device: "
+ 			"got bogus message type (expected: ECHO_REQUEST)\n");
+-		return -EINVAL;
++		len = -EINVAL;
++		goto free_skb;
+ 	}
+ 
+-	icmp_packet.uid = socket_client->index;
++	icmp_packet->uid = socket_client->index;
+ 
+-	if (icmp_packet.version != COMPAT_VERSION) {
+-		icmp_packet.msg_type = PARAMETER_PROBLEM;
+-		icmp_packet.ttl = COMPAT_VERSION;
+-		bat_socket_add_packet(socket_client, &icmp_packet, packet_len);
+-		goto out;
++	if (icmp_packet->version != COMPAT_VERSION) {
++		icmp_packet->msg_type = PARAMETER_PROBLEM;
++		icmp_packet->ttl = COMPAT_VERSION;
++		bat_socket_add_packet(socket_client, icmp_packet, packet_len);
++		goto free_skb;
+ 	}
+ 
+ 	if (atomic_read(&module_state) != MODULE_ACTIVE)
+ 		goto dst_unreach;
+ 
+ 	spin_lock_irqsave(&orig_hash_lock, flags);
+-	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet.dst));
++	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet->dst));
+ 
+ 	if (!orig_node)
+ 		goto unlock;
+@@ -225,21 +239,23 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 	if (batman_if->if_status != IF_ACTIVE)
+ 		goto dst_unreach;
+ 
+-	memcpy(icmp_packet.orig, batman_if->net_dev->dev_addr, ETH_ALEN);
++	memcpy(icmp_packet->orig, batman_if->net_dev->dev_addr, ETH_ALEN);
+ 
+ 	if (packet_len == sizeof(struct icmp_packet_rr))
+-		memcpy(icmp_packet.rr, batman_if->net_dev->dev_addr, ETH_ALEN);
++		memcpy(icmp_packet->rr, batman_if->net_dev->dev_addr, ETH_ALEN);
+ 
+-	send_raw_packet((unsigned char *)&icmp_packet,
+-			packet_len, batman_if, dstaddr);
++
++	send_skb_packet(skb, batman_if, dstaddr);
+ 
+ 	goto out;
+ 
+ unlock:
+ 	spin_unlock_irqrestore(&orig_hash_lock, flags);
+ dst_unreach:
+-	icmp_packet.msg_type = DESTINATION_UNREACHABLE;
+-	bat_socket_add_packet(socket_client, &icmp_packet, packet_len);
++	icmp_packet->msg_type = DESTINATION_UNREACHABLE;
++	bat_socket_add_packet(socket_client, icmp_packet, packet_len);
++free_skb:
++	kfree_skb(skb);
+ out:
+ 	return len;
+ }
 -- 
 1.7.1
 
