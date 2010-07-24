@@ -1,8 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 24 Jul 2010 01:09:24 +0200
-Message-Id: <1279926564-897-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Aggregate batman packets
+Date: Sat, 24 Jul 2010 12:30:05 +0200
+Message-Id: <1279967405-23427-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1279926564-897-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1279926564-897-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Aggregate batman packets
 	directly in skb
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -29,6 +31,9 @@ structure is freed by send_outstanding_bat_packet afterwards.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
+ Changes since v1:
+  * Use NULL for pointers and not 0
+
  batman-adv/aggregation.c |   22 ++++++++++++----------
  batman-adv/send.c        |   24 ++++++++++++------------
  batman-adv/types.h       |    1 -
@@ -99,7 +104,7 @@ index d738b7a..5896cf2 100644
  	forw_packet_aggr->num_packets++;
  
 diff --git a/batman-adv/send.c b/batman-adv/send.c
-index 934bd8a..89e6643 100644
+index 934bd8a..09a87c6 100644
 --- a/batman-adv/send.c
 +++ b/batman-adv/send.c
 @@ -132,14 +132,14 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
@@ -156,7 +161,7 @@ index 934bd8a..89e6643 100644
 +		/* skb is only used once and than forw_packet is free'd */
 +		send_skb_packet(forw_packet->skb, forw_packet->if_incoming,
  				broadcast_addr);
-+		forw_packet->skb = 0;
++		forw_packet->skb = NULL;
 +
  		return;
  	}
