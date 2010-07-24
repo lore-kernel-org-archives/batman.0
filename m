@@ -1,11 +1,10 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 24 Jul 2010 17:16:53 +0200
-Message-Id: <1279984615-1144-1-git-send-email-lindner_marek@yahoo.de>
+Date: Sat, 24 Jul 2010 17:16:54 +0200
+Message-Id: <1279984615-1144-2-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <201007241716.07250.lindner_marek@yahoo.de>
 References: <201007241716.07250.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: attach each hard-interface
-	to a soft-interface
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: multiple mesh clouds
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,2068 +19,3354 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-This patch replaces the static bat0 interface with a dynamic/abstracted
-approach. It is now possible to create multiple batX interfaces by
-assigning hard interfaces to them. Each batX interface acts as an
-independent mesh network. A soft interface is removed once no hard
-interface references it any longer.
+This patch removes all remaining global variables and includes the
+necessary bits into the bat_priv structure. It is the last
+remaining piece to allow multiple concurrent mesh clouds on the
+same device.
+A few global variables have been rendered obsolete during the process
+and have been removed entirely.
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- batman-adv/aggregation.c       |    3 +-
- batman-adv/bat_sysfs.c         |   56 ++++++----------
- batman-adv/bitarray.c          |    7 +-
- batman-adv/bitarray.h          |    4 +-
- batman-adv/gateway_client.c    |   20 ++---
- batman-adv/gateway_client.h    |    7 +-
- batman-adv/hard-interface.c    |  119 ++++++++++++++++++++------------
- batman-adv/hard-interface.h    |    6 +-
- batman-adv/hash.c              |    6 +-
- batman-adv/hash.h              |    4 +-
- batman-adv/icmp_socket.c       |    6 +-
- batman-adv/main.c              |   54 +--------------
- batman-adv/main.h              |    2 -
- batman-adv/originator.c        |   43 ++++++------
- batman-adv/originator.h        |    2 +-
- batman-adv/routing.c           |  147 ++++++++++++++++++++++------------------
- batman-adv/routing.h           |   10 ++--
- batman-adv/send.c              |   47 ++++++-------
- batman-adv/send.h              |    2 +-
- batman-adv/soft-interface.c    |  126 +++++++++++++++++++++++++++-------
- batman-adv/soft-interface.h    |    8 ++-
- batman-adv/translation-table.c |   57 ++++++++-------
- batman-adv/translation-table.h |   13 ++--
- batman-adv/types.h             |    2 +
- batman-adv/vis.c               |   13 ++--
- 25 files changed, 407 insertions(+), 357 deletions(-)
+ batman-adv/aggregation.c       |   18 ++--
+ batman-adv/bat_sysfs.c         |    2 +-
+ batman-adv/gateway_client.c    |  101 +++++++--------
+ batman-adv/gateway_client.h    |    8 +-
+ batman-adv/gateway_common.c    |    4 +-
+ batman-adv/hard-interface.c    |   42 +++---
+ batman-adv/icmp_socket.c       |   11 +-
+ batman-adv/main.c              |   77 ++++++------
+ batman-adv/main.h              |   22 +---
+ batman-adv/originator.c        |  122 ++++++++++-------
+ batman-adv/originator.h        |    6 +-
+ batman-adv/routing.c           |  113 +++++++++-------
+ batman-adv/routing.h           |    5 +-
+ batman-adv/send.c              |  111 +++++++++-------
+ batman-adv/send.h              |    3 +-
+ batman-adv/soft-interface.c    |   61 +++++----
+ batman-adv/soft-interface.h    |    3 -
+ batman-adv/translation-table.c |  219 ++++++++++++++++---------------
+ batman-adv/translation-table.h |   17 +--
+ batman-adv/types.h             |   85 +++++++++---
+ batman-adv/vis.c               |  288 ++++++++++++++++++++++------------------
+ batman-adv/vis.h               |   27 +----
+ 22 files changed, 705 insertions(+), 640 deletions(-)
 
 diff --git a/batman-adv/aggregation.c b/batman-adv/aggregation.c
-index d738b7a..853a74c 100644
+index 853a74c..57f30a4 100644
 --- a/batman-adv/aggregation.c
 +++ b/batman-adv/aggregation.c
-@@ -106,8 +106,7 @@ static void new_aggregated_packet(unsigned char *packet_buff,
+@@ -104,9 +104,9 @@ static void new_aggregated_packet(unsigned char *packet_buff,
+ 			   struct batman_if *if_incoming,
+ 			   int own_packet)
  {
++	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
  	struct forw_packet *forw_packet_aggr;
  	unsigned long flags;
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
+-	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
  
  	/* own packet should always be scheduled */
  	if (!own_packet) {
+@@ -152,9 +152,9 @@ static void new_aggregated_packet(unsigned char *packet_buff,
+ 		forw_packet_aggr->direct_link_flags |= 1;
+ 
+ 	/* add new packet to packet list */
+-	spin_lock_irqsave(&forw_bat_list_lock, flags);
+-	hlist_add_head(&forw_packet_aggr->list, &forw_bat_list);
+-	spin_unlock_irqrestore(&forw_bat_list_lock, flags);
++	spin_lock_irqsave(&bat_priv->forw_bat_list_lock, flags);
++	hlist_add_head(&forw_packet_aggr->list, &bat_priv->forw_bat_list);
++	spin_unlock_irqrestore(&bat_priv->forw_bat_list_lock, flags);
+ 
+ 	/* start timer for this packet */
+ 	INIT_DELAYED_WORK(&forw_packet_aggr->delayed_work,
+@@ -198,11 +198,11 @@ void add_bat_packet_to_list(struct bat_priv *bat_priv,
+ 	unsigned long flags;
+ 
+ 	/* find position for the packet in the forward queue */
+-	spin_lock_irqsave(&forw_bat_list_lock, flags);
++	spin_lock_irqsave(&bat_priv->forw_bat_list_lock, flags);
+ 	/* own packets are not to be aggregated */
+ 	if ((atomic_read(&bat_priv->aggregation_enabled)) && (!own_packet)) {
+-		hlist_for_each_entry(forw_packet_pos, tmp_node, &forw_bat_list,
+-				     list) {
++		hlist_for_each_entry(forw_packet_pos, tmp_node,
++				     &bat_priv->forw_bat_list, list) {
+ 			if (can_aggregate_with(batman_packet,
+ 					       packet_len,
+ 					       send_time,
+@@ -219,7 +219,7 @@ void add_bat_packet_to_list(struct bat_priv *bat_priv,
+ 	 * suitable aggregation packet found */
+ 	if (forw_packet_aggr == NULL) {
+ 		/* the following section can run without the lock */
+-		spin_unlock_irqrestore(&forw_bat_list_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->forw_bat_list_lock, flags);
+ 
+ 		/**
+ 		 * if we could not aggregate this packet with one of the others
+@@ -237,7 +237,7 @@ void add_bat_packet_to_list(struct bat_priv *bat_priv,
+ 		aggregate(forw_packet_aggr,
+ 			  packet_buff, packet_len,
+ 			  direct_link);
+-		spin_unlock_irqrestore(&forw_bat_list_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->forw_bat_list_lock, flags);
+ 	}
+ }
+ 
 diff --git a/batman-adv/bat_sysfs.c b/batman-adv/bat_sysfs.c
-index 04db890..422cf52 100644
+index 422cf52..1331a02 100644
 --- a/batman-adv/bat_sysfs.c
 +++ b/batman-adv/bat_sysfs.c
-@@ -183,9 +183,7 @@ static ssize_t store_frag(struct kobject *kobj, struct attribute *attr,
- 		 frag_enabled_tmp == 1 ? "enabled" : "disabled");
+@@ -459,7 +459,7 @@ static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
  
- 	atomic_set(&bat_priv->frag_enabled, (unsigned)frag_enabled_tmp);
--
--	update_min_mtu();
--
-+	update_min_mtu(net_dev);
- 	return count;
+ 	return sprintf(buff, "%s\n",
+ 		       batman_if->if_status == IF_NOT_IN_USE ?
+-							"none" : "bat0");
++					"none" : batman_if->soft_iface->name);
  }
  
-@@ -406,22 +404,6 @@ int sysfs_add_meshif(struct net_device *dev)
- 	struct bat_attribute **bat_attr;
- 	int err;
- 
--	/* FIXME: should be done in the general mesh setup
--		  routine as soon as we have it */
--	atomic_set(&bat_priv->aggregation_enabled, 1);
--	atomic_set(&bat_priv->bonding_enabled, 0);
--	atomic_set(&bat_priv->frag_enabled, 1);
--	atomic_set(&bat_priv->vis_mode, VIS_TYPE_CLIENT_UPDATE);
--	atomic_set(&bat_priv->gw_mode, GW_MODE_OFF);
--	atomic_set(&bat_priv->gw_class, 0);
--	atomic_set(&bat_priv->orig_interval, 1000);
--	atomic_set(&bat_priv->log_level, 0);
--	atomic_set(&bat_priv->bcast_queue_left, BCAST_QUEUE_LEN);
--	atomic_set(&bat_priv->batman_queue_left, BATMAN_QUEUE_LEN);
--
--	bat_priv->primary_if = NULL;
--	bat_priv->num_ifaces = 0;
--
- 	bat_priv->mesh_obj = kobject_create_and_add(SYSFS_IF_MESH_SUBDIR,
- 						    batif_kobject);
- 	if (!bat_priv->mesh_obj) {
-@@ -491,32 +473,34 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
- 	if (!batman_if)
- 		return count;
- 
--	if (strncmp(buff, "none", 4) == 0)
--		status_tmp = IF_NOT_IN_USE;
--
--	if (strncmp(buff, "bat0", 4) == 0)
--		status_tmp = IF_I_WANT_YOU;
--
--	if (status_tmp < 0) {
--		if (buff[count - 1] == '\n')
--			buff[count - 1] = '\0';
-+	if (buff[count - 1] == '\n')
-+		buff[count - 1] = '\0';
- 
-+	if (strlen(buff) >= IFNAMSIZ) {
- 		pr_err("Invalid parameter for 'mesh_iface' setting received: "
--		       "%s\n", buff);
-+		       "interface name too long '%s'\n", buff);
- 		return -EINVAL;
- 	}
- 
--	if ((batman_if->if_status == status_tmp) ||
--	    ((status_tmp == IF_I_WANT_YOU) &&
--	     (batman_if->if_status != IF_NOT_IN_USE)))
-+	if (strncmp(buff, "none", 4) == 0)
-+		status_tmp = IF_NOT_IN_USE;
-+	else
-+		status_tmp = IF_I_WANT_YOU;
-+
-+	if ((batman_if->if_status == status_tmp) || ((batman_if->soft_iface) &&
-+	    (strncmp(batman_if->soft_iface->name, buff, IFNAMSIZ) == 0)))
- 		return count;
- 
--	if (status_tmp == IF_I_WANT_YOU)
--		status_tmp = hardif_enable_interface(batman_if);
--	else
-+	if (status_tmp == IF_NOT_IN_USE) {
-+		hardif_disable_interface(batman_if);
-+		return count;
-+	}
-+
-+	/* if the interface already is in use */
-+	if (batman_if->if_status != IF_NOT_IN_USE)
- 		hardif_disable_interface(batman_if);
- 
--	return (status_tmp < 0 ? status_tmp : count);
-+	return hardif_enable_interface(batman_if, buff);
- }
- 
- static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
-diff --git a/batman-adv/bitarray.c b/batman-adv/bitarray.c
-index 9dbaf1e..814274f 100644
---- a/batman-adv/bitarray.c
-+++ b/batman-adv/bitarray.c
-@@ -127,11 +127,10 @@ static void bit_reset_window(TYPE_OF_WORD *seq_bits)
-  *  1 if the window was moved (either new or very old)
-  *  0 if the window was not moved/shifted.
-  */
--char bit_get_packet(TYPE_OF_WORD *seq_bits, int32_t seq_num_diff,
--		    int8_t set_mark)
-+char bit_get_packet(void *priv, TYPE_OF_WORD *seq_bits,
-+		    int32_t seq_num_diff, int8_t set_mark)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = (struct bat_priv *)priv;
- 
- 	/* sequence number is slightly older. We already got a sequence number
- 	 * higher than this one, so we just mark it. */
-diff --git a/batman-adv/bitarray.h b/batman-adv/bitarray.h
-index c0c1730..d961d56 100644
---- a/batman-adv/bitarray.h
-+++ b/batman-adv/bitarray.h
-@@ -38,8 +38,8 @@ void bit_mark(TYPE_OF_WORD *seq_bits, int32_t n);
- 
- /* receive and process one packet, returns 1 if received seq_num is considered
-  * new, 0 if old  */
--char bit_get_packet(TYPE_OF_WORD *seq_bits, int32_t seq_num_diff,
--					int8_t set_mark);
-+char bit_get_packet(void *priv, TYPE_OF_WORD *seq_bits,
-+		    int32_t seq_num_diff, int8_t set_mark);
- 
- /* count the hamming weight, how many good packets did we receive? */
- int  bit_packet_count(TYPE_OF_WORD *seq_bits);
+ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
 diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
-index f50bc41..d2de0e1 100644
+index d2de0e1..dddb175 100644
 --- a/batman-adv/gateway_client.c
 +++ b/batman-adv/gateway_client.c
-@@ -54,10 +54,8 @@ void gw_deselect(void)
- 	spin_unlock(&curr_gw_lock);
+@@ -28,18 +28,9 @@
+ #include <linux/udp.h>
+ #include <linux/if_vlan.h>
+ 
+-static LIST_HEAD(gw_list);
+-static DEFINE_SPINLOCK(curr_gw_lock);
+-static DEFINE_SPINLOCK(gw_list_lock);
+-static struct gw_node *curr_gateway;
+-
+-void *gw_get_selected(void)
++void *gw_get_selected(struct bat_priv *bat_priv)
+ {
+-	struct gw_node *curr_gateway_tmp = NULL;
+-
+-	spin_lock(&curr_gw_lock);
+-	curr_gateway_tmp = curr_gateway;
+-	spin_unlock(&curr_gw_lock);
++	struct gw_node *curr_gateway_tmp = bat_priv->curr_gw;
+ 
+ 	if (!curr_gateway_tmp)
+ 		return NULL;
+@@ -47,15 +38,14 @@ void *gw_get_selected(void)
+ 	return curr_gateway_tmp->orig_node;
  }
  
--void gw_election(void)
-+void gw_election(struct bat_priv *bat_priv)
+-void gw_deselect(void)
++void gw_deselect(struct bat_priv *bat_priv)
  {
--	/* FIXME: get bat_priv */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
+-	spin_lock(&curr_gw_lock);
+-	curr_gateway = NULL;
+-	spin_unlock(&curr_gw_lock);
++	bat_priv->curr_gw = NULL;
+ }
+ 
+ void gw_election(struct bat_priv *bat_priv)
+ {
++	struct hlist_node *node;
  	struct gw_node *gw_node, *curr_gw_tmp = NULL;
  	uint8_t max_tq = 0;
  	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
-@@ -209,10 +207,9 @@ deselect:
- 	gw_deselect();
- }
- 
--static void gw_node_add(struct orig_node *orig_node, uint8_t new_gwflags)
-+static void gw_node_add(struct bat_priv *bat_priv,
-+			struct orig_node *orig_node, uint8_t new_gwflags)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 	struct gw_node *gw_node;
- 	int down, up;
- 
-@@ -236,10 +233,9 @@ static void gw_node_add(struct orig_node *orig_node, uint8_t new_gwflags)
- 		(up > 2048 ? "MBit" : "KBit"));
- }
- 
--void gw_node_update(struct orig_node *orig_node, uint8_t new_gwflags)
-+void gw_node_update(struct bat_priv *bat_priv,
-+		    struct orig_node *orig_node, uint8_t new_gwflags)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 	struct gw_node *gw_node;
- 
- 	rcu_read_lock();
-@@ -273,12 +269,12 @@ void gw_node_update(struct orig_node *orig_node, uint8_t new_gwflags)
- 	if (new_gwflags == 0)
+@@ -70,24 +60,24 @@ void gw_election(struct bat_priv *bat_priv)
+ 	if (atomic_read(&bat_priv->gw_mode) != GW_MODE_CLIENT)
  		return;
  
--	gw_node_add(orig_node, new_gwflags);
-+	gw_node_add(bat_priv, orig_node, new_gwflags);
- }
- 
--void gw_node_delete(struct orig_node *orig_node)
-+void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node)
- {
--	return gw_node_update(orig_node, 0);
-+	return gw_node_update(bat_priv, orig_node, 0);
- }
- 
- static void gw_node_free(struct rcu_head *rcu)
-diff --git a/batman-adv/gateway_client.h b/batman-adv/gateway_client.h
-index 1c24187..19a82a7 100644
---- a/batman-adv/gateway_client.h
-+++ b/batman-adv/gateway_client.h
-@@ -23,11 +23,12 @@
- #define _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
- 
- void gw_deselect(void);
--void gw_election(void);
-+void gw_election(struct bat_priv *bat_priv);
- void *gw_get_selected(void);
- void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node);
--void gw_node_update(struct orig_node *orig_node, uint8_t new_gwflags);
--void gw_node_delete(struct orig_node *orig_node);
-+void gw_node_update(struct bat_priv *bat_priv,
-+		    struct orig_node *orig_node, uint8_t new_gwflags);
-+void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node);
- void gw_node_purge_deleted(void);
- void gw_node_list_free(void);
- int gw_client_seq_print_text(struct seq_file *seq, void *offset);
-diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index fdabe4f..307acbd 100644
---- a/batman-adv/hard-interface.c
-+++ b/batman-adv/hard-interface.c
-@@ -160,24 +160,28 @@ static void check_known_mac_addr(uint8_t *addr)
- 	rcu_read_unlock();
- }
- 
--int hardif_min_mtu(void)
-+int hardif_min_mtu(struct net_device *soft_iface)
- {
-+	struct bat_priv *bat_priv = netdev_priv(soft_iface);
- 	struct batman_if *batman_if;
- 	/* allow big frames if all devices are capable to do so
- 	 * (have MTU > 1500 + BAT_HEADER_LEN) */
- 	int min_mtu = ETH_DATA_LEN;
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 
- 	if (atomic_read(&bat_priv->frag_enabled))
- 		goto out;
+-	if (curr_gateway)
++	if (bat_priv->curr_gw)
+ 		return;
  
  	rcu_read_lock();
+-	if (list_empty(&gw_list)) {
++	if (hlist_empty(&bat_priv->gw_list)) {
+ 		rcu_read_unlock();
+ 
+-		if (curr_gateway) {
++		if (bat_priv->curr_gw) {
+ 			bat_dbg(DBG_BATMAN, bat_priv,
+ 				"Removing selected gateway - "
+ 				"no gateway in range\n");
+-			gw_deselect();
++			gw_deselect(bat_priv);
+ 		}
+ 
+ 		return;
+ 	}
+ 
+-	list_for_each_entry_rcu(gw_node, &gw_list, list) {
++	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
+ 		if (!gw_node->orig_node->router)
+ 			continue;
+ 
+@@ -132,13 +122,12 @@ void gw_election(struct bat_priv *bat_priv)
+ 	}
+ 	rcu_read_unlock();
+ 
+-	spin_lock(&curr_gw_lock);
+-	if (curr_gateway != curr_gw_tmp) {
+-		if ((curr_gateway) && (!curr_gw_tmp))
++	if (bat_priv->curr_gw != curr_gw_tmp) {
++		if ((bat_priv->curr_gw) && (!curr_gw_tmp))
+ 			bat_dbg(DBG_BATMAN, bat_priv,
+ 				"Removing selected gateway - "
+ 				"no gateway in range\n");
+-		else if ((!curr_gateway) && (curr_gw_tmp))
++		else if ((!bat_priv->curr_gw) && (curr_gw_tmp))
+ 			bat_dbg(DBG_BATMAN, bat_priv,
+ 				"Adding route to gateway %pM "
+ 				"(gw_flags: %i, tq: %i)\n",
+@@ -153,20 +142,15 @@ void gw_election(struct bat_priv *bat_priv)
+ 				curr_gw_tmp->orig_node->gw_flags,
+ 				curr_gw_tmp->orig_node->router->tq_avg);
+ 
+-		curr_gateway = curr_gw_tmp;
++		bat_priv->curr_gw = curr_gw_tmp;
+ 	}
+-	spin_unlock(&curr_gw_lock);
+ }
+ 
+ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
+ {
+-	struct gw_node *curr_gateway_tmp;
++	struct gw_node *curr_gateway_tmp = bat_priv->curr_gw;
+ 	uint8_t gw_tq_avg, orig_tq_avg;
+ 
+-	spin_lock(&curr_gw_lock);
+-	curr_gateway_tmp = curr_gateway;
+-	spin_unlock(&curr_gw_lock);
+-
+ 	if (!curr_gateway_tmp)
+ 		return;
+ 
+@@ -204,7 +188,7 @@ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
+ 		gw_tq_avg, orig_tq_avg);
+ 
+ deselect:
+-	gw_deselect();
++	gw_deselect(bat_priv);
+ }
+ 
+ static void gw_node_add(struct bat_priv *bat_priv,
+@@ -218,10 +202,10 @@ static void gw_node_add(struct bat_priv *bat_priv,
+ 		return;
+ 
+ 	memset(gw_node, 0, sizeof(struct gw_node));
+-	INIT_LIST_HEAD(&gw_node->list);
++	INIT_HLIST_NODE(&gw_node->list);
+ 	gw_node->orig_node = orig_node;
+ 
+-	list_add_tail_rcu(&gw_node->list, &gw_list);
++	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw_list);
+ 
+ 	gw_srv_class_to_kbit(new_gwflags, &down, &up);
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+@@ -236,10 +220,11 @@ static void gw_node_add(struct bat_priv *bat_priv,
+ void gw_node_update(struct bat_priv *bat_priv,
+ 		    struct orig_node *orig_node, uint8_t new_gwflags)
+ {
++	struct hlist_node *node;
+ 	struct gw_node *gw_node;
+ 
+ 	rcu_read_lock();
+-	list_for_each_entry_rcu(gw_node, &gw_list, list) {
++	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
+ 		if (gw_node->orig_node != orig_node)
+ 			continue;
+ 
+@@ -257,8 +242,8 @@ void gw_node_update(struct bat_priv *bat_priv,
+ 				"Gateway %pM removed from gateway list\n",
+ 				orig_node->orig);
+ 
+-			if (gw_node == curr_gateway)
+-				gw_deselect();
++			if (gw_node == bat_priv->curr_gw)
++				gw_deselect(bat_priv);
+ 		}
+ 
+ 		rcu_read_unlock();
+@@ -283,41 +268,46 @@ static void gw_node_free(struct rcu_head *rcu)
+ 	kfree(gw_node);
+ }
+ 
+-void gw_node_purge_deleted(void)
++void gw_node_purge_deleted(struct bat_priv *bat_priv)
+ {
+-	struct gw_node *gw_node, *gw_node_tmp;
++	struct gw_node *gw_node;
++	struct hlist_node *node, *node_tmp;
+ 	unsigned long timeout = 2 * PURGE_TIMEOUT * HZ;
+ 
+-	spin_lock(&gw_list_lock);
++	spin_lock(&bat_priv->gw_list_lock);
+ 
+-	list_for_each_entry_safe(gw_node, gw_node_tmp, &gw_list, list) {
++	hlist_for_each_entry_safe(gw_node, node, node_tmp,
++						&bat_priv->gw_list, list) {
+ 		if ((gw_node->deleted) &&
+ 		    (time_after(jiffies, gw_node->deleted + timeout))) {
+ 
+-			list_del_rcu(&gw_node->list);
++			hlist_del_rcu(&gw_node->list);
+ 			call_rcu(&gw_node->rcu, gw_node_free);
+ 		}
+ 	}
+ 
+-	spin_unlock(&gw_list_lock);
++	spin_unlock(&bat_priv->gw_list_lock);
+ }
+ 
+-void gw_node_list_free(void)
++void gw_node_list_free(struct bat_priv *bat_priv)
+ {
+-	struct gw_node *gw_node, *gw_node_tmp;
++	struct gw_node *gw_node;
++	struct hlist_node *node, *node_tmp;
+ 
+-	spin_lock(&gw_list_lock);
++	spin_lock(&bat_priv->gw_list_lock);
+ 
+-	list_for_each_entry_safe(gw_node, gw_node_tmp, &gw_list, list) {
+-		list_del_rcu(&gw_node->list);
++	hlist_for_each_entry_safe(gw_node, node, node_tmp,
++				 &bat_priv->gw_list, list) {
++		hlist_del_rcu(&gw_node->list);
+ 		call_rcu(&gw_node->rcu, gw_node_free);
+ 	}
+ 
+-	gw_deselect();
+-	spin_unlock(&gw_list_lock);
++	gw_deselect(bat_priv);
++	spin_unlock(&bat_priv->gw_list_lock);
+ }
+ 
+-static int _write_buffer_text(struct seq_file *seq, struct gw_node *gw_node)
++static int _write_buffer_text(struct bat_priv *bat_priv,
++			      struct seq_file *seq, struct gw_node *gw_node)
+ {
+ 	int down, up;
+ 	char gw_str[ETH_STR_LEN], router_str[ETH_STR_LEN];
+@@ -327,7 +317,7 @@ static int _write_buffer_text(struct seq_file *seq, struct gw_node *gw_node)
+ 	gw_srv_class_to_kbit(gw_node->orig_node->gw_flags, &down, &up);
+ 
+ 	return seq_printf(seq, "%s %-17s (%3i) %17s [%10s]: %3i - %i%s/%i%s\n",
+-		       (curr_gateway == gw_node ? "=>" : "  "),
++		       (bat_priv->curr_gw == gw_node ? "=>" : "  "),
+ 		       gw_str,
+ 		       gw_node->orig_node->router->tq_avg,
+ 		       router_str,
+@@ -344,6 +334,7 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct net_device *net_dev = (struct net_device *)seq->private;
+ 	struct bat_priv *bat_priv = netdev_priv(net_dev);
+ 	struct gw_node *gw_node;
++	struct hlist_node *node;
+ 	int gw_count = 0;
+ 
+ 	rcu_read_lock();
+@@ -372,14 +363,14 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 	rcu_read_unlock();
+ 
+ 	rcu_read_lock();
+-	list_for_each_entry_rcu(gw_node, &gw_list, list) {
++	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
+ 		if (gw_node->deleted)
+ 			continue;
+ 
+ 		if (!gw_node->orig_node->router)
+ 			continue;
+ 
+-		_write_buffer_text(seq, gw_node);
++		_write_buffer_text(bat_priv, seq, gw_node);
+ 		gw_count++;
+ 	}
+ 	rcu_read_unlock();
+@@ -399,7 +390,7 @@ bool gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
+ 	if (atomic_read(&bat_priv->gw_mode) != GW_MODE_CLIENT)
+ 		return false;
+ 
+-	if (!curr_gateway)
++	if (!bat_priv->curr_gw)
+ 		return false;
+ 
+ 	ethhdr = (struct ethhdr *)skb->data;
+diff --git a/batman-adv/gateway_client.h b/batman-adv/gateway_client.h
+index 19a82a7..ce0b4f0 100644
+--- a/batman-adv/gateway_client.h
++++ b/batman-adv/gateway_client.h
+@@ -22,15 +22,15 @@
+ #ifndef _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
+ #define _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
+ 
+-void gw_deselect(void);
++void gw_deselect(struct bat_priv *bat_priv);
+ void gw_election(struct bat_priv *bat_priv);
+-void *gw_get_selected(void);
++void *gw_get_selected(struct bat_priv *bat_priv);
+ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node);
+ void gw_node_update(struct bat_priv *bat_priv,
+ 		    struct orig_node *orig_node, uint8_t new_gwflags);
+ void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node);
+-void gw_node_purge_deleted(void);
+-void gw_node_list_free(void);
++void gw_node_purge_deleted(struct bat_priv *bat_priv);
++void gw_node_list_free(struct bat_priv *bat_priv);
+ int gw_client_seq_print_text(struct seq_file *seq, void *offset);
+ bool gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb);
+ 
+diff --git a/batman-adv/gateway_common.c b/batman-adv/gateway_common.c
+index 06bdd75..3851930 100644
+--- a/batman-adv/gateway_common.c
++++ b/batman-adv/gateway_common.c
+@@ -261,7 +261,7 @@ next:
+ 		gw_srv_class_to_kbit((uint8_t)gw_class_tmp,
+ 				     (int *)&down, (int *)&up);
+ 
+-		gw_deselect();
++		gw_deselect(bat_priv);
+ 		bat_info(net_dev, "Changing gateway mode from: '%s' to: '%s' "
+ 			 "(gw_class: %ld -> propagating: %ld%s/%ld%s)\n",
+ 			 gw_mode_curr_str, gw_mode_tmp_str, gw_class_tmp,
+@@ -280,7 +280,7 @@ next:
+ 	atomic_set(&bat_priv->gw_class, gw_class_tmp);
+ 
+ 	if (gw_class_tmp == 0)
+-		gw_deselect();
++		gw_deselect(bat_priv);
+ 
+ end:
+ 	return count;
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index 307acbd..e80dd50 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -80,13 +80,15 @@ static int is_valid_iface(struct net_device *net_dev)
+ 	return 1;
+ }
+ 
+-static struct batman_if *get_active_batman_if(void)
++static struct batman_if *get_active_batman_if(struct net_device *soft_iface)
+ {
+ 	struct batman_if *batman_if;
+ 
+-	/* TODO: should check interfaces belonging to bat_priv */
+ 	rcu_read_lock();
  	list_for_each_entry_rcu(batman_if, &if_list, list) {
--		if ((batman_if->if_status == IF_ACTIVE) ||
--		    (batman_if->if_status == IF_TO_BE_ACTIVATED))
--			min_mtu = MIN(batman_if->net_dev->mtu - BAT_HEADER_LEN,
--				      min_mtu);
-+		if ((batman_if->if_status != IF_ACTIVE) &&
-+		    (batman_if->if_status != IF_TO_BE_ACTIVATED))
-+			continue;
-+
 +		if (batman_if->soft_iface != soft_iface)
 +			continue;
 +
-+		min_mtu = MIN(batman_if->net_dev->mtu - BAT_HEADER_LEN,
-+			      min_mtu);
+ 		if (batman_if->if_status == IF_ACTIVE)
+ 			goto out;
  	}
- 	rcu_read_unlock();
- out:
-@@ -185,22 +189,23 @@ out:
- }
- 
- /* adjusts the MTU if a new interface with a smaller MTU appeared. */
--void update_min_mtu(void)
-+void update_min_mtu(struct net_device *soft_iface)
- {
- 	int min_mtu;
- 
--	min_mtu = hardif_min_mtu();
--	if (soft_device->mtu != min_mtu)
--		soft_device->mtu = min_mtu;
-+	min_mtu = hardif_min_mtu(soft_iface);
-+	if (soft_iface->mtu != min_mtu)
-+		soft_iface->mtu = min_mtu;
- }
- 
--static void hardif_activate_interface(struct net_device *net_dev,
--				      struct bat_priv *bat_priv,
--				      struct batman_if *batman_if)
-+static void hardif_activate_interface(struct batman_if *batman_if)
- {
-+	struct bat_priv *bat_priv;
-+
- 	if (batman_if->if_status != IF_INACTIVE)
+@@ -108,8 +110,6 @@ static void set_primary_if(struct bat_priv *bat_priv,
+ 	if (!bat_priv->primary_if)
  		return;
  
-+	bat_priv = netdev_priv(batman_if->soft_iface);
- 	dev_hold(batman_if->net_dev);
+-	set_main_if_addr(batman_if->net_dev->dev_addr);
+-
+ 	batman_packet = (struct batman_packet *)(batman_if->packet_buff);
+ 	batman_packet->flags = PRIMARIES_FIRST_HOP;
+ 	batman_packet->ttl = TTL;
+@@ -118,7 +118,7 @@ static void set_primary_if(struct bat_priv *bat_priv,
+ 	 * hacky trick to make sure that we send the HNA information via
+ 	 * our new primary interface
+ 	 */
+-	atomic_set(&hna_local_changed, 1);
++	atomic_set(&bat_priv->hna_local_changed, 1);
+ }
  
- 	update_mac_addresses(batman_if);
-@@ -213,17 +218,17 @@ static void hardif_activate_interface(struct net_device *net_dev,
- 	if (!bat_priv->primary_if)
- 		set_primary_if(bat_priv, batman_if);
+ static bool hardif_is_iface_up(struct batman_if *batman_if)
+@@ -221,9 +221,6 @@ static void hardif_activate_interface(struct batman_if *batman_if)
+ 	bat_info(batman_if->soft_iface, "Interface activated: %s\n",
+ 		 batman_if->dev);
  
--	bat_info(net_dev, "Interface activated: %s\n", batman_if->dev);
-+	bat_info(batman_if->soft_iface, "Interface activated: %s\n",
-+		 batman_if->dev);
- 
- 	if (atomic_read(&module_state) == MODULE_INACTIVE)
- 		activate_module();
- 
--	update_min_mtu();
-+	update_min_mtu(batman_if->soft_iface);
+-	if (atomic_read(&module_state) == MODULE_INACTIVE)
+-		activate_module();
+-
+ 	update_min_mtu(batman_if->soft_iface);
  	return;
  }
- 
--static void hardif_deactivate_interface(struct net_device *net_dev,
--					struct batman_if *batman_if)
-+static void hardif_deactivate_interface(struct batman_if *batman_if)
- {
- 	if ((batman_if->if_status != IF_ACTIVE) &&
- 	   (batman_if->if_status != IF_TO_BE_ACTIVATED))
-@@ -233,26 +238,39 @@ static void hardif_deactivate_interface(struct net_device *net_dev,
- 
- 	batman_if->if_status = IF_INACTIVE;
- 
--	bat_info(net_dev, "Interface deactivated: %s\n", batman_if->dev);
-+	bat_info(batman_if->soft_iface, "Interface deactivated: %s\n",
-+		 batman_if->dev);
- 
--	update_min_mtu();
-+	update_min_mtu(batman_if->soft_iface);
- }
- 
--int hardif_enable_interface(struct batman_if *batman_if)
-+int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
- {
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv;
- 	struct batman_packet *batman_packet;
- 
- 	if (batman_if->if_status != IF_NOT_IN_USE)
- 		goto out;
- 
-+	batman_if->soft_iface = dev_get_by_name(&init_net, iface_name);
-+
-+	if (!batman_if->soft_iface) {
-+		batman_if->soft_iface = softif_create(iface_name);
-+
-+		if (!batman_if->soft_iface)
-+			goto err;
-+
-+		/* dev_get_by_name() increases the reference counter for us */
-+		dev_hold(batman_if->soft_iface);
-+	}
-+
-+	bat_priv = netdev_priv(batman_if->soft_iface);
- 	batman_if->packet_len = BAT_PACKET_LEN;
- 	batman_if->packet_buff = kmalloc(batman_if->packet_len, GFP_ATOMIC);
- 
- 	if (!batman_if->packet_buff) {
--		bat_err(soft_device, "Can't add interface packet (%s): "
--			"out of memory\n", batman_if->dev);
-+		bat_err(batman_if->soft_iface, "Can't add interface packet "
-+			"(%s): out of memory\n", batman_if->dev);
- 		goto err;
- 	}
- 
-@@ -271,11 +289,12 @@ int hardif_enable_interface(struct batman_if *batman_if)
- 
- 	atomic_set(&batman_if->seqno, 1);
- 	atomic_set(&batman_if->frag_seqno, 1);
--	bat_info(soft_device, "Adding interface: %s\n", batman_if->dev);
-+	bat_info(batman_if->soft_iface, "Adding interface: %s\n",
-+		 batman_if->dev);
- 
- 	if (atomic_read(&bat_priv->frag_enabled) && batman_if->net_dev->mtu <
- 		ETH_DATA_LEN + BAT_HEADER_LEN)
--		bat_info(soft_device,
-+		bat_info(batman_if->soft_iface,
- 			"The MTU of interface %s is too small (%i) to handle "
- 			"the transport of batman-adv packets. Packets going "
- 			"over this interface will be fragmented on layer2 "
-@@ -286,7 +305,7 @@ int hardif_enable_interface(struct batman_if *batman_if)
- 
- 	if (!atomic_read(&bat_priv->frag_enabled) && batman_if->net_dev->mtu <
- 		ETH_DATA_LEN + BAT_HEADER_LEN)
--		bat_info(soft_device,
-+		bat_info(batman_if->soft_iface,
- 			"The MTU of interface %s is too small (%i) to handle "
- 			"the transport of batman-adv packets. If you experience"
- 			" problems getting traffic through try increasing the "
-@@ -295,9 +314,9 @@ int hardif_enable_interface(struct batman_if *batman_if)
- 			ETH_DATA_LEN + BAT_HEADER_LEN);
- 
- 	if (hardif_is_iface_up(batman_if))
--		hardif_activate_interface(soft_device, bat_priv, batman_if);
-+		hardif_activate_interface(batman_if);
- 	else
--		bat_err(soft_device, "Not using interface %s "
-+		bat_err(batman_if->soft_iface, "Not using interface %s "
- 			"(retrying later): interface not active\n",
- 			batman_if->dev);
- 
-@@ -313,16 +332,16 @@ err:
- 
- void hardif_disable_interface(struct batman_if *batman_if)
- {
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
- 
- 	if (batman_if->if_status == IF_ACTIVE)
--		hardif_deactivate_interface(soft_device, batman_if);
-+		hardif_deactivate_interface(batman_if);
- 
- 	if (batman_if->if_status != IF_INACTIVE)
- 		return;
- 
--	bat_info(soft_device, "Removing interface: %s\n", batman_if->dev);
-+	bat_info(batman_if->soft_iface, "Removing interface: %s\n",
-+		 batman_if->dev);
- 	bat_priv->num_ifaces--;
+@@ -346,11 +343,16 @@ void hardif_disable_interface(struct batman_if *batman_if)
  	orig_hash_del_if(batman_if, bat_priv->num_ifaces);
  
-@@ -332,10 +351,17 @@ void hardif_disable_interface(struct batman_if *batman_if)
+ 	if (batman_if == bat_priv->primary_if)
+-		set_primary_if(bat_priv, get_active_batman_if());
++		set_primary_if(bat_priv,
++			       get_active_batman_if(batman_if->soft_iface));
+ 
  	kfree(batman_if->packet_buff);
  	batman_if->packet_buff = NULL;
  	batman_if->if_status = IF_NOT_IN_USE;
-+	dev_put(batman_if->soft_iface);
 +
-+	/* nobody uses this interface anymore */
-+	if (!bat_priv->num_ifaces)
-+		softif_destroy(batman_if->soft_iface);
++	/* delete all references to this batman_if */
++	purge_orig_ref(bat_priv);
++	purge_outstanding_packets(bat_priv, batman_if);
+ 	dev_put(batman_if->soft_iface);
  
--	if ((atomic_read(&module_state) == MODULE_ACTIVE) &&
-+	batman_if->soft_iface = NULL;
-+
-+	/*if ((atomic_read(&module_state) == MODULE_ACTIVE) &&
- 	    (bat_priv->num_ifaces == 0))
--		deactivate_module();
-+		deactivate_module();*/
+ 	/* nobody uses this interface anymore */
+@@ -358,10 +360,6 @@ void hardif_disable_interface(struct batman_if *batman_if)
+ 		softif_destroy(batman_if->soft_iface);
+ 
+ 	batman_if->soft_iface = NULL;
+-
+-	/*if ((atomic_read(&module_state) == MODULE_ACTIVE) &&
+-	    (bat_priv->num_ifaces == 0))
+-		deactivate_module();*/
  }
  
  static struct batman_if *hardif_add_interface(struct net_device *net_dev)
-@@ -364,6 +390,7 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
- 
- 	batman_if->if_num = -1;
- 	batman_if->net_dev = net_dev;
-+	batman_if->soft_iface = NULL;
- 	batman_if->if_status = IF_NOT_IN_USE;
- 	INIT_LIST_HEAD(&batman_if->list);
- 
-@@ -419,8 +446,7 @@ static int hard_if_event(struct notifier_block *this,
+@@ -410,10 +408,6 @@ static void hardif_free_interface(struct rcu_head *rcu)
  {
- 	struct net_device *net_dev = (struct net_device *)ptr;
- 	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv;
+ 	struct batman_if *batman_if = container_of(rcu, struct batman_if, rcu);
  
+-	/* delete all references to this batman_if */
+-	purge_orig(NULL);
+-	purge_outstanding_packets(batman_if);
+-
+ 	kfree(batman_if->dev);
+ 	kfree(batman_if);
+ }
+@@ -509,9 +503,6 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 	if (!skb)
+ 		goto err_out;
+ 
+-	if (atomic_read(&module_state) != MODULE_ACTIVE)
+-		goto err_free;
+-
+ 	/* if netfilter/ebtables wants to block incoming batman
+ 	 * packets then give them a chance to do so here */
+ 	ret = NF_HOOK(PF_BRIDGE, NF_BR_LOCAL_IN, skb, dev, NULL,
+@@ -532,12 +523,19 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
  	if (!batman_if)
- 		batman_if = hardif_add_interface(net_dev);
-@@ -432,11 +458,11 @@ static int hard_if_event(struct notifier_block *this,
- 	case NETDEV_REGISTER:
- 		break;
- 	case NETDEV_UP:
--		hardif_activate_interface(soft_device, bat_priv, batman_if);
-+		hardif_activate_interface(batman_if);
- 		break;
- 	case NETDEV_GOING_DOWN:
- 	case NETDEV_DOWN:
--		hardif_deactivate_interface(soft_device, batman_if);
-+		hardif_deactivate_interface(batman_if);
- 		break;
- 	case NETDEV_UNREGISTER:
- 		hardif_remove_interface(batman_if);
-@@ -444,8 +470,13 @@ static int hard_if_event(struct notifier_block *this,
- 	case NETDEV_CHANGENAME:
- 		break;
- 	case NETDEV_CHANGEADDR:
-+		if (batman_if->if_status == IF_NOT_IN_USE)
-+			goto out;
+ 		goto err_free;
+ 
++	if (!batman_if->soft_iface)
++		goto err_free;
 +
- 		check_known_mac_addr(batman_if->net_dev->dev_addr);
- 		update_mac_addresses(batman_if);
++	bat_priv = netdev_priv(batman_if->soft_iface);
 +
-+		bat_priv = netdev_priv(batman_if->soft_iface);
- 		if (batman_if == bat_priv->primary_if)
- 			set_primary_if(bat_priv, batman_if);
- 		break;
-@@ -467,8 +498,7 @@ static int batman_skb_recv_finish(struct sk_buff *skb)
- int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 	struct packet_type *ptype, struct net_device *orig_dev)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv;
- 	struct batman_packet *batman_packet;
- 	struct batman_if *batman_if;
- 	int ret;
-@@ -507,6 +537,7 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
++	if (atomic_read(&bat_priv->mesh_state) != MESH_ACTIVE)
++		goto err_free;
++
+ 	/* discard frames on not active interfaces */
+ 	if (batman_if->if_status != IF_ACTIVE)
  		goto err_free;
  
  	batman_packet = (struct batman_packet *)skb->data;
-+	bat_priv = netdev_priv(batman_if->soft_iface);
+-	bat_priv = netdev_priv(batman_if->soft_iface);
  
  	if (batman_packet->version != COMPAT_VERSION) {
  		bat_dbg(DBG_BATMAN, bat_priv,
-@@ -541,12 +572,12 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+@@ -557,7 +555,7 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
  
- 		/* broadcast packet */
- 	case BAT_BCAST:
--		ret = recv_bcast_packet(skb);
-+		ret = recv_bcast_packet(skb, batman_if);
+ 		/* batman icmp packet */
+ 	case BAT_ICMP:
+-		ret = recv_icmp_packet(skb);
++		ret = recv_icmp_packet(skb, batman_if);
  		break;
  
- 		/* vis packet */
- 	case BAT_VIS:
--		ret = recv_vis_packet(skb);
-+		ret = recv_vis_packet(skb, batman_if);
- 		break;
- 	default:
- 		ret = NET_RX_DROP;
-diff --git a/batman-adv/hard-interface.h b/batman-adv/hard-interface.h
-index d5640b0..4b49527 100644
---- a/batman-adv/hard-interface.h
-+++ b/batman-adv/hard-interface.h
-@@ -32,14 +32,14 @@
- extern struct notifier_block hard_if_notifier;
- 
- struct batman_if *get_batman_if_by_netdev(struct net_device *net_dev);
--int hardif_enable_interface(struct batman_if *batman_if);
-+int hardif_enable_interface(struct batman_if *batman_if, char *iface_name);
- void hardif_disable_interface(struct batman_if *batman_if);
- void hardif_remove_interfaces(void);
- int batman_skb_recv(struct sk_buff *skb,
- 				struct net_device *dev,
- 				struct packet_type *ptype,
- 				struct net_device *orig_dev);
--int hardif_min_mtu(void);
--void update_min_mtu(void);
-+int hardif_min_mtu(struct net_device *soft_iface);
-+void update_min_mtu(struct net_device *soft_iface);
- 
- #endif /* _NET_BATMAN_ADV_HARD_INTERFACE_H_ */
-diff --git a/batman-adv/hash.c b/batman-adv/hash.c
-index 1286f8f..8ef26eb 100644
---- a/batman-adv/hash.c
-+++ b/batman-adv/hash.c
-@@ -36,7 +36,7 @@ static void hash_init(struct hashtable_t *hash)
- /* remove the hash structure. if hashdata_free_cb != NULL, this function will be
-  * called to remove the elements inside of the hash.  if you don't remove the
-  * elements, memory might be leaked. */
--void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb)
-+void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb, void *arg)
- {
- 	struct element_t *bucket, *last_bucket;
- 	int i;
-@@ -46,7 +46,7 @@ void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb)
- 
- 		while (bucket != NULL) {
- 			if (free_cb != NULL)
--				free_cb(bucket->data);
-+				free_cb(bucket->data, arg);
- 
- 			last_bucket = bucket;
- 			bucket = bucket->next;
-@@ -300,7 +300,7 @@ struct hashtable_t *hash_resize(struct hashtable_t *hash, int size)
- 
- 	/* remove hash and eventual overflow buckets but not the content
- 	 * itself. */
--	hash_delete(hash, NULL);
-+	hash_delete(hash, NULL, NULL);
- 
- 	return new_hash;
- }
-diff --git a/batman-adv/hash.h b/batman-adv/hash.h
-index c483e11..2c8e176 100644
---- a/batman-adv/hash.h
-+++ b/batman-adv/hash.h
-@@ -30,7 +30,7 @@
- 
- typedef int (*hashdata_compare_cb)(void *, void *);
- typedef int (*hashdata_choose_cb)(void *, int);
--typedef void (*hashdata_free_cb)(void *);
-+typedef void (*hashdata_free_cb)(void *, void *);
- 
- struct element_t {
- 	void *data;		/* pointer to the data */
-@@ -70,7 +70,7 @@ void *hash_remove_bucket(struct hashtable_t *hash, struct hash_it_t *hash_it_t);
- /* remove the hash structure. if hashdata_free_cb != NULL, this function will be
-  * called to remove the elements inside of the hash.  if you don't remove the
-  * elements, memory might be leaked. */
--void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb);
-+void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb, void *arg);
- 
- /* free only the hashtable and the hash itself. */
- void hash_destroy(struct hashtable_t *hash);
+ 		/* unicast packet */
 diff --git a/batman-adv/icmp_socket.c b/batman-adv/icmp_socket.c
-index a84e84d..2660516 100644
+index 2660516..8ef87c0 100644
 --- a/batman-adv/icmp_socket.c
 +++ b/batman-adv/icmp_socket.c
-@@ -69,6 +69,7 @@ static int bat_socket_open(struct inode *inode, struct file *file)
- 	INIT_LIST_HEAD(&socket_client->queue_list);
- 	socket_client->queue_len = 0;
- 	socket_client->index = i;
-+	socket_client->bat_priv = inode->i_private;
- 	spin_lock_init(&socket_client->lock);
- 	init_waitqueue_head(&socket_client->queue_wait);
+@@ -205,11 +205,12 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 		goto out;
+ 	}
  
-@@ -155,10 +156,9 @@ static ssize_t bat_socket_read(struct file *file, char __user *buf,
- static ssize_t bat_socket_write(struct file *file, const char __user *buff,
- 				size_t len, loff_t *off)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 	struct socket_client *socket_client =
- 		(struct socket_client *)file->private_data;
-+	struct bat_priv *bat_priv = socket_client->bat_priv;
- 	struct icmp_packet_rr icmp_packet;
- 	struct orig_node *orig_node;
- 	struct batman_if *batman_if;
-@@ -277,7 +277,7 @@ int bat_socket_setup(struct bat_priv *bat_priv)
- 		goto err;
+-	if (atomic_read(&module_state) != MODULE_ACTIVE)
++	if (atomic_read(&bat_priv->mesh_state) != MESH_ACTIVE)
+ 		goto dst_unreach;
  
- 	d = debugfs_create_file(ICMP_SOCKET, S_IFREG | S_IWUSR | S_IRUSR,
--				bat_priv->debug_dir, NULL, &fops);
-+				bat_priv->debug_dir, bat_priv, &fops);
- 	if (d)
- 		goto err;
+-	spin_lock_irqsave(&orig_hash_lock, flags);
+-	orig_node = ((struct orig_node *)hash_find(orig_hash, icmp_packet.dst));
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
++	orig_node = ((struct orig_node *)hash_find(bat_priv->orig_hash,
++						   icmp_packet.dst));
  
+ 	if (!orig_node)
+ 		goto unlock;
+@@ -220,7 +221,7 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 	batman_if = orig_node->router->if_incoming;
+ 	memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+ 
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 	if (!batman_if)
+ 		goto dst_unreach;
+@@ -239,7 +240,7 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 	goto out;
+ 
+ unlock:
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ dst_unreach:
+ 	icmp_packet.msg_type = DESTINATION_UNREACHABLE;
+ 	bat_socket_add_packet(socket_client, &icmp_packet, packet_len);
 diff --git a/batman-adv/main.c b/batman-adv/main.c
-index 64925dc..22f9c5e 100644
+index 22f9c5e..22767b7 100644
 --- a/batman-adv/main.c
 +++ b/batman-adv/main.c
-@@ -46,8 +46,6 @@ DEFINE_SPINLOCK(forw_bcast_list_lock);
+@@ -36,18 +36,8 @@
+ #include "compat.h"
  
- int16_t num_hna;
- 
--struct net_device *soft_device;
+ struct list_head if_list;
+-struct hlist_head forw_bat_list;
+-struct hlist_head forw_bcast_list;
+-struct hashtable_t *orig_hash;
 -
+-DEFINE_SPINLOCK(orig_hash_lock);
+-DEFINE_SPINLOCK(forw_bat_list_lock);
+-DEFINE_SPINLOCK(forw_bcast_list_lock);
+-
+-int16_t num_hna;
+ 
  unsigned char broadcast_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
- atomic_t module_state;
+-atomic_t module_state;
  
-@@ -60,8 +58,6 @@ struct workqueue_struct *bat_event_workqueue;
- 
+ static struct packet_type batman_adv_packet_type __read_mostly = {
+ 	.type = __constant_htons(ETH_P_BATMAN),
+@@ -59,10 +49,6 @@ struct workqueue_struct *bat_event_workqueue;
  static int __init batman_init(void)
  {
--	int retval;
--
  	INIT_LIST_HEAD(&if_list);
- 	INIT_HLIST_HEAD(&forw_bat_list);
- 	INIT_HLIST_HEAD(&forw_bcast_list);
-@@ -78,32 +74,6 @@ static int __init batman_init(void)
- 	bat_socket_init();
- 	debugfs_init();
+-	INIT_HLIST_HEAD(&forw_bat_list);
+-	INIT_HLIST_HEAD(&forw_bcast_list);
+-
+-	atomic_set(&module_state, MODULE_INACTIVE);
  
--	/* initialize layer 2 interface */
--	soft_device = alloc_netdev(sizeof(struct bat_priv) , "bat%d",
--				   interface_setup);
--
--	if (!soft_device) {
--		pr_err("Unable to allocate the batman interface\n");
--		goto end;
--	}
--
--	retval = register_netdev(soft_device);
--
--	if (retval < 0) {
--		pr_err("Unable to register the batman interface: %i\n", retval);
--		goto free_soft_device;
--	}
--
--	retval = sysfs_add_meshif(soft_device);
--
--	if (retval < 0)
--		goto unreg_soft_device;
--
--	retval = debugfs_add_meshif(soft_device);
--
--	if (retval < 0)
--		goto unreg_sysfs;
--
- 	register_netdevice_notifier(&hard_if_notifier);
- 	dev_add_pack(&batman_adv_packet_type);
- 
-@@ -112,19 +82,6 @@ static int __init batman_init(void)
- 		COMPAT_VERSION);
- 
- 	return 0;
--
--unreg_sysfs:
--	sysfs_del_meshif(soft_device);
--unreg_soft_device:
--	unregister_netdev(soft_device);
--	soft_device = NULL;
--	return -ENOMEM;
--
--free_soft_device:
--	free_netdev(soft_device);
--	soft_device = NULL;
--end:
--	return -ENOMEM;
- }
+ 	/* the name should not be longer than 10 chars - see
+ 	 * http://lwn.net/Articles/23634/ */
+@@ -86,69 +72,82 @@ static int __init batman_init(void)
  
  static void __exit batman_exit(void)
-@@ -135,13 +92,6 @@ static void __exit batman_exit(void)
+ {
+-	deactivate_module();
+-
+ 	debugfs_destroy();
  	unregister_netdevice_notifier(&hard_if_notifier);
  	hardif_remove_interfaces();
  
--	if (soft_device) {
--		debugfs_del_meshif(soft_device);
--		sysfs_del_meshif(soft_device);
--		unregister_netdev(soft_device);
--		soft_device = NULL;
--	}
--
  	dev_remove_pack(&batman_adv_packet_type);
  
++	flush_workqueue(bat_event_workqueue);
  	destroy_workqueue(bat_event_workqueue);
-@@ -160,12 +110,12 @@ void activate_module(void)
- 	if (hna_global_init() < 1)
- 		goto err;
- 
--	hna_local_add(soft_device->dev_addr);
-+	/*hna_local_add(soft_device->dev_addr);*/
- 
- 	if (vis_init() < 1)
- 		goto err;
- 
--	update_min_mtu();
-+	/*update_min_mtu();*/
- 	atomic_set(&module_state, MODULE_ACTIVE);
- 	goto end;
- 
-diff --git a/batman-adv/main.h b/batman-adv/main.h
-index 6d759f0..70d6e36 100644
---- a/batman-adv/main.h
-+++ b/batman-adv/main.h
-@@ -138,8 +138,6 @@ extern spinlock_t forw_bcast_list_lock;
- 
- extern int16_t num_hna;
- 
--extern struct net_device *soft_device;
--
- extern unsigned char broadcast_addr[];
- extern atomic_t module_state;
- extern struct workqueue_struct *bat_event_workqueue;
-diff --git a/batman-adv/originator.c b/batman-adv/originator.c
-index 66852ea..205ec01 100644
---- a/batman-adv/originator.c
-+++ b/batman-adv/originator.c
-@@ -63,8 +63,7 @@ struct neigh_node *
- create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
- 		uint8_t *neigh, struct batman_if *if_incoming)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct neigh_node *neigh_node;
- 
- 	bat_dbg(DBG_BATMAN, bat_priv,
-@@ -84,11 +83,12 @@ create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
- 	return neigh_node;
+ 	bat_event_workqueue = NULL;
  }
  
--static void free_orig_node(void *data)
-+static void free_orig_node(void *data, void *arg)
+-/* activates the module, starts timer ... */
+-void activate_module(void)
++int mesh_init(struct net_device *soft_iface)
  {
- 	struct list_head *list_pos, *list_pos_tmp;
- 	struct neigh_node *neigh_node;
- 	struct orig_node *orig_node = (struct orig_node *)data;
-+	struct bat_priv *bat_priv = (struct bat_priv *)arg;
+-	if (originator_init() < 1)
++	struct bat_priv *bat_priv = netdev_priv(soft_iface);
++
++	spin_lock_init(&bat_priv->orig_hash_lock);
++	spin_lock_init(&bat_priv->forw_bat_list_lock);
++	spin_lock_init(&bat_priv->forw_bcast_list_lock);
++	spin_lock_init(&bat_priv->hna_lhash_lock);
++	spin_lock_init(&bat_priv->hna_ghash_lock);
++	spin_lock_init(&bat_priv->gw_list_lock);
++	spin_lock_init(&bat_priv->vis_hash_lock);
++	spin_lock_init(&bat_priv->vis_list_lock);
++
++	INIT_HLIST_HEAD(&bat_priv->forw_bat_list);
++	INIT_HLIST_HEAD(&bat_priv->forw_bcast_list);
++	INIT_HLIST_HEAD(&bat_priv->gw_list);
++
++	if (originator_init(bat_priv) < 1)
+ 		goto err;
  
- 	/* for all neighbors towards this originator ... */
- 	list_for_each_safe(list_pos, list_pos_tmp, &orig_node->neigh_list) {
-@@ -99,7 +99,7 @@ static void free_orig_node(void *data)
- 	}
+-	if (hna_local_init() < 1)
++	if (hna_local_init(bat_priv) < 1)
+ 		goto err;
  
- 	frag_list_free(&orig_node->frag_list);
--	hna_global_del_orig(orig_node, "originator timed out");
-+	hna_global_del_orig(bat_priv, orig_node, "originator timed out");
+-	if (hna_global_init() < 1)
++	if (hna_global_init(bat_priv) < 1)
+ 		goto err;
  
- 	kfree(orig_node->bcast_own);
- 	kfree(orig_node->bcast_own_sum);
-@@ -116,17 +116,15 @@ void originator_free(void)
- 	cancel_delayed_work_sync(&purge_orig_wq);
+-	/*hna_local_add(soft_device->dev_addr);*/
++	hna_local_add(soft_iface, soft_iface->dev_addr);
  
- 	spin_lock_irqsave(&orig_hash_lock, flags);
--	hash_delete(orig_hash, free_orig_node);
-+	/*hash_delete(orig_hash, free_orig_node, bat_priv);*/
- 	orig_hash = NULL;
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
+-	if (vis_init() < 1)
++	if (vis_init(bat_priv) < 1)
+ 		goto err;
+ 
+-	/*update_min_mtu();*/
+-	atomic_set(&module_state, MODULE_ACTIVE);
++
++	atomic_set(&bat_priv->mesh_state, MESH_ACTIVE);
+ 	goto end;
+ 
+ err:
+ 	pr_err("Unable to allocate memory for mesh information structures: "
+ 	       "out of mem ?\n");
+-	deactivate_module();
++	mesh_free(soft_iface);
++	return 1;
++
+ end:
+-	return;
++	return 0;
+ }
+ 
+-/* shuts down the whole module.*/
+-void deactivate_module(void)
++void mesh_free(struct net_device *soft_iface)
+ {
+-	atomic_set(&module_state, MODULE_DEACTIVATING);
++	struct bat_priv *bat_priv = netdev_priv(soft_iface);
+ 
+-	purge_outstanding_packets(NULL);
+-	flush_workqueue(bat_event_workqueue);
++	atomic_set(&bat_priv->mesh_state, MESH_DEACTIVATING);
+ 
+-	vis_quit();
++	purge_outstanding_packets(bat_priv, NULL);
+ 
+-	/* TODO: unregister BATMAN pack */
++	vis_quit(bat_priv);
+ 
+-	gw_node_list_free();
+-	originator_free();
++	gw_node_list_free(bat_priv);
++	originator_free(bat_priv);
+ 
+-	hna_local_free();
+-	hna_global_free();
++	hna_local_free(bat_priv);
++	hna_global_free(bat_priv);
+ 
+ 	synchronize_net();
+ 
+ 	synchronize_rcu();
+-	atomic_set(&module_state, MODULE_INACTIVE);
++	atomic_set(&bat_priv->mesh_state, MESH_INACTIVE);
+ }
+ 
+ void inc_module_count(void)
+diff --git a/batman-adv/main.h b/batman-adv/main.h
+index 70d6e36..1528f7a 100644
+--- a/batman-adv/main.h
++++ b/batman-adv/main.h
+@@ -76,9 +76,9 @@
+ #define EXPECTED_SEQNO_RANGE	65536
+ /* don't reset again within 30 seconds */
+ 
+-#define MODULE_INACTIVE 0
+-#define MODULE_ACTIVE 1
+-#define MODULE_DEACTIVATING 2
++#define MESH_INACTIVE 0
++#define MESH_ACTIVE 1
++#define MESH_DEACTIVATING 2
+ 
+ #define BCAST_QUEUE_LEN		256
+ #define BATMAN_QUEUE_LEN	256
+@@ -128,22 +128,12 @@
+ #endif
+ 
+ extern struct list_head if_list;
+-extern struct hlist_head forw_bat_list;
+-extern struct hlist_head forw_bcast_list;
+-extern struct hashtable_t *orig_hash;
+-
+-extern spinlock_t orig_hash_lock;
+-extern spinlock_t forw_bat_list_lock;
+-extern spinlock_t forw_bcast_list_lock;
+-
+-extern int16_t num_hna;
+ 
+ extern unsigned char broadcast_addr[];
+-extern atomic_t module_state;
+ extern struct workqueue_struct *bat_event_workqueue;
+ 
+-void activate_module(void);
+-void deactivate_module(void);
++int mesh_init(struct net_device *soft_iface);
++void mesh_free(struct net_device *soft_iface);
+ void inc_module_count(void);
+ void dec_module_count(void);
+ int addr_to_string(char *buff, uint8_t *addr);
+@@ -154,7 +144,7 @@ int is_bcast(uint8_t *addr);
+ int is_mcast(uint8_t *addr);
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+-extern int debug_log(struct bat_priv *bat_priv, char *fmt, ...);
++int debug_log(struct bat_priv *bat_priv, char *fmt, ...);
+ 
+ #define bat_dbg(type, bat_priv, fmt, arg...)			\
+ 	do {							\
+diff --git a/batman-adv/originator.c b/batman-adv/originator.c
+index 205ec01..aba582e 100644
+--- a/batman-adv/originator.c
++++ b/batman-adv/originator.c
+@@ -31,31 +31,32 @@
+ #include "hard-interface.h"
+ #include "fragmentation.h"
+ 
+-static DECLARE_DELAYED_WORK(purge_orig_wq, purge_orig);
++static void purge_orig(struct work_struct *work);
+ 
+-static void start_purge_timer(void)
++static void start_purge_timer(struct bat_priv *bat_priv)
+ {
+-	queue_delayed_work(bat_event_workqueue, &purge_orig_wq, 1 * HZ);
++	INIT_DELAYED_WORK(&bat_priv->orig_work, purge_orig);
++	queue_delayed_work(bat_event_workqueue, &bat_priv->orig_work, 1 * HZ);
+ }
+ 
+-int originator_init(void)
++int originator_init(struct bat_priv *bat_priv)
+ {
+ 	unsigned long flags;
+-	if (orig_hash)
++	if (bat_priv->orig_hash)
+ 		return 1;
+ 
+-	spin_lock_irqsave(&orig_hash_lock, flags);
+-	orig_hash = hash_new(128, compare_orig, choose_orig);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
++	bat_priv->orig_hash = hash_new(128, compare_orig, choose_orig);
+ 
+-	if (!orig_hash)
++	if (!bat_priv->orig_hash)
+ 		goto err;
+ 
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
+-	start_purge_timer();
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
++	start_purge_timer(bat_priv);
+ 	return 1;
+ 
+ err:
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 	return 0;
+ }
+ 
+@@ -106,19 +107,19 @@ static void free_orig_node(void *data, void *arg)
+ 	kfree(orig_node);
+ }
+ 
+-void originator_free(void)
++void originator_free(struct bat_priv *bat_priv)
+ {
+ 	unsigned long flags;
+ 
+-	if (!orig_hash)
++	if (!bat_priv->orig_hash)
+ 		return;
+ 
+-	cancel_delayed_work_sync(&purge_orig_wq);
++	cancel_delayed_work_sync(&bat_priv->orig_work);
+ 
+-	spin_lock_irqsave(&orig_hash_lock, flags);
+-	/*hash_delete(orig_hash, free_orig_node, bat_priv);*/
+-	orig_hash = NULL;
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
++	hash_delete(bat_priv->orig_hash, free_orig_node, bat_priv);
++	bat_priv->orig_hash = NULL;
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
  }
  
  /* this function finds or creates an originator entry for the given
-  * address if it does not exits */
--struct orig_node *get_orig_node(uint8_t *addr)
-+struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
- {
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 	struct orig_node *orig_node;
+@@ -129,9 +130,9 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
  	struct hashtable_t *swaphash;
  	int size;
-@@ -175,7 +173,7 @@ struct orig_node *get_orig_node(uint8_t *addr)
- 		swaphash = hash_resize(orig_hash, orig_hash->size * 2);
  
- 		if (swaphash == NULL)
--			bat_err(soft_device,
-+			bat_dbg(DBG_BATMAN, bat_priv,
+-	orig_node = ((struct orig_node *)hash_find(orig_hash, addr));
++	orig_node = ((struct orig_node *)hash_find(bat_priv->orig_hash, addr));
+ 
+-	if (orig_node != NULL)
++	if (orig_node)
+ 		return orig_node;
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+@@ -166,17 +167,18 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
+ 	if (!orig_node->bcast_own_sum)
+ 		goto free_bcast_own;
+ 
+-	if (hash_add(orig_hash, orig_node) < 0)
++	if (hash_add(bat_priv->orig_hash, orig_node) < 0)
+ 		goto free_bcast_own_sum;
+ 
+-	if (orig_hash->elements * 4 > orig_hash->size) {
+-		swaphash = hash_resize(orig_hash, orig_hash->size * 2);
++	if (bat_priv->orig_hash->elements * 4 > bat_priv->orig_hash->size) {
++		swaphash = hash_resize(bat_priv->orig_hash,
++				       bat_priv->orig_hash->size * 2);
+ 
+-		if (swaphash == NULL)
++		if (!swaphash)
+ 			bat_dbg(DBG_BATMAN, bat_priv,
  				"Couldn't resize orig hash table\n");
  		else
- 			orig_hash = swaphash;
-@@ -191,11 +189,10 @@ free_orig_node:
- 	return NULL;
+-			orig_hash = swaphash;
++			bat_priv->orig_hash = swaphash;
+ 	}
+ 
+ 	return orig_node;
+@@ -205,8 +207,8 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
+ 
+ 		if ((time_after(jiffies,
+ 			neigh_node->last_valid + PURGE_TIMEOUT * HZ)) ||
+-		    (neigh_node->if_incoming->if_status ==
+-						IF_TO_BE_REMOVED)) {
++		    (neigh_node->if_incoming->if_status == IF_INACTIVE) ||
++		    (neigh_node->if_incoming->if_status == IF_TO_BE_REMOVED)) {
+ 
+ 			if (neigh_node->if_incoming->if_status ==
+ 							IF_TO_BE_REMOVED)
+@@ -262,39 +264,50 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
+ 	return false;
  }
  
--static bool purge_orig_neighbors(struct orig_node *orig_node,
-+static bool purge_orig_neighbors(struct bat_priv *bat_priv,
-+				 struct orig_node *orig_node,
- 				 struct neigh_node **best_neigh_node)
+-void purge_orig(struct work_struct *work)
++static void _purge_orig(struct bat_priv *bat_priv)
  {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 	struct list_head *list_pos, *list_pos_tmp;
- 	struct neigh_node *neigh_node;
- 	bool neigh_purged = false;
-@@ -237,10 +234,9 @@ static bool purge_orig_neighbors(struct orig_node *orig_node,
- 	return neigh_purged;
- }
+ 	HASHIT(hashit);
+ 	struct orig_node *orig_node;
+ 	unsigned long flags;
  
--static bool purge_orig_node(struct orig_node *orig_node)
-+static bool purge_orig_node(struct bat_priv *bat_priv,
-+			    struct orig_node *orig_node)
- {
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 	struct neigh_node *best_neigh_node;
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
  
- 	if (time_after(jiffies,
-@@ -251,8 +247,10 @@ static bool purge_orig_node(struct orig_node *orig_node)
- 			orig_node->orig, (orig_node->last_valid / HZ));
- 		return true;
- 	} else {
--		if (purge_orig_neighbors(orig_node, &best_neigh_node)) {
--			update_routes(orig_node, best_neigh_node,
-+		if (purge_orig_neighbors(bat_priv, orig_node,
-+							&best_neigh_node)) {
-+			update_routes(bat_priv, orig_node,
-+				      best_neigh_node,
- 				      orig_node->hna_buff,
- 				      orig_node->hna_buff_len);
- 			/* update bonding candidates, we could have lost
-@@ -275,22 +273,23 @@ void purge_orig(struct work_struct *work)
  	/* for all origins... */
- 	while (hash_iterate(orig_hash, &hashit)) {
+-	while (hash_iterate(orig_hash, &hashit)) {
++	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
  		orig_node = hashit.bucket->data;
--		if (purge_orig_node(orig_node)) {
-+
-+		/*if (purge_orig_node(bat_priv, orig_node)) {
+ 
+-		/*if (purge_orig_node(bat_priv, orig_node)) {
++		if (purge_orig_node(bat_priv, orig_node)) {
  			if (orig_node->gw_flags)
--				gw_node_delete(orig_node);
-+				gw_node_delete(bat_priv, orig_node);
- 			hash_remove_bucket(orig_hash, &hashit);
- 			free_orig_node(orig_node);
--		}
-+		}*/
+ 				gw_node_delete(bat_priv, orig_node);
+-			hash_remove_bucket(orig_hash, &hashit);
+-			free_orig_node(orig_node);
+-		}*/
++			hash_remove_bucket(bat_priv->orig_hash, &hashit);
++			free_orig_node(orig_node, bat_priv);
++		}
  
  		if (time_after(jiffies, (orig_node->last_frag_packet +
--			msecs_to_jiffies(FRAG_TIMEOUT))))
-+					msecs_to_jiffies(FRAG_TIMEOUT))))
+ 					msecs_to_jiffies(FRAG_TIMEOUT))))
  			frag_list_free(&orig_node->frag_list);
  	}
  
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
  
- 	gw_node_purge_deleted();
--	gw_election();
-+	/*gw_election(bat_priv);*/
+-	gw_node_purge_deleted();
+-	/*gw_election(bat_priv);*/
++	gw_node_purge_deleted(bat_priv);
++	gw_election(bat_priv);
++}
  
- 	/* if work == NULL we were not called by the timer
- 	 * and thus do not need to re-arm the timer */
-diff --git a/batman-adv/originator.h b/batman-adv/originator.h
-index e88411d..bc47c68 100644
---- a/batman-adv/originator.h
-+++ b/batman-adv/originator.h
-@@ -25,7 +25,7 @@
- int originator_init(void);
- void originator_free(void);
- void purge_orig(struct work_struct *work);
--struct orig_node *get_orig_node(uint8_t *addr);
-+struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr);
- struct neigh_node *
- create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
- 		uint8_t *neigh, struct batman_if *if_incoming);
-diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 02f1c2c..3baec55 100644
---- a/batman-adv/routing.c
-+++ b/batman-adv/routing.c
-@@ -40,6 +40,7 @@ static DECLARE_WAIT_QUEUE_HEAD(thread_wait);
+-	/* if work == NULL we were not called by the timer
+-	 * and thus do not need to re-arm the timer */
+-	if (work)
+-		start_purge_timer();
++static void purge_orig(struct work_struct *work)
++{
++	struct delayed_work *delayed_work =
++		container_of(work, struct delayed_work, work);
++	struct bat_priv *bat_priv =
++		container_of(delayed_work, struct bat_priv, orig_work);
++
++	_purge_orig(bat_priv);
++	start_purge_timer(bat_priv);
++}
++
++void purge_orig_ref(struct bat_priv *bat_priv)
++{
++	_purge_orig(bat_priv);
+ }
  
- void slide_own_bcast_window(struct batman_if *batman_if)
+ int orig_seq_print_text(struct seq_file *seq, void *offset)
+@@ -332,9 +345,9 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
+ 		   "outgoingIF", "Potential nexthops");
+ 	rcu_read_unlock();
+ 
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 
+-	while (hash_iterate(orig_hash, &hashit)) {
++	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
+ 
+ 		orig_node = hashit.bucket->data;
+ 
+@@ -366,7 +379,7 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
+ 		batman_count++;
+ 	}
+ 
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 	if ((batman_count == 0))
+ 		seq_printf(seq, "No batman nodes in range ...\n");
+@@ -406,25 +419,26 @@ static int orig_node_add_if(struct orig_node *orig_node, int max_if_num)
+ 
+ int orig_hash_add_if(struct batman_if *batman_if, int max_if_num)
  {
 +	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
- 	HASHIT(hashit);
  	struct orig_node *orig_node;
+ 	HASHIT(hashit);
+ 
+ 	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
+ 	 * if_num */
+-	spin_lock(&orig_hash_lock);
++	spin_lock(&bat_priv->orig_hash_lock);
+ 
+-	while (hash_iterate(orig_hash, &hashit)) {
++	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
+ 		orig_node = hashit.bucket->data;
+ 
+ 		if (orig_node_add_if(orig_node, max_if_num) == -1)
+ 			goto err;
+ 	}
+ 
+-	spin_unlock(&orig_hash_lock);
++	spin_unlock(&bat_priv->orig_hash_lock);
+ 	return 0;
+ 
+ err:
+-	spin_unlock(&orig_hash_lock);
++	spin_unlock(&bat_priv->orig_hash_lock);
+ 	return -ENOMEM;
+ }
+ 
+@@ -482,6 +496,7 @@ free_own_sum:
+ 
+ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
+ {
++	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
+ 	struct batman_if *batman_if_tmp;
+ 	struct orig_node *orig_node;
+ 	HASHIT(hashit);
+@@ -489,9 +504,9 @@ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
+ 
+ 	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
+ 	 * if_num */
+-	spin_lock(&orig_hash_lock);
++	spin_lock(&bat_priv->orig_hash_lock);
+ 
+-	while (hash_iterate(orig_hash, &hashit)) {
++	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
+ 		orig_node = hashit.bucket->data;
+ 
+ 		ret = orig_node_del_if(orig_node, max_if_num,
+@@ -510,16 +525,19 @@ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
+ 		if (batman_if == batman_if_tmp)
+ 			continue;
+ 
++		if (batman_if->soft_iface != batman_if_tmp->soft_iface)
++			continue;
++
+ 		if (batman_if_tmp->if_num > batman_if->if_num)
+ 			batman_if_tmp->if_num--;
+ 	}
+ 	rcu_read_unlock();
+ 
+ 	batman_if->if_num = -1;
+-	spin_unlock(&orig_hash_lock);
++	spin_unlock(&bat_priv->orig_hash_lock);
+ 	return 0;
+ 
+ err:
+-	spin_unlock(&orig_hash_lock);
++	spin_unlock(&bat_priv->orig_hash_lock);
+ 	return -ENOMEM;
+ }
+diff --git a/batman-adv/originator.h b/batman-adv/originator.h
+index bc47c68..a97c400 100644
+--- a/batman-adv/originator.h
++++ b/batman-adv/originator.h
+@@ -22,9 +22,9 @@
+ #ifndef _NET_BATMAN_ADV_ORIGINATOR_H_
+ #define _NET_BATMAN_ADV_ORIGINATOR_H_
+ 
+-int originator_init(void);
+-void originator_free(void);
+-void purge_orig(struct work_struct *work);
++int originator_init(struct bat_priv *bat_priv);
++void originator_free(struct bat_priv *bat_priv);
++void purge_orig_ref(struct bat_priv *bat_priv);
+ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr);
+ struct neigh_node *
+ create_neighbor(struct orig_node *orig_node, struct orig_node *orig_neigh_node,
+diff --git a/batman-adv/routing.c b/batman-adv/routing.c
+index 3baec55..399ac60 100644
+--- a/batman-adv/routing.c
++++ b/batman-adv/routing.c
+@@ -36,8 +36,6 @@
+ #include "gateway_client.h"
+ #include "fragmentation.h"
+ 
+-static DECLARE_WAIT_QUEUE_HEAD(thread_wait);
+-
+ void slide_own_bcast_window(struct batman_if *batman_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
+@@ -46,9 +44,9 @@ void slide_own_bcast_window(struct batman_if *batman_if)
  	TYPE_OF_WORD *word;
-@@ -51,7 +52,7 @@ void slide_own_bcast_window(struct batman_if *batman_if)
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 
+-	while (hash_iterate(orig_hash, &hashit)) {
++	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
  		orig_node = hashit.bucket->data;
  		word = &(orig_node->bcast_own[batman_if->if_num * NUM_WORDS]);
  
--		bit_get_packet(word, 1, 0);
-+		bit_get_packet(bat_priv, word, 1, 0);
- 		orig_node->bcast_own_sum[batman_if->if_num] =
+@@ -57,7 +55,7 @@ void slide_own_bcast_window(struct batman_if *batman_if)
  			bit_packet_count(word);
  	}
-@@ -59,7 +60,7 @@ void slide_own_bcast_window(struct batman_if *batman_if)
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
  }
  
--static void update_HNA(struct orig_node *orig_node,
-+static void update_HNA(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 		       unsigned char *hna_buff, int hna_buff_len)
- {
- 	if ((hna_buff_len != orig_node->hna_buff_len) ||
-@@ -68,27 +69,27 @@ static void update_HNA(struct orig_node *orig_node,
- 	     (memcmp(orig_node->hna_buff, hna_buff, hna_buff_len) != 0))) {
+ static void update_HNA(struct bat_priv *bat_priv, struct orig_node *orig_node,
+@@ -580,6 +578,9 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 		if (batman_if->if_status != IF_ACTIVE)
+ 			continue;
  
- 		if (orig_node->hna_buff_len > 0)
--			hna_global_del_orig(orig_node,
-+			hna_global_del_orig(bat_priv, orig_node,
- 					    "originator changed hna");
- 
- 		if ((hna_buff_len > 0) && (hna_buff != NULL))
--			hna_global_add_orig(orig_node, hna_buff, hna_buff_len);
-+			hna_global_add_orig(bat_priv, orig_node,
-+					    hna_buff, hna_buff_len);
- 	}
- }
- 
--static void update_route(struct orig_node *orig_node,
-+static void update_route(struct bat_priv *bat_priv,
-+			 struct orig_node *orig_node,
- 			 struct neigh_node *neigh_node,
- 			 unsigned char *hna_buff, int hna_buff_len)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
--
- 	/* route deleted */
- 	if ((orig_node->router != NULL) && (neigh_node == NULL)) {
- 
- 		bat_dbg(DBG_ROUTES, bat_priv, "Deleting route towards: %pM\n",
- 			orig_node->orig);
--		hna_global_del_orig(orig_node, "originator timed out");
-+		hna_global_del_orig(bat_priv, orig_node,
-+				    "originator timed out");
- 
- 		/* route added */
- 	} else if ((orig_node->router == NULL) && (neigh_node != NULL)) {
-@@ -96,7 +97,8 @@ static void update_route(struct orig_node *orig_node,
- 		bat_dbg(DBG_ROUTES, bat_priv,
- 			"Adding route towards: %pM (via %pM)\n",
- 			orig_node->orig, neigh_node->addr);
--		hna_global_add_orig(orig_node, hna_buff, hna_buff_len);
-+		hna_global_add_orig(bat_priv, orig_node,
-+				    hna_buff, hna_buff_len);
- 
- 		/* route changed */
- 	} else {
-@@ -111,19 +113,20 @@ static void update_route(struct orig_node *orig_node,
- }
- 
- 
--void update_routes(struct orig_node *orig_node,
--			  struct neigh_node *neigh_node,
--			  unsigned char *hna_buff, int hna_buff_len)
-+void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
-+		   struct neigh_node *neigh_node, unsigned char *hna_buff,
-+		   int hna_buff_len)
- {
- 
- 	if (orig_node == NULL)
- 		return;
- 
- 	if (orig_node->router != neigh_node)
--		update_route(orig_node, neigh_node, hna_buff, hna_buff_len);
-+		update_route(bat_priv, orig_node, neigh_node,
-+			     hna_buff, hna_buff_len);
- 	/* may be just HNA changed */
- 	else
--		update_HNA(orig_node, hna_buff, hna_buff_len);
-+		update_HNA(bat_priv, orig_node, hna_buff, hna_buff_len);
- }
- 
- static int is_bidirectional_neigh(struct orig_node *orig_node,
-@@ -131,8 +134,7 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 				struct batman_packet *batman_packet,
- 				struct batman_if *if_incoming)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct neigh_node *neigh_node = NULL, *tmp_neigh_node = NULL;
- 	unsigned char total_count;
- 
-@@ -236,14 +238,14 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 	return 0;
- }
- 
--static void update_orig(struct orig_node *orig_node, struct ethhdr *ethhdr,
-+static void update_orig(struct bat_priv *bat_priv,
-+			struct orig_node *orig_node,
-+			struct ethhdr *ethhdr,
- 			struct batman_packet *batman_packet,
- 			struct batman_if *if_incoming,
- 			unsigned char *hna_buff, int hna_buff_len,
- 			char is_duplicate)
- {
--	/* FIXME: get bat_priv */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 	struct neigh_node *neigh_node = NULL, *tmp_neigh_node = NULL;
- 	int tmp_hna_buff_len;
- 
-@@ -269,12 +271,11 @@ static void update_orig(struct orig_node *orig_node, struct ethhdr *ethhdr,
- 	if (!neigh_node) {
- 		struct orig_node *orig_tmp;
- 
--		orig_tmp = get_orig_node(ethhdr->h_source);
-+		orig_tmp = get_orig_node(bat_priv, ethhdr->h_source);
- 		if (!orig_tmp)
- 			return;
- 
--		neigh_node = create_neighbor(orig_node,
--					     orig_tmp,
-+		neigh_node = create_neighbor(orig_node, orig_tmp,
- 					     ethhdr->h_source, if_incoming);
- 		if (!neigh_node)
- 			return;
-@@ -316,15 +317,17 @@ static void update_orig(struct orig_node *orig_node, struct ethhdr *ethhdr,
- 	      >= neigh_node->orig_node->bcast_own_sum[if_incoming->if_num])))
- 		goto update_hna;
- 
--	update_routes(orig_node, neigh_node, hna_buff, tmp_hna_buff_len);
-+	update_routes(bat_priv, orig_node, neigh_node,
-+		      hna_buff, tmp_hna_buff_len);
- 	goto update_gw;
- 
- update_hna:
--	update_routes(orig_node, orig_node->router, hna_buff, tmp_hna_buff_len);
-+	update_routes(bat_priv, orig_node, orig_node->router,
-+		      hna_buff, tmp_hna_buff_len);
- 
- update_gw:
- 	if (orig_node->gw_flags != batman_packet->gw_flags)
--		gw_node_update(orig_node, batman_packet->gw_flags);
-+		gw_node_update(bat_priv, orig_node, batman_packet->gw_flags);
- 
- 	orig_node->gw_flags = batman_packet->gw_flags;
- 
-@@ -338,12 +341,10 @@ update_gw:
-  *  0 if the packet is to be accepted
-  *  1 if the packet is to be ignored.
-  */
--static int window_protected(int32_t seq_num_diff,
--				unsigned long *last_reset)
-+static int window_protected(struct bat_priv *bat_priv,
-+			    int32_t seq_num_diff,
-+			    unsigned long *last_reset)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
--
- 	if ((seq_num_diff <= -TQ_LOCAL_WINDOW_SIZE)
- 		|| (seq_num_diff >= EXPECTED_SEQNO_RANGE)) {
- 		if (time_after(jiffies, *last_reset +
-@@ -372,8 +373,7 @@ static char count_real_packets(struct ethhdr *ethhdr,
- 			       struct batman_packet *batman_packet,
- 			       struct batman_if *if_incoming)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct orig_node *orig_node;
- 	struct neigh_node *tmp_neigh_node;
- 	char is_duplicate = 0;
-@@ -381,14 +381,15 @@ static char count_real_packets(struct ethhdr *ethhdr,
- 	int need_update = 0;
- 	int set_mark;
- 
--	orig_node = get_orig_node(batman_packet->orig);
-+	orig_node = get_orig_node(bat_priv, batman_packet->orig);
- 	if (orig_node == NULL)
- 		return 0;
- 
- 	seq_diff = batman_packet->seqno - orig_node->last_real_seqno;
- 
- 	/* signalize caller that the packet is to be dropped. */
--	if (window_protected(seq_diff, &orig_node->batman_seqno_reset))
-+	if (window_protected(bat_priv, seq_diff,
-+			     &orig_node->batman_seqno_reset))
- 		return -1;
- 
- 	list_for_each_entry(tmp_neigh_node, &orig_node->neigh_list, list) {
-@@ -404,8 +405,9 @@ static char count_real_packets(struct ethhdr *ethhdr,
- 			set_mark = 0;
- 
- 		/* if the window moved, set the update flag. */
--		need_update |= bit_get_packet(tmp_neigh_node->real_bits,
--						seq_diff, set_mark);
-+		need_update |= bit_get_packet(bat_priv,
-+					      tmp_neigh_node->real_bits,
-+					      seq_diff, set_mark);
- 
- 		tmp_neigh_node->real_packet_count =
- 			bit_packet_count(tmp_neigh_node->real_bits);
-@@ -533,8 +535,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 				unsigned char *hna_buff, int hna_buff_len,
- 				struct batman_if *if_incoming)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct batman_if *batman_if;
- 	struct orig_node *orig_neigh_node, *orig_node;
- 	char has_directlink_flag;
-@@ -621,7 +622,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 		TYPE_OF_WORD *word;
- 		int offset;
- 
--		orig_neigh_node = get_orig_node(ethhdr->h_source);
-+		orig_neigh_node = get_orig_node(bat_priv, ethhdr->h_source);
- 
- 		if (!orig_neigh_node)
- 			return;
-@@ -653,7 +654,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 		return;
- 	}
- 
--	orig_node = get_orig_node(batman_packet->orig);
-+	orig_node = get_orig_node(bat_priv, batman_packet->orig);
- 	if (orig_node == NULL)
- 		return;
- 
-@@ -689,7 +690,8 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 	/* if sender is a direct neighbor the sender mac equals
- 	 * originator mac */
- 	orig_neigh_node = (is_single_hop_neigh ?
--			   orig_node : get_orig_node(ethhdr->h_source));
-+			   orig_node :
-+			   get_orig_node(bat_priv, ethhdr->h_source));
- 	if (orig_neigh_node == NULL)
- 		return;
- 
-@@ -711,7 +713,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 	    (!is_duplicate ||
- 	     ((orig_node->last_real_seqno == batman_packet->seqno) &&
- 	      (orig_node->last_ttl - 3 <= batman_packet->ttl))))
--		update_orig(orig_node, ethhdr, batman_packet,
-+		update_orig(bat_priv, orig_node, ethhdr, batman_packet,
- 			    if_incoming, hna_buff, hna_buff_len, is_duplicate);
- 
- 	mark_bonding_address(bat_priv, orig_node,
-@@ -1018,8 +1020,7 @@ int recv_icmp_packet(struct sk_buff *skb)
- struct neigh_node *find_router(struct orig_node *orig_node,
- 		struct batman_if *recv_if)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv;
- 	struct orig_node *primary_orig_node;
- 	struct orig_node *router_orig;
- 	struct neigh_node *router, *first_candidate, *best_router;
-@@ -1035,9 +1036,14 @@ struct neigh_node *find_router(struct orig_node *orig_node,
- 	/* without bonding, the first node should
- 	 * always choose the default router. */
- 
-+	if (!recv_if)
-+		return orig_node->router;
++		if (batman_if->soft_iface != if_incoming->soft_iface)
++			continue;
 +
-+	bat_priv = netdev_priv(recv_if->soft_iface);
- 	bonding_enabled = atomic_read(&bat_priv->bonding_enabled);
--	if (!bonding_enabled && (recv_if == NULL))
--			return orig_node->router;
-+
-+	if (!bonding_enabled)
-+		return orig_node->router;
- 
- 	router_orig = orig_node->router->orig_node;
- 
-@@ -1114,7 +1120,7 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
- 	if (skb_headlen(skb) < hdr_size)
- 		return -1;
- 
--	ethhdr = (struct ethhdr *) skb_mac_header(skb);
-+	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	/* packet with unicast indication but broadcast recipient */
- 	if (is_bcast(ethhdr->h_dest))
-@@ -1131,8 +1137,8 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
- 	return 0;
+ 		if (compare_orig(ethhdr->h_source,
+ 				 batman_if->net_dev->dev_addr))
+ 			is_my_addr = 1;
+@@ -751,9 +752,9 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 				0, hna_buff_len, if_incoming);
  }
  
--static int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
--		int hdr_size)
-+static int route_unicast_packet(struct sk_buff *skb,
-+				struct batman_if *recv_if, int hdr_size)
+-int recv_bat_packet(struct sk_buff *skb,
+-				struct batman_if *batman_if)
++int recv_bat_packet(struct sk_buff *skb, struct batman_if *batman_if)
  {
- 	struct orig_node *orig_node;
- 	struct neigh_node *router;
-@@ -1140,9 +1146,16 @@ static int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
- 	struct sk_buff *skb_old;
- 	uint8_t dstaddr[ETH_ALEN];
++	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
+ 	struct ethhdr *ethhdr;
  	unsigned long flags;
--	struct unicast_packet *unicast_packet =
--		(struct unicast_packet *) skb->data;
--	struct ethhdr *ethhdr = (struct ethhdr *) skb_mac_header(skb);
-+	struct unicast_packet *unicast_packet;
-+	struct ethhdr *ethhdr = (struct ethhdr *)skb_mac_header(skb);
-+
-+	unicast_packet = (struct unicast_packet *)skb->data;
-+
-+	/* packet for me */
-+	if (is_my_mac(unicast_packet->dest)) {
-+		interface_rx(recv_if->soft_iface, skb, hdr_size);
-+		return NET_RX_SUCCESS;
-+	}
+ 	struct sk_buff *skb_old;
+@@ -785,18 +786,19 @@ int recv_bat_packet(struct sk_buff *skb,
+ 		kfree_skb(skb_old);
+ 	}
+ 
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 	receive_aggr_bat_packet(ethhdr,
+ 				skb->data,
+ 				skb_headlen(skb),
+ 				batman_if);
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 	kfree_skb(skb);
+ 	return NET_RX_SUCCESS;
+ }
+ 
+-static int recv_my_icmp_packet(struct sk_buff *skb, size_t icmp_len)
++static int recv_my_icmp_packet(struct bat_priv *bat_priv,
++			       struct sk_buff *skb, size_t icmp_len)
+ {
+ 	struct orig_node *orig_node;
+ 	struct icmp_packet_rr *icmp_packet;
+@@ -818,8 +820,8 @@ static int recv_my_icmp_packet(struct sk_buff *skb, size_t icmp_len)
+ 
+ 	/* answer echo request (ping) */
+ 	/* get routing information */
+-	spin_lock_irqsave(&orig_hash_lock, flags);
+-	orig_node = ((struct orig_node *)hash_find(orig_hash,
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
++	orig_node = ((struct orig_node *)hash_find(bat_priv->orig_hash,
+ 						   icmp_packet->orig));
+ 	ret = NET_RX_DROP;
+ 
+@@ -830,7 +832,7 @@ static int recv_my_icmp_packet(struct sk_buff *skb, size_t icmp_len)
+ 		 * copy the required data before sending */
+ 		batman_if = orig_node->router->if_incoming;
+ 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 		/* create a copy of the skb, if needed, to modify it. */
+ 		skb_old = NULL;
+@@ -853,12 +855,13 @@ static int recv_my_icmp_packet(struct sk_buff *skb, size_t icmp_len)
+ 		ret = NET_RX_SUCCESS;
+ 
+ 	} else
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 	return ret;
+ }
+ 
+-static int recv_icmp_ttl_exceeded(struct sk_buff *skb, size_t icmp_len)
++static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
++				  struct sk_buff *skb, size_t icmp_len)
+ {
+ 	struct orig_node *orig_node;
+ 	struct icmp_packet *icmp_packet;
+@@ -881,9 +884,9 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb, size_t icmp_len)
+ 	}
+ 
+ 	/* get routing information */
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 	orig_node = ((struct orig_node *)
+-		     hash_find(orig_hash, icmp_packet->orig));
++		     hash_find(bat_priv->orig_hash, icmp_packet->orig));
+ 	ret = NET_RX_DROP;
+ 
+ 	if ((orig_node != NULL) &&
+@@ -893,7 +896,7 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb, size_t icmp_len)
+ 		 * copy the required data before sending */
+ 		batman_if = orig_node->router->if_incoming;
+ 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 		/* create a copy of the skb, if needed, to modify it. */
+ 		if (!skb_clone_writable(skb, icmp_len)) {
+@@ -915,14 +918,15 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb, size_t icmp_len)
+ 		ret = NET_RX_SUCCESS;
+ 
+ 	} else
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 	return ret;
+ }
+ 
+ 
+-int recv_icmp_packet(struct sk_buff *skb)
++int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ {
++	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct icmp_packet_rr *icmp_packet;
+ 	struct ethhdr *ethhdr;
+ 	struct orig_node *orig_node;
+@@ -969,18 +973,18 @@ int recv_icmp_packet(struct sk_buff *skb)
+ 
+ 	/* packet for me */
+ 	if (is_my_mac(icmp_packet->dst))
+-		return recv_my_icmp_packet(skb, hdr_size);
++		return recv_my_icmp_packet(bat_priv, skb, hdr_size);
  
  	/* TTL exceeded */
- 	if (unicast_packet->ttl < 2) {
-@@ -1200,11 +1213,11 @@ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 	if (icmp_packet->ttl < 2)
+-		return recv_icmp_ttl_exceeded(skb, hdr_size);
++		return recv_icmp_ttl_exceeded(bat_priv, skb, hdr_size);
+ 
+ 	ret = NET_RX_DROP;
+ 
+ 	/* get routing information */
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 	orig_node = ((struct orig_node *)
+-		     hash_find(orig_hash, icmp_packet->dst));
++		     hash_find(bat_priv->orig_hash, icmp_packet->dst));
+ 
+ 	if ((orig_node != NULL) &&
+ 	    (orig_node->router != NULL)) {
+@@ -989,7 +993,7 @@ int recv_icmp_packet(struct sk_buff *skb)
+ 		 * copy the required data before sending */
+ 		batman_if = orig_node->router->if_incoming;
+ 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 		/* create a copy of the skb, if needed, to modify it. */
+ 		if (!skb_clone_writable(skb, hdr_size)) {
+@@ -1010,7 +1014,7 @@ int recv_icmp_packet(struct sk_buff *skb)
+ 		ret = NET_RX_SUCCESS;
+ 
+ 	} else
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 	return ret;
+ }
+@@ -1018,7 +1022,7 @@ int recv_icmp_packet(struct sk_buff *skb)
+ /* find a suitable router for this originator, and use
+  * bonding if possible. */
+ struct neigh_node *find_router(struct orig_node *orig_node,
+-		struct batman_if *recv_if)
++			       struct batman_if *recv_if)
+ {
+ 	struct bat_priv *bat_priv;
+ 	struct orig_node *primary_orig_node;
+@@ -1059,8 +1063,9 @@ struct neigh_node *find_router(struct orig_node *orig_node,
+ 				router_orig->orig, ETH_ALEN) == 0) {
+ 		primary_orig_node = router_orig;
+ 	} else {
+-		primary_orig_node = hash_find(orig_hash,
++		primary_orig_node = hash_find(bat_priv->orig_hash,
+ 						router_orig->primary_addr);
++
+ 		if (!primary_orig_node)
+ 			return orig_node->router;
+ 	}
+@@ -1140,6 +1145,7 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
+ static int route_unicast_packet(struct sk_buff *skb,
+ 				struct batman_if *recv_if, int hdr_size)
+ {
++	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct orig_node *orig_node;
+ 	struct neigh_node *router;
+ 	struct batman_if *batman_if;
+@@ -1166,14 +1172,14 @@ static int route_unicast_packet(struct sk_buff *skb,
+ 	}
+ 
+ 	/* get routing information */
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 	orig_node = ((struct orig_node *)
+-		     hash_find(orig_hash, unicast_packet->dest));
++		     hash_find(bat_priv->orig_hash, unicast_packet->dest));
+ 
+ 	router = find_router(orig_node, recv_if);
+ 
+ 	if (!router) {
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 		return NET_RX_DROP;
+ 	}
+ 
+@@ -1183,7 +1189,7 @@ static int route_unicast_packet(struct sk_buff *skb,
+ 	batman_if = router->if_incoming;
+ 	memcpy(dstaddr, router->addr, ETH_ALEN);
+ 
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 	/* create a copy of the skb, if needed, to modify it. */
+ 	if (!skb_clone_writable(skb, hdr_size)) {
+@@ -1191,7 +1197,7 @@ static int route_unicast_packet(struct sk_buff *skb,
+ 		skb = skb_copy(skb, GFP_ATOMIC);
+ 		if (!skb)
+ 			return NET_RX_DROP;
+-		unicast_packet = (struct unicast_packet *) skb->data;
++		unicast_packet = (struct unicast_packet *)skb->data;
+ 		ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 		kfree_skb(skb_old);
+ 	}
+@@ -1226,6 +1232,7 @@ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 
+ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ {
++	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct unicast_frag_packet *unicast_packet;
+ 	struct orig_node *orig_node;
+ 	struct frag_packet_list_entry *tmp_frag_entry;
+@@ -1235,19 +1242,20 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
  	if (check_unicast_packet(skb, hdr_size) < 0)
  		return NET_RX_DROP;
  
--	unicast_packet = (struct unicast_packet *) skb->data;
-+	unicast_packet = (struct unicast_packet *)skb->data;
+-	unicast_packet = (struct unicast_frag_packet *) skb->data;
++	unicast_packet = (struct unicast_frag_packet *)skb->data;
  
  	/* packet for me */
  	if (is_my_mac(unicast_packet->dest)) {
--		interface_rx(skb, hdr_size);
-+		interface_rx(recv_if->soft_iface, skb, hdr_size);
- 		return NET_RX_SUCCESS;
- 	}
  
-@@ -1259,18 +1272,20 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
+-		spin_lock_irqsave(&orig_hash_lock, flags);
++		spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 		orig_node = ((struct orig_node *)
+-			hash_find(orig_hash, unicast_packet->orig));
++			hash_find(bat_priv->orig_hash, unicast_packet->orig));
+ 
+ 		if (!orig_node) {
+ 			pr_warning("couldn't find orig node for "
+ 				"fragmentation\n");
+-			spin_unlock_irqrestore(&orig_hash_lock, flags);
++			spin_unlock_irqrestore(&bat_priv->orig_hash_lock,
++					       flags);
+ 			return NET_RX_DROP;
+ 		}
+ 
+@@ -1258,17 +1266,18 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 
+ 		tmp_frag_entry =
+ 			search_frag_packet(&orig_node->frag_list,
+-			unicast_packet);
++					   unicast_packet);
+ 
+ 		if (!tmp_frag_entry) {
+ 			create_frag_entry(&orig_node->frag_list, skb);
+-			spin_unlock_irqrestore(&orig_hash_lock, flags);
++			spin_unlock_irqrestore(&bat_priv->orig_hash_lock,
++					       flags);
+ 			return NET_RX_SUCCESS;
+ 		}
+ 
+ 		skb = merge_frag_packet(&orig_node->frag_list,
+-			tmp_frag_entry, skb);
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++					tmp_frag_entry, skb);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
  		if (!skb)
  			return NET_RX_DROP;
  
--		interface_rx(skb, hdr_size);
-+		interface_rx(recv_if->soft_iface, skb, hdr_size);
- 		return NET_RX_SUCCESS;
- 	}
- 
- 	return route_unicast_packet(skb, recv_if, hdr_size);
+@@ -1280,12 +1289,12 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
  }
  
--int recv_bcast_packet(struct sk_buff *skb)
-+
-+int recv_bcast_packet(struct sk_buff *skb, struct batman_if *batman_if)
+ 
+-int recv_bcast_packet(struct sk_buff *skb, struct batman_if *batman_if)
++int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
  {
++	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
  	struct orig_node *orig_node;
  	struct bcast_packet *bcast_packet;
  	struct ethhdr *ethhdr;
-+	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
+-	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
  	int hdr_size = sizeof(struct bcast_packet);
  	int32_t seq_diff;
  	unsigned long flags;
-@@ -1322,37 +1337,38 @@ int recv_bcast_packet(struct sk_buff *skb)
- 	seq_diff = ntohl(bcast_packet->seqno) - orig_node->last_bcast_seqno;
+@@ -1317,12 +1326,12 @@ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *batman_if)
+ 	if (bcast_packet->ttl < 2)
+ 		return NET_RX_DROP;
  
- 	/* check whether the packet is old and the host just restarted. */
--	if (window_protected(seq_diff, &orig_node->bcast_seqno_reset)) {
-+	if (window_protected(bat_priv, seq_diff,
-+			     &orig_node->bcast_seqno_reset)) {
- 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 	orig_node = ((struct orig_node *)
+-		     hash_find(orig_hash, bcast_packet->orig));
++		     hash_find(bat_priv->orig_hash, bcast_packet->orig));
+ 
+ 	if (orig_node == NULL) {
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
  		return NET_RX_DROP;
  	}
  
- 	/* mark broadcast in flood history, update window position
- 	 * if required. */
--	if (bit_get_packet(orig_node->bcast_bits, seq_diff, 1))
-+	if (bit_get_packet(bat_priv, orig_node->bcast_bits, seq_diff, 1))
+@@ -1330,7 +1339,7 @@ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *batman_if)
+ 	if (get_bit_status(orig_node->bcast_bits,
+ 			   orig_node->last_bcast_seqno,
+ 			   ntohl(bcast_packet->seqno))) {
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 		return NET_RX_DROP;
+ 	}
+ 
+@@ -1339,7 +1348,7 @@ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *batman_if)
+ 	/* check whether the packet is old and the host just restarted. */
+ 	if (window_protected(bat_priv, seq_diff,
+ 			     &orig_node->bcast_seqno_reset)) {
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 		return NET_RX_DROP;
+ 	}
+ 
+@@ -1348,21 +1357,21 @@ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *batman_if)
+ 	if (bit_get_packet(bat_priv, orig_node->bcast_bits, seq_diff, 1))
  		orig_node->last_bcast_seqno = ntohl(bcast_packet->seqno);
  
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
  	/* rebroadcast packet */
--	add_bcast_packet_to_list(skb);
-+	add_bcast_packet_to_list(bat_priv, skb);
+ 	add_bcast_packet_to_list(bat_priv, skb);
  
  	/* broadcast for me */
--	interface_rx(skb, hdr_size);
-+	interface_rx(batman_if->soft_iface, skb, hdr_size);
+-	interface_rx(batman_if->soft_iface, skb, hdr_size);
++	interface_rx(recv_if->soft_iface, skb, hdr_size);
  
  	return NET_RX_SUCCESS;
  }
  
--int recv_vis_packet(struct sk_buff *skb)
-+int recv_vis_packet(struct sk_buff *skb, struct batman_if *batman_if)
+-int recv_vis_packet(struct sk_buff *skb, struct batman_if *batman_if)
++int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if)
  {
  	struct vis_packet *vis_packet;
  	struct ethhdr *ethhdr;
--	struct bat_priv *bat_priv;
-+	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
+-	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
++	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
  	int hdr_size = sizeof(struct vis_packet);
  
  	if (skb_headlen(skb) < hdr_size)
- 		return NET_RX_DROP;
- 
--	vis_packet = (struct vis_packet *) skb->data;
-+	vis_packet = (struct vis_packet *)skb->data;
- 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	/* not for me */
-@@ -1366,9 +1382,6 @@ int recv_vis_packet(struct sk_buff *skb)
- 	if (is_my_mac(vis_packet->sender_orig))
- 		return NET_RX_DROP;
- 
--	/* FIXME: each batman_if will be attached to a softif */
--	bat_priv = netdev_priv(soft_device);
--
- 	switch (vis_packet->vis_type) {
- 	case VIS_TYPE_SERVER_SYNC:
- 		/* TODO: handle fragmented skbs properly */
 diff --git a/batman-adv/routing.h b/batman-adv/routing.h
-index 81c684f..67f2842 100644
+index 67f2842..06ea99d 100644
 --- a/batman-adv/routing.h
 +++ b/batman-adv/routing.h
-@@ -29,14 +29,14 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 				struct batman_packet *batman_packet,
- 				unsigned char *hna_buff, int hna_buff_len,
- 				struct batman_if *if_incoming);
--void update_routes(struct orig_node *orig_node,
--				struct neigh_node *neigh_node,
--				unsigned char *hna_buff, int hna_buff_len);
-+void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
-+		   struct neigh_node *neigh_node, unsigned char *hna_buff,
-+		   int hna_buff_len);
- int recv_icmp_packet(struct sk_buff *skb);
+@@ -32,13 +32,12 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 		   struct neigh_node *neigh_node, unsigned char *hna_buff,
+ 		   int hna_buff_len);
+-int recv_icmp_packet(struct sk_buff *skb);
++int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if);
  int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
  int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if);
--int recv_bcast_packet(struct sk_buff *skb);
--int recv_vis_packet(struct sk_buff *skb);
-+int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
-+int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_bat_packet(struct sk_buff *skb,
- 				struct batman_if *batman_if);
+ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if);
+-int recv_bat_packet(struct sk_buff *skb,
+-				struct batman_if *batman_if);
++int recv_bat_packet(struct sk_buff *skb, struct batman_if *recv_if);
  struct neigh_node *find_router(struct orig_node *orig_node,
+ 		struct batman_if *recv_if);
+ void update_bonding_candidates(struct bat_priv *bat_priv,
 diff --git a/batman-adv/send.c b/batman-adv/send.c
-index cd6be2b..785f997 100644
+index 785f997..0baa294 100644
 --- a/batman-adv/send.c
 +++ b/batman-adv/send.c
-@@ -126,8 +126,7 @@ void send_raw_packet(unsigned char *pack_buff, int pack_buff_len,
- static void send_packet_to_if(struct forw_packet *forw_packet,
- 			      struct batman_if *batman_if)
- {
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
- 	char *fwd_str;
- 	uint8_t packet_num;
- 	int16_t buff_pos;
-@@ -182,9 +181,9 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
- /* send a batman packet */
+@@ -182,8 +182,8 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
  static void send_packet(struct forw_packet *forw_packet)
  {
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
  	struct batman_if *batman_if;
-+	struct bat_priv *bat_priv =
-+		netdev_priv(forw_packet->if_incoming->soft_iface);
+-	struct bat_priv *bat_priv =
+-		netdev_priv(forw_packet->if_incoming->soft_iface);
++	struct net_device *soft_iface = forw_packet->if_incoming->soft_iface;
++	struct bat_priv *bat_priv = netdev_priv(soft_iface);
  	struct batman_packet *batman_packet =
  		(struct batman_packet *)(forw_packet->packet_buff);
  	unsigned char directlink = (batman_packet->flags & DIRECTLINK ? 1 : 0);
-@@ -253,8 +252,7 @@ static void rebuild_batman_packet(struct batman_if *batman_if)
+@@ -220,18 +220,24 @@ static void send_packet(struct forw_packet *forw_packet)
  
- void schedule_own_packet(struct batman_if *batman_if)
+ 	/* broadcast on every interface */
+ 	rcu_read_lock();
+-	list_for_each_entry_rcu(batman_if, &if_list, list)
++	list_for_each_entry_rcu(batman_if, &if_list, list) {
++		if (batman_if->soft_iface != soft_iface)
++			continue;
++
+ 		send_packet_to_if(forw_packet, batman_if);
++	}
+ 	rcu_read_unlock();
+ }
+ 
+-static void rebuild_batman_packet(struct batman_if *batman_if)
++static void rebuild_batman_packet(struct bat_priv *bat_priv,
++				  struct batman_if *batman_if)
  {
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
- 	unsigned long send_time;
+ 	int new_len;
+ 	unsigned char *new_buff;
  	struct batman_packet *batman_packet;
- 	int vis_server;
-@@ -317,8 +315,7 @@ void schedule_forward_packet(struct orig_node *orig_node,
- 			     uint8_t directlink, int hna_buff_len,
- 			     struct batman_if *if_incoming)
- {
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	unsigned char in_tq, in_ttl, tq_avg = 0;
- 	unsigned long send_time;
  
-@@ -409,12 +406,10 @@ static void _add_bcast_packet_to_list(struct forw_packet *forw_packet,
-  *
-  * The skb is not consumed, so the caller should make sure that the
-  * skb is freed. */
--int add_bcast_packet_to_list(struct sk_buff *skb)
-+int add_bcast_packet_to_list(struct bat_priv *bat_priv, struct sk_buff *skb)
- {
- 	struct forw_packet *forw_packet;
- 	struct bcast_packet *bcast_packet;
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
+-	new_len = sizeof(struct batman_packet) + (num_hna * ETH_ALEN);
++	new_len = sizeof(struct batman_packet) +
++			(bat_priv->num_local_hna * ETH_ALEN);
+ 	new_buff = kmalloc(new_len, GFP_ATOMIC);
  
- 	if (!atomic_dec_not_zero(&bat_priv->bcast_queue_left)) {
- 		bat_dbg(DBG_BATMAN, bat_priv, "bcast packet queue full\n");
-@@ -462,8 +457,7 @@ static void send_outstanding_bcast_packet(struct work_struct *work)
+ 	/* keep old buffer if kmalloc should fail */
+@@ -240,9 +246,9 @@ static void rebuild_batman_packet(struct batman_if *batman_if)
+ 		       sizeof(struct batman_packet));
+ 		batman_packet = (struct batman_packet *)new_buff;
+ 
+-		batman_packet->num_hna = hna_local_fill_buffer(
+-			new_buff + sizeof(struct batman_packet),
+-			new_len - sizeof(struct batman_packet));
++		batman_packet->num_hna = hna_local_fill_buffer(bat_priv,
++				new_buff + sizeof(struct batman_packet),
++				new_len - sizeof(struct batman_packet));
+ 
+ 		kfree(batman_if->packet_buff);
+ 		batman_if->packet_buff = new_buff;
+@@ -274,9 +280,9 @@ void schedule_own_packet(struct batman_if *batman_if)
+ 		batman_if->if_status = IF_ACTIVE;
+ 
+ 	/* if local hna has changed and interface is a primary interface */
+-	if ((atomic_read(&hna_local_changed)) &&
++	if ((atomic_read(&bat_priv->hna_local_changed)) &&
+ 	    (batman_if == bat_priv->primary_if))
+-		rebuild_batman_packet(batman_if);
++		rebuild_batman_packet(bat_priv, batman_if);
+ 
+ 	/**
+ 	 * NOTE: packet_buff might just have been re-allocated in
+@@ -379,16 +385,17 @@ static void forw_packet_free(struct forw_packet *forw_packet)
+ 	kfree(forw_packet);
+ }
+ 
+-static void _add_bcast_packet_to_list(struct forw_packet *forw_packet,
++static void _add_bcast_packet_to_list(struct bat_priv *bat_priv,
++				      struct forw_packet *forw_packet,
+ 				      unsigned long send_time)
+ {
+ 	unsigned long flags;
+ 	INIT_HLIST_NODE(&forw_packet->list);
+ 
+ 	/* add new packet to packet list */
+-	spin_lock_irqsave(&forw_bcast_list_lock, flags);
+-	hlist_add_head(&forw_packet->list, &forw_bcast_list);
+-	spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
++	spin_lock_irqsave(&bat_priv->forw_bcast_list_lock, flags);
++	hlist_add_head(&forw_packet->list, &bat_priv->forw_bcast_list);
++	spin_unlock_irqrestore(&bat_priv->forw_bcast_list_lock, flags);
+ 
+ 	/* start timer for this packet */
+ 	INIT_DELAYED_WORK(&forw_packet->delayed_work,
+@@ -416,6 +423,9 @@ int add_bcast_packet_to_list(struct bat_priv *bat_priv, struct sk_buff *skb)
+ 		goto out;
+ 	}
+ 
++	if (!bat_priv->primary_if)
++		goto out;
++
+ 	forw_packet = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
+ 
+ 	if (!forw_packet)
+@@ -433,11 +443,12 @@ int add_bcast_packet_to_list(struct bat_priv *bat_priv, struct sk_buff *skb)
+ 
+ 	forw_packet->skb = skb;
+ 	forw_packet->packet_buff = NULL;
++	forw_packet->if_incoming = bat_priv->primary_if;
+ 
+ 	/* how often did we send the bcast packet ? */
+ 	forw_packet->num_packets = 0;
+ 
+-	_add_bcast_packet_to_list(forw_packet, 1);
++	_add_bcast_packet_to_list(bat_priv, forw_packet, 1);
+ 	return NETDEV_TX_OK;
+ 
+ packet_free:
+@@ -457,23 +468,26 @@ static void send_outstanding_bcast_packet(struct work_struct *work)
  		container_of(delayed_work, struct forw_packet, delayed_work);
  	unsigned long flags;
  	struct sk_buff *skb1;
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv;
+-	struct bat_priv *bat_priv;
++	struct net_device *soft_iface = forw_packet->if_incoming->soft_iface;
++	struct bat_priv *bat_priv = netdev_priv(soft_iface);
  
- 	spin_lock_irqsave(&forw_bcast_list_lock, flags);
+-	spin_lock_irqsave(&forw_bcast_list_lock, flags);
++	spin_lock_irqsave(&bat_priv->forw_bcast_list_lock, flags);
  	hlist_del(&forw_packet->list);
-@@ -492,6 +486,7 @@ static void send_outstanding_bcast_packet(struct work_struct *work)
+-	spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->forw_bcast_list_lock, flags);
+ 
+-	if (atomic_read(&module_state) == MODULE_DEACTIVATING)
++	if (atomic_read(&bat_priv->mesh_state) == MESH_DEACTIVATING)
+ 		goto out;
+ 
+ 	/* rebroadcast packet */
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
++		if (batman_if->soft_iface != soft_iface)
++			continue;
++
+ 		/* send a copy of the saved skb */
+ 		skb1 = skb_copy(forw_packet->skb, GFP_ATOMIC);
+ 		if (skb1)
+-			send_skb_packet(skb1,
+-				batman_if, broadcast_addr);
++			send_skb_packet(skb1, batman_if, broadcast_addr);
+ 	}
+ 	rcu_read_unlock();
+ 
+@@ -481,12 +495,12 @@ static void send_outstanding_bcast_packet(struct work_struct *work)
+ 
+ 	/* if we still have some more bcasts to send */
+ 	if (forw_packet->num_packets < 3) {
+-		_add_bcast_packet_to_list(forw_packet, ((5 * HZ) / 1000));
++		_add_bcast_packet_to_list(bat_priv, forw_packet,
++					  ((5 * HZ) / 1000));
+ 		return;
  	}
  
  out:
-+	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
+-	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
  	forw_packet_free(forw_packet);
  	atomic_inc(&bat_priv->bcast_queue_left);
  }
-@@ -503,8 +498,7 @@ void send_outstanding_bat_packet(struct work_struct *work)
- 	struct forw_packet *forw_packet =
- 		container_of(delayed_work, struct forw_packet, delayed_work);
+@@ -500,11 +514,12 @@ void send_outstanding_bat_packet(struct work_struct *work)
  	unsigned long flags;
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv;
+ 	struct bat_priv *bat_priv;
  
- 	spin_lock_irqsave(&forw_bat_list_lock, flags);
+-	spin_lock_irqsave(&forw_bat_list_lock, flags);
++	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
++	spin_lock_irqsave(&bat_priv->forw_bat_list_lock, flags);
  	hlist_del(&forw_packet->list);
-@@ -524,6 +518,8 @@ void send_outstanding_bat_packet(struct work_struct *work)
+-	spin_unlock_irqrestore(&forw_bat_list_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->forw_bat_list_lock, flags);
+ 
+-	if (atomic_read(&module_state) == MODULE_DEACTIVATING)
++	if (atomic_read(&bat_priv->mesh_state) == MESH_DEACTIVATING)
+ 		goto out;
+ 
+ 	send_packet(forw_packet);
+@@ -518,8 +533,6 @@ void send_outstanding_bat_packet(struct work_struct *work)
  		schedule_own_packet(forw_packet->if_incoming);
  
  out:
-+	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
-+
+-	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
+-
  	/* don't count own packet */
  	if (!forw_packet->own)
  		atomic_inc(&bat_priv->batman_queue_left);
-@@ -533,19 +529,22 @@ out:
+@@ -527,29 +540,25 @@ out:
+ 	forw_packet_free(forw_packet);
+ }
  
- void purge_outstanding_packets(struct batman_if *batman_if)
+-void purge_outstanding_packets(struct batman_if *batman_if)
++void purge_outstanding_packets(struct bat_priv *bat_priv,
++			       struct batman_if *batman_if)
  {
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv;
+-	struct bat_priv *bat_priv;
  	struct forw_packet *forw_packet;
  	struct hlist_node *tmp_node, *safe_tmp_node;
  	unsigned long flags;
  
--	if (batman_if)
--		bat_dbg(DBG_BATMAN, bat_priv,
--			"purge_outstanding_packets(): %s\n",
--			batman_if->dev);
--	else
--		bat_dbg(DBG_BATMAN, bat_priv,
--			"purge_outstanding_packets()\n");
-+	if (batman_if->soft_iface) {
-+		bat_priv = netdev_priv(batman_if->soft_iface);
-+
-+		if (batman_if)
-+			bat_dbg(DBG_BATMAN, bat_priv,
-+				"purge_outstanding_packets(): %s\n",
-+				batman_if->dev);
-+		else
-+			bat_dbg(DBG_BATMAN, bat_priv,
-+				"purge_outstanding_packets()\n");
-+	}
+-	if (batman_if->soft_iface) {
+-		bat_priv = netdev_priv(batman_if->soft_iface);
+-
+-		if (batman_if)
+-			bat_dbg(DBG_BATMAN, bat_priv,
+-				"purge_outstanding_packets(): %s\n",
+-				batman_if->dev);
+-		else
+-			bat_dbg(DBG_BATMAN, bat_priv,
+-				"purge_outstanding_packets()\n");
+-	}
++	if (batman_if)
++		bat_dbg(DBG_BATMAN, bat_priv,
++			"purge_outstanding_packets(): %s\n",
++			batman_if->dev);
++	else
++		bat_dbg(DBG_BATMAN, bat_priv,
++			"purge_outstanding_packets()\n");
  
  	/* free bcast list */
- 	spin_lock_irqsave(&forw_bcast_list_lock, flags);
+-	spin_lock_irqsave(&forw_bcast_list_lock, flags);
++	spin_lock_irqsave(&bat_priv->forw_bcast_list_lock, flags);
+ 	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node,
+-				  &forw_bcast_list, list) {
++				  &bat_priv->forw_bcast_list, list) {
+ 
+ 		/**
+ 		 * if purge_outstanding_packets() was called with an argmument
+@@ -559,21 +568,21 @@ void purge_outstanding_packets(struct batman_if *batman_if)
+ 		    (forw_packet->if_incoming != batman_if))
+ 			continue;
+ 
+-		spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->forw_bcast_list_lock, flags);
+ 
+ 		/**
+ 		 * send_outstanding_bcast_packet() will lock the list to
+ 		 * delete the item from the list
+ 		 */
+ 		cancel_delayed_work_sync(&forw_packet->delayed_work);
+-		spin_lock_irqsave(&forw_bcast_list_lock, flags);
++		spin_lock_irqsave(&bat_priv->forw_bcast_list_lock, flags);
+ 	}
+-	spin_unlock_irqrestore(&forw_bcast_list_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->forw_bcast_list_lock, flags);
+ 
+ 	/* free batman packet list */
+-	spin_lock_irqsave(&forw_bat_list_lock, flags);
++	spin_lock_irqsave(&bat_priv->forw_bat_list_lock, flags);
+ 	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node,
+-				  &forw_bat_list, list) {
++				  &bat_priv->forw_bat_list, list) {
+ 
+ 		/**
+ 		 * if purge_outstanding_packets() was called with an argmument
+@@ -583,14 +592,14 @@ void purge_outstanding_packets(struct batman_if *batman_if)
+ 		    (forw_packet->if_incoming != batman_if))
+ 			continue;
+ 
+-		spin_unlock_irqrestore(&forw_bat_list_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->forw_bat_list_lock, flags);
+ 
+ 		/**
+ 		 * send_outstanding_bat_packet() will lock the list to
+ 		 * delete the item from the list
+ 		 */
+ 		cancel_delayed_work_sync(&forw_packet->delayed_work);
+-		spin_lock_irqsave(&forw_bat_list_lock, flags);
++		spin_lock_irqsave(&bat_priv->forw_bat_list_lock, flags);
+ 	}
+-	spin_unlock_irqrestore(&forw_bat_list_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->forw_bat_list_lock, flags);
+ }
 diff --git a/batman-adv/send.h b/batman-adv/send.h
-index b64c627..2c48042 100644
+index 2c48042..c253f28 100644
 --- a/batman-adv/send.h
 +++ b/batman-adv/send.h
-@@ -35,7 +35,7 @@ void schedule_forward_packet(struct orig_node *orig_node,
- 			     struct batman_packet *batman_packet,
- 			     uint8_t directlink, int hna_buff_len,
+@@ -37,6 +37,7 @@ void schedule_forward_packet(struct orig_node *orig_node,
  			     struct batman_if *if_outgoing);
--int  add_bcast_packet_to_list(struct sk_buff *skb);
-+int add_bcast_packet_to_list(struct bat_priv *bat_priv, struct sk_buff *skb);
+ int add_bcast_packet_to_list(struct bat_priv *bat_priv, struct sk_buff *skb);
  void send_outstanding_bat_packet(struct work_struct *work);
- void purge_outstanding_packets(struct batman_if *batman_if);
+-void purge_outstanding_packets(struct batman_if *batman_if);
++void purge_outstanding_packets(struct bat_priv *bat_priv,
++			       struct batman_if *batman_if);
  
+ #endif /* _NET_BATMAN_ADV_SEND_H_ */
 diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
-index 3025083..7e0b1e0 100644
+index 7e0b1e0..37ffa0b 100644
 --- a/batman-adv/soft-interface.c
 +++ b/batman-adv/soft-interface.c
-@@ -24,10 +24,13 @@
- #include "hard-interface.h"
- #include "routing.h"
- #include "send.h"
-+#include "bat_debugfs.h"
- #include "translation-table.h"
- #include "types.h"
- #include "hash.h"
-+
- #include <linux/slab.h>
-+#include "gateway_common.h"
- #include "gateway_client.h"
- #include <linux/ethtool.h>
- #include <linux/etherdevice.h>
-@@ -95,12 +98,13 @@ static int interface_release(struct net_device *dev)
+@@ -37,12 +37,6 @@
+ #include "compat.h"
+ #include "fragmentation.h"
  
- static struct net_device_stats *interface_stats(struct net_device *dev)
+-static uint32_t bcast_seqno = 1; /* give own bcast messages seq numbers to avoid
+-				  * broadcast storms */
+-static int32_t skb_packets;
+-static int32_t skb_bad_packets;
+-
+-unsigned char main_if_addr[ETH_ALEN];
+ static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd);
+ static void bat_get_drvinfo(struct net_device *dev,
+ 			    struct ethtool_drvinfo *info);
+@@ -62,18 +56,11 @@ static const struct ethtool_ops bat_ethtool_ops = {
+ 	.set_rx_csum = bat_set_rx_csum
+ };
+ 
+-void set_main_if_addr(uint8_t *addr)
+-{
+-	memcpy(main_if_addr, addr, ETH_ALEN);
+-}
+-
+ int my_skb_push(struct sk_buff *skb, unsigned int len)
  {
--	struct bat_priv *priv = netdev_priv(dev);
--	return &priv->stats;
-+	struct bat_priv *bat_priv = netdev_priv(dev);
-+	return &bat_priv->stats;
- }
+ 	int result = 0;
  
- static int interface_set_mac_addr(struct net_device *dev, void *p)
- {
-+	struct bat_priv *bat_priv = netdev_priv(dev);
- 	struct sockaddr *addr = p;
+-	skb_packets++;
+ 	if (skb_headroom(skb) < len) {
+-		skb_bad_packets++;
+ 		result = pskb_expand_head(skb, len, 0, GFP_ATOMIC);
  
- 	if (!is_valid_ether_addr(addr->sa_data))
-@@ -108,8 +112,9 @@ static int interface_set_mac_addr(struct net_device *dev, void *p)
+ 		if (result < 0)
+@@ -111,7 +98,7 @@ static int interface_set_mac_addr(struct net_device *dev, void *p)
+ 		return -EADDRNOTAVAIL;
  
  	/* only modify hna-table if it has been initialised before */
- 	if (atomic_read(&module_state) == MODULE_ACTIVE) {
--		hna_local_remove(dev->dev_addr, "mac address changed");
--		hna_local_add(addr->sa_data);
-+		hna_local_remove(bat_priv, dev->dev_addr,
-+				 "mac address changed");
-+		hna_local_add(dev, addr->sa_data);
- 	}
+-	if (atomic_read(&module_state) == MODULE_ACTIVE) {
++	if (atomic_read(&bat_priv->mesh_state) == MESH_ACTIVE) {
+ 		hna_local_remove(bat_priv, dev->dev_addr,
+ 				 "mac address changed");
+ 		hna_local_add(dev, addr->sa_data);
+@@ -150,7 +137,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	int hdr_len;
+ 	bool bcast_dst = false, do_bcast = true;
  
- 	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
-@@ -120,7 +125,7 @@ static int interface_set_mac_addr(struct net_device *dev, void *p)
- static int interface_change_mtu(struct net_device *dev, int new_mtu)
- {
- 	/* check ranges */
--	if ((new_mtu < 68) || (new_mtu > hardif_min_mtu()))
-+	if ((new_mtu < 68) || (new_mtu > hardif_min_mtu(dev)))
- 		return -EINVAL;
- 
- 	dev->mtu = new_mtu;
-@@ -128,7 +133,7 @@ static int interface_change_mtu(struct net_device *dev, int new_mtu)
- 	return 0;
- }
- 
--int interface_tx(struct sk_buff *skb, struct net_device *dev)
-+int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- {
- 	struct unicast_packet *unicast_packet;
- 	struct unicast_frag_packet *ucast_frag1, *ucast_frag2;
-@@ -136,9 +141,8 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
- 	struct orig_node *orig_node;
- 	struct neigh_node *router;
- 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
--	struct bat_priv *priv = netdev_priv(dev);
-+	struct bat_priv *bat_priv = netdev_priv(soft_iface);
- 	struct batman_if *batman_if;
--	struct bat_priv *bat_priv;
- 	struct sk_buff *frag_skb;
- 	uint8_t dstaddr[6];
- 	int data_len = skb->len;
-@@ -149,12 +153,9 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
- 	if (atomic_read(&module_state) != MODULE_ACTIVE)
+-	if (atomic_read(&module_state) != MODULE_ACTIVE)
++	if (atomic_read(&bat_priv->mesh_state) != MESH_ACTIVE)
  		goto dropped;
  
--	/* FIXME: each batman_if will be attached to a softif */
--	bat_priv = netdev_priv(soft_device);
--
--	dev->trans_start = jiffies;
-+	soft_iface->trans_start = jiffies;
- 	/* TODO: check this for locks */
--	hna_local_add(ethhdr->h_source);
-+	hna_local_add(soft_iface, ethhdr->h_source);
+ 	soft_iface->trans_start = jiffies;
+@@ -165,6 +152,9 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
  
- 	if (is_bcast(ethhdr->h_dest) || is_mcast(ethhdr->h_dest))
- 		bcast_dst = true;
-@@ -182,7 +183,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
- 		bcast_packet->seqno = htonl(bcast_seqno);
+ 	/* ethernet packet should be broadcasted */
+ 	if (bcast_dst && do_bcast) {
++		if (!bat_priv->primary_if)
++			goto dropped;
++
+ 		if (my_skb_push(skb, sizeof(struct bcast_packet)) < 0)
+ 			goto dropped;
  
- 		/* broadcast packet. on success, increase seqno. */
--		if (add_bcast_packet_to_list(skb) == NETDEV_TX_OK)
-+		if (add_bcast_packet_to_list(bat_priv, skb) == NETDEV_TX_OK)
- 			bcast_seqno++;
+@@ -177,14 +167,14 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 
+ 		/* hw address of first interface is the orig mac because only
+ 		 * this mac is known throughout the mesh */
+-		memcpy(bcast_packet->orig, main_if_addr, ETH_ALEN);
++		memcpy(bcast_packet->orig,
++		       bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
+ 
+ 		/* set broadcast sequence number */
+-		bcast_packet->seqno = htonl(bcast_seqno);
++		bcast_packet->seqno =
++			htonl(atomic_inc_return(&bat_priv->bcast_seqno));
+ 
+-		/* broadcast packet. on success, increase seqno. */
+-		if (add_bcast_packet_to_list(bat_priv, skb) == NETDEV_TX_OK)
+-			bcast_seqno++;
++		add_bcast_packet_to_list(bat_priv, skb);
  
  		/* a copy is stored in the bcast list, therefore removing
-@@ -282,23 +283,23 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
- 		}
- 	}
+ 		 * the original skb. */
+@@ -192,18 +182,21 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
  
--	priv->stats.tx_packets++;
--	priv->stats.tx_bytes += data_len;
-+	bat_priv->stats.tx_packets++;
-+	bat_priv->stats.tx_bytes += data_len;
+ 	/* unicast packet */
+ 	} else {
+-		spin_lock_irqsave(&orig_hash_lock, flags);
++		spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 
+ 		/* get routing information */
+ 		if (bcast_dst)
+-			orig_node = (struct orig_node *)gw_get_selected();
++			orig_node = (struct orig_node *)
++						gw_get_selected(bat_priv);
+ 		else
+-			orig_node = ((struct orig_node *)hash_find(orig_hash,
+-							   ethhdr->h_dest));
++			orig_node = ((struct orig_node *)hash_find(
++							bat_priv->orig_hash,
++							ethhdr->h_dest));
+ 
+ 		/* check for hna host */
+ 		if (!orig_node)
+-			orig_node = transtable_search(ethhdr->h_dest);
++			orig_node = transtable_search(bat_priv,
++						      ethhdr->h_dest);
+ 
+ 		router = find_router(orig_node, NULL);
+ 
+@@ -216,7 +209,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 		batman_if = router->if_incoming;
+ 		memcpy(dstaddr, router->addr, ETH_ALEN);
+ 
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 		if (batman_if->if_status != IF_ACTIVE)
+ 			goto dropped;
+@@ -288,7 +281,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
  	goto end;
  
  unlock:
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
  dropped:
--	priv->stats.tx_dropped++;
-+	bat_priv->stats.tx_dropped++;
+ 	bat_priv->stats.tx_dropped++;
  	kfree_skb(skb);
- end:
- 	return NETDEV_TX_OK;
- }
+@@ -392,7 +385,6 @@ struct net_device *softif_create(char *name)
+ 	}
  
--void interface_rx(struct sk_buff *skb, int hdr_size)
-+void interface_rx(struct net_device *soft_iface,
-+		  struct sk_buff *skb, int hdr_size)
- {
--	struct net_device *dev = soft_device;
--	struct bat_priv *priv = netdev_priv(dev);
-+	struct bat_priv *priv = netdev_priv(soft_iface);
+ 	ret = register_netdev(soft_iface);
+-
+ 	if (ret < 0) {
+ 		pr_err("Unable to register the batman interface '%s': %i\n",
+ 		       name, ret);
+@@ -412,21 +404,29 @@ struct net_device *softif_create(char *name)
+ 	atomic_set(&bat_priv->bcast_queue_left, BCAST_QUEUE_LEN);
+ 	atomic_set(&bat_priv->batman_queue_left, BATMAN_QUEUE_LEN);
  
- 	/* check if enough space is available for pulling, and pull */
- 	if (!pskb_may_pull(skb, hdr_size)) {
-@@ -308,8 +309,8 @@ void interface_rx(struct sk_buff *skb, int hdr_size)
- 	skb_pull_rcsum(skb, hdr_size);
- /*	skb_set_mac_header(skb, -sizeof(struct ethhdr));*/
- 
--	skb->dev = dev;
--	skb->protocol = eth_type_trans(skb, dev);
-+	skb->dev = soft_iface;
-+	skb->protocol = eth_type_trans(skb, soft_iface);
- 
- 	/* should not be neccesary anymore as we use skb_pull_rcsum()
- 	 * TODO: please verify this and remove this TODO
-@@ -323,7 +324,7 @@ void interface_rx(struct sk_buff *skb, int hdr_size)
- 	priv->stats.rx_packets++;
- 	priv->stats.rx_bytes += skb->len;
- 
--	dev->last_rx = jiffies;
-+	soft_iface->last_rx = jiffies;
- 
- 	netif_rx(skb);
- }
-@@ -340,7 +341,7 @@ static const struct net_device_ops bat_netdev_ops = {
- };
- #endif
- 
--void interface_setup(struct net_device *dev)
-+static void interface_setup(struct net_device *dev)
- {
- 	struct bat_priv *priv = netdev_priv(dev);
- 	char dev_addr[ETH_ALEN];
-@@ -359,9 +360,11 @@ void interface_setup(struct net_device *dev)
- #endif
- 	dev->destructor = free_netdev;
- 
--	dev->mtu = ETH_DATA_LEN;	/* can't call min_mtu, because the
--					 * needed variables have not been
--					 * initialized yet */
-+	/**
-+	 * can't call min_mtu, because the needed variables
-+	 * have not been initialized yet
-+	 */
-+	dev->mtu = ETH_DATA_LEN;
- 	dev->hard_header_len = BAT_HEADER_LEN; /* reserve more space in the
- 						* skbuff for our header */
- 
-@@ -374,6 +377,75 @@ void interface_setup(struct net_device *dev)
- 	memset(priv, 0, sizeof(struct bat_priv));
- }
- 
-+struct net_device *softif_create(char *name)
-+{
-+	struct net_device *soft_iface;
-+	struct bat_priv *bat_priv;
-+	int ret;
++	atomic_set(&bat_priv->mesh_state, MESH_INACTIVE);
++	atomic_set(&bat_priv->bcast_seqno, 1);
++	atomic_set(&bat_priv->hna_local_changed, 0);
 +
-+	soft_iface = alloc_netdev(sizeof(struct bat_priv) , name,
-+				   interface_setup);
-+
-+	if (!soft_iface) {
-+		pr_err("Unable to allocate the batman interface: %s\n", name);
-+		goto out;
-+	}
-+
-+	ret = register_netdev(soft_iface);
-+
-+	if (ret < 0) {
-+		pr_err("Unable to register the batman interface '%s': %i\n",
-+		       name, ret);
-+		goto free_soft_iface;
-+	}
-+
-+	bat_priv = netdev_priv(soft_iface);
-+
-+	atomic_set(&bat_priv->aggregation_enabled, 1);
-+	atomic_set(&bat_priv->bonding_enabled, 0);
-+	atomic_set(&bat_priv->vis_mode, VIS_TYPE_CLIENT_UPDATE);
-+	atomic_set(&bat_priv->gw_mode, GW_MODE_OFF);
-+	atomic_set(&bat_priv->gw_class, 0);
-+	atomic_set(&bat_priv->orig_interval, 1000);
-+	atomic_set(&bat_priv->log_level, 0);
-+	atomic_set(&bat_priv->frag_enabled, 1);
-+	atomic_set(&bat_priv->bcast_queue_left, BCAST_QUEUE_LEN);
-+	atomic_set(&bat_priv->batman_queue_left, BATMAN_QUEUE_LEN);
-+
-+	bat_priv->primary_if = NULL;
-+	bat_priv->num_ifaces = 0;
-+
-+	ret = sysfs_add_meshif(soft_iface);
-+
+ 	bat_priv->primary_if = NULL;
+ 	bat_priv->num_ifaces = 0;
+ 
+ 	ret = sysfs_add_meshif(soft_iface);
+-
+ 	if (ret < 0)
+ 		goto unreg_soft_iface;
+ 
+ 	ret = debugfs_add_meshif(soft_iface);
+-
+ 	if (ret < 0)
+ 		goto unreg_sysfs;
+ 
++	ret = mesh_init(soft_iface);
 +	if (ret < 0)
-+		goto unreg_soft_iface;
++		goto unreg_debugfs;
 +
-+	ret = debugfs_add_meshif(soft_iface);
-+
-+	if (ret < 0)
-+		goto unreg_sysfs;
-+
-+	return soft_iface;
-+
-+unreg_sysfs:
-+	sysfs_del_meshif(soft_iface);
-+unreg_soft_iface:
-+	unregister_netdev(soft_iface);
-+	return NULL;
-+
-+free_soft_iface:
-+	free_netdev(soft_iface);
-+out:
-+	return NULL;
-+}
-+
-+void softif_destroy(struct net_device *soft_iface)
-+{
+ 	return soft_iface;
+ 
++unreg_debugfs:
 +	debugfs_del_meshif(soft_iface);
-+	sysfs_del_meshif(soft_iface);
-+	unregister_netdev(soft_iface);
-+}
-+
- /* ethtool */
- static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
+ unreg_sysfs:
+ 	sysfs_del_meshif(soft_iface);
+ unreg_soft_iface:
+@@ -443,6 +443,7 @@ void softif_destroy(struct net_device *soft_iface)
  {
+ 	debugfs_del_meshif(soft_iface);
+ 	sysfs_del_meshif(soft_iface);
++	mesh_free(soft_iface);
+ 	unregister_netdev(soft_iface);
+ }
+ 
 diff --git a/batman-adv/soft-interface.h b/batman-adv/soft-interface.h
-index 6364854..dd5cf4d 100644
+index dd5cf4d..2429f66 100644
 --- a/batman-adv/soft-interface.h
 +++ b/batman-adv/soft-interface.h
-@@ -23,10 +23,12 @@
+@@ -22,7 +22,6 @@
+ #ifndef _NET_BATMAN_ADV_SOFT_INTERFACE_H_
  #define _NET_BATMAN_ADV_SOFT_INTERFACE_H_
  
- void set_main_if_addr(uint8_t *addr);
--void interface_setup(struct net_device *dev);
--int interface_tx(struct sk_buff *skb, struct net_device *dev);
--void interface_rx(struct sk_buff *skb, int hdr_size);
-+int interface_tx(struct sk_buff *skb, struct net_device *soft_iface);
-+void interface_rx(struct net_device *soft_iface,
-+		  struct sk_buff *skb, int hdr_size);
- int my_skb_push(struct sk_buff *skb, unsigned int len);
-+struct net_device *softif_create(char *name);
-+void softif_destroy(struct net_device *soft_iface);
+-void set_main_if_addr(uint8_t *addr);
+ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface);
+ void interface_rx(struct net_device *soft_iface,
+ 		  struct sk_buff *skb, int hdr_size);
+@@ -30,6 +29,4 @@ int my_skb_push(struct sk_buff *skb, unsigned int len);
+ struct net_device *softif_create(char *name);
+ void softif_destroy(struct net_device *soft_iface);
  
- extern unsigned char main_if_addr[];
- 
+-extern unsigned char main_if_addr[];
+-
+ #endif /* _NET_BATMAN_ADV_SOFT_INTERFACE_H_ */
 diff --git a/batman-adv/translation-table.c b/batman-adv/translation-table.c
-index 1513495..d1e0d10 100644
+index d1e0d10..9cae140 100644
 --- a/batman-adv/translation-table.c
 +++ b/batman-adv/translation-table.c
-@@ -35,7 +35,8 @@ static DEFINE_SPINLOCK(hna_global_hash_lock);
+@@ -26,36 +26,29 @@
+ #include "hash.h"
+ #include "compat.h"
  
+-struct hashtable_t *hna_local_hash;
+-static struct hashtable_t *hna_global_hash;
+-atomic_t hna_local_changed;
+-
+-DEFINE_SPINLOCK(hna_local_hash_lock);
+-static DEFINE_SPINLOCK(hna_global_hash_lock);
+-
  static void hna_local_purge(struct work_struct *work);
- static DECLARE_DELAYED_WORK(hna_local_purge_wq, hna_local_purge);
--static void _hna_global_del_orig(struct hna_global_entry *hna_global_entry,
-+static void _hna_global_del_orig(struct bat_priv *bat_priv,
-+				 struct hna_global_entry *hna_global_entry,
+-static DECLARE_DELAYED_WORK(hna_local_purge_wq, hna_local_purge);
+ static void _hna_global_del_orig(struct bat_priv *bat_priv,
+ 				 struct hna_global_entry *hna_global_entry,
  				 char *message);
  
- static void hna_local_start_timer(void)
-@@ -59,10 +60,9 @@ int hna_local_init(void)
+-static void hna_local_start_timer(void)
++static void hna_local_start_timer(struct bat_priv *bat_priv)
+ {
+-	queue_delayed_work(bat_event_workqueue, &hna_local_purge_wq, 10 * HZ);
++	INIT_DELAYED_WORK(&bat_priv->hna_work, hna_local_purge);
++	queue_delayed_work(bat_event_workqueue, &bat_priv->hna_work, 10 * HZ);
+ }
+ 
+-int hna_local_init(void)
++int hna_local_init(struct bat_priv *bat_priv)
+ {
+-	if (hna_local_hash)
++	if (bat_priv->hna_local_hash)
+ 		return 1;
+ 
+-	hna_local_hash = hash_new(128, compare_orig, choose_orig);
++	bat_priv->hna_local_hash = hash_new(128, compare_orig, choose_orig);
+ 
+-	if (!hna_local_hash)
++	if (!bat_priv->hna_local_hash)
+ 		return 0;
+ 
+-	atomic_set(&hna_local_changed, 0);
+-	hna_local_start_timer();
++	atomic_set(&bat_priv->hna_local_changed, 0);
++	hna_local_start_timer(bat_priv);
+ 
  	return 1;
  }
- 
--void hna_local_add(uint8_t *addr)
-+void hna_local_add(struct net_device *soft_iface, uint8_t *addr)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	struct bat_priv *bat_priv = netdev_priv(soft_iface);
- 	struct hna_local_entry *hna_local_entry;
- 	struct hna_global_entry *hna_global_entry;
+@@ -68,12 +61,13 @@ void hna_local_add(struct net_device *soft_iface, uint8_t *addr)
  	struct hashtable_t *swaphash;
-@@ -101,7 +101,7 @@ void hna_local_add(uint8_t *addr)
- 	hna_local_entry->last_seen = jiffies;
+ 	unsigned long flags;
  
- 	/* the batman interface mac address should never be purged */
--	if (compare_orig(addr, soft_device->dev_addr))
-+	if (compare_orig(addr, soft_iface->dev_addr))
- 		hna_local_entry->never_purge = 1;
+-	spin_lock_irqsave(&hna_local_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_lhash_lock, flags);
+ 	hna_local_entry =
+-		((struct hna_local_entry *)hash_find(hna_local_hash, addr));
+-	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
++		((struct hna_local_entry *)hash_find(bat_priv->hna_local_hash,
++						     addr));
++	spin_unlock_irqrestore(&bat_priv->hna_lhash_lock, flags);
+ 
+-	if (hna_local_entry != NULL) {
++	if (hna_local_entry) {
+ 		hna_local_entry->last_seen = jiffies;
+ 		return;
+ 	}
+@@ -81,8 +75,9 @@ void hna_local_add(struct net_device *soft_iface, uint8_t *addr)
+ 	/* only announce as many hosts as possible in the batman-packet and
+ 	   space in batman_packet->num_hna That also should give a limit to
+ 	   MAC-flooding. */
+-	if ((num_hna + 1 > (ETH_DATA_LEN - BAT_PACKET_LEN) / ETH_ALEN) ||
+-	    (num_hna + 1 > 255)) {
++	if ((bat_priv->num_local_hna + 1 > (ETH_DATA_LEN - BAT_PACKET_LEN)
++								/ ETH_ALEN) ||
++	    (bat_priv->num_local_hna + 1 > 255)) {
+ 		bat_dbg(DBG_ROUTES, bat_priv,
+ 			"Can't add new local hna entry (%pM): "
+ 			"number of local hna entries exceeds packet size\n",
+@@ -106,47 +101,49 @@ void hna_local_add(struct net_device *soft_iface, uint8_t *addr)
  	else
  		hna_local_entry->never_purge = 0;
-@@ -131,7 +131,8 @@ void hna_local_add(uint8_t *addr)
- 		((struct hna_global_entry *)hash_find(hna_global_hash, addr));
  
- 	if (hna_global_entry != NULL)
--		_hna_global_del_orig(hna_global_entry, "local hna received");
-+		_hna_global_del_orig(bat_priv, hna_global_entry,
-+				     "local hna received");
+-	spin_lock_irqsave(&hna_local_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_lhash_lock, flags);
  
- 	spin_unlock_irqrestore(&hna_global_hash_lock, flags);
+-	hash_add(hna_local_hash, hna_local_entry);
+-	num_hna++;
+-	atomic_set(&hna_local_changed, 1);
++	hash_add(bat_priv->hna_local_hash, hna_local_entry);
++	bat_priv->num_local_hna++;
++	atomic_set(&bat_priv->hna_local_changed, 1);
+ 
+-	if (hna_local_hash->elements * 4 > hna_local_hash->size) {
+-		swaphash = hash_resize(hna_local_hash,
+-				       hna_local_hash->size * 2);
++	if (bat_priv->hna_local_hash->elements * 4 >
++					bat_priv->hna_local_hash->size) {
++		swaphash = hash_resize(bat_priv->hna_local_hash,
++				       bat_priv->hna_local_hash->size * 2);
+ 
+-		if (swaphash == NULL)
++		if (!swaphash)
+ 			pr_err("Couldn't resize local hna hash table\n");
+ 		else
+-			hna_local_hash = swaphash;
++			bat_priv->hna_local_hash = swaphash;
+ 	}
+ 
+-	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->hna_lhash_lock, flags);
+ 
+ 	/* remove address from global hash if present */
+-	spin_lock_irqsave(&hna_global_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_ghash_lock, flags);
+ 
+-	hna_global_entry =
+-		((struct hna_global_entry *)hash_find(hna_global_hash, addr));
++	hna_global_entry = ((struct hna_global_entry *)
++				hash_find(bat_priv->hna_global_hash, addr));
+ 
+-	if (hna_global_entry != NULL)
++	if (hna_global_entry)
+ 		_hna_global_del_orig(bat_priv, hna_global_entry,
+ 				     "local hna received");
+ 
+-	spin_unlock_irqrestore(&hna_global_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->hna_ghash_lock, flags);
  }
-@@ -215,26 +216,26 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
- 	return 0;
- }
  
--static void _hna_local_del(void *data)
-+static void _hna_local_del(void *data, void *arg)
+-int hna_local_fill_buffer(unsigned char *buff, int buff_len)
++int hna_local_fill_buffer(struct bat_priv *bat_priv,
++			  unsigned char *buff, int buff_len)
  {
+ 	struct hna_local_entry *hna_local_entry;
+ 	HASHIT(hashit);
+ 	int i = 0;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&hna_local_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_lhash_lock, flags);
+ 
+-	while (hash_iterate(hna_local_hash, &hashit)) {
++	while (hash_iterate(bat_priv->hna_local_hash, &hashit)) {
+ 
+ 		if (buff_len < (i + 1) * ETH_ALEN)
+ 			break;
+@@ -158,11 +155,10 @@ int hna_local_fill_buffer(unsigned char *buff, int buff_len)
+ 	}
+ 
+ 	/* if we did not get all new local hnas see you next time  ;-) */
+-	if (i == num_hna)
+-		atomic_set(&hna_local_changed, 0);
+-
+-	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
++	if (i == bat_priv->num_local_hna)
++		atomic_set(&bat_priv->hna_local_changed, 0);
+ 
++	spin_unlock_irqrestore(&bat_priv->hna_lhash_lock, flags);
+ 	return i;
+ }
+ 
+@@ -187,29 +183,29 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
+ 		   "announced via HNA:\n",
+ 		   net_dev->name);
+ 
+-	spin_lock_irqsave(&hna_local_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_lhash_lock, flags);
+ 
+ 	buf_size = 1;
+ 	/* Estimate length for: " * xx:xx:xx:xx:xx:xx\n" */
+-	while (hash_iterate(hna_local_hash, &hashit_count))
++	while (hash_iterate(bat_priv->hna_local_hash, &hashit_count))
+ 		buf_size += 21;
+ 
+ 	buff = kmalloc(buf_size, GFP_ATOMIC);
+ 	if (!buff) {
+-		spin_unlock_irqrestore(&hna_local_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->hna_lhash_lock, flags);
+ 		return -ENOMEM;
+ 	}
+ 	buff[0] = '\0';
+ 	pos = 0;
+ 
+-	while (hash_iterate(hna_local_hash, &hashit)) {
++	while (hash_iterate(bat_priv->hna_local_hash, &hashit)) {
+ 		hna_local_entry = hashit.bucket->data;
+ 
+ 		pos += snprintf(buff + pos, 22, " * %pM\n",
+ 				hna_local_entry->addr);
+ 	}
+ 
+-	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->hna_lhash_lock, flags);
+ 
+ 	seq_printf(seq, "%s", buff);
+ 	kfree(buff);
+@@ -218,9 +214,11 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ static void _hna_local_del(void *data, void *arg)
+ {
++	struct bat_priv *bat_priv = (struct bat_priv *)arg;
++
  	kfree(data);
- 	num_hna--;
- 	atomic_set(&hna_local_changed, 1);
+-	num_hna--;
+-	atomic_set(&hna_local_changed, 1);
++	bat_priv->num_local_hna--;
++	atomic_set(&bat_priv->hna_local_changed, 1);
  }
  
--static void hna_local_del(struct hna_local_entry *hna_local_entry,
-+static void hna_local_del(struct bat_priv *bat_priv,
-+			  struct hna_local_entry *hna_local_entry,
- 			  char *message)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
+ static void hna_local_del(struct bat_priv *bat_priv,
+@@ -230,7 +228,7 @@ static void hna_local_del(struct bat_priv *bat_priv,
  	bat_dbg(DBG_ROUTES, bat_priv, "Deleting local hna entry (%pM): %s\n",
  		hna_local_entry->addr, message);
  
- 	hash_remove(hna_local_hash, hna_local_entry->addr);
--	_hna_local_del(hna_local_entry);
-+	_hna_local_del(hna_local_entry, bat_priv);
+-	hash_remove(hna_local_hash, hna_local_entry->addr);
++	hash_remove(bat_priv->hna_local_hash, hna_local_entry->addr);
+ 	_hna_local_del(hna_local_entry, bat_priv);
  }
  
--void hna_local_remove(uint8_t *addr, char *message)
-+void hna_local_remove(struct bat_priv *bat_priv,
-+		      uint8_t *addr, char *message)
- {
+@@ -240,57 +238,62 @@ void hna_local_remove(struct bat_priv *bat_priv,
  	struct hna_local_entry *hna_local_entry;
  	unsigned long flags;
-@@ -244,7 +245,7 @@ void hna_local_remove(uint8_t *addr, char *message)
- 	hna_local_entry = (struct hna_local_entry *)
- 		hash_find(hna_local_hash, addr);
- 	if (hna_local_entry)
--		hna_local_del(hna_local_entry, message);
-+		hna_local_del(bat_priv, hna_local_entry, message);
  
- 	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
+-	spin_lock_irqsave(&hna_local_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_lhash_lock, flags);
+ 
+ 	hna_local_entry = (struct hna_local_entry *)
+-		hash_find(hna_local_hash, addr);
++		hash_find(bat_priv->hna_local_hash, addr);
+ 	if (hna_local_entry)
+ 		hna_local_del(bat_priv, hna_local_entry, message);
+ 
+-	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->hna_lhash_lock, flags);
  }
-@@ -262,9 +263,10 @@ static void hna_local_purge(struct work_struct *work)
+ 
+ static void hna_local_purge(struct work_struct *work)
+ {
++	struct delayed_work *delayed_work =
++		container_of(work, struct delayed_work, work);
++	struct bat_priv *bat_priv =
++		container_of(delayed_work, struct bat_priv, hna_work);
+ 	struct hna_local_entry *hna_local_entry;
+ 	HASHIT(hashit);
+ 	unsigned long flags;
+ 	unsigned long timeout;
+ 
+-	spin_lock_irqsave(&hna_local_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_lhash_lock, flags);
+ 
+-	while (hash_iterate(hna_local_hash, &hashit)) {
++	while (hash_iterate(bat_priv->hna_local_hash, &hashit)) {
  		hna_local_entry = hashit.bucket->data;
  
  		timeout = hna_local_entry->last_seen + LOCAL_HNA_TIMEOUT * HZ;
--		if ((!hna_local_entry->never_purge) &&
-+		/* if ((!hna_local_entry->never_purge) &&
+-		/* if ((!hna_local_entry->never_purge) &&
++
++		if ((!hna_local_entry->never_purge) &&
  		    time_after(jiffies, timeout))
--			hna_local_del(hna_local_entry, "address timed out");
-+			hna_local_del(bat_priv, hna_local_entry,
-+				      "address timed out");*/
+ 			hna_local_del(bat_priv, hna_local_entry,
+-				      "address timed out");*/
++				      "address timed out");
  	}
  
- 	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
-@@ -277,7 +279,7 @@ void hna_local_free(void)
+-	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
+-	hna_local_start_timer();
++	spin_unlock_irqrestore(&bat_priv->hna_lhash_lock, flags);
++	hna_local_start_timer(bat_priv);
+ }
+ 
+-void hna_local_free(void)
++void hna_local_free(struct bat_priv *bat_priv)
+ {
+-	if (!hna_local_hash)
++	if (!bat_priv->hna_local_hash)
  		return;
  
- 	cancel_delayed_work_sync(&hna_local_purge_wq);
--	hash_delete(hna_local_hash, _hna_local_del);
-+	hash_delete(hna_local_hash, _hna_local_del, NULL);
- 	hna_local_hash = NULL;
+-	cancel_delayed_work_sync(&hna_local_purge_wq);
+-	hash_delete(hna_local_hash, _hna_local_del, NULL);
+-	hna_local_hash = NULL;
++	cancel_delayed_work_sync(&bat_priv->hna_work);
++	hash_delete(bat_priv->hna_local_hash, _hna_local_del, bat_priv);
++	bat_priv->hna_local_hash = NULL;
  }
  
-@@ -294,11 +296,10 @@ int hna_global_init(void)
+-int hna_global_init(void)
++int hna_global_init(struct bat_priv *bat_priv)
+ {
+-	if (hna_global_hash)
++	if (bat_priv->hna_global_hash)
+ 		return 1;
+ 
+-	hna_global_hash = hash_new(128, compare_orig, choose_orig);
++	bat_priv->hna_global_hash = hash_new(128, compare_orig, choose_orig);
+ 
+-	if (!hna_global_hash)
++	if (!bat_priv->hna_global_hash)
+ 		return 0;
+ 
  	return 1;
- }
+@@ -308,14 +311,15 @@ void hna_global_add_orig(struct bat_priv *bat_priv,
+ 	unsigned char *hna_ptr;
  
--void hna_global_add_orig(struct orig_node *orig_node,
-+void hna_global_add_orig(struct bat_priv *bat_priv,
-+			 struct orig_node *orig_node,
- 			 unsigned char *hna_buff, int hna_buff_len)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 	struct hna_global_entry *hna_global_entry;
- 	struct hna_local_entry *hna_local_entry;
- 	struct hashtable_t *swaphash;
-@@ -346,7 +347,8 @@ void hna_global_add_orig(struct orig_node *orig_node,
- 			hash_find(hna_local_hash, hna_ptr);
+ 	while ((hna_buff_count + 1) * ETH_ALEN <= hna_buff_len) {
+-		spin_lock_irqsave(&hna_global_hash_lock, flags);
++		spin_lock_irqsave(&bat_priv->hna_ghash_lock, flags);
  
- 		if (hna_local_entry != NULL)
--			hna_local_del(hna_local_entry, "global hna received");
-+			hna_local_del(bat_priv, hna_local_entry,
-+				      "global hna received");
+ 		hna_ptr = hna_buff + (hna_buff_count * ETH_ALEN);
+ 		hna_global_entry = (struct hna_global_entry *)
+-			hash_find(hna_global_hash, hna_ptr);
++			hash_find(bat_priv->hna_global_hash, hna_ptr);
  
- 		spin_unlock_irqrestore(&hna_local_hash_lock, flags);
+-		if (hna_global_entry == NULL) {
+-			spin_unlock_irqrestore(&hna_global_hash_lock, flags);
++		if (!hna_global_entry) {
++			spin_unlock_irqrestore(&bat_priv->hna_ghash_lock,
++					       flags);
  
-@@ -430,11 +432,10 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
- 	return 0;
- }
+ 			hna_global_entry =
+ 				kmalloc(sizeof(struct hna_global_entry),
+@@ -331,26 +335,26 @@ void hna_global_add_orig(struct bat_priv *bat_priv,
+ 				"%pM (via %pM)\n",
+ 				hna_global_entry->addr, orig_node->orig);
  
--static void _hna_global_del_orig(struct hna_global_entry *hna_global_entry,
-+static void _hna_global_del_orig(struct bat_priv *bat_priv,
-+				 struct hna_global_entry *hna_global_entry,
- 				 char *message)
- {
--	/* FIXME: each orig_node->batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 	bat_dbg(DBG_ROUTES, bat_priv,
- 		"Deleting global hna entry %pM (via %pM): %s\n",
- 		hna_global_entry->addr, hna_global_entry->orig_node->orig,
-@@ -444,7 +445,8 @@ static void _hna_global_del_orig(struct hna_global_entry *hna_global_entry,
- 	kfree(hna_global_entry);
- }
+-			spin_lock_irqsave(&hna_global_hash_lock, flags);
+-			hash_add(hna_global_hash, hna_global_entry);
++			spin_lock_irqsave(&bat_priv->hna_ghash_lock, flags);
++			hash_add(bat_priv->hna_global_hash, hna_global_entry);
  
--void hna_global_del_orig(struct orig_node *orig_node, char *message)
-+void hna_global_del_orig(struct bat_priv *bat_priv,
-+			 struct orig_node *orig_node, char *message)
- {
- 	struct hna_global_entry *hna_global_entry;
- 	int hna_buff_count = 0;
-@@ -463,7 +465,8 @@ void hna_global_del_orig(struct orig_node *orig_node, char *message)
+ 		}
  
- 		if ((hna_global_entry != NULL) &&
- 		    (hna_global_entry->orig_node == orig_node))
--			_hna_global_del_orig(hna_global_entry, message);
-+			_hna_global_del_orig(bat_priv, hna_global_entry,
-+					     message);
+ 		hna_global_entry->orig_node = orig_node;
+-		spin_unlock_irqrestore(&hna_global_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->hna_ghash_lock, flags);
+ 
+ 		/* remove address from local hash if present */
+-		spin_lock_irqsave(&hna_local_hash_lock, flags);
++		spin_lock_irqsave(&bat_priv->hna_lhash_lock, flags);
+ 
+ 		hna_ptr = hna_buff + (hna_buff_count * ETH_ALEN);
+ 		hna_local_entry = (struct hna_local_entry *)
+-			hash_find(hna_local_hash, hna_ptr);
++			hash_find(bat_priv->hna_local_hash, hna_ptr);
+ 
+-		if (hna_local_entry != NULL)
++		if (hna_local_entry)
+ 			hna_local_del(bat_priv, hna_local_entry,
+ 				      "global hna received");
+ 
+-		spin_unlock_irqrestore(&hna_local_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->hna_lhash_lock, flags);
  
  		hna_buff_count++;
  	}
-@@ -475,7 +478,7 @@ void hna_global_del_orig(struct orig_node *orig_node, char *message)
- 	orig_node->hna_buff = NULL;
+@@ -367,19 +371,20 @@ void hna_global_add_orig(struct bat_priv *bat_priv,
+ 		}
+ 	}
+ 
+-	spin_lock_irqsave(&hna_global_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_ghash_lock, flags);
+ 
+-	if (hna_global_hash->elements * 4 > hna_global_hash->size) {
+-		swaphash = hash_resize(hna_global_hash,
+-				       hna_global_hash->size * 2);
++	if (bat_priv->hna_global_hash->elements * 4 >
++					bat_priv->hna_global_hash->size) {
++		swaphash = hash_resize(bat_priv->hna_global_hash,
++				       bat_priv->hna_global_hash->size * 2);
+ 
+-		if (swaphash == NULL)
++		if (!swaphash)
+ 			pr_err("Couldn't resize global hna hash table\n");
+ 		else
+-			hna_global_hash = swaphash;
++			bat_priv->hna_global_hash = swaphash;
+ 	}
+ 
+-	spin_unlock_irqrestore(&hna_global_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->hna_ghash_lock, flags);
  }
  
--static void hna_global_del(void *data)
-+static void hna_global_del(void *data, void *arg)
- {
- 	kfree(data);
+ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
+@@ -402,22 +407,22 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
+ 	seq_printf(seq, "Globally announced HNAs received via the mesh %s\n",
+ 		   net_dev->name);
+ 
+-	spin_lock_irqsave(&hna_global_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_ghash_lock, flags);
+ 
+ 	buf_size = 1;
+ 	/* Estimate length for: " * xx:xx:xx:xx:xx:xx via xx:xx:xx:xx:xx:xx\n"*/
+-	while (hash_iterate(hna_global_hash, &hashit_count))
++	while (hash_iterate(bat_priv->hna_global_hash, &hashit_count))
+ 		buf_size += 43;
+ 
+ 	buff = kmalloc(buf_size, GFP_ATOMIC);
+ 	if (!buff) {
+-		spin_unlock_irqrestore(&hna_global_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->hna_ghash_lock, flags);
+ 		return -ENOMEM;
+ 	}
+ 	buff[0] = '\0';
+ 	pos = 0;
+ 
+-	while (hash_iterate(hna_global_hash, &hashit)) {
++	while (hash_iterate(bat_priv->hna_global_hash, &hashit)) {
+ 		hna_global_entry = hashit.bucket->data;
+ 
+ 		pos += snprintf(buff + pos, 44,
+@@ -425,7 +430,7 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
+ 				hna_global_entry->orig_node->orig);
+ 	}
+ 
+-	spin_unlock_irqrestore(&hna_global_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->hna_ghash_lock, flags);
+ 
+ 	seq_printf(seq, "%s", buff);
+ 	kfree(buff);
+@@ -441,7 +446,7 @@ static void _hna_global_del_orig(struct bat_priv *bat_priv,
+ 		hna_global_entry->addr, hna_global_entry->orig_node->orig,
+ 		message);
+ 
+-	hash_remove(hna_global_hash, hna_global_entry->addr);
++	hash_remove(bat_priv->hna_global_hash, hna_global_entry->addr);
+ 	kfree(hna_global_entry);
  }
-@@ -485,7 +488,7 @@ void hna_global_free(void)
- 	if (!hna_global_hash)
+ 
+@@ -456,14 +461,14 @@ void hna_global_del_orig(struct bat_priv *bat_priv,
+ 	if (orig_node->hna_buff_len == 0)
  		return;
  
--	hash_delete(hna_global_hash, hna_global_del);
-+	hash_delete(hna_global_hash, hna_global_del, NULL);
- 	hna_global_hash = NULL;
+-	spin_lock_irqsave(&hna_global_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_ghash_lock, flags);
+ 
+ 	while ((hna_buff_count + 1) * ETH_ALEN <= orig_node->hna_buff_len) {
+ 		hna_ptr = orig_node->hna_buff + (hna_buff_count * ETH_ALEN);
+ 		hna_global_entry = (struct hna_global_entry *)
+-			hash_find(hna_global_hash, hna_ptr);
++			hash_find(bat_priv->hna_global_hash, hna_ptr);
+ 
+-		if ((hna_global_entry != NULL) &&
++		if ((hna_global_entry) &&
+ 		    (hna_global_entry->orig_node == orig_node))
+ 			_hna_global_del_orig(bat_priv, hna_global_entry,
+ 					     message);
+@@ -471,7 +476,7 @@ void hna_global_del_orig(struct bat_priv *bat_priv,
+ 		hna_buff_count++;
+ 	}
+ 
+-	spin_unlock_irqrestore(&hna_global_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->hna_ghash_lock, flags);
+ 
+ 	orig_node->hna_buff_len = 0;
+ 	kfree(orig_node->hna_buff);
+@@ -483,26 +488,26 @@ static void hna_global_del(void *data, void *arg)
+ 	kfree(data);
  }
  
+-void hna_global_free(void)
++void hna_global_free(struct bat_priv *bat_priv)
+ {
+-	if (!hna_global_hash)
++	if (!bat_priv->hna_global_hash)
+ 		return;
+ 
+-	hash_delete(hna_global_hash, hna_global_del, NULL);
+-	hna_global_hash = NULL;
++	hash_delete(bat_priv->hna_global_hash, hna_global_del, NULL);
++	bat_priv->hna_global_hash = NULL;
+ }
+ 
+-struct orig_node *transtable_search(uint8_t *addr)
++struct orig_node *transtable_search(struct bat_priv *bat_priv, uint8_t *addr)
+ {
+ 	struct hna_global_entry *hna_global_entry;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&hna_global_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->hna_ghash_lock, flags);
+ 	hna_global_entry = (struct hna_global_entry *)
+-		hash_find(hna_global_hash, addr);
+-	spin_unlock_irqrestore(&hna_global_hash_lock, flags);
++				hash_find(bat_priv->hna_global_hash, addr);
++	spin_unlock_irqrestore(&bat_priv->hna_ghash_lock, flags);
+ 
+-	if (hna_global_entry == NULL)
++	if (!hna_global_entry)
+ 		return NULL;
+ 
+ 	return hna_global_entry->orig_node;
 diff --git a/batman-adv/translation-table.h b/batman-adv/translation-table.h
-index fa93e37..af7a59c 100644
+index af7a59c..10c4c5c 100644
 --- a/batman-adv/translation-table.h
 +++ b/batman-adv/translation-table.h
-@@ -25,16 +25,19 @@
+@@ -24,25 +24,22 @@
+ 
  #include "types.h"
  
- int hna_local_init(void);
--void hna_local_add(uint8_t *addr);
--void hna_local_remove(uint8_t *addr, char *message);
-+void hna_local_add(struct net_device *soft_iface, uint8_t *addr);
-+void hna_local_remove(struct bat_priv *bat_priv,
-+		      uint8_t *addr, char *message);
- int hna_local_fill_buffer(unsigned char *buff, int buff_len);
+-int hna_local_init(void);
++int hna_local_init(struct bat_priv *bat_priv);
+ void hna_local_add(struct net_device *soft_iface, uint8_t *addr);
+ void hna_local_remove(struct bat_priv *bat_priv,
+ 		      uint8_t *addr, char *message);
+-int hna_local_fill_buffer(unsigned char *buff, int buff_len);
++int hna_local_fill_buffer(struct bat_priv *bat_priv,
++			  unsigned char *buff, int buff_len);
  int hna_local_seq_print_text(struct seq_file *seq, void *offset);
- void hna_local_free(void);
- int hna_global_init(void);
--void hna_global_add_orig(struct orig_node *orig_node, unsigned char *hna_buff,
--			 int hna_buff_len);
-+void hna_global_add_orig(struct bat_priv *bat_priv,
-+			 struct orig_node *orig_node,
-+			 unsigned char *hna_buff, int hna_buff_len);
+-void hna_local_free(void);
+-int hna_global_init(void);
++void hna_local_free(struct bat_priv *bat_priv);
++int hna_global_init(struct bat_priv *bat_priv);
+ void hna_global_add_orig(struct bat_priv *bat_priv,
+ 			 struct orig_node *orig_node,
+ 			 unsigned char *hna_buff, int hna_buff_len);
  int hna_global_seq_print_text(struct seq_file *seq, void *offset);
--void hna_global_del_orig(struct orig_node *orig_node, char *message);
-+void hna_global_del_orig(struct bat_priv *bat_priv,
-+			 struct orig_node *orig_node, char *message);
- void hna_global_free(void);
- struct orig_node *transtable_search(uint8_t *addr);
+ void hna_global_del_orig(struct bat_priv *bat_priv,
+ 			 struct orig_node *orig_node, char *message);
+-void hna_global_free(void);
+-struct orig_node *transtable_search(uint8_t *addr);
+-
+-extern spinlock_t hna_local_hash_lock;
+-extern struct hashtable_t *hna_local_hash;
+-extern atomic_t hna_local_changed;
++void hna_global_free(struct bat_priv *bat_priv);
++struct orig_node *transtable_search(struct bat_priv *bat_priv, uint8_t *addr);
  
+ #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
 diff --git a/batman-adv/types.h b/batman-adv/types.h
-index e3c4d2d..20cb0f7 100644
+index 20cb0f7..56c6b52 100644
 --- a/batman-adv/types.h
 +++ b/batman-adv/types.h
-@@ -46,6 +46,7 @@ struct batman_if {
- 	int packet_len;
- 	struct kobject *hardif_obj;
- 	struct rcu_head rcu;
-+	struct net_device *soft_iface;
+@@ -50,19 +50,19 @@ struct batman_if {
  };
  
  /**
-@@ -142,6 +143,7 @@ struct socket_client {
- 	unsigned char index;
- 	spinlock_t lock;
- 	wait_queue_head_t queue_wait;
-+	struct bat_priv *bat_priv;
+-  *	orig_node - structure for orig_list maintaining nodes of mesh
+-  *	@primary_addr: hosts primary interface address
+-  *	@last_valid: when last packet from this node was received
+-  *	@bcast_seqno_reset: time when the broadcast seqno window was reset
+-  *	@batman_seqno_reset: time when the batman seqno window was reset
+-  *	@gw_flags: flags related to gateway class
+-  *	@flags: for now only VIS_SERVER flag
+-  *	@last_real_seqno: last and best known squence number
+-  *	@last_ttl: ttl of last received packet
+-  *	@last_bcast_seqno: last broadcast sequence number received by this host
+-  *
+-  *	@candidates: how many candidates are available
+-  *	@selected: next bonding candidate
++ *	orig_node - structure for orig_list maintaining nodes of mesh
++ *	@primary_addr: hosts primary interface address
++ *	@last_valid: when last packet from this node was received
++ *	@bcast_seqno_reset: time when the broadcast seqno window was reset
++ *	@batman_seqno_reset: time when the batman seqno window was reset
++ *	@gw_flags: flags related to gateway class
++ *	@flags: for now only VIS_SERVER flag
++ *	@last_real_seqno: last and best known squence number
++ *	@last_ttl: ttl of last received packet
++ *	@last_bcast_seqno: last broadcast sequence number received by this host
++ *
++ *	@candidates: how many candidates are available
++ *	@selected: next bonding candidate
+  */
+ struct orig_node {
+ 	uint8_t orig[ETH_ALEN];
+@@ -93,15 +93,15 @@ struct orig_node {
  };
  
- struct socket_packet {
+ struct gw_node {
+-	struct list_head list;
++	struct hlist_node list;
+ 	struct orig_node *orig_node;
+ 	unsigned long deleted;
+ 	struct rcu_head rcu;
+ };
+ 
+ /**
+-  *	neigh_node
+-  *	@last_valid: when last packet via this neighbor was received
++ *	neigh_node
++ *	@last_valid: when last packet via this neighbor was received
+  */
+ struct neigh_node {
+ 	struct list_head list;
+@@ -119,6 +119,7 @@ struct neigh_node {
+ };
+ 
+ struct bat_priv {
++	atomic_t mesh_state;
+ 	struct net_device_stats stats;
+ 	atomic_t aggregation_enabled;
+ 	atomic_t bonding_enabled;
+@@ -128,6 +129,7 @@ struct bat_priv {
+ 	atomic_t gw_class;
+ 	atomic_t orig_interval;
+ 	atomic_t log_level;
++	atomic_t bcast_seqno;
+ 	atomic_t bcast_queue_left;
+ 	atomic_t batman_queue_left;
+ 	char num_ifaces;
+@@ -135,6 +137,29 @@ struct bat_priv {
+ 	struct batman_if *primary_if;
+ 	struct kobject *mesh_obj;
+ 	struct dentry *debug_dir;
++	struct hlist_head forw_bat_list;
++	struct hlist_head forw_bcast_list;
++	struct hlist_head gw_list;
++	struct list_head vis_send_list;
++	struct hashtable_t *orig_hash;
++	struct hashtable_t *hna_local_hash;
++	struct hashtable_t *hna_global_hash;
++	struct hashtable_t *vis_hash;
++	spinlock_t orig_hash_lock;
++	spinlock_t forw_bat_list_lock;
++	spinlock_t forw_bcast_list_lock;
++	spinlock_t hna_lhash_lock;
++	spinlock_t hna_ghash_lock;
++	spinlock_t gw_list_lock;
++	spinlock_t vis_hash_lock;
++	spinlock_t vis_list_lock;
++	int16_t num_local_hna;
++	atomic_t hna_local_changed;
++	struct delayed_work hna_work;
++	struct delayed_work orig_work;
++	struct delayed_work vis_work;
++	struct gw_node *curr_gw;
++	struct vis_info *my_vis_info;
+ };
+ 
+ struct socket_client {
+@@ -164,8 +189,8 @@ struct hna_global_entry {
+ };
+ 
+ /**
+-  *	forw_packet - structure for forw_list maintaining packets to be
+-  *	              send/forwarded
++ *	forw_packet - structure for forw_list maintaining packets to be
++ *	              send/forwarded
+  */
+ struct forw_packet {
+ 	struct hlist_node list;
+@@ -204,4 +229,28 @@ struct frag_packet_list_entry {
+ 	struct sk_buff *skb;
+ };
+ 
++struct vis_info {
++	unsigned long       first_seen;
++	struct list_head    recv_list;
++			    /* list of server-neighbors we received a vis-packet
++			     * from.  we should not reply to them. */
++	struct list_head send_list;
++	struct kref refcount;
++	struct bat_priv *bat_priv;
++	/* this packet might be part of the vis send queue. */
++	struct vis_packet packet;
++	/* vis_info may follow here*/
++} __attribute__((packed));
++
++struct vis_info_entry {
++	uint8_t  src[ETH_ALEN];
++	uint8_t  dest[ETH_ALEN];
++	uint8_t  quality;	/* quality = 0 means HNA */
++} __attribute__((packed));
++
++struct recvlist_node {
++	struct list_head list;
++	uint8_t mac[ETH_ALEN];
++};
++
+ #endif /* _NET_BATMAN_ADV_TYPES_H_ */
 diff --git a/batman-adv/vis.c b/batman-adv/vis.c
-index 5c825b5..5766148 100644
+index 5766148..8f03b5b 100644
 --- a/batman-adv/vis.c
 +++ b/batman-adv/vis.c
-@@ -701,17 +701,16 @@ static void send_vis_packets(struct work_struct *work)
+@@ -44,28 +44,23 @@
+ 			_dummy > smallest_signed_int(_dummy); })
+ #define seq_after(x, y) seq_before(y, x)
+ 
+-static struct hashtable_t *vis_hash;
+-static DEFINE_SPINLOCK(vis_hash_lock);
+-static DEFINE_SPINLOCK(recv_list_lock);
+-static struct vis_info *my_vis_info;
+-static struct list_head send_list;	/* always locked with vis_hash_lock */
+-
+-static void start_vis_timer(void);
++static void start_vis_timer(struct bat_priv *bat_priv);
+ 
+ /* free the info */
+ static void free_info(struct kref *ref)
  {
- 	struct vis_info *info, *temp;
+ 	struct vis_info *info = container_of(ref, struct vis_info, refcount);
++	struct bat_priv *bat_priv = info->bat_priv;
+ 	struct recvlist_node *entry, *tmp;
  	unsigned long flags;
--	/* FIXME: each batman_if will be attached to a softif */
--	struct bat_priv *bat_priv = netdev_priv(soft_device);
-+	/* struct bat_priv *bat_priv = netdev_priv(soft_device); */
  
- 	spin_lock_irqsave(&vis_hash_lock, flags);
- 
- 	purge_vis_packets();
- 
--	if (generate_vis_packet(bat_priv) == 0) {
-+	/* if (generate_vis_packet(bat_priv) == 0) {*/
- 		/* schedule if generation was successful */
--		send_list_add(my_vis_info);
--	}
-+		/*send_list_add(my_vis_info);
-+	} */
- 
- 	list_for_each_entry_safe(info, temp, &send_list, send_list) {
- 
-@@ -785,7 +784,7 @@ err:
+ 	list_del_init(&info->send_list);
+-	spin_lock_irqsave(&recv_list_lock, flags);
++	spin_lock_irqsave(&bat_priv->vis_list_lock, flags);
+ 	list_for_each_entry_safe(entry, tmp, &info->recv_list, list) {
+ 		list_del(&entry->list);
+ 		kfree(entry);
+ 	}
+-	spin_unlock_irqrestore(&recv_list_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->vis_list_lock, flags);
+ 	kfree(info);
  }
  
- /* Decrease the reference count on a hash item info */
--static void free_info_ref(void *data)
-+static void free_info_ref(void *data, void *arg)
+@@ -199,8 +194,8 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	buf_size = 1;
+ 	/* Estimate length */
+-	spin_lock_irqsave(&vis_hash_lock, flags);
+-	while (hash_iterate(vis_hash, &hashit_count)) {
++	spin_lock_irqsave(&bat_priv->vis_hash_lock, flags);
++	while (hash_iterate(bat_priv->vis_hash, &hashit_count)) {
+ 		info = hashit_count.bucket->data;
+ 		entries = (struct vis_info_entry *)
+ 			((char *)info + sizeof(struct vis_info));
+@@ -232,13 +227,13 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	buff = kmalloc(buf_size, GFP_ATOMIC);
+ 	if (!buff) {
+-		spin_unlock_irqrestore(&vis_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->vis_hash_lock, flags);
+ 		return -ENOMEM;
+ 	}
+ 	buff[0] = '\0';
+ 	buff_pos = 0;
+ 
+-	while (hash_iterate(vis_hash, &hashit)) {
++	while (hash_iterate(bat_priv->vis_hash, &hashit)) {
+ 		info = hashit.bucket->data;
+ 		entries = (struct vis_info_entry *)
+ 			((char *)info + sizeof(struct vis_info));
+@@ -277,7 +272,7 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 		}
+ 	}
+ 
+-	spin_unlock_irqrestore(&vis_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->vis_hash_lock, flags);
+ 
+ 	seq_printf(seq, "%s", buff);
+ 	kfree(buff);
+@@ -287,11 +282,11 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ /* add the info packet to the send list, if it was not
+  * already linked in. */
+-static void send_list_add(struct vis_info *info)
++static void send_list_add(struct bat_priv *bat_priv, struct vis_info *info)
  {
- 	struct vis_info *info = data;
+ 	if (list_empty(&info->send_list)) {
+ 		kref_get(&info->refcount);
+-		list_add_tail(&info->send_list, &send_list);
++		list_add_tail(&info->send_list, &bat_priv->vis_send_list);
+ 	}
+ }
  
-@@ -804,7 +803,7 @@ void vis_quit(void)
+@@ -306,7 +301,8 @@ static void send_list_del(struct vis_info *info)
+ }
  
- 	spin_lock_irqsave(&vis_hash_lock, flags);
+ /* tries to add one entry to the receive list. */
+-static void recv_list_add(struct list_head *recv_list, char *mac)
++static void recv_list_add(struct bat_priv *bat_priv,
++			  struct list_head *recv_list, char *mac)
+ {
+ 	struct recvlist_node *entry;
+ 	unsigned long flags;
+@@ -316,32 +312,35 @@ static void recv_list_add(struct list_head *recv_list, char *mac)
+ 		return;
+ 
+ 	memcpy(entry->mac, mac, ETH_ALEN);
+-	spin_lock_irqsave(&recv_list_lock, flags);
++	spin_lock_irqsave(&bat_priv->vis_list_lock, flags);
+ 	list_add_tail(&entry->list, recv_list);
+-	spin_unlock_irqrestore(&recv_list_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->vis_list_lock, flags);
+ }
+ 
+ /* returns 1 if this mac is in the recv_list */
+-static int recv_list_is_in(struct list_head *recv_list, char *mac)
++static int recv_list_is_in(struct bat_priv *bat_priv,
++			   struct list_head *recv_list, char *mac)
+ {
+ 	struct recvlist_node *entry;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&recv_list_lock, flags);
++	spin_lock_irqsave(&bat_priv->vis_list_lock, flags);
+ 	list_for_each_entry(entry, recv_list, list) {
+ 		if (memcmp(entry->mac, mac, ETH_ALEN) == 0) {
+-			spin_unlock_irqrestore(&recv_list_lock, flags);
++			spin_unlock_irqrestore(&bat_priv->vis_list_lock,
++					       flags);
+ 			return 1;
+ 		}
+ 	}
+-	spin_unlock_irqrestore(&recv_list_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->vis_list_lock, flags);
+ 	return 0;
+ }
+ 
+ /* try to add the packet to the vis_hash. return NULL if invalid (e.g. too old,
+  * broken.. ).	vis hash must be locked outside.  is_new is set when the packet
+  * is newer than old entries in the hash. */
+-static struct vis_info *add_packet(struct vis_packet *vis_packet,
++static struct vis_info *add_packet(struct bat_priv *bat_priv,
++				   struct vis_packet *vis_packet,
+ 				   int vis_info_len, int *is_new,
+ 				   int make_broadcast)
+ {
+@@ -350,18 +349,18 @@ static struct vis_info *add_packet(struct vis_packet *vis_packet,
+ 
+ 	*is_new = 0;
+ 	/* sanity check */
+-	if (vis_hash == NULL)
++	if (!bat_priv->vis_hash)
+ 		return NULL;
+ 
+ 	/* see if the packet is already in vis_hash */
+ 	memcpy(search_elem.packet.vis_orig, vis_packet->vis_orig, ETH_ALEN);
+-	old_info = hash_find(vis_hash, &search_elem);
++	old_info = hash_find(bat_priv->vis_hash, &search_elem);
+ 
+ 	if (old_info != NULL) {
+ 		if (!seq_after(ntohl(vis_packet->seqno),
+ 				ntohl(old_info->packet.seqno))) {
+ 			if (old_info->packet.seqno == vis_packet->seqno) {
+-				recv_list_add(&old_info->recv_list,
++				recv_list_add(bat_priv, &old_info->recv_list,
+ 					      vis_packet->sender_orig);
+ 				return old_info;
+ 			} else {
+@@ -370,19 +369,20 @@ static struct vis_info *add_packet(struct vis_packet *vis_packet,
+ 			}
+ 		}
+ 		/* remove old entry */
+-		hash_remove(vis_hash, old_info);
++		hash_remove(bat_priv->vis_hash, old_info);
+ 		send_list_del(old_info);
+ 		kref_put(&old_info->refcount, free_info);
+ 	}
+ 
+ 	info = kmalloc(sizeof(struct vis_info) + vis_info_len, GFP_ATOMIC);
+-	if (info == NULL)
++	if (!info)
+ 		return NULL;
+ 
+ 	kref_init(&info->refcount);
+ 	INIT_LIST_HEAD(&info->send_list);
+ 	INIT_LIST_HEAD(&info->recv_list);
+ 	info->first_seen = jiffies;
++	info->bat_priv = bat_priv;
+ 	memcpy(&info->packet, vis_packet,
+ 	       sizeof(struct vis_packet) + vis_info_len);
+ 
+@@ -398,10 +398,10 @@ static struct vis_info *add_packet(struct vis_packet *vis_packet,
+ 		info->packet.entries = vis_info_len /
+ 			sizeof(struct vis_info_entry);
+ 
+-	recv_list_add(&info->recv_list, info->packet.sender_orig);
++	recv_list_add(bat_priv, &info->recv_list, info->packet.sender_orig);
+ 
+ 	/* try to add it */
+-	if (hash_add(vis_hash, info) < 0) {
++	if (hash_add(bat_priv->vis_hash, info) < 0) {
+ 		/* did not work (for some reason) */
+ 		kref_put(&old_info->refcount, free_info);
+ 		info = NULL;
+@@ -422,17 +422,18 @@ void receive_server_sync_packet(struct bat_priv *bat_priv,
+ 
+ 	make_broadcast = (vis_server == VIS_TYPE_SERVER_SYNC);
+ 
+-	spin_lock_irqsave(&vis_hash_lock, flags);
+-	info = add_packet(vis_packet, vis_info_len, &is_new, make_broadcast);
+-	if (info == NULL)
++	spin_lock_irqsave(&bat_priv->vis_hash_lock, flags);
++	info = add_packet(bat_priv, vis_packet, vis_info_len,
++			  &is_new, make_broadcast);
++	if (!info)
+ 		goto end;
+ 
+ 	/* only if we are server ourselves and packet is newer than the one in
+ 	 * hash.*/
+ 	if (vis_server == VIS_TYPE_SERVER_SYNC && is_new)
+-		send_list_add(info);
++		send_list_add(bat_priv, info);
+ end:
+-	spin_unlock_irqrestore(&vis_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->vis_hash_lock, flags);
+ }
+ 
+ /* handle an incoming client update packet and schedule forward if needed. */
+@@ -455,9 +456,10 @@ void receive_client_update_packet(struct bat_priv *bat_priv,
+ 	    is_my_mac(vis_packet->target_orig))
+ 		are_target = 1;
+ 
+-	spin_lock_irqsave(&vis_hash_lock, flags);
+-	info = add_packet(vis_packet, vis_info_len, &is_new, are_target);
+-	if (info == NULL)
++	spin_lock_irqsave(&bat_priv->vis_hash_lock, flags);
++	info = add_packet(bat_priv, vis_packet, vis_info_len,
++			  &is_new, are_target);
++	if (!info)
+ 		goto end;
+ 	/* note that outdated packets will be dropped at this point. */
+ 
+@@ -465,30 +467,30 @@ void receive_client_update_packet(struct bat_priv *bat_priv,
+ 	/* send only if we're the target server or ... */
+ 	if (are_target && is_new) {
+ 		info->packet.vis_type = VIS_TYPE_SERVER_SYNC;	/* upgrade! */
+-		send_list_add(info);
++		send_list_add(bat_priv, info);
+ 
+ 		/* ... we're not the recipient (and thus need to forward). */
+ 	} else if (!is_my_mac(info->packet.target_orig)) {
+-		send_list_add(info);
++		send_list_add(bat_priv, info);
+ 	}
+ end:
+-	spin_unlock_irqrestore(&vis_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->vis_hash_lock, flags);
+ }
+ 
+ /* Walk the originators and find the VIS server with the best tq. Set the packet
+  * address to its address and return the best_tq.
+  *
+  * Must be called with the originator hash locked */
+-static int find_best_vis_server(struct vis_info *info)
++static int find_best_vis_server(struct bat_priv *bat_priv,
++				struct vis_info *info)
+ {
+ 	HASHIT(hashit);
+ 	struct orig_node *orig_node;
+ 	int best_tq = -1;
+ 
+-	while (hash_iterate(orig_hash, &hashit)) {
++	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
+ 		orig_node = hashit.bucket->data;
+-		if ((orig_node != NULL) &&
+-		    (orig_node->router != NULL) &&
++		if ((orig_node) && (orig_node->router) &&
+ 		    (orig_node->flags & VIS_SERVER) &&
+ 		    (orig_node->router->tq_avg > best_tq)) {
+ 			best_tq = orig_node->router->tq_avg;
+@@ -515,7 +517,7 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
+ 	HASHIT(hashit_local);
+ 	HASHIT(hashit_global);
+ 	struct orig_node *orig_node;
+-	struct vis_info *info = (struct vis_info *)my_vis_info;
++	struct vis_info *info = (struct vis_info *)bat_priv->my_vis_info;
+ 	struct vis_info_entry *entry, *entry_array;
+ 	struct hna_local_entry *hna_local_entry;
+ 	int best_tq = -1;
+@@ -524,26 +526,27 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
+ 	info->first_seen = jiffies;
+ 	info->packet.vis_type = atomic_read(&bat_priv->vis_mode);
+ 
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 	memcpy(info->packet.target_orig, broadcast_addr, ETH_ALEN);
+ 	info->packet.ttl = TTL;
+ 	info->packet.seqno = htonl(ntohl(info->packet.seqno) + 1);
+ 	info->packet.entries = 0;
+ 
+ 	if (info->packet.vis_type == VIS_TYPE_CLIENT_UPDATE) {
+-		best_tq = find_best_vis_server(info);
++		best_tq = find_best_vis_server(bat_priv, info);
+ 		if (best_tq < 0) {
+-			spin_unlock_irqrestore(&orig_hash_lock, flags);
++			spin_unlock_irqrestore(&bat_priv->orig_hash_lock,
++					       flags);
+ 			return -1;
+ 		}
+ 	}
+ 
+ 	entry_array = (struct vis_info_entry *)
+-		((char *)info + sizeof(struct vis_info));
++				((char *)info + sizeof(struct vis_info));
+ 
+-	while (hash_iterate(orig_hash, &hashit_global)) {
++	while (hash_iterate(bat_priv->orig_hash, &hashit_global)) {
+ 		orig_node = hashit_global.bucket->data;
+-		if (orig_node->router != NULL
++		if (orig_node->router
+ 			&& compare_orig(orig_node->router->addr,
+ 					orig_node->orig)
+ 			&& (orig_node->router->if_incoming->if_status ==
+@@ -560,16 +563,17 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
+ 			info->packet.entries++;
+ 
+ 			if (vis_packet_full(info)) {
+-				spin_unlock_irqrestore(&orig_hash_lock, flags);
++				spin_unlock_irqrestore(
++					&bat_priv->orig_hash_lock, flags);
+ 				return 0;
+ 			}
+ 		}
+ 	}
+ 
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+-	spin_lock_irqsave(&hna_local_hash_lock, flags);
+-	while (hash_iterate(hna_local_hash, &hashit_local)) {
++	spin_lock_irqsave(&bat_priv->hna_lhash_lock, flags);
++	while (hash_iterate(bat_priv->hna_local_hash, &hashit_local)) {
+ 		hna_local_entry = hashit_local.bucket->data;
+ 		entry = &entry_array[info->packet.entries];
+ 		memset(entry->src, 0, ETH_ALEN);
+@@ -578,35 +582,40 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
+ 		info->packet.entries++;
+ 
+ 		if (vis_packet_full(info)) {
+-			spin_unlock_irqrestore(&hna_local_hash_lock, flags);
++			spin_unlock_irqrestore(&bat_priv->hna_lhash_lock,
++					       flags);
+ 			return 0;
+ 		}
+ 	}
+-	spin_unlock_irqrestore(&hna_local_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->hna_lhash_lock, flags);
+ 	return 0;
+ }
+ 
+ /* free old vis packets. Must be called with this vis_hash_lock
+  * held */
+-static void purge_vis_packets(void)
++static void purge_vis_packets(struct bat_priv *bat_priv)
+ {
+ 	HASHIT(hashit);
+ 	struct vis_info *info;
+ 
+-	while (hash_iterate(vis_hash, &hashit)) {
++	while (hash_iterate(bat_priv->vis_hash, &hashit)) {
+ 		info = hashit.bucket->data;
+-		if (info == my_vis_info)	/* never purge own data. */
++
++		/* never purge own data. */
++		if (info == bat_priv->my_vis_info)
+ 			continue;
++
+ 		if (time_after(jiffies,
+ 			       info->first_seen + VIS_TIMEOUT * HZ)) {
+-			hash_remove_bucket(vis_hash, &hashit);
++			hash_remove_bucket(bat_priv->vis_hash, &hashit);
+ 			send_list_del(info);
+ 			kref_put(&info->refcount, free_info);
+ 		}
+ 	}
+ }
+ 
+-static void broadcast_vis_packet(struct vis_info *info, int packet_length)
++static void broadcast_vis_packet(struct bat_priv *bat_priv,
++				 struct vis_info *info, int packet_length)
+ {
+ 	HASHIT(hashit);
+ 	struct orig_node *orig_node;
+@@ -614,10 +623,10 @@ static void broadcast_vis_packet(struct vis_info *info, int packet_length)
+ 	struct batman_if *batman_if;
+ 	uint8_t dstaddr[ETH_ALEN];
+ 
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 
+ 	/* send to all routers in range. */
+-	while (hash_iterate(orig_hash, &hashit)) {
++	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
+ 		orig_node = hashit.bucket->data;
+ 
+ 		/* if it's a vis server and reachable, send it. */
+@@ -627,34 +636,36 @@ static void broadcast_vis_packet(struct vis_info *info, int packet_length)
+ 			continue;
+ 		/* don't send it if we already received the packet from
+ 		 * this node. */
+-		if (recv_list_is_in(&info->recv_list, orig_node->orig))
++		if (recv_list_is_in(bat_priv, &info->recv_list,
++							orig_node->orig))
+ 			continue;
+ 
+ 		memcpy(info->packet.target_orig, orig_node->orig, ETH_ALEN);
+ 		batman_if = orig_node->router->if_incoming;
+ 		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 		send_raw_packet((unsigned char *)&info->packet,
+ 				packet_length, batman_if, dstaddr);
+ 
+-		spin_lock_irqsave(&orig_hash_lock, flags);
++		spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 
+ 	}
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 	memcpy(info->packet.target_orig, broadcast_addr, ETH_ALEN);
+ }
+ 
+-static void unicast_vis_packet(struct vis_info *info, int packet_length)
++static void unicast_vis_packet(struct bat_priv *bat_priv,
++			       struct vis_info *info, int packet_length)
+ {
+ 	struct orig_node *orig_node;
+ 	unsigned long flags;
+ 	struct batman_if *batman_if;
+ 	uint8_t dstaddr[ETH_ALEN];
+ 
+-	spin_lock_irqsave(&orig_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 	orig_node = ((struct orig_node *)
+-		     hash_find(orig_hash, info->packet.target_orig));
++		     hash_find(bat_priv->orig_hash, info->packet.target_orig));
+ 
+ 	if ((!orig_node) || (!orig_node->router))
+ 		goto out;
+@@ -663,18 +674,18 @@ static void unicast_vis_packet(struct vis_info *info, int packet_length)
+ 	 * copy the required data before sending */
+ 	batman_if = orig_node->router->if_incoming;
+ 	memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 
+ 	send_raw_packet((unsigned char *)&info->packet,
+ 			packet_length, batman_if, dstaddr);
+ 	return;
+ 
+ out:
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
++	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ }
+ 
+ /* only send one vis packet. called from send_vis_packets() */
+-static void send_vis_packet(struct vis_info *info)
++static void send_vis_packet(struct bat_priv *bat_priv, struct vis_info *info)
+ {
+ 	int packet_length;
+ 
+@@ -683,103 +694,115 @@ static void send_vis_packet(struct vis_info *info)
+ 		return;
+ 	}
+ 
+-	memcpy(info->packet.sender_orig, main_if_addr, ETH_ALEN);
++	memcpy(info->packet.sender_orig,
++	       bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
+ 	info->packet.ttl--;
+ 
+ 	packet_length = sizeof(struct vis_packet) +
+ 		info->packet.entries * sizeof(struct vis_info_entry);
+ 
+ 	if (is_bcast(info->packet.target_orig))
+-		broadcast_vis_packet(info, packet_length);
++		broadcast_vis_packet(bat_priv, info, packet_length);
+ 	else
+-		unicast_vis_packet(info, packet_length);
++		unicast_vis_packet(bat_priv, info, packet_length);
+ 	info->packet.ttl++; /* restore TTL */
+ }
+ 
+ /* called from timer; send (and maybe generate) vis packet. */
+ static void send_vis_packets(struct work_struct *work)
+ {
++	struct delayed_work *delayed_work =
++		container_of(work, struct delayed_work, work);
++	struct bat_priv *bat_priv =
++		container_of(delayed_work, struct bat_priv, vis_work);
+ 	struct vis_info *info, *temp;
+ 	unsigned long flags;
+-	/* struct bat_priv *bat_priv = netdev_priv(soft_device); */
+-
+-	spin_lock_irqsave(&vis_hash_lock, flags);
+ 
+-	purge_vis_packets();
++	spin_lock_irqsave(&bat_priv->vis_hash_lock, flags);
++	purge_vis_packets(bat_priv);
+ 
+-	/* if (generate_vis_packet(bat_priv) == 0) {*/
++	if (generate_vis_packet(bat_priv) == 0) {
+ 		/* schedule if generation was successful */
+-		/*send_list_add(my_vis_info);
+-	} */
++		send_list_add(bat_priv, bat_priv->my_vis_info);
++	}
+ 
+-	list_for_each_entry_safe(info, temp, &send_list, send_list) {
++	list_for_each_entry_safe(info, temp, &bat_priv->vis_send_list,
++				 send_list) {
+ 
+ 		kref_get(&info->refcount);
+-		spin_unlock_irqrestore(&vis_hash_lock, flags);
++		spin_unlock_irqrestore(&bat_priv->vis_hash_lock, flags);
+ 
+-		send_vis_packet(info);
++		if (bat_priv->primary_if)
++			send_vis_packet(bat_priv, info);
+ 
+-		spin_lock_irqsave(&vis_hash_lock, flags);
++		spin_lock_irqsave(&bat_priv->vis_hash_lock, flags);
+ 		send_list_del(info);
+ 		kref_put(&info->refcount, free_info);
+ 	}
+-	spin_unlock_irqrestore(&vis_hash_lock, flags);
+-	start_vis_timer();
++	spin_unlock_irqrestore(&bat_priv->vis_hash_lock, flags);
++	start_vis_timer(bat_priv);
+ }
+-static DECLARE_DELAYED_WORK(vis_timer_wq, send_vis_packets);
+ 
+ /* init the vis server. this may only be called when if_list is already
+  * initialized (e.g. bat0 is initialized, interfaces have been added) */
+-int vis_init(void)
++int vis_init(struct bat_priv *bat_priv)
+ {
+ 	unsigned long flags;
+-	if (vis_hash)
++
++	if (bat_priv->vis_hash)
+ 		return 1;
+ 
+-	spin_lock_irqsave(&vis_hash_lock, flags);
++	if (!bat_priv->primary_if)
++		return 0;
++
++	spin_lock_irqsave(&bat_priv->vis_hash_lock, flags);
+ 
+-	vis_hash = hash_new(256, vis_info_cmp, vis_info_choose);
+-	if (!vis_hash) {
++	bat_priv->vis_hash = hash_new(256, vis_info_cmp, vis_info_choose);
++	if (!bat_priv->vis_hash) {
+ 		pr_err("Can't initialize vis_hash\n");
+ 		goto err;
+ 	}
+ 
+-	my_vis_info = kmalloc(1000, GFP_ATOMIC);
+-	if (!my_vis_info) {
++	bat_priv->my_vis_info = kmalloc(1000, GFP_ATOMIC);
++	if (!bat_priv->my_vis_info) {
+ 		pr_err("Can't initialize vis packet\n");
+ 		goto err;
+ 	}
+ 
+ 	/* prefill the vis info */
+-	my_vis_info->first_seen = jiffies - msecs_to_jiffies(VIS_INTERVAL);
+-	INIT_LIST_HEAD(&my_vis_info->recv_list);
+-	INIT_LIST_HEAD(&my_vis_info->send_list);
+-	kref_init(&my_vis_info->refcount);
+-	my_vis_info->packet.version = COMPAT_VERSION;
+-	my_vis_info->packet.packet_type = BAT_VIS;
+-	my_vis_info->packet.ttl = TTL;
+-	my_vis_info->packet.seqno = 0;
+-	my_vis_info->packet.entries = 0;
+-
+-	INIT_LIST_HEAD(&send_list);
+-
+-	memcpy(my_vis_info->packet.vis_orig, main_if_addr, ETH_ALEN);
+-	memcpy(my_vis_info->packet.sender_orig, main_if_addr, ETH_ALEN);
+-
+-	if (hash_add(vis_hash, my_vis_info) < 0) {
++	bat_priv->my_vis_info->first_seen = jiffies -
++						msecs_to_jiffies(VIS_INTERVAL);
++	INIT_LIST_HEAD(&bat_priv->my_vis_info->recv_list);
++	INIT_LIST_HEAD(&bat_priv->my_vis_info->send_list);
++	kref_init(&bat_priv->my_vis_info->refcount);
++	bat_priv->my_vis_info->bat_priv = bat_priv;
++	bat_priv->my_vis_info->packet.version = COMPAT_VERSION;
++	bat_priv->my_vis_info->packet.packet_type = BAT_VIS;
++	bat_priv->my_vis_info->packet.ttl = TTL;
++	bat_priv->my_vis_info->packet.seqno = 0;
++	bat_priv->my_vis_info->packet.entries = 0;
++
++	INIT_LIST_HEAD(&bat_priv->vis_send_list);
++
++	memcpy(bat_priv->my_vis_info->packet.vis_orig,
++	       bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
++	memcpy(bat_priv->my_vis_info->packet.sender_orig,
++	       bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
++
++	if (hash_add(bat_priv->vis_hash, bat_priv->my_vis_info) < 0) {
+ 		pr_err("Can't add own vis packet into hash\n");
+ 		/* not in hash, need to remove it manually. */
+-		kref_put(&my_vis_info->refcount, free_info);
++		kref_put(&bat_priv->my_vis_info->refcount, free_info);
+ 		goto err;
+ 	}
+ 
+-	spin_unlock_irqrestore(&vis_hash_lock, flags);
+-	start_vis_timer();
++	spin_unlock_irqrestore(&bat_priv->vis_hash_lock, flags);
++	start_vis_timer(bat_priv);
+ 	return 1;
+ 
+ err:
+-	spin_unlock_irqrestore(&vis_hash_lock, flags);
+-	vis_quit();
++	spin_unlock_irqrestore(&bat_priv->vis_hash_lock, flags);
++	vis_quit(bat_priv);
+ 	return 0;
+ }
+ 
+@@ -793,25 +816,26 @@ static void free_info_ref(void *data, void *arg)
+ }
+ 
+ /* shutdown vis-server */
+-void vis_quit(void)
++void vis_quit(struct bat_priv *bat_priv)
+ {
+ 	unsigned long flags;
+-	if (!vis_hash)
++	if (!bat_priv->vis_hash)
+ 		return;
+ 
+-	cancel_delayed_work_sync(&vis_timer_wq);
++	cancel_delayed_work_sync(&bat_priv->vis_work);
+ 
+-	spin_lock_irqsave(&vis_hash_lock, flags);
++	spin_lock_irqsave(&bat_priv->vis_hash_lock, flags);
  	/* properly remove, kill timers ... */
--	hash_delete(vis_hash, free_info_ref);
-+	hash_delete(vis_hash, free_info_ref, NULL);
- 	vis_hash = NULL;
- 	my_vis_info = NULL;
- 	spin_unlock_irqrestore(&vis_hash_lock, flags);
+-	hash_delete(vis_hash, free_info_ref, NULL);
+-	vis_hash = NULL;
+-	my_vis_info = NULL;
+-	spin_unlock_irqrestore(&vis_hash_lock, flags);
++	hash_delete(bat_priv->vis_hash, free_info_ref, NULL);
++	bat_priv->vis_hash = NULL;
++	bat_priv->my_vis_info = NULL;
++	spin_unlock_irqrestore(&bat_priv->vis_hash_lock, flags);
+ }
+ 
+ /* schedule packets for (re)transmission */
+-static void start_vis_timer(void)
++static void start_vis_timer(struct bat_priv *bat_priv)
+ {
+-	queue_delayed_work(bat_event_workqueue, &vis_timer_wq,
+-			   (VIS_INTERVAL * HZ) / 1000);
++	INIT_DELAYED_WORK(&bat_priv->vis_work, send_vis_packets);
++	queue_delayed_work(bat_event_workqueue, &bat_priv->vis_work,
++			   msecs_to_jiffies(VIS_INTERVAL));
+ }
+diff --git a/batman-adv/vis.h b/batman-adv/vis.h
+index bb13bf1..2c3b330 100644
+--- a/batman-adv/vis.h
++++ b/batman-adv/vis.h
+@@ -24,29 +24,6 @@
+ 
+ #define VIS_TIMEOUT		200	/* timeout of vis packets in seconds */
+ 
+-struct vis_info {
+-	unsigned long       first_seen;
+-	struct list_head    recv_list;
+-			    /* list of server-neighbors we received a vis-packet
+-			     * from.  we should not reply to them. */
+-	struct list_head send_list;
+-	struct kref refcount;
+-	/* this packet might be part of the vis send queue. */
+-	struct vis_packet packet;
+-	/* vis_info may follow here*/
+-} __attribute__((packed));
+-
+-struct vis_info_entry {
+-	uint8_t  src[ETH_ALEN];
+-	uint8_t  dest[ETH_ALEN];
+-	uint8_t  quality;	/* quality = 0 means HNA */
+-} __attribute__((packed));
+-
+-struct recvlist_node {
+-	struct list_head list;
+-	uint8_t mac[ETH_ALEN];
+-};
+-
+ int vis_seq_print_text(struct seq_file *seq, void *offset);
+ void receive_server_sync_packet(struct bat_priv *bat_priv,
+ 				struct vis_packet *vis_packet,
+@@ -54,7 +31,7 @@ void receive_server_sync_packet(struct bat_priv *bat_priv,
+ void receive_client_update_packet(struct bat_priv *bat_priv,
+ 				  struct vis_packet *vis_packet,
+ 				  int vis_info_len);
+-int vis_init(void);
+-void vis_quit(void);
++int vis_init(struct bat_priv *bat_priv);
++void vis_quit(struct bat_priv *bat_priv);
+ 
+ #endif /* _NET_BATMAN_ADV_VIS_H_ */
 -- 
 1.7.1
 
