@@ -1,8 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  1 Aug 2010 23:20:06 +0200
-Message-Id: <1280697613-32001-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 0/7] SKB cleanup queue
+Date: Sun,  1 Aug 2010 23:20:07 +0200
+Message-Id: <1280697613-32001-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1280697613-32001-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1280697613-32001-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/7] batman-adv: Keep header writable and
+	unshared
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,14 +19,127 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+my_skb_push provided an easy way to allocate enough headroom in
+situation were we don't have enough space left and move the data pointer
+to the new position, but we didn't checked wether we are allowed to
+write to the new pushed header. This is for example a problem when the
+skb was cloned and thus doesn't have a private data part.
 
-David S. Miller found some problems in our current codebase which must be fixed
-before it can be submitted for inclusion into the mainline kernel under net/.
+my_skb_head_push now replaces my_skb_push by using skb_cow_head to
+provide only a large enough, writable header without testing for the
+rest of the (maybe shared) data. It will also move the data pointer
+using skb_push when skb_cow_head doesn't fail.
 
-This it the second version of those patches which adds some new ones and
-corrects some smaller things in the commit messages.
+This should give us enough flexibility in situation were skbs will be
+queued by underlying layers and still doesn't unnecessarily copy the
+data in situations when the skb was consumed right away during
+dev_queue_xmit.
 
-thanks,
-	Sven
+Reported-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv/send.c           |    2 +-
+ batman-adv/soft-interface.c |   18 ++++++------------
+ batman-adv/soft-interface.h |    2 +-
+ batman-adv/unicast.c        |    6 +++---
+ 4 files changed, 11 insertions(+), 17 deletions(-)
+
+diff --git a/batman-adv/send.c b/batman-adv/send.c
+index 506994c..fb0bfbf 100644
+--- a/batman-adv/send.c
++++ b/batman-adv/send.c
+@@ -76,7 +76,7 @@ int send_skb_packet(struct sk_buff *skb,
+ 	}
+ 
+ 	/* push to the ethernet header. */
+-	if (my_skb_push(skb, sizeof(struct ethhdr)) < 0)
++	if (my_skb_head_push(skb, sizeof(struct ethhdr)) < 0)
+ 		goto send_skb_err;
+ 
+ 	skb_reset_mac_header(skb);
+diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
+index 44de0a6..2de0209 100644
+--- a/batman-adv/soft-interface.c
++++ b/batman-adv/soft-interface.c
+@@ -33,8 +33,6 @@
+ 
+ static uint32_t bcast_seqno = 1; /* give own bcast messages seq numbers to avoid
+ 				  * broadcast storms */
+-static int32_t skb_packets;
+-static int32_t skb_bad_packets;
+ 
+ unsigned char main_if_addr[ETH_ALEN];
+ static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd);
+@@ -61,18 +59,14 @@ void set_main_if_addr(uint8_t *addr)
+ 	memcpy(main_if_addr, addr, ETH_ALEN);
+ }
+ 
+-int my_skb_push(struct sk_buff *skb, unsigned int len)
++int my_skb_head_push(struct sk_buff *skb, unsigned int len)
+ {
+-	int result = 0;
++	int result;
+ 
+-	skb_packets++;
+-	if (skb_headroom(skb) < len) {
+-		skb_bad_packets++;
+-		result = pskb_expand_head(skb, len, 0, GFP_ATOMIC);
++	result = skb_cow_head(skb, len);
+ 
+-		if (result < 0)
+-			return result;
+-	}
++	if (result < 0)
++		return result;
+ 
+ 	skb_push(skb, len);
+ 	return 0;
+@@ -148,7 +142,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	/* ethernet packet should be broadcasted */
+ 	if (bcast_dst && do_bcast) {
+-		if (my_skb_push(skb, sizeof(struct bcast_packet)) < 0)
++		if (my_skb_head_push(skb, sizeof(struct bcast_packet)) < 0)
+ 			goto dropped;
+ 
+ 		bcast_packet = (struct bcast_packet *)skb->data;
+diff --git a/batman-adv/soft-interface.h b/batman-adv/soft-interface.h
+index 6364854..9dbf5fc 100644
+--- a/batman-adv/soft-interface.h
++++ b/batman-adv/soft-interface.h
+@@ -26,7 +26,7 @@ void set_main_if_addr(uint8_t *addr);
+ void interface_setup(struct net_device *dev);
+ int interface_tx(struct sk_buff *skb, struct net_device *dev);
+ void interface_rx(struct sk_buff *skb, int hdr_size);
+-int my_skb_push(struct sk_buff *skb, unsigned int len);
++int my_skb_head_push(struct sk_buff *skb, unsigned int len);
+ 
+ extern unsigned char main_if_addr[];
+ 
+diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
+index 76cfccb..64505f7 100644
+--- a/batman-adv/unicast.c
++++ b/batman-adv/unicast.c
+@@ -164,8 +164,8 @@ int unicast_send_frag_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + hdr_len);
+ 	skb_split(skb, frag_skb, data_len / 2);
+ 
+-	if (my_skb_push(frag_skb, hdr_len) < 0 ||
+-	    my_skb_push(skb, hdr_len) < 0)
++	if (my_skb_head_push(frag_skb, hdr_len) < 0 ||
++	    my_skb_head_push(skb, hdr_len) < 0)
+ 		goto drop_frag;
+ 
+ 	ucast_frag1 = (struct unicast_frag_packet *)skb->data;
+@@ -245,7 +245,7 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+ 		return unicast_send_frag_skb(skb, bat_priv, batman_if,
+ 					     dstaddr, orig_node);
+ 
+-	if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
++	if (my_skb_head_push(skb, sizeof(struct unicast_packet)) < 0)
+ 		goto dropped;
+ 
+ 	unicast_packet = (struct unicast_packet *)skb->data;
+-- 
+1.7.1
 
