@@ -1,9 +1,8 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  1 Aug 2010 22:36:18 +0200
-Message-Id: <1280694978-28232-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Keep function
-	unicast_send_frag_skb local
+Date: Sun,  1 Aug 2010 23:20:06 +0200
+Message-Id: <1280697613-32001-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2 0/7] SKB cleanup queue
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,24 +16,14 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-adv/unicast.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hi,
 
-diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
-index 64505f7..f6f5d34 100644
---- a/batman-adv/unicast.c
-+++ b/batman-adv/unicast.c
-@@ -149,7 +149,7 @@ void frag_list_free(struct list_head *head)
- 	return;
- }
- 
--int unicast_send_frag_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
-+static int unicast_send_frag_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 			  struct batman_if *batman_if, uint8_t dstaddr[],
- 			  struct orig_node *orig_node)
- {
--- 
-1.7.1
+David S. Miller found some problems in our current codebase which must be fixed
+before it can be submitted for inclusion into the mainline kernel under net/.
+
+This it the second version of those patches which adds some new ones and
+corrects some smaller things in the commit messages.
+
+thanks,
+	Sven
 
