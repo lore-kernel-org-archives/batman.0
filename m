@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 24 Jul 2010 19:56:07 +0200
-References: <1279917512-22144-1-git-send-email-sven.eckelmann@gmx.de>
-	<1279918164-22878-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1279918164-22878-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun, 1 Aug 2010 17:28:53 +0200
+References: <1279923269-26513-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1279923269-26513-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201007241956.08384.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Directly prepare icmp
-	packets in socket buffer
+Message-Id: <201008011728.53733.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Only copy skb data for
+	multiple broadcasts
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,16 +23,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday 23 July 2010 22:49:24 Sven Eckelmann wrote:
-> It is unnecessary to generate an icmp packet in an extra memory region
-> and than copying it to a new allocated skb.
+On Saturday 24 July 2010 00:14:29 Sven Eckelmann wrote:
+> batman-adv tries to resend broadcasts on all interfaces up to three
+> times. For each round and each interface it must provide a skb which
+> gets consumed by the sending function.
 > 
-> This also resolved the problem that we do inform the user that we
-> couldn't send the packet because we couldn't allocate the socket buffer.
-> 
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+> It is unnecessary to copy the data of each broadcast because the actual
+> data is either not shared or already copied by add_bcast_packet_to_list.
+> So it is enough to just copy the skb control data
 
-Applied in revision 1745.
+I think the reason to call skb_copy() is the following dev_queue_xmit() call 
+which will consume the given skb. If we consider a case of having 3 interfaces 
+all 3 cloned skbs point to the same data while going out via different 
+interfaces ? I wonder whether that can work ?!
 
-Thanks,
+Cheers,
 Marek
