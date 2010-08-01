@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  1 Aug 2010 23:20:11 +0200
-Message-Id: <1280697613-32001-6-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun,  1 Aug 2010 23:20:12 +0200
+Message-Id: <1280697613-32001-7-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1280697613-32001-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1280697613-32001-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: Create copy of skb with
-	pre-allocated headroom
+Subject: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: Provide full headers and
+	packets as linear skb
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,168 +19,116 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-We can use skb_cow instead of a handwritten function to test and create
-a writable skb buffer. This also allows us to pre-allocate headroom to
-be able to send the data without re-allocating the buffer again to add
-the ethernet header.
+We must ensure that all interesting data is linear and not paged out to
+access all information in a header or a full batman-adv related packet.
+Otherwise we may drop packets which have non-linear headers but which
+hold valid data.
+
+This doesn't affect non-linear skbs which have all headers in a linear
+head unless we must process the whole packet like in ogms or vis packets.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/routing.c |   77 +++++++++++++++----------------------------------
- 1 files changed, 24 insertions(+), 53 deletions(-)
+ batman-adv/hard-interface.c |    2 +-
+ batman-adv/routing.c        |   22 ++++++++++++++--------
+ 2 files changed, 15 insertions(+), 9 deletions(-)
 
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index fdabe4f..23a2595 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -490,7 +490,7 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 		goto err_out;
+ 
+ 	/* packet should hold at least type and version */
+-	if (unlikely(skb_headlen(skb) < 2))
++	if (unlikely(!pskb_may_pull(skb, 2)))
+ 		goto err_free;
+ 
+ 	/* expect a valid ethernet header here. */
 diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 2764122..7667c55 100644
+index 7667c55..8f3b6fb 100644
 --- a/batman-adv/routing.c
 +++ b/batman-adv/routing.c
-@@ -754,7 +754,6 @@ int recv_bat_packet(struct sk_buff *skb,
- {
- 	struct ethhdr *ethhdr;
+@@ -756,7 +756,7 @@ int recv_bat_packet(struct sk_buff *skb,
  	unsigned long flags;
--	struct sk_buff *skb_old;
  
  	/* drop packet if it has not necessary minimum size */
- 	if (skb_headlen(skb) < sizeof(struct batman_packet))
-@@ -770,18 +769,11 @@ int recv_bat_packet(struct sk_buff *skb,
- 	if (is_bcast(ethhdr->h_source))
+-	if (skb_headlen(skb) < sizeof(struct batman_packet))
++	if (unlikely(!pskb_may_pull(skb, sizeof(struct batman_packet))))
  		return NET_RX_DROP;
  
--	/* TODO: we use headlen instead of "length", because
--	 * only this data is paged in. */
--
- 	/* create a copy of the skb, if needed, to modify it. */
--	if (!skb_clone_writable(skb, skb_headlen(skb))) {
--		skb_old = skb;
--		skb = skb_copy(skb, GFP_ATOMIC);
--		if (!skb)
--			return NET_RX_DROP;
--		ethhdr = (struct ethhdr *)skb_mac_header(skb);
--		kfree_skb(skb_old);
--	}
-+	if (skb_cow(skb, 0) < 0)
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+@@ -773,6 +773,10 @@ int recv_bat_packet(struct sk_buff *skb,
+ 	if (skb_cow(skb, 0) < 0)
+ 		return NET_RX_DROP;
+ 
++	/* keep skb linear */
++	if (skb_linearize(skb) < 0)
 +		return NET_RX_DROP;
 +
-+	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
  
  	spin_lock_irqsave(&orig_hash_lock, flags);
- 	receive_aggr_bat_packet(ethhdr,
-@@ -801,7 +793,6 @@ static int recv_my_icmp_packet(struct sk_buff *skb, size_t icmp_len)
- 	struct orig_node *orig_node;
- 	struct icmp_packet_rr *icmp_packet;
+@@ -926,11 +930,11 @@ int recv_icmp_packet(struct sk_buff *skb)
+ 	/**
+ 	 * we truncate all incoming icmp packets if they don't match our size
+ 	 */
+-	if (skb_headlen(skb) >= sizeof(struct icmp_packet_rr))
++	if (skb->len >= sizeof(struct icmp_packet_rr))
+ 		hdr_size = sizeof(struct icmp_packet_rr);
+ 
+ 	/* drop packet if it has not necessary minimum size */
+-	if (skb_headlen(skb) < hdr_size)
++	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+ 		return NET_RX_DROP;
+ 
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+@@ -1099,7 +1103,7 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
  	struct ethhdr *ethhdr;
--	struct sk_buff *skb_old;
- 	struct batman_if *batman_if;
- 	int ret;
+ 
+ 	/* drop packet if it has not necessary minimum size */
+-	if (skb_headlen(skb) < hdr_size)
++	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+ 		return -1;
+ 
+ 	ethhdr = (struct ethhdr *) skb_mac_header(skb);
+@@ -1259,7 +1263,7 @@ int recv_bcast_packet(struct sk_buff *skb)
  	unsigned long flags;
-@@ -836,16 +827,11 @@ static int recv_my_icmp_packet(struct sk_buff *skb, size_t icmp_len)
- 		spin_unlock_irqrestore(&orig_hash_lock, flags);
  
- 		/* create a copy of the skb, if needed, to modify it. */
--		skb_old = NULL;
--		if (!skb_clone_writable(skb, icmp_len)) {
--			skb_old = skb;
--			skb = skb_copy(skb, GFP_ATOMIC);
--			if (!skb)
--				return NET_RX_DROP;
--			icmp_packet = (struct icmp_packet_rr *)skb->data;
--			ethhdr = (struct ethhdr *)skb_mac_header(skb);
--			kfree_skb(skb_old);
--		}
-+		if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
-+			return NET_RX_DROP;
-+
-+		icmp_packet = (struct icmp_packet_rr *)skb->data;
-+		ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 	/* drop packet if it has not necessary minimum size */
+-	if (skb_headlen(skb) < hdr_size)
++	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+ 		return NET_RX_DROP;
  
- 		memcpy(icmp_packet->dst, icmp_packet->orig, ETH_ALEN);
- 		memcpy(icmp_packet->orig,
-@@ -869,7 +855,6 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb, size_t icmp_len)
- 	struct orig_node *orig_node;
- 	struct icmp_packet *icmp_packet;
- 	struct ethhdr *ethhdr;
--	struct sk_buff *skb_old;
- 	struct batman_if *batman_if;
- 	int ret;
- 	unsigned long flags;
-@@ -905,15 +890,11 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb, size_t icmp_len)
- 		spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+@@ -1332,7 +1336,11 @@ int recv_vis_packet(struct sk_buff *skb)
+ 	struct bat_priv *bat_priv;
+ 	int hdr_size = sizeof(struct vis_packet);
  
- 		/* create a copy of the skb, if needed, to modify it. */
--		if (!skb_clone_writable(skb, icmp_len)) {
--			skb_old = skb;
--			skb = skb_copy(skb, GFP_ATOMIC);
--			if (!skb)
--				return NET_RX_DROP;
--			icmp_packet = (struct icmp_packet *) skb->data;
--			ethhdr = (struct ethhdr *)skb_mac_header(skb);
--			kfree_skb(skb_old);
--		}
-+		if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
-+			return NET_RX_DROP;
-+
-+		icmp_packet = (struct icmp_packet *) skb->data;
-+		ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 		memcpy(icmp_packet->dst, icmp_packet->orig, ETH_ALEN);
- 		memcpy(icmp_packet->orig,
-@@ -936,7 +917,6 @@ int recv_icmp_packet(struct sk_buff *skb)
- 	struct icmp_packet_rr *icmp_packet;
- 	struct ethhdr *ethhdr;
- 	struct orig_node *orig_node;
--	struct sk_buff *skb_old;
- 	struct batman_if *batman_if;
- 	int hdr_size = sizeof(struct icmp_packet);
- 	int ret;
-@@ -1002,15 +982,11 @@ int recv_icmp_packet(struct sk_buff *skb)
- 		spin_unlock_irqrestore(&orig_hash_lock, flags);
- 
- 		/* create a copy of the skb, if needed, to modify it. */
--		if (!skb_clone_writable(skb, hdr_size)) {
--			skb_old = skb;
--			skb = skb_copy(skb, GFP_ATOMIC);
--			if (!skb)
--				return NET_RX_DROP;
--			icmp_packet = (struct icmp_packet_rr *)skb->data;
--			ethhdr = (struct ethhdr *)skb_mac_header(skb);
--			kfree_skb(skb_old);
--		}
-+		if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
-+			return NET_RX_DROP;
-+
-+		icmp_packet = (struct icmp_packet_rr *)skb->data;
-+		ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 		/* decrement ttl */
- 		icmp_packet->ttl--;
-@@ -1149,7 +1125,6 @@ static int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
- 	struct orig_node *orig_node;
- 	struct neigh_node *router;
- 	struct batman_if *batman_if;
--	struct sk_buff *skb_old;
- 	uint8_t dstaddr[ETH_ALEN];
- 	unsigned long flags;
- 	struct unicast_packet *unicast_packet =
-@@ -1185,15 +1160,11 @@ static int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
- 	spin_unlock_irqrestore(&orig_hash_lock, flags);
- 
- 	/* create a copy of the skb, if needed, to modify it. */
--	if (!skb_clone_writable(skb, hdr_size)) {
--		skb_old = skb;
--		skb = skb_copy(skb, GFP_ATOMIC);
--		if (!skb)
--			return NET_RX_DROP;
--		unicast_packet = (struct unicast_packet *) skb->data;
--		ethhdr = (struct ethhdr *)skb_mac_header(skb);
--		kfree_skb(skb_old);
--	}
-+	if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
+-	if (skb_headlen(skb) < hdr_size)
++	/* keep skb linear */
++	if (skb_linearize(skb) < 0)
 +		return NET_RX_DROP;
 +
-+	unicast_packet = (struct unicast_packet *) skb->data;
-+	ethhdr = (struct ethhdr *)skb_mac_header(skb);
++	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+ 		return NET_RX_DROP;
  
- 	/* decrement ttl */
- 	unicast_packet->ttl--;
+ 	vis_packet = (struct vis_packet *) skb->data;
+@@ -1354,13 +1362,11 @@ int recv_vis_packet(struct sk_buff *skb)
+ 
+ 	switch (vis_packet->vis_type) {
+ 	case VIS_TYPE_SERVER_SYNC:
+-		/* TODO: handle fragmented skbs properly */
+ 		receive_server_sync_packet(bat_priv, vis_packet,
+ 					   skb_headlen(skb));
+ 		break;
+ 
+ 	case VIS_TYPE_CLIENT_UPDATE:
+-		/* TODO: handle fragmented skbs properly */
+ 		receive_client_update_packet(bat_priv, vis_packet,
+ 					     skb_headlen(skb));
+ 		break;
 -- 
 1.7.1
 
