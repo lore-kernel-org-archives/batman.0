@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon,  9 Aug 2010 23:56:39 +0200
-Message-Id: <1281391002-21577-3-git-send-email-sven.eckelmann@gmx.de>
+Date: Mon,  9 Aug 2010 23:56:40 +0200
+Message-Id: <1281391002-21577-4-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1281391002-21577-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1281391002-21577-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/5] Staging: batman-adv: unify
-	orig_hash_lock spinlock handling to avoid deadlocks
+Subject: [B.A.T.M.A.N.] [PATCH 3/5] Staging: batman-adv: fix batman icmp
+	originating from secondary interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,82 +18,90 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net, stable <stable@kernel.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
 
 From: Marek Lindner <lindner_marek@yahoo.de>
 
-The orig_hash_lock spinlock always has to be locked with IRQs being
-disabled to avoid deadlocks between code that is being executed in
-IRQ context and code that is being executed in non-IRQ context.
+If a batman icmp packet had to be routed over a secondary interface
+at the first hop, the mac address of that secondary interface would
+be written in the 'orig' field of the icmp packet. A node which is
+more than one hop away is not aware of the mac address because
+secondary interfaces are not flooded through the whole mesh and
+therefore can't send a reply.
+This patch always sends the mac address of the primary interface
+in the 'orig' field of the icmp packet.
 
-Reported-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: stable <stable@kernel.org>
 ---
- drivers/staging/batman-adv/originator.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
+ drivers/staging/batman-adv/icmp_socket.c |   12 ++++++++----
+ drivers/staging/batman-adv/types.h       |    1 +
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
-index 28bb627..de5a8c1 100644
---- a/drivers/staging/batman-adv/originator.c
-+++ b/drivers/staging/batman-adv/originator.c
-@@ -391,11 +391,12 @@ static int orig_node_add_if(struct orig_node *orig_node, int max_if_num)
- int orig_hash_add_if(struct batman_if *batman_if, int max_if_num)
+diff --git a/drivers/staging/batman-adv/icmp_socket.c b/drivers/staging/batman-adv/icmp_socket.c
+index fc3d32c..3ae7dd2 100644
+--- a/drivers/staging/batman-adv/icmp_socket.c
++++ b/drivers/staging/batman-adv/icmp_socket.c
+@@ -67,6 +67,7 @@ static int bat_socket_open(struct inode *inode, struct file *file)
+ 	INIT_LIST_HEAD(&socket_client->queue_list);
+ 	socket_client->queue_len = 0;
+ 	socket_client->index = i;
++	socket_client->bat_priv = inode->i_private;
+ 	spin_lock_init(&socket_client->lock);
+ 	init_waitqueue_head(&socket_client->queue_wait);
+ 
+@@ -151,9 +152,8 @@ static ssize_t bat_socket_read(struct file *file, char __user *buf,
+ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 				size_t len, loff_t *off)
  {
+-	/* FIXME: each orig_node->batman_if will be attached to a softif */
+-	struct bat_priv *bat_priv = netdev_priv(soft_device);
+ 	struct socket_client *socket_client = file->private_data;
++	struct bat_priv *bat_priv = socket_client->bat_priv;
+ 	struct icmp_packet_rr icmp_packet;
  	struct orig_node *orig_node;
-+	unsigned long flags;
- 	HASHIT(hashit);
- 
- 	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
- 	 * if_num */
--	spin_lock(&orig_hash_lock);
-+	spin_lock_irqsave(&orig_hash_lock, flags);
- 
- 	while (hash_iterate(orig_hash, &hashit)) {
- 		orig_node = hashit.bucket->data;
-@@ -404,11 +405,11 @@ int orig_hash_add_if(struct batman_if *batman_if, int max_if_num)
- 			goto err;
+ 	struct batman_if *batman_if;
+@@ -168,6 +168,9 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 		return -EINVAL;
  	}
  
--	spin_unlock(&orig_hash_lock);
-+	spin_unlock_irqrestore(&orig_hash_lock, flags);
- 	return 0;
++	if (!bat_priv->primary_if)
++		return -EFAULT;
++
+ 	if (len >= sizeof(struct icmp_packet_rr))
+ 		packet_len = sizeof(struct icmp_packet_rr);
  
- err:
--	spin_unlock(&orig_hash_lock);
-+	spin_unlock_irqrestore(&orig_hash_lock, flags);
- 	return -ENOMEM;
- }
+@@ -223,7 +226,8 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 	if (batman_if->if_status != IF_ACTIVE)
+ 		goto dst_unreach;
  
-@@ -468,12 +469,13 @@ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
- {
- 	struct batman_if *batman_if_tmp;
- 	struct orig_node *orig_node;
-+	unsigned long flags;
- 	HASHIT(hashit);
- 	int ret;
+-	memcpy(icmp_packet.orig, batman_if->net_dev->dev_addr, ETH_ALEN);
++	memcpy(icmp_packet.orig,
++	       bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
  
- 	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
- 	 * if_num */
--	spin_lock(&orig_hash_lock);
-+	spin_lock_irqsave(&orig_hash_lock, flags);
+ 	if (packet_len == sizeof(struct icmp_packet_rr))
+ 		memcpy(icmp_packet.rr, batman_if->net_dev->dev_addr, ETH_ALEN);
+@@ -271,7 +275,7 @@ int bat_socket_setup(struct bat_priv *bat_priv)
+ 		goto err;
  
- 	while (hash_iterate(orig_hash, &hashit)) {
- 		orig_node = hashit.bucket->data;
-@@ -500,10 +502,10 @@ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
- 	rcu_read_unlock();
+ 	d = debugfs_create_file(ICMP_SOCKET, S_IFREG | S_IWUSR | S_IRUSR,
+-				bat_priv->debug_dir, NULL, &fops);
++				bat_priv->debug_dir, bat_priv, &fops);
+ 	if (d)
+ 		goto err;
  
- 	batman_if->if_num = -1;
--	spin_unlock(&orig_hash_lock);
-+	spin_unlock_irqrestore(&orig_hash_lock, flags);
- 	return 0;
+diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
+index 21d0717..9aa9d36 100644
+--- a/drivers/staging/batman-adv/types.h
++++ b/drivers/staging/batman-adv/types.h
+@@ -126,6 +126,7 @@ struct socket_client {
+ 	unsigned char index;
+ 	spinlock_t lock;
+ 	wait_queue_head_t queue_wait;
++	struct bat_priv *bat_priv;
+ };
  
- err:
--	spin_unlock(&orig_hash_lock);
-+	spin_unlock_irqrestore(&orig_hash_lock, flags);
- 	return -ENOMEM;
- }
+ struct socket_packet {
 -- 
 1.7.1
 
