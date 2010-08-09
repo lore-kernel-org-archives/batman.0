@@ -1,14 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 8 Aug 2010 15:05:44 +0200
-References: <1280697613-32001-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1280697613-32001-1-git-send-email-sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201008081505.44822.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 0/7] SKB cleanup queue
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon,  9 Aug 2010 23:56:37 +0200
+Message-Id: <1281391002-21577-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (6: fixes)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,19 +14,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
+To: greg@kroah.com
+Cc: b.a.t.m.a.n@lists.open-mesh.net
 
 Hi,
 
-> David S. Miller found some problems in our current codebase which must be
-> fixed before it can be submitted for inclusion into the mainline kernel
-> under net/.
-> 
-> This it the second version of those patches which adds some new ones and
-> corrects some smaller things in the commit messages.
+here are patches targeted for 2.6.36. All patches needed for that patchset are
+already part of Linus' tree. They are smaller bugfixes and add no new features.
 
-I committed all of them (revision 1757-1763).
+The only special fix is "unify orig_hash_lock spinlock handling to avoid
+deadlocks" which fixes the usage of the same spinlock with spin_lock and
+spin_lock_irqsave. This one should also be applied in 2.6.35.x
 
-Thanks,
-Marek
+"Fix merge of linus tree" should readd an older bugfix again which was removed
+by your merge with Linus' tree.
+
+The patches for 2.6.37 will follow later.
+
+thanks,
+	Sven
+
+Marek Lindner (4):
+      Staging: batman-adv: unify orig_hash_lock spinlock handling to avoid deadlocks
+      Staging: batman-adv: fix batman icmp originating from secondary interface
+      Staging: batman-adv: always reply batman icmp packets with primary mac
+      Staging: batman-adv: fix own mac address detection
+
+Sven Eckelmann (1):
+      Staging: batman-adv: Fix merge of linus tree
+
+ drivers/staging/batman-adv/bat_sysfs.c      |    4 ++++
+ drivers/staging/batman-adv/hard-interface.c |    8 --------
+ drivers/staging/batman-adv/icmp_socket.c    |   12 ++++++++----
+ drivers/staging/batman-adv/main.c           |    7 +++++--
+ drivers/staging/batman-adv/originator.c     |   14 ++++++++------
+ drivers/staging/batman-adv/routing.c        |   16 ++++++++++++++--
+ drivers/staging/batman-adv/types.h          |    1 +
+ 7 files changed, 40 insertions(+), 22 deletions(-)
+
