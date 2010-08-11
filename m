@@ -1,14 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 11 Aug 2010 13:14:08 +0200
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Wed, 11 Aug 2010 13:20:04 +0200
 References: <mailman.1.1281002401.15834.b.a.t.m.a.n@lists.open-mesh.org>
 	<4C627FCF.4090303@web.de>
 In-Reply-To: <4C627FCF.4090303@web.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: multipart/signed; boundary="nextPart5414195.8imNG8xgXh";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201008111314.09249.lindner_marek@yahoo.de>
+Message-Id: <201008111320.14389.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] Problem openWRT "backfire" and "kmod-batman-adv"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,71 +21,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Tim <Timbo2001@web.de>
 
+--nextPart5414195.8imNG8xgXh
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-> Step6: Editing the config files using uci:
-> "root@OpenWrt:~# uci delete wireless.radio0.disabled
-> root@OpenWrt:~# uci delete wireless.@wifi-iface[0].network
-> root@OpenWrt:~# uci set wireless. radio0.channel=1
-> root@OpenWrt:~# uci set wireless.@wifi-iface[0].mode=adhoc
-> root@OpenWrt:~# uci set wireless.@wifi-iface[0].ssid=mesh
-> root@OpenWrt:~# uci set wireless.@wifi-iface[0].bssid=02:12:34:56:78:9A
-> root@OpenWrt:~# uci set network.lan.mtu=1500
-> root@OpenWrt:~# uci set network.lan.ifname="eth0.0 bat0"
-> root@OpenWrt:~# uci set network.wlan0=interface
-> root@OpenWrt:~# uci set network.wlan0.ifname=wlan0
-> root@OpenWrt:~# uci set network.wlan0.proto=none
-> root@OpenWrt:~# uci set network.wlan0.mtu=1524
-
-You don't seem to modify the batman-adv settings. Could you post the batman-
-adv config file, so that we can see whether it fits the rest of your uci 
-configuration ?
-
-
-> root@OpenWrt:~# uci set network.bat0=interface
-> root@OpenWrt:~# uci set network.bat0.ifname=bat0
-> root@OpenWrt:~# uci set network.bat0.proto=none
-> root@OpenWrt:~# uci set network.bat0.mtu=1500
-
-I'm not sure what this will do. Any reason to set these values ?
-
-
-> root@OpenWrt:~# uci commit
-> root@OpenWrt:~# /etc/init.d/network restart"
-> 
+On Wednesday 11 August 2010 12:47:43 Tim wrote:
+[...]
 > After restarting the network the console says: "segmentation fault" and
 > freezes. When doing "reboot" instead the device also freezes and the
 > power-led keeps flashing.
 > I also tried only changing the config in /etc/config/wireless and
 > restarted the device, with the same effect.
-
-With "uci commit" you save these settings permanently which then get loaded at 
-boot time. If these settings crash your device it is save to assume that this 
-happens with each boot attempt.  :-)
-
-
+>=20
 > In order to make sure the error isn't related to any errors while
 > compiling the image, I compiled an Image without the batman-adv package.
-> After that I was able to configure the router as usual without any freezes.
+> After that I was able to configure the router as usual without any freeze=
+s.
 
-Before you try the next "/etc/init.d/network restart" could you please check 
-whether the batman-adv module is loaded (using 'lsmod') and whether any 
-interfaces are active (using 'batctl if'). The batman-adv version would be 
-also interesting to know (can be found in the system log -> 'logread').
-At this point I don't see how a "network restart" is related to batman.
+Thanks for the steps to reproduce. That should help a little bit.
 
+I don't have hardware here at the moment to test it. So cannot tell what th=
+e=20
+problem may be. Maybe another person has some free time to test it and chec=
+k=20
+for a possible problem (but I don't think that anyone active has a WRT54GL).
+
+what you could try is to setup the stuff by yourself using
+ http://open-mesh.net/wiki/batman-adv-quick-start-guide and test which comm=
+and=20
+may cause the problem (when it is batman-adv related).
 
 > As I already mentioned I'm not very used to Linux, so I have not yet
 > found a way to connect to the router with serial console without
 > building an JTAG-Cable. Is that right?
 
-Yes, you will need a corresponding cable and pins on the board to connect it 
-to. A WRT54GL probably does not have the pins which means you would need to 
-solder it yourself.
+No, JTAG and serial port are completely unrelated:
+http://nuwiki.openwrt.org/oldwiki/OpenWrtDocs/Hardware/Linksys/WRT54GL#seri=
+al.port
 
-Regards,
-Marek
+But yes, you must build something. But it is highly recommended to have som=
+e=20
+serial console on embedded devices anyway.
 
+Best regards,
+	Sven
+
+--nextPart5414195.8imNG8xgXh
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMYodlAAoJEF2HCgfBJntGr9sQANPcJ+FKB7NwqmakmXawUTuU
+TnaZkGvSGV/CgbGVBdZuj+NRblShRLwIHrvWskk9DXv7zf5+oNA+MekV+3eZ/jSf
+DRzxuyPD12/1x81roMERBmqSlxUF8LeE5aYFTWipd/Rw57WStmbWf0SBFPD0/Sut
+ttyY3jwMQBL+7reuKxLmkLrQOnXcqtDwTZnGTmc0vw02ipBFat3xL1LUDixgNhdg
+u8jd3kM3drptwV0xXsQrAUKRpswwyUCXUt5pqQMGP0ZOc74QjSFgrQ0WFZXZYjY8
+ATCJGs17IGSdL5rOGHLJ3xEQPAInfvoE9oWklGqG5dUGvnl1QXsXnkVUlM5FyO6y
+AbsnEnuP6eorrCrTp/Is6YjuPFOC4DSPfoeXtlEX+fieYIJ5eRI4hxetXPOy39pZ
+41Tj7QnxtDBu3cYPr8ZWfoAFqd+qNwbwIdkaPa/Og80W4qXX916fJcokZtrWo05R
+GKajZUnZis/FZPB9j+k7/Uw4NiGoj5+ikWcmwpnr3zGEuXPC0YPunG27k1gMvGpD
+2uwibOBJC02sMTlKMfcLgJ4XFQ5cLW42kmU4nm0Nw5DLFIDXHaBK8WtdiZTxa046
+1wb16HEeuRVv/FruEtsdhePYbVWgYZGfhO1HDv2/cU3RFLegk8u0R2TUWZr8vpsL
+rV1XayhCWK57p7v9IyY7
+=rRoP
+-----END PGP SIGNATURE-----
+
+--nextPart5414195.8imNG8xgXh--
