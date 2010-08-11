@@ -1,11 +1,14 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon,  9 Aug 2010 23:56:42 +0200
-Message-Id: <1281391002-21577-6-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1281391002-21577-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1281391002-21577-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 5/5] Staging: batman-adv: fix own mac address
-	detection
+Return-Path: <Timbo2001@web.de>
+Message-ID: <4C627FCF.4090303@web.de>
+Date: Wed, 11 Aug 2010 12:47:43 +0200
+From: Tim <Timbo2001@web.de>
+MIME-Version: 1.0
+References: <mailman.1.1281002401.15834.b.a.t.m.a.n@lists.open-mesh.org>
+In-Reply-To: <mailman.1.1281002401.15834.b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Sender: Timbo2001@web.de
+Subject: Re: [B.A.T.M.A.N.] Problem openWRT "backfire" and "kmod-batman-adv"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,42 +20,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: greg@kroah.com
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+Hello,
 
-Earlier batman-adv versions would only create a batman_if struct after
-a corresponding interface had been activated by a user. Now each
-existing system interface has a batman_if struct and has to be checked
-by verifying the IF_ACTIVE flag.
+first of all I'd like to say thanks for your fast replies.
+I'm not very used to using Linux so this is a little tricky to me.
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- drivers/staging/batman-adv/main.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+First of all I'm going to show you the way I compiled an image 
+containing batman-adv (that's the way it used to work before) for WRT54GL:
 
-diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
-index 2686019..ef7c20a 100644
---- a/drivers/staging/batman-adv/main.c
-+++ b/drivers/staging/batman-adv/main.c
-@@ -250,10 +250,13 @@ int choose_orig(void *data, int32_t size)
- int is_my_mac(uint8_t *addr)
- {
- 	struct batman_if *batman_if;
-+
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(batman_if, &if_list, list) {
--		if ((batman_if->net_dev) &&
--		    (compare_orig(batman_if->net_dev->dev_addr, addr))) {
-+		if (batman_if->if_status != IF_ACTIVE)
-+			continue;
-+
-+		if (compare_orig(batman_if->net_dev->dev_addr, addr)) {
- 			rcu_read_unlock();
- 			return 1;
- 		}
--- 
-1.7.1
+Step1: Check out the backfire repository:
+"svn co svn://svn.openwrt.org/openwrt/branches/backfire"
+
+Step2: Change to backfire-folder
+"cd backfire"
+
+Step3: Adding the Batman-Adv module
+"./scripts/feeds update"
+"./scripts/feeds install kmod-batman-adv"
+
+Step4: Configure the Image using:
+"make menuconfig"
+Here I select "Broadcom BCM947xx/953xx" with 2.6 kernel as Target System 
+and add the batman-package in "Image Configuration -
+ > Kernel Modules -> Network Support"
+
+Step4: Compiling the Image
+Step5: Transferring the image, changing the password via telnet and the 
+connecting via SSH
+Step6: Editing the config files using uci:
+"root@OpenWrt:~# uci delete wireless.radio0.disabled
+root@OpenWrt:~# uci delete wireless.@wifi-iface[0].network
+root@OpenWrt:~# uci set wireless. radio0.channel=1
+root@OpenWrt:~# uci set wireless.@wifi-iface[0].mode=adhoc
+root@OpenWrt:~# uci set wireless.@wifi-iface[0].ssid=mesh
+root@OpenWrt:~# uci set wireless.@wifi-iface[0].bssid=02:12:34:56:78:9A
+root@OpenWrt:~# uci set network.lan.mtu=1500
+root@OpenWrt:~# uci set network.lan.ifname="eth0.0 bat0"
+root@OpenWrt:~# uci set network.wlan0=interface
+root@OpenWrt:~# uci set network.wlan0.ifname=wlan0
+root@OpenWrt:~# uci set network.wlan0.proto=none
+root@OpenWrt:~# uci set network.wlan0.mtu=1524
+root@OpenWrt:~# uci set network.bat0=interface
+root@OpenWrt:~# uci set network.bat0.ifname=bat0
+root@OpenWrt:~# uci set network.bat0.proto=none
+root@OpenWrt:~# uci set network.bat0.mtu=1500
+root@OpenWrt:~# uci commit
+root@OpenWrt:~# /etc/init.d/network restart"
+
+After restarting the network the console says: "segmentation fault" and 
+freezes. When doing "reboot" instead the device also freezes and the 
+power-led keeps flashing.
+I also tried only changing the config in /etc/config/wireless and 
+restarted the device, with the same effect.
+
+In order to make sure the error isn't related to any errors while 
+compiling the image, I compiled an Image without the batman-adv package. 
+After that I was able to configure the router as usual without any freezes.
+
+As I already mentioned I'm not very used to Linux, so I have not yet 
+found a way to connect to the router with serial console without 
+building an JTAG-Cable. Is that right?
+
+Greetings,
+Tim
 
