@@ -1,16 +1,16 @@
-Return-Path: <djb31st@gmail.com>
+Return-Path: <Timbo2001@web.de>
+Message-ID: <4C62B25A.3030206@web.de>
+Date: Wed, 11 Aug 2010 16:23:22 +0200
+From: Tim <Timbo2001@web.de>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTinhcpamuMGApH9D5SPn3VNkEi9BDCYwGkRcDdJq@mail.gmail.com>
-References: <mailman.375.1281525844.17951.b.a.t.m.a.n@lists.open-mesh.org>
-	<AANLkTim-RfupM1iHH-dFwtDiN5RLFVaP=AWK9=MH-dGK@mail.gmail.com>
-	<AANLkTik1UtAUDEU=zcyYzAzhVENQ_+XF7YhvWp+hWk=n@mail.gmail.com>
-	<AANLkTinhcpamuMGApH9D5SPn3VNkEi9BDCYwGkRcDdJq@mail.gmail.com>
-Date: Wed, 11 Aug 2010 15:50:38 +0300
-Message-ID: <AANLkTi==R4oWr_zTLapUxCddFkjyD5LeV61nzEqKi+Us@mail.gmail.com>
-From: David Beaumont <djb31st@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Nat Question
+References: <mailman.1.1281002401.15834.b.a.t.m.a.n@lists.open-mesh.org>
+	<4C627FCF.4090303@web.de>
+	<201008111320.14389.sven.eckelmann@gmx.de>
+In-Reply-To: <201008111320.14389.sven.eckelmann@gmx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Sender: Timbo2001@web.de
+Subject: Re: [B.A.T.M.A.N.] Problem openWRT "backfire" and "kmod-batman-adv"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,83 +24,67 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hmm i was hoping it would be that simple.. but alas it wasn't.
+On 11.08.2010 13:20, Sven Eckelmann wrote:
+[...]
 
-Here is the output from tcpdump on the bat0 interface
+> what you could try is to setup the stuff by yourself using
+>   http://open-mesh.net/wiki/batman-adv-quick-start-guide  and test which command
+> may cause the problem (when it is batman-adv related).
+>    
+I tried to configure it as described in the guide and I think I some 
+kind of found the problem:
 
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on bat0, link-type EN10MB (Ethernet), capture size 96 bytes
-14:19:43.356750 IP 192.168.1.189.52560 > fx-in-f99.1e100.net.80: SWE 424611=
-5553:
-4246115553(0) win 5840 <mss 1460,nop,nop,sackOK,nop,wscale 4>
-14:19:43.464324 IP fx-in-f99.1e100.net.80 > 192.168.1.189.52560: S 16938928=
-36:16
-93892836(0) ack 4246115554 win 5720 <mss 1430,nop,nop,sackOK,nop,wscale 6>
-14:19:43.467474 IP 192.168.1.189.52560 > fx-in-f99.1e100.net.80: . ack 1 wi=
-n 365
+Before being able to add wlan0 to the batman interfaces, I need to 
+create the interface wlan0 and to remove "option disabled 1" from 
+/etc/config/wireless, because otherwise wlan will be disabled by default.
 
-14:19:43.467776 IP 192.168.1.189.52560 > fx-in-f99.1e100.net.80: P 1:78(77)=
- ack
-1 win 365
-14:19:45.737534 IP 192.168.1.189.58552 > fx-in-f147.1e100.net.80: P 3961995=
-538:3
-961995615(77) ack 1025796129 win 365
-14:19:46.467535 IP 192.168.1.189.52560 > fx-in-f99.1e100.net.80: P 1:78(77)=
- ack
-1 win 365
+Way1: When removing "option disabled 1" first and then doing 
+"/etc/init.d/network restart" I get the following message:
+"root@OpenWrt:/# /etc/init.d/network restart
+udhcpc (v1.15.3) started
+Sending discover...
+Configuration file: /var/run/hostapd-phy0.conf
+Segmentation fault
+Failed to start hostapd for phy0
+root@OpenWrt:/# Sending discover...
+Sending discover..."
 
-and my network interfaces are configured as follows
+When rebooting the whole device it freezes as already described.
 
-ath0      Link encap:Ethernet  HWaddr 00:0C:42:3A:75:A2
-         inet addr:100.10.17.3  Bcast:100.255.255.255  Mask:255.0.0.0
-         UP BROADCAST RUNNING MULTICAST  MTU:1524  Metric:1
-         RX packets:894 errors:0 dropped:68 overruns:0 frame:0
-         TX packets:362 errors:0 dropped:0 overruns:0 carrier:0
-         collisions:0 txqueuelen:0
-         RX bytes:55386 (54.0 KiB)  TX bytes:20256 (19.7 KiB)
+Way 2: When adding the interface wlan0 before enableing radio0 and then 
+doing "/etc/init.d/network restart" the following output appears:
+"config interface wlan0
+         option type     interface
+         option ifname   "wlan0"
+         option proto    none
 
-bat0      Link encap:Ethernet  HWaddr 00:FF:D0:24:1D:30
-         inet addr:10.0.1.1  Bcast:10.0.1.255  Mask:255.255.255.0
-         UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-         RX packets:52 errors:0 dropped:0 overruns:0 frame:0
-         TX packets:35 errors:0 dropped:1 overruns:0 carrier:0
-         collisions:0 txqueuelen:1000
-         RX bytes:5461 (5.3 KiB)  TX bytes:3942 (3.8 KiB)
+root@OpenWrt:/# /etc/init.d/network restart
+udhcpc (v1.15.3) started
+'radio0' is disabled
+'radio0' is disabled
+root@OpenWrt:/# Sending discover...
+Sending discover...
+Sending discover..."
 
-br-lan    Link encap:Ethernet  HWaddr 00:0D:B9:19:0E:98
-         inet addr:192.168.1.1  Bcast:192.168.1.255  Mask:255.255.255.0
-         UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-         RX packets:52 errors:0 dropped:0 overruns:0 frame:0
-         TX packets:36 errors:0 dropped:0 overruns:0 carrier:0
-         collisions:0 txqueuelen:0
-         RX bytes:4733 (4.6 KiB)  TX bytes:4344 (4.2 KiB)
+That's clear, enabeling the interface without radio0 running is impossible.
+After that the devices reboots as it should.
+Enableing radio0 after that and then doing "etc/init.d/network restart" 
+the output changes a little bit:
 
-Can still ping, and also resolve DNS but no traffic on TCP or UDP will send
+"root@OpenWrt:~# /etc/init.d/network restart
+Received SIGTERM
+Entering released state
+udhcpc (v1.15.3) started
+Sending discover...
+Configuration file: /var/run/hostapd-phy0.conf
+Segmentation fault
+Failed to start hostapd for phy0
+root@OpenWrt:~# Sending discover...
+Sending discover..."
 
-On Wed, Aug 11, 2010 at 3:28 PM, Outback Dingo <outbackdingo@gmail.com> wro=
-te:
-> or its a basic MTU problem, might want to try searching google for openwr=
-t
-> batman MTU issues
->
-> On Wed, Aug 11, 2010 at 7:48 AM, David Beaumont <djb31st@gmail.com> wrote=
-:
->>
->> I have a B.A.T.M.A.N mesh successfully=A0configured=A0on x86 hardware.
->>
->> I can currently ping the internet from the router that is connected
->> via the mesh, however i can't download or connect to any webpages.
->>
->> I see the request for the page going over the bat0 interface and being
->> received=A0at the other end.
->>
->> I've a feeling this is a basic nat problem, but have been unable to
->> find a solution.
->>
->> I am using OpenWRT software.
->>
->> Any advice? or hints?
->>
->> Thanks
->
->
+So for me the problem seems to be related to radio0. Trying that with 
+the image I compiled without adding batman-adv, enabeling radio0 is 
+working fine.
+
+With best regards,
+Tim
