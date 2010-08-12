@@ -1,15 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 12 Aug 2010 11:50:31 +0200
+Return-Path: <djb31st@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <201008121150.33820.sven.eckelmann@gmx.de>
 References: <mailman.375.1281525844.17951.b.a.t.m.a.n@lists.open-mesh.org>
 	<201008121131.23425.lindner_marek@yahoo.de>
 	<AANLkTim8cNH29kS=VM+m18OeexHaxwo19ug6Yu04Q6wx@mail.gmail.com>
-In-Reply-To: <AANLkTim8cNH29kS=VM+m18OeexHaxwo19ug6Yu04Q6wx@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3229696.79O0PMsP2s";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201008121150.33820.sven.eckelmann@gmx.de>
+	<201008121150.33820.sven.eckelmann@gmx.de>
+Date: Thu, 12 Aug 2010 13:11:01 +0300
+Message-ID: <AANLkTik9JYyRM4UO2RLvm4NfhaDmnLEHamo8kKLV4RnB@mail.gmail.com>
+From: David Beaumont <djb31st@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] Nat Question
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,57 +23,51 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: David Beaumont <djb31st@gmail.com>
 
---nextPart3229696.79O0PMsP2s
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> > The bat0 interface is currently bridged as follows
+> >
+> > On the router with internet going into the WAN port (ETH1), BAT0 is
+> > bridged with the LAN (ETH0) =A0Internet works correctly though the lan,
+> > so i would assume NAT routing to the WAN is setup correctly?
+>
+> so you have eth0 and bat0(ath0) in a bridge br0 -> eth1 uses nat to trans=
+late
+> packets for/from eth1?
 
-David Beaumont wrote:
-> The bat0 interface is currently bridged as follows
->=20
-> On the router with internet going into the WAN port (ETH1), BAT0 is
-> bridged with the LAN (ETH0)  Internet works correctly though the lan,
-> so i would assume NAT routing to the WAN is setup correctly?
+Yes this is correct, bat0 and eth0 are bridged to form br-lan, which
+uses nat to translate things over to eth1
 
-so you have eth0 and bat0(ath0) in a bridge br0 -> eth1 uses nat to transla=
-te=20
-packets for/from eth1?
+>
+> > On the router on the other end of the mesh, BAT0 is bridged with the
+> > WAN port (ETH1) so that the router will route WAN traffic though BAT0?
+>
+> What? Why a different internet gateway and why do you bridge the bat0(ath=
+0)
+> interface with the wan interface instead of using nat here?
+>
 
-> On the router on the other end of the mesh, BAT0 is bridged with the
-> WAN port (ETH1) so that the router will route WAN traffic though BAT0?
+Not sure what you mean by a "a different internet gateway"
 
-What? Why a different internet gateway and why do you bridge the bat0(ath0)=
-=20
-interface with the wan interface instead of using nat here?
+The way openWRT is setup, the WAN network is actually a bridge of bat0
+and wifi0 (which is the card that bat0 is running on) Talking this
+though its looking like this might be the bit where the problem lies.
+Its setup currently like this as i was initially trying to run OLSR
+and BATMAN simultaneously (although have since simplified to just
+batman).
 
-Maybe there is a misunderstanding somewhere... At least I am extremely=20
-confused about your setup.
+My theory was that if bat0 is the WAN, the NAT rules built into
+openwrt would take control and internet would be routed though bat0.
 
-Best regards,
-	Sven
+I have also attempted to setup nat myself at this end, but am so far
+unsuccessful and loose the ability to even ping the internet.
 
---nextPart3229696.79O0PMsP2s
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+I think i am close to the solution as i can ping things, there is just
+something missing.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Will try un-bridging wifi0 and report on what happens.
 
-iQIcBAABCgAGBQJMY8PoAAoJEF2HCgfBJntGdIAQAJynASZAkLmw8tG7nHQEQcAj
-rTR1Lqf6AW6ZHJ6FZ3n7dVBnLmMb0AlGmIRsxkt/phV+iuoDwMJtae0FYvZLwT8D
-5K3AHIrxRTBdXJjC0UNTNXXapR1KqCq20+6damb71bfnFxrrsHMLCwa7C0fpWbef
-Ywt4xDugztzjZDw/HzcKIAySGfV5ik6synh7kKg0aCi9VnVqeRy3LTCTluqFk/4q
-Pp95Jn371i/vLP8UA25TX8BSjH2DZbbTqK9yojPoFbUh8M9AwoV/cl2+Y7gWONci
-kDrNkXFd1a81t9QxSE93QYz5uBt6dMEQOv8YcU7URYelU6UUyPJnp211nV9zQPcQ
-pWkCf5z51WQ7sQxmQAAQyfnxQGUz+/DWYlg1T34N2fHpfDEJ/4sweenooQD1oll6
-zgDWRB19SHh20ajZhbBmZvVM/74dmIuPG/cOD5pIKNpY8tyEVBT64RwPBBQOsbiG
-yACBpFTCqPsILca0859USKpjykNFShXpl07h7mt5XjWDY3rchl/zAmnNEt5qDPF7
-B7ihafGiBGHU9uh+75oOhwdw8NZQ8az+qLfr5dGbvLZV+E1RsibTv+Qu51dYYjtG
-Rt6+Fn1QENVjSCCdlqV6Fu5xXYNLtdc4IJtXj08v/j9jhBTZXj7Yk4QcUlhco+On
-FQWD3WMZYKDj0peST0o1
-=rJUq
------END PGP SIGNATURE-----
-
---nextPart3229696.79O0PMsP2s--
+> Maybe there is a misunderstanding somewhere... At least I am extremely
+> confused about your setup.
+>
+> Best regards,
+> =A0 =A0 =A0 =A0Sven
