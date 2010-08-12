@@ -1,15 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 12 Aug 2010 11:31:23 +0200
+Return-Path: <djb31st@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <201008121131.23425.lindner_marek@yahoo.de>
 References: <mailman.375.1281525844.17951.b.a.t.m.a.n@lists.open-mesh.org>
 	<AANLkTim-RfupM1iHH-dFwtDiN5RLFVaP=AWK9=MH-dGK@mail.gmail.com>
 	<AANLkTik1UtAUDEU=zcyYzAzhVENQ_+XF7YhvWp+hWk=n@mail.gmail.com>
-In-Reply-To: <AANLkTik1UtAUDEU=zcyYzAzhVENQ_+XF7YhvWp+hWk=n@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201008121131.23425.lindner_marek@yahoo.de>
+	<201008121131.23425.lindner_marek@yahoo.de>
+Date: Thu, 12 Aug 2010 12:38:14 +0300
+Message-ID: <AANLkTim8cNH29kS=VM+m18OeexHaxwo19ug6Yu04Q6wx@mail.gmail.com>
+From: David Beaumont <djb31st@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] Nat Question
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,18 +24,40 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+The bat0 interface is currently bridged as follows
 
-Hi,
+On the router with internet going into the WAN port (ETH1), BAT0 is
+bridged with the LAN (ETH0) =A0Internet works correctly though the lan,
+so i would assume NAT routing to the WAN is setup correctly?
 
-> I see the request for the page going over the bat0 interface and being
-> received at the other end.
-> 
-> I've a feeling this is a basic nat problem, but have been unable to
-> find a solution.
+On the router on the other end of the mesh, BAT0 is=A0bridged with the
+WAN port (ETH1) so that the router will route WAN traffic though BAT0?
 
-how is the routing (especially bat0) configured on the node that is connected 
-to the internet ? Are you bridging bat0 or doing something else ?
+Have i got some of the basics confused somewhere?
+
+I had BATMAN (not advanced) working fine, although was experiencing i
+think a known problem with openwrt, whereas when traffic was sent over
+the TUN interface for the captive portal the gate0 interface would
+collapse. Lets stay on topic with batman advanced for now though i
+guess :-)
 
 
-Regards,
-Marek
+
+On Thu, Aug 12, 2010 at 12:31 PM, Marek Lindner <lindner_marek@yahoo.de> wr=
+ote:
+>
+> Hi,
+>
+> > I see the request for the page going over the bat0 interface and being
+> > received at the other end.
+> >
+> > I've a feeling this is a basic nat problem, but have been unable to
+> > find a solution.
+>
+> how is the routing (especially bat0) configured on the node that is conne=
+cted
+> to the internet ? Are you bridging bat0 or doing something else ?
+>
+>
+> Regards,
+> Marek
