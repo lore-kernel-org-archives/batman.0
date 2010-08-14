@@ -1,9 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 14 Aug 2010 23:07:57 +0200
-Message-Id: <1281820085-13507-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: Create batman_if only on
-	register event
+Date: Sat, 14 Aug 2010 23:07:58 +0200
+Message-Id: <1281820085-13507-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1281820085-13507-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1281820085-13507-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 2/9] batman-adv: Revert "Adding
+	netfilter-bridge hooks"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,43 +19,84 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-We try to get all events for all net_devices to be able to add special
-sysfs folders for the batman-adv configuration. This also includes such
-events like NETDEV_POST_INIT which has no valid kobject according to
-v2.6.32-rc3-13-g7ffbe3f. This would create an oops in that situation.
+The netfilter hook seems to be misused and may leak skbs in situations
+when NF_HOOK returns NF_STOLEN. It doesn't filter in the right chain and
+may not filter everything as expected.
 
-It is enough to create the batman_if only on NETDEV_REGISTER events
-because we will also receive those events for devices which already
-existed when we registered the notifier call.
+It was only added for testing purposes and can be removed again.
 
+Reported-by: Vasiliy Kulikov <segooon@gmail.com>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: stable <stable@kernel.org>
 ---
- batman-adv/hard-interface.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ batman-adv/hard-interface.c |   13 -------------
+ batman-adv/send.c           |    8 ++------
+ 2 files changed, 2 insertions(+), 19 deletions(-)
 
 diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index 1a829be..f481cbb 100644
+index f481cbb..d53138c 100644
 --- a/batman-adv/hard-interface.c
 +++ b/batman-adv/hard-interface.c
-@@ -457,15 +457,13 @@ static int hard_if_event(struct notifier_block *this,
- 	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
- 	struct bat_priv *bat_priv;
+@@ -30,7 +30,6 @@
+ #include "hash.h"
  
--	if (!batman_if)
--		batman_if = hardif_add_interface(net_dev);
-+	if (!batman_if && event == NETDEV_REGISTER)
-+			batman_if = hardif_add_interface(net_dev);
+ #include <linux/if_arp.h>
+-#include <linux/netfilter_bridge.h>
  
- 	if (!batman_if)
- 		goto out;
+ #include "compat.h"
  
- 	switch (event) {
--	case NETDEV_REGISTER:
--		break;
- 	case NETDEV_UP:
- 		hardif_activate_interface(batman_if);
- 		break;
+@@ -495,11 +494,6 @@ out:
+ 	return NOTIFY_DONE;
+ }
+ 
+-static int batman_skb_recv_finish(struct sk_buff *skb)
+-{
+-	return NF_ACCEPT;
+-}
+-
+ /* receive a packet with the batman ethertype coming on a hard
+  * interface */
+ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+@@ -517,13 +511,6 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 	if (!skb)
+ 		goto err_out;
+ 
+-	/* if netfilter/ebtables wants to block incoming batman
+-	 * packets then give them a chance to do so here */
+-	ret = NF_HOOK(PF_BRIDGE, NF_BR_LOCAL_IN, skb, dev, NULL,
+-		      batman_skb_recv_finish);
+-	if (ret != 1)
+-		goto err_out;
+-
+ 	/* packet should hold at least type and version */
+ 	if (unlikely(!pskb_may_pull(skb, 2)))
+ 		goto err_free;
+diff --git a/batman-adv/send.c b/batman-adv/send.c
+index 47bde44..97c3142 100644
+--- a/batman-adv/send.c
++++ b/batman-adv/send.c
+@@ -29,7 +29,6 @@
+ #include "vis.h"
+ #include "aggregation.h"
+ #include "gateway_common.h"
+-#include <linux/netfilter_bridge.h>
+ 
+ #include "compat.h"
+ 
+@@ -94,12 +93,9 @@ int send_skb_packet(struct sk_buff *skb,
+ 
+ 	/* dev_queue_xmit() returns a negative result on error.	 However on
+ 	 * congestion and traffic shaping, it drops and returns NET_XMIT_DROP
+-	 * (which is > 0). This will not be treated as an error.
+-	 * Also, if netfilter/ebtables wants to block outgoing batman
+-	 * packets then giving them a chance to do so here */
++	 * (which is > 0). This will not be treated as an error. */
+ 
+-	return NF_HOOK(PF_BRIDGE, NF_BR_LOCAL_OUT, skb, NULL, skb->dev,
+-		       dev_queue_xmit);
++	return dev_queue_xmit(skb);
+ send_skb_err:
+ 	kfree_skb(skb);
+ 	return NET_XMIT_DROP;
 -- 
 1.7.1
 
