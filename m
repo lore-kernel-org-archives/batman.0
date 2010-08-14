@@ -1,9 +1,13 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 14 Aug 2010 19:06:47 +0200
-Message-Id: <1281805607-7494-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Create batman_if only on special
-	events
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 14 Aug 2010 19:26:56 +0200
+References: <4C6437BF.9080909@web.de>
+In-Reply-To: <4C6437BF.9080909@web.de>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_gHtZM3RO1KGBfeO"
+Message-Id: <201008141926.57132.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Problem openWRT "backfire" and "kmod-batman-adv"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,26 +19,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-We try to get all events for all net_devices to be able to add special
-sysfs folders for the batman-adv configuration. This also includes such
-events like NETDEV_POST_INIT which has no valid kobject according to
-v2.6.32-rc3-13-g7ffbe3f. This would create an oops in that situation.
+--Boundary-00=_gHtZM3RO1KGBfeO
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-We also drop NETDEV_UNREGISTER as event which may register a new
-batman_if because it would be destroyed after its initialisation.
+On Thursday 12 August 2010 20:04:47 Tim Glaremin wrote:
+> Hope it helps.... The part Marek quoted at least did change :)
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: stable <stable@kernel.org>
----
- batman-adv/hard-interface.c |   19 +++++++++++++------
- 1 files changed, 13 insertions(+), 6 deletions(-)
+Yes, it did.
 
-diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index 1a829be..09678a6 100644
---- a/batman-adv/hard-interface.c
-+++ b/batman-adv/hard-interface.c
+Could you please copy the attached patch into your batman-advanced patches 
+folder and verify whether it fixes your problem ? This document explains the 
+location of that folder and how to rebuild the package:
+http://www.open-mesh.org/wiki/building-batman-adv-with-openwrt
+
+Regards,
+Marek
+
+--Boundary-00=_gHtZM3RO1KGBfeO
+Content-Type: text/x-patch;
+  charset="UTF-8";
+  name="01-notify.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="01-notify.patch"
+
+--- a/hard-interface.c
++++ b/hard-interface.c
 @@ -457,15 +457,24 @@ static int hard_if_event(struct notifier_block *this,
  	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
  	struct bat_priv *bat_priv;
@@ -76,3 +90,5 @@ index 1a829be..09678a6 100644
 -- 
 1.7.1
 
+
+--Boundary-00=_gHtZM3RO1KGBfeO--
