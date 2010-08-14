@@ -1,10 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 14 Aug 2010 23:08:05 +0200
-Message-Id: <1281820085-13507-9-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1281820085-13507-1-git-send-email-sven.eckelmann@gmx.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 14 Aug 2010 23:32:27 +0200
 References: <1281820085-13507-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Don't increase mtu of
+	<1281820085-13507-9-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1281820085-13507-9-git-send-email-sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201008142332.28067.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Don't increase mtu of
 	interface automatically
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -17,41 +22,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The user usually sets a mtu by hand and don't want to have software to
-change it automatically. This is only needed when we must reduce the mtu
-due to a low mtu of an active slave device, but we should not increase
-it when any other action is made on the system related to the used
-interfaces.
+On Saturday 14 August 2010 23:08:05 Sven Eckelmann wrote:
+> The user usually sets a mtu by hand and don't want to have software to
+> change it automatically. This is only needed when we must reduce the mtu
+> due to a low mtu of an active slave device, but we should not increase
+> it when any other action is made on the system related to the used
+> interfaces.
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-adv/hard-interface.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+I fear that this might lead to a strange user experience. If the mtu on batX 
+wasn't set explicitely but the mtu of an interface used by batman is increased 
+while batman uses it the user has to know that he/she now needs to manually 
+modify the batX mtu before it becomes effective.
 
-diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index ee02050..eb26026 100644
---- a/batman-adv/hard-interface.c
-+++ b/batman-adv/hard-interface.c
-@@ -201,7 +201,7 @@ void update_min_mtu(struct net_device *soft_iface)
- 	int min_mtu;
- 
- 	min_mtu = hardif_min_mtu(soft_iface);
--	if (soft_iface->mtu != min_mtu)
-+	if (soft_iface->mtu > min_mtu)
- 		soft_iface->mtu = min_mtu;
- }
- 
-@@ -241,8 +241,6 @@ static void hardif_deactivate_interface(struct batman_if *batman_if)
- 
- 	bat_info(batman_if->soft_iface, "Interface deactivated: %s\n",
- 		 batman_if->net_dev->name);
--
--	update_min_mtu(batman_if->soft_iface);
- }
- 
- int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
--- 
-1.7.1
+What about a flag which remembers whether the mtu on batX was modified by the 
+user. If so, batman-adv does not increase the mtu otherwise we keep the 
+current behaviour ?
 
+Regards,
+Marek
