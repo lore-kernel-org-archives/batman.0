@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 14 Aug 2010 23:08:02 +0200
-Message-Id: <1281820085-13507-6-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 14 Aug 2010 23:08:03 +0200
+Message-Id: <1281820085-13507-7-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1281820085-13507-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1281820085-13507-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 6/9] batman-adv: Don't inform about dropped
-	packets in nodebug
+Subject: [B.A.T.M.A.N.] [PATCH 7/9] batman-adv: Don't use net_dev after
+	dev_put
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,91 +19,74 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Information about dropped packets are usually only interesting for
-debugging purposes and otherwise open the possibility to flood the logs
-of the target machine with useless information.
+dev_put allows a device to be freed when all its references are dropped.
+After that we are not allowed to access that information anymore. Access
+to the data structure of a net_device must be surrounded a dev_hold
+and ended using dev_put.
 
-pr_debug will not output those information on a nodebug kernel.
+batman-adv adds a device to its own management structure in
+hardif_add_interface and will release it in hardif_remove_interface.
+Thus it must hold a reference all the time between those functions to
+prevent any access to the already released net_device structure.
 
-Reported-by: Vasiliy Kulikov <segooon@gmail.com>
+Reported-by: Tim Glaremin <Tim.Glaremin@web.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/compat.h  |    8 ++++++++
- batman-adv/routing.c |   15 +++++++--------
- batman-adv/vis.c     |    2 +-
- 3 files changed, 16 insertions(+), 9 deletions(-)
+ batman-adv/hard-interface.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/batman-adv/compat.h b/batman-adv/compat.h
-index 617d23c..d59d709 100644
---- a/batman-adv/compat.h
-+++ b/batman-adv/compat.h
-@@ -90,6 +90,14 @@ static inline int skb_cow_head(struct sk_buff *skb, unsigned int headroom)
- #define pr_warning(fmt, ...) \
-        printk(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
- 
-+#if defined(DEBUG)
-+#define pr_debug(fmt, ...) \
-+	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-+#else
-+#define pr_debug(fmt, ...) \
-+	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
-+#endif
-+
- #define dev_get_by_name(x, y) dev_get_by_name(y)
- 
- #endif /* < KERNEL_VERSION(2, 6, 24) */
-diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 454a84c..a2c64a4 100644
---- a/batman-adv/routing.c
-+++ b/batman-adv/routing.c
-@@ -871,9 +871,9 @@ static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
- 
- 	/* send TTL exceeded if packet is an echo request (traceroute) */
- 	if (icmp_packet->msg_type != ECHO_REQUEST) {
--		pr_warning("Warning - can't forward icmp packet from %pM to "
--			   "%pM: ttl exceeded\n", icmp_packet->orig,
--			   icmp_packet->dst);
-+		pr_debug("Warning - can't forward icmp packet from %pM to "
-+			 "%pM: ttl exceeded\n", icmp_packet->orig,
-+			 icmp_packet->dst);
- 		return NET_RX_DROP;
- 	}
- 
-@@ -1153,9 +1153,9 @@ static int route_unicast_packet(struct sk_buff *skb,
- 
- 	/* TTL exceeded */
- 	if (unicast_packet->ttl < 2) {
--		pr_warning("Warning - can't forward unicast packet from %pM to "
--			   "%pM: ttl exceeded\n", ethhdr->h_source,
--			   unicast_packet->dest);
-+		pr_debug("Warning - can't forward unicast packet from %pM to "
-+			 "%pM: ttl exceeded\n", ethhdr->h_source,
-+			 unicast_packet->dest);
- 		return NET_RX_DROP;
- 	}
- 
-@@ -1236,8 +1236,7 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
- 			hash_find(bat_priv->orig_hash, unicast_packet->orig));
- 
- 		if (!orig_node) {
--			pr_warning("couldn't find orig node for "
--				"fragmentation\n");
-+			pr_debug("couldn't find orig node for fragmentation\n");
- 			spin_unlock_irqrestore(&bat_priv->orig_hash_lock,
- 					       flags);
- 			return NET_RX_DROP;
-diff --git a/batman-adv/vis.c b/batman-adv/vis.c
-index ac3779b..6de5c76 100644
---- a/batman-adv/vis.c
-+++ b/batman-adv/vis.c
-@@ -746,7 +746,7 @@ static void send_vis_packet(struct bat_priv *bat_priv, struct vis_info *info)
- 
- 	packet = (struct vis_packet *)info->skb_packet->data;
- 	if (packet->ttl < 2) {
--		pr_warning("Error - can't send vis packet: ttl exceeded\n");
-+		pr_debug("Error - can't send vis packet: ttl exceeded\n");
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index a141ffb..2025ba1 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -213,7 +213,6 @@ static void hardif_activate_interface(struct batman_if *batman_if)
  		return;
+ 
+ 	bat_priv = netdev_priv(batman_if->soft_iface);
+-	dev_hold(batman_if->net_dev);
+ 
+ 	update_mac_addresses(batman_if);
+ 	batman_if->if_status = IF_TO_BE_ACTIVATED;
+@@ -238,8 +237,6 @@ static void hardif_deactivate_interface(struct batman_if *batman_if)
+ 	   (batman_if->if_status != IF_TO_BE_ACTIVATED))
+ 		return;
+ 
+-	dev_put(batman_if->net_dev);
+-
+ 	batman_if->if_status = IF_INACTIVE;
+ 
+ 	bat_info(batman_if->soft_iface, "Interface deactivated: %s\n",
+@@ -385,11 +382,13 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
+ 	if (ret != 1)
+ 		goto out;
+ 
++	dev_hold(net_dev);
++
+ 	batman_if = kmalloc(sizeof(struct batman_if), GFP_ATOMIC);
+ 	if (!batman_if) {
+ 		pr_err("Can't add interface (%s): out of memory\n",
+ 		       net_dev->name);
+-		goto out;
++		goto release_dev;
  	}
+ 
+ 	ret = sysfs_add_hardif(&batman_if->hardif_obj, net_dev);
+@@ -408,6 +407,8 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
+ 
+ free_if:
+ 	kfree(batman_if);
++release_dev:
++	dev_put(net_dev);
+ out:
+ 	return NULL;
+ }
+@@ -431,6 +432,7 @@ static void hardif_remove_interface(struct batman_if *batman_if)
+ 	batman_if->if_status = IF_TO_BE_REMOVED;
+ 	list_del_rcu(&batman_if->list);
+ 	sysfs_del_hardif(&batman_if->hardif_obj);
++	dev_put(batman_if->net_dev);
+ 	call_rcu(&batman_if->rcu, hardif_free_interface);
+ }
  
 -- 
 1.7.1
