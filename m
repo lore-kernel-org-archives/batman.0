@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 14 Aug 2010 23:08:04 +0200
-Message-Id: <1281820085-13507-8-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 14 Aug 2010 23:08:05 +0200
+Message-Id: <1281820085-13507-9-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1281820085-13507-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1281820085-13507-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 8/9] batman-adv: Update mtu of bat device by
-	changing mtu of slave device
+Subject: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Don't increase mtu of
+	interface automatically
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,31 +19,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-We must reduce our own mtu when we reduce the mtu of any device we use
-to transfer our packets. Otherwise we may accept to large packets which
-gets dropped by the actual device.
+The user usually sets a mtu by hand and don't want to have software to
+change it automatically. This is only needed when we must reduce the mtu
+due to a low mtu of an active slave device, but we should not increase
+it when any other action is made on the system related to the used
+interfaces.
 
-Reported-by: Vasiliy Kulikov <segooon@gmail.com>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/hard-interface.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ batman-adv/hard-interface.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
 diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index 2025ba1..ee02050 100644
+index ee02050..eb26026 100644
 --- a/batman-adv/hard-interface.c
 +++ b/batman-adv/hard-interface.c
-@@ -468,6 +468,10 @@ static int hard_if_event(struct notifier_block *this,
- 	case NETDEV_UNREGISTER:
- 		hardif_remove_interface(batman_if);
- 		break;
-+	case NETDEV_CHANGEMTU:
-+		if (batman_if->soft_iface)
-+			update_min_mtu(batman_if->soft_iface);
-+		break;
- 	case NETDEV_CHANGEADDR:
- 		if (batman_if->if_status == IF_NOT_IN_USE)
- 			goto out;
+@@ -201,7 +201,7 @@ void update_min_mtu(struct net_device *soft_iface)
+ 	int min_mtu;
+ 
+ 	min_mtu = hardif_min_mtu(soft_iface);
+-	if (soft_iface->mtu != min_mtu)
++	if (soft_iface->mtu > min_mtu)
+ 		soft_iface->mtu = min_mtu;
+ }
+ 
+@@ -241,8 +241,6 @@ static void hardif_deactivate_interface(struct batman_if *batman_if)
+ 
+ 	bat_info(batman_if->soft_iface, "Interface deactivated: %s\n",
+ 		 batman_if->net_dev->name);
+-
+-	update_min_mtu(batman_if->soft_iface);
+ }
+ 
+ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
 -- 
 1.7.1
 
