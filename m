@@ -1,14 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 16 Aug 2010 18:51:42 +0200
-References: <4C6437BF.9080909@web.de>
-	<201008141926.57132.lindner_marek@yahoo.de>
-In-Reply-To: <201008141926.57132.lindner_marek@yahoo.de>
+Return-Path: <djb31st@gmail.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_fyWaMPk0kPgC32P"
-Message-Id: <201008161851.43816.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Problem openWRT "backfire" and "kmod-batman-adv"
+In-Reply-To: <201008161832.14980.sven.eckelmann@gmx.de>
+References: <mailman.375.1281525844.17951.b.a.t.m.a.n@lists.open-mesh.org>
+	<201008141646.49517.lindner_marek@yahoo.de>
+	<AANLkTimpmFOrT_AnH5Fq-50uLBJswhC_T1-B3G4fC8Nc@mail.gmail.com>
+	<201008161832.14980.sven.eckelmann@gmx.de>
+Date: Tue, 17 Aug 2010 11:14:14 +0300
+Message-ID: <AANLkTimRzmDuNR21UOuHHRt7tEvAoKjULVigpfkR2M0C@mail.gmail.com>
+From: David Beaumont <djb31st@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Nat Question
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,114 +24,79 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---Boundary-00=_fyWaMPk0kPgC32P
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+The plot thickens..
 
-On Saturday 14 August 2010 19:26:56 Marek Lindner wrote:
-> Could you please copy the attached patch into your batman-advanced patches 
-> folder and verify whether it fixes your problem ? This document explains
-> the  location of that folder and how to rebuild the package:
+i started producing the tcp dumps that you requested to take a look at
+and noticed the following.
 
-Here is the updated notify patch plus another patch which might solve the 
-issue. These are the patches posted by Sven but backported to 2000.0.0 and 
-prepared for OpenWRT. Please try the notify patch first and if it does not work 
-add the dev_hold patch and let us know how it goes.
+On the main internet node, if i ping google.com everything is fine.
+However if i ping -s 1464 google.com i do not get a reply, this isn't
+even going over the batman interface. So it looks like i have more of
+a local problem.
 
-Regards,
-Marek
+To clarify
 
---Boundary-00=_fyWaMPk0kPgC32P
-Content-Type: text/x-patch;
-  charset="UTF-8";
-  name="01-notify.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="01-notify.patch"
+ping -s 1464 google.com
 
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -457,15 +457,13 @@ static int hard_if_event(struct notifier_block *this,
- 	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
- 	struct bat_priv *bat_priv;
- 
--	if (!batman_if)
--		batman_if = hardif_add_interface(net_dev);
-+	if (!batman_if && event == NETDEV_REGISTER)
-+			batman_if = hardif_add_interface(net_dev);
- 
- 	if (!batman_if)
- 		goto out;
- 
- 	switch (event) {
--	case NETDEV_REGISTER:
--		break;
- 	case NETDEV_UP:
- 		hardif_activate_interface(batman_if);
- 		break;
+results in ping requests being sent and recieved on ETH1, but not
+being returned to br-lan
+
+ping google.com
+
+results in ping requests being sent and recieved on ETH1, and being
+returned on br-lan
+
+ping -s 84 google.com will work
+ping -s 85 google.com will not work.
+
+I've never encountered these issues before, but i think they are the
+route cause of my problem? As was initially stated an MTU issue, i
+just need to find where!
+
+echo "HEAD / HTTP/1.1\nHost: git.open-mesh.net\n\n"|nc git.open-mesh.net 80
+
+from the mesh node brings no results, although works as expected on
+the internet node.
 
 
---Boundary-00=_fyWaMPk0kPgC32P
-Content-Type: text/x-patch;
-  charset="UTF-8";
-  name="02-dev_hold.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="02-dev_hold.patch"
-
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -213,7 +213,6 @@ static void hardif_activate_interface(struct batman_if *batman_if)
-        if (batman_if->if_status != IF_INACTIVE)
- 		return;
- 
--	dev_hold(batman_if->net_dev);
- 
- 	update_mac_addresses(batman_if);
- 	batman_if->if_status = IF_TO_BE_ACTIVATED;
-@@ -238,8 +237,6 @@ static void hardif_deactivate_interface(struct batman_if *batman_if)
- 	   (batman_if->if_status != IF_TO_BE_ACTIVATED))
- 		return;
- 
--	dev_put(batman_if->net_dev);
--
- 	batman_if->if_status = IF_INACTIVE;
- 
- 	bat_info(batman_if->soft_iface, "Interface deactivated: %s\n",
-@@ -385,12 +382,14 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
- 	if (ret != 1)
- 		goto out;
- 
-+	dev_hold(net_dev);
-+
- 	batman_if = kmalloc(sizeof(struct batman_if), GFP_ATOMIC);
- 	if (!batman_if) {
- 		printk(KERN_ERR "batman-adv:"
- 		       "Can't add interface (%s): out of memory\n",
- 		       net_dev->name);
--		goto out;
-+		goto release_dev;
- 	}
- 
- 	batman_if->dev = kstrdup(net_dev->name, GFP_ATOMIC);
-@@ -408,6 +407,8 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
- 
- free_if:
- 	kfree(batman_if);
-+release_dev:
-+	dev_put(net_dev);
- out:
- 	return NULL;
- }
-@@ -431,6 +432,7 @@ static void hardif_remove_interface(struct batman_if *batman_if)
- 	batman_if->if_status = IF_TO_BE_REMOVED;
- 	list_del_rcu(&batman_if->list);
- 	sysfs_del_hardif(&batman_if->hardif_obj);
-+	dev_put(batman_if->net_dev);
- 	call_rcu(&batman_if->rcu, hardif_free_interface);
- }
- 
 
 
---Boundary-00=_fyWaMPk0kPgC32P--
+
+
+
+
+
+On Mon, Aug 16, 2010 at 7:32 PM, Sven Eckelmann <sven.eckelmann@gmx.de> wro=
+te:
+> David Beaumont wrote:
+>> Sorry for the late reply, a few things came up over the weekend that i
+>> had to attend to.
+>>
+>> Here are three tcp dump files from the internet node on bat0 and one
+>> on eth1 (the internet port)
+>>
+>> Really don't understand what is wrong here :-(
+>
+> Ok, test plan:
+>
+> =A0* Find the machine and interface were a response from google.com could=
+ be
+> =A0 received but which will not forward it to the other interface
+> =A0* take a real dump on all interfaces (wan and lan)
+> =A0 tcpdump -s 0 -i eth1 -w eth1.dump
+> =A0* when the response packet is forwarded over the lan/bat0 interface bu=
+t
+> =A0 doesn't get to the final machine than please also create a tcpdump on=
+ the
+> =A0 receiving machine (real interface and maybe bat0)
+> =A0* Go to your router and check mtu of your wan interface
+> =A0* Try to ping google.com with the maximum size (mtu - 28 bytes, for ex=
+ample
+> =A0 mtu 1492): ping -M do -s 1464 google.com
+> =A0* Send small tcp packet with small tcp response:
+> =A0 echo "HEAD / HTTP/1.1\nHost: git.open-mesh.net\n\n"|nc git.open-mesh.=
+net 80
+>
+> Best regards,
+> =A0 =A0 =A0 =A0Sven
+>
