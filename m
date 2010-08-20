@@ -1,17 +1,17 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 20 Aug 2010 11:00:36 +0200
-References: <4C6437BF.9080909@web.de>
-	<201008130524.24059.sven.eckelmann@gmx.de>
-	<4C6E2EF6.6000407@bb.banban.jp>
-In-Reply-To: <4C6E2EF6.6000407@bb.banban.jp>
+Return-Path: <djb31st@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3290333.zGtmHeYclj";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201008201100.41993.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] problem openwrt-trunk + ath5k + batman-adv-devel
-	in my case
+In-Reply-To: <AANLkTimRzmDuNR21UOuHHRt7tEvAoKjULVigpfkR2M0C@mail.gmail.com>
+References: <mailman.375.1281525844.17951.b.a.t.m.a.n@lists.open-mesh.org>
+	<201008141646.49517.lindner_marek@yahoo.de>
+	<AANLkTimpmFOrT_AnH5Fq-50uLBJswhC_T1-B3G4fC8Nc@mail.gmail.com>
+	<201008161832.14980.sven.eckelmann@gmx.de>
+	<AANLkTimRzmDuNR21UOuHHRt7tEvAoKjULVigpfkR2M0C@mail.gmail.com>
+Date: Fri, 20 Aug 2010 12:53:17 +0300
+Message-ID: <AANLkTinTLUMo6DsNqyNcT4-pEBP+Bs+p=twpGhkdx3FF@mail.gmail.com>
+From: David Beaumont <djb31st@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Nat Question
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,58 +23,117 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart3290333.zGtmHeYclj
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+I've been busy trying to track down these ping issues and it appears
+to be a problem with the actual ping program supplied with open rather
+than a network problem.
 
-On Friday 20 August 2010 09:29:58 Lemonde wrote:
->   Hi, batman community members.
->=20
-> I also met problem similar to Tim's case.
-> My environment is,
-> board: gateworks avila gw2348-4
-> wlan module: wistron dcma-82(ar5414)
-> firmware: openwrt trunk r22692
-> wlan driver: ath5k
-> batman version: batman-adv-devel (refered to
-> http://www.open-mesh.org/wiki/building-batman-adv-with-openwrt) (for
-> trial of multi interface altering)
->=20
-> I built firmware image with symbol table option. Is it helpful?
+I know get the following results from the mesh router
+
+root@Generic:~# /usr/bin/ping -M do -s 1472 google.com
+PING google.com (74.125.39.105) 1472(1500) bytes of data.
+72 bytes from fx-in-f105.1e100.net (74.125.39.105): icmp_seq=3D1 ttl=3D53
+(truncated)
+72 bytes from fx-in-f105.1e100.net (74.125.39.105): icmp_seq=3D2 ttl=3D53
+(truncated)
+
+root@Generic:~# /usr/bin/ping -M do -s 1473 google.com
+PING google.com (74.125.39.99) 1473(1501) bytes of data.
+From 192.168.1.123 icmp_seq=3D1 Frag needed and DF set (mtu =3D 1500)
+From 192.168.1.123 icmp_seq=3D1 Frag needed and DF set (mtu =3D 1500)
+
+So large pings appear to be going over the batman interface.
+
+However still not getting any web traffic through
+
+root@Generic:~# echo "HEAD / HTTP/1.1\nHost: git.open-mesh.net\n\n"|nc
+git.open-mesh.net 80
 
 
-Please apply
- https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-August/003236.html +
- https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-August/003242.html =
-and=20
-try again.
+root@Generic:~# wget http://www.google.com
+Connecting to www.google.com (74.125.39.104:80)
 
-Best regards,
-	Sven
+What else can i provide to help track down the problem here :-(
 
---nextPart3290333.zGtmHeYclj
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Dave
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMbkQ0AAoJEF2HCgfBJntGC00QAJ6YOF0Dsx0Px55WP7P9pNrn
-LloGd2SnxMqeLjMeeXGNXGd9Q2TwOF+P1dkfaOn5P+I3TcWyix49BSEA23+oSLK5
-/ZA72YSQ5jjVgc/idGQ/nQK5o+y8iaxgeivb7H9elipQBZrDUlXNmxwCJ/Jilz/h
-YS/MemiZtQ+6m+XyjoBiPDMfN3n31jl4MseczGCnphscc7bfanquGCq4n8pgQ0g1
-sH8QUHRDthDHKBO8TR6s/rBllV/prcqZeJywDtVEPZl4gYbnaVFC9Lfn5w4jdIff
-Hmavc5tBzSI5P5tUWk3Svhl2RVhguccx7JWyZha+iCyOPmGU5Huwzpsi3eOBfeoQ
-7eMl+npz5IzGr4p3m1UiQ/0b7Cg4TXC1dWUDttdc9o+m90UzV3lcr/Eku/Jiyf3Z
-sSmfam7/qYKfUZGCB2mReQ5Ac/xIskCLeuXK2hm3ZooSCE0XuGlLs5b28IUbyCDJ
-Dgz84fuu+soaqK2XT8xO05s4UgbHRJksr+mj2DzwiU9iC1+J4oqa8o751WSd0GP6
-H2PuR7YvUdkoHWTqosT/RjHk2akAnYUvmp1x0TfgeB2Fh2FS9NsUlxtkahsM9M5f
-sJYvLRv56BAl+zkI0gXBwYswfByWxMOo0Py/UTiijCUit03TcsFkRpbt1tlftfAs
-rEnZlbfexToIXdouNBqa
-=kbZl
------END PGP SIGNATURE-----
-
---nextPart3290333.zGtmHeYclj--
+On Tue, Aug 17, 2010 at 11:14 AM, David Beaumont <djb31st@gmail.com> wrote:
+>
+> The plot thickens..
+>
+> i started producing the tcp dumps that you requested to take a look at
+> and noticed the following.
+>
+> On the main internet node, if i ping google.com everything is fine.
+> However if i ping -s 1464 google.com i do not get a reply, this isn't
+> even going over the batman interface. So it looks like i have more of
+> a local problem.
+>
+> To clarify
+>
+> ping -s 1464 google.com
+>
+> results in ping requests being sent and recieved on ETH1, but not
+> being returned to br-lan
+>
+> ping google.com
+>
+> results in ping requests being sent and recieved on ETH1, and being
+> returned on br-lan
+>
+> ping -s 84 google.com will work
+> ping -s 85 google.com will not work.
+>
+> I've never encountered these issues before, but i think they are the
+> route cause of my problem? As was initially stated an MTU issue, i
+> just need to find where!
+>
+> echo "HEAD / HTTP/1.1\nHost: git.open-mesh.net\n\n"|nc git.open-mesh.net =
+80
+>
+> from the mesh node brings no results, although works as expected on
+> the internet node.
+>
+>
+>
+>
+>
+>
+>
+>
+>
+> On Mon, Aug 16, 2010 at 7:32 PM, Sven Eckelmann <sven.eckelmann@gmx.de> w=
+rote:
+> > David Beaumont wrote:
+> >> Sorry for the late reply, a few things came up over the weekend that i
+> >> had to attend to.
+> >>
+> >> Here are three tcp dump files from the internet node on bat0 and one
+> >> on eth1 (the internet port)
+> >>
+> >> Really don't understand what is wrong here :-(
+> >
+> > Ok, test plan:
+> >
+> > =A0* Find the machine and interface were a response from google.com cou=
+ld be
+> > =A0 received but which will not forward it to the other interface
+> > =A0* take a real dump on all interfaces (wan and lan)
+> > =A0 tcpdump -s 0 -i eth1 -w eth1.dump
+> > =A0* when the response packet is forwarded over the lan/bat0 interface =
+but
+> > =A0 doesn't get to the final machine than please also create a tcpdump =
+on the
+> > =A0 receiving machine (real interface and maybe bat0)
+> > =A0* Go to your router and check mtu of your wan interface
+> > =A0* Try to ping google.com with the maximum size (mtu - 28 bytes, for =
+example
+> > =A0 mtu 1492): ping -M do -s 1464 google.com
+> > =A0* Send small tcp packet with small tcp response:
+> > =A0 echo "HEAD / HTTP/1.1\nHost: git.open-mesh.net\n\n"|nc git.open-mes=
+h.net 80
+> >
+> > Best regards,
+> > =A0 =A0 =A0 =A0Sven
+> >
