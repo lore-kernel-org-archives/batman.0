@@ -1,13 +1,15 @@
-Return-Path: <greg@kroah.com>
-Date: Mon, 23 Aug 2010 10:04:08 -0700
-From: Greg KH <greg@kroah.com>
-Message-ID: <20100823170408.GA11279@kroah.com>
-References: <1282393090-27411-1-git-send-email-sven.eckelmann@gmx.de>
+Return-Path: <zukky@bb.banban.jp>
+Message-ID: <4C760EEB.4000001@bb.banban.jp>
+Date: Thu, 26 Aug 2010 15:51:23 +0900
+From: Kazuki Shimada <zukky@bb.banban.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1282393090-27411-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.36 (7: fixes)
+References: <4C6437BF.9080909@web.de>	<201008201824.22693.lindner_marek@yahoo.de>	<4C6F5DC7.5010303@bb.banban.jp>
+	<201008210801.17503.lindner_marek@yahoo.de>
+In-Reply-To: <201008210801.17503.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] problem openwrt-trunk + ath5k + batman-adv-devel
+ in my case
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,21 +21,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sat, Aug 21, 2010 at 02:18:07PM +0200, Sven Eckelmann wrote:
-> Hi,
-> 
-> here are patches targeted for 2.6.36. They are smaller bugfixes and add
-> no new features.
-> 
-> I already send you 5 Patches two weeks ago which fixes problems in 2.6.36 and
-> one of them also in 2.6.35, but got no reply till now. So here is the reminder
-> you asked me before.
+  Hi, Marek and Sven.
 
-Sorry about that, they are all queued up now.
+I'm sorry to be late to reply.
+Thank you for your instruction and patches.
+I could update to latest revision 1778 and built successfully.
 
-thanks,
+I met a new problem.
+After configuration, I entered /etc/init.d/network restart
 
-greg k-h
+root@OpenWrt:/# /etc/init.d/network restart
+br-lan: port 3(bat0) entering disabled state
+br-lan: port 1(eth0) entering disabled state
+device bat0 left promiscuous mode
+br-lan: port 3(bat0) entering disabled state
+device eth1 left promiscuous mode
+br-lan: port 2(eth1) entering disabled state
+device eth0 left promiscuous mode
+br-lan: port 1(eth0) entering disabled state
+eth0: link down
+device eth0 entered promiscuous mode
+device eth1 entered promiscuous mode
+device bat0 entered promiscuous mode
+br-lan: port 3(bat0) entering forwarding state
+batman_adv: bat0: Interface deactivated: wlan0
+batman_adv: bat0: Removing interface: wlan0
+eth0: link up, speed 100 Mb/s, full duplex
+br-lan: port 1(eth0) entering forwarding state
+batman_adv: bat0: Interface deactivated: wlan1
+batman_adv: bat0: Removing interface: wlan1
+
+After this line, console stopped. No key input was recieved.
+
+
+Thanks in advance.
+
+Kazuki Shimada
+
+
+
+(2010/08/21 15:01), Marek Lindner wrote:
+> On Saturday 21 August 2010 07:01:59 Kazuki Shimada wrote:
+>> PKG_REV:=1729
+>>
+>> [..]
+>> ------------------------------------
+>>
+>> My update procedure is
+>> cd openwrt/trunk
+>> ./script/feeds update
+>>
+>> .... Is this wrong? :-s
+> No, it is not wrong but you might want to change the PKG_REV field to match
+> with the SVN revision you want to use. If you are interested in the latest
+> trunk you should set it to 1776.
+> We don't update this number each time something gets committed.
+>
+> Cheers,
+> Marek
+>
+>
+
