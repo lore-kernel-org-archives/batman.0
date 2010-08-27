@@ -1,17 +1,17 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 26 Aug 2010 10:28:26 +0200
+Return-Path: <zukky@bb.banban.jp>
+Message-ID: <4C7720F1.5030604@bb.banban.jp>
+Date: Fri, 27 Aug 2010 11:20:33 +0900
+From: Kazuki Shimada <zukky@bb.banban.jp>
+MIME-Version: 1.0
 References: <4C6437BF.9080909@web.de>
 	<201008210801.17503.lindner_marek@yahoo.de>
 	<4C760EEB.4000001@bb.banban.jp>
-In-Reply-To: <4C760EEB.4000001@bb.banban.jp>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2263609.5Tslo9FB10";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
+	<201008261028.35755.sven.eckelmann@gmx.de>
+In-Reply-To: <201008261028.35755.sven.eckelmann@gmx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201008261028.35755.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] problem openwrt-trunk + ath5k + batman-adv-devel
-	in my case
+ in my case
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,96 +23,231 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2263609.5Tslo9FB10
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+  Hi, Sven.
 
-On Thursday 26 August 2010 08:51:23 Kazuki Shimada wrote:
->   Hi, Marek and Sven.
->=20
-> I'm sorry to be late to reply.
-> Thank you for your instruction and patches.
-> I could update to latest revision 1778 and built successfully.
->=20
-> I met a new problem.
-> After configuration, I entered /etc/init.d/network restart
->=20
-> root@OpenWrt:/# /etc/init.d/network restart
-> br-lan: port 3(bat0) entering disabled state
-> br-lan: port 1(eth0) entering disabled state
-> device bat0 left promiscuous mode
-> br-lan: port 3(bat0) entering disabled state
-> device eth1 left promiscuous mode
-> br-lan: port 2(eth1) entering disabled state
-> device eth0 left promiscuous mode
-> br-lan: port 1(eth0) entering disabled state
-> eth0: link down
-> device eth0 entered promiscuous mode
-> device eth1 entered promiscuous mode
-> device bat0 entered promiscuous mode
-> br-lan: port 3(bat0) entering forwarding state
-> batman_adv: bat0: Interface deactivated: wlan0
-> batman_adv: bat0: Removing interface: wlan0
-> eth0: link up, speed 100 Mb/s, full duplex
-> br-lan: port 1(eth0) entering forwarding state
-> batman_adv: bat0: Interface deactivated: wlan1
-> batman_adv: bat0: Removing interface: wlan1
->=20
-> After this line, console stopped. No key input was recieved.
+> How did you connect? Using serial console or using lan (from output I would
+> guess serial console).
+Yes, it's serial console.
 
-Hm, thats not much information. So here some question to enrich it a little=
-=20
-bit (otherwise I have no idea were the problem might be as I could not=20
-reproduce it yet).
+> Does the hang always happen?
+Yes.
 
-How did you connect? Using serial console or using lan (from output I would=
-=20
-guess serial console).
+> Can you add printks in hard-interface.c around the call of
+> hardif_remove_interface inside hard_if_event to check if it stops inside that
+> function and if it does then please try to add more printks inside of
+> hardif_remove_interface and hardif_disable_interface.
+I added printk() in hard-interface.c and soft-interface.c.
+This is it.
 
-Does the hang always happen?
+-----------------------------------------------------------------------------------------------------------------------------------------------
+root@OpenWrt:/# cd /etc/config/
+root@OpenWrt:/etc/config# cat batman-adv
 
-Can you reproduce the problem with the version in linux-2.6.36-rc3 or=20
-maint/next of the batman-adv git repository? Can you reproduce the problem =
-by=20
-doing the necessary insmode/iw/batctl/rmmod steps by hand (aka no=20
-configuration using /etc, but manually)? What where your calls? Which call=
-=20
-made it hang? Can you drop parts of you iw/batctl calls and the hang still=
-=20
-occurs?
+config 'mesh' 'bat0'
+         option 'interfaces' 'wlan0'
+         option 'orig_interval'
+         option 'log_level'
+         option 'aggregate_ogm'
+         option 'vis_mode'
+root@OpenWrt:/etc/config# cat network
+# Copyright (C) 2006 OpenWrt.org
 
-Can you add printks in hard-interface.c around the call of=20
-hardif_remove_interface inside hard_if_event to check if it stops inside th=
-at=20
-function and if it does then please try to add more printks inside of=20
-hardif_remove_interface and hardif_disable_interface.
+config interface loopback
+         option ifname   lo
+         option proto    static
+         option ipaddr   127.0.0.1
+         option netmask  255.0.0.0
 
-thanks,
-	Sven
+config interface lan
+         option ifname   'eth0 eth1 bat0'
+         option type     bridge
+         option proto    static
+         option ipaddr   192.168.2.12
+         option netmask  255.255.255.0
+root@OpenWrt:/etc/config# cat wireless
+config wifi-device  radio0
+         option type     mac80211
+         option channel  1
+         option macaddr  00:0b:6b:2d:f4:91
+         option hwmode   11g
 
---nextPart2263609.5Tslo9FB10
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+         # REMOVE THIS LINE TO ENABLE WIFI:
+#       option disabled 1
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+config wifi-iface
+         option device   radio0
+#       option network  lan
+         option mode     adhoc
+         option ssid     mesh1
+         option encryption none
 
-iQIcBAABCgAGBQJMdiWsAAoJEF2HCgfBJntGjSsQALJnVKg3NPZwDzVWB9DFwkQ8
-JwQsmplrC376RbMckKVu3pso9vyjDr8XUoVrIhXyBP2HVZElnGnp8tY0Tk+v6nIf
-HhEtf4MZQ7UyCN6yoUrsNUczr88eEJh7XaRnFFZZvTnTbes09qv0l1X/HeiThLZy
-E0QKz2tgTHufIaUkk2uHg8lUKHgMysnsLWgG/wD3V+yc4S+7PdqEjm1rqkRiGmRE
-Nx5TkwW1C9SFTEkE7tty7MgtN9K9sZMVbRz1qhR22CkwjtK2qMU3liarrLcWCit/
-L6GYFkgWkInAaaVTt/VsbwndPYlnSA0AwuM3FoByrqoPY0a82+e1vELJsrFlVhXv
-0RKaaLIPMwefV/4camhqUSgkGdW/YRiyyEkuVV+8l8Fz0ZdD6+ZAZ2kPPli50zaT
-BQ2TEvxOjoz68Tx3oGtDyQ4z5ObLIHC2iZTqVQDtwmVCn7s86C7ebYY6jbUEzOT/
-8k+pA+FpSSDhsXMledEwRVjxzNf59bIQ+sYTu2garSUHUQUSYM1TqndMtR9cR/FJ
-BDYhGKLRj1JFTlXtSm2SOipaKSmZa6n3VH/gUx/Dk0zdVIgp/SbUfr1454m8j3Ec
-ZGey8HQ/9C7r4KKKpCiUijqxzGdsFtCEUawxB6uINoMula/I+hqIxUdXpYM5wrtV
-OveSjfIi4UHrxPRZ4MYB
-=yK3g
------END PGP SIGNATURE-----
+config wifi-device  radio1
+         option type     mac80211
+         option channel  6
+         option macaddr  00:0b:6b:2c:15:e3
+         option hwmode   11g
 
---nextPart2263609.5Tslo9FB10--
+         # REMOVE THIS LINE TO ENABLE WIFI:
+#       option disabled 1
+
+config wifi-iface
+         option device   radio1
+#       option network  lan
+         option mode     adhoc
+         option ssid     mesh2
+         option encryption none
+
+root@OpenWrt:/etc/config# /etc/init.d/network restart
+br-lan: port 3(bat0) entering disabled state
+br-lan: port 1(eth0) entering disabled state
+device bat0 left promiscuous mode
+br-lan: port 3(bat0) entering disabled state
+device eth1 left promiscuous mode
+br-lan: port 2(eth1) entering disabled state
+device eth0 left promiscuous mode
+br-lan: port 1(eth0) entering disabled state
+enter hardif_remove_interface
+1 hardif_remove_interface
+2 hardif_remove_interface
+3 hardif_remove_interface
+4 hardif_remove_interface
+5 hardif_remove_interface
+6 hardif_remove_interface
+exit hardif_remove_interface
+eth0: link down
+device eth0 entered promiscuous mode
+eth0: link up, speed 100 Mb/s, full duplex
+br-lan: port 1(eth0) entering forwarding state
+device eth1 entered promiscuous mode
+device bat0 entered promiscuous mode
+br-lan: port 3(bat0) entering forwarding state
+batman_adv: bat0: Interface deactivated: wlan0
+enter hardif_remove_interface
+enter hardif_disable_interface
+batman_adv: bat0: Removing interface: wlan0
+1 hardif_disable_interface
+2 hardif_disable_interface
+3 hardif_disable_interface
+4 hardif_disable_interface
+5 hardif_disable_interface
+6 hardif_disable_interface
+7 hardif_disable_interface
+8 hardif_disable_interface
+9 hardif_disable_interface
+10 hardif_disable_interface
+enter softif_destroy
+1 softif_destroy
+2 softif_destroy
+3 softif_destroy
+-----------------------------------------------------------------------------------------------------------------------------------------------
+<hard-interface.c>
+
+void hardif_disable_interface(struct batman_if *batman_if)
+{
+printk(KERN_ALERT "enter hardif_disable_interface\n");
+         struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
+
+         if (batman_if->if_status == IF_ACTIVE)
+                 hardif_deactivate_interface(batman_if);
+
+         if (batman_if->if_status != IF_INACTIVE)
+                 return;
+
+         bat_info(batman_if->soft_iface, "Removing interface: %s\n",
+                  batman_if->net_dev->name);
+printk(KERN_ALERT "1 hardif_disable_interface\n");
+         dev_remove_pack(&batman_if->batman_adv_ptype);
+printk(KERN_ALERT "2 hardif_disable_interface\n");
+         if (batman_if->if_status != IF_INACTIVE)
+                 return;
+
+         bat_info(batman_if->soft_iface, "Removing interface: %s\n",
+                  batman_if->net_dev->name);
+printk(KERN_ALERT "1 hardif_disable_interface\n");
+         dev_remove_pack(&batman_if->batman_adv_ptype);
+printk(KERN_ALERT "2 hardif_disable_interface\n");
+
+         bat_priv->num_ifaces--;
+printk(KERN_ALERT "3 hardif_disable_interface\n");
+         orig_hash_del_if(batman_if, bat_priv->num_ifaces);
+printk(KERN_ALERT "4 hardif_disable_interface\n");
+
+         if (batman_if == bat_priv->primary_if)
+                 set_primary_if(bat_priv,
+                                
+get_active_batman_if(batman_if->soft_iface));
+
+printk(KERN_ALERT "5 hardif_disable_interface\n");
+         kfree(batman_if->packet_buff);
+printk(KERN_ALERT "6 hardif_disable_interface\n");
+         batman_if->packet_buff = NULL;
+printk(KERN_ALERT "7 hardif_disable_interface\n");
+         batman_if->if_status = IF_NOT_IN_USE;
+
+         /* delete all references to this batman_if */
+         purge_orig_ref(bat_priv);
+printk(KERN_ALERT "8 hardif_disable_interface\n");
+         purge_outstanding_packets(bat_priv, batman_if);
+printk(KERN_ALERT "9 hardif_disable_interface\n");
+         dev_put(batman_if->soft_iface);
+printk(KERN_ALERT "10 hardif_disable_interface\n");
+
+         /* nobody uses this interface anymore */
+         if (!bat_priv->num_ifaces)
+                 softif_destroy(batman_if->soft_iface);
+
+printk(KERN_ALERT "11 hardif_disable_interface\n");
+         batman_if->soft_iface = NULL;
+printk(KERN_ALERT "exit hardif_disable_interface\n");
+}
+
+
+static void hardif_remove_interface(struct batman_if *batman_if)
+{
+printk(KERN_ALERT "enter hardif_remove_interface\n");
+         /* first deactivate interface */
+         if (batman_if->if_status != IF_NOT_IN_USE)
+                 hardif_disable_interface(batman_if);
+
+printk(KERN_ALERT "1 hardif_remove_interface\n");
+         if (batman_if->if_status != IF_NOT_IN_USE)
+                 return;
+
+printk(KERN_ALERT "2 hardif_remove_interface\n");
+         batman_if->if_status = IF_TO_BE_REMOVED;
+printk(KERN_ALERT "3 hardif_remove_interface\n");
+         list_del_rcu(&batman_if->list);
+printk(KERN_ALERT "4 hardif_remove_interface\n");
+         sysfs_del_hardif(&batman_if->hardif_obj);
+printk(KERN_ALERT "5 hardif_remove_interface\n");
+         dev_put(batman_if->net_dev);
+printk(KERN_ALERT "6 hardif_remove_interface\n");
+         call_rcu(&batman_if->rcu, hardif_free_interface);
+printk(KERN_ALERT "exit hardif_remove_interface\n");
+}
+-----------------------------------------------------------------------------------------------------------------------------------------------
+soft-interface.c
+
+void softif_destroy(struct net_device *soft_iface)
+{
+printk(KERN_ALERT "enter softif_destroy\n");
+         debugfs_del_meshif(soft_iface);
+printk(KERN_ALERT "1 softif_destroy\n");
+         sysfs_del_meshif(soft_iface);
+printk(KERN_ALERT "2 softif_destroy\n");
+         mesh_free(soft_iface);
+printk(KERN_ALERT "3 softif_destroy\n");
+         unregister_netdev(soft_iface);
+printk(KERN_ALERT "exit softif_destroy\n");
+}
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+"exit softif_destroy\n" is not printed out.
+unregister_netdev?
+
+Thanks in advance.
+
+Kazuki Shimada
+
