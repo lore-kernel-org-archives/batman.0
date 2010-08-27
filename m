@@ -1,17 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 27 Aug 2010 11:59:26 +0200
-References: <4C6437BF.9080909@web.de>
-	<201008261028.35755.sven.eckelmann@gmx.de>
-	<4C7720F1.5030604@bb.banban.jp>
-In-Reply-To: <4C7720F1.5030604@bb.banban.jp>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1307900.N0xSM42Eqn";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201008271159.28345.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] problem openwrt-trunk + ath5k + batman-adv-devel
-	in my case
+Date: Fri, 27 Aug 2010 13:53:45 +0200
+Message-Id: <1282910025-30645-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Don't call unregister_netdev
+	with locked rtnl semaphore
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,59 +17,103 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1307900.N0xSM42Eqn
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+We currently try to call unregister_netdev when we can destroy a softif
+after all corresponding hard-interfaces announced that they will be
+removed.
 
-Kazuki Shimada wrote:
-[...]
-> "exit softif_destroy\n" is not printed out.
-> unregister_netdev?
+This will be done when we receive a hard_if_event which already takes
+the rtnl semaphore and thus we try to get it again in unregister_netdev.
+This results in a deadlock. This call to unregister_netdev cannot easily
+replaced by unregister_netdevice, because other parts of the batman-adv
+module still call that code indirectly without holding the rtnl
+semaphore.
 
-Thanks, perfect work. This is a new bug which was added in the multiple mes=
-h=20
-patchset. The problem is that the rtnl lock is taken and we still use=20
-unregister_netdev when we process an event using hard_if_event.
+                    (needs rtln_unlocked)
+                     unregister_netdev
+                             ^
+                             |
+                       softif_destroy
+                             ^
+                             |
+                  hardif_disable_interface
+                 ^           ^
+                /            |
+store_mesh_iface   hardif_remove_interface
+(rtln_unlocked)              ^            ^
+                             |             \
+                 hardif_remove_interfaces   hard_if_event
+                             ^              (rtln_locked)
+                             |
+                        batman_exit
+                      (rtln_unlocked)
 
-I have to check other code paths to ensure that I don't destroy other thing=
-s,=20
-but a workaround for you would be to use unregister_netdevice instead of=20
-unregister_netdev in that situation. (Just check v0.2.1-30-g992bfd1 for mor=
-e=20
-information on that subject).
+A consistent workaround is to change store_mesh_iface and
+hardif_remove_interfaces to call rtnl_lock before they call the
+mentioned child function, release the semaphore afterwards and change
+unregister_netdev in softif_destroy to unregister_netdevice.
 
-The problem is that softif_destroy is also called when we unloading the mod=
-ule=20
-=2D which means that it assumes that the rtnl lock is taken (which it is no=
-t=20
-when you don't use unregister_netdev there). So I will work on a complete f=
-ix=20
-and Cc it to you.
+Reported-by: Kazuki Shimada <zukky@bb.banban.jp>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv/bat_sysfs.c      |    7 ++++++-
+ batman-adv/hard-interface.c |    5 ++++-
+ batman-adv/soft-interface.c |    2 +-
+ 3 files changed, 11 insertions(+), 3 deletions(-)
 
-Thanks,
-	Sven
+diff --git a/batman-adv/bat_sysfs.c b/batman-adv/bat_sysfs.c
+index 1331a02..8e180ba 100644
+--- a/batman-adv/bat_sysfs.c
++++ b/batman-adv/bat_sysfs.c
+@@ -492,13 +492,18 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 		return count;
+ 
+ 	if (status_tmp == IF_NOT_IN_USE) {
++		rtnl_lock();
+ 		hardif_disable_interface(batman_if);
++		rtnl_unlock();
+ 		return count;
+ 	}
+ 
+ 	/* if the interface already is in use */
+-	if (batman_if->if_status != IF_NOT_IN_USE)
++	if (batman_if->if_status != IF_NOT_IN_USE) {
++		rtnl_lock();
+ 		hardif_disable_interface(batman_if);
++		rtnl_unlock();
++	}
+ 
+ 	return hardif_enable_interface(batman_if, buff);
+ }
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index a437ec3..b12f63b 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -441,8 +441,11 @@ void hardif_remove_interfaces(void)
+ {
+ 	struct batman_if *batman_if, *batman_if_tmp;
+ 
+-	list_for_each_entry_safe(batman_if, batman_if_tmp, &if_list, list)
++	list_for_each_entry_safe(batman_if, batman_if_tmp, &if_list, list) {
++		rtnl_lock();
+ 		hardif_remove_interface(batman_if);
++		rtnl_unlock();
++	}
+ }
+ 
+ static int hard_if_event(struct notifier_block *this,
+diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
+index a45626e..38134ae 100644
+--- a/batman-adv/soft-interface.c
++++ b/batman-adv/soft-interface.c
+@@ -351,7 +351,7 @@ void softif_destroy(struct net_device *soft_iface)
+ 	debugfs_del_meshif(soft_iface);
+ 	sysfs_del_meshif(soft_iface);
+ 	mesh_free(soft_iface);
+-	unregister_netdev(soft_iface);
++	unregister_netdevice(soft_iface);
+ }
+ 
+ /* ethtool */
+-- 
+1.7.1
 
---nextPart1307900.N0xSM42Eqn
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMd4x/AAoJEF2HCgfBJntG+SEQAICQqnIW4FSQNE5kbX2aRuEY
-vAcVkr0+b+gL4y8OdWAMk4CAGvaoSyuRFcFVYaXoAR5Za+YZK4dl9MOAgViU61Jy
-iXV2V9TJCjiM6G/XJ2iAQLKQnX0HJaURELr/pLy6i/2IASTm9Mc2+YqBiJI32OF1
-WTVnGhiBQ92L933XuEPN5dPMUtK/YhXysP/4s3LyQfugSK5gUESsizlzaShl2Fo4
-i+e0UoPxM/3m1p1mEaUyLYyn0ajkNQzhEpL4SZ7NWzVoTMc8pFDMYzlfzTOJT0rI
-PFGlTlZvZQBWlGC+qDT8ZjQTGJ2dX7P8UJVBfXbdsLis+viRIKfYl8kD4CO/KweX
-SsDl/XTbdmDVl5tufz9r5gTyKH+Ee3wmuJagDubVUPVOX2OgQPFFu8zbHvSQ/oJL
-hQ+vT6HtQSylKsK27FvzpPKfnEebvXlCihhkP1QhXVvo2Htra53n13F0b/pr7BoG
-98O+WQniDvsqpEewSdt0b2clVd/iVkbmgEMt6VNXM/pb/FYoaENzgdf0gqEbi8To
-nJ1H8b4gptylyJYad1ke0eMqMcWpcJ6I5VuwTgR+InuphKaTKpdtnbPl15uxleib
-SJZXHYWDwRbEVFxbNG/oBKcv7U5rVOj70LFX9R8b+RVqfFatqsGWJoJ6obApSWIg
-sGK3cFTM2Q+RxhpNOY4i
-=S/qy
------END PGP SIGNATURE-----
-
---nextPart1307900.N0xSM42Eqn--
