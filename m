@@ -1,15 +1,17 @@
-Return-Path: <zukky@bb.banban.jp>
-Message-ID: <4C7E2540.20704@bb.banban.jp>
-Date: Wed, 01 Sep 2010 19:04:48 +0900
-From: Kazuki Shimada <zukky@bb.banban.jp>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Wed, 1 Sep 2010 12:48:11 +0200
+References: <4C6437BF.9080909@web.de>
+	<201008311132.17198.sven.eckelmann@gmx.de>
+	<4C7E22B2.1000707@bb.banban.jp>
+In-Reply-To: <4C7E22B2.1000707@bb.banban.jp>
 MIME-Version: 1.0
-References: <4C6437BF.9080909@web.de>	<201008271159.28345.sven.eckelmann@gmx.de>	<4C7CA94A.7020103@bb.banban.jp>
-	<201008311237.20104.lindner_marek@yahoo.de>
-In-Reply-To: <201008311237.20104.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed; boundary="nextPart1482901.oN1Mt8ZASg";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
+Message-Id: <201009011248.12227.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] problem openwrt-trunk + ath5k + batman-adv-devel
- in my case
+	in my case
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,23 +23,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-  Hi, Marek.
+--nextPart1482901.oN1Mt8ZASg
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
->> After network restart, wlan interfaces under bat0 are still deactivated.
->> But it's not big problem. "/etc/init.d/batman-adv restart" makes them
->> activated.
-> By removing interfaces entirely, i.e. network restart, batman purges the
-> settings it had regarding these interfaces.
-Ah, OK.
+Kazuki Shimada wrote:
+>   Hi, Sven.
+>=20
+> >> P.S.
+> >> When activating network interfaces under bat0, What about forcing their
+> >> mtu value to 1527?
+> >=20
+> > Why?
+>=20
+> Because batman-adv says
+> "The MTU of interface wlan0 is too small 1500 to handle the transport of
+> batman-adv packets. Packets going over this interface will be fragmented
+> on layer2 which could impact the performance. Setting the MTU to 1527
+> would solve the problem."
+>=20
+> I thought batman-adv need 1527 as mtu value.
+> OK, I've understood.
 
-> Note that OpenWRT allows to specify the MTU in the configuration files
-> (/etc/config/network), so that you don't need to manually configure it each time
-> you invoke "network restart".
-Oh, thank you for your advice.
-I'll try it.
+You don't need it for unicast packets, but it is highly recommended due to=
+=20
+performance penalties. Do you think that we should change that warning to m=
+ake=20
+it more clear? Is there anything special which we should add/change?
 
 Thanks,
+	Sven
 
-Kazuki Shimada
+--nextPart1482901.oN1Mt8ZASg
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMfi9rAAoJEF2HCgfBJntGDeYP/209EKfaeB5zyQynzrGYG/Sf
+I8qH3I1lg13WyQEmHi42wyMa1lZWzBHkAsHiTdHn/PagXcCT81Xmn+5TnJlH49rK
+ulMFq5ML5Mc/5lnwaPwq+FtKoce1ovP1imnRl1Oe1ILCBFMQpfKb78f3e5pJn8MO
+GyEbQWpVR+jgl++6XtOrHTsQngU7xGwQn6ueLNhPt4Kb1LeyPVO8S8Sw7IIk1RQL
+SSBU4bD0HiewkreZKTRawMXWBt+Sr3DQ5krC18AajHp+9EVncsy7oXuPNNJflZp1
+LJ8FZORC+m7KiasE9U+BAI4vkd43ySgJrWIiGAOhYA7c5/hsinZFh/UHLDn7mzki
+vYVjfjwVCiWHzoUP3rd2esCvBA8jRWVUHfaUTCVfWXxHJpJWbG1PPn5XfoCq7XB/
+bKG/F9RTYe08NHsGrr04kaW2wlVcaVZTpSHqKdJNPQ784kDq36r/QoNm54Y3yfQr
+oW4okpEDIKF6XXEzO60u/HL1gGT4DRNA0gZlXP1aggCYN678sG00pj9lCkRCmQho
+9DBL5qXDvg51Zz6GFhWrsUj3fCd2/L90FESvZA3cd9zsb+fxCLLunjK+GTzfJwu4
+CxDhfvMowS+S7GX71AJ/f17ODDmdPDSMXY4b/c5nBzzAF3ObG5GEZtLDdOlShtXB
+PH8YItSaXqVcONRdfHww
+=zvXv
+-----END PGP SIGNATURE-----
+
+--nextPart1482901.oN1Mt8ZASg--
