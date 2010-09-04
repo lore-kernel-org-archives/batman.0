@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  5 Sep 2010 01:58:23 +0200
-Message-Id: <1283644718-653-7-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun,  5 Sep 2010 01:58:24 +0200
+Message-Id: <1283644718-653-8-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 06/21] Staging: batman-adv: move queue
-	counters into bat_priv
+Subject: [B.A.T.M.A.N.] [PATCH 07/21] Staging: batman-adv: refactoring
+	unicast payload code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,182 +18,271 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: b.a.t.m.a.n@lists.open-mesh.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
 
-From: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
 
-to support multiple mesh devices later, we need to move global variables
-like the queues into corresponding private structs bat_priv of the soft
-devices.
-
-Note that this patch still has a lot of FIXMEs and depends on the global
-soft_device variable. This should be resolved later, e.g. by referencing
-the parent soft device in batman_if.
-
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 [sven.eckelmann@gmx.de: Rework on top of current version]
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/aggregation.c |    6 +++---
- drivers/staging/batman-adv/bat_sysfs.c   |    2 ++
- drivers/staging/batman-adv/main.c        |    6 ------
- drivers/staging/batman-adv/main.h        |    2 --
- drivers/staging/batman-adv/send.c        |   12 ++++++++----
- drivers/staging/batman-adv/types.h       |    2 ++
- 6 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/staging/batman-adv/Makefile         |    2 +-
+ drivers/staging/batman-adv/soft-interface.c |   74 ++++-------------------
+ drivers/staging/batman-adv/unicast.c        |   87 +++++++++++++++++++++++++++
+ drivers/staging/batman-adv/unicast.h        |   27 ++++++++
+ 4 files changed, 128 insertions(+), 62 deletions(-)
+ create mode 100644 drivers/staging/batman-adv/unicast.c
+ create mode 100644 drivers/staging/batman-adv/unicast.h
 
-diff --git a/drivers/staging/batman-adv/aggregation.c b/drivers/staging/batman-adv/aggregation.c
-index 9862d16..d738b7a 100644
---- a/drivers/staging/batman-adv/aggregation.c
-+++ b/drivers/staging/batman-adv/aggregation.c
-@@ -111,7 +111,7 @@ static void new_aggregated_packet(unsigned char *packet_buff,
+diff --git a/drivers/staging/batman-adv/Makefile b/drivers/staging/batman-adv/Makefile
+index e9817b5..4b5c434 100644
+--- a/drivers/staging/batman-adv/Makefile
++++ b/drivers/staging/batman-adv/Makefile
+@@ -19,4 +19,4 @@
+ #
  
- 	/* own packet should always be scheduled */
- 	if (!own_packet) {
--		if (!atomic_dec_not_zero(&batman_queue_left)) {
-+		if (!atomic_dec_not_zero(&bat_priv->batman_queue_left)) {
- 			bat_dbg(DBG_BATMAN, bat_priv,
- 				"batman packet queue full\n");
- 			return;
-@@ -121,7 +121,7 @@ static void new_aggregated_packet(unsigned char *packet_buff,
- 	forw_packet_aggr = kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
- 	if (!forw_packet_aggr) {
- 		if (!own_packet)
--			atomic_inc(&batman_queue_left);
-+			atomic_inc(&bat_priv->batman_queue_left);
- 		return;
- 	}
+ obj-$(CONFIG_BATMAN_ADV) += batman-adv.o
+-batman-adv-objs := main.o bat_debugfs.o bat_sysfs.o send.o routing.o soft-interface.o icmp_socket.o translation-table.o bitarray.o hash.o ring_buffer.o vis.o hard-interface.o aggregation.o originator.o
++batman-adv-objs := main.o bat_debugfs.o bat_sysfs.o send.o routing.o soft-interface.o icmp_socket.o translation-table.o bitarray.o hash.o ring_buffer.o vis.o hard-interface.o aggregation.o originator.o unicast.o
+diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
+index 6f22e6e..315fdeb 100644
+--- a/drivers/staging/batman-adv/soft-interface.c
++++ b/drivers/staging/batman-adv/soft-interface.c
+@@ -22,14 +22,12 @@
+ #include "main.h"
+ #include "soft-interface.h"
+ #include "hard-interface.h"
+-#include "routing.h"
+-#include "send.h"
+ #include "translation-table.h"
+-#include "types.h"
+-#include "hash.h"
++#include "send.h"
+ #include <linux/slab.h>
+ #include <linux/ethtool.h>
+ #include <linux/etherdevice.h>
++#include "unicast.h"
  
-@@ -129,7 +129,7 @@ static void new_aggregated_packet(unsigned char *packet_buff,
- 						GFP_ATOMIC);
- 	if (!forw_packet_aggr->packet_buff) {
- 		if (!own_packet)
--			atomic_inc(&batman_queue_left);
-+			atomic_inc(&bat_priv->batman_queue_left);
- 		kfree(forw_packet_aggr);
- 		return;
- 	}
-diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
-index 05ca15a..d49adde 100644
---- a/drivers/staging/batman-adv/bat_sysfs.c
-+++ b/drivers/staging/batman-adv/bat_sysfs.c
-@@ -311,6 +311,8 @@ int sysfs_add_meshif(struct net_device *dev)
- 	atomic_set(&bat_priv->vis_mode, VIS_TYPE_CLIENT_UPDATE);
- 	atomic_set(&bat_priv->orig_interval, 1000);
- 	atomic_set(&bat_priv->log_level, 0);
-+	atomic_set(&bat_priv->bcast_queue_left, BCAST_QUEUE_LEN);
-+	atomic_set(&bat_priv->batman_queue_left, BATMAN_QUEUE_LEN);
+ static uint32_t bcast_seqno = 1; /* give own bcast messages seq numbers to avoid
+ 				  * broadcast storms */
+@@ -127,24 +125,14 @@ static int interface_change_mtu(struct net_device *dev, int new_mtu)
  
- 	bat_priv->primary_if = NULL;
- 	bat_priv->num_ifaces = 0;
-diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
-index ef7c20a..c0a3373 100644
---- a/drivers/staging/batman-adv/main.c
-+++ b/drivers/staging/batman-adv/main.c
-@@ -42,9 +42,6 @@ DEFINE_SPINLOCK(orig_hash_lock);
- DEFINE_SPINLOCK(forw_bat_list_lock);
- DEFINE_SPINLOCK(forw_bcast_list_lock);
+ int interface_tx(struct sk_buff *skb, struct net_device *dev)
+ {
+-	struct unicast_packet *unicast_packet;
+-	struct bcast_packet *bcast_packet;
+-	struct orig_node *orig_node;
+-	struct neigh_node *router;
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
+-	struct bat_priv *priv = netdev_priv(dev);
+-	struct batman_if *batman_if;
+-	struct bat_priv *bat_priv;
+-	uint8_t dstaddr[6];
+-	int data_len = skb->len;
+-	unsigned long flags;
++	struct bat_priv *bat_priv = netdev_priv(dev);
++	struct bcast_packet *bcast_packet;
++	int data_len = skb->len, ret;
  
--atomic_t bcast_queue_left;
--atomic_t batman_queue_left;
+ 	if (atomic_read(&module_state) != MODULE_ACTIVE)
+ 		goto dropped;
+ 
+-	/* FIXME: each batman_if will be attached to a softif */
+-	bat_priv = netdev_priv(soft_device);
 -
- int16_t num_hna;
+ 	dev->trans_start = jiffies;
+ 	/* TODO: check this for locks */
+ 	hna_local_add(ethhdr->h_source);
+@@ -179,55 +167,19 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
  
- struct net_device *soft_device;
-@@ -69,9 +66,6 @@ static int __init batman_init(void)
- 
- 	atomic_set(&module_state, MODULE_INACTIVE);
- 
--	atomic_set(&bcast_queue_left, BCAST_QUEUE_LEN);
--	atomic_set(&batman_queue_left, BATMAN_QUEUE_LEN);
+ 	/* unicast packet */
+ 	} else {
+-		spin_lock_irqsave(&orig_hash_lock, flags);
+-		/* get routing information */
+-		orig_node = ((struct orig_node *)hash_find(orig_hash,
+-							   ethhdr->h_dest));
 -
- 	/* the name should not be longer than 10 chars - see
- 	 * http://lwn.net/Articles/23634/ */
- 	bat_event_workqueue = create_singlethread_workqueue("bat_events");
-diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
-index 9b30eef..2d364e0 100644
---- a/drivers/staging/batman-adv/main.h
-+++ b/drivers/staging/batman-adv/main.h
-@@ -136,8 +136,6 @@ extern spinlock_t orig_hash_lock;
- extern spinlock_t forw_bat_list_lock;
- extern spinlock_t forw_bcast_list_lock;
- 
--extern atomic_t bcast_queue_left;
--extern atomic_t batman_queue_left;
- extern int16_t num_hna;
- 
- extern struct net_device *soft_device;
-diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
-index da3c82e..e874cae 100644
---- a/drivers/staging/batman-adv/send.c
-+++ b/drivers/staging/batman-adv/send.c
-@@ -404,7 +404,7 @@ int add_bcast_packet_to_list(struct sk_buff *skb)
- 	/* FIXME: each batman_if will be attached to a softif */
- 	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 
--	if (!atomic_dec_not_zero(&bcast_queue_left)) {
-+	if (!atomic_dec_not_zero(&bat_priv->bcast_queue_left)) {
- 		bat_dbg(DBG_BATMAN, bat_priv, "bcast packet queue full\n");
- 		goto out;
+-		/* check for hna host */
+-		if (!orig_node)
+-			orig_node = transtable_search(ethhdr->h_dest);
+-
+-		router = find_router(orig_node, NULL);
+-
+-		if (!router)
+-			goto unlock;
+-
+-		/* don't lock while sending the packets ... we therefore
+-		 * copy the required data before sending */
+-
+-		batman_if = router->if_incoming;
+-		memcpy(dstaddr, router->addr, ETH_ALEN);
+-
+-		spin_unlock_irqrestore(&orig_hash_lock, flags);
+-
+-		if (batman_if->if_status != IF_ACTIVE)
+-			goto dropped;
+-
+-		if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
+-			goto dropped;
+-
+-		unicast_packet = (struct unicast_packet *)skb->data;
+-
+-		unicast_packet->version = COMPAT_VERSION;
+-		/* batman packet type: unicast */
+-		unicast_packet->packet_type = BAT_UNICAST;
+-		/* set unicast ttl */
+-		unicast_packet->ttl = TTL;
+-		/* copy the destination for faster routing */
+-		memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
+-
+-		send_skb_packet(skb, batman_if, dstaddr);
++		ret = unicast_send_skb(skb, bat_priv);
++		if (ret != 0) {
++			bat_priv->stats.tx_dropped++;
++			goto end;
++		}
  	}
-@@ -436,7 +436,7 @@ int add_bcast_packet_to_list(struct sk_buff *skb)
- packet_free:
- 	kfree(forw_packet);
- out_and_inc:
--	atomic_inc(&bcast_queue_left);
-+	atomic_inc(&bat_priv->bcast_queue_left);
- out:
- 	return NETDEV_TX_BUSY;
- }
-@@ -450,6 +450,8 @@ static void send_outstanding_bcast_packet(struct work_struct *work)
- 		container_of(delayed_work, struct forw_packet, delayed_work);
- 	unsigned long flags;
- 	struct sk_buff *skb1;
-+	/* FIXME: each batman_if will be attached to a softif */
-+	struct bat_priv *bat_priv = netdev_priv(soft_device);
  
- 	spin_lock_irqsave(&forw_bcast_list_lock, flags);
- 	hlist_del(&forw_packet->list);
-@@ -479,7 +481,7 @@ static void send_outstanding_bcast_packet(struct work_struct *work)
+-	priv->stats.tx_packets++;
+-	priv->stats.tx_bytes += data_len;
++	bat_priv->stats.tx_packets++;
++	bat_priv->stats.tx_bytes += data_len;
+ 	goto end;
  
- out:
- 	forw_packet_free(forw_packet);
--	atomic_inc(&bcast_queue_left);
-+	atomic_inc(&bat_priv->bcast_queue_left);
- }
- 
- void send_outstanding_bat_packet(struct work_struct *work)
-@@ -489,6 +491,8 @@ void send_outstanding_bat_packet(struct work_struct *work)
- 	struct forw_packet *forw_packet =
- 		container_of(delayed_work, struct forw_packet, delayed_work);
- 	unsigned long flags;
-+	/* FIXME: each batman_if will be attached to a softif */
-+	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 
- 	spin_lock_irqsave(&forw_bat_list_lock, flags);
- 	hlist_del(&forw_packet->list);
-@@ -510,7 +514,7 @@ void send_outstanding_bat_packet(struct work_struct *work)
- out:
- 	/* don't count own packet */
- 	if (!forw_packet->own)
--		atomic_inc(&batman_queue_left);
-+		atomic_inc(&bat_priv->batman_queue_left);
- 
- 	forw_packet_free(forw_packet);
- }
-diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
-index 9aa9d36..67bf4db 100644
---- a/drivers/staging/batman-adv/types.h
-+++ b/drivers/staging/batman-adv/types.h
-@@ -113,6 +113,8 @@ struct bat_priv {
- 	atomic_t vis_mode;
- 	atomic_t orig_interval;
- 	atomic_t log_level;
-+	atomic_t bcast_queue_left;
-+	atomic_t batman_queue_left;
- 	char num_ifaces;
- 	struct debug_log *debug_log;
- 	struct batman_if *primary_if;
+-unlock:
+-	spin_unlock_irqrestore(&orig_hash_lock, flags);
+ dropped:
+-	priv->stats.tx_dropped++;
++	bat_priv->stats.tx_dropped++;
+ 	kfree_skb(skb);
+ end:
+ 	return NETDEV_TX_OK;
+diff --git a/drivers/staging/batman-adv/unicast.c b/drivers/staging/batman-adv/unicast.c
+new file mode 100644
+index 0000000..27c4abb
+--- /dev/null
++++ b/drivers/staging/batman-adv/unicast.c
+@@ -0,0 +1,87 @@
++/*
++ * Copyright (C) 2010 B.A.T.M.A.N. contributors:
++ *
++ * Andreas Langer
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
++ *
++ */
++
++#include "main.h"
++#include "unicast.h"
++#include "send.h"
++#include "soft-interface.h"
++#include "hash.h"
++#include "translation-table.h"
++#include "routing.h"
++#include "hard-interface.h"
++
++int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
++{
++	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
++	struct unicast_packet *unicast_packet;
++	struct orig_node *orig_node;
++	struct batman_if *batman_if;
++	struct neigh_node *router;
++	uint8_t dstaddr[6];
++	unsigned long flags;
++
++	spin_lock_irqsave(&orig_hash_lock, flags);
++
++	/* get routing information */
++	orig_node = ((struct orig_node *)hash_find(orig_hash, ethhdr->h_dest));
++
++	/* check for hna host */
++	if (!orig_node)
++		orig_node = transtable_search(ethhdr->h_dest);
++
++	router = find_router(orig_node, NULL);
++
++	if (!router)
++		goto unlock;
++
++	/* don't lock while sending the packets ... we therefore
++		* copy the required data before sending */
++
++	batman_if = router->if_incoming;
++	memcpy(dstaddr, router->addr, ETH_ALEN);
++
++	spin_unlock_irqrestore(&orig_hash_lock, flags);
++
++	if (batman_if->if_status != IF_ACTIVE)
++		goto dropped;
++
++	if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
++		goto dropped;
++
++	unicast_packet = (struct unicast_packet *)skb->data;
++
++	unicast_packet->version = COMPAT_VERSION;
++	/* batman packet type: unicast */
++	unicast_packet->packet_type = BAT_UNICAST;
++	/* set unicast ttl */
++	unicast_packet->ttl = TTL;
++	/* copy the destination for faster routing */
++	memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
++
++	send_skb_packet(skb, batman_if, dstaddr);
++	return 0;
++
++unlock:
++	spin_unlock_irqrestore(&orig_hash_lock, flags);
++dropped:
++	kfree_skb(skb);
++	return 1;
++}
+diff --git a/drivers/staging/batman-adv/unicast.h b/drivers/staging/batman-adv/unicast.h
+new file mode 100644
+index 0000000..dd00703
+--- /dev/null
++++ b/drivers/staging/batman-adv/unicast.h
+@@ -0,0 +1,27 @@
++/*
++ * Copyright (C) 2010 B.A.T.M.A.N. contributors:
++ *
++ * Andreas Langer
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
++ *
++ */
++
++#ifndef _NET_BATMAN_ADV_UNICAST_H_
++#define _NET_BATMAN_ADV_UNICAST_H_
++
++int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv);
++
++#endif /* _NET_BATMAN_ADV_UNICAST_H_ */
 -- 
 1.7.1
 
