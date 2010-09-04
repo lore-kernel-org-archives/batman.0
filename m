@@ -1,14 +1,12 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sat, 4 Sep 2010 15:02:06 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20100904130204.GA8638@pandem0nium>
-References: <1283603445-5980-1-git-send-email-sven.eckelmann@gmx.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 4 Sep 2010 16:29:57 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="KsGdsel6WgEHnImy"
-Content-Disposition: inline
-In-Reply-To: <1283603445-5980-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Merge batman-adv 2010.1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201009041629.58372.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] batman-adv 2010.1.0 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,176 +18,132 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---KsGdsel6WgEHnImy
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+New versions of the batman-adv kernel module and batctl are released today=
+=20
+with the version number 2010.1.0. The B.A.T.M.A.N. team's main focus was on=
+=20
+new features, Linux kernel compliance and a bunch of bug fixes. As the kern=
+el=20
+module always depends on the Linux kernel it was compiled against, it does =
+not=20
+make sense to provide binaries on our website. As usual, you will find the=
+=20
+signed tarballs in our download section:
+http://downloads.open-mesh.net/batman/releases/batman-adv-2010.1.0/=20
+as well as prepackaged binaries in your distribution.
 
-applied in r1784,
 
-Thanks,
-	Simon
+Important changes
+=2D---------------
 
-On Sat, Sep 04, 2010 at 02:30:45PM +0200, Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-> ---
->  batman-adv/CHANGELOG |   16 ++++++++++++++++
->  batman-adv/README    |   47 +++++++++++++++++++++++---------------------=
----
->  2 files changed, 39 insertions(+), 24 deletions(-)
->=20
-> diff --git a/batman-adv/CHANGELOG b/batman-adv/CHANGELOG
-> index 86450b4..67bfc6e 100644
-> --- a/batman-adv/CHANGELOG
-> +++ b/batman-adv/CHANGELOG
-> @@ -1,3 +1,19 @@
-> +batman-adv 2010.1.0:
-> +
-> +* support latest kernels (2.6.21 - 2.6.36)
-> +* further cleanup of coding style
-> +* recording of routes for batman icmp messages
-> +* move of complex sysfs files to debugfs
-> +* change output of all sysfs files to single-value-only
-> +* reintroduce virtual file for the debug log
-> +* bonding and alternating added
-> +* add ttl to broadcasts
-> +* change all sequence numbers to 32 bit
-> +* show last-seen in originator table
-> +* many bugs (rounding issues, locking, netdev event handler, ...) squash=
-ed
-> +
-> + -- Sat, 04 Sep 2010 13:56:38 +0200
-> +
->  batman-adv 2010.0.0:
-> =20
->  * support latest kernels (2.6.21 - 2.6.35)
-> diff --git a/batman-adv/README b/batman-adv/README
-> index 24b062b..ecef96d 100644
-> --- a/batman-adv/README
-> +++ b/batman-adv/README
-> @@ -1,4 +1,4 @@
-> -[state: 12-06-2010]
-> +[state: 04-09-2010]
-> =20
->  BATMAN-ADV
->  ----------
-> @@ -18,7 +18,7 @@ Batman advanced was implemented as a Linux kernel drive=
-r  to  re-
->  duce the overhead to a minimum. It does not depend on any (other)
->  network driver, and can be used on wifi as well as ethernet  lan,
->  vpn,  etc ... (anything with ethernet-style layer 2). It compiles
-> -against and should work with Linux 2.6.21 -  2.6.35.   Supporting
-> +against and should work with Linux 2.6.21 -  2.6.36.   Supporting
->  older versions is not planned, but it's probably easy to backport
->  it.  If you work on a backport, feel free to contact us.  :-)
-> =20
-> @@ -83,15 +83,21 @@ All  mesh  wide  settings  can be found in batman's o=
-wn interface
->  folder:
-> =20
->  #  ls  /sys/class/net/bat0/mesh/
-> -#  aggregate_ogm   originators        transtable_global  vis_mode
-> -#  orig_interval   transtable_local   vis_data
-> +#  aggregated_ogms  bonding  orig_interval  vis_mode
-> +
-> +
-> +There is a special folder for debugging informations:
-> +
-> +#  ls /sys/kernel/debug/batman_adv/bat0/
-> +#  originators  socket  transtable_global  transtable_local
-> +#  vis_data
-> =20
-> =20
->  Some of the files contain all sort of status information  regard-
->  ing  the  mesh  network.  For  example, you can view the table of
->  originators (mesh participants) with:
-> =20
-> -# cat /sys/class/net/bat0/mesh/originators
-> +# cat /sys/kernel/debug/batman_adv/bat0/originators
-> =20
->  Other files allow to change batman's behaviour to better fit your
->  requirements.  For instance, you can check the current originator
-> @@ -99,7 +105,7 @@ interval (value in milliseconds which determines how o=
-ften batman
->  sends its broadcast packets):
-> =20
->  # cat /sys/class/net/bat0/mesh/orig_interval
-> -# status: 1000
-> +# 1000
-> =20
->  and also change its value:
-> =20
-> @@ -153,7 +159,7 @@ at least very similar) data.
->  When  configured  as  server,  you can get a topology snapshot of
->  your mesh:
-> =20
-> -# cat /sys/class/net/bat0/mesh/vis_data
-> +# cat /sys/kernel/debug/batman_adv/bat0/vis_data
-> =20
->  This raw output is intended to be easily parsable and convertable
->  with  other tools. Have a look at the batctl README if you want a
-> @@ -201,32 +207,25 @@ uncomment the line
-> =20
->  #EXTRA_CFLAGS +=3D -DCONFIG_BATMAN_ADV_DEBUG
-> =20
-> +Those additional  debug messages can be accessed  using a special
-> +file in debugfs
-> +
-> +# cat /sys/kernel/debug/batman_adv/bat0/log
-> +
->  The additional debug output is by default disabled. It can be en-
-> -abled  either  at kernel modules load time or during run time. To
-> -enable debug output at module load time, add the module parameter
-> -debug=3D<value>.  <value> can take one of four values.
-> +abled  during run time. Following log_levels are defined:
-> =20
->  0 - All  debug  output  disabled
->  1 - Enable messages related to routing / flooding / broadcasting
->  2 - Enable route or hna added / changed / deleted
->  3 - Enable all messages
-> =20
-> -e.g.
-> -
-> -# modprobe batman-adv debug=3D2
-> -
-> -will load the module and enable debug messages for when routes or
-> -HNAs change.
-> -
-> -The debug output can also be changed at runtime  using  the  file
-> -/sys/module/batman-adv/parameters/debug. e.g.
-> -
-> -# echo 2 > /sys/module/batman-adv/parameters/debug
-> +The debug output can be changed at runtime  using  the  file
-> +/sys/class/net/bat0/mesh/log_level. e.g.
-> =20
-> -enables debug messages for when routes or HNAs
-> +# echo 2 > /sys/class/net/bat0/mesh/log_level
-> =20
-> -The  debug  output  is sent to the kernel logs. So try dmesg, lo-
-> -gread, etc to see the debug messages.
-> +will enable debug messages for when routes or HNAs change.
-> =20
-> =20
->  BATCTL
-> --=20
-> 1.7.1
->=20
->=20
+As part of the ongoing kernel interface restructuring all remaining tables =
+and=20
+debug output was migrated from the proc filesystem to the debug filesystem.=
+=20
+Also, some tables which went into sysfs followed this example as well as th=
+e=20
+layer 2 icmp socket which resided in /dev. All programs / scripts accessing=
+=20
+these files directly need to be adjusted. Scripts using batctl are not affe=
+cted=20
+by this transition as the batctl command line parameters are unchanged. Mor=
+e=20
+details can be found below as well as in our documentation.=20
 
---KsGdsel6WgEHnImy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Thanks
+=2D---------------
 
-iEYEARECAAYFAkyCQ0wACgkQrzg/fFk7axbDjACfZE1pNn9gN5hJWBSTwVCLvRoF
-z2QAniV3XXcQMnFfHwJTWaCxlnN0l4I2
-=2xlg
------END PGP SIGNATURE-----
+Thanks to all people sending in patches:
 
---KsGdsel6WgEHnImy--
+ * Antonio Quartulli <ordex@ritirata.org>
+ * Dan Carpenter <error27@gmail.com>
+ * Daniel Seither <post@tiwoc.de>
+ * Eric Dumazet <eric.dumazet@gmail.com>
+ * Jiri Pirko <jpirko@redhat.com>
+ * Joe Perches <joe@perches.com>
+ * Linus L=FCssing <linus.luessing@web.de>
+ * Marek Lindner <lindner_marek@yahoo.de>
+ * Randy Dunlap <randy.dunlap@oracle.com>
+ * Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+ * Sven Eckelmann <sven.eckelmann@gmx.de>
+ * Tejun Heo <tj@kernel.org>
+
+
+batman-adv
+=2D---------------
+
+The first B.A.T.M.A.N. V features left the experimental stage and went into=
+=20
+this release: interface alternating (formerly known as incoming interface=20
+based routing) & bonding mode. These are optimizations for scenarios in whi=
+ch=20
+mesh nodes possess several WiFi cards to run the mesh on. In alternating mo=
+de=20
+batman-adv will switch the WiFi interface to forward the traffic with each =
+hop,=20
+thereby avoiding store & forward (which would half the bandwidth with each=
+=20
+forwarding node). Bonding mode will use all available interfaces at the sam=
+e=20
+time to forward the traffic. Both modes do not require the whole network to=
+ have=20
+the same hardware configuration - the available interfaces are automaticall=
+y=20
+detected and used if possible. Per default batman-adv operates in the=20
+alternating mode, bonding mode can be activated.
+
+To achieve Linux kernel compliance all tables and debug information have be=
+en=20
+concentrated in the debug filesystem (all configuration options remain in=20
+sysfs). Make sure your kernel has the debug filesystem compiled in if you w=
+ant=20
+to access those information. The user space API is now considered clean and=
+=20
+won't require significant changes in the future. The originator table outpu=
+ts=20
+the "last seen" field to allow observing originator outages in real time. T=
+he=20
+batman-adv debug log returned with the debugfs changes, after it had been=20
+removed in previous releases. The batman icmp socket left the /dev director=
+y=20
+to join the other debug facilities in debugfs (before it was not possible t=
+o=20
+create a socket for each configured mesh). This release also contains numer=
+ous=20
+bug fixes regarding stability, broadcast flood protection through 32Bit seq=
+uence=20
+numbers, supporting newer kernel versions, multiple interface bugs, roundin=
+g=20
+issues and more.
+
+
+batctl
+=2D---------------
+
+Batctl has been adapted to retrieve the tables and other information from t=
+he=20
+debug filesystem. To provide a smooth user experience batctl automatically=
+=20
+mounts the debug filesystem whenever necessary. As the debug log output mov=
+ed=20
+from the standard kernel logging to the batman-adv log file, batctl re-
+introduces the convenience features to retrieve the logs and replace mac=20
+addresses with names. Batctl also followed the icmp socket move and is=20
+prepared for the multiple mesh support. The ping utility received the "reco=
+rd=20
+route" ability which allows to monitor route changes. The originator table=
+=20
+viewer gained some additional options to filter for "fresh" entries (using =
+the=20
+"last seen" field) and allows to specify a refresh interval to continuously=
+=20
+print the table.=20
+
+
+Happy routing,
+The B.A.T.M.A.N. team
+
