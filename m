@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  5 Sep 2010 01:58:28 +0200
-Message-Id: <1283644718-653-12-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun,  5 Sep 2010 01:58:32 +0200
+Message-Id: <1283644718-653-16-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 11/21] Staging: batman-adv: Keep header
-	writable and unshared
+Subject: [B.A.T.M.A.N.] [PATCH 15/21] Staging: batman-adv: Create copy of
+	skb with pre-allocated headroom
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,135 +20,168 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-my_skb_push provided an easy way to allocate enough headroom in
-situation were we don't have enough space left and move the data pointer
-to the new position, but we didn't checked wether we are allowed to
-write to the new pushed header. This is for example a problem when the
-skb was cloned and thus doesn't have a private data part.
+We can use skb_cow instead of a handwritten function to test and create
+a writable skb buffer. This also allows us to pre-allocate headroom to
+be able to send the data without re-allocating the buffer again to add
+the ethernet header.
 
-my_skb_head_push now replaces my_skb_push by using skb_cow_head to
-provide only a large enough, writable header without testing for the
-rest of the (maybe shared) data. It will also move the data pointer
-using skb_push when skb_cow_head doesn't fail.
-
-This should give us enough flexibility in situation were skbs will be
-queued by underlying layers and still doesn't unnecessarily copy the
-data in situations when the skb was consumed right away during
-dev_queue_xmit.
-
-Reported-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/send.c           |    2 +-
- drivers/staging/batman-adv/soft-interface.c |   26 ++++++++++++++------------
- drivers/staging/batman-adv/soft-interface.h |    2 +-
- drivers/staging/batman-adv/unicast.c        |    6 +++---
- 4 files changed, 19 insertions(+), 17 deletions(-)
+ drivers/staging/batman-adv/routing.c |   77 ++++++++++-----------------------
+ 1 files changed, 24 insertions(+), 53 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
-index e874cae..b39c67b 100644
---- a/drivers/staging/batman-adv/send.c
-+++ b/drivers/staging/batman-adv/send.c
-@@ -73,7 +73,7 @@ int send_skb_packet(struct sk_buff *skb,
- 	}
- 
- 	/* push to the ethernet header. */
--	if (my_skb_push(skb, sizeof(struct ethhdr)) < 0)
-+	if (my_skb_head_push(skb, sizeof(struct ethhdr)) < 0)
- 		goto send_skb_err;
- 
- 	skb_reset_mac_header(skb);
-diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
-index d60b1a8..e8be209 100644
---- a/drivers/staging/batman-adv/soft-interface.c
-+++ b/drivers/staging/batman-adv/soft-interface.c
-@@ -31,8 +31,6 @@
- 
- static uint32_t bcast_seqno = 1; /* give own bcast messages seq numbers to avoid
- 				  * broadcast storms */
--static int32_t skb_packets;
--static int32_t skb_bad_packets;
- 
- unsigned char main_if_addr[ETH_ALEN];
- static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd);
-@@ -59,18 +57,22 @@ void set_main_if_addr(uint8_t *addr)
- 	memcpy(main_if_addr, addr, ETH_ALEN);
- }
- 
--int my_skb_push(struct sk_buff *skb, unsigned int len)
-+int my_skb_head_push(struct sk_buff *skb, unsigned int len)
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index d8e77ac..7e993a2 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -742,7 +742,6 @@ int recv_bat_packet(struct sk_buff *skb,
  {
--	int result = 0;
-+	int result;
+ 	struct ethhdr *ethhdr;
+ 	unsigned long flags;
+-	struct sk_buff *skb_old;
  
--	skb_packets++;
--	if (skb_headroom(skb) < len) {
--		skb_bad_packets++;
--		result = pskb_expand_head(skb, len, 0, GFP_ATOMIC);
-+	/**
-+	 * TODO: We must check if we can release all references to non-payload
-+	 * data using skb_header_release in our skbs to allow skb_cow_header to
-+	 * work optimally. This means that those skbs are not allowed to read
-+	 * or write any data which is before the current position of skb->data
-+	 * after that call and thus allow other skbs with the same data buffer
-+	 * to write freely in that area.
-+	 */
-+	result = skb_cow_head(skb, len);
+ 	/* drop packet if it has not necessary minimum size */
+ 	if (skb_headlen(skb) < sizeof(struct batman_packet))
+@@ -758,18 +757,11 @@ int recv_bat_packet(struct sk_buff *skb,
+ 	if (is_bcast(ethhdr->h_source))
+ 		return NET_RX_DROP;
  
--		if (result < 0)
--			return result;
+-	/* TODO: we use headlen instead of "length", because
+-	 * only this data is paged in. */
+-
+ 	/* create a copy of the skb, if needed, to modify it. */
+-	if (!skb_clone_writable(skb, skb_headlen(skb))) {
+-		skb_old = skb;
+-		skb = skb_copy(skb, GFP_ATOMIC);
+-		if (!skb)
+-			return NET_RX_DROP;
+-		ethhdr = (struct ethhdr *)skb_mac_header(skb);
+-		kfree_skb(skb_old);
 -	}
-+	if (result < 0)
-+		return result;
++	if (skb_cow(skb, 0) < 0)
++		return NET_RX_DROP;
++
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
  
- 	skb_push(skb, len);
- 	return 0;
-@@ -140,7 +142,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *dev)
- 	/* ethernet packet should be broadcasted */
- 	if (is_bcast(ethhdr->h_dest) || is_mcast(ethhdr->h_dest)) {
+ 	spin_lock_irqsave(&orig_hash_lock, flags);
+ 	receive_aggr_bat_packet(ethhdr,
+@@ -789,7 +781,6 @@ static int recv_my_icmp_packet(struct sk_buff *skb, size_t icmp_len)
+ 	struct orig_node *orig_node;
+ 	struct icmp_packet_rr *icmp_packet;
+ 	struct ethhdr *ethhdr;
+-	struct sk_buff *skb_old;
+ 	struct batman_if *batman_if;
+ 	int ret;
+ 	unsigned long flags;
+@@ -824,16 +815,11 @@ static int recv_my_icmp_packet(struct sk_buff *skb, size_t icmp_len)
+ 		spin_unlock_irqrestore(&orig_hash_lock, flags);
  
--		if (my_skb_push(skb, sizeof(struct bcast_packet)) < 0)
-+		if (my_skb_head_push(skb, sizeof(struct bcast_packet)) < 0)
- 			goto dropped;
+ 		/* create a copy of the skb, if needed, to modify it. */
+-		skb_old = NULL;
+-		if (!skb_clone_writable(skb, icmp_len)) {
+-			skb_old = skb;
+-			skb = skb_copy(skb, GFP_ATOMIC);
+-			if (!skb)
+-				return NET_RX_DROP;
+-			icmp_packet = (struct icmp_packet_rr *)skb->data;
+-			ethhdr = (struct ethhdr *)skb_mac_header(skb);
+-			kfree_skb(skb_old);
+-		}
++		if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
++			return NET_RX_DROP;
++
++		icmp_packet = (struct icmp_packet_rr *)skb->data;
++		ethhdr = (struct ethhdr *)skb_mac_header(skb);
  
- 		bcast_packet = (struct bcast_packet *)skb->data;
-diff --git a/drivers/staging/batman-adv/soft-interface.h b/drivers/staging/batman-adv/soft-interface.h
-index 6364854..9dbf5fc 100644
---- a/drivers/staging/batman-adv/soft-interface.h
-+++ b/drivers/staging/batman-adv/soft-interface.h
-@@ -26,7 +26,7 @@ void set_main_if_addr(uint8_t *addr);
- void interface_setup(struct net_device *dev);
- int interface_tx(struct sk_buff *skb, struct net_device *dev);
- void interface_rx(struct sk_buff *skb, int hdr_size);
--int my_skb_push(struct sk_buff *skb, unsigned int len);
-+int my_skb_head_push(struct sk_buff *skb, unsigned int len);
+ 		memcpy(icmp_packet->dst, icmp_packet->orig, ETH_ALEN);
+ 		memcpy(icmp_packet->orig,
+@@ -857,7 +843,6 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb, size_t icmp_len)
+ 	struct orig_node *orig_node;
+ 	struct icmp_packet *icmp_packet;
+ 	struct ethhdr *ethhdr;
+-	struct sk_buff *skb_old;
+ 	struct batman_if *batman_if;
+ 	int ret;
+ 	unsigned long flags;
+@@ -893,15 +878,11 @@ static int recv_icmp_ttl_exceeded(struct sk_buff *skb, size_t icmp_len)
+ 		spin_unlock_irqrestore(&orig_hash_lock, flags);
  
- extern unsigned char main_if_addr[];
+ 		/* create a copy of the skb, if needed, to modify it. */
+-		if (!skb_clone_writable(skb, icmp_len)) {
+-			skb_old = skb;
+-			skb = skb_copy(skb, GFP_ATOMIC);
+-			if (!skb)
+-				return NET_RX_DROP;
+-			icmp_packet = (struct icmp_packet *) skb->data;
+-			ethhdr = (struct ethhdr *)skb_mac_header(skb);
+-			kfree_skb(skb_old);
+-		}
++		if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
++			return NET_RX_DROP;
++
++		icmp_packet = (struct icmp_packet *) skb->data;
++		ethhdr = (struct ethhdr *)skb_mac_header(skb);
  
-diff --git a/drivers/staging/batman-adv/unicast.c b/drivers/staging/batman-adv/unicast.c
-index 153914e..61ebd38 100644
---- a/drivers/staging/batman-adv/unicast.c
-+++ b/drivers/staging/batman-adv/unicast.c
-@@ -163,8 +163,8 @@ static int unicast_send_frag_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + hdr_len);
- 	skb_split(skb, frag_skb, data_len / 2);
+ 		memcpy(icmp_packet->dst, icmp_packet->orig, ETH_ALEN);
+ 		memcpy(icmp_packet->orig,
+@@ -924,7 +905,6 @@ int recv_icmp_packet(struct sk_buff *skb)
+ 	struct icmp_packet_rr *icmp_packet;
+ 	struct ethhdr *ethhdr;
+ 	struct orig_node *orig_node;
+-	struct sk_buff *skb_old;
+ 	struct batman_if *batman_if;
+ 	int hdr_size = sizeof(struct icmp_packet);
+ 	int ret;
+@@ -990,15 +970,11 @@ int recv_icmp_packet(struct sk_buff *skb)
+ 		spin_unlock_irqrestore(&orig_hash_lock, flags);
  
--	if (my_skb_push(frag_skb, hdr_len) < 0 ||
--	    my_skb_push(skb, hdr_len) < 0)
-+	if (my_skb_head_push(frag_skb, hdr_len) < 0 ||
-+	    my_skb_head_push(skb, hdr_len) < 0)
- 		goto drop_frag;
+ 		/* create a copy of the skb, if needed, to modify it. */
+-		if (!skb_clone_writable(skb, hdr_size)) {
+-			skb_old = skb;
+-			skb = skb_copy(skb, GFP_ATOMIC);
+-			if (!skb)
+-				return NET_RX_DROP;
+-			icmp_packet = (struct icmp_packet_rr *)skb->data;
+-			ethhdr = (struct ethhdr *)skb_mac_header(skb);
+-			kfree_skb(skb_old);
+-		}
++		if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
++			return NET_RX_DROP;
++
++		icmp_packet = (struct icmp_packet_rr *)skb->data;
++		ethhdr = (struct ethhdr *)skb_mac_header(skb);
  
- 	ucast_frag1 = (struct unicast_frag_packet *)skb->data;
-@@ -240,7 +240,7 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
- 		return unicast_send_frag_skb(skb, bat_priv, batman_if,
- 					     dstaddr, orig_node);
+ 		/* decrement ttl */
+ 		icmp_packet->ttl--;
+@@ -1137,7 +1113,6 @@ static int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
+ 	struct orig_node *orig_node;
+ 	struct neigh_node *router;
+ 	struct batman_if *batman_if;
+-	struct sk_buff *skb_old;
+ 	uint8_t dstaddr[ETH_ALEN];
+ 	unsigned long flags;
+ 	struct unicast_packet *unicast_packet =
+@@ -1173,15 +1148,11 @@ static int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
+ 	spin_unlock_irqrestore(&orig_hash_lock, flags);
  
--	if (my_skb_push(skb, sizeof(struct unicast_packet)) < 0)
-+	if (my_skb_head_push(skb, sizeof(struct unicast_packet)) < 0)
- 		goto dropped;
+ 	/* create a copy of the skb, if needed, to modify it. */
+-	if (!skb_clone_writable(skb, hdr_size)) {
+-		skb_old = skb;
+-		skb = skb_copy(skb, GFP_ATOMIC);
+-		if (!skb)
+-			return NET_RX_DROP;
+-		unicast_packet = (struct unicast_packet *) skb->data;
+-		ethhdr = (struct ethhdr *)skb_mac_header(skb);
+-		kfree_skb(skb_old);
+-	}
++	if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
++		return NET_RX_DROP;
++
++	unicast_packet = (struct unicast_packet *) skb->data;
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
  
- 	unicast_packet = (struct unicast_packet *)skb->data;
+ 	/* decrement ttl */
+ 	unicast_packet->ttl--;
 -- 
 1.7.1
 
