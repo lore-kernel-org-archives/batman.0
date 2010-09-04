@@ -1,8 +1,8 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat,  4 Sep 2010 18:30:51 +0200
-Message-Id: <1283617851-29956-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add missing include for bat_sys.h
+Date: Sun,  5 Sep 2010 00:25:00 +0200
+Message-Id: <1283639100-6506-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Don't free unicast skb on failure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,31 +16,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-soft_interface.c needs sysfs_add_meshif and sysfs_del_meshif after
-"batman-adv: attach each hard-interface to a soft-interface". This
-Include is provided indirectly using compat.h on standalone sources, but
-missing on kernel builds.
+The soft-interface transmission function expects that the unicast skb is
+still available when a send failed. Otherwise we would try to free the
+skb twice and create many different and hard to debug memory access
+failures due to access on not (anymore) allocated memory.
 
-We should add it directly as the compat.h include is only a side effect
-we cannot rely on.
-
+Reported-by: Andreas Langer <an.langer@gmx.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/soft-interface.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ unicast.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
-index 38134ae..28bd6a2 100644
---- a/batman-adv/soft-interface.c
-+++ b/batman-adv/soft-interface.c
-@@ -31,6 +31,7 @@
- #include "gateway_common.h"
- #include "gateway_client.h"
- #include "send.h"
-+#include "bat_sysfs.h"
- #include <linux/slab.h>
- #include <linux/ethtool.h>
- #include <linux/etherdevice.h>
+diff --git a/unicast.c b/unicast.c
+index 84b204b..796d9c1 100644
+--- a/unicast.c
++++ b/unicast.c
+@@ -264,6 +264,5 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+ unlock:
+ 	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ dropped:
+-	kfree_skb(skb);
+ 	return 1;
+ }
 -- 
 1.7.1
 
