@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  5 Sep 2010 01:58:30 +0200
-Message-Id: <1283644718-653-14-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun,  5 Sep 2010 01:58:33 +0200
+Message-Id: <1283644718-653-17-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 13/21] Staging: batman-adv: Aggregate batman
-	packets directly in skb
+Subject: [B.A.T.M.A.N.] [PATCH 16/21] Staging: batman-adv: Provide full
+	headers and packets as linear skb
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,179 +20,117 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-All originator messages are send through aggregation buffers. Those
-buffers can directly be allocated as skb to reduce the cost of
-allocation an extra buffer and copying them to a new allocated skb
-directly before it gets send.
+We must ensure that all interesting data is linear and not paged out to
+access all information in a header or a full batman-adv related packet.
+Otherwise we may drop packets which have non-linear headers but which
+hold valid data.
 
-Now only the skb must be cloned in case of send_packet_to_if as it gets
-called by send_packet for each interface. Non-primary ogms must not
-cloned at all because they will only send once and the forward_packet
-structure is freed by send_outstanding_bat_packet afterwards.
+This doesn't affect non-linear skbs which have all headers in a linear
+head unless we must process the whole packet like in ogms or vis
+packets.
 
-Reported-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/aggregation.c |   22 ++++++++++++----------
- drivers/staging/batman-adv/send.c        |   24 ++++++++++++------------
- drivers/staging/batman-adv/types.h       |    1 -
- 3 files changed, 24 insertions(+), 23 deletions(-)
+ drivers/staging/batman-adv/hard-interface.c |    2 +-
+ drivers/staging/batman-adv/routing.c        |   22 ++++++++++++++--------
+ 2 files changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/aggregation.c b/drivers/staging/batman-adv/aggregation.c
-index d738b7a..5896cf2 100644
---- a/drivers/staging/batman-adv/aggregation.c
-+++ b/drivers/staging/batman-adv/aggregation.c
-@@ -39,7 +39,7 @@ static bool can_aggregate_with(struct batman_packet *new_batman_packet,
- 			       struct forw_packet *forw_packet)
- {
- 	struct batman_packet *batman_packet =
--		(struct batman_packet *)forw_packet->packet_buff;
-+		(struct batman_packet *)forw_packet->skb->data;
- 	int aggregated_bytes = forw_packet->packet_len + packet_len;
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index f33c73f..c1863d2 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -486,7 +486,7 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 		goto err_free;
  
- 	/**
-@@ -106,6 +106,7 @@ static void new_aggregated_packet(unsigned char *packet_buff,
- {
- 	struct forw_packet *forw_packet_aggr;
+ 	/* packet should hold at least type and version */
+-	if (unlikely(skb_headlen(skb) < 2))
++	if (unlikely(!pskb_may_pull(skb, 2)))
+ 		goto err_free;
+ 
+ 	/* expect a valid ethernet header here. */
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index 7e993a2..6009adc 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -744,7 +744,7 @@ int recv_bat_packet(struct sk_buff *skb,
  	unsigned long flags;
-+	unsigned char *skb_buff;
- 	/* FIXME: each batman_if will be attached to a softif */
- 	struct bat_priv *bat_priv = netdev_priv(soft_device);
  
-@@ -125,23 +126,22 @@ static void new_aggregated_packet(unsigned char *packet_buff,
- 		return;
- 	}
+ 	/* drop packet if it has not necessary minimum size */
+-	if (skb_headlen(skb) < sizeof(struct batman_packet))
++	if (unlikely(!pskb_may_pull(skb, sizeof(struct batman_packet))))
+ 		return NET_RX_DROP;
  
--	forw_packet_aggr->packet_buff = kmalloc(MAX_AGGREGATION_BYTES,
--						GFP_ATOMIC);
--	if (!forw_packet_aggr->packet_buff) {
-+	forw_packet_aggr->skb = dev_alloc_skb(MAX_AGGREGATION_BYTES +
-+					      sizeof(struct ethhdr));
-+	if (!forw_packet_aggr->skb) {
- 		if (!own_packet)
- 			atomic_inc(&bat_priv->batman_queue_left);
- 		kfree(forw_packet_aggr);
- 		return;
- 	}
-+	skb_reserve(forw_packet_aggr->skb, sizeof(struct ethhdr));
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+@@ -761,6 +761,10 @@ int recv_bat_packet(struct sk_buff *skb,
+ 	if (skb_cow(skb, 0) < 0)
+ 		return NET_RX_DROP;
  
- 	INIT_HLIST_NODE(&forw_packet_aggr->list);
- 
-+	skb_buff = skb_put(forw_packet_aggr->skb, packet_len);
- 	forw_packet_aggr->packet_len = packet_len;
--	memcpy(forw_packet_aggr->packet_buff,
--	       packet_buff,
--	       forw_packet_aggr->packet_len);
-+	memcpy(skb_buff, packet_buff, packet_len);
- 
--	forw_packet_aggr->skb = NULL;
- 	forw_packet_aggr->own = own_packet;
- 	forw_packet_aggr->if_incoming = if_incoming;
- 	forw_packet_aggr->num_packets = 0;
-@@ -171,8 +171,10 @@ static void aggregate(struct forw_packet *forw_packet_aggr,
- 		      int packet_len,
- 		      bool direct_link)
- {
--	memcpy((forw_packet_aggr->packet_buff + forw_packet_aggr->packet_len),
--	       packet_buff, packet_len);
-+	unsigned char *skb_buff;
++	/* keep skb linear */
++	if (skb_linearize(skb) < 0)
++		return NET_RX_DROP;
 +
-+	skb_buff = skb_put(forw_packet_aggr->skb, packet_len);
-+	memcpy(skb_buff, packet_buff, packet_len);
- 	forw_packet_aggr->packet_len += packet_len;
- 	forw_packet_aggr->num_packets++;
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
  
-diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
-index 8dd9dd4..6b138b9 100644
---- a/drivers/staging/batman-adv/send.c
-+++ b/drivers/staging/batman-adv/send.c
-@@ -126,14 +126,14 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
- 	uint8_t packet_num;
- 	int16_t buff_pos;
- 	struct batman_packet *batman_packet;
-+	struct sk_buff *skb;
+ 	spin_lock_irqsave(&orig_hash_lock, flags);
+@@ -914,11 +918,11 @@ int recv_icmp_packet(struct sk_buff *skb)
+ 	/**
+ 	 * we truncate all incoming icmp packets if they don't match our size
+ 	 */
+-	if (skb_headlen(skb) >= sizeof(struct icmp_packet_rr))
++	if (skb->len >= sizeof(struct icmp_packet_rr))
+ 		hdr_size = sizeof(struct icmp_packet_rr);
  
- 	if (batman_if->if_status != IF_ACTIVE)
- 		return;
+ 	/* drop packet if it has not necessary minimum size */
+-	if (skb_headlen(skb) < hdr_size)
++	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+ 		return NET_RX_DROP;
  
- 	packet_num = 0;
- 	buff_pos = 0;
--	batman_packet = (struct batman_packet *)
--		(forw_packet->packet_buff);
-+	batman_packet = (struct batman_packet *)forw_packet->skb->data;
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+@@ -1087,7 +1091,7 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
+ 	struct ethhdr *ethhdr;
  
- 	/* adjust all flags and log packets */
- 	while (aggregated_packet(buff_pos,
-@@ -165,12 +165,13 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
- 			(batman_packet->num_hna * ETH_ALEN);
- 		packet_num++;
- 		batman_packet = (struct batman_packet *)
--			(forw_packet->packet_buff + buff_pos);
-+			(forw_packet->skb->data + buff_pos);
- 	}
+ 	/* drop packet if it has not necessary minimum size */
+-	if (skb_headlen(skb) < hdr_size)
++	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+ 		return -1;
  
--	send_raw_packet(forw_packet->packet_buff,
--			forw_packet->packet_len,
--			batman_if, broadcast_addr);
-+	/* create clone because function is called more than once */
-+	skb = skb_clone(forw_packet->skb, GFP_ATOMIC);
-+	if (skb)
-+		send_skb_packet(skb, batman_if, broadcast_addr);
- }
+ 	ethhdr = (struct ethhdr *) skb_mac_header(skb);
+@@ -1247,7 +1251,7 @@ int recv_bcast_packet(struct sk_buff *skb)
+ 	unsigned long flags;
  
- /* send a batman packet */
-@@ -180,7 +181,7 @@ static void send_packet(struct forw_packet *forw_packet)
- 	struct bat_priv *bat_priv = netdev_priv(soft_device);
- 	struct batman_if *batman_if;
- 	struct batman_packet *batman_packet =
--		(struct batman_packet *)(forw_packet->packet_buff);
-+		(struct batman_packet *)(forw_packet->skb->data);
- 	unsigned char directlink = (batman_packet->flags & DIRECTLINK ? 1 : 0);
+ 	/* drop packet if it has not necessary minimum size */
+-	if (skb_headlen(skb) < hdr_size)
++	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+ 		return NET_RX_DROP;
  
- 	if (!forw_packet->if_incoming) {
-@@ -206,10 +207,11 @@ static void send_packet(struct forw_packet *forw_packet)
- 			batman_packet->ttl, forw_packet->if_incoming->dev,
- 			forw_packet->if_incoming->addr_str);
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+@@ -1320,7 +1324,11 @@ int recv_vis_packet(struct sk_buff *skb)
+ 	struct bat_priv *bat_priv;
+ 	int hdr_size = sizeof(struct vis_packet);
  
--		send_raw_packet(forw_packet->packet_buff,
--				forw_packet->packet_len,
--				forw_packet->if_incoming,
-+		/* skb is only used once and than forw_packet is free'd */
-+		send_skb_packet(forw_packet->skb, forw_packet->if_incoming,
- 				broadcast_addr);
-+		forw_packet->skb = NULL;
+-	if (skb_headlen(skb) < hdr_size)
++	/* keep skb linear */
++	if (skb_linearize(skb) < 0)
++		return NET_RX_DROP;
 +
- 		return;
- 	}
++	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+ 		return NET_RX_DROP;
  
-@@ -366,7 +368,6 @@ static void forw_packet_free(struct forw_packet *forw_packet)
- {
- 	if (forw_packet->skb)
- 		kfree_skb(forw_packet->skb);
--	kfree(forw_packet->packet_buff);
- 	kfree(forw_packet);
- }
+ 	vis_packet = (struct vis_packet *) skb->data;
+@@ -1342,13 +1350,11 @@ int recv_vis_packet(struct sk_buff *skb)
  
-@@ -425,7 +426,6 @@ int add_bcast_packet_to_list(struct sk_buff *skb)
- 	skb_reset_mac_header(skb);
+ 	switch (vis_packet->vis_type) {
+ 	case VIS_TYPE_SERVER_SYNC:
+-		/* TODO: handle fragmented skbs properly */
+ 		receive_server_sync_packet(bat_priv, vis_packet,
+ 					   skb_headlen(skb));
+ 		break;
  
- 	forw_packet->skb = skb;
--	forw_packet->packet_buff = NULL;
- 
- 	/* how often did we send the bcast packet ? */
- 	forw_packet->num_packets = 0;
-diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
-index 2b06944..4b2e832 100644
---- a/drivers/staging/batman-adv/types.h
-+++ b/drivers/staging/batman-adv/types.h
-@@ -161,7 +161,6 @@ struct forw_packet {
- 	unsigned long send_time;
- 	uint8_t own;
- 	struct sk_buff *skb;
--	unsigned char *packet_buff;
- 	uint16_t packet_len;
- 	uint32_t direct_link_flags;
- 	uint8_t num_packets;
+ 	case VIS_TYPE_CLIENT_UPDATE:
+-		/* TODO: handle fragmented skbs properly */
+ 		receive_client_update_packet(bat_priv, vis_packet,
+ 					     skb_headlen(skb));
+ 		break;
 -- 
 1.7.1
 
