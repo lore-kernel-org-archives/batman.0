@@ -1,10 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  5 Sep 2010 01:58:19 +0200
-Message-Id: <1283644718-653-3-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun,  5 Sep 2010 01:58:20 +0200
+Message-Id: <1283644718-653-4-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 02/21] Staging: batman-adv: Remove CHANGELOG
+Subject: [B.A.T.M.A.N.] [PATCH 03/21] Staging: batman-adv: Start new
+	development cycle
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,85 +20,125 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-The changelog is only generated on standalone releases. Thus it has no
-real value for the in-kernel version of batman-adv.
+Version 2010.1.0 of the extra kernel module was released and thus the
+documentation should be updated and everything prepared for the the
+upcoming patchset.
 
-Reported-by: Abraham Arce <abraham.arce.moreno@gmail.com>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/CHANGELOG |   63 ----------------------------------
- 1 files changed, 0 insertions(+), 63 deletions(-)
- delete mode 100644 drivers/staging/batman-adv/CHANGELOG
+ drivers/staging/batman-adv/README |   45 ++++++++++++++++++-------------------
+ drivers/staging/batman-adv/main.h |    2 +-
+ 2 files changed, 23 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/CHANGELOG b/drivers/staging/batman-adv/CHANGELOG
-deleted file mode 100644
-index 86450b4..0000000
---- a/drivers/staging/batman-adv/CHANGELOG
-+++ /dev/null
-@@ -1,63 +0,0 @@
--batman-adv 2010.0.0:
+diff --git a/drivers/staging/batman-adv/README b/drivers/staging/batman-adv/README
+index 7192b7f..3a975fc 100644
+--- a/drivers/staging/batman-adv/README
++++ b/drivers/staging/batman-adv/README
+@@ -1,4 +1,4 @@
+-[state: 12-06-2010]
++[state: 04-09-2010]
+ 
+ BATMAN-ADV
+ ----------
+@@ -67,15 +67,21 @@ All  mesh  wide  settings  can be found in batman's own interface
+ folder:
+ 
+ #  ls  /sys/class/net/bat0/mesh/
+-#  aggregate_ogm   originators        transtable_global  vis_mode
+-#  orig_interval   transtable_local   vis_data
++#  aggregated_ogms  bonding  orig_interval  vis_mode
++
++
++There is a special folder for debugging informations:
++
++#  ls /sys/kernel/debug/batman_adv/bat0/
++#  originators  socket  transtable_global  transtable_local
++#  vis_data
+ 
+ 
+ Some of the files contain all sort of status information  regard-
+ ing  the  mesh  network.  For  example, you can view the table of
+ originators (mesh participants) with:
+ 
+-# cat /sys/class/net/bat0/mesh/originators
++# cat /sys/kernel/debug/batman_adv/bat0/originators
+ 
+ Other files allow to change batman's behaviour to better fit your
+ requirements.  For instance, you can check the current originator
+@@ -83,7 +89,7 @@ interval (value in milliseconds which determines how often batman
+ sends its broadcast packets):
+ 
+ # cat /sys/class/net/bat0/mesh/orig_interval
+-# status: 1000
++# 1000
+ 
+ and also change its value:
+ 
+@@ -137,7 +143,7 @@ at least very similar) data.
+ When  configured  as  server,  you can get a topology snapshot of
+ your mesh:
+ 
+-# cat /sys/class/net/bat0/mesh/vis_data
++# cat /sys/kernel/debug/batman_adv/bat0/vis_data
+ 
+ This raw output is intended to be easily parsable and convertable
+ with  other tools. Have a look at the batctl README if you want a
+@@ -181,32 +187,25 @@ enabled when compiling the batman-adv module. When building  bat-
+ man-adv  as  part of kernel, use "make menuconfig" and enable the
+ option "B.A.T.M.A.N. debugging".
+ 
++Those additional  debug messages can be accessed  using a special
++file in debugfs
++
++# cat /sys/kernel/debug/batman_adv/bat0/log
++
+ The additional debug output is by default disabled. It can be en-
+-abled  either  at kernel modules load time or during run time. To
+-enable debug output at module load time, add the module parameter
+-debug=<value>.  <value> can take one of four values.
++abled  during run time. Following log_levels are defined:
+ 
+ 0 - All  debug  output  disabled
+ 1 - Enable messages related to routing / flooding / broadcasting
+ 2 - Enable route or hna added / changed / deleted
+ 3 - Enable all messages
+ 
+-e.g.
++The debug output can be changed at runtime  using  the  file
++/sys/class/net/bat0/mesh/log_level. e.g.
+ 
+-# modprobe batman-adv debug=2
++# echo 2 > /sys/class/net/bat0/mesh/log_level
+ 
+-will load the module and enable debug messages for when routes or
+-HNAs change.
 -
--* support latest kernels (2.6.21 - 2.6.35)
--* further code refactoring and cleaning for coding style
--* move from procfs based configuration to sysfs
--* reorganized sequence number handling
--* limit queue lengths for batman and broadcast packets
--* many bugs (endless loop and rogue packets on shutdown, wrong tcpdump output,
--  missing frees in error situations, sleeps in atomic contexts) squashed
+-The debug output can also be changed at runtime  using  the  file
+-/sys/module/batman-adv/parameters/debug. e.g.
 -
-- -- Fri, 18 Jun 2010 21:34:26 +0200
+-# echo 2 > /sys/module/batman-adv/parameters/debug
 -
--batman-adv 0.2.1:
+-enables debug messages for when routes or HNAs
 -
--* support latest kernels (2.6.20 - 2.6.33)
--* receive packets directly using skbs, remove old sockets and threads
--* fix various regressions in the vis server
--* don't disable interrupts while sending
--* replace internal logging mechanism with standard kernel logging
--* move vis formats into userland, one general format remains in the kernel
--* allow MAC address to be set, correctly initialize them
--* code refactoring and cleaning for coding style
--* many bugs (null pointers, locking, hash iterators) squashed
--
-- -- Sun, 21 Mar 2010 20:46:47 +0100
--
--batman-adv 0.2:
--
--* support latest kernels (2.6.20 - 2.6.31)
--* temporary routing loops / TTL code bug / ghost entries in originator table fixed
--* internal packet queue for packet aggregation & transmission retry (ARQ)
--  for payload broadcasts added
--* interface detection converted to event based handling to avoid timers
--* major linux coding style adjustments applied
--* all kernel version compatibility functions has been moved to compat.h
--* use random ethernet address generator from the kernel
--* /sys/module/batman_adv/version to export kernel module version
--* vis: secondary interface export for dot draw format + JSON output format added
--* many bugs (alignment issues, race conditions, deadlocks, etc) squashed
--
-- -- Sat, 07 Nov 2009 15:44:31 +0100
--
--batman-adv 0.1:
--
--* support latest kernels (2.6.20 - 2.6.28)
--* LOTS of cleanup: locking, stack usage, memory leaks
--* Change Ethertype from 0x0842 to 0x4305
--  unregistered at IEEE, if you want to sponsor an official Ethertype ($2500)
--  please contact us
--
-- -- Sun, 28 Dec 2008 00:44:31 +0100
--
--batman-adv 0.1-beta:
--
--* layer 2 meshing based on BATMAN TQ algorithm in kernelland
--* operates on any ethernet like interface
--* supports IPv4, IPv6, DHCP, etc
--* is controlled via /proc/net/batman-adv/
--* bridging via brctl is supported
--* interface watchdog (interfaces can be (de)activated dynamically)
--* offers integrated vis server which meshes/syncs with other vis servers in range
--
-- -- Mon, 05 May 2008 14:10:04 +0200
+-The  debug  output  is sent to the kernel logs. So try dmesg, lo-
+-gread, etc to see the debug messages.
++will enable debug messages for when routes or HNAs change.
+ 
+ 
+ BATCTL
+diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
+index 8513261..9b30eef 100644
+--- a/drivers/staging/batman-adv/main.h
++++ b/drivers/staging/batman-adv/main.h
+@@ -30,7 +30,7 @@
+ #define DRIVER_DESC   "B.A.T.M.A.N. advanced"
+ #define DRIVER_DEVICE "batman-adv"
+ 
+-#define SOURCE_VERSION "maint"
++#define SOURCE_VERSION "next"
+ 
+ 
+ /* B.A.T.M.A.N. parameters */
 -- 
 1.7.1
 
