@@ -1,11 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun,  5 Sep 2010 01:58:18 +0200
-Message-Id: <1283644718-653-2-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun,  5 Sep 2010 01:58:19 +0200
+Message-Id: <1283644718-653-3-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 01/21] Revert: "Staging: batman-adv: Adding
-	netfilter-bridge hooks"
+Subject: [B.A.T.M.A.N.] [PATCH 02/21] Staging: batman-adv: Remove CHANGELOG
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,87 +19,85 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.net
 
-This reverts commit 96d592ed599434d2d5f339a1d282871bc6377d2c.
+The changelog is only generated on standalone releases. Thus it has no
+real value for the in-kernel version of batman-adv.
 
-The netfilter hook seems to be misused and may leak skbs in situations
-when NF_HOOK returns NF_STOLEN. It may not filter everything as
-expected. Also the ethernet bridge tables are not yet capable to
-understand batman-adv packet correctly.
-
-It was only added for testing purposes and can be removed again.
-
-Reported-by: Vasiliy Kulikov <segooon@gmail.com>
+Reported-by: Abraham Arce <abraham.arce.moreno@gmail.com>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/hard-interface.c |   13 -------------
- drivers/staging/batman-adv/send.c           |    8 ++------
- 2 files changed, 2 insertions(+), 19 deletions(-)
+ drivers/staging/batman-adv/CHANGELOG |   63 ----------------------------------
+ 1 files changed, 0 insertions(+), 63 deletions(-)
+ delete mode 100644 drivers/staging/batman-adv/CHANGELOG
 
-diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
-index baa8b05..6e973a7 100644
---- a/drivers/staging/batman-adv/hard-interface.c
-+++ b/drivers/staging/batman-adv/hard-interface.c
-@@ -30,7 +30,6 @@
- #include "hash.h"
- 
- #include <linux/if_arp.h>
--#include <linux/netfilter_bridge.h>
- 
- #define MIN(x, y) ((x) < (y) ? (x) : (y))
- 
-@@ -431,11 +430,6 @@ out:
- 	return NOTIFY_DONE;
- }
- 
--static int batman_skb_recv_finish(struct sk_buff *skb)
--{
--	return NF_ACCEPT;
--}
+diff --git a/drivers/staging/batman-adv/CHANGELOG b/drivers/staging/batman-adv/CHANGELOG
+deleted file mode 100644
+index 86450b4..0000000
+--- a/drivers/staging/batman-adv/CHANGELOG
++++ /dev/null
+@@ -1,63 +0,0 @@
+-batman-adv 2010.0.0:
 -
- /* receive a packet with the batman ethertype coming on a hard
-  * interface */
- int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
-@@ -456,13 +450,6 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 	if (atomic_read(&module_state) != MODULE_ACTIVE)
- 		goto err_free;
- 
--	/* if netfilter/ebtables wants to block incoming batman
--	 * packets then give them a chance to do so here */
--	ret = NF_HOOK(PF_BRIDGE, NF_BR_LOCAL_IN, skb, dev, NULL,
--		      batman_skb_recv_finish);
--	if (ret != 1)
--		goto err_out;
+-* support latest kernels (2.6.21 - 2.6.35)
+-* further code refactoring and cleaning for coding style
+-* move from procfs based configuration to sysfs
+-* reorganized sequence number handling
+-* limit queue lengths for batman and broadcast packets
+-* many bugs (endless loop and rogue packets on shutdown, wrong tcpdump output,
+-  missing frees in error situations, sleeps in atomic contexts) squashed
 -
- 	/* packet should hold at least type and version */
- 	if (unlikely(skb_headlen(skb) < 2))
- 		goto err_free;
-diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
-index 055edee..da3c82e 100644
---- a/drivers/staging/batman-adv/send.c
-+++ b/drivers/staging/batman-adv/send.c
-@@ -29,7 +29,6 @@
- #include "vis.h"
- #include "aggregation.h"
- 
--#include <linux/netfilter_bridge.h>
- 
- static void send_outstanding_bcast_packet(struct work_struct *work);
- 
-@@ -92,12 +91,9 @@ int send_skb_packet(struct sk_buff *skb,
- 
- 	/* dev_queue_xmit() returns a negative result on error.	 However on
- 	 * congestion and traffic shaping, it drops and returns NET_XMIT_DROP
--	 * (which is > 0). This will not be treated as an error.
--	 * Also, if netfilter/ebtables wants to block outgoing batman
--	 * packets then giving them a chance to do so here */
-+	 * (which is > 0). This will not be treated as an error. */
- 
--	return NF_HOOK(PF_BRIDGE, NF_BR_LOCAL_OUT, skb, NULL, skb->dev,
--		       dev_queue_xmit);
-+	return dev_queue_xmit(skb);
- send_skb_err:
- 	kfree_skb(skb);
- 	return NET_XMIT_DROP;
+- -- Fri, 18 Jun 2010 21:34:26 +0200
+-
+-batman-adv 0.2.1:
+-
+-* support latest kernels (2.6.20 - 2.6.33)
+-* receive packets directly using skbs, remove old sockets and threads
+-* fix various regressions in the vis server
+-* don't disable interrupts while sending
+-* replace internal logging mechanism with standard kernel logging
+-* move vis formats into userland, one general format remains in the kernel
+-* allow MAC address to be set, correctly initialize them
+-* code refactoring and cleaning for coding style
+-* many bugs (null pointers, locking, hash iterators) squashed
+-
+- -- Sun, 21 Mar 2010 20:46:47 +0100
+-
+-batman-adv 0.2:
+-
+-* support latest kernels (2.6.20 - 2.6.31)
+-* temporary routing loops / TTL code bug / ghost entries in originator table fixed
+-* internal packet queue for packet aggregation & transmission retry (ARQ)
+-  for payload broadcasts added
+-* interface detection converted to event based handling to avoid timers
+-* major linux coding style adjustments applied
+-* all kernel version compatibility functions has been moved to compat.h
+-* use random ethernet address generator from the kernel
+-* /sys/module/batman_adv/version to export kernel module version
+-* vis: secondary interface export for dot draw format + JSON output format added
+-* many bugs (alignment issues, race conditions, deadlocks, etc) squashed
+-
+- -- Sat, 07 Nov 2009 15:44:31 +0100
+-
+-batman-adv 0.1:
+-
+-* support latest kernels (2.6.20 - 2.6.28)
+-* LOTS of cleanup: locking, stack usage, memory leaks
+-* Change Ethertype from 0x0842 to 0x4305
+-  unregistered at IEEE, if you want to sponsor an official Ethertype ($2500)
+-  please contact us
+-
+- -- Sun, 28 Dec 2008 00:44:31 +0100
+-
+-batman-adv 0.1-beta:
+-
+-* layer 2 meshing based on BATMAN TQ algorithm in kernelland
+-* operates on any ethernet like interface
+-* supports IPv4, IPv6, DHCP, etc
+-* is controlled via /proc/net/batman-adv/
+-* bridging via brctl is supported
+-* interface watchdog (interfaces can be (de)activated dynamically)
+-* offers integrated vis server which meshes/syncs with other vis servers in range
+-
+- -- Mon, 05 May 2008 14:10:04 +0200
 -- 
 1.7.1
 
