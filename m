@@ -1,13 +1,13 @@
-Return-Path: <greg@kroah.com>
-Date: Sun, 5 Sep 2010 00:33:00 -0700
-From: Greg KH <greg@kroah.com>
-Message-ID: <20100905073300.GA15860@kroah.com>
-References: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Mon,  6 Sep 2010 01:29:53 +0200
+Message-Id: <1283729393-13842-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1283644718-653-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.37 (1)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Always synchronize rcu's on
+	module shutdown
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,25 +19,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun, Sep 05, 2010 at 01:58:17AM +0200, Sven Eckelmann wrote:
-> Hi,
-> 
-> I hope that the fever-induced dreams are over now. Otherwise I will try to
-> write my mails also as little tales. ;)
-> 
-> Nevertheless, I would like to send some patches for 2.6.37. That is not
-> 100% true. We would also like to see the revert
-> 'Revert: "Staging: batman-adv: Adding netfilter-bridge hooks"' too in 2.6.36.
-> It fixes a bug introduced by the commit we revert here.
+During the module shutdown procedure in batman_exit(), a rcu callback is
+being scheduled (batman_exit -> hardif_remove_interfaces ->
+hardif_remove_interfae -> call_rcu). However, when the kernel unloads
+the module, the rcu callback might not have been executed yet, resulting
+in a "unable to handle kernel paging request" in __rcu_process_callback
+afterwards, causing the kernel to freeze.
+Therefore, we should always flush all rcu callback functions scheduled
+during the shutdown procedure.
 
-Ok, I've applied this to both trees to make everything work properly.
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+ main.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-> The rest is more or less the usual stuff, but more feature patches this time.
-> All patches we depend on are already part of 2.6.36-rc3.
+diff --git a/main.c b/main.c
+index 209a46b..e8acb46 100644
+--- a/main.c
++++ b/main.c
+@@ -73,6 +73,8 @@ static void __exit batman_exit(void)
+ 	flush_workqueue(bat_event_workqueue);
+ 	destroy_workqueue(bat_event_workqueue);
+ 	bat_event_workqueue = NULL;
++
++	synchronize_net();
+ }
+ 
+ int mesh_init(struct net_device *soft_iface)
+@@ -135,9 +137,6 @@ void mesh_free(struct net_device *soft_iface)
+ 	hna_local_free(bat_priv);
+ 	hna_global_free(bat_priv);
+ 
+-	synchronize_net();
+-
+-	synchronize_rcu();
+ 	atomic_set(&bat_priv->mesh_state, MESH_INACTIVE);
+ }
+ 
+-- 
+1.7.1
 
-All queued up now, thanks.
-
-greg k-h
