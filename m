@@ -1,17 +1,17 @@
-Return-Path: <paulmck@paulmck-laptop.linux.vnet.ibm.com>
-Date: Tue, 7 Sep 2010 11:10:00 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Message-ID: <20100907181000.GF2448@linux.vnet.ibm.com>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Tue, 7 Sep 2010 20:24:51 +0200
 References: <1283646353-17811-1-git-send-email-sven.eckelmann@gmx.de>
-	<20100907171917.GD2448@linux.vnet.ibm.com>
 	<201009071956.54499.sven.eckelmann@gmx.de>
+	<20100907181000.GF2448@linux.vnet.ibm.com>
+In-Reply-To: <20100907181000.GF2448@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201009071956.54499.sven.eckelmann@gmx.de>
+Content-Type: multipart/signed; boundary="nextPart3312287.PMbKDDce3f";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201009072024.53048.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv4] net: Add batman-adv meshing protocol
-Reply-To: paulmck@linux.vnet.ibm.com,
-	The list for a Better Approach To Mobile Ad-hoc Networking
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -22,79 +22,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
+To: paulmck@linux.vnet.ibm.com
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.net, davem@davemloft.net
 
-On Tue, Sep 07, 2010 at 07:56:53PM +0200, Sven Eckelmann wrote:
-> Thanks for your comment. I removed the parts you don't refer to (makes it lot 
-> easier to find the actual comment).
+--nextPart3312287.PMbKDDce3f
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I guess I can always refer to the original to see the related code.  ;-)
+Paul E. McKenney wrote:
+[..]
+> > > I have similar concerns with your other RCU read-side critical
+> > > sections.
+> >=20
+> > Looks to me like a valid point. I have to think a little bit how to sol=
+ve
+> > it correctly. Feel free to add more comments about other rcu cruelties
+> > in it.
+>=20
+> One approach would be to extend the RCU read-side critical section to
+> cover all uses of the RCU-protected pointer.  Another approach would be
+> to take a reference count (or something similar) before the pointer
+> leaves the RCU read-side critical section.
 
-> Paul E. McKenney wrote:
-> > > +
-> > > +#include <linux/if_arp.h>
-> > > +
-> > > +#define MIN(x, y) ((x) < (y) ? (x) : (y))
-> > > +
-> > > +struct batman_if *get_batman_if_by_netdev(struct net_device *net_dev)
-> > > +{
-> > > +     struct batman_if *batman_if;
-> > > +
-> > > +     rcu_read_lock();
-> > > +     list_for_each_entry_rcu(batman_if, &if_list, list) {
-> > > +             if (batman_if->net_dev == net_dev)
-> > > +                     goto out;
-> > > +     }
-> > > +
-> > > +     batman_if = NULL;
-> > > +
-> > > +out:
-> > > +     rcu_read_unlock();
-> > 
-> > Here we are leaking an RCU-protected pointer outside of the RCU read-side
-> > critical section.  Why is this safe?
-> 
-> First thing: Their is another rcu related problem with a call_rcu and the 
-> missing explicit (so not done implizit by another function) synchronize_rcu 
-> before the shutdown. This was fixed right after this patch was send for a 
-> review... bad timing, but ok.
+I am not the author of the rcu related functionality (it was one of the act=
+ual=20
+maintainers: Simon Wunderlich), but would guess that the rcu protected=20
+"critical section" will be extended.
 
-Fair enough!
+> Could you please take a look at Documentation/RCU/checklist.txt?
+>=20
+> Because I am not familiar with the BATMAN device, it is all too easy
+> for me to miss subtleties in the code.
 
-> > Here is the sequence of events that I am concerned about:
-> > 
-> > 1.      CPU 0 executes the code above, obtains a pointer, and is about
-> >         ready to return.
-> > 
-> > 2.      CPU 1 executes hardif_remove_interface(), and calls
-> >         hardif_disable_interface(), which calls
-> >         hardif_deactivate_interface(), which sets ->if_status to
-> >         IF_INACTIVE.  Then hardif_disable_interface() sets ->if_status
-> >         to IF_NOT_IN_USE.  Then hardif_remove_interface() frees
-> >         the interface via call_rcu().
-> > 
-> > 3.      Of course, call_rcu() waits for an RCU grace period to elapse,
-> >         but we are no longer in an RCU read-side critical section,
-> >         so there is nothing stopping the grace period from completing
-> >         before we are done with the batman_if pointer.
-> > 
-> > Or am I missing some other interlock that prevents
-> > hardif_remove_interface() from freeing this structure?
-> > 
-> > I have similar concerns with your other RCU read-side critical sections.
-> 
-> Looks to me like a valid point. I have to think a little bit how to solve it 
-> correctly. Feel free to add more comments about other rcu cruelties in it.
+Yes, will be done (will probably end in reading all the rcu documentation).=
+=20
+But it is really nice that you checked the code for your area of interest.
 
-One approach would be to extend the RCU read-side critical section to
-cover all uses of the RCU-protected pointer.  Another approach would be
-to take a reference count (or something similar) before the pointer
-leaves the RCU read-side critical section.
+thanks,
+	Sven
 
-Could you please take a look at Documentation/RCU/checklist.txt?
+--nextPart3312287.PMbKDDce3f
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Because I am not familiar with the BATMAN device, it is all too easy
-for me to miss subtleties in the code.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-							Thanx, Paul
+iQIcBAABCgAGBQJMhoN0AAoJEF2HCgfBJntGdYkQALvr+YpSccrJriQDihslXiIp
+bvw0WE9K05E1D8DjqT9H8vo/qptnGtIFhMQlUB1GsN1JVVmpxE5J6tvEbCZPVcyv
+uTYEkSkwlBDJe6sSEApqLSc8fkZR4dn882pgJTm32cRN3M843eFy80g3MJ39TnZh
+6UhHK5rh/WI/p6Q+GXX/LMYbrBqWgGMK4yssv3dDTHohRXOa8Y4nwlGBesmuJgbM
+BizlL04XY7iDUv4npHl/jV0xE292wP/QZet2HvszlQmWJDDtGAU9Yc8wP002Py+z
+pBvcJSH3K5UCX5Ab1V8R6htCMOY/Jp7OTKqOMFq5EEdRMqHdeiOTXH3+iPj5DzJG
+2NJuACyN1Gtk4chOnlFHSE2F21FflI9JDOmwmpP2VqnC1Pl7pKlzyhsuwgv+9ww4
+rYXPPkmWJZBLYeQvE79mxRp7GwE62X7ZNLRPirSdZtYoZyWIOUAqYYHLMJqe/PwM
+8wxT+obzrJf/6FIXs9gOVIeWY2oEloqTEJ2IPVAPawF1IBgzG5Abhn8xfB6+GrxI
+fEdlHzIr9XPsFef/xZ8vDTH/CoK9HNTxMUe9D/rB0XJxssf7pxWd1c58V9B36bB7
+8b+b7yECXAhCa79XWhiWI4081dp8eVy+FR1tywZHoozrBsPdZ8y6vpLtgUbNgj43
+0MycGskEVE/HjxnZ60ut
+=SZ2s
+-----END PGP SIGNATURE-----
+
+--nextPart3312287.PMbKDDce3f--
