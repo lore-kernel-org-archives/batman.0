@@ -1,12 +1,12 @@
 Return-Path: <jesse@nicira.com>
 MIME-Version: 1.0
-In-Reply-To: <201009082058.15533.sven.eckelmann@gmx.de>
+In-Reply-To: <201009082112.14877.lindner_marek@yahoo.de>
 References: <1283646353-17811-1-git-send-email-sven.eckelmann@gmx.de>
 	<201009081142.31610.sven.eckelmann@gmx.de>
 	<AANLkTimnBqkiO26wqEQOm+AgSJgQLtQmAe8R-kB6CqtZ@mail.gmail.com>
-	<201009082058.15533.sven.eckelmann@gmx.de>
-Date: Wed, 8 Sep 2010 12:54:23 -0700
-Message-ID: <AANLkTi=FVyLE6OHTd+_qDbzSLk6fY5j6wBOWkYA810Dj@mail.gmail.com>
+	<201009082112.14877.lindner_marek@yahoo.de>
+Date: Wed, 8 Sep 2010 13:07:42 -0700
+Message-ID: <AANLkTi=Ro-Vnkq75KPEdAsNEHvtF6JnmFV9i4uX2gb=H@mail.gmail.com>
 From: Jesse Gross <jesse@nicira.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
@@ -22,12 +22,12 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Andi Kleen <andi@firstfloor.org>, davem@davemloft.net, b.a.t.m.a.n@lists.open-mesh.net
+To: Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Andi Kleen <andi@firstfloor.org>, davem@davemloft.net
 
-On Wed, Sep 8, 2010 at 11:58 AM, Sven Eckelmann <sven.eckelmann@gmx.de> wro=
+On Wed, Sep 8, 2010 at 12:12 PM, Marek Lindner <lindner_marek@yahoo.de> wro=
 te:
-> Jesse Gross wrote:
+> On Wednesday 08 September 2010 20:22:42 Jesse Gross wrote:
 >> Potentially one way to do this is to build on top of Open vSwitch. =A0It
 >> contains a pretty generic flow-based kernel module for forwarding data
 >> packets and making simple modifications. =A0Control packets can be sent
@@ -35,69 +35,34 @@ te:
 >> the kernel for performance. =A0This would dramatically reduce the amount
 >> of code that needs to be in the kernel and may even help performance
 >> by simplifying the fast path.
->>
->> I don't know the details of your protocol well enough to know if this
->> is feasible but it seems like something you might want to look into.
->> Open vSwitch is currently in the process of finalizing its interfaces
->> to prepare for upstreaming.
 >
-> It sounds interesting. I haven't looked into it yet, but maybe you could
-> easily answer some questions:
-> =A0* Does it allow to generate multiple net_devices on the system?
+> Thanks for your input.
+>
+> I had a quick look at the website to get an idea but I had to notice that
+> there is quite a collection of daemons, kernel modules and apps. As you s=
+eem
+> involved in this project, could you point us to the collection of tools t=
+hat
+> you think we would need to achieve the following:
+>
+> * sending protocol traffic
+> * transmitting the routing logic
+> * encapsulation of the various packet types (see http://www.open-
+> mesh.org/browser/trunk/batman-adv/packet.h to get an idea)
+> * directly influence the traffic flow, i.e., ARQ for broadcasts, interfac=
+e
+> alternating, bonding, forward error correction, etc
+> * layer 2 fragmentation
 
-Yes.
-
-> =A0* Does it allow to attach multiple net_devices to a single openvswitch
-> =A0 device?
-
-Yes.
-
-> =A0* Does the attaching of a net_device to a openvswitch device prevent i=
-t to be
-> =A0 added to another openvswitch device?
-
-It can be set up in different ways, depending on the desired behavior.
-
-> =A0* Does it propagate the information about the incoming device to the
-> =A0 userspace in case of the not routed packets (everything which should
-
-I think the last part of your question got cut off.  However, packets
-do include metadata about the input device.  Userspace would then be
-able to use the normal Linux mechanisms to find out whatever it needs
-(or look at its own information).
-
-> =A0* Does it allow to append extra header information to the packet?
-> =A0* Does it allow fragmentation of packets (not real fragmentation, but =
-more
-> =A0 single split)?
-
-I'm assuming that both of these questions are for tunneling.  Open
-vSwitch currently supports a few different L2 over L3 tunneling
-mechanisms and has a tunnel library that makes adding additional
-protocols easy.  It probably can't do exactly what you need right now,
-but it should be fairly easy to extend.
-
-> =A0* Does it allow to define outgoing patterns (on which attached interfa=
-ce
-> =A0 goes the thing out again) on packet number or incoming device (the re=
-al
-> =A0 hardware device it was coming in)?
-
-I'm not sure what you mean by "packet number".  It does allow you to
-specify the output interface based on a number of factors, include the
-input device.
-
-> =A0* Is it possible to define rules like: "If this is a broadcast of an u=
-dp/ip
-> =A0 packet with target port 123 which may or may not have a vlan tag, but=
- is
-> =A0 coming directly from the virtual device and is not routed by us, then
-> =A0 change the mac address to following"?
-
-Yes.
-
-> =A0* Can it be backported to old kernels (~2.6.21 - yes, their are "custo=
-mers"
-> =A0 who need even older kernels due to the fantastic vendors out their)?
-
-The kernel module currently supports 2.6.18+.
+There are three basic components that you need running for Open
+vSwitch: the main daemon, ovs-vswitchd, a lightweight configuration
+manager, ovsdb-server, and the kernel module, openvswitch_mod.  You
+would then be able to write a userspace process to communicate with
+the daemons to handle the above.  As I mentioned, the encapsulation
+would likely require some small additions to the kernel module for
+your particular type of tunneling (unless you are flexible and can use
+one of the existing mechanisms).  However, that would be significantly
+less kernel code than this patch.  As a starting point, I would
+recommend playing around with Open vSwitch as a normal switch to get a
+feeling for its operation (see the INSTALL.Linux file in the source
+distribution for instructions).
