@@ -1,15 +1,15 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 8 Sep 2010 22:25:46 +0200
+Date: Wed, 8 Sep 2010 22:42:44 +0200
 References: <1283646353-17811-1-git-send-email-sven.eckelmann@gmx.de>
-	<201009082058.15533.sven.eckelmann@gmx.de>
 	<AANLkTi=FVyLE6OHTd+_qDbzSLk6fY5j6wBOWkYA810Dj@mail.gmail.com>
-In-Reply-To: <AANLkTi=FVyLE6OHTd+_qDbzSLk6fY5j6wBOWkYA810Dj@mail.gmail.com>
+	<201009082225.47498.sven.eckelmann@gmx.de>
+In-Reply-To: <201009082225.47498.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8620099.O4X0t5WkED";
+Content-Type: multipart/signed; boundary="nextPart5812658.xxDpOry2Fx";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201009082225.47498.sven.eckelmann@gmx.de>
+Message-Id: <201009082242.46020.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv4] net: Add batman-adv meshing protocol
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,110 +22,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jesse Gross <jesse@nicira.com>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Andi Kleen <andi@firstfloor.org>, davem@davemloft.net, b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, Jesse Gross <jesse@nicira.com>, Andi Kleen <andi@firstfloor.org>, davem@davemloft.net, b.a.t.m.a.n@lists.open-mesh.net
 
---nextPart8620099.O4X0t5WkED
+--nextPart5812658.xxDpOry2Fx
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Jesse Gross wrote:
-[...]
-> >  * Does it propagate the information about the incoming device to the
-> >   userspace in case of the not routed packets (everything which should
+Sven Eckelmann wrote:
+> Jesse Gross wrote:
+> [...]
+> >=20
+> > I'm not sure what you mean by "packet number".  It does allow you to
+> > specify the output interface based on a number of factors, include the
+> > input device.
 >=20
-> I think the last part of your question got cut off.
+> It would mean that for example 5 packets goes over device 1, the next 5
+> packets goes over
 
-Or I simple was distracted and didn't finish the sentence. :)
+I should stop writing mails as I get to easily distracted right now:
 
->  However, packets
-> do include metadata about the input device.  Userspace would then be
-> able to use the normal Linux mechanisms to find out whatever it needs
-> (or look at its own information).
->=20
-> >  * Does it allow to append extra header information to the packet?
-> >  * Does it allow fragmentation of packets (not real fragmentation, but
-> > more single split)?
->=20
-> I'm assuming that both of these questions are for tunneling.  Open
-> vSwitch currently supports a few different L2 over L3 tunneling
-> mechanisms and has a tunnel library that makes adding additional
-> protocols easy.  It probably can't do exactly what you need right now,
-> but it should be fairly easy to extend.
+=2E.. goes over the device 2, the next 5 packets goes over device 3 and the=
+ next=20
+5 packets goes over device 1, ...
 
-Hm, low overhead tunneling is one of the main parts, but if you think that =
-it=20
-is easy to extend then fine.
-
-> >  * Does it allow to define outgoing patterns (on which attached interfa=
-ce
-> >   goes the thing out again) on packet number or incoming device (the re=
-al
-> >   hardware device it was coming in)?
->=20
-> I'm not sure what you mean by "packet number".  It does allow you to
-> specify the output interface based on a number of factors, include the
-> input device.
-
-It would mean that for example 5 packets goes over device 1, the next 5=20
-packets goes over=20
-
-> > * directly influence the traffic flow, i.e., ARQ for broadcasts,
-
-Could you please comment on that one (taken from Mareks mail). Think about=
-=20
-that one:
- * A Broadcast packet must be send over wifi (adhoc)
- * This packet is probably dropped due to some interferences. So each node
-   must transmit the broadcast more than one time to be (with a good chance
-   successful). This is quite essential on l2 based adhoc wifi mesh networks
-   (as tests showed - but please ask Marek for the actual test setups)
-
-
-> There are three basic components that you need running for Open
-> vSwitch: the main daemon, ovs-vswitchd, a lightweight configuration
-> manager, ovsdb-server, and the kernel module, openvswitch_mod.  You
-> would then be able to write a userspace process to communicate with
-> the daemons to handle the above.  As I mentioned, the encapsulation
-> would likely require some small additions to the kernel module for
-> your particular type of tunneling (unless you are flexible and can use
-> one of the existing mechanisms).  However, that would be significantly
-> less kernel code than this patch.  As a starting point, I would
-> recommend playing around with Open vSwitch as a normal switch to get a
-> feeling for its operation (see the INSTALL.Linux file in the source
-> distribution for instructions).
-
-Without checking any facts: This sounds a little bit heavy - does it only=20
-sound heavy and in reality is extreme slim? The problem is that it must run=
- on=20
-those low end, "please don't run code on me, because I cannot crunch number=
-s=20
-and have no ram" machines like the FON2100 or WRT54GL.
+Maybe other things like "5 over device one, 10 over device 2, 2 over device=
+ 3"=20
+could be imagined.
 
 thanks,
 	Sven
 
---nextPart8620099.O4X0t5WkED
+--nextPart5812658.xxDpOry2Fx
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJMh/FKAAoJEF2HCgfBJntGTCAQAKjwKIbMv2u5QuO0HNKwD58o
-TMVufVBTTd2Q+KT+XkZt+wpyf1TMkfJBM6bs+8yjJhDxih+Pn0iu+YaGsmX4SzSc
-Y/PUpZlfipualFxGK2yGIH59arK5NJ44BFMLAhub65OpfkjvOLTg0RFhdj0AOXmS
-LAt/1tB+YWY0a2aboAsxgHvTsnb+7lTig4zGPhK2WonTXRCtY339siaIbh8XP6fd
-4yxCrO8aw4JzIEMvH50RJbOocpmxsYpOK7IDfVM08uTGnPfQEYv35nHGjafGO/Wk
-9dOQhPwZZhlwv1EQaPbP5X+/lhBdi0GgfvZgGtTiJ2ODue2S5EaI73eeJm1fyNqW
-mavSl8EUzvIkEsmHHq141/aoekTLqoKXV5RD0PfpSgVKBku0YzUcQ8i7ZtD7SmzM
-fNZgkxJV0fjDRJCwoBmkFEXcF5x/eh+inqTJUxz3uaQO3c5lk1sO6yeo6IgsKxIM
-9FYLSVoX3M1WfLzY4kLo1M9Fr0h9yo6AQNz7MlEE4BxrK2Rl/gCncEGFRFvfMbys
-Nlp2qVIXaHO9z/WwqftUbMmqPpVrDbeZfhnrl+arjasa43tN+MJ75poF+a1Ka9xd
-Jbp/21DAyASqjof8oB4PBY/m8Qzb9dy28xQMd7ASNFXZDHlI9zY74uuEyOd5tdrc
-Lg+ZGn4Q9qA4AYiFEGrH
-=pi7Z
+iQIcBAABCgAGBQJMh/VFAAoJEF2HCgfBJntGV14QAImriepZt1PZIoDhyci/apeD
+ZLM5RUZhsxfxVhbRZFAsh2kgG1Wjhudw/0BgKt02a+f3Q+Cw889DVWVOyMUStO70
+bOhDik5xhJ8b1EcAmPES7L3x45pcdZvWkKDB7nfhQTr5LoYIdQAjLomz6mzTz4nP
+PTECCH//v3VNue75huc/vzrf55TvnnKw7ZPaQmss82G6bUJeMxy/11iGZr+fuxQa
+Y6PQPdPVc44WtUB9wwwcMTPvYBad8hUTmeoAeD8LvFLSTk5HT6QoMgmqzl7V1uL5
+5LI8drXIXJ0XXMXfTdp5urDqBR+rfoebOcs1illa4sbUH5AsIUwMrNO3ZPwJu1Ib
+2I5aA5tjFjIBnK67mIrEpehPumeLpV6WBsuLLAVK24BatrWQcoHxh5hgUuvgufLX
+KZ+A7+GLjiA5ZDlvhBpqo1/sHGlBbdGRPlZ88yTIf8gkeJ5oD5B2IruNPEbOlL7M
+4rhgMvEUPkqyca9GWzb9wt51BXlorfdaXn6tXteYPzyKPTqVA+ZAaqGVB3e7NBf0
+ZeGwmTwf3KKMNo6mk0KOc88qrOpdtRYpxhE/wzjYSMhnIXW07V/Jj5rp6cjy938n
+I14vQPW+TYVBNK/d82NidaWRip9MiJgWE1Mon84yAn5XAL5bujUd16BvCdUxZcmA
+xSecf03f1xJchPmekoG8
+=qHND
 -----END PGP SIGNATURE-----
 
---nextPart8620099.O4X0t5WkED--
+--nextPart5812658.xxDpOry2Fx--
