@@ -1,15 +1,15 @@
-Return-Path: <jesse@nicira.com>
-MIME-Version: 1.0
-In-Reply-To: <201009082112.14877.lindner_marek@yahoo.de>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Wed, 8 Sep 2010 22:25:46 +0200
 References: <1283646353-17811-1-git-send-email-sven.eckelmann@gmx.de>
-	<201009081142.31610.sven.eckelmann@gmx.de>
-	<AANLkTimnBqkiO26wqEQOm+AgSJgQLtQmAe8R-kB6CqtZ@mail.gmail.com>
-	<201009082112.14877.lindner_marek@yahoo.de>
-Date: Wed, 8 Sep 2010 13:07:42 -0700
-Message-ID: <AANLkTi=Ro-Vnkq75KPEdAsNEHvtF6JnmFV9i4uX2gb=H@mail.gmail.com>
-From: Jesse Gross <jesse@nicira.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+	<201009082058.15533.sven.eckelmann@gmx.de>
+	<AANLkTi=FVyLE6OHTd+_qDbzSLk6fY5j6wBOWkYA810Dj@mail.gmail.com>
+In-Reply-To: <AANLkTi=FVyLE6OHTd+_qDbzSLk6fY5j6wBOWkYA810Dj@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart8620099.O4X0t5WkED";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201009082225.47498.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv4] net: Add batman-adv meshing protocol
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,47 +22,110 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Andi Kleen <andi@firstfloor.org>, davem@davemloft.net
+To: Jesse Gross <jesse@nicira.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Andi Kleen <andi@firstfloor.org>, davem@davemloft.net, b.a.t.m.a.n@lists.open-mesh.net
 
-On Wed, Sep 8, 2010 at 12:12 PM, Marek Lindner <lindner_marek@yahoo.de> wro=
-te:
-> On Wednesday 08 September 2010 20:22:42 Jesse Gross wrote:
->> Potentially one way to do this is to build on top of Open vSwitch. =A0It
->> contains a pretty generic flow-based kernel module for forwarding data
->> packets and making simple modifications. =A0Control packets can be sent
->> to userspace to handle the routing logic, while data packets remain in
->> the kernel for performance. =A0This would dramatically reduce the amount
->> of code that needs to be in the kernel and may even help performance
->> by simplifying the fast path.
->
-> Thanks for your input.
->
-> I had a quick look at the website to get an idea but I had to notice that
-> there is quite a collection of daemons, kernel modules and apps. As you s=
-eem
-> involved in this project, could you point us to the collection of tools t=
-hat
-> you think we would need to achieve the following:
->
-> * sending protocol traffic
-> * transmitting the routing logic
-> * encapsulation of the various packet types (see http://www.open-
-> mesh.org/browser/trunk/batman-adv/packet.h to get an idea)
-> * directly influence the traffic flow, i.e., ARQ for broadcasts, interfac=
-e
-> alternating, bonding, forward error correction, etc
-> * layer 2 fragmentation
+--nextPart8620099.O4X0t5WkED
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-There are three basic components that you need running for Open
-vSwitch: the main daemon, ovs-vswitchd, a lightweight configuration
-manager, ovsdb-server, and the kernel module, openvswitch_mod.  You
-would then be able to write a userspace process to communicate with
-the daemons to handle the above.  As I mentioned, the encapsulation
-would likely require some small additions to the kernel module for
-your particular type of tunneling (unless you are flexible and can use
-one of the existing mechanisms).  However, that would be significantly
-less kernel code than this patch.  As a starting point, I would
-recommend playing around with Open vSwitch as a normal switch to get a
-feeling for its operation (see the INSTALL.Linux file in the source
-distribution for instructions).
+Jesse Gross wrote:
+[...]
+> >  * Does it propagate the information about the incoming device to the
+> >   userspace in case of the not routed packets (everything which should
+>=20
+> I think the last part of your question got cut off.
+
+Or I simple was distracted and didn't finish the sentence. :)
+
+>  However, packets
+> do include metadata about the input device.  Userspace would then be
+> able to use the normal Linux mechanisms to find out whatever it needs
+> (or look at its own information).
+>=20
+> >  * Does it allow to append extra header information to the packet?
+> >  * Does it allow fragmentation of packets (not real fragmentation, but
+> > more single split)?
+>=20
+> I'm assuming that both of these questions are for tunneling.  Open
+> vSwitch currently supports a few different L2 over L3 tunneling
+> mechanisms and has a tunnel library that makes adding additional
+> protocols easy.  It probably can't do exactly what you need right now,
+> but it should be fairly easy to extend.
+
+Hm, low overhead tunneling is one of the main parts, but if you think that =
+it=20
+is easy to extend then fine.
+
+> >  * Does it allow to define outgoing patterns (on which attached interfa=
+ce
+> >   goes the thing out again) on packet number or incoming device (the re=
+al
+> >   hardware device it was coming in)?
+>=20
+> I'm not sure what you mean by "packet number".  It does allow you to
+> specify the output interface based on a number of factors, include the
+> input device.
+
+It would mean that for example 5 packets goes over device 1, the next 5=20
+packets goes over=20
+
+> > * directly influence the traffic flow, i.e., ARQ for broadcasts,
+
+Could you please comment on that one (taken from Mareks mail). Think about=
+=20
+that one:
+ * A Broadcast packet must be send over wifi (adhoc)
+ * This packet is probably dropped due to some interferences. So each node
+   must transmit the broadcast more than one time to be (with a good chance
+   successful). This is quite essential on l2 based adhoc wifi mesh networks
+   (as tests showed - but please ask Marek for the actual test setups)
+
+
+> There are three basic components that you need running for Open
+> vSwitch: the main daemon, ovs-vswitchd, a lightweight configuration
+> manager, ovsdb-server, and the kernel module, openvswitch_mod.  You
+> would then be able to write a userspace process to communicate with
+> the daemons to handle the above.  As I mentioned, the encapsulation
+> would likely require some small additions to the kernel module for
+> your particular type of tunneling (unless you are flexible and can use
+> one of the existing mechanisms).  However, that would be significantly
+> less kernel code than this patch.  As a starting point, I would
+> recommend playing around with Open vSwitch as a normal switch to get a
+> feeling for its operation (see the INSTALL.Linux file in the source
+> distribution for instructions).
+
+Without checking any facts: This sounds a little bit heavy - does it only=20
+sound heavy and in reality is extreme slim? The problem is that it must run=
+ on=20
+those low end, "please don't run code on me, because I cannot crunch number=
+s=20
+and have no ram" machines like the FON2100 or WRT54GL.
+
+thanks,
+	Sven
+
+--nextPart8620099.O4X0t5WkED
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMh/FKAAoJEF2HCgfBJntGTCAQAKjwKIbMv2u5QuO0HNKwD58o
+TMVufVBTTd2Q+KT+XkZt+wpyf1TMkfJBM6bs+8yjJhDxih+Pn0iu+YaGsmX4SzSc
+Y/PUpZlfipualFxGK2yGIH59arK5NJ44BFMLAhub65OpfkjvOLTg0RFhdj0AOXmS
+LAt/1tB+YWY0a2aboAsxgHvTsnb+7lTig4zGPhK2WonTXRCtY339siaIbh8XP6fd
+4yxCrO8aw4JzIEMvH50RJbOocpmxsYpOK7IDfVM08uTGnPfQEYv35nHGjafGO/Wk
+9dOQhPwZZhlwv1EQaPbP5X+/lhBdi0GgfvZgGtTiJ2ODue2S5EaI73eeJm1fyNqW
+mavSl8EUzvIkEsmHHq141/aoekTLqoKXV5RD0PfpSgVKBku0YzUcQ8i7ZtD7SmzM
+fNZgkxJV0fjDRJCwoBmkFEXcF5x/eh+inqTJUxz3uaQO3c5lk1sO6yeo6IgsKxIM
+9FYLSVoX3M1WfLzY4kLo1M9Fr0h9yo6AQNz7MlEE4BxrK2Rl/gCncEGFRFvfMbys
+Nlp2qVIXaHO9z/WwqftUbMmqPpVrDbeZfhnrl+arjasa43tN+MJ75poF+a1Ka9xd
+Jbp/21DAyASqjof8oB4PBY/m8Qzb9dy28xQMd7ASNFXZDHlI9zY74uuEyOd5tdrc
+Lg+ZGn4Q9qA4AYiFEGrH
+=pi7Z
+-----END PGP SIGNATURE-----
+
+--nextPart8620099.O4X0t5WkED--
