@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun, 12 Sep 2010 23:21:55 +0200
-Message-Id: <1284326516-30540-5-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun, 12 Sep 2010 23:21:56 +0200
+Message-Id: <1284326516-30540-6-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284326516-30540-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284326516-30540-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/5] Staging: batman-adv: removing redundant
-	assignment of skb->dev
+Subject: [B.A.T.M.A.N.] [PATCH 5/5] Staging: batman-adv: check kmalloc()
+	return value
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,39 +18,86 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.net
+Cc: Vasiliy Kulikov <segooon@gmail.com>, b.a.t.m.a.n@lists.open-mesh.net, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+From: Vasiliy Kulikov <segooon@gmail.com>
 
+kmalloc() may fail, if so drop current packet.
+
+Signed-off-by: Vasiliy Kulikov <segooon@gmail.com>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+[sven.eckelmann@gmx.de: Removed new introduced deadlock]
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/soft-interface.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+ drivers/staging/batman-adv/routing.c |    8 ++++++--
+ drivers/staging/batman-adv/unicast.c |    8 ++++++--
+ drivers/staging/batman-adv/unicast.h |    2 +-
+ 3 files changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
-index 8d14343..3904db9 100644
---- a/drivers/staging/batman-adv/soft-interface.c
-+++ b/drivers/staging/batman-adv/soft-interface.c
-@@ -201,7 +201,7 @@ void interface_rx(struct net_device *soft_iface,
- 	skb_pull_rcsum(skb, hdr_size);
- /*	skb_set_mac_header(skb, -sizeof(struct ethhdr));*/
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index e12fd99..2cf8cf9 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -1232,8 +1232,12 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
  
--	skb->dev = soft_iface;
-+	/* skb->dev & skb->pkt_type are set here */
- 	skb->protocol = eth_type_trans(skb, soft_iface);
+ 		orig_node->last_frag_packet = jiffies;
  
- 	/* should not be neccesary anymore as we use skb_pull_rcsum()
-@@ -210,9 +210,6 @@ void interface_rx(struct net_device *soft_iface,
+-		if (list_empty(&orig_node->frag_list))
+-			create_frag_buffer(&orig_node->frag_list);
++		if (list_empty(&orig_node->frag_list) &&
++			create_frag_buffer(&orig_node->frag_list)) {
++			spin_unlock_irqrestore(&bat_priv->orig_hash_lock,
++					       flags);
++			return NET_RX_DROP;
++		}
  
- /*	skb->ip_summed = CHECKSUM_UNNECESSARY;*/
+ 		tmp_frag_entry =
+ 			search_frag_packet(&orig_node->frag_list,
+diff --git a/drivers/staging/batman-adv/unicast.c b/drivers/staging/batman-adv/unicast.c
+index f951abc..0dac50d 100644
+--- a/drivers/staging/batman-adv/unicast.c
++++ b/drivers/staging/batman-adv/unicast.c
+@@ -78,7 +78,7 @@ void create_frag_entry(struct list_head *head, struct sk_buff *skb)
+ 	return;
+ }
  
--	/* TODO: set skb->pkt_type to PACKET_BROADCAST, PACKET_MULTICAST,
--	 * PACKET_OTHERHOST or PACKET_HOST */
--
- 	priv->stats.rx_packets++;
- 	priv->stats.rx_bytes += skb->len + sizeof(struct ethhdr);
+-void create_frag_buffer(struct list_head *head)
++int create_frag_buffer(struct list_head *head)
+ {
+ 	int i;
+ 	struct frag_packet_list_entry *tfp;
+@@ -86,13 +86,17 @@ void create_frag_buffer(struct list_head *head)
+ 	for (i = 0; i < FRAG_BUFFER_SIZE; i++) {
+ 		tfp = kmalloc(sizeof(struct frag_packet_list_entry),
+ 			GFP_ATOMIC);
++		if (!tfp) {
++			frag_list_free(head);
++			return -ENOMEM;
++		}
+ 		tfp->skb = NULL;
+ 		tfp->seqno = 0;
+ 		INIT_LIST_HEAD(&tfp->list);
+ 		list_add(&tfp->list, head);
+ 	}
  
+-	return;
++	return 0;
+ }
+ 
+ struct frag_packet_list_entry *search_frag_packet(struct list_head *head,
+diff --git a/drivers/staging/batman-adv/unicast.h b/drivers/staging/batman-adv/unicast.h
+index 1d5cbeb..7973697 100644
+--- a/drivers/staging/batman-adv/unicast.h
++++ b/drivers/staging/batman-adv/unicast.h
+@@ -30,7 +30,7 @@ struct sk_buff *merge_frag_packet(struct list_head *head,
+ 	struct sk_buff *skb);
+ 
+ void create_frag_entry(struct list_head *head, struct sk_buff *skb);
+-void create_frag_buffer(struct list_head *head);
++int create_frag_buffer(struct list_head *head);
+ struct frag_packet_list_entry *search_frag_packet(struct list_head *head,
+ 	struct unicast_frag_packet *up);
+ void frag_list_free(struct list_head *head);
 -- 
 1.7.2.3
 
