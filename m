@@ -1,15 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun, 12 Sep 2010 22:43:59 +0200
-References: <1284317791-4744-1-git-send-email-segooon@gmail.com>
-In-Reply-To: <1284317791-4744-1-git-send-email-segooon@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1580855.oHMeUH8upn";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201009122244.00861.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] staging: batman-adv: check kmalloc()
-	return value
+Date: Sun, 12 Sep 2010 23:00:42 +0200
+Message-Id: <1284325242-29661-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <201009122244.00861.sven.eckelmann@gmx.de>
+References: <201009122244.00861.sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Unlock on failure during
+	fragmentation rx
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,73 +18,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: devel@driverdev.osuosl.org, Vasiliy Kulikov <segooon@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart1580855.oHMeUH8upn
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+When we detect a failure in create_frag_buffer we must drop the packet
+and unlock the orig_has which was locked before.
+69d187ffb8e22024a87d8457e5dcb10e297108e9 forgot that and created a
+potential deadlock of the complete system.
 
-Vasiliy Kulikov wrote:
-> kmalloc() may fail, if so drop current packet.
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ routing.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-Thanks for your patch. The indention is right, but it adds just another bug=
-=20
-(locking related).
+diff --git a/routing.c b/routing.c
+index 23a12cd..a07e0e0 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1233,9 +1233,11 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 
+ 		orig_node->last_frag_packet = jiffies;
+ 
+-		if (list_empty(&orig_node->frag_list)) {
+-			if (create_frag_buffer(&orig_node->frag_list))
+-				return NET_RX_DROP;
++		if (list_empty(&orig_node->frag_list) &&
++			create_frag_buffer(&orig_node->frag_list)) {
++			spin_unlock_irqrestore(&bat_priv->orig_hash_lock,
++					       flags);
++			return NET_RX_DROP;
+ 		}
+ 
+ 		tmp_frag_entry =
+-- 
+1.7.2.3
 
-> Signed-off-by: Vasiliy Kulikov <segooon@gmail.com>
-> ---
->  Compile tested.
->=20
->  drivers/staging/batman-adv/routing.c |    6 ++++--
->  drivers/staging/batman-adv/unicast.c |    8 ++++++--
->  drivers/staging/batman-adv/unicast.h |    2 +-
->  3 files changed, 11 insertions(+), 5 deletions(-)
->=20
-> diff --git a/drivers/staging/batman-adv/routing.c
-> b/drivers/staging/batman-adv/routing.c index e12fd99..e545260 100644
-> --- a/drivers/staging/batman-adv/routing.c
-> +++ b/drivers/staging/batman-adv/routing.c
-> @@ -1232,8 +1232,10 @@ int recv_ucast_frag_packet(struct sk_buff *skb,
-> struct batman_if *recv_if)
->=20
->  		orig_node->last_frag_packet =3D jiffies;
->=20
-> -		if (list_empty(&orig_node->frag_list))
-> -			create_frag_buffer(&orig_node->frag_list);
-> +		if (list_empty(&orig_node->frag_list)) {
-> +			if (create_frag_buffer(&orig_node->frag_list))
-> +				return NET_RX_DROP;
-> +		}
->=20
->  		tmp_frag_entry =3D
->  			search_frag_packet(&orig_node->frag_list,
-
-You must spin_unlock_irqrestore before you return from that function.
-
-Best regards,
-	Sven
-
---nextPart1580855.oHMeUH8upn
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMjTuPAAoJEF2HCgfBJntGO/sP/3Z4RUEiVlcraL7QtwzyTEUr
-ixxT4ZvoX9qkVvyJQA7xpU5eKHNI98GjbrJ/cbkmxIU0OT9kGwRTlZDVadgKpA9c
-jfdyz908wAZrfevLnjybMtnfHnYL0IWUWLETgSS1GiPq5zsZkb0lp0FSPktYE2nt
-/vMZURL0oRTkpIOqTdPjqwBKWy1nzEbpVdbzPpSBI+sTxKu2DiO6KTpqzEVw8b1+
-grjGjoCIcft1B5XQ6FRdwKvddxvDGuoKMox/JqkDTqvpL9Iza6daCXf1nTUTNwoD
-vCbRkI49VKPjeYpAu+6qxtqBu5Hlv1kmeWgcc6Ml1RPd0F9DgeG9cFzp0DgYNP9W
-O8KpoiXzjxT2WO5TVtJUThU5bgC6D36/z6z6omujkoUUgDiCxDlUvOgTs5VRhs5D
-NQsTW0vxP3S52+oFYZJNcpj7csmpHWIqDTQ6BQZTDls9m5jS47IYoZzyeepRsUDb
-pk7em5A20C9GDKhO8dOlNShU2ws2t7ylsU2OqO93mJwcY8TH3Tzf3D1otxCElp+J
-An33yvFaGdHmt/zS7q7hMYXVApT6N/8KWXZLYqxCC1NOz19yrfKTSp5EP13MuRPm
-o/lrEL9VZ1QKXBZyHQ8dJjw/BusVHB1lJ/pj4vtXIerVBDPnqvMq07ZaWtuXz2Zh
-Nx0Q/+uWqk6hSGTrufRO
-=4L/4
------END PGP SIGNATURE-----
-
---nextPart1580855.oHMeUH8upn--
