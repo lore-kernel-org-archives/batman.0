@@ -1,16 +1,17 @@
-Return-Path: <an.langer@gmx.de>
-Date: Sun, 12 Sep 2010 03:14:48 +0200
-From: Andreas Langer <an.langer@gmx.de>
-Message-ID: <20100912031448.6f7b11f7@rechenknecht>
-In-Reply-To: <201009111126.38504.sven.eckelmann@gmx.de>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sun, 12 Sep 2010 22:11:06 +0200
 References: <20100910184706.151a6728@rechenknecht>
-	<1284137300-26277-1-git-send-email-an.langer@gmx.de>
 	<201009111126.38504.sven.eckelmann@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<201009120156.20364.lindner_marek@yahoo.de>
+In-Reply-To: <201009120156.20364.lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1477918.QQipjLk2yt";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
+Message-Id: <201009122211.07839.sven.eckelmann@gmx.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: layer2 unicast packet
- fragmentation enhancements
+	fragmentation enhancements
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,92 +24,103 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Am Sat, 11 Sep 2010 11:26:37 +0200
-schrieb Sven Eckelmann <sven.eckelmann@gmx.de>:
+--nextPart1477918.QQipjLk2yt
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> Andreas Langer wrote:
-> > things that changed since the last patch:
-> > - add support to fragment packets on every node,
-> >   if outgoing iface mtu is smaller as the packet
-> > - add support to defragment packets on every node,
-> >   if outgoing iface mtu is >= original size
-> > - rename some functions
-> 
-> Is it possible to split the patch in those parts? It would make it easier to 
-> read it and understand the patches later.
+Marek Lindner wrote:
+> On Saturday 11 September 2010 11:26:37 Sven Eckelmann wrote:
+> > Is it possible to split the patch in those parts? It would make it easi=
+er
+> > to read it and understand the patches later.
+>=20
+> I'm not sure that will do much good. He managed to reorganize the code and
+> thereby remove redundancies. The second patch would probably be no bigger
+> than 3-5 lines of code.
 
-I think it makes no sense, it belongs together. But I can put the renaming in an
-extra patch. Would that be ok ?
+That would not be bad. But refactoring and adding two new features isn't=20
+something I personally like. Guessing what part could belong to which other=
+=20
+part just makes it hard to find the real problems. Take for example the=20
+missing failure checks in the patch.
 
-> 
-> I haven't checked the patch in detail, but scrolled over it a little bit.
-> 
-> Andreas Langer wrote:
-> > This patch improves the fragmentation by also fragmenting
-> > packets that came in via an interface which does not need
-> > fragmentation. In addition it reassembles fragmented packets
-> > as soon as the interface MTU allows it.
-> > 
-> > Signed-off-by: Andreas Langer <an.langer at gmx.de>
-> > ---
-> >  batman-adv/routing.c |   64 +++++++++---------------
-> >  batman-adv/unicast.c |  130
-> > +++++++++++++++++++++++++++++++++----------------- batman-adv/unicast.h | 
-> >  13 ++----
-> >  3 files changed, 114 insertions(+), 93 deletions(-)
-> > 
-> > diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-> > index a2c64a4..e975452 100644
-> > --- a/batman-adv/routing.c
-> > +++ b/batman-adv/routing.c
-> > @@ -1142,15 +1142,11 @@ static int route_unicast_packet(struct sk_buff
-> > *skb, unsigned long flags;
-> >  	struct unicast_packet *unicast_packet;
-> >  	struct ethhdr *ethhdr = (struct ethhdr *)skb_mac_header(skb);
-> > +	int hdr_lenght = sizeof(struct unicast_packet),
-> > +	    uni_diff = sizeof(struct unicast_frag_packet) - hdr_lenght;
-> > 
-> 
-> Could you change lenght to length?
+Something I had in mind would be  a patch which adds frag_send_skb and star=
+ts=20
+to use it, one that removes the duplicated code, another one that does the=
+=20
+cleanup/renaming stuff, the next adds the fragmentation on routing and fina=
+lly=20
+there is the defragmentation (probably skipped some steps) - you could much=
+=20
+more easily check the actual change in its own context. That would for exam=
+ple=20
+remove the question why those lines were removed - the patch itself would=20
+answer that question using its commit message which states: "hey those line=
+s=20
+aren't needed because we already check that fact here and there and don't n=
+eed=20
+that information before".
 
-yes i can.
+And if a patch real adds a cool feature only by changing some lines and=20
+without rewriting the whole code then we must have done something right.
 
+If you think different - ok, leave it that way.
 
-> 
-> >  	unicast_packet = (struct unicast_packet *)skb->data;
-> > 
-> > -	/* packet for me */
-> > -	if (is_my_mac(unicast_packet->dest)) {
-> > -		interface_rx(recv_if->soft_iface, skb, hdr_size);
-> > -		return NET_RX_SUCCESS;
-> > -	}
-> > -
-> 
-> There are different parts of the patch which makes ma a little bit curious - 
-> for example: why it is possible to drop that check entirely? Could that be an 
-> extra patch with an explanation why that can be dropped? Is it only valid in 
-> context of the new fragmentation handling? .
+> > > -	/* packet for me */
+> > > -	if (is_my_mac(unicast_packet->dest)) {
+> > > -		interface_rx(recv_if->soft_iface, skb, hdr_size);
+> > > -		return NET_RX_SUCCESS;
+> > > -	}
+> > > -
+> >=20
+> > There are different parts of the patch which makes ma a little bit
+> > curious - for example: why it is possible to drop that check entirely?
+> > Could that be an extra patch with an explanation why that can be
+> > dropped? Is it only valid in context of the new fragmentation handling?
+> > ...
+>=20
+> I ran into the same question as it looks a bit odd here but if you apply
+> the patch it all looks good. As I said: it seems he managed to purge quite
+> a bit of redundancy (fragmented and non-fragmented packets are almost
+> identical after all).
+=20
+Andreas Langer wrote:
+> what are the other parts which makes you curious ?
 
-No it's not in context, recv_unicast_packet and recv_ucast_frag_packet check this,
-so it makes no sense to call it again in route_unicast_packet. I'm not sure if it 
-came from the first fragmentation patch, i put it extra.
+That a failure in frag_reassemble_skb is a good successfully rx, that=20
+frag_create_buffer is magically always successful even when the called=20
+functions can fail, that you use skb_pull and directly afterward access the=
+=20
+data pointer, that no one frees the skb when frag_reassemble_skb cannot fin=
+d a=20
+matching originator, ...
 
-what are the other parts which makes you curious ?
+Best regards,
+	Sven
 
-> 
-> [...]
-> > -static int unicast_send_frag_skb(struct sk_buff *skb, struct bat_priv
-> > *bat_priv, -			  struct batman_if *batman_if, uint8_t dstaddr[],
-> > -			  struct orig_node *orig_node)
-> > +/* if matching fragment found return reassembled skb
-> > +   otherwise buffer the fragment */
-> 
-> Could you change the first three spaces to a " * ". Otherwise checkpatch.pl is 
-> unhappy again.
-> 
-> thanks,
-> 	Sven
+--nextPart1477918.QQipjLk2yt
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-thanks, andreas
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iQIcBAABCgAGBQJMjTPbAAoJEF2HCgfBJntG1mEQAI6fv5rWtRVfQS5REHA7gqaL
+u/8pYmO6iqE1MK0d6bSyKsBeLVgZ7kIVv9uwO1x4Fr751QF55VqICTvLP+6Ov4zU
+ylLSW/vsscX5ShmdcqUVMWGRTrLv2vu/aJcQNpUWGWouaG/ihzfi99UBM56K4kT8
+/eLIqjz7nI1eIYp/HziRLLLRC/38SJ3fnWOjyh4rFTL57BXbOvs8fYEgrF13kpN4
+gLSkCm72g8/vcbm9+KootdcjGN1TPpDyzUFn7PUnBjyD7sqFEXqi/tB2qBlGZDPa
+jhvGW9KigzOlqgvQlpsnAeuHg+tCuEttrfIOqGu8KGpJ+GDgUBBgbdRjMUjxmQHQ
+NXPMxTw4rYzOqhjgSsfPt/5ltoS0iSajP4EcIs7v34o84T+HlzIv5+WlO3xVHLXT
+rAjMbItqw7BD+cjqCmljCUzzdSENq0m76Pjz4CBlW2LqpXWSTf/KWveuPmOebw4w
+pD4/w4vdpDsa9PdxEF2VCWi3uchdprGxtFFuaXhYIz2saq9gGIJk3Cw5Kk8AEp7B
+8yDgx7SzdSXB4vB5xKosXUR+y/XHIgLjGUy2utc8itpak6PzRdweR4CuSxS3L+Kk
+deoZqlk0QNAT8DHo4ETeR+oxlPnUpGtsgjBqg993nDeEK/vM9uULIoC752xxVjD/
+J8Es1QFJosnxYWPNXCst
+=JWQZ
+-----END PGP SIGNATURE-----
+
+--nextPart1477918.QQipjLk2yt--
