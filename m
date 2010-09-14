@@ -1,17 +1,18 @@
-Return-Path: <an.langer@gmx.de>
-Date: Mon, 13 Sep 2010 17:45:31 +0200
-From: Andreas Langer <an.langer@gmx.de>
-Message-ID: <20100913174531.21580041@rechenknecht>
-In-Reply-To: <201009122211.07839.sven.eckelmann@gmx.de>
-References: <20100910184706.151a6728@rechenknecht>
-	<201009111126.38504.sven.eckelmann@gmx.de>
-	<201009120156.20364.lindner_marek@yahoo.de>
-	<201009122211.07839.sven.eckelmann@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: layer2 unicast packet
- fragmentation enhancements
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Tue, 14 Sep 2010 21:21:02 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20100914192102.GA30906@pandem0nium>
+References: <1283646353-17811-1-git-send-email-sven.eckelmann@gmx.de>
+	<201009082058.15533.sven.eckelmann@gmx.de>
+	<AANLkTi=FVyLE6OHTd+_qDbzSLk6fY5j6wBOWkYA810Dj@mail.gmail.com>
+	<201009082225.47498.sven.eckelmann@gmx.de>
+	<AANLkTim-jswWzG=H0AQP5Z3byxoR1uXoV-ZhdaZ7+Sqd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="k1lZvvs/B4yU6o8G"
+Content-Disposition: inline
+In-Reply-To: <AANLkTim-jswWzG=H0AQP5Z3byxoR1uXoV-ZhdaZ7+Sqd@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4] net: Add batman-adv meshing protocol
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,71 +24,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Jesse Gross <jesse@nicira.com>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Andi Kleen <andi@firstfloor.org>, davem@davemloft.net, Sven Eckelmann <sven.eckelmann@gmx.de>
 
-Am Sun, 12 Sep 2010 22:11:06 +0200
-schrieb Sven Eckelmann <sven.eckelmann@gmx.de>:
 
-> Marek Lindner wrote:
-> > On Saturday 11 September 2010 11:26:37 Sven Eckelmann wrote:
-> > > Is it possible to split the patch in those parts? It would make it easier
-> > > to read it and understand the patches later.
-> > 
-> > I'm not sure that will do much good. He managed to reorganize the code and
-> > thereby remove redundancies. The second patch would probably be no bigger
-> > than 3-5 lines of code.
-> 
-> That would not be bad. But refactoring and adding two new features isn't 
-> something I personally like. Guessing what part could belong to which other 
-> part just makes it hard to find the real problems. Take for example the 
-> missing failure checks in the patch.
-> 
-> Something I had in mind would be  a patch which adds frag_send_skb and starts 
-> to use it, one that removes the duplicated code, another one that does the 
-> cleanup/renaming stuff, the next adds the fragmentation on routing and finally 
-> there is the defragmentation (probably skipped some steps) - you could much 
-> more easily check the actual change in its own context. That would for example 
-> remove the question why those lines were removed - the patch itself would 
-> answer that question using its commit message which states: "hey those lines 
-> aren't needed because we already check that fact here and there and don't need 
-> that information before".
-> 
-> And if a patch real adds a cool feature only by changing some lines and 
-> without rewriting the whole code then we must have done something right.
-> 
-> If you think different - ok, leave it that way.
+--k1lZvvs/B4yU6o8G
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No it's ok, you are right. I will split the patch.
-> 
-> > > > -	/* packet for me */
-> > > > -	if (is_my_mac(unicast_packet->dest)) {
-> > > > -		interface_rx(recv_if->soft_iface, skb, hdr_size);
-> > > > -		return NET_RX_SUCCESS;
-> > > > -	}
-> > > > -
-> > > 
-> > > There are different parts of the patch which makes ma a little bit
-> > > curious - for example: why it is possible to drop that check entirely?
-> > > Could that be an extra patch with an explanation why that can be
-> > > dropped? Is it only valid in context of the new fragmentation handling?
-> > > ...
-> > 
-> > I ran into the same question as it looks a bit odd here but if you apply
-> > the patch it all looks good. As I said: it seems he managed to purge quite
-> > a bit of redundancy (fragmented and non-fragmented packets are almost
-> > identical after all).
->  
-> Andreas Langer wrote:
-> > what are the other parts which makes you curious ?
-> 
-> That a failure in frag_reassemble_skb is a good successfully rx, that 
-> frag_create_buffer is magically always successful even when the called 
-> functions can fail, that you use skb_pull and directly afterward access the 
-> data pointer, that no one frees the skb when frag_reassemble_skb cannot find a 
-> matching originator, ...
+Hello,
 
-I will look into it.Thanks for your hints.
+thank you for your comments. As already said, splitting batman-advanced into
+a kernel space part for switching and a user space part for making route
+decision is an already discussed idea which is quite interesting. I wouldn't
+say that it's completely unusual to decide routing in the kernel, as we see
+other mesh protocols like 802.11s/HWMP or STP (not really a mesh protocol)
+integrated in the kernel as well. We have discussed a possible openvswitch =
+port
+internally with some of the main contributors, and we see the following iss=
+ues:
 
-regards,
-andreas
+Looking at openvswitch, it seems that the target application is very differ=
+ent.
+batman-adv is targeted to support 802.11 WiFi networks on low-end hardware,=
+ while
+openvswitch was designed as switching environment for virtual machines. This
+implies different design decisions - batman-adv should be able to run witho=
+ut any
+additional userspace applications if needed, while openvswitch comes with q=
+uite a
+big, rich featured environment required for operation.
 
+Next to this fact, one thing which worries us is that openvswitch seems to
+replace quite some standard linux tools/facilities (e.g. the bridge module),
+which is often used in most of the APs we have seen, along with ebtables and
+the configuration interfaces it provides. Changing to openvswitch would imp=
+ly
+to change the configuration interfaces and firmwares plus educating all our
+users which depend on those standard tools.
+
+Porting batman-adv to the openvswitch framework would of course require an
+enormous effort itself. batman-adv as a software which is already "finished=
+",
+well tested and integrated in various products/firmwares and ready for kern=
+el
+integration. Porting to openvswitch would mean a step backwards for our pro=
+ject
+as it is not predictable for us when openvswitch will be finished or integr=
+ated in
+the kernel.
+
+Maybe we should move forward in this direction after openvswitch is settled=
+ as
+the way to go for layer 2 tunneling/abstraction in the Linux kernel, but
+currently we don't see the benefit for us to port it.
+
+best regards,
+    Simon   =20
+
+--k1lZvvs/B4yU6o8G
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkyPyx4ACgkQrzg/fFk7axaG4QCfWW2n31p1Jtr02UtvfQ5D/Pof
+Z1YAoLlkMQ1vXI7gjYISjoFMkHg///Nj
+=Q48j
+-----END PGP SIGNATURE-----
+
+--k1lZvvs/B4yU6o8G--
