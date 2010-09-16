@@ -1,11 +1,14 @@
-Return-Path: <an.langer@gmx.de>
-From: Andreas Langer <an.langer@gmx.de>
-Date: Fri, 17 Sep 2010 00:00:10 +0200
-Message-Id: <1284674410-15477-6-git-send-email-an.langer@gmx.de>
-In-Reply-To: <20100916235908.51ab3bfc@rechenknecht>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Fri, 17 Sep 2010 00:27:13 +0200
 References: <20100916235908.51ab3bfc@rechenknecht>
-Subject: [B.A.T.M.A.N.] [PATCH 6/6] batman-adv: reassemble fragmented skb if
-	mtu allows it
+In-Reply-To: <20100916235908.51ab3bfc@rechenknecht>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1461605.qi8KMfWOVo";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201009170027.16080.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] batman-adv: unicast fragmentation enhancements
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,85 +21,57 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Andy Whitcroft <apw@shadowen.org>
 
-Signed-off-by: Andreas Langer <an.langer at gmx.de>
----
- batman-adv/routing.c |   21 ++++++++++++++++++++-
- batman-adv/unicast.c |    8 ++++++++
- 2 files changed, 28 insertions(+), 1 deletions(-)
+--nextPart1461605.qi8KMfWOVo
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index c763121..236ce96 100644
---- a/batman-adv/routing.c
-+++ b/batman-adv/routing.c
-@@ -1142,6 +1142,8 @@ static int route_unicast_packet(struct sk_buff *skb,
- 	unsigned long flags;
- 	struct unicast_packet *unicast_packet;
- 	struct ethhdr *ethhdr = (struct ethhdr *)skb_mac_header(skb);
-+	int ret;
-+	struct sk_buff *new_skb;
- 
- 	unicast_packet = (struct unicast_packet *)skb->data;
- 
-@@ -1185,6 +1187,22 @@ static int route_unicast_packet(struct sk_buff *skb,
- 		return frag_send_skb(skb, bat_priv, batman_if,
- 				     dstaddr);
- 
-+	if (unicast_packet->packet_type == BAT_UNICAST_FRAG &&
-+	    2 * skb->len - hdr_size <= batman_if->net_dev->mtu) {
-+
-+		ret = frag_reassemble_skb(skb, bat_priv, &new_skb);
-+
-+		if (ret == NET_RX_DROP)
-+			return NET_RX_DROP;
-+
-+		/* packet was buffered for late merge */
-+		if (!new_skb)
-+			return NET_RX_SUCCESS;
-+
-+		skb = new_skb;
-+		unicast_packet = (struct unicast_packet *) skb->data;
-+	}
-+
- 	/* decrement ttl */
- 	unicast_packet->ttl--;
- 
-@@ -1238,7 +1256,8 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
- 		if (!new_skb)
- 			return NET_RX_SUCCESS;
- 
--		interface_rx(recv_if->soft_iface, new_skb, hdr_size);
-+		interface_rx(recv_if->soft_iface, new_skb,
-+			     sizeof(struct unicast_packet));
- 		return NET_RX_SUCCESS;
- 	}
- 
-diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
-index 25284d8..4a49a4d 100644
---- a/batman-adv/unicast.c
-+++ b/batman-adv/unicast.c
-@@ -37,6 +37,9 @@ static struct sk_buff *frag_merge_packet(struct list_head *head,
- 	struct unicast_frag_packet *up =
- 		(struct unicast_frag_packet *)skb->data;
- 	struct sk_buff *tmp_skb;
-+	struct unicast_packet *unicast_packet;
-+	int hdr_len = sizeof(struct unicast_packet),
-+	    uni_diff = sizeof(struct unicast_frag_packet) -hdr_len;
- 
- 	/* set skb to the first part and tmp_skb to the second part */
- 	if (up->flags & UNI_FRAG_HEAD) {
-@@ -60,6 +63,11 @@ static struct sk_buff *frag_merge_packet(struct list_head *head,
- 
- 	memcpy(skb_put(skb, tmp_skb->len), tmp_skb->data, tmp_skb->len);
- 	kfree_skb(tmp_skb);
-+
-+	memmove(skb->data + uni_diff, skb->data, hdr_len);
-+	unicast_packet = (struct unicast_packet *) skb_pull(skb, uni_diff);
-+	unicast_packet->packet_type = BAT_UNICAST;
-+
- 	return skb;
- }
- 
--- 
-1.7.0.4
+Andreas Langer wrote:
+> Sven, any idea why checkpatch (0.31)b do this ?
+>=20
+> ERROR: space prohibited after that '-' (ctx:WxW)
+> #10: FILE: batman-adv/routing.c:1146:
+> +	    uni_diff =3D sizeof(struct unicast_frag_packet) - hdr_len;
 
+Because... what the heck? Usually it says that you should use consistent=20
+spaces around '-'. So better use spaces in patch 1 and 6 and don't remove t=
+he=20
+space before hdr_len as you did now.
+
+My version from linux-next (today) is 0.30 and doesn't have a problem with=
+=20
+spaces around those '-' (but with your version of the patches). The=20
+checkpatch.pl-testing also don't have the problem.
+
+I would guess that it was a regression in checkpatch.pl. Maybe Andy Whitcro=
+ft=20
+knows more about it
+
+Best regards,
+	Sven
+
+--nextPart1461605.qi8KMfWOVo
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMkpnCAAoJEF2HCgfBJntGNCcQAMSbEyaqV28Ko+t02LZFOYHG
+38IfVWaCRe23bbI8PH6ShC8WjMTi5MAl8aBYyObUL5rcGFHLc32+MWWmw4nRG5B0
+OCSmo0SvvoQiFcMzrtvudktQKDPg8Ac15OL/YF81qPCjXmYLaifW0INqOzHFpwN9
+/yAE77Ah2yrVAu331UDd5O+pp3IWg63CInYFplQuLPeUF+JfXo52jLaMK87hQg2g
+9v+FOEK52ohHr38QulRG5wUYfp+gYmM0yP0ql+NDVPUii5yY6Bs5idC6RVxKSvxT
+OKDIgzhvs2azZjFBlpySFBQ777f5hmFNRGU0xOdtfPN+l+C5bwY5UMLQlwAFEAlQ
+IKeLC1x9EkO2E3SohUujwcbhnhX+lZerneJjIBaVferXl2E/jAGtMuXlA0qPNSdd
+YtbLeaI8ujDdePiunRdivAXTdwwDiLV3WNuG8EcRhUDCcD+urOAXOdIiKhEP46Ha
+b947+80zZMrLahdqlgWHWAmX9V3XAtULcPrrlpQb2HF+MMJ/zQQg3TGnj95U+rbw
+EXpF0NUTXG6lyji0uDeVn4LkDeZJIQSYcD6VEzhm1KgqImL90kzhI/J7Ao8T8Z0O
+lbfh0xHS/Hrl60hd6tY0jv0QqEMuvxDt0NERbwwJZRUluvek8psxTr3COR0+cU03
+juV8p8T2gpSHeRTrJdbH
+=74Pe
+-----END PGP SIGNATURE-----
+
+--nextPart1461605.qi8KMfWOVo--
