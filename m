@@ -1,11 +1,11 @@
 Return-Path: <an.langer@gmx.de>
-Date: Thu, 16 Sep 2010 23:59:08 +0200
 From: Andreas Langer <an.langer@gmx.de>
-Message-ID: <20100916235908.51ab3bfc@rechenknecht>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] batman-adv: unicast fragmentation enhancements
+Date: Fri, 17 Sep 2010 00:00:05 +0200
+Message-Id: <1284674410-15477-1-git-send-email-an.langer@gmx.de>
+In-Reply-To: <20100916235908.51ab3bfc@rechenknecht>
+References: <20100916235908.51ab3bfc@rechenknecht>
+Subject: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: restructure fragmentation to
+	handle batman unicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,28 +19,131 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi again,
+The unicast_frag_send_skb() function expected 'raw' packets (without any
+batman-adv header) to fragment them. This needs to be changed, so that
+this function is able to fragment packets that already traveled inside the
+mesh but need to be fragmented now.
 
-things that changed since the last patch:
-- add support to fragment packets on every node,
-  if outgoing iface mtu is smaller as the packet
-- add support to defragment packets on every node,
-  if outgoing iface mtu is >= original size
-- rename some functions
+Signed-off-by: Andreas Langer <an.langer at gmx.de>
+---
+ batman-adv/unicast.c |   66 +++++++++++++++++++++++++++----------------------
+ 1 files changed, 36 insertions(+), 30 deletions(-)
 
-In this patch every node defragment packets if it can. Do you think it
-is better to add an option to enable/disable this ?
+diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
+index ee85c7c..750f10e 100644
+--- a/batman-adv/unicast.c
++++ b/batman-adv/unicast.c
+@@ -153,55 +153,58 @@ void frag_list_free(struct list_head *head)
+ 	return;
+ }
+ 
+-static int unicast_send_frag_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+-			  struct batman_if *batman_if, uint8_t dstaddr[],
+-			  struct orig_node *orig_node)
++int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
++		  struct batman_if *batman_if, uint8_t dstaddr[])
+ {
+-	struct unicast_frag_packet *ucast_frag1, *ucast_frag2;
+-	int hdr_len = sizeof(struct unicast_frag_packet);
++	struct unicast_packet tmp_uc, *unicast_packet;
+ 	struct sk_buff *frag_skb;
++	struct unicast_frag_packet *frag1, *frag2;
++	int uc_hdr_len = sizeof(struct unicast_packet);
++	int ucf_hdr_len = sizeof(struct unicast_frag_packet);
+ 	int data_len = skb->len;
+ 
+ 	if (!bat_priv->primary_if)
+ 		goto dropped;
+ 
+-	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + hdr_len);
++	unicast_packet = (struct unicast_packet *) skb->data;
++
++	memcpy(&tmp_uc, unicast_packet, uc_hdr_len);
++	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + ucf_hdr_len);
+ 	skb_split(skb, frag_skb, data_len / 2);
+ 
+-	if (my_skb_head_push(frag_skb, hdr_len) < 0 ||
+-	    my_skb_head_push(skb, hdr_len) < 0)
++	if (my_skb_head_push(skb, ucf_hdr_len - uc_hdr_len) < 0 ||
++	    my_skb_head_push(frag_skb, ucf_hdr_len) < 0)
+ 		goto drop_frag;
+ 
+-	ucast_frag1 = (struct unicast_frag_packet *)skb->data;
+-	ucast_frag2 = (struct unicast_frag_packet *)frag_skb->data;
++	frag1 = (struct unicast_frag_packet *)skb->data;
++	frag2 = (struct unicast_frag_packet *)frag_skb->data;
+ 
+-	ucast_frag1->version = COMPAT_VERSION;
+-	ucast_frag1->packet_type = BAT_UNICAST_FRAG;
+-	ucast_frag1->ttl = TTL;
+-	memcpy(ucast_frag1->orig,
+-	       bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
+-	memcpy(ucast_frag1->dest, orig_node->orig, ETH_ALEN);
++	memcpy(frag1, &tmp_uc, sizeof(struct unicast_packet));
+ 
+-	memcpy(ucast_frag2, ucast_frag1, sizeof(struct unicast_frag_packet));
++	frag1->ttl--;
++	frag1->version = COMPAT_VERSION;
++	frag1->packet_type = BAT_UNICAST_FRAG;
+ 
+-	ucast_frag1->flags |= UNI_FRAG_HEAD;
+-	ucast_frag2->flags &= ~UNI_FRAG_HEAD;
++	memcpy(frag1->orig, bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
++	memcpy(frag2, frag1, sizeof(struct unicast_frag_packet));
+ 
+-	ucast_frag1->seqno = htons((uint16_t)atomic_inc_return(
+-						&batman_if->frag_seqno));
++	frag1->flags |= UNI_FRAG_HEAD;
++	frag2->flags &= ~UNI_FRAG_HEAD;
+ 
+-	ucast_frag2->seqno = htons((uint16_t)atomic_inc_return(
+-						&batman_if->frag_seqno));
++	frag1->seqno = htons((uint16_t)atomic_inc_return(
++			     &batman_if->frag_seqno));
++	frag2->seqno = htons((uint16_t)atomic_inc_return(
++			     &batman_if->frag_seqno));
+ 
+ 	send_skb_packet(skb, batman_if, dstaddr);
+ 	send_skb_packet(frag_skb, batman_if, dstaddr);
+-	return 0;
++	return NET_RX_SUCCESS;
+ 
+ drop_frag:
+ 	kfree_skb(frag_skb);
+ dropped:
+ 	kfree_skb(skb);
+-	return 1;
++	return NET_RX_DROP;
+ }
+ 
+ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+@@ -244,11 +247,6 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+ 	if (batman_if->if_status != IF_ACTIVE)
+ 		goto dropped;
+ 
+-	if (atomic_read(&bat_priv->frag_enabled) &&
+-	    data_len + sizeof(struct unicast_packet) > batman_if->net_dev->mtu)
+-		return unicast_send_frag_skb(skb, bat_priv, batman_if,
+-					     dstaddr, orig_node);
+-
+ 	if (my_skb_head_push(skb, sizeof(struct unicast_packet)) < 0)
+ 		goto dropped;
+ 
+@@ -262,6 +260,14 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+ 	/* copy the destination for faster routing */
+ 	memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
+ 
++	if (atomic_read(&bat_priv->frag_enabled) &&
++	    data_len + sizeof(struct unicast_packet) >
++	    batman_if->net_dev->mtu) {
++		/* send frag skb decreases ttl */
++		unicast_packet->ttl++;
++		return frag_send_skb(skb, bat_priv, batman_if,
++				     dstaddr);
++	}
+ 	send_skb_packet(skb, batman_if, dstaddr);
+ 	return 0;
+ 
+-- 
+1.7.0.4
 
-
-
-Sven, any idea why checkpatch (0.31)b do this ?
-
-ERROR: space prohibited after that '-' (ctx:WxW)
-#10: FILE: batman-adv/routing.c:1146:
-+	    uni_diff = sizeof(struct unicast_frag_packet) - hdr_len;
- 	                                                  ^
-
-
-
-regards,
-Andreas
