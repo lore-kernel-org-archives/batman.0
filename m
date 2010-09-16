@@ -1,10 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 16 Sep 2010 11:30:07 +0200
-Message-Id: <1284629407-20394-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1284589835-26617-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1284589835-26617-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: Mark debugfs files as nonseekable
+Date: Thu, 16 Sep 2010 11:34:54 +0200
+Message-Id: <1284629694-20581-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1284629407-20394-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1284629407-20394-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Mark debugfs files as
+	nonseekable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,7 +18,6 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Arnd Bergmann <arnd@arndb.de>
 
 We don't allow to seek in the debugfs socket and log files. Thus we
 should mark the file descriptor as nonseekable.
@@ -27,6 +27,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>
 ---
 I think it is according to Arnd's patch the cleanest version to say that
 those files are nonseekable.
+
+Sry for the wrong subject. Of course it is not for batctl, but for batman-adv.
+Seems that I mixed it up while testing those changes with batctl
 
  batman-adv/bat_debugfs.c |    2 ++
  batman-adv/icmp_socket.c |    3 +++
