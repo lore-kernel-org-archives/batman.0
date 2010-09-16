@@ -1,15 +1,11 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 17 Sep 2010 00:44:11 +0200
-References: <201009170035.05463.lindner_marek@yahoo.de>
-	<1284676540-15734-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1284676540-15734-1-git-send-email-lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1561072.HDMT5rRO5D";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201009170044.12820.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: softif lan loop avoidance
+Return-Path: <an.langer@gmx.de>
+From: Andreas Langer <an.langer@gmx.de>
+Date: Fri, 17 Sep 2010 00:43:24 +0200
+Message-Id: <1284677004-16895-1-git-send-email-an.langer@gmx.de>
+In-Reply-To: <1284674410-15477-6-git-send-email-an.langer@gmx.de>
+References: <1284674410-15477-6-git-send-email-an.langer@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 6/6] batman-adv: reassemble fragmented skb if
+	mtu allows it
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,45 +18,85 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart1561072.HDMT5rRO5D
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Andreas Langer <an.langer at gmx.de>
+---
+ batman-adv/routing.c |   21 ++++++++++++++++++++-
+ batman-adv/unicast.c |    8 ++++++++
+ 2 files changed, 28 insertions(+), 1 deletions(-)
 
-To make it short: please check your code against=20
-Documentation/RCU/checklist.txt
+diff --git a/batman-adv/routing.c b/batman-adv/routing.c
+index c763121..236ce96 100644
+--- a/batman-adv/routing.c
++++ b/batman-adv/routing.c
+@@ -1142,6 +1142,8 @@ static int route_unicast_packet(struct sk_buff *skb,
+ 	unsigned long flags;
+ 	struct unicast_packet *unicast_packet;
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb_mac_header(skb);
++	int ret;
++	struct sk_buff *new_skb;
+ 
+ 	unicast_packet = (struct unicast_packet *)skb->data;
+ 
+@@ -1185,6 +1187,22 @@ static int route_unicast_packet(struct sk_buff *skb,
+ 		return frag_send_skb(skb, bat_priv, batman_if,
+ 				     dstaddr);
+ 
++	if (unicast_packet->packet_type == BAT_UNICAST_FRAG &&
++	    2 * skb->len - hdr_size <= batman_if->net_dev->mtu) {
++
++		ret = frag_reassemble_skb(skb, bat_priv, &new_skb);
++
++		if (ret == NET_RX_DROP)
++			return NET_RX_DROP;
++
++		/* packet was buffered for late merge */
++		if (!new_skb)
++			return NET_RX_SUCCESS;
++
++		skb = new_skb;
++		unicast_packet = (struct unicast_packet *) skb->data;
++	}
++
+ 	/* decrement ttl */
+ 	unicast_packet->ttl--;
+ 
+@@ -1238,7 +1256,8 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 		if (!new_skb)
+ 			return NET_RX_SUCCESS;
+ 
+-		interface_rx(recv_if->soft_iface, new_skb, hdr_size);
++		interface_rx(recv_if->soft_iface, new_skb,
++			     sizeof(struct unicast_packet));
+ 		return NET_RX_SUCCESS;
+ 	}
+ 
+diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
+index 25284d8..bca69f6 100644
+--- a/batman-adv/unicast.c
++++ b/batman-adv/unicast.c
+@@ -37,6 +37,9 @@ static struct sk_buff *frag_merge_packet(struct list_head *head,
+ 	struct unicast_frag_packet *up =
+ 		(struct unicast_frag_packet *)skb->data;
+ 	struct sk_buff *tmp_skb;
++	struct unicast_packet *unicast_packet;
++	int hdr_len = sizeof(struct unicast_packet),
++	    uni_diff = sizeof(struct unicast_frag_packet) - hdr_len;
+ 
+ 	/* set skb to the first part and tmp_skb to the second part */
+ 	if (up->flags & UNI_FRAG_HEAD) {
+@@ -60,6 +63,11 @@ static struct sk_buff *frag_merge_packet(struct list_head *head,
+ 
+ 	memcpy(skb_put(skb, tmp_skb->len), tmp_skb->data, tmp_skb->len);
+ 	kfree_skb(tmp_skb);
++
++	memmove(skb->data + uni_diff, skb->data, hdr_len);
++	unicast_packet = (struct unicast_packet *) skb_pull(skb, uni_diff);
++	unicast_packet->packet_type = BAT_UNICAST;
++
+ 	return skb;
+ }
+ 
+-- 
+1.7.0.4
 
-The new patch adds different problems I tried to address in other patches=20
-posted by me today. There are also new parts which leaks information outsid=
-e=20
-rcu_read_lock... so parts which aren't yet addressed by patches for other=20
-subsystems of batman-adv.
-
-Best regards,
-	Sven
-
---nextPart1561072.HDMT5rRO5D
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMkp28AAoJEF2HCgfBJntGUQIP/RmSIQLKn72DEil28xpXFehV
-IFG4LrgAD3B7qUmhq739DaLDd6p4hWsCa6P3eU9FL11dl5adSgt7OHUby0xsnzXG
-72ZfxvwvYeG+h1JxZrFHSpf+1JwWDD/HY9fBbi0nS0TV3lXqBZlv2MliC5zRFk5T
-X+7m0A7Se24YBLEfre8u1PHtOdIdmzr5cO1s9G658xwLqLSHaq6XD69RGAHKvyfD
-ccbTtF3wZJ9YdmYiIvhzPuvlTEFrs+P9yn4y7evrHHmw+lXmskNvomIVl8cJ5EhZ
-lG/dfKlk5s9NWbQOkshRsxfihS8ji3+4Gk66ZEvWlJHB9xN+CgaY1g2z/CKa304S
-FOc+cIsuLRmwu3MQt/mxLJZdRAuFhR1eAwcr5ecKTnh393vs9qNVGOXP/IEjJN2R
-/HeFRtMl2QML572S0Bj0NnYYLeYwoxeP6IJCuVxb4Bb+aoD08B0o97FUTl/Polhs
-e/HWAw3ZR4xXWJDX5Ko4rCG8+1v+CPtByvpoYGsLlKe9k/UaZIa3lx8qfsiXWFA/
-JHjJq9nmBaigvIq+CNk6TEncjAv4lOkCG0rvhEPn2/5xM2efFHreqZHskGdQX4Fy
-cVLX/iOok7tmerhX2r3QhkYB/LJ2huqtc5bNfsTl7X9/VyWwiOkSgniAEl44GSh6
-Yhavfxl8E0TCcemA9Mis
-=PTVV
------END PGP SIGNATURE-----
-
---nextPart1561072.HDMT5rRO5D--
