@@ -1,9 +1,9 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 16 Sep 2010 23:22:54 +0200
-Message-Id: <1284672174-27464-3-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1284668317-19890-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1284668317-19890-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Thu, 16 Sep 2010 23:32:01 +0200
+Message-Id: <1284672721-28527-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1284672174-27464-3-git-send-email-sven.eckelmann@gmx.de>
+References: <1284672174-27464-3-git-send-email-sven.eckelmann@gmx.de>
 Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Use refcnt to track usage
 	count of batman_if
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,7 +17,7 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 get_batman_if_by_netdev and get_active_batman_if may leak data from the
 rcu protected list of interfaces. The rcu protected list of all gateway
@@ -38,13 +38,15 @@ function. So "put" is not allowed inside an rcu_read_lock.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
+Hmpf, small copy and paste failure (used hardif_hold instead of hardif_put).
+
  batman-adv/hard-interface.c |    6 ++++--
  batman-adv/hard-interface.h |   13 +++++++++++++
  batman-adv/types.h          |    1 +
  3 files changed, 18 insertions(+), 2 deletions(-)
 
 diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index 3cd7cb1..d7439e3 100644
+index 3cd7cb1..4513856 100644
 --- a/batman-adv/hard-interface.c
 +++ b/batman-adv/hard-interface.c
 @@ -403,6 +403,8 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
@@ -70,7 +72,7 @@ index 3cd7cb1..d7439e3 100644
  	sysfs_del_hardif(&batman_if->hardif_obj);
  	dev_put(batman_if->net_dev);
 -	call_rcu(&batman_if->rcu, hardif_free_interface);
-+	hardif_hold(batman_if);
++	hardif_put(batman_if);
  }
  
  void hardif_remove_interfaces(void)
