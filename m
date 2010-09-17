@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 17 Sep 2010 17:40:57 +0200
-Message-Id: <1284738065-8715-2-git-send-email-sven.eckelmann@gmx.de>
+Date: Fri, 17 Sep 2010 17:40:58 +0200
+Message-Id: <1284738065-8715-3-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: Introduce if_list_lock to
-	protect if_list
+Subject: [B.A.T.M.A.N.] [PATCH 2/9] batman-adv: Protect update side of
+	gw_list
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,80 +19,79 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The update critical sections of if_list must be protected by a locking
-primitive other than RCU. The iterator must also be protected by the
-chosen locking mechanism.
+hlist_add_head_rcu must be protected using gw_list_lock of the current
+bat_priv like already done with hlist_del_rcu.
 
-The rtnl_lock in hardif_remove_interfaces must also be moved outside the
-iterator primitive to ensure that we don't deadlock the kernel due to
-differently nested locks in hardif_remove_interfaces and hard_if_event.
+It is important that this lock is now always done using
+spin_lock_irqsave because gw_node_add can also be called indirectly from
+parts of the kernel with interrupts disabled.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/hard-interface.c |   17 +++++++++++++++--
- 1 files changed, 15 insertions(+), 2 deletions(-)
+ batman-adv/gateway_client.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index edbfddf..3cd7cb1 100644
---- a/batman-adv/hard-interface.c
-+++ b/batman-adv/hard-interface.c
-@@ -35,6 +35,9 @@
- 
- #define MIN(x, y) ((x) < (y) ? (x) : (y))
- 
-+/* protect update critical side of if_list - but not the content */
-+static DEFINE_SPINLOCK(if_list_lock);
-+
- struct batman_if *get_batman_if_by_netdev(struct net_device *net_dev)
+diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
+index 6721398..dd96d99 100644
+--- a/batman-adv/gateway_client.c
++++ b/batman-adv/gateway_client.c
+@@ -196,6 +196,7 @@ static void gw_node_add(struct bat_priv *bat_priv,
  {
- 	struct batman_if *batman_if;
-@@ -402,7 +405,11 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
- 	INIT_LIST_HEAD(&batman_if->list);
+ 	struct gw_node *gw_node;
+ 	int down, up;
++	unsigned long flags;
  
- 	check_known_mac_addr(batman_if->net_dev->dev_addr);
-+
-+	spin_lock(&if_list_lock);
- 	list_add_tail_rcu(&batman_if->list, &if_list);
-+	spin_unlock(&if_list_lock);
-+
- 	return batman_if;
+ 	gw_node = kmalloc(sizeof(struct gw_node), GFP_ATOMIC);
+ 	if (!gw_node)
+@@ -205,7 +206,9 @@ static void gw_node_add(struct bat_priv *bat_priv,
+ 	INIT_HLIST_NODE(&gw_node->list);
+ 	gw_node->orig_node = orig_node;
  
- free_if:
-@@ -430,6 +437,8 @@ static void hardif_remove_interface(struct batman_if *batman_if)
- 		return;
++	spin_lock_irqsave(&bat_priv->gw_list_lock, flags);
+ 	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw_list);
++	spin_unlock_irqrestore(&bat_priv->gw_list_lock, flags);
  
- 	batman_if->if_status = IF_TO_BE_REMOVED;
-+
-+	/* caller must take if_list_lock */
- 	list_del_rcu(&batman_if->list);
- 	sysfs_del_hardif(&batman_if->hardif_obj);
- 	dev_put(batman_if->net_dev);
-@@ -440,11 +449,13 @@ void hardif_remove_interfaces(void)
- {
- 	struct batman_if *batman_if, *batman_if_tmp;
+ 	gw_srv_class_to_kbit(new_gwflags, &down, &up);
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+@@ -273,8 +276,9 @@ void gw_node_purge_deleted(struct bat_priv *bat_priv)
+ 	struct gw_node *gw_node;
+ 	struct hlist_node *node, *node_tmp;
+ 	unsigned long timeout = 2 * PURGE_TIMEOUT * HZ;
++	unsigned long flags;
  
-+	rtnl_lock();
-+	spin_lock(&if_list_lock);
- 	list_for_each_entry_safe(batman_if, batman_if_tmp, &if_list, list) {
--		rtnl_lock();
- 		hardif_remove_interface(batman_if);
--		rtnl_unlock();
+-	spin_lock(&bat_priv->gw_list_lock);
++	spin_lock_irqsave(&bat_priv->gw_list_lock, flags);
+ 
+ 	hlist_for_each_entry_safe(gw_node, node, node_tmp,
+ 						&bat_priv->gw_list, list) {
+@@ -286,15 +290,16 @@ void gw_node_purge_deleted(struct bat_priv *bat_priv)
+ 		}
  	}
-+	spin_unlock(&if_list_lock);
-+	rtnl_unlock();
+ 
+-	spin_unlock(&bat_priv->gw_list_lock);
++	spin_unlock_irqrestore(&bat_priv->gw_list_lock, flags);
  }
  
- static int hard_if_event(struct notifier_block *this,
-@@ -469,7 +480,9 @@ static int hard_if_event(struct notifier_block *this,
- 		hardif_deactivate_interface(batman_if);
- 		break;
- 	case NETDEV_UNREGISTER:
-+		spin_lock(&if_list_lock);
- 		hardif_remove_interface(batman_if);
-+		spin_unlock(&if_list_lock);
- 		break;
- 	case NETDEV_CHANGEMTU:
- 		if (batman_if->soft_iface)
+ void gw_node_list_free(struct bat_priv *bat_priv)
+ {
+ 	struct gw_node *gw_node;
+ 	struct hlist_node *node, *node_tmp;
++	unsigned long flags;
+ 
+-	spin_lock(&bat_priv->gw_list_lock);
++	spin_lock_irqsave(&bat_priv->gw_list_lock, flags);
+ 
+ 	hlist_for_each_entry_safe(gw_node, node, node_tmp,
+ 				 &bat_priv->gw_list, list) {
+@@ -303,7 +308,7 @@ void gw_node_list_free(struct bat_priv *bat_priv)
+ 	}
+ 
+ 	gw_deselect(bat_priv);
+-	spin_unlock(&bat_priv->gw_list_lock);
++	spin_unlock_irqrestore(&bat_priv->gw_list_lock, flags);
+ }
+ 
+ static int _write_buffer_text(struct bat_priv *bat_priv,
 -- 
 1.7.2.3
 
