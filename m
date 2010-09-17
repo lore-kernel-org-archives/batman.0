@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 17 Sep 2010 17:41:03 +0200
-Message-Id: <1284738065-8715-8-git-send-email-sven.eckelmann@gmx.de>
+Date: Fri, 17 Sep 2010 17:41:05 +0200
+Message-Id: <1284738065-8715-10-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 7/9] batman-adv: Use refcnt to track usage
-	count of batman_if
+Subject: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: count batman_if list queries
+	as reference
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,87 +19,221 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-get_batman_if_by_netdev and get_active_batman_if may leak data from the
-rcu protected list of interfaces. The rcu protected list of all gateway
-nodes leaks the actual data outside the read-side critical area. This is
-not valid as we may free the data using a call_rcu created callback
-after we unlock using rcu_read_unlock. A workaround is to provide a
-reference count to be sure that the memory isn't freed to early.
+The return of get_batman_if_by_netdev and get_active_batman_if leaks a
+pointer from the rcu protected list of interfaces. We must protect it to
+prevent a too early release of the memory. Those functions must increase
+the reference counter before rcu_read_unlock or it may be to late to
+prevent a free.
 
-It is currently only to implement the already existing functionality and
-doesn't provide the full tracking of all usage cases.
+hardif_add_interface must also increase the reference count for the
+returned batman_if to make the behaviour consistent.
 
-Additionally, we must hardif_hold inside the
-rcu_read_lock()..rcu_read_unlock() before we attach to the structure
-which "leaks" it. When another function now removed it from its usage
-context (primary_if, usage on stack, ...) then we must hardif_put it. If
-it is decremented to zero then we can issue the call_rcu to the freeing
-function. So "put" is not allowed inside an rcu_read_lock.
-
+Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/hard-interface.c |    5 +++--
- batman-adv/hard-interface.h |   13 +++++++++++++
- batman-adv/types.h          |    1 +
- 3 files changed, 17 insertions(+), 2 deletions(-)
+ batman-adv/bat_sysfs.c      |   37 +++++++++++++++++++++++++++----------
+ batman-adv/hard-interface.c |   29 ++++++++++++++++++++++++-----
+ 2 files changed, 51 insertions(+), 15 deletions(-)
 
-diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index 0b3ee6b..445498c 100644
---- a/batman-adv/hard-interface.c
-+++ b/batman-adv/hard-interface.c
-@@ -403,6 +403,8 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
- 	batman_if->soft_iface = NULL;
- 	batman_if->if_status = IF_NOT_IN_USE;
- 	INIT_LIST_HEAD(&batman_if->list);
-+	atomic_set(&batman_if->refcnt, 0);
-+	hardif_hold(batman_if);
+diff --git a/batman-adv/bat_sysfs.c b/batman-adv/bat_sysfs.c
+index 8e180ba..79090c9 100644
+--- a/batman-adv/bat_sysfs.c
++++ b/batman-adv/bat_sysfs.c
+@@ -453,13 +453,17 @@ static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 	struct device *dev = to_dev(kobj->parent);
+ 	struct net_device *net_dev = to_net_dev(dev);
+ 	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
++	ssize_t length;
  
- 	check_known_mac_addr(batman_if->net_dev->dev_addr);
+ 	if (!batman_if)
+ 		return 0;
  
-@@ -435,8 +437,7 @@ static void hardif_remove_interface(struct batman_if *batman_if)
- 	list_del_rcu(&batman_if->list);
- 	synchronize_rcu();
- 	sysfs_del_hardif(&batman_if->hardif_obj);
--	dev_put(batman_if->net_dev);
--	kfree(batman_if);
+-	return sprintf(buff, "%s\n",
+-		       batman_if->if_status == IF_NOT_IN_USE ?
+-					"none" : batman_if->soft_iface->name);
++	length = sprintf(buff, "%s\n", batman_if->if_status == IF_NOT_IN_USE ?
++			 "none" : batman_if->soft_iface->name);
++
 +	hardif_put(batman_if);
++
++	return length;
  }
  
- void hardif_remove_interfaces(void)
-diff --git a/batman-adv/hard-interface.h b/batman-adv/hard-interface.h
-index 4b49527..d550889 100644
---- a/batman-adv/hard-interface.h
-+++ b/batman-adv/hard-interface.h
-@@ -42,4 +42,17 @@ int batman_skb_recv(struct sk_buff *skb,
- int hardif_min_mtu(struct net_device *soft_iface);
- void update_min_mtu(struct net_device *soft_iface);
+ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+@@ -469,6 +473,7 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 	struct net_device *net_dev = to_net_dev(dev);
+ 	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
+ 	int status_tmp = -1;
++	int ret;
  
-+static inline void hardif_hold(struct batman_if *batman_if)
-+{
-+	atomic_inc(&batman_if->refcnt);
-+}
-+
-+static inline void hardif_put(struct batman_if *batman_if)
-+{
-+	if (atomic_dec_and_test(&batman_if->refcnt)) {
-+		dev_put(batman_if->net_dev);
-+		kfree(batman_if);
+ 	if (!batman_if)
+ 		return count;
+@@ -479,6 +484,7 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 	if (strlen(buff) >= IFNAMSIZ) {
+ 		pr_err("Invalid parameter for 'mesh_iface' setting received: "
+ 		       "interface name too long '%s'\n", buff);
++		hardif_put(batman_if);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -488,13 +494,16 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 		status_tmp = IF_I_WANT_YOU;
+ 
+ 	if ((batman_if->if_status == status_tmp) || ((batman_if->soft_iface) &&
+-	    (strncmp(batman_if->soft_iface->name, buff, IFNAMSIZ) == 0)))
++	    (strncmp(batman_if->soft_iface->name, buff, IFNAMSIZ) == 0))) {
++		hardif_put(batman_if);
+ 		return count;
 +	}
-+}
+ 
+ 	if (status_tmp == IF_NOT_IN_USE) {
+ 		rtnl_lock();
+ 		hardif_disable_interface(batman_if);
+ 		rtnl_unlock();
++		hardif_put(batman_if);
+ 		return count;
+ 	}
+ 
+@@ -505,7 +514,10 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 		rtnl_unlock();
+ 	}
+ 
+-	return hardif_enable_interface(batman_if, buff);
++	ret = hardif_enable_interface(batman_if, buff);
++	hardif_put(batman_if);
 +
- #endif /* _NET_BATMAN_ADV_HARD_INTERFACE_H_ */
-diff --git a/batman-adv/types.h b/batman-adv/types.h
-index ecc4365..a609100 100644
---- a/batman-adv/types.h
-+++ b/batman-adv/types.h
-@@ -44,6 +44,7 @@ struct batman_if {
- 	unsigned char *packet_buff;
- 	int packet_len;
- 	struct kobject *hardif_obj;
-+	atomic_t refcnt;
- 	struct packet_type batman_adv_ptype;
- 	struct net_device *soft_iface;
- };
++	return ret;
+ }
+ 
+ static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
+@@ -514,23 +526,28 @@ static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
+ 	struct device *dev = to_dev(kobj->parent);
+ 	struct net_device *net_dev = to_net_dev(dev);
+ 	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
++	ssize_t length;
+ 
+ 	if (!batman_if)
+ 		return 0;
+ 
+ 	switch (batman_if->if_status) {
+ 	case IF_TO_BE_REMOVED:
+-		return sprintf(buff, "disabling\n");
++		length = sprintf(buff, "disabling\n");
+ 	case IF_INACTIVE:
+-		return sprintf(buff, "inactive\n");
++		length = sprintf(buff, "inactive\n");
+ 	case IF_ACTIVE:
+-		return sprintf(buff, "active\n");
++		length = sprintf(buff, "active\n");
+ 	case IF_TO_BE_ACTIVATED:
+-		return sprintf(buff, "enabling\n");
++		length = sprintf(buff, "enabling\n");
+ 	case IF_NOT_IN_USE:
+ 	default:
+-		return sprintf(buff, "not in use\n");
++		length = sprintf(buff, "not in use\n");
+ 	}
++
++	hardif_put(batman_if);
++
++	return length;
+ }
+ 
+ static BAT_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index 445498c..f519b4b 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -51,6 +51,9 @@ struct batman_if *get_batman_if_by_netdev(struct net_device *net_dev)
+ 	batman_if = NULL;
+ 
+ out:
++	if (batman_if)
++		hardif_hold(batman_if);
++
+ 	rcu_read_unlock();
+ 	return batman_if;
+ }
+@@ -98,6 +101,9 @@ static struct batman_if *get_active_batman_if(struct net_device *soft_iface)
+ 	batman_if = NULL;
+ 
+ out:
++	if (batman_if)
++		hardif_hold(batman_if);
++
+ 	rcu_read_unlock();
+ 	return batman_if;
+ }
+@@ -294,6 +300,7 @@ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
+ 	batman_if->batman_adv_ptype.type = __constant_htons(ETH_P_BATMAN);
+ 	batman_if->batman_adv_ptype.func = batman_skb_recv;
+ 	batman_if->batman_adv_ptype.dev = batman_if->net_dev;
++	hardif_hold(batman_if);
+ 	dev_add_pack(&batman_if->batman_adv_ptype);
+ 
+ 	atomic_set(&batman_if->seqno, 1);
+@@ -352,13 +359,20 @@ void hardif_disable_interface(struct batman_if *batman_if)
+ 	bat_info(batman_if->soft_iface, "Removing interface: %s\n",
+ 		 batman_if->net_dev->name);
+ 	dev_remove_pack(&batman_if->batman_adv_ptype);
++	hardif_put(batman_if);
+ 
+ 	bat_priv->num_ifaces--;
+ 	orig_hash_del_if(batman_if, bat_priv->num_ifaces);
+ 
+-	if (batman_if == bat_priv->primary_if)
+-		set_primary_if(bat_priv,
+-			       get_active_batman_if(batman_if->soft_iface));
++	if (batman_if == bat_priv->primary_if) {
++		struct batman_if *new_if;
++
++		new_if = get_active_batman_if(batman_if->soft_iface);
++		set_primary_if(bat_priv, new_if);
++
++		if (new_if)
++			hardif_put(new_if);
++	}
+ 
+ 	kfree(batman_if->packet_buff);
+ 	batman_if->packet_buff = NULL;
+@@ -412,6 +426,8 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
+ 	list_add_tail_rcu(&batman_if->list, &if_list);
+ 	spin_unlock(&if_list_lock);
+ 
++	/* extra reference for return */
++	hardif_hold(batman_if);
+ 	return batman_if;
+ 
+ free_if:
+@@ -461,7 +477,7 @@ static int hard_if_event(struct notifier_block *this,
+ 	struct bat_priv *bat_priv;
+ 
+ 	if (!batman_if && event == NETDEV_REGISTER)
+-			batman_if = hardif_add_interface(net_dev);
++		batman_if = hardif_add_interface(net_dev);
+ 
+ 	if (!batman_if)
+ 		goto out;
+@@ -484,8 +500,10 @@ static int hard_if_event(struct notifier_block *this,
+ 			update_min_mtu(batman_if->soft_iface);
+ 		break;
+ 	case NETDEV_CHANGEADDR:
+-		if (batman_if->if_status == IF_NOT_IN_USE)
++		if (batman_if->if_status == IF_NOT_IN_USE) {
++			hardif_put(batman_if);
+ 			goto out;
++		}
+ 
+ 		check_known_mac_addr(batman_if->net_dev->dev_addr);
+ 		update_mac_addresses(batman_if);
+@@ -497,6 +515,7 @@ static int hard_if_event(struct notifier_block *this,
+ 	default:
+ 		break;
+ 	};
++	hardif_put(batman_if);
+ 
+ out:
+ 	return NOTIFY_DONE;
 -- 
 1.7.2.3
 
