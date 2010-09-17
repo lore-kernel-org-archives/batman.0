@@ -1,8 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 17 Sep 2010 17:40:56 +0200
-Message-Id: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 0/9] RCU locking patches
+Date: Fri, 17 Sep 2010 17:40:57 +0200
+Message-Id: <1284738065-8715-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: Introduce if_list_lock to
+	protect if_list
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,32 +19,80 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+The update critical sections of if_list must be protected by a locking
+primitive other than RCU. The iterator must also be protected by the
+chosen locking mechanism.
 
-i tried to prevent the race condition [1] that I mentioned yesterday. The
-patchset was also slightly extended to use a refcnt a little bit more.
+The rtnl_lock in hardif_remove_interfaces must also be moved outside the
+iterator primitive to ensure that we don't deadlock the kernel due to
+differently nested locks in hardif_remove_interfaces and hard_if_event.
 
-Best regards,
-	Sven
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv/hard-interface.c |   17 +++++++++++++++--
+ 1 files changed, 15 insertions(+), 2 deletions(-)
 
-[1] 201009170317.28338.sven.eckelmann@gmx.de
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index edbfddf..3cd7cb1 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -35,6 +35,9 @@
+ 
+ #define MIN(x, y) ((x) < (y) ? (x) : (y))
+ 
++/* protect update critical side of if_list - but not the content */
++static DEFINE_SPINLOCK(if_list_lock);
++
+ struct batman_if *get_batman_if_by_netdev(struct net_device *net_dev)
+ {
+ 	struct batman_if *batman_if;
+@@ -402,7 +405,11 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
+ 	INIT_LIST_HEAD(&batman_if->list);
+ 
+ 	check_known_mac_addr(batman_if->net_dev->dev_addr);
++
++	spin_lock(&if_list_lock);
+ 	list_add_tail_rcu(&batman_if->list, &if_list);
++	spin_unlock(&if_list_lock);
++
+ 	return batman_if;
+ 
+ free_if:
+@@ -430,6 +437,8 @@ static void hardif_remove_interface(struct batman_if *batman_if)
+ 		return;
+ 
+ 	batman_if->if_status = IF_TO_BE_REMOVED;
++
++	/* caller must take if_list_lock */
+ 	list_del_rcu(&batman_if->list);
+ 	sysfs_del_hardif(&batman_if->hardif_obj);
+ 	dev_put(batman_if->net_dev);
+@@ -440,11 +449,13 @@ void hardif_remove_interfaces(void)
+ {
+ 	struct batman_if *batman_if, *batman_if_tmp;
+ 
++	rtnl_lock();
++	spin_lock(&if_list_lock);
+ 	list_for_each_entry_safe(batman_if, batman_if_tmp, &if_list, list) {
+-		rtnl_lock();
+ 		hardif_remove_interface(batman_if);
+-		rtnl_unlock();
+ 	}
++	spin_unlock(&if_list_lock);
++	rtnl_unlock();
+ }
+ 
+ static int hard_if_event(struct notifier_block *this,
+@@ -469,7 +480,9 @@ static int hard_if_event(struct notifier_block *this,
+ 		hardif_deactivate_interface(batman_if);
+ 		break;
+ 	case NETDEV_UNREGISTER:
++		spin_lock(&if_list_lock);
+ 		hardif_remove_interface(batman_if);
++		spin_unlock(&if_list_lock);
+ 		break;
+ 	case NETDEV_CHANGEMTU:
+ 		if (batman_if->soft_iface)
+-- 
+1.7.2.3
 
-Sven Eckelmann (9):
-      batman-adv: Introduce if_list_lock to protect if_list
-      batman-adv: Protect update side of gw_list
-      batman-adv: Always protect list_for_each_entry_rcu with RCU
-      batman-adv: Remove unneeded rcu_read_lock
-      batman-adv: Use synchronize_rcu instead of call_rcu
-      batman-adv: Use refcnt to track usage count of gw_node
-      batman-adv: Use refcnt to track usage count of batman_if
-      batman-adv: count election of gateway as reference
-      batman-adv: count batman_if list queries as reference
-
- batman-adv/bat_sysfs.c      |   37 ++++++++++++++++++-------
- batman-adv/gateway_client.c |   64 ++++++++++++++++++++++++++++++-------------
- batman-adv/hard-interface.c |   59 +++++++++++++++++++++++++++++-----------
- batman-adv/hard-interface.h |   13 +++++++++
- batman-adv/originator.c     |    2 -
- batman-adv/routing.c        |    2 +
- batman-adv/types.h          |    4 +-
- 7 files changed, 132 insertions(+), 49 deletions(-)
