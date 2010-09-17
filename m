@@ -1,11 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 17 Sep 2010 17:40:59 +0200
-Message-Id: <1284738065-8715-4-git-send-email-sven.eckelmann@gmx.de>
+Date: Fri, 17 Sep 2010 17:41:00 +0200
+Message-Id: <1284738065-8715-5-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/9] batman-adv: Always protect
-	list_for_each_entry_rcu with RCU
+Subject: [B.A.T.M.A.N.] [PATCH 4/9] batman-adv: Remove unneeded rcu_read_lock
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,35 +18,68 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-receive_bat_packet is not called with rcu_read_lock so we must ensure by
-ourself that we protect list_for_each_entry_rcu using the correct RCU
-locks.
+Regions which do not use rcu functions don't need to protected by
+rcu_read_lock. If we want to protect data from being freed than it must
+be covered by the same read-side critical section or otherwise the grace
+period may already ended and freed the memory before we called
+rcu_read_lock again.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/routing.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ batman-adv/gateway_client.c |    4 ----
+ batman-adv/originator.c     |    2 --
+ 2 files changed, 0 insertions(+), 6 deletions(-)
 
-diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 603a932..1781b7e 100644
---- a/batman-adv/routing.c
-+++ b/batman-adv/routing.c
-@@ -575,6 +575,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 		batman_packet->tq, batman_packet->ttl, batman_packet->version,
- 		has_directlink_flag);
+diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
+index dd96d99..bfac0ff 100644
+--- a/batman-adv/gateway_client.c
++++ b/batman-adv/gateway_client.c
+@@ -342,9 +342,7 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct hlist_node *node;
+ 	int gw_count = 0;
  
-+	rcu_read_lock();
- 	list_for_each_entry_rcu(batman_if, &if_list, list) {
- 		if (batman_if->if_status != IF_ACTIVE)
- 			continue;
-@@ -597,6 +598,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 		if (compare_orig(ethhdr->h_source, broadcast_addr))
- 			is_broadcast = 1;
+-	rcu_read_lock();
+ 	if (!bat_priv->primary_if) {
+-		rcu_read_unlock();
+ 
+ 		return seq_printf(seq, "BATMAN mesh %s disabled - please "
+ 				  "specify interfaces to enable it\n",
+@@ -352,7 +350,6 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
  	}
-+	rcu_read_unlock();
  
- 	if (batman_packet->version != COMPAT_VERSION) {
- 		bat_dbg(DBG_BATMAN, bat_priv,
+ 	if (bat_priv->primary_if->if_status != IF_ACTIVE) {
+-		rcu_read_unlock();
+ 
+ 		return seq_printf(seq, "BATMAN mesh %s disabled - "
+ 				       "primary interface not active\n",
+@@ -365,7 +362,6 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 		   "outgoingIF", SOURCE_VERSION, REVISION_VERSION_STR,
+ 		   bat_priv->primary_if->net_dev->name,
+ 		   bat_priv->primary_if->addr_str, net_dev->name);
+-	rcu_read_unlock();
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
+diff --git a/batman-adv/originator.c b/batman-adv/originator.c
+index 2250266..3424ac2 100644
+--- a/batman-adv/originator.c
++++ b/batman-adv/originator.c
+@@ -335,7 +335,6 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
+ 				  net_dev->name);
+ 	}
+ 
+-	rcu_read_lock();
+ 	seq_printf(seq, "[B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)]\n",
+ 		   SOURCE_VERSION, REVISION_VERSION_STR,
+ 		   bat_priv->primary_if->net_dev->name,
+@@ -343,7 +342,6 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
+ 	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
+ 		   "Originator", "last-seen", "#", TQ_MAX_VALUE, "Nexthop",
+ 		   "outgoingIF", "Potential nexthops");
+-	rcu_read_unlock();
+ 
+ 	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 
 -- 
 1.7.2.3
 
