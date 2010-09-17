@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 17 Sep 2010 17:41:01 +0200
-Message-Id: <1284738065-8715-6-git-send-email-sven.eckelmann@gmx.de>
+Date: Fri, 17 Sep 2010 17:41:02 +0200
+Message-Id: <1284738065-8715-7-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 5/9] batman-adv: Use synchronize_rcu instead
-	of call_rcu
+Subject: [B.A.T.M.A.N.] [PATCH 6/9] batman-adv: Use refcnt to track usage
+	count of gw_node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,107 +19,86 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-It is recommended [1] to use synchronize_rcu to simplify the code -
-especially when otherwise extra locking is needed to protect other code
-from picking stale elements. It also protects us for emitting to many
-callbacks which may results in OOM conditions.
+gw_election may leak data from the rcu protected list of all gateway
+nodes outside the read-side critical area. This is not valid as we may
+free the data using a call_rcu created callback after we unlock using
+rcu_read_unlock. A workaround is to provide a reference count to be sure
+that the memory isn't freed to early.
 
-The only reason not to use it, would be in performance critical sections
-or when we are not allowed to block.
+It is currently only to implement the already existing functionality and
+doesn't provide the full tracking of all usage cases.
 
-[1] Documentation/RCU/checklist.txt
+Additionally, we must gw_node_hold inside the
+rcu_read_lock()..rcu_read_unlock() before we attach to the structure
+which "leaks" it. When another function now removed it from its usage
+context (curr_gw, usage on stack, ...) then we must gw_node_put it. If
+it is decremented to zero then we can issue the call_rcu to the freeing
+function. So "put" is not allowed inside an rcu_read_lock.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/gateway_client.c |   12 ++++--------
- batman-adv/hard-interface.c |   10 ++--------
- batman-adv/types.h          |    2 --
- 3 files changed, 6 insertions(+), 18 deletions(-)
+ batman-adv/gateway_client.c |   17 +++++++++++++++--
+ batman-adv/types.h          |    1 +
+ 2 files changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
-index bfac0ff..8bc1cb0 100644
+index 8bc1cb0..16f0757 100644
 --- a/batman-adv/gateway_client.c
 +++ b/batman-adv/gateway_client.c
-@@ -265,12 +265,6 @@ void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node)
- 	return gw_node_update(bat_priv, orig_node, 0);
- }
+@@ -28,6 +28,17 @@
+ #include <linux/udp.h>
+ #include <linux/if_vlan.h>
  
--static void gw_node_free(struct rcu_head *rcu)
--{
--	struct gw_node *gw_node = container_of(rcu, struct gw_node, rcu);
--	kfree(gw_node);
--}
--
- void gw_node_purge_deleted(struct bat_priv *bat_priv)
++static void gw_node_hold(struct gw_node *gw_node)
++{
++	atomic_inc(&gw_node->refcnt);
++}
++
++static void gw_node_put(struct gw_node *gw_node)
++{
++	if (atomic_dec_and_test(&gw_node->refcnt))
++		kfree(gw_node);
++}
++
+ void *gw_get_selected(struct bat_priv *bat_priv)
  {
- 	struct gw_node *gw_node;
-@@ -286,7 +280,8 @@ void gw_node_purge_deleted(struct bat_priv *bat_priv)
- 		    (time_after(jiffies, gw_node->deleted + timeout))) {
+ 	struct gw_node *curr_gateway_tmp = bat_priv->curr_gw;
+@@ -205,6 +216,8 @@ static void gw_node_add(struct bat_priv *bat_priv,
+ 	memset(gw_node, 0, sizeof(struct gw_node));
+ 	INIT_HLIST_NODE(&gw_node->list);
+ 	gw_node->orig_node = orig_node;
++	atomic_set(&gw_node->refcnt, 0);
++	gw_node_hold(gw_node);
+ 
+ 	spin_lock_irqsave(&bat_priv->gw_list_lock, flags);
+ 	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw_list);
+@@ -281,7 +294,7 @@ void gw_node_purge_deleted(struct bat_priv *bat_priv)
  
  			hlist_del_rcu(&gw_node->list);
--			call_rcu(&gw_node->rcu, gw_node_free);
-+			synchronize_rcu();
-+			kfree(gw_node);
+ 			synchronize_rcu();
+-			kfree(gw_node);
++			gw_node_put(gw_node);
  		}
  	}
  
-@@ -304,7 +299,8 @@ void gw_node_list_free(struct bat_priv *bat_priv)
- 	hlist_for_each_entry_safe(gw_node, node, node_tmp,
+@@ -300,7 +313,7 @@ void gw_node_list_free(struct bat_priv *bat_priv)
  				 &bat_priv->gw_list, list) {
  		hlist_del_rcu(&gw_node->list);
--		call_rcu(&gw_node->rcu, gw_node_free);
-+		synchronize_rcu();
-+		kfree(gw_node);
+ 		synchronize_rcu();
+-		kfree(gw_node);
++		gw_node_put(gw_node);
  	}
  
  	gw_deselect(bat_priv);
-diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index 3cd7cb1..0b3ee6b 100644
---- a/batman-adv/hard-interface.c
-+++ b/batman-adv/hard-interface.c
-@@ -420,13 +420,6 @@ out:
- 	return NULL;
- }
- 
--static void hardif_free_interface(struct rcu_head *rcu)
--{
--	struct batman_if *batman_if = container_of(rcu, struct batman_if, rcu);
--
--	kfree(batman_if);
--}
--
- static void hardif_remove_interface(struct batman_if *batman_if)
- {
- 	/* first deactivate interface */
-@@ -440,9 +433,10 @@ static void hardif_remove_interface(struct batman_if *batman_if)
- 
- 	/* caller must take if_list_lock */
- 	list_del_rcu(&batman_if->list);
-+	synchronize_rcu();
- 	sysfs_del_hardif(&batman_if->hardif_obj);
- 	dev_put(batman_if->net_dev);
--	call_rcu(&batman_if->rcu, hardif_free_interface);
-+	kfree(batman_if);
- }
- 
- void hardif_remove_interfaces(void)
 diff --git a/batman-adv/types.h b/batman-adv/types.h
-index e7b53a4..1940404 100644
+index 1940404..ecc4365 100644
 --- a/batman-adv/types.h
 +++ b/batman-adv/types.h
-@@ -44,7 +44,6 @@ struct batman_if {
- 	unsigned char *packet_buff;
- 	int packet_len;
- 	struct kobject *hardif_obj;
--	struct rcu_head rcu;
- 	struct packet_type batman_adv_ptype;
- 	struct net_device *soft_iface;
- };
-@@ -96,7 +95,6 @@ struct gw_node {
+@@ -95,6 +95,7 @@ struct gw_node {
  	struct hlist_node list;
  	struct orig_node *orig_node;
  	unsigned long deleted;
--	struct rcu_head rcu;
++	atomic_t refcnt;
  };
  
  /**
