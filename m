@@ -1,10 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 17 Sep 2010 17:41:00 +0200
-Message-Id: <1284738065-8715-5-git-send-email-sven.eckelmann@gmx.de>
+Date: Fri, 17 Sep 2010 17:41:01 +0200
+Message-Id: <1284738065-8715-6-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/9] batman-adv: Remove unneeded rcu_read_lock
+Subject: [B.A.T.M.A.N.] [PATCH 5/9] batman-adv: Use synchronize_rcu instead
+	of call_rcu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,68 +19,110 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Regions which do not use rcu functions don't need to protected by
-rcu_read_lock. If we want to protect data from being freed than it must
-be covered by the same read-side critical section or otherwise the grace
-period may already ended and freed the memory before we called
-rcu_read_lock again.
+It is recommended [1] to use synchronize_rcu to simplify the code -
+especially when otherwise extra locking is needed to protect other code
+from picking stale elements. It also protects us for emitting to many
+callbacks which may results in OOM conditions.
+
+The only reason not to use it, would be in performance critical sections
+or when we are not allowed to block.
+
+[1] Documentation/RCU/checklist.txt
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/gateway_client.c |    4 ----
- batman-adv/originator.c     |    2 --
- 2 files changed, 0 insertions(+), 6 deletions(-)
+ batman-adv/gateway_client.c |   12 ++++--------
+ batman-adv/hard-interface.c |   10 ++--------
+ batman-adv/types.h          |    2 --
+ 3 files changed, 6 insertions(+), 18 deletions(-)
 
 diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
-index dd96d99..bfac0ff 100644
+index bfac0ff..8bc1cb0 100644
 --- a/batman-adv/gateway_client.c
 +++ b/batman-adv/gateway_client.c
-@@ -342,9 +342,7 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
- 	struct hlist_node *node;
- 	int gw_count = 0;
+@@ -265,12 +265,6 @@ void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node)
+ 	return gw_node_update(bat_priv, orig_node, 0);
+ }
  
--	rcu_read_lock();
- 	if (!bat_priv->primary_if) {
--		rcu_read_unlock();
+-static void gw_node_free(struct rcu_head *rcu)
+-{
+-	struct gw_node *gw_node = container_of(rcu, struct gw_node, rcu);
+-	kfree(gw_node);
+-}
+-
+ void gw_node_purge_deleted(struct bat_priv *bat_priv)
+ {
+ 	struct gw_node *gw_node;
+@@ -286,7 +280,8 @@ void gw_node_purge_deleted(struct bat_priv *bat_priv)
+ 		    (time_after(jiffies, gw_node->deleted + timeout))) {
  
- 		return seq_printf(seq, "BATMAN mesh %s disabled - please "
- 				  "specify interfaces to enable it\n",
-@@ -352,7 +350,6 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 			hlist_del_rcu(&gw_node->list);
+-			call_rcu(&gw_node->rcu, gw_node_free);
++			synchronize_rcu();
++			kfree(gw_node);
+ 		}
  	}
  
- 	if (bat_priv->primary_if->if_status != IF_ACTIVE) {
--		rcu_read_unlock();
- 
- 		return seq_printf(seq, "BATMAN mesh %s disabled - "
- 				       "primary interface not active\n",
-@@ -365,7 +362,6 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
- 		   "outgoingIF", SOURCE_VERSION, REVISION_VERSION_STR,
- 		   bat_priv->primary_if->net_dev->name,
- 		   bat_priv->primary_if->addr_str, net_dev->name);
--	rcu_read_unlock();
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
-diff --git a/batman-adv/originator.c b/batman-adv/originator.c
-index 2250266..3424ac2 100644
---- a/batman-adv/originator.c
-+++ b/batman-adv/originator.c
-@@ -335,7 +335,6 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 				  net_dev->name);
+@@ -304,7 +299,8 @@ void gw_node_list_free(struct bat_priv *bat_priv)
+ 	hlist_for_each_entry_safe(gw_node, node, node_tmp,
+ 				 &bat_priv->gw_list, list) {
+ 		hlist_del_rcu(&gw_node->list);
+-		call_rcu(&gw_node->rcu, gw_node_free);
++		synchronize_rcu();
++		kfree(gw_node);
  	}
  
--	rcu_read_lock();
- 	seq_printf(seq, "[B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)]\n",
- 		   SOURCE_VERSION, REVISION_VERSION_STR,
- 		   bat_priv->primary_if->net_dev->name,
-@@ -343,7 +342,6 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
- 		   "Originator", "last-seen", "#", TQ_MAX_VALUE, "Nexthop",
- 		   "outgoingIF", "Potential nexthops");
--	rcu_read_unlock();
+ 	gw_deselect(bat_priv);
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index 3cd7cb1..0b3ee6b 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -420,13 +420,6 @@ out:
+ 	return NULL;
+ }
  
- 	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+-static void hardif_free_interface(struct rcu_head *rcu)
+-{
+-	struct batman_if *batman_if = container_of(rcu, struct batman_if, rcu);
+-
+-	kfree(batman_if);
+-}
+-
+ static void hardif_remove_interface(struct batman_if *batman_if)
+ {
+ 	/* first deactivate interface */
+@@ -440,9 +433,10 @@ static void hardif_remove_interface(struct batman_if *batman_if)
  
+ 	/* caller must take if_list_lock */
+ 	list_del_rcu(&batman_if->list);
++	synchronize_rcu();
+ 	sysfs_del_hardif(&batman_if->hardif_obj);
+ 	dev_put(batman_if->net_dev);
+-	call_rcu(&batman_if->rcu, hardif_free_interface);
++	kfree(batman_if);
+ }
+ 
+ void hardif_remove_interfaces(void)
+diff --git a/batman-adv/types.h b/batman-adv/types.h
+index e7b53a4..1940404 100644
+--- a/batman-adv/types.h
++++ b/batman-adv/types.h
+@@ -44,7 +44,6 @@ struct batman_if {
+ 	unsigned char *packet_buff;
+ 	int packet_len;
+ 	struct kobject *hardif_obj;
+-	struct rcu_head rcu;
+ 	struct packet_type batman_adv_ptype;
+ 	struct net_device *soft_iface;
+ };
+@@ -96,7 +95,6 @@ struct gw_node {
+ 	struct hlist_node list;
+ 	struct orig_node *orig_node;
+ 	unsigned long deleted;
+-	struct rcu_head rcu;
+ };
+ 
+ /**
 -- 
 1.7.2.3
 
