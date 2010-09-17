@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Fri, 17 Sep 2010 17:41:04 +0200
-Message-Id: <1284738065-8715-9-git-send-email-sven.eckelmann@gmx.de>
+Date: Fri, 17 Sep 2010 17:41:03 +0200
+Message-Id: <1284738065-8715-8-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284738065-8715-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 8/9] batman-adv: count election of gateway as
-	reference
+Subject: [B.A.T.M.A.N.] [PATCH 7/9] batman-adv: Use refcnt to track usage
+	count of batman_if
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,79 +19,87 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-We reference the gw_nodes as curr_gw for each bat_priv. They are tracked
-inside a rcu protected list gw_list which may free the memory after it
-gets removed from the list. Nevertheless it could still be referenced by
-curr_gw and access to it would result in a kernel oops.
+get_batman_if_by_netdev and get_active_batman_if may leak data from the
+rcu protected list of interfaces. The rcu protected list of all gateway
+nodes leaks the actual data outside the read-side critical area. This is
+not valid as we may free the data using a call_rcu created callback
+after we unlock using rcu_read_unlock. A workaround is to provide a
+reference count to be sure that the memory isn't freed to early.
+
+It is currently only to implement the already existing functionality and
+doesn't provide the full tracking of all usage cases.
+
+Additionally, we must hardif_hold inside the
+rcu_read_lock()..rcu_read_unlock() before we attach to the structure
+which "leaks" it. When another function now removed it from its usage
+context (primary_if, usage on stack, ...) then we must hardif_put it. If
+it is decremented to zero then we can issue the call_rcu to the freeing
+function. So "put" is not allowed inside an rcu_read_lock.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- batman-adv/gateway_client.c |   22 +++++++++++++++++++---
- 1 files changed, 19 insertions(+), 3 deletions(-)
+ batman-adv/hard-interface.c |    5 +++--
+ batman-adv/hard-interface.h |   13 +++++++++++++
+ batman-adv/types.h          |    1 +
+ 3 files changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
-index 16f0757..1cad4f8 100644
---- a/batman-adv/gateway_client.c
-+++ b/batman-adv/gateway_client.c
-@@ -51,13 +51,18 @@ void *gw_get_selected(struct bat_priv *bat_priv)
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index 0b3ee6b..445498c 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -403,6 +403,8 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
+ 	batman_if->soft_iface = NULL;
+ 	batman_if->if_status = IF_NOT_IN_USE;
+ 	INIT_LIST_HEAD(&batman_if->list);
++	atomic_set(&batman_if->refcnt, 0);
++	hardif_hold(batman_if);
  
- void gw_deselect(struct bat_priv *bat_priv)
- {
-+	struct gw_node *gw_node = bat_priv->curr_gw;
-+
- 	bat_priv->curr_gw = NULL;
-+
-+	if (gw_node)
-+		gw_node_put(gw_node);
+ 	check_known_mac_addr(batman_if->net_dev->dev_addr);
+ 
+@@ -435,8 +437,7 @@ static void hardif_remove_interface(struct batman_if *batman_if)
+ 	list_del_rcu(&batman_if->list);
+ 	synchronize_rcu();
+ 	sysfs_del_hardif(&batman_if->hardif_obj);
+-	dev_put(batman_if->net_dev);
+-	kfree(batman_if);
++	hardif_put(batman_if);
  }
  
- void gw_election(struct bat_priv *bat_priv)
- {
- 	struct hlist_node *node;
--	struct gw_node *gw_node, *curr_gw_tmp = NULL;
-+	struct gw_node *gw_node, *curr_gw_tmp = NULL, *old_gw_node = NULL;
- 	uint8_t max_tq = 0;
- 	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
- 	int down, up;
-@@ -131,7 +136,6 @@ void gw_election(struct bat_priv *bat_priv)
- 		if (tmp_gw_factor > max_gw_factor)
- 			max_gw_factor = tmp_gw_factor;
- 	}
--	rcu_read_unlock();
+ void hardif_remove_interfaces(void)
+diff --git a/batman-adv/hard-interface.h b/batman-adv/hard-interface.h
+index 4b49527..d550889 100644
+--- a/batman-adv/hard-interface.h
++++ b/batman-adv/hard-interface.h
+@@ -42,4 +42,17 @@ int batman_skb_recv(struct sk_buff *skb,
+ int hardif_min_mtu(struct net_device *soft_iface);
+ void update_min_mtu(struct net_device *soft_iface);
  
- 	if (bat_priv->curr_gw != curr_gw_tmp) {
- 		if ((bat_priv->curr_gw) && (!curr_gw_tmp))
-@@ -153,8 +157,17 @@ void gw_election(struct bat_priv *bat_priv)
- 				curr_gw_tmp->orig_node->gw_flags,
- 				curr_gw_tmp->orig_node->router->tq_avg);
- 
-+		old_gw_node = bat_priv->curr_gw;
-+		if (curr_gw_tmp)
-+			gw_node_hold(curr_gw_tmp);
++static inline void hardif_hold(struct batman_if *batman_if)
++{
++	atomic_inc(&batman_if->refcnt);
++}
 +
- 		bat_priv->curr_gw = curr_gw_tmp;
- 	}
++static inline void hardif_put(struct batman_if *batman_if)
++{
++	if (atomic_dec_and_test(&batman_if->refcnt)) {
++		dev_put(batman_if->net_dev);
++		kfree(batman_if);
++	}
++}
 +
-+	rcu_read_unlock();
-+
-+	if (old_gw_node)
-+		gw_node_put(old_gw_node);
- }
- 
- void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
-@@ -258,8 +271,11 @@ void gw_node_update(struct bat_priv *bat_priv,
- 				"Gateway %pM removed from gateway list\n",
- 				orig_node->orig);
- 
--			if (gw_node == bat_priv->curr_gw)
-+			if (gw_node == bat_priv->curr_gw) {
-+				rcu_read_unlock();
- 				gw_deselect(bat_priv);
-+				return;
-+			}
- 		}
- 
- 		rcu_read_unlock();
+ #endif /* _NET_BATMAN_ADV_HARD_INTERFACE_H_ */
+diff --git a/batman-adv/types.h b/batman-adv/types.h
+index ecc4365..a609100 100644
+--- a/batman-adv/types.h
++++ b/batman-adv/types.h
+@@ -44,6 +44,7 @@ struct batman_if {
+ 	unsigned char *packet_buff;
+ 	int packet_len;
+ 	struct kobject *hardif_obj;
++	atomic_t refcnt;
+ 	struct packet_type batman_adv_ptype;
+ 	struct net_device *soft_iface;
+ };
 -- 
 1.7.2.3
 
