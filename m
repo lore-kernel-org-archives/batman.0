@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 18 Sep 2010 21:01:17 +0200
-Message-Id: <1284836482-23431-8-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 18 Sep 2010 21:01:18 +0200
+Message-Id: <1284836482-23431-9-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284836482-23431-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284836482-23431-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 07/12] Staging: batman-adv: Remove unneeded
-	rcu_read_lock
+Subject: [B.A.T.M.A.N.] [PATCH 08/12] Staging: batman-adv: Use
+	synchronize_rcu instead of call_rcu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,37 +20,77 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Regions which do not use rcu functions don't need to protected by
-rcu_read_lock. If we want to protect data from being freed than it must
-be covered by the same read-side critical section or otherwise the grace
-period may already ended and freed the memory before we called
-rcu_read_lock again.
+It is recommended [1] to use synchronize_rcu to simplify the code -
+especially when otherwise extra locking is needed to protect other code
+from picking stale elements. It also protects us for emitting to many
+callbacks which may results in OOM conditions.
+
+The only reason not to use it, would be in performance critical sections
+or when we are not allowed to block.
+
+[1] Documentation/RCU/checklist.txt
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/originator.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/staging/batman-adv/TODO             |    1 -
+ drivers/staging/batman-adv/hard-interface.c |   10 ++--------
+ drivers/staging/batman-adv/types.h          |    1 -
+ 3 files changed, 2 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
-index f25d7fd..c530df1 100644
---- a/drivers/staging/batman-adv/originator.c
-+++ b/drivers/staging/batman-adv/originator.c
-@@ -329,7 +329,6 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 				  net_dev->name);
- 	}
+diff --git a/drivers/staging/batman-adv/TODO b/drivers/staging/batman-adv/TODO
+index 76b2acd..cb6b026 100644
+--- a/drivers/staging/batman-adv/TODO
++++ b/drivers/staging/batman-adv/TODO
+@@ -1,7 +1,6 @@
+  * Rework usage of RCU
+     - don't leak pointers from rcu out of rcu critical area which may
+       get freed
+-    - check were synchronize_rcu must be used
+     - go through Documentation/RCU/checklist.txt
+  * Request a new review
+  * Process the comments from the review
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index 35b198c..376ac48 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -418,13 +418,6 @@ out:
+ 	return NULL;
+ }
  
--	rcu_read_lock();
- 	seq_printf(seq, "[B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)]\n",
- 		   SOURCE_VERSION, REVISION_VERSION_STR,
- 		   bat_priv->primary_if->net_dev->name,
-@@ -337,7 +336,6 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
- 		   "Originator", "last-seen", "#", TQ_MAX_VALUE, "Nexthop",
- 		   "outgoingIF", "Potential nexthops");
--	rcu_read_unlock();
+-static void hardif_free_interface(struct rcu_head *rcu)
+-{
+-	struct batman_if *batman_if = container_of(rcu, struct batman_if, rcu);
+-
+-	kfree(batman_if);
+-}
+-
+ static void hardif_remove_interface(struct batman_if *batman_if)
+ {
+ 	/* first deactivate interface */
+@@ -438,9 +431,10 @@ static void hardif_remove_interface(struct batman_if *batman_if)
  
- 	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 	/* caller must take if_list_lock */
+ 	list_del_rcu(&batman_if->list);
++	synchronize_rcu();
+ 	sysfs_del_hardif(&batman_if->hardif_obj);
+ 	dev_put(batman_if->net_dev);
+-	call_rcu(&batman_if->rcu, hardif_free_interface);
++	kfree(batman_if);
+ }
  
+ void hardif_remove_interfaces(void)
+diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
+index 478277f..b162644 100644
+--- a/drivers/staging/batman-adv/types.h
++++ b/drivers/staging/batman-adv/types.h
+@@ -44,7 +44,6 @@ struct batman_if {
+ 	unsigned char *packet_buff;
+ 	int packet_len;
+ 	struct kobject *hardif_obj;
+-	struct rcu_head rcu;
+ 	struct packet_type batman_adv_ptype;
+ 	struct net_device *soft_iface;
+ };
 -- 
 1.7.2.3
 
