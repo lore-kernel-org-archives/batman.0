@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 18 Sep 2010 21:01:13 +0200
-Message-Id: <1284836482-23431-4-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 18 Sep 2010 21:01:14 +0200
+Message-Id: <1284836482-23431-5-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284836482-23431-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284836482-23431-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 03/12] Staging: batman-adv: Mark debugfs
-	files as nonseekable
+Subject: [B.A.T.M.A.N.] [PATCH 04/12] Staging: batman-adv: wait for call_rcu
+	before unloading module
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,57 +20,34 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-We don't allow to seek in the debugfs socket and log files. Thus we
-should mark the file descriptor as nonseekable.
+synchronize_rcu respective synchronize_net only waits for the rcu grace
+period to elapse and we may fail to finish the calls which were made to
+call_rcu in that time. In result the module could be unloaded during the
+execution of the RCU callbacks.
+
+rcu_barrier[1] will now wait for all outstanding RCU callbacks to finish
+before continuing.
+
+[1] Documentation/RCU/rcubarrier.txt
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/staging/batman-adv/bat_debugfs.c |    2 ++
- drivers/staging/batman-adv/icmp_socket.c |    3 +++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+ drivers/staging/batman-adv/main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/bat_debugfs.c b/drivers/staging/batman-adv/bat_debugfs.c
-index 507da68..57f84a9 100644
---- a/drivers/staging/batman-adv/bat_debugfs.c
-+++ b/drivers/staging/batman-adv/bat_debugfs.c
-@@ -90,6 +90,7 @@ int debug_log(struct bat_priv *bat_priv, char *fmt, ...)
+diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
+index 78ceebf..580ca02 100644
+--- a/drivers/staging/batman-adv/main.c
++++ b/drivers/staging/batman-adv/main.c
+@@ -72,7 +72,7 @@ static void __exit batman_exit(void)
+ 	destroy_workqueue(bat_event_workqueue);
+ 	bat_event_workqueue = NULL;
  
- static int log_open(struct inode *inode, struct file *file)
- {
-+	nonseekable_open(inode, file);
- 	file->private_data = inode->i_private;
- 	inc_module_count();
- 	return 0;
-@@ -174,6 +175,7 @@ static const struct file_operations log_fops = {
- 	.release        = log_release,
- 	.read           = log_read,
- 	.poll           = log_poll,
-+	.llseek         = no_llseek,
- };
+-	synchronize_net();
++	rcu_barrier();
+ }
  
- static int debug_log_setup(struct bat_priv *bat_priv)
-diff --git a/drivers/staging/batman-adv/icmp_socket.c b/drivers/staging/batman-adv/icmp_socket.c
-index 24627be..48856ca 100644
---- a/drivers/staging/batman-adv/icmp_socket.c
-+++ b/drivers/staging/batman-adv/icmp_socket.c
-@@ -45,6 +45,8 @@ static int bat_socket_open(struct inode *inode, struct file *file)
- 	unsigned int i;
- 	struct socket_client *socket_client;
- 
-+	nonseekable_open(inode, file);
-+
- 	socket_client = kmalloc(sizeof(struct socket_client), GFP_KERNEL);
- 
- 	if (!socket_client)
-@@ -283,6 +285,7 @@ static const struct file_operations fops = {
- 	.read = bat_socket_read,
- 	.write = bat_socket_write,
- 	.poll = bat_socket_poll,
-+	.llseek = no_llseek,
- };
- 
- int bat_socket_setup(struct bat_priv *bat_priv)
+ int mesh_init(struct net_device *soft_iface)
 -- 
 1.7.2.3
 
