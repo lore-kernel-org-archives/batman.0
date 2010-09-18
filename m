@@ -1,17 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 18 Sep 2010 13:14:10 +0200
-References: <1284589835-26617-1-git-send-email-sven.eckelmann@gmx.de>
-	<201009161451.40470.arnd@arndb.de>
-	<201009161516.27824.sven.eckelmann@gmx.de>
-In-Reply-To: <201009161516.27824.sven.eckelmann@gmx.de>
+Date: Sat, 18 Sep 2010 13:23:37 +0200
+References: <20100917010913.719fcab2@rechenknecht>
+In-Reply-To: <20100917010913.719fcab2@rechenknecht>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201009181314.10843.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Mark debugfs files as
-	nonseekable
+Message-Id: <201009181323.37657.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] email changed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,25 +22,10 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday 16 September 2010 15:16:26 Sven Eckelmann wrote:
-> Arnd Bergmann wrote:
-> > On Thursday 16 September 2010, Sven Eckelmann wrote:
-> > > We don't allow to seek in the debugfs socket and log files. Thus we
-> > > should mark the file descriptor as nonseekable.
-> > > 
-> > > Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-> > > Cc: Arnd Bergmann <arnd@arndb.de>
-> > 
-> > Acked-by: Arnd Bergmann <arnd@arndb.de>
-> > 
-> > Looks good. Do you want to merge it yourself? Otherwise I'll queue it up
-> > in my tree.
-> 
-> This patch is for the batman-adv repository (so the paths aren't 100% ready
-> for the kernel tree). So I would wait for Marek Lindner to approve it and
-> than wandering from there to Gregs staging-next tree for 2.6.37.
+On Friday 17 September 2010 01:09:13 Andreas Langer wrote:
+> My email address has changed.
 
-The patch looks good. It is in our repos now.
+Thanks for the update.  :-)
 
-Thanks,
+Cheers,
 Marek
