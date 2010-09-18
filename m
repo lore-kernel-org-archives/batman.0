@@ -1,17 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 18 Sep 2010 17:41:43 +0200
-References: <1284738065-8715-10-git-send-email-sven.eckelmann@gmx.de>
-	<201009181642.08297.lindner_marek@yahoo.de>
-	<201009181721.44244.sven.eckelmann@gmx.de>
-In-Reply-To: <201009181721.44244.sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201009181741.44238.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 9/9] batman-adv: count batman_if list
-	queries as reference
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sat, 18 Sep 2010 21:01:10 +0200
+Message-Id: <1284836482-23431-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.37 (3)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,17 +14,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: greg@kroah.com
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-On Saturday 18 September 2010 17:21:43 Sven Eckelmann wrote:
-> As said before, this patch should not count primary_if by design (see the 
-> commit message). I would say that your changes should be an extra patch.
-> 
-> I will split that stuff and send it as extra patches. Your patch itself
-> has  the problem that it increases the refcnt through
-> get_active_batman_if, but doesn't reduce it at the end.
+Hi,
 
-Should be ok now - I submitted your patches (revision 1799-1809).
+here are patches targeted for 2.6.37. All patches needed for that patchset are
+already part of your staging-next tree.
 
-Thanks,
-Marek
+thanks,
+	Sven
+
+Marek Lindner (1):
+      Staging: batman-adv: Introduce update_primary_addr to update mac address
+
+Sven Eckelmann (11):
+      Staging: batman-adv: checkpatch cleanup of comments
+      Staging: batman-adv: Move mailing list address to .org
+      Staging: batman-adv: Mark debugfs files as nonseekable
+      Staging: batman-adv: wait for call_rcu before unloading module
+      Staging: batman-adv: Introduce if_list_lock to protect if_list
+      Staging: batman-adv: Always protect list_for_each_entry_rcu with RCU
+      Staging: batman-adv: Remove unneeded rcu_read_lock
+      Staging: batman-adv: Use synchronize_rcu instead of call_rcu
+      Staging: batman-adv: Use refcnt to track usage count of batman_if
+      Staging: batman-adv: count batman_if list queries as reference
+      Staging: batman-adv: Track references of batman_if in set_primary_if
+
+ drivers/staging/batman-adv/README           |    5 +-
+ drivers/staging/batman-adv/TODO             |    7 +--
+ drivers/staging/batman-adv/bat_debugfs.c    |    2 +
+ drivers/staging/batman-adv/bat_sysfs.c      |   42 ++++++++++---
+ drivers/staging/batman-adv/hard-interface.c |   89 +++++++++++++++++++-------
+ drivers/staging/batman-adv/hard-interface.h |   13 ++++
+ drivers/staging/batman-adv/icmp_socket.c    |    3 +
+ drivers/staging/batman-adv/main.c           |    2 +-
+ drivers/staging/batman-adv/originator.c     |    2 -
+ drivers/staging/batman-adv/packet.h         |    2 +-
+ drivers/staging/batman-adv/routing.c        |    2 +
+ drivers/staging/batman-adv/types.h          |   21 +++---
+ drivers/staging/batman-adv/vis.c            |   16 +++---
+ 13 files changed, 142 insertions(+), 64 deletions(-)
