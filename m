@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 18 Sep 2010 21:01:12 +0200
-Message-Id: <1284836482-23431-3-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 18 Sep 2010 21:01:13 +0200
+Message-Id: <1284836482-23431-4-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284836482-23431-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284836482-23431-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 02/12] Staging: batman-adv: Move mailing list
-	address to .org
+Subject: [B.A.T.M.A.N.] [PATCH 03/12] Staging: batman-adv: Mark debugfs
+	files as nonseekable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,43 +20,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-The official mailing list is run on lists.open-mesh.org and it should be
-avoided to sent them to lists.open-mesh.net to reduce the number of
-receipents and double posts.
+We don't allow to seek in the debugfs socket and log files. Thus we
+should mark the file descriptor as nonseekable.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/staging/batman-adv/README |    5 +++--
- drivers/staging/batman-adv/TODO   |    2 +-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/staging/batman-adv/bat_debugfs.c |    2 ++
+ drivers/staging/batman-adv/icmp_socket.c |    3 +++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/README b/drivers/staging/batman-adv/README
-index 3a975fc..7c878bb 100644
---- a/drivers/staging/batman-adv/README
-+++ b/drivers/staging/batman-adv/README
-@@ -229,8 +229,9 @@ CONTACT
- Please send us comments, experiences, questions, anything :)
+diff --git a/drivers/staging/batman-adv/bat_debugfs.c b/drivers/staging/batman-adv/bat_debugfs.c
+index 507da68..57f84a9 100644
+--- a/drivers/staging/batman-adv/bat_debugfs.c
++++ b/drivers/staging/batman-adv/bat_debugfs.c
+@@ -90,6 +90,7 @@ int debug_log(struct bat_priv *bat_priv, char *fmt, ...)
  
- IRC:            #batman   on   irc.freenode.org
--Mailing-list:   b.a.t.m.a.n@open-mesh.net (optional  subscription
--          at https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n)
-+Mailing-list:   b.a.t.m.a.n@b.a.t.m.a.n@lists.open-mesh.org
-+                (optional   subscription   at
-+                 https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n)
+ static int log_open(struct inode *inode, struct file *file)
+ {
++	nonseekable_open(inode, file);
+ 	file->private_data = inode->i_private;
+ 	inc_module_count();
+ 	return 0;
+@@ -174,6 +175,7 @@ static const struct file_operations log_fops = {
+ 	.release        = log_release,
+ 	.read           = log_read,
+ 	.poll           = log_poll,
++	.llseek         = no_llseek,
+ };
  
- You can also contact the Authors:
+ static int debug_log_setup(struct bat_priv *bat_priv)
+diff --git a/drivers/staging/batman-adv/icmp_socket.c b/drivers/staging/batman-adv/icmp_socket.c
+index 24627be..48856ca 100644
+--- a/drivers/staging/batman-adv/icmp_socket.c
++++ b/drivers/staging/batman-adv/icmp_socket.c
+@@ -45,6 +45,8 @@ static int bat_socket_open(struct inode *inode, struct file *file)
+ 	unsigned int i;
+ 	struct socket_client *socket_client;
  
-diff --git a/drivers/staging/batman-adv/TODO b/drivers/staging/batman-adv/TODO
-index 3af8028..76b2acd 100644
---- a/drivers/staging/batman-adv/TODO
-+++ b/drivers/staging/batman-adv/TODO
-@@ -11,5 +11,5 @@ Please send all patches to:
- 	Marek Lindner <lindner_marek@yahoo.de>
- 	Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
- 	Andrew Lunn <andrew@lunn.ch>
--	b.a.t.m.a.n@lists.open-mesh.net
-+	b.a.t.m.a.n@lists.open-mesh.org
- 	Greg Kroah-Hartman <gregkh@suse.de>
++	nonseekable_open(inode, file);
++
+ 	socket_client = kmalloc(sizeof(struct socket_client), GFP_KERNEL);
+ 
+ 	if (!socket_client)
+@@ -283,6 +285,7 @@ static const struct file_operations fops = {
+ 	.read = bat_socket_read,
+ 	.write = bat_socket_write,
+ 	.poll = bat_socket_poll,
++	.llseek = no_llseek,
+ };
+ 
+ int bat_socket_setup(struct bat_priv *bat_priv)
 -- 
 1.7.2.3
 
