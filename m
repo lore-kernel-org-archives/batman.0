@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 18 Sep 2010 21:01:16 +0200
-Message-Id: <1284836482-23431-7-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 18 Sep 2010 21:01:17 +0200
+Message-Id: <1284836482-23431-8-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1284836482-23431-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1284836482-23431-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 06/12] Staging: batman-adv: Always protect
-	list_for_each_entry_rcu with RCU
+Subject: [B.A.T.M.A.N.] [PATCH 07/12] Staging: batman-adv: Remove unneeded
+	rcu_read_lock
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,35 +20,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-receive_bat_packet is not called with rcu_read_lock so we must ensure by
-ourself that we protect list_for_each_entry_rcu using the correct RCU
-locks.
+Regions which do not use rcu functions don't need to protected by
+rcu_read_lock. If we want to protect data from being freed than it must
+be covered by the same read-side critical section or otherwise the grace
+period may already ended and freed the memory before we called
+rcu_read_lock again.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/routing.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/staging/batman-adv/originator.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
-index 2cf8cf9..58aa99e 100644
---- a/drivers/staging/batman-adv/routing.c
-+++ b/drivers/staging/batman-adv/routing.c
-@@ -563,6 +563,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 		batman_packet->tq, batman_packet->ttl, batman_packet->version,
- 		has_directlink_flag);
- 
-+	rcu_read_lock();
- 	list_for_each_entry_rcu(batman_if, &if_list, list) {
- 		if (batman_if->if_status != IF_ACTIVE)
- 			continue;
-@@ -585,6 +586,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 		if (compare_orig(ethhdr->h_source, broadcast_addr))
- 			is_broadcast = 1;
+diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
+index f25d7fd..c530df1 100644
+--- a/drivers/staging/batman-adv/originator.c
++++ b/drivers/staging/batman-adv/originator.c
+@@ -329,7 +329,6 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
+ 				  net_dev->name);
  	}
-+	rcu_read_unlock();
  
- 	if (batman_packet->version != COMPAT_VERSION) {
- 		bat_dbg(DBG_BATMAN, bat_priv,
+-	rcu_read_lock();
+ 	seq_printf(seq, "[B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%s (%s)]\n",
+ 		   SOURCE_VERSION, REVISION_VERSION_STR,
+ 		   bat_priv->primary_if->net_dev->name,
+@@ -337,7 +336,6 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
+ 	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
+ 		   "Originator", "last-seen", "#", TQ_MAX_VALUE, "Nexthop",
+ 		   "outgoingIF", "Potential nexthops");
+-	rcu_read_unlock();
+ 
+ 	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
+ 
 -- 
 1.7.2.3
 
