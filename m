@@ -1,15 +1,15 @@
-Return-Path: <don@dis.org.nz>
-MIME-Version: 1.0
-In-Reply-To: <97C5B1C7CD044FEDB67CC3C1E2055BDD@flightrisk>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 27 Sep 2010 17:58:03 +0200
 References: <201009262057.36382.lindner_marek@yahoo.de>
-	<1285527477-10340-1-git-send-email-lindner_marek@yahoo.de>
 	<201009261516.21774.lew.pitcher@digitalfreehold.ca>
 	<97C5B1C7CD044FEDB67CC3C1E2055BDD@flightrisk>
-Date: Mon, 27 Sep 2010 14:22:52 +1300
-Message-ID: <AANLkTimL5Mha3Xr+f9K68aR8u8sS=3HgfG_qSBzmFmyU@mail.gmail.com>
-From: Donald Gordon <don@dis.org.nz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <97C5B1C7CD044FEDB67CC3C1E2055BDD@flightrisk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201009271758.03620.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv: softif lan loop avoidance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,27 +22,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org, "Lew Pitcher (The Pitcher Digital Freehold)" <lew.pitcher@digitalfreehold.ca>
 
-On Mon, Sep 27, 2010 at 1:25 PM, DuncanSF
-<duncan-tech-openmesh@404.978.org> wrote:
+On Monday 27 September 2010 02:25:52 DuncanSF wrote:
 > Doing this defeats part of the purpose of running batman-adv on
-> a LAN. =A0Picture the case where nodes have links between each
+> a LAN.  Picture the case where nodes have links between each
 > other both on their wireless interfaces and through Homeplug
-> adapters like the old Netgear XE102 Ethernet-to-Powerline bridge.
->
-> Electing a single mesh-to-LAN gateway as proposed will blackhole
-> any stations on that LAN unable to reach the elected gateway.
->
-> Not everything connected to a LAN port is a standard, reliable
-> local area network. =A0*smiles*
+> adapters like the old Netgear XE102 Ethernet-to-Powerline bridge
 
-Surely in that situation you'd run batman-advanced in a topology where
-you only sent batman-encapsulated packets over your unreliable
-ethernet (which is unreliable in a similar way to adhoc wifi), and
-then either configure up your bat0 interfaces locally on every host or
-bridge the bat0 interfaces to nice reliable local ethernet networks.
-Then batman would automatically choose the best path over the
-available networks to connect your islands of reliability :-)
+It seems you somewhat misunderstood this new feature. As Donald already 
+pointed out: It does not apply in your case.
 
-donald
+But thanks a lot for all your questions because it made me aware of  the fact 
+that my explanations were not clear enough. To address the matter I wrote a 
+document: http://www.open-mesh.org/wiki/bridge-loop-avoidance
+
+Let me know if it answers the questions raised here and also pay close 
+attention to the handcrafted fancy graphics. :-)
+
+Regards,
+Marek
