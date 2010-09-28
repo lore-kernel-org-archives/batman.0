@@ -1,16 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 28 Sep 2010 11:33:21 +0200
-References: <201009262057.36382.lindner_marek@yahoo.de>
-	<201009271758.03620.lindner_marek@yahoo.de>
-	<AANLkTinacNr1_eAFPiEhxx0ahPZ0_TRYYxKJZ617cFaH@mail.gmail.com>
-In-Reply-To: <AANLkTinacNr1_eAFPiEhxx0ahPZ0_TRYYxKJZ617cFaH@mail.gmail.com>
+Return-Path: <mag@magwas.rulez.org>
+Message-ID: <4CA23D45.60306@magwas.rulez.org>
+Date: Tue, 28 Sep 2010 21:08:53 +0200
+From: =?UTF-8?B?TWFnb3PDoW55aSDDgXJww6Fk?= <mag@magwas.rulez.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201009281133.21640.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv: softif lan loop avoidance
+Subject: [B.A.T.M.A.N.] Mesh with access from wifi and lan. Which is the
+	Only True Way?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,25 +18,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Monday 27 September 2010 23:00:21 Donald Gordon wrote:
-> * Does this mean that batman will now send OGMs out the bat0 interface?
+  Hi!
 
-No, OGMs have to originate from the bridge interface bat0 belongs to.
+I am struggling with setting up a mesh network. It should be available 
+for users without batmand both on the lan interfaces and wan interfaces.
 
+Surely I do have some misconceptions in my setup, but don't know where.
+The nodes are wistron ca8 ones, with official OpenWrt Backfire 
+10.03.1-rc3 r22796 atheros.
 
-> * Can the LAN be added as an interface that batman will send "normal"
-> batman packets out, too?  So bat0 would be in a bridge br0 with e.g.
-> eth0, but br0 or eth0 would also be set up as an interface batman
-> would send/recieve batman-encapsulated packets on?
+I try to set up the following network topology:
+- there is a /c subnet for batman nodes, 10.42.0.N/24
+- there is a /c subnet on each node for non-batman users, 10.42.N.1/24 
+(dhcp runs there in force mode)
+- there is a /c subnet on each node for lan (non-batman) 10.43.N.1/24 
+(dhcp runs there)
 
-If an interface is part of a bridge (e.g. br0) it can't be used by batman-adv 
-at the same time. The bridge module pulls in all the traffic. But that always 
-has been the case and is not a new development.
+with only two nodes I have managed to handle all the traffic with the 
+following rules in firewall.user:
+iptables -A forwarding_rule -s 10.42.N.0/24 -i ath0 -j ACCEPT
+iptables -A forwarding_rule -d 10.42.N.0/24 -o ath0 -j ACCEPT
 
-Is that a theoretical question or do you have a use case ?
+But with three nodes in a linear topology user-A-B-C, the reject 
+firewall chain (basically the FORWARD chain) eats up the packets user->A
+This is the same rule which rejects batman packets A->C which go through 
+B, and there are the gate interface which I do not understand, so while 
+the following rules seem to solve the problem at least for three nodes, 
+I have a feeling that I am not on the right path, and maybe on a way to 
+cause packet storms.
+iptables -A forwarding_rule -d 10.42.0.0/24 ! -s 10.42.0.0/24 -i ath0 -o 
+ath0 -j ACCEPT
+iptables -A forwarding_rule -s 10.42.0.0/24 ! -d 10.42.0.0/24 -o ath0 -i 
+ath0 -j ACCEPT
 
+Can someone tell me what I have missed (or is it the right solution indeed?)
 
-Regards,
-Marek
