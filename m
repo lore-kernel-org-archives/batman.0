@@ -1,17 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 30 Sep 2010 16:15:40 +0200
-References: <4CA23D45.60306@magwas.rulez.org>
-	<201009292340.41693.lindner_marek@yahoo.de>
-	<4CA4799C.6050503@magwas.rulez.org>
-In-Reply-To: <4CA4799C.6050503@magwas.rulez.org>
+Return-Path: <mag@magwas.rulez.org>
+Message-ID: <4CAD8DEB.2010407@magwas.rulez.org>
+Date: Thu, 07 Oct 2010 11:07:55 +0200
+From: =?UTF-8?B?TWFnb3PDoW55aSDDgXJww6Fk?= <mag@magwas.rulez.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201009301615.41517.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Mesh with access from wifi and lan. Which is the
-	Only True Way?
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] Windows 7 and ad hoc network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,43 +19,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday 30 September 2010 13:50:52 Magos=C3=A1nyi =C3=81rp=C3=A1d wrote:
-> I do announce local wifi net through HNA.
-> In the meantime my config started to not work. I saw that the node in=20
-> the middle does REJECT tunnel traffic from packet filter, so added a=20
-> firewall rule to accept everything in the FORWARD chain in all nodes.=20
-> Then as packets started to come out from the system with tunnel source=20
-> IP, I have added a MASQUERADE on the node which is connected to the=20
-> internet gateway.
->=20
-> Now it works, but uses the tunnel in an assymetric way: packets out go=20
-> through the tunnel, packets in go in the plain route.
+  If it is an inappropriate place to post, please direct me to the right 
+place.
+I could not find relevant info with google.
 
-Batmand offers 2 types of tunnel: the "half tunnel" and the "full tunnel" w=
-hich=20
-allows you to choose what suits you best.
+I have an ad hoc network using batman. The network config of backbone nodes:
+10.42.0.N/24 :wireless interface, network for backbone nodes
+10.42.N.1/24 : wireless interface, network for user nodes. dhcp served here
+10.43.N.1/24 : wired interface, network for user nodes. dhcp served here
 
-The full tunnel has the advantage that batmand can automatically detect=20
-whether the gateway has a working internet connection and switch to another=
-=20
-gateway if necessary. As tunneling in user space is painfully CPU intense t=
-he=20
-full tunnel comes with a performance penalty with many simultaneous users. =
- If=20
-that is an issue you might want to have a look at the batgat kernel module=
-=20
-which does the tunneling in kernel space.
+This setup works with linux as a user node. It tries its old ip with 
+dhcp request, but after that it asks for a new address with dhcp 
+discover. But with a windows 7 there is a problem.
+The windows gets an address with DHCP from one node. When it roams to 
+another nodes' area, it cannot get an ip address for the new area. It 
+seems that the windows box do not want to forget the first IP it got. We 
+have tried:
+ipconfig /renew
+shutting down and restarting wifi connection
+setting dhcp lease time to 1 min in all nodes, going to the old node 
+area, getting the old ip, and renew, shut down, etc.
 
-The half tunnel does not run into the performance issue that easily but can=
-'t=20
-detect internet availability. As the user traffic is not natted in the tunn=
-el=20
-this mode is more suitable for SIP and similar protocols.
+The windows seems to use dhcp request all times, never dhcp discover, 
+even after it obviosly figured out that the old IP won't work.
+The dhcp servers aren't set to be authoritative, as it would create 
+problems where their area overlap.
 
-Half tunnel mode is the default, full tunneling can be activated by natting=
- on=20
-the client's gate0 interface:
-iptables -t nat -I POSTROUTING -o gate0 -j MASQUERADE
+I would be glad to have any suggestions.
 
-Regards,
-Marek
+Thank you
