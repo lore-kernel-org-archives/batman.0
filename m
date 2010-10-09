@@ -1,14 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 9 Oct 2010 13:41:07 +0200
-References: <201009291520.13588.lindner_marek@yahoo.de>
-In-Reply-To: <201009291520.13588.lindner_marek@yahoo.de>
+Date: Sat, 9 Oct 2010 13:44:33 +0200
+References: <1285848524-13469-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1285848524-13469-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201010091341.08096.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] bridge loop avoidance (v3)
+Message-Id: <201010091344.33647.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] (no subject)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,14 +22,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday 29 September 2010 15:20:13 Marek Lindner wrote:
-> the received comments motivated me to reword the commit messages to outline
-> that the loop is caused by bridging the payload traffic and not by the LAN
-> itself. Furthermore, the locking has been cleaned up and the neighbor list
-> is purged when the module is unloaded.
+On Thursday 30 September 2010 14:08:40 Marek Lindner wrote:
+> since the vis code and the bridge loop avoidance code already use
+> the kref library functions, I converted the remaining refcounting
+> code to use kref as well.
 
-Since no more new questions came up I merged the patches into trunk (revision 
-1816-1817). 
+These patches also got applied (revision 1818-1821).
 
 Regards,
 Marek
