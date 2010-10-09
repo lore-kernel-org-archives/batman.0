@@ -1,11 +1,11 @@
-Return-Path: <mag@magwas.rulez.org>
-Message-ID: <4CAD8DEB.2010407@magwas.rulez.org>
-Date: Thu, 07 Oct 2010 11:07:55 +0200
-From: =?UTF-8?B?TWFnb3PDoW55aSDDgXJww6Fk?= <mag@magwas.rulez.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] Windows 7 and ad hoc network
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sat,  9 Oct 2010 02:19:42 +0200
+Message-Id: <1286583582-13275-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <20101008093941.GH11681@bicker>
+References: <20101008093941.GH11681@bicker>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Don't dereference unchecked
+	incoming soft_iface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,34 +17,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: error27@gmail.com
 
-  If it is an inappropriate place to post, please direct me to the right 
-place.
-I could not find relevant info with google.
+send_packet derefenced forw_packet->if_incoming and checked if
+forw_packet->if_incoming is NULL.
 
-I have an ad hoc network using batman. The network config of backbone nodes:
-10.42.0.N/24 :wireless interface, network for backbone nodes
-10.42.N.1/24 : wireless interface, network for user nodes. dhcp served here
-10.43.N.1/24 : wired interface, network for user nodes. dhcp served here
+This cannot happen, but still makes irritates when reading through the
+functions.
 
-This setup works with linux as a user node. It tries its old ip with 
-dhcp request, but after that it asks for a new address with dhcp 
-discover. But with a windows 7 there is a problem.
-The windows gets an address with DHCP from one node. When it roams to 
-another nodes' area, it cannot get an ip address for the new area. It 
-seems that the windows box do not want to forget the first IP it got. We 
-have tried:
-ipconfig /renew
-shutting down and restarting wifi connection
-setting dhcp lease time to 1 min in all nodes, going to the old node 
-area, getting the old ip, and renew, shut down, etc.
+Reported-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv/send.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-The windows seems to use dhcp request all times, never dhcp discover, 
-even after it obviosly figured out that the old IP won't work.
-The dhcp servers aren't set to be authoritative, as it would create 
-problems where their area overlap.
+diff --git a/batman-adv/send.c b/batman-adv/send.c
+index 625a3ba..7097ff0 100644
+--- a/batman-adv/send.c
++++ b/batman-adv/send.c
+@@ -163,8 +163,8 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
+ static void send_packet(struct forw_packet *forw_packet)
+ {
+ 	struct batman_if *batman_if;
+-	struct net_device *soft_iface = forw_packet->if_incoming->soft_iface;
+-	struct bat_priv *bat_priv = netdev_priv(soft_iface);
++	struct net_device *soft_iface;
++	struct bat_priv *bat_priv;
+ 	struct batman_packet *batman_packet =
+ 		(struct batman_packet *)(forw_packet->skb->data);
+ 	unsigned char directlink = (batman_packet->flags & DIRECTLINK ? 1 : 0);
+@@ -175,6 +175,9 @@ static void send_packet(struct forw_packet *forw_packet)
+ 		return;
+ 	}
+ 
++	soft_iface = forw_packet->if_incoming->soft_iface;
++	bat_priv = netdev_priv(soft_iface);
++
+ 	if (forw_packet->if_incoming->if_status != IF_ACTIVE)
+ 		return;
+ 
+-- 
+1.7.2.3
 
-I would be glad to have any suggestions.
-
-Thank you
