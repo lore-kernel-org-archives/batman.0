@@ -1,10 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat,  9 Oct 2010 14:16:40 +0200
-Message-Id: <1286626600-23439-6-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1286626600-23439-1-git-send-email-sven.eckelmann@gmx.de>
-References: <1286626600-23439-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: Rewrite hash using hlist_*
+Date: Sat,  9 Oct 2010 14:32:01 +0200
+Message-Id: <1286627521-24986-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1286626600-23439-6-git-send-email-sven.eckelmann@gmx.de>
+References: <1286626600-23439-6-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2 5/5] batman-adv: Rewrite hash using hlist_*
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -34,13 +34,15 @@ The rewrite changes the behavior of some functions slightly:
 Reported-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
+Remove now unused hashdata_compare_cb from hash_resize
+
  batman-adv/hash.c              |   14 ++--
- batman-adv/hash.h              |  172 ++++++++++++++++------------------------
- batman-adv/originator.c        |   17 +++-
+ batman-adv/hash.h              |  173 +++++++++++++++------------------------
+ batman-adv/originator.c        |   20 +++--
  batman-adv/routing.c           |    4 +-
- batman-adv/translation-table.c |   16 +++-
+ batman-adv/translation-table.c |   22 +++--
  batman-adv/vis.c               |   29 +++++--
- 6 files changed, 122 insertions(+), 130 deletions(-)
+ 6 files changed, 125 insertions(+), 137 deletions(-)
 
 diff --git a/batman-adv/hash.c b/batman-adv/hash.c
 index bfe943c..8605e2f 100644
@@ -77,7 +79,7 @@ index bfe943c..8605e2f 100644
  
  	return data_save;
 diff --git a/batman-adv/hash.h b/batman-adv/hash.h
-index a8e4dd1..d42cfd2 100644
+index a8e4dd1..cf43035 100644
 --- a/batman-adv/hash.h
 +++ b/batman-adv/hash.h
 @@ -22,10 +22,11 @@
@@ -246,7 +248,12 @@ index a8e4dd1..d42cfd2 100644
  	}
  
  	return NULL;
-@@ -198,8 +189,10 @@ static inline struct hashtable_t *hash_resize(struct hashtable_t *hash,
+@@ -193,13 +184,14 @@ static inline void *hash_find(struct hashtable_t *hash,
+ /* resize the hash, returns the pointer to the new hash or NULL on
+  * error. removes the old hash on success */
+ static inline struct hashtable_t *hash_resize(struct hashtable_t *hash,
+-					      hashdata_compare_cb compare,
+ 					      hashdata_choose_cb choose,
  					      int size)
  {
  	struct hashtable_t *new_hash;
@@ -258,7 +265,7 @@ index a8e4dd1..d42cfd2 100644
  
  	/* initialize a new hash with the new size */
  	new_hash = hash_new(size);
-@@ -209,17 +202,20 @@ static inline struct hashtable_t *hash_resize(struct hashtable_t *hash,
+@@ -209,17 +201,20 @@ static inline struct hashtable_t *hash_resize(struct hashtable_t *hash,
  
  	/* copy the elements */
  	for (i = 0; i < hash->size; i++) {
@@ -286,7 +293,7 @@ index a8e4dd1..d42cfd2 100644
  
  	return new_hash;
  }
-@@ -236,63 +232,29 @@ static inline struct hash_it_t *hash_iterate(struct hashtable_t *hash,
+@@ -236,63 +231,29 @@ static inline struct hash_it_t *hash_iterate(struct hashtable_t *hash,
  	if (!iter)
  		return NULL;
  
@@ -369,10 +376,20 @@ index a8e4dd1..d42cfd2 100644
  
  #endif /* _NET_BATMAN_ADV_HASH_H_ */
 diff --git a/batman-adv/originator.c b/batman-adv/originator.c
-index 0927119..67d9821 100644
+index 0927119..8e7b15d 100644
 --- a/batman-adv/originator.c
 +++ b/batman-adv/originator.c
-@@ -274,6 +274,7 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
+@@ -177,8 +177,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
+ 		goto free_bcast_own_sum;
+ 
+ 	if (bat_priv->orig_hash->elements * 4 > bat_priv->orig_hash->size) {
+-		swaphash = hash_resize(bat_priv->orig_hash, compare_orig,
+-				       choose_orig,
++		swaphash = hash_resize(bat_priv->orig_hash,choose_orig,
+ 				       bat_priv->orig_hash->size * 2);
+ 
+ 		if (!swaphash)
+@@ -274,6 +273,7 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
  static void _purge_orig(struct bat_priv *bat_priv)
  {
  	HASHIT(hashit);
@@ -380,7 +397,7 @@ index 0927119..67d9821 100644
  	struct orig_node *orig_node;
  	unsigned long flags;
  
-@@ -281,7 +282,8 @@ static void _purge_orig(struct bat_priv *bat_priv)
+@@ -281,7 +281,8 @@ static void _purge_orig(struct bat_priv *bat_priv)
  
  	/* for all origins... */
  	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
@@ -390,7 +407,7 @@ index 0927119..67d9821 100644
  
  		if (purge_orig_node(bat_priv, orig_node)) {
  			if (orig_node->gw_flags)
-@@ -322,6 +324,7 @@ void purge_orig_ref(struct bat_priv *bat_priv)
+@@ -322,6 +323,7 @@ void purge_orig_ref(struct bat_priv *bat_priv)
  int orig_seq_print_text(struct seq_file *seq, void *offset)
  {
  	HASHIT(hashit);
@@ -398,7 +415,7 @@ index 0927119..67d9821 100644
  	struct net_device *net_dev = (struct net_device *)seq->private;
  	struct bat_priv *bat_priv = netdev_priv(net_dev);
  	struct orig_node *orig_node;
-@@ -355,8 +358,8 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
+@@ -355,8 +357,8 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
  	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
  
  	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
@@ -409,7 +426,7 @@ index 0927119..67d9821 100644
  
  		if (!orig_node->router)
  			continue;
-@@ -430,13 +433,15 @@ int orig_hash_add_if(struct batman_if *batman_if, int max_if_num)
+@@ -430,13 +432,15 @@ int orig_hash_add_if(struct batman_if *batman_if, int max_if_num)
  	struct orig_node *orig_node;
  	unsigned long flags;
  	HASHIT(hashit);
@@ -426,7 +443,7 @@ index 0927119..67d9821 100644
  
  		if (orig_node_add_if(orig_node, max_if_num) == -1)
  			goto err;
-@@ -509,6 +514,7 @@ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
+@@ -509,6 +513,7 @@ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
  	struct orig_node *orig_node;
  	unsigned long flags;
  	HASHIT(hashit);
@@ -434,7 +451,7 @@ index 0927119..67d9821 100644
  	int ret;
  
  	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
-@@ -516,7 +522,8 @@ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
+@@ -516,7 +521,8 @@ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
  	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
  
  	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
@@ -467,10 +484,20 @@ index bdb8460..797ccd1 100644
  
  		bit_get_packet(bat_priv, word, 1, 0);
 diff --git a/batman-adv/translation-table.c b/batman-adv/translation-table.c
-index 20e1a74..66b7b08 100644
+index 20e1a74..de93c3d 100644
 --- a/batman-adv/translation-table.c
 +++ b/batman-adv/translation-table.c
-@@ -142,6 +142,7 @@ int hna_local_fill_buffer(struct bat_priv *bat_priv,
+@@ -112,8 +112,7 @@ void hna_local_add(struct net_device *soft_iface, uint8_t *addr)
+ 
+ 	if (bat_priv->hna_local_hash->elements * 4 >
+ 					bat_priv->hna_local_hash->size) {
+-		swaphash = hash_resize(bat_priv->hna_local_hash, compare_orig,
+-				       choose_orig,
++		swaphash = hash_resize(bat_priv->hna_local_hash, choose_orig,
+ 				       bat_priv->hna_local_hash->size * 2);
+ 
+ 		if (!swaphash)
+@@ -142,6 +141,7 @@ int hna_local_fill_buffer(struct bat_priv *bat_priv,
  			  unsigned char *buff, int buff_len)
  {
  	struct hna_local_entry *hna_local_entry;
@@ -478,7 +505,7 @@ index 20e1a74..66b7b08 100644
  	HASHIT(hashit);
  	int i = 0;
  	unsigned long flags;
-@@ -153,7 +154,8 @@ int hna_local_fill_buffer(struct bat_priv *bat_priv,
+@@ -153,7 +153,8 @@ int hna_local_fill_buffer(struct bat_priv *bat_priv,
  		if (buff_len < (i + 1) * ETH_ALEN)
  			break;
  
@@ -488,7 +515,7 @@ index 20e1a74..66b7b08 100644
  		memcpy(buff + (i * ETH_ALEN), hna_local_entry->addr, ETH_ALEN);
  
  		i++;
-@@ -174,6 +176,7 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
+@@ -174,6 +175,7 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
  	struct hna_local_entry *hna_local_entry;
  	HASHIT(hashit);
  	HASHIT(hashit_count);
@@ -496,7 +523,7 @@ index 20e1a74..66b7b08 100644
  	unsigned long flags;
  	size_t buf_size, pos;
  	char *buff;
-@@ -204,7 +207,8 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
+@@ -204,7 +206,8 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
  	pos = 0;
  
  	while (hash_iterate(bat_priv->hna_local_hash, &hashit)) {
@@ -506,7 +533,7 @@ index 20e1a74..66b7b08 100644
  
  		pos += snprintf(buff + pos, 22, " * %pM\n",
  				hna_local_entry->addr);
-@@ -263,13 +267,15 @@ static void hna_local_purge(struct work_struct *work)
+@@ -263,13 +266,15 @@ static void hna_local_purge(struct work_struct *work)
  		container_of(delayed_work, struct bat_priv, hna_work);
  	struct hna_local_entry *hna_local_entry;
  	HASHIT(hashit);
@@ -523,7 +550,17 @@ index 20e1a74..66b7b08 100644
  
  		timeout = hna_local_entry->last_seen + LOCAL_HNA_TIMEOUT * HZ;
  
-@@ -405,6 +411,7 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
+@@ -385,8 +390,7 @@ void hna_global_add_orig(struct bat_priv *bat_priv,
+ 
+ 	if (bat_priv->hna_global_hash->elements * 4 >
+ 					bat_priv->hna_global_hash->size) {
+-		swaphash = hash_resize(bat_priv->hna_global_hash, compare_orig,
+-				       choose_orig,
++		swaphash = hash_resize(bat_priv->hna_global_hash, choose_orig,
+ 				       bat_priv->hna_global_hash->size * 2);
+ 
+ 		if (!swaphash)
+@@ -405,6 +409,7 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
  	struct hna_global_entry *hna_global_entry;
  	HASHIT(hashit);
  	HASHIT(hashit_count);
@@ -531,7 +568,7 @@ index 20e1a74..66b7b08 100644
  	unsigned long flags;
  	size_t buf_size, pos;
  	char *buff;
-@@ -434,7 +441,8 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
+@@ -434,7 +439,8 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
  	pos = 0;
  
  	while (hash_iterate(bat_priv->hna_global_hash, &hashit)) {
