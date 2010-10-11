@@ -1,15 +1,17 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 11 Oct 2010 09:54:09 +0200
-References: <1286712994-30845-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1286712994-30845-1-git-send-email-lindner_marek@yahoo.de>
+Date: Mon, 11 Oct 2010 10:04:54 +0200
+References: <1286685001-15227-1-git-send-email-linus.luessing@web.de>
+	<201010101442.08908.lindner_marek@yahoo.de>
+	<20101010190037.GA2240@Sellars>
+In-Reply-To: <20101010190037.GA2240@Sellars>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart32997507.oQchfy92BI";
+Content-Type: multipart/signed; boundary="nextPart2013655.1hZ72HHdSn";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201010110954.10005.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: decrease refcount of
-	hard-interface when it gets removed
+Message-Id: <201010111004.55912.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: Introduce generic
+	BAT_ATTR_* macros
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,55 +24,72 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart32997507.oQchfy92BI
+--nextPart2013655.1hZ72HHdSn
 Content-Type: Text/Plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  batman-adv/hard-interface.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+Linus L=FCssing wrote:
+> Hi Marek,
 >=20
-> diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-> index ec16dc9..afc2c3d 100644
-> --- a/batman-adv/hard-interface.c
-> +++ b/batman-adv/hard-interface.c
-> @@ -44,6 +44,7 @@ static void hardif_free_rcu(struct rcu_head *rcu)
+> actually, there were two reasons for renaming that I guess. One
+> was out of "laziness" and I wanted to keep the number of
+> parameters of a BAT_ATTR_* macro as less as possible. Otherwise
+> I'd have to have another field, one for stating the name in sysfs
+> and one for the name in bat_priv.
 >=20
->  	batman_if =3D container_of(rcu, struct batman_if, rcu);
->  	sysfs_del_hardif(&batman_if->hardif_obj);
-> +	dev_put(batman_if->net_dev);
->  	kref_put(&batman_if->refcount, hardif_free_ref);
->  }
+> I then was wondering why the names between sysfs and bat_priv
+> shouldn't be the same instead (or +_enabled for switch/bool
+> attributes). I could have renamed the part in bat_priv to
+> aggregate_ogms_enabled but found that a little long (the same for
+> fragmentation_enabled). Or the _enabled parts could be removed in
+> bat_priv, but making it less obvious, what kind of values they
+> might take.
+>=20
+> So I thought that just aggregation might be a good trade-off. And
+> that anyone who might be confused by the names, not knowing what
+> they might be used for, should use batctl instead (and its manpage
+> for explanations).
+>=20
+> Or would anybody prefer another solution (of the ones described
+> above)?
 
-Uh....
+Please don't change the sysfs names.
 
-Acked-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+And document all your sysfs files for sysfs-class-net-mesh and
+sysfs-class-net-batman-adv in linux-merge.git
 
---nextPart32997507.oQchfy92BI
+Still missing stuff are:
+ * fragmentation (@Andreas - your part)
+ * gw_mode (can be documented later)
+ * hop_penalty
+ * num_bcasts
+ * log_level
+
+Thanks,
+	Sven
+
+--nextPart2013655.1hZ72HHdSn
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJMssKhAAoJEF2HCgfBJntGf2QQANEM1bACjlxEOLmjtXOX0pYv
-2z4G1xPHPWJSGKsoW5MczRopxjHqpsr0CE2oR14dQIH9I2+l7FAFMAB42N0eE9Zg
-/uk0L0rub++feUUc5brA17OdRKhIv8LZEOa6MAYStGJ587QIECHncBWy7Gvt2yD/
-UjaMNCaz6L0o7cbXz8m1voy5GlllsAPb8w+muPGQtPUyuw0fseM+xTa8r0qxL06s
-Kuyh3moS9w6arqKZVndcIK2GhXuGd2LfiJLLgz9Zf2nRnH0q2FfZB/q4D7qs7v0m
-aqhDrix5+WfiNdlr2f740L8Qf3u7yxxgrAGkPMavuYRZcyejabpOM0u8UYPJe1Mr
-cLpFsX3XBo5hjOG0vqNEWT9PJUNg+OA2e1vVBcXZP4Q8JwYDmI25NIKxWRnM2SjR
-g4yUSrayG6UHg9GDykmRlEkyF0DYoONbqGs5kkGkLwwh3WhNrAfs7R/Z9CMa4K/c
-xUgfVy50xyeDicojN4LUL/Q+TLkJg+4Jx/1gRRTivRB3OE1kjFM4d0K6CM76BIqp
-NHtbAK5MiyIPCB/hsAS9CWjr+BDp8JRiOgmifmKu1tmIkozNouAB/jdwK8BW7Lvu
-YIZEIjnILqAU7UAKR998FFvqPe+MJa89AmyguPWBl4ODdK154kIYYdwZzCc5pzS4
-VaT5E2kcjqezooa72Np3
-=AAZ+
+iQIcBAABCgAGBQJMssUnAAoJEF2HCgfBJntGQRoP/RhmZFH4PGAFhO2QRMfroanh
+kFvBH9oOC43eduFGytlYu+qPWzffpkj2zMTjZrg9FZ5mBw97+KS/1sYbG0qBfuw5
+hvqpiH/RW1XKF8CLVkOi2zGcDGCkbY02mKv+facNVLYOTcA3nErTszNSyyDQc2Zy
+BXdPBxhOXwwRbNWfoFmT++VYFrYrhs0R1lyibmvTwzjV8csMgGCWSt71wSE5y5Wz
+Y0h7lp4yAE63qjbFRkptTnBxwwwPWjIuddG36bWIZ/OF8Ox1TCKunSneN+vKbLbL
+Q39m2id2EmnVrffMyJ9sToBdmf6vfA1CWju0Ck3z5AxmXpMiEEDFnl561F1vKMjO
++uztyLLoM/QC1Of879/nsEnywjGuNrxGQmnG0wilTig9ERgiTlhK808/dIt5LeHq
+FoyppEmcd8h0WTo49lfP4hDfIGuhlB+QW4CaN6rN8gpG/urhbGUaen+dnWwhfWYI
+oWZimsf7gnSOLhg6qtJtfQEzClpSHxxEaUbcHeK9lFJ2U6oN78cU/U07qNJAgwho
+GAByZ4R8qZucg20+pFiDAeMGDDwDGx3tpoy+1FL2ReN5o8+5MOyVZWdEgaXsg3WI
+yLQ8I9Z2ItZAzSl7lwh5IiyVXmXe8Sn+BjzjeRWAGNuFrWbGqArfsqXg7EjdcEjT
+pS4UuSBxD47TmkBLBGVO
+=zpl3
 -----END PGP SIGNATURE-----
 
---nextPart32997507.oQchfy92BI--
+--nextPart2013655.1hZ72HHdSn--
