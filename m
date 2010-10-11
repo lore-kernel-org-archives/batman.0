@@ -1,18 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-Date: Sun, 10 Oct 2010 21:00:37 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20101010190037.GA2240@Sellars>
-References: <1286685001-15227-1-git-send-email-linus.luessing@web.de>
-	<1286685001-15227-2-git-send-email-linus.luessing@web.de>
-	<201010101442.08908.lindner_marek@yahoo.de>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon, 11 Oct 2010 09:54:09 +0200
+References: <1286712994-30845-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1286712994-30845-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <201010101442.08908.lindner_marek@yahoo.de>
-Sender: linus.luessing@web.de
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: Introduce generic
- BAT_ATTR_* macros
+Content-Type: multipart/signed; boundary="nextPart32997507.oQchfy92BI";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201010110954.10005.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: decrease refcount of
+	hard-interface when it gets removed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,47 +21,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Hi Marek,
+--nextPart32997507.oQchfy92BI
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-actually, there were two reasons for renaming that I guess. One
-was out of "laziness" and I wanted to keep the number of
-parameters of a BAT_ATTR_* macro as less as possible. Otherwise
-I'd have to have another field, one for stating the name in sysfs
-and one for the name in bat_priv.
+Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  batman-adv/hard-interface.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+> index ec16dc9..afc2c3d 100644
+> --- a/batman-adv/hard-interface.c
+> +++ b/batman-adv/hard-interface.c
+> @@ -44,6 +44,7 @@ static void hardif_free_rcu(struct rcu_head *rcu)
+>=20
+>  	batman_if =3D container_of(rcu, struct batman_if, rcu);
+>  	sysfs_del_hardif(&batman_if->hardif_obj);
+> +	dev_put(batman_if->net_dev);
+>  	kref_put(&batman_if->refcount, hardif_free_ref);
+>  }
 
-I then was wondering why the names between sysfs and bat_priv
-shouldn't be the same instead (or +_enabled for switch/bool
-attributes). I could have renamed the part in bat_priv to
-aggregate_ogms_enabled but found that a little long (the same for
-fragmentation_enabled). Or the _enabled parts could be removed in
-bat_priv, but making it less obvious, what kind of values they
-might take.
+Uh....
 
-So I thought that just aggregation might be a good trade-off. And
-that anyone who might be confused by the names, not knowing what
-they might be used for, should use batctl instead (and its manpage
-for explanations).
+Acked-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 
-Or would anybody prefer another solution (of the ones described
-above)?
+--nextPart32997507.oQchfy92BI
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Cheers, Linus
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-On Sun, Oct 10, 2010 at 02:42:08PM +0200, Marek Lindner wrote:
-> On Sunday 10 October 2010 06:29:58 Linus Lüssing wrote:
-> > Additionally, the sysfs entries "aggregate_ogms" and "fragmentation"
-> > get renamed to "aggregation" and "frag" for consistency reasons, they
-> > match the *_enabled parts in bat_priv now.
-> 
-> I don't quite understand why you want to rename these names. I like the 
-> "aggregate_ogms" as it makes clear what is being aggregated. 
-> 
-> Please keep in mind that the kernel people won't be happy if we modify the 
-> user space API. Right now, it is less of an issue but once we leave the 
-> staging tree it is mostly unchangeable.
-> 
-> Regards,
-> Marek
-> 
+iQIcBAABCgAGBQJMssKhAAoJEF2HCgfBJntGf2QQANEM1bACjlxEOLmjtXOX0pYv
+2z4G1xPHPWJSGKsoW5MczRopxjHqpsr0CE2oR14dQIH9I2+l7FAFMAB42N0eE9Zg
+/uk0L0rub++feUUc5brA17OdRKhIv8LZEOa6MAYStGJ587QIECHncBWy7Gvt2yD/
+UjaMNCaz6L0o7cbXz8m1voy5GlllsAPb8w+muPGQtPUyuw0fseM+xTa8r0qxL06s
+Kuyh3moS9w6arqKZVndcIK2GhXuGd2LfiJLLgz9Zf2nRnH0q2FfZB/q4D7qs7v0m
+aqhDrix5+WfiNdlr2f740L8Qf3u7yxxgrAGkPMavuYRZcyejabpOM0u8UYPJe1Mr
+cLpFsX3XBo5hjOG0vqNEWT9PJUNg+OA2e1vVBcXZP4Q8JwYDmI25NIKxWRnM2SjR
+g4yUSrayG6UHg9GDykmRlEkyF0DYoONbqGs5kkGkLwwh3WhNrAfs7R/Z9CMa4K/c
+xUgfVy50xyeDicojN4LUL/Q+TLkJg+4Jx/1gRRTivRB3OE1kjFM4d0K6CM76BIqp
+NHtbAK5MiyIPCB/hsAS9CWjr+BDp8JRiOgmifmKu1tmIkozNouAB/jdwK8BW7Lvu
+YIZEIjnILqAU7UAKR998FFvqPe+MJa89AmyguPWBl4ODdK154kIYYdwZzCc5pzS4
+VaT5E2kcjqezooa72Np3
+=AAZ+
+-----END PGP SIGNATURE-----
+
+--nextPart32997507.oQchfy92BI--
