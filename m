@@ -1,9 +1,16 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 12 Oct 2010 00:54:33 +0200
-Message-Id: <1286837673-17108-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: replace the use of <module>-objs
-	with <module>-y
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 12 Oct 2010 11:47:00 +0200
+References: <1286712994-30845-1-git-send-email-lindner_marek@yahoo.de>
+	<201010110954.10005.sven.eckelmann@gmx.de>
+In-Reply-To: <201010110954.10005.sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201010121147.01309.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: decrease refcount of
+	hard-interface when it gets removed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,29 +22,12 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Tracey Dent <tdent48227@gmail.com>
+On Monday 11 October 2010 09:54:09 Sven Eckelmann wrote:
+> Acked-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 
-Changed <module>-objs to <module>-y n Makefile.
+Applied in revision 1820.
 
-Signed-off-by: Tracey Dent <tdent48227@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-adv/Makefile.kbuild |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/batman-adv/Makefile.kbuild b/batman-adv/Makefile.kbuild
-index ca81cb1..14e3daa 100644
---- a/batman-adv/Makefile.kbuild
-+++ b/batman-adv/Makefile.kbuild
-@@ -32,4 +32,4 @@ EXTRA_CFLAGS += -DREVISION_VERSION=\"$(REVISION)\"
- endif
- 
- obj-m += batman-adv.o
--batman-adv-objs := main.o bat_debugfs.o bat_sysfs.o send.o routing.o soft-interface.o icmp_socket.o translation-table.o bitarray.o hash.o ring_buffer.o vis.o hard-interface.o aggregation.o originator.o gateway_common.o gateway_client.o unicast.o $(shell [ "2" -eq "$(VERSION)" ] 2>&- && [ "6" -eq "$(PATCHLEVEL)" ] 2>&- && [ "$(SUBLEVEL)" -le "28" ] 2>&- && echo bat_printk.o)
-+batman-adv-y := main.o bat_debugfs.o bat_sysfs.o send.o routing.o soft-interface.o icmp_socket.o translation-table.o bitarray.o hash.o ring_buffer.o vis.o hard-interface.o aggregation.o originator.o gateway_common.o gateway_client.o unicast.o $(shell [ "2" -eq "$(VERSION)" ] 2>&- && [ "6" -eq "$(PATCHLEVEL)" ] 2>&- && [ "$(SUBLEVEL)" -le "28" ] 2>&- && echo bat_printk.o)
--- 
-1.7.1
-
+Regards,
+Marek
