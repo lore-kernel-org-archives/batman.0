@@ -1,10 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 15 Oct 2010 17:56:12 +0200
-Message-Id: <1287158172-15920-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <201010151749.01120.lindner_marek@yahoo.de>
-References: <201010151749.01120.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: document fragmentation sysfs API
+Date: Fri, 15 Oct 2010 18:01:52 +0200
+References: <1286922125-18097-1-git-send-email-linus.luessing@web.de>
+	<1286969589-31373-1-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1286969589-31373-1-git-send-email-linus.luessing@ascom.ch>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201010151801.52611.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/4] batman-adv: Make hop_penalty
+	configurable via sysfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,33 +22,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- batman-adv/sysfs-class-net-mesh |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+On Wednesday 13 October 2010 13:33:09 Linus L=C3=BCssing wrote:
+> Exposing the hop_penalty is especially useful for the stated scenario: A
+> static node can keep the default originator interval, a mobile node can
+> select a quicker one resulting in faster route updates towards this
+> mobile node. Additionally, such a mobile node could select a higher hop
+> penalty (or even set it to 255 to disable acting as a router for other
+> nodes) to make it less desirable, letting other nodes avoid selecting
+> this mobile node as a router.
 
-diff --git a/batman-adv/sysfs-class-net-mesh b/batman-adv/sysfs-class-net-mesh
-index 5aa1912..b4cdb60 100644
---- a/batman-adv/sysfs-class-net-mesh
-+++ b/batman-adv/sysfs-class-net-mesh
-@@ -14,6 +14,14 @@ Description:
-                 mesh will be sent using multiple interfaces at the
-                 same time (if available).
- 
-+What:           /sys/class/net/<mesh_iface>/mesh/fragmentation
-+Date:           October 2010
-+Contact:        Andreas Langer <an.langer@gmx.de>
-+Description:
-+                Indicates whether the data traffic going through the
-+                mesh will be fragmented or silently discarded if the
-+                packet size exceeds the outgoing interface MTU.
-+
- What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
- Date:           May 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
--- 
-1.7.1
+Could you please complete this patch by providing the proper sysfs API=20
+documentation. For a reference simply check the sysfs-class-net-mesh file w=
+hich=20
+is now part of the repository.=20
 
+Thanks,
+Marek
