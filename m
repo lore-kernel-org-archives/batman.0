@@ -1,14 +1,14 @@
-Return-Path: <linus.luessing@ascom.ch>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Mon, 18 Oct 2010 12:01:59 +0200
-Message-Id: <1287396119-7796-1-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <201010151801.52611.lindner_marek@yahoo.de>
-References: <201010151801.52611.lindner_marek@yahoo.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 18 Oct 2010 12:06:01 +0200
+References: <1286922125-18097-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1286922125-18097-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Adding sysfs API documentation
-	for hop_penalty
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201010181206.02350.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Simplifying sysfs code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,37 +20,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
----
- sysfs-class-net-mesh |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+On Wednesday 13 October 2010 00:22:01 Linus L=C3=BCssing wrote:
+> thanks for all the feedback for the changes I wanted to make to the sysfs
+> code base. I tried to address bugs and suggestions. The macros are now a
+> bit smaller than in the beginning, the missing static has been added
+> (thanks Andrew and Sven).
+>=20
+> Due to Marecs comment on the issues with changing sysfs file names in the
+> kernel (which I was not aware of, thanks for explaining) and comments
+> about old sysfs filenames being more descriptive, I changed the bat_priv
+> names instead now. I don't really see a good reason yet why they should
+> not be equal.
 
-diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
-index 5aa1912..f3f9070 100644
---- a/sysfs-class-net-mesh
-+++ b/sysfs-class-net-mesh
-@@ -21,6 +21,18 @@ Description:
-                 Defines the interval in milliseconds in which batman
-                 sends its protocol messages.
- 
-+What:           /sys/class/net/<mesh_iface>/mesh/hop_penalty
-+Date:           Oct 2010
-+Contact:        Linus Lüssing <linus.luessing@web.de>
-+Description:
-+		Defines the penalty which will be applied to an
-+		originator message's tq-field on every hop. In a
-+		mixed topology of static and mobile nodes, it might
-+		be desired to increase this value on the mobile ones
-+		instead of increasing the originator interval
-+		everywhere - or even set it to its maximum to disable
-+		forwarding on a node.
-+
- What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
- Date:           May 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
--- 
-1.7.1
+Patches 1-4 have been applied (revision 1833-1836).
 
+Thanks,
+Marek
