@@ -1,15 +1,9 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Mon, 18 Oct 2010 23:44:13 +0200
-Message-Id: <1287438253-13064-1-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <201010181211.55541.lindner_marek@yahoo.de>
-References: <201010181211.55541.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Adding sysfs ABI documentation
-	for hop_penalty
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Tue, 19 Oct 2010 01:46:30 +0200
+Message-Id: <1287445590-18048-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove space before tab in
+	bat_sysfs.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,31 +16,25 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- sysfs-class-net-mesh |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ batman-adv/bat_sysfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
-index 5aa1912..2c03e76 100644
---- a/sysfs-class-net-mesh
-+++ b/sysfs-class-net-mesh
-@@ -21,6 +21,13 @@ Description:
-                 Defines the interval in milliseconds in which batman
-                 sends its protocol messages.
+diff --git a/batman-adv/bat_sysfs.c b/batman-adv/bat_sysfs.c
+index dbb0208..5ea5c11 100644
+--- a/batman-adv/bat_sysfs.c
++++ b/batman-adv/bat_sysfs.c
+@@ -80,7 +80,7 @@ ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
+ }
  
-+What:           /sys/class/net/<mesh_iface>/mesh/hop_penalty
-+Date:           Oct 2010
-+Contact:        Linus Lüssing <linus.luessing@web.de>
-+Description:
-+		Defines the penalty which will be applied to an
-+		originator message's tq-field on every hop.
-+
- What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
- Date:           May 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
+ #define BAT_ATTR_SHOW_UINT(_name)					\
+-ssize_t show_##_name(struct kobject *kobj, struct attribute *attr, 	\
++ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
+ 			    char *buff)					\
+ {									\
+ 	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);		\
 -- 
-1.7.1
+1.7.2.3
 
