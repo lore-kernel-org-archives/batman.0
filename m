@@ -1,15 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 18 Oct 2010 11:11:55 +0200
-References: <1287157417-15369-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1287157417-15369-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <linus.luessing@ascom.ch>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Date: Mon, 18 Oct 2010 12:01:59 +0200
+Message-Id: <1287396119-7796-1-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <201010151801.52611.lindner_marek@yahoo.de>
+References: <201010151801.52611.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201010181111.55474.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: protect against ogm
-	packet overflow by checking table length
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Adding sysfs API documentation
+	for hop_penalty
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,12 +20,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-On Friday 15 October 2010 17:43:35 Marek Lindner wrote:
-> Reported-by: Sam Yeung <sam.cwyeung@gmail.com>
+Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
+---
+ sysfs-class-net-mesh |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-Applied in revision 1830-1832.
+diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
+index 5aa1912..f3f9070 100644
+--- a/sysfs-class-net-mesh
++++ b/sysfs-class-net-mesh
+@@ -21,6 +21,18 @@ Description:
+                 Defines the interval in milliseconds in which batman
+                 sends its protocol messages.
+ 
++What:           /sys/class/net/<mesh_iface>/mesh/hop_penalty
++Date:           Oct 2010
++Contact:        Linus Lüssing <linus.luessing@web.de>
++Description:
++		Defines the penalty which will be applied to an
++		originator message's tq-field on every hop. In a
++		mixed topology of static and mobile nodes, it might
++		be desired to increase this value on the mobile ones
++		instead of increasing the originator interval
++		everywhere - or even set it to its maximum to disable
++		forwarding on a node.
++
+ What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
+ Date:           May 2010
+ Contact:        Marek Lindner <lindner_marek@yahoo.de>
+-- 
+1.7.1
 
-Regards,
-Marek
