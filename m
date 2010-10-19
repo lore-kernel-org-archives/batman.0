@@ -1,9 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 19 Oct 2010 01:46:30 +0200
-Message-Id: <1287445590-18048-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove space before tab in
-	bat_sysfs.c
+Date: Tue, 19 Oct 2010 11:59:08 +0200
+Message-Id: <1287482355-16319-1-git-send-email-sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.37 (4)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,26 +17,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: greg@kroah.com
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-adv/bat_sysfs.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hi,
 
-diff --git a/batman-adv/bat_sysfs.c b/batman-adv/bat_sysfs.c
-index dbb0208..5ea5c11 100644
---- a/batman-adv/bat_sysfs.c
-+++ b/batman-adv/bat_sysfs.c
-@@ -80,7 +80,7 @@ ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
- }
- 
- #define BAT_ATTR_SHOW_UINT(_name)					\
--ssize_t show_##_name(struct kobject *kobj, struct attribute *attr, 	\
-+ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
- 			    char *buff)					\
- {									\
- 	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);		\
--- 
-1.7.2.3
+here are patches targeted for 2.6.37. All patches needed for that patchset are
+already part of your staging-next tree.
 
+All patches are cleanup and bugfix patches and no new feature is added.
+
+thanks,
+        Sven
+
+Linus Lüssing (1):
+      Staging: batman-adv: Fix resizing of broadcast seqno buffers on if deletion
+
+Marek Lindner (4):
+      Staging: batman-adv: document fragmentation sysfs API
+      Staging: batman-adv: protect against ogm packet overflow by checking table length
+      Staging: batman-adv: fix crash when new OGM is generated
+      Staging: batman-adv: process OGMs bigger than MAX_AGGREGATION_BYTES
+
+Sven Eckelmann (2):
+      Staging: batman-adv: Add hash recommendations to TODO
+      Staging: batman-adv: Don't dereference unchecked incoming soft_iface
+
+ drivers/staging/batman-adv/TODO                 |    4 ++++
+ drivers/staging/batman-adv/aggregation.c        |   17 +++++++++++------
+ drivers/staging/batman-adv/originator.c         |    4 ++--
+ drivers/staging/batman-adv/send.c               |    7 +++++--
+ drivers/staging/batman-adv/sysfs-class-net-mesh |    8 ++++++++
+ drivers/staging/batman-adv/translation-table.c  |    9 +++++++--
+ 6 files changed, 37 insertions(+), 12 deletions(-)
