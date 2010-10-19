@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 19 Oct 2010 11:59:08 +0200
-Message-Id: <1287482355-16319-1-git-send-email-sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.37 (4)
+Date: Tue, 19 Oct 2010 11:59:09 +0200
+Message-Id: <1287482355-16319-2-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1287482355-16319-1-git-send-email-sven.eckelmann@gmx.de>
+References: <1287482355-16319-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/7] Staging: batman-adv: Add hash
+	recommendations to TODO
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,33 +20,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+David Miller <davem@davemloft.net> recommended in
+20100924.134334.28812338.davem@davemloft.net that we must make the hash
+abstraction helper more efficient and may remove it completely.
 
-here are patches targeted for 2.6.37. All patches needed for that patchset are
-already part of your staging-next tree.
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ drivers/staging/batman-adv/TODO |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-All patches are cleanup and bugfix patches and no new feature is added.
+diff --git a/drivers/staging/batman-adv/TODO b/drivers/staging/batman-adv/TODO
+index 5913731..11c384f 100644
+--- a/drivers/staging/batman-adv/TODO
++++ b/drivers/staging/batman-adv/TODO
+@@ -1,3 +1,7 @@
++ * remove own list functionality from hash
++ * use hlist_head, hlist_node in hash
++ * don't use callbacks for compare+choose in hash
++ * think about more efficient ways instead of abstraction of hash
+  * Request a new review
+  * Process the comments from the review
+  * Move into mainline proper
+-- 
+1.7.2.3
 
-thanks,
-        Sven
-
-Linus Lüssing (1):
-      Staging: batman-adv: Fix resizing of broadcast seqno buffers on if deletion
-
-Marek Lindner (4):
-      Staging: batman-adv: document fragmentation sysfs API
-      Staging: batman-adv: protect against ogm packet overflow by checking table length
-      Staging: batman-adv: fix crash when new OGM is generated
-      Staging: batman-adv: process OGMs bigger than MAX_AGGREGATION_BYTES
-
-Sven Eckelmann (2):
-      Staging: batman-adv: Add hash recommendations to TODO
-      Staging: batman-adv: Don't dereference unchecked incoming soft_iface
-
- drivers/staging/batman-adv/TODO                 |    4 ++++
- drivers/staging/batman-adv/aggregation.c        |   17 +++++++++++------
- drivers/staging/batman-adv/originator.c         |    4 ++--
- drivers/staging/batman-adv/send.c               |    7 +++++--
- drivers/staging/batman-adv/sysfs-class-net-mesh |    8 ++++++++
- drivers/staging/batman-adv/translation-table.c  |    9 +++++++--
- 6 files changed, 37 insertions(+), 12 deletions(-)
