@@ -1,14 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 19 Oct 2010 11:59:11 +0200
-Message-Id: <1287482355-16319-4-git-send-email-sven.eckelmann@gmx.de>
+Date: Tue, 19 Oct 2010 11:59:12 +0200
+Message-Id: <1287482355-16319-5-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1287482355-16319-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1287482355-16319-1-git-send-email-sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 3/7] Staging: batman-adv: Fix resizing of
-	broadcast seqno buffers on if deletion
+Subject: [B.A.T.M.A.N.] [PATCH 4/7] Staging: batman-adv: document
+	fragmentation sysfs API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,42 +18,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Linus Lüssing <linus.luessing@web.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
 
-Not only the entries of the deleted interface got erased, but also all
-ones with a lower if_num. This commit fixes this issue by setting the
-destination appropriately.
-
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/originator.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/staging/batman-adv/sysfs-class-net-mesh |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/originator.c b/drivers/staging/batman-adv/originator.c
-index c530df1..865211d 100644
---- a/drivers/staging/batman-adv/originator.c
-+++ b/drivers/staging/batman-adv/originator.c
-@@ -456,7 +456,7 @@ static int orig_node_del_if(struct orig_node *orig_node,
- 	memcpy(data_ptr, orig_node->bcast_own, del_if_num * chunk_size);
+diff --git a/drivers/staging/batman-adv/sysfs-class-net-mesh b/drivers/staging/batman-adv/sysfs-class-net-mesh
+index 5aa1912..b4cdb60 100644
+--- a/drivers/staging/batman-adv/sysfs-class-net-mesh
++++ b/drivers/staging/batman-adv/sysfs-class-net-mesh
+@@ -14,6 +14,14 @@ Description:
+                 mesh will be sent using multiple interfaces at the
+                 same time (if available).
  
- 	/* copy second part */
--	memcpy(data_ptr,
-+	memcpy(data_ptr + del_if_num * chunk_size,
- 	       orig_node->bcast_own + ((del_if_num + 1) * chunk_size),
- 	       (max_if_num - del_if_num) * chunk_size);
- 
-@@ -476,7 +476,7 @@ free_bcast_own:
- 	memcpy(data_ptr, orig_node->bcast_own_sum,
- 	       del_if_num * sizeof(uint8_t));
- 
--	memcpy(data_ptr,
-+	memcpy(data_ptr + del_if_num * sizeof(uint8_t),
- 	       orig_node->bcast_own_sum + ((del_if_num + 1) * sizeof(uint8_t)),
- 	       (max_if_num - del_if_num) * sizeof(uint8_t));
- 
++What:           /sys/class/net/<mesh_iface>/mesh/fragmentation
++Date:           October 2010
++Contact:        Andreas Langer <an.langer@gmx.de>
++Description:
++                Indicates whether the data traffic going through the
++                mesh will be fragmented or silently discarded if the
++                packet size exceeds the outgoing interface MTU.
++
+ What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
+ Date:           May 2010
+ Contact:        Marek Lindner <lindner_marek@yahoo.de>
 -- 
 1.7.2.3
 
