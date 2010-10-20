@@ -1,17 +1,17 @@
-Return-Path: <sven.eckelmann@gmx.de>
-Date: Thu, 21 Oct 2010 00:16:37 +0200
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Message-ID: <20101020221636.GA21132@sven-atom.lazhur.ath.cx>
+Return-Path: <greg@kroah.com>
+Date: Wed, 20 Oct 2010 15:39:58 -0700
+From: Greg KH <greg@kroah.com>
+Message-ID: <20101020223958.GA17011@kroah.com>
 References: <1287589664-25447-1-git-send-email-andy.shevchenko@gmail.com>
 	<20101020205115.GA18087@sven-atom.lazhur.ath.cx>
 	<20101020205749.GA9686@kroah.com>
+	<20101020221636.GA21132@sven-atom.lazhur.ath.cx>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="x+6KMIRAuhnl3hBn"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20101020205749.GA9686@kroah.com>
-Subject: Re: [B.A.T.M.A.N.] [resend][PATCHv2] staging: batman-adv: remove
- useless addr_to_string()
+In-Reply-To: <20101020221636.GA21132@sven-atom.lazhur.ath.cx>
+Subject: Re: [B.A.T.M.A.N.] [resend][PATCHv2] staging: batman-adv:
+	remove	useless addr_to_string()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,60 +23,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Greg KH <greg@kroah.com>
+To: Sven Eckelmann <sven.eckelmann@gmx.de>
 Cc: devel@driverdev.osuosl.org, Greg Kroah-Hartman <gregkh@suse.de>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Andy Shevchenko <andy.shevchenko@gmail.com>, Marek Lindner <lindner_marek@yahoo.de>
 
+On Thu, Oct 21, 2010 at 12:16:37AM +0200, Sven Eckelmann wrote:
+> On Wed, Oct 20, 2010 at 01:57:49PM -0700, Greg KH wrote:
+> > On Wed, Oct 20, 2010 at 10:51:15PM +0200, Sven Eckelmann wrote:
+> > > On Wed, Oct 20, 2010 at 06:47:44PM +0300, Andy Shevchenko wrote:
+> > > > Since all *printf() methods in the kernel understand '%pM' modifier the
+> > > > conversion to the string is useless beforehand.
+> > > > 
+> > > > Additionally this patch decreases batman_if structure by 20 bytes.
+> > > 
+> > > Thanks for your patch. I have problems with compiling due to other patches in
+> > > the queue. I will fix that and recommend it as patch for 2.6.38.
+> > 
+> > What do you mean by this?  It applies just fine to my tree, so why can't
+> > I take it now?
+> 
+> If you want then do so, but the stuff in batman-adv's master must be fixed so
+> they have to apply the v3 version of the patch and not the v2 version Andy
+> sent.
 
---x+6KMIRAuhnl3hBn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That's one of the problems with having an out-of-tree tree.  Please
+don't do that at all anymore.
 
-On Wed, Oct 20, 2010 at 01:57:49PM -0700, Greg KH wrote:
-> On Wed, Oct 20, 2010 at 10:51:15PM +0200, Sven Eckelmann wrote:
-> > On Wed, Oct 20, 2010 at 06:47:44PM +0300, Andy Shevchenko wrote:
-> > > Since all *printf() methods in the kernel understand '%pM' modifier t=
-he
-> > > conversion to the string is useless beforehand.
-> > >=20
-> > > Additionally this patch decreases batman_if structure by 20 bytes.
-> >=20
-> > Thanks for your patch. I have problems with compiling due to other patc=
-hes in
-> > the queue. I will fix that and recommend it as patch for 2.6.38.
->=20
-> What do you mean by this?  It applies just fine to my tree, so why can't
-> I take it now?
+I'll go apply this patch to mine, and you can handle any merge issues if
+you continue to wish to keep an external tree (hint, I STRONGLY
+recommend that you do not, for these reasons and many others.)
 
-If you want then do so, but the stuff in batman-adv's master must be fixed =
-so
-they have to apply the v3 version of the patch and not the v2 version Andy
-sent.
+thanks,
 
-Best regards,
-	Sven
-
---x+6KMIRAuhnl3hBn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAEBCgAGBQJMv2pEAAoJEF2HCgfBJntGFVQP/38xtkOYU2iRb10XKlSAN1si
-n/DAwu7cFPciW0+3kP3HspE57nYnKKpe0/QdCH+WTZ2wqeAFdg6bWvzf/n92uz/m
-UvMWHlSoTXfEb5bX272w3dHz0PX3XHC+ces+hHmZNCsE9Q9FYY6wrXpGEh8ZF2dG
-XTqS9bXGuA3S2F3v8eEoT74Bxs/oYbqD0USVKEIN0U1Te8ST2kug9S5Oz3Fs5TCC
-OmEtC8iR+xyk2pp7v3zD2wKCU2ZTLcgl7R70Nvqn3YR3kLu7eTuCARvW3bKdRLj9
-qVGJ8KQTLckMzerEpUm/ODK737ZU1k7TExWNc5PY4/UBCnLDGhqUHvz+/LOJ2Dae
-XXA8q+ymSwzhlxBw/4lAQ9lYEfy32Q2s2vOwqbnYGK0iQkb3Dh+vOZlFmqOi6zie
-VaXTQDXdOhLsmXCdC8fAZvmVyz1NZdtup0f3Ku66kf3opdgK6Pro86AUbltgpOQO
-ZOIXG4Ho7ey6sotMdPbKsceBGKpQoRyMWc9Ns+ppJy+j8UoErzkRD5rgWpSM25o+
-vf+/tQoh6gCQTZxJzMjoyg2yZhXhY7a0ZnbQ64C7BchPoqg78U/Jhm37vFZcKcvR
-J2sITaIm+m5HT2EbzKlrD8FncuOzB/3UZDbO00KpcBtzJiO1K9DAVZWI4/X7uDij
-lkdZVbm3GMVxG7eDTqMR
-=DLVp
------END PGP SIGNATURE-----
-
---x+6KMIRAuhnl3hBn--
+greg k-h
