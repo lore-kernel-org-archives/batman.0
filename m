@@ -1,16 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 23 Oct 2010 17:21:17 +0200
-References: <1287846695-17402-1-git-send-email-lindner_marek@yahoo.de>
-	<201010231719.23353.sven.eckelmann@gmx.de>
-In-Reply-To: <201010231719.23353.sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Message-Id: <201010231721.17921.lindner_marek@yahoo.de>
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove obsolete flags
-	variable to avoid kernel warnings
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Sun, 24 Oct 2010 00:42:22 +0200
+Message-Id: <1287873742-5039-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove useless braces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,13 +14,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Saturday 23 October 2010 17:19:21 Sven Eckelmann wrote:
-> Correct. Forgot them because I only build it in non-debug mode.
+54466268785c9892d6e2af2ac2a54a684face022 added changes to vis.c which
+trigger a checkpatch.pl warning about braces which are not necessary
+anymore.
 
-Same here - I missed these warnings when I checked your patch before 
-submitting it. Just applied this patch (revision 1848).
+WARNING: braces {} are not necessary for any arm of this statement
++               if (entry->primary)
+[...]
++               else {
+[...]
 
-Regards,
-Marek
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batman-adv/vis.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/batman-adv/vis.c b/batman-adv/vis.c
+index bde423a..5aea153 100644
+--- a/batman-adv/vis.c
++++ b/batman-adv/vis.c
+@@ -136,9 +136,8 @@ static ssize_t vis_data_read_prim_sec(char *buff, struct hlist_head *if_list)
+ 	hlist_for_each_entry(entry, pos, if_list, list) {
+ 		if (entry->primary)
+ 			len += sprintf(buff + len, "PRIMARY, ");
+-		else {
++		else
+ 			len += sprintf(buff + len,  "SEC %pM, ", entry->addr);
+-		}
+ 	}
+ 
+ 	return len;
+-- 
+1.7.1
+
