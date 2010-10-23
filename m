@@ -1,8 +1,16 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sat, 23 Oct 2010 15:46:02 +0200
-Message-Id: <1287841562-19205-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add missing space in originator.c
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 23 Oct 2010 16:27:44 +0200
+References: <1287325852-8786-1-git-send-email-sven.eckelmann@gmx.de>
+	<1287407818-23034-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1287407818-23034-1-git-send-email-sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201010231627.45357.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Limit spin_locks to
+	spin_lock_bh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,26 +22,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-adv/originator.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Monday 18 October 2010 15:16:58 Sven Eckelmann wrote:
+> This makes it possible to exchange the quite complex spin_lock_irqsave
+> with spin_lock_bh which only stops bottom halves from running on the
+> current cpu, but allows interrupt handlers to take over to keep the
+> interrupt latency low.
 
-diff --git a/batman-adv/originator.c b/batman-adv/originator.c
-index afac4eb..15bf037 100644
---- a/batman-adv/originator.c
-+++ b/batman-adv/originator.c
-@@ -177,7 +177,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
- 		goto free_bcast_own_sum;
- 
- 	if (bat_priv->orig_hash->elements * 4 > bat_priv->orig_hash->size) {
--		swaphash = hash_resize(bat_priv->orig_hash,choose_orig,
-+		swaphash = hash_resize(bat_priv->orig_hash, choose_orig,
- 				       bat_priv->orig_hash->size * 2);
- 
- 		if (!swaphash)
--- 
-1.7.2.3
+Applied in revision 1846.
 
+Thanks,
+Marek
