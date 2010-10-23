@@ -1,14 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 23 Oct 2010 03:41:15 +0200
-References: <1286626600-23439-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1286626600-23439-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Sat, 23 Oct 2010 03:45:09 +0200
+References: <1286922125-18097-1-git-send-email-linus.luessing@web.de>
+	<1286969589-31373-1-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1286969589-31373-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201010230341.15802.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Polishing of the hash implementation
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201010230345.09650.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/4] batman-adv: Make hop_penalty
+	configurable via sysfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,15 +24,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday 09 October 2010 14:16:35 Sven Eckelmann wrote:
-> David S. Miller wasn't amused[1] by our hash implementation. Instead he
-> proposed some changes we should make. I tried to implement most of them,
-> but don't think we should really manually inline every functionality
-> currently provided by the hash implementation. I would rather keep the
-> heavily used functions as compiler inlineable functions and do the rest
-> using standard kernel hlist_*.
+On Wednesday 13 October 2010 13:33:09 Linus L=C3=BCssing wrote:
+> Exposing the hop_penalty is especially useful for the stated scenario: A
+> static node can keep the default originator interval, a mobile node can
+> select a quicker one resulting in faster route updates towards this
+> mobile node. Additionally, such a mobile node could select a higher hop
+> penalty (or even set it to 255 to disable acting as a router for other
+> nodes) to make it less desirable, letting other nodes avoid selecting
+> this mobile node as a router.
 
-Applied in revision 1838-1842.
+Applied in revision 1843.
 
 Thanks,
 Marek
