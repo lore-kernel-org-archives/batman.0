@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 23 Oct 2010 03:45:09 +0200
-References: <1286922125-18097-1-git-send-email-linus.luessing@web.de>
-	<1286969589-31373-1-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <1286969589-31373-1-git-send-email-linus.luessing@ascom.ch>
+Date: Sat, 23 Oct 2010 03:46:38 +0200
+References: <201010181211.55541.lindner_marek@yahoo.de>
+	<1287438253-13064-1-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1287438253-13064-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <201010230345.09650.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 5/4] batman-adv: Make hop_penalty
-	configurable via sysfs
+Message-Id: <201010230346.38736.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Adding sysfs ABI
+	documentation for hop_penalty
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,16 +24,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday 13 October 2010 13:33:09 Linus L=C3=BCssing wrote:
-> Exposing the hop_penalty is especially useful for the stated scenario: A
-> static node can keep the default originator interval, a mobile node can
-> select a quicker one resulting in faster route updates towards this
-> mobile node. Additionally, such a mobile node could select a higher hop
-> penalty (or even set it to 255 to disable acting as a router for other
-> nodes) to make it less desirable, letting other nodes avoid selecting
-> this mobile node as a router.
+On Monday 18 October 2010 23:44:13 Linus L=C3=BCssing wrote:
+> +Description:
+> +               Defines the penalty which will be applied to an
+> +               originator message's tq-field on every hop.
 
-Applied in revision 1843.
+Applied in revision 1845.
 
 Thanks,
 Marek
