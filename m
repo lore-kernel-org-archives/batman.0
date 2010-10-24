@@ -1,12 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 24 Oct 2010 03:13:33 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201010240313.35215.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] batman-adv gateway handling
+Date: Sun, 24 Oct 2010 03:14:16 +0200
+Message-Id: <1287882863-11314-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <201010240313.35215.lindner_marek@yahoo.de>
+References: <201010240313.35215.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/8] batman-adv: remove redundant
+	gw_node_list_free() function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,16 +18,110 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ batman-adv/gateway_client.c |   30 +++++++++---------------------
+ batman-adv/gateway_client.h |    3 +--
+ batman-adv/main.c           |    2 +-
+ batman-adv/originator.c     |    2 +-
+ 4 files changed, 12 insertions(+), 25 deletions(-)
 
-Hi,
+diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
+index ac33c09..1cd7e0a 100644
+--- a/batman-adv/gateway_client.c
++++ b/batman-adv/gateway_client.c
+@@ -306,7 +306,7 @@ void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node)
+ 	return gw_node_update(bat_priv, orig_node, 0);
+ }
+ 
+-void gw_node_purge_deleted(struct bat_priv *bat_priv)
++void gw_node_purge(struct bat_priv *bat_priv)
+ {
+ 	struct gw_node *gw_node;
+ 	struct hlist_node *node, *node_tmp;
+@@ -315,32 +315,20 @@ void gw_node_purge_deleted(struct bat_priv *bat_priv)
+ 	spin_lock_bh(&bat_priv->gw_list_lock);
+ 
+ 	hlist_for_each_entry_safe(gw_node, node, node_tmp,
+-						&bat_priv->gw_list, list) {
+-		if ((gw_node->deleted) &&
+-		    (time_after(jiffies, gw_node->deleted + timeout))) {
+-
+-			hlist_del_rcu(&gw_node->list);
+-			call_rcu(&gw_node->rcu, gw_node_free_rcu);
+-		}
+-	}
+-
+-	spin_unlock_bh(&bat_priv->gw_list_lock);
+-}
+-
+-void gw_node_list_free(struct bat_priv *bat_priv)
+-{
+-	struct gw_node *gw_node;
+-	struct hlist_node *node, *node_tmp;
++				  &bat_priv->gw_list, list) {
++		if (((!gw_node->deleted) ||
++		     (time_after(jiffies, gw_node->deleted + timeout))) &&
++		    atomic_read(&bat_priv->mesh_state) == MESH_ACTIVE)
++			continue;
+ 
+-	spin_lock_bh(&bat_priv->gw_list_lock);
++		if (bat_priv->curr_gw == gw_node)
++			gw_deselect(bat_priv);
+ 
+-	hlist_for_each_entry_safe(gw_node, node, node_tmp,
+-				 &bat_priv->gw_list, list) {
+ 		hlist_del_rcu(&gw_node->list);
+ 		call_rcu(&gw_node->rcu, gw_node_free_rcu);
+ 	}
+ 
+-	gw_deselect(bat_priv);
++
+ 	spin_unlock_bh(&bat_priv->gw_list_lock);
+ }
+ 
+diff --git a/batman-adv/gateway_client.h b/batman-adv/gateway_client.h
+index ce0b4f0..38699ba 100644
+--- a/batman-adv/gateway_client.h
++++ b/batman-adv/gateway_client.h
+@@ -29,8 +29,7 @@ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node);
+ void gw_node_update(struct bat_priv *bat_priv,
+ 		    struct orig_node *orig_node, uint8_t new_gwflags);
+ void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node);
+-void gw_node_purge_deleted(struct bat_priv *bat_priv);
+-void gw_node_list_free(struct bat_priv *bat_priv);
++void gw_node_purge(struct bat_priv *bat_priv);
+ int gw_client_seq_print_text(struct seq_file *seq, void *offset);
+ bool gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb);
+ 
+diff --git a/batman-adv/main.c b/batman-adv/main.c
+index 73d2752..6d6df7e 100644
+--- a/batman-adv/main.c
++++ b/batman-adv/main.c
+@@ -133,7 +133,7 @@ void mesh_free(struct net_device *soft_iface)
+ 
+ 	vis_quit(bat_priv);
+ 
+-	gw_node_list_free(bat_priv);
++	gw_node_purge(bat_priv);
+ 	originator_free(bat_priv);
+ 
+ 	hna_local_free(bat_priv);
+diff --git a/batman-adv/originator.c b/batman-adv/originator.c
+index 8c72a40..39f3160 100644
+--- a/batman-adv/originator.c
++++ b/batman-adv/originator.c
+@@ -294,7 +294,7 @@ static void _purge_orig(struct bat_priv *bat_priv)
+ 
+ 	spin_unlock_bh(&bat_priv->orig_hash_lock);
+ 
+-	gw_node_purge_deleted(bat_priv);
++	gw_node_purge(bat_priv);
+ 	gw_election(bat_priv);
+ 
+ 	softif_neigh_purge(bat_priv);
+-- 
+1.7.1
 
-the batman-adv gateway functionality has been available in the trunk for quite 
-some time but was never able to enter an official release because the sysfs API 
-did not follow the Linux kernel guidelines.
-I wrote a series of patches meant to address these style issues. A 
-comprehensive documentation of the gateway handling is on my todo list and 
-will follow shortly.
-
-Regards,
-Marek
