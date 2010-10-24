@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 24 Oct 2010 03:14:16 +0200
-Message-Id: <1287882863-11314-1-git-send-email-lindner_marek@yahoo.de>
+Date: Sun, 24 Oct 2010 03:14:17 +0200
+Message-Id: <1287882863-11314-2-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <201010240313.35215.lindner_marek@yahoo.de>
 References: <201010240313.35215.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/8] batman-adv: remove redundant
-	gw_node_list_free() function
+Subject: [B.A.T.M.A.N.] [PATCH 2/8] batman-adv: gateways silently drop DHCP
+	requests
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,106 +22,136 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- batman-adv/gateway_client.c |   30 +++++++++---------------------
- batman-adv/gateway_client.h |    3 +--
- batman-adv/main.c           |    2 +-
- batman-adv/originator.c     |    2 +-
- 4 files changed, 12 insertions(+), 25 deletions(-)
+ batman-adv/gateway_client.c |   31 +++++++++++++++++--------------
+ batman-adv/gateway_client.h |    2 +-
+ batman-adv/soft-interface.c |   16 ++++++++++------
+ 3 files changed, 28 insertions(+), 21 deletions(-)
 
 diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
-index ac33c09..1cd7e0a 100644
+index 1cd7e0a..6c6a0b3 100644
 --- a/batman-adv/gateway_client.c
 +++ b/batman-adv/gateway_client.c
-@@ -306,7 +306,7 @@ void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node)
- 	return gw_node_update(bat_priv, orig_node, 0);
+@@ -400,54 +400,57 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 	return 0;
  }
  
--void gw_node_purge_deleted(struct bat_priv *bat_priv)
-+void gw_node_purge(struct bat_priv *bat_priv)
+-bool gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
++int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
  {
- 	struct gw_node *gw_node;
- 	struct hlist_node *node, *node_tmp;
-@@ -315,32 +315,20 @@ void gw_node_purge_deleted(struct bat_priv *bat_priv)
- 	spin_lock_bh(&bat_priv->gw_list_lock);
+ 	struct ethhdr *ethhdr;
+ 	struct iphdr *iphdr;
+ 	struct udphdr *udphdr;
+ 	unsigned int header_len = 0;
  
- 	hlist_for_each_entry_safe(gw_node, node, node_tmp,
--						&bat_priv->gw_list, list) {
--		if ((gw_node->deleted) &&
--		    (time_after(jiffies, gw_node->deleted + timeout))) {
+-	if (atomic_read(&bat_priv->gw_mode) != GW_MODE_CLIENT)
+-		return false;
 -
--			hlist_del_rcu(&gw_node->list);
--			call_rcu(&gw_node->rcu, gw_node_free_rcu);
--		}
--	}
--
--	spin_unlock_bh(&bat_priv->gw_list_lock);
--}
--
--void gw_node_list_free(struct bat_priv *bat_priv)
--{
--	struct gw_node *gw_node;
--	struct hlist_node *node, *node_tmp;
-+				  &bat_priv->gw_list, list) {
-+		if (((!gw_node->deleted) ||
-+		     (time_after(jiffies, gw_node->deleted + timeout))) &&
-+		    atomic_read(&bat_priv->mesh_state) == MESH_ACTIVE)
-+			continue;
+-	if (!bat_priv->curr_gw)
+-		return false;
++	if (atomic_read(&bat_priv->gw_mode) == GW_MODE_OFF)
++		return 0;
  
--	spin_lock_bh(&bat_priv->gw_list_lock);
-+		if (bat_priv->curr_gw == gw_node)
-+			gw_deselect(bat_priv);
+ 	/* check for ethernet header */
+ 	if (!pskb_may_pull(skb, header_len + ETH_HLEN))
+-		return false;
++		return 0;
+ 	ethhdr = (struct ethhdr *)skb->data;
+ 	header_len += ETH_HLEN;
  
--	hlist_for_each_entry_safe(gw_node, node, node_tmp,
--				 &bat_priv->gw_list, list) {
- 		hlist_del_rcu(&gw_node->list);
- 		call_rcu(&gw_node->rcu, gw_node_free_rcu);
+ 	/* check for initial vlan header */
+ 	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
+ 		if (!pskb_may_pull(skb, header_len + VLAN_HLEN))
+-			return false;
++			return 0;
+ 		ethhdr = (struct ethhdr *)(skb->data + VLAN_HLEN);
+ 		header_len += VLAN_HLEN;
  	}
  
--	gw_deselect(bat_priv);
-+
- 	spin_unlock_bh(&bat_priv->gw_list_lock);
- }
+ 	/* check for ip header */
+ 	if (ntohs(ethhdr->h_proto) != ETH_P_IP)
+-		return false;
++		return 0;
  
+ 	if (!pskb_may_pull(skb, header_len + sizeof(struct iphdr)))
+-		return false;
++		return 0;
+ 	iphdr = (struct iphdr *)(skb->data + header_len);
+ 	header_len += iphdr->ihl * 4;
+ 
+ 	/* check for udp header */
+ 	if (iphdr->protocol != IPPROTO_UDP)
+-		return false;
++		return 0;
+ 
+ 	if (!pskb_may_pull(skb, header_len + sizeof(struct udphdr)))
+-		return false;
++		return 0;
+ 	udphdr = (struct udphdr *)(skb->data + header_len);
+ 	header_len += sizeof(struct udphdr);
+ 
+ 	/* check for bootp port */
+ 	if (ntohs(udphdr->dest) != 67)
+-		return false;
++		return 0;
++
++	if (atomic_read(&bat_priv->gw_mode) == GW_MODE_SERVER)
++		return -1;
++
++	if (!bat_priv->curr_gw)
++		return 0;
+ 
+-	return true;
++	return 1;
+ }
 diff --git a/batman-adv/gateway_client.h b/batman-adv/gateway_client.h
-index ce0b4f0..38699ba 100644
+index 38699ba..4585e65 100644
 --- a/batman-adv/gateway_client.h
 +++ b/batman-adv/gateway_client.h
-@@ -29,8 +29,7 @@ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node);
- void gw_node_update(struct bat_priv *bat_priv,
- 		    struct orig_node *orig_node, uint8_t new_gwflags);
+@@ -31,6 +31,6 @@ void gw_node_update(struct bat_priv *bat_priv,
  void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node);
--void gw_node_purge_deleted(struct bat_priv *bat_priv);
--void gw_node_list_free(struct bat_priv *bat_priv);
-+void gw_node_purge(struct bat_priv *bat_priv);
+ void gw_node_purge(struct bat_priv *bat_priv);
  int gw_client_seq_print_text(struct seq_file *seq, void *offset);
- bool gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb);
+-bool gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb);
++int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb);
  
-diff --git a/batman-adv/main.c b/batman-adv/main.c
-index 73d2752..6d6df7e 100644
---- a/batman-adv/main.c
-+++ b/batman-adv/main.c
-@@ -133,7 +133,7 @@ void mesh_free(struct net_device *soft_iface)
+ #endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
+diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
+index a13276b..25564c3 100644
+--- a/batman-adv/soft-interface.c
++++ b/batman-adv/soft-interface.c
+@@ -349,7 +349,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	struct vlan_ethhdr *vhdr;
+ 	int data_len = skb->len, ret;
+ 	short vid = -1;
+-	bool bcast_dst = false, do_bcast = true;
++	bool do_bcast = false;
  
- 	vis_quit(bat_priv);
+ 	if (atomic_read(&bat_priv->mesh_state) != MESH_ACTIVE)
+ 		goto dropped;
+@@ -380,14 +380,18 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	/* TODO: check this for locks */
+ 	hna_local_add(soft_iface, ethhdr->h_source);
  
--	gw_node_list_free(bat_priv);
-+	gw_node_purge(bat_priv);
- 	originator_free(bat_priv);
+-	if (is_bcast(ethhdr->h_dest) || is_mcast(ethhdr->h_dest))
+-		bcast_dst = true;
++	if (is_bcast(ethhdr->h_dest) || is_mcast(ethhdr->h_dest)) {
++		ret = gw_is_target(bat_priv, skb);
  
- 	hna_local_free(bat_priv);
-diff --git a/batman-adv/originator.c b/batman-adv/originator.c
-index 8c72a40..39f3160 100644
---- a/batman-adv/originator.c
-+++ b/batman-adv/originator.c
-@@ -294,7 +294,7 @@ static void _purge_orig(struct bat_priv *bat_priv)
+-	if ((bcast_dst) && gw_is_target(bat_priv, skb))
+-		do_bcast = false;
++		if (ret < 0)
++			goto dropped;
++
++		if (ret == 0)
++			do_bcast = true;
++	}
  
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
+ 	/* ethernet packet should be broadcasted */
+-	if (bcast_dst && do_bcast) {
++	if (do_bcast) {
+ 		if (!bat_priv->primary_if)
+ 			goto dropped;
  
--	gw_node_purge_deleted(bat_priv);
-+	gw_node_purge(bat_priv);
- 	gw_election(bat_priv);
- 
- 	softif_neigh_purge(bat_priv);
 -- 
 1.7.1
 
