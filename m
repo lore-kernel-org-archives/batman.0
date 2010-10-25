@@ -1,18 +1,10 @@
-Return-Path: <clang@gateworks.com>
-From: Chris Lang <clang@gateworks.com>
-In-Reply-To: <201010251444.38251.lindner_marek@yahoo.de>
-References: <clang@gateworks.com>
-	<1287988488-10533-1-git-send-email-clang@gateworks.com>
-	<201010251444.38251.lindner_marek@yahoo.de>
-Content-Type: text/plain
-Date: Mon, 25 Oct 2010 08:36:30 -0700
-Message-Id: <1288020990.5210.35.camel@chris-desktop>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Re-Enable
-	Interface	alternating and bonding
-Reply-To: clang@gateworks.com,
-	The list for a Better Approach To Mobile Ad-hoc Networking
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 25 Oct 2010 23:46:05 +0200
+Message-Id: <1288043165-8144-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add seq_printf() wrapper for
+	older kernels that don't support %pM
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,33 +15,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On Mon, 2010-10-25 at 14:44 +0200, Marek Lindner wrote:
-> On Monday 25 October 2010 08:34:48 Chris Lang wrote:
-> > r1765 incidentally disabled bonding of packets first entering the
-> > mesh along with also disabling interface alternating regardless
-> > of where the packet came from. This re-enables these options.
-> 
-> Wow - what a catch! :-)
-> We might have to reword your commit message to get your patch accepted by the 
-> Linux stable maintainers. I offer to do the job if you don't mind.
-> 
-> Cheers,
-> Marek
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ batman-adv/bat_printk.c |   18 ++++++++++++++++++
+ batman-adv/compat.h     |    3 +++
+ 2 files changed, 21 insertions(+), 0 deletions(-)
 
-Marek,
-
-I don't have any issue with you rewording the commit message. I just
-didn't think about making the commit message linux friendly.
-
-Thanks,
-
+diff --git a/batman-adv/bat_printk.c b/batman-adv/bat_printk.c
+index 4fa3e18..69a7f95 100644
+--- a/batman-adv/bat_printk.c
++++ b/batman-adv/bat_printk.c
+@@ -935,3 +935,21 @@ int bat_snprintf(char *buf, size_t size, const char *fmt, ...)
+ 
+ 	return i;
+ }
++
++int bat_seq_printf(struct seq_file *m, const char *f, ...)
++{
++	va_list args;
++	int len;
++
++	if (m->count < m->size) {
++		va_start(args, f);
++		len = bat_vsnprintf(m->buf + m->count, m->size - m->count, f, args);
++		va_end(args);
++		if (m->count + len < m->size) {
++			m->count += len;
++			return 0;
++		}
++	}
++	m->count = m->size;
++	return -1;
++}
+diff --git a/batman-adv/compat.h b/batman-adv/compat.h
+index da474e4..b01455f 100644
+--- a/batman-adv/compat.h
++++ b/batman-adv/compat.h
+@@ -259,6 +259,9 @@ int bat_sprintf(char *buf, const char *fmt, ...);
+ int bat_snprintf(char *buf, size_t size, const char *fmt, ...);
+ #define snprintf bat_snprintf
+ 
++int bat_seq_printf(struct seq_file *m, const char *f, ...);
++#define seq_printf bat_seq_printf
++
+ #endif /* < KERNEL_VERSION(2, 6, 29) */
+ 
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
 -- 
-Chris Lang
-Gateworks Corporation
-3026 S. Higuera, San Luis Obispo, CA 93401
-Ph: 805-781-2000 Fax: 805-781-2001
-Email: clang@gateworks.com
-Web: www.gateworks.com
+1.7.1
 
