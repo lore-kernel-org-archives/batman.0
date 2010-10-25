@@ -1,15 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 25 Oct 2010 23:49:42 +0200
-References: <1287660411-4238-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1287660411-4238-1-git-send-email-sven.eckelmann@gmx.de>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Tue, 26 Oct 2010 00:06:13 +0200
+Message-Id: <1288044374-11771-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <AANLkTi=MbTkJiD-=7LcWdzMdqcJeqaBkX2G6O3oeUDZ8@mail.gmail.com>
+References: <AANLkTi=MbTkJiD-=7LcWdzMdqcJeqaBkX2G6O3oeUDZ8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201010252349.43966.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Include compat.h only
-	once
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Sender: linus.luessing@web.de
+Subject: Re: [B.A.T.M.A.N.] batman-adv multi-hop route
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,17 +20,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday 21 October 2010 13:26:50 Sven Eckelmann wrote:
-> The compat.h can also be included in main.h which is included by all
-> source files. In theory also all header files must include main.h. This
-> is currently not and hopefully will never be necessary.
-> 
-> It is also important that all header files which declare functions which
-> are redefined in compat.h to be included before compat.h is included.
+Hi xianghua,
 
-Applied in revision 1851 & 1852.
+for such test cases basically this patch had once been made to force batman-adv
+onto certain routes but needed to be removed again as the way ebtables is
+used here is not standard-conforming. However, this shouldn't bother you :).
 
-Thanks,
-Marek
+You can then just use ebtables to prohibit certain routes:
+> ebtables -I INPUT -s MAC -j DROP or
+> ebtables -I INPUT -p 0x4305 -j DROP
+> (and the same for -I OUTPUT)
+
+Antonio had been doing tests with this ebtables patch, too (see this
+mailing list's archive from about the 10 May 2010).
+
+This is a revert of the revert of commit 660d20261343e0b2ff57e51e50d7eb0e557d5e5b.
+and applies on top of the current git master branch. If you need it for any
+other version of batman-adv, try 'git revert 660d20261343e0b2ff57e51e50d7eb0e557d5e5b'
+and if that doesn't work, just bug me again :).
+
+Cheers, Linus
