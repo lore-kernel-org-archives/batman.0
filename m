@@ -1,17 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 26 Oct 2010 00:22:42 +0200
-References: <clang@gateworks.com> <201010251444.38251.lindner_marek@yahoo.de>
-	<1288020990.5210.35.camel@chris-desktop>
-In-Reply-To: <1288020990.5210.35.camel@chris-desktop>
+Date: Tue, 26 Oct 2010 00:24:44 +0200
+References: <1288043165-8144-1-git-send-email-lindner_marek@yahoo.de>
+	<201010260015.01173.sven.eckelmann@gmx.de>
+In-Reply-To: <201010260015.01173.sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201010260022.43128.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.]
- =?iso-8859-15?q?=5BPATCH=5D_batman-adv=3A_Re-Enabl?=
- =?iso-8859-15?q?e_Interface=09alternating_and_bonding?=
+Message-Id: <201010260024.45283.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add seq_printf() wrapper for
+	older kernels that don't support %pM
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,11 +24,10 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday 25 October 2010 17:36:30 Chris Lang wrote:
-> I don't have any issue with you rewording the commit message. I just
-> didn't think about making the commit message linux friendly.
+On Tuesday 26 October 2010 00:14:59 Sven Eckelmann wrote:
+> Acked-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 
-Ok, applied your patch in revision 1853.
+Applied in revision 1854.
 
-Thanks,
+Regards,
 Marek
