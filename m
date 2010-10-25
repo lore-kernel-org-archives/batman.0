@@ -1,15 +1,14 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Tue, 26 Oct 2010 00:14:59 +0200
-References: <1288043165-8144-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1288043165-8144-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <xiaoxianghua@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2282711.685diOyhXJ";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201010260015.01173.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add seq_printf() wrapper for
-	older kernels that don't support %pM
+In-Reply-To: <1288044374-11771-1-git-send-email-linus.luessing@web.de>
+References: <AANLkTi=MbTkJiD-=7LcWdzMdqcJeqaBkX2G6O3oeUDZ8@mail.gmail.com>
+	<1288044374-11771-1-git-send-email-linus.luessing@web.de>
+Date: Mon, 25 Oct 2010 17:16:50 -0500
+Message-ID: <AANLkTim55WkJkmC8u-BidPaVH1J=hEJs2v09d-NUH4KH@mail.gmail.com>
+From: Xianghua Xiao <xiaoxianghua@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] batman-adv multi-hop route
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +20,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, linus.luessing@web.de
 
---nextPart2282711.685diOyhXJ
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+On Mon, Oct 25, 2010 at 5:06 PM, Linus L=C3=BCssing <linus.luessing@web.de>=
+ wrote:
+> Hi xianghua,
+>
+> for such test cases basically this patch had once been made to force batm=
+an-adv
+> onto certain routes but needed to be removed again as the way ebtables is
+> used here is not standard-conforming. However, this shouldn't bother you =
+:).
+>
+> You can then just use ebtables to prohibit certain routes:
+>> ebtables -I INPUT -s MAC -j DROP or
+>> ebtables -I INPUT -p 0x4305 -j DROP
+>> (and the same for -I OUTPUT)
+>
+> Antonio had been doing tests with this ebtables patch, too (see this
+> mailing list's archive from about the 10 May 2010).
+>
+> This is a revert of the revert of commit 660d20261343e0b2ff57e51e50d7eb0e=
+557d5e5b.
+> and applies on top of the current git master branch. If you need it for a=
+ny
+> other version of batman-adv, try 'git revert 660d20261343e0b2ff57e51e50d7=
+eb0e557d5e5b'
+> and if that doesn't work, just bug me again :).
+>
+> Cheers, Linus
+>
 
-Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-
-Acked-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-
---nextPart2282711.685diOyhXJ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJMxgFkAAoJEF2HCgfBJntG2hcP/jftH1uIID64j9IH4aSr09Zi
-LAAg15NdM0+BqOzFjLz/nkMExnktsw8NhqGrk53ECgFa2eKbkxgc+RWwA4VIl10z
-sfrCHqPk7zN+bVof431ktXjERbkut3r+H6rOIfUtanYKZKaYUxLnTaySZCpNIrrC
-1Q2roIeRVFnnSS6qNJEJh01J+Wh0BrYr5TiVSXcLloalSdrqdLjcDxJi/u7ecQcv
-Tjy0LbB3BlCVBz02wAYj3PWpwE6GldfiMXwUZF5o+GWmz1CX43z+TOJTL92HNVjR
-aJUcH1XfPVK3Rrx1/1iCdnCjiSH5XpsbFjlnN8F6d4FOzhQt6M1gX5wtCrK2d7BY
-KZlqeEiVe26lZOYgi0uzcqvd+aUqXoE8qX9depX4guAKhSWP2GiyPVdnI7ZYrMvs
-sMXm/+4j/d3gsu4SW8FO83XCEKHqzoTZ/dp9GnOtLBfrCo5qKj2eUsiwQ/d8lT2u
-w5sqbgdQr2jFA5mRNtuj3nFmoUJoNdZXEOzNj8wL9X0mxmeN7azZkWYbolzmI2mB
-pDzTOWAb/7qKqKpyANUmKRpsG7OHakUvfJpw1c4K5TWlgYtgwfGiNhqPwwxA+zCX
-uAeRjGNSXfFgxj6gHf+iezkY4rQYXCjL4pUtw4+5ij0bdD0cknDyIIksh2rssPr2
-ZHcrOspT3abgK81He7oq
-=IbbF
------END PGP SIGNATURE-----
-
---nextPart2282711.685diOyhXJ--
+Thanks!
+Will give it a try.
+Xianghua
