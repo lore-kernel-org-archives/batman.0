@@ -1,16 +1,15 @@
-Return-Path: <xiaoxianghua@gmail.com>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Thu, 28 Oct 2010 11:49:31 +0200
+References: <1288166545-8252-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1288166545-8252-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTima7xg=zOz5M1PKwfoyTJc1LO_XZ23efjVh0oZ9@mail.gmail.com>
-References: <AANLkTi=MbTkJiD-=7LcWdzMdqcJeqaBkX2G6O3oeUDZ8@mail.gmail.com>
-	<1288044374-11771-1-git-send-email-linus.luessing@web.de>
-	<AANLkTim55WkJkmC8u-BidPaVH1J=hEJs2v09d-NUH4KH@mail.gmail.com>
-	<AANLkTima7xg=zOz5M1PKwfoyTJc1LO_XZ23efjVh0oZ9@mail.gmail.com>
-Date: Wed, 27 Oct 2010 21:02:11 -0500
-Message-ID: <AANLkTikemzJPeFGQCjGi636pJ21TF3JDHtFGfqTWV80b@mail.gmail.com>
-From: Xianghua Xiao <xiaoxianghua@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] batman-adv multi-hop route
+Content-Type: multipart/signed; boundary="nextPart2720223.4ue3b7pcMG";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201010281149.45974.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Correct sparse warning about
+	different lock contexts for basic block
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,107 +21,116 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, linus.luessing@web.de
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wed, Oct 27, 2010 at 8:17 PM, Xianghua Xiao <xiaoxianghua@gmail.com> wro=
-te:
-> On Mon, Oct 25, 2010 at 5:16 PM, Xianghua Xiao <xiaoxianghua@gmail.com> w=
-rote:
->> On Mon, Oct 25, 2010 at 5:06 PM, Linus L=C3=BCssing <linus.luessing@web.=
-de> wrote:
->>> Hi xianghua,
->>>
->>> for such test cases basically this patch had once been made to force ba=
-tman-adv
->>> onto certain routes but needed to be removed again as the way ebtables =
-is
->>> used here is not standard-conforming. However, this shouldn't bother yo=
-u :).
->>>
->>> You can then just use ebtables to prohibit certain routes:
->>>> ebtables -I INPUT -s MAC -j DROP or
->>>> ebtables -I INPUT -p 0x4305 -j DROP
->>>> (and the same for -I OUTPUT)
->>>
->>> Antonio had been doing tests with this ebtables patch, too (see this
->>> mailing list's archive from about the 10 May 2010).
->>>
->>> This is a revert of the revert of commit 660d20261343e0b2ff57e51e50d7eb=
-0e557d5e5b.
->>> and applies on top of the current git master branch. If you need it for=
- any
->>> other version of batman-adv, try 'git revert 660d20261343e0b2ff57e51e50=
-d7eb0e557d5e5b'
->>> and if that doesn't work, just bug me again :).
->>>
->>> Cheers, Linus
->>>
->>
->> Thanks!
->> Will give it a try.
->> Xianghua
->>
-> ************A*******************
-> $ git revert 660d20261343e0b2ff57e51e50d7eb0e557d5e5b
-> Automatic revert failed. =C2=A0After resolving the conflicts,
-> mark the corrected paths with 'git add <paths>' or 'git rm <paths>'
-> and commit the result.
-> ************B*********************
-> $ git diff
-> diff --cc send.c
-> index 16ffd03,283c6bb..0000000
-> --- a/send.c
-> +++ b/send.c
-> @@@ -28,6 -28,8 +28,11 @@@
-> =C2=A0#include "types.h"
-> =C2=A0#include "vis.h"
-> =C2=A0#include "aggregation.h"
-> ++<<<<<<< HEAD
-> ++=3D=3D=3D=3D=3D=3D=3D
-> + #include "gateway_common.h"
-> + #include <linux/netfilter_bridge.h>
-> ++>>>>>>> 660d202... batman-adv: Revert "Adding netfilter-bridge hooks"
->
-> =C2=A0#include "compat.h"
-> ****************C*********************
-> $cat send.c
-> <snip>
-> #include "main.h"
-> #include "send.h"
-> #include "routing.h"
-> #include "translation-table.h"
-> #include "soft-interface.h"
-> #include "hard-interface.h"
-> #include "types.h"
-> #include "vis.h"
-> #include "aggregation.h"
-> #include "gateway_common.h"
-> #include <linux/netfilter_bridge.h>
->
-> #include "compat.h"
-> <snip>
-> ****************D*********************
-> ~/devel/mesh/batman-adv$ make
-> make -C /lib/modules/2.6.32-25-generic/build
-> REVISION=3Dv2010.1.0-52-gdbfbc90-dirty
-> M=3D/home/xxiao/devel/mesh/batman-adv
-> PWD=3D/home/xxiao/devel/mesh/batman-adv -j 1 modules
-> make[1]: Entering directory `/usr/src/linux-headers-2.6.32-25-generic'
-> =C2=A0CC [M] =C2=A0/home/xxiao/devel/mesh/batman-adv/main.o
-> =C2=A0CC [M] =C2=A0/home/xxiao/devel/mesh/batman-adv/bat_debugfs.o
-> =C2=A0CC [M] =C2=A0/home/xxiao/devel/mesh/batman-adv/bat_sysfs.o
-> =C2=A0CC [M] =C2=A0/home/xxiao/devel/mesh/batman-adv/send.o
-> /home/xxiao/devel/mesh/batman-adv/send.c:31:28: error:
-> gateway_common.h: No such file or directory
-> make[2]: *** [/home/xxiao/devel/mesh/batman-adv/send.o] Error 1
-> make[1]: *** [_module_/home/xxiao/devel/mesh/batman-adv] Error 2
-> make[1]: Leaving directory `/usr/src/linux-headers-2.6.32-25-generic'
-> make: *** [all] Error 2
->
-> so, where is gateway_common.h?
->
-> thanks!
->
+--nextPart2720223.4ue3b7pcMG
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-sent out too fast, I removed that offending line and it compiles. never min=
-d.
+On Wednesday 27 October 2010 10:02:25 Sven Eckelmann wrote:
+> sparse noticed that if_list_lock is taken in some situations with bottom
+> halfes disabled in some SMP kernels and that we must always lock it with
+> spin_lock_bh.
+
+I would like to reject that patch by myself. Not that it does something bad=
+,=20
+but more that it does not make any sense what sparse says. I've looked thro=
+ugh=20
+the 2.6.32 smp code and couldn't locate the real problem. So if anyone has =
+a=20
+opinion or can show were the actual problem is... please tell me.
+
+My current test was done like that (on debian squeeze i386):
+=2D----------------------------------------------------------
+$ cd $MY_v2.6.32
+$ make mrproper
+$ make allnoconfig
+$ grep -v 'CONFIG_MODULES is not set' .config > .config.tmp; mv .config.tmp=
+ \
+ .config
+$ grep -v 'CONFIG_NET is not set' .config > .config.tmp; mv .config.tmp \
+ .config
+$ grep -v 'CONFIG_SMP is not set' .config > .config.tmp; mv .config.tmp \
+ .config
+$ grep -v 'CONFIG_MODULE_UNLOAD is not set' .config > .config.tmp; mv \
+ .config.tmp .config
+$ echo 'CONFIG_MODULES=3Dy' >> .config
+$ echo 'CONFIG_NET=3Dy' >> .config
+$ echo 'CONFIG_SMP=3Dy' >> .config
+$ echo 'CONFIG_MODULE_UNLOAD=3Dy' >> .config
+$ echo 'xy'|make menuconfig
+$ make prepare
+$ make modules
+
+
+$ mkdir test
+$ cd test
+$ cat << EOF > Makefile
+obj-m +=3D test.o
+test-y +=3D main.o
+EOF
+$ cat << EOF > main.c
+#include <linux/module.h>
+#include <linux/spinlock.h>
+
+static DEFINE_SPINLOCK(testlock);
+
+static int __init test_init(void)
+{
+	spin_lock(&testlock);
+	spin_unlock(&testlock);
+	return 0;
+}
+
+static void __exit test_exit(void)
+{
+}
+
+module_init(test_init);
+module_exit(test_exit);
+EOF
+
+
+$ make CC=3Dcgcc -C $MY_v2.6.32/linux-next M=3D$(pwd) modules         =20
+make: Entering directory `$MY_v2.6.32'
+  CC [M]  $MY_v2.6.32/testmodule/main.o
+$MY_v2.6.32/test/main.c:6:19: warning: context imbalance in 'test_init' -=20
+wrong count at exit
+  LD [M]  $MY_v2.6.32/test/test.o
+  Building modules, stage 2.
+  MODPOST 1 modules
+  LD [M]  $MY_v2.6.32/test/test.ko
+make: Leaving directory `$MY_v2.6.32'
+=2D----------------------------------------------------------
+
+The sparse version was v0.4.3.
+
+I will post a question regarding that problem on the sparse mailinglist
+
+Best regards,
+	Sven
+
+--nextPart2720223.4ue3b7pcMG
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJMyUcuAAoJEF2HCgfBJntGUhAQAMcaEaLpxaix5xZ4Qq9UHr9y
+BRyIiiz48Oknqz3QomJnFyaV/vk8ktpU+RoP8wK1tdWDvzohqXPzEHuvtIP4meou
+prMYCNVQ4jYmJIfFxrEvwZKbngN2gTP0OMbg5mU7/nfOUfmmWlMnCKdeMKT9c2hv
+NYwJmpLY25vWXal8pvBtpryGSh2R6Kez65lF0Y0fYv4bCoB3Nddn/L+TxpP6wf5m
+K4xQbFBLBBgXrT0S8AmF/ReQtLqfR04h23Nc+oMULu/guuH902MyQQ/kynCWK8zj
+SY5NadDUx8A9j4osxeFsU3XCBU5j4iG7hjTcIWYgy74wPcL7X2dmHzhMUbcsUdc/
+6AGcpxQ5GkG+YTWTaCFikmFGNccZusq0pB2lN9mI0Wy7eTxEW18ewv5vQRNThpAL
+rdTcFtkWCE8zXhbAcqsEkrvtRqHcTqTU8dfd7Zx9On+CpXpsqaJYKUjol3cVA6Il
+IT0UwwKybFM5xDmQkUjXJQtrqGgmGYlo6y5CIxmkxpG4CykxJ33lRza4G6IvMG+N
+kX+em2Hpu1t1NKyTT4tEoBdfcMulMYRsFGEusUTs2UkFFA55ygoJazMbFiexiOzS
+n0iN14rmtkUvkKv41Q3v7n+7p6+R7FmsDW0u6sUgCgpaeSHaBe3IzpHbSFU1ik75
+KnqRabZYUmdMfXsuv1GO
+=3cyi
+-----END PGP SIGNATURE-----
+
+--nextPart2720223.4ue3b7pcMG--
