@@ -1,15 +1,12 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu, 28 Oct 2010 11:49:31 +0200
-References: <1288166545-8252-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1288166545-8252-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Thu, 28 Oct 2010 12:03:43 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2720223.4ue3b7pcMG";
+Content-Type: multipart/signed; boundary="nextPart1575344.vSG0leIoSf";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201010281149.45974.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Correct sparse warning about
-	different lock contexts for basic block
+Message-Id: <201010281203.46522.sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] "wrong count at exit" after spin_lock/_unlock pair
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,25 +18,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: linux-sparse@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2720223.4ue3b7pcMG
+--nextPart1575344.vSG0leIoSf
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-On Wednesday 27 October 2010 10:02:25 Sven Eckelmann wrote:
-> sparse noticed that if_list_lock is taken in some situations with bottom
-> halfes disabled in some SMP kernels and that we must always lock it with
-> spin_lock_bh.
+Hi,
 
-I would like to reject that patch by myself. Not that it does something bad=
-,=20
-but more that it does not make any sense what sparse says. I've looked thro=
-ugh=20
-the 2.6.32 smp code and couldn't locate the real problem. So if anyone has =
-a=20
-opinion or can show were the actual problem is... please tell me.
+I use sparse (cgcc) with different kernel versions to do some quick checks =
+on=20
+the batman-adv kernel module. I noticed that my change from UP to SMP kerne=
+l=20
+generated some 'weird' warnings regarding a 'context imbalance' which I=20
+couldn't find, but went away when switching from spin_(un)lock to=20
+spin_(un)lock_bh - something which doesn't make sense in my mind.
+
+I am not quite sure if this is linux-headers or sparse related - so I try t=
+o=20
+post it here first. I choose 2.6.32 because it is the latest long stable=20
+kernel and will be used in by Debian Squeeze.
 
 My current test was done like that (on debian squeeze i386):
 =2D----------------------------------------------------------
@@ -78,9 +78,9 @@ static DEFINE_SPINLOCK(testlock);
 
 static int __init test_init(void)
 {
-	spin_lock(&testlock);
-	spin_unlock(&testlock);
-	return 0;
+        spin_lock(&testlock);
+        spin_unlock(&testlock);
+        return 0;
 }
 
 static void __exit test_exit(void)
@@ -104,33 +104,37 @@ wrong count at exit
 make: Leaving directory `$MY_v2.6.32'
 =2D----------------------------------------------------------
 
-The sparse version was v0.4.3.
+The sparse version was v0.4.3. It was obtained from git and and build using=
+=20
+the current Debian squeeze tools provided by build-essential. It was run fr=
+om=20
+the build dir by specifying it in $PATH
 
-I will post a question regarding that problem on the sparse mailinglist
+$ export PATH=3D$MY_SPARSE_CHECKOUT:$PATH
 
 Best regards,
 	Sven
 
---nextPart2720223.4ue3b7pcMG
+--nextPart1575344.vSG0leIoSf
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJMyUcuAAoJEF2HCgfBJntGUhAQAMcaEaLpxaix5xZ4Qq9UHr9y
-BRyIiiz48Oknqz3QomJnFyaV/vk8ktpU+RoP8wK1tdWDvzohqXPzEHuvtIP4meou
-prMYCNVQ4jYmJIfFxrEvwZKbngN2gTP0OMbg5mU7/nfOUfmmWlMnCKdeMKT9c2hv
-NYwJmpLY25vWXal8pvBtpryGSh2R6Kez65lF0Y0fYv4bCoB3Nddn/L+TxpP6wf5m
-K4xQbFBLBBgXrT0S8AmF/ReQtLqfR04h23Nc+oMULu/guuH902MyQQ/kynCWK8zj
-SY5NadDUx8A9j4osxeFsU3XCBU5j4iG7hjTcIWYgy74wPcL7X2dmHzhMUbcsUdc/
-6AGcpxQ5GkG+YTWTaCFikmFGNccZusq0pB2lN9mI0Wy7eTxEW18ewv5vQRNThpAL
-rdTcFtkWCE8zXhbAcqsEkrvtRqHcTqTU8dfd7Zx9On+CpXpsqaJYKUjol3cVA6Il
-IT0UwwKybFM5xDmQkUjXJQtrqGgmGYlo6y5CIxmkxpG4CykxJ33lRza4G6IvMG+N
-kX+em2Hpu1t1NKyTT4tEoBdfcMulMYRsFGEusUTs2UkFFA55ygoJazMbFiexiOzS
-n0iN14rmtkUvkKv41Q3v7n+7p6+R7FmsDW0u6sUgCgpaeSHaBe3IzpHbSFU1ik75
-KnqRabZYUmdMfXsuv1GO
-=3cyi
+iQIcBAABCgAGBQJMyUqBAAoJEF2HCgfBJntGq38QAMx7z4FgX+zQfuCGxGXLd/Es
+K9MkSitY/ifFPaOqAYnLCd1tX8jtNw2aFoxi7zslvpRM+ei33iwtMaz/GPuE0Fzg
+OF92E7SptpreaYQOwj3ZD+E0JuQjkSCCrqai7STwQT3EQX74PoyWzhb+1FnknGTL
+FNyhTyxnHE9zQuQ2XbnQe6xsOVsxjVKKTgyqQPa3rWIBzfZhiOSXMPc/1aLDuhoL
++Zh2EJCVMxkBHNoppDUP63EwQE0Ax99VrTn+wWMLWQ8NBMfeHDvFCHZ8g/Hz1+5X
+TTlcbzCsakhwr3LG8qQE6oGZ20IMDyKRWSNgf6bUNskJyGWVI+gPVKj8jUzLC7Ff
+qU7adE4ymm+yosg0+bTseyuuuy5cZ+nJtAYg2+Q9I75HAGOHbqXNLSKHHs9dbqS+
+PfjfO1WZ5wDF5Ry5SdjxZIAeDxmks9AeGRPTGbcXGr5SNSF5kJmKVDQBF3GVmnKu
+pziGePgzLe5KrUypLYEcZqOiE6kB+GXUad/MbzsEOqBDym3AMlSL664bTR8O0rL3
+V+xpjJWfhlLGNb7fKoMSt9KcPQ0j6WmtWg651boKUosrtQ+ZSSINUXE5fr8WPH0s
+hJRrkouxqcZHtBdevgstLS+auSiny9+g8NE8X+Iqr+nTtccdqk2NYIV7J8DZxWys
+cNZeq37BkZC6++4vM57L
+=V/7C
 -----END PGP SIGNATURE-----
 
---nextPart2720223.4ue3b7pcMG--
+--nextPart1575344.vSG0leIoSf--
