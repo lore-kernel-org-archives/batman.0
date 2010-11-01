@@ -1,16 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 1 Nov 2010 12:34:56 +0100
-References: <1288450858-14753-1-git-send-email-sven.eckelmann@gmx.de>
-	<1288450858-14753-3-git-send-email-sven.eckelmann@gmx.de>
-	<201011011226.21697.lindner_marek@yahoo.de>
-In-Reply-To: <201011011226.21697.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1291762.8uhzWkv65t";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201011011234.57230.sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/6] batctl: Remove unused variables
+Date: Mon,  1 Nov 2010 12:48:02 +0100
+Message-Id: <1288612082-13365-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1288450858-14753-3-git-send-email-sven.eckelmann@gmx.de>
+References: <1288450858-14753-3-git-send-email-sven.eckelmann@gmx.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2 3/6] batctl: Remove unused variables
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,69 +17,123 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart1291762.8uhzWkv65t
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Different variables aren't used after they are set. We can discard them
+without changing the behavior visible to the outside.
 
-Marek Lindner wrote:
-> On Saturday 30 October 2010 17:00:55 Sven Eckelmann wrote:
-> > -static void dump_arp(unsigned char *packet_buff, ssize_t buff_len, int
-> > time_printed) +static void dump_arp(unsigned char *packet_buff, ssize_t
-> > buff_len) {
-> >=20
-> >         struct ether_arp *arphdr;
-> >        =20
-> >         LEN_CHECK((size_t)buff_len, sizeof(struct ether_arp), "ARP");
-> >=20
-> > -       if (!time_printed)
-> > -               time_printed =3D print_time();
-> > -
-> >=20
-> >         arphdr =3D (struct ether_arp *)packet_buff;
-> >        =20
-> >         switch (ntohs(arphdr->arp_op)) {
-> >=20
-> > @@ -111,7 +108,7 @@ static void dump_arp(unsigned char *packet_buff,
-> > ssize_t buff_len, int time_prin }
-> >=20
-> >  }
->=20
-> I don't understand why you want to remove the time_printed stuff. Maybe it
-> is not so clear what this is good for ? At the beginning of each line
-> batctl tcpdump prints a timestamp by caling print_time(). The various
-> functions to analyze the headers (e.g. ARP) can be called under different
-> conditions: Either after the encapsulating batman-adv header had been
-> printed (including the timestamp) or without any prior prints in which
-> case we want to output the timestamp.
+Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+---
+ batctl/functions.c |    3 +--
+ batctl/tcpdump.c   |   12 ++++--------
+ batctl/vis.c       |    3 +--
+ 3 files changed, 6 insertions(+), 12 deletions(-)
 
-It is not used anywhere in the functions - so why keep it?
+diff --git a/batctl/functions.c b/batctl/functions.c
+index cff8b52..ce046ba 100644
+--- a/batctl/functions.c
++++ b/batctl/functions.c
+@@ -126,7 +126,6 @@ int read_file(char *dir, char *fname, int read_opt,
+ 	float last_seen;
+ 	char full_path[500], *buff_ptr, *space_ptr, extra_char;
+ 	size_t len = 0;
+-	ssize_t read;
+ 	FILE *fp = NULL;
+ 
+ 	if (read_opt & USE_BAT_HOSTS)
+@@ -154,7 +153,7 @@ open:
+ 		system("clear");
+ 
+ read:
+-	while ((read = getline(&line_ptr, &len, fp)) != -1) {
++	while (getline(&line_ptr, &len, fp) != -1) {
+ 		/* the buffer will be handled elsewhere */
+ 		if (read_opt & USE_READ_BUFF)
+ 			break;
+diff --git a/batctl/tcpdump.c b/batctl/tcpdump.c
+index 8898cf8..08a662a 100644
+--- a/batctl/tcpdump.c
++++ b/batctl/tcpdump.c
+@@ -91,7 +91,7 @@ static void dump_arp(unsigned char *packet_buff, ssize_t buff_len, int time_prin
+ 	LEN_CHECK((size_t)buff_len, sizeof(struct ether_arp), "ARP");
+ 
+ 	if (!time_printed)
+-		time_printed = print_time();
++		print_time();
+ 
+ 	arphdr = (struct ether_arp *)packet_buff;
+ 
+@@ -122,7 +122,7 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_print
+ 	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), "IP");
+ 
+ 	if (!time_printed)
+-		time_printed = print_time();
++		print_time();
+ 
+ 	switch (iphdr->protocol) {
+ 	case IPPROTO_ICMP:
+@@ -257,7 +257,7 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
+ 	batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
+ 
+ 	if (!time_printed)
+-		time_printed = print_time();
++		print_time();
+ 
+ 	printf("BAT %s: ",
+ 	       get_name_by_macaddr((struct ether_addr *)batman_packet->orig, read_opt));
+@@ -275,17 +275,15 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
+ 
+ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+ {
+-	struct ether_header *ether_header;
+ 	struct icmp_packet *icmp_packet;
+ 	char *name;
+ 
+ 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct icmp_packet), "BAT ICMP");
+ 
+-	ether_header = (struct ether_header *)packet_buff;
+ 	icmp_packet = (struct icmp_packet *)(packet_buff + sizeof(struct ether_header));
+ 
+ 	if (!time_printed)
+-		time_printed = print_time();
++		print_time();
+ 
+ 	printf("BAT %s > ", get_name_by_macaddr((struct ether_addr *)icmp_packet->orig, read_opt));
+ 
+@@ -373,13 +371,11 @@ static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int
+ 
+ static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+ {
+-	struct ether_header *ether_header;
+ 	struct unicast_frag_packet *unicast_frag_packet;
+ 
+ 	LEN_CHECK((size_t)buff_len - ETH_HLEN, sizeof(struct unicast_frag_packet), "BAT FRAG");
+ 	LEN_CHECK((size_t)buff_len - ETH_HLEN - sizeof(struct unicast_frag_packet), (size_t)ETH_HLEN, "BAT FRAG (unpacked)");
+ 
+-	ether_header = (struct ether_header *)packet_buff;
+ 	unicast_frag_packet = (struct unicast_frag_packet *)(packet_buff + ETH_HLEN);
+ 
+ 	if (!time_printed)
+diff --git a/batctl/vis.c b/batctl/vis.c
+index ad612ff..4bc5954 100644
+--- a/batctl/vis.c
++++ b/batctl/vis.c
+@@ -183,7 +183,6 @@ static FILE *open_vis(char *mesh_iface)
+ static int format(char *mesh_iface, const struct funcs *funcs)
+ {
+ 	size_t len = 0;
+-	ssize_t read;
+ 	char *line = NULL;
+ 	char *orig, *from;
+ 	char *duplet;
+@@ -202,7 +201,7 @@ static int format(char *mesh_iface, const struct funcs *funcs)
+ 	if (funcs->print_header)
+ 		funcs->print_header();
+ 
+-	while ((read = getline(&line, &len, fp)) != -1) {
++	while (getline(&line, &len, fp) != -1) {
+ 		/* First MAC address is the originator */
+ 		orig = strtok_r(line, ",", &line_save_ptr);
+ 
+-- 
+1.7.2.3
 
-Best regards,
-	Sven
-
---nextPart1291762.8uhzWkv65t
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJMzqXgAAoJEF2HCgfBJntGF2IQAIcDChFRCWyWG05I9VqkCebN
-I1lcxfYnS1Mi7URoAxv+blskdnJjxoaU9xbO2Kl5ivVnqB/ifLA6B4f+8es0n8Mu
-bUXgqr3P/u6VD02k8rIKszvH8OmZlZ3/zb7+kLOqQ3MrgEt7kzJhhUianJ6Kcy+z
-ey120fI6+5vB6Uf/Gz4s/NRiLvCxLkOtuGojwsuuUdFzwoLIKvUwfb7enKZ/GCPx
-HWR6+L/3UgsM1eWVhd/0NAcQxKwwtAbWG7XUMqhVPEDuNYhQxX1EUMAfcX6pzZy+
-Rl/oLfCPOMsdZNeBse224aMZZuRKaF7SzaIcWsRN4vuHVNW1FPkHkQiOlu0MCkwA
-WUk/S5UNsjpuIkZWCCCnGxZ7HBxNgfiAOyZCJHKWg7ewcsssvI6ZogdAAJ3AwpZE
-oSzhFQQb/Rx08bCb/m5XIpObNd9UGIoYHLngRpNq4Fww9BslbF1QJpKY58AOM2eF
-YDsjkeMr0vV0dEKW9J5hbONQ78igEaF10oPX5Iw4Rv/D/WbjZhj2c9Z9jv0gxb/e
-r/FvB+Mhno5sH527d/f0c1dxvqhd3dtb1FOfDL9r7i4zOIv5nqmDAtDzfB3zM8fr
-LQTs5OBVrdr/+fJaeUY14DK7LFOZv1zSC2KAAbYSATUrKKRKE+GkDtEd/5GpAZGX
-zuqWpYntJrw7EpUZrcOe
-=1FIk
------END PGP SIGNATURE-----
-
---nextPart1291762.8uhzWkv65t--
