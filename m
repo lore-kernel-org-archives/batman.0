@@ -1,10 +1,15 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon,  1 Nov 2010 12:48:02 +0100
-Message-Id: <1288612082-13365-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1288450858-14753-3-git-send-email-sven.eckelmann@gmx.de>
-References: <1288450858-14753-3-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 3/6] batctl: Remove unused variables
+Date: Wed, 3 Nov 2010 11:12:12 +0100
+References: <1288778342-10056-1-git-send-email-tklauser@distanz.ch>
+In-Reply-To: <1288778342-10056-1-git-send-email-tklauser@distanz.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1988295.zTvOpfjHI8";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201011031112.20044.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] staging: batman-adv: Use
+	linux/etherdevice.h address helper functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,124 +21,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Tobias Klauser <tklauser@distanz.ch>
+Cc: devel@driverdev.osuosl.org, b.a.t.m.a.n@lists.open-mesh.org, Greg Kroah-Hartman <gregkh@suse.de>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>
 
-Different variables aren't used after they are set. We can discard them
-without changing the behavior visible to the outside.
+--nextPart1988295.zTvOpfjHI8
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batctl/functions.c |    3 +--
- batctl/tcpdump.c   |   12 ++++--------
- batctl/vis.c       |    3 +--
- 3 files changed, 6 insertions(+), 12 deletions(-)
+On Wednesday 03 November 2010 10:59:02 you wrote:
+> Replace custom ethernet address check functions by calls to the helpers
+> in linux/etherdevice.h
 
-diff --git a/batctl/functions.c b/batctl/functions.c
-index cff8b52..ce046ba 100644
---- a/batctl/functions.c
-+++ b/batctl/functions.c
-@@ -126,7 +126,6 @@ int read_file(char *dir, char *fname, int read_opt,
- 	float last_seen;
- 	char full_path[500], *buff_ptr, *space_ptr, extra_char;
- 	size_t len = 0;
--	ssize_t read;
- 	FILE *fp = NULL;
- 
- 	if (read_opt & USE_BAT_HOSTS)
-@@ -154,7 +153,7 @@ open:
- 		system("clear");
- 
- read:
--	while ((read = getline(&line_ptr, &len, fp)) != -1) {
-+	while (getline(&line_ptr, &len, fp) != -1) {
- 		/* the buffer will be handled elsewhere */
- 		if (read_opt & USE_READ_BUFF)
- 			break;
-diff --git a/batctl/tcpdump.c b/batctl/tcpdump.c
-index 8898cf8..08a662a 100644
---- a/batctl/tcpdump.c
-+++ b/batctl/tcpdump.c
-@@ -91,7 +91,7 @@ static void dump_arp(unsigned char *packet_buff, ssize_t buff_len, int time_prin
- 	LEN_CHECK((size_t)buff_len, sizeof(struct ether_arp), "ARP");
- 
- 	if (!time_printed)
--		time_printed = print_time();
-+		print_time();
- 
- 	arphdr = (struct ether_arp *)packet_buff;
- 
-@@ -122,7 +122,7 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_print
- 	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), "IP");
- 
- 	if (!time_printed)
--		time_printed = print_time();
-+		print_time();
- 
- 	switch (iphdr->protocol) {
- 	case IPPROTO_ICMP:
-@@ -257,7 +257,7 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
- 	batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
- 
- 	if (!time_printed)
--		time_printed = print_time();
-+		print_time();
- 
- 	printf("BAT %s: ",
- 	       get_name_by_macaddr((struct ether_addr *)batman_packet->orig, read_opt));
-@@ -275,17 +275,15 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
- 
- static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
- {
--	struct ether_header *ether_header;
- 	struct icmp_packet *icmp_packet;
- 	char *name;
- 
- 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct icmp_packet), "BAT ICMP");
- 
--	ether_header = (struct ether_header *)packet_buff;
- 	icmp_packet = (struct icmp_packet *)(packet_buff + sizeof(struct ether_header));
- 
- 	if (!time_printed)
--		time_printed = print_time();
-+		print_time();
- 
- 	printf("BAT %s > ", get_name_by_macaddr((struct ether_addr *)icmp_packet->orig, read_opt));
- 
-@@ -373,13 +371,11 @@ static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int
- 
- static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
- {
--	struct ether_header *ether_header;
- 	struct unicast_frag_packet *unicast_frag_packet;
- 
- 	LEN_CHECK((size_t)buff_len - ETH_HLEN, sizeof(struct unicast_frag_packet), "BAT FRAG");
- 	LEN_CHECK((size_t)buff_len - ETH_HLEN - sizeof(struct unicast_frag_packet), (size_t)ETH_HLEN, "BAT FRAG (unpacked)");
- 
--	ether_header = (struct ether_header *)packet_buff;
- 	unicast_frag_packet = (struct unicast_frag_packet *)(packet_buff + ETH_HLEN);
- 
- 	if (!time_printed)
-diff --git a/batctl/vis.c b/batctl/vis.c
-index ad612ff..4bc5954 100644
---- a/batctl/vis.c
-+++ b/batctl/vis.c
-@@ -183,7 +183,6 @@ static FILE *open_vis(char *mesh_iface)
- static int format(char *mesh_iface, const struct funcs *funcs)
- {
- 	size_t len = 0;
--	ssize_t read;
- 	char *line = NULL;
- 	char *orig, *from;
- 	char *duplet;
-@@ -202,7 +201,7 @@ static int format(char *mesh_iface, const struct funcs *funcs)
- 	if (funcs->print_header)
- 		funcs->print_header();
- 
--	while ((read = getline(&line, &len, fp)) != -1) {
-+	while (getline(&line, &len, fp) != -1) {
- 		/* First MAC address is the originator */
- 		orig = strtok_r(line, ",", &line_save_ptr);
- 
--- 
-1.7.2.3
+Have you proven that the addresses are always two bytes aligned in memory?=
+=20
+Afaik this function needs it.
 
+> In one case where the address was tested for broadcast and multicast
+> address, the broadcast address check can be omitted as broadcast is also
+> a multicast address.
+
+We need to distinguish between these two types for different optimizations=
+=20
+(research is currently done for multicast over mesh - but currently not par=
+t=20
+of batman-adv).
+
+
+Best regards,
+	Sven
+
+--nextPart1988295.zTvOpfjHI8
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJM0TV+AAoJEF2HCgfBJntG9LQP/3Z1vj4V4d6pJjpWQXSpvj8x
+dvAp9FIbhC73S1dQbxG+BsuXVmODoIczYs4MeyDgyblhrQGRBFHze9huE/5j8kIb
+Cvy97mcWwkDDjZphxQJiRWiC8UJ8A+GS1ojHxexyDeQqBcxej7uFDjA+5fX6bo6u
+Y3I32f2Iy7Ja+b07CopTDYu/AUHFUrV/W9WQQG3a6yYxUsDSm3nZj5PkLe64w2/h
+52anyMv8P1Twvl/oUNj2SRrAcJ+Mz8AvFhbWZtB63rCR3u0whVd+MMRP/DrB55x/
+FY1KJBe7o12qLmj9B1/fV2RAeSwcb9HmCUlwbSBWAm0N3GdSsyGz667EMVIDQmhH
+l0oeDM0o3EPAZcBOAo250kDUu4KnTleovAtSSlh7tet87H0+r39aB+I+V2LlYWCm
+aTeoAKShIZgiOQ16HNJ5otP49WdXJRm9MRrFKGYEr0CAANYdNepf3wkFEPRiKOTA
+zgPz/nb67gq0WaWFKAJiPKyPBu3uEB0t4+7v8rAj3AYSiNBv/yJe1nRhjqoFlCNQ
+m9/MImWXqONlrpAjWUaB7/biwKrIPODb28Z9bwULeyqlPZJ65chP4awLxwnhHb3W
+FtavXICa0k3NEAsJnWCVI6AhIHy65Fnlp+gQ/F0RwTIdqJxlaZ4R2NxpGCw5Toby
+y7aD4dOwVAl2k/Z69CQs
+=TOnc
+-----END PGP SIGNATURE-----
+
+--nextPart1988295.zTvOpfjHI8--
