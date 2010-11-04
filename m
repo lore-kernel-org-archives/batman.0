@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu,  4 Nov 2010 18:20:59 +0100
-Message-Id: <1288891265-16035-2-git-send-email-lindner_marek@yahoo.de>
+Date: Thu,  4 Nov 2010 18:21:00 +0100
+Message-Id: <1288891265-16035-3-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <201011041820.44518.lindner_marek@yahoo.de>
 References: <201011041820.44518.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/8] batman-adv: gateways silently drop DHCP
-	requests
+Subject: [B.A.T.M.A.N.] [PATCH 3/8] batman-adv: move gateway selection class
+	into its own sysfs file
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,138 +20,154 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
+The Linux kernel guidelines require each sysfs file to have a single
+value / purpose, therefore it is necessary to split up the sysfs
+gateway files.
+
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- batman-adv/gateway_client.c |   31 +++++++++++++++++--------------
- batman-adv/gateway_client.h |    2 +-
- batman-adv/soft-interface.c |   16 ++++++++++------
- 3 files changed, 28 insertions(+), 21 deletions(-)
+ batman-adv/bat_sysfs.c      |   10 ++++++++++
+ batman-adv/gateway_client.c |    6 +++---
+ batman-adv/gateway_common.c |    5 ++++-
+ batman-adv/routing.c        |    5 ++++-
+ batman-adv/soft-interface.c |    1 +
+ batman-adv/types.h          |    1 +
+ 6 files changed, 23 insertions(+), 5 deletions(-)
 
+diff --git a/batman-adv/bat_sysfs.c b/batman-adv/bat_sysfs.c
+index 8e3dbef..0f39213 100644
+--- a/batman-adv/bat_sysfs.c
++++ b/batman-adv/bat_sysfs.c
+@@ -251,6 +251,12 @@ static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
+ 	return count;
+ }
+ 
++static void post_gw_deselect(struct net_device *net_dev)
++{
++	struct bat_priv *bat_priv = netdev_priv(net_dev);
++	gw_deselect(bat_priv);
++}
++
+ static ssize_t show_gw_mode(struct kobject *kobj, struct attribute *attr,
+ 			    char *buff)
+ {
+@@ -261,6 +267,7 @@ static ssize_t show_gw_mode(struct kobject *kobj, struct attribute *attr,
+ 
+ 	switch (gw_mode) {
+ 	case GW_MODE_CLIENT:
++		gw_class = atomic_read(&bat_priv->gw_sel_class);
+ 		bytes_written = sprintf(buff, "%s (gw_class: %i)\n",
+ 					GW_MODE_CLIENT_NAME, gw_class);
+ 		break;
+@@ -298,6 +305,8 @@ static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
+ static BAT_ATTR(gw_mode, S_IRUGO | S_IWUSR, show_gw_mode, store_gw_mode);
+ BAT_ATTR_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
+ BAT_ATTR_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
++BAT_ATTR_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, TQ_MAX_VALUE,
++	      post_gw_deselect);
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+ BAT_ATTR_UINT(log_level, S_IRUGO | S_IWUSR, 0, 3, NULL);
+ #endif
+@@ -310,6 +319,7 @@ static struct bat_attribute *mesh_attrs[] = {
+ 	&bat_attr_gw_mode,
+ 	&bat_attr_orig_interval,
+ 	&bat_attr_hop_penalty,
++	&bat_attr_gw_sel_class,
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+ 	&bat_attr_log_level,
+ #endif
 diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
-index e10dc90..2e05dd4 100644
+index 2e05dd4..56c52b0 100644
 --- a/batman-adv/gateway_client.c
 +++ b/batman-adv/gateway_client.c
-@@ -399,54 +399,57 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
- 	return 0;
+@@ -116,7 +116,7 @@ void gw_election(struct bat_priv *bat_priv)
+ 		if (gw_node->deleted)
+ 			continue;
+ 
+-		switch (atomic_read(&bat_priv->gw_class)) {
++		switch (atomic_read(&bat_priv->gw_sel_class)) {
+ 		case 1: /* fast connection */
+ 			gw_srv_class_to_kbit(gw_node->orig_node->gw_flags,
+ 					     &down, &up);
+@@ -215,8 +215,8 @@ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
+ 	 * if the routing class is greater than 3 the value tells us how much
+ 	 * greater the TQ value of the new gateway must be
+ 	 **/
+-	if ((atomic_read(&bat_priv->gw_class) > 3) &&
+-	    (orig_tq_avg - gw_tq_avg < atomic_read(&bat_priv->gw_class)))
++	if ((atomic_read(&bat_priv->gw_sel_class) > 3) &&
++	    (orig_tq_avg - gw_tq_avg < atomic_read(&bat_priv->gw_sel_class)))
+ 		return;
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+diff --git a/batman-adv/gateway_common.c b/batman-adv/gateway_common.c
+index a88ce41..330167e 100644
+--- a/batman-adv/gateway_common.c
++++ b/batman-adv/gateway_common.c
+@@ -236,12 +236,15 @@ next:
+ 
+ 	switch (gw_mode_tmp) {
+ 	case GW_MODE_CLIENT:
++		gw_class_tmp = atomic_read(&bat_priv->gw_sel_class);
+ 		if ((gw_mode_tmp == GW_MODE_CLIENT) && (!gw_class_tmp))
+ 			gw_class_tmp = 20;
+ 
+ 		bat_info(net_dev, "Changing gateway mode from: '%s' to: '%s' "
+-			 "(gw_class: %ld)\n",
++			 "(gw_sel_class: %ld)\n",
+ 			 gw_mode_curr_str, gw_mode_tmp_str, gw_class_tmp);
++
++		atomic_set(&bat_priv->gw_sel_class, gw_class_tmp);
+ 		break;
+ 	case GW_MODE_SERVER:
+ 		if (!down)
+diff --git a/batman-adv/routing.c b/batman-adv/routing.c
+index e75337d..9f31167 100644
+--- a/batman-adv/routing.c
++++ b/batman-adv/routing.c
+@@ -32,6 +32,7 @@
+ #include "ring_buffer.h"
+ #include "vis.h"
+ #include "aggregation.h"
++#include "gateway_common.h"
+ #include "gateway_client.h"
+ #include "unicast.h"
+ 
+@@ -330,7 +331,9 @@ update_gw:
+ 	orig_node->gw_flags = batman_packet->gw_flags;
+ 
+ 	/* restart gateway selection if fast or late switching was enabled */
+-	if ((orig_node->gw_flags) && (atomic_read(&bat_priv->gw_class) > 2))
++	if ((orig_node->gw_flags) &&
++	    (atomic_read(&bat_priv->gw_mode) == GW_MODE_CLIENT) &&
++	    (atomic_read(&bat_priv->gw_sel_class) > 2))
+ 		gw_check_election(bat_priv, orig_node);
  }
  
--bool gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
-+int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
- {
- 	struct ethhdr *ethhdr;
- 	struct iphdr *iphdr;
- 	struct udphdr *udphdr;
- 	unsigned int header_len = 0;
- 
--	if (atomic_read(&bat_priv->gw_mode) != GW_MODE_CLIENT)
--		return false;
--
--	if (!bat_priv->curr_gw)
--		return false;
-+	if (atomic_read(&bat_priv->gw_mode) == GW_MODE_OFF)
-+		return 0;
- 
- 	/* check for ethernet header */
- 	if (!pskb_may_pull(skb, header_len + ETH_HLEN))
--		return false;
-+		return 0;
- 	ethhdr = (struct ethhdr *)skb->data;
- 	header_len += ETH_HLEN;
- 
- 	/* check for initial vlan header */
- 	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
- 		if (!pskb_may_pull(skb, header_len + VLAN_HLEN))
--			return false;
-+			return 0;
- 		ethhdr = (struct ethhdr *)(skb->data + VLAN_HLEN);
- 		header_len += VLAN_HLEN;
- 	}
- 
- 	/* check for ip header */
- 	if (ntohs(ethhdr->h_proto) != ETH_P_IP)
--		return false;
-+		return 0;
- 
- 	if (!pskb_may_pull(skb, header_len + sizeof(struct iphdr)))
--		return false;
-+		return 0;
- 	iphdr = (struct iphdr *)(skb->data + header_len);
- 	header_len += iphdr->ihl * 4;
- 
- 	/* check for udp header */
- 	if (iphdr->protocol != IPPROTO_UDP)
--		return false;
-+		return 0;
- 
- 	if (!pskb_may_pull(skb, header_len + sizeof(struct udphdr)))
--		return false;
-+		return 0;
- 	udphdr = (struct udphdr *)(skb->data + header_len);
- 	header_len += sizeof(struct udphdr);
- 
- 	/* check for bootp port */
- 	if (ntohs(udphdr->dest) != 67)
--		return false;
-+		return 0;
-+
-+	if (atomic_read(&bat_priv->gw_mode) == GW_MODE_SERVER)
-+		return -1;
-+
-+	if (!bat_priv->curr_gw)
-+		return 0;
- 
--	return true;
-+	return 1;
- }
-diff --git a/batman-adv/gateway_client.h b/batman-adv/gateway_client.h
-index 38699ba..4585e65 100644
---- a/batman-adv/gateway_client.h
-+++ b/batman-adv/gateway_client.h
-@@ -31,6 +31,6 @@ void gw_node_update(struct bat_priv *bat_priv,
- void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node);
- void gw_node_purge(struct bat_priv *bat_priv);
- int gw_client_seq_print_text(struct seq_file *seq, void *offset);
--bool gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb);
-+int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb);
- 
- #endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
 diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
-index e16c61b..836c452 100644
+index 836c452..7b2673c 100644
 --- a/batman-adv/soft-interface.c
 +++ b/batman-adv/soft-interface.c
-@@ -347,7 +347,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 	struct vlan_ethhdr *vhdr;
- 	int data_len = skb->len, ret;
- 	short vid = -1;
--	bool bcast_dst = false, do_bcast = true;
-+	bool do_bcast = false;
- 
- 	if (atomic_read(&bat_priv->mesh_state) != MESH_ACTIVE)
- 		goto dropped;
-@@ -378,14 +378,18 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 	/* TODO: check this for locks */
- 	hna_local_add(soft_iface, ethhdr->h_source);
- 
--	if (is_bcast(ethhdr->h_dest) || is_mcast(ethhdr->h_dest))
--		bcast_dst = true;
-+	if (is_bcast(ethhdr->h_dest) || is_mcast(ethhdr->h_dest)) {
-+		ret = gw_is_target(bat_priv, skb);
- 
--	if ((bcast_dst) && gw_is_target(bat_priv, skb))
--		do_bcast = false;
-+		if (ret < 0)
-+			goto dropped;
-+
-+		if (ret == 0)
-+			do_bcast = true;
-+	}
- 
- 	/* ethernet packet should be broadcasted */
--	if (bcast_dst && do_bcast) {
-+	if (do_bcast) {
- 		if (!bat_priv->primary_if)
- 			goto dropped;
- 
+@@ -591,6 +591,7 @@ struct net_device *softif_create(char *name)
+ 	atomic_set(&bat_priv->bonding, 0);
+ 	atomic_set(&bat_priv->vis_mode, VIS_TYPE_CLIENT_UPDATE);
+ 	atomic_set(&bat_priv->gw_mode, GW_MODE_OFF);
++	atomic_set(&bat_priv->gw_sel_class, 0);
+ 	atomic_set(&bat_priv->gw_class, 0);
+ 	atomic_set(&bat_priv->orig_interval, 1000);
+ 	atomic_set(&bat_priv->hop_penalty, 10);
+diff --git a/batman-adv/types.h b/batman-adv/types.h
+index 2678ce1..b68add4 100644
+--- a/batman-adv/types.h
++++ b/batman-adv/types.h
+@@ -128,6 +128,7 @@ struct bat_priv {
+ 	atomic_t fragmentation;		/* boolean */
+ 	atomic_t vis_mode;		/* VIS_TYPE_* */
+ 	atomic_t gw_mode;		/* GW_MODE_* */
++	atomic_t gw_sel_class;		/* uint */
+ 	atomic_t gw_class;		/* uint */
+ 	atomic_t orig_interval;		/* uint */
+ 	atomic_t hop_penalty;		/* uint */
 -- 
 1.7.1
 
