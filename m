@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Thu,  4 Nov 2010 23:02:29 +0100
-Message-Id: <1288908150-19744-3-git-send-email-sven.eckelmann@gmx.de>
+Date: Thu,  4 Nov 2010 23:02:30 +0100
+Message-Id: <1288908150-19744-4-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1288908150-19744-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1288908150-19744-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] Staging: batman-adv: fix interface
-	alternating and bonding reggression
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] Staging: batman-adv: suppress false
+	warning when changing the mac address
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,93 +18,73 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: Marek Lindner <lindner_marek@yahoo.de>, b.a.t.m.a.n@lists.open-mesh.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Chris Lang <clang@gateworks.com>
+From: Marek Lindner <lindner_marek@yahoo.de>
 
-55d1666b521cbed95924c8d4775fe272c103f08c incidentally disabled bonding
-of packets first entering the mesh along with also disabling interface
-alternating regardless of where the packet came from. This re-enables
-these options.
+Whenever the mac address of an batman interface is changed
+check_known_mac_addr() is called to print a warning if the newly added
+mac address exists an another batman interface. While looping through
+the batman interface list check_known_mac_addr() only compares mac
+addresses and does not make sure they belong to different interfaces,
+thus always printing a warning.
 
-Signed-off-by: Chris Lang <clang@gateworks.com>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/routing.c |   12 ++++--------
- drivers/staging/batman-adv/routing.h |    4 ++--
- drivers/staging/batman-adv/unicast.c |    2 +-
- 3 files changed, 7 insertions(+), 11 deletions(-)
+ drivers/staging/batman-adv/hard-interface.c |   15 ++++++++++-----
+ 1 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
-index 9010263..657b69e 100644
---- a/drivers/staging/batman-adv/routing.c
-+++ b/drivers/staging/batman-adv/routing.c
-@@ -1000,10 +1000,10 @@ int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if)
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index 80cfa86..b68a7e5 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -165,7 +165,7 @@ static void update_mac_addresses(struct batman_if *batman_if)
+ 	       batman_if->net_dev->dev_addr, ETH_ALEN);
+ }
  
- /* find a suitable router for this originator, and use
-  * bonding if possible. */
--struct neigh_node *find_router(struct orig_node *orig_node,
-+struct neigh_node *find_router(struct bat_priv *bat_priv,
-+			       struct orig_node *orig_node,
- 			       struct batman_if *recv_if)
+-static void check_known_mac_addr(uint8_t *addr)
++static void check_known_mac_addr(struct net_device *net_dev)
  {
--	struct bat_priv *bat_priv;
- 	struct orig_node *primary_orig_node;
- 	struct orig_node *router_orig;
- 	struct neigh_node *router, *first_candidate, *best_router;
-@@ -1019,13 +1019,9 @@ struct neigh_node *find_router(struct orig_node *orig_node,
- 	/* without bonding, the first node should
- 	 * always choose the default router. */
+ 	struct batman_if *batman_if;
  
--	if (!recv_if)
--		return orig_node->router;
--
--	bat_priv = netdev_priv(recv_if->soft_iface);
- 	bonding_enabled = atomic_read(&bat_priv->bonding_enabled);
+@@ -175,11 +175,16 @@ static void check_known_mac_addr(uint8_t *addr)
+ 		    (batman_if->if_status != IF_TO_BE_ACTIVATED))
+ 			continue;
  
--	if (!bonding_enabled)
-+	if ((!recv_if) && (!bonding_enabled))
- 		return orig_node->router;
+-		if (!compare_orig(batman_if->net_dev->dev_addr, addr))
++		if (batman_if->net_dev == net_dev)
++			continue;
++
++		if (!compare_orig(batman_if->net_dev->dev_addr,
++				  net_dev->dev_addr))
+ 			continue;
  
- 	router_orig = orig_node->router->orig_node;
-@@ -1154,7 +1150,7 @@ static int route_unicast_packet(struct sk_buff *skb,
- 	orig_node = ((struct orig_node *)
- 		     hash_find(bat_priv->orig_hash, unicast_packet->dest));
+ 		pr_warning("The newly added mac address (%pM) already exists "
+-			   "on: %s\n", addr, batman_if->net_dev->name);
++			   "on: %s\n", net_dev->dev_addr,
++			   batman_if->net_dev->name);
+ 		pr_warning("It is strongly recommended to keep mac addresses "
+ 			   "unique to avoid problems!\n");
+ 	}
+@@ -430,7 +435,7 @@ static struct batman_if *hardif_add_interface(struct net_device *net_dev)
+ 	atomic_set(&batman_if->refcnt, 0);
+ 	hardif_hold(batman_if);
  
--	router = find_router(orig_node, recv_if);
-+	router = find_router(bat_priv, orig_node, recv_if);
+-	check_known_mac_addr(batman_if->net_dev->dev_addr);
++	check_known_mac_addr(batman_if->net_dev);
  
- 	if (!router) {
- 		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
-diff --git a/drivers/staging/batman-adv/routing.h b/drivers/staging/batman-adv/routing.h
-index 06ea99d..92674c8 100644
---- a/drivers/staging/batman-adv/routing.h
-+++ b/drivers/staging/batman-adv/routing.h
-@@ -38,8 +38,8 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_bat_packet(struct sk_buff *skb, struct batman_if *recv_if);
--struct neigh_node *find_router(struct orig_node *orig_node,
--		struct batman_if *recv_if);
-+struct neigh_node *find_router(struct bat_priv *bat_priv,
-+		struct orig_node *orig_node, struct batman_if *recv_if);
- void update_bonding_candidates(struct bat_priv *bat_priv,
- 			       struct orig_node *orig_node);
+ 	spin_lock(&if_list_lock);
+ 	list_add_tail_rcu(&batman_if->list, &if_list);
+@@ -515,7 +520,7 @@ static int hard_if_event(struct notifier_block *this,
+ 			goto out;
+ 		}
  
-diff --git a/drivers/staging/batman-adv/unicast.c b/drivers/staging/batman-adv/unicast.c
-index 0dac50d..0459413 100644
---- a/drivers/staging/batman-adv/unicast.c
-+++ b/drivers/staging/batman-adv/unicast.c
-@@ -224,7 +224,7 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
- 	if (!orig_node)
- 		orig_node = transtable_search(bat_priv, ethhdr->h_dest);
+-		check_known_mac_addr(batman_if->net_dev->dev_addr);
++		check_known_mac_addr(batman_if->net_dev);
+ 		update_mac_addresses(batman_if);
  
--	router = find_router(orig_node, NULL);
-+	router = find_router(bat_priv, orig_node, NULL);
- 
- 	if (!router)
- 		goto unlock;
+ 		bat_priv = netdev_priv(batman_if->soft_iface);
 -- 
 1.7.2.3
 
