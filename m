@@ -1,15 +1,15 @@
-Return-Path: <greg@kroah.com>
-Date: Tue, 9 Nov 2010 16:21:07 -0800
-From: Greg KH <greg@kroah.com>
-Message-ID: <20101110002107.GB4111@kroah.com>
-References: <1288908150-19744-1-git-send-email-sven.eckelmann@gmx.de>
-	<1288908150-19744-2-git-send-email-sven.eckelmann@gmx.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 10 Nov 2010 11:17:03 +0100
+References: <12893476522148@site>
+In-Reply-To: <12893476522148@site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1288908150-19744-2-git-send-email-sven.eckelmann@gmx.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] Staging: batman-adv: Remove useless
-	braces
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201011101117.03979.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] patch "staging: batman-adv: Use
+	linux/etherdevice.h address helper functions" added to staging tree
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,25 +21,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: gregkh@suse.de, b.a.t.m.a.n@lists.open-mesh.org
+Cc: tklauser@distanz.ch, siwu@hrz.tu-chemnitz.de
 
-On Thu, Nov 04, 2010 at 11:02:28PM +0100, Sven Eckelmann wrote:
-> 77099f0afe94928b5b0066a7efa5fa9f81696b54 added changes to vis.c which
-> trigger a checkpatch.pl warning about braces which are not necessary
-> anymore.
+
+Greg,
+
+> The patch is only compile-tested.
+
+[..]
+
+> diff --git a/drivers/staging/batman-adv/main.c
+> b/drivers/staging/batman-adv/main.c index 0587940..6ea6420 100644
+> --- a/drivers/staging/batman-adv/main.c
+> +++ b/drivers/staging/batman-adv/main.c
+> @@ -149,7 +149,7 @@ void dec_module_count(void)
 > 
-> WARNING: braces {} are not necessary for any arm of this statement
-> +               if (entry->primary)
-> [...]
-> +               else {
-> [...]
-> 
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+>  int compare_orig(void *data1, void *data2)
+>  {
+> -	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
+> +	return (compare_ether_addr(data1, data2) == 0 ? 1 : 0);
+>  }
 
-This isn't needed for .37, sorry.  I'll use the other version of this
-and queue it up for .38.
+I'm wondering why you accepted this patch despite the raised objections 
+regarding alignment problems. [1][2]
+Is there something you know that we overlooked ? We haven't heard from Thomas 
+or you since the alignment question came on the table. 
 
-thanks,
+Cheers,
+Marek
 
-greg k-h
+[1]https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-November/003640.html
+[2]https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-November/003643.html
