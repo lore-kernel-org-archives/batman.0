@@ -1,7 +1,7 @@
-Return-Path: <gregkh@suse.de>
-Date: Wed, 10 Nov 2010 17:11:37 -0800
-From: Greg KH <gregkh@suse.de>
-Message-ID: <20101111011137.GA23112@suse.de>
+Return-Path: <tklauser@sym.noone.org>
+Date: Thu, 11 Nov 2010 09:52:57 +0100
+From: Tobias Klauser <tklauser@distanz.ch>
+Message-ID: <20101111085257.GE10886@distanz.ch>
 References: <12893476522148@site> <201011101117.03979.lindner_marek@yahoo.de>
 	<20101110160455.GC10561@suse.de>
 	<201011101746.42904.sven.eckelmann@gmx.de>
@@ -24,26 +24,9 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: tklauser@distanz.ch, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, siwu@hrz.tu-chemnitz.de
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Greg KH <gregkh@suse.de>, siwu@hrz.tu-chemnitz.de
 
-On Wed, Nov 10, 2010 at 05:46:37PM +0100, Sven Eckelmann wrote:
-> On Wednesday 10 November 2010 17:04:55 Greg KH wrote:
-> > > I'm wondering why you accepted this patch despite the raised objections
-> > > regarding alignment problems. [1][2]
-> > 
-> > Because at the end of that thread, it sounded like you all agreed that
-> > this patch was acceptable.
-> > 
-> > If not, then please let me know and I will revert it.
-> 
-> The end of the thread was that he should remove parts of the patch and resent 
-> it - or prove that all the data is 2 bytes aligned.
-> 
-> 
-> On Wednesday 03 November 2010 11:56:19 Sven Eckelmann wrote:
-> [...]
-> > > I don't think they need to be two bytes aligned, but I might be wrong.
-> > 
+On 2010-11-10 at 17:46:37 +0100, Sven Eckelmann <sven.eckelmann@gmx.de> wrote:
 > > compare_ether_addr uses a two byte pointer to access 3x two bytes. This
 > > makes it necessary to have all those 3 bytes aligned to 2 byte boundaries.
 > [correction sent later: "6x two bytes aligned to 2 byte boundaries"]
@@ -63,8 +46,7 @@ On Wed, Nov 10, 2010 at 05:46:37PM +0100, Sven Eckelmann wrote:
 > None of that happened yet. And yes, this wasn't the last mail we sent to him 
 > to get some response - no answer till now.
 
-Oops, my fault, I've now reverted this patch, sorry about that.
+I'll send an updated patch, leaving out the compare_ether_addr part.
 
-thanks,
-
-greg k-h
+Cheers
+Tobias
