@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 15 Nov 2010 11:14:51 +0100
-References: <7id3qa2xwq.fsf@lanthane.pps.jussieu.fr>
-	<4CE08734.9010402@murdoch.edu.au>
-In-Reply-To: <4CE08734.9010402@murdoch.edu.au>
+Date: Mon, 15 Nov 2010 11:21:54 +0100
+References: <12893476522148@site> <20101111085257.GE10886@distanz.ch>
+	<BAY127-W15AD53BC245C1D430CF07BCF360@phx.gbl>
+In-Reply-To: <BAY127-W15AD53BC245C1D430CF07BCF360@phx.gbl>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201011151114.52497.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Another peer-reviewed assessment of
-	Babel, Batman and OLSR
+Message-Id: <201011151121.55072.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] patch "staging: batman-adv: Use
+	linux/etherdevice.h address helper functions" added to staging tree
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,31 +22,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: battlemesh@ml.ninux.org, olsr-users@lists.olsr.org
-Cc: Juliusz Chroboczek <Juliusz.Chroboczek@pps.jussieu.fr>, T.Koziniec@murdoch.edu.au, David Murray <D.Murray@murdoch.edu.au>, b.a.t.m.a.n@lists.open-mesh.org, M.Dixon@murdoch.edu.au
+To: Tan Zhi Heng <tanzhiheng0510@hotmail.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, gregkh@suse.de, siwu@hrz.tu-chemnitz.de
 
 
 Hi,
 
-> We are happy to answer any questions people might have with that paper.
+> Hello, im a BATMAN user and also a member of the website. Im doing a
+> project using BATMAN for MANET.I actually plan to modify codes from
+> batman-0.3.2, to be able to modify the packet header and send the codes
+> between notebooks. Any kind soul able to point me in the direction to look
+> at? Which codes do i specifically modify?
 
-Quote from:
-http://bridgingthelayers.org/docs/murray_routing.pdf
+you wish to modify the batman daemon sources ? What kind of changes do you 
+have in mind ?
 
-"Upon inspection of the BATMAN L2 and BATMAN L3
-results, the only major performance difference between data
-link layer routing and network layer routing is the packet
-size. Data link layer routing protocols will not require a
-network layer IPv4/IPv6 header and may therefore be smaller."
+Note that HTML mails are not blocked on the batman mailing list.
 
-Please note that the packet size of the protocol packets might be of vital 
-importance to the IETF and IEEE but for the batman project that was a rather 
-insignificant side effect. Having full control over the traffic flowing through the 
-mesh was the main motivation to go down to layer 2. It allowed us to implement 
-things like broadcast support & broadcast optimization (ARQ), multicast 
-support & optimization, interface alternating (consult the second part of this 
-article: http://www.open-mesh.org/wiki/2010-06-13-wbm2010-bracciano), seamless 
-roaming for non-mesh participants.
-
-Regards,
+Cheers,
 Marek
