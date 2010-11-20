@@ -1,18 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 17 Nov 2010 17:32:27 +0100
-References: <12893476522148@site> <201011101746.42904.sven.eckelmann@gmx.de>
-	<20101111085257.GE10886@distanz.ch>
-In-Reply-To: <20101111085257.GE10886@distanz.ch>
+Return-Path: <linus.luessing@web.de>
+Date: Sat, 20 Nov 2010 19:27:01 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20101120182701.GA16511@Sellars>
+References: <201011170226.09739.lindner_marek@yahoo.de>
+	<1289957194-5455-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201011171732.28501.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.]
- =?iso-8859-1?q?patch_=22staging=3A_batman-adv=3A_U?=
- =?iso-8859-1?q?se=09linux/etherdevice=2Eh_address_helper_functions=22_add?=
- =?iso-8859-1?q?ed_to_staging_tree?=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1289957194-5455-1-git-send-email-lindner_marek@yahoo.de>
+Sender: linus.luessing@web.de
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/8] batman-adv: protect neighbor nodes
+ with reference counters
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,15 +22,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Tobias Klauser <tklauser@distanz.ch>, Greg KH <gregkh@suse.de>, siwu@hrz.tu-chemnitz.de
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Marek,
 
-Tobias,
-
-> I'll send an updated patch, leaving out the compare_ether_addr part.
-
-not necessary anymore. Today I included a patch from Sven that does the job.
-
-Thanks for bringing this up,
-Marek
+> @@ -108,7 +110,12 @@ static void update_route(struct bat_priv *bat_priv,
+>  			orig_node->router->addr);
+>  	}
+>  
+> +	neigh_node_tmp = orig_node->router;
+>  	orig_node->router = neigh_node;
+> +	if (orig_node->router)
+> +		kref_get(&orig_node->router->refcount);
+> +	if (neigh_node_tmp)
+> +		kref_put(&neigh_node->refcount, neigh_node_free_ref);
+>  }
+I guess you meant "kref_put(&neigh_node_tmp,... instead of
+neigh_node (without tmp) here, as neigh_node_tmp won't be used anymore, not neigh_node,
+right? Otherwise it also does not seem to make sense to first increase the refcount and
+then decreasing it right again after the additional check.
