@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 22 Nov 2010 00:55:44 +0100
-Message-Id: <1290383767-32602-7-git-send-email-sven.eckelmann@gmx.de>
+Date: Mon, 22 Nov 2010 00:55:45 +0100
+Message-Id: <1290383767-32602-8-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 06/29] Staging: batman-adv: use rcu callbacks
-	when freeing batman_if
+Subject: [B.A.T.M.A.N.] [PATCH 07/29] Staging: batman-adv: restructure
+	fragmentation to handle batman unicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,73 +18,136 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+From: Andreas Langer <an.langer@gmx.de>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+The unicast_frag_send_skb() function expected 'raw' packets (without any
+batman-adv header) to fragment them. This needs to be changed, so that
+this function is able to fragment packets that already traveled inside
+the mesh but need to be fragmented now.
+
+Signed-off-by: Andreas Langer <an.langer@gmx.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/hard-interface.c |   12 ++++++++++--
- drivers/staging/batman-adv/hard-interface.h |    1 -
- drivers/staging/batman-adv/types.h          |    1 +
- 3 files changed, 11 insertions(+), 3 deletions(-)
+ drivers/staging/batman-adv/unicast.c |   66 ++++++++++++++++++---------------
+ 1 files changed, 36 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
-index 6d5b748..c2ff294 100644
---- a/drivers/staging/batman-adv/hard-interface.c
-+++ b/drivers/staging/batman-adv/hard-interface.c
-@@ -36,6 +36,15 @@
- /* protect update critical side of if_list - but not the content */
- static DEFINE_SPINLOCK(if_list_lock);
+diff --git a/drivers/staging/batman-adv/unicast.c b/drivers/staging/batman-adv/unicast.c
+index 0459413..58bf2b6 100644
+--- a/drivers/staging/batman-adv/unicast.c
++++ b/drivers/staging/batman-adv/unicast.c
+@@ -152,55 +152,58 @@ void frag_list_free(struct list_head *head)
+ 	return;
+ }
  
-+static void hardif_free_rcu(struct rcu_head *rcu)
-+{
-+	struct batman_if *batman_if;
-+
-+	batman_if = container_of(rcu, struct batman_if, rcu);
-+	dev_put(batman_if->net_dev);
-+	kref_put(&batman_if->refcount, hardif_free_ref);
-+}
-+
- struct batman_if *get_batman_if_by_netdev(struct net_device *net_dev)
+-static int unicast_send_frag_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+-			  struct batman_if *batman_if, uint8_t dstaddr[],
+-			  struct orig_node *orig_node)
++static int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
++			 struct batman_if *batman_if, uint8_t dstaddr[])
  {
- 	struct batman_if *batman_if;
-@@ -462,9 +471,8 @@ static void hardif_remove_interface(struct batman_if *batman_if)
- 		return;
+-	struct unicast_frag_packet *ucast_frag1, *ucast_frag2;
+-	int hdr_len = sizeof(struct unicast_frag_packet);
++	struct unicast_packet tmp_uc, *unicast_packet;
+ 	struct sk_buff *frag_skb;
++	struct unicast_frag_packet *frag1, *frag2;
++	int uc_hdr_len = sizeof(struct unicast_packet);
++	int ucf_hdr_len = sizeof(struct unicast_frag_packet);
+ 	int data_len = skb->len;
  
- 	batman_if->if_status = IF_TO_BE_REMOVED;
--	synchronize_rcu();
- 	sysfs_del_hardif(&batman_if->hardif_obj);
--	kref_put(&batman_if->refcount, hardif_free_ref);
-+	call_rcu(&batman_if->rcu, hardif_free_rcu);
+ 	if (!bat_priv->primary_if)
+ 		goto dropped;
+ 
+-	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + hdr_len);
++	unicast_packet = (struct unicast_packet *) skb->data;
++
++	memcpy(&tmp_uc, unicast_packet, uc_hdr_len);
++	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + ucf_hdr_len);
+ 	skb_split(skb, frag_skb, data_len / 2);
+ 
+-	if (my_skb_head_push(frag_skb, hdr_len) < 0 ||
+-	    my_skb_head_push(skb, hdr_len) < 0)
++	if (my_skb_head_push(skb, ucf_hdr_len - uc_hdr_len) < 0 ||
++	    my_skb_head_push(frag_skb, ucf_hdr_len) < 0)
+ 		goto drop_frag;
+ 
+-	ucast_frag1 = (struct unicast_frag_packet *)skb->data;
+-	ucast_frag2 = (struct unicast_frag_packet *)frag_skb->data;
++	frag1 = (struct unicast_frag_packet *)skb->data;
++	frag2 = (struct unicast_frag_packet *)frag_skb->data;
+ 
+-	ucast_frag1->version = COMPAT_VERSION;
+-	ucast_frag1->packet_type = BAT_UNICAST_FRAG;
+-	ucast_frag1->ttl = TTL;
+-	memcpy(ucast_frag1->orig,
+-	       bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
+-	memcpy(ucast_frag1->dest, orig_node->orig, ETH_ALEN);
++	memcpy(frag1, &tmp_uc, sizeof(struct unicast_packet));
+ 
+-	memcpy(ucast_frag2, ucast_frag1, sizeof(struct unicast_frag_packet));
++	frag1->ttl--;
++	frag1->version = COMPAT_VERSION;
++	frag1->packet_type = BAT_UNICAST_FRAG;
+ 
+-	ucast_frag1->flags |= UNI_FRAG_HEAD;
+-	ucast_frag2->flags &= ~UNI_FRAG_HEAD;
++	memcpy(frag1->orig, bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
++	memcpy(frag2, frag1, sizeof(struct unicast_frag_packet));
+ 
+-	ucast_frag1->seqno = htons((uint16_t)atomic_inc_return(
+-						&batman_if->frag_seqno));
++	frag1->flags |= UNI_FRAG_HEAD;
++	frag2->flags &= ~UNI_FRAG_HEAD;
+ 
+-	ucast_frag2->seqno = htons((uint16_t)atomic_inc_return(
+-						&batman_if->frag_seqno));
++	frag1->seqno = htons((uint16_t)atomic_inc_return(
++			     &batman_if->frag_seqno));
++	frag2->seqno = htons((uint16_t)atomic_inc_return(
++			     &batman_if->frag_seqno));
+ 
+ 	send_skb_packet(skb, batman_if, dstaddr);
+ 	send_skb_packet(frag_skb, batman_if, dstaddr);
+-	return 0;
++	return NET_RX_SUCCESS;
+ 
+ drop_frag:
+ 	kfree_skb(frag_skb);
+ dropped:
+ 	kfree_skb(skb);
+-	return 1;
++	return NET_RX_DROP;
  }
  
- void hardif_remove_interfaces(void)
-diff --git a/drivers/staging/batman-adv/hard-interface.h b/drivers/staging/batman-adv/hard-interface.h
-index 1d1cd9f..30ec3b8 100644
---- a/drivers/staging/batman-adv/hard-interface.h
-+++ b/drivers/staging/batman-adv/hard-interface.h
-@@ -47,7 +47,6 @@ static inline void hardif_free_ref(struct kref *refcount)
- 	struct batman_if *batman_if;
+ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+@@ -240,11 +243,6 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+ 	if (batman_if->if_status != IF_ACTIVE)
+ 		goto dropped;
  
- 	batman_if = container_of(refcount, struct batman_if, refcount);
--	dev_put(batman_if->net_dev);
- 	kfree(batman_if);
- }
+-	if (atomic_read(&bat_priv->frag_enabled) &&
+-	    data_len + sizeof(struct unicast_packet) > batman_if->net_dev->mtu)
+-		return unicast_send_frag_skb(skb, bat_priv, batman_if,
+-					     dstaddr, orig_node);
+-
+ 	if (my_skb_head_push(skb, sizeof(struct unicast_packet)) < 0)
+ 		goto dropped;
  
-diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
-index d89ec70..8f6ba1c 100644
---- a/drivers/staging/batman-adv/types.h
-+++ b/drivers/staging/batman-adv/types.h
-@@ -46,6 +46,7 @@ struct batman_if {
- 	struct kref refcount;
- 	struct packet_type batman_adv_ptype;
- 	struct net_device *soft_iface;
-+	struct rcu_head rcu;
- };
+@@ -258,6 +256,14 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+ 	/* copy the destination for faster routing */
+ 	memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
  
- /**
++	if (atomic_read(&bat_priv->frag_enabled) &&
++	    data_len + sizeof(struct unicast_packet) >
++	    batman_if->net_dev->mtu) {
++		/* send frag skb decreases ttl */
++		unicast_packet->ttl++;
++		return frag_send_skb(skb, bat_priv, batman_if,
++				     dstaddr);
++	}
+ 	send_skb_packet(skb, batman_if, dstaddr);
+ 	return 0;
+ 
 -- 
 1.7.2.3
 
