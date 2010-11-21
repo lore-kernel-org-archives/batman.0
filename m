@@ -1,14 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 22 Nov 2010 00:56:05 +0100
-Message-Id: <1290383767-32602-28-git-send-email-sven.eckelmann@gmx.de>
+Date: Mon, 22 Nov 2010 00:56:06 +0100
+Message-Id: <1290383767-32602-29-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 27/29] Staging: batman-adv: add gateway IPv6
-	support by filtering DHCPv6 messages
+Subject: [B.A.T.M.A.N.] [PATCH 28/29] Staging: batman-adv: Use kernel
+	version min macro
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,97 +18,41 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+The kernel headers already provide different versions of a min/max macro
+which should be used by all modules according to
+Documentation/CodingStyle.
 
-Some additional checks will be needed in case of extension headers
-like the fragmentation or hop-by-hop (for jumbo frames for example)
-headers or ipsec stuff. But this patch should do for most people
-for now, the rest can be added with a later one.
-
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Acked-by: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/gateway_client.c |   40 +++++++++++++++++++++------
- 1 files changed, 31 insertions(+), 9 deletions(-)
+ drivers/staging/batman-adv/hard-interface.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/gateway_client.c b/drivers/staging/batman-adv/gateway_client.c
-index fde1d8a..0065ffb 100644
---- a/drivers/staging/batman-adv/gateway_client.c
-+++ b/drivers/staging/batman-adv/gateway_client.c
-@@ -24,6 +24,7 @@
- #include "gateway_common.h"
- #include "hard-interface.h"
- #include <linux/ip.h>
-+#include <linux/ipv6.h>
- #include <linux/udp.h>
- #include <linux/if_vlan.h>
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index ff0ac98..4f95777 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -31,8 +31,6 @@
  
-@@ -403,6 +404,7 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
- {
- 	struct ethhdr *ethhdr;
- 	struct iphdr *iphdr;
-+	struct ipv6hdr *ipv6hdr;
- 	struct udphdr *udphdr;
- 	unsigned int header_len = 0;
+ #include <linux/if_arp.h>
  
-@@ -424,17 +426,32 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
+-#define MIN(x, y) ((x) < (y) ? (x) : (y))
+-
+ /* protect update critical side of if_list - but not the content */
+ static DEFINE_SPINLOCK(if_list_lock);
+ 
+@@ -220,8 +218,8 @@ int hardif_min_mtu(struct net_device *soft_iface)
+ 		if (batman_if->soft_iface != soft_iface)
+ 			continue;
+ 
+-		min_mtu = MIN(batman_if->net_dev->mtu - BAT_HEADER_LEN,
+-			      min_mtu);
++		min_mtu = min_t(int, batman_if->net_dev->mtu - BAT_HEADER_LEN,
++				min_mtu);
  	}
- 
- 	/* check for ip header */
--	if (ntohs(ethhdr->h_proto) != ETH_P_IP)
--		return 0;
-+	switch (ntohs(ethhdr->h_proto)) {
-+	case ETH_P_IP:
-+		if (!pskb_may_pull(skb, header_len + sizeof(struct iphdr)))
-+			return 0;
-+		iphdr = (struct iphdr *)(skb->data + header_len);
-+		header_len += iphdr->ihl * 4;
- 
--	if (!pskb_may_pull(skb, header_len + sizeof(struct iphdr)))
--		return 0;
--	iphdr = (struct iphdr *)(skb->data + header_len);
--	header_len += iphdr->ihl * 4;
-+		/* check for udp header */
-+		if (iphdr->protocol != IPPROTO_UDP)
-+			return 0;
-+
-+		break;
-+	case ETH_P_IPV6:
-+		if (!pskb_may_pull(skb, header_len + sizeof(struct ipv6hdr)))
-+			return 0;
-+		ipv6hdr = (struct ipv6hdr *)(skb->data + header_len);
-+		header_len += sizeof(struct ipv6hdr);
-+
-+		/* check for udp header */
-+		if (ipv6hdr->nexthdr != IPPROTO_UDP)
-+			return 0;
- 
--	/* check for udp header */
--	if (iphdr->protocol != IPPROTO_UDP)
-+		break;
-+	default:
- 		return 0;
-+	}
- 
- 	if (!pskb_may_pull(skb, header_len + sizeof(struct udphdr)))
- 		return 0;
-@@ -442,7 +459,12 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
- 	header_len += sizeof(struct udphdr);
- 
- 	/* check for bootp port */
--	if (ntohs(udphdr->dest) != 67)
-+	if ((ntohs(ethhdr->h_proto) == ETH_P_IP) &&
-+	     (ntohs(udphdr->dest) != 67))
-+		return 0;
-+
-+	if ((ntohs(ethhdr->h_proto) == ETH_P_IPV6) &&
-+	    (ntohs(udphdr->dest) != 547))
- 		return 0;
- 
- 	if (atomic_read(&bat_priv->gw_mode) == GW_MODE_SERVER)
+ 	rcu_read_unlock();
+ out:
 -- 
 1.7.2.3
 
