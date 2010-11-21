@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 22 Nov 2010 00:56:06 +0100
-Message-Id: <1290383767-32602-29-git-send-email-sven.eckelmann@gmx.de>
+Date: Mon, 22 Nov 2010 00:56:07 +0100
+Message-Id: <1290383767-32602-30-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 28/29] Staging: batman-adv: Use kernel
-	version min macro
+Subject: [B.A.T.M.A.N.] [PATCH 29/29] Staging: batman-adv: Use kernel
+	functions to identify broadcasts
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,39 +20,181 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: greg@kroah.com
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-The kernel headers already provide different versions of a min/max macro
-which should be used by all modules according to
-Documentation/CodingStyle.
+linux/etherdevice.h already provides functions to classify different
+ethernet addresses. These inlineable functions should be used instead of
+custom functions.
 
+The check for multicast together with multicast can also be replaced
+with a single test for multicast because for every ethernet address x
+following is always true:
+
+is_broadcast_ether_addr(x) => is_multicast_ether_addr(x)
+
+or when looking more at the implementation:
+
+(FF:FF:FF:FF:FF:FF == x) => [(01:00:00:00:00:00 & x) != 00:00:00:00:00:00]
+
+Reported-by: Tobias Klauser <tklauser@distanz.ch>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/hard-interface.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/staging/batman-adv/main.c           |   10 ----------
+ drivers/staging/batman-adv/main.h           |    3 +--
+ drivers/staging/batman-adv/routing.c        |   16 ++++++++--------
+ drivers/staging/batman-adv/soft-interface.c |    2 +-
+ drivers/staging/batman-adv/unicast.c        |    2 +-
+ drivers/staging/batman-adv/vis.c            |    4 ++--
+ 6 files changed, 13 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
-index ff0ac98..4f95777 100644
---- a/drivers/staging/batman-adv/hard-interface.c
-+++ b/drivers/staging/batman-adv/hard-interface.c
-@@ -31,8 +31,6 @@
+diff --git a/drivers/staging/batman-adv/main.c b/drivers/staging/batman-adv/main.c
+index c91e635..b827f6a 100644
+--- a/drivers/staging/batman-adv/main.c
++++ b/drivers/staging/batman-adv/main.c
+@@ -172,16 +172,6 @@ int is_my_mac(uint8_t *addr)
  
- #include <linux/if_arp.h>
+ }
  
--#define MIN(x, y) ((x) < (y) ? (x) : (y))
+-int is_bcast(uint8_t *addr)
+-{
+-	return (addr[0] == (uint8_t)0xff) && (addr[1] == (uint8_t)0xff);
+-}
 -
- /* protect update critical side of if_list - but not the content */
- static DEFINE_SPINLOCK(if_list_lock);
+-int is_mcast(uint8_t *addr)
+-{
+-	return *addr & 0x01;
+-}
+-
+ module_init(batman_init);
+ module_exit(batman_exit);
  
-@@ -220,8 +218,8 @@ int hardif_min_mtu(struct net_device *soft_iface)
- 		if (batman_if->soft_iface != soft_iface)
- 			continue;
+diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
+index 3ee1eb0..6b60c33 100644
+--- a/drivers/staging/batman-adv/main.h
++++ b/drivers/staging/batman-adv/main.h
+@@ -109,6 +109,7 @@
+ #include <linux/mutex.h>	/* mutex */
+ #include <linux/module.h>	/* needed by all modules */
+ #include <linux/netdevice.h>	/* netdevice */
++#include <linux/etherdevice.h>  /* ethernet address classifaction */
+ #include <linux/if_ether.h>	/* ethernet header */
+ #include <linux/poll.h>		/* poll_table */
+ #include <linux/kthread.h>	/* kernel threads */
+@@ -136,8 +137,6 @@ void mesh_free(struct net_device *soft_iface);
+ void inc_module_count(void);
+ void dec_module_count(void);
+ int is_my_mac(uint8_t *addr);
+-int is_bcast(uint8_t *addr);
+-int is_mcast(uint8_t *addr);
  
--		min_mtu = MIN(batman_if->net_dev->mtu - BAT_HEADER_LEN,
--			      min_mtu);
-+		min_mtu = min_t(int, batman_if->net_dev->mtu - BAT_HEADER_LEN,
-+				min_mtu);
- 	}
- 	rcu_read_unlock();
- out:
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+ int debug_log(struct bat_priv *bat_priv, char *fmt, ...);
+diff --git a/drivers/staging/batman-adv/routing.c b/drivers/staging/batman-adv/routing.c
+index 9f31167..d8b0c5a 100644
+--- a/drivers/staging/batman-adv/routing.c
++++ b/drivers/staging/batman-adv/routing.c
+@@ -770,11 +770,11 @@ int recv_bat_packet(struct sk_buff *skb, struct batman_if *batman_if)
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 
+ 	/* packet with broadcast indication but unicast recipient */
+-	if (!is_bcast(ethhdr->h_dest))
++	if (!is_broadcast_ether_addr(ethhdr->h_dest))
+ 		return NET_RX_DROP;
+ 
+ 	/* packet with broadcast sender address */
+-	if (is_bcast(ethhdr->h_source))
++	if (is_broadcast_ether_addr(ethhdr->h_source))
+ 		return NET_RX_DROP;
+ 
+ 	/* create a copy of the skb, if needed, to modify it. */
+@@ -946,11 +946,11 @@ int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 
+ 	/* packet with unicast indication but broadcast recipient */
+-	if (is_bcast(ethhdr->h_dest))
++	if (is_broadcast_ether_addr(ethhdr->h_dest))
+ 		return NET_RX_DROP;
+ 
+ 	/* packet with broadcast sender address */
+-	if (is_bcast(ethhdr->h_source))
++	if (is_broadcast_ether_addr(ethhdr->h_source))
+ 		return NET_RX_DROP;
+ 
+ 	/* not for me */
+@@ -1118,11 +1118,11 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 
+ 	/* packet with unicast indication but broadcast recipient */
+-	if (is_bcast(ethhdr->h_dest))
++	if (is_broadcast_ether_addr(ethhdr->h_dest))
+ 		return -1;
+ 
+ 	/* packet with broadcast sender address */
+-	if (is_bcast(ethhdr->h_source))
++	if (is_broadcast_ether_addr(ethhdr->h_source))
+ 		return -1;
+ 
+ 	/* not for me */
+@@ -1282,11 +1282,11 @@ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 
+ 	/* packet with broadcast indication but unicast recipient */
+-	if (!is_bcast(ethhdr->h_dest))
++	if (!is_broadcast_ether_addr(ethhdr->h_dest))
+ 		return NET_RX_DROP;
+ 
+ 	/* packet with broadcast sender address */
+-	if (is_bcast(ethhdr->h_source))
++	if (is_broadcast_ether_addr(ethhdr->h_source))
+ 		return NET_RX_DROP;
+ 
+ 	/* ignore broadcasts sent by myself */
+diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
+index 9b968df..e89ede1 100644
+--- a/drivers/staging/batman-adv/soft-interface.c
++++ b/drivers/staging/batman-adv/soft-interface.c
+@@ -378,7 +378,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	/* TODO: check this for locks */
+ 	hna_local_add(soft_iface, ethhdr->h_source);
+ 
+-	if (is_bcast(ethhdr->h_dest) || is_mcast(ethhdr->h_dest)) {
++	if (is_multicast_ether_addr(ethhdr->h_dest)) {
+ 		ret = gw_is_target(bat_priv, skb);
+ 
+ 		if (ret < 0)
+diff --git a/drivers/staging/batman-adv/unicast.c b/drivers/staging/batman-adv/unicast.c
+index 7b9385b..dc2e28b 100644
+--- a/drivers/staging/batman-adv/unicast.c
++++ b/drivers/staging/batman-adv/unicast.c
+@@ -283,7 +283,7 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+ 	spin_lock_bh(&bat_priv->orig_hash_lock);
+ 
+ 	/* get routing information */
+-	if (is_bcast(ethhdr->h_dest) || is_mcast(ethhdr->h_dest))
++	if (is_multicast_ether_addr(ethhdr->h_dest))
+ 		orig_node = (struct orig_node *)gw_get_selected(bat_priv);
+ 	else
+ 		orig_node = ((struct orig_node *)hash_find(bat_priv->orig_hash,
+diff --git a/drivers/staging/batman-adv/vis.c b/drivers/staging/batman-adv/vis.c
+index 65676dc..957a086 100644
+--- a/drivers/staging/batman-adv/vis.c
++++ b/drivers/staging/batman-adv/vis.c
+@@ -472,7 +472,7 @@ void receive_client_update_packet(struct bat_priv *bat_priv,
+ 	int are_target = 0;
+ 
+ 	/* clients shall not broadcast. */
+-	if (is_bcast(vis_packet->target_orig))
++	if (is_broadcast_ether_addr(vis_packet->target_orig))
+ 		return;
+ 
+ 	/* Are we the target for this VIS packet? */
+@@ -755,7 +755,7 @@ static void send_vis_packet(struct bat_priv *bat_priv, struct vis_info *info)
+ 	       ETH_ALEN);
+ 	packet->ttl--;
+ 
+-	if (is_bcast(packet->target_orig))
++	if (is_broadcast_ether_addr(packet->target_orig))
+ 		broadcast_vis_packet(bat_priv, info);
+ 	else
+ 		unicast_vis_packet(bat_priv, info);
 -- 
 1.7.2.3
 
