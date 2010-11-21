@@ -1,14 +1,14 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 22 Nov 2010 00:55:54 +0100
-Message-Id: <1290383767-32602-17-git-send-email-sven.eckelmann@gmx.de>
+Date: Mon, 22 Nov 2010 00:55:55 +0100
+Message-Id: <1290383767-32602-18-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 16/29] Staging: batman-adv: Ommit storing
-	struct device in sysfs functions
+Subject: [B.A.T.M.A.N.] [PATCH 17/29] Staging: batman-adv: Make hop_penalty
+	configurable via sysfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,128 +21,140 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-From: Linus Lüssing <linus.luessing@web.de>
+From: Linus Lüssing <linus.luessing@ascom.ch>
 
-We actually do not need an extra struct device variable, therefore
-replacing them with defines that directly get the bat_priv or
-net_device. This further reduces the code size in bat_sysfs.c and
-especially shortens some macros.
+When having a mixed topology of both very mobile and rather static
+nodes, you are usually best advised to set the originator interval on
+all nodes to a level best suited for the most mobile node.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+However, if most of the nodes are rather static, this can create a lot
+of undesired overhead as a trade-off then. If setting the interval too
+low on the static nodes, a mobile node might be chosen as a router for
+too long, not switching away from it fast enough because of its
+mobility and the low frequency of ogms of static nodes.
+
+Exposing the hop_penalty is especially useful for the stated scenario: A
+static node can keep the default originator interval, a mobile node can
+select a quicker one resulting in faster route updates towards this
+mobile node. Additionally, such a mobile node could select a higher hop
+penalty (or even set it to 255 to disable acting as a router for other
+nodes) to make it less desirable, letting other nodes avoid selecting
+this mobile node as a router.
+
+Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/bat_sysfs.c |   33 +++++++++++--------------------
- 1 files changed, 12 insertions(+), 21 deletions(-)
+ drivers/staging/batman-adv/bat_sysfs.c          |    2 ++
+ drivers/staging/batman-adv/main.h               |    2 --
+ drivers/staging/batman-adv/send.c               |    7 ++++---
+ drivers/staging/batman-adv/soft-interface.c     |    1 +
+ drivers/staging/batman-adv/sysfs-class-net-mesh |    7 +++++++
+ drivers/staging/batman-adv/types.h              |    1 +
+ 6 files changed, 15 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/staging/batman-adv/bat_sysfs.c b/drivers/staging/batman-adv/bat_sysfs.c
-index 19be531..9bec60d 100644
+index 9bec60d..5ff6e5e 100644
 --- a/drivers/staging/batman-adv/bat_sysfs.c
 +++ b/drivers/staging/batman-adv/bat_sysfs.c
-@@ -26,7 +26,9 @@
- #include "hard-interface.h"
- #include "vis.h"
+@@ -254,6 +254,7 @@ BAT_ATTR_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
+ BAT_ATTR_BOOL(fragmentation, S_IRUGO | S_IWUSR, update_min_mtu);
+ static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
+ BAT_ATTR_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
++BAT_ATTR_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+ BAT_ATTR_UINT(log_level, S_IRUGO | S_IWUSR, 0, 3, NULL);
+ #endif
+@@ -264,6 +265,7 @@ static struct bat_attribute *mesh_attrs[] = {
+ 	&bat_attr_fragmentation,
+ 	&bat_attr_vis_mode,
+ 	&bat_attr_orig_interval,
++	&bat_attr_hop_penalty,
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+ 	&bat_attr_log_level,
+ #endif
+diff --git a/drivers/staging/batman-adv/main.h b/drivers/staging/batman-adv/main.h
+index ec35ef8..d8d50f3 100644
+--- a/drivers/staging/batman-adv/main.h
++++ b/drivers/staging/batman-adv/main.h
+@@ -52,8 +52,6 @@
+ #define TQ_LOCAL_BIDRECT_RECV_MINIMUM 1
+ #define TQ_TOTAL_BIDRECT_LIMIT 1
  
--#define to_dev(obj)     container_of(obj, struct device, kobj)
-+#define to_dev(obj)		container_of(obj, struct device, kobj)
-+#define kobj_to_netdev(obj)	to_net_dev(to_dev(obj->parent))
-+#define kobj_to_batpriv(obj)	netdev_priv(kobj_to_netdev(obj))
+-#define TQ_HOP_PENALTY 10
+-
+ #define NUM_WORDS (TQ_LOCAL_WINDOW_SIZE / WORD_BIT_SIZE)
  
- /* Use this, if you have customized show and store functions */
- #define BAT_ATTR(_name, _mode, _show, _store)	\
-@@ -41,8 +43,7 @@ struct bat_attribute bat_attr_##_name = {	\
- ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
- 		      char *buff, size_t count)				\
- {									\
--	struct device *dev = to_dev(kobj->parent);			\
--	struct net_device *net_dev = to_net_dev(dev);			\
-+	struct net_device *net_dev = kobj_to_netdev(kobj);		\
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);		\
- 	return __store_bool_attr(buff, count, _post_func, attr,		\
- 				 &bat_priv->_name, net_dev);		\
-@@ -52,9 +53,7 @@ ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
- ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
- 			    char *buff)					\
- {									\
--	struct device *dev = to_dev(kobj->parent);			\
--	struct net_device *net_dev = to_net_dev(dev);			\
--	struct bat_priv *bat_priv = netdev_priv(net_dev);		\
-+	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);		\
- 	return sprintf(buff, "%s\n",					\
- 		       atomic_read(&bat_priv->_name) == 0 ?		\
- 		       "disabled" : "enabled");				\
-@@ -71,8 +70,7 @@ ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
- ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
- 			     char *buff, size_t count)			\
- {									\
--	struct device *dev = to_dev(kobj->parent);			\
--	struct net_device *net_dev = to_net_dev(dev);			\
-+	struct net_device *net_dev = kobj_to_netdev(kobj);		\
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);		\
- 	return __store_uint_attr(buff, count, _min, _max, _post_func,	\
- 				 attr, &bat_priv->_name, net_dev);	\
-@@ -82,9 +80,7 @@ ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
- ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
- 			    char *buff)					\
- {									\
--	struct device *dev = to_dev(kobj->parent);			\
--	struct net_device *net_dev = to_net_dev(dev);			\
--	struct bat_priv *bat_priv = netdev_priv(net_dev);		\
-+	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);		\
- 	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_name));	\
- }									\
+ #define PACKBUFF_SIZE 2000
+diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
+index 7adf76d..1489b6c 100644
+--- a/drivers/staging/batman-adv/send.c
++++ b/drivers/staging/batman-adv/send.c
+@@ -33,9 +33,10 @@
+ static void send_outstanding_bcast_packet(struct work_struct *work);
  
-@@ -204,8 +200,7 @@ static inline ssize_t __store_uint_attr(char *buff, size_t count,
- static ssize_t show_vis_mode(struct kobject *kobj, struct attribute *attr,
- 			     char *buff)
+ /* apply hop penalty for a normal link */
+-static uint8_t hop_penalty(const uint8_t tq)
++static uint8_t hop_penalty(const uint8_t tq, struct bat_priv *bat_priv)
  {
--	struct device *dev = to_dev(kobj->parent);
--	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
-+	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);
- 	int vis_mode = atomic_read(&bat_priv->vis_mode);
+-	return (tq * (TQ_MAX_VALUE - TQ_HOP_PENALTY)) / (TQ_MAX_VALUE);
++	int hop_penalty = atomic_read(&bat_priv->hop_penalty);
++	return (tq * (TQ_MAX_VALUE - hop_penalty)) / (TQ_MAX_VALUE);
+ }
  
- 	return sprintf(buff, "%s\n",
-@@ -216,8 +211,7 @@ static ssize_t show_vis_mode(struct kobject *kobj, struct attribute *attr,
- static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
- 			      char *buff, size_t count)
- {
--	struct device *dev = to_dev(kobj->parent);
--	struct net_device *net_dev = to_net_dev(dev);
-+	struct net_device *net_dev = kobj_to_netdev(kobj);
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
- 	unsigned long val;
- 	int ret, vis_mode_tmp = -1;
-@@ -329,8 +323,7 @@ void sysfs_del_meshif(struct net_device *dev)
- static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
- 			       char *buff)
- {
--	struct device *dev = to_dev(kobj->parent);
--	struct net_device *net_dev = to_net_dev(dev);
-+	struct net_device *net_dev = kobj_to_netdev(kobj);
- 	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
- 	ssize_t length;
+ /* when do we schedule our own packet to be sent */
+@@ -330,7 +331,7 @@ void schedule_forward_packet(struct orig_node *orig_node,
+ 	}
  
-@@ -348,8 +341,7 @@ static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
- static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
- 				char *buff, size_t count)
- {
--	struct device *dev = to_dev(kobj->parent);
--	struct net_device *net_dev = to_net_dev(dev);
-+	struct net_device *net_dev = kobj_to_netdev(kobj);
- 	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
- 	int status_tmp = -1;
- 	int ret;
-@@ -402,8 +394,7 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
- static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
- 				 char *buff)
- {
--	struct device *dev = to_dev(kobj->parent);
--	struct net_device *net_dev = to_net_dev(dev);
-+	struct net_device *net_dev = kobj_to_netdev(kobj);
- 	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);
- 	ssize_t length;
+ 	/* apply hop penalty */
+-	batman_packet->tq = hop_penalty(batman_packet->tq);
++	batman_packet->tq = hop_penalty(batman_packet->tq, bat_priv);
  
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+ 		"Forwarding packet: tq_orig: %i, tq_avg: %i, "
+diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
+index c903a76..1cf9aa2 100644
+--- a/drivers/staging/batman-adv/soft-interface.c
++++ b/drivers/staging/batman-adv/soft-interface.c
+@@ -582,6 +582,7 @@ struct net_device *softif_create(char *name)
+ 	atomic_set(&bat_priv->bonding, 0);
+ 	atomic_set(&bat_priv->vis_mode, VIS_TYPE_CLIENT_UPDATE);
+ 	atomic_set(&bat_priv->orig_interval, 1000);
++	atomic_set(&bat_priv->hop_penalty, 10);
+ 	atomic_set(&bat_priv->log_level, 0);
+ 	atomic_set(&bat_priv->fragmentation, 1);
+ 	atomic_set(&bat_priv->bcast_queue_left, BCAST_QUEUE_LEN);
+diff --git a/drivers/staging/batman-adv/sysfs-class-net-mesh b/drivers/staging/batman-adv/sysfs-class-net-mesh
+index b4cdb60..bd20e14 100644
+--- a/drivers/staging/batman-adv/sysfs-class-net-mesh
++++ b/drivers/staging/batman-adv/sysfs-class-net-mesh
+@@ -29,6 +29,13 @@ Description:
+                 Defines the interval in milliseconds in which batman
+                 sends its protocol messages.
+ 
++What:           /sys/class/net/<mesh_iface>/mesh/hop_penalty
++Date:           Oct 2010
++Contact:        Linus Lüssing <linus.luessing@web.de>
++Description:
++		Defines the penalty which will be applied to an
++		originator message's tq-field on every hop.
++
+ What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
+ Date:           May 2010
+ Contact:        Marek Lindner <lindner_marek@yahoo.de>
+diff --git a/drivers/staging/batman-adv/types.h b/drivers/staging/batman-adv/types.h
+index 4463da3..e41f95f 100644
+--- a/drivers/staging/batman-adv/types.h
++++ b/drivers/staging/batman-adv/types.h
+@@ -118,6 +118,7 @@ struct bat_priv {
+ 	atomic_t fragmentation;		/* boolean */
+ 	atomic_t vis_mode;		/* VIS_TYPE_* */
+ 	atomic_t orig_interval;		/* uint */
++	atomic_t hop_penalty;		/* uint */
+ 	atomic_t log_level;		/* uint */
+ 	atomic_t bcast_seqno;
+ 	atomic_t bcast_queue_left;
 -- 
 1.7.2.3
 
