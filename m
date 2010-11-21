@@ -1,8 +1,16 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Sun, 21 Nov 2010 23:37:16 +0100
-Message-Id: <1290379036-11460-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Rename if_list_queue to if_queue
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 22 Nov 2010 00:07:28 +0100
+References: <201011211432.44862.lindner_marek@yahoo.de>
+	<1290349981-23883-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1290349981-23883-1-git-send-email-sven.eckelmann@gmx.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201011220007.30358.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Ensure that eth_type_trans
+	gets linear memory
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,44 +22,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The name "if_list_queue" would create lines longer than 80 chars which
-can be avoided by shortened version "if_queue".
+On Sunday 21 November 2010 15:33:01 Sven Eckelmann wrote:
+> eth_type_trans tries to pull data with the length of the ethernet header
+> from the skb. We only ensured that enough data for the first ethernet
+> header and the batman header is available in non-paged memory of the skb
+> and not for the ethernet after the batman header.
+> 
+> eth_type_trans would fail sometimes with drivers which don't ensure that
+> all there data is perfectly linearised.
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-adv/hard-interface.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Ok, I went ahead and applied this patch in revision 1874 after some 
+discussion. No Intel user needs to suffer if we can avoid it.  ;-)
 
-diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index bf98b90..4f95777 100644
---- a/batman-adv/hard-interface.c
-+++ b/batman-adv/hard-interface.c
-@@ -476,19 +476,19 @@ static void hardif_remove_interface(struct batman_if *batman_if)
- void hardif_remove_interfaces(void)
- {
- 	struct batman_if *batman_if, *batman_if_tmp;
--	struct list_head if_list_queue;
-+	struct list_head if_queue;
- 
--	INIT_LIST_HEAD(&if_list_queue);
-+	INIT_LIST_HEAD(&if_queue);
- 
- 	spin_lock(&if_list_lock);
- 	list_for_each_entry_safe(batman_if, batman_if_tmp, &if_list, list) {
- 		list_del_rcu(&batman_if->list);
--		list_add_tail(&batman_if->list, &if_list_queue);
-+		list_add_tail(&batman_if->list, &if_queue);
- 	}
- 	spin_unlock(&if_list_lock);
- 
- 	rtnl_lock();
--	list_for_each_entry_safe(batman_if, batman_if_tmp, &if_list_queue, list) {
-+	list_for_each_entry_safe(batman_if, batman_if_tmp, &if_queue, list) {
- 		hardif_remove_interface(batman_if);
- 	}
- 	rtnl_unlock();
--- 
-1.7.2.3
-
+Thanks,
+Marek
