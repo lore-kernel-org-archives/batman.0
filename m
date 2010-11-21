@@ -1,12 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 22 Nov 2010 00:43:27 +0100
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Mon, 22 Nov 2010 00:55:38 +0100
+Message-Id: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201011220043.28143.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] batman-adv 2010.2.0 released
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] batman-adv for 2.6.38 (1)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,129 +17,89 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: greg@kroah.com
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
+Hi,
 
-The B.A.T.M.A.N. team proudly presents the last batman-adv release in the y=
-ear=20
-2010, carrying the version number 2010.2.0. This release contains a mix of =
-new=20
-features, Linux kernel compliance and bug fixes. As the kernel module alway=
-s=20
-depends on the Linux kernel it was compiled against, it does not make sense=
- to=20
-provide binaries on our website. As usual, you will find the signed tarball=
-s in=20
-our download section:
-http://downloads.open-mesh.org/batman/releases/batman-adv-2010.2.0/=20
-as well as prepackaged binaries in your distribution.
+here are the feature patches which are targeted for 2.6.38.
 
+Important features include:
+ * Fragmentation of forward packets
+ * reassemble of fragmented packets during transfer
+ * softif bridge loop avoidance
+ * gateway support for dhcp(v6) filtering
+ * hash related optimizations
 
-Important changes
-=2D---------------
+thanks,
+	Sven
 
-The batman-adv module now supports multiple mesh clouds simultaneously whic=
-h=20
-made changes to the 'bat0' interface behavior necessary: Mesh interfaces (s=
-uch=20
-as bat0) are created only after 'real' interfaces (e.g. wlan0) have been=20
-assigned. Mesh interfaces that have no real interfaces assigned are removed=
-=20
-from the system. Furthermore the mesh interface can be freely named such as=
-=20
-bat5, mesh0, etc, therefore batman-adv might be active even though bat0 doe=
-s=20
-not exist. More details can be found below as well as in our documentation.=
-=20
+Andreas Langer (6):
+      Staging: batman-adv: restructure fragmentation to handle batman unicast packets
+      Staging: batman-adv: add frag_ prefix to all fragmentation related functions
+      Staging: batman-adv: move skb reassembly of fragmented packets into dedicated function
+      Staging: batman-adv: remove redundant is_my_mac() check in route_unicast_packet
+      Staging: batman-adv: fragment forwarded packets
+      Staging: batman-adv: reassemble fragmented skb if mtu allows it
 
+Linus Lüssing (4):
+      Staging: batman-adv: Unify sysfs file names with their bat_priv atomics
+      Staging: batman-adv: Wrapper functions for sysfs storing
+      Staging: batman-adv: Ommit storing struct device in sysfs functions
+      Staging: batman-adv: Make hop_penalty configurable via sysfs
 
-Thanks
-=2D---------------
+Marek Lindner (8):
+      Staging: batman-adv: ensure that eth_type_trans gets linear memory
+      Staging: batman-adv: convert batman_if custom refcounting to kref functions
+      Staging: batman-adv: use rcu callbacks when freeing batman_if
+      Staging: batman-adv: softif bridge loop avoidance
+      Staging: batman-adv: send DHCP requests directly to the chosen gw
+      Staging: batman-adv: best gw DHCP filter 802.1Q support
+      Staging: batman-adv: add gateway IPv6 support by filtering DHCPv6 messages
+      Staging: batman-adv: adding gateway functionality
 
-Thanks to all people sending in patches:
+Sven Eckelmann (11):
+      Staging: batman-adv: Replace Andrew Lunn as Staging maintainer
+      Staging: batman-adv: Add new sysfs files to README
+      Staging: batman-adv: Don't remove interface with spinlock held
+      Staging: batman-adv: Remove hashdata_compare_cb from hash
+      Staging: batman-adv: Remove hashdata_choose_cb from hash
+      Staging: batman-adv: Move hash callback related function to header
+      Staging: batman-adv: Make hash_iterate inlineable
+      Staging: batman-adv: Rewrite hash using hlist_*
+      Staging: batman-adv: Limit spin_locks to spin_lock_bh
+      Staging: batman-adv: Use kernel version min macro
+      Staging: batman-adv: Use kernel functions to identify broadcasts
 
- * Andreas Langer <an.langer@gmx.de>
- * Andy Shevchenko <andy.shevchenko@gmail.com>
- * Chris Lang <clang@gateworks.com>
- * Linus L=FCssing <linus.luessing@web.de>
- * Marek Lindner <lindner_marek@yahoo.de>
- * Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
- * Sven Eckelmann <sven.eckelmann@gmx.de>
- * Tracey Dent <tdent48227@gmail.com>
- * Vasiliy Kulikov <segooon@gmail.com>
-
-and to all those that supported us with good advice or rigorous testing:
-
- * Dan Carpenter <error27@gmail.com>
- * David S. Miller <davem@davemloft.net>
- * Paul E. McKenney <paulmck@linux.vnet.ibm.com>
- * Rafal Lesniak <lesniak@eresi-project.org>
- * Sam Yeung <sam.cwyeung@gmail.com>
-
-
-batman-adv
-=2D---------------
-
-The work that nearly a year ago began has finally come to an end: Multiple =
-mesh=20
-cloud support has been completed. This allows one host to participate in=20
-multiple meshes at the same time via different interfaces. This often reque=
-sted=20
-feature is particularly useful to segment large batman-adv installations,=20
-thereby reducing overhead. Each mesh cloud can be individually configured,=
-=20
-deals with its traffic flow independently and possesses its own batX interf=
-ace.=20
-Also added was a layer 2 fragmentation for unicast data flowing through the=
-=20
-mesh which will allow to run batman-adv over interfaces / connections that=
-=20
-don't allow to increase the MTU beyond the standard Ethernet packet size of=
-=20
-1500 bytes. This initial fragmentation only supports splitting the large=20
-packets at "the beginning of mesh" whereas an extension which allows=20
-fragmenting "on the fly" anywhere in the mesh network will be included in t=
-he=20
-following release.
-
-As usual, many improvements happened under the hood: The module uses the=20
-kernel supplied functions for network buffer manipulations instead of re-
-implementing them and takes advantage of the optimized kernel functionality=
-=20
-for OGM counting. The RCU protected lists have been revamped and enhanced w=
-ith=20
-referenced based counting which squashes quite some race conditions. The HN=
-A=20
-handling needed some fixes too when it was stress tested with a very large=
-=20
-local network. Many minor bugs such as false warnings, reduced memory usage=
-=20
-and coding style issues were addressed.
-
-
-batctl
-=2D---------------
-
-To support the "multiple mesh clouds" feature batctl received a new (option=
-al)=20
-parameter '-m' to specify the mesh cloud interface in order to query the me=
-sh=20
-cloud of interest. If '-m' is not specified batctl will assume 'bat0' as me=
-sh=20
-cloud interface which maintains backward compatibility and suits most users=
-=2E=20
-The newly added fragmentation on/off switch also was added as well as batct=
-l=20
-tcpdump support for fragmented packets. In addition, the batctl tcpdump can=
-=20
-deal with multiple header encapsulation (e.g. HTTP in VLAN in BAT UNICAST i=
-n=20
-VLAN) and the batctl ping utilities' '-i' option is not silently ignored an=
-y=20
-longer. Various cleanups took place and a crash fixed if the HOME environme=
-nt=20
-variable is not set.
-
-Happy routing,
-The B.A.T.M.A.N. team
-
+ drivers/staging/batman-adv/Makefile             |   19 +-
+ drivers/staging/batman-adv/README               |    6 +-
+ drivers/staging/batman-adv/TODO                 |    6 +-
+ drivers/staging/batman-adv/aggregation.c        |   18 +-
+ drivers/staging/batman-adv/bat_debugfs.c        |   33 ++-
+ drivers/staging/batman-adv/bat_sysfs.c          |  425 +++++++++++---------
+ drivers/staging/batman-adv/gateway_client.c     |  477 +++++++++++++++++++++++
+ drivers/staging/batman-adv/gateway_client.h     |   36 ++
+ drivers/staging/batman-adv/gateway_common.c     |  177 +++++++++
+ drivers/staging/batman-adv/gateway_common.h     |   38 ++
+ drivers/staging/batman-adv/hard-interface.c     |   71 ++--
+ drivers/staging/batman-adv/hard-interface.h     |   13 +-
+ drivers/staging/batman-adv/hash.c               |  237 +-----------
+ drivers/staging/batman-adv/hash.h               |  219 +++++++++--
+ drivers/staging/batman-adv/icmp_socket.c        |   26 +-
+ drivers/staging/batman-adv/main.c               |   46 +--
+ drivers/staging/batman-adv/main.h               |    9 +-
+ drivers/staging/batman-adv/originator.c         |   75 ++--
+ drivers/staging/batman-adv/originator.h         |   28 ++
+ drivers/staging/batman-adv/packet.h             |    4 +-
+ drivers/staging/batman-adv/routing.c            |  188 +++++-----
+ drivers/staging/batman-adv/routing.h            |    2 +
+ drivers/staging/batman-adv/send.c               |   48 ++-
+ drivers/staging/batman-adv/soft-interface.c     |  333 +++++++++++++++-
+ drivers/staging/batman-adv/soft-interface.h     |    5 +-
+ drivers/staging/batman-adv/sysfs-class-net-mesh |   28 ++
+ drivers/staging/batman-adv/translation-table.c  |  128 ++++---
+ drivers/staging/batman-adv/types.h              |   46 ++-
+ drivers/staging/batman-adv/unicast.c            |  158 ++++++--
+ drivers/staging/batman-adv/unicast.h            |   12 +-
+ drivers/staging/batman-adv/vis.c                |  143 ++++----
+ 31 files changed, 2131 insertions(+), 923 deletions(-)
