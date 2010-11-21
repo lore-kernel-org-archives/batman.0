@@ -1,11 +1,14 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 22 Nov 2010 00:56:04 +0100
-Message-Id: <1290383767-32602-27-git-send-email-sven.eckelmann@gmx.de>
+Date: Mon, 22 Nov 2010 00:56:05 +0100
+Message-Id: <1290383767-32602-28-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
 References: <1290383767-32602-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 26/29] Staging: batman-adv: best gw DHCP
-	filter 802.1Q support
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 27/29] Staging: batman-adv: add gateway IPv6
+	support by filtering DHCPv6 messages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,36 +25,93 @@ Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
 From: Marek Lindner <lindner_marek@yahoo.de>
 
-The DHCP filter inspects packets to determine whether or not to send
-them via ethernet unicast. This patch adds 802.1Q (vlan) support for
-this check.
+Some additional checks will be needed in case of extension headers
+like the fragmentation or hop-by-hop (for jumbo frames for example)
+headers or ipsec stuff. But this patch should do for most people
+for now, the rest can be added with a later one.
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-[sven.eckelmann@gmx.de: Rework on top of current version]
+Acked-by: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
 ---
- drivers/staging/batman-adv/gateway_client.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ drivers/staging/batman-adv/gateway_client.c |   40 +++++++++++++++++++++------
+ 1 files changed, 31 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/staging/batman-adv/gateway_client.c b/drivers/staging/batman-adv/gateway_client.c
-index 3d4e109..fde1d8a 100644
+index fde1d8a..0065ffb 100644
 --- a/drivers/staging/batman-adv/gateway_client.c
 +++ b/drivers/staging/batman-adv/gateway_client.c
-@@ -415,6 +415,14 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
- 	ethhdr = (struct ethhdr *)skb->data;
- 	header_len += ETH_HLEN;
+@@ -24,6 +24,7 @@
+ #include "gateway_common.h"
+ #include "hard-interface.h"
+ #include <linux/ip.h>
++#include <linux/ipv6.h>
+ #include <linux/udp.h>
+ #include <linux/if_vlan.h>
  
-+	/* check for initial vlan header */
-+	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
-+		if (!pskb_may_pull(skb, header_len + VLAN_HLEN))
-+			return 0;
-+		ethhdr = (struct ethhdr *)(skb->data + VLAN_HLEN);
-+		header_len += VLAN_HLEN;
-+	}
-+
+@@ -403,6 +404,7 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
+ {
+ 	struct ethhdr *ethhdr;
+ 	struct iphdr *iphdr;
++	struct ipv6hdr *ipv6hdr;
+ 	struct udphdr *udphdr;
+ 	unsigned int header_len = 0;
+ 
+@@ -424,17 +426,32 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
+ 	}
+ 
  	/* check for ip header */
- 	if (ntohs(ethhdr->h_proto) != ETH_P_IP)
+-	if (ntohs(ethhdr->h_proto) != ETH_P_IP)
+-		return 0;
++	switch (ntohs(ethhdr->h_proto)) {
++	case ETH_P_IP:
++		if (!pskb_may_pull(skb, header_len + sizeof(struct iphdr)))
++			return 0;
++		iphdr = (struct iphdr *)(skb->data + header_len);
++		header_len += iphdr->ihl * 4;
+ 
+-	if (!pskb_may_pull(skb, header_len + sizeof(struct iphdr)))
+-		return 0;
+-	iphdr = (struct iphdr *)(skb->data + header_len);
+-	header_len += iphdr->ihl * 4;
++		/* check for udp header */
++		if (iphdr->protocol != IPPROTO_UDP)
++			return 0;
++
++		break;
++	case ETH_P_IPV6:
++		if (!pskb_may_pull(skb, header_len + sizeof(struct ipv6hdr)))
++			return 0;
++		ipv6hdr = (struct ipv6hdr *)(skb->data + header_len);
++		header_len += sizeof(struct ipv6hdr);
++
++		/* check for udp header */
++		if (ipv6hdr->nexthdr != IPPROTO_UDP)
++			return 0;
+ 
+-	/* check for udp header */
+-	if (iphdr->protocol != IPPROTO_UDP)
++		break;
++	default:
  		return 0;
++	}
+ 
+ 	if (!pskb_may_pull(skb, header_len + sizeof(struct udphdr)))
+ 		return 0;
+@@ -442,7 +459,12 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
+ 	header_len += sizeof(struct udphdr);
+ 
+ 	/* check for bootp port */
+-	if (ntohs(udphdr->dest) != 67)
++	if ((ntohs(ethhdr->h_proto) == ETH_P_IP) &&
++	     (ntohs(udphdr->dest) != 67))
++		return 0;
++
++	if ((ntohs(ethhdr->h_proto) == ETH_P_IPV6) &&
++	    (ntohs(udphdr->dest) != 547))
+ 		return 0;
+ 
+ 	if (atomic_read(&bat_priv->gw_mode) == GW_MODE_SERVER)
 -- 
 1.7.2.3
 
