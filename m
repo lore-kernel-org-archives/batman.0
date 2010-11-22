@@ -1,16 +1,16 @@
-Return-Path: <slnxumalo@gmail.com>
-Message-ID: <1215065789-1290462574-cardhu_decombobulator_blackberry.rim.net-971802515-@b27.c11.bise7.blackberry>
-Content-Transfer-Encoding: base64
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 23 Nov 2010 00:44:57 +0100
 References: <1290462354-17246-1-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1290462354-17246-1-git-send-email-linus.luessing@ascom.ch>
-From: slnxumalo@gmail.com
-Date: Mon, 22 Nov 2010 21:46:18 +0000
-Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201011230044.58352.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batctl: Fix bisecting of OGMs with
-	32bitseqno
-Reply-To: slnxumalo@gmail.com,
-	The list for a Better Approach To Mobile Ad-hoc Networking
+	32bit seqno
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,41 +23,17 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-SSB3b3VsZCBsaWtlIHRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBmb3J1bS4NClNlbnQgdmlhIG15
-IEJsYWNrQmVycnkgZnJvbSBWb2RhY29tIC0gbGV0IHlvdXIgZW1haWwgZmluZCB5b3UhDQoNCi0t
-LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBMaW51cyBMw7xzc2luZyA8bGludXMubHVl
-c3NpbmdAYXNjb20uY2g+DQpTZW5kZXI6IGIuYS50Lm0uYS5uLWJvdW5jZXNAbGlzdHMub3Blbi1t
-ZXNoLm9yZw0KRGF0ZTogTW9uLCAyMiBOb3YgMjAxMCAyMjo0NTo1MyANClRvOiA8Yi5hLnQubS5h
-Lm5AbGlzdHMub3Blbi1tZXNoLm9yZz4NClJlcGx5LVRvOiBUaGUgbGlzdCBmb3IgYSBCZXR0ZXIg
-QXBwcm9hY2ggVG8gTW9iaWxlIEFkLWhvYyBOZXR3b3JraW5nDQoJPGIuYS50Lm0uYS5uQGxpc3Rz
-Lm9wZW4tbWVzaC5vcmc+DQpDYzogTGludXMgTMO8c3Npbmc8bGludXMubHVlc3NpbmdAYXNjb20u
-Y2g+DQpTdWJqZWN0OiBbQi5BLlQuTS5BLk4uXSBbUEFUQ0ggMS8yXSBiYXRjdGw6IEZpeCBiaXNl
-Y3Rpbmcgb2YgT0dNcyB3aXRoIDMyYml0DQoJc2Vxbm8NCg0KVGhpcyBwYXRjaCBpbmNyZWFzZXMg
-dGhlIHNpemUgb2YgdGhlIHNlcW5vIHZhcmlhYmxlIGZvciBiaXNlY3QgYW5kIG5vdw0KdXNlcyBV
-SU5UMzJfTUFYIGZvciBmb3JtYXQgY2hlY2tpbmcuIFRvIGJlIGNvbnNpc3RlbnQsIGFsc28gIjI1
-NSJzIGdvdA0Kc3Vic3RpdHV0ZWQgYnkgVUlOVDhfTUFYDQoNClNpZ25lZC1vZmYtYnk6IExpbnVz
-IEzDvHNzaW5nIDxsaW51cy5sdWVzc2luZ0Bhc2NvbS5jaD4NCi0tLQ0KIGJpc2VjdC5jIHwgICAx
-MCArKysrKy0tLS0tDQogMSBmaWxlcyBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDUgZGVsZXRp
-b25zKC0pDQoNCmRpZmYgLS1naXQgYS9iaXNlY3QuYyBiL2Jpc2VjdC5jDQppbmRleCBiN2Q4OTY5
-Li5lZTllMmYxIDEwMDY0NA0KLS0tIGEvYmlzZWN0LmMNCisrKyBiL2Jpc2VjdC5jDQpAQCAtMzg1
-LDcgKzM4NSw3IEBAIGVycjoNCiAJcmV0dXJuIDA7DQogfQ0KIA0KLXN0YXRpYyBpbnQgc2Vxbm9f
-ZXZlbnRfbmV3KGNoYXIgKmlmYWNlX2FkZHIsIGNoYXIgKm9yaWcsIGNoYXIgKnByZXZfc2VuZGVy
-LCBjaGFyICpuZWlnaCwgaW50IHNlcW5vLCBpbnQgdHEsIGludCB0dGwpDQorc3RhdGljIGludCBz
-ZXFub19ldmVudF9uZXcoY2hhciAqaWZhY2VfYWRkciwgY2hhciAqb3JpZywgY2hhciAqcHJldl9z
-ZW5kZXIsIGNoYXIgKm5laWdoLCBpbnQ2NF90IHNlcW5vLCBpbnQgdHEsIGludCB0dGwpDQogew0K
-IAlzdHJ1Y3QgYmF0X25vZGUgKm9yaWdfbm9kZSwgKm5laWdoX25vZGUsICpwcmV2X3NlbmRlcl9u
-b2RlOw0KIAlzdHJ1Y3Qgb3JpZ19ldmVudCAqb3JpZ19ldmVudDsNCkBAIC00MDYsMTcgKzQwNiwx
-NyBAQCBzdGF0aWMgaW50IHNlcW5vX2V2ZW50X25ldyhjaGFyICppZmFjZV9hZGRyLCBjaGFyICpv
-cmlnLCBjaGFyICpwcmV2X3NlbmRlciwgY2hhcg0KIAkJZ290byBlcnI7DQogCX0NCiANCi0JaWYg
-KChzZXFubyA8IDApIHx8IChzZXFubyA+IDY1NTM1KSkgew0KLQkJZnByaW50ZihzdGRlcnIsICJJ
-bnZhbGlkIHNlcXVlbmNlIG51bWJlciBmb3VuZCAoJWkpIC0gc2tpcHBpbmciLCBzZXFubyk7DQor
-CWlmICgoc2Vxbm8gPCAwKSB8fCAoc2Vxbm8gPiBVSU5UMzJfTUFYKSkgew0KKwkJZnByaW50Zihz
-dGRlcnIsICJJbnZhbGlkIHNlcXVlbmNlIG51bWJlciBmb3VuZCAoJWxsaSkgLSBza2lwcGluZyIs
-IHNlcW5vKTsNCiAJCWdvdG8gZXJyOw0KIAl9DQogDQotCWlmICgodHEgPCAwKSB8fCAodHEgPiAy
-NTUpKSB7DQorCWlmICgodHEgPCAwKSB8fCAodHEgPiBVSU5UOF9NQVgpKSB7DQogCQlmcHJpbnRm
-KHN0ZGVyciwgIkludmFsaWQgdHEgdmFsdWUgZm91bmQgKCVpKSAtIHNraXBwaW5nIiwgdHEpOw0K
-IAkJZ290byBlcnI7DQogCX0NCiANCi0JaWYgKCh0dGwgPCAwKSB8fCAodHRsID4gMjU1KSkgew0K
-KwlpZiAoKHR0bCA8IDApIHx8ICh0dGwgPiBVSU5UOF9NQVgpKSB7DQogCQlmcHJpbnRmKHN0ZGVy
-ciwgIkludmFsaWQgdHRsIHZhbHVlIGZvdW5kICglaSkgLSBza2lwcGluZyIsIHR0bCk7DQogCQln
-b3RvIGVycjsNCiAJfQ0KLS0gDQoxLjcuMQ0KDQo=
+On Monday 22 November 2010 22:45:53 Linus L=C3=BCssing wrote:
+> -static int seqno_event_new(char *iface_addr, char *orig, char
+> *prev_sender, char *neigh, int seqno, int tq, int ttl) +static int
+> seqno_event_new(char *iface_addr, char *orig, char *prev_sender, char
+> *neigh, int64_t seqno, int tq, int ttl)
 
+Didn't you forget to adjust the seqno size in the seqno_event and seqno_tra=
+ce=20
+struct ? Simply declaring it 64bit in the function header won't do much goo=
+d=20
+=2E..
+
+Regards,
+Marek
