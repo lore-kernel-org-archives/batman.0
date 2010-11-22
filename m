@@ -1,11 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 22 Nov 2010 12:34:50 +0100
-Message-Id: <1290425690-5119-4-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <201011221129.06220.sven.eckelmann@gmx.de>
-References: <201011221129.06220.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] Staging: batman-adv: Don't remove
-	interface with spinlock held
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Date: Mon, 22 Nov 2010 22:45:54 +0100
+Message-Id: <1290462354-17246-2-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1290462354-17246-1-git-send-email-linus.luessing@ascom.ch>
+References: <1290462354-17246-1-git-send-email-linus.luessing@ascom.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: Fix (skipped) substitutions of
+	mac addresses
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,78 +21,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: greg@kroah.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-We call a lot of the netdevice code when holding if_list_lock which will
-spin the whole time. This is not necessary because we only want to
-protect the access to the list to be serialized. An extra queue can be
-used which hold all interfaces which should be removed and then use that
-queue without any locks for netdevice cleanup.
+This patch fixes two parts: For one thing "batctl l" won't remove commas
+anymore if it cannot find the mac address in the bat-hosts file.
+For another, it now allows the correct substitution of mac addresses
+which have the suffix ')'.
 
-We create a "scheduling while atomic" Oops when calling different
-netdevice related functions inside a spinlock protected area on a
-preemtible kernel.
-
-Reported-by: Rafal Lesniak <lesniak@eresi-project.org>
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
+Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
-The same patch was also submitted for 2.6.38 and it is also possible
-to merge that patch in 2.6.37 and then merge 2.6.37 in 2.6.28
+ functions.c |   24 ++++++++++++++++--------
+ 1 files changed, 16 insertions(+), 8 deletions(-)
 
- drivers/staging/batman-adv/hard-interface.c |   19 +++++++++++++------
- 1 files changed, 13 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
-index b68a7e5..d85de82 100644
---- a/drivers/staging/batman-adv/hard-interface.c
-+++ b/drivers/staging/batman-adv/hard-interface.c
-@@ -463,9 +463,6 @@ static void hardif_remove_interface(struct batman_if *batman_if)
- 		return;
+diff --git a/functions.c b/functions.c
+index ce046ba..52cfe4b 100644
+--- a/functions.c
++++ b/functions.c
+@@ -177,9 +177,17 @@ read:
+ 			*space_ptr = '\0';
+ 			extra_char = '\0';
  
- 	batman_if->if_status = IF_TO_BE_REMOVED;
+-			if ((strlen(buff_ptr) == ETH_STR_LEN + 1) && (buff_ptr[ETH_STR_LEN] == ',')) {
+-				extra_char = ',';
+-				buff_ptr[ETH_STR_LEN] = '\0';
++			if (strlen(buff_ptr) == ETH_STR_LEN + 1) {
++				extra_char = buff_ptr[ETH_STR_LEN]; 
++				switch (extra_char) {
++				case ',':
++				case ')':
++					buff_ptr[ETH_STR_LEN] = '\0';
++					break;
++				default:
++					extra_char = '\0';
++					break;
++				}
+ 			}
+ 
+ 			if (strlen(buff_ptr) != ETH_STR_LEN)
+@@ -201,16 +209,16 @@ read:
+ 				/* keep table format */
+ 				printf("%17s", bat_host->name);
+ 
+-			if (extra_char != '\0')
+-				printf("%c", extra_char);
 -
--	/* caller must take if_list_lock */
--	list_del_rcu(&batman_if->list);
- 	synchronize_rcu();
- 	sysfs_del_hardif(&batman_if->hardif_obj);
- 	hardif_put(batman_if);
-@@ -474,13 +471,21 @@ static void hardif_remove_interface(struct batman_if *batman_if)
- void hardif_remove_interfaces(void)
- {
- 	struct batman_if *batman_if, *batman_if_tmp;
-+	struct list_head if_queue;
-+
-+	INIT_LIST_HEAD(&if_queue);
+-			printf(" ");
+ 			goto written;
  
--	rtnl_lock();
- 	spin_lock(&if_list_lock);
- 	list_for_each_entry_safe(batman_if, batman_if_tmp, &if_list, list) {
--		hardif_remove_interface(batman_if);
-+		list_del_rcu(&batman_if->list);
-+		list_add_tail(&batman_if->list, &if_queue);
- 	}
- 	spin_unlock(&if_list_lock);
-+
-+	rtnl_lock();
-+	list_for_each_entry_safe(batman_if, batman_if_tmp, &if_queue, list) {
-+		hardif_remove_interface(batman_if);
-+	}
- 	rtnl_unlock();
- }
+ print_plain_buff:
+-			printf("%s ", buff_ptr);
++			printf("%s", buff_ptr);
  
-@@ -507,8 +512,10 @@ static int hard_if_event(struct notifier_block *this,
- 		break;
- 	case NETDEV_UNREGISTER:
- 		spin_lock(&if_list_lock);
--		hardif_remove_interface(batman_if);
-+		list_del_rcu(&batman_if->list);
- 		spin_unlock(&if_list_lock);
+ written:
++			if (extra_char != '\0')
++				printf("%c", extra_char);
 +
-+		hardif_remove_interface(batman_if);
- 		break;
- 	case NETDEV_CHANGEMTU:
- 		if (batman_if->soft_iface)
++			printf(" ");
+ 			buff_ptr = space_ptr + 1;
+ 		}
+ 
 -- 
-1.7.2.3
+1.7.1
 
