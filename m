@@ -1,10 +1,10 @@
 Return-Path: <sven.eckelmann@gmx.de>
 From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Mon, 22 Nov 2010 12:34:48 +0100
-Message-Id: <1290425690-5119-2-git-send-email-sven.eckelmann@gmx.de>
+Date: Mon, 22 Nov 2010 12:34:49 +0100
+Message-Id: <1290425690-5119-3-git-send-email-sven.eckelmann@gmx.de>
 In-Reply-To: <201011221129.06220.sven.eckelmann@gmx.de>
 References: <201011221129.06220.sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH-stable] Staging: batman-adv: ensure that
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] Staging: batman-adv: ensure that
 	eth_type_trans gets linear memory
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -18,7 +18,7 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: greg@kroah.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, stable@kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
 From: Marek Lindner <lindner_marek@yahoo.de>
 
@@ -36,29 +36,49 @@ skb_pull inside eth_type_trans.
 Reported-by: Rafal Lesniak <lesniak@eresi-project.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
-Cc: stable@kernel.org
 ---
-This patch is the backport to v2.6.36 and was also submitted
-slightly different for 2.6.37 and 2.6.38.
+The same patch was also submitted for 2.6.38 and it is also possible
+to merge that patch in 2.6.37 and then merge 2.6.37 in 2.6.28
 
- drivers/staging/batman-adv/soft-interface.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/staging/batman-adv/soft-interface.c |   14 ++++++++++----
+ 1 files changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/staging/batman-adv/soft-interface.c b/drivers/staging/batman-adv/soft-interface.c
-index 2ea97de..876be5a 100644
+index 3904db9..0e99618 100644
 --- a/drivers/staging/batman-adv/soft-interface.c
 +++ b/drivers/staging/batman-adv/soft-interface.c
-@@ -246,6 +246,10 @@ void interface_rx(struct sk_buff *skb, int hdr_size)
+@@ -194,14 +194,15 @@ void interface_rx(struct net_device *soft_iface,
+ 	struct bat_priv *priv = netdev_priv(soft_iface);
+ 
+ 	/* check if enough space is available for pulling, and pull */
+-	if (!pskb_may_pull(skb, hdr_size)) {
+-		kfree_skb(skb);
+-		return;
+-	}
++	if (!pskb_may_pull(skb, hdr_size))
++		goto dropped;
++
  	skb_pull_rcsum(skb, hdr_size);
  /*	skb_set_mac_header(skb, -sizeof(struct ethhdr));*/
  
-+	if (unlikely(!pskb_may_pull(skb, ETH_HLEN))) {
-+		kfree_skb(skb);
-+		return;
-+	}
- 	skb->dev = dev;
- 	skb->protocol = eth_type_trans(skb, dev);
+ 	/* skb->dev & skb->pkt_type are set here */
++	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
++		goto dropped;
+ 	skb->protocol = eth_type_trans(skb, soft_iface);
  
+ 	/* should not be neccesary anymore as we use skb_pull_rcsum()
+@@ -216,6 +217,11 @@ void interface_rx(struct net_device *soft_iface,
+ 	soft_iface->last_rx = jiffies;
+ 
+ 	netif_rx(skb);
++	return;
++
++dropped:
++	kfree_skb(skb);
++	return;
+ }
+ 
+ #ifdef HAVE_NET_DEVICE_OPS
 -- 
 1.7.2.3
 
