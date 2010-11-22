@@ -1,15 +1,13 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Mon, 22 Nov 2010 22:45:54 +0100
-Message-Id: <1290462354-17246-2-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <1290462354-17246-1-git-send-email-linus.luessing@ascom.ch>
-References: <1290462354-17246-1-git-send-email-linus.luessing@ascom.ch>
+Date: Mon, 22 Nov 2010 22:45:53 +0100
+Message-Id: <1290462354-17246-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: Fix (skipped) substitutions of
-	mac addresses
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batctl: Fix bisecting of OGMs with 32bit
+	seqno
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,63 +22,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-This patch fixes two parts: For one thing "batctl l" won't remove commas
-anymore if it cannot find the mac address in the bat-hosts file.
-For another, it now allows the correct substitution of mac addresses
-which have the suffix ')'.
+This patch increases the size of the seqno variable for bisect and now
+uses UINT32_MAX for format checking. To be consistent, also "255"s got
+substituted by UINT8_MAX
 
 Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
- functions.c |   24 ++++++++++++++++--------
- 1 files changed, 16 insertions(+), 8 deletions(-)
+ bisect.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/functions.c b/functions.c
-index ce046ba..52cfe4b 100644
---- a/functions.c
-+++ b/functions.c
-@@ -177,9 +177,17 @@ read:
- 			*space_ptr = '\0';
- 			extra_char = '\0';
+diff --git a/bisect.c b/bisect.c
+index b7d8969..ee9e2f1 100644
+--- a/bisect.c
++++ b/bisect.c
+@@ -385,7 +385,7 @@ err:
+ 	return 0;
+ }
  
--			if ((strlen(buff_ptr) == ETH_STR_LEN + 1) && (buff_ptr[ETH_STR_LEN] == ',')) {
--				extra_char = ',';
--				buff_ptr[ETH_STR_LEN] = '\0';
-+			if (strlen(buff_ptr) == ETH_STR_LEN + 1) {
-+				extra_char = buff_ptr[ETH_STR_LEN]; 
-+				switch (extra_char) {
-+				case ',':
-+				case ')':
-+					buff_ptr[ETH_STR_LEN] = '\0';
-+					break;
-+				default:
-+					extra_char = '\0';
-+					break;
-+				}
- 			}
+-static int seqno_event_new(char *iface_addr, char *orig, char *prev_sender, char *neigh, int seqno, int tq, int ttl)
++static int seqno_event_new(char *iface_addr, char *orig, char *prev_sender, char *neigh, int64_t seqno, int tq, int ttl)
+ {
+ 	struct bat_node *orig_node, *neigh_node, *prev_sender_node;
+ 	struct orig_event *orig_event;
+@@ -406,17 +406,17 @@ static int seqno_event_new(char *iface_addr, char *orig, char *prev_sender, char
+ 		goto err;
+ 	}
  
- 			if (strlen(buff_ptr) != ETH_STR_LEN)
-@@ -201,16 +209,16 @@ read:
- 				/* keep table format */
- 				printf("%17s", bat_host->name);
+-	if ((seqno < 0) || (seqno > 65535)) {
+-		fprintf(stderr, "Invalid sequence number found (%i) - skipping", seqno);
++	if ((seqno < 0) || (seqno > UINT32_MAX)) {
++		fprintf(stderr, "Invalid sequence number found (%lli) - skipping", seqno);
+ 		goto err;
+ 	}
  
--			if (extra_char != '\0')
--				printf("%c", extra_char);
--
--			printf(" ");
- 			goto written;
+-	if ((tq < 0) || (tq > 255)) {
++	if ((tq < 0) || (tq > UINT8_MAX)) {
+ 		fprintf(stderr, "Invalid tq value found (%i) - skipping", tq);
+ 		goto err;
+ 	}
  
- print_plain_buff:
--			printf("%s ", buff_ptr);
-+			printf("%s", buff_ptr);
- 
- written:
-+			if (extra_char != '\0')
-+				printf("%c", extra_char);
-+
-+			printf(" ");
- 			buff_ptr = space_ptr + 1;
- 		}
- 
+-	if ((ttl < 0) || (ttl > 255)) {
++	if ((ttl < 0) || (ttl > UINT8_MAX)) {
+ 		fprintf(stderr, "Invalid ttl value found (%i) - skipping", ttl);
+ 		goto err;
+ 	}
 -- 
 1.7.1
 
