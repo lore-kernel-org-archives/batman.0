@@ -1,16 +1,19 @@
 Return-Path: <linus.luessing@web.de>
-Date: Mon, 29 Nov 2010 21:13:44 +0100
+Date: Mon, 29 Nov 2010 21:36:54 +0100
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20101129201344.GA5899@Sellars>
-References: <mailman.14.1290812292.944.b.a.t.m.a.n@lists.open-mesh.org>
-	<AANLkTimR7VU95r3C-=C9rn5ftZahKkNTu3-cU-Vft+VZ@mail.gmail.com>
-	<AANLkTikZJn5T7gEc_REH_vyEwhKhTcsqLRdq8tX0OdF8@mail.gmail.com>
+Message-ID: <20101129203654.GB5899@Sellars>
+References: <1289148361-16019-1-git-send-email-linus.luessing@web.de>
+	<1289350093-5782-2-git-send-email-linus.luessing@ascom.ch>
+	<201011101206.18881.lindner_marek@yahoo.de>
+	<OFD539991B.AC1A53B7-ONC12577D7.0055C780-C12577D7.0055E665@ln.ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <AANLkTikZJn5T7gEc_REH_vyEwhKhTcsqLRdq8tX0OdF8@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <OFD539991B.AC1A53B7-ONC12577D7.0055C780-C12577D7.0055E665@ln.ascom.ch>
 Sender: linus.luessing@web.de
-Subject: Re: [B.A.T.M.A.N.] Fwd: BATMAN routing
+Subject: Re: [B.A.T.M.A.N.] Antwort: Re: [PATCHv2] batman-adv: Allow
+ promiscuous reception of unicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,66 +27,92 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Hlabishi and welcome!
+Hi there,
 
-> As I mentioned above: We are in a redesign phase right now and welcome
-> anyone
-> interested to join.
-Hmm, what would you think about a voip conference for anyone
-interested to join :)? I think there are still quite some open
-questions about how a BATMAN V algorithm could look like. And I
-wanted to discuss some of the recent experiences in mobile
-scenarios anyway.
+Hmm, okay, and I made some further measurements. In typical
+scenarios with "default" settings, I unfortunately could not
+really get a reliability improvement. The thing is, due to the
+multicast rate of 1MBit/s in common wifi drivers, I wasn't able to
+put the devices close enough for the promisc-reception to take
+effect without BATMAN switching to the direct, shorter path.
+So I ended up setting the multicast rate to 48mbit/s and
+could get a reliability improvement from 14.5% packet loss down to
+about 9.5%. But of course, such a high multicast rate is not
+feasible.
 
-We could try something like mumble for the chatting, I've setup an
-experimental server on open-mesh.org on its default port.
-I'd suggest something like 6pm UTC. If anyone who's interested to
-join can't make it at that time, feel free to suggest
-another date then. Anyone who thinks this is fine and would like
-to attend, please drop a note :).
+So it'd be ok to ommit this patch, unless/until someone might have some
+further ideas to get the promisc-idea usable.
 
 Cheers, Linus
 
-PS: Some interesting ideas and questions have been raised so far,
-I'm looking forward to interesting answers via email already,
-too :).
-
-> module ? All my answers will refer to the kernel module as this is the place
-> where most of the development is going on at the moment.
+On Wed, Nov 10, 2010 at 04:38:15PM +0100, Linus Luessing wrote:
+> Marek Lindner <lindner_marek@yahoo.de> schrieb am 10.11.2010 12:06:18:
 > 
-> > On the second approach we want to use mac layer stats to estimate the
-> > signal strength and probably the congestion rate of the top N ranked
-> links.
-> > We acknowledge the fact that usually links with lower signal strength will
-> > loose more OGM's which results in an automatic low rank, however in a
-> > frequently changing topology, current signal strength is crucial. We plan
-> > to use SNR or RSSI in this case.
+> > [Bild entfernt] 
+> > 
+> > Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Allow promiscuous reception
+> > of unicast packets
+> > 
+> > Marek Lindner 
+> > 
+> > an:
+> > 
+> > The list for a Better Approach To Mobile Ad-hoc Networking, Linus 
+> Lüssing
+> > 
+> > 10.11.2010 12:08
+> > 
+> > [Bild entfernt] 
+> > 
+> > Von:
+> > 
+> > Marek Lindner <lindner_marek@yahoo.de>
+> > 
+> > An:
+> > 
+> > "The list for a Better Approach To Mobile Ad-hoc Networking" 
+> > <b.a.t.m.a.n@lists.open-mesh.org>, Linus Lüssing 
+> <linus.luessing@ascom.ch>
+> > 
+> > On Wednesday 10 November 2010 01:48:13 Linus Lüssing wrote:
+> > > Firstly, a very mobile node moving towards the sender along the hop 
+> path
+> > > benefits from this as for such a mobility pattern the reception 
+> probability
+> > > increases, no matter how slow the topology convergence speed is.
+> > 
+> > Would you mind explaining why you think it helps for mobile nodes in the 
 > 
-> The concept is known since a while but nobody has implemented it so far
-> because its implementation is fairly complex. Do you have an idea how it
-> should work in the end ?
+> > scenario you mention ?
+> > If I understand it correctly it helps for data originating from a 
+> non-mobile 
+> > node traveling towards the mobile node but this is less critical 
+> > (assuming the 
+> > mobile node has a higher orig interval).
+> Correct, I was assuming equal intervals ;). Yes, this is usually not 
+> critical, but just
+> found it note worthy anyway, that you could possibly move towards the 
+> sender along the
+> path as fast as you wish without losing the stream from the sender, being 
+> independent
+> of the receivers OGM interval.
 > 
+> > For data originating at the mobile 
+> > node traveling towards the non-mobile node it will only help if 
+> bothnodes are 
+> > single hop neighbors.
+> That's not what I've been claiming afaik :). And if both nodes are just 
+> one hop away, then
+> you don't have any advantage of this promisc-reception anyway.
 > 
-> > 1. How can i get the RSSI/LQI of th neighbor links?
+> Hope that paragraph did not cause too much confusion, if you think there's 
+> something misleading
+> in it, I can change it, no problem.
 > 
-> I don't get this question. You intend to use RSSI but you don't know how ?
+> > 
+> > Regards,
+> > Marek
 > 
-> 
-> > I would really appreciate your opinions and advices in this regard more
-> > specially how to go about implementing changes in BATMAN protocol.
-> 
-> This is a little abstract. Usually, we discuss specific concepts / ideas in
-> our
-> IRC channel or on the mailing list long before starting to implement them.
-> The
-> past has shown it is often better to let other people dive into your ideas
-> and
-> comment because routing is a rather complex subject.
-> 
-> scenarios in which the current implementation behaves poorly. All routing
-> protocol changes have to go through this collection of scenarios to estimate
-> its impact. What do you think about this idea ?
-> 
-> Regards,
-> Marek
+> Cheers,
+> Linus
 > 
