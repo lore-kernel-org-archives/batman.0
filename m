@@ -1,11 +1,14 @@
-Return-Path: <kosta@iamkosta.org>
+Return-Path: <greg@kroah.com>
+Date: Mon, 29 Nov 2010 10:55:31 -0800
+From: Greg KH <greg@kroah.com>
+Message-ID: <20101129185531.GA32202@kroah.com>
+References: <201011221129.06220.sven.eckelmann@gmx.de>
+	<1290425690-5119-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-From: Kosta Grammatis <kosta@iamkosta.org>
-Date: Mon, 29 Nov 2010 08:54:30 -0800
-Message-ID: <AANLkTikhncqRxsbRfJRPb0y8oM2uT4sHpQOzONc4hxba@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] global mesh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1290425690-5119-1-git-send-email-sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] Staging: batman-adv for 2.6.37 (6)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,33 +20,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven.eckelmann@gmx.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Friends-
-We're working on a rather ambitious initiative to build a
-de-centralized network for the whole of humanity. We're collaborating
-with NASA Ames, Deutsche Telekom, and others. =A0Our latest campaign is
-to buy a satellite: http://buythissatellite.org
+On Mon, Nov 22, 2010 at 12:34:47PM +0100, Sven Eckelmann wrote:
+> 
+> Hi,
+> 
+> I would like to propose following two patches which were already send to you
+> for 2.6.38 also for 2.6.37. These should be unchanged and you are free to
+> decide how you want to apply those to get them in both kernel version.
+> 
+> [PATCH 1/2] Staging: batman-adv: ensure that eth_type_trans gets linear memory
+> [PATCH 2/2] Staging: batman-adv: Don't remove interface with spinlock held
 
-All that aside, the work of B.A.T.M.A.N. is incredible, from what I
-read you've tackled some big problems and your technology is being
-implemented in many places (our friends at Village Telco seem to be
-using B.A.T.M.A.N.).
+I've applied these to the .37 branch to go to Linus later this week.
 
-We'd like to build a satellite network that serves as a backhaul to
-local de-centralized mesh networks. =A0Local data transactions can move
-within the mesh, if data needs to be accessed from further away, they
-switch to the satellite network. An ambitious addition to this idea is
-to allow each device on the mesh to act as a piece of a phase array
-antenna.
+> Following patch (backported version of patch 1/2) would be a candidate for
+> 2.6.36 to fix a kernel Oops on Intel 3945ABG and Intel Corporation PRO/Wireless
+> 4965 AG or AGN.
+> 
+> [PATCH-stable] Staging: batman-adv: ensure that eth_type_trans gets linear memory
 
-I personally understand how challenging this may be, and my expertise
-is (very) limited. =A0Is this technically possible with technology
-available today? =A0What would you recommend to get this done and what
-can we expect in terms of an end user experience?
-I appreciate your time and expertise. I believe this is the ultimate
-end goal of B.A.T.M.A.N, perhaps we can work on this together.
+Thanks, I'll save that for when these patches get into Linus's tree.
 
--Kosta
---
-http://iamkosta.org
+greg k-h
