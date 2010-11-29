@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 29 Nov 2010 18:00:30 +0100
-Message-Id: <1291050032-20169-7-git-send-email-lindner_marek@yahoo.de>
+Date: Mon, 29 Nov 2010 18:00:31 +0100
+Message-Id: <1291050032-20169-8-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <201011291800.02971.lindner_marek@yahoo.de>
 References: <201011291800.02971.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 7/9] batman-adv: replace orig_hash
-	hash_iterate() with individual functions
+Subject: [B.A.T.M.A.N.] [PATCH 8/9] batman-adv: protect ogm counter arrays
+	with spinlock
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,613 +22,130 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- batman-adv/originator.c |  212 +++++++++++++++++++++++++++++++++--------------
- batman-adv/routing.c    |   32 ++++++--
- batman-adv/vis.c        |  157 ++++++++++++++++++++++------------
- 3 files changed, 275 insertions(+), 126 deletions(-)
+ batman-adv/originator.c |    9 ++++++++-
+ batman-adv/routing.c    |   27 +++++++++++++++++++++++----
+ batman-adv/types.h      |    1 +
+ 3 files changed, 32 insertions(+), 5 deletions(-)
 
 diff --git a/batman-adv/originator.c b/batman-adv/originator.c
-index 58c479d..d573a5b 100644
+index d573a5b..2dfb549 100644
 --- a/batman-adv/originator.c
 +++ b/batman-adv/originator.c
-@@ -133,26 +133,44 @@ void orig_node_free_ref(struct kref *refcount)
+@@ -201,6 +201,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
+ 		return NULL;
  
- void originator_free(struct bat_priv *bat_priv)
- {
--	HASHIT(hashit);
-+	struct hashtable_t *hash = bat_priv->orig_hash;
-+	struct hlist_node *walk, *safe;
-+	struct hlist_head *head;
- 	struct element_t *bucket;
-+	spinlock_t *list_lock;
- 	struct orig_node *orig_node;
-+	int i, ret;
+ 	INIT_HLIST_HEAD(&orig_node->neigh_list);
++	spin_lock_init(&orig_node->ogm_cnt_lock);
+ 	spin_lock_init(&orig_node->neigh_list_lock);
+ 	kref_init(&orig_node->refcount);
  
--	if (!bat_priv->orig_hash)
-+	if (!hash)
- 		return;
+@@ -544,7 +545,11 @@ int orig_hash_add_if(struct batman_if *batman_if, int max_if_num)
+ 		hlist_for_each_entry_rcu(bucket, walk, head, hlist) {
+ 			orig_node = bucket->data;
  
- 	cancel_delayed_work_sync(&bat_priv->orig_work);
- 
- 	spin_lock_bh(&bat_priv->orig_hash_lock);
-+	bat_priv->orig_hash = NULL;
+-			if (orig_node_add_if(orig_node, max_if_num) == -1)
++			spin_lock_bh(&orig_node->ogm_cnt_lock);
++			ret = orig_node_add_if(orig_node, max_if_num);
++			spin_unlock_bh(&orig_node->ogm_cnt_lock);
 +
-+	for (i = 0; i < hash->size; i++) {
-+		rcu_read_lock();
-+		ret = hlist_empty(&hash->table[i]);
-+		rcu_read_unlock();
-+
-+		if (ret)
-+			continue;
- 
--	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
--		bucket = hlist_entry(hashit.walk, struct element_t, hlist);
--		orig_node = bucket->data;
-+		head = &hash->table[i];
-+		list_lock = &hash->list_locks[i];
- 
--		hash_remove_bucket(bat_priv->orig_hash, &hashit);
--		kref_put(&orig_node->refcount, orig_node_free_ref);
-+		spin_lock_bh(list_lock);
-+		hlist_for_each_entry_safe(bucket, walk, safe, head, hlist) {
-+			hlist_del_rcu(walk);
-+			orig_node = bucket->data;
-+			kref_put(&orig_node->refcount, orig_node_free_ref);
-+			call_rcu(&bucket->rcu, bucket_free_rcu);
-+		}
-+		spin_unlock_bh(list_lock);
- 	}
- 
--	bat_priv->orig_hash = NULL;
-+	hash_destroy(hash);
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
- }
- 
-@@ -307,27 +325,52 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
- 
- static void _purge_orig(struct bat_priv *bat_priv)
- {
--	HASHIT(hashit);
-+	struct hashtable_t *hash = bat_priv->orig_hash;
-+	struct hlist_node *walk, *safe;
-+	struct hlist_head *head;
- 	struct element_t *bucket;
-+	spinlock_t *list_lock;
- 	struct orig_node *orig_node;
-+	int i, ret;
-+
-+	if (!hash)
-+		return;
- 
- 	spin_lock_bh(&bat_priv->orig_hash_lock);
- 
- 	/* for all origins... */
--	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
--		bucket = hlist_entry(hashit.walk, struct element_t, hlist);
--		orig_node = bucket->data;
--
--		if (purge_orig_node(bat_priv, orig_node)) {
--			if (orig_node->gw_flags)
--				gw_node_delete(bat_priv, orig_node);
--			hash_remove_bucket(bat_priv->orig_hash, &hashit);
--			kref_put(&orig_node->refcount, orig_node_free_ref);
--		}
-+	for (i = 0; i < hash->size; i++) {
-+		rcu_read_lock();
-+		ret = hlist_empty(&hash->table[i]);
-+		rcu_read_unlock();
-+
-+		if (ret)
-+			continue;
- 
--		if (time_after(jiffies, (orig_node->last_frag_packet +
-+		head = &hash->table[i];
-+		list_lock = &hash->list_locks[i];
-+
-+		spin_lock_bh(list_lock);
-+		hlist_for_each_entry_safe(bucket, walk, safe, head, hlist) {
-+			orig_node = bucket->data;
-+
-+			if (purge_orig_node(bat_priv, orig_node)) {
-+				if (orig_node->gw_flags)
-+					gw_node_delete(bat_priv, orig_node);
-+				hlist_del_rcu(walk);
-+				kref_put(&orig_node->refcount,
-+					 orig_node_free_ref);
-+				call_rcu(&bucket->rcu, bucket_free_rcu);
-+				hash->elements--;
-+				continue;
-+			}
-+
-+			if (time_after(jiffies, (orig_node->last_frag_packet +
- 					msecs_to_jiffies(FRAG_TIMEOUT))))
--			frag_list_free(&orig_node->frag_list);
-+				frag_list_free(&orig_node->frag_list);
-+
-+		}
-+		spin_unlock_bh(list_lock);
- 	}
- 
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
-@@ -356,16 +399,18 @@ void purge_orig_ref(struct bat_priv *bat_priv)
- 
- int orig_seq_print_text(struct seq_file *seq, void *offset)
- {
--	HASHIT(hashit);
--	struct hlist_node *node;
--	struct element_t *bucket;
- 	struct net_device *net_dev = (struct net_device *)seq->private;
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
-+	struct hashtable_t *hash = bat_priv->orig_hash;
-+	struct hlist_node *walk, *node;
-+	struct hlist_head *head;
-+	struct element_t *bucket;
- 	struct orig_node *orig_node;
- 	struct neigh_node *neigh_node;
- 	int batman_count = 0;
- 	int last_seen_secs;
- 	int last_seen_msecs;
-+	int i, ret;
- 
- 	if ((!bat_priv->primary_if) ||
- 	    (bat_priv->primary_if->if_status != IF_ACTIVE)) {
-@@ -389,36 +434,48 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 
- 	spin_lock_bh(&bat_priv->orig_hash_lock);
- 
--	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
--		bucket = hlist_entry(hashit.walk, struct element_t, hlist);
--		orig_node = bucket->data;
-+	for (i = 0; i < hash->size; i++) {
-+		rcu_read_lock();
-+		ret = hlist_empty(&hash->table[i]);
-+		rcu_read_unlock();
- 
--		if (!orig_node->router)
-+		if (ret)
- 			continue;
- 
--		if (orig_node->router->tq_avg == 0)
--			continue;
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(bucket, walk, head, hlist) {
-+			orig_node = bucket->data;
-+
-+			if (!orig_node->router)
-+				continue;
- 
--		last_seen_secs = jiffies_to_msecs(jiffies -
-+			if (orig_node->router->tq_avg == 0)
-+				continue;
-+
-+			last_seen_secs = jiffies_to_msecs(jiffies -
- 						orig_node->last_valid) / 1000;
--		last_seen_msecs = jiffies_to_msecs(jiffies -
-+			last_seen_msecs = jiffies_to_msecs(jiffies -
- 						orig_node->last_valid) % 1000;
- 
--		seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
--			   orig_node->orig, last_seen_secs, last_seen_msecs,
--			   orig_node->router->tq_avg, orig_node->router->addr,
--			   orig_node->router->if_incoming->net_dev->name);
--
--		rcu_read_lock();
--		hlist_for_each_entry(neigh_node, node,
--				     &orig_node->neigh_list, list) {
--			seq_printf(seq, " %pM (%3i)", neigh_node->addr,
--					   neigh_node->tq_avg);
-+			neigh_node = orig_node->router;
-+			seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
-+				   orig_node->orig, last_seen_secs,
-+				   last_seen_msecs, neigh_node->tq_avg,
-+				   neigh_node->addr,
-+				   neigh_node->if_incoming->net_dev->name);
-+
-+			hlist_for_each_entry(neigh_node, node,
-+					&orig_node->neigh_list, list) {
-+				seq_printf(seq, " %pM (%3i)", neigh_node->addr,
-+						neigh_node->tq_avg);
-+			}
-+
-+			seq_printf(seq, "\n");
-+			batman_count++;
++			if (ret == -1)
+ 				goto err;
  		}
  		rcu_read_unlock();
--
--		seq_printf(seq, "\n");
--		batman_count++;
- 	}
+@@ -640,8 +645,10 @@ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
+ 		hlist_for_each_entry_rcu(bucket, walk, head, hlist) {
+ 			orig_node = bucket->data;
  
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
-@@ -462,26 +519,42 @@ static int orig_node_add_if(struct orig_node *orig_node, int max_if_num)
- int orig_hash_add_if(struct batman_if *batman_if, int max_if_num)
- {
- 	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
--	struct orig_node *orig_node;
--	HASHIT(hashit);
-+	struct hashtable_t *hash = bat_priv->orig_hash;
-+	struct hlist_node *walk;
-+	struct hlist_head *head;
- 	struct element_t *bucket;
-+	struct orig_node *orig_node;
-+	int i, ret;
++			spin_lock_bh(&orig_node->ogm_cnt_lock);
+ 			ret = orig_node_del_if(orig_node, max_if_num,
+ 					batman_if->if_num);
++			spin_unlock_bh(&orig_node->ogm_cnt_lock);
  
- 	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
- 	 * if_num */
- 	spin_lock_bh(&bat_priv->orig_hash_lock);
- 
--	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
--		bucket = hlist_entry(hashit.walk, struct element_t, hlist);
--		orig_node = bucket->data;
-+	for (i = 0; i < hash->size; i++) {
-+		rcu_read_lock();
-+		ret = hlist_empty(&hash->table[i]);
-+		rcu_read_unlock();
-+
-+		if (ret)
-+			continue;
-+
-+		head = &hash->table[i];
- 
--		if (orig_node_add_if(orig_node, max_if_num) == -1)
--			goto err;
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(bucket, walk, head, hlist) {
-+			orig_node = bucket->data;
-+
-+			if (orig_node_add_if(orig_node, max_if_num) == -1)
-+				goto err;
-+		}
-+		rcu_read_unlock();
- 	}
- 
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
- 	return 0;
- 
- err:
-+	rcu_read_unlock();
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
- 	return -ENOMEM;
- }
-@@ -541,25 +614,39 @@ free_own_sum:
- int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
- {
- 	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
-+	struct hashtable_t *hash = bat_priv->orig_hash;
-+	struct hlist_node *walk;
-+	struct hlist_head *head;
-+	struct element_t *bucket;
- 	struct batman_if *batman_if_tmp;
- 	struct orig_node *orig_node;
--	HASHIT(hashit);
--	struct element_t *bucket;
--	int ret;
-+	int i, ret;
- 
- 	/* resize all orig nodes because orig_node->bcast_own(_sum) depend on
- 	 * if_num */
- 	spin_lock_bh(&bat_priv->orig_hash_lock);
- 
--	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
--		bucket = hlist_entry(hashit.walk, struct element_t, hlist);
--		orig_node = bucket->data;
-+	for (i = 0; i < hash->size; i++) {
-+		rcu_read_lock();
-+		ret = hlist_empty(&hash->table[i]);
-+		rcu_read_unlock();
-+
-+		if (ret)
-+			continue;
-+
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(bucket, walk, head, hlist) {
-+			orig_node = bucket->data;
- 
--		ret = orig_node_del_if(orig_node, max_if_num,
--				       batman_if->if_num);
-+			ret = orig_node_del_if(orig_node, max_if_num,
-+					batman_if->if_num);
- 
--		if (ret == -1)
--			goto err;
-+			if (ret == -1)
-+				goto err;
-+		}
-+		rcu_read_unlock();
- 	}
- 
- 	/* renumber remaining batman interfaces _inside_ of orig_hash_lock */
-@@ -584,6 +671,7 @@ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num)
- 	return 0;
- 
- err:
-+	rcu_read_unlock();
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
- 	return -ENOMEM;
- }
+ 			if (ret == -1)
+ 				goto err;
 diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 35abe00..69de72c 100644
+index 69de72c..9f039c9 100644
 --- a/batman-adv/routing.c
 +++ b/batman-adv/routing.c
-@@ -39,21 +39,37 @@
- void slide_own_bcast_window(struct batman_if *batman_if)
- {
- 	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
--	HASHIT(hashit);
-+	struct hashtable_t *hash = bat_priv->orig_hash;
-+	struct hlist_node *walk;
-+	struct hlist_head *head;
- 	struct element_t *bucket;
- 	struct orig_node *orig_node;
- 	TYPE_OF_WORD *word;
-+	int ret, i;
+@@ -62,12 +62,14 @@ void slide_own_bcast_window(struct batman_if *batman_if)
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(bucket, walk, head, hlist) {
+ 			orig_node = bucket->data;
++			spin_lock_bh(&orig_node->ogm_cnt_lock);
+ 			word = &(orig_node->bcast_own[batman_if->if_num *
+ 								NUM_WORDS]);
  
- 	spin_lock_bh(&bat_priv->orig_hash_lock);
- 
--	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
--		bucket = hlist_entry(hashit.walk, struct element_t, hlist);
--		orig_node = bucket->data;
--		word = &(orig_node->bcast_own[batman_if->if_num * NUM_WORDS]);
-+	for (i = 0; i < hash->size; i++) {
-+		rcu_read_lock();
-+		ret = hlist_empty(&hash->table[i]);
-+		rcu_read_unlock();
-+
-+		if (ret)
-+			continue;
-+
-+		head = &hash->table[i];
- 
--		bit_get_packet(bat_priv, word, 1, 0);
--		orig_node->bcast_own_sum[batman_if->if_num] =
--			bit_packet_count(word);
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(bucket, walk, head, hlist) {
-+			orig_node = bucket->data;
-+			word = &(orig_node->bcast_own[batman_if->if_num *
-+								NUM_WORDS]);
-+
-+			bit_get_packet(bat_priv, word, 1, 0);
-+			orig_node->bcast_own_sum[batman_if->if_num] =
-+				bit_packet_count(word);
-+		}
-+		rcu_read_unlock();
- 	}
- 
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
-diff --git a/batman-adv/vis.c b/batman-adv/vis.c
-index 3af2506..fe7ad15 100644
---- a/batman-adv/vis.c
-+++ b/batman-adv/vis.c
-@@ -513,24 +513,40 @@ end:
- static int find_best_vis_server(struct bat_priv *bat_priv,
- 				struct vis_info *info)
- {
--	HASHIT(hashit);
-+	struct hashtable_t *hash = bat_priv->orig_hash;
-+	struct hlist_node *walk;
-+	struct hlist_head *head;
- 	struct element_t *bucket;
- 	struct orig_node *orig_node;
- 	struct vis_packet *packet;
--	int best_tq = -1;
-+	int best_tq = -1, i, ret;
- 
- 	packet = (struct vis_packet *)info->skb_packet->data;
- 
--	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
--		bucket = hlist_entry(hashit.walk, struct element_t, hlist);
--		orig_node = bucket->data;
--		if ((orig_node) && (orig_node->router) &&
--		    (orig_node->flags & VIS_SERVER) &&
--		    (orig_node->router->tq_avg > best_tq)) {
--			best_tq = orig_node->router->tq_avg;
--			memcpy(packet->target_orig, orig_node->orig, ETH_ALEN);
-+	for (i = 0; i < hash->size; i++) {
-+		rcu_read_lock();
-+		ret = hlist_empty(&hash->table[i]);
-+		rcu_read_unlock();
-+
-+		if (ret)
-+			continue;
-+
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(bucket, walk, head, hlist) {
-+			orig_node = bucket->data;
-+			if ((orig_node) && (orig_node->router) &&
-+			(orig_node->flags & VIS_SERVER) &&
-+			(orig_node->router->tq_avg > best_tq)) {
-+				best_tq = orig_node->router->tq_avg;
-+				memcpy(packet->target_orig,
-+				       orig_node->orig, ETH_ALEN);
-+			}
+ 			bit_get_packet(bat_priv, word, 1, 0);
+ 			orig_node->bcast_own_sum[batman_if->if_num] =
+ 				bit_packet_count(word);
++			spin_unlock_bh(&orig_node->ogm_cnt_lock);
  		}
-+		rcu_read_unlock();
+ 		rcu_read_unlock();
  	}
-+
- 	return best_tq;
- }
- 
-@@ -551,14 +567,17 @@ static bool vis_packet_full(struct vis_info *info)
- static int generate_vis_packet(struct bat_priv *bat_priv)
+@@ -273,8 +275,10 @@ static void update_orig(struct bat_priv *bat_priv,
+ 			char is_duplicate)
  {
- 	HASHIT(hashit_local);
--	HASHIT(hashit_global);
-+	struct hashtable_t *hash = bat_priv->orig_hash;
-+	struct hlist_node *walk;
-+	struct hlist_head *head;
- 	struct element_t *bucket;
- 	struct orig_node *orig_node;
-+	struct neigh_node *neigh_node;
- 	struct vis_info *info = (struct vis_info *)bat_priv->my_vis_info;
- 	struct vis_packet *packet = (struct vis_packet *)info->skb_packet->data;
- 	struct vis_info_entry *entry;
- 	struct hna_local_entry *hna_local_entry;
--	int best_tq = -1;
-+	int best_tq = -1, i, ret;
+ 	struct neigh_node *neigh_node = NULL, *tmp_neigh_node = NULL;
++	struct orig_node *orig_node_tmp;
+ 	struct hlist_node *node;
+ 	int tmp_hna_buff_len;
++	uint8_t bcast_own_sum_orig, bcast_own_sum_neigh;
  
- 	info->first_seen = jiffies;
- 	packet->vis_type = atomic_read(&bat_priv->vis_mode);
-@@ -579,37 +598,49 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
+ 	bat_dbg(DBG_BATMAN, bat_priv, "update_originator(): "
+ 		"Searching and updating originator entry of received packet\n");
+@@ -344,10 +348,22 @@ static void update_orig(struct bat_priv *bat_priv,
+ 	/* if the TQ is the same and the link not more symetric we
+ 	 * won't consider it either */
+ 	if ((orig_node->router) &&
+-	     ((neigh_node->tq_avg == orig_node->router->tq_avg) &&
+-	     (orig_node->router->orig_node->bcast_own_sum[if_incoming->if_num]
+-	      >= neigh_node->orig_node->bcast_own_sum[if_incoming->if_num])))
+-		goto update_hna;
++	     (neigh_node->tq_avg == orig_node->router->tq_avg)) {
++		orig_node_tmp = orig_node->router->orig_node;
++		spin_lock_bh(&orig_node_tmp->ogm_cnt_lock);
++		bcast_own_sum_orig =
++			orig_node_tmp->bcast_own_sum[if_incoming->if_num];
++		spin_unlock_bh(&orig_node_tmp->ogm_cnt_lock);
++
++		orig_node_tmp = neigh_node->orig_node;
++		spin_lock_bh(&orig_node_tmp->ogm_cnt_lock);
++		bcast_own_sum_neigh =
++			orig_node_tmp->bcast_own_sum[if_incoming->if_num];
++		spin_unlock_bh(&orig_node_tmp->ogm_cnt_lock);
++
++		if (bcast_own_sum_orig >= bcast_own_sum_neigh)
++			goto update_hna;
++	}
+ 
+ 	update_routes(bat_priv, orig_node, neigh_node,
+ 		      hna_buff, tmp_hna_buff_len);
+@@ -692,10 +708,13 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 				 batman_packet->orig) &&
+ 		    (batman_packet->seqno - if_incoming_seqno + 2 == 0)) {
+ 			offset = if_incoming->if_num * NUM_WORDS;
++
++			spin_lock_bh(&orig_neigh_node->ogm_cnt_lock);
+ 			word = &(orig_neigh_node->bcast_own[offset]);
+ 			bit_mark(word, 0);
+ 			orig_neigh_node->bcast_own_sum[if_incoming->if_num] =
+ 				bit_packet_count(word);
++			spin_unlock_bh(&orig_neigh_node->ogm_cnt_lock);
  		}
- 	}
  
--	while (hash_iterate(bat_priv->orig_hash, &hashit_global)) {
--		bucket = hlist_entry(hashit_global.walk, struct element_t,
--				     hlist);
--		orig_node = bucket->data;
-+	for (i = 0; i < hash->size; i++) {
-+		rcu_read_lock();
-+		ret = hlist_empty(&hash->table[i]);
-+		rcu_read_unlock();
- 
--		if (!orig_node->router)
-+		if (ret)
- 			continue;
- 
--		if (!compare_orig(orig_node->router->addr, orig_node->orig))
--			continue;
-+		head = &hash->table[i];
- 
--		if (orig_node->router->if_incoming->if_status != IF_ACTIVE)
--			continue;
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(bucket, walk, head, hlist) {
-+			orig_node = bucket->data;
-+			neigh_node = orig_node->router;
- 
--		if (orig_node->router->tq_avg < 1)
--			continue;
-+			if (!neigh_node)
-+				continue;
- 
--		/* fill one entry into buffer. */
--		entry = (struct vis_info_entry *)
--				skb_put(info->skb_packet, sizeof(*entry));
--		memcpy(entry->src,
--		       orig_node->router->if_incoming->net_dev->dev_addr,
--		       ETH_ALEN);
--		memcpy(entry->dest, orig_node->orig, ETH_ALEN);
--		entry->quality = orig_node->router->tq_avg;
--		packet->entries++;
-+			if (!compare_orig(neigh_node->addr, orig_node->orig))
-+				continue;
- 
--		if (vis_packet_full(info)) {
--			spin_unlock_bh(&bat_priv->orig_hash_lock);
--			return 0;
-+			if (neigh_node->if_incoming->if_status != IF_ACTIVE)
-+				continue;
-+
-+			if (neigh_node->tq_avg < 1)
-+				continue;
-+
-+			/* fill one entry into buffer. */
-+			entry = (struct vis_info_entry *)
-+				     skb_put(info->skb_packet, sizeof(*entry));
-+			memcpy(entry->src,
-+			       neigh_node->if_incoming->net_dev->dev_addr,
-+			       ETH_ALEN);
-+			memcpy(entry->dest, orig_node->orig, ETH_ALEN);
-+			entry->quality = neigh_node->tq_avg;
-+			packet->entries++;
-+
-+			if (vis_packet_full(info)) {
-+				spin_unlock_bh(&bat_priv->orig_hash_lock);
-+				return 0;
-+			}
- 		}
-+		rcu_read_unlock();
- 	}
- 
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
-@@ -664,45 +695,59 @@ static void purge_vis_packets(struct bat_priv *bat_priv)
- static void broadcast_vis_packet(struct bat_priv *bat_priv,
- 				 struct vis_info *info)
- {
--	HASHIT(hashit);
-+	struct hashtable_t *hash = bat_priv->orig_hash;
-+	struct hlist_node *walk;
-+	struct hlist_head *head;
- 	struct element_t *bucket;
- 	struct orig_node *orig_node;
- 	struct vis_packet *packet;
- 	struct sk_buff *skb;
- 	struct batman_if *batman_if;
- 	uint8_t dstaddr[ETH_ALEN];
-+	int i, ret;
- 
- 
- 	spin_lock_bh(&bat_priv->orig_hash_lock);
- 	packet = (struct vis_packet *)info->skb_packet->data;
- 
- 	/* send to all routers in range. */
--	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
--		bucket = hlist_entry(hashit.walk, struct element_t, hlist);
--		orig_node = bucket->data;
-+	for (i = 0; i < hash->size; i++) {
-+		rcu_read_lock();
-+		ret = hlist_empty(&hash->table[i]);
-+		rcu_read_unlock();
- 
--		/* if it's a vis server and reachable, send it. */
--		if ((!orig_node) || (!orig_node->router))
--			continue;
--		if (!(orig_node->flags & VIS_SERVER))
--			continue;
--		/* don't send it if we already received the packet from
--		 * this node. */
--		if (recv_list_is_in(bat_priv, &info->recv_list,
--							orig_node->orig))
-+		if (ret)
- 			continue;
- 
--		memcpy(packet->target_orig, orig_node->orig, ETH_ALEN);
--		batman_if = orig_node->router->if_incoming;
--		memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
--		spin_unlock_bh(&bat_priv->orig_hash_lock);
-+		head = &hash->table[i];
- 
--		skb = skb_clone(info->skb_packet, GFP_ATOMIC);
--		if (skb)
--			send_skb_packet(skb, batman_if, dstaddr);
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(bucket, walk, head, hlist) {
-+			orig_node = bucket->data;
- 
--		spin_lock_bh(&bat_priv->orig_hash_lock);
-+			/* if it's a vis server and reachable, send it. */
-+			if ((!orig_node) || (!orig_node->router))
-+				continue;
-+			if (!(orig_node->flags & VIS_SERVER))
-+				continue;
-+			/* don't send it if we already received the packet from
-+			* this node. */
-+			if (recv_list_is_in(bat_priv, &info->recv_list,
-+							orig_node->orig))
-+				continue;
- 
-+			memcpy(packet->target_orig, orig_node->orig, ETH_ALEN);
-+			batman_if = orig_node->router->if_incoming;
-+			memcpy(dstaddr, orig_node->router->addr, ETH_ALEN);
-+			spin_unlock_bh(&bat_priv->orig_hash_lock);
-+
-+			skb = skb_clone(info->skb_packet, GFP_ATOMIC);
-+			if (skb)
-+				send_skb_packet(skb, batman_if, dstaddr);
-+
-+			spin_lock_bh(&bat_priv->orig_hash_lock);
-+		}
-+		rcu_read_unlock();
- 	}
- 
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
+ 		bat_dbg(DBG_BATMAN, bat_priv, "Drop packet: "
+diff --git a/batman-adv/types.h b/batman-adv/types.h
+index f4ce526..de4efa0 100644
+--- a/batman-adv/types.h
++++ b/batman-adv/types.h
+@@ -89,6 +89,7 @@ struct orig_node {
+ 	struct kref refcount;
+ 	struct bat_priv *bat_priv;
+ 	unsigned long last_frag_packet;
++	spinlock_t ogm_cnt_lock; /* protects ogm counter */
+ 	struct {
+ 		uint8_t candidates;
+ 		struct neigh_node *selected;
 -- 
 1.7.2.3
 
