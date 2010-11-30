@@ -1,15 +1,15 @@
-Return-Path: <jcpuigpinos@gmail.com>
+Return-Path: <kosta@iamkosta.org>
 MIME-Version: 1.0
-In-Reply-To: <201011291729.43323.neumann@cgws.de>
-References: <AANLkTimnCjXo7BWuC5kHeb2AK36DrkD8Bheo7s0UHDyb@mail.gmail.com>
-	<201011291729.43323.neumann@cgws.de>
-Date: Mon, 29 Nov 2010 22:27:08 -0300
-Message-ID: <AANLkTinKJq8pCtEL=oLbfr7JC3GzpFc5s2Rc2TktQOJu@mail.gmail.com>
-From: Julio Cesar Puigpinos <jcpuigpinos@gmail.com>
+Sender: kosta@iamkosta.org
+In-Reply-To: <201011292258.05388.lindner_marek@yahoo.de>
+References: <AANLkTikhncqRxsbRfJRPb0y8oM2uT4sHpQOzONc4hxba@mail.gmail.com>
+	<201011292258.05388.lindner_marek@yahoo.de>
+From: Kosta -- A Human Right <kosta@ahumanright.org>
+Date: Mon, 29 Nov 2010 22:12:21 -0800
+Message-ID: <AANLkTikPFR+A5uGZfxB350yD4h0VXuueE+y1g2CcNxS7@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Problem with BMX 0.3 and the Vis Server in the
- dot draw output
+Subject: Re: [B.A.T.M.A.N.] global mesh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,29 +23,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-2010/11/29 Axel Neumann :
-> Hi Julio,
+Thanks for the response-
 
-Hi.
+Can B.A.T.M.A.N. scale to millions of users? What are the limitations
+of B.A.T.M.A.N. in this regard? Where does it excel?
 
-> thanks for the hint!
-> Fixed seomething (the vis_packet->seq_range) in rv1884 and then did some =
-minor
-> code beatifications in rv1885.
-> Can you please test with rv1885 ?
 
-We test it and it works fine.
 
-Thanks a lot for your help :)
+On Mon, Nov 29, 2010 at 1:58 PM, Marek Lindner <lindner_marek@yahoo.de> wro=
+te:
+>
+> Hi,
+>
+>> We'd like to build a satellite network that serves as a backhaul to
+>> local de-centralized mesh networks. =A0Local data transactions can move
+>> within the mesh, if data needs to be accessed from further away, they
+>> switch to the satellite network. An ambitious addition to this idea is
+>> to allow each device on the mesh to act as a piece of a phase array
+>> antenna.
+>>
+>> I personally understand how challenging this may be, and my expertise
+>> is (very) limited. =A0Is this technically possible with technology
+>> available today? =A0What would you recommend to get this done and what
+>> can we expect in terms of an end user experience?
+>
+> building decentralized local networks with a shared internet connection i=
+s the
+> primary use case of batman today, therefore I don't really get your quest=
+ion.
+> Can you provide specific info on what you have in mind ?
+>
+> Cheers,
+> Marek
+>
 
-> cu
-> /axel
 
-          Saludos, Julio
 
 --=20
-www.lugro-mesh.org.ar/=A0 =A0 =A0 =A0 =A0Wireless Mesh Networks Group
-www.lugro.org.ar=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=A0 GNU/Linux User Group=
- Rosario, Argentina
-Slackware rulez :P=A0 =A0 =A0 =A0 =A0 =A0=A0 =A0 =A0www.slackware.org
-NO A LA MATRICULA!!!: =A0 =A0 =A0 =A0http://noalamatricula.wordpress.com/
+http://iamkosta.org
