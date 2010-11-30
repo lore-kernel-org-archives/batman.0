@@ -1,13 +1,15 @@
-Return-Path: <mvanderkolff@gmail.com>
+Return-Path: <jcpuigpinos@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTikhncqRxsbRfJRPb0y8oM2uT4sHpQOzONc4hxba@mail.gmail.com>
-References: <AANLkTikhncqRxsbRfJRPb0y8oM2uT4sHpQOzONc4hxba@mail.gmail.com>
-Date: Tue, 30 Nov 2010 10:25:54 +1100
-Message-ID: <AANLkTi=4o6z+KWP6tmet4eCTDHYmLsqzjEkNoUGHMz50@mail.gmail.com>
-From: Michael van der Kolff <mvanderkolff@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <201011291729.43323.neumann@cgws.de>
+References: <AANLkTimnCjXo7BWuC5kHeb2AK36DrkD8Bheo7s0UHDyb@mail.gmail.com>
+	<201011291729.43323.neumann@cgws.de>
+Date: Mon, 29 Nov 2010 22:27:08 -0300
+Message-ID: <AANLkTinKJq8pCtEL=oLbfr7JC3GzpFc5s2Rc2TktQOJu@mail.gmail.com>
+From: Julio Cesar Puigpinos <jcpuigpinos@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] global mesh
+Subject: Re: [B.A.T.M.A.N.] Problem with BMX 0.3 and the Vis Server in the
+ dot draw output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,47 +23,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tue, Nov 30, 2010 at 3:54 AM, Kosta Grammatis <kosta@iamkosta.org> wrote=
-:
-> Hi Friends-
-> We're working on a rather ambitious initiative to build a
-> de-centralized network for the whole of humanity. We're collaborating
-> with NASA Ames, Deutsche Telekom, and others. =C2=A0Our latest campaign i=
-s
-> to buy a satellite: http://buythissatellite.org
->
-> All that aside, the work of B.A.T.M.A.N. is incredible, from what I
-> read you've tackled some big problems and your technology is being
-> implemented in many places (our friends at Village Telco seem to be
-> using B.A.T.M.A.N.).
->
-> We'd like to build a satellite network that serves as a backhaul to
-> local de-centralized mesh networks. =C2=A0Local data transactions can mov=
-e
-> within the mesh, if data needs to be accessed from further away, they
-> switch to the satellite network. An ambitious addition to this idea is
-> to allow each device on the mesh to act as a piece of a phase array
-> antenna.
->
-A phase array antenna requires that each of the pieces of the array
-have very low-latency, low jitter communications.  BATMAN is unlikely
-to supply that.
+2010/11/29 Axel Neumann :
+> Hi Julio,
 
-BATMAN's approach to routing is not suitable for very large networks
-(more than 10^3 routing nodes).  That said, if the backhaul network
-setup is stable, you could use BGP between individual BATMAN islands.
-If you need a very large network with moving nodes, you may need an
-approach like SSR, or other approaches - but they are very much the
-subject of research.
+Hi.
 
-> I personally understand how challenging this may be, and my expertise
-> is (very) limited. =C2=A0Is this technically possible with technology
-> available today? =C2=A0What would you recommend to get this done and what
-> can we expect in terms of an end user experience?
-> I appreciate your time and expertise. I believe this is the ultimate
-> end goal of B.A.T.M.A.N, perhaps we can work on this together.
->
-> -Kosta
-> --
-> http://iamkosta.org
->
+> thanks for the hint!
+> Fixed seomething (the vis_packet->seq_range) in rv1884 and then did some =
+minor
+> code beatifications in rv1885.
+> Can you please test with rv1885 ?
+
+We test it and it works fine.
+
+Thanks a lot for your help :)
+
+> cu
+> /axel
+
+          Saludos, Julio
+
+--=20
+www.lugro-mesh.org.ar/=A0 =A0 =A0 =A0 =A0Wireless Mesh Networks Group
+www.lugro.org.ar=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=A0 GNU/Linux User Group=
+ Rosario, Argentina
+Slackware rulez :P=A0 =A0 =A0 =A0 =A0 =A0=A0 =A0 =A0www.slackware.org
+NO A LA MATRICULA!!!: =A0 =A0 =A0 =A0http://noalamatricula.wordpress.com/
