@@ -1,9 +1,15 @@
-Return-Path: <sven.eckelmann@gmx.de>
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed,  1 Dec 2010 20:59:07 +0100
-Message-Id: <1291233547-9437-1-git-send-email-sven.eckelmann@gmx.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Use kernel facilities for bit
-	operations
+Return-Path: <davem@davemloft.net>
+Date: Wed, 01 Dec 2010 12:18:26 -0800 (PST)
+Message-Id: <20101201.121826.232746256.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <201012012048.47096.lindner_marek@yahoo.de>
+References: <201012012004.34356.sven.eckelmann@gmx.de>
+	<20101201.111205.28818479.davem@davemloft.net>
+	<201012012048.47096.lindner_marek@yahoo.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCHv6] net: Add batman-adv meshing protocol
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,43 +21,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: lindner_marek@yahoo.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-set_bit and test_bit provide an efficient way to set and test bits of an
-unsigned long.
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 1 Dec 2010 20:48:46 +0100
 
-This also fixes the problem that a very old ogm got not recorded as
-received due to the missing constant definition "1" as unsigned long
-inside the bit_mark operation - also known as "1UL".
+> 
+> David,
+> 
+>> Ok, fair enough.
+> 
+> I'm not so sure how to read this - could you please explain ?
 
-Reported-by: David Miller <davem@davemloft.net>
-Signed-off-by: Sven Eckelmann <sven.eckelmann@gmx.de>
----
- batman-adv/bitarray.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/batman-adv/bitarray.c b/batman-adv/bitarray.c
-index 814274f..14606fc 100644
---- a/batman-adv/bitarray.c
-+++ b/batman-adv/bitarray.c
-@@ -40,7 +40,7 @@ uint8_t get_bit_status(TYPE_OF_WORD *seq_bits, uint32_t last_seqno,
- 		/* which position in the selected word */
- 		word_offset = (last_seqno - curr_seqno) % WORD_BIT_SIZE;
- 
--		if (seq_bits[word_num] & 1 << word_offset)
-+		if (test_bit(word_offset, &seq_bits[word_num]))
- 			return 1;
- 		else
- 			return 0;
-@@ -61,7 +61,7 @@ void bit_mark(TYPE_OF_WORD *seq_bits, int32_t n)
- 	/* which position in the selected word */
- 	word_offset = n % WORD_BIT_SIZE;
- 
--	seq_bits[word_num] |= 1 << word_offset;	/* turn the position on */
-+	set_bit(word_offset, &seq_bits[word_num]);	/* turn the position on */
- }
- 
- /* shift the packet array by n places. */
--- 
-1.7.2.3
-
+When I say fair enough it means I agree with you about the hashing
+situation.
