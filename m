@@ -1,14 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 01 Dec 2010 11:12:05 -0800 (PST)
-Message-Id: <20101201.111205.28818479.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <201012012004.34356.sven.eckelmann@gmx.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 1 Dec 2010 20:48:46 +0100
 References: <201012011954.20275.sven.eckelmann@gmx.de>
-	<20101201.105615.48506929.davem@davemloft.net>
 	<201012012004.34356.sven.eckelmann@gmx.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	<20101201.111205.28818479.davem@davemloft.net>
+In-Reply-To: <20101201.111205.28818479.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201012012048.47096.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv6] net: Add batman-adv meshing protocol
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,25 +22,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven.eckelmann@gmx.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>
 
-From: Sven Eckelmann <sven.eckelmann@gmx.de>
-Date: Wed, 1 Dec 2010 20:04:33 +0100
 
-> David Miller wrote:
->> From: Sven Eckelmann <sven.eckelmann@gmx.de>
->> Date: Wed, 1 Dec 2010 19:54:19 +0100
->> 
->> > Do you have any more possible duplication you have in your mind right
->> > now?
->> 
->> The hashing code, for the third time.
-> 
-> And I asked in the past about the removal of the hashing stuff without any 
-> reaction. So, we removed most of it. resize and iterate will be dropped too. 
-> So, is it a problem to have a hash_find, hash_remove, hash_add? These were 
-> created to reduce duplicated code and not to create a complete new dynamic 
-> datastructure (which it isn't... it is just the usual hlist stuff)
+David,
 
-Ok, fair enough.
+> Ok, fair enough.
+
+I'm not so sure how to read this - could you please explain ?
+We are very thankful regarding any advice how to improve our code and have 
+followed every single hint to change the code accordingly (including the hash 
+implementation). 
+You named the bit operations - we will look into this. What else do you see ? 
+Could you be more specific than vaguely saying "the code is full of duplicated 
+functionality" ? Have our hash code changes met your expectations ?
+
+Thanks,
+Marek
+
