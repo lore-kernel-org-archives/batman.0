@@ -1,17 +1,15 @@
-Return-Path: <daniele.furlan@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20101202120210.GB13912@ritirata.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 6 Dec 2010 17:20:25 +0100
 References: <mailman.14.1290812292.944.b.a.t.m.a.n@lists.open-mesh.org>
-	<AANLkTinFgQ+Z4OsvyHTMNhy11=SrEz0Xu+YU2iZcdcwZ@mail.gmail.com>
-	<AANLkTimYtBa3fD_YNmFV2x0GUoyNiDzT47wy9Kuok0k9@mail.gmail.com>
-	<201012011330.19145.lindner_marek@yahoo.de>
-	<20101202102752.GA11558@Sellars>
 	<20101202120210.GB13912@ritirata.org>
-Date: Mon, 6 Dec 2010 11:40:10 +0100
-Message-ID: <AANLkTi=isvXpB+HK22nLEwAa9ErmRDwhtXFRPJPCO_C3@mail.gmail.com>
-From: Daniele Furlan <daniele.furlan@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+	<AANLkTi=isvXpB+HK22nLEwAa9ErmRDwhtXFRPJPCO_C3@mail.gmail.com>
+In-Reply-To: <AANLkTi=isvXpB+HK22nLEwAa9ErmRDwhtXFRPJPCO_C3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201012061720.26228.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] BATMAN routing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -26,99 +24,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi all,
 
-I'm doing a research project on the topic discussed.
-I think the solutions proposed can improve the performance of the
-protocol, especially its reactivity in case of link failures.
-But in my opinion the main cause of performance deficiency is the
-route flap problem documented in some research paper. This is a common
-problem, especially in dense network. My work focus on finding out
-some strategy to reduce this problem maintaining at the same time a
-good reactivity in route decision. The first strategy I will try, is
-to introduce an hysteresis in route change and then I will study more
-sophisticated technique.
+Hi,
 
-As soon as I have some written material I will send it to the mailing
-list hoping to receive some suggestion or critiques.
+> But in my opinion the main cause of performance deficiency is the
+> route flap problem documented in some research paper. This is a common
+> problem, especially in dense network.
 
-PS. I'm also working on a theoretical analysis on routing overhead in
-term of network utilization. Soon I will post some results.
-
-Bye.
-
-2010/12/2 Antonio Quartulli <ordex@ritirata.org>
->
-> Hi all*,
->
-> On gio, dic 02, 2010 at 11:27:52 +0100, Linus L=C3=BCssing wrote:
-> > Hi everyone,
-> >
-> > thanks for having joined the IRC channel, Hlabishi and Chris, that's
-> > really speeding the discussions up a lot, I guess :). Just wanted
-> > to throw in another idea open for discussions which is refering to
-> > Hlabisihi's packet count weighting.
-> >
-> > What do you guys think about pushing this concept even one step
-> > further and removing the local packet count window? And instead
-> > using a "smoother" exponential weighted average which got very
-> > popular in TCP for it's RTT estimations:
-> >
-> > RQ_new =3D f(newseqno, lastseqno, RQ_old, =CE=B1)
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0=3D (1-=CE=B1) * RQ_old + =CE=B1 * 1 / =CE=
-=94(newseqno, lastseqno)
-> >
-> > As in TCP, =CE=B1 is then the parameter for tweaking on how much
-> > more priority a newer packet shall have and is chosen between 0
-> > (conservative) and 1 (opportunistic).
-> >
-> > What do you think?
-> >
->
-> IMHO this is not the best solution. Probably it could better than the
-> actual strategy, but, as TCP demonstrates, this is not a really nice way
-> of evaluating the RQ.
->
-> Imho, since we have more and more information than
-> TCP for evaluating the new RQ, we could try to make a better choice
-> considering "more values": instead of using only the deltaSEQ and the
-> oldRQ, we could try to apply a function that can weight also the previous
-> history of the link (of course with a limit).
-> Something like
->
-> newRQ =3D f(window[0], ...., window[N-1]) in which, each OGM (received or
-> not) can be weighted in a different way depending on its position.
->
-> I hope I've been clear.
->
-> furland is probably working on this aspect.
->
-> Bye!
->
-> >
-> > Cheers, Linus
-> >
-> > On Wed, Dec 01, 2010 at 01:30:18PM +0100, Marek Lindner wrote:
-> > > On Wednesday 01 December 2010 10:46:10 hlabishi kobo wrote:
-> > > > Thank you for considering this concept, i am working on the
-> > > > implementation now. I would love to attend your IRC channel
-> > > > discussions, just tell date and time.
-> > >
-> > > The IRC meetings are less formal. Just join us when you have the time=
-. People
-> > > hang out there all the time.
-> > >
-> > > Cheers,
-> > > Marek
-> > >
->
-> --
-> Antonio Quartulli
->
-> Ognuno di noi, da solo, non vale nulla
-> Ernesto "Che" Guevara
+would you mind explaining in a few words why you think rapid route changes are 
+a performance problem or name the paper you are referring to ? 
 
 
+> As soon as I have some written material I will send it to the mailing
+> list hoping to receive some suggestion or critiques.
+> 
+> PS. I'm also working on a theoretical analysis on routing overhead in
+> term of network utilization. Soon I will post some results.
 
---
-Daniele Furlan (furland)
+Great! Looking forward to your results.
+
+Cheers,
+Marek
