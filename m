@@ -1,14 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
-Date: Tue,  7 Dec 2010 23:32:14 +0100
-Message-Id: <1291761150-29818-4-git-send-email-linus.luessing@saxnet.de>
+Date: Tue,  7 Dec 2010 23:32:23 +0100
+Message-Id: <1291761150-29818-13-git-send-email-linus.luessing@saxnet.de>
 In-Reply-To: <20101207221351.GA19474@Sellars>
 References: <20101207221351.GA19474@Sellars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 04/20] batman-adv: Attach local MCAs to OGMs
+Subject: [B.A.T.M.A.N.] [PATCH 13/20] batman-adv: Send own BAT_MCAST packets
+	in proact_tracking multicast mode
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,215 +24,268 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
 
-This patch introduces multicast announcements - MCA for short - which
-are now being attached to an OGM if an optimized multicast mode needing
-MCAs has been selected (i.e. proactive_tracking).
+This patch adds the capability to encapsulate and send a node's own
+multicast data packets. Based on the previously established multicast
+forwarding table, the sender can decide wheather it actually has to send
+the multicast data to one or more of its interfaces or not.
 
-MCA entries are multicast mac addresses used by a multicast receiver in
-the mesh cloud. Currently MCAs are only fetched locally from the
-according batman interface itself, bridged-in hosts will not yet get
-announced and will need a more complex patch for supporting IGMP/MLD
-snooping. However, the local fetching also allows to have multicast
-optimizations on layer 2 already for batman nodes, not depending on
-IP at all.
+Furthermore, the sending procedure also decides whether to broadcast or
+unicast a multicast data packet to its next-hops, depending on the
+configured mcast_fanout (default: < 3 next hops on an interface, send
+seperate unicast packets).
 
 Signed-off-by: Linus Lüssing <linus.luessing@saxnet.de>
 ---
- aggregation.c |   12 +++++++-
- aggregation.h |    6 +++-
- main.h        |    2 +
- send.c        |   82 +++++++++++++++++++++++++++++++++++++++++++++++++-------
- 4 files changed, 87 insertions(+), 15 deletions(-)
+ multicast.c      |  133 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ multicast.h      |    1 +
+ soft-interface.c |   25 +++++++++--
+ types.h          |    1 +
+ 4 files changed, 156 insertions(+), 4 deletions(-)
 
-diff --git a/aggregation.c b/aggregation.c
-index 0c92e3b..d4de296 100644
---- a/aggregation.c
-+++ b/aggregation.c
-@@ -30,6 +30,12 @@ static int hna_len(struct batman_packet *batman_packet)
- 	return batman_packet->num_hna * ETH_ALEN;
+diff --git a/multicast.c b/multicast.c
+index 2b1bfde..72249ef 100644
+--- a/multicast.c
++++ b/multicast.c
+@@ -23,6 +23,7 @@
+ #include "multicast.h"
+ #include "hash.h"
+ #include "send.h"
++#include "soft-interface.h"
+ #include "compat.h"
+ 
+ /* If auto mode for tracker timeout has been selected,
+@@ -1058,6 +1059,138 @@ int mcast_forw_table_seq_print_text(struct seq_file *seq, void *offset)
+ 	return 0;
  }
  
-+/* calculate the size of the mca information for a given packet */
-+static int mca_len(struct batman_packet *batman_packet)
++static void route_mcast_packet(struct sk_buff *skb, struct bat_priv *bat_priv)
 +{
-+	return batman_packet->num_mca * ETH_ALEN;
-+}
-+
- /* return true if new_packet can be aggregated with forw_packet */
- static bool can_aggregate_with(struct batman_packet *new_batman_packet,
- 			       int packet_len,
-@@ -265,9 +271,11 @@ void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff,
- 				   hna_buff, hna_len(batman_packet),
- 				   if_incoming);
- 
--		buff_pos += BAT_PACKET_LEN + hna_len(batman_packet);
-+		buff_pos += BAT_PACKET_LEN + hna_len(batman_packet) +
-+			    mca_len(batman_packet);
- 		batman_packet = (struct batman_packet *)
- 			(packet_buff + buff_pos);
- 	} while (aggregated_packet(buff_pos, packet_len,
--				   batman_packet->num_hna));
-+				   batman_packet->num_hna,
-+				   batman_packet->num_mca));
- }
-diff --git a/aggregation.h b/aggregation.h
-index 71a91b3..93f2496 100644
---- a/aggregation.h
-+++ b/aggregation.h
-@@ -25,9 +25,11 @@
- #include "main.h"
- 
- /* is there another aggregated packet here? */
--static inline int aggregated_packet(int buff_pos, int packet_len, int num_hna)
-+static inline int aggregated_packet(int buff_pos, int packet_len, int num_hna,
-+				    int num_mca)
- {
--	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (num_hna * ETH_ALEN);
-+	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (num_hna * ETH_ALEN) +
-+			    (num_mca * ETH_ALEN);
- 
- 	return (next_buff_pos <= packet_len) &&
- 		(next_buff_pos <= MAX_AGGREGATION_BYTES);
-diff --git a/main.h b/main.h
-index a362433..772d621 100644
---- a/main.h
-+++ b/main.h
-@@ -105,6 +105,8 @@
- 
- /* #define VIS_SUBCLUSTERS_DISABLED */
- 
-+#define UINT8_MAX 255
-+
- /*
-  * Kernel headers
-  */
-diff --git a/send.c b/send.c
-index b89b9f7..ba7ebfe 100644
---- a/send.c
-+++ b/send.c
-@@ -122,7 +122,8 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
- 	/* adjust all flags and log packets */
- 	while (aggregated_packet(buff_pos,
- 				 forw_packet->packet_len,
--				 batman_packet->num_hna)) {
-+				 batman_packet->num_hna,
-+				 batman_packet->num_mca)) {
- 
- 		/* we might have aggregated direct link packets with an
- 		 * ordinary base packet */
-@@ -214,18 +215,71 @@ static void send_packet(struct forw_packet *forw_packet)
- 	rcu_read_unlock();
- }
- 
-+static void add_own_MCA(struct batman_packet *batman_packet, int num_mca,
-+		       struct net_device *soft_iface)
-+{
-+	MC_LIST *mc_list_entry;
-+	int num_mca_done = 0;
++	struct sk_buff *skb1;
++	struct mcast_packet *mcast_packet;
++	struct ethhdr *ethhdr;
++	struct batman_if *batman_if;
 +	unsigned long flags;
-+	char *mca_entry = (char *)(batman_packet + 1);
++	struct mcast_forw_table_entry *table_entry;
++	struct mcast_forw_orig_entry *orig_entry;
++	struct mcast_forw_if_entry *if_entry;
++	struct mcast_forw_nexthop_entry *nexthop_entry;
++	int mcast_fanout = atomic_read(&bat_priv->mcast_fanout);
++	int num_bcasts = 3, i;
++	struct dest_entries_list dest_list, *dest_entry, *tmp;
 +
-+	if (num_mca == 0)
-+		goto out;
++	mcast_packet = (struct mcast_packet*)skb->data;
++	ethhdr = (struct ethhdr*)(mcast_packet + 1);
 +
-+	if (num_mca > UINT8_MAX) {
-+		pr_warning("Too many multicast announcements here, "
-+			   "just adding %i\n", UINT8_MAX);
-+		num_mca = UINT8_MAX;
-+	}
++	INIT_LIST_HEAD(&dest_list.list);
 +
-+	mca_entry = mca_entry + batman_packet->num_hna * ETH_ALEN;
++	mcast_packet->ttl--;
 +
-+	MC_LIST_LOCK(soft_iface, flags);
-+	netdev_for_each_mc_addr(mc_list_entry, soft_iface) {
-+		memcpy(mca_entry, &mc_list_entry->MC_LIST_ADDR, ETH_ALEN);
-+		mca_entry += ETH_ALEN;
++	rcu_read_lock();
++	spin_lock_irqsave(&bat_priv->mcast_forw_table_lock, flags);
++	list_for_each_entry(table_entry, &bat_priv->mcast_forw_table, list) {
++		if (memcmp(ethhdr->h_dest, table_entry->mcast_addr, ETH_ALEN))
++			continue;
 +
-+		/* A multicast address might just have been added,
-+		 * avoid writing outside of buffer */
-+		if(++num_mca_done == num_mca)
++		list_for_each_entry(orig_entry, &table_entry->mcast_orig_list,
++				    list) {
++			if (memcmp(mcast_packet->orig,
++				   orig_entry->orig, ETH_ALEN))
++				continue;
++
++			list_for_each_entry(if_entry,
++					    &orig_entry->mcast_if_list, list) {
++				batman_if = if_num_to_batman_if(
++							if_entry->if_num);
++
++				/* send via broadcast */
++				if (if_entry->num_nexthops > mcast_fanout) {
++					dest_entry = kmalloc(sizeof(struct
++							dest_entries_list),
++							GFP_ATOMIC);
++					memcpy(dest_entry->dest,
++					       broadcast_addr, ETH_ALEN);
++					dest_entry->batman_if = batman_if;
++					list_add(&dest_entry->list,
++						 &dest_list.list);
++					continue;
++				}
++
++				/* send seperate unicast packets */
++				list_for_each_entry(nexthop_entry,
++						&if_entry->mcast_nexthop_list,
++						list) {
++					if (!get_remaining_timeout(
++								nexthop_entry,
++								bat_priv))
++						continue;
++
++					dest_entry = kmalloc(sizeof(struct
++							dest_entries_list),
++							GFP_ATOMIC);
++					memcpy(dest_entry->dest,
++					       nexthop_entry->neigh_addr,
++					       ETH_ALEN);
++					dest_entry->batman_if = batman_if;
++					list_add(&dest_entry->list,
++						 &dest_list.list);
++				}
++			}
 +			break;
++		}
++		break;
 +	}
-+	MC_LIST_UNLOCK(soft_iface, flags);
++	spin_unlock_irqrestore(&bat_priv->mcast_forw_table_lock, flags);
 +
-+out:
-+	batman_packet->num_mca = num_mca_done;
++	list_for_each_entry_safe (dest_entry, tmp, &dest_list.list, list) {
++		if (is_broadcast_ether_addr(dest_entry->dest)) {
++			for (i = 0; i < num_bcasts; i++) {
++				skb1 = skb_clone(skb, GFP_ATOMIC);
++				send_skb_packet(skb1, dest_entry->batman_if,
++						dest_entry->dest);
++			}
++		} else {
++			skb1 = skb_clone(skb, GFP_ATOMIC);
++			send_skb_packet(skb1, dest_entry->batman_if,
++					dest_entry->dest);
++		}
++		list_del(&dest_entry->list);
++		kfree(dest_entry);
++	}
++	rcu_read_unlock();
 +}
 +
- static void rebuild_batman_packet(struct bat_priv *bat_priv,
- 				  struct batman_if *batman_if)
++int mcast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
++{
++	struct mcast_packet *mcast_packet;
++
++	if (!bat_priv->primary_if)
++		goto dropped;
++
++	if (my_skb_head_push(skb, sizeof(struct mcast_packet)) < 0)
++		goto dropped;
++
++	mcast_packet = (struct mcast_packet *)skb->data;
++	mcast_packet->version = COMPAT_VERSION;
++	mcast_packet->ttl = TTL;
++
++	/* batman packet type: broadcast */
++	mcast_packet->packet_type = BAT_MCAST;
++
++	/* hw address of first interface is the orig mac because only
++	 * this mac is known throughout the mesh */
++	memcpy(mcast_packet->orig,
++	       bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
++
++	/* set broadcast sequence number */
++	mcast_packet->seqno =
++		htonl(atomic_inc_return(&bat_priv->mcast_seqno));
++
++	route_mcast_packet(skb, bat_priv);
++
++	kfree_skb(skb);
++	return 0;
++
++dropped:
++	kfree_skb(skb);
++	return 1;
++}
++
+ int mcast_init(struct bat_priv *bat_priv)
  {
--	int new_len;
--	unsigned char *new_buff;
-+	int new_len, mcast_mode, num_mca = 0;
-+	unsigned long flags;
-+	unsigned char *new_buff = NULL;
- 	struct batman_packet *batman_packet;
+ 	INIT_DELAYED_WORK(&bat_priv->mcast_tracker_work, mcast_tracker_timer);
+diff --git a/multicast.h b/multicast.h
+index 7312afa..06dd398 100644
+--- a/multicast.h
++++ b/multicast.h
+@@ -32,6 +32,7 @@ void route_mcast_tracker_packet(
+ 			int tracker_packet_len, struct bat_priv *bat_priv);
+ void purge_mcast_forw_table(struct bat_priv *bat_priv);
+ int mcast_forw_table_seq_print_text(struct seq_file *seq, void *offset);
++int mcast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv);
+ int mcast_init(struct bat_priv *bat_priv);
+ void mcast_free(struct bat_priv *bat_priv);
  
--	new_len = sizeof(struct batman_packet) +
--			(bat_priv->num_local_hna * ETH_ALEN);
--	new_buff = kmalloc(new_len, GFP_ATOMIC);
-+	batman_packet = (struct batman_packet *)batman_if->packet_buff;
-+	mcast_mode = atomic_read(&bat_priv->mcast_mode);
-+
-+	/* Avoid attaching MCAs, if multicast optimization is disabled */
-+	if (mcast_mode == MCAST_MODE_PROACT_TRACKING) {
-+		MC_LIST_LOCK(batman_if->soft_iface, flags);
-+		num_mca = netdev_mc_count(batman_if->soft_iface);
-+		MC_LIST_UNLOCK(batman_if->soft_iface, flags);
-+	}
+diff --git a/soft-interface.c b/soft-interface.c
+index 7cea678..2a5a728 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -38,6 +38,7 @@
+ #include <linux/if_vlan.h>
+ #include "unicast.h"
+ #include "routing.h"
++#include "multicast.h"
  
--	/* keep old buffer if kmalloc should fail */
-+	if (atomic_read(&bat_priv->hna_local_changed) ||
-+	    num_mca != batman_packet->num_mca) {
-+		new_len = sizeof(struct batman_packet) +
-+			(bat_priv->num_local_hna * ETH_ALEN) +
-+			num_mca * ETH_ALEN;
-+		new_buff = kmalloc(new_len, GFP_ATOMIC);
-+	}
+ 
+ static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd);
+@@ -347,7 +348,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	struct vlan_ethhdr *vhdr;
+ 	int data_len = skb->len, ret;
+ 	short vid = -1;
+-	bool do_bcast = false;
++	bool bcast_dst = false, mcast_dst = false;
+ 
+ 	if (atomic_read(&bat_priv->mesh_state) != MESH_ACTIVE)
+ 		goto dropped;
+@@ -384,12 +385,20 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 		if (ret < 0)
+ 			goto dropped;
+ 
+-		if (ret == 0)
+-			do_bcast = true;
++		/* dhcp request, which should be sent to the gateway directly? */
++		if (ret)
++			goto unicast;
 +
-+	/*
-+	 * if local hna or mca has changed but kmalloc failed
-+	 * then just keep the old buffer
-+	 */
- 	if (new_buff) {
- 		memcpy(new_buff, batman_if->packet_buff,
- 		       sizeof(struct batman_packet));
-@@ -239,6 +293,13 @@ static void rebuild_batman_packet(struct bat_priv *bat_priv,
- 		batman_if->packet_buff = new_buff;
- 		batman_if->packet_len = new_len;
++		if (is_broadcast_ether_addr(ethhdr->h_dest))
++			bcast_dst = true;
++		else if (atomic_read(&bat_priv->mcast_mode) == MCAST_MODE_PROACT_TRACKING)
++			mcast_dst = true;
++		else
++			bcast_dst = true;
  	}
+ 
+ 	/* ethernet packet should be broadcasted */
+-	if (do_bcast) {
++	if (bcast_dst) {
+ 		if (!bat_priv->primary_if)
+ 			goto dropped;
+ 
+@@ -418,8 +427,15 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 		 * the original skb. */
+ 		kfree_skb(skb);
+ 
++	/* multicast data with path optimization */
++	} else if (mcast_dst) {
++		ret = mcast_send_skb(skb, bat_priv);
++		if (ret != 0)
++			goto dropped_freed;
 +
-+	/**
-+	 * always copy mca entries (if there are any) - we have to
-+	 * traverse the list anyway, so we can just do a memcpy instead of memcmp
-+	 * for the sake of simplicity
-+	 */
-+	add_own_MCA(batman_packet, num_mca, batman_if->soft_iface);
- }
+ 	/* unicast packet */
+ 	} else {
++unicast:
+ 		ret = unicast_send_skb(skb, bat_priv);
+ 		if (ret != 0)
+ 			goto dropped_freed;
+@@ -608,6 +624,7 @@ struct net_device *softif_create(char *name)
  
- void schedule_own_packet(struct batman_if *batman_if)
-@@ -264,9 +325,7 @@ void schedule_own_packet(struct batman_if *batman_if)
- 	if (batman_if->if_status == IF_TO_BE_ACTIVATED)
- 		batman_if->if_status = IF_ACTIVE;
+ 	atomic_set(&bat_priv->mesh_state, MESH_INACTIVE);
+ 	atomic_set(&bat_priv->bcast_seqno, 1);
++	atomic_set(&bat_priv->mcast_seqno, 1);
+ 	atomic_set(&bat_priv->hna_local_changed, 0);
  
--	/* if local hna has changed and interface is a primary interface */
--	if ((atomic_read(&bat_priv->hna_local_changed)) &&
--	    (batman_if == bat_priv->primary_if))
-+	if (batman_if == bat_priv->primary_if)
- 		rebuild_batman_packet(bat_priv, batman_if);
- 
- 	/**
-@@ -359,7 +418,8 @@ void schedule_forward_packet(struct orig_node *orig_node,
- 	send_time = forward_send_time(bat_priv);
- 	add_bat_packet_to_list(bat_priv,
- 			       (unsigned char *)batman_packet,
--			       sizeof(struct batman_packet) + hna_buff_len,
-+			       sizeof(struct batman_packet) + hna_buff_len
-+			       + batman_packet->num_mca * ETH_ALEN,
- 			       if_incoming, 0, send_time);
- }
- 
+ 	bat_priv->primary_if = NULL;
+diff --git a/types.h b/types.h
+index 17ccd5a..c12fd2c 100644
+--- a/types.h
++++ b/types.h
+@@ -140,6 +140,7 @@ struct bat_priv {
+ 	atomic_t mcast_fanout;		/* uint */
+ 	atomic_t log_level;		/* uint */
+ 	atomic_t bcast_seqno;
++	atomic_t mcast_seqno;
+ 	atomic_t bcast_queue_left;
+ 	atomic_t batman_queue_left;
+ 	char num_ifaces;
 -- 
 1.7.1
 
