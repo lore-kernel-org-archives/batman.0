@@ -1,11 +1,11 @@
 Return-Path: <linus.luessing@ascom.ch>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Tue,  7 Dec 2010 15:39:31 +0100
-Message-Id: <1291732778-27441-4-git-send-email-linus.luessing@ascom.ch>
+Date: Tue,  7 Dec 2010 15:39:32 +0100
+Message-Id: <1291732778-27441-5-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
 References: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 03/10] batman-adv: Adding workqueue for new
-	ndp packets
+Subject: [B.A.T.M.A.N.] [PATCH 04/10] batman-adv: Send neighbor discovery
+	packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,157 +20,128 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-The new neighbor discovery packets will later need their own interval
-per interface. For instance on a wifi interface which has regularly
-changing link qualities the ndp interval should be faster than on a
-static cable link where we would need some probes from time to time
-only.
-
-This patch adds a workqueue per interface used by batman-adv. When an
-interface is active, a ndp_send() with the according batman_if structure
-will be called every second now.
+This patch makes use of the previously introduced periodic tasks per
+interface and actually sends neighbor discovery packets on these now.
+Note: The TQ values of each neighbor are not being added yet to these NDPs
+and also no evaluation of these packets is being done.
 ---
- Makefile.kbuild  |    1 +
- hard-interface.c |    6 ++++++
- ndp.c            |   44 ++++++++++++++++++++++++++++++++++++++++++++
- ndp.h            |    6 ++++++
- types.h          |    2 ++
- 5 files changed, 59 insertions(+), 0 deletions(-)
- create mode 100644 ndp.c
- create mode 100644 ndp.h
+ hard-interface.c |    5 ++++-
+ ndp.c            |   37 ++++++++++++++++++++++++++++++++++++-
+ types.h          |    5 +++++
+ 3 files changed, 45 insertions(+), 2 deletions(-)
 
-diff --git a/Makefile.kbuild b/Makefile.kbuild
-index e99c198..094eb31 100644
---- a/Makefile.kbuild
-+++ b/Makefile.kbuild
-@@ -42,6 +42,7 @@ batman-adv-y += hard-interface.o
- batman-adv-y += hash.o
- batman-adv-y += icmp_socket.o
- batman-adv-y += main.o
-+batman-adv-y += ndp.o
- batman-adv-y += originator.o
- batman-adv-y += ring_buffer.o
- batman-adv-y += routing.o
 diff --git a/hard-interface.c b/hard-interface.c
-index da7b9a9..cb81c13 100644
+index cb81c13..887f794 100644
 --- a/hard-interface.c
 +++ b/hard-interface.c
-@@ -26,6 +26,7 @@
- #include "translation-table.h"
- #include "routing.h"
- #include "bat_sysfs.h"
-+#include "ndp.h"
- #include "originator.h"
- #include "hash.h"
+@@ -284,6 +284,7 @@ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
+ {
+ 	struct bat_priv *bat_priv;
+ 	struct batman_packet_ogm *batman_packet_ogm;
++	int ret;
  
-@@ -260,6 +261,7 @@ static void hardif_activate_interface(struct batman_if *batman_if)
- 		 batman_if->net_dev->name);
- 
- 	update_min_mtu(batman_if->soft_iface);
-+	start_ndp_timer(batman_if);
- 	return;
- }
- 
-@@ -274,6 +276,7 @@ static void hardif_deactivate_interface(struct batman_if *batman_if)
- 	bat_info(batman_if->soft_iface, "Interface deactivated: %s\n",
- 		 batman_if->net_dev->name);
- 
-+	stop_ndp_timer(batman_if);
- 	update_min_mtu(batman_if->soft_iface);
- }
- 
-@@ -328,6 +331,8 @@ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
+ 	if (batman_if->if_status != IF_NOT_IN_USE)
+ 		goto out;
+@@ -331,7 +332,9 @@ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
  
  	atomic_set(&batman_if->seqno, 1);
  	atomic_set(&batman_if->frag_seqno, 1);
-+	ndp_init(batman_if);
-+
+-	ndp_init(batman_if);
++	ret = ndp_init(batman_if);
++	if (ret)
++		goto err;
+ 
  	bat_info(batman_if->soft_iface, "Adding interface: %s\n",
  		 batman_if->net_dev->name);
- 
-@@ -381,6 +386,7 @@ void hardif_disable_interface(struct batman_if *batman_if)
- 
- 	bat_info(batman_if->soft_iface, "Removing interface: %s\n",
- 		 batman_if->net_dev->name);
-+	ndp_free(batman_if);
- 	dev_remove_pack(&batman_if->batman_adv_ptype);
- 	kref_put(&batman_if->refcount, hardif_free_ref);
- 
 diff --git a/ndp.c b/ndp.c
-new file mode 100644
-index 0000000..2dfb06d
---- /dev/null
+index 2dfb06d..afdf249 100644
+--- a/ndp.c
 +++ b/ndp.c
-@@ -0,0 +1,44 @@
-+#include "main.h"
-+#include "send.h"
-+#include "ndp.h"
+@@ -20,10 +20,24 @@ static void ndp_send(struct work_struct *work)
+ 	struct batman_if *batman_if = container_of(work, struct batman_if,
+ 							ndp_wq.work);
+ 	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
++	struct batman_packet_ndp *ndp_packet = (struct batman_packet_ndp*)
++						batman_if->ndp_packet_buff;
++	int packet_len = sizeof(struct batman_packet_ndp);
++	struct sk_buff *skb;
 +
-+void start_ndp_timer(struct batman_if *batman_if)
-+{
-+	// adding some jitter
-+	unsigned long ndp_interval = own_ndp_send_time(batman_if);
-+	queue_delayed_work(bat_event_workqueue, &batman_if->ndp_wq,
-+			   ndp_interval - jiffies);
-+}
++	ndp_packet->seqno = atomic_read(&batman_if->ndp_seqno);
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+ 		"batman-adv:Sending ndp packet on interface %s, seqno %d\n",
+-		batman_if->net_dev, atomic_read(&batman_if->ndp_seqno));
++		batman_if->net_dev, ntohl(ndp_packet->seqno));
 +
-+void stop_ndp_timer(struct batman_if *batman_if)
-+{
-+	cancel_delayed_work_sync(&batman_if->ndp_wq);
-+}
++	skb = dev_alloc_skb(packet_len + sizeof(struct ethhdr));
++	skb_reserve(skb, sizeof(struct ethhdr));
 +
-+static void ndp_send(struct work_struct *work)
-+{
-+	struct batman_if *batman_if = container_of(work, struct batman_if,
-+							ndp_wq.work);
-+	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
++	memcpy(skb_put(skb, packet_len), batman_if->ndp_packet_buff,
++	       packet_len);
 +
-+	bat_dbg(DBG_BATMAN, bat_priv,
-+		"batman-adv:Sending ndp packet on interface %s, seqno %d\n",
-+		batman_if->net_dev, atomic_read(&batman_if->ndp_seqno));
++	send_skb_packet(skb, batman_if, broadcast_addr);
+ 
+ 	atomic_inc(&batman_if->ndp_seqno);
+ 	start_ndp_timer(batman_if);
+@@ -31,14 +45,35 @@ static void ndp_send(struct work_struct *work)
+ 
+ int ndp_init(struct batman_if *batman_if)
+ {
++	struct batman_packet_ndp *ndp_packet;
 +
-+	atomic_inc(&batman_if->ndp_seqno);
-+	start_ndp_timer(batman_if);
-+}
+ 	atomic_set(&batman_if->ndp_interval, 500);
+ 	atomic_set(&batman_if->ndp_seqno, 0);
 +
-+int ndp_init(struct batman_if *batman_if)
-+{
-+	atomic_set(&batman_if->ndp_interval, 500);
-+	atomic_set(&batman_if->ndp_seqno, 0);
-+	INIT_DELAYED_WORK(&batman_if->ndp_wq, ndp_send);
++	batman_if->ndp_packet_buff =
++		kmalloc(ETH_DATA_LEN, GFP_ATOMIC);
++	if (!batman_if->ndp_packet_buff) {
++		printk(KERN_ERR "batman-adv: Can't add "
++			"local interface packet (%s): out of memory\n",
++			batman_if->net_dev->name);
++		goto err;
++	}
++	memset(batman_if->ndp_packet_buff, 0, batman_if->packet_len);
++	ndp_packet = (struct batman_packet_ndp*)
++			batman_if->ndp_packet_buff;
 +
-+	return 0;
-+}
++	ndp_packet->packet_type = BAT_PACKET_NDP;
++	ndp_packet->version = COMPAT_VERSION;
 +
-+void ndp_free(struct batman_if *batman_if)
-+{
-+	stop_ndp_timer(batman_if);
-+}
-diff --git a/ndp.h b/ndp.h
-new file mode 100644
-index 0000000..de85910
---- /dev/null
-+++ b/ndp.h
-@@ -0,0 +1,6 @@
-+
-+void start_ndp_timer(struct batman_if *batman_if);
-+void stop_ndp_timer(struct batman_if *batman_if);
-+
-+int ndp_init(struct batman_if *batman_if);
-+void ndp_free(struct batman_if *batman_if);
+ 	INIT_DELAYED_WORK(&batman_if->ndp_wq, ndp_send);
+ 
+ 	return 0;
++err:
++	return 1;
+ }
+ 
+ void ndp_free(struct batman_if *batman_if)
+ {
+ 	stop_ndp_timer(batman_if);
++	kfree(batman_if->ndp_packet_buff);
+ }
 diff --git a/types.h b/types.h
-index 8921e20..e8dfdf6 100644
+index e8dfdf6..3ea8f2a 100644
 --- a/types.h
 +++ b/types.h
-@@ -48,6 +48,8 @@ struct batman_if {
+@@ -47,6 +47,7 @@ struct batman_if {
+ 	struct packet_type batman_adv_ptype;
  	struct net_device *soft_iface;
  	struct rcu_head rcu;
++	unsigned char *ndp_packet_buff;
  	atomic_t ndp_interval;
-+	atomic_t ndp_seqno;
-+	struct delayed_work ndp_wq;
+ 	atomic_t ndp_seqno;
+ 	struct delayed_work ndp_wq;
+@@ -122,6 +123,10 @@ struct neigh_node {
+ 	struct batman_if *if_incoming;
  };
  
- /**
++struct neigh_entry {
++	uint8_t addr[ETH_ALEN];
++	uint8_t rq;
++};
+ 
+ struct bat_priv {
+ 	atomic_t mesh_state;
 -- 
 1.7.1
 
