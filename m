@@ -1,15 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
-Date: Tue,  7 Dec 2010 23:32:27 +0100
-Message-Id: <1291761150-29818-17-git-send-email-linus.luessing@saxnet.de>
+Date: Tue,  7 Dec 2010 23:32:19 +0100
+Message-Id: <1291761150-29818-9-git-send-email-linus.luessing@saxnet.de>
 In-Reply-To: <20101207221351.GA19474@Sellars>
 References: <20101207221351.GA19474@Sellars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 17/20] batman-adv: Add duplicate checks for
-	multicast data
+Subject: [B.A.T.M.A.N.] [PATCH 09/20] batman-adv: Route multicast tracker
+	packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,122 +24,83 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
 
-This commit adds duplicate checks to avoid endless rebroadcasts in the
-case of forwarding multicast data packets via broadcasting.
+This commit adds the ability to also forward a received multicast
+tracker packet (if necessary). It also makes use of the same splitting
+methods introduced with one of the previous commits, in case of multiple
+next hop destinations.
 
 Signed-off-by: Linus Lüssing <linus.luessing@saxnet.de>
 ---
- originator.c |    2 ++
- routing.c    |   48 +++++++++++++++++++++++++++++++++++++++++++++++-
- types.h      |    3 +++
- 3 files changed, 52 insertions(+), 1 deletions(-)
+ hard-interface.c |    5 +++++
+ routing.c        |   19 +++++++++++++++++++
+ routing.h        |    1 +
+ 3 files changed, 25 insertions(+), 0 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index 39ce8d5..f882292 100644
---- a/originator.c
-+++ b/originator.c
-@@ -154,6 +154,8 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
- 	orig_node->num_mca = 0;
- 	orig_node->bcast_seqno_reset = jiffies - 1
- 					- msecs_to_jiffies(RESET_PROTECTION_MS);
-+	orig_node->mcast_seqno_reset = jiffies - 1
-+					- msecs_to_jiffies(RESET_PROTECTION_MS);
- 	orig_node->batman_seqno_reset = jiffies - 1
- 					- msecs_to_jiffies(RESET_PROTECTION_MS);
+diff --git a/hard-interface.c b/hard-interface.c
+index 2b502be..3b380e1 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -624,6 +624,11 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 		ret = recv_bcast_packet(skb, batman_if);
+ 		break;
  
++		/* multicast tracker packet */
++	case BAT_MCAST_TRACKER:
++		ret = recv_mcast_tracker_packet(skb, batman_if);
++		break;
++
+ 		/* vis packet */
+ 	case BAT_VIS:
+ 		ret = recv_vis_packet(skb, batman_if);
 diff --git a/routing.c b/routing.c
-index f9582be..19f045a 100644
+index cf145b7..9c83006 100644
 --- a/routing.c
 +++ b/routing.c
-@@ -1391,8 +1391,11 @@ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
- int recv_mcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+@@ -35,6 +35,7 @@
+ #include "gateway_common.h"
+ #include "gateway_client.h"
+ #include "unicast.h"
++#include "multicast.h"
+ 
+ void slide_own_bcast_window(struct batman_if *batman_if)
  {
- 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
-+	struct orig_node *orig_node;
-+	struct mcast_packet *mcast_packet;
- 	struct ethhdr *ethhdr;
- 	MC_LIST *mc_entry;
-+	int32_t seq_diff;
- 	unsigned long flags;
- 	int ret = 1;
- 	int hdr_size = sizeof(struct mcast_packet);
-@@ -1402,10 +1405,53 @@ int recv_mcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
- 	    check_broadcast_packet(skb, hdr_size) < 0)
- 		return NET_RX_DROP;
+@@ -1378,6 +1379,24 @@ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 	return NET_RX_SUCCESS;
+ }
  
-+	mcast_packet = (struct mcast_packet *)skb->data;
++int recv_mcast_tracker_packet(struct sk_buff *skb, struct batman_if *recv_if)
++{
++	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
++	struct mcast_tracker_packet *tracker_packet;
++	int hdr_size = sizeof(struct mcast_tracker_packet);
 +
-+	/* ignore broadcasts originated by myself */
-+	if (is_my_mac(mcast_packet->orig))
++	if (check_unicast_packet(skb, hdr_size) < 0)
 +		return NET_RX_DROP;
 +
-+	if (mcast_packet->ttl < 2)
-+		return NET_RX_DROP;
++	tracker_packet = (struct mcast_tracker_packet *)skb->data;
 +
-+	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
-+	orig_node = ((struct orig_node *)
-+		     hash_find(bat_priv->orig_hash, compare_orig, choose_orig,
-+			       mcast_packet->orig));
++	route_mcast_tracker_packet(tracker_packet, skb->len, bat_priv);
 +
-+	if (orig_node == NULL) {
-+		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
-+		return NET_RX_DROP;
-+	}
++	dev_kfree_skb(skb);
 +
-+	/* check whether the packet is a duplicate */
-+	if (get_bit_status(orig_node->mcast_bits,
-+			   orig_node->last_mcast_seqno,
-+			   ntohl(mcast_packet->seqno))) {
-+		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
-+		return NET_RX_DROP;
-+	}
++	return NET_RX_SUCCESS;
++}
 +
-+	seq_diff = ntohl(mcast_packet->seqno) - orig_node->last_mcast_seqno;
-+
-+	/* check whether the packet is old and the host just restarted. */
-+	if (window_protected(bat_priv, seq_diff,
-+			     &orig_node->mcast_seqno_reset)) {
-+		spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
-+		return NET_RX_DROP;
-+	}
-+
-+	/* mark broadcast in flood history, update window position
-+	 * if required. */
-+	if (bit_get_packet(bat_priv, orig_node->mcast_bits, seq_diff, 1))
-+		orig_node->last_mcast_seqno = ntohl(mcast_packet->seqno);
-+
-+	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
-+
- 	/* forward multicast packet if necessary */
- 	route_mcast_packet(skb, bat_priv);
- 
--	ethhdr = (struct ethhdr *)(skb->data + sizeof(struct mcast_packet));
-+	ethhdr = (struct ethhdr *)(mcast_packet + 1);
- 
- 	/* multicast for me? */
- 	MC_LIST_LOCK(recv_if->soft_iface, flags);
-diff --git a/types.h b/types.h
-index c12fd2c..890822f 100644
---- a/types.h
-+++ b/types.h
-@@ -74,6 +74,7 @@ struct orig_node {
- 	int tq_asym_penalty;
- 	unsigned long last_valid;
- 	unsigned long bcast_seqno_reset;
-+	unsigned long mcast_seqno_reset;
- 	unsigned long batman_seqno_reset;
- 	uint8_t gw_flags;
- 	uint8_t flags;
-@@ -84,7 +85,9 @@ struct orig_node {
- 	uint32_t last_real_seqno;
- 	uint8_t last_ttl;
- 	TYPE_OF_WORD bcast_bits[NUM_WORDS];
-+	TYPE_OF_WORD mcast_bits[NUM_WORDS];
- 	uint32_t last_bcast_seqno;
-+	uint32_t last_mcast_seqno;
- 	struct list_head neigh_list;
- 	struct list_head frag_list;
- 	unsigned long last_frag_packet;
+ int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ {
+ 	struct vis_packet *vis_packet;
+diff --git a/routing.h b/routing.h
+index d44b540..ad3f054 100644
+--- a/routing.h
++++ b/routing.h
+@@ -38,6 +38,7 @@ int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
++int recv_mcast_tracker_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_bat_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ struct neigh_node *find_router(struct bat_priv *bat_priv,
 -- 
 1.7.1
 
