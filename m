@@ -1,15 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
-Date: Tue,  7 Dec 2010 23:32:17 +0100
-Message-Id: <1291761150-29818-7-git-send-email-linus.luessing@saxnet.de>
+Date: Tue,  7 Dec 2010 23:32:20 +0100
+Message-Id: <1291761150-29818-10-git-send-email-linus.luessing@saxnet.de>
 In-Reply-To: <20101207221351.GA19474@Sellars>
 References: <20101207221351.GA19474@Sellars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 07/20] batman-adv: Prepare and send own
-	multicast tracker packets
+Subject: [B.A.T.M.A.N.] [PATCH 10/20] batman-adv: Add/refresh entries to/in
+	mcast forwarding table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,554 +24,434 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
 
-This commit introduces batman multicast tracker packets. Their job is,
-to mark nodes responsible for forwarding multicast data later (so a
-multicast receiver will not be marked, only the forwarding nodes).
+On reception of a multicast tracker packet (both locally generated or
+received over an interface), a node now memorizes its forwarding state
+for a tuple of multicast-group, originator, and next-hops (+ their
+according outgoing interface).
 
-When having activated the proact_tracking multicast mode, a path between
-all multicast _receivers_ of a group will be marked - in fact, in this
-mode BATMAN will assume, that a multicast receiver is also a multicast
-sender, therefore a multicast sender should also join the same multicast
-group.
+The first two elements are necessary to determine, whether a node shall
+forward a multicast data packet on reception later. The next-hop and
+according interface information is necessary to quickly determine, if a
+multicast data packet shall be forwarded via unicast to each single next
+hop or via broadcast.
 
-The advantage of this is less complexity and the paths are marked in
-advance before an actual data packet has been sent, decreasing delays.
-The disadvantage is higher protocol overhead.
-
-One large tracker packet will be created on a generating node first,
-which then gets split for every necessary next hop destination.
-
-This commit does not add forwarding of tracker packets but just local
-generation and local sending of them.
+This commit does not yet purge multicast forwarding table entries after
+the set tracker timeout yet.
 
 Signed-off-by: Linus Lüssing <linus.luessing@saxnet.de>
 ---
- hash.h      |    4 +
- multicast.c |  469 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- multicast.h |    3 +
- 3 files changed, 476 insertions(+), 0 deletions(-)
+ multicast.c |  278 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ types.h     |    2 +
+ 2 files changed, 277 insertions(+), 3 deletions(-)
 
-diff --git a/hash.h b/hash.h
-index 0b61c6e..d61c185 100644
---- a/hash.h
-+++ b/hash.h
-@@ -28,6 +28,10 @@
- 		.index = 0, .walk = NULL, \
- 		.safe = NULL}
- 
-+#define HASHIT_RESET(name) \
-+		name.index = 0, name.walk = NULL; \
-+		name.safe = NULL
-+
- /* callback to a compare function.  should
-  * compare 2 element datas for their keys,
-  * return 0 if same and not 0 if not
 diff --git a/multicast.c b/multicast.c
-index 1ddd37b..bfb1410 100644
+index 2b3d613..c7edbef 100644
 --- a/multicast.c
 +++ b/multicast.c
-@@ -21,6 +21,24 @@
+@@ -25,6 +25,10 @@
+ #include "send.h"
+ #include "compat.h"
  
- #include "main.h"
- #include "multicast.h"
-+#include "hash.h"
-+#include "send.h"
-+#include "compat.h"
++/* If auto mode for tracker timeout has been selected,
++ * how many times of tracker_interval to wait */
++#define TRACKER_TIMEOUT_AUTO_X 5
 +
-+#define tracker_packet_for_each_dest(mcast_entry, dest_entry, mcast_num, dest_num, tracker_packet) \
-+	for (mcast_num = 0, mcast_entry = (struct mcast_entry *)(tracker_packet + 1), \
-+	     dest_entry = (uint8_t *)(mcast_entry + 1); \
-+	     mcast_num < tracker_packet->num_mcast_entries; mcast_num++, \
-+	     mcast_entry = (struct mcast_entry *)dest_entry, \
-+	     dest_entry = (uint8_t *)(mcast_entry + 1)) \
-+		for (dest_num = 0; dest_num < mcast_entry->num_dest; dest_num++, \
-+		     dest_entry += ETH_ALEN)
+ #define tracker_packet_for_each_dest(mcast_entry, dest_entry, mcast_num, dest_num, tracker_packet) \
+ 	for (mcast_num = 0, mcast_entry = (struct mcast_entry *)(tracker_packet + 1), \
+ 	     dest_entry = (uint8_t *)(mcast_entry + 1); \
+@@ -40,6 +44,34 @@ struct dest_entries_list {
+ 	struct batman_if *batman_if;
+ };
+ 
 +
-+struct dest_entries_list {
++struct mcast_forw_nexthop_entry {
 +	struct list_head list;
-+	uint8_t dest[6];
-+	struct batman_if *batman_if;
++	uint8_t neigh_addr[6];
++	unsigned long timeout;	/* old jiffies value */
 +};
- 
++
++struct mcast_forw_if_entry {
++	struct list_head list;
++	int16_t if_num;
++	int num_nexthops;
++	struct list_head mcast_nexthop_list;
++};
++
++struct mcast_forw_orig_entry {
++	struct list_head list;
++	uint8_t orig[6];
++	uint32_t last_mcast_seqno;
++	TYPE_OF_WORD mcast_bits[NUM_WORDS];
++	struct list_head mcast_if_list;
++};
++
++struct mcast_forw_table_entry {
++	struct list_head list;
++	uint8_t mcast_addr[6];
++	struct list_head mcast_orig_list;
++};
++
  /* how long to wait until sending a multicast tracker packet */
  static int tracker_send_delay(struct bat_priv *bat_priv)
-@@ -56,11 +74,462 @@ void mcast_tracker_reset(struct bat_priv *bat_priv)
+ {
+@@ -74,6 +106,218 @@ void mcast_tracker_reset(struct bat_priv *bat_priv)
  	start_mcast_tracker(bat_priv);
  }
  
-+static inline int find_mca_match(struct orig_node *orig_node,
-+		int mca_pos, uint8_t *mc_addr_list, int num_mcast_entries)
++static void prepare_forw_if_entry(struct list_head *forw_if_list,
++				  int16_t if_num, uint8_t *neigh_addr)
 +{
-+	int pos;
++	struct mcast_forw_if_entry *forw_if_entry;
++	struct mcast_forw_nexthop_entry *forw_nexthop_entry;
 +
-+	for (pos = 0; pos < num_mcast_entries; pos++)
-+		if (!memcmp(&mc_addr_list[pos*ETH_ALEN],
-+			    &orig_node->mca_buff[ETH_ALEN*mca_pos], ETH_ALEN))
-+			return pos;
-+	return -1;
-+}
++	list_for_each_entry (forw_if_entry, forw_if_list, list)
++		if (forw_if_entry->if_num == if_num)
++			goto skip_create_if;
 +
-+/**
-+ * Prepares a multicast tracker packet on a multicast member with all its
-+ * groups and their members attached. Note, that the proactive tracking
-+ * mode does not differentiate between multicast senders and receivers,
-+ * resulting in tracker packets between each node.
-+ *
-+ * Returns NULL if this node is not a member of any group or if there are
-+ * no other members in its groups.
-+ *
-+ * @bat_priv:		bat_priv for the mesh we are preparing this packet
-+ */
-+static struct mcast_tracker_packet *mcast_proact_tracker_prepare(
-+			struct bat_priv *bat_priv, int *tracker_packet_len)
-+{
-+	struct net_device *soft_iface = bat_priv->primary_if->soft_iface;
-+	uint8_t *mc_addr_list;
-+	MC_LIST *mc_entry;
-+	struct element_t *bucket;
-+	struct orig_node *orig_node;
++	forw_if_entry = kmalloc(sizeof(struct mcast_forw_if_entry),
++				GFP_ATOMIC);
++	if (!forw_if_entry)
++		return;
 +
-+	/* one dest_entries_list per multicast group,
-+	 * they'll collect dest_entries[x] */
-+	int num_mcast_entries, used_mcast_entries = 0;
-+	struct list_head *dest_entries_list;
-+	struct dest_entries_list dest_entries[UINT8_MAX], *dest, *tmp;
-+	int num_dest_entries, dest_entries_total = 0;
++	forw_if_entry->if_num = if_num;
++	forw_if_entry->num_nexthops = 0;
++	INIT_LIST_HEAD(&forw_if_entry->mcast_nexthop_list);
++	list_add(&forw_if_entry->list, forw_if_list);
 +
-+	uint8_t *dest_entry;
-+	int pos, mca_pos;
-+	unsigned long flags;
-+	struct mcast_tracker_packet *tracker_packet = NULL;
-+	struct mcast_entry *mcast_entry;
-+	HASHIT(hashit);
-+
-+	/* Make a copy so we don't have to rush because of locking */
-+	MC_LIST_LOCK(soft_iface, flags);
-+	num_mcast_entries = netdev_mc_count(soft_iface);
-+	mc_addr_list = kmalloc(ETH_ALEN * num_mcast_entries, GFP_ATOMIC);
-+	if (!mc_addr_list) {
-+		MC_LIST_UNLOCK(soft_iface, flags);
-+		goto out;
++skip_create_if:
++	list_for_each_entry (forw_nexthop_entry,
++			     &forw_if_entry->mcast_nexthop_list, list) {
++		if (!memcmp(forw_nexthop_entry->neigh_addr,
++			    neigh_addr, ETH_ALEN))
++			return;
 +	}
-+	pos = 0;
-+	netdev_for_each_mc_addr(mc_entry, soft_iface) {
-+		memcpy(&mc_addr_list[pos * ETH_ALEN], mc_entry->MC_LIST_ADDR,
-+		       ETH_ALEN);
-+		pos++;
-+	}
-+	MC_LIST_UNLOCK(soft_iface, flags);
 +
-+	if (num_mcast_entries > UINT8_MAX)
-+		num_mcast_entries = UINT8_MAX;
-+	dest_entries_list = kmalloc(num_mcast_entries *
-+					sizeof(struct list_head), GFP_ATOMIC);
-+	if (!dest_entries_list)
++	forw_nexthop_entry = kmalloc(sizeof(struct mcast_forw_nexthop_entry),
++				     GFP_ATOMIC);
++	if (!forw_nexthop_entry && forw_if_entry->num_nexthops)
++		return;
++	else if(!forw_nexthop_entry)
 +		goto free;
 +
-+	for (pos = 0; pos < num_mcast_entries; pos++)
-+		INIT_LIST_HEAD(&dest_entries_list[pos]);
-+
-+	/* fill the lists and buffers */
-+	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
-+	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
-+		bucket = hlist_entry(hashit.walk, struct element_t, hlist);
-+		orig_node = bucket->data;
-+		if (!orig_node->num_mca)
-+			continue;
-+
-+		num_dest_entries = 0;
-+		for (mca_pos = 0; mca_pos < orig_node->num_mca && dest_entries_total != UINT8_MAX; mca_pos++) {
-+			pos = find_mca_match(orig_node, mca_pos, mc_addr_list,
-+					     num_mcast_entries);
-+			if (pos > UINT8_MAX || pos < 0)
-+				continue;
-+			memcpy(dest_entries[dest_entries_total].dest, orig_node->orig, ETH_ALEN);
-+			list_add(&dest_entries[dest_entries_total].list, &dest_entries_list[pos]);
-+
-+			num_dest_entries++;
-+			dest_entries_total++;
-+		}
-+	}
-+	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
-+
-+	/* Any list left empty? */
-+	for (pos = 0; pos < num_mcast_entries; pos++)
-+		if (!list_empty(&dest_entries_list[pos]))
-+			used_mcast_entries++;
-+
-+	if (!used_mcast_entries)
-+		goto free_all;
-+
-+	/* prepare tracker packet, finally! */
-+	*tracker_packet_len = sizeof(struct mcast_tracker_packet) +
-+			     sizeof(struct mcast_entry) * used_mcast_entries +
-+			     ETH_ALEN * dest_entries_total;
-+	if (*tracker_packet_len > ETH_DATA_LEN) {
-+		pr_warning("mcast tracker packet got too large (%i Bytes), "
-+			   "forcing reduced size of %i Bytes\n",
-+			   *tracker_packet_len, ETH_DATA_LEN);
-+		*tracker_packet_len = ETH_DATA_LEN;
-+	}
-+	tracker_packet = kmalloc(*tracker_packet_len, GFP_ATOMIC);
-+
-+	tracker_packet->packet_type = BAT_MCAST_TRACKER;
-+	tracker_packet->version = COMPAT_VERSION;
-+	memcpy(tracker_packet->orig, bat_priv->primary_if->net_dev->dev_addr,
-+		ETH_ALEN);
-+	tracker_packet->ttl = TTL;
-+	tracker_packet->num_mcast_entries = (used_mcast_entries > UINT8_MAX) ?
-+						UINT8_MAX : used_mcast_entries;
-+	memset(tracker_packet->align, 0, sizeof(tracker_packet->align));
-+
-+	/* append all collected entries */
-+	mcast_entry = (struct mcast_entry *)(tracker_packet + 1);
-+	for (pos = 0; pos < num_mcast_entries; pos++) {
-+		if (list_empty(&dest_entries_list[pos]))
-+			continue;
-+
-+		if ((char *)(mcast_entry + 1) <=
-+		    (char *)tracker_packet + ETH_DATA_LEN) {
-+			memcpy(mcast_entry->mcast_addr,
-+			       &mc_addr_list[pos*ETH_ALEN], ETH_ALEN);
-+			mcast_entry->num_dest = 0;
-+		}
-+
-+		dest_entry = (uint8_t *)(mcast_entry + 1);
-+		list_for_each_entry_safe(dest, tmp, &dest_entries_list[pos],
-+					 list) {
-+			/* still place for a dest_entry left?
-+			 * watch out for overflow here, stop at UINT8_MAX */
-+			if ((char *)dest_entry + ETH_ALEN <=
-+			    (char *)tracker_packet + ETH_DATA_LEN &&
-+			    mcast_entry->num_dest != UINT8_MAX) {
-+				mcast_entry->num_dest++;
-+				memcpy(dest_entry, dest->dest, ETH_ALEN);
-+				dest_entry += ETH_ALEN;
-+			}
-+			list_del(&dest->list);
-+		}
-+		/* still space for another mcast_entry left? */
-+		if ((char *)(mcast_entry + 1) <=
-+		    (char *)tracker_packet + ETH_DATA_LEN)
-+			mcast_entry = (struct mcast_entry*)dest_entry;
-+	}
-+
-+
-+	/* outstanding cleanup */
-+free_all:
-+	kfree(dest_entries_list);
-+free:
-+	kfree(mc_addr_list);
-+out:
-+
-+	return tracker_packet;
-+}
-+
-+/* Adds the router for the destination address to the next_hop list and its
-+ * interface to the forw_if_list - but only if this router has not been
-+ * added yet */
-+static int add_router_of_dest(struct dest_entries_list *next_hops,
-+			      uint8_t *dest, struct bat_priv *bat_priv)
-+{
-+	struct dest_entries_list *next_hop_tmp, *next_hop_entry;
-+	unsigned long flags;
-+	struct element_t *bucket;
-+	struct orig_node *orig_node;
-+	HASHIT(hashit);
-+
-+	next_hop_entry = kmalloc(sizeof(struct dest_entries_list), GFP_ATOMIC);
-+	if (!next_hop_entry)
-+		return 1;
-+
-+	next_hop_entry->batman_if = NULL;
-+	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
-+	while (hash_iterate(bat_priv->orig_hash, &hashit)) {
-+		bucket = hlist_entry(hashit.walk, struct element_t, hlist);
-+		orig_node = bucket->data;
-+
-+		if (memcmp(orig_node->orig, dest, ETH_ALEN))
-+			continue;
-+
-+		if (!orig_node->router)
-+			break;
-+
-+		memcpy(next_hop_entry->dest, orig_node->router->addr,
-+		       ETH_ALEN);
-+		next_hop_entry->batman_if = orig_node->router->if_incoming;
-+		break;
-+	}
-+	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
-+	if (!next_hop_entry->batman_if)
++	memcpy(forw_nexthop_entry->neigh_addr, neigh_addr, ETH_ALEN);
++	forw_if_entry->num_nexthops++;
++	if (forw_if_entry->num_nexthops < 0) {
++		kfree(forw_nexthop_entry);
 +		goto free;
++	}
 +
-+	list_for_each_entry(next_hop_tmp, &next_hops->list, list)
-+		if (!memcmp(next_hop_tmp->dest, next_hop_entry->dest,
-+								ETH_ALEN))
-+			goto free;
-+
-+	list_add(&next_hop_entry->list, &next_hops->list);
-+
-+	return 0;
-+
++	list_add(&forw_nexthop_entry->list,
++		 &forw_if_entry->mcast_nexthop_list);
++	return;
 +free:
-+	kfree(next_hop_entry);
-+	return 1;
++	list_del(&forw_if_entry->list);
++	kfree(forw_if_entry);
 +}
 +
-+/* Collect nexthops for all dest entries specified in this tracker packet */
-+static int tracker_next_hops(struct mcast_tracker_packet *tracker_packet,
-+			     struct dest_entries_list *next_hops,
-+			     struct bat_priv *bat_priv)
++static struct list_head *prepare_forw_table_entry(
++				struct mcast_forw_table_entry *forw_table,
++				uint8_t *mcast_addr, uint8_t *orig)
 +{
-+	int num_next_hops = 0, mcast_num, dest_num, ret;
-+	struct mcast_entry *mcast_entry;
-+	uint8_t *dest_entry;
++	struct mcast_forw_table_entry *forw_table_entry;
++	struct mcast_forw_orig_entry *orig_entry;
 +
-+	INIT_LIST_HEAD(&next_hops->list);
-+
-+	tracker_packet_for_each_dest(mcast_entry, dest_entry,
-+				     mcast_num, dest_num, tracker_packet) {
-+		ret = add_router_of_dest(next_hops, dest_entry,
-+					 bat_priv);
-+		if (!ret)
-+			num_next_hops++;
-+	}
-+
-+	return num_next_hops;
-+}
-+
-+static void zero_tracker_packet(struct mcast_tracker_packet *tracker_packet,
-+				uint8_t *next_hop, struct bat_priv *bat_priv)
-+{
-+	struct mcast_entry *mcast_entry;
-+	uint8_t *dest_entry;
-+	int mcast_num, dest_num;
-+
-+	unsigned long flags;
-+	struct element_t *bucket;
-+	struct orig_node *orig_node;
-+	HASHIT(hashit);
-+
-+	spin_lock_irqsave(&bat_priv->orig_hash_lock, flags);
-+	tracker_packet_for_each_dest(mcast_entry, dest_entry,
-+				     mcast_num, dest_num, tracker_packet) {
-+		while (hash_iterate(bat_priv->orig_hash, &hashit)) {
-+			bucket = hlist_entry(hashit.walk, struct element_t,
-+					     hlist);
-+			orig_node = bucket->data;
-+
-+			if (memcmp(orig_node->orig, dest_entry, ETH_ALEN))
-+				continue;
-+
-+			/* is the next hop already our destination? */
-+			if (!memcmp(orig_node->orig, next_hop, ETH_ALEN))
-+				memset(dest_entry, '\0', ETH_ALEN);
-+			else if (!orig_node->router)
-+				memset(dest_entry, '\0', ETH_ALEN);
-+			else if (!memcmp(orig_node->orig,
-+				    orig_node->router->orig_node->primary_addr,
-+				    ETH_ALEN))
-+				memset(dest_entry, '\0', ETH_ALEN);
-+			/* is this the wrong next hop for our destination? */
-+			else if (memcmp(orig_node->router->addr,
-+					next_hop, ETH_ALEN))
-+				memset(dest_entry, '\0', ETH_ALEN);
-+
-+			break;
-+		}
-+		HASHIT_RESET(hashit);
-+	}
-+	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
-+}
-+
-+static int shrink_tracker_packet(struct mcast_tracker_packet *tracker_packet,
-+				  int tracker_packet_len)
-+{
-+	struct mcast_entry *mcast_entry;
-+	uint8_t *dest_entry;
-+	uint8_t *tail = (uint8_t *)tracker_packet + tracker_packet_len;
-+	int mcast_num, dest_num;
-+	int new_tracker_packet_len = sizeof(struct mcast_tracker_packet);
-+
-+	tracker_packet_for_each_dest(mcast_entry, dest_entry,
-+				     mcast_num, dest_num, tracker_packet) {
-+		if (memcmp(dest_entry, "\0\0\0\0\0\0", ETH_ALEN)) {
-+			new_tracker_packet_len += ETH_ALEN;
-+			continue;
-+		}
-+
-+		memmove(dest_entry, dest_entry + ETH_ALEN,
-+			tail - dest_entry - ETH_ALEN);
-+
-+		mcast_entry->num_dest--;
-+		tail -= ETH_ALEN;
-+
-+		if (mcast_entry->num_dest) {
-+			dest_num--;
-+			dest_entry -= ETH_ALEN;
-+			continue;
-+		}
-+
-+		/* = mcast_entry */
-+		dest_entry -= sizeof(struct mcast_entry);
-+
-+		memmove(dest_entry, dest_entry + sizeof(struct mcast_entry),
-+			tail - dest_entry - sizeof(struct mcast_entry));
-+
-+		tracker_packet->num_mcast_entries--;
-+		tail -= sizeof(struct mcast_entry);
-+
-+		mcast_num--;
-+
-+		/* Avoid mcast_entry check of tracker_packet_for_each_dest's
-+		 * inner loop */
-+		break;
-+	}
-+
-+	new_tracker_packet_len += sizeof(struct mcast_entry) *
-+				  tracker_packet->num_mcast_entries;
-+
-+	return new_tracker_packet_len;
-+}
-+
-+static struct sk_buff *build_tracker_packet_skb(
-+		struct mcast_tracker_packet *tracker_packet,
-+		int tracker_packet_len, uint8_t *dest)
-+{
-+	struct sk_buff *skb;
-+	struct mcast_tracker_packet *skb_tracker_data;
-+
-+	skb = dev_alloc_skb(tracker_packet_len + sizeof(struct ethhdr));
-+	if (!skb)
++	forw_table_entry = kmalloc(sizeof(struct mcast_forw_table_entry),
++				   GFP_ATOMIC);
++	if (!forw_table_entry)
 +		return NULL;
 +
-+	skb_reserve(skb, sizeof(struct ethhdr));
-+	skb_tracker_data = (struct mcast_tracker_packet *)
-+				skb_put(skb, tracker_packet_len);
++	memcpy(forw_table_entry->mcast_addr, mcast_addr, ETH_ALEN);
++	list_add(&forw_table_entry->list, &forw_table->list);
 +
-+	memcpy(skb_tracker_data, tracker_packet, tracker_packet_len);
-+
-+	return skb;
-+}
-+
-+
-+/**
-+ * Sends (splitted parts of) a multicast tracker packet on the according
-+ * interfaces.
-+ *
-+ * @tracker_packet: 	A compact multicast tracker packet with all groups and
-+ * 			destinations attached.
-+ */
-+void route_mcast_tracker_packet(
-+			struct mcast_tracker_packet *tracker_packet,
-+			int tracker_packet_len, struct bat_priv *bat_priv)
-+{
-+	struct dest_entries_list next_hops, *tmp;
-+	struct mcast_tracker_packet *next_hop_tracker_packets,
-+				    *next_hop_tracker_packet;
-+	struct dest_entries_list *next_hop;
-+	struct sk_buff *skb;
-+	int num_next_hops, i;
-+	int *tracker_packet_lengths;
-+
-+	rcu_read_lock();
-+	num_next_hops = tracker_next_hops(tracker_packet, &next_hops,
-+					  bat_priv);
-+	if (!num_next_hops)
-+		goto out;
-+	next_hop_tracker_packets = kmalloc(tracker_packet_len * num_next_hops,
-+					   GFP_ATOMIC);
-+	if (!next_hop_tracker_packets)
++	INIT_LIST_HEAD(&forw_table_entry->mcast_orig_list);
++	orig_entry = kmalloc(sizeof(struct mcast_forw_orig_entry), GFP_ATOMIC);
++	if (!orig_entry)
 +		goto free;
 +
-+	tracker_packet_lengths = kmalloc(sizeof(int) * num_next_hops,
-+					  GFP_ATOMIC);
-+	if (!tracker_packet_lengths)
-+		goto free2;
++	memcpy(orig_entry->orig, orig, ETH_ALEN);
++	INIT_LIST_HEAD(&orig_entry->mcast_if_list);
++	list_add(&orig_entry->list, &forw_table_entry->mcast_orig_list);
 +
-+	i = 0;
-+	list_for_each_entry_safe(next_hop, tmp, &next_hops.list, list) {
-+		next_hop_tracker_packet = (struct mcast_tracker_packet *)
-+					  ((char *)next_hop_tracker_packets +
-+					   i * tracker_packet_len);
-+		memcpy(next_hop_tracker_packet, tracker_packet,
-+		       tracker_packet_len);
-+		zero_tracker_packet(next_hop_tracker_packet, next_hop->dest,
-+				    bat_priv);
-+		tracker_packet_lengths[i] = shrink_tracker_packet(
-+				next_hop_tracker_packet, tracker_packet_len);
-+		i++;
-+	}
++	return &orig_entry->mcast_if_list;
 +
-+	i = 0;
-+	/* Add ethernet header, send 'em! */
-+	list_for_each_entry_safe(next_hop, tmp, &next_hops.list, list) {
-+		if (tracker_packet_lengths[i] ==
-+		    sizeof(struct mcast_tracker_packet))
-+			goto skip_send;
-+
-+		skb = build_tracker_packet_skb(&next_hop_tracker_packets[i],
-+					       tracker_packet_lengths[i],
-+					       next_hop->dest);
-+		if (skb)
-+			send_skb_packet(skb, next_hop->batman_if,
-+					next_hop->dest);
-+skip_send:
-+		list_del(&next_hop->list);
-+		kfree(next_hop);
-+		i++;
-+	}
-+
-+	kfree(tracker_packet_lengths);
-+	kfree(next_hop_tracker_packets);
-+	return;
-+
-+free2:
-+	kfree(next_hop_tracker_packets);
 +free:
-+	list_for_each_entry_safe(next_hop, tmp, &next_hops.list, list) {
-+		list_del(&next_hop->list);
-+		kfree(next_hop);
-+	}
-+out:
-+	rcu_read_unlock();
++	list_del(&forw_table_entry->list);
++	kfree(forw_table_entry);
++	return NULL;
 +}
 +
- static void mcast_tracker_timer(struct work_struct *work)
++static int sync_nexthop(struct mcast_forw_nexthop_entry *sync_nexthop_entry,
++			 struct list_head *nexthop_list)
++{
++	struct mcast_forw_nexthop_entry *nexthop_entry;
++	int synced = 0;
++
++	list_for_each_entry(nexthop_entry, nexthop_list, list) {
++		if (memcmp(sync_nexthop_entry->neigh_addr,
++			   nexthop_entry->neigh_addr, ETH_ALEN))
++			continue;
++
++		nexthop_entry->timeout = jiffies;
++		list_del(&sync_nexthop_entry->list);
++		kfree(sync_nexthop_entry);
++
++		synced = 1;
++		break;
++	}
++
++	if (!synced) {
++		sync_nexthop_entry->timeout = jiffies;
++		list_move(&sync_nexthop_entry->list, nexthop_list);
++		return 1;
++	}
++
++	return 0;
++}
++
++static void sync_if(struct mcast_forw_if_entry *sync_if_entry,
++		    struct list_head *if_list)
++{
++	struct mcast_forw_if_entry *if_entry;
++	struct mcast_forw_nexthop_entry *sync_nexthop_entry, *tmp;
++	int synced = 0;
++
++	list_for_each_entry(if_entry, if_list, list) {
++		if (sync_if_entry->if_num != if_entry->if_num)
++			continue;
++
++		list_for_each_entry_safe(sync_nexthop_entry, tmp,
++				&sync_if_entry->mcast_nexthop_list, list)
++			if (sync_nexthop(sync_nexthop_entry,
++					 &if_entry->mcast_nexthop_list))
++				if_entry->num_nexthops++;
++
++		list_del(&sync_if_entry->list);
++		kfree(sync_if_entry);
++
++		synced = 1;
++		break;
++	}
++
++	if (!synced)
++		list_move(&sync_if_entry->list, if_list);
++}
++
++/* syncs all multicast entries of sync_table_entry to forw_table */
++static void sync_orig(struct mcast_forw_orig_entry *sync_orig_entry,
++		      struct list_head *orig_list)
++{
++	struct mcast_forw_orig_entry *orig_entry;
++	struct mcast_forw_if_entry *sync_if_entry, *tmp;
++	int synced = 0;
++
++	list_for_each_entry(orig_entry, orig_list, list) {
++		if (memcmp(sync_orig_entry->orig,
++			    orig_entry->orig, ETH_ALEN))
++			continue;
++
++		list_for_each_entry_safe(sync_if_entry, tmp,
++				&sync_orig_entry->mcast_if_list, list)
++			sync_if(sync_if_entry, &orig_entry->mcast_if_list);
++
++		list_del(&sync_orig_entry->list);
++		kfree(sync_orig_entry);
++
++		synced = 1;
++		break;
++	}
++
++	if (!synced)
++		list_move(&sync_orig_entry->list, orig_list);
++}
++
++
++/* syncs all multicast entries of sync_table_entry to forw_table */
++static void sync_table(struct mcast_forw_table_entry *sync_table_entry,
++		       struct list_head *forw_table)
++{
++	struct mcast_forw_table_entry *table_entry;
++	struct mcast_forw_orig_entry *sync_orig_entry, *tmp;
++	int synced = 0;
++
++	list_for_each_entry(table_entry, forw_table, list) {
++		if (memcmp(sync_table_entry->mcast_addr,
++			   table_entry->mcast_addr, ETH_ALEN))
++			continue;
++
++		list_for_each_entry_safe(sync_orig_entry, tmp,
++				&sync_table_entry->mcast_orig_list, list)
++			sync_orig(sync_orig_entry,
++				  &table_entry->mcast_orig_list);
++
++		list_del(&sync_table_entry->list);
++		kfree(sync_table_entry);
++
++		synced = 1;
++		break;
++	}
++
++	if (!synced)
++		list_move(&sync_table_entry->list, forw_table);
++}
++
++/* Updates the old multicast forwarding table with the information gained
++ * from the generated/received tracker packet. It also frees the generated
++ * table for syncing (*forw_table). */
++static void update_mcast_forw_table(struct mcast_forw_table_entry *forw_table,
++				    struct bat_priv *bat_priv)
++{
++	struct mcast_forw_table_entry *sync_table_entry, *tmp;
++	unsigned long flags;
++
++	spin_lock_irqsave(&bat_priv->mcast_forw_table_lock, flags);
++	list_for_each_entry_safe(sync_table_entry, tmp, &forw_table->list,
++				 list)
++		sync_table(sync_table_entry, &bat_priv->mcast_forw_table);
++	spin_unlock_irqrestore(&bat_priv->mcast_forw_table_lock, flags);
++}
++
+ static inline int find_mca_match(struct orig_node *orig_node,
+ 		int mca_pos, uint8_t *mc_addr_list, int num_mcast_entries)
  {
- 	struct bat_priv *bat_priv = container_of(work, struct bat_priv,
- 						 mcast_tracker_work.work);
-+	struct mcast_tracker_packet *tracker_packet = NULL;
-+	int tracker_packet_len = 0;
-+
-+	if (atomic_read(&bat_priv->mcast_mode) == MCAST_MODE_PROACT_TRACKING)
-+		tracker_packet = mcast_proact_tracker_prepare(bat_priv,
-+							&tracker_packet_len);
-+
-+	if (!tracker_packet)
-+		goto out;
-+
-+	route_mcast_tracker_packet(tracker_packet, tracker_packet_len, bat_priv);
-+	kfree(tracker_packet);
+@@ -246,13 +490,16 @@ out:
+  * interface to the forw_if_list - but only if this router has not been
+  * added yet */
+ static int add_router_of_dest(struct dest_entries_list *next_hops,
+-			      uint8_t *dest, struct bat_priv *bat_priv)
++			      uint8_t *dest,
++			      struct list_head *forw_if_list,
++			      struct bat_priv *bat_priv)
+ {
+ 	struct dest_entries_list *next_hop_tmp, *next_hop_entry;
+ 	unsigned long flags;
+ 	struct element_t *bucket;
+ 	struct orig_node *orig_node;
+ 	HASHIT(hashit);
++	int16_t if_num;
  
-+out:
- 	start_mcast_tracker(bat_priv);
+ 	next_hop_entry = kmalloc(sizeof(struct dest_entries_list), GFP_ATOMIC);
+ 	if (!next_hop_entry)
+@@ -273,12 +520,17 @@ static int add_router_of_dest(struct dest_entries_list *next_hops,
+ 		memcpy(next_hop_entry->dest, orig_node->router->addr,
+ 		       ETH_ALEN);
+ 		next_hop_entry->batman_if = orig_node->router->if_incoming;
++		if_num = next_hop_entry->batman_if->if_num;
+ 		break;
+ 	}
+ 	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ 	if (!next_hop_entry->batman_if)
+ 		goto free;
+ 
++	if (forw_if_list)
++		prepare_forw_if_entry(forw_if_list, if_num,
++				      next_hop_entry->dest);
++
+ 	list_for_each_entry(next_hop_tmp, &next_hops->list, list)
+ 		if (!memcmp(next_hop_tmp->dest, next_hop_entry->dest,
+ 								ETH_ALEN))
+@@ -300,14 +552,17 @@ free:
+ static int tracker_next_hops(struct mcast_tracker_packet *tracker_packet,
+ 			     int tracker_packet_len,
+ 			     struct dest_entries_list *next_hops,
++			     struct mcast_forw_table_entry *forw_table,
+ 			     struct bat_priv *bat_priv)
+ {
+ 	int num_next_hops = 0, mcast_num, dest_num, ret;
+ 	struct mcast_entry *mcast_entry;
+ 	uint8_t *dest_entry;
+ 	uint8_t *tail = (uint8_t *)tracker_packet + tracker_packet_len;
++	struct list_head *forw_table_if = NULL;
+ 
+ 	INIT_LIST_HEAD(&next_hops->list);
++	INIT_LIST_HEAD(&forw_table->list);
+ 
+ 	tracker_packet_for_each_dest(mcast_entry, dest_entry,
+ 				     mcast_num, dest_num, tracker_packet) {
+@@ -327,8 +582,15 @@ static int tracker_next_hops(struct mcast_tracker_packet *tracker_packet,
+ 			goto out;
+ 		}
+ 
++		if (dest_num)
++			goto skip;
++
++		forw_table_if = prepare_forw_table_entry(forw_table,
++						 mcast_entry->mcast_addr,
++						 tracker_packet->orig);
++skip:
+ 		ret = add_router_of_dest(next_hops, dest_entry,
+-					 bat_priv);
++					 forw_table_if, bat_priv);
+ 		if (!ret)
+ 			num_next_hops++;
+ 	}
+@@ -336,6 +598,8 @@ out:
+ 	return num_next_hops;
  }
  
-diff --git a/multicast.h b/multicast.h
-index 26ce6d8..2711d8b 100644
---- a/multicast.h
-+++ b/multicast.h
-@@ -27,6 +27,9 @@ int mcast_tracker_interval_set(struct net_device *net_dev, char *buff,
- int mcast_tracker_timeout_set(struct net_device *net_dev, char *buff,
- 			       size_t count);
- void mcast_tracker_reset(struct bat_priv *bat_priv);
-+void route_mcast_tracker_packet(
-+			struct mcast_tracker_packet *tracker_packet,
-+			int tracker_packet_len, struct bat_priv *bat_priv);
- int mcast_init(struct bat_priv *bat_priv);
- void mcast_free(struct bat_priv *bat_priv);
++/* Zero destination entries not destined for the specified next hop in the
++ * tracker packet */
+ static void zero_tracker_packet(struct mcast_tracker_packet *tracker_packet,
+ 				uint8_t *next_hop, struct bat_priv *bat_priv)
+ {
+@@ -380,6 +644,8 @@ static void zero_tracker_packet(struct mcast_tracker_packet *tracker_packet,
+ 	spin_unlock_irqrestore(&bat_priv->orig_hash_lock, flags);
+ }
  
++/* Remove zeroed destination entries and empty multicast entries in tracker
++ * packet */
+ static int shrink_tracker_packet(struct mcast_tracker_packet *tracker_packet,
+ 				  int tracker_packet_len)
+ {
+@@ -466,15 +732,19 @@ void route_mcast_tracker_packet(
+ 	struct mcast_tracker_packet *next_hop_tracker_packets,
+ 				    *next_hop_tracker_packet;
+ 	struct dest_entries_list *next_hop;
++	struct mcast_forw_table_entry forw_table;
+ 	struct sk_buff *skb;
+ 	int num_next_hops, i;
+ 	int *tracker_packet_lengths;
+ 
+ 	rcu_read_lock();
+ 	num_next_hops = tracker_next_hops(tracker_packet, tracker_packet_len,
+-					  &next_hops, bat_priv);
++					  &next_hops, &forw_table, bat_priv);
+ 	if (!num_next_hops)
+ 		goto out;
++
++	update_mcast_forw_table(&forw_table, bat_priv);
++
+ 	next_hop_tracker_packets = kmalloc(tracker_packet_len * num_next_hops,
+ 					   GFP_ATOMIC);
+ 	if (!next_hop_tracker_packets)
+@@ -657,6 +927,8 @@ ok:
+ int mcast_init(struct bat_priv *bat_priv)
+ {
+ 	INIT_DELAYED_WORK(&bat_priv->mcast_tracker_work, mcast_tracker_timer);
++	INIT_LIST_HEAD(&bat_priv->mcast_forw_table);
++
+ 	start_mcast_tracker(bat_priv);
+ 
+ 	return 1;
+diff --git a/types.h b/types.h
+index 0129b1f..17ccd5a 100644
+--- a/types.h
++++ b/types.h
+@@ -153,6 +153,7 @@ struct bat_priv {
+ 	struct hlist_head forw_bcast_list;
+ 	struct hlist_head gw_list;
+ 	struct list_head vis_send_list;
++	struct list_head mcast_forw_table;
+ 	struct hashtable_t *orig_hash;
+ 	struct hashtable_t *hna_local_hash;
+ 	struct hashtable_t *hna_global_hash;
+@@ -166,6 +167,7 @@ struct bat_priv {
+ 	spinlock_t vis_hash_lock; /* protects vis_hash */
+ 	spinlock_t vis_list_lock; /* protects vis_info::recv_list */
+ 	spinlock_t softif_neigh_lock; /* protects soft-interface neigh list */
++	spinlock_t mcast_forw_table_lock; /* protects mcast_forw_table */
+ 	int16_t num_local_hna;
+ 	atomic_t hna_local_changed;
+ 	struct delayed_work hna_work;
 -- 
 1.7.1
 
