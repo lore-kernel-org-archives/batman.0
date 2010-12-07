@@ -1,11 +1,16 @@
-Return-Path: <linus.luessing@ascom.ch>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Tue,  7 Dec 2010 15:39:38 +0100
-Message-Id: <1291732778-27441-11-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
+Return-Path: <sven.eckelmann@gmx.de>
+From: Sven Eckelmann <sven.eckelmann@gmx.de>
+Date: Tue, 7 Dec 2010 15:51:21 +0100
 References: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 10/10] batman-adv: Use local tq values
-	determined by NDP on OGMs
+	<1291732778-27441-5-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1291732778-27441-5-git-send-email-linus.luessing@ascom.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3006143.ukOigRsXH1";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201012071551.31575.sven.eckelmann@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 04/10] batman-adv: Send neighbor
+	discovery packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,104 +23,52 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Cc: Linus =?iso-8859-1?q?L=FCssing?= <linus.luessing@ascom.ch>
 
-With this commit not the local transmit quality values determined
-by the OGMs themselves are applied on received OGMs, but the local
-transmit quality detemined by NDP instead. Usually the link quality
-measurements of NDP are more up-to-date than the one of the OGMs, as NDP
-is using a more frequent interval because NDP's packets are not being
-flooded through the whole mesh.
----
- routing.c |   53 ++++++++++++++++++++++-------------------------------
- 1 files changed, 22 insertions(+), 31 deletions(-)
+--nextPart3006143.ukOigRsXH1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/routing.c b/routing.c
-index 1972bb8..8830129 100644
---- a/routing.c
-+++ b/routing.c
-@@ -136,7 +136,7 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- {
- 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct neigh_node *neigh_node = NULL, *tmp_neigh_node = NULL;
--	unsigned char total_count;
-+	uint8_t local_tq = 0;
- 
- 	if (orig_node == orig_neigh_node) {
- 		list_for_each_entry(tmp_neigh_node,
-@@ -180,25 +180,19 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 			return 0;
- 	}
- 
--	orig_node->last_valid = jiffies;
-+	spin_lock_bh(&if_incoming->neigh_list_lock);
-+	list_for_each_entry(neigh_node, &if_incoming->neigh_list, list) {
-+		if (!compare_orig(neigh_node->addr, orig_neigh_node->orig))
-+			continue;
- 
--	/* pay attention to not get a value bigger than 100 % */
--	total_count = (orig_neigh_node->bcast_own_sum[if_incoming->if_num] >
--		       neigh_node->real_packet_count ?
--		       neigh_node->real_packet_count :
--		       orig_neigh_node->bcast_own_sum[if_incoming->if_num]);
-+		orig_node->last_valid = jiffies;
-+		local_tq = neigh_node->tq_avg;
-+		break;
-+	}
-+	spin_unlock_bh(&if_incoming->neigh_list_lock);
- 
--	/* if we have too few packets (too less data) we set tq_own to zero */
--	/* if we receive too few packets it is not considered bidirectional */
--	if ((total_count < TQ_LOCAL_BIDRECT_SEND_MINIMUM) ||
--	    (neigh_node->real_packet_count < TQ_LOCAL_BIDRECT_RECV_MINIMUM))
--		orig_neigh_node->tq_own = 0;
--	else
--		/* neigh_node->real_packet_count is never zero as we
--		 * only purge old information when getting new
--		 * information */
--		orig_neigh_node->tq_own = (TQ_MAX_VALUE * total_count) /
--			neigh_node->real_packet_count;
-+	if (local_tq == 0)
-+		return 0;
- 
- 	/*
- 	 * 1 - ((1-x) ** 3), normalized to TQ_MAX_VALUE this does
-@@ -209,25 +203,22 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 	orig_neigh_node->tq_asym_penalty =
- 		TQ_MAX_VALUE -
- 		(TQ_MAX_VALUE *
--		 (TQ_LOCAL_WINDOW_SIZE - neigh_node->real_packet_count) *
--		 (TQ_LOCAL_WINDOW_SIZE - neigh_node->real_packet_count) *
--		 (TQ_LOCAL_WINDOW_SIZE - neigh_node->real_packet_count)) /
--		(TQ_LOCAL_WINDOW_SIZE *
--		 TQ_LOCAL_WINDOW_SIZE *
--		 TQ_LOCAL_WINDOW_SIZE);
-+		 (TQ_MAX_VALUE - local_tq) *
-+		 (TQ_MAX_VALUE - local_tq) *
-+		 (TQ_MAX_VALUE - local_tq)) /
-+		(TQ_MAX_VALUE *
-+		 TQ_MAX_VALUE *
-+		 TQ_MAX_VALUE);
- 
- 	batman_packet_ogm->tq = ((batman_packet_ogm->tq *
--			      orig_neigh_node->tq_own *
- 			      orig_neigh_node->tq_asym_penalty) /
--			     (TQ_MAX_VALUE * TQ_MAX_VALUE));
-+			      TQ_MAX_VALUE);
- 
- 	bat_dbg(DBG_BATMAN, bat_priv,
- 		"bidirectional: "
--		"orig = %-15pM neigh = %-15pM => own_bcast = %2i, "
--		"real recv = %2i, local tq: %3i, asym_penalty: %3i, "
--		"total tq: %3i\n",
--		orig_node->orig, orig_neigh_node->orig, total_count,
--		neigh_node->real_packet_count, orig_neigh_node->tq_own,
-+		"orig = %-15pM neigh = %-15pM => real recv = %2i, "
-+	        "local tq: %3i, asym_penalty: %3i, total tq: %3i\n",
-+		orig_node->orig, orig_neigh_node->orig, local_tq,
- 		orig_neigh_node->tq_asym_penalty, batman_packet_ogm->tq);
- 
- 	/* if link has the minimum required transmission quality
--- 
-1.7.1
+On Tuesday 07 December 2010 15:39:32 Linus L=FCssing wrote:
+> +	memcpy(skb_put(skb, packet_len), batman_if->ndp_packet_buff,
+> +	       packet_len);
+> +
+> +	send_skb_packet(skb, batman_if, broadcast_addr);
 
+> --- a/types.h
+> +++ b/types.h
+> @@ -47,6 +47,7 @@ struct batman_if {
+>  	struct packet_type batman_adv_ptype;
+>  	struct net_device *soft_iface;
+>  	struct rcu_head rcu;
+> +	unsigned char *ndp_packet_buff;
+
+Good way to never get included in the linux kernel by David S. Miller.
+
+Best regards,
+	Sven
+
+--nextPart3006143.ukOigRsXH1
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJM/knqAAoJEF2HCgfBJntGoZoQAJ9YM+BDxNGjSFiWznJpqDiI
+IUJSjhqwxXEMMQH14Kdfd4wwBhp02wGELdFkReeOHHXBUiKyG4hoV3KC5vWvkQXQ
+evGuZHUdfNyvHsGTLesjL6tt682dKKCgFNvbNIwV/6n1vaL+PqxRVr9CLn0zTI9l
+/KHZ2pxDdw3rKkUK9TuP+gJb4c5Ea6esQzAxj+h4MhQQ/BiUxi1dc8+bvs0fvDvs
+rqettM1WD3U7yNkf9jUPDKl9mFRhQg3xc1KyU0S3UuisfS7oDO9M23XF2Y1YfoZ3
+djelUFKTsz9pDsICNrJtX01uV5sqnYQ6Lx8WI5GIZKFP76NVMGl8cVb+r8Jq0Yad
+2OwpvjdVTluNhOYiq4fW29Xm+SClWI+y2V2+z2JzpC9eVHKPacNFsUMYI87HVr3j
+Glof5sG5YcOSDUifaLdbkpiCj3+nkeQjCjvl1gDnU5W3/S0kEu6Cy3vWOXhrWslG
+h7Yw4DaX5iszE3A7Ph1A0UKSitNxeZ/vXEo4zRKMWcyiPHWweRAiX/CaBo4UMF1K
+9A0FEqO493vNHCwGtlu15tNbfkVc7NgV9CpCdLidtlVefTyg7seqrgTIY+JxkuRO
+nSf8NyXumaQEkaYWjcLAhPGJWzRQUguc/vlyh20tCiLBv+Fc3SIq2jdjHlR8+SpG
+FIjuMPbcHWD3GuM9NvlA
+=S6Sk
+-----END PGP SIGNATURE-----
+
+--nextPart3006143.ukOigRsXH1--
