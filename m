@@ -1,15 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
-Date: Tue,  7 Dec 2010 23:32:24 +0100
-Message-Id: <1291761150-29818-14-git-send-email-linus.luessing@saxnet.de>
+Date: Tue,  7 Dec 2010 23:32:21 +0100
+Message-Id: <1291761150-29818-11-git-send-email-linus.luessing@saxnet.de>
 In-Reply-To: <20101207221351.GA19474@Sellars>
 References: <20101207221351.GA19474@Sellars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 14/20] batman-adv: Export broadcast packet
-	ethernet header checks
+Subject: [B.A.T.M.A.N.] [PATCH 11/20] batman-adv: Output mcast forw table in
+	debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,78 +24,171 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
 
-We need to check similar things for BAT_MCAST packets later too,
-therefore moving them to a seperate function.
+With this commit the full multicast forwarding table, which is used for
+determining whether to forward a multicast data packet or not, can now
+be displayed via mcast_forw_table in BATMAN's debugfs directory.
 
 Signed-off-by: Linus Lüssing <linus.luessing@saxnet.de>
 ---
- routing.c |   43 ++++++++++++++++++++++++++-----------------
- 1 files changed, 26 insertions(+), 17 deletions(-)
+ bat_debugfs.c |    9 ++++++
+ multicast.c   |   83 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ multicast.h   |    1 +
+ 3 files changed, 93 insertions(+), 0 deletions(-)
 
-diff --git a/routing.c b/routing.c
-index 9c83006..ff74bd1 100644
---- a/routing.c
-+++ b/routing.c
-@@ -1167,6 +1167,31 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
- 	return 0;
+diff --git a/bat_debugfs.c b/bat_debugfs.c
+index 0ae81d0..7b1b57d 100644
+--- a/bat_debugfs.c
++++ b/bat_debugfs.c
+@@ -32,6 +32,7 @@
+ #include "soft-interface.h"
+ #include "vis.h"
+ #include "icmp_socket.h"
++#include "multicast.h"
+ 
+ static struct dentry *bat_debugfs;
+ 
+@@ -252,6 +253,12 @@ static int transtable_local_open(struct inode *inode, struct file *file)
+ 	return single_open(file, hna_local_seq_print_text, net_dev);
  }
  
-+static int check_broadcast_packet(struct sk_buff *skb, int hdr_size)
++static int mcast_forw_table_open(struct inode *inode, struct file *file)
 +{
-+	struct ethhdr *ethhdr;
++	struct net_device *net_dev = (struct net_device *)inode->i_private;
++	return single_open(file, mcast_forw_table_seq_print_text, net_dev);
++}
 +
-+	/* drop packet if it has not necessary minimum size */
-+	if (unlikely(!pskb_may_pull(skb, hdr_size)))
-+		return -1;
+ static int vis_data_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+@@ -280,6 +287,7 @@ static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
+ static BAT_DEBUGINFO(softif_neigh, S_IRUGO, softif_neigh_open);
+ static BAT_DEBUGINFO(transtable_global, S_IRUGO, transtable_global_open);
+ static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
++static BAT_DEBUGINFO(mcast_forw_table, S_IRUGO, mcast_forw_table_open);
+ static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
+ 
+ static struct bat_debuginfo *mesh_debuginfos[] = {
+@@ -288,6 +296,7 @@ static struct bat_debuginfo *mesh_debuginfos[] = {
+ 	&bat_debuginfo_softif_neigh,
+ 	&bat_debuginfo_transtable_global,
+ 	&bat_debuginfo_transtable_local,
++	&bat_debuginfo_mcast_forw_table,
+ 	&bat_debuginfo_vis_data,
+ 	NULL,
+ };
+diff --git a/multicast.c b/multicast.c
+index c7edbef..edfe7e2 100644
+--- a/multicast.c
++++ b/multicast.c
+@@ -106,6 +106,24 @@ void mcast_tracker_reset(struct bat_priv *bat_priv)
+ 	start_mcast_tracker(bat_priv);
+ }
+ 
++static inline int get_remaining_timeout(
++				struct mcast_forw_nexthop_entry *nexthop_entry,
++				struct bat_priv *bat_priv)
++{
++	int tracker_timeout = atomic_read(&bat_priv->mcast_tracker_timeout);
++	if (!tracker_timeout)
++		tracker_timeout = atomic_read(&bat_priv->mcast_tracker_interval)
++				  * TRACKER_TIMEOUT_AUTO_X;
++	if (!tracker_timeout)
++		tracker_timeout = atomic_read(&bat_priv->orig_interval)
++				  * TRACKER_TIMEOUT_AUTO_X / 2;
 +
-+	ethhdr = (struct ethhdr *)skb_mac_header(skb);
++	tracker_timeout = jiffies_to_msecs(nexthop_entry->timeout) +
++			tracker_timeout - jiffies_to_msecs(jiffies);
 +
-+	/* packet with broadcast indication but unicast recipient */
-+	if (!is_broadcast_ether_addr(ethhdr->h_dest))
-+		return -1;
++	return (tracker_timeout > 0 ? tracker_timeout : 0);
++}
 +
-+	/* packet with broadcast sender address */
-+	if (is_broadcast_ether_addr(ethhdr->h_source))
-+		return -1;
+ static void prepare_forw_if_entry(struct list_head *forw_if_list,
+ 				  int16_t if_num, uint8_t *neigh_addr)
+ {
+@@ -924,6 +942,71 @@ ok:
+ 	return count;
+ }
+ 
++static inline struct batman_if *if_num_to_batman_if(int16_t if_num)
++{
++	struct batman_if *batman_if;
 +
-+	/* ignore broadcasts sent by myself */
-+	if (is_my_mac(ethhdr->h_source))
-+		return -1;
++	list_for_each_entry_rcu(batman_if, &if_list, list)
++		if (batman_if->if_num == if_num)
++			return batman_if;
++
++	return NULL;
++}
++
++int mcast_forw_table_seq_print_text(struct seq_file *seq, void *offset)
++{
++	struct net_device *net_dev = (struct net_device *)seq->private;
++	struct bat_priv *bat_priv = netdev_priv(net_dev);
++	unsigned long flags;
++	struct batman_if *batman_if;
++	struct mcast_forw_table_entry *table_entry;
++	struct mcast_forw_orig_entry *orig_entry;
++	struct mcast_forw_if_entry *if_entry;
++	struct mcast_forw_nexthop_entry *nexthop_entry;
++
++	seq_printf(seq, "[B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%pM (%s)]\n",
++		   SOURCE_VERSION, REVISION_VERSION_STR,
++		   bat_priv->primary_if->net_dev->name,
++		   bat_priv->primary_if->net_dev->dev_addr, net_dev->name);
++	seq_printf(seq, "Multicast group MAC\tOriginator\t"
++			"Outgoing interface\tNexthop - timeout in msecs\n");
++
++	rcu_read_lock();
++	spin_lock_irqsave(&bat_priv->mcast_forw_table_lock, flags);
++	list_for_each_entry(table_entry, &bat_priv->mcast_forw_table, list) {
++		seq_printf(seq, "%pM\n", table_entry->mcast_addr);
++
++		list_for_each_entry(orig_entry, &table_entry->mcast_orig_list,
++				    list) {
++			seq_printf(seq, "\t%pM\n", orig_entry->orig);
++
++			list_for_each_entry(if_entry,
++					    &orig_entry->mcast_if_list, list) {
++				batman_if =
++					if_num_to_batman_if(if_entry->if_num);
++				if (!batman_if)
++					continue;
++
++				seq_printf(seq, "\t\t%s\n",
++					   batman_if->net_dev->name);
++
++				list_for_each_entry(nexthop_entry,
++						&if_entry->mcast_nexthop_list,
++						list) {
++					seq_printf(seq, "\t\t\t%pM - %i\n",
++						   nexthop_entry->neigh_addr,
++						   get_remaining_timeout(
++						     nexthop_entry, bat_priv));
++				}
++			}
++		}
++	}
++	spin_unlock_irqrestore(&bat_priv->mcast_forw_table_lock, flags);
++	rcu_read_unlock();
 +
 +	return 0;
 +}
 +
- int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
- 			 int hdr_size)
+ int mcast_init(struct bat_priv *bat_priv)
  {
-@@ -1306,26 +1331,10 @@ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
- 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
- 	struct orig_node *orig_node;
- 	struct bcast_packet *bcast_packet;
--	struct ethhdr *ethhdr;
- 	int hdr_size = sizeof(struct bcast_packet);
- 	int32_t seq_diff;
+ 	INIT_DELAYED_WORK(&bat_priv->mcast_tracker_work, mcast_tracker_timer);
+diff --git a/multicast.h b/multicast.h
+index 2711d8b..0bd0590 100644
+--- a/multicast.h
++++ b/multicast.h
+@@ -30,6 +30,7 @@ void mcast_tracker_reset(struct bat_priv *bat_priv);
+ void route_mcast_tracker_packet(
+ 			struct mcast_tracker_packet *tracker_packet,
+ 			int tracker_packet_len, struct bat_priv *bat_priv);
++int mcast_forw_table_seq_print_text(struct seq_file *seq, void *offset);
+ int mcast_init(struct bat_priv *bat_priv);
+ void mcast_free(struct bat_priv *bat_priv);
  
--	/* drop packet if it has not necessary minimum size */
--	if (unlikely(!pskb_may_pull(skb, hdr_size)))
--		return NET_RX_DROP;
--
--	ethhdr = (struct ethhdr *)skb_mac_header(skb);
--
--	/* packet with broadcast indication but unicast recipient */
--	if (!is_broadcast_ether_addr(ethhdr->h_dest))
--		return NET_RX_DROP;
--
--	/* packet with broadcast sender address */
--	if (is_broadcast_ether_addr(ethhdr->h_source))
--		return NET_RX_DROP;
--
--	/* ignore broadcasts sent by myself */
--	if (is_my_mac(ethhdr->h_source))
-+	if (check_broadcast_packet(skb, hdr_size) < 0)
- 		return NET_RX_DROP;
- 
- 	bcast_packet = (struct bcast_packet *)skb->data;
 -- 
 1.7.1
 
