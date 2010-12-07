@@ -1,11 +1,11 @@
 Return-Path: <linus.luessing@ascom.ch>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Tue,  7 Dec 2010 15:39:30 +0100
-Message-Id: <1291732778-27441-3-git-send-email-linus.luessing@ascom.ch>
+Date: Tue,  7 Dec 2010 15:39:31 +0100
+Message-Id: <1291732778-27441-4-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
 References: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 02/10] batman-adv: Adding jittering methods
-	for ndp
+Subject: [B.A.T.M.A.N.] [PATCH 03/10] batman-adv: Adding workqueue for new
+	ndp packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,116 +20,154 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-This patch adds a function for fetching and jittering an ndp interval
-from batman-if structure. Needed later for timing the neighbor discovery
-packets.
----
- hard-interface.c |    2 +-
- routing.c        |    2 +-
- send.c           |   18 +++++++++++++-----
- send.h           |    3 ++-
- types.h          |    1 +
- 5 files changed, 18 insertions(+), 8 deletions(-)
+The new neighbor discovery packets will later need their own interval
+per interface. For instance on a wifi interface which has regularly
+changing link qualities the ndp interval should be faster than on a
+static cable link where we would need some probes from time to time
+only.
 
+This patch adds a workqueue per interface used by batman-adv. When an
+interface is active, a ndp_send() with the according batman_if structure
+will be called every second now.
+---
+ Makefile.kbuild  |    1 +
+ hard-interface.c |    6 ++++++
+ ndp.c            |   44 ++++++++++++++++++++++++++++++++++++++++++++
+ ndp.h            |    6 ++++++
+ types.h          |    2 ++
+ 5 files changed, 59 insertions(+), 0 deletions(-)
+ create mode 100644 ndp.c
+ create mode 100644 ndp.h
+
+diff --git a/Makefile.kbuild b/Makefile.kbuild
+index e99c198..094eb31 100644
+--- a/Makefile.kbuild
++++ b/Makefile.kbuild
+@@ -42,6 +42,7 @@ batman-adv-y += hard-interface.o
+ batman-adv-y += hash.o
+ batman-adv-y += icmp_socket.o
+ batman-adv-y += main.o
++batman-adv-y += ndp.o
+ batman-adv-y += originator.o
+ batman-adv-y += ring_buffer.o
+ batman-adv-y += routing.o
 diff --git a/hard-interface.c b/hard-interface.c
-index 784c475..da7b9a9 100644
+index da7b9a9..cb81c13 100644
 --- a/hard-interface.c
 +++ b/hard-interface.c
-@@ -360,7 +360,7 @@ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
- 			batman_if->net_dev->name);
+@@ -26,6 +26,7 @@
+ #include "translation-table.h"
+ #include "routing.h"
+ #include "bat_sysfs.h"
++#include "ndp.h"
+ #include "originator.h"
+ #include "hash.h"
  
- 	/* begin scheduling originator messages on that interface */
--	schedule_own_packet(batman_if);
-+	schedule_own_ogm_packet(batman_if);
+@@ -260,6 +261,7 @@ static void hardif_activate_interface(struct batman_if *batman_if)
+ 		 batman_if->net_dev->name);
  
- out:
- 	return 0;
-diff --git a/routing.c b/routing.c
-index a9406ba..7ebb631 100644
---- a/routing.c
-+++ b/routing.c
-@@ -561,7 +561,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 	if (batman_packet_ogm->packet_type != BAT_PACKET_OGM)
- 		return;
- 
--	/* could be changed by schedule_own_packet() */
-+	/* could be changed by schedule_own_ogm_packet() */
- 	if_incoming_seqno = atomic_read(&if_incoming->seqno);
- 
- 	has_directlink_flag = (batman_packet_ogm->flags & DIRECTLINK ? 1 : 0);
-diff --git a/send.c b/send.c
-index eb9c1e3..910411c 100644
---- a/send.c
-+++ b/send.c
-@@ -40,8 +40,16 @@ static uint8_t hop_penalty(const uint8_t tq, struct bat_priv *bat_priv)
- 	return (tq * (TQ_MAX_VALUE - hop_penalty)) / (TQ_MAX_VALUE);
+ 	update_min_mtu(batman_if->soft_iface);
++	start_ndp_timer(batman_if);
+ 	return;
  }
  
--/* when do we schedule our own packet to be sent */
--static unsigned long own_send_time(struct bat_priv *bat_priv)
-+/* when do we schedule our own neighbor discovery packet to be sent */
-+unsigned long own_ndp_send_time(struct batman_if *batman_if)
+@@ -274,6 +276,7 @@ static void hardif_deactivate_interface(struct batman_if *batman_if)
+ 	bat_info(batman_if->soft_iface, "Interface deactivated: %s\n",
+ 		 batman_if->net_dev->name);
+ 
++	stop_ndp_timer(batman_if);
+ 	update_min_mtu(batman_if->soft_iface);
+ }
+ 
+@@ -328,6 +331,8 @@ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
+ 
+ 	atomic_set(&batman_if->seqno, 1);
+ 	atomic_set(&batman_if->frag_seqno, 1);
++	ndp_init(batman_if);
++
+ 	bat_info(batman_if->soft_iface, "Adding interface: %s\n",
+ 		 batman_if->net_dev->name);
+ 
+@@ -381,6 +386,7 @@ void hardif_disable_interface(struct batman_if *batman_if)
+ 
+ 	bat_info(batman_if->soft_iface, "Removing interface: %s\n",
+ 		 batman_if->net_dev->name);
++	ndp_free(batman_if);
+ 	dev_remove_pack(&batman_if->batman_adv_ptype);
+ 	kref_put(&batman_if->refcount, hardif_free_ref);
+ 
+diff --git a/ndp.c b/ndp.c
+new file mode 100644
+index 0000000..2dfb06d
+--- /dev/null
++++ b/ndp.c
+@@ -0,0 +1,44 @@
++#include "main.h"
++#include "send.h"
++#include "ndp.h"
++
++void start_ndp_timer(struct batman_if *batman_if)
 +{
-+	return jiffies + msecs_to_jiffies(
-+		   atomic_read(&batman_if->ndp_interval) -
-+		   JITTER + (random32() % 2*JITTER));
++	// adding some jitter
++	unsigned long ndp_interval = own_ndp_send_time(batman_if);
++	queue_delayed_work(bat_event_workqueue, &batman_if->ndp_wq,
++			   ndp_interval - jiffies);
 +}
 +
-+/* when do we schedule our own originator packet to be sent */
-+static unsigned long own_ogm_send_time(struct bat_priv *bat_priv)
- {
- 	return jiffies + msecs_to_jiffies(
- 		   atomic_read(&bat_priv->orig_interval) -
-@@ -243,7 +251,7 @@ static void rebuild_batman_packet_ogm(struct bat_priv *bat_priv,
- 	}
- }
- 
--void schedule_own_packet(struct batman_if *batman_if)
-+void schedule_own_ogm_packet(struct batman_if *batman_if)
- {
- 	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
- 	unsigned long send_time;
-@@ -296,7 +304,7 @@ void schedule_own_packet(struct batman_if *batman_if)
- 	atomic_inc(&batman_if->seqno);
- 
- 	slide_own_bcast_window(batman_if);
--	send_time = own_send_time(bat_priv);
-+	send_time = own_ogm_send_time(bat_priv);
- 	add_bat_packet_to_list(bat_priv,
- 			       batman_if->packet_buff,
- 			       batman_if->packet_len,
-@@ -513,7 +521,7 @@ void send_outstanding_bat_packet(struct work_struct *work)
- 	 * shutting down
- 	 */
- 	if (forw_packet->own)
--		schedule_own_packet(forw_packet->if_incoming);
-+		schedule_own_ogm_packet(forw_packet->if_incoming);
- 
- out:
- 	/* don't count own packet */
-diff --git a/send.h b/send.h
-index acf59e7..b626ddf 100644
---- a/send.h
-+++ b/send.h
-@@ -27,7 +27,8 @@
- int send_skb_packet(struct sk_buff *skb,
- 				struct batman_if *batman_if,
- 				uint8_t *dst_addr);
--void schedule_own_packet(struct batman_if *batman_if);
-+unsigned long own_ndp_send_time(struct batman_if *batman_if);
-+void schedule_own_ogm_packet(struct batman_if *batman_if);
- void schedule_forward_packet(struct orig_node *orig_node,
- 			     struct ethhdr *ethhdr,
- 			     struct batman_packet_ogm *batman_packet_ogm,
++void stop_ndp_timer(struct batman_if *batman_if)
++{
++	cancel_delayed_work_sync(&batman_if->ndp_wq);
++}
++
++static void ndp_send(struct work_struct *work)
++{
++	struct batman_if *batman_if = container_of(work, struct batman_if,
++							ndp_wq.work);
++	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
++
++	bat_dbg(DBG_BATMAN, bat_priv,
++		"batman-adv:Sending ndp packet on interface %s, seqno %d\n",
++		batman_if->net_dev, atomic_read(&batman_if->ndp_seqno));
++
++	atomic_inc(&batman_if->ndp_seqno);
++	start_ndp_timer(batman_if);
++}
++
++int ndp_init(struct batman_if *batman_if)
++{
++	atomic_set(&batman_if->ndp_interval, 500);
++	atomic_set(&batman_if->ndp_seqno, 0);
++	INIT_DELAYED_WORK(&batman_if->ndp_wq, ndp_send);
++
++	return 0;
++}
++
++void ndp_free(struct batman_if *batman_if)
++{
++	stop_ndp_timer(batman_if);
++}
+diff --git a/ndp.h b/ndp.h
+new file mode 100644
+index 0000000..de85910
+--- /dev/null
++++ b/ndp.h
+@@ -0,0 +1,6 @@
++
++void start_ndp_timer(struct batman_if *batman_if);
++void stop_ndp_timer(struct batman_if *batman_if);
++
++int ndp_init(struct batman_if *batman_if);
++void ndp_free(struct batman_if *batman_if);
 diff --git a/types.h b/types.h
-index 1d00849..8921e20 100644
+index 8921e20..e8dfdf6 100644
 --- a/types.h
 +++ b/types.h
-@@ -47,6 +47,7 @@ struct batman_if {
- 	struct packet_type batman_adv_ptype;
+@@ -48,6 +48,8 @@ struct batman_if {
  	struct net_device *soft_iface;
  	struct rcu_head rcu;
-+	atomic_t ndp_interval;
+ 	atomic_t ndp_interval;
++	atomic_t ndp_seqno;
++	struct delayed_work ndp_wq;
  };
  
  /**
