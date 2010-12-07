@@ -1,15 +1,14 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
-Date: Tue,  7 Dec 2010 23:32:16 +0100
-Message-Id: <1291761150-29818-6-git-send-email-linus.luessing@saxnet.de>
+Date: Tue,  7 Dec 2010 23:32:14 +0100
+Message-Id: <1291761150-29818-4-git-send-email-linus.luessing@saxnet.de>
 In-Reply-To: <20101207221351.GA19474@Sellars>
 References: <20101207221351.GA19474@Sellars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 06/20] batman-adv: Buffer other originator's
-	received MCA entries
+Subject: [B.A.T.M.A.N.] [PATCH 04/20] batman-adv: Attach local MCAs to OGMs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,165 +23,215 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
 
-We need to memorize the MCA information attached to the OGMs to be able
-to prepare the tracker packets with them later.
+This patch introduces multicast announcements - MCA for short - which
+are now being attached to an OGM if an optimized multicast mode needing
+MCAs has been selected (i.e. proactive_tracking).
+
+MCA entries are multicast mac addresses used by a multicast receiver in
+the mesh cloud. Currently MCAs are only fetched locally from the
+according batman interface itself, bridged-in hosts will not yet get
+announced and will need a more complex patch for supporting IGMP/MLD
+snooping. However, the local fetching also allows to have multicast
+optimizations on layer 2 already for batman nodes, not depending on
+IP at all.
 
 Signed-off-by: Linus Lüssing <linus.luessing@saxnet.de>
 ---
- originator.c |    7 ++++++-
- routing.c    |   40 +++++++++++++++++++++++++++++++++++++---
- routing.h    |    2 +-
- types.h      |    2 ++
- 4 files changed, 46 insertions(+), 5 deletions(-)
+ aggregation.c |   12 +++++++-
+ aggregation.h |    6 +++-
+ main.h        |    2 +
+ send.c        |   82 +++++++++++++++++++++++++++++++++++++++++++++++++-------
+ 4 files changed, 87 insertions(+), 15 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index 89ec021..900d5fc 100644
---- a/originator.c
-+++ b/originator.c
-@@ -101,6 +101,8 @@ static void free_orig_node(void *data, void *arg)
- 	frag_list_free(&orig_node->frag_list);
- 	hna_global_del_orig(bat_priv, orig_node, "originator timed out");
- 
-+	kfree(orig_node->mca_buff);
-+
- 	kfree(orig_node->bcast_own);
- 	kfree(orig_node->bcast_own_sum);
- 	kfree(orig_node);
-@@ -147,6 +149,8 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
- 	memcpy(orig_node->orig, addr, ETH_ALEN);
- 	orig_node->router = NULL;
- 	orig_node->hna_buff = NULL;
-+	orig_node->mca_buff = NULL;
-+	orig_node->num_mca = 0;
- 	orig_node->bcast_seqno_reset = jiffies - 1
- 					- msecs_to_jiffies(RESET_PROTECTION_MS);
- 	orig_node->batman_seqno_reset = jiffies - 1
-@@ -256,7 +260,8 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
- 			update_routes(bat_priv, orig_node,
- 				      best_neigh_node,
- 				      orig_node->hna_buff,
--				      orig_node->hna_buff_len);
-+				      orig_node->hna_buff_len,
-+				      orig_node->mca_buff, orig_node->num_mca);
- 			/* update bonding candidates, we could have lost
- 			 * some candidates. */
- 			update_bonding_candidates(bat_priv, orig_node);
-diff --git a/routing.c b/routing.c
-index d8b0c5a..cf145b7 100644
---- a/routing.c
-+++ b/routing.c
-@@ -77,6 +77,34 @@ static void update_HNA(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 	}
+diff --git a/aggregation.c b/aggregation.c
+index 0c92e3b..d4de296 100644
+--- a/aggregation.c
++++ b/aggregation.c
+@@ -30,6 +30,12 @@ static int hna_len(struct batman_packet *batman_packet)
+ 	return batman_packet->num_hna * ETH_ALEN;
  }
  
-+/* Copy the mca buffer again if something has changed */
-+static void update_MCA(struct orig_node *orig_node,
-+		       unsigned char *mca_buff, int num_mca)
++/* calculate the size of the mca information for a given packet */
++static int mca_len(struct batman_packet *batman_packet)
 +{
-+	/* numbers differ? then reallocate buffer */
-+	if (num_mca != orig_node->num_mca) {
-+		kfree(orig_node->mca_buff);
-+		if (num_mca > 0) {
-+			orig_node->mca_buff =
-+				kmalloc(num_mca * ETH_ALEN, GFP_ATOMIC);
-+			if (orig_node->mca_buff)
-+				goto update;
-+		}
-+		orig_node->mca_buff = NULL;
-+		orig_node->num_mca = 0;
-+	/* size ok, just update? */
-+	} else if (num_mca > 0 &&
-+		 memcmp(orig_node->mca_buff, mca_buff, num_mca * ETH_ALEN))
-+		goto update;
-+
-+	/* it's the same, leave it like that */
-+	return;
-+
-+update:
-+	memcpy(orig_node->mca_buff, mca_buff, num_mca * ETH_ALEN);
-+	orig_node->num_mca = num_mca;
++	return batman_packet->num_mca * ETH_ALEN;
 +}
 +
- static void update_route(struct bat_priv *bat_priv,
- 			 struct orig_node *orig_node,
- 			 struct neigh_node *neigh_node,
-@@ -114,7 +142,7 @@ static void update_route(struct bat_priv *bat_priv,
+ /* return true if new_packet can be aggregated with forw_packet */
+ static bool can_aggregate_with(struct batman_packet *new_batman_packet,
+ 			       int packet_len,
+@@ -265,9 +271,11 @@ void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff,
+ 				   hna_buff, hna_len(batman_packet),
+ 				   if_incoming);
  
- void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 		   struct neigh_node *neigh_node, unsigned char *hna_buff,
--		   int hna_buff_len)
-+		   int hna_buff_len, unsigned char *mca_buff, int num_mca)
+-		buff_pos += BAT_PACKET_LEN + hna_len(batman_packet);
++		buff_pos += BAT_PACKET_LEN + hna_len(batman_packet) +
++			    mca_len(batman_packet);
+ 		batman_packet = (struct batman_packet *)
+ 			(packet_buff + buff_pos);
+ 	} while (aggregated_packet(buff_pos, packet_len,
+-				   batman_packet->num_hna));
++				   batman_packet->num_hna,
++				   batman_packet->num_mca));
+ }
+diff --git a/aggregation.h b/aggregation.h
+index 71a91b3..93f2496 100644
+--- a/aggregation.h
++++ b/aggregation.h
+@@ -25,9 +25,11 @@
+ #include "main.h"
+ 
+ /* is there another aggregated packet here? */
+-static inline int aggregated_packet(int buff_pos, int packet_len, int num_hna)
++static inline int aggregated_packet(int buff_pos, int packet_len, int num_hna,
++				    int num_mca)
  {
+-	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (num_hna * ETH_ALEN);
++	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (num_hna * ETH_ALEN) +
++			    (num_mca * ETH_ALEN);
  
- 	if (orig_node == NULL)
-@@ -126,6 +154,8 @@ void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 	/* may be just HNA changed */
- 	else
- 		update_HNA(bat_priv, orig_node, hna_buff, hna_buff_len);
+ 	return (next_buff_pos <= packet_len) &&
+ 		(next_buff_pos <= MAX_AGGREGATION_BYTES);
+diff --git a/main.h b/main.h
+index a362433..772d621 100644
+--- a/main.h
++++ b/main.h
+@@ -105,6 +105,8 @@
+ 
+ /* #define VIS_SUBCLUSTERS_DISABLED */
+ 
++#define UINT8_MAX 255
 +
-+	update_MCA(orig_node, mca_buff, num_mca);
+ /*
+  * Kernel headers
+  */
+diff --git a/send.c b/send.c
+index b89b9f7..ba7ebfe 100644
+--- a/send.c
++++ b/send.c
+@@ -122,7 +122,8 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
+ 	/* adjust all flags and log packets */
+ 	while (aggregated_packet(buff_pos,
+ 				 forw_packet->packet_len,
+-				 batman_packet->num_hna)) {
++				 batman_packet->num_hna,
++				 batman_packet->num_mca)) {
+ 
+ 		/* we might have aggregated direct link packets with an
+ 		 * ordinary base packet */
+@@ -214,18 +215,71 @@ static void send_packet(struct forw_packet *forw_packet)
+ 	rcu_read_unlock();
  }
  
- static int is_bidirectional_neigh(struct orig_node *orig_node,
-@@ -247,6 +277,7 @@ static void update_orig(struct bat_priv *bat_priv,
++static void add_own_MCA(struct batman_packet *batman_packet, int num_mca,
++		       struct net_device *soft_iface)
++{
++	MC_LIST *mc_list_entry;
++	int num_mca_done = 0;
++	unsigned long flags;
++	char *mca_entry = (char *)(batman_packet + 1);
++
++	if (num_mca == 0)
++		goto out;
++
++	if (num_mca > UINT8_MAX) {
++		pr_warning("Too many multicast announcements here, "
++			   "just adding %i\n", UINT8_MAX);
++		num_mca = UINT8_MAX;
++	}
++
++	mca_entry = mca_entry + batman_packet->num_hna * ETH_ALEN;
++
++	MC_LIST_LOCK(soft_iface, flags);
++	netdev_for_each_mc_addr(mc_list_entry, soft_iface) {
++		memcpy(mca_entry, &mc_list_entry->MC_LIST_ADDR, ETH_ALEN);
++		mca_entry += ETH_ALEN;
++
++		/* A multicast address might just have been added,
++		 * avoid writing outside of buffer */
++		if(++num_mca_done == num_mca)
++			break;
++	}
++	MC_LIST_UNLOCK(soft_iface, flags);
++
++out:
++	batman_packet->num_mca = num_mca_done;
++}
++
+ static void rebuild_batman_packet(struct bat_priv *bat_priv,
+ 				  struct batman_if *batman_if)
  {
- 	struct neigh_node *neigh_node = NULL, *tmp_neigh_node = NULL;
- 	int tmp_hna_buff_len;
-+	unsigned char *mca_buff;
+-	int new_len;
+-	unsigned char *new_buff;
++	int new_len, mcast_mode, num_mca = 0;
++	unsigned long flags;
++	unsigned char *new_buff = NULL;
+ 	struct batman_packet *batman_packet;
  
- 	bat_dbg(DBG_BATMAN, bat_priv, "update_originator(): "
- 		"Searching and updating originator entry of received packet\n");
-@@ -297,6 +328,7 @@ static void update_orig(struct bat_priv *bat_priv,
+-	new_len = sizeof(struct batman_packet) +
+-			(bat_priv->num_local_hna * ETH_ALEN);
+-	new_buff = kmalloc(new_len, GFP_ATOMIC);
++	batman_packet = (struct batman_packet *)batman_if->packet_buff;
++	mcast_mode = atomic_read(&bat_priv->mcast_mode);
++
++	/* Avoid attaching MCAs, if multicast optimization is disabled */
++	if (mcast_mode == MCAST_MODE_PROACT_TRACKING) {
++		MC_LIST_LOCK(batman_if->soft_iface, flags);
++		num_mca = netdev_mc_count(batman_if->soft_iface);
++		MC_LIST_UNLOCK(batman_if->soft_iface, flags);
++	}
  
- 	tmp_hna_buff_len = (hna_buff_len > batman_packet->num_hna * ETH_ALEN ?
- 			    batman_packet->num_hna * ETH_ALEN : hna_buff_len);
-+	mca_buff = (char *)batman_packet + BAT_PACKET_LEN + tmp_hna_buff_len;
+-	/* keep old buffer if kmalloc should fail */
++	if (atomic_read(&bat_priv->hna_local_changed) ||
++	    num_mca != batman_packet->num_mca) {
++		new_len = sizeof(struct batman_packet) +
++			(bat_priv->num_local_hna * ETH_ALEN) +
++			num_mca * ETH_ALEN;
++		new_buff = kmalloc(new_len, GFP_ATOMIC);
++	}
++
++	/*
++	 * if local hna or mca has changed but kmalloc failed
++	 * then just keep the old buffer
++	 */
+ 	if (new_buff) {
+ 		memcpy(new_buff, batman_if->packet_buff,
+ 		       sizeof(struct batman_packet));
+@@ -239,6 +293,13 @@ static void rebuild_batman_packet(struct bat_priv *bat_priv,
+ 		batman_if->packet_buff = new_buff;
+ 		batman_if->packet_len = new_len;
+ 	}
++
++	/**
++	 * always copy mca entries (if there are any) - we have to
++	 * traverse the list anyway, so we can just do a memcpy instead of memcmp
++	 * for the sake of simplicity
++	 */
++	add_own_MCA(batman_packet, num_mca, batman_if->soft_iface);
+ }
  
- 	/* if this neighbor already is our next hop there is nothing
- 	 * to change */
-@@ -317,12 +349,14 @@ static void update_orig(struct bat_priv *bat_priv,
- 		goto update_hna;
+ void schedule_own_packet(struct batman_if *batman_if)
+@@ -264,9 +325,7 @@ void schedule_own_packet(struct batman_if *batman_if)
+ 	if (batman_if->if_status == IF_TO_BE_ACTIVATED)
+ 		batman_if->if_status = IF_ACTIVE;
  
- 	update_routes(bat_priv, orig_node, neigh_node,
--		      hna_buff, tmp_hna_buff_len);
-+		      hna_buff, tmp_hna_buff_len, mca_buff,
-+		      batman_packet->num_mca);
- 	goto update_gw;
+-	/* if local hna has changed and interface is a primary interface */
+-	if ((atomic_read(&bat_priv->hna_local_changed)) &&
+-	    (batman_if == bat_priv->primary_if))
++	if (batman_if == bat_priv->primary_if)
+ 		rebuild_batman_packet(bat_priv, batman_if);
  
- update_hna:
- 	update_routes(bat_priv, orig_node, orig_node->router,
--		      hna_buff, tmp_hna_buff_len);
-+		      hna_buff, tmp_hna_buff_len, mca_buff,
-+		      batman_packet->num_mca);
+ 	/**
+@@ -359,7 +418,8 @@ void schedule_forward_packet(struct orig_node *orig_node,
+ 	send_time = forward_send_time(bat_priv);
+ 	add_bat_packet_to_list(bat_priv,
+ 			       (unsigned char *)batman_packet,
+-			       sizeof(struct batman_packet) + hna_buff_len,
++			       sizeof(struct batman_packet) + hna_buff_len
++			       + batman_packet->num_mca * ETH_ALEN,
+ 			       if_incoming, 0, send_time);
+ }
  
- update_gw:
- 	if (orig_node->gw_flags != batman_packet->gw_flags)
-diff --git a/routing.h b/routing.h
-index f108f23..d44b540 100644
---- a/routing.h
-+++ b/routing.h
-@@ -31,7 +31,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- 				struct batman_if *if_incoming);
- void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 		   struct neigh_node *neigh_node, unsigned char *hna_buff,
--		   int hna_buff_len);
-+		   int hna_buff_len, unsigned char *mca_buff, int num_mca);
- int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
- 			 int hdr_size);
- int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if);
-diff --git a/types.h b/types.h
-index 41eabfe..0129b1f 100644
---- a/types.h
-+++ b/types.h
-@@ -79,6 +79,8 @@ struct orig_node {
- 	uint8_t flags;
- 	unsigned char *hna_buff;
- 	int16_t hna_buff_len;
-+	unsigned char *mca_buff;
-+	uint8_t num_mca;
- 	uint32_t last_real_seqno;
- 	uint8_t last_ttl;
- 	TYPE_OF_WORD bcast_bits[NUM_WORDS];
 -- 
 1.7.1
 
