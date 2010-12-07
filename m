@@ -1,15 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
-Date: Tue,  7 Dec 2010 23:32:19 +0100
-Message-Id: <1291761150-29818-9-git-send-email-linus.luessing@saxnet.de>
+Date: Tue,  7 Dec 2010 23:32:22 +0100
+Message-Id: <1291761150-29818-12-git-send-email-linus.luessing@saxnet.de>
 In-Reply-To: <20101207221351.GA19474@Sellars>
 References: <20101207221351.GA19474@Sellars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 09/20] batman-adv: Route multicast tracker
-	packets
+Subject: [B.A.T.M.A.N.] [PATCH 12/20] batman-adv: Purge timeouted entries in
+	mcast forw table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,83 +24,116 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
 
-This commit adds the ability to also forward a received multicast
-tracker packet (if necessary). It also makes use of the same splitting
-methods introduced with one of the previous commits, in case of multiple
-next hop destinations.
+With this commit, the multicast forwarding table, which has been
+previously filled up due to multicast tracker packets, will now be
+checked frequently (once per second) for timeouted entries. If so these
+entries get removed from the table.
+
+Note, that a more frequent check interval is not necessary, as multicast
+data will not only be forwarded if an entry exists, but also if that one
+might not have timeouted yet.
 
 Signed-off-by: Linus Lüssing <linus.luessing@saxnet.de>
 ---
- hard-interface.c |    5 +++++
- routing.c        |   19 +++++++++++++++++++
- routing.h        |    1 +
- 3 files changed, 25 insertions(+), 0 deletions(-)
+ multicast.c  |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ multicast.h  |    1 +
+ originator.c |    2 ++
+ 3 files changed, 54 insertions(+), 0 deletions(-)
 
-diff --git a/hard-interface.c b/hard-interface.c
-index 2b502be..3b380e1 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -624,6 +624,11 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 		ret = recv_bcast_packet(skb, batman_if);
- 		break;
- 
-+		/* multicast tracker packet */
-+	case BAT_MCAST_TRACKER:
-+		ret = recv_mcast_tracker_packet(skb, batman_if);
-+		break;
-+
- 		/* vis packet */
- 	case BAT_VIS:
- 		ret = recv_vis_packet(skb, batman_if);
-diff --git a/routing.c b/routing.c
-index cf145b7..9c83006 100644
---- a/routing.c
-+++ b/routing.c
-@@ -35,6 +35,7 @@
- #include "gateway_common.h"
- #include "gateway_client.h"
- #include "unicast.h"
-+#include "multicast.h"
- 
- void slide_own_bcast_window(struct batman_if *batman_if)
- {
-@@ -1378,6 +1379,24 @@ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
- 	return NET_RX_SUCCESS;
+diff --git a/multicast.c b/multicast.c
+index edfe7e2..2b1bfde 100644
+--- a/multicast.c
++++ b/multicast.c
+@@ -821,6 +821,57 @@ out:
+ 	rcu_read_unlock();
  }
  
-+int recv_mcast_tracker_packet(struct sk_buff *skb, struct batman_if *recv_if)
++void purge_mcast_forw_table(struct bat_priv *bat_priv)
 +{
-+	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
-+	struct mcast_tracker_packet *tracker_packet;
-+	int hdr_size = sizeof(struct mcast_tracker_packet);
++	unsigned long flags;
++	struct mcast_forw_table_entry *table_entry, *tmp_table_entry;
++	struct mcast_forw_orig_entry *orig_entry, *tmp_orig_entry;
++	struct mcast_forw_if_entry *if_entry, *tmp_if_entry;
++	struct mcast_forw_nexthop_entry *nexthop_entry, *tmp_nexthop_entry;
 +
-+	if (check_unicast_packet(skb, hdr_size) < 0)
-+		return NET_RX_DROP;
++	spin_lock_irqsave(&bat_priv->mcast_forw_table_lock, flags);
++	list_for_each_entry_safe(table_entry, tmp_table_entry,
++				 &bat_priv->mcast_forw_table, list) {
++		list_for_each_entry_safe(orig_entry, tmp_orig_entry,
++					 &table_entry->mcast_orig_list, list) {
++			list_for_each_entry_safe(if_entry, tmp_if_entry,
++					    &orig_entry->mcast_if_list, list) {
++				list_for_each_entry_safe(nexthop_entry,
++						tmp_nexthop_entry,
++						&if_entry->mcast_nexthop_list,
++						list) {
++					if (get_remaining_timeout(
++					    nexthop_entry, bat_priv))
++						continue;
 +
-+	tracker_packet = (struct mcast_tracker_packet *)skb->data;
++					list_del(&nexthop_entry->list);
++					kfree(nexthop_entry);
++					if_entry->num_nexthops--;
++				}
 +
-+	route_mcast_tracker_packet(tracker_packet, skb->len, bat_priv);
++				if (!list_empty(&if_entry->mcast_nexthop_list))
++					continue;
 +
-+	dev_kfree_skb(skb);
++				list_del(&if_entry->list);
++				kfree(if_entry);
++			}
 +
-+	return NET_RX_SUCCESS;
++			if (!list_empty(&orig_entry->mcast_if_list))
++				continue;
++
++			list_del(&orig_entry->list);
++			kfree(orig_entry);
++		}
++
++		if (!list_empty(&table_entry->mcast_orig_list))
++			continue;
++
++		list_del(&table_entry->list);
++		kfree(table_entry);
++	}
++	spin_unlock_irqrestore(&bat_priv->mcast_forw_table_lock, flags);
 +}
 +
- int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ static void mcast_tracker_timer(struct work_struct *work)
  {
- 	struct vis_packet *vis_packet;
-diff --git a/routing.h b/routing.h
-index d44b540..ad3f054 100644
---- a/routing.h
-+++ b/routing.h
-@@ -38,6 +38,7 @@ int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
-+int recv_mcast_tracker_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_bat_packet(struct sk_buff *skb, struct batman_if *recv_if);
- struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 	struct bat_priv *bat_priv = container_of(work, struct bat_priv,
+diff --git a/multicast.h b/multicast.h
+index 0bd0590..7312afa 100644
+--- a/multicast.h
++++ b/multicast.h
+@@ -30,6 +30,7 @@ void mcast_tracker_reset(struct bat_priv *bat_priv);
+ void route_mcast_tracker_packet(
+ 			struct mcast_tracker_packet *tracker_packet,
+ 			int tracker_packet_len, struct bat_priv *bat_priv);
++void purge_mcast_forw_table(struct bat_priv *bat_priv);
+ int mcast_forw_table_seq_print_text(struct seq_file *seq, void *offset);
+ int mcast_init(struct bat_priv *bat_priv);
+ void mcast_free(struct bat_priv *bat_priv);
+diff --git a/originator.c b/originator.c
+index 900d5fc..39ce8d5 100644
+--- a/originator.c
++++ b/originator.c
+@@ -30,6 +30,7 @@
+ #include "hard-interface.h"
+ #include "unicast.h"
+ #include "soft-interface.h"
++#include "multicast.h"
+ 
+ static void purge_orig(struct work_struct *work);
+ 
+@@ -311,6 +312,7 @@ static void purge_orig(struct work_struct *work)
+ 	struct bat_priv *bat_priv =
+ 		container_of(delayed_work, struct bat_priv, orig_work);
+ 
++	purge_mcast_forw_table(bat_priv);
+ 	_purge_orig(bat_priv);
+ 	start_purge_timer(bat_priv);
+ }
 -- 
 1.7.1
 
