@@ -1,14 +1,19 @@
-Return-Path: <daniele.furlan@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <201012061720.26228.lindner_marek@yahoo.de>
+Return-Path: <linus.luessing@ascom.ch>
+Date: Tue, 7 Dec 2010 11:09:26 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@ascom.ch>
+Message-ID: <20101207100926.GA18505@Sellars>
 References: <mailman.14.1290812292.944.b.a.t.m.a.n@lists.open-mesh.org>
+	<AANLkTinFgQ+Z4OsvyHTMNhy11=SrEz0Xu+YU2iZcdcwZ@mail.gmail.com>
+	<AANLkTimYtBa3fD_YNmFV2x0GUoyNiDzT47wy9Kuok0k9@mail.gmail.com>
+	<201012011330.19145.lindner_marek@yahoo.de>
+	<20101202102752.GA11558@Sellars>
 	<20101202120210.GB13912@ritirata.org>
-	<AANLkTi=isvXpB+HK22nLEwAa9ErmRDwhtXFRPJPCO_C3@mail.gmail.com>
-	<201012061720.26228.lindner_marek@yahoo.de>
-Date: Mon, 6 Dec 2010 18:06:54 +0100
-Message-ID: <AANLkTinhV_bVKuH8i=DxXoEAAy6BxD+21kGC4osjfrLk@mail.gmail.com>
-From: Daniele Furlan <daniele.furlan@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20101202120210.GB13912@ritirata.org>
+Sender: linus.luessing@ascom.ch
 Subject: Re: [B.A.T.M.A.N.] BATMAN routing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,44 +28,64 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi all,
+Hi Antonio,
 
-2010/12/6 Marek Lindner <lindner_marek@yahoo.de>:
->
-> Hi,
->
->> But in my opinion the main cause of performance deficiency is the
->> route flap problem documented in some research paper. This is a common
->> problem, especially in dense network.
->
-> would you mind explaining in a few words why you think rapid route changes are
-> a performance problem or name the paper you are referring to ?
+thanks for the feedback on the exponential weighted average.
 
-The paper I refer is "Routing Stability in Static Wireless Mesh Networks"
-Krishna Ramachandran, Irfan Sheriff, Elizabeth Belding, Kevin Almeroth
-University of California, Santa Barbara
+> IMHO this is not the best solution. Probably it could better than the
+> actual strategy, but, as TCP demonstrates, this is not a really nice way
+> of evaluating the RQ.
+Well, I guess TCP could have used a weighted window for doing its RTT
+estimations, too, couldn't it? Do you know if there has been a
+particular design decision to using an exponential weighted
+average instead of a weighted window here?
 
-The rapid route change is an advantage in case of variable and
-unstable wireless link, but can become a problem in case of multiple
-available "good" links. In my opinion, in this case useless route
-change happens, maybe for a temporary throughput improvement, so it is
-important to protect current good route from route flapping.
+> 
+> Imho, since we have more and more information than
+> TCP for evaluating the new RQ, we could try to make a better choice
+> considering "more values": instead of using only the deltaSEQ and the
+> oldRQ, we could try to apply a function that can weight also the previous
+> history of the link (of course with a limit).
+> Something like
+Hmm, I think with an exponential weighted average we are weighting
+the previous history as well, aren't we? And due to the
+exponential behaviour, history further in the past will be
+considered less - which sounds similar to the scheme proposed by
+Hlabishi with a wighted window, doesn't it? And by the way,
+an exponential weighted average should consid "more value" compared
+to the weighted window, shouldn't it? The window is limited in size
+and packets get kicked out again, while in an exponential weighted average,
+even a veeeery old packet still has an influence (though a veeeery
+little one then, too ;) ).
 
->> As soon as I have some written material I will send it to the mailing
->> list hoping to receive some suggestion or critiques.
->>
->> PS. I'm also working on a theoretical analysis on routing overhead in
->> term of network utilization. Soon I will post some results.
->
-> Great! Looking forward to your results.
->
-> Cheers,
-> Marek
->
+One thing that might be something not easily doable with an exponential
+weighted average is changing the weight of a single, previously
+received packet on demand (we cannot suddenly say that we now want to make the
+packet we received 3 seconds ago now 5 times more important). But
+I guess that's not needed with the current ideas so far, is it?
 
-I hope I've been clear.
+For changing the weight of a just received packet, doing special
+weighting could even be easier, as a different α could be applied
+for this single packet. For instance there were some discussions
+if we should send larger packets for packet loss probing from time
+to time and giving these a higher priority.
+> 
+> newRQ = f(window[0], ...., window[N-1]) in which, each OGM (received or
+> not) can be weighted in a different way depending on its position.
+Yes, I think that's what Hlabishi had in mind, too.
 
-Bye!
+I actually started doing some googling and there seem there seem to
+be even more ways of how to weight a set of samples. Anyone with
+some more knowledge in the field of signal processing? Or
+economics / stock markets :D?
 
---
-Daniele Furlan
+
+Hlabishi, I'd be curious if there was a certain design decision
+for using a weighted window in favour for other weigthing
+techniques and if you considered using other
+techniques, too. Or was the idea of using a weighted window due to
+the fact, that we are already having a window and that you did not
+want to temper too much with that?
+
+
+Cheers, Linus
