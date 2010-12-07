@@ -1,15 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
-Date: Tue,  7 Dec 2010 23:32:21 +0100
-Message-Id: <1291761150-29818-11-git-send-email-linus.luessing@saxnet.de>
+Date: Tue,  7 Dec 2010 23:32:25 +0100
+Message-Id: <1291761150-29818-15-git-send-email-linus.luessing@saxnet.de>
 In-Reply-To: <20101207221351.GA19474@Sellars>
 References: <20101207221351.GA19474@Sellars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 11/20] batman-adv: Output mcast forw table in
-	debugfs
+Subject: [B.A.T.M.A.N.] [PATCH 15/20] batman-adv: Receive multicast data
+	packets BAT_MCAST
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,171 +24,86 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
 
-With this commit the full multicast forwarding table, which is used for
-determining whether to forward a multicast data packet or not, can now
-be displayed via mcast_forw_table in BATMAN's debugfs directory.
+This patch adds the forwarding of multicast data packets to the local
+soft interface if this receiving node is a member of the same multicast
+group as specified in the multicast packet.
 
 Signed-off-by: Linus Lüssing <linus.luessing@saxnet.de>
 ---
- bat_debugfs.c |    9 ++++++
- multicast.c   |   83 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- multicast.h   |    1 +
- 3 files changed, 93 insertions(+), 0 deletions(-)
+ hard-interface.c |    5 +++++
+ routing.c        |   30 ++++++++++++++++++++++++++++++
+ routing.h        |    1 +
+ 3 files changed, 36 insertions(+), 0 deletions(-)
 
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index 0ae81d0..7b1b57d 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -32,6 +32,7 @@
- #include "soft-interface.h"
- #include "vis.h"
- #include "icmp_socket.h"
-+#include "multicast.h"
+diff --git a/hard-interface.c b/hard-interface.c
+index 3b380e1..b668ae6 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -624,6 +624,11 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 		ret = recv_bcast_packet(skb, batman_if);
+ 		break;
  
- static struct dentry *bat_debugfs;
- 
-@@ -252,6 +253,12 @@ static int transtable_local_open(struct inode *inode, struct file *file)
- 	return single_open(file, hna_local_seq_print_text, net_dev);
++		/* multicast packet */
++	case BAT_MCAST:
++		ret = recv_mcast_packet(skb, batman_if);
++		break;
++
+ 		/* multicast tracker packet */
+ 	case BAT_MCAST_TRACKER:
+ 		ret = recv_mcast_tracker_packet(skb, batman_if);
+diff --git a/routing.c b/routing.c
+index ff74bd1..b1aad26 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1388,6 +1388,36 @@ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 	return NET_RX_SUCCESS;
  }
  
-+static int mcast_forw_table_open(struct inode *inode, struct file *file)
++int recv_mcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
 +{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+	return single_open(file, mcast_forw_table_seq_print_text, net_dev);
-+}
-+
- static int vis_data_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
-@@ -280,6 +287,7 @@ static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
- static BAT_DEBUGINFO(softif_neigh, S_IRUGO, softif_neigh_open);
- static BAT_DEBUGINFO(transtable_global, S_IRUGO, transtable_global_open);
- static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
-+static BAT_DEBUGINFO(mcast_forw_table, S_IRUGO, mcast_forw_table_open);
- static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
- 
- static struct bat_debuginfo *mesh_debuginfos[] = {
-@@ -288,6 +296,7 @@ static struct bat_debuginfo *mesh_debuginfos[] = {
- 	&bat_debuginfo_softif_neigh,
- 	&bat_debuginfo_transtable_global,
- 	&bat_debuginfo_transtable_local,
-+	&bat_debuginfo_mcast_forw_table,
- 	&bat_debuginfo_vis_data,
- 	NULL,
- };
-diff --git a/multicast.c b/multicast.c
-index c7edbef..edfe7e2 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -106,6 +106,24 @@ void mcast_tracker_reset(struct bat_priv *bat_priv)
- 	start_mcast_tracker(bat_priv);
- }
- 
-+static inline int get_remaining_timeout(
-+				struct mcast_forw_nexthop_entry *nexthop_entry,
-+				struct bat_priv *bat_priv)
-+{
-+	int tracker_timeout = atomic_read(&bat_priv->mcast_tracker_timeout);
-+	if (!tracker_timeout)
-+		tracker_timeout = atomic_read(&bat_priv->mcast_tracker_interval)
-+				  * TRACKER_TIMEOUT_AUTO_X;
-+	if (!tracker_timeout)
-+		tracker_timeout = atomic_read(&bat_priv->orig_interval)
-+				  * TRACKER_TIMEOUT_AUTO_X / 2;
-+
-+	tracker_timeout = jiffies_to_msecs(nexthop_entry->timeout) +
-+			tracker_timeout - jiffies_to_msecs(jiffies);
-+
-+	return (tracker_timeout > 0 ? tracker_timeout : 0);
-+}
-+
- static void prepare_forw_if_entry(struct list_head *forw_if_list,
- 				  int16_t if_num, uint8_t *neigh_addr)
- {
-@@ -924,6 +942,71 @@ ok:
- 	return count;
- }
- 
-+static inline struct batman_if *if_num_to_batman_if(int16_t if_num)
-+{
-+	struct batman_if *batman_if;
-+
-+	list_for_each_entry_rcu(batman_if, &if_list, list)
-+		if (batman_if->if_num == if_num)
-+			return batman_if;
-+
-+	return NULL;
-+}
-+
-+int mcast_forw_table_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct bat_priv *bat_priv = netdev_priv(net_dev);
++	struct ethhdr *ethhdr;
++	MC_LIST *mc_entry;
 +	unsigned long flags;
-+	struct batman_if *batman_if;
-+	struct mcast_forw_table_entry *table_entry;
-+	struct mcast_forw_orig_entry *orig_entry;
-+	struct mcast_forw_if_entry *if_entry;
-+	struct mcast_forw_nexthop_entry *nexthop_entry;
++	int ret = 1;
++	int hdr_size = sizeof(struct mcast_packet);
 +
-+	seq_printf(seq, "[B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%pM (%s)]\n",
-+		   SOURCE_VERSION, REVISION_VERSION_STR,
-+		   bat_priv->primary_if->net_dev->name,
-+		   bat_priv->primary_if->net_dev->dev_addr, net_dev->name);
-+	seq_printf(seq, "Multicast group MAC\tOriginator\t"
-+			"Outgoing interface\tNexthop - timeout in msecs\n");
++	/* multicast data packets might be received via unicast or broadcast */
++	if (check_unicast_packet(skb, hdr_size) < 0 &&
++	    check_broadcast_packet(skb, hdr_size) < 0)
++		return NET_RX_DROP;
 +
-+	rcu_read_lock();
-+	spin_lock_irqsave(&bat_priv->mcast_forw_table_lock, flags);
-+	list_for_each_entry(table_entry, &bat_priv->mcast_forw_table, list) {
-+		seq_printf(seq, "%pM\n", table_entry->mcast_addr);
++	ethhdr = (struct ethhdr *)(skb->data + sizeof(struct mcast_packet));
 +
-+		list_for_each_entry(orig_entry, &table_entry->mcast_orig_list,
-+				    list) {
-+			seq_printf(seq, "\t%pM\n", orig_entry->orig);
-+
-+			list_for_each_entry(if_entry,
-+					    &orig_entry->mcast_if_list, list) {
-+				batman_if =
-+					if_num_to_batman_if(if_entry->if_num);
-+				if (!batman_if)
-+					continue;
-+
-+				seq_printf(seq, "\t\t%s\n",
-+					   batman_if->net_dev->name);
-+
-+				list_for_each_entry(nexthop_entry,
-+						&if_entry->mcast_nexthop_list,
-+						list) {
-+					seq_printf(seq, "\t\t\t%pM - %i\n",
-+						   nexthop_entry->neigh_addr,
-+						   get_remaining_timeout(
-+						     nexthop_entry, bat_priv));
-+				}
-+			}
-+		}
++	/* multicast for me? */
++	MC_LIST_LOCK(recv_if->soft_iface, flags);
++	netdev_for_each_mc_addr(mc_entry, recv_if->soft_iface) {
++		ret = memcmp(mc_entry->MC_LIST_ADDR, ethhdr->h_dest, ETH_ALEN);
++		if (!ret)
++			break;
 +	}
-+	spin_unlock_irqrestore(&bat_priv->mcast_forw_table_lock, flags);
-+	rcu_read_unlock();
++	MC_LIST_UNLOCK(recv_if->soft_iface, flags);
 +
-+	return 0;
++	if (!ret)
++		interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size);
++
++	return NET_RX_SUCCESS;
 +}
 +
- int mcast_init(struct bat_priv *bat_priv)
+ int recv_mcast_tracker_packet(struct sk_buff *skb, struct batman_if *recv_if)
  {
- 	INIT_DELAYED_WORK(&bat_priv->mcast_tracker_work, mcast_tracker_timer);
-diff --git a/multicast.h b/multicast.h
-index 2711d8b..0bd0590 100644
---- a/multicast.h
-+++ b/multicast.h
-@@ -30,6 +30,7 @@ void mcast_tracker_reset(struct bat_priv *bat_priv);
- void route_mcast_tracker_packet(
- 			struct mcast_tracker_packet *tracker_packet,
- 			int tracker_packet_len, struct bat_priv *bat_priv);
-+int mcast_forw_table_seq_print_text(struct seq_file *seq, void *offset);
- int mcast_init(struct bat_priv *bat_priv);
- void mcast_free(struct bat_priv *bat_priv);
- 
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+diff --git a/routing.h b/routing.h
+index ad3f054..6b45212 100644
+--- a/routing.h
++++ b/routing.h
+@@ -38,6 +38,7 @@ int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
++int recv_mcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_mcast_tracker_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_bat_packet(struct sk_buff *skb, struct batman_if *recv_if);
 -- 
 1.7.1
 
