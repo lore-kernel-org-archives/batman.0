@@ -1,15 +1,15 @@
 Return-Path: <andrew@lunn.ch>
-Date: Wed, 8 Dec 2010 09:18:59 +0100
+Date: Wed, 8 Dec 2010 10:06:37 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20101208081859.GB11450@lunn.ch>
+Message-ID: <20101208090637.GC11450@lunn.ch>
 References: <20101207221351.GA19474@Sellars>
-	<1291761150-29818-1-git-send-email-linus.luessing@saxnet.de>
+	<1291761150-29818-7-git-send-email-linus.luessing@saxnet.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1291761150-29818-1-git-send-email-linus.luessing@saxnet.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 01/20] batman-adv: Add packet structures
- for multicast optimizations
+In-Reply-To: <1291761150-29818-7-git-send-email-linus.luessing@saxnet.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 07/20] batman-adv: Prepare and send own
+ multicast tracker packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,14 +24,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Linus L??ssing <linus.luessing@saxnet.de>
 
-> +struct mcast_packet {
-> +	uint8_t  packet_type;    /* BAT_MCAST */
-> +	uint8_t  version;        /* batman version field */
-> +	uint8_t  orig[6];
-> +	uint8_t  ttl;
-> +	uint32_t seqno;
-> +} __attribute__((packed));
+> +#define tracker_packet_for_each_dest(mcast_entry, dest_entry, mcast_num, dest_num, tracker_packet) \
+> +	for (mcast_num = 0, mcast_entry = (struct mcast_entry *)(tracker_packet + 1), \
+> +	     dest_entry = (uint8_t *)(mcast_entry + 1); \
+> +	     mcast_num < tracker_packet->num_mcast_entries; mcast_num++, \
+> +	     mcast_entry = (struct mcast_entry *)dest_entry, \
+> +	     dest_entry = (uint8_t *)(mcast_entry + 1)) \
+> +		for (dest_num = 0; dest_num < mcast_entry->num_dest; dest_num++, \
+> +		     dest_entry += ETH_ALEN)
 
-It would be better to put seqno before ttl, so that it is 32bit aligned. 
+It is probably not a good idea to have nested for loops inside a macro
+like this. What happens with code like:
 
-   Andrew
+     tracker_packet_for_each_dest(mcast_entry, dest_entry, mcast_num, dest_num, tracker_packet) {
+         ...         
+         ...
+         if (foo == bar)
+	     break;
+
+         if (foo)
+	    continue;
+     
+These don't do what you would expect.
+
+      Andrew
