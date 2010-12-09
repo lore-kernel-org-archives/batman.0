@@ -1,15 +1,13 @@
-Return-Path: <andrew@lunn.ch>
-Date: Wed, 8 Dec 2010 19:12:08 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20101208181208.GC11267@lunn.ch>
-References: <20101207221351.GA19474@Sellars>
-	<1291761150-29818-13-git-send-email-linus.luessing@saxnet.de>
+Return-Path: <linus.luessing@ascom.ch>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Date: Thu,  9 Dec 2010 10:23:48 +0100
+Message-Id: <1291886638-19344-1-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
+References: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1291761150-29818-13-git-send-email-linus.luessing@saxnet.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 13/20] batman-adv: Send own BAT_MCAST
- packets in proact_tracking multicast mode
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] NDP patches v2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,106 +19,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Linus L??ssing <linus.luessing@saxnet.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue, Dec 07, 2010 at 11:32:23PM +0100, Linus L??ssing wrote:
-> This patch adds the capability to encapsulate and send a node's own
-> multicast data packets. Based on the previously established multicast
-> forwarding table, the sender can decide wheather it actually has to send
-> the multicast data to one or more of its interfaces or not.
-> 
-> Furthermore, the sending procedure also decides whether to broadcast or
-> unicast a multicast data packet to its next-hops, depending on the
-> configured mcast_fanout (default: < 3 next hops on an interface, send
-> seperate unicast packets).
-> 
-> Signed-off-by: Linus L??ssing <linus.luessing@saxnet.de>
-> ---
->  multicast.c      |  133 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  multicast.h      |    1 +
->  soft-interface.c |   25 +++++++++--
->  types.h          |    1 +
->  4 files changed, 156 insertions(+), 4 deletions(-)
-> 
-> diff --git a/multicast.c b/multicast.c
-> index 2b1bfde..72249ef 100644
-> --- a/multicast.c
-> +++ b/multicast.c
-> @@ -23,6 +23,7 @@
->  #include "multicast.h"
->  #include "hash.h"
->  #include "send.h"
-> +#include "soft-interface.h"
->  #include "compat.h"
->  
->  /* If auto mode for tracker timeout has been selected,
-> @@ -1058,6 +1059,138 @@ int mcast_forw_table_seq_print_text(struct seq_file *seq, void *offset)
->  	return 0;
->  }
->  
-> +static void route_mcast_packet(struct sk_buff *skb, struct bat_priv *bat_priv)
-> +{
-> +	struct sk_buff *skb1;
-> +	struct mcast_packet *mcast_packet;
-> +	struct ethhdr *ethhdr;
-> +	struct batman_if *batman_if;
-> +	unsigned long flags;
-> +	struct mcast_forw_table_entry *table_entry;
-> +	struct mcast_forw_orig_entry *orig_entry;
-> +	struct mcast_forw_if_entry *if_entry;
-> +	struct mcast_forw_nexthop_entry *nexthop_entry;
-> +	int mcast_fanout = atomic_read(&bat_priv->mcast_fanout);
-> +	int num_bcasts = 3, i;
-> +	struct dest_entries_list dest_list, *dest_entry, *tmp;
-> +
-> +	mcast_packet = (struct mcast_packet*)skb->data;
-> +	ethhdr = (struct ethhdr*)(mcast_packet + 1);
-> +
-> +	INIT_LIST_HEAD(&dest_list.list);
-> +
-> +	mcast_packet->ttl--;
-> +
-> +	rcu_read_lock();
-> +	spin_lock_irqsave(&bat_priv->mcast_forw_table_lock, flags);
-> +	list_for_each_entry(table_entry, &bat_priv->mcast_forw_table, list) {
-> +		if (memcmp(ethhdr->h_dest, table_entry->mcast_addr, ETH_ALEN))
-> +			continue;
-> +
-> +		list_for_each_entry(orig_entry, &table_entry->mcast_orig_list,
-> +				    list) {
-> +			if (memcmp(mcast_packet->orig,
-> +				   orig_entry->orig, ETH_ALEN))
-> +				continue;
-> +
-> +			list_for_each_entry(if_entry,
-> +					    &orig_entry->mcast_if_list, list) {
-> +				batman_if = if_num_to_batman_if(
-> +							if_entry->if_num);
-> +
-> +				/* send via broadcast */
-> +				if (if_entry->num_nexthops > mcast_fanout) {
-> +					dest_entry = kmalloc(sizeof(struct
-> +							dest_entries_list),
-> +							GFP_ATOMIC);
-> +					memcpy(dest_entry->dest,
-> +					       broadcast_addr, ETH_ALEN);
-> +					dest_entry->batman_if = batman_if;
-> +					list_add(&dest_entry->list,
-> +						 &dest_list.list);
-> +					continue;
-> +				}
-> +
-> +				/* send seperate unicast packets */
-> +				list_for_each_entry(nexthop_entry,
-> +						&if_entry->mcast_nexthop_list,
-> +						list) {
-> +					if (!get_remaining_timeout(
-> +								nexthop_entry,
-> +								bat_priv))
-> +						continue;
-> +
+Hi there,
 
-Again, refactor this into four functions. 
+The following points have been changed during the last series:
+- Use SKBs instead of own packet buffer
+  (batman-adv: Send neighbor discovery packets)
+- Also accept first packet for packet counting already 
+  (batman-adv: Creating neighbor structures, updating LQs)
+- Fixing the asymmetric penalty handling (no more changes since previous PATCHv2 10/10 though)
+  (batman-adv: Use local tq values determined by NDP on OGMs)
 
-       Andrew
+I've also added my Signed-off-by now, as it seems to work fine here for me
+and the integration now makes more sense to me after PATCHv2 10/10 :). So
+for me, it'd be ok to add it upstream. Does it make sense to do the OGM
+cleanup with these patches already or would it be fine to do them after
+NDP got upstream? In the first case the maintenance/rebasing of the cleanup
+patches might be more effort until NDP gets upstream. In the latter case,
+there'd be no need to hurry for doing the cleanup then, reducing the chances
+of breaking something :). Or would you prefer to have the full batch
+including the cleanup for the OGMs already?
+
+Cheers, Linus
