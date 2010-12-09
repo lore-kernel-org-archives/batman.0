@@ -1,14 +1,14 @@
-Return-Path: <linus.luessing@ascom.ch>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Thu,  9 Dec 2010 10:23:58 +0100
-Message-Id: <1291886638-19344-11-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
-References: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Thu, 9 Dec 2010 22:02:52 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20101209210251.GA4592@pandem0nium>
+References: <20101207221351.GA19474@Sellars> <20101208072915.GA8875@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 10/10] batman-adv: Use local tq values
-	determined by NDP on OGMs
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
+Content-Disposition: inline
+In-Reply-To: <20101208072915.GA8875@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N.-Advanced Multicast Optimizations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,109 +20,88 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-With this commit not the local transmit quality values determined
-by the OGMs themselves are applied on received OGMs, but the local
-transmit quality detemined by NDP instead. Usually the link quality
-measurements of NDP are more up-to-date than the one of the OGMs, as NDP
-is using a more frequent interval because NDP's packets are not being
-flooded through the whole mesh.
 
-Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
----
- routing.c |   55 ++++++++++++++++++++++++-------------------------------
- 1 files changed, 24 insertions(+), 31 deletions(-)
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/routing.c b/routing.c
-index 1972bb8..d33680d 100644
---- a/routing.c
-+++ b/routing.c
-@@ -136,7 +136,7 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- {
- 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct neigh_node *neigh_node = NULL, *tmp_neigh_node = NULL;
--	unsigned char total_count;
-+	uint8_t local_tq = 0, local_rq = 0;
- 
- 	if (orig_node == orig_neigh_node) {
- 		list_for_each_entry(tmp_neigh_node,
-@@ -180,25 +180,20 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 			return 0;
- 	}
- 
--	orig_node->last_valid = jiffies;
-+	spin_lock_bh(&if_incoming->neigh_list_lock);
-+	list_for_each_entry(neigh_node, &if_incoming->neigh_list, list) {
-+		if (!compare_orig(neigh_node->addr, orig_neigh_node->orig))
-+			continue;
- 
--	/* pay attention to not get a value bigger than 100 % */
--	total_count = (orig_neigh_node->bcast_own_sum[if_incoming->if_num] >
--		       neigh_node->real_packet_count ?
--		       neigh_node->real_packet_count :
--		       orig_neigh_node->bcast_own_sum[if_incoming->if_num]);
-+		orig_node->last_valid = jiffies;
-+		local_tq = neigh_node->tq_avg;
-+		local_rq = neigh_node->rq;
-+		break;
-+	}
-+	spin_unlock_bh(&if_incoming->neigh_list_lock);
- 
--	/* if we have too few packets (too less data) we set tq_own to zero */
--	/* if we receive too few packets it is not considered bidirectional */
--	if ((total_count < TQ_LOCAL_BIDRECT_SEND_MINIMUM) ||
--	    (neigh_node->real_packet_count < TQ_LOCAL_BIDRECT_RECV_MINIMUM))
--		orig_neigh_node->tq_own = 0;
--	else
--		/* neigh_node->real_packet_count is never zero as we
--		 * only purge old information when getting new
--		 * information */
--		orig_neigh_node->tq_own = (TQ_MAX_VALUE * total_count) /
--			neigh_node->real_packet_count;
-+	if (local_tq == 0)
-+		return 0;
- 
- 	/*
- 	 * 1 - ((1-x) ** 3), normalized to TQ_MAX_VALUE this does
-@@ -209,25 +204,23 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 	orig_neigh_node->tq_asym_penalty =
- 		TQ_MAX_VALUE -
- 		(TQ_MAX_VALUE *
--		 (TQ_LOCAL_WINDOW_SIZE - neigh_node->real_packet_count) *
--		 (TQ_LOCAL_WINDOW_SIZE - neigh_node->real_packet_count) *
--		 (TQ_LOCAL_WINDOW_SIZE - neigh_node->real_packet_count)) /
--		(TQ_LOCAL_WINDOW_SIZE *
--		 TQ_LOCAL_WINDOW_SIZE *
--		 TQ_LOCAL_WINDOW_SIZE);
-+		 (TQ_MAX_VALUE - local_rq) *
-+		 (TQ_MAX_VALUE - local_rq) *
-+		 (TQ_MAX_VALUE - local_rq)) /
-+		(TQ_MAX_VALUE *
-+		 TQ_MAX_VALUE *
-+		 TQ_MAX_VALUE);
- 
- 	batman_packet_ogm->tq = ((batman_packet_ogm->tq *
--			      orig_neigh_node->tq_own *
-+			      local_tq *
- 			      orig_neigh_node->tq_asym_penalty) /
--			     (TQ_MAX_VALUE * TQ_MAX_VALUE));
-+			      (TQ_MAX_VALUE * TQ_MAX_VALUE));
- 
- 	bat_dbg(DBG_BATMAN, bat_priv,
- 		"bidirectional: "
--		"orig = %-15pM neigh = %-15pM => own_bcast = %2i, "
--		"real recv = %2i, local tq: %3i, asym_penalty: %3i, "
--		"total tq: %3i\n",
--		orig_node->orig, orig_neigh_node->orig, total_count,
--		neigh_node->real_packet_count, orig_neigh_node->tq_own,
-+		"orig = %-15pM neigh = %-15pM => local tq = %3i, "
-+	        "local rq: %3i, asym_penalty: %3i, total tq: %3i\n",
-+		orig_node->orig, orig_neigh_node->orig, local_tq, local_rq,
- 		orig_neigh_node->tq_asym_penalty, batman_packet_ogm->tq);
- 
- 	/* if link has the minimum required transmission quality
--- 
-1.7.1
+Hey Andrew,=20
 
+thank you for your comments and the review!
+
+On Wed, Dec 08, 2010 at 08:29:15AM +0100, Andrew Lunn wrote:
+>=20
+> [...]
+>=20
+> Do you think you could do a search/replace with "multicast MAC
+> address"?
+
+You've got a point, we can change that.
+
+> [...]=20
+>
+> Is this symmetric assumption a problem? Depends one the use case. Your
+> PIM gateway into the multicast cloud should be a member of the
+> group. It has to receive the packets from the local hosts, so it can
+> forward them upstream to the RP, the root of the distribution tree. So
+> your traffic coming from upstream should be O.K. However if you have a
+> webcam which is multicasting a video stream, it might not be a member
+> of the group, since it is not interesting in receiving video streams,
+> just sending them. So in this use case you won't have any benefit from
+> your scheme.
+>=20
+> The symmetric assumption is a nice simplification to get started, but
+> i think you need to have a good plan for allowing none members to send
+> multicast traffic.
+
+Yup, we had a "symmetric" application in mind when designing
+this algorithm, but we have discussed ideas to improve the algorithm to
+a more general scheme. For example we could detect if a multicast MAC
+address is sent to through the soft interface, and then start
+sending tracker packets accordingly - this method might need some tuning
+however, the build up might take some time, and maybe we should avoid=20
+building it up for single packets.
+
+Detecting non-local receivers (like SNMP snooping) appears to be the
+harder task IMHO to become more general - you will most likely not receive=
+=20
+your webcam stream with your WiFi AP. :)
+
+>=20
+> Have you considered handing broadcast packets as multicast packets?
+> Broadcast is just a special case of multicast.
+
+That is right, but I don't think this is a good idea to use this multicast
+approach for broadcast in this case. From a theoretical point of view,=20
+this algorithm is a group aware one for "sparse" mesh networks, where the n=
+umber of=20
+group members is quite small (< 50% of all mesh nodes). If all nodes were=
+=20
+in a group (as it would be the case for broadcast), the overhead of the=20
+tracker packets would most likely nullify any gain. Non-group-aware algorit=
+hm=20
+like MPR and its variations [1] are probably more suited for this case. But
+maybe someone will find a clever workaround. ;)
+
+best regards,
+	Simon
+
+[1] http://tools.ietf.org/html/draft-ietf-manet-smf-10 Appendices A to C
+
+--GvXjxJ+pjyke8COw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAk0BQ/sACgkQrzg/fFk7axb6AwCg7oPafKxnSlzdokotHC+K8USr
+jUUAoL/mfqwZtP5pByCGLrukX4Gykxo0
+=/byK
+-----END PGP SIGNATURE-----
+
+--GvXjxJ+pjyke8COw--
