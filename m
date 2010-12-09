@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@ascom.ch>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Thu,  9 Dec 2010 10:23:57 +0100
-Message-Id: <1291886638-19344-10-git-send-email-linus.luessing@ascom.ch>
+Date: Thu,  9 Dec 2010 10:23:56 +0100
+Message-Id: <1291886638-19344-9-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
 References: <1291732778-27441-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 09/10] batman-adv: Adding sysfs parameter for
-	ndp interval
+Subject: [B.A.T.M.A.N.] [PATCH 08/10] batman-adv: Adding batman_if specific
+	sysfs wrapper macros for UINT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,34 +23,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-This parameter can be set individually on each interface and allows the
-configuration of the ndp interval for the link quality measurements
-during runtime. Usually it is desirable to set it to a higher (= slower) value
-on interfaces which have a more static characteristic (e.g. wired
-interfaces) or very dense neighbourhoods to reduce overhead.
+This allows us to easily add a sysfs parameter for an unsigned int
+later, which is not for a batman mesh interface (e.g. bat0), but for a
+common interface instead. It allows reading and writing an atomic_t in
+batman_if (instead of bat_priv compared to the mesh variant).
 
 Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
- bat_sysfs.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ bat_sysfs.c |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+), 0 deletions(-)
 
 diff --git a/bat_sysfs.c b/bat_sysfs.c
-index 98c10a3..1dcd986 100644
+index cd7bb51..98c10a3 100644
 --- a/bat_sysfs.c
 +++ b/bat_sysfs.c
-@@ -572,10 +572,12 @@ static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
- static BAT_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
- 		show_mesh_iface, store_mesh_iface);
- static BAT_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
-+BAT_ATTR_IF_UINT(ndp_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
+@@ -94,6 +94,33 @@ ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
+ 	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
  
- static struct bat_attribute *batman_attrs[] = {
- 	&bat_attr_mesh_iface,
- 	&bat_attr_iface_status,
-+	&bat_attr_ndp_interval,
- 	NULL,
- };
  
++#define BAT_ATTR_IF_STORE_UINT(_name, _min, _max, _post_func)		\
++ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
++			     char *buff, size_t count)			\
++{									\
++	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);	\
++	return __store_uint_attr(buff, count, _min, _max, _post_func,	\
++				 attr, &batman_if->_name, net_dev);	\
++}
++
++#define BAT_ATTR_IF_SHOW_UINT(_name)					\
++ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
++			    char *buff)					\
++{									\
++	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);	\
++	return sprintf(buff, "%i\n", atomic_read(&batman_if->_name));	\
++}									\
++
++/* Use this, if you are going to set [name] in batman_if to unsigned integer
++ * values only */
++#define BAT_ATTR_IF_UINT(_name, _mode, _min, _max, _post_func)		\
++	static BAT_ATTR_IF_STORE_UINT(_name, _min, _max, _post_func)	\
++	static BAT_ATTR_IF_SHOW_UINT(_name)				\
++	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
++
++
+ static int store_bool_attr(char *buff, size_t count,
+ 			   struct net_device *net_dev,
+ 			   char *attr_name, atomic_t *attr)
 -- 
 1.7.1
 
