@@ -1,17 +1,15 @@
-Return-Path: <hlabishik@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 12 Dec 2010 20:29:46 +0100
+References: <1291233547-9437-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1291233547-9437-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTimYtBa3fD_YNmFV2x0GUoyNiDzT47wy9Kuok0k9@mail.gmail.com>
-References: <mailman.14.1290812292.944.b.a.t.m.a.n@lists.open-mesh.org>
-	<AANLkTimR7VU95r3C-=C9rn5ftZahKkNTu3-cU-Vft+VZ@mail.gmail.com>
-	<AANLkTikZJn5T7gEc_REH_vyEwhKhTcsqLRdq8tX0OdF8@mail.gmail.com>
-	<AANLkTinFgQ+Z4OsvyHTMNhy11=SrEz0Xu+YU2iZcdcwZ@mail.gmail.com>
-	<AANLkTimYtBa3fD_YNmFV2x0GUoyNiDzT47wy9Kuok0k9@mail.gmail.com>
-Date: Sat, 11 Dec 2010 11:51:42 +0200
-Message-ID: <AANLkTi=0tLPwa0toe9HX=PwA780mXTox8NrGNxymuF_-@mail.gmail.com>
-From: hlabishi kobo <hlabishik@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] BATMAN routing
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201012122029.47019.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Use kernel facilities for
+	bit operations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,257 +21,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Linus, First we considered using statistical methods but we found a
-lot of deficiencies and we opted for the weighting window as it simple
-and made a lot of sense and yes because there was a window already to
-work on.
-Hlabishi
+On Wednesday 01 December 2010 20:59:07 Sven Eckelmann wrote:
+> set_bit and test_bit provide an efficient way to set and test bits of an
+> unsigned long.
 
-On 12/1/10, hlabishi kobo <hlabishik@gmail.com> wrote:
-> HI marek
->
-> Thank you for considering this concept, i am working on the
-> implementation now. I would love to attend your IRC channel
-> discussions, just tell date and time.
->
-> Kind Regards
-> Hlabishi
->
-> On 11/30/10, hlabishi kobo <hlabishik@gmail.com> wrote:
->> Dear Marek and the BATMAN community.
->> The idea is to prioritize recently received OGM's thus giving them
->> more weight for the routing decisions. This is because they give a
->> precise indication of the status of current situation of the link.
->> BATMAN algorithm currently counts the number of received OGM's in a
->> current sliding window and the link with the most OGM's becomes the
->> best next-hop towards a that destination. A lot can happen within a
->> second in an ad hoc wireless network. if a lot of OGM's where recorded
->> at the beginning of the window range and less towards the end which be
->> that the link was better at the beginning not at the end of the
->> sliding window (current). This could be selected as the best as
->> opposed to the one that recorded a lot of OGM's towards the end but
->> less in total. e.g. suppose you have sliding window of 10, link 1
->> records [1111100000]=3D 5 and link 2 [0000001111] =3D 4. link 1 will be
->> chosen and as it stands the current best would have been link 2.
->> The proposed concept prioritizes the recently received OGM's by giving
->> them more weight. Thus we want to add the indexes of which an OGM was
->> received in that interval. from the example above we would have link
->> 1+2+3+4+5+6=3D 21 and link 2 7+8+9+10 =3D 34.
->>
->> Kind Regards
->> Hlabishi
->>
->>
->> On 11/29/10, hlabishi kobo <hlabishik@gmail.com> wrote:
->>> ---------- Forwarded message ----------
->>> From: hlabishi kobo <hlabishik@gmail.com>
->>> Date: Sun, 28 Nov 2010 22:06:01 +0200
->>> Subject: Fwd: BATMAN routing
->>> To: lindner_marek@yahoo.de
->>>
->>> Hi
->>>
->>> Thank you very much for your reply. The reason why i sent this to you
->>> and
->>> your colleague is that i have tried the mail list before and all my pos=
-t
->>> kept on being returned, i used this address
->>> b.a.t.m.a.n-owner@lists.open-mesh.org. I would really appreciate it if
->>> this
->>> can reach the mailing list public (i will keep on trying). i will send
->>> you
->>> a
->>> follow up on the  full explanation of the concept like you requested.
->>>
->>> Regards
->>> Hlabishi
->>> ---------- Forwarded message ----------
->>> From: <b.a.t.m.a.n-owner@lists.open-mesh.org>
->>> Date: Sat, Nov 27, 2010 at 12:58 AM
->>> Subject: Fwd: BATMAN routing
->>> To: hlabishik@gmail.com
->>>
->>>
->>> Message rejected by filter rule match
->>>
->>>
->>>
->>> ---------- Forwarded message ----------
->>> From: hlabishi kobo <hlabishik@gmail.com>
->>> To: b.a.t.m.a.n@lists.open-mesh.org
->>> Date: Sat, 27 Nov 2010 00:58:09 +0200
->>> Subject: Fwd: BATMAN routing
->>>
->>>
->>> ---------- Forwarded message ----------
->>> From: Marek Lindner <lindner_marek@yahoo.de>
->>> Date: Fri, Nov 26, 2010 at 5:23 PM
->>> Subject: Re: BATMAN routing
->>> To: hlabishi kobo <hlabishik@gmail.com>, Linus L=FCssing <
->>> linus.luessing@web.de>
->>> Cc: siwu@hrz.tu-chemnitz.de
->>>
->>>
->>>
->>> Hi,
->>>
->>> welcome to the project! :-)
->>>
->>>> Firstly my apologies for sending this email to your personal email. My
->>> name
->>>> is Hlabishi Isaac Kobo at the, an Msc computer science student at the
->>>> University of the Western Cape in South Africa, I am doing a research
->>>> on
->>>> routing in a hybrid (combination of static and mobile dynamic routers)
->>>> mesh.
->>>
->>> I don't see a good reason to apologize, just wondering why you are not
->>> sending
->>> this mail to the public list ?
->>>
->>>
->>>> I want to use the mesh potatoes as well as the batphone (android
->>>> version of batman) to create a mesh model.
->>>
->>> What is the "batphone" ? A project name or a nick name you invented ?
->>> :-)
->>>
->>> Note: Various tests have shown that running a mobile device
->>> (smartphone/tablet/etc) in adhoc mode plus running a mesh protocol on
->>> top
->>> is
->>> a
->>> battery killer, hence not practical in real world scenarios (in additio=
-n
->>> of
->>> the hassle to install and configure the mesh software on each and every
->>> device). This was one of the main reasons to start developing batman-ad=
-v
->>> as
->>> it
->>> allows mobile devices to take advantage of the mesh (e.g. roaming)
->>> without
->>> having to run the mesh on the device itself.
->>>
->>> You might be aware of this - I am just mentioning it because many peopl=
-e
->>> are
->>> not.
->>>
->>>
->>>> First we say the recently received OGMs will give a clear indication o=
-n
->>> the
->>>> reliability on the link, so we give the recently received OGMs from th=
-e
->>>> sliding window a priority in deciding the best next hop link towards a
->>>> destination. We want to count and add the indexes were an OGM was
->>>> recorded
->>>> in an interval (seconds), (hence the recently received OGM will have
->>>> more
->>>> weight). At the end the link with more recent OGMs will have more
->>>> weight
->>>> and hence become the current best link.
->>>
->>> This is a good idea. We are in the process of redesigning the current
->>> protocol
->>> and welcome any input. Giving older OGMs less "weight" was also one of
->>> the
->>> ideas we had. Would you mind explaining your concept in greater detail =
-?
->>>
->>>
->>>> I went through the source code so many times and I got few questions
->>>> about
->>>> this:
->>>
->>> Are we talking about the batman daemon source code or the batman-adv
->>> kernel
->>> module ? All my answers will refer to the kernel module as this is the
->>> place
->>> where most of the development is going on at the moment.
->>>
->>>
->>>> 1. What structure is used to keep track of the sliding window?  If its
->>>> the
->>>> has how does it get updated based on the sliding packet range?
->>>
->>> Each "struct orig_node" has a bitarray to keep track of its own seqnos
->>> repeated by its neighbors (bcast_own) and each "struct neigh_node"
->>> having
->>> a
->>> bitarray for its own OGMs (real_bits).
->>>
->>>
->>>> 2. How are the OGM's recorded, is in a form of binary where 1 will
->>>> represent the received OGM and 0 otherwise?
->>>
->>> Correct.
->>>
->>>
->>>> 3. I looked in the source and still not sure of where the ranking
->>> decisions
->>>> are made, can you enlighten me on that?
->>>
->>> You mean which function changes the route when a better neighbor was
->>> found
->>> ?
->>> That would be update_orig() in routing.c.
->>>
->>>
->>>> On the second approach we want to use mac layer stats to estimate the
->>>> signal strength and probably the congestion rate of the top N ranked
->>> links.
->>>> We acknowledge the fact that usually links with lower signal strength
->>>> will
->>>> loose more OGM's which results in an automatic low rank, however in a
->>>> frequently changing topology, current signal strength is crucial. We
->>>> plan
->>>> to use SNR or RSSI in this case.
->>>
->>> The concept is known since a while but nobody has implemented it so far
->>> because its implementation is fairly complex. Do you have an idea how i=
-t
->>> should work in the end ?
->>>
->>>
->>>> 1. How can i get the RSSI/LQI of th neighbor links?
->>>
->>> I don't get this question. You intend to use RSSI but you don't know ho=
-w
->>> ?
->>>
->>>
->>>> I would really appreciate your opinions and advices in this regard mor=
-e
->>>> specially how to go about implementing changes in BATMAN protocol.
->>>
->>> This is a little abstract. Usually, we discuss specific concepts / idea=
-s
->>> in
->>> our
->>> IRC channel or on the mailing list long before starting to implement
->>> them.
->>> The
->>> past has shown it is often better to let other people dive into your
->>> ideas
->>> and
->>> comment because routing is a rather complex subject.
->>>
->>> As I mentioned above: We are in a redesign phase right now and welcome
->>> anyone
->>> interested to join. As the next step we envisioned a collection of
->>> routing
->>> scenarios in which the current implementation behaves poorly. All
->>> routing
->>> protocol changes have to go through this collection of scenarios to
->>> estimate
->>> its impact. What do you think about this idea ?
->>>
->>> Regards,
->>> Marek
->>>
->>
->
+Since test_bit() / set_bit() expect 32Bit values we should at least add a 
+comment next to TYPE_OF_WORD, so that nobody changes this define ?!
+
+Cheers,
+Marek
