@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 12 Dec 2010 20:29:46 +0100
-References: <1291233547-9437-1-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1291233547-9437-1-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun, 12 Dec 2010 21:32:21 +0100
+References: <201012042042.16056.sven.eckelmann@gmx.de>
+	<1291493028-29957-1-git-send-email-sven.eckelmann@gmx.de>
+In-Reply-To: <1291493028-29957-1-git-send-email-sven.eckelmann@gmx.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201012122029.47019.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Use kernel facilities for
-	bit operations
+Message-Id: <201012122132.22479.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: remove hash resize
+	functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,12 +24,10 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday 01 December 2010 20:59:07 Sven Eckelmann wrote:
-> set_bit and test_bit provide an efficient way to set and test bits of an
-> unsigned long.
+On Saturday 04 December 2010 21:03:40 Sven Eckelmann wrote:
+> From: Marek Lindner <lindner_marek@yahoo.de>
 
-Since test_bit() / set_bit() expect 32Bit values we should at least add a 
-comment next to TYPE_OF_WORD, so that nobody changes this define ?!
+Applied in revision 1887.
 
-Cheers,
+Regards,
 Marek
