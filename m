@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 12 Dec 2010 22:57:17 +0100
-References: <201012042042.16056.sven.eckelmann@gmx.de>
-	<1291493028-29957-5-git-send-email-sven.eckelmann@gmx.de>
-In-Reply-To: <1291493028-29957-5-git-send-email-sven.eckelmann@gmx.de>
+Date: Sun, 12 Dec 2010 22:57:57 +0100
+References: <201012122143.10618.sven@narfation.org>
+	<1292186819-26232-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1292186819-26232-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201012122257.18049.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 5/9] batman-adv: protect neighbor list
-	with rcu locks
+Message-Id: <201012122257.57925.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 1/2] batman-adv: Remove line over 80
+	characters
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,10 +24,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday 04 December 2010 21:03:44 Sven Eckelmann wrote:
-> From: Marek Lindner <lindner_marek@yahoo.de>
+On Sunday 12 December 2010 21:46:58 Sven Eckelmann wrote:
+> "Use kernel facilities for bit operations" increased accidently the
+> character count on a line to more than 80 characters when counting a tab
+> as 8 characters.
 
-Applied in revision 1892.
+Applied in revision 1893.
 
-Regards,
+Thanks,
 Marek
