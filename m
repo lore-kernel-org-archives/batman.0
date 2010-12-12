@@ -1,10 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 12 Dec 2010 21:39:11 +0100
-Message-Id: <1292186352-24624-1-git-send-email-sven@narfation.org>
-In-Reply-To: <201012122136.48156.sven@narfation.org>
-References: <201012122136.48156.sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Use kernel facilities for
+Date: Sun, 12 Dec 2010 21:36:46 +0100
+References: <1291233547-9437-1-git-send-email-sven.eckelmann@gmx.de>
+	<201012122029.47019.lindner_marek@yahoo.de>
+In-Reply-To: <201012122029.47019.lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart10861579.l5JJ9hQanW";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201012122136.48156.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Use kernel facilities for
 	bit operations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -18,42 +23,48 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-set_bit and test_bit provide an efficient way to set and test bits of an
-unsigned long.
+--nextPart10861579.l5JJ9hQanW
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-This also fixes the problem that a very old ogm got not recorded as
-received due to the missing constant definition "1" as unsigned long
-inside the bit_mark operation - also known as "1UL".
+Marek Lindner wrote:
+> On Wednesday 01 December 2010 20:59:07 Sven Eckelmann wrote:
+> > set_bit and test_bit provide an efficient way to set and test bits of an
+> > unsigned long.
+>=20
+> Since test_bit() / set_bit() expect 32Bit values we should at least add a
+> comment next to TYPE_OF_WORD, so that nobody changes this define ?!
 
-Reported-by: David Miller <davem@davemloft.net>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- batman-adv/bitarray.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+unsigned long is not always 32 bit.... I will send a patch which completely=
+=20
+replaces TYPE_OF_WORD
 
-diff --git a/batman-adv/bitarray.c b/batman-adv/bitarray.c
-index 814274f..5dad5e8 100644
---- a/batman-adv/bitarray.c
-+++ b/batman-adv/bitarray.c
-@@ -40,7 +40,7 @@ uint8_t get_bit_status(TYPE_OF_WORD *seq_bits, uint32_t last_seqno,
- 		/* which position in the selected word */
- 		word_offset = (last_seqno - curr_seqno) % WORD_BIT_SIZE;
- 
--		if (seq_bits[word_num] & 1 << word_offset)
-+		if (test_bit(word_offset, &seq_bits[word_num]))
- 			return 1;
- 		else
- 			return 0;
-@@ -61,7 +61,7 @@ void bit_mark(TYPE_OF_WORD *seq_bits, int32_t n)
- 	/* which position in the selected word */
- 	word_offset = n % WORD_BIT_SIZE;
- 
--	seq_bits[word_num] |= 1 << word_offset;	/* turn the position on */
-+	set_bit(word_offset, &seq_bits[word_num]); /* turn the position on */
- }
- 
- /* shift the packet array by n places. */
--- 
-1.7.2.3
+Best regards,
+	Sven
 
+--nextPart10861579.l5JJ9hQanW
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJNBTJeAAoJEF2HCgfBJntGKjAQAJV/7FwITzTRQQqGch3G2Pic
+XRHbMsnC1MkZQq1NGaF8gGL3Xn92OC64nWmzROZSa9NhX+LNLfJlNyHjgNO05Urj
+beIJr/3+fCMP+PWL33pUK3gFtH0X6xZMOW+D4PvBWOSTZnLsM50kGXCNdDP90iNI
+PyhgES+AFWi6E/jf6+JtLlJn6OqsQydexeBAhaOMmS3lRPvmUw4qQHEAeY3iHUKZ
+5+/Ls2cLHTejlEgFe/Gxq+38e5rxS8QkSFY7B4rsO+jM8/ssXhj4yIq7r1IVe7Ts
+r60MHqOXjVNBv4lomHWWFsyl+Y955BR+1i9SZgqv66fYO4EB3A+3Fnzj7zIPFKCA
+gkw9xaYPTFre2HFTDKfg5P1i3YfPAst5ngB70TqAN5gXKz7Q78NpbyG3hmDRMrhY
+edwE5n5gX5DL5GjFuBkTXTMRdN+23Gu1ovGBgwZgyxWqwfj3m369h+BrLiq1mVIX
+2WS6a2XNZWbOxtS5LWb4tHkEXvMeh4XjEkNCqL31F1mZL9nFuL/+7TkNAG6fCjhI
+ZrVGp3hczAXsaRSyuiXWUDdjmCEsUtAtbZf2z6kDy+kPmC6mAUqim5clqopwQy2H
+gfUALac5eAkj2VkpBMy9fWEl9bGuw+Qcjo/W/OyFvEUFTSAlOr8DgbpG8Vv6u+w7
+JbS6AXJCx1w1d+qdBYOO
+=Ycgh
+-----END PGP SIGNATURE-----
+
+--nextPart10861579.l5JJ9hQanW--
