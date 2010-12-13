@@ -1,12 +1,12 @@
-Return-Path: <linus.luessing@web.de>
-Date: Mon, 13 Dec 2010 00:03:16 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20101212230316.GA9329@Sellars>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 13 Dec 2010 01:18:14 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] B.A.T.M.A.N. V status update
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201012130118.14949.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] performance patches (v3)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,13 +20,22 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-A status update on the B.A.T.M.A.N. V development and what has been achieved
-so far during the last year and what is still expected to come can be found
-here:
-http://www.open-mesh.org/wiki/2010-12-12-batman-v-status-update
 
-Thanks for the tremendous amount of input so far and we are looking
-forward to all the input still to come :).
+Hi,
 
-Happy routing,
-The B.A.T.M.A.N. team
+the performance patches progress step by step. A few patches already went into 
+the repository the rest is waiting for more review. Thanks to Sven's feedback 
+quite some bugs were squashed.
+
+Changes since v2:
+* code rebased on top of the trunk
+* some more neigh_node protected by reference counters
+* call_rcu and kref_put race condition fixed
+
+Known issues:
+* bonding / alternating candidates are not secured by refcounting [see  
+find_router()] - ideas welcome
+
+
+Regards,
+Marek
