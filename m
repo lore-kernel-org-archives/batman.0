@@ -1,13 +1,14 @@
 Return-Path: <linus.luessing@ascom.ch>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Tue, 14 Dec 2010 10:58:13 +0100
-Message-Id: <1292320696-11983-8-git-send-email-linus.luessing@ascom.ch>
+Date: Tue, 14 Dec 2010 10:58:08 +0100
+Message-Id: <1292320696-11983-3-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1292320696-11983-1-git-send-email-linus.luessing@ascom.ch>
 References: <1292320696-11983-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 07/10] batman-adv: Adding ndp debugfs output
+Subject: [B.A.T.M.A.N.] [PATCH 02/10] batman-adv: Adding jittering methods
+	for ndp
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,141 +23,121 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-Lists all neighbours and their tq/rq values detected and measured by the
-Neighbor Discovery Protocol (NDP).
+This patch adds a function for fetching and jittering an ndp interval
+from batman-if structure. Needed later for timing the neighbor discovery
+packets.
 
 Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
- bat_debugfs.c |    9 ++++++++
- ndp.c         |   60 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- ndp.h         |    1 +
- 3 files changed, 70 insertions(+), 0 deletions(-)
+ hard-interface.c |    2 +-
+ routing.c        |    2 +-
+ send.c           |   18 +++++++++++++-----
+ send.h           |    3 ++-
+ types.h          |    1 +
+ 5 files changed, 18 insertions(+), 8 deletions(-)
 
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index 0ae81d0..602aa15 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -25,6 +25,7 @@
+diff --git a/hard-interface.c b/hard-interface.c
+index 784c475..da7b9a9 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -360,7 +360,7 @@ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
+ 			batman_if->net_dev->name);
  
- #include "bat_debugfs.h"
- #include "translation-table.h"
-+#include "ndp.h"
- #include "originator.h"
- #include "hard-interface.h"
- #include "gateway_common.h"
-@@ -222,6 +223,12 @@ static void debug_log_cleanup(struct bat_priv *bat_priv)
+ 	/* begin scheduling originator messages on that interface */
+-	schedule_own_packet(batman_if);
++	schedule_own_ogm_packet(batman_if);
+ 
+ out:
+ 	return 0;
+diff --git a/routing.c b/routing.c
+index a9406ba..7ebb631 100644
+--- a/routing.c
++++ b/routing.c
+@@ -561,7 +561,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 	if (batman_packet_ogm->packet_type != BAT_PACKET_OGM)
+ 		return;
+ 
+-	/* could be changed by schedule_own_packet() */
++	/* could be changed by schedule_own_ogm_packet() */
+ 	if_incoming_seqno = atomic_read(&if_incoming->seqno);
+ 
+ 	has_directlink_flag = (batman_packet_ogm->flags & DIRECTLINK ? 1 : 0);
+diff --git a/send.c b/send.c
+index eb9c1e3..910411c 100644
+--- a/send.c
++++ b/send.c
+@@ -40,8 +40,16 @@ static uint8_t hop_penalty(const uint8_t tq, struct bat_priv *bat_priv)
+ 	return (tq * (TQ_MAX_VALUE - hop_penalty)) / (TQ_MAX_VALUE);
  }
- #endif
  
-+static int neighbors_open(struct inode *inode, struct file *file)
+-/* when do we schedule our own packet to be sent */
+-static unsigned long own_send_time(struct bat_priv *bat_priv)
++/* when do we schedule our own neighbor discovery packet to be sent */
++unsigned long own_ndp_send_time(struct batman_if *batman_if)
 +{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+	return single_open(file, ndp_seq_print_text, net_dev);
++	return jiffies + msecs_to_jiffies(
++		   atomic_read(&batman_if->ndp_interval) -
++		   JITTER + (random32() % 2*JITTER));
 +}
 +
- static int originators_open(struct inode *inode, struct file *file)
++/* when do we schedule our own originator packet to be sent */
++static unsigned long own_ogm_send_time(struct bat_priv *bat_priv)
  {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
-@@ -275,6 +282,7 @@ struct bat_debuginfo bat_debuginfo_##_name = {	\
- 		}				\
+ 	return jiffies + msecs_to_jiffies(
+ 		   atomic_read(&bat_priv->orig_interval) -
+@@ -243,7 +251,7 @@ static void rebuild_batman_packet_ogm(struct bat_priv *bat_priv,
+ 	}
+ }
+ 
+-void schedule_own_packet(struct batman_if *batman_if)
++void schedule_own_ogm_packet(struct batman_if *batman_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
+ 	unsigned long send_time;
+@@ -296,7 +304,7 @@ void schedule_own_packet(struct batman_if *batman_if)
+ 	atomic_inc(&batman_if->seqno);
+ 
+ 	slide_own_bcast_window(batman_if);
+-	send_time = own_send_time(bat_priv);
++	send_time = own_ogm_send_time(bat_priv);
+ 	add_bat_packet_to_list(bat_priv,
+ 			       batman_if->packet_buff,
+ 			       batman_if->packet_len,
+@@ -513,7 +521,7 @@ void send_outstanding_bat_packet(struct work_struct *work)
+ 	 * shutting down
+ 	 */
+ 	if (forw_packet->own)
+-		schedule_own_packet(forw_packet->if_incoming);
++		schedule_own_ogm_packet(forw_packet->if_incoming);
+ 
+ out:
+ 	/* don't count own packet */
+diff --git a/send.h b/send.h
+index acf59e7..b626ddf 100644
+--- a/send.h
++++ b/send.h
+@@ -27,7 +27,8 @@
+ int send_skb_packet(struct sk_buff *skb,
+ 				struct batman_if *batman_if,
+ 				uint8_t *dst_addr);
+-void schedule_own_packet(struct batman_if *batman_if);
++unsigned long own_ndp_send_time(struct batman_if *batman_if);
++void schedule_own_ogm_packet(struct batman_if *batman_if);
+ void schedule_forward_packet(struct orig_node *orig_node,
+ 			     struct ethhdr *ethhdr,
+ 			     struct batman_packet_ogm *batman_packet_ogm,
+diff --git a/types.h b/types.h
+index 1d00849..8921e20 100644
+--- a/types.h
++++ b/types.h
+@@ -47,6 +47,7 @@ struct batman_if {
+ 	struct packet_type batman_adv_ptype;
+ 	struct net_device *soft_iface;
+ 	struct rcu_head rcu;
++	atomic_t ndp_interval;
  };
  
-+static BAT_DEBUGINFO(neighbors, S_IRUGO, neighbors_open);
- static BAT_DEBUGINFO(originators, S_IRUGO, originators_open);
- static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
- static BAT_DEBUGINFO(softif_neigh, S_IRUGO, softif_neigh_open);
-@@ -283,6 +291,7 @@ static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
- static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
- 
- static struct bat_debuginfo *mesh_debuginfos[] = {
-+	&bat_debuginfo_neighbors,
- 	&bat_debuginfo_originators,
- 	&bat_debuginfo_gateways,
- 	&bat_debuginfo_softif_neigh,
-diff --git a/ndp.c b/ndp.c
-index 80b30f1..2acff6e 100644
---- a/ndp.c
-+++ b/ndp.c
-@@ -1,6 +1,7 @@
- #include "main.h"
- #include "send.h"
- #include "ndp.h"
-+#include "hard-interface.h"
- #include "soft-interface.h"
- #include "originator.h"
- 
-@@ -243,3 +244,62 @@ ret:
- 	spin_unlock_bh(&batman_if->neigh_list_lock);
- 	return ret;
- }
-+
-+int ndp_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct neigh_node *neigh_node;
-+	struct batman_if *batman_if;
-+	int last_seen_secs;
-+	int last_seen_msecs;
-+	int batman_count = 0;
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct bat_priv *bat_priv = netdev_priv(net_dev);
-+
-+	if ((!bat_priv->primary_if) ||
-+	    (bat_priv->primary_if->if_status != IF_ACTIVE)) {
-+		if (!bat_priv->primary_if)
-+			return seq_printf(seq, "BATMAN mesh %s disabled - "
-+				    "please specify interfaces to enable it\n",
-+				    net_dev->name);
-+
-+		return seq_printf(seq, "BATMAN mesh %s "
-+				  "disabled - primary interface not active\n",
-+				  net_dev->name);
-+	}
-+
-+	seq_printf(seq, "[B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%pM (%s)]\n",
-+		   SOURCE_VERSION, REVISION_VERSION_STR,
-+		   bat_priv->primary_if->net_dev->name,
-+		   bat_priv->primary_if->net_dev->dev_addr, net_dev->name);
-+	seq_printf(seq, "  %-15s %s (%s/%i) [%10s]\n",
-+		   "Neighbor", "last-seen", "#TQ,#RQ", TQ_MAX_VALUE, "IF");
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(batman_if, &if_list, list) {
-+		if (batman_if->if_status != IF_ACTIVE)
-+			continue;
-+
-+		spin_lock_bh(&batman_if->neigh_list_lock);
-+		list_for_each_entry(neigh_node, &batman_if->neigh_list,
-+				    list) {
-+			last_seen_secs = jiffies_to_msecs(jiffies -
-+						neigh_node->last_valid) / 1000;
-+			last_seen_msecs = jiffies_to_msecs(jiffies -
-+						neigh_node->last_valid) % 1000;
-+
-+			seq_printf(seq, "%pM %4i.%03is     (%3i,%3i) [%10s]\n",
-+				   neigh_node->addr, last_seen_secs,
-+				   last_seen_msecs, neigh_node->tq_avg,
-+				   neigh_node->rq, batman_if->net_dev->name);
-+
-+			batman_count++;
-+		}
-+		spin_unlock_bh(&batman_if->neigh_list_lock);
-+	}
-+	rcu_read_unlock();
-+
-+	if ((batman_count == 0))
-+		seq_printf(seq, "No batman nodes in range ...\n");
-+
-+	return 0;
-+}
-diff --git a/ndp.h b/ndp.h
-index 5679f36..26be41f 100644
---- a/ndp.h
-+++ b/ndp.h
-@@ -10,3 +10,4 @@ uint8_t ndp_fetch_tq(struct batman_packet_ndp *packet,
- void ndp_purge_neighbors(void);
- int ndp_update_neighbor(uint8_t my_tq, uint32_t seqno,
- 			struct batman_if *batman_if, uint8_t *neigh_addr);
-+int ndp_seq_print_text(struct seq_file *seq, void *offset);
+ /**
 -- 
 1.7.1
 
