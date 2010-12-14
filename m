@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@ascom.ch>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Tue, 14 Dec 2010 10:58:12 +0100
-Message-Id: <1292320696-11983-7-git-send-email-linus.luessing@ascom.ch>
+Date: Tue, 14 Dec 2010 10:58:14 +0100
+Message-Id: <1292320696-11983-9-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1292320696-11983-1-git-send-email-linus.luessing@ascom.ch>
 References: <1292320696-11983-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 06/10] batman-adv: Purge outdated ndp
-	neighbours
+Subject: [B.A.T.M.A.N.] [PATCH 08/10] batman-adv: Adding batman_if specific
+	sysfs wrapper macros for UINT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,83 +23,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-If no new packet has been received from a neighbour for a while, then
-delete it from memory.
+This allows us to easily add a sysfs parameter for an unsigned int
+later, which is not for a batman mesh interface (e.g. bat0), but for a
+common interface instead. It allows reading and writing an atomic_t in
+batman_if (instead of bat_priv compared to the mesh variant).
 
 Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
- ndp.c        |   25 +++++++++++++++++++++++++
- ndp.h        |    1 +
- originator.c |    2 ++
- 3 files changed, 28 insertions(+), 0 deletions(-)
+ bat_sysfs.c |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+), 0 deletions(-)
 
-diff --git a/ndp.c b/ndp.c
-index 408dd70..80b30f1 100644
---- a/ndp.c
-+++ b/ndp.c
-@@ -184,6 +184,31 @@ static struct neigh_node *ndp_create_neighbor(uint8_t my_tq, uint32_t seqno,
- 	return neigh_node;
- }
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index cd7bb51..98c10a3 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -94,6 +94,33 @@ ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
+ 	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
  
-+void ndp_purge_neighbors(void)
-+{
-+	struct neigh_node *neigh_node, *neigh_node_tmp;
-+	struct batman_if *batman_if;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(batman_if, &if_list, list) {
-+		if (batman_if->if_status != IF_ACTIVE)
-+			continue;
-+
-+		spin_lock_bh(&batman_if->neigh_list_lock);
-+		list_for_each_entry_safe(neigh_node, neigh_node_tmp,
-+					 &batman_if->neigh_list, list) {
-+			if (time_before(jiffies,
-+			    neigh_node->last_valid + PURGE_TIMEOUT * HZ))
-+				continue;
-+
-+			list_del(&neigh_node->list);
-+			kfree(neigh_node);
-+		}
-+		spin_unlock_bh(&batman_if->neigh_list_lock);
-+	}
-+	rcu_read_unlock();
+ 
++#define BAT_ATTR_IF_STORE_UINT(_name, _min, _max, _post_func)		\
++ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
++			     char *buff, size_t count)			\
++{									\
++	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);	\
++	return __store_uint_attr(buff, count, _min, _max, _post_func,	\
++				 attr, &batman_if->_name, net_dev);	\
 +}
 +
- int ndp_update_neighbor(uint8_t my_tq, uint32_t seqno,
- 			struct batman_if *batman_if, uint8_t *neigh_addr)
- {
-diff --git a/ndp.h b/ndp.h
-index 35146ce..5679f36 100644
---- a/ndp.h
-+++ b/ndp.h
-@@ -7,5 +7,6 @@ void ndp_free(struct batman_if *batman_if);
- 
- uint8_t ndp_fetch_tq(struct batman_packet_ndp *packet,
- 		 uint8_t *my_if_addr);
-+void ndp_purge_neighbors(void);
- int ndp_update_neighbor(uint8_t my_tq, uint32_t seqno,
- 			struct batman_if *batman_if, uint8_t *neigh_addr);
-diff --git a/originator.c b/originator.c
-index 89ec021..ad31bf7 100644
---- a/originator.c
-+++ b/originator.c
-@@ -22,6 +22,7 @@
- /* increase the reference counter for this originator */
- 
- #include "main.h"
-+#include "ndp.h"
- #include "originator.h"
- #include "hash.h"
- #include "translation-table.h"
-@@ -307,6 +308,7 @@ static void purge_orig(struct work_struct *work)
- 		container_of(delayed_work, struct bat_priv, orig_work);
- 
- 	_purge_orig(bat_priv);
-+	ndp_purge_neighbors();
- 	start_purge_timer(bat_priv);
- }
- 
++#define BAT_ATTR_IF_SHOW_UINT(_name)					\
++ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
++			    char *buff)					\
++{									\
++	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);	\
++	return sprintf(buff, "%i\n", atomic_read(&batman_if->_name));	\
++}									\
++
++/* Use this, if you are going to set [name] in batman_if to unsigned integer
++ * values only */
++#define BAT_ATTR_IF_UINT(_name, _mode, _min, _max, _post_func)		\
++	static BAT_ATTR_IF_STORE_UINT(_name, _min, _max, _post_func)	\
++	static BAT_ATTR_IF_SHOW_UINT(_name)				\
++	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
++
++
+ static int store_bool_attr(char *buff, size_t count,
+ 			   struct net_device *net_dev,
+ 			   char *attr_name, atomic_t *attr)
 -- 
 1.7.1
 
