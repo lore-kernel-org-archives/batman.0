@@ -1,12 +1,12 @@
-Return-Path: <neumann@cgws.de>
-From: Axel Neumann <neumann@cgws.de>
-Date: Sat, 18 Dec 2010 18:01:14 +0100
+Return-Path: <ordex@ritirata.org>
+Date: Sun, 19 Dec 2010 00:33:42 +0100
+From: Antonio Quartulli <ordex@ritirata.org>
+Message-ID: <20101218233342.GC30203@ritirata.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201012181801.14616.neumann@cgws.de>
-Subject: [B.A.T.M.A.N.] New BMX website at www.bmx6.net
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Modifing hna_local_fill_buffer()
+	return value
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,27 +20,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hello mesh folks!
+After changeset 1888, the return value of hna_local_fill_buffer() has
+not been changed to _count_. In this way an eroneous num_hna was
+calculated before sending the new OGM packet.
 
-There is a new BMX website and mailing list at 
-http://www.bmx6.net 
+Signed-off-by: Antonio Quartulli <ordex@ritirata.org>
+---
+ translation-table.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The new website wants to track development and usage activities of the
-BMX mesh routing protocol.
+diff --git a/translation-table.c b/translation-table.c
+index a19e16c..a633b5a 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -162,7 +162,7 @@ int hna_local_fill_buffer(struct bat_priv *bat_priv,
+                atomic_set(&bat_priv->hna_local_changed, 0);
+ 
+        spin_unlock_bh(&bat_priv->hna_lhash_lock);
+-       return i;
++       return count;
+ }
+ 
+ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
 
-Although the new site is still under construction, you'll find:
 
-* Wikipages and links guiding you in understanding and using BMX
+-- 
+Antonio Quartulli
 
-* git ropositories of the
-     - currently stable bmx-0.3.x branch
-     - new bmx6 development branch
-
-* a new mailing list for BMX in general at: 
-    http://lists.bmx6.net/cgi-bin/mailman/listinfo/bmxd
-
-* download section with latest snapshots
-
-hoping to once see you there...
-best regards
-/axel
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
