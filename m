@@ -1,19 +1,16 @@
-Return-Path: <linus.luessing@web.de>
-Date: Mon, 20 Dec 2010 10:05:02 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20101220090502.GA30598@Sellars>
-References: <mailman.14.1290812292.944.b.a.t.m.a.n@lists.open-mesh.org>
-	<AANLkTimR7VU95r3C-=C9rn5ftZahKkNTu3-cU-Vft+VZ@mail.gmail.com>
-	<AANLkTikZJn5T7gEc_REH_vyEwhKhTcsqLRdq8tX0OdF8@mail.gmail.com>
-	<AANLkTinFgQ+Z4OsvyHTMNhy11=SrEz0Xu+YU2iZcdcwZ@mail.gmail.com>
-	<AANLkTimYtBa3fD_YNmFV2x0GUoyNiDzT47wy9Kuok0k9@mail.gmail.com>
-	<AANLkTi=0tLPwa0toe9HX=PwA780mXTox8NrGNxymuF_-@mail.gmail.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 20 Dec 2010 13:17:51 +0100
+References: <201012181801.14616.neumann@cgws.de>
+	<201012191009.09941.sven@narfation.org>
+	<201012201245.16891.neumann@cgws.de>
+In-Reply-To: <201012201245.16891.neumann@cgws.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <AANLkTi=0tLPwa0toe9HX=PwA780mXTox8NrGNxymuF_-@mail.gmail.com>
-Sender: linus.luessing@web.de
-Subject: Re: [B.A.T.M.A.N.] BATMAN routing
+Content-Type: multipart/signed; boundary="nextPart1673831.fMbB6WoPms";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201012201317.52706.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] New BMX website at www.bmx6.net
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,39 +22,68 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: hlabishi kobo <hlabishik@gmail.com>
+To: Axel Neumann <neumann@cgws.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi everyone,
+--nextPart1673831.fMbB6WoPms
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-just wanted to share a website I found, which is actually for
-stock markets and their charts, but I think the Moving Average of
-a data set, that's what we'd have in common. And I guess what the
-economists have discovered and thought being useful could be
-useful for us, too. There are some nice and easy to understand
-articles here that explain the pros and cons:
+Axel Neumann wrote:
+> > Does that mean that your svn directories and git repositories at
+> > open-mesh.org can be dropped
+>=20
+> In the long term yes! But please not right now. I want to update links in
+> other repositories like openWrt first and give users some time to update
+> their checkout as well so that the build process does not fail. Lets say
+> in February.
 
-http://www.investopedia.com/university/
+Ok, sounds good.
 
-Dictionary:
-- Simple Moving Average: http://www.investopedia.com/terms/s/sma.asp
-  (what we have now)
-- Weighted Moving Average:
-  http://www.investopedia.com/terms/l/linearlyweightedmovingaverage.asp
-  (Hlabishi's proposal)
-- Exponential Moving Average:
-  http://www.investopedia.com/terms/e/ema.asp
-- Double Exponential Moving Average:
-  http://www.investopedia.com/terms/d/double-exponential-moving-average.asp
+> > (at least it seems that no branch has common
+> > ancestors with your branches)?
+>=20
+> For branches/bmx-0.3.x/ I used git-svn to create the git repository  which
+> I expected to create common ancestors. Some confusion leaked in when I
+> moved the directory from trunk/batman-experimental to branches/bmx-0.3.x
+> (some deleted files like LIESMICH,.. were not deleted which I fixed with
+> the last git commit).
 
-Articles:
-- Weighted Moving Average:
-  http://www.investopedia.com/articles/technical/060401.asp
-- Simple vs. Exponential Moving Average:
-  http://www.investopedia.com/articles/trading/10/simple-exponential-moving-averages-compare.asp
-- Double Exponential Moving Averages Explained:
-  http://www.investopedia.com/articles/trading/10/double-exponential-moving-average.asp
-- Moving Averages:
-  http://www.investopedia.com/university/movingaverage/default.asp
+The problem is that you (sry, no offence meant) did a quite bad job to conv=
+ert=20
+it. bmxd.git has these weird git-svn-id lines in the commit messages, "rand=
+om"=20
+commiter names+mails, missing parts of the history, dangling symlinks, ...
 
-Cheers, Linus
+Please take a look at git://git.open-mesh.org/ecsv/test/bmx.git
+I don't say that it is the holy grail of svn-to-git conversation, but I thi=
+nk=20
+it could be a better conversation than your bmxd.git
+
+Best regards,
+	Sven
+
+--nextPart1673831.fMbB6WoPms
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJND0lvAAoJEF2HCgfBJntGsAsP/3DJREZHRZOL9lU7lkdK7oX8
+QGoRM3b1OSeugcRZ0nP9E0lHpCsh5ycLXleFbdC6MA6pIk2hjwOPvlIaiy8CaOLp
+23JbxGHmtoOiTyYNcX8NmSf66SFDBKSxbyVeoDlle8zHP9ONxQazTGiOP41KRbph
+1rx2KJ88UFWuUy8RwKn3oBu5eOIjFD8ZftNsrcvBd1HY3e/Fk9XD17kPMAHgDLzH
+lk1fL0YlJlHeNCEA6Zi+8xs55GOrhhyp+YVGlEeG+PWMnGxlyZNF1rGCmmGsd6qX
+ZTjDBRy337ywTNNG7ejXqsakiWgwhwBfx0ibWKYzLG8WAbeYOe9LKKrlkZmYPieE
+e1S1YXNrhJqjQFMmJk7dXNRL51aQpyGSwH+F8KVVgL5De7FmOzsocqVEPaGZkq5V
+DKjcCj6NVGwAhPHCPeO2b5sO9BbWujlR/ZBOEv5NCKEEVm7srHsyx9z2UkaJUTXZ
+9ZqHLCtKbsxgO0CStAP2PzLBzDtjwJzPW/+pEcXLKCD4izlPDCXptXJP7CYNhoAZ
+6mWj4CV61DeCKFQmSYi4wxAUHAn8erWHWJpleGx15H6WAnSyr/M9xjD3q0+YnR4s
+BaB6Vtd8Rceb+GriAqEiwpWW14nDlW04RiFvgZV5ZucV6LP0TuzJFnHlAcsakAMH
+S8tHjclqnJZlgb+RWOk/
+=6zBw
+-----END PGP SIGNATURE-----
+
+--nextPart1673831.fMbB6WoPms--
