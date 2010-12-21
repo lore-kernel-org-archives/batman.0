@@ -1,16 +1,16 @@
-Return-Path: <andrew@lunn.ch>
-Date: Tue, 21 Dec 2010 19:01:34 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20101221180134.GF18448@lunn.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 22 Dec 2010 00:52:51 +0100
 References: <1292320696-11983-1-git-send-email-linus.luessing@ascom.ch>
-	<1292320696-11983-2-git-send-email-linus.luessing@ascom.ch>
-	<201012211839.37926.lindner_marek@yahoo.de>
+	<1292320696-11983-4-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1292320696-11983-4-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201012211839.37926.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 01/10] batman-adv: Creating new neighbor
- discovery packet
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201012220052.52342.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/10] batman-adv: Adding workqueue for
+	new ndp packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,28 +23,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Linus L??ssing <linus.luessing@ascom.ch>
 
-> > -#define BAT_PACKET       0x01
-> > -#define BAT_ICMP         0x02
-> > -#define BAT_UNICAST      0x03
-> > -#define BAT_BCAST        0x04
-> > -#define BAT_VIS          0x05
-> > -#define BAT_UNICAST_FRAG 0x06
-> > +#define BAT_PACKET_NDP   0x01
-> > +#define BAT_PACKET_OGM   0x02
-> > +#define BAT_ICMP         0x03
-> > +#define BAT_UNICAST      0x04
-> > +#define BAT_BCAST        0x05
-> > +#define BAT_VIS          0x06
-> > +#define BAT_UNICAST_FRAG 0x07
-> 
-> Although I like this reordering (I would like to see BAT_UNICAST followed by 
-> BAT_UNICAST_FRAG) I think we can't easily touch this without annoying the 
-> wireshark folks. Maybe we don't care because they hate us already ?
+On Tuesday 14 December 2010 10:58:09 Linus L=C3=BCssing wrote:
+> diff --git a/ndp.c b/ndp.c
+> new file mode 100644
+> index 0000000..2dfb06d
+> --- /dev/null
+> +++ b/ndp.c
+> @@ -0,0 +1,44 @@
+> +#include "main.h"
+> +#include "send.h"
 
-It will also be interesting to see what David Miller says the first
-time you increment the version number, or make some other backward
-incompatible change.
+I think it would make more sense to have own_ndp_send_time() in ndp.c as it=
+ is=20
+not used anywhere else.=20
+We don't have to repeat the mistakes from the past.  ;-)
 
-	     Andrew
+
+> +
+> +void start_ndp_timer(struct batman_if *batman_if)
+> +{
+> +	// adding some jitter
+> +	unsigned long ndp_interval =3D own_ndp_send_time(batman_if);
+> +	queue_delayed_work(bat_event_workqueue, &batman_if->ndp_wq,
+> +			   ndp_interval - jiffies);
+> +}
+> +
+> +void stop_ndp_timer(struct batman_if *batman_if)
+> +{
+> +	cancel_delayed_work_sync(&batman_if->ndp_wq);
+> +}
+
+Would you mind renaming these functions, so that they begin with ndp_*() ?
+Checkpatch does not like C99 style comments ("//").
+
+
+> +int ndp_init(struct batman_if *batman_if)
+> +{
+> +	atomic_set(&batman_if->ndp_interval, 500);
+> +	atomic_set(&batman_if->ndp_seqno, 0);
+> +	INIT_DELAYED_WORK(&batman_if->ndp_wq, ndp_send);
+> +
+> +	return 0;
+> +}
+
+Wouldn't it be better to initialize the ndp_interval in=20
+hardif_add_interface(), so that an interface disable/enable does not overwr=
+ite=20
+user specified ndp intervals ?
+
+Cheers,
+Marek
