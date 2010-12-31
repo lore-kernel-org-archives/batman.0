@@ -1,15 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Fri, 31 Dec 2010 16:46:24 +0100
-Message-Id: <1293810385-31761-10-git-send-email-linus.luessing@ascom.ch>
+Date: Fri, 31 Dec 2010 16:46:25 +0100
+Message-Id: <1293810385-31761-11-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1293810385-31761-1-git-send-email-linus.luessing@ascom.ch>
 References: <1293810385-31761-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 09/10] batman-adv: Use local tq values
-	determined by NDP on OGMs
+Subject: [B.A.T.M.A.N.] [PATCH 10/10] batman-adv: Use rcu locking +
+	ref-counting for neigh_list
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,119 +24,235 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-With this commit not the local transmit quality values determined
-by the OGMs themselves are applied on received OGMs, but the local
-transmit quality detemined by NDP instead. Usually the link quality
-measurements of NDP are more up-to-date than the one of the OGMs, as NDP
-is using a more frequent interval because NDP's packets are not being
-flooded through the whole mesh.
+With this commit only spinlocking for reading/writing variables inside
+a neigh_node for NDP is used. The neigh_list traversal and entry
+deleting/adding is done with rcu-locking and reference counting instead
+to greatly reduce the time of (concurrent) spinlocking.
 
 Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
- routing.c |   64 ++++++++++++++++++++++++++++--------------------------------
- 1 files changed, 30 insertions(+), 34 deletions(-)
+ ndp.c        |   54 ++++++++++++++++++++++++++++++++++++++----------------
+ originator.c |    2 +-
+ originator.h |    1 +
+ routing.c    |   14 +++++++++-----
+ types.h      |    2 ++
+ 5 files changed, 51 insertions(+), 22 deletions(-)
 
+diff --git a/ndp.c b/ndp.c
+index 9f498f9..0793564 100644
+--- a/ndp.c
++++ b/ndp.c
+@@ -66,19 +66,23 @@ static void ndp_send(struct work_struct *work)
+ 	       ETH_ALEN);
+ 
+ 	neigh_entry = (struct neigh_entry *)(ndp_packet + 1);
+-	spin_lock_bh(&batman_if->neigh_list_lock);
+-	hlist_for_each_entry(neigh_node, node, &batman_if->neigh_list, list) {
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(neigh_node, node, &batman_if->neigh_list,
++				 list) {
+ 		if (entries_len + sizeof(struct neigh_entry) >
+ 		    skb_tailroom(skb))
+ 			break;
+ 
++		spin_lock_bh(&neigh_node->update_lock);
+ 		memcpy(neigh_entry->addr, neigh_node->addr, ETH_ALEN);
+ 		neigh_entry->rq = neigh_node->rq;
++		spin_unlock_bh(&neigh_node->update_lock);
++
+ 		ndp_packet->num_neighbors++;
+ 		neigh_entry++;
+ 		entries_len += sizeof(struct neigh_entry);
+ 	}
+-	spin_unlock_bh(&batman_if->neigh_list_lock);
++	rcu_read_unlock();
+ 	skb_put(skb, entries_len);
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+@@ -205,6 +209,9 @@ static struct neigh_node *ndp_create_neighbor(uint8_t my_tq, uint32_t seqno,
+ 		return NULL;
+ 
+ 	INIT_HLIST_NODE(&neigh_node->list);
++	spin_lock_init(&neigh_node->update_lock);
++	kref_init(&neigh_node->refcount);
++
+ 	memcpy(neigh_node->addr, neigh_addr, ETH_ALEN);
+ 	neigh_node->last_rq_seqno = seqno - 1;
+ 
+@@ -216,6 +223,7 @@ void ndp_purge_neighbors(void)
+ 	struct neigh_node *neigh_node;
+ 	struct hlist_node *node, *node_tmp;
+ 	struct batman_if *batman_if;
++	unsigned long last_valid;
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(batman_if, &if_list, list) {
+@@ -225,13 +233,17 @@ void ndp_purge_neighbors(void)
+ 		spin_lock_bh(&batman_if->neigh_list_lock);
+ 		hlist_for_each_entry_safe(neigh_node, node, node_tmp,
+ 					  &batman_if->neigh_list, list) {
+-			if (time_before(jiffies, neigh_node->last_valid +
++			spin_lock(&neigh_node->update_lock);
++			last_valid = neigh_node->last_valid;
++			spin_unlock(&neigh_node->update_lock);
++
++			if (time_before(jiffies, last_valid +
+ 					msecs_to_jiffies(PURGE_TIMEOUT *
+ 							 1000)))
+ 				continue;
+ 
+-			hlist_del(&neigh_node->list);
+-			kfree(neigh_node);
++			hlist_del_rcu(&neigh_node->list);
++			call_rcu(&neigh_node->rcu, neigh_node_free_rcu);
+ 		}
+ 		spin_unlock_bh(&batman_if->neigh_list_lock);
+ 	}
+@@ -246,16 +258,17 @@ int ndp_update_neighbor(uint8_t my_tq, uint32_t seqno,
+ 	struct hlist_node *node;
+ 	int ret = 1;
+ 
+-	spin_lock_bh(&batman_if->neigh_list_lock);
+-	/* old neighbor? */
+-	hlist_for_each_entry(tmp_neigh_node, node, &batman_if->neigh_list,
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(tmp_neigh_node, node, &batman_if->neigh_list,
+ 			     list) {
+ 		if (!compare_orig(tmp_neigh_node->addr, neigh_addr))
+ 			continue;
+ 
+ 		neigh_node = tmp_neigh_node;
++		kref_get(&neigh_node->refcount);
+ 		break;
+ 	}
++	rcu_read_unlock();
+ 
+ 	/* new neighbor? */
+ 	if (!neigh_node) {
+@@ -264,15 +277,24 @@ int ndp_update_neighbor(uint8_t my_tq, uint32_t seqno,
+ 		if (!neigh_node)
+ 			goto ret;
+ 
+-		hlist_add_head(&neigh_node->list, &batman_if->neigh_list);
++		ndp_update_neighbor_lq(my_tq, seqno, neigh_node, bat_priv);
++
++		spin_lock_bh(&batman_if->neigh_list_lock);
++		hlist_add_head_rcu(&neigh_node->list, &batman_if->neigh_list);
++		spin_unlock_bh(&batman_if->neigh_list_lock);
+ 	}
++	/* old neighbor? */
++	else {
++		spin_lock_bh(&neigh_node->update_lock);
++		ndp_update_neighbor_lq(my_tq, seqno, neigh_node, bat_priv);
++		spin_unlock_bh(&neigh_node->update_lock);
+ 
+-	ndp_update_neighbor_lq(my_tq, seqno, neigh_node, bat_priv);
++		kref_put(&neigh_node->refcount, neigh_node_free_ref);
++	}
+ 
+ 	ret = 0;
+ 
+ ret:
+-	spin_unlock_bh(&batman_if->neigh_list_lock);
+ 	return ret;
+ }
+ 
+@@ -311,9 +333,9 @@ int ndp_seq_print_text(struct seq_file *seq, void *offset)
+ 		if (batman_if->if_status != IF_ACTIVE)
+ 			continue;
+ 
+-		spin_lock_bh(&batman_if->neigh_list_lock);
+-		hlist_for_each_entry(neigh_node, node, &batman_if->neigh_list,
+-				    list) {
++		hlist_for_each_entry_rcu(neigh_node, node,
++					 &batman_if->neigh_list, list) {
++			spin_lock_bh(&neigh_node->update_lock);
+ 			last_seen_secs = jiffies_to_msecs(jiffies -
+ 						neigh_node->last_valid) / 1000;
+ 			last_seen_msecs = jiffies_to_msecs(jiffies -
+@@ -324,9 +346,9 @@ int ndp_seq_print_text(struct seq_file *seq, void *offset)
+ 				   last_seen_msecs, neigh_node->tq_avg,
+ 				   neigh_node->rq, batman_if->net_dev->name);
+ 
++			spin_unlock_bh(&neigh_node->update_lock);
+ 			batman_count++;
+ 		}
+-		spin_unlock_bh(&batman_if->neigh_list_lock);
+ 	}
+ 	rcu_read_unlock();
+ 
+diff --git a/originator.c b/originator.c
+index e98add5..699dbfc 100644
+--- a/originator.c
++++ b/originator.c
+@@ -68,7 +68,7 @@ void neigh_node_free_ref(struct kref *refcount)
+ 	kfree(neigh_node);
+ }
+ 
+-static void neigh_node_free_rcu(struct rcu_head *rcu)
++void neigh_node_free_rcu(struct rcu_head *rcu)
+ {
+ 	struct neigh_node *neigh_node;
+ 
+diff --git a/originator.h b/originator.h
+index f3676fa..2a7d68b 100644
+--- a/originator.h
++++ b/originator.h
+@@ -31,6 +31,7 @@ struct neigh_node *create_neighbor(struct orig_node *orig_node,
+ 				   uint8_t *neigh,
+ 				   struct batman_if *if_incoming);
+ void neigh_node_free_ref(struct kref *refcount);
++void neigh_node_free_rcu(struct rcu_head *rcu);
+ int orig_seq_print_text(struct seq_file *seq, void *offset);
+ int orig_hash_add_if(struct batman_if *batman_if, int max_if_num);
+ int orig_hash_del_if(struct batman_if *batman_if, int max_if_num);
 diff --git a/routing.c b/routing.c
-index 947592f..8a3acfa 100644
+index 8a3acfa..785ddc2 100644
 --- a/routing.c
 +++ b/routing.c
-@@ -152,7 +152,7 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct neigh_node *neigh_node = NULL, *tmp_neigh_node = NULL;
- 	struct hlist_node *node;
--	unsigned char total_count;
-+	uint8_t local_tq = 0, local_rq = 0;
- 
- 	if (orig_node == orig_neigh_node) {
- 		rcu_read_lock();
-@@ -199,25 +199,23 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
+@@ -199,20 +199,24 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
  			return 0;
  	}
  
--	orig_node->last_valid = jiffies;
-+	/* note, bottom halves are already deactivated outside in
-+	 * recv_bat_packet() */
-+	spin_lock(&if_incoming->neigh_list_lock);
-+	hlist_for_each_entry(neigh_node, node, &if_incoming->neigh_list,
-+								list) {
-+		if (!compare_orig(neigh_node->addr, orig_neigh_node->orig))
-+			continue;
+-	/* note, bottom halves are already deactivated outside in
+-	 * recv_bat_packet() */
+-	spin_lock(&if_incoming->neigh_list_lock);
+-	hlist_for_each_entry(neigh_node, node, &if_incoming->neigh_list,
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(neigh_node, node, &if_incoming->neigh_list,
+ 								list) {
+ 		if (!compare_orig(neigh_node->addr, orig_neigh_node->orig))
+ 			continue;
  
--	/* pay attention to not get a value bigger than 100 % */
--	total_count = (orig_neigh_node->bcast_own_sum[if_incoming->if_num] >
--		       neigh_node->real_packet_count ?
--		       neigh_node->real_packet_count :
--		       orig_neigh_node->bcast_own_sum[if_incoming->if_num]);
-+		orig_node->last_valid = jiffies;
-+		local_tq = neigh_node->tq_avg;
-+		local_rq = neigh_node->rq;
-+		break;
-+	}
-+	spin_unlock(&if_incoming->neigh_list_lock);
- 
--	/* if we have too few packets (too less data) we set tq_own to zero */
--	/* if we receive too few packets it is not considered bidirectional */
--	if ((total_count < TQ_LOCAL_BIDRECT_SEND_MINIMUM) ||
--	    (neigh_node->real_packet_count < TQ_LOCAL_BIDRECT_RECV_MINIMUM))
--		orig_neigh_node->tq_own = 0;
--	else
--		/* neigh_node->real_packet_count is never zero as we
--		 * only purge old information when getting new
--		 * information */
--		orig_neigh_node->tq_own = (TQ_MAX_VALUE * total_count) /
--			neigh_node->real_packet_count;
-+	if (local_tq == 0)
-+		return 0;
- 
- 	/*
- 	 * 1 - ((1-x) ** 3), normalized to TQ_MAX_VALUE this does
-@@ -228,25 +226,22 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 	orig_neigh_node->tq_asym_penalty =
- 		TQ_MAX_VALUE -
- 		(TQ_MAX_VALUE *
--		 (TQ_LOCAL_WINDOW_SIZE - neigh_node->real_packet_count) *
--		 (TQ_LOCAL_WINDOW_SIZE - neigh_node->real_packet_count) *
--		 (TQ_LOCAL_WINDOW_SIZE - neigh_node->real_packet_count)) /
--		(TQ_LOCAL_WINDOW_SIZE *
--		 TQ_LOCAL_WINDOW_SIZE *
--		 TQ_LOCAL_WINDOW_SIZE);
--
--	ogm_packet->tq = ((ogm_packet->tq *
--			      orig_neigh_node->tq_own *
--			      orig_neigh_node->tq_asym_penalty) /
--			     (TQ_MAX_VALUE * TQ_MAX_VALUE));
-+		 (TQ_MAX_VALUE - local_rq) *
-+		 (TQ_MAX_VALUE - local_rq) *
-+		 (TQ_MAX_VALUE - local_rq)) /
-+		(TQ_MAX_VALUE *
-+		 TQ_MAX_VALUE *
-+		 TQ_MAX_VALUE);
+ 		orig_node->last_valid = jiffies;
 +
-+	ogm_packet->tq = ((ogm_packet->tq * local_tq *
-+			   orig_neigh_node->tq_asym_penalty) /
-+			   (TQ_MAX_VALUE * TQ_MAX_VALUE));
++		/* note, bottom halves are already deactivated outside in
++		 * recv_bat_packet() */
++		spin_lock(&neigh_node->update_lock);
+ 		local_tq = neigh_node->tq_avg;
+ 		local_rq = neigh_node->rq;
++		spin_unlock(&neigh_node->update_lock);
++
+ 		break;
+ 	}
+-	spin_unlock(&if_incoming->neigh_list_lock);
++	rcu_read_unlock();
  
- 	bat_dbg(DBG_BATMAN, bat_priv,
- 		"bidirectional: "
--		"orig = %-15pM neigh = %-15pM => own_bcast = %2i, "
--		"real recv = %2i, local tq: %3i, asym_penalty: %3i, "
--		"total tq: %3i\n",
--		orig_node->orig, orig_neigh_node->orig, total_count,
--		neigh_node->real_packet_count, orig_neigh_node->tq_own,
-+		"orig = %-15pM neigh = %-15pM => local tq = %3i, "
-+		"local rq: %3i, asym_penalty: %3i, total tq: %3i\n",
-+		orig_node->orig, orig_neigh_node->orig, local_tq, local_rq,
- 		orig_neigh_node->tq_asym_penalty, ogm_packet->tq);
+ 	if (local_tq == 0)
+ 		return 0;
+diff --git a/types.h b/types.h
+index 43721cf..37c2c58 100644
+--- a/types.h
++++ b/types.h
+@@ -129,6 +129,8 @@ struct neigh_node {
+ 	struct rcu_head rcu;
+ 	struct orig_node *orig_node;
+ 	struct batman_if *if_incoming;
++	spinlock_t update_lock;	/* protects last_rq_seqno, ndp_rq_window, rq,
++				   last_valid, tq_avg for NDP */
+ };
  
- 	/* if link has the minimum required transmission quality
-@@ -859,6 +854,7 @@ int recv_bat_packet(struct sk_buff *skb,
- 
- 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
-+	/* note, is_bidirectional_neigh() relies on deactivated bottom halves */
- 	spin_lock_bh(&bat_priv->orig_hash_lock);
- 	receive_aggr_bat_packet(ethhdr,
- 				skb->data,
+ struct neigh_entry {
 -- 
 1.7.1
 
