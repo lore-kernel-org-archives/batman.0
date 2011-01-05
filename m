@@ -1,14 +1,12 @@
 Return-Path: <linus.luessing@web.de>
-Date: Wed, 5 Jan 2011 11:57:47 +0100
+Date: Wed, 5 Jan 2011 12:57:30 +0100
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20110105105747.GA6723@Sellars>
-References: <E056F038D9D24718AF5E3AFDC7E7BAEE@granch.local>
+Message-ID: <20110105115730.GB6723@Sellars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <E056F038D9D24718AF5E3AFDC7E7BAEE@granch.local>
 Sender: linus.luessing@web.de
-Subject: Re: [B.A.T.M.A.N.] Mesh network topology problem
+Subject: [B.A.T.M.A.N.] bitarray.c / packet-counting / window questions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,54 +18,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Michael,
+Hi everyone,
 
-Welcome to the BATMAN mailing list :). Let me ask some general
-questions first about what you're trying to achieve. So you are
-trying to set up a highly fault tolearant network. Does the
-fault tolerant setup have any time limitations, how quickly do you
-need to detect outageous and switch? So far it looks like you're
-having just a wlan0 interface inside of batman-adv, right?
-So you usually want to use the wired links but use the wireless mesh
-network as a backup?
-Could you explain the picture you've attached a little further. I
-guess (1) - (8) and (11) - (18) are nodes which are running
-batman-adv, what are (CCbs0/1)? Do blue lines represent the wired
-links attached to a switch (so 4 switches involved?) and a thin black
-line the wifi-links? What is a thick black line, what do the numbers represent?
+For the NDP patches, the usage of the methods for determening the
+link qualities with the window is the code I'm most uncertain
+about (right after the fancy rcu-locking/refcounting ;) ).
 
-On Mon, Jan 03, 2011 at 03:24:45PM +0600, Michael Y. Gluhovchenko wrote:
-> Hello All;
-> 
-> I have a problem organizing mesh, each wireless router has a Wifi
-> link and 2 wired links. The problem is that there is the parallel
-> corridor  with the same infrastructure. Routers can see each other
-> across the corridor, the signal quality in the corridor is better
-> than the main line.
-> I want to use Linux bridge + stp interfaces bat0, eth0, eth1 wired
-> links have advantages. When break wire links or failure one of the
-> routers need to maintain communication through the mesh. Is it
-> possible to configure mesh so that the link in another corridor with
-> the best quality work in the last turn?
-Are you talking about a wireless link here? Which link are you
-refering to here exactly?
-> What problems can occur for
-> that network topology.
-Well, if done wrong, bridge-loops ;). I think with stp and
-bridging the wifi-mesh and wired network would be one possible
-solution, but there are at least two more ways to go. It would be
-great if you could explain the physical network topology a little
-more with the help of the picture so that we'd be able to better
-decide which of those solutions might be most suitable for you.
-> 
-> With best regards,
-> Michael;
+Therefore I'd like to ask some questions about code in bitarray.c
+and routing.c that came to my mind while reading some of those
+parts and which parts confused me, partly due to their naming
+style I think. It's great though, that the purpose of the methods
+in bitarray.c are well explained, I'm just missing some minor cases
+that are not explained in their comment.
+
+- for get_bit_status() it's especially not clear to me, what is
+  meant with "in range" in its comment. is it supposed to be "in
+  range" if it is after or before the last_seqno?
+- bit_get_packet(): just for clarification, if set_mark is set,
+  that means the window can still be slided, but the bit for the
+  according seqno in the window is not being set, right?
+  (what do you think about adding a sentence about its purpose in
+  this methods preceding comment?)
+- what does bit_get_packet() return in case of a not very old, but
+  just old packet which is still inside of the window? (the
+  comment does not seem to cover this case)
+- what do you think of renaming bit_get_packet() to something like
+  update_window()? With function names having a "get" in their
+  name I'd usually think that they'd not modify anything. And for
+  instance renaming set_mark to "slide_only" or something else
+  that might explain a little more the difference when setting or
+  not setting it?
+
+- for the need_update in the code, this is just refering to an
+  updated last_real_seqno, right? need_update could also be 0 in
+  case of a out-of-order and not too old ogm, right?
+  (maybe renaming it to something like window_slided or
+  update_last_rq_seqno?)
+- in count_real_packets(), why are the window update functions
+  (bit_get_packet(), bit_packet_count()) still called in case of
+  is_duplicate == 1?
+
+Do you think it might make sense to add some more abstraction in
+routing.c to reduce the number of functions in bitarray.c you have to look at
+and their purpose you'd have to get your head around? To avoid having to think
+of the window operations in routing.c and abstract that part?
+
+And one more question for the TQ_LOCAL_WINDOW_SIZE, when i.e. I'd
+change that to a lower value, for instance 4, I'd have to set
+WORD_BIT_SIZE to (sizeof(unsigned long) / 2), right? Would that
+cause any trouble on the code side (and yeah, I know that this is
+causing unusable link quality measurements, but I wanted to reduce
+that to play a little with an exponentially weighted moving
+average on top of that).
 
 Cheers, Linus
-
-PS: Also note, that STP over batman-adv will create quite some
-overhead, depending on the number of nodes you are running.
-batman-adv will flood each STP packet through the whole
-wireless mesh.
