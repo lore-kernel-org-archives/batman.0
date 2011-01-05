@@ -1,12 +1,14 @@
-Return-Path: <linus.luessing@web.de>
-Date: Wed, 5 Jan 2011 12:57:30 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20110105115730.GB6723@Sellars>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 5 Jan 2011 13:12:33 +0100
+References: <1293810385-31761-1-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1293810385-31761-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] bitarray.c / packet-counting / window questions
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201101051312.34513.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] NDP patches v4
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,59 +20,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi everyone,
 
-For the NDP patches, the usage of the methods for determening the
-link qualities with the window is the code I'm most uncertain
-about (right after the fancy rcu-locking/refcounting ;) ).
+Hi Linus,
 
-Therefore I'd like to ask some questions about code in bitarray.c
-and routing.c that came to my mind while reading some of those
-parts and which parts confused me, partly due to their naming
-style I think. It's great though, that the purpose of the methods
-in bitarray.c are well explained, I'm just missing some minor cases
-that are not explained in their comment.
+great that you embraced the feedback that quickly. As discussed in Berlin I'll 
+go through your patches once I have a little bit more room to manoeuvre (next 
+week is rather packed).
 
-- for get_bit_status() it's especially not clear to me, what is
-  meant with "in range" in its comment. is it supposed to be "in
-  range" if it is after or before the last_seqno?
-- bit_get_packet(): just for clarification, if set_mark is set,
-  that means the window can still be slided, but the bit for the
-  according seqno in the window is not being set, right?
-  (what do you think about adding a sentence about its purpose in
-  this methods preceding comment?)
-- what does bit_get_packet() return in case of a not very old, but
-  just old packet which is still inside of the window? (the
-  comment does not seem to cover this case)
-- what do you think of renaming bit_get_packet() to something like
-  update_window()? With function names having a "get" in their
-  name I'd usually think that they'd not modify anything. And for
-  instance renaming set_mark to "slide_only" or something else
-  that might explain a little more the difference when setting or
-  not setting it?
+> Would be great if someone could check the usage of rcu-locking +
+> refcounting. I was also a little confused because in
+> "Documentation/RCU/listRCU.txt" list_del_rcu() and list_add_rcu() are not
+> protected with a spinlock for the list here, but in the batman-adv code we
+> are usually having those extra locks. Do I have to leave those spinlocks
+> or can I remove them for adding/deleting entries in the neigh_list?
 
-- for the need_update in the code, this is just refering to an
-  updated last_real_seqno, right? need_update could also be 0 in
-  case of a out-of-order and not too old ogm, right?
-  (maybe renaming it to something like window_slided or
-  update_last_rq_seqno?)
-- in count_real_packets(), why are the window update functions
-  (bit_get_packet(), bit_packet_count()) still called in case of
-  is_duplicate == 1?
+I don't understand why you think there are no locks. Did you read the text 
+around the examples (Documentation/RCU/listRCU.txt) ? I mean, below the first 
+example (which indeed does not contain spinlocks) it is written:
 
-Do you think it might make sense to add some more abstraction in
-routing.c to reduce the number of functions in bitarray.c you have to look at
-and their purpose you'd have to get your head around? To avoid having to think
-of the window operations in routing.c and abstract that part?
+Normally, the write_lock() and write_unlock() would be replaced by
+a spin_lock() and a spin_unlock(), but in this case, all callers hold
+audit_netlink_sem, so no additional locking is required.  The auditsc_lock
+can therefore be eliminated, since use of RCU eliminates the need for
+writers to exclude readers.  Normally, the write_lock() calls would
+be converted into spin_lock() calls.
 
-And one more question for the TQ_LOCAL_WINDOW_SIZE, when i.e. I'd
-change that to a lower value, for instance 4, I'd have to set
-WORD_BIT_SIZE to (sizeof(unsigned long) / 2), right? Would that
-cause any trouble on the code side (and yeah, I know that this is
-causing unusable link quality measurements, but I wanted to reduce
-that to play a little with an exponentially weighted moving
-average on top of that).
+If you check the following example you'll find spinlocks or search for 
+list_del_rcu() in the kernel sources to find more usage scenarios.
 
-Cheers, Linus
+Regards,
+Marek
