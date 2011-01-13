@@ -1,14 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 13 Jan 2011 14:25:53 +0100
-References: <20110105115730.GB6723@Sellars>
-In-Reply-To: <20110105115730.GB6723@Sellars>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 13 Jan 2011 22:13:15 +0100
+References: <alpine.LNX.2.00.1101132146400.11347@swampdragon.chaosbits.net>
+In-Reply-To: <alpine.LNX.2.00.1101132146400.11347@swampdragon.chaosbits.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+Content-Type: multipart/signed; boundary="nextPart12825553.O9jQGzAFVI";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201101131425.53563.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] bitarray.c / packet-counting / window questions
+Message-Id: <201101132213.18503.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Even Batman should not dereference NULL
+	pointers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,57 +21,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Jesper Juhl <jj@chaosbits.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
 
+--nextPart12825553.O9jQGzAFVI
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Thursday 13 January 2011 21:53:38 Jesper Juhl wrote:
+> There's a problem in net/batman-adv/unicast.c::frag_send_skb().
+> dev_alloc_skb() allocates memory and may fail, thus returning NULL. If
+> this happens we'll pass a NULL pointer on to skb_split() which in turn
+> hands it to skb_split_inside_header() from where it gets passed to
+> skb_put() that lets skb_tail_pointer() play with it and that function
+> dereferences it. And thus the bat dies.
+>=20
+> While I was at it I also moved the call to dev_alloc_skb() above the
+> assignment to 'unicast_packet' since there's no reason to do that
+> assignment if the memory allocation fails.
 
-> - for get_bit_status() it's especially not clear to me, what is
->   meant with "in range" in its comment. is it supposed to be "in
->   range" if it is after or before the last_seqno?
+Applied
 
-the function seems rather obvious to me. If curr_seqno is smaller than 
-last_seqno it is in range (aka in the sliding window).
+Thanks,
+	Sven
 
+--nextPart12825553.O9jQGzAFVI
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> - bit_get_packet(): just for clarification, if set_mark is set,
->   that means the window can still be slided, but the bit for the
->   according seqno in the window is not being set, right?
->   (what do you think about adding a sentence about its purpose in
->   this methods preceding comment?)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Correct - if set_mark decides whether the bit is set and not whether the 
-window gets shifted.
+iQIcBAABCgAGBQJNL2rsAAoJEF2HCgfBJntG0DIQAIbD6U+6ITHA4PD08pn2Vq6K
+3iioaSryDTDa+a9nEz6T3vox64dSLTQVC4fzXkFQW+FGUX3QzGVCh4cpNPjgSpoI
+gL9+DK5OahV4TZVSy2yjGDX230H7GjlwXRycTuALx0Xk3pS/ElAjoJc9W79rN9xC
+P7mBbFEskPO4L8rkcTSRWGPlWoSHo++q8nWHmDN+5HitmyfTMFBFiQN0IRxQh62+
+gM1usbAIPOLoqwer3udI/tw+J2nrkmVFDtmFGAzgznKMqv1++hqUrtib2603yzZs
+0NNOLOvWc0zyHtwoBK9jmEvD2hrqiB/pvjQWz37JZ5Pi7M6eXaCKPZgNPtrJj1xT
+kqFjDdNsUK72RNNJqrV2Kd+3LPIsofwH6EJ9XxvIBJzlJXhUJmTn6zpl94UtoEQc
+q/xsqPMTHm1E4kM8dcJELXSFDsPlFEzu3p33M2+/FNIxLFlb8nUKB6GDVxo2PGYM
+NG0zT341rzDNmbzUshcPolWR+h69+6De0HPQvsDBbzqtTLQV1IxGaTzvkNHPCaSY
+F/73q3QJsCIbpwy9kVo5j4G4m17IicGIIXUzIUqMacGYsspHE7/obzEl7MWmlC08
+slNxmCrNzfSMeyFF4kmPzeuY//tH9SfjL7iFJ5brU6/nCq5+Kf0tXdLsrTML7PnE
+ex3OQ/zyZp1EcKcjYjmJ
+=heoP
+-----END PGP SIGNATURE-----
 
-
-> - what does bit_get_packet() return in case of a not very old, but
->   just old packet which is still inside of the window? (the
->   comment does not seem to cover this case)
-
-Do you mean: "sequence number is slightly older. We already got a sequence 
-number higher than this one, so we just mark it." ? It returns 0 ..
-
-
-> - for the need_update in the code, this is just refering to an
->   updated last_real_seqno, right? need_update could also be 0 in
->   case of a out-of-order and not too old ogm, right?
-
-Yes.
-
-
-> - in count_real_packets(), why are the window update functions
->   (bit_get_packet(), bit_packet_count()) still called in case of
->   is_duplicate == 1?
-
-Why should they not be called ?
-
-
-> Do you think it might make sense to add some more abstraction in
-> routing.c to reduce the number of functions in bitarray.c you have to look
-> at and their purpose you'd have to get your head around? To avoid having
-> to think of the window operations in routing.c and abstract that part?
-
-What exactly do you have in mind ?
-
-Regards,
-Marek
+--nextPart12825553.O9jQGzAFVI--
