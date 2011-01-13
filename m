@@ -1,15 +1,11 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Fri, 14 Jan 2011 01:59:54 +0100
-Message-Id: <1294966794-17780-12-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <1294966794-17780-1-git-send-email-linus.luessing@ascom.ch>
-References: <1294966794-17780-1-git-send-email-linus.luessing@ascom.ch>
+Return-Path: <jj@chaosbits.net>
+Date: Thu, 13 Jan 2011 21:53:38 +0100 (CET)
+From: Jesper Juhl <jj@chaosbits.net>
+Message-ID: <alpine.LNX.2.00.1101132146400.11347@swampdragon.chaosbits.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 11/11] batman-adv: Adding sysfs ABI
-	documentation for ndp_interval
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: [B.A.T.M.A.N.] [PATCH] Even Batman should not dereference NULL
+	pointers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,28 +18,47 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
 
-Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
+There's a problem in net/batman-adv/unicast.c::frag_send_skb().
+dev_alloc_skb() allocates memory and may fail, thus returning NULL. If 
+this happens we'll pass a NULL pointer on to skb_split() which in turn 
+hands it to skb_split_inside_header() from where it gets passed to 
+skb_put() that lets skb_tail_pointer() play with it and that function 
+dereferences it. And thus the bat dies.
+
+While I was at it I also moved the call to dev_alloc_skb() above the 
+assignment to 'unicast_packet' since there's no reason to do that 
+assignment if the memory allocation fails.
+
+Signed-off-by: Jesper Juhl <jj@chaosbits.net>
 ---
- sysfs-class-net-batman-adv |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ unicast.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/batman-adv/sysfs-class-net-batman-adv b/batman-adv/sysfs-class-net-batman-adv
-index 38dd762..585e43a 100644
---- a/batman-adv/sysfs-class-net-batman-adv
-+++ b/batman-adv/sysfs-class-net-batman-adv
-@@ -12,3 +12,10 @@ Date:           May 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
- Description:
-                 Indicates the status of <iface> as it is seen by batman.
-+
-+What:           /sys/class/net/<mesh_iface>/batman-adv/ndp_interval
-+Date:           Jan 2011
-+Contact:        Linus Lüssing <linus.luessing@web.de>
-+Description:
-+                Defines the interval in milliseconds in which batman
-+                sends its probing packets for link quality measurements.
+diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
+index dc2e28b..ee41fef 100644
+--- a/net/batman-adv/unicast.c
++++ b/net/batman-adv/unicast.c
+@@ -229,10 +229,12 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 	if (!bat_priv->primary_if)
+ 		goto dropped;
+ 
+-	unicast_packet = (struct unicast_packet *) skb->data;
++	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + ucf_hdr_len);
++	if (!frag_skb)
++		goto dropped;
+ 
++	unicast_packet = (struct unicast_packet *) skb->data;
+ 	memcpy(&tmp_uc, unicast_packet, uc_hdr_len);
+-	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + ucf_hdr_len);
+ 	skb_split(skb, frag_skb, data_len / 2);
+ 
+ 	if (my_skb_head_push(skb, ucf_hdr_len - uc_hdr_len) < 0 ||
+
+
 -- 
-1.7.1
+Jesper Juhl <jj@chaosbits.net>            http://www.chaosbits.net/
+Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please.
 
