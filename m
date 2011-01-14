@@ -1,15 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Fri, 14 Jan 2011 01:59:46 +0100
-Message-Id: <1294966794-17780-4-git-send-email-linus.luessing@ascom.ch>
+Date: Fri, 14 Jan 2011 01:59:47 +0100
+Message-Id: <1294966794-17780-5-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1294966794-17780-1-git-send-email-linus.luessing@ascom.ch>
 References: <1294966794-17780-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 03/11] batman-adv: Send neighbor discovery
-	packets
+Subject: [B.A.T.M.A.N.] [PATCH 04/11] batman-adv: Creating neighbor
+	structures, updating LQs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,174 +24,354 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-This patch makes use of the previously introduced periodic tasks per
-interface and actually sends neighbor discovery packets on these now.
-Note: The TQ values of each neighbor are not being added yet to these NDPs
-and also no evaluation of these packets is being done.
-
-Also most of the packet type numbers got changed due to their reordering.
+It will now be checked if a neighbor discovery packet from a new
+neighbor on a certain interface has been received. If so,
+structures in memory will be allocated for further seqno-tracking
+and RQ calculations, and TQ reception, which will be updated
+frequently from this commit on.
 
 Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
- hard-interface.c |   12 +++++++++++-
- ndp.c            |   35 ++++++++++++++++++++++++++++++++++-
- packet.h         |   23 +++++++++++++++++------
- types.h          |    1 +
- 4 files changed, 63 insertions(+), 8 deletions(-)
+ hard-interface.c |    5 ++
+ ndp.c            |  156 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ ndp.h            |    4 ++
+ routing.c        |   42 ++++++++++++++-
+ routing.h        |    1 +
+ types.h          |   10 ++++
+ 6 files changed, 217 insertions(+), 1 deletions(-)
 
 diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index aba895f..3dc24f1 100644
+index 3dc24f1..f4bbb1a 100644
 --- a/batman-adv/hard-interface.c
 +++ b/batman-adv/hard-interface.c
-@@ -284,6 +284,7 @@ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
- {
- 	struct bat_priv *bat_priv;
- 	struct ogm_packet *ogm_packet;
-+	int ret;
+@@ -618,6 +618,11 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 	 * the supplied skb. if not, we have to free the skb. */
  
- 	if (batman_if->if_status != IF_NOT_IN_USE)
- 		goto out;
-@@ -331,7 +332,9 @@ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
- 
- 	atomic_set(&batman_if->seqno, 1);
- 	atomic_set(&batman_if->frag_seqno, 1);
--	ndp_init(batman_if);
-+	ret = ndp_init(batman_if);
-+	if (ret)
-+		goto free;
- 
- 	bat_info(batman_if->soft_iface, "Adding interface: %s\n",
- 		 batman_if->net_dev->name);
-@@ -369,7 +372,14 @@ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name)
- 
- out:
- 	return 0;
-+free:
-+	dev_remove_pack(&batman_if->batman_adv_ptype);
-+	kref_put(&batman_if->refcount, hardif_free_ref);
- 
-+	bat_priv->num_ifaces--;
-+	orig_hash_del_if(batman_if, bat_priv->num_ifaces);
+ 	switch (ogm_packet->packet_type) {
++		/* batman neighbor discovery protocol packet */
++	case BAT_PACKET_NDP:
++		ret = recv_ndp_packet(skb, batman_if);
++		break;
 +
-+	kfree(batman_if->packet_buff);
- err:
- 	return -ENOMEM;
- }
+ 		/* batman originator packet */
+ 	case BAT_PACKET_OGM:
+ 		ret = recv_bat_packet(skb, batman_if);
 diff --git a/batman-adv/ndp.c b/batman-adv/ndp.c
-index 60631b0..3269d67 100644
+index 3269d67..90712b6 100644
 --- a/batman-adv/ndp.c
 +++ b/batman-adv/ndp.c
-@@ -49,10 +49,21 @@ static void ndp_send(struct work_struct *work)
- 	struct batman_if *batman_if = container_of(work, struct batman_if,
+@@ -22,6 +22,7 @@
+ #include "main.h"
+ #include "send.h"
+ #include "ndp.h"
++#include "originator.h"
+ 
+ /* when do we schedule our own neighbor discovery packet to be sent */
+ static unsigned long own_ndp_send_time(struct batman_if *batman_if)
+@@ -50,6 +51,10 @@ static void ndp_send(struct work_struct *work)
  							ndp_wq.work);
  	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
-+	struct batman_packet_ndp *ndp_packet;
-+	struct sk_buff *skb;
-+
-+	skb = skb_copy(batman_if->ndp_skb, GFP_ATOMIC);
-+	ndp_packet = (struct batman_packet_ndp *)skb->data;
-+	ndp_packet->seqno = htonl(atomic_read(&batman_if->ndp_seqno));
-+	ndp_packet->num_neighbors = 0;
-+	memcpy(ndp_packet->orig, bat_priv->primary_if->net_dev->dev_addr,
-+	       ETH_ALEN);
+ 	struct batman_packet_ndp *ndp_packet;
++	struct neigh_entry *neigh_entry;
++	struct neigh_node *neigh_node;
++	struct hlist_node *node;
++	int entries_len = 0;
+ 	struct sk_buff *skb;
  
+ 	skb = skb_copy(batman_if->ndp_skb, GFP_ATOMIC);
+@@ -59,6 +64,22 @@ static void ndp_send(struct work_struct *work)
+ 	memcpy(ndp_packet->orig, bat_priv->primary_if->net_dev->dev_addr,
+ 	       ETH_ALEN);
+ 
++	neigh_entry = (struct neigh_entry *)(ndp_packet + 1);
++	spin_lock_bh(&batman_if->neigh_list_lock);
++	hlist_for_each_entry(neigh_node, node, &batman_if->neigh_list, list) {
++		if (entries_len + sizeof(struct neigh_entry) >
++		    skb_tailroom(skb))
++			break;
++
++		memcpy(neigh_entry->addr, neigh_node->addr, ETH_ALEN);
++		neigh_entry->rq = neigh_node->rq;
++		ndp_packet->num_neighbors++;
++		neigh_entry++;
++		entries_len += sizeof(struct neigh_entry);
++	}
++	spin_unlock_bh(&batman_if->neigh_list_lock);
++	skb_put(skb, entries_len);
++
  	bat_dbg(DBG_BATMAN, bat_priv,
  		"batman-adv:Sending ndp packet on interface %s, seqno %d\n",
--		batman_if->net_dev, atomic_read(&batman_if->ndp_seqno));
-+		batman_if->net_dev, ntohl(ndp_packet->seqno));
-+
-+	send_skb_packet(skb, batman_if, broadcast_addr);
+ 		batman_if->net_dev, ntohl(ndp_packet->seqno));
+@@ -90,6 +111,9 @@ int ndp_init(struct batman_if *batman_if)
+ 	ndp_packet->packet_type = BAT_PACKET_NDP;
+ 	ndp_packet->version = COMPAT_VERSION;
  
- 	atomic_inc(&batman_if->ndp_seqno);
- 	ndp_start_timer(batman_if);
-@@ -60,12 +71,34 @@ static void ndp_send(struct work_struct *work)
- 
- int ndp_init(struct batman_if *batman_if)
- {
-+	struct batman_packet_ndp *ndp_packet;
-+
-+	batman_if->ndp_skb =
-+		dev_alloc_skb(ETH_DATA_LEN + sizeof(struct ethhdr));
-+	if (!batman_if->ndp_skb) {
-+		printk(KERN_ERR "batman-adv: Can't add "
-+			"local interface packet (%s): out of memory\n",
-+			batman_if->net_dev->name);
-+		goto err;
-+	}
-+	skb_reserve(batman_if->ndp_skb, sizeof(struct ethhdr) +
-+					sizeof(struct batman_packet_ndp));
-+	ndp_packet = (struct batman_packet_ndp *)
-+		skb_push(batman_if->ndp_skb, sizeof(struct batman_packet_ndp));
-+	memset(ndp_packet, 0, sizeof(struct batman_packet_ndp));
-+
-+	ndp_packet->packet_type = BAT_PACKET_NDP;
-+	ndp_packet->version = COMPAT_VERSION;
++	INIT_HLIST_HEAD(&batman_if->neigh_list);
++	spin_lock_init(&batman_if->neigh_list_lock);
 +
  	INIT_DELAYED_WORK(&batman_if->ndp_wq, ndp_send);
  
  	return 0;
-+err:
-+	return 1;
- }
+@@ -99,6 +123,138 @@ err:
  
  void ndp_free(struct batman_if *batman_if)
  {
- 	ndp_stop_timer(batman_if);
-+	dev_kfree_skb(batman_if->ndp_skb);
- }
-diff --git a/batman-adv/packet.h b/batman-adv/packet.h
-index 681052d..0b0c453 100644
---- a/batman-adv/packet.h
-+++ b/batman-adv/packet.h
-@@ -24,12 +24,13 @@
- 
- #define ETH_P_BATMAN  0x4305	/* unofficial/not registered Ethertype */
- 
--#define BAT_PACKET_OGM   0x01
--#define BAT_ICMP         0x02
--#define BAT_UNICAST      0x03
--#define BAT_BCAST        0x04
--#define BAT_VIS          0x05
--#define BAT_UNICAST_FRAG 0x06
-+#define BAT_PACKET_NDP   0x01
-+#define BAT_PACKET_OGM   0x02
-+#define BAT_ICMP         0x03
-+#define BAT_UNICAST      0x04
-+#define BAT_UNICAST_FRAG 0x05
-+#define BAT_BCAST        0x06
-+#define BAT_VIS          0x07
- 
- /* this file is included by batctl which needs these defines */
- #define COMPAT_VERSION 12
-@@ -51,6 +52,16 @@
- /* fragmentation defines */
- #define UNI_FRAG_HEAD 0x01
- 
-+/* Neighbor discovery packet */
-+struct batman_packet_ndp {
-+	uint8_t  packet_type;
-+	uint8_t  version;  /* batman version field */
-+	uint8_t  orig[6];
-+	uint32_t seqno;
-+	uint8_t  num_neighbors;
-+	uint8_t  align[3];
-+} __attribute__((packed));
++	struct neigh_node *neigh_node;
++	struct hlist_node *node, *node_tmp;
 +
- /* Originator message packet */
- struct ogm_packet {
- 	uint8_t  packet_type;
+ 	ndp_stop_timer(batman_if);
+ 	dev_kfree_skb(batman_if->ndp_skb);
++
++	spin_lock_bh(&batman_if->neigh_list_lock);
++	hlist_for_each_entry_safe(neigh_node, node, node_tmp,
++				  &batman_if->neigh_list, list) {
++		hlist_del(&neigh_node->list);
++		kfree(neigh_node);
++	}
++	spin_unlock_bh(&batman_if->neigh_list_lock);
++}
++
++/* extract my own tq to neighbor from the ndp packet */
++uint8_t ndp_fetch_tq(struct batman_packet_ndp *packet,
++			 uint8_t *my_if_addr)
++{
++	struct neigh_entry *neigh_entry = (struct neigh_entry *)(packet + 1);
++	uint8_t tq = 0;
++	int i;
++
++	for (i = 0; i < packet->num_neighbors; i++) {
++		if (compare_orig(my_if_addr, neigh_entry->addr)) {
++			tq = neigh_entry->rq;
++			break;
++		}
++		neigh_entry++;
++	}
++	return tq;
++}
++
++static void ndp_update_neighbor_lq(uint8_t tq, uint32_t seqno,
++				   struct neigh_node *neigh_node,
++				   struct bat_priv *bat_priv)
++{
++	char is_duplicate = 0;
++	int32_t seq_diff;
++	int need_update = 0;
++
++	seq_diff = seqno - neigh_node->last_rq_seqno;
++
++	is_duplicate |= get_bit_status(neigh_node->ndp_rq_window,
++				       neigh_node->last_rq_seqno,
++				       seqno);
++
++	/* if the window moved, set the update flag. */
++	need_update |= bit_get_packet(bat_priv, neigh_node->ndp_rq_window,
++				      seq_diff, 1);
++	/* TODO: rename TQ_LOCAL_WINDOW_SIZE to RQ_LOCAL... */
++	neigh_node->rq =
++		(bit_packet_count(neigh_node->ndp_rq_window) * TQ_MAX_VALUE)
++			/ TQ_LOCAL_WINDOW_SIZE;
++
++	if (need_update) {
++		bat_dbg(DBG_BATMAN, bat_priv, "batman-adv: ndp: "
++			"updating last_seqno of neighbor %pM: old %d, new %d\n",
++			neigh_node->addr, neigh_node->last_rq_seqno, seqno);
++		/* TODO: this is not really an average here,
++		   need to change the variable name later */
++		neigh_node->tq_avg = tq;
++		neigh_node->last_valid = jiffies;
++		neigh_node->last_rq_seqno = seqno;
++	}
++
++	if (is_duplicate)
++		bat_dbg(DBG_BATMAN, bat_priv,
++			"seqno %d of neighbor %pM was a duplicate!\n",
++			seqno, neigh_node->addr);
++
++	bat_dbg(DBG_BATMAN, bat_priv, "batman-adv: ndp: "
++		"new rq/tq of neighbor %pM: rq %d, tq %d\n",
++		neigh_node->addr, neigh_node->rq, neigh_node->tq_avg);
++}
++
++static struct neigh_node *ndp_create_neighbor(uint8_t my_tq, uint32_t seqno,
++					      uint8_t *neigh_addr,
++					      struct bat_priv *bat_priv)
++{
++	struct neigh_node *neigh_node;
++
++	bat_dbg(DBG_BATMAN, bat_priv,
++		"batman-adv: ndp: Creating new neighbor %pM, "
++		"initial tq %d, initial seqno %d\n",
++		neigh_addr, my_tq, seqno);
++
++	neigh_node = kzalloc(sizeof(struct neigh_node), GFP_ATOMIC);
++	if (!neigh_node)
++		return NULL;
++
++	INIT_HLIST_NODE(&neigh_node->list);
++	memcpy(neigh_node->addr, neigh_addr, ETH_ALEN);
++	neigh_node->last_rq_seqno = seqno - 1;
++
++	return neigh_node;
++}
++
++int ndp_update_neighbor(uint8_t my_tq, uint32_t seqno,
++			struct batman_if *batman_if, uint8_t *neigh_addr)
++{
++	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
++	struct neigh_node *neigh_node = NULL, *tmp_neigh_node;
++	struct hlist_node *node;
++	int ret = 1;
++
++	spin_lock_bh(&batman_if->neigh_list_lock);
++	/* old neighbor? */
++	hlist_for_each_entry(tmp_neigh_node, node, &batman_if->neigh_list,
++			     list) {
++		if (!compare_orig(tmp_neigh_node->addr, neigh_addr))
++			continue;
++
++		neigh_node = tmp_neigh_node;
++		break;
++	}
++
++	/* new neighbor? */
++	if (!neigh_node) {
++		neigh_node = ndp_create_neighbor(my_tq, seqno, neigh_addr,
++						 bat_priv);
++		if (!neigh_node)
++			goto ret;
++
++		hlist_add_head(&neigh_node->list, &batman_if->neigh_list);
++	}
++
++	ndp_update_neighbor_lq(my_tq, seqno, neigh_node, bat_priv);
++
++	ret = 0;
++
++ret:
++	spin_unlock_bh(&batman_if->neigh_list_lock);
++	return ret;
+ }
+diff --git a/batman-adv/ndp.h b/batman-adv/ndp.h
+index 1405e6b..2496c3f 100644
+--- a/batman-adv/ndp.h
++++ b/batman-adv/ndp.h
+@@ -27,5 +27,9 @@ void ndp_stop_timer(struct batman_if *batman_if);
+ 
+ int ndp_init(struct batman_if *batman_if);
+ void ndp_free(struct batman_if *batman_if);
++uint8_t ndp_fetch_tq(struct batman_packet_ndp *packet,
++		 uint8_t *my_if_addr);
++int ndp_update_neighbor(uint8_t my_tq, uint32_t seqno,
++			struct batman_if *batman_if, uint8_t *neigh_addr);
+ 
+ #endif /* _NET_BATMAN_ADV_NDP_H_ */
+diff --git a/batman-adv/routing.c b/batman-adv/routing.c
+index 1782777..947592f 100644
+--- a/batman-adv/routing.c
++++ b/batman-adv/routing.c
+@@ -27,6 +27,7 @@
+ #include "hard-interface.h"
+ #include "icmp_socket.h"
+ #include "translation-table.h"
++#include "ndp.h"
+ #include "originator.h"
+ #include "types.h"
+ #include "ring_buffer.h"
+@@ -790,7 +791,46 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 				0, hna_buff_len, if_incoming);
+ }
+ 
+-int recv_bat_packet(struct sk_buff *skb, struct batman_if *batman_if)
++int recv_ndp_packet(struct sk_buff *skb, struct batman_if *batman_if)
++{
++	struct ethhdr *ethhdr;
++	struct batman_packet_ndp *packet;
++	int ret;
++	uint8_t my_tq;
++
++	/* keep skb linear */
++	if (skb_linearize(skb) < 0)
++		return NET_RX_DROP;
++
++	/* drop packet if it has not necessary minimum size */
++	if (unlikely(!pskb_may_pull(skb, sizeof(struct batman_packet_ndp))))
++		return NET_RX_DROP;
++
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
++
++	/* packet with broadcast indication but unicast recipient */
++	if (!is_broadcast_ether_addr(ethhdr->h_dest))
++		return NET_RX_DROP;
++
++	/* packet with broadcast sender address */
++	if (is_broadcast_ether_addr(ethhdr->h_source))
++		return NET_RX_DROP;
++
++	packet = (struct batman_packet_ndp *)(ethhdr + 1);
++
++	my_tq = ndp_fetch_tq(packet, batman_if->net_dev->dev_addr);
++
++	ret = ndp_update_neighbor(my_tq, ntohl(packet->seqno),
++					batman_if, ethhdr->h_source);
++	if (ret)
++		return NET_RX_DROP;
++
++	dev_kfree_skb(skb);
++	return NET_RX_SUCCESS;
++}
++
++int recv_bat_packet(struct sk_buff *skb,
++				struct batman_if *batman_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
+ 	struct ethhdr *ethhdr;
+diff --git a/batman-adv/routing.h b/batman-adv/routing.h
+index 0c62015..24567f9 100644
+--- a/batman-adv/routing.h
++++ b/batman-adv/routing.h
+@@ -39,6 +39,7 @@ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if);
++int recv_ndp_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_bat_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 		struct orig_node *orig_node, struct batman_if *recv_if);
 diff --git a/batman-adv/types.h b/batman-adv/types.h
-index 3ef48a6..f81d0ba 100644
+index f81d0ba..5a21611 100644
 --- a/batman-adv/types.h
 +++ b/batman-adv/types.h
-@@ -49,6 +49,7 @@ struct batman_if {
- 	struct rcu_head rcu;
- 	atomic_t ndp_interval;
+@@ -51,6 +51,8 @@ struct batman_if {
  	atomic_t ndp_seqno;
-+	struct sk_buff *ndp_skb;
+ 	struct sk_buff *ndp_skb;
  	struct delayed_work ndp_wq;
++	struct hlist_head neigh_list;
++	spinlock_t neigh_list_lock;
  };
  
+ /**
+@@ -113,6 +115,9 @@ struct neigh_node {
+ 	struct hlist_node list;
+ 	uint8_t addr[ETH_ALEN];
+ 	uint8_t real_packet_count;
++	uint8_t rq;
++	uint32_t last_rq_seqno;
++	unsigned long ndp_rq_window[NUM_WORDS];
+ 	uint8_t tq_recv[TQ_GLOBAL_WINDOW_SIZE];
+ 	uint8_t tq_index;
+ 	uint8_t tq_avg;
+@@ -126,6 +131,11 @@ struct neigh_node {
+ 	struct batman_if *if_incoming;
+ };
+ 
++struct neigh_entry {
++	uint8_t addr[ETH_ALEN];
++	uint8_t rq;
++	uint8_t align;
++} __attribute__((packed));
+ 
+ struct bat_priv {
+ 	atomic_t mesh_state;
 -- 
 1.7.1
 
