@@ -1,14 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Fri, 14 Jan 2011 01:59:49 +0100
-Message-Id: <1294966794-17780-7-git-send-email-linus.luessing@ascom.ch>
+Date: Fri, 14 Jan 2011 01:59:50 +0100
+Message-Id: <1294966794-17780-8-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1294966794-17780-1-git-send-email-linus.luessing@ascom.ch>
 References: <1294966794-17780-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 06/11] batman-adv: Adding ndp debugfs output
+Subject: [B.A.T.M.A.N.] [PATCH 07/11] batman-adv: Adding batman_if specific
+	sysfs wrapper macros for UINT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,136 +24,70 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-Lists all neighbours and their tq/rq values detected and measured by the
-Neighbor Discovery Protocol (NDP).
+This allows us to easily add a sysfs parameter for an unsigned int
+later, which is not for a batman mesh interface (e.g. bat0), but for a
+common interface instead. It allows reading and writing an atomic_t in
+batman_if (instead of bat_priv compared to the mesh variant).
 
 Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
- bat_debugfs.c |    9 ++++++++
- ndp.c         |   60 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- ndp.h         |    1 +
- 3 files changed, 70 insertions(+), 0 deletions(-)
+ bat_sysfs.c |   43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 43 insertions(+), 0 deletions(-)
 
-diff --git a/batman-adv/bat_debugfs.c b/batman-adv/bat_debugfs.c
-index 0ae81d0..602aa15 100644
---- a/batman-adv/bat_debugfs.c
-+++ b/batman-adv/bat_debugfs.c
-@@ -25,6 +25,7 @@
+diff --git a/batman-adv/bat_sysfs.c b/batman-adv/bat_sysfs.c
+index cd7bb51..5954389 100644
+--- a/batman-adv/bat_sysfs.c
++++ b/batman-adv/bat_sysfs.c
+@@ -94,6 +94,49 @@ ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
+ 	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
  
- #include "bat_debugfs.h"
- #include "translation-table.h"
-+#include "ndp.h"
- #include "originator.h"
- #include "hard-interface.h"
- #include "gateway_common.h"
-@@ -222,6 +223,12 @@ static void debug_log_cleanup(struct bat_priv *bat_priv)
- }
- #endif
  
-+static int neighbors_open(struct inode *inode, struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+	return single_open(file, ndp_seq_print_text, net_dev);
++#define BAT_ATTR_IF_STORE_UINT(_name, _min, _max, _post_func)		\
++ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
++			     char *buff, size_t count)			\
++{									\
++	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);	\
++	ssize_t length;							\
++									\
++	if (!batman_if)							\
++		return 0;						\
++									\
++	length = __store_uint_attr(buff, count, _min, _max, _post_func,	\
++				 attr, &batman_if->_name, net_dev);	\
++									\
++	kref_put(&batman_if->refcount, hardif_free_ref);		\
++	return length;							\
 +}
 +
- static int originators_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
-@@ -275,6 +282,7 @@ struct bat_debuginfo bat_debuginfo_##_name = {	\
- 		}				\
- };
- 
-+static BAT_DEBUGINFO(neighbors, S_IRUGO, neighbors_open);
- static BAT_DEBUGINFO(originators, S_IRUGO, originators_open);
- static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
- static BAT_DEBUGINFO(softif_neigh, S_IRUGO, softif_neigh_open);
-@@ -283,6 +291,7 @@ static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
- static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
- 
- static struct bat_debuginfo *mesh_debuginfos[] = {
-+	&bat_debuginfo_neighbors,
- 	&bat_debuginfo_originators,
- 	&bat_debuginfo_gateways,
- 	&bat_debuginfo_softif_neigh,
-diff --git a/batman-adv/ndp.c b/batman-adv/ndp.c
-index 5be2639..1fd107c 100644
---- a/batman-adv/ndp.c
-+++ b/batman-adv/ndp.c
-@@ -286,3 +286,63 @@ ret:
- 	spin_unlock_bh(&batman_if->neigh_list_lock);
- 	return ret;
- }
-+
-+int ndp_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct neigh_node *neigh_node;
-+	struct batman_if *batman_if;
-+	struct hlist_node *node;
-+	int last_seen_secs;
-+	int last_seen_msecs;
-+	int batman_count = 0;
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct bat_priv *bat_priv = netdev_priv(net_dev);
-+
-+	if ((!bat_priv->primary_if) ||
-+	    (bat_priv->primary_if->if_status != IF_ACTIVE)) {
-+		if (!bat_priv->primary_if)
-+			return seq_printf(seq, "BATMAN mesh %s disabled - "
-+				    "please specify interfaces to enable it\n",
-+				    net_dev->name);
-+
-+		return seq_printf(seq, "BATMAN mesh %s "
-+				  "disabled - primary interface not active\n",
-+				  net_dev->name);
-+	}
-+
-+	seq_printf(seq, "[B.A.T.M.A.N. adv %s%s, MainIF/MAC: %s/%pM (%s)]\n",
-+		   SOURCE_VERSION, REVISION_VERSION_STR,
-+		   bat_priv->primary_if->net_dev->name,
-+		   bat_priv->primary_if->net_dev->dev_addr, net_dev->name);
-+	seq_printf(seq, "  %-15s %s (%s/%i) [%10s]\n",
-+		   "Neighbor", "last-seen", "#TQ,#RQ", TQ_MAX_VALUE, "IF");
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(batman_if, &if_list, list) {
-+		if (batman_if->if_status != IF_ACTIVE)
-+			continue;
-+
-+		spin_lock_bh(&batman_if->neigh_list_lock);
-+		hlist_for_each_entry(neigh_node, node, &batman_if->neigh_list,
-+				    list) {
-+			last_seen_secs = jiffies_to_msecs(jiffies -
-+						neigh_node->last_valid) / 1000;
-+			last_seen_msecs = jiffies_to_msecs(jiffies -
-+						neigh_node->last_valid) % 1000;
-+
-+			seq_printf(seq, "%pM %4i.%03is     (%3i,%3i) [%10s]\n",
-+				   neigh_node->addr, last_seen_secs,
-+				   last_seen_msecs, neigh_node->tq_avg,
-+				   neigh_node->rq, batman_if->net_dev->name);
-+
-+			batman_count++;
-+		}
-+		spin_unlock_bh(&batman_if->neigh_list_lock);
-+	}
-+	rcu_read_unlock();
-+
-+	if ((batman_count == 0))
-+		seq_printf(seq, "No batman nodes in range ...\n");
-+
-+	return 0;
++#define BAT_ATTR_IF_SHOW_UINT(_name)					\
++ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
++			    char *buff)					\
++{									\
++	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct batman_if *batman_if = get_batman_if_by_netdev(net_dev);	\
++	ssize_t length;							\
++									\
++	if (!batman_if)							\
++		return 0;						\
++									\
++	length = sprintf(buff, "%i\n", atomic_read(&batman_if->_name));	\
++									\
++	kref_put(&batman_if->refcount, hardif_free_ref);		\
++	return length;							\
 +}
-diff --git a/batman-adv/ndp.h b/batman-adv/ndp.h
-index a828362..f528bcf 100644
---- a/batman-adv/ndp.h
-+++ b/batman-adv/ndp.h
-@@ -32,5 +32,6 @@ uint8_t ndp_fetch_tq(struct batman_packet_ndp *packet,
- void ndp_purge_neighbors(void);
- int ndp_update_neighbor(uint8_t my_tq, uint32_t seqno,
- 			struct batman_if *batman_if, uint8_t *neigh_addr);
-+int ndp_seq_print_text(struct seq_file *seq, void *offset);
- 
- #endif /* _NET_BATMAN_ADV_NDP_H_ */
++
++/* Use this, if you are going to set [name] in batman_if to unsigned integer
++ * values only */
++#define BAT_ATTR_IF_UINT(_name, _mode, _min, _max, _post_func)		\
++	static BAT_ATTR_IF_STORE_UINT(_name, _min, _max, _post_func)	\
++	static BAT_ATTR_IF_SHOW_UINT(_name)				\
++	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
++
++
+ static int store_bool_attr(char *buff, size_t count,
+ 			   struct net_device *net_dev,
+ 			   char *attr_name, atomic_t *attr)
 -- 
 1.7.1
 
