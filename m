@@ -1,9 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 15 Jan 2011 10:56:24 +0100
-Message-Id: <1295085384-23195-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Use "__attribute__" shortcut
-	macros
+Return-Path: <andrew@lunn.ch>
+Date: Sat, 15 Jan 2011 14:53:13 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20110115135313.GQ23716@lunn.ch>
+References: <1294966794-17780-1-git-send-email-linus.luessing@ascom.ch>
+	<1294966794-17780-4-git-send-email-linus.luessing@ascom.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1294966794-17780-4-git-send-email-linus.luessing@ascom.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/11] batman-adv: Send neighbor
+ discovery packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,141 +21,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Linus L??ssing <linus.luessing@ascom.ch>
 
-Linux 2.6.21 defines different macros for __attribute__ which are also
-used inside batman-adv. The next version of checkpatch.pl warns about
-the usage of __attribute__((packed))).
+> diff --git a/batman-adv/ndp.c b/batman-adv/ndp.c
+> index 60631b0..3269d67 100644
+> --- a/batman-adv/ndp.c
+> +++ b/batman-adv/ndp.c
+> @@ -49,10 +49,21 @@ static void ndp_send(struct work_struct *work)
+>  	struct batman_if *batman_if = container_of(work, struct batman_if,
+>  							ndp_wq.work);
+>  	struct bat_priv *bat_priv = netdev_priv(batman_if->soft_iface);
+> +	struct batman_packet_ndp *ndp_packet;
+> +	struct sk_buff *skb;
+> +
+> +	skb = skb_copy(batman_if->ndp_skb, GFP_ATOMIC);
+> +	ndp_packet = (struct batman_packet_ndp *)skb->data;
 
-Linux 2.6.33 defines an extra macro __always_unused which is used to
-assist source code analyzers and can be used to removed the last
-existing __attribute__ inside the source code.
+Hi Linus
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- batman-adv/compat.h |    6 ++++++
- batman-adv/main.h   |    6 +++---
- batman-adv/packet.h |   14 +++++++-------
- batman-adv/types.h  |    4 ++--
- 4 files changed, 18 insertions(+), 12 deletions(-)
+You should check the returned skb. It could be NULL if the system is
+out of memory.
 
-diff --git a/batman-adv/compat.h b/batman-adv/compat.h
-index b01455f..6074969 100644
---- a/batman-adv/compat.h
-+++ b/batman-adv/compat.h
-@@ -264,4 +264,10 @@ int bat_seq_printf(struct seq_file *m, const char *f, ...);
- 
- #endif /* < KERNEL_VERSION(2, 6, 29) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
-+
-+#define __always_unused			__attribute__((unused))
-+
-+#endif /* < KERNEL_VERSION(2, 6, 33) */
-+
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
-diff --git a/batman-adv/main.h b/batman-adv/main.h
-index a362433..c239c97 100644
---- a/batman-adv/main.h
-+++ b/batman-adv/main.h
-@@ -153,9 +153,9 @@ int debug_log(struct bat_priv *bat_priv, char *fmt, ...);
- 	}							\
- 	while (0)
- #else /* !CONFIG_BATMAN_ADV_DEBUG */
--static inline void bat_dbg(char type __attribute__((unused)),
--			   struct bat_priv *bat_priv __attribute__((unused)),
--			   char *fmt __attribute__((unused)), ...)
-+static inline void bat_dbg(char type __always_unused,
-+			   struct bat_priv *bat_priv __always_unused,
-+			   char *fmt __always_unused, ...)
- {
- }
- #endif
-diff --git a/batman-adv/packet.h b/batman-adv/packet.h
-index b49fdf7..2284e81 100644
---- a/batman-adv/packet.h
-+++ b/batman-adv/packet.h
-@@ -63,7 +63,7 @@ struct batman_packet {
- 	uint8_t  num_hna;
- 	uint8_t  gw_flags;  /* flags related to gateway class */
- 	uint8_t  align;
--} __attribute__((packed));
-+} __packed;
- 
- #define BAT_PACKET_LEN sizeof(struct batman_packet)
- 
-@@ -76,7 +76,7 @@ struct icmp_packet {
- 	uint8_t  orig[6];
- 	uint16_t seqno;
- 	uint8_t  uid;
--} __attribute__((packed));
-+} __packed;
- 
- #define BAT_RR_LEN 16
- 
-@@ -93,14 +93,14 @@ struct icmp_packet_rr {
- 	uint8_t  uid;
- 	uint8_t  rr_cur;
- 	uint8_t  rr[BAT_RR_LEN][ETH_ALEN];
--} __attribute__((packed));
-+} __packed;
- 
- struct unicast_packet {
- 	uint8_t  packet_type;
- 	uint8_t  version;  /* batman version field */
- 	uint8_t  dest[6];
- 	uint8_t  ttl;
--} __attribute__((packed));
-+} __packed;
- 
- struct unicast_frag_packet {
- 	uint8_t  packet_type;
-@@ -110,7 +110,7 @@ struct unicast_frag_packet {
- 	uint8_t  flags;
- 	uint8_t  orig[6];
- 	uint16_t seqno;
--} __attribute__((packed));
-+} __packed;
- 
- struct bcast_packet {
- 	uint8_t  packet_type;
-@@ -118,7 +118,7 @@ struct bcast_packet {
- 	uint8_t  orig[6];
- 	uint8_t  ttl;
- 	uint32_t seqno;
--} __attribute__((packed));
-+} __packed;
- 
- struct vis_packet {
- 	uint8_t  packet_type;
-@@ -131,6 +131,6 @@ struct vis_packet {
- 				  * neighbors */
- 	uint8_t  target_orig[6]; /* who should receive this packet */
- 	uint8_t  sender_orig[6]; /* who sent or rebroadcasted this packet */
--} __attribute__((packed));
-+} __packed;
- 
- #endif /* _NET_BATMAN_ADV_PACKET_H_ */
-diff --git a/batman-adv/types.h b/batman-adv/types.h
-index 09d18d8..9e636c2 100644
---- a/batman-adv/types.h
-+++ b/batman-adv/types.h
-@@ -249,13 +249,13 @@ struct vis_info {
- 	/* this packet might be part of the vis send queue. */
- 	struct sk_buff *skb_packet;
- 	/* vis_info may follow here*/
--} __attribute__((packed));
-+} __packed;
- 
- struct vis_info_entry {
- 	uint8_t  src[ETH_ALEN];
- 	uint8_t  dest[ETH_ALEN];
- 	uint8_t  quality;	/* quality = 0 means HNA */
--} __attribute__((packed));
-+} __packed;
- 
- struct recvlist_node {
- 	struct list_head list;
--- 
-1.7.2.3
-
+    Andrew
