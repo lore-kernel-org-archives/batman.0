@@ -1,11 +1,9 @@
-Return-Path: <jj@chaosbits.net>
-Date: Thu, 13 Jan 2011 21:53:38 +0100 (CET)
-From: Jesper Juhl <jj@chaosbits.net>
-Message-ID: <alpine.LNX.2.00.1101132146400.11347@swampdragon.chaosbits.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Subject: [B.A.T.M.A.N.] [PATCH] Even Batman should not dereference NULL
-	pointers
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 15 Jan 2011 10:56:24 +0100
+Message-Id: <1295085384-23195-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Use "__attribute__" shortcut
+	macros
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,47 +16,140 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
 
-There's a problem in net/batman-adv/unicast.c::frag_send_skb().
-dev_alloc_skb() allocates memory and may fail, thus returning NULL. If 
-this happens we'll pass a NULL pointer on to skb_split() which in turn 
-hands it to skb_split_inside_header() from where it gets passed to 
-skb_put() that lets skb_tail_pointer() play with it and that function 
-dereferences it. And thus the bat dies.
+Linux 2.6.21 defines different macros for __attribute__ which are also
+used inside batman-adv. The next version of checkpatch.pl warns about
+the usage of __attribute__((packed))).
 
-While I was at it I also moved the call to dev_alloc_skb() above the 
-assignment to 'unicast_packet' since there's no reason to do that 
-assignment if the memory allocation fails.
+Linux 2.6.33 defines an extra macro __always_unused which is used to
+assist source code analyzers and can be used to removed the last
+existing __attribute__ inside the source code.
 
-Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- unicast.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ batman-adv/compat.h |    6 ++++++
+ batman-adv/main.h   |    6 +++---
+ batman-adv/packet.h |   14 +++++++-------
+ batman-adv/types.h  |    4 ++--
+ 4 files changed, 18 insertions(+), 12 deletions(-)
 
-diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
-index dc2e28b..ee41fef 100644
---- a/net/batman-adv/unicast.c
-+++ b/net/batman-adv/unicast.c
-@@ -229,10 +229,12 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 	if (!bat_priv->primary_if)
- 		goto dropped;
+diff --git a/batman-adv/compat.h b/batman-adv/compat.h
+index b01455f..6074969 100644
+--- a/batman-adv/compat.h
++++ b/batman-adv/compat.h
+@@ -264,4 +264,10 @@ int bat_seq_printf(struct seq_file *m, const char *f, ...);
  
--	unicast_packet = (struct unicast_packet *) skb->data;
-+	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + ucf_hdr_len);
-+	if (!frag_skb)
-+		goto dropped;
+ #endif /* < KERNEL_VERSION(2, 6, 29) */
  
-+	unicast_packet = (struct unicast_packet *) skb->data;
- 	memcpy(&tmp_uc, unicast_packet, uc_hdr_len);
--	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + ucf_hdr_len);
- 	skb_split(skb, frag_skb, data_len / 2);
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
++
++#define __always_unused			__attribute__((unused))
++
++#endif /* < KERNEL_VERSION(2, 6, 33) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/batman-adv/main.h b/batman-adv/main.h
+index a362433..c239c97 100644
+--- a/batman-adv/main.h
++++ b/batman-adv/main.h
+@@ -153,9 +153,9 @@ int debug_log(struct bat_priv *bat_priv, char *fmt, ...);
+ 	}							\
+ 	while (0)
+ #else /* !CONFIG_BATMAN_ADV_DEBUG */
+-static inline void bat_dbg(char type __attribute__((unused)),
+-			   struct bat_priv *bat_priv __attribute__((unused)),
+-			   char *fmt __attribute__((unused)), ...)
++static inline void bat_dbg(char type __always_unused,
++			   struct bat_priv *bat_priv __always_unused,
++			   char *fmt __always_unused, ...)
+ {
+ }
+ #endif
+diff --git a/batman-adv/packet.h b/batman-adv/packet.h
+index b49fdf7..2284e81 100644
+--- a/batman-adv/packet.h
++++ b/batman-adv/packet.h
+@@ -63,7 +63,7 @@ struct batman_packet {
+ 	uint8_t  num_hna;
+ 	uint8_t  gw_flags;  /* flags related to gateway class */
+ 	uint8_t  align;
+-} __attribute__((packed));
++} __packed;
  
- 	if (my_skb_head_push(skb, ucf_hdr_len - uc_hdr_len) < 0 ||
-
-
+ #define BAT_PACKET_LEN sizeof(struct batman_packet)
+ 
+@@ -76,7 +76,7 @@ struct icmp_packet {
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+ 	uint8_t  uid;
+-} __attribute__((packed));
++} __packed;
+ 
+ #define BAT_RR_LEN 16
+ 
+@@ -93,14 +93,14 @@ struct icmp_packet_rr {
+ 	uint8_t  uid;
+ 	uint8_t  rr_cur;
+ 	uint8_t  rr[BAT_RR_LEN][ETH_ALEN];
+-} __attribute__((packed));
++} __packed;
+ 
+ struct unicast_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+ 	uint8_t  dest[6];
+ 	uint8_t  ttl;
+-} __attribute__((packed));
++} __packed;
+ 
+ struct unicast_frag_packet {
+ 	uint8_t  packet_type;
+@@ -110,7 +110,7 @@ struct unicast_frag_packet {
+ 	uint8_t  flags;
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+-} __attribute__((packed));
++} __packed;
+ 
+ struct bcast_packet {
+ 	uint8_t  packet_type;
+@@ -118,7 +118,7 @@ struct bcast_packet {
+ 	uint8_t  orig[6];
+ 	uint8_t  ttl;
+ 	uint32_t seqno;
+-} __attribute__((packed));
++} __packed;
+ 
+ struct vis_packet {
+ 	uint8_t  packet_type;
+@@ -131,6 +131,6 @@ struct vis_packet {
+ 				  * neighbors */
+ 	uint8_t  target_orig[6]; /* who should receive this packet */
+ 	uint8_t  sender_orig[6]; /* who sent or rebroadcasted this packet */
+-} __attribute__((packed));
++} __packed;
+ 
+ #endif /* _NET_BATMAN_ADV_PACKET_H_ */
+diff --git a/batman-adv/types.h b/batman-adv/types.h
+index 09d18d8..9e636c2 100644
+--- a/batman-adv/types.h
++++ b/batman-adv/types.h
+@@ -249,13 +249,13 @@ struct vis_info {
+ 	/* this packet might be part of the vis send queue. */
+ 	struct sk_buff *skb_packet;
+ 	/* vis_info may follow here*/
+-} __attribute__((packed));
++} __packed;
+ 
+ struct vis_info_entry {
+ 	uint8_t  src[ETH_ALEN];
+ 	uint8_t  dest[ETH_ALEN];
+ 	uint8_t  quality;	/* quality = 0 means HNA */
+-} __attribute__((packed));
++} __packed;
+ 
+ struct recvlist_node {
+ 	struct list_head list;
 -- 
-Jesper Juhl <jj@chaosbits.net>            http://www.chaosbits.net/
-Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please.
+1.7.2.3
 
