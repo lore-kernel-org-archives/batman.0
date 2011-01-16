@@ -1,13 +1,11 @@
-Return-Path: <davem@davemloft.net>
-Date: Sat, 15 Jan 2011 20:48:33 -0800 (PST)
-Message-Id: <20110115.204833.71097454.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1295145527-17537-1-git-send-email-sven@narfation.org>
-References: <1295145527-17537-1-git-send-email-sven@narfation.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-01-16
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 16 Jan 2011 11:27:52 +0100
+Message-Id: <1295173672-16895-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1295103173-7036-1-git-send-email-lindner_marek@yahoo.de>
+References: <1295103173-7036-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: free neighbors when an interface
+	is deactivated
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,17 +17,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven@narfation.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 16 Jan 2011 03:38:45 +0100
+hardif_disable_interface() calls purge_orig_ref() to immediately free
+all neighbors associated with the interface that is going down.
+purge_orig_neighbors() checked if the interface status is IF_INACTIVE
+which is set to IF_NOT_IN_USE shortly before calling purge_orig_ref().
 
-> The following changes since commit 53320fe3bb1b1eef1aaff8dd47aae530ebeeb1e5:
-> 
->   batman-adv: Return hna count on local buffer fill (2010-12-20 10:32:03 -0800)
-> 
-> are available in the git repository at:
->   git://git.open-mesh.org/ecsv/linux-merge.git for-david
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
 
-Pulled, thanks Sven.
+Note: The previous patch created a new problem when cleaning up pending
+OGMs, therefore this different approach.
+
+ batman-adv/originator.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/batman-adv/originator.c b/batman-adv/originator.c
+index c043bf8..1840f3a 100644
+--- a/batman-adv/originator.c
++++ b/batman-adv/originator.c
+@@ -224,10 +224,15 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
+ 		if ((time_after(jiffies,
+ 			neigh_node->last_valid + PURGE_TIMEOUT * HZ)) ||
+ 		    (neigh_node->if_incoming->if_status == IF_INACTIVE) ||
++		    (neigh_node->if_incoming->if_status == IF_NOT_IN_USE) ||
+ 		    (neigh_node->if_incoming->if_status == IF_TO_BE_REMOVED)) {
+ 
+-			if (neigh_node->if_incoming->if_status ==
+-							IF_TO_BE_REMOVED)
++			if ((neigh_node->if_incoming->if_status ==
++								IF_INACTIVE) ||
++			    (neigh_node->if_incoming->if_status ==
++							IF_NOT_IN_USE) ||
++			    (neigh_node->if_incoming->if_status ==
++							IF_TO_BE_REMOVED))
+ 				bat_dbg(DBG_BATMAN, bat_priv,
+ 					"neighbor purge: originator %pM, "
+ 					"neighbor: %pM, iface: %s\n",
+-- 
+1.7.2.3
+
