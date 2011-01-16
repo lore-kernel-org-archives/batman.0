@@ -1,11 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 16 Jan 2011 11:27:52 +0100
-Message-Id: <1295173672-16895-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1295103173-7036-1-git-send-email-lindner_marek@yahoo.de>
-References: <1295103173-7036-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: free neighbors when an interface
-	is deactivated
+Date: Sun, 16 Jan 2011 12:35:53 +0100
+References: <201012130118.14949.lindner_marek@yahoo.de>
+	<20101230020917.GA4707@pandem0nium>
+In-Reply-To: <20101230020917.GA4707@pandem0nium>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201101161235.54223.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: protect bonding with rcu
+	locks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,44 +23,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-hardif_disable_interface() calls purge_orig_ref() to immediately free
-all neighbors associated with the interface that is going down.
-purge_orig_neighbors() checked if the interface status is IF_INACTIVE
-which is set to IF_NOT_IN_USE shortly before calling purge_orig_ref().
+On Thursday 30 December 2010 03:09:17 Simon Wunderlich wrote:
+> bonding / alternating candidates need to be secured by rcu locks
+> as well. This patch therefore converts the bonding list
+> from a plain pointer list to a rcu securable lists and references
+> the bonding candidates.
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
+Thanks for your patch! As the bonding / alternating candidate list is the last 
+item on the way to an orig_hash_lock free kernel module this patch is a very 
+welcome one. However, first tests revealed some memory leaks due to misbehaving 
+reference counters. Therefore I took the time to dive deeper into this code 
+section and propose an addition to your patch. The changes include:
 
-Note: The previous patch created a new problem when cleaning up pending
-OGMs, therefore this different approach.
+* The bonding / alternating candidate list is not destroyed & re-created with 
+each incoming OGM but candidates are added & deleted in a dynamic fashion.
+* The memory leaks have been fixed / a workaround has been found. The "free 
+neighbors when an interface is deactivated" patch is also required to get the 
+full benefit of these memory leak fixes. 
+* I introduced some style changes which are meant to increase readability & 
+maintainability. Feedback is welcome.  ;-)
 
- batman-adv/originator.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+Note: One of the memory leaks turned out to be part of a bigger problem which 
+we may or may not have in other code sections as well. purge_orig_neighbors() 
+called call_rcu() on the same struct more then once in a short time period, so 
+that each consecutive call overwrote the previous one. We have to look into 
+this.
 
-diff --git a/batman-adv/originator.c b/batman-adv/originator.c
-index c043bf8..1840f3a 100644
---- a/batman-adv/originator.c
-+++ b/batman-adv/originator.c
-@@ -224,10 +224,15 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
- 		if ((time_after(jiffies,
- 			neigh_node->last_valid + PURGE_TIMEOUT * HZ)) ||
- 		    (neigh_node->if_incoming->if_status == IF_INACTIVE) ||
-+		    (neigh_node->if_incoming->if_status == IF_NOT_IN_USE) ||
- 		    (neigh_node->if_incoming->if_status == IF_TO_BE_REMOVED)) {
- 
--			if (neigh_node->if_incoming->if_status ==
--							IF_TO_BE_REMOVED)
-+			if ((neigh_node->if_incoming->if_status ==
-+								IF_INACTIVE) ||
-+			    (neigh_node->if_incoming->if_status ==
-+							IF_NOT_IN_USE) ||
-+			    (neigh_node->if_incoming->if_status ==
-+							IF_TO_BE_REMOVED))
- 				bat_dbg(DBG_BATMAN, bat_priv,
- 					"neighbor purge: originator %pM, "
- 					"neighbor: %pM, iface: %s\n",
--- 
-1.7.2.3
+While reorganizing the code I stumbled over these lines which are part of the 
+interference check:
+
+/* we only care if the other candidate is even considered as candidate. */
+if (!list_empty(&tmp_neigh_node2->bonding_list))
+         continue;
+
+This seems wrong in this context. If the list is empty then this neighbor is 
+not part of the candidate list. Wouldn't you agree ?
+
+Regards,
+Marek
 
