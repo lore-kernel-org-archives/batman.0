@@ -1,9 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 15 Jan 2011 15:52:53 +0100
-Message-Id: <1295103173-7036-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: free neighbors when an interface
-	is deactivated
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 16 Jan 2011 03:38:45 +0100
+Message-Id: <1295145527-17537-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2011-01-16
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,39 +14,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-hardif_disable_interface() calls purge_orig_ref() to immediately free
-all neighbors associated with the interface that is going down.
-purge_orig_neighbors() checked if the interface status is IF_INACTIVE
-which is set to IF_NOT_IN_USE shortly before calling purge_orig_ref().
+Hi,
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- batman-adv/hard-interface.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+i would propose some smaller corrections.
 
-diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index 4f95777..52b2b72 100644
---- a/batman-adv/hard-interface.c
-+++ b/batman-adv/hard-interface.c
-@@ -398,7 +398,6 @@ void hardif_disable_interface(struct batman_if *batman_if)
- 
- 	kfree(batman_if->packet_buff);
- 	batman_if->packet_buff = NULL;
--	batman_if->if_status = IF_NOT_IN_USE;
- 
- 	/* delete all references to this batman_if */
- 	purge_orig_ref(bat_priv);
-@@ -410,6 +409,7 @@ void hardif_disable_interface(struct batman_if *batman_if)
- 		softif_destroy(batman_if->soft_iface);
- 
- 	batman_if->soft_iface = NULL;
-+	batman_if->if_status = IF_NOT_IN_USE;
- }
- 
- static struct batman_if *hardif_add_interface(struct net_device *net_dev)
--- 
-1.7.2.3
+The following changes since commit 53320fe3bb1b1eef1aaff8dd47aae530ebeeb1e5:
 
+  batman-adv: Return hna count on local buffer fill (2010-12-20 10:32:03 -0800)
+
+are available in the git repository at:
+  git://git.open-mesh.org/ecsv/linux-merge.git for-david
+
+Jesper Juhl (1):
+      batman-adv: Even Batman should not dereference NULL pointers
+
+Sven Eckelmann (1):
+      batman-adv: Use "__attribute__" shortcut macros
+
+ net/batman-adv/main.h    |    6 +++---
+ net/batman-adv/packet.h  |   14 +++++++-------
+ net/batman-adv/types.h   |    4 ++--
+ net/batman-adv/unicast.c |    6 ++++--
+ 4 files changed, 16 insertions(+), 14 deletions(-)
