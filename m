@@ -1,16 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 19 Jan 2011 20:13:42 +0100
-References: <1295103173-7036-1-git-send-email-lindner_marek@yahoo.de>
-	<1295173672-16895-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1295173672-16895-1-git-send-email-lindner_marek@yahoo.de>
+Date: Wed, 19 Jan 2011 21:07:01 +0100
+References: <201012130118.14949.lindner_marek@yahoo.de>
+In-Reply-To: <201012130118.14949.lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201101192013.42758.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: free neighbors when an
-	interface is deactivated
+Message-Id: <201101192107.02433.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] performance patches (v3)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,13 +22,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday 16 January 2011 11:27:52 Marek Lindner wrote:
-> hardif_disable_interface() calls purge_orig_ref() to immediately free
-> all neighbors associated with the interface that is going down.
-> purge_orig_neighbors() checked if the interface status is IF_INACTIVE
-> which is set to IF_NOT_IN_USE shortly before calling purge_orig_ref().
+On Monday 13 December 2010 01:18:14 Marek Lindner wrote:
+> the performance patches progress step by step. A few patches already went
+> into  the repository the rest is waiting for more review. Thanks to Sven's
+> feedback quite some bugs were squashed.
+> 
+> Changes since v2:
+> * code rebased on top of the trunk
+> * some more neigh_node protected by reference counters
+> * call_rcu and kref_put race condition fixed
+> 
+> Known issues:
+> * bonding / alternating candidates are not secured by refcounting [see  
+> find_router()] - ideas welcome
 
-Applied in revision 1903.
+Thanks to the bonding / alternating patch I was able to commit the remaining 
+patches that replace the orig_hash spinlock with more advanced locking 
+techniques (revision 1904 - 1909).
 
 Regards,
 Marek
