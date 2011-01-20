@@ -1,11 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 20 Jan 2011 06:22:55 +0100
-Message-Id: <1295500975-3884-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1295500975-3884-1-git-send-email-sven@narfation.org>
-References: <1295500975-3884-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Silence checkpatch warnings
-	about spinlocks
+Return-Path: <gluhovchenko@granch.ru>
+Message-ID: <9593ED11D39C4938AB059ECE63244111@granch.local>
+From: "Michael Y. Gluhovchenko" <gluhovchenko@granch.ru>
+Date: Thu, 20 Jan 2011 13:31:34 +0600
+MIME-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="koi8-r"; reply-type=original
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] Stup batman ADv devel on openWRT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,56 +19,82 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- batman-adv/hash.h       |    4 ++--
- batman-adv/originator.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Hello All;
 
-diff --git a/batman-adv/hash.h b/batman-adv/hash.h
-index d47735c..a975e07 100644
---- a/batman-adv/hash.h
-+++ b/batman-adv/hash.h
-@@ -70,7 +70,7 @@ static inline void hash_delete(struct hashtable_t *hash,
- 	struct hlist_head *head;
- 	struct hlist_node *walk, *safe;
- 	struct element_t *bucket;
--	spinlock_t *list_lock;
-+	spinlock_t *list_lock; /* spinlock to protect write access */
- 	int i;
- 
- 	for (i = 0; i < hash->size; i++) {
-@@ -100,7 +100,7 @@ static inline int hash_add(struct hashtable_t *hash,
- 	struct hlist_head *head;
- 	struct hlist_node *walk, *safe;
- 	struct element_t *bucket;
--	spinlock_t *list_lock;
-+	spinlock_t *list_lock; /* spinlock to protect write access */
- 
- 	if (!hash)
- 		goto err;
-diff --git a/batman-adv/originator.c b/batman-adv/originator.c
-index 5a6745f..cf2ec37 100644
---- a/batman-adv/originator.c
-+++ b/batman-adv/originator.c
-@@ -150,7 +150,7 @@ void originator_free(struct bat_priv *bat_priv)
- 	struct hlist_node *walk, *safe;
- 	struct hlist_head *head;
- 	struct element_t *bucket;
--	spinlock_t *list_lock;
-+	spinlock_t *list_lock; /* spinlock to protect write access */
- 	struct orig_node *orig_node;
- 	int i;
- 
-@@ -353,7 +353,7 @@ static void _purge_orig(struct bat_priv *bat_priv)
- 	struct hlist_node *walk, *safe;
- 	struct hlist_head *head;
- 	struct element_t *bucket;
--	spinlock_t *list_lock;
-+	spinlock_t *list_lock; /* spinlock to protect write access */
- 	struct orig_node *orig_node;
- 	int i;
- 
--- 
-1.7.2.3
+I am truing to setup two batman openWRT nodes;
+
+I have that topology
+br-lan          0002.001e8cc9451b       yes             bat0
+		                                                  eth0
+                        		                                  eth1
+                                               			  wlan0
+
+Counters of RX & TX packets are increase on wlan0, but no RX packets on 
+Batman Iface Bat0
+In logs first(ha00) node i am only see "[     69443] Sending own packet 
+(originator c4:17:fe:b4:0b:97 seqno 70438, TQ 255, TTL 50, IDF off) on 
+interface wlan0 [c4:17:fe:b4:0b:97]". Second(ha01) node I am see "[ 
+69553] Sending own packet (originator c4:17:fe:b2:50:c8 seqno 70549, TQ 255, 
+TTL 50, IDF off) on interface wlan0 [c4:17:fe:b2:50:c8]"
+What am i doing wrong?
+
+First Node don't see Second Node.
+Bat Setup:
+ha00 - /etc/config/wireless:
+config wifi-device  radio0
+        option type     mac80211
+        option channel  1
+        option macaddr  c4:17:fe:b4:0b:97
+        option hwmode   11g
+        option htmode   HT20
+        list ht_capab   SHORT-GI-40
+        list ht_capab   TX-STBC
+        list ht_capab   RX-STBC1
+        list ht_capab   DSSS_CCK-40
+
+config wifi-iface
+        option device   radio0
+        option network  lan
+        option mtu      1527
+        option mode     ahdemo
+        option ssid     g_mesh
+        option encryption none
+/etc/config/batman-adv
+
+config 'mesh' 'bat0'
+        option 'interfaces' 'wlan0'
+        option 'orig_interval'
+        option 'log_level'
+        option 'aggregated_ogms'
+        option 'bonding'
+        option 'vis_mode'
+-------------------------------------
+ha01 - /etc/config/wireless
+config wifi-device  radio0
+        option type     mac80211
+        option channel  1
+        option macaddr  c4:17:fe:b2:50:c8
+        option hwmode   11g
+        option htmode   HT20
+        list ht_capab   SHORT-GI-40
+        list ht_capab   TX-STBC
+        list ht_capab   RX-STBC1
+        list ht_capab   DSSS_CCK-40
+
+config wifi-iface
+        option device   radio0
+        option network  lan
+        option mode     ahdemo
+        option ssid     g_mesh
+        option encryption none
+
+/etc/config/batman-adv
+config 'mesh' 'bat0'
+        option 'interfaces' 'wlan0'
+        option 'orig_interval'
+        option 'log_level'
+        option 'aggregated_ogms'
+        option 'bonding'
+        option 'vis_mode'
+. 
 
