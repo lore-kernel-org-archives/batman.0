@@ -1,14 +1,16 @@
-Return-Path: <tcannon@generalpacket.com>
-Message-ID: <4D3855DD.3020604@generalpacket.com>
-Date: Thu, 20 Jan 2011 07:33:49 -0800
-From: Tom Cannon <tcannon@generalpacket.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 20 Jan 2011 18:24:47 +0100
+References: <1295518649-25141-1-git-send-email-lindner_marek@yahoo.de>
+	<201101201201.15645.lindner_marek@yahoo.de>
+	<201101201236.51262.sven@narfation.org>
+In-Reply-To: <201101201236.51262.sven@narfation.org>
 MIME-Version: 1.0
-References: <9593ED11D39C4938AB059ECE63244111@granch.local>	<20110120082521.GA14117@Sellars>
-	<4D37F45B.9000106@gmail.com> <20110120125259.GA14504@Sellars>
-In-Reply-To: <20110120125259.GA14504@Sellars>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] Stup batman ADv devel on openWRT
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201101201824.47921.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: update compat version
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,53 +24,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Linus is correct.  You cannot bridge the wireless interface with bat0.
-The wireless interface is managed by bat0.
-bat0 gets bridged with your lan port(s).
+On Thursday 20 January 2011 12:36:49 Sven Eckelmann wrote:
+> If you promise that we won't have a feature in trunk but not in next for 
+> ages... Personally I don't see the reason to make a fully compatible
+> version  incompatible. And I don't want to explain David S. Miller why he
+> has to merge such a change (and the merge window is closed now).
 
-If you remove the line 'option network  lan' from /etc/config/wireless 
-it should start working.
+Ok, sounds reasonable. Let's not forget to increase to 14 then. ;-)
 
-I have batman-adv running quite well on both kamikaze and backfire with 
-atheros/madwifi.
-
-I did, however have to play around with MTU settings to get it working 
-at an acceptable throughput.
-Also, by default, the interface 'wlan0' is in /etc/config/batman-adv and 
-I had to change that to 'ath0' for atheros..
-
-
-On 1/20/2011 4:52 AM, Linus Lüssing wrote:
-> On Thu, Jan 20, 2011 at 10:37:47AM +0200, wayne wrote:
->> Linus Lüssing wrote:
->>> Hi Michael,
->>>
->>> You have a bridge loop here, you cannot put an interface into
->>> batman-adv and bridge the same one with bat0 again which seems to
->>> be the case for wlan0. Packets will enter wlan0, batman will grab
->>> them, encapsulate it in its own batman header and send the same
->>> packet on wlan0 again, reaching another batman-adv
->>> node, which encapsulates the same packet again etc.
->>>
->>
->> Hi All
->>
->> If I can jump in here, I had the same prob with batman L3 in wrt
->> with the bridge!
->>
->> Killing the Br-lan bridge kills everything, I eventually solved it
->> by flashing a old kamakaze version : pre bridge version, which
->> provides the simple ,
->>
->> eth0, eth1 , scenario!
->>
->> Wayne A
->>
-> Sorry, but I don't get it, how are the batman-adv and batmand
-> bridge issues related? Why should an older OpenWRT "fix" this? In
-> this scenario I'm 100% that using a different OpenWRT version will
-> _not_ help Michael, as it is a conceptual issue, not a bug or so.
->
-> What kind of pre bridge version are you talking about?
->
-> Cheers, Linus
+Regards,
+Marek
