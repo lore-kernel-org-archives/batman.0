@@ -1,16 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 20 Jan 2011 18:24:47 +0100
-References: <1295518649-25141-1-git-send-email-lindner_marek@yahoo.de>
-	<201101201201.15645.lindner_marek@yahoo.de>
-	<201101201236.51262.sven@narfation.org>
-In-Reply-To: <201101201236.51262.sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201101201824.47921.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: update compat version
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 20 Jan 2011 23:48:55 +0100
+Message-Id: <1295563736-27526-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Create roughly equal sized
+	fragments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,13 +17,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday 20 January 2011 12:36:49 Sven Eckelmann wrote:
-> If you promise that we won't have a feature in trunk but not in next for 
-> ages... Personally I don't see the reason to make a fully compatible
-> version  incompatible. And I don't want to explain David S. Miller why he
-> has to merge such a change (and the merge window is closed now).
+The routing algorithm must know how large two fragments are to be able to
+decide that it is safe to merge them or if it should resubmit without waiting
+for the second part. When these two fragments have a too different size, it is
+not possible to guess right in every situation.
 
-Ok, sounds reasonable. Let's not forget to increase to 14 then. ;-)
+The user could easily configure the MTU of the attached cards so that one
+fragment is forwarded and the other one is added to the fragments table to wait
+for the missing part.
 
-Regards,
-Marek
+For even sized packages it is possible to split it so that the resulting
+packages are equal sized by ignoring the old non-fragment header at the
+beginning of the original packet.
+
+This still creates different sized fragments for uneven sized packets.
+
+Reported-by: Russell Senior <russell@personaltelco.net>
+Reported-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+This patch is completely untested and is currently only to support marec and
+russell-- during their debugging sessions. Maybe it doesn't even compile.
+
+ batman-adv/unicast.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
+index 677663b..84e70bc 100644
+--- a/batman-adv/unicast.c
++++ b/batman-adv/unicast.c
+@@ -230,7 +230,7 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 	struct unicast_frag_packet *frag1, *frag2;
+ 	int uc_hdr_len = sizeof(struct unicast_packet);
+ 	int ucf_hdr_len = sizeof(struct unicast_frag_packet);
+-	int data_len = skb->len;
++	int data_len = skb->len - uc_hdr_len;
+ 
+ 	if (!bat_priv->primary_if)
+ 		goto dropped;
+@@ -238,10 +238,11 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + ucf_hdr_len);
+ 	if (!frag_skb)
+ 		goto dropped;
++	skb_reserve(frag_skb, ucf_hdr_len);
+ 
+ 	unicast_packet = (struct unicast_packet *) skb->data;
+ 	memcpy(&tmp_uc, unicast_packet, uc_hdr_len);
+-	skb_split(skb, frag_skb, data_len / 2);
++	skb_split(skb, frag_skb, data_len / 2 + uc_hdr_len);
+ 
+ 	if (my_skb_head_push(skb, ucf_hdr_len - uc_hdr_len) < 0 ||
+ 	    my_skb_head_push(frag_skb, ucf_hdr_len) < 0)
+-- 
+1.7.2.3
+
