@@ -1,11 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 21 Jan 2011 00:00:19 +0100
-Message-Id: <1295564419-28216-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1295563736-27526-1-git-send-email-sven@narfation.org>
-References: <1295563736-27526-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: Calculate correct size for
-	merged packets
+Return-Path: <plettpc@gmail.com>
+Message-ID: <4D391414.5080705@gmail.com>
+Date: Fri, 21 Jan 2011 07:05:24 +0200
+From: wayne <plettpc@gmail.com>
+MIME-Version: 1.0
+References: <9593ED11D39C4938AB059ECE63244111@granch.local>	<20110120082521.GA14117@Sellars>
+	<4D37F45B.9000106@gmail.com> <20110120125259.GA14504@Sellars>
+In-Reply-To: <20110120125259.GA14504@Sellars>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] Stup batman ADv devel on openWRT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,116 +20,68 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The routing algorithm must be able to decide if a fragment can be merged with
-the missing part and still be passed to a forwarding interface. The fragments
-can only differ by one byte in case that the original payload had an uneven
-length. In that situation the sender has to inform all possible receivers that
-the tail is one byte longer using the flag UNI_FRAG_LARGETAIL.
+Linus Lüssing wrote:
+> On Thu, Jan 20, 2011 at 10:37:47AM +0200, wayne wrote:
+>> Linus Lüssing wrote:
+>>> Hi Michael,
+>>>
+>>> You have a bridge loop here, you cannot put an interface into
+>>> batman-adv and bridge the same one with bat0 again which seems to
+>>> be the case for wlan0. Packets will enter wlan0, batman will grab
+>>> them, encapsulate it in its own batman header and send the same
+>>> packet on wlan0 again, reaching another batman-adv
+>>> node, which encapsulates the same packet again etc.
+>>>
+>>
+>> Hi All
+>>
+>> If I can jump in here, I had the same prob with batman L3 in wrt
+>> with the bridge!
+>>
+>> Killing the Br-lan bridge kills everything, I eventually solved it
+>> by flashing a old kamakaze version : pre bridge version, which
+>> provides the simple ,
+>>
+>> eth0, eth1 , scenario!
+>>
+>> Wayne A
+>>
+> Sorry, but I don't get it, how are the batman-adv and batmand
+> bridge issues related? Why should an older OpenWRT "fix" this? In
+> this scenario I'm 100% that using a different OpenWRT version will
+> _not_ help Michael, as it is a conceptual issue, not a bug or so.
+> 
+> What kind of pre bridge version are you talking about?
+> 
+> Cheers, Linus
+> 
+Hi Linus
 
-The combination of UNI_FRAG_LARGETAIL and UNI_FRAG_HEAD flag makes it possible
-to calculate the correct length for even and uneven sized payloads.
+I understand the issue is unrelated, My point was for the beginner, the 
+bridging concept (br-lan) used in later versions of wrt, can cause 
+slight confusions.
 
-The original formula missed to add the unicast header at all and forgot to
-remove the fragment header of the second fragment. This made the results highly
-unreliable and only useful for machines with large differences between the
-configured MTUs.
+Most of the howto's don't take this into account, and only refer to the 
+Plain eth0,eth1, or wlan0.
 
-Reported-by: Russell Senior <russell@personaltelco.net>
-Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-This patch is completely untested and is currently only to support marec and
-russell-- during their debugging sessions. Maybe it doesn't even compile.
+It really is not ideal, but once one has Batman running this way, the 
+light will come on!
 
-Reduced size of patch slightly.
 
- batman-adv/packet.h  |    1 +
- batman-adv/routing.c |   24 +++++++++++++++++++++++-
- batman-adv/unicast.c |    8 ++++++--
- 3 files changed, 30 insertions(+), 3 deletions(-)
+My 2c.
 
-diff --git a/batman-adv/packet.h b/batman-adv/packet.h
-index 2284e81..03ce0d3 100644
---- a/batman-adv/packet.h
-+++ b/batman-adv/packet.h
-@@ -50,6 +50,7 @@
- 
- /* fragmentation defines */
- #define UNI_FRAG_HEAD 0x01
-+#define UNI_FRAG_LARGETAIL 0x02
- 
- struct batman_packet {
- 	uint8_t  packet_type;
-diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index a90d105..71dd69f 100644
---- a/batman-adv/routing.c
-+++ b/batman-adv/routing.c
-@@ -1243,6 +1243,28 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
- 	return 0;
- }
- 
-+static int frag_can_reassemble(struct sk_buff *skb, int mtu)
-+{
-+	struct unicast_frag_packet *unicast_packet;
-+	int uneven_correction = 0;
-+	unsigned int merged_size;
-+
-+	unicast_packet = (struct unicast_frag_packet *)skb->data;
-+
-+	if (unicast_packet->flags & UNI_FRAG_LARGETAIL) {
-+		if (unicast_packet->flags & UNI_FRAG_HEAD)
-+			uneven_correction = 1;
-+		else
-+			uneven_correction = -1;
-+	}
-+
-+	merged_size = (skb->len - sizeof(struct unicast_frag_packet)) * 2;
-+	merged_size += sizeof(struct unicast_packet);
-+	merged_size += uneven_correction;
-+
-+	return merged_size <= mtu;
-+}
-+
- int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
- 			 int hdr_size)
- {
-@@ -1297,7 +1319,7 @@ int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
- 	}
- 
- 	if (unicast_packet->packet_type == BAT_UNICAST_FRAG &&
--	    2 * skb->len - hdr_size <= neigh_node->if_incoming->net_dev->mtu) {
-+	    frag_can_reassemble(skb, neigh_node->if_incoming->net_dev->mtu)) {
- 
- 		ret = frag_reassemble_skb(skb, bat_priv, &new_skb);
- 
-diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
-index 84e70bc..f88e86c 100644
---- a/batman-adv/unicast.c
-+++ b/batman-adv/unicast.c
-@@ -231,6 +231,7 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 	int uc_hdr_len = sizeof(struct unicast_packet);
- 	int ucf_hdr_len = sizeof(struct unicast_frag_packet);
- 	int data_len = skb->len - uc_hdr_len;
-+	int large_tail = 0;
- 
- 	if (!bat_priv->primary_if)
- 		goto dropped;
-@@ -260,8 +261,11 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 	memcpy(frag1->orig, bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
- 	memcpy(frag2, frag1, sizeof(struct unicast_frag_packet));
- 
--	frag1->flags |= UNI_FRAG_HEAD;
--	frag2->flags &= ~UNI_FRAG_HEAD;
-+	if (data_len & 1)
-+		large_tail = UNI_FRAG_LARGETAIL;
-+
-+	frag1->flags = UNI_FRAG_HEAD | large_tail;
-+	frag2->flags = large_tail;
- 
- 	frag1->seqno = htons((uint16_t)atomic_inc_return(
- 			     &batman_if->frag_seqno));
--- 
-1.7.2.3
+Wayne A
+
+
+
+
+
+
+
+
+
+
+
 
