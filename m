@@ -1,11 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 21 Jan 2011 18:39:04 +0100
-Message-Id: <1295631544-19884-1-git-send-email-sven@narfation.org>
-In-Reply-To: <201101211826.08385.lindner_marek@yahoo.de>
-References: <201101211826.08385.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCHv3 2/2] batman-adv: Calculate correct size for
-	merged packets
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 21 Jan 2011 19:33:01 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201101211933.03003.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] Wireless Battle Mesh v4 - Call for papers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,124 +18,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, olsr-users@lists.olsr.org, babel-users@lists.alioth.debian.org
 
-The routing algorithm must be able to decide if a fragment can be merged with
-the missing part and still be passed to a forwarding interface. The fragments
-can only differ by one byte in case that the original payload had an uneven
-length. In that situation the sender has to inform all possible receivers that
-the tail is one byte longer using the flag UNI_FRAG_LARGETAIL.
 
-The combination of UNI_FRAG_LARGETAIL and UNI_FRAG_HEAD flag makes it possible
-to calculate the correct length for even and uneven sized payloads.
+Wireless Battle Mesh v4 - Call for papers
+=========================
 
-The original formula missed to add the unicast header at all and forgot to
-remove the fragment header of the second fragment. This made the results highly
-unreliable and only useful for machines with large differences between the
-configured MTUs.
+Wireless Battle Mesh v4 is at hand and it is time to bring together the 
+agenda. To avoid last year's dynamic process which gave us a true talk 
+marathon on the very last day of WBMv3 all talks / workshops / panel 
+discussions shall be announced beforehand.
 
-Reported-by: Russell Senior <russell@personaltelco.net>
-Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-This patch is completely untested and is currently only to support marec and
-russell-- during their debugging sessions. Maybe it doesn't even compile.
 
-Moved frag_can_reassemble to unicast.c -> makes it uninlinable
+Tracks
+====
 
- batman-adv/packet.h  |    1 +
- batman-adv/routing.c |    2 +-
- batman-adv/unicast.c |   29 +++++++++++++++++++++++++++--
- batman-adv/unicast.h |    1 +
- 4 files changed, 30 insertions(+), 3 deletions(-)
+In order to broaden the horizon of the event we are going to split the event 
+into different tracks:
 
-diff --git a/batman-adv/packet.h b/batman-adv/packet.h
-index 2284e81..03ce0d3 100644
---- a/batman-adv/packet.h
-+++ b/batman-adv/packet.h
-@@ -50,6 +50,7 @@
- 
- /* fragmentation defines */
- #define UNI_FRAG_HEAD 0x01
-+#define UNI_FRAG_LARGETAIL 0x02
- 
- struct batman_packet {
- 	uint8_t  packet_type;
-diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index a90d105..87ea1b8 100644
---- a/batman-adv/routing.c
-+++ b/batman-adv/routing.c
-@@ -1297,7 +1297,7 @@ int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
- 	}
- 
- 	if (unicast_packet->packet_type == BAT_UNICAST_FRAG &&
--	    2 * skb->len - hdr_size <= neigh_node->if_incoming->net_dev->mtu) {
-+	    frag_can_reassemble(skb, neigh_node->if_incoming->net_dev->mtu)) {
- 
- 		ret = frag_reassemble_skb(skb, bat_priv, &new_skb);
- 
-diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
-index 84e70bc..20aefb5 100644
---- a/batman-adv/unicast.c
-+++ b/batman-adv/unicast.c
-@@ -231,6 +231,7 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 	int uc_hdr_len = sizeof(struct unicast_packet);
- 	int ucf_hdr_len = sizeof(struct unicast_frag_packet);
- 	int data_len = skb->len - uc_hdr_len;
-+	int large_tail = 0;
- 
- 	if (!bat_priv->primary_if)
- 		goto dropped;
-@@ -260,8 +261,11 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 	memcpy(frag1->orig, bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
- 	memcpy(frag2, frag1, sizeof(struct unicast_frag_packet));
- 
--	frag1->flags |= UNI_FRAG_HEAD;
--	frag2->flags &= ~UNI_FRAG_HEAD;
-+	if (data_len & 1)
-+		large_tail = UNI_FRAG_LARGETAIL;
-+
-+	frag1->flags = UNI_FRAG_HEAD | large_tail;
-+	frag2->flags = large_tail;
- 
- 	frag1->seqno = htons((uint16_t)atomic_inc_return(
- 			     &batman_if->frag_seqno));
-@@ -366,3 +370,24 @@ out:
- 		kfree_skb(skb);
- 	return ret;
- }
-+
-+int frag_can_reassemble(struct sk_buff *skb, int mtu)
-+{
-+	struct unicast_frag_packet *unicast_packet;
-+	int uneven_correction = 0;
-+	unsigned int merged_size;
-+
-+	unicast_packet = (struct unicast_frag_packet *)skb->data;
-+
-+	if (unicast_packet->flags & UNI_FRAG_LARGETAIL) {
-+		if (unicast_packet->flags & UNI_FRAG_HEAD)
-+			uneven_correction = 1;
-+		else
-+			uneven_correction = -1;
-+	}
-+
-+	merged_size = (skb->len - sizeof(struct unicast_frag_packet)) * 2;
-+	merged_size += sizeof(struct unicast_packet) + uneven_correction;
-+
-+	return merged_size <= mtu;
-+}
-diff --git a/batman-adv/unicast.h b/batman-adv/unicast.h
-index e32b786..b0e29df 100644
---- a/batman-adv/unicast.h
-+++ b/batman-adv/unicast.h
-@@ -31,5 +31,6 @@ void frag_list_free(struct list_head *head);
- int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv);
- int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 		  struct batman_if *batman_if, uint8_t dstaddr[]);
-+int frag_can_reassemble(struct sk_buff *skb, int mtu);
- 
- #endif /* _NET_BATMAN_ADV_UNICAST_H_ */
--- 
-1.7.2.3
+* The technical track is taking place throughout the week (monday till friday) 
+which mainly focuses on rather technical topics like: 
+ => routing protocol internals
+ => implementations / development of "cool" algorithms
+ => hands-on routing / multicast / roaming / convergence speed / etc
+ => secuity aspects in mesh networks
+ => your idea here
+
+* The weekend (saturday & sunday) is reserved for the applications track which 
+aims to showcase applications that run on top of the mesh. It is not important 
+whether protocol X or Y is deployed and how it is implemented, the question 
+is: What can we do with the mesh once it is there ?
+ => VoIP in the mesh ?
+ => fast desaster recovery ?
+ => artistic projects ?
+ => your idea here
+
+The idea of these tracks is to provide a ground for the different developers / 
+projects to exchange ideas on technical aspects of algorithms / 
+implementations / optimizations as well as organizing an exchange with mesh 
+network users who care less about how the mesh itself works as long as their 
+application can do its job. On the other hand the weekend serves as an entry 
+point for people to learn about what you can actually do with mesh networks.
+
+
+Submission
+=======
+
+To allow an efficient handling of your submission, please provide the following 
+information and send them to me directly in form of an email:
+
+* your name
+* the track you are interested in
+* the type of your slot (talk/workshop/panel discussion)
+* your topic headline
+* your topic description which can brief (does not need to exceed a couple of 
+lines) but should provide a reasonable summary of your talk
+* the dates of your stay at the event + (optional) preferred day for your slot
+* length of the slot if you wish to do a workshop (all other slots will be 
+limited to one hour - notify me in advance if you think that is not enough for 
+you)
+
+
+Deadlines
+======
+
+Submissions are accepted until and including the 28th of February. Everyone 
+missing this deadline still has the opportunity to apply for a lightening talk 
+slot. These slots can be acquired by simply contacting me during the event. 
+The list of registered lightening talks will be published in the battlemesh 
+wiki.
+The final program will be made available in the aforementioned wiki during the 
+first week of March.
+
+If you have any question or suggestion, please let me know.
+
+Regards,
+Marek
 
