@@ -1,14 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
-Date: Sat, 22 Jan 2011 02:21:27 +0100
-Message-Id: <1295659302-7171-5-git-send-email-linus.luessing@saxnet.de>
+Date: Sat, 22 Jan 2011 02:21:28 +0100
+Message-Id: <1295659302-7171-6-git-send-email-linus.luessing@saxnet.de>
 In-Reply-To: <1295659302-7171-1-git-send-email-linus.luessing@saxnet.de>
 References: <1295659302-7171-1-git-send-email-linus.luessing@saxnet.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 04/19] batman-adv: Attach local MCAs to OGMs
+Subject: [B.A.T.M.A.N.] [PATCH 05/19] batman-adv: Add periodic multicast
+	tracker timer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,213 +24,187 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
 
-This patch introduces multicast announcements - MCA for short - which
-are now being attached to an OGM if an optimized multicast mode needing
-MCAs has been selected (i.e. proactive_tracking).
-
-MCA entries are multicast mac addresses used by a multicast receiver in
-the mesh cloud. Currently MCAs are only fetched locally from the
-according batman interface itself, bridged-in hosts will not yet get
-announced and will need a more complex patch for supporting IGMP/MLD
-snooping. However, the local fetching also allows to have multicast
-optimizations on layer 2 already for batman nodes, not depending on
-IP at all.
+This commit adds a timer for sending periodic tracker packets (the
+sending is not in the scope of this patch). Furthermore, the timer gets
+restarted if the tracker interval gets changed or if the originator
+interval changed and we have selected auto mode for the tracker
+interval.
 
 Signed-off-by: Linus Lüssing <linus.luessing@saxnet.de>
 ---
- aggregation.c |   12 +++++++-
- aggregation.h |    6 +++-
- main.h        |    2 +
- send.c        |   80 +++++++++++++++++++++++++++++++++++++++++++++++++--------
- 4 files changed, 85 insertions(+), 15 deletions(-)
+ bat_sysfs.c |   13 +++++++++++--
+ main.c      |    5 +++++
+ multicast.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ multicast.h |    3 +++
+ types.h     |    1 +
+ 5 files changed, 77 insertions(+), 2 deletions(-)
 
-diff --git a/batman-adv/aggregation.c b/batman-adv/aggregation.c
-index 3850a3e..c3aff27 100644
---- a/batman-adv/aggregation.c
-+++ b/batman-adv/aggregation.c
-@@ -30,6 +30,12 @@ static int hna_len(struct batman_packet *batman_packet)
- 	return batman_packet->num_hna * ETH_ALEN;
+diff --git a/batman-adv/bat_sysfs.c b/batman-adv/bat_sysfs.c
+index f627d70..8f688db 100644
+--- a/batman-adv/bat_sysfs.c
++++ b/batman-adv/bat_sysfs.c
+@@ -357,8 +357,16 @@ static ssize_t store_gw_bwidth(struct kobject *kobj, struct attribute *attr,
+ 	return gw_bandwidth_set(net_dev, buff, count);
  }
  
-+/* calculate the size of the mca information for a given packet */
-+static int mca_len(struct batman_packet *batman_packet)
++void update_mcast_tracker(struct net_device *net_dev)
 +{
-+	return batman_packet->num_mca * ETH_ALEN;
++	struct bat_priv *bat_priv = netdev_priv(net_dev);
++
++	if (!atomic_read(&bat_priv->mcast_tracker_interval))
++		mcast_tracker_reset(bat_priv);
 +}
 +
- /* return true if new_packet can be aggregated with forw_packet */
- static bool can_aggregate_with(struct batman_packet *new_batman_packet,
- 			       int packet_len,
-@@ -265,9 +271,11 @@ void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff,
- 				   hna_buff, hna_len(batman_packet),
- 				   if_incoming);
+ static ssize_t show_mcast_mode(struct kobject *kobj, struct attribute *attr,
+-				 char *buff)
++			       char *buff)
+ {
+ 	struct device *dev = to_dev(kobj->parent);
+ 	struct bat_priv *bat_priv = netdev_priv(to_net_dev(dev));
+@@ -509,7 +517,8 @@ BAT_ATTR_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
+ BAT_ATTR_BOOL(fragmentation, S_IRUGO | S_IWUSR, update_min_mtu);
+ static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
+ static BAT_ATTR(gw_mode, S_IRUGO | S_IWUSR, show_gw_mode, store_gw_mode);
+-BAT_ATTR_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
++BAT_ATTR_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX,
++	      update_mcast_tracker);
+ BAT_ATTR_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
+ BAT_ATTR_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, TQ_MAX_VALUE,
+ 	      post_gw_deselect);
+diff --git a/batman-adv/main.c b/batman-adv/main.c
+index cb3c3a3..1641075 100644
+--- a/batman-adv/main.c
++++ b/batman-adv/main.c
+@@ -32,6 +32,7 @@
+ #include "gateway_client.h"
+ #include "types.h"
+ #include "vis.h"
++#include "multicast.h"
+ #include "hash.h"
  
--		buff_pos += BAT_PACKET_LEN + hna_len(batman_packet);
-+		buff_pos += BAT_PACKET_LEN + hna_len(batman_packet) +
-+			    mca_len(batman_packet);
- 		batman_packet = (struct batman_packet *)
- 			(packet_buff + buff_pos);
- 	} while (aggregated_packet(buff_pos, packet_len,
--				   batman_packet->num_hna));
-+				   batman_packet->num_hna,
-+				   batman_packet->num_mca));
+ struct list_head if_list;
+@@ -108,6 +109,9 @@ int mesh_init(struct net_device *soft_iface)
+ 	if (vis_init(bat_priv) < 1)
+ 		goto err;
+ 
++	if (mcast_init(bat_priv) < 1)
++		goto err;
++
+ 	atomic_set(&bat_priv->mesh_state, MESH_ACTIVE);
+ 	goto end;
+ 
+@@ -138,6 +142,7 @@ void mesh_free(struct net_device *soft_iface)
+ 	hna_global_free(bat_priv);
+ 
+ 	softif_neigh_purge(bat_priv);
++	mcast_free(bat_priv);
+ 
+ 	atomic_set(&bat_priv->mesh_state, MESH_INACTIVE);
  }
-diff --git a/batman-adv/aggregation.h b/batman-adv/aggregation.h
-index 71a91b3..93f2496 100644
---- a/batman-adv/aggregation.h
-+++ b/batman-adv/aggregation.h
-@@ -25,9 +25,11 @@
+diff --git a/batman-adv/multicast.c b/batman-adv/multicast.c
+index 0598873..cc83937 100644
+--- a/batman-adv/multicast.c
++++ b/batman-adv/multicast.c
+@@ -22,6 +22,48 @@
  #include "main.h"
+ #include "multicast.h"
  
- /* is there another aggregated packet here? */
--static inline int aggregated_packet(int buff_pos, int packet_len, int num_hna)
-+static inline int aggregated_packet(int buff_pos, int packet_len, int num_hna,
-+				    int num_mca)
- {
--	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (num_hna * ETH_ALEN);
-+	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (num_hna * ETH_ALEN) +
-+			    (num_mca * ETH_ALEN);
- 
- 	return (next_buff_pos <= packet_len) &&
- 		(next_buff_pos <= MAX_AGGREGATION_BYTES);
-diff --git a/batman-adv/main.h b/batman-adv/main.h
-index c239c97..4913f12 100644
---- a/batman-adv/main.h
-+++ b/batman-adv/main.h
-@@ -105,6 +105,8 @@
- 
- /* #define VIS_SUBCLUSTERS_DISABLED */
- 
-+#define UINT8_MAX 255
-+
- /*
-  * Kernel headers
-  */
-diff --git a/batman-adv/send.c b/batman-adv/send.c
-index 77f8297..03db894 100644
---- a/batman-adv/send.c
-+++ b/batman-adv/send.c
-@@ -122,7 +122,8 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
- 	/* adjust all flags and log packets */
- 	while (aggregated_packet(buff_pos,
- 				 forw_packet->packet_len,
--				 batman_packet->num_hna)) {
-+				 batman_packet->num_hna,
-+				 batman_packet->num_mca)) {
- 
- 		/* we might have aggregated direct link packets with an
- 		 * ordinary base packet */
-@@ -214,18 +215,69 @@ static void send_packet(struct forw_packet *forw_packet)
- 	rcu_read_unlock();
- }
- 
-+static void add_own_MCA(struct batman_packet *batman_packet, int num_mca,
-+		       struct net_device *soft_iface)
++/* how long to wait until sending a multicast tracker packet */
++static int tracker_send_delay(struct bat_priv *bat_priv)
 +{
-+	MC_LIST *mc_list_entry;
-+	int num_mca_done = 0;
-+	char *mca_entry = (char *)(batman_packet + 1);
++	int tracker_interval = atomic_read(&bat_priv->mcast_tracker_interval);
 +
-+	if (num_mca == 0)
-+		goto out;
++	/* auto mode, set to 1/2 ogm interval */
++	if (!tracker_interval)
++		tracker_interval = atomic_read(&bat_priv->orig_interval) / 2;
 +
-+	if (num_mca > UINT8_MAX) {
-+		pr_warning("Too many multicast announcements here, "
-+			   "just adding %i\n", UINT8_MAX);
-+		num_mca = UINT8_MAX;
-+	}
-+
-+	mca_entry = mca_entry + batman_packet->num_hna * ETH_ALEN;
-+
-+	netif_addr_lock_bh(soft_iface);
-+	netdev_for_each_mc_addr(mc_list_entry, soft_iface) {
-+		memcpy(mca_entry, &mc_list_entry->MC_LIST_ADDR, ETH_ALEN);
-+		mca_entry += ETH_ALEN;
-+
-+		/* A multicast address might just have been added,
-+		 * avoid writing outside of buffer */
-+		if (++num_mca_done == num_mca)
-+			break;
-+	}
-+	netif_addr_unlock_bh(soft_iface);
-+
-+out:
-+	batman_packet->num_mca = num_mca_done;
++	/* multicast tracker packets get half as much jitter as ogms as they're
++	 * limited down to JITTER and not JITTER*2 */
++	return msecs_to_jiffies(tracker_interval -
++		   JITTER/2 + (random32() % JITTER));
 +}
 +
- static void rebuild_batman_packet(struct bat_priv *bat_priv,
- 				  struct batman_if *batman_if)
++static void start_mcast_tracker(struct bat_priv *bat_priv)
++{
++	/* adding some jitter */
++	unsigned long tracker_interval = tracker_send_delay(bat_priv);
++	queue_delayed_work(bat_event_workqueue, &bat_priv->mcast_tracker_work,
++			   tracker_interval);
++}
++
++static void stop_mcast_tracker(struct bat_priv *bat_priv)
++{
++	cancel_delayed_work_sync(&bat_priv->mcast_tracker_work);
++}
++
++void mcast_tracker_reset(struct bat_priv *bat_priv)
++{
++	stop_mcast_tracker(bat_priv);
++	start_mcast_tracker(bat_priv);
++}
++
++static void mcast_tracker_timer(struct work_struct *work)
++{
++	struct bat_priv *bat_priv = container_of(work, struct bat_priv,
++						 mcast_tracker_work.work);
++
++	start_mcast_tracker(bat_priv);
++}
++
+ int mcast_tracker_interval_set(struct net_device *net_dev, char *buff,
+ 			       size_t count)
  {
--	int new_len;
--	unsigned char *new_buff;
-+	int new_len, mcast_mode, num_mca = 0;
-+	unsigned char *new_buff = NULL;
- 	struct batman_packet *batman_packet;
+@@ -68,6 +110,8 @@ ok:
  
--	new_len = sizeof(struct batman_packet) +
--			(bat_priv->num_local_hna * ETH_ALEN);
--	new_buff = kmalloc(new_len, GFP_ATOMIC);
-+	batman_packet = (struct batman_packet *)batman_if->packet_buff;
-+	mcast_mode = atomic_read(&bat_priv->mcast_mode);
+ 	atomic_set(&bat_priv->mcast_tracker_interval, new_tracker_interval);
  
--	/* keep old buffer if kmalloc should fail */
-+	/* Avoid attaching MCAs, if multicast optimization is disabled */
-+	if (mcast_mode == MCAST_MODE_PROACT_TRACKING) {
-+		netif_addr_lock_bh(batman_if->soft_iface);
-+		num_mca = netdev_mc_count(batman_if->soft_iface);
-+		netif_addr_unlock_bh(batman_if->soft_iface);
-+	}
++	mcast_tracker_reset(bat_priv);
 +
-+	if (atomic_read(&bat_priv->hna_local_changed) ||
-+	    num_mca != batman_packet->num_mca) {
-+		new_len = sizeof(struct batman_packet) +
-+			(bat_priv->num_local_hna * ETH_ALEN) +
-+			num_mca * ETH_ALEN;
-+		new_buff = kmalloc(new_len, GFP_ATOMIC);
-+	}
-+
-+	/*
-+	 * if local hna or mca has changed but kmalloc failed
-+	 * then just keep the old buffer
-+	 */
- 	if (new_buff) {
- 		memcpy(new_buff, batman_if->packet_buff,
- 		       sizeof(struct batman_packet));
-@@ -239,6 +291,13 @@ static void rebuild_batman_packet(struct bat_priv *bat_priv,
- 		batman_if->packet_buff = new_buff;
- 		batman_if->packet_len = new_len;
- 	}
-+
-+	/**
-+	 * always copy mca entries (if there are any) - we have to
-+	 * traverse the list anyway, so we can just do a memcpy instead of
-+	 * memcmp for the sake of simplicity
-+	 */
-+	add_own_MCA(batman_packet, num_mca, batman_if->soft_iface);
+ 	return count;
  }
  
- void schedule_own_packet(struct batman_if *batman_if)
-@@ -264,9 +323,7 @@ void schedule_own_packet(struct batman_if *batman_if)
- 	if (batman_if->if_status == IF_TO_BE_ACTIVATED)
- 		batman_if->if_status = IF_ACTIVE;
+@@ -119,3 +163,16 @@ ok:
  
--	/* if local hna has changed and interface is a primary interface */
--	if ((atomic_read(&bat_priv->hna_local_changed)) &&
--	    (batman_if == bat_priv->primary_if))
-+	if (batman_if == bat_priv->primary_if)
- 		rebuild_batman_packet(bat_priv, batman_if);
- 
- 	/**
-@@ -359,7 +416,8 @@ void schedule_forward_packet(struct orig_node *orig_node,
- 	send_time = forward_send_time();
- 	add_bat_packet_to_list(bat_priv,
- 			       (unsigned char *)batman_packet,
--			       sizeof(struct batman_packet) + hna_buff_len,
-+			       sizeof(struct batman_packet) + hna_buff_len
-+			       + batman_packet->num_mca * ETH_ALEN,
- 			       if_incoming, 0, send_time);
+ 	return count;
  }
++
++int mcast_init(struct bat_priv *bat_priv)
++{
++	INIT_DELAYED_WORK(&bat_priv->mcast_tracker_work, mcast_tracker_timer);
++	start_mcast_tracker(bat_priv);
++
++	return 1;
++}
++
++void mcast_free(struct bat_priv *bat_priv)
++{
++	stop_mcast_tracker(bat_priv);
++}
+diff --git a/batman-adv/multicast.h b/batman-adv/multicast.h
+index 12a3376..26ce6d8 100644
+--- a/batman-adv/multicast.h
++++ b/batman-adv/multicast.h
+@@ -26,5 +26,8 @@ int mcast_tracker_interval_set(struct net_device *net_dev, char *buff,
+ 			       size_t count);
+ int mcast_tracker_timeout_set(struct net_device *net_dev, char *buff,
+ 			       size_t count);
++void mcast_tracker_reset(struct bat_priv *bat_priv);
++int mcast_init(struct bat_priv *bat_priv);
++void mcast_free(struct bat_priv *bat_priv);
  
+ #endif /* _NET_BATMAN_ADV_MULTICAST_H_ */
+diff --git a/batman-adv/types.h b/batman-adv/types.h
+index 3abf6d9..c4ae252 100644
+--- a/batman-adv/types.h
++++ b/batman-adv/types.h
+@@ -173,6 +173,7 @@ struct bat_priv {
+ 	struct delayed_work hna_work;
+ 	struct delayed_work orig_work;
+ 	struct delayed_work vis_work;
++	struct delayed_work mcast_tracker_work;
+ 	struct gw_node *curr_gw;
+ 	struct vis_info *my_vis_info;
+ };
 -- 
 1.7.2.3
 
