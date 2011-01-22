@@ -1,12 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 21 Jan 2011 19:33:01 +0100
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
+Date: Sat, 22 Jan 2011 02:21:23 +0100
+Message-Id: <1295659302-7171-1-git-send-email-linus.luessing@saxnet.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201101211933.03003.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] Wireless Battle Mesh v4 - Call for papers
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] B.A.T.M.A.N.-Advanced Multicast Optimizations, v2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,80 +18,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, olsr-users@lists.olsr.org, babel-users@lists.alioth.debian.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Hi everyone,
 
-Wireless Battle Mesh v4 - Call for papers
-=========================
+Here's the next series of patches which should address the comments I got for the
+first one. Thanks for all the feedback!
 
-Wireless Battle Mesh v4 is at hand and it is time to bring together the 
-agenda. To avoid last year's dynamic process which gave us a true talk 
-marathon on the very last day of WBMv3 all talks / workshops / panel 
-discussions shall be announced beforehand.
+Changelog:
+ * rebasing to commit [65e0869478bce153a799c0e774a117ba5fc78025],
+   using new orig_hash methods
+ * putting seqno before ttl, 4 byte aligning mcast_packet [01/20]
+ * adapted compat.h to not use custom lock macros, instead only one macro for
+   netif_addr_lock_bh() in case of older kernel versions
+ * merged spinlock-irqsave-to-bh commit into previous commits [20/20]
+ * moved mcast_may_optimize() to soft-interface.c [18/20], removed inlining
+   (won't optimize much anyway...)
+ * purge_mcast_forw_table, splitted list operations into separate functions
+   [12/20]
+ * use batman_if refcounting to reduce the time of rcu-locking [13/20]
+ * do not create nexthop entry if according batman_if is NULL [13/20]
+ * route_mcast_packet, split into separat functions [13/20]
+ * fix typo "seperate" [13/20]
+ * fix typo "i.g." [08/20]
+ * COMPAT_VERSION to 14 [01/20]
+ * use rcu-locking+refcounting for orig_node, remove orig_hash_lock [07/20],
+   [17/20]
+ * made checkpatch-clean
+ * use __packed instead of __attribute_((packed)) [01/20]
+ * change tracker_packet_for_each_dest macro [07/20]:
+   make a "break" in this macro to behave like usual, export parts from macro
+   into own functions
 
+TODO:
+* directly prepare mcast-tracker-packet in sk_buff
+* only create methods / variables in patches that need them
 
-Tracks
-====
+* update mcast-doc
+* upload updated mcast-doc to wiki
 
-In order to broaden the horizon of the event we are going to split the event 
-into different tracks:
+maybe TODO?
+* use hlist instead of list for mcast-table?
+* use rcu-locking / refcounting for mcast_forw_table?
 
-* The technical track is taking place throughout the week (monday till friday) 
-which mainly focuses on rather technical topics like: 
- => routing protocol internals
- => implementations / development of "cool" algorithms
- => hands-on routing / multicast / roaming / convergence speed / etc
- => secuity aspects in mesh networks
- => your idea here
-
-* The weekend (saturday & sunday) is reserved for the applications track which 
-aims to showcase applications that run on top of the mesh. It is not important 
-whether protocol X or Y is deployed and how it is implemented, the question 
-is: What can we do with the mesh once it is there ?
- => VoIP in the mesh ?
- => fast desaster recovery ?
- => artistic projects ?
- => your idea here
-
-The idea of these tracks is to provide a ground for the different developers / 
-projects to exchange ideas on technical aspects of algorithms / 
-implementations / optimizations as well as organizing an exchange with mesh 
-network users who care less about how the mesh itself works as long as their 
-application can do its job. On the other hand the weekend serves as an entry 
-point for people to learn about what you can actually do with mesh networks.
-
-
-Submission
-=======
-
-To allow an efficient handling of your submission, please provide the following 
-information and send them to me directly in form of an email:
-
-* your name
-* the track you are interested in
-* the type of your slot (talk/workshop/panel discussion)
-* your topic headline
-* your topic description which can brief (does not need to exceed a couple of 
-lines) but should provide a reasonable summary of your talk
-* the dates of your stay at the event + (optional) preferred day for your slot
-* length of the slot if you wish to do a workshop (all other slots will be 
-limited to one hour - notify me in advance if you think that is not enough for 
-you)
-
-
-Deadlines
-======
-
-Submissions are accepted until and including the 28th of February. Everyone 
-missing this deadline still has the opportunity to apply for a lightening talk 
-slot. These slots can be acquired by simply contacting me during the event. 
-The list of registered lightening talks will be published in the battlemesh 
-wiki.
-The final program will be made available in the aforementioned wiki during the 
-first week of March.
-
-If you have any question or suggestion, please let me know.
-
-Regards,
-Marek
-
+Cheers, Linus
