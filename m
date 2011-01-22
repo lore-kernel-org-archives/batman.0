@@ -1,15 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
-Date: Sat, 22 Jan 2011 02:21:38 +0100
-Message-Id: <1295659302-7171-16-git-send-email-linus.luessing@saxnet.de>
+Date: Sat, 22 Jan 2011 02:21:39 +0100
+Message-Id: <1295659302-7171-17-git-send-email-linus.luessing@saxnet.de>
 In-Reply-To: <1295659302-7171-1-git-send-email-linus.luessing@saxnet.de>
 References: <1295659302-7171-1-git-send-email-linus.luessing@saxnet.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 15/19] batman-adv: Receive multicast data
-	packets BAT_MCAST
+Subject: [B.A.T.M.A.N.] [PATCH 16/19] batman-adv: Forward multicast data in
+	proact_tracking mode
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,85 +24,64 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
 
-This patch adds the forwarding of multicast data packets to the local
-soft interface if this receiving node is a member of the same multicast
-group as specified in the multicast packet.
+This patch enables the forwarding of multicast data and uses the same
+methods for deciding to forward via broad- or unicast(s) as the local
+packet encapsulation already did.
 
 Signed-off-by: Linus Lüssing <linus.luessing@saxnet.de>
 ---
- hard-interface.c |    5 +++++
- routing.c        |   29 +++++++++++++++++++++++++++++
- routing.h        |    1 +
- 3 files changed, 35 insertions(+), 0 deletions(-)
+ multicast.c |    2 +-
+ multicast.h |    1 +
+ routing.c   |    4 ++++
+ 3 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index f478c4b..a535e09 100644
---- a/batman-adv/hard-interface.c
-+++ b/batman-adv/hard-interface.c
-@@ -624,6 +624,11 @@ int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 		ret = recv_bcast_packet(skb, batman_if);
- 		break;
- 
-+		/* multicast packet */
-+	case BAT_MCAST:
-+		ret = recv_mcast_packet(skb, batman_if);
-+		break;
-+
- 		/* multicast tracker packet */
- 	case BAT_MCAST_TRACKER:
- 		ret = recv_mcast_tracker_packet(skb, batman_if);
-diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 9482db2..b5559c0 100644
---- a/batman-adv/routing.c
-+++ b/batman-adv/routing.c
-@@ -1510,6 +1510,35 @@ out:
- 	return ret;
+diff --git a/batman-adv/multicast.c b/batman-adv/multicast.c
+index a8613ef..70184cf 100644
+--- a/batman-adv/multicast.c
++++ b/batman-adv/multicast.c
+@@ -1241,7 +1241,7 @@ static inline void nexthops_from_table(uint8_t *dest, uint8_t *orig,
+ 	}
  }
  
-+int recv_mcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
-+{
-+	struct ethhdr *ethhdr;
-+	MC_LIST *mc_entry;
-+	int ret = 1;
-+	int hdr_size = sizeof(struct mcast_packet);
-+
-+	/* multicast data packets might be received via unicast or broadcast */
-+	if (check_unicast_packet(skb, hdr_size) < 0 &&
-+	    check_broadcast_packet(skb, hdr_size) < 0)
-+		return NET_RX_DROP;
-+
-+	ethhdr = (struct ethhdr *)(skb->data + sizeof(struct mcast_packet));
-+
-+	/* multicast for me? */
-+	netif_addr_lock_bh(recv_if->soft_iface);
-+	netdev_for_each_mc_addr(mc_entry, recv_if->soft_iface) {
-+		ret = memcmp(mc_entry->MC_LIST_ADDR, ethhdr->h_dest, ETH_ALEN);
-+		if (!ret)
-+			break;
-+	}
-+	netif_addr_unlock_bh(recv_if->soft_iface);
-+
-+	if (!ret)
-+		interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size);
-+
-+	return NET_RX_SUCCESS;
-+}
-+
- int recv_mcast_tracker_packet(struct sk_buff *skb, struct batman_if *recv_if)
+-static void route_mcast_packet(struct sk_buff *skb, struct bat_priv *bat_priv)
++void route_mcast_packet(struct sk_buff *skb, struct bat_priv *bat_priv)
  {
- 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
-diff --git a/batman-adv/routing.h b/batman-adv/routing.h
-index 0fad12a..722d837 100644
---- a/batman-adv/routing.h
-+++ b/batman-adv/routing.h
-@@ -38,6 +38,7 @@ int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
-+int recv_mcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_mcast_tracker_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if);
- int recv_bat_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ 	struct sk_buff *skb1;
+ 	struct mcast_packet *mcast_packet;
+diff --git a/batman-adv/multicast.h b/batman-adv/multicast.h
+index 06dd398..6dcf537 100644
+--- a/batman-adv/multicast.h
++++ b/batman-adv/multicast.h
+@@ -32,6 +32,7 @@ void route_mcast_tracker_packet(
+ 			int tracker_packet_len, struct bat_priv *bat_priv);
+ void purge_mcast_forw_table(struct bat_priv *bat_priv);
+ int mcast_forw_table_seq_print_text(struct seq_file *seq, void *offset);
++void route_mcast_packet(struct sk_buff *skb, struct bat_priv *bat_priv);
+ int mcast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv);
+ int mcast_init(struct bat_priv *bat_priv);
+ void mcast_free(struct bat_priv *bat_priv);
+diff --git a/batman-adv/routing.c b/batman-adv/routing.c
+index b5559c0..512d9ba 100644
+--- a/batman-adv/routing.c
++++ b/batman-adv/routing.c
+@@ -1512,6 +1512,7 @@ out:
+ 
+ int recv_mcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ {
++	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct ethhdr *ethhdr;
+ 	MC_LIST *mc_entry;
+ 	int ret = 1;
+@@ -1522,6 +1523,9 @@ int recv_mcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 	    check_broadcast_packet(skb, hdr_size) < 0)
+ 		return NET_RX_DROP;
+ 
++	/* forward multicast packet if necessary */
++	route_mcast_packet(skb, bat_priv);
++
+ 	ethhdr = (struct ethhdr *)(skb->data + sizeof(struct mcast_packet));
+ 
+ 	/* multicast for me? */
 -- 
 1.7.2.3
 
