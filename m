@@ -1,12 +1,13 @@
-Return-Path: <or4n9e@gmx.de>
-Content-Type: text/plain; charset="utf-8"
-Date: Mon, 24 Jan 2011 21:55:13 +0100
-From: or4n9e@gmx.de
-Message-ID: <20110124205513.195270@gmx.net>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Tue, 25 Jan 2011 22:49:29 +0100
+Message-Id: <1295992169-3797-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] An Experimental Comparison of Routing Protocols in
- Multi Hop Ad Hoc Networks
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix kernel panic when fetching
+	vis data on a vis server
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,15 +21,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+Commit 593180d8b00bd486187841468adb53ca1edf3950 introduced a bug leading
+to a kernel panic when fetching the vis data on a vis server. That
+commit forgot to rename one variable name, which this commit fixes now.
 
-following your call for paper submissions at http://www.open-mesh.org/wiki/Experience, I'd briefly like to make your group aware of the following 2010 scientific paper [1] about OSLR, BATMAN L2+L3 and Babel protocols (performance comparison etc, kind of a follow-up to the already listed paper at [2]). I assume it's of some interest for you guys!
+Reported-by: Russell Senior <russell@personaltelco.net>
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+ vis.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Thanks,
-orange (Piranha Project Maintainer), http://piranha.pwnz.org/
-
-[1] http://bridgingthelayers.org/docs/murray_routing.pdf
-[2] http://ro.uow.edu.au/cgi/viewcontent.cgi?article=1747&amp;context=infopapers
+diff --git a/batman-adv/vis.c b/batman-adv/vis.c
+index 69178d9..2cdf01c 100644
+--- a/batman-adv/vis.c
++++ b/batman-adv/vis.c
+@@ -268,10 +268,10 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 				buff_pos += sprintf(buff + buff_pos, "%pM,",
+ 						entry->addr);
+ 
+-				for (i = 0; i < packet->entries; i++)
++				for (j = 0; j < packet->entries; j++)
+ 					buff_pos += vis_data_read_entry(
+ 							buff + buff_pos,
+-							&entries[i],
++							&entries[j],
+ 							entry->addr,
+ 							entry->primary);
+ 
 -- 
-GMX DSL Doppel-Flat ab 19,99 Euro/mtl.! Jetzt mit 
-gratis Handy-Flat! http://portal.gmx.net/de/go/dsl
+1.7.2.3
+
