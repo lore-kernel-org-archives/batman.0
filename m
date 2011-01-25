@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 25 Jan 2011 22:53:32 +0100
-References: <1295733797-1552-1-git-send-email-lindner_marek@yahoo.de>
-	<1295738907-10092-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1295738907-10092-1-git-send-email-lindner_marek@yahoo.de>
+Date: Tue, 25 Jan 2011 22:54:19 +0100
+References: <1295878321-17159-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1295878321-17159-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201101252253.33121.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: protect bit operations to
-	count OGMs with spinlock
+Content-Transfer-Encoding: 7bit
+Message-Id: <201101252254.20537.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: make broadcast seqno
+	operations atomic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,11 +23,15 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday 23 January 2011 00:28:27 Marek Lindner wrote:
-> Reported-by: Linus L=C3=BCssing <linus.luessing@web.de>
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+On Monday 24 January 2011 15:12:01 Marek Lindner wrote:
+> Batman-adv could receive several payload broadcasts at the same time
+> that would trigger access to the broadcast seqno sliding window to
+> determine whether this is a new broadcast or not. If these incoming
+> broadcasts are accessing the sliding window simultaneously it could
+> be left in an inconsistent state. Therefore it is necessary to make
+> sure this access is atomic.
 
-Applied in revision 1912.
+Applied in revision 1913.
 
 Regards,
 Marek
