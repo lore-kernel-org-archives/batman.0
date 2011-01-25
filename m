@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 25 Jan 2011 22:54:19 +0100
-References: <1295878321-17159-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1295878321-17159-1-git-send-email-lindner_marek@yahoo.de>
+Date: Tue, 25 Jan 2011 22:54:54 +0100
+References: <1295992169-3797-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1295992169-3797-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201101252254.20537.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: make broadcast seqno
-	operations atomic
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201101252254.54790.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix kernel panic when
+	fetching vis data on a vis server
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,15 +23,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday 24 January 2011 15:12:01 Marek Lindner wrote:
-> Batman-adv could receive several payload broadcasts at the same time
-> that would trigger access to the broadcast seqno sliding window to
-> determine whether this is a new broadcast or not. If these incoming
-> broadcasts are accessing the sliding window simultaneously it could
-> be left in an inconsistent state. Therefore it is necessary to make
-> sure this access is atomic.
+On Tuesday 25 January 2011 22:49:29 Linus L=C3=BCssing wrote:
+> Commit 593180d8b00bd486187841468adb53ca1edf3950 introduced a bug leading
+> to a kernel panic when fetching the vis data on a vis server. That
+> commit forgot to rename one variable name, which this commit fixes now.
 
-Applied in revision 1913.
+Applied in revision 1914.
 
-Regards,
+Thanks,
 Marek
