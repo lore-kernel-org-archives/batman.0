@@ -1,13 +1,16 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Tue, 25 Jan 2011 22:49:29 +0100
-Message-Id: <1295992169-3797-1-git-send-email-linus.luessing@web.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 25 Jan 2011 22:53:32 +0100
+References: <1295733797-1552-1-git-send-email-lindner_marek@yahoo.de>
+	<1295738907-10092-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1295738907-10092-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix kernel panic when fetching
-	vis data on a vis server
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201101252253.33121.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: protect bit operations to
+	count OGMs with spinlock
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,35 +22,13 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Commit 593180d8b00bd486187841468adb53ca1edf3950 introduced a bug leading
-to a kernel panic when fetching the vis data on a vis server. That
-commit forgot to rename one variable name, which this commit fixes now.
+On Sunday 23 January 2011 00:28:27 Marek Lindner wrote:
+> Reported-by: Linus L=C3=BCssing <linus.luessing@web.de>
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 
-Reported-by: Russell Senior <russell@personaltelco.net>
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- vis.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Applied in revision 1912.
 
-diff --git a/batman-adv/vis.c b/batman-adv/vis.c
-index 69178d9..2cdf01c 100644
---- a/batman-adv/vis.c
-+++ b/batman-adv/vis.c
-@@ -268,10 +268,10 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
- 				buff_pos += sprintf(buff + buff_pos, "%pM,",
- 						entry->addr);
- 
--				for (i = 0; i < packet->entries; i++)
-+				for (j = 0; j < packet->entries; j++)
- 					buff_pos += vis_data_read_entry(
- 							buff + buff_pos,
--							&entries[i],
-+							&entries[j],
- 							entry->addr,
- 							entry->primary);
- 
--- 
-1.7.2.3
-
+Regards,
+Marek
