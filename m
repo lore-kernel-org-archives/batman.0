@@ -1,10 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 27 Jan 2011 14:56:09 +0100
-Message-Id: <1296136571-13226-3-git-send-email-sven@narfation.org>
+Date: Thu, 27 Jan 2011 14:56:10 +0100
+Message-Id: <1296136571-13226-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1296136571-13226-1-git-send-email-sven@narfation.org>
 References: <1296136571-13226-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: Remove unused definitions
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Remove declaration of
+	batman_skb_recv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,63 +19,59 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+batman_skb_recv can be defined in hard-interface.c as static because it is
+never used outside of that file.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- batman-adv/main.h |   15 ---------------
- 1 files changed, 0 insertions(+), 15 deletions(-)
+ batman-adv/hard-interface.c |   11 +++++++++--
+ batman-adv/hard-interface.h |    4 ----
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/batman-adv/main.h b/batman-adv/main.h
-index c239c97..b07968d 100644
---- a/batman-adv/main.h
-+++ b/batman-adv/main.h
-@@ -22,9 +22,6 @@
- #ifndef _NET_BATMAN_ADV_MAIN_H_
- #define _NET_BATMAN_ADV_MAIN_H_
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index 3ab9a20..ee847e3 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -34,6 +34,12 @@
+ /* protect update critical side of if_list - but not the content */
+ static DEFINE_SPINLOCK(if_list_lock);
  
--/* Kernel Programming */
--#define LINUX
--
- #define DRIVER_AUTHOR "Marek Lindner <lindner_marek@yahoo.de>, " \
- 		      "Simon Wunderlich <siwu@hrz.tu-chemnitz.de>"
- #define DRIVER_DESC   "B.A.T.M.A.N. advanced"
-@@ -54,7 +51,6 @@
++
++static int batman_skb_recv(struct sk_buff *skb,
++			   struct net_device *dev,
++			   struct packet_type *ptype,
++			   struct net_device *orig_dev);
++
+ static void hardif_free_rcu(struct rcu_head *rcu)
+ {
+ 	struct batman_if *batman_if;
+@@ -549,8 +555,9 @@ out:
  
- #define NUM_WORDS (TQ_LOCAL_WINDOW_SIZE / WORD_BIT_SIZE)
+ /* receive a packet with the batman ethertype coming on a hard
+  * interface */
+-int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+-	struct packet_type *ptype, struct net_device *orig_dev)
++static int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
++			   struct packet_type *ptype,
++			   struct net_device *orig_dev)
+ {
+ 	struct bat_priv *bat_priv;
+ 	struct batman_packet *batman_packet;
+diff --git a/batman-adv/hard-interface.h b/batman-adv/hard-interface.h
+index 30ec3b8..a42f5a4 100644
+--- a/batman-adv/hard-interface.h
++++ b/batman-adv/hard-interface.h
+@@ -35,10 +35,6 @@ struct batman_if *get_batman_if_by_netdev(struct net_device *net_dev);
+ int hardif_enable_interface(struct batman_if *batman_if, char *iface_name);
+ void hardif_disable_interface(struct batman_if *batman_if);
+ void hardif_remove_interfaces(void);
+-int batman_skb_recv(struct sk_buff *skb,
+-				struct net_device *dev,
+-				struct packet_type *ptype,
+-				struct net_device *orig_dev);
+ int hardif_min_mtu(struct net_device *soft_iface);
+ void update_min_mtu(struct net_device *soft_iface);
  
--#define PACKBUFF_SIZE 2000
- #define LOG_BUF_LEN 8192	  /* has to be a power of 2 */
- 
- #define VIS_INTERVAL 5000	/* 5 seconds */
-@@ -96,15 +92,11 @@
- #define DBG_ROUTES 2	/* route or hna added / changed / deleted */
- #define DBG_ALL 3
- 
--#define LOG_BUF_LEN 8192          /* has to be a power of 2 */
--
- 
- /*
-  *  Vis
-  */
- 
--/* #define VIS_SUBCLUSTERS_DISABLED */
--
- /*
-  * Kernel headers
-  */
-@@ -160,13 +152,6 @@ static inline void bat_dbg(char type __always_unused,
- }
- #endif
- 
--#define bat_warning(net_dev, fmt, arg...)				\
--	do {								\
--		struct net_device *_netdev = (net_dev);                 \
--		struct bat_priv *_batpriv = netdev_priv(_netdev);       \
--		bat_dbg(DBG_ALL, _batpriv, fmt, ## arg);		\
--		pr_warning("%s: " fmt, _netdev->name, ## arg);		\
--	} while (0)
- #define bat_info(net_dev, fmt, arg...)					\
- 	do {								\
- 		struct net_device *_netdev = (net_dev);                 \
 -- 
 1.7.2.3
 
