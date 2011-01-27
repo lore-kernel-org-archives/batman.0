@@ -1,16 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 27 Jan 2011 13:37:57 +0100
-References: <1296052208-6041-1-git-send-email-lindner_marek@yahoo.de>
-	<201101261602.38873.sven@narfation.org>
-In-Reply-To: <201101261602.38873.sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201101271337.58236.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: add raw wifi packet
-	decapsulation support
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 27 Jan 2011 14:56:07 +0100
+Message-Id: <1296136571-13226-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] Dead code cleanup
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,29 +14,12 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday 26 January 2011 16:02:32 Sven Eckelmann wrote:
-> Didn't we say yesterday that we must either use ntohs or only read the
-> first byte of the framecontrol? The last option which comes to my mind is
-> to define IEEE80211_FCTL_FTYPE and IEEE80211_FTYPE_DATA for big and little
-> endian independently.
+Hi,
 
-I must have misunderstood something but you are right - I'm going to change it 
-and publish a second patch.
+I started to go through the release todo and removed some dead code.
 
+Best regards,
+	Sven
 
-> > +       if (fc & IEEE80211_STYPE_QOS_DATA)
-> > +               hdr_len += 2;
-> 
-> Here are you testing only on bit. Are you sure that the other 3 bits aren't
-> interesting? At least one combination isn't well defined by the 802.11
-> standard from 2007 and some others are null data types.
-
-I'd claim we only care if it is QoS or not because all QoS packets have a 
-longer header (QoS control field). 
-The spec says: "bit 7 is set to 1 in the QoS data subtypes, which have QoS 
-Control fields in their MAC headers"
-
-Regards,
-Marek
