@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 27 Jan 2011 14:56:11 +0100
-Message-Id: <1296136571-13226-5-git-send-email-sven@narfation.org>
-In-Reply-To: <1296136571-13226-1-git-send-email-sven@narfation.org>
-References: <1296136571-13226-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: Remove unused variables
+Date: Thu, 27 Jan 2011 15:34:13 +0100
+Message-Id: <1296138853-17657-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1296136571-13226-5-git-send-email-sven@narfation.org>
+References: <1296136571-13226-5-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: Remove unused variables
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,9 +20,11 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+Remove best_router_tq which is only in master, but not in next.
+
  batman-adv/bat_debugfs.c |    4 +---
- batman-adv/routing.c     |    7 -------
- 2 files changed, 1 insertions(+), 10 deletions(-)
+ batman-adv/routing.c     |   10 ----------
+ 2 files changed, 1 insertions(+), 13 deletions(-)
 
 diff --git a/batman-adv/bat_debugfs.c b/batman-adv/bat_debugfs.c
 index 0ae81d0..d36d305 100644
@@ -47,7 +49,7 @@ index 0ae81d0..d36d305 100644
  
  	for (p = debug_log_buf; *p != 0; p++)
 diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 6168648..936b5f8 100644
+index 6168648..480c178 100644
 --- a/batman-adv/routing.c
 +++ b/batman-adv/routing.c
 @@ -866,11 +866,9 @@ static int recv_my_icmp_packet(struct bat_priv *bat_priv,
@@ -98,6 +100,30 @@ index 6168648..936b5f8 100644
  
  	/* decrement ttl */
  	icmp_packet->ttl--;
+@@ -1100,7 +1093,6 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 	struct neigh_node *router, *first_candidate, *tmp_neigh_node;
+ 	static uint8_t zero_mac[ETH_ALEN] = {0, 0, 0, 0, 0, 0};
+ 	int bonding_enabled;
+-	int best_router_tq;
+ 
+ 	if (!orig_node)
+ 		return NULL;
+@@ -1190,7 +1182,6 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 		/* if bonding is disabled, use the best of the
+ 		 * remaining candidates which are not using
+ 		 * this interface. */
+-		best_router_tq = 0;
+ 		list_for_each_entry_rcu(tmp_neigh_node,
+ 			&primary_orig_node->bond_list, bonding_list) {
+ 			if (!first_candidate)
+@@ -1203,7 +1194,6 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 				if ((!router) ||
+ 				(tmp_neigh_node->tq_avg > router->tq_avg)) {
+ 					router = tmp_neigh_node;
+-					best_router_tq = 0;
+ 				}
+ 		}
+ 
 -- 
 1.7.2.3
 
