@@ -1,14 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 27 Jan 2011 13:27:57 +0100
+Date: Thu, 27 Jan 2011 13:37:57 +0100
 References: <1296052208-6041-1-git-send-email-lindner_marek@yahoo.de>
-	<20110126154127.GA6813@lunn.ch>
-In-Reply-To: <20110126154127.GA6813@lunn.ch>
+	<201101261602.38873.sven@narfation.org>
+In-Reply-To: <201101261602.38873.sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201101271327.58266.lindner_marek@yahoo.de>
+Message-Id: <201101271337.58236.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: add raw wifi packet
 	decapsulation support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,37 +24,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Wednesday 26 January 2011 16:02:32 Sven Eckelmann wrote:
+> Didn't we say yesterday that we must either use ntohs or only read the
+> first byte of the framecontrol? The last option which comes to my mind is
+> to define IEEE80211_FCTL_FTYPE and IEEE80211_FTYPE_DATA for big and little
+> endian independently.
 
-Hi,
+I must have misunderstood something but you are right - I'm going to change it 
+and publish a second patch.
 
-> > +	shost = wifi_hdr->addr2;
-> > +	if (fc & IEEE80211_FCTL_FROMDS)
-> > +		shost = wifi_hdr->addr3;
-> > +	else if (fc & IEEE80211_FCTL_TODS)
-> > +		shost = wifi_hdr->addr4;
-> > +
-> > +	dhost = wifi_hdr->addr1;
-> > +	if (fc & IEEE80211_FCTL_TODS)
-> > +		dhost = wifi_hdr->addr3;
+
+> > +       if (fc & IEEE80211_STYPE_QOS_DATA)
+> > +               hdr_len += 2;
 > 
-> What would happen if you happened to pick up a WDS packet? Four
-> addresses in the packet. Do we see sensible addresses?
+> Here are you testing only on bit. Are you sure that the other 3 bits aren't
+> interesting? At least one combination isn't well defined by the 802.11
+> standard from 2007 and some others are null data types.
 
-we should - that is what addr4 is used for but I did not test it. Let me know 
-if it does not work for you.
+I'd claim we only care if it is QoS or not because all QoS packets have a 
+longer header (QoS control field). 
+The spec says: "bit 7 is set to 1 in the QoS data subtypes, which have QoS 
+Control fields in their MAC headers"
 
-
-> > +
-> > +	hdr_len = 24;
-> > +	if ((fc & IEEE80211_FCTL_FROMDS) && (fc & IEEE80211_FCTL_TODS))
-> > +		hdr_len = 30;
-> 
-> Again, WDS? We are now a few bytes out when decoding the rest of the
-> packet.
-
-I don't understand what you are trying to say here. Are you sure it is not 
-working or are you worried that WDS might not work ? If you have doubts please 
-explain them in more detail.
-
-Thanks,
+Regards,
 Marek
