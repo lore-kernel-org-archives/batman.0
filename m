@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 28 Jan 2011 18:34:06 +0100
-Message-Id: <1296236047-15200-2-git-send-email-sven@narfation.org>
+Date: Fri, 28 Jan 2011 18:34:07 +0100
+Message-Id: <1296236047-15200-3-git-send-email-sven@narfation.org>
 In-Reply-To: <1296236047-15200-1-git-send-email-sven@narfation.org>
 References: <1296236047-15200-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Remove vis info element in
-	free_info
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Make vis info stack
+	traversal threadsafe
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,28 +19,55 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The free_info function will be called when no reference to the info
-object exists anymore. It must be ensured that the allocated memory
-gets freed and not only the elements which are managed by the info
-object.
+The batman-adv vis server has to a stack which stores all information
+about packets which should be send later. This stack is protected
+with a spinlock that is used to prevent concurrent write access to it.
 
+The send_vis_packets function has to take all elements from the stack
+and send them to other hosts over the primary interface. The send will
+be initiated without the lock which protects the stack.
+
+The implementation using list_for_each_entry_safe has the problem that
+it stores the next element as "safe ptr" to allow the deletion of the
+current element in the list. The list may be modified during the
+unlock/lock pair in the loop body which may make the safe pointer
+not pointing to correct next element.
+
+It is safer to remove and use the first element from the stack until no
+elements are available. This does not need reduntant information which
+would have to be validated each time the lock was removed.
+
+Reported-by: Russell Senior <russell@personaltelco.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- batman-adv/vis.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ batman-adv/vis.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/batman-adv/vis.c b/batman-adv/vis.c
-index 9d2729c..584781e 100644
+index 584781e..323f013 100644
 --- a/batman-adv/vis.c
 +++ b/batman-adv/vis.c
-@@ -64,6 +64,7 @@ static void free_info(struct kref *ref)
+@@ -825,7 +825,7 @@ static void send_vis_packets(struct work_struct *work)
+ 		container_of(work, struct delayed_work, work);
+ 	struct bat_priv *bat_priv =
+ 		container_of(delayed_work, struct bat_priv, vis_work);
+-	struct vis_info *info, *temp;
++	struct vis_info *info;
  
- 	spin_unlock_bh(&bat_priv->vis_list_lock);
- 	kfree_skb(info->skb_packet);
-+	kfree(info);
- }
+ 	spin_lock_bh(&bat_priv->vis_hash_lock);
+ 	purge_vis_packets(bat_priv);
+@@ -835,8 +835,9 @@ static void send_vis_packets(struct work_struct *work)
+ 		send_list_add(bat_priv, bat_priv->my_vis_info);
+ 	}
  
- /* Compare two vis packets, used by the hashing algorithm */
+-	list_for_each_entry_safe(info, temp, &bat_priv->vis_send_list,
+-				 send_list) {
++	while (!list_empty(&bat_priv->vis_send_list)) {
++		info = list_first_entry(&bat_priv->vis_send_list,
++					typeof(*info), send_list);
+ 
+ 		kref_get(&info->refcount);
+ 		spin_unlock_bh(&bat_priv->vis_hash_lock);
 -- 
 1.7.2.3
 
