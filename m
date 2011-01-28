@@ -1,10 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 27 Jan 2011 15:34:13 +0100
-Message-Id: <1296138853-17657-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1296136571-13226-5-git-send-email-sven@narfation.org>
-References: <1296136571-13226-5-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: Remove unused variables
+Return-Path: <andrew@lunn.ch>
+Date: Fri, 28 Jan 2011 18:24:16 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20110128172416.GW23716@lunn.ch>
+References: <1296052208-6041-1-git-send-email-lindner_marek@yahoo.de>
+	<20110126154127.GA6813@lunn.ch>
+	<201101271327.58266.lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201101271327.58266.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: add raw wifi packet
+ decapsulation support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,114 +22,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Remove best_router_tq which is only in master, but not in next.
+On Thu, Jan 27, 2011 at 01:27:57PM +0100, Marek Lindner wrote:
+> 
+> Hi,
+> 
+> > > +	shost = wifi_hdr->addr2;
+> > > +	if (fc & IEEE80211_FCTL_FROMDS)
+> > > +		shost = wifi_hdr->addr3;
+> > > +	else if (fc & IEEE80211_FCTL_TODS)
+> > > +		shost = wifi_hdr->addr4;
+> > > +
+> > > +	dhost = wifi_hdr->addr1;
+> > > +	if (fc & IEEE80211_FCTL_TODS)
+> > > +		dhost = wifi_hdr->addr3;
+> > 
+> > What would happen if you happened to pick up a WDS packet? Four
+> > addresses in the packet. Do we see sensible addresses?
+> 
+> we should - that is what addr4 is used for but I did not test it. Let me know 
+> if it does not work for you.
+> 
+> 
+> > > +
+> > > +	hdr_len = 24;
+> > > +	if ((fc & IEEE80211_FCTL_FROMDS) && (fc & IEEE80211_FCTL_TODS))
+> > > +		hdr_len = 30;
+> > 
+> > Again, WDS? We are now a few bytes out when decoding the rest of the
+> > packet.
 
- batman-adv/bat_debugfs.c |    4 +---
- batman-adv/routing.c     |   10 ----------
- 2 files changed, 1 insertions(+), 13 deletions(-)
+OK. Sorry. I'm wrong.
 
-diff --git a/batman-adv/bat_debugfs.c b/batman-adv/bat_debugfs.c
-index 0ae81d0..d36d305 100644
---- a/batman-adv/bat_debugfs.c
-+++ b/batman-adv/bat_debugfs.c
-@@ -52,7 +52,6 @@ static void emit_log_char(struct debug_log *debug_log, char c)
- 
- static int fdebug_log(struct debug_log *debug_log, char *fmt, ...)
- {
--	int printed_len;
- 	va_list args;
- 	static char debug_log_buf[256];
- 	char *p;
-@@ -62,8 +61,7 @@ static int fdebug_log(struct debug_log *debug_log, char *fmt, ...)
- 
- 	spin_lock_bh(&debug_log->lock);
- 	va_start(args, fmt);
--	printed_len = vscnprintf(debug_log_buf, sizeof(debug_log_buf),
--				 fmt, args);
-+	vscnprintf(debug_log_buf, sizeof(debug_log_buf), fmt, args);
- 	va_end(args);
- 
- 	for (p = debug_log_buf; *p != 0; p++)
-diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 6168648..480c178 100644
---- a/batman-adv/routing.c
-+++ b/batman-adv/routing.c
-@@ -866,11 +866,9 @@ static int recv_my_icmp_packet(struct bat_priv *bat_priv,
- 	struct orig_node *orig_node = NULL;
- 	struct neigh_node *neigh_node = NULL;
- 	struct icmp_packet_rr *icmp_packet;
--	struct ethhdr *ethhdr;
- 	int ret = NET_RX_DROP;
- 
- 	icmp_packet = (struct icmp_packet_rr *)skb->data;
--	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	/* add data to device queue */
- 	if (icmp_packet->msg_type != ECHO_REQUEST) {
-@@ -904,7 +902,6 @@ static int recv_my_icmp_packet(struct bat_priv *bat_priv,
- 		goto out;
- 
- 	icmp_packet = (struct icmp_packet_rr *)skb->data;
--	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	memcpy(icmp_packet->dst, icmp_packet->orig, ETH_ALEN);
- 	memcpy(icmp_packet->orig,
-@@ -932,11 +929,9 @@ static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
- 	struct orig_node *orig_node = NULL;
- 	struct neigh_node *neigh_node = NULL;
- 	struct icmp_packet *icmp_packet;
--	struct ethhdr *ethhdr;
- 	int ret = NET_RX_DROP;
- 
- 	icmp_packet = (struct icmp_packet *)skb->data;
--	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	/* send TTL exceeded if packet is an echo request (traceroute) */
- 	if (icmp_packet->msg_type != ECHO_REQUEST) {
-@@ -971,7 +966,6 @@ static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
- 		goto out;
- 
- 	icmp_packet = (struct icmp_packet *)skb->data;
--	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	memcpy(icmp_packet->dst, icmp_packet->orig, ETH_ALEN);
- 	memcpy(icmp_packet->orig,
-@@ -1068,7 +1062,6 @@ int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if)
- 		goto out;
- 
- 	icmp_packet = (struct icmp_packet_rr *)skb->data;
--	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	/* decrement ttl */
- 	icmp_packet->ttl--;
-@@ -1100,7 +1093,6 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
- 	struct neigh_node *router, *first_candidate, *tmp_neigh_node;
- 	static uint8_t zero_mac[ETH_ALEN] = {0, 0, 0, 0, 0, 0};
- 	int bonding_enabled;
--	int best_router_tq;
- 
- 	if (!orig_node)
- 		return NULL;
-@@ -1190,7 +1182,6 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
- 		/* if bonding is disabled, use the best of the
- 		 * remaining candidates which are not using
- 		 * this interface. */
--		best_router_tq = 0;
- 		list_for_each_entry_rcu(tmp_neigh_node,
- 			&primary_orig_node->bond_list, bonding_list) {
- 			if (!first_candidate)
-@@ -1203,7 +1194,6 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
- 				if ((!router) ||
- 				(tmp_neigh_node->tq_avg > router->tq_avg)) {
- 					router = tmp_neigh_node;
--					best_router_tq = 0;
- 				}
- 		}
- 
--- 
-1.7.2.3
+What confused me is time spent debugging WDS in madwifi. It has macros
+similar to what you have:
 
+#define IEEE80211_FC1_DIR_NODS                  0x00    /* STA->STA */
+#define IEEE80211_FC1_DIR_TODS                  0x01    /* STA->AP  */
+#define IEEE80211_FC1_DIR_FROMDS                0x02    /* AP ->STA */
+#define IEEE80211_FC1_DIR_DSTODS                0x03    /* AP ->AP  */
+
+So i was expecting to see something like DSTODS. However the madwifi
+macros are for the complete DIR field, where as you are looking at
+individual bits. So 
+
+(fc & IEEE80211_FCTL_FROMDS) && (fc & IEEE80211_FCTL_TODS) 
+
+is equivalent to the madwifi IEEE80211_FC1_DIR_DSTODS.
+
+So you header length calculation looks O.K.
+
+   Andrew
