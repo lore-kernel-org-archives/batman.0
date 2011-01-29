@@ -1,15 +1,13 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sat, 29 Jan 2011 18:44:02 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20110129174402.GA11792@pandem0nium>
-References: <1296236047-15200-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
-Content-Disposition: inline
-In-Reply-To: <1296236047-15200-1-git-send-email-sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Remove vis info
-	on	hashing errors
+Return-Path: <bjo@nord-west.org>
+From: Bjoern Franke <bjo@nord-west.org>
+In-Reply-To: <201101282346.16035.clemens-john@gmx.de>
+References: <201101282346.16035.clemens-john@gmx.de>
+Content-Type: text/plain; charset="utf-8"
+Date: Sat, 29 Jan 2011 18:45:52 +0100
+Message-ID: <1296323152.2725.6.camel@mytilus>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] Connecting through Batman advanced interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,59 +21,22 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi,
 
---FCuugMFkClbJLl1L
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Am Freitag, den 28.01.2011, 23:46 +0100 schrieb Clemens John:
 
-Hello Sven,
+> What can I do?
+> I can not open a second wifi device in ap mode and add it to mesh. I know that 
+> this would be the best way but I´m trying this on an wrt54g and the b43 driver 
+> does not support multi essid.
 
-i've applied your patches in r1922-r1924.
+I think if we don't want to change back our configuration (batman-adv on
+vpn with its mtu-problems etc.) the simplest way would be connecting a
+usual router to the wrt54g.
 
-Thanks for your contribution
-	Simon
+regards
+Bjoern 
+-- 
+jabber: bjo@schafweide.org
+bjo.nord-west.org | nord-west.org | freifunk-ol.de
 
-On Fri, Jan 28, 2011 at 06:34:05PM +0100, Sven Eckelmann wrote:
-> A newly created vis info object must be removed when it couldn't be
-> added to the hash. The old_info which has to be replaced was already
-> removed and isn't related to the hash anymore.
->=20
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  batman-adv/vis.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/batman-adv/vis.c b/batman-adv/vis.c
-> index 2cdf01c..9d2729c 100644
-> --- a/batman-adv/vis.c
-> +++ b/batman-adv/vis.c
-> @@ -446,7 +446,7 @@ static struct vis_info *add_packet(struct bat_priv *b=
-at_priv,
->  			      info);
->  	if (hash_added < 0) {
->  		/* did not work (for some reason) */
-> -		kref_put(&old_info->refcount, free_info);
-> +		kref_put(&info->refcount, free_info);
->  		info =3D NULL;
->  	}
-> =20
-> --=20
-> 1.7.2.3
->=20
->=20
-
---FCuugMFkClbJLl1L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAk1EUeIACgkQrzg/fFk7axZBPACdGlEJPFM3QHpJU6EGScZmY4cv
-NagAn04CLAuxHnHkgE6ctm2PlESf5N//
-=ZEQV
------END PGP SIGNATURE-----
-
---FCuugMFkClbJLl1L--
