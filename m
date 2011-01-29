@@ -1,12 +1,14 @@
-Return-Path: <bjo@nord-west.org>
-From: Bjoern Franke <bjo@nord-west.org>
-In-Reply-To: <201101282346.16035.clemens-john@gmx.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 29 Jan 2011 19:00:50 +0100
 References: <201101282346.16035.clemens-john@gmx.de>
-Content-Type: text/plain; charset="utf-8"
-Date: Sat, 29 Jan 2011 18:45:52 +0100
-Message-ID: <1296323152.2725.6.camel@mytilus>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+	<1296323152.2725.6.camel@mytilus>
+In-Reply-To: <1296323152.2725.6.camel@mytilus>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201101291900.51081.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Connecting through Batman advanced interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,22 +23,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+
 Hi,
 
-Am Freitag, den 28.01.2011, 23:46 +0100 schrieb Clemens John:
+> I think if we don't want to change back our configuration (batman-adv on
+> vpn with its mtu-problems etc.) the simplest way would be connecting a
+> usual router to the wrt54g.
 
-> What can I do?
-> I can not open a second wifi device in ap mode and add it to mesh. I know that 
-> this would be the best way but I´m trying this on an wrt54g and the b43 driver 
-> does not support multi essid.
+I don't think the VPN is the problem here but the fact that you can't bridge 
+an interface running in adhoc mode. Ad-hoc is "lacks" a field in the wifi header 
+which makes bridging impossible.
+However, I agree with your proposed solution - another router connected to the 
+Ethernet of the wrt54g can solve the issue.
 
-I think if we don't want to change back our configuration (batman-adv on
-vpn with its mtu-problems etc.) the simplest way would be connecting a
-usual router to the wrt54g.
-
-regards
-Bjoern 
--- 
-jabber: bjo@schafweide.org
-bjo.nord-west.org | nord-west.org | freifunk-ol.de
-
+Regards,
+Marek
