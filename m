@@ -1,15 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
-Date: Sun, 30 Jan 2011 05:39:14 +0100
-Message-Id: <1296362366-3852-7-git-send-email-linus.luessing@saxnet.de>
+Date: Sun, 30 Jan 2011 05:39:15 +0100
+Message-Id: <1296362366-3852-8-git-send-email-linus.luessing@saxnet.de>
 In-Reply-To: <1296362366-3852-1-git-send-email-linus.luessing@saxnet.de>
 References: <1296362366-3852-1-git-send-email-linus.luessing@saxnet.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 06/18] batman-adv: Add length check for
-	(received) tracker packets
+Subject: [B.A.T.M.A.N.] [PATCH 07/18] batman-adv: Route multicast tracker
+	packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,75 +24,84 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@saxnet.de>
 
-Before/while a tracker packet is being searched for next hops for its
-destination entries, it will also be checked if the number of
-destination and mcast entries might exceed the tracker_packet_len.
-Otherwise we might read/write in unallocated memory.
-Such a broken tracker packet could potentially occure when we are going
-to reuse route_mcast_tracker_packet for tracker packets received from a
-neighbour node.
-
-In such a case, we are just reducing the stated mcast / dest numbers in
-the tracker packet to fit the size of the allocated buffer.
+This commit adds the ability to also forward a received multicast
+tracker packet (if necessary). It also makes use of the same splitting
+methods introduced with one of the previous commits, in case of multiple
+next hop destinations.
 
 Signed-off-by: Linus Lüssing <linus.luessing@saxnet.de>
 ---
- multicast.c |   25 +++++++++++++++++++++++--
- 1 files changed, 23 insertions(+), 2 deletions(-)
+ hard-interface.c |    5 +++++
+ routing.c        |   20 ++++++++++++++++++++
+ routing.h        |    1 +
+ 3 files changed, 26 insertions(+), 0 deletions(-)
 
-diff --git a/batman-adv/multicast.c b/batman-adv/multicast.c
-index f414394..ffeb800 100644
---- a/batman-adv/multicast.c
-+++ b/batman-adv/multicast.c
-@@ -403,17 +403,38 @@ out:
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index 1455e7f..8fa8ff7 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -631,6 +631,11 @@ static int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 		ret = recv_bcast_packet(skb, batman_if);
+ 		break;
+ 
++		/* multicast tracker packet */
++	case BAT_MCAST_TRACKER:
++		ret = recv_mcast_tracker_packet(skb, batman_if);
++		break;
++
+ 		/* vis packet */
+ 	case BAT_VIS:
+ 		ret = recv_vis_packet(skb, batman_if);
+diff --git a/batman-adv/routing.c b/batman-adv/routing.c
+index 81719d9..60dcf39 100644
+--- a/batman-adv/routing.c
++++ b/batman-adv/routing.c
+@@ -35,6 +35,7 @@
+ #include "gateway_common.h"
+ #include "gateway_client.h"
+ #include "unicast.h"
++#include "multicast.h"
+ 
+ void slide_own_bcast_window(struct batman_if *batman_if)
+ {
+@@ -1496,6 +1497,25 @@ out:
  	return ret;
  }
  
--/* Collect nexthops for all dest entries specified in this tracker packet */
-+/* Collect nexthops for all dest entries specified in this tracker packet.
-+ * It also reduces the number of elements in the tracker packet if they exceed
-+ * the buffers length (e.g. because of a received, broken tracker packet) to
-+ * avoid writing in unallocated memory. */
- static int tracker_next_hops(struct mcast_tracker_packet *tracker_packet,
-+			     int tracker_packet_len,
- 			     struct dest_entries_list *next_hops,
- 			     struct bat_priv *bat_priv)
++int recv_mcast_tracker_packet(struct sk_buff *skb, struct batman_if *recv_if)
++{
++	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
++	int hdr_size = sizeof(struct mcast_tracker_packet);
++
++	/* keep skb linear */
++	if (skb_linearize(skb) < 0)
++		return NET_RX_DROP;
++
++	if (check_unicast_packet(skb, hdr_size) < 0)
++		return NET_RX_DROP;
++
++	route_mcast_tracker_packet(skb, bat_priv);
++
++	dev_kfree_skb(skb);
++
++	return NET_RX_SUCCESS;
++}
++
+ int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if)
  {
- 	int num_next_hops = 0, ret;
- 	struct tracker_packet_state state;
-+	uint8_t *tail = (uint8_t *)tracker_packet + tracker_packet_len;
- 
- 	INIT_LIST_HEAD(&next_hops->list);
- 
- 	tracker_packet_for_each_dest(&state, tracker_packet) {
-+		/* avoid writing outside of unallocated memory later */
-+		if (state.dest_entry + ETH_ALEN > tail) {
-+			bat_dbg(DBG_BATMAN, bat_priv,
-+				"mcast tracker packet is broken, too many "
-+				"entries claimed for its length, repairing");
-+
-+			tracker_packet->num_mcast_entries = state.mcast_num;
-+
-+			if (state.dest_num) {
-+				tracker_packet->num_mcast_entries++;
-+				state.mcast_entry->num_dest = state.dest_num;
-+			}
-+
-+			break;
-+		}
-+
- 		ret = add_router_of_dest(next_hops, state.dest_entry,
- 					 bat_priv);
- 		if (!ret)
-@@ -521,7 +542,7 @@ void route_mcast_tracker_packet(struct sk_buff *skb,
- 	int num_next_hops;
- 
- 	num_next_hops = tracker_next_hops((struct mcast_tracker_packet*)
--				skb->data, &next_hops, bat_priv);
-+				skb->data, skb->len, &next_hops, bat_priv);
- 	if (!num_next_hops)
- 		return;
- 
+ 	struct vis_packet *vis_packet;
+diff --git a/batman-adv/routing.h b/batman-adv/routing.h
+index d138644..83f2752 100644
+--- a/batman-adv/routing.h
++++ b/batman-adv/routing.h
+@@ -38,6 +38,7 @@ int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
++int recv_mcast_tracker_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_bat_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ struct neigh_node *find_router(struct bat_priv *bat_priv,
 -- 
 1.7.2.3
 
