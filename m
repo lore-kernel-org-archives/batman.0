@@ -1,13 +1,15 @@
-Return-Path: <batman@kevinsteen.net>
-Message-ID: <4D47E5A4.2020005@kevinsteen.net>
-Date: Tue, 01 Feb 2011 10:51:16 +0000
-From: Kevin Steen <batman@kevinsteen.net>
-MIME-Version: 1.0
-References: <201101282346.16035.clemens-john@gmx.de>	<1296323152.2725.6.camel@mytilus>	<201101291900.51081.lindner_marek@yahoo.de>
-	<201101311933.01581.clemens-john@gmx.de>
+Return-Path: <bjo@nord-west.org>
+From: Bjoern Franke <bjo@nord-west.org>
 In-Reply-To: <201101311933.01581.clemens-john@gmx.de>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
+References: <201101282346.16035.clemens-john@gmx.de>
+	<1296323152.2725.6.camel@mytilus>
+	<201101291900.51081.lindner_marek@yahoo.de>
+	<201101311933.01581.clemens-john@gmx.de>
+Content-Type: text/plain; charset="utf-8"
+Date: Tue, 01 Feb 2011 13:12:55 +0100
+Message-ID: <1296562375.26635.5.camel@ostrea>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Subject: Re: [B.A.T.M.A.N.] Connecting through Batman advanced interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,41 +24,35 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On 31/01/11 18:32, Clemens John wrote:
-> Am Samstag 29 Januar 2011, 19:00:50 schrieb Marek Lindner:
->> Hi,
->>
->>> I think if we don't want to change back our configuration (batman-adv on
->>> vpn with its mtu-problems etc.) the simplest way would be connecting a
->>> usual router to the wrt54g.
->> I don't think the VPN is the problem here but the fact that you can't
->> bridge an interface running in adhoc mode. Ad-hoc is "lacks" a field in
->> the wifi header which makes bridging impossible.
->> However, I agree with your proposed solution - another router connected =
-to
->> the Ethernet of the wrt54g can solve the issue.
-> This is not possible in this case (I don=B4t have another router).
->
-> Is there onother (maybe harder) way or a hack to do get the same result l=
-ike
+Hi,
+
+> > I don't think the VPN is the problem here but the fact that you can't
+> > bridge an interface running in adhoc mode. Ad-hoc is "lacks" a field in
+> > the wifi header which makes bridging impossible.
+> > However, I agree with your proposed solution - another router connected to
+> > the Ethernet of the wrt54g can solve the issue.
+> 
+> This is not possible in this case (I don´t have another router).
+
+Does Franco have another router which he could connect to the wrt54g? 
+
+> Is there onother (maybe harder) way or a hack to do get the same result like 
 > when bridging two interfaces? Maybe with iptables?
->
-> Or does anyone know what the status of multiple ssid on wrt54g with kerne=
-l 2.6
+
+I think this would break our setup.
+
+> Or does anyone know what the status of multiple ssid on wrt54g with kernel 2.6 
 > is?
->
-> Regards
-> Clemens
-If your non-batman clients don't need incoming connections, you could=20
-NAT outgoing connections :
-   [client]-->[adhoc ath1]-->NAT-->[br-mesh]
-You would have to run a DHCP server on the ath1 interface to give those=20
-clients a private IP and tell them to use the private IP on ath1 as=20
-their router.
 
--Kevin
+Maybe we should ask here:
+http://wireless.kernel.org/en/users/Drivers/b43#support
 
----
-Have a vacancy for a Network Engineer/IT guy in London, UK? Please let me k=
-now.
+I have no experience with brcm-chips due to I have only a brcm4318 in my
+laptop.
+
+regards
+Bjoern
+-- 
+jabber: bjo@schafweide.org
+bjo.nord-west.org | nord-west.org | freifunk-ol.de
 
