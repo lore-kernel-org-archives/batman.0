@@ -1,16 +1,16 @@
-Return-Path: <bjo@nord-west.org>
-From: Bjoern Franke <bjo@nord-west.org>
-In-Reply-To: <201101311933.01581.clemens-john@gmx.de>
-References: <201101282346.16035.clemens-john@gmx.de>
-	<1296323152.2725.6.camel@mytilus>
-	<201101291900.51081.lindner_marek@yahoo.de>
-	<201101311933.01581.clemens-john@gmx.de>
-Content-Type: text/plain; charset="utf-8"
-Date: Tue, 01 Feb 2011 13:12:55 +0100
-Message-ID: <1296562375.26635.5.camel@ostrea>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] Connecting through Batman advanced interface
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 1 Feb 2011 23:08:34 +0100
+References: <1296052208-6041-1-git-send-email-lindner_marek@yahoo.de>
+	<1296317807-13584-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1296317807-13584-1-git-send-email-lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201102012308.35658.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: add raw wifi packet
+	decapsulation support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,35 +24,10 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi,
+On Saturday 29 January 2011 17:16:47 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 
-> > I don't think the VPN is the problem here but the fact that you can't
-> > bridge an interface running in adhoc mode. Ad-hoc is "lacks" a field in
-> > the wifi header which makes bridging impossible.
-> > However, I agree with your proposed solution - another router connected to
-> > the Ethernet of the wrt54g can solve the issue.
-> 
-> This is not possible in this case (I don´t have another router).
+Applied in revision 1929.
 
-Does Franco have another router which he could connect to the wrt54g? 
-
-> Is there onother (maybe harder) way or a hack to do get the same result like 
-> when bridging two interfaces? Maybe with iptables?
-
-I think this would break our setup.
-
-> Or does anyone know what the status of multiple ssid on wrt54g with kernel 2.6 
-> is?
-
-Maybe we should ask here:
-http://wireless.kernel.org/en/users/Drivers/b43#support
-
-I have no experience with brcm-chips due to I have only a brcm4318 in my
-laptop.
-
-regards
-Bjoern
--- 
-jabber: bjo@schafweide.org
-bjo.nord-west.org | nord-west.org | freifunk-ol.de
-
+Regards,
+Marek
