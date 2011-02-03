@@ -1,14 +1,14 @@
-Return-Path: <linus.luessing@ascom.ch>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Thu,  3 Feb 2011 15:43:21 +0100
-Message-Id: <1296744201-11542-3-git-send-email-linus.luessing@ascom.ch>
+Return-Path: <linus.luessing@ascom.CH>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.CH>
+Date: Thu,  3 Feb 2011 15:43:20 +0100
+Message-Id: <1296744201-11542-2-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1296668238-19323-1-git-send-email-linus.luessing@ascom.ch>
 References: <1296668238-19323-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Increase orig_node refcount
-	before releasing rcu read lock
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: add __rcu annotations for
+	gw_node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,42 +21,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.CH>
 
-When unicast_send_skb() is increasing the orig_node's refcount another
-thread might have been freeing this orig_node already. We need to
-increase the refcount in the rcu read lock protected area to avoid that.
+Add __rcu annotations for rcu protected pointers in the gateway code
+to allow sparse checking.
 
 Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
- gateway_client.c |    1 +
- unicast.c        |    1 -
- 2 files changed, 1 insertions(+), 1 deletions(-)
+ compat.h |    6 ++++++
+ types.h  |    4 ++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
-index ee71335..15ea268 100644
---- a/batman-adv/gateway_client.c
-+++ b/batman-adv/gateway_client.c
-@@ -57,6 +57,7 @@ void *gw_get_selected(struct bat_priv *bat_priv)
+diff --git a/batman-adv/compat.h b/batman-adv/compat.h
+index a76d0be..4e89049 100644
+--- a/batman-adv/compat.h
++++ b/batman-adv/compat.h
+@@ -270,4 +270,10 @@ int bat_seq_printf(struct seq_file *m, const char *f, ...);
  
- 	orig_node = rcu_dereference(curr_gateway_tmp->orig_node);
- 	if (orig_node) {
-+		kref_get(&orig_node->refcount);
- 		rcu_read_unlock();
- 		return NULL;
- 	}
-diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
-index 8816102..b42e40e 100644
---- a/batman-adv/unicast.c
-+++ b/batman-adv/unicast.c
-@@ -310,7 +310,6 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
- 			goto trans_search;
- 		}
+ #endif /* < KERNEL_VERSION(2, 6, 33) */
  
--		kref_get(&orig_node->refcount);
- 		rcu_read_unlock();
- 		goto find_router;
- 	}
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
++
++#define __rcu
++
++#endif /* < KERNEL_VERSION(2, 6, 36) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/batman-adv/types.h b/batman-adv/types.h
+index 30d10c0..2cb0c31 100644
+--- a/batman-adv/types.h
++++ b/batman-adv/types.h
+@@ -98,7 +98,7 @@ struct orig_node {
+ 
+ struct gw_node {
+ 	struct hlist_node list;
+-	struct orig_node *orig_node;
++	struct orig_node __rcu *orig_node;	/* rcu protected pointer */
+ 	unsigned long deleted;
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
+@@ -172,7 +172,7 @@ struct bat_priv {
+ 	struct delayed_work hna_work;
+ 	struct delayed_work orig_work;
+ 	struct delayed_work vis_work;
+-	struct gw_node *curr_gw;
++	struct gw_node __rcu *curr_gw;	/* rcu protected pointer */
+ 	struct vis_info *my_vis_info;
+ };
+ 
 -- 
 1.7.2.3
 
