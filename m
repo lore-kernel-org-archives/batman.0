@@ -1,12 +1,14 @@
-Return-Path: <linus.luessing@ascom.CH>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.CH>
-Date: Thu,  3 Feb 2011 15:41:03 +0100
-Message-Id: <1296744063-11440-1-git-send-email-linus.luessing@ascom.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 3 Feb 2011 18:02:51 +0100
+References: <1296352379-1546-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1296352379-1546-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Disallow originator addressing
-	within mesh layer
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201102031802.52134.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Reordered rcu refcounting
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,56 +20,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.CH>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-For a host in the mesh network, the batman layer should be transparent.
-However, we had one exception, data packets within the mesh network
-which have the same destination as a originator are being routed to
-that node, although there is no host that node's bat0 interface and
-therefore gets dropped anyway. This commit removes this exception.
 
-Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
----
- unicast.c |   22 +++-------------------
- 1 files changed, 3 insertions(+), 19 deletions(-)
+Hi,
 
-diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
-index 6a9ab61..9b13565 100644
---- a/batman-adv/unicast.c
-+++ b/batman-adv/unicast.c
-@@ -295,28 +295,12 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
- 	/* get routing information */
- 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
- 		orig_node = (struct orig_node *)gw_get_selected(bat_priv);
--		if (!orig_node)
--			goto trans_search;
--
--		kref_get(&orig_node->refcount);
--		goto find_router;
--	} else {
--		rcu_read_lock();
--		orig_node = ((struct orig_node *)hash_find(bat_priv->orig_hash,
--							   compare_orig,
--							   choose_orig,
--							   ethhdr->h_dest));
--		if (!orig_node) {
--			rcu_read_unlock();
--			goto trans_search;
-+		if (orig_node) {
-+			kref_get(&orig_node->refcount);
-+			goto find_router;
- 		}
--
--		kref_get(&orig_node->refcount);
--		rcu_read_unlock();
--		goto find_router;
- 	}
- 
--trans_search:
- 	/* check for hna host - increases orig_node refcount */
- 	orig_node = transtable_search(bat_priv, ethhdr->h_dest);
- 
--- 
-1.7.2.3
+> I told Linus and Marek that the implementation of some datastructures using
+> reference counting and RCUs must be redesigned. The problem is that
+> call_rcu should only be used when the reference count is zero because
+> multiple call_rcu cannot be initiated at the same time. The next problem
+> is that we may try to access an element with the refcount 0 when we try to
+> traverse a rcu protected list. This problem cannot be solved by kref -
+> thus we have to use atomic_t again to not increase the reference count
+> when it was already zero.
 
+I reviewed the posted patches, filled in the missing parts and fixed some bugs 
+along the way. Feel free to comment.
+
+@Linus: I believe it would be a good idea if your gateway patch was based on 
+this patchset.
+
+Cheers,
+Marek
