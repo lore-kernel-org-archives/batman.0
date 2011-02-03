@@ -1,11 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu,  3 Feb 2011 18:03:57 +0100
-Message-Id: <1296752637-4646-4-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <201102031802.52134.lindner_marek@yahoo.de>
-References: <201102031802.52134.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: Correct rcu refcounting for
-	neigh_node
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 3 Feb 2011 18:56:37 +0100
+References: <1296668238-19323-1-git-send-email-linus.luessing@ascom.ch>
+	<1296744201-11542-1-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1296744201-11542-1-git-send-email-linus.luessing@ascom.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4133594.CVSjBksrfP";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201102031856.39736.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Correct rcu refcounting
+	for gw_node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,468 +23,114 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+Cc: Linus =?iso-8859-1?q?L=FCssing?= <linus.luessing@ascom.ch>
 
-From: Sven Eckelmann <sven@narfation.org>
+--nextPart4133594.CVSjBksrfP
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-It might be possible that 2 threads access the same data in the same
-rcu grace period. The first thread calls call_rcu() to decrement the
-refcount and free the data while the second thread increases the
-refcount to use the data. To avoid this race condition all refcount
-operations have to be atomic.
+> For another the rcu protected macros rcu_dereference() and
+> rcu_assign_pointer() for the bat_priv->curr_gw and curr_gw->orig_node
+> need to be used.
 
-Reported-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- batman-adv/icmp_socket.c |    7 ++-
- batman-adv/originator.c  |   26 ++++---------
- batman-adv/originator.h  |    3 +-
- batman-adv/routing.c     |   93 ++++++++++++++++++++++++++++++++-------------
- batman-adv/types.h       |    3 +-
- batman-adv/unicast.c     |    2 +-
- batman-adv/vis.c         |    8 +++-
- 7 files changed, 87 insertions(+), 55 deletions(-)
+What? Since when is curr_gw::orig_node rcu protected?
 
-diff --git a/batman-adv/icmp_socket.c b/batman-adv/icmp_socket.c
-index 10a969c..046f976 100644
---- a/batman-adv/icmp_socket.c
-+++ b/batman-adv/icmp_socket.c
-@@ -230,10 +230,11 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
- 	kref_get(&orig_node->refcount);
- 	neigh_node = orig_node->router;
- 
--	if (!neigh_node)
-+	if (!neigh_node || !atomic_inc_not_zero(&neigh_node->refcount)) {
-+		neigh_node = NULL;
- 		goto unlock;
-+	}
- 
--	kref_get(&neigh_node->refcount);
- 	rcu_read_unlock();
- 
- 	if (!neigh_node->if_incoming)
-@@ -261,7 +262,7 @@ free_skb:
- 	kfree_skb(skb);
- out:
- 	if (neigh_node)
--		kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+		neigh_node_free_ref(neigh_node);
- 	if (orig_node)
- 		kref_put(&orig_node->refcount, orig_node_free_ref);
- 	return len;
-diff --git a/batman-adv/originator.c b/batman-adv/originator.c
-index e8a8473..bde9778 100644
---- a/batman-adv/originator.c
-+++ b/batman-adv/originator.c
-@@ -56,28 +56,18 @@ err:
- 	return 0;
- }
- 
--void neigh_node_free_ref(struct kref *refcount)
--{
--	struct neigh_node *neigh_node;
--
--	neigh_node = container_of(refcount, struct neigh_node, refcount);
--	kfree(neigh_node);
--}
--
- static void neigh_node_free_rcu(struct rcu_head *rcu)
- {
- 	struct neigh_node *neigh_node;
- 
- 	neigh_node = container_of(rcu, struct neigh_node, rcu);
--	kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+	kfree(neigh_node);
- }
- 
--void neigh_node_free_rcu_bond(struct rcu_head *rcu)
-+void neigh_node_free_ref(struct neigh_node *neigh_node)
- {
--	struct neigh_node *neigh_node;
--
--	neigh_node = container_of(rcu, struct neigh_node, rcu_bond);
--	kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+	if (atomic_dec_and_test(&neigh_node->refcount))
-+		call_rcu(&neigh_node->rcu, neigh_node_free_rcu);
- }
- 
- struct neigh_node *create_neighbor(struct orig_node *orig_node,
-@@ -101,7 +91,7 @@ struct neigh_node *create_neighbor(struct orig_node *orig_node,
- 	memcpy(neigh_node->addr, neigh, ETH_ALEN);
- 	neigh_node->orig_node = orig_neigh_node;
- 	neigh_node->if_incoming = if_incoming;
--	kref_init(&neigh_node->refcount);
-+	atomic_set(&neigh_node->refcount, 1);
- 
- 	spin_lock_bh(&orig_node->neigh_list_lock);
- 	hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
-@@ -123,14 +113,14 @@ void orig_node_free_ref(struct kref *refcount)
- 	list_for_each_entry_safe(neigh_node, tmp_neigh_node,
- 				 &orig_node->bond_list, bonding_list) {
- 		list_del_rcu(&neigh_node->bonding_list);
--		call_rcu(&neigh_node->rcu_bond, neigh_node_free_rcu_bond);
-+		neigh_node_free_ref(neigh_node);
- 	}
- 
- 	/* for all neighbors towards this originator ... */
- 	hlist_for_each_entry_safe(neigh_node, node, node_tmp,
- 				  &orig_node->neigh_list, list) {
- 		hlist_del_rcu(&neigh_node->list);
--		call_rcu(&neigh_node->rcu, neigh_node_free_rcu);
-+		neigh_node_free_ref(neigh_node);
- 	}
- 
- 	spin_unlock_bh(&orig_node->neigh_list_lock);
-@@ -311,7 +301,7 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
- 
- 			hlist_del_rcu(&neigh_node->list);
- 			bonding_candidate_del(orig_node, neigh_node);
--			call_rcu(&neigh_node->rcu, neigh_node_free_rcu);
-+			neigh_node_free_ref(neigh_node);
- 		} else {
- 			if ((!*best_neigh_node) ||
- 			    (neigh_node->tq_avg > (*best_neigh_node)->tq_avg))
-diff --git a/batman-adv/originator.h b/batman-adv/originator.h
-index 360dfd1..84d96e2 100644
---- a/batman-adv/originator.h
-+++ b/batman-adv/originator.h
-@@ -26,13 +26,12 @@ int originator_init(struct bat_priv *bat_priv);
- void originator_free(struct bat_priv *bat_priv);
- void purge_orig_ref(struct bat_priv *bat_priv);
- void orig_node_free_ref(struct kref *refcount);
--void neigh_node_free_rcu_bond(struct rcu_head *rcu);
- struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr);
- struct neigh_node *create_neighbor(struct orig_node *orig_node,
- 				   struct orig_node *orig_neigh_node,
- 				   uint8_t *neigh,
- 				   struct batman_if *if_incoming);
--void neigh_node_free_ref(struct kref *refcount);
-+void neigh_node_free_ref(struct neigh_node *neigh_node);
- int orig_seq_print_text(struct seq_file *seq, void *offset);
- int orig_hash_add_if(struct batman_if *batman_if, int max_if_num);
- int orig_hash_del_if(struct batman_if *batman_if, int max_if_num);
-diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 2861f18..0d6a629 100644
---- a/batman-adv/routing.c
-+++ b/batman-adv/routing.c
-@@ -118,12 +118,12 @@ static void update_route(struct bat_priv *bat_priv,
- 			orig_node->router->addr);
- 	}
- 
--	if (neigh_node)
--		kref_get(&neigh_node->refcount);
-+	if (neigh_node && !atomic_inc_not_zero(&neigh_node->refcount))
-+		neigh_node = NULL;
- 	neigh_node_tmp = orig_node->router;
- 	orig_node->router = neigh_node;
- 	if (neigh_node_tmp)
--		kref_put(&neigh_node_tmp->refcount, neigh_node_free_ref);
-+		neigh_node_free_ref(neigh_node_tmp);
- }
- 
- 
-@@ -175,7 +175,11 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 		if (!neigh_node)
- 			goto unlock;
- 
--		kref_get(&neigh_node->refcount);
-+		if (!atomic_inc_not_zero(&neigh_node->refcount)) {
-+			neigh_node = NULL;
-+			goto unlock;
-+		}
-+
- 		rcu_read_unlock();
- 
- 		neigh_node->last_valid = jiffies;
-@@ -200,7 +204,11 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 		if (!neigh_node)
- 			goto unlock;
- 
--		kref_get(&neigh_node->refcount);
-+		if (!atomic_inc_not_zero(&neigh_node->refcount)) {
-+			neigh_node = NULL;
-+			goto unlock;
-+		}
-+
- 		rcu_read_unlock();
- 	}
- 
-@@ -262,7 +270,7 @@ unlock:
- 	rcu_read_unlock();
- out:
- 	if (neigh_node)
--		kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+		neigh_node_free_ref(neigh_node);
- 	return ret;
- }
- 
-@@ -275,8 +283,8 @@ void bonding_candidate_del(struct orig_node *orig_node,
- 		goto out;
- 
- 	list_del_rcu(&neigh_node->bonding_list);
--	call_rcu(&neigh_node->rcu_bond, neigh_node_free_rcu_bond);
- 	INIT_LIST_HEAD(&neigh_node->bonding_list);
-+	neigh_node_free_ref(neigh_node);
- 	atomic_dec(&orig_node->bond_candidates);
- 
- out:
-@@ -337,8 +345,10 @@ static void bonding_candidate_add(struct orig_node *orig_node,
- 	if (!list_empty(&neigh_node->bonding_list))
- 		goto out;
- 
-+	if (!atomic_inc_not_zero(&neigh_node->refcount))
-+		goto out;
-+
- 	list_add_rcu(&neigh_node->bonding_list, &orig_node->bond_list);
--	kref_get(&neigh_node->refcount);
- 	atomic_inc(&orig_node->bond_candidates);
- 	goto out;
- 
-@@ -382,7 +392,10 @@ static void update_orig(struct bat_priv *bat_priv,
- 	hlist_for_each_entry_rcu(tmp_neigh_node, node,
- 				 &orig_node->neigh_list, list) {
- 		if (compare_orig(tmp_neigh_node->addr, ethhdr->h_source) &&
--		    (tmp_neigh_node->if_incoming == if_incoming)) {
-+		    (tmp_neigh_node->if_incoming == if_incoming) &&
-+		     atomic_inc_not_zero(&tmp_neigh_node->refcount)) {
-+			if (neigh_node)
-+				neigh_node_free_ref(neigh_node);
- 			neigh_node = tmp_neigh_node;
- 			continue;
- 		}
-@@ -409,11 +422,15 @@ static void update_orig(struct bat_priv *bat_priv,
- 		kref_put(&orig_tmp->refcount, orig_node_free_ref);
- 		if (!neigh_node)
- 			goto unlock;
-+
-+		if (!atomic_inc_not_zero(&neigh_node->refcount)) {
-+			neigh_node = NULL;
-+			goto unlock;
-+		}
- 	} else
- 		bat_dbg(DBG_BATMAN, bat_priv,
- 			"Updating existing last-hop neighbor of originator\n");
- 
--	kref_get(&neigh_node->refcount);
- 	rcu_read_unlock();
- 
- 	orig_node->flags = batman_packet->flags;
-@@ -490,7 +507,7 @@ unlock:
- 	rcu_read_unlock();
- out:
- 	if (neigh_node)
--		kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+		neigh_node_free_ref(neigh_node);
- }
- 
- /* checks whether the host restarted and is in the protection time.
-@@ -894,7 +911,11 @@ static int recv_my_icmp_packet(struct bat_priv *bat_priv,
- 	if (!neigh_node)
- 		goto unlock;
- 
--	kref_get(&neigh_node->refcount);
-+	if (!atomic_inc_not_zero(&neigh_node->refcount)) {
-+		neigh_node = NULL;
-+		goto unlock;
-+	}
-+
- 	rcu_read_unlock();
- 
- 	/* create a copy of the skb, if needed, to modify it. */
-@@ -917,7 +938,7 @@ unlock:
- 	rcu_read_unlock();
- out:
- 	if (neigh_node)
--		kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+		neigh_node_free_ref(neigh_node);
- 	if (orig_node)
- 		kref_put(&orig_node->refcount, orig_node_free_ref);
- 	return ret;
-@@ -958,7 +979,11 @@ static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
- 	if (!neigh_node)
- 		goto unlock;
- 
--	kref_get(&neigh_node->refcount);
-+	if (!atomic_inc_not_zero(&neigh_node->refcount)) {
-+		neigh_node = NULL;
-+		goto unlock;
-+	}
-+
- 	rcu_read_unlock();
- 
- 	/* create a copy of the skb, if needed, to modify it. */
-@@ -981,7 +1006,7 @@ unlock:
- 	rcu_read_unlock();
- out:
- 	if (neigh_node)
--		kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+		neigh_node_free_ref(neigh_node);
- 	if (orig_node)
- 		kref_put(&orig_node->refcount, orig_node_free_ref);
- 	return ret;
-@@ -1054,7 +1079,11 @@ int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if)
- 	if (!neigh_node)
- 		goto unlock;
- 
--	kref_get(&neigh_node->refcount);
-+	if (!atomic_inc_not_zero(&neigh_node->refcount)) {
-+		neigh_node = NULL;
-+		goto unlock;
-+	}
-+
- 	rcu_read_unlock();
- 
- 	/* create a copy of the skb, if needed, to modify it. */
-@@ -1075,7 +1104,7 @@ unlock:
- 	rcu_read_unlock();
- out:
- 	if (neigh_node)
--		kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+		neigh_node_free_ref(neigh_node);
- 	if (orig_node)
- 		kref_put(&orig_node->refcount, orig_node_free_ref);
- 	return ret;
-@@ -1108,12 +1137,11 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
- 	/* select default router to output */
- 	router = orig_node->router;
- 	router_orig = orig_node->router->orig_node;
--	if (!router_orig) {
-+	if (!router_orig || !atomic_inc_not_zero(&router->refcount)) {
- 		rcu_read_unlock();
- 		return NULL;
- 	}
- 
--
- 	if ((!recv_if) && (!bonding_enabled))
- 		goto return_router;
- 
-@@ -1146,6 +1174,7 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
- 	 * is is not on the interface where the packet came
- 	 * in. */
- 
-+	neigh_node_free_ref(router);
- 	first_candidate = NULL;
- 	router = NULL;
- 
-@@ -1158,16 +1187,23 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
- 			if (!first_candidate)
- 				first_candidate = tmp_neigh_node;
- 			/* recv_if == NULL on the first node. */
--			if (tmp_neigh_node->if_incoming != recv_if) {
-+			if (tmp_neigh_node->if_incoming != recv_if &&
-+			    atomic_inc_not_zero(&tmp_neigh_node->refcount)) {
- 				router = tmp_neigh_node;
- 				break;
- 			}
- 		}
- 
- 		/* use the first candidate if nothing was found. */
--		if (!router)
-+		if (!router && first_candidate &&
-+		    atomic_inc_not_zero(&first_candidate->refcount))
- 			router = first_candidate;
- 
-+		if (!router) {
-+			rcu_read_unlock();
-+			return NULL;
-+		}
-+
- 		/* selected should point to the next element
- 		 * after the current router */
- 		spin_lock_bh(&primary_orig_node->neigh_list_lock);
-@@ -1188,21 +1224,24 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
- 				first_candidate = tmp_neigh_node;
- 
- 			/* recv_if == NULL on the first node. */
--			if (tmp_neigh_node->if_incoming != recv_if)
-+			if (tmp_neigh_node->if_incoming != recv_if &&
-+			    atomic_inc_not_zero(&tmp_neigh_node->refcount)) {
- 				/* if we don't have a router yet
- 				 * or this one is better, choose it. */
- 				if ((!router) ||
--				(tmp_neigh_node->tq_avg > router->tq_avg)) {
-+				    (tmp_neigh_node->tq_avg > router->tq_avg))
- 					router = tmp_neigh_node;
--				}
-+				else
-+					neigh_node_free_ref(tmp_neigh_node);
-+			}
- 		}
- 
- 		/* use the first candidate if nothing was found. */
--		if (!router)
-+		if (!router && first_candidate &&
-+		    atomic_inc_not_zero(&first_candidate->refcount))
- 			router = first_candidate;
- 	}
- return_router:
--	kref_get(&router->refcount);
- 	rcu_read_unlock();
- 	return router;
- }
-@@ -1315,7 +1354,7 @@ unlock:
- 	rcu_read_unlock();
- out:
- 	if (neigh_node)
--		kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+		neigh_node_free_ref(neigh_node);
- 	if (orig_node)
- 		kref_put(&orig_node->refcount, orig_node_free_ref);
- 	return ret;
-diff --git a/batman-adv/types.h b/batman-adv/types.h
-index 317ede8..ee77d48 100644
---- a/batman-adv/types.h
-+++ b/batman-adv/types.h
-@@ -119,9 +119,8 @@ struct neigh_node {
- 	struct list_head bonding_list;
- 	unsigned long last_valid;
- 	unsigned long real_bits[NUM_WORDS];
--	struct kref refcount;
-+	atomic_t refcount;
- 	struct rcu_head rcu;
--	struct rcu_head rcu_bond;
- 	struct orig_node *orig_node;
- 	struct batman_if *if_incoming;
- };
-diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
-index 6a9ab61..580b547 100644
---- a/batman-adv/unicast.c
-+++ b/batman-adv/unicast.c
-@@ -363,7 +363,7 @@ find_router:
- 
- out:
- 	if (neigh_node)
--		kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+		neigh_node_free_ref(neigh_node);
- 	if (orig_node)
- 		kref_put(&orig_node->refcount, orig_node_free_ref);
- 	if (ret == 1)
-diff --git a/batman-adv/vis.c b/batman-adv/vis.c
-index 191401b..c1c3258 100644
---- a/batman-adv/vis.c
-+++ b/batman-adv/vis.c
-@@ -776,7 +776,11 @@ static void unicast_vis_packet(struct bat_priv *bat_priv,
- 	if (!neigh_node)
- 		goto unlock;
- 
--	kref_get(&neigh_node->refcount);
-+	if (!atomic_inc_not_zero(&neigh_node->refcount)) {
-+		neigh_node = NULL;
-+		goto unlock;
-+	}
-+
- 	rcu_read_unlock();
- 
- 	skb = skb_clone(info->skb_packet, GFP_ATOMIC);
-@@ -790,7 +794,7 @@ unlock:
- 	rcu_read_unlock();
- out:
- 	if (neigh_node)
--		kref_put(&neigh_node->refcount, neigh_node_free_ref);
-+		neigh_node_free_ref(neigh_node);
- 	if (orig_node)
- 		kref_put(&orig_node->refcount, orig_node_free_ref);
- 	return;
--- 
-1.7.2.3
+> -	return curr_gateway_tmp->orig_node;
+> +	orig_node =3D rcu_dereference(curr_gateway_tmp->orig_node);
+> +	if (orig_node) {
+> +		rcu_read_unlock();
+> +		return NULL;
+> +	}
+> +
+> +	rcu_read_unlock();
+> +	return orig_node;
+>  }
 
+
+And you cannot return the (it is not, but when it would be) rcu protected=20
+element without increasing the refcounter.
+
+> +		orig_node =3D rcu_dereference(gw_node->orig_node);
+> +		if (!orig_node->router)
+>  			continue;
+
+Same here
+
+> -	if (bat_priv->curr_gw !=3D curr_gw_tmp) {
+> -		if ((bat_priv->curr_gw) && (!curr_gw_tmp))
+> +	if (curr_gw !=3D curr_gw_tmp) {
+> +		orig_node =3D rcu_dereference(curr_gw_tmp->orig_node);
+> +		if ((curr_gw) && (!curr_gw_tmp))
+
+And here
+
+> -	if (bat_priv->curr_gw !=3D curr_gw_tmp) {
+> -		if ((bat_priv->curr_gw) && (!curr_gw_tmp))
+> +	if (curr_gw !=3D curr_gw_tmp) {
+> +		orig_node =3D rcu_dereference(curr_gw_tmp->orig_node);
+> +		if ((curr_gw) && (!curr_gw_tmp))
+
+Here again
+
+> -	if (bat_priv->curr_gw !=3D curr_gw_tmp) {
+> -		if ((bat_priv->curr_gw) && (!curr_gw_tmp))
+> +	if (curr_gw !=3D curr_gw_tmp) {
+> +		orig_node =3D rcu_dereference(curr_gw_tmp->orig_node);
+> +		if ((curr_gw) && (!curr_gw_tmp))
+
+Here....
+
+> -	gw_bandwidth_to_kbit(gw_node->orig_node->gw_flags, &down, &up);
+> +	rcu_read_lock();
+> +	curr_gw =3D rcu_dereference(bat_priv->curr_gw);
+> +	orig_node =3D rcu_dereference(gw_node->orig_node);
+> +	gw_bandwidth_to_kbit(orig_node->gw_flags, &down, &up);
+
+=2E...
+
+> diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
+> index 6a9ab61..8816102 100644
+> --- a/batman-adv/unicast.c
+> +++ b/batman-adv/unicast.c
+> @@ -298,7 +298,6 @@ int unicast_send_skb(struct sk_buff *skb, struct
+> bat_priv *bat_priv) if (!orig_node)
+>  			goto trans_search;
+>=20
+> -		kref_get(&orig_node->refcount);
+>  		goto find_router;
+>  	} else {
+>  		rcu_read_lock();
+
+Why? Maybe this should be part of the patch 3/3?
+
+And please to merge the refcounting stuff with the rcu pointer in one patch=
+=2E..=20
+and maybe it is better to merge patch 2/3 with the rcu pointer patch.
+
+Best regards,
+	Sven
+
+--nextPart4133594.CVSjBksrfP
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJNSuxWAAoJEF2HCgfBJntGunoQALWqBlie8LIvK87vxLkPAf9h
+dqyEqDVGuRz6dWHdiVou8wes/Tw10sWrGXnjRL9Kzd3aCclqYqLPRvwIG0dShibj
+i0B18UbUJoUkM6lkQDXxQJ/xQQFoCedGfzxc5cUJEt8ISJ8eyWT5Nwh8w+wuP/JV
+ybcgIZ5D5CZMGL8uwmFXEeLSTXmbPqFnw8qukQXC/2jRJbQN9P7Yr6Yaw322P1vF
+70AtYW6FTqW19bsk66zpdSyx1A/C2K/K2cDzv6tqr6W4vBRT5DIXWwIuhBNx9Cp4
+Hx3WUIsEJDCaP29l/wXGBJmpLOZmn0MvjUh8LBTcdA/15VDWSON8svVK2ClCtajX
+NfaUQFYnuK3qaRR34EHO74lxhQ4h86C34As+j9YNxbWFcuNWC9kKo4E0hG+rWyvN
+B9UBtK5riAULpL1HZRTcWW18Fs8f0e5NIZXdSpTk4FNLMNUOYv9lMJIgimufn95X
+5T0yJ/xL9hE5JmqYPOBv3jd8gGqdQsShA2rinWZJijgOqS9Kdp0fe1xD0M5YATEA
+UWdFrZaLU1SVBLKDTJHlkF6PxQJ2FRBOTDRnybwY/F5G8Q9gSbUMIkb+10z6f0Pl
+mW6lawnWqUjDbTiE+dZ6AVFZJsfCCGV1dOAoXKZVSMDAMM4GkqZF++G1KdacJtup
+vu4HfwugYC5HettCZR3n
+=MjKU
+-----END PGP SIGNATURE-----
+
+--nextPart4133594.CVSjBksrfP--
