@@ -1,17 +1,17 @@
-Return-Path: <linus.luessing@web.de>
-Date: Thu, 3 Feb 2011 10:55:25 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20110203095525.GA21622@Sellars>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 3 Feb 2011 11:01:26 +0100
 References: <1296352379-1546-2-git-send-email-sven@narfation.org>
-	<1296668238-19323-1-git-send-email-linus.luessing@ascom.ch>
 	<201102022242.52008.sven@narfation.org>
+	<20110203095525.GA21622@Sellars>
+In-Reply-To: <20110203095525.GA21622@Sellars>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <201102022242.52008.sven@narfation.org>
-Sender: linus.luessing@web.de
+Content-Type: multipart/signed; boundary="nextPart8424106.zMhYrK4xWl";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201102031101.27870.sven@narfation.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] Re: batman-adv: Correct rcu refcounting
- for gw_node
+	for gw_node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,94 +23,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Sven,
+--nextPart8424106.zMhYrK4xWl
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 02, 2011 at 10:42:46PM +0100, Sven Eckelmann wrote:
-> > gw_deselet():
-> > * is the refcount at this time always 1 for gw_node, can the null
-> > pointer check + a rcu_dereference be ommited? (at least that's what
-> > it looks like when comparing to the rcuref.txt example)
-> 
-> Why can't it be NULL? And _always_ use rcu_dereference. What example tells you 
-> that it isn't needed? None of the examples has any kind of rcu pointer in it 
-> (just el as pointer which is stored in a struct were the pointer inside the 
-> struct is rcu protected).
-Ok, you got a point there with the always-rcu-dereference pointers. I
-somehow was thinking that in between the spin-lock/unlock there
-could possibly be no other thread reading/writing to it then - but
-I guess at that moment I forgot about the reordering and the whole
-point of using the rcu macros between the spinlock there :). So,
-yes, you're right with that one, will change it.
+Linus L=FCssing wrote:
+> > I think it should look that way:
+> > > -       struct gw_node *curr_gw;
+> > > +       struct gw_node __rcu *curr_gw;
+>=20
+> Eh, had been looking at whatisRCU.txt and there gbl_foo in section
+> 3 did not have a "__rcu" (actually I hadn't seen that in any of the
+> documentations before).
 
-For the NULL pointer, guess you're right again. I was looking at
-the delete() example in rcuref.txt which was not doing any NULL
-pointer check. But either that's the case there because it's more
-pseudo-code there or because it's more related to lists, meaning
-that after the delete_element there it's not in the list anymore
-and not possible for any other thread to have the idea to free the
-same thing again.
-> 
-> 
-> > gw_get_selected():
-> > * Probably the orig_node's refcounting has to be made atomic, too?
-> 
-> This part is still a little bit ugly and I cannot give you an easy answer. 
-> Just think about following:
->  * Hash list is a bunch of rcu protected lists
->  * pointer to originator is stored inside a bucket (list elements inside the
->    hash)
->  * hash bucket wants to get removed - call_rcu; reference count of the
->    originator is decremented immediately
->  * (!!!! lots of reordering of read and write commands inside the cpu!!!! -
->     aren't we happy about the added complexity which tries to hide the memory
->     latency?)
->  * the originator was removed, the bucket which is removed in the call_rcu
->    still points to the removed originator
->  * a parallel running operation tries to find a originator, the rcu list
->    iterator gets the to-be-deleted bucket to the originator
->  * the pointer to the already removed originator inside the bucket is
->    dereferenced, data is read/written -> Kernel Oops
-> 
-> Does this sound scary? At least it could be used in some horror movies (and I 
-> would watch them).
-> 
-> But that is the other problem I currently have with the state of batman-adv in 
-> trunk - and I think I forget to tell you about it after the release of 
-> v2011.0.0.
-> 
-> So, a good idea would be the removal of the buckets for the hash. Usage of 
-> "struct hlist_node" inside the hash elements should be a good starting point. 
-> But think about the problem that the different hashes could have the same 
-> element. So you need for each distinct hash an extra "struct hlist_node" 
-> inside the element which should be part of the hash. The hash_add (and 
-> related) functions don't get the actual pointer to the element, but the 
-> pointer to the correct "struct hlist_node" inside the element/struct. The 
-> comparison and hashing function would also receive "struct hlist_node" as 
-> parameter and must get the pointer to the element using the container_of 
-> macro.
-> 
-> 
-> > @@ -171,7 +172,7 @@ struct bat_priv {
-> >         struct delayed_work hna_work;
-> >         struct delayed_work orig_work;
-> >         struct delayed_work vis_work;
-> > -       struct gw_node *curr_gw;
-> > +       struct gw_node *curr_gw;        /* rcu protected pointer */
-> >         struct vis_info *my_vis_info;
-> >  };
-> 
-> Sry, but I have to say that: FAIL ;)
-> 
-> I think it should look that way:
-> > -       struct gw_node *curr_gw;
-> > +       struct gw_node __rcu *curr_gw;
-Eh, had been looking at whatisRCU.txt and there gbl_foo in section
-3 did not have a "__rcu" (actually I hadn't seen that in any of the
-documentations before).
-> 
-> Best regards,
-> 	Sven
+$ git show v2.6.37:Documentation/RCU/checklist.txt|grep __rcu
 
-Cheers, Linus
+That document explains it quite well how the sparse check works and why you=
+=20
+must use __rcu to say "hey, this is a pointer which is used in a special wa=
+y).
+
+Best regards,
+	Sven
+
+--nextPart8424106.zMhYrK4xWl
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJNSnz2AAoJEF2HCgfBJntGMJkP/RSZK/L8xLsheVWYCYoa8eQr
+IXrtiBURzeHk6poMbHE2QHFOANVZjmihxzF78HxEsWxRI5czy1t3Y2t/OU/+p2ch
+DGMbm4s0D0Ux2rhLvXeQXb8cetXMFxsEs7sUL9I7OcCIpwIYT64AcrU7MEx+xKl+
+55sGluVBwDG22Fg4Z1DL5cSjbVI6U3JmYfaGU3k1u+F0Xz0yEMcHH3xuphCKjQr0
+dr4rkTRjjzANjVno57y/qRO4IF/zjkDorT8UG+InbZlFrw6aU6vXbwPFOHdetEYZ
+Rm4SfubMYgn/DG9YW/3lro+wl6O1eUGlkOraZ11HPuAguJM8/umIf2x+ooV2ujfy
+sYpLxqeKcF0PFOzZhJynjDCklr2BIEZmyA7SJfMf5KpP9gTPmbhUKHX+nBWW3EmJ
+Lp93p51VKE6NcR1q4GiwcOrcTDchUNd9OMHhx72LC3jEIRMEYbhcxXxWSo5GOMBB
+19817I0N1IPFcChBy8+NnjJV0eQv/V1yuQs89SztSfu3u/Eql3g9+zrfBRaOdSK4
+oLX0388ugrzrhhJltfV6nwAQErLTe8byL+bQ9AE47mijubF03PHXc1Wu2ujv6Qus
+spAH4iiTO7TeQ/uwlx2G5HoqL+ISZSV9aGo3noiDEJv5dF+CSfCsD2t9lIS69yGm
+R3yUH/mhH2LN8ACLu1pL
+=rTA6
+-----END PGP SIGNATURE-----
+
+--nextPart8424106.zMhYrK4xWl--
