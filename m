@@ -1,17 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 3 Feb 2011 11:01:26 +0100
-References: <1296352379-1546-2-git-send-email-sven@narfation.org>
-	<201102022242.52008.sven@narfation.org>
-	<20110203095525.GA21622@Sellars>
-In-Reply-To: <20110203095525.GA21622@Sellars>
+Return-Path: <linus.luessing@ascom.ch>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Date: Thu,  3 Feb 2011 15:43:21 +0100
+Message-Id: <1296744201-11542-3-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1296668238-19323-1-git-send-email-linus.luessing@ascom.ch>
+References: <1296668238-19323-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8424106.zMhYrK4xWl";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201102031101.27870.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Re: batman-adv: Correct rcu refcounting
-	for gw_node
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Increase orig_node refcount
+	before releasing rcu read lock
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,51 +21,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
---nextPart8424106.zMhYrK4xWl
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+When unicast_send_skb() is increasing the orig_node's refcount another
+thread might have been freeing this orig_node already. We need to
+increase the refcount in the rcu read lock protected area to avoid that.
 
-Linus L=FCssing wrote:
-> > I think it should look that way:
-> > > -       struct gw_node *curr_gw;
-> > > +       struct gw_node __rcu *curr_gw;
->=20
-> Eh, had been looking at whatisRCU.txt and there gbl_foo in section
-> 3 did not have a "__rcu" (actually I hadn't seen that in any of the
-> documentations before).
+Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
+---
+ gateway_client.c |    1 +
+ unicast.c        |    1 -
+ 2 files changed, 1 insertions(+), 1 deletions(-)
 
-$ git show v2.6.37:Documentation/RCU/checklist.txt|grep __rcu
+diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
+index ee71335..15ea268 100644
+--- a/batman-adv/gateway_client.c
++++ b/batman-adv/gateway_client.c
+@@ -57,6 +57,7 @@ void *gw_get_selected(struct bat_priv *bat_priv)
+ 
+ 	orig_node = rcu_dereference(curr_gateway_tmp->orig_node);
+ 	if (orig_node) {
++		kref_get(&orig_node->refcount);
+ 		rcu_read_unlock();
+ 		return NULL;
+ 	}
+diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
+index 8816102..b42e40e 100644
+--- a/batman-adv/unicast.c
++++ b/batman-adv/unicast.c
+@@ -310,7 +310,6 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+ 			goto trans_search;
+ 		}
+ 
+-		kref_get(&orig_node->refcount);
+ 		rcu_read_unlock();
+ 		goto find_router;
+ 	}
+-- 
+1.7.2.3
 
-That document explains it quite well how the sparse check works and why you=
-=20
-must use __rcu to say "hey, this is a pointer which is used in a special wa=
-y).
-
-Best regards,
-	Sven
-
---nextPart8424106.zMhYrK4xWl
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJNSnz2AAoJEF2HCgfBJntGMJkP/RSZK/L8xLsheVWYCYoa8eQr
-IXrtiBURzeHk6poMbHE2QHFOANVZjmihxzF78HxEsWxRI5czy1t3Y2t/OU/+p2ch
-DGMbm4s0D0Ux2rhLvXeQXb8cetXMFxsEs7sUL9I7OcCIpwIYT64AcrU7MEx+xKl+
-55sGluVBwDG22Fg4Z1DL5cSjbVI6U3JmYfaGU3k1u+F0Xz0yEMcHH3xuphCKjQr0
-dr4rkTRjjzANjVno57y/qRO4IF/zjkDorT8UG+InbZlFrw6aU6vXbwPFOHdetEYZ
-Rm4SfubMYgn/DG9YW/3lro+wl6O1eUGlkOraZ11HPuAguJM8/umIf2x+ooV2ujfy
-sYpLxqeKcF0PFOzZhJynjDCklr2BIEZmyA7SJfMf5KpP9gTPmbhUKHX+nBWW3EmJ
-Lp93p51VKE6NcR1q4GiwcOrcTDchUNd9OMHhx72LC3jEIRMEYbhcxXxWSo5GOMBB
-19817I0N1IPFcChBy8+NnjJV0eQv/V1yuQs89SztSfu3u/Eql3g9+zrfBRaOdSK4
-oLX0388ugrzrhhJltfV6nwAQErLTe8byL+bQ9AE47mijubF03PHXc1Wu2ujv6Qus
-spAH4iiTO7TeQ/uwlx2G5HoqL+ISZSV9aGo3noiDEJv5dF+CSfCsD2t9lIS69yGm
-R3yUH/mhH2LN8ACLu1pL
-=rTA6
------END PGP SIGNATURE-----
-
---nextPart8424106.zMhYrK4xWl--
