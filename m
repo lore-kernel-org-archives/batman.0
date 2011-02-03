@@ -1,13 +1,17 @@
-Return-Path: <jay.busch@gmail.com>
-Message-ID: <4d49eebc.a735ec0a.47e4.06c7@mx.google.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 3 Feb 2011 01:19:58 +0100
+References: <1296352379-1546-2-git-send-email-sven@narfation.org>
+	<1296668238-19323-1-git-send-email-linus.luessing@ascom.ch>
+	<201102022242.52008.sven@narfation.org>
+In-Reply-To: <201102022242.52008.sven@narfation.org>
 MIME-Version: 1.0
-content-class: 
-From: jay.busch <jay.busch@gmail.com>
-Date: Wed, 2 Feb 2011 18:54:27 -0500
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201102030119.58808.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] Re: batman-adv: Correct rcu refcounting
- for gw_node
+	for gw_node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +25,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Wednesday 02 February 2011 22:42:46 Sven Eckelmann wrote:
+> > gw_election():
+> > * can the if-block before gw_deselect() be ommited, we had a nullpointer
+> > 
+> >   check for curr_gw just a couple of lines before during the rcu-lock.
+> 
+> I thought that this if block should be moved to gw_select. And your
+> gw_select still has the bug that the bat_priv->curr_gw isn't set to NULL
+> when new_gw_node is NULL.
 
+Yes, but we discussed this without Linus.
 
-Sent from my HTC PURE=E2=84=A2, a Windows=C2=AE phone from AT&T
+@Linus: This section will be changed - I'm working on this.
 
------Original Message-----
-From: Marek Lindner <lindner_marek@yahoo.de>
-Sent: Wednesday, February 02, 2011 2:49 PM
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n=
-@lists.open-mesh.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Re: batman-adv: Correct rcu refcounting=
- for gw_node
-
-On Wednesday 02 February 2011 18:37:18 Linus L=C3=BCssing wrote:
-> So after some more discussions with Marek and Sven, it looks like we
-> have to use the rcu protected macros rcu_dereference() and
-> rcu_assign_pointer() for the bat_priv->curr_gw and curr_gw->orig_node.
->=20
-> Changes here also include moving the kref_get() from unicast_send_skb()
-> into gw_get_selected(). The orig_node could have been freed already at
-> the time the kref_get() was called in unicast_send_skb().
-
-I'd suggest you make a standalone patch because the patches address differe=
-nt=20
-problems.
-
-Thanks,
+Regards,
 Marek
-
