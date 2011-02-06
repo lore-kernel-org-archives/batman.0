@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 7 Feb 2011 00:06:17 +0100
-References: <1296827833-27595-1-git-send-email-linus.luessing@ascom.ch>
-	<1296827833-27595-2-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <1296827833-27595-2-git-send-email-linus.luessing@ascom.ch>
+Date: Mon, 7 Feb 2011 00:24:59 +0100
+References: <1296942118-4875-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1296942118-4875-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201102070006.17661.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Switch order of types.h
-	and compat.h inclusion
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201102070025.00197.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Linearize fragment packets
+	before merge
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,11 +23,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday 04 February 2011 14:57:13 Linus L=C3=BCssing wrote:
-> The compat.h changes should be transparent for any other of our source
-> files - even for types.h. Therefore switching the order.
+On Saturday 05 February 2011 22:41:58 Sven Eckelmann wrote:
+> We access the data inside the skbs of two fragments directly using memmove
+> during the merge. The data of the skb could span over multiple skb pages.
+> An direct access without knowledge about the pages would lead to an
+> invalid memory access.
 
-Applied in revision 1932.
+Applied in revision 1933.
 
 Thanks,
 Marek
