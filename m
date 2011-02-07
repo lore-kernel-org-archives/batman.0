@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 7 Feb 2011 15:50:34 +0100
-References: <201101211933.03003.lindner_marek@yahoo.de>
-In-Reply-To: <201101211933.03003.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201102071550.36130.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Wireless Battle Mesh v4 - Call for
-	papers (update)
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue,  8 Feb 2011 00:59:20 +0100
+Message-Id: <1297123161-25612-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2011-02-08
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,57 +14,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: battlemesh@ml.ninux.org
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, olsr-users@lists.olsr.org, babel-users@lists.alioth.debian.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+Hi,
 
-Wireless Battle Mesh v4 - Call for papers (update)
-=================================
+I would like to propose following patch for net-2.6.git/2.6.38 which fixes a
+possible kernel oops in the unicast fragmentation code.
 
-The submission for papers is now open since 2 weeks, nonetheless quite some 
-ideas have already surfaced. Below you will find the current list of submitted 
-talks/panel discussions/workshops but you still can send in your idea - the 
-call for paper still is open for another 3 weeks but time is quickly running 
-out.
+thanks,
+	Sven
 
+The following changes since commit 1181e1daace88018b2ff66592aa10a4791d705ff:
 
-Technical Track:
-===========
+  batman-adv: Make vis info stack traversal threadsafe (2011-01-30 10:32:08 +0100)
 
-* Wireless Battle Mesh - The past, present and future
- (panel discussion - Marek Lindner & Xavier Carcelle)
-* Recompiling AirOS with routing protocols
- (talk - Ninux)
-* Forming mesh mobs - multicast optimizations for batman-adv
- (talk - Simon Wunderlich & Linus Luessing)
-* Babel Z: routing accross multiple radio frequencies
- (talk -  Juliusz Chroboczek)
-* Google summer of code - old projects and new ideas
- (talk - Freifunk, Funkfeuer & Ninux)
-* OpenWRT - master your router (flashing/uci configuration/packages)
- (workshop - Nicolas Thill)
-* Lightening talks
+are available in the git repository at:
+  git://git.open-mesh.org/ecsv/linux-merge.git batman-adv/merge
 
+Sven Eckelmann (1):
+      batman-adv: Linearize fragment packets before merge
 
-Application Track:
-=============
-
-* Wireless communities around the world
- (talk - guifi.net, Freifunk, Funkfeuer, Ninux & Ljubljana)
-* VoIP over mesh made easy - the mesh potatoe 
- (talk - Elektra)
-
-
-Open Questions:
-============
-
-The GSoC presentation is meant to show case the past Freifunk GSoC projects, 
-preferably by the students itself and/or their mentors. Can each participating 
-group (Freifunk, Funkfeuer & Ninux) provide a list of their projects / 
-students / mentors and their travel plans.
-
-
-If you have any question or suggestion, please let me know.
-
-Regards,
-Marek
+ net/batman-adv/unicast.c |   15 ++++++++++-----
+ 1 files changed, 10 insertions(+), 5 deletions(-)
