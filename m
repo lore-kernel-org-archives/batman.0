@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 7 Feb 2011 00:24:59 +0100
-References: <1296942118-4875-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1296942118-4875-1-git-send-email-sven@narfation.org>
+Date: Mon, 7 Feb 2011 01:11:14 +0100
+References: <1296744063-11440-1-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1296744063-11440-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201102070025.00197.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Linearize fragment packets
-	before merge
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201102070111.14880.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Disallow originator
+	addressing within mesh layer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,13 +23,14 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday 05 February 2011 22:41:58 Sven Eckelmann wrote:
-> We access the data inside the skbs of two fragments directly using memmove
-> during the merge. The data of the skb could span over multiple skb pages.
-> An direct access without knowledge about the pages would lead to an
-> invalid memory access.
+On Thursday 03 February 2011 15:41:03 Linus L=C3=BCssing wrote:
+> For a host in the mesh network, the batman layer should be transparent.
+> However, we had one exception, data packets within the mesh network
+> which have the same destination as a originator are being routed to
+> that node, although there is no host that node's bat0 interface and
+> therefore gets dropped anyway. This commit removes this exception.
 
-Applied in revision 1933.
+Applied in revision 1934.
 
 Thanks,
 Marek
