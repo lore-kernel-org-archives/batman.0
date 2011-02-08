@@ -1,16 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 8 Feb 2011 14:18:37 +0100
-References: <201102031802.52134.lindner_marek@yahoo.de>
-	<1296832896-30081-6-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <1296832896-30081-6-git-send-email-linus.luessing@ascom.ch>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed,  9 Feb 2011 00:35:02 +0100
+Message-Id: <1297208102-4931-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201102081418.38151.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: Make bat_priv->curr_gw
-	an rcu protected pointer
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Use successive sequence numbers
+	for fragments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,68 +18,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+The two fragments of an unicast packet must have successive sequence numbers to
+allow the receiver side to detect matching fragments and merge them again. The
+current implementation doesn't provide that property because a sequence of two
+atomic_inc_return may be interleaved with another sequence which also changes
+the variable.
 
-On Friday 04 February 2011 16:21:34 Linus L=C3=BCssing wrote:
-> +	if (curr_gw) {
-> +		rcu_read_unlock();
->  		return;
-> +	}
->=20
-> -	rcu_read_lock();
->  	if (hlist_empty(&bat_priv->gw_list)) {
-> -		rcu_read_unlock();
->=20
-> -		if (bat_priv->curr_gw) {
-> +		if (curr_gw) {
-> +			rcu_read_unlock();
->  			bat_dbg(DBG_BATMAN, bat_priv,
->  				"Removing selected gateway - "
->  				"no gateway in range\n");
->  			gw_deselect(bat_priv);
->  		}
-> +		else
-> +			rcu_read_unlock();
+The access to the fragment sequence number pool has either to be protected by
+correct locking or the access to the pool has to reserve two sequence numbers
+in a single access. The latter one can easily be done by increasing the value
+of the last used sequence number by 2 in a single access. The generated window
+of two currently unused sequence numbers can now be scattered across the two
+fragments.
 
-This is a bit odd here - we return if curr_gw is not NULL and later we prin=
-t a=20
-message if curr_gw is not NULL ?=20
-The issue existed before your patch came along.
+Reported-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ batman-adv/unicast.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
+index db62b66..29ad9b8 100644
+--- a/batman-adv/unicast.c
++++ b/batman-adv/unicast.c
+@@ -237,6 +237,7 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 	int ucf_hdr_len = sizeof(struct unicast_frag_packet);
+ 	int data_len = skb->len - uc_hdr_len;
+ 	int large_tail = 0;
++	uint16_t seqno;
+ 
+ 	if (!bat_priv->primary_if)
+ 		goto dropped;
+@@ -272,10 +273,9 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 	frag1->flags = UNI_FRAG_HEAD | large_tail;
+ 	frag2->flags = large_tail;
+ 
+-	frag1->seqno = htons((uint16_t)atomic_inc_return(
+-			     &batman_if->frag_seqno));
+-	frag2->seqno = htons((uint16_t)atomic_inc_return(
+-			     &batman_if->frag_seqno));
++	seqno = atomic_add_return(2, &batman_if->frag_seqno);
++	frag1->seqno = htons(seqno - 1);
++	frag2->seqno = htons(seqno);
+ 
+ 	send_skb_packet(skb, batman_if, dstaddr);
+ 	send_skb_packet(frag_skb, batman_if, dstaddr);
+-- 
+1.7.2.3
 
->  void gw_check_election(struct bat_priv *bat_priv, struct orig_node
-> *orig_node) {
-> -	struct gw_node *curr_gateway_tmp =3D bat_priv->curr_gw;
-> +	struct gw_node *curr_gateway_tmp;
->  	uint8_t gw_tq_avg, orig_tq_avg;
->=20
-> +	rcu_read_lock();
-> +	curr_gateway_tmp =3D rcu_dereference(bat_priv->curr_gw);
->  	if (!curr_gateway_tmp)
-> -		return;
-> +		goto rcu_unlock;
->=20
->  	if (!curr_gateway_tmp->orig_node)
->  		goto deselect;
-
-It seems if we jump to "deselect" here the rcu_lock() will never be unlocke=
-d.
-
-
-> @@ -316,7 +342,7 @@ void gw_node_purge(struct bat_priv *bat_priv)
-> -		if (bat_priv->curr_gw =3D=3D gw_node)
-> +		if (rcu_dereference(bat_priv->curr_gw) =3D=3D gw_node)
->  			gw_deselect(bat_priv);
-
-At this point we neither hold a rcu_lock() nor the newly created spinlock .=
-=2E.
-
-
->  	spinlock_t gw_list_lock; /* protects gw_list */
-> +	spinlock_t curr_gw_lock; /* protects curr_gw updates */
-
-Would speak anything against re-using the gw_list_lock ?
-
-Regards,
-Marek
