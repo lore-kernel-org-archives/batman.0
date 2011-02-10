@@ -1,16 +1,17 @@
-Return-Path: <linus.luessing@web.de>
-Date: Thu, 10 Feb 2011 14:03:03 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20110210130303.GD13038@Sellars>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 10 Feb 2011 14:36:42 +0100
 References: <201102091918.42080.lindner_marek@yahoo.de>
 	<1297275550-12420-2-git-send-email-lindner_marek@yahoo.de>
+	<20110210130303.GD13038@Sellars>
+In-Reply-To: <20110210130303.GD13038@Sellars>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1297275550-12420-2-git-send-email-lindner_marek@yahoo.de>
-Sender: linus.luessing@web.de
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201102101436.43136.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: remove extra layer
- between hash and hash element - hash bucket
+	between hash and hash element - hash bucket
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,24 +25,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-> diff --git a/batman-adv/compat.h b/batman-adv/compat.h
-> index a76d0be..29a3203 100644
-> --- a/batman-adv/compat.h
-> +++ b/batman-adv/compat.h
-> @@ -270,4 +270,12 @@ int bat_seq_printf(struct seq_file *m, const char *f, ...);
->  
->  #endif /* < KERNEL_VERSION(2, 6, 33) */
->  
-> +#define hlist_first_rcu(head) (*((struct hlist_node **)(&(head)->first)))
-> +#define hlist_next_rcu(node) (*((struct hlist_node **)(&(node)->next)))
-> +
-> +#define __hlist_for_each_rcu(pos, head) \
-> +	for (pos = rcu_dereference(hlist_first_rcu(head)); \
-> +	pos && ({ prefetch(pos->next); 1; }); \
-> +	pos = rcu_dereference(hlist_next_rcu(pos)))
-> +
->  #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
-Isn't there a #define with < KERNEL_VERSION(2, 6, 37) missing?
-(Haven't checked much else about this patch yet)
+On Thursday 10 February 2011 14:03:03 Linus L=C3=BCssing wrote:
+> Isn't there a #define with < KERNEL_VERSION(2, 6, 37) missing?
+> (Haven't checked much else about this patch yet)
 
-Cheers, Linus
+Why would there be a need for .37 (this functionality came with .34) ?
+Nevertheless, you are right - it is missing here.
+
+Regards,
+Marek
