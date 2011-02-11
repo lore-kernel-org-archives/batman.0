@@ -1,11 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 Feb 2011 00:21:41 +0100
-Message-Id: <1297466503-13246-3-git-send-email-sven@narfation.org>
+Date: Sat, 12 Feb 2011 00:21:42 +0100
+Message-Id: <1297466503-13246-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1297466503-13246-1-git-send-email-sven@narfation.org>
 References: <1297466503-13246-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: Split combined variable
-	declarations
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Remove duplicate types.h
+	inclusions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,35 +21,153 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+From: Linus Lüssing <linus.luessing@ascom.ch>
 
-Multiple variable declarations in a single statements over multiple lines can
-be split into multiple variable declarations without changing the actual
-behavior.
+types.h is included by main.h, which is included at the beginning of any
+other c-file anyway. Therefore this commit removes those duplicate
+inclussions.
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/unicast.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/icmp_socket.c       |    1 -
+ net/batman-adv/icmp_socket.h       |    2 --
+ net/batman-adv/main.c              |    1 -
+ net/batman-adv/routing.c           |    1 -
+ net/batman-adv/routing.h           |    2 --
+ net/batman-adv/send.c              |    1 -
+ net/batman-adv/send.h              |    2 --
+ net/batman-adv/soft-interface.c    |    1 -
+ net/batman-adv/translation-table.c |    1 -
+ net/batman-adv/translation-table.h |    2 --
+ 10 files changed, 0 insertions(+), 14 deletions(-)
 
-diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
-index 9b2a222..6c92eef 100644
---- a/net/batman-adv/unicast.c
-+++ b/net/batman-adv/unicast.c
-@@ -39,8 +39,8 @@ static struct sk_buff *frag_merge_packet(struct list_head *head,
- 		(struct unicast_frag_packet *)skb->data;
- 	struct sk_buff *tmp_skb;
- 	struct unicast_packet *unicast_packet;
--	int hdr_len = sizeof(struct unicast_packet),
--	    uni_diff = sizeof(struct unicast_frag_packet) - hdr_len;
-+	int hdr_len = sizeof(struct unicast_packet);
-+	int uni_diff = sizeof(struct unicast_frag_packet) - hdr_len;
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 5e86d6f..319a7cc 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -24,7 +24,6 @@
+ #include <linux/slab.h>
+ #include "icmp_socket.h"
+ #include "send.h"
+-#include "types.h"
+ #include "hash.h"
+ #include "originator.h"
+ #include "hard-interface.h"
+diff --git a/net/batman-adv/icmp_socket.h b/net/batman-adv/icmp_socket.h
+index 08b1859..462b190 100644
+--- a/net/batman-adv/icmp_socket.h
++++ b/net/batman-adv/icmp_socket.h
+@@ -22,8 +22,6 @@
+ #ifndef _NET_BATMAN_ADV_ICMP_SOCKET_H_
+ #define _NET_BATMAN_ADV_ICMP_SOCKET_H_
  
- 	/* set skb to the first part and tmp_skb to the second part */
- 	if (up->flags & UNI_FRAG_HEAD) {
+-#include "types.h"
+-
+ #define ICMP_SOCKET "socket"
+ 
+ void bat_socket_init(void);
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index dc9248d..06d956c 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -30,7 +30,6 @@
+ #include "translation-table.h"
+ #include "hard-interface.h"
+ #include "gateway_client.h"
+-#include "types.h"
+ #include "vis.h"
+ #include "hash.h"
+ 
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 028f739..8274140 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -28,7 +28,6 @@
+ #include "icmp_socket.h"
+ #include "translation-table.h"
+ #include "originator.h"
+-#include "types.h"
+ #include "ring_buffer.h"
+ #include "vis.h"
+ #include "aggregation.h"
+diff --git a/net/batman-adv/routing.h b/net/batman-adv/routing.h
+index ceeca6f..a09d16f 100644
+--- a/net/batman-adv/routing.h
++++ b/net/batman-adv/routing.h
+@@ -22,8 +22,6 @@
+ #ifndef _NET_BATMAN_ADV_ROUTING_H_
+ #define _NET_BATMAN_ADV_ROUTING_H_
+ 
+-#include "types.h"
+-
+ void slide_own_bcast_window(struct batman_if *batman_if);
+ void receive_bat_packet(struct ethhdr *ethhdr,
+ 				struct batman_packet *batman_packet,
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 7cc620e..8314276 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -25,7 +25,6 @@
+ #include "translation-table.h"
+ #include "soft-interface.h"
+ #include "hard-interface.h"
+-#include "types.h"
+ #include "vis.h"
+ #include "aggregation.h"
+ #include "gateway_common.h"
+diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
+index bc53ade..b68c272 100644
+--- a/net/batman-adv/send.h
++++ b/net/batman-adv/send.h
+@@ -22,8 +22,6 @@
+ #ifndef _NET_BATMAN_ADV_SEND_H_
+ #define _NET_BATMAN_ADV_SEND_H_
+ 
+-#include "types.h"
+-
+ int send_skb_packet(struct sk_buff *skb,
+ 				struct batman_if *batman_if,
+ 				uint8_t *dst_addr);
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 145e0f7..bd088f8 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -26,7 +26,6 @@
+ #include "send.h"
+ #include "bat_debugfs.h"
+ #include "translation-table.h"
+-#include "types.h"
+ #include "hash.h"
+ #include "gateway_common.h"
+ #include "gateway_client.h"
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index f6917dd..7fb6726 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -22,7 +22,6 @@
+ #include "main.h"
+ #include "translation-table.h"
+ #include "soft-interface.h"
+-#include "types.h"
+ #include "hash.h"
+ #include "originator.h"
+ 
+diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
+index a4f3a37..f19931c 100644
+--- a/net/batman-adv/translation-table.h
++++ b/net/batman-adv/translation-table.h
+@@ -22,8 +22,6 @@
+ #ifndef _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
+ #define _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
+ 
+-#include "types.h"
+-
+ int hna_local_init(struct bat_priv *bat_priv);
+ void hna_local_add(struct net_device *soft_iface, uint8_t *addr);
+ void hna_local_remove(struct bat_priv *bat_priv,
 -- 
 1.7.2.3
 
