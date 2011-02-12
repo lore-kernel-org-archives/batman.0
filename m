@@ -1,13 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Fri, 11 Feb 2011 21:21:35 -0800 (PST)
-Message-Id: <20110211.212135.232757143.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1297466503-13246-1-git-send-email-sven@narfation.org>
-References: <1297466503-13246-1-git-send-email-sven@narfation.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-02-12
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Date: Sat, 12 Feb 2011 22:21:37 +0100
+Message-Id: <1297545698-15850-1-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <201102101525.21265.lindner_marek@yahoo.de>
+References: <201102101525.21265.lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Sender: linus.luessing@web.de
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: Make bat_priv->curr_gw
+	an rcu protected pointer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,26 +21,12 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven@narfation.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 Feb 2011 00:21:39 +0100
+Hi Marek,
 
-> Hi,
-> 
-> I would like propose following changes for net-next-2.6.git. Two of them are
-> minor code style changes and the other two change minor issues in the
-> routing/fragmentation code.
-> 
-> thanks,
-> 	Sven
-> 
-> The following changes since commit 091b948306d2628320e77977eb7ae4a757b12180:
-> 
->   batman-adv: Merge README of v2011.0.0 release (2011-01-31 14:57:13 +0100)
-> 
-> are available in the git repository at:
->   git://git.open-mesh.org/ecsv/linux-merge.git batman-adv/next
+Ok, I now reused the gw_list_lock instead of introducing a new spinlock. I've left the
+one issue in the beginning of gw_election() you've been mentioning untouched.
+The rest should be fixed.
 
-Pulled, thanks Sven.
+Cheers, Linus
