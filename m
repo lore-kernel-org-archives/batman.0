@@ -1,9 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 14 Feb 2011 10:10:23 +0100
-Message-Id: <1297674623-3130-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: else should follow close brace
-	'}'
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 14 Feb 2011 13:57:35 +0100
+References: <1297674623-3130-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1297674623-3130-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201102141357.36274.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: else should follow close
+	brace '}'
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,27 +21,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- batman-adv/gateway_client.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+On Monday 14 February 2011 10:10:23 Sven Eckelmann wrote:
+>                         gw_deselect(bat_priv);
+> -               }
+> -               else
+> +               } else
+>                         rcu_read_unlock();
 
-diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
-index 3486854..41eba8a 100644
---- a/batman-adv/gateway_client.c
-+++ b/batman-adv/gateway_client.c
-@@ -123,8 +123,7 @@ void gw_election(struct bat_priv *bat_priv)
- 				"Removing selected gateway - "
- 				"no gateway in range\n");
- 			gw_deselect(bat_priv);
--		}
--		else
-+		} else
- 			rcu_read_unlock();
- 
- 		return;
--- 
-1.7.2.3
+Applied in revision 1944.
 
+Thanks,
+Marek
