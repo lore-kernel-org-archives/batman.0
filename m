@@ -1,11 +1,14 @@
 Return-Path: <linus.luessing@ascom.ch>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Tue, 15 Feb 2011 18:12:15 +0100
-Message-Id: <1297789948-16948-1-git-send-email-linus.luessing@ascom.ch>
+Date: Tue, 15 Feb 2011 18:12:16 +0100
+Message-Id: <1297789948-16948-2-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1297789948-16948-1-git-send-email-linus.luessing@ascom.ch>
+References: <1297789948-16948-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Redundancy bonding mode patches, v1
+Subject: [B.A.T.M.A.N.] [PATCH 01/13] batman-adv: Remove unused hdr_size
+	variable in route_unicast_packet()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,30 +21,74 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-Hi everyone,
+Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
+---
+ routing.c        |    7 +++----
+ routing.h        |    3 +--
+ soft-interface.c |    2 +-
+ 3 files changed, 5 insertions(+), 7 deletions(-)
 
-The following patches add a redundancy bonding mode to batman-adv: In case
-of multiple interfaces available towards a next hop node, instead of sending
-packets in interface alternating or round robin bonding fashion, packets
-get send redundantly on all available interfaces available for bonding.
+diff --git a/batman-adv/routing.c b/batman-adv/routing.c
+index a2b770a..ec14a59 100644
+--- a/batman-adv/routing.c
++++ b/batman-adv/routing.c
+@@ -1280,8 +1280,7 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
+ 	return 0;
+ }
+ 
+-int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
+-			 int hdr_size)
++int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct orig_node *orig_node = NULL;
+@@ -1385,7 +1384,7 @@ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 		return NET_RX_SUCCESS;
+ 	}
+ 
+-	return route_unicast_packet(skb, recv_if, hdr_size);
++	return route_unicast_packet(skb, recv_if);
+ }
+ 
+ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
+@@ -1418,7 +1417,7 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 		return NET_RX_SUCCESS;
+ 	}
+ 
+-	return route_unicast_packet(skb, recv_if, hdr_size);
++	return route_unicast_packet(skb, recv_if);
+ }
+ 
+ 
+diff --git a/batman-adv/routing.h b/batman-adv/routing.h
+index e2a9872..d302bd7 100644
+--- a/batman-adv/routing.h
++++ b/batman-adv/routing.h
+@@ -30,8 +30,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 		   struct neigh_node *neigh_node, unsigned char *hna_buff,
+ 		   int hna_buff_len);
+-int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
+-			 int hdr_size);
++int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if);
+diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
+index 152beaa..eccced9 100644
+--- a/batman-adv/soft-interface.c
++++ b/batman-adv/soft-interface.c
+@@ -482,7 +482,7 @@ void interface_rx(struct net_device *soft_iface,
+ 
+ 		memcpy(unicast_packet->dest,
+ 		       bat_priv->softif_neigh->addr, ETH_ALEN);
+-		ret = route_unicast_packet(skb, recv_if, hdr_size);
++		ret = route_unicast_packet(skb, recv_if);
+ 		if (ret == NET_RX_DROP)
+ 			goto dropped;
+ 
+-- 
+1.7.2.3
 
-This mode increases the packet delivery ratio of unicast data transfers for
-the cost of throughput in multi interface mesh networks and is therefore
-aimed at high reliability mesh networks.
-
-It is especially useful if the main source of packet loss is not always
-reliably detectable by batman-adv's broadcast PDR measurements (i.e.
-bursty periods of interference on a single channel, which gets averaged out
-due to the windowing; different unicast bitrate; ...). Or if a fault
-tolerant packet forwarding scheme which is able to tolerate a sudden link
-failure with no impact on the user experience is required.
-
-
-The first eight patches are mainly some restructuring of the unicast sending
-code paths. Patches nine to 13 add the actual redandancy bonding mode.
-
-Please note, that this redundancy bonding mode is not yet compatible with
-batman-adv's link layer fragmentation feature.
-
-Cheers, Linus
