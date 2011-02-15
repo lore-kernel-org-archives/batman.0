@@ -1,15 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 14 Feb 2011 23:44:41 +0100
-References: <alpine.LNX.2.00.1102142335331.4530@swampdragon.chaosbits.net>
-In-Reply-To: <alpine.LNX.2.00.1102142335331.4530@swampdragon.chaosbits.net>
+Return-Path: <linus.luessing@ascom.ch>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Date: Tue, 15 Feb 2011 18:12:15 +0100
+Message-Id: <1297789948-16948-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5347088.GlsFtsWs27";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201102142344.44819.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH][trivial] Batman: Remove two duplicate
-	includes.
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Redundancy bonding mode patches, v1
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,43 +17,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jesper Juhl <jj@chaosbits.net>
-Cc: trivial@kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart5347088.GlsFtsWs27
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Hi everyone,
 
-On Monday 14 February 2011 23:38:18 Jesper Juhl wrote:
-> Remove duplicate inclusion of "send.h" and "routing.h" from
-> net/batman-adv/soft-interface.c
+The following patches add a redundancy bonding mode to batman-adv: In case
+of multiple interfaces available towards a next hop node, instead of sending
+packets in interface alternating or round robin bonding fashion, packets
+get send redundantly on all available interfaces available for bonding.
 
-Applied, thanks
+This mode increases the packet delivery ratio of unicast data transfers for
+the cost of throughput in multi interface mesh networks and is therefore
+aimed at high reliability mesh networks.
 
-Best regards,
-	Sven
+It is especially useful if the main source of packet loss is not always
+reliably detectable by batman-adv's broadcast PDR measurements (i.e.
+bursty periods of interference on a single channel, which gets averaged out
+due to the windowing; different unicast bitrate; ...). Or if a fault
+tolerant packet forwarding scheme which is able to tolerate a sudden link
+failure with no impact on the user experience is required.
 
---nextPart5347088.GlsFtsWs27
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+The first eight patches are mainly some restructuring of the unicast sending
+code paths. Patches nine to 13 add the actual redandancy bonding mode.
 
-iQIcBAABCgAGBQJNWbBaAAoJEF2HCgfBJntGX6UP/0823WP6xtS7XXMxLyPfR595
-eRicoE7cqzjRFLvsA8kEjHM3iepdCL7ZQzPqM+t1wnQP/VjYbJn5iGnxh4aMf2N/
-2R9KI/NknJJ9akwsYyPngHzGHPN3kPD2adEsBAMwoedrnUWQdi24RcIgRi8QhWpa
-kpWBwPywOdPs5XQjnL3nLiHoaxudgRj9wlUJVQcPEoggj9f1t5JEeR5uELZqnehz
-SYccN4ZsT762kqvuT0mwtzjeTvAfXcJvU3512T1s4JhDcG+AcwzFBh3O6qLULFoo
-C5TEZyJzKcrYP0itLe05SGefKStyzwAy1GwcWUh0hydD8rRjF9jdZ9MeQb/fiZi8
-c8vtU2sIJDcAyhRhx9mysXqeRWbiDjjxVwOECdXhWxjqxIhGTU7sId8wlqqX+JHr
-Hbyz3K53DeZBtavEj7gGpmbOag1/3AcRTNY58lb0rj/pxNqBbIcFS40Ii9vmi0dD
-oCvCQrCjfSsCaf1TC9uhoL6bebyKYV1lpNVcOBSxJmgp60kIBdVx/Z4mKM8qW8ie
-Y+sSG8o3bkohmRRTadcv73VMRt0xrWoaweJkJB+n5KF7IkYSLhWRsc7DABo0Uwkf
-McsS3hkABIISusiZNPX90wAJdRe/Gg+UZ5Im8clm/IPKDFddrSYl8aUaOqYBVSrU
-ck84ROYp0ThzfQyxQtNn
-=cPbo
------END PGP SIGNATURE-----
+Please note, that this redundancy bonding mode is not yet compatible with
+batman-adv's link layer fragmentation feature.
 
---nextPart5347088.GlsFtsWs27--
+Cheers, Linus
