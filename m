@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@ascom.ch>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Tue, 15 Feb 2011 18:12:21 +0100
-Message-Id: <1297789948-16948-7-git-send-email-linus.luessing@ascom.ch>
+Date: Tue, 15 Feb 2011 18:12:22 +0100
+Message-Id: <1297789948-16948-8-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1297789948-16948-1-git-send-email-linus.luessing@ascom.ch>
 References: <1297789948-16948-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 06/13] batman-adv: Use route_unicast_packet()
-	for sending own unicast packets
+Subject: [B.A.T.M.A.N.] [PATCH 07/13] batman-adv: Avoid redundant
+	hash_find() call for own unicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,166 +23,190 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-This removes some redundancy present in unicast_send_skb(). It now
-invokes route_unicast_packet() for the next hop decision and sending.
-
 Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
- routing.c        |   15 ++++++++-------
- routing.h        |    5 +++--
- soft-interface.c |    3 ++-
- unicast.c        |   41 +++++++----------------------------------
- 4 files changed, 20 insertions(+), 44 deletions(-)
+ routing.c        |   37 ++++++++++++++++++-------------------
+ routing.h        |    8 +++-----
+ soft-interface.c |    6 ++++--
+ unicast.c        |    4 ++--
+ 4 files changed, 27 insertions(+), 28 deletions(-)
 
 diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 081c461..f8fb709 100644
+index f8fb709..4899649 100644
 --- a/batman-adv/routing.c
 +++ b/batman-adv/routing.c
-@@ -1188,10 +1188,10 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
+@@ -1020,10 +1020,10 @@ out:
+ /* find a suitable router for this originator, and use
+  * bonding if possible. increases the found neighbors
+  * refcount.*/
+-struct neigh_node *find_router(struct bat_priv *bat_priv,
+-			       struct orig_node *orig_node,
++struct neigh_node *find_router(struct orig_node *orig_node,
+ 			       struct batman_if *recv_if)
+ {
++	struct bat_priv *bat_priv;
+ 	struct orig_node *primary_orig_node;
+ 	struct orig_node *router_orig;
+ 	struct neigh_node *router, *first_candidate, *tmp_neigh_node;
+@@ -1036,6 +1036,8 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 	if (!orig_node->router)
+ 		return NULL;
+ 
++	bat_priv = orig_node->bat_priv;
++
+ 	/* without bonding, the first node should
+ 	 * always choose the default router. */
+ 	bonding_enabled = atomic_read(&bat_priv->bonding);
+@@ -1188,22 +1190,15 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
  	return 0;
  }
  
--int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
--			 uint8_t *dest, uint8_t packet_type)
-+int route_unicast_packet(struct bat_priv *bat_priv, struct sk_buff *skb,
-+			 struct batman_if *recv_if, uint8_t *dest,
-+			 uint8_t packet_type)
+-int route_unicast_packet(struct bat_priv *bat_priv, struct sk_buff *skb,
+-			 struct batman_if *recv_if, uint8_t *dest,
+-			 uint8_t packet_type)
++int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
++			 struct orig_node *orig_node, uint8_t packet_type)
  {
--	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
- 	struct orig_node *orig_node = NULL;
+-	struct orig_node *orig_node = NULL;
  	struct neigh_node *neigh_node = NULL;
  	int ret = NET_RX_DROP;
-@@ -1252,6 +1252,7 @@ out:
+ 	struct sk_buff *new_skb;
  
- int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+-	/* get routing information */
+-	orig_node = hash_find_orig(bat_priv, dest);
+-	if (!orig_node)
+-		goto out;
+-
+ 	/* find_router() increases neigh_nodes refcount if found. */
+-	neigh_node = find_router(bat_priv, orig_node, recv_if);
++	neigh_node = find_router(orig_node, recv_if);
+ 
+ 	if (!neigh_node)
+ 		goto out;
+@@ -1213,9 +1208,9 @@ int route_unicast_packet(struct bat_priv *bat_priv, struct sk_buff *skb,
+ 		goto out;
+ 
+ 	if (packet_type == BAT_UNICAST &&
+-	    atomic_read(&bat_priv->fragmentation) &&
++	    atomic_read(&orig_node->bat_priv->fragmentation) &&
+ 	    skb->len > neigh_node->if_incoming->net_dev->mtu) {
+-		ret = frag_send_skb(skb, bat_priv,
++		ret = frag_send_skb(skb, orig_node->bat_priv,
+ 				    neigh_node->if_incoming, neigh_node->addr);
+ 		goto out;
+ 	}
+@@ -1223,7 +1218,7 @@ int route_unicast_packet(struct bat_priv *bat_priv, struct sk_buff *skb,
+ 	if (packet_type == BAT_UNICAST_FRAG &&
+ 	    frag_can_reassemble(skb, neigh_node->if_incoming->net_dev->mtu)) {
+ 
+-		ret = frag_reassemble_skb(skb, bat_priv, &new_skb);
++		ret = frag_reassemble_skb(skb, orig_node->bat_priv, &new_skb);
+ 
+ 		if (ret == NET_RX_DROP)
+ 			goto out;
+@@ -1254,6 +1249,7 @@ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if)
  {
-+	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
  	struct unicast_packet *unicast_packet;
++	struct orig_node *orig_node;
  	int hdr_size = sizeof(struct unicast_packet);
  
-@@ -1266,8 +1267,8 @@ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ 	if (check_unicast_packet(skb, hdr_size) < 0)
+@@ -1267,14 +1263,16 @@ int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if)
  		return NET_RX_SUCCESS;
  	}
  
--	return route_unicast_packet(skb, recv_if, unicast_packet->dest,
--				    unicast_packet->header.packet_type);
-+	return route_unicast_packet(bat_priv, skb, recv_if,
-+		unicast_packet->dest, unicast_packet->header.packet_type);
+-	return route_unicast_packet(bat_priv, skb, recv_if,
+-		unicast_packet->dest, unicast_packet->header.packet_type);
++	orig_node = hash_find_orig(bat_priv, unicast_packet->dest);
++	return route_unicast_packet(skb, recv_if, orig_node,
++				    unicast_packet->header.packet_type);
  }
  
  int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
-@@ -1300,8 +1301,8 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct unicast_frag_packet *unicast_packet;
++	struct orig_node *orig_node;
+ 	int hdr_size = sizeof(struct unicast_frag_packet);
+ 	struct sk_buff *new_skb = NULL;
+ 	int ret;
+@@ -1301,8 +1299,9 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
  		return NET_RX_SUCCESS;
  	}
  
--	return route_unicast_packet(skb, recv_if, unicast_packet->dest,
--				    unicast_packet->header.packet_type);
-+	return route_unicast_packet(bat_priv, skb, recv_if,
-+		unicast_packet->dest, unicast_packet->header.packet_type);
+-	return route_unicast_packet(bat_priv, skb, recv_if,
+-		unicast_packet->dest, unicast_packet->header.packet_type);
++	orig_node = hash_find_orig(bat_priv, unicast_packet->dest);
++	return route_unicast_packet(skb, recv_if, orig_node,
++				    unicast_packet->header.packet_type);
  }
  
  
 diff --git a/batman-adv/routing.h b/batman-adv/routing.h
-index c6b2ad3..406f396 100644
+index 406f396..3c04bb0 100644
 --- a/batman-adv/routing.h
 +++ b/batman-adv/routing.h
-@@ -30,8 +30,9 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+@@ -30,17 +30,15 @@ void receive_bat_packet(struct ethhdr *ethhdr,
  void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
  		   struct neigh_node *neigh_node, unsigned char *hna_buff,
  		   int hna_buff_len);
--int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
--			 uint8_t *dest, uint8_t packet_type);
-+int route_unicast_packet(struct bat_priv *bat_priv, struct sk_buff *skb,
-+			 struct batman_if *recv_if, uint8_t *dest,
-+			 uint8_t packet_type);
+-int route_unicast_packet(struct bat_priv *bat_priv, struct sk_buff *skb,
+-			 struct batman_if *recv_if, uint8_t *dest,
+-			 uint8_t packet_type);
++int route_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if,
++			 struct orig_node *orig_node, uint8_t packet_type);
  int recv_icmp_packet(struct sk_buff *skb, struct batman_if *recv_if);
  int recv_unicast_packet(struct sk_buff *skb, struct batman_if *recv_if);
  int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if);
+ int recv_bat_packet(struct sk_buff *skb, struct batman_if *recv_if);
+-struct neigh_node *find_router(struct bat_priv *bat_priv,
+-			       struct orig_node *orig_node,
++struct neigh_node *find_router(struct orig_node *orig_node,
+ 			       struct batman_if *recv_if);
+ void bonding_candidate_del(struct orig_node *orig_node,
+ 			   struct neigh_node *neigh_node);
 diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
-index 0b48bf1..23f374a 100644
+index 23f374a..7225764 100644
 --- a/batman-adv/soft-interface.c
 +++ b/batman-adv/soft-interface.c
-@@ -482,7 +482,8 @@ void interface_rx(struct net_device *soft_iface,
+@@ -439,6 +439,7 @@ void interface_rx(struct net_device *soft_iface,
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(soft_iface);
+ 	struct unicast_packet *unicast_packet;
++	struct orig_node *orig_node;
+ 	struct ethhdr *ethhdr;
+ 	struct vlan_ethhdr *vhdr;
+ 	short vid = -1;
+@@ -482,8 +483,9 @@ void interface_rx(struct net_device *soft_iface,
  
  		memcpy(unicast_packet->dest,
  		       bat_priv->softif_neigh->addr, ETH_ALEN);
--		ret = route_unicast_packet(skb, recv_if, unicast_packet->dest,
-+		ret = route_unicast_packet(bat_priv, skb, recv_if,
-+					   unicast_packet->dest,
+-		ret = route_unicast_packet(bat_priv, skb, recv_if,
+-					   unicast_packet->dest,
++
++		orig_node = hash_find_orig(bat_priv, unicast_packet->dest);
++		ret = route_unicast_packet(skb, recv_if, orig_node,
  					   unicast_packet->header.packet_type);
  		if (ret == NET_RX_DROP)
  			goto dropped;
 diff --git a/batman-adv/unicast.c b/batman-adv/unicast.c
-index 4d794cb..df69514 100644
+index df69514..7262a22 100644
 --- a/batman-adv/unicast.c
 +++ b/batman-adv/unicast.c
-@@ -282,34 +282,19 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
- 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
- 	struct unicast_packet *unicast_packet;
- 	struct orig_node *orig_node;
--	struct neigh_node *neigh_node;
--	int data_len = skb->len;
--	int ret = 1;
-+	int ret = NET_RX_DROP;
- 
- 	/* get routing information */
- 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
- 		orig_node = (struct orig_node *)gw_get_selected(bat_priv);
- 		if (orig_node)
--			goto find_router;
-+			goto route;
- 	}
- 
- 	/* check for hna host - increases orig_node refcount */
- 	orig_node = transtable_search(bat_priv, ethhdr->h_dest);
- 
--find_router:
--	/**
--	 * find_router():
--	 *  - if orig_node is NULL it returns NULL
--	 *  - increases neigh_nodes refcount if found.
--	 */
--	neigh_node = find_router(bat_priv, orig_node, NULL);
--
--	if (!neigh_node)
--		goto out;
--
--	if (neigh_node->if_incoming->if_status != IF_ACTIVE)
--		goto out;
--
-+route:
- 	if (my_skb_head_push(skb, sizeof(struct unicast_packet)) < 0)
- 		goto out;
- 
-@@ -323,24 +308,12 @@ find_router:
+@@ -308,8 +308,8 @@ route:
  	/* copy the destination for faster routing */
  	memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
  
--	if (atomic_read(&bat_priv->fragmentation) &&
--	    data_len + sizeof(struct unicast_packet) >
--				neigh_node->if_incoming->net_dev->mtu) {
--		ret = frag_send_skb(skb, bat_priv,
--				    neigh_node->if_incoming, neigh_node->addr);
--		goto out;
--	}
--
--	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
--	ret = 0;
--	goto out;
-+	ret = route_unicast_packet(orig_node->bat_priv, skb, NULL,
-+		unicast_packet->dest, unicast_packet->header.packet_type);
+-	ret = route_unicast_packet(orig_node->bat_priv, skb, NULL,
+-		unicast_packet->dest, unicast_packet->header.packet_type);
++	ret = route_unicast_packet(skb, NULL, orig_node,
++				   unicast_packet->header.packet_type);
  
  out:
--	if (neigh_node)
--		neigh_node_free_ref(neigh_node);
--	if (orig_node)
--		kref_put(&orig_node->refcount, orig_node_free_ref);
--	if (ret == 1)
-+	if (ret == NET_RX_DROP)
- 		kfree_skb(skb);
-+
- 	return ret;
- }
+ 	if (ret == NET_RX_DROP)
 -- 
 1.7.2.3
 
