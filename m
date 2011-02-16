@@ -1,15 +1,14 @@
 Return-Path: <andrew@lunn.ch>
-Date: Wed, 16 Feb 2011 07:08:11 +0100
+Date: Wed, 16 Feb 2011 07:16:49 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20110216060811.GB11570@lunn.ch>
+Message-ID: <20110216061649.GC11570@lunn.ch>
 References: <1297789948-16948-1-git-send-email-linus.luessing@ascom.ch>
-	<1297789948-16948-3-git-send-email-linus.luessing@ascom.ch>
+	<1297789948-16948-4-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1297789948-16948-3-git-send-email-linus.luessing@ascom.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 02/13] batman-adv: Add explicit batman
- header structure
+In-Reply-To: <1297789948-16948-4-git-send-email-linus.luessing@ascom.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/13] batman-adv: Unify TTL handling
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,54 +23,22 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Linus L??ssing <linus.luessing@ascom.ch>
 
-On Tue, Feb 15, 2011 at 06:12:17PM +0100, Linus L??ssing wrote:
-> Just a minor style adjustment, to give people a hint which fields should
-> not be reordered and need to be at the beginning of each packet with
-> batman-adv's frame type.
-
-Hi Linus
-  
-> +struct batman_header {
-> +	uint8_t  packet_type;
-> +	uint8_t  version;  /* batman version field */
-> +	uint8_t  ttl;
-> +	uint8_t  align;
-> +} __packed;
+On Tue, Feb 15, 2011 at 06:12:18PM +0100, Linus L??ssing wrote:
+> All our packets have a TTL and with the last batman header patch also at
+> the same place in a batman encapsulated packet. We can therefore savely
+> do one single TTL check before sending any batman packet type.
+ 
+> +static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
+> +				  struct sk_buff *skb)
+> +{
+> +	struct orig_node *orig_node = NULL;
+> +	struct neigh_node *neigh_node = NULL;
+> +	struct icmp_packet *icmp_packet;
+> +	int ret = NET_RX_DROP;
 > +
->  struct batman_packet {
-> -	uint8_t  packet_type;
-> -	uint8_t  version;  /* batman version field */
-> +	struct   batman_header header;
-> +	uint32_t seqno;
->  	uint8_t  flags;    /* 0x40: DIRECTLINK flag, 0x20 VIS_SERVER flag... */
->  	uint8_t  tq;
-> -	uint32_t seqno;
->  	uint8_t  orig[6];
->  	uint8_t  prev_sender[6];
-> -	uint8_t  ttl;
->  	uint8_t  num_hna;
->  	uint8_t  gw_flags;  /* flags related to gateway class */
-> -	uint8_t  align;
->  } __packed;
 
-Two different ideas, both triggered by the align byte in header. This
-byte is a waste of space, it is not used, and it is probably not easy
-to find something which all packet types are going to need in the
-future. 
+This is in the middle of the send path, so calling it
+recv_icmp_ttl_exceeded() seems a bit strange. I would say either
+send_icmp_ttl_exceeded() or recvd_icmp_ttl_exceeded() are better.
 
-1) Did you try not having it. So long header is __packed, and all the
-structures it is used in are __packed, i think the compiler will do
-the right thing. The downside is that alignment is not obvious. Most
-people will assume header is 4 bytes, not 3, and think the alignment
-of the packets is wrong. 
-
-2) Did you consider using a union? It is a more invasive patch, but
-the alignment is then clear. The downside is sizeof() no longer gives
-you the per packet type size, rather it gives you the size of the
-biggest member of the union. So this makes the change even more
-invasive and bug prone.
-
-I think i prefer 1), with appropriate comments to explain the
-alignment issue.
-
-	  Andrew
+	 Andrew
