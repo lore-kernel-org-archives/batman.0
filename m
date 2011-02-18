@@ -1,15 +1,14 @@
-Return-Path: <Linus.Luessing@ascom.CH>
-In-Reply-To: <20110216060811.GB11570@lunn.ch>
-References: <1297789948-16948-1-git-send-email-linus.luessing@ascom.ch>
-	<1297789948-16948-3-git-send-email-linus.luessing@ascom.ch>
-	<20110216060811.GB11570@lunn.ch>
+Return-Path: <ordex@ritirata.org>
+Date: Fri, 18 Feb 2011 10:33:29 +0100
+From: Antonio Quartulli <ordex@ritirata.org>
+Message-ID: <20110218093329.GA21474@ritirata.org>
+References: <20101216001530.GD2104@ritirata.org>
+	<201012301747.35093.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Message-ID: <OF1CE3C18F.65202C60-ONC1257839.0051202F-C1257839.0052EAAC@ln.ascom.ch>
-From: Linus Luessing <Linus.Luessing@ascom.CH>
-Date: Wed, 16 Feb 2011 16:05:39 +0100
-Content-Type: text/plain; charset="US-ASCII"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 02/13] batman-adv: Add explicit batman
- header structure
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <201012301747.35093.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] HNAs Announcements and Roaming management v2]
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,108 +20,94 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Andrew Lunn <andrew@lunn.ch> schrieb am 16.02.2011 07:08:11:
-
-> [Bild entfernt] 
+On gio, dic 30, 2010 at 05:47:34 +0100, Marek Lindner wrote:
 > 
-> Re: [B.A.T.M.A.N.] [PATCH 02/13] batman-adv: Add explicit batman 
-> header structure
+> Hi,
 > 
-> Andrew Lunn 
+> > A lot of things have changed since the previous version of this paper.
+> > 
+> > As usual, feel free to comment it. I'll wait for your feedback :)
 > 
-> an:
+> we are sitting here together with your paper in one hand and warm apfelstrudel 
+> in the other. After some discussion we came up with a list of questions / 
+> ideas that should we discuss further:
 > 
-> The list for a Better Approach To Mobile Ad-hoc Networking
-> 
-> 16.02.2011 07:08
-> 
-> Kopie:
-> 
-> Linus L??ssing
-> 
-> On Tue, Feb 15, 2011 at 06:12:17PM +0100, Linus L??ssing wrote:
-> > Just a minor style adjustment, to give people a hint which fields 
-should
-> > not be reordered and need to be at the beginning of each packet with
-> > batman-adv's frame type.
-> 
-> Hi Linus
-> 
-> > +struct batman_header {
-> > +   uint8_t  packet_type;
-> > +   uint8_t  version;  /* batman version field */
-> > +   uint8_t  ttl;
-> > +   uint8_t  align;
-> > +} __packed;
-> > +
-> >  struct batman_packet {
-> > -   uint8_t  packet_type;
-> > -   uint8_t  version;  /* batman version field */
-> > +   struct   batman_header header;
-> > +   uint32_t seqno;
-> >     uint8_t  flags;    /* 0x40: DIRECTLINK flag, 0x20 VIS_SERVER 
-flag... */
-> >     uint8_t  tq;
-> > -   uint32_t seqno;
-> >     uint8_t  orig[6];
-> >     uint8_t  prev_sender[6];
-> > -   uint8_t  ttl;
-> >     uint8_t  num_hna;
-> >     uint8_t  gw_flags;  /* flags related to gateway class */
-> > -   uint8_t  align;
-> >  } __packed;
-> 
-> Two different ideas, both triggered by the align byte in header. This
-> byte is a waste of space, it is not used, and it is probably not easy
-> to find something which all packet types are going to need in the
-> future.
-
-Sure, anything that not all packet types have in common can't go inside of
-the batman_header. But are those three variables something we could agree
-on, being something that all packet types will need today and in the 
-future?
-version + packet_type is something we'll always need I think, the TTL 
-might
-be something to argue about, as packets that do not get routed would not
-necessarily need them (though it could be a "safety belt" in case of bugs,
-to really make sure packets only intended for one hop will not be routed).
-
-> 
-> 1) Did you try not having it. So long header is __packed, and all the
-> structures it is used in are __packed, i think the compiler will do
-> the right thing. The downside is that alignment is not obvious. Most
-> people will assume header is 4 bytes, not 3, and think the alignment
-> of the packets is wrong. 
-> 
-> 2) Did you consider using a union? It is a more invasive patch, but
-> the alignment is then clear. The downside is sizeof() no longer gives
-> you the per packet type size, rather it gives you the size of the
-> biggest member of the union. So this makes the change even more
-> invasive and bug prone.
-
-Hmm, no, actually haven't thought about that. So we'd actually put the 
-batman
-packet types as a union inside of the batman-header structure, instead of
-putting the header structure at the front of each packet type. Don't know
-if I'd like that either, due to the reason you've mentioned.
-
-> 
-> I think i prefer 1), with appropriate comments to explain the
-> alignment issue.
-
-So I think I'd prefer the first option, that should work too :). Just 
-didn't think
-that an extra Byte would matter that much, and had the readability / 
-making the
-alignment a little more obvious in mind. (And who knows when we might need 
-to increase
-the version number size already ;) ) 
+> * Is HNA_VERSION_NUM increased with every translation table change (client 
+> joins/disconnects) or does a HNA version may span multiple joins/disconnects ?
 
 
-> 
->      Andrew
+It is increased on every local table change.
 
-Cheers, Linus
+> 
+> * In case of a HNA diff sent via TT_QUERY_RESPONSE you suggest using the 
+> multicast bit to distinguish joins from disconnects which breaks the upcoming 
+> multicast optimization as it uses HNA to announce multicast group membership. 
+> Using an extra flag seems to be the better solution.
+> 
+
+Ok, I'm using a onebyte flag to address the operation.
+
+
+> * Forwarding a packet (roaming advanced) needs to be defined in more detail to 
+> make sure that we don't introduce traffic loops. For example, what happens if 
+> one node on the path already received the delete update but not the add update 
+> or if some nodes received the add update and others not, etc.
+> 
+> * Linus suggested to add a flag for the "roaming delete" event which says 
+> "don't delete me if I am the only route" to avoid that the source has no route 
+> until it received the "add" event from the new orig node.
+> 
+
+
+I think that a better solution (cleaner) could be in increasing the hna
+version counter on ROAMING_ADVERTISEMENT receivement but without adding
+the delete command. In this way a node receiving the old node's OGM will
+know that something changes (and this will force it to look up the
+global translation table on forwarding) but it won't delete the old
+route for the client until the new node's OGM arrives.
+
+
+> * How to handle mac address conflicts ?
+> 
+
+What do you exactly mean? Was this conflict considered in the past
+actual solution?
+
+> * The OGM packet format with the appended HNA diffs is missing ? Don't forget 
+> to add a HNA diff length field otherwise the OGM aggregation won't work.
+> 
+
+Ok, thanks :)
+
+> * The current HNA fragmenation proposal sounds rather fragile and susceptible 
+> to race conditions. If the a HNA fragment gets lost and the receiving node 
+> requests it to be resent before or after a new HNA event took place, etc
+> Therefore we'd like to suggest a simplification by always sending the whole 
+> translation table instead of specific fragments. It does not seem to be a big 
+> problem as direct neighbors also can answer with the full table.
+> 
+> * If neighbors can answer with the whole table then we might be able to avoid 
+> the diff history on each and every node. A TT_QUERY_REQUEST could always 
+> requests the full table instead of the diffs.
+> 
+
+I think we can still improve this. I scheduled it in the list :)
+
+
+> Hope you find this input useful - happy new year !
+
+It has been really usefull! Happy new year too :D:D:D (2012!)
+
+> 
+> Regards,
+> Marek
+
+Bye
+
+-- 
+Antonio Quartulli
+
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
