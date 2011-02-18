@@ -1,15 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 18 Feb 2011 13:17:31 +0100
-References: <1297550891-18231-1-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <1297550891-18231-1-git-send-email-linus.luessing@ascom.ch>
+Date: Fri, 18 Feb 2011 13:26:46 +0100
+References: <201102091918.42080.lindner_marek@yahoo.de>
+In-Reply-To: <201102091918.42080.lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201102181317.32226.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix possible buffer overflow
-	in softif neigh list output
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201102181326.47236.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] reordered rcu (part II)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,14 +22,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday 12 February 2011 23:48:11 Linus L=C3=BCssing wrote:
-> Furthermore 31 Bytes are not enough for printing an entry with a vid
-> of more than 2 digits.
->=20
-> The manual buffering is unnecessary, we can safely print to the seq
-> directly during the rcu_read_lock().
+On Wednesday 09 February 2011 19:18:41 Marek Lindner wrote:
+> here comes the next batch of changes to make the code "rcu safe". It won't
+> be the last one but should make all follow-ups much easier.
 
-Applied in revision 1946.
+Applied in revision 1947-1950.
 
-Thanks,
+Regards,
 Marek
