@@ -1,11 +1,13 @@
-Return-Path: <Stefan@Radtke.eu>
-Message-ID: <4D64BAFF.9050006@Radtke.eu>
-Date: Wed, 23 Feb 2011 08:45:03 +0100
-From: "Dr. Stefan Radtke" <Stefan@Radtke.eu>
+Return-Path: <ordex@ritirata.org>
+Date: Wed, 23 Feb 2011 09:54:09 +0100
+From: Antonio Quartulli <ordex@ritirata.org>
+Message-ID: <20110223085409.GA7707@ritirata.org>
+References: <4D64BAFF.9050006@Radtke.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] Problem after configuring a bridge
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4D64BAFF.9050006@Radtke.eu>
+Subject: Re: [B.A.T.M.A.N.] Problem after configuring a bridge
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,42 +19,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello *,
+Hello!
 
-I set up batman-adv-2010  on OpenWRT (backfire 10.3.x). Mesh interface  
-is wlan0 and another non-batman-LAN is connected to eth0. non-batman 
-clients should connect via the eth0 interface. (Full description and 
-network diagram here: 
-https://forum.openwrt.org/viewtopic.php?pid=129226#p129226 ).
+On mer, feb 23, 2011 at 08:45:03 +0100, Dr. Stefan Radtke wrote:
+> I have to configure a bridge  (according to quick start guide 
+> http://www.open-mesh.org/wiki/batman-adv-quick-start-guide) because I 
+> want batman-adv to announce MAC-addresses connected to eth0 (see network 
+> diagram):
+> 
+> brctl addbr mesh-bridge
+> brctl addif mesh-bridge eth0
+> brctl addif mesh-bridge bat0
+> ifconfig eth0 up
+> ifconfig bat0 up
+> ifconfig mesh-bridge up
 
-After setting up batman-adv 2010.x with
+Did you also do
+	ifconfig bat0 0.0.0.0 up
+	ifconfig mesh-bridge 192.168.10.2 u
+?
+You have to remove the IP address from the real interface and add it to
+the bridge one.
 
-batctl if add wlan0
-ifconfig wlan 0 0.0.0.0
-ifconfig bat0 192.168.10.2    (previous ip address of wlan0)
-ifconfig bat0 up
+Regards
 
-I have to configure a bridge  (according to quick start guide 
-http://www.open-mesh.org/wiki/batman-adv-quick-start-guide) because I 
-want batman-adv to announce MAC-addresses connected to eth0 (see network 
-diagram):
+-- 
+Antonio Quartulli
 
-brctl addbr mesh-bridge
-brctl addif mesh-bridge eth0
-brctl addif mesh-bridge bat0
-ifconfig eth0 up
-ifconfig bat0 up
-ifconfig mesh-bridge up
-
-
-Although the translation tables (global and local) seem fine in this moment, at the same momentof bringing up the bridge I cannot send any more packets through bat0 or ent0.
-Both don't even reply to a ping.
-
-Network setup and outputs of ifconfig onhttp://www.open-mesh.org/wiki/batman-adv-quick-start-guide  
-
-Any hint is appreciated.
-
-Stefan
-
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
