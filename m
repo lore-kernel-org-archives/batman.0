@@ -1,16 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 22 Feb 2011 15:22:45 +0100
-References: <201101211933.03003.lindner_marek@yahoo.de>
-	<201102071550.36130.lindner_marek@yahoo.de>
-In-Reply-To: <201102071550.36130.lindner_marek@yahoo.de>
+Return-Path: <Stefan@Radtke.eu>
+Message-ID: <4D64BAFF.9050006@Radtke.eu>
+Date: Wed, 23 Feb 2011 08:45:03 +0100
+From: "Dr. Stefan Radtke" <Stefan@Radtke.eu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201102221522.46475.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Wireless Battle Mesh v4 - Call for
-	papers (update II)
+Subject: [B.A.T.M.A.N.] Problem after configuring a bridge
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,68 +18,41 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: olsr-users@lists.olsr.org, battlemesh@ml.ninux.org, babel-users@lists.alioth.debian.org
 
-Wireless Battle Mesh v4 - Call for papers (update II)
-=================================
+Hello *,
 
-The second agenda preview also is a reminder: We are nearing the submission 
-deadline - only one week left to get your topic onto the agenda! Contact us 
-before the end of this month otherwise we won't be able to consider your 
-application.
+I set up batman-adv-2010  on OpenWRT (backfire 10.3.x). Mesh interface  
+is wlan0 and another non-batman-LAN is connected to eth0. non-batman 
+clients should connect via the eth0 interface. (Full description and 
+network diagram here: 
+https://forum.openwrt.org/viewtopic.php?pid=129226#p129226 ).
 
-Since the last preview a few more items have materialized / updated:
+After setting up batman-adv 2010.x with
 
+batctl if add wlan0
+ifconfig wlan 0 0.0.0.0
+ifconfig bat0 192.168.10.2    (previous ip address of wlan0)
+ifconfig bat0 up
 
-Technical Track:
-===========
+I have to configure a bridge  (according to quick start guide 
+http://www.open-mesh.org/wiki/batman-adv-quick-start-guide) because I 
+want batman-adv to announce MAC-addresses connected to eth0 (see network 
+diagram):
 
-* Interactive Mesh - make your mesh sing with multicast
-  (talk - Ursula & Pascale Gustin)
-* Google summer of code - old projects and new ideas
- - Free Web Radio Program Scheduler presented by Clauz
- - IPinUDP encapsulation module presented by Saverio
- - Porting OLSR to Nokia N900 and Android OS presented by Mitar
- - Implementation of a Bounded Incremental SPF Algorithm for olsrd presented 
-by Markus Kittenberger
-
-to be confirmed:
- - flashing, re-flashing, debricking framework - Alexander Morlang
-
-open:
- - linux VoIP api at the example of an AirTies WAV-281
-student: Lars-Peter Clausen, mentor: john crispin 
-- Database output for freimap
-student: Nino Ciurleo, mentor: stefano pilla 
-- Liquid freifunk collaboration web framework
-student: Phuc Hau Dang, mentor: Mario Behling
+brctl addbr mesh-bridge
+brctl addif mesh-bridge eth0
+brctl addif mesh-bridge bat0
+ifconfig eth0 up
+ifconfig bat0 up
+ifconfig mesh-bridge up
 
 
-Application Track:
-=============
+Although the translation tables (global and local) seem fine in this moment, at the same momentof bringing up the bridge I cannot send any more packets through bat0 or ent0.
+Both don't even reply to a ping.
 
-* Live demonstration of the "Interactive Mesh"
-  (demonstration - Ursula & Pascale Gustin)
-* Wireless communities around the world
- - guifi.net presented by Ramon Rocca
- - Ninux presented by Saverio
+Network setup and outputs of ifconfig onhttp://www.open-mesh.org/wiki/batman-adv-quick-start-guide  
 
-to be confirmed:
- - Funkfeuer presented by Aaron
- - Ljubljana presented by Mitar
+Any hint is appreciated.
 
-open:
- - Freifunk
+Stefan
 
-
-Special Events:
-============
-
-A barrel of beer will be made available to celebrate the inclusion of the 
-batman-adv kernel module in the to be released Linux kernel 2.6.38.
-
-
-If you have any question or suggestion, please let me know.
- 
-Regards,
-Marek
