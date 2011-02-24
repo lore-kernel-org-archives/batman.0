@@ -1,18 +1,15 @@
-Return-Path: <hlabishik@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20101220090502.GA30598@Sellars>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 24 Feb 2011 11:23:41 +0100
 References: <mailman.14.1290812292.944.b.a.t.m.a.n@lists.open-mesh.org>
-	<AANLkTimR7VU95r3C-=C9rn5ftZahKkNTu3-cU-Vft+VZ@mail.gmail.com>
-	<AANLkTikZJn5T7gEc_REH_vyEwhKhTcsqLRdq8tX0OdF8@mail.gmail.com>
-	<AANLkTinFgQ+Z4OsvyHTMNhy11=SrEz0Xu+YU2iZcdcwZ@mail.gmail.com>
-	<AANLkTimYtBa3fD_YNmFV2x0GUoyNiDzT47wy9Kuok0k9@mail.gmail.com>
-	<AANLkTi=0tLPwa0toe9HX=PwA780mXTox8NrGNxymuF_-@mail.gmail.com>
 	<20101220090502.GA30598@Sellars>
-Date: Thu, 24 Feb 2011 11:58:02 +0200
-Message-ID: <AANLkTi=7es_PbdB+-_+pGZ7B1n2Ke8xFUXRA7vFdP_O-@mail.gmail.com>
-From: hlabishi kobo <hlabishik@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+	<AANLkTi=7es_PbdB+-_+pGZ7B1n2Ke8xFUXRA7vFdP_O-@mail.gmail.com>
+In-Reply-To: <AANLkTi=7es_PbdB+-_+pGZ7B1n2Ke8xFUXRA7vFdP_O-@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart7595868.t57k8dEUVB";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201102241123.43797.sven@narfation.org>
 Subject: Re: [B.A.T.M.A.N.] BATMAN routing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,75 +22,105 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: =?ISO-8859-1?Q?Linus_L=FCssing?= <linus.luessing@web.de>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: hlabishi kobo <hlabishik@gmail.com>
 
-HI everyone
+--nextPart7595868.t57k8dEUVB
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Its been a while, I have been trying to test the weighted algorithm
-(debugging and changing). I made changes on the method
-bit_packet_count or rather replaced it with a method
-weighted_bit_packet_count on which i try to count the number of
-received OGMs received in a sliding window and giving them weights.
-However when i test, i cant seem to ping other nodes to verify
-connectivity (i first try on only two nodes). I have trying this and i
-do not know i might have went wrong. see the code below.
+Disclaimer: I will not comment on the whole subject. All my comments are on=
+ly=20
+based on following code.
 
-int weighted_bit_packet_count(TYPE_OF_WORD *seq_bits)
-{
-	int i, count =3D 0;
-	TYPE_OF_WORD word;
+On Thursday 24 February 2011 10:58:02 hlabishi kobo wrote:
+> int weighted_bit_packet_count(TYPE_OF_WORD *seq_bits)
+> {
+>         int i, count =3D 0;
+>         TYPE_OF_WORD word;
+>=20
+>         for (i =3D 0; i < NUM_WORDS; i++) {
+>                 //word =3D seq_bits[i];
+>                =20
+>                 if (seq_bits[i] =3D=3D 1)
+>                         count +=3D i;            =20
+>         }
+>         return count;
+>=20
+> }
 
-	for (i =3D 0; i < NUM_WORDS; i++) {
-		//word =3D seq_bits[i];
-	=09
-		if (seq_bits[i] =3D=3D 1)
-			count +=3D i;	=09
-	}
-	return count;
+You only gave us the following code and no other information. I must assume=
+=20
+that other parts of the code weren't modified. The part of the code seems t=
+o=20
+be derived from following function:
 
+int bit_packet_count(unsigned long *seq_bits)                              =
+                                                                   =20
+{                                                                          =
+                                                                   =20
+        int i, hamming =3D 0;                                              =
+                                                                     =20
+                                                                           =
+                                                                   =20
+        for (i =3D 0; i < NUM_WORDS; i++)                                  =
+                                                                     =20
+                hamming +=3D hweight_long(seq_bits[i]);                    =
+                                                                     =20
+                                                                           =
+                                                                   =20
+        return hamming;                                                    =
+                                                                   =20
 }
 
-Kind Regards
-Hlabishi
+It is easy to notice that the original function is aware that many bits ins=
+ide=20
+a word (unsigned long) are set either to zero or to one. The sum of all bit=
+s=20
+inside all words (sum of the hamming weights) is complete set of informatio=
+n=20
+the routing algorithm needs to make any decision.
 
-On 12/20/10, Linus L=FCssing <linus.luessing@web.de> wrote:
-> Hi everyone,
->
-> just wanted to share a website I found, which is actually for
-> stock markets and their charts, but I think the Moving Average of
-> a data set, that's what we'd have in common. And I guess what the
-> economists have discovered and thought being useful could be
-> useful for us, too. There are some nice and easy to understand
-> articles here that explain the pros and cons:
->
-> http://www.investopedia.com/university/
->
-> Dictionary:
-> - Simple Moving Average: http://www.investopedia.com/terms/s/sma.asp
->   (what we have now)
-> - Weighted Moving Average:
->   http://www.investopedia.com/terms/l/linearlyweightedmovingaverage.asp
->   (Hlabishi's proposal)
-> - Exponential Moving Average:
->   http://www.investopedia.com/terms/e/ema.asp
-> - Double Exponential Moving Average:
->   http://www.investopedia.com/terms/d/double-exponential-moving-average.a=
-sp
->
-> Articles:
-> - Weighted Moving Average:
->   http://www.investopedia.com/articles/technical/060401.asp
-> - Simple vs. Exponential Moving Average:
->
-> http://www.investopedia.com/articles/trading/10/simple-exponential-moving=
--averages-compare.asp
-> - Double Exponential Moving Averages Explained:
->
-> http://www.investopedia.com/articles/trading/10/double-exponential-moving=
--average.asp
-> - Moving Averages:
->   http://www.investopedia.com/university/movingaverage/default.asp
->
-> Cheers, Linus
->
+Your function is also operating on the same data, but only tests if the las=
+t=20
+bit in every word is 1. Lets assume that a unsigned long is 64 bit long and=
+ we=20
+have 8 of them. That means that we are only allowed to have received every =
+8th=20
+ogm and that we are currently shifted these bits to the lsb position of eac=
+h=20
+word. Something tells me that I should not start to calculate the probabili=
+ty=20
+of such an event.
+
+I would suggest that you check your originator and global/local translation=
+=20
+tables.
+
+Best regards,
+	Sven
+
+--nextPart7595868.t57k8dEUVB
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCgAGBQJNZjGuAAoJEF2HCgfBJntGLu4P/0CmIF6pI6T0PF/Eku7MNAiP
+R68u2g9+QL231KYsWBc6vR8aSjhIHWQuQIty3krpwpLOvyRFzu4Uwjbq+HBD3LCG
+sdG0p0FI00deQtXmzfNmoWFLUvlr3hzImBIrJlQFEV1Gyzm9+56v/SvgCDBGcPV8
+QVgKRIHzFvjk0IE1Bl6rr4dVbfomBRpv6CCUL7ywaZmngXSOJZ5M8JL2Otxhge0r
+hxmvBiIgLkFCOyuO7sr6RKe96+uYunc0Sz0sghW2XD+jianPg1F51++JsveqGvnn
+3GCLugHRg/prlZuLIM9sKbIr8Lr6BdZqziHcq423UqpLugCTsyjN2h+BfQKzp/6B
+l4Y0YGVbi/hBNhhQVVcKi7CIriQ0nYLZ0ZniXhGoq2UdcvmBOu/neSmAkOexvP8n
+GBf5ScX2S9Fw+bBB4Jp0NHobMl94pKPFPapnMEUa0R2rBWRNrLCLpKAYgss5/t2x
+T4uP7Tr8TFfPv6o+Jngy6tNNOF05Dh8E1r0JN80SKiVS+IRNErCA+KwhqjwQBwIv
+MBjqoEPPEn/br+kRjfB/ZA3v2lX/YFa1Mgf1Y3Fz2Yts2LLq2DuXvJXXI8FGSpwT
+S4qWUYYJF6dd9CWpgkrUsj4crx+6q6nCRJ6/tuhKn4OxMkd/nEFUiOn/4KZknBLo
+8TEQALckPa5bQBtVq5T2
+=0p4z
+-----END PGP SIGNATURE-----
+
+--nextPart7595868.t57k8dEUVB--
