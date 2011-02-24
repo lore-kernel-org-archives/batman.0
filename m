@@ -1,14 +1,19 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 23 Feb 2011 19:14:52 +0100
-References: <4D64BAFF.9050006@Radtke.eu> <4D654722.4030506@Radtke.eu>
-In-Reply-To: <4D654722.4030506@Radtke.eu>
+Return-Path: <hlabishik@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1797997.N1dHJHINN9";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201102231914.56033.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] Problem after configuring a bridge
+In-Reply-To: <20101220090502.GA30598@Sellars>
+References: <mailman.14.1290812292.944.b.a.t.m.a.n@lists.open-mesh.org>
+	<AANLkTimR7VU95r3C-=C9rn5ftZahKkNTu3-cU-Vft+VZ@mail.gmail.com>
+	<AANLkTikZJn5T7gEc_REH_vyEwhKhTcsqLRdq8tX0OdF8@mail.gmail.com>
+	<AANLkTinFgQ+Z4OsvyHTMNhy11=SrEz0Xu+YU2iZcdcwZ@mail.gmail.com>
+	<AANLkTimYtBa3fD_YNmFV2x0GUoyNiDzT47wy9Kuok0k9@mail.gmail.com>
+	<AANLkTi=0tLPwa0toe9HX=PwA780mXTox8NrGNxymuF_-@mail.gmail.com>
+	<20101220090502.GA30598@Sellars>
+Date: Thu, 24 Feb 2011 11:58:02 +0200
+Message-ID: <AANLkTi=7es_PbdB+-_+pGZ7B1n2Ke8xFUXRA7vFdP_O-@mail.gmail.com>
+From: hlabishi kobo <hlabishik@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] BATMAN routing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,67 +25,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: =?ISO-8859-1?Q?Linus_L=FCssing?= <linus.luessing@web.de>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1797997.N1dHJHINN9
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+HI everyone
 
-On Wednesday 23 February 2011 18:42:58 Dr. Stefan Radtke wrote:
-> Hello Antonio, Sven,
->=20
-> thanks for your comments. With your help I could set it up. The mistake
-> was in fact the ip-address on bat0.
->=20
-> I removed all IP addresses and set them to the bridge. That worked !
->=20
-> For those who might run into the same problem, here is the correct setup:
-> http://www.radtke.eu/tmp/Leitzberg-Mesh-corrected.gif
+Its been a while, I have been trying to test the weighted algorithm
+(debugging and changing). I made changes on the method
+bit_packet_count or rather replaced it with a method
+weighted_bit_packet_count on which i try to count the number of
+received OGMs received in a sliding window and giving them weights.
+However when i test, i cant seem to ping other nodes to verify
+connectivity (i first try on only two nodes). I have trying this and i
+do not know i might have went wrong. see the code below.
 
-I've noticed two IPs for br0:0 in node1 but no for br0 - is this correct?
+int weighted_bit_packet_count(TYPE_OF_WORD *seq_bits)
+{
+	int i, count =3D 0;
+	TYPE_OF_WORD word;
 
-> But a question is remaining: once the mesh was running, I wanted to turn
-> on enrcyption but this seems not working in ad-hoc mode with OpenWRT .
-> If I select Access Point mode for wlan0 the WPA2 encryption works....but
-> this is not supported with batman-adv since the wifis need to run in
-> ad-hoc mode. Any hint for this if I want to run the mesh encrypted ?
+	for (i =3D 0; i < NUM_WORDS; i++) {
+		//word =3D seq_bits[i];
+	=09
+		if (seq_bits[i] =3D=3D 1)
+			count +=3D i;	=09
+	}
+	return count;
 
-This is wrong. batman-adv doesn't need a network which is setup in adhoc mo=
-de.=20
-It only needs a layer which has roughly the characteristics of ethernet (fr=
-ame=20
-header, broadcast/multicast addresses, ...).
+}
 
-If you want some kind of encryption in adhoc mode as part of the wifi layer=
-=20
-then please try WPA_NONE or similar protocols. Authorisation, authenticatio=
-n=20
-and encryption in higher layers are still highly recommended.
+Kind Regards
+Hlabishi
 
-Best regards,
-	Sven
-
---nextPart1797997.N1dHJHINN9
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABCgAGBQJNZU6dAAoJEF2HCgfBJntG1fIP/RsE4Lh7O4JzZb/SAN2n6OLA
-c2o7XrUgxE4tpPLxPwqP2jRsqRBJEvj6KFCG053s4BLXPOxJyo88GZvngbwfFYdZ
-ovcrqRGRab5TpOD/XEBejbG5p9IebPLNi4+Rj3ZUC47utdncOwqpux07bm/PfcOn
-EVWmS/gAoWwuJr5LMvhEe1esBZMVhnN74sbLrJRqMYp0Lh6GJF/GMN2kKR5v/h93
-SSiSEnHvdqfEkJPSk3g/+rrxeVyXZWe4LWZj8XSExZPIPDic34QVhxm38strYd3u
-D90sZI0eaE7WVptuUJOyOz2N1Vo5bH9Z7hKes4krP36sqpBVCB1Cx9x/T+PVIUJN
-L39f5rj/sLP0Vz4UK5tcJPJ1tMhjT+pJpdsgQDpgQgqGhvrnC4yxoambjwJdwIpk
-2yAd6NoF/6I1mB9E4gZqzQLg+CqvQcxfhk9aey8QB0BPvYoqb3/JKQ1YBZicTVoj
-/h2ZxJzX2aE30EBL/f47H4ccuX1bs1wX88I8ddixHnpgmqa7OFpkSrvd0a6qO9Qb
-9sw0CZKEh3F7no3hCASNCYhw8uw8+DfdeB8vqPLoPCogGrUZ42a/E4uc+R9se3kf
-NLH8+XAcFqMK5cKPIc69CWZd105Jnx0np0Ysg8Hm24O2t8NwkWxMowU3nzHd2RHy
-rY6F7U4p+OoE8Mw0HQo2
-=jNA2
------END PGP SIGNATURE-----
-
---nextPart1797997.N1dHJHINN9--
+On 12/20/10, Linus L=FCssing <linus.luessing@web.de> wrote:
+> Hi everyone,
+>
+> just wanted to share a website I found, which is actually for
+> stock markets and their charts, but I think the Moving Average of
+> a data set, that's what we'd have in common. And I guess what the
+> economists have discovered and thought being useful could be
+> useful for us, too. There are some nice and easy to understand
+> articles here that explain the pros and cons:
+>
+> http://www.investopedia.com/university/
+>
+> Dictionary:
+> - Simple Moving Average: http://www.investopedia.com/terms/s/sma.asp
+>   (what we have now)
+> - Weighted Moving Average:
+>   http://www.investopedia.com/terms/l/linearlyweightedmovingaverage.asp
+>   (Hlabishi's proposal)
+> - Exponential Moving Average:
+>   http://www.investopedia.com/terms/e/ema.asp
+> - Double Exponential Moving Average:
+>   http://www.investopedia.com/terms/d/double-exponential-moving-average.a=
+sp
+>
+> Articles:
+> - Weighted Moving Average:
+>   http://www.investopedia.com/articles/technical/060401.asp
+> - Simple vs. Exponential Moving Average:
+>
+> http://www.investopedia.com/articles/trading/10/simple-exponential-moving=
+-averages-compare.asp
+> - Double Exponential Moving Averages Explained:
+>
+> http://www.investopedia.com/articles/trading/10/double-exponential-moving=
+-average.asp
+> - Moving Averages:
+>   http://www.investopedia.com/university/movingaverage/default.asp
+>
+> Cheers, Linus
+>
