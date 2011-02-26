@@ -1,13 +1,18 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 27 Feb 2011 00:01:24 +0100
+Return-Path: <linus.luessing@web.de>
+Date: Sat, 26 Feb 2011 20:31:47 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20110226193147.GB18971@Sellars>
+References: <4D668F3F.4080700@orxrail.com> <20110224194414.GA15337@Sellars>
+	<4D66BBC9.80101@orxrail.com>
+	<201102250130.35865.lindner_marek@yahoo.de>
+	<4D67B241.8070606@orxrail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201102270001.24921.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4D67B241.8070606@orxrail.com>
+Sender: linus.luessing@web.de
 Subject: Re: [B.A.T.M.A.N.] batman-adv mesh slows down wired
- =?utf-8?q?clients=09?=(bridge-loop-avoidance)
+	clients	(bridge-loop-avoidance)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,18 +25,6 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-
-Hi,
-
-Linus has some problems sending mails to the list, so I forward his reply.
-
-Cheers,
-Marek
-
-
-============================================
-
 
 Hi Vinay,
 
