@@ -1,13 +1,14 @@
-Return-Path: <daniele.furlan@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20110228123720.GG4698@lunn.ch>
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 28 Feb 2011 15:48:20 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20110228144820.GH4698@lunn.ch>
 References: <AANLkTim+tN9NKUUHJqcaaxS-RpWeLQqrUoB0D+=sA0J7@mail.gmail.com>
 	<20110228123720.GG4698@lunn.ch>
-Date: Mon, 28 Feb 2011 14:07:36 +0100
-Message-ID: <AANLkTikdyLe01RSdet=Y1bZgjnCAUCcbdvJdXyUDSVw=@mail.gmail.com>
-From: Daniele Furlan <daniele.furlan@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+	<AANLkTikdyLe01RSdet=Y1bZgjnCAUCcbdvJdXyUDSVw=@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <AANLkTikdyLe01RSdet=Y1bZgjnCAUCcbdvJdXyUDSVw=@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] OGM overhead and routing metric proposal
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,56 +23,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-2011/2/28 Andrew Lunn <andrew@lunn.ch>:
->> In attachment you will also find a draft/proposals of a new routing
->> approach. It is based on the collection of more link parameters (the
->> current TQ, bit-rate and node-load) to write in OGM at each hop. This
->> permit to develop a more thorough metric and can open new room of
->> improvement such multi-path routing.
->
-> Hi Daniele
->
-> Do you have any suggestions how to collect this bit-rate information?
-> Do you suggest measuring it, or asking the wireless LAN driver? =A0Is
-> there an API in the kernel to allow access to this information?
->
-I'm not a kernel guru but i find out that the new core mac80211 and
-cfg80211 (http://linuxwireless.org/) offers the possibility to obtain
-a per-station bit-rate information that should be driver independent.
-The measurement is an alternative but I think it is more complex to
-implement. The load measurement instead is more difficult and at this
-moment have not idea of how to do it!!
+> I'm not a kernel guru but i find out that the new core mac80211 and
+> cfg80211 (http://linuxwireless.org/) offers the possibility to obtain
+> a per-station bit-rate information that should be driver independent.
 
-> Also, how do you see this interacting with the hidden node problem? In
-> order to reduce the hidden node problem, you ideally want to use the
-> lowest coding rate and transmit power possible to get your packets
-> through. Currently this is not being done. Current wireless systems
-> optimize for maximum bandwidth between two nodes, which may not be the
-> optimum for the complete mesh bandwidth, due to inter node
-> interference.
->
-I have not mentioned the hidden node problem. But I think this problem
-is very difficult to remove, the only best practice to reduce the
-problem is to force the RTS/CTS mechanism to be active. Other
-phenomena such as capture effect instead are intrinsic in the wireless
-networking and are very difficult to eliminate. The optimization of
-bandwidth in my opinion does not influence the protocol because if the
-link is bad, rate adaption mechanism will reduce the bit-rate and I
-can read this information from the driver.
+O.K. I will take a look at this.
 
-Anyhow collecting more information about link can help much in
-evaluating the best route I think, and offer a big opportunity to
-experiment new metrics.
+> I have not mentioned the hidden node problem. But I think this problem
+> is very difficult to remove, the only best practice to reduce the
+> problem is to force the RTS/CTS mechanism to be active.
 
-> Will you be at the WBMv4 next Month?
->
-I'm afraid but I cannot be at WMBv4, I hope I can come to the next
-WBM, maybe with a working implementation :)
+RTS/CTS helps, true. But it has a few problems. e.g. most meshing
+protocols use broadcast packets for there management. e.g. BATMANs
+OGMs are broadcast. These cannot be protected with RTS/CTS. So the
+OGMs can collide with RTS packets from a hidden node, or OGMs from a
+hidden node.
 
-> =A0 =A0 Andrew
->
+Another way to help reduce the hidden node problem, or interference
+with other nodes, is to use a low coding rate and transmit power when
+possible. So for example when we don't have much traffic to send to
+node X, it could send the packets with the lowest coding rate and low
+power. This keeps the interference with other nodes to a minimum. As
+the amount of data for X increases, the coding rate and transmit power
+can be increased, so increasing the available bandwidth to X, but at
+the same time increasing the amount of interference the traffic
+produces.
 
+Such a scheme to minimize interference does not play too well with
+your idea of putting the coding rate into the OGMs. We would have to
+ensure that the coding rate is the highest possible coding rate usable
+between two peers, not the currently used coding rate, which could be
+low in order to avoid interference.
 
+> > Will you be at the WBMv4 next Month?
+> >
+> I'm afraid but I cannot be at WMBv4, I hope I can come to the next
+> WBM, maybe with a working implementation :)
 
---=20
-Daniele Furlan
+Shame, i plan to talk more about the hidden node problem during WBMv4.
+It is also a good place to discuss new ideas like adding information
+into the OGMs.
+
+     Andrew
