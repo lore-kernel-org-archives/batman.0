@@ -1,16 +1,15 @@
-Return-Path: <daniele.furlan@gmail.com>
+Return-Path: <vinay@orxrail.com>
+Message-ID: <4D6BF3B3.8040509@orxrail.com>
+Date: Mon, 28 Feb 2011 14:12:51 -0500
+From: Vinay Tharigopula <vinay@orxrail.com>
 MIME-Version: 1.0
-In-Reply-To: <20110228144820.GH4698@lunn.ch>
-References: <AANLkTim+tN9NKUUHJqcaaxS-RpWeLQqrUoB0D+=sA0J7@mail.gmail.com>
-	<20110228123720.GG4698@lunn.ch>
-	<AANLkTikdyLe01RSdet=Y1bZgjnCAUCcbdvJdXyUDSVw=@mail.gmail.com>
-	<20110228144820.GH4698@lunn.ch>
-Date: Mon, 28 Feb 2011 17:00:23 +0100
-Message-ID: <AANLkTikH6y62sEUUmW9UuXdY=koyDSk5K9Zmnhd6cp7U@mail.gmail.com>
-From: Daniele Furlan <daniele.furlan@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] OGM overhead and routing metric proposal
+References: <4D668F3F.4080700@orxrail.com>	<201102250130.35865.lindner_marek@yahoo.de>	<4D67B241.8070606@orxrail.com>
+	<201102262349.52282.lindner_marek@yahoo.de>
+In-Reply-To: <201102262349.52282.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] batman-adv mesh slows down wired clients
+	(bridge-loop-avoidance)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,71 +23,115 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-2011/2/28 Andrew Lunn <andrew@lunn.ch>:
->> I'm not a kernel guru but i find out that the new core mac80211 and
->> cfg80211 (http://linuxwireless.org/) offers the possibility to obtain
->> a per-station bit-rate information that should be driver independent.
->
-> O.K. I will take a look at this.
->
->> I have not mentioned the hidden node problem. But I think this problem
->> is very difficult to remove, the only best practice to reduce the
->> problem is to force the RTS/CTS mechanism to be active.
->
-> RTS/CTS helps, true. But it has a few problems. e.g. most meshing
-> protocols use broadcast packets for there management. e.g. BATMANs
-> OGMs are broadcast. These cannot be protected with RTS/CTS. So the
-> OGMs can collide with RTS packets from a hidden node, or OGMs from a
-> hidden node.
->
-In my opinion the use of broadcast is somehow useful. If many OGM
-packet collide it means that the link is congested and batman will use
-another.
-It would be wrong to protect OGM from collision or hidden node.
+Linus , Marek...
 
-> Another way to help reduce the hidden node problem, or interference
-> with other nodes, is to use a low coding rate and transmit power when
-> possible. So for example when we don't have much traffic to send to
-> node X, it could send the packets with the lowest coding rate and low
-> power. This keeps the interference with other nodes to a minimum. As
-> the amount of data for X increases, the coding rate and transmit power
-> can be increased, so increasing the available bandwidth to X, but at
-> the same time increasing the amount of interference the traffic
-> produces.
->
-Yes, I think that it is always better to use low transmission power
-and favor multi-hop so short link, especially in dense network. The
-schema I propose effectively favor short link offering the possibility
-of reducing transmission power.
-Anyhow a transmission power management system is out of the scope of
-my work, but it is a very interesting area. It is certainly possible
-to add transmission power level to OGM in order to use also this
-information in routing decision. More information we now of link and
-more accurate will be the routing decisions.
+I think the List had issues with all of us getting multiple emails for 
+some reason. I wanted to update you on this status and let others know 
+about my solution.
 
-> Such a scheme to minimize interference does not play too well with
-> your idea of putting the coding rate into the OGMs. We would have to
-> ensure that the coding rate is the highest possible coding rate usable
-> between two peers, not the currently used coding rate, which could be
-> low in order to avoid interference.
->
-The current rate is decided by the driver basing on link quality and
-collision so indirectly tells us how much interference there are in
-the link. Why it is a bad idea to use this information?
+Linus, in the problem that I described after updating to batman-adv 
+2011.0, I would lose connection to both the routers that were plugged 
+in. Any SSH connection already established also would timeout. Therefore 
+I can't get the output of batctl ping or dmesg at that exact instant. I 
+did try to do a tcp dump but got nowhere because of the disconnects.
 
->> > Will you be at the WBMv4 next Month?
->> >
->> I'm afraid but I cannot be at WMBv4, I hope I can come to the next
->> WBM, maybe with a working implementation :)
->
-> Shame, i plan to talk more about the hidden node problem during WBMv4.
-> It is also a good place to discuss new ideas like adding information
-> into the OGMs.
->
-> =A0 =A0 Andrew
->
+Now here is how I (kinda) solved it.
+
+I had to enable STP on the lan-switches.  STP type: STP and Mode: Root 
+Protection. This can be enabled on all ports safely without causing 
+disruption to the clients plugged into the switch.
+
+After this step was done, bridge-loop-avoidance worked properly and if 
+more than 1 router in a mesh was plugged in, all the routers would pick 
+one as a gateway.
+
+Extra Bonus Step:
+
+If more than one is plugged in, the higher MAC router will drop all lan 
+packets which will result in slower throughput to clients to that router 
+because it is hopping to another router via wireless and neglecting the 
+fact that it's own wired link would take it faster to the intended 
+destination.
+
+My "solution" to this was to enable STP in the router too. In the UCI 
+page for networking, under the br-lan, I had this option.
+
+option 'stp' '1'.
+
+After this setting, the 2nd router would choose the wired link as its 
+preferred method of linking to the network.
+
+The customary "warning" : I am no network expert and I am just offering 
+a solution for anybody else reading this.
+
+Thanks for all your help Linus and Marek. Please do let me know if you 
+have any explanation for this :) . If you want me to send some of the 
+binaries I built or my OpenWRT config files to the list, I can do so . 
+Let me know.
+
+Thanks
+
+Vinay.
+
+My specific setup:
+
+Routers   : 8  x  Buffalo WZR - HP -G 300NH
+Switches : 6  x 3Com 5500G-EI.
 
 
 
---=20
-Daniele Furlan
+On 2/26/2011 5:49 PM, Marek Lindner wrote:
+> Hi,
+>
+> Linus has some problems sending mails to the list, so I forward his reply.
+>
+> Cheers,
+> Marek
+>
+>
+> ============================================
+>
+>
+> Hi Vinay,
+>
+> On Fri, Feb 25, 2011 at 08:44:33AM -0500, Vinay Tharigopula wrote:
+>> Marek..
+>>
+>> I got the binaries from the openwrt prebuilt packages. However,
+>> now
+>> I rebuilt the image and built batman-adv 2011.myself. I will try
+>> this now and let you know.
+>>
+>> However, now I am running into a much bigger issue. If two
+>> routers
+>> are plugged in to the same switch, bridge loop avoidance doesnt
+>> work
+>> and both of them are stopping responding to pings.
+> Could you try "batctl ping" too and check whether this is working
+> or not.
+>
+> If that's working but the normal pinging is not, then it should be
+> a layer 3 problem - in that case we'd need the outputs of "ip
+> route show" and "ip address show".
+>
+> If batctl ping is already not working then "batctl o" and "batctl
+> if" output will be interesting.
+>> Here is my config.
+>>
+>> bat0 if:
+>> wlan1: active.
+>>
+>> wlan1: Mesh Network.
+>>
+>> wlan0: Infrastructure network.
+>> eth0 : 4 lan ports
+>> eth1: 1 wan port
+>>
+>> br-lan : wlan0 eth0 eth1 bat0
+> Hmm, that looks sane and correct, should work like that.
+>
+> Is there anything weird in the output of "dmesg"? Any errors or
+> warnings?
+>
+> Cheers, Linus
+
