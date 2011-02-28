@@ -1,15 +1,16 @@
-Return-Path: <vinay@orxrail.com>
-Message-ID: <4D6BF3B3.8040509@orxrail.com>
-Date: Mon, 28 Feb 2011 14:12:51 -0500
-From: Vinay Tharigopula <vinay@orxrail.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 28 Feb 2011 20:29:03 +0100
+References: <mailman.14.1290812292.944.b.a.t.m.a.n@lists.open-mesh.org>
+	<201102281303.07122.sven@narfation.org>
+	<AANLkTinja_Hq4ze-fOFbHRK-iDzzA3Tk0oAsJ+CB=M2S@mail.gmail.com>
+In-Reply-To: <AANLkTinja_Hq4ze-fOFbHRK-iDzzA3Tk0oAsJ+CB=M2S@mail.gmail.com>
 MIME-Version: 1.0
-References: <4D668F3F.4080700@orxrail.com>	<201102250130.35865.lindner_marek@yahoo.de>	<4D67B241.8070606@orxrail.com>
-	<201102262349.52282.lindner_marek@yahoo.de>
-In-Reply-To: <201102262349.52282.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: multipart/signed; boundary="nextPart1627714.gbvihqBmdr";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv mesh slows down wired clients
-	(bridge-loop-avoidance)
+Message-Id: <201102282029.05802.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] BATMAN routing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,117 +22,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Linus , Marek...
+--nextPart1627714.gbvihqBmdr
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I think the List had issues with all of us getting multiple emails for 
-some reason. I wanted to update you on this status and let others know 
-about my solution.
+On Monday 28 February 2011 20:15:05 hlabishi kobo wrote:
+> Thanks again for your reply sven, but i think my code might have maybe
+> you a different view of wht i want to do, see below.
+> The idea is to prioritize recently received OGM's thus giving them
+> more weight for the routing decisions. suppose you have sliding window
+> of 10, a link A records  [1111100000]=3D 5 and link B records
+> [0000001111] =3D 4, currently this will be used towards the calculation
+> of local TQ. in the proposed method we want to add the indexes on
+> which an OGM was received in that interval. from the example above we
+> would have link A 1+2+3+4+5+6=3D 21 and link B 7+8+9+10 =3D 34. this
+> actually what i meant by counting and adding indexes.
 
-Linus, in the problem that I described after updating to batman-adv 
-2011.0, I would lose connection to both the routers that were plugged 
-in. Any SSH connection already established also would timeout. Therefore 
-I can't get the output of batctl ping or dmesg at that exact instant. I 
-did try to do a tcp dump but got nowhere because of the disconnects.
+I know what you want, but it seems (judging from your "implementation") tha=
+t=20
+you don't know how to write that down. I hope that I gave you enough=20
+information to show you why your implementation isn't what you want.
 
-Now here is how I (kinda) solved it.
+The last part should help you to implement it the right way and to understa=
+nd=20
+what the values represent and how you should operate on them.
 
-I had to enable STP on the lan-switches.  STP type: STP and Mode: Root 
-Protection. This can be enabled on all ports safely without causing 
-disruption to the clients plugged into the switch.
+Best regards,
+	Sven
 
-After this step was done, bridge-loop-avoidance worked properly and if 
-more than 1 router in a mesh was plugged in, all the routers would pick 
-one as a gateway.
+--nextPart1627714.gbvihqBmdr
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Extra Bonus Step:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-If more than one is plugged in, the higher MAC router will drop all lan 
-packets which will result in slower throughput to clients to that router 
-because it is hopping to another router via wireless and neglecting the 
-fact that it's own wired link would take it faster to the intended 
-destination.
+iQIcBAABCgAGBQJNa/eAAAoJEF2HCgfBJntG2R0P/iGOZ2W4H7vSZ0dB2c95u0/E
+R/38pZow8P/En5pI35icHwTYsHxtu8+stfiox2dOiIwjTNmblAqkZ2RLoFRFgkBT
+fA8Os+YEuub2rGPKXWXDlxl4Fmy5LzM9MVNjPwzkUXAEOTwYkzt1iM+rimMcypQo
+hDiQ3r6CS2puq7oKyCWfVHjC41o8L8Uq1YfFyK1BiL99QY4DNbuj14huhCOytMyc
+H/IF7v8EHdkJ18zcIUWs8y+UQSPuno2snEu8aDG04oNSybMTK3jjXs0VCkbYZT5+
+WUFi+fAk0O5EV+UPDUrDTy3KDgNaaLPeu/GxsKW6Wh+z/fqFA5YCkSUT82nhpRBY
+IRMiGCkilvdiWpMl0KuGPqrmv4WubDxLNNP4PMmKfO/7uJJPHmdE7Ue43gx+YJcl
+MpX7miWsTUOwgpCgY6kL/bOB9JBzJG+E6xycCvXA6MSnmLWO2K1+J8wN4OERRoEz
+K5ObtyY5nsSZb06eaENGviJn3Ed0PDO24JGlNKr1BnNX71Q7AuN70CWdZdM9w7Qf
+L9PSWyts/xOfS4UiZN2BMW1U0b8kt1h20vvQ7BINWNX+1Gr0DGwhV08X/VYz5cyW
+tdRQa+WhM7NaBu08tR6i2uSxPKEQFRB/anPy47qLFDjnenaws3lMGJp8eyZLRw0Y
+ku2aZrre5t597C6uOopQ
+=yayM
+-----END PGP SIGNATURE-----
 
-My "solution" to this was to enable STP in the router too. In the UCI 
-page for networking, under the br-lan, I had this option.
-
-option 'stp' '1'.
-
-After this setting, the 2nd router would choose the wired link as its 
-preferred method of linking to the network.
-
-The customary "warning" : I am no network expert and I am just offering 
-a solution for anybody else reading this.
-
-Thanks for all your help Linus and Marek. Please do let me know if you 
-have any explanation for this :) . If you want me to send some of the 
-binaries I built or my OpenWRT config files to the list, I can do so . 
-Let me know.
-
-Thanks
-
-Vinay.
-
-My specific setup:
-
-Routers   : 8  x  Buffalo WZR - HP -G 300NH
-Switches : 6  x 3Com 5500G-EI.
-
-
-
-On 2/26/2011 5:49 PM, Marek Lindner wrote:
-> Hi,
->
-> Linus has some problems sending mails to the list, so I forward his reply.
->
-> Cheers,
-> Marek
->
->
-> ============================================
->
->
-> Hi Vinay,
->
-> On Fri, Feb 25, 2011 at 08:44:33AM -0500, Vinay Tharigopula wrote:
->> Marek..
->>
->> I got the binaries from the openwrt prebuilt packages. However,
->> now
->> I rebuilt the image and built batman-adv 2011.myself. I will try
->> this now and let you know.
->>
->> However, now I am running into a much bigger issue. If two
->> routers
->> are plugged in to the same switch, bridge loop avoidance doesnt
->> work
->> and both of them are stopping responding to pings.
-> Could you try "batctl ping" too and check whether this is working
-> or not.
->
-> If that's working but the normal pinging is not, then it should be
-> a layer 3 problem - in that case we'd need the outputs of "ip
-> route show" and "ip address show".
->
-> If batctl ping is already not working then "batctl o" and "batctl
-> if" output will be interesting.
->> Here is my config.
->>
->> bat0 if:
->> wlan1: active.
->>
->> wlan1: Mesh Network.
->>
->> wlan0: Infrastructure network.
->> eth0 : 4 lan ports
->> eth1: 1 wan port
->>
->> br-lan : wlan0 eth0 eth1 bat0
-> Hmm, that looks sane and correct, should work like that.
->
-> Is there anything weird in the output of "dmesg"? Any errors or
-> warnings?
->
-> Cheers, Linus
-
+--nextPart1627714.gbvihqBmdr--
