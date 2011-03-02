@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@ascom.ch>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Wed,  2 Mar 2011 18:18:41 +0100
-Message-Id: <1299086321-25116-13-git-send-email-linus.luessing@ascom.ch>
+Date: Wed,  2 Mar 2011 18:18:37 +0100
+Message-Id: <1299086321-25116-9-git-send-email-linus.luessing@ascom.ch>
 In-Reply-To: <1299086321-25116-1-git-send-email-linus.luessing@ascom.ch>
 References: <1299086321-25116-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 12/12] batman-adv: Add sequence number and
-	duplicate checks for unicasts_safe
+Subject: [B.A.T.M.A.N.] [PATCH 08/12] batman-adv: Add sysfs option for
+	enabling redundant bonding mode
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,87 +23,72 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-With the new redundant bonding mode a node might receive a unicast_safe
-packet more than once. Therefore duplicate checks on any unicast_safe
-packet need to be performed before further processing.
+When bonding is enabled, then enabling red_bonding too changes the
+behavior from throughput bonding (round robin sending on interfaces) to
+redundant bonding (sending every packet on all interfaces available for
+bonding).
 
 Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 ---
- originator.c |    3 +++
- routing.c    |   14 +++++++++++++-
- types.h      |    2 ++
- 3 files changed, 18 insertions(+), 1 deletions(-)
+ bat_sysfs.c      |   10 ++++++++++
+ soft-interface.c |    1 +
+ types.h          |    1 +
+ 3 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index 57cb5c9..3be8460 100644
---- a/originator.c
-+++ b/originator.c
-@@ -198,6 +198,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
- 	INIT_LIST_HEAD(&orig_node->bond_list);
- 	spin_lock_init(&orig_node->ogm_cnt_lock);
- 	spin_lock_init(&orig_node->bcast_seqno_lock);
-+	spin_lock_init(&orig_node->ucast_safe_seqno_lock);
- 	spin_lock_init(&orig_node->neigh_list_lock);
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index e449bf6..3b8cf26 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -356,8 +356,17 @@ static ssize_t store_gw_bwidth(struct kobject *kobj, struct attribute *attr,
+ 	return gw_bandwidth_set(net_dev, buff, count);
+ }
  
- 	/* extra reference for return */
-@@ -209,6 +210,8 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
- 	orig_node->hna_buff = NULL;
- 	orig_node->bcast_seqno_state.seqno_reset = jiffies - 1
- 					- msecs_to_jiffies(RESET_PROTECTION_MS);
-+	orig_node->ucast_safe_seqno_state.seqno_reset = jiffies - 1
-+					- msecs_to_jiffies(RESET_PROTECTION_MS);
- 	orig_node->batman_seqno_reset = jiffies - 1
- 					- msecs_to_jiffies(RESET_PROTECTION_MS);
- 
-diff --git a/routing.c b/routing.c
-index a2c55fd..d19eb77 100644
---- a/routing.c
-+++ b/routing.c
-@@ -1440,13 +1440,25 @@ int recv_ucast_safe_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 	struct unicast_packet_safe *unicast_packet;
- 	struct orig_node *orig_node;
- 	int hdr_size = sizeof(struct unicast_packet);
--	int bonding_mode;
-+	int ret, bonding_mode;
- 
- 	if (check_unicast_packet(skb, hdr_size) < 0)
- 		return NET_RX_DROP;
- 
- 	unicast_packet = (struct unicast_packet_safe *)skb->data;
- 
-+	orig_node = orig_hash_find(bat_priv, unicast_packet->orig);
-+	if (!orig_node)
-+		return NET_RX_DROP;
++static void print_bonding_notice(struct net_device *net_dev)
++{
++	bat_info(net_dev, "Redundant Bonding mode is currently not compatible "
++			"with batman-adv's link layer fragmentation and will "
++			"be ignored. Also make sure to activate general "
++			"bonding for redundant bonding to take effect.\n");
++}
 +
-+	ret = check_duplicate(bat_priv, ntohl(unicast_packet->seqno),
-+			      &orig_node->ucast_safe_seqno_state,
-+			      &orig_node->ucast_safe_seqno_lock);
-+
-+	orig_node_free_ref(orig_node);
-+	if (ret == NET_RX_DROP)
-+		return NET_RX_DROP;
-+
- 	/* packet for me */
- 	if (is_my_mac(unicast_packet->dest)) {
- 		unicast_safe_to_unicast(skb);
+ BAT_ATTR_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
+ BAT_ATTR_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
++BAT_ATTR_BOOL(red_bonding, S_IRUGO | S_IWUSR, print_bonding_notice);
+ BAT_ATTR_BOOL(fragmentation, S_IRUGO | S_IWUSR, update_min_mtu);
+ static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
+ static BAT_ATTR(gw_mode, S_IRUGO | S_IWUSR, show_gw_mode, store_gw_mode);
+@@ -374,6 +383,7 @@ BAT_ATTR_UINT(log_level, S_IRUGO | S_IWUSR, 0, 3, NULL);
+ static struct bat_attribute *mesh_attrs[] = {
+ 	&bat_attr_aggregated_ogms,
+ 	&bat_attr_bonding,
++	&bat_attr_red_bonding,
+ 	&bat_attr_fragmentation,
+ 	&bat_attr_vis_mode,
+ 	&bat_attr_gw_mode,
+diff --git a/soft-interface.c b/soft-interface.c
+index 8224fdc..7f0e768 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -571,6 +571,7 @@ struct net_device *softif_create(char *name)
+ 
+ 	atomic_set(&bat_priv->aggregated_ogms, 1);
+ 	atomic_set(&bat_priv->bonding, 0);
++	atomic_set(&bat_priv->red_bonding, 0);
+ 	atomic_set(&bat_priv->vis_mode, VIS_TYPE_CLIENT_UPDATE);
+ 	atomic_set(&bat_priv->gw_mode, GW_MODE_OFF);
+ 	atomic_set(&bat_priv->gw_sel_class, 20);
 diff --git a/types.h b/types.h
-index cceff07..bfab0c7 100644
+index 83445cf..0ce4b99 100644
 --- a/types.h
 +++ b/types.h
-@@ -93,11 +93,13 @@ struct orig_node {
- 	struct bat_priv *bat_priv;
- 	unsigned long last_frag_packet;
- 	struct seqno_state bcast_seqno_state;
-+	struct seqno_state ucast_safe_seqno_state;
- 	spinlock_t ogm_cnt_lock; /* protects: bcast_own, bcast_own_sum,
- 				  * neigh_node->real_bits,
- 				  * neigh_node->real_packet_count */
- 	spinlock_t bcast_seqno_lock; /* protects bcast_bits,
- 				      *	 last_bcast_seqno */
-+	spinlock_t ucast_safe_seqno_lock; /* protects ucast_safe_seqno_state */
- 	atomic_t bond_candidates;
- 	struct list_head bond_list;
- };
+@@ -133,6 +133,7 @@ struct bat_priv {
+ 	struct net_device_stats stats;
+ 	atomic_t aggregated_ogms;	/* boolean */
+ 	atomic_t bonding;		/* boolean */
++	atomic_t red_bonding;		/* boolean */
+ 	atomic_t fragmentation;		/* boolean */
+ 	atomic_t vis_mode;		/* VIS_TYPE_* */
+ 	atomic_t gw_mode;		/* GW_MODE_* */
 -- 
 1.7.2.3
 
