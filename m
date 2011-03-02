@@ -1,11 +1,14 @@
 Return-Path: <linus.luessing@ascom.ch>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
-Date: Wed,  2 Mar 2011 18:18:29 +0100
-Message-Id: <1299086321-25116-1-git-send-email-linus.luessing@ascom.ch>
+Date: Wed,  2 Mar 2011 18:18:30 +0100
+Message-Id: <1299086321-25116-2-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1299086321-25116-1-git-send-email-linus.luessing@ascom.ch>
+References: <1299086321-25116-1-git-send-email-linus.luessing@ascom.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Redundancy bonding mode patches, v2
+Subject: [B.A.T.M.A.N.] [PATCH 01/12] batman-adv: Remove unused hdr_size
+	variable in route_unicast_packet()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,21 +21,74 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-Hi everyone,
+Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
+---
+ routing.c        |    7 +++----
+ routing.h        |    3 +--
+ soft-interface.c |    2 +-
+ 3 files changed, 5 insertions(+), 7 deletions(-)
 
-Here are some smaller modifications of the redundancy bonding mode patches. I
-haven't modified the batman_header yet, as there seem to be some other opinions
-about this, too and might be easier to discuss at the WBMv4.
+diff --git a/routing.c b/routing.c
+index 42cb6e2..c172f5d 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1263,8 +1263,7 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
+ 	return 0;
+ }
+ 
+-int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if,
+-			 int hdr_size)
++int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct orig_node *orig_node = NULL;
+@@ -1365,7 +1364,7 @@ int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		return NET_RX_SUCCESS;
+ 	}
+ 
+-	return route_unicast_packet(skb, recv_if, hdr_size);
++	return route_unicast_packet(skb, recv_if);
+ }
+ 
+ int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+@@ -1398,7 +1397,7 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		return NET_RX_SUCCESS;
+ 	}
+ 
+-	return route_unicast_packet(skb, recv_if, hdr_size);
++	return route_unicast_packet(skb, recv_if);
+ }
+ 
+ 
+diff --git a/routing.h b/routing.h
+index 5efceaf..b5a064c 100644
+--- a/routing.h
++++ b/routing.h
+@@ -30,8 +30,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 		   struct neigh_node *neigh_node, unsigned char *hna_buff,
+ 		   int hna_buff_len);
+-int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if,
+-			 int hdr_size);
++int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+ int recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+ int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+ int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+diff --git a/soft-interface.c b/soft-interface.c
+index 95d1c3f..6b514ec 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -462,7 +462,7 @@ void interface_rx(struct net_device *soft_iface,
+ 
+ 		memcpy(unicast_packet->dest,
+ 		       bat_priv->softif_neigh->addr, ETH_ALEN);
+-		ret = route_unicast_packet(skb, recv_if, hdr_size);
++		ret = route_unicast_packet(skb, recv_if);
+ 		if (ret == NET_RX_DROP)
+ 			goto dropped;
+ 
+-- 
+1.7.2.3
 
-As always, everything is available here as well:
-http://git.open-mesh.org/?p=t_x/batman-adv.git;a=shortlog;h=refs/heads/rbonding
-
-Cheers, Linus
-
-rbonding changelog v2:
-* Fix (interim) refcounting bug / memory leak in unicast_send_skb() [5/12]
-* change recv_icmp_ttl_exceeded() to change_icmp_ttl_exceeded(), as it
-  is in the sending code path now (thanks Andrew!) [3/12]
-* Add missing ttl modification in aggregation.c [3/12]
-* rebased to f39fe6f230e4cbf2b04e659b056ea62a652578a0
