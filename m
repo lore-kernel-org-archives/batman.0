@@ -1,16 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 3 Mar 2011 14:48:37 +0100
-References: <1299086321-25116-1-git-send-email-linus.luessing@ascom.ch>
-	<1299086321-25116-10-git-send-email-linus.luessing@ascom.ch>
-In-Reply-To: <1299086321-25116-10-git-send-email-linus.luessing@ascom.ch>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201103031448.38450.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 09/12] batman-adv: Adding redundant
-	bonding mode transmission
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Date: Thu,  3 Mar 2011 20:09:02 +0100
+Message-Id: <1299179342-15418-2-git-send-email-linus.luessing@ascom.ch>
+In-Reply-To: <1299179342-15418-1-git-send-email-linus.luessing@ascom.ch>
+References: <1299179342-15418-1-git-send-email-linus.luessing@ascom.ch>
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] [PATCH] RFC: batman-adv: Fix null pointer deref.
+	when adding hard-if as soft-if
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,68 +18,77 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-On Wednesday 02 March 2011 18:18:38 Linus L=C3=BCssing wrote:
-> diff --git a/main.h b/main.h
-> index a0059dd..c6d4848 100644
-> --- a/main.h
-> +++ b/main.h
-> @@ -97,6 +97,11 @@
->   *  Vis
->   */
-> =20
-> +/* Bonding modes */
-> +#define THROUGHPUT_BONDING     1
-> +#define REDUNDANT_BONDING      2
+When we are trying to create a batman soft-interface which already
+exists as a common hard interface, batman than wrongly assumes that this
+hard interface is a fully initialized soft interface. This leads to a
+null pointer dereference on the first try of accessing for instance a
+non-intialized orig_hash.
 
-Here you go into the right direction but ...
+For every hard interface, there is no initialized orig_hash, therefore
+this commit uses this criteria to abort creating a soft interface with
+an already existing name.
+---
+ hard-interface.c |   17 +++++++++++++++--
+ 1 files changed, 15 insertions(+), 2 deletions(-)
 
-
-> @@ -347,6 +346,7 @@ void frag_packet_list(struct bat_priv *bat_priv,
-> +       bonding_mode =3D atomic_read(&bat_priv->bonding) <<
-> +                       atomic_read(&bat_priv->red_bonding);
-
-here you resort to some magic. I believe that can be simplified (see my sys=
-fs=20
-reply).
-
-
-> +static int unicast_to_unicast_safe(struct sk_buff *skb,
-> +                                  struct bat_priv *bat_priv)
-> [..]
-> +       unicast_packet_safe->header =3D unicast_packet.header;
-> +       memcpy(unicast_packet_safe->dest, unicast_packet.dest, ETH_ALEN);
-> +       unicast_packet_safe->header.packet_type =3D BAT_UNICAST_SAFE;
-
-I don't think "unicast_packet_safe->header =3D unicast_packet.header;" does=
- what=20
-you want it to do.
-
-
-> +static void red_bonding_copy(struct sk_buff *skb, struct list_head
-> [..]
-> +       list_for_each_entry_rcu(neigh_node, bond_list, bonding_list) {
-> +               entry =3D kmalloc(sizeof(struct packet_list_entry),
-> GFP_ATOMIC);
-> +               if (!entry) {
-> +                       kfree_skb(skb);
-> +                       return;
-> +               }
-> +               if (!num_entries)
-> +                       entry->skb =3D skb;
-> +               else {
-> +                       entry->skb =3D skb_copy(skb, GFP_ATOMIC);
-> +                       if (!entry->skb) {
-> +                               kfree_skb(skb);
-> +                               kfree(entry);
-> +                               return;
-> +                       }
-> +               }
-
-Yet another malloc() followed by an skb_copy() ? Seems to be unnecessary=20
-ballast.=20
-
-Cheers,
-Marek
+diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
+index 95a35b6..53d6fce 100644
+--- a/batman-adv/hard-interface.c
++++ b/batman-adv/hard-interface.c
+@@ -282,6 +282,7 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
+ {
+ 	struct bat_priv *bat_priv;
+ 	struct batman_packet *batman_packet;
++	int ret;
+ 
+ 	if (hard_iface->if_status != IF_NOT_IN_USE)
+ 		goto out;
+@@ -294,20 +295,32 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
+ 	if (!hard_iface->soft_iface) {
+ 		hard_iface->soft_iface = softif_create(iface_name);
+ 
+-		if (!hard_iface->soft_iface)
++		if (!hard_iface->soft_iface) {
++			ret = -ENOMEM;
+ 			goto err;
++		}
+ 
+ 		/* dev_get_by_name() increases the reference counter for us */
+ 		dev_hold(hard_iface->soft_iface);
+ 	}
+ 
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
++
++	if (!bat_priv->orig_hash) {
++		bat_err(hard_iface->soft_iface,
++			"Can't create soft interface %s: "
++			"already exists as non soft interface\n",
++			hard_iface->soft_iface->name);
++		ret = -EINVAL;
++		goto err;
++	}
+ 	hard_iface->packet_len = BAT_PACKET_LEN;
+ 	hard_iface->packet_buff = kmalloc(hard_iface->packet_len, GFP_ATOMIC);
+ 
+ 	if (!hard_iface->packet_buff) {
+ 		bat_err(hard_iface->soft_iface, "Can't add interface packet "
+ 			"(%s): out of memory\n", hard_iface->net_dev->name);
++		ret = -ENOMEM;
+ 		goto err;
+ 	}
+ 
+@@ -370,7 +383,7 @@ out:
+ 
+ err:
+ 	hardif_free_ref(hard_iface);
+-	return -ENOMEM;
++	return ret;
+ }
+ 
+ void hardif_disable_interface(struct hard_iface *hard_iface)
+-- 
+1.7.2.3
 
