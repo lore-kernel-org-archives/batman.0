@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu,  3 Mar 2011 21:39:16 +0100
-Message-Id: <1299184756-26069-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1299179342-15418-1-git-send-email-linus.luessing@ascom.ch>
-References: <1299179342-15418-1-git-send-email-linus.luessing@ascom.ch>
+Date: Thu,  3 Mar 2011 22:08:39 +0100
+Message-Id: <1299186519-27314-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1299184756-26069-1-git-send-email-sven@narfation.org>
+References: <1299184756-26069-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix null pointer deref. when
-	adding hard-if as soft-if
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Disallow regular interface as
+	mesh device
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,33 +22,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-When we are trying to create a batman soft-interface which already
-exists as a common hard interface, batman wrongly assumes that this
-hard interface is a fully initialized soft interface. This leads to a
-null pointer dereference on the first try of accessing for instance a
-non-intialized orig_hash.
+When trying to associate a net_device with another net_device which
+already exists, batman-adv assumes that this interface is a fully
+initialized batman mesh interface without checking it. The behaviour
+when accessing data behind netdev_priv of a random net_device is
+undefined and potentially dangerous.
 
 Reported-by: Linus Lüssing <linus.luessing@ascom.ch>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- batman-adv/hard-interface.c |   37 +++++++++++++++++++++++--------------
+ * Just smaller cleanups
+ * No functionality changes
+
+ batman-adv/hard-interface.c |   34 ++++++++++++++++++++++------------
  batman-adv/soft-interface.c |   13 +++++++++++++
  batman-adv/soft-interface.h |    1 +
- 3 files changed, 37 insertions(+), 14 deletions(-)
+ 3 files changed, 36 insertions(+), 12 deletions(-)
 
 diff --git a/batman-adv/hard-interface.c b/batman-adv/hard-interface.c
-index 95a35b6..947e647 100644
+index 95a35b6..a5d88e5 100644
 --- a/batman-adv/hard-interface.c
 +++ b/batman-adv/hard-interface.c
-@@ -71,21 +71,14 @@ static int is_valid_iface(struct net_device *net_dev)
- {
- 	if (net_dev->flags & IFF_LOOPBACK)
- 		return 0;
--
- 	if (net_dev->type != ARPHRD_ETHER)
- 		return 0;
--
- 	if (net_dev->addr_len != ETH_ALEN)
+@@ -79,13 +79,8 @@ static int is_valid_iface(struct net_device *net_dev)
  		return 0;
  
  	/* no batman over batman */
@@ -63,16 +58,16 @@ index 95a35b6..947e647 100644
  
  	/* Device is being bridged */
  	/* if (net_dev->priv_flags & IFF_BRIDGE_PORT)
-@@ -282,6 +275,8 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
+@@ -282,6 +277,8 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
  {
  	struct bat_priv *bat_priv;
  	struct batman_packet *batman_packet;
-+	int ret;
 +	struct net_device *soft_iface;
++	int ret;
  
  	if (hard_iface->if_status != IF_NOT_IN_USE)
  		goto out;
-@@ -289,18 +284,31 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
+@@ -289,18 +286,30 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
  	if (!atomic_inc_not_zero(&hard_iface->refcount))
  		goto out;
  
@@ -96,8 +91,8 @@ index 95a35b6..947e647 100644
  	}
  
 +	if (!softif_is_valid(soft_iface)) {
-+		pr_err("Can't create soft interface %s: "
-+		       "already exists as non soft interface\n",
++		pr_err("Can't create batman mesh interface interface %s: "
++		       "already exists as regular interface\n",
 +		       soft_iface->name);
 +		dev_put(soft_iface);
 +		ret = -EINVAL;
@@ -105,11 +100,10 @@ index 95a35b6..947e647 100644
 +	}
 +
 +	hard_iface->soft_iface = soft_iface;
-+
  	bat_priv = netdev_priv(hard_iface->soft_iface);
  	hard_iface->packet_len = BAT_PACKET_LEN;
  	hard_iface->packet_buff = kmalloc(hard_iface->packet_len, GFP_ATOMIC);
-@@ -308,6 +316,7 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
+@@ -308,6 +317,7 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
  	if (!hard_iface->packet_buff) {
  		bat_err(hard_iface->soft_iface, "Can't add interface packet "
  			"(%s): out of memory\n", hard_iface->net_dev->name);
@@ -117,7 +111,7 @@ index 95a35b6..947e647 100644
  		goto err;
  	}
  
-@@ -370,7 +379,7 @@ out:
+@@ -370,7 +380,7 @@ out:
  
  err:
  	hardif_free_ref(hard_iface);
