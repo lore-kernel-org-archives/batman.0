@@ -1,9 +1,12 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri,  4 Mar 2011 02:13:16 +0100
-Message-Id: <1299201196-6188-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: orig_node must be freed after in
-	case of timeout
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 4 Mar 2011 03:01:39 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201103040301.40340.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] Wireless Battle Mesh v4 - Agenda
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,34 +18,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <ordex@autistici.org>
+To: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, olsr-users@lists.olsr.org, babel-users@lists.alioth.debian.org
 
-This patch corrects commit
-4c4236064501e85915087f00a370df8d9f43028d in which
-bucket_free_orig_rcu() has been removed but without
-being replaced.
-In _push_orig(), the orig_node was not freed anymore after
-a timeout.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- originator.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Wireless Battle Mesh v4 - Agenda
+=====================
 
-diff --git a/originator.c b/originator.c
-index 53753d3..0b91330 100644
---- a/originator.c
-+++ b/originator.c
-@@ -349,6 +349,7 @@ static void _purge_orig(struct bat_priv *bat_priv)
- 				if (orig_node->gw_flags)
- 					gw_node_delete(bat_priv, orig_node);
- 				hlist_del_rcu(node);
-+				orig_node_free_ref(orig_node);
- 				continue;
- 			}
- 
--- 
-1.7.3.4
+The principal assembly work on the WBMv4 agenda has been completed and the 
+result published on the battlemesh website:
+http://battlemesh.org/BattleMeshV4/Agenda
 
+However, expect some minor tweaks in the coming days as we always have some 
+latecomers. The most difficult part while compiling the schedule was the various 
+travel plans of the speakers. If any speaker feels uneasy about its talk feel 
+free to contact me - a solution will be found.
+
+Lightening talks: These slots can be acquired by simply contacting me during 
+the event. The agenda will be updated as soon as slots have been registered.
+
+If you have any question or suggestion, please let me know.
+
+Regards,
+Marek
