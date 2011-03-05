@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  5 Mar 2011 13:28:30 +0100
-Message-Id: <1299328122-21468-17-git-send-email-sven@narfation.org>
+Date: Sat,  5 Mar 2011 13:28:31 +0100
+Message-Id: <1299328122-21468-18-git-send-email-sven@narfation.org>
 In-Reply-To: <1299328122-21468-1-git-send-email-sven@narfation.org>
 References: <1299328122-21468-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 16/28] batman-adv: make broadcast seqno
-	operations atomic
+Subject: [B.A.T.M.A.N.] [PATCH 17/28] batman-adv: Make bat_priv->curr_gw an
+	rcu protected pointer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,170 +21,287 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+From: Linus Lüssing <linus.luessing@ascom.ch>
 
-Batman-adv could receive several payload broadcasts at the same time
-that would trigger access to the broadcast seqno sliding window to
-determine whether this is a new broadcast or not. If these incoming
-broadcasts are accessing the sliding window simultaneously it could
-be left in an inconsistent state. Therefore it is necessary to make
-sure this access is atomic.
+The rcu protected macros rcu_dereference() and rcu_assign_pointer()
+for the bat_priv->curr_gw need to be used, as well as spin/rcu locking.
 
-Reported-by: Linus Lüssing <linus.luessing@web.de>
+Otherwise we might end up using a curr_gw pointer pointing to already
+freed memory.
+
+Reported-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/originator.c |    1 +
- net/batman-adv/routing.c    |   56 ++++++++++++++++++++++++++-----------------
- net/batman-adv/types.h      |    2 +
- 3 files changed, 37 insertions(+), 22 deletions(-)
+ net/batman-adv/gateway_client.c |  100 +++++++++++++++++++++++++++------------
+ net/batman-adv/types.h          |    4 +-
+ 2 files changed, 72 insertions(+), 32 deletions(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 61299da..d9a8e31 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -215,6 +215,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
- 	INIT_HLIST_HEAD(&orig_node->neigh_list);
- 	INIT_LIST_HEAD(&orig_node->bond_list);
- 	spin_lock_init(&orig_node->ogm_cnt_lock);
-+	spin_lock_init(&orig_node->bcast_seqno_lock);
- 	spin_lock_init(&orig_node->neigh_list_lock);
- 	kref_init(&orig_node->refcount);
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 517e001..a3e842f 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -44,19 +44,29 @@ static void gw_node_free_ref(struct gw_node *gw_node)
  
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 29a689a..ce68815 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1473,81 +1473,93 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct batman_if *recv_if)
- int recv_bcast_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ void *gw_get_selected(struct bat_priv *bat_priv)
  {
- 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
--	struct orig_node *orig_node;
+-	struct gw_node *curr_gateway_tmp = bat_priv->curr_gw;
++	struct gw_node *curr_gateway_tmp;
 +	struct orig_node *orig_node = NULL;
- 	struct bcast_packet *bcast_packet;
- 	struct ethhdr *ethhdr;
- 	int hdr_size = sizeof(struct bcast_packet);
-+	int ret = NET_RX_DROP;
- 	int32_t seq_diff;
  
- 	/* drop packet if it has not necessary minimum size */
- 	if (unlikely(!pskb_may_pull(skb, hdr_size)))
--		return NET_RX_DROP;
++	rcu_read_lock();
++	curr_gateway_tmp = rcu_dereference(bat_priv->curr_gw);
+ 	if (!curr_gateway_tmp)
+-		return NULL;
 +		goto out;
- 
- 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	/* packet with broadcast indication but unicast recipient */
- 	if (!is_broadcast_ether_addr(ethhdr->h_dest))
--		return NET_RX_DROP;
-+		goto out;
- 
- 	/* packet with broadcast sender address */
- 	if (is_broadcast_ether_addr(ethhdr->h_source))
--		return NET_RX_DROP;
-+		goto out;
- 
- 	/* ignore broadcasts sent by myself */
- 	if (is_my_mac(ethhdr->h_source))
--		return NET_RX_DROP;
-+		goto out;
- 
- 	bcast_packet = (struct bcast_packet *)skb->data;
- 
- 	/* ignore broadcasts originated by myself */
- 	if (is_my_mac(bcast_packet->orig))
--		return NET_RX_DROP;
-+		goto out;
- 
- 	if (bcast_packet->ttl < 2)
--		return NET_RX_DROP;
-+		goto out;
- 
- 	spin_lock_bh(&bat_priv->orig_hash_lock);
- 	rcu_read_lock();
- 	orig_node = ((struct orig_node *)
- 		     hash_find(bat_priv->orig_hash, compare_orig, choose_orig,
- 			       bcast_packet->orig));
 +
-+	if (!orig_node)
-+		goto rcu_unlock;
-+
-+	kref_get(&orig_node->refcount);
- 	rcu_read_unlock();
++	orig_node = curr_gateway_tmp->orig_node;
  
--	if (!orig_node) {
--		spin_unlock_bh(&bat_priv->orig_hash_lock);
--		return NET_RX_DROP;
--	}
-+	spin_lock_bh(&orig_node->bcast_seqno_lock);
- 
- 	/* check whether the packet is a duplicate */
--	if (get_bit_status(orig_node->bcast_bits,
--			   orig_node->last_bcast_seqno,
--			   ntohl(bcast_packet->seqno))) {
--		spin_unlock_bh(&bat_priv->orig_hash_lock);
--		return NET_RX_DROP;
--	}
-+	if (get_bit_status(orig_node->bcast_bits, orig_node->last_bcast_seqno,
-+			   ntohl(bcast_packet->seqno)))
-+		goto spin_unlock;
- 
- 	seq_diff = ntohl(bcast_packet->seqno) - orig_node->last_bcast_seqno;
- 
- 	/* check whether the packet is old and the host just restarted. */
- 	if (window_protected(bat_priv, seq_diff,
--			     &orig_node->bcast_seqno_reset)) {
--		spin_unlock_bh(&bat_priv->orig_hash_lock);
--		return NET_RX_DROP;
--	}
-+			     &orig_node->bcast_seqno_reset))
-+		goto spin_unlock;
- 
- 	/* mark broadcast in flood history, update window position
- 	 * if required. */
- 	if (bit_get_packet(bat_priv, orig_node->bcast_bits, seq_diff, 1))
- 		orig_node->last_bcast_seqno = ntohl(bcast_packet->seqno);
- 
-+	spin_unlock_bh(&orig_node->bcast_seqno_lock);
- 	spin_unlock_bh(&bat_priv->orig_hash_lock);
-+
- 	/* rebroadcast packet */
- 	add_bcast_packet_to_list(bat_priv, skb);
- 
- 	/* broadcast for me */
- 	interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size);
-+	ret = NET_RX_SUCCESS;
-+	goto out;
- 
--	return NET_RX_SUCCESS;
-+rcu_unlock:
-+	rcu_read_unlock();
-+	spin_unlock_bh(&bat_priv->orig_hash_lock);
-+	goto out;
-+spin_unlock:
-+	spin_unlock_bh(&orig_node->bcast_seqno_lock);
-+	spin_unlock_bh(&bat_priv->orig_hash_lock);
+-	return curr_gateway_tmp->orig_node;
 +out:
-+	if (orig_node)
-+		kref_put(&orig_node->refcount, orig_node_free_ref);
++	rcu_read_unlock();
++	return orig_node;
+ }
+ 
+ void gw_deselect(struct bat_priv *bat_priv)
+ {
+-	struct gw_node *gw_node = bat_priv->curr_gw;
++	struct gw_node *gw_node;
+ 
+-	bat_priv->curr_gw = NULL;
++	spin_lock_bh(&bat_priv->gw_list_lock);
++	gw_node = rcu_dereference(bat_priv->curr_gw);
++	rcu_assign_pointer(bat_priv->curr_gw, NULL);
++	spin_unlock_bh(&bat_priv->gw_list_lock);
+ 
+ 	if (gw_node)
+ 		gw_node_free_ref(gw_node);
+@@ -64,12 +74,15 @@ void gw_deselect(struct bat_priv *bat_priv)
+ 
+ static void gw_select(struct bat_priv *bat_priv, struct gw_node *new_gw_node)
+ {
+-	struct gw_node *curr_gw_node = bat_priv->curr_gw;
++	struct gw_node *curr_gw_node;
+ 
+ 	if (new_gw_node && !atomic_inc_not_zero(&new_gw_node->refcount))
+ 		new_gw_node = NULL;
+ 
+-	bat_priv->curr_gw = new_gw_node;
++	spin_lock_bh(&bat_priv->gw_list_lock);
++	curr_gw_node = rcu_dereference(bat_priv->curr_gw);
++	rcu_assign_pointer(bat_priv->curr_gw, new_gw_node);
++	spin_unlock_bh(&bat_priv->gw_list_lock);
+ 
+ 	if (curr_gw_node)
+ 		gw_node_free_ref(curr_gw_node);
+@@ -78,7 +91,7 @@ static void gw_select(struct bat_priv *bat_priv, struct gw_node *new_gw_node)
+ void gw_election(struct bat_priv *bat_priv)
+ {
+ 	struct hlist_node *node;
+-	struct gw_node *gw_node, *curr_gw_tmp = NULL;
++	struct gw_node *gw_node, *curr_gw, *curr_gw_tmp = NULL;
+ 	uint8_t max_tq = 0;
+ 	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
+ 	int down, up;
+@@ -92,19 +105,23 @@ void gw_election(struct bat_priv *bat_priv)
+ 	if (atomic_read(&bat_priv->gw_mode) != GW_MODE_CLIENT)
+ 		return;
+ 
+-	if (bat_priv->curr_gw)
++	rcu_read_lock();
++	curr_gw = rcu_dereference(bat_priv->curr_gw);
++	if (curr_gw) {
++		rcu_read_unlock();
+ 		return;
++	}
+ 
+-	rcu_read_lock();
+ 	if (hlist_empty(&bat_priv->gw_list)) {
+-		rcu_read_unlock();
+ 
+-		if (bat_priv->curr_gw) {
++		if (curr_gw) {
++			rcu_read_unlock();
+ 			bat_dbg(DBG_BATMAN, bat_priv,
+ 				"Removing selected gateway - "
+ 				"no gateway in range\n");
+ 			gw_deselect(bat_priv);
+-		}
++		} else
++			rcu_read_unlock();
+ 
+ 		return;
+ 	}
+@@ -153,12 +170,12 @@ void gw_election(struct bat_priv *bat_priv)
+ 			max_gw_factor = tmp_gw_factor;
+ 	}
+ 
+-	if (bat_priv->curr_gw != curr_gw_tmp) {
+-		if ((bat_priv->curr_gw) && (!curr_gw_tmp))
++	if (curr_gw != curr_gw_tmp) {
++		if ((curr_gw) && (!curr_gw_tmp))
+ 			bat_dbg(DBG_BATMAN, bat_priv,
+ 				"Removing selected gateway - "
+ 				"no gateway in range\n");
+-		else if ((!bat_priv->curr_gw) && (curr_gw_tmp))
++		else if ((!curr_gw) && (curr_gw_tmp))
+ 			bat_dbg(DBG_BATMAN, bat_priv,
+ 				"Adding route to gateway %pM "
+ 				"(gw_flags: %i, tq: %i)\n",
+@@ -181,31 +198,35 @@ void gw_election(struct bat_priv *bat_priv)
+ 
+ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
+ {
+-	struct gw_node *curr_gateway_tmp = bat_priv->curr_gw;
++	struct gw_node *curr_gateway_tmp;
+ 	uint8_t gw_tq_avg, orig_tq_avg;
+ 
++	rcu_read_lock();
++	curr_gateway_tmp = rcu_dereference(bat_priv->curr_gw);
+ 	if (!curr_gateway_tmp)
+-		return;
++		goto out_rcu;
+ 
+ 	if (!curr_gateway_tmp->orig_node)
+-		goto deselect;
++		goto deselect_rcu;
+ 
+ 	if (!curr_gateway_tmp->orig_node->router)
+-		goto deselect;
++		goto deselect_rcu;
+ 
+ 	/* this node already is the gateway */
+ 	if (curr_gateway_tmp->orig_node == orig_node)
+-		return;
++		goto out_rcu;
+ 
+ 	if (!orig_node->router)
+-		return;
++		goto out_rcu;
+ 
+ 	gw_tq_avg = curr_gateway_tmp->orig_node->router->tq_avg;
++	rcu_read_unlock();
++
+ 	orig_tq_avg = orig_node->router->tq_avg;
+ 
+ 	/* the TQ value has to be better */
+ 	if (orig_tq_avg < gw_tq_avg)
+-		return;
++		goto out;
+ 
+ 	/**
+ 	 * if the routing class is greater than 3 the value tells us how much
+@@ -213,15 +234,23 @@ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
+ 	 **/
+ 	if ((atomic_read(&bat_priv->gw_sel_class) > 3) &&
+ 	    (orig_tq_avg - gw_tq_avg < atomic_read(&bat_priv->gw_sel_class)))
+-		return;
++		goto out;
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+ 		"Restarting gateway selection: better gateway found (tq curr: "
+ 		"%i, tq new: %i)\n",
+ 		gw_tq_avg, orig_tq_avg);
++	goto deselect;
+ 
++out_rcu:
++	rcu_read_unlock();
++	goto out;
++deselect_rcu:
++	rcu_read_unlock();
+ deselect:
+ 	gw_deselect(bat_priv);
++out:
++	return;
+ }
+ 
+ static void gw_node_add(struct bat_priv *bat_priv,
+@@ -278,7 +307,7 @@ void gw_node_update(struct bat_priv *bat_priv,
+ 				"Gateway %pM removed from gateway list\n",
+ 				orig_node->orig);
+ 
+-			if (gw_node == bat_priv->curr_gw) {
++			if (gw_node == rcu_dereference(bat_priv->curr_gw)) {
+ 				rcu_read_unlock();
+ 				gw_deselect(bat_priv);
+ 				return;
+@@ -316,7 +345,7 @@ void gw_node_purge(struct bat_priv *bat_priv)
+ 		    atomic_read(&bat_priv->mesh_state) == MESH_ACTIVE)
+ 			continue;
+ 
+-		if (bat_priv->curr_gw == gw_node)
++		if (rcu_dereference(bat_priv->curr_gw) == gw_node)
+ 			gw_deselect(bat_priv);
+ 
+ 		hlist_del_rcu(&gw_node->list);
+@@ -330,12 +359,16 @@ void gw_node_purge(struct bat_priv *bat_priv)
+ static int _write_buffer_text(struct bat_priv *bat_priv,
+ 			      struct seq_file *seq, struct gw_node *gw_node)
+ {
+-	int down, up;
++	struct gw_node *curr_gw;
++	int down, up, ret;
+ 
+ 	gw_bandwidth_to_kbit(gw_node->orig_node->gw_flags, &down, &up);
+ 
+-	return seq_printf(seq, "%s %pM (%3i) %pM [%10s]: %3i - %i%s/%i%s\n",
+-		       (bat_priv->curr_gw == gw_node ? "=>" : "  "),
++	rcu_read_lock();
++	curr_gw = rcu_dereference(bat_priv->curr_gw);
++
++	ret = seq_printf(seq, "%s %pM (%3i) %pM [%10s]: %3i - %i%s/%i%s\n",
++		       (curr_gw == gw_node ? "=>" : "  "),
+ 		       gw_node->orig_node->orig,
+ 		       gw_node->orig_node->router->tq_avg,
+ 		       gw_node->orig_node->router->addr,
+@@ -345,6 +378,9 @@ static int _write_buffer_text(struct bat_priv *bat_priv,
+ 		       (down > 2048 ? "MBit" : "KBit"),
+ 		       (up > 2048 ? up / 1024 : up),
+ 		       (up > 2048 ? "MBit" : "KBit"));
++
++	rcu_read_unlock();
 +	return ret;
  }
  
- int recv_vis_packet(struct sk_buff *skb, struct batman_if *recv_if)
+ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
+@@ -465,8 +501,12 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
+ 	if (atomic_read(&bat_priv->gw_mode) == GW_MODE_SERVER)
+ 		return -1;
+ 
+-	if (!bat_priv->curr_gw)
++	rcu_read_lock();
++	if (!rcu_dereference(bat_priv->curr_gw)) {
++		rcu_read_unlock();
+ 		return 0;
++	}
++	rcu_read_unlock();
+ 
+ 	return 1;
+ }
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 9a14276..e1f3e5e 100644
+index e1f3e5e..3dd5e77 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -90,6 +90,8 @@ struct orig_node {
- 	spinlock_t ogm_cnt_lock; /* protects: bcast_own, bcast_own_sum,
- 				  * neigh_node->real_bits,
- 				  * neigh_node->real_packet_count */
-+	spinlock_t bcast_seqno_lock; /* protects bcast_bits,
-+				      *	 last_bcast_seqno */
- 	atomic_t bond_candidates;
- 	struct list_head bond_list;
+@@ -162,7 +162,7 @@ struct bat_priv {
+ 	spinlock_t forw_bcast_list_lock; /* protects  */
+ 	spinlock_t hna_lhash_lock; /* protects hna_local_hash */
+ 	spinlock_t hna_ghash_lock; /* protects hna_global_hash */
+-	spinlock_t gw_list_lock; /* protects gw_list */
++	spinlock_t gw_list_lock; /* protects gw_list and curr_gw */
+ 	spinlock_t vis_hash_lock; /* protects vis_hash */
+ 	spinlock_t vis_list_lock; /* protects vis_info::recv_list */
+ 	spinlock_t softif_neigh_lock; /* protects soft-interface neigh list */
+@@ -171,7 +171,7 @@ struct bat_priv {
+ 	struct delayed_work hna_work;
+ 	struct delayed_work orig_work;
+ 	struct delayed_work vis_work;
+-	struct gw_node *curr_gw;
++	struct gw_node __rcu *curr_gw;  /* rcu protected pointer */
+ 	struct vis_info *my_vis_info;
  };
+ 
 -- 
 1.7.2.3
 
