@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  5 Mar 2011 13:28:41 +0100
-Message-Id: <1299328122-21468-28-git-send-email-sven@narfation.org>
+Date: Sat,  5 Mar 2011 13:28:42 +0100
+Message-Id: <1299328122-21468-29-git-send-email-sven@narfation.org>
 In-Reply-To: <1299328122-21468-1-git-send-email-sven@narfation.org>
 References: <1299328122-21468-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 27/28] batman-adv: Remove unused hdr_size
-	variable in route_unicast_packet()
+Subject: [B.A.T.M.A.N.] [PATCH 28/28] batman-adv: Disallow regular interface
+	as mesh device
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,77 +21,138 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@ascom.ch>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Linus Lüssing <linus.luessing@ascom.ch>
+When trying to associate a net_device with another net_device which
+already exists, batman-adv assumes that this interface is a fully
+initialized batman mesh interface without checking it. The behaviour
+when accessing data behind netdev_priv of a random net_device is
+undefined and potentially dangerous.
 
-Signed-off-by: Linus Lüssing <linus.luessing@ascom.ch>
+Reported-by: Linus Lüssing <linus.luessing@ascom.ch>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/routing.c        |    7 +++----
- net/batman-adv/routing.h        |    3 +--
- net/batman-adv/soft-interface.c |    2 +-
- 3 files changed, 5 insertions(+), 7 deletions(-)
+ net/batman-adv/hard-interface.c |   34 ++++++++++++++++++++++------------
+ net/batman-adv/soft-interface.c |   13 +++++++++++++
+ net/batman-adv/soft-interface.h |    1 +
+ 3 files changed, 36 insertions(+), 12 deletions(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 42cb6e2..c172f5d 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1263,8 +1263,7 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
- 	return 0;
- }
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 95a35b6..b3058e4 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -79,13 +79,8 @@ static int is_valid_iface(struct net_device *net_dev)
+ 		return 0;
  
--int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if,
--			 int hdr_size)
-+int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	/* no batman over batman */
+-#ifdef HAVE_NET_DEVICE_OPS
+-	if (net_dev->netdev_ops->ndo_start_xmit == interface_tx)
++	if (softif_is_valid(net_dev))
+ 		return 0;
+-#else
+-	if (net_dev->hard_start_xmit == interface_tx)
+-		return 0;
+-#endif
+ 
+ 	/* Device is being bridged */
+ 	/* if (net_dev->priv_flags & IFF_BRIDGE_PORT)
+@@ -282,6 +277,8 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
  {
- 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
- 	struct orig_node *orig_node = NULL;
-@@ -1365,7 +1364,7 @@ int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 		return NET_RX_SUCCESS;
+ 	struct bat_priv *bat_priv;
+ 	struct batman_packet *batman_packet;
++	struct net_device *soft_iface;
++	int ret;
+ 
+ 	if (hard_iface->if_status != IF_NOT_IN_USE)
+ 		goto out;
+@@ -289,18 +286,30 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
+ 	if (!atomic_inc_not_zero(&hard_iface->refcount))
+ 		goto out;
+ 
+-	hard_iface->soft_iface = dev_get_by_name(&init_net, iface_name);
++	soft_iface = dev_get_by_name(&init_net, iface_name);
+ 
+-	if (!hard_iface->soft_iface) {
+-		hard_iface->soft_iface = softif_create(iface_name);
++	if (!soft_iface) {
++		soft_iface = softif_create(iface_name);
+ 
+-		if (!hard_iface->soft_iface)
++		if (!soft_iface) {
++			ret = -ENOMEM;
+ 			goto err;
++		}
+ 
+ 		/* dev_get_by_name() increases the reference counter for us */
+-		dev_hold(hard_iface->soft_iface);
++		dev_hold(soft_iface);
++	}
++
++	if (!softif_is_valid(soft_iface)) {
++		pr_err("Can't create batman mesh interface %s: "
++		       "already exists as regular interface\n",
++		       soft_iface->name);
++		dev_put(soft_iface);
++		ret = -EINVAL;
++		goto err;
  	}
  
--	return route_unicast_packet(skb, recv_if, hdr_size);
-+	return route_unicast_packet(skb, recv_if);
- }
- 
- int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if)
-@@ -1398,7 +1397,7 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 		return NET_RX_SUCCESS;
++	hard_iface->soft_iface = soft_iface;
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	hard_iface->packet_len = BAT_PACKET_LEN;
+ 	hard_iface->packet_buff = kmalloc(hard_iface->packet_len, GFP_ATOMIC);
+@@ -308,6 +317,7 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
+ 	if (!hard_iface->packet_buff) {
+ 		bat_err(hard_iface->soft_iface, "Can't add interface packet "
+ 			"(%s): out of memory\n", hard_iface->net_dev->name);
++		ret = -ENOMEM;
+ 		goto err;
  	}
  
--	return route_unicast_packet(skb, recv_if, hdr_size);
-+	return route_unicast_packet(skb, recv_if);
+@@ -370,7 +380,7 @@ out:
+ 
+ err:
+ 	hardif_free_ref(hard_iface);
+-	return -ENOMEM;
++	return ret;
  }
  
- 
-diff --git a/net/batman-adv/routing.h b/net/batman-adv/routing.h
-index 5efceaf..b5a064c 100644
---- a/net/batman-adv/routing.h
-+++ b/net/batman-adv/routing.h
-@@ -30,8 +30,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
- void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 		   struct neigh_node *neigh_node, unsigned char *hna_buff,
- 		   int hna_buff_len);
--int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if,
--			 int hdr_size);
-+int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+ void hardif_disable_interface(struct hard_iface *hard_iface)
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 95d1c3f..6b514ec 100644
+index 6b514ec..9ed2614 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -462,7 +462,7 @@ void interface_rx(struct net_device *soft_iface,
+@@ -622,6 +622,19 @@ void softif_destroy(struct net_device *soft_iface)
+ 	unregister_netdevice(soft_iface);
+ }
  
- 		memcpy(unicast_packet->dest,
- 		       bat_priv->softif_neigh->addr, ETH_ALEN);
--		ret = route_unicast_packet(skb, recv_if, hdr_size);
-+		ret = route_unicast_packet(skb, recv_if);
- 		if (ret == NET_RX_DROP)
- 			goto dropped;
++int softif_is_valid(struct net_device *net_dev)
++{
++#ifdef HAVE_NET_DEVICE_OPS
++	if (net_dev->netdev_ops->ndo_start_xmit == interface_tx)
++		return 1;
++#else
++	if (net_dev->hard_start_xmit == interface_tx)
++		return 1;
++#endif
++
++	return 0;
++}
++
+ /* ethtool */
+ static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
+ {
+diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
+index 80a3607..4789b6f 100644
+--- a/net/batman-adv/soft-interface.h
++++ b/net/batman-adv/soft-interface.h
+@@ -31,5 +31,6 @@ void interface_rx(struct net_device *soft_iface,
+ 		  int hdr_size);
+ struct net_device *softif_create(char *name);
+ void softif_destroy(struct net_device *soft_iface);
++int softif_is_valid(struct net_device *net_dev);
  
+ #endif /* _NET_BATMAN_ADV_SOFT_INTERFACE_H_ */
 -- 
 1.7.2.3
 
