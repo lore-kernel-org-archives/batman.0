@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  5 Mar 2011 13:28:42 +0100
-Message-Id: <1299328122-21468-29-git-send-email-sven@narfation.org>
-In-Reply-To: <1299328122-21468-1-git-send-email-sven@narfation.org>
+Date: Sat, 5 Mar 2011 15:13:26 +0100
 References: <1299328122-21468-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1299328122-21468-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 28/28] batman-adv: Disallow regular interface
-	as mesh device
+Content-Type: multipart/signed; boundary="nextPart1465142.ctbB09opI6";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201103051513.30796.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-03-05
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,139 +20,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, davem@davemloft.net
 
-When trying to associate a net_device with another net_device which
-already exists, batman-adv assumes that this interface is a fully
-initialized batman mesh interface without checking it. The behaviour
-when accessing data behind netdev_priv of a random net_device is
-undefined and potentially dangerous.
+--nextPart1465142.ctbB09opI6
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Reported-by: Linus Lüssing <linus.luessing@ascom.ch>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- net/batman-adv/hard-interface.c |   34 ++++++++++++++++++++++------------
- net/batman-adv/soft-interface.c |   13 +++++++++++++
- net/batman-adv/soft-interface.h |    1 +
- 3 files changed, 36 insertions(+), 12 deletions(-)
+On Saturday 05 March 2011 13:28:14 Sven Eckelmann wrote:
+> Hi,
+>=20
+> I was asked to submit following pull request for net-next-2.6/linux-2.6.3=
+9.
+> It contains Marek's hard work (and of course related work by other people)
+> to remove the orig_hash (aka the batman-adv private "big kernel lock").
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 95a35b6..b3058e4 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -79,13 +79,8 @@ static int is_valid_iface(struct net_device *net_dev)
- 		return 0;
- 
- 	/* no batman over batman */
--#ifdef HAVE_NET_DEVICE_OPS
--	if (net_dev->netdev_ops->ndo_start_xmit == interface_tx)
-+	if (softif_is_valid(net_dev))
- 		return 0;
--#else
--	if (net_dev->hard_start_xmit == interface_tx)
--		return 0;
--#endif
- 
- 	/* Device is being bridged */
- 	/* if (net_dev->priv_flags & IFF_BRIDGE_PORT)
-@@ -282,6 +277,8 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
- {
- 	struct bat_priv *bat_priv;
- 	struct batman_packet *batman_packet;
-+	struct net_device *soft_iface;
-+	int ret;
- 
- 	if (hard_iface->if_status != IF_NOT_IN_USE)
- 		goto out;
-@@ -289,18 +286,30 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
- 	if (!atomic_inc_not_zero(&hard_iface->refcount))
- 		goto out;
- 
--	hard_iface->soft_iface = dev_get_by_name(&init_net, iface_name);
-+	soft_iface = dev_get_by_name(&init_net, iface_name);
- 
--	if (!hard_iface->soft_iface) {
--		hard_iface->soft_iface = softif_create(iface_name);
-+	if (!soft_iface) {
-+		soft_iface = softif_create(iface_name);
- 
--		if (!hard_iface->soft_iface)
-+		if (!soft_iface) {
-+			ret = -ENOMEM;
- 			goto err;
-+		}
- 
- 		/* dev_get_by_name() increases the reference counter for us */
--		dev_hold(hard_iface->soft_iface);
-+		dev_hold(soft_iface);
-+	}
-+
-+	if (!softif_is_valid(soft_iface)) {
-+		pr_err("Can't create batman mesh interface %s: "
-+		       "already exists as regular interface\n",
-+		       soft_iface->name);
-+		dev_put(soft_iface);
-+		ret = -EINVAL;
-+		goto err;
- 	}
- 
-+	hard_iface->soft_iface = soft_iface;
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
- 	hard_iface->packet_len = BAT_PACKET_LEN;
- 	hard_iface->packet_buff = kmalloc(hard_iface->packet_len, GFP_ATOMIC);
-@@ -308,6 +317,7 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
- 	if (!hard_iface->packet_buff) {
- 		bat_err(hard_iface->soft_iface, "Can't add interface packet "
- 			"(%s): out of memory\n", hard_iface->net_dev->name);
-+		ret = -ENOMEM;
- 		goto err;
- 	}
- 
-@@ -370,7 +380,7 @@ out:
- 
- err:
- 	hardif_free_ref(hard_iface);
--	return -ENOMEM;
-+	return ret;
- }
- 
- void hardif_disable_interface(struct hard_iface *hard_iface)
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 6b514ec..9ed2614 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -622,6 +622,19 @@ void softif_destroy(struct net_device *soft_iface)
- 	unregister_netdevice(soft_iface);
- }
- 
-+int softif_is_valid(struct net_device *net_dev)
-+{
-+#ifdef HAVE_NET_DEVICE_OPS
-+	if (net_dev->netdev_ops->ndo_start_xmit == interface_tx)
-+		return 1;
-+#else
-+	if (net_dev->hard_start_xmit == interface_tx)
-+		return 1;
-+#endif
-+
-+	return 0;
-+}
-+
- /* ethtool */
- static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
- {
-diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
-index 80a3607..4789b6f 100644
---- a/net/batman-adv/soft-interface.h
-+++ b/net/batman-adv/soft-interface.h
-@@ -31,5 +31,6 @@ void interface_rx(struct net_device *soft_iface,
- 		  int hdr_size);
- struct net_device *softif_create(char *name);
- void softif_destroy(struct net_device *soft_iface);
-+int softif_is_valid(struct net_device *net_dev);
- 
- #endif /* _NET_BATMAN_ADV_SOFT_INTERFACE_H_ */
--- 
-1.7.2.3
+Small correction: The orig_hash is still there, but the orig_hash lock was=
+=20
+replaced by finer grained locking and rcu protected datastructures.
 
+Kind regards,
+	Sven
+
+--nextPart1465142.ctbB09opI6
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJNckUIAAoJEF2HCgfBJntGSTUQANXmUVJnbep0gP/MRGj3RMGQ
+9pv7snsrEMJ13+t5+cOBill565jKHMUswErkVDzmBOLdIHCAFmbWypp8Ul9/DYo2
+2TKP0d6zT4wn8Qc279z80SN+a3+vgMNYbOsVal3G3zRYDk6IWhJo1v7tah1lAkcT
+XGsAlI9XMRUP68/D6nINaPIRnKDpbJRVWehTFRijFhX23795lmRJuHSaPEis3FHU
+TyOn9vQuSynqe/lafO1Mx5ivN1ime2loND0+IWCRdBH4EJmG4+NnxWkxmZFmswk+
+blYGLVIQ251B5CxvbdjMtndVIvW8uR8ydE81Ou8G94zSwGZ1hxlM7g9xHjI28Gzt
+1LCAf5/lS/FAWL9WCFJC+jFlDJF0ske6xGepDFmv+LfAcBpXVlxJEkoQSIsEINxm
+4KVxCv9VKXq7b0xyOw9CCKrprnRlQSxtaIMn+m7lIh4vgElNZsQXD+7Wq4L6C74B
+R8xdU+xES88ohmBrAgEoq5VgsR2NlKcS0Wlax1nDNg8edL2OD2PlhDZL08OqXAZB
+zQ8rZXXRTQpHNl/Ac7B5iIrwa25Z4Xj+dqZGnyjYAoxf7c6O2ak7SUXs837XgsmM
+QaDMA9esE3PuWW5j+7HCuK4dhd8BDwtJeJVR099bQKDWD7E85VpT990Ic5YpNcl6
+jbl8OS5Dcu2NRA9FSbaR
+=3Itd
+-----END PGP SIGNATURE-----
+
+--nextPart1465142.ctbB09opI6--
