@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  5 Mar 2011 13:28:26 +0100
-Message-Id: <1299328122-21468-13-git-send-email-sven@narfation.org>
+Date: Sat,  5 Mar 2011 13:28:27 +0100
+Message-Id: <1299328122-21468-14-git-send-email-sven@narfation.org>
 In-Reply-To: <1299328122-21468-1-git-send-email-sven@narfation.org>
 References: <1299328122-21468-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 12/28] batman-adv: Correct rcu refcounting
-	for gw_node
+Subject: [B.A.T.M.A.N.] [PATCH 13/28] batman-adv: Correct rcu refcounting
+	for softif_neigh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -31,116 +31,111 @@ operations have to be atomic.
 Reported-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/gateway_client.c |   37 ++++++++++++++++---------------------
+ net/batman-adv/soft-interface.c |   31 +++++++++++++++----------------
  net/batman-adv/types.h          |    2 +-
- 2 files changed, 17 insertions(+), 22 deletions(-)
+ 2 files changed, 16 insertions(+), 17 deletions(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 429a013..517e001 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -28,20 +28,18 @@
- #include <linux/udp.h>
- #include <linux/if_vlan.h>
- 
--static void gw_node_free_ref(struct kref *refcount)
-+static void gw_node_free_rcu(struct rcu_head *rcu)
- {
- 	struct gw_node *gw_node;
- 
--	gw_node = container_of(refcount, struct gw_node, refcount);
-+	gw_node = container_of(rcu, struct gw_node, rcu);
- 	kfree(gw_node);
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 7e37077..152beaa 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -76,20 +76,18 @@ int my_skb_head_push(struct sk_buff *skb, unsigned int len)
+ 	return 0;
  }
  
--static void gw_node_free_rcu(struct rcu_head *rcu)
-+static void gw_node_free_ref(struct gw_node *gw_node)
+-static void softif_neigh_free_ref(struct kref *refcount)
++static void softif_neigh_free_rcu(struct rcu_head *rcu)
  {
--	struct gw_node *gw_node;
+ 	struct softif_neigh *softif_neigh;
+ 
+-	softif_neigh = container_of(refcount, struct softif_neigh, refcount);
++	softif_neigh = container_of(rcu, struct softif_neigh, rcu);
+ 	kfree(softif_neigh);
+ }
+ 
+-static void softif_neigh_free_rcu(struct rcu_head *rcu)
++static void softif_neigh_free_ref(struct softif_neigh *softif_neigh)
+ {
+-	struct softif_neigh *softif_neigh;
 -
--	gw_node = container_of(rcu, struct gw_node, rcu);
--	kref_put(&gw_node->refcount, gw_node_free_ref);
-+	if (atomic_dec_and_test(&gw_node->refcount))
-+		call_rcu(&gw_node->rcu, gw_node_free_rcu);
+-	softif_neigh = container_of(rcu, struct softif_neigh, rcu);
+-	kref_put(&softif_neigh->refcount, softif_neigh_free_ref);
++	if (atomic_dec_and_test(&softif_neigh->refcount))
++		call_rcu(&softif_neigh->rcu, softif_neigh_free_rcu);
  }
  
- void *gw_get_selected(struct bat_priv *bat_priv)
-@@ -61,25 +59,26 @@ void gw_deselect(struct bat_priv *bat_priv)
- 	bat_priv->curr_gw = NULL;
+ void softif_neigh_purge(struct bat_priv *bat_priv)
+@@ -116,11 +114,10 @@ void softif_neigh_purge(struct bat_priv *bat_priv)
+ 				 softif_neigh->addr, softif_neigh->vid);
+ 			softif_neigh_tmp = bat_priv->softif_neigh;
+ 			bat_priv->softif_neigh = NULL;
+-			kref_put(&softif_neigh_tmp->refcount,
+-				 softif_neigh_free_ref);
++			softif_neigh_free_ref(softif_neigh_tmp);
+ 		}
  
- 	if (gw_node)
--		kref_put(&gw_node->refcount, gw_node_free_ref);
-+		gw_node_free_ref(gw_node);
- }
+-		call_rcu(&softif_neigh->rcu, softif_neigh_free_rcu);
++		softif_neigh_free_ref(softif_neigh);
+ 	}
  
--static struct gw_node *gw_select(struct bat_priv *bat_priv,
--			  struct gw_node *new_gw_node)
-+static void gw_select(struct bat_priv *bat_priv, struct gw_node *new_gw_node)
- {
- 	struct gw_node *curr_gw_node = bat_priv->curr_gw;
+ 	spin_unlock_bh(&bat_priv->softif_neigh_lock);
+@@ -141,8 +138,11 @@ static struct softif_neigh *softif_neigh_get(struct bat_priv *bat_priv,
+ 		if (softif_neigh->vid != vid)
+ 			continue;
  
--	if (new_gw_node)
--		kref_get(&new_gw_node->refcount);
-+	if (new_gw_node && !atomic_inc_not_zero(&new_gw_node->refcount))
-+		new_gw_node = NULL;
- 
- 	bat_priv->curr_gw = new_gw_node;
--	return curr_gw_node;
++		if (!atomic_inc_not_zero(&softif_neigh->refcount))
++			continue;
 +
-+	if (curr_gw_node)
-+		gw_node_free_ref(curr_gw_node);
- }
- 
- void gw_election(struct bat_priv *bat_priv)
- {
- 	struct hlist_node *node;
--	struct gw_node *gw_node, *curr_gw_tmp = NULL, *old_gw_node = NULL;
-+	struct gw_node *gw_node, *curr_gw_tmp = NULL;
- 	uint8_t max_tq = 0;
- 	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
- 	int down, up;
-@@ -174,14 +173,10 @@ void gw_election(struct bat_priv *bat_priv)
- 				curr_gw_tmp->orig_node->gw_flags,
- 				curr_gw_tmp->orig_node->router->tq_avg);
- 
--		old_gw_node = gw_select(bat_priv, curr_gw_tmp);
-+		gw_select(bat_priv, curr_gw_tmp);
+ 		softif_neigh->last_seen = jiffies;
+-		goto found;
++		goto out;
  	}
  
+ 	softif_neigh = kzalloc(sizeof(struct softif_neigh), GFP_ATOMIC);
+@@ -152,15 +152,14 @@ static struct softif_neigh *softif_neigh_get(struct bat_priv *bat_priv,
+ 	memcpy(softif_neigh->addr, addr, ETH_ALEN);
+ 	softif_neigh->vid = vid;
+ 	softif_neigh->last_seen = jiffies;
+-	kref_init(&softif_neigh->refcount);
++	/* initialize with 2 - caller decrements counter by one */
++	atomic_set(&softif_neigh->refcount, 2);
+ 
+ 	INIT_HLIST_NODE(&softif_neigh->list);
+ 	spin_lock_bh(&bat_priv->softif_neigh_lock);
+ 	hlist_add_head_rcu(&softif_neigh->list, &bat_priv->softif_neigh_list);
+ 	spin_unlock_bh(&bat_priv->softif_neigh_lock);
+ 
+-found:
+-	kref_get(&softif_neigh->refcount);
+ out:
  	rcu_read_unlock();
--
--	/* the kfree() has to be outside of the rcu lock */
--	if (old_gw_node)
--		kref_put(&old_gw_node->refcount, gw_node_free_ref);
- }
- 
- void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
-@@ -242,7 +237,7 @@ static void gw_node_add(struct bat_priv *bat_priv,
- 	memset(gw_node, 0, sizeof(struct gw_node));
- 	INIT_HLIST_NODE(&gw_node->list);
- 	gw_node->orig_node = orig_node;
--	kref_init(&gw_node->refcount);
-+	atomic_set(&gw_node->refcount, 1);
- 
- 	spin_lock_bh(&bat_priv->gw_list_lock);
- 	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw_list);
-@@ -325,7 +320,7 @@ void gw_node_purge(struct bat_priv *bat_priv)
- 			gw_deselect(bat_priv);
- 
- 		hlist_del_rcu(&gw_node->list);
--		call_rcu(&gw_node->rcu, gw_node_free_rcu);
-+		gw_node_free_ref(gw_node);
+ 	return softif_neigh;
+@@ -264,7 +263,7 @@ static void softif_batman_recv(struct sk_buff *skb, struct net_device *dev,
+ 			 softif_neigh->addr, softif_neigh->vid);
+ 		softif_neigh_tmp = bat_priv->softif_neigh;
+ 		bat_priv->softif_neigh = softif_neigh;
+-		kref_put(&softif_neigh_tmp->refcount, softif_neigh_free_ref);
++		softif_neigh_free_ref(softif_neigh_tmp);
+ 		/* we need to hold the additional reference */
+ 		goto err;
+ 	}
+@@ -282,7 +281,7 @@ static void softif_batman_recv(struct sk_buff *skb, struct net_device *dev,
  	}
  
- 
+ out:
+-	kref_put(&softif_neigh->refcount, softif_neigh_free_ref);
++	softif_neigh_free_ref(softif_neigh);
+ err:
+ 	kfree_skb(skb);
+ 	return;
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 084604a..cfbeb45 100644
+index cfbeb45..96f7c22 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -98,7 +98,7 @@ struct gw_node {
- 	struct hlist_node list;
- 	struct orig_node *orig_node;
- 	unsigned long deleted;
+@@ -268,7 +268,7 @@ struct softif_neigh {
+ 	uint8_t addr[ETH_ALEN];
+ 	unsigned long last_seen;
+ 	short vid;
 -	struct kref refcount;
 +	atomic_t refcount;
  	struct rcu_head rcu;
