@@ -1,14 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 9 Mar 2011 18:04:50 +0100
-References: <201103091748.32512.onelektra@gmx.net>
-In-Reply-To: <201103091748.32512.onelektra@gmx.net>
+Return-Path: <onelektra@gmx.net>
+From: elektra <onelektra@gmx.net>
+Date: Wed, 9 Mar 2011 18:16:16 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7027543.MERJfnpI2G";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
+Message-Id: <201103091816.17283.onelektra@gmx.net>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201103091804.55424.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [Patch] vis: Modified format of JSON output.
+Subject: [B.A.T.M.A.N.] [Patch] vis: Modified format of JSON output.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,56 +21,73 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Alberto Escudero-Pascual <aep@it46.se>
 
---nextPart7027543.MERJfnpI2G
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+The current vis server JSON output format is breaking the json_decode() 
+function for PHP. 
 
-On Wednesday 09 March 2011 17:48:32 elektra wrote:
-> The current vis server JSON output format is breaking the json_decode()
-> function for PHP.
->=20
-> This patch mainly:
-> - Removes all spaces
-> - Removes all the \t TABS
-> - Double quotes the string-variables
->=20
-> Reported-by:  "Alberto Escudero-Pascual" <aep@it46.se>
-> Signed-off-by: "elektra" <onelektra@gmx.net>
+This patch mainly:
+- Removes all spaces
+- Removes all the \t TABS
+- Double quotes the string-variables
 
-I am not sure if anyone currently maintains batmand and vis.
+Reported-by:  "Alberto Escudero-Pascual" <aep@it46.se>
+Signed-off-by: "elektra" <onelektra@gmx.net>
 
-Anyway, your patch is more or less scrambled. Can you please resend it usin=
-g a=20
-client which doesn't create a wordwrap and space massacre[1]. Many people h=
-ere=20
-seem to use git-send-email for that purpose.
-
-Kind regards,
-	Sven
-
-[1] http://kernel.org/doc/Documentation/email-clients.txt
-
---nextPart7027543.MERJfnpI2G
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJNd7MzAAoJEF2HCgfBJntGFNkP/AlETzCk+qJKAM5lCRJEcsuu
-R7cDF2FKK0y35X2k+juTJJ7btU7j1nUXqx0HcLZK4PVuK/jkQU/JUJTyc9jRzJAZ
-L+RU+bOJrP3szQhPLVBaeqwsoZA/mUDmqzChlg6cqaolr2/sEefkCrtqk+T8Am6o
-kNbJdYJsbbFtRJ+ZHwrEx5jXI0aBMm/Vy0XK+x8AA2OFpWrgzwGimQVOOhr7tVLD
-qeZB/uIlB8s3W6AuQrNLPuoV8RsHqAWV3cs26yf0Y8HMr7aMbNuPbXQAfA1IxTCJ
-aczINi1oJrjydWxv6cSRnscVFGNGvMrOEN5NCf+8f1DvECmNSlR8BZo4aGHkkhOD
-KADfaX3cWVoJTVjrkbZnqb0UEgZsVl5X7O6qWU/oZCeA3PQK5FAJXEdV7UqpKF3/
-+GjB2EhWaodIwzehwR2U9bettqTRJvzSLdNpF7SjUZwwIwnwHIi+FWIuXJYv/zUY
-RmPnyc8PHbpslqt9d/l3DShcpBy9hDC/F/e8MpuJXYFOzeMEl0s97oPfcEFZ1JV/
-9dcM3XYV5bDJ8Ko+vmbY1O5o5xTSDs3SDSRB1FSi6K6xtErTbB2CTPWiHTEKsS1Z
-4ZERUolZ21FP1MCWIAPqOQabNTKPdRlSWx1snzypCQC0ZcIoU6d3geHUSmuDGjKv
-XBUeKn9dlJ9cmCh4wOxI
-=Vqb0
------END PGP SIGNATURE-----
-
---nextPart7027543.MERJfnpI2G--
+--- vis.c       2011-03-09 17:19:59.000000000 +0100
++++ new/vis.c   2011-03-09 17:15:26.000000000 +0100
+@@ -88,19 +88,21 @@
+        if ( fork() )
+                exit(EXIT_SUCCESS);
+ 
+-       chdir( "/" );
++       if (chdir( "/" )==0) {
+ 
+-       if ( ( fd = open(_PATH_DEVNULL, O_RDWR, 0) ) != -1 ) {
++               if ( ( fd = open(_PATH_DEVNULL, O_RDWR, 0) ) != -1 ) {
+ 
+-               dup2(fd, STDIN_FILENO);
+-               dup2(fd, STDOUT_FILENO);
+-               dup2(fd, STDERR_FILENO);
++                       dup2(fd, STDIN_FILENO);
++                       dup2(fd, STDOUT_FILENO);
++                       dup2(fd, STDERR_FILENO);
+ 
+-               if ( fd > 2 )
+-                       close(fd);
++                       if ( fd > 2 )
++                               close(fd);
+ 
++               }
++       } else {
++               exit_error( "Error - can't chdir\n");
+        }
+-
+        return 0;
+ }
+ 
+@@ -395,7 +397,7 @@
+                                                fillme->dot_buffer = (char *)debugRealloc( fillme->dot_buffer, strlen( tmp ) + strlen( fillme->dot_buffer ) + 1, 408 );
+                                                strncat( fillme->dot_buffer, tmp, strlen( tmp ) );
+ 
+-                                               snprintf( tmp, sizeof( tmp ), "%s\t{ router : \"%s\", neighbour : \"%s\", label : %.2f }",
++                                               snprintf( tmp, sizeof( tmp ), "%s{\"router\":\"%s\",\"neighbour\":\"%s\",\"label\":%.2f}",
+                                                        (first_line ? "" : ",\n"), from_str, to_str, (float)( orig_node->tq_max / (float)neigh->tq_avg ) );
+                                                first_line = 0;
+                                                fillme->json_buffer = (char *)debugRealloc( fillme->json_buffer, strlen( tmp ) + strlen( fillme->json_buffer ) + 1, 408 );
+@@ -416,7 +418,7 @@
+                                        fillme->dot_buffer = (char *)debugRealloc( fillme->dot_buffer, strlen( tmp ) + strlen( fillme->dot_buffer ) + 1, 409 );
+                                        strncat( fillme->dot_buffer, tmp, strlen( tmp ) );
+ 
+-                                       snprintf( tmp, sizeof( tmp ), "%s\t{ router : \"%s\", gateway : \"%s/%s\", label : \"HNA\" }",
++                                       snprintf( tmp, sizeof( tmp ), "%s{\"router\":\"%s\",\"gateway\":\"%s/%s\",\"label\":\"HNA\"}",
+                                                (first_line ? "" : ",\n"), from_str, to_str, hna_str );
+                                        first_line = 0;
+                                        fillme->json_buffer = (char *)debugRealloc( fillme->json_buffer, strlen( tmp ) + strlen( fillme->json_buffer ) + 1, 409 );
+@@ -432,7 +434,7 @@
+                                        strncat( fillme->dot_buffer, tmp, strlen( tmp ) );
+ 
+                                        snprintf( tmp, sizeof( tmp ),
+-                                               "%s\t{ router : \"%s\", gateway : \"%s\", label : \"%s\" }",
++                                               "%s{\"router\":\"%s\",\"gateway\":\"%s\",\"label\":\"%s\"}",
+                                                (first_line ? "" : ",\n"), from_str, "0.0.0.0/0.0.0.0", "HNA" );
+                                        first_line = 0;
+                                        fillme->json_buffer = (char *)debugRealloc( fillme->json_buffer, strlen( tmp ) + strlen( fillme->json_buffer ) + 1, 410 );
