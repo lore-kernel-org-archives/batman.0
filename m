@@ -1,15 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 10 Mar 2011 09:28:22 +0100
-References: <201103091748.32512.onelektra@gmx.net>
-	<201103091804.55424.sven@narfation.org> <4D7883F8.7060303@it46.se>
-In-Reply-To: <4D7883F8.7060303@it46.se>
+Return-Path: <onelektra@gmx.net>
+From: elektra <onelektra@gmx.net>
+Date: Thu, 10 Mar 2011 11:17:11 +0100
+References: <201103091835.10969.onelektra@gmx.net>
+	<201103100012.18223.onelektra@gmx.net>
+	<20110310065858.GA12886@lunn.ch>
+In-Reply-To: <20110310065858.GA12886@lunn.ch>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201103100928.23396.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [Patch] vis: Modified format of JSON output.
+Message-Id: <201103101117.11268.onelektra@gmx.net>
+Subject: Re: [B.A.T.M.A.N.] Maintainer of vis and batmand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,24 +23,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Alberto Escudero-Pascual <aep@it46.se>
 
-On Thursday 10 March 2011 08:55:36 Alberto Escudero-Pascual wrote:
-> * The patch fixes three issues
->  - Reporting of duplicated entries in the VIS output, this is fixed in
-> trunk but not in vis.0.3.2
->  - Removed a gcc warning related to the use of chdir()
->  - Cleaned up the JSON output of vis
-> 
-> Our code is in SVN so I have not git-send-email magic :)
+Hi all -
 
-The point is not to make everybody use git - feel free to use other tools (git 
-just makes it easy). But sending the patch to the list enables everybody to 
-read & comment on the proposed patch and also allows a painless commit.
+> An option would be to move to IPv6 and use stateless address
+> autoconfiguration, where the MAC address is used to form part of the
+> IPv6 address. You can then easily see from the IP address which device
+> it is, assuming you know its MAC address.
 
-Broken spacing, broken line endings, patched files in remote SVNs, etc don't 
-make reviewing the code a pleasure experience and are most likely to be 
-ignored.
+the background of my thoughts was how far we can get with non-technical people just taking a 
+bunch of Mesh-Potatoes out of the box, connecting one of them to an existing LAN segment with 
+DHCP and Internet uplink. The setup should allow them to make calls amongst each other and 
+simplifying the gateway setup, so they can use the Internet and make international calls. The 
+MPs should also have a Accesspoint VAP.
 
-Regards,
-Marek
+This is an attempt of squaring the circle, of course...
+
+Having said that batman-adv is pretty powerful with this regard. I just wanted to initiate some 
+public brainstorming about how to solve the problem of identifying each device for debugging 
+purposes when using DHCP.
+
+Writing down each devices MAC address and using IPv6 is a feasible approach, but I figure it 
+would be not intuitive.
+
+However Mareks suggestion of adding a alias IP (we have a Asterisk IVR extension that can do 
+this) is a valid suggestion.  
+
+The requirement to enter a IP via the phone keypad is not exactly zero configuration, but given 
+the enormous set of features that we can offer, it is pretty close. Thanks!
+
+
+Cheers,
+Elektra 
