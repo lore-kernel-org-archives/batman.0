@@ -1,15 +1,12 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Sun, 13 Mar 2011 20:52:22 +0100
-Message-Id: <1300045945-28734-3-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1300045945-28734-1-git-send-email-linus.luessing@web.de>
-References: <1300045945-28734-1-git-send-email-linus.luessing@web.de>
+Date: Sun, 13 Mar 2011 20:52:20 +0100
+Message-Id: <1300045945-28734-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: Make gateway_get_selected
-	type safe
+Subject: [B.A.T.M.A.N.] Various fixes and clean-ups
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,40 +20,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Make the return value explicit instead of (void *).
+Hi everyone,
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- gateway_client.c |    2 +-
- gateway_client.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+For one thing, I've changed the orig_node->router dereference as discussed on IRC,
+now using an extra getter method for that to reduce the lines of code for
+rcu-dereferencing, rcu-locking and refcounting for the router pointer
+and to make it easier to keep track of the right refcounting (Patch 4/5). Note,
+that the previous version was pretty simple, by just using rcu_dereference() everywhere.
+However, this current version is a little more invasive, so would be great if
+someone could double check that I didn't introduce any new mem-leaks or
+null-pointer-dereferences due to wrong refcounting. It already took me quite
+some time to find and squash two bugs I had introduced with this, so
+there might be even more in there. I double checked it myself and
+also tested it in a 4 node chain toplogy vm setup, though.
 
-diff --git a/batman-adv/gateway_client.c b/batman-adv/gateway_client.c
-index 3cc4355..27b87ad 100644
---- a/batman-adv/gateway_client.c
-+++ b/batman-adv/gateway_client.c
-@@ -42,7 +42,7 @@ static void gw_node_free_ref(struct gw_node *gw_node)
- 		call_rcu(&gw_node->rcu, gw_node_free_rcu);
- }
- 
--void *gw_get_selected(struct bat_priv *bat_priv)
-+struct orig_node *gw_get_selected(struct bat_priv *bat_priv)
- {
- 	struct gw_node *curr_gateway_tmp;
- 	struct orig_node *orig_node = NULL;
-diff --git a/batman-adv/gateway_client.h b/batman-adv/gateway_client.h
-index 2aa4391..97c31d1 100644
---- a/batman-adv/gateway_client.h
-+++ b/batman-adv/gateway_client.h
-@@ -24,7 +24,7 @@
- 
- void gw_deselect(struct bat_priv *bat_priv);
- void gw_election(struct bat_priv *bat_priv);
--void *gw_get_selected(struct bat_priv *bat_priv);
-+struct orig_node *gw_get_selected(struct bat_priv *bat_priv);
- void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node);
- void gw_node_update(struct bat_priv *bat_priv,
- 		    struct orig_node *orig_node, uint8_t new_gwflags);
--- 
-1.7.4.1
+For Patch 5/5, I've removed the "TQ value" from the patch subject. For the TQ
+window locking is definitely needed, whether tq_avg needs locking as well still
+needs to be checked. If so, that could be done with a separate patch though.
 
+Patches 1,2,3 are just some smaller changes. Let me know what you think about them.
+
+Cheers, Linus
