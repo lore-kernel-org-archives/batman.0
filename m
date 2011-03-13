@@ -1,16 +1,15 @@
-Return-Path: <onelektra@gmx.net>
-From: elektra <onelektra@gmx.net>
-Date: Thu, 10 Mar 2011 11:17:11 +0100
-References: <201103091835.10969.onelektra@gmx.net>
-	<201103100012.18223.onelektra@gmx.net>
-	<20110310065858.GA12886@lunn.ch>
-In-Reply-To: <20110310065858.GA12886@lunn.ch>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Sun, 13 Mar 2011 20:52:21 +0100
+Message-Id: <1300045945-28734-2-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1300045945-28734-1-git-send-email-linus.luessing@web.de>
+References: <1300045945-28734-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201103101117.11268.onelektra@gmx.net>
-Subject: Re: [B.A.T.M.A.N.] Maintainer of vis and batmand
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Move bonding / iface
+	alternating router search to own functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,34 +23,219 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi all -
+This decreases the size of find_router() by outsourcing the router
+search for the bonding and interface alternating modes to their own sub
+functions. This shall make it easier to keep track of the correct
+refcounting later.
 
-> An option would be to move to IPv6 and use stateless address
-> autoconfiguration, where the MAC address is used to form part of the
-> IPv6 address. You can then easily see from the IP address which device
-> it is, assuming you know its MAC address.
+Sigend-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+ routing.c |  176 +++++++++++++++++++++++++++++++++++--------------------------
+ 1 files changed, 101 insertions(+), 75 deletions(-)
 
-the background of my thoughts was how far we can get with non-technical people just taking a 
-bunch of Mesh-Potatoes out of the box, connecting one of them to an existing LAN segment with 
-DHCP and Internet uplink. The setup should allow them to make calls amongst each other and 
-simplifying the gateway setup, so they can use the Internet and make international calls. The 
-MPs should also have a Accesspoint VAP.
+diff --git a/batman-adv/routing.c b/batman-adv/routing.c
+index c172f5d..c00d861 100644
+--- a/batman-adv/routing.c
++++ b/batman-adv/routing.c
+@@ -1092,6 +1092,102 @@ out:
+ 	return ret;
+ }
+ 
++/* In the bonding case, send the packets in a round
++ * robin fashion over the remaining interfaces.
++ *
++ * This method rotates the bonding list and increases the
++ * returned router's refcount. */
++static struct neigh_node *find_bond_router(struct orig_node *primary_orig,
++					   struct hard_iface *recv_if)
++{
++	struct neigh_node *tmp_neigh_node, *router = NULL,
++			  *first_candidate = NULL;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(tmp_neigh_node, &primary_orig->bond_list,
++				bonding_list) {
++		if (!first_candidate)
++			first_candidate = tmp_neigh_node;
++		/* recv_if == NULL on the first node. */
++		if (tmp_neigh_node->if_incoming != recv_if &&
++		    atomic_inc_not_zero(&tmp_neigh_node->refcount)) {
++			router = tmp_neigh_node;
++			break;
++		}
++	}
++
++	/* use the first candidate if nothing was found. */
++	if (!router && first_candidate &&
++	    atomic_inc_not_zero(&first_candidate->refcount))
++		router = first_candidate;
++
++	if (!router)
++		goto out;
++
++	/* selected should point to the next element
++	 * after the current router */
++	spin_lock_bh(&primary_orig->neigh_list_lock);
++	/* this is a list_move(), which unfortunately
++	 * does not exist as rcu version */
++	list_del_rcu(&primary_orig->bond_list);
++	list_add_rcu(&primary_orig->bond_list,
++		     &router->bonding_list);
++	spin_unlock_bh(&primary_orig->neigh_list_lock);
++
++out:
++	rcu_read_unlock();
++	return router;
++}
++
++/* Interface Alternating: Use the best of the
++ * remaining candidates which are not using
++ * this interface.
++ *
++ * Increases the returned router's refcount */
++static struct neigh_node *find_ifalter_router(struct orig_node *primary_orig,
++					      struct hard_iface *recv_if)
++{
++	struct neigh_node *tmp_neigh_node, *router = NULL,
++			  *first_candidate = NULL;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(tmp_neigh_node, &primary_orig->bond_list,
++				bonding_list) {
++		if (!first_candidate)
++			first_candidate = tmp_neigh_node;
++
++		/* recv_if == NULL on the first node. */
++		if (tmp_neigh_node->if_incoming == recv_if)
++			continue;
++
++		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
++			continue;
++
++		/* if we don't have a router yet
++		 * or this one is better, choose it. */
++		if ((!router) ||
++		    (tmp_neigh_node->tq_avg > router->tq_avg)) {
++			/* decrement refcount of
++			 * previously selected router */
++			if (router)
++				neigh_node_free_ref(router);
++
++			router = tmp_neigh_node;
++			atomic_inc_not_zero(&router->refcount);
++		}
++
++		neigh_node_free_ref(tmp_neigh_node);
++	}
++
++	/* use the first candidate if nothing was found. */
++	if (!router && first_candidate &&
++	    atomic_inc_not_zero(&first_candidate->refcount))
++		router = first_candidate;
++
++	rcu_read_unlock();
++	return router;
++}
++
+ /* find a suitable router for this originator, and use
+  * bonding if possible. increases the found neighbors
+  * refcount.*/
+@@ -1101,7 +1197,7 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
+ {
+ 	struct orig_node *primary_orig_node;
+ 	struct orig_node *router_orig;
+-	struct neigh_node *router, *first_candidate, *tmp_neigh_node;
++	struct neigh_node *router;
+ 	static uint8_t zero_mac[ETH_ALEN] = {0, 0, 0, 0, 0, 0};
+ 	int bonding_enabled;
+ 
+@@ -1157,82 +1253,12 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 	 * in. */
+ 
+ 	neigh_node_free_ref(router);
+-	first_candidate = NULL;
+-	router = NULL;
+ 
+-	if (bonding_enabled) {
+-		/* in the bonding case, send the packets in a round
+-		 * robin fashion over the remaining interfaces. */
++	if (bonding_enabled)
++		router = find_bond_router(primary_orig_node, recv_if);
++	else
++		router = find_ifalter_router(primary_orig_node, recv_if);
+ 
+-		list_for_each_entry_rcu(tmp_neigh_node,
+-				&primary_orig_node->bond_list, bonding_list) {
+-			if (!first_candidate)
+-				first_candidate = tmp_neigh_node;
+-			/* recv_if == NULL on the first node. */
+-			if (tmp_neigh_node->if_incoming != recv_if &&
+-			    atomic_inc_not_zero(&tmp_neigh_node->refcount)) {
+-				router = tmp_neigh_node;
+-				break;
+-			}
+-		}
+-
+-		/* use the first candidate if nothing was found. */
+-		if (!router && first_candidate &&
+-		    atomic_inc_not_zero(&first_candidate->refcount))
+-			router = first_candidate;
+-
+-		if (!router) {
+-			rcu_read_unlock();
+-			return NULL;
+-		}
+-
+-		/* selected should point to the next element
+-		 * after the current router */
+-		spin_lock_bh(&primary_orig_node->neigh_list_lock);
+-		/* this is a list_move(), which unfortunately
+-		 * does not exist as rcu version */
+-		list_del_rcu(&primary_orig_node->bond_list);
+-		list_add_rcu(&primary_orig_node->bond_list,
+-				&router->bonding_list);
+-		spin_unlock_bh(&primary_orig_node->neigh_list_lock);
+-
+-	} else {
+-		/* if bonding is disabled, use the best of the
+-		 * remaining candidates which are not using
+-		 * this interface. */
+-		list_for_each_entry_rcu(tmp_neigh_node,
+-			&primary_orig_node->bond_list, bonding_list) {
+-			if (!first_candidate)
+-				first_candidate = tmp_neigh_node;
+-
+-			/* recv_if == NULL on the first node. */
+-			if (tmp_neigh_node->if_incoming == recv_if)
+-				continue;
+-
+-			if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
+-				continue;
+-
+-			/* if we don't have a router yet
+-			 * or this one is better, choose it. */
+-			if ((!router) ||
+-			    (tmp_neigh_node->tq_avg > router->tq_avg)) {
+-				/* decrement refcount of
+-				 * previously selected router */
+-				if (router)
+-					neigh_node_free_ref(router);
+-
+-				router = tmp_neigh_node;
+-				atomic_inc_not_zero(&router->refcount);
+-			}
+-
+-			neigh_node_free_ref(tmp_neigh_node);
+-		}
+-
+-		/* use the first candidate if nothing was found. */
+-		if (!router && first_candidate &&
+-		    atomic_inc_not_zero(&first_candidate->refcount))
+-			router = first_candidate;
+-	}
+ return_router:
+ 	rcu_read_unlock();
+ 	return router;
+-- 
+1.7.4.1
 
-This is an attempt of squaring the circle, of course...
-
-Having said that batman-adv is pretty powerful with this regard. I just wanted to initiate some 
-public brainstorming about how to solve the problem of identifying each device for debugging 
-purposes when using DHCP.
-
-Writing down each devices MAC address and using IPv6 is a feasible approach, but I figure it 
-would be not intuitive.
-
-However Mareks suggestion of adding a alias IP (we have a Asterisk IVR extension that can do 
-this) is a valid suggestion.  
-
-The requirement to enter a IP via the phone keypad is not exactly zero configuration, but given 
-the enormous set of features that we can offer, it is pretty close. Thanks!
-
-
-Cheers,
-Elektra 
