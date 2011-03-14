@@ -1,11 +1,14 @@
-Return-Path: <jluehr@online.de>
-From: =?iso-8859-1?Q?Jan_L=FChr?= <jluehr@online.de>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-Date: Mon, 14 Mar 2011 13:39:51 +0100
-Message-Id: <9B37313E-1B65-4D3F-BE01-1374D13681A8@online.de>
-Mime-Version: 1.0 (Apple Message framework v1082)
-Subject: [B.A.T.M.A.N.] Batman-adv gateways vs IPv6
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 14 Mar 2011 23:48:14 +0100
+References: <1300045945-28734-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1300045945-28734-1-git-send-email-linus.luessing@web.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201103142348.14901.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Various fixes and clean-ups
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,27 +20,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello @all,
 
-I'm new to batman - so, sorry if this was discussed already...
+Hi,
 
-We're up to deploy batman-adv in an wireless mesh network with multiple =
-routers / gateways providing access to the outside world. Furthermore =
-deploying an IPv4 / v6 dual stack networking is one goals we're trying =
-to archive.
-We stumbled up on batman-adv and its gateway feature, which looks quite =
-promising. (http://www.open-mesh.org/wiki/batman-adv-gateways)
-However, since dhcp is used for implementing batman-adv gateways, this =
-feature doesn't affect IPv6 ND / icmp6 - am I right?
+> For one thing, I've changed the orig_node->router dereference as discussed
+> on IRC, now using an extra getter method for that to reduce the lines of
+> code for rcu-dereferencing, rcu-locking and refcounting for the router
+> pointer and to make it easier to keep track of the right refcounting
+> (Patch 4/5). Note, that the previous version was pretty simple, by just
+> using rcu_dereference() everywhere. However, this current version is a
+> little more invasive, so would be great if someone could double check that
+> I didn't introduce any new mem-leaks or null-pointer-dereferences due to
+> wrong refcounting. It already took me quite some time to find and squash
+> two bugs I had introduced with this, so there might be even more in there.
+> I double checked it myself and also tested it in a 4 node chain toplogy vm
+> setup, though.
 
-Having this in mind, what do you think is a suitable deployment strategy =
-for IPv6 in batman-adv networks?
-Of course, assigning a single /64 to the mesh-cloud is a simple option, =
-but icmp6 flooding might occur ...
+after reviewing these patches I made some modifications before committing them 
+in revision 1956-1960.
 
 Thanks,
-Jan
-
-
+Marek
