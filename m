@@ -1,15 +1,11 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Sun, 13 Mar 2011 20:52:25 +0100
-Message-Id: <1300045945-28734-6-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1300045945-28734-1-git-send-email-linus.luessing@web.de>
-References: <1300045945-28734-1-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: Protect global TQ window
-	with a spinlock
+Return-Path: <jluehr@online.de>
+From: =?iso-8859-1?Q?Jan_L=FChr?= <jluehr@online.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+Date: Mon, 14 Mar 2011 13:39:51 +0100
+Message-Id: <9B37313E-1B65-4D3F-BE01-1374D13681A8@online.de>
+Mime-Version: 1.0 (Apple Message framework v1082)
+Subject: [B.A.T.M.A.N.] Batman-adv gateways vs IPv6
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,67 +19,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- originator.c |    1 +
- routing.c    |    4 ++++
- types.h      |    1 +
- 3 files changed, 6 insertions(+), 0 deletions(-)
+Hello @all,
 
-diff --git a/batman-adv/originator.c b/batman-adv/originator.c
-index 4989bbb..4905619 100644
---- a/batman-adv/originator.c
-+++ b/batman-adv/originator.c
-@@ -102,6 +102,7 @@ struct neigh_node *create_neighbor(struct orig_node *orig_node,
- 
- 	INIT_HLIST_NODE(&neigh_node->list);
- 	INIT_LIST_HEAD(&neigh_node->bonding_list);
-+	spin_lock_init(&neigh_node->tq_lock);
- 
- 	memcpy(neigh_node->addr, neigh, ETH_ALEN);
- 	neigh_node->orig_node = orig_neigh_node;
-diff --git a/batman-adv/routing.c b/batman-adv/routing.c
-index 9780a62..cd578d4 100644
---- a/batman-adv/routing.c
-+++ b/batman-adv/routing.c
-@@ -408,10 +408,12 @@ static void update_orig(struct bat_priv *bat_priv,
- 		if (is_duplicate)
- 			continue;
- 
-+		spin_lock_bh(&tmp_neigh_node->tq_lock);
- 		ring_buffer_set(tmp_neigh_node->tq_recv,
- 				&tmp_neigh_node->tq_index, 0);
- 		tmp_neigh_node->tq_avg =
- 			ring_buffer_avg(tmp_neigh_node->tq_recv);
-+		spin_unlock_bh(&tmp_neigh_node->tq_lock);
- 	}
- 
- 	if (!neigh_node) {
-@@ -436,10 +438,12 @@ static void update_orig(struct bat_priv *bat_priv,
- 	orig_node->flags = batman_packet->flags;
- 	neigh_node->last_valid = jiffies;
- 
-+	spin_lock_bh(&neigh_node->tq_lock);
- 	ring_buffer_set(neigh_node->tq_recv,
- 			&neigh_node->tq_index,
- 			batman_packet->tq);
- 	neigh_node->tq_avg = ring_buffer_avg(neigh_node->tq_recv);
-+	spin_unlock_bh(&neigh_node->tq_lock);
- 
- 	if (!is_duplicate) {
- 		orig_node->last_ttl = batman_packet->ttl;
-diff --git a/batman-adv/types.h b/batman-adv/types.h
-index 1854cbb..091476d 100644
---- a/batman-adv/types.h
-+++ b/batman-adv/types.h
-@@ -125,6 +125,7 @@ struct neigh_node {
- 	struct rcu_head rcu;
- 	struct orig_node *orig_node;
- 	struct hard_iface *if_incoming;
-+	spinlock_t tq_lock;	/* protects: tq_recv, tq_index */
- };
- 
- 
--- 
-1.7.4.1
+I'm new to batman - so, sorry if this was discussed already...
+
+We're up to deploy batman-adv in an wireless mesh network with multiple =
+routers / gateways providing access to the outside world. Furthermore =
+deploying an IPv4 / v6 dual stack networking is one goals we're trying =
+to archive.
+We stumbled up on batman-adv and its gateway feature, which looks quite =
+promising. (http://www.open-mesh.org/wiki/batman-adv-gateways)
+However, since dhcp is used for implementing batman-adv gateways, this =
+feature doesn't affect IPv6 ND / icmp6 - am I right?
+
+Having this in mind, what do you think is a suitable deployment strategy =
+for IPv6 in batman-adv networks?
+Of course, assigning a single /64 to the mesh-cloud is a simple option, =
+but icmp6 flooding might occur ...
+
+Thanks,
+Jan
+
 
