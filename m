@@ -1,16 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 15 Mar 2011 20:59:15 +0100
-References: <AANLkTikR_oUzLcEb+=AUR_1bWZR_bS2VgKPcC6RVVd+c@mail.gmail.com>
-	<201103151911.51091.sven@narfation.org>
-	<AANLkTikTD7Ks_RmRT_yoVm3_16w4u48mK6t4XD2H5Zjr@mail.gmail.com>
-In-Reply-To: <AANLkTikTD7Ks_RmRT_yoVm3_16w4u48mK6t4XD2H5Zjr@mail.gmail.com>
+Return-Path: <neumann@cgws.de>
+From: Axel Neumann <neumann@cgws.de>
+Date: Wed, 16 Mar 2011 00:14:21 +0100
+References: <201012181801.14616.neumann@cgws.de>
+	<201012201317.52706.sven@narfation.org>
+	<201103071126.13621.sven@narfation.org>
+In-Reply-To: <201103071126.13621.sven@narfation.org>
 MIME-Version: 1.0
+Message-Id: <201103160014.21523.neumann@cgws.de>
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201103152059.15569.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Wireless Bridge
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] New BMX website at www.bmx6.net
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,17 +22,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "A. AlBoori" <ahmed.boori@gmail.com>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday 15 March 2011 19:19:00 A. AlBoori wrote:
-> Thank You for your reply. Yes however it runs B.A.T.M.A.N mesh
-> protocol.  I wonder. is it possible to do it?
+On Montag 07 M=E4rz 2011, you wrote:
+> On Monday 20 December 2010 13:17:51 Sven Eckelmann wrote:
+> > Axel Neumann wrote:
+> > > > Does that mean that your svn directories and git repositories at
+> > > > open-mesh.org can be dropped
+> > >=20
+> > > In the long term yes! But please not right now. I want to update links
+> > > in other repositories like openWrt first and give users some time to
+> > > update their checkout as well so that the build process does not fail.
+> > > Lets say in February.
+> >=20
+> > Ok, sounds good.
+>=20
+> @Axel: what is the current status?
 
-Yes, batman-adv allow bridging your LAN into your WLAN.
+you can remove it.
+I changed links to repositories in openwrt packages by end of january. Than=
+ks=20
+for your patience and sorry for late reply.
 
-Please contact open-mesh.com to learn how to do so:
-http://www.open-mesh.com/contacts/
+/axel
 
-Regards,
-Marek
+>=20
+> Kind regards,
+> 	Sven
+
