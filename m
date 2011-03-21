@@ -1,14 +1,15 @@
-Return-Path: <hlabishik@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <201103181218.56535.sven@narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 22 Mar 2011 00:01:45 +0100
 References: <mailman.14.1290812292.944.b.a.t.m.a.n@lists.open-mesh.org>
-	<201103081052.58143.sven@narfation.org>
-	<AANLkTiniFmA3qES=1vfU_Y6Y+aMgTXzTOnDdSkpndxVX@mail.gmail.com>
 	<201103181218.56535.sven@narfation.org>
-Date: Tue, 22 Mar 2011 00:40:57 +0200
-Message-ID: <AANLkTinPwwPP-kP9QajcgC5+90w1x-3-wc0S3MhJdF8F@mail.gmail.com>
-From: hlabishi kobo <hlabishik@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<AANLkTinPwwPP-kP9QajcgC5+90w1x-3-wc0S3MhJdF8F@mail.gmail.com>
+In-Reply-To: <AANLkTinPwwPP-kP9QajcgC5+90w1x-3-wc0S3MhJdF8F@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4947768.YsVVF9G8Oi";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201103220001.48909.sven@narfation.org>
 Subject: Re: [B.A.T.M.A.N.] BATMAN routing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,67 +22,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: hlabishi kobo <hlabishik@gmail.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-On 3/18/11, Sven Eckelmann <sven@narfation.org> wrote:
-> On Thursday 17 March 2011 23:40:06 hlabishi kobo wrote:
->> Hi thank you very much for your suggestions Sven, they were really
->> helpful. i actually now put the below code down which i am still busy
->> trying to test it.
->>
->> int weighted_bit_packet_count(TYPE_OF_WORD *seq_bits)
->> {
->> 	int i,check, count = 0;
->> 	int j;
->> 	//TYPE_OF_WORD *word;
->> 	int word;
->>
->> 	for (i = 0; i < NUM_WORDS; i++) {
->> 		word = seq_bits[i];
->>
->> 		for (j = 0; j < 32; j++){
->>         		check = (word & (1 << j)) >> j;
->>        		 	if (check == 1)
->>          		   count += j;
->> 		}
->> 	printk("our count is %d\n", count);
->> 	return count;
->> 	}
->> 	//printk("our count is %d\n", count);
->> 	//return count;
->> }
->> When i am using it on two PC's my ping seems to be recording much
->> delay. I will appreciate your feedback in this regard.
->> Thank you and kind Regards
->
+--nextPart4947768.YsVVF9G8Oi
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Thank you very much Sven. Your feedback have been really helpful.
+On Monday 21 March 2011 23:40:57 hlabishi kobo wrote:
+[...]
+> I actually printed the seq_bits[i] and that is basically why i used 32
+> but that was just for debugging purpose. But actually if i use
+> NUM_WORDS, my weighted sum become very small whereas if i use 32 it
+> becomes very big, trying to understand what might be causing it to be
+> that way.
 
-> Ehrm, you know that you ignore the fact that seq_bits[i] may be 64 bits?
-I actually printed the seq_bits[i] and that is basically why i used 32
-but that was just for debugging purpose. But actually if i use
-NUM_WORDS, my weighted sum become very small whereas if i use 32 it
-becomes very big, trying to understand what might be causing it to be
-that way.
-And
-> you only calculate the weighted sum of a single "word" (which you static
-> casted to int....?) and not all words.
-i actually dont understand this very well, how many words does seq_bits[i] have?
- And the sum is still wrong weighted
-> (you still give zero weight for the newest one and increase the weight for the older).
-Thanks for letting alerting me about this, i hv now changed from
-ascending to descending order.
- And the way you check the bits is even for a sequential
-> implementation
-> overly complex. And it is normal that printk heavily increase the amount of
-> time... maybe you meant that by delay.
-even if i comment out the printk() statement its still carries with the delay.
-> Sry, I have really no idea what I should say to it.
->
-> Regards,
-> 	Sven
->
+NUM_WORDS =3D=3D amount of unsigned long/words
+WORD_BIT_SIZE =3D=3D amount of bits in a unsigned long
+TQ_LOCAL_WINDOW_SIZE =3D=3D sum of bits in seq_bits
 
-Kind Regards
-Hlabishi
+Nothing really fancy here.
+
+> > you only calculate the weighted sum of a single "word" (which you static
+> > casted to int....?) and not all words.
+>=20
+> i actually dont understand this very well, how many words does seq_bits[i]
+> have?
+
+a single "word"/unsigned long. seq_bits consist of NUM_WORDS words (words a=
+re=20
+defined in context of seq_bits as unsigned long - that's why we removed=20
+TYPE_OF_WORD completely and just use unsigned long).
+
+Regards,
+	Sven
+
+--nextPart4947768.YsVVF9G8Oi
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJNh9jaAAoJEF2HCgfBJntGnlwQAMv2vrF2FwosXxQIZZKciB7m
+zKKqDFqNaAqtS711mkeLU5Vu3Winm0rFakOyu6DJBPOa6i/ZTprPdH4BxJXMlpDg
+STFk5hDD3uda9N03ZmGyeSog++MTnfC2c15XKBhB7iDLITRBJ2bcAmEj62GXKfBG
+h+y1x/qzJdrfdhDEbXc7G6ioYaoXMBYmkLJo3r3L8cX+gDtSsp/WoP2iB47Ewrx/
+ehC6HTWtIzgy0fcvTl9O0KxNuKNRXB5rf37HwTRxNdKtQv04W1FJDwtsOMMnrEP3
+0j/EAdpWbNWY8B6kSwCL0fPuQfuQP6tfNNHkDez65eyqcq+AsRGRq9g5G+lbTfTd
+7GwBI/6GeN9Q2w26B4ZgH6b71wEXHbbmTnXDT2wFKrgl+fxwgS4Ml7AP62lyM9vO
+r+2MmSxLedu8myU5/THrfR+qvfsqw/NvSaz+EPlVTuEBORXI3K10pGFHIzwE9F6e
+8g1CVnhEIcwXDGOT2RohEQCPDJ/L1rFo1ToArhO05w2zLfG21emh9xrbOBf3T4c3
+1H/RHp3rM0dzN25E6thYo+Fzv9MPlQPscKjwkELjd19Wo83782aS5r5GOi27zwVP
+0vAZEZAPPAL4HI6eKqvH23oQIAkfIkxj1BSmLe/iLehjHHusfMl+hA7/H6phNF2z
+7uFspTP809f2omI7Mxxt
+=2uZ+
+-----END PGP SIGNATURE-----
+
+--nextPart4947768.YsVVF9G8Oi--
