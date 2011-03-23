@@ -1,10 +1,10 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 23 Mar 2011 11:53:49 +0100
-Message-Id: <1300877629-15690-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <20110319193308.GA29129@pandem0nium>
-References: <20110319193308.GA29129@pandem0nium>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: protect softif_neigh by rcu
+Date: Wed, 23 Mar 2011 12:00:23 +0100
+Message-Id: <1300878023-17742-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1300877629-15690-1-git-send-email-lindner_marek@yahoo.de>
+References: <1300877629-15690-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: protect softif_neigh by rcu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,14 +26,14 @@ use rcu functions to manipulate the pointers.
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- Updated select/deselect API & moved spinlock in select().
+ Forgot to amend last changes.  :(
 
  batman-adv/soft-interface.c |  115 +++++++++++++++++++++++++++++++++----------
  batman-adv/types.h          |    2 +-
  2 files changed, 89 insertions(+), 28 deletions(-)
 
 diff --git a/batman-adv/soft-interface.c b/batman-adv/soft-interface.c
-index 9ed2614..add9f6e 100644
+index 9ed2614..5f3fc1b 100644
 --- a/batman-adv/soft-interface.c
 +++ b/batman-adv/soft-interface.c
 @@ -90,10 +90,52 @@ static void softif_neigh_free_ref(struct softif_neigh *softif_neigh)
@@ -86,7 +86,7 @@ index 9ed2614..add9f6e 100644
  	struct hlist_node *node, *node_tmp;
 +	char do_deselect = 0;
 +
-+	curr_softif_neigh = bat_priv_get_softif_neigh(bat_priv);
++	curr_softif_neigh = softif_neigh_get_selected(bat_priv);
  
  	spin_lock_bh(&bat_priv->softif_neigh_lock);
  
@@ -165,7 +165,7 @@ index 9ed2614..add9f6e 100644
  		goto err;
  
 -	if (bat_priv->softif_neigh == softif_neigh)
-+	curr_softif_neigh = bat_priv_get_softif_neigh(bat_priv);
++	curr_softif_neigh = softif_neigh_get_selected(bat_priv);
 +	if (curr_softif_neigh == softif_neigh)
  		goto out;
  
@@ -236,7 +236,7 @@ index 9ed2614..add9f6e 100644
  	 * it will transport the packets to the mesh
  	 */
 -	if ((bat_priv->softif_neigh) && (bat_priv->softif_neigh->vid == vid))
-+	curr_softif_neigh = bat_priv_get_softif_neigh(bat_priv);
++	curr_softif_neigh = softif_neigh_get_selected(bat_priv);
 +	if ((curr_softif_neigh) && (curr_softif_neigh->vid == vid))
  		goto dropped;
  
@@ -263,7 +263,7 @@ index 9ed2614..add9f6e 100644
  	 * it will transport the packets to the non-mesh network
  	 */
 -	if ((bat_priv->softif_neigh) && (bat_priv->softif_neigh->vid == vid)) {
-+	curr_softif_neigh = bat_priv_get_softif_neigh(bat_priv);
++	curr_softif_neigh = softif_neigh_get_selected(bat_priv);
 +	if (curr_softif_neigh && (curr_softif_neigh->vid == vid)) {
  		skb_push(skb, hdr_size);
  		unicast_packet = (struct unicast_packet *)skb->data;
