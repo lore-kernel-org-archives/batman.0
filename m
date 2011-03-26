@@ -1,13 +1,10 @@
-Return-Path: <andrew@lunn.ch>
-Date: Sat, 26 Mar 2011 17:14:39 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20110326161439.GK17979@lunn.ch>
-References: <20110326130451.GC10750@ritirata.org>
-	<201103261631.42903.lindner_marek@yahoo.de>
+Return-Path: <ordex@autistici.org>
+Date: Sat, 26 Mar 2011 18:21:55 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20110326172155.GA11235@ritirata.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <201103261631.42903.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] TTL yes, TTL no
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,9 +17,11 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sat, Mar 26, 2011 at 04:31:42PM +0100, Marek Lindner wrote:
+Hello,
+
+On sab, mar 26, 2011 at 04:31:42 +0100, Marek Lindner wrote:
 > 
 > Hi,
 > 
@@ -36,63 +35,28 @@ On Sat, Mar 26, 2011 at 04:31:42PM +0100, Marek Lindner wrote:
 > zero. With the current default hop penalty of 10 the maximum number of hops is 
 > limited to 25.
 
-Humm, i could be wrong here.....
+I think it is wrong: TQ is not decremented by hop_penalty each time, but it is
+multiplied by (TQ_MAX-hop_penalty/TQ_MAX), then the number of hops is
+bigger than what you said. With hop_penalty = 10 we can probably reach
+~135 hops (raw calculus 255*(TQ_MAX-hop_penalty/TQ_MAX)^135) =~ 0)
 
-static uint8_t hop_penalty(const uint8_t tq, struct bat_priv *bat_priv)
-{
-        int hop_penalty = atomic_read(&bat_priv->hop_penalty);
-        return (tq * (TQ_MAX_VALUE - hop_penalty)) / (TQ_MAX_VALUE);
-}
+> 
+> 
+> > Someone could probably say that a node far at least TTL hops will never
+> > be reached by a unicast packet, then it is meaningless to let it know
+> > about me. But then it could be possible to recalibrate the TTL such that
+> > it has to be equal to the maximum length in number of hops of the longest
+> > path the OGM can traverse.
+> 
+> Not quite sure what you are proposing. A TTL of TQ_MAX / hop penalty ?
+> 
 
-So 10% is deducted, not 10 absolute. So assuming perfect links, TQ
-will be:
+Looking at the calculus above, I'm proposing to use TTL = ~135
 
-255
-245
-235
-226
-217
-208
-200
-192
-184
-177
-170
-163
-157
-151
-145
-139
-134
-129
-124
-119
-114
-110
-106
-102
-98
-94
-90
-86
-83
-80
-77
-74
-71
-68
-65
-62
-60
-58
-56
-54
+Bye!
 
-etc...
+-- 
+Antonio Quartulli
 
-Depending on how the rounding works, i think somewhere after hop 72
-the TQ is always 12.
-
-But maybe i'm not understanding something correctly....
-
-    Andrew
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
