@@ -1,11 +1,12 @@
-Return-Path: <ordex@autistici.org>
-Date: Sat, 26 Mar 2011 19:01:28 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110326180128.GC11235@ritirata.org>
+Return-Path: <linus.luessing@web.de>
+Date: Wed, 30 Mar 2011 10:20:42 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20110330082042.GA12108@Sellars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Subject: Re: [B.A.T.M.A.N.] TTL yes, TTL no
+Sender: linus.luessing@web.de
+Subject: [B.A.T.M.A.N.] B.A.T.M.A.N. @Google Summer of Code 2011
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,49 +20,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sat, Mar 26, 2011 at 06:45:48PM +0100, Andrew Lunn wrote:
-> > I think it is wrong: TQ is not decremented by hop_penalty each time, but it is
-> > multiplied by (TQ_MAX-hop_penalty/TQ_MAX), then the number of hops is
-> > bigger than what you said. With hop_penalty = 10 we can probably reach
-> > ~135 hops (raw calculus 255*(TQ_MAX-hop_penalty/TQ_MAX)^135) =~ 0)
-> 
-> I agree with the principle. However, you need to take rounding into
-> effect. The kernel does integer arithmetic and TQ is always an integer
-> value. I also got it wrong in my last post. I used the wrong round
-> function when calculating the values. Using rounddown() i get:
-> 
+*** Google Summer of Code 2011 ***
 
-[cut]
+Since last Monday the student application period for the Google
+Summer of Code 2011 has opened. A chance for any student to get
+their hands dirty on their favorite OpenSource project and getting
+its development process and code base to know better during these
+2 months - while getting payed for it! And guess what? This year,
+you can play with Batman - ehh, B.A.T.M.A.N. Anyways, they both
+want to save the world of course ;).
 
-> 
-> After 73 hops, TQ will be zero.
+As the application of OpenMesh as a mentoring organization was
+sadly rejected last year, we decided and agreed on applying via
+Freifunk this year, which serves as an umbrella organization for
+various projects dealing with wireless mesh networks.
 
-You are right, my raw calculus was too raw :p
-> 
-> > Looking at the calculus above, I'm proposing to use TTL = ~135
-> 
-> TTL of 73 would be more accurate i think.
-
-Yes.
-
-> 
-> Which leads me to a new question. At WBM we talked about moving the
-> HNAs out of the OGMs. If we had a really big mesh, with more than 73
-> hops from side to side, do we get into a situation where we have HNAs
-> from more than 73 hops away, but no idea how to route to them since
-> OGMs got dropped when TQ reached 0?
-> 
-
-Mh..The HNA request is triggered by the TTVN carried into the OGM. Then a node
-far more than 73 hops should never ask for HNAs it cannot reach..
-Moreover, a route toward a client is never allocated if we don't have
-its orig_node in our DB.
+If you are interested in mesh networking and B.A.T.M.A.N. and if
+you also love OpenSource software and would like to become a more
+firm part of it, then get in touch with us via mailinglist and/or
+IRC. So far the following ideas have been collected which you may
+apply for:
+http://wiki.freifunk.net/Ideas#B.A.T.M.A.N.
+But feel free to tell us your own suggestions and ideas, too.
 
 
-Bye
+*****                                                 ****
+*** Student application deadline is the 8th of April!! ***
+****                                                 *****
 
--- 
-Antonio Quartulli
+- GSoC timeline:
+  http://www.google-melange.com/document/show/gsoc_program/google/gsoc2011/timeline
+- Student Check List:
+  http://wiki.freifunk.net/Student_Check_List
+- Freifunk GSoC Page:
+  http://www.google-melange.com/gsoc/org/show/google/gsoc2011/freifunk
 
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
+
+Happy routing,
+
+The B.A.T.M.A.N. team
