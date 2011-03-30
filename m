@@ -1,12 +1,14 @@
-Return-Path: <linus.luessing@web.de>
-Date: Wed, 30 Mar 2011 10:20:42 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20110330082042.GA12108@Sellars>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Wed, 30 Mar 2011 21:49:05 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20110330194905.GA30406@pandem0nium>
+References: <E76519770B30484E96B403F9721C148B2FB0C1DD@afsexc102.aurora.aero>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
 Content-Disposition: inline
-Sender: linus.luessing@web.de
-Subject: [B.A.T.M.A.N.] B.A.T.M.A.N. @Google Summer of Code 2011
+In-Reply-To: <E76519770B30484E96B403F9721C148B2FB0C1DD@afsexc102.aurora.aero>
+Subject: Re: [B.A.T.M.A.N.] UDP multicast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,44 +20,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-
-*** Google Summer of Code 2011 ***
-
-Since last Monday the student application period for the Google
-Summer of Code 2011 has opened. A chance for any student to get
-their hands dirty on their favorite OpenSource project and getting
-its development process and code base to know better during these
-2 months - while getting payed for it! And guess what? This year,
-you can play with Batman - ehh, B.A.T.M.A.N. Anyways, they both
-want to save the world of course ;).
-
-As the application of OpenMesh as a mentoring organization was
-sadly rejected last year, we decided and agreed on applying via
-Freifunk this year, which serves as an umbrella organization for
-various projects dealing with wireless mesh networks.
-
-If you are interested in mesh networking and B.A.T.M.A.N. and if
-you also love OpenSource software and would like to become a more
-firm part of it, then get in touch with us via mailinglist and/or
-IRC. So far the following ideas have been collected which you may
-apply for:
-http://wiki.freifunk.net/Ideas#B.A.T.M.A.N.
-But feel free to tell us your own suggestions and ideas, too.
+To: "Toupet, Olivier" <otoupet@aurora.aero>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
-*****                                                 ****
-*** Student application deadline is the 8th of April!! ***
-****                                                 *****
+--FL5UXtIhxfXey3p5
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-- GSoC timeline:
-  http://www.google-melange.com/document/show/gsoc_program/google/gsoc2011/timeline
-- Student Check List:
-  http://wiki.freifunk.net/Student_Check_List
-- Freifunk GSoC Page:
-  http://www.google-melange.com/gsoc/org/show/google/gsoc2011/freifunk
+Hello Olivier,
+
+yes, batman advanced (note, not the layer 3 BATMAN) supports multicast. It
+behaves like a (rather lossy) Ethernet interface and transports multicast
+traffic just like broadcast. For broadcast, we use a "classic flooding"
+approach, which means that every message is rebroadcasted by every node
+once when heard first. This "works" also for UDP multicast traffic,=20
+but is not designed for high bandwidth multicast/broadcast data.
+
+Linus and me are working on an optimization for multicast which is currently
+in an experimental stage, which may also be better suited for your applicat=
+ion.
+However, I don't know whether LCM works on lossy networks and which bandwid=
+th
+requirements it has. Also note that the optimization is not "deployment rea=
+dy"
+yet. ;)
+
+A few pointers to get started:
+Quick Start Guide: http://www.open-mesh.org/wiki/batman-adv/Quick-start-gui=
+de
+First Announcement of Multicast Optimization (Specification attached):
+https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-December/003858.html
 
 
-Happy routing,
+best regards,
+	Simon
 
-The B.A.T.M.A.N. team
+On Thu, Mar 24, 2011 at 07:42:21PM +0000, Toupet, Olivier wrote:
+> Hello,
+>=20
+> I am considering using the Lightweight Communications and Marshalling (LC=
+M) library recently developed at MIT: http://code.google.com/p/lcm/ . Howev=
+er, that library relies on UDP multicast and I need it to work for mesh net=
+works. I have only used simple UDP in the past with B.A.T.M.A.N. and I was =
+wondering if my applications would still work with B.A.T.M.A.N. if I went w=
+ith UDP multicast. Doing a little bit of research on the web seems to indic=
+ate that the UDP packets would be treated like broadcast packets and would =
+then be flooded in the network, which doesn't seem efficient bandwidth-wise=
+=2E Is that really the case? Would B.A.T.M.A.N. work with LCM (i.e. UDP mul=
+ticast)? Is there documentation that explains how to set up B.A.T.M.A.N. fo=
+r UDP multicast?
+>=20
+> Thanks in advance for your reply.
+>=20
+> Best regards,
+>=20
+> Olivier
+
+--FL5UXtIhxfXey3p5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk2TiTEACgkQrzg/fFk7axaDKACg8VLnHmaF3VuNGahc4joDUd3J
+39YAniharStpNXCxym+c8Xp7PzcEzi1C
+=uEbz
+-----END PGP SIGNATURE-----
+
+--FL5UXtIhxfXey3p5--
