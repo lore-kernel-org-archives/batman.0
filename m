@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 31 Mar 2011 18:11:38 +0200
-Message-Id: <1301587899-9449-2-git-send-email-sven@narfation.org>
+Date: Thu, 31 Mar 2011 18:11:39 +0200
+Message-Id: <1301587899-9449-3-git-send-email-sven@narfation.org>
 In-Reply-To: <1301587899-9449-1-git-send-email-sven@narfation.org>
 References: <1301587899-9449-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove subversion/svk revision
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: Remove subversion/svk revision
 	information
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,9 +19,9 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The current version of batman-adv cannot be obtained from subversion or
-svk anymore. It is unnecessary to provide the functionality to retrieve
-the current revision using these tools.
+The current version of batctl cannot be obtained from subversion or svk
+anymore. It is unnecessary to provide the functionality to retrieve the
+current revision using these tools.
 
 We only have to differenciate between git checkout and official release.
 We cannot detect a git snapshot and thus the distribution has to provide
@@ -33,12 +33,12 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
  1 files changed, 2 insertions(+), 18 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 830c53b..84828ea 100644
+index b5b4e2b..217a00a 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -29,24 +29,8 @@ endif
- 
- export KERNELPATH
+@@ -47,24 +47,8 @@ PACKAGE_NAME = batctl
+ BINARY_NAME = batctl
+ SOURCE_VERSION_HEADER = main.h
  
 -REVISION= $(shell	if [ -d .svn ]; then \
 -				if which svn > /dev/null; then \
@@ -62,7 +62,7 @@ index 830c53b..84828ea 100644
 +				echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); \
  			fi)
  
- NUM_CPUS = $(shell nproc 2> /dev/null || echo 1)
+ REVISION_VERSION =\"\ $(REVISION)\"
 -- 
 1.7.4.1
 
