@@ -1,14 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 31 Mar 2011 09:20:03 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20110331072003.GE9965@lunn.ch>
-References: <006701cbef3f$b70d9590$2528c0b0$@britton@adelaide.edu.au>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 31 Mar 2011 16:41:53 +0200
+References: <1300875978-14600-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1300875978-14600-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <006701cbef3f$b70d9590$2528c0b0$@britton@adelaide.edu.au>
-Subject: Re: [B.A.T.M.A.N.] Modification of BATMAN IV's route selection
- algorithm
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201103311641.54018.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: concentrate all curr_gw
+	related rcu operations in select/deselect functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,15 +23,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Mattew
+On Wednesday 23 March 2011 11:26:18 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  batman-adv/gateway_client.c |  166
+> +++++++++++++++++++++++++------------------ batman-adv/gateway_client.h
+> |    2 +-
+>  batman-adv/unicast.c        |    2 +-
+>  3 files changed, 98 insertions(+), 72 deletions(-)
 
-Another idea sprung to mind....
+Applied in revision g8ffdea8.
 
-Your hysteresis value H seems to be an absolute. I think it would work
-better if it was a percentage. With large meshes, the further away you
-are from the originator, the smaller TQ is, because of the link
-penalty. Thus with an absolute value of H, the relative quality of the
-link has to change a lot more when you are many hops away, than if you
-are near by.
-
-    Andrew
+Regards,
+Marek
