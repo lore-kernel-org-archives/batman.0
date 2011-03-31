@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 31 Mar 2011 17:36:12 +0200
-References: <1300877629-15690-1-git-send-email-lindner_marek@yahoo.de>
-	<1300878023-17742-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1300878023-17742-1-git-send-email-lindner_marek@yahoo.de>
+Date: Thu, 31 Mar 2011 17:48:53 +0200
+References: <20110323121503.GK6239@lunn.ch>
+In-Reply-To: <20110323121503.GK6239@lunn.ch>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201103311736.12900.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: protect softif_neigh by rcu
+Message-Id: <201103311748.54166.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] [batman-adv] Set the txqueuelen to zero
+	when creating soft interface.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,13 +23,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday 23 March 2011 12:00:23 Marek Lindner wrote:
-> From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+On Wednesday 23 March 2011 13:15:03 Andrew Lunn wrote:
+> Like other virtual interfaces, e.g. br0, we don't need a transmit
+> queue. Packets should only be queued on real interfaces which are
+> underneath. In practice this patch makes little difference since the
+> virtual interfaces can accept packets as fast as they come, but the
+> patch will avoid bufferbloat questions to the mailling lists in the
+> future.
 > 
-> Add get/set wrapper functions for softif_neigh and
-> use rcu functions to manipulate the pointers.
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> Tested-by: Linus Luesing <linus.luessing@web.de>
 
-Applied in revision g053e6e6.
+Applied in revision ga2f8a49.
 
 Thanks,
 Marek
