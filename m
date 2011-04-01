@@ -1,11 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  1 Apr 2011 08:49:19 +0200
-Message-Id: <1301640559-4152-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1301640559-4152-1-git-send-email-sven@narfation.org>
-References: <1301640559-4152-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix imbalanced locking in
-	gw_node_update
+Date: Fri,  1 Apr 2011 08:49:18 +0200
+Message-Id: <1301640559-4152-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Add missing static for
+	softif_neigh_deselect
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,35 +17,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-8ffdea813e32cee3c60be36fb9e6a5e077e51ea0 used rcu_read_unlock without
-using rcu_read_lock when gw_get_selected_gw_node didn't return a valid
-gw_node.
+053e6e6c30c161c218eacf2eb2eb4c7ecc0f387c forgot to mark the only locally
+used function softif_neigh_deselect as static.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- gateway_client.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ soft-interface.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/gateway_client.c b/gateway_client.c
-index 3d0050b..a5757da 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -312,7 +312,7 @@ void gw_node_update(struct bat_priv *bat_priv,
+diff --git a/soft-interface.c b/soft-interface.c
+index 599b668..58ce440 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -123,7 +123,7 @@ static void softif_neigh_select(struct bat_priv *bat_priv,
+ 	spin_unlock_bh(&bat_priv->softif_neigh_lock);
+ }
  
- 	curr_gw = gw_get_selected_gw_node(bat_priv);
- 	if (!curr_gw)
--		goto out;
-+		goto freeref;
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
-@@ -350,6 +350,7 @@ deselect:
- 	gw_deselect(bat_priv);
- out:
- 	rcu_read_unlock();
-+freeref:
- 	if (curr_gw)
- 		gw_node_free_ref(curr_gw);
+-void softif_neigh_deselect(struct bat_priv *bat_priv)
++static void softif_neigh_deselect(struct bat_priv *bat_priv)
+ {
+ 	softif_neigh_select(bat_priv, NULL);
  }
 -- 
 1.7.4.1
