@@ -1,11 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  1 Apr 2011 09:00:48 +0200
-Message-Id: <1301641248-6710-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1301640559-4152-2-git-send-email-sven@narfation.org>
-References: <1301640559-4152-2-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: Fix imbalanced locking in
-	gw_node_update
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 1 Apr 2011 21:44:58 +0200
+References: <1301587899-9449-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1301587899-9449-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201104012144.58790.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batctl: Remove obsolete creation of
+	source packages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,33 +21,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-8ffdea813e32cee3c60be36fb9e6a5e077e51ea0 used rcu_read_unlock without
-using rcu_read_lock when gw_get_selected_gw_node didn't return a valid
-gw_node.
+On Thursday 31 March 2011 18:11:37 Sven Eckelmann wrote:
+> The creation of source packages is now either done by the release team
+> using special scripts or through gitweb. It is not needed to provide the
+> source target inside the Makefile and may not work in the future anyway.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Maybe the other patch is useful in the future... but changing the goto
-to a return is less invasive and easier to understand
+Applied in revision g2f267d7.
 
- gateway_client.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/gateway_client.c b/gateway_client.c
-index 3d0050b..fff998a 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -312,7 +312,7 @@ void gw_node_update(struct bat_priv *bat_priv,
- 
- 	curr_gw = gw_get_selected_gw_node(bat_priv);
- 	if (!curr_gw)
--		goto out;
-+		return;
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
--- 
-1.7.4.1
-
+Thanks,
+Marek
