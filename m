@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 31 Mar 2011 18:11:39 +0200
-Message-Id: <1301587899-9449-3-git-send-email-sven@narfation.org>
-In-Reply-To: <1301587899-9449-1-git-send-email-sven@narfation.org>
-References: <1301587899-9449-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: Remove subversion/svk revision
-	information
+Date: Fri,  1 Apr 2011 08:49:19 +0200
+Message-Id: <1301640559-4152-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1301640559-4152-1-git-send-email-sven@narfation.org>
+References: <1301640559-4152-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix imbalanced locking in
+	gw_node_update
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,50 +19,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The current version of batctl cannot be obtained from subversion or svk
-anymore. It is unnecessary to provide the functionality to retrieve the
-current revision using these tools.
-
-We only have to differenciate between git checkout and official release.
-We cannot detect a git snapshot and thus the distribution has to provide
-the REVISION variable for snapshots.
+8ffdea813e32cee3c60be36fb9e6a5e077e51ea0 used rcu_read_unlock without
+using rcu_read_lock when gw_get_selected_gw_node didn't return a valid
+gw_node.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile |   20 ++------------------
- 1 files changed, 2 insertions(+), 18 deletions(-)
+ gateway_client.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index b5b4e2b..217a00a 100644
---- a/Makefile
-+++ b/Makefile
-@@ -47,24 +47,8 @@ PACKAGE_NAME = batctl
- BINARY_NAME = batctl
- SOURCE_VERSION_HEADER = main.h
+diff --git a/gateway_client.c b/gateway_client.c
+index 3d0050b..a5757da 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -312,7 +312,7 @@ void gw_node_update(struct bat_priv *bat_priv,
  
--REVISION= $(shell	if [ -d .svn ]; then \
--				if which svn > /dev/null; then \
--					echo rv$$(svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'); \
--				else \
--					echo "[unknown]"; \
--				fi; \
--			elif [ -d .git ]; then \
--				if which git > /dev/null; then \
--					echo $$(git describe --always --dirty 2> /dev/null); \
--				else \
--					echo "[unknown]"; \
--				fi; \
--			elif [ -d ~/.svk ]; then \
--				if which svk > /dev/null; then \
--					echo rv$$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
--				else \
--					echo "[unknown]"; \
--				fi; \
-+REVISION= $(shell	if [ -d .git ]; then \
-+				echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); \
- 			fi)
+ 	curr_gw = gw_get_selected_gw_node(bat_priv);
+ 	if (!curr_gw)
+-		goto out;
++		goto freeref;
  
- REVISION_VERSION =\"\ $(REVISION)\"
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
+@@ -350,6 +350,7 @@ deselect:
+ 	gw_deselect(bat_priv);
+ out:
+ 	rcu_read_unlock();
++freeref:
+ 	if (curr_gw)
+ 		gw_node_free_ref(curr_gw);
+ }
 -- 
 1.7.4.1
 
