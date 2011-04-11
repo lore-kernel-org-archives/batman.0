@@ -1,13 +1,12 @@
-Return-Path: <andrew@lunn.ch>
-Date: Mon, 11 Apr 2011 08:55:00 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20110411065500.GD4251@lunn.ch>
+Return-Path: <ordex@autistici.org>
+Date: Mon, 11 Apr 2011 08:33:07 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20110411063254.GA23526@ritirata.org>
 References: <alpine.DEB.2.00.1104102257050.17976@drawesome>
-	<201104110851.55819.sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <201104110851.55819.sven@narfation.org>
+In-Reply-To: <alpine.DEB.2.00.1104102257050.17976@drawesome>
 Subject: Re: [B.A.T.M.A.N.] batman-adv coexisting with olsr?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,16 +21,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-> This was explained a year ago during the Wireless Community Weekend 2010 [1]. 
-> Maybe you can find somewhere an example firmware which was made after that 
-> discussion.
+On dom, apr 10, 2011 at 11:01:27 -0400, Ryan Hughes wrote:
+> Hi.  Is it possible to get batman-adv to coexist with olsr, working with 
+> different network prefixes?
+> 
+> Cuz it seems to me that the olsr traffic would all get routed by batman, 
+> and every node would think it could see every other node, and olsr would 
+> add all kinds of nonsense to the routing table.
 
-Hi Ryan
+Are you running olsr on bat0? You should run olsr on the phy device
+(i.e. eth0, the same you added with batctl for batman-adv)
 
-This is also how the WBM4 was setup, with OLSR, BMX6, Bable all
-running in parallel with different subnet ranges.
+> 
+> Thanks.
+> --Ryan
 
-The configuration files for OpenWRT are around somewhere. Try
-searching the WBM site.
+-- 
+Antonio Quartulli
 
-	  Andrew
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
