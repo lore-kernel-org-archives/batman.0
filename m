@@ -1,12 +1,13 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 11 Apr 2011 08:33:07 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110411063254.GA23526@ritirata.org>
+Return-Path: <ryan@iheartryan.com>
+Date: Mon, 11 Apr 2011 10:49:41 -0400 (EDT)
+From: Ryan Hughes <ryan@iheartryan.com>
+In-Reply-To: <20110411065500.GD4251@lunn.ch>
+Message-ID: <alpine.DEB.2.00.1104111048430.4431@minime>
 References: <alpine.DEB.2.00.1104102257050.17976@drawesome>
+	<201104110851.55819.sven@narfation.org>
+	<20110411065500.GD4251@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1104102257050.17976@drawesome>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Subject: Re: [B.A.T.M.A.N.] batman-adv coexisting with olsr?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,23 +22,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On dom, apr 10, 2011 at 11:01:27 -0400, Ryan Hughes wrote:
-> Hi.  Is it possible to get batman-adv to coexist with olsr, working with 
-> different network prefixes?
-> 
-> Cuz it seems to me that the olsr traffic would all get routed by batman, 
-> and every node would think it could see every other node, and olsr would 
-> add all kinds of nonsense to the routing table.
+> This is also how the WBM4 was setup, with OLSR, BMX6, Bable all
+> running in parallel with different subnet ranges.
+>
+> The configuration files for OpenWRT are around somewhere. Try
+> searching the WBM site.
 
-Are you running olsr on bat0? You should run olsr on the phy device
-(i.e. eth0, the same you added with batctl for batman-adv)
+Aha.  I didn't find the scripts that were used in WBMv4, but I found the 
+one from WBMv3.
+ 	http://battlemesh.org/BattleMeshV3/NodeConfigScript/AllInOne
 
-> 
-> Thanks.
-> --Ryan
+Thanks, I'll check this out.
 
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
+--Ryan
