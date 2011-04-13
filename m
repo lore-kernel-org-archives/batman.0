@@ -1,14 +1,12 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 12 Apr 2011 01:03:09 +0200
-References: <alpine.DEB.2.00.1104111123540.4431@minime>
-In-Reply-To: <alpine.DEB.2.00.1104111123540.4431@minime>
+Date: Wed, 13 Apr 2011 17:27:00 +0200
+Message-Id: <1302708420-8552-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201104120103.10240.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Gateway
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: avoid error message when command was
+	successful
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,17 +18,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On Monday 11 April 2011 17:35:29 Ryan Hughes wrote:
-> I don't seem to understand how to set up the gateway.
-> 
-> I'm using bmx6 right now (is that on-topic for this list?  I assume the 
-> same things apply to batmand).
+Reported-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ sys.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/sys.c b/sys.c
+index 729f898..3511b40 100644
+--- a/sys.c
++++ b/sys.c
+@@ -420,10 +420,10 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
+ 	case GW_MODE_SERVER:
+ 		res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
+ 		break;
+-	default:
+-		goto out;
+ 	}
+ 
++	goto out;
++
+ opt_err:
+ 	printf("Error - the supplied argument is invalid: %s\n", argv[1]);
+ 	printf("The following values are allowed:\n");
+-- 
+1.7.2.3
 
-The bmx project has its own website / resources: http://www.bmx6.net
-Axel (its developer) tends to not read this list.
-
-Regards,
-Marek
