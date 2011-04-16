@@ -1,12 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 16 Apr 2011 11:22:16 +0200
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201104161122.16517.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Batman-adv hna balancing
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat, 16 Apr 2011 11:30:57 +0200
+Message-Id: <1302946257-25173-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1302891416-31451-1-git-send-email-ordex@autistici.org>
+References: <1302891416-31451-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: orig_hash_find() manages
+	rcu_lock/unlock internally
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,27 +17,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
+orig_hash_find() manages rcu_lock/unlock internally and doesn't need to
+be surrounded by rcu_read_lock() / rcu_read_unlock() anymore
 
-Hi,
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ routing.c |   16 ++--------------
+ 1 files changed, 2 insertions(+), 14 deletions(-)
 
-> Here you can see our topology, there is two nodes at moment they are
-> connected to the same switch and should see same hnas but they are
-> announced mostly by one of the two
-> http://eigenlab.org/batman-adv_status.php
-> 
-> If i turn off the cc:c8 node the hna pass to the other nodes but when
-> i turn it on all hna pass on it
-> 
-> Why this? Is not better to balance hna announcing?
+diff --git a/routing.c b/routing.c
+index f6c6422..2d77bd3 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1310,13 +1310,10 @@ int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	}
+ 
+ 	/* get routing information */
+-	rcu_read_lock();
+ 	orig_node = orig_hash_find(bat_priv, unicast_packet->dest);
+ 
+ 	if (!orig_node)
+-		goto unlock;
+-
+-	rcu_read_unlock();
++		goto out;
+ 
+ 	/* find_router() increases neigh_nodes refcount if found. */
+ 	neigh_node = find_router(bat_priv, orig_node, recv_if);
+@@ -1362,10 +1359,7 @@ int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	/* route it */
+ 	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
+ 	ret = NET_RX_SUCCESS;
+-	goto out;
+ 
+-unlock:
+-	rcu_read_unlock();
+ out:
+ 	if (neigh_node)
+ 		neigh_node_free_ref(neigh_node);
+@@ -1464,13 +1458,10 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	if (bcast_packet->ttl < 2)
+ 		goto out;
+ 
+-	rcu_read_lock();
+ 	orig_node = orig_hash_find(bat_priv, bcast_packet->orig);
+ 
+ 	if (!orig_node)
+-		goto rcu_unlock;
+-
+-	rcu_read_unlock();
++		goto out;
+ 
+ 	spin_lock_bh(&orig_node->bcast_seqno_lock);
+ 
+@@ -1501,9 +1492,6 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	ret = NET_RX_SUCCESS;
+ 	goto out;
+ 
+-rcu_unlock:
+-	rcu_read_unlock();
+-	goto out;
+ spin_unlock:
+ 	spin_unlock_bh(&orig_node->bcast_seqno_lock);
+ out:
+-- 
+1.7.3.4
 
-the 2 batman-adv nodes probably detected they are connected to the same switch 
-and activated the bridge loop avoidance [1]. With 'batctl sn' you can retrieve 
-the bridge loop neighbor list.
-
-Regards,
-Marek
-
-
-[1] http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance
