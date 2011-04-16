@@ -1,16 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 16 Apr 2011 10:25:39 +0200
-References: <1302891882-11246-1-git-send-email-linus.luessing@web.de>
-	<201104160954.49563.sven@narfation.org>
-In-Reply-To: <201104160954.49563.sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1383199.tY4Zr9t5EC";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201104161025.40133.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix crash on module shutdown
-	with multiple ifaces
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat, 16 Apr 2011 11:01:23 +0200
+Message-Id: <1302944483-4386-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1302944374-2971-1-git-send-email-ordex@autistici.org>
+References: <1302944374-2971-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: orig_hash_find() manages
+	rcu_lock/unlock internally
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,72 +17,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1383199.tY4Zr9t5EC
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+orig_hash_find() manages rcu_lock/unlock internally and doesn't need to
+be surrounded by rcu_read_lock() / rcu_read_unlock() anymore
 
-Sven Eckelmann wrote:
-> Linus L=FCssing wrote:
-> > hardif_remove_interfaces() removes all hard interfaces from the
-> > hardif_list before freeing and cleaning up any device. However the clean
-> > up procedures in orig_hash_del_if()
-> > (hardif_remove_interface()->hardif_disable_interface()->
-> > orig_hash_del_if())
-> > need the other interfaces still to be present in the hardif_list.
-> > Otherwise it won't renumber any preceding interfaces, which leads to an
-> > unhandled kernel paging request in orig_node_del_if()'s "/* copy second
-> > part */" due to wrong hard_if->if_num's.
-> >=20
-> > With this commit the interface removal on module shutdown will be down
-> > in the same way as removing single interfaces from batman only: One
-> > interface will be removed and cleaned at a time.
-> >=20
-> > Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
->=20
-> Please use --patience as requested in
->  http://www.open-mesh.org/wiki/open-mesh/Contribute
->=20
-> Please show us (as part of the commit message) why the information in
->  http://www.open-mesh.org/projects/batman-adv/repository/revisions/132b77=
-6c
-> 22c9b71962a3ed9a33e5b6f9218dae1b isn't valid anymore and explain why it is
-> save to use the spin_lock only inside the loop (but it would have to
-> protect the loop in normal situations).
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ routing.c |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
 
-Sry, this was not the correct commit - The commit which fixed a problematic=
-=20
-locking behaviour was 5d4b5a4d - but I didn't gave a lockdep output there.
+diff --git a/routing.c b/routing.c
+index f6c6422..634a44d 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1310,14 +1310,11 @@ int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	}
+ 
+ 	/* get routing information */
+-	rcu_read_lock();
+ 	orig_node = orig_hash_find(bat_priv, unicast_packet->dest);
+ 
+ 	if (!orig_node)
+ 		goto unlock;
+ 
+-	rcu_read_unlock();
+-
+ 	/* find_router() increases neigh_nodes refcount if found. */
+ 	neigh_node = find_router(bat_priv, orig_node, recv_if);
+ 
+@@ -1464,14 +1461,11 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	if (bcast_packet->ttl < 2)
+ 		goto out;
+ 
+-	rcu_read_lock();
+ 	orig_node = orig_hash_find(bat_priv, bcast_packet->orig);
+ 
+ 	if (!orig_node)
+ 		goto rcu_unlock;
+ 
+-	rcu_read_unlock();
+-
+ 	spin_lock_bh(&orig_node->bcast_seqno_lock);
+ 
+ 	/* check whether the packet is a duplicate */
+-- 
+1.7.3.4
 
-The other question must still be answered.
-
-Btw. what is the status of the sysfs_addrm_finish vs. rtnl_lock patch?
-
-Kind regards,
- 	Sven
-
---nextPart1383199.tY4Zr9t5EC
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJNqVKDAAoJEF2HCgfBJntGju8P/3nGeMHSreEM1FgYEYLrrYSF
-k4U0kD7/6Pe9EJLNrTyDCqIMsSZfYH7/VNgxQA47hVSZqZ7H5as1y1sNwzMqg2tS
-uaEaIGglnNr2rwLrPkaIU3mtbccl0PaP0xu9Rezh1ZyDCh3gIUrkKStCR7eAaVFc
-x5dPN08x83eCgCKEEsMg09QYgiLl4GZx51TSMqBks0tEAzeDVwm8fAXigoCE0n0t
-3fnNY0lEJI85o0Y3iXXGI2xPI1IohgK5zSPNrhxqPXEXRt1lxMD0Co+U7I54qOAQ
-aR16mvDdCqxJcaLl0QvrsOB6b3fcCUGRLIPENQLIq9Gzg3mskViXM8CtT9RpqGr+
-BXVKbnZMjd2N+KgclHmA0DeyH1wwVZKZgF8s0vv/k7cxhQOXY0peFYukLwjXNE5j
-80GBbNS2NwOovpUThleiERmJAd5mYnVzk5TOdFDOxCpCltG1IVYa4paQLn0uAvfA
-kYZQCymfE2so2FmPIvsrVtgSVOlXvFnV3UwjSS37xW97x0ykSQSOuitHFV/O09VP
-CpN/5Y4NIsGQ7QoroNhoJXBz0BfJOOxnFD86EHJAEaePUo6SvwnQd5cWgmA4NV0/
-RqKTIHq5T66dXHQQtcYNN/VR/4Cxf3hr8deXFy2mlfXjhT04tcUeNNiwYTbqDi6W
-Do7KTAi2mrzW0wQ++cUW
-=gsTt
------END PGP SIGNATURE-----
-
---nextPart1383199.tY4Zr9t5EC--
