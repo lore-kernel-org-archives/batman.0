@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 16 Apr 2011 10:02:43 +0200
-References: <1302891416-31451-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1302891416-31451-1-git-send-email-ordex@autistici.org>
+Date: Sat, 16 Apr 2011 10:04:44 +0200
+References: <1302708420-8552-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1302708420-8552-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6550406.u4z63IOEfL";
+Content-Type: multipart/signed; boundary="nextPart3054348.DTcxMpJrTP";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201104161002.44105.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: orig_hash_find() manages
-	rcu_lock/unlock internally
+Message-Id: <201104161004.45335.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: avoid error message when command
+	was successful
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,89 +22,39 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart6550406.u4z63IOEfL
+--nextPart3054348.DTcxMpJrTP
 Content-Type: Text/Plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-Antonio Quartulli wrote:
-> orig_hash_find() manages rcu_lock/unlock internally and doesn't need to
-> be surrounded by rcu_read_lock() / rcu_read_unlock() anymore
->=20
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Marek Lindner wrote:
+> Reported-by: Linus L=FCssing <linus.luessing@web.de>
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 
-Valid point, but incorrect implementation
+Acked-by: Sven Eckelmann <sven@narfation.org>
 
-
-> ---
->  routing.c |    6 ------
->  1 files changed, 0 insertions(+), 6 deletions(-)
->=20
-> diff --git a/routing.c b/routing.c
-> index f6c6422..634a44d 100644
-> --- a/routing.c
-> +++ b/routing.c
-> @@ -1310,14 +1310,11 @@ int route_unicast_packet(struct sk_buff *skb,
-> struct hard_iface *recv_if) }
->=20
->  	/* get routing information */
-> -	rcu_read_lock();
->  	orig_node =3D orig_hash_find(bat_priv, unicast_packet->dest);
->=20
->  	if (!orig_node)
->  		goto unlock;
->=20
-> -	rcu_read_unlock();
-> -
-
-You forgot to fix the rcu_read_unlock after the label unlock.
-
->  	/* find_router() increases neigh_nodes refcount if found. */
->  	neigh_node =3D find_router(bat_priv, orig_node, recv_if);
->=20
-> @@ -1464,14 +1461,11 @@ int recv_bcast_packet(struct sk_buff *skb, struct
-> hard_iface *recv_if) if (bcast_packet->ttl < 2)
->  		goto out;
->=20
-> -	rcu_read_lock();
->  	orig_node =3D orig_hash_find(bat_priv, bcast_packet->orig);
->=20
->  	if (!orig_node)
->  		goto rcu_unlock;
->=20
-> -	rcu_read_unlock();
-> -
->  	spin_lock_bh(&orig_node->bcast_seqno_lock);
->=20
->  	/* check whether the packet is a duplicate */
-
-You forgot to fix the rcu_read_unlock after the label rcu_unlock.
-
-Kind regards,
-	Sven
-
-
---nextPart6550406.u4z63IOEfL
+--nextPart3054348.DTcxMpJrTP
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABCgAGBQJNqU0jAAoJEF2HCgfBJntGzqMQALriGOLons83lNoiA90uZUoL
-UGoJczcBfD1lYeGw/q+UUq5hnTehv9hU0Jpdey09ujK7V8EyFmSJdj+Gyv725/kQ
-dQt48v11NixS0nMeQwlPk6gWcgMpDVO80zX0zSKnOIPQltV9WUTEPBBpA4gSHEq9
-1ksp96mg0V4SanmZ2ARRTDxVgs0UI6ZNyE8Brp7rWltL1K9Mrf+q+ttUQ1LTz1hJ
-zqWOBRmXRSwGjs57ER6FnAUUbcV8EoKJH4wPBswOHSIqP1Be3yOy1JpuA5nqkw8f
-xkTH6zqQOXg4w36s3zc2uftWukHFO0fKiB/haF94D1V2CFyAlqAunVYMGG5lGZtO
-iOiWWbf9oWjBCUO2sE18/i3gjuNolC07fZoGR2CotgPYUlXU7lvuL6Xsvz1/CSOv
-9dZpurSDvNEHKhH00UGPDpTnsZQrT40Dm7ScQ322iXrMvLcguqj5pMoiiTeUdnGf
-idkSrIgd2TkG4XPLaGpN23GNi83kckjY34GvHB1RIKIj3TC+i6E/Kmk4bFJpBBO8
-6c5rtNuhj9f4NEnelqq4TnOlTCzVBjPrnvTA6xlRpbfVZP8RtonWQC/MZxNJLgS9
-gP/NG7HAebLQzBleEc20SRLOx2TldVrGxYadS1Zl8JvLGfmRyWQZUHzoHkSgek2K
-TDqW1ym3tM5T3XQFQsNk
-=jK1z
+iQIcBAABCgAGBQJNqU2dAAoJEF2HCgfBJntG7xYQALuc7mC2mCqFaW6dEZEfT8rz
+7RS5gs//52bIwAt6oyrMU4GWfp82USzpfuAw5cosoLBK+mZ9F8xGmcY7sLubAC0s
+UTJV8bjZW/dZbrq3Om+WJL1GoXznXJucAE++DPDl8WYf5NlFiIj4JTZgyKurwf5r
+19lxzn9SpL1CGJ59JEgEujevtQrYqLbIbWyTe4bLI+VCN9KQ5kpWranuSmZCVkUD
+RW4ID6ZbNE8ILK6omHURLJz9h07bL98kYc48U6A7xva0Y4lBdZEROlcAKRIDl9VJ
+P+5PnDjNo64myb9bcUXGzjJbtcHjKIa0+B4MLIQ8zC2d+3LiMh/0a4iG3YlS7tmS
+24BHTwlbLT+45z0wd70wZezsYdB16JbcaDVr5jJOMnda7d5D5s6QufCoVv6eKymo
+uvB+r0oAkNTycSlncpvm6tUPEm/eNjX3egxSkoUIVNxo12zSP05Wot1Lor8n4Ctv
+2u8jZalOdTC/+WfZXlVbXVLQW61ir8gsppknYPZkzHR2nCW7a2oTS3tnCihaTg+Z
+JCwhaBZJz2ArGRgk0XHajTApTKQ3rBtXLmIirFR3Khb8ILApmrAF9AThmD3mBcdC
+3RuzwxBnMDwVh7cgjEpGig9KWU8OYhN636WYtwTTfa+99ECO8AhzRD5HYANRKW9m
+5YkyNBlfHmcvUxnkQMxt
+=dKiX
 -----END PGP SIGNATURE-----
 
---nextPart6550406.u4z63IOEfL--
+--nextPart3054348.DTcxMpJrTP--
