@@ -1,11 +1,12 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 16 Apr 2011 11:01:23 +0200
-Message-Id: <1302944483-4386-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1302944374-2971-1-git-send-email-ordex@autistici.org>
-References: <1302944374-2971-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: orig_hash_find() manages
-	rcu_lock/unlock internally
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 16 Apr 2011 11:22:08 +0200
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201104161122.09266.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Batman-adv hna balancing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,50 +18,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-orig_hash_find() manages rcu_lock/unlock internally and doesn't need to
-be surrounded by rcu_read_lock() / rcu_read_unlock() anymore
+On Friday 15 April 2011 13:03:26 Gioacchino Mazzurco wrote:
+> I think batman shouldn't handle mac duplication as conflict but simply
+> act as the two nodes see the same clients, like olsrd do when multiple
+> nodes announces the same hna
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- routing.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+The HNA IP addresses have the same functionality as (HNA) mac addresses for 
+batman-adv, therefore we talking about the same thing.
 
-diff --git a/routing.c b/routing.c
-index f6c6422..634a44d 100644
---- a/routing.c
-+++ b/routing.c
-@@ -1310,14 +1310,11 @@ int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 	}
- 
- 	/* get routing information */
--	rcu_read_lock();
- 	orig_node = orig_hash_find(bat_priv, unicast_packet->dest);
- 
- 	if (!orig_node)
- 		goto unlock;
- 
--	rcu_read_unlock();
--
- 	/* find_router() increases neigh_nodes refcount if found. */
- 	neigh_node = find_router(bat_priv, orig_node, recv_if);
- 
-@@ -1464,14 +1461,11 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 	if (bcast_packet->ttl < 2)
- 		goto out;
- 
--	rcu_read_lock();
- 	orig_node = orig_hash_find(bat_priv, bcast_packet->orig);
- 
- 	if (!orig_node)
- 		goto rcu_unlock;
- 
--	rcu_read_unlock();
--
- 	spin_lock_bh(&orig_node->bcast_seqno_lock);
- 
- 	/* check whether the packet is a duplicate */
--- 
-1.7.3.4
-
+Regards,
+Marek
