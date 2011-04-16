@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 16 Apr 2011 11:22:08 +0200
+Date: Sat, 16 Apr 2011 11:22:16 +0200
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201104161122.09266.lindner_marek@yahoo.de>
+Message-Id: <201104161122.16517.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Batman-adv hna balancing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,13 +20,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday 15 April 2011 13:03:26 Gioacchino Mazzurco wrote:
-> I think batman shouldn't handle mac duplication as conflict but simply
-> act as the two nodes see the same clients, like olsrd do when multiple
-> nodes announces the same hna
 
-The HNA IP addresses have the same functionality as (HNA) mac addresses for 
-batman-adv, therefore we talking about the same thing.
+Hi,
+
+> Here you can see our topology, there is two nodes at moment they are
+> connected to the same switch and should see same hnas but they are
+> announced mostly by one of the two
+> http://eigenlab.org/batman-adv_status.php
+> 
+> If i turn off the cc:c8 node the hna pass to the other nodes but when
+> i turn it on all hna pass on it
+> 
+> Why this? Is not better to balance hna announcing?
+
+the 2 batman-adv nodes probably detected they are connected to the same switch 
+and activated the bridge loop avoidance [1]. With 'batctl sn' you can retrieve 
+the bridge loop neighbor list.
 
 Regards,
 Marek
+
+
+[1] http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance
