@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 Apr 2011 21:30:11 +0200
-Message-Id: <1303068618-27928-2-git-send-email-sven@narfation.org>
+Date: Sun, 17 Apr 2011 21:30:13 +0200
+Message-Id: <1303068618-27928-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1303068618-27928-1-git-send-email-sven@narfation.org>
 References: <1303068618-27928-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 1/8] batman-adv: Move bonding / iface
-	alternating router search to own functions
+Subject: [B.A.T.M.A.N.] [PATCH 3/8] batman-adv: Simplify gw_check_election(),
+	use gw_get_selected()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,225 +25,75 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lind
 
 From: Linus Lüssing <linus.luessing@web.de>
 
-This decreases the size of find_router() by outsourcing the router
-search for the bonding and interface alternating modes to their own sub
-functions. This shall make it easier to keep track of the correct
-refcounting later.
+gw_get_selected() can get us the desired orig_node directly, therefore
+reusing that function in gw_check_election().
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/routing.c |  180 +++++++++++++++++++++++++++-------------------
- 1 files changed, 105 insertions(+), 75 deletions(-)
+ net/batman-adv/gateway_client.c |   23 ++++++++++++-----------
+ 1 files changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index c172f5d..f212abe 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1092,6 +1092,106 @@ out:
- 	return ret;
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 27b87ad..879ac15 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -23,6 +23,7 @@
+ #include "gateway_client.h"
+ #include "gateway_common.h"
+ #include "hard-interface.h"
++#include "originator.h"
+ #include <linux/ip.h>
+ #include <linux/ipv6.h>
+ #include <linux/udp.h>
+@@ -203,28 +204,25 @@ void gw_election(struct bat_priv *bat_priv)
+ 
+ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
+ {
+-	struct gw_node *curr_gateway_tmp;
++	struct orig_node *curr_gw_orig;
+ 	uint8_t gw_tq_avg, orig_tq_avg;
+ 
++	curr_gw_orig = gw_get_selected(bat_priv);
++	if (!curr_gw_orig)
++		goto deselect;
++
+ 	rcu_read_lock();
+-	curr_gateway_tmp = rcu_dereference(bat_priv->curr_gw);
+-	if (!curr_gateway_tmp)
+-		goto out_rcu;
+-
+-	if (!curr_gateway_tmp->orig_node)
+-		goto deselect_rcu;
+-
+-	if (!curr_gateway_tmp->orig_node->router)
++	if (!curr_gw_orig->router)
+ 		goto deselect_rcu;
+ 
+ 	/* this node already is the gateway */
+-	if (curr_gateway_tmp->orig_node == orig_node)
++	if (curr_gw_orig == orig_node)
+ 		goto out_rcu;
+ 
+ 	if (!orig_node->router)
+ 		goto out_rcu;
+ 
+-	gw_tq_avg = curr_gateway_tmp->orig_node->router->tq_avg;
++	gw_tq_avg = curr_gw_orig->router->tq_avg;
+ 	rcu_read_unlock();
+ 
+ 	orig_tq_avg = orig_node->router->tq_avg;
+@@ -255,6 +253,9 @@ deselect_rcu:
+ deselect:
+ 	gw_deselect(bat_priv);
+ out:
++	if (curr_gw_orig)
++		orig_node_free_ref(curr_gw_orig);
++
+ 	return;
  }
  
-+/* In the bonding case, send the packets in a round
-+ * robin fashion over the remaining interfaces.
-+ *
-+ * This method rotates the bonding list and increases the
-+ * returned router's refcount. */
-+static struct neigh_node *find_bond_router(struct orig_node *primary_orig,
-+					   struct hard_iface *recv_if)
-+{
-+	struct neigh_node *tmp_neigh_node;
-+	struct neigh_node *router = NULL, *first_candidate = NULL;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(tmp_neigh_node, &primary_orig->bond_list,
-+				bonding_list) {
-+		if (!first_candidate)
-+			first_candidate = tmp_neigh_node;
-+
-+		/* recv_if == NULL on the first node. */
-+		if (tmp_neigh_node->if_incoming == recv_if)
-+			continue;
-+
-+		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
-+			continue;
-+
-+		router = tmp_neigh_node;
-+		break;
-+	}
-+
-+	/* use the first candidate if nothing was found. */
-+	if (!router && first_candidate &&
-+	    atomic_inc_not_zero(&first_candidate->refcount))
-+		router = first_candidate;
-+
-+	if (!router)
-+		goto out;
-+
-+	/* selected should point to the next element
-+	 * after the current router */
-+	spin_lock_bh(&primary_orig->neigh_list_lock);
-+	/* this is a list_move(), which unfortunately
-+	 * does not exist as rcu version */
-+	list_del_rcu(&primary_orig->bond_list);
-+	list_add_rcu(&primary_orig->bond_list,
-+		     &router->bonding_list);
-+	spin_unlock_bh(&primary_orig->neigh_list_lock);
-+
-+out:
-+	rcu_read_unlock();
-+	return router;
-+}
-+
-+/* Interface Alternating: Use the best of the
-+ * remaining candidates which are not using
-+ * this interface.
-+ *
-+ * Increases the returned router's refcount */
-+static struct neigh_node *find_ifalter_router(struct orig_node *primary_orig,
-+					      struct hard_iface *recv_if)
-+{
-+	struct neigh_node *tmp_neigh_node;
-+	struct neigh_node *router = NULL, *first_candidate = NULL;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(tmp_neigh_node, &primary_orig->bond_list,
-+				bonding_list) {
-+		if (!first_candidate)
-+			first_candidate = tmp_neigh_node;
-+
-+		/* recv_if == NULL on the first node. */
-+		if (tmp_neigh_node->if_incoming == recv_if)
-+			continue;
-+
-+		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
-+			continue;
-+
-+		/* if we don't have a router yet
-+		 * or this one is better, choose it. */
-+		if ((!router) ||
-+		    (tmp_neigh_node->tq_avg > router->tq_avg)) {
-+			/* decrement refcount of
-+			 * previously selected router */
-+			if (router)
-+				neigh_node_free_ref(router);
-+
-+			router = tmp_neigh_node;
-+			atomic_inc_not_zero(&router->refcount);
-+		}
-+
-+		neigh_node_free_ref(tmp_neigh_node);
-+	}
-+
-+	/* use the first candidate if nothing was found. */
-+	if (!router && first_candidate &&
-+	    atomic_inc_not_zero(&first_candidate->refcount))
-+		router = first_candidate;
-+
-+	rcu_read_unlock();
-+	return router;
-+}
-+
- /* find a suitable router for this originator, and use
-  * bonding if possible. increases the found neighbors
-  * refcount.*/
-@@ -1101,7 +1201,7 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
- {
- 	struct orig_node *primary_orig_node;
- 	struct orig_node *router_orig;
--	struct neigh_node *router, *first_candidate, *tmp_neigh_node;
-+	struct neigh_node *router;
- 	static uint8_t zero_mac[ETH_ALEN] = {0, 0, 0, 0, 0, 0};
- 	int bonding_enabled;
- 
-@@ -1157,82 +1257,12 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
- 	 * in. */
- 
- 	neigh_node_free_ref(router);
--	first_candidate = NULL;
--	router = NULL;
- 
--	if (bonding_enabled) {
--		/* in the bonding case, send the packets in a round
--		 * robin fashion over the remaining interfaces. */
-+	if (bonding_enabled)
-+		router = find_bond_router(primary_orig_node, recv_if);
-+	else
-+		router = find_ifalter_router(primary_orig_node, recv_if);
- 
--		list_for_each_entry_rcu(tmp_neigh_node,
--				&primary_orig_node->bond_list, bonding_list) {
--			if (!first_candidate)
--				first_candidate = tmp_neigh_node;
--			/* recv_if == NULL on the first node. */
--			if (tmp_neigh_node->if_incoming != recv_if &&
--			    atomic_inc_not_zero(&tmp_neigh_node->refcount)) {
--				router = tmp_neigh_node;
--				break;
--			}
--		}
--
--		/* use the first candidate if nothing was found. */
--		if (!router && first_candidate &&
--		    atomic_inc_not_zero(&first_candidate->refcount))
--			router = first_candidate;
--
--		if (!router) {
--			rcu_read_unlock();
--			return NULL;
--		}
--
--		/* selected should point to the next element
--		 * after the current router */
--		spin_lock_bh(&primary_orig_node->neigh_list_lock);
--		/* this is a list_move(), which unfortunately
--		 * does not exist as rcu version */
--		list_del_rcu(&primary_orig_node->bond_list);
--		list_add_rcu(&primary_orig_node->bond_list,
--				&router->bonding_list);
--		spin_unlock_bh(&primary_orig_node->neigh_list_lock);
--
--	} else {
--		/* if bonding is disabled, use the best of the
--		 * remaining candidates which are not using
--		 * this interface. */
--		list_for_each_entry_rcu(tmp_neigh_node,
--			&primary_orig_node->bond_list, bonding_list) {
--			if (!first_candidate)
--				first_candidate = tmp_neigh_node;
--
--			/* recv_if == NULL on the first node. */
--			if (tmp_neigh_node->if_incoming == recv_if)
--				continue;
--
--			if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
--				continue;
--
--			/* if we don't have a router yet
--			 * or this one is better, choose it. */
--			if ((!router) ||
--			    (tmp_neigh_node->tq_avg > router->tq_avg)) {
--				/* decrement refcount of
--				 * previously selected router */
--				if (router)
--					neigh_node_free_ref(router);
--
--				router = tmp_neigh_node;
--				atomic_inc_not_zero(&router->refcount);
--			}
--
--			neigh_node_free_ref(tmp_neigh_node);
--		}
--
--		/* use the first candidate if nothing was found. */
--		if (!router && first_candidate &&
--		    atomic_inc_not_zero(&first_candidate->refcount))
--			router = first_candidate;
--	}
- return_router:
- 	rcu_read_unlock();
- 	return router;
 -- 
 1.7.4.4
 
