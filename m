@@ -1,15 +1,11 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 17 Apr 2011 18:22:10 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20110417162210.GA19178@pandem0nium>
-References: <1302708420-8552-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 17 Apr 2011 21:30:10 +0200
+Message-Id: <1303068618-27928-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="YiEDa0DAkWCtVeE4"
-Content-Disposition: inline
-In-Reply-To: <1302708420-8552-1-git-send-email-lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: avoid error message when command
- was successful
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2011-04-17
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,60 +17,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+
+Hi,
+
+I would like to propose following patches for net-next-2.6/2.6.40. Most of the
+stuff is cleanup work to reduce the locking complexity. The only exception is
+Andrew Lunn's patch, which only adds the initialisation of tx_queue_len.
+
+thanks,
+	Sven
 
 
---YiEDa0DAkWCtVeE4
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The following changes since commit 0ce790e7d736cedc563e1fb4e998babf5a4dbc3d:
 
-Applied in eee3fc6,
+  Linux 2.6.39-rc1 (2011-03-29 12:09:47 -0700)
 
-thanks
-	Simon
+are available in the git repository at:
+  git://git.open-mesh.org/ecsv/linux-merge.git batman-adv/next
 
-On Wed, Apr 13, 2011 at 05:27:00PM +0200, Marek Lindner wrote:
-> Reported-by: Linus L=C3=BCssing <linus.luessing@web.de>
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  sys.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/sys.c b/sys.c
-> index 729f898..3511b40 100644
-> --- a/sys.c
-> +++ b/sys.c
-> @@ -420,10 +420,10 @@ int handle_gw_setting(char *mesh_iface, int argc, c=
-har **argv)
->  	case GW_MODE_SERVER:
->  		res =3D write_file(path_buff, SYS_GW_BW, argv[2], NULL);
->  		break;
-> -	default:
-> -		goto out;
->  	}
-> =20
-> +	goto out;
-> +
->  opt_err:
->  	printf("Error - the supplied argument is invalid: %s\n", argv[1]);
->  	printf("The following values are allowed:\n");
-> --=20
-> 1.7.2.3
->=20
->=20
+Andrew Lunn (1):
+      batman-adv: Set the txqueuelen to zero when creating soft interface
 
---YiEDa0DAkWCtVeE4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Linus Lüssing (5):
+      batman-adv: Move bonding / iface alternating router search to own functions
+      batman-adv: Make gateway_get_selected type safe
+      batman-adv: Simplify gw_check_election(), use gw_get_selected()
+      batman-adv: Make orig_node->router an rcu protected pointer
+      batman-adv: Protect global TQ window with a spinlock
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Marek Lindner (1):
+      batman-adv: concentrate all curr_gw related rcu operations in select/deselect functions
 
-iEYEARECAAYFAk2rE7IACgkQrzg/fFk7axZEFQCfVaojw/AKJJytIP0y5OPaSgpK
-kY0AoIz9J/MfiMnadfhpz2L1oRi0WLKK
-=SFok
------END PGP SIGNATURE-----
+Simon Wunderlich (1):
+      batman-adv: protect softif_neigh by rcu
 
---YiEDa0DAkWCtVeE4--
+ net/batman-adv/gateway_client.c |  259 ++++++++++++++++-----------
+ net/batman-adv/gateway_client.h |    2 +-
+ net/batman-adv/icmp_socket.c    |   18 +--
+ net/batman-adv/originator.c     |   38 +++-
+ net/batman-adv/originator.h     |    1 +
+ net/batman-adv/routing.c        |  378 +++++++++++++++++++++------------------
+ net/batman-adv/send.c           |   19 ++-
+ net/batman-adv/soft-interface.c |  115 +++++++++---
+ net/batman-adv/types.h          |    7 +-
+ net/batman-adv/unicast.c        |    2 +-
+ net/batman-adv/vis.c            |   91 +++++-----
+ 11 files changed, 537 insertions(+), 393 deletions(-)
