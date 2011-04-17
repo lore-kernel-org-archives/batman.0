@@ -1,12 +1,15 @@
-Return-Path: <gmazzurco89@gmail.com>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun, 17 Apr 2011 18:22:10 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20110417162210.GA19178@pandem0nium>
+References: <1302708420-8552-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-In-Reply-To: <201104161122.16517.lindner_marek@yahoo.de>
-References: <201104161122.16517.lindner_marek@yahoo.de>
-Date: Sat, 16 Apr 2011 11:42:29 +0200
-Message-ID: <BANLkTikZ1O3J8UAuomQmKVH1c=3NAAhY7A@mail.gmail.com>
-From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Batman-adv hna balancing
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="YiEDa0DAkWCtVeE4"
+Content-Disposition: inline
+In-Reply-To: <1302708420-8552-1-git-send-email-lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: avoid error message when command
+ was successful
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,33 +22,59 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-ok understood
 
-many thanks!
+--YiEDa0DAkWCtVeE4
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-2011/4/16 Marek Lindner <lindner_marek@yahoo.de>:
->
-> Hi,
->
->> Here you can see our topology, there is two nodes at moment they are
->> connected to the same switch and should see same hnas but they are
->> announced mostly by one of the two
->> http://eigenlab.org/batman-adv_status.php
->>
->> If i turn off the cc:c8 node the hna pass to the other nodes but when
->> i turn it on all hna pass on it
->>
->> Why this? Is not better to balance hna announcing?
->
-> the 2 batman-adv nodes probably detected they are connected to the same switch
-> and activated the bridge loop avoidance [1]. With 'batctl sn' you can retrieve
-> the bridge loop neighbor list.
->
-> Regards,
-> Marek
->
->
-> [1] http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance
->
+Applied in eee3fc6,
+
+thanks
+	Simon
+
+On Wed, Apr 13, 2011 at 05:27:00PM +0200, Marek Lindner wrote:
+> Reported-by: Linus L=C3=BCssing <linus.luessing@web.de>
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  sys.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/sys.c b/sys.c
+> index 729f898..3511b40 100644
+> --- a/sys.c
+> +++ b/sys.c
+> @@ -420,10 +420,10 @@ int handle_gw_setting(char *mesh_iface, int argc, c=
+har **argv)
+>  	case GW_MODE_SERVER:
+>  		res =3D write_file(path_buff, SYS_GW_BW, argv[2], NULL);
+>  		break;
+> -	default:
+> -		goto out;
+>  	}
+> =20
+> +	goto out;
+> +
+>  opt_err:
+>  	printf("Error - the supplied argument is invalid: %s\n", argv[1]);
+>  	printf("The following values are allowed:\n");
+> --=20
+> 1.7.2.3
+>=20
+>=20
+
+--YiEDa0DAkWCtVeE4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk2rE7IACgkQrzg/fFk7axZEFQCfVaojw/AKJJytIP0y5OPaSgpK
+kY0AoIz9J/MfiMnadfhpz2L1oRi0WLKK
+=SFok
+-----END PGP SIGNATURE-----
+
+--YiEDa0DAkWCtVeE4--
