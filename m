@@ -1,14 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 Apr 2011 21:30:18 +0200
-Message-Id: <1303068618-27928-9-git-send-email-sven@narfation.org>
+Return-Path: <davem@davemloft.net>
+Date: Sun, 17 Apr 2011 17:38:26 -0700 (PDT)
+Message-Id: <20110417.173826.232897573.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <1303068618-27928-1-git-send-email-sven@narfation.org>
 References: <1303068618-27928-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] =?utf-8?q?=5BPATCH_8/8=5D_batman-adv=3A_Set_the_tx?=
-	=?utf-8?q?queuelen_to_zero_when_creating_soft_interface?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-04-17
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,38 +19,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: sven@narfation.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Andrew Lunn <andrew@lunn.ch>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 17 Apr 2011 21:30:10 +0200
 
-Like other virtual interfaces, e.g. br0, we don't need a transmit
-queue. Packets should only be queued on real interfaces which are
-underneath. In practice this patch makes little difference since the
-virtual interfaces can accept packets as fast as they come, but the
-patch will avoid bufferbloat questions to the mailling lists in the
-future.
+> I would like to propose following patches for net-next-2.6/2.6.40. Most of the
+> stuff is cleanup work to reduce the locking complexity. The only exception is
+> Andrew Lunn's patch, which only adds the initialisation of tx_queue_len.
 
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-Tested-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/soft-interface.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index a60fd48..1f6f756 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -584,6 +584,7 @@ static void interface_setup(struct net_device *dev)
- 	dev->hard_start_xmit = interface_tx;
- #endif
- 	dev->destructor = free_netdev;
-+	dev->tx_queue_len = 0;
- 
- 	/**
- 	 * can't call min_mtu, because the needed variables
--- 
-1.7.4.4
-
+Pulled, thanks.
