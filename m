@@ -1,13 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Date: Sun, 17 Apr 2011 17:38:26 -0700 (PDT)
-Message-Id: <20110417.173826.232897573.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1303068618-27928-1-git-send-email-sven@narfation.org>
-References: <1303068618-27928-1-git-send-email-sven@narfation.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 18 Apr 2011 17:05:16 +0200
+References: <1302891416-31451-1-git-send-email-ordex@autistici.org>
+	<1302946257-25173-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1302946257-25173-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-04-17
+Message-Id: <201104181705.17252.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: orig_hash_find() manages
+	rcu_lock/unlock internally
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,14 +22,13 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven@narfation.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 Apr 2011 21:30:10 +0200
+On Saturday 16 April 2011 11:30:57 Antonio Quartulli wrote:
+> orig_hash_find() manages rcu_lock/unlock internally and doesn't need to
+> be surrounded by rcu_read_lock() / rcu_read_unlock() anymore
 
-> I would like to propose following patches for net-next-2.6/2.6.40. Most of the
-> stuff is cleanup work to reduce the locking complexity. The only exception is
-> Andrew Lunn's patch, which only adds the initialisation of tx_queue_len.
+Applied in revision ffe4329.
 
-Pulled, thanks.
+Thanks,
+Marek
