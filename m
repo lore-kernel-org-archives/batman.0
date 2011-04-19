@@ -1,11 +1,16 @@
-Return-Path: <mirq@rere.qmqm.pl>
-From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Return-Path: <linus.luessing@web.de>
+Date: Tue, 19 Apr 2011 15:29:35 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20110419132935.GA20312@Sellars>
+References: <BANLkTin=6SArq_5+n7SMRHfX2p-RGgsomA@mail.gmail.com>
+	<BANLkTikBcWdW==dP8BG4Ud5HjxyQ0z0n3A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Message-Id: <20110419104320.0675D1389B@rere.qmqm.pl>
-Date: Tue, 19 Apr 2011 12:43:20 +0200 (CEST)
-Subject: [B.A.T.M.A.N.] [PATCH] net: batman-adv: remove rx_csum ethtool_ops
+In-Reply-To: <BANLkTikBcWdW==dP8BG4Ud5HjxyQ0z0n3A@mail.gmail.com>
+Sender: linus.luessing@web.de
+Subject: Re: [B.A.T.M.A.N.] batman-adv vis_data
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,49 +22,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
----
- net/batman-adv/soft-interface.c |   13 -------------
- 1 files changed, 0 insertions(+), 13 deletions(-)
+On Tue, Apr 19, 2011 at 09:46:10AM +0200, Gioacchino Mazzurco wrote:
+> moreover the two node have two interfaces used by batman-adv but only
+> one is displayed!
+> 
+> 2011/4/19 Gioacchino Mazzurco <gmazzurco89@gmail.com>:
+> > Hi!
+> >
+> > In Pisa we are switching to batman-adv for our mesh, we use the
+> > version packaged in openwrt.
+> >
+> > But it seems that the output of vd is not conform to specification in
+> > this page  http://www.open-mesh.org/wiki/batman-adv/VisAdv
+> >
+> > especially the box representing a node is painted only for the node
+> > where you call 'batctl vd dot'
+> >
+> > here you can see what is happening
+> > http://eigenlab.org/batman-adv_status.php to simplify visualization i
+> > am generating it with 'batctl vd dot -H'
+> >
+> 
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 1f6f756..f4d80ad 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -43,8 +43,6 @@ static void bat_get_drvinfo(struct net_device *dev,
- static u32 bat_get_msglevel(struct net_device *dev);
- static void bat_set_msglevel(struct net_device *dev, u32 value);
- static u32 bat_get_link(struct net_device *dev);
--static u32 bat_get_rx_csum(struct net_device *dev);
--static int bat_set_rx_csum(struct net_device *dev, u32 data);
- 
- static const struct ethtool_ops bat_ethtool_ops = {
- 	.get_settings = bat_get_settings,
-@@ -52,8 +50,6 @@ static const struct ethtool_ops bat_ethtool_ops = {
- 	.get_msglevel = bat_get_msglevel,
- 	.set_msglevel = bat_set_msglevel,
- 	.get_link = bat_get_link,
--	.get_rx_csum = bat_get_rx_csum,
--	.set_rx_csum = bat_set_rx_csum
- };
- 
- int my_skb_head_push(struct sk_buff *skb, unsigned int len)
-@@ -736,12 +732,3 @@ static u32 bat_get_link(struct net_device *dev)
- 	return 1;
- }
- 
--static u32 bat_get_rx_csum(struct net_device *dev)
--{
--	return 0;
--}
--
--static int bat_set_rx_csum(struct net_device *dev, u32 data)
--{
--	return -EOPNOTSUPP;
--}
--- 
-1.7.2.5
+Hi Gioacchino,
 
+As far as I know the format for the batman-adv vis output has not
+been changed on purpose and the wiki page should reflect the current
+specification. So you might possibly have found a bug.
+
+So guessing from the link, you are testing this with two nodes
+(with two interfaces as you said) with perfect link qualities and
+the issue already comes up, correct?
+
+It would be great if you could provide the following additional
+data from this two node setup:
+- The raw vis output from /sys/kernel/debug/batman_adv/bat0/vis_data
+- The originator table of the two nodes from
+  /sys/kernel/debug/batman_adv/bat0/originators
+
+Cheers, Linus
