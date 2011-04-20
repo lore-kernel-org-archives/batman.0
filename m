@@ -1,8 +1,14 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 20 Apr 2011 08:54:39 +0200
-Message-Id: <1303282479-17392-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Move definition of
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 20 Apr 2011 09:09:46 +0200
+References: <1303282479-17392-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1303282479-17392-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2433516.8S3uOVxihB";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201104200909.48651.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Move definition of
 	atomic_dec_not_zero() into main.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -15,51 +21,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-atomic_dec_not_zero() is very usefull and it is currently defined
-multiple times. So it is possible to move it in main.h
----
- aggregation.c |    1 -
- main.h        |    2 ++
- send.c        |    1 -
- 3 files changed, 2 insertions(+), 2 deletions(-)
+--nextPart2433516.8S3uOVxihB
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-diff --git a/aggregation.c b/aggregation.c
-index af45d6b..c11788c 100644
---- a/aggregation.c
-+++ b/aggregation.c
-@@ -95,7 +95,6 @@ static bool can_aggregate_with(struct batman_packet *new_batman_packet,
- 	return false;
- }
- 
--#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
- /* create a new aggregated packet and add this packet to it */
- static void new_aggregated_packet(unsigned char *packet_buff, int packet_len,
- 				  unsigned long send_time, bool direct_link,
-diff --git a/main.h b/main.h
-index a0059dd..101d9dc 100644
---- a/main.h
-+++ b/main.h
-@@ -177,4 +177,6 @@ static inline int compare_eth(void *data1, void *data2)
- 	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
- }
- 
-+#define atomic_dec_not_zero(v)	atomic_add_unless((v), -1, 0)
-+
- #endif /* _NET_BATMAN_ADV_MAIN_H_ */
-diff --git a/send.c b/send.c
-index e78670c..7650e2b 100644
---- a/send.c
-+++ b/send.c
-@@ -393,7 +393,6 @@ static void _add_bcast_packet_to_list(struct bat_priv *bat_priv,
- 			   send_time);
- }
- 
--#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
- /* add a broadcast packet to the queue and setup timers. broadcast packets
-  * are sent multiple times to increase probability for beeing received.
-  *
--- 
-1.7.3.4
+On Wednesday 20 April 2011 08:54:39 Antonio Quartulli wrote:
+> atomic_dec_not_zero() is very usefull and it is currently defined
+> multiple times. So it is possible to move it in main.h
 
+I would prefer "useful" and a "Signed-off-by:" line.
+
+For the rest of the patch:
+
+Acked-by: Sven Eckelmann <sven@narfation.org>
+
+--nextPart2433516.8S3uOVxihB
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJNroa6AAoJEF2HCgfBJntGLIgQAIPWTj+YrHdTSWw0lF23/2iD
+QUl01XEPkUOF+TaTaGwjgLnIVU3ysjKjYuFPmNfHvIHsIPCr0Ekkg5qZi4Q+ezOF
+ITmxXsWombaJA40qRNEVhcsXdhoeLjEpqbAqWNlnaZhqcGntff+yx20x+zWHxRoH
+kHXZnZLpENUQmef3ZXR0jBs4iZLOi99zwMhxpEBmMDwV50MOcOUW9eOI8QkMAWz8
+fq9KfGQ5c2aMJLQYvb8rxQ9RsS/0O1hbBeVXdcbVxOGnkvgcic3QlbfjGJpT5cei
++ia6LwZ+HmpLgIoNl0r5dhV58wi8/mCapG8kxc4DK0dEtVEq/Rc2LCRZQSFufiIq
+VRuhBObFiF0/OicgJJEM/B+e8Ksoa/e5KTC2pzT/DGu5Runa2tgnGxu/L/pcqWJ4
+sKp1PjcjGxVI15vp+dHsaIerA6nwIFiHV9kSBMnHYqVcs6uxWP2gb0T91DbJkM9Y
+lI0GWHdDBX2fI+mcMe5wiLc6uig2AyB54LkmB9h1X0y/hkIP374cKSKWVAikpgah
+k7Sw8y9FXFdp3d2syQGgzv8pF7zfmhLkq9ViF6n6/xTGZZV2kplIHygjmNhl4S0X
+KeL7O+pYuC1Ya+Uj98rbpjCtigvK+0CHqEqPBvRT/YFg8mY8cCfvpnLMiwj0xtiX
+oZSPqOz8de8/upZoZ4TO
+=ROXY
+-----END PGP SIGNATURE-----
+
+--nextPart2433516.8S3uOVxihB--
