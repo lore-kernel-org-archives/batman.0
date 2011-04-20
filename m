@@ -1,15 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 19 Apr 2011 22:51:13 +0200
-References: <20110419104320.0675D1389B@rere.qmqm.pl>
-In-Reply-To: <20110419104320.0675D1389B@rere.qmqm.pl>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4297395.7FScR8N4XZ";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201104192251.14769.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] net: batman-adv: remove rx_csum
-	ethtool_ops
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Wed, 20 Apr 2011 08:54:39 +0200
+Message-Id: <1303282479-17392-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Move definition of
+	atomic_dec_not_zero() into main.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,42 +15,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: =?utf-8?q?Micha=C5=82_Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart4297395.7FScR8N4XZ
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+atomic_dec_not_zero() is very usefull and it is currently defined
+multiple times. So it is possible to move it in main.h
+---
+ aggregation.c |    1 -
+ main.h        |    2 ++
+ send.c        |    1 -
+ 3 files changed, 2 insertions(+), 2 deletions(-)
 
-Micha=C5=82 Miros=C5=82aw wrote:
-> Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
+diff --git a/aggregation.c b/aggregation.c
+index af45d6b..c11788c 100644
+--- a/aggregation.c
++++ b/aggregation.c
+@@ -95,7 +95,6 @@ static bool can_aggregate_with(struct batman_packet *new_batman_packet,
+ 	return false;
+ }
+ 
+-#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
+ /* create a new aggregated packet and add this packet to it */
+ static void new_aggregated_packet(unsigned char *packet_buff, int packet_len,
+ 				  unsigned long send_time, bool direct_link,
+diff --git a/main.h b/main.h
+index a0059dd..101d9dc 100644
+--- a/main.h
++++ b/main.h
+@@ -177,4 +177,6 @@ static inline int compare_eth(void *data1, void *data2)
+ 	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
+ }
+ 
++#define atomic_dec_not_zero(v)	atomic_add_unless((v), -1, 0)
++
+ #endif /* _NET_BATMAN_ADV_MAIN_H_ */
+diff --git a/send.c b/send.c
+index e78670c..7650e2b 100644
+--- a/send.c
++++ b/send.c
+@@ -393,7 +393,6 @@ static void _add_bcast_packet_to_list(struct bat_priv *bat_priv,
+ 			   send_time);
+ }
+ 
+-#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
+ /* add a broadcast packet to the queue and setup timers. broadcast packets
+  * are sent multiple times to increase probability for beeing received.
+  *
+-- 
+1.7.3.4
 
-Applied
-
-thanks,
-	Sven
-
---nextPart4297395.7FScR8N4XZ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJNrfXBAAoJEF2HCgfBJntGzA0QAK5lXdfhkz149s/ETE7tlOYo
-NV7mUCgiMyGhWg3/wd9QmGJXSHP654xJVVRz9XJm9piPvbJ9u5vGUrtx2sfKv03b
-CK2c+RSKBhmKLuc4npQuaenCsFmKoyKM7zrAWHjpjofrkSKPJ+RTjzVBILKLWrFd
-FSy2N5Jb4EghOFqQWAzqg5yk+Ybd2SWTl+6+z52QG1sh17QK029ncz1ughJZr7KR
-DQf03Cs3OCXQm42eLLRLHo6ZiFR/JFdo40hR81nVPrNGu+d55NZojYtG07B+adAh
-m4xOfwtkpWAlUpappyL2pHwnv98BMZEsff6MluPTXJWwlSdNFde0foBl2iOmFfcL
-ytpnzvyfZ7U1lqbrij8rjImlyV/eUiu5ypDuHrbSEQm3kXcUqF0aF4S6vwAeujUy
-X5HA7fylAELHVf1SgUIV1THJ/IMNUhDQE0nI3NjghYzNhkBR+HPlIZJmpYWERDX0
-/ziIzMh3rG2dT036q23drYhQy77h69qiI3rx099gYvcGeOFrxfjtNnSjGpdXj9gl
-AKROcXT+ebPz6K4r1ufx/1vYTOIA8KACuUEJD++zNFKb6iD16czvUc2RZRM5wZZJ
-xaJqKMvioUI/RECE7Ri/vKG1EWX1rRthb4K6G0g88unyzbwAf69ap/1cqzsisELm
-42lHIJUlyYvGtcol6RfS
-=Y8Tn
------END PGP SIGNATURE-----
-
---nextPart4297395.7FScR8N4XZ--
