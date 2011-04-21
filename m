@@ -1,15 +1,18 @@
-Return-Path: <linus.luessing@web.de>
-Date: Thu, 21 Apr 2011 19:54:10 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20110421175410.GB23449@Sellars>
-References: <BANLkTinQ6xjJQTK_zZJYKn4q4bT4Oi6NWQ@mail.gmail.com>
-	<201104202305.40456.lindner_marek@yahoo.de>
+Return-Path: <ordex@ritirata.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <201104202305.40456.lindner_marek@yahoo.de>
-Sender: linus.luessing@web.de
-Subject: Re: [B.A.T.M.A.N.] batman doesn't see neigh on wired lan
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Thu, 21 Apr 2011 19:20:31 +0200
+From: Antonio Quartulli <ordex@ritirata.org>
+In-Reply-To: <BANLkTim9LrO298EnM8n63dcMZqC2Nh+6tg@mail.gmail.com>
+References: <BANLkTimERe+ZVihn1SHbjubF84V2q2pANQ@mail.gmail.com>
+	<BANLkTi=GP+EZAxPEZxEdO1yGwF-h6jVnMA@mail.gmail.com>
+	<201104211835.35388.lindner_marek@yahoo.de>
+	<BANLkTi=68rM5h-7eaVWRnSCiDZgzpKkHrA@mail.gmail.com>
+	<BANLkTim9LrO298EnM8n63dcMZqC2Nh+6tg@mail.gmail.com>
+Message-ID: <c2e82a568e15c598dc77382a109b3e20@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] Fwd: batman-adv multiple meshs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,27 +26,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, Apr 20, 2011 at 11:05:40PM +0200, Marek Lindner wrote:
-> On Wednesday 20 April 2011 22:39:30 Gioacchino Mazzurco wrote:
-> > Here in Pisa we are experiencing a big problem!
-> > 
-> > Nodes doesn't see each other on cable!
-> > 
-> > below is some data from the 2 nodes
-> > 
-> > As you can see nodes receives each other BAT packets but don't see
-> > each other as neighbor...
-> > 
-> > also batctl tr can confirm it...
-> > 
-> > what is happening?
-> 
-> That can't work - eth0 is part of a bridge. You can either use eth0 with 
-> batman or in a bridge, not both. However, you can configure batman to use the 
-> bridge interface which the eth0 interface is part of.
-> 
-> Cheers,
-> Marek
-> 
+ On Thu, 21 Apr 2011 19:06:02 +0200, Gioacchino Mazzurco wrote:
+> I see openwrt uci file you can define multiple mesh section, what
+> happen if i define different mesh interfaces like bat0 and bat1 on
+> every nodes?
+>
+> I will have 2 separated layer 2 networks?
 
-Ah, ups, so that post too late :).
+ Yes, batman-adv provides this functionality. But iirc you cannot add 
+ the
+ same real device to more than one bat-interface.
+ So, for example, eth0 can be added to bat0 but then you can't add it to 
+ bat1
+
+ If you really want to do this I think you can first split eth0 in 
+ eth0:1 and
+ eth0:2, as different vlans, and then add them to two different 
+ bat-interfaces.
+
+ Regards,
+
+-- 
+ Antonio Quartulli
+
+ Ognuno di noi, da solo, non vale nulla
+ Ernesto "Che" Guevara
