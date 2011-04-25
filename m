@@ -1,14 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 25 Apr 2011 22:16:12 +0200
-References: <BANLkTikkUq=32ktEFcWUtaP1bhEGiLGSiA@mail.gmail.com>
-In-Reply-To: <BANLkTikkUq=32ktEFcWUtaP1bhEGiLGSiA@mail.gmail.com>
+Return-Path: <gollab@interia.pl>
+Message-ID: <4DB5DB65.6070706@interia.pl>
+Date: Mon, 25 Apr 2011 22:36:53 +0200
+From: =?UTF-8?B?S3J6eXNpZWsgR2/FgsSZYmlld3NraQ==?= <gollab@interia.pl>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9382556.oKJkWYH6yI";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201104252216.13314.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] smallest embedded hw running b.a.t.m.a.n ?
+References: <201104251055.17370.onelektra@gmx.net>
+In-Reply-To: <201104251055.17370.onelektra@gmx.net>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] Batmand - ping 169.254.0.0 from client is not
+ working.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,78 +20,114 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: onelektra@gmx.net, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart9382556.oKJkWYH6yI
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+I tried to change my settings as you have wroten, elektra.
 
-f campos wrote:
-> Hi !
+So I:
 
-Could it be that you repeat yourself? I think I've already read that in=20
-<BANLkTinZA2TC68-dcC81RZhOV1JSPPOe3g@mail.gmail.com> and=20
-<BANLkTikRFbLgHckRkph4pwC4ZUP7EQW0Dw@mail.gmail.com>.
+1. Changed the settings on client and now I have:
+
+ >config 'interface' 'ath0'
+ >option 'ifname' 'ath0'
+ >option 'proto' 'static'
+ >option 'ipaddr' '10.130.1.3'
+ >option 'netmask' '255.255.255.0'
+ >option 'dns' '8.8.8.8'
+
+There is no gateway now and there is new dns server.
+
+2. Rebooted router (client) and then typed:
+ >> iptable -F .
+3. I started batmand with command below:
+ >> batmand -d 3 -r 2 -a 192.168.4.0/24 --disable-client-nat ath0
+
+4. On the gateway I also used
+ >> iptables -F
+
+and then I typed:
+
+>>  iptables -t nat -A POSTROUTING -o eth0.1 -j MASQUERADE
+
+and after it I started batmand, command below:
+
+>>  batmand -d 3 -g 1000 -a 192.168.3.0/24 ath0
+
+I changed also speed of gateway connection. Here, at home I have only 1Mbit.
+
+>  (I am assuming that you have the uplink connected to the WAN port of the Asus)
+
+Yes, you`re right. Port eth0.1 (wan) is my port to the next router (my home router with normal access to Internet and Asus is connected to it`s one of lan ports).
+It`s got an address (192.168.2.2) from DHCP.
 
 
-> Can the forum give feedback on the smallest embedded hw running b.a.t.m.a=
-=2En
-> ?
+Now situation is:
 
-batmand or batman-adv or bmx? Has the software to be preinstalled? What kin=
-d=20
-of network/physical layer must be supported?
+On the client router - connected by ssh - putty:
+I can ping f.e. www.google.com and I have a reply (ping works).
+I can ping 192.168.2.1 (gateway at home router).
+I can ping 10.130.1.1 (address of interface ath0 on gateway).
+I can`t ping 192.168.2.2 (port wan on Asus, why?). -> results 100% loss.
+I can`t ping 169.254.0.0 (end of tunnel gate0 on the gateway). -> 
+results 100% loss.
 
-> do you have digikey/stores link for that  ?
+On the gateway:
+I can ping Internet address (www.google.com).
+I can ping 10.130.1.3.
+I can ping 169.254.0.1.
+I can ping 192.168.2.2.
+I can ping 192.168.2.1.
 
-Usually we don't get information from the companies/persons which use the=20
-software provided by open-mesh.org - only when there is a problem or somebo=
-dy=20
-wants to contribute patches. But they don't provide information about the f=
-orm=20
-factor of their products.
+On the gateway all look correctly.
 
-It should be no problem to run it on those SheevaPlug/GuruPlug things or yo=
-u=20
-could try to use Picotux (nobody said that it should a powerful box which i=
-s=20
-capable of doing real networking stuff). Common small router have the=20
-dimensions of those fonera routers (please correct me).=20
+On PC connected to Router Client (by LAN eth0.0) I can ping almost 
+nothing...
+ping 192.168.4.1 (gateway PC-Router client) working.
+ping 10.130.1.3 working.
+ping 10.130.1.1 not working -> Request time out.
+Any other address doesn`t reply.
 
-To make it short: No, we cannot give any feedback on the smallest embedded=
-=20
-device which runs batmand/batman-adv/bmx because we have no world record=20
-registration for that kind of information. But we could try to give hints=20
-about possible solutions for problems involving the size of the hardware wh=
-ich=20
-should run batmand/batman-adv/bmx... just give us a detailed description of=
-=20
-your problem.
+On PC connected to Router Gateway (by LAN eth0.0):
+ping www.google.com not working
+ping 10.130.1.1 working
+ping 10.130.1.3 working
+ping 192.168.2.2 working
+ping 192.168.2.1 not working.
 
-Kind regards,
-	Sven
+And... messenger works properly... despite it I can`t ping gateway.
 
---nextPart9382556.oKJkWYH6yI
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Maybe it depends on routing table, but here is another problem.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+>  The command
 
-iQIcBAABCgAGBQJNtdaMAAoJEF2HCgfBJntG720QALmPvsoNmqWAWv7W3qqU35N4
-Gc+ThkwIt/JLy9Ds8jmvgP9Ffryym/xJ/vtrR/xaYYHg3IUhsoYvMD6MUw/jO19h
-NgNZa1XbMd2/xQL5NZbcQpR4xj1cl2S8i5186X72wOXUvvTRrq3hfwZGbm1dnABa
-7sEgcS58e3kKPJSOjcctpNWPaCNb1C6vqbUA0b4Bb0CPTE2SKumj2vJOwImx63dt
-1X0pLxyoD/ChaZspeEKI19zeEYsPzC9RZkk7iibGc4GZHDpYiXlHBwsnAtZQ7lz2
-y+Y6jltFL4qofblyTKBKJpFE/9ya+nD8mBSLE8VWsMpwK7hjp5cFGCDFdnqEi3sk
-Fp/WHmFkRTOISdGjrHdZnBBmYaU00D9gC+iaXNnqE54IEH3f/Ck3g9lxUfYoxrll
-8DxxYDxzepqqdJRaAjlcL7uIXgcpp1ou9Uu82423nZu0YURmtG7ZJh8a1ggFZUa4
-H8EvzqbpDCDqRwBg4wgTVlq67yBzR9j5x+byCs7S7VjzITNbmwJz23kKaEJRoAAd
-6JnYcOcDfeZM0vOg+q3OHijEMAB5/VQw2D8bsJVlSjnNAEzCY4l697cs/A8hBxMp
-H15blQ1KHWp2CCPh8C3OsKt9c5d66Qo4/oU0OqKW35zrmGPqfyev7HE4oduKFAYn
-ArNKxQL4BLq2prIhQI/F
-=SZq+
------END PGP SIGNATURE-----
+>  route -n
 
---nextPart9382556.oKJkWYH6yI--
+>  is not helpful when working with batmand. The route command is a outdated
+>  legacy from Linux 2.2 and older. Use the
+>  ip command instead, to see the policy routing tables.
+
+>  ip r ls table all
+
+>  will list all tables.
+
+
+Yes... I am associating this command but some minuts ago I would like to 
+check my routing table and these commands: ip route and ip rule are not 
+recognized for my router.
+
+root@Asus4:~# ip r ls table all
+-ash: ip: not found
+
+I thought I didn`t install it but in list of packages available for my 
+Backfire I couldn`t find something suitable. From where can I download it?
+
+
+Any more suggestions?
+Thanks,
+Krzysiek.
+
+
+---------------------------------------------
+Ksiegowa radzi: Jak załozyc firme w 15 minut?
+http://linkint.pl/f2968
+
