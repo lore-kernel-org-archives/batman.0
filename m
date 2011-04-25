@@ -1,16 +1,16 @@
-Return-Path: <onelektra@gmx.net>
-From: elektra <onelektra@gmx.net>
-Date: Tue, 26 Apr 2011 01:42:24 +0200
-References: <201104251055.17370.onelektra@gmx.net>
-	<4DB5DB65.6070706@interia.pl>
-In-Reply-To: <4DB5DB65.6070706@interia.pl>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 26 Apr 2011 01:57:34 +0200
+References: <1303723103-29582-1-git-send-email-ordex@autistici.org>
+	<1303764272-5943-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1303764272-5943-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201104260142.24934.onelektra@gmx.net>
-Subject: Re: [B.A.T.M.A.N.] Batmand - ping 169.254.0.0 from client is not
-	working.
+Message-Id: <201104260157.35190.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4] batman-adv: fix gw_node_update() and
+	gw_election()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,42 +22,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Krzysiek -
+On Monday 25 April 2011 22:44:32 Antonio Quartulli wrote:
+> This is a regression from 8ffdea813e32cee3c60be36fb9e6a5e077e51ea0
+> 
+> - gw_node_update() doesn't add a new gw_node in case of empty curr_gw.
+> This means that at the beginning no gw_node is added, leading to an
+> empty gateway list.
+> 
+> - gw_election() is terminating in case of curr_gw == NULL. It has to
+> terminate in case of curr_gw != NULL
 
-as promised you can now use the Internet from the batmand gateway client and you can access the gateway machine 
-behind the batmand gateway. 
+Applied in revision 66b5d57.
 
-If you have more machines in the 192.168.2.0/24 subnet, you will be able to access them as well. However they are 
-now behind a NAT instance.
-
-You can not ping the 192.168.2.2 interface address since you didn't announce the 192.168.2.0/24 subnet via HNA. You 
-can ping everything that is behind 192.168.2.2, because of the NAT postrouting rule. I don't think talking to the 
-192.168.2.2 IP is necessary since you can access the device with the 10.130.1.X IP. If you insist on it, you can 
-add a HNA network announcement ( -a ). 
-
-The package you are missing is iproute2.
-
-With regards to the PC connected to the batman gateway client - did you set up a default route in the PC? Without a 
-route you can only ping those IPs that are link local. Don't forget to add a DNS server, too.
-
-Don't bother about pinging the tunnel endpoint IP. The tunnel is merely required as a means of transport which 
-allows batman gateway-clients to select a batmand gateway when sending traffic *to* the gateway. And it is a half-way 
-(one-way!) tunnel.  
-
-Cheers,
-Elektra
-
-
--- 
-Viral meme of radical freedom
-
-The fact that you talk in your head doesn't mean that you think.
-
-The best way to lose control over yourself is trying to control yourself.
-
-Most people experience themselves as a voice in their head, telling them
-who they are, what they think and what they have to do.
-
-http://en.wikipedia.org/wiki/Meme
+Thanks,
+Marek
