@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 25 Apr 2011 22:43:43 +0200
-Message-Id: <1303764223-5031-1-git-send-email-ordex@autistici.org>
+Date: Mon, 25 Apr 2011 22:44:32 +0200
+Message-Id: <1303764272-5943-1-git-send-email-ordex@autistici.org>
 In-Reply-To: <1303723103-29582-1-git-send-email-ordex@autistici.org>
 References: <1303723103-29582-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: fix gw_node_update() and
-	gw_election() selected
+Subject: [B.A.T.M.A.N.] [PATCHv4] batman-adv: fix gw_node_update() and
+	gw_election()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
