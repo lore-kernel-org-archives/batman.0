@@ -1,14 +1,11 @@
-Return-Path: <gollab@interia.pl>
-Message-ID: <4DB5DB65.6070706@interia.pl>
-Date: Mon, 25 Apr 2011 22:36:53 +0200
-From: =?UTF-8?B?S3J6eXNpZWsgR2/FgsSZYmlld3NraQ==?= <gollab@interia.pl>
-MIME-Version: 1.0
-References: <201104251055.17370.onelektra@gmx.net>
-In-Reply-To: <201104251055.17370.onelektra@gmx.net>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] Batmand - ping 169.254.0.0 from client is not
- working.
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 25 Apr 2011 22:43:43 +0200
+Message-Id: <1303764223-5031-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1303723103-29582-1-git-send-email-ordex@autistici.org>
+References: <1303723103-29582-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: fix gw_node_update() and
+	gw_election() selected
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,114 +17,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: onelektra@gmx.net, b.a.t.m.a.n@lists.open-mesh.org
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-I tried to change my settings as you have wroten, elektra.
+This is a regression from 8ffdea813e32cee3c60be36fb9e6a5e077e51ea0
 
-So I:
+- gw_node_update() doesn't add a new gw_node in case of empty curr_gw.
+This means that at the beginning no gw_node is added, leading to an
+empty gateway list.
 
-1. Changed the settings on client and now I have:
+- gw_election() is terminating in case of curr_gw == NULL. It has to
+terminate in case of curr_gw != NULL
 
- >config 'interface' 'ath0'
- >option 'ifname' 'ath0'
- >option 'proto' 'static'
- >option 'ipaddr' '10.130.1.3'
- >option 'netmask' '255.255.255.0'
- >option 'dns' '8.8.8.8'
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ gateway_client.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-There is no gateway now and there is new dns server.
-
-2. Rebooted router (client) and then typed:
- >> iptable -F .
-3. I started batmand with command below:
- >> batmand -d 3 -r 2 -a 192.168.4.0/24 --disable-client-nat ath0
-
-4. On the gateway I also used
- >> iptables -F
-
-and then I typed:
-
->>  iptables -t nat -A POSTROUTING -o eth0.1 -j MASQUERADE
-
-and after it I started batmand, command below:
-
->>  batmand -d 3 -g 1000 -a 192.168.3.0/24 ath0
-
-I changed also speed of gateway connection. Here, at home I have only 1Mbit.
-
->  (I am assuming that you have the uplink connected to the WAN port of the Asus)
-
-Yes, you`re right. Port eth0.1 (wan) is my port to the next router (my home router with normal access to Internet and Asus is connected to it`s one of lan ports).
-It`s got an address (192.168.2.2) from DHCP.
-
-
-Now situation is:
-
-On the client router - connected by ssh - putty:
-I can ping f.e. www.google.com and I have a reply (ping works).
-I can ping 192.168.2.1 (gateway at home router).
-I can ping 10.130.1.1 (address of interface ath0 on gateway).
-I can`t ping 192.168.2.2 (port wan on Asus, why?). -> results 100% loss.
-I can`t ping 169.254.0.0 (end of tunnel gate0 on the gateway). -> 
-results 100% loss.
-
-On the gateway:
-I can ping Internet address (www.google.com).
-I can ping 10.130.1.3.
-I can ping 169.254.0.1.
-I can ping 192.168.2.2.
-I can ping 192.168.2.1.
-
-On the gateway all look correctly.
-
-On PC connected to Router Client (by LAN eth0.0) I can ping almost 
-nothing...
-ping 192.168.4.1 (gateway PC-Router client) working.
-ping 10.130.1.3 working.
-ping 10.130.1.1 not working -> Request time out.
-Any other address doesn`t reply.
-
-On PC connected to Router Gateway (by LAN eth0.0):
-ping www.google.com not working
-ping 10.130.1.1 working
-ping 10.130.1.3 working
-ping 192.168.2.2 working
-ping 192.168.2.1 not working.
-
-And... messenger works properly... despite it I can`t ping gateway.
-
-Maybe it depends on routing table, but here is another problem.
-
->  The command
-
->  route -n
-
->  is not helpful when working with batmand. The route command is a outdated
->  legacy from Linux 2.2 and older. Use the
->  ip command instead, to see the policy routing tables.
-
->  ip r ls table all
-
->  will list all tables.
-
-
-Yes... I am associating this command but some minuts ago I would like to 
-check my routing table and these commands: ip route and ip rule are not 
-recognized for my router.
-
-root@Asus4:~# ip r ls table all
--ash: ip: not found
-
-I thought I didn`t install it but in list of packages available for my 
-Backfire I couldn`t find something suitable. From where can I download it?
-
-
-Any more suggestions?
-Thanks,
-Krzysiek.
-
-
----------------------------------------------
-Ksiegowa radzi: Jak załozyc firme w 15 minut?
-http://linkint.pl/f2968
+diff --git a/gateway_client.c b/gateway_client.c
+index 2acd7a6..4b4f71b 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -127,7 +127,7 @@ void gw_election(struct bat_priv *bat_priv)
+ 		return;
+ 
+ 	curr_gw = gw_get_selected_gw_node(bat_priv);
+-	if (!curr_gw)
++	if (curr_gw)
+ 		goto out;
+ 
+ 	rcu_read_lock();
+@@ -311,8 +311,6 @@ void gw_node_update(struct bat_priv *bat_priv,
+ 	struct gw_node *gw_node, *curr_gw;
+ 
+ 	curr_gw = gw_get_selected_gw_node(bat_priv);
+-	if (!curr_gw)
+-		goto out;
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
+@@ -350,7 +348,7 @@ deselect:
+ 	gw_deselect(bat_priv);
+ unlock:
+ 	rcu_read_unlock();
+-out:
++
+ 	if (curr_gw)
+ 		gw_node_free_ref(curr_gw);
+ }
+-- 
+1.7.3.4
 
