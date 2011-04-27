@@ -1,10 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 27 Apr 2011 23:35:05 +0200
-Message-Id: <1303940106-1457-4-git-send-email-ordex@autistici.org>
+Date: Wed, 27 Apr 2011 23:35:06 +0200
+Message-Id: <1303940106-1457-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1303940106-1457-1-git-send-email-ordex@autistici.org>
 References: <1303940106-1457-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: improved roaming mechanism
+Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: protect the local and the
+	global trans-tables with rcu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,644 +19,670 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Exploting the new announcement implementation, it has been possible to
-improve the roaming mechanism and reduce the number of packet drops.
-
-For details, please visit:
-http://www.open-mesh.org/wiki/batman-adv/Roaming-improvements
+The local and the global translation-tables are now lock free and rcu
+protected.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- hard-interface.c    |    4 +
- main.c              |    2 +
- main.h              |    4 +
- originator.c        |    1 +
- packet.h            |   10 +++
- routing.c           |   70 ++++++++++++++++++++--
- routing.h           |    1 +
- send.c              |    1 +
- soft-interface.c    |    3 +-
- translation-table.c |  169 +++++++++++++++++++++++++++++++++++++++++++++-----
- translation-table.h |    7 ++-
- types.h             |   24 +++++++
- 12 files changed, 271 insertions(+), 25 deletions(-)
+ main.c              |    2 -
+ translation-table.c |  266 +++++++++++++++++++++++++++++----------------------
+ types.h             |    6 +-
+ vis.c               |   13 +--
+ 4 files changed, 161 insertions(+), 126 deletions(-)
 
-diff --git a/hard-interface.c b/hard-interface.c
-index 2a7c533..e88fccd 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -673,6 +673,10 @@ static int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 	case BAT_TT_QUERY:
- 		ret = recv_tt_query(skb, hard_iface);
- 		break;
-+		/* Roaming advertisement */
-+	case BAT_ROAM_ADV:
-+		ret = recv_roam_adv(skb, hard_iface);
-+		break;
- 	default:
- 		ret = NET_RX_DROP;
- 	}
 diff --git a/main.c b/main.c
-index a84679a..31cbecc 100644
+index 31cbecc..a3783f8 100644
 --- a/main.c
 +++ b/main.c
-@@ -85,6 +85,7 @@ int mesh_init(struct net_device *soft_iface)
- 	spin_lock_init(&bat_priv->tt_ghash_lock);
+@@ -81,8 +81,6 @@ int mesh_init(struct net_device *soft_iface)
+ 
+ 	spin_lock_init(&bat_priv->forw_bat_list_lock);
+ 	spin_lock_init(&bat_priv->forw_bcast_list_lock);
+-	spin_lock_init(&bat_priv->tt_lhash_lock);
+-	spin_lock_init(&bat_priv->tt_ghash_lock);
  	spin_lock_init(&bat_priv->tt_changes_list_lock);
  	spin_lock_init(&bat_priv->tt_req_list_lock);
-+	spin_lock_init(&bat_priv->tt_roam_list_lock);
- 	spin_lock_init(&bat_priv->tt_buff_lock);
- 	spin_lock_init(&bat_priv->gw_list_lock);
- 	spin_lock_init(&bat_priv->vis_hash_lock);
-@@ -97,6 +98,7 @@ int mesh_init(struct net_device *soft_iface)
- 	INIT_HLIST_HEAD(&bat_priv->softif_neigh_list);
- 	INIT_LIST_HEAD(&bat_priv->tt_changes_list);
- 	INIT_LIST_HEAD(&bat_priv->tt_req_list);
-+	INIT_LIST_HEAD(&bat_priv->tt_roam_list);
- 
- 	if (originator_init(bat_priv) < 1)
- 		goto err;
-diff --git a/main.h b/main.h
-index cc1c277..802d87a 100644
---- a/main.h
-+++ b/main.h
-@@ -55,6 +55,10 @@
- #define TT_ADD 0
- #define TT_DEL 1
- 
-+#define ROAMING_MAX_TIME 20 /* Time in which a client can roam at most
-+			     * ROAMING_MAX_COUNT times */
-+#define ROAMING_MAX_COUNT 5
-+
- #define NUM_WORDS (TQ_LOCAL_WINDOW_SIZE / WORD_BIT_SIZE)
- 
- #define LOG_BUF_LEN 8192	  /* has to be a power of 2 */
-diff --git a/originator.c b/originator.c
-index be7257b..2cb7425 100644
---- a/originator.c
-+++ b/originator.c
-@@ -221,6 +221,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
- 	/* extra reference for return */
- 	atomic_set(&orig_node->refcount, 2);
- 
-+	orig_node->tt_poss_change = false;
- 	orig_node->bat_priv = bat_priv;
- 	memcpy(orig_node->orig, addr, ETH_ALEN);
- 	orig_node->router = NULL;
-diff --git a/packet.h b/packet.h
-index 34a2775..e7ac34c 100644
---- a/packet.h
-+++ b/packet.h
-@@ -31,6 +31,7 @@
- #define BAT_VIS          0x05
- #define BAT_UNICAST_FRAG 0x06
- #define BAT_TT_QUERY	 0x07
-+#define BAT_ROAM_ADV	 0x08
- 
- /* this file is included by batctl which needs these defines */
- #define COMPAT_VERSION 14
-@@ -164,4 +165,13 @@ struct tt_query_packet {
- 				 */
- } __packed;
- 
-+struct roam_adv_packet {
-+	uint8_t  packet_type;
-+	uint8_t  version;
-+	uint8_t  dst[6];
-+	uint8_t  ttl;
-+	uint8_t  src[6];
-+	uint8_t  client[6];
-+} __packed;
-+
- #endif /* _NET_BATMAN_ADV_PACKET_H_ */
-diff --git a/routing.c b/routing.c
-index 838394b..431370a 100644
---- a/routing.c
-+++ b/routing.c
-@@ -89,7 +89,7 @@ static void update_transtable(struct bat_priv *bat_priv,
- 			else
- 				if (!tt_global_add(bat_priv, orig_node,
- 							tt_change->addr,
--							ttvn))
-+							ttvn, false))
- 					/* In case of problem while storing a
- 					 * global_entry, we stop the updating
- 					 * procedure without committing the
-@@ -108,6 +108,10 @@ static void update_transtable(struct bat_priv *bat_priv,
- 		 * to recompute it to spot any possible inconsistency
- 		 * in the global table */
- 		orig_node->tt_crc = tt_global_crc(bat_priv, orig_node);
-+		/* Roaming phase is over: tables are in sync again. I can
-+		 * unset the flag */
-+		if (tt_num_changes)
-+			orig_node->tt_poss_change = false;
- 	} else {
- 		/* if we missed more than one change or our tables are not
- 		 * in sync anymore -> request fresh tt data */
-@@ -1290,6 +1294,56 @@ out:
- 	return ret;
- }
- 
-+int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
-+{
-+	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
-+	struct roam_adv_packet *roam_adv_packet;
-+	struct orig_node *orig_node;
-+	struct ethhdr *ethhdr;
-+	int ret = NET_RX_DROP;
-+
-+	/* drop packet if it has not necessary minimum size */
-+	if (unlikely(!pskb_may_pull(skb, sizeof(struct roam_adv_packet))))
-+		goto out;
-+
-+	ethhdr = (struct ethhdr *)skb_mac_header(skb);
-+
-+	/* packet with unicast indication but broadcast recipient */
-+	if (is_broadcast_ether_addr(ethhdr->h_dest))
-+		goto out;
-+
-+	/* packet with broadcast sender address */
-+	if (is_broadcast_ether_addr(ethhdr->h_source))
-+		goto out;
-+
-+	roam_adv_packet = (struct roam_adv_packet *)skb->data;
-+
-+	if (!is_my_mac(roam_adv_packet->dst))
-+		return route_unicast_packet(skb, recv_if);
-+
-+	orig_node = orig_hash_find(bat_priv, roam_adv_packet->src);
-+	if (!orig_node)
-+		goto out;
-+
-+	tt_global_add(bat_priv, orig_node, roam_adv_packet->client,
-+		      atomic_read(&orig_node->last_tt_ver_num) + 1, true);
-+
-+	/* Roaming phase starts: I have a new information but the ttvn has been
-+	 * incremented yet. This flag will make me check all the incoming
-+	 * packets for the correct destination. */
-+	bat_priv->tt_poss_change = true;
-+
-+	bat_dbg(DBG_ROUTES, bat_priv, "Received ROAMING_ADV from %pM "
-+		"(client %pM)\n", roam_adv_packet->src,
-+		roam_adv_packet->client);
-+
-+	orig_node_free_ref(orig_node);
-+	ret = NET_RX_SUCCESS;
-+out:
-+	kfree(skb);
-+	return ret;
-+}
-+
- /* find a suitable router for this originator, and use
-  * bonding if possible. increases the found neighbors
-  * refcount.*/
-@@ -1478,35 +1532,41 @@ int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 	struct ethhdr *ethhdr;
- 	uint8_t curr_ttvn;
- 	int16_t diff;
-+	bool tt_poss_change;
- 
- 	if (check_unicast_packet(skb, hdr_size) < 0)
- 		return NET_RX_DROP;
- 
-+	/* I could need to modify it */
-+	if (skb_cow(skb, sizeof(struct unicast_packet)) < 0)
-+		return NET_RX_DROP;
-+
- 	unicast_packet = (struct unicast_packet *)skb->data;
- 
--	if (is_my_mac(unicast_packet->dest))
-+	if (is_my_mac(unicast_packet->dest)) {
-+		tt_poss_change = bat_priv->tt_poss_change;
- 		curr_ttvn = (uint8_t)atomic_read(&bat_priv->tt_ver_num);
--	else {
-+	} else {
- 		orig_node = orig_hash_find(bat_priv, unicast_packet->dest);
- 
- 		if (!orig_node)
- 			return NET_RX_DROP;
- 
- 		curr_ttvn = (uint8_t)atomic_read(&orig_node->last_tt_ver_num);
-+		tt_poss_change = orig_node->tt_poss_change;
- 		orig_node_free_ref(orig_node);
- 	}
- 
- 	diff = unicast_packet->ttvn - curr_ttvn;
- 	/* Check whether I have to reroute the packet */
- 	if (unicast_packet->packet_type == BAT_UNICAST &&
--	    (diff < 0 && diff > -0xff/2)) {
-+	    ((diff < 0 && diff > -0xff/2) || tt_poss_change)) {
- 		/* Linearize the skb before accessing it */
- 		if (skb_linearize(skb) < 0)
- 			return NET_RX_DROP;
- 
- 		ethhdr = (struct ethhdr *)(skb->data +
- 			sizeof(struct unicast_packet));
--
- 		orig_node = transtable_search(bat_priv, ethhdr->h_dest);
- 
- 		if (!orig_node) {
-diff --git a/routing.h b/routing.h
-index 6f6a5f8..e2943e0 100644
---- a/routing.h
-+++ b/routing.h
-@@ -37,6 +37,7 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_vis_packet(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_bat_packet(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if);
-+int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if);
- struct neigh_node *find_router(struct bat_priv *bat_priv,
- 			       struct orig_node *orig_node,
- 			       struct hard_iface *recv_if);
-diff --git a/send.c b/send.c
-index f85913e..e975417 100644
---- a/send.c
-+++ b/send.c
-@@ -303,6 +303,7 @@ void schedule_own_packet(struct hard_iface *hard_iface)
- 			prepare_packet_buffer(bat_priv, hard_iface);
- 			/* Increment the TTVN only once per OGM interval */
- 			atomic_inc(&bat_priv->tt_ver_num);
-+			bat_priv->tt_poss_change = false;
- 		}
- 
- 		/* if the changes have been sent enough times */
-diff --git a/soft-interface.c b/soft-interface.c
-index fedb1ed..eb35ae9 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -366,7 +366,7 @@ static int interface_set_mac_addr(struct net_device *dev, void *p)
- 	/* only modify tt-table if it has been initialised before */
- 	if (atomic_read(&bat_priv->mesh_state) == MESH_ACTIVE) {
- 		tt_local_remove(bat_priv, dev->dev_addr,
--				"mac address changed");
-+				"mac address changed", false);
- 		tt_local_add(dev, addr->sa_data);
- 	}
- 
-@@ -669,6 +669,7 @@ struct net_device *softif_create(char *name)
- 
- 	bat_priv->tt_buff = NULL;
- 	bat_priv->tt_buff_len = 0;
-+	bat_priv->tt_poss_change = false;
- 
- 	bat_priv->primary_if = NULL;
- 	bat_priv->num_ifaces = 0;
+ 	spin_lock_init(&bat_priv->tt_roam_list_lock);
 diff --git a/translation-table.c b/translation-table.c
-index d55eeb5..0b13473 100644
+index 0b13473..700d57b 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -168,6 +168,8 @@ void tt_local_add(struct net_device *soft_iface, uint8_t *addr)
- 	struct bat_priv *bat_priv = netdev_priv(soft_iface);
- 	struct tt_local_entry *tt_local_entry;
- 	struct tt_global_entry *tt_global_entry;
-+	uint8_t roam_addr[ETH_ALEN];
-+	struct orig_node *roam_orig_node;
+@@ -78,6 +78,9 @@ static struct tt_local_entry *tt_local_hash_find(struct bat_priv *bat_priv,
+ 		if (!compare_eth(tt_local_entry, data))
+ 			continue;
  
- 	spin_lock_bh(&bat_priv->tt_lhash_lock);
- 	tt_local_entry = tt_local_hash_find(bat_priv, addr);
-@@ -206,12 +208,21 @@ void tt_local_add(struct net_device *soft_iface, uint8_t *addr)
++		if (!atomic_inc_not_zero(&tt_local_entry->refcount))
++			continue;
++
+ 		tt_local_entry_tmp = tt_local_entry;
+ 		break;
+ 	}
+@@ -107,6 +110,9 @@ static struct tt_global_entry *tt_global_hash_find(struct bat_priv *bat_priv,
+ 		if (!compare_eth(tt_global_entry, data))
+ 			continue;
  
- 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
- 
--	if (tt_global_entry)
-+	/* Check whether it is a roaming! */
-+	if (tt_global_entry) {
-+		memcpy(roam_addr, tt_global_entry->addr, ETH_ALEN);
-+		roam_orig_node = tt_global_entry->orig_node;
-+		/* This node is probably going to update its tt table */
-+		tt_global_entry->orig_node->tt_poss_change = true;
- 		_tt_global_del(bat_priv, tt_global_entry,
- 			       "local tt received");
-+		spin_unlock_bh(&bat_priv->tt_ghash_lock);
-+		send_roam_adv(bat_priv, tt_global_entry->addr,
-+			tt_global_entry->orig_node);
-+	} else
-+		spin_unlock_bh(&bat_priv->tt_ghash_lock);
- 
--	spin_unlock_bh(&bat_priv->tt_ghash_lock);
--
-+	return;
- unlock:
- 	spin_unlock_bh(&bat_priv->tt_lhash_lock);
- }
-@@ -364,7 +375,8 @@ static void tt_local_del(struct bat_priv *bat_priv,
- 	tt_local_entry_free(&tt_local_entry->hash_entry, bat_priv);
++		if (!atomic_inc_not_zero(&tt_global_entry->refcount))
++			continue;
++
+ 		tt_global_entry_tmp = tt_global_entry;
+ 		break;
+ 	}
+@@ -123,6 +129,34 @@ static bool is_out_of_time(unsigned long starting_time, unsigned long timeout)
+ 	return time_after(jiffies, deadline);
  }
  
--void tt_local_remove(struct bat_priv *bat_priv, uint8_t *addr, char *message)
-+void tt_local_remove(struct bat_priv *bat_priv, uint8_t *addr,
-+		     char *message, bool roaming)
++static void tt_local_entry_free_rcu(struct rcu_head *rcu)
++{
++	struct tt_local_entry *tt_local_entry;
++
++	tt_local_entry = container_of(rcu, struct tt_local_entry, rcu);
++	kfree(tt_local_entry);
++}
++
++static void tt_local_entry_free_ref(struct tt_local_entry *tt_local_entry)
++{
++	if (atomic_dec_and_test(&tt_local_entry->refcount))
++		call_rcu(&tt_local_entry->rcu, tt_local_entry_free_rcu);
++}
++
++static void tt_global_entry_free_rcu(struct rcu_head *rcu)
++{
++	struct tt_global_entry *tt_global_entry;
++
++	tt_global_entry = container_of(rcu, struct tt_global_entry, rcu);
++	kfree(tt_global_entry);
++}
++
++static void tt_global_entry_free_ref(struct tt_global_entry *tt_global_entry)
++{
++	if (atomic_dec_and_test(&tt_global_entry->refcount))
++		call_rcu(&tt_global_entry->rcu, tt_global_entry_free_rcu);
++}
++
+ static void tt_local_event(struct bat_priv *bat_priv, uint8_t op, uint8_t *addr)
  {
- 	struct tt_local_entry *tt_local_entry;
+ 	struct tt_change_node *tt_change_node;
+@@ -166,22 +200,19 @@ static int tt_local_init(struct bat_priv *bat_priv)
+ void tt_local_add(struct net_device *soft_iface, uint8_t *addr)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(soft_iface);
+-	struct tt_local_entry *tt_local_entry;
+-	struct tt_global_entry *tt_global_entry;
+-	uint8_t roam_addr[ETH_ALEN];
+-	struct orig_node *roam_orig_node;
++	struct tt_local_entry *tt_local_entry = NULL;
++	struct tt_global_entry *tt_global_entry = NULL;
  
-@@ -372,7 +384,11 @@ void tt_local_remove(struct bat_priv *bat_priv, uint8_t *addr, char *message)
+-	spin_lock_bh(&bat_priv->tt_lhash_lock);
  	tt_local_entry = tt_local_hash_find(bat_priv, addr);
  
  	if (tt_local_entry) {
--		tt_local_event(bat_priv, TT_DEL, tt_local_entry->addr);
-+		if (roaming)
-+			tt_local_event(bat_priv, TT_DEL, broadcast_addr);
-+		else
-+			tt_local_event(bat_priv, TT_DEL, tt_local_entry->addr);
-+
- 		tt_local_del(bat_priv, tt_local_entry, message);
+ 		tt_local_entry->last_seen = jiffies;
+-		goto unlock;
++		goto out;
  	}
- 	spin_unlock_bh(&bat_priv->tt_lhash_lock);
-@@ -473,7 +489,7 @@ static void tt_changes_list_free(struct bat_priv *bat_priv)
- /* caller must hold orig_node recount */
- int tt_global_add(struct bat_priv *bat_priv,
- 		  struct orig_node *orig_node,
--		  unsigned char *tt_addr, uint8_t ttvn)
-+		  unsigned char *tt_addr, uint8_t ttvn, bool roaming)
+ 
+ 	tt_local_entry = kmalloc(sizeof(struct tt_local_entry), GFP_ATOMIC);
+ 	if (!tt_local_entry)
+-		goto unlock;
++		goto out;
+ 
+ 	tt_local_event(bat_priv, TT_ADD, addr);
+ 
+@@ -191,6 +222,7 @@ void tt_local_add(struct net_device *soft_iface, uint8_t *addr)
+ 
+ 	memcpy(tt_local_entry->addr, addr, ETH_ALEN);
+ 	tt_local_entry->last_seen = jiffies;
++	atomic_set(&tt_local_entry->refcount, 2);
+ 
+ 	/* the batman interface mac address should never be purged */
+ 	if (compare_eth(addr, soft_iface->dev_addr))
+@@ -200,31 +232,26 @@ void tt_local_add(struct net_device *soft_iface, uint8_t *addr)
+ 
+ 	hash_add(bat_priv->tt_local_hash, compare_ltt, choose_orig,
+ 		 tt_local_entry, &tt_local_entry->hash_entry);
++
+ 	atomic_inc(&bat_priv->num_local_tt);
+-	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+ 
+ 	/* remove address from global hash if present */
+-	spin_lock_bh(&bat_priv->tt_ghash_lock);
+-
+ 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
+ 
+ 	/* Check whether it is a roaming! */
+ 	if (tt_global_entry) {
+-		memcpy(roam_addr, tt_global_entry->addr, ETH_ALEN);
+-		roam_orig_node = tt_global_entry->orig_node;
+ 		/* This node is probably going to update its tt table */
+ 		tt_global_entry->orig_node->tt_poss_change = true;
+ 		_tt_global_del(bat_priv, tt_global_entry,
+ 			       "local tt received");
+-		spin_unlock_bh(&bat_priv->tt_ghash_lock);
+ 		send_roam_adv(bat_priv, tt_global_entry->addr,
+-			tt_global_entry->orig_node);
+-	} else
+-		spin_unlock_bh(&bat_priv->tt_ghash_lock);
+-
+-	return;
+-unlock:
+-	spin_unlock_bh(&bat_priv->tt_lhash_lock);
++			      tt_global_entry->orig_node);
++	}
++out:
++	if (tt_local_entry)
++		tt_local_entry_free_ref(tt_local_entry);
++	if (tt_global_entry)
++		tt_global_entry_free_ref(tt_global_entry);
+ }
+ 
+ int tt_changes_fill_buffer(struct bat_priv *bat_priv,
+@@ -306,8 +333,6 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 		   "announced via TT (TTVN: %u):\n",
+ 		   net_dev->name, (uint8_t)atomic_read(&bat_priv->tt_ver_num));
+ 
+-	spin_lock_bh(&bat_priv->tt_lhash_lock);
+-
+ 	buf_size = 1;
+ 	/* Estimate length for: " * xx:xx:xx:xx:xx:xx\n" */
+ 	for (i = 0; i < hash->size; i++) {
+@@ -321,7 +346,6 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	buff = kmalloc(buf_size, GFP_ATOMIC);
+ 	if (!buff) {
+-		spin_unlock_bh(&bat_priv->tt_lhash_lock);
+ 		ret = -ENOMEM;
+ 		goto out;
+ 	}
+@@ -341,8 +365,6 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 		rcu_read_unlock();
+ 	}
+ 
+-	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+-
+ 	seq_printf(seq, "%s", buff);
+ 	kfree(buff);
+ out:
+@@ -351,15 +373,6 @@ out:
+ 	return ret;
+ }
+ 
+-static void tt_local_entry_free(struct hlist_node *node, void *arg)
+-{
+-	struct bat_priv *bat_priv = (struct bat_priv *)arg;
+-	void *data = container_of(node, struct tt_local_entry, hash_entry);
+-
+-	kfree(data);
+-	atomic_dec(&bat_priv->num_local_tt);
+-}
+-
+ static void tt_local_del(struct bat_priv *bat_priv,
+ 			 struct tt_local_entry *tt_local_entry,
+ 			 char *message)
+@@ -372,26 +385,28 @@ static void tt_local_del(struct bat_priv *bat_priv,
+ 	hash_remove(bat_priv->tt_local_hash, compare_ltt, choose_orig,
+ 		    tt_local_entry->addr);
+ 
+-	tt_local_entry_free(&tt_local_entry->hash_entry, bat_priv);
++	tt_local_entry_free_ref(tt_local_entry);
+ }
+ 
+ void tt_local_remove(struct bat_priv *bat_priv, uint8_t *addr,
+ 		     char *message, bool roaming)
+ {
+-	struct tt_local_entry *tt_local_entry;
++	struct tt_local_entry *tt_local_entry = NULL;
+ 
+-	spin_lock_bh(&bat_priv->tt_lhash_lock);
+ 	tt_local_entry = tt_local_hash_find(bat_priv, addr);
+ 
+-	if (tt_local_entry) {
+-		if (roaming)
+-			tt_local_event(bat_priv, TT_DEL, broadcast_addr);
+-		else
+-			tt_local_event(bat_priv, TT_DEL, tt_local_entry->addr);
++	if (!tt_local_entry)
++		goto out;
+ 
+-		tt_local_del(bat_priv, tt_local_entry, message);
+-	}
+-	spin_unlock_bh(&bat_priv->tt_lhash_lock);
++	if (roaming)
++		tt_local_event(bat_priv, TT_DEL, broadcast_addr);
++	else
++		tt_local_event(bat_priv, TT_DEL, tt_local_entry->addr);
++
++	tt_local_del(bat_priv, tt_local_entry, message);
++out:
++	if (tt_local_entry)
++		tt_local_entry_free_ref(tt_local_entry);
+ }
+ 
+ static void tt_local_purge(struct bat_priv *bat_priv)
+@@ -400,13 +415,14 @@ static void tt_local_purge(struct bat_priv *bat_priv)
+ 	struct tt_local_entry *tt_local_entry;
+ 	struct hlist_node *node, *node_tmp;
+ 	struct hlist_head *head;
++	spinlock_t *list_lock;
+ 	int i;
+ 
+-	spin_lock_bh(&bat_priv->tt_lhash_lock);
+-
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
++		list_lock = &hash->list_locks[i];
+ 
++		spin_lock_bh(list_lock);
+ 		hlist_for_each_entry_safe(tt_local_entry, node, node_tmp,
+ 					  head, hash_entry) {
+ 			if (tt_local_entry->never_purge)
+@@ -417,22 +433,26 @@ static void tt_local_purge(struct bat_priv *bat_priv)
+ 				continue;
+ 
+ 			tt_local_event(bat_priv, TT_DEL, tt_local_entry->addr);
+-			tt_local_del(bat_priv, tt_local_entry,
+-				     "address timed out");
++			atomic_dec(&bat_priv->num_local_tt);
++			bat_dbg(DBG_ROUTES, bat_priv, "Deleting local "
++				"tt entry (%pM): timed out\n",
++				tt_local_entry->addr);
++			hlist_del_rcu(node);
++			tt_local_entry_free_ref(tt_local_entry);
+ 		}
++		spin_unlock_bh(list_lock);
+ 	}
+ 
+-	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+ }
+ 
+ static void tt_local_table_free(struct bat_priv *bat_priv)
+ {
+ 	struct hashtable_t *hash;
+-	int i;
+ 	spinlock_t *list_lock;
+-	struct hlist_head *head;
+-	struct hlist_node *node, *node_tmp;
+ 	struct tt_local_entry *tt_local_entry;
++	struct hlist_node *node, *node_tmp;
++	struct hlist_head *head;
++	int i;
+ 
+ 	if (!bat_priv->tt_local_hash)
+ 		return;
+@@ -447,7 +467,7 @@ static void tt_local_table_free(struct bat_priv *bat_priv)
+ 		hlist_for_each_entry_safe(tt_local_entry, node, node_tmp,
+ 					  head, hash_entry) {
+ 			hlist_del_rcu(node);
+-			kfree(tt_local_entry);
++			tt_local_entry_free_ref(tt_local_entry);
+ 		}
+ 		spin_unlock_bh(list_lock);
+ 	}
+@@ -492,10 +512,9 @@ int tt_global_add(struct bat_priv *bat_priv,
+ 		  unsigned char *tt_addr, uint8_t ttvn, bool roaming)
  {
  	struct tt_global_entry *tt_global_entry;
- 	struct tt_local_entry *tt_local_entry;
-@@ -520,8 +536,9 @@ int tt_global_add(struct bat_priv *bat_priv,
- 	tt_local_entry = tt_local_hash_find(bat_priv, tt_addr);
+-	struct tt_local_entry *tt_local_entry;
+ 	struct orig_node *orig_node_tmp;
++	int ret = 0;
  
- 	if (tt_local_entry)
--		tt_local_del(bat_priv, tt_local_entry,
--			     "global tt received");
-+		tt_local_remove(bat_priv, tt_global_entry->addr,
-+				"global tt received", roaming);
+-	spin_lock_bh(&bat_priv->tt_ghash_lock);
+ 	tt_global_entry = tt_global_hash_find(bat_priv, tt_addr);
+ 
+ 	if (!tt_global_entry) {
+@@ -503,16 +522,19 @@ int tt_global_add(struct bat_priv *bat_priv,
+ 			kmalloc(sizeof(struct tt_global_entry),
+ 				GFP_ATOMIC);
+ 		if (!tt_global_entry)
+-			goto unlock;
++			goto out;
 +
- 	spin_unlock_bh(&bat_priv->tt_lhash_lock);
- 	return 1;
- unlock:
-@@ -905,6 +922,7 @@ out:
- 		kfree(tt_req_node);
- 	}
- 	return ret;
+ 		memcpy(tt_global_entry->addr, tt_addr, ETH_ALEN);
+ 		/* Assign the new orig_node */
+ 		atomic_inc(&orig_node->refcount);
+ 		tt_global_entry->orig_node = orig_node;
+ 		tt_global_entry->ttvn = ttvn;
+-		atomic_inc(&orig_node->tt_size);
++		atomic_set(&tt_global_entry->refcount, 2);
 +
- unlock_tt:
- 	spin_unlock_bh(&bat_priv->tt_req_list_lock);
- 	return ret;
-@@ -1249,7 +1267,7 @@ static void _tt_fill_gtable(struct bat_priv *bat_priv,
- 		tt_ptr = tt_buff + (count * ETH_ALEN);
- 
- 		/* If we fail to allocate a new entry we return immediatly */
--		if (!tt_global_add(bat_priv, orig_node, tt_ptr, ttvn))
-+		if (!tt_global_add(bat_priv, orig_node, tt_ptr, ttvn, false))
- 			return;
- 	}
- 	atomic_set(&orig_node->last_tt_ver_num, ttvn);
-@@ -1303,7 +1321,8 @@ static void tt_update_changes(struct bat_priv *bat_priv,
- 				      "tt removed by tt_response");
- 		else
- 			if (!tt_global_add(bat_priv, orig_node,
--				     (tt_change + i)->addr, tt_response->ttvn))
-+					   (tt_change + i)->addr,
-+					   tt_response->ttvn, false))
- 				return;
+ 		hash_add(bat_priv->tt_global_hash, compare_gtt,
+ 			 choose_orig, tt_global_entry,
+ 			 &tt_global_entry->hash_entry);
++		atomic_inc(&orig_node->tt_size);
+ 	} else {
+ 		if (tt_global_entry->orig_node != orig_node) {
+ 			atomic_dec(&tt_global_entry->orig_node->tt_size);
+@@ -525,25 +547,18 @@ int tt_global_add(struct bat_priv *bat_priv,
+ 		}
  	}
  
-@@ -1382,16 +1401,118 @@ int tt_init(struct bat_priv *bat_priv)
- 	return 1;
+-	spin_unlock_bh(&bat_priv->tt_ghash_lock);
+-
+ 	bat_dbg(DBG_ROUTES, bat_priv,
+ 		"Creating new global tt entry: %pM (via %pM)\n",
+ 		tt_global_entry->addr, orig_node->orig);
+ 
+ 	/* remove address from local hash if present */
+-	spin_lock_bh(&bat_priv->tt_lhash_lock);
+-	tt_local_entry = tt_local_hash_find(bat_priv, tt_addr);
+-
+-	if (tt_local_entry)
+-		tt_local_remove(bat_priv, tt_global_entry->addr,
+-				"global tt received", roaming);
+-
+-	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+-	return 1;
+-unlock:
+-	spin_unlock_bh(&bat_priv->tt_ghash_lock);
+-	return 0;
++	tt_local_remove(bat_priv, tt_global_entry->addr,
++			"global tt received", roaming);
++	ret = 1;
++out:
++	if (tt_global_entry)
++		tt_global_entry_free_ref(tt_global_entry);
++	return ret;
  }
  
--void tt_free(struct bat_priv *bat_priv)
-+static void tt_roam_list_free(struct bat_priv *bat_priv)
+ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+@@ -579,8 +594,6 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 	seq_printf(seq, "       %-13s %s       %-15s %s\n",
+ 		   "Client", "(TTVN)", "Originator", "(Curr TTVN)");
+ 
+-	spin_lock_bh(&bat_priv->tt_ghash_lock);
+-
+ 	buf_size = 1;
+ 	/* Estimate length for: " * xx:xx:xx:xx:xx:xx (ttvn) via
+ 	 * xx:xx:xx:xx:xx:xx (cur_ttvn)\n"*/
+@@ -595,10 +608,10 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	buff = kmalloc(buf_size, GFP_ATOMIC);
+ 	if (!buff) {
+-		spin_unlock_bh(&bat_priv->tt_ghash_lock);
+ 		ret = -ENOMEM;
+ 		goto out;
+ 	}
++
+ 	buff[0] = '\0';
+ 	pos = 0;
+ 
+@@ -620,8 +633,6 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 		rcu_read_unlock();
+ 	}
+ 
+-	spin_unlock_bh(&bat_priv->tt_ghash_lock);
+-
+ 	seq_printf(seq, "%s", buff);
+ 	kfree(buff);
+ out:
+@@ -635,7 +646,7 @@ static void _tt_global_del(struct bat_priv *bat_priv,
+ 			   char *message)
  {
--	cancel_delayed_work_sync(&bat_priv->tt_work);
-+	struct tt_roam_node *node, *safe;
+ 	if (!tt_global_entry)
+-		return;
++		goto out;
  
--	tt_local_table_free(bat_priv);
--	tt_global_table_free(bat_priv);
--	tt_req_list_free(bat_priv);
--	tt_changes_list_free(bat_priv);
-+	spin_lock_bh(&bat_priv->tt_roam_list_lock);
+ 	bat_dbg(DBG_ROUTES, bat_priv,
+ 		"Deleting global tt entry %pM (via %pM): %s\n",
+@@ -643,25 +654,29 @@ static void _tt_global_del(struct bat_priv *bat_priv,
+ 		message);
  
--	kfree(bat_priv->tt_buff);
-+	list_for_each_entry_safe(node, safe, &bat_priv->tt_roam_list, list) {
-+		list_del(&node->list);
-+		kfree(node);
-+	}
+ 	atomic_dec(&tt_global_entry->orig_node->tt_size);
 +
-+	spin_unlock_bh(&bat_priv->tt_roam_list_lock);
-+}
-+
-+static void tt_roam_purge(struct bat_priv *bat_priv)
-+{
-+	struct tt_roam_node *node, *safe;
-+
-+	spin_lock_bh(&bat_priv->tt_roam_list_lock);
-+	list_for_each_entry_safe(node, safe, &bat_priv->tt_roam_list, list) {
-+		if (!is_out_of_time(node->first_time,
-+				    ROAMING_MAX_TIME * 1000))
-+			continue;
-+
-+		list_del(&node->list);
-+		kfree(node);
-+	}
-+	spin_unlock_bh(&bat_priv->tt_roam_list_lock);
-+}
-+
-+void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
-+		   struct orig_node *orig_node)
-+{
-+	struct neigh_node *neigh_node;
-+	struct sk_buff *skb;
-+	struct roam_adv_packet *roam_adv_packet;
-+	struct tt_roam_node *tt_roam_node;
-+	bool found = false;
-+	int ret = 1;
-+
-+	spin_lock_bh(&bat_priv->tt_roam_list_lock);
-+	/* The new tt_req will be issued only if I'm not waiting for a
-+	 * reply from the same orig_node yet */
-+	list_for_each_entry(tt_roam_node, &bat_priv->tt_roam_list, list) {
-+		if (!compare_eth(tt_roam_node->addr, client))
-+			continue;
-+
-+		if (is_out_of_time(tt_roam_node->first_time,
-+				   ROAMING_MAX_TIME * 1000))
-+			continue;
-+
-+		if (!atomic_dec_not_zero(&tt_roam_node->counter))
-+			/* Sorry, you roamed too many times! */
-+			goto unlock;
-+
-+		found = true;
-+		break;
-+	}
-+
-+	if (!found) {
-+		tt_roam_node = kmalloc(sizeof(struct tt_roam_node), GFP_ATOMIC);
-+		if (!tt_roam_node)
-+			goto unlock;
-+
-+		tt_roam_node->first_time = jiffies;
-+		atomic_set(&tt_roam_node->counter, ROAMING_MAX_COUNT - 1);
-+		memcpy(tt_roam_node->addr, client, ETH_ALEN);
-+
-+		list_add(&tt_roam_node->list, &bat_priv->tt_roam_list);
-+	}
-+	spin_unlock_bh(&bat_priv->tt_roam_list_lock);
-+
-+	skb = dev_alloc_skb(sizeof(struct roam_adv_packet) + ETH_HLEN);
-+	if (!skb)
-+		goto free_skb;
-+
-+	skb_reserve(skb, ETH_HLEN);
-+
-+	roam_adv_packet = (struct roam_adv_packet *)skb_put(skb,
-+					sizeof(struct roam_adv_packet));
-+
-+	roam_adv_packet->packet_type = BAT_ROAM_ADV;
-+	roam_adv_packet->version = COMPAT_VERSION;
-+	roam_adv_packet->ttl = TTL;
-+	memcpy(roam_adv_packet->src,
-+		bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
-+	memcpy(roam_adv_packet->dst, orig_node->orig, ETH_ALEN);
-+	memcpy(roam_adv_packet->client, client, ETH_ALEN);
-+
-+	neigh_node = find_router(bat_priv, orig_node, NULL);
-+	if (!neigh_node)
-+		goto free_skb;
-+
-+	if (neigh_node->if_incoming->if_status != IF_ACTIVE)
-+		goto free_neigh;
-+
-+	bat_dbg(DBG_ROUTES, bat_priv,
-+		"Sending ROAMING_ADV to %pM (client %pM) via %pM\n",
-+		orig_node->orig, client, neigh_node->addr);
-+
-+	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
-+	ret = 0;
-+
-+free_neigh:
-+	if (neigh_node)
-+		neigh_node_free_ref(neigh_node);
-+free_skb:
-+	if (ret)
-+		kfree_skb(skb);
-+	return;
-+unlock:
-+	spin_unlock_bh(&bat_priv->tt_roam_list_lock);
+ 	hash_remove(bat_priv->tt_global_hash, compare_gtt, choose_orig,
+ 		    tt_global_entry->addr);
+-	kfree(tt_global_entry);
++out:
++	if (tt_global_entry)
++		tt_global_entry_free_ref(tt_global_entry);
  }
  
- static void tt_purge(struct work_struct *work)
-@@ -1403,6 +1524,20 @@ static void tt_purge(struct work_struct *work)
+ void tt_global_del(struct bat_priv *bat_priv,
+ 		   struct orig_node *orig_node,
+ 		   unsigned char *addr, char *message)
+ {
+-	struct tt_global_entry *tt_global_entry;
++	struct tt_global_entry *tt_global_entry = NULL;
  
- 	tt_local_purge(bat_priv);
- 	tt_req_purge(bat_priv);
-+	tt_roam_purge(bat_priv);
+-	spin_lock_bh(&bat_priv->tt_ghash_lock);
+ 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
++	if (!tt_global_entry)
++		goto out;
  
- 	tt_start_timer(bat_priv);
+-	if (tt_global_entry && tt_global_entry->orig_node == orig_node) {
+-		atomic_dec(&orig_node->tt_size);
++	if (tt_global_entry->orig_node == orig_node)
+ 		_tt_global_del(bat_priv, tt_global_entry, message);
+-	}
+-	spin_unlock_bh(&bat_priv->tt_ghash_lock);
++out:
++	if (tt_global_entry)
++		tt_global_entry_free_ref(tt_global_entry);
  }
-+
-+void tt_free(struct bat_priv *bat_priv)
-+{
-+	cancel_delayed_work_sync(&bat_priv->tt_work);
-+
-+	tt_local_table_free(bat_priv);
-+	tt_global_table_free(bat_priv);
-+	tt_req_list_free(bat_priv);
-+	tt_changes_list_free(bat_priv);
-+	tt_roam_list_free(bat_priv);
-+
-+	kfree(bat_priv->tt_buff);
-+}
-diff --git a/translation-table.h b/translation-table.h
-index 4eef4f8..05ef22c 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -22,6 +22,7 @@
- #ifndef _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
- #define _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
  
-+struct orig_node *transtable_search(struct bat_priv *bat_priv, uint8_t *addr);
- int tt_len(int changes_num);
- void tt_changes_primary_if(struct bat_priv *bat_priv, uint8_t *old_addr,
- 			   uint8_t *new_addr);
-@@ -30,14 +31,14 @@ int tt_changes_fill_buffer(struct bat_priv *bat_priv,
- int tt_init(struct bat_priv *bat_priv);
- void tt_local_add(struct net_device *soft_iface, uint8_t *addr);
- void tt_local_remove(struct bat_priv *bat_priv,
--		     uint8_t *addr, char *message);
-+		     uint8_t *addr, char *message, bool roaming);
- int tt_local_seq_print_text(struct seq_file *seq, void *offset);
- void tt_global_add_orig(struct bat_priv *bat_priv,
- 			struct orig_node *orig_node,
- 			unsigned char *tt_buff, int tt_buff_len);
- int tt_global_add(struct bat_priv *bat_priv,
- 		  struct orig_node *orig_node, unsigned char *addr,
--		  uint8_t ttvn);
-+		  uint8_t ttvn, bool roaming);
- int tt_global_seq_print_text(struct seq_file *seq, void *offset);
  void tt_global_del_orig(struct bat_priv *bat_priv,
- 			struct orig_node *orig_node, char *message);
-@@ -58,5 +59,7 @@ int send_tt_response(struct bat_priv *bat_priv,
- bool is_my_client(struct bat_priv *bat_priv, uint8_t *addr);
- void handle_tt_response(struct bat_priv *bat_priv,
- 			struct tt_query_packet *tt_response);
-+void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
-+		   struct orig_node *orig_node);
+@@ -672,38 +687,59 @@ void tt_global_del_orig(struct bat_priv *bat_priv,
+ 	struct hashtable_t *hash = bat_priv->tt_global_hash;
+ 	struct hlist_node *node, *safe;
+ 	struct hlist_head *head;
++	spinlock_t *list_lock;
  
- #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
+-	if (!bat_priv->tt_global_hash)
+-		return;
+-
+-	spin_lock_bh(&bat_priv->tt_ghash_lock);
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
++		list_lock = &hash->list_locks[i];
+ 
++		spin_lock_bh(list_lock);
+ 		hlist_for_each_entry_safe(tt_global_entry, node, safe,
+ 					 head, hash_entry) {
+-			if (tt_global_entry->orig_node == orig_node)
+-				_tt_global_del(bat_priv, tt_global_entry,
+-					       message);
++			if (tt_global_entry->orig_node == orig_node) {
++				bat_dbg(DBG_ROUTES, bat_priv,
++					"Deleting global tt entry %pM "
++					"(via %pM): originator time out\n",
++					tt_global_entry->addr,
++					tt_global_entry->orig_node->orig);
++				hlist_del_rcu(node);
++				tt_global_entry_free_ref(tt_global_entry);
++			}
+ 		}
++		spin_unlock_bh(list_lock);
+ 	}
+ 	atomic_set(&orig_node->tt_size, 0);
+-
+-	spin_unlock_bh(&bat_priv->tt_ghash_lock);
+-}
+-
+-static void tt_global_entry_free(struct hlist_node *node, void *arg)
+-{
+-	void *data = container_of(node, struct tt_global_entry, hash_entry);
+-	kfree(data);
+ }
+ 
+ static void tt_global_table_free(struct bat_priv *bat_priv)
+ {
++	struct hashtable_t *hash;
++	spinlock_t *list_lock;
++	struct tt_global_entry *tt_global_entry;
++	struct hlist_node *node, *node_tmp;
++	struct hlist_head *head;
++	int i;
++
+ 	if (!bat_priv->tt_global_hash)
+ 		return;
+ 
+-	hash_delete(bat_priv->tt_global_hash, tt_global_entry_free, NULL);
++	hash = bat_priv->tt_global_hash;
++
++	for (i = 0; i < hash->size; i++) {
++		head = &hash->table[i];
++		list_lock = &hash->list_locks[i];
++
++		spin_lock_bh(list_lock);
++		hlist_for_each_entry_safe(tt_global_entry, node, node_tmp,
++					  head, hash_entry) {
++			hlist_del_rcu(node);
++			tt_global_entry_free_ref(tt_global_entry);
++		}
++		spin_unlock_bh(list_lock);
++	}
++
++	hash_destroy(hash);
++
+ 	bat_priv->tt_global_hash = NULL;
+ }
+ 
+@@ -712,19 +748,19 @@ struct orig_node *transtable_search(struct bat_priv *bat_priv, uint8_t *addr)
+ 	struct tt_global_entry *tt_global_entry;
+ 	struct orig_node *orig_node = NULL;
+ 
+-	spin_lock_bh(&bat_priv->tt_ghash_lock);
+ 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
+ 
+ 	if (!tt_global_entry)
+ 		goto out;
+ 
+ 	if (!atomic_inc_not_zero(&tt_global_entry->orig_node->refcount))
+-		goto out;
++		goto free_tt;
+ 
+ 	orig_node = tt_global_entry->orig_node;
+ 
++free_tt:
++	tt_global_entry_free_ref(tt_global_entry);
+ out:
+-	spin_unlock_bh(&bat_priv->tt_ghash_lock);
+ 	return orig_node;
+ }
+ 
+@@ -781,7 +817,6 @@ uint16_t tt_local_crc(struct bat_priv *bat_priv)
+ 						   tt_local_entry->addr[j]);
+ 			total ^= total_one;
+ 		}
+-
+ 		rcu_read_unlock();
+ 	}
+ 
+@@ -1323,7 +1358,7 @@ static void tt_update_changes(struct bat_priv *bat_priv,
+ 			if (!tt_global_add(bat_priv, orig_node,
+ 					   (tt_change + i)->addr,
+ 					   tt_response->ttvn, false))
+-				return;
++				goto out;
+ 	}
+ 
+ 	tt_save_orig_buffer(bat_priv, orig_node, (unsigned char *)tt_change,
+@@ -1337,15 +1372,17 @@ out:
+ 
+ bool is_my_client(struct bat_priv *bat_priv, uint8_t *addr)
+ {
+-	struct tt_local_entry *tt_local_entry;
++	struct tt_local_entry *tt_local_entry = NULL;
++	bool ret = false;
+ 
+-	spin_lock_bh(&bat_priv->tt_lhash_lock);
+ 	tt_local_entry = tt_local_hash_find(bat_priv, addr);
+-	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+-
++	if (!tt_local_entry)
++		goto out;
++	ret = true;
++out:
+ 	if (tt_local_entry)
+-		return true;
+-	return false;
++		tt_local_entry_free_ref(tt_local_entry);
++	return ret;
+ }
+ 
+ void handle_tt_response(struct bat_priv *bat_priv,
+@@ -1381,11 +1418,10 @@ void handle_tt_response(struct bat_priv *bat_priv,
+ 	if (!orig_node)
+ 		goto out;
+ 
+-	spin_lock_bh(&bat_priv->tt_ghash_lock);
+ 	orig_node->tt_crc = tt_global_crc(bat_priv, orig_node);
+-	spin_unlock_bh(&bat_priv->tt_ghash_lock);
+ out:
+-	orig_node_free_ref(orig_node);
++	if (orig_node)
++		orig_node_free_ref(orig_node);
+ }
+ 
+ int tt_init(struct bat_priv *bat_priv)
 diff --git a/types.h b/types.h
-index 3a629a3..da7eda8 100644
+index da7eda8..e0cdc5f 100644
 --- a/types.h
 +++ b/types.h
-@@ -81,6 +81,14 @@ struct orig_node {
- 	int16_t tt_buff_len;
- 	spinlock_t tt_buff_lock;
- 	atomic_t tt_size;
-+	bool tt_poss_change; /* this flag is needed to detect an ongoing
-+			      * roaming event. If it is true, it means that
-+			      * in the last OGM interval I sent a Roaming_adv,
-+			      * so I have to check every packet going to it
-+			      * whether the destination is still a client of
-+			      * its or not, it will be reset as soon as I'll
-+			      * receive a new TTVN from it */
-+
- 	uint32_t last_real_seqno;
- 	uint8_t last_ttl;
- 	unsigned long bcast_bits[NUM_WORDS];
-@@ -158,6 +166,13 @@ struct bat_priv {
- 	atomic_t tt_ver_num;
- 	atomic_t tt_ogm_append_cnt;
- 	atomic_t tt_local_changes; /* changes registered in a OGM interval */
-+	bool tt_poss_change; /* this flag is needed to detect an ongoing
-+			      * roaming event. If it is true, it means that
-+			      * in the last OGM interval I received a
-+			      * Roaming_adv, so I have to check every packet
-+			      * going to me whether the destination is still
-+			      * a client of mine or not, it will be reset as
-+			      * soon as I'll increase my TTVN */
- 	char num_ifaces;
- 	struct hlist_head softif_neigh_list;
- 	struct softif_neigh __rcu *softif_neigh;
-@@ -173,6 +188,7 @@ struct bat_priv {
- 	struct hashtable_t *tt_local_hash;
- 	struct hashtable_t *tt_global_hash;
- 	struct list_head tt_req_list; /* list of pending tt_requests */
-+	struct list_head tt_roam_list;
- 	struct hashtable_t *vis_hash;
+@@ -193,8 +193,6 @@ struct bat_priv {
  	spinlock_t forw_bat_list_lock; /* protects forw_bat_list */
  	spinlock_t forw_bcast_list_lock; /* protects  */
-@@ -180,6 +196,7 @@ struct bat_priv {
- 	spinlock_t tt_lhash_lock; /* protects tt_local_hash */
- 	spinlock_t tt_ghash_lock; /* protects tt_global_hash */
+ 	spinlock_t tt_changes_list_lock; /* protects tt_changes */
+-	spinlock_t tt_lhash_lock; /* protects tt_local_hash */
+-	spinlock_t tt_ghash_lock; /* protects tt_global_hash */
  	spinlock_t tt_req_list_lock; /* protects tt_req_list */
-+	spinlock_t tt_roam_list_lock; /* protects tt_roam_list */
+ 	spinlock_t tt_roam_list_lock; /* protects tt_roam_list */
  	spinlock_t gw_list_lock; /* protects gw_list and curr_gw */
- 	spinlock_t vis_hash_lock; /* protects vis_hash */
- 	spinlock_t vis_list_lock; /* protects vis_info::recv_list */
-@@ -239,6 +256,13 @@ struct tt_req_node {
- 	struct list_head list;
+@@ -234,6 +232,8 @@ struct tt_local_entry {
+ 	uint8_t addr[ETH_ALEN];
+ 	unsigned long last_seen;
+ 	char never_purge;
++	atomic_t refcount;
++	struct rcu_head rcu;
+ 	struct hlist_node hash_entry;
  };
  
-+struct tt_roam_node {
-+	uint8_t addr[ETH_ALEN];
-+	atomic_t counter;
-+	unsigned long first_time;
-+	struct list_head list;
-+};
-+
- /**
-  *	forw_packet - structure for forw_list maintaining packets to be
-  *	              send/forwarded
+@@ -241,6 +241,8 @@ struct tt_global_entry {
+ 	uint8_t addr[ETH_ALEN];
+ 	struct orig_node *orig_node;
+ 	uint8_t ttvn;
++	atomic_t refcount;
++	struct rcu_head rcu;
+ 	/* entry in the global table */
+ 	struct hlist_node hash_entry;
+ };
+diff --git a/vis.c b/vis.c
+index c39f20c..4c27950 100644
+--- a/vis.c
++++ b/vis.c
+@@ -680,11 +680,12 @@ next:
+ 
+ 	hash = bat_priv->tt_local_hash;
+ 
+-	spin_lock_bh(&bat_priv->tt_lhash_lock);
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+ 
+-		hlist_for_each_entry(tt_local_entry, node, head, hash_entry) {
++		rcu_read_lock();
++		hlist_for_each_entry_rcu(tt_local_entry, node, head,
++					 hash_entry) {
+ 			entry = (struct vis_info_entry *)
+ 					skb_put(info->skb_packet,
+ 						sizeof(*entry));
+@@ -693,14 +694,12 @@ next:
+ 			entry->quality = 0; /* 0 means TT */
+ 			packet->entries++;
+ 
+-			if (vis_packet_full(info)) {
+-				spin_unlock_bh(&bat_priv->tt_lhash_lock);
+-				return 0;
+-			}
++			if (vis_packet_full(info))
++				goto unlock;
+ 		}
++		rcu_read_unlock();
+ 	}
+ 
+-	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+ 	return 0;
+ 
+ unlock:
 -- 
 1.7.3.4
 
