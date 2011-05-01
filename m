@@ -1,11 +1,18 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 30 Apr 2011 22:54:14 +0200
-Message-Id: <1304196854-28141-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1304182620-12637-2-git-send-email-sven@narfation.org>
-References: <1304182620-12637-2-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 2/3] batman-adv: Remove unnecessary
-	hardif_list_lock
+Return-Path: <ordex@autistici.org>
+Date: Sun, 1 May 2011 13:35:37 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20110501113536.GA8915@ritirata.org>
+References: <1303940106-1457-1-git-send-email-ordex@autistici.org>
+	<1303940106-1457-3-git-send-email-ordex@autistici.org>
+	<20110430084226.GM21883@lunn.ch>
+	<20110430160027.GC3851@ritirata.org>
+	<20110430174839.GC6538@lunn.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20110430174839.GC6538@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: improved client
+ announcement mechanismy
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,119 +24,212 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-hardif_list_lock is unneccessary because we already ensure that no
-multiple admin operations can take place through rtnl_lock.
-hardif_list_lock only adds additional overhead and complexity.
+On Sat, Apr 30, 2011 at 07:48:39PM +0200, Andrew Lunn wrote:
+> > > You indentation/wrapping is a bit strange. In the function
+> > > declaration, i would of put the int tt_num_changes directly under int
+> > > buff_pos.
+> > 
+> > This is what I've done, but it seems that your mail client is messing up
+> > with the tabs (I think).
+> 
+> Possibly. Or the list server. I use mutt, same as you, and it normally
+> gets tabs and the like correct.
+> 
+Yes..then I don't know :)
 
-Critical functions now check whether they are called with rtnl_lock
-using ASSERT_RTNL.
+> > > > +++ b/packet.h
+> > > > @@ -30,9 +30,10 @@
+> > > >  #define BAT_BCAST        0x04
+> > > >  #define BAT_VIS          0x05
+> > > >  #define BAT_UNICAST_FRAG 0x06
+> > > > +#define BAT_TT_QUERY	 0x07
+> > > 
+> > > Indentation?
+> > 
+> > As above, but in this case I think I'll substitute the tab with spaces so
+> > that all the BAT_* definitions can be homogeneous
+> 
+> checkpatch might complain, depending on the number of spaces.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Rebased patch on top of "batman-adv: Make bat_priv->primary_if an rcu
-protected pointer"
+Yep, I'll keep the patch checkpatch-compilant ;)
+
+>  
+> > > > +/* TT flags */
+> > > > +#define TT_RESPONSE	0x00
+> > > > +#define TT_REQUEST	0x01
+> > > > +#define TT_FULL_TABLE	0x02
+> > > > +
+> > > > @@ -101,6 +109,7 @@ struct unicast_packet {
+> > > >  	uint8_t  version;  /* batman version field */
+> > > >  	uint8_t  dest[6];
+> > > >  	uint8_t  ttl;
+> > > > +	uint8_t  ttvn; /* destination ttvn */
+> > > >  } __packed;
+> > > 
+> > > What is ttvn? The vn in particular? Is it version? There is already
+> > > ver and version used, do we want yet another way to say version?
+> > > 
+> > 
+> > Translation Table Version Number. 'ttvn' is the abbreviation used in the
+> > documentation, so I decided to use it as field name. Only in the struct
+> > orig_node it is called last_tt_ver_num. Do you think I should use the
+> > latter everywhere? 'ttvn' is really nice and compact :)
+> 
+> It is a minor point. ttvn is O.K. But how about ttver?
+
+Mh..Honestly I like ttvn, but I can put and explicit explanation in the
+field declaration in types.h.
+
+I would also like to know what the other people think about
+
+> > > Rather than document the bits, it would be better to reference to the
+> > > macros TT_*. Somebody at some time with add new flags, or change the
+> > > values and not update this description.
+> > 
+> > Mh..Honestly I prefer to understand what each bit means in a bitfield
+> > flag. What do you mean with reference to the macros? 
+> 
+> I mean say that flags is a combination of TT_RESPONSE, TT_REQUEST,
+> TT_FULL_TABLE. The TT_* macros.
+
+Oky!
+
+> > > > +	uint16_t tt_data;	/* if tt_request: crc associated with the
+> > > > +				 *		   ttvn
+> > > > +				 * if tt_response: table_size
+> > > > +				 */
+> > > 
+> > > Maybe a union instead of tt_data being used for two different things?
+> > > Makes it less confusing when reading the code.
+> > 
+> > I decided to avoid a union because here we have two different things
+> > which have exactly the same length. So I opted for a "generic" name.
+> > What do style experts suggest? :)
+> > A union would probably make easier to understand what is going on while
+> > reading the code, as Andrew suggested.
+> 
+> I believe in the saying: Code is written once, read a 100 times, so
+> make it easy to read.
+> 
 
 
- hard-interface.c |   21 ++++++---------------
- 1 files changed, 6 insertions(+), 15 deletions(-)
+> > > > +	/* the ttvn increased by one -> we can apply the attached changes */
+> > > > +	if (ttvn - orig_ttvn == 1) {
+> > > > +		/* if it does not contain the changes send a tt request */
+> > > > +		if (!tt_num_changes)
+> > > > +			goto request_table;
+> > > 
+> > > Why would that happen? It sounds like you are handling a bug, not
+> > > something which is designed to happen. 
+> > >
+> > 
+> > We have two cases which would lead to this situation:
+> > 1) An OGM, after being sent TT_OGM_APPEND_MAX times, will not contain
+> > the changes anymore. If a node missed all the "full" OGMs, it will
+> > end up in this situation when receiving the next one.
+> > 2) The set of changes is too big to be appended to the OGM (due to the frame
+> > maximum size). The receiving node will send a tt_request to recover the
+> > changes (later on, it could also exploit the fragmentation, while the
+> > OGM cannot)
+> 
+> O.K. so there is a good reason. So maybe hint about these reasons in
+> the comment? Help the reader understand why it might happen.
 
-diff --git a/hard-interface.c b/hard-interface.c
-index 6636d2f..7e2f772 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -31,9 +31,6 @@
- 
- #include <linux/if_arp.h>
- 
--/* protect update critical side of hardif_list - but not the content */
--static DEFINE_SPINLOCK(hardif_list_lock);
--
- 
- static int batman_skb_recv(struct sk_buff *skb,
- 			   struct net_device *dev,
-@@ -136,7 +133,7 @@ static void primary_if_select(struct bat_priv *bat_priv,
- 	struct hard_iface *curr_hard_iface;
- 	struct batman_packet *batman_packet;
- 
--	spin_lock_bh(&hardif_list_lock);
-+	ASSERT_RTNL();
- 
- 	if (new_hard_iface && !atomic_inc_not_zero(&new_hard_iface->refcount))
- 		new_hard_iface = NULL;
-@@ -148,7 +145,7 @@ static void primary_if_select(struct bat_priv *bat_priv,
- 		hardif_free_ref(curr_hard_iface);
- 
- 	if (!new_hard_iface)
--		goto out;
-+		return;
- 
- 	batman_packet = (struct batman_packet *)(new_hard_iface->packet_buff);
- 	batman_packet->flags = PRIMARIES_FIRST_HOP;
-@@ -161,9 +158,6 @@ static void primary_if_select(struct bat_priv *bat_priv,
- 	 * our new primary interface
- 	 */
- 	atomic_set(&bat_priv->hna_local_changed, 1);
--
--out:
--	spin_unlock_bh(&hardif_list_lock);
- }
- 
- static bool hardif_is_iface_up(struct hard_iface *hard_iface)
-@@ -456,6 +450,8 @@ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
- 	struct hard_iface *hard_iface;
- 	int ret;
- 
-+	ASSERT_RTNL();
-+
- 	ret = is_valid_iface(net_dev);
- 	if (ret != 1)
- 		goto out;
-@@ -482,10 +478,7 @@ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
- 	atomic_set(&hard_iface->refcount, 2);
- 
- 	check_known_mac_addr(hard_iface->net_dev);
--
--	spin_lock(&hardif_list_lock);
- 	list_add_tail_rcu(&hard_iface->list, &hardif_list);
--	spin_unlock(&hardif_list_lock);
- 
- 	return hard_iface;
- 
-@@ -499,6 +492,8 @@ out:
- 
- static void hardif_remove_interface(struct hard_iface *hard_iface)
- {
-+	ASSERT_RTNL();
-+
- 	/* first deactivate interface */
- 	if (hard_iface->if_status != IF_NOT_IN_USE)
- 		hardif_disable_interface(hard_iface);
-@@ -516,13 +511,11 @@ void hardif_remove_interfaces(void)
- 	struct hard_iface *hard_iface, *hard_iface_tmp;
- 
- 	rtnl_lock();
--	spin_lock(&hardif_list_lock);
- 	list_for_each_entry_safe(hard_iface, hard_iface_tmp,
- 				 &hardif_list, list) {
- 		list_del_rcu(&hard_iface->list);
- 		hardif_remove_interface(hard_iface);
- 	}
--	spin_unlock(&hardif_list_lock);
- 	rtnl_unlock();
- }
- 
-@@ -549,9 +542,7 @@ static int hard_if_event(struct notifier_block *this,
- 		hardif_deactivate_interface(hard_iface);
- 		break;
- 	case NETDEV_UNREGISTER:
--		spin_lock(&hardif_list_lock);
- 		list_del_rcu(&hard_iface->list);
--		spin_unlock(&hardif_list_lock);
- 
- 		hardif_remove_interface(hard_iface);
- 		break;
+Ok I can add some comments more. But, should I reason as we do not have
+documentation at all? I mean, while deciding to put a comment or not..
+
+Because, in my opinion, this piece of code woule be clearer after reading the
+doc.
+
+> 
+> > Yes, memory problem. Actually it is not possible to make two passes:
+> > e.g. imagine that the set of changes is the following:
+> > - DEL A
+> > - ADD A
+> > - DEL A
+> > (ok it is probably not really common, but still possible)
+> 
+> And since it will not happen to often, it is not worth the code so
+> find such situations and simply the transactions.
+> 
+
+What do you exactly mean? Sorry but I didn't fully understand your
+sentence :(
+
+> > Remember that we added the TT_CRC. It was born as conutermeasure to node
+> > reboots, but now we are exploiting it as consistency check! This is why
+> > the code recomputes the crc after applying every change set. If something
+> > went wrong, on the next OGM the node will recognise the problem and ask
+> > for a "full table".
+> 
+> O.K. a clean self recovery. That is good.
+
+;)
+
+> 
+> > > > +	if (tt_query->flags & TT_REQUEST) {
+> > > > +		/* Try to reply to this tt_request */
+> > > > +		ret = send_tt_response(bat_priv, tt_query);
+> > > > +		if (ret != NET_RX_SUCCESS) {
+> > > 
+> > > This looks wrong. The name send_tt_response() suggests we are sending,
+> > > but you compare against NET_RX_SUCCESS!
+> > 
+> > eheh you're nearly right. We are sending a tt_response here, BUT only if we
+> > have enough information to send such message we can consider the
+> > tt_request as correctly received, otherwise, as the code below suggests,
+> > we have to re-route the packet and so let route_unicast_packet() decide
+> > whether the mesage was correctly received or not.
+> 
+> You definitely need a comment here. It is so counter intuitive that
+> you are bound to get bug reports and patches by people who see this.
+
+Ok, I'll add a commente here too
+
+> 
+> > > > +			bat_dbg(DBG_ROUTES, bat_priv,
+> > > > +				"Routing TT_REQUEST to %pM [%c]\n",
+> > > > +				tt_query->dst,
+> > > > +				(tt_query->flags & TT_FULL_TABLE ? 'F' : '.'));
+> > > > +			tt_query->tt_data = htons(tt_query->tt_data);
+> > > > +			return route_unicast_packet(skb, recv_if);
+> > > > +		}
+> > > > +		goto out;
+> > > > +	}
+> > > > +	/* We need to linearize the packet to access the TT data */
+> > > > +	if (skb_linearize(skb) < 0)
+> > > > +		goto out;
+> > > 
+> > > Isn't this too late. You have already accessed tt_query->tt_data in
+> > > the code above?
+> > > 
+> > 
+> > the access to the tt_data field is guaranteed by 
+> >
+> > pskb_may_pull(skb, sizeof(struct tt_query_packet))
+> > 
+> > (a few lines above inside the function), while here we are linearising the
+> > skb to let handle_tt_reponse access the data contained after the header.
+> 
+> Ah, O.K. The comment is ambiguous and i got the wrong meaning. Maybe
+> the comment could be:
+> 
+> 	/* We need to linearize the packet to access the TT change records */
+> 
+
+Oky I'll correct the comment :-)
+
+
+I understood that I have to work harder to write comments :D
+Thank you again!
+
+
+Regards,
+
 -- 
-1.7.4.4
+Antonio Quartulli
 
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
