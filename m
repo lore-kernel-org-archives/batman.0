@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  1 May 2011 23:10:32 +0200
-Message-Id: <1304284234-27338-3-git-send-email-sven@narfation.org>
+Date: Sun,  1 May 2011 23:10:33 +0200
+Message-Id: <1304284234-27338-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1304284234-27338-1-git-send-email-sven@narfation.org>
 References: <1304284234-27338-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: Move definition of
-	atomic_dec_not_zero() into main.h
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: fix gw_node_update() and
+	gw_election()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,52 +22,59 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Antonio Quartulli <ordex@autistici.org>
 
-atomic_dec_not_zero() is very useful and it is currently defined
-multiple times. So it is possible to move it in main.h
+This is a regression from c4aac1ab9b973798163b34939b522f01e4d28ac9
+
+- gw_node_update() doesn't add a new gw_node in case of empty curr_gw.
+This means that at the beginning no gw_node is added, leading to an
+empty gateway list.
+
+- gw_election() is terminating in case of curr_gw == NULL. It has to
+terminate in case of curr_gw != NULL
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/aggregation.c |    1 -
- net/batman-adv/main.h        |    2 ++
- net/batman-adv/send.c        |    1 -
- 3 files changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/gateway_client.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/aggregation.c b/net/batman-adv/aggregation.c
-index af45d6b..c11788c 100644
---- a/net/batman-adv/aggregation.c
-+++ b/net/batman-adv/aggregation.c
-@@ -95,7 +95,6 @@ static bool can_aggregate_with(struct batman_packet *new_batman_packet,
- 	return false;
- }
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 2acd7a6..af128ef 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -127,7 +127,7 @@ void gw_election(struct bat_priv *bat_priv)
+ 		return;
  
--#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
- /* create a new aggregated packet and add this packet to it */
- static void new_aggregated_packet(unsigned char *packet_buff, int packet_len,
- 				  unsigned long send_time, bool direct_link,
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index dc24869..ace7285 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -175,4 +175,6 @@ static inline int compare_eth(void *data1, void *data2)
- 	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
- }
+ 	curr_gw = gw_get_selected_gw_node(bat_priv);
+-	if (!curr_gw)
++	if (curr_gw)
+ 		goto out;
  
-+#define atomic_dec_not_zero(v)	atomic_add_unless((v), -1, 0)
+ 	rcu_read_lock();
+@@ -310,9 +310,13 @@ void gw_node_update(struct bat_priv *bat_priv,
+ 	struct hlist_node *node;
+ 	struct gw_node *gw_node, *curr_gw;
+ 
++	/**
++	 * Note: We don't need a NULL check here, since curr_gw never gets
++	 * dereferenced. If curr_gw is NULL we also should not exit as we may
++	 * have this gateway in our list (duplication check!) even though we
++	 * have no currently selected gateway.
++	 */
+ 	curr_gw = gw_get_selected_gw_node(bat_priv);
+-	if (!curr_gw)
+-		goto out;
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
+@@ -350,7 +354,7 @@ deselect:
+ 	gw_deselect(bat_priv);
+ unlock:
+ 	rcu_read_unlock();
+-out:
 +
- #endif /* _NET_BATMAN_ADV_MAIN_H_ */
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index e78670c..7650e2b 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -393,7 +393,6 @@ static void _add_bcast_packet_to_list(struct bat_priv *bat_priv,
- 			   send_time);
+ 	if (curr_gw)
+ 		gw_node_free_ref(curr_gw);
  }
- 
--#define atomic_dec_not_zero(v)          atomic_add_unless((v), -1, 0)
- /* add a broadcast packet to the queue and setup timers. broadcast packets
-  * are sent multiple times to increase probability for beeing received.
-  *
 -- 
 1.7.4.4
 
