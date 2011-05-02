@@ -1,11 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon,  2 May 2011 21:19:38 +0200
-Message-Id: <1304363978-16164-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1304363978-16164-1-git-send-email-sven@narfation.org>
-References: <1304363978-16164-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv4 2/2] batman-adv: Avoid deadlock between
-	rtnl_lock and s_active
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Mon, 2 May 2011 22:18:49 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20110502201849.GA14607@pandem0nium>
+References: <20110502131044.GE10967@Sellars>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
+Content-Disposition: inline
+In-Reply-To: <20110502131044.GE10967@Sellars>
+Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. Developer Meeting
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,77 +20,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The hard_if_event is called by the notifier with rtnl_lock and tries to
-remove sysfs entries when a NETDEV_UNREGISTER event is received. This
-will automatically take the s_active lock.
 
-The s_active lock is also used when a new interface is added to a meshif
-through sysfs. In that situation we cannot wait for the rntl_lock before
-creating the actual batman-adv interface to prevent a deadlock. It is
-still possible to try to get the rtnl_lock and immediately abort the
-current operation when the trylock call failed.
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Rebased on new merged patch 1/2
+Hey Linus,
 
- bat_sysfs.c      |   18 +++++++++---------
- soft-interface.c |    2 +-
- 2 files changed, 10 insertions(+), 10 deletions(-)
+this sounds great, I would really like to join.=20
 
-diff --git a/bat_sysfs.c b/bat_sysfs.c
-index 85ba20d..497a070 100644
---- a/bat_sysfs.c
-+++ b/bat_sysfs.c
-@@ -488,24 +488,24 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
- 	    (strncmp(hard_iface->soft_iface->name, buff, IFNAMSIZ) == 0))
- 		goto out;
- 
-+	if (!rtnl_trylock()) {
-+		ret = -ERESTARTSYS;
-+		goto out;
-+	}
-+
- 	if (status_tmp == IF_NOT_IN_USE) {
--		rtnl_lock();
- 		hardif_disable_interface(hard_iface);
--		rtnl_unlock();
--		goto out;
-+		goto unlock;
- 	}
- 
- 	/* if the interface already is in use */
--	if (hard_iface->if_status != IF_NOT_IN_USE) {
--		rtnl_lock();
-+	if (hard_iface->if_status != IF_NOT_IN_USE)
- 		hardif_disable_interface(hard_iface);
--		rtnl_unlock();
--	}
- 
--	rtnl_lock();
- 	ret = hardif_enable_interface(hard_iface, buff);
-+
-+unlock:
- 	rtnl_unlock();
--
- out:
- 	hardif_free_ref(hard_iface);
- 	return ret;
-diff --git a/soft-interface.c b/soft-interface.c
-index 1772e2b..a78e923 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -639,7 +639,7 @@ struct net_device *softif_create(char *name)
- 		goto out;
- 	}
- 
--	ret = register_netdev(soft_iface);
-+	ret = register_netdevice(soft_iface);
- 	if (ret < 0) {
- 		pr_err("Unable to register the batman interface '%s': %i\n",
- 		       name, ret);
--- 
-1.7.4.4
+My preferred date would be June 30th to July 3rd,
+I already have tickets for an event on July 9th unfortunately. The weekends
+after July 9th (like 16th, 23th) are also available for me. :)
 
+Sounds like the others prefer the first date? What about other (later)
+weekends then?
+
+best regards
+	Simon
+
+
+
+On Mon, May 02, 2011 at 03:10:44PM +0200, Linus L=C3=BCssing wrote:
+> Hi everyone,
+>=20
+> During the last Wireless Battlemesh a lot of conceptual
+> protocol discussions as well as batman-adv kernel-hacking took
+> place. Therefore also the question came up where and when would be
+> the best place and time to meet next.
+>=20
+> The first idea was to meet at the Wireless Community Weekend in
+> Berlin, 3.-5. June 2011, or at the Chaos Communication Camp near
+> Berlin, 11.-14. August 2011. However these dates did not seem to
+> suite everybody (though still some batman developers will probably
+> be there on these dates).
+>=20
+> Therefore the second idea was to have a dedicated B.A.T.M.A.N.
+> developer meeting between these two dates.
+>=20
+> Place: L=C3=BCbeck (near Hamburg, at the Baltic Sea)
+> Date: 30th of June to 3rd of July 2011
+>   or: 7th to 10th of July 2011
+>=20
+> Please let me know if you are going to attend, which day you would
+> prefer and if you would like to join the holiday appartement I am
+> offering to organize.
+>=20
+> Cheers, Linus
+>=20
+
+--PEIAKu/WMn1b1Hv9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk2/EakACgkQrzg/fFk7axbFHwCgudi04qRfhleT2qNVbF/e3+cV
+1u4AoOuiaOuV9dnr0usTlfm0e9GPqvvM
+=Ysap
+-----END PGP SIGNATURE-----
+
+--PEIAKu/WMn1b1Hv9--
