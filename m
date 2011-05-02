@@ -1,14 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 2 May 2011 16:55:13 +0200
-References: <1304347097-8520-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1304347097-8520-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <linus.luessing@web.de>
+Date: Mon, 2 May 2011 17:01:39 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20110502150139.GF10967@Sellars>
+References: <20110502131044.GE10967@Sellars>
+	<20110502132536.GB8989@ritirata.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2231721.QllU9TFzsP";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105021655.15703.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove misplaced comment
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20110502132536.GB8989@ritirata.org>
+Sender: linus.luessing@web.de
+Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. Developer Meeting
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,57 +22,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2231721.QllU9TFzsP
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Mon, May 02, 2011 at 03:25:36PM +0200, Antonio Quartulli wrote:
+> Hi all,
+> 
+> On lun, mag 02, 2011 at 03:10:44 +0200, Linus Lüssing wrote:
+> > Therefore the second idea was to have a dedicated B.A.T.M.A.N.
+> > developer meeting between these two dates.
+> > 
+> 
+> Great ;)
+> 
+> > Place: Lübeck (near Hamburg, at the Baltic Sea)
+> > Date: 30th of June to 3rd of July 2011
+> >   or: 7th to 10th of July 2011
+> 
+> Here I am!
+> Concerning the dates, I prefer the second one because there is another event I
+> would like to attend on July 2nd
+> 
+> > 
+> > Please let me know if you are going to attend, which day you would
+> > prefer and if you would like to join the holiday appartement I am
+> > offering to organize.
+> > 
+> 
+> Do you know anything about the cost?
 
-On Monday 02 May 2011 16:38:17 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  originator.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
->=20
-> diff --git a/originator.c b/originator.c
-> index ef4a9be..51af91b 100644
-> --- a/originator.c
-> +++ b/originator.c
-> @@ -19,8 +19,6 @@
->   *
->   */
->=20
-> -/* increase the reference counter for this originator */
+It should be at about 25-35€ per person per night. I've never done
+organising something like this here before, but according to
+various websites it should be something like that :).
+Some appartements I have on my radar so far (depending on the
+number of people actually interested) and which I'd have a
+look at:
 
-Could we replace it with another joke? :D
+- 80m², 5ppl max :
+  http://www.luebeck24.info/index.php?content=1&subcontent=11&subsubcontent=80
+- 80m², 6ppl max:
+  http://www.luebeck24.info/index.php?content=1&subcontent=11&subsubcontent=82
 
-Acked-by: Sven Eckelmann <sven@narfation.org>
+= http://www.traum-ferienwohnungen.de/9743.htm?sid=e72a47650937dda59a3f93441c79ad6c
+(Hmm, the website just says 65€ - 85€ per night and no extra fees
+per person, 85€ for 6 people would seem way too cheap... I'll have to ask
+them for the prices, I guess)
 
-Kind regards,
-	Sven
+- 130m², 8-10ppl max :), 120€ for 4 people + 15€ for any further person
+  per night:
+http://www.traum-ferienwohnungen.de/42809.htm?sid=e72a47650937dda59a3f93441c79ad6c
 
---nextPart2231721.QllU9TFzsP
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+They are all located in the city center and have wifi included.
+Let me know if that'd suite your level of luxury and price
+expectations :).
 
-iQIcBAABCgAGBQJNvsXRAAoJEF2HCgfBJntGau4P/37iUqhBRBf7QoOXyhwm7zbm
-cICWPEwAevRiPEeB5WOFFMiwOfS2X98xjSEJc3v5g/Cir/1WHfADflG9IdsZNfpK
-j5H4sB5akah1ygXTGkwc2HQs2wx1t4oUN7jVbhzOYlHzyB/w/pVfNnaH7mqF48rX
-/8OfOO4S2LNRsi9fnmS//M2yAtb8NS2IOJY94F4FQh4s403t7NqJK2EJXHSUkX3c
-J0D4e4hbrE41qFY52NMzubDPjLhvPE3d+GXal7mw57a79P7j7YXxpjx/ktpfXkKn
-Ifl/1BCgkM8nZ64QbewrYhLZ5GuS+XA5tOzLseHEEsgLcm2fxgkqKJ34txru3tHK
-7hpB5YBBrqwNFcAHMUdX4fN1cJT9LzC+XsLey/fgIZSqFMDjxm0uuj/3p/cijHtn
-MuNIgbTXNrCnGGnpDQ3Ctk2RXA0ooTsIIvSXxiBWW8j2FB2cz0nnI+9J8/02krqD
-Rm4OUptiLy9AKJDkwXGhJ+Gvy7a0Mtp0doGi5EsntwZlO/2BvI1RW57IX50MIz2+
-Qd1Ty7Zz/9BjmnfgvyyiHgGBVob0uFJ1mWEHKKxvq7tCYxcW7BBm2/RO0vGhC8z0
-2HCCOJURkNl3Z7Bbn18oRbqhng95HRVpFQDZN6Z8gV9XN97HMAy+hz5PPwKIr11K
-J2F1xukTVOaLJUNmivLo
-=xrQS
------END PGP SIGNATURE-----
+Cheers, Linus
 
---nextPart2231721.QllU9TFzsP--
+> 
+> Bye and thank you for organising!
+> 
+> 
+> -- 
+> Antonio Quartulli
+> 
+> ..each of us alone is worth nothing..
+> Ernesto "Che" Guevara
+> 
