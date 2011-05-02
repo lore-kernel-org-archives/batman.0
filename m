@@ -1,14 +1,17 @@
-Return-Path: <linus.luessing@web.de>
-Date: Mon, 2 May 2011 20:50:47 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20110502185047.GH12500@Sellars>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 2 May 2011 21:15:47 +0200
+References: <1304182620-12637-2-git-send-email-sven@narfation.org>
+	<1304196854-28141-1-git-send-email-sven@narfation.org>
+	<20110502171645.GB12500@Sellars>
+In-Reply-To: <20110502171645.GB12500@Sellars>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-Sender: linus.luessing@web.de
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/3] batman-adv: Fix crash on module
- shutdown with multiple ifaces
+Content-Type: multipart/signed; boundary="nextPart11553152.PGWErOAovD";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201105022115.48413.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/3] batman-adv: Remove unnecessary
+	hardif_list_lock
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,101 +25,96 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sat, Apr 30, 2011 at 06:56:58PM +0200, Sven Eckelmann wrote:
-> From: Linus Lüssing <linus.luessing@web.de>
-> 
-> hardif_remove_interfaces() removes all hard interfaces from the
-> hardif_list before freeing and cleaning up any device. However the clean
-> up procedures in orig_hash_del_if()
-> (hardif_remove_interface()->hardif_disable_interface()->
-> orig_hash_del_if()) need the other interfaces still to be present in the
-> hardif_list. Otherwise it won't renumber any preceding interfaces, which
-> leads to an unhandled kernel paging request in orig_node_del_if()'s
-> "/* copy second part */" due to wrong hard_if->if_num's.
-> 
-> With this commit the interface removal on module shutdown will be down
-> in the same way as removing single interfaces from batman only: One
-> interface will be removed and cleaned at a time.
-> 
-> Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-> [sven@narfation.org: Keep locking around list_for_each_entry_safe]
-Hmm, though that does not seem to work for me like that anyway:
+--nextPart11553152.PGWErOAovD
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-----
-[61975.933652] BUG: sleeping function called from invalid context at
-kernel/mutex.c:278
-[61975.938166] in_atomic(): 1, irqs_disabled(): 0, pid: 9199,
-name: rmmod
-[61975.941408] INFO: lockdep is turned off.
-[61975.943655] Pid: 9199, comm: rmmod Not tainted 2.6.38+ #4
-[61975.946518] Call Trace:
-[61975.948360]  [<c105888a>] __might_sleep+0xd9/0xe0
-[61975.951975]  [<c151ea00>] mutex_lock_nested+0x1a/0x33
-[61975.954679]  [<c1148cfb>] sysfs_addrm_start+0x24/0x29
-[61975.957446]  [<c11493f1>] sysfs_remove_dir+0x39/0x6c
-[61975.960000]  [<c11e141c>] kobject_del+0xf/0x2c
-[61975.962872]  [<c11e146b>] kobject_release+0x32/0x50
-[61975.966295]  [<c11e1439>] ? kobject_del+0x2c/0x2c
-[61975.969065]  [<c11e2181>] kref_put+0x39/0x44
-[61975.971416]  [<c11e13b5>] kobject_put+0x37/0x3c
-[61975.973921]  [<f9e06591>] sysfs_del_hardif+0xd/0x16
-[batman_adv]
-[61975.976845]  [<f9e0848c>] hardif_remove_interface+0x23/0x2d
-[batman_adv]
-[61975.979936]  [<f9e086d7>] hardif_remove_interfaces+0x35/0x53
-[batman_adv]
-[61975.984400]  [<f9e10945>] batman_exit+0x17/0x3c [batman_adv]
-[61975.987189]  [<c1094242>] sys_delete_module+0x184/0x1dc
-[61975.989893]  [<c10eb988>] ? remove_vma+0x52/0x58
-[61975.992387]  [<c10ec6c2>] ? do_munmap+0x245/0x261
-[61975.994849]  [<c151fd9d>] syscall_call+0x7/0xb
-[61975.997361] batman_adv: bat0: Interface deactivated: eth1
-[61976.000117] batman_adv: bat0: Removing interface: eth1
-----
+Linus L=FCssing wrote:
+> Looks quite good and seems to make sense to avoid the
+> double-locking. Tested it here and together with patch 1/3 fixes
+> the initial issue, too.
+>=20
+> Just one minor thing:
+> ----
+> [58518.225154] batman_adv: bat0: The MTU of interface eth1 is too
+> small (1500) to handle the transport of batman-adv packets.
+> Packets going over this interface will be fragmented on layer2
+> which could impact the performance. Setting the MTU to 1527 would
+> solve the problem.
+> [58518.278111] RTNL: assertion failed at
+> /home/mesh-node/incoming/batman-adv-git-builddir/hard-interface.c
+> (136)
+> [58518.293167] Pid: 6366, comm: bash Not tainted 2.6.38+ #4
+> [58518.299142] Call Trace:
+> [58518.300953]  [<f8cb91f3>] primary_if_select+0x2f/0x9f
+> [batman_adv]
+> [58518.447844]  [<f8cb8e9c>] ? rcu_read_unlock+0x1c/0x1e
+> [batman_adv]
+> [58518.452572]  [<f8cb9146>] ? primary_if_get_selected+0x6a/0x71
+> [batman_adv]
+> [58518.455759]  [<f8cb92c6>] hardif_activate_interface+0x63/0x91
+> [batman_adv]
+> [58518.459168]  [<f8cb98e4>] hardif_enable_interface+0x1cc/0x21e
+> [batman_adv]
+> [58518.462481]  [<f8cb7bca>] store_mesh_iface+0xed/0x113
+> [batman_adv]
+> [58518.465564]  [<f8cb7add>] ? store_aggregated_ogms+0x28/0x28
+> [batman_adv]
+> [58518.468714]  [<c11e1121>] kobj_attr_store+0x1a/0x22
+> [58518.472277]  [<c11481dc>] sysfs_write_file+0xbc/0xe7
+> [58518.613128]  [<c1148120>] ? sysfs_open_file+0x205/0x205
+> [58518.616400]  [<c10ff7a7>] vfs_write+0x84/0xde
+> [58518.660437]  [<c10ff89a>] sys_write+0x3b/0x60
+> [58518.667248]  [<c151fd9d>] syscall_call+0x7/0xb
+> [58518.672117] batman_adv: bat0: Interface activated: eth1
+> ----
+>=20
+> So maybe it makes sense to add the assertion in
+> primary_if_select() in patch 3/3 instead?
 
-So looks like we may not hold a spin_lock() during the
-hardif_remove_interface(). Of course, that issue is not present
-with your next patch anymore. Thanks for good intention to keep my
-fame++, but, hmm, maybe it actually only makes sense to have the
-two patches merged.
+No, the problem is that I changed the patch after I noticed that it wasn't=
+=20
+made for the current master - and only tested after all patches were applie=
+d.=20
+I would like to add rtnl_lock/rtnl_unlock around primary_if_get_selected()=
+=20
+instead.
 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> Splitted the first patch to keep Linus' fame. There should be no difference
-> (after all patches are applied) between the first and the second version.
-> 
->  hard-interface.c |   11 ++---------
->  1 files changed, 2 insertions(+), 9 deletions(-)
-> 
-> diff --git a/hard-interface.c b/hard-interface.c
-> index b3058e4..c6edf0a 100644
-> --- a/hard-interface.c
-> +++ b/hard-interface.c
-> @@ -490,22 +490,15 @@ static void hardif_remove_interface(struct hard_iface *hard_iface)
->  void hardif_remove_interfaces(void)
->  {
->  	struct hard_iface *hard_iface, *hard_iface_tmp;
-> -	struct list_head if_queue;
-> -
-> -	INIT_LIST_HEAD(&if_queue);
->  
-> +	rtnl_lock();
->  	spin_lock(&hardif_list_lock);
->  	list_for_each_entry_safe(hard_iface, hard_iface_tmp,
->  				 &hardif_list, list) {
->  		list_del_rcu(&hard_iface->list);
-> -		list_add_tail(&hard_iface->list, &if_queue);
-> -	}
-> -	spin_unlock(&hardif_list_lock);
-> -
-> -	rtnl_lock();
-> -	list_for_each_entry_safe(hard_iface, hard_iface_tmp, &if_queue, list) {
->  		hardif_remove_interface(hard_iface);
->  	}
-> +	spin_unlock(&hardif_list_lock);
->  	rtnl_unlock();
->  }
->  
-> -- 
-> 1.7.4.4
-> 
+> Hmm, and I'm wondering if it might make sense to also document it
+> with a little comment above the struct list_head hardif_list;,
+> like:
+> /* List additions and deletions have to be rtnl_lock()'ed,
+>  * list traversals just rcu-locked */
+> (or is that overdoing it?)
+
+Ok, will steal this comment from your mail - ok, change it slightly to pres=
+ent=20
+it as my own work.
+
+Kind regards,
+	Sven
+
+--nextPart11553152.PGWErOAovD
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJNvwLjAAoJEF2HCgfBJntGdA4QAJ91G48mrjF9HxZGipK3x4Ah
+HS4LFc5xxmWBe5GTCkkMMx4dyo9TWRyPkeCkRd7QkpPU1gK5FQYGlKPtpc/VHmzY
+B9bv4jGlWdpqngOk1sA/7sB0DV/NccwD3jUTpu7huxiBHDqr5oqwzxYHSIxadjjp
+Mi+7VZ43UrtBL+lCy7njubTAGHJ1sAHtr/zWy77yrVBMFP725vdVn815cUI2x5jy
+49XZcVDDZ6+UBiHEJ82j2oDK+8cyt0+Ujc6OnagU2PNxhWOXIsX3hAHPprmSD4UY
+kE3v1Qrys2PJmK/ic5/a9DKXqB9Sw9q012kaOs1c7C6fF/PqqUJHoROC6sJ3uPyh
+6Km2fig2jDyOd7uxB8TFutHtMTWkl0/9GRB9hDYKRGpVnjjsCsgSL0SuS2a3+0Mk
+JBgkrd7zDYWWWU03vXlz3t340ZBzxDfhidMSICvOb+/LNs2nW27mixP0VNVn293Y
+tNcnP0rPYv4sIAHRnfhAU9AkYLCxBZ+b5EEYMm0fNWqgHnP78wPlcX25t5HxjNjO
+lpFpe1az/HZ2BW1lPxDXDcByxPGIWA+TnHEiu4Ymm3jCJce0pxxxilYuMRJAuxpb
+guSfKkJk6ruPHUkoZKNwTkPUWpQ2vbxQ6zLe1XNqoHIjbuGaQhdV631dF64Hj83y
+lsVgNV1xNb0zYtTUBAL6
+=/EV2
+-----END PGP SIGNATURE-----
+
+--nextPart11553152.PGWErOAovD--
