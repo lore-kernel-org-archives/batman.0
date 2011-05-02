@@ -1,8 +1,8 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon,  2 May 2011 16:38:17 +0200
-Message-Id: <1304347097-8520-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove misplaced comment
+Date: Mon,  2 May 2011 16:53:44 +0200
+Message-Id: <1304348024-11681-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: purge unnecessary include
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,22 +19,21 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- originator.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ compat.h |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index ef4a9be..51af91b 100644
---- a/originator.c
-+++ b/originator.c
-@@ -19,8 +19,6 @@
-  *
-  */
+diff --git a/compat.h b/compat.h
+index 0c5ad82..bddf7e2 100644
+--- a/compat.h
++++ b/compat.h
+@@ -26,7 +26,6 @@
+ #define _NET_BATMAN_ADV_COMPAT_H_
  
--/* increase the reference counter for this originator */
--
- #include "main.h"
- #include "originator.h"
- #include "hash.h"
+ #include <linux/version.h>	/* LINUX_VERSION_CODE */
+-#include "bat_sysfs.h"		/* struct bat_attribute */
+ 
+ #ifndef IPPROTO_UDP
+ #define IPPROTO_UDP 17
 -- 
 1.7.2.3
 
