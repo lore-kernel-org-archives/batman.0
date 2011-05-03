@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  3 May 2011 17:54:53 +0200
-Message-Id: <1304438096-19009-2-git-send-email-ordex@autistici.org>
+Date: Tue,  3 May 2011 17:54:54 +0200
+Message-Id: <1304438096-19009-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1303940106-1457-1-git-send-email-ordex@autistici.org>
 References: <1303940106-1457-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 1/4] batman-adv: rename everything from
-	*hna* into *tt* (translation table)
+Subject: [B.A.T.M.A.N.] [PATCHv2 2/4] batman-adv: improved client
+	announcement mechanism
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,1558 +19,2525 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-To be coherent, all the functions/variables/constats have been renamed
-to the TranslationTable style
+The old HNA mechanism has been totally rewritten from scratch.
+The new mechanism consists in announcing local translation-table changes
+only, reducing the protocol overhead.
+
+For details, please visit:
+http://www.open-mesh.org/wiki/batman-adv/Client-announcement
+
+Moreover:
+- COMPAT_VERSION has been increased to 14
+- batman-adv now depends on module "crc16" for tt crc computation
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- README              |    8 +-
- aggregation.c       |   16 +-
- aggregation.h       |    4 +-
- bat_debugfs.c       |    4 +-
- hard-interface.c    |    6 +-
- main.c              |   14 +-
- main.h              |    4 +-
+ aggregation.c       |   23 +-
+ aggregation.h       |    6 +-
+ hard-interface.c    |   13 +-
+ main.c              |   13 +-
+ main.h              |   10 +-
  originator.c        |    8 +-
- packet.h            |    2 +-
- routing.c           |   70 +++++-----
- routing.h           |    6 +-
- send.c              |   16 +-
+ packet.h            |   34 ++-
+ routing.c           |  241 +++++++++--
+ routing.h           |   10 +-
+ send.c              |   90 +++-
  send.h              |    2 +-
- soft-interface.c    |   10 +-
- translation-table.c |  414 +++++++++++++++++++++++++-------------------------
- translation-table.h |   24 ++--
- types.h             |   24 ++--
- unicast.c           |    2 +-
- vis.c               |   18 +-
- 19 files changed, 326 insertions(+), 326 deletions(-)
+ soft-interface.c    |   11 +-
+ translation-table.c | 1147 ++++++++++++++++++++++++++++++++++++++++++---------
+ translation-table.h |   39 ++-
+ types.h             |   38 ++-
+ unicast.c           |    3 +
+ 16 files changed, 1374 insertions(+), 314 deletions(-)
 
-diff --git a/README b/README
-index 6aa36eb..47a840e 100644
---- a/README
-+++ b/README
-@@ -176,13 +176,13 @@ face.  Each  entry can/has to have the following values:
- -> "TQ mac  value"  -  src mac's link quality towards mac address
-                        of a neighbor originator's interface which
-                        is being used for routing
---> "HNA mac" - HNA announced by source mac
-+-> "TT mac" - TT announced by source mac
- -> "PRIMARY" - this  is a primary interface
- -> "SEC mac" - secondary mac address of source
-                (requires preceding PRIMARY)
- 
- The TQ value has a range from 4 to 255 with 255 being  the  best.
--The HNA entries are showing which hosts are connected to the mesh
-+The TT entries are showing which hosts are connected to the mesh
- via bat0 or being bridged into the mesh network.  The PRIMARY/SEC
- values are only applied on primary interfaces
- 
-@@ -219,7 +219,7 @@ abled  during run time. Following log_levels are defined:
- 
- 0 - All  debug  output  disabled
- 1 - Enable messages related to routing / flooding / broadcasting
--2 - Enable route or hna added / changed / deleted
-+2 - Enable route or tt added / changed / deleted
- 3 - Enable all messages
- 
- The debug output can be changed at runtime  using  the  file
-@@ -227,7 +227,7 @@ The debug output can be changed at runtime  using  the  file
- 
- # echo 2 > /sys/class/net/bat0/mesh/log_level
- 
--will enable debug messages for when routes or HNAs change.
-+will enable debug messages for when routes or TTs change.
- 
- 
- BATCTL
 diff --git a/aggregation.c b/aggregation.c
-index c11788c..9b94590 100644
+index 9b94590..de59b5f 100644
 --- a/aggregation.c
 +++ b/aggregation.c
-@@ -24,10 +24,10 @@
+@@ -20,16 +20,11 @@
+  */
+ 
+ #include "main.h"
++#include "translation-table.h"
+ #include "aggregation.h"
  #include "send.h"
  #include "routing.h"
  
--/* calculate the size of the hna information for a given packet */
--static int hna_len(struct batman_packet *batman_packet)
-+/* calculate the size of the tt information for a given packet */
-+static int tt_len(struct batman_packet *batman_packet)
- {
--	return batman_packet->num_hna * ETH_ALEN;
-+	return batman_packet->num_tt * ETH_ALEN;
- }
- 
+-/* calculate the size of the tt information for a given packet */
+-static int tt_len(struct batman_packet *batman_packet)
+-{
+-	return batman_packet->num_tt * ETH_ALEN;
+-}
+-
  /* return true if new_packet can be aggregated with forw_packet */
-@@ -250,7 +250,7 @@ void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff,
- {
- 	struct batman_packet *batman_packet;
- 	int buff_pos = 0;
--	unsigned char *hna_buff;
-+	unsigned char *tt_buff;
- 
+ static bool can_aggregate_with(struct batman_packet *new_batman_packet,
+ 			       int packet_len,
+@@ -255,18 +250,20 @@ void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff,
  	batman_packet = (struct batman_packet *)packet_buff;
  
-@@ -259,14 +259,14 @@ void receive_aggr_bat_packet(struct ethhdr *ethhdr, unsigned char *packet_buff,
- 		   orig_interval. */
+ 	do {
+-		/* network to host order for our 32bit seqno, and the
+-		   orig_interval. */
++		/* network to host order for our 32bit seqno and the
++		   orig_interval */
  		batman_packet->seqno = ntohl(batman_packet->seqno);
++		batman_packet->tt_crc = ntohs(batman_packet->tt_crc);
  
--		hna_buff = packet_buff + buff_pos + BAT_PACKET_LEN;
-+		tt_buff = packet_buff + buff_pos + BAT_PACKET_LEN;
- 		receive_bat_packet(ethhdr, batman_packet,
--				   hna_buff, hna_len(batman_packet),
-+				   tt_buff, tt_len(batman_packet),
- 				   if_incoming);
+ 		tt_buff = packet_buff + buff_pos + BAT_PACKET_LEN;
+-		receive_bat_packet(ethhdr, batman_packet,
+-				   tt_buff, tt_len(batman_packet),
+-				   if_incoming);
  
--		buff_pos += BAT_PACKET_LEN + hna_len(batman_packet);
-+		buff_pos += BAT_PACKET_LEN + tt_len(batman_packet);
+-		buff_pos += BAT_PACKET_LEN + tt_len(batman_packet);
++		receive_bat_packet(ethhdr, batman_packet, tt_buff, if_incoming);
++
++		buff_pos += BAT_PACKET_LEN +
++			tt_len(batman_packet->tt_num_changes);
++
  		batman_packet = (struct batman_packet *)
  			(packet_buff + buff_pos);
  	} while (aggregated_packet(buff_pos, packet_len,
--				   batman_packet->num_hna));
-+				   batman_packet->num_tt));
+-				   batman_packet->num_tt));
++				   batman_packet->tt_num_changes));
  }
 diff --git a/aggregation.h b/aggregation.h
-index 0622042..7e6d72f 100644
+index 7e6d72f..c631a4c 100644
 --- a/aggregation.h
 +++ b/aggregation.h
-@@ -25,9 +25,9 @@
+@@ -25,9 +25,11 @@
  #include "main.h"
  
  /* is there another aggregated packet here? */
--static inline int aggregated_packet(int buff_pos, int packet_len, int num_hna)
-+static inline int aggregated_packet(int buff_pos, int packet_len, int num_tt)
+-static inline int aggregated_packet(int buff_pos, int packet_len, int num_tt)
++static inline int aggregated_packet(int buff_pos, int packet_len,
++				    int tt_num_changes)
  {
--	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (num_hna * ETH_ALEN);
-+	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (num_tt * ETH_ALEN);
+-	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (num_tt * ETH_ALEN);
++	int next_buff_pos = buff_pos + BAT_PACKET_LEN + (tt_num_changes *
++						sizeof(struct tt_change));
  
  	return (next_buff_pos <= packet_len) &&
  		(next_buff_pos <= MAX_AGGREGATION_BYTES);
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index 0e9d435..abaeec5 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -241,13 +241,13 @@ static int softif_neigh_open(struct inode *inode, struct file *file)
- static int transtable_global_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
--	return single_open(file, hna_global_seq_print_text, net_dev);
-+	return single_open(file, tt_global_seq_print_text, net_dev);
- }
- 
- static int transtable_local_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
--	return single_open(file, hna_local_seq_print_text, net_dev);
-+	return single_open(file, tt_local_seq_print_text, net_dev);
- }
- 
- static int vis_data_open(struct inode *inode, struct file *file)
 diff --git a/hard-interface.c b/hard-interface.c
-index 3e888f1..9e4ac7d 100644
+index 9e4ac7d..4fcd22e 100644
 --- a/hard-interface.c
 +++ b/hard-interface.c
-@@ -157,10 +157,10 @@ static void primary_if_select(struct bat_priv *bat_priv,
+@@ -156,12 +156,6 @@ static void primary_if_select(struct bat_priv *bat_priv,
+ 
  	primary_if_update_addr(bat_priv);
  
- 	/***
--	 * hacky trick to make sure that we send the HNA information via
-+	 * hacky trick to make sure that we send the TT information via
- 	 * our new primary interface
- 	 */
--	atomic_set(&bat_priv->hna_local_changed, 1);
-+	atomic_set(&bat_priv->tt_local_changed, 1);
- 
+-	/***
+-	 * hacky trick to make sure that we send the TT information via
+-	 * our new primary interface
+-	 */
+-	atomic_set(&bat_priv->tt_local_changed, 1);
+-
  out:
  	spin_unlock_bh(&hardif_list_lock);
-@@ -345,7 +345,7 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
+ }
+@@ -345,7 +339,8 @@ int hardif_enable_interface(struct hard_iface *hard_iface, char *iface_name)
  	batman_packet->flags = 0;
  	batman_packet->ttl = 2;
  	batman_packet->tq = TQ_MAX_VALUE;
--	batman_packet->num_hna = 0;
-+	batman_packet->num_tt = 0;
+-	batman_packet->num_tt = 0;
++	batman_packet->tt_num_changes = 0;
++	batman_packet->ttvn = 0;
  
  	hard_iface->if_num = bat_priv->num_ifaces;
  	bat_priv->num_ifaces++;
+@@ -674,6 +669,10 @@ static int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 	case BAT_VIS:
+ 		ret = recv_vis_packet(skb, hard_iface);
+ 		break;
++		/* Translation table query (request or response) */
++	case BAT_TT_QUERY:
++		ret = recv_tt_query(skb, hard_iface);
++		break;
+ 	default:
+ 		ret = NET_RX_DROP;
+ 	}
 diff --git a/main.c b/main.c
-index 709b33b..2970908 100644
+index 2970908..a84679a 100644
 --- a/main.c
 +++ b/main.c
-@@ -81,8 +81,8 @@ int mesh_init(struct net_device *soft_iface)
- 
- 	spin_lock_init(&bat_priv->forw_bat_list_lock);
+@@ -83,6 +83,9 @@ int mesh_init(struct net_device *soft_iface)
  	spin_lock_init(&bat_priv->forw_bcast_list_lock);
--	spin_lock_init(&bat_priv->hna_lhash_lock);
--	spin_lock_init(&bat_priv->hna_ghash_lock);
-+	spin_lock_init(&bat_priv->tt_lhash_lock);
-+	spin_lock_init(&bat_priv->tt_ghash_lock);
+ 	spin_lock_init(&bat_priv->tt_lhash_lock);
+ 	spin_lock_init(&bat_priv->tt_ghash_lock);
++	spin_lock_init(&bat_priv->tt_changes_list_lock);
++	spin_lock_init(&bat_priv->tt_req_list_lock);
++	spin_lock_init(&bat_priv->tt_buff_lock);
  	spin_lock_init(&bat_priv->gw_list_lock);
  	spin_lock_init(&bat_priv->vis_hash_lock);
  	spin_lock_init(&bat_priv->vis_list_lock);
-@@ -96,13 +96,13 @@ int mesh_init(struct net_device *soft_iface)
+@@ -92,14 +95,13 @@ int mesh_init(struct net_device *soft_iface)
+ 	INIT_HLIST_HEAD(&bat_priv->forw_bcast_list);
+ 	INIT_HLIST_HEAD(&bat_priv->gw_list);
+ 	INIT_HLIST_HEAD(&bat_priv->softif_neigh_list);
++	INIT_LIST_HEAD(&bat_priv->tt_changes_list);
++	INIT_LIST_HEAD(&bat_priv->tt_req_list);
+ 
  	if (originator_init(bat_priv) < 1)
  		goto err;
  
--	if (hna_local_init(bat_priv) < 1)
-+	if (tt_local_init(bat_priv) < 1)
+-	if (tt_local_init(bat_priv) < 1)
+-		goto err;
+-
+-	if (tt_global_init(bat_priv) < 1)
++	if (tt_init(bat_priv) < 1)
  		goto err;
  
--	if (hna_global_init(bat_priv) < 1)
-+	if (tt_global_init(bat_priv) < 1)
- 		goto err;
- 
--	hna_local_add(soft_iface, soft_iface->dev_addr);
-+	tt_local_add(soft_iface, soft_iface->dev_addr);
- 
- 	if (vis_init(bat_priv) < 1)
- 		goto err;
-@@ -133,8 +133,8 @@ void mesh_free(struct net_device *soft_iface)
+ 	tt_local_add(soft_iface, soft_iface->dev_addr);
+@@ -133,8 +135,7 @@ void mesh_free(struct net_device *soft_iface)
  	gw_node_purge(bat_priv);
  	originator_free(bat_priv);
  
--	hna_local_free(bat_priv);
--	hna_global_free(bat_priv);
-+	tt_local_free(bat_priv);
-+	tt_global_free(bat_priv);
+-	tt_local_free(bat_priv);
+-	tt_global_free(bat_priv);
++	tt_free(bat_priv);
  
  	softif_neigh_purge(bat_priv);
  
 diff --git a/main.h b/main.h
-index 101d9dc..50eb819 100644
+index 50eb819..cc1c277 100644
 --- a/main.h
 +++ b/main.h
-@@ -39,7 +39,7 @@
+@@ -39,8 +39,8 @@
  #define PURGE_TIMEOUT 200	/* purge originators after time in seconds if no
  				   * valid packet comes in -> TODO: check
  				   * influence on TQ_LOCAL_WINDOW_SIZE */
--#define LOCAL_HNA_TIMEOUT 3600 /* in seconds */
-+#define TT_LOCAL_TIMEOUT 3600 /* in seconds */
- 
+-#define TT_LOCAL_TIMEOUT 3600 /* in seconds */
+-
++#define TT_LOCAL_TIMEOUT 3600	/* in seconds */
++#define TT_REQUEST_TIMEOUT 3	/* seconds we have to keep pending tt_req */
  #define TQ_LOCAL_WINDOW_SIZE 64	  /* sliding packet range of received originator
  				   * messages in squence numbers (should be a
-@@ -89,7 +89,7 @@
+ 				   * multiple of our word size) */
+@@ -49,6 +49,12 @@
+ #define TQ_LOCAL_BIDRECT_RECV_MINIMUM 1
+ #define TQ_TOTAL_BIDRECT_LIMIT 1
  
- #define DBG_BATMAN 1	/* all messages related to routing / flooding /
- 			 * broadcasting / etc */
--#define DBG_ROUTES 2	/* route or hna added / changed / deleted */
-+#define DBG_ROUTES 2	/* route or tt added / changed / deleted */
- #define DBG_ALL 3
++#define TT_OGM_APPEND_MAX 3 /* number of OGMs sent with the last tt diff */
++
++/* Transtable operations */
++#define TT_ADD 0
++#define TT_DEL 1
++
+ #define NUM_WORDS (TQ_LOCAL_WINDOW_SIZE / WORD_BIT_SIZE)
  
- 
+ #define LOG_BUF_LEN 8192	  /* has to be a power of 2 */
 diff --git a/originator.c b/originator.c
-index ef4a9be..0314875 100644
+index 0314875..be7257b 100644
 --- a/originator.c
 +++ b/originator.c
-@@ -144,7 +144,7 @@ static void orig_node_free_rcu(struct rcu_head *rcu)
- 	spin_unlock_bh(&orig_node->neigh_list_lock);
- 
- 	frag_list_free(&orig_node->frag_list);
--	hna_global_del_orig(orig_node->bat_priv, orig_node,
-+	tt_global_del_orig(orig_node->bat_priv, orig_node,
+@@ -147,6 +147,7 @@ static void orig_node_free_rcu(struct rcu_head *rcu)
+ 	tt_global_del_orig(orig_node->bat_priv, orig_node,
  			    "originator timed out");
  
++	kfree(orig_node->tt_buff);
  	kfree(orig_node->bcast_own);
-@@ -222,7 +222,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
- 	orig_node->bat_priv = bat_priv;
+ 	kfree(orig_node->bcast_own_sum);
+ 	kfree(orig_node);
+@@ -215,6 +216,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
+ 	spin_lock_init(&orig_node->ogm_cnt_lock);
+ 	spin_lock_init(&orig_node->bcast_seqno_lock);
+ 	spin_lock_init(&orig_node->neigh_list_lock);
++	spin_lock_init(&orig_node->tt_buff_lock);
+ 
+ 	/* extra reference for return */
+ 	atomic_set(&orig_node->refcount, 2);
+@@ -223,6 +225,8 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, uint8_t *addr)
  	memcpy(orig_node->orig, addr, ETH_ALEN);
  	orig_node->router = NULL;
--	orig_node->hna_buff = NULL;
-+	orig_node->tt_buff = NULL;
+ 	orig_node->tt_buff = NULL;
++	orig_node->tt_buff_len = 0;
++	atomic_set(&orig_node->tt_size, 0);
  	orig_node->bcast_seqno_reset = jiffies - 1
  					- msecs_to_jiffies(RESET_PROTECTION_MS);
  	orig_node->batman_seqno_reset = jiffies - 1
-@@ -333,8 +333,8 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
+@@ -332,9 +336,7 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
+ 		if (purge_orig_neighbors(bat_priv, orig_node,
  							&best_neigh_node)) {
  			update_routes(bat_priv, orig_node,
- 				      best_neigh_node,
--				      orig_node->hna_buff,
--				      orig_node->hna_buff_len);
-+				      orig_node->tt_buff,
-+				      orig_node->tt_buff_len);
+-				      best_neigh_node,
+-				      orig_node->tt_buff,
+-				      orig_node->tt_buff_len);
++				      best_neigh_node);
  		}
  	}
  
 diff --git a/packet.h b/packet.h
-index e757187..c225c3a 100644
+index c225c3a..de8bf3b 100644
 --- a/packet.h
 +++ b/packet.h
-@@ -61,7 +61,7 @@ struct batman_packet {
+@@ -30,9 +30,10 @@
+ #define BAT_BCAST        0x04
+ #define BAT_VIS          0x05
+ #define BAT_UNICAST_FRAG 0x06
++#define BAT_TT_QUERY     0x07
+ 
+ /* this file is included by batctl which needs these defines */
+-#define COMPAT_VERSION 12
++#define COMPAT_VERSION 14
+ #define DIRECTLINK 0x40
+ #define VIS_SERVER 0x20
+ #define PRIMARIES_FIRST_HOP 0x10
+@@ -52,6 +53,11 @@
+ #define UNI_FRAG_HEAD 0x01
+ #define UNI_FRAG_LARGETAIL 0x02
+ 
++/* TT flags */
++#define TT_RESPONSE     0x00
++#define TT_REQUEST      0x01
++#define TT_FULL_TABLE   0x02
++
+ struct batman_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+@@ -61,7 +67,9 @@ struct batman_packet {
  	uint8_t  orig[6];
  	uint8_t  prev_sender[6];
  	uint8_t  ttl;
--	uint8_t  num_hna;
-+	uint8_t  num_tt;
+-	uint8_t  num_tt;
++	uint8_t  ttvn; /* translation table version number */
++	uint16_t tt_crc;
++	uint8_t  tt_num_changes;
  	uint8_t  gw_flags;  /* flags related to gateway class */
  	uint8_t  align;
  } __packed;
+@@ -101,6 +109,7 @@ struct unicast_packet {
+ 	uint8_t  version;  /* batman version field */
+ 	uint8_t  dest[6];
+ 	uint8_t  ttl;
++	uint8_t  ttvn; /* destination translation table version number */
+ } __packed;
+ 
+ struct unicast_frag_packet {
+@@ -134,4 +143,25 @@ struct vis_packet {
+ 	uint8_t  sender_orig[6]; /* who sent or rebroadcasted this packet */
+ } __packed;
+ 
++struct tt_query_packet {
++	uint8_t  packet_type;
++	uint8_t  version;  /* batman version field */
++	uint8_t  dst[6];
++	uint8_t  ttl;
++	uint8_t  flags;		/* this field is a combination of:
++				 * - TT_REQUEST or TT_RESPONSE
++				 * - TT_FULL_TABLE
++				 */
++	uint8_t  src[6];
++	uint8_t  ttvn;		/* if TT_REQUEST: ttvn that triggered the
++				 *		  request
++				 * if TT_RESPONSE: new ttvn for the src
++				 * orig_node
++				 */
++	uint16_t tt_data;	/* if TT_REQUEST: crc associated with the
++				 *		  ttvn
++				 * if TT_RESPONSE: table_size
++				 */
++} __packed;
++
+ #endif /* _NET_BATMAN_ADV_PACKET_H_ */
 diff --git a/routing.c b/routing.c
-index 49f5715..91b3709 100644
+index 91b3709..52107cd 100644
 --- a/routing.c
 +++ b/routing.c
-@@ -64,28 +64,28 @@ void slide_own_bcast_window(struct hard_iface *hard_iface)
+@@ -64,28 +64,71 @@ void slide_own_bcast_window(struct hard_iface *hard_iface)
  	}
  }
  
--static void update_HNA(struct bat_priv *bat_priv, struct orig_node *orig_node,
--		       unsigned char *hna_buff, int hna_buff_len)
-+static void update_TT(struct bat_priv *bat_priv, struct orig_node *orig_node,
-+		       unsigned char *tt_buff, int tt_buff_len)
+-static void update_TT(struct bat_priv *bat_priv, struct orig_node *orig_node,
+-		       unsigned char *tt_buff, int tt_buff_len)
++static void update_transtable(struct bat_priv *bat_priv,
++			      struct orig_node *orig_node,
++			      unsigned char *tt_buff, uint8_t tt_num_changes,
++			      uint8_t ttvn, uint16_t tt_crc)
  {
--	if ((hna_buff_len != orig_node->hna_buff_len) ||
--	    ((hna_buff_len > 0) &&
--	     (orig_node->hna_buff_len > 0) &&
--	     (memcmp(orig_node->hna_buff, hna_buff, hna_buff_len) != 0))) {
-+	if ((tt_buff_len != orig_node->tt_buff_len) ||
-+	    ((tt_buff_len > 0) &&
-+	     (orig_node->tt_buff_len > 0) &&
-+	     (memcmp(orig_node->tt_buff, tt_buff, tt_buff_len) != 0))) {
- 
--		if (orig_node->hna_buff_len > 0)
--			hna_global_del_orig(bat_priv, orig_node,
--					    "originator changed hna");
-+		if (orig_node->tt_buff_len > 0)
-+			tt_global_del_orig(bat_priv, orig_node,
-+					    "originator changed tt");
- 
--		if ((hna_buff_len > 0) && (hna_buff))
--			hna_global_add_orig(bat_priv, orig_node,
--					    hna_buff, hna_buff_len);
-+		if ((tt_buff_len > 0) && (tt_buff))
-+			tt_global_add_orig(bat_priv, orig_node,
-+					    tt_buff, tt_buff_len);
+-	if ((tt_buff_len != orig_node->tt_buff_len) ||
+-	    ((tt_buff_len > 0) &&
+-	     (orig_node->tt_buff_len > 0) &&
+-	     (memcmp(orig_node->tt_buff, tt_buff, tt_buff_len) != 0))) {
+-
+-		if (orig_node->tt_buff_len > 0)
+-			tt_global_del_orig(bat_priv, orig_node,
+-					    "originator changed tt");
+-
+-		if ((tt_buff_len > 0) && (tt_buff))
+-			tt_global_add_orig(bat_priv, orig_node,
+-					    tt_buff, tt_buff_len);
++	struct tt_change *tt_change;
++	int count;
++	uint8_t orig_ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
++
++	/* the ttvn increased by one -> we can apply the attached changes */
++	if (ttvn - orig_ttvn == 1) {
++		/* the OGM could not contain the changes because they were too
++		 * many to fit in one frame or because they have already been
++		 * sent TT_OGM_APPEND_MAX times. In this case send a tt
++		 * request */
++		if (!tt_num_changes)
++			goto request_table;
++
++		for (count = 0; count < tt_num_changes; count++) {
++			tt_change = (struct tt_change *) tt_buff + count;
++			/* Check for the change op */
++			if (tt_change->op == TT_DEL)
++				tt_global_del(bat_priv, orig_node,
++					      tt_change->addr,
++					      "tt remotely removed");
++			else
++				if (!tt_global_add(bat_priv, orig_node,
++							tt_change->addr,
++							ttvn))
++					/* In case of problem while storing a
++					 * global_entry, we stop the updating
++					 * procedure without committing the
++					 * ttvn change. This will avoid to send
++					 * corrupted data on tt_request
++					 */
++					return;
++		}
++		/* Let's save the buffer (if any) */
++		tt_save_orig_buffer(bat_priv, orig_node,
++				    tt_buff, tt_num_changes);
++
++		atomic_set(&orig_node->last_ttvn, ttvn);
++
++		/* Even if we received the crc into the OGM, we prefer
++		 * to recompute it to spot any possible inconsistency
++		 * in the global table */
++		orig_node->tt_crc = tt_global_crc(bat_priv, orig_node);
++	} else {
++		/* if we missed more than one change or our tables are not
++		 * in sync anymore -> request fresh tt data */
++		if (ttvn != orig_ttvn || orig_node->tt_crc != tt_crc) {
++request_table:
++			bat_dbg(DBG_ROUTES, bat_priv, "TT changes missing "
++				"for %pM. Need to retrieve last OGM buffer\n",
++				orig_node->orig);
++			send_tt_request(bat_priv, orig_node, ttvn, tt_crc,
++					true);
++			return;
++		}
  	}
  }
  
  static void update_route(struct bat_priv *bat_priv,
  			 struct orig_node *orig_node,
- 			 struct neigh_node *neigh_node,
--			 unsigned char *hna_buff, int hna_buff_len)
-+			 unsigned char *tt_buff, int tt_buff_len)
+-			 struct neigh_node *neigh_node,
+-			 unsigned char *tt_buff, int tt_buff_len)
++			 struct neigh_node *neigh_node)
  {
  	struct neigh_node *curr_router;
  
-@@ -96,7 +96,7 @@ static void update_route(struct bat_priv *bat_priv,
+@@ -93,7 +136,6 @@ static void update_route(struct bat_priv *bat_priv,
  
+ 	/* route deleted */
+ 	if ((curr_router) && (!neigh_node)) {
+-
  		bat_dbg(DBG_ROUTES, bat_priv, "Deleting route towards: %pM\n",
  			orig_node->orig);
--		hna_global_del_orig(bat_priv, orig_node,
-+		tt_global_del_orig(bat_priv, orig_node,
- 				    "originator timed out");
- 
- 	/* route added */
-@@ -105,8 +105,8 @@ static void update_route(struct bat_priv *bat_priv,
+ 		tt_global_del_orig(bat_priv, orig_node,
+@@ -105,9 +147,6 @@ static void update_route(struct bat_priv *bat_priv,
  		bat_dbg(DBG_ROUTES, bat_priv,
  			"Adding route towards: %pM (via %pM)\n",
  			orig_node->orig, neigh_node->addr);
--		hna_global_add_orig(bat_priv, orig_node,
--				    hna_buff, hna_buff_len);
-+		tt_global_add_orig(bat_priv, orig_node,
-+				    tt_buff, tt_buff_len);
- 
+-		tt_global_add_orig(bat_priv, orig_node,
+-				    tt_buff, tt_buff_len);
+-
  	/* route changed */
  	} else {
-@@ -135,8 +135,8 @@ static void update_route(struct bat_priv *bat_priv,
+ 		bat_dbg(DBG_ROUTES, bat_priv,
+@@ -135,8 +174,7 @@ static void update_route(struct bat_priv *bat_priv,
  
  
  void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
--		   struct neigh_node *neigh_node, unsigned char *hna_buff,
--		   int hna_buff_len)
-+		   struct neigh_node *neigh_node, unsigned char *tt_buff,
-+		   int tt_buff_len)
+-		   struct neigh_node *neigh_node, unsigned char *tt_buff,
+-		   int tt_buff_len)
++		   struct neigh_node *neigh_node)
  {
  	struct neigh_node *router = NULL;
  
-@@ -147,10 +147,10 @@ void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
+@@ -146,11 +184,7 @@ void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 	router = orig_node_get_router(orig_node);
  
  	if (router != neigh_node)
- 		update_route(bat_priv, orig_node, neigh_node,
--			     hna_buff, hna_buff_len);
--	/* may be just HNA changed */
-+			     tt_buff, tt_buff_len);
-+	/* may be just TT changed */
- 	else
--		update_HNA(bat_priv, orig_node, hna_buff, hna_buff_len);
-+		update_TT(bat_priv, orig_node, tt_buff, tt_buff_len);
+-		update_route(bat_priv, orig_node, neigh_node,
+-			     tt_buff, tt_buff_len);
+-	/* may be just TT changed */
+-	else
+-		update_TT(bat_priv, orig_node, tt_buff, tt_buff_len);
++		update_route(bat_priv, orig_node, neigh_node);
  
  out:
  	if (router)
-@@ -387,14 +387,14 @@ static void update_orig(struct bat_priv *bat_priv,
+@@ -387,14 +421,12 @@ static void update_orig(struct bat_priv *bat_priv,
  			struct ethhdr *ethhdr,
  			struct batman_packet *batman_packet,
  			struct hard_iface *if_incoming,
--			unsigned char *hna_buff, int hna_buff_len,
-+			unsigned char *tt_buff, int tt_buff_len,
- 			char is_duplicate)
+-			unsigned char *tt_buff, int tt_buff_len,
+-			char is_duplicate)
++			unsigned char *tt_buff, char is_duplicate)
  {
  	struct neigh_node *neigh_node = NULL, *tmp_neigh_node = NULL;
  	struct neigh_node *router = NULL;
  	struct orig_node *orig_node_tmp;
  	struct hlist_node *node;
--	int tmp_hna_buff_len;
-+	int tmp_tt_buff_len;
+-	int tmp_tt_buff_len;
  	uint8_t bcast_own_sum_orig, bcast_own_sum_neigh;
  
  	bat_dbg(DBG_BATMAN, bat_priv, "update_originator(): "
-@@ -459,18 +459,18 @@ static void update_orig(struct bat_priv *bat_priv,
+@@ -459,9 +491,6 @@ static void update_orig(struct bat_priv *bat_priv,
  
  	bonding_candidate_add(orig_node, neigh_node);
  
--	tmp_hna_buff_len = (hna_buff_len > batman_packet->num_hna * ETH_ALEN ?
--			    batman_packet->num_hna * ETH_ALEN : hna_buff_len);
-+	tmp_tt_buff_len = (tt_buff_len > batman_packet->num_tt * ETH_ALEN ?
-+			    batman_packet->num_tt * ETH_ALEN : tt_buff_len);
- 
+-	tmp_tt_buff_len = (tt_buff_len > batman_packet->num_tt * ETH_ALEN ?
+-			    batman_packet->num_tt * ETH_ALEN : tt_buff_len);
+-
  	/* if this neighbor already is our next hop there is nothing
  	 * to change */
  	router = orig_node_get_router(orig_node);
- 	if (router == neigh_node)
--		goto update_hna;
-+		goto update_tt;
- 
- 	/* if this neighbor does not offer a better TQ we won't consider it */
- 	if (router && (router->tq_avg > neigh_node->tq_avg))
--		goto update_hna;
-+		goto update_tt;
- 
- 	/* if the TQ is the same and the link not more symetric we
- 	 * won't consider it either */
-@@ -488,16 +488,16 @@ static void update_orig(struct bat_priv *bat_priv,
- 		spin_unlock_bh(&orig_node_tmp->ogm_cnt_lock);
- 
- 		if (bcast_own_sum_orig >= bcast_own_sum_neigh)
--			goto update_hna;
-+			goto update_tt;
+@@ -491,15 +520,19 @@ static void update_orig(struct bat_priv *bat_priv,
+ 			goto update_tt;
  	}
  
- 	update_routes(bat_priv, orig_node, neigh_node,
--		      hna_buff, tmp_hna_buff_len);
-+		      tt_buff, tmp_tt_buff_len);
- 	goto update_gw;
+-	update_routes(bat_priv, orig_node, neigh_node,
+-		      tt_buff, tmp_tt_buff_len);
+-	goto update_gw;
++	update_routes(bat_priv, orig_node, neigh_node);
  
--update_hna:
-+update_tt:
- 	update_routes(bat_priv, orig_node, router,
--		      hna_buff, tmp_hna_buff_len);
-+		      tt_buff, tmp_tt_buff_len);
+ update_tt:
+-	update_routes(bat_priv, orig_node, router,
+-		      tt_buff, tmp_tt_buff_len);
++	/* I have to check for transtable changes only if the OGM has been
++	 * sent through a primary interface */
++	if (((batman_packet->orig != ethhdr->h_source) &&
++				(batman_packet->ttl > 2)) ||
++				(batman_packet->flags & PRIMARIES_FIRST_HOP))
++		update_transtable(bat_priv, orig_node, tt_buff,
++				  batman_packet->tt_num_changes,
++				  batman_packet->ttvn,
++				  batman_packet->tt_crc);
  
- update_gw:
+-update_gw:
  	if (orig_node->gw_flags != batman_packet->gw_flags)
-@@ -621,7 +621,7 @@ out:
+ 		gw_node_update(bat_priv, orig_node, batman_packet->gw_flags);
+ 
+@@ -621,7 +654,7 @@ out:
  
  void receive_bat_packet(struct ethhdr *ethhdr,
  			struct batman_packet *batman_packet,
--			unsigned char *hna_buff, int hna_buff_len,
-+			unsigned char *tt_buff, int tt_buff_len,
+-			unsigned char *tt_buff, int tt_buff_len,
++			unsigned char *tt_buff,
  			struct hard_iface *if_incoming)
  {
  	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
-@@ -818,14 +818,14 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+@@ -660,12 +693,14 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+ 		"Received BATMAN packet via NB: %pM, IF: %s [%pM] "
+-		"(from OG: %pM, via prev OG: %pM, seqno %d, tq %d, "
+-		"TTL %d, V %d, IDF %d)\n",
++		"(from OG: %pM, via prev OG: %pM, seqno %d, ttvn %u, "
++		"crc %u, changes %u, td %d, TTL %d, V %d, IDF %d)\n",
+ 		ethhdr->h_source, if_incoming->net_dev->name,
+ 		if_incoming->net_dev->dev_addr, batman_packet->orig,
+ 		batman_packet->prev_sender, batman_packet->seqno,
+-		batman_packet->tq, batman_packet->ttl, batman_packet->version,
++		batman_packet->ttvn, batman_packet->tt_crc,
++		batman_packet->tt_num_changes, batman_packet->tq,
++		batman_packet->ttl, batman_packet->version,
+ 		has_directlink_flag);
+ 
+ 	rcu_read_lock();
+@@ -818,14 +853,14 @@ void receive_bat_packet(struct ethhdr *ethhdr,
  	     ((orig_node->last_real_seqno == batman_packet->seqno) &&
  	      (orig_node->last_ttl - 3 <= batman_packet->ttl))))
  		update_orig(bat_priv, orig_node, ethhdr, batman_packet,
--			    if_incoming, hna_buff, hna_buff_len, is_duplicate);
-+			    if_incoming, tt_buff, tt_buff_len, is_duplicate);
+-			    if_incoming, tt_buff, tt_buff_len, is_duplicate);
++			    if_incoming, tt_buff, is_duplicate);
  
  	/* is single hop (direct) neighbor */
  	if (is_single_hop_neigh) {
  
  		/* mark direct link on incoming interface */
  		schedule_forward_packet(orig_node, ethhdr, batman_packet,
--					1, hna_buff_len, if_incoming);
-+					1, tt_buff_len, if_incoming);
+-					1, tt_buff_len, if_incoming);
++					1, if_incoming);
  
  		bat_dbg(DBG_BATMAN, bat_priv, "Forwarding packet: "
  			"rebroadcast neighbor packet with direct link flag\n");
-@@ -848,7 +848,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
+@@ -848,7 +883,7 @@ void receive_bat_packet(struct ethhdr *ethhdr,
  	bat_dbg(DBG_BATMAN, bat_priv,
  		"Forwarding packet: rebroadcast originator packet\n");
  	schedule_forward_packet(orig_node, ethhdr, batman_packet,
--				0, hna_buff_len, if_incoming);
-+				0, tt_buff_len, if_incoming);
+-				0, tt_buff_len, if_incoming);
++				0, if_incoming);
  
  out_neigh:
  	if ((orig_neigh_node) && (!is_single_hop_neigh))
+@@ -1195,6 +1230,70 @@ static struct neigh_node *find_ifalter_router(struct orig_node *primary_orig,
+ 	return router;
+ }
+ 
++int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
++{
++	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
++	struct tt_query_packet *tt_query;
++	struct ethhdr *ethhdr;
++	int ret = NET_RX_DROP;
++
++	/* drop packet if it has not necessary minimum size */
++	if (unlikely(!pskb_may_pull(skb, sizeof(struct tt_query_packet))))
++		goto out;
++
++	/* I could need to modify it */
++	if (skb_cow(skb, sizeof(struct tt_query_packet)) < 0)
++		goto out;
++
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
++
++	/* packet with unicast indication but broadcast recipient */
++	if (is_broadcast_ether_addr(ethhdr->h_dest))
++		goto out;
++
++	/* packet with broadcast sender address */
++	if (is_broadcast_ether_addr(ethhdr->h_source))
++		goto out;
++
++	tt_query = (struct tt_query_packet *)skb->data;
++
++	tt_query->tt_data = ntohs(tt_query->tt_data);
++
++	if (tt_query->flags & TT_REQUEST) {
++		/* If we cannot provide an answer the tt_request is 
++		 * forwarded */
++		if (!send_tt_response(bat_priv, tt_query)) {
++			bat_dbg(DBG_ROUTES, bat_priv,
++				"Routing TT_REQUEST to %pM [%c]\n",
++				tt_query->dst,
++				(tt_query->flags & TT_FULL_TABLE ? 'F' : '.'));
++			tt_query->tt_data = htons(tt_query->tt_data);
++			return route_unicast_packet(skb, recv_if);
++		}
++		ret = NET_RX_SUCCESS;
++		goto out;
++	}
++	/* packet needs to be linearised to access the TT changes records */
++	if (skb_linearize(skb) < 0)
++		goto out;
++
++	if (is_my_mac(tt_query->dst))
++		handle_tt_response(bat_priv, tt_query);
++	else {
++		bat_dbg(DBG_ROUTES, bat_priv,
++			"Routing TT_RESPONSE to %pM [%c]\n",
++			tt_query->dst,
++			(tt_query->flags & TT_FULL_TABLE ? 'F' : '.'));
++		tt_query->tt_data = htons(tt_query->tt_data);
++		return route_unicast_packet(skb, recv_if);
++	}
++	ret = NET_RX_SUCCESS;
++
++out:
++	kfree_skb(skb);
++	return ret;
++}
++
+ /* find a suitable router for this originator, and use
+  * bonding if possible. increases the found neighbors
+  * refcount.*/
+@@ -1376,14 +1475,64 @@ out:
+ 
+ int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ {
++	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct unicast_packet *unicast_packet;
+ 	int hdr_size = sizeof(struct unicast_packet);
++	struct orig_node *orig_node;
++	struct ethhdr *ethhdr;
++	uint8_t curr_ttvn;
++	int16_t diff;
+ 
+ 	if (check_unicast_packet(skb, hdr_size) < 0)
+ 		return NET_RX_DROP;
+ 
+ 	unicast_packet = (struct unicast_packet *)skb->data;
+ 
++	if (is_my_mac(unicast_packet->dest))
++		curr_ttvn = (uint8_t)atomic_read(&bat_priv->ttvn);
++	else {
++		orig_node = orig_hash_find(bat_priv, unicast_packet->dest);
++
++		if (!orig_node)
++			return NET_RX_DROP;
++
++		curr_ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
++		orig_node_free_ref(orig_node);
++	}
++
++	diff = unicast_packet->ttvn - curr_ttvn;
++	/* Check whether I have to reroute the packet */
++	if (unicast_packet->packet_type == BAT_UNICAST &&
++	    (diff < 0 && diff > -0xff/2)) {
++		/* Linearize the skb before accessing it */
++		if (skb_linearize(skb) < 0)
++			return NET_RX_DROP;
++
++		ethhdr = (struct ethhdr *)(skb->data +
++			sizeof(struct unicast_packet));
++
++		orig_node = transtable_search(bat_priv, ethhdr->h_dest);
++
++		if (!orig_node) {
++			if (!is_my_client(bat_priv, ethhdr->h_dest))
++				return NET_RX_DROP;
++			memcpy(unicast_packet->dest,
++			       bat_priv->primary_if->net_dev->dev_addr,
++			       ETH_ALEN);
++		} else {
++			memcpy(unicast_packet->dest, orig_node->orig,
++			       ETH_ALEN);
++			curr_ttvn = (uint8_t)
++				atomic_read(&orig_node->last_ttvn);
++			orig_node_free_ref(orig_node);
++		}
++
++		unicast_packet->ttvn = curr_ttvn;
++
++		bat_dbg(DBG_ROUTES, bat_priv, "HVN mismatch! "
++			"Rerouting unicast packet (for %pM) to %pM\n",
++			ethhdr->h_dest, unicast_packet->dest);
++	}
+ 	/* packet for me */
+ 	if (is_my_mac(unicast_packet->dest)) {
+ 		interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size);
 diff --git a/routing.h b/routing.h
-index b5a064c..870f298 100644
+index 870f298..6f6a5f8 100644
 --- a/routing.h
 +++ b/routing.h
-@@ -25,11 +25,11 @@
+@@ -24,12 +24,11 @@
+ 
  void slide_own_bcast_window(struct hard_iface *hard_iface);
  void receive_bat_packet(struct ethhdr *ethhdr,
- 				struct batman_packet *batman_packet,
--				unsigned char *hna_buff, int hna_buff_len,
-+				unsigned char *tt_buff, int tt_buff_len,
- 				struct hard_iface *if_incoming);
+-				struct batman_packet *batman_packet,
+-				unsigned char *tt_buff, int tt_buff_len,
+-				struct hard_iface *if_incoming);
++			struct batman_packet *batman_packet,
++			unsigned char *tt_buff,
++			struct hard_iface *if_incoming);
  void update_routes(struct bat_priv *bat_priv, struct orig_node *orig_node,
--		   struct neigh_node *neigh_node, unsigned char *hna_buff,
--		   int hna_buff_len);
-+		   struct neigh_node *neigh_node, unsigned char *tt_buff,
-+		   int tt_buff_len);
+-		   struct neigh_node *neigh_node, unsigned char *tt_buff,
+-		   int tt_buff_len);
++		   struct neigh_node *neigh_node);
  int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
  int recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if);
  int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+@@ -37,6 +36,7 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+ int recv_vis_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+ int recv_bat_packet(struct sk_buff *skb, struct hard_iface *recv_if);
++int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if);
+ struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 			       struct orig_node *orig_node,
+ 			       struct hard_iface *recv_if);
 diff --git a/send.c b/send.c
-index 02b541a..f30d0c6 100644
+index f30d0c6..aa0ad64 100644
 --- a/send.c
 +++ b/send.c
 @@ -121,7 +121,7 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
  	/* adjust all flags and log packets */
  	while (aggregated_packet(buff_pos,
  				 forw_packet->packet_len,
--				 batman_packet->num_hna)) {
-+				 batman_packet->num_tt)) {
+-				 batman_packet->num_tt)) {
++				 batman_packet->tt_num_changes)) {
  
  		/* we might have aggregated direct link packets with an
  		 * ordinary base packet */
-@@ -146,7 +146,7 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
+@@ -136,17 +136,17 @@ static void send_packet_to_if(struct forw_packet *forw_packet,
+ 							    "Forwarding"));
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+ 			"%s %spacket (originator %pM, seqno %d, TQ %d, TTL %d,"
+-			" IDF %s) on interface %s [%pM]\n",
++			" IDF %s, hvn %d) on interface %s [%pM]\n",
+ 			fwd_str, (packet_num > 0 ? "aggregated " : ""),
+ 			batman_packet->orig, ntohl(batman_packet->seqno),
+ 			batman_packet->tq, batman_packet->ttl,
+ 			(batman_packet->flags & DIRECTLINK ?
+ 			 "on" : "off"),
+-			hard_iface->net_dev->name,
++			batman_packet->ttvn, hard_iface->net_dev->name,
  			hard_iface->net_dev->dev_addr);
  
  		buff_pos += sizeof(struct batman_packet) +
--			(batman_packet->num_hna * ETH_ALEN);
-+			(batman_packet->num_tt * ETH_ALEN);
+-			(batman_packet->num_tt * ETH_ALEN);
++			tt_len(batman_packet->tt_num_changes);
  		packet_num++;
  		batman_packet = (struct batman_packet *)
  			(forw_packet->skb->data + buff_pos);
-@@ -222,7 +222,7 @@ static void rebuild_batman_packet(struct bat_priv *bat_priv,
- 	struct batman_packet *batman_packet;
+@@ -214,26 +214,17 @@ static void send_packet(struct forw_packet *forw_packet)
+ 	rcu_read_unlock();
+ }
  
- 	new_len = sizeof(struct batman_packet) +
--			(bat_priv->num_local_hna * ETH_ALEN);
-+			(bat_priv->num_local_tt * ETH_ALEN);
+-static void rebuild_batman_packet(struct bat_priv *bat_priv,
+-				  struct hard_iface *hard_iface)
++static void realloc_packet_buffer(struct hard_iface *hard_iface,
++				int new_len)
+ {
+-	int new_len;
+ 	unsigned char *new_buff;
+-	struct batman_packet *batman_packet;
+ 
+-	new_len = sizeof(struct batman_packet) +
+-			(bat_priv->num_local_tt * ETH_ALEN);
  	new_buff = kmalloc(new_len, GFP_ATOMIC);
  
  	/* keep old buffer if kmalloc should fail */
-@@ -231,7 +231,7 @@ static void rebuild_batman_packet(struct bat_priv *bat_priv,
+ 	if (new_buff) {
+ 		memcpy(new_buff, hard_iface->packet_buff,
  		       sizeof(struct batman_packet));
- 		batman_packet = (struct batman_packet *)new_buff;
+-		batman_packet = (struct batman_packet *)new_buff;
+-
+-		batman_packet->num_tt = tt_local_fill_buffer(bat_priv,
+-				new_buff + sizeof(struct batman_packet),
+-				new_len - sizeof(struct batman_packet));
  
--		batman_packet->num_hna = hna_local_fill_buffer(bat_priv,
-+		batman_packet->num_tt = tt_local_fill_buffer(bat_priv,
- 				new_buff + sizeof(struct batman_packet),
- 				new_len - sizeof(struct batman_packet));
+ 		kfree(hard_iface->packet_buff);
+ 		hard_iface->packet_buff = new_buff;
+@@ -241,6 +232,46 @@ static void rebuild_batman_packet(struct bat_priv *bat_priv,
+ 	}
+ }
  
-@@ -266,8 +266,8 @@ void schedule_own_packet(struct hard_iface *hard_iface)
++/* when calling this function (hard_iface == primary_if) has to be true */
++static void prepare_packet_buffer(struct bat_priv *bat_priv,
++				  struct hard_iface *hard_iface)
++{
++	int new_len;
++	struct batman_packet *batman_packet;
++
++	new_len = BAT_PACKET_LEN +
++		  tt_len((uint8_t)atomic_read(&bat_priv->tt_local_changes));
++
++	/* if we have too many changes for one packet don't send any
++	 * and wait for the tt table request which will be fragmented */
++	if (new_len > hard_iface->soft_iface->mtu)
++		new_len = BAT_PACKET_LEN;
++
++	realloc_packet_buffer(hard_iface, new_len);
++	batman_packet = (struct batman_packet *)hard_iface->packet_buff;
++
++	atomic_set(&bat_priv->tt_crc, tt_local_crc(bat_priv));
++
++	/* reset the sending counter */
++	atomic_set(&bat_priv->tt_ogm_append_cnt, TT_OGM_APPEND_MAX);
++
++	batman_packet->tt_num_changes = tt_changes_fill_buffer(bat_priv,
++				hard_iface->packet_buff + BAT_PACKET_LEN,
++				hard_iface->packet_len - BAT_PACKET_LEN);
++
++}
++
++static void reset_packet_buffer(struct bat_priv *bat_priv,
++	struct hard_iface *hard_iface)
++{
++	struct batman_packet *batman_packet;
++
++	realloc_packet_buffer(hard_iface, BAT_PACKET_LEN);
++
++	batman_packet = (struct batman_packet *)hard_iface->packet_buff;
++	batman_packet->tt_num_changes = 0;
++}
++
+ void schedule_own_packet(struct hard_iface *hard_iface)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+@@ -266,14 +297,22 @@ void schedule_own_packet(struct hard_iface *hard_iface)
  	if (hard_iface->if_status == IF_TO_BE_ACTIVATED)
  		hard_iface->if_status = IF_ACTIVE;
  
--	/* if local hna has changed and interface is a primary interface */
--	if ((atomic_read(&bat_priv->hna_local_changed)) &&
-+	/* if local tt has changed and interface is a primary interface */
-+	if ((atomic_read(&bat_priv->tt_local_changed)) &&
- 	    (hard_iface == primary_if))
- 		rebuild_batman_packet(bat_priv, hard_iface);
+-	/* if local tt has changed and interface is a primary interface */
+-	if ((atomic_read(&bat_priv->tt_local_changed)) &&
+-	    (hard_iface == primary_if))
+-		rebuild_batman_packet(bat_priv, hard_iface);
++	if (hard_iface == primary_if) {
++		/* if at least one change happened */
++		if (atomic_read(&bat_priv->tt_local_changes) > 0) {
++			prepare_packet_buffer(bat_priv, hard_iface);
++			/* Increment the TTVN only once per OGM interval */
++			atomic_inc(&bat_priv->ttvn);
++		}
++
++		/* if the changes have been sent enough times */
++		if (!atomic_dec_not_zero(&bat_priv->tt_ogm_append_cnt))
++			reset_packet_buffer(bat_priv, hard_iface);
++	}
  
-@@ -309,7 +309,7 @@ void schedule_own_packet(struct hard_iface *hard_iface)
+ 	/**
+ 	 * NOTE: packet_buff might just have been re-allocated in
+-	 * rebuild_batman_packet()
++	 * prepare_packet_buffer() or in reset_packet_buffer()
+ 	 */
+ 	batman_packet = (struct batman_packet *)hard_iface->packet_buff;
+ 
+@@ -281,6 +320,9 @@ void schedule_own_packet(struct hard_iface *hard_iface)
+ 	batman_packet->seqno =
+ 		htonl((uint32_t)atomic_read(&hard_iface->seqno));
+ 
++	batman_packet->ttvn = atomic_read(&bat_priv->ttvn);
++	batman_packet->tt_crc = htons((uint16_t)atomic_read(&bat_priv->tt_crc));
++
+ 	if (vis_server == VIS_TYPE_SERVER_SYNC)
+ 		batman_packet->flags |= VIS_SERVER;
+ 	else
+@@ -309,13 +351,14 @@ void schedule_own_packet(struct hard_iface *hard_iface)
  void schedule_forward_packet(struct orig_node *orig_node,
  			     struct ethhdr *ethhdr,
  			     struct batman_packet *batman_packet,
--			     uint8_t directlink, int hna_buff_len,
-+			     uint8_t directlink, int tt_buff_len,
+-			     uint8_t directlink, int tt_buff_len,
++			     uint8_t directlink,
  			     struct hard_iface *if_incoming)
  {
  	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
-@@ -369,7 +369,7 @@ void schedule_forward_packet(struct orig_node *orig_node,
+ 	struct neigh_node *router;
+ 	unsigned char in_tq, in_ttl, tq_avg = 0;
+ 	unsigned long send_time;
++	uint8_t tt_num_changes;
+ 
+ 	if (batman_packet->ttl <= 1) {
+ 		bat_dbg(DBG_BATMAN, bat_priv, "ttl exceeded\n");
+@@ -326,6 +369,7 @@ void schedule_forward_packet(struct orig_node *orig_node,
+ 
+ 	in_tq = batman_packet->tq;
+ 	in_ttl = batman_packet->ttl;
++	tt_num_changes = batman_packet->tt_num_changes;
+ 
+ 	batman_packet->ttl--;
+ 	memcpy(batman_packet->prev_sender, ethhdr->h_source, ETH_ALEN);
+@@ -358,6 +402,7 @@ void schedule_forward_packet(struct orig_node *orig_node,
+ 		batman_packet->ttl);
+ 
+ 	batman_packet->seqno = htonl(batman_packet->seqno);
++	batman_packet->tt_crc = htons(batman_packet->tt_crc);
+ 
+ 	/* switch of primaries first hop flag when forwarding */
+ 	batman_packet->flags &= ~PRIMARIES_FIRST_HOP;
+@@ -369,7 +414,8 @@ void schedule_forward_packet(struct orig_node *orig_node,
  	send_time = forward_send_time();
  	add_bat_packet_to_list(bat_priv,
  			       (unsigned char *)batman_packet,
--			       sizeof(struct batman_packet) + hna_buff_len,
-+			       sizeof(struct batman_packet) + tt_buff_len,
+-			       sizeof(struct batman_packet) + tt_buff_len,
++			       sizeof(struct batman_packet) +
++			       tt_len(tt_num_changes),
  			       if_incoming, 0, send_time);
  }
  
 diff --git a/send.h b/send.h
-index 7b2ff19..247172d 100644
+index 247172d..842f4d1 100644
 --- a/send.h
 +++ b/send.h
 @@ -29,7 +29,7 @@ void schedule_own_packet(struct hard_iface *hard_iface);
  void schedule_forward_packet(struct orig_node *orig_node,
  			     struct ethhdr *ethhdr,
  			     struct batman_packet *batman_packet,
--			     uint8_t directlink, int hna_buff_len,
-+			     uint8_t directlink, int tt_buff_len,
+-			     uint8_t directlink, int tt_buff_len,
++			     uint8_t directlink,
  			     struct hard_iface *if_outgoing);
  int add_bcast_packet_to_list(struct bat_priv *bat_priv, struct sk_buff *skb);
  void send_outstanding_bat_packet(struct work_struct *work);
 diff --git a/soft-interface.c b/soft-interface.c
-index 1772e2b..89a940a 100644
+index 89a940a..96b98f7 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
-@@ -363,11 +363,11 @@ static int interface_set_mac_addr(struct net_device *dev, void *p)
- 	if (!is_valid_ether_addr(addr->sa_data))
- 		return -EADDRNOTAVAIL;
- 
--	/* only modify hna-table if it has been initialised before */
-+	/* only modify tt-table if it has been initialised before */
+@@ -366,7 +366,7 @@ static int interface_set_mac_addr(struct net_device *dev, void *p)
+ 	/* only modify tt-table if it has been initialised before */
  	if (atomic_read(&bat_priv->mesh_state) == MESH_ACTIVE) {
--		hna_local_remove(bat_priv, dev->dev_addr,
-+		tt_local_remove(bat_priv, dev->dev_addr,
- 				 "mac address changed");
--		hna_local_add(dev, addr->sa_data);
-+		tt_local_add(dev, addr->sa_data);
+ 		tt_local_remove(bat_priv, dev->dev_addr,
+-				 "mac address changed");
++				"mac address changed");
+ 		tt_local_add(dev, addr->sa_data);
  	}
  
- 	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
-@@ -425,7 +425,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+@@ -424,7 +424,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	if ((curr_softif_neigh) && (curr_softif_neigh->vid == vid))
  		goto dropped;
  
- 	/* TODO: check this for locks */
--	hna_local_add(soft_iface, ethhdr->h_source);
-+	tt_local_add(soft_iface, ethhdr->h_source);
+-	/* TODO: check this for locks */
++	/* Register the client MAC in the transtable */
+ 	tt_local_add(soft_iface, ethhdr->h_source);
  
  	if (is_multicast_ether_addr(ethhdr->h_dest)) {
- 		ret = gw_is_target(bat_priv, skb);
-@@ -663,7 +663,7 @@ struct net_device *softif_create(char *name)
+@@ -663,7 +663,12 @@ struct net_device *softif_create(char *name)
  
  	atomic_set(&bat_priv->mesh_state, MESH_INACTIVE);
  	atomic_set(&bat_priv->bcast_seqno, 1);
--	atomic_set(&bat_priv->hna_local_changed, 0);
-+	atomic_set(&bat_priv->tt_local_changed, 0);
+-	atomic_set(&bat_priv->tt_local_changed, 0);
++	atomic_set(&bat_priv->ttvn, 0);
++	atomic_set(&bat_priv->tt_local_changes, 0);
++	atomic_set(&bat_priv->tt_ogm_append_cnt, 0);
++
++	bat_priv->tt_buff = NULL;
++	bat_priv->tt_buff_len = 0;
  
  	bat_priv->primary_if = NULL;
  	bat_priv->num_ifaces = 0;
 diff --git a/translation-table.c b/translation-table.c
-index f931830..25e6939 100644
+index 25e6939..698c3d4 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -26,40 +26,40 @@
+@@ -23,13 +23,17 @@
+ #include "translation-table.h"
+ #include "soft-interface.h"
+ #include "hard-interface.h"
++#include "send.h"
  #include "hash.h"
  #include "originator.h"
++#include "routing.h"
  
--static void hna_local_purge(struct work_struct *work);
--static void _hna_global_del_orig(struct bat_priv *bat_priv,
--				 struct hna_global_entry *hna_global_entry,
-+static void tt_local_purge(struct work_struct *work);
-+static void _tt_global_del_orig(struct bat_priv *bat_priv,
-+				 struct tt_global_entry *tt_global_entry,
- 				 char *message);
+-static void tt_local_purge(struct work_struct *work);
+-static void _tt_global_del_orig(struct bat_priv *bat_priv,
+-				 struct tt_global_entry *tt_global_entry,
+-				 char *message);
++#include <linux/crc16.h>
++
++static void _tt_global_del(struct bat_priv *bat_priv,
++			   struct tt_global_entry *tt_global_entry,
++			   char *message);
++static void tt_purge(struct work_struct *work);
  
  /* returns 1 if they are the same mac addr */
--static int compare_lhna(struct hlist_node *node, void *data2)
-+static int compare_ltt(struct hlist_node *node, void *data2)
- {
--	void *data1 = container_of(node, struct hna_local_entry, hash_entry);
-+	void *data1 = container_of(node, struct tt_local_entry, hash_entry);
- 
+ static int compare_ltt(struct hlist_node *node, void *data2)
+@@ -47,14 +51,15 @@ static int compare_gtt(struct hlist_node *node, void *data2)
  	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
  }
  
- /* returns 1 if they are the same mac addr */
--static int compare_ghna(struct hlist_node *node, void *data2)
-+static int compare_gtt(struct hlist_node *node, void *data2)
+-static void tt_local_start_timer(struct bat_priv *bat_priv)
++static void tt_start_timer(struct bat_priv *bat_priv)
  {
--	void *data1 = container_of(node, struct hna_global_entry, hash_entry);
-+	void *data1 = container_of(node, struct tt_global_entry, hash_entry);
- 
- 	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
+-	INIT_DELAYED_WORK(&bat_priv->tt_work, tt_local_purge);
+-	queue_delayed_work(bat_event_workqueue, &bat_priv->tt_work, 10 * HZ);
++	INIT_DELAYED_WORK(&bat_priv->tt_work, tt_purge);
++	queue_delayed_work(bat_event_workqueue, &bat_priv->tt_work,
++			   msecs_to_jiffies(5000));
  }
  
--static void hna_local_start_timer(struct bat_priv *bat_priv)
-+static void tt_local_start_timer(struct bat_priv *bat_priv)
+ static struct tt_local_entry *tt_local_hash_find(struct bat_priv *bat_priv,
+-						   void *data)
++						 void *data)
  {
--	INIT_DELAYED_WORK(&bat_priv->hna_work, hna_local_purge);
--	queue_delayed_work(bat_event_workqueue, &bat_priv->hna_work, 10 * HZ);
-+	INIT_DELAYED_WORK(&bat_priv->tt_work, tt_local_purge);
-+	queue_delayed_work(bat_event_workqueue, &bat_priv->tt_work, 10 * HZ);
- }
- 
--static struct hna_local_entry *hna_local_hash_find(struct bat_priv *bat_priv,
-+static struct tt_local_entry *tt_local_hash_find(struct bat_priv *bat_priv,
- 						   void *data)
- {
--	struct hashtable_t *hash = bat_priv->hna_local_hash;
-+	struct hashtable_t *hash = bat_priv->tt_local_hash;
+ 	struct hashtable_t *hash = bat_priv->tt_local_hash;
  	struct hlist_head *head;
- 	struct hlist_node *node;
--	struct hna_local_entry *hna_local_entry, *hna_local_entry_tmp = NULL;
-+	struct tt_local_entry *tt_local_entry, *tt_local_entry_tmp = NULL;
- 	int index;
- 
- 	if (!hash)
-@@ -69,26 +69,26 @@ static struct hna_local_entry *hna_local_hash_find(struct bat_priv *bat_priv,
- 	head = &hash->table[index];
- 
- 	rcu_read_lock();
--	hlist_for_each_entry_rcu(hna_local_entry, node, head, hash_entry) {
--		if (!compare_eth(hna_local_entry, data))
-+	hlist_for_each_entry_rcu(tt_local_entry, node, head, hash_entry) {
-+		if (!compare_eth(tt_local_entry, data))
- 			continue;
- 
--		hna_local_entry_tmp = hna_local_entry;
-+		tt_local_entry_tmp = tt_local_entry;
- 		break;
- 	}
- 	rcu_read_unlock();
- 
--	return hna_local_entry_tmp;
-+	return tt_local_entry_tmp;
+@@ -82,7 +87,7 @@ static struct tt_local_entry *tt_local_hash_find(struct bat_priv *bat_priv,
  }
  
--static struct hna_global_entry *hna_global_hash_find(struct bat_priv *bat_priv,
-+static struct tt_global_entry *tt_global_hash_find(struct bat_priv *bat_priv,
- 						     void *data)
+ static struct tt_global_entry *tt_global_hash_find(struct bat_priv *bat_priv,
+-						     void *data)
++						   void *data)
  {
--	struct hashtable_t *hash = bat_priv->hna_global_hash;
-+	struct hashtable_t *hash = bat_priv->tt_global_hash;
+ 	struct hashtable_t *hash = bat_priv->tt_global_hash;
  	struct hlist_head *head;
- 	struct hlist_node *node;
--	struct hna_global_entry *hna_global_entry;
--	struct hna_global_entry *hna_global_entry_tmp = NULL;
-+	struct tt_global_entry *tt_global_entry;
-+	struct tt_global_entry *tt_global_entry_tmp = NULL;
- 	int index;
- 
- 	if (!hash)
-@@ -98,125 +98,125 @@ static struct hna_global_entry *hna_global_hash_find(struct bat_priv *bat_priv,
- 	head = &hash->table[index];
- 
- 	rcu_read_lock();
--	hlist_for_each_entry_rcu(hna_global_entry, node, head, hash_entry) {
--		if (!compare_eth(hna_global_entry, data))
-+	hlist_for_each_entry_rcu(tt_global_entry, node, head, hash_entry) {
-+		if (!compare_eth(tt_global_entry, data))
- 			continue;
- 
--		hna_global_entry_tmp = hna_global_entry;
-+		tt_global_entry_tmp = tt_global_entry;
- 		break;
- 	}
- 	rcu_read_unlock();
- 
--	return hna_global_entry_tmp;
-+	return tt_global_entry_tmp;
+@@ -110,7 +115,42 @@ static struct tt_global_entry *tt_global_hash_find(struct bat_priv *bat_priv,
+ 	return tt_global_entry_tmp;
  }
  
--int hna_local_init(struct bat_priv *bat_priv)
-+int tt_local_init(struct bat_priv *bat_priv)
+-int tt_local_init(struct bat_priv *bat_priv)
++static bool is_out_of_time(unsigned long starting_time, unsigned long timeout)
++{
++	unsigned long deadline;
++	deadline = starting_time + msecs_to_jiffies(timeout);
++
++	return time_after(jiffies, deadline);
++}
++
++static void tt_local_event(struct bat_priv *bat_priv, uint8_t op, uint8_t *addr)
++{
++	struct tt_change_node *tt_change_node;
++
++	tt_change_node = (struct tt_change_node *)
++		kmalloc(sizeof(struct tt_change_node), GFP_ATOMIC);
++
++	if (!tt_change_node)
++		return;
++
++	tt_change_node->change.op = op;
++	memcpy(tt_change_node->change.addr, addr, ETH_ALEN);
++
++	spin_lock_bh(&bat_priv->tt_changes_list_lock);
++	/* track the change in the OGMinterval list */
++	list_add_tail(&tt_change_node->list, &bat_priv->tt_changes_list);
++	atomic_inc(&bat_priv->tt_local_changes);
++	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
++
++	atomic_set(&bat_priv->tt_ogm_append_cnt, 0);
++}
++
++int tt_len(int changes_num)
++{
++	return changes_num * sizeof(struct tt_change);
++}
++
++static int tt_local_init(struct bat_priv *bat_priv)
  {
--	if (bat_priv->hna_local_hash)
-+	if (bat_priv->tt_local_hash)
+ 	if (bat_priv->tt_local_hash)
  		return 1;
- 
--	bat_priv->hna_local_hash = hash_new(1024);
-+	bat_priv->tt_local_hash = hash_new(1024);
- 
--	if (!bat_priv->hna_local_hash)
-+	if (!bat_priv->tt_local_hash)
+@@ -120,9 +160,6 @@ int tt_local_init(struct bat_priv *bat_priv)
+ 	if (!bat_priv->tt_local_hash)
  		return 0;
  
--	atomic_set(&bat_priv->hna_local_changed, 0);
--	hna_local_start_timer(bat_priv);
-+	atomic_set(&bat_priv->tt_local_changed, 0);
-+	tt_local_start_timer(bat_priv);
- 
+-	atomic_set(&bat_priv->tt_local_changed, 0);
+-	tt_local_start_timer(bat_priv);
+-
  	return 1;
  }
  
--void hna_local_add(struct net_device *soft_iface, uint8_t *addr)
-+void tt_local_add(struct net_device *soft_iface, uint8_t *addr)
- {
+@@ -131,40 +168,24 @@ void tt_local_add(struct net_device *soft_iface, uint8_t *addr)
  	struct bat_priv *bat_priv = netdev_priv(soft_iface);
--	struct hna_local_entry *hna_local_entry;
--	struct hna_global_entry *hna_global_entry;
-+	struct tt_local_entry *tt_local_entry;
-+	struct tt_global_entry *tt_global_entry;
- 	int required_bytes;
+ 	struct tt_local_entry *tt_local_entry;
+ 	struct tt_global_entry *tt_global_entry;
+-	int required_bytes;
  
--	spin_lock_bh(&bat_priv->hna_lhash_lock);
--	hna_local_entry = hna_local_hash_find(bat_priv, addr);
--	spin_unlock_bh(&bat_priv->hna_lhash_lock);
-+	spin_lock_bh(&bat_priv->tt_lhash_lock);
-+	tt_local_entry = tt_local_hash_find(bat_priv, addr);
-+	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+ 	spin_lock_bh(&bat_priv->tt_lhash_lock);
+ 	tt_local_entry = tt_local_hash_find(bat_priv, addr);
+-	spin_unlock_bh(&bat_priv->tt_lhash_lock);
  
--	if (hna_local_entry) {
--		hna_local_entry->last_seen = jiffies;
-+	if (tt_local_entry) {
-+		tt_local_entry->last_seen = jiffies;
- 		return;
+ 	if (tt_local_entry) {
+ 		tt_local_entry->last_seen = jiffies;
+-		return;
++		goto unlock;
  	}
  
- 	/* only announce as many hosts as possible in the batman-packet and
--	   space in batman_packet->num_hna That also should give a limit to
-+	   space in batman_packet->num_tt That also should give a limit to
- 	   MAC-flooding. */
--	required_bytes = (bat_priv->num_local_hna + 1) * ETH_ALEN;
-+	required_bytes = (bat_priv->num_local_tt + 1) * ETH_ALEN;
- 	required_bytes += BAT_PACKET_LEN;
+-	/* only announce as many hosts as possible in the batman-packet and
+-	   space in batman_packet->num_tt That also should give a limit to
+-	   MAC-flooding. */
+-	required_bytes = (bat_priv->num_local_tt + 1) * ETH_ALEN;
+-	required_bytes += BAT_PACKET_LEN;
+-
+-	if ((required_bytes > ETH_DATA_LEN) ||
+-	    (atomic_read(&bat_priv->aggregated_ogms) &&
+-	     required_bytes > MAX_AGGREGATION_BYTES) ||
+-	    (bat_priv->num_local_tt + 1 > 255)) {
+-		bat_dbg(DBG_ROUTES, bat_priv,
+-			"Can't add new local tt entry (%pM): "
+-			"number of local tt entries exceeds packet size\n",
+-			addr);
+-		return;
+-	}
+-
+-	bat_dbg(DBG_ROUTES, bat_priv,
+-		"Creating new local tt entry: %pM\n", addr);
+-
+ 	tt_local_entry = kmalloc(sizeof(struct tt_local_entry), GFP_ATOMIC);
+ 	if (!tt_local_entry)
+-		return;
++		goto unlock;
++
++	tt_local_event(bat_priv, TT_ADD, addr);
++
++	bat_dbg(DBG_ROUTES, bat_priv,
++		"Creating new local tt entry: %pM (ttvn: %d\n", addr,
++		(uint8_t)atomic_read(&bat_priv->ttvn));
  
- 	if ((required_bytes > ETH_DATA_LEN) ||
- 	    (atomic_read(&bat_priv->aggregated_ogms) &&
- 	     required_bytes > MAX_AGGREGATION_BYTES) ||
--	    (bat_priv->num_local_hna + 1 > 255)) {
-+	    (bat_priv->num_local_tt + 1 > 255)) {
- 		bat_dbg(DBG_ROUTES, bat_priv,
--			"Can't add new local hna entry (%pM): "
--			"number of local hna entries exceeds packet size\n",
-+			"Can't add new local tt entry (%pM): "
-+			"number of local tt entries exceeds packet size\n",
- 			addr);
- 		return;
- 	}
- 
- 	bat_dbg(DBG_ROUTES, bat_priv,
--		"Creating new local hna entry: %pM\n", addr);
-+		"Creating new local tt entry: %pM\n", addr);
- 
--	hna_local_entry = kmalloc(sizeof(struct hna_local_entry), GFP_ATOMIC);
--	if (!hna_local_entry)
-+	tt_local_entry = kmalloc(sizeof(struct tt_local_entry), GFP_ATOMIC);
-+	if (!tt_local_entry)
- 		return;
- 
--	memcpy(hna_local_entry->addr, addr, ETH_ALEN);
--	hna_local_entry->last_seen = jiffies;
-+	memcpy(tt_local_entry->addr, addr, ETH_ALEN);
-+	tt_local_entry->last_seen = jiffies;
- 
- 	/* the batman interface mac address should never be purged */
- 	if (compare_eth(addr, soft_iface->dev_addr))
--		hna_local_entry->never_purge = 1;
-+		tt_local_entry->never_purge = 1;
+ 	memcpy(tt_local_entry->addr, addr, ETH_ALEN);
+ 	tt_local_entry->last_seen = jiffies;
+@@ -175,13 +196,9 @@ void tt_local_add(struct net_device *soft_iface, uint8_t *addr)
  	else
--		hna_local_entry->never_purge = 0;
-+		tt_local_entry->never_purge = 0;
+ 		tt_local_entry->never_purge = 0;
  
--	spin_lock_bh(&bat_priv->hna_lhash_lock);
-+	spin_lock_bh(&bat_priv->tt_lhash_lock);
- 
--	hash_add(bat_priv->hna_local_hash, compare_lhna, choose_orig,
--		 hna_local_entry, &hna_local_entry->hash_entry);
--	bat_priv->num_local_hna++;
--	atomic_set(&bat_priv->hna_local_changed, 1);
-+	hash_add(bat_priv->tt_local_hash, compare_ltt, choose_orig,
-+		 tt_local_entry, &tt_local_entry->hash_entry);
-+	bat_priv->num_local_tt++;
-+	atomic_set(&bat_priv->tt_local_changed, 1);
- 
--	spin_unlock_bh(&bat_priv->hna_lhash_lock);
-+	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+-	spin_lock_bh(&bat_priv->tt_lhash_lock);
+-
+ 	hash_add(bat_priv->tt_local_hash, compare_ltt, choose_orig,
+ 		 tt_local_entry, &tt_local_entry->hash_entry);
+-	bat_priv->num_local_tt++;
+-	atomic_set(&bat_priv->tt_local_changed, 1);
+-
++	atomic_inc(&bat_priv->num_local_tt);
+ 	spin_unlock_bh(&bat_priv->tt_lhash_lock);
  
  	/* remove address from global hash if present */
--	spin_lock_bh(&bat_priv->hna_ghash_lock);
-+	spin_lock_bh(&bat_priv->tt_ghash_lock);
+@@ -190,46 +207,60 @@ void tt_local_add(struct net_device *soft_iface, uint8_t *addr)
+ 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
  
--	hna_global_entry = hna_global_hash_find(bat_priv, addr);
-+	tt_global_entry = tt_global_hash_find(bat_priv, addr);
+ 	if (tt_global_entry)
+-		_tt_global_del_orig(bat_priv, tt_global_entry,
+-				     "local tt received");
++		_tt_global_del(bat_priv, tt_global_entry,
++			       "local tt received");
  
--	if (hna_global_entry)
--		_hna_global_del_orig(bat_priv, hna_global_entry,
--				     "local hna received");
-+	if (tt_global_entry)
-+		_tt_global_del_orig(bat_priv, tt_global_entry,
-+				     "local tt received");
- 
--	spin_unlock_bh(&bat_priv->hna_ghash_lock);
-+	spin_unlock_bh(&bat_priv->tt_ghash_lock);
- }
- 
--int hna_local_fill_buffer(struct bat_priv *bat_priv,
-+int tt_local_fill_buffer(struct bat_priv *bat_priv,
- 			  unsigned char *buff, int buff_len)
- {
--	struct hashtable_t *hash = bat_priv->hna_local_hash;
--	struct hna_local_entry *hna_local_entry;
-+	struct hashtable_t *hash = bat_priv->tt_local_hash;
-+	struct tt_local_entry *tt_local_entry;
- 	struct hlist_node *node;
- 	struct hlist_head *head;
- 	int i, count = 0;
- 
--	spin_lock_bh(&bat_priv->hna_lhash_lock);
-+	spin_lock_bh(&bat_priv->tt_lhash_lock);
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
- 
- 		rcu_read_lock();
--		hlist_for_each_entry_rcu(hna_local_entry, node,
-+		hlist_for_each_entry_rcu(tt_local_entry, node,
- 					 head, hash_entry) {
- 			if (buff_len < (count + 1) * ETH_ALEN)
- 				break;
- 
--			memcpy(buff + (count * ETH_ALEN), hna_local_entry->addr,
-+			memcpy(buff + (count * ETH_ALEN), tt_local_entry->addr,
- 			       ETH_ALEN);
- 
- 			count++;
-@@ -224,20 +224,20 @@ int hna_local_fill_buffer(struct bat_priv *bat_priv,
- 		rcu_read_unlock();
- 	}
- 
--	/* if we did not get all new local hnas see you next time  ;-) */
--	if (count == bat_priv->num_local_hna)
--		atomic_set(&bat_priv->hna_local_changed, 0);
-+	/* if we did not get all new local tts see you next time  ;-) */
-+	if (count == bat_priv->num_local_tt)
-+		atomic_set(&bat_priv->tt_local_changed, 0);
- 
--	spin_unlock_bh(&bat_priv->hna_lhash_lock);
+ 	spin_unlock_bh(&bat_priv->tt_ghash_lock);
++
++unlock:
 +	spin_unlock_bh(&bat_priv->tt_lhash_lock);
- 	return count;
  }
  
--int hna_local_seq_print_text(struct seq_file *seq, void *offset)
-+int tt_local_seq_print_text(struct seq_file *seq, void *offset)
+-int tt_local_fill_buffer(struct bat_priv *bat_priv,
+-			  unsigned char *buff, int buff_len)
++int tt_changes_fill_buffer(struct bat_priv *bat_priv,
++			   unsigned char *buff, int buff_len)
  {
- 	struct net_device *net_dev = (struct net_device *)seq->private;
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
--	struct hashtable_t *hash = bat_priv->hna_local_hash;
--	struct hna_local_entry *hna_local_entry;
-+	struct hashtable_t *hash = bat_priv->tt_local_hash;
-+	struct tt_local_entry *tt_local_entry;
- 	struct hard_iface *primary_if;
- 	struct hlist_node *node;
- 	struct hlist_head *head;
-@@ -261,10 +261,10 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
+-	struct hashtable_t *hash = bat_priv->tt_local_hash;
+-	struct tt_local_entry *tt_local_entry;
+-	struct hlist_node *node;
+-	struct hlist_head *head;
+-	int i, count = 0;
++	int count = 0, tot_changes = 0;
++	struct tt_change_node *entry, *safe;
+ 
+-	spin_lock_bh(&bat_priv->tt_lhash_lock);
++	if (buff_len > 0)
++		tot_changes = buff_len / tt_len(1);
+ 
+-	for (i = 0; i < hash->size; i++) {
+-		head = &hash->table[i];
+-
+-		rcu_read_lock();
+-		hlist_for_each_entry_rcu(tt_local_entry, node,
+-					 head, hash_entry) {
+-			if (buff_len < (count + 1) * ETH_ALEN)
+-				break;
+-
+-			memcpy(buff + (count * ETH_ALEN), tt_local_entry->addr,
+-			       ETH_ALEN);
++	spin_lock_bh(&bat_priv->tt_changes_list_lock);
++	atomic_set(&bat_priv->tt_local_changes, 0);
+ 
++	list_for_each_entry_safe(entry, safe, &bat_priv->tt_changes_list,
++			list) {
++		if (count < tot_changes) {
++			memcpy(buff + tt_len(count),
++			       &entry->change, sizeof(struct tt_change));
+ 			count++;
+ 		}
+-		rcu_read_unlock();
++		list_del(&entry->list);
++		kfree(entry);
+ 	}
++	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
+ 
+-	/* if we did not get all new local tts see you next time  ;-) */
+-	if (count == bat_priv->num_local_tt)
+-		atomic_set(&bat_priv->tt_local_changed, 0);
++	/* Keep the buffer for possible tt_request */
++	spin_lock_bh(&bat_priv->tt_buff_lock);
++	kfree(bat_priv->tt_buff);
++	bat_priv->tt_buff_len = 0;
++	bat_priv->tt_buff = NULL;
++	/* We check whether this new OGM has no changes due to size
++	 * problems */
++	if (buff_len > 0) {
++		/**
++		 * if kmalloc() fails we will reply with the full table
++		 * instead of providing the diff
++		 */
++		bat_priv->tt_buff = kmalloc(buff_len, GFP_ATOMIC);
++		if (bat_priv->tt_buff) {
++			memcpy(bat_priv->tt_buff, buff, buff_len);
++			bat_priv->tt_buff_len = buff_len;
++		}
++	}
++	spin_unlock_bh(&bat_priv->tt_buff_lock);
+ 
+-	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+-	return count;
++	return tot_changes;
+ }
+ 
+ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
+@@ -261,8 +292,8 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
  	}
  
  	seq_printf(seq, "Locally retrieved addresses (from %s) "
--		   "announced via HNA:\n",
-+		   "announced via TT:\n",
- 		   net_dev->name);
+-		   "announced via TT:\n",
+-		   net_dev->name);
++		   "announced via TT (TTVN: %u):\n",
++		   net_dev->name, (uint8_t)atomic_read(&bat_priv->ttvn));
  
--	spin_lock_bh(&bat_priv->hna_lhash_lock);
-+	spin_lock_bh(&bat_priv->tt_lhash_lock);
+ 	spin_lock_bh(&bat_priv->tt_lhash_lock);
  
- 	buf_size = 1;
- 	/* Estimate length for: " * xx:xx:xx:xx:xx:xx\n" */
-@@ -279,7 +279,7 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
- 
- 	buff = kmalloc(buf_size, GFP_ATOMIC);
- 	if (!buff) {
--		spin_unlock_bh(&bat_priv->hna_lhash_lock);
-+		spin_unlock_bh(&bat_priv->tt_lhash_lock);
- 		ret = -ENOMEM;
- 		goto out;
- 	}
-@@ -291,15 +291,15 @@ int hna_local_seq_print_text(struct seq_file *seq, void *offset)
- 		head = &hash->table[i];
- 
- 		rcu_read_lock();
--		hlist_for_each_entry_rcu(hna_local_entry, node,
-+		hlist_for_each_entry_rcu(tt_local_entry, node,
- 					 head, hash_entry) {
- 			pos += snprintf(buff + pos, 22, " * %pM\n",
--					hna_local_entry->addr);
-+					tt_local_entry->addr);
- 		}
- 		rcu_read_unlock();
- 	}
- 
--	spin_unlock_bh(&bat_priv->hna_lhash_lock);
-+	spin_unlock_bh(&bat_priv->tt_lhash_lock);
- 
- 	seq_printf(seq, "%s", buff);
- 	kfree(buff);
-@@ -309,180 +309,180 @@ out:
+@@ -309,54 +340,50 @@ out:
  	return ret;
  }
  
--static void _hna_local_del(struct hlist_node *node, void *arg)
-+static void _tt_local_del(struct hlist_node *node, void *arg)
+-static void _tt_local_del(struct hlist_node *node, void *arg)
++static void tt_local_entry_free(struct hlist_node *node, void *arg)
  {
  	struct bat_priv *bat_priv = (struct bat_priv *)arg;
--	void *data = container_of(node, struct hna_local_entry, hash_entry);
-+	void *data = container_of(node, struct tt_local_entry, hash_entry);
+ 	void *data = container_of(node, struct tt_local_entry, hash_entry);
  
  	kfree(data);
--	bat_priv->num_local_hna--;
--	atomic_set(&bat_priv->hna_local_changed, 1);
-+	bat_priv->num_local_tt--;
-+	atomic_set(&bat_priv->tt_local_changed, 1);
+-	bat_priv->num_local_tt--;
+-	atomic_set(&bat_priv->tt_local_changed, 1);
++	atomic_dec(&bat_priv->num_local_tt);
  }
  
--static void hna_local_del(struct bat_priv *bat_priv,
--			  struct hna_local_entry *hna_local_entry,
-+static void tt_local_del(struct bat_priv *bat_priv,
-+			  struct tt_local_entry *tt_local_entry,
- 			  char *message)
+ static void tt_local_del(struct bat_priv *bat_priv,
+-			  struct tt_local_entry *tt_local_entry,
+-			  char *message)
++			 struct tt_local_entry *tt_local_entry,
++			 char *message)
  {
--	bat_dbg(DBG_ROUTES, bat_priv, "Deleting local hna entry (%pM): %s\n",
--		hna_local_entry->addr, message);
-+	bat_dbg(DBG_ROUTES, bat_priv, "Deleting local tt entry (%pM): %s\n",
-+		tt_local_entry->addr, message);
+ 	bat_dbg(DBG_ROUTES, bat_priv, "Deleting local tt entry (%pM): %s\n",
+ 		tt_local_entry->addr, message);
  
--	hash_remove(bat_priv->hna_local_hash, compare_lhna, choose_orig,
--		    hna_local_entry->addr);
--	_hna_local_del(&hna_local_entry->hash_entry, bat_priv);
-+	hash_remove(bat_priv->tt_local_hash, compare_ltt, choose_orig,
-+		    tt_local_entry->addr);
-+	_tt_local_del(&tt_local_entry->hash_entry, bat_priv);
++	atomic_dec(&bat_priv->num_local_tt);
++
+ 	hash_remove(bat_priv->tt_local_hash, compare_ltt, choose_orig,
+ 		    tt_local_entry->addr);
+-	_tt_local_del(&tt_local_entry->hash_entry, bat_priv);
++
++	tt_local_entry_free(&tt_local_entry->hash_entry, bat_priv);
  }
  
--void hna_local_remove(struct bat_priv *bat_priv,
-+void tt_local_remove(struct bat_priv *bat_priv,
- 		      uint8_t *addr, char *message)
+-void tt_local_remove(struct bat_priv *bat_priv,
+-		      uint8_t *addr, char *message)
++void tt_local_remove(struct bat_priv *bat_priv, uint8_t *addr, char *message)
  {
--	struct hna_local_entry *hna_local_entry;
-+	struct tt_local_entry *tt_local_entry;
+ 	struct tt_local_entry *tt_local_entry;
  
--	spin_lock_bh(&bat_priv->hna_lhash_lock);
-+	spin_lock_bh(&bat_priv->tt_lhash_lock);
+ 	spin_lock_bh(&bat_priv->tt_lhash_lock);
+-
+ 	tt_local_entry = tt_local_hash_find(bat_priv, addr);
  
--	hna_local_entry = hna_local_hash_find(bat_priv, addr);
-+	tt_local_entry = tt_local_hash_find(bat_priv, addr);
- 
--	if (hna_local_entry)
--		hna_local_del(bat_priv, hna_local_entry, message);
-+	if (tt_local_entry)
-+		tt_local_del(bat_priv, tt_local_entry, message);
- 
--	spin_unlock_bh(&bat_priv->hna_lhash_lock);
-+	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+-	if (tt_local_entry)
++	if (tt_local_entry) {
++		tt_local_event(bat_priv, TT_DEL, tt_local_entry->addr);
+ 		tt_local_del(bat_priv, tt_local_entry, message);
+-
++	}
+ 	spin_unlock_bh(&bat_priv->tt_lhash_lock);
  }
  
--static void hna_local_purge(struct work_struct *work)
-+static void tt_local_purge(struct work_struct *work)
+-static void tt_local_purge(struct work_struct *work)
++static void tt_local_purge(struct bat_priv *bat_priv)
  {
- 	struct delayed_work *delayed_work =
- 		container_of(work, struct delayed_work, work);
- 	struct bat_priv *bat_priv =
--		container_of(delayed_work, struct bat_priv, hna_work);
--	struct hashtable_t *hash = bat_priv->hna_local_hash;
--	struct hna_local_entry *hna_local_entry;
-+		container_of(delayed_work, struct bat_priv, tt_work);
-+	struct hashtable_t *hash = bat_priv->tt_local_hash;
-+	struct tt_local_entry *tt_local_entry;
+-	struct delayed_work *delayed_work =
+-		container_of(work, struct delayed_work, work);
+-	struct bat_priv *bat_priv =
+-		container_of(delayed_work, struct bat_priv, tt_work);
+ 	struct hashtable_t *hash = bat_priv->tt_local_hash;
+ 	struct tt_local_entry *tt_local_entry;
  	struct hlist_node *node, *node_tmp;
  	struct hlist_head *head;
- 	unsigned long timeout;
+-	unsigned long timeout;
  	int i;
  
--	spin_lock_bh(&bat_priv->hna_lhash_lock);
-+	spin_lock_bh(&bat_priv->tt_lhash_lock);
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
- 
--		hlist_for_each_entry_safe(hna_local_entry, node, node_tmp,
-+		hlist_for_each_entry_safe(tt_local_entry, node, node_tmp,
- 					  head, hash_entry) {
--			if (hna_local_entry->never_purge)
-+			if (tt_local_entry->never_purge)
+ 	spin_lock_bh(&bat_priv->tt_lhash_lock);
+@@ -369,32 +396,52 @@ static void tt_local_purge(struct work_struct *work)
+ 			if (tt_local_entry->never_purge)
  				continue;
  
--			timeout = hna_local_entry->last_seen;
--			timeout += LOCAL_HNA_TIMEOUT * HZ;
-+			timeout = tt_local_entry->last_seen;
-+			timeout += TT_LOCAL_TIMEOUT * HZ;
- 
- 			if (time_before(jiffies, timeout))
+-			timeout = tt_local_entry->last_seen;
+-			timeout += TT_LOCAL_TIMEOUT * HZ;
+-
+-			if (time_before(jiffies, timeout))
++			if (!is_out_of_time(tt_local_entry->last_seen,
++					   TT_LOCAL_TIMEOUT * 1000))
  				continue;
  
--			hna_local_del(bat_priv, hna_local_entry,
-+			tt_local_del(bat_priv, tt_local_entry,
- 				      "address timed out");
++			tt_local_event(bat_priv, TT_DEL, tt_local_entry->addr);
+ 			tt_local_del(bat_priv, tt_local_entry,
+-				      "address timed out");
++				     "address timed out");
  		}
  	}
  
--	spin_unlock_bh(&bat_priv->hna_lhash_lock);
--	hna_local_start_timer(bat_priv);
-+	spin_unlock_bh(&bat_priv->tt_lhash_lock);
-+	tt_local_start_timer(bat_priv);
+ 	spin_unlock_bh(&bat_priv->tt_lhash_lock);
+-	tt_local_start_timer(bat_priv);
  }
  
--void hna_local_free(struct bat_priv *bat_priv)
-+void tt_local_free(struct bat_priv *bat_priv)
+-void tt_local_free(struct bat_priv *bat_priv)
++static void tt_local_table_free(struct bat_priv *bat_priv)
  {
--	if (!bat_priv->hna_local_hash)
-+	if (!bat_priv->tt_local_hash)
++	struct hashtable_t *hash;
++	int i;
++	spinlock_t *list_lock; /* protects write access to the hash lists */
++	struct hlist_head *head;
++	struct hlist_node *node, *node_tmp;
++	struct tt_local_entry *tt_local_entry;
++
+ 	if (!bat_priv->tt_local_hash)
  		return;
  
--	cancel_delayed_work_sync(&bat_priv->hna_work);
--	hash_delete(bat_priv->hna_local_hash, _hna_local_del, bat_priv);
--	bat_priv->hna_local_hash = NULL;
-+	cancel_delayed_work_sync(&bat_priv->tt_work);
-+	hash_delete(bat_priv->tt_local_hash, _tt_local_del, bat_priv);
-+	bat_priv->tt_local_hash = NULL;
+-	cancel_delayed_work_sync(&bat_priv->tt_work);
+-	hash_delete(bat_priv->tt_local_hash, _tt_local_del, bat_priv);
++	hash = bat_priv->tt_local_hash;
++
++	for (i = 0; i < hash->size; i++) {
++		head = &hash->table[i];
++		list_lock = &hash->list_locks[i];
++
++		spin_lock_bh(list_lock);
++		hlist_for_each_entry_safe(tt_local_entry, node, node_tmp,
++					  head, hash_entry) {
++			hlist_del_rcu(node);
++			kfree(tt_local_entry);
++		}
++		spin_unlock_bh(list_lock);
++	}
++
++	hash_destroy(hash);
++
+ 	bat_priv->tt_local_hash = NULL;
  }
  
--int hna_global_init(struct bat_priv *bat_priv)
-+int tt_global_init(struct bat_priv *bat_priv)
+-int tt_global_init(struct bat_priv *bat_priv)
++static int tt_global_init(struct bat_priv *bat_priv)
  {
--	if (bat_priv->hna_global_hash)
-+	if (bat_priv->tt_global_hash)
+ 	if (bat_priv->tt_global_hash)
  		return 1;
- 
--	bat_priv->hna_global_hash = hash_new(1024);
-+	bat_priv->tt_global_hash = hash_new(1024);
- 
--	if (!bat_priv->hna_global_hash)
-+	if (!bat_priv->tt_global_hash)
- 		return 0;
- 
+@@ -407,74 +454,79 @@ int tt_global_init(struct bat_priv *bat_priv)
  	return 1;
  }
  
--void hna_global_add_orig(struct bat_priv *bat_priv,
-+void tt_global_add_orig(struct bat_priv *bat_priv,
- 			 struct orig_node *orig_node,
--			 unsigned char *hna_buff, int hna_buff_len)
-+			 unsigned char *tt_buff, int tt_buff_len)
+-void tt_global_add_orig(struct bat_priv *bat_priv,
+-			 struct orig_node *orig_node,
+-			 unsigned char *tt_buff, int tt_buff_len)
++static void tt_changes_list_free(struct bat_priv *bat_priv)
++{
++	struct tt_change_node *entry, *safe;
++
++	spin_lock_bh(&bat_priv->tt_changes_list_lock);
++
++	list_for_each_entry_safe(entry, safe, &bat_priv->tt_changes_list,
++				 list) {
++		list_del(&entry->list);
++		kfree(entry);
++	}
++
++	atomic_set(&bat_priv->tt_local_changes, 0);
++	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
++}
++
++/* caller must hold orig_node recount */
++int tt_global_add(struct bat_priv *bat_priv,
++		  struct orig_node *orig_node,
++		  unsigned char *tt_addr, uint8_t ttvn)
  {
--	struct hna_global_entry *hna_global_entry;
--	struct hna_local_entry *hna_local_entry;
--	int hna_buff_count = 0;
--	unsigned char *hna_ptr;
-+	struct tt_global_entry *tt_global_entry;
-+	struct tt_local_entry *tt_local_entry;
-+	int tt_buff_count = 0;
-+	unsigned char *tt_ptr;
- 
--	while ((hna_buff_count + 1) * ETH_ALEN <= hna_buff_len) {
--		spin_lock_bh(&bat_priv->hna_ghash_lock);
-+	while ((tt_buff_count + 1) * ETH_ALEN <= tt_buff_len) {
-+		spin_lock_bh(&bat_priv->tt_ghash_lock);
- 
--		hna_ptr = hna_buff + (hna_buff_count * ETH_ALEN);
--		hna_global_entry = hna_global_hash_find(bat_priv, hna_ptr);
-+		tt_ptr = tt_buff + (tt_buff_count * ETH_ALEN);
-+		tt_global_entry = tt_global_hash_find(bat_priv, tt_ptr);
- 
--		if (!hna_global_entry) {
--			spin_unlock_bh(&bat_priv->hna_ghash_lock);
-+		if (!tt_global_entry) {
-+			spin_unlock_bh(&bat_priv->tt_ghash_lock);
- 
--			hna_global_entry =
--				kmalloc(sizeof(struct hna_global_entry),
-+			tt_global_entry =
-+				kmalloc(sizeof(struct tt_global_entry),
- 					GFP_ATOMIC);
- 
--			if (!hna_global_entry)
-+			if (!tt_global_entry)
- 				break;
- 
--			memcpy(hna_global_entry->addr, hna_ptr, ETH_ALEN);
-+			memcpy(tt_global_entry->addr, tt_ptr, ETH_ALEN);
- 
- 			bat_dbg(DBG_ROUTES, bat_priv,
--				"Creating new global hna entry: "
-+				"Creating new global tt entry: "
- 				"%pM (via %pM)\n",
--				hna_global_entry->addr, orig_node->orig);
-+				tt_global_entry->addr, orig_node->orig);
- 
--			spin_lock_bh(&bat_priv->hna_ghash_lock);
--			hash_add(bat_priv->hna_global_hash, compare_ghna,
--				 choose_orig, hna_global_entry,
--				 &hna_global_entry->hash_entry);
-+			spin_lock_bh(&bat_priv->tt_ghash_lock);
-+			hash_add(bat_priv->tt_global_hash, compare_gtt,
-+				 choose_orig, tt_global_entry,
-+				 &tt_global_entry->hash_entry);
- 
+ 	struct tt_global_entry *tt_global_entry;
+ 	struct tt_local_entry *tt_local_entry;
+-	int tt_buff_count = 0;
+-	unsigned char *tt_ptr;
+-
+-	while ((tt_buff_count + 1) * ETH_ALEN <= tt_buff_len) {
+-		spin_lock_bh(&bat_priv->tt_ghash_lock);
+-
+-		tt_ptr = tt_buff + (tt_buff_count * ETH_ALEN);
+-		tt_global_entry = tt_global_hash_find(bat_priv, tt_ptr);
+-
+-		if (!tt_global_entry) {
+-			spin_unlock_bh(&bat_priv->tt_ghash_lock);
+-
+-			tt_global_entry =
+-				kmalloc(sizeof(struct tt_global_entry),
+-					GFP_ATOMIC);
+-
+-			if (!tt_global_entry)
+-				break;
+-
+-			memcpy(tt_global_entry->addr, tt_ptr, ETH_ALEN);
+-
+-			bat_dbg(DBG_ROUTES, bat_priv,
+-				"Creating new global tt entry: "
+-				"%pM (via %pM)\n",
+-				tt_global_entry->addr, orig_node->orig);
+-
+-			spin_lock_bh(&bat_priv->tt_ghash_lock);
+-			hash_add(bat_priv->tt_global_hash, compare_gtt,
+-				 choose_orig, tt_global_entry,
+-				 &tt_global_entry->hash_entry);
+-
+-		}
+-
++	struct orig_node *orig_node_tmp;
++
++	spin_lock_bh(&bat_priv->tt_ghash_lock);
++	tt_global_entry = tt_global_hash_find(bat_priv, tt_addr);
++
++	if (!tt_global_entry) {
++		tt_global_entry =
++			kmalloc(sizeof(struct tt_global_entry),
++				GFP_ATOMIC);
++		if (!tt_global_entry)
++			goto unlock;
++		memcpy(tt_global_entry->addr, tt_addr, ETH_ALEN);
++		/* Assign the new orig_node */
++		atomic_inc(&orig_node->refcount);
+ 		tt_global_entry->orig_node = orig_node;
+-		spin_unlock_bh(&bat_priv->tt_ghash_lock);
+-
+-		/* remove address from local hash if present */
+-		spin_lock_bh(&bat_priv->tt_lhash_lock);
+-
+-		tt_ptr = tt_buff + (tt_buff_count * ETH_ALEN);
+-		tt_local_entry = tt_local_hash_find(bat_priv, tt_ptr);
+-
+-		if (tt_local_entry)
+-			tt_local_del(bat_priv, tt_local_entry,
+-				      "global tt received");
+-
+-		spin_unlock_bh(&bat_priv->tt_lhash_lock);
+-
+-		tt_buff_count++;
+-	}
+-
+-	/* initialize, and overwrite if malloc succeeds */
+-	orig_node->tt_buff = NULL;
+-	orig_node->tt_buff_len = 0;
+-
+-	if (tt_buff_len > 0) {
+-		orig_node->tt_buff = kmalloc(tt_buff_len, GFP_ATOMIC);
+-		if (orig_node->tt_buff) {
+-			memcpy(orig_node->tt_buff, tt_buff, tt_buff_len);
+-			orig_node->tt_buff_len = tt_buff_len;
++		tt_global_entry->ttvn = ttvn;
++		atomic_inc(&orig_node->tt_size);
++		hash_add(bat_priv->tt_global_hash, compare_gtt,
++			 choose_orig, tt_global_entry,
++			 &tt_global_entry->hash_entry);
++	} else {
++		if (tt_global_entry->orig_node != orig_node) {
++			atomic_dec(&tt_global_entry->orig_node->tt_size);
++			orig_node_tmp = tt_global_entry->orig_node;
++			atomic_inc(&orig_node->refcount);
++			tt_global_entry->orig_node = orig_node;
++			tt_global_entry->ttvn = ttvn;
++			orig_node_free_ref(orig_node_tmp);
++			atomic_inc(&orig_node->tt_size);
  		}
+ 	}
++
++	spin_unlock_bh(&bat_priv->tt_ghash_lock);
++
++	bat_dbg(DBG_ROUTES, bat_priv,
++		"Creating new global tt entry: %pM (via %pM)\n",
++		tt_global_entry->addr, orig_node->orig);
++
++	/* remove address from local hash if present */
++	spin_lock_bh(&bat_priv->tt_lhash_lock);
++	tt_local_entry = tt_local_hash_find(bat_priv, tt_addr);
++
++	if (tt_local_entry)
++		tt_local_del(bat_priv, tt_local_entry,
++			     "global tt received");
++	spin_unlock_bh(&bat_priv->tt_lhash_lock);
++	return 1;
++unlock:
++	spin_unlock_bh(&bat_priv->tt_ghash_lock);
++	return 0;
+ }
  
--		hna_global_entry->orig_node = orig_node;
--		spin_unlock_bh(&bat_priv->hna_ghash_lock);
-+		tt_global_entry->orig_node = orig_node;
-+		spin_unlock_bh(&bat_priv->tt_ghash_lock);
+ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+@@ -507,17 +559,20 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
  
- 		/* remove address from local hash if present */
--		spin_lock_bh(&bat_priv->hna_lhash_lock);
-+		spin_lock_bh(&bat_priv->tt_lhash_lock);
+ 	seq_printf(seq, "Globally announced TTs received via the mesh %s\n",
+ 		   net_dev->name);
++	seq_printf(seq, "       %-13s %s       %-15s %s\n",
++		   "Client", "(TTVN)", "Originator", "(Curr TTVN)");
  
--		hna_ptr = hna_buff + (hna_buff_count * ETH_ALEN);
--		hna_local_entry = hna_local_hash_find(bat_priv, hna_ptr);
-+		tt_ptr = tt_buff + (tt_buff_count * ETH_ALEN);
-+		tt_local_entry = tt_local_hash_find(bat_priv, tt_ptr);
+ 	spin_lock_bh(&bat_priv->tt_ghash_lock);
  
--		if (hna_local_entry)
--			hna_local_del(bat_priv, hna_local_entry,
--				      "global hna received");
-+		if (tt_local_entry)
-+			tt_local_del(bat_priv, tt_local_entry,
-+				      "global tt received");
+ 	buf_size = 1;
+-	/* Estimate length for: " * xx:xx:xx:xx:xx:xx via xx:xx:xx:xx:xx:xx\n"*/
++	/* Estimate length for: " * xx:xx:xx:xx:xx:xx (ttvn) via
++	 * xx:xx:xx:xx:xx:xx (cur_ttvn)\n"*/
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
  
--		spin_unlock_bh(&bat_priv->hna_lhash_lock);
-+		spin_unlock_bh(&bat_priv->tt_lhash_lock);
- 
--		hna_buff_count++;
-+		tt_buff_count++;
+ 		rcu_read_lock();
+ 		__hlist_for_each_rcu(node, head)
+-			buf_size += 43;
++			buf_size += 59;
+ 		rcu_read_unlock();
  	}
  
- 	/* initialize, and overwrite if malloc succeeds */
--	orig_node->hna_buff = NULL;
--	orig_node->hna_buff_len = 0;
-+	orig_node->tt_buff = NULL;
-+	orig_node->tt_buff_len = 0;
+@@ -536,10 +591,14 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(tt_global_entry, node,
+ 					 head, hash_entry) {
+-			pos += snprintf(buff + pos, 44,
+-					" * %pM via %pM\n",
++			pos += snprintf(buff + pos, 61,
++					" * %pM  (%3u) via %pM     (%3u)\n",
+ 					tt_global_entry->addr,
+-					tt_global_entry->orig_node->orig);
++					tt_global_entry->ttvn,
++					tt_global_entry->orig_node->orig,
++					(uint8_t) atomic_read(
++						&tt_global_entry->orig_node->
++						last_ttvn));
+ 		}
+ 		rcu_read_unlock();
+ 	}
+@@ -554,64 +613,80 @@ out:
+ 	return ret;
+ }
  
--	if (hna_buff_len > 0) {
--		orig_node->hna_buff = kmalloc(hna_buff_len, GFP_ATOMIC);
--		if (orig_node->hna_buff) {
--			memcpy(orig_node->hna_buff, hna_buff, hna_buff_len);
--			orig_node->hna_buff_len = hna_buff_len;
+-static void _tt_global_del_orig(struct bat_priv *bat_priv,
+-				 struct tt_global_entry *tt_global_entry,
+-				 char *message)
++static void _tt_global_del(struct bat_priv *bat_priv,
++			   struct tt_global_entry *tt_global_entry,
++			   char *message)
+ {
++	if (!tt_global_entry)
++		return;
++
+ 	bat_dbg(DBG_ROUTES, bat_priv,
+ 		"Deleting global tt entry %pM (via %pM): %s\n",
+ 		tt_global_entry->addr, tt_global_entry->orig_node->orig,
+ 		message);
+ 
++	atomic_dec(&tt_global_entry->orig_node->tt_size);
+ 	hash_remove(bat_priv->tt_global_hash, compare_gtt, choose_orig,
+ 		    tt_global_entry->addr);
+ 	kfree(tt_global_entry);
+ }
+ 
++void tt_global_del(struct bat_priv *bat_priv,
++		   struct orig_node *orig_node,
++		   unsigned char *addr, char *message)
++{
++	struct tt_global_entry *tt_global_entry;
++
++	spin_lock_bh(&bat_priv->tt_ghash_lock);
++	tt_global_entry = tt_global_hash_find(bat_priv, addr);
++
++	if (tt_global_entry && tt_global_entry->orig_node == orig_node) {
++		atomic_dec(&orig_node->tt_size);
++		_tt_global_del(bat_priv, tt_global_entry, message);
++	}
++	spin_unlock_bh(&bat_priv->tt_ghash_lock);
++}
++
+ void tt_global_del_orig(struct bat_priv *bat_priv,
+-			 struct orig_node *orig_node, char *message)
++			struct orig_node *orig_node, char *message)
+ {
+ 	struct tt_global_entry *tt_global_entry;
+-	int tt_buff_count = 0;
+-	unsigned char *tt_ptr;
++	int i;
++	struct hashtable_t *hash = bat_priv->tt_global_hash;
++	struct hlist_node *node, *safe;
++	struct hlist_head *head;
+ 
+-	if (orig_node->tt_buff_len == 0)
++	if (!bat_priv->tt_global_hash)
+ 		return;
+ 
+ 	spin_lock_bh(&bat_priv->tt_ghash_lock);
++	for (i = 0; i < hash->size; i++) {
++		head = &hash->table[i];
+ 
+-	while ((tt_buff_count + 1) * ETH_ALEN <= orig_node->tt_buff_len) {
+-		tt_ptr = orig_node->tt_buff + (tt_buff_count * ETH_ALEN);
+-		tt_global_entry = tt_global_hash_find(bat_priv, tt_ptr);
+-
+-		if ((tt_global_entry) &&
+-		    (tt_global_entry->orig_node == orig_node))
+-			_tt_global_del_orig(bat_priv, tt_global_entry,
+-					     message);
+-
+-		tt_buff_count++;
++		hlist_for_each_entry_safe(tt_global_entry, node, safe,
++					 head, hash_entry) {
++			if (tt_global_entry->orig_node == orig_node)
++				_tt_global_del(bat_priv, tt_global_entry,
++					       message);
++		}
+ 	}
++	atomic_set(&orig_node->tt_size, 0);
+ 
+ 	spin_unlock_bh(&bat_priv->tt_ghash_lock);
+-
+-	orig_node->tt_buff_len = 0;
+-	kfree(orig_node->tt_buff);
+-	orig_node->tt_buff = NULL;
+ }
+ 
+-static void tt_global_del(struct hlist_node *node, void *arg)
++static void tt_global_entry_free(struct hlist_node *node, void *arg)
+ {
+ 	void *data = container_of(node, struct tt_global_entry, hash_entry);
+-
+ 	kfree(data);
+ }
+ 
+-void tt_global_free(struct bat_priv *bat_priv)
++static void tt_global_table_free(struct bat_priv *bat_priv)
+ {
+ 	if (!bat_priv->tt_global_hash)
+ 		return;
+ 
+-	hash_delete(bat_priv->tt_global_hash, tt_global_del, NULL);
++	hash_delete(bat_priv->tt_global_hash, tt_global_entry_free, NULL);
+ 	bat_priv->tt_global_hash = NULL;
+ }
+ 
+@@ -635,3 +710,695 @@ out:
+ 	spin_unlock_bh(&bat_priv->tt_ghash_lock);
+ 	return orig_node;
+ }
++
++/* Calculates the checksum of the local table of a given orig_node */
++uint16_t tt_global_crc(struct bat_priv *bat_priv, struct orig_node *orig_node)
++{
++	uint16_t total = 0, total_one;
++	struct hashtable_t *hash = bat_priv->tt_global_hash;
++	struct tt_global_entry *tt_global_entry;
++	struct hlist_node *node;
++	struct hlist_head *head;
++	int i, j;
++
++	for (i = 0; i < hash->size; i++) {
++		head = &hash->table[i];
++
++		rcu_read_lock();
++		hlist_for_each_entry_rcu(tt_global_entry, node,
++					 head, hash_entry) {
++			if (compare_eth(tt_global_entry->orig_node,
++					orig_node)) {
++				total_one = 0;
++				for (j = 0; j < ETH_ALEN; j++)
++					total_one = crc16_byte(total_one,
++						tt_global_entry->addr[j]);
++				total ^= total_one;
++			}
++		}
++		rcu_read_unlock();
++	}
++
++	return total;
++}
++
++/* Calculates the checksum of the local table */
++uint16_t tt_local_crc(struct bat_priv *bat_priv)
++{
++	uint16_t total = 0, total_one;
++	struct hashtable_t *hash = bat_priv->tt_local_hash;
++	struct tt_local_entry *tt_local_entry;
++	struct hlist_node *node;
++	struct hlist_head *head;
++	int i, j;
++
++	for (i = 0; i < hash->size; i++) {
++		head = &hash->table[i];
++
++		rcu_read_lock();
++		hlist_for_each_entry_rcu(tt_local_entry, node,
++					 head, hash_entry) {
++			total_one = 0;
++			for (j = 0; j < ETH_ALEN; j++)
++				total_one = crc16_byte(total_one,
++						   tt_local_entry->addr[j]);
++			total ^= total_one;
++		}
++
++		rcu_read_unlock();
++	}
++
++	return total;
++}
++
++static void tt_req_list_free(struct bat_priv *bat_priv)
++{
++	struct tt_req_node *node, *safe;
++
++	spin_lock_bh(&bat_priv->tt_req_list_lock);
++
++	list_for_each_entry_safe(node, safe, &bat_priv->tt_req_list, list) {
++		list_del(&node->list);
++		kfree(node);
++	}
++
++	spin_unlock_bh(&bat_priv->tt_req_list_lock);
++}
++
++void tt_save_orig_buffer(struct bat_priv *bat_priv, struct orig_node *orig_node,
++			 unsigned char *tt_buff, uint8_t tt_num_changes)
++{
++	uint16_t tt_buff_len = tt_len(tt_num_changes);
++
++	/* Replace the old buffer only if I received something in the
++	 * last OGM (the OGM could carry no changes) */
++	spin_lock_bh(&orig_node->tt_buff_lock);
 +	if (tt_buff_len > 0) {
++		kfree(orig_node->tt_buff);
++		orig_node->tt_buff_len = 0;
 +		orig_node->tt_buff = kmalloc(tt_buff_len, GFP_ATOMIC);
 +		if (orig_node->tt_buff) {
 +			memcpy(orig_node->tt_buff, tt_buff, tt_buff_len);
 +			orig_node->tt_buff_len = tt_buff_len;
- 		}
- 	}
- }
- 
--int hna_global_seq_print_text(struct seq_file *seq, void *offset)
-+int tt_global_seq_print_text(struct seq_file *seq, void *offset)
- {
- 	struct net_device *net_dev = (struct net_device *)seq->private;
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
--	struct hashtable_t *hash = bat_priv->hna_global_hash;
--	struct hna_global_entry *hna_global_entry;
-+	struct hashtable_t *hash = bat_priv->tt_global_hash;
++		}
++	}
++	spin_unlock_bh(&orig_node->tt_buff_lock);
++}
++
++static void tt_req_purge(struct bat_priv *bat_priv)
++{
++	struct tt_req_node *node, *safe;
++
++	spin_lock_bh(&bat_priv->tt_req_list_lock);
++	list_for_each_entry_safe(node, safe, &bat_priv->tt_req_list, list) {
++		if (is_out_of_time(node->issued_at,
++		    TT_REQUEST_TIMEOUT * 1000)) {
++			list_del(&node->list);
++			kfree(node);
++		}
++	}
++	spin_unlock_bh(&bat_priv->tt_req_list_lock);
++}
++
++int send_tt_request(struct bat_priv *bat_priv, struct orig_node *dst_orig_node,
++		    uint8_t ttvn, uint16_t tt_crc, bool full_table)
++{
++	struct sk_buff *skb;
++	struct tt_query_packet *tt_request;
++	struct neigh_node *neigh_node = NULL;
++	struct hard_iface *primary_if;
++	struct tt_req_node *tt_req_node = NULL;
++	int ret = 0;
++
++	primary_if = primary_if_get_selected(bat_priv);
++	if (!primary_if)
++		goto out;
++
++	spin_lock_bh(&bat_priv->tt_req_list_lock);
++	/* The new tt_req will be issued only if I'm not waiting for a
++	 * reply from the same orig_node yet */
++	list_for_each_entry(tt_req_node, &bat_priv->tt_req_list, list) {
++		if (compare_eth(tt_req_node, dst_orig_node) &&
++		    !is_out_of_time(tt_req_node->issued_at,
++				    TT_REQUEST_TIMEOUT * 1000))
++			goto unlock_tt;
++	}
++
++	tt_req_node = kmalloc(sizeof(struct tt_req_node), GFP_ATOMIC);
++	if (!tt_req_node) {
++		ret = 1;
++		goto unlock_tt;
++	}
++
++	memcpy(tt_req_node->addr, dst_orig_node->orig, ETH_ALEN);
++	tt_req_node->issued_at = jiffies;
++
++	list_add(&tt_req_node->list, &bat_priv->tt_req_list);
++	spin_unlock_bh(&bat_priv->tt_req_list_lock);
++
++	skb = dev_alloc_skb(sizeof(struct tt_query_packet) + ETH_HLEN);
++	if (!skb)
++		goto out;
++
++	skb_reserve(skb, ETH_HLEN);
++
++	tt_request = (struct tt_query_packet *)skb_put(skb,
++				sizeof(struct tt_query_packet));
++
++	tt_request->packet_type = BAT_TT_QUERY;
++	tt_request->version = COMPAT_VERSION;
++	memcpy(tt_request->src, primary_if->net_dev->dev_addr, ETH_ALEN);
++	memcpy(tt_request->dst, dst_orig_node->orig, ETH_ALEN);
++	tt_request->ttl = TTL;
++	tt_request->ttvn = ttvn;
++	tt_request->tt_data = tt_crc;
++	tt_request->flags = TT_REQUEST;
++
++	/* Request the full table if needed */
++	if (full_table)
++		tt_request->flags |= TT_FULL_TABLE;
++
++	neigh_node = find_router(bat_priv, dst_orig_node, NULL);
++	if (!neigh_node)
++		goto out;
++
++	if (neigh_node->if_incoming->if_status != IF_ACTIVE)
++		goto out;
++
++	bat_dbg(DBG_ROUTES, bat_priv, "Sending TT_REQUEST to %pM via %pM "
++		"[%c]\n", dst_orig_node->orig, neigh_node->addr,
++		(full_table ? 'F' : '.'));
++
++	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
++	ret = 0;
++
++out:
++	if (neigh_node)
++		neigh_node_free_ref(neigh_node);
++	if (primary_if)
++		hardif_free_ref(primary_if);
++	if (ret == 1) {
++		kfree_skb(skb);
++		spin_lock_bh(&bat_priv->tt_req_list_lock);
++		list_del(&tt_req_node->list);
++		spin_unlock_bh(&bat_priv->tt_req_list_lock);
++		kfree(tt_req_node);
++	}
++	return ret;
++unlock_tt:
++	spin_unlock_bh(&bat_priv->tt_req_list_lock);
++	return ret;
++}
++
++static bool send_other_tt_response(struct bat_priv *bat_priv,
++				  struct tt_query_packet *tt_request)
++{
++	struct orig_node *req_dst_orig_node = NULL, *res_dst_orig_node = NULL;
++	struct neigh_node *neigh_node = NULL;
++	struct hard_iface *primary_if = NULL;
 +	struct tt_global_entry *tt_global_entry;
- 	struct hard_iface *primary_if;
- 	struct hlist_node *node;
- 	struct hlist_head *head;
-@@ -505,10 +505,10 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
- 		goto out;
- 	}
- 
--	seq_printf(seq, "Globally announced HNAs received via the mesh %s\n",
-+	seq_printf(seq, "Globally announced TTs received via the mesh %s\n",
- 		   net_dev->name);
- 
--	spin_lock_bh(&bat_priv->hna_ghash_lock);
-+	spin_lock_bh(&bat_priv->tt_ghash_lock);
- 
- 	buf_size = 1;
- 	/* Estimate length for: " * xx:xx:xx:xx:xx:xx via xx:xx:xx:xx:xx:xx\n"*/
-@@ -523,7 +523,7 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
- 
- 	buff = kmalloc(buf_size, GFP_ATOMIC);
- 	if (!buff) {
--		spin_unlock_bh(&bat_priv->hna_ghash_lock);
-+		spin_unlock_bh(&bat_priv->tt_ghash_lock);
- 		ret = -ENOMEM;
- 		goto out;
- 	}
-@@ -534,17 +534,17 @@ int hna_global_seq_print_text(struct seq_file *seq, void *offset)
- 		head = &hash->table[i];
- 
- 		rcu_read_lock();
--		hlist_for_each_entry_rcu(hna_global_entry, node,
-+		hlist_for_each_entry_rcu(tt_global_entry, node,
- 					 head, hash_entry) {
- 			pos += snprintf(buff + pos, 44,
- 					" * %pM via %pM\n",
--					hna_global_entry->addr,
--					hna_global_entry->orig_node->orig);
-+					tt_global_entry->addr,
-+					tt_global_entry->orig_node->orig);
- 		}
- 		rcu_read_unlock();
- 	}
- 
--	spin_unlock_bh(&bat_priv->hna_ghash_lock);
-+	spin_unlock_bh(&bat_priv->tt_ghash_lock);
- 
- 	seq_printf(seq, "%s", buff);
- 	kfree(buff);
-@@ -554,84 +554,84 @@ out:
- 	return ret;
- }
- 
--static void _hna_global_del_orig(struct bat_priv *bat_priv,
--				 struct hna_global_entry *hna_global_entry,
-+static void _tt_global_del_orig(struct bat_priv *bat_priv,
-+				 struct tt_global_entry *tt_global_entry,
- 				 char *message)
- {
- 	bat_dbg(DBG_ROUTES, bat_priv,
--		"Deleting global hna entry %pM (via %pM): %s\n",
--		hna_global_entry->addr, hna_global_entry->orig_node->orig,
-+		"Deleting global tt entry %pM (via %pM): %s\n",
-+		tt_global_entry->addr, tt_global_entry->orig_node->orig,
- 		message);
- 
--	hash_remove(bat_priv->hna_global_hash, compare_ghna, choose_orig,
--		    hna_global_entry->addr);
--	kfree(hna_global_entry);
-+	hash_remove(bat_priv->tt_global_hash, compare_gtt, choose_orig,
-+		    tt_global_entry->addr);
-+	kfree(tt_global_entry);
- }
- 
--void hna_global_del_orig(struct bat_priv *bat_priv,
-+void tt_global_del_orig(struct bat_priv *bat_priv,
- 			 struct orig_node *orig_node, char *message)
- {
--	struct hna_global_entry *hna_global_entry;
--	int hna_buff_count = 0;
--	unsigned char *hna_ptr;
-+	struct tt_global_entry *tt_global_entry;
-+	int tt_buff_count = 0;
++	struct hlist_node *node;
++	struct hlist_head *head;
++	struct hashtable_t *hash;
++	uint8_t orig_ttvn, req_ttvn;
++	int i, ret = false;
++	unsigned char *tt_buff;
++	bool full_table;
++	uint16_t tt_len, tt_tot, tt_count;
++	struct sk_buff *skb = NULL;
++	struct tt_query_packet *tt_response;
++
++	bat_dbg(DBG_ROUTES, bat_priv,
++		"Received TT_REQUEST from %pM for "
++		"ttvn: %u (%pM) [%c]\n", tt_request->src,
++		tt_request->ttvn, tt_request->dst,
++		(tt_request->flags & TT_FULL_TABLE ? 'F' : '.'));
++
++	/* Let's get the orig node of the REAL destination */
++	req_dst_orig_node = get_orig_node(bat_priv, tt_request->dst);
++	if (!req_dst_orig_node)
++		goto out;
++
++	res_dst_orig_node = get_orig_node(bat_priv, tt_request->src);
++	if (!res_dst_orig_node)
++		goto out;
++
++	neigh_node = find_router(bat_priv, res_dst_orig_node, NULL);
++	if (!neigh_node)
++		goto out;
++
++	if (neigh_node->if_incoming->if_status != IF_ACTIVE)
++		goto out;
++
++	primary_if = primary_if_get_selected(bat_priv);
++	if (!primary_if)
++		goto out;
++
++	orig_ttvn = (uint8_t)atomic_read(&req_dst_orig_node->last_ttvn);
++	req_ttvn = tt_request->ttvn;
++
++	/* I have not the requested data */
++	if (orig_ttvn != req_ttvn ||
++	    tt_request->tt_data != req_dst_orig_node->tt_crc)
++		goto out;
++
++	/* If it has explicitly been requested the full table */
++	if (tt_request->flags & TT_FULL_TABLE ||
++	    !req_dst_orig_node->tt_buff)
++		full_table = true;
++	else
++		full_table = false;
++
++	/* In this version, fragmentation is not implemented, then
++	 * I'll send only one packet with as much TT entries as I can */
++	if (!full_table) {
++		spin_lock_bh(&req_dst_orig_node->tt_buff_lock);
++		tt_len = req_dst_orig_node->tt_buff_len;
++		tt_tot = tt_len / sizeof(struct tt_change);
++
++		skb = dev_alloc_skb(sizeof(struct tt_query_packet) +
++				    tt_len + ETH_HLEN);
++		if (!skb)
++			goto unlock;
++
++		skb_reserve(skb, ETH_HLEN);
++		tt_response = (struct tt_query_packet *)skb_put(skb,
++				sizeof(struct tt_query_packet) + tt_len);
++		tt_response->ttvn = req_ttvn;
++
++		tt_buff = skb->data + sizeof(struct tt_query_packet);
++		/* Copy the last orig_node's OGM buffer */
++		memcpy(tt_buff, req_dst_orig_node->tt_buff,
++		       req_dst_orig_node->tt_buff_len);
++
++		spin_unlock_bh(&req_dst_orig_node->tt_buff_lock);
++	} else {
++		tt_len = (uint16_t)atomic_read(&req_dst_orig_node->tt_size) *
++								ETH_ALEN;
++		if (sizeof(struct tt_query_packet) + tt_len >
++						primary_if->soft_iface->mtu) {
++			tt_len = primary_if->soft_iface->mtu -
++						sizeof(struct tt_query_packet);
++			tt_len -= tt_len % ETH_ALEN;
++		}
++		tt_tot = tt_len / ETH_ALEN;
++
++		skb = dev_alloc_skb(sizeof(struct tt_query_packet) +
++				    tt_len + ETH_HLEN);
++		if (!skb)
++			goto out;
++
++		skb_reserve(skb, ETH_HLEN);
++		tt_response = (struct tt_query_packet *)skb_put(skb,
++				sizeof(struct tt_query_packet) + tt_len);
++		tt_response->ttvn = (uint8_t)
++			atomic_read(&req_dst_orig_node->last_ttvn);
++
++		tt_buff = skb->data + sizeof(struct tt_query_packet);
++		/* Fill the packet with the orig_node's local table */
++		hash = bat_priv->tt_global_hash;
++		tt_count = 0;
++		rcu_read_lock();
++		for (i = 0; i < hash->size; i++) {
++			head = &hash->table[i];
++
++			hlist_for_each_entry_rcu(tt_global_entry, node,
++					head, hash_entry) {
++				if (tt_count == tt_tot)
++					break;
++				if (tt_global_entry->orig_node ==
++				    req_dst_orig_node) {
++					memcpy(tt_buff + tt_count * ETH_ALEN,
++					       tt_global_entry->addr,
++					       ETH_ALEN);
++					tt_count++;
++				}
++			}
++		}
++		rcu_read_unlock();
++	}
++
++	tt_response->packet_type = BAT_TT_QUERY;
++	tt_response->version = COMPAT_VERSION;
++	memcpy(tt_response->src, req_dst_orig_node->orig, ETH_ALEN);
++	memcpy(tt_response->dst, tt_request->src, ETH_ALEN);
++	tt_response->tt_data = htons(tt_tot);
++	tt_response->flags = TT_RESPONSE;
++
++	if (full_table)
++		tt_response->flags |= TT_FULL_TABLE;
++
++	bat_dbg(DBG_ROUTES, bat_priv,
++		"Sending TT_RESPONSE %pM via %pM for %pM (ttvn: %u)\n",
++		res_dst_orig_node->orig, neigh_node->addr,
++		req_dst_orig_node->orig, req_ttvn);
++
++	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
++	ret = true;
++	goto out;
++
++unlock:
++	spin_unlock_bh(&req_dst_orig_node->tt_buff_lock);
++
++out:
++	if (res_dst_orig_node)
++		orig_node_free_ref(res_dst_orig_node);
++	if (req_dst_orig_node)
++		orig_node_free_ref(req_dst_orig_node);
++	if (neigh_node)
++		neigh_node_free_ref(neigh_node);
++	if (primary_if)
++		hardif_free_ref(primary_if);
++	if (!ret)
++		kfree(skb);
++	return ret;
++
++}
++static bool send_my_tt_response(struct bat_priv *bat_priv,
++			       struct tt_query_packet *tt_request)
++{
++	struct orig_node *orig_node = NULL;
++	struct neigh_node *neigh_node = NULL;
++	struct tt_local_entry *tt_local_entry;
++	struct hard_iface *primary_if = NULL;
++	struct hlist_node *node;
++	struct hlist_head *head;
++	struct hashtable_t *hash;
++	uint8_t my_ttvn, req_ttvn;
++	int i, ret = false;
++	unsigned char *tt_buff;
++	bool full_table;
++	uint16_t tt_len, tt_tot, tt_count;
++	struct sk_buff *skb = NULL;
++	struct tt_query_packet *tt_response;
++
++	bat_dbg(DBG_ROUTES, bat_priv,
++		"Received TT_REQUEST from %pM for "
++		"ttvn: %u (me) [%c]\n", tt_request->src,
++		tt_request->ttvn,
++		(tt_request->flags & TT_FULL_TABLE ? 'F' : '.'));
++
++
++	my_ttvn = (uint8_t)atomic_read(&bat_priv->ttvn);
++	req_ttvn = tt_request->ttvn;
++
++	orig_node = get_orig_node(bat_priv, tt_request->src);
++	if (!orig_node)
++		goto out;
++
++	neigh_node = find_router(bat_priv, orig_node, NULL);
++	if (!neigh_node)
++		goto out;
++
++	if (neigh_node->if_incoming->if_status != IF_ACTIVE)
++		goto out;
++
++	primary_if = primary_if_get_selected(bat_priv);
++	if (!primary_if)
++		goto out;
++
++	/* If the full table has been explicitly requested or the gap
++	 * is too big send the whole local translation table */
++	if (tt_request->flags & TT_FULL_TABLE || my_ttvn != req_ttvn ||
++	    !bat_priv->tt_buff)
++		full_table = true;
++	else
++		full_table = false;
++
++	/* In this version, fragmentation is not implemented, then
++	 * I'll send only one packet with as much TT entries as I can */
++	if (!full_table) {
++		spin_lock_bh(&bat_priv->tt_buff_lock);
++		tt_len = bat_priv->tt_buff_len;
++		tt_tot = tt_len / sizeof(struct tt_change);
++
++		skb = dev_alloc_skb(sizeof(struct tt_query_packet) +
++				    tt_len + ETH_HLEN);
++		if (!skb)
++			goto unlock;
++
++		skb_reserve(skb, ETH_HLEN);
++		tt_response = (struct tt_query_packet *)skb_put(skb,
++				sizeof(struct tt_query_packet) + tt_len);
++		tt_response->ttvn = req_ttvn;
++
++		tt_buff = skb->data + sizeof(struct tt_query_packet);
++		memcpy(tt_buff, bat_priv->tt_buff,
++		       bat_priv->tt_buff_len);
++		spin_unlock_bh(&bat_priv->tt_buff_lock);
++	} else {
++		tt_len = (uint16_t)atomic_read(&bat_priv->num_local_tt) *
++								ETH_ALEN;
++		if (sizeof(struct tt_query_packet) + tt_len >
++				bat_priv->primary_if->soft_iface->mtu) {
++			tt_len = bat_priv->primary_if->soft_iface->mtu -
++				sizeof(struct tt_query_packet);
++			tt_len -= tt_len % ETH_ALEN;
++		}
++		tt_tot = tt_len / ETH_ALEN;
++
++		skb = dev_alloc_skb(sizeof(struct tt_query_packet) +
++				    tt_len + ETH_HLEN);
++		if (!skb)
++			goto out;
++
++		skb_reserve(skb, ETH_HLEN);
++		tt_response = (struct tt_query_packet *)skb_put(skb,
++				sizeof(struct tt_query_packet) + tt_len);
++		tt_buff = skb->data + sizeof(struct tt_query_packet);
++		/* Fill the packet with the local table */
++		tt_response->ttvn =
++			(uint8_t)atomic_read(&bat_priv->ttvn);
++
++		hash = bat_priv->tt_local_hash;
++		tt_count = 0;
++		rcu_read_lock();
++		for (i = 0; i < hash->size; i++) {
++			head = &hash->table[i];
++
++			hlist_for_each_entry_rcu(tt_local_entry, node,
++					head, hash_entry) {
++				if (tt_count == tt_tot)
++					break;
++				memcpy(tt_buff + tt_count * ETH_ALEN,
++					tt_local_entry->addr,
++						ETH_ALEN);
++				tt_count++;
++			}
++		}
++		rcu_read_unlock();
++	}
++
++	tt_response->packet_type = BAT_TT_QUERY;
++	tt_response->version = COMPAT_VERSION;
++	memcpy(tt_response->src, primary_if->net_dev->dev_addr, ETH_ALEN);
++	memcpy(tt_response->dst, tt_request->src, ETH_ALEN);
++	tt_response->tt_data = htons(tt_tot);
++	tt_response->flags = TT_RESPONSE;
++
++	if (full_table)
++		tt_response->flags |= TT_FULL_TABLE;
++
++	bat_dbg(DBG_ROUTES, bat_priv,
++		"Sending TT_RESPONSE to %pM via %pM [%c]\n",
++		orig_node->orig, neigh_node->addr,
++		(tt_response->flags & TT_FULL_TABLE ? 'F' : '.'));
++
++	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
++	ret = true;
++	goto out;
++
++unlock:
++	spin_unlock_bh(&bat_priv->tt_buff_lock);
++out:
++	if (orig_node)
++		orig_node_free_ref(orig_node);
++	if (neigh_node)
++		neigh_node_free_ref(neigh_node);
++	if (primary_if)
++		hardif_free_ref(primary_if);
++	if (!ret)
++		kfree(skb);
++	/* This packet was for me, so it doesn't need to be re-routed */
++	return true;
++}
++
++bool send_tt_response(struct bat_priv *bat_priv,
++		     struct tt_query_packet *tt_request)
++{
++	if (is_my_mac(tt_request->dst))
++		return send_my_tt_response(bat_priv, tt_request);
++	else
++		return send_other_tt_response(bat_priv, tt_request);
++}
++
++/* Substitute the TT response source's table with the newone carried by the
++ * packet */
++static void _tt_fill_gtable(struct bat_priv *bat_priv,
++			    struct orig_node *orig_node, unsigned char *tt_buff,
++			    uint16_t table_size, uint8_t ttvn)
++{
++	int count;
 +	unsigned char *tt_ptr;
- 
--	if (orig_node->hna_buff_len == 0)
-+	if (orig_node->tt_buff_len == 0)
- 		return;
- 
--	spin_lock_bh(&bat_priv->hna_ghash_lock);
-+	spin_lock_bh(&bat_priv->tt_ghash_lock);
- 
--	while ((hna_buff_count + 1) * ETH_ALEN <= orig_node->hna_buff_len) {
--		hna_ptr = orig_node->hna_buff + (hna_buff_count * ETH_ALEN);
--		hna_global_entry = hna_global_hash_find(bat_priv, hna_ptr);
-+	while ((tt_buff_count + 1) * ETH_ALEN <= orig_node->tt_buff_len) {
-+		tt_ptr = orig_node->tt_buff + (tt_buff_count * ETH_ALEN);
-+		tt_global_entry = tt_global_hash_find(bat_priv, tt_ptr);
- 
--		if ((hna_global_entry) &&
--		    (hna_global_entry->orig_node == orig_node))
--			_hna_global_del_orig(bat_priv, hna_global_entry,
-+		if ((tt_global_entry) &&
-+		    (tt_global_entry->orig_node == orig_node))
-+			_tt_global_del_orig(bat_priv, tt_global_entry,
- 					     message);
- 
--		hna_buff_count++;
-+		tt_buff_count++;
- 	}
- 
--	spin_unlock_bh(&bat_priv->hna_ghash_lock);
-+	spin_unlock_bh(&bat_priv->tt_ghash_lock);
- 
--	orig_node->hna_buff_len = 0;
--	kfree(orig_node->hna_buff);
--	orig_node->hna_buff = NULL;
-+	orig_node->tt_buff_len = 0;
++
++	for (count = 0; count < table_size; count++) {
++		tt_ptr = tt_buff + (count * ETH_ALEN);
++
++		/* If we fail to allocate a new entry we return immediatly */
++		if (!tt_global_add(bat_priv, orig_node, tt_ptr, ttvn))
++			return;
++	}
++	atomic_set(&orig_node->last_ttvn, ttvn);
++}
++
++static void tt_fill_gtable(struct bat_priv *bat_priv,
++			   struct tt_query_packet *tt_response)
++{
++	struct orig_node *orig_node = NULL;
++
++	orig_node = orig_hash_find(bat_priv, tt_response->src);
++	if (!orig_node)
++		goto out;
++
++	/* Purge the old table first.. */
++	tt_global_del_orig(bat_priv, orig_node, "Received full table");
++
++	_tt_fill_gtable(bat_priv, orig_node,
++		((unsigned char *)tt_response) +
++		sizeof(struct tt_query_packet),
++		tt_response->tt_data,
++		tt_response->ttvn);
++
++	spin_lock_bh(&orig_node->tt_buff_lock);
 +	kfree(orig_node->tt_buff);
++	orig_node->tt_buff_len = 0;
 +	orig_node->tt_buff = NULL;
- }
- 
--static void hna_global_del(struct hlist_node *node, void *arg)
-+static void tt_global_del(struct hlist_node *node, void *arg)
- {
--	void *data = container_of(node, struct hna_global_entry, hash_entry);
-+	void *data = container_of(node, struct tt_global_entry, hash_entry);
- 
- 	kfree(data);
- }
- 
--void hna_global_free(struct bat_priv *bat_priv)
-+void tt_global_free(struct bat_priv *bat_priv)
- {
--	if (!bat_priv->hna_global_hash)
-+	if (!bat_priv->tt_global_hash)
- 		return;
- 
--	hash_delete(bat_priv->hna_global_hash, hna_global_del, NULL);
--	bat_priv->hna_global_hash = NULL;
-+	hash_delete(bat_priv->tt_global_hash, tt_global_del, NULL);
-+	bat_priv->tt_global_hash = NULL;
- }
- 
- struct orig_node *transtable_search(struct bat_priv *bat_priv, uint8_t *addr)
- {
--	struct hna_global_entry *hna_global_entry;
-+	struct tt_global_entry *tt_global_entry;
- 	struct orig_node *orig_node = NULL;
- 
--	spin_lock_bh(&bat_priv->hna_ghash_lock);
--	hna_global_entry = hna_global_hash_find(bat_priv, addr);
++	spin_unlock_bh(&orig_node->tt_buff_lock);
++
++out:
++	if (orig_node)
++		orig_node_free_ref(orig_node);
++}
++
++static void tt_update_changes(struct bat_priv *bat_priv,
++			      struct tt_query_packet *tt_response,
++			      struct tt_change *tt_change)
++{
++	struct orig_node *orig_node = NULL;
++	int i;
++
++	orig_node = orig_hash_find(bat_priv, tt_response->src);
++
++	if (!orig_node)
++		goto out;
++
++	for (i = 0; i < tt_response->tt_data; i++) {
++		if ((tt_change + i)->op == TT_DEL)
++			tt_global_del(bat_priv, orig_node,
++				      (tt_change + i)->addr,
++				      "tt removed by tt_response");
++		else
++			if (!tt_global_add(bat_priv, orig_node,
++				     (tt_change + i)->addr, tt_response->ttvn))
++				return;
++	}
++
++	tt_save_orig_buffer(bat_priv, orig_node, (unsigned char *)tt_change,
++			    tt_response->tt_data);
++	atomic_set(&orig_node->last_ttvn, tt_response->ttvn);
++
++out:
++	if (orig_node)
++		orig_node_free_ref(orig_node);
++}
++
++bool is_my_client(struct bat_priv *bat_priv, uint8_t *addr)
++{
++	struct tt_local_entry *tt_local_entry;
++
++	spin_lock_bh(&bat_priv->tt_lhash_lock);
++	tt_local_entry = tt_local_hash_find(bat_priv, addr);
++	spin_unlock_bh(&bat_priv->tt_lhash_lock);
++
++	if (tt_local_entry)
++		return true;
++	return false;
++}
++
++void handle_tt_response(struct bat_priv *bat_priv,
++			struct tt_query_packet *tt_response)
++{
++	struct tt_req_node *node, *safe;
++	struct orig_node *orig_node = NULL;
++
++	bat_dbg(DBG_ROUTES, bat_priv, "Received TT_RESPONSE from %pM for "
++		"ttvn %d t_size: %d [%c]\n",
++		tt_response->src, tt_response->ttvn,
++		tt_response->tt_data,
++		(tt_response->flags & TT_FULL_TABLE ? 'F' : '.'));
++
++	if (tt_response->flags & TT_FULL_TABLE)
++		tt_fill_gtable(bat_priv, tt_response);
++	else
++		tt_update_changes(bat_priv, tt_response,
++				  (struct tt_change *)(tt_response + 1));
++
++	/* Delete the tt_req_node from pending tt_requests list */
++	spin_lock_bh(&bat_priv->tt_req_list_lock);
++	list_for_each_entry_safe(node, safe, &bat_priv->tt_req_list, list) {
++		if (!compare_eth(node->addr, tt_response->src))
++			continue;
++		list_del(&node->list);
++		kfree(node);
++	}
++	spin_unlock_bh(&bat_priv->tt_req_list_lock);
++
++	/* Recalculate the CRC for this orig_node and store it */
++	orig_node = orig_hash_find(bat_priv, tt_response->src);
++	if (!orig_node)
++		goto out;
++
 +	spin_lock_bh(&bat_priv->tt_ghash_lock);
-+	tt_global_entry = tt_global_hash_find(bat_priv, addr);
- 
--	if (!hna_global_entry)
-+	if (!tt_global_entry)
- 		goto out;
- 
--	if (!atomic_inc_not_zero(&hna_global_entry->orig_node->refcount))
-+	if (!atomic_inc_not_zero(&tt_global_entry->orig_node->refcount))
- 		goto out;
- 
--	orig_node = hna_global_entry->orig_node;
-+	orig_node = tt_global_entry->orig_node;
- 
- out:
--	spin_unlock_bh(&bat_priv->hna_ghash_lock);
++	orig_node->tt_crc = tt_global_crc(bat_priv, orig_node);
 +	spin_unlock_bh(&bat_priv->tt_ghash_lock);
- 	return orig_node;
- }
++out:
++	orig_node_free_ref(orig_node);
++}
++
++int tt_init(struct bat_priv *bat_priv)
++{
++	if (!tt_local_init(bat_priv))
++		return 0;
++
++	if (!tt_global_init(bat_priv))
++		return 0;
++
++	tt_start_timer(bat_priv);
++
++	return 1;
++}
++
++void tt_free(struct bat_priv *bat_priv)
++{
++	cancel_delayed_work_sync(&bat_priv->tt_work);
++
++	tt_local_table_free(bat_priv);
++	tt_global_table_free(bat_priv);
++	tt_req_list_free(bat_priv);
++	tt_changes_list_free(bat_priv);
++
++	kfree(bat_priv->tt_buff);
++}
++
++static void tt_purge(struct work_struct *work)
++{
++	struct delayed_work *delayed_work =
++		container_of(work, struct delayed_work, work);
++	struct bat_priv *bat_priv =
++		container_of(delayed_work, struct bat_priv, tt_work);
++
++	tt_local_purge(bat_priv);
++	tt_req_purge(bat_priv);
++
++	tt_start_timer(bat_priv);
++}
 diff --git a/translation-table.h b/translation-table.h
-index f19931c..46152c3 100644
+index 46152c3..68cb1bc 100644
 --- a/translation-table.h
 +++ b/translation-table.h
-@@ -22,22 +22,22 @@
+@@ -22,22 +22,41 @@
  #ifndef _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
  #define _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
  
--int hna_local_init(struct bat_priv *bat_priv);
--void hna_local_add(struct net_device *soft_iface, uint8_t *addr);
--void hna_local_remove(struct bat_priv *bat_priv,
-+int tt_local_init(struct bat_priv *bat_priv);
-+void tt_local_add(struct net_device *soft_iface, uint8_t *addr);
-+void tt_local_remove(struct bat_priv *bat_priv,
- 		      uint8_t *addr, char *message);
--int hna_local_fill_buffer(struct bat_priv *bat_priv,
-+int tt_local_fill_buffer(struct bat_priv *bat_priv,
- 			  unsigned char *buff, int buff_len);
--int hna_local_seq_print_text(struct seq_file *seq, void *offset);
--void hna_local_free(struct bat_priv *bat_priv);
--int hna_global_init(struct bat_priv *bat_priv);
--void hna_global_add_orig(struct bat_priv *bat_priv,
-+int tt_local_seq_print_text(struct seq_file *seq, void *offset);
-+void tt_local_free(struct bat_priv *bat_priv);
-+int tt_global_init(struct bat_priv *bat_priv);
-+void tt_global_add_orig(struct bat_priv *bat_priv,
- 			 struct orig_node *orig_node,
--			 unsigned char *hna_buff, int hna_buff_len);
--int hna_global_seq_print_text(struct seq_file *seq, void *offset);
--void hna_global_del_orig(struct bat_priv *bat_priv,
-+			 unsigned char *tt_buff, int tt_buff_len);
-+int tt_global_seq_print_text(struct seq_file *seq, void *offset);
-+void tt_global_del_orig(struct bat_priv *bat_priv,
- 			 struct orig_node *orig_node, char *message);
--void hna_global_free(struct bat_priv *bat_priv);
-+void tt_global_free(struct bat_priv *bat_priv);
+-int tt_local_init(struct bat_priv *bat_priv);
++int tt_len(int changes_num);
++void tt_changes_primary_if(struct bat_priv *bat_priv, uint8_t *old_addr,
++			   uint8_t *new_addr);
++int tt_changes_fill_buffer(struct bat_priv *bat_priv,
++			   unsigned char *buff, int buff_len);
++int tt_init(struct bat_priv *bat_priv);
+ void tt_local_add(struct net_device *soft_iface, uint8_t *addr);
+ void tt_local_remove(struct bat_priv *bat_priv,
+-		      uint8_t *addr, char *message);
+-int tt_local_fill_buffer(struct bat_priv *bat_priv,
+-			  unsigned char *buff, int buff_len);
++		     uint8_t *addr, char *message);
+ int tt_local_seq_print_text(struct seq_file *seq, void *offset);
+-void tt_local_free(struct bat_priv *bat_priv);
+-int tt_global_init(struct bat_priv *bat_priv);
+ void tt_global_add_orig(struct bat_priv *bat_priv,
+-			 struct orig_node *orig_node,
+-			 unsigned char *tt_buff, int tt_buff_len);
++			struct orig_node *orig_node,
++			unsigned char *tt_buff, int tt_buff_len);
++int tt_global_add(struct bat_priv *bat_priv,
++		  struct orig_node *orig_node, unsigned char *addr,
++		  uint8_t ttvn);
+ int tt_global_seq_print_text(struct seq_file *seq, void *offset);
+ void tt_global_del_orig(struct bat_priv *bat_priv,
+-			 struct orig_node *orig_node, char *message);
+-void tt_global_free(struct bat_priv *bat_priv);
++			struct orig_node *orig_node, char *message);
++void tt_global_del(struct bat_priv *bat_priv,
++		   struct orig_node *orig_node, unsigned char *addr,
++		   char *message);
  struct orig_node *transtable_search(struct bat_priv *bat_priv, uint8_t *addr);
++void tt_save_orig_buffer(struct bat_priv *bat_priv, struct orig_node *orig_node,
++			 unsigned char *tt_buff, uint8_t tt_num_changes);
++uint16_t tt_local_crc(struct bat_priv *bat_priv);
++uint16_t tt_global_crc(struct bat_priv *bat_priv, struct orig_node *orig_node);
++void tt_free(struct bat_priv *bat_priv);
++int send_tt_request(struct bat_priv *bat_priv,
++		    struct orig_node *dst_orig_node, uint8_t hvn,
++		    uint16_t tt_crc, bool full_table);
++bool send_tt_response(struct bat_priv *bat_priv,
++		     struct tt_query_packet *tt_request);
++bool is_my_client(struct bat_priv *bat_priv, uint8_t *addr);
++void handle_tt_response(struct bat_priv *bat_priv,
++			struct tt_query_packet *tt_response);
  
  #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
 diff --git a/types.h b/types.h
-index 947bafc..b8c72c3 100644
+index b8c72c3..ba97028 100644
 --- a/types.h
 +++ b/types.h
-@@ -75,8 +75,8 @@ struct orig_node {
+@@ -75,8 +75,12 @@ struct orig_node {
  	unsigned long batman_seqno_reset;
  	uint8_t gw_flags;
  	uint8_t flags;
--	unsigned char *hna_buff;
--	int16_t hna_buff_len;
-+	unsigned char *tt_buff;
-+	int16_t tt_buff_len;
++	atomic_t last_ttvn; /* last seen translation table version number */
++	uint16_t tt_crc;
+ 	unsigned char *tt_buff;
+ 	int16_t tt_buff_len;
++	spinlock_t tt_buff_lock; /* protects tt_buff */
++	atomic_t tt_size;
  	uint32_t last_real_seqno;
  	uint8_t last_ttl;
  	unsigned long bcast_bits[NUM_WORDS];
-@@ -156,20 +156,20 @@ struct bat_priv {
+@@ -94,10 +98,16 @@ struct orig_node {
+ 				  * neigh_node->real_packet_count */
+ 	spinlock_t bcast_seqno_lock; /* protects bcast_bits,
+ 				      *	 last_bcast_seqno */
++	spinlock_t tt_list_lock; /* protects tt_list */
+ 	atomic_t bond_candidates;
+ 	struct list_head bond_list;
+ };
+ 
++struct tt_change {
++	uint8_t op;
++	uint8_t addr[ETH_ALEN];
++};
++
+ struct gw_node {
+ 	struct hlist_node list;
+ 	struct orig_node *orig_node;
+@@ -145,6 +155,9 @@ struct bat_priv {
+ 	atomic_t bcast_seqno;
+ 	atomic_t bcast_queue_left;
+ 	atomic_t batman_queue_left;
++	atomic_t ttvn; /* tranlation table version number */
++	atomic_t tt_ogm_append_cnt;
++	atomic_t tt_local_changes; /* changes registered in a OGM interval */
+ 	char num_ifaces;
+ 	struct hlist_head softif_neigh_list;
+ 	struct softif_neigh __rcu *softif_neigh;
+@@ -154,21 +167,29 @@ struct bat_priv {
+ 	struct hlist_head forw_bat_list;
+ 	struct hlist_head forw_bcast_list;
  	struct hlist_head gw_list;
++	struct list_head tt_changes_list; /* tracks changes in a OGM int */
  	struct list_head vis_send_list;
  	struct hashtable_t *orig_hash;
--	struct hashtable_t *hna_local_hash;
--	struct hashtable_t *hna_global_hash;
-+	struct hashtable_t *tt_local_hash;
-+	struct hashtable_t *tt_global_hash;
+ 	struct hashtable_t *tt_local_hash;
+ 	struct hashtable_t *tt_global_hash;
++	struct list_head tt_req_list; /* list of pending tt_requests */
  	struct hashtable_t *vis_hash;
  	spinlock_t forw_bat_list_lock; /* protects forw_bat_list */
  	spinlock_t forw_bcast_list_lock; /* protects  */
--	spinlock_t hna_lhash_lock; /* protects hna_local_hash */
--	spinlock_t hna_ghash_lock; /* protects hna_global_hash */
-+	spinlock_t tt_lhash_lock; /* protects tt_local_hash */
-+	spinlock_t tt_ghash_lock; /* protects tt_global_hash */
++	spinlock_t tt_changes_list_lock; /* protects tt_changes */
+ 	spinlock_t tt_lhash_lock; /* protects tt_local_hash */
+ 	spinlock_t tt_ghash_lock; /* protects tt_global_hash */
++	spinlock_t tt_req_list_lock; /* protects tt_req_list */
  	spinlock_t gw_list_lock; /* protects gw_list and curr_gw */
  	spinlock_t vis_hash_lock; /* protects vis_hash */
  	spinlock_t vis_list_lock; /* protects vis_info::recv_list */
  	spinlock_t softif_neigh_lock; /* protects soft-interface neigh list */
--	int16_t num_local_hna;
--	atomic_t hna_local_changed;
--	struct delayed_work hna_work;
-+	int16_t num_local_tt;
-+	atomic_t tt_local_changed;
-+	struct delayed_work tt_work;
+-	int16_t num_local_tt;
+-	atomic_t tt_local_changed;
++	atomic_t num_local_tt;
++	atomic_t tt_crc; /* Checksum of the local table, recomputed before
++			  * sending a new OGM */
++	unsigned char *tt_buff;
++	int16_t tt_buff_len;
++	spinlock_t tt_buff_lock; /* protects tt_buff */
+ 	struct delayed_work tt_work;
  	struct delayed_work orig_work;
  	struct delayed_work vis_work;
- 	struct gw_node __rcu *curr_gw;  /* rcu protected pointer */
-@@ -192,14 +192,14 @@ struct socket_packet {
- 	struct icmp_packet_rr icmp_packet;
- };
- 
--struct hna_local_entry {
-+struct tt_local_entry {
- 	uint8_t addr[ETH_ALEN];
- 	unsigned long last_seen;
- 	char never_purge;
- 	struct hlist_node hash_entry;
- };
- 
--struct hna_global_entry {
-+struct tt_global_entry {
+@@ -202,9 +223,22 @@ struct tt_local_entry {
+ struct tt_global_entry {
  	uint8_t addr[ETH_ALEN];
  	struct orig_node *orig_node;
++	uint8_t ttvn;
++	/* entry in the global table */
  	struct hlist_node hash_entry;
-@@ -262,7 +262,7 @@ struct vis_info {
- struct vis_info_entry {
- 	uint8_t  src[ETH_ALEN];
- 	uint8_t  dest[ETH_ALEN];
--	uint8_t  quality;	/* quality = 0 means HNA */
-+	uint8_t  quality;	/* quality = 0 means TT */
- } __packed;
+ };
  
- struct recvlist_node {
++struct tt_change_node {
++	struct list_head list;
++	struct tt_change change;
++};
++
++struct tt_req_node {
++	uint8_t addr[ETH_ALEN];
++	unsigned long issued_at;
++	struct list_head list;
++};
++
+ /**
+  *	forw_packet - structure for forw_list maintaining packets to be
+  *	              send/forwarded
 diff --git a/unicast.c b/unicast.c
-index b46cbf1..19c3daf 100644
+index 19c3daf..7a9c02c 100644
 --- a/unicast.c
 +++ b/unicast.c
-@@ -300,7 +300,7 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
- 			goto find_router;
- 	}
+@@ -329,6 +329,9 @@ find_router:
+ 	unicast_packet->ttl = TTL;
+ 	/* copy the destination for faster routing */
+ 	memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
++	/* set the destination tt version number */
++	unicast_packet->ttvn =
++		(uint8_t)atomic_read(&orig_node->last_ttvn);
  
--	/* check for hna host - increases orig_node refcount */
-+	/* check for tt host - increases orig_node refcount */
- 	orig_node = transtable_search(bat_priv, ethhdr->h_dest);
- 
- find_router:
-diff --git a/vis.c b/vis.c
-index c8f571d..c39f20c 100644
---- a/vis.c
-+++ b/vis.c
-@@ -194,7 +194,7 @@ static ssize_t vis_data_read_entry(char *buff, struct vis_info_entry *entry,
- {
- 	/* maximal length: max(4+17+2, 3+17+1+3+2) == 26 */
- 	if (primary && entry->quality == 0)
--		return sprintf(buff, "HNA %pM, ", entry->dest);
-+		return sprintf(buff, "TT %pM, ", entry->dest);
- 	else if (compare_eth(entry->src, src))
- 		return sprintf(buff, "TQ %pM %d, ", entry->dest,
- 			       entry->quality);
-@@ -622,7 +622,7 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
- 	struct vis_info *info = (struct vis_info *)bat_priv->my_vis_info;
- 	struct vis_packet *packet = (struct vis_packet *)info->skb_packet->data;
- 	struct vis_info_entry *entry;
--	struct hna_local_entry *hna_local_entry;
-+	struct tt_local_entry *tt_local_entry;
- 	int best_tq = -1, i;
- 
- 	info->first_seen = jiffies;
-@@ -678,29 +678,29 @@ next:
- 		rcu_read_unlock();
- 	}
- 
--	hash = bat_priv->hna_local_hash;
-+	hash = bat_priv->tt_local_hash;
- 
--	spin_lock_bh(&bat_priv->hna_lhash_lock);
-+	spin_lock_bh(&bat_priv->tt_lhash_lock);
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
- 
--		hlist_for_each_entry(hna_local_entry, node, head, hash_entry) {
-+		hlist_for_each_entry(tt_local_entry, node, head, hash_entry) {
- 			entry = (struct vis_info_entry *)
- 					skb_put(info->skb_packet,
- 						sizeof(*entry));
- 			memset(entry->src, 0, ETH_ALEN);
--			memcpy(entry->dest, hna_local_entry->addr, ETH_ALEN);
--			entry->quality = 0; /* 0 means HNA */
-+			memcpy(entry->dest, tt_local_entry->addr, ETH_ALEN);
-+			entry->quality = 0; /* 0 means TT */
- 			packet->entries++;
- 
- 			if (vis_packet_full(info)) {
--				spin_unlock_bh(&bat_priv->hna_lhash_lock);
-+				spin_unlock_bh(&bat_priv->tt_lhash_lock);
- 				return 0;
- 			}
- 		}
- 	}
- 
--	spin_unlock_bh(&bat_priv->hna_lhash_lock);
-+	spin_unlock_bh(&bat_priv->tt_lhash_lock);
- 	return 0;
- 
- unlock:
+ 	if (atomic_read(&bat_priv->fragmentation) &&
+ 	    data_len + sizeof(struct unicast_packet) >
 -- 
 1.7.3.4
 
