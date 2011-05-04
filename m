@@ -1,14 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 4 May 2011 15:36:37 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110504133637.GB6519@ritirata.org>
+Return-Path: <andrew@lunn.ch>
+Date: Wed, 4 May 2011 15:52:23 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20110504135223.GB1528@lunn.ch>
 References: <1303940106-1457-1-git-send-email-ordex@autistici.org>
 	<1304438096-19009-4-git-send-email-ordex@autistici.org>
 	<20110504112234.GA1528@lunn.ch>
+	<20110504133637.GB6519@ritirata.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20110504112234.GA1528@lunn.ch>
+In-Reply-To: <20110504133637.GB6519@ritirata.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv2 3/4] batman-adv: improved roaming
  mechanism
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,150 +25,62 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, May 04, 2011 at 01:22:34PM +0200, Andrew Lunn wrote:
-> > +struct roam_adv_packet {
-> > +	uint8_t  packet_type;
-> > +	uint8_t  version;
-> > +	uint8_t  dst[6];
-> > +	uint8_t  ttl;
-> > +	uint8_t  src[6];
-> > +	uint8_t  client[6];
-> > +} __packed;
-> > +
+On Wed, May 04, 2011 at 03:36:37PM +0200, Antonio Quartulli wrote:
+> On Wed, May 04, 2011 at 01:22:34PM +0200, Andrew Lunn wrote:
+> > > +struct roam_adv_packet {
+> > > +	uint8_t  packet_type;
+> > > +	uint8_t  version;
+> > > +	uint8_t  dst[6];
+> > > +	uint8_t  ttl;
+> > > +	uint8_t  src[6];
+> > > +	uint8_t  client[6];
+> > > +} __packed;
+> > > +
+> > 
+> > Maybe put ttl at the end, to help with alignment? 
 > 
-> Maybe put ttl at the end, to help with alignment? 
+> As I did for the tt_query packet, the initial four fields are the same as the
+> unicast_packet so that I can exploit route_unicast_packet() instead of writing
+> routing function.
+> 
+> Is that a major issue?
 
-As I did for the tt_query packet, the initial four fields are the same as the
-unicast_packet so that I can exploit route_unicast_packet() instead of writing
-routing function.
+No. It just that gcc might optimize accesses to src and client as a
+word read + 1/2 word read, if they where 1/2 word aligned. With ttl
+where it is, src and client are in strange alignments, so gcc will
+have to do byte access. But this is not the fast path, so it does not
+matter much.
 
-Is that a major issue?
+> > > +	tt_global_add(bat_priv, orig_node, roam_adv_packet->client,
+> > > +		      atomic_read(&orig_node->last_ttvn) + 1, true);
+> > > +
+> > > +	/* Roaming phase starts: I have a new information but the ttvn has been
+> > > +	 * incremented yet. This flag will make me check all the incoming
+> > > +	 * packets for the correct destination. */
+> > 
+> > The grammar in that comment could be better:
+> > 
+> > 	/* Roaming phase starts: I have new information but the ttvn has not 
+> > 	 * been incremented yet. This flag will make me check all the incoming
+> > 	 * packets for the correct destination. */
+> > 
+> 
+> Thanks and sorry for my poor grammar :)
 
-> 
-> > +	tt_global_add(bat_priv, orig_node, roam_adv_packet->client,
-> > +		      atomic_read(&orig_node->last_ttvn) + 1, true);
-> > +
-> > +	/* Roaming phase starts: I have a new information but the ttvn has been
-> > +	 * incremented yet. This flag will make me check all the incoming
-> > +	 * packets for the correct destination. */
-> 
-> The grammar in that comment could be better:
-> 
-> 	/* Roaming phase starts: I have new information but the ttvn has not 
-> 	 * been incremented yet. This flag will make me check all the incoming
-> 	 * packets for the correct destination. */
-> 
+Actually, it is mostly very good....
 
-Thanks and sorry for my poor grammar :)
+> Ok..I got the point. Maybe I will not be so drastic but I will follow
+> your suggestion
 
-> > +	skb = dev_alloc_skb(sizeof(struct roam_adv_packet) + ETH_HLEN);
-> > +	if (!skb)
-> > +		goto free_skb;
-> 
-> If the allocation fails, go free it ?
+Lots of small functions is my style. However, the Linux coding style
+documentation says something similar:
 
-It's a matter of label. I'll correct it
+                Chapter 6: Functions
 
-> 
-> > +
-> > +	skb_reserve(skb, ETH_HLEN);
-> > +
-> > +	roam_adv_packet = (struct roam_adv_packet *)skb_put(skb,
-> > +					sizeof(struct roam_adv_packet));
-> > +
-> > +	roam_adv_packet->packet_type = BAT_ROAM_ADV;
-> > +	roam_adv_packet->version = COMPAT_VERSION;
-> > +	roam_adv_packet->ttl = TTL;
-> > +	memcpy(roam_adv_packet->src,
-> > +		bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
-> > +	memcpy(roam_adv_packet->dst, orig_node->orig, ETH_ALEN);
-> > +	memcpy(roam_adv_packet->client, client, ETH_ALEN);
-> > +
-> > +	neigh_node = find_router(bat_priv, orig_node, NULL);
-> > +	if (!neigh_node)
-> > +		goto free_skb;
-> > +
-> > +	if (neigh_node->if_incoming->if_status != IF_ACTIVE)
-> > +		goto free_neigh;
-> > +
-> > +	bat_dbg(DBG_ROUTES, bat_priv,
-> > +		"Sending ROAMING_ADV to %pM (client %pM) via %pM\n",
-> > +		orig_node->orig, client, neigh_node->addr);
-> > +
-> > +	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
-> > +	ret = 0;
-> > +
-> > +free_neigh:
-> > +	if (neigh_node)
-> > +		neigh_node_free_ref(neigh_node);
-> > +free_skb:
-> > +	if (ret)
-> > +		kfree_skb(skb);
-> > +	return;
-> > +unlock:
-> > +	spin_unlock_bh(&bat_priv->tt_roam_list_lock);
-> >  }
-> 
-> All these different goto's makes me think of BASIC. How about breaking
-> this function up into a number of functions. 
-> 
-> 1) find an existing tt_roam_node
-> 2) Create a new tt_roam_node
-> 3) Allocate and fill in the roam_adv_packet.
-> 4) Find the neigh_node and send the packet.
-> 
-> You then end up with something like
-> 
-> void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
-> 		   struct orig_node *orig_node)
-> {
-> 	spin_lock_bh(&bat_priv->tt_roam_list_lock);
-> 	
-> 	tt_roam_node = find_tt_roam_node(client);
-> 
-> 	if (!tt_roam_node) {
-> 	   tt_roam_node = new_tt_roam_node(client, bat_priv);
-> 	}
-> 	spin_unlock_bh(&bat_priv->tt_roam_list_lock);
-> 
-> 	if (tt_roam_node)
-> 	   roam_pkt = build_roam_pkt(bat_priv, orig_node, client);
-> 	   if (roan_pkt)
-> 	      send_roam_pkt(roam_pkt, orig_node, client);
-> }
-> 
-> No goto's and easier to understand.  It also makes it clear that
-> tt_roam_node is not actually used while sending the packet, so maybe
-> it does not belong inside send_roam_adv()?
->
+Functions should be short and sweet, and do just one thing.  They should
+fit on one or two screenfuls of text (the ISO/ANSI screen size is 80x24,
+as we all know), and do one thing and do that well.
 
-Ok..I got the point. Maybe I will not be so drastic but I will follow
-your suggestion
+It is well worth reading Documentation/CodingStyle
 
-> > +	bool tt_poss_change; /* this flag is needed to detect an ongoing
-> > +			      * roaming event. If it is true, it means that
-> > +			      * in the last OGM interval I sent a Roaming_adv,
-> > +			      * so I have to check every packet going to it
-> > +			      * whether the destination is still a client of
-> > +			      * its or not, it will be reset as soon as I'll
-> > +			      * receive a new TTVN from it */
-> > +
-> 
-> Too many it/its. I have a hard time understanding what it is.
-> 
-
-You are definitely right. I'll rewrite the comment.
-
-> So, mostly comments about the comments and style issues.
-> 
->   Andrew
-
-Thank you very much Andrew!
-
-Regards,
-
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
+   Andrew
