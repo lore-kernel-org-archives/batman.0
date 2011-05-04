@@ -1,18 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 4 May 2011 15:59:39 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110504135939.GC6519@ritirata.org>
-References: <1303940106-1457-1-git-send-email-ordex@autistici.org>
-	<1304438096-19009-4-git-send-email-ordex@autistici.org>
-	<20110504112234.GA1528@lunn.ch>
-	<20110504133637.GB6519@ritirata.org>
-	<20110504135223.GB1528@lunn.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 4 May 2011 16:25:28 +0200
+References: <1304347097-8520-1-git-send-email-lindner_marek@yahoo.de>
+	<201105021655.15703.sven@narfation.org>
+In-Reply-To: <201105021655.15703.sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20110504135223.GB1528@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 3/4] batman-adv: improved roaming
- mechanism
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201105041625.29399.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove misplaced comment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,81 +23,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, May 04, 2011 at 03:52:23PM +0200, Andrew Lunn wrote:
-> On Wed, May 04, 2011 at 03:36:37PM +0200, Antonio Quartulli wrote:
-> > On Wed, May 04, 2011 at 01:22:34PM +0200, Andrew Lunn wrote:
-> > > > +struct roam_adv_packet {
-> > > > +	uint8_t  packet_type;
-> > > > +	uint8_t  version;
-> > > > +	uint8_t  dst[6];
-> > > > +	uint8_t  ttl;
-> > > > +	uint8_t  src[6];
-> > > > +	uint8_t  client[6];
-> > > > +} __packed;
-> > > > +
-> > > 
-> > > Maybe put ttl at the end, to help with alignment? 
+On Monday 02 May 2011 16:55:13 Sven Eckelmann wrote:
+> On Monday 02 May 2011 16:38:17 Marek Lindner wrote:
+> > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> > ---
 > > 
-> > As I did for the tt_query packet, the initial four fields are the same as the
-> > unicast_packet so that I can exploit route_unicast_packet() instead of writing
-> > routing function.
+> >  originator.c |    2 --
+> >  1 files changed, 0 insertions(+), 2 deletions(-)
 > > 
-> > Is that a major issue?
-> 
-> No. It just that gcc might optimize accesses to src and client as a
-> word read + 1/2 word read, if they where 1/2 word aligned. With ttl
-> where it is, src and client are in strange alignments, so gcc will
-> have to do byte access. 
-
-Understood. Thanks for the explanation.
-
-> But this is not the fast path, so it does not
-> matter much.
-> 
-
-Exactly..So I think we can leave as it is in this case
-
-> > > > +	tt_global_add(bat_priv, orig_node, roam_adv_packet->client,
-> > > > +		      atomic_read(&orig_node->last_ttvn) + 1, true);
-> > > > +
-> > > > +	/* Roaming phase starts: I have a new information but the ttvn has been
-> > > > +	 * incremented yet. This flag will make me check all the incoming
-> > > > +	 * packets for the correct destination. */
-> > > 
-> > > The grammar in that comment could be better:
-> > > 
-> > > 	/* Roaming phase starts: I have new information but the ttvn has not 
-> > > 	 * been incremented yet. This flag will make me check all the incoming
-> > > 	 * packets for the correct destination. */
-> > > 
+> > diff --git a/originator.c b/originator.c
+> > index ef4a9be..51af91b 100644
+> > --- a/originator.c
+> > +++ b/originator.c
+> > @@ -19,8 +19,6 @@
 > > 
-> > Thanks and sorry for my poor grammar :)
+> >   *
+> >   */
+> > 
+> > -/* increase the reference counter for this originator */
 > 
-> Actually, it is mostly very good....
-> 
-> > Ok..I got the point. Maybe I will not be so drastic but I will follow
-> > your suggestion
-> 
-> Lots of small functions is my style. However, the Linux coding style
-> documentation says something similar:
-> 
->                 Chapter 6: Functions
-> 
-> Functions should be short and sweet, and do just one thing.  They should
-> fit on one or two screenfuls of text (the ISO/ANSI screen size is 80x24,
-> as we all know), and do one thing and do that well.
-> 
-> It is well worth reading Documentation/CodingStyle
-> 
+> Could we replace it with another joke? :D
 
+Feel free to propose some jokes - the best will be included.  ;-)
 
-Mh, thank you for showing me this document. I'll deeply read it as soon as
-possible! :)
+Applied this patch in revision b9f017d.
+
 
 Regards,
-
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
+Marek
