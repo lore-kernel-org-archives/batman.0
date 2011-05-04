@@ -1,16 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 4 May 2011 16:57:16 +0200
-References: <1304416299-906-2-git-send-email-linus.luessing@web.de>
-	<1304421006-7137-1-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1304421006-7137-1-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201105041657.17393.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Avoid deadlock between
-	rtnl_lock and s_active
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed,  4 May 2011 21:11:06 +0200
+Message-Id: <1304536266-21116-1-git-send-email-sven@narfation.org>
+In-Reply-To: <201105041351.35006.lindner_marek@yahoo.de>
+References: <201105041351.35006.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH-Marek 2/5] batman-adv: Add compatibility code
+	for kfree_rcu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,22 +17,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday 03 May 2011 13:10:06 Linus L=FCssing wrote:
-> From: Sven Eckelmann <sven@narfation.org>
->=20
-> The hard_if_event is called by the notifier with rtnl_lock and tries to
-> remove sysfs entries when a NETDEV_UNREGISTER event is received. This
-> will automatically take the s_active lock.
->=20
-> The s_active lock is also used when a new interface is added to a meshif
-> through sysfs. In that situation we cannot wait for the rntl_lock before
-> creating the actual batman-adv interface to prevent a deadlock. It is
-> still possible to try to get the rtnl_lock and immediately abort the
-> current operation when the trylock call failed.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat.c |   30 +++++++++++++++++++++++++++++-
+ compat.h |   10 ++++++++++
+ 2 files changed, 39 insertions(+), 1 deletions(-)
 
-Applied in b278a6c.
+diff --git a/compat.c b/compat.c
+index f4561c3..67c5126 100644
+--- a/compat.c
++++ b/compat.c
+@@ -1,4 +1,4 @@
+-#include <linux/version.h>
++#include "main.h"
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 29)
+ 
+@@ -959,3 +959,31 @@ int bat_seq_printf(struct seq_file *m, const char *f, ...)
+ }
+ 
+ #endif /* < KERNEL_VERSION(2, 6, 29) */
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 1234)
++
++void free_rcu_gw_node(struct rcu_head *rcu)
++{
++	struct gw_node *gw_node;
++
++	gw_node = container_of(rcu, struct gw_node, rcu);
++	kfree(gw_node);
++}
++
++void free_rcu_neigh_node(struct rcu_head *rcu)
++{
++	struct neigh_node *neigh_node;
++
++	neigh_node = container_of(rcu, struct neigh_node, rcu);
++	kfree(neigh_node);
++}
++
++void free_rcu_softif_neigh(struct rcu_head *rcu)
++{
++	struct softif_neigh *softif_neigh;
++
++	softif_neigh = container_of(rcu, struct softif_neigh, rcu);
++	kfree(softif_neigh);
++}
++
++#endif /* < KERNEL_VERSION(2, 6, 1234) */
+diff --git a/compat.h b/compat.h
+index c3fd2cd..62fd968 100644
+--- a/compat.h
++++ b/compat.h
+@@ -291,4 +291,14 @@ int bat_seq_printf(struct seq_file *m, const char *f, ...);
+ 
+ #endif /* < KERNEL_VERSION(2, 6, 36) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 1234)
++
++#define kfree_rcu(ptr, rcu_head) call_rcu(&ptr->rcu_head, free_rcu_##ptr)
++
++void free_rcu_gw_node(struct rcu_head *rcu);
++void free_rcu_neigh_node(struct rcu_head *rcu);
++void free_rcu_softif_neigh(struct rcu_head *rcu);
++
++#endif /* < KERNEL_VERSION(2, 6, 1234) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+-- 
+1.7.4.4
 
-Thanks,
-Marek
