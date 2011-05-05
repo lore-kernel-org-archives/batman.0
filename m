@@ -1,15 +1,10 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 5 May 2011 15:46:49 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20110505134649.GD1528@lunn.ch>
-References: <1304579589-5222-1-git-send-email-ordex@autistici.org>
-	<1304579589-5222-4-git-send-email-ordex@autistici.org>
+Return-Path: <ed.okerson@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1304579589-5222-4-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: improved gateway
- tq-based selection
+Date: Thu, 5 May 2011 10:37:05 -0500
+Message-ID: <BANLkTikaMjY9t=0gDQCn0xUzz+c4YPz7gQ@mail.gmail.com>
+From: Ed Okerson <ed.okerson@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Routing decisions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,20 +16,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thu, May 05, 2011 at 09:13:09AM +0200, Antonio Quartulli wrote:
-> +	/* If old_gw != NULL then this packet is unicast.
-> +	 * So, at this point it can only be a renewal packet (because it is the
-> +	 * only dhcp client message sent as unicast) and we have to decide
-> +	 * whether to drop it or not */
+Hi,
 
-What about the release message? Is that not also unicast? 
+We are evaluating using Batman in an environment where there could be
+200-300 devices in a single building.  We started out setting up 10
+devices in our office to figure out how everything works and do some
+throughput testing.  We have noticed that the routing decisions always
+send the packet to the node towards the destination with the highest
+signal strength.  This causes the packet to always traverse the
+network with the maximum possible number of hops, which causes
+performance to degrade quickly.  Is it possible to use a different
+routing algorithm?  It would seem that sending to the node closest to
+the destination that the source node can still communicate with
+directly would minimize the number of hops.
 
-> +	if (old_gw && curr_gw->orig_node != old_gw) {
-> +		/* If the dhcp packet has been sent to a different gw, we have
-> +		 * to evaluate whether the old gw is still enough reliable */
-
-still reliable enough.
-
-      Andrew
+Ed Okerson
