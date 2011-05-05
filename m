@@ -1,16 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 5 May 2011 09:05:18 +0200
-References: <1304550695-6922-1-git-send-email-ordex@autistici.org>
-	<1304577807-16450-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1304577807-16450-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4500575.roVkArVDgK";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105050905.20271.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batctl: rename stuff from *hna* to
-	*tt* (translation table)
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu,  5 May 2011 09:13:06 +0200
+Message-Id: <1304579589-5222-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] batman-adv: added uevent support for gw and gw
+	propagation for clients
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,54 +15,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart4500575.roVkArVDgK
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Three new features have been added:
+1) generic uevent support
+2) uevent triggering for gw state changes
+3) gw propagation for clients
 
-> diff --git a/packet.h b/packet.h
-> index e757187..c225c3a 100644
-> --- a/packet.h
-> +++ b/packet.h
-> @@ -61,7 +61,7 @@ struct batman_packet {
->  	uint8_t  orig[6];
->  	uint8_t  prev_sender[6];
->  	uint8_t  ttl;
-> -	uint8_t  num_hna;
-> +	uint8_t  num_tt;
->  	uint8_t  gw_flags;  /* flags related to gateway class */
->  	uint8_t  align;
->  } __packed;
+Patch summary:
 
-Modified stuff in batctl/packet.h must also be changed in batman-adv/packet=
-=2Eh=20
-at the same time.
+- 1/3: a wrapper function that permits to trigger uevents has been added.
+The function takes a "type", an "action" and a "data" as parameters which
+will be used as uevent attributes. In particular they will respectively be
+BATTYPE, BATACTION and BATDATA in the uevent environment.
+The "type" and the "action" field are managed using two enum definitions and
+two char arrais. Currently the supported "type" is 'gw' only and the supported
+"actions" are 'add', 'change' and 'del'. The "data" parameter is a free field
+which can be filled by the programmer to send any useful data to the userspace.
+Uevents can be seen in userspace with the following command:
+	"$ udevadm monitor --property"
 
-Kind regards,
-	Sven
+- 2/3: on a gateway add/change/del event a corresponding uevent of type 'gw' is
+triggered. In particular, in case of setting up a gw for the first time a
+uevent with action 'add' is triggered. In case of changing the best gateway a
+uevent with action 'change' is triggered. In case of deselection of any gateway
+a uevent with action DEL is triggered.
 
---nextPart4500575.roVkArVDgK
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+- 3/3: a gw propagation feature for clients has been provided. The main target
+of this patch is to make clients able to change L3 gateway as soon as the mesh
+node currently serving them changes its default one at the batman layer.
+For this target a passive approach has been followed: whenever a unicast
+DHCPREQUEST for renewal is sent from a client, the node will inspect it and
+check if it is directed to the current default gateway or not. If it is not
+the case then the packet is dropped. In this way the client will get a
+timeout and a new DHCPREQUEST for discover will be sent giving the possibility
+to the node to select the best gw to forward this packet to (current gw
+selection mode).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJNwkwuAAoJEF2HCgfBJntGwioP/1CTSQz8aU25RzeoeWnqywzL
-5EOJgeI7HsTdFCIWXuDIJwLF3sjBDnZai9TXwPUxWq3moZKD6Jt5YntAXrNmyizZ
-cqNMF/hEQchxbCKnKq2kewhU/IGmkrqcwq49VQP5UeoeIsPR0IO3eIFHVJC9s17T
-WXXR/NbL5Mg5fy84Gn+6BDeGmqAWOd76UBoeFQxoNsTihxqqUVV5gybcuet9LTbh
-M8N7CekDpCK1VKr/vdk1TAM4pB2hj4W1oV2t+mMn0IQ1IhD0mKXmMb4symjo/+F1
-4MjZX6/x7A8n/eBZlsC71qJ8nDcHmOBWXZPIHk/aU3GRQVtilCaE6MactFoksbEz
-kuPIwDCDekUFFOqVPb7uskfHGIV+b4RWG9LMfLELNv3xAKQ+gCviS9rziISb5FP4
-rWiN0PLFq89ime6NMM4MpL57OfLmaBxgfpbC8PGIvHP0q3i1s1BacL/yWOgANinh
-WnfinYOgCR3XmThTn12jVPDbdYZ5LfE8At3/hPGu4Z/RpvwYWGxmGFOxeKrUB8Sa
-hKTbkckw9307aqcZbeGZ3T579kvRJLMZN4L2lIlI9TF9IItBx1egI5YJ+3+hEQHe
-CNtTtiHKbS1TLXgbjDPaxgnSYkrQUz9SQx4T8g622HAHMfg6HM/RkWio8aTbK9WM
-NF2M+n78WRUKYn9GhT7y
-=UkjK
------END PGP SIGNATURE-----
-
---nextPart4500575.roVkArVDgK--
