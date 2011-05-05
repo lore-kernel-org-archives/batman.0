@@ -1,8 +1,10 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu,  5 May 2011 14:15:57 +0200
-Message-Id: <1304597757-17035-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix rcu_lock imbalance in
+Date: Thu,  5 May 2011 14:19:09 +0200
+Message-Id: <1304597949-17173-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1304597757-17035-1-git-send-email-lindner_marek@yahoo.de>
+References: <1304597757-17035-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Fix refcount imbalance in
 	find_router
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,6 +22,8 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
+Fixed wrong subject.
+
  routing.c |   14 +++++++++-----
  1 files changed, 9 insertions(+), 5 deletions(-)
 
