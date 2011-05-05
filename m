@@ -1,15 +1,16 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 5 May 2011 20:52:05 +0200
-References: <BANLkTikFQsW0d8gYXLkTKcUkKMcD4juC9g@mail.gmail.com>
-In-Reply-To: <BANLkTikFQsW0d8gYXLkTKcUkKMcD4juC9g@mail.gmail.com>
+Date: Thu, 5 May 2011 21:01:43 +0200
+References: <1304597757-17035-1-git-send-email-lindner_marek@yahoo.de>
+	<1304597949-17173-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1304597949-17173-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5440008.l33cLTbGch";
+Content-Type: multipart/signed; boundary="nextPart9127316.P4L58vdJg0";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105052052.06909.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: remove duplicate code
-	from function is_bidirectional_neigh()
+Message-Id: <201105052101.44109.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Fix refcount imbalance in
+	find_router
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,53 +23,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart5440008.l33cLTbGch
+--nextPart9127316.P4L58vdJg0
 Content-Type: Text/Plain;
   charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Daniele Furlan wrote:
-> Is there an error in the previous version.
-> I'm sorry, this version instead works for me.
->=20
-> Signed-off-by: Daniele Furlan <daniele.furlan@gmail.com>
+Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 
-Could you please send a patch which isn't malformed... please :)
+Acked-by: Sven Eckelmann <sven@narfation.org>
 
-The biggest problem seems to be the gmail client. Please use something else=
-=20
-like git-send-email (or anything else which doesn't play around with the st=
-uff=20
-you gave him) and read through
- http://www.open-mesh.org/wiki/open-mesh/Contribute#Submitting-patches
-
-Also add a real commit message and only add additional comments after the=20
-"---" (right before the diffstats).
-
-Kind regards,
-	Sven
-
---nextPart5440008.l33cLTbGch
+--nextPart9127316.P4L58vdJg0
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABCgAGBQJNwvHVAAoJEF2HCgfBJntGXIsP/jckZq++XSr2j+SQEb/sVLsx
-avaqSpulV4JDpGfOMf7AEnpEOJ5VG0ltDQRY2CfC2pi8s+yYGjMIJAWYbogrDG/6
-46TazmeOE4/XCPeg33HfzZ4p0ukFj5jm3dMoZJ+4D4RQa+IJcII1uvVudEvW79JT
-EogQ984k8toS+I1gAEKYKWICYNf6f6l5U2uEX8zEFg4vJenqVKUO0EIddRiwKTYl
-cCYyf9oP/B80lfnAp3X9OqIB+sHrdT+9qYL3FWiUp0UGyG8CYthUu1n06c8eFlM0
-Phd6X+AbpqrgMoOmZuLZEJ0OP+UgwCk5vTmZwigKBSaV+xmWME7s7vatQaWpSV8Q
-Gablgli91e22mGc6g5rc+BzulMRpaEPotf1YVKOpftFYRJEQ5eNMrBzhq44c59hs
-3e4EzpUnQx2qOAup+vPVx7nhLUo+QHxeb8JHDGJs/ESEx76SXdFM9D67ftqlPL3U
-D+U6yuInZsCA05BsxbCTmBqw4vQvLkdu3kxQlzz7du3iH5shUkf9Ejf6wdx6ebHt
-H+1I2lJct+DpQgl/WKfsBJv4ESg9MqfdxyRiqrjyAGWuDQfrksi+C8nt3XhZ3cSi
-NRat0AKJpB15YzBsTKGclwravDRp8f9HwLcQV4wzYIgxa7Us1ZbU4kIFvAHPAojM
-if2wglm/R7AxUqOHunFZ
-=OogK
+iQIcBAABCgAGBQJNwvQXAAoJEF2HCgfBJntGzSMP/1C4P6Mxp0pdt1GJrfW5JToM
+bZAPb05BWQUM8foh2AhYLN2WYb9Dwyr3FH8K7wQQh2voM+tyK8V38NpQgkn2Gjrk
+wsStIVfBAckTOF2A/NbyosjHS+HKT+XpdeGIDIC6uT+JxaqbakQs++TzsMRes4oC
+h8ghJFWEasOc0PRkWEAh7LqsRvgZmFBI469lwZk15/9uNy6AfYhkWdX8zQpS+2HJ
+Vb7ocE//3sV6dntpZurG60oHaQkO+jm2ehN+67bM596TesI/wgggJAFdPX/mzAju
+c2jE9AY3GbZRuK1horEwmkp9q4iUuasasI7WUs1BDpsCEzSFYuy7RvqcjZ2IpbMO
+q+/BYyUt0ZBDfR+L10UA/RruVYeIvB5+7qSKUQ3dA2I84dnhvsTIhKWyACgKgwKw
+HhW37nNY3/H+0CY5j3MfC61rcL54xnBwa/BspobAea5dU+pbomy8lxAjblx7hED8
+BSJIFr37K/GjQVBRZyCwUMVNuPI1mCN18UC3AAtJi0SqCjlhiXnmMfGzSNu/msCb
+m75sUb5u7ODgU8tHXi9jgHMMtMhn6Dy48wBfCEDgKk898L1R26IXmBxHK73lCCG+
+fv1mpiWy90urKbg+hpbu9mpfqR8ULdwwiRRWpd9rJaoCwLBdYdgSbJZBhhoMfRsk
+Fe/UJFH2n/9hCLppdQaO
+=zaJo
 -----END PGP SIGNATURE-----
 
---nextPart5440008.l33cLTbGch--
+--nextPart9127316.P4L58vdJg0--
