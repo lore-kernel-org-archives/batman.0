@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  5 May 2011 09:13:07 +0200
-Message-Id: <1304579589-5222-2-git-send-email-ordex@autistici.org>
+Date: Thu,  5 May 2011 09:13:08 +0200
+Message-Id: <1304579589-5222-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1304579589-5222-1-git-send-email-ordex@autistici.org>
 References: <1304579589-5222-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: add wrapper function to
-	throw uevent in userspace
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: throw uevent in userspace on
+	gateway add/change/del event
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,152 +19,125 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Using throw_uevent() is now possible to trigger uevent signal that can
-be recognised in userspace. Uevents will be triggered through the
-/devices/virtual/net/{MESH_IFACE} kobject.
+In case of new default gw, changing the default gw or deleting the default gw a
+uevent is triggered with type=gw, action=add/change/del and
+data={GW_ORIG_ADDRESS} (if any).
 
-A triggered uevent has three properties:
-- type: the event class. Who generates the event (only 'gw' is currently
-  defined). Corresponds to the BATTYPE uevent variable.
-- action: the associated action with the event ('add'/'change'/'del' are
-  currently defined). Corresponds to the BAACTION uevent variable.
-- data: any useful data for the userspace. Corresponds to the BATDATA
-  uevent variable.
+The gateway election mechanism has been a little revised. Now the
+gw_election is trigered by an atomic_t flag (gw_reselect) which is is set
+to 1 in case of election needed, avoding to set curr_gw to NULL.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- bat_sysfs.c |   69 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- bat_sysfs.h |    4 +++
- main.h      |   11 +++++++++
- 3 files changed, 84 insertions(+), 0 deletions(-)
+ gateway_client.c |   31 ++++++++++++++++++++++++-------
+ main.c           |    1 +
+ types.h          |    1 +
+ 3 files changed, 26 insertions(+), 7 deletions(-)
 
-diff --git a/bat_sysfs.c b/bat_sysfs.c
-index 497a070..83c0980 100644
---- a/bat_sysfs.c
-+++ b/bat_sysfs.c
-@@ -32,6 +32,16 @@
- #define kobj_to_netdev(obj)	to_net_dev(to_dev(obj->parent))
- #define kobj_to_batpriv(obj)	netdev_priv(kobj_to_netdev(obj))
- 
-+static char *uev_action_str[] = {
-+	"add",
-+	"del",
-+	"change"
-+};
-+
-+static char *uev_type_str[] = {
-+	"gw"
-+};
-+
- /* Use this, if you have customized show and store functions */
- #define BAT_ATTR(_name, _mode, _show, _store)	\
- struct bat_attribute bat_attr_##_name = {	\
-@@ -594,3 +604,62 @@ void sysfs_del_hardif(struct kobject **hardif_obj)
- 	kobject_put(*hardif_obj);
- 	*hardif_obj = NULL;
- }
-+
-+int throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
-+		 enum uev_action action, char *data)
-+{
-+	int ret = -1;
-+	struct hard_iface *primary_if = NULL;
-+	struct kobject *bat_kobj;
-+	char *uevent_env[4] = { NULL, NULL, NULL, NULL };
-+
-+	primary_if = primary_if_get_selected(bat_priv);
-+	if (!primary_if)
-+		goto out;
-+
-+	bat_kobj = &primary_if->soft_iface->dev.kobj;
-+
-+	uevent_env[0] = kmalloc(strlen("BATTYPE=") +
-+				strlen(uev_type_str[type]) + 1,
-+				GFP_ATOMIC);
-+	if (!uevent_env[0])
-+		goto out;
-+
-+	sprintf(uevent_env[0], "BATTYPE=%s", uev_type_str[type]);
-+
-+	uevent_env[1] = kmalloc(strlen("BATACTION=") +
-+				strlen(uev_action_str[action]) + 1,
-+				GFP_ATOMIC);
-+	if (!uevent_env[1])
-+		goto out;
-+
-+	sprintf(uevent_env[1], "BATACTION=%s", uev_action_str[action]);
-+
-+	/* If the event is DEL, ignore the data field */
-+	if (action == UEV_DEL)
-+		goto throw;
-+
-+	uevent_env[2] = kmalloc(strlen("BATDATA=") +
-+				strlen(data) + 1, GFP_ATOMIC);
-+	if (!uevent_env[2])
-+		goto out;
-+
-+	sprintf(uevent_env[2], "BATDATA=%s", data);
-+
-+throw:
-+	ret = kobject_uevent_env(bat_kobj, KOBJ_CHANGE, uevent_env);
-+out:
-+	kfree(uevent_env[0]);
-+	kfree(uevent_env[1]);
-+	kfree(uevent_env[2]);
-+
-+	if (primary_if)
-+		hardif_free_ref(primary_if);
-+
-+	if (ret)
-+		bat_dbg(DBG_BATMAN, bat_priv, "Impossible to send "
-+			"uevent for (%s,%s,%s) event\n",
-+			uev_type_str[type], uev_action_str[action],
-+			(action == UEV_DEL ? "NULL" : data));
-+	return ret;
-+}
-diff --git a/bat_sysfs.h b/bat_sysfs.h
-index 02f1fa7..2b1a1d0 100644
---- a/bat_sysfs.h
-+++ b/bat_sysfs.h
-@@ -26,6 +26,8 @@
- #define SYSFS_IF_MESH_SUBDIR "mesh"
- #define SYSFS_IF_BAT_SUBDIR "batman_adv"
- 
-+struct bat_priv;
-+
- struct bat_attribute {
- 	struct attribute attr;
- 	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
-@@ -38,5 +40,7 @@ int sysfs_add_meshif(struct net_device *dev);
- void sysfs_del_meshif(struct net_device *dev);
- int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev);
- void sysfs_del_hardif(struct kobject **hardif_obj);
-+int throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
-+		 enum uev_action action, char *data);
- 
- #endif /* _NET_BATMAN_ADV_SYSFS_H_ */
-diff --git a/main.h b/main.h
-index 101d9dc..0dfb46e 100644
---- a/main.h
-+++ b/main.h
-@@ -78,6 +78,17 @@
- #define BCAST_QUEUE_LEN		256
- #define BATMAN_QUEUE_LEN	256
- 
-+
-+enum uev_action {
-+	UEV_ADD = 0,
-+	UEV_DEL,
-+	UEV_CHANGE
-+};
-+
-+enum uev_type {
-+	UEV_GW = 0
-+};
-+
- /*
-  * Debug Messages
+diff --git a/gateway_client.c b/gateway_client.c
+index 65f3953..8a7090c 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -20,6 +20,7 @@
   */
+ 
+ #include "main.h"
++#include "bat_sysfs.h"
+ #include "gateway_client.h"
+ #include "gateway_common.h"
+ #include "hard-interface.h"
+@@ -105,17 +106,18 @@ static void gw_select(struct bat_priv *bat_priv, struct gw_node *new_gw_node)
+ 
+ void gw_deselect(struct bat_priv *bat_priv)
+ {
+-	gw_select(bat_priv, NULL);
++	atomic_set(&bat_priv->gw_reselect, 1);
+ }
+ 
+ void gw_election(struct bat_priv *bat_priv)
+ {
+ 	struct hlist_node *node;
+ 	struct gw_node *gw_node, *curr_gw = NULL, *curr_gw_tmp = NULL;
+-	struct neigh_node *router;
++	struct neigh_node *router = NULL;
+ 	uint8_t max_tq = 0;
+ 	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
+ 	int down, up;
++	char gw_addr[18] = { '\0' };
+ 
+ 	/**
+ 	 * The batman daemon checks here if we already passed a full originator
+@@ -127,7 +129,7 @@ void gw_election(struct bat_priv *bat_priv)
+ 		return;
+ 
+ 	curr_gw = gw_get_selected_gw_node(bat_priv);
+-	if (curr_gw)
++	if (!atomic_dec_not_zero(&bat_priv->gw_reselect))
+ 		goto out;
+ 
+ 	rcu_read_lock();
+@@ -186,9 +188,8 @@ void gw_election(struct bat_priv *bat_priv)
+ 	}
+ 
+ 	if (curr_gw != curr_gw_tmp) {
+-		router = orig_node_get_router(curr_gw_tmp->orig_node);
+-		if (!router)
+-			goto unlock;
++		if (curr_gw_tmp)
++			router = orig_node_get_router(curr_gw_tmp->orig_node);
+ 
+ 		if ((curr_gw) && (!curr_gw_tmp))
+ 			bat_dbg(DBG_BATMAN, bat_priv,
+@@ -209,8 +210,24 @@ void gw_election(struct bat_priv *bat_priv)
+ 				curr_gw_tmp->orig_node->gw_flags,
+ 				router->tq_avg);
+ 
+-		neigh_node_free_ref(router);
++		if (router)
++			neigh_node_free_ref(router);
+ 		gw_select(bat_priv, curr_gw_tmp);
++		rcu_read_unlock();
++
++		/* Throw the gateway event to the userspace */
++		if (!curr_gw_tmp) {
++			throw_uevent(bat_priv, UEV_GW, UEV_DEL, NULL);
++			goto out;
++		}
++
++		sprintf(gw_addr, "%pM", curr_gw_tmp->orig_node->orig);
++
++		if (curr_gw)
++			throw_uevent(bat_priv, UEV_GW, UEV_CHANGE, gw_addr);
++		else
++			throw_uevent(bat_priv, UEV_GW, UEV_ADD, gw_addr);
++		goto out;
+ 	}
+ 
+ unlock:
+diff --git a/main.c b/main.c
+index 7edf8d7..792f682 100644
+--- a/main.c
++++ b/main.c
+@@ -111,6 +111,7 @@ int mesh_init(struct net_device *soft_iface)
+ 	if (vis_init(bat_priv) < 1)
+ 		goto err;
+ 
++	atomic_set(&bat_priv->gw_reselect, 0);
+ 	atomic_set(&bat_priv->mesh_state, MESH_ACTIVE);
+ 	goto end;
+ 
+diff --git a/types.h b/types.h
+index 9ae507a..e1f22b0 100644
+--- a/types.h
++++ b/types.h
+@@ -173,6 +173,7 @@ struct bat_priv {
+ 	struct delayed_work orig_work;
+ 	struct delayed_work vis_work;
+ 	struct gw_node __rcu *curr_gw;  /* rcu protected pointer */
++	atomic_t gw_reselect;
+ 	struct hard_iface __rcu *primary_if;  /* rcu protected pointer */
+ 	struct vis_info *my_vis_info;
+ };
 -- 
 1.7.3.4
 
