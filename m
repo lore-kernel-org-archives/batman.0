@@ -1,17 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 6 May 2011 01:05:45 +0200
-References: <1304597757-17035-1-git-send-email-lindner_marek@yahoo.de>
-	<1304597949-17173-1-git-send-email-lindner_marek@yahoo.de>
-	<201105052101.44109.sven@narfation.org>
-In-Reply-To: <201105052101.44109.sven@narfation.org>
+Return-Path: <jarmando22@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105060105.45478.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Fix refcount imbalance in
-	find_router
+Date: Fri, 6 May 2011 07:23:43 -0700
+Message-ID: <BANLkTikE30AmKXdq7QTB=1jaMzFj-FHGDw@mail.gmail.com>
+From: Jose Armando <jarmando22@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] mesh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,15 +17,13 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday 05 May 2011 21:01:43 Sven Eckelmann wrote:
-> Marek Lindner wrote:
-> > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> 
-> Acked-by: Sven Eckelmann <sven@narfation.org>
+Hello
 
-Applied in revision ca6b80c.
-
-Thanks for the review,
-Marek
+Can any one tell me how to install batman on openwrt my router has
+openwrt install with luci but i cant install batman im need on this
+mesh or any one can build for me and i will pay for u time
+thank you
+Armando =A0Dieguez
+Phone 714.292.0156
