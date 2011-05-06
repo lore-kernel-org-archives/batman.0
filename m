@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 6 May 2011 19:41:36 +0200
+Date: Fri, 6 May 2011 20:27:24 +0200
 References: <BANLkTikE30AmKXdq7QTB=1jaMzFj-FHGDw@mail.gmail.com>
-	<201105061912.58122.sven@narfation.org>
-	<BANLkTinpAMkyfZtwE9m0L51d-qMrVwpX_Q@mail.gmail.com>
-In-Reply-To: <BANLkTinpAMkyfZtwE9m0L51d-qMrVwpX_Q@mail.gmail.com>
+	<201105061939.34734.sven@narfation.org>
+	<4DC436D6.9030706@gmail.com>
+In-Reply-To: <4DC436D6.9030706@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1535259.G1vl2cGk0S";
+Content-Type: multipart/signed; boundary="nextPart1575949.eX5xhMn8Nj";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105061941.37810.sven@narfation.org>
+Message-Id: <201105062027.26100.sven@narfation.org>
 Subject: Re: [B.A.T.M.A.N.] mesh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,42 +22,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jose Armando <jarmando22@gmail.com>
+To: sebastian.criado@gmail.com
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1535259.G1vl2cGk0S
+--nextPart1575949.eX5xhMn8Nj
 Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-On Friday 06 May 2011 19:31:33 Jose Armando wrote:
-> Sven are u in usa?
+On Friday 06 May 2011 19:58:46 Sebasti=E1n D. Criado wrote:
+> El 06/05/11 14:39, Sven Eckelmann escribi=F3:
+> > On Friday 06 May 2011 19:21:58 Jose Armando wrote:
+> >> Sorry seven here's is what looking for I would like to build a firmware
+> >> that work like mesh and I been told that Batman is the best I'm new one
+> >> this linux open source but I want to learn and I want to build mesh
+> >> firmware that work with this
+> >> 1 open ssid
+> >> 2 close ssid with wpa password
+> >> 3 mesh ssid by MAC addresses so I can mesh 20 routers
+> >> 4 used captival portal
+> >> Used Opendns
+>=20
+> Our development has everything he suggests.
+>=20
+> http://nightwing.lugro-mesh.org.ar/en/
+>=20
+> Indeed. He knows this because it has been communicating with us for
+> assistance.
+>=20
+> http://lugro.org.ar/pipermail/nightwing/2011-February/000288.html
+>=20
+> I do not understand that says "i want to build" when it should say "im
+> using"
+>=20
+> In deed, today he communicated with us to offer a donation of equipment.
 
-Not right now and propably not in the near future.
+Ok, so everything is already solved.
 
 Kind regards,
 	Sven
 
---nextPart1535259.G1vl2cGk0S
+--nextPart1575949.eX5xhMn8Nj
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABCgAGBQJNxDLRAAoJEF2HCgfBJntGoc0P/0gXGOaraOhJxB/ktz+/+qc2
-LmzTxF62WX3rLf5Je91QYLqo+duJjBsqaLxsKA41vk4ZqlDUtsG0MW55EEZTF3Xe
-lOgTUtDEW1XtRBDsfYNXiad4TfqB9Irh+skdhsjZ0wDjvKIGmiXcHuDLTubkJiX8
-CFRNsWANZOql6+iSrp78aYCk3R+nVbyS9pxaOEQMAGlkcHS1EnldSDZywjJuj+ax
-EXWAQp++3I73aSsr6p/RRYQMIu2WE1Q1SmSarNbr0b129HDJfDgwDB8T870EgJgR
-lgjmEebAtIbrheMdL8+0Bm+UZ07l9RF+QQj/ysMonTMaANeR4cFWLOgp/bq1cyKF
-9Sg/qF+oqqORs3jD4HPoSV/BdOjPmMfh7ZtJjPp61EFEunLiGaWejBv+UYmrmSAZ
-pLeLekXRU+3QE816HcFIFlZrGt1NTsHYnXhAR+WhxUl9JDOPRl9us9U+Mi8Gl0V8
-GbyAI1RSAwYyU4GjwKFOA8TudmH51DncAU/VBbCFU69BRG4oKBTHHtrHItl87B7R
-DbHzaZ7TeyXWIySV+wqbaQEzPNyovMubFA4qaSAe4y6qxBXHMoqgSlIAzwSakjIF
-ZQoQxbekwPzz6L5B570X2WLarMZ6dmCa5SJQNWn49uv06Tga1ZputmOdJTYiJyOW
-VALyThxzqo9Er+v26Pgv
-=Hn6H
+iQIcBAABCgAGBQJNxD2MAAoJEF2HCgfBJntG9joP/ijFoNpW9hbOqgBWlPNTUlO2
+mIKjxk5sqrPE8bdSHTFX9job2p6DqLjnR2RhNYZmc7qMiX/04F859cmQi7hN5MNq
+38ssTt4iegjD6pAgCBQ2rWR8wAKkS1u/+3+/XnJQjAlaxV7ItUg564vFXVE9chTJ
+JilxIQi0BaF8qFgRPVtLNoonOFQtIjOjJFBPOCTFxqBNjW0QUJ6+Yfo8xLN85jE2
+UnQ9NIzYmqixgmcpQffTFXkcHa+X87McoCLRYijNdWQDUhD3eIBwI3bldu/CM8ZI
+ZFi6FF4Twg0q4S0Zuhahl8UUxlC1oeK2kN5x3lFVJ8VbdcPnmtiFCWrG4EPQEeiW
+w7MNPhzzFhz9akjAuMEDjMD3g9yGpVQxDXTBnrFB8590IFwNJZ93WiNnvADYBKAg
+tvGcNLlidNftVEk7Y64Jb6x1GjKX33rSDO3syBh7nWzY9Zvm72+XWNDEq8HB2aGy
+hpuRzG3iicKO5qBI4Uvo7ecAlnjBd+9uJLUrbNM2vzZMjFfN9a1sJ88+TFLAqpL4
+Xn1LKhiiFXeNBKQtBIC+UxJVzQ9kOm7rpu1lo/B4QNPS+yRwlFiD+dGhPPZUtvVU
+QbH58BzqnFJuluUah2jhweTM/1m4US6QCLbI+kYLi2LNL0G0b9OsCa5wpMxFjbS+
+S9ZzKqngbja5N/PCrCav
+=5bjS
 -----END PGP SIGNATURE-----
 
---nextPart1535259.G1vl2cGk0S--
+--nextPart1575949.eX5xhMn8Nj--
