@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  7 May 2011 21:48:04 +0200
-Message-Id: <1304797684-31778-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1304797684-31778-1-git-send-email-sven@narfation.org>
-References: <1304797684-31778-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Remove unused variable r in
-	bat_printk
+Date: Sat,  7 May 2011 22:45:19 +0200
+Message-Id: <1304801119-3083-1-git-send-email-sven@narfation.org>
+In-Reply-To: <201105052052.06909.sven@narfation.org>
+References: <201105052052.06909.sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: remove duplicate code from
+	function is_bidirectional_neigh()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,28 +19,116 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+From: Daniele Furlan <daniele.furlan@gmail.com>
+
+In function is_bidirectional_neigh the code that find out the one hop
+neighbor is duplicated.
+
+Signed-off-by: Daniele Furlan <daniele.furlan@gmail.com>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- compat.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+No answer yet, but I would like to get this patch into net-next-2.6. I
+did the change myself and compared both versions by ignoring spaces. No
+real differences were shown... so I would say that this change looks
+good :)
 
-diff --git a/compat.c b/compat.c
-index 34b27a1..70de376 100644
---- a/compat.c
-+++ b/compat.c
-@@ -909,11 +909,10 @@ int bat_vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
- asmlinkage int bat_printk(const char *fmt, ...)
- {
- 	va_list args;
--	int r;
- 	char buf[256];
+ routing.c |   73 ++++++++++++++++++++-----------------------------------------
+ 1 files changed, 24 insertions(+), 49 deletions(-)
+
+diff --git a/routing.c b/routing.c
+index 7648b92..d562566 100644
+--- a/routing.c
++++ b/routing.c
+@@ -169,65 +169,40 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
+ 	uint8_t orig_eq_count, neigh_rq_count, tq_own;
+ 	int tq_asym_penalty, ret = 0;
  
- 	va_start(args, fmt);
--	r = bat_vsnprintf(buf, sizeof(buf), fmt, args);
-+	bat_vsnprintf(buf, sizeof(buf), fmt, args);
- 	va_end(args);
+-	if (orig_node == orig_neigh_node) {
+-		rcu_read_lock();
+-		hlist_for_each_entry_rcu(tmp_neigh_node, node,
+-					 &orig_node->neigh_list, list) {
++	/* find corresponding one hop neighbor */
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(tmp_neigh_node, node,
++				 &orig_neigh_node->neigh_list, list) {
  
- 	return printk("%s", buf);
+-			if (!compare_eth(tmp_neigh_node->addr,
+-					 orig_neigh_node->orig))
+-				continue;
++		if (!compare_eth(tmp_neigh_node->addr, orig_neigh_node->orig))
++			continue;
+ 
+-			if (tmp_neigh_node->if_incoming != if_incoming)
+-				continue;
++		if (tmp_neigh_node->if_incoming != if_incoming)
++			continue;
+ 
+-			if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
+-				continue;
++		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
++			continue;
+ 
+-			neigh_node = tmp_neigh_node;
+-		}
+-		rcu_read_unlock();
++		neigh_node = tmp_neigh_node;
++	}
++	rcu_read_unlock();
+ 
+-		if (!neigh_node)
+-			neigh_node = create_neighbor(orig_node,
+-						     orig_neigh_node,
+-						     orig_neigh_node->orig,
+-						     if_incoming);
+-		if (!neigh_node)
+-			goto out;
++	if (!neigh_node)
++		neigh_node = create_neighbor(orig_neigh_node,
++					     orig_neigh_node,
++					     orig_neigh_node->orig,
++					     if_incoming);
+ 
++	if (!neigh_node)
++		goto out;
++
++	/* if orig_node is direct neighbour update neigh_node last_valid */
++	if (orig_node == orig_neigh_node)
+ 		neigh_node->last_valid = jiffies;
+-	} else {
+-		/* find packet count of corresponding one hop neighbor */
+-		rcu_read_lock();
+-		hlist_for_each_entry_rcu(tmp_neigh_node, node,
+-					 &orig_neigh_node->neigh_list, list) {
+-
+-			if (!compare_eth(tmp_neigh_node->addr,
+-					 orig_neigh_node->orig))
+-				continue;
+-
+-			if (tmp_neigh_node->if_incoming != if_incoming)
+-				continue;
+-
+-			if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
+-				continue;
+-
+-			neigh_node = tmp_neigh_node;
+-		}
+-		rcu_read_unlock();
+-
+-		if (!neigh_node)
+-			neigh_node = create_neighbor(orig_neigh_node,
+-						     orig_neigh_node,
+-						     orig_neigh_node->orig,
+-						     if_incoming);
+-		if (!neigh_node)
+-			goto out;
+-	}
+ 
+ 	orig_node->last_valid = jiffies;
+ 
++	/* find packet count of corresponding one hop neighbor */
+ 	spin_lock_bh(&orig_node->ogm_cnt_lock);
+ 	orig_eq_count = orig_neigh_node->bcast_own_sum[if_incoming->if_num];
+ 	neigh_rq_count = neigh_node->real_packet_count;
 -- 
 1.7.5.1
 
