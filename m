@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 7 May 2011 19:46:02 +0200
-References: <1304438096-19009-2-git-send-email-ordex@autistici.org>
-	<1304577765-15123-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1304577765-15123-1-git-send-email-ordex@autistici.org>
+Date: Sat, 7 May 2011 20:00:40 +0200
+References: <1304496393-16405-1-git-send-email-sven@narfation.org>
+	<1304496393-16405-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1304496393-16405-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105071946.02972.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: rename everything from
-	*hna* into *tt* (translation table)
+Message-Id: <201105072000.40439.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Rename bat_printk.c to
+	compat.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,11 +24,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday 05 May 2011 08:42:45 Antonio Quartulli wrote:
-> To be coherent, all the functions/variables/constats have been renamed
-> to the TranslationTable style
+On Wednesday 04 May 2011 10:06:29 Sven Eckelmann wrote:
+>  Makefile.kbuild          |    2 +-
+>  bat_printk.c => compat.c |    0
+>  2 files changed, 1 insertions(+), 1 deletions(-)
+>  rename bat_printk.c => compat.c (100%)
 
-Applied in revision 160dd13.
+Applied in revision adcaaf2.
 
 Thanks,
 Marek
