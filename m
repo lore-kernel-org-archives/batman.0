@@ -1,15 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 8 May 2011 15:28:05 +0200
+Return-Path: <daniele.furlan@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <20110508125553.GA4071@lunn.ch>
 References: <BANLkTi=jP-N9wR2TMdB6oDEZcLVpROndUg@mail.gmail.com>
 	<201105071933.19780.lindner_marek@yahoo.de>
 	<BANLkTi=NMtjCDO5461N+mxmKqmDnSpPa+w@mail.gmail.com>
-In-Reply-To: <BANLkTi=NMtjCDO5461N+mxmKqmDnSpPa+w@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105081528.06184.lindner_marek@yahoo.de>
+	<20110508125553.GA4071@lunn.ch>
+Date: Sun, 8 May 2011 16:55:29 +0200
+Message-ID: <BANLkTikEY9egqZwSX0qPFce=XC-HL_DdHw@mail.gmail.com>
+From: Daniele Furlan <daniele.furlan@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] Routing improvement taking into account links
 	bit-rate
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,76 +25,71 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+2011/5/8 Andrew Lunn <andrew@lunn.ch>:
+> Hi Daniele
+>
+>> It is not a real Link State routing, the document maybe is not
+>> completely clear. =A0Every node before the OGM rebroadcast, attach its
+>> current best path toward the originator node. =A0I could do this
+>> without adding an hop list, but simply substituting the TQ with PCE.
+>
+> How you tried this? How well does this work?
+>
+I've not tried this, but it is perfectly equivalent as appending the
+current best path to OGM.
+I permit to the next node to do the same operation that previous node has d=
+one.
 
-Hi,
+> Not adding path information will be a big help in avoiding routing
+> loops. It seems to me, just the simple idea of weighting the local TQ
+> with a bitrate factor might help.
+>
+Routing loops can occur exactly as they can occur with current
+protocol, I think.
+I did not introduced any cause of loops, I use the list of hop
+received in OGM only for PCE computation.
+Anyhow I will think deeply on this potential problem.
 
-> > * The concept of attaching all hops and their information to the OGM
-> > brings us dangerously close to the problems other routing protocols
-> > suffer from (especially Link State): The more a node is away from the
-> > source the more its information are outdated. Imagine a 10 hop path -
-> > how can we rely on this information at the end of that path ?
-> > Furthermore, by making a decision at the end of the path it does not
-> > mean the next hop (which has newer information) agrees with us on that
-> > path. It might send it the packet somewhere else. All that depends at
-> > which point the bandwidth influences the routing decision. Do you mind
-> > providing a more precise example how the route switching happens ? I
-> > hope you thought about loops..
-> 
-> It is not a real Link State routing, the document maybe is not completely
-> clear. Every node before the OGM rebroadcast, attach its current best path
-> toward the originator node. I could do this without adding an hop list, but
-> simply substituting the TQ with PCE. This modification, as explained in the
-> report, has been done to permit future addition of further information about
-> link such as, for example, the load.
+> The hard part is correctly handling the total air time. One 36Mbps hop
+> is better than two 54Mbps hops, because of the total air time.
+>
+I explained this in the report. I did not calculate the exactly total
+air time, but I weight the
+metric with its length when comparing it with the current best route.
+For example, for doubling the length I require 4 times more PCE.
 
-No, it is not exactly like Link State but it goes into the same direction. The 
-problem is this: The more information you propagate through the mesh the more 
-you have to pay attention to not make decisions based on outdated data. In a 4 
-node testbed you will not see this but as your mesh grows you will.
-Your document explains how the PCE is calculated but I could not find the 
-section which explains how every individual node comes to a routing decision. 
-That part is essential for the routing loops.
-In addition you gain no value by sending all these information. Even if every 
-node had up-to-date information about all other nodes in the mesh and made a 
-decision based on that, the next hop can come to a completely different 
-decision and sends the packet somewhere else. That is one of the main reason 
-why I don't see the multipath routing to work as you envision in the paper.
+> It would also be interesting to see how bit rates change with
+> usage. It could be that you pick a next hop partially based on its bit
+> rate, which puts load onto the next hop, and its bit rate drops, since
+> it is now being used more and so suffers more interference. The
+> dropping bit rate causes the next hop route decision to change.
+>
+> It could be, you are actually introducing more route flipping.
 
+Certainly bit-rate is subject to frequent oscillations, so I maintain
+an exponential moving average
+of PCE that "smooth" this oscillations.
+Bit-rate is actually subject to variation for various factor, such as
+node distance, channel occupation, etc.. and
+all these factor are important for routing decision. I take the
+bit-rate that summarize all these information and use it
+to weight the TQ.
+>
+> What would be interesting is to look at the effect of route
+> flipping. Is it bad for performance? If so, can hysteresis be added
+> without causing routing loops. There was some work posted here a
+> couple of months ago that started to look at these
+> questions. Unfortunately, it did not consider if routing loops would
+> be introduced.
+>
+I've seen that work and seems interesting. Routing loops have been not
+considered yet in
+any published paper as far as I know. :(
 
-> > - Bit-rates are not a fixed value either - mistrel for example maintains
-> > a table of 3 different bit-rates. How do you obtain one value ? What
-> > about the other bit rate algorithms ?
-> 
-> As far as I know, the value given from driver is the current 
-> "best-throughput" one in the minstrel case. In any case is reported the most
-> used by the wireless card.
+> =A0 Andrew
+>
 
-Ok, your results are not accurate then. Not sure whether this is a problem or 
-not.
+Thank you for your comments!
 
-
-> > - Bit-rates are a best guess too which might drop rapidly as soon as you
-> > try to actually use the link.
-> 
-> For the minstrel case, no estimation of bit-rate is done, the bit-rate
-> is obtained only measuring real traffic. For the other algorithms I have
-> surely to do a more accurate research.
-
-What makes you think this is not an "estimation" ? On wireless you never know 
-the actual throughput unless you use the link. Even then the outcome is highly 
-variable depending on whether you have neighboring nodes that also send 
-traffic, whether there is a sudden interference (microwave is turned on) and 
-so forth and so on.
-
-
-> In addition I assume that links are used periodically, otherwise why is
-> routing necessary? :)
-
-You assume a steady flow of data which rarely is the case. Imagine a user 
-surfing the web - you'll have peaks of traffic and then longer periods of no 
-traffic. During the peak time the bandwidth estimate will drop and recover 
-quickly as soon as the link is not used anymore (I have seen that many times). 
-
-Cheers,
-Marek
-
+--=20
+Daniele Furlan
