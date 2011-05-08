@@ -1,14 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  8 May 2011 17:24:39 +0200
-Message-Id: <1304868284-9364-4-git-send-email-sven@narfation.org>
+Date: Sun,  8 May 2011 17:24:40 +0200
+Message-Id: <1304868284-9364-5-git-send-email-sven@narfation.org>
 In-Reply-To: <1304868284-9364-1-git-send-email-sven@narfation.org>
 References: <1304868284-9364-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 3/8] batman-adv: Remove unnecessary
-	hardif_list_lock
+Subject: [B.A.T.M.A.N.] [PATCH 4/8] batman-adv: Avoid deadlock between
+	rtnl_lock and s_active
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,171 +20,59 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-hardif_list_lock is unneccessary because we already ensure that no
-multiple admin operations can take place through rtnl_lock.
-hardif_list_lock only adds additional overhead and complexity.
+The hard_if_event is called by the notifier with rtnl_lock and tries to
+remove sysfs entries when a NETDEV_UNREGISTER event is received. This
+will automatically take the s_active lock.
 
-Critical functions now check whether they are called with rtnl_lock
-using ASSERT_RTNL.
+The s_active lock is also used when a new interface is added to a meshif
+through sysfs. In that situation we cannot wait for the rntl_lock before
+creating the actual batman-adv interface to prevent a deadlock. It is
+still possible to try to get the rtnl_lock and immediately abort the
+current operation when the trylock call failed.
 
-It indirectly fixes the problem that orig_hash_del_if() expects that
-only one interface is deleted from hardif_list at a time, but
-hardif_remove_interfaces() removes all at once and then calls
-orig_hash_del_if().
-
-Reported-by: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_sysfs.c      |    2 ++
- net/batman-adv/hard-interface.c |   30 +++++++-----------------------
- net/batman-adv/main.c           |    3 +++
- net/batman-adv/soft-interface.c |    2 +-
- 4 files changed, 13 insertions(+), 24 deletions(-)
+ net/batman-adv/bat_sysfs.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/net/batman-adv/bat_sysfs.c b/net/batman-adv/bat_sysfs.c
-index e449bf6..85ba20d 100644
+index 85ba20d..497a070 100644
 --- a/net/batman-adv/bat_sysfs.c
 +++ b/net/batman-adv/bat_sysfs.c
-@@ -502,7 +502,9 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
- 		rtnl_unlock();
+@@ -488,24 +488,24 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 	    (strncmp(hard_iface->soft_iface->name, buff, IFNAMSIZ) == 0))
+ 		goto out;
+ 
++	if (!rtnl_trylock()) {
++		ret = -ERESTARTSYS;
++		goto out;
++	}
++
+ 	if (status_tmp == IF_NOT_IN_USE) {
+-		rtnl_lock();
+ 		hardif_disable_interface(hard_iface);
+-		rtnl_unlock();
+-		goto out;
++		goto unlock;
  	}
  
-+	rtnl_lock();
- 	ret = hardif_enable_interface(hard_iface, buff);
-+	rtnl_unlock();
+ 	/* if the interface already is in use */
+-	if (hard_iface->if_status != IF_NOT_IN_USE) {
+-		rtnl_lock();
++	if (hard_iface->if_status != IF_NOT_IN_USE)
+ 		hardif_disable_interface(hard_iface);
+-		rtnl_unlock();
+-	}
  
+-	rtnl_lock();
+ 	ret = hardif_enable_interface(hard_iface, buff);
++
++unlock:
+ 	rtnl_unlock();
+-
  out:
  	hardif_free_ref(hard_iface);
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 3e888f1..7e2f772 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -31,9 +31,6 @@
- 
- #include <linux/if_arp.h>
- 
--/* protect update critical side of hardif_list - but not the content */
--static DEFINE_SPINLOCK(hardif_list_lock);
--
- 
- static int batman_skb_recv(struct sk_buff *skb,
- 			   struct net_device *dev,
-@@ -136,7 +133,7 @@ static void primary_if_select(struct bat_priv *bat_priv,
- 	struct hard_iface *curr_hard_iface;
- 	struct batman_packet *batman_packet;
- 
--	spin_lock_bh(&hardif_list_lock);
-+	ASSERT_RTNL();
- 
- 	if (new_hard_iface && !atomic_inc_not_zero(&new_hard_iface->refcount))
- 		new_hard_iface = NULL;
-@@ -148,7 +145,7 @@ static void primary_if_select(struct bat_priv *bat_priv,
- 		hardif_free_ref(curr_hard_iface);
- 
- 	if (!new_hard_iface)
--		goto out;
-+		return;
- 
- 	batman_packet = (struct batman_packet *)(new_hard_iface->packet_buff);
- 	batman_packet->flags = PRIMARIES_FIRST_HOP;
-@@ -161,9 +158,6 @@ static void primary_if_select(struct bat_priv *bat_priv,
- 	 * our new primary interface
- 	 */
- 	atomic_set(&bat_priv->hna_local_changed, 1);
--
--out:
--	spin_unlock_bh(&hardif_list_lock);
- }
- 
- static bool hardif_is_iface_up(struct hard_iface *hard_iface)
-@@ -456,6 +450,8 @@ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
- 	struct hard_iface *hard_iface;
- 	int ret;
- 
-+	ASSERT_RTNL();
-+
- 	ret = is_valid_iface(net_dev);
- 	if (ret != 1)
- 		goto out;
-@@ -482,10 +478,7 @@ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
- 	atomic_set(&hard_iface->refcount, 2);
- 
- 	check_known_mac_addr(hard_iface->net_dev);
--
--	spin_lock(&hardif_list_lock);
- 	list_add_tail_rcu(&hard_iface->list, &hardif_list);
--	spin_unlock(&hardif_list_lock);
- 
- 	return hard_iface;
- 
-@@ -499,6 +492,8 @@ out:
- 
- static void hardif_remove_interface(struct hard_iface *hard_iface)
- {
-+	ASSERT_RTNL();
-+
- 	/* first deactivate interface */
- 	if (hard_iface->if_status != IF_NOT_IN_USE)
- 		hardif_disable_interface(hard_iface);
-@@ -514,20 +509,11 @@ static void hardif_remove_interface(struct hard_iface *hard_iface)
- void hardif_remove_interfaces(void)
- {
- 	struct hard_iface *hard_iface, *hard_iface_tmp;
--	struct list_head if_queue;
- 
--	INIT_LIST_HEAD(&if_queue);
--
--	spin_lock(&hardif_list_lock);
-+	rtnl_lock();
- 	list_for_each_entry_safe(hard_iface, hard_iface_tmp,
- 				 &hardif_list, list) {
- 		list_del_rcu(&hard_iface->list);
--		list_add_tail(&hard_iface->list, &if_queue);
--	}
--	spin_unlock(&hardif_list_lock);
--
--	rtnl_lock();
--	list_for_each_entry_safe(hard_iface, hard_iface_tmp, &if_queue, list) {
- 		hardif_remove_interface(hard_iface);
- 	}
- 	rtnl_unlock();
-@@ -556,9 +542,7 @@ static int hard_if_event(struct notifier_block *this,
- 		hardif_deactivate_interface(hard_iface);
- 		break;
- 	case NETDEV_UNREGISTER:
--		spin_lock(&hardif_list_lock);
- 		list_del_rcu(&hard_iface->list);
--		spin_unlock(&hardif_list_lock);
- 
- 		hardif_remove_interface(hard_iface);
- 		break;
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 705e8be..7edf8d7 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -33,6 +33,9 @@
- #include "vis.h"
- #include "hash.h"
- 
-+
-+/* List manipulations on hardif_list have to be rtnl_lock()'ed,
-+ * list traversals just rcu-locked */
- struct list_head hardif_list;
- 
- unsigned char broadcast_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 8cb13a0..9301e21 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -819,7 +819,7 @@ struct net_device *softif_create(char *name)
- 		goto out;
- 	}
- 
--	ret = register_netdev(soft_iface);
-+	ret = register_netdevice(soft_iface);
- 	if (ret < 0) {
- 		pr_err("Unable to register the batman interface '%s': %i\n",
- 		       name, ret);
+ 	return ret;
 -- 
 1.7.5.1
 
