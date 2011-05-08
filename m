@@ -1,15 +1,11 @@
 Return-Path: <ordex@autistici.org>
-Date: Sun, 8 May 2011 20:44:40 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110508184431.GA4631@ritirata.org>
+Date: Sun,  8 May 2011 20:52:57 +0200
+Message-Id: <1304880777-19702-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1304583702-23969-1-git-send-email-ordex@autistici.org>
 References: <1304583702-23969-1-git-send-email-ordex@autistici.org>
-	<201105051420.10634.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <201105051420.10634.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: move
- neigh_node->if_incoming->if_status check in find_router()
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: move
+	neigh_node->if_incoming->if_status check in find_router()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,28 +17,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On gio, mag 05, 2011 at 02:20:10 +0200, Marek Lindner wrote:
-> On Thursday 05 May 2011 10:21:42 Antonio Quartulli wrote:
-> >  return_router:
-> > +       if (router && router->if_incoming->if_status != IF_ACTIVE)
-> > +               router = NULL;
-> > +
-> >         rcu_read_unlock();
-> >         return router;
-> 
-> You are breaking the reference counting of 'router' here. While looking at 
-> your patch I found another refcount imbalance. Check the patch I just posted 
-> (Fix refcount imbalance in find_router).
+Every time that find_router() is invoked, if_status has to be compared with
+IF_ACTIVE. Moving this comparison inside find_router() will avoid to write it
+each time.
 
-I see :)
-And thanks for reviewing.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+In this version the reference counting of 'router' has been corrected.
 
-Regards,
+ routing.c |    3 +++
+ unicast.c |    3 ---
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/routing.c b/routing.c
+index bb1c3ec..8c403ce 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1240,6 +1240,9 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 		router = find_ifalter_router(primary_orig_node, recv_if);
+ 
+ return_router:
++	if (router && router->if_incoming->if_status != IF_ACTIVE)
++		goto err_unlock;
++
+ 	rcu_read_unlock();
+ 	return router;
+ err_unlock:
+diff --git a/unicast.c b/unicast.c
+index 19c3daf..bab6076 100644
+--- a/unicast.c
++++ b/unicast.c
+@@ -314,9 +314,6 @@ find_router:
+ 	if (!neigh_node)
+ 		goto out;
+ 
+-	if (neigh_node->if_incoming->if_status != IF_ACTIVE)
+-		goto out;
+-
+ 	if (my_skb_head_push(skb, sizeof(struct unicast_packet)) < 0)
+ 		goto out;
+ 
 -- 
-Antonio Quartulli
+1.7.3.4
 
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
