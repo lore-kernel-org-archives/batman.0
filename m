@@ -1,16 +1,13 @@
-Return-Path: <ordex@autistici.org>
-Date: Sun, 8 May 2011 22:57:11 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110508205711.GE4631@ritirata.org>
-References: <1304579589-5222-1-git-send-email-ordex@autistici.org>
-	<1304579589-5222-4-git-send-email-ordex@autistici.org>
-	<20110505134649.GD1528@lunn.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20110505134649.GD1528@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: improved gateway
- tq-based selection
+Return-Path: <davem@davemloft.net>
+Date: Sun, 08 May 2011 15:40:06 -0700 (PDT)
+Message-Id: <20110508.154006.70211034.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1304868284-9364-1-git-send-email-sven@narfation.org>
+References: <1304868284-9364-1-git-send-email-sven@narfation.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-05-08
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,32 +19,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: sven@narfation.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On gio, mag 05, 2011 at 03:46:49 +0200, Andrew Lunn wrote:
-> On Thu, May 05, 2011 at 09:13:09AM +0200, Antonio Quartulli wrote:
-> > +	/* If old_gw != NULL then this packet is unicast.
-> > +	 * So, at this point it can only be a renewal packet (because it is the
-> > +	 * only dhcp client message sent as unicast) and we have to decide
-> > +	 * whether to drop it or not */
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun,  8 May 2011 17:24:36 +0200
+
+> Hi,
 > 
-> What about the release message? Is that not also unicast? 
+> I would like to propose following patches for net-next-2.6/2.6.40. They
+> include minor cleanups of comments, a big rename patch s/hna/tt/, but
+> also a remove some duplicated code. The spinlock which protected the
+> list of possible interfaces for batman-adv was completely replaced by
+> rtnl_lock because we want to be in sync with the rest of the network
+> stack and the extra spinlock made everything more complex without giving
+> any additional feature (and rtnl_lock was already used everywhere).
+> Related to this patch is also a fix which should prevent a deadlock
+> between the sysfs code and the event listener. Also the reference
+> counting in find_router was fixed when an error was detected after the
+> refcounter was already increased. The only feature is the support for
+> multiple vlans in the bridge loop detection code.
 > 
+> I will submit a patch to remove the atomic_dec_not_zero from main.h
+> after Linus accepted the patch you already saw.
 
-You are right (dhcpdecline is unicast too).
-I have to inspect the dhcp header and look at the message type option.
-
-> > +	if (old_gw && curr_gw->orig_node != old_gw) {
-> > +		/* If the dhcp packet has been sent to a different gw, we have
-> > +		 * to evaluate whether the old gw is still enough reliable */
-> 
-> still reliable enough.
-> 
-
-Thanks!
-
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
+Pulled, thanks Sven.
