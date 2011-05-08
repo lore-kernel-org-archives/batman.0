@@ -1,11 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  8 May 2011 17:24:44 +0200
-Message-Id: <1304868284-9364-9-git-send-email-sven@narfation.org>
-In-Reply-To: <1304868284-9364-1-git-send-email-sven@narfation.org>
-References: <1304868284-9364-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 8/8] batman-adv: remove duplicate code from
-	function is_bidirectional_neigh()
+Return-Path: <ordex@autistici.org>
+Date: Sun, 8 May 2011 20:44:40 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20110508184431.GA4631@ritirata.org>
+References: <1304583702-23969-1-git-send-email-ordex@autistici.org>
+	<201105051420.10634.lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <201105051420.10634.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: move
+ neigh_node->if_incoming->if_status check in find_router()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,115 +21,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Daniele Furlan <daniele.furlan@gmail.com>
+On gio, mag 05, 2011 at 02:20:10 +0200, Marek Lindner wrote:
+> On Thursday 05 May 2011 10:21:42 Antonio Quartulli wrote:
+> >  return_router:
+> > +       if (router && router->if_incoming->if_status != IF_ACTIVE)
+> > +               router = NULL;
+> > +
+> >         rcu_read_unlock();
+> >         return router;
+> 
+> You are breaking the reference counting of 'router' here. While looking at 
+> your patch I found another refcount imbalance. Check the patch I just posted 
+> (Fix refcount imbalance in find_router).
 
-In function is_bidirectional_neigh the code that find out the one hop
-neighbor is duplicated.
+I see :)
+And thanks for reviewing.
 
-Signed-off-by: Daniele Furlan <daniele.furlan@gmail.com>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/routing.c |   74 +++++++++++++++------------------------------
- 1 files changed, 25 insertions(+), 49 deletions(-)
+Regards,
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 7648b92..bb1c3ec 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -169,65 +169,41 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
- 	uint8_t orig_eq_count, neigh_rq_count, tq_own;
- 	int tq_asym_penalty, ret = 0;
- 
--	if (orig_node == orig_neigh_node) {
--		rcu_read_lock();
--		hlist_for_each_entry_rcu(tmp_neigh_node, node,
--					 &orig_node->neigh_list, list) {
-+	/* find corresponding one hop neighbor */
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(tmp_neigh_node, node,
-+				 &orig_neigh_node->neigh_list, list) {
- 
--			if (!compare_eth(tmp_neigh_node->addr,
--					 orig_neigh_node->orig))
--				continue;
-+		if (!compare_eth(tmp_neigh_node->addr, orig_neigh_node->orig))
-+			continue;
- 
--			if (tmp_neigh_node->if_incoming != if_incoming)
--				continue;
-+		if (tmp_neigh_node->if_incoming != if_incoming)
-+			continue;
- 
--			if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
--				continue;
-+		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
-+			continue;
- 
--			neigh_node = tmp_neigh_node;
--		}
--		rcu_read_unlock();
-+		neigh_node = tmp_neigh_node;
-+		break;
-+	}
-+	rcu_read_unlock();
- 
--		if (!neigh_node)
--			neigh_node = create_neighbor(orig_node,
--						     orig_neigh_node,
--						     orig_neigh_node->orig,
--						     if_incoming);
--		if (!neigh_node)
--			goto out;
-+	if (!neigh_node)
-+		neigh_node = create_neighbor(orig_neigh_node,
-+					     orig_neigh_node,
-+					     orig_neigh_node->orig,
-+					     if_incoming);
- 
-+	if (!neigh_node)
-+		goto out;
-+
-+	/* if orig_node is direct neighbour update neigh_node last_valid */
-+	if (orig_node == orig_neigh_node)
- 		neigh_node->last_valid = jiffies;
--	} else {
--		/* find packet count of corresponding one hop neighbor */
--		rcu_read_lock();
--		hlist_for_each_entry_rcu(tmp_neigh_node, node,
--					 &orig_neigh_node->neigh_list, list) {
--
--			if (!compare_eth(tmp_neigh_node->addr,
--					 orig_neigh_node->orig))
--				continue;
--
--			if (tmp_neigh_node->if_incoming != if_incoming)
--				continue;
--
--			if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
--				continue;
--
--			neigh_node = tmp_neigh_node;
--		}
--		rcu_read_unlock();
--
--		if (!neigh_node)
--			neigh_node = create_neighbor(orig_neigh_node,
--						     orig_neigh_node,
--						     orig_neigh_node->orig,
--						     if_incoming);
--		if (!neigh_node)
--			goto out;
--	}
- 
- 	orig_node->last_valid = jiffies;
- 
-+	/* find packet count of corresponding one hop neighbor */
- 	spin_lock_bh(&orig_node->ogm_cnt_lock);
- 	orig_eq_count = orig_neigh_node->bcast_own_sum[if_incoming->if_num];
- 	neigh_rq_count = neigh_node->real_packet_count;
 -- 
-1.7.5.1
+Antonio Quartulli
 
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
