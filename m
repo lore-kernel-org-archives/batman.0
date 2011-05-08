@@ -1,11 +1,16 @@
 Return-Path: <ordex@autistici.org>
+Date: Sun, 8 May 2011 21:21:34 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun,  8 May 2011 20:52:57 +0200
-Message-Id: <1304880777-19702-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1304583702-23969-1-git-send-email-ordex@autistici.org>
-References: <1304583702-23969-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: move
-	neigh_node->if_incoming->if_status check in find_router()
+Message-ID: <20110508192134.GC4631@ritirata.org>
+References: <1304579589-5222-1-git-send-email-ordex@autistici.org>
+	<1304579589-5222-2-git-send-email-ordex@autistici.org>
+	<20110505133424.GC1528@lunn.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20110505133424.GC1528@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: add wrapper function to
+ throw uevent in userspace
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,48 +22,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Every time that find_router() is invoked, if_status has to be compared with
-IF_ACTIVE. Moving this comparison inside find_router() will avoid to write it
-each time.
+On gio, mag 05, 2011 at 03:34:24 +0200, Andrew Lunn wrote:
+> > +	uevent_env[0] = kmalloc(strlen("BATTYPE=") +
+> > +				strlen(uev_type_str[type]) + 1,
+> > +				GFP_ATOMIC);
+> > +	if (!uevent_env[0])
+> > +		goto out;
+> > +
+> > +	sprintf(uevent_env[0], "BATTYPE=%s", uev_type_str[type]);
+> 
+> Hi Antonio
+> 
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
-In this version the reference counting of 'router' has been corrected.
+Hi Andrew,
 
- routing.c |    3 +++
- unicast.c |    3 ---
- 2 files changed, 3 insertions(+), 3 deletions(-)
+> I don't particularly like having BATTYPE= twice, once in the kmalloc
+> and a second time in the sprintf. Maybe somebody will decide that
+> BATUTYPE is a better name, change the sprintf, forget about the
+> kmalloc, and overflow the allocated memory by one byte. snprintf will
+> prevent the corruption. I've made this sort of stupid error myself,
+> and it takes longer to debug than to write a bit more defensive code
+> which prevents the error.
 
-diff --git a/routing.c b/routing.c
-index bb1c3ec..8c403ce 100644
---- a/routing.c
-+++ b/routing.c
-@@ -1240,6 +1240,9 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
- 		router = find_ifalter_router(primary_orig_node, recv_if);
- 
- return_router:
-+	if (router && router->if_incoming->if_status != IF_ACTIVE)
-+		goto err_unlock;
-+
- 	rcu_read_unlock();
- 	return router;
- err_unlock:
-diff --git a/unicast.c b/unicast.c
-index 19c3daf..bab6076 100644
---- a/unicast.c
-+++ b/unicast.c
-@@ -314,9 +314,6 @@ find_router:
- 	if (!neigh_node)
- 		goto out;
- 
--	if (neigh_node->if_incoming->if_status != IF_ACTIVE)
--		goto out;
--
- 	if (my_skb_head_push(skb, sizeof(struct unicast_packet)) < 0)
- 		goto out;
- 
+I definitely agree. I thin that using a define like
+#define UEV_TYPE_VAR "BATTYPE="
+would be more elegant.
+In this case I can avoid to use snprintf. Do you agree on this?
+
+> > +	/* If the event is DEL, ignore the data field */
+> > +	if (action == UEV_DEL)
+> > +		goto throw;
+> 
+> I would replace this goto with a plain if statement. 
+
+Mh..ok. I abused of this if->goto style even if not really needed
+
+> > +	if (ret)
+> > +		bat_dbg(DBG_BATMAN, bat_priv, "Impossible to send "
+> > +			"uevent for (%s,%s,%s) event\n",
+> > +			uev_type_str[type], uev_action_str[action],
+> > +			(action == UEV_DEL ? "NULL" : data));
+> 
+> The value of ret could be interesting here, especially if kobject_uevent_env() failed.
+
+Mh, Ok. I can print it into the message. Is there a function in the kernel to
+transform it in a proper string?
+
+Thank you very much.
+
+Regards,
+
 -- 
-1.7.3.4
+Antonio Quartulli
 
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
