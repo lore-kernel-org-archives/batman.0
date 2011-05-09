@@ -1,10 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon,  9 May 2011 11:49:11 +0200
-Message-Id: <1304934551-3862-3-git-send-email-ordex@autistici.org>
+Date: Mon,  9 May 2011 11:50:11 +0200
+Message-Id: <1304934611-5016-1-git-send-email-ordex@autistici.org>
 In-Reply-To: <1303940106-1457-1-git-send-email-ordex@autistici.org>
 References: <1303940106-1457-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: protect the local and the
+Subject: [B.A.T.M.A.N.] [PATCHv3 3/3] batman-adv: protect the local and the
 	global trans-tables with rcu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
