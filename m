@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon,  9 May 2011 11:52:23 +0200
-Message-Id: <1304934744-6599-2-git-send-email-ordex@autistici.org>
+Date: Mon,  9 May 2011 11:52:24 +0200
+Message-Id: <1304934744-6599-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1304579589-5222-1-git-send-email-ordex@autistici.org>
 References: <1304579589-5222-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 2/3] batman-adv: throw uevent in userspace
-	on gateway add/change/del event
+Subject: [B.A.T.M.A.N.] [PATCHv2 3/3] batman-adv: improved gateway tq-based
+	selection
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,125 +19,232 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-In case of new default gw, changing the default gw or deleting the default gw a
-uevent is triggered with type=gw, action=add/change/del and
-data={GW_ORIG_ADDRESS} (if any).
-
-The gateway election mechanism has been a little revised. Now the
-gw_election is trigered by an atomic_t flag (gw_reselect) which is is set
-to 1 in case of election needed, avoding to set curr_gw to NULL.
+If a client issues a DHCPREQUEST for renewal, the packet is dropped
+if the old destination (the old gateway for the client) TQ is smaller
+than the current best gateway TQ less GW_THRESHOLD
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- gateway_client.c |   31 ++++++++++++++++++++++++-------
- main.c           |    1 +
- types.h          |    1 +
- 3 files changed, 26 insertions(+), 7 deletions(-)
+1) Following Andrew's suggestion, the dhcp unicast packet type is now checked
+   to ensure it is a DHCPREQUEST.
+
+2) Comments corrections
+
+Thanks
+
+ gateway_client.c |   94 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ gateway_client.h |    3 +-
+ main.h           |    3 +-
+ soft-interface.c |   10 ++++-
+ 4 files changed, 104 insertions(+), 6 deletions(-)
 
 diff --git a/gateway_client.c b/gateway_client.c
-index 65f3953..8a7090c 100644
+index 8a7090c..da2bc8d 100644
 --- a/gateway_client.c
 +++ b/gateway_client.c
-@@ -20,6 +20,7 @@
-  */
- 
- #include "main.h"
-+#include "bat_sysfs.h"
- #include "gateway_client.h"
+@@ -25,11 +25,17 @@
  #include "gateway_common.h"
  #include "hard-interface.h"
-@@ -105,17 +106,18 @@ static void gw_select(struct bat_priv *bat_priv, struct gw_node *new_gw_node)
+ #include "originator.h"
++#include "routing.h"
+ #include <linux/ip.h>
+ #include <linux/ipv6.h>
+ #include <linux/udp.h>
+ #include <linux/if_vlan.h>
  
- void gw_deselect(struct bat_priv *bat_priv)
++/* This is the offset of the options field in a dhcp packet starting at
++ * the beginning of the dhcp header */
++#define DHCP_OPTIONS_OFFSET 240
++#define DHCP_REQUEST 3
++
+ static void gw_node_free_rcu(struct rcu_head *rcu)
  {
--	gw_select(bat_priv, NULL);
-+	atomic_set(&bat_priv->gw_reselect, 1);
+ 	struct gw_node *gw_node;
+@@ -505,14 +511,75 @@ out:
+ 	return ret;
  }
  
- void gw_election(struct bat_priv *bat_priv)
- {
- 	struct hlist_node *node;
- 	struct gw_node *gw_node, *curr_gw = NULL, *curr_gw_tmp = NULL;
--	struct neigh_node *router;
-+	struct neigh_node *router = NULL;
- 	uint8_t max_tq = 0;
- 	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
- 	int down, up;
-+	char gw_addr[18] = { '\0' };
- 
- 	/**
- 	 * The batman daemon checks here if we already passed a full originator
-@@ -127,7 +129,7 @@ void gw_election(struct bat_priv *bat_priv)
- 		return;
- 
- 	curr_gw = gw_get_selected_gw_node(bat_priv);
--	if (curr_gw)
-+	if (!atomic_dec_not_zero(&bat_priv->gw_reselect))
- 		goto out;
- 
- 	rcu_read_lock();
-@@ -186,9 +188,8 @@ void gw_election(struct bat_priv *bat_priv)
- 	}
- 
- 	if (curr_gw != curr_gw_tmp) {
--		router = orig_node_get_router(curr_gw_tmp->orig_node);
--		if (!router)
--			goto unlock;
-+		if (curr_gw_tmp)
-+			router = orig_node_get_router(curr_gw_tmp->orig_node);
- 
- 		if ((curr_gw) && (!curr_gw_tmp))
- 			bat_dbg(DBG_BATMAN, bat_priv,
-@@ -209,8 +210,24 @@ void gw_election(struct bat_priv *bat_priv)
- 				curr_gw_tmp->orig_node->gw_flags,
- 				router->tq_avg);
- 
--		neigh_node_free_ref(router);
-+		if (router)
-+			neigh_node_free_ref(router);
- 		gw_select(bat_priv, curr_gw_tmp);
-+		rcu_read_unlock();
+-int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
++static bool is_type_dhcprequest(struct sk_buff *skb, int header_len)
++{
++	int ret = false;
++	unsigned char *p;
++	int pkt_len;
 +
-+		/* Throw the gateway event to the userspace */
-+		if (!curr_gw_tmp) {
-+			throw_uevent(bat_priv, UEV_GW, UEV_DEL, NULL);
-+			goto out;
-+		}
-+
-+		sprintf(gw_addr, "%pM", curr_gw_tmp->orig_node->orig);
-+
-+		if (curr_gw)
-+			throw_uevent(bat_priv, UEV_GW, UEV_CHANGE, gw_addr);
-+		else
-+			throw_uevent(bat_priv, UEV_GW, UEV_ADD, gw_addr);
++	if (skb_linearize(skb) < 0)
 +		goto out;
- 	}
++
++	pkt_len = skb_headlen(skb);
++
++	if (pkt_len < header_len + DHCP_OPTIONS_OFFSET + 1)
++		goto out;
++
++	p = skb->data + header_len + DHCP_OPTIONS_OFFSET;
++	pkt_len -= header_len + DHCP_OPTIONS_OFFSET + 1;
++
++	/* Access the dhcp option lists. Each entry is made up by:
++	 * - octect 1: option type
++	 * - octect 2: option data len (only if type != 255 and 0)
++	 * - octect 3: option data */
++	while (*p != 255 && !ret) {
++		/* p now points to the first octect: option type */
++		if (*p == 53) {
++			/* type 53 is the message type option.
++			 * Jump the len octect and go to the data octect */
++			if (pkt_len < 2)
++				goto out;
++			pkt_len -= 2;
++			p += 2;
++
++			/* check if the message type is what we need */
++			if (*p == DHCP_REQUEST)
++				ret = true;
++		} else if (*p == 0) {
++			/* option type 0 (padding), just go forward */
++			if (pkt_len < 1)
++				goto out;
++			pkt_len--;
++			p++;
++		} else {
++			/* This is any other option. So we get the length... */
++			if (pkt_len < 1)
++				goto out;
++			pkt_len--;
++			p++;
++
++			/* ...and then we jump over the data */
++			if (pkt_len < *p)
++				goto out;
++			pkt_len -= *p;
++			p += (*p);
++		}
++	}
++out:
++	return ret;
++}
++
++int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb,
++		 struct orig_node *old_gw)
+ {
+ 	struct ethhdr *ethhdr;
+ 	struct iphdr *iphdr;
+ 	struct ipv6hdr *ipv6hdr;
+ 	struct udphdr *udphdr;
+ 	struct gw_node *curr_gw;
++	struct neigh_node *neigh_curr = NULL, *neigh_old = NULL;
+ 	unsigned int header_len = 0;
++	int ret = 1;
  
- unlock:
-diff --git a/main.c b/main.c
-index 0a7cee0..ca060a9 100644
---- a/main.c
-+++ b/main.c
-@@ -111,6 +111,7 @@ int mesh_init(struct net_device *soft_iface)
- 	if (vis_init(bat_priv) < 1)
- 		goto err;
+ 	if (atomic_read(&bat_priv->gw_mode) == GW_MODE_OFF)
+ 		return 0;
+@@ -580,7 +647,30 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
+ 	if (!curr_gw)
+ 		return 0;
  
-+	atomic_set(&bat_priv->gw_reselect, 0);
- 	atomic_set(&bat_priv->mesh_state, MESH_ACTIVE);
- 	goto end;
++	/* If old_gw != NULL then this packet is unicast.
++	 * So, at this point we have to check the message type: if it is a
++	 * DHCPREQUEST we have to decide whether to drop it or not */
++	if (old_gw && curr_gw->orig_node != old_gw) {
++		if (is_type_dhcprequest(skb, header_len)) {
++			/* If the dhcp packet has been sent to a different gw,
++			 * we have to evaluate whether the old gw is still
++			 * reliable enough */
++			neigh_curr = find_router(bat_priv, curr_gw->orig_node,
++						 NULL);
++			neigh_old = find_router(bat_priv, old_gw, NULL);
++			if (!neigh_curr || !neigh_old)
++				goto free_neigh;
++			if (neigh_curr->tq_avg - neigh_old->tq_avg <
++								GW_THRESHOLD)
++				ret = -1;
++		}
++	}
++free_neigh:
++	if (neigh_old)
++		neigh_node_free_ref(neigh_old);
++	if (neigh_curr)
++		neigh_node_free_ref(neigh_curr);
+ 	if (curr_gw)
+ 		gw_node_free_ref(curr_gw);
+-	return 1;
++	return ret;
+ }
+diff --git a/gateway_client.h b/gateway_client.h
+index 1ce8c60..b9b983c 100644
+--- a/gateway_client.h
++++ b/gateway_client.h
+@@ -31,6 +31,7 @@ void gw_node_update(struct bat_priv *bat_priv,
+ void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node);
+ void gw_node_purge(struct bat_priv *bat_priv);
+ int gw_client_seq_print_text(struct seq_file *seq, void *offset);
+-int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb);
++int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb,
++		 struct orig_node *old_gw);
  
-diff --git a/types.h b/types.h
-index fab70e8..87b890e 100644
---- a/types.h
-+++ b/types.h
-@@ -173,6 +173,7 @@ struct bat_priv {
- 	struct delayed_work orig_work;
- 	struct delayed_work vis_work;
- 	struct gw_node __rcu *curr_gw;  /* rcu protected pointer */
-+	atomic_t gw_reselect;
- 	struct hard_iface __rcu *primary_if;  /* rcu protected pointer */
- 	struct vis_info *my_vis_info;
+ #endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
+diff --git a/main.h b/main.h
+index 4f9991d..fbd7d37 100644
+--- a/main.h
++++ b/main.h
+@@ -79,7 +79,6 @@
+ #define BCAST_QUEUE_LEN		256
+ #define BATMAN_QUEUE_LEN	256
+ 
+-
+ enum uev_action {
+ 	UEV_ADD = 0,
+ 	UEV_DEL,
+@@ -90,6 +89,8 @@ enum uev_type {
+ 	UEV_GW = 0
  };
+ 
++#define GW_THRESHOLD	25
++
+ /*
+  * Debug Messages
+  */
+diff --git a/soft-interface.c b/soft-interface.c
+index c76a33e..6d02d92 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -30,6 +30,7 @@
+ #include "gateway_common.h"
+ #include "gateway_client.h"
+ #include "bat_sysfs.h"
++#include "originator.h"
+ #include <linux/slab.h>
+ #include <linux/ethtool.h>
+ #include <linux/etherdevice.h>
+@@ -569,6 +570,7 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	struct bcast_packet *bcast_packet;
+ 	struct vlan_ethhdr *vhdr;
+ 	struct softif_neigh *curr_softif_neigh = NULL;
++	struct orig_node *orig_node;
+ 	int data_len = skb->len, ret;
+ 	short vid = -1;
+ 	bool do_bcast = false;
+@@ -603,8 +605,10 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	/* TODO: check this for locks */
+ 	tt_local_add(soft_iface, ethhdr->h_source);
+ 
+-	if (is_multicast_ether_addr(ethhdr->h_dest)) {
+-		ret = gw_is_target(bat_priv, skb);
++	orig_node = transtable_search(bat_priv, ethhdr->h_dest);
++	if (is_multicast_ether_addr(ethhdr->h_dest) ||
++				(orig_node && orig_node->gw_flags)) {
++		ret = gw_is_target(bat_priv, skb, orig_node);
+ 
+ 		if (ret < 0)
+ 			goto dropped;
+@@ -612,6 +616,8 @@ int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 		if (ret == 0)
+ 			do_bcast = true;
+ 	}
++	if (orig_node)
++		orig_node_free_ref(orig_node);
+ 
+ 	/* ethernet packet should be broadcasted */
+ 	if (do_bcast) {
 -- 
 1.7.3.4
 
