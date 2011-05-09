@@ -1,13 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Sun, 08 May 2011 15:40:06 -0700 (PDT)
-Message-Id: <20110508.154006.70211034.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1304868284-9364-1-git-send-email-sven@narfation.org>
-References: <1304868284-9364-1-git-send-email-sven@narfation.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-05-08
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon,  9 May 2011 10:15:32 +0200
+Message-Id: <1304928932-10114-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix build with linux
+	2.6.25-2.6.27
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,28 +15,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven@narfation.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  8 May 2011 17:24:36 +0200
+We must prevent that IPPROTO_UDP gets redefined using compat.h.
+Otherwise the build will fail when including things like net/addrconf.h
 
-> Hi,
-> 
-> I would like to propose following patches for net-next-2.6/2.6.40. They
-> include minor cleanups of comments, a big rename patch s/hna/tt/, but
-> also a remove some duplicated code. The spinlock which protected the
-> list of possible interfaces for batman-adv was completely replaced by
-> rtnl_lock because we want to be in sync with the rest of the network
-> stack and the extra spinlock made everything more complex without giving
-> any additional feature (and rtnl_lock was already used everywhere).
-> Related to this patch is also a fix which should prevent a deadlock
-> between the sysfs code and the event listener. Also the reference
-> counting in find_router was fixed when an error was detected after the
-> refcounter was already increased. The only feature is the support for
-> multiple vlans in the bridge loop detection code.
-> 
-> I will submit a patch to remove the atomic_dec_not_zero from main.h
-> after Linus accepted the patch you already saw.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Pulled, thanks Sven.
+diff --git a/compat.c b/compat.c
+index 70de376..586898f 100644
+--- a/compat.c
++++ b/compat.c
+@@ -1,3 +1,4 @@
++#include <linux/in.h>
+ #include <linux/version.h>
+ #include "main.h"
+ 
+-- 
+1.7.5.1
+
