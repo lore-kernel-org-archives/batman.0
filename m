@@ -1,10 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon,  9 May 2011 22:30:48 +0200
-Message-Id: <1304973048-6922-1-git-send-email-ordex@autistici.org>
+Date: Mon,  9 May 2011 23:15:58 +0200
+Message-Id: <1304975758-9412-1-git-send-email-ordex@autistici.org>
 In-Reply-To: <1304579589-5222-1-git-send-email-ordex@autistici.org>
 References: <1304579589-5222-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv4 3/3] batman-adv: improved gateway tq-based
+Subject: [B.A.T.M.A.N.] [PATCHv5 3/3] batman-adv: improved gateway tq-based
 	selection
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,17 +25,16 @@ than the current best gateway TQ less GW_THRESHOLD
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
-Corrected while loop in is_type_dhcprequest(): if we find option 53, we exit
-the loop without going through the rest of the option list.
+Removed a useless decrement in is_type_dhcprequest()
 
- gateway_client.c |   95 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ gateway_client.c |   94 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
  gateway_client.h |    3 +-
  main.h           |    3 +-
  soft-interface.c |   10 ++++-
- 4 files changed, 105 insertions(+), 6 deletions(-)
+ 4 files changed, 104 insertions(+), 6 deletions(-)
 
 diff --git a/gateway_client.c b/gateway_client.c
-index 761dcfb..616d43c 100644
+index 761dcfb..3b43781 100644
 --- a/gateway_client.c
 +++ b/gateway_client.c
 @@ -25,11 +25,17 @@
@@ -56,7 +55,7 @@ index 761dcfb..616d43c 100644
  static void gw_node_free_rcu(struct rcu_head *rcu)
  {
  	struct gw_node *gw_node;
-@@ -509,14 +515,76 @@ out:
+@@ -509,14 +515,75 @@ out:
  	return ret;
  }
  
@@ -89,7 +88,6 @@ index 761dcfb..616d43c 100644
 +			 * Jump the len octect and go to the data octect */
 +			if (pkt_len < 2)
 +				goto out;
-+			pkt_len -= 2;
 +			p += 2;
 +
 +			/* check if the message type is what we need */
@@ -134,7 +132,7 @@ index 761dcfb..616d43c 100644
  
  	if (atomic_read(&bat_priv->gw_mode) == GW_MODE_OFF)
  		return 0;
-@@ -584,7 +652,30 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
+@@ -584,7 +651,30 @@ int gw_is_target(struct bat_priv *bat_priv, struct sk_buff *skb)
  	if (!curr_gw)
  		return 0;
  
