@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 10 May 2011 09:16:59 +0200
-Message-Id: <1305011821-5411-2-git-send-email-sven@narfation.org>
+Date: Tue, 10 May 2011 09:17:00 +0200
+Message-Id: <1305011821-5411-3-git-send-email-sven@narfation.org>
 In-Reply-To: <1305011821-5411-1-git-send-email-sven@narfation.org>
 References: <1304496393-16405-1-git-send-email-sven@narfation.org>
 	<1305011821-5411-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 2/4] batman-adv: convert
-	call_rcu(gw_node_free_rcu) to kfree_rcu
+Subject: [B.A.T.M.A.N.] [PATCHv2 3/4] batman-adv: convert
+	call_rcu(neigh_node_free_rcu) to kfree()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,7 +22,7 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-The RCU callback gw_node_free_rcu() just calls kfree(), so we can use
+The RCU callback neigh_node_free_rcu() just calls kfree(), so we can use
 kfree_rcu() instead of call_rcu().
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
@@ -34,33 +34,33 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 Rebased on top of current master + newest version from Paul E. McKenney
 
- gateway_client.c |   10 +---------
+ originator.c |   10 +---------
  1 files changed, 1 insertions(+), 9 deletions(-)
 
-diff --git a/gateway_client.c b/gateway_client.c
-index 65f3953..61605a0 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -29,18 +29,10 @@
- #include <linux/udp.h>
- #include <linux/if_vlan.h>
- 
--static void gw_node_free_rcu(struct rcu_head *rcu)
--{
--	struct gw_node *gw_node;
--
--	gw_node = container_of(rcu, struct gw_node, rcu);
--	kfree(gw_node);
--}
--
- static void gw_node_free_ref(struct gw_node *gw_node)
- {
- 	if (atomic_dec_and_test(&gw_node->refcount))
--		call_rcu(&gw_node->rcu, gw_node_free_rcu);
-+		kfree_rcu(gw_node, rcu);
+diff --git a/originator.c b/originator.c
+index 080ec88..40a30bb 100644
+--- a/originator.c
++++ b/originator.c
+@@ -54,18 +54,10 @@ err:
+ 	return 0;
  }
  
- static struct gw_node *gw_get_selected_gw_node(struct bat_priv *bat_priv)
+-static void neigh_node_free_rcu(struct rcu_head *rcu)
+-{
+-	struct neigh_node *neigh_node;
+-
+-	neigh_node = container_of(rcu, struct neigh_node, rcu);
+-	kfree(neigh_node);
+-}
+-
+ void neigh_node_free_ref(struct neigh_node *neigh_node)
+ {
+ 	if (atomic_dec_and_test(&neigh_node->refcount))
+-		call_rcu(&neigh_node->rcu, neigh_node_free_rcu);
++		kfree_rcu(neigh_node, rcu);
+ }
+ 
+ /* increases the refcounter of a found router */
 -- 
 1.7.5.1
 
