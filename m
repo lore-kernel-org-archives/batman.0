@@ -1,16 +1,11 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 10 May 2011 08:29:28 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110510062927.GA22075@ritirata.org>
-References: <1304579589-5222-1-git-send-email-ordex@autistici.org>
-	<1304946150-6026-1-git-send-email-ordex@autistici.org>
-	<20110510050803.GB4416@lunn.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20110510050803.GB4416@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 1/3] batman-adv: add wrapper function
- to throw uevent in userspace
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 10 May 2011 09:16:58 +0200
+Message-Id: <1305011821-5411-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1304496393-16405-1-git-send-email-sven@narfation.org>
+References: <1304496393-16405-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: Add compatibility code for
+	kfree_rcu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,25 +17,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On mar, mag 10, 2011 at 07:08:03 +0200, Andrew Lunn wrote:
-> On Mon, May 09, 2011 at 03:02:28PM +0200, Antonio Quartulli wrote:
-> > Using throw_uevent() is now possible to trigger uevent signal that can
-> > be recognised in userspace. Uevents will be triggered through the
-> > /devices/virtual/net/{MESH_IFACE} kobject.
-> 
-> Hi Antonio
-> 
-> Since this is part of sysfs you should add a description to
-> Documentation/networking/batman-adv.txt.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+Rebased on top of current master + newest version from Paul E. McKenney
 
-Ah ok, I didn't know this.
-I think Marek already planned to instruct me on this part. Thank you for
-reminding me!
+ compat.c |   28 ++++++++++++++++++++++++++++
+ compat.h |   10 ++++++++++
+ 2 files changed, 38 insertions(+), 0 deletions(-)
 
+diff --git a/compat.c b/compat.c
+index 586898f..e040486 100644
+--- a/compat.c
++++ b/compat.c
+@@ -988,3 +988,31 @@ int bat_seq_printf(struct seq_file *m, const char *f, ...)
+ }
+ 
+ #endif /* < KERNEL_VERSION(2, 6, 29) */
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 40)
++
++void free_rcu_gw_node(struct rcu_head *rcu)
++{
++	struct gw_node *gw_node;
++
++	gw_node = container_of(rcu, struct gw_node, rcu);
++	kfree(gw_node);
++}
++
++void free_rcu_neigh_node(struct rcu_head *rcu)
++{
++	struct neigh_node *neigh_node;
++
++	neigh_node = container_of(rcu, struct neigh_node, rcu);
++	kfree(neigh_node);
++}
++
++void free_rcu_softif_neigh(struct rcu_head *rcu)
++{
++	struct softif_neigh *softif_neigh;
++
++	softif_neigh = container_of(rcu, struct softif_neigh, rcu);
++	kfree(softif_neigh);
++}
++
++#endif /* < KERNEL_VERSION(2, 6, 40) */
+diff --git a/compat.h b/compat.h
+index fb49f9d..2e3f062 100644
+--- a/compat.h
++++ b/compat.h
+@@ -273,4 +273,14 @@ int bat_seq_printf(struct seq_file *m, const char *f, ...);
+ 
+ #endif /* < KERNEL_VERSION(2, 6, 36) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 40)
++
++#define kfree_rcu(ptr, rcu_head) call_rcu(&ptr->rcu_head, free_rcu_##ptr)
++
++void free_rcu_gw_node(struct rcu_head *rcu);
++void free_rcu_neigh_node(struct rcu_head *rcu);
++void free_rcu_softif_neigh(struct rcu_head *rcu);
++
++#endif /* < KERNEL_VERSION(2, 6, 40) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
 -- 
-Antonio Quartulli
+1.7.5.1
 
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
