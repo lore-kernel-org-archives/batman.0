@@ -1,12 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 10 May 2011 09:17:01 +0200
-Message-Id: <1305011821-5411-4-git-send-email-sven@narfation.org>
-In-Reply-To: <1305011821-5411-1-git-send-email-sven@narfation.org>
-References: <1304496393-16405-1-git-send-email-sven@narfation.org>
-	<1305011821-5411-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: convert
-	call_rcu(softif_neigh_free_rcu) to kfree_rcu
+Date: Tue, 10 May 2011 11:17:40 +0200
+Message-Id: <1305019060-26731-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Use kzalloc rather than kmalloc
+	followed by memset with 0
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,47 +17,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-The RCU callback softif_neigh_free_rcu() just calls kfree(), so we can
-use kfree_rcu() instead of call_rcu().
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Acked-by: David S. Miller <davem@davemloft.net>
-Reviewed-by: Josh Triplett <josh@joshtriplett.org>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Rebased on top of current master + newest version from Paul E. McKenney
+ gateway_client.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
- soft-interface.c |   10 +---------
- 1 files changed, 1 insertions(+), 9 deletions(-)
-
-diff --git a/soft-interface.c b/soft-interface.c
-index c76a33e..d5aa609 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -72,18 +72,10 @@ int my_skb_head_push(struct sk_buff *skb, unsigned int len)
- 	return 0;
- }
+diff --git a/gateway_client.c b/gateway_client.c
+index 65f3953..e638841 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -281,11 +281,10 @@ static void gw_node_add(struct bat_priv *bat_priv,
+ 	struct gw_node *gw_node;
+ 	int down, up;
  
--static void softif_neigh_free_rcu(struct rcu_head *rcu)
--{
--	struct softif_neigh *softif_neigh;
--
--	softif_neigh = container_of(rcu, struct softif_neigh, rcu);
--	kfree(softif_neigh);
--}
--
- static void softif_neigh_free_ref(struct softif_neigh *softif_neigh)
- {
- 	if (atomic_dec_and_test(&softif_neigh->refcount))
--		call_rcu(&softif_neigh->rcu, softif_neigh_free_rcu);
-+		kfree_rcu(softif_neigh, rcu);
- }
+-	gw_node = kmalloc(sizeof(struct gw_node), GFP_ATOMIC);
++	gw_node = kzalloc(sizeof(struct gw_node), GFP_ATOMIC);
+ 	if (!gw_node)
+ 		return;
  
- static void softif_neigh_vid_free_rcu(struct rcu_head *rcu)
+-	memset(gw_node, 0, sizeof(struct gw_node));
+ 	INIT_HLIST_NODE(&gw_node->list);
+ 	gw_node->orig_node = orig_node;
+ 	atomic_set(&gw_node->refcount, 1);
 -- 
 1.7.5.1
 
