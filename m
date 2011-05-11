@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 11 May 2011 14:44:37 +0200
-Message-Id: <1305117877-31345-1-git-send-email-sven@narfation.org>
-In-Reply-To: <20110511001749.GA18190@ritirata.org>
-References: <20110511001749.GA18190@ritirata.org>
-Subject: [B.A.T.M.A.N.] [RFC PATCH] batman-adv: Add missing hardif_free_ref
-	in forw_packet_free
+Date: Wed, 11 May 2011 20:59:06 +0200
+Message-Id: <1305140346-10563-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1305117877-31345-1-git-send-email-sven@narfation.org>
+References: <1305117877-31345-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC PATCHv2] batman-adv: Add missing
+	hardif_free_ref in forw_packet_free
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,17 +20,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 add_bcast_packet_to_list increases the refcount for if_incoming but the
-reference count is never decreased. This is an regression introduced by
+reference count is never decreased. The reference count must be
+increased for all kinds of forwarded packets which have the primary
+interface stored and forw_packet_free must decrease them. Also
+purge_outstanding_packets has to invoke forw_packet_free when a work
+item was really cancelled.
+
+This was a regression introduced by
 89079aec4c0c2c60a3a2561afcce62538cebd71d.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-This patch is not ready to be applied - just a first note. And before
-someone asks - no, it doesn't fix the problem.
+I will leave the hard work to someone else (cleanup, fixing commit
+message, ...)
 
  aggregation.c |   14 +++++++++++---
- send.c        |    2 ++
- 2 files changed, 13 insertions(+), 3 deletions(-)
+ send.c        |   10 +++++++++-
+ 2 files changed, 20 insertions(+), 4 deletions(-)
 
 diff --git a/aggregation.c b/aggregation.c
 index 9b94590..a8c3203 100644
@@ -91,7 +97,7 @@ index 9b94590..a8c3203 100644
  
  /* aggregate a new packet into the existing aggregation */
 diff --git a/send.c b/send.c
-index f30d0c6..6e83e23 100644
+index f30d0c6..76f70c7 100644
 --- a/send.c
 +++ b/send.c
 @@ -377,6 +377,8 @@ static void forw_packet_free(struct forw_packet *forw_packet)
@@ -103,6 +109,29 @@ index f30d0c6..6e83e23 100644
  	kfree(forw_packet);
  }
  
+@@ -539,6 +541,7 @@ void purge_outstanding_packets(struct bat_priv *bat_priv,
+ {
+ 	struct forw_packet *forw_packet;
+ 	struct hlist_node *tmp_node, *safe_tmp_node;
++	bool pending;
+ 
+ 	if (hard_iface)
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+@@ -591,8 +594,13 @@ void purge_outstanding_packets(struct bat_priv *bat_priv,
+ 		 * send_outstanding_bat_packet() will lock the list to
+ 		 * delete the item from the list
+ 		 */
+-		cancel_delayed_work_sync(&forw_packet->delayed_work);
++		pending = cancel_delayed_work_sync(&forw_packet->delayed_work);
+ 		spin_lock_bh(&bat_priv->forw_bat_list_lock);
++
++		if (pending) {
++			hlist_del(&forw_packet->list);
++			forw_packet_free(forw_packet);
++		}
+ 	}
+ 	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
+ }
 -- 
 1.7.5.1
 
