@@ -1,15 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 14 May 2011 20:08:20 +0200
-References: <1305396082-30309-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1305396082-30309-1-git-send-email-lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2077657.khYvbj3JJy";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105142008.23630.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: reset broadcast flood
-	protection on error
+Date: Sat, 14 May 2011 23:14:46 +0200
+Message-Id: <1305407694-16789-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: Annotate functions with
+	format strings
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,60 +16,46 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart2077657.khYvbj3JJy
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ bat_debugfs.c |    1 +
+ main.h        |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-Marek Lindner wrote:
-> The broadcast flood protection should be reset to its original value
-> if the primary interface could not be retrieved.
->=20
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  send.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/send.c b/send.c
-> index 76daa46..3377927 100644
-> --- a/send.c
-> +++ b/send.c
-> @@ -421,7 +421,7 @@ int add_bcast_packet_to_list(struct bat_priv *bat_pri=
-v,
-> struct sk_buff *skb)
->=20
->  	primary_if =3D primary_if_get_selected(bat_priv);
->  	if (!primary_if)
-> -		goto out;
-> +		goto out_and_inc;
->=20
->  	forw_packet =3D kmalloc(sizeof(struct forw_packet), GFP_ATOMIC);
+diff --git a/bat_debugfs.c b/bat_debugfs.c
+index abaeec5..4577d3f 100644
+--- a/bat_debugfs.c
++++ b/bat_debugfs.c
+@@ -50,6 +50,7 @@ static void emit_log_char(struct debug_log *debug_log, char c)
+ 		debug_log->log_start = debug_log->log_end - log_buff_len;
+ }
+ 
++__printf(2, 3)
+ static int fdebug_log(struct debug_log *debug_log, char *fmt, ...)
+ {
+ 	va_list args;
+diff --git a/main.h b/main.h
+index 3ca3941..f80954b 100644
+--- a/main.h
++++ b/main.h
+@@ -138,7 +138,7 @@ void dec_module_count(void);
+ int is_my_mac(uint8_t *addr);
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+-int debug_log(struct bat_priv *bat_priv, char *fmt, ...);
++int debug_log(struct bat_priv *bat_priv, char *fmt, ...) __printf(2, 3);
+ 
+ #define bat_dbg(type, bat_priv, fmt, arg...)			\
+ 	do {							\
+@@ -147,6 +147,7 @@ int debug_log(struct bat_priv *bat_priv, char *fmt, ...);
+ 	}							\
+ 	while (0)
+ #else /* !CONFIG_BATMAN_ADV_DEBUG */
++__printf(3, 4)
+ static inline void bat_dbg(char type __always_unused,
+ 			   struct bat_priv *bat_priv __always_unused,
+ 			   char *fmt __always_unused, ...)
+-- 
+1.7.5.1
 
-
-Acked-by: Sven Eckelmann <sven@narfation.org>
-
---nextPart2077657.khYvbj3JJy
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJNzsUWAAoJEF2HCgfBJntGN84P/ixetfpzeP1u1ro2H7yV7uoj
-mMCyC5t1GoIyimHfZ4VuFQTdLGxj3/NmcdrMKRodDxzWQuJVNLKF1PCh/1szNsAN
-H9eqciDsqf2bPQfSDLDFZbD5z6nOfFkUfI2/CaA5TBwophEDjidjp0DXFA5tlNaQ
-V0FFcfQouS7JRDKmYkv9Ojc8zxsCuKXRZykxwd8Kt/r9eWpbCpuxyXaf5Ul659UI
-JS971bHIRIYUvxbZQlg1fD1EiFjUw0yNiHF5D8MZQXoElMIIvLvnpYC4sU0a8bLp
-ePGIdC0rqIsrC3UKpfBOxeJFNOHKWbWTKhgKLn75JlNoBl32Zw2Rsbubnyd7ErEb
-ZRrCjEA14Wxfij4AqbSntIxLbWH5e4LlF6fAkcW5Y1RXNb1eIIN8LbQY0lztkeY5
-zGMpltJTtaXVVUfXnjM+WtjAz1b1s2SF5Z8H3W04euSP82DQn86n+WFiQaI5H46Z
-UPJZaNiOZVd/jWTn0qXcaEHQwMi+HgPthLrJ7RcmCsVLxtaRAZ/USbB//E4woPc6
-d76VUFDaBakvmJTa/TFf9QWBlhUGC/6kHIjMJNaxczXxdo4kUGYsRB9rFseMk8n/
-zIuQPZ+Fp9kFUJuqgTuFy3P9Nkedajm/4KZNQKF1uIHDwnBN5e87coPYGruKno8T
-1s/w3KfefodWsZw3/VZH
-=kNq9
------END PGP SIGNATURE-----
-
---nextPart2077657.khYvbj3JJy--
