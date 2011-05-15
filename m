@@ -1,13 +1,14 @@
-Return-Path: <davem@davemloft.net>
-Date: Sat, 14 May 2011 22:51:46 -0400 (EDT)
-Message-Id: <20110514.225146.725571367301901111.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1305411394-28807-1-git-send-email-sven@narfation.org>
-References: <1305411394-28807-1-git-send-email-sven@narfation.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-05-14
+Return-Path: <andrew@lunn.ch>
+Date: Sun, 15 May 2011 08:36:24 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20110515063624.GK4071@lunn.ch>
+References: <1305407694-16789-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1305407694-16789-1-git-send-email-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: Annotate functions with
+ format strings
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,12 +20,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven@narfation.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 15 May 2011 00:16:32 +0200
+Hi Sven
 
->   git://git.open-mesh.org/ecsv/linux-merge.git batman-adv/next
+Nice set of patches.
 
-Pulled, thanks Sven.
+Are you using any tools to find these issues? I don't think sparse
+points these out.
+
+       Thanks
+  	Andrew
