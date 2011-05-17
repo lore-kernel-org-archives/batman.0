@@ -1,17 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 17 May 2011 21:22:16 +0200
-References: <1303940106-1457-1-git-send-email-ordex@autistici.org>
-	<1305032531-20493-1-git-send-email-ordex@autistici.org>
-	<201105172109.37942.sven@narfation.org>
-In-Reply-To: <201105172109.37942.sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12325423.p4q36Kuq7W";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105172122.17616.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 1/3] batman-adv: improved client
-	announcement mechanism
+Return-Path: <clint3112@gmx.de>
+From: Elmo <clint3112@gmx.de>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-Gd3ljDpbd1UoQvG6KskT"
+Date: Tue, 17 May 2011 21:34:32 +0200
+Message-ID: <1305660872.22368.6.camel@elmo-ubuntu>
+Mime-Version: 1.0
+Subject: [B.A.T.M.A.N.] Extending the Exporter
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,44 +20,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart12325423.p4q36Kuq7W
-Content-Type: Text/Plain;
-  charset="us-ascii"
+
+--=-Gd3ljDpbd1UoQvG6KskT
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Sven Eckelmann wrote:
-> Nack
->=20
-> There are two many small things that need to be changed. I didn't to a
-> complete review, but at least the primary_if dereference is unacceptable.
+Hello,
 
-I'm also too broken right now... "too many small problems", 'I haven't done=
- a=20
-complete reviews"
+I'm trying to extend the Exporter of OpenMesh to put another float
+stored at each Vertex to an off or obj file. But the Tutorial on your
+website dosn't make it clear i think.=20
+Do I have to extend the the BaseExporter by a Iterator for my float
+like:
+virtual PVertexIter const_myFloat_begin()   =3D 0;
+virtual PVertexIter const_myFloat_end()   =3D 0;
 
-thanks,
-	Sven
+Where do i have to add the code to get these iterators called?
 
---nextPart12325423.p4q36Kuq7W
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Is there anything else to add?=20
+
+Thanks in advance
+Malte
+
+
+--=-Gd3ljDpbd1UoQvG6KskT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABCgAGBQJN0sroAAoJEF2HCgfBJntGsksQAJmwVImCKRNdE1J4vngrumpd
-cOcutTuhk9tTZ3FHjFrCjTsRExogQ8gELUrkccIYS58D9l5HbnLic1JlbOHH47d5
-XR3TCg/1qc3xwPiw8OhOiik8OBYHUemm6ZS0cl1KIWBYiTKRxD2cY8ds2aQ7SqU4
-xUtfQNAQ4JIO19HyMrF7uqVbRtMMl6rmoRo0sUt0+2OLPZ9m+ms45IsHvZOwFeay
-MbohVOoIvIpIcMCxP8E2F89wsNfE3JcvcBDM/iVltjTQ1kh1VA12B8Fqna850yz2
-zl6hH8uaxfuL4TFVFJLP6j7zzuMqGTrcI/bLV50sJkyrJguOR1ZX4HvKhJz0LUzY
-heggp2HRGy6GEUSIV/IBGsD4BXbI62PLJLS5/9E3aMp8i9Zmym+pP+r8uMqBH3m+
-U0wNrMzhfmuAXWKltckGrVAp4+YiWB1ZJy4CgG3mNRWb63Eojr2gS7SC0uTvGjIC
-Ax2LZG91W+BBOTAUJa7CHH6/KZVxDAg5IO9arvQ4LF24BBiQ0HFK5eViwPn059OM
-fOEMSZ7aHke/JJxSWfuEa4PUCQilejosOw18HftAoyWLHUNP/dcG0KDALfAh4VWh
-49ITpRf6bbGUuI4ErLDzot43RNqUogM8zUG36VuEb1AtRYdOeopPgBo9fQV5gkmw
-DxPGaCoXUiOctvHIDdFy
-=KurN
+iQEcBAABAgAGBQJN0s3CAAoJEKitp9RgVrs9T7kH/1oPMMqJGDmHgaQbt+Uctm1m
+Y+I7tvHIUO7BbVv3DVQNl2ODLwv+UI5AMM076qK/gAbWLn3Ls676eVm95fS+pM/V
+h5HirvL9Cl95P0Zm5+ZzCHxRD5KfmfhuGIW2kY6Zp1w7ASEUJ9jdZfzit7Lk3UAL
+SzWwc+Y8f7P4M+y5ExUNR7y46Yy7C1xx0CwzhIWkgJSV1D9eDJS3bokn0i69z54D
+dEboN55Z/6Y/bGs/zCkKwBZeND3rPv/o5UozATJs4ZTHP8Ione1sukTPEQ3/1kmm
+GAsAQhInbUbg55lfe+VcqTlANQge52KlZn2OBsz/9+qJ41ndHdXw8HWdsAUojGk=
+=ZZQ0
 -----END PGP SIGNATURE-----
 
---nextPart12325423.p4q36Kuq7W--
+--=-Gd3ljDpbd1UoQvG6KskT--
+
