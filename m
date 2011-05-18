@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 18 May 2011 11:37:16 +0200
+Date: Wed, 18 May 2011 11:40:45 +0200
 References: <1305407694-16789-1-git-send-email-sven@narfation.org>
-	<1305407694-16789-3-git-send-email-sven@narfation.org>
-In-Reply-To: <1305407694-16789-3-git-send-email-sven@narfation.org>
+	<1305407694-16789-4-git-send-email-sven@narfation.org>
+In-Reply-To: <1305407694-16789-4-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105181137.16866.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/9] batman-adv: Remove comparising < 0
-	for unsigned type
+Message-Id: <201105181140.46093.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/9] batman-adv: Don't do pointer
+	arithmetic with void*
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,13 +24,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday 14 May 2011 23:14:48 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  bat_debugfs.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+On Saturday 14 May 2011 23:14:49 Sven Eckelmann wrote:
+> The size of void is currently set by gcc to 1, but is not well defined
+> in general. Therefore it is more advisable to cast it to char* before
+> doing pointer arithmetic.
 
-Applied in revision 960f86c.
+Applied in revision f896bd9.
 
 Thanks,
 Marek
