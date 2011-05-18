@@ -1,14 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 18 May 2011 03:19:42 +0200
-References: <1305660872.22368.6.camel@elmo-ubuntu>
-In-Reply-To: <1305660872.22368.6.camel@elmo-ubuntu>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105180319.42863.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Extending the Exporter
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Wed, 18 May 2011 09:20:50 +0200
+Message-Id: <1305703250-23111-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: move smallest_signed_int(),
+	seq_before() and  seq_after() into main.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,26 +15,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Elmo <clint3112@gmx.de>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi,
+smallest_signed_int(), seq_before() and seq_after() are very useful
+functions that help to handle comparisons between sequence numbers.
+However they were only defined in vis.c. With this patch every
+batman-adv function will be able to use them.
 
-> I'm trying to extend the Exporter of OpenMesh to put another float
-> stored at each Vertex to an off or obj file. But the Tutorial on your
-> website dosn't make it clear i think.
-> Do I have to extend the the BaseExporter by a Iterator for my float
-> like:
-> virtual PVertexIter const_myFloat_begin()   = 0;
-> virtual PVertexIter const_myFloat_end()   = 0;
-> 
-> Where do i have to add the code to get these iterators called?
-> 
-> Is there anything else to add?
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ main.h |   16 ++++++++++++++++
+ vis.c  |   16 ----------------
+ 2 files changed, 16 insertions(+), 16 deletions(-)
 
-are you referring to openmesh.org ?
-You sent your mail to the mailing list of open-mesh.org (note the dash). It is 
-about routing in wireless mesh networks ...
+diff --git a/main.h b/main.h
+index 3ca3941..90db244 100644
+--- a/main.h
++++ b/main.h
+@@ -181,4 +181,20 @@ static inline int compare_eth(void *data1, void *data2)
+ 
+ #define atomic_dec_not_zero(v)	atomic_add_unless((v), -1, 0)
+ 
++/* Returns the smallest signed integer in two's complement with the sizeof x */
++#define smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
++
++/* Checks if a sequence number x is a predecessor/successor of y.
++ * they handle overflows/underflows and can correctly check for a
++ * predecessor/successor unless the variable sequence number has grown by
++ * more then 2**(bitwidth(x)-1)-1.
++ * This means that for a uint8_t with the maximum value 255, it would think:
++ *  - when adding nothing - it is neither a predecessor nor a successor
++ *  - before adding more than 127 to the starting value - it is a predecessor,
++ *  - when adding 128 - it is neither a predecessor nor a successor,
++ *  - after adding more than 127 to the starting value - it is a successor */
++#define seq_before(x, y) ({typeof(x) _dummy = (x - y); \
++			_dummy > smallest_signed_int(_dummy); })
++#define seq_after(x, y) seq_before(y, x)
++
+ #endif /* _NET_BATMAN_ADV_MAIN_H_ */
+diff --git a/vis.c b/vis.c
+index c39f20c..e1ed552 100644
+--- a/vis.c
++++ b/vis.c
+@@ -30,22 +30,6 @@
+ 
+ #define MAX_VIS_PACKET_SIZE 1000
+ 
+-/* Returns the smallest signed integer in two's complement with the sizeof x */
+-#define smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
+-
+-/* Checks if a sequence number x is a predecessor/successor of y.
+- * they handle overflows/underflows and can correctly check for a
+- * predecessor/successor unless the variable sequence number has grown by
+- * more then 2**(bitwidth(x)-1)-1.
+- * This means that for a uint8_t with the maximum value 255, it would think:
+- *  - when adding nothing - it is neither a predecessor nor a successor
+- *  - before adding more than 127 to the starting value - it is a predecessor,
+- *  - when adding 128 - it is neither a predecessor nor a successor,
+- *  - after adding more than 127 to the starting value - it is a successor */
+-#define seq_before(x, y) ({typeof(x) _dummy = (x - y); \
+-			_dummy > smallest_signed_int(_dummy); })
+-#define seq_after(x, y) seq_before(y, x)
+-
+ static void start_vis_timer(struct bat_priv *bat_priv);
+ 
+ /* free the info */
+-- 
+1.7.3.4
 
-Cheers,
-Marek
