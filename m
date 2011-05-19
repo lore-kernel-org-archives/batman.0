@@ -1,10 +1,15 @@
-Return-Path: <aarizaq@uma.es>
-Message-ID: <4DD5410C.1060009@uma.es>
-Date: Thu, 19 May 2011 18:10:52 +0200
-From: alfonso ariza quintana <aarizaq@uma.es>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 19 May 2011 21:40:55 +0200
+References: <1305730043-3666-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1305730043-3666-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------010004040407010407080105"
-Subject: [B.A.T.M.A.N.] port to omnet++
+Content-Type: multipart/signed; boundary="nextPart2795898.sThI3iUcUQ";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201105192141.11078.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: a multiline comment should
+	precede the variable it is describing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,34 +23,63 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is a multi-part message in MIME format.
---------------010004040407010407080105
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+--nextPart2795898.sThI3iUcUQ
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
+Antonio Quartulli wrote:
+> This comment has been wrongly put after the variable it refers to and was
+> also bad indented
+>=20
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+>=20
+>  types.h |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/types.h b/types.h
+> index fab70e8..65b3222 100644
+> --- a/types.h
+> +++ b/types.h
+> @@ -246,10 +246,10 @@ struct frag_packet_list_entry {
+>  };
+>=20
+>  struct vis_info {
+> -	unsigned long       first_seen;
+> -	struct list_head    recv_list;
+> -			    /* list of server-neighbors we received a vis-packet
+> -			     * from.  we should not reply to them. */
+> +	unsigned long first_seen;
+> +	/* list of server-neighbors we received a vis-packet
+> +	 * from.  we should not reply to them. */
+> +	struct list_head recv_list;
+>  	struct list_head send_list;
+>  	struct kref refcount;
+>  	struct hlist_node hash_entry;
 
-I have adapted the code of the version 0.3.2 to omnet. If some one is 
-interested to check the code, it's possible to download from
-https://github.com/inetmanet/inetmanet/tree/master/src/networklayer/manetrouting/batman
+Acked-by: Sven Eckelmann <sven@narfation.org>
 
---------------010004040407010407080105
-Content-Type: text/x-vcard; charset=utf-8;
- name="aarizaq.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="aarizaq.vcf"
+--nextPart2795898.sThI3iUcUQ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-begin:vcard
-fn:Alfonso Ariza Quintana
-n:Ariza Quintana;Alfonso
-org;quoted-printable;quoted-printable:E.T.S.I Telecomunicaci=C3=B3n, M=C3=A1laga University;Tecnolog=C3=ADa Electr=C3=B3nica
-adr;quoted-printable:;;Campus de Teatinos S/N;M=C3=A1laga;;29071;Spain
-email;internet:aarizaq@uma.es
-title:Titular de Universidad
-tel;work:+34 952132728
-tel;fax:+34 952131447
-version:2.1
-end:vcard
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
+iQIcBAABCgAGBQJN1XJUAAoJEF2HCgfBJntG0YsP/09YyMTUlUWgse/p6v2KQVXX
+DAflyLDH9rpM1HyUMz3XMIv+ZurMVxtuiCHgW7whYpcf3WQAhO41y5uIrk+fQgEj
+nP7A6m7EJFR5zlGJNfzkPvqizkuaitO96Y1JE0HyUlthS4GX5HYR4/cF2IVvD8Vl
+Ujf5CLa6XbQrl4lca4jzoK7zlUgCeLmlOcMJkZVfOQEMl9BkMu9eP0rklLiFf/lh
+e6vfDDU5g11z85UIm45AqCEeutbA1gg1ognF4dYm/xSxC7cr6L3sXw8p7jLAY/I5
+OV7KMwPaO6oVZqLuapWYCgOrehgzlKBg2ZRP/T3K97npnUgIJoRVYwpx3TR2W0ag
+aYhs3ioK/1gAkBPuKRnKLG7qKTCJZ/OF6IGDqEH70tvgLLhkku0zpv53Ftd/62fe
+z+zZcJQK7L39TC+5dd+IQdnxgkCBpPJeKcExPA4lDMdgv0vD2Zq3CDI6+P4B2zTv
+d9jS0KbD9satIXSPkKkPOV2zPQyvYJUmuHXWy4/Md+PZl/UcYLq5rHh/eMY4KFHE
+xhCbgarraanWJKIxbMCira898Smg0tThHbg1NQM5K4hwTQNnC1QygCR2zAPdAUUj
+J7kkgRgCLpqqdXY6Y/SutKSCAMu4ucVNN+pJVdBCh/YX6XbRtxGqBv8QGCvqPCms
+ezH+iA2M8cM9WjsuGEcX
+=XX9B
+-----END PGP SIGNATURE-----
 
---------------010004040407010407080105--
+--nextPart2795898.sThI3iUcUQ--
