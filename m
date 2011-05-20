@@ -1,12 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 20 May 2011 09:55:26 +0200
+Date: Fri, 20 May 2011 10:37:52 +0200
+References: <201105200955.27323.sven@narfation.org>
+In-Reply-To: <201105200955.27323.sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2047936.PbcKAP7UAn";
+Content-Type: multipart/signed; boundary="nextPart3902460.oYQnQ6rCns";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105200955.27323.sven@narfation.org>
-Subject: [B.A.T.M.A.N.] batman-adv bug 149: odd broadcast behavior --
+Message-Id: <201105201037.53737.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] batman-adv bug 149: odd broadcast behavior --
 	generated CRC errors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,80 +21,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: dbeberman@aicas.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: dbeberman@aicas.com
 
---nextPart2047936.PbcKAP7UAn
+--nextPart3902460.oYQnQ6rCns
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Sven Eckelmann wrote:
+> Hi,
+>=20
+> I would assume that you don't monitor the bug as you didn't answer the
+> questions on irc. So here the part of the IRC communication which needs
+> comments/answers from your side.
+[...]
 
-I would assume that you don't monitor the bug as you didn't answer the
-questions on irc. So here the part of the IRC communication which needs
-comments/answers from your side.
+Just talked to Marek and we both are a little bit irritated by following pa=
+rt=20
+of your first "mail":
 
-<T_X> dbeberman-away: hmm, weird. could be a batman specific bug. the first=
- thing I'd have in mind to narrow things down would be=20
-to try changing that line: http://git.open-mesh.org/?p=3Dbatman-
-adv.git;a=3Dblob;f=3Dsend.c;h=3D33779278f1b2bfe49155bb9dfadc421305c0c8d7;hb=
-=3Drefs/heads/master#l485
-<T_X> from skb_clone to skb_copy
-<T_X> from looking at the kernel code it seems like skb_clone() is only cop=
-ying the skb-header, but not the skb-headroom (which we=20
-are modifying in send_skb_packet() )
-=2D-> jn_ (~jonathan@dslb-084-060-236-250.pools.arcor-ip.net) has joined #b=
-atman
-<ecsv_> T_X: and that is a problem.... why?
-<ecsv_> i don't see which crc is the problem
-<T_X> ecsv_: you mean it should not be a problem because we for clones we a=
-re writing the exact same data in the headroom again?
-<ecsv_> we should... but yes, it might be a good idea to implement it diffe=
-rently and to test it with skb_copy
-<ecsv_> it didn't checked the bug report... just assumed that you guessed :)
-<ecsv_> but still don't see what happened to which crc
-<ecsv_> we only modify stuff which is related to us.... and not to the enca=
-psulated data
-<ecsv_> but maybe he meant the ethernet header/wifi stuff before the batman=
-=2Dadv header
-<ecsv_> but why does he see them?
-<ecsv_> and why are udp broadcasts fragmented?
-<ecsv_> we should only have fragmentation for unicast
-<T_X> ecsv_: I think he's talking about the wifi fragmentation
-<T_X> not the fragmentation in batman
-<ecsv_> dbeberman-away: and the only reason why we reject mails on the list=
- is either that you are a known spammer or that you try=20
-to send html mails
-<ecsv_> did you get a reply?
-<T_X> and I suppose he's doing the sniffing on another interface in monitor=
- mode
-<T_X> ah, and missed that the "my_skb_head_push()" is in fact making the he=
-adroom of the (cloned) skb writeable
+> > Further, if the UDP packet is large enough to fragment into 2 packets, a
+> > total of 6 packets are  broacast, with only the very last packet being
+> > broadcast without error.
+
+We don't know what fragmentation you are talking here. batman-adv doesn't=20
+fragment the broadcast packet, wifi shall not fragment the broadcast packet:
+
+"only mpdus with a unicast receiver address shall be fragmented.=20
+broadcast/multicast frames shall not be fragmented even if their length=20
+exceeds dot11FragmentationThreshold" - ieee802.11-2007 page 255
+
+So the only fragmentation seems to be the IP(v6) fragmentation - and this=20
+would mean that batman-adv only sees two independent packets which it=20
+rebroadcasts complete independent - therefore it doesn't make any sense tha=
+t=20
+only the last of 6 packets isn't destroyed by the resend mechanism.
+
+Could you please exactly tell us on which layer and which situation you=20
+experienced what behaviour and how you did your measurements.
 
 Kind regards,
 	Sven
 
---nextPart2047936.PbcKAP7UAn
+--nextPart3902460.oYQnQ6rCns
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABCgAGBQJN1h5uAAoJEF2HCgfBJntGUvsP/R35+O86M7kQECNbk+VakxvI
-l9GEFxQzduAFAg0h+8kqFyAfGlc7F4yepaMBQ0CMEpq6+rrzswXzatDKF74nS2Xu
-TgeIDhQuGRvWHeTpe3XDqjQDbZwczW3khHp1ZeDof8TwJb7ua7mxXRfP2/gy7xKk
-VGrt6UBbX1Qq1oxwScExnytJ6ajIbRO/F48f2xljnDc0f2Y3D6xEl86tcP/A5COB
-zXRUmIzxE5XMyTvHAStseIqvIq9/HZi65HEGdU+dEXAXj600EWKJTGqWqI+x2OH3
-sDfKzSBTi+eBdfnNteB+O4F8VyepULcxLV8yZlA/HxCuR8yofksxpF8kbVMuNG9W
-DAj3a5WRZOcxZH60adQMJiHvn+ZNzyues49ra3VWDIDRELtmgWc7KGHd0ZBj0Vs0
-2HKAovkiN0K58qbRt4VOAL1aZvV6ByrUCnJWgim4NOw1Kkpls/2DigcNKT0pGEKQ
-3L/Wz9so5zgmDTL9B8lgGD+3yaRqh4ww8uREEtQGGZXDC26/p9hMfPliLtM4nopT
-N2myNut0b2OX0SZb5ZxxykFDeVBfqONBhd+8TIAeADcPAJU0FpigrfLPuMt7042o
-J78+k891z/k3WOHPmNftAPdjkZq/11T+CnYf82djv9oZVPZzBNSJvmmNvIf5GvYL
-+3tv0vKshZXyBXkcldta
-=QIR0
+iQIcBAABCgAGBQJN1ihgAAoJEF2HCgfBJntGlyUQAKJqitBIfFfzjl0mVneLuW7R
+fFPCwWkCtD2Y266CQa6bRLVmxIAnUrq830v9OS0Cz0gGlOZma5fsc10mk95wV9fa
+CiDLfsP0FPvlKGBaNQ34Yi7bwbx88MxuuB/++W/ScFlwTcPbNYddVojzZvzLXkT7
+E0KQf+PPIWHD8/yUhEJm1iC7U5VSa0dx2Kprht/SD0QRwWUl0hybhWBaEO2mtg3j
+zDTON/aT4CqNV0hio/YvLiwT70o0IgjSPzbr+H62mOuX2KLhsMH3YDMNYnGM3HGB
+9gVfivuWoYuWHRiT2G7Az2nv4Jv8hn/DEWJrmRXvdDKA4NZQSJyl8xQa3CgY0hvz
+DgD7GISCInw/TycfCRdKZLPUYRbOv75I2NCR0VyoTo8fcE5Km9WIJIstzNd8owRl
+OrYfMFlC290jlSjPQwvsff2MSpPJy5ZtGVH34l2L9901bwo/hRondzuzFR89TonE
+Kr/SSQ11oueO9seQ/nVhg1rECttY7lOP6nw6S+AzJXikvnpvmZjeFZWuKxGvh5Ji
+Lz4kY3QIziwwaC7MSjTQwh3StuMotsGaDbJc+CUOXdsUoQS1fk2vEo5z8ig9bPb6
+MMFESul6ouQK9saZX0Zf0HcoE9jbEgrI7v9yaXVEzgLQ9sWSwY0c/7Hk2rAm2OYi
+lXJA8SfAAkHBe0ND7j66
+=aKdB
 -----END PGP SIGNATURE-----
 
---nextPart2047936.PbcKAP7UAn--
+--nextPart3902460.oYQnQ6rCns--
