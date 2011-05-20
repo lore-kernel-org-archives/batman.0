@@ -1,17 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 20 May 2011 14:30:43 +0200
-References: <1304496393-16405-1-git-send-email-sven@narfation.org>
-	<1305011821-5411-1-git-send-email-sven@narfation.org>
-	<1305011821-5411-4-git-send-email-sven@narfation.org>
-In-Reply-To: <1305011821-5411-4-git-send-email-sven@narfation.org>
+Return-Path: <dbeberman@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1823103.tWxhmJxGnA";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105201430.44397.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: convert
-	call_rcu(softif_neigh_free_rcu) to kfree_rcu
+Date: Fri, 20 May 2011 09:40:01 -0400
+Message-ID: <BANLkTim+tDtnKidN7XOrs=FJz=u6Jkqoyw@mail.gmail.com>
+From: David Beberman <dbeberman@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] batman-adv bug 149: odd broadcast behavior --
+ generated CRC errors (Sven Eckelmann)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,48 +20,60 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1823103.tWxhmJxGnA
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+First, my apologies on not monitoring the irc channel.
+A bit consumed at work.=A0 (if anybody happens to know how to
+get the broadcom bcm4329 driver to change channels in ad-hoc mode,
+please feel free to share.=A0 iwconfig ... channel XX command fails, but
+driver code looks correct. Target is HTC Desire).
 
-Sven Eckelmann wrote:
-> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->=20
-> The RCU callback softif_neigh_free_rcu() just calls kfree(), so we can
-> use kfree_rcu() instead of call_rcu().
->=20
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Cc: Marek Lindner <lindner_marek@yahoo.de>
-> Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> Acked-by: David S. Miller <davem@davemloft.net>
-> Reviewed-by: Josh Triplett <josh@joshtriplett.org>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Regarding fragmentation -- this is strictly coming from the UPD/IPv6.
+It it not fragmenting in the wlan driver.=A0 I have fragmentation
+threshold set off.=A0 I'm assuming it is responding to the configuration
+parameters correctly.
 
-Linus applied it in 8e3572cff70ee19a0a1f2e2dde0bca0b7c8b54dc
+I'm using Omnipeek on a PC to sniff the packets.=A0 The antennas are
+about 2 feet apart.=A0 The network traffic is relatively low, in the 1 -
+10% on average, with virtually no indication of corruption from hidden
+nodes or other sources under regular operation.=A0 That is, I only see
+the CRC error flags set with the broadcast packets at 802.11g data
+rates.=A0 This is the 802.11 packet CRC, nothing internal to it.=A0 The
+Omnipeek does not know about the batman-adv protocol.=A0 Also, I have
+other nodes setup with batman-adv which are
+repeating the broadcasts.=A0 I can see that only the packets without the
+CRC error flags are being rebroadcast.=A0 This indicates to me that the
+packets flagged as
+CRC errors by Omnipeek are also being dropped as error'ed packets by
+the other nodes.
+I do not see this problem with packets sent directly to the bcm4329
+device.=A0 However, I will continue to try to see if I can get that to
+happen, would then mean it is bcm4329 driver and hardware problem.=A0 At
+the moment, using UDP broadcast with IPv4 directly onto the wlan
+driver without batman-adv (bat0), I do not see the behavior.=A0 I've
+been using my own code for this.=A0 Noticed netcat and nc last night.
+Will try piping with those tools today in both modes, with and without
+batman-adv to
+reverify what I'm seeing.
 
-Applied in 8bd9620
+I do not know how to do kernel debugging with kdbg/gdb across a USB
+port on the target side.=A0 I do not have JTAG or serial access.
+Google'd for how to setup the kernel to use USB port for kdbg, but did
+not find anything.=A0 Just lots of info on how to debug the USB driver
+itself.
+I'm using the cyanogenmod version of Android with the HTC Desire
+version of the Linux kernel, and the insertion of modules like
+batman-adv.=A0 I did verify that the modules are being built against the
+correct Linux kernel sources, just in case there was something silly
+going on.
 
---nextPart1823103.tWxhmJxGnA
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+I'm building with NETCONSOLE enabled today and hope to be able to see
+driver messages sent over the WLAN using netcat on the host side.
+That should allow me to see both batman-adv and the bcm4329 trace
+messages.=A0 I should also be able to send the console to ttyUSB0,
+assuming I can get the HTC Desire USB to behave properly.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+I'll change the line to skb_copy as was suggested by <T_x>?=A0 and Sven.
+Will post my results.
 
-iQIcBAABCgAGBQJN1l7zAAoJEF2HCgfBJntGoAsP/Arfy5aaRA+DjPKijDmS79Ud
-Ir1kablbj/cnn/xBKatfdpO/pO8NiPeRkGjgf6+rYCqZ4EY8j1nNqF6DukoARpOV
-EFttkyqxUN/uoJG8x094dkp+0UzGovcT1673CLJxfq2CpL1y7V7nSv4VRx0QRwHI
-pD0Rds68+dwVs52DWz6DFMfNUKn/liLdDtRer8CX//n2c+fydmxsePggfbYXHupl
-lPa2/Wj2z/+rsJqaxPUP8VhMScilmV20sC0Dq1sFlh8lvZ29rDRcD1VpxIdI+H3t
-7R/aS8mZZR9bzKOizwUw8QiJPmHWNkqejFjsN6ocJI7bg+WtZat8jj/s9Gtw+kuX
-T6zelYhgqot9joeilSt1O+hLywYP9jAYqbVin1FwZiby9VHhvYZQ8Tpm3hyzTEUq
-2PrE0PZsqBrLQTr0AO7cI4i69TA96TZjh/mo1qQx0HZvC3IY+ja03zhLLwkHCJL4
-72kgKdq3Xu0zRhKzjaSInCvaPV2TAdInqB+4L0NPkdobgZbuYLbyWoOiK3dj4L2q
-ElXSaemX1kBtq7JEMrEB16CTBguuM2jYDTdN2+Osm832hhem6z0kJ2neJi8T4F0f
-sAPX48O6SpdM8lJ3yFsJ/JoRy7DEjJ4/a1BoaewdXGKYUtZ5RFRb9kL125nh8LXc
-cXmjJHElxZfHawAgTljR
-=ueIH
------END PGP SIGNATURE-----
+Thanks for the follow up.
 
---nextPart1823103.tWxhmJxGnA--
+David Beberman
