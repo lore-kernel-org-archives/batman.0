@@ -1,11 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 19 May 2011 21:43:08 +0200
-Message-Id: <1305834188-15514-1-git-send-email-sven@narfation.org>
-In-Reply-To: <201105192141.18647.sven@narfation.org>
-References: <201105192141.18647.sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Check type of x and y in
-	seq_(before|after)
+Date: Fri, 20 May 2011 09:55:26 +0200
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2047936.PbcKAP7UAn";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Content-Transfer-Encoding: 7bit
+Message-Id: <201105200955.27323.sven@narfation.org>
+Subject: [B.A.T.M.A.N.] batman-adv bug 149: odd broadcast behavior --
+	generated CRC errors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,38 +19,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: dbeberman@aicas.com
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-seq_before and seq_after depend on the fact that both sequence numbers
-have the same type and thus the same bitwidth. We can ensure that by
-compile time checking using a compare between the pointer to the
-temporary buffers which were created using the typeof of both
-parameters. For example gcc would create a warning like
-"warning: comparison of distinct pointer types lacks a cast".
+--nextPart2047936.PbcKAP7UAn
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- main.h |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+Hi,
 
-diff --git a/main.h b/main.h
-index db29444..3395bf9 100644
---- a/main.h
-+++ b/main.h
-@@ -196,8 +196,11 @@ static inline int compare_eth(const void *data1, const void *data2)
-  *  - before adding more than 127 to the starting value - it is a predecessor,
-  *  - when adding 128 - it is neither a predecessor nor a successor,
-  *  - after adding more than 127 to the starting value - it is a successor */
--#define seq_before(x, y) ({typeof(x) _dummy = (x - y); \
--			_dummy > smallest_signed_int(_dummy); })
-+#define seq_before(x, y) ({typeof(x) _d1 = (x); \
-+			  typeof(y) _d2 = (y); \
-+			  typeof(x) _dummy = (_d1 - _d2); \
-+			  (void) (&_d1 == &_d2); \
-+			  _dummy > smallest_signed_int(_dummy); })
- #define seq_after(x, y) seq_before(y, x)
- 
- #endif /* _NET_BATMAN_ADV_MAIN_H_ */
--- 
-1.7.5.1
+I would assume that you don't monitor the bug as you didn't answer the
+questions on irc. So here the part of the IRC communication which needs
+comments/answers from your side.
 
+<T_X> dbeberman-away: hmm, weird. could be a batman specific bug. the first=
+ thing I'd have in mind to narrow things down would be=20
+to try changing that line: http://git.open-mesh.org/?p=3Dbatman-
+adv.git;a=3Dblob;f=3Dsend.c;h=3D33779278f1b2bfe49155bb9dfadc421305c0c8d7;hb=
+=3Drefs/heads/master#l485
+<T_X> from skb_clone to skb_copy
+<T_X> from looking at the kernel code it seems like skb_clone() is only cop=
+ying the skb-header, but not the skb-headroom (which we=20
+are modifying in send_skb_packet() )
+=2D-> jn_ (~jonathan@dslb-084-060-236-250.pools.arcor-ip.net) has joined #b=
+atman
+<ecsv_> T_X: and that is a problem.... why?
+<ecsv_> i don't see which crc is the problem
+<T_X> ecsv_: you mean it should not be a problem because we for clones we a=
+re writing the exact same data in the headroom again?
+<ecsv_> we should... but yes, it might be a good idea to implement it diffe=
+rently and to test it with skb_copy
+<ecsv_> it didn't checked the bug report... just assumed that you guessed :)
+<ecsv_> but still don't see what happened to which crc
+<ecsv_> we only modify stuff which is related to us.... and not to the enca=
+psulated data
+<ecsv_> but maybe he meant the ethernet header/wifi stuff before the batman=
+=2Dadv header
+<ecsv_> but why does he see them?
+<ecsv_> and why are udp broadcasts fragmented?
+<ecsv_> we should only have fragmentation for unicast
+<T_X> ecsv_: I think he's talking about the wifi fragmentation
+<T_X> not the fragmentation in batman
+<ecsv_> dbeberman-away: and the only reason why we reject mails on the list=
+ is either that you are a known spammer or that you try=20
+to send html mails
+<ecsv_> did you get a reply?
+<T_X> and I suppose he's doing the sniffing on another interface in monitor=
+ mode
+<T_X> ah, and missed that the "my_skb_head_push()" is in fact making the he=
+adroom of the (cloned) skb writeable
+
+Kind regards,
+	Sven
+
+--nextPart2047936.PbcKAP7UAn
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJN1h5uAAoJEF2HCgfBJntGUvsP/R35+O86M7kQECNbk+VakxvI
+l9GEFxQzduAFAg0h+8kqFyAfGlc7F4yepaMBQ0CMEpq6+rrzswXzatDKF74nS2Xu
+TgeIDhQuGRvWHeTpe3XDqjQDbZwczW3khHp1ZeDof8TwJb7ua7mxXRfP2/gy7xKk
+VGrt6UBbX1Qq1oxwScExnytJ6ajIbRO/F48f2xljnDc0f2Y3D6xEl86tcP/A5COB
+zXRUmIzxE5XMyTvHAStseIqvIq9/HZi65HEGdU+dEXAXj600EWKJTGqWqI+x2OH3
+sDfKzSBTi+eBdfnNteB+O4F8VyepULcxLV8yZlA/HxCuR8yofksxpF8kbVMuNG9W
+DAj3a5WRZOcxZH60adQMJiHvn+ZNzyues49ra3VWDIDRELtmgWc7KGHd0ZBj0Vs0
+2HKAovkiN0K58qbRt4VOAL1aZvV6ByrUCnJWgim4NOw1Kkpls/2DigcNKT0pGEKQ
+3L/Wz9so5zgmDTL9B8lgGD+3yaRqh4ww8uREEtQGGZXDC26/p9hMfPliLtM4nopT
+N2myNut0b2OX0SZb5ZxxykFDeVBfqONBhd+8TIAeADcPAJU0FpigrfLPuMt7042o
+J78+k891z/k3WOHPmNftAPdjkZq/11T+CnYf82djv9oZVPZzBNSJvmmNvIf5GvYL
++3tv0vKshZXyBXkcldta
+=QIR0
+-----END PGP SIGNATURE-----
+
+--nextPart2047936.PbcKAP7UAn--
