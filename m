@@ -1,11 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 21 May 2011 15:45:11 +0200
-Message-Id: <1305985517-3763-7-git-send-email-sven@narfation.org>
+Date: Sat, 21 May 2011 15:45:12 +0200
+Message-Id: <1305985517-3763-8-git-send-email-sven@narfation.org>
 In-Reply-To: <1305985517-3763-1-git-send-email-sven@narfation.org>
 References: <1305985517-3763-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 07/13] vis: Only define CC when not already
-	specified
+Subject: [B.A.T.M.A.N.] [PATCH 08/13] vis: Build binary before installing it
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,10 +18,6 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-It is possible that a build environment specifies the CC different than
-gcc (for example gcc-4.6). The Makefile should only set it when the
-compiler wasn't explicitely set.
-
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 This patch depends on other patches submitted earlier:
@@ -33,18 +28,18 @@ This patch depends on other patches submitted earlier:
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 5cbff33..2817292 100755
+index 2817292..75d59cc 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -27,7 +27,7 @@ ifndef V
- endif
- endif
+@@ -56,7 +56,7 @@ $(BINARY_NAME): $(OBJ) Makefile
+ clean:
+ 	rm -f $(BINARY_NAME) $(OBJ) $(DEP)
  
--CC =		gcc
-+CC ?=		gcc
- CFLAGS +=	-pedantic -Wall -W -std=gnu99
- EXTRA_CFLAGS =	-DDEBUG_MALLOC -DMEMORY_USAGE -DREVISION_VERSION=$(REVISION_VERSION)
- LDFLAGS +=	-lpthread
+-install:
++install: $(BINARY_NAME)
+ 	mkdir -p $(SBINDIR)
+ 	install -m 0755 $(BINARY_NAME) $(SBINDIR)
+ 
 -- 
 1.7.5.1
 
