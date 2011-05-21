@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 21 May 2011 15:45:10 +0200
-Message-Id: <1305985517-3763-6-git-send-email-sven@narfation.org>
+Date: Sat, 21 May 2011 15:45:11 +0200
+Message-Id: <1305985517-3763-7-git-send-email-sven@narfation.org>
 In-Reply-To: <1305985517-3763-1-git-send-email-sven@narfation.org>
 References: <1305985517-3763-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 06/13] vis: Mark makefile targets without
-	output as PHONY
+Subject: [B.A.T.M.A.N.] [PATCH 07/13] vis: Only define CC when not already
+	specified
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,10 +19,9 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Normally makefile targets should create an output with the same name as
-the target. It is necessary to mark them as PHONY to prevent that the
-virtual target like all, clean or install aren't executed when a file
-with the same name exists.
+It is possible that a build environment specifies the CC different than
+gcc (for example gcc-4.6). The Makefile should only set it when the
+compiler wasn't explicitely set.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
@@ -30,19 +29,22 @@ This patch depends on other patches submitted earlier:
  - vis: Remove obsolete creation of source packages
  - vis: Remove subversion/svk revision information
 
- Makefile |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index d9b011c..5cbff33 100755
+index 5cbff33..2817292 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -59,3 +59,5 @@ clean:
- install:
- 	mkdir -p $(SBINDIR)
- 	install -m 0755 $(BINARY_NAME) $(SBINDIR)
-+
-+.PHONY: all clean install
+@@ -27,7 +27,7 @@ ifndef V
+ endif
+ endif
+ 
+-CC =		gcc
++CC ?=		gcc
+ CFLAGS +=	-pedantic -Wall -W -std=gnu99
+ EXTRA_CFLAGS =	-DDEBUG_MALLOC -DMEMORY_USAGE -DREVISION_VERSION=$(REVISION_VERSION)
+ LDFLAGS +=	-lpthread
 -- 
 1.7.5.1
 
