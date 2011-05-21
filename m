@@ -1,10 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 21 May 2011 15:10:42 +0200
-Message-Id: <1305983442-1607-14-git-send-email-sven@narfation.org>
-In-Reply-To: <1305983442-1607-1-git-send-email-sven@narfation.org>
-References: <1305983442-1607-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 14/14] batmand: Install manpage
+Date: Sat, 21 May 2011 15:45:05 +0200
+Message-Id: <1305985517-3763-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 01/13] vis: Remove optimisation and debugging
+	options
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,47 +17,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Distributions like Gentoo or Debian have to strip the options regarding
+the optimisation levels and debugging information to fulfil their
+policies. There is currently no valid reason why the Makefile should
+override it.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 This patch depends on other patches submitted earlier:
- - batmand: Fix FTBFS on second build attempt
- - batmand: Remove obsolete creation of source packages
- - batmand: Remove subversion/svk revision information
- - batmand: Use nproc to get number of available processors
+ - vis: Remove obsolete creation of source packages
+ - vis: Remove subversion/svk revision information
 
- Makefile |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 21a379c..4f6fe64 100755
+index c808391..6867a5f 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -48,6 +48,7 @@ OS_OBJ =	$(BSD_OBJ) $(POSIX_OBJ)
+@@ -26,7 +26,7 @@ endif
  endif
  
- OBJ = batman.o originator.o schedule.o list-batman.o allocate.o bitarray.o hash.o profile.o ring_buffer.o hna.o $(OS_OBJ)
-+MANPAGE = man/batmand.8
+ CC =		gcc
+-CFLAGS +=	-pedantic -Wall -W -O1 -g3 -std=gnu99
++CFLAGS +=	-pedantic -Wall -W -std=gnu99
+ EXTRA_CFLAGS =	-DDEBUG_MALLOC -DMEMORY_USAGE -DREVISION_VERSION=$(REVISION_VERSION)
+ LDFLAGS +=	-lpthread
  
- # activate this variable to deactivate policy routing for backward compatibility
- #NO_POLICY_ROUTING = -DNO_POLICY_ROUTING
-@@ -78,6 +79,7 @@ LINK.o = $(Q_LD)$(CC) $(LDFLAGS) $(TARGET_ARCH)
- # standard install paths
- PREFIX = /usr/local
- SBINDIR = $(PREFIX)/sbin
-+MANDIR = $(PREFIX)/share/man
- 
- # try to generate revision
- REVISION = $(shell if [ -d .git ]; then echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); fi)
-@@ -99,7 +101,9 @@ clean:
- 
- install: $(BINARY_NAME)
- 	$(MKDIR) $(DESTDIR)$(SBINDIR)
-+	$(MKDIR) $(DESTDIR)$(MANDIR)/man8
- 	$(INSTALL) -m 0755 $(BINARY_NAME) $(DESTDIR)$(SBINDIR)
-+	$(INSTALL) -m 0644 $(MANPAGE) $(DESTDIR)$(MANDIR)/man8
- 
- # load dependencies
- DEP = $(OBJ:.o=.d)
 -- 
 1.7.5.1
 
