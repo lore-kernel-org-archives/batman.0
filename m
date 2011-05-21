@@ -1,10 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 21 May 2011 15:45:14 +0200
-Message-Id: <1305985517-3763-10-git-send-email-sven@narfation.org>
+Date: Sat, 21 May 2011 15:45:15 +0200
+Message-Id: <1305985517-3763-11-git-send-email-sven@narfation.org>
 In-Reply-To: <1305985517-3763-1-git-send-email-sven@narfation.org>
 References: <1305985517-3763-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 10/13] vis: Use standard-like build rules
+Subject: [B.A.T.M.A.N.] [PATCH 11/13] vis: Make called tools in clean and
+	install configurable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,60 +19,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-User expect a specific naming inside makefile rules which they can
-modify by changing environment variables or providing them explicitely
-as parameters of the make call. The naming was extracted from the gnu
-make standard rules database.
-
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 This patch depends on other patches submitted earlier:
  - vis: Remove obsolete creation of source packages
  - vis: Remove subversion/svk revision information
 
- Makefile |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
+ Makefile |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index da966ac..b34d2e8 100755
+index b34d2e8..bd20b1c 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -23,9 +23,9 @@ BINARY_NAME= vis
- OBJ = allocate.o hash.o list-batman.o vis.o udp_server.o
- 
- # vis flags and options
--CFLAGS +=	-pedantic -Wall -W -std=gnu99
--EXTRA_CFLAGS =	-DDEBUG_MALLOC -DMEMORY_USAGE -DREVISION_VERSION=$(REVISION_VERSION)
--LDFLAGS +=	-lpthread
-+CFLAGS +=	-pedantic -Wall -W -std=gnu99 -MD
-+CPPFLAGS +=	-DDEBUG_MALLOC -DMEMORY_USAGE -DREVISION_VERSION=$(REVISION_VERSION)
-+LDLIBS +=	-lpthread
- 
- # disable verbose output
- ifneq ($(findstring $(MAKEFLAGS),s),s)
-@@ -39,6 +39,8 @@ endif
+@@ -39,6 +39,9 @@ endif
  
  # standard build tools
  CC ?=		gcc
-+COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
-+LINK.o = $(Q_LD)$(CC) $(LDFLAGS) $(TARGET_ARCH)
++RM ?= rm -f
++INSTALL ?= install
++MKDIR ?= mkdir -p
+ COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+ LINK.o = $(Q_LD)$(CC) $(LDFLAGS) $(TARGET_ARCH)
  
- # standard install paths
- SBINDIR =	$(INSTALL_PREFIX)/usr/sbin
-@@ -53,10 +55,10 @@ all: $(BINARY_NAME)
- # standard build rules
- .SUFFIXES: .o .c
- .c.o:
--	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MD -c $< -o $@
-+	$(COMPILE.c) -o $@ $<
- 
--$(BINARY_NAME): $(OBJ) Makefile
--	$(Q_LD)$(CC) -o $@ $(OBJ) $(LDFLAGS)
-+$(BINARY_NAME): $(OBJ)
-+	$(LINK.o) $^ $(LDLIBS) -o $@
+@@ -61,11 +64,11 @@ $(BINARY_NAME): $(OBJ)
+ 	$(LINK.o) $^ $(LDLIBS) -o $@
  
  clean:
- 	rm -f $(BINARY_NAME) $(OBJ) $(DEP)
+-	rm -f $(BINARY_NAME) $(OBJ) $(DEP)
++	$(RM) $(BINARY_NAME) $(OBJ) $(DEP)
+ 
+ install: $(BINARY_NAME)
+-	mkdir -p $(SBINDIR)
+-	install -m 0755 $(BINARY_NAME) $(SBINDIR)
++	$(MKDIR) $(SBINDIR)
++	$(INSTALL) -m 0755 $(BINARY_NAME) $(SBINDIR)
+ 
+ # load dependencies
+ DEP = $(OBJ:.o=.d)
 -- 
 1.7.5.1
 
