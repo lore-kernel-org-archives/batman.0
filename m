@@ -1,11 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 21 May 2011 15:10:30 +0200
-Message-Id: <1305983442-1607-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1305983442-1607-1-git-send-email-sven@narfation.org>
-References: <1305983442-1607-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 02/14] batmand: Don't automatically build in
-	parallel
+Date: Sat, 21 May 2011 15:10:29 +0200
+Message-Id: <1305983442-1607-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 01/14] batmand: Remove optimisation and
+	debugging options
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,9 +17,10 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Distributions like Gentoo and Debian have policies which make it
-necessary to use some kind of environmental variable to control the
-parallel build.
+Distributions like Gentoo or Debian have to strip the options regarding
+the optimisation levels and debugging information to fulfil their
+policies. There is currently no valid reason why the Makefile should
+override it.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
@@ -31,26 +30,22 @@ This patch depends on other patches submitted earlier:
  - batmand: Remove subversion/svk revision information
  - batmand: Use nproc to get number of available processors
 
- Makefile |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+ Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 49342ac..f8864d0 100644
+index 4df2872..49342ac 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -77,11 +77,8 @@ REVISION= $(shell      if [ -d .git ]; then \
-                         fi)
- REVISION_VERSION =\"\ $(REVISION)\"
+@@ -29,7 +29,7 @@ endif
+ #NO_POLICY_ROUTING = -DNO_POLICY_ROUTING
  
--NUM_CPUS = $(shell nproc 2> /dev/null || echo 1)
+ CC =		gcc
+-CFLAGS +=	-pedantic -Wall -W -Os -g3 -std=gnu99
++CFLAGS +=	-pedantic -Wall -W -std=gnu99
+ EXTRA_CFLAGS =	-DDEBUG_MALLOC -DMEMORY_USAGE -DPROFILE_DATA $(NO_POLICY_ROUTING) -DREVISION_VERSION=$(REVISION_VERSION)
+ LDFLAGS +=	-lpthread
  
--
--all:
--	$(MAKE) -j $(NUM_CPUS) $(BINARY_NAME)
-+all: $(BINARY_NAME)
- 
- $(BINARY_NAME): $(SRC_O) $(SRC_H) Makefile
- 	$(Q_LD)$(CC) -o $@ $(SRC_O) $(LDFLAGS)
 -- 
 1.7.5.1
 
