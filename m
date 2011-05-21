@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 21 May 2011 15:45:09 +0200
-Message-Id: <1305985517-3763-5-git-send-email-sven@narfation.org>
+Date: Sat, 21 May 2011 15:45:10 +0200
+Message-Id: <1305985517-3763-6-git-send-email-sven@narfation.org>
 In-Reply-To: <1305985517-3763-1-git-send-email-sven@narfation.org>
 References: <1305985517-3763-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 05/13] vis: Provide shebang to inform about
-	interpreter
+Subject: [B.A.T.M.A.N.] [PATCH 06/13] vis: Mark makefile targets without
+	output as PHONY
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,6 +19,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Normally makefile targets should create an output with the same name as
+the target. It is necessary to mark them as PHONY to prevent that the
+virtual target like all, clean or install aren't executed when a file
+with the same name exists.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 This patch depends on other patches submitted earlier:
@@ -27,20 +32,17 @@ This patch depends on other patches submitted earlier:
 
  Makefile |    2 ++
  1 files changed, 2 insertions(+), 0 deletions(-)
- mode change 100644 => 100755 Makefile
 
 diff --git a/Makefile b/Makefile
-old mode 100644
-new mode 100755
-index a18aa72..d9b011c
+index d9b011c..5cbff33 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -1,3 +1,5 @@
-+#!/usr/bin/make -f
-+# -*- makefile -*-
- #
- # Copyright (C) 2006-2009 BATMAN contributors
- #
+@@ -59,3 +59,5 @@ clean:
+ install:
+ 	mkdir -p $(SBINDIR)
+ 	install -m 0755 $(BINARY_NAME) $(SBINDIR)
++
++.PHONY: all clean install
 -- 
 1.7.5.1
 
