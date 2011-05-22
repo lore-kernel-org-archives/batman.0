@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 22 May 2011 13:01:00 +0200
+Date: Sun, 22 May 2011 13:44:56 +0200
 References: <1303940106-1457-1-git-send-email-ordex@autistici.org>
 	<1306013107-18515-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1306013107-18515-3-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2490827.C9kcW77BMT";
+Content-Type: multipart/signed; boundary="nextPart16328898.fpUY3Hkhjp";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105221301.02304.sven@narfation.org>
+Message-Id: <201105221344.57586.sven@narfation.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/3] batman-adv: improved roaming
 	mechanism
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,43 +24,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2490827.C9kcW77BMT
+--nextPart16328898.fpUY3Hkhjp
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
 Antonio Quartulli wrote:
->         int16_t diff;
-[...]
-> =20
->         diff =3D unicast_packet->ttvn - curr_ttvn;
+> +	memcpy(roam_adv_packet->src,
+> +		bat_priv->primary_if->net_dev->dev_addr, ETH_ALEN);
 
+Again, Nack.
 
-diff is set but never used in recv_unicast_packet
+This is _definitely_ not allowed. Please use the primary_if !=3D NULL that =
+you=20
+got through primary_if_get_selected instead of dereferencing
+bat_priv->primary_if directly.
 
 Kind regards,
-	Sven
+	Sven=20
 
---nextPart2490827.C9kcW77BMT
+--nextPart16328898.fpUY3Hkhjp
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABCgAGBQJN2OztAAoJEF2HCgfBJntGrJ0QAMmMLGnSJFx42gvXvbtJ0f6k
-Q4DAVZgXaCvNH/eNWj9rA91BSIpA2HI1Lk9MxAcizQlHDtegJhwlsCLDerZKmTkr
-HemRJ8oIuqxZjw5ghB76mRtzHNDKR0diHwIFZZeF8Lyw47t4wcWNgwoPda+9dpT6
-pQS5uWtlPj5CrTdLFj68+gG3RiGKRzqnZxtB/NMS+WpKb7H3PBhCgYpZ4amKdLV1
-ESswCIt2bpu8L7VCp/WM7PCXKUOiJ6ibyPOVwrbkDneW/LFyK6eSu73eeS3CaDjj
-WFExGtcmDfAEo+ZKOmcN9hfWLB+phaB4YdXIiEdTruB5vLsuvAv4WLI3go+dHIJl
-MEm7LoATJWqcqq136fq6ksQ8jPaZqCTQmDnIBhqHYIzcIjeeYQHdO0kejJLqdddk
-P6HQjMVcu251LxutkhZwBIURBRE0FToUArhy1Vtp4Z3+Dnm3w09pQ+fJ5P0IKx3j
-5BX2OZRRMDrSBK8+RRi3GkZawC3bRGiNb1QrZ4XgF+4VyMkLpBJR2Wa4xAcZUtn6
-nABMEuuW12xo5Y+dQ5GUseio/vGrZ4+xVzmAtCUD3SfkNzeB69wC7h7iyAAFaWpm
-rmZuFgoqC6E0aUVzkhzW4ve8R4ErF02e/oQytF35qDqV9sXlFr10JAPUWKP0RYWI
-8xwSC2g2IzkBZ5E3YqhH
-=Ksey
+iQIcBAABCgAGBQJN2Pc4AAoJEF2HCgfBJntGOHcP/3otkKTgWtKI+cnOkxtrVFem
+o9pEEdTCnvehxHXD0INB2g16si8v7zrz8bLsf1chQ6C8cxaj8ueD/mGkiQhpn7ZD
+kWc0Qr1FZSMQMo6gISOAH0fUUrvaydkzDH3FH2I5vBTokY9FvrySjzJ3hnpce5du
+nuixG6PY2R/1SkkEG+wrXxh6qr2NWbMORmNuF41JuFsv3xRZGc1qRoYgdMG0A4MS
+y4KG9FErnlP0ayyin7p59bcyTPpUDrtmbEGh9+KCMm0291q2DfhLe1AsES35Vxts
+Lfabjmx/TP9onRW3p7JKp3EMLi1o9vKWDyP68fBMl0pD740nDP+NGM9A2CcMGqWy
+c4aG/RhJXDMH1kKADLim6c5vRre8A5eWIoGjLY2NWEtgI6BeNGr+OpTpBm7Z4L+i
+r/G5rMKqBLph4lNhu997JTYJG54MVUgf9MfXqIaBVx+6m4LyPZujEyFlhu1ORFoa
+YsZ2SMYpKS/Gh34ISPZQiHDXScD+bvG+yz88hwO5goEc5jbGWDahOj+B/JCFB5Zg
+tSptlT5leacUriSUdjAwAc01pmd6xr59b5dfMY34Ehct74ktJh6YuIc6Wfn5YoId
+SG5k80jjH0m09lkou1GseM77/ymVD7/l9IcXxkqOLU9mK8Ncjtn7JkYT2Ro6hU/1
+BYZ+NwQxvGey8C1hFgmJ
+=NE/3
 -----END PGP SIGNATURE-----
 
---nextPart2490827.C9kcW77BMT--
+--nextPart16328898.fpUY3Hkhjp--
