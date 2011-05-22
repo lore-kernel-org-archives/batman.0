@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 22 May 2011 11:42:54 +0200
+Date: Sun, 22 May 2011 11:43:48 +0200
 References: <1305980898-30494-1-git-send-email-sven@narfation.org>
-	<1305980898-30494-7-git-send-email-sven@narfation.org>
-In-Reply-To: <1305980898-30494-7-git-send-email-sven@narfation.org>
+	<1305980898-30494-8-git-send-email-sven@narfation.org>
+In-Reply-To: <1305980898-30494-8-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105221142.54928.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 07/14] batctl: Only define CC when not
-	already specified
+Message-Id: <201105221143.48305.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 08/14] batctl: Build binary before
+	installing it
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,12 +24,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday 21 May 2011 14:28:11 Sven Eckelmann wrote:
-> It is possible that a build environment specifies the CC different than
-> gcc (for example gcc-4.6). The Makefile should only set it when the
-> compiler wasn't explicitely set.
+On Saturday 21 May 2011 14:28:12 Sven Eckelmann wrote:
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  Makefile |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 
-Applied in revision 8ae5eed.
+Applied in revision 75c9f10.
 
 Thanks,
 Marek
