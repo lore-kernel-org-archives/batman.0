@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 22 May 2011 11:41:03 +0200
+Date: Sun, 22 May 2011 11:41:56 +0200
 References: <1305980898-30494-1-git-send-email-sven@narfation.org>
-	<1305980898-30494-5-git-send-email-sven@narfation.org>
-In-Reply-To: <1305980898-30494-5-git-send-email-sven@narfation.org>
+	<1305980898-30494-6-git-send-email-sven@narfation.org>
+In-Reply-To: <1305980898-30494-6-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105221141.03604.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 05/14] batctl: Provide shebang to inform
-	about interpreter
+Message-Id: <201105221141.56870.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 06/14] batctl: Mark makefile targets
+	without output as PHONY
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,14 +24,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday 21 May 2011 14:28:09 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  Makefile |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
->  mode change 100644 => 100755 Makefile
+On Saturday 21 May 2011 14:28:10 Sven Eckelmann wrote:
+> Normally makefile targets should create an output with the same name as
+> the target. It is necessary to mark them as PHONY to prevent that the
+> virtual target like all, clean or install aren't executed when a file
+> with the same name exists.
 
-Applied in revision 4866155.
+Applied in revision d487861.
 
 Thanks,
 Marek
