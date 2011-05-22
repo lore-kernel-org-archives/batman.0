@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 22 May 2011 11:38:46 +0200
+Date: Sun, 22 May 2011 11:41:03 +0200
 References: <1305980898-30494-1-git-send-email-sven@narfation.org>
-	<1305980898-30494-4-git-send-email-sven@narfation.org>
-In-Reply-To: <1305980898-30494-4-git-send-email-sven@narfation.org>
+	<1305980898-30494-5-git-send-email-sven@narfation.org>
+In-Reply-To: <1305980898-30494-5-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105221138.46541.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 04/14] batctl: Directly specify objects
-	in Makefile
+Message-Id: <201105221141.03604.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 05/14] batctl: Provide shebang to inform
+	about interpreter
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,12 +24,14 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday 21 May 2011 14:28:08 Sven Eckelmann wrote:
-> The information about header and source files aren't needed by the
-> Makefile. Only the dependencies to headers provide useful information,
-> but these are automatically included by the generated *.d files.
+On Saturday 21 May 2011 14:28:09 Sven Eckelmann wrote:
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  Makefile |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+>  mode change 100644 => 100755 Makefile
 
-Applied in revision a6f3c76.
+Applied in revision 4866155.
 
 Thanks,
 Marek
