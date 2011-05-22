@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 22 May 2011 11:29:04 +0200
+Date: Sun, 22 May 2011 11:32:03 +0200
 References: <1305980898-30494-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1305980898-30494-1-git-send-email-sven@narfation.org>
+	<1305980898-30494-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1305980898-30494-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105221129.04629.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 01/14] batctl: Remove optimisation and
-	debugging options
+Message-Id: <201105221132.03531.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 02/14] batctl: Don't automatically build
+	in parallel
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,13 +24,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday 21 May 2011 14:28:05 Sven Eckelmann wrote:
-> Distributions like Gentoo or Debian have to strip the options regarding
-> the optimisation levels and debugging information to fulfil their
-> policies. There is currently no valid reason why the Makefile should
-> override it.
+On Saturday 21 May 2011 14:28:06 Sven Eckelmann wrote:
+> Distributions like Gentoo and Debian have policies which make it
+> necessary to use some kind of environmental variable to control the
+> parallel build.
 
-Applied in revision bf2326e.
+Applied in revision b2e3f83.
 
 Thanks,
 Marek
