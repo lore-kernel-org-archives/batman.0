@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 28 May 2011 19:29:53 +0200
-References: <1303940106-1457-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1303940106-1457-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105281929.54250.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] New translation table announcement
-	mechanism patchset
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 29 May 2011 00:26:17 +0200
+Message-Id: <1306621577-5494-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: correct !x & y in !(x & y)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,25 +14,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday 27 April 2011 23:35:02 Antonio Quartulli wrote:
-> Patchset description:
-> 1) Rename all the variables/functions/constants from hna to tt
-> 2) Implement the new announcement mechanism
-> 3) Implement the roaming optimisation
-> 4) Protect by RCU the local and global table
+This error was introduced with: 4dea0274b8edeab50bfeb6685ef33362e3ec9299
 
-I just applied the remaining 3 patches from your repository (the first one 
-already entered the master branch a while ago). 
-The corresponding commits are: 4dea027, cea194d & 7bad463.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+This error has been found using sparse
 
+ translation-table.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> ** Patch 2/4 also introduces a dependency on the crc16 module since the new
-> mechanism uses the crc16 computation function provided by this module. **
+diff --git a/translation-table.c b/translation-table.c
+index 464569e..f0d8857 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -724,7 +724,7 @@ static void tt_global_roam_purge(struct bat_priv *bat_priv)
+ 		spin_lock_bh(list_lock);
+ 		hlist_for_each_entry_safe(tt_global_entry, node, node_tmp,
+ 					  head, hash_entry) {
+-			if (!tt_global_entry->flags & TT_GLOBAL_ROAM)
++			if (!(tt_global_entry->flags & TT_GLOBAL_ROAM))
+ 				continue;
+ 			if (!is_out_of_time(tt_global_entry->roam_at,
+ 					    TT_GLOBAL_ROAM_TIMEOUT * 1000))
+-- 
+1.7.3.4
 
-Guess we have to adjust our Kconfig file ? I'll modify the OpenWRT package to 
-handle this dependency.
-
-Thanks for your work,
-Marek
