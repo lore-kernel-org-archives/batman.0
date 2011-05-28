@@ -1,16 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 28 May 2011 13:46:22 +0200
-References: <201105280926.32059.sven@narfation.org>
-	<1306572183-25950-1-git-send-email-sven@narfation.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 28 May 2011 13:45:29 +0200
+Message-Id: <1306583129-4854-1-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1306572183-25950-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1932087.Ezlip7FE2n";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105281346.26760.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH-sven] batman-adv: Unify the first 4 bytes
-	in each packet
+References: <1306572183-25950-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH-marek] batman-adv: Unify the first 3 bytes in
+	each packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,49 +19,124 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1932087.Ezlip7FE2n
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+From: Antonio Quartulli <ordex@autistici.org>
 
-On Saturday 28 May 2011 10:43:03 Sven Eckelmann wrote:
-> From: Antonio Quartulli <ordex@autistici.org>
->=20
-> The amount of duplicated code in the receive and routing code can be
-> reduced when all headers provide the packet type, version and ttl in the
-> same first bytes.
->=20
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
-> just my suggestion
+The amount of duplicated code in the receive and routing code can be reduced
+when all headers provide the packet type, version and ttl in the same first
+bytes.
 
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+* Only the first 3 bytes have to be the same.
+* vis_packet was not changed yet.
 
-Hm, forgot vis_packet and the 4 byte header is ugly. Maybe reordering=20
-everything is better....
+ packet.h |   30 ++++++++++++++++++------------
+ 1 files changed, 18 insertions(+), 12 deletions(-)
 
-Kind regards,
-	Sven
+diff --git a/packet.h b/packet.h
+index eda9965..36a3aad 100644
+--- a/packet.h
++++ b/packet.h
+@@ -32,7 +32,7 @@
+ #define BAT_UNICAST_FRAG 0x06
+ 
+ /* this file is included by batctl which needs these defines */
+-#define COMPAT_VERSION 12
++#define COMPAT_VERSION 14
+ #define DIRECTLINK 0x40
+ #define VIS_SERVER 0x20
+ #define PRIMARIES_FIRST_HOP 0x10
+@@ -55,15 +55,15 @@
+ struct batman_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
++	uint8_t  ttl;
+ 	uint8_t  flags;    /* 0x40: DIRECTLINK flag, 0x20 VIS_SERVER flag... */
+-	uint8_t  tq;
+ 	uint32_t seqno;
+ 	uint8_t  orig[6];
+ 	uint8_t  prev_sender[6];
+-	uint8_t  ttl;
+-	uint8_t  num_tt;
+ 	uint8_t  gw_flags;  /* flags related to gateway class */
+-	uint8_t  align;
++	uint8_t  tq;
++	uint8_t  num_tt;
++	uint8_t  reserved;
+ } __packed;
+ 
+ #define BAT_PACKET_LEN sizeof(struct batman_packet)
+@@ -71,12 +71,13 @@ struct batman_packet {
+ struct icmp_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  ttl;
++	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  dst[6];
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+ 	uint8_t  uid;
++	uint8_t  reserved;
+ } __packed;
+ 
+ #define BAT_RR_LEN 16
+@@ -86,8 +87,8 @@ struct icmp_packet {
+ struct icmp_packet_rr {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  ttl;
++	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  dst[6];
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+@@ -99,16 +100,19 @@ struct icmp_packet_rr {
+ struct unicast_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  dest[6];
+ 	uint8_t  ttl;
++	uint8_t  reserved;
++	uint8_t  dest[6];
+ } __packed;
+ 
+ struct unicast_frag_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  dest[6];
+ 	uint8_t  ttl;
++	uint8_t  reserved;
++	uint8_t  dest[6];
+ 	uint8_t  flags;
++	uint8_t  align;
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+ } __packed;
+@@ -116,18 +120,20 @@ struct unicast_frag_packet {
+ struct bcast_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  orig[6];
+ 	uint8_t  ttl;
++	uint8_t  reserved;
++	uint8_t  orig[6];
+ 	uint32_t seqno;
+ } __packed;
+ 
+ struct vis_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;        /* batman version field */
++	uint8_t  ttl;		 /* TTL */
+ 	uint8_t  vis_type;	 /* which type of vis-participant sent this? */
+-	uint8_t  entries;	 /* number of entries behind this struct */
+ 	uint32_t seqno;		 /* sequence number */
+-	uint8_t  ttl;		 /* TTL */
++	uint8_t  entries;	 /* number of entries behind this struct */
++	uint8_t  reserved;
+ 	uint8_t  vis_orig[6];	 /* originator that announces its neighbors */
+ 	uint8_t  target_orig[6]; /* who should receive this packet */
+ 	uint8_t  sender_orig[6]; /* who sent or rebroadcasted this packet */
+-- 
+1.7.2.3
 
---nextPart1932087.Ezlip7FE2n
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJN4OCRAAoJEF2HCgfBJntG+y0QALuQB0GTdf+IInekz0SHnl1K
-VW9E8L7Wgr9PVEeG+OgM2zl0Th4UKP2eU7x+LMygKXAFimYWHDvoCkOIs7VwLOR+
-azhJeAHZ4DVsdygXHuGrzDtmpGhtWGZmZ7dVNt51S4pUj0DrQ3I81+eztfktSvss
-tjqtApf9DU5Hqt5+8Vo4e2Ctb+z07IdY10B7wEqzeNk39H5jKkXJ3jBduWM/j3hx
-q4gqMYn40U97quV3StwfwCnTUBiPv+5k++i+Y7l/psdcdTiy/bneOC0f1CYr3Bct
-n6B1yBJUEac6p8IYXFK9jUPNsWZurcTxgHHlYUXaH6hLCVZwCt/WpY22k7696k/S
-atA6uBsZcwKBkZag2GvZfuJ9r8sCEPli4XQcpBV9mxndrw6GLU8gBPjeyiY+c8hi
-QfGJzuxfPGiRcvOyY1oaTsj7czwAMhaDvuHA+vLVny5Ou0jLoUQ3Gf2PNzhWsQ8l
-PO4QYzeWIXq/5QapRh1nC174z7cmt7vXYEqyqZYImRzf5pPsit9KjllEcStqNYQB
-zJ2nl71eYKV9V0u/Z89p2RLQiBCxnSFgjZeSznXt3yXrRe1Z4KqXAwEbO0qd3uJR
-5fL9dXbnea1AaNpsJNyum/dwyNviqHTiP8FnAEToVPuZeEyGq6FQ5gsdeVGnHziw
-cITZAnzn56AHJPZnEA/j
-=bGED
------END PGP SIGNATURE-----
-
---nextPart1932087.Ezlip7FE2n--
