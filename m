@@ -1,17 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 28 May 2011 13:20:02 +0200
-References: <1306534222-11710-1-git-send-email-ordex@autistici.org>
-	<201105280035.24310.lindner_marek@yahoo.de>
-	<201105280926.32059.sven@narfation.org>
-In-Reply-To: <201105280926.32059.sven@narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 28 May 2011 13:46:22 +0200
+References: <201105280926.32059.sven@narfation.org>
+	<1306572183-25950-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1306572183-25950-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: multipart/signed; boundary="nextPart1932087.Ezlip7FE2n";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201105281320.03020.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: move the ttl field to the
-	third position of unicast_* packets
+Message-Id: <201105281346.26760.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH-sven] batman-adv: Unify the first 4 bytes
+	in each packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,32 +22,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Saturday 28 May 2011 09:26:30 Sven Eckelmann wrote:
-> > Yes, I suggested that because the tt patches will replace the first align
-> > with the ttvn field.
-> 
-> But it doesn't compile. I cannot forward stuff which is too broken. And
-> personally I don't care who suggested it when my builtin c-parser explodes.
+--nextPart1932087.Ezlip7FE2n
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-You got a point here.  :-)
+On Saturday 28 May 2011 10:43:03 Sven Eckelmann wrote:
+> From: Antonio Quartulli <ordex@autistici.org>
+>=20
+> The amount of duplicated code in the receive and routing code can be
+> reduced when all headers provide the packet type, version and ttl in the
+> same first bytes.
+>=20
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+> just my suggestion
 
 
-> My suggestion: Rename the first align in every packet structure to
-> 'reserved'.
+Hm, forgot vis_packet and the 4 byte header is ugly. Maybe reordering=20
+everything is better....
 
-Ok.
+Kind regards,
+	Sven
 
+--nextPart1932087.Ezlip7FE2n
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> Then to the next part which I don't like: the patch forgot to touch
-> batman_packet, icmp_packet, icmp_packet_rr, bcast_packet and vis_packet. It
-> doesn't make sense to patch half of the on-wire types to reduce the number
-> of COMPAT_VERSIONs.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-If we touch every packet definition we also have to ensure that the code 
-touching these packets does not implicitly assume certain positions (like 
-route_unicast_packet() does).
+iQIcBAABCgAGBQJN4OCRAAoJEF2HCgfBJntG+y0QALuQB0GTdf+IInekz0SHnl1K
+VW9E8L7Wgr9PVEeG+OgM2zl0Th4UKP2eU7x+LMygKXAFimYWHDvoCkOIs7VwLOR+
+azhJeAHZ4DVsdygXHuGrzDtmpGhtWGZmZ7dVNt51S4pUj0DrQ3I81+eztfktSvss
+tjqtApf9DU5Hqt5+8Vo4e2Ctb+z07IdY10B7wEqzeNk39H5jKkXJ3jBduWM/j3hx
+q4gqMYn40U97quV3StwfwCnTUBiPv+5k++i+Y7l/psdcdTiy/bneOC0f1CYr3Bct
+n6B1yBJUEac6p8IYXFK9jUPNsWZurcTxgHHlYUXaH6hLCVZwCt/WpY22k7696k/S
+atA6uBsZcwKBkZag2GvZfuJ9r8sCEPli4XQcpBV9mxndrw6GLU8gBPjeyiY+c8hi
+QfGJzuxfPGiRcvOyY1oaTsj7czwAMhaDvuHA+vLVny5Ou0jLoUQ3Gf2PNzhWsQ8l
+PO4QYzeWIXq/5QapRh1nC174z7cmt7vXYEqyqZYImRzf5pPsit9KjllEcStqNYQB
+zJ2nl71eYKV9V0u/Z89p2RLQiBCxnSFgjZeSznXt3yXrRe1Z4KqXAwEbO0qd3uJR
+5fL9dXbnea1AaNpsJNyum/dwyNviqHTiP8FnAEToVPuZeEyGq6FQ5gsdeVGnHziw
+cITZAnzn56AHJPZnEA/j
+=bGED
+-----END PGP SIGNATURE-----
 
-Regards,
-Marek
+--nextPart1932087.Ezlip7FE2n--
