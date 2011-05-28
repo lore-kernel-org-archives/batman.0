@@ -1,16 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 28 May 2011 14:07:10 +0200
+Date: Sat, 28 May 2011 13:46:27 +0200
+Message-Id: <1306583187-5527-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1306572183-25950-1-git-send-email-sven@narfation.org>
 References: <1306572183-25950-1-git-send-email-sven@narfation.org>
-	<1306583129-4854-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1306583129-4854-1-git-send-email-lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1705626.eKNDhyNvZM";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Content-Transfer-Encoding: 7bit
-Message-Id: <201105281407.15153.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH-marek] batman-adv: Unify the first 3
-	bytes in each packet
+Subject: [B.A.T.M.A.N.] [PATCHv2-sven] batman-adv: Unify the first 3 bytes
+	in each packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,79 +18,123 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart1705626.eKNDhyNvZM
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+From: Antonio Quartulli <ordex@autistici.org>
 
-On Saturday 28 May 2011 13:45:29 Marek Lindner wrote:
-> @@ -99,16 +100,19 @@ struct icmp_packet_rr {
->  struct unicast_packet {
->  	uint8_t  packet_type;
->  	uint8_t  version;  /* batman version field */
-> -	uint8_t  dest[6];
->  	uint8_t  ttl;
-> +	uint8_t  reserved;
-> +	uint8_t  dest[6];
->  } __packed;
->=20
->  struct unicast_frag_packet {
->  	uint8_t  packet_type;
->  	uint8_t  version;  /* batman version field */
-> -	uint8_t  dest[6];
->  	uint8_t  ttl;
-> +	uint8_t  reserved;
-> +	uint8_t  dest[6];
->  	uint8_t  flags;
-> +	uint8_t  align;
->  	uint8_t  orig[6];
->  	uint16_t seqno;
->  } __packed;
+The amount of duplicated code in the receive and routing code can be reduced
+when all headers provide the packet type, version and ttl in the same first
+bytes.
 
-Why dont you use the reserverd part for the flags which are currently not i=
-n=20
-unicast? Then you could also remove that other align byte. It would still b=
-e=20
-possible to add flags to unicast packets when necessary.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+* reduce to 3 bytes, but still keep alignments
+* corrected vis_packet
 
-> @@ -116,18 +120,20 @@ struct unicast_frag_packet {
->  struct bcast_packet {
->  	uint8_t  packet_type;
->  	uint8_t  version;  /* batman version field */
-> -	uint8_t  orig[6];
->  	uint8_t  ttl;
-> +	uint8_t  reserved;
-> +	uint8_t  orig[6];
->  	uint32_t seqno;
->  } __packed;
+ packet.h |   28 ++++++++++++++++------------
+ 1 files changed, 16 insertions(+), 12 deletions(-)
 
-Wouldn't that lead to an unaligned seqno?
+diff --git a/packet.h b/packet.h
+index eda9965..ede441b 100644
+--- a/packet.h
++++ b/packet.h
+@@ -32,7 +32,7 @@
+ #define BAT_UNICAST_FRAG 0x06
+ 
+ /* this file is included by batctl which needs these defines */
+-#define COMPAT_VERSION 12
++#define COMPAT_VERSION 14
+ #define DIRECTLINK 0x40
+ #define VIS_SERVER 0x20
+ #define PRIMARIES_FIRST_HOP 0x10
+@@ -55,15 +55,15 @@
+ struct batman_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
++	uint8_t  ttl;
+ 	uint8_t  flags;    /* 0x40: DIRECTLINK flag, 0x20 VIS_SERVER flag... */
+-	uint8_t  tq;
+ 	uint32_t seqno;
+ 	uint8_t  orig[6];
+ 	uint8_t  prev_sender[6];
+-	uint8_t  ttl;
+-	uint8_t  num_tt;
+ 	uint8_t  gw_flags;  /* flags related to gateway class */
+-	uint8_t  align;
++	uint8_t  tq;
++	uint8_t  num_tt;
++	uint8_t  reserved;
+ } __packed;
+ 
+ #define BAT_PACKET_LEN sizeof(struct batman_packet)
+@@ -71,12 +71,13 @@ struct batman_packet {
+ struct icmp_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  ttl;
++	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  dst[6];
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+ 	uint8_t  uid;
++	uint8_t  reserved;
+ } __packed;
+ 
+ #define BAT_RR_LEN 16
+@@ -86,8 +87,8 @@ struct icmp_packet {
+ struct icmp_packet_rr {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  ttl;
++	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  dst[6];
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+@@ -99,16 +100,17 @@ struct icmp_packet_rr {
+ struct unicast_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  dest[6];
+ 	uint8_t  ttl;
++	uint8_t  reserved;
++	uint8_t  dest[6];
+ } __packed;
+ 
+ struct unicast_frag_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  dest[6];
+ 	uint8_t  ttl;
+ 	uint8_t  flags;
++	uint8_t  dest[6];
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+ } __packed;
+@@ -116,18 +118,20 @@ struct unicast_frag_packet {
+ struct bcast_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  orig[6];
+ 	uint8_t  ttl;
++	uint8_t  reserved;
+ 	uint32_t seqno;
++	uint8_t  orig[6];
+ } __packed;
+ 
+ struct vis_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;        /* batman version field */
++	uint8_t  ttl;		 /* TTL */
+ 	uint8_t  vis_type;	 /* which type of vis-participant sent this? */
+-	uint8_t  entries;	 /* number of entries behind this struct */
+ 	uint32_t seqno;		 /* sequence number */
+-	uint8_t  ttl;		 /* TTL */
++	uint8_t  entries;	 /* number of entries behind this struct */
++	uint8_t  reserved;
+ 	uint8_t  vis_orig[6];	 /* originator that announces its neighbors */
+ 	uint8_t  target_orig[6]; /* who should receive this packet */
+ 	uint8_t  sender_orig[6]; /* who sent or rebroadcasted this packet */
+-- 
+1.7.5.1
 
-Kind regards,
-	Sven
-
---nextPart1705626.eKNDhyNvZM
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJN4OVxAAoJEF2HCgfBJntGoFQP/iapuP3go73Vh/cMDKTaLKOY
-hVNPBWNATJmeKAJcNcHrPD6zxVLPuDnqXYya2cA64Q0EcLYg4mUK6ZtePLObnKGw
-GjahULH450yZBZlcz16SKwb7UIXdZX/mn1n5u4zLpGtGM+mW/CSfO06YIlqOTd0R
-n4wtliWoTHhh13qsFegrHp5VaeVoYKiqPDL2nIXpQ3BNVbHlMZRKqDWQlTstWswk
-l0i0phygR/dU92DMZ4b34iMDa8kMeqFDjJzQ2GWyaOWBcHiZuXST/BhOOW2HZyRe
-PIVbB4LdA7L0rE7Trqvu99wtNksqOmJHmeLPQD+zOtMVvO4dDX5MVdIqZBcrv3y9
-A7qVOBX32ss38FPrZHtx9vlbt8/wolrdI4u4YmYIVvU4b/OeQ0nnaSh2Ansbf7+Z
-s0aZi8ofry1EnwDQShLgdlaSX7Fzpg7MXJMzwsz7KmQkN/Tq6trbeth9nO7daO2G
-3/1fbObi57jTJaKk+QCZcvhzN6C9E63hqrc0wbFJQCCw7ti4Zf5cHrBFlffSd3CZ
-UVCGGoIse8BVXh93p8lqVPdurFaZv157sTP5ERp7vs+UtuMGlTv8spS4VkVNtCRL
-PT43ndTrQAg72nvx7MC3ZWuW3yL0trpf/0vswa2wea5Gpp1LAABF6YiaF452NDyh
-rlpPr5uqFtSvHfdQVUp9
-=osfG
------END PGP SIGNATURE-----
-
---nextPart1705626.eKNDhyNvZM--
