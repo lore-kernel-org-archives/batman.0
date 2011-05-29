@@ -1,14 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Sun, 29 May 2011 21:41:42 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110529194142.GA26674@ritirata.org>
-References: <1306689460-30162-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 29 May 2011 21:58:33 +0200
+References: <1306695271-8749-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1306695271-8749-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1306689460-30162-1-git-send-email-lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batctl: tcpdump - add support for tt
- request / roaming advertisement packets
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201105292158.33513.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: send_*_tt_response() has to
+	initialise the ttl field
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,16 +23,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sun, May 29, 2011 at 07:17:39PM +0200, Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+On Sunday 29 May 2011 20:54:31 Antonio Quartulli wrote:
+> send_*_tt_response() didn't properly initialise the ttl field of the
+> tt_response message.
+> 
+> This error was introduced with: cea194d90b11aff7fc289149e4c7f305fad3535a
 
-Acked-by: Antonio Quartulli <ordex@autistici.org>
+Applied in revision 7fbf38e.
 
-
-Thank you!
-
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
+Thanks,
+Marek
