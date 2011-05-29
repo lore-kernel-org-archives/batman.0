@@ -1,11 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 29 May 2011 19:17:40 +0200
-Message-Id: <1306689460-30162-2-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1306689460-30162-1-git-send-email-lindner_marek@yahoo.de>
-References: <1306689460-30162-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: tcpdump - add option to select
-	all packet types except specified
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 29 May 2011 20:54:31 +0200
+Message-Id: <1306695271-8749-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: send_*_tt_response() has to
+	initialise the ttl field
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,67 +15,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+send_*_tt_response() didn't properly initialise the ttl field of the
+tt_response message.
+
+This error was introduced with: cea194d90b11aff7fc289149e4c7f305fad3535a
+
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- tcpdump.c |   17 ++++++++++++++---
- 1 files changed, 14 insertions(+), 3 deletions(-)
+ translation-table.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/tcpdump.c b/tcpdump.c
-index 6f1adc1..3e68844 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -51,8 +51,9 @@ if ((size_t)(buff_len) < (check_len)) { \
- 	return; \
- }
+diff --git a/translation-table.c b/translation-table.c
+index f0d8857..f04ab9b 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1132,6 +1132,7 @@ static bool send_other_tt_response(struct bat_priv *bat_priv,
  
--static unsigned short dump_level = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
-+static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
- 		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATVIS | DUMP_TYPE_BATFRAG | DUMP_TYPE_BATTT | DUMP_TYPE_NONBAT;
-+static unsigned short dump_level;
+ 	tt_response->packet_type = BAT_TT_QUERY;
+ 	tt_response->version = COMPAT_VERSION;
++	tt_response->ttl = TTL;
+ 	memcpy(tt_response->src, req_dst_orig_node->orig, ETH_ALEN);
+ 	memcpy(tt_response->dst, tt_request->src, ETH_ALEN);
+ 	tt_response->tt_data = htons(tt_tot);
+@@ -1280,6 +1281,7 @@ static bool send_my_tt_response(struct bat_priv *bat_priv,
  
- static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
- 
-@@ -63,6 +64,8 @@ static void tcpdump_usage(void)
- 	printf(" \t -h print this help\n");
- 	printf(" \t -n don't convert addresses to bat-host names\n");
- 	printf(" \t -p dump specific packet type\n");
-+	printf(" \t -x dump all packet types except specified\n");
-+	printf("packet types:\n");
- 	printf(" \t\t%3d - batman ogm packets\n", DUMP_TYPE_BATOGM);
- 	printf(" \t\t%3d - batman icmp packets\n", DUMP_TYPE_BATICMP);
- 	printf(" \t\t%3d - batman unicast packets\n", DUMP_TYPE_BATUCAST);
-@@ -621,7 +624,9 @@ int tcpdump(int argc, char **argv)
- 	unsigned char packet_buff[2000];
- 	int monitor_header_len = -1;
- 
--	while ((optchar = getopt(argc, argv, "hnp:")) != -1) {
-+	dump_level = dump_level_all;
-+
-+	while ((optchar = getopt(argc, argv, "hnp:x:")) != -1) {
- 		switch (optchar) {
- 		case 'h':
- 			tcpdump_usage();
-@@ -632,10 +637,16 @@ int tcpdump(int argc, char **argv)
- 			break;
- 		case 'p':
- 			tmp = strtol(optarg, NULL , 10);
--			if ((tmp > 0) && (tmp <= dump_level))
-+			if ((tmp > 0) && (tmp <= dump_level_all))
- 				dump_level = tmp;
- 			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
- 			break;
-+		case 'x':
-+			tmp = strtol(optarg, NULL , 10);
-+			if ((tmp > 0) && (tmp <= dump_level_all))
-+				dump_level &= ~tmp;
-+			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
-+			break;
- 		default:
- 			tcpdump_usage();
- 			return EXIT_FAILURE;
+ 	tt_response->packet_type = BAT_TT_QUERY;
+ 	tt_response->version = COMPAT_VERSION;
++	tt_response->ttl = TTL;
+ 	memcpy(tt_response->src, primary_if->net_dev->dev_addr, ETH_ALEN);
+ 	memcpy(tt_response->dst, tt_request->src, ETH_ALEN);
+ 	tt_response->tt_data = htons(tt_tot);
 -- 
-1.7.2.3
+1.7.3.4
 
