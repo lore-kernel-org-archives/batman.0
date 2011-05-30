@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 30 May 2011 09:22:49 +0200
-Message-Id: <1306740182-2665-5-git-send-email-sven@narfation.org>
+Date: Mon, 30 May 2011 09:22:50 +0200
+Message-Id: <1306740182-2665-6-git-send-email-sven@narfation.org>
 In-Reply-To: <1306740182-2665-1-git-send-email-sven@narfation.org>
 References: <1306740182-2665-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 04/17] batman-adv: Print jiffies as unsigned
-	long
+Subject: [B.A.T.M.A.N.] [PATCH 05/17] batman-adv: Remove comparising < 0 for
+	unsigned type
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,18 +26,18 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/net/batman-adv/bat_debugfs.c b/net/batman-adv/bat_debugfs.c
-index 4577d3f..e8491ee 100644
+index e8491ee..628ab18 100644
 --- a/net/batman-adv/bat_debugfs.c
 +++ b/net/batman-adv/bat_debugfs.c
-@@ -82,7 +82,7 @@ int debug_log(struct bat_priv *bat_priv, char *fmt, ...)
+@@ -115,7 +115,7 @@ static ssize_t log_read(struct file *file, char __user *buf,
+ 	    !(debug_log->log_end - debug_log->log_start))
+ 		return -EAGAIN;
  
- 	va_start(args, fmt);
- 	vscnprintf(tmp_log_buf, sizeof(tmp_log_buf), fmt, args);
--	fdebug_log(bat_priv->debug_log, "[%10u] %s",
-+	fdebug_log(bat_priv->debug_log, "[%10lu] %s",
- 		   (jiffies / HZ), tmp_log_buf);
- 	va_end(args);
+-	if ((!buf) || (count < 0))
++	if (!buf)
+ 		return -EINVAL;
  
+ 	if (count == 0)
 -- 
 1.7.5.3
 
