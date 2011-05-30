@@ -1,11 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 30 May 2011 09:23:00 +0200
-Message-Id: <1306740182-2665-16-git-send-email-sven@narfation.org>
-In-Reply-To: <1306740182-2665-1-git-send-email-sven@narfation.org>
-References: <1306740182-2665-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 15/17] batman-adv: use
-	is_broadcast_ether_addr() instead of compare_eth(.., brd_addr)
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 30 May 2011 13:51:12 +0200
+References: <1306689460-30162-1-git-send-email-lindner_marek@yahoo.de>
+	<20110529194142.GA26674@ritirata.org>
+In-Reply-To: <20110529194142.GA26674@ritirata.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201105301351.13081.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batctl: tcpdump - add support for tt
+	request / roaming advertisement packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,35 +22,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <ordex@autistici.org>
+On Sunday 29 May 2011 21:41:42 Antonio Quartulli wrote:
+> On Sun, May 29, 2011 at 07:17:39PM +0200, Marek Lindner wrote:
+> > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> 
+> Acked-by: Antonio Quartulli <ordex@autistici.org>
 
-Instead of comparing mac addresses with the broadcast address by means
-of compare_eth(), the is_broadcast_ether_addr() kernel function has to be
-used.
+Applied in revision e177d6e.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-Acked-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/routing.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 07f23ba..90ae6f0 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -661,7 +661,7 @@ void receive_bat_packet(const struct ethhdr *ethhdr,
- 				hard_iface->net_dev->dev_addr))
- 			is_my_oldorig = 1;
- 
--		if (compare_eth(ethhdr->h_source, broadcast_addr))
-+		if (is_broadcast_ether_addr(ethhdr->h_source))
- 			is_broadcast = 1;
- 	}
- 	rcu_read_unlock();
--- 
-1.7.5.3
-
+Thanks for testing,
+Marek
