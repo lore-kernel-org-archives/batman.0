@@ -1,10 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 30 May 2011 20:40:39 +0200
-Message-Id: <1306780839-9375-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1306763217-27752-1-git-send-email-lindner_marek@yahoo.de>
-References: <1306763217-27752-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: modify TT_RESPONSE-full-table
+Date: Mon, 30 May 2011 23:37:38 +0200
+Message-Id: <1306791458-7891-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1306780839-9375-1-git-send-email-ordex@autistici.org>
+References: <1306780839-9375-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4] batman-adv: modify TT_RESPONSE-full-table
 	format
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,9 +28,60 @@ flag field can be used for later purposes.
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
+ main.h              |    5 -
+ packet.h            |   12 ++-
  translation-table.c |  255 +++++++++++++++++++++++++--------------------------
- 1 files changed, 125 insertions(+), 130 deletions(-)
+ types.h             |    5 -
+ 4 files changed, 136 insertions(+), 141 deletions(-)
 
+diff --git a/main.h b/main.h
+index 582e387..faf6391 100644
+--- a/main.h
++++ b/main.h
+@@ -55,11 +55,6 @@
+ 
+ #define TT_OGM_APPEND_MAX 3 /* number of OGMs sent with the last tt diff */
+ 
+-/* Transtable change flags */
+-#define TT_CHANGE_ADD   0x00
+-#define TT_CHANGE_DEL   0x01
+-#define TT_CHANGE_ROAM  0x02
+-
+ /* Transtable global entry flags */
+ #define TT_GLOBAL_ROAM  0x01
+ 
+diff --git a/packet.h b/packet.h
+index ae212c7..8f33177 100644
+--- a/packet.h
++++ b/packet.h
+@@ -54,11 +54,16 @@
+ #define UNI_FRAG_HEAD 0x01
+ #define UNI_FRAG_LARGETAIL 0x02
+ 
+-/* TT flags */
++/* TT_QUERY flags */
+ #define TT_RESPONSE     0x01
+ #define TT_REQUEST      0x02
+ #define TT_FULL_TABLE   0x04
+ 
++/* TT_CHANGE flags */
++#define TT_CHANGE_ADD   0x00
++#define TT_CHANGE_DEL   0x01
++#define TT_CHANGE_ROAM  0x02
++
+ struct batman_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+@@ -180,4 +185,9 @@ struct roam_adv_packet {
+ 	uint8_t  client[ETH_ALEN];
+ } __packed;
+ 
++struct tt_change {
++	uint8_t flags;
++	uint8_t addr[ETH_ALEN];
++};
++
+ #endif /* _NET_BATMAN_ADV_PACKET_H_ */
 diff --git a/translation-table.c b/translation-table.c
 index f04ab9b..1c50122 100644
 --- a/translation-table.c
@@ -411,6 +462,22 @@ index f04ab9b..1c50122 100644
  
  	tt_save_orig_buffer(bat_priv, orig_node, (unsigned char *)tt_change,
  			    tt_num_changes);
+diff --git a/types.h b/types.h
+index 8c9b5da..11e8569 100644
+--- a/types.h
++++ b/types.h
+@@ -109,11 +109,6 @@ struct orig_node {
+ 	struct list_head bond_list;
+ };
+ 
+-struct tt_change {
+-	uint8_t flags;
+-	uint8_t addr[ETH_ALEN];
+-};
+-
+ struct gw_node {
+ 	struct hlist_node list;
+ 	struct orig_node *orig_node;
 -- 
 1.7.3.4
 
