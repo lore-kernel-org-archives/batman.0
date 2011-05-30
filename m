@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 30 May 2011 09:23:02 +0200
-Message-Id: <1306740182-2665-18-git-send-email-sven@narfation.org>
+Date: Mon, 30 May 2011 09:22:58 +0200
+Message-Id: <1306740182-2665-14-git-send-email-sven@narfation.org>
 In-Reply-To: <1306740182-2665-1-git-send-email-sven@narfation.org>
 References: <1306740182-2665-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 17/17] batman-adv: Ensure that we really have
-	route changes in update_route
+Subject: [B.A.T.M.A.N.] [PATCH 13/17] batman-adv: move smallest_signed_int(),
+	seq_before() and seq_after() into main.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,31 +20,72 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-The debug output of update_route has tests for "route deleted" and "route
-added". All other situations are handled as "route changed". This is not
-true because neigh_node and curr_router could be both NULL.
+From: Antonio Quartulli <ordex@autistici.org>
 
-The function is not called in this situation, but the code might be
-interpreted wrong when reading it without this test.
+smallest_signed_int(), seq_before() and seq_after() are very useful
+functions that help to handle comparisons between sequence numbers.
+However they were only defined in vis.c. With this patch every
+batman-adv function will be able to use them.
 
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/routing.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ net/batman-adv/main.h |   16 ++++++++++++++++
+ net/batman-adv/vis.c  |   16 ----------------
+ 2 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 90ae6f0..368ceeb 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -108,7 +108,7 @@ static void update_route(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 				    tt_buff, tt_buff_len);
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 0150897a..80be5ad 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -182,4 +182,20 @@ static inline int compare_eth(const void *data1, const void *data2)
  
- 	/* route changed */
--	} else {
-+	} else if (neigh_node && curr_router) {
- 		bat_dbg(DBG_ROUTES, bat_priv,
- 			"Changing route towards: %pM "
- 			"(now via %pM - was via %pM)\n",
+ #define atomic_dec_not_zero(v)	atomic_add_unless((v), -1, 0)
+ 
++/* Returns the smallest signed integer in two's complement with the sizeof x */
++#define smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
++
++/* Checks if a sequence number x is a predecessor/successor of y.
++ * they handle overflows/underflows and can correctly check for a
++ * predecessor/successor unless the variable sequence number has grown by
++ * more then 2**(bitwidth(x)-1)-1.
++ * This means that for a uint8_t with the maximum value 255, it would think:
++ *  - when adding nothing - it is neither a predecessor nor a successor
++ *  - before adding more than 127 to the starting value - it is a predecessor,
++ *  - when adding 128 - it is neither a predecessor nor a successor,
++ *  - after adding more than 127 to the starting value - it is a successor */
++#define seq_before(x, y) ({typeof(x) _dummy = (x - y); \
++			_dummy > smallest_signed_int(_dummy); })
++#define seq_after(x, y) seq_before(y, x)
++
+ #endif /* _NET_BATMAN_ADV_MAIN_H_ */
+diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
+index ea8d7e9..355c6e5 100644
+--- a/net/batman-adv/vis.c
++++ b/net/batman-adv/vis.c
+@@ -30,22 +30,6 @@
+ 
+ #define MAX_VIS_PACKET_SIZE 1000
+ 
+-/* Returns the smallest signed integer in two's complement with the sizeof x */
+-#define smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
+-
+-/* Checks if a sequence number x is a predecessor/successor of y.
+- * they handle overflows/underflows and can correctly check for a
+- * predecessor/successor unless the variable sequence number has grown by
+- * more then 2**(bitwidth(x)-1)-1.
+- * This means that for a uint8_t with the maximum value 255, it would think:
+- *  - when adding nothing - it is neither a predecessor nor a successor
+- *  - before adding more than 127 to the starting value - it is a predecessor,
+- *  - when adding 128 - it is neither a predecessor nor a successor,
+- *  - after adding more than 127 to the starting value - it is a successor */
+-#define seq_before(x, y) ({typeof(x) _dummy = (x - y); \
+-			_dummy > smallest_signed_int(_dummy); })
+-#define seq_after(x, y) seq_before(y, x)
+-
+ static void start_vis_timer(struct bat_priv *bat_priv);
+ 
+ /* free the info */
 -- 
 1.7.5.3
 
