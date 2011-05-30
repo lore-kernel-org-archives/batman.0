@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 30 May 2011 09:22:55 +0200
-Message-Id: <1306740182-2665-11-git-send-email-sven@narfation.org>
+Date: Mon, 30 May 2011 09:22:57 +0200
+Message-Id: <1306740182-2665-13-git-send-email-sven@narfation.org>
 In-Reply-To: <1306740182-2665-1-git-send-email-sven@narfation.org>
 References: <1306740182-2665-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 10/17] batman-adv: Remove casts from type x
-	to type x
+Subject: [B.A.T.M.A.N.] [PATCH 12/17] batman-adv: Use
+	rcu_dereference_protected by update-side
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,41 +20,59 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Casting from pointer like 'struct orig_node*' to 'struct orig_node *'
-doesn't provide any additional functionality and can be savely removed.
+Usually rcu_dereference isn't necessary in situations were the
+RCU-protected data structure cannot change, but sparse and lockdep still
+need a similar functionality for analysis. rcu_dereference_protected
+implements the reduced version which should be used to support the
+dynamic and static analysis.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/unicast.c |    2 +-
- net/batman-adv/vis.c     |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/gateway_client.c |    2 +-
+ net/batman-adv/hard-interface.c |    2 +-
+ net/batman-adv/soft-interface.c |    3 ++-
+ 3 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
-index e2deb44..82717fd 100644
---- a/net/batman-adv/unicast.c
-+++ b/net/batman-adv/unicast.c
-@@ -295,7 +295,7 @@ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index a44dff3..ab597c4 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -86,7 +86,7 @@ static void gw_select(struct bat_priv *bat_priv, struct gw_node *new_gw_node)
+ 	if (new_gw_node && !atomic_inc_not_zero(&new_gw_node->refcount))
+ 		new_gw_node = NULL;
  
- 	/* get routing information */
- 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
--		orig_node = (struct orig_node *)gw_get_selected_orig(bat_priv);
-+		orig_node = gw_get_selected_orig(bat_priv);
- 		if (orig_node)
- 			goto find_router;
- 	}
-diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
-index adb0327..b48954c 100644
---- a/net/batman-adv/vis.c
-+++ b/net/batman-adv/vis.c
-@@ -621,7 +621,7 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
- 	struct hlist_head *head;
- 	struct orig_node *orig_node;
- 	struct neigh_node *router;
--	struct vis_info *info = (struct vis_info *)bat_priv->my_vis_info;
-+	struct vis_info *info = bat_priv->my_vis_info;
- 	struct vis_packet *packet = (struct vis_packet *)info->skb_packet->data;
- 	struct vis_info_entry *entry;
- 	struct tt_local_entry *tt_local_entry;
+-	curr_gw_node = bat_priv->curr_gw;
++	curr_gw_node = rcu_dereference_protected(bat_priv->curr_gw, 1);
+ 	rcu_assign_pointer(bat_priv->curr_gw, new_gw_node);
+ 
+ 	if (curr_gw_node)
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index e0052cf..a3fbfb5 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -138,7 +138,7 @@ static void primary_if_select(struct bat_priv *bat_priv,
+ 	if (new_hard_iface && !atomic_inc_not_zero(&new_hard_iface->refcount))
+ 		new_hard_iface = NULL;
+ 
+-	curr_hard_iface = bat_priv->primary_if;
++	curr_hard_iface = rcu_dereference_protected(bat_priv->primary_if, 1);
+ 	rcu_assign_pointer(bat_priv->primary_if, new_hard_iface);
+ 
+ 	if (curr_hard_iface)
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index cead606..b8d3f248 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -241,7 +241,8 @@ static void softif_neigh_vid_select(struct bat_priv *bat_priv,
+ 	if (new_neigh && !atomic_inc_not_zero(&new_neigh->refcount))
+ 		new_neigh = NULL;
+ 
+-	curr_neigh = softif_neigh_vid->softif_neigh;
++	curr_neigh = rcu_dereference_protected(softif_neigh_vid->softif_neigh,
++					       1);
+ 	rcu_assign_pointer(softif_neigh_vid->softif_neigh, new_neigh);
+ 
+ 	if ((curr_neigh) && (!new_neigh))
 -- 
 1.7.5.3
 
