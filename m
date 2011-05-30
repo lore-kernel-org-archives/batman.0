@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 30 May 2011 09:22:53 +0200
-Message-Id: <1306740182-2665-9-git-send-email-sven@narfation.org>
+Date: Mon, 30 May 2011 09:22:54 +0200
+Message-Id: <1306740182-2665-10-git-send-email-sven@narfation.org>
 In-Reply-To: <1306740182-2665-1-git-send-email-sven@narfation.org>
 References: <1306740182-2665-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 08/17] batman-adv: Only use int up and down
-	gw representation
+Subject: [B.A.T.M.A.N.] [PATCH 09/17] batman-adv: Remove explicit casts cast
+	from void* for store
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,94 +20,56 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-It is not save to provide memory for an int and then cast the pointer to
-it to long*. It is better to standardize the up and down gateway
-bandwith representation to simple ints and only use long inside
-conversation routines.
+It is not necessary to cast a void* to the pointer type when we just
+store it and don't want to do pointer arithmetic before the actual
+assignment.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/gateway_common.c |   19 ++++++++++---------
- 1 files changed, 10 insertions(+), 9 deletions(-)
+ net/batman-adv/bitarray.c          |    2 +-
+ net/batman-adv/hard-interface.c    |    2 +-
+ net/batman-adv/translation-table.c |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
-index 50d3a59..ed3bd36 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -76,10 +76,11 @@ void gw_bandwidth_to_kbit(uint8_t gw_srv_class, int *down, int *up)
- }
- 
- static bool parse_gw_bandwidth(struct net_device *net_dev, char *buff,
--			       long *up, long *down)
-+			       int *up, int *down)
+diff --git a/net/batman-adv/bitarray.c b/net/batman-adv/bitarray.c
+index 767e237..700ee4f 100644
+--- a/net/batman-adv/bitarray.c
++++ b/net/batman-adv/bitarray.c
+@@ -130,7 +130,7 @@ static void bit_reset_window(unsigned long *seq_bits)
+ char bit_get_packet(void *priv, unsigned long *seq_bits,
+ 		    int32_t seq_num_diff, int8_t set_mark)
  {
- 	int ret, multi = 1;
- 	char *slash_ptr, *tmp_ptr;
-+	long ldown, lup;
+-	struct bat_priv *bat_priv = (struct bat_priv *)priv;
++	struct bat_priv *bat_priv = priv;
  
- 	slash_ptr = strchr(buff, '/');
- 	if (slash_ptr)
-@@ -96,7 +97,7 @@ static bool parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 			*tmp_ptr = '\0';
- 	}
- 
--	ret = strict_strtoul(buff, 10, down);
-+	ret = strict_strtoul(buff, 10, &ldown);
- 	if (ret) {
- 		bat_err(net_dev,
- 			"Download speed of gateway mode invalid: %s\n",
-@@ -104,7 +105,7 @@ static bool parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 		return false;
- 	}
- 
--	*down *= multi;
-+	*down = ldown * multi;
- 
- 	/* we also got some upload info */
- 	if (slash_ptr) {
-@@ -121,7 +122,7 @@ static bool parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 				*tmp_ptr = '\0';
- 		}
- 
--		ret = strict_strtoul(slash_ptr + 1, 10, up);
-+		ret = strict_strtoul(slash_ptr + 1, 10, &lup);
- 		if (ret) {
- 			bat_err(net_dev,
- 				"Upload speed of gateway mode invalid: "
-@@ -129,7 +130,7 @@ static bool parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 			return false;
- 		}
- 
--		*up *= multi;
-+		*up = lup * multi;
- 	}
- 
- 	return true;
-@@ -138,7 +139,8 @@ static bool parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- ssize_t gw_bandwidth_set(struct net_device *net_dev, char *buff, size_t count)
+ 	/* sequence number is slightly older. We already got a sequence number
+ 	 * higher than this one, so we just mark it. */
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 915e12b..e626e75 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -523,7 +523,7 @@ void hardif_remove_interfaces(void)
+ static int hard_if_event(struct notifier_block *this,
+ 			 unsigned long event, void *ptr)
  {
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
--	long gw_bandwidth_tmp = 0, up = 0, down = 0;
-+	long gw_bandwidth_tmp = 0;
-+	int up = 0, down = 0;
- 	bool ret;
+-	struct net_device *net_dev = (struct net_device *)ptr;
++	struct net_device *net_dev = ptr;
+ 	struct hard_iface *hard_iface = hardif_get_by_netdev(net_dev);
+ 	struct hard_iface *primary_if = NULL;
+ 	struct bat_priv *bat_priv;
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index be7b5cc..802eace 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -313,7 +313,7 @@ out:
  
- 	ret = parse_gw_bandwidth(net_dev, buff, &up, &down);
-@@ -158,12 +160,11 @@ ssize_t gw_bandwidth_set(struct net_device *net_dev, char *buff, size_t count)
- 	 * speeds, hence we need to calculate it back to show the number
- 	 * that is going to be propagated
- 	 **/
--	gw_bandwidth_to_kbit((uint8_t)gw_bandwidth_tmp,
--			     (int *)&down, (int *)&up);
-+	gw_bandwidth_to_kbit((uint8_t)gw_bandwidth_tmp, &down, &up);
+ static void _tt_local_del(struct hlist_node *node, void *arg)
+ {
+-	struct bat_priv *bat_priv = (struct bat_priv *)arg;
++	struct bat_priv *bat_priv = arg;
+ 	void *data = container_of(node, struct tt_local_entry, hash_entry);
  
- 	gw_deselect(bat_priv);
- 	bat_info(net_dev, "Changing gateway bandwidth from: '%i' to: '%ld' "
--		 "(propagating: %ld%s/%ld%s)\n",
-+		 "(propagating: %d%s/%d%s)\n",
- 		 atomic_read(&bat_priv->gw_bandwidth), gw_bandwidth_tmp,
- 		 (down > 2048 ? down / 1024 : down),
- 		 (down > 2048 ? "MBit" : "KBit"),
+ 	kfree(data);
 -- 
 1.7.5.3
 
