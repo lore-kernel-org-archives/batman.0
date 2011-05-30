@@ -1,10 +1,10 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 30 May 2011 15:46:57 +0200
-Message-Id: <1306763217-27752-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1306710316-28187-1-git-send-email-ordex@autistici.org>
-References: <1306710316-28187-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: modify TT_RESPONSE-full-table
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 30 May 2011 20:40:39 +0200
+Message-Id: <1306780839-9375-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1306763217-27752-1-git-send-email-lindner_marek@yahoo.de>
+References: <1306763217-27752-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: modify TT_RESPONSE-full-table
 	format
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -17,10 +17,8 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Marek Lindner <lindner_marek@yahoo.de>
-
-From: Antonio Quartulli <ordex@autistici.org>
 
 In case of TT_REQUEST for a full table, the related TT_RESPONSE now
 carries a set of tt_change structures instead of pure MACs.
@@ -30,13 +28,11 @@ flag field can be used for later purposes.
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
-Merged full table write into a single function.
-
- translation-table.c |  278 +++++++++++++++++++++++++--------------------------
- 1 files changed, 135 insertions(+), 143 deletions(-)
+ translation-table.c |  255 +++++++++++++++++++++++++--------------------------
+ 1 files changed, 125 insertions(+), 130 deletions(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index f04ab9b..8a5df7a 100644
+index f04ab9b..1c50122 100644
 --- a/translation-table.c
 +++ b/translation-table.c
 @@ -493,7 +493,7 @@ static void tt_changes_list_free(struct bat_priv *bat_priv)
@@ -48,7 +44,7 @@ index f04ab9b..8a5df7a 100644
  int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
  		  const unsigned char *tt_addr, uint8_t ttvn, bool roaming)
  {
-@@ -938,6 +938,76 @@ unlock:
+@@ -938,6 +938,79 @@ unlock:
  	return tt_req_node;
  }
  
@@ -56,6 +52,9 @@ index f04ab9b..8a5df7a 100644
 +{
 +	const struct tt_global_entry *tt_global_entry = entry_ptr;
 +	const struct orig_node *orig_node = data_ptr;
++
++	if (tt_global_entry->flags & TT_GLOBAL_ROAM)
++		return 0;
 +
 +	return (tt_global_entry->orig_node == orig_node);
 +}
@@ -125,7 +124,7 @@ index f04ab9b..8a5df7a 100644
  int send_tt_request(struct bat_priv *bat_priv, struct orig_node *dst_orig_node,
  		    uint8_t ttvn, uint16_t tt_crc, bool full_table)
  {
-@@ -1006,20 +1076,16 @@ out:
+@@ -1006,20 +1079,16 @@ out:
  }
  
  static bool send_other_tt_response(struct bat_priv *bat_priv,
@@ -150,7 +149,7 @@ index f04ab9b..8a5df7a 100644
  	struct sk_buff *skb = NULL;
  	struct tt_query_packet *tt_response;
  
-@@ -1077,6 +1143,7 @@ static bool send_other_tt_response(struct bat_priv *bat_priv,
+@@ -1077,6 +1146,7 @@ static bool send_other_tt_response(struct bat_priv *bat_priv,
  		tt_response = (struct tt_query_packet *)skb_put(skb,
  				sizeof(struct tt_query_packet) + tt_len);
  		tt_response->ttvn = req_ttvn;
@@ -158,7 +157,7 @@ index f04ab9b..8a5df7a 100644
  
  		tt_buff = skb->data + sizeof(struct tt_query_packet);
  		/* Copy the last orig_node's OGM buffer */
-@@ -1086,48 +1153,17 @@ static bool send_other_tt_response(struct bat_priv *bat_priv,
+@@ -1086,48 +1156,17 @@ static bool send_other_tt_response(struct bat_priv *bat_priv,
  		spin_unlock_bh(&req_dst_orig_node->tt_buff_lock);
  	} else {
  		tt_len = (uint16_t)atomic_read(&req_dst_orig_node->tt_size) *
@@ -214,7 +213,7 @@ index f04ab9b..8a5df7a 100644
  	}
  
  	tt_response->packet_type = BAT_TT_QUERY;
-@@ -1135,7 +1171,6 @@ static bool send_other_tt_response(struct bat_priv *bat_priv,
+@@ -1135,7 +1174,6 @@ static bool send_other_tt_response(struct bat_priv *bat_priv,
  	tt_response->ttl = TTL;
  	memcpy(tt_response->src, req_dst_orig_node->orig, ETH_ALEN);
  	memcpy(tt_response->dst, tt_request->src, ETH_ALEN);
@@ -222,7 +221,7 @@ index f04ab9b..8a5df7a 100644
  	tt_response->flags = TT_RESPONSE;
  
  	if (full_table)
-@@ -1168,20 +1203,16 @@ out:
+@@ -1168,20 +1206,16 @@ out:
  
  }
  static bool send_my_tt_response(struct bat_priv *bat_priv,
@@ -247,7 +246,7 @@ index f04ab9b..8a5df7a 100644
  	struct sk_buff *skb = NULL;
  	struct tt_query_packet *tt_response;
  
-@@ -1231,6 +1262,7 @@ static bool send_my_tt_response(struct bat_priv *bat_priv,
+@@ -1231,6 +1265,7 @@ static bool send_my_tt_response(struct bat_priv *bat_priv,
  		tt_response = (struct tt_query_packet *)skb_put(skb,
  				sizeof(struct tt_query_packet) + tt_len);
  		tt_response->ttvn = req_ttvn;
@@ -255,7 +254,7 @@ index f04ab9b..8a5df7a 100644
  
  		tt_buff = skb->data + sizeof(struct tt_query_packet);
  		memcpy(tt_buff, bat_priv->tt_buff,
-@@ -1238,45 +1270,16 @@ static bool send_my_tt_response(struct bat_priv *bat_priv,
+@@ -1238,45 +1273,16 @@ static bool send_my_tt_response(struct bat_priv *bat_priv,
  		spin_unlock_bh(&bat_priv->tt_buff_lock);
  	} else {
  		tt_len = (uint16_t)atomic_read(&bat_priv->num_local_tt) *
@@ -307,7 +306,7 @@ index f04ab9b..8a5df7a 100644
  	}
  
  	tt_response->packet_type = BAT_TT_QUERY;
-@@ -1284,7 +1287,6 @@ static bool send_my_tt_response(struct bat_priv *bat_priv,
+@@ -1284,7 +1290,6 @@ static bool send_my_tt_response(struct bat_priv *bat_priv,
  	tt_response->ttl = TTL;
  	memcpy(tt_response->src, primary_if->net_dev->dev_addr, ETH_ALEN);
  	memcpy(tt_response->dst, tt_request->src, ETH_ALEN);
@@ -315,7 +314,7 @@ index f04ab9b..8a5df7a 100644
  	tt_response->flags = TT_RESPONSE;
  
  	if (full_table)
-@@ -1323,57 +1325,10 @@ bool send_tt_response(struct bat_priv *bat_priv,
+@@ -1323,23 +1328,30 @@ bool send_tt_response(struct bat_priv *bat_priv,
  		return send_other_tt_response(bat_priv, tt_request);
  }
  
@@ -324,103 +323,94 @@ index f04ab9b..8a5df7a 100644
 -static void _tt_fill_gtable(struct bat_priv *bat_priv,
 -			    struct orig_node *orig_node, unsigned char *tt_buff,
 -			    uint16_t table_size, uint8_t ttvn)
--{
--	int count;
--	unsigned char *tt_ptr;
--
--	for (count = 0; count < table_size; count++) {
--		tt_ptr = tt_buff + (count * ETH_ALEN);
--
--		/* If we fail to allocate a new entry we return immediatly */
--		if (!tt_global_add(bat_priv, orig_node, tt_ptr, ttvn, false))
--			return;
--	}
--	atomic_set(&orig_node->last_ttvn, ttvn);
--}
--
--static void tt_fill_gtable(struct bat_priv *bat_priv,
--			   struct tt_query_packet *tt_response)
--{
--	struct orig_node *orig_node = NULL;
--
--	orig_node = orig_hash_find(bat_priv, tt_response->src);
--	if (!orig_node)
--		goto out;
--
--	/* Purge the old table first.. */
--	tt_global_del_orig(bat_priv, orig_node, "Received full table");
--
--	_tt_fill_gtable(bat_priv, orig_node,
--		((unsigned char *)tt_response) +
--		sizeof(struct tt_query_packet),
--		tt_response->tt_data,
--		tt_response->ttvn);
--
--	spin_lock_bh(&orig_node->tt_buff_lock);
--	kfree(orig_node->tt_buff);
--	orig_node->tt_buff_len = 0;
--	orig_node->tt_buff = NULL;
--	spin_unlock_bh(&orig_node->tt_buff_lock);
--
--out:
--	if (orig_node)
--		orig_node_free_ref(orig_node);
--}
--
--void tt_update_changes(struct bat_priv *bat_priv, struct orig_node *orig_node,
--		       uint16_t tt_num_changes, uint8_t ttvn,
--		       struct tt_change *tt_change)
 +static void _tt_update_changes(struct bat_priv *bat_priv,
 +			       struct orig_node *orig_node,
 +			       struct tt_change *tt_change,
 +			       uint16_t tt_num_changes, uint8_t ttvn)
  {
- 	int i;
+-	int count;
+-	unsigned char *tt_ptr;
+-
+-	for (count = 0; count < table_size; count++) {
+-		tt_ptr = tt_buff + (count * ETH_ALEN);
++	int i;
  
-@@ -1394,6 +1349,43 @@ void tt_update_changes(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 				 */
- 				return;
+-		/* If we fail to allocate a new entry we return immediatly */
+-		if (!tt_global_add(bat_priv, orig_node, tt_ptr, ttvn, false))
+-			return;
++	for (i = 0; i < tt_num_changes; i++) {
++		if ((tt_change + i)->flags & TT_CHANGE_DEL)
++			tt_global_del(bat_priv, orig_node,
++				      (tt_change + i)->addr,
++				      "tt removed by changes",
++				      (tt_change + i)->flags & TT_CHANGE_ROAM);
++		else
++			if (!tt_global_add(bat_priv, orig_node,
++					   (tt_change + i)->addr, ttvn, false))
++				/* In case of problem while storing a
++				 * global_entry, we stop the updating
++				 * procedure without committing the
++				 * ttvn change. This will avoid to send
++				 * corrupted data on tt_request
++				 */
++				return;
  	}
-+}
-+
-+static void tt_fill_gtable(struct bat_priv *bat_priv,
-+			   struct tt_query_packet *tt_response)
-+{
-+	struct orig_node *orig_node = NULL;
-+
-+	orig_node = orig_hash_find(bat_priv, tt_response->src);
-+	if (!orig_node)
-+		goto out;
-+
-+	/* Purge the old table first.. */
-+	tt_global_del_orig(bat_priv, orig_node, "Received full table");
-+
+-	atomic_set(&orig_node->last_ttvn, ttvn);
+ }
+ 
+ static void tt_fill_gtable(struct bat_priv *bat_priv,
+@@ -1354,11 +1366,9 @@ static void tt_fill_gtable(struct bat_priv *bat_priv,
+ 	/* Purge the old table first.. */
+ 	tt_global_del_orig(bat_priv, orig_node, "Received full table");
+ 
+-	_tt_fill_gtable(bat_priv, orig_node,
+-		((unsigned char *)tt_response) +
+-		sizeof(struct tt_query_packet),
+-		tt_response->tt_data,
+-		tt_response->ttvn);
 +	_tt_update_changes(bat_priv, orig_node,
 +			   (struct tt_change *)(tt_response + 1),
 +			   tt_response->tt_data, tt_response->ttvn);
-+
-+	spin_lock_bh(&orig_node->tt_buff_lock);
-+	kfree(orig_node->tt_buff);
-+	orig_node->tt_buff_len = 0;
-+	orig_node->tt_buff = NULL;
-+	spin_unlock_bh(&orig_node->tt_buff_lock);
-+
+ 
+ 	spin_lock_bh(&orig_node->tt_buff_lock);
+ 	kfree(orig_node->tt_buff);
+@@ -1366,6 +1376,8 @@ static void tt_fill_gtable(struct bat_priv *bat_priv,
+ 	orig_node->tt_buff = NULL;
+ 	spin_unlock_bh(&orig_node->tt_buff_lock);
+ 
 +	atomic_set(&orig_node->last_ttvn, tt_response->ttvn);
 +
-+out:
-+	if (orig_node)
-+		orig_node_free_ref(orig_node);
-+}
-+
-+void tt_update_changes(struct bat_priv *bat_priv, struct orig_node *orig_node,
-+		       uint16_t tt_num_changes, uint8_t ttvn,
-+		       struct tt_change *tt_change)
-+{
+ out:
+ 	if (orig_node)
+ 		orig_node_free_ref(orig_node);
+@@ -1375,25 +1387,8 @@ void tt_update_changes(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 		       uint16_t tt_num_changes, uint8_t ttvn,
+ 		       struct tt_change *tt_change)
+ {
+-	int i;
+-
+-	for (i = 0; i < tt_num_changes; i++) {
+-		if ((tt_change + i)->flags & TT_CHANGE_DEL)
+-			tt_global_del(bat_priv, orig_node,
+-				      (tt_change + i)->addr,
+-				      "tt removed by changes",
+-				      (tt_change + i)->flags & TT_CHANGE_ROAM);
+-		else
+-			if (!tt_global_add(bat_priv, orig_node,
+-					   (tt_change + i)->addr, ttvn, false))
+-				/* In case of problem while storing a
+-				 * global_entry, we stop the updating
+-				 * procedure without committing the
+-				 * ttvn change. This will avoid to send
+-				 * corrupted data on tt_request
+-				 */
+-				return;
+-	}
 +	_tt_update_changes(bat_priv, orig_node, tt_change, tt_num_changes,
 +			   ttvn);
  
  	tt_save_orig_buffer(bat_priv, orig_node, (unsigned char *)tt_change,
  			    tt_num_changes);
 -- 
-1.7.2.3
+1.7.3.4
 
