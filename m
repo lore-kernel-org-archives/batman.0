@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 30 May 2011 09:22:47 +0200
-Message-Id: <1306740182-2665-3-git-send-email-sven@narfation.org>
+Date: Mon, 30 May 2011 09:22:46 +0200
+Message-Id: <1306740182-2665-2-git-send-email-sven@narfation.org>
 In-Reply-To: <1306740182-2665-1-git-send-email-sven@narfation.org>
 References: <1306740182-2665-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 02/17] batman-adv: Use kzalloc rather than
-	kmalloc followed by memset with 0
+Subject: [B.A.T.M.A.N.] [PATCH 01/17] batman-adv: move
+	neigh_node->if_incoming->if_status check in find_router()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,28 +20,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+From: Antonio Quartulli <ordex@autistici.org>
+
+Every time that find_router() is invoked, if_status has to be compared with
+IF_ACTIVE. Moving this comparison inside find_router() will avoid to write it
+each time.
+
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/gateway_client.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ net/batman-adv/routing.c |    3 +++
+ net/batman-adv/unicast.c |    3 ---
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 61605a0..6e03635 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -273,11 +273,10 @@ static void gw_node_add(struct bat_priv *bat_priv,
- 	struct gw_node *gw_node;
- 	int down, up;
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index bb1c3ec..8c403ce 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -1240,6 +1240,9 @@ struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 		router = find_ifalter_router(primary_orig_node, recv_if);
  
--	gw_node = kmalloc(sizeof(struct gw_node), GFP_ATOMIC);
-+	gw_node = kzalloc(sizeof(struct gw_node), GFP_ATOMIC);
- 	if (!gw_node)
- 		return;
+ return_router:
++	if (router && router->if_incoming->if_status != IF_ACTIVE)
++		goto err_unlock;
++
+ 	rcu_read_unlock();
+ 	return router;
+ err_unlock:
+diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
+index 19c3daf..bab6076 100644
+--- a/net/batman-adv/unicast.c
++++ b/net/batman-adv/unicast.c
+@@ -314,9 +314,6 @@ find_router:
+ 	if (!neigh_node)
+ 		goto out;
  
--	memset(gw_node, 0, sizeof(struct gw_node));
- 	INIT_HLIST_NODE(&gw_node->list);
- 	gw_node->orig_node = orig_node;
- 	atomic_set(&gw_node->refcount, 1);
+-	if (neigh_node->if_incoming->if_status != IF_ACTIVE)
+-		goto out;
+-
+ 	if (my_skb_head_push(skb, sizeof(struct unicast_packet)) < 0)
+ 		goto out;
+ 
 -- 
 1.7.5.3
 
