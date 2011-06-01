@@ -1,13 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 31 May 2011 20:52:16 -0700 (PDT)
-Message-Id: <20110531.205216.202460915.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1306740182-2665-1-git-send-email-sven@narfation.org>
-References: <1306740182-2665-1-git-send-email-sven@narfation.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv 2011-05-30
+Return-Path: <andrew@lunn.ch>
+Date: Wed, 1 Jun 2011 07:34:25 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20110601053425.GA27695@lunn.ch>
+References: <1306763217-27752-1-git-send-email-lindner_marek@yahoo.de>
+	<1306780839-9375-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1306780839-9375-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: modify
+ TT_RESPONSE-full-table format
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,22 +21,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven@narfation.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 30 May 2011 09:22:45 +0200
+> +	ssize_t tt_query_size = sizeof(struct tt_query_packet);
+> +	int i;
+> +
+> +	if (sizeof(struct tt_query_packet) + tt_len >
+> +						primary_if->soft_iface->mtu) {
+> +		tt_len = primary_if->soft_iface->mtu - tt_query_size;
+> +		tt_len -= tt_len % sizeof(struct tt_change);
+> +	}
 
-> I would like to propose following patches for net-next-2.6/3.1 [1]. It
-> is not really based on your net-next-2.6 tree, but directly on v3.0-rc1.
-> I hope that this is ok - thought that you will merge that version
-> anyway. Just wanted to get these patches out before doing the really
-> work (reducing the amount of patches you get in a single pull request).
-> 
-> Most patches are only cleanup patches - nothing really interesting.
-> Antonio also moved the protocol specific seq_before/seq_after function
-> to main.h like you told us [2]. Now he can use it in his translation
-> table query patches (they are still moving, so he needs to hunt them
-> down before I can submit them).
+Hi Antonio
 
-Pulled, thanks Sven.
+This first struck me as being asymmetric. Then i say that
+tt_query_size is sizeof(struct tt_query_packet). So use it in the if
+statement, and then symmetry is restored and probably the indentation
+looks better.
+
+      Andrew
