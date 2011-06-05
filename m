@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 5 Jun 2011 22:33:56 +0200
-References: <1307184038-32426-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1307184038-32426-1-git-send-email-sven@narfation.org>
+Date: Sun, 5 Jun 2011 22:35:49 +0200
+References: <201106041359.15552.sven@narfation.org>
+	<1307188849-20156-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1307188849-20156-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201106052233.56882.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Don't return value in
-	void function
+Message-Id: <201106052235.49274.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: Fix signedness problem
+	in parse_gw_bandwidth
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,12 +24,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, June 04, 2011 12:40:37 PM Sven Eckelmann wrote:
-> gw_node_delete is defined with "void" as return type, but still tries to
-> return a value. The called function gw_node_delete is also return as
-> void and thus doesn't provide a value for us.
+On Saturday, June 04, 2011 02:00:49 PM Sven Eckelmann wrote:
+> strict_strtoul as used in parse_gw_bandwidth is defined for unsigned
+> long and strict_strtol should be used instead for long.
 
-Applied in revision 4a6c93d.
+Applied in revision 1ad4162.
 
 Thanks,
 Marek
