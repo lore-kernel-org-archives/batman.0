@@ -1,11 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun,  5 Jun 2011 23:01:04 +0200
-Message-Id: <1307307664-19910-4-git-send-email-ordex@autistici.org>
-In-Reply-To: <1307307664-19910-1-git-send-email-ordex@autistici.org>
+Return-Path: <andrew@lunn.ch>
+Date: Sun, 5 Jun 2011 23:42:36 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20110605214236.GV4071@lunn.ch>
 References: <1307307664-19910-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: implement AP-isolation on
-	the receiver side
+	<1307307664-19910-2-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1307307664-19910-2-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: detect clients connected
+ through a 802.11 device
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,81 +21,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-When a node receives a unicast packet it checks if the source and the
-destination client can communicate or not due to the AP isolation
+Hi Antonio
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- soft-interface.c    |    3 +++
- translation-table.c |   30 ++++++++++++++++++++++++++++++
- translation-table.h |    1 +
- 3 files changed, 34 insertions(+), 0 deletions(-)
+>  
+> -	tt_local_add(soft_iface, soft_iface->dev_addr);
+> +	tt_local_add(soft_iface, soft_iface->dev_addr, 0);
 
-diff --git a/soft-interface.c b/soft-interface.c
-index 6489665..714a2af 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -733,6 +733,9 @@ void interface_rx(struct net_device *soft_iface,
- 
- 	soft_iface->last_rx = jiffies;
- 
-+	if (is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest))
-+		goto dropped;
-+
- 	netif_rx(skb);
- 	goto out;
- 
-diff --git a/translation-table.c b/translation-table.c
-index e0c5945..24e48e7 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1683,3 +1683,33 @@ void tt_free(struct bat_priv *bat_priv)
- 
- 	kfree(bat_priv->tt_buff);
- }
-+
-+bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst)
-+{
-+	struct tt_local_entry *tt_local_entry = NULL;
-+	struct tt_global_entry *tt_global_entry = NULL;
-+	bool ret = true;
-+
-+	if (!atomic_read(&bat_priv->ap_isolation))
-+		return false;
-+
-+	tt_local_entry = tt_local_hash_find(bat_priv, dst);
-+	if (!tt_local_entry)
-+		goto out;
-+
-+	tt_global_entry = tt_global_hash_find(bat_priv, src);
-+	if (!tt_global_entry)
-+		goto out;
-+
-+	if (_is_ap_isolated(tt_local_entry, tt_global_entry))
-+		goto out;
-+
-+	ret = false;
-+
-+out:
-+	if (tt_global_entry)
-+		tt_global_entry_free_ref(tt_global_entry);
-+	if (tt_local_entry)
-+		tt_local_entry_free_ref(tt_local_entry);
-+	return ret;
-+}
-diff --git a/translation-table.h b/translation-table.h
-index 3055b8b..8080153 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -67,5 +67,6 @@ void handle_tt_response(struct bat_priv *bat_priv,
- 			struct tt_query_packet *tt_response);
- void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
- 		   struct orig_node *orig_node);
-+bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst);
- 
- #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
--- 
-1.7.3.4
+Reading the code, it is not obvious what this 0 mean here. Did you see
+Sven's recent patches which introduced enums in various places? Maybe
+instead of a bool you could have an enum with two values: wired, wifi?
+
+I've not looked at the other patches yet, but it might even make sense
+to have enums for wired, AP, client, adhoc?
+
+> +/* This function check whether the interface represented by ifindex is a
+> + * 802.11 wireless device or not. If so the tt_local_entry is marked with the
+> + * TT_CLIENT_WIFI flag */
+> +static void tt_check_iface(struct tt_local_entry *tt_local_entry, int ifindex)
+
+It would be nice to have a more descriptive name, one which tells you
+what it is checking. Here it is clear, because of the comment, but
+where it is actually used, it is not possible to know what the
+function is checking.
+
+Maybe what is actually needed is a function:
+
+bool is_iface_wifi(int ifindex)
+
+and maybe that should be in hard-interface.c? It could be that knowing
+if an interface is wired or wifi could be useful in other places. This
+was one of the discussions at WBMv4, giving preference to wired
+interfaces over wireless.
+
+	   Andrew
 
