@@ -1,9 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  5 Jun 2011 10:20:19 +0200
-Message-Id: <1307262019-9147-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Rewrite debugfs kobj_to_*
-	helpers as functions
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 5 Jun 2011 22:08:03 +0200
+References: <1306797945-22502-1-git-send-email-ordex@autistici.org>
+	<1307205393-14227-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1307205393-14227-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201106052208.03533.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv6 1/2] batman-adv: modify
+	TT_RESPONSE-full-table format
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,42 +22,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-CodingStyle "Chapter 12: Macros, Enums and RTL" highly recommends to use
-functions instead of macros were possible. This ensures type safety and
-prevents shadowing of other variables.
+On Saturday, June 04, 2011 06:36:32 PM Antonio Quartulli wrote:
+> In case of TT_REQUEST for a full table, the related TT_RESPONSE now
+> carries a set of tt_change structures instead of pure MACs.
+> This helps to keep the TT_RESPONSE format extensible. In particular, the
+> flag field can be used for later purposes.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- bat_sysfs.c |   14 +++++++++++---
- 1 files changed, 11 insertions(+), 3 deletions(-)
+Applied in revision e455c1c.
 
-diff --git a/bat_sysfs.c b/bat_sysfs.c
-index df8a283..63738ec 100644
---- a/bat_sysfs.c
-+++ b/bat_sysfs.c
-@@ -28,9 +28,17 @@
- #include "gateway_client.h"
- #include "vis.h"
- 
--#define to_dev(obj)		container_of(obj, struct device, kobj)
--#define kobj_to_netdev(obj)	to_net_dev(to_dev(obj->parent))
--#define kobj_to_batpriv(obj)	netdev_priv(kobj_to_netdev(obj))
-+static struct net_device *kobj_to_netdev(struct kobject *obj)
-+{
-+	struct device *dev = container_of(obj->parent, struct device, kobj);
-+	return to_net_dev(dev);
-+}
-+
-+static struct bat_priv *kobj_to_batpriv(struct kobject *obj)
-+{
-+	struct net_device *net_dev = kobj_to_netdev(obj);
-+	return netdev_priv(net_dev);
-+}
- 
- /* Use this, if you have customized show and store functions */
- #define BAT_ATTR(_name, _mode, _show, _store)	\
--- 
-1.7.5.3
-
+Thanks,
+Marek
