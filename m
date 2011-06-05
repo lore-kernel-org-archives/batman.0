@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 5 Jun 2011 22:43:06 +0200
-References: <1307262019-9147-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1307262019-9147-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201106052243.06790.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Rewrite debugfs kobj_to_*
-	helpers as functions
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun,  5 Jun 2011 23:01:01 +0200
+Message-Id: <1307307664-19910-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/3] Implement the AP-Isolation mechanism
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,14 +14,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, June 05, 2011 10:20:19 AM Sven Eckelmann wrote:
-> CodingStyle "Chapter 12: Macros, Enums and RTL" highly recommends to use
-> functions instead of macros were possible. This ensures type safety and
-> prevents shadowing of other variables.
+This patchset introduces the AP-isolation functionality. As for common access
+points, the AP-isolation is a mechanism that prevents clients to communicate
+to each other. In batman-adv the AP-isolation, if activated, will prevent
+"WIFI bridged-in clients" to communicate with any other "WIFI bridged-in
+client".
 
-Applied in revision a14621f.
+The first patch introduces a mechanism which permit to detect the interface type
+used by a client and to possibly mark its tt_local_entry in case of WIFI. This
+information is then spread over the network within the TT announcements.
 
-Thanks,
-Marek
+The other two patches implement the AP-isolation mechanism which exploits the
+WIFI mark (on tt_entries) to prevent communications between WIFI clients.
+
+The "AP-isolation check" is done either on the receiver and on the sender side.
+
+Best regards,
+	Antonio Quartulli
+
+
