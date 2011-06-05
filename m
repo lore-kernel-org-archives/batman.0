@@ -1,15 +1,9 @@
-Return-Path: <andrew@lunn.ch>
-Date: Sun, 5 Jun 2011 23:42:36 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20110605214236.GV4071@lunn.ch>
-References: <1307307664-19910-1-git-send-email-ordex@autistici.org>
-	<1307307664-19910-2-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1307307664-19910-2-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: detect clients connected
- through a 802.11 device
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun,  5 Jun 2011 23:50:01 +0200
+Message-Id: <1307310601-22560-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: Remove unused but set variable in
+	roam and tt dump functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +15,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Antonio
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ tcpdump.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
->  
-> -	tt_local_add(soft_iface, soft_iface->dev_addr);
-> +	tt_local_add(soft_iface, soft_iface->dev_addr, 0);
-
-Reading the code, it is not obvious what this 0 mean here. Did you see
-Sven's recent patches which introduced enums in various places? Maybe
-instead of a bool you could have an enum with two values: wired, wifi?
-
-I've not looked at the other patches yet, but it might even make sense
-to have enums for wired, AP, client, adhoc?
-
-> +/* This function check whether the interface represented by ifindex is a
-> + * 802.11 wireless device or not. If so the tt_local_entry is marked with the
-> + * TT_CLIENT_WIFI flag */
-> +static void tt_check_iface(struct tt_local_entry *tt_local_entry, int ifindex)
-
-It would be nice to have a more descriptive name, one which tells you
-what it is checking. Here it is clear, because of the comment, but
-where it is actually used, it is not possible to know what the
-function is checking.
-
-Maybe what is actually needed is a function:
-
-bool is_iface_wifi(int ifindex)
-
-and maybe that should be in hard-interface.c? It could be that knowing
-if an interface is wired or wifi could be useful in other places. This
-was one of the discussions at WBMv4, giving preference to wired
-interfaces over wireless.
-
-	   Andrew
+diff --git a/tcpdump.c b/tcpdump.c
+index 3e68844..85d461e 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -253,12 +253,10 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
+ 
+ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+ {
+-	struct ether_header *ether_header;
+ 	struct tt_query_packet *tt_query_packet;
+ 
+ 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct tt_query_packet), "BAT TT");
+ 
+-	ether_header = (struct ether_header *)packet_buff;
+ 	tt_query_packet = (struct tt_query_packet *)(packet_buff + sizeof(struct ether_header));
+ 
+ 	if (!time_printed)
+@@ -280,12 +278,10 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
+ 
+ static void dump_batman_roam(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+ {
+-	struct ether_header *ether_header;
+ 	struct roam_adv_packet *roam_adv_packet;
+ 
+ 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct roam_adv_packet), "BAT ROAM");
+ 
+-	ether_header = (struct ether_header *)packet_buff;
+ 	roam_adv_packet = (struct roam_adv_packet *)(packet_buff + sizeof(struct ether_header));
+ 
+ 	if (!time_printed)
+-- 
+1.7.5.3
 
