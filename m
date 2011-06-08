@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 8 Jun 2011 13:18:42 +0200
-References: <1307400355-11624-1-git-send-email-daniele.furlan@gmail.com>
-In-Reply-To: <1307400355-11624-1-git-send-email-daniele.furlan@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201106081318.42918.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Mark as received also old
-	rebroadcast
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed,  8 Jun 2011 22:33:53 +0200
+Message-Id: <1307565233-15101-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove cast after kmalloc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,22 +14,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, June 07, 2011 12:45:55 AM Daniele Furlan wrote:
-> This patch avoid local TQ drop in case of heavy load. In this case,
-> rebroadcast can be delayed more than orig_interval causing the receiver
-> to incorrectly drop old packets without marking them as received.
+Casting (void *) value returned by kmalloc is useless as mentioned in
+Documentation/CodingStyle, Chap 14.
 
-I applied the patch (in revision 9e80af2) with the following commit message:
+This regression was introduced in
+cea194d90b11aff7fc289149e4c7f305fad3535a
 
-accept delayed rebroadcasts to avoid bogus routing under heavy load
-    
-When a link is saturated (re)broadcasts of OGMs are delayed. Under heavy load
-this delay may exceed the orig interval which leads to OGMs being dropped (the
-code would only accept an OGM rebroadcast if it arrived before the next OGM 
-was broadcasted). With this patch batman-adv will also accept delayed OGMs in 
-order to avoid a bogus influence on the routing metric.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ translation-table.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Thanks,
-Marek
+diff --git a/translation-table.c b/translation-table.c
+index d2a9f80..adecf1b 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -148,8 +148,7 @@ static void tt_local_event(struct bat_priv *bat_priv, uint8_t op,
+ {
+ 	struct tt_change_node *tt_change_node;
+ 
+-	tt_change_node = (struct tt_change_node *)
+-		kmalloc(sizeof(*tt_change_node), GFP_ATOMIC);
++	tt_change_node = kmalloc(sizeof(*tt_change_node), GFP_ATOMIC);
+ 
+ 	if (!tt_change_node)
+ 		return;
+-- 
+1.7.5.3
+
