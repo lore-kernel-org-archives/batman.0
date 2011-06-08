@@ -1,14 +1,13 @@
-Return-Path: <daniele.furlan@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <201106081210.03034.lindner_marek@yahoo.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 8 Jun 2011 13:18:42 +0200
 References: <1307400355-11624-1-git-send-email-daniele.furlan@gmail.com>
-	<201106071001.59176.lindner_marek@yahoo.de>
-	<BANLkTinO=5LO+Ctss=a05i1Pr-zFsyKEzA@mail.gmail.com>
-	<201106081210.03034.lindner_marek@yahoo.de>
-Date: Wed, 8 Jun 2011 13:07:05 +0200
-Message-ID: <BANLkTinS9zdW8vhs5Fn57eHYRz0cF6DfMg@mail.gmail.com>
-From: Daniele Furlan <daniele.furlan@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <1307400355-11624-1-git-send-email-daniele.furlan@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201106081318.42918.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Mark as received also old
 	rebroadcast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,25 +23,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-2011/6/8 Marek Lindner <lindner_marek@yahoo.de>:
-> On Tuesday, June 07, 2011 10:23:58 AM Daniele Furlan wrote:
->> Running some test with netperf (but also using ping -f the result did
->> not change), it happens that TQ towards all node in the network drops to
->> values near 0. This beahaviuor lead to "random" route change that are not
->> correlated with the quality of the link. I verified that this patch solve
->> this problem.
->
-> Thanks for the explanations. I hope you don't mind that I add these
-> information to your commit message before submiting it ?
+On Tuesday, June 07, 2011 12:45:55 AM Daniele Furlan wrote:
+> This patch avoid local TQ drop in case of heavy load. In this case,
+> rebroadcast can be delayed more than orig_interval causing the receiver
+> to incorrectly drop old packets without marking them as received.
 
-Ok no problem, let's add it to the commit message.
+I applied the patch (in revision 9e80af2) with the following commit message:
 
-Thank'you!
+accept delayed rebroadcasts to avoid bogus routing under heavy load
+    
+When a link is saturated (re)broadcasts of OGMs are delayed. Under heavy load
+this delay may exceed the orig interval which leads to OGMs being dropped (the
+code would only accept an OGM rebroadcast if it arrived before the next OGM 
+was broadcasted). With this patch batman-adv will also accept delayed OGMs in 
+order to avoid a bogus influence on the routing metric.
 
->
-> Regards,
-> Marek
->
-
--- 
-Daniele Furlan
+Thanks,
+Marek
