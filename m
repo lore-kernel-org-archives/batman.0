@@ -1,10 +1,10 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 11 Jun 2011 12:15:42 +0200
-Message-Id: <1307787342-24307-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1304946150-6026-2-git-send-email-ordex@autistici.org>
-References: <1304946150-6026-2-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv4 2/3] batman-adv: throw uevent in userspace
+Date: Sat, 11 Jun 2011 12:21:28 +0200
+Message-Id: <1307787688-25242-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1307787342-24307-1-git-send-email-lindner_marek@yahoo.de>
+References: <1307787342-24307-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCHv5 2/3] batman-adv: throw uevent in userspace
 	on gateway add/change/del event
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -33,17 +33,16 @@ to 1 in case of election needed, avoding to set curr_gw to NULL.
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
-* gw_election() code refactored to increase readability
-* bug fixed: if curr_gw_tmp is NULL the uevent would never be triggered
-  because the variable "router" would also be NULL
+* gw_get_best_gw_node() should not call gw_node_free_ref() if 
+  atomic_inc_not_zero() failed
 
- gateway_client.c |  143 ++++++++++++++++++++++++++++++++---------------------
+ gateway_client.c |  148 ++++++++++++++++++++++++++++++++---------------------
  main.c           |    1 +
  types.h          |    1 +
- 3 files changed, 88 insertions(+), 57 deletions(-)
+ 3 files changed, 91 insertions(+), 59 deletions(-)
 
 diff --git a/gateway_client.c b/gateway_client.c
-index 24aee56..964a27e 100644
+index 24aee56..64505ee 100644
 --- a/gateway_client.c
 +++ b/gateway_client.c
 @@ -20,6 +20,7 @@
@@ -140,23 +139,18 @@ index 24aee56..964a27e 100644
  			break;
  		}
  
-@@ -174,42 +165,80 @@ void gw_election(struct bat_priv *bat_priv)
+@@ -174,42 +165,81 @@ void gw_election(struct bat_priv *bat_priv)
  		if (tmp_gw_factor > max_gw_factor)
  			max_gw_factor = tmp_gw_factor;
  
-+next:
- 		neigh_node_free_ref(router);
-+		gw_node_free_ref(gw_node);
- 	}
-+	rcu_read_unlock();
- 
+-		neigh_node_free_ref(router);
+-	}
+-
 -	if (curr_gw != curr_gw_tmp) {
 -		router = orig_node_get_router(curr_gw_tmp->orig_node);
 -		if (!router)
 -			goto unlock;
-+	return curr_gw;
-+}
- 
+-
 -		if ((curr_gw) && (!curr_gw_tmp))
 -			bat_dbg(DBG_BATMAN, bat_priv,
 -				"Removing selected gateway - "
@@ -175,14 +169,25 @@ index 24aee56..964a27e 100644
 -				curr_gw_tmp->orig_node->orig,
 -				curr_gw_tmp->orig_node->gw_flags,
 -				router->tq_avg);
++		gw_node_free_ref(gw_node);
+ 
++next:
+ 		neigh_node_free_ref(router);
+-		gw_select(bat_priv, curr_gw_tmp);
+ 	}
+-
+-unlock:
+ 	rcu_read_unlock();
++
++	return curr_gw;
++}
++
 +void gw_election(struct bat_priv *bat_priv)
 +{
 +	struct gw_node *curr_gw = NULL, *next_gw = NULL;
 +	struct neigh_node *router = NULL;
 +	char gw_addr[18] = { '\0' };
- 
--		neigh_node_free_ref(router);
--		gw_select(bat_priv, curr_gw_tmp);
++
 +	/**
 +	 * The batman daemon checks here if we already passed a full originator
 +	 * cycle in order to make sure we don't choose the first gateway we
@@ -210,10 +215,8 @@ index 24aee56..964a27e 100644
 +			gw_deselect(bat_priv);
 +			goto out;
 +		}
- 	}
- 
--unlock:
--	rcu_read_unlock();
++	}
++
 +	if ((curr_gw) && (!next_gw)) {
 +		bat_dbg(DBG_BATMAN, bat_priv,
 +			"Removing selected gateway - no gateway in range\n");
