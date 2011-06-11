@@ -1,14 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 11 Jun 2011 12:07:17 +0200
+Date: Sat, 11 Jun 2011 12:10:24 +0200
 References: <1304579589-5222-1-git-send-email-ordex@autistici.org>
-	<1304946150-6026-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1304946150-6026-1-git-send-email-ordex@autistici.org>
+	<20110510050803.GB4416@lunn.ch>
+	<20110510062927.GA22075@ritirata.org>
+In-Reply-To: <20110510062927.GA22075@ritirata.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201106111207.18089.lindner_marek@yahoo.de>
+Message-Id: <201106111210.24731.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv3 1/3] batman-adv: add wrapper function
 	to throw uevent in userspace
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,20 +25,15 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, May 09, 2011 03:02:28 PM Antonio Quartulli wrote:
-> Using throw_uevent() is now possible to trigger uevent signal that can
-> be recognised in userspace. Uevents will be triggered through the
-> /devices/virtual/net/{MESH_IFACE} kobject.
+On Tuesday, May 10, 2011 08:29:28 AM Antonio Quartulli wrote:
+> > Since this is part of sysfs you should add a description to
+> > Documentation/networking/batman-adv.txt.
 > 
-> A triggered uevent has three properties:
-> - type: the event class. Who generates the event (only 'gw' is currently
->   defined). Corresponds to the BATTYPE uevent variable.
-> - action: the associated action with the event ('add'/'change'/'del' are
->   currently defined). Corresponds to the BAACTION uevent variable.
-> - data: any useful data for the userspace. Corresponds to the BATDATA
->   uevent variable.
+> Ah ok, I didn't know this.
+> I think Marek already planned to instruct me on this part. Thank you for
+> reminding me!
 
-Applied in revision d2586d6.
+I believe we still lack some documentation here or did I overlook something ?
 
-Thanks,
+Regards,
 Marek
