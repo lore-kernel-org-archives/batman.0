@@ -1,8 +1,11 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 13 Jun 2011 19:38:00 +0200
-Message-Id: <1307986680-21113-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: clean up the tt_query flags field
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 13 Jun 2011 22:51:40 +0200
+Message-Id: <1307998300-5898-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1307986680-21113-1-git-send-email-ordex@autistici.org>
+References: <1307986680-21113-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: clean up the tt_query flags
+	field
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,7 +17,9 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+
+From: Antonio Quartulli <ordex@autistici.org>
 
 The tt_query subtype is represented by the two leading bits (lsb) of
 the tt_query->flags field. Therefore it cannot be handled by simple
@@ -23,10 +28,13 @@ extract the relevant bits that can be compared to the related enum
 values (TT_RESPONSE, TT_REQUEST)
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+ * Just added three missing tabs as mentioned in the last mail.
+
  packet.h  |   10 ++++++++--
- routing.c |   30 ++++++++++++++++--------------
- 2 files changed, 24 insertions(+), 16 deletions(-)
+ routing.c |   34 ++++++++++++++++++----------------
+ 2 files changed, 26 insertions(+), 18 deletions(-)
 
 diff --git a/packet.h b/packet.h
 index ef7476f..c5f081d 100644
@@ -52,7 +60,7 @@ index ef7476f..c5f081d 100644
  };
  
 diff --git a/routing.c b/routing.c
-index 7f458e9..027e988 100644
+index 7f458e9..3a3cfb8 100644
 --- a/routing.c
 +++ b/routing.c
 @@ -1218,7 +1218,8 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
@@ -85,15 +93,18 @@ index 7f458e9..027e988 100644
 -		handle_tt_response(bat_priv, tt_query);
 -	else {
 -		bat_dbg(DBG_TT, bat_priv,
+-			"Routing TT_RESPONSE to %pM [%c]\n",
+-			tt_query->dst,
+-			(tt_query->flags & TT_FULL_TABLE ? 'F' : '.'));
+-		tt_query->tt_data = htons(tt_query->tt_data);
+-		return route_unicast_packet(skb, recv_if);
 +		if (is_my_mac(tt_query->dst))
 +			handle_tt_response(bat_priv, tt_query);
 +		else {
 +			bat_dbg(DBG_TT, bat_priv,
- 			"Routing TT_RESPONSE to %pM [%c]\n",
- 			tt_query->dst,
- 			(tt_query->flags & TT_FULL_TABLE ? 'F' : '.'));
--		tt_query->tt_data = htons(tt_query->tt_data);
--		return route_unicast_packet(skb, recv_if);
++				"Routing TT_RESPONSE to %pM [%c]\n",
++				tt_query->dst,
++				(tt_query->flags & TT_FULL_TABLE ? 'F' : '.'));
 +			tt_query->tt_data = htons(tt_query->tt_data);
 +			return route_unicast_packet(skb, recv_if);
 +		}
@@ -102,5 +113,5 @@ index 7f458e9..027e988 100644
  	ret = NET_RX_SUCCESS;
  
 -- 
-1.7.3.4
+1.7.5.4
 
