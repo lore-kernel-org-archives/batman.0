@@ -1,8 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 14 Jun 2011 17:54:29 +0200
-Message-Id: <1308066869-29254-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: the skb has not to be freed in
+Date: Tue, 14 Jun 2011 17:58:27 +0200
+Message-Id: <1308067107-32399-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1308066869-29254-1-git-send-email-ordex@autistici.org>
+References: <1308066869-29254-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: the skb has not to be freed in
 	recv_tt_query()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,11 +26,14 @@ always return NET_RX_DROP and not to free the skb.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- routing.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+
+Corrected comment. Sorry
+
+ routing.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/routing.c b/routing.c
-index 3a3cfb8..fc8eb87 100644
+index 3a3cfb8..30d0f73 100644
 --- a/routing.c
 +++ b/routing.c
 @@ -1194,7 +1194,6 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
@@ -39,7 +44,7 @@ index 3a3cfb8..fc8eb87 100644
  
  	/* drop packet if it has not necessary minimum size */
  	if (unlikely(!pskb_may_pull(skb, sizeof(struct tt_query_packet))))
-@@ -1248,11 +1247,11 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+@@ -1248,11 +1247,10 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
  		}
  		break;
  	}
@@ -48,8 +53,7 @@ index 3a3cfb8..fc8eb87 100644
  out:
 -	kfree_skb(skb);
 -	return ret;
-+	/* returning NET_RX_DROP will make the caller function to kfree the
-+	 * skb */
++	/* returning NET_RX_DROP will make the caller function kfree the skb */
 +	return NET_RX_DROP;
  }
  
