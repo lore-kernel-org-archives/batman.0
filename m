@@ -1,9 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 14 Jun 2011 16:22:42 +0200
-Message-Id: <1308061362-28727-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: tcpdump - cleanup tt_query packet
-	parser
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 14 Jun 2011 17:54:29 +0200
+Message-Id: <1308066869-29254-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: the skb has not to be freed in
+	recv_tt_query()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,66 +15,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+In recv_tt_query(), in case of error the skb is freed and then
+NET_RX_DROP is returned. This makes the caller function wrongly invoke
+kfree_skb() again. To avoid this double free recv_tt_query() has to
+always return NET_RX_DROP and not to free the skb.
+
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- tcpdump.c |   30 +++++++++++++++++++++++-------
- 1 files changed, 23 insertions(+), 7 deletions(-)
+ routing.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/tcpdump.c b/tcpdump.c
-index 4e09274..5500899 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -254,6 +254,7 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
- static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
- {
- 	struct tt_query_packet *tt_query_packet;
-+	char *tt_desc, *tt_data, tt_type;
+diff --git a/routing.c b/routing.c
+index 3a3cfb8..fc8eb87 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1194,7 +1194,6 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct tt_query_packet *tt_query;
+ 	struct ethhdr *ethhdr;
+-	int ret = NET_RX_DROP;
  
- 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct tt_query_packet), "BAT TT");
+ 	/* drop packet if it has not necessary minimum size */
+ 	if (unlikely(!pskb_may_pull(skb, sizeof(struct tt_query_packet))))
+@@ -1248,11 +1247,11 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		}
+ 		break;
+ 	}
+-	ret = NET_RX_SUCCESS;
  
-@@ -262,17 +263,32 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
- 	if (!time_printed)
- 		print_time();
- 
-+	switch (tt_query_packet->flags & TT_QUERY_TYPE_MASK) {
-+	case TT_REQUEST:
-+		tt_desc = "request";
-+		tt_data = "crc";
-+		tt_type = 'Q';
-+		break;
-+	case TT_RESPONSE:
-+		tt_desc = "response";
-+		tt_data = "entries";
-+		tt_type = 'P';
-+		break;
-+	default:
-+		tt_desc = "unknown";
-+		tt_data = "unknown";
-+		tt_type = '?';
-+		break;
-+	}
-+
- 	printf("BAT %s > ",
- 	       get_name_by_macaddr((struct ether_addr *)tt_query_packet->src, read_opt));
- 
--	printf("%s: TT %s, ttvn %d, %s %d, ttl %2d, v %d, flags [%c%c%c], length %zu\n",
-+	printf("%s: TT %s, ttvn %d, %s %d, ttl %2d, v %d, flags [%c%c], length %zu\n",
- 	       get_name_by_macaddr((struct ether_addr *)tt_query_packet->dst, read_opt),
--	       tt_query_packet->flags & TT_RESPONSE ? "response" : "request",
--	       tt_query_packet->ttvn, tt_query_packet->flags & TT_RESPONSE ? "entries" : "crc",
--	       ntohs(tt_query_packet->tt_data), tt_query_packet->ttl, tt_query_packet->version,
--	       (tt_query_packet->flags & TT_REQUEST ? 'Q' : '.'),
--	       (tt_query_packet->flags & TT_RESPONSE ? 'P' : '.'),
--	       (tt_query_packet->flags & TT_FULL_TABLE ? 'F' : '.'),
-+	       tt_desc, tt_query_packet->ttvn, tt_data, ntohs(tt_query_packet->tt_data),
-+	       tt_query_packet->ttl, tt_query_packet->version,
-+	       tt_type, (tt_query_packet->flags & TT_FULL_TABLE ? 'F' : '.'),
- 	       (size_t)buff_len - sizeof(struct ether_header));
+ out:
+-	kfree_skb(skb);
+-	return ret;
++	/* returning NET_RX_DROP will make the caller function to kfree the
++	 * skb */
++	return NET_RX_DROP;
  }
  
+ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
 -- 
-1.7.5.3
+1.7.3.4
 
