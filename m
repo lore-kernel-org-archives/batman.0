@@ -1,11 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 14 Jun 2011 17:58:27 +0200
-Message-Id: <1308067107-32399-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1308066869-29254-1-git-send-email-ordex@autistici.org>
-References: <1308066869-29254-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: the skb has not to be freed in
-	recv_tt_query()
+Date: Tue, 14 Jun 2011 18:01:39 +0200
+Message-Id: <1308067299-2282-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: skbs have to be freed using
+	kfree_skb()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,45 +17,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-In recv_tt_query(), in case of error the skb is freed and then
-NET_RX_DROP is returned. This makes the caller function wrongly invoke
-kfree_skb() again. To avoid this double free recv_tt_query() has to
-always return NET_RX_DROP and not to free the skb.
+The skb structures have always to be freed using kfree_skb() and not the
+simple kfree()
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
-
-Corrected comment. Sorry
-
- routing.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ routing.c           |    2 +-
+ translation-table.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/routing.c b/routing.c
-index 3a3cfb8..30d0f73 100644
+index 30d0f73..41d065e 100644
 --- a/routing.c
 +++ b/routing.c
-@@ -1194,7 +1194,6 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
- 	struct tt_query_packet *tt_query;
- 	struct ethhdr *ethhdr;
--	int ret = NET_RX_DROP;
- 
- 	/* drop packet if it has not necessary minimum size */
- 	if (unlikely(!pskb_may_pull(skb, sizeof(struct tt_query_packet))))
-@@ -1248,11 +1247,10 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 		}
- 		break;
- 	}
--	ret = NET_RX_SUCCESS;
- 
+@@ -1299,7 +1299,7 @@ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	orig_node_free_ref(orig_node);
+ 	ret = NET_RX_SUCCESS;
  out:
--	kfree_skb(skb);
--	return ret;
-+	/* returning NET_RX_DROP will make the caller function kfree the skb */
-+	return NET_RX_DROP;
+-	kfree(skb);
++	kfree_skb(skb);
+ 	return ret;
  }
  
- int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
+diff --git a/translation-table.c b/translation-table.c
+index adecf1b..373ee81 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1199,7 +1199,7 @@ out:
+ 	if (primary_if)
+ 		hardif_free_ref(primary_if);
+ 	if (!ret)
+-		kfree(skb);
++		kfree_skb(skb);
+ 	return ret;
+ 
+ }
+@@ -1312,7 +1312,7 @@ out:
+ 	if (primary_if)
+ 		hardif_free_ref(primary_if);
+ 	if (!ret)
+-		kfree(skb);
++		kfree_skb(skb);
+ 	/* This packet was for me, so it doesn't need to be re-routed */
+ 	return true;
+ }
 -- 
 1.7.3.4
 
