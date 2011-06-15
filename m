@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 15 Jun 2011 20:48:09 +0200
-References: <1308066869-29254-1-git-send-email-ordex@autistici.org>
-	<1308067107-32399-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1308067107-32399-1-git-send-email-ordex@autistici.org>
+Date: Wed, 15 Jun 2011 20:56:17 +0200
+References: <1308067299-2282-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1308067299-2282-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201106152048.10114.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: the skb has not to be
-	freed in recv_tt_query()
+Message-Id: <201106152056.18072.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: skbs have to be freed using
+	kfree_skb()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,13 +23,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, June 14, 2011 05:58:27 PM Antonio Quartulli wrote:
-> In recv_tt_query(), in case of error the skb is freed and then
-> NET_RX_DROP is returned. This makes the caller function wrongly invoke
-> kfree_skb() again. To avoid this double free recv_tt_query() has to
-> always return NET_RX_DROP and not to free the skb.
+On Tuesday, June 14, 2011 06:01:39 PM Antonio Quartulli wrote:
+> @@ -1299,7 +1299,7 @@ int recv_roam_adv(struct sk_buff *skb, struct
+> hard_iface *recv_if) orig_node_free_ref(orig_node);
+>         ret = NET_RX_SUCCESS;
+>  out:
+> -       kfree(skb);
+> +       kfree_skb(skb);
+>         return ret;
+>  }
+>  
 
-Applied in revision 6872456.
+I'd say recv_roam_adv() suffers from the same problem you fixed in 
+recv_tt_query() with your previous patch. Wouldn't you say so ?
 
-Thanks,
+Cheers,
 Marek
