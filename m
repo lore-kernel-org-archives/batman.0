@@ -1,8 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 15 Jun 2011 15:08:59 +0200
-Message-Id: <1308143339-20188-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Move compare_orig to originator.c
+Date: Wed, 15 Jun 2011 15:17:21 +0200
+Message-Id: <1308143841-21713-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Keep interface_tx as local
+	function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,54 +17,40 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-compare_orig is only used in context of orig_node which is managed
-inside originator.c. It is not necessary to keep that function inside
-the header originator.h.
+interface_tx is not used outside of soft-interface.c and thus doesn't
+need to be declared inside soft-interface.h
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- originator.c |    8 ++++++++
- originator.h |    8 --------
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ soft-interface.c |    2 +-
+ soft-interface.h |    1 -
+ 2 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index 62d8196..338b3c5 100644
---- a/originator.c
-+++ b/originator.c
-@@ -37,6 +37,14 @@ static void start_purge_timer(struct bat_priv *bat_priv)
- 	queue_delayed_work(bat_event_workqueue, &bat_priv->orig_work, 1 * HZ);
+diff --git a/soft-interface.c b/soft-interface.c
+index 7aeed0d..7c554b4 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -554,7 +554,7 @@ static int interface_change_mtu(struct net_device *dev, int new_mtu)
+ 	return 0;
  }
  
-+/* returns 1 if they are the same originator */
-+static int compare_orig(const struct hlist_node *node, const void *data2)
-+{
-+	const void *data1 = container_of(node, struct orig_node, hash_entry);
-+
-+	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
-+}
-+
- int originator_init(struct bat_priv *bat_priv)
+-int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
++static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
  {
- 	if (bat_priv->orig_hash)
-diff --git a/originator.h b/originator.h
-index 8e307af..cfc1f60 100644
---- a/originator.h
-+++ b/originator.h
-@@ -40,14 +40,6 @@ int orig_hash_add_if(struct hard_iface *hard_iface, int max_if_num);
- int orig_hash_del_if(struct hard_iface *hard_iface, int max_if_num);
- 
- 
--/* returns 1 if they are the same originator */
--static inline int compare_orig(const struct hlist_node *node, const void *data2)
--{
--	const void *data1 = container_of(node, struct orig_node, hash_entry);
--
--	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
--}
--
- /* hashfunction to choose an entry in a hash table of given size */
- /* hash algorithm from http://en.wikipedia.org/wiki/Hash_table */
- static inline int choose_orig(const void *data, int32_t size)
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
+ 	struct bat_priv *bat_priv = netdev_priv(soft_iface);
+diff --git a/soft-interface.h b/soft-interface.h
+index c24906d..001546f 100644
+--- a/soft-interface.h
++++ b/soft-interface.h
+@@ -25,7 +25,6 @@
+ int my_skb_head_push(struct sk_buff *skb, unsigned int len);
+ int softif_neigh_seq_print_text(struct seq_file *seq, void *offset);
+ void softif_neigh_purge(struct bat_priv *bat_priv);
+-int interface_tx(struct sk_buff *skb, struct net_device *soft_iface);
+ void interface_rx(struct net_device *soft_iface,
+ 		  struct sk_buff *skb, struct hard_iface *recv_if,
+ 		  int hdr_size);
 -- 
 1.7.5.3
 
