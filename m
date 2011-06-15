@@ -1,17 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 15 Jun 2011 23:38:57 +0200
+Date: Wed, 15 Jun 2011 23:42:38 +0200
 References: <1307307664-19910-1-git-send-email-ordex@autistici.org>
-	<1307307664-19910-3-git-send-email-ordex@autistici.org>
-	<20110605215052.GW4071@lunn.ch>
-In-Reply-To: <20110605215052.GW4071@lunn.ch>
+	<1307307664-19910-4-git-send-email-ordex@autistici.org>
+	<20110605215552.GX4071@lunn.ch>
+In-Reply-To: <20110605215552.GX4071@lunn.ch>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201106152338.58217.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: implement AP-isolation
-	on the sender side
+Message-Id: <201106152342.39423.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: implement AP-isolation
+	on the receiver side
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,18 +25,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, June 05, 2011 11:50:52 PM Andrew Lunn wrote:
-> Hi Antonio
+On Sunday, June 05, 2011 11:55:52 PM Andrew Lunn wrote:
+> > diff --git a/translation-table.c b/translation-table.c
+> > index e0c5945..24e48e7 100644
+> > --- a/translation-table.c
+> > +++ b/translation-table.c
+> > @@ -1683,3 +1683,33 @@ void tt_free(struct bat_priv *bat_priv)
+> > 
+> >  	kfree(bat_priv->tt_buff);
+> >  
+> >  }
+> > 
+> > +
+> > +bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t
+> > *dst)
 > 
-> > +static bool _is_ap_isolated(struct tt_local_entry *tt_local_entry,
-> > +			    struct tt_global_entry *tt_global_entry)
+> Doh!
 > 
-> The general pattern i've seen in linux code is that a function _foobar
-> is a helper for a function foobar. I don't see an is_ap_isolated()
-> here. So i would just call it is_ap_isolated.
+> O.K. The ordering could of been better... but the code at the end is
+> O.K, which is what matters.
 
-I agree - I also wondered about where to find is_ap_isolated() when I saw 
-_is_ap_isolated().
+Aarrgh, same here. Let's see how many others fall into this trap.
+How about reversing the order of these patches to avoid this "problem" ?
 
 Regards,
 Marek
