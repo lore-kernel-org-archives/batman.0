@@ -1,16 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 15 Jun 2011 21:04:15 +0200
-References: <1308123697-7893-1-git-send-email-sven@narfation.org>
-	<1308123697-7893-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1308123697-7893-2-git-send-email-sven@narfation.org>
+Return-Path: <fboehm@aon.at>
+Message-ID: <4DF90276.8050701@aon.at>
+Date: Wed, 15 Jun 2011 21:05:26 +0200
+From: fboehm <fboehm@aon.at>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201106152104.16054.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: count_real_packets() in
-	batman-adv assumes char is signed
+Subject: [B.A.T.M.A.N.] Linux bridge-code for something like BATMAN
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,19 +19,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday, June 15, 2011 09:41:36 AM Sven Eckelmann wrote:
-> From: David Howells <dhowells@redhat.com>
-> 
-> count_real_packets() in batman-adv assumes char is signed, and returns -1
-> through it:
-> 
-> net/batman-adv/routing.c: In function 'receive_bat_packet':
-> net/batman-adv/routing.c:739: warning: comparison is always false due to
-> limited range of data type
-> 
-> Use int instead.
+Hi,
 
-Applied in revision fdc8438.
+I know bridging is not routing but I was thinking since some time if it 
+is possible to modify the linux bridge-code for forwarding layer2 
+packets according to the rules of some routing algorithm. This means the 
+bridge would not learn mac addresses from ARP protocol any longer but 
+from a daemon. The result would be a layer2 mesh routing like BATMAN does.
 
-Thanks,
-Marek
+OLSR is doing quite the same one layer above by manipulating the routing 
+table with the OLSR daemon. Of course it's much easier to manipulate a 
+routing table because there are interfaces for doing this.
+
+It's just an idea and I would like to hear your expert opinions.
+
+Kind regards,
+Franz
