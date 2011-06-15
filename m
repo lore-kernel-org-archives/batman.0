@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 16 Jun 2011 00:32:24 +0200
-Message-Id: <1308177145-21191-1-git-send-email-ordex@autistici.org>
+Date: Thu, 16 Jun 2011 00:32:25 +0200
+Message-Id: <1308177145-21191-2-git-send-email-ordex@autistici.org>
 In-Reply-To: <201106152056.18072.lindner_marek@yahoo.de>
 References: <201106152056.18072.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: the skb has not to be freed
-	in recv_roam_adv()
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: skbs have to be freed using
+	kfree_skb()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,41 +19,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-In recv_roam_adv(), in case of error the skb is freed and then
-NET_RX_DROP is returned. This makes the caller function wrongly invoke
-kfree_skb() again. To avoid this double free recv_tt_query() has to
-always return NET_RX_DROP and not to free the skb.
+The skb structures have always to be freed using kfree_skb() and not the
+simple kfree()
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- routing.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ translation-table.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/routing.c b/routing.c
-index 2222288..0ce090c 100644
---- a/routing.c
-+++ b/routing.c
-@@ -1259,7 +1259,6 @@ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
- 	struct roam_adv_packet *roam_adv_packet;
- 	struct orig_node *orig_node;
- 	struct ethhdr *ethhdr;
--	int ret = NET_RX_DROP;
+diff --git a/translation-table.c b/translation-table.c
+index adecf1b..373ee81 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1199,7 +1199,7 @@ out:
+ 	if (primary_if)
+ 		hardif_free_ref(primary_if);
+ 	if (!ret)
+-		kfree(skb);
++		kfree_skb(skb);
+ 	return ret;
  
- 	/* drop packet if it has not necessary minimum size */
- 	if (unlikely(!pskb_may_pull(skb, sizeof(struct roam_adv_packet))))
-@@ -1297,10 +1296,9 @@ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
- 	bat_priv->tt_poss_change = true;
- 
- 	orig_node_free_ref(orig_node);
--	ret = NET_RX_SUCCESS;
- out:
--	kfree(skb);
--	return ret;
-+	/* returning NET_RX_DROP will make the caller function kfree the skb */
-+	return NET_RX_DROP;
  }
- 
- /* find a suitable router for this originator, and use
+@@ -1312,7 +1312,7 @@ out:
+ 	if (primary_if)
+ 		hardif_free_ref(primary_if);
+ 	if (!ret)
+-		kfree(skb);
++		kfree_skb(skb);
+ 	/* This packet was for me, so it doesn't need to be re-routed */
+ 	return true;
+ }
 -- 
 1.7.3.4
 
