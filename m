@@ -1,16 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 15 Jun 2011 07:56:08 +0200
+Date: Wed, 15 Jun 2011 07:59:15 +0200
 References: <20110614235132.3724.57632.stgit@warthog.procyon.org.uk>
-	<20110614235142.3724.92963.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20110614235142.3724.92963.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20110614235132.3724.57632.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6415492.DeiPKRp8Ju";
+Content-Type: multipart/signed; boundary="nextPart3529075.mEVmQ899UY";
 	protocol="application/pgp-signature"; micalg=pgp-sha512
 Content-Transfer-Encoding: 7bit
-Message-Id: <201106150756.10117.sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: compare_eth() should
-	take const pointer arguments
+Message-Id: <201106150759.15643.sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: count_real_packets() in
+	batman-adv assumes char is signed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,82 +24,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: David Howells <dhowells@redhat.com>
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
---nextPart6415492.DeiPKRp8Ju
+--nextPart3529075.mEVmQ899UY
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
 David Howells wrote:
-> compare_eth() should take const pointer arguments so that it can be passed
-> const pointers without the need for a cast, leading to:
+> count_real_packets() in batman-adv assumes char is signed, and returns -1
+> through it:
 >=20
-> net/batman-adv/vis.c: In function 'vis_data_insert_interface':
-> net/batman-adv/vis.c:146: warning: passing argument 2 of 'compare_eth'
-> discards qualifiers from pointer target type
+> net/batman-adv/routing.c: In function 'receive_bat_packet':
+> net/batman-adv/routing.c:739: warning: comparison is always false due to
+> limited range of data type
 >=20
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> cc: Marek Lindner <lindner_marek@yahoo.de>
-> cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> cc: Sven Eckelmann <sven@narfation.org>
-> cc: b.a.t.m.a.n@lists.open-mesh.org
-> cc: netdev@vger.kernel.org
-> ---
+> Use int instead.
 >=20
->  net/batman-adv/main.h |    2 +-
->  net/batman-adv/vis.c  |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-> index 148b49e..e6fc798 100644
-> --- a/net/batman-adv/main.h
-> +++ b/net/batman-adv/main.h
-> @@ -172,7 +172,7 @@ static inline void bat_dbg(char type __always_unused,
->   *
->   * note: can't use compare_ether_addr() as it requires aligned memory
->   */
-> -static inline int compare_eth(void *data1, void *data2)
-> +static inline int compare_eth(const void *data1, const void *data2)
+
+[...]
+> -static char count_real_packets(struct ethhdr *ethhdr,
+> -			       struct batman_packet *batman_packet,
+> -			       struct hard_iface *if_incoming)
+> +static int count_real_packets(struct ethhdr *ethhdr,
+> +			      struct batman_packet *batman_packet,
+> +			      struct hard_iface *if_incoming)
 >  {
->  	return (memcmp(data1, data2, ETH_ALEN) =3D=3D 0 ? 1 : 0);
->  }
-> diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
-> index c39f20c..34053ac 100644
-> --- a/net/batman-adv/vis.c
-> +++ b/net/batman-adv/vis.c
-> @@ -143,7 +143,7 @@ static void vis_data_insert_interface(const uint8_t
-> *interface, struct hlist_node *pos;
->=20
->  	hlist_for_each_entry(entry, pos, if_list, list) {
-> -		if (compare_eth(entry->addr, (void *)interface))
-> +		if (compare_eth(entry->addr, interface))
->  			return;
->  	}
 
-Sry, but this patch doesn't apply here (net-next-2.6/linux-next)
 
-Kind regards,
+This one doesn't apply on linux-next/net-next-2.6, but I will fix it by han=
+d.
+
+Thanks,
 	Sven
 
---nextPart6415492.DeiPKRp8Ju
+--nextPart3529075.mEVmQ899UY
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABCgAGBQJN+El5AAoJEF2HCgfBJntGi98QAKSvOwMaJraCxyLkwwZutlse
-RFWePTrfMYlmZqE+nShd9PaQmLFwH0jfOo9efka7lomy0HL37/SbAOlWZjsvt/8a
-IybENol7QjY2mk4SEeEfEzDHaTF+hZcJDOoHKwK6iQ9MNzPsMRjdfJSNW1y98Arp
-Ax04f80WKPWHJSEdN+Kh7wcdV9MEUy+qwmb2WTiMTawLuO2G80086LACaibfxXrK
-82jiwmFCtSstqmc/LLvaJM2vuSMYVRLBa0rlRY491xX6HroMuYahcl9kIAEjgfls
-7PzgrMlpIThNaxxCLTZylXAhtrRa6ufIiuW9zd9BAdQ1pqRtVPqKg05callFDUZd
-4ZNT5zqM3aPFKFCq1MzGYIXyu23JdEQgFZ3CCKoSbBizsMEiMavDB1+ubIppLFwY
-WIozx/jTBr+QTlRO60JceRoYeX5mL1iFwHZ9bNEeOfYuCAdYSs5gnPBhnroymh5f
-B2PDJF6DOwJrT5OdEgmUg6tgshx18MzlrQzH3LwTFM3NHn6ipCoVwLy5DJfscPTf
-Fni/0dUUHaqiKTre5sqnQsZfRjktJsmf7+S4GP0im3HGdcLhm2/rZ9pAB1qfFoYW
-SEpmDx1v8rURrHpipTDtomM1ge+3tE9EeWnlshYc9O8Q80Za71zZAwhVx+wnFbFg
-kRRk6rvbct9iI6mfqgHe
-=oB+4
+iQIcBAABCgAGBQJN+EozAAoJEF2HCgfBJntG1vsP+wTsooSe/vh/kc2V2Y19JYLq
+0TtvDWqKGUEyA68VakxspRhWfCNuKBhsK1rcR3oHnE5Kvx0SvEqolpR30UMBxPXu
+8wIvqWTUNBmfQL/aS089MqXn6Bn1zP4PJS6ovfA+D62t5J4JlEuxmAN6VkIDYMg6
+8gVfSeRLUFXBXQRbs3gmI39wZzt3y8ODR2YJEST6PsZJpGyammqq4Q9LM1dfz7ZT
+xPtofQmVffRplJ++i5viCvo0oud/8YXom65Zc9ff/ZC+rdAMBfLOocGJ2QmSKnK4
+rOH8opU+8W3paHVWwnofueTIOH4sB7UiUcNFrnzntp02NrgBbnD+2EW14Z4KrGaJ
+VSHgTmMCU2H05TKLaJInHPnEQLsi/4trEvNYT5Uov5jUI5DZnxs4813znjULwjsT
+1f0zSOUw/p66URyLH4TEMA1zCm5JjRHJnaLQSjnSO21UQqB186INHleThZXMqVEG
+AtUcaGnNnF5G045cx2Z/zFtRXv3g4NpGZJQOzWqyEyhzrY6MhLtbFc4cCbJE21ku
+ahfShkJp0Gf2BL/wFoXiiXu8j2vHuC/WtJii6lF8QeJgFtJkoKfMLXVmya8OZ81w
+XQrJvbDTfh3DTxhTmhV4CIFEGDNUCULL7tMhuKemqM8ulRq8EOtEm13FMdjEGk/7
+Y9tfbIFyHWTQ5trJiSky
+=jrRk
 -----END PGP SIGNATURE-----
 
---nextPart6415492.DeiPKRp8Ju--
+--nextPart3529075.mEVmQ899UY--
