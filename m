@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 15 Jun 2011 22:23:21 +0200
-References: <4DF90276.8050701@aon.at>
-	<201106152122.30123.lindner_marek@yahoo.de>
-	<4DF907DB.2070802@aon.at>
-In-Reply-To: <4DF907DB.2070802@aon.at>
+Date: Wed, 15 Jun 2011 22:27:49 +0200
+References: <1308123697-7893-1-git-send-email-sven@narfation.org>
+	<1308123697-7893-3-git-send-email-sven@narfation.org>
+In-Reply-To: <1308123697-7893-3-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201106152223.21903.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Linux bridge-code for something like BATMAN
+Message-Id: <201106152227.50305.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Reduce usage of char
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,20 +23,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday, June 15, 2011 09:28:27 PM fboehm wrote:
-> unfortunately I am stuck with an older kernel where I can't use BATMAN.
-> And everytime I am dealing with linux bridge configuration this idea
-> comes into my mind.
+On Wednesday, June 15, 2011 09:41:37 AM Sven Eckelmann wrote:
+> char was used in different places to store information without really
+> using the characteristics of that data type or by ignoring the fact that
+> char has not a well defined signedness.
 
-If you can't upgrade your kernel you need to develop that for your old kernel 
-version. BATMAN supports up to 2.6.21 which already is ancient ..
+Applied in revision 58fc8de.
 
-
-> At the moment it's just an idea but before starting some experiments I
-> would like to get some feedback.
-
-Then you have to explain your idea in greater detail. Feeding mac addresses 
-into the bridge module alone is not going to make layer2 routing work.
-
-Regards,
+Thanks,
 Marek
