@@ -1,9 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 15 Jun 2011 15:17:21 +0200
-Message-Id: <1308143841-21713-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Keep interface_tx as local
-	function
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 15 Jun 2011 20:41:42 +0200
+References: <1308061362-28727-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1308061362-28727-1-git-send-email-lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201106152041.43112.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: tcpdump - cleanup tt_query
+	packet parser
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,42 +21,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-interface_tx is not used outside of soft-interface.c and thus doesn't
-need to be declared inside soft-interface.h
+On Tuesday, June 14, 2011 04:22:42 PM Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  tcpdump.c |   30 +++++++++++++++++++++++-------
+>  1 files changed, 23 insertions(+), 7 deletions(-)
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- soft-interface.c |    2 +-
- soft-interface.h |    1 -
- 2 files changed, 1 insertions(+), 2 deletions(-)
+Applied in revision 5e42d99.
 
-diff --git a/soft-interface.c b/soft-interface.c
-index 7aeed0d..7c554b4 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -554,7 +554,7 @@ static int interface_change_mtu(struct net_device *dev, int new_mtu)
- 	return 0;
- }
- 
--int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
-+static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- {
- 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
- 	struct bat_priv *bat_priv = netdev_priv(soft_iface);
-diff --git a/soft-interface.h b/soft-interface.h
-index c24906d..001546f 100644
---- a/soft-interface.h
-+++ b/soft-interface.h
-@@ -25,7 +25,6 @@
- int my_skb_head_push(struct sk_buff *skb, unsigned int len);
- int softif_neigh_seq_print_text(struct seq_file *seq, void *offset);
- void softif_neigh_purge(struct bat_priv *bat_priv);
--int interface_tx(struct sk_buff *skb, struct net_device *soft_iface);
- void interface_rx(struct net_device *soft_iface,
- 		  struct sk_buff *skb, struct hard_iface *recv_if,
- 		  int hdr_size);
--- 
-1.7.5.3
-
+Regards,
+Marek
