@@ -1,14 +1,17 @@
-Return-Path: <post@tiwoc.de>
-Message-ID: <4DF9CAE3.8020709@tiwoc.de>
-Date: Thu, 16 Jun 2011 11:20:35 +0200
-From: Daniel Seither <post@tiwoc.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 16 Jun 2011 12:12:53 +0200
+References: <1307307664-19910-1-git-send-email-ordex@autistici.org>
+	<201106152328.29223.lindner_marek@yahoo.de>
+	<20110615224355.GA15320@ritirata.org>
+In-Reply-To: <20110615224355.GA15320@ritirata.org>
 MIME-Version: 1.0
-References: <BANLkTi=HCdWDjTQER8uOP48RW-XsZ6ehaQ@mail.gmail.com>
-In-Reply-To: <BANLkTi=HCdWDjTQER8uOP48RW-XsZ6ehaQ@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] tangentially driver related question on
- broadcasts with batman-adv
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201106161212.54542.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: detect clients connected
+	through a 802.11 device
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,34 +23,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David Beberman <dbeberman@gmail.com>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi!
+On Thursday, June 16, 2011 12:43:55 AM Antonio Quartulli wrote:
+> > > -	tt_local_add(soft_iface, soft_iface->dev_addr);
+> > > +	tt_local_add(soft_iface, soft_iface->dev_addr, NULL_IFINDEX);
+> > 
+> > Are you sure 0 is not a valid index for any interface ?
+> 
+> Yes. You can also check the function dev_new_index() at
+> http://lxr.linux.no/linux+v2.6.39/net/core/dev.c#L5080
+> indexes start from 1 :)
 
-Am 16.06.2011 00:04, schrieb David Beberman:
-> The second way I'm using it is to take advantage of broadcasting
-> as a simply floodfill algorithm.  All of my nodes transmit to all other n=
-odes
-> on a periodic basis.  This is an IPv6 local multicast.  I believe this
-> translates to 802.11 MAC FF:FF:FF:FF:FF:FF broadcast address, and
-> everything works.
->=20
-> What I noticed with a network sniffer is that all of the broadcasts were =
-sent
-> with 1 Mbps data rate.
+Ok.
 
-This is the behavior specified in IEEE 802.11 [1], =A79.6 (Multirate suppor=
-t):
-"All frames with multicast and broadcast in the Address 1 field that
-have a UP of zero shall be transmitted at one of the rates included in
-the BSSBasicRateSet parameter, regardless of their type or subtype."
 
-The basic rate set seems to often consists only of small rates such as 1
-or 2 MBit/s in 11g networks. However, I couldn't find out how to get the
-basic rates supported by my wifi card or configured in the wireless
-stack. Does anyone know how to do this?
+> > How about adding a set of flags (TT_CLIENT_ROAM / TT_CLIENT_WIFI / etc)
+> > instead of adding more and more bool arguments ? In several places the
+> > code converts one to the other which does not seem necessary.
+> 
+> You mean simply passing a int value which is combination of the used
+> flags? mught be a good idea, even for further changes.
 
-- Daniel
+Yes, that is what I had in mind.
 
-[1] http://standards.ieee.org/getieee802/download/802.11-2007.pdf
+
+Regards,
+Marek
