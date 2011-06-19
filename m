@@ -1,16 +1,12 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 19 Jun 2011 21:41:19 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20110619194119.GB30791@pandem0nium>
-References: <BANLkTi=1-+rypSNN-GJvi1rCh_W_SCVH0w@mail.gmail.com>
-	<201106191309.01399.lindner_marek@yahoo.de>
-	<BANLkTi=3o4mFyrRnVo8WZF5gCejzFVPGCQ@mail.gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 19 Jun 2011 22:59:15 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cmJC7u66zC7hs+87"
-Content-Disposition: inline
-In-Reply-To: <BANLkTi=3o4mFyrRnVo8WZF5gCejzFVPGCQ@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Vis server
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201106192259.16044.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] batman-adv 2011.2.0 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,72 +21,92 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---cmJC7u66zC7hs+87
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The B.A.T.M.A.N. team is publishing its latest edition, 2011.2.0, primarily=
+=20
+focusing on bug fixes and compatibility plus some smaller features. As the=
+=20
+kernel module always depends on the Linux kernel it was compiled against, i=
+t=20
+does not make sense to provide binaries on our website. As usual, you will=
+=20
+find the signed tarballs in our download section:
 
-Hello Wayne,
+http://downloads.open-mesh.org/batman/releases/batman-adv-2011.2.0/
 
-if you want access from outside the mesh, you should set up one of the mesh=
- nodes
-to share information, e.g.:
+as well as prepackaged binaries in your distribution.
 
- 1.) set up a netcat server which constantly runs "batctl vd dot"
- 2.) periodically (or on demand?) ssh in to a mesh node which
 
-We have used solution 1 for meshs3d and it works quite fine. It will give y=
-ou pretty
-much the same behaviour as the old vis server.
+Important changes
+=2D----------------
 
-Regards,
-	Simon
+A series of patches has been merged that replaces all occurrences of 'HNA' =
+by=20
+'TT' (standing for 'translation table'). Originally, batman-adv inherited t=
+he=20
+term 'HNA' from our layer 3 implementation which caused some confusion as=20
+people expected it to behave in the same way. The new name is meant to outl=
+ine=20
+the difference. Scripts / tools expecting the string 'HNA' in the debugfs /=
+=20
+batctl output need to be adjusted.
+This renaming is the first step in a number of changes regarding the client=
+=20
+announcement mechanisms. Expect more to come with the following releases.
 
-On Sun, Jun 19, 2011 at 01:39:06PM +0200, wayne abroue wrote:
-> On Sun, Jun 19, 2011 at 1:09 PM, Marek Lindner <lindner_marek@yahoo.de> w=
-rote:
-> >
-> > Hi,
-> >
-> >> I'm trying to interogate vis on a bat-adv server node, Can anybody
-> >> point me in the right direction, It's for use with this
-> >> http://villagetelco.org/2011/06/spud-simple-unified-dashboard-for-mesh=
--netw
-> >> orks/ It works with batman, but not with bat-adv.
-> >
-> > unlike batmand (our layer 3 implementation) batman-adv has the vis serv=
-er
-> > built-in. Using the layer 3 vis server on top of batman-adv won't help =
-you.
-> >
-> > Please read our documentation regarding the layer 2 vis server first an=
-d feel
-> > free to come back with any questions you might have:
-> > http://www.open-mesh.org/wiki/batman-adv/VisAdv
-> >
-> > Regards,
-> > Marek
-> >
->=20
-> Thanks Marek, I get this, and vis is working internally in my bat-adv
-> environment, What this implementation is trying to do is monitor the
-> vis from outside the mesh, thus my question?
-> How could this be achieved?
->=20
-> Wayne
->=20
 
---cmJC7u66zC7hs+87
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Thanks
+=2D-----
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Thanks to all people sending in patches:
 
-iEYEARECAAYFAk3+UN8ACgkQrzg/fFk7axZLVQCfbG5mn2s/q7Uyv+uNWouw2f3D
-SigAn29lAPjnW0wnf4A2zhgxi5OgaZh7
-=1trs
------END PGP SIGNATURE-----
+  * Andrew Lunn <andrew@lunn.ch>
+  * Antonio Quartulli <ordex@autistici.org>
+  * Daniele Furlan <daniele.furlan@gmail.com>
+  * David Decotigny <decot@google.com>
+  * Linus L=C3=BCssing <linus.luessing@web.de>
+  * Lucas De Marchi <lucas.demarchi@profusion.mobi>
+  * Marek Lindner <lindner_marek@yahoo.de>
+  * Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
+  * Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+  * Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+  * Sven Eckelmann <sven@narfation.org>
+  * Sylvestre Ledru <sylvestre.ledru@scilab.org>
 
---cmJC7u66zC7hs+87--
+
+batman-adv
+=2D---------
+
+In the aftermath of the orig hash lock removal released with 2011.1.0, batm=
+an-
+adv underwent a stabilization phase in which fixing bugs was the highest=20
+priority. Unsurprisingly, the transition to fine grained locking required=20
+further attention such as properly protecting data structures with rcu lock=
+s.=20
+During the debugging phase race conditions were fixed, duplicate code remov=
+ed,=20
+memory leaks eliminated and reference counting imbalances addressed.
+The backward compatibility with older kernel versions as well as the suppor=
+t=20
+of upcoming kernel releases has been thoroughly tested and improved. The lo=
+cal=20
+and global translation table output is reflecting the HNA to TT conversion.=
+=20
+Adding support for multiple vlan ids to the bridge loop avoidance code is t=
+he=20
+only noticeable new feature coming with this release.
+
+
+batctl
+=2D-----
+
+The batctl tool also has been affected by the renaming: the vis data option=
+=20
+'--no-HNA|-H' has been renamed to '--no-TT|-T' and the vis data output prin=
+ts=20
+'label=3DTT' instead of 'label=3DHNA'. To be compliant with the JSON Schema=
+ the=20
+JSON vis data output has been slightly modified.
+
+
+Happy routing,
+The B.A.T.M.A.N. team
