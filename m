@@ -1,12 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 19 Jun 2011 22:59:15 +0200
+Return-Path: <plettpc@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+In-Reply-To: <20110619194119.GB30791@pandem0nium>
+References: <BANLkTi=1-+rypSNN-GJvi1rCh_W_SCVH0w@mail.gmail.com>
+	<201106191309.01399.lindner_marek@yahoo.de>
+	<BANLkTi=3o4mFyrRnVo8WZF5gCejzFVPGCQ@mail.gmail.com>
+	<20110619194119.GB30791@pandem0nium>
+Date: Mon, 20 Jun 2011 10:04:22 +0200
+Message-ID: <BANLkTi=hr0bmH8G8G8X3AvqWq7XquOvbBQ@mail.gmail.com>
+From: wayne abroue <plettpc@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <201106192259.16044.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] batman-adv 2011.2.0 released
+Subject: Re: [B.A.T.M.A.N.] Vis server
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,93 +24,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Sun, Jun 19, 2011 at 9:41 PM, Simon Wunderlich
+<simon.wunderlich@s2003.tu-chemnitz.de> wrote:
+> Hello Wayne,
+>
+> if you want access from outside the mesh, you should set up one of the me=
+sh nodes
+> to share information, e.g.:
+>
+> =A01.) set up a netcat server which constantly runs "batctl vd dot"
+> =A02.) periodically (or on demand?) ssh in to a mesh node which
+>
+> We have used solution 1 for meshs3d and it works quite fine. It will give=
+ you pretty
+> much the same behaviour as the old vis server.
+>
+> Regards,
+> =A0 =A0 =A0 =A0Simon
+>
+Thanks Simon
+Yes, I will try also to modify the PHP, maybe using PHP to log in
+using SSH and exec the cmd.
+I'll try to get the Dev, to modify if I don't get it right, SPUD II,
+for bat-adv sounds good!
+Here's a working model running batmand.
+http://villagetelco.org/2011/06/spud-simple-unified-dashboard-for-mesh-netw=
+orks/
 
-The B.A.T.M.A.N. team is publishing its latest edition, 2011.2.0, primarily=
-=20
-focusing on bug fixes and compatibility plus some smaller features. As the=
-=20
-kernel module always depends on the Linux kernel it was compiled against, i=
-t=20
-does not make sense to provide binaries on our website. As usual, you will=
-=20
-find the signed tarballs in our download section:
-
-http://downloads.open-mesh.org/batman/releases/batman-adv-2011.2.0/
-
-as well as prepackaged binaries in your distribution.
-
-
-Important changes
-=2D----------------
-
-A series of patches has been merged that replaces all occurrences of 'HNA' =
-by=20
-'TT' (standing for 'translation table'). Originally, batman-adv inherited t=
-he=20
-term 'HNA' from our layer 3 implementation which caused some confusion as=20
-people expected it to behave in the same way. The new name is meant to outl=
-ine=20
-the difference. Scripts / tools expecting the string 'HNA' in the debugfs /=
-=20
-batctl output need to be adjusted.
-This renaming is the first step in a number of changes regarding the client=
-=20
-announcement mechanisms. Expect more to come with the following releases.
-
-
-Thanks
-=2D-----
-
-Thanks to all people sending in patches:
-
-  * Andrew Lunn <andrew@lunn.ch>
-  * Antonio Quartulli <ordex@autistici.org>
-  * Daniele Furlan <daniele.furlan@gmail.com>
-  * David Decotigny <decot@google.com>
-  * Linus L=C3=BCssing <linus.luessing@web.de>
-  * Lucas De Marchi <lucas.demarchi@profusion.mobi>
-  * Marek Lindner <lindner_marek@yahoo.de>
-  * Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-  * Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-  * Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-  * Sven Eckelmann <sven@narfation.org>
-  * Sylvestre Ledru <sylvestre.ledru@scilab.org>
-
-
-batman-adv
-=2D---------
-
-In the aftermath of the orig hash lock removal released with 2011.1.0, batm=
-an-
-adv underwent a stabilization phase in which fixing bugs was the highest=20
-priority. Unsurprisingly, the transition to fine grained locking required=20
-further attention such as properly protecting data structures with rcu lock=
-s.=20
-During the debugging phase race conditions were fixed, duplicate code remov=
-ed,=20
-memory leaks eliminated and reference counting imbalances addressed.
-The backward compatibility with older kernel versions as well as the suppor=
-t=20
-of upcoming kernel releases has been thoroughly tested and improved. The lo=
-cal=20
-and global translation table output is reflecting the HNA to TT conversion.=
-=20
-Adding support for multiple vlan ids to the bridge loop avoidance code is t=
-he=20
-only noticeable new feature coming with this release.
-
-
-batctl
-=2D-----
-
-The batctl tool also has been affected by the renaming: the vis data option=
-=20
-'--no-HNA|-H' has been renamed to '--no-TT|-T' and the vis data output prin=
-ts=20
-'label=3DTT' instead of 'label=3DHNA'. To be compliant with the JSON Schema=
- the=20
-JSON vis data output has been slightly modified.
-
-
-Happy routing,
-The B.A.T.M.A.N. team
+Wayne
