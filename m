@@ -1,8 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 20 Jun 2011 12:16:53 +0200
-Message-Id: <1308565025-21293-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 2011-06-20
+Date: Mon, 20 Jun 2011 12:16:58 +0200
+Message-Id: <1308565025-21293-6-git-send-email-sven@narfation.org>
+In-Reply-To: <1308565025-21293-1-git-send-email-sven@narfation.org>
+References: <1308565025-21293-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 05/12] batman-adv: Unify the first 3 bytes in
+	each packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,73 +20,122 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+From: Antonio Quartulli <ordex@autistici.org>
 
-I would like to propose following changes for net-next-2.6/3.1. The
-first part (1-4) are only only small cleanup patches. The last 8 patches
-are related to Antonio Quartulli's research "Client announcement and
-Fast roaming in a Layer-2 mesh network". The technical report isn't
-published yet, but will hopefully follow soon. He tried to document all
-important parts in some (unofficial) documents [1,2,3].
+The amount of duplicated code in the receive and routing code can be
+reduced when all headers provide the packet type, version and ttl in the
+same first bytes.
 
-thanks,
-	Sven
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/packet.h |   30 ++++++++++++++++++------------
+ 1 files changed, 18 insertions(+), 12 deletions(-)
 
-[1] http://www.open-mesh.org/wiki/batman-adv/Client-announcement
-[2] http://www.open-mesh.org/wiki/batman-adv/Client-roaming
-[3] http://www.open-mesh.org/wiki/batman-adv/Uevent
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index 9f77086..6ddbfd8 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -34,7 +34,7 @@ enum bat_packettype {
+ };
+ 
+ /* this file is included by batctl which needs these defines */
+-#define COMPAT_VERSION 12
++#define COMPAT_VERSION 14
+ 
+ enum batman_flags {
+ 	PRIMARIES_FIRST_HOP = 1 << 4,
+@@ -66,15 +66,15 @@ enum unicast_frag_flags {
+ struct batman_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
++	uint8_t  ttl;
+ 	uint8_t  flags;    /* 0x40: DIRECTLINK flag, 0x20 VIS_SERVER flag... */
+-	uint8_t  tq;
+ 	uint32_t seqno;
+ 	uint8_t  orig[6];
+ 	uint8_t  prev_sender[6];
+-	uint8_t  ttl;
+-	uint8_t  num_tt;
+ 	uint8_t  gw_flags;  /* flags related to gateway class */
+-	uint8_t  align;
++	uint8_t  tq;
++	uint8_t  num_tt;
++	uint8_t  reserved;
+ } __packed;
+ 
+ #define BAT_PACKET_LEN sizeof(struct batman_packet)
+@@ -82,12 +82,13 @@ struct batman_packet {
+ struct icmp_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  ttl;
++	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  dst[6];
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+ 	uint8_t  uid;
++	uint8_t  reserved;
+ } __packed;
+ 
+ #define BAT_RR_LEN 16
+@@ -97,8 +98,8 @@ struct icmp_packet {
+ struct icmp_packet_rr {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  ttl;
++	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  dst[6];
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+@@ -110,16 +111,19 @@ struct icmp_packet_rr {
+ struct unicast_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  dest[6];
+ 	uint8_t  ttl;
++	uint8_t  reserved;
++	uint8_t  dest[6];
+ } __packed;
+ 
+ struct unicast_frag_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  dest[6];
+ 	uint8_t  ttl;
++	uint8_t  reserved;
++	uint8_t  dest[6];
+ 	uint8_t  flags;
++	uint8_t  align;
+ 	uint8_t  orig[6];
+ 	uint16_t seqno;
+ } __packed;
+@@ -127,18 +131,20 @@ struct unicast_frag_packet {
+ struct bcast_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+-	uint8_t  orig[6];
+ 	uint8_t  ttl;
++	uint8_t  reserved;
+ 	uint32_t seqno;
++	uint8_t  orig[6];
+ } __packed;
+ 
+ struct vis_packet {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;        /* batman version field */
++	uint8_t  ttl;		 /* TTL */
+ 	uint8_t  vis_type;	 /* which type of vis-participant sent this? */
+-	uint8_t  entries;	 /* number of entries behind this struct */
+ 	uint32_t seqno;		 /* sequence number */
+-	uint8_t  ttl;		 /* TTL */
++	uint8_t  entries;	 /* number of entries behind this struct */
++	uint8_t  reserved;
+ 	uint8_t  vis_orig[6];	 /* originator that announces its neighbors */
+ 	uint8_t  target_orig[6]; /* who should receive this packet */
+ 	uint8_t  sender_orig[6]; /* who sent or rebroadcasted this packet */
+-- 
+1.7.5.3
 
-
-The following changes since commit ecbd532108cb21d9d3770f73e168bad65d14d9eb:
-
-  batman-adv: use NO_FLAGS define instead of hard-coding 0 (2011-06-09 20:40:38 +0200)
-
-are available in the git repository at:
-  git://git.open-mesh.org/ecsv/linux-merge.git batman-adv/next
-
-Antonio Quartulli (8):
-      batman-adv: Unify the first 3 bytes in each packet
-      batman-adv: improved client announcement mechanism
-      batman-adv: improved roaming mechanism
-      batman-adv: protect the local and the global trans-tables with rcu
-      batman-adv: add wrapper function to throw uevent in userspace
-      batman-adv: gateway election code refactoring
-      batman-adv: throw uevent in userspace on gateway add/change/del event
-      batman-adv: improved gateway tq-based selection
-
-David Howells (1):
-      batman-adv: count_real_packets() in batman-adv assumes char is signed
-
-Sven Eckelmann (3):
-      batman-adv: Move compare_orig to originator.c
-      batman-adv: Keep interface_tx as local function
-      batman-adv: Reduce usage of char
-
- net/batman-adv/Kconfig             |    1 +
- net/batman-adv/aggregation.c       |   25 +-
- net/batman-adv/aggregation.h       |    8 +-
- net/batman-adv/bat_sysfs.c         |   73 ++-
- net/batman-adv/bat_sysfs.h         |    2 +
- net/batman-adv/bitarray.c          |    8 +-
- net/batman-adv/bitarray.h          |    8 +-
- net/batman-adv/gateway_client.c    |  238 +++++--
- net/batman-adv/gateway_client.h    |    3 +-
- net/batman-adv/gateway_common.c    |    6 +-
- net/batman-adv/hard-interface.c    |   17 +-
- net/batman-adv/main.c              |   18 +-
- net/batman-adv/main.h              |   27 +-
- net/batman-adv/originator.c        |   17 +-
- net/batman-adv/originator.h        |    8 -
- net/batman-adv/packet.h            |   92 ++-
- net/batman-adv/routing.c           |  317 +++++++--
- net/batman-adv/routing.h           |    7 +-
- net/batman-adv/send.c              |   92 ++-
- net/batman-adv/send.h              |    2 +-
- net/batman-adv/soft-interface.c    |   26 +-
- net/batman-adv/soft-interface.h    |    1 -
- net/batman-adv/translation-table.c | 1428 ++++++++++++++++++++++++++++++------
- net/batman-adv/translation-table.h |   38 +-
- net/batman-adv/types.h             |   64 ++-
- net/batman-adv/unicast.c           |    3 +
- net/batman-adv/vis.c               |   13 +-
- 27 files changed, 2080 insertions(+), 462 deletions(-)
