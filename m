@@ -1,16 +1,11 @@
-Return-Path: <plettpc@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20110619194119.GB30791@pandem0nium>
-References: <BANLkTi=1-+rypSNN-GJvi1rCh_W_SCVH0w@mail.gmail.com>
-	<201106191309.01399.lindner_marek@yahoo.de>
-	<BANLkTi=3o4mFyrRnVo8WZF5gCejzFVPGCQ@mail.gmail.com>
-	<20110619194119.GB30791@pandem0nium>
-Date: Mon, 20 Jun 2011 10:04:22 +0200
-Message-ID: <BANLkTi=hr0bmH8G8G8X3AvqWq7XquOvbBQ@mail.gmail.com>
-From: wayne abroue <plettpc@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Vis server
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 20 Jun 2011 12:16:54 +0200
+Message-Id: <1308565025-21293-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1308565025-21293-1-git-send-email-sven@narfation.org>
+References: <1308565025-21293-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 01/12] batman-adv: Move compare_orig to
+	originator.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,33 +17,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun, Jun 19, 2011 at 9:41 PM, Simon Wunderlich
-<simon.wunderlich@s2003.tu-chemnitz.de> wrote:
-> Hello Wayne,
->
-> if you want access from outside the mesh, you should set up one of the me=
-sh nodes
-> to share information, e.g.:
->
-> =A01.) set up a netcat server which constantly runs "batctl vd dot"
-> =A02.) periodically (or on demand?) ssh in to a mesh node which
->
-> We have used solution 1 for meshs3d and it works quite fine. It will give=
- you pretty
-> much the same behaviour as the old vis server.
->
-> Regards,
-> =A0 =A0 =A0 =A0Simon
->
-Thanks Simon
-Yes, I will try also to modify the PHP, maybe using PHP to log in
-using SSH and exec the cmd.
-I'll try to get the Dev, to modify if I don't get it right, SPUD II,
-for bat-adv sounds good!
-Here's a working model running batmand.
-http://villagetelco.org/2011/06/spud-simple-unified-dashboard-for-mesh-netw=
-orks/
+compare_orig is only used in context of orig_node which is managed
+inside originator.c. It is not necessary to keep that function inside
+the header originator.h.
 
-Wayne
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/originator.c |    8 ++++++++
+ net/batman-adv/originator.h |    8 --------
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index a6c35d4..991a6e7 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -37,6 +37,14 @@ static void start_purge_timer(struct bat_priv *bat_priv)
+ 	queue_delayed_work(bat_event_workqueue, &bat_priv->orig_work, 1 * HZ);
+ }
+ 
++/* returns 1 if they are the same originator */
++static int compare_orig(const struct hlist_node *node, const void *data2)
++{
++	const void *data1 = container_of(node, struct orig_node, hash_entry);
++
++	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
++}
++
+ int originator_init(struct bat_priv *bat_priv)
+ {
+ 	if (bat_priv->orig_hash)
+diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
+index 8e307af..cfc1f60 100644
+--- a/net/batman-adv/originator.h
++++ b/net/batman-adv/originator.h
+@@ -40,14 +40,6 @@ int orig_hash_add_if(struct hard_iface *hard_iface, int max_if_num);
+ int orig_hash_del_if(struct hard_iface *hard_iface, int max_if_num);
+ 
+ 
+-/* returns 1 if they are the same originator */
+-static inline int compare_orig(const struct hlist_node *node, const void *data2)
+-{
+-	const void *data1 = container_of(node, struct orig_node, hash_entry);
+-
+-	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
+-}
+-
+ /* hashfunction to choose an entry in a hash table of given size */
+ /* hash algorithm from http://en.wikipedia.org/wiki/Hash_table */
+ static inline int choose_orig(const void *data, int32_t size)
+-- 
+1.7.5.3
+
