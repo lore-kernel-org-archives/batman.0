@@ -1,13 +1,11 @@
-Return-Path: <davem@davemloft.net>
-Date: Mon, 20 Jun 2011 13:01:19 -0700 (PDT)
-Message-Id: <20110620.130119.2092406320851066318.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1308565025-21293-1-git-send-email-sven@narfation.org>
-References: <1308565025-21293-1-git-send-email-sven@narfation.org>
+Return-Path: <gofb-b.a.t.m.a.n@m.gmane.org>
+From: Max IP <ipmax2011@hotmail.com>
+Date: Tue, 21 Jun 2011 12:51:56 +0000 (UTC)
+Message-ID: <loom.20110621T143855-684@post.gmane.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-06-20
+Subject: [B.A.T.M.A.N.] iperf in 3 node batman-adv network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,19 +17,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven@narfation.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 20 Jun 2011 12:16:53 +0200
+Hi all,
 
-> I would like to propose following changes for net-next-2.6/3.1. The
-> first part (1-4) are only only small cleanup patches. The last 8 patches
-> are related to Antonio Quartulli's research "Client announcement and
-> Fast roaming in a Layer-2 mesh network". The technical report isn't
-> published yet, but will hopefully follow soon. He tried to document all
-> important parts in some (unofficial) documents [1,2,3].
+I am implementing the 3 node batman-adv network.
 
-Pulled, but you should seriously consider locking down the on-the-wire
-protocol at some point and only make backward compatible changes to it
-from that point forward.
+A <---> B <---> C
+
+B is the relay point for communication between A and C.
+
+I have setup the batman-adv 2011.1.0 in all nodes and succesfully I can
+communicate and also use avahi between all nodes.
+
+Now I want to calculate bandwidth, jitter and throughput patterns.
+
+To calculate bandwidth, I used 
+iperf -s on machine A.
+
+On machine B, I used
+iperf -C <ip address of A>
+This gave me a bandwidth of 89.1 Mbits/sec
+
+On machine C, I used
+iperf -c <ip address of A>
+This gave me a bandwith of 89.0 Mbits/sec
+
+Since, there is relay through B to reach C, I was expecting the bandwith from A
+to C to be less around half (say 50 Mbits/sec). Is my understanding correct?
+
+Please help me.
+
+Max
+
