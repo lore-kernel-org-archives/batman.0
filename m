@@ -1,17 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 22 Jun 2011 22:58:01 +0200
-Message-ID: <2867331.bNPR7zso8k@sven-desktop.home.narfation.org>
-In-Reply-To: <20110622.011620.1019772975075064501.davem@davemloft.net>
-References: <1308661983-4113-1-git-send-email-sven@narfation.org>
-	<28453742.RFlbu1Gcpv@sven-desktop.home.narfation.org>
-	<20110622.011620.1019772975075064501.davem@davemloft.net>
+Return-Path: <dbeberman@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9918459.7MH3XqzQJB";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] MAINTAINERS: Remove Sven Eckelmann from
-	BATMAN ADVANCED
+Date: Thu, 23 Jun 2011 11:51:40 -0400
+Message-ID: <BANLkTimmgkGAXscfEJHwKYoUgEuLL4Oc=Q@mail.gmail.com>
+From: David Beberman <dbeberman@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] previous tangentially related broadcast issue --
+	info on MAC80211
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,109 +17,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+This is probably well understood by the engineers working on
+the Linux Wireless layer and those on the batman-adv project.
+I'm just a user trying to figure out what the best use of the
+protocol is for my application.  This is a follow up explanation
+for the behavior I have been seeing.
 
---nextPart9918459.7MH3XqzQJB
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+I walked through the MAC80211 layer.  There are rate control
+algorithms that are loaded as modules.  Currently there seems to be
+two of them, but more can be registered.  Each of these appears to
+check individually for multicast and broadcast packets.  Each
+broadcast packet uses the lowest basic rate available.  The multicast
+packets use a basic rate from the BSSBasicRateSet that can be user
+defined.
+I believe, but have not verified, that batman-adv uses the broadcast
+address (FF:FF:FF:FF:FF:FF) for broadcast and multicast packets.  The
+MAC80211 layer then uses the lowest basic rate available, which in my
+case, with a mixed b/g/n is 1 Mbps.
 
-On Wednesday 22 June 2011 01:16:20 David Miller wrote:
-> From: Sven Eckelmann <sven@narfation.org>
-> Date: Wed, 22 Jun 2011 09:41:45 +0200
-> 
-> > On Tuesday 21 June 2011 14:35:15 David Miller wrote:
-> >> All of this effort was placed to get this thing merged into the
-> >> main tree, and then moved out of staging.
-> > 
-> > "Shooting the messenger" - I think that is the matching phrase. Just try
-> > to grep my name in the net/batman-adv/ and you will see it nowhere.
-> 
-> It is everywhere as far as I am concerned, because you're the only person
-> actually keeping upstream maintained and in sync.
+For what I am trying to do, this is a problem.  However, I would not
+call this a problem with batman-adv or MAC80211 in general.
+I can obviously do a hack for my own uses that looks into the packet
+in the MAC80211 layer to determine if it is a batman-adv broadcast
+packet and use a different rate.  Maybe I can change batman-adv to use
+a multicast MAC address and pick up the fixed multicast rate that I
+can configure in MAC80211.  None of this should be a general change
+for either module.
 
-That is more related to the fact that Mareks opinion on the topic is that only 
-one person should be in responsible for the linux merging and this position 
-should not be changed each time. And I understood the names in MAINTAINERS as 
-the persons which feel responsible and are the right ones to contact to get 
-something done (whether it is merging, submitting bug reports, asking for 
-information, ...).
+Also, last time I looked through the batman-adv code, it did not have
+a multicast implementation from what I could tell.  Seemed like
+multicast was mapped onto a general broadcast approach.  Since my
+application requires all nodes to send to all other nodes in the
+system (full mesh), it seemed like broadcast was the best solution,
+and the docs I read said the same thing.
 
-> > The problem is that I am probably the most unimportant person in the
-> > whole project.
-> 
-> From my perspective, this is not true.  You are the most important
-> person.  And this is because the people writing the code obviously
-> don't care enough about upstream to do any merges themselves.  Yet
-> you do.
+Just thought I'd post a follow up on the broadcast data rate issue in
+case anybody reads through an archive on this, and wanted to
+see any resolution to the questions.
 
-I think that I have to adjust your perspective slightly. I would never say 
-that Marek doesn't care about something. Yes, he never did a pull request, but 
-he always comes up and try to give further insight when it was needed. He is 
-currently the mastermind behind batman-adv and tries to keep everything 
-together.
+Also, I saw a question about whether I had turned on aggregation when
+I increased the OGM rate from 1000 to 100 msecs.  Apologies, but I do
+not remember.  I believe I tried it both ways.
+I was hoping for a decision to go to a multi-hop route would occur
+faster with a higher OGM rate, when I was using unicast UDP traffic,
+and my nodes were moving apart.  Instead, I found that the decision to
+go to multi-hop route appeared to take longer.  Could easily have been
+configuration and user error on my part.  I was using the batctl ping
+with the routing flag to see what the route to look at the behavior.
 
-He already wrote you that he is willing to take over and I will assist him as 
-good as I can (but not doing pull request anymore or giving statements whether 
-a patch is good or bad for batman-adv/linux)
-
-Just to give you a small overview about the stuff where currently work is done 
-(as far as I know). More or less the complete protocol should be rewritten and 
-many features should be added. You already got the first step when you merged 
-the translation table and roaming changes [1]. Other topics seem to be:
- * multicast[2]
- * splitting OGMs[3] in ELP[4], OGM and something else
- * Adding support for an ARP protocol over distributed hash tables[5]
- * wireless network coding[7]
- * ap isolation
- * mesh wide minstrel
- * transmission quality calculated using the data from the wifi drivers along
-   the path
- * redundancy bonding
- * ...
-
-Every change needs some modifications to the packet format and may make it 
-incompatible to the previous versions (some only add flags and some need to 
-modify many things and even add new packet types). They already started to 
-discuss[8] how they want to send those changes to you.
-
-thanks,
-	Sven
-
-
-[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2011-June/005010.html
-[2] http://www.open-mesh.org/wiki/batman-adv/Multicast-ideas
-[3] http://www.open-mesh.org/wiki/batman-adv/OGM
-[4] http://www.open-mesh.org/wiki/batman-adv/ELP
-[5] http://www.open-mesh.org/wiki/batman-adv/DAT
-[6] http://www.open-mesh.org/wiki/batman-adv/MGO
-[7] http://downloads.open-mesh.org/batman/misc/wbmv4-network_coding.avi
-    (there is a document called "Inter-Flow Network Coding for Wireless Mesh
-     Networks" about it, but I don't think that I am allowed to redistribute
-     it)
-[8] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2011-June/005025.html
---nextPart9918459.7MH3XqzQJB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJOAldZAAoJEF2HCgfBJntGPhcQAMDG+p4hvZHKk0gy2vW914SM
-98cinWb1XEsMFI/3VIYqZBpe6chzW0RH03mXt2OMCXcJhTJxVr8XTXy1uKfyqb6l
-wfwhwK+LAdk9j2SQ9+aaAV2QyleC9oAt3TmVIm3GOic/u75TC33L7W7hm9zn+9cP
-HB2434LQ2i3fIZU89F/wy9snMzUOXH2GhOgqovUUxRsOhIdMUo1hqHOfeqTJRXfW
-3PG/YDyWTE6hMBsRJ8spGZXd0K2MRwY2C4d9E8DNFAz2B96I9QEn55DAIu5W57rI
-3xexqT0VPA7lwokhc0ABpumEx6QJvKbhRqamezf7FmVTjp3DL/5MYGoPhGXcKDzg
-ij21g2pZAqMOXgo2+LJApXD2XuQooLem6dj9JjfpZUArFkYoYrorW46tFx2ih86i
-2o2GyaU4ySrmYZ2P1g1aYJ+byV+b4gLrhOakZqeA/B/ZW0vzkV9cjpJ+jMQGqgYo
-+dWMF/xYeHFFTSsLLN0snPAp7+RC/ZZZmT7xQPZECdMQ8KnOG07//N26kIBAnp0S
-qeEFNK9nIdsjFvB/n6paGOWSAwsLRu/yumtD6um0bPp8DitVITw7eK9N1BpYh6md
-dUerv0itErOsZTVwf5TxitDj9MilulQreGmIXV6CQ1mkrrbdKtzxOy6o++Oq84ra
-EmkNkSSRXTxVZdY6+Ccg
-=TdPb
------END PGP SIGNATURE-----
-
---nextPart9918459.7MH3XqzQJB--
-
+Regards,
+David Beberman
