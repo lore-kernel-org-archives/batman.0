@@ -1,14 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 27 Jun 2011 10:15:18 +0200
-Message-ID: <1420378.ZNDDy6Tuoz@sven-laptop.home.narfation.org>
-In-Reply-To: <BANLkTi=cK3LA-563FvccPOH8eZoXHurysA@mail.gmail.com>
-References: <BANLkTi=cK3LA-563FvccPOH8eZoXHurysA@mail.gmail.com>
+Return-Path: <ordex@autistici.org>
+Date: Mon, 27 Jun 2011 13:32:15 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20110627113215.GC30872@ritirata.org>
+References: <1309091169-27226-1-git-send-email-ordex@autistici.org>
+	<1309127157-32507-1-git-send-email-ordex@autistici.org>
+	<20110627053319.GH12315@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart18440909.PhenRuYsvj";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.1.0 network interface setup
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20110627053319.GH12315@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: pass a unique flag arg
+ instead of a sequence of bool ones
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,55 +22,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Max Ip <ipmax2011@googlemail.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Andrew,
 
---nextPart18440909.PhenRuYsvj
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
-
-On Monday 27 June 2011 09:48:38 Max Ip wrote:
-[...]
-> I would like to run bat0 interface directly after restarting the
-> computer (like we have it for wlan0 or eth0)
+On Mon, Jun 27, 2011 at 07:33:19AM +0200, Andrew Lunn wrote:
+> Hi Antonio
 > 
-> Could you please help me how do I do this?
+> > +	/* NOPURGE flag has not to go on the wire */
+> > +	flags &= ~TT_CLIENT_NOPURGE;
+> >  
+> > +	tt_change_node->change.flags = flags;
+> 
+> I don't remember the packet format. But i assume flags on the wire is
+> a u8? How about making TT_CLIENT_NOPURGE 1<<8 or bigger, so it is
+> automatically not sent on the wire? It will also make it easier
+> sometime in the future when you want to use the bit on the wire that
+> TT_CLIENT_NOPURGE is currently taking.
+> 
 
-This is a task for your distributions and we cannot help you here. For 
-example, I think there should be uci support for batman-adv in OpenWRT. There 
-could be support in other networking scripts of other distributions, but 
-usually there is some kind of "user init-script" which is called as last init 
-script so that the user can make his own modifications. (On Debian this would 
-be /etc/rc.local). You can just add the commands needed for the setup to this 
-file and it will be automatically done after the system started. Some 
-networking scripts also allow hooks to be added so that the batman-adv device 
-can automatically be started/removed when another network interface 
-appears/disappears or gets/looses a link.
+Even if we want to add other flags that don't need to be sent on the
+wire. I like this idea.
 
-Kind regards,
-	Sven
---nextPart18440909.PhenRuYsvj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+We can have a uint16_t flags field in the
+tt_local/global_entry structure, where the 8 tailing bits only are sent
+within the messages. Instead, the 8 leading bits are reserved for local purposes.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+> You might also want to change the function parameters flags from int
+> to uint, so avoiding sign extension problems.
 
-iQIcBAABCgAGBQJOCDwWAAoJEF2HCgfBJntG/QcQAMj3jAMDa/LGEeQrNRdY8so0
-/INUOPvTuCwloshfI3FdOq6EPYTdB97UckOSMkVWZeEvUGcHErpvTsiGuvy7TnD+
-uzSxR0idimQAE5xa5V4C35dRcupG9pL9551m5yEzn/qduDjzQU6pv7oSrRHAwT7n
-ZZvXHBwfRi7civ9S0pWFsfDtwnPQU0j1AUBjjAWXDTL4ouAD+r1g41bLhBVAZZbw
-Nc26apUlDhvOH25rnU4kWM5tm1SaHpZWfS++OmKqpaS5h8rf+NeW8rKpOvL6OCyO
-RZFJJyxlsu5pyyjZNoC9xTlhec0SqD/7KmHVJp1Ag0CpatXtqZBQIzSQBoJzyIpy
-UfpsVMm0f4q50RdSlqaop2ms9mDcu3D3eLOezzM3apZvbp1YGPko9JQfUAAzRlbU
-zhPtrgC2GrQe7yyvGBTUGYFYzzZs+6DxcOR0UZpzW/JI9thBjXrC2o36k5WYwdzj
-80FkzJnKkEzyGcKNZuKOdOqHWKqaFrJ+drQfpKmZ/HzK6jNgnmrZtfnLMLdv2ki4
-pqulBXP+7pWQf3b6EphRTA6dDMYiGuzAA+s8+1KD/SWSNvO5mnKsPgc5+zcOMJrY
-VGsEQJTzM9Wo7/332Zcu3L8olBkvTudrJ9FsNSp1jmF/olgIzTKTIq9Ge5z5bm/1
-Hq1vBREAKYJT8YUAzYHp
-=FqHH
------END PGP SIGNATURE-----
+Yes, thanks!
 
---nextPart18440909.PhenRuYsvj--
+> 
+>    Andrew
 
+
+-- 
+Antonio Quartulli
+
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
