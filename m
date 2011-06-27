@@ -1,15 +1,10 @@
-Return-Path: <andrew@lunn.ch>
-Date: Mon, 27 Jun 2011 07:33:19 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20110627053319.GH12315@lunn.ch>
-References: <1309091169-27226-1-git-send-email-ordex@autistici.org>
-	<1309127157-32507-1-git-send-email-ordex@autistici.org>
+Return-Path: <ipmax2011@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1309127157-32507-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: pass a unique flag arg
- instead of a sequence of bool ones
+Date: Mon, 27 Jun 2011 09:48:38 +0200
+Message-ID: <BANLkTi=cK3LA-563FvccPOH8eZoXHurysA@mail.gmail.com>
+From: Max Ip <ipmax2011@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] batman-adv 2011.1.0 network interface setup
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,20 +18,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Antonio
+Hi all,
 
-> +	/* NOPURGE flag has not to go on the wire */
-> +	flags &= ~TT_CLIENT_NOPURGE;
->  
-> +	tt_change_node->change.flags = flags;
+I setup the virtual interface bat0 which embeds wlan0 for my system.
+As described in the batman-adv README file, I did
 
-I don't remember the packet format. But i assume flags on the wire is
-a u8? How about making TT_CLIENT_NOPURGE 1<<8 or bigger, so it is
-automatically not sent on the wire? It will also make it easier
-sometime in the future when you want to use the bit on the wire that
-TT_CLIENT_NOPURGE is currently taking.
+# insmod batman-adv.ko and
+# echo bat0 > /sys/class/net/wlan0/batman_adv/mesh_iface
 
-You might also want to change the function parameters flags from int
-to uint, so avoiding sign extension problems.
+I can thus enable bat0 interface and start the batman-adv protocol in
+multihop environment.
 
-   Andrew
+However, when I restart the computer, I need to again load the kernel
+module and start the process from beginning.
+
+I would like to run bat0 interface directly after restarting the
+computer (like we have it for wlan0 or eth0)
+
+Could you please help me how do I do this?
+
+Thanks in advance
+
+Max
