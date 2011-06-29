@@ -1,16 +1,11 @@
 Return-Path: <ordex@autistici.org>
-Date: Mon, 27 Jun 2011 13:32:15 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110627113215.GC30872@ritirata.org>
-References: <1309091169-27226-1-git-send-email-ordex@autistici.org>
-	<1309127157-32507-1-git-send-email-ordex@autistici.org>
-	<20110627053319.GH12315@lunn.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20110627053319.GH12315@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: pass a unique flag arg
- instead of a sequence of bool ones
+Date: Thu, 30 Jun 2011 01:13:59 +0200
+Message-Id: <1309389240-11486-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1309127157-32507-1-git-send-email-ordex@autistici.org>
+References: <1309127157-32507-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: split tt_local/global_entry
+	flags field for local and remote computations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,43 +17,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Andrew,
+The tt_global/local_entry 'flags' field contains flags used either for
+local and remote computations. To optimise the usage of this field, its
+length has been increased to 16bit in order to use the eight leading bits
+(from 0 to 7) to store flags that have to be sent on the wire, while the
+eight ending ones are used for local computation only.
 
-On Mon, Jun 27, 2011 at 07:33:19AM +0200, Andrew Lunn wrote:
-> Hi Antonio
-> 
-> > +	/* NOPURGE flag has not to go on the wire */
-> > +	flags &= ~TT_CLIENT_NOPURGE;
-> >  
-> > +	tt_change_node->change.flags = flags;
-> 
-> I don't remember the packet format. But i assume flags on the wire is
-> a u8? How about making TT_CLIENT_NOPURGE 1<<8 or bigger, so it is
-> automatically not sent on the wire? It will also make it easier
-> sometime in the future when you want to use the bit on the wire that
-> TT_CLIENT_NOPURGE is currently taking.
-> 
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ packet.h |   10 ++++++----
+ types.h  |    4 ++--
+ 2 files changed, 8 insertions(+), 6 deletions(-)
 
-Even if we want to add other flags that don't need to be sent on the
-wire. I like this idea.
-
-We can have a uint16_t flags field in the
-tt_local/global_entry structure, where the 8 tailing bits only are sent
-within the messages. Instead, the 8 leading bits are reserved for local purposes.
-
-> You might also want to change the function parameters flags from int
-> to uint, so avoiding sign extension problems.
-
-Yes, thanks!
-
-> 
->    Andrew
-
-
+diff --git a/packet.h b/packet.h
+index 8fd2fde..590e4a6 100644
+--- a/packet.h
++++ b/packet.h
+@@ -78,11 +78,13 @@ enum tt_query_flags {
+ 	TT_FULL_TABLE = 1 << 2
+ };
+ 
+-/* TT_CLIENT flags */
++/* TT_CLIENT flags.
++ * Flags from 1 to 1 << 7 are sent on the wire, while flags from 1 << 8 to
++ * 1 << 15 are used for local computation only */
+ enum tt_client_flags {
+-	TT_CLIENT_DEL     = 0x01,
+-	TT_CLIENT_ROAM    = 0x02,
+-	TT_CLIENT_NOPURGE = 0x04
++	TT_CLIENT_DEL     = 1 << 0,
++	TT_CLIENT_ROAM    = 1 << 1,
++	TT_CLIENT_NOPURGE = 1 << 8
+ };
+ 
+ struct batman_packet {
+diff --git a/types.h b/types.h
+index 582283a..25bd1db 100644
+--- a/types.h
++++ b/types.h
+@@ -224,7 +224,7 @@ struct socket_packet {
+ struct tt_local_entry {
+ 	uint8_t addr[ETH_ALEN];
+ 	unsigned long last_seen;
+-	uint8_t flags;
++	uint16_t flags;
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
+ 	struct hlist_node hash_entry;
+@@ -234,7 +234,7 @@ struct tt_global_entry {
+ 	uint8_t addr[ETH_ALEN];
+ 	struct orig_node *orig_node;
+ 	uint8_t ttvn;
+-	uint8_t flags; /* only TT_GLOBAL_ROAM is used */
++	uint16_t flags; /* only TT_GLOBAL_ROAM is used */
+ 	unsigned long roam_at; /* time at which TT_GLOBAL_ROAM was set */
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
 -- 
-Antonio Quartulli
+1.7.3.4
 
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
