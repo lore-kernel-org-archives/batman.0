@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 4 Jul 2011 14:29:26 +0200
-References: <1309127157-32507-1-git-send-email-ordex@autistici.org>
-	<1309389240-11486-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1309389240-11486-2-git-send-email-ordex@autistici.org>
+Date: Mon, 4 Jul 2011 14:35:04 +0200
+References: <1309095099-14532-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1309095099-14532-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201107041429.26541.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/2] batman-adv: pass a unique flag arg
-	instead of a sequence of bool ones
+Message-Id: <201107041435.04736.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: broadcast primary OGM on all
+	active hard-interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,11 +23,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday, June 30, 2011 01:14:00 Antonio Quartulli wrote:
-> now tt_local_event() takes a flags argument instead of a sequence of
-> boolean values which would grow up with the time.
+On Sunday, June 26, 2011 15:31:39 Marek Lindner wrote:
+> The primary interface OGM has to be broadcasted on all hard-interfaces
+> even if the primary interface is not the first interface (if_num = 0).
+> Therefore the code has to compare the originating interface with the
+> primary interface instead of checking the if_num.
 
-Applied in revision fc01f17.
+Applied in revision 5ca3283.
 
 Thanks,
 Marek
