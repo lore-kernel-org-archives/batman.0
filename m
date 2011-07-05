@@ -1,15 +1,11 @@
-Return-Path: <gmazzurco89@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <201107051647.05355.lindner_marek@yahoo.de>
-References: <CAOaDhSS0-EP6bPM+2kho3h9u8aGJXsP0QmaqFMAhHa_4Y=MA4Q@mail.gmail.com>
-	<7287252.x81mV8tODY@sven-laptop.home.narfation.org>
-	<CAOaDhST=Zto=DCG=RxyO8vDAjkncBNKwRCiqeXuNmggm9OSg6Q@mail.gmail.com>
-	<201107051647.05355.lindner_marek@yahoo.de>
-Date: Tue, 5 Jul 2011 17:00:47 +0200
-Message-ID: <CAOaDhST4vJLqq+ee2XwSt57Vbeng4yEMq29FNshQTaAnWXGztw@mail.gmail.com>
-From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] batctl vd dot buggy
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue,  5 Jul 2011 17:23:00 +0200
+Message-Id: <1309879385-21224-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1309879385-21224-1-git-send-email-ordex@autistici.org>
+References: <1309879385-21224-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: unify the three starting
+	fields of the tt_local/global_entry structures
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,34 +17,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-I'll try to explain better
-As you can see on the graph here http://eigenlab.org/status.php there
-are nodes ( you can recognize them because on link there is a number
-instead of HNA ) that are not inside cluster
+Now the three starting fields of the tt_local/global_entry structures are
+unified. This allows to write generalised functions that operate on the
+flags and refcount field.
 
-this is not the expected behavior as you can see on documentation
-http://www.open-mesh.org/wiki/batman-adv/VisAdv
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ types.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-this is happening also for nodes that have more than an interfaces so
-this affect badly the topology graphing
+diff --git a/types.h b/types.h
+index 25bd1db..b32ae5a 100644
+--- a/types.h
++++ b/types.h
+@@ -223,20 +223,20 @@ struct socket_packet {
+ 
+ struct tt_local_entry {
+ 	uint8_t addr[ETH_ALEN];
+-	unsigned long last_seen;
+ 	uint16_t flags;
+ 	atomic_t refcount;
++	unsigned long last_seen;
+ 	struct rcu_head rcu;
+ 	struct hlist_node hash_entry;
+ };
+ 
+ struct tt_global_entry {
+ 	uint8_t addr[ETH_ALEN];
++	uint16_t flags; /* only TT_GLOBAL_ROAM is used */
++	atomic_t refcount;
+ 	struct orig_node *orig_node;
+ 	uint8_t ttvn;
+-	uint16_t flags; /* only TT_GLOBAL_ROAM is used */
+ 	unsigned long roam_at; /* time at which TT_GLOBAL_ROAM was set */
+-	atomic_t refcount;
+ 	struct rcu_head rcu;
+ 	struct hlist_node hash_entry; /* entry in the global table */
+ };
+-- 
+1.7.3.4
 
-
-2011/7/5 Marek Lindner <lindner_marek@yahoo.de>:
->
-> Gioacchino,
->
->> here is infos
->
-> as Sven already said you several times: If you want us to help you need to
-> explain what you think is wrong. Simply dumping the data in front of our feet
-> is not going to suffice. Unless your guessing abilities are far superior to
-> ours you would also expect some explanations from us if we wanted you to fix
-> something.
-> In short: We don't know what is wrong. Please tell us!
->
-> Cheers,
-> Marek
->
