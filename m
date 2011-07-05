@@ -1,13 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 05 Jul 2011 16:08:16 +0200
-Message-ID: <1352247.13aSduvyXD@sven-laptop.home.narfation.org>
-In-Reply-To: <CAOaDhSS0-EP6bPM+2kho3h9u8aGJXsP0QmaqFMAhHa_4Y=MA4Q@mail.gmail.com>
-References: <CAOaDhSS0-EP6bPM+2kho3h9u8aGJXsP0QmaqFMAhHa_4Y=MA4Q@mail.gmail.com>
+Return-Path: <gmazzurco89@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1678793.qJBpiz7UI1";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
+In-Reply-To: <1352247.13aSduvyXD@sven-laptop.home.narfation.org>
+References: <CAOaDhSS0-EP6bPM+2kho3h9u8aGJXsP0QmaqFMAhHa_4Y=MA4Q@mail.gmail.com>
+	<1352247.13aSduvyXD@sven-laptop.home.narfation.org>
+Date: Tue, 5 Jul 2011 16:15:22 +0200
+Message-ID: <CAOaDhSR8JLKWHUY_YV6nwK0vXEPc5mGMTD0nLRdHKuWvfRwA+A@mail.gmail.com>
+From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] batctl vd dot buggy
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,53 +20,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
+you are right I can provide you an ssh access
+I know personally Antonio and Marek so if you are trusted by them i
+can trust you and give you access to our server so you can do every
+check you want ;)
 
---nextPart1678793.qJBpiz7UI1
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+eigenServer gioacchino # cat /sys/kernel/debug/batman_adv/bat0/vis_data
+7a:ea:3a:b6:49:cc,TQ 00:15:6d:7a:96:7a 206, HNA 00:26:5e:1e:d5:b8, HNA
+00:18:f3:87:94:94, HNA 00:15:6d:ae:46:6c, HNA ce:ee:a6:b8:6e:ea,
+PRIMARY,
+06:15:6d:7c:09:d8,TQ 00:15:6d:7a:96:7a 221, TQ 00:15:6d:fc:72:0b 243,
+00:15:6d:7a:97:33,TQ 00:15:6d:7a:96:7a 82, TQ 00:15:6d:7a:97:45 155,
+TQ 00:15:6d:fc:72:0b 191, TQ 06:15:6d:fc:71:f6 175, HNA
+9e:62:5e:51:2e:9a, PRIMARY,
+00:15:6d:7a:97:45,TQ 06:15:6d:fc:71:f6 177, TQ 00:15:6d:7a:97:33 150,
+TQ 00:15:6d:7c:09:9e 223, TQ 06:15:6d:72:48:0d 246, HNA
+22:86:17:2d:42:dd, PRIMARY,
+06:15:6d:fc:71:ce,TQ 00:15:6d:7c:09:9e 233,
+00:15:6d:fc:72:0b,TQ 00:15:6d:7a:97:33 180, TQ 06:15:6d:7c:09:d8 212,
+00:15:6d:73:48:0d,TQ 00:23:7d:29:13:fa 255, TQ 00:15:6d:7d:09:9e 250,
+HNA cc:08:e0:fc:8e:47, HNA 62:b0:58:e5:63:ba, HNA f8:db:7f:80:1e:f2,
+HNA 00:15:6d:72:48:0d, HNA 00:26:68:15:a8:77, PRIMARY,
+92:17:8d:21:e4:a5,TQ 2a:11:49:e1:1e:64 220,
+00:15:6d:7a:96:7a,TQ 00:15:6d:7a:97:33 143, TQ 06:15:6d:7c:09:d8 169,
+TQ 7a:ea:3a:b6:49:cc 254,
+06:15:6d:fc:71:f6,TQ 00:15:6d:7a:97:45 135, TQ 00:15:6d:7c:09:e8 8, TQ
+00:15:6d:7a:97:33 202,
+2a:11:49:e1:1e:64,TQ 92:17:8d:21:e4:a5 254,
+00:23:7d:29:13:fa,TQ 00:15:6d:73:48:0d 255, TQ 00:15:6d:7d:09:9e 241,
+HNA 5a:61:e5:74:a5:da, SEC 2a:11:49:e1:1e:64, PRIMARY,
+00:15:6d:7d:09:9e,TQ 00:23:7d:29:13:fa 255, TQ 00:15:6d:73:48:0d 251,
+HNA ca:07:b3:65:e6:51, PRIMARY, SEC 00:15:6d:7c:09:9e,
+00:15:6d:7c:09:9e,TQ 00:15:6d:7a:97:45 196, TQ 06:15:6d:fc:71:ce 251,
 
-On Tuesday 05 July 2011 15:56:37 Gioacchino Mazzurco wrote:
-> on our server we have batman-adv from 2.6.38 kernel
-> 
-> the output of batctl vd dot results buggy
-> 
-> eigenServer gioacchino # batctl -v
-> batctl 2011.1.0
-> 
-> as you can see here http://eigenlab.org/status.php a lot of blue
-> cluster are missing also on node with multiple interfaces so the
-> topology draw is badly affected by this :|
-
-What about providing the output of /sys/kernel/debug/batman_adv/bat0/vis_data 
-and giving a better explanation what is missing? Showing some pictures and say 
-that something is missing without any details will not help anyone. And no, I 
-can't read italian.
-
-Kind regards,
-	Sven
---nextPart1678793.qJBpiz7UI1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJOExrQAAoJEF2HCgfBJntGg4sP/0yyskyYIN77lxFt8ZJF/Cvo
-Put7N/yftFJrNA40Mj0KQA1TN8pCodAzbpfNsT+RNB4sOzl0ZXB2SRxfy6wF+t9q
-+Wnqn4Ig/4Rt3OwF8xM7RiPEzK6V4FILVRGs9RFv744Me+R7BnCj6+89roVFHc4B
-fZw7q4vk01hHPcbTqnOFCIvw5AAK7sWqeoDhEINOmky18gXX1X/3ZrVRnIz1q52h
-gQVPl1k6e+Z7FJzQHi0haNz50F/tL3jyxVUpfpqlMOEDh2OiEyG7YkVg+5Ef2ZbG
-27xWxu2hzBr2VxjSR41zKdT3sIwc6DaRCdz9Via6tcl3mjwxBPtm2J0/rprqvfdG
-CPM9bwHJJplQ9mLzPbQUCqUQyWn0PpGc3o7M+fy7hwkLcavXoJJFMAssI9ahBEu/
-o1LDkXpsL/z9FBmLjrkNNN+Kp8wFjraAmjh1CNzwYwZfjFvdMT/wl72T2k7FurPF
-eVcMNJ6IlUsiMHBDgWTkcm36OMkBPw6z5CPxcHBS2i1/xs5mAGEvH4YthbN/YpAa
-RakAHt47+att8T7sOPsk6MF++1ilUhMJobZ/puH9p1ADbzxDFR8lfL+yk3amrNvr
-R5S3gdnLbfuj3mNKHFe7Ddl88l8TadP6dedcneyY/sIqmVlFevXk2wWZLcqnwUW9
-U/O4qy7dKbQzatWnVLRn
-=tuhd
------END PGP SIGNATURE-----
-
---nextPart1678793.qJBpiz7UI1--
-
+2011/7/5 Sven Eckelmann <sven@narfation.org>:
+> On Tuesday 05 July 2011 15:56:37 Gioacchino Mazzurco wrote:
+>> on our server we have batman-adv from 2.6.38 kernel
+>>
+>> the output of batctl vd dot results buggy
+>>
+>> eigenServer gioacchino # batctl -v
+>> batctl 2011.1.0
+>>
+>> as you can see here http://eigenlab.org/status.php a lot of blue
+>> cluster are missing also on node with multiple interfaces so the
+>> topology draw is badly affected by this :|
+>
+> What about providing the output of /sys/kernel/debug/batman_adv/bat0/vis_=
+data
+> and giving a better explanation what is missing? Showing some pictures an=
+d say
+> that something is missing without any details will not help anyone. And n=
+o, I
+> can't read italian.
+>
+> Kind regards,
+> =A0 =A0 =A0 =A0Sven
