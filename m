@@ -1,8 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  5 Jul 2011 17:22:59 +0200
-Message-Id: <1309879385-21224-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 0/6] Solve consistency issues in TT code
+Return-Path: <gmazzurco89@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <CAOaDhST4vJLqq+ee2XwSt57Vbeng4yEMq29FNshQTaAnWXGztw@mail.gmail.com>
+References: <CAOaDhSS0-EP6bPM+2kho3h9u8aGJXsP0QmaqFMAhHa_4Y=MA4Q@mail.gmail.com>
+	<7287252.x81mV8tODY@sven-laptop.home.narfation.org>
+	<CAOaDhST=Zto=DCG=RxyO8vDAjkncBNKwRCiqeXuNmggm9OSg6Q@mail.gmail.com>
+	<201107051647.05355.lindner_marek@yahoo.de>
+	<CAOaDhST4vJLqq+ee2XwSt57Vbeng4yEMq29FNshQTaAnWXGztw@mail.gmail.com>
+Date: Tue, 5 Jul 2011 18:05:47 +0200
+Message-ID: <CAOaDhSSFo34MYK3JYk1-XOwc9+LuHqAp6ygu+SmwuCiYUa8BRg@mail.gmail.com>
+From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] batctl vd dot buggy
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,30 +22,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
+To: Marek Lindner <lindner_marek@yahoo.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Hello everybody.
+It seems that only nodes with hna attached are getting "clustered"
 
-In the current TT implementation there are some cases where transtable
-consistency is not kept.
-
-In particular, it is possible to observe this problem in case of a tt_response
-issued after a request for full-table: if the responding node is _the real
-destination of the request_ then it will send within the response message also
-those clients added after the last ttvn increment.
-This will cause an inconsistency because now we have different nodes with
-the same ttvn value but with different tables for the same originator.
-
-These patches are meant to solve this issue and keep consistency among nodes.
-
-Patches 1) and 2) introduce beautifications only. This change helped in writing
-patches 5) and 6) by reducing the code complexity.
-
-I would like to read some feedbacks even about the patch decomposition, which
-could probably be improved :-)
-
-Thank you all.
-
-Regards,
-	Antonio Quartulli
-
+2011/7/5 Gioacchino Mazzurco <gmazzurco89@gmail.com>:
+> I'll try to explain better
+> As you can see on the graph here http://eigenlab.org/status.php there
+> are nodes ( you can recognize them because on link there is a number
+> instead of HNA ) that are not inside cluster
+>
+> this is not the expected behavior as you can see on documentation
+> http://www.open-mesh.org/wiki/batman-adv/VisAdv
+>
+> this is happening also for nodes that have more than an interfaces so
+> this affect badly the topology graphing
+>
+>
+> 2011/7/5 Marek Lindner <lindner_marek@yahoo.de>:
+>>
+>> Gioacchino,
+>>
+>>> here is infos
+>>
+>> as Sven already said you several times: If you want us to help you need to
+>> explain what you think is wrong. Simply dumping the data in front of our feet
+>> is not going to suffice. Unless your guessing abilities are far superior to
+>> ours you would also expect some explanations from us if we wanted you to fix
+>> something.
+>> In short: We don't know what is wrong. Please tell us!
+>>
+>> Cheers,
+>> Marek
+>>
+>
