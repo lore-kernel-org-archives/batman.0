@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue,  5 Jul 2011 15:43:57 +0200
-Message-Id: <1309873440-11704-4-git-send-email-lindner_marek@yahoo.de>
+Date: Tue,  5 Jul 2011 15:43:58 +0200
+Message-Id: <1309873440-11704-5-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1309873440-11704-1-git-send-email-lindner_marek@yahoo.de>
 References: <1309873440-11704-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/6] batman-adv: pass a unique flag arg
-	instead of a sequence of bool ones
+Subject: [B.A.T.M.A.N.] [PATCH 4/6] batman-adv: broadcast primary OGM on all
+	active hard-interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,84 +20,76 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Antonio Quartulli <ordex@autistici.org>
+The primary interface OGM has to be broadcasted on all hard-interfaces
+even if the primary interface is not the first interface (if_num = 0).
+Therefore the code has to compare the originating interface with the
+primary interface instead of checking the if_num.
 
-now tt_local_event() takes a flags argument instead of a sequence of
-boolean values which would grow up with the time.
-
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Reported-by: Linus Luessing <linus.luessing@web.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/translation-table.c |   21 ++++++++++-----------
- 1 files changed, 10 insertions(+), 11 deletions(-)
+ net/batman-adv/send.c |   17 +++++++++++++----
+ 1 files changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 4208dc7..06d361d 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -143,8 +143,8 @@ static void tt_global_entry_free_ref(struct tt_global_entry *tt_global_entry)
- 		kfree_rcu(tt_global_entry, rcu);
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 2f62b2e..4b8e11b 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -163,6 +163,7 @@ static void send_packet(struct forw_packet *forw_packet)
+ 	struct hard_iface *hard_iface;
+ 	struct net_device *soft_iface;
+ 	struct bat_priv *bat_priv;
++	struct hard_iface *primary_if = NULL;
+ 	struct batman_packet *batman_packet =
+ 		(struct batman_packet *)(forw_packet->skb->data);
+ 	int directlink = (batman_packet->flags & DIRECTLINK ? 1 : 0);
+@@ -170,19 +171,23 @@ static void send_packet(struct forw_packet *forw_packet)
+ 	if (!forw_packet->if_incoming) {
+ 		pr_err("Error - can't forward packet: incoming iface not "
+ 		       "specified\n");
+-		return;
++		goto out;
+ 	}
+ 
+ 	soft_iface = forw_packet->if_incoming->soft_iface;
+ 	bat_priv = netdev_priv(soft_iface);
+ 
+ 	if (forw_packet->if_incoming->if_status != IF_ACTIVE)
+-		return;
++		goto out;
++
++	primary_if = primary_if_get_selected(bat_priv);
++	if (!primary_if)
++		goto out;
+ 
+ 	/* multihomed peer assumed */
+ 	/* non-primary OGMs are only broadcasted on their interface */
+ 	if ((directlink && (batman_packet->ttl == 1)) ||
+-	    (forw_packet->own && (forw_packet->if_incoming->if_num > 0))) {
++	    (forw_packet->own && (forw_packet->if_incoming != primary_if))) {
+ 
+ 		/* FIXME: what about aggregated packets ? */
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+@@ -199,7 +204,7 @@ static void send_packet(struct forw_packet *forw_packet)
+ 				broadcast_addr);
+ 		forw_packet->skb = NULL;
+ 
+-		return;
++		goto out;
+ 	}
+ 
+ 	/* broadcast on every interface */
+@@ -211,6 +216,10 @@ static void send_packet(struct forw_packet *forw_packet)
+ 		send_packet_to_if(forw_packet, hard_iface);
+ 	}
+ 	rcu_read_unlock();
++
++out:
++	if (primary_if)
++		hardif_free_ref(primary_if);
  }
  
--static void tt_local_event(struct bat_priv *bat_priv, uint8_t op,
--			   const uint8_t *addr, bool roaming)
-+static void tt_local_event(struct bat_priv *bat_priv, const uint8_t *addr,
-+			   uint8_t flags)
- {
- 	struct tt_change_node *tt_change_node;
- 
-@@ -153,10 +153,7 @@ static void tt_local_event(struct bat_priv *bat_priv, uint8_t op,
- 	if (!tt_change_node)
- 		return;
- 
--	tt_change_node->change.flags = op;
--	if (roaming)
--		tt_change_node->change.flags |= TT_CLIENT_ROAM;
--
-+	tt_change_node->change.flags = flags;
- 	memcpy(tt_change_node->change.addr, addr, ETH_ALEN);
- 
- 	spin_lock_bh(&bat_priv->tt_changes_list_lock);
-@@ -203,8 +200,6 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr)
- 	if (!tt_local_entry)
- 		goto out;
- 
--	tt_local_event(bat_priv, NO_FLAGS, addr, false);
--
- 	bat_dbg(DBG_TT, bat_priv,
- 		"Creating new local tt entry: %pM (ttvn: %d)\n", addr,
- 		(uint8_t)atomic_read(&bat_priv->ttvn));
-@@ -218,6 +213,8 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr)
- 	if (compare_eth(addr, soft_iface->dev_addr))
- 		tt_local_entry->flags |= TT_CLIENT_NOPURGE;
- 
-+	tt_local_event(bat_priv, addr, tt_local_entry->flags);
-+
- 	hash_add(bat_priv->tt_local_hash, compare_ltt, choose_orig,
- 		 tt_local_entry, &tt_local_entry->hash_entry);
- 
-@@ -386,7 +383,9 @@ void tt_local_remove(struct bat_priv *bat_priv, const uint8_t *addr,
- 	if (!tt_local_entry)
- 		goto out;
- 
--	tt_local_event(bat_priv, TT_CLIENT_DEL, tt_local_entry->addr, roaming);
-+	tt_local_event(bat_priv, tt_local_entry->addr,
-+		       tt_local_entry->flags | TT_CLIENT_DEL |
-+		       (roaming ? TT_CLIENT_ROAM : NO_FLAGS));
- 	tt_local_del(bat_priv, tt_local_entry, message);
- out:
- 	if (tt_local_entry)
-@@ -416,8 +415,8 @@ static void tt_local_purge(struct bat_priv *bat_priv)
- 					    TT_LOCAL_TIMEOUT * 1000))
- 				continue;
- 
--			tt_local_event(bat_priv, TT_CLIENT_DEL,
--				       tt_local_entry->addr, false);
-+			tt_local_event(bat_priv, tt_local_entry->addr,
-+				       tt_local_entry->flags | TT_CLIENT_DEL);
- 			atomic_dec(&bat_priv->num_local_tt);
- 			bat_dbg(DBG_TT, bat_priv, "Deleting local "
- 				"tt entry (%pM): timed out\n",
+ static void realloc_packet_buffer(struct hard_iface *hard_iface,
 -- 
 1.7.5.3
 
