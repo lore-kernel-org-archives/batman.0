@@ -1,17 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 06 Jul 2011 09:43:42 +0200
-Message-ID: <1364008.4HQyYqKGTl@sven-laptop.home.narfation.org>
-In-Reply-To: <1903541.vB6FKW9Psn@sven-laptop.home.narfation.org>
-References: <1309879385-21224-1-git-send-email-ordex@autistici.org>
-	<1309879385-21224-2-git-send-email-ordex@autistici.org>
-	<1903541.vB6FKW9Psn@sven-laptop.home.narfation.org>
+Return-Path: <ipmax2011@googlemail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4697445.DmehtKNnEA";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: unify the three starting
-	fields of the tt_local/global_entry structures
+Date: Wed, 6 Jul 2011 10:55:40 +0200
+Message-ID: <CAJA-1Lg=T_xkp4vdopQ2fscQgSnB9pLiThTBcmf=y_HocYKm=w@mail.gmail.com>
+From: Max Ip <ipmax2011@googlemail.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] make batctl 2011.1.0
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,55 +17,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi all,
 
---nextPart4697445.DmehtKNnEA
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+I downloaded the batctl package 2011.1.0 from the batman website. I
+installed it using command make all.
 
-On Wednesday 06 July 2011 09:31:11 Sven Eckelmann wrote:
-> On Tuesday 05 July 2011 17:23:00 Antonio Quartulli wrote:
-> > Now the three starting fields of the tt_local/global_entry structures
-> > are
-> > unified. This allows to write generalised functions that operate on the
-> > flags and refcount field.
-> > 
-> > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> > ---
-> 
-> Ehrm, this is wrong (or at least undefined behaviour). Please read C99
-> 6.5.2.3 point 5
+It generates the following two warnings:
 
-Found an extreme nice example [1] for you. Please read it together with the 
-C99 paragraph mentioned above.
+functions.c: In function =91read_file=92:
+functions.c:153:9: warning: ignoring return value of =91system=92,
+declared with attribute warn_unused_result
 
-Kind regards,
-	Sven
+and
 
-[1] 
-http://coding.derkeiler.com/Archive/C_CPP/comp.lang.c/2007-05/msg03192.html
---nextPart4697445.DmehtKNnEA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+bisect.c: In function =91bisect=92:
+bisect.c:197:9: warning: =91j=92 may be used uninitialized in this function
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+I just ignored the warnings. But, I wasn't able to run the batctl
+command neither could I see the manual page for batctl.
 
-iQIcBAABCgAGBQJOFBIuAAoJEF2HCgfBJntGN+gP/3GepP2wCSvhN1zxrbHgFGHb
-SQMitQ3kx9uFvRlEXJGBExcVR+zjGkcxF1c0vAxRtckb6xF0PVpl7JHrwx20DWdS
-tx4PkLVzXQNy0Wug7Y/+k3p1i9X7UeqK36nlJNaze11+7fP1spGNFlCCfFnqg/vW
-NOBTbBFwxqJ9IRItfNxZ3kTPTh6mWGkoxMPL3reOwT45KygKRpyb/2VKpaG4T8Ew
-p62v7IhpvIZ2Ld9P91iEa/eW/s7ylh38U9M4fsS+6nZy2QZZRzQcft30aRm1pC1p
-PagSn0Qgvv/y+LkDcp0FA8teok1+PAAaIgr7Z30DrrxDrB5UXe4y5+pvjboiaZQG
-oeuAZCL+lcfQpI0ZX9PCStGAca/DjfD3lq/6QHMRnoeMOTTikDXh7N/X6VFTxp+n
-H7UyCg5B7bXX396l4sQlpbeph8040mtFTbwGw9DuwCte15RYTWbRSmcafT/Elj0G
-bM7XROlhh1r1/8UbmmWxDxSu/o0Dq61pdLWkO+dXBT2GEzHYxQAyLfGKPpB+ZlMg
-C7XjIiZGNszMQo6PfTd+p3dblJh/xE3OEubbWuyc8w3z38TnNa7U/YYmDU7a5HVo
-H7n79EyfJAS7BKZv6rDWIRwoOYD2oyF2wpK76RORrbXhmLEvBt4RAt0d/BxyTZp5
-kotc/hx54Kg84vHh+piN
-=0z8f
------END PGP SIGNATURE-----
+I couldn't figure out what exactly could be the issue though I have
+been going through the codes and the makefile.
 
---nextPart4697445.DmehtKNnEA--
+Do anyone of you have an idea if my way of installation is correct?
 
+Thanking you.
+
+Max
