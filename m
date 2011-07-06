@@ -1,15 +1,17 @@
-Return-Path: <daniele.furlan@gmail.com>
+Return-Path: <ipmax2011@googlemail.com>
 MIME-Version: 1.0
-In-Reply-To: <CAJA-1LgTau4xarTiQkwYpp=48veejz-6zHYzqy1djxP3PMHZ-w@mail.gmail.com>
-References: <CAJA-1Lg=T_xkp4vdopQ2fscQgSnB9pLiThTBcmf=y_HocYKm=w@mail.gmail.com>
-	<CAG7VhQRdp3jLMKFotkzGMUVDr75-iWvA=oj6qKT8a+awfLkbMQ@mail.gmail.com>
-	<CAJA-1LgTau4xarTiQkwYpp=48veejz-6zHYzqy1djxP3PMHZ-w@mail.gmail.com>
-Date: Wed, 6 Jul 2011 11:07:27 +0200
-Message-ID: <CAG7VhQRB4CeJ4fWT4Cfe2ZD+0bwFwt0z78R=i=1D0mii4v4KYw@mail.gmail.com>
-From: Daniele Furlan <daniele.furlan@gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] make batctl 2011.1.0
+In-Reply-To: <20110704183941.GC26734@autistici.org>
+References: <CAJA-1Lijvt9hZVTP0QXi81bk061A54tRs=quUyztzo2_cM-LNw@mail.gmail.com>
+	<201107041455.33023.lindner_marek@yahoo.de>
+	<CAJA-1Ljmeqym_Sj4zqSEqaJtVvGf3brFQPtghYYi2QT5PFLYHw@mail.gmail.com>
+	<20110704182256.GB26734@autistici.org>
+	<20110704182914.GA4362@sven-atom.home.narfation.org>
+	<20110704183941.GC26734@autistici.org>
+Date: Wed, 6 Jul 2011 11:41:53 +0200
+Message-ID: <CAJA-1Ljpew4y6EjR9823V533ssC-DpirPkNpBbFzULZGvmw_jg@mail.gmail.com>
+From: Max Ip <ipmax2011@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] Disconnecting the nodes in batman-adv 2011.1.0
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,67 +25,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-simply run:
+I tried ebtables to block the mac address of the neighboring node.
 
-sudo make install
+sudo ebtables -I OUTPUT -s 00:1b:77:06:1c:15 -j DROP
+sudo ebtables -I INPUT -s 00:1b:77:06:1c:15 -j DROP
 
-2011/7/6 Max Ip <ipmax2011@googlemail.com>:
-> I get an executable file named batctl in the batctl-2011.1.0 folder. I
-> can run the batctl command using
->
-> ./batctl originators
->
-> but not
->
-> batctl originators directly
->
->
->
-> On Wed, Jul 6, 2011 at 10:58 AM, Daniele Furlan
-> <daniele.furlan@gmail.com> wrote:
->> I think the warnings are not a big problem.
->>
->> If you run batctl what is the error message reported?
->>
->> 2011/7/6 Max Ip <ipmax2011@googlemail.com>:
->>> Hi all,
->>>
->>> I downloaded the batctl package 2011.1.0 from the batman website. I
->>> installed it using command make all.
->>>
->>> It generates the following two warnings:
->>>
->>> functions.c: In function =91read_file=92:
->>> functions.c:153:9: warning: ignoring return value of =91system=92,
->>> declared with attribute warn_unused_result
->>>
->>> and
->>>
->>> bisect.c: In function =91bisect=92:
->>> bisect.c:197:9: warning: =91j=92 may be used uninitialized in this func=
-tion
->>>
->>> I just ignored the warnings. But, I wasn't able to run the batctl
->>> command neither could I see the manual page for batctl.
->>>
->>> I couldn't figure out what exactly could be the issue though I have
->>> been going through the codes and the makefile.
->>>
->>> Do anyone of you have an idea if my way of installation is correct?
->>>
->>> Thanking you.
->>>
->>> Max
->>>
->>
->>
->>
->> --
->> Daniele Furlan
->>
->
+But the batctl o command still shows 00:1b:77:06:1c:15 as one of the
+originators.
 
+My question is won't the enslaving wlan0 to br0 have the same problem
+because the mac address for both br0 and wlan0 will be the same?
 
-
---=20
-Daniele Furlan
+On Mon, Jul 4, 2011 at 8:39 PM, Antonio Quartulli <ordex@autistici.org> wrote:
+> On Mon, Jul 04, 2011 at 08:29:14PM +0200, Sven Eckelmann wrote:
+>> > As Marek suggested, you should use something like ebtables. But honestly I
+>> > remember that ebtables support has been removed from batman some time
+>> > ago.
+>>
+>> What about using a bridge over the actual device to simulate the bad link
+>> together with ebtables? This would resolve the problem that batman-adv must be
+>> ebtables aware.
+>
+>
+> You mean enslave wlan0 (e.g.) to br0 and then put br0 into bat0?
+> If so, it sounds good, because at that point you can use ebtables
+> against frames going through br0.
+>
+>
+> Regards,
+>
+> --
+> Antonio Quartulli
+>
+> ..each of us alone is worth nothing..
+> Ernesto "Che" Guevara
+>
