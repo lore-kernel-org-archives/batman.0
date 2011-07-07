@@ -1,16 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 7 Jul 2011 13:35:52 +0200
-References: <1309995659-19126-1-git-send-email-ordex@autistici.org>
-	<1309995659-19126-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1309995659-19126-2-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201107071335.52849.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/3] batman-adv: initialise last_ttvn
-	and tt_crc for the orig_node structure
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu,  7 Jul 2011 14:24:34 +0200
+Message-Id: <1310041474-7624-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1310031027-7198-1-git-send-email-ordex@autistici.org>
+References: <1310031027-7198-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: request the full table if
+	tt_crc doesn't match
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,13 +17,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday, July 07, 2011 01:40:57 Antonio Quartulli wrote:
-> The last_ttvn and tt_crc fields of the orig_node structure were not
-> initialised causing an immediate TT_REQ/RES dialogue even if not needed.
+In case of tt_crc mismatching for a certain orig_node after applying the
+changes, the node must request the full table immediately.
 
-Applied in revision c9007e1.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-Thanks,
-Marek
+Comment rephrased.
+
+ routing.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/routing.c b/routing.c
+index 2cb98be..130fa07 100644
+--- a/routing.c
++++ b/routing.c
+@@ -91,6 +91,18 @@ static void update_transtable(struct bat_priv *bat_priv,
+ 		 * to recompute it to spot any possible inconsistency
+ 		 * in the global table */
+ 		orig_node->tt_crc = tt_global_crc(bat_priv, orig_node);
++
++		/* The ttvn alone is not enough to guarantee consistency
++		 * because the a single value could repesent different states
++		 * (due to the wrap around). Thus a node has to check whether
++		 * the table resulting (after applying the changes) is still
++		 * consistent or not. E.g. a node could disconnect while its
++		 * ttvn is X and reconnect on ttvn = X + TTVN_MAX: in this case
++		 * checking the CRC value is mandatory to detect the
++		 * inconsistency */
++		if (orig_node->tt_crc != tt_crc)
++			goto request_table;
++
+ 		/* Roaming phase is over: tables are in sync again. I can
+ 		 * unset the flag */
+ 		orig_node->tt_poss_change = false;
+-- 
+1.7.3.4
+
