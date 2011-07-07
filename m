@@ -1,11 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri,  8 Jul 2011 00:35:46 +0200
-Message-Id: <1310078146-29537-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1310078023-28958-1-git-send-email-lindner_marek@yahoo.de>
+Date: Fri, 8 Jul 2011 00:39:04 +0200
 References: <1310078023-28958-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: request the full table if
-	tt_crc doesn't match
+In-Reply-To: <1310078023-28958-1-git-send-email-lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201107080039.05143.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-07-08
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,43 +20,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, davem@davemloft.net
 
-From: Antonio Quartulli <ordex@autistici.org>
+On Friday, July 08, 2011 00:33:39 Marek Lindner wrote:
+> I have another small but important set of changes I'd like to get pulled
+> into net-next-2.6/3.1. Despite our best efforts, recent tests and reviews
+> of the protocol changes we have introduced a couple of weeks ago made it
+> quite obvious that some bugs slipped through. The implementation of said
+> protocol does not handle all corner cases in the way it should, thus
+> provoking inconsistent states in the mesh. These 4 patches are meant to
+> address the found issues.
 
-In case of tt_crc mismatching for a certain orig_node after applying the
-changes, the node must request the full table immediately.
+Woops - pulled the trigger too fast. Here is the missing shortlog:
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- net/batman-adv/routing.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+The following changes since commit 44c4349a2a117b22a5c4087f2ac9faf10c575e17:
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 2cb98be..0f32c81 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -91,6 +91,18 @@ static void update_transtable(struct bat_priv *bat_priv,
- 		 * to recompute it to spot any possible inconsistency
- 		 * in the global table */
- 		orig_node->tt_crc = tt_global_crc(bat_priv, orig_node);
-+
-+		/* The ttvn alone is not enough to guarantee consistency
-+		 * because a single value could repesent different states
-+		 * (due to the wrap around). Thus a node has to check whether
-+		 * the resulting table (after applying the changes) is still
-+		 * consistent or not. E.g. a node could disconnect while its
-+		 * ttvn is X and reconnect on ttvn = X + TTVN_MAX: in this case
-+		 * checking the CRC value is mandatory to detect the
-+		 * inconsistency */
-+		if (orig_node->tt_crc != tt_crc)
-+			goto request_table;
-+
- 		/* Roaming phase is over: tables are in sync again. I can
- 		 * unset the flag */
- 		orig_node->tt_poss_change = false;
--- 
-1.7.5.3
+  batman-adv: Replace version info instead of appending them (2011-07-05 14:48:56 +0200)
+
+are available in the git repository at:
+  git://git.open-mesh.org/linux-merge.git batman-adv/next
+
+Antonio Quartulli (4):
+      batman-adv: initialise last_ttvn and tt_crc for the orig_node structure
+      batman-adv: keep local table consistency for further TT_RESPONSE
+      batman-adv: keep global table consistency in case of roaming
+      batman-adv: request the full table if tt_crc doesn't match
+
+ net/batman-adv/originator.c        |    2 +
+ net/batman-adv/packet.h            |    4 +-
+ net/batman-adv/routing.c           |   12 +++
+ net/batman-adv/send.c              |    4 +-
+ net/batman-adv/translation-table.c |  156 +++++++++++++++++++++++++++++-------
+ net/batman-adv/translation-table.h |    1 +
+ 6 files changed, 147 insertions(+), 32 deletions(-)
 
