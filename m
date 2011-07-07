@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  7 Jul 2011 15:25:05 +0200
-Message-Id: <1310045106-23202-4-git-send-email-ordex@autistici.org>
+Date: Thu,  7 Jul 2011 15:25:06 +0200
+Message-Id: <1310045106-23202-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1310045106-23202-1-git-send-email-ordex@autistici.org>
 References: <1310045106-23202-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 3/4] batman-adv: keep global table
-	consistency in case of roaming
+Subject: [B.A.T.M.A.N.] [PATCHv4 4/4] batman-adv: request the full table if
+	tt_crc doesn't match
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,45 +19,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-To keep consistency of other originator tables, new clients detected as
-roamed, are kept in the global table but are marked as TT_CLIENT_PENDING
-They are purged only when the new ttvn is received by the corresponding
-originator. Moreover they need to be considered as removed in case of global
-transtable lookup.
+In case of tt_crc mismatching for a certain orig_node after applying the
+changes, the node must request the full table immediately.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- translation-table.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+ routing.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/translation-table.c b/translation-table.c
-index 7cc67c0..fb6931d 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -230,8 +230,9 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr)
- 	if (tt_global_entry) {
- 		/* This node is probably going to update its tt table */
- 		tt_global_entry->orig_node->tt_poss_change = true;
--		_tt_global_del(bat_priv, tt_global_entry,
--			       "local tt received");
-+		/* The global entry has to be marked as PENDING and has to be
-+		 * kept for consistency purpose */
-+		tt_global_entry->flags |= TT_CLIENT_PENDING;
- 		send_roam_adv(bat_priv, tt_global_entry->addr,
- 			      tt_global_entry->orig_node);
- 	}
-@@ -787,6 +788,11 @@ struct orig_node *transtable_search(struct bat_priv *bat_priv,
- 	if (!atomic_inc_not_zero(&tt_global_entry->orig_node->refcount))
- 		goto free_tt;
- 
-+	/* A global client marked as PENDING has already moved from that
-+	 * originator */
-+	if (tt_global_entry->flags & TT_CLIENT_PENDING)
-+		goto free_tt;
+diff --git a/routing.c b/routing.c
+index 2cb98be..0f32c81 100644
+--- a/routing.c
++++ b/routing.c
+@@ -91,6 +91,18 @@ static void update_transtable(struct bat_priv *bat_priv,
+ 		 * to recompute it to spot any possible inconsistency
+ 		 * in the global table */
+ 		orig_node->tt_crc = tt_global_crc(bat_priv, orig_node);
 +
- 	orig_node = tt_global_entry->orig_node;
- 
- free_tt:
++		/* The ttvn alone is not enough to guarantee consistency
++		 * because a single value could repesent different states
++		 * (due to the wrap around). Thus a node has to check whether
++		 * the resulting table (after applying the changes) is still
++		 * consistent or not. E.g. a node could disconnect while its
++		 * ttvn is X and reconnect on ttvn = X + TTVN_MAX: in this case
++		 * checking the CRC value is mandatory to detect the
++		 * inconsistency */
++		if (orig_node->tt_crc != tt_crc)
++			goto request_table;
++
+ 		/* Roaming phase is over: tables are in sync again. I can
+ 		 * unset the flag */
+ 		orig_node->tt_poss_change = false;
 -- 
 1.7.3.4
 
