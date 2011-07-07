@@ -1,8 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  7 Jul 2011 15:25:02 +0200
-Message-Id: <1310045106-23202-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 0/3] Implement the AP-Isolation mechanism
+Date: Thu,  7 Jul 2011 15:25:03 +0200
+Message-Id: <1310045106-23202-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1310045106-23202-1-git-send-email-ordex@autistici.org>
+References: <1310045106-23202-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3 1/4] batman-adv: initialise last_ttvn and
+	tt_crc for the orig_node structure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,20 +19,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is the third version of the AP-Isolation patchset.
-The patches have been rebased on top of the master branch but they have been
-left mostly unmodified.
+The last_ttvn and tt_crc fields of the orig_node structure were not
+initialised causing an immediate TT_REQ/RES dialogue even if not needed.
 
-The Ap-isolation mechanism will prevent (if enabled) WIFI clients to communicate
-with other WIFI clients over the mesh network. WIFI check on a client is done
-by default while the isolation is performed only if the mechanism is enabled
-either on the receiver and on the transmitter side.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ originator.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Ap-isolation can be enabled or disabled by means of a new sysfs attribute (a
-batctl patch has also been provided to toggle interact with it).
-
-Thank you all.
-
-Regards,
-	Antonio Quartulli
+diff --git a/originator.c b/originator.c
+index 4cc94d4..f3c3f62 100644
+--- a/originator.c
++++ b/originator.c
+@@ -223,6 +223,8 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, const uint8_t *addr)
+ 	orig_node->bat_priv = bat_priv;
+ 	memcpy(orig_node->orig, addr, ETH_ALEN);
+ 	orig_node->router = NULL;
++	orig_node->tt_crc = 0;
++	atomic_set(&orig_node->last_ttvn, 0);
+ 	orig_node->tt_buff = NULL;
+ 	orig_node->tt_buff_len = 0;
+ 	atomic_set(&orig_node->tt_size, 0);
+-- 
+1.7.3.4
 
