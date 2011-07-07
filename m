@@ -1,15 +1,8 @@
 Return-Path: <ordex@autistici.org>
-Date: Thu, 7 Jul 2011 15:27:43 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110707132743.GD30129@autistici.org>
-References: <1310045106-23202-1-git-send-email-ordex@autistici.org>
-	<1310045106-23202-5-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1310045106-23202-5-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/4] batman-adv: request the full table
- if tt_crc doesn't match
+Date: Thu,  7 Jul 2011 15:35:34 +0200
+Message-Id: <1310045738-30950-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4 0/3] Implement the AP-Isolation mechanism
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,18 +16,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thu, Jul 07, 2011 at 03:25:06PM +0200, Antonio Quartulli wrote:
-> In case of tt_crc mismatching for a certain orig_node after applying the
-> changes, the node must request the full table immediately.
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Hi all,
 
-This patch has already been applied. I would not have had to send it.
-Sorry.
+I have to apologise for my mistake. I wrongly sent a different patchset instead
+of the ap-isolation one. In this period I'm working on several stuff, including
+my thesis and it's easy for me to make such errors.
+----
+
+This is the third version of the AP-Isolation patchset.
+The patches have been rebased on top of the master branch but they have been
+left mostly unmodified.
+
+The Ap-isolation mechanism will prevent (if enabled) WIFI clients to communicate
+with other WIFI clients over the mesh network. WIFI check on a client is done
+by default while the isolation is performed only if the mechanism is enabled
+either on the receiver and on the transmitter side.
+
+Ap-isolation can be enabled or disabled by means of a new sysfs attribute (a
+batctl patch has also been provided to toggle interact with it).
+
+Thank you all.
+
+Regards,
+	Antonio Quartulli
 
 
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
