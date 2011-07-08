@@ -1,14 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Fri, 08 Jul 2011 08:46:42 -0700 (PDT)
-Message-Id: <20110708.084642.1953457077503391470.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <201107080039.05143.lindner_marek@yahoo.de>
-References: <1310078023-28958-1-git-send-email-lindner_marek@yahoo.de>
-	<201107080039.05143.lindner_marek@yahoo.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-07-08
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Fri,  8 Jul 2011 23:38:54 +0200
+Message-Id: <1310161134-18515-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: keep local table consistency for
+	further TT_RESPONSE
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,26 +15,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: lindner_marek@yahoo.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 8 Jul 2011 00:39:04 +0200
+To keep transtable consistency among all the nodes, an originator must
+not send not yet announced clients within a full table TT_RESPONSE.
+Instead, deleted client have to be kept in the table in order to be sent
+within an immediate TT_RESPONSE. In this way all the nodes in the
+network will always provide the same response for the same request.
 
-> The following changes since commit 44c4349a2a117b22a5c4087f2ac9faf10c575e17:
-> 
->   batman-adv: Replace version info instead of appending them (2011-07-05 14:48:56 +0200)
-> 
-> are available in the git repository at:
->   git://git.open-mesh.org/linux-merge.git batman-adv/next
-> 
-> Antonio Quartulli (4):
->       batman-adv: initialise last_ttvn and tt_crc for the orig_node structure
->       batman-adv: keep local table consistency for further TT_RESPONSE
->       batman-adv: keep global table consistency in case of roaming
->       batman-adv: request the full table if tt_crc doesn't match
+All the modification are committed at the next ttvn increment event.
 
-Pulled.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ packet.h |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-You may want to make the tt_response_fill_table() callback return
-'bool' if it's just returning what amounts to true/false values.
+diff --git a/packet.h b/packet.h
+index 590e4a6..b76b4be 100644
+--- a/packet.h
++++ b/packet.h
+@@ -84,7 +84,9 @@ enum tt_query_flags {
+ enum tt_client_flags {
+ 	TT_CLIENT_DEL     = 1 << 0,
+ 	TT_CLIENT_ROAM    = 1 << 1,
+-	TT_CLIENT_NOPURGE = 1 << 8
++	TT_CLIENT_NOPURGE = 1 << 8,
++	TT_CLIENT_NEW     = 1 << 9,
++	TT_CLIENT_PENDING = 1 << 10
+ };
+ 
+ struct batman_packet {
+-- 
+1.7.3.4
+
