@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 9 Jul 2011 01:05:47 +0200
-References: <1310161134-18515-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1310161134-18515-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201107090105.47816.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: keep local table consistency for
-	further TT_RESPONSE
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat,  9 Jul 2011 13:30:33 +0200
+Message-Id: <1310211033-2951-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: correct typ0 in routing.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,18 +14,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, July 08, 2011 23:38:54 Antonio Quartulli wrote:
-> To keep transtable consistency among all the nodes, an originator must
-> not send not yet announced clients within a full table TT_RESPONSE.
-> Instead, deleted client have to be kept in the table in order to be sent
-> within an immediate TT_RESPONSE. In this way all the nodes in the
-> network will always provide the same response for the same request.
-> 
-> All the modification are committed at the next ttvn increment event.
+Correct a very small typ0 in routing.c
 
-Applied in revision 219bc39.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ routing.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks,
-Marek
+diff --git a/routing.c b/routing.c
+index 0f32c81..36b940c 100644
+--- a/routing.c
++++ b/routing.c
+@@ -93,7 +93,7 @@ static void update_transtable(struct bat_priv *bat_priv,
+ 		orig_node->tt_crc = tt_global_crc(bat_priv, orig_node);
+ 
+ 		/* The ttvn alone is not enough to guarantee consistency
+-		 * because a single value could repesent different states
++		 * because a single value could represent different states
+ 		 * (due to the wrap around). Thus a node has to check whether
+ 		 * the resulting table (after applying the changes) is still
+ 		 * consistent or not. E.g. a node could disconnect while its
+-- 
+1.7.3.4
+
