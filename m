@@ -1,10 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat,  9 Jul 2011 15:53:08 +0200
-Message-Id: <1310219588-9321-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1310211033-2951-1-git-send-email-ordex@autistici.org>
-References: <1310211033-2951-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: correct several typ0s in the
+Date: Sat,  9 Jul 2011 17:52:13 +0200
+Message-Id: <1310226733-4295-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1310219588-9321-1-git-send-email-ordex@autistici.org>
+References: <1310219588-9321-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: correct several typ0s in the
 	comments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,13 +24,14 @@ Several typos have been corrected and some sentences have been rephrased
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
 
-This patch superseeds "[PATCH] batman-adv: correct typ0 in routing.c"
+"..because they were to many to fit.." has been changed into
+"..due to their size..", in routing.c
 
  bitarray.c          |    6 +++---
  gateway_client.c    |   10 +++++-----
  hard-interface.c    |    4 ++--
  main.h              |    4 ++--
- routing.c           |   12 ++++++------
+ routing.c           |   19 +++++++++----------
  send.c              |   10 +++++-----
  soft-interface.c    |    2 +-
  translation-table.c |    8 ++++----
@@ -38,7 +39,7 @@ This patch superseeds "[PATCH] batman-adv: correct typ0 in routing.c"
  types.h             |    4 ++--
  unicast.h           |    2 +-
  vis.c               |    2 +-
- 12 files changed, 33 insertions(+), 33 deletions(-)
+ 12 files changed, 36 insertions(+), 37 deletions(-)
 
 diff --git a/bitarray.c b/bitarray.c
 index c1f4bfc..0be9ff3 100644
@@ -129,10 +130,24 @@ index 9ee8023..7abadae 100644
  #include <linux/poll.h>		/* poll_table */
  #include <linux/kthread.h>	/* kernel threads */
 diff --git a/routing.c b/routing.c
-index 0f32c81..5c286e1 100644
+index 0f32c81..ec23f9f 100644
 --- a/routing.c
 +++ b/routing.c
-@@ -87,13 +87,13 @@ static void update_transtable(struct bat_priv *bat_priv,
+@@ -75,10 +75,9 @@ static void update_transtable(struct bat_priv *bat_priv,
+ 
+ 	/* the ttvn increased by one -> we can apply the attached changes */
+ 	if (ttvn - orig_ttvn == 1) {
+-		/* the OGM could not contain the changes because they were too
+-		 * many to fit in one frame or because they have already been
+-		 * sent TT_OGM_APPEND_MAX times. In this case send a tt
+-		 * request */
++		/* the OGM could not contain the changes due to their size or
++		 * because they have already been sent TT_OGM_APPEND_MAX times.
++		 * In this case send a tt request */
+ 		if (!tt_num_changes) {
+ 			full_table = false;
+ 			goto request_table;
+@@ -87,13 +86,13 @@ static void update_transtable(struct bat_priv *bat_priv,
  		tt_update_changes(bat_priv, orig_node, tt_num_changes, ttvn,
  				  (struct tt_change *)tt_buff);
  
@@ -149,7 +164,7 @@ index 0f32c81..5c286e1 100644
  		 * (due to the wrap around). Thus a node has to check whether
  		 * the resulting table (after applying the changes) is still
  		 * consistent or not. E.g. a node could disconnect while its
-@@ -228,7 +228,7 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
+@@ -228,7 +227,7 @@ static int is_bidirectional_neigh(struct orig_node *orig_node,
  	if (!neigh_node)
  		goto out;
  
@@ -158,7 +173,7 @@ index 0f32c81..5c286e1 100644
  	if (orig_node == orig_neigh_node)
  		neigh_node->last_valid = jiffies;
  
-@@ -473,7 +473,7 @@ static void update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
+@@ -473,7 +472,7 @@ static void update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
  	if (router && (router->tq_avg > neigh_node->tq_avg))
  		goto update_tt;
  
@@ -167,7 +182,7 @@ index 0f32c81..5c286e1 100644
  	 * won't consider it either */
  	if (router && (neigh_node->tq_avg == router->tq_avg)) {
  		orig_node_tmp = router->orig_node;
-@@ -1243,7 +1243,7 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+@@ -1243,7 +1242,7 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
  		}
  		break;
  	case TT_RESPONSE:
