@@ -1,9 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 10 Jul 2011 00:36:36 +0200
-Message-Id: <1310250996-4456-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: hash_add() has to discriminate
-	on the return value
+Date: Sun, 10 Jul 2011 01:50:57 +0200
+Message-Id: <1310255457-26009-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: handle hash_add() return value
+	in the TT code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,91 +17,78 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-hash_add() returns 0 on success while returns -1 either on error and on
-entry already present. The caller could use such information to select
-its behaviour. For this reason it is useful that hash_add() returns -1
-in case on error and returns 1 in case of entry already present.
+hash_add() can fail and for this reason its return value has to be
+correctly interpreted to avoid memory leaks.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- hash.h       |    9 ++++++---
- originator.c |    2 +-
- vis.c        |    4 ++--
- 3 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/hash.h b/hash.h
-index dd5c9fd..864b9b0 100644
---- a/hash.h
-+++ b/hash.h
-@@ -82,7 +82,7 @@ static inline int hash_add(struct hashtable_t *hash,
- 			   hashdata_choose_cb choose,
- 			   const void *data, struct hlist_node *data_node)
- {
--	int index;
-+	int index, ret = -1;
- 	struct hlist_head *head;
- 	struct hlist_node *node;
- 	spinlock_t *list_lock; /* spinlock to protect write access */
-@@ -98,6 +98,7 @@ static inline int hash_add(struct hashtable_t *hash,
- 	__hlist_for_each_rcu(node, head) {
- 		if (!compare(node, data))
- 			continue;
-+		ret = 1;
+This patch needs
+"[PATCH] batman-adv: hash_add() has to discriminate on the return value"
+to work
+
+ translation-table.c |   27 +++++++++++++++++++++------
+ 1 files changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/translation-table.c b/translation-table.c
+index fb6931d..267a287 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -188,6 +188,7 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr)
+ 	struct bat_priv *bat_priv = netdev_priv(soft_iface);
+ 	struct tt_local_entry *tt_local_entry = NULL;
+ 	struct tt_global_entry *tt_global_entry = NULL;
++	int hash_added;
  
- 		goto err_unlock;
- 	}
-@@ -108,12 +109,14 @@ static inline int hash_add(struct hashtable_t *hash,
- 	hlist_add_head_rcu(data_node, head);
- 	spin_unlock_bh(list_lock);
+ 	tt_local_entry = tt_local_hash_find(bat_priv, addr);
  
--	return 0;
-+	ret = 0;
-+
-+	return ret;
+@@ -220,8 +221,14 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr)
+ 	 * (consistency check) */
+ 	tt_local_entry->flags |= TT_CLIENT_NEW;
  
- err_unlock:
- 	rcu_read_unlock();
- err:
--	return -1;
-+	return ret;
- }
- 
- /* removes data from hash, if found. returns pointer do data on success, so you
-diff --git a/originator.c b/originator.c
-index f3c3f62..d448018 100644
---- a/originator.c
-+++ b/originator.c
-@@ -252,7 +252,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, const uint8_t *addr)
- 
- 	hash_added = hash_add(bat_priv->orig_hash, compare_orig,
- 			      choose_orig, orig_node, &orig_node->hash_entry);
--	if (hash_added < 0)
+-	hash_add(bat_priv->tt_local_hash, compare_ltt, choose_orig,
+-		 tt_local_entry, &tt_local_entry->hash_entry);
++	hash_added = hash_add(bat_priv->tt_local_hash, compare_ltt,
++			      choose_orig, tt_local_entry,
++			      &tt_local_entry->hash_entry);
 +	if (hash_added != 0)
- 		goto free_bcast_own_sum;
++		tt_local_entry_free_ref(tt_local_entry);
++
++	if (hash_added < 0)
++		goto out;
  
- 	return orig_node;
-diff --git a/vis.c b/vis.c
-index 8a1b985..8b75cc5 100644
---- a/vis.c
-+++ b/vis.c
-@@ -465,7 +465,7 @@ static struct vis_info *add_packet(struct bat_priv *bat_priv,
- 	/* try to add it */
- 	hash_added = hash_add(bat_priv->vis_hash, vis_info_cmp, vis_info_choose,
- 			      info, &info->hash_entry);
--	if (hash_added < 0) {
-+	if (hash_added != 0) {
- 		/* did not work (for some reason) */
- 		kref_put(&info->refcount, free_info);
- 		info = NULL;
-@@ -920,7 +920,7 @@ int vis_init(struct bat_priv *bat_priv)
- 	hash_added = hash_add(bat_priv->vis_hash, vis_info_cmp, vis_info_choose,
- 			      bat_priv->my_vis_info,
- 			      &bat_priv->my_vis_info->hash_entry);
--	if (hash_added < 0) {
-+	if (hash_added != 0) {
- 		pr_err("Can't add own vis packet into hash\n");
- 		/* not in hash, need to remove it manually. */
- 		kref_put(&bat_priv->my_vis_info->refcount, free_info);
+ 	/* remove address from global hash if present */
+ 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
+@@ -500,6 +507,7 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 	struct tt_global_entry *tt_global_entry;
+ 	struct orig_node *orig_node_tmp;
+ 	int ret = 0;
++	int hash_added;
+ 
+ 	tt_global_entry = tt_global_hash_find(bat_priv, tt_addr);
+ 
+@@ -519,10 +527,17 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 		tt_global_entry->roam_at = 0;
+ 		atomic_set(&tt_global_entry->refcount, 2);
+ 
+-		hash_add(bat_priv->tt_global_hash, compare_gtt,
+-			 choose_orig, tt_global_entry,
+-			 &tt_global_entry->hash_entry);
+-		atomic_inc(&orig_node->tt_size);
++		hash_added = hash_add(bat_priv->tt_global_hash, compare_gtt,
++				      choose_orig, tt_global_entry,
++				      &tt_global_entry->hash_entry);
++		if (hash_added != 0)
++			tt_global_entry_free_ref(tt_global_entry);
++
++		if (hash_added < 0)
++			goto out;
++
++		if (!hash_added)
++			atomic_inc(&orig_node->tt_size);
+ 	} else {
+ 		if (tt_global_entry->orig_node != orig_node) {
+ 			atomic_dec(&tt_global_entry->orig_node->tt_size);
 -- 
 1.7.3.4
 
