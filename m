@@ -1,16 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 Jul 2011 13:15:03 +0200
-Message-ID: <2528846.xa574SJbNA@sven-desktop.home.narfation.org>
-In-Reply-To: <1310901079-14967-1-git-send-email-sven@narfation.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 17 Jul 2011 21:11:31 +0200
 References: <1310899392-1941-1-git-send-email-sven@narfation.org>
-	<1310901079-14967-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1310899392-1941-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1327167.RgR6oS8UaK";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Start to fiddle with compat
-	stuff
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201107172111.32232.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Remove compat code for kernel
+	versions < 2.6.29
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,49 +21,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Sunday, July 17, 2011 12:43:12 Sven Eckelmann wrote:
+> The removal of the HAVE_NET_DEVICE_OPS in the kernel sources by David S.
+> Miller makes it hard to implement compatibility code using compat.(c|h).
+> Either the sources of the kernel and the external module have to diverge
+> again or more complex workarounds have to be found.
+> 
+> Dropping support for kernels older than 2.6.29 will remove the dead ballast
+> of stuff older than two years. People which need it can revert
+> 7f1b7b837c205e413a7aa078a47ec96f0c11afa7 and this patch.
 
---nextPart1327167.RgR6oS8UaK
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Although it might not please everyone I believe this is the way to go. In case 
+somebody does not agree he can propose an alternative in the following days.
 
-On Sunday 17 July 2011 13:11:19 Sven Eckelmann wrote:
->  README           |    2 +-
->  compat.c         |    8 ++++++++
->  compat.h         |   17 +++++++++++++++++
->  soft-interface.c |   31 ++++++++++++++++++++++++++++++-
->  4 files changed, 56 insertions(+), 2 deletions(-)
-
-The sendmail killed my comment. So here it is again:
-
-This is just a small note... but it is completely unacceptable for the kernel
-folks. d0tslash wanted to have "another ugly compat.h macro" - so he can
-continue here.
-
-Kind regards,
-	Sven
---nextPart1327167.RgR6oS8UaK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJOIsQ3AAoJEF2HCgfBJntGeWAQALFHwbkVx1jRiqgiTPlgYC3l
-CTWK+H5ck7TnsXbEkcXLwVnRFQzj9kMV++xwZa6+tzOYeLQCXKUAhZJ3bMG1t+XR
-62avDnl5vzihf2vKek2/BVdzUcVENWYwhjWCycKbPj2qfU+o5zkjFSdh1v4OTRkd
-2VONynYrHLRo/vwQqg3bDgugmLJ+g6k0hIkjJR4fAdeBd4GjO5gnzAwV+SzJ3nDK
-bR1nPVa61Dl1D6xjrkg/kEfHHzs9J12rbRf+BoJBNp2CJhha6EMPJTBwPg7Q0pio
-JgWktKr3Iu/dAfji+LnmE+7FQtUcqObNZQSHTT/ZJfWlyocTo2xzHUr/PtM+Eg6l
-a8G09qorGSquRQ7ajwWAk6fODbnMRj4rJzyFv9W5PiPzlDnTdiKlVzpHRvHC9fXJ
-JwQW+ume9bphzsmOyAC0LdPMdv9Q1p+JJcZKiQJR5IfBq42Blmyt96sXdJwN89Ec
-JSgmMxt15JBs3IEdx207DeAmCGBGtxz29y+eMnqOChRROOevDosOUn+OrGCY/pdu
-0KeS53SOujolDsvqlcUe5yq/k2JgSGsRyFyWd2YuKXDiyC7udPbhJY1ObqC3b+km
-dMBKfxcFv7QZqk+lS4pfdAEG8gsGYLQxxpHUGbzVfP0XWz2qeNOPzDE56SA2u8Sx
-ZZfyYQ5IIeddw3x/sGr2
-=FV72
------END PGP SIGNATURE-----
-
---nextPart1327167.RgR6oS8UaK--
-
+Cheers,
+Marek
