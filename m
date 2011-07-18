@@ -1,18 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 18 Jul 2011 10:35:06 +0200
-Message-ID: <1526434.FaG4SdHL5r@sven-laptop.home.narfation.org>
-In-Reply-To: <20110717191407.GA7377@pandem0nium>
-References: <1310899392-1941-1-git-send-email-sven@narfation.org>
-	<2528846.xa574SJbNA@sven-desktop.home.narfation.org>
-	<20110717191407.GA7377@pandem0nium>
+Return-Path: <drwho@virtadpt.net>
+Message-ID: <4E24703D.9090000@virtadpt.net>
+Date: Mon, 18 Jul 2011 13:41:17 -0400
+From: The Doctor <drwho@virtadpt.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1356357.cYkapPOCVI";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Start to fiddle with compat
-	stuff
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+References: <87ipr2mjdv.fsf@trurl.pps.jussieu.fr>
+	<201107161734.59403.lindner_marek@yahoo.de>
+In-Reply-To: <201107161734.59403.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Battlemesh-like experiment in Washington, DC
+Reply-To: drwho@virtadpt.net,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -25,61 +23,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
---nextPart1356357.cYkapPOCVI
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+On 07/16/2011 11:34 AM, Marek Lindner wrote:
 
-On Sunday 17 July 2011 21:14:07 Simon Wunderlich wrote:
-> Hey Sven,
-> 
-> actually I wanted an ugly macro which keeps the kernel version check in
-> the compat.h only - I tried my luck based on your patch, but i failed
-> miserably... I just can't tame the preprocessor. Sorry. :D
+> I fail to see the misunderstanding - just because DHCP does not work with 
+> $your_protocol does not mean it never works. DHCP is the recommended IP 
+> configuration tool in a batman-adv mesh network.
 
-I never expected that you are able to fix it without doing more ugly things 
-inside the source code.
+We found that DHCP works well to configure clients of the mesh, but a
+possible problem of using it to configure other mesh nodes is too many
+nodes running DHCP servers and potentially handing out conflicting
+information.  For mesh /nodes/ we have two options on the table: AHCP
+(every node will come with ahcpd pre-installed but not running) and
+generating pseudo-random RFC 1918 addresses for the network interfaces
+done by the control panel, and working fairly well at this early date).
 
-[...]
-> As a compromise, we might upload compat patches on open-mesh.org for
-> release versions of batman-adv. No maintaining, just "best effort service".
-> We keep some more unmaintained patches there too [1]. What do you think?
+- -- 
 
-That is exactly what we started to discuss. Personally I don't have anything 
-against it, but Marek said that nobody will test it and it will be harder and 
-harder to backport. My answer was that it is already even harder to backport 
-it to 2.6.21 without modifying the actual sources. But at least it is a way to 
-share some work for people which have to work together with.... against a 
-marketing department that doesn't understands that "supports latest linux" 
-doesn't mean some old and rotting linux 2.6.x.
+The Doctor [412/724/301/703]
 
-The current steps for the compat patch is to revert David's patch (but modify 
-it to use >= 2.6.29 instead of HAVE_....) and revert my "remove that old 
-compat stuff" patch.
+PGP: 0x807B17C1 / 7960 1CDC 85C9 0B63 8D9F  DD89 3BD8 FF2B 807B 17C1
+WWW: http://drwho.virtadpt.net/
 
-Kind regards,
-	Sven
---nextPart1356357.cYkapPOCVI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+"My mom thinks I'm cool..." --Milhouse
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-iQIcBAABCgAGBQJOI/A6AAoJEF2HCgfBJntG97kQAKgz+Qh/IC1W2EVphXtqE8eZ
-jCRH6Zq7QGg7jmclqEjLN08Osiy2jBjp4i7n1IKQs6SXkIJnXpmdUIbqGEl+6loX
-GMv1Z1XKXab6y7wxy1G7oN4dy8oqHm9bWWsCuJ0/gAYBTH6Fil38hgkTL+aqwaGg
-B2PooG0E3+wrJh1OnfKw+CqpiDpvibzbt2mE+mlb745P75Rf2bkMolVE9luwO2oC
-xGnnI4sVcPl/4ck6IEcpcNJlukBG3wOLBj6xsU81Bdg68tdiEPltF6HSIRWhn5Ps
-wYe3ZIhvjpHOHNX200Wasb1cdTggHKuXpK/sWtkubm1K4i9PEnvLU9QMclKeKWUD
-xvigveAK5o1iuWYkrKRSco+wmMGwYpnO5Pu6mCrZXRSu0M6k+7aBh5aU+9YWwUe8
-rgfgefg/r9c6KMiUwCvc4cnXsMRENgwNtEbyLPwCqq7AOe8xrsUyn0wGvSsITbbl
-0V4x2OOI2PX3ikc3qKwSCQZQrU4d+pxXU5xbwmLKVeFyy/620MOPXqQadVeVhIrt
-2lyMCR0OfioMclGjeOJ3Dk4GYpXZ3tW+cxMT7+l77WiXqFClNAvBSQHtA5+ouGKB
-WfbvnuTOSZ3KDU5zZ7axNSJDHmvy+XcZfd6lTb8f6Z1Q7lij8+S+6TzSFcAS5zdO
-gv9XfcAncY2TurB4zDAW
-=RLLT
+iEYEARECAAYFAk4kcD0ACgkQO9j/K4B7F8HXGACfeNTfdZKPhp081ISOtR47/y6O
+ZCYAoMI9iCw+lt95hVGI5zIqg4aTVFuC
+=IMrn
 -----END PGP SIGNATURE-----
-
---nextPart1356357.cYkapPOCVI--
-
