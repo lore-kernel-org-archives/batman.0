@@ -1,18 +1,16 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 21 Jul 2011 12:20:00 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20110721102000.GA9313@lunn.ch>
-References: <CA+qXHzNUGtLUpFqOmvKge05wLYyyoCpkTJG4HKwkd+Zzv81hYQ@mail.gmail.com>
-	<2942004.kRGEbDgGH5@sven-laptop.home.narfation.org>
-	<CA+qXHzN2x3CL7aH7T-OJKEE0tfs7kgOVoqtUpNZJyecrywRJWg@mail.gmail.com>
-	<8523816.3y33SjpCxy@sven-laptop.home.narfation.org>
-	<CA+qXHzOAVeGYcnqjz_=goW2Yzc+oJ5y1GpAYDcH8EeGZssL=wA@mail.gmail.com>
+Return-Path: <drwho@virtadpt.net>
+Message-ID: <4E28392B.9020209@virtadpt.net>
+Date: Thu, 21 Jul 2011 10:35:23 -0400
+From: The Doctor <drwho@virtadpt.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CA+qXHzOAVeGYcnqjz_=goW2Yzc+oJ5y1GpAYDcH8EeGZssL=wA@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Filtering BATMAN-ADV packet
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+References: <87ipr2mjdv.fsf@trurl.pps.jussieu.fr>	<4E270F72.10900@virtadpt.net>
+	<7izkk8zsr4.fsf@lanthane.pps.jussieu.fr>
+In-Reply-To: <7izkk8zsr4.fsf@lanthane.pps.jussieu.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Battlemesh-like experiment in Washington, DC
+Reply-To: drwho@virtadpt.net,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,25 +21,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Juliusz Chroboczek <jch@pps.jussieu.fr>
+Cc: b.a.t.m.a.n@open-mesh.net, Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>, babel-users@lists.alioth.debian.org
 
-On Thu, Jul 21, 2011 at 05:14:28PM +0800, Nik M. Anas Kamarudin wrote:
-> AP mode? Sry, forget to tell, i using in ad-hoc mode. Maybe i explain
-> more. I try to test batman-adv in MANET. In order to doing that, i
-> need to make a scenario that have changing in topology. That why i
-> need to filter some batman-adv packet, if not i need to move the node
-> myself in and out of wireless range.  So, anyone have any idea how to
-> filter batman-adv packet?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Hi Nik
+On 07/20/2011 02:55 PM, Juliusz Chroboczek wrote:
 
-You might want to consider using a network simulator/emulator. Use a
-number of user mode linux nodes, or qemu nodes, connected together
-using a virtual network. You can control the packets losses, paths
-etc, much easier and dynamically.
+> So are you running a DHCP forwarder on every node?  (Or are you working
+> with a layer-2 mesh, which is what Marek was alluding to?)
 
-Take a look at this page for an example:
+Not on every node.  For the purposes of our experiment, we were
+configuring clients associated with a couple of nodes.  We were working
+with a layer-2 mesh at the time.
 
-http://www.open-mesh.org/wiki/open-mesh/Emulation
+By the way, should this particular thread really be going to the
+babel-users list?  If we're talking layer-2 we're talking BATMAN-adv,
+which is out of scope for that discussion list.
 
-	Andrew
+- -- 
+
+The Doctor [412/724/301/703]
+
+PGP: 0x807B17C1 / 7960 1CDC 85C9 0B63 8D9F  DD89 3BD8 FF2B 807B 17C1
+WWW: http://drwho.virtadpt.net/
+
+Your memories are fiction.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAk4oOSsACgkQO9j/K4B7F8FVGACdGnRiT3dVsZ24AtFd3BBohTFK
+X5MAn0sqC/KbEqkbcqoX6wg/GAAmA9R/
+=f5Jn
+-----END PGP SIGNATURE-----
