@@ -1,13 +1,10 @@
-Return-Path: <jch@pps.jussieu.fr>
-From: Juliusz Chroboczek <jch@pps.jussieu.fr>
-References: <87ipr2mjdv.fsf@trurl.pps.jussieu.fr> <4E270F72.10900@virtadpt.net>
-Date: Wed, 20 Jul 2011 20:55:43 +0200
-In-Reply-To: <4E270F72.10900@virtadpt.net> (The Doctor's message of "Wed, 20
-	Jul 2011 13:25:06 -0400")
-Message-ID: <7izkk8zsr4.fsf@lanthane.pps.jussieu.fr>
+Return-Path: <nikanas@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: [B.A.T.M.A.N.] Battlemesh-like experiment in Washington, DC
+Date: Thu, 21 Jul 2011 11:33:55 +0800
+Message-ID: <CA+qXHzNUGtLUpFqOmvKge05wLYyyoCpkTJG4HKwkd+Zzv81hYQ@mail.gmail.com>
+From: "Nik M. Anas Kamarudin" <nikanas@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Filtering BATMAN-ADV packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,16 +16,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: drwho@virtadpt.net
-Cc: b.a.t.m.a.n@open-mesh.net, Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>, babel-users@lists.alioth.debian.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
->> They've got a few minor misunderstandings (for example, they're trying
->> to get ordinary DHCP to work over a mesh),
+Hello all,
 
-> We actually did get DHCP working over our meshes as a proof of concept -
-> it works pretty well.
+I need some help with batmand-adv packet filtering on wireless interface.
+I successfully filter batman-adv packet using ebtables. This what i do:
 
-So are you running a DHCP forwarder on every node?  (Or are you working
-with a layer-2 mesh, which is what Marek was alluding to?)
+/usr/sbin/brctl addbr br0
+/usr/sbin/brctl addif br0 eth0
+/sbin/ifconfig br0 up
+/sbin/ifconfig eth0 192.168.5.2 up
 
--- Juliusz
+then wait around 15 ~ 30 second.
+
+/sbin/modprobe /lib/modules/`2.6.35.13/batman-adv/batman-adv.ko
+/usr/sbin/batctl if add br0
+/sbin/ifconfig bat0 192.168.5.41 up
+/sbin/ifconfig br0 192.168.5.1 up
+
+and filter up the batman-adv packet using etables like this:
+`/usr/sbin/ebtables -A INPUT -s AA:AA:AA:AA:AA -j DROP`
+
+BUT, this only work for Ethernet interface/ wire.. i need to do this
+same thing using wireless interface. Anyone got any ideas?
