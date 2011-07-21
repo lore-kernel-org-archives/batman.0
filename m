@@ -1,15 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 21 Jul 2011 11:32:40 +0200
-Message-ID: <2402068.FGb5V49z0Q@sven-laptop.home.narfation.org>
-In-Reply-To: <10936294.59BhBL2GsI@sven-laptop.home.narfation.org>
+Return-Path: <andrew@lunn.ch>
+Date: Thu, 21 Jul 2011 12:20:00 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20110721102000.GA9313@lunn.ch>
 References: <CA+qXHzNUGtLUpFqOmvKge05wLYyyoCpkTJG4HKwkd+Zzv81hYQ@mail.gmail.com>
+	<2942004.kRGEbDgGH5@sven-laptop.home.narfation.org>
+	<CA+qXHzN2x3CL7aH7T-OJKEE0tfs7kgOVoqtUpNZJyecrywRJWg@mail.gmail.com>
+	<8523816.3y33SjpCxy@sven-laptop.home.narfation.org>
 	<CA+qXHzOAVeGYcnqjz_=goW2Yzc+oJ5y1GpAYDcH8EeGZssL=wA@mail.gmail.com>
-	<10936294.59BhBL2GsI@sven-laptop.home.narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4294393.jcmC6L7rdc";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CA+qXHzOAVeGYcnqjz_=goW2Yzc+oJ5y1GpAYDcH8EeGZssL=wA@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] Filtering BATMAN-ADV packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,45 +23,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Thu, Jul 21, 2011 at 05:14:28PM +0800, Nik M. Anas Kamarudin wrote:
+> AP mode? Sry, forget to tell, i using in ad-hoc mode. Maybe i explain
+> more. I try to test batman-adv in MANET. In order to doing that, i
+> need to make a scenario that have changing in topology. That why i
+> need to filter some batman-adv packet, if not i need to move the node
+> myself in and out of wireless range.  So, anyone have any idea how to
+> filter batman-adv packet?
 
---nextPart4294393.jcmC6L7rdc
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Hi Nik
 
-On Thursday 21 July 2011 11:23:11 Sven Eckelmann wrote:
-> I already told you about it in the first mail what a solution could be.
-> There are two other solutions use the initial idea of ebtables and bridge.
+You might want to consider using a network simulator/emulator. Use a
+number of user mode linux nodes, or qemu nodes, connected together
+using a virtual network. You can control the packets losses, paths
+etc, much easier and dynamically.
 
-Translation:
+Take a look at this page for an example:
 
-I already explained a different solution in the first mail. There are two 
-other ideas which only use ebtables and a bridge.
+http://www.open-mesh.org/wiki/open-mesh/Emulation
 
-Kind regards,
- 	Sven
---nextPart4294393.jcmC6L7rdc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJOJ/I4AAoJEF2HCgfBJntGxRIQAMSJ/U0/a8lnvJ0WmoexQac1
-KYRJfXZKpo9AvlQEvT2vG0q1/KiTnJHeh0Kjv9ZjW5kHMxo5ucc2IZ0DRVVFahld
-mRGAVsYiAJAUiyrQ4EO1rFhORm1sO8KILY4RsoRkdmAMy8V9Us7fKkBcmQifNKQP
-l8HQh7Kq/9L2f7wcw1wvGU52d+aHGQzDudUK/gzo9nqjO6tsRn3paltewWoOSwQd
-1dv/u5vMlNzGJmXqRzCQ+RVVlhI8TlqSbmL9Z6L1FTn51NqRiMu1vnOQ5MfJBV2T
-Q9QN9lEkLmGWGnHYq4c/1d0/VaRReXp9HPNC9tG3vUIsnYuOl5Ml7EU2YPtgsn1A
-26IV4wSLoXjLHIAdRZ2Kd/qMwi+IiiDdjcq+zPKEpyGEObs5P2Xb0BSrWV6Ha2uR
-RFQbYuzW0DQhVCEupIwzR8/Qp+2Tv/6W9yrD/Ycmuj/lJ9nqS2eQoTN+NRLC1x/S
-PBYCpspGJ+OUEnXaGClt7MbsGavJXJiE0oBU9w0VpX8+hV6rxth1j1kxlTBJXze+
-lgbYqNzg2JJM4JMuaHIjQoKltRMfBI+v+acmRiS5sCvEwW/2/MJRni905qz1dt1d
-uXlYVTvi4rMgmgy9/MTlSePjwVdk4ubOJvsVz4mYRdxx6qFlaHecRi8HDhZgx53O
-ywj5evj+8dDqOauxqXR4
-=63Pp
------END PGP SIGNATURE-----
-
---nextPart4294393.jcmC6L7rdc--
-
+	Andrew
