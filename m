@@ -1,15 +1,15 @@
-Return-Path: <jch@pps.jussieu.fr>
-From: Juliusz Chroboczek <jch@pps.jussieu.fr>
-References: <87ipr2mjdv.fsf@trurl.pps.jussieu.fr>
-	<4E270F72.10900@virtadpt.net> <7izkk8zsr4.fsf@lanthane.pps.jussieu.fr>
-	<4E28392B.9020209@virtadpt.net>
-Date: Thu, 21 Jul 2011 18:20:04 +0200
-In-Reply-To: <4E28392B.9020209@virtadpt.net> (The Doctor's message of "Thu, 21
-	Jul 2011 10:35:23 -0400")
-Message-ID: <7ibown8v2j.fsf@lanthane.pps.jussieu.fr>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 23 Jul 2011 11:51:45 +0200
+References: <1310899392-1941-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1310899392-1941-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: [B.A.T.M.A.N.] Battlemesh-like experiment in Washington, DC
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201107231151.45706.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Remove compat code for kernel
+	versions < 2.6.29
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,26 +21,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: drwho@virtadpt.net
-Cc: b.a.t.m.a.n@open-mesh.net, Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>, babel-users@lists.alioth.debian.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
->> So are you running a DHCP forwarder on every node?  (Or are you working
->> with a layer-2 mesh, which is what Marek was alluding to?)
+On Sunday, July 17, 2011 12:43:12 Sven Eckelmann wrote:
+> The removal of the HAVE_NET_DEVICE_OPS in the kernel sources by David S.
+> Miller makes it hard to implement compatibility code using compat.(c|h).
+> Either the sources of the kernel and the external module have to diverge
+> again or more complex workarounds have to be found.
+> 
+> Dropping support for kernels older than 2.6.29 will remove the dead ballast
+> of stuff older than two years. People which need it can revert
+> 7f1b7b837c205e413a7aa078a47ec96f0c11afa7 and this patch.
 
-> Not on every node.  [...] We were working with a layer-2 mesh at the
-> time.
+Since we seem to have been in agreement regarding the support of older kernels 
+I applied your patch in revision a6786eb.
 
-Oh yeah, there should be no problem in a layer 2 mesh, if the mesh
-implements broadcast (or hacks in some ad hoc smarts related to DHCP).
-AHCP is only needed in a layer 3 mesh.
-
-> By the way, should this particular thread really be going to the
-> babel-users list?  If we're talking layer-2 we're talking BATMAN-adv,
-> which is out of scope for that discussion list.
-
-I don't think it is too outrageously off-topic.  If the respectable
-recipients of this list object, we'll move to a more suitable forum.
-(There's unfortunately no suitable forum for protocol-agnostic
-discussions about mesh routing.)
-
--- Juliusz
+Thanks,
+Marek
