@@ -1,9 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 23 Jul 2011 13:16:42 +0200
-Message-Id: <1311419802-31283-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batmand: Fix build of batgat module with
-	linux 3.0
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 23 Jul 2011 23:17:22 +0200
+References: <1310255457-26009-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1310255457-26009-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201107232317.23438.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: handle hash_add() return
+	value in the TT code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,68 +21,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-This patch depends on the patches currently stored in the branch
-pu/nonblock_ioctl
+On Sunday, July 10, 2011 01:50:57 Antonio Quartulli wrote:
+> @@ -220,8 +221,14 @@ void tt_local_add(struct net_device *soft_iface, const
+> uint8_t *addr) * (consistency check) */
+>  	tt_local_entry->flags |= TT_CLIENT_NEW;
+> 
+> -	hash_add(bat_priv->tt_local_hash, compare_ltt, choose_orig,
+> -		 tt_local_entry, &tt_local_entry->hash_entry);
+> +	hash_added = hash_add(bat_priv->tt_local_hash, compare_ltt,
+> +			      choose_orig, tt_local_entry,
+> +			      &tt_local_entry->hash_entry);
+> +	if (hash_added != 0)
+> +		tt_local_entry_free_ref(tt_local_entry);
+> +
+> +	if (hash_added < 0)
+> +		goto out;
 
-Btw. findstring sounds a little bit... error-prone
+No matter whether we add a new element to the tt hash or not we always 
+generate a log message and throw a tt_local_event(). Is that what we want ?
 
- linux/modules/Makefile        |    8 ++++----
- linux/modules/Makefile.kbuild |    4 ++--
- 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/linux/modules/Makefile b/linux/modules/Makefile
-index eccb601..2aa20e1 100644
---- a/linux/modules/Makefile
-+++ b/linux/modules/Makefile
-@@ -10,8 +10,8 @@ endif
- 
- 
- UNAME:=$(shell uname -r)
--LINUX26=2.6
--LINUX_VERSION:=$(findstring $(LINUX26),$(UNAME))
-+LINUX24=2.4
-+LINUX_VERSION:=$(findstring $(LINUX24),$(UNAME))
- REVISION:=	$(shell if [ -d .svn ]; then \
- 						if which svn > /dev/null; then \
- 							svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'; \
-@@ -30,14 +30,14 @@ REVISION:=	$(shell if [ -d .svn ]; then \
- 
- include $(PWD)/Makefile.kbuild
- 
--ifneq ($(LINUX_VERSION),$(LINUX26))
-+ifeq ($(LINUX_VERSION),$(LINUX24))
- TARGET:=batgat
- INCLUDE:=-I/lib/modules/$(UNAME)/build/include -I/usr/src/kernel-headers-$(UNAME)/include
- EXTRA_CFLAGS+=-D__KERNEL__ -DMODULE -O2 -Wall $(INCLUDE)
- CC:=gcc
- endif
- 
--ifeq ($(LINUX_VERSION),$(LINUX26))
-+ifneq ($(LINUX_VERSION),$(LINUX24))
- 
- all:
- 	$(MAKE) -C $(KERNELPATH) REVISION=$(REVISION) M=$(PWD) PWD=$(PWD) modules
-diff --git a/linux/modules/Makefile.kbuild b/linux/modules/Makefile.kbuild
-index 91982a5..18ac9a7 100644
---- a/linux/modules/Makefile.kbuild
-+++ b/linux/modules/Makefile.kbuild
-@@ -2,10 +2,10 @@ ifeq ($(MAKING_MODULES),1)
- -include $(TOPDIR)/Rules.make
- endif
- 
--LINUX26:=2.6
-+LINUX24:=2.4
- EXTRA_CFLAGS +=-DREVISION_VERSION=\"\ rv$(REVISION)\"
- 
--ifeq ($(strip $(findstring $(LINUX26),$(LINUX_VERSION))),$(LINUX26))
-+ifneq ($(strip $(findstring $(LINUX24),$(LINUX_VERSION))),$(LINUX24))
- 
- obj-m += batgat.o
- batgat-objs := gateway.o hash.o
--- 
-1.7.6
+> @@ -519,10 +527,17 @@ int tt_global_add(struct bat_priv *bat_priv, struct
+> orig_node *orig_node, tt_global_entry->roam_at = 0;
+>  		atomic_set(&tt_global_entry->refcount, 2);
+> 
+> -		hash_add(bat_priv->tt_global_hash, compare_gtt,
+> -			 choose_orig, tt_global_entry,
+> -			 &tt_global_entry->hash_entry);
+> -		atomic_inc(&orig_node->tt_size);
+> +		hash_added = hash_add(bat_priv->tt_global_hash, compare_gtt,
+> +				      choose_orig, tt_global_entry,
+> +				      &tt_global_entry->hash_entry);
+> +		if (hash_added != 0)
+> +			tt_global_entry_free_ref(tt_global_entry);
+> +
+> +		if (hash_added < 0)
+> +			goto out;
+> +
+> +		if (!hash_added)
+> +			atomic_inc(&orig_node->tt_size);
 
+Here we only generate a log message when the element has been added or already 
+exists. Do we want that too ?
+
+Regards,
+Marek
