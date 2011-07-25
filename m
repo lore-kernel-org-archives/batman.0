@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 23 Jul 2011 23:17:22 +0200
-References: <1310255457-26009-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1310255457-26009-1-git-send-email-ordex@autistici.org>
+Date: Mon, 25 Jul 2011 22:03:12 +0200
+References: <1310219588-9321-1-git-send-email-ordex@autistici.org>
+	<1310226733-4295-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1310226733-4295-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201107232317.23438.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: handle hash_add() return
-	value in the TT code
+Message-Id: <201107252203.12935.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: correct several typ0s in
+	the comments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,48 +24,10 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, July 10, 2011 01:50:57 Antonio Quartulli wrote:
-> @@ -220,8 +221,14 @@ void tt_local_add(struct net_device *soft_iface, const
-> uint8_t *addr) * (consistency check) */
->  	tt_local_entry->flags |= TT_CLIENT_NEW;
-> 
-> -	hash_add(bat_priv->tt_local_hash, compare_ltt, choose_orig,
-> -		 tt_local_entry, &tt_local_entry->hash_entry);
-> +	hash_added = hash_add(bat_priv->tt_local_hash, compare_ltt,
-> +			      choose_orig, tt_local_entry,
-> +			      &tt_local_entry->hash_entry);
-> +	if (hash_added != 0)
-> +		tt_local_entry_free_ref(tt_local_entry);
-> +
-> +	if (hash_added < 0)
-> +		goto out;
+On Saturday, July 09, 2011 17:52:13 Antonio Quartulli wrote:
+> Several typos have been corrected and some sentences have been rephrased
 
-No matter whether we add a new element to the tt hash or not we always 
-generate a log message and throw a tt_local_event(). Is that what we want ?
+Applied in revision d1d0877.
 
-
-> @@ -519,10 +527,17 @@ int tt_global_add(struct bat_priv *bat_priv, struct
-> orig_node *orig_node, tt_global_entry->roam_at = 0;
->  		atomic_set(&tt_global_entry->refcount, 2);
-> 
-> -		hash_add(bat_priv->tt_global_hash, compare_gtt,
-> -			 choose_orig, tt_global_entry,
-> -			 &tt_global_entry->hash_entry);
-> -		atomic_inc(&orig_node->tt_size);
-> +		hash_added = hash_add(bat_priv->tt_global_hash, compare_gtt,
-> +				      choose_orig, tt_global_entry,
-> +				      &tt_global_entry->hash_entry);
-> +		if (hash_added != 0)
-> +			tt_global_entry_free_ref(tt_global_entry);
-> +
-> +		if (hash_added < 0)
-> +			goto out;
-> +
-> +		if (!hash_added)
-> +			atomic_inc(&orig_node->tt_size);
-
-Here we only generate a log message when the element has been added or already 
-exists. Do we want that too ?
-
-Regards,
+Thanks,
 Marek
