@@ -1,15 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 26 Jul 2011 00:58:34 +0200
-References: <1311633548-302-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1311633548-302-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201107260058.34559.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: detect clients connected through
-	a 802.11 device
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 27 Jul 2011 11:47:41 +0200
+Message-Id: <1311760070-21532-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1311760070-21532-1-git-send-email-sven@narfation.org>
+References: <1311760070-21532-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4 02/11] batman-adv: Remove private define of
+	atomic_dec_not_zero
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,16 +17,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: linux-arch@vger.kernel.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>, linux-kernel@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, July 26, 2011 00:39:08 Antonio Quartull wrote:
-> From: Antonio Quartulli <ordex@autistici.org>
-> 
-> Clients connected through a 802.11 device are now marked with the
-> TT_CLIENT_WIFI flag. This flag is also advertised with the tt
-> announcement.
+atomic_dec_not_zero is defined through <linux/atomic.h> for all
+architectures and batman-adv doesn't need an extra define which may
+collide with the global one.
 
-Applied in revision 610d2ad.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+---
+ net/batman-adv/main.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-Thanks,
-Marek
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index a6df61a..d986f34 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -201,8 +201,6 @@ static inline int compare_eth(const void *data1, const void *data2)
+ }
+ 
+ 
+-#define atomic_dec_not_zero(v)	atomic_add_unless((v), -1, 0)
+-
+ /* Returns the smallest signed integer in two's complement with the sizeof x */
+ #define smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
+ 
+-- 
+1.7.5.4
+
