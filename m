@@ -1,13 +1,15 @@
-Return-Path: <gmazzurco89@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20110728124618.GA23072@sven-atom.home.narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 29 Jul 2011 10:44:39 +0200
+Message-ID: <1422235.OECWub9Oxo@sven-laptop.home.narfation.org>
+In-Reply-To: <CAOaDhSTPmuvg0hx2CPmHWtEAO9Cnzb5yys5aNx0Z1y9p1pKtEQ@mail.gmail.com>
 References: <CAOaDhSSaTKxP96NfHhv+aBDjOE9sm4u1fpJGoegcHeXKnsJ-Rw@mail.gmail.com>
 	<20110728124618.GA23072@sven-atom.home.narfation.org>
-Date: Thu, 28 Jul 2011 15:19:43 +0200
-Message-ID: <CAOaDhSTPmuvg0hx2CPmHWtEAO9Cnzb5yys5aNx0Z1y9p1pKtEQ@mail.gmail.com>
-From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+	<CAOaDhSTPmuvg0hx2CPmHWtEAO9Cnzb5yys5aNx0Z1y9p1pKtEQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2564760.HnTfsNj2FM";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] per interface hop penalty
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,46 +22,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-At moment i have no time but how much work is needed to change that ?
 
-2011/7/28 Sven Eckelmann <sven@narfation.org>:
-> On Thu, Jul 28, 2011 at 02:31:49PM +0200, Gioacchino Mazzurco wrote:
->> Hey all reading batman-adv documentation I have found the option hop
->> penalty that seems quite good for example with vpn links
->>
->> The problem is that actual hop penalty is per node but not per
->> interface, the fact to have per interface hop penalty could be useful
->> on nodes that have both vpn and real interface and someone want to
->> penalize only vpn interfaces
->>
->> it is possible to have that implemented soon ?
->
-> Yes, you can propose a patch and we can check it to get it in batman-adv
-> 2011.4.0 (which will be released in ~3-4 month) and linux 3.2. But you ha=
-ve to
-> hurry a little bit, because deadline for those patches is in 3 weeks.
->
-> Kind regards,
-> =A0 =A0 =A0 =A0Sven
->
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.10 (GNU/Linux)
->
-> iQIcBAEBCgAGBQJOMVoaAAoJEF2HCgfBJntGCT4P/0Teraw/K+Wy5nqCmBxUgRK+
-> Qn8P2TgfvAYLikjUQBvUiWF9CoVCPgaKNjxnOwljbZSPYB+z+qlYvFbSYoEEw91B
-> FeV0fWrQ30SaVBhNDUCiAcUfUcAyiG8L11HAFaPFZYhAaewhOZcq9jaO2wZ9SZIO
-> 21//Xz5wa3n59vQJyWKus5f6+mbDMb6yrDNt7GHOjqZVYcS5KFoYbkW5pdfIGd0c
-> mIkNSpvpPp1dZo8BfVU5luMQEgsujLdawRTeCacqelljI3oVnGXXhV7OOH3/CXn4
-> HbrWD0NEXU+Y9UtRgP+IE9z4MztELtO8xT3Tc5vnOe8TKODX7BRGAAHu7tj55u48
-> tmUZ2rjzVgpLWmbokX33jHXOZISsxvG8C1qkbBdomk9+imb2r+z+KMy5YiATElrC
-> zjEMRnzuEq2nWLqKDhtvDNpSQrr0mpeOWuJyt3fmN/IIx3eke+Y0cKPVw4KjWLoF
-> bD7avCjKvAfog90bGvltiQxCU19oyST3bW6hycYe1I0936fkF3fIwih9/dhmHEYg
-> xeEcotY6/wOiP8Pfr7lu52vzIxST26IJm7y94MOB8BXKBU3hKerSZF9+4XjgL9V2
-> xvY7qXI4fL4ppunZN76e1rIJIny2zirBKZBSOIMq+gliOm8gd5T4CHaPVnWcf7UM
-> rZHUipj8f2tuHcLtVI0B
-> =3DetdJ
-> -----END PGP SIGNATURE-----
->
->
+--nextPart2564760.HnTfsNj2FM
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
+
+On Thursday 28 July 2011 15:19:43 Gioacchino Mazzurco wrote:
+> At moment i have no time but how much work is needed to change that ?
+
+To find the answer to this question is usually the first step when developing 
+something. I would say that it is easily doable within the time limit of 3 
+weeks, but Marek told me that I should answer with "3 months of work".
+
+Kind regards,
+	Sven
+--nextPart2564760.HnTfsNj2FM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJOMnL3AAoJEF2HCgfBJntGwFEP/AuVZ9nFuaehsd3EWxlBY54s
+Fe/6Ze+raRCTvjU55EblreKMt7yfGBct0HQXXcl0xfM+yqcA8Slls/j4ssTQOrVD
+4tT0xROWBMvY67kellN3s/b6aNXyA8K+MKByHECmdD8hU5UbEfcQqMZdlRKo+MtT
+TJK1cgFVuzI97RpMiOJsuBbN92FlrTs3HICntxw3lp4+Kup+OMyypX4vu5Eb/xTG
+M8G4nTH3NZkZ7zGZu7wdouDUMDOZoF1qiSCyMbqnIhRd4jYFIm+nQu57gh9KlbX6
+0v0tKg5gJWjqM6C1EWYNrufdYAz0MykfmCVvaqcJsHElpsaZCx2KuNd5V9nJxE38
+ZC9OHam1SJRmcyxYaLFLvIfHgnqXp7tX/0KzNqENVS16wjiavRQgVZbFOa9ZCer5
+9CDsBqoHW2zz9iUprHobUHZv/XfoMhJpLlsl6RX3PEo9AUaW+fUCaDbx42g70AA6
+QAUjeOQhQo1v0lSqTq+lL7DMhTd+ljN9s6bQlMSFSEVnI2YxAZx4jJdcPIuC9v8y
+hYi4fMLutxFoc7piWosBF3SBVtPYsubWuaczFuTGTjJyZeLoIWghDI2bItPiwZM7
+fYaCo0HhCbeUkWYsC5vMSMYGXGqb3YxWh1GiiArSgzEqof9zZyun3OnqftADaZBC
+BC7DqoXMa/tl2lGcO3Qz
+=RKca
+-----END PGP SIGNATURE-----
+
+--nextPart2564760.HnTfsNj2FM--
+
