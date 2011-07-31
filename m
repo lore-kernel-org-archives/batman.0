@@ -1,11 +1,15 @@
-Return-Path: <j.neuschaefer@gmx.net>
-From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-Date: Sat, 30 Jul 2011 13:16:05 +0200
-Message-Id: <1312024565-10153-1-git-send-email-j.neuschaefer@gmx.net>
+Return-Path: <ordex@autistici.org>
+Date: Sun, 31 Jul 2011 23:53:19 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20110731215318.GA25702@ritirata.org.org>
+References: <1310255457-26009-1-git-send-email-ordex@autistici.org>
+	<201107232317.23438.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: fix a memory leak in bat_hosts_init
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <201107232317.23438.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: handle hash_add() return
+ value in the TT code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,37 +21,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-normalized was not being free'd when hash_new failed, now it is.
+On Sat, Jul 23, 2011 at 11:17:22 +0200, Marek Lindner wrote:
+> On Sunday, July 10, 2011 01:50:57 Antonio Quartulli wrote:
+> > @@ -220,8 +221,14 @@ void tt_local_add(struct net_device *soft_iface, const
+> > uint8_t *addr) * (consistency check) */
+> >  	tt_local_entry->flags |= TT_CLIENT_NEW;
+> > 
+> > -	hash_add(bat_priv->tt_local_hash, compare_ltt, choose_orig,
+> > -		 tt_local_entry, &tt_local_entry->hash_entry);
+> > +	hash_added = hash_add(bat_priv->tt_local_hash, compare_ltt,
+> > +			      choose_orig, tt_local_entry,
+> > +			      &tt_local_entry->hash_entry);
+> > +	if (hash_added != 0)
+> > +		tt_local_entry_free_ref(tt_local_entry);
+> > +
+> > +	if (hash_added < 0)
+> > +		goto out;
+> 
+> No matter whether we add a new element to the tt hash or not we always 
+> generate a log message and throw a tt_local_event(). Is that what we want ?
 
-Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
----
- bat-hosts.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+What about going to 'out' in case of hash_added != 0? In both cases (<0 or >0) 
+we cannot go ahead with the function as the entry has already been added or it
+is not possible to add it.
 
-diff --git a/bat-hosts.c b/bat-hosts.c
-index 0ea4134..179e733 100644
---- a/bat-hosts.c
-+++ b/bat-hosts.c
-@@ -179,7 +179,7 @@ void bat_hosts_init(int read_opt)
- 	if (!host_hash) {
- 		if (read_opt & USE_BAT_HOSTS)
- 			printf("Warning - could not create bat hosts hash table\n");
--		return;
-+		goto out;
- 	}
- 
- 	homedir = getenv("HOME");
-@@ -216,6 +216,7 @@ void bat_hosts_init(int read_opt)
- 			parse_hosts_file(&host_hash, normalized + (i * PATH_MAX), read_opt);
- 	}
- 
-+out:
- 	free(normalized);
- }
- 
--- 
-1.7.5.4
+> 
+> 
+> > @@ -519,10 +527,17 @@ int tt_global_add(struct bat_priv *bat_priv, struct
+> > orig_node *orig_node, tt_global_entry->roam_at = 0;
+> >  		atomic_set(&tt_global_entry->refcount, 2);
+> > 
+> > -		hash_add(bat_priv->tt_global_hash, compare_gtt,
+> > -			 choose_orig, tt_global_entry,
+> > -			 &tt_global_entry->hash_entry);
+> > -		atomic_inc(&orig_node->tt_size);
+> > +		hash_added = hash_add(bat_priv->tt_global_hash, compare_gtt,
+> > +				      choose_orig, tt_global_entry,
+> > +				      &tt_global_entry->hash_entry);
+> > +		if (hash_added != 0)
+> > +			tt_global_entry_free_ref(tt_global_entry);
+> > +
+> > +		if (hash_added < 0)
+> > +			goto out;
+> > +
+> > +		if (!hash_added)
+> > +			atomic_inc(&orig_node->tt_size);
+> 
+> Here we only generate a log message when the element has been added or already 
+> exists. Do we want that too ?
+> 
 
+The same as before.
+
+Cheers,
+Antonio
