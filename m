@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 3 Aug 2011 09:16:02 +0200
-References: <1312024218-8197-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1312024218-8197-1-git-send-email-lindner_marek@yahoo.de>
+Date: Wed, 3 Aug 2011 09:18:06 +0200
+References: <1312024565-10153-1-git-send-email-j.neuschaefer@gmx.net>
+In-Reply-To: <1312024565-10153-1-git-send-email-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201108030916.02491.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: merge update_transtable()
-	into tt related code
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201108030918.06461.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: fix a memory leak in
+	bat_hosts_init
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,18 +21,13 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan =?utf-8?q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 
-On Saturday, July 30, 2011 13:10:18 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  routing.c           |   66
-> ++---------------------------------------------- translation-table.c
-> |   69 +++++++++++++++++++++++++++++++++++++++++++++++---
-> translation-table.h |    9 ++----
->  3 files changed, 70 insertions(+), 74 deletions(-)
+On Saturday, July 30, 2011 13:16:05 Jonathan Neusch=C3=A4fer wrote:
+> normalized was not being free'd when hash_new failed, now it is.
 
-Applied in revision a69a796.
+Applied in revision 87ec067.
 
-Regards,
+Thanks,
 Marek
