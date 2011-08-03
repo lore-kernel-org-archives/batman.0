@@ -1,14 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 02 Aug 2011 10:32:15 +0200
-Message-ID: <77194694.R5bZIYz2sd@sven-laptop.home.narfation.org>
-In-Reply-To: <9bf008cbb049b3d76dcb7899e48f949c@mail.gmail.com>
-References: <9bf008cbb049b3d76dcb7899e48f949c@mail.gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 3 Aug 2011 07:31:52 +0200
+References: <1310255457-26009-1-git-send-email-ordex@autistici.org>
+	<201107232317.23438.lindner_marek@yahoo.de>
+	<20110731215318.GA25702@ritirata.org.org>
+In-Reply-To: <20110731215318.GA25702@ritirata.org.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1353576.Kv2FLyCP28";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] DNS Batmand
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201108030731.52934.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: handle hash_add() return
+	value in the TT code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,108 +23,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+On Sunday, July 31, 2011 23:53:19 Antonio Quartulli wrote:
+> > > +	hash_added = hash_add(bat_priv->tt_local_hash, compare_ltt,
+> > > +			      choose_orig, tt_local_entry,
+> > > +			      &tt_local_entry->hash_entry);
+> > > +	if (hash_added != 0)
+> > > +		tt_local_entry_free_ref(tt_local_entry);
+> > > +
+> > > +	if (hash_added < 0)
+> > > +		goto out;
+> > 
+> > No matter whether we add a new element to the tt hash or not we always
+> > generate a log message and throw a tt_local_event(). Is that what we want
+> > ?
+> 
+> What about going to 'out' in case of hash_added != 0? In both cases (<0 or
+> >0) we cannot go ahead with the function as the entry has already been
+> added or it is not possible to add it.
+
+If I am not mistaken we should keep the additional "tt_local_entry_free_ref()" 
+because we initialize the newly allocated struct with 2.
+Still, the original problem remains: We generate a log message claiming to 
+have added a new entry even though it might fail later. You have to move the 
+log message to the end of the function.
 
 
---nextPart1353576.Kv2FLyCP28
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="windows-1252"
+> > > +		hash_added = hash_add(bat_priv->tt_global_hash, compare_gtt,
+> > > +				      choose_orig, tt_global_entry,
+> > > +				      &tt_global_entry->hash_entry);
+> > > +		if (hash_added != 0)
+> > > +			tt_global_entry_free_ref(tt_global_entry);
+> > > +
+> > > +		if (hash_added < 0)
+> > > +			goto out;
+> > > +
+> > > +		if (!hash_added)
+> > > +			atomic_inc(&orig_node->tt_size);
+> > 
+> > Here we only generate a log message when the element has been added or
+> > already exists. Do we want that too ?
+> 
+> The same as before.
 
-On Monday 01 August 2011 16:10:41 Camila Troncoso wrote:
-> I=B4m working for some time with a wireless mesh.  I have several dev=
-ices
-> with a basic linux inside (Openwrt) and they are running Batmand prot=
-ocol.
-> One of the mesh nodes acts as a gateway to internet, obtaining IP and=
- DNS
-> trough pppoe. The other nodes act as clients and connect to internet
-> trough this gateway.
+Yeah, same problem as above.  :-)
 
-Do you really use batmand? There is a maintainer for this daemon, but I=
- would=20
-say that there is no measurable difference between now and the time whe=
-n no=20
-maintainer was available.
-
-> The only problem that I=92m facing , is that even when the gateway cr=
-eates
-> the tunnel ( gate0) with the client node and gave it internet connect=
-ivity
-> , it doesn=92t modify the /etc/resolv.conf file, and the client node =
-isn=92t
-> capable of resolving names (DNS).
-
-It is a long time since I used batmand, but at least I think that the g=
-ateway=20
-functionality was never intended to be used as full replacement for DHC=
-P.=20
-Actually, it has a complete different task scope. This means that it ha=
-ndles=20
-all the routing stuff, but resolving of names is a complete different t=
-opic.=20
-You would have to use an external nameserver (own server or just a free=
- one=20
-[1]) or use a special node in the mesh as dns server. Every node has to=
- be=20
-preconfigured with this nameserver in their /etc/resolv.conf (or better=
-:=20
-inside the uci configuration [2]).
-
-> I don=92t understand why the gateway node is not giving the client no=
-de all
-> the necessary information of the internet connection.  I suppose by
-> protocol , if the gateway makes a tunnel , gives IP and route to the
-> clients nodes, It also has to give them a way to resolve names (DNS).=
-
-
-It depends what you define as "necessary". I would say that necessary i=
-s only=20
-the ip stuff. So everything is done by the gateway... Nameserver is onl=
-y=20
-optional and I don't see the reason why this is wrong.
-
-If you really want DHCP... please feel free to use batman-adv [3]. Ther=
-e is=20
-also AHCP [4] for Layer3 protocols, but I never used it. At least the b=
-abel=20
-guys seem to be happy about it. This is enough to be mentioned here :)
-It is not meant to be used to enhance the batmand gateway stuff, but it=
- can be=20
-used to automatically configure the nameserver instead of preconfigurin=
-g it.
-
-To make it short: batmand is a routing daemon and not something like=20=
-
-pppoe/dhcp/ahcp/...
-
-Kind regards,
-=09Sven
-
-[1] http://theos.in/windows-xp/free-fast-public-dns-server-list/
-[2] http://wiki.openwrt.org/doc/uci/network
-[3] http://www.open-mesh.org/projects/batman-adv/wiki
-[4] http://www.pps.jussieu.fr/~jch/software/ahcp/
---nextPart1353576.Kv2FLyCP28
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJON7YPAAoJEF2HCgfBJntGSdoP/2DEj3c7Jacw4MrSAJh8s7vY
-KmjgtvwpG4BMq0ky2Mc8KonbBirKufLCanpInL0WbuXt6VdYQWEA5mg2JY2bkuWP
-9/zfbo+OIYWJ33yjrFMfQwstK6t87f/QZyirajkMTA6NajmyHreSM8QogcqR/Rza
-6JPThbqrpTq4+F3p27iQI4UFdAWOBSyxcCtF+DWUIK5+dePDsBLtuYP/BuHiX6xF
-vftKxSjRqEPSZHdgZ9hZktr+EYN3wCZEpTYvQmb8iFYAmedkiLre0IuLbHqqkAhD
-euF0Pza7/LP2AOzcJ0ZVIzjbMjc9D0uYunbd7zLEqQgGnxuoUUx3jMg1yV8/UBu6
-R9hioYJh+/CIOSuNoUezcnVXvFjLDOgTWjHAuBE8Ov2+lnGlN3015N7amdy8c0R6
-lGv1/BX8qhblvWpjv9sSkUsofT/R91nGC7up0lq/GMLwRywY1N71a6WzLHShwblN
-dcQfkzFizaComy4o7fbLv3PjMt6+r8fgTMXtiyQRoX3uc2GwXuT7b5t0s+Vqxu3M
-qVxxJwAacbqxVHieZYBwROEixxPMq1oVpSE2iQvfGpMLkdiSFSHqfd5pBFDaPFKq
-M66lKYik4ZQey81v7XEPww/+kV3HcNRsevE5oAabO+wdoNsOZ8pasUg1ZwnrgGq+
-CLxkag1SUzr/I6ShyDST
-=OR8Y
------END PGP SIGNATURE-----
-
---nextPart1353576.Kv2FLyCP28--
-
+Cheers,
+Marek
