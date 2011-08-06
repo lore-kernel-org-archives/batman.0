@@ -1,13 +1,13 @@
-Return-Path: <hozer@hozed.org>
-Date: Sat, 6 Aug 2011 09:56:08 -0500
-From: Troy Benjegerdes <hozer@hozed.org>
-Message-ID: <20110806145555.GD20928@excalibur.hozed.org>
+Return-Path: <ryan@iheartryan.com>
+MIME-Version: 1.0
+Date: Sat, 06 Aug 2011 10:20:01 -0700
+From: Ryan Jud Hughes <ryan@iheartryan.com>
+In-Reply-To: <20110806145555.GD20928@excalibur.hozed.org>
 References: <alpine.DEB.2.02.1108060959150.9094@localhost6.localdomain6>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.02.1108060959150.9094@localhost6.localdomain6>
+	<20110806145555.GD20928@excalibur.hozed.org>
+Message-ID: <14d8e95b055e78a5fee934eb3192a2b8@pirateship.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Subject: Re: [B.A.T.M.A.N.] "Distributed" DHCP vs gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,29 +22,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sat, Aug 06, 2011 at 10:19:28AM -0400, Ryan Hughes wrote:
-> So, I had a crazy idea the other day:
-> 
-> Normally, when I talk to people about mesh networks, they assume
-> that there is some central authority assigning IP addresses to nodes
-> intelligently.
-> 
-> I was thinking, though, that I'd rather have it so that every node
-> could have the same firmware, and you'd just throw the node up and
-> it'd negotiate everything for itself, including its IP address.
 
-Why reinvent the wheel? I would argue that using IPv6 stateless autoconfig
-
+> Why reinvent the wheel? I would argue that using IPv6 stateless
+autoconfig
+> 
+>
 http://en.wikipedia.org/wiki/IPv6#Stateless_address_autoconfiguration_.28SLAAC.29
+> 
+> and then working to provide a mechanism to support 'legacy' IPv4-only
+> clients would be a beter solution than a lot of the hoops we have to
+> jump through to support distributed dhcp cleanly.
 
-and then working to provide a mechanism to support 'legacy' IPv4-only
-clients would be a beter solution than a lot of the hoops we have to 
-jump through to support distributed dhcp cleanly.
+I was looking into the idea of using IPv6-only on the inside of the
+network, but the consensus seems to be that this is a hard and unsolved
+problem.
 
+Let's say that you are an IPv6-only client on the inside of the network. 
+You want to view the website kittenwar.com.  You look it up on DNS.  Let's
+say that kittenwar.com only has an A record and not an AAAA record.  If you
+don't have an IPv4 address, this A record is useless to you.  The solution
+is this trick called DNS64.  DNS64 is a proxy.  If it sees that a site has
+only an A record, it will construct an AAAA record and return that for you,
+using the standard transformations of IPv4 addresses to IPv6 addresses.
 
-My thought is every node runs radvd (ipv6 equivalent of dhcpd), and any
-ipv4 traffic will get tunneled over the v6 mesh network to the closest
-exit node with upstream IPv4 net access, which is where the DHCP server
-would run.
+Then, how does your IPv6 traffic get over to kittenwar.com, which is only
+listening on IPv4?  The solution is a trick called NAT64, which nats your
+IPv6 traffic over to IPv4.
 
+So the technology theoretically exists.  But as of the time I was last
+doing the research, it was unstable and did not have a lot of development
+effort behind it.
+
+It's not as simple as the problem of getting your IPv4 traffic out to an
+IPv6 address.
+
+So, it's hoops either way.  I was hoping that the distributed-dhcp path
+would be shorter.
+
+But yeah, the problem is much simpler in IPv6-land, where there's
+autoconfiguration, and you can have as many IPv6 addresses as you need.
+
+--Ryan
 
