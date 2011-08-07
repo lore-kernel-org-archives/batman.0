@@ -1,13 +1,13 @@
-Return-Path: <ryan@iheartryan.com>
-MIME-Version: 1.0
-Date: Sat, 06 Aug 2011 10:20:01 -0700
-From: Ryan Jud Hughes <ryan@iheartryan.com>
-In-Reply-To: <20110806145555.GD20928@excalibur.hozed.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 7 Aug 2011 15:25:29 +0200
 References: <alpine.DEB.2.02.1108060959150.9094@localhost6.localdomain6>
-	<20110806145555.GD20928@excalibur.hozed.org>
-Message-ID: <14d8e95b055e78a5fee934eb3192a2b8@pirateship.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.DEB.2.02.1108060959150.9094@localhost6.localdomain6>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201108071525.29452.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] "Distributed" DHCP vs gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,44 +23,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-> Why reinvent the wheel? I would argue that using IPv6 stateless
-autoconfig
+Hi,
+
+> Now, what if the network is fractured and the same IP address gets
+> assigned to a router (and thus is used as a prefix for that router's
+> clients) on each side of the split?  When the segments join up, we'll have
+> multiple nodes with the same IP address and this will cause problems.
 > 
->
-http://en.wikipedia.org/wiki/IPv6#Stateless_address_autoconfiguration_.28SLAAC.29
-> 
-> and then working to provide a mechanism to support 'legacy' IPv4-only
-> clients would be a beter solution than a lot of the hoops we have to
-> jump through to support distributed dhcp cleanly.
+> Yes.  The lease times will be very short, so this type of problem should
+> resolve itself quickly.
 
-I was looking into the idea of using IPv6-only on the inside of the
-network, but the consensus seems to be that this is a hard and unsolved
-problem.
+you are overlooking the fact that you can't be sure each gateway receives 
+every DHCP packet even if you have a single network cell. On wireless you 
+always have packet loss as opposed to wired networks. Therefore this approach 
+won't be reliable. You can try things like arping nodes, etc but at the end of 
+the day you will always hit the same wall: Just because nodeX did not receive 
+a packet / can't reach nodeY you must not assume it does not exist.
 
-Let's say that you are an IPv6-only client on the inside of the network. 
-You want to view the website kittenwar.com.  You look it up on DNS.  Let's
-say that kittenwar.com only has an A record and not an AAAA record.  If you
-don't have an IPv4 address, this A record is useless to you.  The solution
-is this trick called DNS64.  DNS64 is a proxy.  If it sees that a site has
-only an A record, it will construct an AAAA record and return that for you,
-using the standard transformations of IPv4 addresses to IPv6 addresses.
 
-Then, how does your IPv6 traffic get over to kittenwar.com, which is only
-listening on IPv4?  The solution is a trick called NAT64, which nats your
-IPv6 traffic over to IPv4.
+> But, what do I do about how the gateway business interferes with DHCP?
+> Could I somehow have two DHCP servers serving the same interface?  One
+> that serves out IP addresses and one that deals only with gateways?
 
-So the technology theoretically exists.  But as of the time I was last
-doing the research, it was unstable and did not have a lot of development
-effort behind it.
+Why not simply disable the "gateway business" ? Or better, not enabling it - 
+the gateway extension is disabled per default.
 
-It's not as simple as the problem of getting your IPv4 traffic out to an
-IPv6 address.
-
-So, it's hoops either way.  I was hoping that the distributed-dhcp path
-would be shorter.
-
-But yeah, the problem is much simpler in IPv6-land, where there's
-autoconfiguration, and you can have as many IPv6 addresses as you need.
-
---Ryan
-
+Regards,
+Marek
