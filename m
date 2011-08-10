@@ -1,16 +1,10 @@
-Return-Path: <mitar@tnode.com>
-Message-ID: <4E41A0C6.1010209@tnode.com>
-Date: Tue, 09 Aug 2011 23:04:06 +0200
-From: Mitar <mitar@tnode.com>
+Return-Path: <ipmax2011@googlemail.com>
 MIME-Version: 1.0
-References: <87ipr2mjdv.fsf@trurl.pps.jussieu.fr>	<4E270F72.10900@virtadpt.net>	<7izkk8zsr4.fsf@lanthane.pps.jussieu.fr>	<4E28392B.9020209@virtadpt.net>	<7ibown8v2j.fsf@lanthane.pps.jussieu.fr>
-	<4E403367.4060701@virtadpt.net> <4E411B95.4030203@tnode.com>
-	<4E416584.2020701@virtadpt.net>
-In-Reply-To: <4E416584.2020701@virtadpt.net>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Battlemesh-like experiment in
-	Washington, DC
+Date: Wed, 10 Aug 2011 12:43:58 +0200
+Message-ID: <CAJA-1LiiLCJ4D2s9ubXFRmyu_TvgiK51PAzaOHNMwP3M-KeeEg@mail.gmail.com>
+From: Max Ip <ipmax2011@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Batman CPU usage
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,30 +16,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: drwho@virtadpt.net
-Cc: Juliusz Chroboczek <jch@pps.jussieu.fr>, b.a.t.m.a.n@open-mesh.net, Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>, babel-users@lists.alioth.debian.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi!
+Hi folks,
 
-> We're writing a custom control panel in Python, using CherryPy for the
-> web server and Mako for the templating system.
+I am checking the efficiency of my batman-adv network in terms of CPU
+usage. My system consists of batman-adv 2011.1.0 enabled 3 laptops.
 
-What exactly is this control panel? What do you understand under this
-term? It is something running on the node? Or on the server?
+A-----B------C
 
-Is there some webpage with more about that?
+There is no direct contact between A and C. So, node B is the relaying
+node. The systems cpu configuration in all nodes are:
 
-> However, it is my hope that by providing a large enough address space
-> (17,891,328) we can minimize the number of IP address collisions in a
-> given mesh.  If need be, we can always try a different approach.
+In A : cpu MHz = 2000
+In B : cpu MHz = 1000
+In C : cpu MHz = 800
 
-You are talking about IPv6 or IPv4 here?In IPv4 some MAC address + IPv6
-prefix could be enough.
-
-In IPv4 is problem, that if you will take big address space you will
-have problems peering with other mesh networks. If this will be one day
-interesting to you. (At least in Europe we are slowly trying to connect
-all networks together.)
+When I checked the CPU usage at different nodes (using netperf), I
+found the following results.
 
 
-Mitar
+TCP CPU utilization send local from C to B = 5.84%
+TCP CPU utilzation send local from B to A = 2.37%
+TCP CPU utilization from C to A (2-hop environment) = 9.19%
+
+UDP CPU utilization send local from C to B = 0.75%
+UDP CPU utilization send local from B to A = 3.85%
+UDP CPU utilization send local from C to A (2-hop environment)  = 4.31%
+
+My questions are why is the CPU utilization so less for UDP case?  In
+case of TCP cpu utilization, isn't 9.19% a very high value for a
+system consisting of just 3 nodes?
+
+Since, B is acting as a relaying node to relay the network from C to
+A, what is its impact on total CPU usage?
+
+Thanks
+
+Max
