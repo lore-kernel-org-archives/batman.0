@@ -1,18 +1,17 @@
-Return-Path: <mitar@tnode.com>
-Message-ID: <4E42B779.70905@tnode.com>
-Date: Wed, 10 Aug 2011 18:53:13 +0200
-From: Mitar <mitar@tnode.com>
+Return-Path: <drwho@virtadpt.net>
+Message-ID: <4E42B783.1040103@virtadpt.net>
+Date: Wed, 10 Aug 2011 12:53:23 -0400
+From: The Doctor <drwho@virtadpt.net>
 MIME-Version: 1.0
-References: <87ipr2mjdv.fsf@trurl.pps.jussieu.fr>	<4E270F72.10900@virtadpt.net>	<7izkk8zsr4.fsf@lanthane.pps.jussieu.fr>	<4E28392B.9020209@virtadpt.net>	<7ibown8v2j.fsf@lanthane.pps.jussieu.fr>
-	<4E403367.4060701@virtadpt.net> <4E411B95.4030203@tnode.com>
-	<4E416584.2020701@virtadpt.net> <4E41A0C6.1010209@tnode.com>
-	<4E42B411.9050601@virtadpt.net>
-In-Reply-To: <4E42B411.9050601@virtadpt.net>
-Content-Type: text/plain; charset=us-ascii
+References: <87ipr2mjdv.fsf@trurl.pps.jussieu.fr>	<4E270F72.10900@virtadpt.net>	<7izkk8zsr4.fsf@lanthane.pps.jussieu.fr>	<4E28392B.9020209@virtadpt.net>	<7ibown8v2j.fsf@lanthane.pps.jussieu.fr>	<4E403367.4060701@virtadpt.net>	<4E411B95.4030203@tnode.com>	<4E416584.2020701@virtadpt.net>
+	<CAEVTcgUMYVjHbNnP8wBBsGEtAoH+BNW3G1vBoktDoOPMDcsoQw@mail.gmail.com>
+In-Reply-To: <CAEVTcgUMYVjHbNnP8wBBsGEtAoH+BNW3G1vBoktDoOPMDcsoQw@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Battlemesh-like experiment in
-	Washington, DC
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ Washington, DC
+Reply-To: drwho@virtadpt.net,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,81 +22,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: drwho@virtadpt.net
-Cc: Juliusz Chroboczek <jch@pps.jussieu.fr>, b.a.t.m.a.n@open-mesh.net, Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>, babel-users@lists.alioth.debian.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi!
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> The Byzantium control panel is an application which allows the user to
-> (de)configure network interfaces, add or remove them from a mesh, and
-> enable or disable services and web applications running on a node.  It
-> runs on a node (listening only on the loopback interface) and is
-> accessed with any web browser.  Technically, it is a web application,
-> but seeing as how Byzantium will package a couple of web applications
-> for public use on a mesh anyway (Etherpad-lite, crypto.cat, status.net,
-> and a few others) it made more sense to call it a control panel.
+On 08/09/2011 01:40 PM, Glen Duncan wrote:
 
-Interesting. Just as an information, in our network (wlan slovenia) we
-have taken directly the opposite approach and made a centralized system
-for deploying nodes (centralized in the sense it is one of the services
-of the network, but the network itself still runs operates if this
-service is removed from operation, this server/system/service only
-streamlines node deployment (and prevents IP collisions so that it
-maintains ). The point we have seen is that web interface on the node
-takes simply too much time to maintain once you have many nodes which
-you want to configure the same (and update configuration and so on). It
-takes time to click all those things. And that it is still too technical
-for common people to use.
+>  Doesn't RFC-1918 and supporting protocols check to see if the address
+> chosen is already in use and back off/retry if it fails?
 
-So we have taken completely other approach: nodes without any web
-interface, where you have a service in the network which issues
-pregenerated firmware images with all configuration already in there. So
-you just select what hardware you have, where the node will be and
-everything else is done by the system (for power users you can also
-select additional OpenWrt packets and mangle with configuration, but it
-is not necessary). You flash the image, power it up and this is it.
+That is an excellent question, but to answer it I will have to do some
+research and get back to you.
 
-Now, the next step is to make this service distributed (like every node
-can be it) and we have best of both worlds. ;-)
+- -- 
 
-But currently we are making it modular, so that different networks can
-adapt it to their needs:
+The Doctor [412/724/301/703]
 
-http://dev.wlan-si.net/wiki/Nodewatcher
+PGP: 0x807B17C1 / 7960 1CDC 85C9 0B63 8D9F  DD89 3BD8 FF2B 807B 17C1
+WWW: http://drwho.virtadpt.net/
 
-> IPv4.  We considered IPv6, and in fact we get it for free with the Linux
-> kernel, but not all applications are aware of or play nicely with it.
+"And the flowers are still standing!" --Peter Venkman, _Ghostbusters_
 
-Yes, but if everybody just waits for applications to be ready ... ;-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-I think it is crucial especially for decentralized networks to start
-using it.
-
-Maybe instead of random IP allocation you could try some distributed IP
-allocation system where you would take some temporary IP and request
-what is free (using distributed hash storage or something). But yes,
-there were already so many other ideas for this problem discussed and
-yes, there is a problem of mixing layers.
-
-> This is an interesting problem to us, and one of the things we have in
-> mind once Byzantium is stable is correcting problems with
-> interoperability.
-
-I would invite you to take part here:
-
-http://interop.wlan-si.net/
-
-It is an initiative by many networks to find some common ground. As I
-see it is a bit more centralized that your approach (we are mostly using
-centralized node databases), but probably we could also find some common
-ground with you. For example, currently we are defining a common
-database schema to be able to describe our nodes in a common way so that
-we can then have common applications working over that.
-
-You could probably use the same schema internally in your control panel
-in a distributed way so that maybe some centralized system in your
-network could still fetch this data and use it (for example to draw a
-map or something).
-
-
-Mitar
+iEYEARECAAYFAk5Ct4MACgkQO9j/K4B7F8F0sQCghfe67YYb3ESxCrL3myyRB0Ke
+jKEAoLzkWeyMu1mN4qg975um5XN9Ldoe
+=qRJY
+-----END PGP SIGNATURE-----
