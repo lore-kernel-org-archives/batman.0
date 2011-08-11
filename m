@@ -1,14 +1,15 @@
-Return-Path: <ipmax2011@googlemail.com>
-MIME-Version: 1.0
-In-Reply-To: <201108101637.48914.lindner_marek@yahoo.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 11 Aug 2011 16:37:30 +0200
 References: <CAJA-1LiiLCJ4D2s9ubXFRmyu_TvgiK51PAzaOHNMwP3M-KeeEg@mail.gmail.com>
-	<201108101313.11132.lindner_marek@yahoo.de>
-	<CAJA-1Lgog2nTsUpHBi3nxfjHOcxrQTKysBko1V0a8a9ojJfsKQ@mail.gmail.com>
 	<201108101637.48914.lindner_marek@yahoo.de>
-Date: Thu, 11 Aug 2011 15:21:51 +0200
-Message-ID: <CAJA-1LiDPQ=DZHvibHM95QnqJuqecSH71PMghK6PgQyLjD=rqQ@mail.gmail.com>
-From: Max Ip <ipmax2011@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<CAJA-1LiDPQ=DZHvibHM95QnqJuqecSH71PMghK6PgQyLjD=rqQ@mail.gmail.com>
+In-Reply-To: <CAJA-1LiDPQ=DZHvibHM95QnqJuqecSH71PMghK6PgQyLjD=rqQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201108111637.31233.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Batman CPU usage
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,72 +24,51 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Without batman-advanced protocol between the nodes and when all nodes
-are communicating to each other the results for TCP and UDP cpu usage
-were:
 
-A B C (all in communication range)
+Hi,
 
-TCP CPU utilization send local from C to B = 5.85%
-TCP CPU utilzation send local from B to A = 0.90%
-TCP CPU utilization send local from C to A = 5.10%
+before we proceed any further would you please solve the riddle of *how* you 
+obtain the CPU usage values ? I have asked this question several times but 
+could not find any answer in your mails. Maybe it is something obvious I am 
+missing ?
 
 
-After the nodes C and A were disconnected, we enabled batman-adv on
-all of the nodes and tested the cpu usage:
+> Without batman-advanced protocol between the nodes and when all nodes
+> are communicating to each other the results for TCP and UDP cpu usage
+> were:
+> 
+> A B C (all in communication range)
+> 
+> TCP CPU utilization send local from C to B = 5.85%
+> TCP CPU utilzation send local from B to A = 0.90%
+> TCP CPU utilization send local from C to A = 5.10%
 
-A B C (C & A out of contact)
-
-TCP CPU utilization send local from C to B = 6.04%
-TCP CPU utilzation send local from B to A = 1.127%
-TCP CPU utilization send local from C to A = 8.615%
-
-Thus I calculated that the (subtracting batman enabled cpu usage -
-batman disabled cpu usage)
-
-CPU load due to batman-adv (from C to B) = 0.19% (1-hop)     (which is
-6.04 - 5.85)
-CPU load due to batman-adv (from B to A) = 0.27% (1-hop)     (which is
-1.127 - 0.90)
-CPU load due to batman-adv (from C to A) =  1.865% (2-hop)   (which is
-8.615 - 5.85 - 0.90)
-
-The CPU load for 2-hop is more than that for 1-hop which is obvious.
-But, shouldn't the individual some of 1-hops (0.19% + 0.27 % = 0.46%)
-be equal to the 2-hop (1.865%).
-
-So, the thing is I was expecting 0.46% but ended up with 1.865% for
-the 2-hop case.
-
-Also, what about the CPU load on the relaying node itself (node B)?
-
-MaX
+Why are you not building the same setup ? Comparing 2 different setups to draw 
+conclusions is a bit weird ..
 
 
+> CPU load due to batman-adv (from C to B) = 0.19% (1-hop)     (which is
+> 6.04 - 5.85)
+> CPU load due to batman-adv (from B to A) = 0.27% (1-hop)     (which is
+> 1.127 - 0.90)
+> CPU load due to batman-adv (from C to A) =  1.865% (2-hop)   (which is
+> 8.615 - 5.85 - 0.90)
+> 
+> The CPU load for 2-hop is more than that for 1-hop which is obvious.
+> But, shouldn't the individual some of 1-hops (0.19% + 0.27 % = 0.46%)
+> be equal to the 2-hop (1.865%).
+
+In your first email you explain that all 3 systems use different hardware 
+components (800MHz/1000MHz/2000MHz). Adding / subtracting percentage values 
+based on different hardware is weird too ..
+Also, you probably will notice that you obtain different values depending on 
+which node has to generate the packets. For instance, A -> C won't give you 
+the same results as C -> A.
 
 
+> Also, what about the CPU load on the relaying node itself (node B)?
 
+What about it ?
 
-On Wed, Aug 10, 2011 at 4:37 PM, Marek Lindner <lindner_marek@yahoo.de> wrote:
-> On Wednesday, August 10, 2011 13:50:48 Max Ip wrote:
->> http://www.netperf.org/svn/netperf2/tags/netperf-2.5.0/doc/netperf.html#TCP
->> _005fSTREAM
->>
->> The receive socket size bytes, send socket size bytes and send message
->> size bytes were set to the default values i.e 87380, 16384 and 16384
->> respectively.
->> The command gave the CPU utilization of 5.84% on node C (sending node).
->
-> Meaning netperf tells you the CPU utilization or you get it from top / uptime
-> / etc ? If so, why do you conclude this is the CPU load generated by batman-
-> adv ? It seems to me you are measuring the CPU load generated by netperf not
-> batman-adv.
->
-> You could disable/bypass batman-adv and repeat the test whilst using static
-> routes. What is the CPU load you get then ? By comparing these 2 tests (one
-> with batman-adv and one without) you could say something about the load
-> generated by batman-adv.
->
-> Regards,
-> Marek
->
+Regards,
+Marek
