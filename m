@@ -1,17 +1,14 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Fri, 12 Aug 2011 15:15:15 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20110812131515.GA24909@pandem0nium>
-References: <201108030952.35467.lindner_marek@yahoo.de>
-	<20110803083056.GE9901@lunn.ch>
-	<201108031639.53966.lindner_marek@yahoo.de>
-	<20110803165018.GF9901@lunn.ch>
+Return-Path: <ordex@autistici.org>
+Date: Fri, 12 Aug 2011 18:02:20 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20110812160217.GB22361@ritirata.org.org>
+References: <4E42C546.7010003@inti.gob.ar>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2fHTh5uZTiUOsy+g"
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <20110803165018.GF9901@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] routing code re-organization / the road ahead
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4E42C546.7010003@inti.gob.ar>
+Subject: Re: [B.A.T.M.A.N.] Multiple DHCP Gateways
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,70 +22,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hello and thank you for sharing your gw experience with us,
 
---2fHTh5uZTiUOsy+g
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Aug 10, 2011 at 02:52:06PM -0300, gtolon@inti.gob.ar wrote:
+> Hi
+[CUT]
+> However, when the original gateway becomes 
+> worse than the alternative, and the client chooses the new one as 
+> preferred (observed with batctl gwl) i noticed that the subsequent 
+> request DHCP messages are sent to the original server, even if it 
+> doesn´t have the best link.
+> 
+> I guess that´s because these subsequent DHCP requests are made as 
+> Unicast to the original server and so Batman doesn´t redirect them, 
 
-Hey,
+Unicast renewal requests are "dropped" only if the TQ towards the destination is
+smaller than the "current_GW_TQ - GW_THRESHOLD" (GW_THRESHOLD = 50).
+To clarify:
 
-On Wed, Aug 03, 2011 at 06:50:18PM +0200, Andrew Lunn wrote:
-> On Wed, Aug 03, 2011 at 04:39:53PM +0200, Marek Lindner wrote:
-> > Where is the interoperability coming from ? The protocols won't be comp=
-atible.
->=20
-> Interoperability has many meanings. I've seen it mean the protocol
-> does not actively destroy the operation of another protocol. I've seen
-> this in powerline networks. Company X proprietary powerline protocol
-> is interoperable with HomePlug in that it will not destroy the
-> HomePlug network if run in parallel with it. It won't talk to it
-> either...
->=20
-> By making it a runtime option, i don't need to recompile my kernel to
-> swap from one to the other. I just need "batctl algo V" or "batctl
-> algo IV". My kernel is interoperable, i just need to configure the
-> mesh correctly for it to work.
->=20
-> What might also be interesting is
-> batctl algo IV bat0
-> batctl algo V bat1
-> brctl addif br0 bat0
-> brctl addif br0 bat1
->=20
-> It won't give optimal routes, but it at least gets the two meshs
-> talking to each other.
->=20
-mhm, I'm not sure if we need to let two different meshes talking (right now=
-),
-but a nice compromise might be to enable selecting the algorithm at module
-load time as parameter - I would find it inconvenient to re-compile the mod=
-ule=20
-all the time. :)
 
-This is hopefully not too hard, we could go with a struct of function point=
-ers
-as many other subsystems do. This could also be enhanced later to enable=20
-"real" runtime selection, but there might be some challenges there, e.g.=20
-changing the sysfs (for algorithm-dependent parameters) and other dependenc=
-ies.
+In your topology you have three nodes: A, B and C. A and C are GWs. A is the
+current best GW for B and B got an IP from the DHCP server running on A. Then
+the link A <--> B becomes worse than B <--> C. At this point Batman-adv will
+drop a DHCP unicast renewal request directed to A 
 
-What do you think?
+if and only if TQ(C) - TQ(A) > 50
 
-best regards,
-	Simon
+Is this condition verified in your topology when your are observing the renewal
+DHCP packets?
 
---2fHTh5uZTiUOsy+g
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+I hope I've been clear. :-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> but 
+> i wonder how this behavior affects the network balance, because the 
+> computers would get tied always to the original DHCP and IP default 
+> gateway even if they moved, right?
 
-iEYEARECAAYFAk5FJ2MACgkQrzg/fFk7axaIHACeLUcnRBvWum0jDK1dj2sGP050
-axUAoMozu8UoWS2pI7K4R2oejQFX94Fy
-=VGm8
------END PGP SIGNATURE-----
+As above. Clients will keep the same GW as long as the link is still "usable"
+(difference on TQs greater than 50)
 
---2fHTh5uZTiUOsy+g--
+> 
+> Thank you very much
+
+Thank you too,
+Antonio
