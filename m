@@ -1,16 +1,17 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 11 Aug 2011 16:37:30 +0200
-References: <CAJA-1LiiLCJ4D2s9ubXFRmyu_TvgiK51PAzaOHNMwP3M-KeeEg@mail.gmail.com>
-	<201108101637.48914.lindner_marek@yahoo.de>
-	<CAJA-1LiDPQ=DZHvibHM95QnqJuqecSH71PMghK6PgQyLjD=rqQ@mail.gmail.com>
-In-Reply-To: <CAJA-1LiDPQ=DZHvibHM95QnqJuqecSH71PMghK6PgQyLjD=rqQ@mail.gmail.com>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Fri, 12 Aug 2011 15:15:15 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20110812131515.GA24909@pandem0nium>
+References: <201108030952.35467.lindner_marek@yahoo.de>
+	<20110803083056.GE9901@lunn.ch>
+	<201108031639.53966.lindner_marek@yahoo.de>
+	<20110803165018.GF9901@lunn.ch>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201108111637.31233.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Batman CPU usage
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="2fHTh5uZTiUOsy+g"
+Content-Disposition: inline
+In-Reply-To: <20110803165018.GF9901@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] routing code re-organization / the road ahead
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,50 +26,69 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-Hi,
+--2fHTh5uZTiUOsy+g
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-before we proceed any further would you please solve the riddle of *how* you 
-obtain the CPU usage values ? I have asked this question several times but 
-could not find any answer in your mails. Maybe it is something obvious I am 
-missing ?
+Hey,
 
+On Wed, Aug 03, 2011 at 06:50:18PM +0200, Andrew Lunn wrote:
+> On Wed, Aug 03, 2011 at 04:39:53PM +0200, Marek Lindner wrote:
+> > Where is the interoperability coming from ? The protocols won't be comp=
+atible.
+>=20
+> Interoperability has many meanings. I've seen it mean the protocol
+> does not actively destroy the operation of another protocol. I've seen
+> this in powerline networks. Company X proprietary powerline protocol
+> is interoperable with HomePlug in that it will not destroy the
+> HomePlug network if run in parallel with it. It won't talk to it
+> either...
+>=20
+> By making it a runtime option, i don't need to recompile my kernel to
+> swap from one to the other. I just need "batctl algo V" or "batctl
+> algo IV". My kernel is interoperable, i just need to configure the
+> mesh correctly for it to work.
+>=20
+> What might also be interesting is
+> batctl algo IV bat0
+> batctl algo V bat1
+> brctl addif br0 bat0
+> brctl addif br0 bat1
+>=20
+> It won't give optimal routes, but it at least gets the two meshs
+> talking to each other.
+>=20
+mhm, I'm not sure if we need to let two different meshes talking (right now=
+),
+but a nice compromise might be to enable selecting the algorithm at module
+load time as parameter - I would find it inconvenient to re-compile the mod=
+ule=20
+all the time. :)
 
-> Without batman-advanced protocol between the nodes and when all nodes
-> are communicating to each other the results for TCP and UDP cpu usage
-> were:
-> 
-> A B C (all in communication range)
-> 
-> TCP CPU utilization send local from C to B = 5.85%
-> TCP CPU utilzation send local from B to A = 0.90%
-> TCP CPU utilization send local from C to A = 5.10%
+This is hopefully not too hard, we could go with a struct of function point=
+ers
+as many other subsystems do. This could also be enhanced later to enable=20
+"real" runtime selection, but there might be some challenges there, e.g.=20
+changing the sysfs (for algorithm-dependent parameters) and other dependenc=
+ies.
 
-Why are you not building the same setup ? Comparing 2 different setups to draw 
-conclusions is a bit weird ..
+What do you think?
 
+best regards,
+	Simon
 
-> CPU load due to batman-adv (from C to B) = 0.19% (1-hop)     (which is
-> 6.04 - 5.85)
-> CPU load due to batman-adv (from B to A) = 0.27% (1-hop)     (which is
-> 1.127 - 0.90)
-> CPU load due to batman-adv (from C to A) =  1.865% (2-hop)   (which is
-> 8.615 - 5.85 - 0.90)
-> 
-> The CPU load for 2-hop is more than that for 1-hop which is obvious.
-> But, shouldn't the individual some of 1-hops (0.19% + 0.27 % = 0.46%)
-> be equal to the 2-hop (1.865%).
+--2fHTh5uZTiUOsy+g
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-In your first email you explain that all 3 systems use different hardware 
-components (800MHz/1000MHz/2000MHz). Adding / subtracting percentage values 
-based on different hardware is weird too ..
-Also, you probably will notice that you obtain different values depending on 
-which node has to generate the packets. For instance, A -> C won't give you 
-the same results as C -> A.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAk5FJ2MACgkQrzg/fFk7axaIHACeLUcnRBvWum0jDK1dj2sGP050
+axUAoMozu8UoWS2pI7K4R2oejQFX94Fy
+=VGm8
+-----END PGP SIGNATURE-----
 
-> Also, what about the CPU load on the relaying node itself (node B)?
-
-What about it ?
-
-Regards,
-Marek
+--2fHTh5uZTiUOsy+g--
