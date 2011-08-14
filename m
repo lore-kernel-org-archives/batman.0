@@ -1,14 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 12 Aug 2011 19:22:28 +0200
+Return-Path: <pmazart@web.de>
+From: "P. Mazart" <pmazart@web.de>
+Date: Sun, 14 Aug 2011 19:27:55 +0200
 References: <4E42C546.7010003@inti.gob.ar>
-	<20110812160217.GB22361@ritirata.org.org>
-In-Reply-To: <20110812160217.GB22361@ritirata.org.org>
+In-Reply-To: <4E42C546.7010003@inti.gob.ar>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
+Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201108121922.28786.lindner_marek@yahoo.de>
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+Message-Id: <201108141927.55335.pmazart@web.de>
+Sender: pmazart@web.de
 Subject: Re: [B.A.T.M.A.N.] Multiple DHCP Gateways
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,18 +24,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, August 12, 2011 18:02:20 Antonio Quartulli wrote:
-> In your topology you have three nodes: A, B and C. A and C are GWs. A is
-> the current best GW for B and B got an IP from the DHCP server running on
-> A. Then the link A <--> B becomes worse than B <--> C. At this point
-> Batman-adv will drop a DHCP unicast renewal request directed to A
-> 
-> if and only if TQ(C) - TQ(A) > 50
+Hi,
 
-Be aware that only happens if you use the git repository. The "DHCP request 
-drop" feature was not released yet.
+> I=C2=B4m testing the Gateway roaming capabilities [=E2=80=A6]
+> [=E2=80=A6], even if it doesn=C2=B4t [=E2=80=A6]
+> [=E2=80=A6] I guess that=C2=B4s because these subsequent DHCP requests [=
+=E2=80=A6]
 
-What version are you using ?
+Please don=E2=80=99t use the accute as an apostrophe.
+You could use =E2=80=9C ' =E2=80=9D (U+0027/ASCII) or even better
+a typografically true =E2=80=9C =E2=80=99 =E2=80=9D (U+2019)=E2=80=A6
 
-Cheers,
-Marek
+Best Regards,
+P.M.
