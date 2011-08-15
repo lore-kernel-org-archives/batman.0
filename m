@@ -1,16 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 15 Aug 2011 17:33:48 +0200
-References: <CAJA-1LiiLCJ4D2s9ubXFRmyu_TvgiK51PAzaOHNMwP3M-KeeEg@mail.gmail.com>
-	<201108111637.31233.lindner_marek@yahoo.de>
-	<CAJA-1LhpLpJBsekY92GjXspnfJO-j_g2VEjsc9gxSaR3yW+mZQ@mail.gmail.com>
-In-Reply-To: <CAJA-1LhpLpJBsekY92GjXspnfJO-j_g2VEjsc9gxSaR3yW+mZQ@mail.gmail.com>
+Return-Path: <gtolon@inti.gob.ar>
+Message-ID: <4E494147.5020709@inti.gob.ar>
+Date: Mon, 15 Aug 2011 12:54:47 -0300
+From: gtolon@inti.gob.ar
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201108151733.48675.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Batman CPU usage
+References: <mailman.1.1313229601.6855.b.a.t.m.a.n@lists.open-mesh.org>
+In-Reply-To: <mailman.1.1313229601.6855.b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Multiple DHCP Gateways
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,37 +19,117 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Monday, August 15, 2011 12:02:34 Max Ip wrote:
-> The CPU usage is the resources consumed to run the netperf test.
-> netperf gives the amount of CPU it consumes while sending the stream
-> TCP_STREAM from client to the server. So, the CPU usage is calculated
-> on the network first without batman-adv and secondly with batman-adv
-> enabled on each nodes. Thus the difference would measure the cpu load
-> created by batman-adv. So, I don't use top / uptime / etc.
+Thank you for your answers. I understood clearly how the system should=20
+work, but i=B4m not using the git repository but the 2011.1.0 version.=20
+I'll try with the repo to see what happens.
 
-When netperf tells you how much CPU cycles it consumed how can you deduce the 
-batman-adv load from it ? netperf runs in user space and has no knowledge 
-about what is going on in the kernel. In fact, netperf probably asks the 
-kernel how many CPU cycles were consumed by its own process.
-In other words: netperf has no way of knowing the load created by the kernel 
-as it simply is beyond its scope. I suggest looking at tools that are able to 
-analyze kernel load, for example ftrace.
+Best regards
 
- 
-> The whole point of using batman-adv in this experiment is to create
-> adhoc connection between the end nodes (A and C) which are out of
-> contact. So, the intermediate node (B) acts as the relaying node. So,
-> I would like to create a virtual 2-hop condition (using ebtables to
-> disable connection between end nodes A and C). Now that the 2-hop case
-> is formed, what would be its effect in terms of CPU usage in node B. I
-> don't think I can use any better setup than this one.
+Gabriel
 
-What you want to achieve is understandable but you were running different test 
-setups and compared the results. Without batman-adv you had no relay and with 
-batman-adv you had a relay. Trying to fix the difference with a simple 
-calculation should only be done if one understands all the implications.
 
-Regards,
-Marek
+
+
+> Message: 2
+> Date: Fri, 12 Aug 2011 18:02:20 +0200
+> From: Antonio Quartulli<ordex@autistici.org>
+> To: The list for a Better Approach To Mobile Ad-hoc Networking
+> 	<b.a.t.m.a.n@lists.open-mesh.org>
+> Subject: Re: [B.A.T.M.A.N.] Multiple DHCP Gateways
+> Message-ID:<20110812160217.GB22361@ritirata.org.org>
+> Content-Type: text/plain; charset=3Dutf-8
+>
+> Hello and thank you for sharing your gw experience with us,
+>
+> On Wed, Aug 10, 2011 at 02:52:06PM -0300, gtolon@inti.gob.ar wrote:
+>> Hi
+> [CUT]
+>> However, when the original gateway becomes
+>> worse than the alternative, and the client chooses the new one as
+>> preferred (observed with batctl gwl) i noticed that the subsequent
+>> request DHCP messages are sent to the original server, even if it
+>> doesn?t have the best link.
+>>
+>> I guess that?s because these subsequent DHCP requests are made as
+>> Unicast to the original server and so Batman doesn?t redirect them,
+>
+> Unicast renewal requests are "dropped" only if the TQ towards the destina=
+tion is
+> smaller than the "current_GW_TQ - GW_THRESHOLD" (GW_THRESHOLD =3D 50).
+> To clarify:
+>
+>
+> In your topology you have three nodes: A, B and C. A and C are GWs. A is =
+the
+> current best GW for B and B got an IP from the DHCP server running on A. =
+Then
+> the link A<-->  B becomes worse than B<-->  C. At this point Batman-adv w=
+ill
+> drop a DHCP unicast renewal request directed to A
+>
+> if and only if TQ(C) - TQ(A)>  50
+>
+> Is this condition verified in your topology when your are observing the r=
+enewal
+> DHCP packets?
+>
+> I hope I've been clear. :-)
+>
+>> but
+>> i wonder how this behavior affects the network balance, because the
+>> computers would get tied always to the original DHCP and IP default
+>> gateway even if they moved, right?
+>
+> As above. Clients will keep the same GW as long as the link is still "usa=
+ble"
+> (difference on TQs greater than 50)
+>
+>>
+>> Thank you very much
+>
+> Thank you too,
+> Antonio
+>
+>
+> ------------------------------
+>
+> Message: 3
+> Date: Fri, 12 Aug 2011 19:22:28 +0200
+> From: Marek Lindner<lindner_marek@yahoo.de>
+> To: "The list for a Better Approach To Mobile Ad-hoc Networking"
+> 	<b.a.t.m.a.n@lists.open-mesh.org>
+> Subject: Re: [B.A.T.M.A.N.] Multiple DHCP Gateways
+> Message-ID:<201108121922.28786.lindner_marek@yahoo.de>
+> Content-Type: Text/Plain;  charset=3D"utf-8"
+>
+> On Friday, August 12, 2011 18:02:20 Antonio Quartulli wrote:
+>> In your topology you have three nodes: A, B and C. A and C are GWs. A is
+>> the current best GW for B and B got an IP from the DHCP server running on
+>> A. Then the link A<-->  B becomes worse than B<-->  C. At this point
+>> Batman-adv will drop a DHCP unicast renewal request directed to A
+>>
+>> if and only if TQ(C) - TQ(A)>  50
+>
+> Be aware that only happens if you use the git repository. The "DHCP reque=
+st
+> drop" feature was not released yet.
+>
+> What version are you using ?
+>
+> Cheers,
+> Marek
+>
+>
+> ------------------------------
+>
+> _______________________________________________
+> B.A.T.M.A.N mailing list
+> B.A.T.M.A.N@lists.open-mesh.org
+> https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n
+>
+>
+> End of B.A.T.M.A.N Digest, Vol 56, Issue 15
+> *******************************************
+>
