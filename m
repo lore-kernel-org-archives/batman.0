@@ -1,15 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 15 Aug 2011 18:29:32 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110815162931.GB7493@ritirata.org>
-References: <mailman.1.1313229601.6855.b.a.t.m.a.n@lists.open-mesh.org>
-	<4E494147.5020709@inti.gob.ar>
+Return-Path: <don@dis.org.nz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4E494147.5020709@inti.gob.ar>
-Subject: Re: [B.A.T.M.A.N.] Multiple DHCP Gateways
+In-Reply-To: <14d8e95b055e78a5fee934eb3192a2b8@pirateship.org>
+References: <alpine.DEB.2.02.1108060959150.9094@localhost6.localdomain6>
+	<20110806145555.GD20928@excalibur.hozed.org>
+	<14d8e95b055e78a5fee934eb3192a2b8@pirateship.org>
+Date: Tue, 16 Aug 2011 09:15:55 +1200
+Message-ID: <CAK+uisD2cWxJMK0adDRFvXsb4BA=00QoUqWEPLfP=oo=f6S79w@mail.gmail.com>
+From: Donald Gordon <don@dis.org.nz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] "Distributed" DHCP vs gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,15 +23,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Mon, Aug 15, 2011 at 12:54:47PM -0300, gtolon@inti.gob.ar wrote:
-> Thank you for your answers. I understood clearly how the system should 
-> work, but i´m not using the git repository but the 2011.1.0 version. 
+To dredge up an old thread:
 
-Ah ok, then everything is ok with your description: successive DHCP requests are
-sent in unicast and so to they are sent to the old GW, even if the node serving
-the client just chose a new GW.
+On Sun, Aug 7, 2011 at 5:20 AM, Ryan Jud Hughes <ryan@iheartryan.com> wrote=
+:
+>
+>> Why reinvent the wheel? I would argue that using IPv6 stateless
+> autoconfig
 
-Please, feel free to share your experience with the git version :-)
+> I was looking into the idea of using IPv6-only on the inside of the
+> network, but the consensus seems to be that this is a hard and unsolved
+> problem.
 
-Regards,
-Antonio
+> So the technology theoretically exists. =A0But as of the time I was last
+> doing the research, it was unstable and did not have a lot of development
+> effort behind it.
+
+totd (for your dns) + tayga (for your NAT64) worked for me a few
+months ago.  For normal web browsing, ssh, IMAP, etc, it just works.
+
+donald
