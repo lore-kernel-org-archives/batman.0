@@ -1,13 +1,15 @@
-Return-Path: <tonyputi@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 16 Aug 2011 13:11:27 +0200
+References: <mailman.54.1312831773.1125.b.a.t.m.a.n@lists.open-mesh.org>
+	<CAFevQmNuUV-FebLq5nuD=iqX24xqEiBxaxd9nTja3O4XewHKFA@mail.gmail.com>
+In-Reply-To: <CAFevQmNuUV-FebLq5nuD=iqX24xqEiBxaxd9nTja3O4XewHKFA@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <CAFevQmMWGcJhzKiZzDKOh_pMAq1CyMJrPh=FMpYAQh-wXZwH=g@mail.gmail.com>
-References: <mailman.52.1312816695.1125.b.a.t.m.a.n@lists.open-mesh.org>
-	<CAFevQmMWGcJhzKiZzDKOh_pMAq1CyMJrPh=FMpYAQh-wXZwH=g@mail.gmail.com>
-From: Filippo Sallemi <tonyputi@gmail.com>
-Date: Tue, 16 Aug 2011 12:58:49 +0200
-Message-ID: <CAFevQmMrBa20As8dAEoMCiWqUUm+xxS0=GGex5orx6=seKfmbQ@mail.gmail.com>
-Content-Type: multipart/mixed; boundary=20cf303b4351e207e704aa9d4495
-Subject: [B.A.T.M.A.N.] openwrt lib/batman-adv/config.sh
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201108161311.27235.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Batman-adv secure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,93 +23,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---20cf303b4351e207e704aa9d4495
-Content-Type: text/plain; charset=UTF-8
 
-Hi all,
+Hi,
 
-i thought it was a good idea to move the functions "start_mesh" and
-"stop_mesh" from /etc/init.d/batman-adv script to a new file in
-openwrt style "/lib/batman-adv/config.sh".
-With this improvment it possible to recycle this two function to
-operate with an hotplug script so when network restart, all batman
-interface will be reconfigured automatically and I just work to do
-this.
-In this mail you can find batman-adv initscript updated to work in
-this way and the batman-adv library file that must be located in
-/lib/batman-adv/.
-Any comment are apprecciated
+> I don't known if this is a old argument but exsist the possibility to
+> implement a secure mesh network?
+> For example a tecnique that crypt batman-adv traffic with a preshare
+> key or similar or
+> using ebtables to block all INPUT and OUTPUT traffic and allow only
+> the specified nodes mac?
 
---
-Filippo Sallemi
+Please consult our FAQ and feel free to ask unanswered questions afterwards:
+http://www.open-mesh.org/wiki/open-mesh/FAQ
 
---20cf303b4351e207e704aa9d4495
-Content-Type: application/x-sh; name="config.sh"
-Content-Disposition: attachment; filename="config.sh"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_gr3a1j390
 
-IyEvYmluL3NoCgpzdGFydF9tZXNoKCkgewogICAgbG9jYWwgbWVzaGlmPSIkezF9IgogICAgbG9j
-YWwgaW50ZXJmYWNlcwogICAgbG9jYWwgYWdncmVnYXRlZF9vZ21zCiAgICBsb2NhbCBib25kaW5n
-CiAgICBsb2NhbCBmcmFnbWVudGF0aW9uCiAgICBsb2NhbCBnd19iYW5kd2lkdGgKICAgIGxvY2Fs
-IGd3X21vZGUKICAgIGxvY2FsIGd3X3NlbF9jbGFzcwogICAgbG9jYWwgbG9nX2xldmVsCiAgICBs
-b2NhbCBvcmlnX2ludGVydmFsCiAgICBsb2NhbCB2aXNfbW9kZQogICAgCiAgICBbICEgLWQgIi9z
-eXMvbW9kdWxlL2JhdG1hbl9hZHYiIF0gJiYgewogICAgICAgIGxvZ2dlciAiYmF0bWFuLWFkdiBt
-b2R1bGUgZGlyZWN0b3J5IG5vdCBmb3VuZCAtIHdhcyB0aGUga2VybmVsIG1vZHVsZSBsb2FkZWQg
-PyIKICAgICAgICByZXR1cm4KICAgIH0KICAgIAogICAgY29uZmlnX2dldCBpbnRlcmZhY2VzICIk
-e21lc2hpZn0iIGludGVyZmFjZXMKCWNvbmZpZ19nZXQgYWdncmVnYXRlZF9vZ21zICIke21lc2hp
-Zn0iIGFnZ3JlZ2F0ZWRfb2dtcwoJY29uZmlnX2dldCBib25kaW5nICIke21lc2hpZn0iIGJvbmRp
-bmcKCWNvbmZpZ19nZXQgZnJhZ21lbnRhdGlvbiAiJHttZXNoaWZ9IiBmcmFnbWVudGF0aW9uCglj
-b25maWdfZ2V0IGd3X2JhbmR3aWR0aCAiJHttZXNoaWZ9IiBnd19iYW5kd2lkdGgKCWNvbmZpZ19n
-ZXQgZ3dfbW9kZSAiJHttZXNoaWZ9IiBnd19tb2RlCgljb25maWdfZ2V0IGd3X3NlbF9jbGFzcyAi
-JHttZXNoaWZ9IiBnd19zZWxfY2xhc3MKCWNvbmZpZ19nZXQgbG9nX2xldmVsICIke21lc2hpZn0i
-IGxvZ19sZXZlbAoJY29uZmlnX2dldCBvcmlnX2ludGVydmFsICIke21lc2hpZn0iIG9yaWdfaW50
-ZXJ2YWwKCWNvbmZpZ19nZXQgdmlzX21vZGUgIiR7bWVzaGlmfSIgdmlzX21vZGUKCQoJWyAtbiAi
-JHtpbnRlcmZhY2VzfSIgXSB8fCB7CgkgICAgbG9nZ2VyICJFcnJvciwgeW91IG11c3Qgc3BlY2lm
-eSBhdCBsZWFzdCBhIG5ldHdvcmsgaW50ZXJmYWNlIgoJICAgIHJldHVybgoJfQoJCglmb3IgaW50
-ZXJmYWNlIGluICR7aW50ZXJmYWNlc307IGRvCgkJWyAhIC1mICIvc3lzL2NsYXNzL25ldC8ke2lu
-dGVyZmFjZX0vYmF0bWFuX2Fkdi9tZXNoX2lmYWNlIiBdICYmIHsKCQkJaW50ZXJmYWNlPSQodWNp
-IC1QIC92YXIvc3RhdGUgZ2V0IG5ldHdvcmsuJHtpbnRlcmZhY2V9LmlmbmFtZSAyPiYtKQoJCQlb
-ICEgLWYgIi9zeXMvY2xhc3MvbmV0LyR7aW50ZXJmYWNlfS9iYXRtYW5fYWR2L21lc2hfaWZhY2Ui
-IF0gJiYgewoJCQkJbG9nZ2VyICJDYW4ndCBhZGQgaW50ZXJmYWNlICR7aWZuYW1lfSAtIGlnbm9y
-aW5nIiAmJiBjb250aW51ZQoJCQl9CgkJfQoJCWVjaG8gJHttZXNoaWZ9ID4gL3N5cy9jbGFzcy9u
-ZXQvJHtpbnRlcmZhY2V9L2JhdG1hbl9hZHYvbWVzaF9pZmFjZQoJZG9uZQoJCglpZiBbICR7b3Jp
-Z19pbnRlcnZhbH0gXTsgdGhlbgoJCWVjaG8gJHtvcmlnX2ludGVydmFsfSA+IC9zeXMvY2xhc3Mv
-bmV0LyR7bWVzaGlmfS9tZXNoL29yaWdfaW50ZXJ2YWwKCWZpCgoJaWYgWyAke2xvZ19sZXZlbH0g
-XTsgdGhlbgoJCWVjaG8gJHtsb2dfbGV2ZWx9ID4gL3N5cy9jbGFzcy9uZXQvJHttZXNoaWZ9L21l
-c2gvbG9nX2xldmVsIDI+Ji0KCWZpCgoJaWYgWyAke2FnZ3JlZ2F0ZWRfb2dtc30gXTsgdGhlbgoJ
-CWVjaG8gJHthZ2dyZWdhdGVkX29nbXN9ID4gL3N5cy9jbGFzcy9uZXQvJHttZXNoaWZ9L21lc2gv
-YWdncmVnYXRlZF9vZ21zCglmaQoJCglpZiBbICR7Ym9uZGluZ30gXTsgdGhlbgoJCWVjaG8gJHti
-b25kaW5nfSA+IC9zeXMvY2xhc3MvbmV0LyR7bWVzaGlmfS9tZXNoL2JvbmRpbmcKCWZpCgkKCWlm
-IFsgJHtmcmFnbWVudGF0aW9ufSBdOyB0aGVuCgkJZWNobyAke2ZyYWdtZW50YXRpb259ID4gL3N5
-cy9jbGFzcy9uZXQvJHttZXNoaWZ9L21lc2gvZnJhZ21lbnRhdGlvbgoJZmkKCQoJaWYgWyAke2d3
-X2JhbmR3aWR0aH0gXTsgdGhlbgoJCWVjaG8gJHtnd19iYW5kd2lkdGh9ID4gL3N5cy9jbGFzcy9u
-ZXQvJHttZXNoaWZ9L21lc2gvZ3dfYmFuZHdpZHRoCglmaQoJCglpZiBbICR7Z3dfbW9kZX0gXTsg
-dGhlbiAKCQllY2hvICR7Z3dfbW9kZX0gPiAvc3lzL2NsYXNzL25ldC8ke21lc2hpZn0vbWVzaC9n
-d19tb2RlCglmaQoJCglpZiBbICR7Z3dfc2VsX2NsYXNzfSBdOyB0aGVuCgkJZWNobyAke2d3X3Nl
-bF9jbGFzc30gPiAvc3lzL2NsYXNzL25ldC8ke21lc2hpZn0vbWVzaC9nd19zZWxfY2xhc3MKCWZp
-CgoJaWYgWyAke3Zpc19tb2RlfSBdOyB0aGVuCgkJZWNobyAke3Zpc19tb2RlfSA+IC9zeXMvY2xh
-c3MvbmV0LyR7bWVzaGlmfS9tZXNoL3Zpc19tb2RlCglmaQp9CgpzdG9wX21lc2goKSB7CiAgICBs
-b2NhbCBtZXNoaWY9IiR7MX0iCgogICAgWyAhIC1kICIvc3lzL21vZHVsZS9iYXRtYW5fYWR2IiBd
-ICYmIHsKICAgICAgICBsb2dnZXIgImJhdG1hbi1hZHYgbW9kdWxlIGRpcmVjdG9yeSBub3QgZm91
-bmQgLSB3YXMgdGhlIGtlcm5lbCBtb2R1bGUgbG9hZGVkID8iCiAgICAgICAgcmV0dXJuCiAgICB9
-CgoJZm9yIGlmYWNlIGluICQobHMgL3N5cy9jbGFzcy9uZXQvKik7IGRvCgkJWyAhIC1mICIke2lm
-YWNlfS9iYXRtYW5fYWR2L21lc2hfaWZhY2UiIF0gJiYgY29udGludWUKCQlbICIkKGhlYWQgLTEg
-JHtpZmFjZX0vYmF0bWFuX2Fkdi9tZXNoX2lmYWNlKSIgIT0gIiR7bWVzaGlmfSIgXSAmJiBjb250
-aW51ZQoJCQoJCWVjaG8gIm5vbmUiID4gJHtpZmFjZX0vYmF0bWFuX2Fkdi9tZXNoX2lmYWNlCglk
-b25lCn0K
---20cf303b4351e207e704aa9d4495
-Content-Type: application/octet-stream; name=batman-adv
-Content-Disposition: attachment; filename=batman-adv
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_gr3a1v6y1
-
-IyEvYmluL3NoIC9ldGMvcmMuY29tbW9uCgpTVEFSVD05MAoKLiAvbGliL2JhdG1hbi1hZHYvY29u
-ZmlnLnNoCgojIGNhbiBhbHNvIGJlIHVzZWQgd2l0aCAiYmF0bWFuLWFkdiBzdGFydCBiYXQwIgpz
-dGFydCgpIHsKCWNvbmZpZ19sb2FkIGJhdG1hbi1hZHYKCglpZiBbIC1uICIkezF9IiBdOyB0aGVu
-CgkJc3RhcnRfbWVzaCAkezF9CgllbHNlCgkJY29uZmlnX2ZvcmVhY2ggc3RhcnRfbWVzaCBtZXNo
-CglmaQp9CgojIGNhbiBhbHNvIGJlIHVzZWQgd2l0aCAiYmF0bWFuLWFkdiBzdG9wIGJhdDAiCnN0
-b3AoKSB7Cgljb25maWdfbG9hZCBiYXRtYW4tYWR2CgoJaWYgWyAtbiAiJHsxfSIgXTsgdGhlbgoJ
-CXN0b3BfbWVzaCAkezF9CgllbHNlCgkJY29uZmlnX2ZvcmVhY2ggc3RvcF9tZXNoIG1lc2gKCWZp
-Cn0K
---20cf303b4351e207e704aa9d4495--
+Regards,
+Marek
