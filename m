@@ -1,16 +1,10 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 16 Aug 2011 17:30:02 +0200
-References: <mailman.52.1312816695.1125.b.a.t.m.a.n@lists.open-mesh.org>
-	<CAFevQmMWGcJhzKiZzDKOh_pMAq1CyMJrPh=FMpYAQh-wXZwH=g@mail.gmail.com>
-	<CAFevQmMrBa20As8dAEoMCiWqUUm+xxS0=GGex5orx6=seKfmbQ@mail.gmail.com>
-In-Reply-To: <CAFevQmMrBa20As8dAEoMCiWqUUm+xxS0=GGex5orx6=seKfmbQ@mail.gmail.com>
+Return-Path: <john.tobias.ph@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201108161730.03159.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] openwrt lib/batman-adv/config.sh
+Date: Tue, 16 Aug 2011 19:10:29 -0700
+Message-ID: <CACUGKYOvkhxWzR4SxAkX33Gsz6AK0cY6HZLjOjn5n5BNevPahw@mail.gmail.com>
+From: John Tobias <john.tobias.ph@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Configuring batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,20 +16,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Hi Guys,
 
-Hi,
+I have two devices, both of them have eth0, wlan0. I followed the
+BATMAN quick start guide
+(http://www.open-mesh.org/wiki/batman-adv/Quick-start-guide) mixing
+non-BATMAN.
+The bat0, eth0, wlan0 on both devices were set to 0.0.0.0 and the
+mesh-bridge on dev1 was set to 192.168.10.1 and on dev2 was set to
+192.168.10.2. Both devices can ping to each other.
 
-> In this mail you can find batman-adv initscript updated to work in
-> this way and the batman-adv library file that must be located in
-> /lib/batman-adv/.
+When I execute "batctl gwl", I was getting "No gateways in range ...".
 
-I liked the idea of having hotplug hooks to restart the batman-adv 
-configuration automatically. 
-Generally, the scripts look good to me. You also changed its "coding style", 
-e.g. $var -> ${var}. This does not look very OpenWRT-ish, therefore I would 
-prefer keeping the current style. Any objections ?
+My question is, do you have a sample step-by-step procedures to bring
+up the batman correctly?.
 
 Regards,
-Marek
+
+john
