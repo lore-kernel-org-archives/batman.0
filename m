@@ -1,15 +1,11 @@
-Return-Path: <tonyputi@gmail.com>
+Return-Path: <rgibson@futurec.net>
+Date: Wed, 17 Aug 2011 01:14:30 -0400
+Message-ID: <mom6lxncdcrf36q99f970abr.1313557795789@email.android.com>
+From: Ray Gibson <rgibson@futurec.net>
 MIME-Version: 1.0
-In-Reply-To: <201108161730.03159.lindner_marek@yahoo.de>
-References: <mailman.52.1312816695.1125.b.a.t.m.a.n@lists.open-mesh.org>
-	<CAFevQmMWGcJhzKiZzDKOh_pMAq1CyMJrPh=FMpYAQh-wXZwH=g@mail.gmail.com>
-	<CAFevQmMrBa20As8dAEoMCiWqUUm+xxS0=GGex5orx6=seKfmbQ@mail.gmail.com>
-	<201108161730.03159.lindner_marek@yahoo.de>
-From: Filippo Sallemi <tonyputi@gmail.com>
-Date: Wed, 17 Aug 2011 06:54:20 +0200
-Message-ID: <CAFevQmO7KeQcjj1tpxCarUaASE=PZNiEp+VpKOxcffgFKb86cQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] openwrt lib/batman-adv/config.sh
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Subject: Re: [B.A.T.M.A.N.] Configuring batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,27 +19,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-No. no prblem from me
-
-2011/8/16 Marek Lindner <lindner_marek@yahoo.de>:
->
-> Hi,
->
->> In this mail you can find batman-adv initscript updated to work in
->> this way and the batman-adv library file that must be located in
->> /lib/batman-adv/.
->
-> I liked the idea of having hotplug hooks to restart the batman-adv
-> configuration automatically.
-> Generally, the scripts look good to me. You also changed its "coding style",
-> e.g. $var -> ${var}. This does not look very OpenWRT-ish, therefore I would
-> prefer keeping the current style. Any objections ?
->
-> Regards,
-> Marek
->
+Sm9obiwKCkdhdGV3YXkgbW9kZSBpcyBzb21ldGhpbmcgZGlmZmVyZW50IChyZWFkIGFib3V0IGl0
+IGluIHRoZSB3aWtpKSAtLSB3aGF0IHlvdSB3YW50IHRvIGxvb2sgYXQgd2l0aCBiYXRjdGwgaXMg
+Im9yaWdpbmF0b3JzIiB3aGljaCBzaG93IHlvdSBzdXJyb3VuZGluZyBub2RlcyB3aXRoIGxpbmsg
+cXVhbGl0eS4gIElmIHlvdSB3YW50IHRvIGRvIHJvdXRpbmcgeW91J2xsIGhhdmUgdG8gZG8gc29t
+ZXRoaW5nIGRpZmZlcmVudDsgYmF0bWFuLWFkdiBhcyB5b3Ugc2V0IGl0IHVwIGlzIGxpa2UgcGx1
+Z2dpbmcgeW91ciBjb21wdXRlcnMgaW50byB0aGUgc2FtZSBzd2l0Y2guCgpHb29kIGx1Y2ssCgpS
+RwoKSm9obiBUb2JpYXMgPGpvaG4udG9iaWFzLnBoQGdtYWlsLmNvbT4gd3JvdGU6Cgo+SGkgR3V5
+cywKPgo+SSBoYXZlIHR3byBkZXZpY2VzLCBib3RoIG9mIHRoZW0gaGF2ZSBldGgwLCB3bGFuMC4g
+SSBmb2xsb3dlZCB0aGUKPkJBVE1BTiBxdWljayBzdGFydCBndWlkZQo+KGh0dHA6Ly93d3cub3Bl
+bi1tZXNoLm9yZy93aWtpL2JhdG1hbi1hZHYvUXVpY2stc3RhcnQtZ3VpZGUpIG1peGluZwo+bm9u
+LUJBVE1BTi4KPlRoZSBiYXQwLCBldGgwLCB3bGFuMCBvbiBib3RoIGRldmljZXMgd2VyZSBzZXQg
+dG8gMC4wLjAuMCBhbmQgdGhlCj5tZXNoLWJyaWRnZSBvbiBkZXYxIHdhcyBzZXQgdG8gMTkyLjE2
+OC4xMC4xIGFuZCBvbiBkZXYyIHdhcyBzZXQgdG8KPjE5Mi4xNjguMTAuMi4gQm90aCBkZXZpY2Vz
+IGNhbiBwaW5nIHRvIGVhY2ggb3RoZXIuCj4KPldoZW4gSSBleGVjdXRlICJiYXRjdGwgZ3dsIiwg
+SSB3YXMgZ2V0dGluZyAiTm8gZ2F0ZXdheXMgaW4gcmFuZ2UgLi4uIi4KPgo+TXkgcXVlc3Rpb24g
+aXMsIGRvIHlvdSBoYXZlIGEgc2FtcGxlIHN0ZXAtYnktc3RlcCBwcm9jZWR1cmVzIHRvIGJyaW5n
+Cj51cCB0aGUgYmF0bWFuIGNvcnJlY3RseT8uCj4KPlJlZ2FyZHMsCj4KPmpvaG4K
 
 
 
--- 
-Filippo Sallemi
+
+This communication constitutes an electronic communication within the meaning of the Electronic Communications Privacy Act, 18 USC 2510, and its disclosure is strictly limited to the recipient intended by the sender of this message. This e-mail and any files transmitted with it are proprietary and intended for the sole use of the individual or entity to whom they are addressed. They are not to be viewed, shared, copied or forwarded, regardless to whom, without the expressed permission of Future Concepts I.S., Inc. If you have received this e-mail in error, please notify the sender and immediately delete it from your system. Thank you.
+
