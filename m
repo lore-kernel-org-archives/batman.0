@@ -1,16 +1,16 @@
-Return-Path: <onelektra@gmx.net>
-Date: Wed, 17 Aug 2011 14:23:33 +0200
-From: elektra <onelektra@gmx.net>
-Message-Id: <20110817142333.16b12e141d00ed40445ab450@gmx.net>
-In-Reply-To: <201108161412.23801.lindner_marek@yahoo.de>
-References: <2744235.RrtTiUgUxn@sven-laptop.home.narfation.org>
-	<201108161315.27242.onelektra@gmx.net>
-	<201108161320.39443.lindner_marek@yahoo.de>
-	<201108161412.23801.lindner_marek@yahoo.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 18 Aug 2011 12:33:20 +0200
+References: <201108030952.35467.lindner_marek@yahoo.de>
+	<1312357982-4610-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1312357982-4610-1-git-send-email-lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] batman(d|-vis) deprecated by upstream
+Message-Id: <201108181233.21151.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: rename all instances of
+	batman_packet to batman_ogm_packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,13 +22,13 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi -
+On Wednesday, August 03, 2011 09:52:59 Marek Lindner wrote:
+> The follow-up routing code changes are going to introduce additional
+> routing packet types which make this distinction necessary.
 
-> A short amendment to avoid potential misunderstandings:
+Applied in revision da9133d.
 
-thanks for clarifying. 
-
-Cheers,
-Elektra
+Regards,
+Marek
