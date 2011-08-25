@@ -1,15 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 25 Aug 2011 01:22:16 +0200
-References: <1314190838-2273-1-git-send-email-lindner_marek@yahoo.de>
-	<20110824212104.GA16444@sven-atom.home.narfation.org>
-	<4E55724D.5000405@linux-migration.net>
+Return-Path: <vempala@cc.gatech.edu>
+Date: Wed, 24 Aug 2011 20:03:41 -0400 (EDT)
+From: Santosh S Vempala <vempala@cc.gatech.edu>
+Message-ID: <693220585.935033.1314230621559.JavaMail.root@mail7.gatech.edu>
 In-Reply-To: <4E55724D.5000405@linux-migration.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <201108250122.16471.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Comments on Lifenet?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,20 +18,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, jon.roland@constitution.org
-Cc: Santosh Vempala <vempala@cc.gatech.edu>, Hrushikesh Mehendale <hrushi@gatech.edu>
+To: jon roland <jon.roland@constitution.org>
+Cc: b a t m a n <b.a.t.m.a.n@lists.open-mesh.org>, Hrushikesh Mehendale <hrushi@gatech.edu>
 
-On Wednesday, August 24, 2011 23:51:09 Jon Roland wrote:
+Sven:
+Thanks for scrolling through the code. Have you actually tried it? Do you have any improvements to suggest? (even if you're not an expert at kernel programming)
+-SV
+
+----- Original Message -----
 > Your comments are just what I hoped to get. There seems to be an
 > explosion of independent efforts in this field that are presently not
 > talking to one another. It might benefit us all if there was more of a
 > mesh among meshers.
-
-Actually, we try to fill that communication gap with the yearly wireless 
-battle mesh[1] gatherings. I hope you can reserve some time for it to present 
-your project there.
-
-Cheers,
-Marek
-
-[1] http://battlemesh.org/
+> 
+> On 08/24/2011 04:21 PM, Sven Eckelmann wrote:
+> > I don't know what you are actually asking.
+> >
+> > Lifenet is not B.A.T.M.A.N. advanced (it uses some ideas also
+> > present in
+> > batman-adv) and has a complete different background [1].
+> >
+> > I scrolled through their code [2] and would recommend them to read
+> > some books
+> > about parallel programming [3] and a good lecture about kernel
+> > programming (not
+> > that I am good in it, but they are even worse).
+> >
+> > Kind regards,
+> > 	Sven
+> >
+> > [1]
+> > http://conferences.sigcomm.org/sigcomm/2011/papers/sigcomm/p446.pdf
+> > [2] https://github.com/hrushim/LifeNet
+> > [3]
+> > http://kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html
+> 
+> 
+> -- Jon
+> 
+> ----------------------------------------------------------
+> Linux Migration Net http://linux-migration.net
+> 2900 W Anderson Ln C-200-322 Austin, TX 78757
+> 512/299-5001 jroland@linux-migration.net
+> ----------------------------------------------------------
