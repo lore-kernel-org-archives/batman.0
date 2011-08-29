@@ -1,16 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 27 Aug 2011 10:21:59 +0200
-Message-ID: <77321642.WCrqHAJ4WE@sven-laptop.home.narfation.org>
-In-Reply-To: <CAKYr3zw3in4U_ZJpOPR0mRy3qA6MzALimO76eJhOpfL83+9Ykg@mail.gmail.com>
-References: <4E55724D.5000405@linux-migration.net>
-	<59747476.qaEuEgGYPz@sven-laptop.home.narfation.org>
-	<CAKYr3zw3in4U_ZJpOPR0mRy3qA6MzALimO76eJhOpfL83+9Ykg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart29211664.z2QG0GlT4W";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] Comments on Lifenet?
+Return-Path: <joe@perches.com>
+From: Joe Perches <joe@perches.com>
+Date: Mon, 29 Aug 2011 14:17:24 -0700
+Message-Id: <c469b9fb57fb75547e3e9092ebfdb3a79480b28f.1314650069.git.joe@perches.com>
+In-Reply-To: <cover.1314650069.git.joe@perches.com>
+References: <cover.1314650069.git.joe@perches.com>
+Subject: [B.A.T.M.A.N.] [PATCH 05/24] batman-adv: Remove unnecessary OOM
+	logging messages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,52 +17,138 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "Vempala, Santosh S" <vempala@cc.gatech.edu>, Hrushi Mehendale <hrushi@gatech.edu>, jon roland <jon.roland@constitution.org>
+To: Marek Lindner <lindner_marek@yahoo.de>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
 
+Removing unnecessary messages saves code and text.
 
---nextPart29211664.z2QG0GlT4W
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Site specific OOM messages are duplications of a generic MM
+out of memory message and aren't really useful, so just
+delete them.
 
-On Friday 26 August 2011 21:37:29 Outback Dingo wrote:
-[...]
-> Even worse, requires ant and java to even build.... i mean seriously?
-> there are so many of these "projects" popping up all with similiar goals,
-> best case scenerios are a coalition of like minds working to an end result
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ net/batman-adv/hard-interface.c |    5 +----
+ net/batman-adv/main.c           |    2 --
+ net/batman-adv/originator.c     |   16 ++++------------
+ net/batman-adv/soft-interface.c |    4 +---
+ net/batman-adv/vis.c            |    4 +---
+ 5 files changed, 7 insertions(+), 24 deletions(-)
 
-Why is it a problem to require java and ant? Both have free (osi definition) 
-implementations. And I am personally a big fan of build systems to manage 
-complex tasks.
-
-And I heavily disagree with the idea of one project that will be better than 
-all other projects (for germans: eierlegende Wollmilchsau). We have to accept 
-that there are many problems out there and some of them should be solved by 
-different algorithms.
-
-Kind regards,
-	Sven
---nextPart29211664.z2QG0GlT4W
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJOWKknAAoJEF2HCgfBJntGGsQQAL0xNuxT0pRnY3Q0fSmgsQuD
-CHcLAYsjc0q+gHIBbsptTB9Qlu3SVGY8+V2BOhGzli69kOD3czq89sgjpdmsuPk5
-IMtc4C+jtxo+Z1ex8ir2qbjgKcArTWJTbK31UEdIJ55JYQvCK9LbDoxmUQRY1M22
-0B1wlrJOKfriNCSYifi/BFoP0lAKNeMuBQjglzH387jkKkAztLrK6QI6yceWum/c
-vExbwSWM1gI1gihUbSUTA4dvNnicpuhYewpQQPCzwAstcP2fm2mgkERz/h48sFhf
-riJvtTABi7M6pzShqsFcMIwCS0UfJUYZn5K4rN1YhGFSxLeIoPkOkG7rjG7oaV4T
-BaW2ouN4NeTlxMFuhmSIlz/mdIvnNJAq5o0NK3DdmptpO7PxBr2a3MI+pwgpqbTK
-qSWvwIyVLUbXskHdEMKdh+YIYMxe09t2AmJxnXrCqbJVJ2bOFBPsWE4mIntRKB2B
-RvkfYjlWZDJMsNTXfSzGZZ9yeXFvH8HMszEfxhvBPE4vaAbo76kHUT4smfHzdcQp
-ZRWOiAUotq0v0GuRfEyDIKtW/W+fFigpCpRsHWkJg9GOFr57/oBS/20rDVYRMMP/
-PrAYm3rUJdAuxZjSDuD0PWivgrqodK2Mj9jfOa9BYi8OzYs+9xq2P25oF05Mvq9i
-IusblssQ6WjK3C4ND/NA
-=oDGX
------END PGP SIGNATURE-----
-
---nextPart29211664.z2QG0GlT4W--
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index bf91e4d..6a5312e 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -455,11 +455,8 @@ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
+ 	dev_hold(net_dev);
+ 
+ 	hard_iface = kmalloc(sizeof(*hard_iface), GFP_ATOMIC);
+-	if (!hard_iface) {
+-		pr_err("Can't add interface (%s): out of memory\n",
+-		       net_dev->name);
++	if (!hard_iface)
+ 		goto release_dev;
+-	}
+ 
+ 	ret = sysfs_add_hardif(&hard_iface->hardif_obj, net_dev);
+ 	if (ret)
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 79b9ae5..fb87bdc 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -117,8 +117,6 @@ int mesh_init(struct net_device *soft_iface)
+ 	goto end;
+ 
+ err:
+-	pr_err("Unable to allocate memory for mesh information structures: "
+-	       "out of mem ?\n");
+ 	mesh_free(soft_iface);
+ 	return -1;
+ 
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index d448018..6e558cd 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -493,10 +493,8 @@ static int orig_node_add_if(struct orig_node *orig_node, int max_if_num)
+ 
+ 	data_ptr = kmalloc(max_if_num * sizeof(unsigned long) * NUM_WORDS,
+ 			   GFP_ATOMIC);
+-	if (!data_ptr) {
+-		pr_err("Can't resize orig: out of memory\n");
++	if (!data_ptr)
+ 		return -1;
+-	}
+ 
+ 	memcpy(data_ptr, orig_node->bcast_own,
+ 	       (max_if_num - 1) * sizeof(unsigned long) * NUM_WORDS);
+@@ -504,10 +502,8 @@ static int orig_node_add_if(struct orig_node *orig_node, int max_if_num)
+ 	orig_node->bcast_own = data_ptr;
+ 
+ 	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
+-	if (!data_ptr) {
+-		pr_err("Can't resize orig: out of memory\n");
++	if (!data_ptr)
+ 		return -1;
+-	}
+ 
+ 	memcpy(data_ptr, orig_node->bcast_own_sum,
+ 	       (max_if_num - 1) * sizeof(uint8_t));
+@@ -562,10 +558,8 @@ static int orig_node_del_if(struct orig_node *orig_node,
+ 
+ 	chunk_size = sizeof(unsigned long) * NUM_WORDS;
+ 	data_ptr = kmalloc(max_if_num * chunk_size, GFP_ATOMIC);
+-	if (!data_ptr) {
+-		pr_err("Can't resize orig: out of memory\n");
++	if (!data_ptr)
+ 		return -1;
+-	}
+ 
+ 	/* copy first part */
+ 	memcpy(data_ptr, orig_node->bcast_own, del_if_num * chunk_size);
+@@ -583,10 +577,8 @@ free_bcast_own:
+ 		goto free_own_sum;
+ 
+ 	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
+-	if (!data_ptr) {
+-		pr_err("Can't resize orig: out of memory\n");
++	if (!data_ptr)
+ 		return -1;
+-	}
+ 
+ 	memcpy(data_ptr, orig_node->bcast_own_sum,
+ 	       del_if_num * sizeof(uint8_t));
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 402fd96..9b5e69e 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -800,10 +800,8 @@ struct net_device *softif_create(const char *name)
+ 
+ 	soft_iface = alloc_netdev(sizeof(*bat_priv), name, interface_setup);
+ 
+-	if (!soft_iface) {
+-		pr_err("Unable to allocate the batman interface: %s\n", name);
++	if (!soft_iface)
+ 		goto out;
+-	}
+ 
+ 	ret = register_netdevice(soft_iface);
+ 	if (ret < 0) {
+diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
+index fb9b19f..f81a6b6 100644
+--- a/net/batman-adv/vis.c
++++ b/net/batman-adv/vis.c
+@@ -887,10 +887,8 @@ int vis_init(struct bat_priv *bat_priv)
+ 	}
+ 
+ 	bat_priv->my_vis_info = kmalloc(MAX_VIS_PACKET_SIZE, GFP_ATOMIC);
+-	if (!bat_priv->my_vis_info) {
+-		pr_err("Can't initialize vis packet\n");
++	if (!bat_priv->my_vis_info)
+ 		goto err;
+-	}
+ 
+ 	bat_priv->my_vis_info->skb_packet = dev_alloc_skb(sizeof(*packet) +
+ 							  MAX_VIS_PACKET_SIZE +
+-- 
+1.7.6.405.gc1be0
 
