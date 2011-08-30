@@ -1,9 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 30 Aug 2011 13:32:33 +0200
-Message-Id: <1314703953-20190-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: readme update (mention ap
-	isolation and new log level)
+Date: Tue, 30 Aug 2011 15:38:02 +0200
+Message-Id: <1314711482-24862-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1314703953-20190-1-git-send-email-lindner_marek@yahoo.de>
+References: <1314703953-20190-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: readme update (mention of new
+	log level)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,27 +22,16 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- README |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+ This makes the previous patch obsolete.
+
+ README |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/README b/README
-index a9ae038..7bcc9f4 100644
+index 1e000ee..7bbcea1 100644
 --- a/README
 +++ b/README
-@@ -83,9 +83,9 @@ All  mesh  wide  settings  can be found in batman's own interface
- folder:
- 
- #  ls  /sys/class/net/bat0/mesh/
--#  aggregated_ogms  gw_bandwidth  hop_penalty
--#  bonding          gw_mode       orig_interval
--#  fragmentation    gw_sel_class  vis_mode
-+#  aggregated_ogms  fragmentation    gw_sel_class     vis_mode
-+#  ap_isolation     gw_bandwidth     hop_penalty
-+#  bonding          gw_mode          orig_interval
- 
- 
- There is a special folder for debugging information:
-@@ -219,15 +219,16 @@ abled  during run time. Following log_levels are defined:
+@@ -218,15 +218,16 @@ abled  during run time. Following log_levels are defined:
  
  0 - All  debug  output  disabled
  1 - Enable messages related to routing / flooding / broadcasting
