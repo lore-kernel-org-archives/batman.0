@@ -1,11 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 30 Aug 2011 15:38:02 +0200
-Message-Id: <1314711482-24862-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1314703953-20190-1-git-send-email-lindner_marek@yahoo.de>
-References: <1314703953-20190-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: readme update (mention of new
-	log level)
+Return-Path: <tracer@robotech.de>
+Message-ID: <4E5D69E3.30403@robotech.de>
+Date: Wed, 31 Aug 2011 00:53:23 +0200
+From: Tobias <tracer@robotech.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] batman-adv 2011.2.0 hop somtimes does not work
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,39 +18,30 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- This makes the previous patch obsolete.
+Hi all,
 
- README |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+i have setup a mesh-network with batman-adv running on about 10 Foneras 
+and 4 TP-Link on OpenWRT.
 
-diff --git a/README b/README
-index 1e000ee..7bbcea1 100644
---- a/README
-+++ b/README
-@@ -218,15 +218,16 @@ abled  during run time. Following log_levels are defined:
- 
- 0 - All  debug  output  disabled
- 1 - Enable messages related to routing / flooding / broadcasting
--2 - Enable route or tt entry added / changed / deleted
--3 - Enable all messages
-+2 - Enable messages related to route added / changed / deleted
-+4 - Enable messages related to translation table operations
-+7 - Enable all messages
- 
- The debug output can be changed at runtime  using  the  file
- /sys/class/net/bat0/mesh/log_level. e.g.
- 
- # echo 2 > /sys/class/net/bat0/mesh/log_level
- 
--will enable debug messages for when routes or TTs change.
-+will enable debug messages for when routes change.
- 
- 
- BATCTL
--- 
-1.7.5.3
+At first everything seemed to work. A node on the one end could ping a 
+node on the other end over the mesh-network. The ping was hopping from 
+node to node as expected.
+
+But sometimes some paths do not work anymore.
+
+Some nodes can only reach their direct neighbors via a "normal ping". A 
+ping to a node via one hop does not work. A "batctl ping" does work!
+
+This only happens to parts of the network and is not permanent. If i 
+wait it will recover, but then the problem appears at another node.
+
+dmesg or the syslog does not report any errors.
+
+Can anyone give me a hint where to look?
+
+Tobias
+
+
+
 
