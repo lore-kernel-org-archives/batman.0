@@ -1,15 +1,16 @@
-Return-Path: <plettpc@gmail.com>
+Return-Path: <tracer@robotech.de>
+Message-ID: <4E5E69DB.5060007@robotech.de>
+Date: Wed, 31 Aug 2011 19:05:31 +0200
+From: Tobias <tracer@robotech.de>
 MIME-Version: 1.0
-In-Reply-To: <4E5E64EF.2010706@robotech.de>
 References: <4E5D69E3.30403@robotech.de>
-	<201108311155.27490.lindner_marek@yahoo.de>
 	<CAKeC-QGag_c+g93MbiJWL9HB3iOczbfbatYUAA1wEEFSyvyd2g@mail.gmail.com>
-	<4E5E64EF.2010706@robotech.de>
-Date: Wed, 31 Aug 2011 18:54:50 +0200
-Message-ID: <CAKeC-QHjYZBnCm93Gt606geY1-nXk1eZPnRTifkOD3F-hO0-rA@mail.gmail.com>
-From: wayne abroue <plettpc@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+	<20110831160712.GC25149@ritirata.org>
+	<201108311816.23147.lindner_marek@yahoo.de>
+	<20110831161833.GD25149@ritirata.org>
+In-Reply-To: <20110831161833.GD25149@ritirata.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.2.0 hop somtimes does not work
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,63 +25,56 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, Aug 31, 2011 at 6:44 PM, Tobias <tracer@robotech.de> wrote:
-> Am 31.08.2011 17:57, schrieb wayne abroue:
->>
->> On Wed, Aug 31, 2011 at 11:55 AM, Marek Lindner<lindner_marek@yahoo.de>
->> =A0wrote:
->>>
->>> Hi,
->>>
->>>> At first everything seemed to work. A node on the one end could ping a
->>>> node on the other end over the mesh-network. The ping was hopping from
->>>> node to node as expected.
->>>>
->>>> But sometimes some paths do not work anymore.
->>>>
->>>> Some nodes can only reach their direct neighbors via a "normal ping". =
-A
->>>> ping to a node via one hop does not work. A "batctl ping" does work!
->>>>
->>>> This only happens to parts of the network and is not permanent. If i
->>>> wait it will recover, but then the problem appears at another node.
->>>
->>> since "batctl ping" works I'd say your mesh works fine - you have a
->>> problem in
->>> your higher layers. Maybe a mac address collision or an ARP timeout ?
->>>
->>> Can you provide specific examples we can go through ? For instance,
->>> provide
->>> the batctl ping output to the neighbor in question, the ping error
->>> message
->>> (does it say timeout / host could not be found / etc), a batctl
->>> traceroute to
->>> the neighbor in question and the output of the global translation table=
-.
->>>
->>> Are you trying to ping a 'fixed' node or a node that is roaming ?
->>>
->>> Regards,
->>> Marek
->>>
->>>
->> I'd also check signal strength,, have experienced this =A0when levels
->> are fluctuating, ie: batctl ping works, ip not. then comes back.
->>
->> Wayne A
+Am 31.08.2011 18:18, schrieb Antonio Quartulli:
+> On Wed, Aug 31, 2011 at 06:16:22PM +0200, Marek Lindner wrote:
+>> On Wednesday, August 31, 2011 18:07:13 Antonio Quartulli wrote:
+>>> Could it be a TT problem? Please, try to enable TT related log only (using
+>>> "batctl ll x", I can't remember the correct x value) and copy/paste the
+>>> output of "batctl l" during the blackout time to
+>>> the moment when everything restart to work.
+>> It is honorable that you want to take the blame but 2011.2.0 does not have the
+>> tt patches yet.  ;-)
+> Ops, sorry! I always confuse the release numbers :-)
+> (phew)
 >
-> Hi Wayne,
->
-> the signal level is not very good - but it should be sufficient. (around
-> 40-60%)
->
-> Even when i keep both pings running at the same time, only the "batctl p"
-> works.
->
-> Tobias
->
+> cheers,
+> Antonio
 
-Thats your problem,, I have experienced the same in the past,, You
-will find access very erratic,, upgrade your antenna if you can.
+Sorry, I mixed the versions i installed. I have the problems with 
+2011.3.0. Before - I tried with 2011.2.0 but when i flashed the nodes i 
+took 2011.3.0.
 
-Wayne A
+So i tried activating the log (batctl ll 4) but it its way too much to 
+keep that running for more than a few seconds. If you relly need the 
+complete log i have to setup a syslog-server to store that.
+
+A short snippet:
+[     25706] Received TT_RESPONSE from bat53 for ttvn 1 t_size: 1 [F]
+[     25706] Deleting global tt entry 04:11:80:db:48:c8 (via 
+0a:18:84:1e:f6:05): originator time out
+[     25706] Creating new global tt entry: 00:02:81:b9:4c:c8 (via 
+0a:18:84:1e:f6:05)
+[     25707] TT inconsistency for 0a:18:84:1e:f6:05. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 1 crc: 51609 last_crc: 20405 
+num_changes: 0)
+[     25707] Sending TT_REQUEST to bat53 via bat51 [F]
+[     25707] Received TT_RESPONSE from bat53 for ttvn 1 t_size: 1 [F]
+[     25707] Deleting global tt entry 00:02:81:b9:4c:c8 (via 
+0a:18:84:1e:f6:05): originator time out
+[     25707] Creating new global tt entry: 18:84:1e:f6:05:01 (via 
+0a:18:84:1e:f6:05)
+[     25707] TT inconsistency for 0a:18:84:1e:f6:05. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 1 crc: 51609 last_crc: 19671 
+num_changes: 0)
+[     25707] Sending TT_REQUEST to bat53 via bat51 [F]
+[     25707] Received TT_RESPONSE from bat53 for ttvn 1 t_size: 1 [F]
+[     25707] Deleting global tt entry 18:84:1e:f6:05:01 (via 
+0a:18:84:1e:f6:05): originator time out
+[     25707] Creating new global tt entry: 04:11:80:e4:a8:c8 (via 
+0a:18:84:1e:f6:05)
+[     25708] TT inconsistency for 0a:18:84:26:35:9d. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 1 crc: 40594 last_crc: 53273 
+num_changes: 0)
+
+Tobias
+
