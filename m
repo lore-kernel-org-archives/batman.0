@@ -1,15 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 03 Sep 2011 11:33:18 +0200
-Message-ID: <1708693.BHy3oZg7c1@sven-desktop.home.narfation.org>
-In-Reply-To: <CAFevQmPHjkJqXSrFS5PHbOU3wmCMm5OLLDpyrBF_tvRLz+5r1g@mail.gmail.com>
-References: <CAFevQmNDWyoA2PnhkRUDXV44r-LreLbjgCj=dqEggvyUbaKE1g@mail.gmail.com>
-	<CAFevQmPHjkJqXSrFS5PHbOU3wmCMm5OLLDpyrBF_tvRLz+5r1g@mail.gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 5 Sep 2011 10:06:13 +0200
+References: <4E5D69E3.30403@robotech.de> <20110901213531.GE840@ritirata.org>
+	<4E600B22.7090100@robotech.de>
+In-Reply-To: <4E600B22.7090100@robotech.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1430256.CrGUeXDinB";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv and coovachilli
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201109051006.13844.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.2.0 hop somtimes does not work
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,70 +21,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: chilli@coova.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart1430256.CrGUeXDinB
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+Tobias,
 
-On Friday 02 September 2011 13:09:44 Filippo Sallemi wrote:
-> Hi all,
-> I've a little problem and i need a confirm from you.
+> root@1043-49:~# batctl tg
+> Globally announced TT entries received via the mesh bat0
+>         Client        (TTVN)       Originator      (Curr TTVN)
+>   * 42:c9:62:7e:91:f2  (  1) via             bat57     (  1)
+>   * d6:0f:24:f1:43:3c  (  1) via             bat59     (  1)
+>   * 04:11:80:50:38:c8  (  1) via             bat53     (  1)
+>   * 7a:7b:f4:ed:5c:24  (  1) via             bat52     (  1)
+>   * 04:11:80:2f:c4:c8  (  1) via             bat67     (  1)
+>   * be:57:9e:5b:e0:3e  (  1) via             bat60     (  1)
+>   * fa:45:8f:a5:2c:75  (  1) via             bat55     (  1)
+>   * c2:90:a3:3b:4e:c9  (  1) via             bat58     (  1)
+>   * ea:4b:dd:55:f3:1f  (  1) via             bat54     (  1)
+>   * 76:18:e9:ab:f9:40  (  1) via             bat51     (  1)
 > 
-> I have 2 mesh node (gateway) with this configuration:
-> lan is a bridge with bat0 and wlan0 with node1 ip 10.0.1.1 netmask
-> 255.0.0.0 and node2 ip 10.0.2.1 netmask 255.0.0.0
-> wan : eth0
-> msh : wlan1
+> root@1043-49:~# batctl tl
+> Locally retrieved addresses (from bat0) announced via TT (TTVN: 1):
+>   * 9e:90:fc:dc:99:09
 > 
-> and 3 mesh gatway (client) whit this configuration
-> lan is a bridge with eth0 bat0 and wlan1 with dhcp
-> msh is wlan1
+> > and ouput of batctl tl of this other node (fon-53)?
 > 
-> on each gateway nodes run an istance of coovachilli that create new
-> interface tun0 ahead br-lan and when coovachilli start deconfig br-lan
-> and assign the ip of br-lan to tun0.
-> all other node are simple client.
-> 
-> Now the problem is that when coovachilli is not running i'm able to
-> ping node1 from node2 and viceversa but when coovachilli is running
-> i'm unable to comunicate with other node with ip addres not in the
-> same subnet.
-> I think that the problem is tun0 interface that block all traffic o
-> something. I have tried to use tap device but the problem is not
-> resolved.
-> 
-> Suggest?
+> root@fon-53:~# batctl tl
+> Locally retrieved addresses (from bat0) announced via TT (TTVN: 1):
+>   * da:54:2c:e4:b9:1e
 
-coovachilli works a layer above batman-adv (we personally don't care about ip 
-addresses that much). So it sounds like a coovachilli "problem" and you should 
-ask the coovachilli support.
+I have tried to reproduce your issue but was unsuccessful. Could you help 
+narrowing down the cause by providing some more information ? 
+For instance:
+* What is the simpliest setup that can provoke the issue ? Does it also happen 
+if you only involve 2 nodes ? Or 3 / 4 / 5 ? Does the problem go away if you 
+reduce the number of interfaces on each node ?
+* You provided some logs showing additions / deletions of a non-existing mac 
+address and you said this would go away after a while. What do the logs say 
+when the problem is about to disappear ?
+* Are the nodes that often exhibit this flakiness far apart or direct 
+neighbors ? What does the topology look like ? Again, the simplier the setup 
+the better.
 
-Kind regards,
-	Sven
---nextPart1430256.CrGUeXDinB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJOYfReAAoJEF2HCgfBJntGzSkP/1cjGrgPdZZCOxbiFLTe2vsG
-3cvOeJQDkYFkK4hfMGoqNs77xA3Bj9K1V+dLzKcfjf5KJPfWor5UYCXHVM3ZD05G
-gR0KGVLVLs9HoqjsNwrgOvXbzvV3sfSnAShXiWMiCwt9qXBBw7ZTqgsc+IY7GV5I
-36kV21ccqVUguDR/+xavQFUCjicosve901aymd253j+lTvMM64nxRF5qsKQ20sEP
-UawItNYJo9aOcq/R/BwH8H3/5HpM6aZAMcj1xBja92i+f+sNpg8RSwi1nbgLpapC
-UhHIgdJf3qA967ZCC2P7cIgL4W2iAJvyo2HI6rCZzlTMOXY6b+w9wHXs1nG2rjD5
-X3p9gRFLykTQMmBEkJvNqvE9r0AHi/5+qyLLCj+KORSeOE4PqY4VW/6oPci+0B/b
-PtpNO27x0u82bAa6d3JPBWASsMfHaVA8rqXgqKBrANQZqNUrECJGn+EvD/euY2dy
-HchXcUjLjykBV537H9/+IgCmHJrPtlHz6KAxpy95s9ce13/im52ml5qxy/sowO3k
-Yi5233Iz1WI7FP8z0SGndYf0XR3mHMeJ6TFlkQJogz1Xn4QvQWPYK6eU4Fari1Bv
-GpQApvBD4hGSgAwJlATW78iOlECBDsaorsb1AqvOdBt6gf6xLhxxbADnnMC8MfC/
-tn5d7PEcqiqo78oAMVuK
-=4+lw
------END PGP SIGNATURE-----
-
---nextPart1430256.CrGUeXDinB--
-
+Regards,
+Marek
