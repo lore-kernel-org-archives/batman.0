@@ -1,15 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 6 Sep 2011 20:33:17 +0200
+Return-Path: <tracer@robotech.de>
+Message-ID: <4E67248D.8040904@robotech.de>
+Date: Wed, 07 Sep 2011 10:00:13 +0200
+From: Tobias <tracer@robotech.de>
+MIME-Version: 1.0
 References: <4E5D69E3.30403@robotech.de>
 	<201109051006.13844.lindner_marek@yahoo.de>
 	<4E65E286.7080600@robotech.de>
-In-Reply-To: <4E65E286.7080600@robotech.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	<201109062033.17427.lindner_marek@yahoo.de>
+In-Reply-To: <201109062033.17427.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201109062033.17427.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.2.0 hop somtimes does not work
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,41 +24,69 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Am 06.09.2011 20:33, schrieb Marek Lindner:
+>
+> Can you tell us what TP-Link model you are using (name, hardware revision,
+> etc). Or post the output of /proc/cpuinfo ?
 
-Hi,
+Hi Marek,
 
-> i needed to get this working so i switched to 2011.2 last weekend and
-> the problems are gone.
+the TP-Links are 1043:
+root@1043-50:~# cat /proc/cpuinfo
+system type             : Atheros AR9132 rev 2
+machine                 : TP-LINK TL-WR1043ND
+processor               : 0
+cpu model               : MIPS 24Kc V7.4
+BogoMIPS                : 265.42
+wait instruction        : yes
+microsecond timers      : yes
+tlb_entries             : 16
+extra interrupt vector  : yes
+hardware watchpoint     : yes, count: 4, address/irw mask: [0x0000, 
+0x0ff8, 0x0ff8, 0x0ff8]
+ASEs implemented        : mips16
+shadow register sets    : 1
+kscratch registers      : 0
+core                    : 0
+VCED exceptions         : not available
+VCEI exceptions         : not available
 
-ok.
+and 841:
+root@841-52:~# cat /proc/cpuinfo
+system type             : Atheros AR7241 rev 1
+machine                 : TP-LINK TL-WR741ND
+processor               : 0
+cpu model               : MIPS 24Kc V7.4
+BogoMIPS                : 265.42
+wait instruction        : yes
+microsecond timers      : yes
+tlb_entries             : 16
+extra interrupt vector  : yes
+hardware watchpoint     : yes, count: 4, address/irw mask: [0x0000, 
+0x08f8, 0x07c0, 0x0ba8]
+ASEs implemented        : mips16
+shadow register sets    : 1
+kscratch registers      : 0
+core                    : 0
+VCED exceptions         : not available
+VCEI exceptions         : not available
 
+the others are Fonera2100:
+root@fon-53:~# cat /proc/cpuinfo
+system type             : Atheros AR2315
+processor               : 0
+cpu model               : MIPS 4KEc V6.4
+BogoMIPS                : 183.50
+wait instruction        : yes
+microsecond timers      : yes
+tlb_entries             : 16
+extra interrupt vector  : yes
+hardware watchpoint     : no
+ASEs implemented        :
+shadow register sets    : 1
+core                    : 0
+VCED exceptions         : not available
+VCEI exceptions         : not available
 
-> I have some similar devices as spare parts. I'll try to set them up and
-> reproduce the problems - but that can take a while.
+Tobias
 
-Understood. We hopefully come up with a patch soon that will need to be 
-tested.
-
-
-> - every node has only one wlan-network on which batman runs and only the
-> node itself uses the bat0 interface - no bridging, no routing
-> - at the end, most of the time only the directly connected nodes were
-> reachable via a normal ping - the "hopping" was not working
-> - i had the *feeling* that the problems got bigger the more nodes we added
-> - also i *think* the problems began when we mixed Fonera- and
-> TP-Link-devices (sightly different architecture i think)
-
-Can you tell us what TP-Link model you are using (name, hardware revision, 
-etc). Or post the output of /proc/cpuinfo ?
-
-
-> - the log was always spammed with messages - because of the tiny devices
-> i use it's not easy to save the log and inspect it when the connection
-> is working again - which can take an hour...
-
-It is somewhat troublesome that the problem went away after a while. If we 
-have a bug in the architecture handling you would expect it to be a permanent 
-problem. But who knows ...
-
-Regards,
-Marek
