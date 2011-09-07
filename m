@@ -1,16 +1,11 @@
-Return-Path: <tracer@robotech.de>
-Message-ID: <4E67248D.8040904@robotech.de>
-Date: Wed, 07 Sep 2011 10:00:13 +0200
-From: Tobias <tracer@robotech.de>
+Return-Path: <clownix@clownix.net>
+Message-ID: <ca09bd7b15aa12865be53ecfffe37fed.squirrel@clownix.net>
+Date: Wed, 7 Sep 2011 04:04:47 -0500
+From: clownix@clownix.net
 MIME-Version: 1.0
-References: <4E5D69E3.30403@robotech.de>
-	<201109051006.13844.lindner_marek@yahoo.de>
-	<4E65E286.7080600@robotech.de>
-	<201109062033.17427.lindner_marek@yahoo.de>
-In-Reply-To: <201109062033.17427.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.2.0 hop somtimes does not work
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] machine emulation tool
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,71 +17,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: batman <b.a.t.m.a.n@lists.open-mesh.org>
 
-Am 06.09.2011 20:33, schrieb Marek Lindner:
->
-> Can you tell us what TP-Link model you are using (name, hardware revision,
-> etc). Or post the output of /proc/cpuinfo ?
+Hello,
+There is a tool to emulate lots of machines in a network based on either
+uml, kvm or lxc container techno, this tool is called cloonix and used by
+the quagga team (and olsr people).
 
-Hi Marek,
+The version 10 is availlable and may be usefull to test batman big
+topologies.
 
-the TP-Links are 1043:
-root@1043-50:~# cat /proc/cpuinfo
-system type             : Atheros AR9132 rev 2
-machine                 : TP-LINK TL-WR1043ND
-processor               : 0
-cpu model               : MIPS 24Kc V7.4
-BogoMIPS                : 265.42
-wait instruction        : yes
-microsecond timers      : yes
-tlb_entries             : 16
-extra interrupt vector  : yes
-hardware watchpoint     : yes, count: 4, address/irw mask: [0x0000, 
-0x0ff8, 0x0ff8, 0x0ff8]
-ASEs implemented        : mips16
-shadow register sets    : 1
-kscratch registers      : 0
-core                    : 0
-VCED exceptions         : not available
-VCEI exceptions         : not available
+The default machine for the tool is the openwrt but buildroot and debian
+machines are very easy to create with a script included in the tool.
 
-and 841:
-root@841-52:~# cat /proc/cpuinfo
-system type             : Atheros AR7241 rev 1
-machine                 : TP-LINK TL-WR741ND
-processor               : 0
-cpu model               : MIPS 24Kc V7.4
-BogoMIPS                : 265.42
-wait instruction        : yes
-microsecond timers      : yes
-tlb_entries             : 16
-extra interrupt vector  : yes
-hardware watchpoint     : yes, count: 4, address/irw mask: [0x0000, 
-0x08f8, 0x07c0, 0x0ba8]
-ASEs implemented        : mips16
-shadow register sets    : 1
-kscratch registers      : 0
-core                    : 0
-VCED exceptions         : not available
-VCEI exceptions         : not available
+See all this at clownix.net.
 
-the others are Fonera2100:
-root@fon-53:~# cat /proc/cpuinfo
-system type             : Atheros AR2315
-processor               : 0
-cpu model               : MIPS 4KEc V6.4
-BogoMIPS                : 183.50
-wait instruction        : yes
-microsecond timers      : yes
-tlb_entries             : 16
-extra interrupt vector  : yes
-hardware watchpoint     : no
-ASEs implemented        :
-shadow register sets    : 1
-core                    : 0
-VCED exceptions         : not available
-VCEI exceptions         : not available
-
-Tobias
-
+Vincent Perrier
