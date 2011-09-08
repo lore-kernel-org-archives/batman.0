@@ -1,14 +1,8 @@
-Return-Path: <clownix@clownix.net>
-Message-ID: <9871b8e268b322c2a49baa3498d1e81e.squirrel@clownix.net>
-In-Reply-To: <BCEE9498-02EA-448B-ADF5-98DE36F99BFD@lo-res.org>
-References: <ca09bd7b15aa12865be53ecfffe37fed.squirrel@clownix.net>
-	<BCEE9498-02EA-448B-ADF5-98DE36F99BFD@lo-res.org>
-Date: Wed, 7 Sep 2011 07:46:15 -0500
-From: clownix@clownix.net
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] machine emulation tool
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu,  8 Sep 2011 18:40:44 +0200
+Message-Id: <1315500051-1122-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2011-09-08
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,36 +14,70 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+Hi,
 
-Thanks, we like it very much also:)
+here comes the next batch batch I'd like to get the pulled into 
+net-next-2.6/3.2. These patches mainly focus restructering the 
+routing code in order to allow the kernel module the handling
+of the current routing algorithm and the upcoming one. 
 
-A last minute minor bug: the graph sometimes freezes and you have to
-launch it again.
-May-be if you stop the movement (Motion stop on main menu) it can avoid
-the freeze.
-There is always something wrong at the last minute and AFTER delivery!
+To ensure a smooth transition and efficient testing later, we 
+decided to offer a choice of routing algorithm but have not     
+come to a final decision on how to design this choice yet. It
+either will be a compile time option, a module parameter or a
+runtime switch. Any suggestions / best practice tips ?
 
-It was a pleasure to receive your mail.
+Note: The new algorithm has been designed with backward 
+compatibility in mind (using TLVs). We are trying to address
+the incompatibility issue you and others have pointed out.
 
-Vincent Perrier
+Thanks,
+Marek
 
+The following changes since commit a943cac144e035c21d4f1b31b95f15b33c33a480:
 
->
-> On Sep 7, 2011, at 11:04 AM, clownix@clownix.net wrote:
->
->> Hello,
->> There is a tool to emulate lots of machines in a network based on either
->> uml, kvm or lxc container techno, this tool is called cloonix and used
->> by
->> the quagga team (and olsr people).
->>
->
-> I like it very much indeed.
->
->
-> a.
->
->
+  batman-adv: merge update_transtable() into tt related code (2011-08-22 15:16:22 +0200)
+
+are available in the git repository at:
+  git://git.open-mesh.org/linux-merge.git batman-adv/next
+
+Joe Perches (1):
+      batman-adv: Remove unnecessary OOM logging messages
+
+Marek Lindner (4):
+      batman-adv: rename all instances of batman_packet to batman_ogm_packet
+      batman-adv: agglomerate all batman iv ogm processing functions in a single file
+      batman-adv: move routing packet initialization into corresponding file
+      batman-adv: agglomerate all batman iv ogm sending functions in the batman iv file
+
+Simon Wunderlich (1):
+      batman-adv: update README (date & ap isolation sysfs file)
+
+Sven Eckelmann (1):
+      batman-adv: update internal version number
+
+ Documentation/networking/batman-adv.txt     |    8 +-
+ net/batman-adv/Makefile                     |    2 +-
+ net/batman-adv/aggregation.c                |  293 -------
+ net/batman-adv/bat_iv_ogm.c                 | 1170 +++++++++++++++++++++++++++
+ net/batman-adv/{aggregation.h => bat_ogm.h} |   30 +-
+ net/batman-adv/hard-interface.c             |   54 +-
+ net/batman-adv/main.c                       |    2 -
+ net/batman-adv/main.h                       |    2 +-
+ net/batman-adv/originator.c                 |   19 +-
+ net/batman-adv/packet.h                     |   18 +-
+ net/batman-adv/routing.c                    |  602 +-------------
+ net/batman-adv/routing.h                    |   17 +-
+ net/batman-adv/send.c                       |  305 +-------
+ net/batman-adv/send.h                       |    9 +-
+ net/batman-adv/soft-interface.c             |   21 +-
+ net/batman-adv/vis.c                        |    4 +-
+ 16 files changed, 1281 insertions(+), 1275 deletions(-)
+ delete mode 100644 net/batman-adv/aggregation.c
+ create mode 100644 net/batman-adv/bat_iv_ogm.c
+ rename net/batman-adv/{aggregation.h => bat_ogm.h} (50%)
+
 
