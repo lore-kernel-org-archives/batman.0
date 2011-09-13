@@ -1,16 +1,16 @@
-Return-Path: <tonyputi@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 13 Sep 2011 13:18:03 +0200
+References: <4E5D69E3.30403@robotech.de>
+	<201109062033.17427.lindner_marek@yahoo.de>
+	<4E67248D.8040904@robotech.de>
+In-Reply-To: <4E67248D.8040904@robotech.de>
 MIME-Version: 1.0
-In-Reply-To: <CAFevQmMJiKnWwa9miU+eFe4WsGRCTj_H6Y+L91jqhM41G0wW4g@mail.gmail.com>
-References: <mailman.52.1312816695.1125.b.a.t.m.a.n@lists.open-mesh.org>
-	<201108161730.03159.lindner_marek@yahoo.de>
-	<CAFevQmO7KeQcjj1tpxCarUaASE=PZNiEp+VpKOxcffgFKb86cQ@mail.gmail.com>
-	<201108220146.25744.lindner_marek@yahoo.de>
-	<CAFevQmMJiKnWwa9miU+eFe4WsGRCTj_H6Y+L91jqhM41G0wW4g@mail.gmail.com>
-From: Filippo Sallemi <tonyputi@gmail.com>
-Date: Mon, 12 Sep 2011 19:43:47 +0200
-Message-ID: <CAFevQmP7Qu5iMi6nHG3WJdbXFAEQej9Ro7W9aEkLxg4YhSX-wQ@mail.gmail.com>
-Content-Type: multipart/mixed; boundary=20cf305638e3e05d3904acc212a6
-Subject: Re: [B.A.T.M.A.N.] openwrt lib/batman-adv/config.sh
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201109131318.03320.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.2.0 hop somtimes does not work
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,63 +24,34 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---20cf305638e3e05d3904acc212a6
-Content-Type: text/plain; charset=UTF-8
 
-Hi all,
-I've writed a hotplug.d script that readd interfaces that are present
-in every bat definition of batman-adv uci file when network restart or
- an interface come up.
-This script must be placed in /etc/hotplug.d/net/
+Hi,
 
-P.S. for Marek you don't need to split /etc/init.d/batman-adv function
-in a separate file such the previous emails.
+> the TP-Links are 1043:
+> root@1043-50:~# cat /proc/cpuinfo
+> system type             : Atheros AR9132 rev 2
+> machine                 : TP-LINK TL-WR1043ND
+> processor               : 0
+> cpu model               : MIPS 24Kc V7.4
+> BogoMIPS                : 265.42
+> wait instruction        : yes
+> microsecond timers      : yes
+> tlb_entries             : 16
+> extra interrupt vector  : yes
+> hardware watchpoint     : yes, count: 4, address/irw mask: [0x0000,
+> 0x0ff8, 0x0ff8, 0x0ff8]
+> ASEs implemented        : mips16
+> shadow register sets    : 1
+> kscratch registers      : 0
+> core                    : 0
+> VCED exceptions         : not available
+> VCEI exceptions         : not available
 
-Rgds.
+thanks for providing the info. So far, we can't spot the issue no matter how 
+long we stare at the code. I'd like to make some patches that will spit out 
+additional debug info to isolate the cause. As we can't reproduce the problem 
+at our end we depend on you to test these patches. Will it be possible for you 
+to have a mix of your nodes running in debug mode ?
 
-Filippo
-
-2011/8/24 Filippo Sallemi <tonyputi@gmail.com>:
-> Ok. I'm just working on it
->
-> 2011/8/22 Marek Lindner <lindner_marek@yahoo.de>:
->> On Wednesday, August 17, 2011 06:54:20 Filippo Sallemi wrote:
->>> No. no prblem from me
->>
->> Ok, I just comitted the new package. Let me know when you have the hotplug
->> stuff ready to be included as well.
->>
->> Regards,
->> Marek
->>
->
->
->
-> --
-> Filippo Sallemi
->
-
-
-
--- 
-Filippo Sallemi
-
---20cf305638e3e05d3904acc212a6
-Content-Type: application/octet-stream; name=99-batman-adv
-Content-Disposition: attachment; filename=99-batman-adv
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_gshql1u60
-
-IyEvYmluL3NoCiMgQ29weXJpZ2h0IChDKSAyMDExIE9wZW5XcnQub3JnCgpzZXR1cF9pZmFjZSgp
-ewoJbG9jYWwgbWVzaD0kMQoJbG9jYWwgZGV2aWNlPSQyCglsb2NhbCBpbnRlcmZhY2VzCgkKCWNv
-bmZpZ19nZXQgaW50ZXJmYWNlcyAkbWVzaCBpbnRlcmZhY2VzCgkKCWZvciBpbnRlcmZhY2UgaW4g
-JGludGVyZmFjZXM7IGRvCgkJWyAhIC1mICIvc3lzL2NsYXNzL25ldC8kaW50ZXJmYWNlL2JhdG1h
-bl9hZHYvbWVzaF9pZmFjZSIgXSAmJiB7CgkJCWludGVyZmFjZT0kKHVjaSAtUCAvdmFyL3N0YXRl
-IGdldCBuZXR3b3JrLiRpbnRlcmZhY2UuaWZuYW1lIDI+Ji0pCgkJCVsgISAtZiAiL3N5cy9jbGFz
-cy9uZXQvJGludGVyZmFjZS9iYXRtYW5fYWR2L21lc2hfaWZhY2UiIF0gJiYgY29udGludWUKCQl9
-CgkJCgkJWyAiJGRldmljZSIgPT0gICIkaW50ZXJmYWNlIiBdICYmIHsKCQkJZWNobyAkbWVzaCA+
-IC9zeXMvY2xhc3MvbmV0LyRpbnRlcmZhY2UvYmF0bWFuX2Fkdi9tZXNoX2lmYWNlCgkJfQoJZG9u
-ZQp9CgpjYXNlICIkQUNUSU9OIiBpbgogICAgYWRkKQoJCWNvbmZpZ19jbGVhcgoJCWNvbmZpZ19s
-b2FkIGJhdG1hbi1hZHYKCQljb25maWdfZm9yZWFjaCBzZXR1cF9pZmFjZSBtZXNoICRJTlRFUkZB
-Q0UKCTs7CmVzYWM=
---20cf305638e3e05d3904acc212a6--
+Cheers,
+Marek
