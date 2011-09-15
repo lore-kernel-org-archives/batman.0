@@ -1,15 +1,15 @@
-Return-Path: <clownix@clownix.net>
-Message-ID: <2717fdb7febe29366a2edbc9d77ee2fb.squirrel@clownix.net>
-In-Reply-To: <1618735.6vzXCZcuLY@sven-desktop.home.narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 15 Sep 2011 17:02:49 +0200
+Message-ID: <1355123.rxInL6RQpp@sven-desktop.home.narfation.org>
+In-Reply-To: <2717fdb7febe29366a2edbc9d77ee2fb.squirrel@clownix.net>
 References: <c3913757cea624537f48fb88fb60e913.squirrel@clownix.net>
-	<14791148.Lch9XMektA@sven-desktop.home.narfation.org>
-	<d477c5ac8b5c4fea9529957152699501.squirrel@clownix.net>
 	<1618735.6vzXCZcuLY@sven-desktop.home.narfation.org>
-Date: Thu, 15 Sep 2011 09:39:51 -0500
-From: clownix@clownix.net
+	<2717fdb7febe29366a2edbc9d77ee2fb.squirrel@clownix.net>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="nextPart2798158.v39ddDIVLM";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] lxc and batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,55 +22,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: clownix@clownix.net
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-All is now clear, I have no idea about how namespaces work and neither
-about the batman-adv instances, I am a simple user preparing for a future
-batman-adv demo network on a single PC.
-This information is what I wanted, so thanks a lot.
-I agree that I do not see any other usage scenario than demo-scenario.
 
-Kind Regards
-Vincent
+--nextPart2798158.v39ddDIVLM
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="iso-8859-1"
 
+On Thursday 15 September 2011 09:39:51 clownix@clownix.net wrote:
+> All is now clear, I have no idea about how namespaces work and neither
+> about the batman-adv instances, I am a simple user preparing for a future
+> batman-adv demo network on a single PC.
+> This information is what I wanted, so thanks a lot.
+> I agree that I do not see any other usage scenario than demo-scenario.
 
-> On Thursday 15 September 2011 08:40:15 clownix@clownix.net wrote:
->> So, for the multiplication of machines in a big network, you confirm
->> that
->> batman-adv is not compatible with lxc.
->
-> I never said that it is not compatible with lxc
->
->> However something is still not clear: with one batman-adv per namespace,
->> would it be possible to have what you have with kvm but with lxc?
->
-> No, this is not possible by definition. kvm == multiple batman-adv
-> instances,
-> batman-adv in lxc == one instance with interfaces in different namespaces.
->
->> The gain for this work would be only performance, the useful scenario
->> being no other than what you have with kvm: big (independant) networks.
->
-> No, by definition those networks aren't independent as they share
-> resources
-> inside batman-adv (and many other resources).
->
-> As far as I understand: You want to create batman-adv interfaces in
-> different
-> namespaces without having colliding names. Feel free to submit patches for
-> it
-> (or enthuse some developers with spare time).
->
-> But I am still waiting for an actual usage scenario. KVM is mostly used
-> for
-> debugging purposes... something were we want to have separate instances
-> which
-> don't crash the developer machine. And I don't see the reason for having
-> the
-> overhead of batman-adv in all namespaces instead of a single entry/exit
-> point.
->
-> Kind regards,
-> 	Sven
+Now we have at least a usage scenario :D
+
+I don't have time right now to implement something like that at the moment. 
+But feel free to submit a feature/wishlist in our batman-adv bug tracker and 
+add this thread as reference. I am interested working a little bit with 
+namespaces in the future... far, far, far future.
+
+Kind regards,
+	Sven
+--nextPart2798158.v39ddDIVLM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJOchOZAAoJEF2HCgfBJntG1mMQANPaIHNCc3pE3ON+3P67j1IR
+3ClROv5FnT6xHj4CfHfqFoJlN9JLVOxlM29hCYRDfoyE3A9gqfgc8aYLidK1I33E
+qFzEk7fsYPr4miPTN3o8vFVpKAaHsDqQNfRjsDTXq4COyHHI8DvqQEBCU2d0aKG/
+Dz10xq/mWX4LG7bLfrnMDz2IyAGzd94v2VIWI5bCNxYlN6Dxy4cXxCnv7UcUF+Bq
+wpP/t4eiwEGBSlYZS97qRus0LRH+d764db23WoNMbI7I6ovdM9r1KtmkbbNUzfWi
+KKaouul+INZejBbFsbgaPL2cYGDSmawEeUvSQA7hcRMy8WxwFibirRz5paSkACoW
+MGxQHKnefY/lXO4ZQ7vz6VTnw3M/U3emf/ehXzlHEujNIluh2hELeOfAhmCGdSSu
+qhu21OkD5xU+t1GTED9PxGGpMASmDgiTw1vtoRBv202LgYSFVJjZBpFKVu23VNXs
+XN4O/WmJRm/gfi9G3qnRuVBEF8ISt0Ylns/TqH6UgKovizzhFodmBdA/my6PMXWt
+M/bSrBvcPgGyDO3HH2ccNfpAZQWVsKG4aGthUnuRk4pE7t9GXElyd/PDv2/54S8F
+FCU4JPvKykcLXFXPk6+ccjWSqzCvseYDIQq2iE10jDyLtxNdmoVsA12QTXnOxWLy
+sM4C1v3OUGvS9kofcST3
+=D5T3
+-----END PGP SIGNATURE-----
+
+--nextPart2798158.v39ddDIVLM--
 
