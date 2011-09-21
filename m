@@ -1,12 +1,14 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 21 Sep 2011 15:26:16 -0400 (EDT)
-Message-Id: <20110921.152616.1053525623924985457.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1315500051-1122-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 22 Sep 2011 01:39:26 +0200
 References: <1315500051-1122-1-git-send-email-lindner_marek@yahoo.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	<20110921.152616.1053525623924985457.davem@davemloft.net>
+In-Reply-To: <20110921.152616.1053525623924985457.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201109220139.26897.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-09-08
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,17 +21,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: lindner_marek@yahoo.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu,  8 Sep 2011 18:40:44 +0200
-
-> The following changes since commit a943cac144e035c21d4f1b31b95f15b33c33a480:
+On Wednesday, September 21, 2011 21:26:16 David Miller wrote:
+> > are available in the git repository at:
+> >   git://git.open-mesh.org/linux-merge.git batman-adv/next
 > 
->   batman-adv: merge update_transtable() into tt related code (2011-08-22 15:16:22 +0200)
-> 
-> are available in the git repository at:
->   git://git.open-mesh.org/linux-merge.git batman-adv/next
+> Pulled, thanks Marek.
 
-Pulled, thanks Marek.
+Pretty sure you are quite busy fighting with your backlog of patches but would 
+you mind giving some advice on this: 
+
+ To ensure a smooth transition and efficient testing later, we 
+ decided to offer a choice of routing algorithm but have not     
+ come to a final decision on how to design this choice yet. It
+ either will be a compile time option, a module parameter or a
+ runtime switch. Any suggestions / best practice tips ?
+
+Regards,
+Marek
