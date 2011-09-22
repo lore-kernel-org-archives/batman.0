@@ -1,16 +1,8 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 22 Sep 2011 13:05:09 +0200
-References: <201109220139.26897.lindner_marek@yahoo.de>
-	<201109220210.05025.lindner_marek@yahoo.de>
-	<20110921.201153.1030355996800820632.davem@davemloft.net>
-In-Reply-To: <20110921.201153.1030355996800820632.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201109221305.10111.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-09-08
+Date: Thu, 22 Sep 2011 20:57:15 +0200
+Message-Id: <1316717836-19374-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2011-09-22 (regression fix)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,24 +14,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, September 22, 2011 02:11:53 David Miller wrote:
-> From: Marek Lindner <lindner_marek@yahoo.de>
-> Date: Thu, 22 Sep 2011 02:10:04 +0200
-> 
-> > No, the data structures for the routing lookups remain the same but there
-> > will be more than one way to fill them with data. You will only use one
-> > "filling algorithm" at a time, so you will need to select the one you
-> > want.
-> 
-> Extend the userspace interface for adding route entries with a boolean
-> flag.  You're using netlink right?  If so, this should be trivial by
-> simply adding a flags attribute if you don't have one already.
+Hi David,
 
-Not really. It's rather the tcp westwood vs tcp reno type of story. But I 
-think we simply make this a runtime option to keep everybody happy.
+our testers have discovered a regression in the current linux-3.1
+code base. It increases latency of payload traffic by a factor of
+4-5. Therefore we propose a patch that hopefully can be included 
+before linux 3.1 final has been released. We kept it as short as 
+possible to avoid introducing last minute bugs.
+
+Once you pulled the patch you will run into a merge conflict
+with net-next:
+++<<<<<<< HEAD
+ + orig_node = transtable_search(bat_priv, ethhdr->h_source,
+ +                               ethhdr->h_dest);
+ + if (is_multicast_ether_addr(ethhdr->h_dest) ||
+ + (orig_node && orig_node->gw_flags)) {
+++=======
++ orig_node = transtable_search(bat_priv, ethhdr->h_dest);
++ do_bcast = is_multicast_ether_addr(ethhdr->h_dest);
++ if (do_bcast || (orig_node && orig_node->gw_flags)) {
+++>>>>>>> batman-adv/maint
+
+The correct merge result would be:
++======
+orig_node = transtable_search(bat_priv, ethhdr->h_source,
+                              ethhdr->h_dest);
+do_bcast = is_multicast_ether_addr(ethhdr->h_dest);
+if (do_bcast || (orig_node && orig_node->gw_flags)) {
++======
+
+Let me know if there is a better way to address the merge conflict.
 
 Thanks,
 Marek
+
+The following changes since commit 322a8b034003c0d46d39af85bf24fee27b902f48:
+
+  Linux 3.1-rc1 (2011-08-07 18:23:30 -0700)
+
+are available in the git repository at:
+  git://git.open-mesh.org/linux-merge.git batman-adv/maint
+
+Antonio Quartulli (1):
+      batman-adv: do_bcast has to be true for broadcast packets only
+
+ net/batman-adv/soft-interface.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
