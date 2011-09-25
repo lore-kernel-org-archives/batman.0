@@ -1,14 +1,11 @@
 Return-Path: <ordex@autistici.org>
-Date: Sun, 25 Sep 2011 18:05:20 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110925160519.GA4631@ritirata.org>
-References: <20110919224529.GB3410@ritirata.org> <4E7ED5D3.2000600@wifibot.com>
-	<20110925073942.GA2993@ritirata.org> <4E7EE7A9.7010309@wifibot.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4E7EE7A9.7010309@wifibot.com>
-Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.2.0 hop somtimes does not work
+Date: Sun, 25 Sep 2011 18:06:38 +0200
+Message-Id: <1316966798-9024-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <20110925160519.GA4631@ritirata.org>
+References: <20110925160519.GA4631@ritirata.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Chichek hunt started! Verbose
+	patch
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,49 +19,70 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Laurent,
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c |   19 +++++++++++++++++--
+ 1 files changed, 17 insertions(+), 2 deletions(-)
 
-On Sun, Sep 25, 2011 at 10:34:49 +0200, laurent wrote:
-> Hello,
-> 
-> thank you for your fast reply.
-> Some precision I use openwrt backfire and each node have eth0 bridged to
-> bat0.
-> 
-> <What about the TT log? does it say something?
-> 
-> I do not have debug on this version, but I can re flash a new firmware.
-> Do I need to  flash all the nodes ?
-> 
-
-wel..it would be better to have the log (yes you have to enable the debug and
-reflash the nodes for this...), so that we can try to understand what it is
-going on in that period of time.
-
-I'm going to send to the ml a patch that will enable a more verbose log so that
-we can obtain more information in one shot.
-
-Please apply that patch on top of
-the master branch (it should be easy with openwrt. Ask here if you have
-problems).
-
-Then, it would be nice if you could copy & paste here the log obtained from two
-not working nodes. Once you will post the logs we will decide how to further
-inspect the problem. Unluckily it seems to be a arch (or what else) related problem
-which makes it unreproducible with my (our) routers.
-
-Cheers,
-
-
-1) the patch will follow in this thread.
-2) I think it is easier to read the log than inspect the graph data
-3) I just noticed this was a private mail. Please keep the conversation public
-so that all the other people can contribute to solve the issue ;);)
-
-
-
+diff --git a/translation-table.c b/translation-table.c
+index 7de9960..e7bac85 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -258,9 +258,14 @@ int tt_changes_fill_buffer(struct bat_priv *bat_priv,
+ 	spin_lock_bh(&bat_priv->tt_changes_list_lock);
+ 	atomic_set(&bat_priv->tt_local_changes, 0);
+ 
++	printk("TT_BUG Preparing OGM buffer\n");
++
+ 	list_for_each_entry_safe(entry, safe, &bat_priv->tt_changes_list,
+ 			list) {
+ 		if (count < tot_changes) {
++			printk("TT_BUG Copying flags: 0x%x addr: %pM\n",
++					entry->change.flags,
++					entry->change.addr);
+ 			memcpy(buff + tt_len(count),
+ 			       &entry->change, sizeof(struct tt_change));
+ 			count++;
+@@ -270,6 +275,8 @@ int tt_changes_fill_buffer(struct bat_priv *bat_priv,
+ 	}
+ 	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
+ 
++	printk("TT_BUG Copied %d addresses\n", count);
++
+ 	/* Keep the buffer for possible tt_request */
+ 	spin_lock_bh(&bat_priv->tt_buff_lock);
+ 	kfree(bat_priv->tt_buff);
+@@ -1407,7 +1414,11 @@ static void _tt_update_changes(struct bat_priv *bat_priv,
+ {
+ 	int i;
+ 
++	printk("TT_BUG Received %d changes\n", tt_num_changes);
++
+ 	for (i = 0; i < tt_num_changes; i++) {
++		printk("TT_BUG flags: 0x%x %pM\n", (tt_change + i)->flags,
++				(tt_change + i)->addr);
+ 		if ((tt_change + i)->flags & TT_CLIENT_DEL)
+ 			tt_global_del(bat_priv, orig_node,
+ 				      (tt_change + i)->addr,
+@@ -1505,12 +1516,16 @@ void handle_tt_response(struct bat_priv *bat_priv,
+ 	if (!orig_node)
+ 		goto out;
+ 
+-	if (tt_response->flags & TT_FULL_TABLE)
++	if (tt_response->flags & TT_FULL_TABLE) {
++		printk("TT_BUG Got full table on response\n");
+ 		tt_fill_gtable(bat_priv, tt_response);
+-	else
++	}
++	else{
++		printk("TT_BUG Got diff\n");
+ 		tt_update_changes(bat_priv, orig_node, tt_response->tt_data,
+ 				  tt_response->ttvn,
+ 				  (struct tt_change *)(tt_response + 1));
++	}
+ 
+ 	/* Delete the tt_req_node from pending tt_requests list */
+ 	spin_lock_bh(&bat_priv->tt_req_list_lock);
 -- 
-Antonio Quartulli
+1.7.3.4
 
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
