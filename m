@@ -1,13 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 26 Sep 2011 11:36:59 +0200
+Return-Path: <bjo@nord-west.org>
+From: Bjoern Franke <bjo@nord-west.org>
+Date: Mon, 26 Sep 2011 14:33:57 +0200
+Message-ID: <9545431.T6PA3XuY7H@mytilus>
+In-Reply-To: <201109261137.00207.lindner_marek@yahoo.de>
 References: <3131360.5iACvcvJX2@ostrea>
-In-Reply-To: <3131360.5iACvcvJX2@ostrea>
+	<201109261137.00207.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201109261137.00207.lindner_marek@yahoo.de>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Subject: Re: [B.A.T.M.A.N.] batman-adv: loop caused by tinc and wifi
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,19 +23,21 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-Hi,
-
-> B.A.T.M.A.N. advanced 2011.0.0 (compatibility version 12)
+> STP is no solution. Did you try enabling the bridge loop avoidance ?
+> http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance
 > 
-> ath1 (ad-hoc) as batman-adv-interfaces
-> ath0 (ap), tap0, eth0.1 and bat0 as a bridge
+> You might need to upgrade to a later batman-adv version though.
 > 
-> stp is enabled for the bridge.
+> Regards,
+> Marek
 
-STP is no solution. Did you try enabling the bridge loop avoidance ?
-http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance
+We did not enable bridge loop avoidance, IIRC we did not run batman on the 
+bridge interface due to overhead on the vpn links.
 
-You might need to upgrade to a later batman-adv version though.
+But we'll enable it on the nodes we have access to.
 
-Regards,
-Marek
+thx
+bjo
+-- 
+jabber: bjo@schafweide.org
+bjo.nord-west.org | nord-west.org | freifunk-ol.de
