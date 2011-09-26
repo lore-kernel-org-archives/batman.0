@@ -1,12 +1,13 @@
-Return-Path: <bjo@nord-west.org>
-From: Bjoern Franke <bjo@nord-west.org>
-Date: Mon, 26 Sep 2011 11:15:59 +0200
-Message-ID: <3651382.SAF9ag9RcR@ostrea>
-In-Reply-To: <20110926070522.GB4125@PC3.lan>
-References: <3131360.5iACvcvJX2@ostrea> <20110926070522.GB4125@PC3.lan>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 26 Sep 2011 11:36:59 +0200
+References: <3131360.5iACvcvJX2@ostrea>
+In-Reply-To: <3131360.5iACvcvJX2@ostrea>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201109261137.00207.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv: loop caused by tinc and wifi
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,16 +22,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+
 Hi,
 
-> Did I get you right, that =BBath1-connection=AB refers to a second
-> connction of two tinc hosts over another interface?
+> B.A.T.M.A.N. advanced 2011.0.0 (compatibility version 12)
+> 
+> ath1 (ad-hoc) as batman-adv-interfaces
+> ath0 (ap), tap0, eth0.1 and bat0 as a bridge
+> 
+> stp is enabled for the bridge.
 
-No, ath1 is the ad-hoc wifi connection.
+STP is no solution. Did you try enabling the bridge loop avoidance ?
+http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance
 
-ath0 and ath1 are wifi interfaces, tap0 is the tinc connection.
+You might need to upgrade to a later batman-adv version though.
 
-regards
---=20
-jabber: bjo@schafweide.org
-bjo.nord-west.org | nord-west.org | freifunk-ol.de
+Regards,
+Marek
