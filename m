@@ -1,11 +1,15 @@
-Return-Path: <bjo@nord-west.org>
-From: Bjoern Franke <bjo@nord-west.org>
-Date: Mon, 26 Sep 2011 02:15:46 +0200
-Message-ID: <3131360.5iACvcvJX2@ostrea>
+Return-Path: <pmazart@web.de>
+Date: Mon, 26 Sep 2011 09:05:22 +0200
+From: "P. Mazart" <pmazart@web.de>
+Message-ID: <20110926070522.GB4125@PC3.lan>
+References: <3131360.5iACvcvJX2@ostrea>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-Subject: [B.A.T.M.A.N.] batman-adv: loop caused by tinc and wifi
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <3131360.5iACvcvJX2@ostrea>
+Sender: pmazart@web.de
+Subject: Re: [B.A.T.M.A.N.] batman-adv: loop caused by tinc and wifi
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,22 +25,22 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 
 Hi,
 
-we are using the following configuration in our freifunk network:
+On Mo, 26.09.2011 02:15:46, Bjoern Franke wrote:
+> ath1 (ad-hoc) as batman-adv-interfaces
+> ath0 (ap), tap0, eth0.1 and bat0 as a bridge
 
-B.A.T.M.A.N. advanced 2011.0.0 (compatibility version 12)
+> Most of the nodes are connected via tinc and the network runs fine. But i=
+f two=20
+> nodes which have a tinc connection also get a ath1-connection, the whole=
+=20
+> network crashes.
 
-ath1 (ad-hoc) as batman-adv-interfaces
-ath0 (ap), tap0, eth0.1 and bat0 as a bridge
+Did I get you right, that =C2=BBath1-connection=C2=AB refers to a second
+connction of two tinc hosts over another interface?
+In this case I suspect it=E2=80=99s a tinc matter,
+and iptables could be a solution.
+Is there anything in the tinc logs?
+Maybe =E2=80=9Etwo=E2=80=9C hosts with the _same_ identity?
 
-stp is enabled for the bridge.
-Most of the nodes are connected via tinc and the network runs fine. But if two 
-nodes which have a tinc connection also get a ath1-connection, the whole 
-network crashes.
-
-What are we doing wrong?
-
-regards
-Bjoern
--- 
-jabber: bjo@schafweide.org
-bjo.nord-west.org | nord-west.org | freifunk-ol.de
+Regards
+P.M.
