@@ -1,12 +1,14 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 27 Sep 2011 10:01:26 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20110927080126.GA17353@pandem0nium>
+Return-Path: <bjo@nord-west.org>
+From: Bjoern Franke <bjo@nord-west.org>
+Date: Tue, 27 Sep 2011 12:45:01 +0200
+Message-ID: <1997296.MKzYFvRXTH@mytilus>
+In-Reply-To: <201109261726.38951.lindner_marek@yahoo.de>
+References: <3131360.5iACvcvJX2@ostrea> <9545431.T6PA3XuY7H@mytilus>
+	<201109261726.38951.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="SLDf9lqlvOQaIe6s"
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] New batman-advanced logo
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] batman-adv: loop caused by tinc and wifi
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,43 +22,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Am Montag, 26. September 2011, 17:26:37 schrieb Marek Lindner:
+> On Monday, September 26, 2011 14:33:57 Bjoern Franke wrote:
+> > We did not enable bridge loop avoidance, IIRC we did not run batman on
+> > the bridge interface due to overhead on the vpn links.
+> > 
+> > But we'll enable it on the nodes we have access to.
+> 
+> Please give it a try. It sounds like a bridge loop.
 
---SLDf9lqlvOQaIe6s
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Ok, we have running now the following setup:
 
-Hey there,
+ath1 (ad-hoc) as batman-interface
+br-mesh (ath0 (ap-mode), eth0.1, tap0, bat0) as batman-interface
 
-as most of us are concentrating batman-advanced now, Marek suggested
-that we should create a new logo for our next generation mesh technology. ;)
+batman complains about the mtu 1500 of br-mesh, but it can't be set to 1527 
+because bat0 does not like any mtu setting.
 
-The "old" ascii logo is still great, but most people associate it with
-the layer 3 BATMAN ...
+> We are working towards an enhanced bridge loop mechanism which aims to
+> reduce the overhead. Are you interested in testing it when it gets ready ?
+> 
 
-Therefore, I made some sketches and would like to ask for opinions from
-the list. Any comments, suggestions, criticism are welcome. My current draft
-is this one:
+Yes, this would be nice :)
 
-http://packetmixer.de/batlogo/bat_gimped3.jpg
+regards
+Bjoern
 
-you can find some more sketches here (maybe you like another sketch more ...):
-
-http://packetmixer.de/batlogo/
-
-looking forward to your feedback,
-	Simon
-
---SLDf9lqlvOQaIe6s
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAk6BgtYACgkQrzg/fFk7axaBpQCg6+2sr3wrqUw8PVvTOR1cbM8t
-bZ8An3kG1PAdVXV86mSbYPEj+hVjm+V3
-=C4MT
------END PGP SIGNATURE-----
-
---SLDf9lqlvOQaIe6s--
+-- 
+jabber: bjo@schafweide.org
+bjo.nord-west.org | nord-west.org | freifunk-ol.de
