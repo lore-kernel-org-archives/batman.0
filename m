@@ -1,13 +1,12 @@
-Return-Path: <laurent@wifibot.com>
-Message-ID: <4E816F97.2070602@wifibot.com>
-Date: Tue, 27 Sep 2011 08:39:19 +0200
-From: laurent <laurent@wifibot.com>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Tue, 27 Sep 2011 10:01:26 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20110927080126.GA17353@pandem0nium>
 MIME-Version: 1.0
-References: <4E80E977.8090608@wifibot.com> <20110927060140.GS27652@lunn.ch>
-In-Reply-To: <20110927060140.GS27652@lunn.ch>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.2.0 hop somtimes does not work
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="SLDf9lqlvOQaIe6s"
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] New batman-advanced logo
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,26 +18,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On 27/09/2011 08:01, Andrew Lunn wrote:
-> On Mon, Sep 26, 2011 at 11:07:03PM +0200, laurent wrote:
->> Hello,
->>
->> I hope this time my email goes public ? just in case I put your email.
->>
->> So I compiled all my node in debug with your patch:
-> Hi Laurent
->
-> Do you still have the object files for the kernel module? Could you
-> create a tarball and send it to me? It is probably quite large, so
-> just end it to me, not the list.
->
->        Thanks
-> 	Andrew
->
-hello,
 
-ok , I wil try to put that on my ftp.
+--SLDf9lqlvOQaIe6s
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 
-Laurent
+Hey there,
+
+as most of us are concentrating batman-advanced now, Marek suggested
+that we should create a new logo for our next generation mesh technology. ;)
+
+The "old" ascii logo is still great, but most people associate it with
+the layer 3 BATMAN ...
+
+Therefore, I made some sketches and would like to ask for opinions from
+the list. Any comments, suggestions, criticism are welcome. My current draft
+is this one:
+
+http://packetmixer.de/batlogo/bat_gimped3.jpg
+
+you can find some more sketches here (maybe you like another sketch more ...):
+
+http://packetmixer.de/batlogo/
+
+looking forward to your feedback,
+	Simon
+
+--SLDf9lqlvOQaIe6s
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk6BgtYACgkQrzg/fFk7axaBpQCg6+2sr3wrqUw8PVvTOR1cbM8t
+bZ8An3kG1PAdVXV86mSbYPEj+hVjm+V3
+=C4MT
+-----END PGP SIGNATURE-----
+
+--SLDf9lqlvOQaIe6s--
