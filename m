@@ -1,14 +1,15 @@
-Return-Path: <bjo@nord-west.org>
-From: Bjoern Franke <bjo@nord-west.org>
-Date: Wed, 28 Sep 2011 00:03:24 +0200
-Message-ID: <2034315.VHQ2Ikuuga@mytilus>
-In-Reply-To: <201109271344.27161.lindner_marek@yahoo.de>
-References: <3131360.5iACvcvJX2@ostrea> <1997296.MKzYFvRXTH@mytilus>
-	<201109271344.27161.lindner_marek@yahoo.de>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Wed, 28 Sep 2011 10:21:57 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20110928082157.GA3161@pandem0nium>
+References: <20110927080126.GA17353@pandem0nium>
+	<201109271837.44964.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-Subject: Re: [B.A.T.M.A.N.] batman-adv: loop caused by tinc and wifi
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
+Content-Disposition: inline
+In-Reply-To: <201109271837.44964.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] New batman-advanced logo
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,23 +23,59 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Am Dienstag, 27. September 2011, 13:44:26 schrieb Marek Lindner:
-> On Tuesday, September 27, 2011 12:45:01 Bjoern Franke wrote:
-> > ath1 (ad-hoc) as batman-interface
-> > br-mesh (ath0 (ap-mode), eth0.1, tap0, bat0) as batman-interface
-> > 
-> > batman complains about the mtu 1500 of br-mesh, but it can't be set to
-> > 1527 because bat0 does not like any mtu setting.
-> 
-> Ok, does it solve your loop ?
 
-I don't know, yesterday one of the loop-routers crashed, so I was not able to 
-test it yet.
+--d6Gm4EdcadzBjdND
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-BTW, how can I solve the MTU issue? 
+Hello,
 
-regards
-Bjoern
--- 
-jabber: bjo@schafweide.org
-bjo.nord-west.org | nord-west.org | freifunk-ol.de
+Marek, thank you for your feedback (also thanks to others who sent me
+messages in private).
+
+As per Martin Hundebolls suggestion I've added a version with a (visually)
+separated head, tell me what you think. :)
+
+http://packetmixer.de/batlogo/bat_gimped3_headsep.jpg
+
+BTW, we will also need a vector version from the final logo, anyone
+volunteering? :)
+
+Cheers,
+	Simon
+
+On Tue, Sep 27, 2011 at 06:37:44PM +0200, Marek Lindner wrote:
+>=20
+> Hi,
+>=20
+> > Therefore, I made some sketches and would like to ask for opinions from
+> > the list. Any comments, suggestions, criticism are welcome. My current
+> > draft is this one:
+> >=20
+> > http://packetmixer.de/batlogo/bat_gimped3.jpg
+>=20
+> personally, I like this one the most. The feedback gathered from bystande=
+rs=20
+> goes into the same direction.
+>=20
+> Anyone another opinion or suggestions ?
+>=20
+> Cheers,
+> Marek
+>=20
+
+--d6Gm4EdcadzBjdND
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk6C2SUACgkQrzg/fFk7axaipgCfaHTKJkKgJ6aMqqZHp0t4N/1e
+GaMAn1pnQpJyeL9v7x+8VryWC0hmkHWl
+=9hro
+-----END PGP SIGNATURE-----
+
+--d6Gm4EdcadzBjdND--
