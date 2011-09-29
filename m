@@ -1,15 +1,14 @@
-Return-Path: <fboehm@aon.at>
-Message-ID: <4E848230.2030805@aon.at>
-Date: Thu, 29 Sep 2011 16:35:28 +0200
-From: fboehm <fboehm@aon.at>
+Return-Path: <bjo@nord-west.org>
+From: Bjoern Franke <bjo@nord-west.org>
+Date: Thu, 29 Sep 2011 22:25:59 +0200
+Message-ID: <3056223.ImXIsORLxT@ostrea>
+In-Reply-To: <201109291208.02457.lindner_marek@yahoo.de>
+References: <3131360.5iACvcvJX2@ostrea> <2034315.VHQ2Ikuuga@mytilus>
+	<201109291208.02457.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-References: <20110927080126.GA17353@pandem0nium>
-	<20110928194302.GA14192@pandem0nium> <4E84077E.80102@aon.at>
-	<2423635.PyWrCoqWJs@sven-laptop.home.narfation.org>
-In-Reply-To: <2423635.PyWrCoqWJs@sven-laptop.home.narfation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] New batman-advanced logo
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] batman-adv: loop caused by tinc and wifi
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,31 +22,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Am 2011-09-29 11:35, schrieb Sven Eckelmann:
-> On Thursday 29 September 2011 07:51:58 fboehm wrote:
->> attached you find my first try of vectorization and simplification of
->> the smallfeet-version.
->> It has very low vector count but perhaps it's already too much different
->> to the artists concept.
-> Quite impressive work. I really like it. The wings look extreme good and the
-> only "big" difference are the glasses (upper left frame, right earpiece), ears
-> and back/tail.
->
-> Kind regards,
-> 	Sven
-Thanks Sven!
+Am Donnerstag, 29. September 2011, 12:08:01 schrieb Marek Lindner:
+> On Wednesday, September 28, 2011 00:03:24 Bjoern Franke wrote:
+> > I don't know, yesterday one of the loop-routers crashed, so I was not
+> > able to test it yet.
+> 
+> Ok.
+> 
 
-The upper left frame of the glasses has the wrong shape. But perhaps the 
-glasses should anyway be kept more angular shaped as in the original 
-version and also a little bit larger so that they overlap the head more. 
-Perhaps this was the artists intention and I don't want to interpret it 
-wrong :-)
+There is something stupid going on. Our network behaves now more unstable as 
+before. I'll try to find out more what's going on.
 
-But nevertheless I was thinking about two small modifications:
-  - Should the left wing also have a convex curve like the right wing 
-instead of a concave?
-  - Should the ears be a little bit curved like in the vector version or 
-straight lines like in the original version?
 
-Regards,
-Franz
+regards
+Bjoern
+-- 
+jabber: bjo@schafweide.org
+bjo.nord-west.org | nord-west.org | freifunk-ol.de
