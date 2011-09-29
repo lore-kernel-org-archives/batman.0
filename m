@@ -1,15 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Thu, 29 Sep 2011 15:56:28 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20110929135623.GA12435@ritirata.org>
-References: <1317110464-7089-1-git-send-email-ordex@autistici.org>
-	<4E823CDC.5060105@wifibot.com> <4E824349.4020001@wifibot.com>
+Return-Path: <fboehm@aon.at>
+Message-ID: <4E848230.2030805@aon.at>
+Date: Thu, 29 Sep 2011 16:35:28 +0200
+From: fboehm <fboehm@aon.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4E824349.4020001@wifibot.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Chichek hunt started!
-	Verbose patch
+References: <20110927080126.GA17353@pandem0nium>
+	<20110928194302.GA14192@pandem0nium> <4E84077E.80102@aon.at>
+	<2423635.PyWrCoqWJs@sven-laptop.home.narfation.org>
+In-Reply-To: <2423635.PyWrCoqWJs@sven-laptop.home.narfation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] New batman-advanced logo
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,21 +21,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: laurent <laurent@wifibot.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tue, Sep 27, 2011 at 11:42:33 +0200, laurent wrote:
-> this is a log level 4 for the node 192.168.1.105 , the file on the zip
-> file I sent  do not show a lot of info
+Am 2011-09-29 11:35, schrieb Sven Eckelmann:
+> On Thursday 29 September 2011 07:51:58 fboehm wrote:
+>> attached you find my first try of vectorization and simplification of
+>> the smallfeet-version.
+>> It has very low vector count but perhaps it's already too much different
+>> to the artists concept.
+> Quite impressive work. I really like it. The wings look extreme good and the
+> only "big" difference are the glasses (upper left frame, right earpiece), ears
+> and back/tail.
+>
+> Kind regards,
+> 	Sven
+Thanks Sven!
 
-Thank you Laurent. I'll try to work on the log ASAP. I hope I can put my hands
-on them this night and find out the problem. Thank you for giving us so much
-information! I really appreciated it!
+The upper left frame of the glasses has the wrong shape. But perhaps the 
+glasses should anyway be kept more angular shaped as in the original 
+version and also a little bit larger so that they overlap the head more. 
+Perhaps this was the artists intention and I don't want to interpret it 
+wrong :-)
 
-Cheers,
+But nevertheless I was thinking about two small modifications:
+  - Should the left wing also have a convex curve like the right wing 
+instead of a concave?
+  - Should the ears be a little bit curved like in the vector version or 
+straight lines like in the original version?
 
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
+Regards,
+Franz
