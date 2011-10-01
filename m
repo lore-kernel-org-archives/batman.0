@@ -1,15 +1,17 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sat, 1 Oct 2011 00:35:05 +0200
+Date: Sat, 1 Oct 2011 23:47:04 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20110930223505.GA30938@pandem0nium>
-References: <1317382322-6922-1-git-send-email-sven@narfation.org>
+Message-ID: <20111001214704.GA11094@pandem0nium>
+References: <20110927080126.GA17353@pandem0nium>
+	<20110928194302.GA14192@pandem0nium> <4E84077E.80102@aon.at>
+	<2423635.PyWrCoqWJs@sven-laptop.home.narfation.org>
+	<4E848230.2030805@aon.at>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/9DWx/yDrRhgMJTb"
+	protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
 Content-Disposition: inline
-In-Reply-To: <1317382322-6922-1-git-send-email-sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Don't use EXTRA_CFLAGS
- to add source version
+In-Reply-To: <4E848230.2030805@aon.at>
+Subject: Re: [B.A.T.M.A.N.] New batman-advanced logo
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,76 +26,78 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---/9DWx/yDrRhgMJTb
+--OXfL5xGRrasGEqWY
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hey there,=20
+Hello Franz,
 
-I've applied it and tested on kernel releases 2.6.29 - 3.1-rc2, and
-it compiled just fine. EXTRA_CFLAGS is still applied when set.=20
+thank you very much for your work! It looks really great and smooth!
 
-I can Ack this. ;)
+Sven is currently at my place, so we have worked on some details together:
+ * We've changed the glasses a little in some details
+ * We have added an outline version to have the black logos on black/dark T=
+-Shirts. :)
+ * We have shortened the tail a little so that the outline does not create =
+some "closed holes"
+ * Seems we have decided on the "small" feet
 
-Cheers,
+Regarding your comments:
+ * I'd like to keep it in the concave version for the left wing. We have tr=
+ied the=20
+   convex version (both might be somehow correct ;] ), but we like the orig=
+inal version more.
+ * The ears look great the way you drew them!
+
+Our version is uploaded here:
+
+http://packetmixer.de/batlogo2/
+
+We should keep the svg version as the "original"/"only" version and convert=
+ bitmaps from it
+if required.
+
+I hope everybody liks this version, we can keep this then as the final vers=
+ion.
+
+Cheers
 	Simon
 
-
-On Fri, Sep 30, 2011 at 01:32:00PM +0200, Sven Eckelmann wrote:
-> EXTRA_CFLAGS is deprecated since v2.6.23-2309-gf77bf01 and should not be =
-used
-> anymore to add additional flags for the c compiler.
+On Thu, Sep 29, 2011 at 04:35:28PM +0200, fboehm wrote:
+> Am 2011-09-29 11:35, schrieb Sven Eckelmann:
+> >On Thursday 29 September 2011 07:51:58 fboehm wrote:
+> >>attached you find my first try of vectorization and simplification of
+> >>the smallfeet-version.
+> >>It has very low vector count but perhaps it's already too much different
+> >>to the artists concept.
+> >Quite impressive work. I really like it. The wings look extreme good and=
+ the
+> >only "big" difference are the glasses (upper left frame, right earpiece)=
+, ears
+> >and back/tail.
+> >
+> >Kind regards,
+> >	Sven
+> Thanks Sven!
 >=20
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  Makefile.kbuild |    4 ++--
->  README          |    4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
+> The upper left frame of the glasses has the wrong shape. But perhaps
+> the glasses should anyway be kept more angular shaped as in the
+> original version and also a little bit larger so that they overlap
+> the head more. Perhaps this was the artists intention and I don't
+> want to interpret it wrong :-)
 >=20
-> diff --git a/Makefile.kbuild b/Makefile.kbuild
-> index 6377c17..bd7e93c 100644
-> --- a/Makefile.kbuild
-> +++ b/Makefile.kbuild
-> @@ -25,10 +25,10 @@ ifeq ($(MAKING_MODULES),1)
->  -include $(TOPDIR)/Rules.make
->  endif
-> =20
-> -# EXTRA_CFLAGS +=3D -DCONFIG_BATMAN_ADV_DEBUG
-> +# ccflags-y +=3D -DCONFIG_BATMAN_ADV_DEBUG
-> =20
->  ifneq ($(REVISION),)
-> -EXTRA_CFLAGS +=3D -DSOURCE_VERSION=3D\"$(REVISION)\"
-> +ccflags-y +=3D -DSOURCE_VERSION=3D\"$(REVISION)\"
->  endif
-> =20
->  obj-m +=3D batman-adv.o
-> diff --git a/README b/README
-> index 1e000ee..5ba56b5 100644
-> --- a/README
-> +++ b/README
-> @@ -1,4 +1,4 @@
-> -[state: 21-08-2011]
-> +[state: 30-09-2011]
-> =20
->  BATMAN-ADV
->  ----------
-> @@ -206,7 +206,7 @@ option "B.A.T.M.A.N. debugging". When compiling  outs=
-ide  of  the
->  kernel  tree it is necessary to edit the file Makefile.kbuild and
->  uncomment the line
-> =20
-> -#EXTRA_CFLAGS +=3D -DCONFIG_BATMAN_ADV_DEBUG
-> +#ccflags-y +=3D -DCONFIG_BATMAN_ADV_DEBUG
-> =20
->  Those additional  debug messages can be accessed  using a special
->  file in debugfs
-> --=20
-> 1.7.6.3
+> But nevertheless I was thinking about two small modifications:
+>  - Should the left wing also have a convex curve like the right wing
+> instead of a concave?
+>  - Should the ears be a little bit curved like in the vector version
+> or straight lines like in the original version?
 >=20
+> Regards,
+> Franz
 >=20
 
---/9DWx/yDrRhgMJTb
+--OXfL5xGRrasGEqWY
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -101,9 +105,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAk6GRBkACgkQrzg/fFk7axb33ACgkiCsdb4EpqZbSNyJW2JrVzHf
-HAsAoNTN+af68je5ClrIyRaxNX7jeMDr
-=673o
+iEYEARECAAYFAk6HilgACgkQrzg/fFk7axYMLgCdG9q2EXleApXKzuF/dCVOBZXb
+lzwAn184zgahJZD7EhNNEeJNmXXBkP6A
+=BTQz
 -----END PGP SIGNATURE-----
 
---/9DWx/yDrRhgMJTb--
+--OXfL5xGRrasGEqWY--
