@@ -1,16 +1,9 @@
 Return-Path: <ordex@autistici.org>
-Date: Tue, 4 Oct 2011 23:48:12 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111004214811.GE28555@ritirata.org>
-References: <mailman.54.1312831773.1125.b.a.t.m.a.n@lists.open-mesh.org>
-	<CAFevQmNuUV-FebLq5nuD=iqX24xqEiBxaxd9nTja3O4XewHKFA@mail.gmail.com>
-	<201108161311.27235.lindner_marek@yahoo.de>
-	<CAFevQmMuk16mnWhsZibwiRe5Kdo4aNfu_1XZmBEigX5SBU8HTQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAFevQmMuk16mnWhsZibwiRe5Kdo4aNfu_1XZmBEigX5SBU8HTQ@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Batman-adv secure
+Date: Wed,  5 Oct 2011 00:12:04 +0200
+Message-Id: <1317766324-28264-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fixed hash functions type to
+	uint32_t instead of int
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,60 +15,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Filippo,
+In choose_orig and vis_choose the size agrument was int while the hash
+result is uint32_t, then the argument has been fixed to uint32_t too.
+The same apply for the returned type.
 
-On Tue, Oct 04, 2011 at 11:39:04PM +0200, Filippo Sallemi wrote:
-> Hi guys,
-> I've read the open-mesh FAQ but I'm not able to resolve my problem.
-> I understood that the mesh network is a public network and that every
-> user have to make sure their connection is secure but i don't want
-> that another node (alien) can connect to my network so i thinked about
-> use ebables to block all traffic (such as policy DROP of iptables) and
-> allow only certain nodes to comunicate with other.
-> 
-> I need some like this
-> ebtables -i wlan0 DROP
-> ebtables -i wlan0 --src <node mac> ACCEPT
-> 
-> but don't work for me
-> 
-> Any suggest?
-> 
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ hash.h       |    2 +-
+ originator.h |    2 +-
+ vis.c        |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-If you dig a bit in the mailing list archive you can probably find some other
-threads talking about this topic. ebtables only work on bridges, therefore it
-won't work on simple interfaces like wlan0..
-
-
-> Rgds
-> 2011/8/16 Marek Lindner <lindner_marek@yahoo.de>:
-> >
-> > Hi,
-> >
-> >> I don't known if this is a old argument but exsist the possibility to
-> >> implement a secure mesh network?
-> >> For example a tecnique that crypt batman-adv traffic with a preshare
-> >> key or similar or
-> >> using ebtables to block all INPUT and OUTPUT traffic and allow only
-> >> the specified nodes mac?
-> >
-> > Please consult our FAQ and feel free to ask unanswered questions afterwards:
-> > http://www.open-mesh.org/wiki/open-mesh/FAQ
-> >
-> >
-> > Regards,
-> > Marek
-> >
-> 
-> 
-> 
-> -- 
-> Filippo Sallemi
-
+diff --git a/hash.h b/hash.h
+index d20aa71..588ef79 100644
+--- a/hash.h
++++ b/hash.h
+@@ -33,7 +33,7 @@ typedef int (*hashdata_compare_cb)(const struct hlist_node *, const void *);
+ /* the hashfunction, should return an index
+  * based on the key in the data of the first
+  * argument and the size the second */
+-typedef int (*hashdata_choose_cb)(const void *, int);
++typedef uint32_t (*hashdata_choose_cb)(const void *, uint32_t);
+ typedef void (*hashdata_free_cb)(struct hlist_node *, void *);
+ 
+ struct hashtable_t {
+diff --git a/originator.h b/originator.h
+index cfc1f60..67765ff 100644
+--- a/originator.h
++++ b/originator.h
+@@ -42,7 +42,7 @@ int orig_hash_del_if(struct hard_iface *hard_iface, int max_if_num);
+ 
+ /* hashfunction to choose an entry in a hash table of given size */
+ /* hash algorithm from http://en.wikipedia.org/wiki/Hash_table */
+-static inline int choose_orig(const void *data, int32_t size)
++static inline uint32_t choose_orig(const void *data, uint32_t size)
+ {
+ 	const unsigned char *key = data;
+ 	uint32_t hash = 0;
+diff --git a/vis.c b/vis.c
+index f81a6b6..a9cd152 100644
+--- a/vis.c
++++ b/vis.c
+@@ -66,7 +66,7 @@ static int vis_info_cmp(const struct hlist_node *node, const void *data2)
+ 
+ /* hash function to choose an entry in a hash table of given size */
+ /* hash algorithm from http://en.wikipedia.org/wiki/Hash_table */
+-static int vis_info_choose(const void *data, int size)
++static uint32_t vis_info_choose(const void *data, uint32_t size)
+ {
+ 	const struct vis_info *vis_info = data;
+ 	const struct vis_packet *packet;
 -- 
-Antonio Quartulli
+1.7.3.4
 
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
