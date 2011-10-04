@@ -1,15 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 04 Oct 2011 23:44:04 +0200
-Message-ID: <1448578.Q1NEulQTAy@sven-desktop.home.narfation.org>
-In-Reply-To: <CAFevQmMuk16mnWhsZibwiRe5Kdo4aNfu_1XZmBEigX5SBU8HTQ@mail.gmail.com>
+Return-Path: <ordex@autistici.org>
+Date: Tue, 4 Oct 2011 23:48:12 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20111004214811.GE28555@ritirata.org>
 References: <mailman.54.1312831773.1125.b.a.t.m.a.n@lists.open-mesh.org>
+	<CAFevQmNuUV-FebLq5nuD=iqX24xqEiBxaxd9nTja3O4XewHKFA@mail.gmail.com>
 	<201108161311.27235.lindner_marek@yahoo.de>
 	<CAFevQmMuk16mnWhsZibwiRe5Kdo4aNfu_1XZmBEigX5SBU8HTQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9091693.YB3RMJW7vo";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CAFevQmMuk16mnWhsZibwiRe5Kdo4aNfu_1XZmBEigX5SBU8HTQ@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] Batman-adv secure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,14 +22,11 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Filippo,
 
---nextPart9091693.YB3RMJW7vo
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-
-On Tuesday 04 October 2011 23:39:04 Filippo Sallemi wrote:
+On Tue, Oct 04, 2011 at 11:39:04PM +0200, Filippo Sallemi wrote:
 > Hi guys,
 > I've read the open-mesh FAQ but I'm not able to resolve my problem.
 > I understood that the mesh network is a public network and that every
@@ -43,34 +40,42 @@ On Tuesday 04 October 2011 23:39:04 Filippo Sallemi wrote:
 > ebtables -i wlan0 --src <node mac> ACCEPT
 > 
 > but don't work for me
+> 
+> Any suggest?
+> 
 
-ebtables is for made for bridges. So you have to send the whole traffic over a 
-bridge that does the filtering for you. But I doubt that it actually fix your 
-problem with alien nodes.
+If you dig a bit in the mailing list archive you can probably find some other
+threads talking about this topic. ebtables only work on bridges, therefore it
+won't work on simple interfaces like wlan0..
 
-Kind regards,
-	Sven
---nextPart9091693.YB3RMJW7vo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+> Rgds
+> 2011/8/16 Marek Lindner <lindner_marek@yahoo.de>:
+> >
+> > Hi,
+> >
+> >> I don't known if this is a old argument but exsist the possibility to
+> >> implement a secure mesh network?
+> >> For example a tecnique that crypt batman-adv traffic with a preshare
+> >> key or similar or
+> >> using ebtables to block all INPUT and OUTPUT traffic and allow only
+> >> the specified nodes mac?
+> >
+> > Please consult our FAQ and feel free to ask unanswered questions afterwards:
+> > http://www.open-mesh.org/wiki/open-mesh/FAQ
+> >
+> >
+> > Regards,
+> > Marek
+> >
+> 
+> 
+> 
+> -- 
+> Filippo Sallemi
 
-iQIcBAABCgAGBQJOi34kAAoJEF2HCgfBJntGhF4QAJevDRs4XDz8yIe4S601uhcf
-DNeKMcuRz8P96Z8wB4T4dRmwIqWrWbz0vB20h0JY0em2KOc4Xbz5sHckYpHcNQ2K
-2+opkp+QNFhpxVzgr/LA9V4Vn3IizTlFhd70ooS6gdlViH8E+CkNKE3bEiGHbWB4
-PdonKyz7Ohs39ea/6vsDmm43g9ePoF19hCT3DZ/NUuqsrNX5KPdphcJ3sqtDGeF2
-sRkqooRBfeQVP7ntZK6IIuUtyFe/SUUC6McIqe7fSJn8TcNR+7rN3bbGV3jXE5YX
-u0nc+EgeOk1U4ZNc1Xwl65pD0xb8MXNMTLWmuYTXCiix/H06u54tXFTANzKCRWtY
-s2dTpSXblNBjkU9//3BomkL0CkrhQqTr0jHmsTqFxxNwsl7cK636tFbCy9SlSr3M
-dIwed+IcLqHnonuJNBrM5GsBV5zBWwlq3yiHYxZlnUf/kf2Mn4vZfAc0PZ+HNxUf
-PMeVa0WaV44gUHGFU7ibVAZynroV1y88oQssW4YPSOY+wVKnRBwVvnBynW1X+o9A
-W8VOJf7b92MMeGfbCwlRJ+zrvGi/ZQwogK9UMS7YBrfVjMuZjAOyPH4HnjBVDfpm
-KQcmqibiM//t0Dy/rpyaFgFEntZEp2lyd5W1TrOm797SO5xGyz8Ghcv3rxwHh2C0
-O5Lq5wQWL9vy+thuTUrr
-=S9+J
------END PGP SIGNATURE-----
+-- 
+Antonio Quartulli
 
---nextPart9091693.YB3RMJW7vo--
-
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
