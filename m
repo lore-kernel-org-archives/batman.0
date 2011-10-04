@@ -1,17 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 4 Oct 2011 17:50:42 +0200
-References: <1316858526-6963-1-git-send-email-lindner_marek@yahoo.de>
-	<1317418754-31223-1-git-send-email-lindner_marek@yahoo.de>
-	<20111003231622.GB13562@ritirata.org>
-In-Reply-To: <20111003231622.GB13562@ritirata.org>
+Return-Path: <tonyputi@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201110041750.42802.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: refactoring gateway
-	handling code
+In-Reply-To: <201108161311.27235.lindner_marek@yahoo.de>
+References: <mailman.54.1312831773.1125.b.a.t.m.a.n@lists.open-mesh.org>
+	<CAFevQmNuUV-FebLq5nuD=iqX24xqEiBxaxd9nTja3O4XewHKFA@mail.gmail.com>
+	<201108161311.27235.lindner_marek@yahoo.de>
+From: Filippo Sallemi <tonyputi@gmail.com>
+Date: Tue, 4 Oct 2011 23:39:04 +0200
+Message-ID: <CAFevQmMuk16mnWhsZibwiRe5Kdo4aNfu_1XZmBEigX5SBU8HTQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] Batman-adv secure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,21 +22,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, October 04, 2011 01:16:23 Antonio Quartulli wrote:
-> On Fri, Sep 30, 2011 at 11:39:14 +0200, Marek Lindner wrote:
-> > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> > ---
-> >
-> >  Fixed the open TODO from v1 with Antonio's help.
-> 
-> I just finished to test the patch in a simple scenario and everything went
-> fine. Therefore I can say:
-> 
-> Acked-by: Antonio Quartulli <ordex@autistici.org>
+Hi guys,
+I've read the open-mesh FAQ but I'm not able to resolve my problem.
+I understood that the mesh network is a public network and that every
+user have to make sure their connection is secure but i don't want
+that another node (alien) can connect to my network so i thinked about
+use ebables to block all traffic (such as policy DROP of iptables) and
+allow only certain nodes to comunicate with other.
 
-Thanks for testing!
+I need some like this
+ebtables -i wlan0 DROP
+ebtables -i wlan0 --src <node mac> ACCEPT
 
-I applied this patch in revision afae4e4.
+but don't work for me
 
-Regards,
-Marek
+Any suggest?
+
+Rgds
+2011/8/16 Marek Lindner <lindner_marek@yahoo.de>:
+>
+> Hi,
+>
+>> I don't known if this is a old argument but exsist the possibility to
+>> implement a secure mesh network?
+>> For example a tecnique that crypt batman-adv traffic with a preshare
+>> key or similar or
+>> using ebtables to block all INPUT and OUTPUT traffic and allow only
+>> the specified nodes mac?
+>
+> Please consult our FAQ and feel free to ask unanswered questions afterwards:
+> http://www.open-mesh.org/wiki/open-mesh/FAQ
+>
+>
+> Regards,
+> Marek
+>
+
+
+
+-- 
+Filippo Sallemi
