@@ -1,14 +1,11 @@
 Return-Path: <ordex@autistici.org>
-Date: Mon, 10 Oct 2011 14:08:50 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111010120849.GA10057@ritirata.org>
-References: <4E80E977.8090608@wifibot.com> <4E80EB52.2010906@wifibot.com>
-	<20110926224847.GB29572@ritirata.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20110926224847.GB29572@ritirata.org>
-Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.2.0 hop somtimes does not work
+Date: Mon, 10 Oct 2011 14:19:48 +0200
+Message-Id: <1318249188-14954-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <20111010120849.GA10057@ritirata.org>
+References: <20111010120849.GA10057@ritirata.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix tt_local_reset_flags()
+	function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,18 +19,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hello everybody,
+tt_local_num has to be increased only the when flag passed as argument is reset
 
-after further investigations we have become able to reproduce the bug, to
-find it and most likely to fix it :-).
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-Please, give this patch a try and send us your feedback! (the patch will follow
-in this thread)
+This patch should fix the aforementioned bug. Please the testers to give it a
+try :-) We are waiting for feedbacks!
 
-Cheers,
+ translation-table.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
+diff --git a/translation-table.c b/translation-table.c
+index 7de9960..8451ecd 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1723,6 +1723,8 @@ static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(tt_local_entry, node,
+ 					 head, hash_entry) {
++			if (!(tt_local_entry->flags & flags))
++				continue;
+ 			tt_local_entry->flags &= ~flags;
+ 			atomic_inc(&bat_priv->num_local_tt);
+ 		}
 -- 
-Antonio Quartulli
+1.7.3.4
 
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
