@@ -1,9 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 11 Oct 2011 14:07:25 +0200
-Message-Id: <1318334846-15625-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: linearise the tt_response
-	only if needed
+Date: Tue, 11 Oct 2011 14:07:26 +0200
+Message-Id: <1318334846-15625-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1318334846-15625-1-git-send-email-ordex@autistici.org>
+References: <1318334846-15625-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: check for tt_reponse real
+	length
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,38 +19,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The TT_RESPONSE m essage can be linearised only if we plan to access the tt
-payload (only if the message is directed to me). In all the other cases we can
-avoid this memory operation
+Before accessing the TT_RESPONSE message payload, we have to ensure that the
+real length of the packet reflect the claimed one (contained in
+tt_response->tt_data field)
 
+Reported-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- routing.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ routing.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
 diff --git a/routing.c b/routing.c
-index f961cc5..1a5d046 100644
+index 1a5d046..21a68a2 100644
 --- a/routing.c
 +++ b/routing.c
-@@ -616,13 +616,13 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 		}
- 		break;
- 	case TT_RESPONSE:
--		/* packet needs to be linearized to access the TT changes */
--		if (skb_linearize(skb) < 0)
--			goto out;
-+		if (is_my_mac(tt_query->dst)) {
-+			/* packet needs to be linearized to access the TT changes */
-+			if (skb_linearize(skb) < 0)
-+				goto out;
+@@ -578,6 +578,7 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct tt_query_packet *tt_query;
++	uint16_t tt_len;
+ 	struct ethhdr *ethhdr;
  
--		if (is_my_mac(tt_query->dst))
+ 	/* drop packet if it has not necessary minimum size */
+@@ -621,6 +622,17 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ 			if (skb_linearize(skb) < 0)
+ 				goto out;
+ 
++			if (tt_query->flags & TT_FULL_TABLE)
++				tt_len = tt_query->tt_data * ETH_ALEN;
++			else
++				tt_len = tt_query->tt_data *
++					 sizeof(struct tt_change);
++
++			/* Ensure we have all the claimed data */
++			if (unlikely(skb->length != sizeof(struct tt_query) +
++						    tt_len))
++				goto out;
++
  			handle_tt_response(bat_priv, tt_query);
--		else {
-+		} else {
+ 		} else {
  			bat_dbg(DBG_TT, bat_priv,
- 				"Routing TT_RESPONSE to %pM [%c]\n",
- 				tt_query->dst,
 -- 
 1.7.3.4
 
