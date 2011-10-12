@@ -1,11 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 12 Oct 2011 15:10:58 +0200
-Message-Id: <1318425058-715-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1318425058-715-1-git-send-email-ordex@autistici.org>
-References: <1318425058-715-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: check for tt_reponse real
-	length
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 12 Oct 2011 17:11:45 +0200
+References: <1318249725-19865-1-git-send-email-ordex@autistici.org>
+	<1318424090-22862-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1318424090-22862-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201110121711.46329.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use orig_hash_find()
+	instead of get_orig_node() in TT code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,52 +22,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Before accessing the TT_RESPONSE message payload, we have to ensure that the
-real length of the packet reflect the claimed one (contained in
-tt_response->tt_data field)
+On Wednesday, October 12, 2011 14:54:50 Antonio Quartulli wrote:
+> get_orig_node() tries to retrieves an orig_node object and possibly creates
+> it if not present. This is not the wanted behaviours in the
+> translation-table code, instead we want to get the orig_node only if it
+> really exists, without creating it.
 
-Reported-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
+Applied in revision 62c7140.
 
-corrected skb length check
-
- routing.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
-
-diff --git a/routing.c b/routing.c
-index 20804f4..af55cf7 100644
---- a/routing.c
-+++ b/routing.c
-@@ -578,6 +578,7 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- {
- 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
- 	struct tt_query_packet *tt_query;
-+	uint16_t tt_len;
- 	struct ethhdr *ethhdr;
- 
- 	/* drop packet if it has not necessary minimum size */
-@@ -622,6 +623,18 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 			if (skb_linearize(skb) < 0)
- 				goto out;
- 
-+			if (tt_query->flags & TT_FULL_TABLE)
-+				tt_len = tt_query->tt_data * ETH_ALEN;
-+			else
-+				tt_len = tt_query->tt_data *
-+					 sizeof(struct tt_change);
-+
-+			/* Ensure we have all the claimed data */
-+			if (unlikely(skb_headlen(skb) <
-+					sizeof(struct tt_query_packet) +
-+					tt_len))
-+				goto out;
-+
- 			handle_tt_response(bat_priv, tt_query);
- 		} else {
- 			bat_dbg(DBG_TT, bat_priv,
--- 
-1.7.3.4
-
+Thanks,
+Marek
