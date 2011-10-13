@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 13 Oct 2011 15:27:30 +0200
-Message-ID: <9625847.JbaLKLxnvi@sven-laptop.home.narfation.org>
+Date: Thu, 13 Oct 2011 15:29:13 +0200
+Message-ID: <1781038.STk64mbk2b@sven-laptop.home.narfation.org>
 In-Reply-To: <201110131457.49798.gmazzurco89@gmail.com>
 References: <201110131334.59408.gmazzurco89@gmail.com>
 	<4797016.P1FaBRmtyJ@sven-laptop.home.narfation.org>
 	<201110131457.49798.gmazzurco89@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3705355.q1q6NSuZVU";
+Content-Type: multipart/signed; boundary="nextPart9286968.Z7coWJgNEh";
 	micalg="pgp-sha512"; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] batman-adv version
@@ -26,49 +26,42 @@ To: gmazzurco89@gmail.com
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart3705355.q1q6NSuZVU
+--nextPart9286968.Z7coWJgNEh
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="iso-8859-15"
 
 On Thursday 13 October 2011 14:57:49 Gioacchino Mazzurco wrote:
-> mmm
-> batman-adv openwrt version is 2011.3.0 that seems included in 3.1 kernel but
-> latest kernel available in gentoo is 3.0.6
-> 
-> the other way to install batman-adv in gentoo is the gentoo ebuild but seems
-> more outdated 2011.1.0  :|
-
-Please contact the gentoo maintainer. I already tried in once, but got no 
-reply.
-
 > do you think is a good idea to compile latest batman-adv and load it as
 > module on my actual kernel ( 2.6.39 ) ?
 
-Yes.
+To be more precise: Use the version with the newest patches from ordex (either 
+from the mailing list or from the maint branch... after they were applied 
+there).
 
 Kind regards,
 	Sven
---nextPart3705355.q1q6NSuZVU
+
+--nextPart9286968.Z7coWJgNEh
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABCgAGBQJOludCAAoJEF2HCgfBJntGqiUP/08mjCY+aykHzuvg+N6WhYNt
-KlZNlOnqxCYSo8oaXkZ0WUFnJR6E8VqnWnbAmp5cn1aQi/tqUiQS5P6pUT5G3Xsc
-GK3HWstIj39FRTTRXxK2Kmpn9g0eFlk3jbnZwnowE5Fx0CJlY2K1GtUmb6eYZbfj
-zjQYF+TXlzCzvzmmag3E8062NA8iHbwmGLa41IJRN7wHNne8vUz8byz67eHMyJ1a
-zOpJwV9DqYQ8ccy4S6zLNPc6fDU1HBJn6CYTmgpu+vZHL5MTQfxbllkby5j38SC5
-/1ZHC1xqZvhBCYMzzGWjbAkkzZLCTKWaukmGxKSCIhbMaGIWOCc0Gvd3xM7EaXIG
-lEhr/iKPDI1B6vTZgKNB7kwvBirEp6+1oJQmAmhlB5lnVV1HGQR5b+scPbvCBo2T
-wZpA/A7IJY0pUv64U3swsCO01SGM6A4mRq2BastXYc4rgv+tmBZJmuhGdS6+AOA7
-OguZeGfcwI+Bi+L5fr7JE8e0D5HdyAh/lxuZjz+57lrFRLqNDFEfw52DhSMi0zIP
-3tZlXeMTXtR7yBJwbjqKl2zhHMvwvMginTpN0P10JzWl5h3wCYBIVCRdHreBf6jQ
-9TLdZhD+XH3igEtn7rz2H6wRfl3otXHmy8m2HiJ0kd7wkQhA+SAnaNjcQPAjSAg9
-AraHg+Pq+Acf03jnkbnq
-=6VuV
+iQIcBAABCgAGBQJOluepAAoJEF2HCgfBJntGtkQQALqedj1culMv8hSNumtckQqs
+3P7CTkebpSNjlH9HHcTGCi+XH8xPs3sXnRoFixG/2kzilTRh3pEMY+crP3ltF5e8
+pJPAnjMKGYl8QHeS5vWUs4R0UOY2ECd0QRi73byquRb9tZJr65lR8f254rmMDSgI
+IwU6CGCLOgnYfy97/cYAn8orfZvuiXZ2Nak9D+bUutb3YMjDVY4PKuWoN/IagmNQ
+g9QS4AVNJs/uiRaqZbAMplEpdxDGDzjfgJ06xfvYP8gsjY+3h3LnC+kz/U/adJAe
+62pqBMVTc+CeSz3nLfuiy15Nb+LGMs/Yq394SGiEysQ1oLiAMlzWeume/rxSMhMa
+I/gipNBVp+LuuECng15YIDypGLB3PHKCPRG9BXGQEyQEwsGPFA/vuDWYxQT7y6Qy
+vBCcSAne/BvooihcoHcRH48QfmnMZsJkOeYdJZ7koNkCA5HskoL193Pt50Qq/sXE
+CmyllIBSZeUSoh3fqCkcPeUjIolQXBp6Z7FzAwqub8O4rWpjgVBPXaDyQUvIIGtz
+Ioy/RkUURp3cKlrj920FdG0El14FKvsj53qTYXqDbXGcS+14NkOtd7Wz/E9wBynw
+KL+lnqKLHPlwAnNvfa/9XU8EXpB179Aja+E/7ycz9UHS6jLIPFJ4Ey4F0IyROH8q
+MdKzAsgGIigkyEmS96hC
+=riJR
 -----END PGP SIGNATURE-----
 
---nextPart3705355.q1q6NSuZVU--
+--nextPart9286968.Z7coWJgNEh--
 
