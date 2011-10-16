@@ -1,9 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 16 Oct 2011 18:53:37 +0200
-Message-Id: <1318784017-28150-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix tt_local_reset_flags()
-	function
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 16 Oct 2011 19:12:36 +0200
+References: <1318425058-715-1-git-send-email-ordex@autistici.org>
+	<1318425058-715-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1318425058-715-2-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201110161912.37335.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: check for tt_reponse
+	real length
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,34 +22,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Currently the counter of tt_local_entry structures (tt_local_num) is incremented
-each time the tt_local_reset_flags() is invoked causing the node to send wrong
-TT_REPONSE packets containing a copy of non-initialised memory thus corrupting
-other nodes global translation table and making higher level communication
-impossible.
+On Wednesday, October 12, 2011 15:10:58 Antonio Quartulli wrote:
+> if (tt_query->flags & TT_FULL_TABLE)
+> +                               tt_len =3D tt_query->tt_data * ETH_ALEN;
 
-Reported-by: Junkeun Song <jun361@gmail.com>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-Acked-by: Junkeun Song <jun361@gmail.com>
----
- translation-table.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Odd, I had the feeling the full table also uses 'struct tt_change' and not=
+=20
+plain ethernet addresses anymore.
 
-diff --git a/translation-table.c b/translation-table.c
-index 2d2cfc1..d4a3917 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1727,6 +1727,8 @@ static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(tt_local_entry, node,
- 					 head, hash_entry) {
-+			if (!(tt_local_entry->flags & flags))
-+				continue;
- 			tt_local_entry->flags &= ~flags;
- 			atomic_inc(&bat_priv->num_local_tt);
- 		}
--- 
-1.7.3.4
+=46rom translation-table.c (send_my_tt_response):
+tt_len =3D (uint16_t)atomic_read(&bat_priv->num_local_tt) *=20
+                              sizeof(struct tt_change);
 
+Regards,
+Marek
