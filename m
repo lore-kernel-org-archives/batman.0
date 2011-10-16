@@ -1,16 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 16 Oct 2011 19:12:36 +0200
-References: <1318425058-715-1-git-send-email-ordex@autistici.org>
-	<1318425058-715-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1318425058-715-2-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201110161912.37335.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: check for tt_reponse
-	real length
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 16 Oct 2011 20:32:02 +0200
+Message-Id: <1318789923-29405-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3 1/3] batman-adv: linearise the tt_response
+	skb only if needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,19 +15,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, October 12, 2011 15:10:58 Antonio Quartulli wrote:
-> if (tt_query->flags & TT_FULL_TABLE)
-> +                               tt_len =3D tt_query->tt_data * ETH_ALEN;
+The TT_RESPONSE skb has to be linearised only if the node plans to access the
+packet payload (so only if the message is directed to that node). In all the
+other cases the node can avoid this memory operation
 
-Odd, I had the feeling the full table also uses 'struct tt_change' and not=
-=20
-plain ethernet addresses anymore.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ routing.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-=46rom translation-table.c (send_my_tt_response):
-tt_len =3D (uint16_t)atomic_read(&bat_priv->num_local_tt) *=20
-                              sizeof(struct tt_change);
+diff --git a/routing.c b/routing.c
+index 60ce407..e0e7b7b 100644
+--- a/routing.c
++++ b/routing.c
+@@ -616,13 +616,14 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		}
+ 		break;
+ 	case TT_RESPONSE:
+-		/* packet needs to be linearized to access the TT changes */
+-		if (skb_linearize(skb) < 0)
+-			goto out;
++		if (is_my_mac(tt_query->dst)) {
++			/* packet needs to be linearized to access the TT
++			 * changes */
++			if (skb_linearize(skb) < 0)
++				goto out;
+ 
+-		if (is_my_mac(tt_query->dst))
+ 			handle_tt_response(bat_priv, tt_query);
+-		else {
++		} else {
+ 			bat_dbg(DBG_TT, bat_priv,
+ 				"Routing TT_RESPONSE to %pM [%c]\n",
+ 				tt_query->dst,
+-- 
+1.7.3.4
 
-Regards,
-Marek
