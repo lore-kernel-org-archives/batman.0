@@ -1,13 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 17 Oct 2011 14:46:14 +0200
+Return-Path: <martin@hundeboll.net>
+Message-ID: <4E9C2AA9.4070208@hundeboll.net>
+Date: Mon, 17 Oct 2011 15:16:25 +0200
+From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201110171446.14875.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: correctly set the data
-	field in the TT_REPONSE packet
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Unused structs in Catwoman packet buffers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,14 +19,40 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, October 17, 2011 14:25:13 Antonio Quartulli wrote:
-> In the TT_RESPONSE packet, the number of carried entries is not correctly
-> set. This leads to a wrong interpretation of the packet payload on the
-> receiver side causing random entries to be added to the global translation
-> table. Therefore the latter gets always corrupted, triggering a table
-> recovery all the time.
+Hi all,
 
-Applied in revision ff7887c.
+I trying to figure out when to free an unused struct in the catwoman (network coding) packet buffer. Below I will try to describe the principal question, but it all comes down to: Should I use a timeout or just remove it right away.
 
-Thanks,
-Marek
+Heres a short description of the buffering in catwoman:
+
+When a packet arrive at a node and is to be forwarded, catwoman searches a hash-table for packets that can be combined with the just arrived packet. If a match is found, the two packets are combined and transmitted as one; if not, the just arrived packet is added to the buffer, so that the next arriving packet might be combined with it.
+
+To reduce the complexity when searching for packets in the hash table, hash indexes are generated from a key consisting of a mac-source XOR'ed with a mac-destination like this:
+
+   int i;
+   uint8_t key[ETH_ALEN];
+
+   for (i = 0; i < ETH_ALEN; i++)
+       key[i] = src[i] ^ dst[ETH_ALEN-1-i];
+
+This reduces complexity because catwoman needs only to search a few paths (src-dst-pairs) for possible matching packets. The reverse order of dst makes the key direction-specific.
+
+Each entry in a hash-bin-hlist is denoted a coding_path, which contains the src and dst of the path i question and a reference to list of packets. This list of packets, is where packets are buffered when waiting for a coding opportunity as described above.
+
+Every 10 ms, the hash table is traversed and packets that have been buffered for more than 10 ms are transmitted without being coded. (This gives an avarage buffer time of 15 ms, I know...)
+
+Now here's the question:
+When a list of a certain coding_path becomes empty, should I free the coding_path right away, or should I timestamp it and mark it for removal at a later time. The thing is that I don't know whether a new packet for the same coding_path will arrive in a short moment. If I have just freed the coding_path struct, I would have to spend ressources to initialize it again...
+
+It is probably a micro-optimiziation and the simplest solution would be to just free it right away, but I would like to have your comments anyways.
+
+-- 
+Kind regards
+Martin Hundebøll
+
++45 61 65 54 61
+martin@hundeboll.net
+
+Nordborggade 57, 2. tv
+8000 Aarhus C
+Denmark
