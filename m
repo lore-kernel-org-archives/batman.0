@@ -1,13 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 19 Oct 2011 11:20:47 +0200
+Date: Wed, 19 Oct 2011 14:08:59 +0200
 References: <1319014945-32281-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1319014945-32281-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+	<201110191120.48103.lindner_marek@yahoo.de>
+In-Reply-To: <201110191120.48103.lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201110191120.48103.lindner_marek@yahoo.de>
+Message-Id: <201110191408.59847.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove references for global
 	tt entries
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,37 +24,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday, October 19, 2011 11:02:25 Simon Wunderlich wrote:
-> struct tt_global_entry holds a reference to an orig_node which must be
-> decremented before deallocating the structure.
+On Wednesday, October 19, 2011 11:20:47 Marek Lindner wrote:
+> > -void free_rcu_tt_global_entry(struct rcu_head *rcu)
+> > -{
+> > -       struct tt_global_entry *tt_global_entry;
+> > -
+> > -       tt_global_entry = container_of(rcu, struct tt_global_entry, rcu);
+> > -       kfree(tt_global_entry);
+> > -}
 > 
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> ---
->  compat.c            |    8 --------
->  compat.h            |    1 -
->  translation-table.c |   14 +++++++++++++-
->  3 files changed, 13 insertions(+), 10 deletions(-)
-> 
-> diff --git a/compat.c b/compat.c
-> index 88ceb40..1793904 100644
-> --- a/compat.c
-> +++ b/compat.c
-> @@ -36,12 +36,4 @@ void free_rcu_tt_local_entry(struct rcu_head *rcu)
->         kfree(tt_local_entry);
->  }
->  
-> -void free_rcu_tt_global_entry(struct rcu_head *rcu)
-> -{
-> -       struct tt_global_entry *tt_global_entry;
-> -
-> -       tt_global_entry = container_of(rcu, struct tt_global_entry, rcu);
-> -       kfree(tt_global_entry);
-> -}
+> If you remove the function from compat.c please also remove its declaration
+> in  compat.h.
 
+My fault - the compat.h cleanup is there.
+Next time I'll read the patch 3 times before commenting.  ;-)
 
-If you remove the function from compat.c please also remove its declaration in 
-compat.h.
-
-
-Thanks,
+Regards,
 Marek
