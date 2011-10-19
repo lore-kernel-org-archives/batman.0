@@ -1,9 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartull <ordex@autistici.org>
-Date: Wed, 19 Oct 2011 14:34:42 +0200
-Message-Id: <1319027682-2897-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: correct ttcrc print format in the
-	tcpdump output
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 19 Oct 2011 14:53:48 +0200
+References: <201110190044.38983.lindner_marek@yahoo.de>
+	<4E9E1A8A.6000902@gmail.com>
+In-Reply-To: <4E9E1A8A.6000902@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201110191453.49409.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.3.1 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,33 +21,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The OGM ttcrc field is an unsigned short int, therefore it has to be printed
-using %hu and has to be converted from network to host order using ntohs
+On Wednesday, October 19, 2011 02:32:10 Michael St=F6cker wrote:
+> even if the batctl remains unchanged, could you please "update" the
+> packagename to 2011.3.1? I would like to update my
+> openwrtbuildroot-batman-adv-makefile to use the new release but it
+> relies on the same version-string.
 
-Signed-off-by: Antonio Quartull <ordex@autistici.org>
----
- tcpdump.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+I just updated the OpenWrt package. Once you fetched the update you should =
+get=20
+batman-adv 2011.3.1 with batctl 2011.3.0.
 
-diff --git a/tcpdump.c b/tcpdump.c
-index 977bedc..7dd289e 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -331,10 +331,10 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
- 	printf("BAT %s: ",
- 	       get_name_by_macaddr((struct ether_addr *)batman_ogm_packet->orig, read_opt));
- 
--	printf("OGM via neigh %s, seq %u, tq %3d, ttvn %d, ttcrc %d, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
-+	printf("OGM via neigh %s, seq %u, tq %3d, ttvn %d, ttcrc %hu, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
- 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
- 	       ntohl(batman_ogm_packet->seqno), batman_ogm_packet->tq, batman_ogm_packet->ttvn,
--	       ntohl(batman_ogm_packet->tt_crc), batman_ogm_packet->ttl, batman_ogm_packet->version,
-+	       ntohs(batman_ogm_packet->tt_crc), batman_ogm_packet->ttl, batman_ogm_packet->version,
- 	       (batman_ogm_packet->flags & DIRECTLINK ? 'D' : '.'),
- 	       (batman_ogm_packet->flags & VIS_SERVER ? 'V' : '.'),
- 	       (batman_ogm_packet->flags & PRIMARIES_FIRST_HOP ? 'F' : '.'),
--- 
-1.7.3.4
-
+Regards,
+Marek
