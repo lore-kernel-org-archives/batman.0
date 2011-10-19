@@ -1,13 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 19 Oct 2011 15:36:37 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111019133636.GG4836@ritirata.org>
-References: <4E5D69E3.30403@robotech.de>
+Return-Path: <michael.stoecker@googlemail.com>
+Message-ID: <4E9ED3ED.5090508@gmail.com>
+Date: Wed, 19 Oct 2011 15:43:09 +0200
+From: "=?ISO-8859-15?Q?Michael_St=F6cker?=" <michael.stoecker@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4E5D69E3.30403@robotech.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.2.0 hop somtimes does not work
+References: <201110190044.38983.lindner_marek@yahoo.de>
+	<4E9E1A8A.6000902@gmail.com>
+	<201110191453.49409.lindner_marek@yahoo.de>
+In-Reply-To: <201110191453.49409.lindner_marek@yahoo.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig90569E4D81623498C8108DF0"
+Subject: Re: [B.A.T.M.A.N.] batman-adv 2011.3.1 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,44 +24,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi all, Hi Tobias,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig90569E4D81623498C8108DF0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Aug 31, 2011 at 12:53:23AM +0200, Tobias wrote:
-> Hi all,
-> 
-> i have setup a mesh-network with batman-adv running on about 10 Foneras 
-> and 4 TP-Link on OpenWRT.
-> 
-> At first everything seemed to work. A node on the one end could ping a 
-> node on the other end over the mesh-network. The ping was hopping from 
-> node to node as expected.
-> 
-> But sometimes some paths do not work anymore.
-> 
-> Some nodes can only reach their direct neighbors via a "normal ping". A 
-> ping to a node via one hop does not work. A "batctl ping" does work!
-> 
-> This only happens to parts of the network and is not permanent. If i 
-> wait it will recover, but then the problem appears at another node.
-> 
-> dmesg or the syslog does not report any errors.
-> 
-> Can anyone give me a hint where to look?
-> 
-> Tobias
+Am 19.10.2011 14:53, schrieb Marek Lindner:
+> On Wednesday, October 19, 2011 02:32:10 Michael St=F6cker wrote:
+>> even if the batctl remains unchanged, could you please "update" the
+>> packagename to 2011.3.1? I would like to update my
+>> openwrtbuildroot-batman-adv-makefile to use the new release but it
+>> relies on the same version-string.
+>=20
+> I just updated the OpenWrt package. Once you fetched the update you sho=
+uld get=20
+> batman-adv 2011.3.1 with batctl 2011.3.0.
+
+thanks! ;)
 
 
-Yesterday batman-adv-2011.3.1 has been released. As I verified with Laurent
-(tests are still going on), this version should fix the bug reported into this
-thread. 
+--------------enig90569E4D81623498C8108DF0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-It would be appreciated if any of the people affected by this bug could
-test the new release and give us any feedback!
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Cheers,
+iEYEARECAAYFAk6e0+0ACgkQ6ee4rTvjE2QakACfb0FWiJwZGimERdp8jrzGfrHb
+KO0AnAybKr0Q3JxDaBMcWqVXSa5of1Oy
+=n7xy
+-----END PGP SIGNATURE-----
 
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
+--------------enig90569E4D81623498C8108DF0--
