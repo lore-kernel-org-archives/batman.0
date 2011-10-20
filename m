@@ -1,10 +1,14 @@
-Return-Path: <tonyputi@gmail.com>
-MIME-Version: 1.0
-From: Filippo Sallemi <tonyputi@gmail.com>
-Date: Thu, 20 Oct 2011 21:29:44 +0200
-Message-ID: <CAFevQmNZGZi4DWjA3-HXcFP3wNFbdEW1ZQpQ5MHdEY6h-qh5Qg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: [B.A.T.M.A.N.] Warning - packet contains unknown ether type: 0x86dd
+Return-Path: <davem@davemloft.net>
+Date: Thu, 20 Oct 2011 17:42:07 -0400 (EDT)
+Message-Id: <20111020.174207.279240796157428159.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1318971669-941-1-git-send-email-lindner_marek@yahoo.de>
+References: <1318971669-941-1-git-send-email-lindner_marek@yahoo.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-10-18 (more
+	regression fixes)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,18 +20,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: lindner_marek@yahoo.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
-I dont understand why but some time my nodes show msg:
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 18 Oct 2011 23:01:07 +0200
 
-Warning - packet contains unknown ether type: 0x86dd
+> we have identified and fixed 2 more critical bugs in the linux-3.1
+> code base. We are somewhat late in the 3.1 release cycle but hoped
+> to take advantage of the delayed release to get these patches 
+> included before the final version is out.
 
-when exec batctl td wlan0.
-
-Can anyone tell me what mean? and if it is as problem how to fix.
-
-Rgds
-
---
-Filippo Sallemi
+Pulled, thanks Marek.
