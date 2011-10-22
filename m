@@ -1,9 +1,9 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 22 Oct 2011 00:55:39 +0200
-Message-Id: <1319237739-7686-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: unify hash_entry field position
-	in tt_local/global_entry
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sat, 22 Oct 2011 18:15:26 +0200
+Message-Id: <1319300126-17640-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: directly write tt entries
+	without buffering
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,48 +16,136 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Function tt_response_fill_table() actually uses a tt_local_entry pointer to
-iterate either over the local or the global table entries (it depends on the
-what hash table is passed as argument). To iterate over such entries the
-hlist_for_each_entry_rcu() macro has to access their "hash_entry" field which
-MUST be at the same position in both the tt_global/local_entry structures.
+When the translation tables (global and local) are written for debugfs,
+it is not neccesary to allocate a buffer, we can directly use
+seq_printf() to print them out.
 
-Reported-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+This might actually be safer if the table changes between size
+calculation and traversal, and we can't estimate the required size
+wrong.
+
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- types.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ translation-table.c |   57 +-------------------------------------------------
+ 1 files changed, 2 insertions(+), 55 deletions(-)
 
-diff --git a/types.h b/types.h
-index 1ae3557..ab8d0fe 100644
---- a/types.h
-+++ b/types.h
-@@ -224,22 +224,22 @@ struct socket_packet {
+diff --git a/translation-table.c b/translation-table.c
+index c2af2b1..fadbc05 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -302,8 +302,6 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct hard_iface *primary_if;
+ 	struct hlist_node *node;
+ 	struct hlist_head *head;
+-	size_t buf_size, pos;
+-	char *buff;
+ 	uint32_t i;
+ 	int ret = 0;
  
- struct tt_local_entry {
- 	uint8_t addr[ETH_ALEN];
-+	struct hlist_node hash_entry;
- 	unsigned long last_seen;
- 	uint16_t flags;
- 	atomic_t refcount;
- 	struct rcu_head rcu;
--	struct hlist_node hash_entry;
- };
+@@ -326,34 +324,13 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 		   "announced via TT (TTVN: %u):\n",
+ 		   net_dev->name, (uint8_t)atomic_read(&bat_priv->ttvn));
  
- struct tt_global_entry {
- 	uint8_t addr[ETH_ALEN];
-+	struct hlist_node hash_entry; /* entry in the global table */
- 	struct orig_node *orig_node;
- 	uint8_t ttvn;
- 	uint16_t flags; /* only TT_GLOBAL_ROAM is used */
- 	unsigned long roam_at; /* time at which TT_GLOBAL_ROAM was set */
- 	atomic_t refcount;
- 	struct rcu_head rcu;
--	struct hlist_node hash_entry; /* entry in the global table */
- };
+-	buf_size = 1;
+-	/* Estimate length for: " * xx:xx:xx:xx:xx:xx\n" */
+-	for (i = 0; i < hash->size; i++) {
+-		head = &hash->table[i];
+-
+-		rcu_read_lock();
+-		__hlist_for_each_rcu(node, head)
+-			buf_size += 29;
+-		rcu_read_unlock();
+-	}
+-
+-	buff = kmalloc(buf_size, GFP_ATOMIC);
+-	if (!buff) {
+-		ret = -ENOMEM;
+-		goto out;
+-	}
+-
+-	buff[0] = '\0';
+-	pos = 0;
+-
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
  
- struct tt_change_node {
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(tt_local_entry, node,
+ 					 head, hash_entry) {
+-			pos += snprintf(buff + pos, 30, " * %pM "
+-					"[%c%c%c%c%c]\n",
++			seq_printf(seq, " * %pM [%c%c%c%c%c]\n",
+ 					tt_local_entry->addr,
+ 					(tt_local_entry->flags &
+ 					 TT_CLIENT_ROAM ? 'R' : '.'),
+@@ -368,9 +345,6 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 		}
+ 		rcu_read_unlock();
+ 	}
+-
+-	seq_printf(seq, "%s", buff);
+-	kfree(buff);
+ out:
+ 	if (primary_if)
+ 		hardif_free_ref(primary_if);
+@@ -579,8 +553,6 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct hard_iface *primary_if;
+ 	struct hlist_node *node;
+ 	struct hlist_head *head;
+-	size_t buf_size, pos;
+-	char *buff;
+ 	uint32_t i;
+ 	int ret = 0;
+ 
+@@ -605,35 +577,13 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 	seq_printf(seq, "       %-13s %s       %-15s %s %s\n",
+ 		   "Client", "(TTVN)", "Originator", "(Curr TTVN)", "Flags");
+ 
+-	buf_size = 1;
+-	/* Estimate length for: " * xx:xx:xx:xx:xx:xx (ttvn) via
+-	 * xx:xx:xx:xx:xx:xx (cur_ttvn)\n"*/
+-	for (i = 0; i < hash->size; i++) {
+-		head = &hash->table[i];
+-
+-		rcu_read_lock();
+-		__hlist_for_each_rcu(node, head)
+-			buf_size += 67;
+-		rcu_read_unlock();
+-	}
+-
+-	buff = kmalloc(buf_size, GFP_ATOMIC);
+-	if (!buff) {
+-		ret = -ENOMEM;
+-		goto out;
+-	}
+-
+-	buff[0] = '\0';
+-	pos = 0;
+-
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+ 
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(tt_global_entry, node,
+ 					 head, hash_entry) {
+-			pos += snprintf(buff + pos, 69,
+-					" * %pM  (%3u) via %pM     (%3u)   "
++			seq_printf(seq, " * %pM  (%3u) via %pM     (%3u)   "
+ 					"[%c%c%c]\n", tt_global_entry->addr,
+ 					tt_global_entry->ttvn,
+ 					tt_global_entry->orig_node->orig,
+@@ -649,9 +599,6 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 		}
+ 		rcu_read_unlock();
+ 	}
+-
+-	seq_printf(seq, "%s", buff);
+-	kfree(buff);
+ out:
+ 	if (primary_if)
+ 		hardif_free_ref(primary_if);
 -- 
-1.7.3.4
+1.7.7
 
