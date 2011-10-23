@@ -1,14 +1,14 @@
 Return-Path: <ordex@autistici.org>
-Date: Sun, 23 Oct 2011 11:38:03 +0200
+Date: Sun, 23 Oct 2011 11:40:54 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111023093802.GA6828@ritirata.org>
-References: <20111019082826.GA31323@pandem0nium>
+Message-ID: <20111023094053.GB6828@ritirata.org>
+References: <1319014945-32281-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20111019082826.GA31323@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add sanity check when
- removing global tts
+In-Reply-To: <1319014945-32281-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove references for global
+ tt entries
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,22 +21,23 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
 Hello,
 
-On Wed, Oct 19, 2011 at 10:28:26AM +0200, Simon Wunderlich wrote:
-> After removing the batman-adv module, the hash may be already gone
-> when tt_global_del_orig() tries to clean the hash. This patch adds
-> a sanity check to avoid this.
+On Wed, Oct 19, 2011 at 11:02:25AM +0200, Simon Wunderlich wrote:
+> struct tt_global_entry holds a reference to an orig_node which must be
+> decremented before deallocating the structure.
 > 
 > Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 > ---
 
-I got a feedback on IRC from fishor_ who said that the patch solved the kernel
-panic problem on module unload and on soft_iface deactivating.
+I got a feedback on IRC from fishor_ who applied the patch while trying to
+eliminate the kernel panic problem on module unload. The refcount has not been
+printed, therefore we do not know if the patch really corrects it but at least
+we know that this patch doesn't crash batman-adv :-)
 
-Thank you for the patch Simon!
-
+Cheers,
 
 -- 
 Antonio Quartulli
