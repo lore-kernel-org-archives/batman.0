@@ -1,17 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 24 Oct 2011 14:07:58 +0200
-References: <20111019082826.GA31323@pandem0nium>
-	<20111023093802.GA6828@ritirata.org>
-	<4EA3E181.2020102@fisher-privat.net>
-In-Reply-To: <4EA3E181.2020102@fisher-privat.net>
+Date: Mon, 24 Oct 2011 14:12:01 +0200
+References: <1319237739-7686-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1319237739-7686-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201110241407.59024.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add sanity check when
-	removing global tts
+Message-Id: <201110241412.02159.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: unify hash_entry field
+	position in tt_local/global_entry
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,26 +23,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, October 23, 2011 11:42:25 Alexey Fisher wrote:
-> On 23.10.2011 11:38, Antonio Quartulli wrote:
-> > Hello,
-> > 
-> > On Wed, Oct 19, 2011 at 10:28:26AM +0200, Simon Wunderlich wrote:
-> >> After removing the batman-adv module, the hash may be already gone
-> >> when tt_global_del_orig() tries to clean the hash. This patch adds
-> >> a sanity check to avoid this.
-> >> 
-> >> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> >> ---
-> > 
-> > I got a feedback on IRC from fishor_ who said that the patch solved the
-> > kernel panic problem on module unload and on soft_iface deactivating.
-> > 
-> > Thank you for the patch Simon!
-> 
-> tested-by: Alexey Fisher <bug-track@fisher-privat.net>
+On Saturday, October 22, 2011 00:55:39 Antonio Quartulli wrote:
+> Function tt_response_fill_table() actually uses a tt_local_entry pointer to
+> iterate either over the local or the global table entries (it depends on
+> the what hash table is passed as argument). To iterate over such entries
+> the hlist_for_each_entry_rcu() macro has to access their "hash_entry"
+> field which MUST be at the same position in both the tt_global/local_entry
+> structures.
 
-Patch was applied in revision 4c7d468.
+Patch was applied in revision 474f917.
 
 Thanks,
 Marek
+
+PS: Antonio, please keep in mind that I apply this patch as a temporary 
+measure not as the final fix.
