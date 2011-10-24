@@ -1,17 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 24 Oct 2011 14:05:51 +0200
-References: <1319014945-32281-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-	<20111023094053.GB6828@ritirata.org>
-	<4EA3E1A9.6020801@fisher-privat.net>
-In-Reply-To: <4EA3E1A9.6020801@fisher-privat.net>
+Date: Mon, 24 Oct 2011 14:07:58 +0200
+References: <20111019082826.GA31323@pandem0nium>
+	<20111023093802.GA6828@ritirata.org>
+	<4EA3E181.2020102@fisher-privat.net>
+In-Reply-To: <4EA3E181.2020102@fisher-privat.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201110241405.51477.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove references for global
-	tt entries
+Message-Id: <201110241407.59024.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add sanity check when
+	removing global tts
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,27 +25,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, October 23, 2011 11:43:05 Alexey Fisher wrote:
-> On 23.10.2011 11:40, Antonio Quartulli wrote:
+On Sunday, October 23, 2011 11:42:25 Alexey Fisher wrote:
+> On 23.10.2011 11:38, Antonio Quartulli wrote:
 > > Hello,
 > > 
-> > On Wed, Oct 19, 2011 at 11:02:25AM +0200, Simon Wunderlich wrote:
-> >> struct tt_global_entry holds a reference to an orig_node which must be
-> >> decremented before deallocating the structure.
+> > On Wed, Oct 19, 2011 at 10:28:26AM +0200, Simon Wunderlich wrote:
+> >> After removing the batman-adv module, the hash may be already gone
+> >> when tt_global_del_orig() tries to clean the hash. This patch adds
+> >> a sanity check to avoid this.
 > >> 
 > >> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 > >> ---
 > > 
-> > I got a feedback on IRC from fishor_ who applied the patch while trying
-> > to eliminate the kernel panic problem on module unload. The refcount has
-> > not been printed, therefore we do not know if the patch really corrects
-> > it but at least we know that this patch doesn't crash batman-adv :-)
+> > I got a feedback on IRC from fishor_ who said that the patch solved the
+> > kernel panic problem on module unload and on soft_iface deactivating.
 > > 
-> > Cheers,
+> > Thank you for the patch Simon!
 > 
 > tested-by: Alexey Fisher <bug-track@fisher-privat.net>
 
-Patch was applied in revision 5da9ad7.
+Patch was applied in revision 4c7d468.
 
 Thanks,
 Marek
