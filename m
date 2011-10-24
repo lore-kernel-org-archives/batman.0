@@ -1,15 +1,17 @@
-Return-Path: <bug-track@fisher-privat.net>
-Message-ID: <4EA3E1A9.6020801@fisher-privat.net>
-Date: Sun, 23 Oct 2011 11:43:05 +0200
-From: Alexey Fisher <bug-track@fisher-privat.net>
-MIME-Version: 1.0
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 24 Oct 2011 14:05:51 +0200
 References: <1319014945-32281-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 	<20111023094053.GB6828@ritirata.org>
-In-Reply-To: <20111023094053.GB6828@ritirata.org>
-Content-Type: text/plain; charset=UTF-8
+	<4EA3E1A9.6020801@fisher-privat.net>
+In-Reply-To: <4EA3E1A9.6020801@fisher-privat.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201110241405.51477.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove references for global
- tt entries
+	tt entries
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,24 +24,28 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On 23.10.2011 11:40, Antonio Quartulli wrote:
-> Hello,
+On Sunday, October 23, 2011 11:43:05 Alexey Fisher wrote:
+> On 23.10.2011 11:40, Antonio Quartulli wrote:
+> > Hello,
+> > 
+> > On Wed, Oct 19, 2011 at 11:02:25AM +0200, Simon Wunderlich wrote:
+> >> struct tt_global_entry holds a reference to an orig_node which must be
+> >> decremented before deallocating the structure.
+> >> 
+> >> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> >> ---
+> > 
+> > I got a feedback on IRC from fishor_ who applied the patch while trying
+> > to eliminate the kernel panic problem on module unload. The refcount has
+> > not been printed, therefore we do not know if the patch really corrects
+> > it but at least we know that this patch doesn't crash batman-adv :-)
+> > 
+> > Cheers,
 > 
-> On Wed, Oct 19, 2011 at 11:02:25AM +0200, Simon Wunderlich wrote:
->> struct tt_global_entry holds a reference to an orig_node which must be
->> decremented before deallocating the structure.
->>
->> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
->> ---
-> 
-> I got a feedback on IRC from fishor_ who applied the patch while trying to
-> eliminate the kernel panic problem on module unload. The refcount has not been
-> printed, therefore we do not know if the patch really corrects it but at least
-> we know that this patch doesn't crash batman-adv :-)
-> 
-> Cheers,
-> 
+> tested-by: Alexey Fisher <bug-track@fisher-privat.net>
 
-tested-by: Alexey Fisher <bug-track@fisher-privat.net>
+Patch was applied in revision 5da9ad7.
+
+Thanks,
+Marek
