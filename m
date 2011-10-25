@@ -1,16 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 24 Oct 2011 16:13:38 +0200
-References: <1318789923-29405-1-git-send-email-ordex@autistici.org>
-	<1318789923-29405-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1318789923-29405-2-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201110241613.38452.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/3] batman-adv: check for tt_reponse
-	packet real length
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 25 Oct 2011 22:42:41 +0200
+Message-Id: <1319575362-20828-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix tt_local_reset_flags()
+	function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,13 +15,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: stable@kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-On Sunday, October 16, 2011 20:32:03 Antonio Quartulli wrote:
-> Before accessing the TT_RESPONSE packet payload, the node has to ensure
-> that the packet is long enough as it would expect to be.
+Currently the counter of tt_local_entry structures (tt_local_num) is incremented
+each time the tt_local_reset_flags() is invoked causing the node to send wrong
+TT_REPONSE packets containing a copy of non-initialised memory thus corrupting
+other nodes global translation table and making higher level communication
+impossible.
 
-Patch was applied in revision e096f38.
+Reported-by: Junkeun Song <jun361@gmail.com>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Acked-by: Junkeun Song <jun361@gmail.com>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
 
-Thanks,
-Marek
+David S. Miller already merged this patch as
+31901264511cf20c5ed33b8649a3ca9ce28df60b in his net-next tree
+
+
+ net/batman-adv/translation-table.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index fb6931d..f599db9 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1668,6 +1668,8 @@ static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(tt_local_entry, node,
+ 					 head, hash_entry) {
++			if (!(tt_local_entry->flags & flags))
++				continue;
+ 			tt_local_entry->flags &= ~flags;
+ 			atomic_inc(&bat_priv->num_local_tt);
+ 		}
+-- 
+1.7.3.4
+
