@@ -1,12 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 30 Oct 2011 14:31:55 +0100
-Message-ID: <1850275.SO2QzbpOTm@sven-laptop.home.narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9926235.zVBpP68GlS";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: [B.A.T.M.A.N.] Weird TTL for ICMP packets
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun, 30 Oct 2011 16:22:43 +0100
+Message-Id: <1319988163-3249-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <4EAC49D7.2060609@intra2net.com>
+References: <4EAC49D7.2060609@intra2net.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix range check for expected
+	packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,51 +18,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
+The check for new packets in the future used a wrong binary operator,
+which makes the check expression always true and accepting too many
+packets.
 
---nextPart9926235.zVBpP68GlS
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Reported-by: Thomas Jarosch <thomas.jarosch@intra2net.com>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ bitarray.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Hi,
-
-just looked through some ICMP code in icmp_socket.c and found a little bit 
-weird TTL:
-
-218         if (icmp_packet->version != COMPAT_VERSION) {                                                                                      
-219                 icmp_packet->msg_type = PARAMETER_PROBLEM;                                                                                 
-220                 icmp_packet->ttl = COMPAT_VERSION;                                                                                         
-221                 bat_socket_add_packet(socket_client, icmp_packet, 
-packet_len);
-222                 goto free_skb;                                                                                                             
-223         }
-
-It was introduced by dba95eb270ff9674326865a20d25921c69c04d6c. My guess is 
-that TTL should be used.
-
-Kind regards,
-	Sven
---nextPart9926235.zVBpP68GlS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJOrVHLAAoJEF2HCgfBJntGH3cQANd8K/7xzASoL0zeRK//uMuy
-t66SY86OAnQ0WRnvnRIdFux2K99HYZLJfE8jWgjKHtIP4KKxGT20Q1e3bH3PfuqD
-qi4VzavhXmscIC8Ec6a8trf0usTmdXB8NKAY7ey+wUnVSAdmJ5zTm87aWTWIQ3tU
-dTu7VyuVGSbVtO8b9QOCnqyyIEtiSHiFjjWgWm2xV45GU8V4/CFxkTvpOmYFGqu8
-rTTNLb+/xg78JddoME2Sa8h82M+1CmybntA1YA4yo6ogb/pPcr6xKAMx0+xaaQzK
-vgAUMoeiltaeSDp5qPU4O5DIIXe0vkaS+4WknOM4DoQxK2aEbo8q4RBAd3K/tGIo
-fUH+VdEcmcW3H1lMGk0x4T51B3XVeStuzbxwWyyUMKe2pzz7l3qBvzKB8TGFTAog
-9Jz4ueopnS5z+hKX9eHdU1Ojs3F4Bb1b+r07uJmIho4HkYWFjso1yxdZKKkXKeYs
-BxrJO6zLP8t3Tsp1iQnPYGG0D4aMBlOyP1+0x+Fz+uSbfSb89XYb1pyZpDgU6OPO
-KNpc6NuRwsgGzR3vw9hCfNlKhOuAzFPVPObTjzUpXXlQLoHa47ouedoJfgRZI1Ys
-CO9RmWd5u/W3a4VMLuqlzH5Q+8l/x7ufk8HjUIcOL4c/L8XQyKTzfMEdqyOD2Wkf
-bgC5N9J58/ULOzudG1ds
-=Y5qk
------END PGP SIGNATURE-----
-
---nextPart9926235.zVBpP68GlS--
+diff --git a/bitarray.c b/bitarray.c
+index 0be9ff3..9bc63b2 100644
+--- a/bitarray.c
++++ b/bitarray.c
+@@ -155,7 +155,7 @@ int bit_get_packet(void *priv, unsigned long *seq_bits,
+ 	/* sequence number is much newer, probably missed a lot of packets */
+ 
+ 	if ((seq_num_diff >= TQ_LOCAL_WINDOW_SIZE)
+-		|| (seq_num_diff < EXPECTED_SEQNO_RANGE)) {
++		&& (seq_num_diff < EXPECTED_SEQNO_RANGE)) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+ 			"We missed a lot of packets (%i) !\n",
+ 			seq_num_diff - 1);
+-- 
+1.7.7
 
