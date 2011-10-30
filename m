@@ -1,16 +1,9 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 30 Oct 2011 21:58:48 +0100
-References: <4EAC49D7.2060609@intra2net.com>
-	<1319988163-3249-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1319988163-3249-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201110302158.48772.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix range check for expected
-	packets
+Date: Sun, 30 Oct 2011 22:27:21 +0100
+Message-Id: <1320010041-29605-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: report compat_version in version
+	field in case of version mismatch
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,14 +16,27 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On Sunday, October 30, 2011 16:22:43 Simon Wunderlich wrote:
-> The check for new packets in the future used a wrong binary operator,
-> which makes the check expression always true and accepting too many
-> packets.
+Reported-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ icmp_socket.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Applied in revision 00ca20e.
+diff --git a/icmp_socket.c b/icmp_socket.c
+index ac3520e..defd692 100644
+--- a/icmp_socket.c
++++ b/icmp_socket.c
+@@ -217,7 +217,7 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 
+ 	if (icmp_packet->version != COMPAT_VERSION) {
+ 		icmp_packet->msg_type = PARAMETER_PROBLEM;
+-		icmp_packet->ttl = COMPAT_VERSION;
++		icmp_packet->version = COMPAT_VERSION;
+ 		bat_socket_add_packet(socket_client, icmp_packet, packet_len);
+ 		goto free_skb;
+ 	}
+-- 
+1.7.5.4
 
-Thanks,
-Marek
