@@ -1,8 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 30 Oct 2011 23:51:01 +0100
-Message-Id: <1320015072-10313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [RFC 00/11] bridge loop avoidance II
+Date: Sun, 30 Oct 2011 23:51:05 +0100
+Message-Id: <1320015072-10313-5-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1320015072-10313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+References: <1320015072-10313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [RFC 04/11] batman-adv: export claim tables through
+	debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,69 +20,136 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-This series of patches is a request for comments on the redesigned
-bridge loop avoidance. The general concept is described in the wiki
-[1]. I've already performed a few testcases [2] which worked fine in
-my kvm environment. No crashes while running or unloading the 
-extension either.
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+[2011-10-27] Changes suggested by Marek Lindner:
+ * move rcu_read_lock() more into the loops
 
-The last patch in the series uses the cached address of the primary
-interface (the originator address known through the mesh) to save some
-code at various positions, there may be side effects I don't see
-however (e.g. implicit checking whether the module was configured
-correctly was removed).
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Marek already pointed quite a few issues out, these changes are
-reflected in the respective commit logs. These commit comments will
-be removed in the final version.
+[2011-10-30] Changes suggested by Marek Lindner:
+ * pimp up claim table debugfs output
 
-Any comments and suggestions are appreciated. 
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ bat_debugfs.c           |   10 +++++++++
+ bridge_loop_avoidance.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++
+ bridge_loop_avoidance.h |    1 +
+ 3 files changed, 62 insertions(+), 0 deletions(-)
 
-Thanks
-    Simon
-
-[1] http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance-II
-[2] http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance-Testcases
-
-Simon Wunderlich (11):
-  batman-adv: remove old bridge loop avoidance code
-  batman-adv: add basic bridge loop avoidance code
-  batman-adv: make bridge loop avoidance switchable
-  batman-adv: export claim tables through debugfs
-  batman-adv: allow multiple entries in tt_global_entries
-  batman-adv: don't let backbone gateways exchange tt entries
-  batman-adv: add broadcast duplicate check
-  batman-adv: drop STP over batman
-  batman-adv: form groups in the bridge loop avoidance
-  batman-adv: Update README and sysfs description
-  [RFC] batman-adv: get primaries address through bat_priv->own_orig
-
- Makefile.kbuild         |    1 +
- README                  |   28 +-
- bat_debugfs.c           |   18 +-
- bat_sysfs.c             |    4 +-
- bridge_loop_avoidance.c | 1509 +++++++++++++++++++++++++++++++++++++++++++++++
- bridge_loop_avoidance.h |   34 ++
- compat.c                |   16 +-
- compat.h                |    3 +-
- hard-interface.c        |    8 +-
- icmp_socket.c           |   12 +-
- main.c                  |    9 +-
- main.h                  |    9 +-
- originator.c            |    3 +-
- packet.h                |   16 +
- routing.c               |   41 +-
- soft-interface.c        |  490 +---------------
- soft-interface.h        |    2 -
- sysfs-class-net-mesh    |    9 +
- translation-table.c     |  366 ++++++++----
- types.h                 |   70 ++-
- unicast.c               |    9 +-
- vis.c                   |   20 +-
- 22 files changed, 1965 insertions(+), 712 deletions(-)
- create mode 100644 bridge_loop_avoidance.c
- create mode 100644 bridge_loop_avoidance.h
-
+diff --git a/bat_debugfs.c b/bat_debugfs.c
+index 492eec7..20d3fc9 100644
+--- a/bat_debugfs.c
++++ b/bat_debugfs.c
+@@ -32,6 +32,7 @@
+ #include "soft-interface.h"
+ #include "vis.h"
+ #include "icmp_socket.h"
++#include "bridge_loop_avoidance.h"
+ 
+ static struct dentry *bat_debugfs;
+ 
+@@ -239,6 +240,13 @@ static int transtable_global_open(struct inode *inode, struct file *file)
+ 	return single_open(file, tt_global_seq_print_text, net_dev);
+ }
+ 
++static int bla_claim_table_open(struct inode *inode, struct file *file)
++{
++	struct net_device *net_dev = (struct net_device *)inode->i_private;
++	return single_open(file, bla_claim_table_seq_print_text, net_dev);
++}
++
++
+ static int transtable_local_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+@@ -271,6 +279,7 @@ struct bat_debuginfo bat_debuginfo_##_name = {	\
+ static BAT_DEBUGINFO(originators, S_IRUGO, originators_open);
+ static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
+ static BAT_DEBUGINFO(transtable_global, S_IRUGO, transtable_global_open);
++static BAT_DEBUGINFO(bla_claim_table, S_IRUGO, bla_claim_table_open);
+ static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
+ static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
+ 
+@@ -278,6 +287,7 @@ static struct bat_debuginfo *mesh_debuginfos[] = {
+ 	&bat_debuginfo_originators,
+ 	&bat_debuginfo_gateways,
+ 	&bat_debuginfo_transtable_global,
++	&bat_debuginfo_bla_claim_table,
+ 	&bat_debuginfo_transtable_local,
+ 	&bat_debuginfo_vis_data,
+ 	NULL,
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 641dbcc..bc4e57f 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -1238,3 +1238,54 @@ handled:
+ 		claim_free_ref(claim);
+ 	return 1;
+ }
++
++int bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
++{
++	struct net_device *net_dev = (struct net_device *)seq->private;
++	struct bat_priv *bat_priv = netdev_priv(net_dev);
++	struct hashtable_t *hash = bat_priv->claim_hash;
++	struct claim *claim;
++	struct hard_iface *primary_if;
++	struct hlist_node *node;
++	struct hlist_head *head;
++	uint32_t i;
++	int ret = 0;
++
++	primary_if = primary_if_get_selected(bat_priv);
++	if (!primary_if) {
++		ret = seq_printf(seq, "BATMAN mesh %s disabled - please "
++				 "specify interfaces to enable it\n",
++				 net_dev->name);
++		goto out;
++	}
++
++	if (primary_if->if_status != IF_ACTIVE) {
++		ret = seq_printf(seq, "BATMAN mesh %s disabled - "
++				 "primary interface not active\n",
++				 net_dev->name);
++		goto out;
++	}
++
++	seq_printf(seq, "Claims announced for the mesh %s "
++			"(orig %pM)\n",
++			net_dev->name, bat_priv->own_orig);
++	seq_printf(seq, "   %-17s    %-5s    %-17s [o] (%-4s)\n",
++		   "Client", "VID", "Originator", "CRC");
++	for (i = 0; i < hash->size; i++) {
++		head = &hash->table[i];
++
++		rcu_read_lock();
++		hlist_for_each_entry_rcu(claim, node, head, hash_entry)
++			seq_printf(seq,	" * %pM on % 5d by %pM [%c] (%04x)\n",
++				claim->addr, claim->vid,
++				claim->backbone_gw->orig,
++				(compare_eth(claim->backbone_gw->orig,
++					     bat_priv->own_orig) ? 'x' : ' '),
++				claim->backbone_gw->crc);
++		rcu_read_unlock();
++	}
++out:
++	if (primary_if)
++		hardif_free_ref(primary_if);
++	return ret;
++}
+diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
+index 8df5036..91aa515 100644
+--- a/bridge_loop_avoidance.h
++++ b/bridge_loop_avoidance.h
+@@ -23,6 +23,7 @@ int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
+ int bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
+ int bla_is_backbone_gw(struct sk_buff *skb,
+ 		struct orig_node *orig_node, int hdr_size);
++int bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
+ void bla_update_orig_address(struct bat_priv *bat_priv, uint8_t *newaddr);
+ int bla_init(struct bat_priv *bat_priv);
+ void bla_free(struct bat_priv *bat_priv);
 -- 
 1.7.7.1
 
