@@ -1,11 +1,16 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 30 Oct 2011 23:51:07 +0100
-Message-Id: <1320015072-10313-7-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1320015072-10313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 31 Oct 2011 00:20:24 +0100
 References: <1320015072-10313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [RFC 06/11] batman-adv: don't let backbone gateways
-	exchange tt entries
+	<1320015072-10313-3-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1320015072-10313-3-git-send-email-siwu@hrz.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201110310020.25024.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC 02/11] batman-adv: add basic bridge loop
+	avoidance code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,186 +22,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-As the backbone gateways are connected to the same backbone, they
-should announce the same clients on the backbone non-exclusively.
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
-[2011-10-27] Changes suggested by Marek Lindner:
- * move rcu_read_lock() more into the loops
+Hi,
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
- bridge_loop_avoidance.c |   50 +++++++++++++++++++++++++++++++++++++++++++++++
- bridge_loop_avoidance.h |    1 +
- routing.c               |    6 +++++
- translation-table.c     |   17 ++++++++++++++-
- 4 files changed, 72 insertions(+), 2 deletions(-)
+>  * always become a backbone gw for a VLAN when there is traffic,
+>    even if there are no claims, to let at least let other backbone gw
+>    nodes that we are able to receive on that VLAN and avoid broadcast
+>    loops.
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index bc4e57f..a787c96 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -24,6 +24,7 @@
- #include "hard-interface.h"
- #include "originator.h"
- #include "bridge_loop_avoidance.h"
-+#include "translation-table.h"
- #include "send.h"
- 
- #include <linux/etherdevice.h>
-@@ -350,6 +351,7 @@ static struct backbone_gw *bla_get_backbone_gw(struct bat_priv *bat_priv,
- 		uint8_t *orig, short vid)
- {
- 	struct backbone_gw *entry;
-+	struct orig_node *orig_node;
- 
- 	entry = backbone_hash_find(bat_priv, orig, vid);
- 
-@@ -377,6 +379,13 @@ static struct backbone_gw *bla_get_backbone_gw(struct bat_priv *bat_priv,
- 	hash_add(bat_priv->backbone_hash, compare_backbone_gw, choose_claim,
- 			entry, &entry->hash_entry);
- 
-+	/* this is a gateway now, remove any tt entries */
-+	orig_node = orig_hash_find(bat_priv, orig);
-+	if (orig_node) {
-+		tt_global_del_orig(bat_priv, orig_node,
-+			    "became a backbone gateway");
-+		orig_node_free_ref(orig_node);
-+	}
- 	return entry;
- }
- 
-@@ -979,6 +988,47 @@ int bla_init(struct bat_priv *bat_priv)
- }
- 
- /**
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @orig: originator mac address
-+ *
-+ * check if the originator is a gateway for any VLAN ID.
-+ *
-+ * returns 1 if it is found, 0 otherwise
-+ *
-+ **/
-+
-+int bla_is_backbone_gw_orig(struct bat_priv *bat_priv, uint8_t *orig)
-+{
-+	struct hashtable_t *hash = bat_priv->backbone_hash;
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct backbone_gw *backbone_gw;
-+	int i;
-+
-+	if (!atomic_read(&bat_priv->bridge_loop_avoidance))
-+		return 0;
-+
-+	if (!hash)
-+		return 0;
-+
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(backbone_gw, node, head, hash_entry) {
-+			if (compare_eth(backbone_gw->orig, orig)) {
-+				rcu_read_unlock();
-+				return 1;
-+			}
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	return 0;
-+}
-+
-+
-+/**
-  * @skb: the frame to be checked
-  * @orig_node: the orig_node of the frame
-  * @hdr_size: maximum length of the frame
-diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
-index 91aa515..bafcfac 100644
---- a/bridge_loop_avoidance.h
-+++ b/bridge_loop_avoidance.h
-@@ -24,6 +24,7 @@ int bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
- int bla_is_backbone_gw(struct sk_buff *skb,
- 		struct orig_node *orig_node, int hdr_size);
- int bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
-+int bla_is_backbone_gw_orig(struct bat_priv *bat_priv, uint8_t *orig);
- void bla_update_orig_address(struct bat_priv *bat_priv, uint8_t *newaddr);
- int bla_init(struct bat_priv *bat_priv);
- void bla_free(struct bat_priv *bat_priv);
-diff --git a/routing.c b/routing.c
-index 8050fb2..1554f60 100644
---- a/routing.c
-+++ b/routing.c
-@@ -675,6 +675,12 @@ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
- 	if (!is_my_mac(roam_adv_packet->dst))
- 		return route_unicast_packet(skb, recv_if);
- 
-+	/* check if it is a backbone gateway. we don't accept
-+	 * roaming advertisement from it, as it has the same
-+	 * entries as we have. */
-+	if (bla_is_backbone_gw_orig(bat_priv, roam_adv_packet->src))
-+		goto out;
-+
- 	orig_node = orig_hash_find(bat_priv, roam_adv_packet->src);
- 	if (!orig_node)
- 		goto out;
-diff --git a/translation-table.c b/translation-table.c
-index 946a872..06a51e5 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -27,6 +27,7 @@
- #include "hash.h"
- #include "originator.h"
- #include "routing.h"
-+#include "bridge_loop_avoidance.h"
- 
- #include <linux/crc16.h>
- 
-@@ -1501,9 +1502,13 @@ out:
- bool send_tt_response(struct bat_priv *bat_priv,
- 		      struct tt_query_packet *tt_request)
- {
--	if (is_my_mac(tt_request->dst))
-+	if (is_my_mac(tt_request->dst)) {
-+		/* don't answer backbone gws! */
-+		if (bla_is_backbone_gw_orig(bat_priv, tt_request->src))
-+			return true;
-+
- 		return send_my_tt_response(bat_priv, tt_request);
--	else
-+	} else
- 		return send_other_tt_response(bat_priv, tt_request);
- }
- 
-@@ -1608,6 +1613,10 @@ void handle_tt_response(struct bat_priv *bat_priv,
- 		tt_response->tt_data,
- 		(tt_response->flags & TT_FULL_TABLE ? 'F' : '.'));
- 
-+	/* we should have never asked a backbone gw */
-+	if (bla_is_backbone_gw_orig(bat_priv, tt_response->src))
-+		goto out;
-+
- 	orig_node = orig_hash_find(bat_priv, tt_response->src);
- 	if (!orig_node)
- 		goto out;
-@@ -1922,6 +1931,10 @@ void tt_update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 	uint8_t orig_ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
- 	bool full_table = true;
- 
-+	/* don't care about a backbone gateways updates. */
-+	if (bla_is_backbone_gw_orig(bat_priv, orig_node->orig))
-+		return;
-+
- 	/* the ttvn increased by one -> we can apply the attached changes */
- 	if (ttvn - orig_ttvn == 1) {
- 		/* the OGM could not contain the changes due to their size or
--- 
-1.7.7.1
+could you give some more details on this change ? Why is it not necessary 
+without VLANs ?
 
+Regards,
+Marek
