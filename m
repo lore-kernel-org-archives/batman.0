@@ -1,13 +1,8 @@
-Return-Path: <davem@davemloft.net>
-Date: Sun, 30 Oct 2011 03:07:45 -0400 (EDT)
-Message-Id: <20111030.030745.1245988853394270780.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1319875606-7794-1-git-send-email-lindner_marek@yahoo.de>
-References: <1319875606-7794-1-git-send-email-lindner_marek@yahoo.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-10-29
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 30 Oct 2011 09:55:56 +0100
+Message-Id: <1319964962-5092-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/6] DAT: Distributed ARP Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,36 +14,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: lindner_marek@yahoo.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, stable@kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 29 Oct 2011 10:06:43 +0200
+Hello people,
+as most of you may already know, last summer I've been working on the
+B.A.T.M.A.N.-Adv GSoC project named "DAT: Distributed ARP Table". For who wants
+to get deeper into the details of the project there are two links:
+- The GSoC proposal [1]
+- The DAT wikipage on open-mesh.org [2], with status and ideas description
 
->   git://git.open-mesh.org/linux-merge.git batman-adv/maint
+Just to recap: DAT is a distributes hash table meant to store ARP entries for
+fast lookup. In a normal scenario, whenever a node wants to communicate with
+another one, it first needs to issue a broadcast ARP request in order to
+retrieve its PHY/MAC address. In a sparse network a broadcast message could be
+lost several times before reaching the real destination so creating high
+latencies. With DAT, every ARP entries (a pair [IP addr, MAC addr]) is stored on
+a "computed" set of nodes, therefore in case of ARP request theses nodes can
+directly be contacted (in unicast) and the needed information can be quickly
+fetched.
 
-Pulled, but long term you should shore up your datastructures to
-handle that issue in patch #3.
+Cheers,
+Antonio
 
-Make a common header:
+[1] http://www.google-melange.com/gsoc/project/google/gsoc2011/ordex/4001
+[2] http://www.open-mesh.org/wiki/batman-adv/DAT
 
-	struct tt_entry_common {
-		u8 addr[ETH_ALEN];
-		struct hlist_node hash_entry;
-	};
-
-Then use that at the beginning of both structures:
-
-	struct tt_local_entry {
-		struct tt_entry_common common;
-		unsigned long last_seen;
-		...
-	};
-
-	struct tt_global_entry {
-		struct tt_entry_comomn common;
-		struct orig_node *orig_node;
-		...
-	};
-
-And &p->common is what gets passed into tt_response_fill_table().
