@@ -1,9 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 30 Oct 2011 22:27:53 +0100
-Message-Id: <1320010073-29681-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: retrieve compat version from version
-	field in case of parameter problem
+Date: Sun, 30 Oct 2011 22:36:07 +0100
+References: <mailman.52.1312816695.1125.b.a.t.m.a.n@lists.open-mesh.org>
+	<CAFevQmMJiKnWwa9miU+eFe4WsGRCTj_H6Y+L91jqhM41G0wW4g@mail.gmail.com>
+	<CAFevQmP7Qu5iMi6nHG3WJdbXFAEQej9Ro7W9aEkLxg4YhSX-wQ@mail.gmail.com>
+In-Reply-To: <CAFevQmP7Qu5iMi6nHG3WJdbXFAEQej9Ro7W9aEkLxg4YhSX-wQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201110302236.07940.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] openwrt lib/batman-adv/config.sh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,46 +22,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Reported-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- ping.c       |    4 ++--
- traceroute.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/ping.c b/ping.c
-index 1003ab1..91b733a 100644
---- a/ping.c
-+++ b/ping.c
-@@ -283,8 +283,8 @@ int ping(char *mesh_iface, int argc, char **argv)
- 			break;
- 		case PARAMETER_PROBLEM:
- 			printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
--					icmp_packet_in.ttl, COMPAT_VERSION);
--			printf("Please make sure to compatible versions!\n");
-+					icmp_packet_in.version, COMPAT_VERSION);
-+			printf("Please make sure to use compatible versions!\n");
- 			goto out;
- 		default:
- 			printf("Unknown message type %d len %zd received\n", icmp_packet_in.msg_type, read_len);
-diff --git a/traceroute.c b/traceroute.c
-index ea43331..d120311 100644
---- a/traceroute.c
-+++ b/traceroute.c
-@@ -188,8 +188,8 @@ int traceroute(char *mesh_iface, int argc, char **argv)
- 				goto out;
- 			case PARAMETER_PROBLEM:
- 				printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
--						icmp_packet_in.ttl, COMPAT_VERSION);
--				printf("Please make sure to compatible versions!\n");
-+						icmp_packet_in.version, COMPAT_VERSION);
-+				printf("Please make sure to use compatible versions!\n");
- 				goto out;
- 			default:
- 				printf("Unknown message type %d len %zd received\n", icmp_packet_in.msg_type, read_len);
--- 
-1.7.5.4
+Filippo,
 
+> I've writed a hotplug.d script that readd interfaces that are present
+> in every bat definition of batman-adv uci file when network restart or
+>  an interface come up.
+> This script must be placed in /etc/hotplug.d/net/
+> 
+> P.S. for Marek you don't need to split /etc/init.d/batman-adv function
+> in a separate file such the previous emails.
+
+I am little bit late with your script but finally got around looking at it. 
+Why don't we use the functions from /lib/batman-adv/config.sh as we previously 
+discussed ? Any unexpected side effects ?
+
+Regards,
+Marek
