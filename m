@@ -1,11 +1,14 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun, 30 Oct 2011 16:36:00 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 30 Oct 2011 16:22:43 +0100
-Message-Id: <1319988163-3249-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <4EAC49D7.2060609@intra2net.com>
-References: <4EAC49D7.2060609@intra2net.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix range check for expected
-	packets
+Message-ID: <20111030153600.GA3234@pandem0nium>
+References: <1850275.SO2QzbpOTm@sven-laptop.home.narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
+Content-Disposition: inline
+In-Reply-To: <1850275.SO2QzbpOTm@sven-laptop.home.narfation.org>
+Subject: Re: [B.A.T.M.A.N.] Weird TTL for ICMP packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,32 +20,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The check for new packets in the future used a wrong binary operator,
-which makes the check expression always true and accepting too many
-packets.
 
-Reported-by: Thomas Jarosch <thomas.jarosch@intra2net.com>
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
- bitarray.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+--azLHFNyN32YCQGCU
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/bitarray.c b/bitarray.c
-index 0be9ff3..9bc63b2 100644
---- a/bitarray.c
-+++ b/bitarray.c
-@@ -155,7 +155,7 @@ int bit_get_packet(void *priv, unsigned long *seq_bits,
- 	/* sequence number is much newer, probably missed a lot of packets */
- 
- 	if ((seq_num_diff >= TQ_LOCAL_WINDOW_SIZE)
--		|| (seq_num_diff < EXPECTED_SEQNO_RANGE)) {
-+		&& (seq_num_diff < EXPECTED_SEQNO_RANGE)) {
- 		bat_dbg(DBG_BATMAN, bat_priv,
- 			"We missed a lot of packets (%i) !\n",
- 			seq_num_diff - 1);
--- 
-1.7.7
+Hi Sven,
 
+although looking a little bit confusing, this seems to be correct. The TTL
+field is used to transport the kernel modules compat version when it differs
+=66rom the one used in batctl.
+
+Compare the batctl code (ping.c:284):
+               switch (icmp_packet_in.msg_type) {
+[...]
+               case PARAMETER_PROBLEM:
+                        printf("Error - the batman adv kernel module versio=
+n (%d) differs from ours (%d)\n",
+                                        icmp_packet_in.ttl, COMPAT_VERSION);
+                        printf("Please make sure to compatible versions!\n"=
+);
+                        goto out;
+[...]
+
+However, I guess an explaining comment in the kernel code would not be wron=
+g ...
+
+Cheers
+	Simon
+
+
+On Sun, Oct 30, 2011 at 02:31:55PM +0100, Sven Eckelmann wrote:
+> Hi,
+>=20
+> just looked through some ICMP code in icmp_socket.c and found a little bi=
+t=20
+> weird TTL:
+>=20
+> 218         if (icmp_packet->version !=3D COMPAT_VERSION) {              =
+                                                                       =20
+> 219                 icmp_packet->msg_type =3D PARAMETER_PROBLEM;         =
+                                                                       =20
+> 220                 icmp_packet->ttl =3D COMPAT_VERSION;                 =
+                                                                       =20
+> 221                 bat_socket_add_packet(socket_client, icmp_packet,=20
+> packet_len);
+> 222                 goto free_skb;                                       =
+                                                                     =20
+> 223         }
+>=20
+> It was introduced by dba95eb270ff9674326865a20d25921c69c04d6c. My guess i=
+s=20
+> that TTL should be used.
+>=20
+> Kind regards,
+> 	Sven
+
+
+
+--azLHFNyN32YCQGCU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk6tbuAACgkQrzg/fFk7axbNWgCcCqfpogssYx3sk1Jo2z7vDmJd
+6/cAoIoqK/useBJ+c2MkaBNbUzbYz99y
+=Jo5q
+-----END PGP SIGNATURE-----
+
+--azLHFNyN32YCQGCU--
