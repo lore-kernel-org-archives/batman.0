@@ -1,16 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 30 Oct 2011 16:57:29 +0100
-Message-ID: <3309808.jFsLfLl59Z@sven-laptop.home.narfation.org>
-In-Reply-To: <1319989246-3670-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-References: <1850275.SO2QzbpOTm@sven-laptop.home.narfation.org>
-	<1319989246-3670-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2631024.8o764XIf9i";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: explain the weird TTL for
-	ICMP packets
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 30 Oct 2011 20:09:01 +0100
+Message-Id: <1320001741-18351-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: generalise tt_local_reset_flags()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,54 +15,90 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+
+The tt_local_reset_flags() is actually used for one use case only. It is not
+generalised enough to be used indifferent situations. This patch make it general
+enough in order to let other code use it whenever a flag flip is requested over
+the whole hash table (passed as parameter).
+
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+
+This patch depends on:
+
+batman-adv: create a common substructure for tt_global/local_entry
 
 
---nextPart2631024.8o764XIf9i
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+ translation-table.c |   31 ++++++++++++++++++++-----------
+ 1 files changed, 20 insertions(+), 11 deletions(-)
 
-On Sunday 30 October 2011 16:40:46 Simon Wunderlich wrote:
-> A comment may clear this up ...
-> 
-> Reported-by: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-
-NAcked-by: Sven Eckelmann <sven@narfation.org>
-
-No, the problem is that there is a ttl field and a version field. There is no 
-reason to use the ttl field for the version or the version field for the ttl. 
-When we query the information from the kernel, why don't we use the correct 
-stuff in the common header structure. And the ttl position wasn't stable... so 
-it would create a random number anyway when mixing particular versions of 
-batman-adv/batctl.
-
-But yes, you are right that the TTL mentioned in my first post doesn't make 
-sense either.
-
-Kind regards,
-	Sven
---nextPart2631024.8o764XIf9i
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJOrXPpAAoJEF2HCgfBJntGBvcP/RvsARfluJLOoAq48PwaFyip
-hEbmkwynUK/q3+tzzZZD7jeIg62LkAXhRV2jZdhrISWRU5DtW8trjRZyQD5OFIQZ
-z1klPK062NUrnvrT58s1Xf8RW7m/LtI1pifIFjZeFiHaj9OAOP1/HUNPzW6vATvH
-qe13Pm8MAYpjxbXJguKXDvQwvqbdXz/RgJ5QEDjdwHoIHSKzydS/4rTAMFFbcVBF
-wEDb7Me+bpH5tVsvA9/q6kG8/rjR89cWg0f6foUo7XvIzFR/WFnOuMg67JD7De48
-JtbK2PgFQk0JAC5pyhjJmYuCuYugb6luJEIQBAqLHuozbTwjOKyuJC410autCha/
-JymElYhuVCalohM+SCRWzGY56pgBpga+h6cjuIPaqDWK6EtewNNeZz8irig2mSaR
-6PKLckLTWsDgAsrVX1RiNr05Qryp4vh65yS6jZQyshm0+WCQRuwsHsjhRRT7MSxB
-bAoXfXBAoD5zRtWzzyDfT67ugAJeYfv+IPtdDshot0BaYqxjJYgcB3hqsanXmyvQ
-QiNpGw02vNAGxTEvg7/WnnBgWHpyO/u0+g+9Zc/PfteWKxiXqnwEecwPRBI4Nqy7
-BlDGg1r92i5v6KACidOgeaTEOLzbiNe4DLLRwJrTzHdnFHg9MBVYauqCAQKHp6qJ
-KuADlGGidKmOesqJUJng
-=ApbK
------END PGP SIGNATURE-----
-
---nextPart2631024.8o764XIf9i--
+diff --git a/translation-table.c b/translation-table.c
+index 76134bc..5b60aba 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1695,19 +1695,20 @@ void tt_free(struct bat_priv *bat_priv)
+ 	kfree(bat_priv->tt_buff);
+ }
+ 
+-/* This function will reset the specified flags from all the entries in
+- * the given hash table and will increment num_local_tt for each involved
+- * entry */
+-static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
++/* This function will flip to new_value (if not already) the specified flags for
++ * all the entries in the given hash table and returns the number of modified
++ * entries */
++static uint16_t tt_flip_flags(struct hashtable_t *hash, uint16_t flags,
++			     uint8_t new_value)
+ {
+ 	uint32_t i;
+-	struct hashtable_t *hash = bat_priv->tt_local_hash;
++	uint16_t changed_num = 0;
+ 	struct hlist_head *head;
+ 	struct hlist_node *node;
+ 	struct tt_common_entry *tt_common_entry;
+ 
+ 	if (!hash)
+-		return;
++		goto out;
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -1715,14 +1716,18 @@ static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(tt_common_entry, node,
+ 					 head, hash_entry) {
+-			if (!(tt_common_entry->flags & flags))
++			if ((tt_common_entry->flags & flags) != new_value)
+ 				continue;
+-			tt_common_entry->flags &= ~flags;
+-			atomic_inc(&bat_priv->num_local_tt);
++			/* depending on 'new_value', enable or disable the flags
++			 * pointed by 'flags' */
++			tt_common_entry->flags &=
++				(~flags | (new_value ? flags : NO_FLAGS));
++			changed_num++;
+ 		}
+ 		rcu_read_unlock();
+ 	}
+-
++out:
++	return changed_num;
+ }
+ 
+ /* Purge out all the tt local entries marked with TT_CLIENT_PENDING */
+@@ -1766,7 +1771,11 @@ static void tt_local_purge_pending_clients(struct bat_priv *bat_priv)
+ 
+ void tt_commit_changes(struct bat_priv *bat_priv)
+ {
+-	tt_local_reset_flags(bat_priv, TT_CLIENT_NEW);
++	uint16_t changed_num = tt_flip_flags(bat_priv->tt_local_hash,
++					    TT_CLIENT_NEW, 0);
++	/* all the reset entries have now to be effectively counted as local
++	 * entries */
++	atomic_add(changed_num, &bat_priv->num_local_tt);
+ 	tt_local_purge_pending_clients(bat_priv);
+ 
+ 	/* Increment the TTVN only once per OGM interval */
+-- 
+1.7.3.4
 
