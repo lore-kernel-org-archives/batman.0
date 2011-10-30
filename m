@@ -1,11 +1,13 @@
-Return-Path: <thomas.jarosch@intra2net.com>
-Message-ID: <4EAC49D7.2060609@intra2net.com>
-Date: Sat, 29 Oct 2011 20:45:43 +0200
-From: Thomas Jarosch <thomas.jarosch@intra2net.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <davem@davemloft.net>
+Date: Sun, 30 Oct 2011 03:07:45 -0400 (EDT)
+Message-Id: <20111030.030745.1245988853394270780.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1319875606-7794-1-git-send-email-lindner_marek@yahoo.de>
+References: <1319875606-7794-1-git-send-email-lindner_marek@yahoo.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] Logic bug in B.A.T.M.A.N. advanced driver
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-10-29
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,47 +19,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: lindner_marek@yahoo.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, stable@kernel.org
 
-Hi Marek,
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 29 Oct 2011 10:06:43 +0200
 
-Consider this code from "net/batman-adv/bitarray.c":
+>   git://git.open-mesh.org/linux-merge.git batman-adv/maint
 
-int bit_get_packet(void *priv, unsigned long *seq_bits,
-		    int32_t seq_num_diff, int set_mark)
-{
-        ...
+Pulled, but long term you should shore up your datastructures to
+handle that issue in patch #3.
 
-	if ((seq_num_diff >= TQ_LOCAL_WINDOW_SIZE)
-		|| (seq_num_diff < EXPECTED_SEQNO_RANGE)) {
-		bat_dbg(DBG_BATMAN, bat_priv,
-			"We missed a lot of packets (%i) !\n",
-			seq_num_diff - 1);
-		bit_reset_window(seq_bits);
-		if (set_mark)
-			bit_mark(seq_bits, 0);
-		return 1;
-	}
------------------------------------
+Make a common header:
 
-The defines from "main.h":
-#define TQ_LOCAL_WINDOW_SIZE 64
-#define EXPECTED_SEQNO_RANGE	65536
+	struct tt_entry_common {
+		u8 addr[ETH_ALEN];
+		struct hlist_node hash_entry;
+	};
 
+Then use that at the beginning of both structures:
 
-So that if() statement will translate to:
+	struct tt_local_entry {
+		struct tt_entry_common common;
+		unsigned long last_seen;
+		...
+	};
 
------------------------------------
-	if ((seq_num_diff >= 64)
-		|| (seq_num_diff < 65536)) {
------------------------------------
+	struct tt_global_entry {
+		struct tt_entry_comomn common;
+		struct orig_node *orig_node;
+		...
+	};
 
-and this will always evaluate to true.
-
-Detected by "cppcheck":
-"[net/batman-adv/bitarray.c:157]: (warning) Mutual exclusion over ||
-always evaluates to true. Did you intend to use && instead?"
-
-Cheers,
-Thomas
+And &p->common is what gets passed into tt_response_fill_table().
