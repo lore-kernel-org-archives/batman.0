@@ -1,8 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 30 Oct 2011 20:09:01 +0100
-Message-Id: <1320001741-18351-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: generalise tt_local_reset_flags()
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 30 Oct 2011 21:24:31 +0100
+References: <1319988980-3548-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1319988980-3548-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201110302124.31362.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix style changes
+	reported by cppcheck
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,91 +21,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The tt_local_reset_flags() is actually used for one use case only. It is not
-generalised enough to be used indifferent situations. This patch make it general
-enough in order to let other code use it whenever a flag flip is requested over
-the whole hash table (passed as parameter).
+On Sunday, October 30, 2011 16:36:20 Simon Wunderlich wrote:
+> cppcheck reported some style issues this patch fixes.
+> 
+> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> ---
+>  bat_iv_ogm.c     |    2 +-
+>  routing.c        |    2 +-
+>  soft-interface.c |    2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
+Do you mind saying what cppcheck reported ?
+What happened to patch 2/2 ?
 
-This patch depends on:
-
-batman-adv: create a common substructure for tt_global/local_entry
-
-
- translation-table.c |   31 ++++++++++++++++++++-----------
- 1 files changed, 20 insertions(+), 11 deletions(-)
-
-diff --git a/translation-table.c b/translation-table.c
-index 76134bc..5b60aba 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1695,19 +1695,20 @@ void tt_free(struct bat_priv *bat_priv)
- 	kfree(bat_priv->tt_buff);
- }
- 
--/* This function will reset the specified flags from all the entries in
-- * the given hash table and will increment num_local_tt for each involved
-- * entry */
--static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
-+/* This function will flip to new_value (if not already) the specified flags for
-+ * all the entries in the given hash table and returns the number of modified
-+ * entries */
-+static uint16_t tt_flip_flags(struct hashtable_t *hash, uint16_t flags,
-+			     uint8_t new_value)
- {
- 	uint32_t i;
--	struct hashtable_t *hash = bat_priv->tt_local_hash;
-+	uint16_t changed_num = 0;
- 	struct hlist_head *head;
- 	struct hlist_node *node;
- 	struct tt_common_entry *tt_common_entry;
- 
- 	if (!hash)
--		return;
-+		goto out;
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1715,14 +1716,18 @@ static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(tt_common_entry, node,
- 					 head, hash_entry) {
--			if (!(tt_common_entry->flags & flags))
-+			if ((tt_common_entry->flags & flags) != new_value)
- 				continue;
--			tt_common_entry->flags &= ~flags;
--			atomic_inc(&bat_priv->num_local_tt);
-+			/* depending on 'new_value', enable or disable the flags
-+			 * pointed by 'flags' */
-+			tt_common_entry->flags &=
-+				(~flags | (new_value ? flags : NO_FLAGS));
-+			changed_num++;
- 		}
- 		rcu_read_unlock();
- 	}
--
-+out:
-+	return changed_num;
- }
- 
- /* Purge out all the tt local entries marked with TT_CLIENT_PENDING */
-@@ -1766,7 +1771,11 @@ static void tt_local_purge_pending_clients(struct bat_priv *bat_priv)
- 
- void tt_commit_changes(struct bat_priv *bat_priv)
- {
--	tt_local_reset_flags(bat_priv, TT_CLIENT_NEW);
-+	uint16_t changed_num = tt_flip_flags(bat_priv->tt_local_hash,
-+					    TT_CLIENT_NEW, 0);
-+	/* all the reset entries have now to be effectively counted as local
-+	 * entries */
-+	atomic_add(changed_num, &bat_priv->num_local_tt);
- 	tt_local_purge_pending_clients(bat_priv);
- 
- 	/* Increment the TTVN only once per OGM interval */
--- 
-1.7.3.4
-
+Regards,
+Marek
