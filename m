@@ -1,14 +1,9 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 30 Oct 2011 16:36:00 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20111030153600.GA3234@pandem0nium>
-References: <1850275.SO2QzbpOTm@sven-laptop.home.narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
-Content-Disposition: inline
-In-Reply-To: <1850275.SO2QzbpOTm@sven-laptop.home.narfation.org>
-Subject: Re: [B.A.T.M.A.N.] Weird TTL for ICMP packets
+Date: Sun, 30 Oct 2011 16:36:20 +0100
+Message-Id: <1319988980-3548-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix style changes reported
+	by cppcheck
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,78 +15,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
+cppcheck reported some style issues this patch fixes.
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ bat_iv_ogm.c     |    2 +-
+ routing.c        |    2 +-
+ soft-interface.c |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-Hi Sven,
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 3512e25..17b6dfa 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -990,7 +990,6 @@ static void bat_ogm_process(const struct ethhdr *ethhdr,
+ 
+ 	if (is_my_orig) {
+ 		unsigned long *word;
+-		int offset;
+ 
+ 		orig_neigh_node = get_orig_node(bat_priv, ethhdr->h_source);
+ 		if (!orig_neigh_node)
+@@ -1002,6 +1001,7 @@ static void bat_ogm_process(const struct ethhdr *ethhdr,
+ 		if (has_directlink_flag &&
+ 		    compare_eth(if_incoming->net_dev->dev_addr,
+ 				batman_ogm_packet->orig)) {
++			int offset;
+ 			offset = if_incoming->if_num * NUM_WORDS;
+ 
+ 			spin_lock_bh(&orig_neigh_node->ogm_cnt_lock);
+diff --git a/routing.c b/routing.c
+index ef24a72..3e97c2c 100644
+--- a/routing.c
++++ b/routing.c
+@@ -977,7 +977,6 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	struct unicast_frag_packet *unicast_packet;
+ 	int hdr_size = sizeof(*unicast_packet);
+ 	struct sk_buff *new_skb = NULL;
+-	int ret;
+ 
+ 	if (check_unicast_packet(skb, hdr_size) < 0)
+ 		return NET_RX_DROP;
+@@ -989,6 +988,7 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 
+ 	/* packet for me */
+ 	if (is_my_mac(unicast_packet->dest)) {
++		int ret;
+ 
+ 		ret = frag_reassemble_skb(skb, bat_priv, &new_skb);
+ 
+diff --git a/soft-interface.c b/soft-interface.c
+index 45297c8..3ed6781 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -692,7 +692,6 @@ void interface_rx(struct net_device *soft_iface,
+ 	struct vlan_ethhdr *vhdr;
+ 	struct softif_neigh *curr_softif_neigh = NULL;
+ 	short vid = -1;
+-	int ret;
+ 
+ 	/* check if enough space is available for pulling, and pull */
+ 	if (!pskb_may_pull(skb, hdr_size))
+@@ -722,6 +721,7 @@ void interface_rx(struct net_device *soft_iface,
+ 	 */
+ 	curr_softif_neigh = softif_neigh_vid_get_selected(bat_priv, vid);
+ 	if (curr_softif_neigh) {
++		int ret;
+ 		skb_push(skb, hdr_size);
+ 		unicast_packet = (struct unicast_packet *)skb->data;
+ 
+-- 
+1.7.7.1
 
-although looking a little bit confusing, this seems to be correct. The TTL
-field is used to transport the kernel modules compat version when it differs
-=66rom the one used in batctl.
-
-Compare the batctl code (ping.c:284):
-               switch (icmp_packet_in.msg_type) {
-[...]
-               case PARAMETER_PROBLEM:
-                        printf("Error - the batman adv kernel module versio=
-n (%d) differs from ours (%d)\n",
-                                        icmp_packet_in.ttl, COMPAT_VERSION);
-                        printf("Please make sure to compatible versions!\n"=
-);
-                        goto out;
-[...]
-
-However, I guess an explaining comment in the kernel code would not be wron=
-g ...
-
-Cheers
-	Simon
-
-
-On Sun, Oct 30, 2011 at 02:31:55PM +0100, Sven Eckelmann wrote:
-> Hi,
->=20
-> just looked through some ICMP code in icmp_socket.c and found a little bi=
-t=20
-> weird TTL:
->=20
-> 218         if (icmp_packet->version !=3D COMPAT_VERSION) {              =
-                                                                       =20
-> 219                 icmp_packet->msg_type =3D PARAMETER_PROBLEM;         =
-                                                                       =20
-> 220                 icmp_packet->ttl =3D COMPAT_VERSION;                 =
-                                                                       =20
-> 221                 bat_socket_add_packet(socket_client, icmp_packet,=20
-> packet_len);
-> 222                 goto free_skb;                                       =
-                                                                     =20
-> 223         }
->=20
-> It was introduced by dba95eb270ff9674326865a20d25921c69c04d6c. My guess i=
-s=20
-> that TTL should be used.
->=20
-> Kind regards,
-> 	Sven
-
-
-
---azLHFNyN32YCQGCU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAk6tbuAACgkQrzg/fFk7axbNWgCcCqfpogssYx3sk1Jo2z7vDmJd
-6/cAoIoqK/useBJ+c2MkaBNbUzbYz99y
-=Jo5q
------END PGP SIGNATURE-----
-
---azLHFNyN32YCQGCU--
