@@ -1,14 +1,10 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <4EAE69CF.6020807@hundeboll.net>
-Date: Mon, 31 Oct 2011 10:26:39 +0100
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+Return-Path: <gmazzurco89@gmail.com>
 MIME-Version: 1.0
-References: <1319964962-5092-1-git-send-email-ordex@autistici.org>
-	<20111031000347.GB10726@pandem0nium>
-In-Reply-To: <20111031000347.GB10726@pandem0nium>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/6] DAT: Distributed ARP Table
+Date: Mon, 31 Oct 2011 10:32:49 +0100
+Message-ID: <CAOaDhSSVMx1eN1G5rZ6-zh8Kh8xoddUOiQ0ua4StaX5bLHVQ7w@mail.gmail.com>
+From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] batman miss crc16 module after nico commit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +16,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: riot-workshop@googlegroups.com, Nodi Roma List <nodi-roma@ml.ninux.org>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <lindner_marek@yahoo.de>
 
-On 2011-10-31 01:03, Simon Wunderlich wrote:
-> Hello Antonio,
->
-> thanks for the patchset! I've tested it again in my kvm setup, it worked very
-> well.
->
-> There are some issues remaining, I'll comment the individual patches for this.
-> About the general stuff:
->
->   * maybe we should rename arp.{c|h} to dat.{c|h} to avoid confusion with
->     other code in the linux kernel?
+Hi all!
 
-I propose "distributet-arp-tables.{c|h}" to avoid too many acronyms in our file names.
+After nico commit [0] batman-adv stopped working in openwrt backfire (
+the crc16 modules is still kmod-crc16 in openwrt stable )
 
--- 
-Kind regards
-Martin Hundebøll
+the batman-adv module refuse to load without error message on stdout
+but saying that crc16 is missing on dmesg
 
-+45 61 65 54 61
-martin@hundeboll.net
 
-Nordborggade 57, 2. tv
-8000 Aarhus C
-Denmark
+selecting manually kernel modules -> other modules -> kmod-crc16 it work again
+
+[0]  https://dev.openwrt.org/changeset/28657/packages/net/batman-adv/Makefile
