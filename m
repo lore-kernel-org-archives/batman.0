@@ -1,10 +1,16 @@
-Return-Path: <gmazzurco89@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 31 Oct 2011 10:42:33 +0100
+References: <1319964962-5092-1-git-send-email-ordex@autistici.org>
+	<20111031000347.GB10726@pandem0nium>
+	<4EAE69CF.6020807@hundeboll.net>
+In-Reply-To: <4EAE69CF.6020807@hundeboll.net>
 MIME-Version: 1.0
-Date: Mon, 31 Oct 2011 10:32:49 +0100
-Message-ID: <CAOaDhSSVMx1eN1G5rZ6-zh8Kh8xoddUOiQ0ua4StaX5bLHVQ7w@mail.gmail.com>
-From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] batman miss crc16 module after nico commit
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201110311042.33719.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/6] DAT: Distributed ARP Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,17 +22,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: riot-workshop@googlegroups.com, Nodi Roma List <nodi-roma@ml.ninux.org>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi all!
+On Monday, October 31, 2011 10:26:39 Martin Hundeb=C3=B8ll wrote:
+> On 2011-10-31 01:03, Simon Wunderlich wrote:
+> > Hello Antonio,
+> >=20
+> > thanks for the patchset! I've tested it again in my kvm setup, it worked
+> > very well.
+> >=20
+> > There are some issues remaining, I'll comment the individual patches for
+> > this.
+> >=20
+> > About the general stuff:
+> >   * maybe we should rename arp.{c|h} to dat.{c|h} to avoid confusion wi=
+th
+> >  =20
+> >     other code in the linux kernel?
+>=20
+> I propose "distributet-arp-tables.{c|h}" to avoid too many acronyms in our
+> file names.
 
-After nico commit [0] batman-adv stopped working in openwrt backfire (
-the crc16 modules is still kmod-crc16 in openwrt stable )
+I second that but I suggest:
+distributed-arp-tables.{c|h}
 
-the batman-adv module refuse to load without error message on stdout
-but saying that crc16 is missing on dmesg
+Regards,
+Marek
 
-
-selecting manually kernel modules -> other modules -> kmod-crc16 it work again
-
-[0]  https://dev.openwrt.org/changeset/28657/packages/net/batman-adv/Makefile
