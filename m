@@ -1,14 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 31 Oct 2011 01:03:47 +0100
+Date: Mon, 31 Oct 2011 01:05:46 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20111031000347.GB10726@pandem0nium>
+Message-ID: <20111031000546.GC10726@pandem0nium>
 References: <1319964962-5092-1-git-send-email-ordex@autistici.org>
+	<1319964962-5092-2-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="jho1yZJdad60DJr+"
+	protocol="application/pgp-signature"; boundary="bAmEntskrkuBymla"
 Content-Disposition: inline
-In-Reply-To: <1319964962-5092-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/6] DAT: Distributed ARP Table
+In-Reply-To: <1319964962-5092-2-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: implement an helper
+ function to forge unicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,63 +25,68 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---jho1yZJdad60DJr+
+--bAmEntskrkuBymla
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hello Antonio,
+On Sun, Oct 30, 2011 at 09:55:57AM +0100, Antonio Quartulli wrote:
+> @@ -304,33 +331,22 @@ int unicast_send_skb(struct sk_buff *skb, struct ba=
+t_priv *bat_priv)
+>  	orig_node =3D transtable_search(bat_priv, ethhdr->h_source,
+>  				      ethhdr->h_dest);
+> =20
+> -find_router:
+> +prepare_packet:
+>  	/**
+>  	 * find_router():
 
-thanks for the patchset! I've tested it again in my kvm setup, it worked ve=
-ry
-well.
+I guess the comment should be changed as well when the label is renamed.
 
-There are some issues remaining, I'll comment the individual patches for th=
-is.
-About the general stuff:
+>  	 *  - if orig_node is NULL it returns NULL
+>  	 *  - increases neigh_nodes refcount if found.
+>  	 */
+>  	neigh_node =3D find_router(bat_priv, orig_node, NULL);
+> -
 
- * maybe we should rename arp.{c|h} to dat.{c|h} to avoid confusion with
-   other code in the linux kernel?
- * please do a checkpatch.pl --strict check on the patches, there were some
-   warnings about too long lines and bad spaces
+Do we really need to remove this newline?
 
-Cheers,
-	Simon
 
-On Sun, Oct 30, 2011 at 09:55:56AM +0100, Antonio Quartulli wrote:
-> Hello people,
-> as most of you may already know, last summer I've been working on the
-> B.A.T.M.A.N.-Adv GSoC project named "DAT: Distributed ARP Table". For who=
- wants
-> to get deeper into the details of the project there are two links:
-> - The GSoC proposal [1]
-> - The DAT wikipage on open-mesh.org [2], with status and ideas description
->=20
-> Just to recap: DAT is a distributes hash table meant to store ARP entries=
- for
-> fast lookup. In a normal scenario, whenever a node wants to communicate w=
-ith
-> another one, it first needs to issue a broadcast ARP request in order to
-> retrieve its PHY/MAC address. In a sparse network a broadcast message cou=
-ld be
-> lost several times before reaching the real destination so creating high
-> latencies. With DAT, every ARP entries (a pair [IP addr, MAC addr]) is st=
-ored on
-> a "computed" set of nodes, therefore in case of ARP request theses nodes =
-can
-> directly be contacted (in unicast) and the needed information can be quic=
-kly
-> fetched.
->=20
-> Cheers,
-> Antonio
->=20
-> [1] http://www.google-melange.com/gsoc/project/google/gsoc2011/ordex/4001
-> [2] http://www.open-mesh.org/wiki/batman-adv/DAT
->=20
->=20
+>  	if (!neigh_node)
+>  		goto out;
+> =20
+> -	if (my_skb_head_push(skb, sizeof(*unicast_packet)) < 0)
+> +	skb =3D prepare_unicast_packet(skb, orig_node);
+> +	if (!skb)
+>  		goto out;
+> =20
+>  	unicast_packet =3D (struct unicast_packet *)skb->data;
+> =20
+> -	unicast_packet->version =3D COMPAT_VERSION;
+> -	/* batman packet type: unicast */
+> -	unicast_packet->packet_type =3D BAT_UNICAST;
+> -	/* set unicast ttl */
+> -	unicast_packet->ttl =3D TTL;
+> -	/* copy the destination for faster routing */
+> -	memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
+> -	/* set the destination tt version number */
+> -	unicast_packet->ttvn =3D
+> -		(uint8_t)atomic_read(&orig_node->last_ttvn);
+> -
+>  	if (atomic_read(&bat_priv->fragmentation) &&
+>  	    data_len + sizeof(*unicast_packet) >
+>  				neigh_node->if_incoming->net_dev->mtu) {
+> @@ -350,7 +366,7 @@ out:
+>  		neigh_node_free_ref(neigh_node);
+>  	if (orig_node)
+>  		orig_node_free_ref(orig_node);
+> -	if (ret =3D=3D 1)
+> +	if (ret =3D=3D 1 && skb)
+>  		kfree_skb(skb);
+>  	return ret;
+>  }
 
---jho1yZJdad60DJr+
+--bAmEntskrkuBymla
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -87,9 +94,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAk6t5eMACgkQrzg/fFk7axaI/QCbBHqbFyEliGK4Vy4cHWGbIPDa
-s4YAn3zxJm6c4z1ma/bYcvNVDH/KvUOA
-=UHgN
+iEYEARECAAYFAk6t5lkACgkQrzg/fFk7axbx6ACeMvYj3tQqBdaN6BgDrq8+Ofuf
+EUQAn3tkj52wH/yRJka0LcS7m6GQdllK
+=e1vP
 -----END PGP SIGNATURE-----
 
---jho1yZJdad60DJr+--
+--bAmEntskrkuBymla--
