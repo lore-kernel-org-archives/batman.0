@@ -1,17 +1,14 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 31 Oct 2011 01:00:34 +0100
+Date: Mon, 31 Oct 2011 01:03:47 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20111031000034.GA10726@pandem0nium>
-References: <1320015072-10313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-	<1320015072-10313-3-git-send-email-siwu@hrz.tu-chemnitz.de>
-	<201110310020.25024.lindner_marek@yahoo.de>
+Message-ID: <20111031000347.GB10726@pandem0nium>
+References: <1319964962-5092-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
+	protocol="application/pgp-signature"; boundary="jho1yZJdad60DJr+"
 Content-Disposition: inline
-In-Reply-To: <201110310020.25024.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC 02/11] batman-adv: add basic bridge loop
- avoidance code
+In-Reply-To: <1319964962-5092-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/6] DAT: Distributed ARP Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,39 +23,63 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---OgqxwSJOaUobr8KG
+--jho1yZJdad60DJr+
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hello Antonio,
 
-On Mon, Oct 31, 2011 at 12:20:24AM +0100, Marek Lindner wrote:
->=20
-> Hi,
->=20
-> >  * always become a backbone gw for a VLAN when there is traffic,
-> >    even if there are no claims, to let at least let other backbone gw
-> >    nodes that we are able to receive on that VLAN and avoid broadcast
-> >    loops.
->=20
-> could you give some more details on this change ? Why is it not necessary=
-=20
-> without VLANs ?
+thanks for the patchset! I've tested it again in my kvm setup, it worked ve=
+ry
+well.
 
-Actually it's also useful for cases without VLANs, e.g. if there has not
-been any traffic yet. However if there is traffic it soon happens in both
-directions and therefore claims are added and situation resolves automatica=
-lly.
+There are some issues remaining, I'll comment the individual patches for th=
+is.
+About the general stuff:
 
-I had the situation that on some VLANs there were no traffic at all for som=
-e time
-and when it suddenly started, the bla system did some weird things.
+ * maybe we should rename arp.{c|h} to dat.{c|h} to avoid confusion with
+   other code in the linux kernel?
+ * please do a checkpatch.pl --strict check on the patches, there were some
+   warnings about too long lines and bad spaces
 
-Cheers
+Cheers,
 	Simon
 
---OgqxwSJOaUobr8KG
+On Sun, Oct 30, 2011 at 09:55:56AM +0100, Antonio Quartulli wrote:
+> Hello people,
+> as most of you may already know, last summer I've been working on the
+> B.A.T.M.A.N.-Adv GSoC project named "DAT: Distributed ARP Table". For who=
+ wants
+> to get deeper into the details of the project there are two links:
+> - The GSoC proposal [1]
+> - The DAT wikipage on open-mesh.org [2], with status and ideas description
+>=20
+> Just to recap: DAT is a distributes hash table meant to store ARP entries=
+ for
+> fast lookup. In a normal scenario, whenever a node wants to communicate w=
+ith
+> another one, it first needs to issue a broadcast ARP request in order to
+> retrieve its PHY/MAC address. In a sparse network a broadcast message cou=
+ld be
+> lost several times before reaching the real destination so creating high
+> latencies. With DAT, every ARP entries (a pair [IP addr, MAC addr]) is st=
+ored on
+> a "computed" set of nodes, therefore in case of ARP request theses nodes =
+can
+> directly be contacted (in unicast) and the needed information can be quic=
+kly
+> fetched.
+>=20
+> Cheers,
+> Antonio
+>=20
+> [1] http://www.google-melange.com/gsoc/project/google/gsoc2011/ordex/4001
+> [2] http://www.open-mesh.org/wiki/batman-adv/DAT
+>=20
+>=20
+
+--jho1yZJdad60DJr+
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -66,9 +87,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAk6t5SIACgkQrzg/fFk7axZDUgCg2d63fZJjc/KjOujosQZlCzVs
-D3QAoKBngSpO5oOonjaeVSlrMdRVcw+K
-=LHiR
+iEYEARECAAYFAk6t5eMACgkQrzg/fFk7axaI/QCbBHqbFyEliGK4Vy4cHWGbIPDa
+s4YAn3zxJm6c4z1ma/bYcvNVDH/KvUOA
+=UHgN
 -----END PGP SIGNATURE-----
 
---OgqxwSJOaUobr8KG--
+--jho1yZJdad60DJr+--
