@@ -1,16 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 31 Oct 2011 01:10:04 +0100
+Date: Mon, 31 Oct 2011 01:12:21 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20111031001004.GE10726@pandem0nium>
+Message-ID: <20111031001221.GF10726@pandem0nium>
 References: <1319964962-5092-1-git-send-email-ordex@autistici.org>
-	<1319964962-5092-5-git-send-email-ordex@autistici.org>
+	<1319964962-5092-6-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qOrJKOH36bD5yhNe"
+	protocol="application/pgp-signature"; boundary="tmoQ0UElFV5VgXgH"
 Content-Disposition: inline
-In-Reply-To: <1319964962-5092-5-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/6] batman-adv: Distributed ARP Table -
- add ARP parsing functions
+In-Reply-To: <1319964962-5092-6-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/6] batman-adv: Distributed ARP Table -
+ add snooping functions for ARP messages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,87 +25,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---qOrJKOH36bD5yhNe
+--tmoQ0UElFV5VgXgH
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-This patch is not checkpatch.pl --strict clean
+This patch fails checkpatch.pl --strict.
 
-On Sun, Oct 30, 2011 at 09:56:00AM +0100, Antonio Quartulli wrote:
-> ARP messages are now parsed to make it possible to trigger special actions
-> depending on their types (snooping).
->=20
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  arp.c |   43 +++++++++++++++++++++++++++++++++++++++++++
->  arp.h |    7 +++++++
->  2 files changed, 50 insertions(+), 0 deletions(-)
->=20
-> diff --git a/arp.c b/arp.c
-> index 39043b8..ea7cc1e 100644
-> --- a/arp.c
-> +++ b/arp.c
-> @@ -183,3 +183,46 @@ out:
->  	kfree(cand);
->  	return ret;
->  }
+On Sun, Oct 30, 2011 at 09:56:01AM +0100, Antonio Quartulli wrote:
+> +bool arp_snoop_outgoing_request(struct bat_priv *bat_priv, struct sk_buf=
+f *skb)
+> [...]
+> +	arp_neigh_update(bat_priv, ip_src, hw_src);
 > +
-> +/* Returns arphdr->ar_op if the skb contains a valid ARP packet, otherwi=
-se
-> + * returns 0 */
-> +uint16_t arp_get_type(struct bat_priv *bat_priv, struct sk_buff *skb)
-> +{
-> +	struct arphdr *arphdr;
-> +	struct ethhdr *ethhdr;
-> +	uint16_t type =3D 0;
-> +
-> +	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
-> +		goto out;
-> +
-> +	ethhdr =3D (struct ethhdr *)skb_mac_header(skb);
-> +
-> +	if (ethhdr->h_proto !=3D htons(ETH_P_ARP))
-> +		goto out;
-> +
-> +	if (unlikely(!pskb_may_pull(skb, ETH_HLEN + arp_hdr_len(skb->dev) + 8 +=
- 12)))
-> +		goto out;
+> +	n =3D neigh_lookup(&arp_tbl, &ip_dst, primary_if->soft_iface);
+> +	/* check if it is a valid neigh entry */
+> +	if (n && (n->nud_state & NUD_CONNECTED)) {
+> +		skb_new =3D arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
+> +				     primary_if->soft_iface, ip_dst, hw_src, n->ha,
+> +				     hw_src);
+> +		unicast_send_skb(skb_new, bat_priv);
+> +		bat_dbg(DBG_ARP, bat_priv, "ARP request replied locally\n");
 
-use ETH_ALEN * 2 + 4 * 2 instead to show where theses numbers come from.
+This function is hooked up in the tx patch, why do we send the unicast repl=
+y to
+the mesh? Shouldn't it be sent on the soft interface instead? I don't reall=
+y understand this one ...
 
-
-> +
-> +	arphdr =3D (struct arphdr *)(skb->data + sizeof(struct ethhdr));
-> +
-> +	/* Check whether the ARP packet carries a valid
-> +	 * IP information */
-> +	if (arphdr->ar_hrd !=3D htons(ARPHRD_ETHER))
-> +		goto out;
-> +
-> +	if (arphdr->ar_pro !=3D htons(ETH_P_IP))
-> +		goto out;
-> +
-> +	if (arphdr->ar_hln !=3D ETH_ALEN)
-> +		goto out;
-> +
-> +	if (arphdr->ar_pln !=3D 4)
-> +		goto out;
-> +
-> +	type =3D ntohs(arphdr->ar_op);
-> +	bat_dbg(DBG_ARP, bat_priv, "ARP message of type %d recognised "
-> +		"[%pM-%pI4 %pM-%pI4]\n", type, ARP_HW_SRC(skb),
-> +		&ARP_IP_SRC(skb), ARP_HW_DST(skb), &ARP_IP_DST(skb));
-
-Would you mind printing the type as string? something like REQUEST or REPLY=
- instead of 1 and 2 ...
-
-
+> +	} else
+> +		/* Send the request on the DHT */
+> +		ret =3D dht_send_data(bat_priv, skb, ip_dst);
+> +	if (n)
+> +		neigh_release(n);
 > +out:
-> +	return type;
+> +	if (primary_if)
+> +		hardif_free_ref(primary_if);
+> +	return ret;
 > +}
+> +
+> diff --git a/routing.c b/routing.c
+> index ef24a72..4f2b417 100644
+> --- a/routing.c
+> +++ b/routing.c
+> @@ -965,6 +966,7 @@ int recv_unicast_packet(struct sk_buff *skb, struct h=
+ard_iface *recv_if)
+>  	/* packet for me */
+>  	if (is_my_mac(unicast_packet->dest)) {
+>  		interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size);
+> +
+>  		return NET_RX_SUCCESS;
+>  	}
+> =20
 
---qOrJKOH36bD5yhNe
+This added newline is useless.
+
+--tmoQ0UElFV5VgXgH
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -113,9 +87,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAk6t51wACgkQrzg/fFk7axbroACfRtJiNnAm4/Abp4rWeG/O4dPg
-eZkAmwTw4/O3ptxv/OIQSimWGaAAf4cA
-=Cb2M
+iEYEARECAAYFAk6t5+UACgkQrzg/fFk7axaYggCgjnyniS3n6kiTtUxikb7/Vzk4
+EcQAnRCNEF6ajyqV50xjJ92bXJIOSeyF
+=MoQv
 -----END PGP SIGNATURE-----
 
---qOrJKOH36bD5yhNe--
+--tmoQ0UElFV5VgXgH--
