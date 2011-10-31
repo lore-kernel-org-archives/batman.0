@@ -1,13 +1,13 @@
-Return-Path: <gmazzurco89@gmail.com>
+Return-Path: <gwirth79@gmail.com>
+Message-ID: <4EAEEE96.9040808@gmail.com>
+Date: Mon, 31 Oct 2011 11:53:10 -0700
+From: Gus Wirth <gwirth79@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <201110311048.50063.lindner_marek@yahoo.de>
-References: <CAOaDhSSVMx1eN1G5rZ6-zh8Kh8xoddUOiQ0ua4StaX5bLHVQ7w@mail.gmail.com>
-	<201110311048.50063.lindner_marek@yahoo.de>
-Date: Mon, 31 Oct 2011 11:39:17 +0100
-Message-ID: <CAOaDhSSpYGNmZVsD4vSxYLqUtfqw4wHgTt_r4pbDL_ikP96fXw@mail.gmail.com>
-From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+References: <1319964962-5092-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1319964962-5092-1-git-send-email-ordex@autistici.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] batman miss crc16 module after nico commit
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/6] DAT: Distributed ARP Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,35 +19,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Nodi Roma List <nodi-roma@ml.ninux.org>, riot-workshop@googlegroups.com
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-More over backfire is not an old release but the stable one, aka the
-one people should use...
-
-2011/10/31 Marek Lindner <lindner_marek@yahoo.de>:
->
-> Hi,
->
->> After nico commit [0] batman-adv stopped working in openwrt backfire (
->> the crc16 modules is still kmod-crc16 in openwrt stable )
->>
->> the batman-adv module refuse to load without error message on stdout
->> but saying that crc16 is missing on dmesg
->>
->>
->> selecting manually kernel modules -> other modules -> kmod-crc16 it work
->> again
->>
->> [0]
->> https://dev.openwrt.org/changeset/28657/packages/net/batman-adv/Makefile
->
-> the OpenWrt developers have renamed the package dependency. Unless you are
-> using the OpenWrt trunk after revision 28656 the package dependency selection
-> won't work anymore.
->
-> Maybe you should ask them about their concept of backward compatibility.
->
+On 10/30/2011 01:55 AM, Antonio Quartulli wrote:
+> Hello people,
+> as most of you may already know, last summer I've been working on the
+> B.A.T.M.A.N.-Adv GSoC project named "DAT: Distributed ARP Table". For who wants
+> to get deeper into the details of the project there are two links:
+> - The GSoC proposal [1]
+> - The DAT wikipage on open-mesh.org [2], with status and ideas description
+> 
+> Just to recap: DAT is a distributes hash table meant to store ARP entries for
+> fast lookup. In a normal scenario, whenever a node wants to communicate with
+> another one, it first needs to issue a broadcast ARP request in order to
+> retrieve its PHY/MAC address. In a sparse network a broadcast message could be
+> lost several times before reaching the real destination so creating high
+> latencies. With DAT, every ARP entries (a pair [IP addr, MAC addr]) is stored on
+> a "computed" set of nodes, therefore in case of ARP request theses nodes can
+> directly be contacted (in unicast) and the needed information can be quickly
+> fetched.
+> 
 > Cheers,
-> Marek
->
+> Antonio
+> 
+> [1] http://www.google-melange.com/gsoc/project/google/gsoc2011/ordex/4001
+> [2] http://www.open-mesh.org/wiki/batman-adv/DAT
+
+The link to the Wiki page doesn't work.
+
+The actual link:
+
+http://www.open-mesh.org/wiki/batman-adv/DistributedArpTable
+
+Except there is no information there :(
+
+Gus
