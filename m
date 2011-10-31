@@ -1,16 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 31 Oct 2011 01:08:42 +0100
+Date: Mon, 31 Oct 2011 01:10:04 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20111031000841.GD10726@pandem0nium>
+Message-ID: <20111031001004.GE10726@pandem0nium>
 References: <1319964962-5092-1-git-send-email-ordex@autistici.org>
-	<1319964962-5092-4-git-send-email-ordex@autistici.org>
+	<1319964962-5092-5-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="7DO5AaGCk89r4vaK"
+	protocol="application/pgp-signature"; boundary="qOrJKOH36bD5yhNe"
 Content-Disposition: inline
-In-Reply-To: <1319964962-5092-4-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/6] batman-adv: Distributed ARP Table -
- create the DHT helper functions
+In-Reply-To: <1319964962-5092-5-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/6] batman-adv: Distributed ARP Table -
+ add ARP parsing functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,129 +25,87 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---7DO5AaGCk89r4vaK
+--qOrJKOH36bD5yhNe
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, Oct 30, 2011 at 09:55:59AM +0100, Antonio Quartulli wrote:
-> [...]
-> +		for (i = 0; i < hash->size; i++) {
-> +			head = &hash->table[i];
-> +
-> +			rcu_read_lock();
-> +			hlist_for_each_entry_rcu(orig_node, node, head,
-> +						 hash_entry) {
-> +				if (orig_node->dht_hash > ip_key)
-> +					tmp_max = USHRT_MAX -
-> +						orig_node->dht_hash + ip_key;
-> +				else
-> +					tmp_max = ip_key - orig_node->dht_hash;
-> +
-> +				/* this is closest! */
-> +				if (tmp_max <= max)
-> +					continue;
-> +
-> +				/* this has already been selected */
-> +				if (tmp_max > last_max)
-> +					continue;
-> +
-> +				if (!atomic_inc_not_zero(&orig_node->refcount))
-> +					continue;
-> +
-> +				/* In case of hash collision we can select two
-> +				 * nodes with the same hash, but we have ensure
-> +				 * they are different */
-> +				if (tmp_max == last_max) {
-> +					for (j = 0; j < select; j++)
-> +						if (res[j].orig_node ==
-> +						    orig_node)
-> +							break;
-> +					if (j < select)
-> +						continue;
-> +				}
-> +
-> +				if (!atomic_inc_not_zero(&orig_node->refcount))
-> +					continue;
+This patch is not checkpatch.pl --strict clean
 
-Why do you increase the refcount two times? If it is really required, please
-add a comment.
-
+On Sun, Oct 30, 2011 at 09:56:00AM +0100, Antonio Quartulli wrote:
+> ARP messages are now parsed to make it possible to trigger special actions
+> depending on their types (snooping).
+>=20
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+>  arp.c |   43 +++++++++++++++++++++++++++++++++++++++++++
+>  arp.h |    7 +++++++
+>  2 files changed, 50 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/arp.c b/arp.c
+> index 39043b8..ea7cc1e 100644
+> --- a/arp.c
+> +++ b/arp.c
+> @@ -183,3 +183,46 @@ out:
+>  	kfree(cand);
+>  	return ret;
+>  }
 > +
-> +				max = tmp_max;
-> +				if (max_orig_node)
-> +					orig_node_free_ref(max_orig_node);
-> +				max_orig_node = orig_node;
-> +			}
-> +			rcu_read_unlock();
-> +		}
-> +		last_max = max;
-> +		if (max_orig_node) {
-> +			res[select].type = DHT_CANDIDATE_ORIG;
-> +			res[select].orig_node = max_orig_node;
-> +			bat_dbg(DBG_ARP, bat_priv, "DHT_SEL_CAND %d: %pM %u\n",
-> +				select, max_orig_node->orig, max);
-> +		}
-> +		if (res[select].type == DHT_CANDIDATE_ME) {
-> +			chosen_me = true;
-> +			bat_dbg(DBG_ARP, bat_priv, "DHT_SEL_CAND %d: ME %u\n",
-> +				select, bat_priv->dht_hash);
-> +		}
-> +
-> +		max_orig_node = NULL;
-> +	}
-> +
-> +	return res;
-> +}
-> +
-> +/*
-> + * Sends the skb payload passed as argument to the candidates selected for
-> + * 'ip'. The skb is copied by means of pskb_copy() and is sent as unicast packet
-> + * to each of the selected candidate. */
-> +static bool dht_send_data(struct bat_priv *bat_priv, struct sk_buff *skb,
-> +			  uint32_t ip)
+> +/* Returns arphdr->ar_op if the skb contains a valid ARP packet, otherwi=
+se
+> + * returns 0 */
+> +uint16_t arp_get_type(struct bat_priv *bat_priv, struct sk_buff *skb)
 > +{
-> +	int i;
-> +	bool ret = false;
-> +	struct neigh_node *neigh_node = NULL;
-> +	struct sk_buff *tmp_skb;
-> +	struct dht_candidate *cand = dht_select_candidates(bat_priv, ip);
+> +	struct arphdr *arphdr;
+> +	struct ethhdr *ethhdr;
+> +	uint16_t type =3D 0;
 > +
-> +	if (!cand)
+> +	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
 > +		goto out;
 > +
-> +	bat_dbg(DBG_ARP, bat_priv, "DHT_SEND for %pI4\n", &ip);
+> +	ethhdr =3D (struct ethhdr *)skb_mac_header(skb);
 > +
-> +	for (i = 0; i < DHT_CANDIDATES_NUM; i++) {
-> +		if (cand[i].type == DHT_CANDIDATE_ME ||
-> +		    cand[i].type == DHT_CANDIDATE_NULL) {
-> +			continue;
-> +		}
+> +	if (ethhdr->h_proto !=3D htons(ETH_P_ARP))
+> +		goto out;
+> +
+> +	if (unlikely(!pskb_may_pull(skb, ETH_HLEN + arp_hdr_len(skb->dev) + 8 +=
+ 12)))
+> +		goto out;
 
-no braces are required here.
+use ETH_ALEN * 2 + 4 * 2 instead to show where theses numbers come from.
+
 
 > +
-> +		neigh_node = orig_node_get_router(cand[i].orig_node);
-> +		if (!neigh_node)
-> +			goto free_orig;
+> +	arphdr =3D (struct arphdr *)(skb->data + sizeof(struct ethhdr));
 > +
-> +		tmp_skb = pskb_copy(skb, GFP_ATOMIC);
-> +		tmp_skb = prepare_unicast_packet(tmp_skb, cand[i].orig_node);
-> +		if (tmp_skb)
-> +			send_skb_packet(tmp_skb, neigh_node->if_incoming,
-> +					neigh_node->addr);
-> +		/* set ret to true only if we send at least one request */
-> +		ret = true;
-> +		neigh_node_free_ref(neigh_node);
-> +free_orig:
-> +		orig_node_free_ref(cand[i].orig_node);
-> +	}
+> +	/* Check whether the ARP packet carries a valid
+> +	 * IP information */
+> +	if (arphdr->ar_hrd !=3D htons(ARPHRD_ETHER))
+> +		goto out;
 > +
+> +	if (arphdr->ar_pro !=3D htons(ETH_P_IP))
+> +		goto out;
+> +
+> +	if (arphdr->ar_hln !=3D ETH_ALEN)
+> +		goto out;
+> +
+> +	if (arphdr->ar_pln !=3D 4)
+> +		goto out;
+> +
+> +	type =3D ntohs(arphdr->ar_op);
+> +	bat_dbg(DBG_ARP, bat_priv, "ARP message of type %d recognised "
+> +		"[%pM-%pI4 %pM-%pI4]\n", type, ARP_HW_SRC(skb),
+> +		&ARP_IP_SRC(skb), ARP_HW_DST(skb), &ARP_IP_DST(skb));
+
+Would you mind printing the type as string? something like REQUEST or REPLY=
+ instead of 1 and 2 ...
+
+
 > +out:
-> +	kfree(cand);
-> +	return ret;
+> +	return type;
 > +}
 
---7DO5AaGCk89r4vaK
+--qOrJKOH36bD5yhNe
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -155,9 +113,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAk6t5wkACgkQrzg/fFk7axYtkwCgi+MQRIGGaCbw9uLTefkqf4jZ
-CIMAn3M9hXGa3qpgBnXE1B/Kud8pvVUT
-=bXpg
+iEYEARECAAYFAk6t51wACgkQrzg/fFk7axbroACfRtJiNnAm4/Abp4rWeG/O4dPg
+eZkAmwTw4/O3ptxv/OIQSimWGaAAf4cA
+=Cb2M
 -----END PGP SIGNATURE-----
 
---7DO5AaGCk89r4vaK--
+--qOrJKOH36bD5yhNe--
