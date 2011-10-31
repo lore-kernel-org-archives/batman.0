@@ -1,15 +1,14 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 31 Oct 2011 01:42:01 +0100
+Date: Mon, 31 Oct 2011 01:52:22 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20111031004201.GH10726@pandem0nium>
-References: <1320001741-18351-1-git-send-email-ordex@autistici.org>
+Message-ID: <20111031005222.GA12450@pandem0nium>
+References: <1320015072-10313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vtJ+CqYNzKB4ukR4"
+	protocol="application/pgp-signature"; boundary="ew6BAiZeqk4r7MaW"
 Content-Disposition: inline
-In-Reply-To: <1320001741-18351-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: generalise
- tt_local_reset_flags()
+In-Reply-To: <1320015072-10313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC 00/11] bridge loop avoidance II
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,127 +20,108 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---vtJ+CqYNzKB4ukR4
+--ew6BAiZeqk4r7MaW
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hey Antonio,
+Hey there,
 
-I don't quite understand what this patch is good for - it generalises the f=
-unction,
-but does not use the function at another point. So what it is good for (nex=
-t to
-add more complexity to batman ;] ).
+There are also some online repositories which might be interesting for
+your review:
 
-Furthermore it counts the changes and adds it to num_local_tt, is there a b=
-ug fix
-hidden in this patch somewhere? :)
+http://git.open-mesh.org/?p=3Dsimon/batman-adv.git;a=3Dshortlog;h=3Drefs/he=
+ads/blaII_dirty
+here are the separate fix patches on top of the original patchset. I'll add
+fixes here first.
+
+http://git.open-mesh.org/?p=3Dsimon/batman-adv.git;a=3Dshortlog;h=3Drefs/he=
+ads/blaII
+this is the patchset as sent to the mailing list. Fixes are squashed from
+blaII_dirty into this branch later.
+
+http://git.open-mesh.org/?p=3Dsimon/batctl.git;a=3Dshortlog;h=3Drefs/heads/=
+blaII
+this is the batctl patch which adds some control and debugging functions.
 
 Cheers,
 	Simon
 
-On Sun, Oct 30, 2011 at 08:09:01PM +0100, Antonio Quartulli wrote:
-> The tt_local_reset_flags() is actually used for one use case only. It is =
-not
-> generalised enough to be used indifferent situations. This patch make it =
-general
-> enough in order to let other code use it whenever a flag flip is requeste=
-d over
-> the whole hash table (passed as parameter).
+On Sun, Oct 30, 2011 at 11:51:01PM +0100, Simon Wunderlich wrote:
+> This series of patches is a request for comments on the redesigned
+> bridge loop avoidance. The general concept is described in the wiki
+> [1]. I've already performed a few testcases [2] which worked fine in
+> my kvm environment. No crashes while running or unloading the=20
+> extension either.
 >=20
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
+> The last patch in the series uses the cached address of the primary
+> interface (the originator address known through the mesh) to save some
+> code at various positions, there may be side effects I don't see
+> however (e.g. implicit checking whether the module was configured
+> correctly was removed).
 >=20
-> This patch depends on:
+> Marek already pointed quite a few issues out, these changes are
+> reflected in the respective commit logs. These commit comments will
+> be removed in the final version.
 >=20
-> batman-adv: create a common substructure for tt_global/local_entry
+> Any comments and suggestions are appreciated.=20
 >=20
+> Thanks
+>     Simon
 >=20
->  translation-table.c |   31 ++++++++++++++++++++-----------
->  1 files changed, 20 insertions(+), 11 deletions(-)
+> [1] http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance-II
+> [2] http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance-Testca=
+ses
 >=20
-> diff --git a/translation-table.c b/translation-table.c
-> index 76134bc..5b60aba 100644
-> --- a/translation-table.c
-> +++ b/translation-table.c
-> @@ -1695,19 +1695,20 @@ void tt_free(struct bat_priv *bat_priv)
->  	kfree(bat_priv->tt_buff);
->  }
-> =20
-> -/* This function will reset the specified flags from all the entries in
-> - * the given hash table and will increment num_local_tt for each involved
-> - * entry */
-> -static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t fla=
-gs)
-> +/* This function will flip to new_value (if not already) the specified f=
-lags for
-> + * all the entries in the given hash table and returns the number of mod=
-ified
-> + * entries */
-> +static uint16_t tt_flip_flags(struct hashtable_t *hash, uint16_t flags,
-> +			     uint8_t new_value)
->  {
->  	uint32_t i;
-> -	struct hashtable_t *hash =3D bat_priv->tt_local_hash;
-> +	uint16_t changed_num =3D 0;
->  	struct hlist_head *head;
->  	struct hlist_node *node;
->  	struct tt_common_entry *tt_common_entry;
-> =20
->  	if (!hash)
-> -		return;
-> +		goto out;
-> =20
->  	for (i =3D 0; i < hash->size; i++) {
->  		head =3D &hash->table[i];
-> @@ -1715,14 +1716,18 @@ static void tt_local_reset_flags(struct bat_priv =
-*bat_priv, uint16_t flags)
->  		rcu_read_lock();
->  		hlist_for_each_entry_rcu(tt_common_entry, node,
->  					 head, hash_entry) {
-> -			if (!(tt_common_entry->flags & flags))
-> +			if ((tt_common_entry->flags & flags) !=3D new_value)
->  				continue;
-> -			tt_common_entry->flags &=3D ~flags;
-> -			atomic_inc(&bat_priv->num_local_tt);
-> +			/* depending on 'new_value', enable or disable the flags
-> +			 * pointed by 'flags' */
-> +			tt_common_entry->flags &=3D
-> +				(~flags | (new_value ? flags : NO_FLAGS));
-> +			changed_num++;
->  		}
->  		rcu_read_unlock();
->  	}
-> -
-> +out:
-> +	return changed_num;
->  }
-> =20
->  /* Purge out all the tt local entries marked with TT_CLIENT_PENDING */
-> @@ -1766,7 +1771,11 @@ static void tt_local_purge_pending_clients(struct =
-bat_priv *bat_priv)
-> =20
->  void tt_commit_changes(struct bat_priv *bat_priv)
->  {
-> -	tt_local_reset_flags(bat_priv, TT_CLIENT_NEW);
-> +	uint16_t changed_num =3D tt_flip_flags(bat_priv->tt_local_hash,
-> +					    TT_CLIENT_NEW, 0);
-> +	/* all the reset entries have now to be effectively counted as local
-> +	 * entries */
-> +	atomic_add(changed_num, &bat_priv->num_local_tt);
->  	tt_local_purge_pending_clients(bat_priv);
-> =20
->  	/* Increment the TTVN only once per OGM interval */
+> Simon Wunderlich (11):
+>   batman-adv: remove old bridge loop avoidance code
+>   batman-adv: add basic bridge loop avoidance code
+>   batman-adv: make bridge loop avoidance switchable
+>   batman-adv: export claim tables through debugfs
+>   batman-adv: allow multiple entries in tt_global_entries
+>   batman-adv: don't let backbone gateways exchange tt entries
+>   batman-adv: add broadcast duplicate check
+>   batman-adv: drop STP over batman
+>   batman-adv: form groups in the bridge loop avoidance
+>   batman-adv: Update README and sysfs description
+>   [RFC] batman-adv: get primaries address through bat_priv->own_orig
+>=20
+>  Makefile.kbuild         |    1 +
+>  README                  |   28 +-
+>  bat_debugfs.c           |   18 +-
+>  bat_sysfs.c             |    4 +-
+>  bridge_loop_avoidance.c | 1509 +++++++++++++++++++++++++++++++++++++++++=
+++++++
+>  bridge_loop_avoidance.h |   34 ++
+>  compat.c                |   16 +-
+>  compat.h                |    3 +-
+>  hard-interface.c        |    8 +-
+>  icmp_socket.c           |   12 +-
+>  main.c                  |    9 +-
+>  main.h                  |    9 +-
+>  originator.c            |    3 +-
+>  packet.h                |   16 +
+>  routing.c               |   41 +-
+>  soft-interface.c        |  490 +---------------
+>  soft-interface.h        |    2 -
+>  sysfs-class-net-mesh    |    9 +
+>  translation-table.c     |  366 ++++++++----
+>  types.h                 |   70 ++-
+>  unicast.c               |    9 +-
+>  vis.c                   |   20 +-
+>  22 files changed, 1965 insertions(+), 712 deletions(-)
+>  create mode 100644 bridge_loop_avoidance.c
+>  create mode 100644 bridge_loop_avoidance.h
+>=20
 > --=20
-> 1.7.3.4
+> 1.7.7.1
 >=20
 >=20
 
---vtJ+CqYNzKB4ukR4
+--ew6BAiZeqk4r7MaW
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -149,9 +129,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAk6t7tkACgkQrzg/fFk7axYxAgCfejX4m1Qn65JQWXADkADGaHx2
-X3oAoMQUeu4G7uPu9VP80ostAi9UIy98
-=xfyE
+iEYEARECAAYFAk6t8UYACgkQrzg/fFk7axYyrQCdH71oH+C6Smi31y5TRbsZq5Kv
+jb0AoJk3b4HNrVlkTTwdBxJNSVdMAXUY
+=Tbai
 -----END PGP SIGNATURE-----
 
---vtJ+CqYNzKB4ukR4--
+--ew6BAiZeqk4r7MaW--
