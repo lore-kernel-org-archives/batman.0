@@ -1,16 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 1 Nov 2011 11:52:45 +0100
-References: <1320015072-10313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-	<1320015072-10313-3-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1320015072-10313-3-git-send-email-siwu@hrz.tu-chemnitz.de>
+Return-Path: <ordex@autistici.org>
+Date: Tue, 1 Nov 2011 14:43:49 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20111101134348.GH20215@ritirata.org>
+References: <1320001741-18351-1-git-send-email-ordex@autistici.org>
+	<20111031004201.GH10726@pandem0nium>
 MIME-Version: 1.0
-Message-Id: <201111011152.46222.lindner_marek@yahoo.de>
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [RFC 02/11] batman-adv: add basic bridge loop
-	avoidance code
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20111031004201.GH10726@pandem0nium>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: generalise
+ tt_local_reset_flags()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,75 +23,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, October 30, 2011 23:51:03 Simon Wunderlich wrote:
-> +static const uint8_t announce_mac[6] = {0x43, 0x05, 0x43, 0x05, 0x00,
-> 0x00};
+On Mon, Oct 31, 2011 at 01:42:01AM +0100, Simon Wunderlich wrote:
+> Hey Antonio,
+> 
+> I don't quite understand what this patch is good for - it generalises the function,
+> but does not use the function at another point. So what it is good for (next to
+> add more complexity to batman ;] ).
+> 
+> Furthermore it counts the changes and adds it to num_local_tt, is there a bug fix
+> hidden in this patch somewhere? :)
 
-All we ever use are 4 bytes - we could make this shorter. Otherwise please use 
-ETH_ALEN. Please use ETH_ALEN throughout the code instead of 6.
+No hidden bug-fix here :)
+This patch aims to generalise the tt_local_reset_flags() function only. As I
+discussed with Sven on IRC, this function could be quite confusing, because its
+name suggests that it can be used either for other purposes, but this is not
+true: it can only be used as it is now in the code.
 
+Therefore this patch wants to generalise it enough in order to be eventually
+used elsewhere.
 
-> +       bat_dbg(DBG_BLA, bat_priv,
-> +               "handle_announce(): ANNOUNCE vid %d (sent "
-> +               "by %pM)... CRC = %04x (nw order)\n",
-> +               vid, backbone_gw->orig, crc);
+The increment of tt_local_num is actually done inside the function and it is
+useful only for the use case proposed in the current code. To generalise the
+function I had to move the increment outside (somebody else could want to flip a
+certain flag without affecting the local counter :-) ).
 
-It is not network byte order anymore ..
+IMHO this patch is not strictly needed, but it would clean the code up (Until
+it doesn't add any complexity :P)
 
+Cheers,
 
-+       /* TODO: we could cal something like tt_local_del() here. */
+-- 
+Antonio Quartulli
 
-Why should we ?
-
-
-> @@ -634,7 +640,7 @@ static int batman_skb_recv(struct sk_buff *skb, struct
-> net_device *dev, case BAT_TT_QUERY:
->                 ret = recv_tt_query(skb, hard_iface);
->                 break;
-> -               /* Roaming advertisement */
-> +               /* bridge roop avoidance query */
->         case BAT_ROAM_ADV:
->                 ret = recv_roam_adv(skb, hard_iface);
->                 break;
-
-Small typo here but why are you even changing the comment ?
-
-
->         atomic_t gw_reselect;
->         struct hard_iface __rcu *primary_if;  /* rcu protected pointer */
->         struct vis_info *my_vis_info;
-> +       uint8_t own_orig[6];            /* cache primary hardifs address */
->  };
-
-I'd call this "primary_addr" instead of "own_orig" to be consistent with 
-"primary_if". Furthermore ETH_ALEN should be used for the length.
-
-
-> +struct backbone_gw {
-> +       uint8_t orig[ETH_ALEN];
-> +       short vid;              /* used VLAN ID */
-> +       struct hlist_node hash_entry;
-> +       struct bat_priv *bat_priv;
-> +       unsigned long lasttime; /* last time we heard of this backbone gw */
-> +       atomic_t request_sent;
-> +       atomic_t refcount;
-> +       struct rcu_head rcu;
-> +       uint16_t crc;           /* crc checksum over all claims */
-> +} __packed;
-> +
-> +struct claim {
-> +       uint8_t addr[ETH_ALEN];
-> +       short vid;
-> +       struct backbone_gw *backbone_gw;
-> +       unsigned long lasttime; /* last time we heard of claim (locals only)
-> */
-> +       struct rcu_head rcu;
-> +       atomic_t refcount;
-> +       struct hlist_node hash_entry;
-> +} __packed;
-
-Why are these structs packed ?
-
-
-Regards,
-Marek
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
