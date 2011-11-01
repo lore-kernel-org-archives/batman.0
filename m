@@ -1,16 +1,16 @@
 Return-Path: <ordex@autistici.org>
-Date: Tue, 1 Nov 2011 10:12:03 +0100
+Date: Tue, 1 Nov 2011 10:14:34 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111101091202.GB20215@ritirata.org>
+Message-ID: <20111101091433.GC20215@ritirata.org>
 References: <1319964962-5092-1-git-send-email-ordex@autistici.org>
-	<1319964962-5092-2-git-send-email-ordex@autistici.org>
-	<20111031000546.GC10726@pandem0nium>
+	<1319964962-5092-5-git-send-email-ordex@autistici.org>
+	<20111031001004.GE10726@pandem0nium>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20111031000546.GC10726@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: implement an helper
- function to forge unicast packets
+In-Reply-To: <20111031001004.GE10726@pandem0nium>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/6] batman-adv: Distributed ARP Table -
+ add ARP parsing functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,30 +24,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Mon, Oct 31, 2011 at 01:05:46AM +0100, Simon Wunderlich wrote:
-> On Sun, Oct 30, 2011 at 09:55:57AM +0100, Antonio Quartulli wrote:
-> > -find_router:
-> > +prepare_packet:
-> >  	/**
-> >  	 * find_router():
+On Mon, Oct 31, 2011 at 01:10:04AM +0100, Simon Wunderlich wrote:
+> This patch is not checkpatch.pl --strict clean
 > 
-> I guess the comment should be changed as well when the label is renamed.
-
-Actually this comment refers to the function below, not to the label.
-
+> On Sun, Oct 30, 2011 at 09:56:00AM +0100, Antonio Quartulli wrote:
+> > +	if (unlikely(!pskb_may_pull(skb, ETH_HLEN + arp_hdr_len(skb->dev) + 8 + 12)))
+> > +		goto out;
 > 
-> >  	 *  - if orig_node is NULL it returns NULL
-> >  	 *  - increases neigh_nodes refcount if found.
-> >  	 */
-> >  	neigh_node = find_router(bat_priv, orig_node, NULL);
-> > -
+> use ETH_ALEN * 2 + 4 * 2 instead to show where theses numbers come from.
+
+Actually this is a mistake, because I have recently seen that arp_hdr_len()
+already includes those supplementary bytes.
+
+> > +	bat_dbg(DBG_ARP, bat_priv, "ARP message of type %d recognised "
+> > +		"[%pM-%pI4 %pM-%pI4]\n", type, ARP_HW_SRC(skb),
+> > +		&ARP_IP_SRC(skb), ARP_HW_DST(skb), &ARP_IP_DST(skb));
 > 
-> Do we really need to remove this newline?
->
+> Would you mind printing the type as string? something like REQUEST or REPLY instead of 1 and 2 ...
 
-Don't think so ;)
+Oky
 
-Thanks,
+
+Thanks, 
 
 -- 
 Antonio Quartulli
