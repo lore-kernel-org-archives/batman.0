@@ -1,10 +1,15 @@
-Return-Path: <plettpc@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 4 Nov 2011 10:47:52 +0100
+References: <CAOaDhSSVMx1eN1G5rZ6-zh8Kh8xoddUOiQ0ua4StaX5bLHVQ7w@mail.gmail.com>
+	<201110311048.50063.lindner_marek@yahoo.de>
+In-Reply-To: <201110311048.50063.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Date: Thu, 3 Nov 2011 16:53:16 +0200
-Message-ID: <CAKeC-QFhm8CgyT8HwGqPwtS=E2g_2Haq3bUK2p+GZnppnwUBgQ@mail.gmail.com>
-From: Wayne Abroue <plettpc@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] MTU issue
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201111041047.52997.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] batman miss crc16 module after nico commit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,24 +22,23 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Nodi Roma List <nodi-roma@ml.ninux.org>, riot-workshop@googlegroups.com
 
-Hi All
+On Monday, October 31, 2011 10:48:49 Marek Lindner wrote:
+> > https://dev.openwrt.org/changeset/28657/packages/net/batman-adv/Makefile
+> 
+> the OpenWrt developers have renamed the package dependency. Unless you are 
+> using the OpenWrt trunk after revision 28656 the package dependency
+> selection  won't work anymore.
+> 
+> Maybe you should ask them about their concept of backward compatibility.
 
-We are having a small isue with mtu, on certain builds, could be only
-the latest, we are getting this error in wrt.
+I have to roll back here. You are using backfire while grabbing the packages 
+from trunk. You are not supposed to do that. There is a specific backfire 
+branch maintained by the OpenWrt developers which is kept compatible (I wasn't 
+aware of that).
 
-batman_adv: bat0: The MTU of interface wlan0 is too small (1527) to
-handle the transport of batman-adv packets. Packets going over this
-interface will be fragmented on layer2 which could impact the
-performance. Setting the MTU to 1528 would solve the problem.
+If you mix backfire and trunk you have to deal with the consequences yourself.
 
-I had the same issue previously, but 1528 did not do it.
-I have since changed build on that unit and can't remember the actual
-value I used, But it was larger.
-
-All I did was increase the value until the warning disappeared, and
-everything started working as advertised.
-
-Any idea's?
-
-Wayne A
+Regards,
+Marek
