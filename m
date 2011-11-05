@@ -1,11 +1,10 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sat,  5 Nov 2011 18:24:21 +0100
-Message-Id: <1320513862-28360-11-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Sat,  5 Nov 2011 18:24:19 +0100
+Message-Id: <1320513862-28360-9-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <1320513862-28360-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1320513862-28360-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCH 10/11] batman-adv: Update README and sysfs
-	description
+Subject: [B.A.T.M.A.N.] [PATCH 08/11] batman-adv: drop STP over batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,89 +20,39 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
- README               |   28 +++++++++++++++-------------
- sysfs-class-net-mesh |    9 +++++++++
- 2 files changed, 24 insertions(+), 13 deletions(-)
 
-diff --git a/README b/README
-index 5ba56b5..44061af 100644
---- a/README
-+++ b/README
-@@ -1,4 +1,4 @@
--[state: 30-09-2011]
-+[state: 27-10-2011]
+---
+[2011-11-04] always use ETH_ALEN
+
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ soft-interface.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/soft-interface.c b/soft-interface.c
+index 46dd328..0451c63 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -129,6 +129,7 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	struct hard_iface *primary_if = NULL;
+ 	struct bcast_packet *bcast_packet;
+ 	struct vlan_ethhdr *vhdr;
++	uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00, 0x00, 0x00};
+ 	unsigned int header_len = 0;
+ 	int data_len = skb->len, ret;
+ 	short vid = -1;
+@@ -158,6 +159,11 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	/* Register the client MAC in the transtable */
+ 	tt_local_add(soft_iface, ethhdr->h_source, skb->skb_iif);
  
- BATMAN-ADV
- ----------
-@@ -82,17 +82,17 @@ To deactivate an interface you have  to  write  "none"  into  its
- All  mesh  wide  settings  can be found in batman's own interface
- folder:
- 
--#  ls  /sys/class/net/bat0/mesh/
--# aggregated_ogms   fragmentation gw_sel_class   vis_mode
--# ap_isolation      gw_bandwidth  hop_penalty
--# bonding           gw_mode       orig_interval
-+# ls /sys/class/net/bat0/mesh/
-+# aggregated_ogms        fragmentation          hop_penalty
-+# ap_isolation           gw_bandwidth           log_level
-+# bonding                gw_mode                orig_interval
-+# bridge_loop_avoidance  gw_sel_class           vis_mode
- 
- There is a special folder for debugging information:
- 
- #  ls /sys/kernel/debug/batman_adv/bat0/
--#  gateways     socket        transtable_global  vis_data
--#  originators  softif_neigh  transtable_local
--
-+# bla_claim_table    log                socket             transtable_local
-+# gateways           originators        transtable_global  vis_data
- 
- Some of the files contain all sort of status information  regard-
- ing  the  mesh  network.  For  example, you can view the table of
-@@ -216,15 +216,17 @@ file in debugfs
- The additional debug output is by default disabled. It can be en-
- abled  during run time. Following log_levels are defined:
- 
--0 - All  debug  output  disabled
--1 - Enable messages related to routing / flooding / broadcasting
--2 - Enable route or tt entry added / changed / deleted
--3 - Enable all messages
-+0 - all debug output disabled
-+1 - messages related to routing / flooding / broadcasting
-+2 - messages related to route added / changed / deleted
-+4 - messages related to translation table operations
-+8 - messages related to bridge loop avoidance
-+15 - enable all messages
- 
- The debug output can be changed at runtime  using  the  file
- /sys/class/net/bat0/mesh/log_level. e.g.
- 
--# echo 2 > /sys/class/net/bat0/mesh/log_level
-+# echo 6 > /sys/class/net/bat0/mesh/log_level
- 
- will enable debug messages for when routes or TTs change.
- 
-diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
-index b020014..1d39bc7 100644
---- a/sysfs-class-net-mesh
-+++ b/sysfs-class-net-mesh
-@@ -14,6 +14,15 @@ Description:
-                 mesh will be sent using multiple interfaces at the
-                 same time (if available).
- 
-+What:           /sys/class/net/<mesh_iface>/mesh/bridge_loop_avoidance
-+Date:           November 2011
-+Contact:        Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-+Description:
-+                Indicates whether the bridge loop avoidance feature
-+                is enabled. This feature detects and avoids loops
-+                between the mesh and devices bridged with the soft
-+                interface <mesh_iface>.
++	/* don't accept stp packets. STP does not help in meshes.
++	 * better use the bridge loop avoidance ... */
++	if (compare_eth(ethhdr->h_dest, stp_addr))
++		goto dropped;
 +
- What:           /sys/class/net/<mesh_iface>/mesh/fragmentation
- Date:           October 2010
- Contact:        Andreas Langer <an.langer@gmx.de>
+ 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
+ 		do_bcast = true;
+ 
 -- 
 1.7.7.1
 
