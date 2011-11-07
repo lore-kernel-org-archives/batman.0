@@ -1,9 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon,  7 Nov 2011 16:36:40 +0100
-Message-Id: <1320680200-32024-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add tt_initialised flag to the
-	orig_node struct
+Date: Mon,  7 Nov 2011 16:47:01 +0100
+Message-Id: <1320680821-5904-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1320001741-18351-1-git-send-email-ordex@autistici.org>
+References: <1320001741-18351-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: generalise
+	tt_local_reset_flags()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,86 +19,92 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-(ttvn == 0) is currently used as initial condition. However this is not a good
-idea because ttvn gets the vale zero each time after reaching the maximum value
-(wrap around). For this reason a new flag is added in order to define whether a
-node has an initialised table or not. Moreover, after invoking
-tt_global_del_orig(), tt_initialised has to be set to false
+The tt_local_reset_flags() is actually used for one use case only. It is not
+generalised enough to be used indifferent situations. This patch make it general
+enough in order to let other code use it whenever a flag set is requested over
+the whole hash table (passed as parameter). The function is now called
+tt_set_flags()
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- originator.c        |    1 +
- translation-table.c |   11 ++++++++---
- types.h             |    1 +
- 3 files changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index 0bc2045..847ff7e 100644
---- a/originator.c
-+++ b/originator.c
-@@ -219,6 +219,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, const uint8_t *addr)
- 	/* extra reference for return */
- 	atomic_set(&orig_node->refcount, 2);
- 
-+	orig_node->tt_initialised = false;
- 	orig_node->tt_poss_change = false;
- 	orig_node->bat_priv = bat_priv;
- 	memcpy(orig_node->orig, addr, ETH_ALEN);
+- argument new_value substituted with enable
+- boolean logic more readable inside tt_set_flags()
+
+ translation-table.c |   36 ++++++++++++++++++++++++------------
+ 1 files changed, 24 insertions(+), 12 deletions(-)
+
 diff --git a/translation-table.c b/translation-table.c
-index 3726f33..e5f1c4e 100644
+index 76134bc..379529d 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -704,6 +704,7 @@ void tt_global_del_orig(struct bat_priv *bat_priv,
- 		spin_unlock_bh(list_lock);
+@@ -1695,19 +1695,20 @@ void tt_free(struct bat_priv *bat_priv)
+ 	kfree(bat_priv->tt_buff);
+ }
+ 
+-/* This function will reset the specified flags from all the entries in
+- * the given hash table and will increment num_local_tt for each involved
+- * entry */
+-static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
++/* This function will flip to new_value (if not already) the specified flags for
++ * all the entries in the given hash table and returns the number of modified
++ * entries */
++static uint16_t tt_set_flags(struct hashtable_t *hash, uint16_t flags,
++			     bool enable)
+ {
+ 	uint32_t i;
+-	struct hashtable_t *hash = bat_priv->tt_local_hash;
++	uint16_t changed_num = 0;
+ 	struct hlist_head *head;
+ 	struct hlist_node *node;
+ 	struct tt_common_entry *tt_common_entry;
+ 
+ 	if (!hash)
+-		return;
++		goto out;
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -1715,14 +1716,21 @@ static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(tt_common_entry, node,
+ 					 head, hash_entry) {
+-			if (!(tt_common_entry->flags & flags))
+-				continue;
+-			tt_common_entry->flags &= ~flags;
+-			atomic_inc(&bat_priv->num_local_tt);
++			if (enable) {
++				if ((tt_common_entry->flags & flags) == flags)
++					continue;
++				tt_common_entry->flags |= flags;
++			} else {
++				if (!(tt_common_entry->flags & flags))
++					continue;
++				tt_common_entry->flags &= ~flags;
++			}
++			changed_num++;
+ 		}
+ 		rcu_read_unlock();
  	}
- 	atomic_set(&orig_node->tt_size, 0);
-+	orig_node->tt_initialised = false;
+-
++out:
++	return changed_num;
  }
  
- static void tt_global_roam_purge(struct bat_priv *bat_priv)
-@@ -1463,6 +1464,7 @@ static void tt_update_changes(struct bat_priv *bat_priv,
- 	tt_save_orig_buffer(bat_priv, orig_node, (unsigned char *)tt_change,
- 			    tt_num_changes);
- 	atomic_set(&orig_node->last_ttvn, ttvn);
-+	orig_node->tt_initialised = true;
- }
+ /* Purge out all the tt local entries marked with TT_CLIENT_PENDING */
+@@ -1766,7 +1774,11 @@ static void tt_local_purge_pending_clients(struct bat_priv *bat_priv)
  
- bool is_my_client(struct bat_priv *bat_priv, const uint8_t *addr)
-@@ -1823,8 +1825,10 @@ void tt_update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 	uint8_t orig_ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
- 	bool full_table = true;
+ void tt_commit_changes(struct bat_priv *bat_priv)
+ {
+-	tt_local_reset_flags(bat_priv, TT_CLIENT_NEW);
++	uint16_t changed_num = tt_set_flags(bat_priv->tt_local_hash,
++					    TT_CLIENT_NEW, false);
++	/* all the reset entries have now to be effectively counted as local
++	 * entries */
++	atomic_add(changed_num, &bat_priv->num_local_tt);
+ 	tt_local_purge_pending_clients(bat_priv);
  
--	/* the ttvn increased by one -> we can apply the attached changes */
--	if (ttvn - orig_ttvn == 1) {
-+	/* {orig table not initialised AND first diff is in the OGM} OR the ttvn
-+	 * increased by one -> we can apply the attached changes */
-+	if ((!orig_node->tt_initialised && ttvn == 1) ||
-+	    ttvn - orig_ttvn == 1) {
- 		/* the OGM could not contain the changes due to their size or
- 		 * because they have already been sent TT_OGM_APPEND_MAX times.
- 		 * In this case send a tt request */
-@@ -1858,7 +1862,8 @@ void tt_update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 	} else {
- 		/* if we missed more than one change or our tables are not
- 		 * in sync anymore -> request fresh tt data */
--		if (ttvn != orig_ttvn || orig_node->tt_crc != tt_crc) {
-+		if (!orig_node->tt_initialised || ttvn != orig_ttvn ||
-+		    orig_node->tt_crc != tt_crc) {
- request_table:
- 			bat_dbg(DBG_TT, bat_priv, "TT inconsistency for %pM. "
- 				"Need to retrieve the correct information "
-diff --git a/types.h b/types.h
-index e9eb043..35085f4 100644
---- a/types.h
-+++ b/types.h
-@@ -81,6 +81,7 @@ struct orig_node {
- 	int16_t tt_buff_len;
- 	spinlock_t tt_buff_lock; /* protects tt_buff */
- 	atomic_t tt_size;
-+	bool tt_initialised;
- 	/* The tt_poss_change flag is used to detect an ongoing roaming phase.
- 	 * If true, then I sent a Roaming_adv to this orig_node and I have to
- 	 * inspect every packet directed to it to check whether it is still
+ 	/* Increment the TTVN only once per OGM interval */
 -- 
 1.7.3.4
 
