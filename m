@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  8 Nov 2011 12:34:21 +0100
-Message-Id: <1320752062-21776-7-git-send-email-ordex@autistici.org>
+Date: Tue,  8 Nov 2011 12:34:22 +0100
+Message-Id: <1320752062-21776-8-git-send-email-ordex@autistici.org>
 In-Reply-To: <1320752062-21776-1-git-send-email-ordex@autistici.org>
 References: <1320752062-21776-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 6/7] batman-adv: Distributed ARP Table -
-	increase default soft_iface ARP table timeout
+Subject: [B.A.T.M.A.N.] [PATCHv2 7/7] batman-adv: add Distributed ARP Table
+	compile option
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,77 +19,91 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The default timeout value for ARP entries belonging to any soft_iface
-ARP table has been incremented by a factor 4. This is necessary because the DHT
-will store several network entries in the soft_iface ARP table.
-
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
+ Makefile.kbuild         |    8 +++++++-
+ README                  |    4 ++++
+ distributed-arp-table.h |   12 ++++++++++++
+ 3 files changed, 23 insertions(+), 1 deletions(-)
 
-- nothing changed 
-
-
- main.h           |    4 ++++
- soft-interface.c |   17 +++++++++++++++++
- 2 files changed, 21 insertions(+), 0 deletions(-)
-
-diff --git a/main.h b/main.h
-index 13f63d8..8c534b4 100644
---- a/main.h
-+++ b/main.h
-@@ -69,6 +69,10 @@
- /* numbers of originator to contact for any STORE/GET DHT operation */
- #define DHT_CANDIDATES_NUM 3
+diff --git a/Makefile.kbuild b/Makefile.kbuild
+index e8861cb..f09004f 100644
+--- a/Makefile.kbuild
++++ b/Makefile.kbuild
+@@ -18,6 +18,8 @@
+ # 02110-1301, USA
+ #
  
-+/* Factor which default ARP timeout values of the soft_iface table are
-+ * multiplied by */
-+#define ARP_TIMEOUT_FACTOR 4
++# uncomment the following line to enable the Distributed ARP Table feature
++# CONFIG_BATMAN_ADV_DAT=y
+ 
+ 
+ # openwrt integration
+@@ -27,6 +29,10 @@ endif
+ 
+ # ccflags-y += -DCONFIG_BATMAN_ADV_DEBUG
+ 
++ifeq ($(CONFIG_BATMAN_ADV_DAT), y)
++ccflags-y += -DCONFIG_BATMAN_ADV_DAT
++endif
 +
- #define NUM_WORDS (TQ_LOCAL_WINDOW_SIZE / WORD_BIT_SIZE)
+ ifneq ($(REVISION),)
+ ccflags-y += -DSOURCE_VERSION=\"$(REVISION)\"
+ endif
+@@ -36,7 +42,7 @@ batman-adv-y += bat_debugfs.o
+ batman-adv-y += bat_iv_ogm.o
+ batman-adv-y += bat_sysfs.o
+ batman-adv-y += bitarray.o
+-batman-adv-y += distributed-arp-table.o
++batman-adv-$(CONFIG_BATMAN_ADV_DAT) += distributed-arp-table.o
+ batman-adv-y += gateway_client.o
+ batman-adv-y += gateway_common.o
+ batman-adv-y += hard-interface.o
+diff --git a/README b/README
+index 5ba56b5..1a27f9f 100644
+--- a/README
++++ b/README
+@@ -26,6 +26,10 @@ it.  If you work on a backport, feel free to contact us.  :-)
+ COMPILE
+ -------
  
- #define LOG_BUF_LEN 8192	  /* has to be a power of 2 */
-diff --git a/soft-interface.c b/soft-interface.c
-index 91b0d40..a8f8a60 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -36,6 +36,7 @@
- #include <linux/ethtool.h>
- #include <linux/etherdevice.h>
- #include <linux/if_vlan.h>
-+#include <linux/inetdevice.h>
- #include "unicast.h"
- 
- 
-@@ -832,6 +833,7 @@ static void interface_setup(struct net_device *dev)
- struct net_device *softif_create(const char *name)
- {
- 	struct net_device *soft_iface;
-+	struct in_device *in_dev;
- 	struct bat_priv *bat_priv;
- 	int ret;
- 
-@@ -847,6 +849,21 @@ struct net_device *softif_create(const char *name)
- 		goto free_soft_iface;
- 	}
- 
-+	in_dev = in_dev_get(soft_iface);
-+	if (!in_dev) {
-+		pr_err("Unable to set ARP parameters for the batman interface "
-+		       "'%s'\n", name);
-+		goto free_soft_iface;
-+	}
++Before compiling you want to have a look at the Makefile.kbuild
++file to enable/disable wanted features. Actually there are:
++- CONFIG_BATMAN_ADV_DAT enables the Distributed ARP Table
 +
-+	/* Introduce a delay in the ARP state-machine transactions. Entries
-+	 * will be kept in the ARP table for the default time multiplied by 4 */
-+	in_dev->arp_parms->base_reachable_time *= ARP_TIMEOUT_FACTOR;
-+	in_dev->arp_parms->gc_staletime *= ARP_TIMEOUT_FACTOR;
-+	in_dev->arp_parms->reachable_time *= ARP_TIMEOUT_FACTOR;
-+
-+	in_dev_put(in_dev);
-+
- 	bat_priv = netdev_priv(soft_iface);
+ To compile against your currently installed  kernel, just type:
  
- 	atomic_set(&bat_priv->aggregated_ogms, 1);
+ # make
+diff --git a/distributed-arp-table.h b/distributed-arp-table.h
+index d3fb8b1..496b7f3 100644
+--- a/distributed-arp-table.h
++++ b/distributed-arp-table.h
+@@ -28,6 +28,8 @@
+ #define ARP_HW_DST(skb) (ARP_HW_SRC(skb) + ETH_ALEN + 4)
+ #define ARP_IP_DST(skb) (*(uint32_t *)(ARP_HW_SRC(skb) + ETH_ALEN * 2 + 4))
+ 
++#ifdef CONFIG_BATMAN_ADV_BAT
++
+ uint16_t arp_get_type(struct bat_priv *bat_priv, struct sk_buff *skb);
+ bool arp_snoop_outgoing_request(struct bat_priv *bat_priv,
+ 				struct sk_buff *skb);
+@@ -36,6 +38,16 @@ bool arp_snoop_incoming_request(struct bat_priv *bat_priv,
+ bool arp_snoop_outgoing_reply(struct bat_priv *bat_priv, struct sk_buff *skb);
+ bool arp_snoop_incoming_reply(struct bat_priv *bat_priv, struct sk_buff *skb);
+ 
++#else
++
++#define arp_get_type(...) (0)
++#define arp_snoop_outgoing_request(...) (0)
++#define arp_snoop_incoming_request(...) (0)
++#define arp_snoop_outgoing_reply(...)
++#define arp_snoop_incoming_reply(...)
++
++#endif
++
+ /* hash function to choose an entry in a hash table of given size */
+ /* hash algorithm from http://en.wikipedia.org/wiki/Hash_table */
+ static inline uint32_t hash_ipv4(const void *data, uint32_t size)
 -- 
 1.7.3.4
 
