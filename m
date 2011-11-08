@@ -1,11 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon,  7 Nov 2011 16:47:01 +0100
-Message-Id: <1320680821-5904-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1320001741-18351-1-git-send-email-ordex@autistici.org>
-References: <1320001741-18351-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: generalise
-	tt_local_reset_flags()
+Date: Tue,  8 Nov 2011 12:13:29 +0100
+Message-Id: <1320750809-12445-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: correct usage of TT_CLIENT_ROAM
+	flag
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,92 +17,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The tt_local_reset_flags() is actually used for one use case only. It is not
-generalised enough to be used indifferent situations. This patch make it general
-enough in order to let other code use it whenever a flag set is requested over
-the whole hash table (passed as parameter). The function is now called
-tt_set_flags()
+The TT_CLIENT_ROAM flag has to be set in tt_global_del() only if the latter has
+been invoked by the roaming_advertisement receiving routine. In case of changes
+update (normal operation done on OGM/TT_QUERY receiving) this doesn't have to
+happen. Moreover, a client which roamed to us has to be marked as ROAMED, not
+PENDING. This will make it to be kept for consistency purposes until the related
+change is received within the next OGM.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
-
-- argument new_value substituted with enable
-- boolean logic more readable inside tt_set_flags()
-
- translation-table.c |   36 ++++++++++++++++++++++++------------
- 1 files changed, 24 insertions(+), 12 deletions(-)
+ translation-table.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index 76134bc..379529d 100644
+index 379529d..633b35b 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -1695,19 +1695,20 @@ void tt_free(struct bat_priv *bat_priv)
- 	kfree(bat_priv->tt_buff);
- }
- 
--/* This function will reset the specified flags from all the entries in
-- * the given hash table and will increment num_local_tt for each involved
-- * entry */
--static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
-+/* This function will flip to new_value (if not already) the specified flags for
-+ * all the entries in the given hash table and returns the number of modified
-+ * entries */
-+static uint16_t tt_set_flags(struct hashtable_t *hash, uint16_t flags,
-+			     bool enable)
- {
- 	uint32_t i;
--	struct hashtable_t *hash = bat_priv->tt_local_hash;
-+	uint16_t changed_num = 0;
- 	struct hlist_head *head;
- 	struct hlist_node *node;
- 	struct tt_common_entry *tt_common_entry;
- 
- 	if (!hash)
--		return;
-+		goto out;
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1715,14 +1716,21 @@ static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(tt_common_entry, node,
- 					 head, hash_entry) {
--			if (!(tt_common_entry->flags & flags))
--				continue;
--			tt_common_entry->flags &= ~flags;
--			atomic_inc(&bat_priv->num_local_tt);
-+			if (enable) {
-+				if ((tt_common_entry->flags & flags) == flags)
-+					continue;
-+				tt_common_entry->flags |= flags;
-+			} else {
-+				if (!(tt_common_entry->flags & flags))
-+					continue;
-+				tt_common_entry->flags &= ~flags;
-+			}
-+			changed_num++;
- 		}
- 		rcu_read_unlock();
+@@ -234,9 +234,11 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	if (tt_global_entry) {
+ 		/* This node is probably going to update its tt table */
+ 		tt_global_entry->orig_node->tt_poss_change = true;
+-		/* The global entry has to be marked as PENDING and has to be
++		/* The global entry has to be marked as ROAMING and has to be
+ 		 * kept for consistency purpose */
+-		tt_global_entry->common.flags |= TT_CLIENT_PENDING;
++		tt_global_entry->common.flags |= TT_CLIENT_ROAM;
++		tt_global_entry->roam_at = jiffies;
++
+ 		send_roam_adv(bat_priv, tt_global_entry->common.addr,
+ 			      tt_global_entry->orig_node);
  	}
--
-+out:
-+	return changed_num;
+@@ -357,12 +359,14 @@ static void tt_local_set_pending(struct bat_priv *bat_priv,
+ 				 uint16_t flags)
+ {
+ 	tt_local_event(bat_priv, tt_local_entry->common.addr,
+-		       tt_local_entry->common.flags | flags);
++		       TT_CLIENT_DEL);
+ 
+ 	/* The local client has to be marked as "pending to be removed" but has
+ 	 * to be kept in the table in order to send it in a full table
+ 	 * response issued before the net ttvn increment (consistency check) */
+ 	tt_local_entry->common.flags |= TT_CLIENT_PENDING;
++	/* if this is a roaming deletion, mark the local entry accordingly */
++	tt_local_entry->common.flags |= flags & TT_CLIENT_ROAM;
  }
  
- /* Purge out all the tt local entries marked with TT_CLIENT_PENDING */
-@@ -1766,7 +1774,11 @@ static void tt_local_purge_pending_clients(struct bat_priv *bat_priv)
- 
- void tt_commit_changes(struct bat_priv *bat_priv)
- {
--	tt_local_reset_flags(bat_priv, TT_CLIENT_NEW);
-+	uint16_t changed_num = tt_set_flags(bat_priv->tt_local_hash,
-+					    TT_CLIENT_NEW, false);
-+	/* all the reset entries have now to be effectively counted as local
-+	 * entries */
-+	atomic_add(changed_num, &bat_priv->num_local_tt);
- 	tt_local_purge_pending_clients(bat_priv);
- 
- 	/* Increment the TTVN only once per OGM interval */
+ void tt_local_remove(struct bat_priv *bat_priv, const uint8_t *addr,
+@@ -1404,7 +1408,7 @@ static void _tt_update_changes(struct bat_priv *bat_priv,
+ 			tt_global_del(bat_priv, orig_node,
+ 				      (tt_change + i)->addr,
+ 				      "tt removed by changes",
+-				      (tt_change + i)->flags & TT_CLIENT_ROAM);
++				      false);
+ 		else
+ 			if (!tt_global_add(bat_priv, orig_node,
+ 					   (tt_change + i)->addr, ttvn, false,
 -- 
 1.7.3.4
 
