@@ -1,16 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 9 Nov 2011 01:41:04 +0800
-References: <1320666759-11791-1-git-send-email-martin@hundeboll.net>
-	<1320668071-12876-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1320668071-12876-1-git-send-email-martin@hundeboll.net>
+Return-Path: <ordex@autistici.org>
+Date: Tue, 8 Nov 2011 18:50:42 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20111108175041.GA8405@ritirata.org>
+References: <1320262005-15120-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201111090141.04786.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: Human readable log levels
-	instead of bitmasks
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1320262005-15120-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: check return value for
+ hash_add()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,14 +21,19 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On Monday, November 07, 2011 20:14:31 Martin Hundeb=C3=B8ll wrote:
-> As the number of log levels increases, it becomes less user friendly to
-> assign a log level, as this is given as a bitmask in decimal form. This
-> patch changes this, so that one or more log levels can be given as
-> human readable words (e.g. "batctl ll batman routes").
+On Wed, Nov 02, 2011 at 08:26:45 +0100, Simon Wunderlich wrote:
+> if hash_add() fails, we should remove the structure to avoid memory
+> leaks.
+> 
+> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Applied in revision edab69b.
+Acked-by Antonio Quartulli <ordex@autistici.org>
 
-Thanks,
-Marek
+
+-- 
+Antonio Quartulli
+
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
