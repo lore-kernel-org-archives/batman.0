@@ -1,8 +1,9 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartull <ordex@autistici.org>
-Date: Sun, 13 Nov 2011 16:58:17 +0100
-Message-Id: <1321199897-21468-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: modify tt sections in the README
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 14 Nov 2011 00:20:36 +0800
+Message-Id: <1321201236-14446-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: update the tcpdump section in the
+	README
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,77 +16,53 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-translocal and transglobal section updated in the README file
-
-Signed-off-by: Antonio Quartull <ordex@autistici.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- README |   45 +++++++++++++++++++++++++++++++++++----------
- 1 files changed, 35 insertions(+), 10 deletions(-)
+ README |   23 ++++++++++++++---------
+ 1 files changed, 14 insertions(+), 9 deletions(-)
 
 diff --git a/README b/README
-index 442f8b6..fc0a85e 100644
+index 442f8b6..cdeb2ed 100644
 --- a/README
 +++ b/README
-@@ -313,7 +313,21 @@ Example:
+@@ -84,21 +84,26 @@ traceroute to fe:fe:00:00:09:01 (fe:fe:00:00:09:01), 50 hops max, 19 byte packet
+ batctl tcpdump
+ ===============
  
- $ batctl translocal
- Locally retrieved addresses (from bat0) announced via TT:
-- * d6:e0:fd:d9:00:00
-+ * d6:e0:fd:d9:00:00 [RPNXW]
-+
-+In particular, RPNXW are flags which have the following meanings:
-+
-+- R/Roaming: this client moved to another node but it is still kept for
-+		consistency purposes up to the next OGM sending.
-+- P/noPurge: this client represents the local soft interface and has to never be
-+		deleted.
-+- N/New: this client has recently been added but it has to not be advertised up
-+		to the next OGM sending (for consistency purposes).
-+- X/delete: this client has to be removed for some reason, but it is still kept
-+		for consistency purposes up to the next OGM sending.
-+- W/Wireless: this client is connected to the node through a Wireless device.
-+
-+If any of the flags is not enabled, a '.' will substitute its symbol.
+-tcpdump layer 2 traffic on the given interface
++tcpdump layer 2 and/or layer 3 traffic on the given interface
  
- batctl transglobal
- ==================
-@@ -324,15 +338,26 @@ Usage: batctl transglobal|tg
- 
- Example:
- 
--Globally announced TT entries received via the mesh (translation table):
-- * 16:aa:c4:a2:00:00 via fe:fe:00:00:09:01
-- * 5a:32:f9:df:00:00 via fe:fe:00:00:03:01
-- * 32:ae:5a:00:00:00 via fe:fe:00:00:04:01
-- * 86:88:80:29:00:00 via fe:fe:00:00:08:01
-- * 9e:d8:72:f2:00:00 via fe:fe:00:00:02:01
-- * 76:84:68:49:00:00 via fe:fe:00:00:05:01
-- * 86:4b:b2:d2:00:00 via fe:fe:00:00:07:01
-- * ca:a1:5b:e5:00:00 via fe:fe:00:00:06:01
-+Globally announced TT entries received via the mesh bat0
-+   Client	     (TTVN)     Originator        (Curr TTVN) Flags
-+ * 16:aa:c4:a2:00:00  ( 12) via fe:fe:00:00:09:01       ( 50) [RXW]
+ Usage: batctl tcpdump [options] interface [interface]
+ options:
+          -h print this help
+          -n don't convert addresses to bat-host names
+          -p dump specific packet type
+-                1 - batman ogm packets
+-                2 - batman icmp packets
+-                4 - batman unicast packets
+-                8 - batman broadcast packets
+-                16 - batman vis packets
+-                32 - batman fragmented packets
+-                64 - non batman packets
+-                65 - batman ogm & non batman packets
++         -x dump all packet types except specified
++packet types:
++                  1 - batman ogm packets
++                  2 - batman icmp packets
++                  4 - batman unicast packets
++                  8 - batman broadcast packets
++                 16 - batman vis packets
++                 32 - batman fragmented packets
++                 64 - batman tt / roaming packets
++                128 - non batman packets
++                129 - batman ogm & non batman packets
 +
-+where:
-+- TTVN: is the translation-table-version-number which introduced this
-+		client
-+- Curr TTVN: is the translation-table-version-number currently advertised by
-+		the originator serving this client (different clients
-+		advertised by the same originator have the same Curr TTVN)
-+- Flags that mean:
-+	- R/Roaming: this client moved to another node but it is still kept for
-+		consistency purposes up to the next OGM received from its
-+		originator
-+	- X/delete: this client has to be removed for some reason, but it is
-+		still kept for consistency purposes.
-+	- W/Wireless: this client is connected to the node through a Wireless
-+		device.
-+
-+If any of the flags is not enabled, a '.' will substitute its symbol.
++tcpdump supports standard interfaces as well as raw wifi interfaces running in monitor mode.
  
- batctl vis_mode
- =================
+ Example output for tcpdump:
+ 
 -- 
-1.7.3.4
+1.7.5.4
 
