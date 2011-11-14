@@ -1,15 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 14 Nov 2011 11:29:36 +0100
-Message-ID: <1956205.mQFSXpQuIf@sven-laptop.home.narfation.org>
-In-Reply-To: <4EC0EB27.8060207@fisher-privat.net>
+Return-Path: <bug-track@fisher-privat.net>
+Message-ID: <4EC0EF83.2060602@fisher-privat.net>
+Date: Mon, 14 Nov 2011 11:37:55 +0100
+From: Alexey Fisher <bug-track@fisher-privat.net>
+MIME-Version: 1.0
 References: <1321261892-6401-1-git-send-email-bug-track@fisher-privat.net>
 	<9935980.KTPM4GpO8u@sven-laptop.home.narfation.org>
 	<4EC0EB27.8060207@fisher-privat.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2426011.7c4HNsCbqK";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
+	<1956205.mQFSXpQuIf@sven-laptop.home.narfation.org>
+In-Reply-To: <1956205.mQFSXpQuIf@sven-laptop.home.narfation.org>
+Content-Type: multipart/mixed; boundary="------------090405090803010609000309"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] add make install
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,50 +21,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Alexey Fisher <bug-track@fisher-privat.net>
+To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
 
+This is a multi-part message in MIME format.
+--------------090405090803010609000309
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
---nextPart2426011.7c4HNsCbqK
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+On 14.11.2011 11:29, Sven Eckelmann wrote:
+> On Monday 14 November 2011 11:19:19 Alexey Fisher wrote:
+> [...]
+>> Thank you,
+>> so you will send your patch? I prefer last version, to make testing easier.
+> 
+> I personally don't care. Feel free to fix your patch and send a new version 
+> (but think about adding the ":" after "install" -- the character magically 
+> disappeared when I wrote the mail).
+> 
+> And don't forget the documentation part as it is always hard to remember 
+> everything on the day the release is made, but easy when you just made the 
+> patch. :)
 
-On Monday 14 November 2011 11:19:19 Alexey Fisher wrote:
-[...]
-> Thank you,
-> so you will send your patch? I prefer last version, to make testing easier.
+Corrected.
 
-I personally don't care. Feel free to fix your patch and send a new version 
-(but think about adding the ":" after "install" -- the character magically 
-disappeared when I wrote the mail).
+--------------090405090803010609000309
+Content-Type: text/x-patch;
+ name="0001-add-make-install-option.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="0001-add-make-install-option.patch"
 
-And don't forget the documentation part as it is always hard to remember 
-everything on the day the release is made, but easy when you just made the 
-patch. :)
+From 04e5cfa522d79a2a8764ee7ce04f8d0842ee37be Mon Sep 17 00:00:00 2001
+From: Alexey Fisher <bug-track@fisher-privat.net>
+Date: Mon, 14 Nov 2011 11:35:13 +0100
+Subject: [PATCH] add "make install" option
 
-Thanks,
-	Sven
---nextPart2426011.7c4HNsCbqK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+Signed-off-by: Alexey Fisher <bug-track@fisher-privat.net>
+---
+ Makefile |    3 +++
+ README   |    4 ++++
+ 2 files changed, 7 insertions(+), 0 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+diff --git a/Makefile b/Makefile
+index 5762721..3374687 100644
+--- a/Makefile
++++ b/Makefile
+@@ -42,3 +42,6 @@ all:
+ 
+ clean:
+ 	$(MAKE) -C $(KERNELPATH) M=$(PWD) PWD=$(PWD) clean
++
++install:
++	$(MAKE) -C $(KERNELPATH) M=$(PWD) PWD=$(PWD) INSTALL_MOD_DIR=kernel/net/batman-adv/ modules_install
+diff --git a/README b/README
+index 5ba56b5..ec85dff 100644
+--- a/README
++++ b/README
+@@ -34,6 +34,10 @@ if you want to compile against some other kernel, use:
+ 
+ # make KERNELPATH=/path/to/kernel
+ 
++if you wont to install this module:
++
++# sudo make install
++
+ 
+ CONFIGURATION
+ -------------
+-- 
+1.7.5.4
 
-iQIcBAABCgAGBQJOwO2QAAoJEF2HCgfBJntGyAkQAMENpC0RleY/VmZz0yxqINF8
-RK0e9OG6TUGxenexz6juOu07pmhUWGy//hw8BeFtM97qKr+meZtV1SASMwkCPpbG
-zzpMsvVfrqlyFF924EZEuUfMYImkW+I5xA01tC44bdJs8d2jcggcK07w47mYihJG
-HWlNaGWg8Cf5m5hnH4fSbGD5ZWj8S8PTLb/1Xa1QbUM2Jm5p/Y8NARGOLOL5RITo
-7amdhIDIJmCTkDQW0/+nbdQPUmkwuxhs2zM+HddVTci8xsGEahV5jMvvtiUr3v1s
-5Sgc8e4vvrKfG/D/m3OcrxlChvL+Ws6zMX7RTjb9k07xjp1pcFJYtFmD7Gkb2eaY
-DX527Mllu1Vx364h5adIo5g0SXl3aRd1kyzxOsgRuI8Np2MMd/zpXa2TQf3T7Cp+
-+K0EUt1hi+rsT7CKTa7fQ0Ve2wZDuFvpkKZoMyO3Wu/fXnJqu7R1JDT1e5Fk9isS
-Dd/GnPDBm4eAkJyfJsMCy8VSgY9i5tFR4LoWrm+kMnTt32ypbqs8imb+RUv9Wd54
-25IHovh7454WXQ7in+YiVFxj+2WFUz4d1V+jM+8FIEDPPJd0OvyA7DH9WNLQdUTS
-7QG6pnNSIOwjOAzmUGDluzhi8232Dnq8nb3cKst/+iJkMfiGxIB4msM5dPnTC1wg
-OumCEdkld1nF2aKYlHz1
-=q1R1
------END PGP SIGNATURE-----
 
---nextPart2426011.7c4HNsCbqK--
-
+--------------090405090803010609000309--
