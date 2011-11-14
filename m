@@ -1,12 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 14 Nov 2011 11:21:12 +0100
-Message-ID: <1428522.agqKBYpyMC@sven-laptop.home.narfation.org>
-In-Reply-To: <9935980.KTPM4GpO8u@sven-laptop.home.narfation.org>
+Date: Mon, 14 Nov 2011 11:29:36 +0100
+Message-ID: <1956205.mQFSXpQuIf@sven-laptop.home.narfation.org>
+In-Reply-To: <4EC0EB27.8060207@fisher-privat.net>
 References: <1321261892-6401-1-git-send-email-bug-track@fisher-privat.net>
 	<9935980.KTPM4GpO8u@sven-laptop.home.narfation.org>
+	<4EC0EB27.8060207@fisher-privat.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3553459.UOKLAnlIgq";
+Content-Type: multipart/signed; boundary="nextPart2426011.7c4HNsCbqK";
 	micalg="pgp-sha512"; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH] add make install
@@ -21,51 +22,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: lindner_marek@yahoo.de
+To: Alexey Fisher <bug-track@fisher-privat.net>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
 
 
---nextPart3553459.UOKLAnlIgq
+--nextPart2426011.7c4HNsCbqK
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="UTF-8"
 
-On Monday 14 November 2011 10:38:07 Sven Eckelmann wrote:
-> On Monday 14 November 2011 10:11:32 Alexey Fisher wrote:
-> > Signed-off-by: Alexey Fisher <bug-track@fisher-privat.net>
-> > ---
-> > 
-> >  Makefile |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
+On Monday 14 November 2011 11:19:19 Alexey Fisher wrote:
 [...]
-> NAck: Sven Eckelmann <sven@narfation.org>
+> Thank you,
+> so you will send your patch? I prefer last version, to make testing easier.
 
-And also "Nack" for not updating the README [1]
+I personally don't care. Feel free to fix your patch and send a new version 
+(but think about adding the ":" after "install" -- the character magically 
+disappeared when I wrote the mail).
 
-Kind regards,
+And don't forget the documentation part as it is always hard to remember 
+everything on the day the release is made, but easy when you just made the 
+patch. :)
+
+Thanks,
 	Sven
-
-[1] http://www.open-mesh.org/wiki/open-mesh/Contribute#Submitting-patches
---nextPart3553459.UOKLAnlIgq
+--nextPart2426011.7c4HNsCbqK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABCgAGBQJOwOuYAAoJEF2HCgfBJntGfKwQAJQ7XtBL2GyBkf9051guxRFk
-B7e0o/Td0d2MypWq/TL9gIkrKEjq0cAbCOeetN6gbFPdwQYw1CGhiwJ1EY0PeMfX
-3Mp3UQoYo1irGTMSxAZFPuJF/NrrBhM6XUzFKN3l6RcyXPSyeeo7XYYlEmGOwAQS
-2CbNTC0zj7rknJj/4ozJDJ2qIqPpDo6daoD1qndvR6yMX/KX2A9J6USM9efdQZIi
-tTY7nJZVDWyTupPke6XwN78cvsDN+8IipyKpT3ohIpLrKSh2Lv2Y/K00A6BuhplS
-06/UqPI6Cra84cszQijcppkyallHuui53ehrd20BNGRDHWNdbjnLaHEKvKUB1LAQ
-BFECROL0gmfr4PaDJqDAdUkPRik7czoU2sdLNf1D5LMu3bWD0EXLJCtNllKdKLTa
-S1IOoNv/fnO9dtN+ls0erVzmxAmljeGNjRTHOaBVaoOX2z3asJ2yCFLxFtwx2w/B
-zqAcUAuFWUI04Ws2wo3WmzGyTtKYvLW/dV5wPaRi1UuP+8BK37gsbZGZL2Wj722E
-7EWjasca0qRm+jtBEHEzFYiRxwMgZSgtc4j1Z0P+/4TV/adUUls8a+7iS0Ik8LnN
-P6jq+XwK8yD9CM2sqZGWVmv1Vn1d+5xkrQfcD7xfDJOEtIo17flOqOjm12JF6xhz
-2qg1nb+1hTKr8/fpVgFt
-=MNIY
+iQIcBAABCgAGBQJOwO2QAAoJEF2HCgfBJntGyAkQAMENpC0RleY/VmZz0yxqINF8
+RK0e9OG6TUGxenexz6juOu07pmhUWGy//hw8BeFtM97qKr+meZtV1SASMwkCPpbG
+zzpMsvVfrqlyFF924EZEuUfMYImkW+I5xA01tC44bdJs8d2jcggcK07w47mYihJG
+HWlNaGWg8Cf5m5hnH4fSbGD5ZWj8S8PTLb/1Xa1QbUM2Jm5p/Y8NARGOLOL5RITo
+7amdhIDIJmCTkDQW0/+nbdQPUmkwuxhs2zM+HddVTci8xsGEahV5jMvvtiUr3v1s
+5Sgc8e4vvrKfG/D/m3OcrxlChvL+Ws6zMX7RTjb9k07xjp1pcFJYtFmD7Gkb2eaY
+DX527Mllu1Vx364h5adIo5g0SXl3aRd1kyzxOsgRuI8Np2MMd/zpXa2TQf3T7Cp+
++K0EUt1hi+rsT7CKTa7fQ0Ve2wZDuFvpkKZoMyO3Wu/fXnJqu7R1JDT1e5Fk9isS
+Dd/GnPDBm4eAkJyfJsMCy8VSgY9i5tFR4LoWrm+kMnTt32ypbqs8imb+RUv9Wd54
+25IHovh7454WXQ7in+YiVFxj+2WFUz4d1V+jM+8FIEDPPJd0OvyA7DH9WNLQdUTS
+7QG6pnNSIOwjOAzmUGDluzhi8232Dnq8nb3cKst/+iJkMfiGxIB4msM5dPnTC1wg
+OumCEdkld1nF2aKYlHz1
+=q1R1
 -----END PGP SIGNATURE-----
 
---nextPart3553459.UOKLAnlIgq--
+--nextPart2426011.7c4HNsCbqK--
 
