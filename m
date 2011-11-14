@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 14 Nov 2011 02:56:34 +0800
-References: <1321201236-14446-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1321201236-14446-1-git-send-email-lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201111140256.34254.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: update the tcpdump section in
-	the README
+Return-Path: <bug-track@fisher-privat.net>
+From: Alexey Fisher <bug-track@fisher-privat.net>
+Date: Mon, 14 Nov 2011 10:11:32 +0100
+Message-Id: <1321261892-6401-1-git-send-email-bug-track@fisher-privat.net>
+Subject: [B.A.T.M.A.N.] [PATCH] add make install
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,15 +14,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: lindner_marek@yahoo.de, b.a.t.m.a.n@lists.open-mesh.org
 
-On Monday, November 14, 2011 00:20:36 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  README |   23 ++++++++++++++---------
->  1 files changed, 14 insertions(+), 9 deletions(-)
+Signed-off-by: Alexey Fisher <bug-track@fisher-privat.net>
+---
+ Makefile |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-Applied in revision 1c27cc6.
+diff --git a/Makefile b/Makefile
+index 5762721..44bad88 100644
+--- a/Makefile
++++ b/Makefile
+@@ -42,3 +42,6 @@ all:
+ 
+ clean:
+ 	$(MAKE) -C $(KERNELPATH) M=$(PWD) PWD=$(PWD) clean
++
++install:
++	@cp batman-adv.ko $(shell dirname $(KERNELPATH))/kernel/net/batman-adv/batman-adv.ko
+-- 
+1.7.5.4
 
-Regards,
-Marek
