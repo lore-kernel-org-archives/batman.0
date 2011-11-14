@@ -1,13 +1,14 @@
-Return-Path: <bug-track@fisher-privat.net>
-Message-ID: <4EC0EB27.8060207@fisher-privat.net>
-Date: Mon, 14 Nov 2011 11:19:19 +0100
-From: Alexey Fisher <bug-track@fisher-privat.net>
-MIME-Version: 1.0
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 14 Nov 2011 11:21:12 +0100
+Message-ID: <1428522.agqKBYpyMC@sven-laptop.home.narfation.org>
+In-Reply-To: <9935980.KTPM4GpO8u@sven-laptop.home.narfation.org>
 References: <1321261892-6401-1-git-send-email-bug-track@fisher-privat.net>
 	<9935980.KTPM4GpO8u@sven-laptop.home.narfation.org>
-In-Reply-To: <9935980.KTPM4GpO8u@sven-laptop.home.narfation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3553459.UOKLAnlIgq";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH] add make install
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,44 +21,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: lindner_marek@yahoo.de
 
-On 14.11.2011 10:38, Sven Eckelmann wrote:
+
+--nextPart3553459.UOKLAnlIgq
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
+
+On Monday 14 November 2011 10:38:07 Sven Eckelmann wrote:
 > On Monday 14 November 2011 10:11:32 Alexey Fisher wrote:
->> Signed-off-by: Alexey Fisher <bug-track@fisher-privat.net>
->> ---
->>  Makefile |    3 +++
->>  1 files changed, 3 insertions(+), 0 deletions(-)
->>
->> diff --git a/Makefile b/Makefile
->> index 5762721..44bad88 100644
->> --- a/Makefile
->> +++ b/Makefile
->> @@ -42,3 +42,6 @@ all:
->>
->>  clean:
->>  	$(MAKE) -C $(KERNELPATH) M=$(PWD) PWD=$(PWD) clean
->> +
->> +install:
->> +	@cp batman-adv.ko $(shell dirname
->> $(KERNELPATH))/kernel/net/batman-adv/batman-adv.ko
-> 
+> > Signed-off-by: Alexey Fisher <bug-track@fisher-privat.net>
+> > ---
+> > 
+> >  Makefile |    3 +++
+> >  1 files changed, 3 insertions(+), 0 deletions(-)
+[...]
 > NAck: Sven Eckelmann <sven@narfation.org>
-> 
-> Please read in the current linux sources Documentation/kbuild/modules.txt
-> 
-> +install
-> +	$(MAKE) -C $(KERNELPATH) M=$(PWD) PWD=$(PWD) modules_install
-> 
-> or to override the old version that is included in the kernel
-> 
-> +install
-> +	$(MAKE) -C $(KERNELPATH) M=$(PWD) PWD=$(PWD) INSTALL_MOD_DIR=kernel/net/batman-adv/ modules_install
 
-Thank you,
-so you will send your patch? I prefer last version, to make testing easier.
+And also "Nack" for not updating the README [1]
 
-regards,
-Alexey.
+Kind regards,
+	Sven
+
+[1] http://www.open-mesh.org/wiki/open-mesh/Contribute#Submitting-patches
+--nextPart3553459.UOKLAnlIgq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJOwOuYAAoJEF2HCgfBJntGfKwQAJQ7XtBL2GyBkf9051guxRFk
+B7e0o/Td0d2MypWq/TL9gIkrKEjq0cAbCOeetN6gbFPdwQYw1CGhiwJ1EY0PeMfX
+3Mp3UQoYo1irGTMSxAZFPuJF/NrrBhM6XUzFKN3l6RcyXPSyeeo7XYYlEmGOwAQS
+2CbNTC0zj7rknJj/4ozJDJ2qIqPpDo6daoD1qndvR6yMX/KX2A9J6USM9efdQZIi
+tTY7nJZVDWyTupPke6XwN78cvsDN+8IipyKpT3ohIpLrKSh2Lv2Y/K00A6BuhplS
+06/UqPI6Cra84cszQijcppkyallHuui53ehrd20BNGRDHWNdbjnLaHEKvKUB1LAQ
+BFECROL0gmfr4PaDJqDAdUkPRik7czoU2sdLNf1D5LMu3bWD0EXLJCtNllKdKLTa
+S1IOoNv/fnO9dtN+ls0erVzmxAmljeGNjRTHOaBVaoOX2z3asJ2yCFLxFtwx2w/B
+zqAcUAuFWUI04Ws2wo3WmzGyTtKYvLW/dV5wPaRi1UuP+8BK37gsbZGZL2Wj722E
+7EWjasca0qRm+jtBEHEzFYiRxwMgZSgtc4j1Z0P+/4TV/adUUls8a+7iS0Ik8LnN
+P6jq+XwK8yD9CM2sqZGWVmv1Vn1d+5xkrQfcD7xfDJOEtIo17flOqOjm12JF6xhz
+2qg1nb+1hTKr8/fpVgFt
+=MNIY
+-----END PGP SIGNATURE-----
+
+--nextPart3553459.UOKLAnlIgq--
 
