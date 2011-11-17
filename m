@@ -1,10 +1,14 @@
-Return-Path: <daniele.furlan@gmail.com>
-From: Daniele Furlan <daniele.furlan@gmail.com>
-Date: Thu, 17 Nov 2011 16:53:53 +0100
-Message-Id: <1321545233-32676-5-git-send-email-daniele.furlan@gmail.com>
-In-Reply-To: <1321545233-32676-1-git-send-email-daniele.furlan@gmail.com>
-References: <1321545233-32676-1-git-send-email-daniele.furlan@gmail.com>
-Subject: [B.A.T.M.A.N.]  [PATCH 5/5] Remove unnecessary code
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 17 Nov 2011 21:01:11 +0100
+Message-ID: <25416217.yBclFAKIz7@sven-laptop.home.narfation.org>
+In-Reply-To: <CAG7VhQTrx1nvuH2ZXRbenSuwAqE7RyW=r9WoWrH+ubs6+aP56g@mail.gmail.com>
+References: <CAG7VhQTrx1nvuH2ZXRbenSuwAqE7RyW=r9WoWrH+ubs6+aP56g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3544657.nVJKRu7qJd";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/5] Loop-freness for B.A.T.M.A.N.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,60 +22,86 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
- This patch remove the now unnecessary code that avoid temporary routing loops
- since new forwading rules guarantees loop-freeness so it becomes useless.
 
-Signed-off-by: Daniele Furlan <daniele.furlan@gmail.com>
----
- bat_iv_ogm.c |   21 ---------------------
- 1 files changed, 0 insertions(+), 21 deletions(-)
+--nextPart3544657.nVJKRu7qJd
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="windows-1252"
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index ec7265a..f76a38c 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -875,7 +875,6 @@ static void bat_ogm_process(const struct ethhdr *ethhdr,
- 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct hard_iface *hard_iface;
- 	struct orig_node *orig_neigh_node, *orig_node;
--	struct neigh_node *router = NULL, *router_router = NULL;
- 	struct neigh_node *new_router = NULL;
- 	struct neigh_node *orig_neigh_router = NULL;
- 	int has_directlink_flag;
-@@ -1025,22 +1024,6 @@ static void bat_ogm_process(const struct ethhdr *ethhdr,
- 		goto out;
- 	}
- 
--	router = orig_node_get_router(orig_node);
--	if (router)
--		router_router = orig_node_get_router(router->orig_node);
--
--	/* avoid temporary routing loops */
--	if (router && router_router &&
--	    (compare_eth(router->addr, batman_ogm_packet->prev_sender)) &&
--	    !(compare_eth(batman_ogm_packet->orig,
--			  batman_ogm_packet->prev_sender)) &&
--	    (compare_eth(router->addr, router_router->addr))) {
--		bat_dbg(DBG_BATMAN, bat_priv,
--			"Drop packet: ignoring all rebroadcast packets that "
--			"may make me loop (sender: %pM)\n", ethhdr->h_source);
--		goto out;
--	}
--
- 	/* if sender is a direct neighbor the sender mac equals
- 	 * originator mac */
- 	orig_neigh_node = (is_single_hop_neigh ?
-@@ -1118,10 +1101,6 @@ out_neigh:
- 	if ((orig_neigh_node) && (!is_single_hop_neigh))
- 		orig_node_free_ref(orig_neigh_node);
- out:
--	if (router)
--		neigh_node_free_ref(router);
--	if (router_router)
--		neigh_node_free_ref(router_router);
- 	if (orig_neigh_router)
- 		neigh_node_free_ref(orig_neigh_router);
- 	if (new_router)
--- 
-1.7.1
+On Thursday 17 November 2011 16:15:42 Daniele Furlan wrote:
+> This series of patches introduce a correction in tq metric and forwarding
+>  rules of ogm packets.
+> 
+>  In the current configuration routing loops scenario can emerge due to some
+>  conceptual errors such the global tq window and the forwarding of ogm
+> coming from sub-optimal paths substituting ogm tq with the average of
+> current router. An example scenario has been realized also in simulation
+> using qemu.
+
+Interesting statement but maybe it would also be interesting for others to
+provide examples and explanations.
+
+>  Can be demonstrated as already done for DSDV[1], that is a protocol very
+>  similar to batman, that a proper forwarding policy together with a strict
+>  control on metric monotonicity (as suggested in [2]) are sufficient to
+>  guarantee loop-freeness for the protocol.
+> 
+>  I apologize in advance if the source style is not the best possible,
+>  but I hope that the ideas will applied after a phase of code revision.
+
+Please read and understand
+ http://www.open-mesh.org/wiki/open-mesh/Contribute#Submitting-patches
+
+I refer here to checking of your patches using simple static analyzers and the
+documentation part.
+
+Also things like
+
++               /* update last originator seqno received from this neighbour */
++               if ((set_mark) && 
++                       (batman_ogm_packet->seqno > tmp_neigh_node->last_seqno))
++                       tmp_neigh_node->last_seqno = batman_ogm_packet->seqno;
++
+
+are simply wrong. Have you thought about overflow of sequence numbers (hint:
+seq_before/after)? Ok, forget about the code and look at the rest.
+
+You don't give any hints about implications of your changes in the commit
+messages (no, something like "everything will be better because I say it"
+doesn't count).
+
+Take for example the stuff prepared by Simon. He gathered information, talked
+to the people and prepared documentation. I can now use this stuff to discuss
+with him at a higher level than with the stuff you provided. And his stuff is
+only a "small" optional feature, but your patches changes things in the path
+selection and information propagation code.
+
+Maybe you should contact everyone (marec, d0tslash, ordex, ...) on IRC and
+talk about the actual concepts (and also their concepts... ttvn
+*hinthinthint*) and prepare actual documentation based on that.
+
+Kind regards,
+	Sven
+--nextPart3544657.nVJKRu7qJd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJOxWgHAAoJEF2HCgfBJntGj6cQAK+9NsJghGV4d8wE9J54g2mb
+g+tVkXhUhP5ZBYI4AdXUMbW7TN8mNoO88vDcFWrpS/47hGJpzO/srT8i0/1zeSCN
+FccNoEh2pkCxPT1uZo+VAX5FEFM0L1ZEctQ5IGz2VAbwA/iZIfb2KlhTDBy6gqAF
+cFXOc3OtabVwpRTr+z4f1N84LyvpcjxttbOL1a+PdgiSbEF8ZaThBlfiPy6SjSPG
+HFJE8jt/XTIuGwKU/rwbIEnhGgnxi5GyKtqdAP27rgJfyfoYmW7BF2OTad+uOLPD
+5CKWGjDmE0F7K1nV9FqBjfa1fHB96cVCdVm5ffTrHQdpsxTAUd8OGV1fo2cqu+yp
+0WfUGHbNn5QsdDaA9bfF9kcLCNAVxHtg/4APqs9PS7fLUMYRFKWJXRD9i5/3tyRF
+RaLPw3/EQdSUffosoYbHboHC+R+gzDZIkBZ0AAUZiWkRdlObRvFJaw8FRhPfER75
+yK66iJBx6YDsqmmA5ixFrWCbu7+iWlFRjapZ8KSevMN38aDqg2rcpncaxAK+VrYo
+EEXkwX8KHJvXH1ChiZhBgHHVoKTjx7cno3jvYHCIU49d2gTZP3rSkFSzH0fk2nao
+P6/9o/y12Fddg/vk4hMaQZH4TUVFXfbtX00izd1SO+iWUyv6S+TdH8X3fR4MhHtG
+xe0xwJSE3+aHhVybBHPS
+=ANq9
+-----END PGP SIGNATURE-----
+
+--nextPart3544657.nVJKRu7qJd--
 
