@@ -1,10 +1,10 @@
 Return-Path: <daniele.furlan@gmail.com>
 From: Daniele Furlan <daniele.furlan@gmail.com>
-Date: Thu, 17 Nov 2011 16:53:51 +0100
-Message-Id: <1321545233-32676-3-git-send-email-daniele.furlan@gmail.com>
+Date: Thu, 17 Nov 2011 16:53:52 +0100
+Message-Id: <1321545233-32676-4-git-send-email-daniele.furlan@gmail.com>
 In-Reply-To: <1321545233-32676-1-git-send-email-daniele.furlan@gmail.com>
 References: <1321545233-32676-1-git-send-email-daniele.furlan@gmail.com>
-Subject: [B.A.T.M.A.N.] [PATCH 3/5] Remove TQ global window and tq averaging.
+Subject: [B.A.T.M.A.N.]  [PATCH 4/5] Change ogm forwarding rules
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,199 +18,113 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
- This patch remove TQ global window and tq averaging, only the latest tq
- value is maintained, this is necessary to guarantee metric monotonicity
- necessary to ensure loop-freeness.
- This patch remove also unused ring_buffer.c and ring_buffer.h files.
+ This patch changes ogm forwarding rules in order to guarantee loop-freeness.
+ Now only the ogm coming from the current router is forwarded.
+ The tq substitution with the router tq is deleted, ogm coming
+ from sub-optimal path, they are simply discarded.
 
 Signed-off-by: Daniele Furlan <daniele.furlan@gmail.com>
 ---
- Makefile.kbuild |    1 -
- bat_iv_ogm.c    |   21 +++++++--------------
- main.h          |    2 +-
- ring_buffer.c   |   52 ----------------------------------------------------
- ring_buffer.h   |   28 ----------------------------
- types.h         |    2 --
- 6 files changed, 8 insertions(+), 98 deletions(-)
- delete mode 100644 ring_buffer.c
- delete mode 100644 ring_buffer.h
+ bat_iv_ogm.c |   45 +++++++++++++++++++--------------------------
+ 1 files changed, 19 insertions(+), 26 deletions(-)
 
-diff --git a/Makefile.kbuild b/Makefile.kbuild
-index bd7e93c..ee83b89 100644
---- a/Makefile.kbuild
-+++ b/Makefile.kbuild
-@@ -43,7 +43,6 @@ batman-adv-y += hash.o
- batman-adv-y += icmp_socket.o
- batman-adv-y += main.o
- batman-adv-y += originator.o
--batman-adv-y += ring_buffer.o
- batman-adv-y += routing.o
- batman-adv-y += send.o
- batman-adv-y += soft-interface.o
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index bdb4f1a..9f6cc9b 100644
+index 9f6cc9b..ec7265a 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
-@@ -22,7 +22,6 @@
- #include "main.h"
- #include "bat_ogm.h"
- #include "translation-table.h"
--#include "ring_buffer.h"
- #include "originator.h"
- #include "routing.h"
- #include "gateway_common.h"
-@@ -604,12 +603,11 @@ static void bat_ogm_orig_update(struct bat_priv *bat_priv,
- 		if (is_duplicate)
- 			continue;
+@@ -466,8 +466,7 @@ static void bat_ogm_forward(struct orig_node *orig_node,
+ 			    int directlink, struct hard_iface *if_incoming)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
+-	struct neigh_node *router;
+-	uint8_t in_tq, in_ttl, tq = 0;
++	uint8_t in_tq, in_ttl;
+ 	uint8_t tt_num_changes;
  
--		spin_lock_bh(&tmp_neigh_node->tq_lock);
--		ring_buffer_set(tmp_neigh_node->tq_recv,
--				&tmp_neigh_node->tq_index, 0);
--		tmp_neigh_node->tq =
--			ring_buffer_avg(tmp_neigh_node->tq_recv);
--		spin_unlock_bh(&tmp_neigh_node->tq_lock);
-+		/* if not received more than TQ_MAX_SEQNO_GAP OGM from neighbour
-+		 * set its tq to 0 */
-+		if ((batman_ogm_packet->seqno - tmp_neigh_node->last_seqno) >
-+		    												TQ_MAX_SEQNO_GAP)
-+			tmp_neigh_node->tq = 0;
+ 	if (batman_ogm_packet->ttl <= 1) {
+@@ -475,8 +474,6 @@ static void bat_ogm_forward(struct orig_node *orig_node,
+ 		return;
  	}
  
- 	if (!neigh_node) {
-@@ -633,13 +631,8 @@ static void bat_ogm_orig_update(struct bat_priv *bat_priv,
+-	router = orig_node_get_router(orig_node);
+-
+ 	in_tq = batman_ogm_packet->tq;
+ 	in_ttl = batman_ogm_packet->ttl;
+ 	tt_num_changes = batman_ogm_packet->tt_num_changes;
+@@ -484,31 +481,13 @@ static void bat_ogm_forward(struct orig_node *orig_node,
+ 	batman_ogm_packet->ttl--;
+ 	memcpy(batman_ogm_packet->prev_sender, ethhdr->h_source, ETH_ALEN);
  
- 	orig_node->flags = batman_ogm_packet->flags;
- 	neigh_node->last_valid = jiffies;
+-	/* rebroadcast tq of our best ranking neighbor to ensure the rebroadcast
+-	 * of our best tq value */
+-	if (router && router->tq != 0) {
 -
--	spin_lock_bh(&neigh_node->tq_lock);
--	ring_buffer_set(neigh_node->tq_recv,
--			&neigh_node->tq_index,
--			batman_ogm_packet->tq);
--	neigh_node->tq = ring_buffer_avg(neigh_node->tq_recv);
--	spin_unlock_bh(&neigh_node->tq_lock);
-+	/* update tq of neighbour */
-+	neigh_node->tq = batman_ogm_packet->tq;
- 
- 	if (!is_duplicate) {
- 		orig_node->last_ttl = batman_ogm_packet->ttl;
-diff --git a/main.h b/main.h
-index 464439f..a778388 100644
---- a/main.h
-+++ b/main.h
-@@ -49,7 +49,7 @@
- #define TQ_LOCAL_WINDOW_SIZE 64
- #define TT_REQUEST_TIMEOUT 3 /* seconds we have to keep pending tt_req */
- 
--#define TQ_GLOBAL_WINDOW_SIZE 5
-+#define TQ_MAX_SEQNO_GAP 5 /* max ogm loss before declaring a path broken */
- #define TQ_LOCAL_BIDRECT_SEND_MINIMUM 1
- #define TQ_LOCAL_BIDRECT_RECV_MINIMUM 1
- #define TQ_TOTAL_BIDRECT_LIMIT 1
-diff --git a/ring_buffer.c b/ring_buffer.c
-deleted file mode 100644
-index f1ccfa7..0000000
---- a/ring_buffer.c
-+++ /dev/null
-@@ -1,52 +0,0 @@
--/*
-- * Copyright (C) 2007-2011 B.A.T.M.A.N. contributors:
-- *
-- * Marek Lindner
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of version 2 of the GNU General Public
-- * License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-- * 02110-1301, USA
-- *
-- */
+-		/* rebroadcast ogm of best ranking neighbor as is */
+-		if (!compare_eth(router->addr, ethhdr->h_source)) {
+-			batman_ogm_packet->tq = router->tq;
 -
--#include "main.h"
--#include "ring_buffer.h"
--
--void ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index, uint8_t value)
--{
--	lq_recv[*lq_index] = value;
--	*lq_index = (*lq_index + 1) % TQ_GLOBAL_WINDOW_SIZE;
--}
--
--uint8_t ring_buffer_avg(const uint8_t lq_recv[])
--{
--	const uint8_t *ptr;
--	uint16_t count = 0, i = 0, sum = 0;
--
--	ptr = lq_recv;
--
--	while (i < TQ_GLOBAL_WINDOW_SIZE) {
--		if (*ptr != 0) {
--			count++;
--			sum += *ptr;
+-			if (router->last_ttl)
+-				batman_ogm_packet->ttl = router->last_ttl - 1;
 -		}
 -
--		i++;
--		ptr++;
+-		tq = router->tq;
 -	}
 -
--	if (count == 0)
--		return 0;
+-	if (router)
+-		neigh_node_free_ref(router);
 -
--	return (uint8_t)(sum / count);
--}
-diff --git a/ring_buffer.h b/ring_buffer.h
-deleted file mode 100644
-index 7cdfe62..0000000
---- a/ring_buffer.h
-+++ /dev/null
-@@ -1,28 +0,0 @@
--/*
-- * Copyright (C) 2007-2011 B.A.T.M.A.N. contributors:
-- *
-- * Marek Lindner
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of version 2 of the GNU General Public
-- * License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-- * 02110-1301, USA
-- *
-- */
--
--#ifndef _NET_BATMAN_ADV_RING_BUFFER_H_
--#define _NET_BATMAN_ADV_RING_BUFFER_H_
--
--void ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index, uint8_t value);
--uint8_t ring_buffer_avg(const uint8_t lq_recv[]);
--
--#endif /* _NET_BATMAN_ADV_RING_BUFFER_H_ */
-diff --git a/types.h b/types.h
-index 910ce85..2006277 100644
---- a/types.h
-+++ b/types.h
-@@ -126,8 +126,6 @@ struct neigh_node {
- 	struct hlist_node list;
- 	uint8_t addr[ETH_ALEN];
- 	uint8_t real_packet_count;
--	uint8_t tq_recv[TQ_GLOBAL_WINDOW_SIZE];
--	uint8_t tq_index;
- 	uint8_t tq;
- 	uint32_t last_seqno;
- 	uint8_t last_ttl;
+ 	/* apply hop penalty */
+ 	batman_ogm_packet->tq = hop_penalty(batman_ogm_packet->tq, bat_priv);
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+-		"Forwarding packet: tq_orig: %i, tq: %i, "
++		"Forwarding packet: tq_orig: %i, "
+ 		"tq_forw: %i, ttl_orig: %i, ttl_forw: %i\n",
+-		in_tq, tq, batman_ogm_packet->tq, in_ttl - 1,
++		in_tq, batman_ogm_packet->tq, in_ttl - 1,
+ 		batman_ogm_packet->ttl);
+ 
+ 	batman_ogm_packet->seqno = htonl(batman_ogm_packet->seqno);
+@@ -897,6 +876,7 @@ static void bat_ogm_process(const struct ethhdr *ethhdr,
+ 	struct hard_iface *hard_iface;
+ 	struct orig_node *orig_neigh_node, *orig_node;
+ 	struct neigh_node *router = NULL, *router_router = NULL;
++	struct neigh_node *new_router = NULL;
+ 	struct neigh_node *orig_neigh_router = NULL;
+ 	int has_directlink_flag;
+ 	int is_my_addr = 0, is_my_orig = 0, is_my_oldorig = 0;
+@@ -1113,9 +1093,20 @@ static void bat_ogm_process(const struct ethhdr *ethhdr,
+ 		goto out_neigh;
+ 	}
+ 
+-	if (is_duplicate) {
++	/* old packet */
++	if (orig_node->last_real_seqno > batman_ogm_packet->seqno) {
++		bat_dbg(DBG_BATMAN, bat_priv,
++			"Drop packet: old packet received\n");
++		goto out_neigh;
++	}
++	
++	/* get router after updates */
++	new_router = orig_node_get_router(orig_node);
++
++	/* forward only ogm coming from current router */
++	if (compare_eth(new_router->addr, ethhdr->h_source) == 0) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Drop packet: duplicate packet received\n");
++			"Drop packet: not received via current router\n");
+ 		goto out_neigh;
+ 	}
+ 
+@@ -1133,6 +1124,8 @@ out:
+ 		neigh_node_free_ref(router_router);
+ 	if (orig_neigh_router)
+ 		neigh_node_free_ref(orig_neigh_router);
++	if (new_router)
++		neigh_node_free_ref(new_router);
+ 
+ 	orig_node_free_ref(orig_node);
+ }
 -- 
 1.7.1
 
