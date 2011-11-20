@@ -1,11 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 20 Nov 2011 16:35:16 +0100
-Message-Id: <1321803316-18872-1-git-send-email-sven@narfation.org>
-In-Reply-To: <CAFevQmPcoR3O5FHfHvuUkv4yrJMYd1MtsEMNZ24uwjXaUtXxeQ@mail.gmail.com>
-References: <CAFevQmPcoR3O5FHfHvuUkv4yrJMYd1MtsEMNZ24uwjXaUtXxeQ@mail.gmail.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: Return failure code when ping was
-	not successful
+Return-Path: <panayot.daskalov@gmail.com>
+Message-ID: <4EC967CC.1040804@gmail.com>
+Date: Sun, 20 Nov 2011 22:49:16 +0200
+From: Panayot Daskalov <panayot.daskalov@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] Connecting non-batman nodes to a mesh network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,48 +19,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The standard iputils-ping returns an error code when it could not receive a
-single reply to a echo request. batctl ping behaved differently and made it
-only possible to detect that the target is not reachable by parsing the text
-output of batctl.
+Hi All,
 
-A new return code EXIT_NOSUCCESS (2) is introduced to distinguish a general
-failure from the inability to reach another node.
+I want to ask for your advice about a batman problem I am facing. I have 
+a mesh network of custom build embedded Linux devices. The devices have 
+only network one interface and this is the Wi-Fi that is used by batman. 
+So far the mesh is running OK, but at some point I need to be able to 
+connect with a laptop (non-Linux) to the network and access some of the 
+devices via its IP address. I tried simply connecting to the adhoc 
+network and setting a static IP to my laptop. I have managed to do that, 
+but I can't access the nodes from the mesh.
 
-Reported-by: Filippo Sallemi <tonyputi@gmail.com>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- main.h |    2 ++
- ping.c |    5 ++++-
- 2 files changed, 6 insertions(+), 1 deletions(-)
+I read the instruction for mixing with non-batman devices by bridging 
+the bat0 interface with the "non-batman" interface, but as far as I 
+understand that applies to systems with at least 2 network interfaces 
+e.g one for batman nodes and one for the non-batman. So my question is - 
+can I mix non-batman and batman nodes when I have only one network 
+interface on the batman nodes? If yes, then how?
 
-diff --git a/main.h b/main.h
-index e5a3e01..fb7ca38 100644
---- a/main.h
-+++ b/main.h
-@@ -25,4 +25,6 @@
- 
- #define SOCKET_PATH_FMT "%s/batman_adv/%s/socket"
- 
-+#define EXIT_NOSUCCESS 2
-+
- #define __packed __attribute((packed))   /* linux kernel compat */
-diff --git a/ping.c b/ping.c
-index 91b733a..1b715f3 100644
---- a/ping.c
-+++ b/ping.c
-@@ -322,7 +322,10 @@ sleep:
- 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
- 		min, avg, max, mdev);
- 
--	ret = EXIT_SUCCESS;
-+	if (packets_in)
-+		ret = EXIT_SUCCESS;
-+	else
-+		ret = EXIT_NOSUCCESS;
- 
- out:
- 	bat_hosts_free();
--- 
-1.7.7.3
+Thanks in advance.
 
+Best regards,
+Panayot
+
+P.S
+I am using batman-adv 2011.2.0, because I can't cross compile the latest 
+version against the kernel I use on the devices - 2.6.28. Also I don't 
+use batctl.
