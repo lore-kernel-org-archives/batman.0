@@ -1,14 +1,10 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 21 Nov 2011 22:27:10 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111121212710.GB32510@ritirata.org>
-References: <20111121192611.GA32510@ritirata.org>
-	<20111121205422.GB11089@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20111121205422.GB11089@kroah.com>
-Subject: Re: [B.A.T.M.A.N.] batman-adv stable patches: information request
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Mon, 21 Nov 2011 22:37:59 +0100
+Message-Id: <1321911479-23444-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1320752062-21776-1-git-send-email-ordex@autistici.org>
+References: <1320752062-21776-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix two issues in DAT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,76 +16,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Greg KH <greg@kroah.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Hello Greg,
+ * use CONFIG_BATMAN_ADV_DAT instead of CONFIG_BATMAN_ADV_BAT
+ * use skb_reset_mac_header() to avoid crashes because of null pointers
+   within arp_get_type()
 
-On Mon, Nov 21, 2011 at 12:54:22 -0800, Greg KH wrote:
-> On Mon, Nov 21, 2011 at 08:27:24PM +0100, Antonio Quartulli wrote:
-> > Hello Greg,
-> > 
-> > I'm Antonio Quartulli, a net/batman-adv kernel module contributor, and I'm
-> > contacting you as you are the stable tree maintainer.
-> > 
-> > On Oct 25, 2011 I sent the following two patches to stable@kernel.org:
-> > 
-> > - [PATCH 1/2] batman-adv: fix tt_local_reset_flags() function
-> >   which is 31901264511cf20c5ed33b8649a3ca9ce28df60b in David's net-next branch
-> > 
-> > 
-> > - [PATCH 2/2] batman-adv: correctly set the data field in the TT_REPONSE packet
-> >   which is 9d8523931f7f5eb8900077f0da0fbe6b8ad0010b in David's net-next branch
-> > 
-> > Up to now we didn't received any reply, either ACK or NACK, but I saw that
-> > linux-3.1.1 has been released in the meanwhile. As I guessed, this release
-> > doesn't contain our patches.
-> > 
-> > Did I miss something in the stable-submit procedure?
-> > I'm sorry for any inconvenient but this is the first time that I send patches to
-> > stable.
-> 
-> Ugh, no, you did everything right, it's just that at that point in time,
-> stable@kernel.org was down, as it still is, the new address is
-> stable@vger.kernel.org.
-> 
+I've reviewed the DAT patchset, all of the previous comments have been
+integrated well. It also runs well within my VMs (after applying this
+patch).
 
-Ah ok, thank you for the advice!
+Please integrate this patch into the previous one and resend it. You
+may add my Reviewed-By tag.
 
-At this point we have 3 patches more that we sent to the wrong address after the
-two that I already mentioned. The patches are:
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ distributed-arp-table.h |    2 +-
+ soft-interface.c        |    2 ++
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-- [PATCH 1/3] batman-adv: remove references for global tt entries
-  commit id in Dadiv's tree: 531027fcddbcf81c9937dd04f08a7e8f11fd47d2
-
-- [PATCH 2/3] batman-adv: add sanity check when removing global tts
-  commit id in Dadiv's tree: 6e8014947d6469df1566e9e253805557c5c0e4e0
-
-- [PATCH 3/3] batman-adv: unify hash_entry field position in
-  tt_local/global_entry
-  commit id in Dadiv's tree: 93840ac40bb0d0f177ef8af74e64671be67e8c37
-
-> I'll queue these two patches up for the next release.  Just to verify,
-> these should only go to 3.1-stable, and not 3.0-stable as well?
-> 
-
-Exactly: the 5 patches are for 3.1-stable only.
-
-> Also, in the future, you can just add a simple:
-> 	Cc: stable <stable@vger.kernel.org>
-> to the patch in the signed-off-by: area, and when it hits Linus's tree,
-> I'll automatically pick it up for the next stable release, you don't
-> have to do anything extra.
-> 
-
-This is what we usually do, but this time we decided to send these patches
-*after* they got merged into David's tree. :)
-
-Thank you very much!
-
-
+diff --git a/distributed-arp-table.h b/distributed-arp-table.h
+index 496b7f3..bd32c89 100644
+--- a/distributed-arp-table.h
++++ b/distributed-arp-table.h
+@@ -28,7 +28,7 @@
+ #define ARP_HW_DST(skb) (ARP_HW_SRC(skb) + ETH_ALEN + 4)
+ #define ARP_IP_DST(skb) (*(uint32_t *)(ARP_HW_SRC(skb) + ETH_ALEN * 2 + 4))
+ 
+-#ifdef CONFIG_BATMAN_ADV_BAT
++#ifdef CONFIG_BATMAN_ADV_DAT
+ 
+ uint16_t arp_get_type(struct bat_priv *bat_priv, struct sk_buff *skb);
+ bool arp_snoop_outgoing_request(struct bat_priv *bat_priv,
+diff --git a/soft-interface.c b/soft-interface.c
+index 9107b22..786bc71 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -592,6 +592,8 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 		goto end;
+ 	}
+ 
++	skb_reset_mac_header(skb);
++
+ 	/**
+ 	 * if we have a another chosen mesh exit node in range
+ 	 * it will transport the packets to the mesh
 -- 
-Antonio Quartulli
+1.7.7.2
 
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
