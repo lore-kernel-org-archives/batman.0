@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 22 Nov 2011 17:40:29 +0800
-References: <1320680200-32024-1-git-send-email-ordex@autistici.org>
-	<20111114164713.GB21063@ritirata.org>
-In-Reply-To: <20111114164713.GB21063@ritirata.org>
+Date: Tue, 22 Nov 2011 17:45:34 +0800
+References: <1321261892-6401-1-git-send-email-bug-track@fisher-privat.net>
+	<1956205.mQFSXpQuIf@sven-laptop.home.narfation.org>
+	<4EC0EF83.2060602@fisher-privat.net>
+In-Reply-To: <4EC0EF83.2060602@fisher-privat.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201111221740.29552.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add tt_initialised flag to
-	the orig_node struct
+Message-Id: <201111221745.35048.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] add make install
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,23 +22,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, November 15, 2011 00:47:14 Antonio Quartulli wrote:
-> On Mon, Nov 07, 2011 at 04:36:40PM +0100, Antonio Quartulli wrote:
-> > (ttvn == 0) is currently used as initial condition. However this is not a
-> > good idea because ttvn gets the vale zero each time after reaching the
-> > maximum value (wrap around). For this reason a new flag is added in
-> > order to define whether a node has an initialised table or not.
-> > Moreover, after invoking
-> > tt_global_del_orig(), tt_initialised has to be set to false
+On Monday, November 14, 2011 18:37:55 Alexey Fisher wrote:
+> On 14.11.2011 11:29, Sven Eckelmann wrote:
+> > On Monday 14 November 2011 11:19:19 Alexey Fisher wrote:
+> > [...]
 > > 
-> > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> >> Thank you,
+> >> so you will send your patch? I prefer last version, to make testing
+> >> easier.
+> >
+> > 
+> >
+> > I personally don't care. Feel free to fix your patch and send a new
+> > version  (but think about adding the ":" after "install" -- the
+> > character magically disappeared when I wrote the mail).
+> >
+> > 
+> >
+> > And don't forget the documentation part as it is always hard to remember 
+> > everything on the day the release is made, but easy when you just made
+> > the  patch. :)
 > 
-> Reported-by: Alexey Fisher <bug-track@fisher-privat.net>
-> Tested-by: Alexey Fisher <bug-track@fisher-privat.net>
+> Corrected.
 
-Applied in revision 8ef201e.
+Applied in revision 44a335d.
+
+Next time, please send the patch inline again and add the branch name (batman-
+adv in this case).
 
 Thanks,
 Marek
