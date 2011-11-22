@@ -1,9 +1,10 @@
 Return-Path: <ordex@autistici.org>
-From: Antonio Quartull <ordex@autistici.org>
-Date: Tue, 22 Nov 2011 18:28:51 +0100
-Message-Id: <1321982931-32465-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: batctl: added loglevel support for
-	DBG_ARP
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 22 Nov 2011 21:47:54 +0100
+Message-Id: <1321994874-10225-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1321982931-32465-1-git-send-email-ordex@autistici.org>
+References: <1321982931-32465-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batctl: added loglevel support for DBG_ARP
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,15 +18,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+From: Antonio Quartull <ordex@autistici.org>
+
 With the introduction of DAT (Distributed ARP Table) a new log level has been
 added. This log level is i ncharge of collecting messages related to DAT, ARP
 parsing and snooping. README has been updated accordingly
 
 Signed-off-by: Antonio Quartull <ordex@autistici.org>
 ---
- README |    1 +
- sys.c  |    5 +++++
- 2 files changed, 6 insertions(+), 0 deletions(-)
+ README       |    1 +
+ man/batctl.8 |    2 +-
+ sys.c        |    5 +++++
+ 3 files changed, 7 insertions(+), 1 deletions(-)
 
 diff --git a/README b/README
 index 7119951..4bbfcb5 100644
@@ -39,6 +43,19 @@ index 7119951..4bbfcb5 100644
  
  batctl aggregation
  ==================
+diff --git a/man/batctl.8 b/man/batctl.8
+index 0cf0a7b..3f3ebc2 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -65,7 +65,7 @@ Once started batctl will display the list of announced gateways in the network.
+ If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the originator interval. The interval is in units of milliseconds.
+ .br
+ .IP "\fBloglevel\fP|\fBll\fP      [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
+-If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting. Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to translation table operations. Level 'all' enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to see them. Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options won't be available.
++If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting. Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to translation table operations. Level 'arp' enables messages related to DAT, ARP parsing and snooping. Level 'all' enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to see them. Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options won't be available.
+ .br
+ .IP "\fBlog\fP|\fBl\fP            [\fB\-n\fP]\fP"
+ batctl will read the batman-adv debug log which has to be compiled into the kernel module. If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output.
 diff --git a/sys.c b/sys.c
 index e510bee..044f772 100644
 --- a/sys.c
