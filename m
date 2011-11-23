@@ -1,15 +1,15 @@
 Return-Path: <andrew@lunn.ch>
-Date: Wed, 23 Nov 2011 16:47:01 +0100
+Date: Wed, 23 Nov 2011 17:11:51 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20111123154701.GB2656@lunn.ch>
+Message-ID: <20111123161151.GC2656@lunn.ch>
 References: <1321915993-29312-1-git-send-email-ordex@autistici.org>
-	<1321915993-29312-5-git-send-email-ordex@autistici.org>
+	<1321915993-29312-6-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1321915993-29312-5-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 4/7] batman-adv: Distributed ARP Table
- - add ARP parsing functions
+In-Reply-To: <1321915993-29312-6-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 5/7] batman-adv: Distributed ARP Table
+ - add snooping functions for ARP messages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,29 +23,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Mon, Nov 21, 2011 at 11:53:10PM +0100, Antonio Quartulli wrote:
-
 Hi Antonio
 
-> +/* Returns arphdr->ar_op if the skb contains a valid ARP packet, otherwise
-> + * returns 0 */
-> +uint16_t arp_get_type(struct bat_priv *bat_priv, struct sk_buff *skb)
-> +{
-> +	struct arphdr *arphdr;
-> +	struct ethhdr *ethhdr;
-> +	uint16_t type = 0;
-> +	char buf[30], *type_str[] = { "REQUEST", "REPLY", "RREQUEST", "RREPLY",
-> +				      "InREQUEST", "InREPLY", "NAK" };
-
-type_str could be marked as const. Saves a little bit of space on the
-BSS.
-
+> +	n = neigh_lookup(&arp_tbl, &ip_dst, primary_if->soft_iface);
+> +	/* check if it is a valid neigh entry */
+> +	if (!n || !(n->nud_state & NUD_CONNECTED))
+> +		goto out;
 > +
-> +	if (type >= 1 && type <= 10)
-> +		scnprintf(buf, 30, "%s", type_str[type - 1]);
+> +	skb_new = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
+> +			     primary_if->soft_iface, ip_dst, hw_src, n->ha,
+> +			     hw_src);
+> +
+> +	unicast_send_skb(skb_new, bat_priv);
 
-type_str currently has 6 entries, so if somebody sends you an ARP
-request with type greater than 6, you go off the end of the
-array. Better to use ARRAY_SIZE().
+Can arp_create fail? Should you check the return value before calling
+unicast_send_skb()?
 
-       Andrew
+	Andrew
