@@ -1,16 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 24 Nov 2011 21:18:47 +0800
-References: <1322131238-11036-1-git-send-email-sven@narfation.org>
-	<201111242101.21710.lindner_marek@yahoo.de>
-In-Reply-To: <201111242101.21710.lindner_marek@yahoo.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 24 Nov 2011 14:20:58 +0100
+Message-ID: <1848153.OCba6IfGej@sven-laptop.home.narfation.org>
+In-Reply-To: <1322139961-12706-1-git-send-email-daniele.furlan@gmail.com>
+References: <1322139961-12706-1-git-send-email-daniele.furlan@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201111242118.47604.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Move build compat stuff to
-	Makefile
+Content-Type: multipart/signed; boundary="nextPart1893062.aHAEiHOADs";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Remove useless condition
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,21 +20,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, November 24, 2011 21:01:21 Marek Lindner wrote:
-> > I looked at the new patches from ordex and thought about using the
-> > Makefile from the kernel as the Makefile.kbuild in the standalone
-> > distribution. The Makefile is only the user friendly compatibility layer
-> > over the kbuild stuff.
-> 
-> I thought the main idea behind this separation was to have one Makefile for
-> the kernel folks and one for the out-of-tree users ? Are they going to
-> accept a single Makefile which contains more than what is needed for
-> in-kernel development ?
 
-sorry, I misread your intentions - then I discovered the patch at the end. Let 
-me try this on OpenWrt.
+--nextPart1893062.aHAEiHOADs
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-Regards,
-Marek
+On Thursday 24 November 2011 14:06:01 Daniele Furlan wrote:
+> ---
+
+What do you think about some information, reasoning, examples,....
+
+Thanks,
+	Sven
+--nextPart1893062.aHAEiHOADs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJOzkS6AAoJEF2HCgfBJntG/cIQAJcOfIHiRt99vCGvIWjCgw1F
+W+PW3jATRgy85CwNDepbu5UYrIdBv6OINi1Xm1eVHE+pJNNu0DpHugoIExqzc/Ii
+1QSbGuDGSDgOW5wzr9jTSvrlf4vLJTL/C+J6puPrkDQRMqZ73TUgQtBIuCcDaGF1
+GRu9G3IVIkwG0qFA4WAAHoNCZnw0swp/0YShdaQJWgtumeuBY7tA51yi9iLj5C9N
+EK98UrWye7TXyLTLR+TNm7YFk9myJmiR/sVM7ahzDdnt+wajvh++xYUO9b75VjDs
+b3iYorHRe3eln8lZk2WOXh5NgDoftyidUWb89FDWp+MNwusVK9HXqnQRxgShma42
+tJyfAGY7/NbCMtuYpTrBfRIaPZEEVPFRrXzjHfEIH6ynlYuKsOf/K6Kv/OvtKOL7
+MvUM04nOc0hc99FJFQrwFVuYgmdTT7e3u5C1CSI0EkeIZkF00LAqj9hxcoSXUNSH
+agLuHwE5Mii2M2sCjw1NTQBwZbhXrxSu1o57bdVcShFO5c7kVjqNogCVSx09pOYl
+xb/DWKI+3NG8jB6CY94lV58QCHz+r+UilL2BUzYG9Xaxzx9HttEPIpifodQTJ9fI
+CNU37HUR9IGa5t6oAPXwTLTvEE2NWCqpypZZArUaULr3ZLUv+9XEL5LuBEdxXfQM
+v5fyultN4G/4I8Lsm4lS
+=vhqa
+-----END PGP SIGNATURE-----
+
+--nextPart1893062.aHAEiHOADs--
+
