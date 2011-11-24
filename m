@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 24 Nov 2011 14:30:59 +0100
-Message-ID: <12714486.7khTKuUBZR@sven-laptop.home.narfation.org>
-In-Reply-To: <20111124132648.GC6836@lunn.ch>
+Date: Thu, 24 Nov 2011 14:32:41 +0100
+Message-ID: <1912197.PaK4SIUBy6@sven-laptop.home.narfation.org>
+In-Reply-To: <201111242118.47604.lindner_marek@yahoo.de>
 References: <1322131238-11036-1-git-send-email-sven@narfation.org>
-	<1323728.0ybshCSZ9s@sven-laptop.home.narfation.org>
-	<20111124132648.GC6836@lunn.ch>
+	<201111242101.21710.lindner_marek@yahoo.de>
+	<201111242118.47604.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3800845.KCkojBcfA9";
+Content-Type: multipart/signed; boundary="nextPart27546203.YEUKMYLtc1";
 	micalg="pgp-sha512"; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Move build compat stuff to
@@ -27,54 +27,53 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 
---nextPart3800845.KCkojBcfA9
+--nextPart27546203.YEUKMYLtc1
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-8859-15"
 
-On Thursday 24 November 2011 14:26:48 Andrew Lunn wrote:
-> > I would be even happier when we also could remove the '#include
-> > "compat.h"' from main.h somehow, but I had no good (and working) idea.
+On Thursday 24 November 2011 21:18:47 Marek Lindner wrote:
+> On Thursday, November 24, 2011 21:01:21 Marek Lindner wrote:
+> > > I looked at the new patches from ordex and thought about using the
+> > > Makefile from the kernel as the Makefile.kbuild in the standalone
+> > > distribution. The Makefile is only the user friendly compatibility
+> > > layer over the kbuild stuff.
+> > 
+> > I thought the main idea behind this separation was to have one Makefile
+> > for the kernel folks and one for the out-of-tree users ? Are they going
+> > to accept a single Makefile which contains more than what is needed for
+> > in-kernel development ?
 > 
-> Hi Sven
-> 
-> Could you build solution using the gcc option:
-> 
-> -include file
-> 
->     Process file as if #include "file" appeared as the first line of
->     the primary source file.
-> 
-> Pass this when compiling out of tree by appending it to CFLAGS?  The
-> hard thing is the ordering. compat.h will be first, before all other
-> header files.
+> sorry, I misread your intentions - then I discovered the patch at the end.
+> Let me try this on OpenWrt.
 
-No, this doesn't work. I had the same idea, but not only our stuff is build, 
-but also some extra kernel stuff. These file will just fail (tested here on 
-open-mesh.org with multiple kernel build versions).
+OpenWRT would need some tweaks to get it working (I didn't test it... just 
+assuming some things). So copying the Makefile.kbuild to Makefile must be 
+removed and PWD= has to be set to the source folder when making the 
+build/install/clean calls.
 
-Thanks,
+Kind regards,
 	Sven
---nextPart3800845.KCkojBcfA9
+--nextPart27546203.YEUKMYLtc1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABCgAGBQJOzkcTAAoJEF2HCgfBJntGAIIQAL8INfju11uafzHz7E5EQHZz
-OQgOvmkl0OBQXcnO18NW2azb/lWggEqMlIEgLKHWYKWkPxBCYbMn2iqzqP7uxjg5
-tNKUemou/mO5P24fdL49J3VLPacry0kfxvwJSviNcmMkeHzofzfCwWvnVyO7MSG5
-V0KxAzSEePc4IgLwb9uSCZTsXrMx8cKeu3tdDhjxx8Go/rT/vVY5u9SzboDo4Nke
-kKXf/nUgXzEsW/oMcyADilQ1eH3ZN0iFA1nFSzALHMZU+YhVVCKRck+nV80DGwGG
-dU8gNPsFkGxSA44Zu5hY/KGIsTjZP6OxZeZaQdruPR8UcZ6Q4pS5U+MJ4O4KosRf
-QmTkdrzTzBVxwCD78tjWa3FR8ty8Clqp0SKEDIBxGDWLC2Kp3tkoHZuVxJ6ydNfW
-bPkiaU/7uMo4gUrzu7LqcgQ8O6YJAWE4C/kYEExU53vDiwtSj8zbkaweSxJD5Wn1
-fcXbNRuIgza+qVQrkmWvoGtC22lxE86jrVGJ2kjDYFs/5dIYB15//MO7PNRY3CV7
-/XmciLqch0KdpZFij0cR1AOKCs9YzQOaL9Drduujg7b5uVACE75XG2bQCeEPfJVF
-/kPGeYlAXG0RIBFWkRVfzinARV1g6kizn0XwcMe5WHx4cO9kHxpzHMQNjse3Smv6
-KAjkbY8L9G9Yutlzl/D+
-=srlV
+iQIcBAABCgAGBQJOzkd5AAoJEF2HCgfBJntGhn8QANJBB1tTylKUWT+zoCbRH32d
+2kNjHDb7taaZUySRVEw6ceT2PisG9btvhCy0FORC3ZvS7YeQKM7RLMuM4/XM+x1k
+CVIgRB58rVvBr3zNfbF7wnjRNGEiRhqnshae617O/pj6Jt7D3h9gCmk1rODHu1Dk
+UdURI58TkfAn8DkCwSuVF0+5/znWq/aLo8qdt+F1h0/SyOOpV8+42SBfM0odsHlc
+r3+qo/6K3BbKfkp4kmdmhHe8KCl62WNJ88myBiIkcDOqdJIMgMEkxpkTbpKYtea9
+75jUevtvCAFv+hDKjISeUwbWUtQU0UTHr3n5wEyFEMvb3s7aOtPPwSW79l5fMbuq
+MUBydvjwRnwnwgRkM8WBXI2JMW1RHP/vRcWOMUDWKOfk5Kf+dGr11tGbNTRtdVAm
+BCbJN6eptrH1OnDQFgkE3roFec8Oe4UDnTtecJMa7amcS9uIXOqgfSWvL9J3UQq8
+RWCr4Tbh5MlxasU5c1VnqFlEVx08LD5nOb28wgn+s4OADoFhFF9W0tb6eaAOa7CL
+mJXNFbGuiaNHFMpj8gdWdaBxNanQOIaT+hZp8mIZLZhL4ij8AJ5kWYMMQoEYSz0L
+9cvM+fcV3g+ny8nnRtaPW3sMvqBtxmcFqcIKnVybxZxpayLb8Qj/wyyF+RYfxlpT
+bMNUsCSE2Nx527iKFr8x
+=JLDI
 -----END PGP SIGNATURE-----
 
---nextPart3800845.KCkojBcfA9--
+--nextPart27546203.YEUKMYLtc1--
 
