@@ -1,16 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 23 Nov 2011 17:19:51 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111123161950.GF728@ritirata.org>
-References: <1321915993-29312-1-git-send-email-ordex@autistici.org>
-	<1321915993-29312-6-git-send-email-ordex@autistici.org>
-	<20111123161151.GC2656@lunn.ch>
+Return-Path: <panayot.daskalov@gmail.com>
+Message-ID: <4ECE12B7.3030505@gmail.com>
+Date: Thu, 24 Nov 2011 11:47:35 +0200
+From: Panayot Daskalov <panayot.daskalov@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20111123161151.GC2656@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 5/7] batman-adv: Distributed ARP Table
- - add snooping functions for ARP messages
+References: <4EC967CC.1040804@gmail.com> <20111120211558.GA11262@autistici.org>
+	<4EC9766D.9000302@gmail.com>
+	<201111211502.41446.lindner_marek@yahoo.de>
+In-Reply-To: <201111211502.41446.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Connecting non-batman nodes to a mesh network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,39 +21,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hello Andrew,
+Hi,
 
-On Wed, Nov 23, 2011 at 05:11:51 +0100, Andrew Lunn wrote:
-> Hi Antonio
-> 
-> > +	n = neigh_lookup(&arp_tbl, &ip_dst, primary_if->soft_iface);
-> > +	/* check if it is a valid neigh entry */
-> > +	if (!n || !(n->nud_state & NUD_CONNECTED))
-> > +		goto out;
-> > +
-> > +	skb_new = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
-> > +			     primary_if->soft_iface, ip_dst, hw_src, n->ha,
-> > +			     hw_src);
-> > +
-> > +	unicast_send_skb(skb_new, bat_priv);
-> 
-> Can arp_create fail? Should you check the return value before calling
-> unicast_send_skb()?
-> 
+thank you all for the valuable help.
 
-Thank you for the comment.
-Anyway this patchset is now a bit "old", because after posting it I continued to
-work on it and to correct some bugs (like this one).
+It appears that the official drivers for those chipsets do not support 
+mac80211 and I can't make virtual interfaces with them. So I had to take 
+TP WR740N router, put OpenWrt + batman-adv on it and make it the entry 
+point to the mesh network. That didn't go without problems, but at the 
+end it worked.
 
-Therefore I would not go ahead in inspecting these patches. Sorry for this.
+BTW - the instructions on the web site about installing batman-adv on 
+OpenWrt are outdated and didn't work for me. I have installed batman 
+just doing - /opkg update && opkg install kmod-batman-adv/.
 
+Best regards,
+Panayot
 
-Cheers,
+On 11/21/2011 09:02 AM, Marek Lindner wrote:
+> Hi,
+>
+>> The devices have either RTL8188SU or RTL8188CUS chipsets from Realtek.
+>> Drivers can be found here -
+>> http://www.realtek.com.tw/downloads/downloadsView.aspx?Langid=1&PNid=48&PFi
+>> d=48&Level=5&Conn=4&DownTypeID=3&GetDown=false&Downloads=true#RTL8188SU
+>> <http://www.realtek.com.tw/downloads/downloadsView.aspx?Langid=1&PNid=48&P
+>> Fid=48&Level=5&Conn=4&DownTypeID=3&GetDown=false&Downloads=true#RTL8188SU>
+>>
+>> May be they are mac80211 compatible, but I am not sure. Can you give me
+>> an example of creating a virtual interface so I can try?
+> the keywords you want to search for are: multi VAP, multi SSID&  mac80211 iw
+> A few links that came out of that search:
+> http://linuxwireless.org/en/users/Drivers
+> http://linuxwireless.org/en/users/Documentation/iw
+>
+> I somehow doubt that the Realtek chip supports the mac80211 infrastructure.
+> You might want to switch to the mac80211 driver for your chip. Not all chips
+> support multi VAPs though.
+>
+> Note: This mailing list is about batman and not so much about how to setup /
+> configure your wifi driver or what features it supports.
+>
+> I extended our FAQ with your question. Thanks for bringing it up.
+>
+> Cheers,
+> Marek
 
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
