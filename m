@@ -1,16 +1,8 @@
-Return-Path: <daniele.furlan@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <3164615.DFmizAk306@sven-laptop.home.narfation.org>
-References: <1322139961-12706-1-git-send-email-daniele.furlan@gmail.com>
-	<1848153.OCba6IfGej@sven-laptop.home.narfation.org>
-	<CAG7VhQSf-YN5wQA0iuAQa3LqDkKFb=j1f5QfqsNuDVZWeehDYQ@mail.gmail.com>
-	<3164615.DFmizAk306@sven-laptop.home.narfation.org>
-Date: Thu, 24 Nov 2011 15:56:48 +0100
-Message-ID: <CAG7VhQSLjXX_FKSwYpHRQCqC2ro28JWMqFn4kgJ4TL5APqWqng@mail.gmail.com>
-From: Daniele Furlan <daniele.furlan@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Remove useless condition
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu, 24 Nov 2011 23:21:12 +0100
+Message-Id: <1322173279-18338-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4 0/7] DAT: Distributed ARP Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,53 +14,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-2011/11/24 Sven Eckelmann <sven@narfation.org>:
-> On Thursday 24 November 2011 15:25:40 Daniele Furlan wrote:
->> 2011/11/24 Sven Eckelmann <sven@narfation.org>:
->> > On Thursday 24 November 2011 14:06:01 Daniele Furlan wrote:
->> >> ---
->> >
->> > What do you think about some information, reasoning, examples,....
->>
->> Ok, using letter a,b,c,k instead of:
->>
->> c =3D total_count
->> a =3D neigh_rq_count
->> b =3D orig_eq_count
->> k =3D TQ_LOCAL_BIDRECT_SEND_MINIMUM
->
-> what about l =3D TQ_LOCAL_BIDRECT_RECV_MINIMUM?
->
-oops I read too fast and i miss the two distinct constants in
-the condition...
-I complain about this gaff....
+Hello people,
 
->>
->> then the code do the following:
->>
->> c =3D min (a,b)
->> and then check this condition:
->> (c<k OR a<k)
->
-> no, it compares (c<k || a<l)
->
-> [snip]
-> Wrong proof using wrong assumptions. You just cannot say that
-> TQ_LOCAL_BIDRECT_SEND_MINIMUM has always the same value as
-> TQ_LOCAL_BIDRECT_RECV_MINIMUM just because it is in this particular examp=
-le.
->
-Anyhow, is there a reason to assign to these constants different values?
+****
+This is the fourth version of this patchset. The whole code has been reviewed
+after some discussions on irc. Several bugs have been spotted and fixed.
+Thanks Marek, Sven and Simon.
+This should be a final version, unless some other mistakes/problems are find.
 
-> And just as reminder: Such things belong in the commit message.
->
-> Kind regards,
-> =A0 =A0 =A0 =A0Sven
+This patchset assume that patch
+[PATCH] batman-adv: add biggest_unsigned_int(x) macro
+has already been applied
+****
 
-Regards.
 
---=20
-Daniele Furlan
+as most of you may already know, last summer I've been working on the
+B.A.T.M.A.N.-Adv GSoC project named "DAT: Distributed ARP Table". For who wants
+to get deeper into the details of the project there are two links:
+- The GSoC proposal [1]
+- The DAT wikipage on open-mesh.org [2], with status and ideas description
+
+Just to recap: DAT is a distributes hash table meant to store ARP entries for
+fast lookup. In a normal scenario, whenever a node wants to communicate with
+another one, it first needs to issue a broadcast ARP request in order to
+retrieve its PHY/MAC address. In a sparse network a broadcast message could be
+lost several times before reaching the real destination so creating high
+latencies. With DAT, every ARP entries (a pair [IP addr, MAC addr]) is stored on
+a "computed" set of nodes, therefore in case of ARP request theses nodes can
+directly be contacted (in unicast) and the needed information can be quickly
+fetched.
+
+
+Cheers,
+Antonio
+
+[1] http://www.google-melange.com/gsoc/project/google/gsoc2011/ordex/4001
+[2] http://www.open-mesh.org/wiki/batman-adv/GSOC2011_DAT
