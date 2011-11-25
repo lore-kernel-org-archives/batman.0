@@ -1,15 +1,15 @@
 Return-Path: <andrew@lunn.ch>
-Date: Fri, 25 Nov 2011 09:31:25 +0100
+Date: Fri, 25 Nov 2011 09:45:56 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20111125083125.GF6836@lunn.ch>
+Message-ID: <20111125084556.GG6836@lunn.ch>
 References: <1322173279-18338-1-git-send-email-ordex@autistici.org>
-	<1322173279-18338-5-git-send-email-ordex@autistici.org>
+	<1322173279-18338-6-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1322173279-18338-5-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/7] batman-adv: Distributed ARP Table
- - add ARP parsing functions
+In-Reply-To: <1322173279-18338-6-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 5/7] batman-adv: Distributed ARP Table
+ - add snooping functions for ARP messages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,26 +23,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Antonio
 
+General question. In the Linux ARP decode code is:
 
-> +/* Returns arphdr->ar_op if the skb contains a valid ARP packet, otherwise
-> + * returns 0 */
-> +static uint16_t arp_get_type(struct bat_priv *bat_priv, struct sk_buff *skb)
-> +{
-> +	struct arphdr *arphdr;
-> +	struct ethhdr *ethhdr;
-> +	uint16_t type = 0;
-> +
-> +	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
-> +		goto out;
-> +
-> +	ethhdr = (struct ethhdr *)skb_mac_header(skb);
-> +
-> +	if (ethhdr->h_proto != htons(ETH_P_ARP))
-> +		goto out;
+/*
+ *      Check for bad requests for 127.x.x.x and requests for multicast
+ *      addresses.  If this is one such, delete it.
+ */
+        if (ipv4_is_loopback(tip) || ipv4_is_multicast(tip))
+                goto out;
 
-Do we have any idea how many people run vlans over B.A.T.M.A.N? It
-would not be too hard to skip over the VLAN tag if there is one to see
-if it is an ARP message inside.
+I don't see the same filtering here. What would happen if you did
+receiver and cached such a bad request?
+
+In a similar direction, how does duplicate address detection work?
+i.e. i ARP my own address to see if somebody else is using it? 
+
+Or do i just need to RTFM your GSOC documentation :-)
 
    Andrew
