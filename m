@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 25 Nov 2011 13:02:36 +0800
-References: <1320750809-12445-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1320750809-12445-1-git-send-email-ordex@autistici.org>
+Date: Fri, 25 Nov 2011 13:27:14 +0800
+References: <1322139961-12706-1-git-send-email-daniele.furlan@gmail.com>
+	<3164615.DFmizAk306@sven-laptop.home.narfation.org>
+	<CAG7VhQSLjXX_FKSwYpHRQCqC2ro28JWMqFn4kgJ4TL5APqWqng@mail.gmail.com>
+In-Reply-To: <CAG7VhQSLjXX_FKSwYpHRQCqC2ro28JWMqFn4kgJ4TL5APqWqng@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201111251302.37267.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: correct usage of
-	TT_CLIENT_ROAM flag
+Message-Id: <201111251327.15188.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Remove useless condition
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,18 +24,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, November 08, 2011 19:13:29 Antonio Quartulli wrote:
-> The TT_CLIENT_ROAM flag has to be set in tt_global_del() only if the latter
-> has been invoked by the roaming_advertisement receiving routine. In case
-> of changes update (normal operation done on OGM/TT_QUERY receiving) this
-> doesn't have to happen. Moreover, a client which roamed to us has to be
-> marked as ROAMED, not PENDING. This will make it to be kept for
-> consistency purposes until the related change is received within the next
-> OGM.
+On Thursday, November 24, 2011 22:56:48 Daniele Furlan wrote:
+> > Wrong proof using wrong assumptions. You just cannot say that
+> > TQ_LOCAL_BIDRECT_SEND_MINIMUM has always the same value as
+> > TQ_LOCAL_BIDRECT_RECV_MINIMUM just because it is in this particular
+> > example.
+> 
+> Anyhow, is there a reason to assign to these constants different values?
 
-Just a recap of our IRC discussion: Please split this patch as it fixes 
-several unrelated issues. Also add information about whether or not these 
-patches should be sent to the stable maintainers as well.
+Well, one is the minimum for the RQ and the other one for the EQ. There could 
+be several reasons to have different values here (depending on your needs).
 
-Thanks,
+Cheers,
 Marek
