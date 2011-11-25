@@ -1,15 +1,15 @@
 Return-Path: <andrew@lunn.ch>
-Date: Fri, 25 Nov 2011 09:18:20 +0100
+Date: Fri, 25 Nov 2011 09:31:25 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20111125081820.GD6836@lunn.ch>
+Message-ID: <20111125083125.GF6836@lunn.ch>
 References: <1322173279-18338-1-git-send-email-ordex@autistici.org>
-	<1322173279-18338-2-git-send-email-ordex@autistici.org>
+	<1322173279-18338-5-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1322173279-18338-2-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 1/7] batman-adv: implement an helper
- function to forge unicast packets
+In-Reply-To: <1322173279-18338-5-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/7] batman-adv: Distributed ARP Table
+ - add ARP parsing functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,41 +23,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thu, Nov 24, 2011 at 11:21:13PM +0100, Antonio Quartulli wrote:
-> A new function named prepare_unicast_packet() has been implemented so that it can
-> do all the needed operations to set up a skb for unicast sending. It is general
-> enough to be used in every context. Helpful for later developments
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  unicast.c |   36 ++++++++++++++++++++++++------------
->  unicast.h |    1 +
->  2 files changed, 25 insertions(+), 12 deletions(-)
-> 
-> diff --git a/unicast.c b/unicast.c
-> index 6f3c659..d49f2cc 100644
-> --- a/unicast.c
-> +++ b/unicast.c
-> @@ -283,6 +283,29 @@ out:
->  	return ret;
->  }
->  
-> +bool prepare_unicast_packet(struct sk_buff *skb, struct orig_node *orig_node)
+
+
+> +/* Returns arphdr->ar_op if the skb contains a valid ARP packet, otherwise
+> + * returns 0 */
+> +static uint16_t arp_get_type(struct bat_priv *bat_priv, struct sk_buff *skb)
 > +{
-> +	struct unicast_packet *unicast_packet;
+> +	struct arphdr *arphdr;
+> +	struct ethhdr *ethhdr;
+> +	uint16_t type = 0;
 > +
-> +	if (my_skb_head_push(skb, sizeof(*unicast_packet)) < 0)
-> +		return false;
+> +	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
+> +		goto out;
 > +
-> +	unicast_packet = (struct unicast_packet *)skb->data;
+> +	ethhdr = (struct ethhdr *)skb_mac_header(skb);
 > +
-> +	unicast_packet->header.version = COMPAT_VERSION;
-> +	/* batman packet type: unicast */
-> +	unicast_packet->header.packet_type = BAT_UNICAST;
-> +	/* set unicast ttl */
-> +	unicast_packet->header.ttl = TTL;
+> +	if (ethhdr->h_proto != htons(ETH_P_ARP))
+> +		goto out;
 
-When Sven added this header structure, did he also add a function to
-fill it in?
+Do we have any idea how many people run vlans over B.A.T.M.A.N? It
+would not be too hard to skip over the VLAN tag if there is one to see
+if it is an ARP message inside.
 
-     Andrew
+   Andrew
