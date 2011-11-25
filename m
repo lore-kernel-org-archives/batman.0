@@ -1,17 +1,17 @@
 Return-Path: <ordex@autistici.org>
-Date: Fri, 25 Nov 2011 11:53:49 +0100
+Date: Fri, 25 Nov 2011 12:04:44 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111125105349.GA17321@autistici.org>
-References: <1322044544-15153-1-git-send-email-ordex@autistici.org>
-	<201111250908.48180.lindner_marek@yahoo.de>
-	<1462592.m5CKka3Otj@sven-laptop.home.narfation.org>
+Message-ID: <20111125110443.GB17321@autistici.org>
+References: <1322173279-18338-1-git-send-email-ordex@autistici.org>
+	<1322173279-18338-5-git-send-email-ordex@autistici.org>
+	<20111125083125.GF6836@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <1462592.m5CKka3Otj@sven-laptop.home.narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add biggest_unsigned_int(x)
- macro
+In-Reply-To: <20111125083125.GF6836@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/7] batman-adv: Distributed ARP Table
+ - add ARP parsing functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,32 +24,20 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On Fri, Nov 25, 2011 at 09:50:41AM +0100, Sven Eckelmann wrote:
-> On Friday 25 November 2011 09:08:47 Marek Lindner wrote:
-> [...]
-> > > +/* Returns the biggest unsigned integer with the sizeof x */
-> > > +#define biggest_unsigned_int(x) (~(x)0)
-> > > +
-> > 
-> > The final conclusion of the IRC discussion might have escaped me but wasn't
-> > there supposed to be a cast somewhere ?
-> 
-> There is a cast. The part "(x)" of "(~(x)0)" is the cast. And I don't think 
-> that there was a final conclusion. I am not really convinced that this should 
-> be part of batman-adv. Just look at include/linux/kernel.h for similar 
-> functionality (but with predefined types). Maybe this would be the correct 
-> position for such a macro? (I don't know it... just thinking out loud).
+On Fri, Nov 25, 2011 at 09:31:25AM +0100, Andrew Lunn wrote:
+> Do we have any idea how many people run vlans over B.A.T.M.A.N? It
+> would not be too hard to skip over the VLAN tag if there is one to see
+> if it is an ARP message inside.
 
-Might be a good idea to send it to the kernel ml, but as usual, I think
-we should first include it in the batman-adv code (am I wrong or we are
-still waiting for seq_before/after to be included somewhere?).
+Actually I don't have any idea about that, but I think there is plenty
+of those out there.
 
-But I agree with you, I should also send this patch to the kerel ml.
+However: Yes you are right. I discussed this with Simon several times, but since
+I have never dealt with the VLAN before, I postponed this "feature" (ok, it's
+a very small one) to a later patch..
 
 Cheers,
-
 
 -- 
 Antonio Quartulli
