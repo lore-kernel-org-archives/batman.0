@@ -1,11 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 26 Nov 2011 22:26:49 +0800
-Message-Id: <1322317612-7770-8-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <davem@davemloft.net>
+Date: Sat, 26 Nov 2011 14:41:22 -0500 (EST)
+Message-Id: <20111126.144122.775553783672941660.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <1322317612-7770-1-git-send-email-lindner_marek@yahoo.de>
 References: <1322317612-7770-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 07/10] batman-adv: directly write tt entries
-	without buffering
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-11-26
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,140 +19,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: lindner_marek@yahoo.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 26 Nov 2011 22:26:42 +0800
 
-When the translation tables (global and local) are written for debugfs,
-it is not neccesary to allocate a buffer, we can directly use
-seq_printf() to print them out.
+> the following 10 patches constitute the first batch I'd like to get the pulled
+> into net-next-2.6/3.3. They're mostly uncritical fixes around the recently
+> introduced tt code, some code refactoring, the kstrto update and the range
+> check fix reported by Thomas Jarosch. 
 
-This might actually be safer if the table changes between size
-calculation and traversal, and we can't estimate the required size
-wrong.
+Pulled, thanks.
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/translation-table.c |   57 +----------------------------------
- 1 files changed, 2 insertions(+), 55 deletions(-)
+Some things to look into:
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 5f28a7f0..78b9528 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -314,8 +314,6 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 	struct hard_iface *primary_if;
- 	struct hlist_node *node;
- 	struct hlist_head *head;
--	size_t buf_size, pos;
--	char *buff;
- 	uint32_t i;
- 	int ret = 0;
- 
-@@ -338,34 +336,13 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 		   "announced via TT (TTVN: %u):\n",
- 		   net_dev->name, (uint8_t)atomic_read(&bat_priv->ttvn));
- 
--	buf_size = 1;
--	/* Estimate length for: " * xx:xx:xx:xx:xx:xx\n" */
--	for (i = 0; i < hash->size; i++) {
--		head = &hash->table[i];
--
--		rcu_read_lock();
--		__hlist_for_each_rcu(node, head)
--			buf_size += 29;
--		rcu_read_unlock();
--	}
--
--	buff = kmalloc(buf_size, GFP_ATOMIC);
--	if (!buff) {
--		ret = -ENOMEM;
--		goto out;
--	}
--
--	buff[0] = '\0';
--	pos = 0;
--
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
- 
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(tt_local_entry, node,
- 					 head, hash_entry) {
--			pos += snprintf(buff + pos, 30, " * %pM "
--					"[%c%c%c%c%c]\n",
-+			seq_printf(seq, " * %pM [%c%c%c%c%c]\n",
- 					tt_local_entry->addr,
- 					(tt_local_entry->flags &
- 					 TT_CLIENT_ROAM ? 'R' : '.'),
-@@ -380,9 +357,6 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 		}
- 		rcu_read_unlock();
- 	}
--
--	seq_printf(seq, "%s", buff);
--	kfree(buff);
- out:
- 	if (primary_if)
- 		hardif_free_ref(primary_if);
-@@ -591,8 +565,6 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 	struct hard_iface *primary_if;
- 	struct hlist_node *node;
- 	struct hlist_head *head;
--	size_t buf_size, pos;
--	char *buff;
- 	uint32_t i;
- 	int ret = 0;
- 
-@@ -617,35 +589,13 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq, "       %-13s %s       %-15s %s %s\n",
- 		   "Client", "(TTVN)", "Originator", "(Curr TTVN)", "Flags");
- 
--	buf_size = 1;
--	/* Estimate length for: " * xx:xx:xx:xx:xx:xx (ttvn) via
--	 * xx:xx:xx:xx:xx:xx (cur_ttvn)\n"*/
--	for (i = 0; i < hash->size; i++) {
--		head = &hash->table[i];
--
--		rcu_read_lock();
--		__hlist_for_each_rcu(node, head)
--			buf_size += 67;
--		rcu_read_unlock();
--	}
--
--	buff = kmalloc(buf_size, GFP_ATOMIC);
--	if (!buff) {
--		ret = -ENOMEM;
--		goto out;
--	}
--
--	buff[0] = '\0';
--	pos = 0;
--
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
- 
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(tt_global_entry, node,
- 					 head, hash_entry) {
--			pos += snprintf(buff + pos, 69,
--					" * %pM  (%3u) via %pM     (%3u)   "
-+			seq_printf(seq, " * %pM  (%3u) via %pM     (%3u)   "
- 					"[%c%c%c]\n", tt_global_entry->addr,
- 					tt_global_entry->ttvn,
- 					tt_global_entry->orig_node->orig,
-@@ -661,9 +611,6 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 		}
- 		rcu_read_unlock();
- 	}
--
--	seq_printf(seq, "%s", buff);
--	kfree(buff);
- out:
- 	if (primary_if)
- 		hardif_free_ref(primary_if);
--- 
-1.7.5.4
++			if (unlikely(skb_headlen(skb) <
++					sizeof(struct tt_query_packet) +
++					tt_len))
+
+This isn't formatted correctly, all the leading edges should line
+up to the openning parenthesis of the unlikely:
+
++			if (unlikely(skb_headlen(skb) <
++				     sizeof(struct tt_query_packet) +
++				     tt_len))
+
+Next, there is a lot of linearization done by the stack, but really the
+thing to do is to make sure that the part you want to look at is
+linear.
+
+You do this using pskb_may_pull() right before you want to look at some
+headers. It makes sure that, for the length given, that many bytes are
+linear at the head of the skb.
+
+Thanks.
 
