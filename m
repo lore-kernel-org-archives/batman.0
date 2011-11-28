@@ -1,13 +1,12 @@
-Return-Path: <davem@davemloft.net>
-Date: Sat, 26 Nov 2011 14:41:22 -0500 (EST)
-Message-Id: <20111126.144122.775553783672941660.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1322317612-7770-1-git-send-email-lindner_marek@yahoo.de>
-References: <1322317612-7770-1-git-send-email-lindner_marek@yahoo.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 29 Nov 2011 00:27:59 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-11-26
+Message-Id: <201111290028.01655.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [RFC] batman-adv: switch routing algorithm at runtime
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,39 +18,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: lindner_marek@yahoo.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 26 Nov 2011 22:26:42 +0800
 
-> the following 10 patches constitute the first batch I'd like to get the pulled
-> into net-next-2.6/3.3. They're mostly uncritical fixes around the recently
-> introduced tt code, some code refactoring, the kstrto update and the range
-> check fix reported by Thomas Jarosch. 
+Hi folks,
 
-Pulled, thanks.
+after the previous discussions how to proceed with BATMAN V we came to the 
+conclusion that a runtime switch for changing the routing algorithms would be 
+the best solution. Hence, I drafted a couple of patches that I'd like to get 
+some feedback on. Note, that these patches are not ready to be included. For 
+instance, the rcu locking isn't clean.
 
-Some things to look into:
+I'd like to focus your attention towards the following items:
 
-+			if (unlikely(skb_headlen(skb) <
-+					sizeof(struct tt_query_packet) +
-+					tt_len))
+ * How do we design the algorithm registration. At the moment batman_init() 
+calls bat_iv_init() and possibly other algorithms in the future but this is 
+less than ideal. I had hoped to find a mechanism which allows an init function 
+to be declared and called inside of the respective routing algorithm files. 
+These files can be compiled into the module or not.
 
-This isn't formatted correctly, all the leading edges should line
-up to the openning parenthesis of the unlikely:
+* The API and its implementation. It is highly likely that this API won't 
+survive for very long as it has been designed to satisfy one routing algorithm 
+only. However, changing it in the future should be easy.
 
-+			if (unlikely(skb_headlen(skb) <
-+				     sizeof(struct tt_query_packet) +
-+				     tt_len))
+* Other ideas / comments ? 
 
-Next, there is a lot of linearization done by the stack, but really the
-thing to do is to make sure that the part you want to look at is
-linear.
-
-You do this using pskb_may_pull() right before you want to look at some
-headers. It makes sure that, for the length given, that many bytes are
-linear at the head of the skb.
-
-Thanks.
-
+Cheers,
+Marek
