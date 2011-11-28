@@ -1,11 +1,12 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 29 Nov 2011 00:28:35 +0800
-Message-Id: <1322497717-21268-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <201111290028.01655.lindner_marek@yahoo.de>
+Date: Tue, 29 Nov 2011 00:28:36 +0800
+Message-Id: <1322497717-21268-2-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1322497717-21268-1-git-send-email-lindner_marek@yahoo.de>
 References: <201111290028.01655.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: add infrastructure to change
-	routing algorithm at runtime
+	<1322497717-21268-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: convert batman iv algorithm
+	to use dynamic infrastructure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,217 +23,282 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- bat_debugfs.c    |    8 ++++++
- bat_iv_ogm.c     |    9 ++++++
- main.c           |   75 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- main.h           |    5 +++
- soft-interface.c |    4 +++
- types.h          |    7 +++++
- 6 files changed, 108 insertions(+), 0 deletions(-)
+ bat_iv_ogm.c     |   21 +++++++++++++--------
+ bat_ogm.h        |   35 -----------------------------------
+ hard-interface.c |   16 ++++++++++------
+ routing.c        |    7 +++++--
+ send.c           |    8 +++++---
+ types.h          |   10 +++++++++-
+ 6 files changed, 42 insertions(+), 55 deletions(-)
+ delete mode 100644 bat_ogm.h
 
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index d0af9bf..05e2f1f 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -221,6 +221,12 @@ static void debug_log_cleanup(struct bat_priv *bat_priv)
- }
- #endif
- 
-+static int bat_algorithms_open(struct inode *inode, struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+	return single_open(file, bat_algo_seq_print_text, net_dev);
-+}
-+
- static int originators_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
-@@ -274,6 +280,7 @@ struct bat_debuginfo bat_debuginfo_##_name = {	\
- 		}				\
- };
- 
-+static BAT_DEBUGINFO(routing_algos, S_IRUGO, bat_algorithms_open);
- static BAT_DEBUGINFO(originators, S_IRUGO, originators_open);
- static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
- static BAT_DEBUGINFO(softif_neigh, S_IRUGO, softif_neigh_open);
-@@ -282,6 +289,7 @@ static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
- static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
- 
- static struct bat_debuginfo *mesh_debuginfos[] = {
-+	&bat_debuginfo_routing_algos,
- 	&bat_debuginfo_originators,
- 	&bat_debuginfo_gateways,
- 	&bat_debuginfo_softif_neigh,
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index d60e1ba..a2b25ad 100644
+index a2b25ad..8e4c81f 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
-@@ -1169,3 +1169,12 @@ void bat_ogm_receive(const struct ethhdr *ethhdr, unsigned char *packet_buff,
- 	} while (bat_ogm_aggr_packet(buff_pos, packet_len,
+@@ -20,7 +20,6 @@
+  */
+ 
+ #include "main.h"
+-#include "bat_ogm.h"
+ #include "translation-table.h"
+ #include "ring_buffer.h"
+ #include "originator.h"
+@@ -30,7 +29,7 @@
+ #include "hard-interface.h"
+ #include "send.h"
+ 
+-void bat_ogm_init(struct hard_iface *hard_iface)
++static void bat_ogm_init(struct hard_iface *hard_iface)
+ {
+ 	struct batman_ogm_packet *batman_ogm_packet;
+ 
+@@ -47,7 +46,7 @@ void bat_ogm_init(struct hard_iface *hard_iface)
+ 	batman_ogm_packet->ttvn = 0;
+ }
+ 
+-void bat_ogm_init_primary(struct hard_iface *hard_iface)
++static void bat_ogm_init_primary(struct hard_iface *hard_iface)
+ {
+ 	struct batman_ogm_packet *batman_ogm_packet;
+ 
+@@ -56,7 +55,7 @@ void bat_ogm_init_primary(struct hard_iface *hard_iface)
+ 	batman_ogm_packet->header.ttl = TTL;
+ }
+ 
+-void bat_ogm_update_mac(struct hard_iface *hard_iface)
++static void bat_ogm_update_mac(struct hard_iface *hard_iface)
+ {
+ 	struct batman_ogm_packet *batman_ogm_packet;
+ 
+@@ -157,7 +156,7 @@ static void bat_ogm_send_to_if(struct forw_packet *forw_packet,
+ }
+ 
+ /* send a batman ogm packet */
+-void bat_ogm_emit(struct forw_packet *forw_packet)
++static void bat_ogm_emit(struct forw_packet *forw_packet)
+ {
+ 	struct hard_iface *hard_iface;
+ 	struct net_device *soft_iface;
+@@ -528,7 +527,7 @@ static void bat_ogm_forward(struct orig_node *orig_node,
+ 			  if_incoming, 0, bat_ogm_fwd_send_time());
+ }
+ 
+-void bat_ogm_schedule(struct hard_iface *hard_iface, int tt_num_changes)
++static void bat_ogm_schedule(struct hard_iface *hard_iface, int tt_num_changes)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	struct batman_ogm_packet *batman_ogm_packet;
+@@ -1140,7 +1139,7 @@ out:
+ 	orig_node_free_ref(orig_node);
+ }
+ 
+-void bat_ogm_receive(const struct ethhdr *ethhdr, unsigned char *packet_buff,
++static void bat_ogm_receive(const struct ethhdr *ethhdr, unsigned char *packet_buff,
+ 		     int packet_len, struct hard_iface *if_incoming)
+ {
+ 	struct batman_ogm_packet *batman_ogm_packet;
+@@ -1170,8 +1169,14 @@ void bat_ogm_receive(const struct ethhdr *ethhdr, unsigned char *packet_buff,
  				     batman_ogm_packet->tt_num_changes));
  }
-+
-+static struct bat_algo bat_algo_iv = {
-+	.name = "BATMAN IV",
-+};
-+
-+int __init bat_iv_init(void)
-+{
-+	return bat_algo_register(&bat_algo_iv);
-+}
-diff --git a/main.c b/main.c
-index fb87bdc..05b85f0 100644
---- a/main.c
-+++ b/main.c
-@@ -37,6 +37,7 @@
- /* List manipulations on hardif_list have to be rtnl_lock()'ed,
-  * list traversals just rcu-locked */
- struct list_head hardif_list;
-+static struct hlist_head bat_algo_list;
  
- unsigned char broadcast_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
- 
-@@ -45,6 +46,9 @@ struct workqueue_struct *bat_event_workqueue;
- static int __init batman_init(void)
- {
- 	INIT_LIST_HEAD(&hardif_list);
-+	INIT_HLIST_HEAD(&bat_algo_list);
-+
-+	bat_iv_init();
- 
- 	/* the name should not be longer than 10 chars - see
- 	 * http://lwn.net/Articles/23634/ */
-@@ -173,6 +177,77 @@ int is_my_mac(const uint8_t *addr)
- 
- }
- 
-+static struct bat_algo *bat_algo_get(char *name)
-+{
-+	struct bat_algo *bat_algo = NULL, *bat_algo_tmp;
-+	struct hlist_node *node;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(bat_algo_tmp, node, &bat_algo_list, list) {
-+		if (strcmp(bat_algo_tmp->name, name) != 0)
-+			continue;
-+
-+		bat_algo = bat_algo_tmp;
-+		break;
-+	}
-+	rcu_read_unlock();
-+
-+	return bat_algo;
-+}
-+
-+int bat_algo_register(struct bat_algo *bat_algo)
-+{
-+	struct bat_algo *bat_algo_tmp;
-+	int ret = -1;
-+
-+	bat_algo_tmp = bat_algo_get(bat_algo->name);
-+	if (bat_algo_tmp) {
-+		pr_info("Trying to register already registered routing "
-+			"algorithm: %s\n", bat_algo->name);
-+		goto out;
-+	}
-+
-+	INIT_HLIST_NODE(&bat_algo->list);
-+	hlist_add_head_rcu(&bat_algo->list, &bat_algo_list);
-+	ret = 0;
-+
-+out:
-+	return ret;
-+}
-+
-+int bat_algo_select(struct bat_priv *bat_priv, char *name)
-+{
-+	struct bat_algo *bat_algo;
-+	int ret = -1;
-+
-+	bat_algo = bat_algo_get(name);
-+	if (!bat_algo)
-+		goto out;
-+
-+	/* TODO: must lock here - can we highjack an existing spinlock ? */
-+	rcu_assign_pointer(bat_priv->bat_algo, bat_algo);
-+	ret = 0;
-+
-+out:
-+	return ret;
-+}
-+
-+int bat_algo_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct bat_algo *bat_algo;
-+	struct hlist_node *node;
-+
-+	seq_printf(seq, "Available routing algorithms:\n");
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(bat_algo, node, &bat_algo_list, list) {
-+		seq_printf(seq, "%s\n", bat_algo->name);
-+	}
-+	rcu_read_unlock();
-+
-+	return 0;
-+}
-+
- module_init(batman_init);
- module_exit(batman_exit);
- 
-diff --git a/main.h b/main.h
-index 464439f..1fa71d8 100644
---- a/main.h
-+++ b/main.h
-@@ -159,6 +159,11 @@ void mesh_free(struct net_device *soft_iface);
- void inc_module_count(void);
- void dec_module_count(void);
- int is_my_mac(const uint8_t *addr);
-+int bat_algo_register(struct bat_algo *bat_algo);
-+int bat_algo_select(struct bat_priv *bat_priv, char *name);
-+int bat_algo_seq_print_text(struct seq_file *seq, void *offset);
-+
-+int bat_iv_init(void);
- 
- #ifdef CONFIG_BATMAN_ADV_DEBUG
- int debug_log(struct bat_priv *bat_priv, const char *fmt, ...) __printf(2, 3);
-diff --git a/soft-interface.c b/soft-interface.c
-index bd8c7cf..a0046ac 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -855,6 +855,10 @@ struct net_device *softif_create(const char *name)
- 	bat_priv->primary_if = NULL;
- 	bat_priv->num_ifaces = 0;
- 
-+	ret = bat_algo_select(bat_priv, "BATMAN IV");
-+	if (ret < 0)
-+		goto unreg_soft_iface;
-+
- 	ret = sysfs_add_meshif(soft_iface);
- 	if (ret < 0)
- 		goto unreg_soft_iface;
-diff --git a/types.h b/types.h
-index 35085f4..cfb0cc2 100644
---- a/types.h
-+++ b/types.h
-@@ -206,6 +206,7 @@ struct bat_priv {
- 	atomic_t gw_reselect;
- 	struct hard_iface __rcu *primary_if;  /* rcu protected pointer */
- 	struct vis_info *my_vis_info;
-+	struct bat_algo __rcu *bat_algo;
+-static struct bat_algo bat_algo_iv = {
++static struct bat_algo bat_algo_iv __read_mostly = {
+ 	.name = "BATMAN IV",
++	.bat_ogm_init = bat_ogm_init,
++	.bat_ogm_init_primary = bat_ogm_init_primary,
++	.bat_ogm_update_mac = bat_ogm_update_mac,
++	.bat_ogm_schedule = bat_ogm_schedule,
++	.bat_ogm_emit = bat_ogm_emit,
++	.bat_ogm_receive = bat_ogm_receive,
  };
  
- struct socket_client {
-@@ -344,4 +345,10 @@ struct softif_neigh {
+ int __init bat_iv_init(void)
+diff --git a/bat_ogm.h b/bat_ogm.h
+deleted file mode 100644
+index 69329c1..0000000
+--- a/bat_ogm.h
++++ /dev/null
+@@ -1,35 +0,0 @@
+-/*
+- * Copyright (C) 2007-2011 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+- * 02110-1301, USA
+- *
+- */
+-
+-#ifndef _NET_BATMAN_ADV_OGM_H_
+-#define _NET_BATMAN_ADV_OGM_H_
+-
+-#include "main.h"
+-
+-void bat_ogm_init(struct hard_iface *hard_iface);
+-void bat_ogm_init_primary(struct hard_iface *hard_iface);
+-void bat_ogm_update_mac(struct hard_iface *hard_iface);
+-void bat_ogm_schedule(struct hard_iface *hard_iface, int tt_num_changes);
+-void bat_ogm_emit(struct forw_packet *forw_packet);
+-void bat_ogm_receive(const struct ethhdr *ethhdr, unsigned char *packet_buff,
+-		     int packet_len, struct hard_iface *if_incoming);
+-
+-#endif /* _NET_BATMAN_ADV_OGM_H_ */
+diff --git a/hard-interface.c b/hard-interface.c
+index d3e0e32..f4bc753 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -28,7 +28,6 @@
+ #include "bat_sysfs.h"
+ #include "originator.h"
+ #include "hash.h"
+-#include "bat_ogm.h"
+ 
+ #include <linux/if_arp.h>
+ 
+@@ -147,7 +146,8 @@ static void primary_if_select(struct bat_priv *bat_priv,
+ 	if (!new_hard_iface)
+ 		return;
+ 
+-	bat_ogm_init_primary(new_hard_iface);
++	if (bat_priv->bat_algo->bat_ogm_init_primary)
++		bat_priv->bat_algo->bat_ogm_init_primary(new_hard_iface);
+ 	primary_if_update_addr(bat_priv);
+ }
+ 
+@@ -233,7 +233,8 @@ static void hardif_activate_interface(struct hard_iface *hard_iface)
+ 
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
+ 
+-	bat_ogm_update_mac(hard_iface);
++	if (bat_priv->bat_algo->bat_ogm_update_mac)
++		bat_priv->bat_algo->bat_ogm_update_mac(hard_iface);
+ 	hard_iface->if_status = IF_TO_BE_ACTIVATED;
+ 
+ 	/**
+@@ -307,7 +308,8 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
+ 	hard_iface->soft_iface = soft_iface;
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
+ 
+-	bat_ogm_init(hard_iface);
++	if (bat_priv->bat_algo->bat_ogm_init)
++		bat_priv->bat_algo->bat_ogm_init(hard_iface);
+ 
+ 	if (!hard_iface->packet_buff) {
+ 		bat_err(hard_iface->soft_iface, "Can't add interface packet "
+@@ -527,9 +529,11 @@ static int hard_if_event(struct notifier_block *this,
+ 			goto hardif_put;
+ 
+ 		check_known_mac_addr(hard_iface->net_dev);
+-		bat_ogm_update_mac(hard_iface);
+-
+ 		bat_priv = netdev_priv(hard_iface->soft_iface);
++
++		if (bat_priv->bat_algo->bat_ogm_update_mac)
++			bat_priv->bat_algo->bat_ogm_update_mac(hard_iface);
++
+ 		primary_if = primary_if_get_selected(bat_priv);
+ 		if (!primary_if)
+ 			goto hardif_put;
+diff --git a/routing.c b/routing.c
+index d5ddbd1..478b121 100644
+--- a/routing.c
++++ b/routing.c
+@@ -29,7 +29,6 @@
+ #include "originator.h"
+ #include "vis.h"
+ #include "unicast.h"
+-#include "bat_ogm.h"
+ 
+ void slide_own_bcast_window(struct hard_iface *hard_iface)
+ {
+@@ -248,6 +247,7 @@ int window_protected(struct bat_priv *bat_priv, int32_t seq_num_diff,
+ 
+ int recv_bat_ogm_packet(struct sk_buff *skb, struct hard_iface *hard_iface)
+ {
++	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	struct ethhdr *ethhdr;
+ 
+ 	/* drop packet if it has not necessary minimum size */
+@@ -274,7 +274,10 @@ int recv_bat_ogm_packet(struct sk_buff *skb, struct hard_iface *hard_iface)
+ 
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 
+-	bat_ogm_receive(ethhdr, skb->data, skb_headlen(skb), hard_iface);
++	if (bat_priv->bat_algo->bat_ogm_receive)
++		bat_priv->bat_algo->bat_ogm_receive(ethhdr, skb->data,
++						    skb_headlen(skb),
++						    hard_iface);
+ 
+ 	kfree_skb(skb);
+ 	return NET_RX_SUCCESS;
+diff --git a/send.c b/send.c
+index b00a0f5..a8a7fc9 100644
+--- a/send.c
++++ b/send.c
+@@ -28,7 +28,6 @@
+ #include "vis.h"
+ #include "gateway_common.h"
+ #include "originator.h"
+-#include "bat_ogm.h"
+ 
+ static void send_outstanding_bcast_packet(struct work_struct *work);
+ 
+@@ -168,7 +167,9 @@ void schedule_bat_ogm(struct hard_iface *hard_iface)
+ 	if (primary_if)
+ 		hardif_free_ref(primary_if);
+ 
+-	bat_ogm_schedule(hard_iface, tt_num_changes);
++	if (bat_priv->bat_algo->bat_ogm_schedule)
++		bat_priv->bat_algo->bat_ogm_schedule(hard_iface,
++						     tt_num_changes);
+ }
+ 
+ static void forw_packet_free(struct forw_packet *forw_packet)
+@@ -318,7 +319,8 @@ void send_outstanding_bat_ogm_packet(struct work_struct *work)
+ 	if (atomic_read(&bat_priv->mesh_state) == MESH_DEACTIVATING)
+ 		goto out;
+ 
+-	bat_ogm_emit(forw_packet);
++	if (bat_priv->bat_algo->bat_ogm_emit)
++		bat_priv->bat_algo->bat_ogm_emit(forw_packet);
+ 
+ 	/**
+ 	 * we have to have at least one packet in the queue
+diff --git a/types.h b/types.h
+index cfb0cc2..e3bdb85 100644
+--- a/types.h
++++ b/types.h
+@@ -345,10 +345,18 @@ struct softif_neigh {
  	struct rcu_head rcu;
  };
  
-+
-+struct bat_algo {
-+	struct hlist_node list;
-+	char name[20];
-+};
-+
+-
+ struct bat_algo {
+ 	struct hlist_node list;
+ 	char name[20];
++	void (*bat_ogm_init)(struct hard_iface *hard_iface);
++	void (*bat_ogm_init_primary)(struct hard_iface *hard_iface);
++	void (*bat_ogm_update_mac)(struct hard_iface *hard_iface);
++	void (*bat_ogm_schedule)(struct hard_iface *hard_iface,
++				 int tt_num_changes);
++	void (*bat_ogm_emit)(struct forw_packet *forw_packet);
++	void (*bat_ogm_receive)(const struct ethhdr *ethhdr,
++				unsigned char *packet_buff, int packet_len,
++				struct hard_iface *if_incoming);
+ };
+ 
  #endif /* _NET_BATMAN_ADV_TYPES_H_ */
 -- 
 1.7.5.4
