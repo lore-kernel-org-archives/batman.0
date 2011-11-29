@@ -1,17 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 29 Nov 2011 14:35:09 +0800
-References: <201111290028.01655.lindner_marek@yahoo.de>
-	<201111290345.29771.lindner_marek@yahoo.de>
-	<20111129060924.GF13600@lunn.ch>
-In-Reply-To: <20111129060924.GF13600@lunn.ch>
+Return-Path: <dan.carpenter@oracle.com>
+Date: Tue, 29 Nov 2011 09:09:09 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Message-ID: <20111129060909.GA6098@elgon.mountain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201111291435.10033.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: convert batman iv
-	algorithm to use dynamic infrastructure
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] [patch] batman-adv: remove extra negation in
+	gw_out_of_range()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,33 +18,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, kernel-janitors@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On Tuesday, November 29, 2011 14:09:24 Andrew Lunn wrote:
-> On Tue, Nov 29, 2011 at 03:45:29AM +0800, Marek Lindner wrote:
-> > On Tuesday, November 29, 2011 03:02:45 Andrew Lunn wrote:
-> > > > +static struct bat_algo bat_algo_iv __read_mostly = {
-> > > > 
-> > > >  	.name = "BATMAN IV",
-> > > > 
-> > > > +	.bat_ogm_init = bat_ogm_init,
-> > > > +	.bat_ogm_init_primary = bat_ogm_init_primary,
-> > > > +	.bat_ogm_update_mac = bat_ogm_update_mac,
-> > > > +	.bat_ogm_schedule = bat_ogm_schedule,
-> > > > +	.bat_ogm_emit = bat_ogm_emit,
-> > > > +	.bat_ogm_receive = bat_ogm_receive,
-> > > > 
-> > > >  };
-> > > 
-> > > This needs an .owner = THIS_MODULE,
-> > > 
-> > > so you can do reference counting on the module.
-> > 
-> > It is not a separate module ..
-> 
-> Which leads to the question, why is it not a separate module?
+There is a typo here where an extra '!' made the check to the opposite
+of what was intended.
 
-Why should it be ? 
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-Cheers,
-Marek
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 9373a14..24403a7 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -695,7 +695,7 @@ bool gw_out_of_range(struct bat_priv *bat_priv,
+ 	}
+ 
+ 	neigh_old = find_router(bat_priv, orig_dst_node, NULL);
+-	if (!!neigh_old)
++	if (!neigh_old)
+ 		goto out;
+ 
+ 	if (curr_tq_avg - neigh_old->tq_avg > GW_THRESHOLD)
