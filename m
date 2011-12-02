@@ -1,7 +1,9 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Fri,  2 Dec 2011 15:15:44 +0100
-Message-Id: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
+Date: Fri,  2 Dec 2011 15:37:31 +0100
+Message-Id: <1322836651-25134-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
+References: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -19,36 +21,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
 Both translation tables and network coding use timeouts to do house
 keeping, so we might as well share the function used to compare a
 timestamp+timeout with current time.
 
-Also, this patch removes a trailing newline in is_my_mac() to satisfy checkpatch
-
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
- main.c              |    4 ++++
+ main.c              |    5 +++++
  main.h              |    1 +
  translation-table.c |    8 --------
- 3 files changed, 5 insertions(+), 8 deletions(-)
+ 3 files changed, 6 insertions(+), 8 deletions(-)
 
 diff --git a/main.c b/main.c
-index fb87bdc..0930bb4 100644
+index 71b56cf..0930bb4 100644
 --- a/main.c
 +++ b/main.c
-@@ -170,7 +170,11 @@ int is_my_mac(const uint8_t *addr)
- 	}
- 	rcu_read_unlock();
+@@ -172,6 +172,11 @@ int is_my_mac(const uint8_t *addr)
  	return 0;
-+}
+ }
  
 +bool is_out_of_time(unsigned long timestamp, unsigned long timeout)
 +{
 +	return time_is_before_jiffies(timestamp + msecs_to_jiffies(timeout));
- }
- 
++}
++
  module_init(batman_init);
+ module_exit(batman_exit);
+ 
 diff --git a/main.h b/main.h
 index 464439f..92eb37b 100644
 --- a/main.h
