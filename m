@@ -1,14 +1,9 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Fri,  2 Dec 2011 15:39:07 +0100
-Message-Id: <1322836747-25204-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
-References: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Rm trailing whitespace from
-	is_my_mac() in main.c
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Fri,  2 Dec 2011 17:38:52 +0100
+Message-Id: <1322843932-21385-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: format multi-line if in the
+	correct way
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,25 +16,30 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+in an multi-line if statement leading edges should line up to the opening
+parenthesis
+
+Reported-by: David Miller <davem@davemloft.net>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- main.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ routing.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/main.c b/main.c
-index fb87bdc..71b56cf 100644
---- a/main.c
-+++ b/main.c
-@@ -170,7 +170,6 @@ int is_my_mac(const uint8_t *addr)
- 	}
- 	rcu_read_unlock();
- 	return 0;
--
- }
+diff --git a/routing.c b/routing.c
+index d5ddbd1..4363d19 100644
+--- a/routing.c
++++ b/routing.c
+@@ -627,8 +627,7 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
  
- module_init(batman_init);
+ 			/* Ensure we have all the claimed data */
+ 			if (unlikely(skb_headlen(skb) <
+-					sizeof(struct tt_query_packet) +
+-					tt_len))
++				     sizeof(struct tt_query_packet) + tt_len))
+ 				goto out;
+ 
+ 			handle_tt_response(bat_priv, tt_query);
 -- 
-1.7.7.4
+1.7.3.4
 
