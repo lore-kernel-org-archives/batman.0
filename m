@@ -1,14 +1,14 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Fri,  2 Dec 2011 15:37:31 +0100
-Message-Id: <1322836651-25134-1-git-send-email-martin@hundeboll.net>
+Date: Fri,  2 Dec 2011 15:39:07 +0100
+Message-Id: <1322836747-25204-1-git-send-email-martin@hundeboll.net>
 In-Reply-To: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
 References: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Move is_out_of_time() to main.c
-	for general use
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Rm trailing whitespace from
+	is_my_mac() in main.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,64 +23,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-Both translation tables and network coding use timeouts to do house
-keeping, so we might as well share the function used to compare a
-timestamp+timeout with current time.
-
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
- main.c              |    5 +++++
- main.h              |    1 +
- translation-table.c |    8 --------
- 3 files changed, 6 insertions(+), 8 deletions(-)
+ main.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
 diff --git a/main.c b/main.c
-index 71b56cf..0930bb4 100644
+index fb87bdc..71b56cf 100644
 --- a/main.c
 +++ b/main.c
-@@ -172,6 +172,11 @@ int is_my_mac(const uint8_t *addr)
+@@ -170,7 +170,6 @@ int is_my_mac(const uint8_t *addr)
+ 	}
+ 	rcu_read_unlock();
  	return 0;
+-
  }
  
-+bool is_out_of_time(unsigned long timestamp, unsigned long timeout)
-+{
-+	return time_is_before_jiffies(timestamp + msecs_to_jiffies(timeout));
-+}
-+
  module_init(batman_init);
- module_exit(batman_exit);
- 
-diff --git a/main.h b/main.h
-index 464439f..92eb37b 100644
---- a/main.h
-+++ b/main.h
-@@ -159,6 +159,7 @@ void mesh_free(struct net_device *soft_iface);
- void inc_module_count(void);
- void dec_module_count(void);
- int is_my_mac(const uint8_t *addr);
-+bool is_out_of_time(unsigned long timestamp, unsigned long timeout);
- 
- #ifdef CONFIG_BATMAN_ADV_DEBUG
- int debug_log(struct bat_priv *bat_priv, const char *fmt, ...) __printf(2, 3);
-diff --git a/translation-table.c b/translation-table.c
-index 7a7df4a..b22f8d9 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -108,14 +108,6 @@ static struct tt_global_entry *tt_global_hash_find(struct bat_priv *bat_priv,
- 
- }
- 
--static bool is_out_of_time(unsigned long starting_time, unsigned long timeout)
--{
--	unsigned long deadline;
--	deadline = starting_time + msecs_to_jiffies(timeout);
--
--	return time_after(jiffies, deadline);
--}
--
- static void tt_local_entry_free_ref(struct tt_local_entry *tt_local_entry)
- {
- 	if (atomic_dec_and_test(&tt_local_entry->common.refcount))
 -- 
 1.7.7.4
 
