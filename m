@@ -1,17 +1,12 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 29 Nov 2011 16:23:18 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20111129152318.GA8417@pandem0nium>
-References: <201111290028.01655.lindner_marek@yahoo.de>
-	<1322497717-21268-1-git-send-email-lindner_marek@yahoo.de>
-	<1322497717-21268-2-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Fri,  2 Dec 2011 15:15:44 +0100
+Message-Id: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="3MwIy2ne0vdjdPXF"
-Content-Disposition: inline
-In-Reply-To: <1322497717-21268-2-git-send-email-lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: convert batman iv
- algorithm to use dynamic infrastructure
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Move is_out_of_time() to main.c
+	for general use
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,74 +18,68 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Both translation tables and network coding use timeouts to do house
+keeping, so we might as well share the function used to compare a
+timestamp+timeout with current time.
 
---3MwIy2ne0vdjdPXF
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Also, this patch removes a trailing newline in is_my_mac() to satisfy checkpatch
 
-Hi Marek,
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
+ main.c              |    4 ++++
+ main.h              |    1 +
+ translation-table.c |    8 --------
+ 3 files changed, 5 insertions(+), 8 deletions(-)
 
-interesting approach, thanks for the patches! I don't really think that
-we need modules at this point, but we can easily extend it later - for
-example, net/mac80211/rate.c has a very similar API and works with modules.
+diff --git a/main.c b/main.c
+index fb87bdc..0930bb4 100644
+--- a/main.c
++++ b/main.c
+@@ -170,7 +170,11 @@ int is_my_mac(const uint8_t *addr)
+ 	}
+ 	rcu_read_unlock();
+ 	return 0;
++}
+ 
++bool is_out_of_time(unsigned long timestamp, unsigned long timeout)
++{
++	return time_is_before_jiffies(timestamp + msecs_to_jiffies(timeout));
+ }
+ 
+ module_init(batman_init);
+diff --git a/main.h b/main.h
+index 464439f..92eb37b 100644
+--- a/main.h
++++ b/main.h
+@@ -159,6 +159,7 @@ void mesh_free(struct net_device *soft_iface);
+ void inc_module_count(void);
+ void dec_module_count(void);
+ int is_my_mac(const uint8_t *addr);
++bool is_out_of_time(unsigned long timestamp, unsigned long timeout);
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+ int debug_log(struct bat_priv *bat_priv, const char *fmt, ...) __printf(2, 3);
+diff --git a/translation-table.c b/translation-table.c
+index 7a7df4a..b22f8d9 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -108,14 +108,6 @@ static struct tt_global_entry *tt_global_hash_find(struct bat_priv *bat_priv,
+ 
+ }
+ 
+-static bool is_out_of_time(unsigned long starting_time, unsigned long timeout)
+-{
+-	unsigned long deadline;
+-	deadline = starting_time + msecs_to_jiffies(timeout);
+-
+-	return time_after(jiffies, deadline);
+-}
+-
+ static void tt_local_entry_free_ref(struct tt_local_entry *tt_local_entry)
+ {
+ 	if (atomic_dec_and_test(&tt_local_entry->common.refcount))
+-- 
+1.7.7.4
 
-A few comments to the API:
-
-Generally, we should have a few lines per function in types.h to
-describe what each function is doing - we don't need that for a RFC patch,
-but that would be useful for the final version.
-
-On Tue, Nov 29, 2011 at 12:28:36AM +0800, Marek Lindner wrote:
->  struct bat_algo {
->  	struct hlist_node list;
->  	char name[20];
-
-you can also use a simple pointer here:=20
-  char *name;
-
-(the name will most probably static in the module anyways)
-
-> +	void (*bat_ogm_init)(struct hard_iface *hard_iface);
-> +	void (*bat_ogm_init_primary)(struct hard_iface *hard_iface);
-> +	void (*bat_ogm_update_mac)(struct hard_iface *hard_iface);
-> +	void (*bat_ogm_schedule)(struct hard_iface *hard_iface,
-> +				 int tt_num_changes);
-
-can't we put tt_num_changes somewhere bat_priv?
-
-> +	void (*bat_ogm_emit)(struct forw_packet *forw_packet);
-> +	void (*bat_ogm_receive)(const struct ethhdr *ethhdr,
-> +				unsigned char *packet_buff, int packet_len,
-> +				struct hard_iface *if_incoming);
-
-you can just pass the SKB instead of ethhdr, packet_buff, and packet_len
--> they are derived from the skb anyway.
-
-Then, you have can do the API with always a hard_iface as the first
-parameter. ;)
-
-I also agree with Andrew on defining (a subset of) mandatory functions
-which every algo has to provide. The register function could then check
-and decline algos which don't define mandatory functions, and we don't have
-to check availability in the real code later ...
-
-best regards,
-	Simon
-
---3MwIy2ne0vdjdPXF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAk7U+OYACgkQrzg/fFk7axZA9gCeNSUcR2jJGAZzdGVVcKTJMZHF
-/OsAoOGvK6r0ZbYdBLqp+LJ5sNtKgxIS
-=nKjy
------END PGP SIGNATURE-----
-
---3MwIy2ne0vdjdPXF--
