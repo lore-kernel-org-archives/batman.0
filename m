@@ -1,9 +1,14 @@
 Return-Path: <ordex@autistici.org>
+Date: Fri, 2 Dec 2011 18:12:16 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri,  2 Dec 2011 17:38:52 +0100
-Message-Id: <1322843932-21385-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: format multi-line if in the
-	correct way
+Message-ID: <20111202171216.GA4561@ritirata.org>
+References: <1322317612-7770-1-git-send-email-lindner_marek@yahoo.de>
+	<20111126.144122.775553783672941660.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20111126.144122.775553783672941660.davem@davemloft.net>
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-11-26
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,31 +20,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
 
-in an multi-line if statement leading edges should line up to the opening
-parenthesis
+Hello David,
 
-Reported-by: David Miller <davem@davemloft.net>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- routing.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+On Sat, Nov 26, 2011 at 02:41:22 -0500, David Miller wrote:
+[CUT]
+> Some things to look into:
+> 
+> +			if (unlikely(skb_headlen(skb) <
+> +					sizeof(struct tt_query_packet) +
+> +					tt_len))
+> 
+> This isn't formatted correctly, all the leading edges should line
+> up to the openning parenthesis of the unlikely:
+> 
+> +			if (unlikely(skb_headlen(skb) <
+> +				     sizeof(struct tt_query_packet) +
+> +				     tt_len))
+> 
 
-diff --git a/routing.c b/routing.c
-index d5ddbd1..4363d19 100644
---- a/routing.c
-+++ b/routing.c
-@@ -627,8 +627,7 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 
- 			/* Ensure we have all the claimed data */
- 			if (unlikely(skb_headlen(skb) <
--					sizeof(struct tt_query_packet) +
--					tt_len))
-+				     sizeof(struct tt_query_packet) + tt_len))
- 				goto out;
- 
- 			handle_tt_response(bat_priv, tt_query);
+Thank you for reporting this issue. We have already prepared a patch which is
+going to be sent within the next batch.
+
+> Next, there is a lot of linearization done by the stack, but really the
+> thing to do is to make sure that the part you want to look at is
+> linear.
+> 
+> You do this using pskb_may_pull() right before you want to look at some
+> headers. It makes sure that, for the length given, that many bytes are
+> linear at the head of the skb.
+> 
+
+For this issue, we had some problem to understand it.
+
+First of all I think you are referring to patch 08/10, in which I moved a
+skb_linearise() operation.
+
+To be sure it is really needed, I backtracked the code flow and noted down any
+eventual psbk_may_pull() (or any other linearisation operation). The result is:
+
+=> in batman_skb_recv()
+	- pskb_may_pull(2)
+  => in recv_tt_query()
+  	  - pskb_may_pull(sizeof(header))
+	  - skb_linearise()
+
+Actually it seems we haven't any useless linearisation.
+Would you mind explain us where you actually found the problem, please?
+
+It might also be that I misunderstood your advice.
+
+Thank you.
+
+
+Best Regards,
+
 -- 
-1.7.3.4
+Antonio Quartulli
 
+..each of us alone is worth nothing..
+Ernesto "Che" Guevara
