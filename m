@@ -1,17 +1,9 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <4EDA4621.905@hundeboll.net>
-Date: Sat, 03 Dec 2011 16:54:09 +0100
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
-MIME-Version: 1.0
-References: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
-	<201112031536.26477.lindner_marek@yahoo.de>
-	<4EDA4332.6080706@hundeboll.net>
-	<201112032346.52327.lindner_marek@yahoo.de>
-In-Reply-To: <201112032346.52327.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Move is_out_of_time() to
- main.c for general use
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat,  3 Dec 2011 21:54:18 +0100
+Message-Id: <1322945658-25154-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: in case of roaming mark the
+	client with TT_CLIENT_ROAM
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,28 +17,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On 2011-12-03 16:46, Marek Lindner wrote:
-> On Saturday, December 03, 2011 23:41:38 Martin Hundebøll wrote:
->> On 2011-12-03 08:36, Marek Lindner wrote:
->>> Since it is a simple one-liner you could make it a define or at least
->>> static inline (in main.h).
->>
->> Correct. Maybe the correct solution is to remove the function and just call
->> time_is_before_jiffies() directly instead?
->
-> Guess you misread me. I like the idea of having this easy to read wrapper.
-> Before you moved it to main.c it was a static function. The compiler could
-> better optimize it.
+Whenever we add a local client for which we already have a global entry, the
+latter has to be marked with the TT_CLIENT_ROAM flag (instead of
+TT_CLIENT_PENDING)
 
-OK. Didn't misread you; just tried to think :) I'll send a patch with moving it to an inline function in main.h.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/translation-table.c b/translation-table.c
+index 7a7df4a..cf3e2c2 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -242,9 +242,11 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	if (tt_global_entry) {
+ 		/* This node is probably going to update its tt table */
+ 		tt_global_entry->orig_node->tt_poss_change = true;
+-		/* The global entry has to be marked as PENDING and has to be
++		/* The global entry has to be marked as ROAMING and has to be
+ 		 * kept for consistency purpose */
+-		tt_global_entry->common.flags |= TT_CLIENT_PENDING;
++		tt_global_entry->common.flags |= TT_CLIENT_ROAM;
++		tt_global_entry->roam_at = jiffies;
++
+ 		send_roam_adv(bat_priv, tt_global_entry->common.addr,
+ 			      tt_global_entry->orig_node);
+ 	}
 -- 
-Kind regards
-Martin Hundebøll
+1.7.3.4
 
-+45 61 65 54 61
-martin@hundeboll.net
-
-Nordborggade 57, 2. tv
-8000 Aarhus C
-Denmark
