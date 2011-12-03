@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 3 Dec 2011 15:20:24 +0800
-References: <1322843932-21385-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1322843932-21385-1-git-send-email-ordex@autistici.org>
+Date: Sat, 3 Dec 2011 15:27:50 +0800
+References: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
+	<1322836747-25204-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1322836747-25204-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201112031520.24632.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: format multi-line if in the
-	correct way
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201112031527.51151.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Rm trailing whitespace from
+	is_my_mac() in main.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,14 +24,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, December 03, 2011 00:38:52 Antonio Quartulli wrote:
-> in an multi-line if statement leading edges should line up to the opening
-> parenthesis
-> 
-> Reported-by: David Miller <davem@davemloft.net>
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+On Friday, December 02, 2011 22:39:07 Martin Hundeb=C3=B8ll wrote:
+> Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
+> ---
+>  main.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/main.c b/main.c
+> index fb87bdc..71b56cf 100644
+> --- a/main.c
+> +++ b/main.c
+> @@ -170,7 +170,6 @@ int is_my_mac(const uint8_t *addr)
+>  	}
+>  	rcu_read_unlock();
+>  	return 0;
+> -
+>  }
+>=20
+>  module_init(batman_init);
 
-Applied in revision 8dd0e99.
+I don't have a trailing whitespace space there and you are removing an enti=
+re=20
+(empty) line. Not just a whitespace ?
+My checkpatch also does not complain about your first patch. Where did you =
+get=20
+your checkpatch from ?
 
-Thanks,
+Regards,
 Marek
