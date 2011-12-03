@@ -1,17 +1,16 @@
-Return-Path: <sven@narfation.org>
-Date: Sat, 3 Dec 2011 09:55:52 +0100
-From: Sven Eckelmann <sven@narfation.org>
-Message-ID: <20111203085552.GA8944@sven-atom.home.narfation.org>
-References: <20111202171216.GA4561@ritirata.org>
-	<20111202.125725.896787381527077500.davem@davemloft.net>
-	<20111203015528.GB3148@ritirata.org>
-	<20111202.205955.840690319685535229.davem@davemloft.net>
+Return-Path: <martin@hundeboll.net>
+Message-ID: <4EDA42B2.8070104@hundeboll.net>
+Date: Sat, 03 Dec 2011 16:39:30 +0100
+From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
-Content-Disposition: inline
-In-Reply-To: <20111202.205955.840690319685535229.davem@davemloft.net>
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-11-26
+References: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
+	<1322836747-25204-1-git-send-email-martin@hundeboll.net>
+	<201112031527.51151.lindner_marek@yahoo.de>
+In-Reply-To: <201112031527.51151.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Rm trailing whitespace from
+ is_my_mac() in main.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,69 +22,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: davem@davemloft.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+On 2011-12-03 08:27, Marek Lindner wrote:
+> I don't have a trailing whitespace space there and you are removing an entire
+> (empty) line. Not just a whitespace ?
 
---NzB8fVQJ5HfG6fxh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, sorry. The commit should say "empty line" instead of "whitespace". The empty line is also present on git.open-mesh.org:
+http://git.open-mesh.org/?p=batman-adv.git;a=blob;f=main.c;h=fb87bdc2ce9bdba9b551f90fcdcada42fdc594a4;hb=refs/heads/master#l173
 
-On Fri, Dec 02, 2011 at 08:59:55PM -0500, David Miller wrote:
-> From: Antonio Quartulli <ordex@autistici.org>
-> Date: Sat, 3 Dec 2011 02:55:29 +0100
->=20
-> > We first call pskb_may_pull() to pull the header only and then, under c=
-ertain
-> > conditions, we linearise the whole skb to access it all. Should I use
-> > pskb_may_pull() even in this case?
->=20
-> Why would you need to access the whole thing?
+> My checkpatch also does not complain about your first patch. Where did you get
+> your checkpatch from ?
 
-It contains only information for the routing/pathfinding to client nodes (n=
-odes
-which do not directly participate in this mesh).
+Downloaded it from git.kernel.org:
+http://git.kernel.org/?p=linux/kernel/git/apw/checkpatch.git;a=blob;f=scripts/checkpatch.pl;h=e29eeea86388d88d7c878383186318632ddac6eb;hb=HEAD
 
-> There are only two types of possible accesses:
->=20
-> 1) Header parsing --> use pskb_may_pull() as needed.
->=20
-> 2) Copying the data to some other location, such as a user
->    buffer.  Use skb_copy_datagram_iovec or similar which handle
->    fragmented SKBs just fine.
+Also tried to download the file from 3.1-tagged tree, which make the same complaints as I mentioned on IRC:
+Patch: http://dpaste.com/664910/
+checkpatch.pl complaints: http://paste.pocoo.org/show/515753/
 
-I think a "copy" using skb_header_pointer/skb_copy_bits would be the right
-thing to do. batman-adv needs the data for kernel data structures and don't
-send it to a userspace program (at least not as primary functionality). I d=
-on't
-have benchmarks which compare both solutions (with a heavily fragmented skb)
-when accessing small, packed structures in a skb.
+I will make a patch v2 with a corrected commit message.
 
-Thanks,
-	Sven
+-- 
+Kind regards
+Martin Hundebøll
 
---NzB8fVQJ5HfG6fxh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
++45 61 65 54 61
+martin@hundeboll.net
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAEBCgAGBQJO2eQXAAoJEF2HCgfBJntGVz8P/38+/7MhN9RwIxMl3cWSpS/J
-2c/dkIzjU2kyLjGgZk3Pv3CLpQtcQXU7TMkAa6+2oIcGe5Ou5AFYZGpvjYPLo15W
-tvPagD81MraTBu0n/2dcRPtE4JevKMoETB2LbCp55ODwTiXfTrWWHrJk1Gbfr6ng
-NTR1YB2rft5f7wxMepmQTtONpVJfpUbT7CJx7uCQ8MusI7mVLH2Ye+8Ut0VeSvqK
-MzVZEcglbbf4jTWLd7Sm5odiHJjA1lvZfGeyGpPf5MNMWUnuUKcLVO+0GypfLdCk
-ytHRJ0dWTG1OZrYYPx6qAHKajQajDhIRvNrdTSkOTGDiZgMeuSBD/7uRZJFgZtHn
-hXMGGXvRtuwauNt2JYWMtI6HS/cI6nYCyTbMUkh9evWRwLczk+NwT7fOf4QHWVJv
-XuG8yXP1Uwp5/s3IXLi9eSngTZbetLQUavgBrZiOueXHhtBZnS0eqmbEbV4rHN0W
-58eUBaTPUOs39z7UmCMmEdDURANUT2ENQ2KnG0jQJYJYmm+b94l1d7L6YJ/d/VDK
-IroQ5QFweBPNQpS9dLbfcUwKGSGwb60WJEr2iwqa8EmUWRu/xo3aAiww3Ufndff4
-CXLdT1saYNRGf0rK9GgEmUBZLTQoFtiWhqKXNHGygizU0sM1sP1yhsnKVKv1AP7Y
-uekZ3lOHKCiTxu3FGKGI
-=63eD
------END PGP SIGNATURE-----
-
---NzB8fVQJ5HfG6fxh--
+Nordborggade 57, 2. tv
+8000 Aarhus C
+Denmark
