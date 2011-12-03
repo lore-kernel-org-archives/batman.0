@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 3 Dec 2011 15:27:50 +0800
+Date: Sat, 3 Dec 2011 15:36:26 +0800
 References: <1322835344-23077-1-git-send-email-martin@hundeboll.net>
-	<1322836747-25204-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1322836747-25204-1-git-send-email-martin@hundeboll.net>
+	<1322836651-25134-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1322836651-25134-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <201112031527.51151.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Rm trailing whitespace from
-	is_my_mac() in main.c
+Message-Id: <201112031536.26477.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Move is_out_of_time() to
+	main.c for general use
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,31 +24,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, December 02, 2011 22:39:07 Martin Hundeb=C3=B8ll wrote:
+On Friday, December 02, 2011 22:37:31 Martin Hundeb=C3=B8ll wrote:
+> Both translation tables and network coding use timeouts to do house
+> keeping, so we might as well share the function used to compare a
+> timestamp+timeout with current time.
+>=20
 > Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > ---
->  main.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
+>  main.c              |    5 +++++
+>  main.h              |    1 +
+>  translation-table.c |    8 --------
+>  3 files changed, 6 insertions(+), 8 deletions(-)
 >=20
 > diff --git a/main.c b/main.c
-> index fb87bdc..71b56cf 100644
+> index 71b56cf..0930bb4 100644
 > --- a/main.c
 > +++ b/main.c
-> @@ -170,7 +170,6 @@ int is_my_mac(const uint8_t *addr)
->  	}
->  	rcu_read_unlock();
->  	return 0;
-> -
+> @@ -172,6 +172,11 @@ int is_my_mac(const uint8_t *addr)
+>         return 0;
 >  }
->=20
->  module_init(batman_init);
+> =20
+> +bool is_out_of_time(unsigned long timestamp, unsigned long timeout)
+> +{
+> +       return time_is_before_jiffies(timestamp +
+> msecs_to_jiffies(timeout));=20
+> +}
 
-I don't have a trailing whitespace space there and you are removing an enti=
-re=20
-(empty) line. Not just a whitespace ?
-My checkpatch also does not complain about your first patch. Where did you =
-get=20
-your checkpatch from ?
+Since it is a simple one-liner you could make it a define or at least stati=
+c=20
+inline (in main.h).
+
+How about a more descriptive name like "reached_timeout()" or=20
+"has_timed_out()" ? We could use it in other parts of the code too.
+
+You might also want to add a few words about the fact that you did not only=
+=20
+move the function but also changed time_after() to time_is_before_jiffies()=
+ at=20
+the same time.
 
 Regards,
 Marek
