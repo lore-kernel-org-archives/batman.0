@@ -1,8 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon,  5 Dec 2011 04:01:51 +0800
-Message-Id: <1323028911-13495-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: simplify bat_ogm_receive API call
+Return-Path: <linux+b.a.t.m.a.n=lists.open-mesh.org@arm.linux.org.uk>
+Date: Sun, 4 Dec 2011 21:33:16 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Message-ID: <20111204213316.GB14542@n2100.arm.linux.org.uk>
+References: <1323013369-29691-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1323013369-29691-1-git-send-email-sven@narfation.org>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5] atomic: add *_dec_not_zero
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,73 +20,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "H. Peter Anvin" <hpa@zytor.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Randy Dunlap <rdunlap@xenotime.net>, Paul Mackerras <paulus@samba.org>, Helge Deller <deller@gmx.de>, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, Richard Weinberger <richard@nod.at>, Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>, Jeff Dike <jdike@addtoit.com>, Chris Metcalf <cmetcalf@tilera.com>, linux-m32r@ml.linux-m32r.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>, Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>, linux-alpha@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 
-Most of the values in that call are derived from the skb, so we can hand
-over the skb instead.
+On Sun, Dec 04, 2011 at 04:42:49PM +0100, Sven Eckelmann wrote:
+> diff --git a/arch/alpha/include/asm/atomic.h b/arch/alpha/include/asm/atomic.h
+> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+> diff --git a/arch/arm/include/asm/atomic.h b/arch/arm/include/asm/atomic.h
+> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
+> diff --git a/arch/ia64/include/asm/atomic.h b/arch/ia64/include/asm/atomic.h
+> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+> diff --git a/arch/mips/include/asm/atomic.h b/arch/mips/include/asm/atomic.h
+> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+> diff --git a/arch/parisc/include/asm/atomic.h b/arch/parisc/include/asm/atomic.h
+> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+> diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
+> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+> diff --git a/arch/s390/include/asm/atomic.h b/arch/s390/include/asm/atomic.h
+> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1, 0)
+> diff --git a/arch/sparc/include/asm/atomic_64.h b/arch/sparc/include/asm/atomic_64.h
+> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+> diff --git a/arch/tile/include/asm/atomic_32.h b/arch/tile/include/asm/atomic_32.h
+> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
+> diff --git a/arch/tile/include/asm/atomic_64.h b/arch/tile/include/asm/atomic_64.h
+> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1, 0)
+> diff --git a/arch/x86/include/asm/atomic64_64.h b/arch/x86/include/asm/atomic64_64.h
+> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+> diff --git a/include/asm-generic/atomic64.h b/include/asm-generic/atomic64.h
+> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
 
-Reported-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- bat_iv_ogm.c |   11 +++++++----
- bat_ogm.h    |    3 +--
- routing.c    |    4 +---
- 3 files changed, 9 insertions(+), 9 deletions(-)
+I think this is rather silly - all these definitions are very similar to
+each other.  Is there really no way to put this into include/linux/atomic.h,
+maybe as something like:
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index d60e1ba..3402fa5 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -1140,13 +1140,16 @@ out:
- 	orig_node_free_ref(orig_node);
- }
- 
--void bat_ogm_receive(const struct ethhdr *ethhdr, unsigned char *packet_buff,
--		     int packet_len, struct hard_iface *if_incoming)
-+void bat_ogm_receive(struct hard_iface *if_incoming, struct sk_buff *skb)
- {
- 	struct batman_ogm_packet *batman_ogm_packet;
--	int buff_pos = 0;
--	unsigned char *tt_buff;
-+	struct ethhdr *ethhdr;
-+	int buff_pos = 0, packet_len;
-+	unsigned char *tt_buff, *packet_buff;
- 
-+	packet_len = skb_headlen(skb);
-+	ethhdr = (struct ethhdr *)skb_mac_header(skb);
-+	packet_buff = skb->data;
- 	batman_ogm_packet = (struct batman_ogm_packet *)packet_buff;
- 
- 	/* unpack the aggregated packets and process them one by one */
-diff --git a/bat_ogm.h b/bat_ogm.h
-index 69329c1..47edfde 100644
---- a/bat_ogm.h
-+++ b/bat_ogm.h
-@@ -29,7 +29,6 @@ void bat_ogm_init_primary(struct hard_iface *hard_iface);
- void bat_ogm_update_mac(struct hard_iface *hard_iface);
- void bat_ogm_schedule(struct hard_iface *hard_iface, int tt_num_changes);
- void bat_ogm_emit(struct forw_packet *forw_packet);
--void bat_ogm_receive(const struct ethhdr *ethhdr, unsigned char *packet_buff,
--		     int packet_len, struct hard_iface *if_incoming);
-+void bat_ogm_receive(struct hard_iface *if_incoming, struct sk_buff *skb);
- 
- #endif /* _NET_BATMAN_ADV_OGM_H_ */
-diff --git a/routing.c b/routing.c
-index 4363d19..5bc41c8 100644
---- a/routing.c
-+++ b/routing.c
-@@ -272,9 +272,7 @@ int recv_bat_ogm_packet(struct sk_buff *skb, struct hard_iface *hard_iface)
- 	if (skb_linearize(skb) < 0)
- 		return NET_RX_DROP;
- 
--	ethhdr = (struct ethhdr *)skb_mac_header(skb);
--
--	bat_ogm_receive(ethhdr, skb->data, skb_headlen(skb), hard_iface);
-+	bat_ogm_receive(hard_iface, skb);
- 
- 	kfree_skb(skb);
- 	return NET_RX_SUCCESS;
--- 
-1.7.5.4
+#ifndef atomic64_dec_not_zero
+#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1, 0)
+#endif
 
+and avoid having to add essentially the same definition to 12 individual
+files?
+
+Architectures which want to override it can do by the following:
+
+#define atomic64_dec_not_zero		atomic64_dec_not_zero
+
+which won't have any effect on C nor asm code.
