@@ -1,16 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 04 Dec 2011 20:16:05 +0100
-Message-ID: <15959182.LiMXKxzelS@sven-desktop.home.narfation.org>
-In-Reply-To: <1323025848-14024-4-git-send-email-sven@narfation.org>
-References: <1323025848-14024-1-git-send-email-sven@narfation.org>
-	<1323025848-14024-4-git-send-email-sven@narfation.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 5 Dec 2011 04:00:48 +0800
+References: <201111290028.01655.lindner_marek@yahoo.de>
+	<1322497717-21268-2-git-send-email-lindner_marek@yahoo.de>
+	<20111129152318.GA8417@pandem0nium>
+In-Reply-To: <20111129152318.GA8417@pandem0nium>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1394395.8W5l9ZLoRH";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: Allow to enable features
-	without editing Makefile
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201112050400.48933.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: convert batman iv
+	algorithm to use dynamic infrastructure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,46 +23,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart1394395.8W5l9ZLoRH
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Hi,
 
-On Sunday 04 December 2011 20:10:48 Sven Eckelmann wrote:
-[...]
-> generates an own compat_autoconf.h that is included by compat.h. This
-> header would have to
-[...]
+> Generally, we should have a few lines per function in types.h to
+> describe what each function is doing - we don't need that for a RFC patch,
+> but that would be useful for the final version.
 
-I should have checked that a line doesn't begin with #... nevertheless: 
-"define/undef all preprocessor variables used to configure batman-adv 
-features".
+ok, I will do that.
 
-Kind regards,
-	Sven
---nextPart1394395.8W5l9ZLoRH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+> > +	void (*bat_ogm_init)(struct hard_iface *hard_iface);
+> > +	void (*bat_ogm_init_primary)(struct hard_iface *hard_iface);
+> > +	void (*bat_ogm_update_mac)(struct hard_iface *hard_iface);
+> > +	void (*bat_ogm_schedule)(struct hard_iface *hard_iface,
+> > +				 int tt_num_changes);
+> 
+> can't we put tt_num_changes somewhere bat_priv?
 
-iQIcBAABCgAGBQJO28b1AAoJEF2HCgfBJntG0YwP/RAgChZAYiSPS/0WmMmrp9/4
-6GAiffocRCerG+eG387yhVUcHOZl1WyjYlXL0qHLKZrEbD2d9i8617ZfidJ7RhfF
-v3EOw1IMCzlHEbE/6K9/RHhMqTcaDkqC1yIdHcwrgrkKjV9gWWDSOT22ysiYcTtm
-BQUm6RxB+9CRVJniXNhU9Tvoc86VB7MaYIS7FftiybIDR8UNadluCJ/b1AzywtMO
-vkTZSUaO7LdnY81D95yG85pzWA/SYKtS0ZuLa6oaCKCHyX431UsqDWhkygXR5Ihe
-MpXszI9WT+eLbGnjnwHvhaCuxjY8Bc76b1tMC93/VK7E/n89rJA9FW9rUjgglV3v
-y/9zAhpLQpga+4Hqx4CtBqhx1O7u0zO4eCTSMClcWN4MtIJetegHOUD8zkT64mno
-p5g5O/c9BEXjBjHh7Sy1/wBH5vMKJanvouHdBkb8xibb/g4visdWx+YQYLrFQ0QH
-ttisdXweHisQ9dvFDmey1Dt6SSKx5lruxvrvlZ9Pd3e+luSWSdHvz8RA0Bc+sn2s
-0pUkTpWkkvB+0t7xKo+8fRfWvybqcwcIqsne/i67T5z4AmgAG53x7zoRQqC7zyR0
-fFkGZZIrfC8TV7D4wFxrfxz50zO23BAZupvNIbgGLIdSpQbXyPvC5kn0AdvldBOO
-R9ZxaGsCnUwnUPyTOLZm
-=I0WJ
------END PGP SIGNATURE-----
+tt_num_changes holds the number of changed TT entries since the last OGM. 
+Obviously that changes all the time. Are you suggesting we store this value in 
+bat_priv instead of a local variable ? 
 
---nextPart1394395.8W5l9ZLoRH--
 
+> > +	void (*bat_ogm_emit)(struct forw_packet *forw_packet);
+> > +	void (*bat_ogm_receive)(const struct ethhdr *ethhdr,
+> > +				unsigned char *packet_buff, int packet_len,
+> > +				struct hard_iface *if_incoming);
+> 
+> you can just pass the SKB instead of ethhdr, packet_buff, and packet_len
+> -> they are derived from the skb anyway.
+> 
+> Then, you have can do the API with always a hard_iface as the first
+> parameter. ;)
+
+I will send a separate patch for this API change in a minute as it is not 
+really a part of the dynamic routing algo patchset.
+
+Thanks for all the feedback!
+
+Cheers,
+Marek
