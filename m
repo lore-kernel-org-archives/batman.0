@@ -1,17 +1,8 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 5 Dec 2011 04:00:48 +0800
-References: <201111290028.01655.lindner_marek@yahoo.de>
-	<1322497717-21268-2-git-send-email-lindner_marek@yahoo.de>
-	<20111129152318.GA8417@pandem0nium>
-In-Reply-To: <20111129152318.GA8417@pandem0nium>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201112050400.48933.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: convert batman iv
-	algorithm to use dynamic infrastructure
+Date: Mon,  5 Dec 2011 04:01:51 +0800
+Message-Id: <1323028911-13495-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: simplify bat_ogm_receive API call
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,46 +14,73 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
+Most of the values in that call are derived from the skb, so we can hand
+over the skb instead.
 
-Hi,
+Reported-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ bat_iv_ogm.c |   11 +++++++----
+ bat_ogm.h    |    3 +--
+ routing.c    |    4 +---
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-> Generally, we should have a few lines per function in types.h to
-> describe what each function is doing - we don't need that for a RFC patch,
-> but that would be useful for the final version.
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index d60e1ba..3402fa5 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -1140,13 +1140,16 @@ out:
+ 	orig_node_free_ref(orig_node);
+ }
+ 
+-void bat_ogm_receive(const struct ethhdr *ethhdr, unsigned char *packet_buff,
+-		     int packet_len, struct hard_iface *if_incoming)
++void bat_ogm_receive(struct hard_iface *if_incoming, struct sk_buff *skb)
+ {
+ 	struct batman_ogm_packet *batman_ogm_packet;
+-	int buff_pos = 0;
+-	unsigned char *tt_buff;
++	struct ethhdr *ethhdr;
++	int buff_pos = 0, packet_len;
++	unsigned char *tt_buff, *packet_buff;
+ 
++	packet_len = skb_headlen(skb);
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
++	packet_buff = skb->data;
+ 	batman_ogm_packet = (struct batman_ogm_packet *)packet_buff;
+ 
+ 	/* unpack the aggregated packets and process them one by one */
+diff --git a/bat_ogm.h b/bat_ogm.h
+index 69329c1..47edfde 100644
+--- a/bat_ogm.h
++++ b/bat_ogm.h
+@@ -29,7 +29,6 @@ void bat_ogm_init_primary(struct hard_iface *hard_iface);
+ void bat_ogm_update_mac(struct hard_iface *hard_iface);
+ void bat_ogm_schedule(struct hard_iface *hard_iface, int tt_num_changes);
+ void bat_ogm_emit(struct forw_packet *forw_packet);
+-void bat_ogm_receive(const struct ethhdr *ethhdr, unsigned char *packet_buff,
+-		     int packet_len, struct hard_iface *if_incoming);
++void bat_ogm_receive(struct hard_iface *if_incoming, struct sk_buff *skb);
+ 
+ #endif /* _NET_BATMAN_ADV_OGM_H_ */
+diff --git a/routing.c b/routing.c
+index 4363d19..5bc41c8 100644
+--- a/routing.c
++++ b/routing.c
+@@ -272,9 +272,7 @@ int recv_bat_ogm_packet(struct sk_buff *skb, struct hard_iface *hard_iface)
+ 	if (skb_linearize(skb) < 0)
+ 		return NET_RX_DROP;
+ 
+-	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+-
+-	bat_ogm_receive(ethhdr, skb->data, skb_headlen(skb), hard_iface);
++	bat_ogm_receive(hard_iface, skb);
+ 
+ 	kfree_skb(skb);
+ 	return NET_RX_SUCCESS;
+-- 
+1.7.5.4
 
-ok, I will do that.
-
-
-> > +	void (*bat_ogm_init)(struct hard_iface *hard_iface);
-> > +	void (*bat_ogm_init_primary)(struct hard_iface *hard_iface);
-> > +	void (*bat_ogm_update_mac)(struct hard_iface *hard_iface);
-> > +	void (*bat_ogm_schedule)(struct hard_iface *hard_iface,
-> > +				 int tt_num_changes);
-> 
-> can't we put tt_num_changes somewhere bat_priv?
-
-tt_num_changes holds the number of changed TT entries since the last OGM. 
-Obviously that changes all the time. Are you suggesting we store this value in 
-bat_priv instead of a local variable ? 
-
-
-> > +	void (*bat_ogm_emit)(struct forw_packet *forw_packet);
-> > +	void (*bat_ogm_receive)(const struct ethhdr *ethhdr,
-> > +				unsigned char *packet_buff, int packet_len,
-> > +				struct hard_iface *if_incoming);
-> 
-> you can just pass the SKB instead of ethhdr, packet_buff, and packet_len
-> -> they are derived from the skb anyway.
-> 
-> Then, you have can do the API with always a hard_iface as the first
-> parameter. ;)
-
-I will send a separate patch for this API change in a minute as it is not 
-really a part of the dynamic routing algo patchset.
-
-Thanks for all the feedback!
-
-Cheers,
-Marek
