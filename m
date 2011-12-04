@@ -1,15 +1,11 @@
 Return-Path: <ordex@autistici.org>
-Date: Sun, 4 Dec 2011 11:35:50 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111204103550.GA20976@ritirata.org>
+Date: Sun,  4 Dec 2011 12:26:50 +0100
+Message-Id: <1322998010-19221-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1322945658-25154-1-git-send-email-ordex@autistici.org>
 References: <1322945658-25154-1-git-send-email-ordex@autistici.org>
-	<201112041736.43389.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <201112041736.43389.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: in case of roaming mark the
- client with TT_CLIENT_ROAM
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: in case of roaming mark the
+	client with TT_CLIENT_ROAM
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,28 +17,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun, Dec 04, 2011 at 05:36:43 +0800, Marek Lindner wrote:
-> On Sunday, December 04, 2011 04:54:18 Antonio Quartulli wrote:
-> > Whenever we add a local client for which we already have a global entry,
-> > the latter has to be marked with the TT_CLIENT_ROAM flag (instead of
-> > TT_CLIENT_PENDING)
-> 
-> Am I right that this patch should go into linux 3.2 ? Maybe even to stable ? 
-> If so, which versions ? linux 3.0 and linux 3.1 ?
-> Are there more patches for stable from your end ? I'd like to send them in one 
-> go and not one by one ..
+In case of a client roaming from node A to node B, the latter have to mark the
+corresponding global entry with TT_CLIENT_ROAM (instead of TT_CLIENT_PENDING).
 
-Actually I would send it to stable-3.1.
+Marking a global entry with TT_CLIENT_PENDING will end up in keeping such entry
+forever (because this flag is only meant to be used with local entries and it is
+never checked on global ones).
 
-Please, give me 12hours more for the other patches. I'll work on them later
-today.
+In the worst case (all the clients roaming to the same node A) the local and the
+global table will contain exactly the same clients. Batman-adv will continue to
+work, but the memory usage is duplicated.
 
-Cheers,
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
+* commit message improved
+
+ translation-table.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/translation-table.c b/translation-table.c
+index 7a7df4a..cf3e2c2 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -242,9 +242,11 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	if (tt_global_entry) {
+ 		/* This node is probably going to update its tt table */
+ 		tt_global_entry->orig_node->tt_poss_change = true;
+-		/* The global entry has to be marked as PENDING and has to be
++		/* The global entry has to be marked as ROAMING and has to be
+ 		 * kept for consistency purpose */
+-		tt_global_entry->common.flags |= TT_CLIENT_PENDING;
++		tt_global_entry->common.flags |= TT_CLIENT_ROAM;
++		tt_global_entry->roam_at = jiffies;
++
+ 		send_roam_adv(bat_priv, tt_global_entry->common.addr,
+ 			      tt_global_entry->orig_node);
+ 	}
 -- 
-Antonio Quartulli
+1.7.3.4
 
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
