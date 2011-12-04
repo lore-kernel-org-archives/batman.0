@@ -1,14 +1,9 @@
-Return-Path: <linux+b.a.t.m.a.n=lists.open-mesh.org@arm.linux.org.uk>
-Date: Sun, 4 Dec 2011 21:33:16 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Message-ID: <20111204213316.GB14542@n2100.arm.linux.org.uk>
-References: <1323013369-29691-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1323013369-29691-1-git-send-email-sven@narfation.org>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5] atomic: add *_dec_not_zero
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun,  4 Dec 2011 22:38:27 +0100
+Message-Id: <1323034707-25325-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: delete global entry in case of
+	roaming
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,48 +15,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "H. Peter Anvin" <hpa@zytor.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Randy Dunlap <rdunlap@xenotime.net>, Paul Mackerras <paulus@samba.org>, Helge Deller <deller@gmx.de>, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, Richard Weinberger <richard@nod.at>, Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>, Jeff Dike <jdike@addtoit.com>, Chris Metcalf <cmetcalf@tilera.com>, linux-m32r@ml.linux-m32r.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>, Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>, linux-alpha@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun, Dec 04, 2011 at 04:42:49PM +0100, Sven Eckelmann wrote:
-> diff --git a/arch/alpha/include/asm/atomic.h b/arch/alpha/include/asm/atomic.h
-> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
-> diff --git a/arch/arm/include/asm/atomic.h b/arch/arm/include/asm/atomic.h
-> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
-> diff --git a/arch/ia64/include/asm/atomic.h b/arch/ia64/include/asm/atomic.h
-> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
-> diff --git a/arch/mips/include/asm/atomic.h b/arch/mips/include/asm/atomic.h
-> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
-> diff --git a/arch/parisc/include/asm/atomic.h b/arch/parisc/include/asm/atomic.h
-> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
-> diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
-> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
-> diff --git a/arch/s390/include/asm/atomic.h b/arch/s390/include/asm/atomic.h
-> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1, 0)
-> diff --git a/arch/sparc/include/asm/atomic_64.h b/arch/sparc/include/asm/atomic_64.h
-> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
-> diff --git a/arch/tile/include/asm/atomic_32.h b/arch/tile/include/asm/atomic_32.h
-> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
-> diff --git a/arch/tile/include/asm/atomic_64.h b/arch/tile/include/asm/atomic_64.h
-> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1, 0)
-> diff --git a/arch/x86/include/asm/atomic64_64.h b/arch/x86/include/asm/atomic64_64.h
-> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
-> diff --git a/include/asm-generic/atomic64.h b/include/asm-generic/atomic64.h
-> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
+When receiving a DEL change for a client due to a roaming event (change is
+marked with TT_CLIENT_ROAM), each node  has to check if the client roamed
+to itself or somewhere else.
 
-I think this is rather silly - all these definitions are very similar to
-each other.  Is there really no way to put this into include/linux/atomic.h,
-maybe as something like:
+In the latter case the global entry is kept to avoid having no route at all
+otherwise we can safely delete the global entry
 
-#ifndef atomic64_dec_not_zero
-#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1, 0)
-#endif
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c |   21 ++++++++++++++++++---
+ 1 files changed, 18 insertions(+), 3 deletions(-)
 
-and avoid having to add essentially the same definition to 12 individual
-files?
+diff --git a/translation-table.c b/translation-table.c
+index cf3e2c2..6e01079 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -663,6 +663,7 @@ void tt_global_del(struct bat_priv *bat_priv,
+ 		   const char *message, bool roaming)
+ {
+ 	struct tt_global_entry *tt_global_entry = NULL;
++	struct tt_local_entry *tt_local_entry = NULL
+ 
+ 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
+ 	if (!tt_global_entry)
+@@ -670,15 +671,29 @@ void tt_global_del(struct bat_priv *bat_priv,
+ 
+ 	if (tt_global_entry->orig_node == orig_node) {
+ 		if (roaming) {
+-			tt_global_entry->common.flags |= TT_CLIENT_ROAM;
+-			tt_global_entry->roam_at = jiffies;
+-			goto out;
++			/* if we are deleting a global entry due to a roam
++			 * event, there are two possibilities:
++			 * 1) the client roamed from node A to node B => we mark
++			 *    it with TT_CLIENT_ROAM, we start a timer and we
++			 *    wait for node B to claim it. In case of timeout
++			 *    the entry is purged.
++			 * 2) the client roamed to us => we can directly delete
++			 *    the global entry, since it is useless now. */
++			tt_local_entry = tt_local_hash_find(bat_priv,
++							tt_global_entry->addr);
++			if (!tt_local_entry) {
++				tt_global_entry->common.flags |= TT_CLIENT_ROAM;
++				tt_global_entry->roam_at = jiffies;
++				goto out;
++			}
+ 		}
+ 		_tt_global_del(bat_priv, tt_global_entry, message);
+ 	}
+ out:
+ 	if (tt_global_entry)
+ 		tt_global_entry_free_ref(tt_global_entry);
++	if (tt_local_entry)
++		tt_local_entry_free_ref(tt_local_entry);
+ }
+ 
+ void tt_global_del_orig(struct bat_priv *bat_priv,
+-- 
+1.7.3.4
 
-Architectures which want to override it can do by the following:
-
-#define atomic64_dec_not_zero		atomic64_dec_not_zero
-
-which won't have any effect on C nor asm code.
