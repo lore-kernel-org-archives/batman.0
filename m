@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 6 Dec 2011 01:04:10 +0800
-References: <1322945658-25154-1-git-send-email-ordex@autistici.org>
-	<1322998010-19221-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1322998010-19221-1-git-send-email-ordex@autistici.org>
+Date: Tue, 6 Dec 2011 02:41:59 +0800
+References: <1323034707-25325-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1323034707-25325-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201112060104.10384.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: in case of roaming mark
-	the client with TT_CLIENT_ROAM
+Message-Id: <201112060242.00220.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: delete global entry in case
+	of roaming
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,20 +23,22 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, December 04, 2011 19:26:50 Antonio Quartulli wrote:
-> In case of a client roaming from node A to node B, the latter have to mark
-> the corresponding global entry with TT_CLIENT_ROAM (instead of
-> TT_CLIENT_PENDING).
-> 
-> Marking a global entry with TT_CLIENT_PENDING will end up in keeping such
-> entry forever (because this flag is only meant to be used with local
-> entries and it is never checked on global ones).
-> 
-> In the worst case (all the clients roaming to the same node A) the local
-> and the global table will contain exactly the same clients. Batman-adv
-> will continue to work, but the memory usage is duplicated.
+On Monday, December 05, 2011 05:38:27 Antonio Quartulli wrote:
+> diff --git a/translation-table.c b/translation-table.c
+> index cf3e2c2..6e01079 100644
+> --- a/translation-table.c
+> +++ b/translation-table.c
+> @@ -663,6 +663,7 @@ void tt_global_del(struct bat_priv *bat_priv,
+>  		   const char *message, bool roaming)
+>  {
+>  	struct tt_global_entry *tt_global_entry = NULL;
+> +	struct tt_local_entry *tt_local_entry = NULL
 
-Applied in revision 913c412.
+Please make sure that your patch at least(!) compiles before you send it to 
+the list. It also would be nice if the patches destined for the maint branch 
+were based on based on this very branch. Saves some time and (merge) hair ..
+ 
+Applied in revision db10af5.
 
 Thanks,
 Marek
