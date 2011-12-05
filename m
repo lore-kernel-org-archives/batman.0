@@ -1,13 +1,13 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 5 Dec 2011 15:09:16 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111205140915.GA15946@ritirata.org>
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 5 Dec 2011 15:25:53 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20111205142553.GE10131@lunn.ch>
 References: <1323078985-1116-1-git-send-email-lindner_marek@yahoo.de>
 	<201112051935.06611.lindner_marek@yahoo.de>
 	<20111205121342.GD10131@lunn.ch>
 	<201112052138.55069.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <201112052138.55069.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] switch routing algorithm at runtime
@@ -24,55 +24,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Mon, Dec 05, 2011 at 09:38:54 +0800, Marek Lindner wrote:
-> On Monday, December 05, 2011 20:13:42 Andrew Lunn wrote:
-> > Changing routing protocol is something you don't want to accidentally
-> > do. So i think it should be reasonably hard to do, so you don't get
-> > any surprises. I would limit it to when the soft interface is down,
-> > and at other times return EBUSY. EBUSY seems like a reasonable good
-> > way to indicate the mesh is busy.
-> > 
-> > However, i think a cleanup call probably is needed, since the routing
-> > protocol will probably have its own internal state, memory
-> > allocations, etc which needs freeing when the mesh is going down.
-> 
 > The mesh is not going down when you bring down bat0. You can do whatever you 
 > want with bat0 - the mesh continues to operate normally. Only when a hard-
 > interface goes down the routing information relying on that very interface are 
 > purged.
-> 
+
+Ah, O.K. My understanding was wrong.
+ 
 > Here comes the chicken & egg problem: We can't have bat0 and its routing 
 > algorithm selection before we did not add at least one hard-interface.
 
-What about specifying the routing algorithm directly on "soft-iface creation"
-and deny any further change?
+Lets see if i have the call chain correct:
 
-I discussed a little bit about this with Marek on IRC and we figured out that
-the soft-iface is created after writing "bat0" (or any other name) in to the
-sysfs. At this point the routing algorithm has not been specified yet, but the
-soft-iface has already been created...
+store_mesh_iface()->hardif_enable_interface()->softif_create()->mesh_init()
 
-As solution I would suggest about splitting the soft-iface creation into two
-steps:
+It is mesh_init() that really starts the mesh going, but there is no
+real need to start it until the first hard interface is added.
 
-1) specify the soft-iface name => create the interface and allocate all the
-structure (that are not dependant on the routing algo)
+So maybe we could spit this into two separate operations.
 
-   1.1) the interface is in ALGO-WAITING state, any action that tries to enable it
-   is denied and EBUSY (?) is returned.
+1) Create the software interface
+2) Add a hard interface and start the mesh, if not already started.
 
-2) specify the routing algo => launch the routing algo init function and create
-all the needed strctures.
+So maybe two new sysfs files are needed:
 
-   2.1) the interface is now READY
+/sys/class/net/batman_adv/add_mesh
+/sys/class/net/batman_adv/rm_mesh
 
+echo the name of a soft interface, bat0, into the add_mesh file and
+the softif_create() function would be called for it, but not
+mesh_init(). 
 
-I don't exclude that I wrote something totally wrong :-)
+hardif_enable_interface() would see if the soft interface exists, as
+it currently does, so keeping backwards compatibility. If it does not
+exist, call softif_create. Then check if the soft interface has been
+started. Maybe add another atomic to priv, started, which mesh_init()
+can increment.
 
-Cheers,
-
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
+    Andrew
