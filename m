@@ -1,15 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 5 Dec 2011 19:35:06 +0800
-References: <1323078985-1116-1-git-send-email-lindner_marek@yahoo.de>
-	<20111205112726.GC10131@lunn.ch>
-In-Reply-To: <20111205112726.GC10131@lunn.ch>
+Return-Path: <David.Laight@ACULAB.COM>
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201112051935.06611.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] switch routing algorithm at runtime
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Date: Mon, 5 Dec 2011 11:44:10 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AEFE@saturn3.aculab.com>
+In-Reply-To: <20111204221850.GC14542@n2100.arm.linux.org.uk>
+From: "David Laight" <David.Laight@ACULAB.COM>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5] atomic: add *_dec_not_zero
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,16 +20,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Sven Eckelmann <sven@narfation.org>
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>, Randy Dunlap <rdunlap@xenotime.net>, Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergma nn <arnd@arndb.de>, Jeff Dike <jdike@addtoit.com>, linux-alpha@vger.kernel.org, Chris Metcalf <cmetcalf@tilera.com>, Tony Luck <tony.luck@intel.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>, linux-m32r@ml.linux-m32r.org, linux-parisc@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>, "David S. Miller" <davem@davemloft.net>, Kyle McMartin <kyle@mcmartin.ca>, Richard Weinberger <richard@nod.at>, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Hirokazu Takata <takata@linux-m32r.org>
 
-On Monday, December 05, 2011 19:27:26 Andrew Lunn wrote:
-> If i'm reading the patches correctly, it looks like you can change the
-> algorithm at any time. Rather than making one algorithm deal with what
-> ever state the previous algorithm left behind, would it not be better
-> to only allow algorithm change when the soft interface is down and
-> there is no local state?
+Looking at this:
 
-Good point. Alternatively, we could add a cleanup call ?
+> #ifndef atomic_inc_unless_negative
+> static inline int atomic_inc_unless_negative(atomic_t *p)
+> {
+>         int v, v1;
+>         for (v =3D 0; v >=3D 0; v =3D v1) {
+>                 v1 =3D atomic_cmpxchg(p, v, v + 1);
+>                 if (likely(v1 =3D=3D v))
+>                         return 1;
+>         }
+>         return 0;
+> }
+> #endif
 
-Cheers,
-Marek
+why is it optimised for '*p' being zero??
+I'd have though the initial assignment to 'v' should
+be made by reading '*p' without any memory barriers (etc).
+
+	David
+
+
