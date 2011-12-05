@@ -1,15 +1,16 @@
 Return-Path: <andrew@lunn.ch>
-Date: Mon, 5 Dec 2011 15:25:53 +0100
+Date: Mon, 5 Dec 2011 15:38:48 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20111205142553.GE10131@lunn.ch>
+Message-ID: <20111205143848.GF10131@lunn.ch>
 References: <1323078985-1116-1-git-send-email-lindner_marek@yahoo.de>
 	<201112051935.06611.lindner_marek@yahoo.de>
 	<20111205121342.GD10131@lunn.ch>
 	<201112052138.55069.lindner_marek@yahoo.de>
+	<20111205140915.GA15946@ritirata.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201112052138.55069.lindner_marek@yahoo.de>
+In-Reply-To: <20111205140915.GA15946@ritirata.org>
 Subject: Re: [B.A.T.M.A.N.] switch routing algorithm at runtime
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,41 +25,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-> The mesh is not going down when you bring down bat0. You can do whatever you 
-> want with bat0 - the mesh continues to operate normally. Only when a hard-
-> interface goes down the routing information relying on that very interface are 
-> purged.
+> What about specifying the routing algorithm directly on "soft-iface creation"
+> and deny any further change?
 
-Ah, O.K. My understanding was wrong.
- 
-> Here comes the chicken & egg problem: We can't have bat0 and its routing 
-> algorithm selection before we did not add at least one hard-interface.
+Emails crossed in the post....
 
-Lets see if i have the call chain correct:
+> 1) specify the soft-iface name => create the interface and allocate all the
+> structure (that are not dependant on the routing algo)
+> 
+>    1.1) the interface is in ALGO-WAITING state, any action that tries to enable it
+>    is denied and EBUSY (?) is returned.
 
-store_mesh_iface()->hardif_enable_interface()->softif_create()->mesh_init()
+We should try to keep backwards compatibility. So rather than having
+ALGO-WAITING, i would suggest using the first available routing
+algorithm as the default.
 
-It is mesh_init() that really starts the mesh going, but there is no
-real need to start it until the first hard interface is added.
+So the backwards compatible way would be:
 
-So maybe we could spit this into two separate operations.
+1) Add a hard interface, which automagically creates the soft
+   interface with the first available routing algorithm.
 
-1) Create the software interface
-2) Add a hard interface and start the mesh, if not already started.
+For those who want to play with new routing algorithms:
 
-So maybe two new sysfs files are needed:
+1) Create the soft interface
+2) Change the routing algorithm away from the default
+3) Add the first hard interface.
 
-/sys/class/net/batman_adv/add_mesh
-/sys/class/net/batman_adv/rm_mesh
+batctl could be extended to hide some of this, eg.
 
-echo the name of a soft interface, bat0, into the add_mesh file and
-the softif_create() function would be called for it, but not
-mesh_init(). 
+batctl if add -a ix eth1 eth42
 
-hardif_enable_interface() would see if the soft interface exists, as
-it currently does, so keeping backwards compatibility. If it does not
-exist, call softif_create. Then check if the soft interface has been
-started. Maybe add another atomic to priv, started, which mesh_init()
-can increment.
+i.e. use routing algorithm ix while adding interfaces eth1 and eth42.
+batctl could check if the soft interface already exists and throw an
+error if -a is passed, or at least, if the algorithm is different to
+the one currently in use.
 
-    Andrew
+   Andrew
