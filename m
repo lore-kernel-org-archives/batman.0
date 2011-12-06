@@ -1,15 +1,12 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 6 Dec 2011 00:33:03 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20111205233302.GA27271@ritirata.org>
-References: <1323034707-25325-1-git-send-email-ordex@autistici.org>
-	<201112060242.00220.lindner_marek@yahoo.de>
+Return-Path: <zb80211@gmail.com>
+From: "zb1981gm"<zb80211@gmail.com>
+Date: Tue, 6 Dec 2011 17:01:13 +0800
+Message-Id: <DM__111206165734_29183085106@smtp.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <201112060242.00220.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: delete global entry in case
- of roaming
+Content-Type: text/plain;
+	charset="GB2312"
+Content-Transfer-Encoding: base64
+Subject: [B.A.T.M.A.N.] about batman performance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,28 +18,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tue, Dec 06, 2011 at 02:41:59AM +0800, Marek Lindner wrote:
-> Please make sure that your patch at least(!) compiles before you send it to 
-> the list. It also would be nice if the patches destined for the maint branch 
-> were based on based on this very branch. Saves some time and (merge) hair ..
-
-Woops, I overlooked too many stuff this time! Thank you for your patience!
-Ehm..I'm sorry for your hair!
-
->  
-> Applied in revision db10af5.
-> 
-
-Thanks.
-
-
-Cheers,
-
-
--- 
-Antonio Quartulli
-
-..each of us alone is worth nothing..
-Ernesto "Che" Guevara
+SSBoYXZlIHVzZWQgYmF0bWFuIG9uIG15IHByb2plY3QgZm9yIHNldmVyYWwgbW9udGhzLkl0IHBl
+cmZvcm1zIHZlcnkgd2VsbCxzdGFibGUgZXNwZWNpYWxseSEgDQpCdXQsYWN0dWFsbHksSSBhbSBu
+b3Qgc2F0aXNmaWVkIHdpdGggdGhlIHBlcmZvcm1hbmNlIG9mIEJhdG1hbi5JIGZvdW5kIHRoYXQg
+dGhlIGJhbmR3aWR0aCB3b3VsZCBkcm9wIHNoYXJwbHkgd2l0aCB0aGUgd2lyZWxlc3MgaG9wIGlu
+Y3JlYXNlLiANCk5vdyBJIHByb3ZpZGUgbXkgdGVzdCByZXN1bHQgaGVyZTogDQoNCnJvdXRlckEg
+YW5kIHJvdXRlckIgaXMgY29tcG9zZWQgb2YgY29tcGV4IHdwNTQzYWh2IG1haW5ib2FyZCAoQVI3
+MTYxIHBsYXRmb3JtKSBhbmQgdHdvIEFSOTIyMCB3aXJlbGVzcyBjYXJkLkZpcm13YXJlIGlzIE9w
+ZW53cnQgYmFja2ZpcmUuIA0Kb25lIGNhcmQgaXMgd29ya2luZyBvbiAyLjRHIGNoYW5uZWwgYXMg
+QVAgbW9kZSx0aGUgb3RoZXIgaXMgd29ya2luZyBvbiA1RyBjaGFubmVsIGFzIG1lc2ggYmFja2Jv
+bmUgIA0KYmF0bWFuIHZlcnNpb246Mi4wIA0Kbm90ZWJvb2sxIGFuZCBub3RlYm9vazIgaXMgZXF1
+aXBlZCB3aXRoIDgwMi4xMW4gdXNiIHdpcmVsZXNzIGNhcmQgd2hpY2ggYWNjZXNzIHRvIHRoZSBB
+UCBtb2RlIGNhcmQgb2Ygcm91dGVyQSBhbmQgcm91dGVyQiANCg0KICAgICAgICAgICAgY2hhbm5l
+bCAxICAgICAgICAgICAgICAgICBjaGFubmVsIDM2ICAgICAgICAgICAgICBjaGFubmVsIDExIA0K
+bm90ZWJvb2sxIC0tLS0tLS0tLS0tLS0tLSAgcm91dGVyQSAtLS0tLS0tLS0tLS0tLSAgcm91dGVy
+QiAtLS0tLS0tLS0tLS0tLSBub3RlYm9vazIgDQoNCkkgdXNlIGlwZXJmIHRvIHRlc3QgYmFuZHdp
+ZHRoIA0KDQpub3RlYm9vazEgLS0tLS0tLS0tLS0gcm91dGVyQSAgICA0NU1icHMgDQpyb3V0ZXJB
+ICAgLS0tLS0tLS0tLS0gcm91dGVyQiAgICA0Nk1icHMgDQpyb3V0ZXJCICAgLS0tLS0tLS0tLS0g
+bm90ZWJvb2syICA0NU1icHMgDQoNCkJ1dCB0aGUgYmFuZHdpZHRoIGJldHdlZW4gbm90ZWJvb2sx
+IGFuZCBub3RlYm9vazIgcmVtYWlucyA4TWJwcyANCmJhbmR3aWR0aCBiZXR3ZWVuIG5vdGVib29r
+MSBhbmQgcm91dGVyQiByZW1haW4gMThNYnBzIA0KDQpTbyB0aGUgY29uY2x1dGlvbiBpcyB0aGF0
+IHRoZSBiYW5kd2lkdGggd2lsbCBiZSBoYWxmZWQgd2l0aCB0aGUgMSBob3AgaW5jcmVhc2UhIHJp
+Z2h0PyANCg0KSSBhbHNvIGZvdW5kIHRoYXQgdGhlIGludGVyZmFjZSBhbHRlcm5hdGluZyBtb2Rl
+IGFuZCBib25kaW5nIG1vZGUgZG9lc24ndCB0YWtlIGVmZmVjdCANCg0KICAgICAgICAgICAgICBj
+aGFubmVsIDEgDQpyb3V0ZXJBICAtLS0tLS0tLS0tLS0tLS0tLS0gIHJvdXRlckIgDQogICAgICAg
+ICAgICAgIGNoYW5uZWwgMzYgDQoNClRoZSB0ZXN0IHJlc3VsdCBpcyBubyBkaWZmZXJlbmNlIHdo
+YXRldmVyIEkgY29uZmlndXJlZCBhbHRlcm5hdGluZyBvciBib25kaW5nIG9yIGp1c3Qgc2luZ2xl
+IHJhZGlvIA0KDQpBY2NvcmRpbmcgdG8gdGhlIGJhdG1hbiBvZmZpY2lhbCBzaXRlLCBhbHRlcm5h
+dGluZyBvciBib25kaW5nIG1vZGUgd291bGQgaW1wcm92ZSB0aGUgcGVyZm9ybWFuY2UgY29tcGFy
+ZWQgd2l0aCB0aGUgc2luZ2xlIHJhZGlvIG1vZGUgDQoNCmxvb2tpbmcgZm9yd2FyZCAgc29tZWJv
+ZHkncyBoZWxwIA0KaGlnaGx5IGFwcHJlY2lhdGVkIQ0K
