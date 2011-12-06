@@ -1,13 +1,11 @@
-Return-Path: <wuchi@nerdshack.com>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed; delsp=yes
-References: <DM__111206165734_29183085106@smtp.gmail.com>
-Date: Tue, 06 Dec 2011 11:23:33 +0100
+Return-Path: <marko.panger@agblab.com>
+Message-ID: <4EDDE473.5020008@agblab.com>
+Date: Tue, 06 Dec 2011 10:46:27 +0100
+From: Marko Panger - AGB Lab <marko.panger@agblab.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-From: Wuchi <wuchi@nerdshack.com>
-Message-ID: <op.v52chjg7wsdi2w@winxp-aspire>
-In-Reply-To: <DM__111206165734_29183085106@smtp.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] about batman performance
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] TT inconsistency problem (again)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,53 +17,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi zb981gm,
+Hi,
 
-we had a (somewhat) similar performance issue with our setup some time ago. We found out that a setup of two n-Cards in a single room decrease performance heavily, if both cards are under load at the same time. Forcing the cards into b/g mode did not help, so changing the cards to b/g hardware solved the problem for us.
+I'm evaluating the possibility to use batman in our next product 
+(measurement equipment) and I'm facing problems in using batman.
+I have five nodes installed around and I experience black-outs in 
+connection among nodes. The resoult is I can't ping a certain node anymore.
 
-May had to do with those fallback window override issues some n-Cards have, but not sure. In general, don't expect too much of an performance increase with n-Hardware on a USB 2.0 interface.
+Here is the output from 'batctl o' and the subsequent ping to a node 
+which has good link quality (TQ):
 
-May be worth a try to look at first before fiddling around with the protocol, IMHO.
+[root@gtam00119 ~]# batctl o
+[B.A.T.M.A.N. adv 2011.4.0, MainIF/MAC: ra0/48:5d:60:b8:a2:f6 (bat0)]
+   Originator      last-seen (#/255)           Nexthop [outgoingIF]:   
+Potential nexthops ...
+48:5d:60:b8:a2:b7    0.974s   (202) 48:5d:60:b8:a3:0e [       ra0]: 
+48:5d:60:b8:a2:d2 (  0) 48:5d:60:b8:a3:0e (202)
+48:5d:60:b8:a3:0e    0.439s   (249) 48:5d:60:b8:a3:0e [       ra0]: 
+48:5d:60:b8:a2:d2 (231) 48:5d:60:b8:a3:0e (249)
+48:5d:60:b8:a2:d2    0.749s   (250) 48:5d:60:b8:a2:d2 [       ra0]: 
+48:5d:60:b8:a3:0e (235) 48:5d:60:b8:a2:d2 (250)
+48:5d:60:b8:a2:ff    0.156s   (209) 48:5d:60:b8:a3:0e [       ra0]: 
+48:5d:60:b8:a2:d2 (  0) 48:5d:60:b8:a3:0e (209)
 
-- Wuchi
+[root@gtam00119 ~]# batctl ping 48:5d:60:b8:a3:0e
+PING 48:5d:60:b8:a3:0e (48:5d:60:b8:a3:0e) 20(48) bytes of data
+Reply from host 48:5d:60:b8:a3:0e timed out
+Reply from host 48:5d:60:b8:a3:0e timed out
+Reply from host 48:5d:60:b8:a3:0e timed out
+Reply from host 48:5d:60:b8:a3:0e timed out
 
-Am 06.12.2011, 10:01 Uhr, schrieb zb1981gm <zb80211@gmail.com>:
+And this is the output from 'batctl ll tt routes' from he node that is 
+being pinged (see above):
 
-> I have used batman on my project for several months.It performs very well,stable especially!
-> But,actually,I am not satisfied with the performance of Batman.I found that the bandwidth would drop sharply with the wireless hop increase.
-> Now I provide my test result here:
->
-> routerA and routerB is composed of compex wp543ahv mainboard (AR7161 platform) and two AR9220 wireless card.Firmware is Openwrt backfire.
-> one card is working on 2.4G channel as AP mode,the other is working on 5G channel as mesh backbone
-> batman version:2.0
-> notebook1 and notebook2 is equiped with 802.11n usb wireless card which access to the AP mode card of routerA and routerB
->
->             channel 1                 channel 36              channel 11
-> notebook1 ---------------  routerA --------------  routerB -------------- notebook2
->
-> I use iperf to test bandwidth
->
-> notebook1 ----------- routerA    45Mbps
-> routerA   ----------- routerB    46Mbps
-> routerB   ----------- notebook2  45Mbps
->
-> But the bandwidth between notebook1 and notebook2 remains 8Mbps
-> bandwidth between notebook1 and routerB remain 18Mbps
->
-> So the conclution is that the bandwidth will be halfed with the 1 hop increase! right?
->
-> I also found that the interface alternating mode and bonding mode doesn't take effect
->
->               channel 1
-> routerA  ------------------  routerB
->               channel 36
->
-> The test result is no difference whatever I configured alternating or bonding or just single radio
->
-> According to the batman official site, alternating or bonding mode would improve the performance compared with the single radio mode
->
-> looking forward  somebody's help
-> highly appreciated!
+[     63665] Sending TT_REQUEST to 48:5d:60:b8:a2:b7 via 
+48:5d:60:b8:a2:ff [.]
+[     63665] TT inconsistency for 48:5d:60:b8:a2:ff. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 0 crc: 19133 last_crc: 0 
+num_changes: 0)
+[     63666] TT inconsistency for 48:5d:60:b8:a2:b7. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 0 crc: 22851 last_crc: 0 
+num_changes: 0)
+[     63666] TT inconsistency for 48:5d:60:b8:a2:ff. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 0 crc: 19133 last_crc: 0 
+num_changes: 0)
+[     63666] Sending TT_REQUEST to 48:5d:60:b8:a2:ff via 
+48:5d:60:b8:a2:ff [.]
+[     63667] TT inconsistency for 48:5d:60:b8:a2:b7. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 0 crc: 22851 last_crc: 0 
+num_changes: 0)
+[     63667] TT inconsistency for 48:5d:60:b8:a2:ff. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 0 crc: 19133 last_crc: 0 
+num_changes: 0)
+[     63668] TT inconsistency for 48:5d:60:b8:a2:b7. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 0 crc: 22851 last_crc: 0 
+num_changes: 0)
+[     63668] TT inconsistency for 48:5d:60:b8:a2:ff. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 0 crc: 19133 last_crc: 0 
+num_changes: 0)
+[     63669] TT inconsistency for 48:5d:60:b8:a2:b7. Need to retrieve 
+the correct information (ttvn: 1 last_ttvn: 0 crc: 22851 last_crc: 0 
+num_changes: 0)
+
+This situation was triggered by the following procedure:
+1) from node (last two octets) 'a2:f6' the 'a3:0e' node was pinged
+2) in the middle a ssh connection from the node 'a2:f6' was made to the 
+node 'a3:0e'.
+3) so far so good
+4) the node 'a3:0e' was rebooted by issuing the 'reboot' command in the 
+console
+5) after this the connection is lost and the above logs were produced
+
+I'm using the version 2011.4.0 on all nodes:
+[root@gtam00119 ~]# batctl -v
+batctl 2011.4.0 [batman-adv: 2011.4.0]
+
+Any help is highly appreciated. I might be doing something wrong, but 
+seems a stability problem.
+
+Marko
 
