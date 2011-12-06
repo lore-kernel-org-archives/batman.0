@@ -1,15 +1,18 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 6 Dec 2011 22:10:09 +0800
-References: <4EDDE473.5020008@agblab.com> <20111206134914.GB6839@ritirata.org>
-	<4EDE1E9A.7080702@agblab.com>
-In-Reply-To: <4EDE1E9A.7080702@agblab.com>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Tue, 6 Dec 2011 16:01:34 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20111206150134.GA12168@pandem0nium>
+References: <1323078985-1116-1-git-send-email-lindner_marek@yahoo.de>
+	<201112051935.06611.lindner_marek@yahoo.de>
+	<20111205121342.GD10131@lunn.ch>
+	<201112052138.55069.lindner_marek@yahoo.de>
+	<20111205142553.GE10131@lunn.ch>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201112062210.09978.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] TT inconsistency problem (again)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ikeVEW9yuYc//A+q"
+Content-Disposition: inline
+In-Reply-To: <20111205142553.GE10131@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] switch routing algorithm at runtime
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,15 +26,53 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, December 06, 2011 21:54:34 Marko Panger - AGB Lab wrote:
-> On 12/6/2011 2:49 PM, Antonio Quartulli wrote:
-> > Because you probably didn't add the crc16 module in the openwrt
-> > menuconfig (you are using openwrt right?)
-> 
-> No, I'm using a custom build kernel with Fedora 12 as the base.
 
-The standard kernel also selects the crc16 module for you as soon as batman-
-adv is selected. Maybe you simply forgot to load the crc16 module ?
+--ikeVEW9yuYc//A+q
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
-Marek
+Hey there,
+
+On Mon, Dec 05, 2011 at 03:25:53PM +0100, Andrew Lunn wrote:
+> > Here comes the chicken & egg problem: We can't have bat0 and its routin=
+g=20
+> > algorithm selection before we did not add at least one hard-interface.
+
+an alternative we may consider:
+
+We could just write the name of the algorithm in a debugfs file called
+"routing_algorithm". It is filled with batmanIV as the default algorithm
+to start with, and whatever is written there is used for the next soft inte=
+rface
+to be created.
+
+This would be backward compatible and changes are only made upon creation o=
+f a
+soft interface. It would also allow different soft interfaces using differe=
+nt
+routing algorithms (if someone really needs it). Putting it into debugfs ma=
+y be
+not the worst idea, as changing routing algorithms is (currently) only done=
+ for
+debugging purposes anyway.
+
+What do you think?
+
+Cheers
+	Simon
+
+--ikeVEW9yuYc//A+q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk7eLk4ACgkQrzg/fFk7axZjiACglh7ElJ8+QXlSLevz3G3wVLl4
+Ym4AnRqyyLAevRQwqvhrrq3TgSARUJgy
+=25ir
+-----END PGP SIGNATURE-----
+
+--ikeVEW9yuYc//A+q--
