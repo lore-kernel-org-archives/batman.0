@@ -1,9 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed,  7 Dec 2011 18:02:50 +0800
-Message-Id: <1323252170-13257-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: warn if added interface is part
-	of a bridge
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed,  7 Dec 2011 13:27:16 +0100
+Message-Id: <1323260836-30163-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1323260777-30119-1-git-send-email-sven@narfation.org>
+References: <1323260777-30119-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Don't try to read commit
+	information from target kernel
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,48 +18,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+It is possible that the kernel used to build the batman-adv module also
+contains a .git directory. The makefile should not try to run git-describe
+inside this kernel to prevent that wrong version information is stored in the
+generated module.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+ Makefile |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Thanks to Sven we even have a 'nice' compat.h workaround. :)
-
- compat.h         |    1 +
- hard-interface.c |    8 ++++++++
- 2 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/compat.h b/compat.h
-index 964c066..dcd92d1 100644
---- a/compat.h
-+++ b/compat.h
-@@ -52,6 +52,7 @@
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+diff --git a/Makefile b/Makefile
+index 99fd366..e2276be 100644
+--- a/Makefile
++++ b/Makefile
+@@ -32,8 +32,8 @@ endif
+ export KERNELPATH
+ RM ?= rm -f
  
- #define __rcu
-+#define IFF_BRIDGE_PORT  0 || (hard_iface->net_dev->br_port ? 1 : 0)
+-REVISION= $(shell	if [ -d .git ]; then \
+-				echo $$(git describe --always --dirty --match "v*" |sed 's/^v//' 2> /dev/null || echo "[unknown]"); \
++REVISION= $(shell	if [ -d "$(PWD)/.git" ]; then \
++				echo $$(git --git-dir="$(PWD)/.git" describe --always --dirty --match "v*" |sed 's/^v//' 2> /dev/null || echo "[unknown]"); \
+ 			fi)
  
- #endif /* < KERNEL_VERSION(2, 6, 36) */
- 
-diff --git a/hard-interface.c b/hard-interface.c
-index d3e0e32..68b667c 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -281,6 +281,14 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
- 	if (!atomic_inc_not_zero(&hard_iface->refcount))
- 		goto out;
- 
-+	/* hard-interface is part of a bridge */
-+	if (hard_iface->net_dev->priv_flags & IFF_BRIDGE_PORT)
-+		pr_err("You are about to enable batman-adv on '%s' which "
-+		       "already is part of a bridge. Unless you know exactly "
-+		       "what you are doing this is probably wrong and won't "
-+		       "work the way you think it would.\n",
-+		       hard_iface->net_dev->name);
-+
- 	soft_iface = dev_get_by_name(&init_net, iface_name);
- 
- 	if (!soft_iface) {
+ CONFIG_BATMAN_ADV=m
 -- 
-1.7.5.4
+1.7.7.3
 
