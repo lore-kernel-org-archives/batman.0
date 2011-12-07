@@ -1,11 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed,  7 Dec 2011 13:42:41 +0800
-Message-Id: <1323236561-25262-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1323236203-24711-1-git-send-email-lindner_marek@yahoo.de>
-References: <1323236203-24711-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: delete global entry in case
-	of roaming
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 07 Dec 2011 08:20:44 +0100
+Message-ID: <17412563.ZlIdMgf0hc@sven-laptop.home.narfation.org>
+In-Reply-To: <201112062053.53909.onelektra@gmx.net>
+References: <1323197832-1791-1-git-send-email-sven@narfation.org>
+	<201112062053.53909.onelektra@gmx.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3951456.qBW26Na3qy";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batmand: Don't override CPPFLAGS set by
+	user
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,68 +22,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
 
-When receiving a DEL change for a client due to a roaming event (change is
-marked with TT_CLIENT_ROAM), each node  has to check if the client roamed
-to itself or somewhere else.
+--nextPart3951456.qBW26Na3qy
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-In the latter case the global entry is kept to avoid having no route at all
-otherwise we can safely delete the global entry
+On Tuesday 06 December 2011 20:53:53 elektra wrote:
+> > Users or build servers may want to enable preprocessor specific options
+> > 
+> >  like -D_FORTIFY_SOURCE=2 that are usually placed in CPPFLAGS. The
+> >  batmand makefile should not override these options to add own
+> >  preprocessor variables.
+> > 
+> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> 
+> Applied in 9cd7382.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/translation-table.c |   21 ++++++++++++++++++---
- 1 files changed, 18 insertions(+), 3 deletions(-)
+It would be nice not to remove my authorship in git. It is enough to just save
+the mail in a textfile (mbox) and run `git am patch123.mbox` or `git am -s
+patch123.mbox` (this adds your Signed-off-by after my Signed-of-by). Now it
+looks [1] like you are the author and committer of the patch.... but you
+should only be the committer.
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index c46b140..5f09a57 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -696,6 +696,7 @@ void tt_global_del(struct bat_priv *bat_priv,
- 		   const char *message, bool roaming)
- {
- 	struct tt_global_entry *tt_global_entry = NULL;
-+	struct tt_local_entry *tt_local_entry = NULL;
- 
- 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
- 	if (!tt_global_entry)
-@@ -703,15 +704,29 @@ void tt_global_del(struct bat_priv *bat_priv,
- 
- 	if (tt_global_entry->orig_node == orig_node) {
- 		if (roaming) {
--			tt_global_entry->flags |= TT_CLIENT_ROAM;
--			tt_global_entry->roam_at = jiffies;
--			goto out;
-+			/* if we are deleting a global entry due to a roam
-+			 * event, there are two possibilities:
-+			 * 1) the client roamed from node A to node B => we mark
-+			 *    it with TT_CLIENT_ROAM, we start a timer and we
-+			 *    wait for node B to claim it. In case of timeout
-+			 *    the entry is purged.
-+			 * 2) the client roamed to us => we can directly delete
-+			 *    the global entry, since it is useless now. */
-+			tt_local_entry = tt_local_hash_find(bat_priv,
-+							tt_global_entry->addr);
-+			if (!tt_local_entry) {
-+				tt_global_entry->flags |= TT_CLIENT_ROAM;
-+				tt_global_entry->roam_at = jiffies;
-+				goto out;
-+			}
- 		}
- 		_tt_global_del(bat_priv, tt_global_entry, message);
- 	}
- out:
- 	if (tt_global_entry)
- 		tt_global_entry_free_ref(tt_global_entry);
-+	if (tt_local_entry)
-+		tt_local_entry_free_ref(tt_local_entry);
- }
- 
- void tt_global_del_orig(struct bat_priv *bat_priv,
--- 
-1.7.5.4
+Kind regards,
+	Sven
+
+[1] http://git.open-mesh.org/?p=batmand.git;a=commitdiff;h=9cd7382f815fbebe25381d5ad5da4cd5074f20cc
+--nextPart3951456.qBW26Na3qy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJO3xPMAAoJEF2HCgfBJntGNW4QAJw9662SVx3AR3boz0MsycPk
+cn1NywtwYNC14Hgtdh4/yHJUnTZXwzLiHMZmCq2y0k4AlL9sgadHhTTsgzMe3a9+
+pdrWCrfxFU8Hjz8r2DadsCFXhn/fwmxzhwWk8+W0ij5PSVQnCfd1C4J1IDSi1iob
+dgXKnQh+5vltJxwiGwsvZphMusChA2ixjRqLzHWSlngqdd3WzZhsMM/sOP05mVs7
+FbBmd8wQbVN1wdOdFApaOWODdMCtPwpZcjPd0N+G57ID0WV10E34+FuQAxwg+XlU
+AT4n4JSQ1wNfkjaufvIQdjlYrjOgH4DSzAyAIb3+gHjXiLi7EI7ekXIO091Drk4I
+zAQPXEg+P8+BJBjCbDOgR7fdMS9IlWrPDAYpHpGD8McbDna/p/NPalkalTXDc0Hc
+Z2phdZ/mE7Qgs5jlLBEoCGxtMrR1LU5kzfbxKOLTC5EMBZPcXrATwtFbdpq734Q+
+NUDjcaO6paiO6GONGbbiDfiy50LDpKO51+LTmEq/qpY4LO49C2lg1h0SGuOCdkcf
+spOqQNlysR+RYWj3HEdTR2xDScUgLU7m29v8YpP6Njyvlquajw8Uw/6rG5/wJSIS
+gukAa29//lEI7JFw12lqpo4Ie8bhdwYxIX/GoTvBmr4Im//UMYk3trAZ7W5vEkZ2
+Q4Kegm169WAEbEWUiq2b
+=dpJz
+-----END PGP SIGNATURE-----
+
+--nextPart3951456.qBW26Na3qy--
 
