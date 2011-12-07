@@ -1,14 +1,13 @@
-Return-Path: <sven@narfation.org>
-Date: Wed, 7 Dec 2011 16:34:10 +0100
-From: Sven Eckelmann <sven@narfation.org>
-Message-ID: <20111207153410.GA22527@sven-atom.home.narfation.org>
-References: <DM__111207092338_92623131516@smtp.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
-Content-Disposition: inline
-In-Reply-To: <DM__111207092338_92623131516@smtp.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] about batman performance
+Return-Path: <davem@davemloft.net>
+Date: Wed, 07 Dec 2011 15:07:16 -0500 (EST)
+Message-Id: <20111207.150716.570415213420429511.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1323236203-24711-1-git-send-email-lindner_marek@yahoo.de>
+References: <1323236203-24711-1-git-send-email-lindner_marek@yahoo.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-12-07
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,48 +19,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: lindner_marek@yahoo.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed,  7 Dec 2011 13:36:40 +0800
 
---dDRMvlgZJXvWKvBx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> The following changes since commit 1ea6b8f48918282bdca0b32a34095504ee65bab5:
+> 
+>   Linux 3.2-rc1 (2011-11-07 16:16:02 -0800)
+> 
+> are available in the git repository at:
+>   git://git.open-mesh.org/linux-merge.git batman-adv/maint
+> 
+> Antonio Quartulli (2):
+>       batman-adv: in case of roaming mark the client with TT_CLIENT_ROAM
+>       batman-adv: delete global entry in case of roaming
 
-Hi,
+Pulled, thanks.
 
-I tried to read your mail to find out what you did and why you did it, but I
-failed miserably. We wanted that you test a setup without batman-adv that uses
-static routes between nodes in adhoc mode. This would be help us to find out
-whether batman-adv is the reason for the bandwidth drop or your hardware. And
-the static routes should help to recreate the multi-hop tests.
-
-Maybe you can restructure the explanations of your setup (and which results you
-saw with each setup).
-
-Kind regards,
-	Sven
-
---dDRMvlgZJXvWKvBx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAEBCgAGBQJO34dyAAoJEF2HCgfBJntGlL8QALU52SncL6ZHQF6CGWWUecvJ
-uvr1K4pM3q6XZG+hYBcBBUzpBv25ohW5uCwFd5Mm8qYQMH2F2AFVOtKnznfLBxlk
-IdgbPwUwW4CcMHgpj/pM1tCKxi21e+doIWZlis0cltq/WGgJBK7usIoytRYxTZWa
-Zh2zN8XKWR/TAZ3ot++kLG5uzQCpOyqMTY5AZr/uend3X6MvRImZZN/aVdhGltmG
-hifY88D3kWv/Gw+XLxsqp/Cv5A7Gr/UZG29Wq16IIuMDQY9Zuwsu0fT+z5YB7kLx
-ogcBRNipcqI582hMN5aARheiE4qqxOICMKgri7KAgaZlX4v1F/PQJWwFIskN1Lrt
-sHQwZl6CU8Q49LOh9Uj3nWR6N0tu+sE/WS2U2bawuuM8jHB9D4V5yKPAw5hbtlCy
-AFf6prKGPX4d5aNls56xnEm/wlYTa6/zyAtlzLgLDzqQtiQLBre8VOd+FgBsr1Oy
-Hz8i3YW/XiU8qbToElA1G/IkjWvN0Yfi1mhTWzXobq3XqHSjeU0jJTu3HqAYhNS7
-lpjVRDnNoOnWdWygqPQJkRWtBcDK+D+eyILydK8vn5KBJP1zxzsr0SAyEOQPMpJl
-f81A0QLlrjo0KudrUqOULJgqNvGJHFmiohL6OrJFR7u9tG4tLnvmudjOCX+VCwmt
-lVg5PTr+Ci7NLK+1x5eZ
-=hHcV
------END PGP SIGNATURE-----
-
---dDRMvlgZJXvWKvBx--
+And also thanks for the heads-up about the conflicts.
