@@ -1,14 +1,8 @@
-Return-Path: <plettpc@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <4EDE971E.4010606@generalpacket.com>
-References: <91576D2A759C423D9F749BF369100C1B@FlavioPC>
-	<4EDE971E.4010606@generalpacket.com>
-Date: Wed, 7 Dec 2011 07:06:46 +0200
-Message-ID: <CAKeC-QEUju5ReYuzKOEzVByAttsy8kQRzZKM_tkN1mb0J3o5ig@mail.gmail.com>
-From: Wayne Abroue <plettpc@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Rede Mesh Batman-ADV in brazil
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed,  7 Dec 2011 13:36:40 +0800
+Message-Id: <1323236203-24711-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2011-12-07
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,77 +14,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Wed, Dec 7, 2011 at 12:28 AM, Tom Cannon <tcannon@generalpacket.com> wro=
-te:
-> This is just a guess, but perhaps the bridge is not set to 'auto' and wil=
-l
-> not come up without the lan interface up.
->
-> /etc/config/network
->
-> config 'interface' 'bridge'
-> =A0 option 'ifname' 'eth wlan bat' =A0# replace with your interface names
-> =A0 option 'type' 'bridge'
-> =A0 option 'auto' '1'
->
-> The option 'auto' ensures the bridge comes up with or without the lan por=
-t
-> active.
-> This stumped me once.......
->
->
-> On 12/6/2011 1:00 PM, Flavio Leonel "suporte tecnico" wrote:
->>
->>
->>
->> --------------------------------------------------
->> From: "Flavio Leonel "suporte tecnico"" <suporte@tec-wi.com.br>
->> Sent: Tuesday, December 06, 2011 6:49 AM
->> To: "Sven Eckelmann" <sven@narfation.org>
->> Subject: Re: [B.A.T.M.A.N.] Fw: Rede Mesh BatmanADV no brazil
->>
->>> well what is happening here is the following problem.
->>>
->>> jah have some nodes with OpenWRT and Ubiquiti with batman-adv instaldos
->>> as I
->>> said in another e-mail and could see the pictures.
->>>
->>> settings:
->>> radio interfaces:
->>> Physical: 2 a LAN and a WLAN.
->>> built-in OpenWRT:
->>> mode =3D wlan mesh
->>> =3D wifi wlan
->>> connected to the router lan =3D
->>>
->>> All part of a bridge
->>> br-lan
->>> where this batman-adv active
->>>
->>> what happens? ..
->>> when I disconnect any machine "computer" or router
->>> connected to the LAN port of the device or restart.
->>>
->>> the radio will not let me drop, access ... I no more communication.
->>> I have to restart with the same device (computer or router) connected t=
-o
->>> reestablish connection.
->>>
->>> already tested it with bridge mode with no firewall
->>> and now I'm experimenting with a way forward iptable
->>>
->>> but without any success not find anything about the forum and do not
->>> understand where this error.
->>>
->>> I hope you can help me, I tried to write my best English
->>> grateful ...
->>>
+David,
 
-Secondly WLAN does not need to be part of the BR as BAT which is
-essentially wlan's VI if set to wlan,
+we have to more fixes that we would like to get pulled into net-next/linux-3.2.
+Both patches address TT protocol misbehavior. Upon merging these patches into
+net-next you'll run into merge conflicts.
 
- option 'ifname' 'ethA ethB batX' =A0# replace with your interface names
+Patch1:
+++<<<<<<< 
+ +              tt_global_entry->common.flags |= TT_CLIENT_PENDING;
+ +              send_roam_adv(bat_priv, tt_global_entry->common.addr,
+++=======
++               tt_global_entry->flags |= TT_CLIENT_ROAM;
++               tt_global_entry->roam_at = jiffies;
++ 
++               send_roam_adv(bat_priv, tt_global_entry->addr,
+++>>>>>>> 
 
-Wayne A
+Resolution1:
++======
+		tt_global_entry->common.flags |= TT_CLIENT_ROAM;
+		tt_global_entry->roam_at = jiffies;
+		send_roam_adv(bat_priv, tt_global_entry->common.addr,
++======
+
+Patch2:
+++<<<<<<< 
+ +                      tt_global_entry->common.flags |= TT_CLIENT_ROAM;
+ +                      tt_global_entry->roam_at = jiffies;
+ +                      goto out;
+++=======
++                       /* if we are deleting a global entry due to a roam
++                        * event, there are two possibilities:
++                        * 1) the client roamed from node A to node B => we mark
++                        *    it with TT_CLIENT_ROAM, we start a timer and we
++                        *    wait for node B to claim it. In case of timeout
++                        *    the entry is purged.
++                        * 2) the client roamed to us => we can directly delete
++                        *    the global entry, since it is useless now. */
++                       tt_local_entry = tt_local_hash_find(bat_priv,
++                                                       tt_global_entry->addr);
++                       if (!tt_local_entry) {
++                               tt_global_entry->flags |= TT_CLIENT_ROAM;
++                               tt_global_entry->roam_at = jiffies;
++                               goto out;
++                       }
+++>>>>>>>
+
+Resolution2:
++======
+			 /* if we are deleting a global entry due to a roam
+			 * event, there are two possibilities:
+			 * 1) the client roamed from node A to node B => we mark
+			 *    it with TT_CLIENT_ROAM, we start a timer and we
+			 *    wait for node B to claim it. In case of timeout
+			 *    the entry is purged.
+			 * 2) the client roamed to us => we can directly delete
+			 *    the global entry, since it is useless now. */
+			tt_local_entry = tt_local_hash_find(bat_priv,
+						tt_global_entry->common.addr);
+			if (!tt_local_entry) {
+				tt_global_entry->common.flags |= TT_CLIENT_ROAM;
+				tt_global_entry->roam_at = jiffies;
+				goto out;
+			}
++======
+
+Let me know if you have any further question.
+
+Thanks,
+Marek
+
+The following changes since commit 1ea6b8f48918282bdca0b32a34095504ee65bab5:
+
+  Linux 3.2-rc1 (2011-11-07 16:16:02 -0800)
+
+are available in the git repository at:
+  git://git.open-mesh.org/linux-merge.git batman-adv/maint
+
+Antonio Quartulli (2):
+      batman-adv: in case of roaming mark the client with TT_CLIENT_ROAM
+      batman-adv: delete global entry in case of roaming
+
+ net/batman-adv/translation-table.c |   27 ++++++++++++++++++++++-----
+ 1 files changed, 22 insertions(+), 5 deletions(-)
+
+
