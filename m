@@ -1,16 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 7 Dec 2011 16:38:38 +0800
+Date: Wed, 7 Dec 2011 17:17:57 +0800
 References: <1323025848-14024-1-git-send-email-sven@narfation.org>
-	<1323025848-14024-3-git-send-email-sven@narfation.org>
-In-Reply-To: <1323025848-14024-3-git-send-email-sven@narfation.org>
+	<1323025848-14024-4-git-send-email-sven@narfation.org>
+	<15959182.LiMXKxzelS@sven-desktop.home.narfation.org>
+In-Reply-To: <15959182.LiMXKxzelS@sven-desktop.home.narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201112071638.38571.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Remove non-kernel parts
-	from Makefile.kbuild
+Message-Id: <201112071717.57290.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: Allow to enable features
+	without editing Makefile
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,20 +25,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, December 05, 2011 03:10:47 Sven Eckelmann wrote:
-> The standalone batman-adv module is sent to the linux kernel maintainers to
-> be merged by them. A batman-adv developer has to manually merge the
-> changes since the last submission and apply it on top of the current linux
-> development tree. The standalone sources have to provide an additional
-> layer that increases the compatibility to kernels and to give a better
-> user experience. This layer will not be sent to the kernel maintainers and
-> has to manually removed each time.
+On Monday, December 05, 2011 03:16:05 Sven Eckelmann wrote:
+>   On Sunday 04 December 2011 20:10:48 Sven Eckelmann wrote:
+> [...]
 > 
-> To reduce this work, the Makefile.kbuild should be cleaned up to be only
-> the vanilla version of the Makefile in the kernel. The Makefile in the
-> standalone sources is used to provide most of the additional layer.
+> > generates an own compat_autoconf.h that is included by compat.h. This
+> > header would have to
+> 
+> [...]
+> 
+> I should have checked that a line doesn't begin with #... nevertheless: 
+> "define/undef all preprocessor variables used to configure batman-adv 
+> features".
 
-Applied in revision b49b17f.
+Applied in revision b3d474c.
 
 Thanks,
 Marek
