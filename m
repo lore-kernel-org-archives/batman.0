@@ -1,13 +1,14 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 07 Dec 2011 15:07:16 -0500 (EST)
-Message-Id: <20111207.150716.570415213420429511.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1323236203-24711-1-git-send-email-lindner_marek@yahoo.de>
-References: <1323236203-24711-1-git-send-email-lindner_marek@yahoo.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 8 Dec 2011 17:26:40 +0800
+References: <1323260777-30119-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1323260777-30119-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-12-07
+Message-Id: <201112081726.40642.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Allow to disable features
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,23 +20,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: lindner_marek@yahoo.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed,  7 Dec 2011 13:36:40 +0800
+On Wednesday, December 07, 2011 20:29:11 Sven Eckelmann wrote:
+> -# uncomment the CONFIG_* line to enable the related feature
+> -# features enabled in the target kernel configuration cannot be disabled
+> +# changing the CONFIG_* line to 'y' enables the related feature
+>  # B.A.T.M.A.N. debugging:
+> -# CONFIG_BATMAN_ADV_DEBUG=y
+> +export CONFIG_BATMAN_ADV_DEBUG=n
 
-> The following changes since commit 1ea6b8f48918282bdca0b32a34095504ee65bab5:
-> 
->   Linux 3.2-rc1 (2011-11-07 16:16:02 -0800)
-> 
-> are available in the git repository at:
->   git://git.open-mesh.org/linux-merge.git batman-adv/maint
-> 
-> Antonio Quartulli (2):
->       batman-adv: in case of roaming mark the client with TT_CLIENT_ROAM
->       batman-adv: delete global entry in case of roaming
+Haven't tried it yet but does it mean the newly added 'activate this feature 
+from the commandline' does not work anymore ?
+For example: make CONFIG_BATMAN_ADV_DEBUG=y
 
-Pulled, thanks.
-
-And also thanks for the heads-up about the conflicts.
+Regards,
+Marek
