@@ -1,15 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 10 Dec 2011 17:34:03 +0800
-References: <1323422308-4897-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1323422308-4897-1-git-send-email-sven@narfation.org>
+Date: Sat, 10 Dec 2011 17:39:17 +0800
+References: <1323343986-5724-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1323343986-5724-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201112101734.03340.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Generate config compatible
-	with kbuild macros
+Message-Id: <201112101739.17927.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: fix log level 'all'
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,13 +22,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, December 09, 2011 17:18:27 Sven Eckelmann wrote:
-> Linux 3.0-rc1-30-g2a11c8e introduced the macros IS_ENABLED, IS_BUILTIN and
-> IS_MODULE that can be used to identify which state a tristate option had.
-> The compat-autoconf.h needs to provide additional precompiler variables
-> that these marcros can use.
+On Thursday, December 08, 2011 19:33:06 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  sys.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 
-Applied in revision 24d65d3.
+Applied in revision 517bc33.
 
-Thanks,
+Regards,
 Marek
