@@ -1,11 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 10 Dec 2011 15:28:34 +0100
-Message-Id: <1323527316-15071-1-git-send-email-sven@narfation.org>
-In-Reply-To: <4EE36653.4000504@gmail.com>
+Date: Sat, 10 Dec 2011 15:28:35 +0100
+Message-Id: <1323527316-15071-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1323527316-15071-1-git-send-email-sven@narfation.org>
 References: <4EE36653.4000504@gmail.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2 1/3] batman-adv: bat_socket_read missing
-	checks
+	<1323527316-15071-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 2/3] batman-adv: Directly check read of
+	icmp packet in copy_from_user
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,35 +19,33 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Paul Kot <pawlkt@gmail.com>
 
-From: Paul Kot <pawlkt@gmail.com>
+The access_ok read check can be directly done in copy_from_user since a failure
+of access_ok is handled the same way as an error in __copy_from_user.
 
-Writing a icmp_packet_rr and then reading icmp_packet can lead to kernel
-memory corruption, if __user *buf is just below TASK_SIZE.
-
-Signed-off-by: Paul Kot <pawlkt@gmail.com>
-[sven@narfation.org: made it checkpatch clean]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- icmp_socket.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ icmp_socket.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
 
 diff --git a/icmp_socket.c b/icmp_socket.c
-index 5bc8649..a53502a 100644
+index a53502a..4dc55e8 100644
 --- a/icmp_socket.c
 +++ b/icmp_socket.c
-@@ -136,8 +136,8 @@ static ssize_t bat_socket_read(struct file *file, char __user *buf,
+@@ -187,12 +187,7 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 	skb_reserve(skb, sizeof(struct ethhdr));
+ 	icmp_packet = (struct icmp_packet_rr *)skb_put(skb, packet_len);
  
- 	spin_unlock_bh(&socket_client->lock);
- 
--	error = __copy_to_user(buf, &socket_packet->icmp_packet,
--			       socket_packet->icmp_len);
-+	error = copy_to_user(buf, &socket_packet->icmp_packet,
-+			     socket_packet->icmp_len);
- 
- 	packet_len = socket_packet->icmp_len;
- 	kfree(socket_packet);
+-	if (!access_ok(VERIFY_READ, buff, packet_len)) {
+-		len = -EFAULT;
+-		goto free_skb;
+-	}
+-
+-	if (__copy_from_user(icmp_packet, buff, packet_len)) {
++	if (copy_from_user(icmp_packet, buff, packet_len)) {
+ 		len = -EFAULT;
+ 		goto free_skb;
+ 	}
 -- 
 1.7.7.3
 
