@@ -1,14 +1,10 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 10 Dec 2011 17:39:17 +0800
-References: <1323343986-5724-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1323343986-5724-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <pawlkt@gmail.com>
+Message-ID: <4EE36653.4000504@gmail.com>
+Date: Sat, 10 Dec 2011 15:01:55 +0100
+From: Paul <pawlkt@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201112101739.17927.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: fix log level 'all'
+Content-Type: multipart/mixed; boundary="------------030307000602030802000306"
+Subject: [B.A.T.M.A.N.] bat_socket_read missing checks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,15 +16,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, December 08, 2011 19:33:06 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  sys.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+This is a multi-part message in MIME format.
+--------------030307000602030802000306
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Applied in revision 517bc33.
+Writing a icmp_packet_rr and then reading icmp_packet can lead to kernel
+memory corruption, if __user *buf is just below TASK_SIZE.
 
+-- 
 Regards,
-Marek
+Paul
+
+
+
+--------------030307000602030802000306
+Content-Type: text/plain;
+ name="patch.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="patch.txt"
+
+diff --git a/icmp_socket.c b/icmp_socket.c
+index 5bc8649..f6a6536 100644
+--- a/icmp_socket.c
++++ b/icmp_socket.c
+@@ -136,7 +136,9 @@ static ssize_t bat_socket_read(struct file *file, char __user *buf,
+ 
+        spin_unlock_bh(&socket_client->lock);
+ 
+-       error = __copy_to_user(buf, &socket_packet->icmp_packet,
++       //queue can contain packets larger than icmp_packet (like icmp_packet_rr),
++       //so we can't rely just on the access_ok above
++       error = copy_to_user(buf, &socket_packet->icmp_packet,
+                               socket_packet->icmp_len);
+ 
+        packet_len = socket_packet->icmp_len;
+
+--------------030307000602030802000306--
