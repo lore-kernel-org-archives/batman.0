@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 12 Dec 2011 19:31:52 +0800
-Message-Id: <1323689516-24427-9-git-send-email-lindner_marek@yahoo.de>
+Date: Mon, 12 Dec 2011 19:31:53 +0800
+Message-Id: <1323689516-24427-10-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1323689516-24427-1-git-send-email-lindner_marek@yahoo.de>
 References: <1323689516-24427-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 08/11] batman-adv: format multi-line if in
-	the correct way
+Subject: [B.A.T.M.A.N.] [PATCH 09/11] batman-adv: bat_socket_read missing
+	checks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,34 +18,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Paul Kot <pawlkt@gmail.com>
 
-From: Antonio Quartulli <ordex@autistici.org>
+From: Paul Kot <pawlkt@gmail.com>
 
-in an multi-line if statement leading edges should line up to the opening
-parenthesis
+Writing a icmp_packet_rr and then reading icmp_packet can lead to kernel
+memory corruption, if __user *buf is just below TASK_SIZE.
 
-Reported-by: David Miller <davem@davemloft.net>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Paul Kot <pawlkt@gmail.com>
+[sven@narfation.org: made it checkpatch clean]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/routing.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ net/batman-adv/icmp_socket.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index ef24a72..773e606 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -627,8 +627,7 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index defd692..88ab26f 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -136,8 +136,8 @@ static ssize_t bat_socket_read(struct file *file, char __user *buf,
  
- 			/* Ensure we have all the claimed data */
- 			if (unlikely(skb_headlen(skb) <
--					sizeof(struct tt_query_packet) +
--					tt_len))
-+				     sizeof(struct tt_query_packet) + tt_len))
- 				goto out;
+ 	spin_unlock_bh(&socket_client->lock);
  
- 			handle_tt_response(bat_priv, tt_query);
+-	error = __copy_to_user(buf, &socket_packet->icmp_packet,
+-			       socket_packet->icmp_len);
++	error = copy_to_user(buf, &socket_packet->icmp_packet,
++			     socket_packet->icmp_len);
+ 
+ 	packet_len = socket_packet->icmp_len;
+ 	kfree(socket_packet);
 -- 
 1.7.5.4
 
