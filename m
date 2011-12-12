@@ -1,11 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 11 Dec 2011 01:15:57 +0800
-Message-Id: <1323537357-9116-5-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1323537357-9116-1-git-send-email-lindner_marek@yahoo.de>
-References: <1323537357-9116-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: export used routing
-	algorithm via sysfs
+Date: Mon, 12 Dec 2011 18:44:17 +0800
+References: <4EE36653.4000504@gmail.com>
+	<1323527316-15071-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1323527316-15071-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201112121844.17891.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/3] batman-adv: bat_socket_read
+	missing checks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,67 +22,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- bat_sysfs.c          |    9 +++++++++
- sysfs-class-net-mesh |    7 +++++++
- 2 files changed, 16 insertions(+), 0 deletions(-)
+On Saturday, December 10, 2011 22:28:34 Sven Eckelmann wrote:
+> From: Paul Kot <pawlkt@gmail.com>
+> 
+> Writing a icmp_packet_rr and then reading icmp_packet can lead to kernel
+> memory corruption, if __user *buf is just below TASK_SIZE.
+> 
+> Signed-off-by: Paul Kot <pawlkt@gmail.com>
+> [sven@narfation.org: made it checkpatch clean]
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-diff --git a/bat_sysfs.c b/bat_sysfs.c
-index c25492f..480ae0a 100644
---- a/bat_sysfs.c
-+++ b/bat_sysfs.c
-@@ -272,6 +272,13 @@ static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
- 	return count;
- }
- 
-+static ssize_t show_bat_algo(struct kobject *kobj, struct attribute *attr,
-+			    char *buff)
-+{
-+	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);
-+	return sprintf(buff, "%s\n", bat_priv->bat_algo_ops->name);
-+}
-+
- static void post_gw_deselect(struct net_device *net_dev)
- {
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
-@@ -382,6 +389,7 @@ BAT_ATTR_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
- BAT_ATTR_BOOL(fragmentation, S_IRUGO | S_IWUSR, update_min_mtu);
- BAT_ATTR_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
- static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
-+static BAT_ATTR(routing_algo, S_IRUGO, show_bat_algo, NULL);
- static BAT_ATTR(gw_mode, S_IRUGO | S_IWUSR, show_gw_mode, store_gw_mode);
- BAT_ATTR_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
- BAT_ATTR_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
-@@ -399,6 +407,7 @@ static struct bat_attribute *mesh_attrs[] = {
- 	&bat_attr_fragmentation,
- 	&bat_attr_ap_isolation,
- 	&bat_attr_vis_mode,
-+	&bat_attr_routing_algo,
- 	&bat_attr_gw_mode,
- 	&bat_attr_orig_interval,
- 	&bat_attr_hop_penalty,
-diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
-index b020014..b218e0f 100644
---- a/sysfs-class-net-mesh
-+++ b/sysfs-class-net-mesh
-@@ -65,6 +65,13 @@ Description:
- 		Defines the penalty which will be applied to an
- 		originator message's tq-field on every hop.
- 
-+What:		/sys/class/net/<mesh_iface>/mesh/routing_algo
-+Date:		Dec 2011
-+Contact:	Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+		Defines the routing procotol this mesh instance
-+		uses to find the optimal paths through the mesh.
-+
- What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
- Date:           May 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
--- 
-1.7.5.4
+Applied in revision 2013715.
 
+Thanks,
+Marek
