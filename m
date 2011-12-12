@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 12 Dec 2011 19:31:50 +0800
-Message-Id: <1323689516-24427-7-git-send-email-lindner_marek@yahoo.de>
+Date: Mon, 12 Dec 2011 19:31:51 +0800
+Message-Id: <1323689516-24427-8-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1323689516-24427-1-git-send-email-lindner_marek@yahoo.de>
 References: <1323689516-24427-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 06/11] batman-adv: readme update (mention ap
-	isolation and new log level)
+Subject: [B.A.T.M.A.N.] [PATCH 07/11] batman-adv: remove extra negation in
+	gw_out_of_range()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,38 +18,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Dan Carpenter <dan.carpenter@oracle.com>
 
+From: Dan Carpenter <dan.carpenter@oracle.com>
+
+There is a typo here where an extra '!' made the check to the opposite
+of what was intended.
+
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Documentation/networking/batman-adv.txt |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ net/batman-adv/gateway_client.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/networking/batman-adv.txt b/Documentation/networking/batman-adv.txt
-index c86d03f..221ad0c 100644
---- a/Documentation/networking/batman-adv.txt
-+++ b/Documentation/networking/batman-adv.txt
-@@ -200,15 +200,16 @@ abled  during run time. Following log_levels are defined:
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 9373a14..24403a7 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -695,7 +695,7 @@ bool gw_out_of_range(struct bat_priv *bat_priv,
+ 	}
  
- 0 - All  debug  output  disabled
- 1 - Enable messages related to routing / flooding / broadcasting
--2 - Enable route or tt entry added / changed / deleted
--3 - Enable all messages
-+2 - Enable messages related to route added / changed / deleted
-+4 - Enable messages related to translation table operations
-+7 - Enable all messages
+ 	neigh_old = find_router(bat_priv, orig_dst_node, NULL);
+-	if (!!neigh_old)
++	if (!neigh_old)
+ 		goto out;
  
- The debug output can be changed at runtime  using  the  file
- /sys/class/net/bat0/mesh/log_level. e.g.
- 
- # echo 2 > /sys/class/net/bat0/mesh/log_level
- 
--will enable debug messages for when routes or TTs change.
-+will enable debug messages for when routes change.
- 
- 
- BATCTL
+ 	if (curr_tq_avg - neigh_old->tq_avg > GW_THRESHOLD)
 -- 
 1.7.5.4
 
