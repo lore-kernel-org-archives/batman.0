@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 12 Dec 2011 19:31:47 +0800
-Message-Id: <1323689516-24427-4-git-send-email-lindner_marek@yahoo.de>
+Date: Mon, 12 Dec 2011 19:31:48 +0800
+Message-Id: <1323689516-24427-5-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1323689516-24427-1-git-send-email-lindner_marek@yahoo.de>
 References: <1323689516-24427-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 03/11] batman-adv: generalise
-	tt_local_reset_flags()
+Subject: [B.A.T.M.A.N.] [PATCH 04/11] batman-adv: check return value for
+	hash_add()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,93 +18,95 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Antonio Quartulli <ordex@autistici.org>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
 
-The tt_local_reset_flags() is actually used for one use case only. It is not
-generalised enough to be used indifferent situations. This patch make it general
-enough in order to let other code use it whenever a flag set is requested over
-the whole hash table (passed as parameter). The function is now called
-tt_set_flags()
+if hash_add() fails, we should remove the structure to avoid memory
+leaks.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Acked-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/translation-table.c |   35 +++++++++++++++++++++++------------
- 1 files changed, 23 insertions(+), 12 deletions(-)
+ net/batman-adv/translation-table.c |   28 ++++++++++++++++++++++------
+ 1 files changed, 22 insertions(+), 6 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 76134bc..f6bbd64 100644
+index f6bbd64..cc87acf 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -1695,19 +1695,19 @@ void tt_free(struct bat_priv *bat_priv)
- 	kfree(bat_priv->tt_buff);
- }
+@@ -190,6 +190,7 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	struct bat_priv *bat_priv = netdev_priv(soft_iface);
+ 	struct tt_local_entry *tt_local_entry = NULL;
+ 	struct tt_global_entry *tt_global_entry = NULL;
++	int hash_added;
  
--/* This function will reset the specified flags from all the entries in
-- * the given hash table and will increment num_local_tt for each involved
-- * entry */
--static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
-+/* This function will enable or disable the specified flags for all the entries
-+ * in the given hash table and returns the number of modified entries */
-+static uint16_t tt_set_flags(struct hashtable_t *hash, uint16_t flags,
-+			     bool enable)
- {
- 	uint32_t i;
--	struct hashtable_t *hash = bat_priv->tt_local_hash;
-+	uint16_t changed_num = 0;
- 	struct hlist_head *head;
- 	struct hlist_node *node;
- 	struct tt_common_entry *tt_common_entry;
+ 	tt_local_entry = tt_local_hash_find(bat_priv, addr);
  
- 	if (!hash)
--		return;
+@@ -217,6 +218,16 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	if (compare_eth(addr, soft_iface->dev_addr))
+ 		tt_local_entry->common.flags |= TT_CLIENT_NOPURGE;
+ 
++	hash_added = hash_add(bat_priv->tt_local_hash, compare_tt, choose_orig,
++			 &tt_local_entry->common,
++			 &tt_local_entry->common.hash_entry);
++
++	if (unlikely(hash_added != 0)) {
++		/* remove the reference for the hash */
++		tt_local_entry_free_ref(tt_local_entry);
 +		goto out;
++	}
++
+ 	tt_local_event(bat_priv, addr, tt_local_entry->common.flags);
  
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1715,14 +1715,21 @@ static void tt_local_reset_flags(struct bat_priv *bat_priv, uint16_t flags)
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(tt_common_entry, node,
- 					 head, hash_entry) {
--			if (!(tt_common_entry->flags & flags))
--				continue;
--			tt_common_entry->flags &= ~flags;
--			atomic_inc(&bat_priv->num_local_tt);
-+			if (enable) {
-+				if ((tt_common_entry->flags & flags) == flags)
-+					continue;
-+				tt_common_entry->flags |= flags;
-+			} else {
-+				if (!(tt_common_entry->flags & flags))
-+					continue;
-+				tt_common_entry->flags &= ~flags;
-+			}
-+			changed_num++;
- 		}
- 		rcu_read_unlock();
- 	}
+ 	/* The local entry has to be marked as NEW to avoid to send it in
+@@ -224,9 +235,6 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	 * (consistency check) */
+ 	tt_local_entry->common.flags |= TT_CLIENT_NEW;
+ 
+-	hash_add(bat_priv->tt_local_hash, compare_tt, choose_orig,
+-		 &tt_local_entry->common, &tt_local_entry->common.hash_entry);
 -
-+out:
-+	return changed_num;
- }
+ 	/* remove address from global hash if present */
+ 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
  
- /* Purge out all the tt local entries marked with TT_CLIENT_PENDING */
-@@ -1766,7 +1773,11 @@ static void tt_local_purge_pending_clients(struct bat_priv *bat_priv)
+@@ -499,6 +507,7 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 	struct tt_global_entry *tt_global_entry;
+ 	struct orig_node *orig_node_tmp;
+ 	int ret = 0;
++	int hash_added;
  
- void tt_commit_changes(struct bat_priv *bat_priv)
- {
--	tt_local_reset_flags(bat_priv, TT_CLIENT_NEW);
-+	uint16_t changed_num = tt_set_flags(bat_priv->tt_local_hash,
-+					    TT_CLIENT_NEW, false);
-+	/* all the reset entries have now to be effectively counted as local
-+	 * entries */
-+	atomic_add(changed_num, &bat_priv->num_local_tt);
- 	tt_local_purge_pending_clients(bat_priv);
+ 	tt_global_entry = tt_global_hash_find(bat_priv, tt_addr);
  
- 	/* Increment the TTVN only once per OGM interval */
+@@ -518,9 +527,15 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 		tt_global_entry->ttvn = ttvn;
+ 		tt_global_entry->roam_at = 0;
+ 
+-		hash_add(bat_priv->tt_global_hash, compare_tt,
+-			 choose_orig, &tt_global_entry->common,
+-			 &tt_global_entry->common.hash_entry);
++		hash_added = hash_add(bat_priv->tt_global_hash, compare_tt,
++				 choose_orig, &tt_global_entry->common,
++				 &tt_global_entry->common.hash_entry);
++
++		if (unlikely(hash_added != 0)) {
++			/* remove the reference for the hash */
++			tt_global_entry_free_ref(tt_global_entry);
++			goto out_remove;
++		}
+ 		atomic_inc(&orig_node->tt_size);
+ 	} else {
+ 		if (tt_global_entry->orig_node != orig_node) {
+@@ -543,6 +558,7 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 		"Creating new global tt entry: %pM (via %pM)\n",
+ 		tt_global_entry->common.addr, orig_node->orig);
+ 
++out_remove:
+ 	/* remove address from local hash if present */
+ 	tt_local_remove(bat_priv, tt_global_entry->common.addr,
+ 			"global tt received", roaming);
 -- 
 1.7.5.4
 
