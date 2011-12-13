@@ -1,11 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 12 Dec 2011 19:31:55 +0800
-Message-Id: <1323689516-24427-12-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <davem@davemloft.net>
+Date: Mon, 12 Dec 2011 19:28:21 -0500 (EST)
+Message-Id: <20111212.192821.886469661461010981.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <1323689516-24427-1-git-send-email-lindner_marek@yahoo.de>
 References: <1323689516-24427-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 11/11] batman-adv: Only write requested
-	number of byte to user buffer
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2011-12-12
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,38 +19,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: lindner_marek@yahoo.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 12 Dec 2011 19:31:44 +0800
 
-Don't write more than the requested number of bytes of an batman-adv icmp
-packet to the userspace buffer. Otherwise unrelated userspace memory might get
-overridden by the kernel.
+> here comes the next batch I'd like to get the pulled into net-next-2.6/3.3.
+> We have a couple of minor fixes for unregister_netdevice(), compat flags,
+> return value checks and a readme update. Plus the regression fix from Dan
+> that addresses a bug introduced with the previous batch. Security 
+> researcher Paul Kot checked our kernelland / user space communication and
+> found a subtle bug which would make batman-adv write to memory locations
+> it should not write to. However, he did not find a way to exploit this
+> bug, therefore we classified it as "non-critical". Please let us know if
+> that is not ok with you.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- net/batman-adv/icmp_socket.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
-index 3b04fff..d9c1e7b 100644
---- a/net/batman-adv/icmp_socket.c
-+++ b/net/batman-adv/icmp_socket.c
-@@ -136,10 +136,9 @@ static ssize_t bat_socket_read(struct file *file, char __user *buf,
- 
- 	spin_unlock_bh(&socket_client->lock);
- 
--	error = copy_to_user(buf, &socket_packet->icmp_packet,
--			     socket_packet->icmp_len);
-+	packet_len = min(count, socket_packet->icmp_len);
-+	error = copy_to_user(buf, &socket_packet->icmp_packet, packet_len);
- 
--	packet_len = socket_packet->icmp_len;
- 	kfree(socket_packet);
- 
- 	if (error)
--- 
-1.7.5.4
-
+All pulled into net-next, thanks.
