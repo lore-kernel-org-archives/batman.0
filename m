@@ -1,17 +1,16 @@
-Return-Path: <bhutchings@solarflare.com>
-From: Ben Hutchings <bhutchings@solarflare.com>
-In-Reply-To: <201112210315.02171.lindner_marek@yahoo.de>
-References: <1324377504-20983-1-git-send-email-lindner_marek@yahoo.de>
-	<201112210259.42387.lindner_marek@yahoo.de>
-	<20111220.140209.618109781658024408.davem@davemloft.net>
-	<201112210315.02171.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 20 Dec 2011 20:56:20 +0000
-Message-ID: <1324414580.2818.31.camel@bwh-desktop>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 22 Dec 2011 20:20:41 +0800
+References: <1323537357-9116-1-git-send-email-lindner_marek@yahoo.de>
+	<1323537357-9116-2-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1323537357-9116-2-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: checkpatch cleanup - remove
- lines longer than 80 chars
+Message-Id: <201112222020.41960.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/4] batman-adv: add infrastructure to
+	change routing algorithm at runtime
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,49 +22,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, David Miller <davem@davemloft.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, 2011-12-21 at 03:15 +0800, Marek Lindner wrote:
-> On Wednesday, December 21, 2011 03:02:09 David Miller wrote:
-> > From: Marek Lindner <lindner_marek@yahoo.de>
-> > Date: Wed, 21 Dec 2011 02:59:41 +0800
-> > 
-> > > On Wednesday, December 21, 2011 02:32:30 David Miller wrote:
-> > >> From: Marek Lindner <lindner_marek@yahoo.de>
-> > >> Date: Tue, 20 Dec 2011 18:38:24 +0800
-> > >> 
-> > >> > The long line was introduced with b26e478f8f.
-> > >> > 
-> > >> > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> > >> 
-> > >> I'm not applying this.
-> > >> 
-> > >> I tell people to make sure arguments line up correctly to the
-> > >> openning parenthesis on the previous line, and that is what is
-> > >> happening here.
-> > > 
-> > > I am not against lining up the arguments but what about checkpatch ? Are
-> > > we going to ignore the complaints or is this line limit about to be
-> > > changed ?
-> > 
-> > Refactor the code so that both constraints can be satisfied.
-> > 
-> > Is this so hard to understand?
-> 
-> Well, my crystal ball did not unveil that a checkpatch complaint you silently 
-> introduced would mean somebody else has to refactor the code. Guess I have to 
-> get a replacement unit.
+On Sunday, December 11, 2011 01:15:54 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  bat_algo.h       |   27 ++++++++++++++++++++
+>  bat_debugfs.c    |   23 +++++++++++++++++
+>  bat_iv_ogm.c     |   10 +++++++
+>  main.c           |   72
+> ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> main.h           |    4 +++
+>  soft-interface.c |    4 +++
+>  types.h          |    6 ++++
+>  7 files changed, 146 insertions(+), 0 deletions(-)
+>  create mode 100644 bat_algo.h
 
-No-one has to refactor the code.  I think David's point is that he's
-more concerned about proper alignment than having every line under 80
-characters.  If you want to satisfy the latter constraint, you still
-have to satisfy the former.
+Applied in revision 27fa916.
 
-Ben.
-
--- 
-Ben Hutchings, Staff Engineer, Solarflare
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
-
+Regards,
+Marek
