@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 24 Dec 2011 22:06:12 +0800
-References: <1324673607-13741-1-git-send-email-sven@narfation.org>
-	<1324673607-13741-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1324673607-13741-2-git-send-email-sven@narfation.org>
+Date: Sat, 24 Dec 2011 22:11:34 +0800
+References: <1324676281-20118-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1324676281-20118-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201112242206.13398.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Split README in kernel
-	and external part
+Message-Id: <201112242211.35312.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix compilation with linux
+	2.6.29 and 2.6.30
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,17 +23,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, December 24, 2011 04:53:27 Sven Eckelmann wrote:
-> The README is shipped in a stripped down version as part of the kernel
-> under Documentation/networking/batman-adv.txt. The readme has to be
-> manually merged each time it gets prepared for submission to the
-> networking subsystem maintainer after the README was modified.
-> 
-> This extra work is reduced by splitting it in a README which contains the
-> same data as available in the kernel and README.external which contains
-> the information that only affect the external module.
+On Saturday, December 24, 2011 05:38:01 Sven Eckelmann wrote:
+> Linux v2.6.30-2332-gfddd520 introduced a seventh parameter to
+> __module_param_call. It is used to give a slightly different user
+> experience for bool parameters. Older kernels can just drop this
+> information using a special compat wrapper for __module_param_call.
 
-Applied in revision e745802.
+Applied in revision f379f93.
 
 Thanks,
 Marek
