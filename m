@@ -1,11 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 27 Dec 2011 17:51:17 +0100
-Message-Id: <1325004682-16792-6-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Tue, 27 Dec 2011 17:51:21 +0100
+Message-Id: <1325004682-16792-10-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <1325004682-16792-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1325004682-16792-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 05/10] batman-adv: allow multiple entries
-	in tt_global_entries
+Subject: [B.A.T.M.A.N.] [PATCHv2 09/10] batman-adv: form groups in the
+	bridge loop avoidance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,543 +19,254 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-as backbone gateways will all independently announce the same clients,
-also the tt global table must be able to hold multiple originators per
-client entry.
+backbone gateways may be part of the same LAN, but participate
+in different meshes. With this patch, backbone gateways form groups by
+applying the groupid of another backbone gateway if it is higher. After
+forming the group, they only accept messages from backbone gateways of
+the same group.
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+
 ---
-[2011-10-30] recalculate global crc in any case:
+[2011-10-27] fix a nasty bug which has overwritten the claim type
+[2011-10-30] Changes suggested by Marek Lindner:
+ * give hw_src and hw_dst as parameter in check_claim_group() to
+   avoid code duplicates
+ * update group id when primary if address is changed
 
- this should not be required, but the crc diverges for some reason.
- Need to dig into this further ...
-
+[2011-11-04] remove primary_if address caching
 [2011-12-27] fix alignment
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- translation-table.c |  318 ++++++++++++++++++++++++++++++++++++---------------
- types.h             |   11 ++-
- 2 files changed, 236 insertions(+), 93 deletions(-)
+ bridge_loop_avoidance.c |  128 +++++++++++++++++++++++++++++++++++++++++------
+ types.h                 |    1 +
+ 2 files changed, 114 insertions(+), 15 deletions(-)
 
-diff --git a/translation-table.c b/translation-table.c
-index 9fe38c1..32d0fb8 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -30,10 +30,8 @@
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 4c4b897..99b0a8f 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -33,7 +33,6 @@
+ #include <net/arp.h>
+ #include <linux/if_vlan.h>
  
- #include <linux/crc16.h>
+-static const uint8_t claim_dest[6] = {0xff, 0x43, 0x05, 0x00, 0x00, 0x00};
+ static const uint8_t announce_mac[4] = {0x43, 0x05, 0x43, 0x05};
  
--static void _tt_global_del(struct bat_priv *bat_priv,
--			   struct tt_global_entry *tt_global_entry,
--			   const char *message);
- static void tt_purge(struct work_struct *work);
-+static void tt_global_del_orig_list(struct tt_global_entry *tt_global_entry);
+ static void bla_periodic_work(struct work_struct *work);
+@@ -268,7 +267,8 @@ static void bla_send_claim(struct bat_priv *bat_priv, uint8_t *mac,
+ 	if (!primary_if)
+ 		return;
  
- /* returns 1 if they are the same mac addr */
- static int compare_tt(const struct hlist_node *node, const void *data2)
-@@ -123,17 +121,31 @@ static void tt_global_entry_free_rcu(struct rcu_head *rcu)
- 	tt_global_entry = container_of(tt_common_entry, struct tt_global_entry,
- 				       common);
+-	memcpy(&local_claim_dest, claim_dest, sizeof(local_claim_dest));
++	memcpy(&local_claim_dest, &bat_priv->claim_dest,
++	       sizeof(local_claim_dest));
+ 	local_claim_dest.type = claimtype;
  
--	if (tt_global_entry->orig_node)
--		orig_node_free_ref(tt_global_entry->orig_node);
--
- 	kfree(tt_global_entry);
+ 	soft_iface = primary_if->soft_iface;
+@@ -284,7 +284,8 @@ static void bla_send_claim(struct bat_priv *bat_priv, uint8_t *mac,
+ 			 /* Ethernet SRC/HW SRC:  originator mac */
+ 			 primary_if->net_dev->dev_addr,
+ 			 /* HW DST: FF:43:05:XX:00:00
+-			  * with XX   = claim type */
++			  * with XX   = claim type
++			  * and YY:YY = group id */
+ 			 (uint8_t *)&local_claim_dest);
+ 
+ 	if (!skb)
+@@ -746,6 +747,84 @@ static int handle_claim(struct bat_priv *bat_priv,
+ 	return 1;
  }
  
- static void tt_global_entry_free_ref(struct tt_global_entry *tt_global_entry)
- {
--	if (atomic_dec_and_test(&tt_global_entry->common.refcount))
-+	if (atomic_dec_and_test(&tt_global_entry->common.refcount)) {
-+		tt_global_del_orig_list(tt_global_entry);
- 		call_rcu(&tt_global_entry->common.rcu,
- 			 tt_global_entry_free_rcu);
-+	}
-+}
-+
-+static void tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
-+{
-+	struct tt_orig_list_entry *orig_entry;
-+
-+	orig_entry = container_of(rcu, struct tt_orig_list_entry, rcu);
-+	atomic_dec(&orig_entry->orig_node->tt_size);
-+	orig_node_free_ref(orig_entry->orig_node);
-+	kfree(orig_entry);
-+}
-+
-+static void tt_orig_list_entry_free_ref(struct tt_orig_list_entry *orig_entry)
-+{
-+	call_rcu(&orig_entry->rcu, tt_orig_list_entry_free_rcu);
- }
- 
- static void tt_local_event(struct bat_priv *bat_priv, const uint8_t *addr,
-@@ -182,6 +194,9 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 	struct bat_priv *bat_priv = netdev_priv(soft_iface);
- 	struct tt_local_entry *tt_local_entry = NULL;
- 	struct tt_global_entry *tt_global_entry = NULL;
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct tt_orig_list_entry *orig_entry;
- 	int hash_added;
- 
- 	tt_local_entry = tt_local_hash_find(bat_priv, addr);
-@@ -232,14 +247,21 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 
- 	/* Check whether it is a roaming! */
- 	if (tt_global_entry) {
--		/* This node is probably going to update its tt table */
--		tt_global_entry->orig_node->tt_poss_change = true;
--		/* The global entry has to be marked as ROAMING and has to be
--		 * kept for consistency purpose */
-+		/* These node are probably going to update their tt table */
-+		head = &tt_global_entry->orig_list;
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(orig_entry, node, head, list) {
-+			orig_entry->orig_node->tt_poss_change = true;
-+
-+			send_roam_adv(bat_priv, tt_global_entry->common.addr,
-+				      orig_entry->orig_node);
-+		}
-+		rcu_read_unlock();
-+		/* The global entry has to be marked as ROAMING and
-+		 * has to be kept for consistency purpose */
-+
- 		tt_global_entry->common.flags |= TT_CLIENT_ROAM;
- 		tt_global_entry->roam_at = jiffies;
--		send_roam_adv(bat_priv, tt_global_entry->common.addr,
--			      tt_global_entry->orig_node);
- 	}
- out:
- 	if (tt_local_entry)
-@@ -492,33 +514,60 @@ static void tt_changes_list_free(struct bat_priv *bat_priv)
- 	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
- }
- 
-+/* find out if an orig_node is already in the list of a tt_global_entry.
-+ * returns 1 if found, 0 otherwise */
-+static bool tt_global_entry_has_orig(const struct tt_global_entry *entry,
-+				     const struct orig_node *orig_node)
-+{
-+	struct tt_orig_list_entry *tmp_orig_entry;
-+	const struct hlist_head *head;
-+	struct hlist_node *node;
-+	bool found = false;
-+
-+	rcu_read_lock();
-+	head = &entry->orig_list;
-+	hlist_for_each_entry_rcu(tmp_orig_entry, node, head, list) {
-+		if (tmp_orig_entry->orig_node == orig_node) {
-+			found = true;
-+			break;
-+		}
-+	}
-+	rcu_read_unlock();
-+	return found;
-+}
-+
- /* caller must hold orig_node refcount */
- int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 		  const unsigned char *tt_addr, uint8_t ttvn, bool roaming,
- 		  bool wifi)
- {
--	struct tt_global_entry *tt_global_entry;
--	struct orig_node *orig_node_tmp;
-+	struct tt_global_entry *tt_global_entry = NULL;
-+	struct tt_orig_list_entry *orig_entry = NULL;
- 	int ret = 0;
- 	int hash_added;
- 
- 	tt_global_entry = tt_global_hash_find(bat_priv, tt_addr);
- 
- 	if (!tt_global_entry) {
--		tt_global_entry =
--			kmalloc(sizeof(*tt_global_entry),
--				GFP_ATOMIC);
-+		tt_global_entry = kzalloc(sizeof(*tt_global_entry),
-+					  GFP_ATOMIC);
- 		if (!tt_global_entry)
- 			goto out;
-+		orig_entry = kzalloc(sizeof(*orig_entry), GFP_ATOMIC);
-+		if (!orig_entry) {
-+			kfree(tt_global_entry);
-+			tt_global_entry = NULL;
-+			goto out;
-+		}
- 
- 		memcpy(tt_global_entry->common.addr, tt_addr, ETH_ALEN);
-+
- 		tt_global_entry->common.flags = NO_FLAGS;
-+		tt_global_entry->roam_at = 0;
- 		atomic_set(&tt_global_entry->common.refcount, 2);
--		/* Assign the new orig_node */
--		atomic_inc(&orig_node->refcount);
--		tt_global_entry->orig_node = orig_node;
--		tt_global_entry->ttvn = ttvn;
--		tt_global_entry->roam_at = 0;
-+
-+		INIT_HLIST_HEAD(&tt_global_entry->orig_list);
-+		spin_lock_init(&tt_global_entry->list_lock);
- 
- 		hash_added = hash_add(bat_priv->tt_global_hash, compare_tt,
- 				 choose_orig, &tt_global_entry->common,
-@@ -529,19 +578,29 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 			tt_global_entry_free_ref(tt_global_entry);
- 			goto out_remove;
- 		}
-+	} else {
-+		if (tt_global_entry_has_orig(tt_global_entry, orig_node))
-+			/* already in the list, no need to add it again */
-+			orig_entry = NULL;
-+		else
-+			orig_entry = kzalloc(sizeof(*orig_entry), GFP_ATOMIC);
-+
-+		tt_global_entry->common.flags = NO_FLAGS;
-+		tt_global_entry->roam_at = 0;
-+	}
-+
-+	/* new orig_entry needs to be added */
-+	if (orig_entry) {
-+		INIT_HLIST_NODE(&orig_entry->list);
-+		atomic_inc(&orig_node->refcount);
- 		atomic_inc(&orig_node->tt_size);
--	} else {
--		if (tt_global_entry->orig_node != orig_node) {
--			atomic_dec(&tt_global_entry->orig_node->tt_size);
--			orig_node_tmp = tt_global_entry->orig_node;
--			atomic_inc(&orig_node->refcount);
--			tt_global_entry->orig_node = orig_node;
--			orig_node_free_ref(orig_node_tmp);
--			atomic_inc(&orig_node->tt_size);
--		}
--		tt_global_entry->common.flags = NO_FLAGS;
--		tt_global_entry->ttvn = ttvn;
--		tt_global_entry->roam_at = 0;
-+		orig_entry->orig_node = orig_node;
-+		orig_entry->ttvn = ttvn;
-+
-+		spin_lock_bh(&tt_global_entry->list_lock);
-+		hlist_add_head_rcu(&orig_entry->list,
-+				   &tt_global_entry->orig_list);
-+		spin_unlock_bh(&tt_global_entry->list_lock);
- 	}
- 
- 	if (wifi)
-@@ -562,6 +621,37 @@ out:
- 	return ret;
- }
- 
-+/*
-+ * print all orig nodes who announce the address for this global entry.
-+ * it is assumed that the caller holds rcu_read_lock();
++/**
++ *
++ * @bat_priv: the bat priv with all the soft interface information
++ * @hw_src: the Hardware source in the ARP Header
++ * @hw_dst: the Hardware destination in the ARP Header
++ * @ethhdr: pointer to the Ethernet header of the claim frame
++ *
++ * checks if it is a claim packet and if its on the same group.
++ * This function also applies the group ID of the sender
++ * if it is in the same mesh.
++ *
++ * returns:
++ *	2  - if it is a claim packet and on the same group
++ *	1  - if is a claim packet from another group
++ *	0  - if it is not a claim packet
 + */
-+static void tt_global_print_entry(struct tt_global_entry *tt_global_entry,
-+				  struct seq_file *seq)
++static int check_claim_group(struct bat_priv *bat_priv,
++			     struct hard_iface *primary_if,
++			     uint8_t *hw_src, uint8_t *hw_dst,
++			     struct ethhdr *ethhdr)
 +{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct tt_orig_list_entry *orig_entry;
-+	struct tt_common_entry *tt_common_entry;
-+	uint16_t flags;
-+	uint8_t last_ttvn;
++	uint8_t *backbone_addr;
++	struct orig_node *orig_node;
++	struct bla_claim_dst *bla_dst, *bla_dst_own;
 +
-+	tt_common_entry = &tt_global_entry->common;
++	bla_dst = (struct bla_claim_dst *) hw_dst;
++	bla_dst_own = &bat_priv->claim_dest;
 +
-+	head = &tt_global_entry->orig_list;
++	/* check if it is a claim packet in general */
++	if (memcmp(bla_dst->magic, bla_dst_own->magic,
++		   sizeof(bla_dst->magic)) != 0)
++		return 0;
 +
-+	hlist_for_each_entry_rcu(orig_entry, node, head, list) {
-+		flags = tt_common_entry->flags;
-+		last_ttvn = atomic_read(&orig_entry->orig_node->last_ttvn);
-+		seq_printf(seq,	" * %pM  (%3u) via %pM     (%3u)   "
-+			   "[%c%c%c]\n", tt_global_entry->common.addr,
-+			   orig_entry->ttvn,
-+			   orig_entry->orig_node->orig, last_ttvn,
-+			   (flags & TT_CLIENT_ROAM ? 'R' : '.'),
-+			   (flags & TT_CLIENT_PENDING ? 'X' : '.'),
-+			   (flags & TT_CLIENT_WIFI ? 'W' : '.'));
++	/* if announcement packet, use the source,
++	 * otherwise assume it is in the hw_src */
++	switch (bla_dst->type) {
++	case CLAIM_TYPE_ADD:
++		backbone_addr = hw_src;
++		break;
++	case CLAIM_TYPE_REQUEST:
++	case CLAIM_TYPE_ANNOUNCE:
++	case CLAIM_TYPE_DEL:
++		backbone_addr = ethhdr->h_source;
++		break;
++	default:
++		return 0;
 +	}
++
++	/* don't accept claim frames from ourselves */
++	if (compare_eth(backbone_addr, primary_if->net_dev->dev_addr))
++		return 0;
++
++	/* if its already the same group, it is fine. */
++	if (bla_dst->group == bla_dst_own->group)
++		return 2;
++
++	/* lets see if this originator is in our mesh */
++	orig_node = orig_hash_find(bat_priv, backbone_addr);
++
++	/* dont accept claims from gateways which are not in
++	 * the same mesh or group. */
++	if (!orig_node)
++		return 1;
++
++	/* if our mesh friends mac is bigger, use it for ourselves. */
++	if (ntohs(bla_dst->group) > ntohs(bla_dst_own->group)) {
++		bat_dbg(DBG_BLA, bat_priv,
++			"taking other backbones claim group: %04x\n",
++			ntohs(bla_dst->group));
++		bla_dst_own->group = bla_dst->group;
++	}
++
++	orig_node_free_ref(orig_node);
++
++	return 2;
 +}
 +
- int tt_global_seq_print_text(struct seq_file *seq, void *offset)
++
+ /*
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the frame to be checked
+@@ -768,6 +847,7 @@ static int bla_process_claim(struct bat_priv *bat_priv,
+ 	uint16_t proto;
+ 	int headlen;
+ 	short vid = -1;
++	int ret;
+ 
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 
+@@ -810,8 +890,15 @@ static int bla_process_claim(struct bat_priv *bat_priv,
+ 	bla_dst = (struct bla_claim_dst *) hw_dst;
+ 
+ 	/* check if it is a claim frame. */
+-	if (memcmp(hw_dst, claim_dest, 3) != 0)
+-		return 0;
++	ret = check_claim_group(bat_priv, primary_if, hw_src, hw_dst, ethhdr);
++	if (ret == 1)
++		bat_dbg(DBG_BLA, bat_priv, "bla_process_claim(): received "
++			"a claim frame from another group. From: "
++			"%pM on vid %d ...(hw_src %pM, hw_dst %pM)\n",
++			ethhdr->h_source, vid, hw_src, hw_dst);
++
++	if (ret < 2)
++		return ret;
+ 
+ 	/* become a backbone gw ourselves on this vlan if not happened yet */
+ 	bla_update_own_backbone_gw(bat_priv, primary_if, vid);
+@@ -960,6 +1047,10 @@ void bla_update_orig_address(struct bat_priv *bat_priv,
+ 	struct hashtable_t *hash;
+ 	int i;
+ 
++	/* reset bridge loop avoidance group id */
++	bat_priv->claim_dest.group =
++		htons(crc16(0, primary_if->net_dev->dev_addr, ETH_ALEN));
++
+ 	if (!oldif) {
+ 		bla_purge_claims(bat_priv, NULL, 1);
+ 		bla_purge_backbone_gw(bat_priv, 1);
+@@ -1059,9 +1150,23 @@ out:
+ int bla_init(struct bat_priv *bat_priv)
  {
- 	struct net_device *net_dev = (struct net_device *)seq->private;
-@@ -605,20 +695,7 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 			tt_global_entry = container_of(tt_common_entry,
- 						       struct tt_global_entry,
- 						       common);
--			seq_printf(seq, " * %pM  (%3u) via %pM     (%3u)   "
--					"[%c%c%c]\n",
--					tt_global_entry->common.addr,
--					tt_global_entry->ttvn,
--					tt_global_entry->orig_node->orig,
--					(uint8_t) atomic_read(
--						&tt_global_entry->orig_node->
--						last_ttvn),
--					(tt_global_entry->common.flags &
--					 TT_CLIENT_ROAM ? 'R' : '.'),
--					(tt_global_entry->common.flags &
--					 TT_CLIENT_PENDING ? 'X' : '.'),
--					(tt_global_entry->common.flags &
--					 TT_CLIENT_WIFI ? 'W' : '.'));
-+			tt_global_print_entry(tt_global_entry, seq);
- 		}
- 		rcu_read_unlock();
- 	}
-@@ -628,27 +705,48 @@ out:
- 	return ret;
- }
+ 	int i;
++	uint8_t claim_dest[ETH_ALEN] = {0xff, 0x43, 0x05, 0x00, 0x00, 0x00};
++	struct hard_iface *primary_if;
  
--static void _tt_global_del(struct bat_priv *bat_priv,
--			   struct tt_global_entry *tt_global_entry,
--			   const char *message)
-+/* deletes the orig list of a tt_global_entry */
-+static void tt_global_del_orig_list(struct tt_global_entry *tt_global_entry)
- {
--	if (!tt_global_entry)
--		goto out;
-+	struct hlist_head *head;
-+	struct hlist_node *node, *safe;
-+	struct tt_orig_list_entry *orig_entry;
+ 	bat_dbg(DBG_BLA, bat_priv, "bla hash registering\n");
  
--	bat_dbg(DBG_TT, bat_priv,
--		"Deleting global tt entry %pM (via %pM): %s\n",
--		tt_global_entry->common.addr, tt_global_entry->orig_node->orig,
--		message);
-+	spin_lock_bh(&tt_global_entry->list_lock);
-+	head = &tt_global_entry->orig_list;
-+	hlist_for_each_entry_safe(orig_entry, node, safe, head, list) {
-+		hlist_del_rcu(node);
-+		tt_orig_list_entry_free_ref(orig_entry);
-+	}
-+	spin_unlock_bh(&tt_global_entry->list_lock);
- 
--	atomic_dec(&tt_global_entry->orig_node->tt_size);
-+}
++	/* setting claim destination address */
++	memcpy(&bat_priv->claim_dest.magic, claim_dest, 3);
++	bat_priv->claim_dest.type = 0;
++	primary_if = primary_if_get_selected(bat_priv);
++	if (primary_if) {
++		bat_priv->claim_dest.group =
++			htons(crc16(0, primary_if->net_dev->dev_addr,
++				    ETH_ALEN));
++		hardif_free_ref(primary_if);
++	} else
++		bat_priv->claim_dest.group = 0; /* will be set later */
 +
-+static void tt_global_del_orig_entry(struct bat_priv *bat_priv,
-+				     struct tt_global_entry *tt_global_entry,
-+				     struct orig_node *orig_node,
-+				     const char *message)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node, *safe;
-+	struct tt_orig_list_entry *orig_entry;
+ 	/* initialize the duplicate list */
+ 	for (i = 0; i < DUPLIST_SIZE; i++)
+ 		bat_priv->bcast_duplist[i].entrytime =
+@@ -1233,9 +1338,6 @@ int bla_is_backbone_gw(struct sk_buff *skb,
+ 	if (!backbone_gw)
+ 		return 0;
  
--	hash_remove(bat_priv->tt_global_hash, compare_tt, choose_orig,
--		    tt_global_entry->common.addr);
--out:
--	if (tt_global_entry)
--		tt_global_entry_free_ref(tt_global_entry);
-+	spin_lock_bh(&tt_global_entry->list_lock);
-+	head = &tt_global_entry->orig_list;
-+	hlist_for_each_entry_safe(orig_entry, node, safe, head, list) {
-+		if (orig_entry->orig_node == orig_node) {
-+			bat_dbg(DBG_TT, bat_priv,
-+				"Deleting %pM from global tt entry %pM: %s\n",
-+				orig_node->orig, tt_global_entry->common.addr,
-+				message);
-+			hlist_del_rcu(node);
-+			tt_orig_list_entry_free_ref(orig_entry);
-+		}
-+	}
-+	spin_unlock_bh(&tt_global_entry->list_lock);
+-	bat_dbg(DBG_BLA, orig_node->bat_priv,
+-		"bla_is_backbone_gw(): originator %pM has a claim "
+-		"for vid %d on the LAN ...\n", orig_node->orig, vid);
+ 	backbone_gw_free_ref(backbone_gw);
+ 	return 1;
  }
+@@ -1395,11 +1497,6 @@ int bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid)
+ 	memcpy(search_claim.addr, ethhdr->h_source, ETH_ALEN);
+ 	search_claim.vid = vid;
  
-+
- void tt_global_del(struct bat_priv *bat_priv,
- 		   struct orig_node *orig_node, const unsigned char *addr,
- 		   const char *message, bool roaming)
-@@ -657,7 +755,7 @@ void tt_global_del(struct bat_priv *bat_priv,
- 	struct tt_local_entry *tt_local_entry = NULL;
+-	bat_dbg(DBG_BLA, bat_priv,
+-		"bla_tx(): checked for claims, now starting ..."
+-		"%pM -> %pM [%04x], vid %d\n",
+-		ethhdr->h_source, ethhdr->h_dest,
+-		ntohs(ethhdr->h_proto), search_claim.vid);
+ 	claim = claim_hash_find(bat_priv, &search_claim);
  
- 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
--	if (!tt_global_entry || tt_global_entry->orig_node != orig_node)
-+	if (!tt_global_entry)
- 		goto out;
- 
- 	if (!roaming)
-@@ -680,7 +778,19 @@ void tt_global_del(struct bat_priv *bat_priv,
+ 	/* if no claim exists, allow it. */
+@@ -1470,8 +1567,9 @@ int bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
  	}
  
- out_del:
--	_tt_global_del(bat_priv, tt_global_entry, message);
-+	tt_global_del_orig_entry(bat_priv, tt_global_entry,
-+				 orig_node, message);
-+
-+	if (hlist_empty(&tt_global_entry->orig_list)) {
-+		bat_dbg(DBG_TT, bat_priv,
-+			"Deleting global tt entry %pM (via %pM): %s\n",
-+			tt_global_entry->common.addr, orig_node->orig,
-+			message);
-+
-+		hash_remove(bat_priv->tt_global_hash, compare_tt, choose_orig,
-+			    tt_global_entry->common.addr);
-+		tt_global_entry_free_ref(tt_global_entry);
-+	}
- 
- out:
- 	if (tt_global_entry)
-@@ -709,16 +819,18 @@ void tt_global_del_orig(struct bat_priv *bat_priv,
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(tt_common_entry, node, safe,
--					 head, hash_entry) {
-+					  head, hash_entry) {
- 			tt_global_entry = container_of(tt_common_entry,
- 						       struct tt_global_entry,
- 						       common);
--			if (tt_global_entry->orig_node == orig_node) {
-+
-+			tt_global_del_orig_entry(bat_priv, tt_global_entry,
-+						 orig_node, message);
-+
-+			if (hlist_empty(&tt_global_entry->orig_list)) {
- 				bat_dbg(DBG_TT, bat_priv,
--					"Deleting global tt entry %pM "
--					"(via %pM): %s\n",
-+					"Deleting global tt entry %pM: %s\n",
- 					tt_global_entry->common.addr,
--					tt_global_entry->orig_node->orig,
- 					message);
- 				hlist_del_rcu(node);
- 				tt_global_entry_free_ref(tt_global_entry);
-@@ -759,7 +871,7 @@ static void tt_global_roam_purge(struct bat_priv *bat_priv)
- 			bat_dbg(DBG_TT, bat_priv, "Deleting global "
- 				"tt entry (%pM): Roaming timeout\n",
- 				tt_global_entry->common.addr);
--			atomic_dec(&tt_global_entry->orig_node->tt_size);
-+
- 			hlist_del_rcu(node);
- 			tt_global_entry_free_ref(tt_global_entry);
- 		}
-@@ -822,6 +934,11 @@ struct orig_node *transtable_search(struct bat_priv *bat_priv,
- 	struct tt_local_entry *tt_local_entry = NULL;
- 	struct tt_global_entry *tt_global_entry = NULL;
- 	struct orig_node *orig_node = NULL;
-+	struct neigh_node *router = NULL;
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct tt_orig_list_entry *orig_entry;
-+	int best_tq;
- 
- 	if (src && atomic_read(&bat_priv->ap_isolation)) {
- 		tt_local_entry = tt_local_hash_find(bat_priv, src);
-@@ -838,16 +955,30 @@ struct orig_node *transtable_search(struct bat_priv *bat_priv,
- 	if (tt_local_entry && _is_ap_isolated(tt_local_entry, tt_global_entry))
- 		goto out;
- 
--	if (!atomic_inc_not_zero(&tt_global_entry->orig_node->refcount))
--		goto out;
--
- 	/* A global client marked as PENDING has already moved from that
- 	 * originator */
- 	if (tt_global_entry->common.flags & TT_CLIENT_PENDING)
- 		goto out;
- 
--	orig_node = tt_global_entry->orig_node;
-+	best_tq = 0;
- 
-+	rcu_read_lock();
-+	head = &tt_global_entry->orig_list;
-+	hlist_for_each_entry_rcu(orig_entry, node, head, list) {
-+		router = orig_node_get_router(orig_entry->orig_node);
-+		if (!router)
-+			continue;
-+
-+		if (router->tq_avg > best_tq) {
-+			orig_node = orig_entry->orig_node;
-+			best_tq = router->tq_avg;
-+		}
-+		neigh_node_free_ref(router);
-+	}
-+	/* found anything? */
-+	if (orig_node && !atomic_inc_not_zero(&orig_node->refcount))
-+		orig_node = NULL;
-+	rcu_read_unlock();
- out:
- 	if (tt_global_entry)
- 		tt_global_entry_free_ref(tt_global_entry);
-@@ -878,20 +1009,24 @@ uint16_t tt_global_crc(struct bat_priv *bat_priv, struct orig_node *orig_node)
- 			tt_global_entry = container_of(tt_common_entry,
- 						       struct tt_global_entry,
- 						       common);
--			if (compare_eth(tt_global_entry->orig_node,
--					orig_node)) {
--				/* Roaming clients are in the global table for
--				 * consistency only. They don't have to be
--				 * taken into account while computing the
--				 * global crc */
--				if (tt_common_entry->flags & TT_CLIENT_ROAM)
--					continue;
--				total_one = 0;
--				for (j = 0; j < ETH_ALEN; j++)
--					total_one = crc16_byte(total_one,
--						tt_common_entry->addr[j]);
--				total ^= total_one;
--			}
-+			/* Roaming clients are in the global table for
-+			 * consistency only. They don't have to be
-+			 * taken into account while computing the
-+			 * global crc */
-+			if (tt_global_entry->common.flags & TT_CLIENT_ROAM)
-+				continue;
-+
-+			/* find out if this global entry is announced by this
-+			 * originator */
-+			if (!tt_global_entry_has_orig(tt_global_entry,
-+						      orig_node))
-+				continue;
-+
-+			total_one = 0;
-+			for (j = 0; j < ETH_ALEN; j++)
-+				total_one = crc16_byte(total_one,
-+					tt_global_entry->common.addr[j]);
-+			total ^= total_one;
- 		}
- 		rcu_read_unlock();
- 	}
-@@ -1030,7 +1165,7 @@ static int tt_global_valid_entry(const void *entry_ptr, const void *data_ptr)
- 	tt_global_entry = container_of(tt_common_entry, struct tt_global_entry,
- 				       common);
- 
--	return (tt_global_entry->orig_node == orig_node);
-+	return tt_global_entry_has_orig(tt_global_entry, orig_node);
- }
- 
- static struct sk_buff *tt_response_fill_table(uint16_t tt_len, uint8_t ttvn,
-@@ -1884,6 +2019,7 @@ void tt_update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 	} else {
- 		/* if we missed more than one change or our tables are not
- 		 * in sync anymore -> request fresh tt data */
-+		orig_node->tt_crc = tt_global_crc(bat_priv, orig_node);
- 		if (!orig_node->tt_initialised || ttvn != orig_ttvn ||
- 		    orig_node->tt_crc != tt_crc) {
- request_table:
+ 	seq_printf(seq, "Claims announced for the mesh %s "
+-		   "(orig %pM)\n",
+-		   net_dev->name, primary_if->net_dev->dev_addr);
++		   "(orig %pM, group id %04x)\n",
++		   net_dev->name, primary_if->net_dev->dev_addr,
++		   ntohs(bat_priv->claim_dest.group));
+ 	seq_printf(seq, "   %-17s    %-5s    %-17s [o] (%-4s)\n",
+ 		   "Client", "VID", "Originator", "CRC");
+ 	for (i = 0; i < hash->size; i++) {
 diff --git a/types.h b/types.h
-index 8c23a34..bc82868 100644
+index e4767a5..b60ccdb 100644
 --- a/types.h
 +++ b/types.h
-@@ -241,11 +241,18 @@ struct tt_local_entry {
- 
- struct tt_global_entry {
- 	struct tt_common_entry common;
--	struct orig_node *orig_node;
--	uint8_t ttvn;
-+	struct hlist_head orig_list;
-+	spinlock_t list_lock;	/* protects the list */
- 	unsigned long roam_at; /* time at which TT_GLOBAL_ROAM was set */
- };
- 
-+struct tt_orig_list_entry {
-+	struct orig_node *orig_node;
-+	uint8_t ttvn;
-+	struct rcu_head rcu;
-+	struct hlist_node list;
-+};
-+
- struct backbone_gw {
- 	uint8_t orig[ETH_ALEN];
- 	short vid;		/* used VLAN ID */
+@@ -193,6 +193,7 @@ struct bat_priv {
+ 	struct hashtable_t *vis_hash;
+ 	struct bcast_duplist_entry bcast_duplist[DUPLIST_SIZE];
+ 	int bcast_duplist_curr;
++	struct bla_claim_dst claim_dest;
+ 	spinlock_t forw_bat_list_lock; /* protects forw_bat_list */
+ 	spinlock_t forw_bcast_list_lock; /* protects  */
+ 	spinlock_t tt_changes_list_lock; /* protects tt_changes */
 -- 
 1.7.7.3
 
