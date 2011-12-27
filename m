@@ -1,11 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 27 Dec 2011 17:51:22 +0100
-Message-Id: <1325004682-16792-11-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Tue, 27 Dec 2011 17:51:19 +0100
+Message-Id: <1325004682-16792-8-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <1325004682-16792-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1325004682-16792-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 10/10] batman-adv: add bridge loop
-	avoidance compile option
+Subject: [B.A.T.M.A.N.] [PATCHv2 07/10] batman-adv: add broadcast duplicate
+	check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,167 +19,188 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The define CONFIG_BATMAN_ADV_BLA switches the bridge loop avoidance
-on - skip it, and the bridge loop avoidance is not compiled in.
+When multiple backbone gateways relay the same broadcast from the
+backbone into the mesh, other nodes in the mesh may receive this
+broadcast multiple times. To avoid this, the crc checksums of
+received broadcasts are recorded and new broadcast packets with
+the same content may be dropped if received by another gateway.
 
-This is useful if binary size should be saved or the feature is
-not needed.
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+
+---
+[2011-12-27] minor changes:
+ * fix alignment
+ * use has_timed_out
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- Makefile                |    2 ++
- Makefile.kbuild         |    2 +-
- README.external         |    1 +
- bat_debugfs.c           |    7 ++++++-
- bat_sysfs.c             |    4 ++++
- bridge_loop_avoidance.h |   14 ++++++++++++++
- gen-compat-autoconf.sh  |    1 +
- 7 files changed, 29 insertions(+), 2 deletions(-)
+ bridge_loop_avoidance.c |   73 +++++++++++++++++++++++++++++++++++++++++++++++
+ bridge_loop_avoidance.h |    2 +
+ main.h                  |    3 ++
+ routing.c               |    4 ++
+ types.h                 |    7 ++++
+ 5 files changed, 89 insertions(+), 0 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index e2276be..eac6bfc 100644
---- a/Makefile
-+++ b/Makefile
-@@ -21,6 +21,8 @@
- # changing the CONFIG_* line to 'y' enables the related feature
- # B.A.T.M.A.N. debugging:
- export CONFIG_BATMAN_ADV_DEBUG=n
-+# B.A.T.M.A.N. bridge loop avoidance:
-+export CONFIG_BATMAN_ADV_BLA=y
- 
- PWD:=$(shell pwd)
- KERNELPATH ?= /lib/modules/$(shell uname -r)/build
-diff --git a/Makefile.kbuild b/Makefile.kbuild
-index 9a5c122..525df15 100644
---- a/Makefile.kbuild
-+++ b/Makefile.kbuild
-@@ -23,7 +23,7 @@ batman-adv-y += bat_debugfs.o
- batman-adv-y += bat_iv_ogm.o
- batman-adv-y += bat_sysfs.o
- batman-adv-y += bitarray.o
--batman-adv-y += bridge_loop_avoidance.o
-+batman-adv-$(CONFIG_BATMAN_ADV_BLA) += bridge_loop_avoidance.o
- batman-adv-y += gateway_client.o
- batman-adv-y += gateway_common.o
- batman-adv-y += hard-interface.o
-diff --git a/README.external b/README.external
-index 4aa4763..4a3a504 100644
---- a/README.external
-+++ b/README.external
-@@ -36,6 +36,7 @@ module).  Available  options  and  their    possible   values are
- (default marked with an "*")
- 
-  * CONFIG_BATMAN_ADV_DEBUG=[y|n*] (B.A.T.M.A.N. debugging)
-+ * CONFIG_BATMAN_ADV_BLA=[y*|n] (B.A.T.M.A.N. bridge loop avoidance)
- 
- e.g., debugging can be enabled by
- 
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index 476cce2..fe179fe 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -245,12 +245,13 @@ static int transtable_global_open(struct inode *inode, struct file *file)
- 	return single_open(file, tt_global_seq_print_text, net_dev);
- }
- 
-+#ifdef CONFIG_BATMAN_ADV_BLA
- static int bla_claim_table_open(struct inode *inode, struct file *file)
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index a5e0eb7..4c4b897 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -1058,8 +1058,16 @@ out:
+ /* initialize all bla structures */
+ int bla_init(struct bat_priv *bat_priv)
  {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 	return single_open(file, bla_claim_table_seq_print_text, net_dev);
- }
--
-+#endif
++	int i;
++
+ 	bat_dbg(DBG_BLA, bat_priv, "bla hash registering\n");
  
- static int transtable_local_open(struct inode *inode, struct file *file)
- {
-@@ -285,7 +286,9 @@ static BAT_DEBUGINFO(routing_algos, S_IRUGO, bat_algorithms_open);
- static BAT_DEBUGINFO(originators, S_IRUGO, originators_open);
- static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
- static BAT_DEBUGINFO(transtable_global, S_IRUGO, transtable_global_open);
-+#ifdef CONFIG_BATMAN_ADV_BLA
- static BAT_DEBUGINFO(bla_claim_table, S_IRUGO, bla_claim_table_open);
-+#endif
- static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
- static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
++	/* initialize the duplicate list */
++	for (i = 0; i < DUPLIST_SIZE; i++)
++		bat_priv->bcast_duplist[i].entrytime =
++			jiffies - msecs_to_jiffies(DUPLIST_TIMEOUT);
++	bat_priv->bcast_duplist_curr = 0;
++
+ 	if (bat_priv->claim_hash)
+ 		return 1;
  
-@@ -293,7 +296,9 @@ static struct bat_debuginfo *mesh_debuginfos[] = {
- 	&bat_debuginfo_originators,
- 	&bat_debuginfo_gateways,
- 	&bat_debuginfo_transtable_global,
-+#ifdef CONFIG_BATMAN_ADV_BLA
- 	&bat_debuginfo_bla_claim_table,
-+#endif
- 	&bat_debuginfo_transtable_local,
- 	&bat_debuginfo_vis_data,
- 	NULL,
-diff --git a/bat_sysfs.c b/bat_sysfs.c
-index 21e46cb..fd4f786 100644
---- a/bat_sysfs.c
-+++ b/bat_sysfs.c
-@@ -386,7 +386,9 @@ static ssize_t store_gw_bwidth(struct kobject *kobj, struct attribute *attr,
+@@ -1077,6 +1085,71 @@ int bla_init(struct bat_priv *bat_priv)
  
- BAT_ATTR_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
- BAT_ATTR_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
-+#ifdef CONFIG_BATMAN_ADV_BLA
- BAT_ATTR_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
-+#endif
- BAT_ATTR_BOOL(fragmentation, S_IRUGO | S_IWUSR, update_min_mtu);
- BAT_ATTR_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
- static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
-@@ -405,7 +407,9 @@ BAT_ATTR_UINT(log_level, S_IRUGO | S_IWUSR, 0, 15, NULL);
- static struct bat_attribute *mesh_attrs[] = {
- 	&bat_attr_aggregated_ogms,
- 	&bat_attr_bonding,
-+#ifdef CONFIG_BATMAN_ADV_BLA
- 	&bat_attr_bridge_loop_avoidance,
-+#endif
- 	&bat_attr_fragmentation,
- 	&bat_attr_ap_isolation,
- 	&bat_attr_vis_mode,
+ /**
+  * @bat_priv: the bat priv with all the soft interface information
++ * @bcast_packet: originator mac address
++ * @hdr_size: maximum length of the frame
++ *
++ * check if it is on our broadcast list. Another gateway might
++ * have sent the same packet because it is connected to the same backbone,
++ * so we have to remove this duplicate.
++ *
++ * This is performed by checking the CRC, which will tell us
++ * with a good chance that it is the same packet. If it is furthermore
++ * sent by another host, drop it. We allow equal packets from
++ * the same host however as this might be intended.
++ *
++ **/
++
++int bla_check_bcast_duplist(struct bat_priv *bat_priv,
++			    struct bcast_packet *bcast_packet,
++			    int hdr_size)
++{
++	int i, length, curr;
++	uint8_t *content;
++	uint16_t crc;
++	struct bcast_duplist_entry *entry;
++
++	length = hdr_size - sizeof(*bcast_packet);
++	content = (uint8_t *) bcast_packet;
++	content += sizeof(*bcast_packet);
++
++	/* calculate the crc ... */
++	crc = crc16(0, content, length);
++
++	for (i = 0 ; i < DUPLIST_SIZE; i++) {
++		curr = (bat_priv->bcast_duplist_curr + i) % DUPLIST_SIZE;
++		entry = &bat_priv->bcast_duplist[curr];
++
++		/* we can stop searching if the entry is too old ;
++		 * later entries will be even older */
++		if (has_timed_out(entry->entrytime, DUPLIST_TIMEOUT))
++			break;
++
++		if (entry->crc != crc)
++			continue;
++
++		if (compare_eth(entry->orig, bcast_packet->orig))
++			continue;
++
++		/* this entry seems to match: same crc, not too old,
++		 * and from another gw. therefore return 1 to forbid it. */
++		return 1;
++	}
++	/* not found, add a new entry (overwrite the oldest entry) */
++	curr = (bat_priv->bcast_duplist_curr + DUPLIST_SIZE - 1) % DUPLIST_SIZE;
++	entry = &bat_priv->bcast_duplist[curr];
++	entry->crc = crc;
++	entry->entrytime = jiffies;
++	memcpy(entry->orig, bcast_packet->orig, ETH_ALEN);
++	bat_priv->bcast_duplist_curr = curr;
++
++	/* allow it, its the first occurence. */
++	return 0;
++}
++
++
++
++/**
++ * @bat_priv: the bat priv with all the soft interface information
+  * @orig: originator mac address
+  *
+  * check if the originator is a gateway for any VLAN ID.
 diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
-index 9468c24..24d7f16 100644
+index b74940f..9468c24 100644
 --- a/bridge_loop_avoidance.h
 +++ b/bridge_loop_avoidance.h
-@@ -22,6 +22,7 @@
- #ifndef _NET_BATMAN_ADV_BLA_H_
- #define _NET_BATMAN_ADV_BLA_H_
- 
-+#ifdef CONFIG_BATMAN_ADV_BLA
- int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
- int bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
- int bla_is_backbone_gw(struct sk_buff *skb,
-@@ -37,5 +38,18 @@ int bla_init(struct bat_priv *bat_priv);
- void bla_free(struct bat_priv *bat_priv);
- 
- #define BLA_CRC_INIT	0
-+#else /* ifdef CONFIG_BATMAN_ADV_BLA */
+@@ -28,6 +28,8 @@ int bla_is_backbone_gw(struct sk_buff *skb,
+ 		       struct orig_node *orig_node, int hdr_size);
+ int bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
+ int bla_is_backbone_gw_orig(struct bat_priv *bat_priv, uint8_t *orig);
++int bla_check_bcast_duplist(struct bat_priv *bat_priv,
++			    struct bcast_packet *bcast_packet, int hdr_size);
+ void bla_update_orig_address(struct bat_priv *bat_priv,
+ 			     struct hard_iface *primary_if,
+ 			     struct hard_iface *oldif);
+diff --git a/main.h b/main.h
+index e813ac3..8128f59 100644
+--- a/main.h
++++ b/main.h
+@@ -83,6 +83,9 @@
+ #define BLA_PERIOD_LENGTH	10000	/* 10 seconds */
+ #define BLA_BACKBONE_TIMEOUT	(BLA_PERIOD_LENGTH * 3)
+ #define BLA_CLAIM_TIMEOUT	(BLA_PERIOD_LENGTH * 10)
 +
-+#define bla_rx(...)				(0)
-+#define bla_tx(...)				(0)
-+#define bla_is_backbone_gw(...)			(0)
-+#define bla_claim_table_seq_print_text		(0)
-+#define bla_is_backbone_gw_orig(...)		(0)
-+#define bla_check_bcast_duplist(...)		(0)
-+#define bla_update_orig_address(...)		{}
-+#define bla_init(...)				(1)
-+#define bla_free(...)				{}
++#define DUPLIST_SIZE		16
++#define DUPLIST_TIMEOUT		500	/* 500 ms */
+ /* don't reset again within 30 seconds */
+ #define RESET_PROTECTION_MS 30000
+ #define EXPECTED_SEQNO_RANGE	65536
+diff --git a/routing.c b/routing.c
+index 4da34b3..6a576aa 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1074,6 +1074,10 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 
+ 	spin_unlock_bh(&orig_node->bcast_seqno_lock);
+ 
++	/* check whether this has been sent by another originator before */
++	if (bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
++		goto out;
 +
-+#endif /* ifdef CONFIG_BATMAN_ADV_BLA */
+ 	/* rebroadcast packet */
+ 	add_bcast_packet_to_list(bat_priv, skb, 1);
  
- #endif /* ifndef _NET_BATMAN_ADV_BLA_H_ */
-diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
-index 1a020c1..7cf621b 100755
---- a/gen-compat-autoconf.sh
-+++ b/gen-compat-autoconf.sh
-@@ -37,6 +37,7 @@ gen_config() {
+diff --git a/types.h b/types.h
+index bc82868..e4767a5 100644
+--- a/types.h
++++ b/types.h
+@@ -140,6 +140,11 @@ struct neigh_node {
+ 	spinlock_t tq_lock;	/* protects: tq_recv, tq_index */
+ };
  
- # write config variables
- gen_config 'CONFIG_BATMAN_ADV_DEBUG' ${CONFIG_BATMAN_ADV_DEBUG:="n"} >> "${TMP}"
-+gen_config 'CONFIG_BATMAN_ADV_BLA' ${CONFIG_BATMAN_ADV_BLA:="y"} >> "${TMP}"
++struct bcast_duplist_entry {
++	uint8_t orig[ETH_ALEN];
++	uint16_t crc;
++	unsigned long entrytime;
++};
  
- # only regenerate compat-autoconf.h when config was changed
- diff "${TMP}" "${TARGET}" > /dev/null 2>&1 || cp "${TMP}" "${TARGET}"
+ struct bat_priv {
+ 	atomic_t mesh_state;
+@@ -186,6 +191,8 @@ struct bat_priv {
+ 	struct list_head tt_req_list; /* list of pending tt_requests */
+ 	struct list_head tt_roam_list;
+ 	struct hashtable_t *vis_hash;
++	struct bcast_duplist_entry bcast_duplist[DUPLIST_SIZE];
++	int bcast_duplist_curr;
+ 	spinlock_t forw_bat_list_lock; /* protects forw_bat_list */
+ 	spinlock_t forw_bcast_list_lock; /* protects  */
+ 	spinlock_t tt_changes_list_lock; /* protects tt_changes */
 -- 
 1.7.7.3
 
