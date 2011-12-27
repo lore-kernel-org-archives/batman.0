@@ -1,11 +1,10 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 27 Dec 2011 17:51:16 +0100
-Message-Id: <1325004682-16792-5-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Tue, 27 Dec 2011 17:51:20 +0100
+Message-Id: <1325004682-16792-9-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <1325004682-16792-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1325004682-16792-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 04/10] batman-adv: export claim tables
-	through debugfs
+Subject: [B.A.T.M.A.N.] [PATCHv2 08/10] batman-adv: drop STP over batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,156 +19,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+
 ---
-[2011-10-27] Changes suggested by Marek Lindner:
- * move rcu_read_lock() more into the loops
-
-[2011-10-30] Changes suggested by Marek Lindner:
- * pimp up claim table debugfs output
-
-[2011-11-04] remove primary_addr
-[2011-12-27] fix alignment, increase readability
+[2011-11-04] always use ETH_ALEN
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- README                  |    5 +--
- bat_debugfs.c           |   10 ++++++++
- bridge_loop_avoidance.c |   54 +++++++++++++++++++++++++++++++++++++++++++++++
- bridge_loop_avoidance.h |    1 +
- 4 files changed, 67 insertions(+), 3 deletions(-)
+ soft-interface.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/README b/README
-index c09780c..0c7a3c8 100644
---- a/README
-+++ b/README
-@@ -75,9 +75,8 @@ folder:
- There is a special folder for debugging information:
+diff --git a/soft-interface.c b/soft-interface.c
+index 0f50a7d..d3f520f 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -129,6 +129,7 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	struct hard_iface *primary_if = NULL;
+ 	struct bcast_packet *bcast_packet;
+ 	struct vlan_ethhdr *vhdr;
++	uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00, 0x00, 0x00};
+ 	unsigned int header_len = 0;
+ 	int data_len = skb->len, ret;
+ 	short vid = -1;
+@@ -158,6 +159,11 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	/* Register the client MAC in the transtable */
+ 	tt_local_add(soft_iface, ethhdr->h_source, skb->skb_iif);
  
- #  ls /sys/kernel/debug/batman_adv/bat0/
--#  gateways     socket        transtable_global  vis_data
--#  originators  softif_neigh  transtable_local
--
-+# bla_claim_table    log                socket             transtable_local
-+# gateways           originators        transtable_global  vis_data
++	/* don't accept stp packets. STP does not help in meshes.
++	 * better use the bridge loop avoidance ... */
++	if (compare_eth(ethhdr->h_dest, stp_addr))
++		goto dropped;
++
+ 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
+ 		do_bcast = true;
  
- Some of the files contain all sort of status information  regard-
- ing  the  mesh  network.  For  example, you can view the table of
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index 1c72e09..476cce2 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -32,6 +32,7 @@
- #include "soft-interface.h"
- #include "vis.h"
- #include "icmp_socket.h"
-+#include "bridge_loop_avoidance.h"
- 
- static struct dentry *bat_debugfs;
- 
-@@ -244,6 +245,13 @@ static int transtable_global_open(struct inode *inode, struct file *file)
- 	return single_open(file, tt_global_seq_print_text, net_dev);
- }
- 
-+static int bla_claim_table_open(struct inode *inode, struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+	return single_open(file, bla_claim_table_seq_print_text, net_dev);
-+}
-+
-+
- static int transtable_local_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
-@@ -277,6 +285,7 @@ static BAT_DEBUGINFO(routing_algos, S_IRUGO, bat_algorithms_open);
- static BAT_DEBUGINFO(originators, S_IRUGO, originators_open);
- static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
- static BAT_DEBUGINFO(transtable_global, S_IRUGO, transtable_global_open);
-+static BAT_DEBUGINFO(bla_claim_table, S_IRUGO, bla_claim_table_open);
- static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
- static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
- 
-@@ -284,6 +293,7 @@ static struct bat_debuginfo *mesh_debuginfos[] = {
- 	&bat_debuginfo_originators,
- 	&bat_debuginfo_gateways,
- 	&bat_debuginfo_transtable_global,
-+	&bat_debuginfo_bla_claim_table,
- 	&bat_debuginfo_transtable_local,
- 	&bat_debuginfo_vis_data,
- 	NULL,
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 30629f5..7cf23ee 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1317,3 +1317,57 @@ out:
- 		claim_free_ref(claim);
- 	return ret;
- }
-+
-+int bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct bat_priv *bat_priv = netdev_priv(net_dev);
-+	struct hashtable_t *hash = bat_priv->claim_hash;
-+	struct claim *claim;
-+	struct hard_iface *primary_if;
-+	struct hlist_node *node;
-+	struct hlist_head *head;
-+	uint32_t i;
-+	bool is_own;
-+	int ret = 0;
-+
-+	primary_if = primary_if_get_selected(bat_priv);
-+	if (!primary_if) {
-+		ret = seq_printf(seq, "BATMAN mesh %s disabled - please "
-+				 "specify interfaces to enable it\n",
-+				 net_dev->name);
-+		goto out;
-+	}
-+
-+	if (primary_if->if_status != IF_ACTIVE) {
-+		ret = seq_printf(seq, "BATMAN mesh %s disabled - "
-+				 "primary interface not active\n",
-+				 net_dev->name);
-+		goto out;
-+	}
-+
-+	seq_printf(seq, "Claims announced for the mesh %s "
-+		   "(orig %pM)\n",
-+		   net_dev->name, primary_if->net_dev->dev_addr);
-+	seq_printf(seq, "   %-17s    %-5s    %-17s [o] (%-4s)\n",
-+		   "Client", "VID", "Originator", "CRC");
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(claim, node, head, hash_entry) {
-+			is_own = compare_eth(claim->backbone_gw->orig,
-+					     primary_if->net_dev->dev_addr);
-+			seq_printf(seq,	" * %pM on % 5d by %pM [%c] (%04x)\n",
-+				   claim->addr, claim->vid,
-+				   claim->backbone_gw->orig,
-+				   (is_own ? 'x' : ' '),
-+				   claim->backbone_gw->crc);
-+		}
-+		rcu_read_unlock();
-+	}
-+out:
-+	if (primary_if)
-+		hardif_free_ref(primary_if);
-+	return ret;
-+}
-diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
-index 488d778..d9e3480 100644
---- a/bridge_loop_avoidance.h
-+++ b/bridge_loop_avoidance.h
-@@ -26,6 +26,7 @@ int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
- int bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
- int bla_is_backbone_gw(struct sk_buff *skb,
- 		       struct orig_node *orig_node, int hdr_size);
-+int bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
- void bla_update_orig_address(struct bat_priv *bat_priv,
- 			     struct hard_iface *primary_if,
- 			     struct hard_iface *oldif);
 -- 
 1.7.7.3
 
