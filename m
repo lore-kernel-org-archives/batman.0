@@ -1,11 +1,15 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 27 Dec 2011 17:51:18 +0100
-Message-Id: <1325004682-16792-7-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1325004682-16792-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-References: <1325004682-16792-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 06/10] batman-adv: don't let backbone
-	gateways exchange tt entries
+Return-Path: <clemens-john@gmx.de>
+From: Clemens John <clemens-john@gmx.de>
+Date: Tue, 27 Dec 2011 23:06:36 +0100
+References: <201112252236.22377.clemens-john@gmx.de>
+	<2075196.LxuFnsEOfE@sven-laptop.home.narfation.org>
+In-Reply-To: <2075196.LxuFnsEOfE@sven-laptop.home.narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2206552.jv9VfqcLWg";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <201112272306.40661.clemens-john@gmx.de>
+Subject: Re: [B.A.T.M.A.N.] HowTo Test Bla2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,186 +23,62 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-As the backbone gateways are connected to the same backbone, they
-should announce the same clients on the backbone non-exclusively.
+--nextPart2206552.jv9VfqcLWg
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+On Sonntag, 25. Dezember 2011 23:29:42 you wrote:
+> On Sunday 25 December 2011 22:36:18 Clemens John wrote:
+> > Hi,
+> >=20
+> > I want to test the  Bridge loop avoidance II with our OpenWrt Freifunk
+> > firmware. Is there a version that works and can be tested? Which git re=
+po
+> > do I have to use and what are the main steps to compile it into openwrt?
+>=20
+> Simon Wunderlich is the maintainer of the bridge loop avoidance II
+> patchset. His current version can be found in his repo [1] in branch blaII
+> (or another branch with blaII in the name). It is currently not rebased on
+> top of master or v2011.4.0... so you cannot take the patchset and put it
+> in OpenWRT.
 
----
-[2011-10-27] Changes suggested by Marek Lindner:
- * move rcu_read_lock() more into the loops
+Simon commited another patchset today so I took the latest snapshot of his=
+=20
+blaII_rebase branch [1] and put it on our own server [2]. I changed the nam=
+e=20
+of the folder inside the snapshot to 2011.4.0 and the md5sum and the url to=
+=20
+download the source in the OpenWrt Makefile [3]. For batctl I used the late=
+st=20
+2011.4.0 release and copied it to our server. But when I try to compile=20
+OpenWrt, I get the following error: http://pastebin.com/PcNH15EC
 
-[2011-12-27] fix alignment
+Anything I can do?
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
- bridge_loop_avoidance.c |   50 +++++++++++++++++++++++++++++++++++++++++++++++
- bridge_loop_avoidance.h |    1 +
- routing.c               |    6 +++++
- translation-table.c     |   17 ++++++++++++++-
- 4 files changed, 72 insertions(+), 2 deletions(-)
+[1] http://git.open-mesh.org/?p=3Dsimon/batman-
+adv.git;a=3Dsnapshot;h=3Debdc92a614b3de8a32c66c92a46df286afe4bf6a;sf=3Dtgz
+[2] http://dev.freifunk-ol.de/batman-adv-2011.4.0.tar.gz
+[3] http://trac.freifunk-
+ol.de/browser/firmware/Trunk/build_patches/bla2/Makefile
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 7cf23ee..a5e0eb7 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -24,6 +24,7 @@
- #include "hard-interface.h"
- #include "originator.h"
- #include "bridge_loop_avoidance.h"
-+#include "translation-table.h"
- #include "send.h"
- 
- #include <linux/etherdevice.h>
-@@ -366,6 +367,7 @@ static struct backbone_gw *bla_get_backbone_gw(struct bat_priv *bat_priv,
- 					       uint8_t *orig, short vid)
- {
- 	struct backbone_gw *entry;
-+	struct orig_node *orig_node;
- 	int hash_added;
- 
- 	entry = backbone_hash_find(bat_priv, orig, vid);
-@@ -400,6 +402,13 @@ static struct backbone_gw *bla_get_backbone_gw(struct bat_priv *bat_priv,
- 		return NULL;
- 	}
- 
-+	/* this is a gateway now, remove any tt entries */
-+	orig_node = orig_hash_find(bat_priv, orig);
-+	if (orig_node) {
-+		tt_global_del_orig(bat_priv, orig_node,
-+				   "became a backbone gateway");
-+		orig_node_free_ref(orig_node);
-+	}
- 	return entry;
- }
- 
-@@ -1067,6 +1076,47 @@ int bla_init(struct bat_priv *bat_priv)
- }
- 
- /**
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @orig: originator mac address
-+ *
-+ * check if the originator is a gateway for any VLAN ID.
-+ *
-+ * returns 1 if it is found, 0 otherwise
-+ *
-+ **/
-+
-+int bla_is_backbone_gw_orig(struct bat_priv *bat_priv, uint8_t *orig)
-+{
-+	struct hashtable_t *hash = bat_priv->backbone_hash;
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct backbone_gw *backbone_gw;
-+	int i;
-+
-+	if (!atomic_read(&bat_priv->bridge_loop_avoidance))
-+		return 0;
-+
-+	if (!hash)
-+		return 0;
-+
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(backbone_gw, node, head, hash_entry) {
-+			if (compare_eth(backbone_gw->orig, orig)) {
-+				rcu_read_unlock();
-+				return 1;
-+			}
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	return 0;
-+}
-+
-+
-+/**
-  * @skb: the frame to be checked
-  * @orig_node: the orig_node of the frame
-  * @hdr_size: maximum length of the frame
-diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
-index d9e3480..b74940f 100644
---- a/bridge_loop_avoidance.h
-+++ b/bridge_loop_avoidance.h
-@@ -27,6 +27,7 @@ int bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
- int bla_is_backbone_gw(struct sk_buff *skb,
- 		       struct orig_node *orig_node, int hdr_size);
- int bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
-+int bla_is_backbone_gw_orig(struct bat_priv *bat_priv, uint8_t *orig);
- void bla_update_orig_address(struct bat_priv *bat_priv,
- 			     struct hard_iface *primary_if,
- 			     struct hard_iface *oldif);
-diff --git a/routing.c b/routing.c
-index f12b34f..4da34b3 100644
---- a/routing.c
-+++ b/routing.c
-@@ -671,6 +671,12 @@ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
- 	if (!is_my_mac(roam_adv_packet->dst))
- 		return route_unicast_packet(skb, recv_if);
- 
-+	/* check if it is a backbone gateway. we don't accept
-+	 * roaming advertisement from it, as it has the same
-+	 * entries as we have. */
-+	if (bla_is_backbone_gw_orig(bat_priv, roam_adv_packet->src))
-+		goto out;
-+
- 	orig_node = orig_hash_find(bat_priv, roam_adv_packet->src);
- 	if (!orig_node)
- 		goto out;
-diff --git a/translation-table.c b/translation-table.c
-index 32d0fb8..12463d2 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -27,6 +27,7 @@
- #include "hash.h"
- #include "originator.h"
- #include "routing.h"
-+#include "bridge_loop_avoidance.h"
- 
- #include <linux/crc16.h>
- 
-@@ -1547,9 +1548,13 @@ out:
- bool send_tt_response(struct bat_priv *bat_priv,
- 		      struct tt_query_packet *tt_request)
- {
--	if (is_my_mac(tt_request->dst))
-+	if (is_my_mac(tt_request->dst)) {
-+		/* don't answer backbone gws! */
-+		if (bla_is_backbone_gw_orig(bat_priv, tt_request->src))
-+			return true;
-+
- 		return send_my_tt_response(bat_priv, tt_request);
--	else
-+	} else
- 		return send_other_tt_response(bat_priv, tt_request);
- }
- 
-@@ -1655,6 +1660,10 @@ void handle_tt_response(struct bat_priv *bat_priv,
- 		tt_response->tt_data,
- 		(tt_response->flags & TT_FULL_TABLE ? 'F' : '.'));
- 
-+	/* we should have never asked a backbone gw */
-+	if (bla_is_backbone_gw_orig(bat_priv, tt_response->src))
-+		goto out;
-+
- 	orig_node = orig_hash_find(bat_priv, tt_response->src);
- 	if (!orig_node)
- 		goto out;
-@@ -1982,6 +1991,10 @@ void tt_update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 	uint8_t orig_ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
- 	bool full_table = true;
- 
-+	/* don't care about a backbone gateways updates. */
-+	if (bla_is_backbone_gw_orig(bat_priv, orig_node->orig))
-+		return;
-+
- 	/* orig table not initialised AND first diff is in the OGM OR the ttvn
- 	 * increased by one -> we can apply the attached changes */
- 	if ((!orig_node->tt_initialised && ttvn == 1) ||
--- 
-1.7.7.3
+Sry for this questions but I=B4m absolutely not very familar with this thin=
+gs so=20
+I need your help to test it.
 
+Regards
+Clemens
+
+--nextPart2206552.jv9VfqcLWg
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAk76QWwACgkQZgdHbA22lqMTFwCeMsRYW9YcNhBvetmWpqWCuqbU
+jO0An29hL9Z2JRlFSF56JwolCAkgbyuM
+=pZ1S
+-----END PGP SIGNATURE-----
+
+--nextPart2206552.jv9VfqcLWg--
