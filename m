@@ -1,15 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 29 Dec 2011 23:26:47 +0800
-References: <1325003047-16582-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1325003047-16582-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Return-Path: <bjo@nord-west.org>
+From: Bjoern Franke <bjo@nord-west.org>
+Date: Thu, 29 Dec 2011 22:19:11 +0100
+Message-ID: <4423425.OCX3qX6ovA@mytilus>
+In-Reply-To: <201112281811.58622.clemens-john@gmx.de>
+References: <201112281811.58622.clemens-john@gmx.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201112292326.47668.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: convert all times to
-	miliseconds
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] HowTo Test Bla2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,15 +21,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday, December 28, 2011 00:24:07 Simon Wunderlich wrote:
-> has_timed_out() takes the second argument in miliseconds. The commit
-> "batman-adv: convert time_after instances to has_timed_out" introduced
-> some bugs by confusing seconds and miliseconds.
+Hi,
+
+Am Mittwoch, 28. Dezember 2011, 18:11:48 schrieb Clemens John:
+
+
 > 
-> This patch converts all timeouts to miliseconds to be consistent, and
-> also fixes the previously introduced bugs.
+> Maybe you can take a look at it and find our mistake?
 
-Applied in revision d2c993d.
+We got it built now, but it has some unknown symbols:
 
-Thanks,
-Marek
+batman_adv: Unknown symbol free_rcu_tt_local_entry
+batman_adv: Unknown symbol free_rcu_gw_node
+batman_adv: Unknown symbol free_rcu_backbone_gw
+batman_adv: Unknown symbol free_rcu_neigh_node
+
+What did we miss?
+
+regards
+Bjoern 
+
+-- 
+jabber: bjo@schafweide.org
+bjo.nord-west.org | nord-west.org | freifunk-ol.de
