@@ -1,10 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  1 Jan 2012 00:41:40 +0100
-Message-Id: <1325374901-1620-4-git-send-email-sven@narfation.org>
-In-Reply-To: <1325374901-1620-1-git-send-email-sven@narfation.org>
-References: <1325374901-1620-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] vis: Update copyright years
+Return-Path: <bjo@nord-west.org>
+From: Bjoern Franke <bjo@nord-west.org>
+Date: Mon, 02 Jan 2012 23:09:09 +0100
+Message-ID: <1542912.6mqKHTfaCm@ostrea>
+In-Reply-To: <2075196.LxuFnsEOfE@sven-laptop.home.narfation.org>
+References: <201112252236.22377.clemens-john@gmx.de>
+	<2075196.LxuFnsEOfE@sven-laptop.home.narfation.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] HowTo Test Bla2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,154 +20,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- Makefile      |    2 +-
- allocate.c    |    2 +-
- allocate.h    |    2 +-
- hash.c        |    2 +-
- hash.h        |    2 +-
- list-batman.c |    2 +-
- list-batman.h |    2 +-
- udp_server.c  |    2 +-
- vis-types.h   |    2 +-
- vis.c         |    2 +-
- vis.h         |    2 +-
- 11 files changed, 11 insertions(+), 11 deletions(-)
+Hi,
 
-diff --git a/Makefile b/Makefile
-index 1804155..c4220f5 100755
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- #!/usr/bin/make -f
- # -*- makefile -*-
- #
--# Copyright (C) 2006-2009 BATMAN contributors
-+# Copyright (C) 2006-2012 BATMAN contributors
- #
- # This program is free software; you can redistribute it and/or
- # modify it under the terms of version 2 of the GNU General Public
-diff --git a/allocate.c b/allocate.c
-index 56f495f..5077531 100644
---- a/allocate.c
-+++ b/allocate.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2012 B.A.T.M.A.N. contributors:
-  *
-  * Thomas Lopatic, Corinna 'Elektra' Aichele, Axel Neumann, Marek Lindner
-  *
-diff --git a/allocate.h b/allocate.h
-index c3fe7df..167ab33 100644
---- a/allocate.h
-+++ b/allocate.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2012 B.A.T.M.A.N. contributors:
-  *
-  * Thomas Lopatic, Corinna 'Elektra' Aichele, Axel Neumann, Marek Lindner
-  *
-diff --git a/hash.c b/hash.c
-index e8c822f..2a9f557 100644
---- a/hash.c
-+++ b/hash.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006-2011 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2012 B.A.T.M.A.N. contributors:
-  *
-  * Simon Wunderlich, Marek Lindner
-  *
-diff --git a/hash.h b/hash.h
-index 443ef28..91ee7d8 100644
---- a/hash.h
-+++ b/hash.h
-@@ -1,5 +1,5 @@
- /* 
-- * Copyright (C) 2006-2011 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2012 B.A.T.M.A.N. contributors:
-  *
-  * Simon Wunderlich, Marek Lindner
-  *
-diff --git a/list-batman.c b/list-batman.c
-index 356c1eb..a0c2ad8 100644
---- a/list-batman.c
-+++ b/list-batman.c
-@@ -1,5 +1,5 @@
- /* 
-- * Copyright (C) 2006-2011 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2012 B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/list-batman.h b/list-batman.h
-index 72d2ac4..ebff97c 100644
---- a/list-batman.h
-+++ b/list-batman.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006-2011 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2012 B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/udp_server.c b/udp_server.c
-index 8f9e664..1df497c 100644
---- a/udp_server.c
-+++ b/udp_server.c
-@@ -1,7 +1,7 @@
- /*
-  * udp_server.c
-  *
-- * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2012 B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/vis-types.h b/vis-types.h
-index a4a35b2..c4c8068 100644
---- a/vis-types.h
-+++ b/vis-types.h
-@@ -1,7 +1,7 @@
- /*
-  * vis-types.h
-  *
-- * Copyright (C) 2006-2009 Marek Lindner:
-+ * Copyright (C) 2006-2012 Marek Lindner:
-  *
-  *
-  * This program is free software; you can redistribute it and/or
-diff --git a/vis.c b/vis.c
-index 039bfa0..d92fbe8 100644
---- a/vis.c
-+++ b/vis.c
-@@ -1,7 +1,7 @@
- /*
-  * vis.c
-  *
-- * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2012 B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner
-  * 
-diff --git a/vis.h b/vis.h
-index 74a3bd8..76ffdfb 100644
---- a/vis.h
-+++ b/vis.h
-@@ -1,7 +1,7 @@
- /*
-  * vis.h
-  *
-- * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2012 B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner
-  *
+Am Sonntag, 25. Dezember 2011, 23:29:42 schrieb Sven Eckelmann:
+> On Sunday 25 December 2011 22:36:18 Clemens John wrote:
+> > Hi,
+> > 
+> > I want to test the  Bridge loop avoidance II with our OpenWrt Freifunk
+> > firmware. Is there a version that works and can be tested? Which git repo
+> > do I have to use and what are the main steps to compile it into openwrt?
+> Simon Wunderlich is the maintainer of the bridge loop avoidance II patchset.
+> His current version can be found in his repo [1] in branch blaII (or
+> another branch with blaII in the name). It is currently not rebased on top
+> of master or v2011.4.0... so you cannot take the patchset and put it in
+> OpenWRT.
+
+We used the rebased version and got the module compiled (yeah! ;).
+ 
+I enabled blaII on one node, and after that all nodes connected to the vpn 
+went unreachable. Most of them use 2011.0.0, some others 2011.4.0, running an 
+ad-hoc iface as bat-adv-iface and bat0, tap0 and ath0(master, for clients) as 
+a bridge. Do the blaII-packets "kill" all the other nodes? I thought the 
+blaII-packets would have no effect on the other nodes because of the compat-
+layer.
+
+regards
+Bjoern
 -- 
-1.7.7.3
-
+jabber: bjo@schafweide.org
+bjo.nord-west.org | nord-west.org | freifunk-ol.de
