@@ -1,15 +1,16 @@
 Return-Path: <onelektra@gmx.net>
 From: elektra <onelektra@gmx.net>
-Date: Tue, 3 Jan 2012 12:55:58 +0100
+Date: Tue, 3 Jan 2012 12:56:25 +0100
 References: <1324642552-23038-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1324642552-23038-1-git-send-email-sven@narfation.org>
+	<1324642552-23038-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1324642552-23038-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201201031255.59342.onelektra@gmx.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batmand: Remove unmaintained *BSD
-	port
+Message-Id: <201201031256.26547.onelektra@gmx.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batmand: Remove unmaintained batgat
+	kernel module
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,89 +29,224 @@ Applied, thanks!
 Cheers,
 Elektra
 
-Am Freitag, 23. Dezember 2011 13:15:50 schrieb Sven Eckelmann:
+Am Freitag, 23. Dezember 2011 13:15:51 schrieb Sven Eckelmann:
+> The batgat kernel module has to be ported to every new kernel version to
+> be compatible with always moving kernel API. It currently only crashes
+> when be used with modern kernels.
+> 
+> It doesn't fulfill the requirements to be merged into the upstream
+> kernel and therefore needs an updated compat layer before it can be
+> readded to batmand.
+> 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  INSTALL        |    9 +-
->  Makefile       |   18 ----
->  bsd/compat.c   |   53 -------------
->  bsd/kernel.c   |  145 ----------------------------------
->  bsd/route.c    |  224 ----------------------------------------------------
->  bsd/tun.c      |  239 --------------------------------------------------------
->  list-batman.h  |    7 --
->  posix/tunnel.c |   15 ----
->  8 files changed, 4 insertions(+), 706 deletions(-)
->  delete mode 100644 bsd/compat.c
->  delete mode 100644 bsd/kernel.c
->  delete mode 100644 bsd/route.c
->  delete mode 100644 bsd/tun.c
+>  linux/kernel.c                |   13 -
+>  linux/modules/Makefile        |   39 --
+>  linux/modules/Makefile.kbuild |   24 --
+>  linux/modules/compat26.h      |   65 ----
+>  linux/modules/gateway.c       |  832 -----------------------------------------
+>  linux/modules/gateway.h       |   93 -----
+>  linux/modules/gateway24.c     |  748 ------------------------------------
+>  linux/modules/gateway24.h     |   98 -----
+>  linux/modules/hash.c          |  296 ---------------
+>  linux/modules/hash.h          |  100 -----
+>  linux/modules/mod_batman.c    |  445 ----------------------
+>  os.h                          |    1 -
+>  posix/init.c                  |  116 ++-----
+>  posix/posix.c                 |   15 -
+>  types.h                       |    7 -
+>  15 files changed, 22 insertions(+), 2870 deletions(-)
+>  delete mode 100644 linux/modules/Makefile
+>  delete mode 100644 linux/modules/Makefile.kbuild
+>  delete mode 100644 linux/modules/compat26.h
+>  delete mode 100644 linux/modules/gateway.c
+>  delete mode 100644 linux/modules/gateway.h
+>  delete mode 100644 linux/modules/gateway24.c
+>  delete mode 100644 linux/modules/gateway24.h
+>  delete mode 100644 linux/modules/hash.c
+>  delete mode 100644 linux/modules/hash.h
+>  delete mode 100644 linux/modules/mod_batman.c
 > 
-> diff --git a/INSTALL b/INSTALL
-> index 41566ab..15f53b0 100644
-> --- a/INSTALL
-> +++ b/INSTALL
-> @@ -13,12 +13,11 @@ You need the usual compile environment and the libpthread-library
->  and the kernel module "tun". Both should already be installed on
->  your machine, if you use a PC with Linux. On embedded devices
->  both may not be installed in order to save space. GNU Make is needed
-> -for compilation (currently BSD Make is not cooperating).
-> +for compilation.
+> diff --git a/linux/kernel.c b/linux/kernel.c
+> index 3f3d8b4..b421f51 100644
+> --- a/linux/kernel.c
+> +++ b/linux/kernel.c
+> @@ -169,19 +169,6 @@ int8_t bind_to_iface(int32_t sock, char *dev)
+>  	return 1;
+>  }
 >  
-> -The *BSD and Mac OS operating systems are currently unmaintained,
-> -make targets are still available but will most probably not work.
-> -If you're interested in porting and maintaining B.A.T.M.A.N. for
-> -these systems, please contact us. We would appreciate your help.
-> +The ports to *BSD and Mac OS operating systems are currently not
-> +available. If you're interested in porting and maintaining B.A.T.M.A.N.
-> +for these systems, please contact us. We would appreciate your help.
->  
->  Tweaking
->  --------
-> diff --git a/Makefile b/Makefile
-> index 65e0cf2..9aafbc8 100755
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -23,30 +23,12 @@ BINARY_NAME = batmand
->  
->  UNAME =		$(shell uname)
->  POSIX_OBJ =	posix/init.o posix/posix.o posix/tunnel.o posix/unix_socket.o
-> -BSD_OBJ =	bsd/route.o bsd/tun.o bsd/kernel.o bsd/compat.o
->  LINUX_OBJ =	linux/route.o linux/tun.o linux/kernel.o
->  
->  ifeq ($(UNAME),Linux)
->  OS_OBJ =	$(LINUX_OBJ) $(POSIX_OBJ)
->  endif
->  
-> -ifeq ($(UNAME),Darwin)
-> -OS_OBJ =	$(BSD_OBJ) $(POSIX_OBJ)
-> -endif
+> -int32_t use_gateway_module(void)
+> -{
+> -	int32_t fd;
 > -
-> -ifeq ($(UNAME),GNU/kFreeBSD)
-> -OS_OBJ =	$(BSD_OBJ) $(POSIX_OBJ)
-> -LDLIBS +=	-lfreebsd -lbsd
-> -endif
+> -	if ((fd = open("/dev/batgat", O_WRONLY)) < 0) {
+> -		debug_output(0, "Warning - batgat kernel modul interface (/dev/batgat) not usable: %s\nThis may decrease the performance of batman!\n", strerror(errno));
 > -
-> -ifeq ($(UNAME),FreeBSD)
-> -OS_OBJ =	$(BSD_OBJ) $(POSIX_OBJ)
-> -endif
+> -		return -1;
+> -	}
 > -
-> -ifeq ($(UNAME),OpenBSD)
-> -OS_OBJ =	$(BSD_OBJ) $(POSIX_OBJ)
-> -endif
+> -	return fd;
+> -}
 > -
->  OBJ = batman.o originator.o schedule.o list-batman.o allocate.o bitarray.o hash.o profile.o ring_buffer.o hna.o $(OS_OBJ)
->  MANPAGE = man/batmand.8
->  
-> diff --git a/bsd/compat.c b/bsd/compat.c
+>  int is_wifi_interface(char *dev, int fd)
+>  {
+>  	struct ifreq int_req;
+> diff --git a/linux/modules/Makefile b/linux/modules/Makefile
 > deleted file mode 100644
-> index a628378..0000000
-> --- a/bsd/compat.c
+> index e5f9bbf..0000000
+> --- a/linux/modules/Makefile
 > +++ /dev/null
-> @@ -1,53 +0,0 @@
+> @@ -1,39 +0,0 @@
+> -PWD:=$(shell pwd)
+> -ifeq ($(wildcard $(KERNELPATH)),)
+> -KERNELPATH = /lib/modules/$(shell uname -r)/build
+> -# sanity check: does KERNELPATH exist?
+> -ifeq ($(shell cd $(KERNELPATH) && pwd),)
+> -$(error $(KERNELPATH) is missing, please set KERNELPATH)
+> -endif
+> -export KERNELPATH
+> -endif
+> -
+> -
+> -UNAME:=$(shell uname -r)
+> -LINUX24=2.4
+> -LINUX_VERSION:=$(findstring $(LINUX24),$(UNAME))
+> -REVISION= $(shell      if [ -d ../../.git ]; then \
+> -                               echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); \
+> -                        fi)
+> -
+> -include $(PWD)/Makefile.kbuild
+> -
+> -ifeq ($(LINUX_VERSION),$(LINUX24))
+> -TARGET:=batgat
+> -INCLUDE:=-I/lib/modules/$(UNAME)/build/include -I/usr/src/kernel-headers-$(UNAME)/include
+> -EXTRA_CFLAGS+=-D__KERNEL__ -DMODULE -O2 -Wall $(INCLUDE)
+> -CC:=gcc
+> -endif
+> -
+> -ifneq ($(LINUX_VERSION),$(LINUX24))
+> -
+> -all:
+> -	$(MAKE) -C $(KERNELPATH) REVISION=$(REVISION) M=$(PWD) PWD=$(PWD) modules
+> -
+> -clean:
+> -	$(MAKE) -C $(KERNELPATH) M=$(PWD) PWD=$(PWD) clean
+> -else
+> -
+> -clean:
+> -	rm -f *.o *~
+> -endif
+> diff --git a/linux/modules/Makefile.kbuild b/linux/modules/Makefile.kbuild
+> deleted file mode 100644
+> index ae538ad..0000000
+> --- a/linux/modules/Makefile.kbuild
+> +++ /dev/null
+> @@ -1,24 +0,0 @@
+> -ifeq ($(MAKING_MODULES),1)
+> --include $(TOPDIR)/Rules.make
+> -endif
+> -
+> -LINUX24:=2.4
+> -ifneq ($(REVISION),)
+> -ccflags-y += -DSOURCE_VERSION=\"$(REVISION)\"
+> -else
+> -ccflags-y += -DSOURCE_VERSION=\"\"
+> -endif
+> -
+> -ifneq ($(strip $(findstring $(LINUX24),$(LINUX_VERSION))),$(LINUX24))
+> -
+> -obj-m += batgat.o
+> -batgat-objs := gateway.o hash.o
+> -
+> -else
+> -
+> -modules: batgat.o
+> -
+> -batgat.o: gateway24.o hash.o
+> -	$(LD) -r $^ -o $@
+> -
+> -endif
+> diff --git a/linux/modules/compat26.h b/linux/modules/compat26.h
+> deleted file mode 100644
+> index a7f31d1..0000000
+> --- a/linux/modules/compat26.h
+> +++ /dev/null
+> @@ -1,65 +0,0 @@
 > -/*
-> - * Copyright (C) 2006, 2007 BATMAN contributors:
-> - * Stefan Sperling <stsp@stsp.name>
+> - * Copyright (C) 2008-2009 B.A.T.M.A.N. contributors:
 > - *
+> - * Thomas Lopatic, Corinna 'Elektra' Aichele, Axel Neumann, Marek Lindner, Andreas Langer
+> - * This program is free software; you can redistribute it and/or
+> - * modify it under the terms of version 2 of the GNU General Public
+> - * License as published by the Free Software Foundation.
+> - *
+> - * This program is distributed in the hope that it will be useful, but
+> - * WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+> - * General Public License for more details.
+> - *
+> - * You should have received a copy of the GNU General Public License
+> - * along with this program; if not, write to the Free Software
+> - * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+> - * 02110-1301, USA
+> - *
+> - *
+> - * This file contains macros for maintaining compatibility with older versions
+> - * of the Linux kernel.
+> - */
+> -
+> -#include <linux/version.h>	/* LINUX_VERSION_CODE */
+> -
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 22)
+> -
+> -#define skb_network_header(_skb) \
+> -	((_skb)->nh.raw)
+> -
+> -static inline struct iphdr *ip_hdr(const struct sk_buff *skb)
+> -{
+> -	return (struct iphdr *)skb_network_header(skb);
+> -}
+> -
+> -#endif /* KERNEL_VERSION(2, 6, 22) */
+> -
+> -
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 19)
+> -
+> -static inline int kernel_bind(struct socket *sock, struct sockaddr *addr, int addrlen)
+> -{
+> -	return sock->ops->bind(sock, addr, addrlen);
+> -}
+> -
+> -#endif /* KERNEL_VERSION(2, 6, 19) */
+> -
+> -
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26)
+> -
+> -#define device_create \
+> -	class_device_create
+> -
+> -#define device_destroy \
+> -	class_device_destroy
+> -#else
+> -
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27)
+> -
+> -#define device_create \
+> -	device_create_drvdata
+> -
+> -#endif /* KERNEL_VERSION(2,6,27) */
+> -
+> -#endif /* KERNEL_VERSION(2,6,26) */
+> diff --git a/linux/modules/gateway.c b/linux/modules/gateway.c
+> deleted file mode 100644
+> index 49b958f..0000000
+> --- a/linux/modules/gateway.c
+> +++ /dev/null
+> @@ -1,832 +0,0 @@
+> -/*
+> - * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
+> - *
+> - * Thomas Lopatic, Corinna 'Elektra' Aichele, Axel Neumann, Marek Lindner, Andreas Langer
 > - * This program is free software; you can redistribute it and/or
 > - * modify it under the terms of version 2 of the GNU General Public
 > - * License as published by the Free Software Foundation.
@@ -127,200 +263,828 @@ Am Freitag, 23. Dezember 2011 13:15:50 schrieb Sven Eckelmann:
 > - *
 > - */
 > -
-> -/* This file contains functions that are used by batman but are not
-> - * present in BSD libc. */
+> -#include "gateway.h"
+> -#include "hash.h"
+> -#include "compat26.h"
 > -
-> -#warning BSD support is known broken - if you compile this on BSD you are expected to fix it :-P
 > -
-> -#include <sys/types.h>
-> -#include <unistd.h>
-> -#include <stdio.h>
-> -#include <stdarg.h>
+> -static struct class *batman_class;
 > -
-> -/* Adapted from busybox */
-> -int vdprintf(int d, const char *format, va_list ap)
+> -
+> -static int batgat_open(struct inode *inode, struct file *filp);
+> -static int batgat_release(struct inode *inode, struct file *file);
+> -static int batgat_ioctl( struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg );
+> -
+> -
+> -static void udp_data_ready(struct sock *sk, int len);
+> -static int packet_recv_thread(void *data);
+> -
+> -static int compare_wip( void *data1, void *data2 );
+> -static int choose_wip( void *data, int32_t size );
+> -static int compare_vip( void *data1, void *data2 );
+> -static int choose_vip( void *data, int32_t size );
+> -static struct gw_client *get_ip_addr(struct sockaddr_in *client_addr);
+> -
+> -static void bat_netdev_setup( struct net_device *dev);
+> -static int create_bat_netdev(void);
+> -static int bat_netdev_open( struct net_device *dev );
+> -static int bat_netdev_close( struct net_device *dev );
+> -static int bat_netdev_xmit( struct sk_buff *skb, struct net_device *dev );
+> -
+> -static void cleanup_procfs(void);
+> -static int setup_procfs(void);
+> -static int proc_clients_read(char *buf, char **start, off_t offset, int size, int *eof, void *data);
+> -
+> -static struct file_operations fops = {
+> -	.open = batgat_open,
+> -	.release = batgat_release,
+> -	.unlocked_ioctl = batgat_ioctl,
+> -};
+> -
+> -
+> -static int Major;					/* Major number assigned to our device driver */
+> -
+> -static struct net_device *gate_device = NULL;
+> -
+> -static struct hashtable_t *wip_hash;
+> -static struct hashtable_t *vip_hash;
+> -
+> -static struct list_head free_client_list;
+> -
+> -
+> -
+> -DEFINE_SPINLOCK(hash_lock);
+> -atomic_t data_ready_cond;
+> -atomic_t exit_cond;
+> -DECLARE_WAIT_QUEUE_HEAD(thread_wait);
+> -static struct task_struct *kthread_task = NULL;
+> -
+> -
+> -static struct proc_dir_entry *proc_dir, *clients_file;
+> -
+> -int init_module(void)
 > -{
-> -	char buf[1024];
-> -	int len;
+> -	/* register our device - kernel assigns a free major number */
+> -	if ( ( Major = register_chrdev( 0, DRIVER_DEVICE, &fops ) ) < 0 ) {
 > -
-> -	len = vsnprintf(buf, sizeof(buf), format, ap);
-> -	return write(d, buf, len);
-> -}
+> -		DBG( "registering the character device failed with %d", Major );
+> -		return Major;
 > -
-> -/* From glibc */
-> -int dprintf(int d, const char *format, ...)
-> -{
-> -  va_list arg;
-> -  int done;
-> -
-> -  va_start (arg, format);
-> -  done = vdprintf (d, format, arg);
-> -  va_end (arg);
-> -
-> -  return done;
-> -}
-> -
-> diff --git a/bsd/kernel.c b/bsd/kernel.c
-> deleted file mode 100644
-> index b98c06f..0000000
-> --- a/bsd/kernel.c
-> +++ /dev/null
-> @@ -1,145 +0,0 @@
-> -/*
-> - * Copyright (C) 2006, 2007 BATMAN contributors:
-> - * Stefan Sperling <stsp@stsp.name>
-> - *
-> - * This program is free software; you can redistribute it and/or
-> - * modify it under the terms of version 2 of the GNU General Public
-> - * License as published by the Free Software Foundation.
-> - *
-> - * This program is distributed in the hope that it will be useful, but
-> - * WITHOUT ANY WARRANTY; without even the implied warranty of
-> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-> - * General Public License for more details.
-> - *
-> - * You should have received a copy of the GNU General Public License
-> - * along with this program; if not, write to the Free Software
-> - * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-> - * 02110-1301, USA
-> - *
-> - */
-> -
-> -/* This file contains functions that deal with BSD kernel interfaces,
-> - * such as sysctls. */
-> -
-> -#warning BSD support is known broken - if you compile this on BSD you are expected to fix it :-P
-> -
-> -#include <sys/types.h>
-> -#include <sys/param.h>
-> -#include <sys/sysctl.h>
-> -#include <sys/socket.h>
-> -#include <fcntl.h>
-> -#include <stdio.h>
-> -#include <errno.h>
-> -#include <err.h>
-> -
-> -#include "../os.h"
-> -#include "../batman.h"
-> -
-> -void set_forwarding(int32_t state)
-> -{
-> -	int mib[4];
-> -
-> -	/* FreeBSD allows us to set a boolean sysctl to anything.
-> -	 * Check the value for sanity. */
-> -	if (state < 0 || state > 1) {
-> -		errno = EINVAL;
-> -		err(1, "set_forwarding: %i", state);
 > -	}
 > -
-> -	/* "net.inet.ip.forwarding" */
-> -	mib[0] = CTL_NET;
-> -	mib[1] = PF_INET;
-> -	mib[2] = IPPROTO_IP;
-> -	mib[3] = IPCTL_FORWARDING;
+> -	batman_class = class_create( THIS_MODULE, "batgat" );
 > -
-> -	if (sysctl(mib, 4, NULL, 0, (void*)&state, sizeof(state)) == -1)
-> -		err(1, "Cannot change net.inet.ip.forwarding");
+> -	if ( IS_ERR( batman_class ) )
+> -		DBG( "could not register class 'batgat'" );
+> -	else
+> -		device_create(batman_class, NULL, MKDEV(Major, 0), NULL, "batgat");
+> -
+> -
+> -	DBG( "batgat loaded %s", SOURCE_VERSION );
+> -	DBG( "I was assigned major number %d. To talk to", Major );
+> -	DBG( "the driver, create a dev file with 'mknod /dev/batgat c %d 0'.", Major );
+> -	DBG( "Remove the device file and module when done." );
+> -
+> -	setup_procfs();
+> -
+> -	/* TODO: error handling */
+> -	vip_hash = hash_new( 128, compare_vip, choose_vip );
+> -	wip_hash = hash_new( 128, compare_wip, choose_wip );
+> -
+> -	INIT_LIST_HEAD(&free_client_list);
+> -
+> -
+> -	return(0);
 > -}
 > -
-> -int32_t get_forwarding(void)
+> -void cleanup_module(void)
 > -{
-> -	int state;
-> -	size_t len;
-> -	int mib[4];
+> -	struct free_client_data *entry, *next;
+> -	struct gw_client *gw_client;
 > -
-> -	/* "net.inet.ip.forwarding" */
-> -	mib[0] = CTL_NET;
-> -	mib[1] = PF_INET;
-> -	mib[2] = IPPROTO_IP;
-> -	mib[3] = IPCTL_FORWARDING;
+> -	device_destroy( batman_class, MKDEV( Major, 0 ) );
+> -	class_destroy( batman_class );
 > -
-> -	len = sizeof(state);
+> -	/* Unregister the device */
+> -	unregister_chrdev( Major, DRIVER_DEVICE );
 > -
-> -	if (sysctl(mib, 4, &state, &len, NULL, 0) == -1)
-> -		err(1, "Cannot tell if packet forwarding is enabled");
+> -	if(kthread_task) {
 > -
-> -	return state;
-> -}
+> -		atomic_set(&exit_cond, 1);
+> -		wake_up_interruptible(&thread_wait);
+> -		kthread_stop(kthread_task);
 > -
-> -void set_send_redirects(int32_t state, char* BATMANUNUSED(dev))
-> -{
-> -	int mib[4];
-> -
-> -	/* FreeBSD allows us to set a boolean sysctl to anything.
-> -	 * Check the value for sanity. */
-> -	if (state < 0 || state > 1) {
-> -		errno = EINVAL;
-> -		err(1, "set_send_redirects: %i", state);
 > -	}
 > -
-> -	/* "net.inet.ip.redirect" */
-> -	mib[0] = CTL_NET;
-> -	mib[1] = PF_INET;
-> -	mib[2] = IPPROTO_IP;
-> -	mib[3] = IPCTL_SENDREDIRECTS;
 > -
-> -	if (sysctl(mib, 4, NULL, 0, (void*)&state, sizeof(state)) == -1)
-> -		err(1, "Cannot change net.inet.ip.redirect");
-> -}
+> -	if(gate_device) {
+> -// 		dev_put(gate_device);
+> -		unregister_netdev(gate_device);
+> -	}
 > -
-> -int32_t get_send_redirects(char *BATMANUNUSED(dev))
-> -{
-> -	int state;
-> -	size_t len;
-> -	int mib[4];
+> -	list_for_each_entry_safe(entry, next, &free_client_list, list) {
 > -
-> -	/* "net.inet.ip.redirect" */
-> -	mib[0] = CTL_NET;
-> -	mib[1] = PF_INET;
-> -	mib[2] = IPPROTO_IP;
-> -	mib[3] = IPCTL_SENDREDIRECTS;
+> -		if(entry->gw_client != NULL) {
+> -			gw_client = entry->gw_client;
+> -			list_del(&entry->list);
+> -			kfree(entry);
+> -			kfree(gw_client);
+> -		}
 > -
-> -	len = sizeof(state);
+> -	}
 > -
-> -	if (sysctl(mib, 4, &state, &len, NULL, 0) == -1)
-> -		err(1, "Cannot tell if redirects are enabled");
-> -
-> -	return state;
-> -}
-> -
-> -void set_rp_filter( int32_t BATMANUNUSED(state), char* BATMANUNUSED(dev) )
-> -{
-> -	/* On BSD, reverse path filtering should be disabled in the firewall. */
+> -	cleanup_procfs();
+> -	DBG( "unload module complete" );
 > -	return;
 > -}
 > -
-> -int32_t get_rp_filter( char *BATMANUNUSED(dev) )
+> -static int batgat_open(struct inode *inode, struct file *filp)
 > -{
-> -	/* On BSD, reverse path filtering should be disabled in the firewall. */
+> -	try_module_get(THIS_MODULE);
+> -	return( 0 );
+> -}
+> -
+> -static int batgat_release(struct inode *inode, struct file *file)
+> -{
+> -	module_put(THIS_MODULE);
+> -	return( 0 );
+> -}
+> -
+> -
+> -static int batgat_ioctl( struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg )
+> -{
+> -	uint8_t tmp_ip[4];
+> -	struct batgat_ioc_args ioc;
+> -	struct free_client_data *entry, *next;
+> -	struct gw_client *gw_client;
+> -
+> -	int ret_value = 0;
+> -
+> -	if( cmd == IOCSETDEV || cmd == IOCREMDEV ) {
+> -
+> -		if( !access_ok( VERIFY_READ, ( void __user* )arg, sizeof( ioc ) ) ) {
+> -			DBG( "access to memory area of arg not allowed" );
+> -			ret_value = -EFAULT;
+> -			goto end;
+> -		}
+> -
+> -		if( __copy_from_user( &ioc, ( void __user* )arg, sizeof( ioc ) ) ) {
+> -			ret_value = -EFAULT;
+> -			goto end;
+> -		}
+> -
+> -	}
+> -
+> -	switch( cmd ) {
+> -
+> -		case IOCSETDEV:
+> -
+> -			if( ( ret_value = create_bat_netdev() ) == 0 && !kthread_task) {
+> -
+> -				kthread_task = kthread_run(packet_recv_thread, NULL, "mod_batgat");
+> -
+> -				if (IS_ERR(kthread_task)) {
+> -					DBG( "unable to start packet receive thread");
+> -					kthread_task = NULL;
+> -					ret_value = -EFAULT;
+> -					goto end;
+> -				}
+> -
+> -			}
+> -
+> -			if( ret_value == -1 || ret_value == 0 ) {
+> -
+> -				tmp_ip[0] = 169; tmp_ip[1] = 254; tmp_ip[2] = 0; tmp_ip[3] = 0;
+> -				ioc.universal = *(uint32_t*)tmp_ip;
+> -				ioc.ifindex = gate_device->ifindex;
+> -
+> -				strlcpy( ioc.dev_name, gate_device->name, IFNAMSIZ - 1 );
+> -
+> -				DBG("name %s index %d", ioc.dev_name, ioc.ifindex);
+> -
+> -				if( ret_value == -1 ) {
+> -
+> -					DBG("device already exists");
+> -					ioc.exists = 1;
+> -					ret_value = 0;
+> -
+> -				}
+> -
+> -				if( copy_to_user( ( void __user* )arg, &ioc, sizeof( ioc ) ) )
+> -
+> -					ret_value = -EFAULT;
+> -
+> -			}
+> -
+> -			break;
+> -
+> -		case IOCREMDEV:
+> -
+> -			DBG("disconnect daemon");
+> -
+> -			if (kthread_task) {
+> -
+> -				atomic_set(&exit_cond, 1);
+> -				wake_up_interruptible(&thread_wait);
+> -				kthread_stop(kthread_task);
+> -
+> -			}
+> -
+> -			kthread_task = NULL;
+> -
+> -			DBG("thread shutdown");
+> -
+> -// 			dev_put(gate_device);
+> -
+> -			if(gate_device) {
+> -				unregister_netdev(gate_device);
+> -				gate_device = NULL;
+> -				DBG("gate shutdown");
+> -			}
+> -
+> -			list_for_each_entry_safe(entry, next, &free_client_list, list) {
+> -
+> -				if(entry->gw_client) {
+> -					gw_client = entry->gw_client;
+> -					list_del(&entry->list);
+> -					kfree(entry);
+> -					kfree(gw_client);
+> -				}
+> -
+> -			}
+> -
+> -			DBG( "device unregistered successfully" );
+> -			break;
+> -		default:
+> -			DBG( "ioctl %d is not supported",cmd );
+> -			ret_value = -EFAULT;
+> -
+> -	}
+> -
+> -end:
+> -
+> -	return( ret_value );
+> -
+> -}
+> -
+> -static void udp_data_ready(struct sock *sk, int len)
+> -{
+> -
+> -	void (*data_ready)(struct sock *, int) = sk->sk_user_data;
+> -	data_ready(sk,len);
+> -	atomic_set(&data_ready_cond, 1);
+> -	wake_up_interruptible(&thread_wait);
+> -
+> -}
+> -
+> -static int packet_recv_thread(void *data)
+> -{
+> -
+> -	struct msghdr msg, inet_msg;
+> -	struct kvec iov, inet_iov;
+> -	struct iphdr *iph;
+> -	struct gw_client *client_data;
+> -	struct sockaddr_in client, inet_addr, server_addr;
+> -	struct free_client_data *tmp_entry;
+> -
+> -	struct socket *server_sock = NULL;
+> -	struct socket *inet_sock = NULL;
+> -
+> -	int length,ret_value;
+> -	unsigned char buffer[1600];
+> -	unsigned long time = jiffies;
+> -
+> -	struct hash_it_t *hashit;
+> -
+> -
+> -	server_addr.sin_family = AF_INET;
+> -	server_addr.sin_addr.s_addr = INADDR_ANY;
+> -	server_addr.sin_port = __constant_htons( (unsigned short) BATMAN_PORT );
+> -
+> -	if ( ( sock_create_kern( PF_INET, SOCK_RAW, IPPROTO_RAW, &inet_sock ) ) < 0 ) {
+> -
+> -		DBG( "can't create raw socket");
+> -		return -1;
+> -
+> -	}
+> -
+> -	if( sock_create_kern( PF_INET, SOCK_DGRAM, IPPROTO_UDP, &server_sock ) < 0 ) {
+> -
+> -		DBG( "can't create udp socket");
+> -		sock_release(inet_sock);
+> -		return -1;
+> -
+> -	}
+> -
+> -	if( kernel_bind( server_sock, (struct sockaddr *) &server_addr, sizeof( server_addr ) ) ) {
+> -
+> -		DBG( "can't bind udp server socket");
+> -		sock_release(server_sock);
+> -		sock_release(inet_sock);
+> -		return -1;
+> -
+> -	}
+> -
+> -	server_sock->sk->sk_user_data = server_sock->sk->sk_data_ready;
+> -	server_sock->sk->sk_data_ready = udp_data_ready;
+> -
+> -	msg.msg_name = &client;
+> -	msg.msg_namelen = sizeof( struct sockaddr_in );
+> -	msg.msg_control = NULL;
+> -	msg.msg_controllen = 0;
+> -	msg.msg_flags = MSG_NOSIGNAL | MSG_DONTWAIT;
+> -
+> -	inet_addr.sin_family = AF_INET;
+> -	inet_msg.msg_flags = MSG_NOSIGNAL | MSG_DONTWAIT;
+> -	inet_msg.msg_name = &inet_addr;
+> -	inet_msg.msg_namelen = sizeof( inet_addr );
+> -	inet_msg.msg_control = NULL;
+> -	inet_msg.msg_controllen = 0;
+> -
+> -	atomic_set(&data_ready_cond, 0);
+> -	atomic_set(&exit_cond, 0);
+> -
+> -	iph = ( struct iphdr*)(buffer + 1 );
+> -
+> -	while (!kthread_should_stop() && !atomic_read(&exit_cond)) {
+> -
+> -		wait_event_interruptible(thread_wait, atomic_read(&data_ready_cond) || atomic_read(&exit_cond));
+> -
+> -		if (kthread_should_stop() || atomic_read(&exit_cond))
+> -			break;
+> -
+> -		client_data = NULL;
+> -
+> -		iov.iov_base = buffer;
+> -		iov.iov_len = sizeof(buffer);
+> -
+> -		while ( ( length = kernel_recvmsg( server_sock, &msg, &iov, 1, sizeof(buffer), MSG_NOSIGNAL | MSG_DONTWAIT ) ) > 0 ) {
+> -
+> -			if( ( jiffies - time ) / HZ > LEASE_TIME ) {
+> -
+> -				hashit = NULL;
+> -				spin_lock(&hash_lock);
+> -				while( NULL != ( hashit = hash_iterate( wip_hash, hashit ) ) ) {
+> -					client_data = hashit->bucket->data;
+> -					if( ( jiffies - client_data->last_keep_alive ) / HZ > LEASE_TIME ) {
+> -
+> -						hash_remove_bucket(wip_hash, hashit);
+> -						hash_remove(vip_hash, client_data);
+> -
+> -						tmp_entry = kmalloc(sizeof(struct free_client_data), GFP_KERNEL);
+> -						if(tmp_entry != NULL) {
+> -							tmp_entry->gw_client = client_data;
+> -							list_add(&tmp_entry->list,&free_client_list);
+> -						} else
+> -							DBG("can't add free gw_client to free list");
+> -
+> -					}
+> -				}
+> -				spin_unlock(&hash_lock);
+> -				time = jiffies;
+> -			}
+> -
+> -
+> -			if( length > 0 && buffer[0] == TUNNEL_IP_REQUEST ) {
+> -
+> -				client_data = get_ip_addr(&client);
+> -
+> -				if(client_data != NULL) {
+> -
+> -					memcpy( &buffer[1], &client_data->vip_addr, sizeof( client_data->vip_addr ) );
+> -
+> -					iov.iov_base = buffer;
+> -					iov.iov_len = length;
+> -
+> -					if( ( ret_value = kernel_sendmsg(server_sock, &msg, &iov, 1, length ) ) < 0 )
+> -						DBG("tunnel ip request socket return %d", ret_value);
+> -
+> -				} else
+> -					DBG("can't get an ip address");
+> -
+> -			} else if( length > 0 && buffer[0] == TUNNEL_DATA ) {
+> -
+> -				spin_lock(&hash_lock);
+> -				client_data = ((struct gw_client *)hash_find(wip_hash, &client.sin_addr.s_addr));
+> -				spin_unlock(&hash_lock);
+> -
+> -				if(client_data == NULL) {
+> -
+> -					buffer[0] = TUNNEL_IP_INVALID;
+> -					iov.iov_base = buffer;
+> -					iov.iov_len = length;
+> -
+> -					if( ( ret_value = kernel_sendmsg(server_sock, &msg, &iov, 1, length ) ) < 0 )
+> -						DBG("tunnel ip invalid socket return %d", ret_value);
+> -					continue;
+> -
+> -				}
+> -
+> -				client_data->last_keep_alive = jiffies;
+> -
+> -				inet_iov.iov_base = &buffer[1];
+> -				inet_iov.iov_len = length - 1;
+> -
+> -				inet_addr.sin_port = 0;
+> -				inet_addr.sin_addr.s_addr = iph->daddr;
+> -
+> -				if( (ret_value = kernel_sendmsg(inet_sock, &inet_msg, &inet_iov, 1, length - 1 ) ) < 0 )
+> -					DBG("tunnel data socket return %d", ret_value);
+> -
+> -			} else if( length > 0 && buffer[0] == TUNNEL_KEEPALIVE_REQUEST ) {
+> -
+> -				DBG("keep alive");
+> -				spin_lock(&hash_lock);
+> -				client_data = ((struct gw_client *)hash_find(wip_hash, &client.sin_addr.s_addr));
+> -				spin_unlock(&hash_lock);
+> -				if(client_data != NULL) {
+> -					DBG("refresh ip");
+> -					buffer[0] = TUNNEL_KEEPALIVE_REPLY;
+> -					client_data->last_keep_alive = jiffies;
+> -				} else
+> -					buffer[0] = TUNNEL_IP_INVALID;
+> -
+> -				iov.iov_base = buffer;
+> -				iov.iov_len = length;
+> -
+> -				if( ( ret_value = kernel_sendmsg(server_sock, &msg, &iov, 1, length ) ) < 0 )
+> -					DBG("tunnel keep alive socket return %d", ret_value);
+> -
+> -			} else
+> -				DBG( "recive unknown message" );
+> -
+> -			iov.iov_base = buffer;
+> -			iov.iov_len = sizeof(buffer);
+> -		}
+> -
+> -		atomic_set(&data_ready_cond, 0);
+> -
+> -	}
+> -
+> -	if(server_sock) {
+> -
+> -		sock_release(server_sock);
+> -		server_sock = NULL;
+> -
+> -	}
+> -
+> -	if(inet_sock) {
+> -
+> -		sock_release(inet_sock);
+> -		inet_sock = NULL;
+> -
+> -	}
+> -
+> -	while(!kthread_should_stop()) {
+> -
+> -		if(kthread_should_stop())
+> -			break;
+> -
+> -		schedule();
+> -	}
+> -
+> -	DBG( "thread stop" );
 > -	return 0;
 > -}
 > -
+> -/* bat_netdev part */
+> -#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29)
+> -static const struct net_device_ops bat_netdev_ops = {
+> -	.ndo_open = bat_netdev_open,
+> -	.ndo_stop = bat_netdev_close,
+> -	.ndo_start_xmit = bat_netdev_xmit,
+> -	.ndo_set_mac_address = eth_mac_addr,
+> -	.ndo_change_mtu = eth_change_mtu
+> -};
+> -#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29) */
 > -
-> -int8_t bind_to_iface( int32_t BATMANUNUSED(udp_recv_sock), char *BATMANUNUSED(dev) )
+> -static void bat_netdev_setup( struct net_device *dev )
 > -{
-> -	/* XXX: Is binding a socket to a specific
-> -	 * interface possible in *BSD?
-> -	 * Possibly via bpf... */
-> -	return 1;
+> -	struct gate_priv *priv;
+> -
+> -	ether_setup(dev);
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 29)
+> -	dev->open = bat_netdev_open;
+> -	dev->stop = bat_netdev_close;
+> -	dev->hard_start_xmit = bat_netdev_xmit;
+> -#ifdef HAVE_VALIDATE_ADDR
+> -	dev->validate_addr = NULL;
+> -#endif
+> -#else
+> -	dev->netdev_ops = &bat_netdev_ops;
+> -#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 29) */
+> -	dev->destructor = free_netdev;
+> -
+> -	dev->features        |= NETIF_F_NO_CSUM;
+> -#ifndef __NET_NET_NAMESPACE_H
+> -	dev->hard_header_cache = NULL;
+> -#endif
+> -	dev->mtu = 1471;
+> -	dev->flags = IFF_POINTOPOINT | IFF_NOARP | IFF_MULTICAST;
+> -
+> -	priv = netdev_priv( dev );
+> -	memset( priv, 0, sizeof( struct gate_priv ) );
+> -
+> -	return;
 > -}
 > -
-> -int32_t use_gateway_module(void)
+> -static int bat_netdev_xmit( struct sk_buff *skb, struct net_device *dev )
 > -{
-> -	return -1;
+> -	struct gate_priv *priv = netdev_priv( dev );
+> -	struct sockaddr_in sa;
+> -	struct iphdr *iph = ip_hdr( skb );
+> -	struct iovec iov[2];
+> -	struct msghdr msg;
+> -
+> -	struct gw_client *client_data;
+> -	unsigned char msg_number[1];
+> -
+> -	msg_number[0] = TUNNEL_DATA;
+> -
+> -	/* we use saddr , because hash choose and compare begin at + 4 bytes */
+> -	spin_lock(&hash_lock);
+> -	client_data = ((struct gw_client *)hash_find(vip_hash, & iph->saddr )); /* daddr */
+> -	spin_unlock(&hash_lock);
+> -
+> -	if( client_data != NULL ) {
+> -
+> -		sa.sin_family = AF_INET;
+> -		sa.sin_addr.s_addr = client_data->wip_addr;
+> -		sa.sin_port = __constant_htons( (unsigned short)BATMAN_PORT );
+> -
+> -		msg.msg_flags = MSG_NOSIGNAL | MSG_DONTWAIT;
+> -		msg.msg_name = &sa;
+> -		msg.msg_namelen = sizeof(sa);
+> -		msg.msg_control = NULL;
+> -		msg.msg_controllen = 0;
+> -
+> -		iov[0].iov_base = msg_number;
+> -		iov[0].iov_len = 1;
+> -		iov[1].iov_base = skb->data + sizeof( struct ethhdr );
+> -		iov[1].iov_len = skb->len - sizeof( struct ethhdr );
+> -		kernel_sendmsg(priv->tun_socket, &msg, (struct kvec *)&iov, 2, skb->len - sizeof( struct ethhdr ) + 1);
+> -
+> -	} else
+> -		DBG("client not found");
+> -
+> -	kfree_skb( skb );
+> -	return( 0 );
 > -}
 > -
-> diff --git a/bsd/route.c b/bsd/route.c
+> -static int bat_netdev_open( struct net_device *dev )
+> -{
+> -	DBG( "receive open" );
+> -	netif_start_queue( dev );
+> -	return( 0 );
+> -}
+> -
+> -static int bat_netdev_close( struct net_device *dev )
+> -{
+> -	struct gate_priv *priv = netdev_priv(dev);
+> -	DBG( "receive close" );
+> -
+> -	if(priv->tun_socket)
+> -		sock_release(priv->tun_socket);
+> -
+> -	netif_stop_queue( dev );
+> -	return( 0 );
+> -}
+> -
+> -static int create_bat_netdev(void)
+> -{
+> -	struct gate_priv *priv;
+> -
+> -	if( gate_device == NULL ) {
+> -
+> -		if( ( gate_device = alloc_netdev( sizeof( struct gate_priv ) , "gate%d", bat_netdev_setup ) ) == NULL )
+> -			return -ENOMEM;
+> -
+> -		if( ( register_netdev( gate_device ) ) < 0 )
+> -			return -ENODEV;
+> -
+> -		priv = netdev_priv( gate_device );
+> -
+> -		if( sock_create_kern( PF_INET, SOCK_DGRAM, IPPROTO_UDP, &priv->tun_socket ) < 0 ) {
+> -
+> -			DBG( "can't create gate socket");
+> -			netif_stop_queue(gate_device);
+> -			return -EFAULT;
+> -
+> -		}
+> -
+> -// 		dev_hold(gate_device);
+> -
+> -
+> -	} else {
+> -
+> -		DBG( "bat_device for is already created" );
+> -		return( -1 );
+> -
+> -	}
+> -
+> -	return( 0 );
+> -
+> -}
+> -
+> -/* ip handling */
+> -
+> -static struct gw_client *get_ip_addr(struct sockaddr_in *client_addr)
+> -{
+> -	static uint8_t next_free_ip[4] = {169,254,0,1};
+> -	struct free_client_data *entry, *next;
+> -	struct gw_client *gw_client = NULL;
+> -	struct hashtable_t *swaphash;
+> -
+> -
+> -	spin_lock(&hash_lock);
+> -	gw_client = ((struct gw_client *)hash_find(wip_hash, &client_addr->sin_addr.s_addr));
+> -
+> -	if (gw_client != NULL) {
+> -		DBG("found client in hash");
+> -		spin_unlock(&hash_lock);
+> -		return gw_client;
+> -	}
+> -
+> -	list_for_each_entry_safe(entry, next, &free_client_list, list) {
+> -		DBG("use free client from list");
+> -		gw_client = entry->gw_client;
+> -		list_del(&entry->list);
+> -		kfree(entry);
+> -		break;
+> -	}
+> -
+> -	if(gw_client == NULL) {
+> -		DBG("malloc client");
+> -		gw_client = kmalloc( sizeof(struct gw_client), GFP_KERNEL );
+> -		gw_client->vip_addr = 0;
+> -	}
+> -
+> -	gw_client->wip_addr = client_addr->sin_addr.s_addr;
+> -	gw_client->client_port = client_addr->sin_port;
+> -	gw_client->last_keep_alive = jiffies;
+> -
+> -	/* TODO: check if enough space available */
+> -	if (gw_client->vip_addr == 0) {
+> -
+> -		gw_client->vip_addr = *(uint32_t *)next_free_ip;
+> -
+> -		next_free_ip[3]++;
+> -
+> -		if (next_free_ip[3] == 0)
+> -			next_free_ip[2]++;
+> -
+> -	}
+> -
+> -
+> -	hash_add(wip_hash, gw_client);
+> -	hash_add(vip_hash, gw_client);
+> -
+> -	if (wip_hash->elements * 4 > wip_hash->size) {
+> -
+> -		swaphash = hash_resize(wip_hash, wip_hash->size * 2);
+> -
+> -		if (swaphash == NULL) {
+> -
+> -			DBG( "Couldn't resize hash table" );
+> -
+> -		}
+> -
+> -		wip_hash = swaphash;
+> -
+> -		swaphash = hash_resize(vip_hash, vip_hash->size * 2);
+> -
+> -		if (swaphash == NULL) {
+> -
+> -			DBG( "Couldn't resize hash table" );
+> -
+> -		}
+> -
+> -		vip_hash = swaphash;
+> -
+> -	}
+> -	spin_unlock(&hash_lock);
+> -	return gw_client;
+> -
+> -}
+> -
+> -
+> -/* needed for hash, compares 2 struct gw_client, but only their ip-addresses. assumes that
+> - * the ip address is the first/second field in the struct */
+> -int compare_wip(void *data1, void *data2)
+> -{
+> -	return ( !memcmp( data1, data2, 4 ) );
+> -}
+> -
+> -int compare_vip(void *data1, void *data2)
+> -{
+> -	return ( !memcmp( data1 + 4, data2 + 4, 4 ) );
+> -}
+> -
+> -/* hashfunction to choose an entry in a hash table of given size */
+> -/* hash algorithm from http://en.wikipedia.org/wiki/Hash_table */
+> -int choose_wip(void *data, int32_t size)
+> -{
+> -	unsigned char *key= data;
+> -	uint32_t hash = 0;
+> -	size_t i;
+> -
+> -	for (i = 0; i < 4; i++) {
+> -		hash += key[i];
+> -		hash += (hash << 10);
+> -		hash ^= (hash >> 6);
+> -	}
+> -
+> -	hash += (hash << 3);
+> -	hash ^= (hash >> 11);
+> -	hash += (hash << 15);
+> -
+> -	return (hash%size);
+> -
+> -}
+> -
+> -int choose_vip(void *data, int32_t size)
+> -{
+> -	unsigned char *key= data;
+> -	uint32_t hash = 0;
+> -	size_t i;
+> -	for (i = 4; i < 8; i++) {
+> -		hash += key[i];
+> -		hash += (hash << 10);
+> -		hash ^= (hash >> 6);
+> -	}
+> -
+> -	hash += (hash << 3);
+> -	hash ^= (hash >> 11);
+> -	hash += (hash << 15);
+> -
+> -	return (hash%size);
+> -
+> -}
+> -
+> -static void cleanup_procfs(void)
+> -{
+> -	if (clients_file)
+> -		remove_proc_entry(PROC_FILE_CLIENTS, proc_dir);
+> -
+> -#ifdef __NET_NET_NAMESPACE_H
+> -	if (proc_dir)
+> -		remove_proc_entry(PROC_ROOT_DIR, init_net.proc_net);
+> -#else
+> -	if (proc_dir)
+> -		remove_proc_entry(PROC_ROOT_DIR, proc_net);
+> -#endif
+> -}
+> -
+> -static int setup_procfs(void)
+> -{
+> -#ifdef __NET_NET_NAMESPACE_H
+> -	proc_dir = proc_mkdir(PROC_ROOT_DIR, init_net.proc_net);
+> -#else
+> -	proc_dir = proc_mkdir(PROC_ROOT_DIR, proc_net);
+> -#endif
+> -	clients_file = create_proc_read_entry(PROC_FILE_CLIENTS, S_IRUGO, proc_dir, proc_clients_read, NULL);
+> -
+> -	return(0);
+> -}
+> -
+> -static int proc_clients_read(char *buf, char **start, off_t offset, int size, int *eof, void *data)
+> -{
+> -	struct gw_client *client_data;
+> -	unsigned char *wip, *vip;
+> -	int bytes_written = 0, total_bytes = 0;
+> -
+> -	struct hash_it_t *hashit = NULL;
+> -	spin_lock(&hash_lock);
+> -	while( NULL != ( hashit = hash_iterate( wip_hash, hashit ) ) ) {
+> -
+> -		client_data = hashit->bucket->data;
+> -		wip = (unsigned char *)&client_data->wip_addr;
+> -		vip = (unsigned char *)&client_data->vip_addr;
+> -		bytes_written = snprintf(buf + total_bytes, (size - total_bytes), "%u.%u.%u.%u - %u.%u.%u.%u\n",
+> -					wip[0],wip[1],wip[2],wip[3],vip[0],vip[1],vip[2],vip[3]);
+> -		total_bytes += (bytes_written > (size - total_bytes) ? size - total_bytes : bytes_written);
+> -
+> -	}
+> -	spin_unlock(&hash_lock);
+> -	*eof = 1;
+> -	return total_bytes;
+> -}
+> -
+> -MODULE_LICENSE("GPL");
+> -
+> -MODULE_AUTHOR(DRIVER_AUTHOR);
+> -MODULE_DESCRIPTION(DRIVER_DESC);
+> -MODULE_SUPPORTED_DEVICE(DRIVER_DEVICE);
+> diff --git a/linux/modules/gateway.h b/linux/modules/gateway.h
 > deleted file mode 100644
-> index 8c9de48..0000000
-> --- a/bsd/route.c
+> index fc98174..0000000
+> --- a/linux/modules/gateway.h
 > +++ /dev/null
-> @@ -1,224 +0,0 @@
+> @@ -1,93 +0,0 @@
 > -/*
-> - * Copyright (C) 2006, 2007 BATMAN contributors:
-> - * Stefan Sperling <stsp@stsp.name>
-> - *
+> - * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
+> - * 
+> - * Thomas Lopatic, Corinna 'Elektra' Aichele, Axel Neumann, Marek Lindner, Andreas Langer
 > - * This program is free software; you can redistribute it and/or
 > - * modify it under the terms of version 2 of the GNU General Public
 > - * License as published by the Free Software Foundation.
@@ -337,219 +1101,1249 @@ Am Freitag, 23. Dezember 2011 13:15:50 schrieb Sven Eckelmann:
 > - *
 > - */
 > -
-> -/* This file contains interface functions for the routing table on BSD. */
 > -
-> -#warning BSD support is known broken - if you compile this on BSD you are expected to fix it :-P
+> -#define LINUX
 > -
-> -#include <sys/types.h>
-> -#include <sys/socket.h>
-> -#include <sys/ioctl.h>
-> -#include <netinet/in.h>
-> -#include <arpa/inet.h>
-> -#include <net/route.h>
-> -#include <net/if.h>
-> -#include <stdio.h>
-> -#include <string.h>
-> -#include <errno.h>
-> -#include <unistd.h>
-> -#include <err.h>
+> -#define DRIVER_AUTHOR "Andreas Langer <an.langer@gmx.de>, Marek Lindner <lindner_marek@yahoo.de>"
+> -#define DRIVER_DESC   "batman gateway module"
+> -#define DRIVER_DEVICE "batgat"
 > -
-> -#include "../os.h"
-> -#include "../batman.h"
+> -#include <linux/version.h>	/* KERNEL_VERSION ... */
+> -#include <linux/fs.h>		/* fops ...*/
 > -
-> -/* Message structure used to interface the kernel routing table.
-> - * See route(4) for details on the message passing interface for
-> - * manipulating the kernel routing table.
-> - */
-> -struct rt_msg
-> -{
-> -	struct rt_msghdr hdr;
-> -	struct sockaddr_in dest;
-> -	struct sockaddr_in gateway;
-> -	struct sockaddr_in netmask;
+> -#include <linux/in.h>		/* sockaddr_in */
+> -#include <linux/net.h>		/* socket */
+> -#include <linux/string.h>	/* strlen, strstr, strncmp ... */
+> -#include <linux/ip.h>		/* iphdr */
+> -#include <linux/if_arp.h>	/* ARPHRD_NONE */
+> -#include <net/sock.h>		/* sock */
+> -#include <net/pkt_sched.h>	/* class_create, class_destroy, class_device_create */
+> -#include <linux/list.h>		/* list handling */
+> -#include <linux/etherdevice.h>	/* ethernet device standard functions */
+> -//#include <linux/netdevice.h> /* init_net */
+> -
+> -#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+> -	#include <linux/kthread.h>
+> -	#include <linux/inetdevice.h>	/* __in_dev_get_rtnl */
+> -#else
+> -	#include <linux/if.h>	/*IFNAMSIZ*/
+> -#endif
+> -
+> -#include <linux/proc_fs.h>
+> -
+> -/* io controls */
+> -#define IOCSETDEV 1
+> -#define IOCREMDEV 2
+> -
+> -#define TRANSPORT_PACKET_SIZE 29
+> -#define VIP_BUFFER_SIZE 5
+> -#define BATMAN_PORT 4306
+> -
+> -#define TUNNEL_DATA 0x01
+> -#define TUNNEL_IP_REQUEST 0x02
+> -#define TUNNEL_IP_INVALID 0x03
+> -#define TUNNEL_KEEPALIVE_REQUEST 0x04
+> -#define TUNNEL_KEEPALIVE_REPLY 0x05
+> -
+> -#define LEASE_TIME 1500
+> -
+> -#define DBG(msg,args...) do { printk(KERN_DEBUG "batgat: [%s:%u] " msg "\n", __func__ ,__LINE__, ##args); } while(0)
+> -
+> -#define PROC_ROOT_DIR "batgat"
+> -#define PROC_FILE_CLIENTS "clients"
+> -
+> -struct gw_client {
+> -	uint32_t wip_addr;
+> -	uint32_t vip_addr;
+> -	uint16_t client_port;
+> -	uint32_t last_keep_alive;
 > -};
 > -
-> -static inline int32_t n_bits(uint8_t n)
+> -struct batgat_ioc_args {
+> -	char dev_name[IFNAMSIZ];
+> -	unsigned char exists;
+> -	uint32_t universal;
+> -	uint32_t ifindex;
+> -};
+> -
+> -struct gate_priv {
+> -	struct socket *tun_socket;
+> -};
+> -
+> -struct free_client_data {
+> -	struct list_head list;
+> -	struct gw_client *gw_client;
+> -};
+> diff --git a/linux/modules/gateway24.c b/linux/modules/gateway24.c
+> deleted file mode 100644
+> index a6b91d2..0000000
+> --- a/linux/modules/gateway24.c
+> +++ /dev/null
+> @@ -1,748 +0,0 @@
+> -/*
+> - * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
+> - *
+> - * Thomas Lopatic, Corinna 'Elektra' Aichele, Axel Neumann, Marek Lindner, Andreas Langer
+> - * This program is free software; you can redistribute it and/or
+> - * modify it under the terms of version 2 of the GNU General Public
+> - * License as published by the Free Software Foundation.
+> - *
+> - * This program is distributed in the hope that it will be useful, but
+> - * WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+> - * General Public License for more details.
+> - *
+> - * You should have received a copy of the GNU General Public License
+> - * along with this program; if not, write to the Free Software
+> - * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+> - * 02110-1301, USA
+> - *
+> - */
+> -
+> -#include "gateway24.h"
+> -#include "hash.h"
+> -
+> -static int batgat_open(struct inode *inode, struct file *filp);
+> -static int batgat_release(struct inode *inode, struct file *file);
+> -static int batgat_ioctl( struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg );
+> -
+> -static int bat_netdev_setup( struct net_device *dev);
+> -static int create_bat_netdev(void);
+> -static int bat_netdev_open( struct net_device *dev );
+> -static int bat_netdev_close( struct net_device *dev );
+> -static int bat_netdev_xmit( struct sk_buff *skb, struct net_device *dev );
+> -
+> -static struct gw_client *get_ip_addr(struct sockaddr_in *client_addr);
+> -static int packet_recv_thread(void *data);
+> -static void udp_data_ready(struct sock *sk, int len);
+> -
+> -static int compare_wip( void *data1, void *data2 );
+> -static int choose_wip( void *data, int32_t size );
+> -static int compare_vip( void *data1, void *data2 );
+> -static int choose_vip( void *data, int32_t size );
+> -
+> -static int kernel_sendmsg(struct socket *sock, struct msghdr *msg, struct iovec *vec, size_t num, size_t size);
+> -static int kernel_recvmsg(struct socket *sock, struct msghdr *msg, struct iovec *vec, size_t num, size_t size, int flags);
+> -		
+> -static struct file_operations fops = {
+> -	.open = batgat_open,
+> -	.release = batgat_release,
+> -	.ioctl = batgat_ioctl,
+> -};
+> -
+> -static int Major;
+> -static int thread_pid;
+> -static struct completion thread_complete;
+> -DECLARE_WAIT_QUEUE_HEAD(thread_wait);
+> -
+> -
+> -spinlock_t hash_lock = SPIN_LOCK_UNLOCKED;
+> -
+> -static struct net_device gate_device = {
+> -	init: bat_netdev_setup, name: "gate%d",
+> -};
+> -
+> -atomic_t gate_device_run;
+> -atomic_t data_ready_cond;
+> -
+> -static struct hashtable_t *wip_hash;
+> -static struct hashtable_t *vip_hash;
+> -static struct list_head free_client_list;
+> -
+> -int init_module(void)
 > -{
-> -	int32_t i, result;
 > -
-> -	result = 0;
+> -	printk(KERN_DEBUG "B.A.T.M.A.N. gateway modul\n");
+> -	
+> -	if ( ( Major = register_chrdev( 0, DRIVER_DEVICE, &fops ) ) < 0 ) {
 > -
-> -	if (n > 32)
-> -		n = 32;
-> -	for (i = 0; i < n; i++)
-> -		result |= (0x80000000 >> i);
+> -		DBG( "registering the character device failed with %d", Major );
+> -		return Major;
 > -
+> -	}
+> -
+> -	DBG( "batgat loaded %s", SOURCE_VERSION );
+> -	DBG( "I was assigned major number %d. To talk to", Major );
+> -	DBG( "the driver, create a dev file with 'mknod /dev/batgat c %d 0'.", Major );
+> -	printk(KERN_DEBUG "Remove the device file and module when done." );
+> -
+> -	INIT_LIST_HEAD(&free_client_list);
+> -	atomic_set(&gate_device_run, 0);
+> -
+> -	/* TODO: error handling */
+> -	vip_hash = hash_new( 128, compare_vip, choose_vip );
+> -	wip_hash = hash_new( 128, compare_wip, choose_wip );
+> -	
+> -	printk(KERN_DEBUG "modul successfully loaded\n");
+> -	return(0);
+> -}
+> -
+> -void cleanup_module(void)
+> -{
+> -	struct gate_priv *priv;
+> -	struct free_client_data *entry, *next;
+> -	struct gw_client *gw_client;
+> -	
+> -	unregister_chrdev( Major, DRIVER_DEVICE );
+> -
+> -	if(thread_pid) {
+> -
+> -		kill_proc(thread_pid, SIGTERM, 1 );
+> -		wait_for_completion(&thread_complete);
+> -
+> -	}
+> -
+> -	if(atomic_read(&gate_device_run)) {
+> -
+> -		priv = (struct gate_priv*)gate_device.priv;
+> -
+> -		if( priv->tun_socket )
+> -			sock_release(priv->tun_socket);
+> -
+> -		kfree(gate_device.priv);
+> -		gate_device.priv = NULL;
+> -		unregister_netdev(&gate_device);
+> -		atomic_dec(&gate_device_run);
+> -
+> -	}
+> -	
+> -	list_for_each_entry_safe(entry, next, &free_client_list, list) {
+> -
+> -		if(entry->gw_client != NULL) {
+> -			gw_client = entry->gw_client;
+> -			list_del(&entry->list);
+> -			kfree(entry);
+> -			kfree(gw_client);
+> -		}
+> -
+> -	}
+> -
+> -	printk(KERN_DEBUG "modul successfully unloaded\n" );
+> -	return;
+> -}
+> -
+> -static int batgat_open(struct inode *inode, struct file *filp)
+> -{
+> -	MOD_INC_USE_COUNT;
+> -	return(0);
+> -}
+> -
+> -static int batgat_release(struct inode *inode, struct file *file)
+> -{
+> -	MOD_DEC_USE_COUNT;
+> -	return(0);
+> -}
+> -
+> -
+> -static int batgat_ioctl( struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg )
+> -{
+> -	uint8_t tmp_ip[4];
+> -	struct batgat_ioc_args ioc;
+> -	struct free_client_data *entry, *next;
+> -	struct gw_client *gw_client;
+> -	struct gate_priv *priv;
+> -	
+> -	int ret_value = 0;
+> -
+> -	if( cmd == IOCSETDEV || cmd == IOCREMDEV ) {
+> -
+> -		if( !access_ok( VERIFY_READ, (void *)arg, sizeof( ioc ) ) ) {
+> -			printk(KERN_DEBUG "access to memory area of arg not allowed" );
+> -			ret_value = -EFAULT;
+> -			goto end;
+> -		}
+> -
+> -		if( __copy_from_user( &ioc, (void *)arg, sizeof( ioc ) ) ) {
+> -			ret_value = -EFAULT;
+> -			goto end;
+> -		}
+> -
+> -	}
+> -	
+> -	switch( cmd ) {
+> -
+> -		case IOCSETDEV:
+> -
+> -			if( ( ret_value = create_bat_netdev() ) == 0 && !thread_pid) {
+> -				init_completion(&thread_complete);
+> -				thread_pid = kernel_thread( packet_recv_thread, NULL, CLONE_FS | CLONE_FILES | CLONE_SIGHAND );
+> -				if(thread_pid<0) {
+> -					printk(KERN_DEBUG "unable to start packet receive thread\n");
+> -					ret_value = -EFAULT;
+> -					goto end;
+> -				}
+> -			}
+> -
+> -			if( ret_value == -1 || ret_value == 0 ) {
+> -
+> -				tmp_ip[0] = 169; tmp_ip[1] = 254; tmp_ip[2] = 0; tmp_ip[3] = 0;
+> -				ioc.universal = *(uint32_t*)tmp_ip;
+> -				ioc.ifindex = gate_device.ifindex;
+> -
+> -				strncpy( ioc.dev_name, gate_device.name, IFNAMSIZ - 1 );
+> -
+> -				DBG("name %s index %d", ioc.dev_name, ioc.ifindex);
+> -				
+> -				if( ret_value == -1 ) {
+> -
+> -					ioc.exists = 1;
+> -					ret_value = 0;
+> -
+> -				}
+> -
+> -				if( copy_to_user( (void *)arg, &ioc, sizeof( ioc ) ) )
+> -
+> -					ret_value = -EFAULT;
+> -
+> -			}
+> -
+> -			break;
+> -
+> -		case IOCREMDEV:
+> -
+> -			printk(KERN_DEBUG "disconnect daemon\n");
+> -
+> -			if(thread_pid) {
+> -
+> -				kill_proc(thread_pid, SIGTERM, 1 );
+> -				wait_for_completion( &thread_complete );
+> -
+> -			}
+> -
+> -			thread_pid = 0;
+> -
+> -			printk(KERN_DEBUG "thread shutdown\n");
+> -
+> -// 			dev_put(gate_device);
+> -
+> -			if(atomic_read(&gate_device_run)) {
+> -
+> -				priv = (struct gate_priv*)gate_device.priv;
+> -
+> -				if( priv->tun_socket )
+> -					sock_release(priv->tun_socket);
+> -
+> -				kfree(gate_device.priv);
+> -				gate_device.priv = NULL;
+> -				unregister_netdev(&gate_device);
+> -				atomic_dec(&gate_device_run);
+> -				printk(KERN_DEBUG "gate shutdown\n");
+> -
+> -			}
+> -
+> -			list_for_each_entry_safe(entry, next, &free_client_list, list) {
+> -
+> -				gw_client = entry->gw_client;
+> -				list_del(&entry->list);
+> -				kfree(entry);
+> -				kfree(gw_client);
+> -
+> -			}
+> -
+> -			printk(KERN_DEBUG "device unregistered successfully\n" );
+> -			break;
+> -		default:
+> -			DBG( "ioctl %d is not supported",cmd );
+> -			ret_value = -EFAULT;
+> -
+> -	}
+> -
+> -end:
+> -
+> -		return( ret_value );
+> -}
+> -
+> -static int packet_recv_thread(void *data)
+> -{
+> -	sigset_t tmpsig;
+> -	struct msghdr msg, inet_msg;
+> -	struct iovec iov, inet_iov;
+> -	struct iphdr *iph;
+> -	struct gw_client *client_data;
+> -	struct sockaddr_in client, inet_addr, server_addr;
+> -	struct free_client_data *tmp_entry;
+> -
+> -	struct socket *server_sock = NULL;
+> -	struct socket *inet_sock = NULL;
+> -
+> -	unsigned long time = jiffies;
+> -	struct hash_it_t *hashit;
+> -
+> -	int length, ret_value;
+> -	unsigned char buffer[1600];
+> -
+> -	server_addr.sin_family = AF_INET;
+> -	server_addr.sin_addr.s_addr = INADDR_ANY;
+> -	server_addr.sin_port = __constant_htons( (unsigned short) BATMAN_PORT );
+> -
+> -	if ( ( sock_create( PF_INET, SOCK_RAW, IPPROTO_RAW, &inet_sock ) ) < 0 ) {
+> -
+> -		printk(KERN_DEBUG "can't create raw socket\n");
+> -		return -1;
+> -
+> -	}
+> -
+> -	if( sock_create( PF_INET, SOCK_DGRAM, IPPROTO_UDP, &server_sock ) < 0 ) {
+> -
+> -		printk(KERN_DEBUG "can't create udp socket\n");
+> -		sock_release(inet_sock);
+> -		return -1;
+> -
+> -	}
+> -
+> -
+> -	if( server_sock->ops->bind(server_sock, (struct sockaddr *) &server_addr, sizeof( server_addr ) ) < 0 ) {
+> -
+> -		printk(KERN_DEBUG "can't bind udp server socket\n");
+> -		sock_release(server_sock);
+> -		sock_release(inet_sock);
+> -		return -1;
+> -
+> -	}
+> -
+> -	server_sock->sk->user_data = server_sock->sk->data_ready;
+> -	server_sock->sk->data_ready = udp_data_ready;
+> -
+> -	msg.msg_name = &client;
+> -	msg.msg_namelen = sizeof( struct sockaddr_in );
+> -	msg.msg_control = NULL;
+> -	msg.msg_controllen = 0;
+> -	msg.msg_flags = MSG_NOSIGNAL | MSG_DONTWAIT;
+> -
+> -	iph = ( struct iphdr*)(buffer + 1 );
+> -	
+> -	strcpy(current->comm,"udp_recv");
+> -	daemonize();
+> -	
+> -	spin_lock_irq(&current->sigmask_lock);
+> -	tmpsig = current->blocked;
+> -	siginitsetinv(&current->blocked, sigmask(SIGKILL) | sigmask(SIGSTOP) | sigmask(SIGTERM) );
+> -	recalc_sigpending(current);
+> -	spin_unlock_irq(&current->sigmask_lock);
+> -
+> -
+> -	atomic_set(&data_ready_cond, 0);
+> -
+> -	while(!signal_pending(current)) {
+> -
+> -		wait_event_interruptible(thread_wait, atomic_read(&data_ready_cond));
+> -
+> -		if (signal_pending(current))
+> -			break;
+> -
+> -		client_data = NULL;
+> -
+> -		iov.iov_base = buffer;
+> -		iov.iov_len = sizeof(buffer);
+> -
+> -		while ( ( length = kernel_recvmsg( server_sock, &msg, &iov, 1, sizeof(buffer), MSG_NOSIGNAL | MSG_DONTWAIT ) ) > 0 ) {
+> -
+> -			if( ( jiffies - time ) / HZ > LEASE_TIME ) {
+> -
+> -				hashit = NULL;
+> -				spin_lock(&hash_lock);
+> -				while( NULL != ( hashit = hash_iterate( wip_hash, hashit ) ) ) {
+> -					client_data = hashit->bucket->data;
+> -					if( ( jiffies - client_data->last_keep_alive ) / HZ > LEASE_TIME ) {
+> -
+> -						hash_remove_bucket(wip_hash, hashit);
+> -						hash_remove(vip_hash, client_data);
+> -
+> -						tmp_entry = kmalloc(sizeof(struct free_client_data), GFP_KERNEL);
+> -						if(tmp_entry != NULL) {
+> -							tmp_entry->gw_client = client_data;
+> -							list_add(&tmp_entry->list,&free_client_list);
+> -						} else
+> -							printk(KERN_DEBUG "can't add free gw_client to free list\n");
+> -
+> -					}
+> -				}
+> -				spin_unlock(&hash_lock);
+> -				time = jiffies;
+> -			}
+> -
+> -			if( length > 0 && buffer[0] == TUNNEL_IP_REQUEST ) {
+> -
+> -				client_data = get_ip_addr(&client);
+> -
+> -				if(client_data != NULL) {
+> -
+> -					memcpy( &buffer[1], &client_data->vip_addr, sizeof( client_data->vip_addr ) );
+> -
+> -					iov.iov_base = buffer;
+> -					iov.iov_len = length;
+> -
+> -					if( ( ret_value = kernel_sendmsg(server_sock, &msg, &iov, 1, length ) ) < 0 )
+> -						DBG("tunnel ip request socket return %d", ret_value);
+> -
+> -				} else
+> -					printk(KERN_DEBUG "can't get an ip address\n");
+> -
+> -			} else if( length > 0 && buffer[0] == TUNNEL_DATA ) {
+> -
+> -				spin_lock(&hash_lock);
+> -				client_data = ((struct gw_client *)hash_find(wip_hash, &client.sin_addr.s_addr));
+> -				spin_unlock(&hash_lock);
+> -
+> -				if(client_data == NULL) {
+> -
+> -					buffer[0] = TUNNEL_IP_INVALID;
+> -					iov.iov_base = buffer;
+> -					iov.iov_len = length;
+> -
+> -					if( ( ret_value = kernel_sendmsg(server_sock, &msg, &iov, 1, length ) ) < 0 )
+> -						DBG("tunnel ip invalid socket return %d", ret_value);
+> -					continue;
+> -
+> -				}
+> -
+> -				client_data->last_keep_alive = jiffies;
+> -
+> -				inet_iov.iov_base = &buffer[1];
+> -				inet_iov.iov_len = length - 1;
+> -
+> -				inet_addr.sin_port = 0;
+> -				inet_addr.sin_addr.s_addr = iph->daddr;
+> -
+> -				if( (ret_value = kernel_sendmsg(inet_sock, &inet_msg, &inet_iov, 1, length - 1 ) ) < 0 )
+> -					DBG("tunnel data socket return %d", ret_value);
+> -
+> -			} else if( length > 0 && buffer[0] == TUNNEL_KEEPALIVE_REQUEST ) {
+> -
+> -				spin_lock(&hash_lock);
+> -				client_data = ((struct gw_client *)hash_find(wip_hash, &client.sin_addr.s_addr));
+> -				spin_unlock(&hash_lock);
+> -				if(client_data != NULL) {
+> -					buffer[0] = TUNNEL_KEEPALIVE_REPLY;
+> -					client_data->last_keep_alive = jiffies;
+> -				} else
+> -					buffer[0] = TUNNEL_IP_INVALID;
+> -
+> -				iov.iov_base = buffer;
+> -				iov.iov_len = length;
+> -
+> -				if( ( ret_value = kernel_sendmsg(server_sock, &msg, &iov, 1, length ) ) < 0 )
+> -					DBG("tunnel keep alive socket return %d", ret_value);
+> -
+> -			} else
+> -				printk(KERN_DEBUG "recive unknown message\n" );
+> -
+> -		}
+> -
+> -		iov.iov_base = buffer;
+> -		iov.iov_len = sizeof(buffer);
+> -
+> -		atomic_set(&data_ready_cond, 0);
+> -	}
+> -	
+> -	if(server_sock)
+> -		sock_release(server_sock);
+> -
+> -	printk(KERN_DEBUG "thread terminated\n");
+> -	complete(&thread_complete);
+> -	return 0;
+> -}
+> -
+> -/* bat_netdev part */
+> -
+> -static int bat_netdev_setup( struct net_device *dev )
+> -{
+> -
+> -	ether_setup(dev);
+> -	dev->open = bat_netdev_open;
+> -	dev->stop = bat_netdev_close;
+> -	dev->hard_start_xmit = bat_netdev_xmit;
+> -// 	dev->destructor = free_netdev;
+> -
+> -	dev->features        |= NETIF_F_NO_CSUM;
+> -	dev->hard_header_cache = NULL;
+> -	dev->mtu = 1471;
+> -	dev->flags = IFF_POINTOPOINT | IFF_NOARP | IFF_MULTICAST;
+> -	dev->hard_header_cache = NULL;
+> -	dev->priv = kmalloc(sizeof(struct gate_priv), GFP_KERNEL);
+> -
+> -	if (dev->priv == NULL)
+> -		return -ENOMEM;
+> -
+> -	memset( dev->priv, 0, sizeof( struct gate_priv ) );
+> -	
+> -	return(0);
+> -}
+> -
+> -static int bat_netdev_xmit( struct sk_buff *skb, struct net_device *dev )
+> -{
+> -	struct gate_priv *priv = priv = (struct gate_priv*)dev->priv;
+> -	struct sockaddr_in sa;
+> -	struct iphdr *iph = ip_hdr( skb );
+> -	struct iovec iov[2];
+> -	struct msghdr msg;
+> -	
+> -	struct gw_client *client_data;
+> -	unsigned char msg_number[1];
+> -
+> -	msg_number[0] = TUNNEL_DATA;
+> -
+> -	/* we use saddr , because hash choose and compare begin at + 4 bytes */
+> -	spin_lock(&hash_lock);
+> -	client_data = ((struct gw_client *)hash_find(vip_hash, & iph->saddr )); /* daddr */
+> -	spin_unlock(&hash_lock);
+> -
+> -	if( client_data != NULL ) {
+> -
+> -		sa.sin_family = AF_INET;
+> -		sa.sin_addr.s_addr = client_data->wip_addr;
+> -		sa.sin_port = __constant_htons( (unsigned short)BATMAN_PORT );
+> -
+> -		msg.msg_flags = MSG_NOSIGNAL | MSG_DONTWAIT;
+> -		msg.msg_name = &sa;
+> -		msg.msg_namelen = sizeof(sa);
+> -		msg.msg_control = NULL;
+> -		msg.msg_controllen = 0;
+> -
+> -		iov[0].iov_base = msg_number;
+> -		iov[0].iov_len = 1;
+> -		iov[1].iov_base = skb->data + sizeof( struct ethhdr );
+> -		iov[1].iov_len = skb->len - sizeof( struct ethhdr );
+> -		kernel_sendmsg(priv->tun_socket, &msg, iov, 2, skb->len - sizeof( struct ethhdr ) + 1);
+> -
+> -	} else
+> -		printk(KERN_DEBUG "client not found\n");
+> -
+> -	kfree_skb( skb );
+> -	return( 0 );
+> -}
+> -
+> -static int bat_netdev_open( struct net_device *dev )
+> -{
+> -	printk(KERN_DEBUG "receive open\n" );
+> -	netif_start_queue( dev );
+> -	return( 0 );
+> -}
+> -
+> -static int bat_netdev_close( struct net_device *dev )
+> -{
+> -
+> -	printk(KERN_DEBUG "receive close\n" );
+> -	netif_stop_queue( dev );
+> -	return( 0 );
+> -}
+> -
+> -static int create_bat_netdev(void)
+> -{
+> -
+> -	struct gate_priv *priv;
+> -	if(!atomic_read(&gate_device_run)) {
+> -
+> -		if( ( register_netdev( &gate_device ) ) < 0 )
+> -			return -ENODEV;
+> -
+> -		priv = (struct gate_priv*)gate_device.priv;
+> -		if( sock_create( PF_INET, SOCK_DGRAM, IPPROTO_UDP, &priv->tun_socket ) < 0 ) {
+> -
+> -			printk(KERN_DEBUG "can't create gate socket\n");
+> -			netif_stop_queue(&gate_device);
+> -			return -EFAULT;
+> -
+> -		}
+> -
+> -		atomic_inc(&gate_device_run);
+> -
+> -	} else {
+> -
+> -		printk(KERN_DEBUG "net device already exists\n");
+> -		return(-1);
+> -
+> -	}
+> -
+> -	return( 0 );
+> -}
+> -
+> -static struct gw_client *get_ip_addr(struct sockaddr_in *client_addr)
+> -{
+> -	static uint8_t next_free_ip[4] = {169,254,0,1};
+> -	struct free_client_data *entry, *next;
+> -	struct gw_client *gw_client = NULL;
+> -	struct hashtable_t *swaphash;
+> -
+> -
+> -	spin_lock(&hash_lock);
+> -	gw_client = ((struct gw_client *)hash_find(wip_hash, &client_addr->sin_addr.s_addr));
+> -
+> -	if (gw_client != NULL) {
+> -		printk(KERN_DEBUG "found client in hash");
+> -		spin_unlock(&hash_lock);
+> -		return gw_client;
+> -	}
+> -
+> -	list_for_each_entry_safe(entry, next, &free_client_list, list) {
+> -		printk(KERN_DEBUG "use free client from list");
+> -		gw_client = entry->gw_client;
+> -		list_del(&entry->list);
+> -		kfree(entry);
+> -		break;
+> -	}
+> -
+> -	if(gw_client == NULL) {
+> -		printk(KERN_DEBUG "malloc client");
+> -		gw_client = kmalloc( sizeof(struct gw_client), GFP_KERNEL );
+> -		gw_client->vip_addr = 0;
+> -	}
+> -
+> -	gw_client->wip_addr = client_addr->sin_addr.s_addr;
+> -	gw_client->client_port = client_addr->sin_port;
+> -	gw_client->last_keep_alive = jiffies;
+> -
+> -	/* TODO: check if enough space available */
+> -	if (gw_client->vip_addr == 0) {
+> -
+> -		gw_client->vip_addr = *(uint32_t *)next_free_ip;
+> -
+> -		next_free_ip[3]++;
+> -
+> -		if (next_free_ip[3] == 0)
+> -			next_free_ip[2]++;
+> -
+> -	}
+> -
+> -	
+> -	hash_add(wip_hash, gw_client);
+> -	hash_add(vip_hash, gw_client);
+> -
+> -	if (wip_hash->elements * 4 > wip_hash->size) {
+> -
+> -		swaphash = hash_resize(wip_hash, wip_hash->size * 2);
+> -
+> -		if (swaphash == NULL) {
+> -
+> -			printk(KERN_DEBUG "Couldn't resize hash table" );
+> -
+> -		}
+> -
+> -		wip_hash = swaphash;
+> -
+> -		swaphash = hash_resize(vip_hash, vip_hash->size * 2);
+> -
+> -		if (swaphash == NULL) {
+> -
+> -			printk(KERN_DEBUG "Couldn't resize hash table" );
+> -
+> -		}
+> -
+> -		vip_hash = swaphash;
+> -
+> -	}
+> -	spin_unlock(&hash_lock);
+> -	return gw_client;
+> -
+> -}
+> -
+> -static void udp_data_ready(struct sock *sk, int len)
+> -{
+> -
+> -	void (*data_ready)(struct sock *, int) = sk->user_data;
+> -	data_ready(sk,len);
+> -	atomic_set(&data_ready_cond, 1);
+> -	wake_up_interruptible(&thread_wait);
+> -
+> -}
+> -
+> -static int kernel_sendmsg(struct socket *sock, struct msghdr *msg, struct iovec *vec, size_t num, size_t size)
+> -{
+> -	mm_segment_t oldfs = get_fs();
+> -	int result;
+> -
+> -	set_fs(KERNEL_DS);
+> -
+> -	msg->msg_iov = vec;
+> -	msg->msg_iovlen = num;
+> -	result = sock_sendmsg(sock, msg, size);
+> -	set_fs(oldfs);
 > -	return result;
 > -}
 > -
-> -/* Send routing message msg to the kernel.
-> - * The kernel's reply is returned in msg. */
-> -static int rt_message(struct rt_msg *msg)
+> -static int kernel_recvmsg(struct socket *sock, struct msghdr *msg, struct iovec *vec, size_t num, size_t size, int flags)
 > -{
-> -	int rt_sock;
-> -	static unsigned int seq = 0;
-> -	ssize_t len;
-> -	pid_t pid;
+> -	mm_segment_t oldfs = get_fs();
+> -	int result;
 > -
-> -	rt_sock = socket(PF_ROUTE, SOCK_RAW, AF_INET);
-> -	if (rt_sock < 0)
-> -		err(1, "Could not open socket to routing table");
+> -	set_fs(KERNEL_DS);
 > -
-> -	pid = getpid();
-> -	len = 0;
-> -	seq++;
+> -	msg->msg_iov = (struct iovec *)vec, msg->msg_iovlen = num;
+> -	result = sock_recvmsg(sock, msg, size, flags);
+> -	set_fs(oldfs);
+> -	return result;
+> -}
 > -
-> -	/* Send message */
-> -	do {
-> -		msg->hdr.rtm_seq = seq;
-> -		len = write(rt_sock, msg, msg->hdr.rtm_msglen);
-> -		if (len < 0) {
-> -			warn("Error sending routing message to kernel");
-> -			return -1;
-> -		}
-> -	} while (len < msg->hdr.rtm_msglen);
+> -int compare_wip(void *data1, void *data2)
+> -{
+> -	return ( !memcmp( data1, data2, 4 ) );
+> -}
 > -
-> -	/* Get reply */
-> -	do {
-> -		len = read(rt_sock, msg, sizeof(struct rt_msg));
-> -		if (len < 0)
-> -			err(1, "Error reading from routing socket");
-> -	} while (len > 0 && (msg->hdr.rtm_seq != seq
-> -				|| msg->hdr.rtm_pid != pid));
+> -int compare_vip(void *data1, void *data2)
+> -{
+> -	return ( !memcmp( data1 + 4, data2 + 4, 4 ) );
+> -}
 > -
-> -	if (msg->hdr.rtm_version != RTM_VERSION)
-> -		warn("RTM_VERSION mismatch: compiled with version %i, "
-> -		    "but running kernel uses version %i", RTM_VERSION,
-> -		    msg->hdr.rtm_version);
+> -int choose_wip(void *data, int32_t size)
+> -{
+> -	unsigned char *key= data;
+> -	uint32_t hash = 0;
+> -	size_t i;
 > -
-> -	/* Check reply for errors. */
-> -	if (msg->hdr.rtm_errno) {
-> -		errno = msg->hdr.rtm_errno;
-> -		return -1;
+> -	for (i = 0; i < 4; i++) {
+> -		hash += key[i];
+> -		hash += (hash << 10);
+> -		hash ^= (hash >> 6);
 > -	}
 > -
-> -	return 0;
+> -	hash += (hash << 3);
+> -	hash ^= (hash >> 11);
+> -	hash += (hash << 15);
+> -
+> -	return (hash%size);
+> -
 > -}
 > -
-> -/* Get IP address of a network device (e.g. "tun0"). */
-> -static uint32_t get_dev_addr(char *dev)
+> -int choose_vip(void *data, int32_t size)
 > -{
-> -	int so;
-> -	struct ifreq ifr;
-> -	struct sockaddr_in *addr;
-> -
-> -	memset(&ifr, 0, sizeof(ifr));
-> -
-> -	strlcpy(ifr.ifr_name, dev, IFNAMSIZ);
-> -
-> -	so = socket(AF_INET, SOCK_DGRAM, 0);
-> -	if (ioctl(so, SIOCGIFADDR, &ifr, sizeof(ifr)) < 0) {
-> -		perror("SIOCGIFADDR");
-> -		return -1;
+> -	unsigned char *key= data;
+> -	uint32_t hash = 0;
+> -	size_t i;
+> -	for (i = 4; i < 8; i++) {
+> -		hash += key[i];
+> -		hash += (hash << 10);
+> -		hash ^= (hash >> 6);
 > -	}
 > -
-> -	if (ifr.ifr_addr.sa_family != AF_INET) {
-> -		warn("get_dev_addr: got a non-IPv4 interface");
-> -		return -1;
-> -	}
+> -	hash += (hash << 3);
+> -	hash ^= (hash >> 11);
+> -	hash += (hash << 15);
 > -
-> -	addr = (struct sockaddr_in*)&ifr.ifr_addr;
-> -	return addr->sin_addr.s_addr;
+> -	return (hash%size);
+> -
 > -}
 > -
-> -void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t BATMANUNUSED(src_ip),
-> -		int32_t BATMANUNUSED(ifi), char *dev, uint8_t BATMANUNUSED(rt_table), int8_t BATMANUNUSED(route_type), int8_t del)
-> -{
-> -	char dest_str[16], router_str[16];
-> -	struct rt_msg msg;
+> -MODULE_LICENSE("GPL");
 > -
-> -	memset(&msg, 0, sizeof(struct rt_msg));
-> -
-> -	inet_ntop(AF_INET, &dest, dest_str, sizeof (dest_str));
-> -	inet_ntop(AF_INET, &router, router_str, sizeof (router_str));
-> -
-> -	/* Message header */
-> -	msg.hdr.rtm_type = del ? RTM_DELETE : RTM_ADD;
-> -	msg.hdr.rtm_version = RTM_VERSION;
-> -	msg.hdr.rtm_flags = RTF_STATIC | RTF_UP;
-> -	if (netmask == 32)
-> -		msg.hdr.rtm_flags |= RTF_HOST;
-> -	msg.hdr.rtm_addrs = RTA_DST | RTA_GATEWAY | RTA_NETMASK;
-> -	msg.hdr.rtm_msglen = sizeof(struct rt_msg);
-> -
-> -	/* Destination and gateway sockaddrs */
-> -	msg.dest.sin_family = AF_INET;
-> -	msg.dest.sin_len = sizeof(struct sockaddr_in);
-> -	msg.gateway.sin_family = AF_INET;
-> -	msg.gateway.sin_len = sizeof(struct sockaddr_in);
-> -	msg.hdr.rtm_flags = RTF_GATEWAY;
-> -	if (dest == router) {
-> -		if (dest == 0) {
-> -			/* Add default route via dev */
-> -			fprintf(stderr, "%s default route via %s\n",
-> -				del ? "Deleting" : "Adding", dev);
-> -			msg.gateway.sin_addr.s_addr = get_dev_addr(dev);
-> -		} else {
-> -			/* Route to dest via default route.
-> -			 * This is a nop. */
-> -			return;
-> -		}
-> -	} else {
-> -		if (router != 0) {
-> -			/* Add route to dest via router */
-> -			msg.dest.sin_addr.s_addr = dest;
-> -			msg.gateway.sin_addr.s_addr = router;
-> -			fprintf(stderr, "%s route to %s/%i via %s\n", del ? "Deleting" : "Adding",
-> -					dest_str, netmask, router_str);
-> -		} else {
-> -			/* Route to dest via default route.
-> -			 * This is a nop. */
-> -			return;
-> -		}
-> -	}
-> -
-> -	/* Netmask sockaddr */
-> -	msg.netmask.sin_family = AF_INET;
-> -	msg.netmask.sin_len = sizeof(struct sockaddr_in);
-> -	/* Netmask is passed as decimal value (e.g. 28 for a /28).
-> -	 * So we need to convert it into a bit pattern with n_bits(). */
-> -	msg.netmask.sin_addr.s_addr = htonl(n_bits(netmask));
-> -
-> -	if (rt_message(&msg) < 0)
-> -		err(1, "Cannot %s route to %s/%i",
-> -			del ? "delete" : "add", dest_str, netmask);
-> -}
-> -
-> -
-> -void add_del_rule(uint32_t BATMANUNUSED(network), uint8_t BATMANUNUSED(netmask), int8_t BATMANUNUSED(rt_table),
-> -		uint32_t BATMANUNUSED(prio), char *BATMANUNUSED(iif), int8_t BATMANUNUSED(dst_rule), int8_t BATMANUNUSED(del) )
-> -{
-> -	fprintf(stderr, "add_del_rule: not implemented\n");
-> -	return;
-> -}
-> -
-> -int add_del_interface_rules( int8_t BATMANUNUSED(del) )
-> -{
-> -	fprintf(stderr, "add_del_interface_rules: not implemented\n");
-> -	return 0;
-> -}
-> -
-> -int flush_routes_rules( int8_t BATMANUNUSED(rt_table) )
-> -{
-> -	fprintf(stderr, "flush_routes_rules: not implemented\n");
-> -	return 0;
-> -}
-> -
-> diff --git a/bsd/tun.c b/bsd/tun.c
+> -MODULE_AUTHOR(DRIVER_AUTHOR);
+> -MODULE_DESCRIPTION(DRIVER_DESC);
+> -MODULE_SUPPORTED_DEVICE(DRIVER_DEVICE);
+> diff --git a/linux/modules/gateway24.h b/linux/modules/gateway24.h
 > deleted file mode 100644
-> index 2c571c0..0000000
-> --- a/bsd/tun.c
+> index b1958a7..0000000
+> --- a/linux/modules/gateway24.h
 > +++ /dev/null
-> @@ -1,239 +0,0 @@
+> @@ -1,98 +0,0 @@
 > -/*
-> - * Copyright (C) 2006, 2007 BATMAN contributors:
-> - * Stefan Sperling <stsp@stsp.name>
+> - * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
+> - *
+> - * Thomas Lopatic, Corinna 'Elektra' Aichele, Axel Neumann, Marek Lindner, Andreas Langer
+> - * This program is free software; you can redistribute it and/or
+> - * modify it under the terms of version 2 of the GNU General Public
+> - * License as published by the Free Software Foundation.
+> - *
+> - * This program is distributed in the hope that it will be useful, but
+> - * WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+> - * General Public License for more details.
+> - *
+> - * You should have received a copy of the GNU General Public License
+> - * along with this program; if not, write to the Free Software
+> - * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+> - * 02110-1301, USA
+> - *
+> - */
+> -
+> -
+> -#define LINUX
+> -
+> -#define DRIVER_AUTHOR "Andreas Langer <an.langer@gmx.de>, Marek Lindner <lindner_marek@yahoo.de>"
+> -#define DRIVER_DESC   "batman gateway module"
+> -#define DRIVER_DEVICE "batgat"
+> -
+> -#include <linux/version.h>	/* KERNEL_VERSION ... */
+> -#include <linux/fs.h>		/* fops ...*/
+> -#include <linux/devfs_fs_kernel.h>
+> -#include <linux/module.h>
+> -#include <linux/in.h>		/* sockaddr_in */
+> -#include <linux/net.h>		/* socket */
+> -#include <linux/string.h>	/* strlen, strstr, strncmp ... */
+> -#include <linux/ip.h>		/* iphdr */
+> -#include <linux/if_arp.h>	/* ARPHRD_NONE */
+> -#include <net/sock.h>		/* sock */
+> -#include <net/pkt_sched.h>	/* class_create, class_destroy, class_device_create */
+> -#include <linux/list.h>		/* list handling */
+> -#include <linux/if.h>		/*IFNAMSIZ*/
+> -#include <linux/netdevice.h>
+> -#include <asm/uaccess.h>
+> -#include <linux/proc_fs.h>
+> -// #include <linux/smp_lock.h>	/* lock_kernel */
+> -
+> -/* io controls */
+> -#define IOCSETDEV 1
+> -#define IOCREMDEV 2
+> -
+> -#define TRANSPORT_PACKET_SIZE 29
+> -#define VIP_BUFFER_SIZE 5
+> -#define BATMAN_PORT 4306
+> -
+> -#define TUNNEL_DATA 0x01
+> -#define TUNNEL_IP_REQUEST 0x02
+> -#define TUNNEL_IP_INVALID 0x03
+> -#define TUNNEL_KEEPALIVE_REQUEST 0x04
+> -#define TUNNEL_KEEPALIVE_REPLY 0x05
+> -
+> -#define LEASE_TIME 1500
+> -
+> -#define DBG(msg,args...) do { printk(KERN_DEBUG "batgat: [%s:%u] " msg "\n", __func__ ,__LINE__, ##args); } while(0)
+> -#define ip_hdr(skb) (struct iphdr*)skb->nh.iph
+> -
+> -
+> -#ifndef list_for_each_entry_safe
+> -#define list_for_each_entry_safe(pos, n, head, member) \
+> -	for (pos = list_entry((head)->next, typeof(*pos), member), \
+> -	n = list_entry(pos->member.next, typeof(*pos), member); \
+> -	&pos->member != (head); \
+> -	pos = n, n = list_entry(n->member.next, typeof(*n), member))
+> -#endif
+> -
+> -#define PROC_ROOT_DIR "batgat"
+> -#define PROC_FILE_CLIENTS "clients"
+> -
+> -struct gw_client {
+> -	uint32_t wip_addr;
+> -	uint32_t vip_addr;
+> -	uint16_t client_port;
+> -	uint32_t last_keep_alive;
+> -};
+> -
+> -struct batgat_ioc_args {
+> -	char dev_name[IFNAMSIZ];
+> -	unsigned char exists;
+> -	uint32_t universal;
+> -	uint32_t ifindex;
+> -};
+> -
+> -struct gate_priv {
+> -	struct socket *tun_socket;
+> -};
+> -
+> -struct free_client_data {
+> -	struct list_head list;
+> -	struct gw_client *gw_client;
+> -};
+> diff --git a/linux/modules/hash.c b/linux/modules/hash.c
+> deleted file mode 100644
+> index ce02764..0000000
+> --- a/linux/modules/hash.c
+> +++ /dev/null
+> @@ -1,296 +0,0 @@
+> -/*
+> - * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
+> - * Simon Wunderlich, Marek Lindner
+> - * This program is free software; you can redistribute it and/or
+> - * modify it under the terms of version 2 of the GNU General Public
+> - * License as published by the Free Software Foundation.
+> - *
+> - * This program is distributed in the hope that it will be useful, but
+> - * WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+> - * General Public License for more details.
+> - *
+> - * You should have received a copy of the GNU General Public License
+> - * along with this program; if not, write to the Free Software
+> - * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+> - * 02110-1301, USA
+> - *
+> - */
+> -
+> -
+> -
+> -
+> -
+> -#include <linux/string.h>	/* strlen, strstr, strncmp ... */
+> -#include <linux/slab.h>
+> -#include "hash.h"
+> -
+> -
+> -
+> -/* clears the hash */
+> -void hash_init(struct hashtable_t *hash)
+> -{
+> -	int i;
+> -
+> -	hash->elements = 0;
+> -
+> -	for (i = 0 ; i < hash->size; i++)
+> -		hash->table[i] = NULL;
+> -}
+> -
+> -/* remove the hash structure. if hashdata_free_cb != NULL,
+> - * this function will be called to remove the elements inside of the hash.
+> - * if you don't remove the elements, memory might be leaked. */
+> -void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb)
+> -{
+> -	struct element_t *bucket, *last_bucket;
+> -	int i;
+> -
+> -	for (i = 0; i < hash->size; i++) {
+> -		bucket = hash->table[i];
+> -
+> -		while (bucket != NULL) {
+> -			if (free_cb != NULL)
+> -				free_cb(bucket->data);
+> -
+> -			last_bucket = bucket;
+> -			bucket = bucket->next;
+> -			kfree(last_bucket);
+> -		}
+> -
+> -	}
+> -
+> -	hash_destroy(hash);
+> -}
+> -
+> -/* free only the hashtable and the hash itself. */
+> -void hash_destroy(struct hashtable_t *hash)
+> -{
+> -	kfree(hash->table);
+> -	kfree(hash);
+> -}
+> -
+> -/* iterate though the hash. first element is selected with iter_in NULL.
+> - * use the returned iterator to access the elements until hash_it_t returns NULL. */
+> -struct hash_it_t *hash_iterate(struct hashtable_t *hash, struct hash_it_t *iter_in)
+> -{
+> -	struct hash_it_t *iter;
+> -
+> -	if (iter_in == NULL) {
+> -		iter = kmalloc(sizeof(struct hash_it_t), GFP_KERNEL);
+> -		iter->index = -1;
+> -		iter->bucket = NULL;
+> -		iter->prev_bucket = NULL;
+> -	} else {
+> -		iter= iter_in;
+> -	}
+> -
+> -	/* sanity checks first (if our bucket got deleted in the last iteration): */
+> -	if (iter->bucket != NULL) {
+> -		if (iter->first_bucket != NULL) {
+> -			/* we're on the first element and it got removed after the last iteration. */
+> -			if ((*iter->first_bucket) != iter->bucket) {
+> -				/* there are still other elements in the list */
+> -				if ((*iter->first_bucket) != NULL) {
+> -					iter->prev_bucket = NULL;
+> -					iter->bucket = (*iter->first_bucket);
+> -					iter->first_bucket = &hash->table[iter->index];
+> -					return iter;
+> -				} else {
+> -					iter->bucket = NULL;
+> -				}
+> -			}
+> -		} else if (iter->prev_bucket != NULL) {
+> -			/*
+> -			* we're not on the first element, and the bucket got removed after the last iteration.
+> -			* the last bucket's next pointer is not pointing to our actual bucket anymore.
+> -			* select the next.
+> -			*/
+> -			if (iter->prev_bucket->next != iter->bucket)
+> -				iter->bucket = iter->prev_bucket;
+> -		}
+> -	}
+> -
+> -	/* now as we are sane, select the next one if there is some */
+> -	if (iter->bucket != NULL) {
+> -		if (iter->bucket->next != NULL) {
+> -			iter->prev_bucket = iter->bucket;
+> -			iter->bucket = iter->bucket->next;
+> -			iter->first_bucket = NULL;
+> -			return iter;
+> -		}
+> -	}
+> -
+> -	/* if not returned yet, we've reached the last one on the index and have to search forward */
+> -	iter->index++;
+> -	/* go through the entries of the hash table */
+> -	while (iter->index < hash->size) {
+> -		if ((hash->table[iter->index]) != NULL){
+> -			iter->prev_bucket = NULL;
+> -			iter->bucket = hash->table[iter->index];
+> -			iter->first_bucket = &hash->table[iter->index];
+> -			return iter;
+> -		} else {
+> -			iter->index++;
+> -		}
+> -	}
+> -
+> -	/* nothing to iterate over anymore */
+> -	kfree(iter);
+> -	return NULL;
+> -}
+> -
+> -/* allocates and clears the hash */
+> -struct hashtable_t *hash_new(int size, hashdata_compare_cb compare, hashdata_choose_cb choose)
+> -{
+> -	struct hashtable_t *hash;
+> -
+> -	hash = kmalloc(sizeof(struct hashtable_t) , GFP_KERNEL);
+> -
+> -	if (hash == NULL)
+> -		return NULL;
+> -
+> -	hash->size = size;
+> -	hash->table = kmalloc(sizeof(struct element_t *) * size, GFP_KERNEL);
+> -
+> -	if (hash->table == NULL) {
+> -		kfree(hash);
+> -		return NULL;
+> -	}
+> -
+> -	hash_init(hash);
+> -
+> -	hash->compare = compare;
+> -	hash->choose = choose;
+> -
+> -	return hash;
+> -}
+> -
+> -/* adds data to the hashtable. returns 0 on success, -1 on error */
+> -int hash_add(struct hashtable_t *hash, void *data)
+> -{
+> -	int index;
+> -	struct element_t *bucket, *prev_bucket = NULL;
+> -
+> -	index = hash->choose(data, hash->size);
+> -	bucket = hash->table[index];
+> -
+> -	while (bucket != NULL) {
+> -		if (hash->compare(bucket->data, data))
+> -			return -1;
+> -
+> -		prev_bucket = bucket;
+> -		bucket = bucket->next;
+> -	}
+> -
+> -	/* found the tail of the list, add new element */
+> -	bucket = kmalloc(sizeof(struct element_t),GFP_KERNEL);
+> -
+> -	if (bucket == NULL)
+> -		return -1;
+> -
+> -	bucket->data = data;
+> -	bucket->next = NULL;
+> -
+> -	/* and link it */
+> -	if (prev_bucket == NULL)
+> -		hash->table[index] = bucket;
+> -	else
+> -		prev_bucket->next = bucket;
+> -
+> -	hash->elements++;
+> -	return 0;
+> -}
+> -
+> -/* finds data, based on the key in keydata. returns the found data on success, or NULL on error */
+> -void *hash_find(struct hashtable_t *hash, void *keydata)
+> -{
+> -	int index;
+> -	struct element_t *bucket;
+> -
+> -	index = hash->choose(keydata , hash->size);
+> -	bucket = hash->table[index];
+> -
+> -	while (bucket != NULL) {
+> -		if (hash->compare(bucket->data, keydata))
+> -			return bucket->data;
+> -
+> -		bucket = bucket->next;
+> -	}
+> -
+> -	return NULL;
+> -}
+> -
+> -/* remove bucket (this might be used in hash_iterate() if you already found the bucket
+> - * you want to delete and don't need the overhead to find it again with hash_remove().
+> - * But usually, you don't want to use this function, as it fiddles with hash-internals. */
+> -void *hash_remove_bucket(struct hashtable_t *hash, struct hash_it_t *hash_it_t)
+> -{
+> -	void *data_save;
+> -
+> -	data_save = hash_it_t->bucket->data;
+> -
+> -	if (hash_it_t->prev_bucket != NULL)
+> -		hash_it_t->prev_bucket->next = hash_it_t->bucket->next;
+> -	else if (hash_it_t->first_bucket != NULL)
+> -		(*hash_it_t->first_bucket) = hash_it_t->bucket->next;
+> -
+> -	kfree(hash_it_t->bucket);
+> -	hash->elements--;
+> -
+> -	return data_save;
+> -}
+> -
+> -/* removes data from hash, if found. returns pointer do data on success,
+> - * so you can remove the used structure yourself, or NULL on error .
+> - * data could be the structure you use with just the key filled,
+> - * we just need the key for comparing. */
+> -void *hash_remove(struct hashtable_t *hash, void *data)
+> -{
+> -	struct hash_it_t hash_it_t;
+> -
+> -	hash_it_t.index = hash->choose(data, hash->size);
+> -	hash_it_t.bucket = hash->table[hash_it_t.index];
+> -	hash_it_t.prev_bucket = NULL;
+> -
+> -	while (hash_it_t.bucket != NULL) {
+> -		if (hash->compare(hash_it_t.bucket->data, data)) {
+> -			hash_it_t.first_bucket = (hash_it_t.bucket == hash->table[hash_it_t.index] ? &hash->table[ hash_it_t.index ] : NULL);
+> -			return hash_remove_bucket(hash, &hash_it_t);
+> -		}
+> -
+> -		hash_it_t.prev_bucket = hash_it_t.bucket;
+> -		hash_it_t.bucket= hash_it_t.bucket->next;
+> -	}
+> -
+> -	return NULL;
+> -}
+> -
+> -/* resize the hash, returns the pointer to the new hash or NULL on error. removes the old hash on success. */
+> -struct hashtable_t *hash_resize(struct hashtable_t *hash, int size)
+> -{
+> -	struct hashtable_t *new_hash;
+> -	struct element_t *bucket;
+> -	int i;
+> -
+> -	/* initialize a new hash with the new size */
+> -	new_hash = hash_new(size, hash->compare, hash->choose);
+> -
+> -	if (new_hash == NULL)
+> -		return NULL;
+> -
+> -	/* copy the elements */
+> -	for (i = 0; i < hash->size; i++) {
+> -		bucket = hash->table[i];
+> -
+> -		while (bucket != NULL) {
+> -			hash_add(new_hash, bucket->data);
+> -			bucket = bucket->next;
+> -		}
+> -	}
+> -
+> -	/* remove hash and eventual overflow buckets but not the content itself. */
+> -	hash_delete(hash, NULL);
+> -
+> -	return new_hash;
+> -}
+> diff --git a/linux/modules/hash.h b/linux/modules/hash.h
+> deleted file mode 100644
+> index b5402be..0000000
+> --- a/linux/modules/hash.h
+> +++ /dev/null
+> @@ -1,100 +0,0 @@
+> -/*
+> - * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
+> - *
+> - * Simon Wunderlich, Marek Lindner
 > - *
 > - * This program is free software; you can redistribute it and/or
 > - * modify it under the terms of version 2 of the GNU General Public
@@ -567,287 +2361,744 @@ Am Freitag, 23. Dezember 2011 13:15:50 schrieb Sven Eckelmann:
 > - *
 > - */
 > -
-> -/* This file contains functions interfacing tun devices on BSD. */
-> -
-> -#warning BSD support is known broken - if you compile this on BSD you are expected to fix it :-P
-> -
-> -#include <sys/types.h>
-> -#include <sys/socket.h>
-> -#include <sys/ioctl.h>
-> -#include <sys/stat.h>
-> -#include <netinet/in.h>
-> -#include <arpa/inet.h>
-> -#include <net/if.h>
-> -#include <net/if_tun.h>
-> -#include <fcntl.h>
-> -#include <stdio.h>
-> -#include <stdlib.h>
-> -#include <string.h>
-> -#include <unistd.h>
-> -#include <err.h>
-> -
-> -#include "../os.h"
-> -#include "../batman.h"
 > -
 > -
+> -
+> -
+> -#ifndef _BATMAN_HASH_H
+> -#define _BATMAN_HASH_H
+> -
+> -
+> -
+> -typedef int (*hashdata_compare_cb)(void *, void *);
+> -typedef int (*hashdata_choose_cb)(void *, int);
+> -typedef void (*hashdata_free_cb)(void *);
+> -
+> -struct element_t {
+> -	void *data;						/* pointer to the data */
+> -	struct element_t *next;			/* overflow bucket pointer */
+> -};
+> -
+> -struct hash_it_t {
+> -	int index;
+> -	struct element_t *bucket;
+> -	struct element_t *prev_bucket;
+> -	struct element_t **first_bucket;
+> -};
+> -
+> -struct hashtable_t {
+> -	struct element_t **table;					/* the hashtable itself, with the buckets */
+> -	int elements;								/* number of elements registered */
+> -	int size;									/* size of hashtable */
+> -	hashdata_compare_cb compare;			    /* callback to a compare function.
+> -												 * should compare 2 element datas for their keys,
+> -												 * return 0 if same and not 0 if not same */
+> -	hashdata_choose_cb choose;					/* the hashfunction, should return an index based
+> -												 * on the key in the data of the first argument
+> -												 * and the size the second */
+> -};
+> -
+> -/* clears the hash */
+> -void 				 hash_init(struct hashtable_t *hash);
+> -
+> -/* allocates and clears the hash */
+> -struct hashtable_t	*hash_new(int size, hashdata_compare_cb compare, hashdata_choose_cb choose);
+> -
+> -/* remove bucket (this might be used in hash_iterate() if you already found the bucket
+> - * you want to delete and don't need the overhead to find it again with hash_remove().
+> - * But usually, you don't want to use this function, as it fiddles with hash-internals. */
+> -void 				*hash_remove_bucket(struct hashtable_t *hash, struct hash_it_t *hash_it_t);
+> -
+> -/* remove the hash structure. if hashdata_free_cb != NULL,
+> - * this function will be called to remove the elements inside of the hash.
+> - * if you don't remove the elements, memory might be leaked. */
+> -void 				 hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb);
+> -
+> -/* free only the hashtable and the hash itself. */
+> -void 				 hash_destroy(struct hashtable_t *hash);
+> -
+> -/* adds data to the hashtable. returns 0 on success, -1 on error */
+> -int 				 hash_add(struct hashtable_t *hash, void *data);
+> -
+> -/* removes data from hash, if found. returns pointer do data on success,
+> - * so you can remove the used structure yourself, or NULL on error .
+> - * data could be the structure you use with just the key filled,
+> - * we just need the key for comparing. */
+> -void 				*hash_remove(struct hashtable_t *hash, void *data);
+> -
+> -/* finds data, based on the key in keydata. returns the found data on success, or NULL on error */
+> -void 				*hash_find(struct hashtable_t *hash, void *keydata);
+> -
+> -/* resize the hash, returns the pointer to the new hash or NULL on error. removes the old hash on success */
+> -struct hashtable_t	*hash_resize(struct hashtable_t *hash, int size);
+> -
+> -/* print the hash table for debugging */
+> -void 				 hash_debug( struct hashtable_t *hash);
+> -
+> -/* iterate though the hash. first element is selected with iter_in NULL.
+> - * use the returned iterator to access the elements until hash_it_t returns NULL. */
+> -struct hash_it_t 	*hash_iterate(struct hashtable_t *hash, struct hash_it_t *iter_in);
+> -
+> -#endif
+> diff --git a/linux/modules/mod_batman.c b/linux/modules/mod_batman.c
+> deleted file mode 100644
+> index be667c5..0000000
+> --- a/linux/modules/mod_batman.c
+> +++ /dev/null
+> @@ -1,445 +0,0 @@
 > -/*
-> - * open_tun_any() opens an available tun device.
-> - * It returns the file descriptor as return value,
-> - * or -1 on failure.
+> - * Copyright (C) 2006-2009 B.A.T.M.A.N. contributors:
 > - *
-> - * The human readable name of the device (e.g. "/dev/tun0") is
-> - * copied into the dev_name parameter. The buffer to hold
-> - * this string is assumed to be dev_name_size bytes large.
+> - * Marek Lindner
+> - *
+> - * This program is free software; you can redistribute it and/or
+> - * modify it under the terms of version 2 of the GNU General Public
+> - * License as published by the Free Software Foundation.
+> - *
+> - * This program is distributed in the hope that it will be useful, but
+> - * WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+> - * General Public License for more details.
+> - *
+> - * You should have received a copy of the GNU General Public License
+> - * along with this program; if not, write to the Free Software
+> - * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+> - * 02110-1301, USA
+> - *
 > - */
-> -#if defined(__OpenBSD__) || defined(__Darwin__)
-> -static int open_tun_any(char *dev_name, size_t dev_name_size)
-> -{
+> -
+> -
+> -
+> -/* Kernel Programming */
+> -#define LINUX
+> -
+> -#define SUCCESS 0
+> -#define IOCGETNWDEV 1
+> -
+> -#define DRIVER_AUTHOR "Marek Lindner <lindner_marek@yahoo.de>"
+> -#define DRIVER_DESC   "B.A.T.M.A.N. performance accelerator"
+> -#define DRIVER_DEVICE "batman"
+> -
+> -
+> -#include <linux/module.h>    /* needed by all modules */
+> -#include <linux/version.h>   /* LINUX_VERSION_CODE */
+> -#include <linux/kernel.h>    /* KERN_ALERT */
+> -#include <linux/fs.h>        /* struct inode */
+> -#include <linux/socket.h>    /* sock_create(), sock_release() */
+> -#include <linux/net.h>       /* SOCK_RAW */
+> -#include <linux/in.h>        /* IPPROTO_RAW */
+> -#include <linux/inet.h>      /* SOCK_RAW */
+> -#include <linux/ip.h>        /* iphdr */
+> -#include <linux/udp.h>       /* udphdr */
+> -#include <linux/file.h>      /* get_unused_fd() */
+> -#include <linux/fsnotify.h>  /* fsnotify_open() */
+> -#include <linux/syscalls.h>  /* sys_close() */
+> -#include <linux/sched.h>     /* schedule_timeout() */
+> -#include <asm/uaccess.h>     /* get_user() */
+> -
+> -
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+> -	#include <linux/devfs_fs_kernel.h>
+> -#else
+> -#include "compat26.h"
+> -
+> -	static struct class *batman_class;
+> -#endif
+> -
+> -
+> -
+> -static int device_open( struct inode *, struct file * );
+> -static int device_release( struct inode *, struct file * );
+> -static int device_ioctl( struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg );
+> -static ssize_t device_write( struct file *, const char *, size_t, loff_t * );
+> -
+> -
+> -
+> -struct orig_packet {
+> -	struct iphdr ip;
+> -	struct udphdr udp;
+> -} __attribute__((packed));
+> -
+> -
+> -struct minor {
+> -	int minor_num;
+> -	int in_use;
+> -	struct class *minor_class;
+> -	struct socket *raw_sock;
+> -	struct kiocb kiocb;
+> -	struct sock_iocb siocb;
+> -	struct msghdr msg;
+> -	struct iovec iov;
+> -	struct sockaddr_in addr_out;
+> -};
+> -
+> -
+> -static struct file_operations fops = {
+> -	.open = device_open,
+> -	.release = device_release,
+> -	.write = device_write,
+> -	.ioctl = device_ioctl,
+> -};
+> -
+> -
+> -
+> -static int Major;                  /* Major number assigned to our device driver */
+> -struct minor *minor_array[256];    /* minor numbers for device users */
+> -
+> -
+> -
+> -
+> -int init_module( void ) {
+> -
 > -	int i;
-> -	int fd;
-> -	char tun_dev_name[12]; /* 12 = length("/dev/tunxxx\0") */
 > -
-> -	for (i = 0; i < sizeof(tun_dev_name); i++)
-> -		tun_dev_name[i] = '\0';
+> -	/* register our device - kernel assigns a free major number */
+> -	if ( ( Major = register_chrdev( 0, DRIVER_DEVICE, &fops ) ) < 0 ) {
 > -
-> -	/* Try opening tun device /dev/tun[0..255] */
-> -	for (i = 0; i < 256; i++) {
-> -		snprintf(tun_dev_name, sizeof(tun_dev_name), "/dev/tun%i", i);
-> -		if ((fd = open(tun_dev_name, O_RDWR)) != -1) {
-> -			if (dev_name != NULL)
-> -				strlcpy(dev_name, tun_dev_name, dev_name_size);
-> -			return fd;
-> -		}
+> -		printk( "B.A.T.M.A.N.: Registering the character device failed with %d\n", Major );
+> -		return Major;
+> -
 > -	}
-> -	return -1;
-> -}
-> -#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-> -static int open_tun_any(char *dev_name, size_t dev_name_size)
-> -{
-> -	int fd;
-> -	struct stat buf;
 > -
-> -	/* Open lowest unused tun device */
-> -	if ((fd = open("/dev/tun", O_RDWR)) != -1) {
-> -		fstat(fd, &buf);
-> -		printf("Using %s\n", devname(buf.st_rdev, S_IFCHR));
-> -		if (dev_name != NULL)
-> -			strlcpy(dev_name, devname(buf.st_rdev, S_IFCHR), dev_name_size);
-> -		return fd;
-> -	}
-> -	return -1;
-> -}
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+> -	if ( devfs_mk_cdev( MKDEV( Major, 0 ), S_IFCHR | S_IRUGO | S_IWUGO, "batman", 0 ) )
+> -		printk( "B.A.T.M.A.N.: Could not create /dev/batman \n" );
+> -#else
+> -	batman_class = class_create( THIS_MODULE, "batman" );
+> -
+> -	if ( IS_ERR(batman_class) )
+> -		printk( "B.A.T.M.A.N.: Could not register class 'batman' \n" );
+> -	else
+> -		device_create_drvdata( batman_class, NULL, MKDEV( Major, 0 ), NULL, "batman" );
 > -#endif
 > -
-> -/* Probe for nat tool availability */
-> -int probe_nat_tool(void) {
-> -	fprintf(stderr, "probe_nat_tool: not implemented\n");
-> -	return -1;
+> -	for ( i = 0; i < 255; i++ ) {
+> -		minor_array[i] = NULL;
+> -	}
+> -
+> -	printk( "B.A.T.M.A.N.: I was assigned major number %d. To talk to\n", Major );
+> -	printk( "B.A.T.M.A.N.: the driver, create a dev file with 'mknod /dev/batman c %d 0'.\n", Major );
+> -	printk( "B.A.T.M.A.N.: Remove the device file and module when done.\n" );
+> -
+> -	return SUCCESS;
+> -
 > -}
 > -
-> -void add_nat_rule(char *BATMANUNUSED(dev)) {
-> -	fprintf(stderr, "add_nat_rule: not implemented\n");
+> -
+> -
+> -void cleanup_module( void ) {
+> -
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+> -	devfs_remove( "batman", 0 );
+> -#else
+> -	device_destroy_drvdata( batman_class, MKDEV( Major, 0 ) );
+> -	class_destroy( batman_class );
+> -#endif
+> -
+> -	/* Unregister the device */
+> -	int ret = unregister_chrdev( Major, DRIVER_DEVICE );
+> -
+> -	if ( ret < 0 )
+> -		printk( "B.A.T.M.A.N.: Unregistering the character device failed with %d\n", ret );
+> -
+> -	printk( "B.A.T.M.A.N.: Unload complete\n" );
+> -
 > -}
 > -
-> -void del_nat_rule(char *BATMANUNUSED(dev)) {
-> -	fprintf(stderr, "del_nat_rule: not implemented\n");
-> -}
 > -
-> -void own_hna_rules(uint32_t hna_ip, uint8_t netmask, int8_t route_action) {
-> -	fprintf(stderr, "own_hna_rules: not implemented\n");
-> -}
 > -
-> -/* Probe for tun interface availability */
-> -int8_t probe_tun(uint8_t BATMANUNUSED(print_to_stderr))
-> -{
-> -	int fd;
-> -	fd = open_tun_any(NULL, 0);
-> -	if (fd == -1)
-> -		return 0;
-> -	close(fd);
-> -	return 1;
-> -}
+> -static int device_open( struct inode *inode, struct file *file ) {
 > -
-> -int8_t del_dev_tun(int32_t fd)
-> -{
-> -	return close(fd);
-> -}
+> -	int minor_num, retval;
+> -	struct minor *minor = NULL;
 > -
-> -int8_t set_tun_addr(int32_t BATMANUNUSED(fd), uint32_t tun_addr, char *tun_ifname)
-> -{
-> -	int so;
-> -	struct ifreq ifr_tun;
-> -	struct sockaddr_in *addr;
 > -
-> -	memset(&ifr_tun, 0, sizeof(ifr_tun));
-> -	strlcpy(ifr_tun.ifr_name, tun_ifname, IFNAMSIZ);
+> -	if ( iminor( inode ) == 0 ) {
 > -
-> -	so = socket(AF_INET, SOCK_DGRAM, 0);
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+> -		MOD_INC_USE_COUNT;
+> -#else
+> -		try_module_get(THIS_MODULE);
+> -#endif
 > -
-> -	/* Get interface flags */
-> -	if (ioctl(so, SIOCGIFFLAGS, &ifr_tun) < 0) {
-> -		perror("SIOCGIFFLAGS");
-> -		return -1;
-> -	}
-> -
-> -	/* Set address */
-> -	addr = (struct sockaddr_in*)&ifr_tun.ifr_addr;
-> -	addr->sin_family = AF_INET;
-> -	addr->sin_addr.s_addr = tun_addr;
-> -	if (ioctl(so, SIOCAIFADDR, &ifr_tun) < 0) {
-> -		perror("SIOCAIFADDR");
-> -		return -1;
-> -	}
-> -	close(so);
-> -
-> -	return 0;
-> -}
-> -
-> -int8_t add_dev_tun(struct batman_if *batman_if, uint32_t tun_addr,
-> -		char *tun_dev, size_t tun_dev_size, int32_t *fd, int32_t *BATMANUNUSED(ifi))
-> -{
-> -	int so;
-> -	struct ifreq ifr_tun, ifr_if;
-> -	struct tuninfo ti;
-> -	char *tun_ifname;
-> -
-> -	memset(&ifr_tun, 0, sizeof(ifr_tun));
-> -	memset(&ifr_if, 0, sizeof(ifr_if));
-> -	memset(&ti, 0, sizeof(ti));
-> -
-> -	if ((*fd = open_tun_any(tun_dev, tun_dev_size)) < 0) {
-> -		perror("Could not open tun device");
-> -		return -1;
-> -	}
-> -
-> -	printf("Using %s\n", tun_dev);
-> -
-> -	/* Initialise tuninfo to defaults. */
-> -	if (ioctl(*fd, TUNGIFINFO, &ti) < 0) {
-> -		perror("TUNGIFINFO");
-> -		del_dev_tun(*fd);
-> -		return -1;
-> -	}
-> -
-> -	/* Set name of interface to configure ("tunX") */
-> -	tun_ifname = strstr(tun_dev, "tun");
-> -	if (tun_ifname == NULL) {
-> -		warn("Cannot determine tun interface name!");
-> -		return -1;
-> -	}
-> -	strlcpy(ifr_tun.ifr_name, tun_ifname, IFNAMSIZ);
-> -
-> -	/* Open temporary socket to configure tun interface. */
-> -	so = socket(AF_INET, SOCK_DGRAM, 0);
-> -
-> -	/* Get interface flags for tun device */
-> -	if (ioctl(so, SIOCGIFFLAGS, &ifr_tun) < 0) {
-> -		perror("SIOCGIFFLAGS");
-> -		del_dev_tun(*fd);
-> -		return -1;
-> -	}
-> -
-> -	/* Set up and running interface flags on tun device. */
-> -	ifr_tun.ifr_flags |= IFF_UP;
-> -	ifr_tun.ifr_flags |= IFF_RUNNING;
-> -	if (ioctl(so, SIOCSIFFLAGS, &ifr_tun) < 0) {
-> -		perror("SIOCSIFFLAGS");
-> -		del_dev_tun(*fd);
-> -		return -1;
-> -	}
-> -
-> -	/* Set IP of this end point of tunnel */
-> -	if (set_tun_addr(*fd, tun_addr, tun_ifname) < 0) {
-> -		perror("set_tun_addr");
-> -		del_dev_tun(*fd);
-> -		return -1;
-> -	}
-> -
-> -	/* get MTU from real interface */
-> -	strlcpy(ifr_if.ifr_name, batman_if->dev, IFNAMSIZ);
-> -	if (ioctl(so, SIOCGIFMTU, &ifr_if) < 0) {
-> -		perror("SIOCGIFMTU");
-> -		del_dev_tun(*fd);
-> -		return -1;
-> -	}
-> -	/* set MTU of tun interface: real MTU - 28 */
-> -	if (ifr_if.ifr_mtu < 100) {
-> -		fprintf(stderr, "Warning: MTU smaller than 100 - cannot reduce MTU anymore\n" );
 > -	} else {
-> -		ti.mtu = ifr_if.ifr_mtu - 28;
-> -		if (ioctl(*fd, TUNSIFINFO, &ti) < 0) {
-> -			perror("TUNSIFINFO");
-> -			del_dev_tun(*fd);
-> -			return -1;
+> -
+> -		minor_num = iminor( inode );
+> -		minor = minor_array[minor_num];
+> -
+> -		if ( minor == NULL ) {
+> -
+> -			printk( "B.A.T.M.A.N.: open() only allowed on /dev/batman: minor number not registered \n" );
+> -			return -EINVAL;
+> -
 > -		}
+> -
+> -		if ( minor->in_use > 0 ) {
+> -
+> -			printk( "B.A.T.M.A.N.: open() only allowed on /dev/batman: minor number already in use \n" );
+> -			return -EPERM;
+> -
+> -		}
+> -
+> -		if ( ( retval = sock_create_kern( PF_INET, SOCK_RAW, IPPROTO_RAW, &minor->raw_sock ) ) < 0 ) {
+> -
+> -			printk( "B.A.T.M.A.N.: Can't create raw socket: %i", retval );
+> -			return retval;
+> -
+> -		}
+> -
+> -		/* Enable broadcast */
+> -		sock_valbool_flag( minor->raw_sock->sk, SOCK_BROADCAST, 1 );
+> -
+> -		init_sync_kiocb( &minor->kiocb, NULL );
+> -
+> -		minor->kiocb.private = &minor->siocb;
+> -
+> -		minor->siocb.sock = minor->raw_sock;
+> -		minor->siocb.scm = NULL;
+> -		minor->siocb.msg = &minor->msg;
+> -
+> -		minor->addr_out.sin_family = AF_INET;
+> -
+> -		minor->msg.msg_iov = &minor->iov;
+> -		minor->msg.msg_iovlen = 1;
+> -		minor->msg.msg_flags = MSG_NOSIGNAL | MSG_DONTWAIT;
+> -		minor->msg.msg_name = &minor->addr_out;
+> -		minor->msg.msg_namelen = sizeof(minor->addr_out);
+> -		minor->msg.msg_control = NULL;
+> -		minor->msg.msg_controllen = 0;
+> -
+> -		minor->in_use++;
+> -
 > -	}
 > -
-> -	strlcpy(tun_dev, ifr_tun.ifr_name, tun_dev_size);
-> -	close(so);
-> -	return 1;
+> -	return SUCCESS;
+> -
 > -}
 > -
-> diff --git a/list-batman.h b/list-batman.h
-> index 72d2ac4..7780c9a 100644
-> --- a/list-batman.h
-> +++ b/list-batman.h
-> @@ -26,13 +26,6 @@
->  #define _LINUX_LIST_H
->  
->  /*
-> - * XXX: Resolve conflict between this file and <sys/queue.h> on BSD systems.
-> - */
-> -#ifdef LIST_HEAD
-> -#undef LIST_HEAD
+> -
+> -
+> -static int device_release( struct inode *inode, struct file *file ) {
+> -
+> -	int minor_num;
+> -	struct minor *minor = NULL;
+> -
+> -
+> -	if ( ( minor_num = iminor( inode ) ) > 0 ) {
+> -
+> -		minor = minor_array[minor_num];
+> -
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+> -		devfs_remove( "batman", minor_num );
+> -#else
+> -		device_destroy(minor->minor_class, MKDEV(Major, minor_num));
+> -		class_destroy( minor->minor_class );
+> -#endif
+> -		sock_release( minor->raw_sock );
+> -
+> -		kfree( minor );
+> -		minor_array[minor_num] = NULL;
+> -
+> -	}
+> -
+> -	/* decrement usage count */
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+> -	MOD_DEC_USE_COUNT;
+> -#else
+> -	module_put(THIS_MODULE);
 > -#endif
 > -
-> -/*
->   * Simple linked list implementation.
->   *
->   * Some of the internal functions ("__xxx") are useful when
-> diff --git a/posix/tunnel.c b/posix/tunnel.c
-> index 1cfb501..cbbdea1 100644
-> --- a/posix/tunnel.c
-> +++ b/posix/tunnel.c
-> @@ -32,9 +32,6 @@
->  #include <netinet/ip.h>
->  #include <netinet/udp.h>
->  #include <netinet/tcp.h>
-> -#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__Darwin__)
-> -#include <sys/sockio.h>
-> -#endif
->  #include <net/if.h>
->  #include <fcntl.h>        /* open(), O_RDWR */
->  
-> @@ -71,29 +68,17 @@ void init_bh_ports(void)
->  
->  static uint8_t get_tunneled_protocol(const unsigned char *buff)
->  {
-> -#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__Darwin__)
-> -	return ((struct ip *)(buff + 1))->ip_p;
+> -	return SUCCESS;
+> -
+> -}
+> -
+> -
+> -
+> -static ssize_t device_write( struct file *file, const char *buff, size_t len, loff_t *off ) {
+> -
+> -	int minor_num;
+> -	struct minor *minor = NULL;
+> -
+> -
+> -	if ( len < sizeof(struct orig_packet) + 10 ) {
+> -
+> -		printk( "B.A.T.M.A.N.: dropping data - packet too small (%i)\n", len );
+> -
+> -		return -EINVAL;
+> -
+> -	}
+> -
+> -	if ( ( minor_num = iminor( file->f_dentry->d_inode ) ) == 0 ) {
+> -
+> -		printk( "B.A.T.M.A.N.: write() not allowed on /dev/batman \n" );
+> -		return -EPERM;
+> -
+> -	}
+> -
+> -	if ( !access_ok( VERIFY_READ, buff, sizeof(struct orig_packet) ) )
+> -		return -EFAULT;
+> -
+> -	minor = minor_array[minor_num];
+> -
+> -	if ( minor == NULL ) {
+> -
+> -		printk( "B.A.T.M.A.N.: write() - minor number not registered: %i \n", minor_num );
+> -		return -EINVAL;
+> -
+> -	}
+> -
+> -
+> -	minor->iov.iov_base = buff;
+> -	minor->iov.iov_len = len;
+> -
+> -	__copy_from_user( &minor->addr_out.sin_port, &((struct orig_packet *)buff)->udp.dest, sizeof(minor->addr_out.sin_port) );
+> -	__copy_from_user( &minor->addr_out.sin_addr.s_addr, &((struct orig_packet *)buff)->ip.daddr, sizeof(minor->addr_out.sin_addr.s_addr) );
+> -
+> -	minor->siocb.size = len;
+> -
+> -	return minor->raw_sock->ops->sendmsg( &minor->kiocb, minor->raw_sock, &minor->msg, len );
+> -
+> -}
+> -
+> -
+> -
+> -static int device_ioctl( struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg ) {
+> -
+> -	int minor_num, fd;
+> -	char filename[100];
+> -	struct minor *minor = NULL;
+> -
+> -
+> -	switch ( cmd ) {
+> -
+> -		case IOCGETNWDEV:
+> -
+> -			for ( minor_num = 1; minor_num < 255; minor_num++ ) {
+> -
+> -				if ( minor_array[minor_num] == NULL ) {
+> -
+> -					minor = kmalloc( sizeof(struct minor), GFP_KERNEL );
+> -
+> -					if ( !minor )
+> -						return -ENOMEM;
+> -
+> -					memset( minor, 0, sizeof(struct minor) );
+> -					minor_array[minor_num] = minor;
+> -
+> -					break;
+> -
+> -				}
+> -
+> -			}
+> -
+> -			if ( minor == NULL ) {
+> -
+> -				printk( "B.A.T.M.A.N.: Maximum number of open batman instances reached \n" );
+> -				return -EMFILE;
+> -
+> -			}
+> -
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+> -			if ( devfs_mk_cdev( MKDEV( Major, minor_num ), S_IFCHR | S_IRUGO | S_IWUGO, "batman%d", minor_num ) ) {
+> -				printk( "B.A.T.M.A.N.: Could not create /dev/batman%d \n", minor_num );
 > -#else
->  	return ((struct iphdr *)(buff + 1))->protocol;
+> -			sprintf( filename, "batman%d", minor_num );
+> -			minor->minor_class = class_create( THIS_MODULE, filename );
+> -			if ( IS_ERR(minor->minor_class) )
+> -				printk( "B.A.T.M.A.N.: Could not register class '%s' \n", filename );
+> -			else
+> -				device_create_drvdata( minor->minor_class, NULL, MKDEV( Major, minor_num ), NULL, "batman%d", minor_num );
 > -#endif
+> -			/* let udev create the device file */
+> -			set_current_state(TASK_INTERRUPTIBLE);
+> -			schedule_timeout(100);
+> -
+> -			sprintf( filename, "/dev/batman%d", minor_num );
+> -
+> -			fd = get_unused_fd();
+> -
+> -			if ( fd >= 0 ) {
+> -
+> -				struct file *f = filp_open( filename, O_WRONLY, 0660 );
+> -
+> -				if ( IS_ERR(f) ) {
+> -
+> -					put_unused_fd(fd);
+> -					fd = PTR_ERR(f);
+> -
+> -					printk( "B.A.T.M.A.N.: Could not open %s: %i \n", filename, fd );
+> -
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+> -					devfs_remove( "batman", minor_num );
+> -#else
+> -					device_destroy( minor->minor_class, MKDEV(Major, minor_num ));
+> -					class_destroy( minor->minor_class );
+> -#endif
+> -					kfree( minor );
+> -					minor_array[minor_num] = NULL;
+> -					return fd;
+> -
+> -				} else {
+> -
+> -					fsnotify_open( f->f_dentry );
+> -					fd_install( fd, f );
+> -
+> -				}
+> -
+> -			}
+> -
+> -			/* increment usage count */
+> -#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+> -			MOD_INC_USE_COUNT;
+> -#else
+> -			try_module_get(THIS_MODULE);
+> -#endif
+> -
+> -			return fd;
+> -			break;
+> -
+> -		default:
+> -
+> -			if ( ( minor_num = iminor( inode ) ) == 0 ) {
+> -
+> -				printk( "B.A.T.M.A.N.: ioctl( SO_BINDTODEVICE ) not allowed on /dev/batman \n" );
+> -				return -EPERM;
+> -
+> -			}
+> -
+> -			minor = minor_array[minor_num];
+> -
+> -			if ( minor == NULL ) {
+> -
+> -				printk( "B.A.T.M.A.N.: ioctl( SO_BINDTODEVICE ) - minor number not registered: %i \n", minor_num );
+> -				return -EINVAL;
+> -
+> -			}
+> -
+> -			return sock_setsockopt( minor->raw_sock, SOL_SOCKET, SO_BINDTODEVICE, (void __user *)arg, cmd );
+> -
+> -	}
+> -
+> -}
+> -
+> -
+> -
+> -
+> -
+> -MODULE_LICENSE("GPL");
+> -
+> -MODULE_AUTHOR(DRIVER_AUTHOR);
+> -MODULE_DESCRIPTION(DRIVER_DESC);
+> -MODULE_SUPPORTED_DEVICE(DRIVER_DEVICE);
+> -
+> diff --git a/os.h b/os.h
+> index 6e4a027..2b15e21 100644
+> --- a/os.h
+> +++ b/os.h
+> @@ -76,7 +76,6 @@ int32_t get_send_redirects( char *dev );
+>  void set_forwarding( int32_t state );
+>  int32_t get_forwarding( void );
+>  int8_t bind_to_iface( int32_t sock, char *dev );
+> -int32_t use_gateway_module(void);
+>  int is_wifi_interface(char *dev, int fd);
+>  
+>  /* posix.c */
+> diff --git a/posix/init.c b/posix/init.c
+> index afd409f..a102431 100644
+> --- a/posix/init.c
+> +++ b/posix/init.c
+> @@ -41,8 +41,6 @@
+>  #include "../batman.h"
+>  #include "../hna.h"
+>  
+> -#define IOCSETDEV 1
+> -
+>  int8_t stop;
+>  
+>  
+> @@ -1049,106 +1047,36 @@ void check_active_interfaces(void)
+>  
+>  void init_interface_gw (void) {
+>  
+> -	int32_t sock_opts, err, skfd;
+> -	struct ifreq ifr;
+> -	struct sockaddr_in sin;
+> -	struct batgat_ioc_args ioc;
+> +	int32_t sock_opts;
+>  	struct batman_if *batman_if = (struct batman_if *)if_list.next;
+>  
+> +	batman_if->addr.sin_port = htons(GW_PORT);
+>  
+> -	if ((batman_if->udp_tunnel_sock = use_gateway_module()) < 0) {
+> +	batman_if->udp_tunnel_sock = socket(PF_INET, SOCK_DGRAM, 0);
+>  
+> -		batman_if->addr.sin_port = htons(GW_PORT);
+> -
+> -		batman_if->udp_tunnel_sock = socket(PF_INET, SOCK_DGRAM, 0);
+> -
+> -		if (batman_if->udp_tunnel_sock < 0) {
+> -
+> -			debug_output( 0, "Error - can't create tunnel socket: %s\n", strerror(errno) );
+> -			restore_defaults();
+> -			exit(EXIT_FAILURE);
+> -
+> -		}
+> -
+> -		if ( bind( batman_if->udp_tunnel_sock, (struct sockaddr *)&batman_if->addr, sizeof(struct sockaddr_in) ) < 0 ) {
+> -
+> -			debug_output( 0, "Error - can't bind tunnel socket: %s\n", strerror(errno) );
+> -			restore_defaults();
+> -			exit(EXIT_FAILURE);
+> -
+> -		}
+> -
+> -		/* make udp socket non blocking */
+> -		sock_opts = fcntl( batman_if->udp_tunnel_sock, F_GETFL, 0 );
+> -		fcntl( batman_if->udp_tunnel_sock, F_SETFL, sock_opts | O_NONBLOCK );
+> -
+> -		batman_if->addr.sin_port = htons(PORT);
+> -
+> -		pthread_create( &batman_if->listen_thread_id, NULL, &gw_listen, batman_if );
+> -
+> -	} else {
+> -
+> -		ioc.universal = strlen(batman_if->dev);
+> -		ioc.exists = 0;
+> -		strncpy(ioc.dev_name, batman_if->dev, IFNAMSIZ - 1);
+> -
+> -		if (ioctl(batman_if->udp_tunnel_sock, IOCSETDEV, &ioc) < 0) {
+> -			debug_output(0, "Error - can't add device %s: %s\n", batman_if->dev,strerror(errno));
+> -			batman_if->dev = NULL;
+> -			restore_defaults();
+> -			exit(EXIT_FAILURE);
+> -		}
+> -
+> -		/* set ip address of gate device */
+> -		if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+> -			debug_output( 0, "Error - can't create socket to gate\n" );
+> -			restore_defaults();
+> -			exit( EXIT_FAILURE );
+> -		}
+> -
+> -		memset(&ifr, 0, sizeof(ifr));
+> -		memset(&sin, 0, sizeof(struct sockaddr));
+> -
+> -		strncpy(ifr.ifr_name, ioc.dev_name, IFNAMSIZ - 1);
+> -
+> -		sin.sin_family = AF_INET;
+> -		sin.sin_addr.s_addr = ioc.universal;
+> -		memcpy(&ifr.ifr_addr, &sin, sizeof(struct sockaddr));
+> -
+> -		if ((err = ioctl(skfd, SIOCSIFADDR, &ifr)) < 0) {
+> -			debug_output(0, "Error - can't set IFADDR %s: %s\n", ioc.dev_name, strerror(err));
+> -			close(skfd);
+> -			restore_defaults();
+> -			exit( EXIT_FAILURE );
+> -		}
+> -
+> -		memset(&ifr, 0, sizeof(ifr));
+> -		strncpy(ifr.ifr_name, ioc.dev_name, IFNAMSIZ - 1);
+> -		if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
+> -			debug_output(0, "Error - can't get IFFLAGS for %s: %s\n", ioc.dev_name, strerror(errno));
+> -			close(skfd);
+> -			restore_defaults();
+> -			exit( EXIT_FAILURE );
+> -		}
+> -
+> -		strncpy(ifr.ifr_name, ioc.dev_name, IFNAMSIZ - 1);
+> -		ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+> -
+> -		if (ioctl(skfd, SIOCSIFFLAGS, &ifr) < 0) {
+> -			debug_output(0, "Error - can't set IFFLAGS for %s: %s\n", ioc.dev_name, strerror(errno));
+> -			close(skfd);
+> -			restore_defaults();
+> -			exit( EXIT_FAILURE );
+> -		}
+> -
+> -		close(skfd);
+> -
+> -		if (!ioc.exists)
+> -			add_del_route(ioc.universal, 16, 0, 0, ioc.ifindex, ioc.dev_name, 254, ROUTE_TYPE_UNICAST, ROUTE_ADD);
+> +	if (batman_if->udp_tunnel_sock < 0) {
+>  
+> +		debug_output( 0, "Error - can't create tunnel socket: %s\n", strerror(errno) );
+> +		restore_defaults();
+> +		exit(EXIT_FAILURE);
+>  
+>  	}
+>  
+> +	if ( bind( batman_if->udp_tunnel_sock, (struct sockaddr *)&batman_if->addr, sizeof(struct sockaddr_in) ) < 0 ) {
+> +
+> +		debug_output( 0, "Error - can't bind tunnel socket: %s\n", strerror(errno) );
+> +		restore_defaults();
+> +		exit(EXIT_FAILURE);
+> +
+> +	}
+> +
+> +	/* make udp socket non blocking */
+> +	sock_opts = fcntl( batman_if->udp_tunnel_sock, F_GETFL, 0 );
+> +	fcntl( batman_if->udp_tunnel_sock, F_SETFL, sock_opts | O_NONBLOCK );
+> +
+> +	batman_if->addr.sin_port = htons(PORT);
+> +
+> +	pthread_create( &batman_if->listen_thread_id, NULL, &gw_listen, batman_if );
 >  }
 >  
->  static uint32_t get_tunneled_sender_ip(const unsigned char *buff)
->  {
-> -#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__Darwin__)
-> -	return ((struct ip *)(buff + 1))->ip_src;
-> -#else
->  	return ((struct iphdr *)(buff + 1))->saddr;
-> -#endif
->  }
 >  
->  static uint16_t get_tunneled_udpdest(const unsigned char *buff)
->  {
-> -#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__Darwin__)
-> -       return ((struct udphdr *)(buff + 1 + ((struct ip *)(buff + 1))->ip_hl*4))->uh_dport;
-> -#else
->         return ((struct udphdr *)(buff + 1 + ((struct iphdr *)(buff + 1))->ihl*4))->dest;
-> -#endif
->  }
+> diff --git a/posix/posix.c b/posix/posix.c
+> index 2c6afd9..2455690 100644
+> --- a/posix/posix.c
+> +++ b/posix/posix.c
+> @@ -42,7 +42,6 @@
 >  
->  static int8_t get_tun_ip(struct sockaddr_in *gw_addr, int32_t udp_sock, uint32_t *tun_addr)
+>  #define BAT_LOGO_PRINT(x,y,z) printf( "\x1B[%i;%iH%c", y + 1, x, z )                      /* write char 'z' into column 'x', row 'y' */
+>  #define BAT_LOGO_END(x,y) printf("\x1B[8;0H");fflush(NULL);bat_wait( x, y );              /* end of current picture */
+> -#define IOCREMDEV 2
+>  
+>  static clock_t last_clock_tick;
+>  static float system_tick;
+> @@ -427,25 +426,11 @@ int8_t send_udp_packet(unsigned char *packet_buff, int32_t packet_buff_len, stru
+>  void del_gw_interface(void)
+>  {
+>  	struct batman_if *batman_if = (struct batman_if *)if_list.next;
+> -	struct batgat_ioc_args args;
+>  
+> -	/* TODO: unregister from kernel module per ioctl */
+>  	if (batman_if->udp_tunnel_sock > 0) {
+>  
+>  		if (batman_if->listen_thread_id != 0) {
+>  			pthread_join(batman_if->listen_thread_id, NULL);
+> -		} else {
+> -
+> -			if (batman_if->dev != NULL) {
+> -
+> -				strncpy(args.dev_name, batman_if->dev, IFNAMSIZ - 1);
+> -				args.universal = strlen(batman_if->dev);
+> -
+> -				if (ioctl(batman_if->udp_tunnel_sock, IOCREMDEV, &args) < 0)
+> -					debug_output(0, "Error - can't remove device %s from kernel module : %s\n", batman_if->dev,strerror(errno));
+> -
+> -			}
+> -
+>  		}
+>  
+>  		close(batman_if->udp_tunnel_sock);
+> diff --git a/types.h b/types.h
+> index fc7913e..9f10e0a 100644
+> --- a/types.h
+> +++ b/types.h
+> @@ -143,11 +143,4 @@ struct curr_gw_data {
+>  	struct batman_if *batman_if;
+>  };
+>  
+> -struct batgat_ioc_args {
+> -	char dev_name[16];
+> -	unsigned char exists;
+> -	uint32_t universal;
+> -	uint32_t ifindex;
+> -};
+> -
+>  #endif
 > 
 
 
