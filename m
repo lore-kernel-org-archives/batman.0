@@ -1,13 +1,15 @@
-Return-Path: <roblourens@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 5 Jan 2012 01:08:35 +0800
+References: <1325374901-1620-1-git-send-email-sven@narfation.org>
+	<1325374901-1620-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1325374901-1620-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-In-Reply-To: <201201050057.03301.lindner_marek@yahoo.de>
-References: <CAAXbfMH0OmQhWja_1sjYRzkyS4x-SGu8h7uQdye6iKRTkyLt5w@mail.gmail.com>
-	<201201050057.03301.lindner_marek@yahoo.de>
-From: Rob Lourens <roblourens@gmail.com>
-Date: Wed, 4 Jan 2012 11:06:49 -0600
-Message-ID: <CAAXbfMGaGzb01nSEZ6ypBdOFsevZgUNuVngMn+1AeGq6riKCug@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Loading the kernel module
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201201050108.36193.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Update copyright years
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,25 +23,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-You're right, I realized I'm using the version from the Ubuntu
-repositories, which is .2, and not the current version.
+On Sunday, January 01, 2012 07:41:38 Sven Eckelmann wrote:
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  Makefile            |    2 +-
+>  Makefile.kbuild     |    2 +-
+>  bat_debugfs.c       |    2 +-
+>  bat_debugfs.h       |    2 +-
+>  bat_iv_ogm.c        |    2 +-
+>  bat_ogm.h           |    2 +-
+>  bat_sysfs.c         |    2 +-
+>  bat_sysfs.h         |    2 +-
+>  bitarray.c          |    2 +-
+>  bitarray.h          |    2 +-
+>  compat.c            |   24 ++++++++++++++++++++++++
+>  compat.h            |    2 +-
+>  gateway_client.c    |    2 +-
+>  gateway_client.h    |    2 +-
+>  gateway_common.c    |    2 +-
+>  gateway_common.h    |    2 +-
+>  hard-interface.c    |    2 +-
+>  hard-interface.h    |    2 +-
+>  hash.c              |    2 +-
+>  hash.h              |    2 +-
+>  icmp_socket.c       |    2 +-
+>  icmp_socket.h       |    2 +-
+>  main.c              |    2 +-
+>  main.h              |    2 +-
+>  originator.c        |    2 +-
+>  originator.h        |    2 +-
+>  packet.h            |    2 +-
+>  ring_buffer.c       |    2 +-
+>  ring_buffer.h       |    2 +-
+>  routing.c           |    2 +-
+>  routing.h           |    2 +-
+>  send.c              |    2 +-
+>  send.h              |    2 +-
+>  soft-interface.c    |    2 +-
+>  soft-interface.h    |    2 +-
+>  translation-table.c |    2 +-
+>  translation-table.h |    2 +-
+>  types.h             |    2 +-
+>  unicast.c           |    2 +-
+>  unicast.h           |    2 +-
+>  vis.c               |    2 +-
+>  vis.h               |    2 +-
+>  42 files changed, 65 insertions(+), 41 deletions(-)
 
-Thanks!
+Applied in revision b82b9b2.
 
-On Wed, Jan 4, 2012 at 10:57 AM, Marek Lindner <lindner_marek@yahoo.de> wrote:
->
-> Hi,
->
->> I'm having trouble with loading the kernel module. I'm sure it's just
->> a dumb mistake on my part. I compiled the module, loaded it with
->> insmod, and I can add interfaces using
->> /sys/class/net/wlan0/batman_adv, but batctl says that the kernel
->> module may not be loaded. It's true that there is no folder
->> /proc/net/batman-adv.
->
-> seems your batctl is way outdated. What batctl version do you have ? Simply
-> run "batctl -v". Before the restructuring 2 years ago the interface
-> configuration happened in /proc/net/batman-adv.
->
-> Regards,
-> Marek
+Thanks,
+Marek
