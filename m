@@ -1,11 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri,  6 Jan 2012 21:31:34 +0100
-Message-Id: <1325881894-18603-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1325881894-18603-1-git-send-email-ordex@autistici.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 9 Jan 2012 03:51:01 +0800
 References: <1325881894-18603-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: move debug print into
-	tt_local_set_pending
+In-Reply-To: <1325881894-18603-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201201090351.01864.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: set TT_CLIENT_NEW flag
+	before invoking hash_add()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,64 +21,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Each tt_local_set_pending is always followed by a bat_dbg invocation. This patch
-moves the latter into the function body in order to avoid to rewrite it all the
-times.
+On Saturday, January 07, 2012 04:31:33 Antonio Quartulli wrote:
+> In case of a new tt_local_entry, the TT_CLIENT_NEW flag has to be set
+> before adding such entry to the hash table. Otherwise, a concurrent a
+> tt_query_reply forging operation could select such entry (as it is already
+> in the hash table) even if it should not.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- translation-table.c |   15 ++++++---------
- 1 files changed, 6 insertions(+), 9 deletions(-)
+Applied in revision 5c5fa22.
 
-diff --git a/translation-table.c b/translation-table.c
-index b493ab4..d105cbd 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -355,7 +355,7 @@ out:
- 
- static void tt_local_set_pending(struct bat_priv *bat_priv,
- 				 struct tt_local_entry *tt_local_entry,
--				 uint16_t flags)
-+				 uint16_t flags, const char *message)
- {
- 	tt_local_event(bat_priv, tt_local_entry->common.addr,
- 		       tt_local_entry->common.flags | flags);
-@@ -364,6 +364,9 @@ static void tt_local_set_pending(struct bat_priv *bat_priv,
- 	 * to be kept in the table in order to send it in a full table
- 	 * response issued before the net ttvn increment (consistency check) */
- 	tt_local_entry->common.flags |= TT_CLIENT_PENDING;
-+
-+	bat_dbg(DBG_TT, bat_priv, "Local tt entry (%pM) pending to be removed: "
-+		"%s\n", tt_local_entry->common.addr, message);
- }
- 
- void tt_local_remove(struct bat_priv *bat_priv, const uint8_t *addr,
-@@ -376,10 +379,7 @@ void tt_local_remove(struct bat_priv *bat_priv, const uint8_t *addr,
- 		goto out;
- 
- 	tt_local_set_pending(bat_priv, tt_local_entry, TT_CLIENT_DEL |
--			     (roaming ? TT_CLIENT_ROAM : NO_FLAGS));
--
--	bat_dbg(DBG_TT, bat_priv, "Local tt entry (%pM) pending to be removed: "
--		"%s\n", tt_local_entry->common.addr, message);
-+			     (roaming ? TT_CLIENT_ROAM : NO_FLAGS), message);
- out:
- 	if (tt_local_entry)
- 		tt_local_entry_free_ref(tt_local_entry);
-@@ -417,10 +417,7 @@ static void tt_local_purge(struct bat_priv *bat_priv)
- 				continue;
- 
- 			tt_local_set_pending(bat_priv, tt_local_entry,
--					     TT_CLIENT_DEL);
--			bat_dbg(DBG_TT, bat_priv, "Local tt entry (%pM) "
--				"pending to be removed: timed out\n",
--				tt_local_entry->common.addr);
-+					     TT_CLIENT_DEL, "timed out");
- 		}
- 		spin_unlock_bh(list_lock);
- 	}
--- 
-1.7.3.4
-
+Thanks,
+Marek
