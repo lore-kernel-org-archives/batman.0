@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 9 Jan 2012 05:29:26 +0800
-References: <A677A9FB362B2F499BEFD6F80687FE9722FD1E20@umechphe.easf.csd.disa.mil>
-In-Reply-To: <A677A9FB362B2F499BEFD6F80687FE9722FD1E20@umechphe.easf.csd.disa.mil>
+Date: Mon, 9 Jan 2012 20:22:37 +0800
+References: <mailman.3.1325847602.24549.b.a.t.m.a.n@lists.open-mesh.org>
+	<4F07148C.5070709@inti.gob.ar>
+In-Reply-To: <4F07148C.5070709@inti.gob.ar>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201201090529.26914.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] statistics & topology provided by batman-adv
-	(UNCLASSIFIED)
+Message-Id: <201201092022.37637.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] problem with mesh network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,26 +26,38 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 
 Hi,
 
-> I'm a roboticist.  My current project involves creating robots that are
-> mobile ad-hoc routers for a network.  The robots are supposed to
-> autonomously determine where to move to improve the
-> bandwidth/latency/reliability/etc. of a network.  In order for this to
-> work, each robot needs to have a rough approximation of the topology of
-> the network, so they can measure if their movements are improving or
-> worsening the network.  The topology information needs to include not just
-> what the network is currently like (which, from the documentation, appears
-> to always be a tree), but a complete graph, with measured information
-> about the bandwidth/latency/reliability of the links between pairs of
-> nodes.  Is it possible to get this information from batman-adv?
+> We are using batman-adv 2011.2.0 with Openwrt Backfire-rc6 on D-Link
+> Dir-615 routers (2 Antennas, 1 single radio), each router with an adhoc
+> interface managed by batman-adv for the mesh network and an Acces Point
+> interface bridged with bat0 and ethernet to allow non batman-adv clients
+> to connect. The problem is that sometimes all works fine, but sometimes
+> we get very poor bitrates between routers, even using just two routers,
+> testing with iperf. We don't know where the problem is, specially
+> because it's a very erratic behavior. If any of you have used this
+> configuration with openwrt and ath9k driver we'd really appreciate some
+> help.
 
-a single batman node does not have the information about all links and their 
-properties (bandwidth/latency/reliability) in the network. The reason is quite 
-simple: The larger the mesh the more outdated your information will be.
+this does not sound like a batman issue. Did you try contacting the 
+ath9k/linux-wireless/openwrt developers ?
 
 
-> Classification: UNCLASSIFIED
+> By the way, the D-Link Dir-615 is an n router, but for some reason
+> related with hostapd the ap vif gets configured in g mode, and the adhoc
+> in n mode, no matter what we set in the uci files. So in case the
+> problem were related with the adhoc and ap virtual interface, we were
+> thinking about the possibility of setting the mesh network without using
+> adhoc mode. In that case each router should have one ap for non
+> batman-adv clients, and two additional interfaces, one in ap and the
+> other managed, these two used to connect with other routers via
+> batman-adv, would that be correct? In that case, you think this
+> configuration could be more or less stable than the other using adhoc
+> mode? 
 
-Lucky me.  :-)
+batman-adv does not care how you configure your interfaces. Using managed/AP 
+with batman-adv on top works as well. However, you will need to configure each 
+managed/AP setup manually which will be cumbersome in a larger network and has 
+no failover. A single failure in your managed/AP chain will bring down all 
+nodes depending on it.
 
-Regards,
+Cheers,
 Marek
