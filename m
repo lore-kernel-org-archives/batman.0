@@ -1,15 +1,13 @@
-Return-Path: <cem.f.karan.civ@mail.mil>
-From: "Karan, Cem F CIV (US)" <cem.f.karan.civ@mail.mil>
-Date: Mon, 9 Jan 2012 22:47:47 +0000
-Message-ID: <A677A9FB362B2F499BEFD6F80687FE9722FD1EEF@umechphe.easf.csd.disa.mil>
-References: <mailman.3.1326106801.16703.b.a.t.m.a.n@lists.open-mesh.org>
-In-Reply-To: <mailman.3.1326106801.16703.b.a.t.m.a.n@lists.open-mesh.org>
-Content-Language: en-US
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
-	micalg=SHA1; boundary="----=_NextPart_000_007E_01CCCEF6.CAEB32B0"
+Return-Path: <gtolon@inti.gob.ar>
+Message-ID: <4F0C39BE.3000209@inti.gob.ar>
+Date: Tue, 10 Jan 2012 10:14:38 -0300
+From: gtolon@inti.gob.ar
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N Digest, Vol 61,
-	Issue 9 (UNCLASSIFIED)
+References: <mailman.1.1326193201.4676.b.a.t.m.a.n@lists.open-mesh.org>
+In-Reply-To: <mailman.1.1326193201.4676.b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] problem with mesh network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,154 +19,83 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-------=_NextPart_000_007E_01CCCEF6.CAEB32B0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-
-Classification: UNCLASSIFIED
-Caveats: NONE
-
-> Marek Lindner wrote on Mon, 9 Jan 2012 05:29:26 +0800:
-> 
-> > I'm a roboticist.  My current project involves creating robots that
-> > are mobile ad-hoc routers for a network.  The robots are supposed to
-> > autonomously determine where to move to improve the
-> > bandwidth/latency/reliability/etc. of a network.  In order for this to
-> > work, each robot needs to have a rough approximation of the topology
-> > of the network, so they can measure if their movements are improving
-> > or worsening the network.  The topology information needs to include
-> > not just what the network is currently like (which, from the
-> > documentation, appears to always be a tree), but a complete graph,
-> > with measured information about the bandwidth/latency/reliability of
-> > the links between pairs of nodes.  Is it possible to get this
-> > information from batman-adv?
-> 
-> a single batman node does not have the information about all links and
-> their properties (bandwidth/latency/reliability) in the network. The
-> reason is quite
-> simple: The larger the mesh the more outdated your information will be.
-
-That is actually acceptable and expected.  I just want the information
-between the one-hop neighbors to be relatively timely.  The only requirement
-for the further away robots that I have is that if the robot positions and
-the world are static, then the topology information should more or less
-stabilize over time.  Random fluctuations are OK; they can be averaged away
-without any trouble.  Does that make sense?
-
-Thanks,
-Cem Karan
-
-Classification: UNCLASSIFIED
-Caveats: NONE
+Hi Marek, thanks for the reply.
 
 
+El 10/01/2012 08:00 a.m., b.a.t.m.a.n-request@lists.open-mesh.org escribi=
+=F3:
+> Date: Mon, 9 Jan 2012 20:22:37 +0800
+> From: Marek Lindner<lindner_marek@yahoo.de>
+> To: "The list for a Better Approach To Mobile Ad-hoc Networking"
+> 	<b.a.t.m.a.n@lists.open-mesh.org>
+> Subject: Re: [B.A.T.M.A.N.] problem with mesh network
+> Message-ID:<201201092022.37637.lindner_marek@yahoo.de>
+> Content-Type: Text/Plain;  charset=3D"iso-8859-1"
+>
+>
+> Hi,
+>
+>> >  We are using batman-adv 2011.2.0 with Openwrt Backfire-rc6 on D-Link
+>> >  Dir-615 routers (2 Antennas, 1 single radio), each router with an adh=
+oc
+>> >  interface managed by batman-adv for the mesh network and an Acces Poi=
+nt
+>> >  interface bridged with bat0 and ethernet to allow non batman-adv clie=
+nts
+>> >  to connect. The problem is that sometimes all works fine, but sometim=
+es
+>> >  we get very poor bitrates between routers, even using just two router=
+s,
+>> >  testing with iperf. We don't know where the problem is, specially
+>> >  because it's a very erratic behavior. If any of you have used this
+>> >  configuration with openwrt and ath9k driver we'd really appreciate so=
+me
+>> >  help.
+> this does not sound like a batman issue. Did you try contacting the
+> ath9k/linux-wireless/openwrt developers ?
 
-------=_NextPart_000_007E_01CCCEF6.CAEB32B0
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
+Yes, we suspected it could be a TX dma problem, because occasionally we=20
+found that error in the logs, so we followed some openwrt tickets=20
+related with that, but we're not sure that's the problem, and anyway it=20
+has not been solved yet. We've also asked on ath9k list about the driver=20
+debug files in case we could find something there, but they did't=20
+answered, I guess it's hard to explain in a mail list. We haven't asked=20
+to linux-wireless, maybe it would be better, since it could be something=20
+on top of the driver.
 
-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
-T0QgRU1BSUwgQ0EtMjMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC99ClNV5NEAweN
-Bh+u+jw0VjRA57EYf2wlbheFBQUj6fbFUCVPgeQjMEJxaer3uJ73b6zeXar81uCNvGvufZmVIjuz
-WMaxUhyyqL8xQCIG/o0o0qlQVWoeB3D4pkjJbf2u7L6AbD3PkNQHok6RFAO/V1kS9XTeQ5ZaWrnP
-uUfof9COsPjY6Us0XsxLF44C8BK/8gRsHRO/qxzeDQnsy5tW7dmQ55alfyZlYcHEm2gkpc3SeSNv
-wzzBhR5I+T5QcWKgQbpyRKVD46Vybs3Oq9rLhNIavx9uchE/LZkfbbD7BTDO5uwjKmVHH3icDZ9M
-JHVsdtLVOxdEFrKKKEjXuQ2vAgMBAAGjggJaMIICVjAOBgNVHQ8BAf8EBAMCAYYwHwYDVR0jBBgw
-FoAUSXS7DF66ev4CVO97oMaVxgmAcJYwHQYDVR0OBBYEFFuWLTGl4faaalxegVE2YR6WJBnRMAwG
-A1UdJAQFMAOAAQAwEgYDVR0TAQH/BAgwBgEB/wIBADCBnwYDVR0gBIGXMIGUMAsGCWCGSAFlAgEL
-BTALBglghkgBZQIBCwkwCwYJYIZIAWUCAQsKMAsGCWCGSAFlAgELEjALBglghkgBZQIBCxMwCwYJ
-YIZIAWUCAQsUMAwGCmCGSAFlAwIBAwYwDAYKYIZIAWUDAgEDBzAMBgpghkgBZQMCAQMIMAwGCmCG
-SAFlAwIBAw0wDAYKYIZIAWUDAgEDETA/BgNVHR8EODA2MDSgMqAwhi5odHRwOi8vY3JsLmRpc2Eu
-bWlsL2dldGNybD9Eb0QlMjBSb290JTIwQ0ElMjAyMIH+BggrBgEFBQcBAQSB8TCB7jA/BggrBgEF
-BQcwAoYzaHR0cDovL2NybC5kaXNhLm1pbC9nZXRJc3N1ZWRUbz9Eb0QlMjBSb290JTIwQ0ElMjAy
-MCAGCCsGAQUFBzABhhRodHRwOi8vb2NzcC5kaXNhLm1pbDCBiAYIKwYBBQUHMAKGfGxkYXA6Ly9j
-cmwuZ2RzLmRpc2EubWlsL2NuJTNkRG9EJTIwUm9vdCUyMENBJTIwMiUyY291JTNkUEtJJTJjb3Ul
-M2REb0QlMmNvJTNkVS5TLiUyMEdvdmVybm1lbnQlMmNjJTNkVVM/Y0FDZXJ0aWZpY2F0ZTtiaW5h
-cnkwDQYJKoZIhvcNAQEFBQADggEBAD729uQP1FfNvu3pxEVS2kVbGKY2OTAKtn7r9on8p2Iusz+D
-feESGobTY5T0dPTOcZfq+8RqOl3imaesw+I2+Oh49NjEUO6KgVX6ioNlDMXyTczpH497Rt0DCpzq
-4qxjdwfLMlTbCFWyWAB9XKa5FjxfZW0vBc5aP5rbScuSo6HZb1HU9cAIwaM5W9BBY4HElGVkYylM
-XfBfcYdqnZaS5ceC/S101wJsyuLboLPbcdUOhj4+F4m9bkIXG7T2OfkaveYuLJsONzsQX0T+e7WU
-WNZxJeU50SO6NADBQ2249A6Xq7Iw9oinjo6KEAOEdNyuTfnlmXQaqaIKbQsHFZTFP2MxggL+MIIC
-+gIBATBkMF0xCzAJBgNVBAYTAlVTMRgwFgYDVQQKEw9VLlMuIEdvdmVybm1lbnQxDDAKBgNVBAsT
-A0RvRDEMMAoGA1UECxMDUEtJMRgwFgYDVQQDEw9ET0QgRU1BSUwgQ0EtMjMCAzd7MjAJBgUrDgMC
-GgUAoIIBbzAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0xMjAxMDky
-MjQ3NDRaMCMGCSqGSIb3DQEJBDEWBBT6tjnUolge1Svlusye7VvLdST/azAkBgkqhkiG9w0BCQ8x
-FzAVMAoGCCqGSIb3DQMHMAcGBSsOAwIaMHMGCSsGAQQBgjcQBDFmMGQwXTELMAkGA1UEBhMCVVMx
-GDAWBgNVBAoTD1UuUy4gR292ZXJubWVudDEMMAoGA1UECxMDRG9EMQwwCgYDVQQLEwNQS0kxGDAW
-BgNVBAMTD0RPRCBFTUFJTCBDQS0yMwIDN3s1MHUGCyqGSIb3DQEJEAILMWagZDBdMQswCQYDVQQG
-EwJVUzEYMBYGA1UEChMPVS5TLiBHb3Zlcm5tZW50MQwwCgYDVQQLEwNEb0QxDDAKBgNVBAsTA1BL
-STEYMBYGA1UEAxMPRE9EIEVNQUlMIENBLTIzAgM3ezUwDQYJKoZIhvcNAQEBBQAEggEAFYlm24tu
-QBP5MsmRe2R6wrnHVjULckC25NRiVfzwvh3pK4XJJBQ37+b4TscwY+6fgBfYyfBeJBB4yUcIqcHB
-NS8vN/sB2h4eU92qQmr0CnU1+1XdYQKxGRCtyzbU1Z+DMUyZ3xXxZ8WzqUCgzr/dpEbp2LLzcd1i
-EWlRGAW7D8gnpaF1jaPMpWkyzcYLMrqOPJx0WLIDSs8jm0HFKWbjbSYj+npLjQFvR5aSnwvDhtEY
-gNH/KIUISVn89xaiuwgI2pCOz4gzicB+bMoAUlazdsZaz8ZT5r/iLYJvUrGv9pyLRBA08/IUR36m
-/xYtQSnUXP1v+E8+AsJJNRJRSC9nTwAAAAAAAA==
+>
+>> >  By the way, the D-Link Dir-615 is an n router, but for some reason
+>> >  related with hostapd the ap vif gets configured in g mode, and the ad=
+hoc
+>> >  in n mode, no matter what we set in the uci files. So in case the
+>> >  problem were related with the adhoc and ap virtual interface, we were
+>> >  thinking about the possibility of setting the mesh network without us=
+ing
+>> >  adhoc mode. In that case each router should have one ap for non
+>> >  batman-adv clients, and two additional interfaces, one in ap and the
+>> >  other managed, these two used to connect with other routers via
+>> >  batman-adv, would that be correct? In that case, you think this
+>> >  configuration could be more or less stable than the other using adhoc
+>> >  mode?
+> batman-adv does not care how you configure your interfaces. Using managed=
+/AP
+> with batman-adv on top works as well. However, you will need to configure=
+ each
+> managed/AP setup manually which will be cumbersome in a larger network an=
+d has
+> no failover. A single failure in your managed/AP chain will bring down all
+> nodes depending on it.
+We were thinking in a script that managed the stations to connect to the=20
+different APs to avoid configuring each router manually. However we=20
+realized that with just one managed interface, each router could connect=20
+to only one AP, so if we wanted that every router could connect=20
+bidirectionally to others we should use a number of managed interfaces=20
+enough to connect to all neigbours,  shouldn't we?
+In any case it would be just another test to see if the results are=20
+different.
 
-------=_NextPart_000_007E_01CCCEF6.CAEB32B0--
+Gabriel
+
+
