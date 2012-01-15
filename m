@@ -1,15 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 16 Jan 2012 03:57:25 +0800
-References: <1326391620-28509-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1326391620-28509-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201201160357.25943.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: TT_CLIENT_PENDING is never
-	set in struct tt_global_entry
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 16 Jan 2012 00:36:58 +0100
+Message-Id: <1326670618-3950-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: unset the TT_CLIENT_PENDING flag
+	if the new local entry already exists
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,13 +15,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Friday, January 13, 2012 02:07:00 Antonio Quartulli wrote:
-> Actually the TT_CLIENT_PENDING flag is never set in the tt_global_entry
-> structure, therefore this code is useless and can be removed.
+When trying to add a new tt_local_entry, if such entry already exists, we have
+to ensure that the TT_CLIENT_PENDING flag is not set, otherwise the entry will
+be deleted soon.
 
-Applied in revision e40ea15.
+Reported-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Thanks,
-Marek
+diff --git a/translation-table.c b/translation-table.c
+index 27753a0..65de6b7 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -188,6 +188,8 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 
+ 	if (tt_local_entry) {
+ 		tt_local_entry->last_seen = jiffies;
++		/* possibly unset the TT_CLIENT_PENDING flag */
++		tt_local_entry->common.flags &= ~TT_CLIENT_PENDING;
+ 		goto out;
+ 	}
+ 
+-- 
+1.7.3.4
+
