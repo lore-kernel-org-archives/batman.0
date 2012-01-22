@@ -1,12 +1,9 @@
-Return-Path: <robert.bouterse@dmh-global.com>
-From: "Bouterse, Robert" <robert.bouterse@dmh-global.com>
-Date: Wed, 18 Jan 2012 11:26:26 -0800
-Message-ID: <110B6C33195F5F4790292BDD9E7DED401AB86BBF80@VA3DIAXVS371.RED001.local>
-Content-Language: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: base64
-MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] Manual route manipulation [SOLVED]
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun, 22 Jan 2012 14:15:53 +0100
+Message-Id: <1327238153-8303-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix initialised flag for tt
+	request/responses
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,34 +15,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <ordex@autistici.org>
 
-U29ycnksIEkgZmlndXJlZCB0aGlzIG91dCBteXNlbGYuIENoYW5naW5nIHRoZSB2YWx1ZSBvZiAv
-c3lzL2NsYXNzL25ldC9iYXQwL21lc2gvaG9wX3BlbmFsdHkgYWxsb3dzIG1lIHRvIGNyZWF0ZSBh
-cnRpZmljaWFsbHkgImRlc2lyYWJsZSIgbm9kZXMuIA0KU28sIEkgaGF2ZSBzZXQgdGhlIGhvcF9w
-ZW5hbHR5IGFzOg0KQT0xMA0KQj0xDQpDPTUNCkQ9MTANCg0KX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXw0KRnJvbTogYi5hLnQubS5hLm4tYm91bmNlc0BsaXN0cy5vcGVu
-LW1lc2gub3JnIFtiLmEudC5tLmEubi1ib3VuY2VzQGxpc3RzLm9wZW4tbWVzaC5vcmddIE9uIEJl
-aGFsZiBPZiBCb3V0ZXJzZSwgUm9iZXJ0IFtyb2JlcnQuYm91dGVyc2VAZG1oLWdsb2JhbC5jb21d
-DQpTZW50OiBXZWRuZXNkYXksIEphbnVhcnkgMTgsIDIwMTIgMTI6NTkgUE0NClRvOiBiLmEudC5t
-LmEubkBsaXN0cy5vcGVuLW1lc2gub3JnDQpTdWJqZWN0OiBbQi5BLlQuTS5BLk4uXSBNYW51YWwg
-cm91dGUgbWFuaXB1bGF0aW9uDQoNCkhpLCBJIGFtIG5ldyB0byB0aGUgQkFUTUFOIGxpc3QsIGFu
-ZCBJIG5lZWQgc29tZSBoZWxwLA0KSSBhbSBydW5uaW5nIHNvbWUgZmVhc2liaWxpdHkgdGVzdHMg
-b24gYmF0bWFuLWFkdiBmb3Igb3VyIHVzZS4gSSBuZWVkIHRvIHRlc3QgaG93IHdlbGwgaXQgcmVy
-b3V0ZXMgdHJhZmZpYyB3aGVuIGFuIGludGVybWVkaWF0ZSBub2RlIGdvZXMgYXdheS4NCkkgbmVl
-ZCB0byBzZXQgdXAgYSBtZXNoIGluIGEgZGlhbW9uZCBwYXR0ZXJuLCBsaWtlOg0KDQogICAgICAg
-IHwtLS0tPkI8LS0tLXwNCkE8LS17ICAgICAgICAgICAgICAgICAgfS0tLT5EDQogICAgICAgIHwt
-LS0tPkM8LS0tLXwNCg0KVGhlbiBmaW5kIG91dCBpZiB0cmFmZmljIGlzIGJlaW5nIHJvdXRlZCB0
-aHJvdWdoIHRoZSBCIG5vZGUsIHNodXRkb3duIHRoZSBCIG5vZGUsIGFuZCBzZWUgdGhhdCB0aGUg
-cm91dGUgImhlYWxzIiB0byB1c2luZyBub2RlIEMgaW5zdGVhZC4NCg0KSSB3YXMgYWJsZSB0byBk
-byB0aGlzIG9uIG9wZW44MDIxMXMgYnkgdXNpbmcgdGhlICJpdyBzdGF0aW9uIHNldCBwbGlua19h
-Y3Rpb24gYmxvY2siIGNvbW1hbmQgdG8gZm9yY2UgdGhlIEEgbm9kZSB0byBuZXZlciBjb21tdW5p
-Y2F0ZSBkaXJlY3RseSB3aXRoIHRoZSBEIG5vZGUsIGFuZCB3aXJlc2hhcmsgdG8gdmVyaWZ5IHRo
-ZSBjb21tdW5pY2F0aW9ucy4NCg0KRG9lcyBhbnlvbmUga25vdyBvZiBhIHdheSBvZiBkb2luZyB0
-aGVzZSB0eXBlcyBvZiBwYXRoIG1hbmlwdWxhdGlvbnMgd2l0aCBiYXRtYW4tYWR2Pw0KSSBkaWRu
-J3Qgc2VlIGFueXRoaW5nIGluIGJhdGN0bCB0aGF0IGxvb2tlZCBsaWtlIGl0IHdvdWxkIHdvcmsu
-IE1heWJlIHRoZXJlIGFyZSAvc3lzIG9yIC9wcm9jIGVudHJpZXM/DQoNCi8qLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSovDQpCb2IgQm91dGVyc2UNClNlbmlvciBTb2Z0
-d2FyZSBFbmdpbmVlcg0KTXVsdGltZWRpYSBEZXZlbG9wbWVudCBDZW50ZXINCkQmTSBIb2xkaW5n
-cyBJbmMuDQpodHRwOi8vd3d3LmRtLWhvbGRpbmdzLmNvbQ0K
+When receiving a tt_response, we first delete the old entries and
+set the initialised flag to false, then add the new received entries,
+but forgot to set the initialised flag to true again. This may lead to
+endless loops of requests/responses, as a request is always issued
+if the initialised flag is not set.
+
+Fix this by moving initialised = true from tt_update_changes() to
+_tt_update_changes().
+
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ translation-table.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/translation-table.c b/translation-table.c
+index 27753a0..9a6f315 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1434,6 +1434,7 @@ static void _tt_update_changes(struct bat_priv *bat_priv,
+ 				 */
+ 				return;
+ 	}
++	orig_node->tt_initialised = true;
+ }
+ 
+ static void tt_fill_gtable(struct bat_priv *bat_priv,
+@@ -1476,7 +1477,6 @@ static void tt_update_changes(struct bat_priv *bat_priv,
+ 	tt_save_orig_buffer(bat_priv, orig_node, (unsigned char *)tt_change,
+ 			    tt_num_changes);
+ 	atomic_set(&orig_node->last_ttvn, ttvn);
+-	orig_node->tt_initialised = true;
+ }
+ 
+ bool is_my_client(struct bat_priv *bat_priv, const uint8_t *addr)
+-- 
+1.7.8.3
 
