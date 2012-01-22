@@ -1,8 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 22 Jan 2012 20:00:17 +0100
-Message-Id: <1327258827-13861-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv3 00/10] bridge loop avoidance II
+Date: Sun, 22 Jan 2012 20:00:20 +0100
+Message-Id: <1327258827-13861-4-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1327258827-13861-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+References: <1327258827-13861-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCHv3 03/10] batman-adv: make bridge loop
+	avoidance switchable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,81 +19,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This series of patches contains the changes for the redesigned
-bridge loop avoidance. The general concept is described in the wiki
-[1]. I've already performed a few testcases [2] which worked fine in
-my kvm environment. No crashes while running or unloading the
-extension either.
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ bat_sysfs.c          |    2 ++
+ sysfs-class-net-mesh |    9 +++++++++
+ 2 files changed, 11 insertions(+), 0 deletions(-)
 
-This is the fourth version of the patchset, rebased on the master and
-including the TT changes after the discussion with Antonio to get the
-flags straight (see [3]):
-
- * Roaming flag should only be set when the last entry moved
- * clean up tt_global_add()
- * remove (debug) crc global computation - it breaks more than it helps
- * add debug message when committed locally
-
-Cheers,
-        Simon
-
-
-The git repositories can be found on git.open-mesh.org:
- * blaII_rebase branch [4] contains the latest patchset
- * blaII_rebase_rework branch [5] contains the latest patchset with individual patches from v2
- * blaII branch in batctl [6] contains the batctl changes
-
-
-Cheers,
-        Simon
-
-[1] http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance-II
-[2] http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance-Testcases
-[3] http://www.open-mesh.org/wiki/2/TT-Flags
-[4] http://git.open-mesh.org/?p=simon/batman-adv.git;a=shortlog;h=refs/heads/blaII_rebase
-[5] http://git.open-mesh.org/?p=simon/batman-adv.git;a=shortlog;h=refs/heads/blaII_rebase_rework
-[6] http://git.open-mesh.org/?p=simon/batctl.git;a=shortlog;h=refs/heads/blaII
-
-
-
-Simon Wunderlich (10):
-  batman-adv: remove old bridge loop avoidance code
-  batman-adv: add basic bridge loop avoidance code
-  batman-adv: make bridge loop avoidance switchable
-  batman-adv: export claim tables through debugfs
-  batman-adv: allow multiple entries in tt_global_entries
-  batman-adv: don't let backbone gateways exchange tt entries
-  batman-adv: add broadcast duplicate check
-  batman-adv: drop STP over batman
-  batman-adv: form groups in the bridge loop avoidance
-  batman-adv: add bridge loop avoidance compile option
-
- Makefile                |    2 +
- Makefile.kbuild         |    1 +
- README                  |   19 +-
- README.external         |    1 +
- bat_debugfs.c           |   23 +-
- bat_sysfs.c             |    8 +-
- bridge_loop_avoidance.c | 1594 +++++++++++++++++++++++++++++++++++++++++++++++
- bridge_loop_avoidance.h |   55 ++
- compat.c                |   16 +-
- compat.h                |    3 +-
- gen-compat-autoconf.sh  |    1 +
- hard-interface.c        |   18 +-
- main.c                  |    9 +-
- main.h                  |    9 +-
- originator.c            |    3 +-
- packet.h                |   16 +
- routing.c               |   16 +
- soft-interface.c        |  490 +--------------
- soft-interface.h        |    2 -
- sysfs-class-net-mesh    |    9 +
- translation-table.c     |  415 ++++++++++---
- types.h                 |   67 ++-
- 22 files changed, 2140 insertions(+), 637 deletions(-)
- create mode 100644 bridge_loop_avoidance.c
- create mode 100644 bridge_loop_avoidance.h
-
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index 8c588b4..2305cad 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -386,6 +386,7 @@ static ssize_t store_gw_bwidth(struct kobject *kobj, struct attribute *attr,
+ 
+ BAT_ATTR_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
+ BAT_ATTR_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
++BAT_ATTR_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
+ BAT_ATTR_BOOL(fragmentation, S_IRUGO | S_IWUSR, update_min_mtu);
+ BAT_ATTR_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
+ static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
+@@ -404,6 +405,7 @@ BAT_ATTR_UINT(log_level, S_IRUGO | S_IWUSR, 0, 15, NULL);
+ static struct bat_attribute *mesh_attrs[] = {
+ 	&bat_attr_aggregated_ogms,
+ 	&bat_attr_bonding,
++	&bat_attr_bridge_loop_avoidance,
+ 	&bat_attr_fragmentation,
+ 	&bat_attr_ap_isolation,
+ 	&bat_attr_vis_mode,
+diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
+index b218e0f..c81fe89 100644
+--- a/sysfs-class-net-mesh
++++ b/sysfs-class-net-mesh
+@@ -14,6 +14,15 @@ Description:
+                 mesh will be sent using multiple interfaces at the
+                 same time (if available).
+ 
++What:           /sys/class/net/<mesh_iface>/mesh/bridge_loop_avoidance
++Date:           November 2011
++Contact:        Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
++Description:
++                Indicates whether the bridge loop avoidance feature
++                is enabled. This feature detects and avoids loops
++                between the mesh and devices bridged with the soft
++                interface <mesh_iface>.
++
+ What:           /sys/class/net/<mesh_iface>/mesh/fragmentation
+ Date:           October 2010
+ Contact:        Andreas Langer <an.langer@gmx.de>
 -- 
 1.7.8.3
 
