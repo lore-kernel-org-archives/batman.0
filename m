@@ -1,10 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 22 Jan 2012 20:00:25 +0100
-Message-Id: <1327258827-13861-9-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Sun, 22 Jan 2012 20:00:24 +0100
+Message-Id: <1327258827-13861-8-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <1327258827-13861-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1327258827-13861-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv3 08/10] batman-adv: drop STP over batman
+Subject: [B.A.T.M.A.N.] [PATCHv3 07/10] batman-adv: add broadcast duplicate
+	check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,40 +19,188 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+When multiple backbone gateways relay the same broadcast from the
+backbone into the mesh, other nodes in the mesh may receive this
+broadcast multiple times. To avoid this, the crc checksums of
+received broadcasts are recorded and new broadcast packets with
+the same content may be dropped if received by another gateway.
+
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
 ---
-[2011-11-04] always use ETH_ALEN
+[2011-12-27] minor changes:
+ * fix alignment
+ * use has_timed_out
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- soft-interface.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ bridge_loop_avoidance.c |   73 +++++++++++++++++++++++++++++++++++++++++++++++
+ bridge_loop_avoidance.h |    2 +
+ main.h                  |    3 ++
+ routing.c               |    4 ++
+ types.h                 |    7 ++++
+ 5 files changed, 89 insertions(+), 0 deletions(-)
 
-diff --git a/soft-interface.c b/soft-interface.c
-index 03cbd9b..59c19aa 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -129,6 +129,7 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 	struct hard_iface *primary_if = NULL;
- 	struct bcast_packet *bcast_packet;
- 	struct vlan_ethhdr *vhdr;
-+	uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00, 0x00, 0x00};
- 	unsigned int header_len = 0;
- 	int data_len = skb->len, ret;
- 	short vid = -1;
-@@ -158,6 +159,11 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 	/* Register the client MAC in the transtable */
- 	tt_local_add(soft_iface, ethhdr->h_source, skb->skb_iif);
- 
-+	/* don't accept stp packets. STP does not help in meshes.
-+	 * better use the bridge loop avoidance ... */
-+	if (compare_eth(ethhdr->h_dest, stp_addr))
-+		goto dropped;
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index a5e0eb7..4c4b897 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -1058,8 +1058,16 @@ out:
+ /* initialize all bla structures */
+ int bla_init(struct bat_priv *bat_priv)
+ {
++	int i;
 +
- 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
- 		do_bcast = true;
+ 	bat_dbg(DBG_BLA, bat_priv, "bla hash registering\n");
  
++	/* initialize the duplicate list */
++	for (i = 0; i < DUPLIST_SIZE; i++)
++		bat_priv->bcast_duplist[i].entrytime =
++			jiffies - msecs_to_jiffies(DUPLIST_TIMEOUT);
++	bat_priv->bcast_duplist_curr = 0;
++
+ 	if (bat_priv->claim_hash)
+ 		return 1;
+ 
+@@ -1077,6 +1085,71 @@ int bla_init(struct bat_priv *bat_priv)
+ 
+ /**
+  * @bat_priv: the bat priv with all the soft interface information
++ * @bcast_packet: originator mac address
++ * @hdr_size: maximum length of the frame
++ *
++ * check if it is on our broadcast list. Another gateway might
++ * have sent the same packet because it is connected to the same backbone,
++ * so we have to remove this duplicate.
++ *
++ * This is performed by checking the CRC, which will tell us
++ * with a good chance that it is the same packet. If it is furthermore
++ * sent by another host, drop it. We allow equal packets from
++ * the same host however as this might be intended.
++ *
++ **/
++
++int bla_check_bcast_duplist(struct bat_priv *bat_priv,
++			    struct bcast_packet *bcast_packet,
++			    int hdr_size)
++{
++	int i, length, curr;
++	uint8_t *content;
++	uint16_t crc;
++	struct bcast_duplist_entry *entry;
++
++	length = hdr_size - sizeof(*bcast_packet);
++	content = (uint8_t *) bcast_packet;
++	content += sizeof(*bcast_packet);
++
++	/* calculate the crc ... */
++	crc = crc16(0, content, length);
++
++	for (i = 0 ; i < DUPLIST_SIZE; i++) {
++		curr = (bat_priv->bcast_duplist_curr + i) % DUPLIST_SIZE;
++		entry = &bat_priv->bcast_duplist[curr];
++
++		/* we can stop searching if the entry is too old ;
++		 * later entries will be even older */
++		if (has_timed_out(entry->entrytime, DUPLIST_TIMEOUT))
++			break;
++
++		if (entry->crc != crc)
++			continue;
++
++		if (compare_eth(entry->orig, bcast_packet->orig))
++			continue;
++
++		/* this entry seems to match: same crc, not too old,
++		 * and from another gw. therefore return 1 to forbid it. */
++		return 1;
++	}
++	/* not found, add a new entry (overwrite the oldest entry) */
++	curr = (bat_priv->bcast_duplist_curr + DUPLIST_SIZE - 1) % DUPLIST_SIZE;
++	entry = &bat_priv->bcast_duplist[curr];
++	entry->crc = crc;
++	entry->entrytime = jiffies;
++	memcpy(entry->orig, bcast_packet->orig, ETH_ALEN);
++	bat_priv->bcast_duplist_curr = curr;
++
++	/* allow it, its the first occurence. */
++	return 0;
++}
++
++
++
++/**
++ * @bat_priv: the bat priv with all the soft interface information
+  * @orig: originator mac address
+  *
+  * check if the originator is a gateway for any VLAN ID.
+diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
+index b74940f..9468c24 100644
+--- a/bridge_loop_avoidance.h
++++ b/bridge_loop_avoidance.h
+@@ -28,6 +28,8 @@ int bla_is_backbone_gw(struct sk_buff *skb,
+ 		       struct orig_node *orig_node, int hdr_size);
+ int bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
+ int bla_is_backbone_gw_orig(struct bat_priv *bat_priv, uint8_t *orig);
++int bla_check_bcast_duplist(struct bat_priv *bat_priv,
++			    struct bcast_packet *bcast_packet, int hdr_size);
+ void bla_update_orig_address(struct bat_priv *bat_priv,
+ 			     struct hard_iface *primary_if,
+ 			     struct hard_iface *oldif);
+diff --git a/main.h b/main.h
+index e8d0af5..84b0adf 100644
+--- a/main.h
++++ b/main.h
+@@ -83,6 +83,9 @@
+ #define BLA_PERIOD_LENGTH	10000	/* 10 seconds */
+ #define BLA_BACKBONE_TIMEOUT	(BLA_PERIOD_LENGTH * 3)
+ #define BLA_CLAIM_TIMEOUT	(BLA_PERIOD_LENGTH * 10)
++
++#define DUPLIST_SIZE		16
++#define DUPLIST_TIMEOUT		500	/* 500 ms */
+ /* don't reset again within 30 seconds */
+ #define RESET_PROTECTION_MS 30000
+ #define EXPECTED_SEQNO_RANGE	65536
+diff --git a/routing.c b/routing.c
+index fe5d2e9..b930714 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1074,6 +1074,10 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 
+ 	spin_unlock_bh(&orig_node->bcast_seqno_lock);
+ 
++	/* check whether this has been sent by another originator before */
++	if (bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
++		goto out;
++
+ 	/* rebroadcast packet */
+ 	add_bcast_packet_to_list(bat_priv, skb, 1);
+ 
+diff --git a/types.h b/types.h
+index 2d23039..8cb57ca 100644
+--- a/types.h
++++ b/types.h
+@@ -140,6 +140,11 @@ struct neigh_node {
+ 	spinlock_t tq_lock;	/* protects: tq_recv, tq_index */
+ };
+ 
++struct bcast_duplist_entry {
++	uint8_t orig[ETH_ALEN];
++	uint16_t crc;
++	unsigned long entrytime;
++};
+ 
+ struct bat_priv {
+ 	atomic_t mesh_state;
+@@ -186,6 +191,8 @@ struct bat_priv {
+ 	struct list_head tt_req_list; /* list of pending tt_requests */
+ 	struct list_head tt_roam_list;
+ 	struct hashtable_t *vis_hash;
++	struct bcast_duplist_entry bcast_duplist[DUPLIST_SIZE];
++	int bcast_duplist_curr;
+ 	spinlock_t forw_bat_list_lock; /* protects forw_bat_list */
+ 	spinlock_t forw_bcast_list_lock; /* protects  */
+ 	spinlock_t tt_changes_list_lock; /* protects tt_changes */
 -- 
 1.7.8.3
 
