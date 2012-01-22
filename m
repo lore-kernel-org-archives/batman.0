@@ -1,15 +1,10 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 23 Jan 2012 00:26:08 +0800
-References: <1327238153-8303-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1327238153-8303-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201201230026.09036.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix initialised flag for tt
-	request/responses
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun, 22 Jan 2012 19:31:03 +0100
+Message-Id: <1327257063-13289-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <201201222146.51275.lindner_marek@yahoo.de>
+References: <201201222146.51275.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batctl: exit on parse error in batctl ll
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,21 +16,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sunday, January 22, 2012 21:15:53 Simon Wunderlich wrote:
-> When receiving a tt_response, we first delete the old entries and
-> set the initialised flag to false, then add the new received entries,
-> but forgot to set the initialised flag to true again. This may lead to
-> endless loops of requests/responses, as a request is always issued
-> if the initialised flag is not set.
-> 
-> Fix this by moving initialised = true from tt_update_changes() to
-> _tt_update_changes().
+If the argument could not be understood, we should not try to
+apply something, but return from the function.
 
-This is a regression introduced by 8ef201e. Can we add this in the commit 
-message somewhere ? As a reminder for me to squash these 2 patches when 
-preparing the patches for David.
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ sys.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-Thanks,
-Marek
+diff --git a/sys.c b/sys.c
+index 9cdccba..56f55dd 100644
+--- a/sys.c
++++ b/sys.c
+@@ -221,8 +221,11 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
+ 				log_level |= (1 << 1);
+ 			else if (strcmp(argv[i], "tt") == 0)
+ 				log_level |= (1 << 2);
+-			else
++			else {
+ 				log_level_usage();
++				res = EXIT_FAILURE;
++				goto out;
++			}
+ 		}
+ 
+ 		snprintf(str, sizeof(str), "%i", log_level);
+-- 
+1.7.8.3
+
