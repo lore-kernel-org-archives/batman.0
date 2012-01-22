@@ -1,11 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 22 Jan 2012 20:00:26 +0100
-Message-Id: <1327258827-13861-10-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Sun, 22 Jan 2012 20:00:27 +0100
+Message-Id: <1327258827-13861-11-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <1327258827-13861-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1327258827-13861-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv3 09/10] batman-adv: form groups in the
-	bridge loop avoidance
+Subject: [B.A.T.M.A.N.] [PATCHv3 10/10] batman-adv: add bridge loop
+	avoidance compile option
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,254 +19,167 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-backbone gateways may be part of the same LAN, but participate
-in different meshes. With this patch, backbone gateways form groups by
-applying the groupid of another backbone gateway if it is higher. After
-forming the group, they only accept messages from backbone gateways of
-the same group.
+The define CONFIG_BATMAN_ADV_BLA switches the bridge loop avoidance
+on - skip it, and the bridge loop avoidance is not compiled in.
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-
----
-[2011-10-27] fix a nasty bug which has overwritten the claim type
-[2011-10-30] Changes suggested by Marek Lindner:
- * give hw_src and hw_dst as parameter in check_claim_group() to
-   avoid code duplicates
- * update group id when primary if address is changed
-
-[2011-11-04] remove primary_if address caching
-[2011-12-27] fix alignment
+This is useful if binary size should be saved or the feature is
+not needed.
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- bridge_loop_avoidance.c |  128 +++++++++++++++++++++++++++++++++++++++++------
- types.h                 |    1 +
- 2 files changed, 114 insertions(+), 15 deletions(-)
+ Makefile                |    2 ++
+ Makefile.kbuild         |    2 +-
+ README.external         |    1 +
+ bat_debugfs.c           |    7 ++++++-
+ bat_sysfs.c             |    4 ++++
+ bridge_loop_avoidance.h |   14 ++++++++++++++
+ gen-compat-autoconf.sh  |    1 +
+ 7 files changed, 29 insertions(+), 2 deletions(-)
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 4c4b897..99b0a8f 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -33,7 +33,6 @@
- #include <net/arp.h>
- #include <linux/if_vlan.h>
+diff --git a/Makefile b/Makefile
+index 776cca4..08f8c39 100644
+--- a/Makefile
++++ b/Makefile
+@@ -21,6 +21,8 @@
+ # changing the CONFIG_* line to 'y' enables the related feature
+ # B.A.T.M.A.N. debugging:
+ export CONFIG_BATMAN_ADV_DEBUG=n
++# B.A.T.M.A.N. bridge loop avoidance:
++export CONFIG_BATMAN_ADV_BLA=y
  
--static const uint8_t claim_dest[6] = {0xff, 0x43, 0x05, 0x00, 0x00, 0x00};
- static const uint8_t announce_mac[4] = {0x43, 0x05, 0x43, 0x05};
+ PWD:=$(shell pwd)
+ KERNELPATH ?= /lib/modules/$(shell uname -r)/build
+diff --git a/Makefile.kbuild b/Makefile.kbuild
+index 94b67fd..6d5c194 100644
+--- a/Makefile.kbuild
++++ b/Makefile.kbuild
+@@ -23,7 +23,7 @@ batman-adv-y += bat_debugfs.o
+ batman-adv-y += bat_iv_ogm.o
+ batman-adv-y += bat_sysfs.o
+ batman-adv-y += bitarray.o
+-batman-adv-y += bridge_loop_avoidance.o
++batman-adv-$(CONFIG_BATMAN_ADV_BLA) += bridge_loop_avoidance.o
+ batman-adv-y += gateway_client.o
+ batman-adv-y += gateway_common.o
+ batman-adv-y += hard-interface.o
+diff --git a/README.external b/README.external
+index 4aa4763..4a3a504 100644
+--- a/README.external
++++ b/README.external
+@@ -36,6 +36,7 @@ module).  Available  options  and  their    possible   values are
+ (default marked with an "*")
  
- static void bla_periodic_work(struct work_struct *work);
-@@ -268,7 +267,8 @@ static void bla_send_claim(struct bat_priv *bat_priv, uint8_t *mac,
- 	if (!primary_if)
- 		return;
+  * CONFIG_BATMAN_ADV_DEBUG=[y|n*] (B.A.T.M.A.N. debugging)
++ * CONFIG_BATMAN_ADV_BLA=[y*|n] (B.A.T.M.A.N. bridge loop avoidance)
  
--	memcpy(&local_claim_dest, claim_dest, sizeof(local_claim_dest));
-+	memcpy(&local_claim_dest, &bat_priv->claim_dest,
-+	       sizeof(local_claim_dest));
- 	local_claim_dest.type = claimtype;
+ e.g., debugging can be enabled by
  
- 	soft_iface = primary_if->soft_iface;
-@@ -284,7 +284,8 @@ static void bla_send_claim(struct bat_priv *bat_priv, uint8_t *mac,
- 			 /* Ethernet SRC/HW SRC:  originator mac */
- 			 primary_if->net_dev->dev_addr,
- 			 /* HW DST: FF:43:05:XX:00:00
--			  * with XX   = claim type */
-+			  * with XX   = claim type
-+			  * and YY:YY = group id */
- 			 (uint8_t *)&local_claim_dest);
- 
- 	if (!skb)
-@@ -746,6 +747,84 @@ static int handle_claim(struct bat_priv *bat_priv,
- 	return 1;
+diff --git a/bat_debugfs.c b/bat_debugfs.c
+index 0e35177..916380c 100644
+--- a/bat_debugfs.c
++++ b/bat_debugfs.c
+@@ -245,12 +245,13 @@ static int transtable_global_open(struct inode *inode, struct file *file)
+ 	return single_open(file, tt_global_seq_print_text, net_dev);
  }
  
-+/**
-+ *
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @hw_src: the Hardware source in the ARP Header
-+ * @hw_dst: the Hardware destination in the ARP Header
-+ * @ethhdr: pointer to the Ethernet header of the claim frame
-+ *
-+ * checks if it is a claim packet and if its on the same group.
-+ * This function also applies the group ID of the sender
-+ * if it is in the same mesh.
-+ *
-+ * returns:
-+ *	2  - if it is a claim packet and on the same group
-+ *	1  - if is a claim packet from another group
-+ *	0  - if it is not a claim packet
-+ */
-+static int check_claim_group(struct bat_priv *bat_priv,
-+			     struct hard_iface *primary_if,
-+			     uint8_t *hw_src, uint8_t *hw_dst,
-+			     struct ethhdr *ethhdr)
-+{
-+	uint8_t *backbone_addr;
-+	struct orig_node *orig_node;
-+	struct bla_claim_dst *bla_dst, *bla_dst_own;
-+
-+	bla_dst = (struct bla_claim_dst *) hw_dst;
-+	bla_dst_own = &bat_priv->claim_dest;
-+
-+	/* check if it is a claim packet in general */
-+	if (memcmp(bla_dst->magic, bla_dst_own->magic,
-+		   sizeof(bla_dst->magic)) != 0)
-+		return 0;
-+
-+	/* if announcement packet, use the source,
-+	 * otherwise assume it is in the hw_src */
-+	switch (bla_dst->type) {
-+	case CLAIM_TYPE_ADD:
-+		backbone_addr = hw_src;
-+		break;
-+	case CLAIM_TYPE_REQUEST:
-+	case CLAIM_TYPE_ANNOUNCE:
-+	case CLAIM_TYPE_DEL:
-+		backbone_addr = ethhdr->h_source;
-+		break;
-+	default:
-+		return 0;
-+	}
-+
-+	/* don't accept claim frames from ourselves */
-+	if (compare_eth(backbone_addr, primary_if->net_dev->dev_addr))
-+		return 0;
-+
-+	/* if its already the same group, it is fine. */
-+	if (bla_dst->group == bla_dst_own->group)
-+		return 2;
-+
-+	/* lets see if this originator is in our mesh */
-+	orig_node = orig_hash_find(bat_priv, backbone_addr);
-+
-+	/* dont accept claims from gateways which are not in
-+	 * the same mesh or group. */
-+	if (!orig_node)
-+		return 1;
-+
-+	/* if our mesh friends mac is bigger, use it for ourselves. */
-+	if (ntohs(bla_dst->group) > ntohs(bla_dst_own->group)) {
-+		bat_dbg(DBG_BLA, bat_priv,
-+			"taking other backbones claim group: %04x\n",
-+			ntohs(bla_dst->group));
-+		bla_dst_own->group = bla_dst->group;
-+	}
-+
-+	orig_node_free_ref(orig_node);
-+
-+	return 2;
-+}
-+
-+
- /*
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: the frame to be checked
-@@ -768,6 +847,7 @@ static int bla_process_claim(struct bat_priv *bat_priv,
- 	uint16_t proto;
- 	int headlen;
- 	short vid = -1;
-+	int ret;
- 
- 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
-@@ -810,8 +890,15 @@ static int bla_process_claim(struct bat_priv *bat_priv,
- 	bla_dst = (struct bla_claim_dst *) hw_dst;
- 
- 	/* check if it is a claim frame. */
--	if (memcmp(hw_dst, claim_dest, 3) != 0)
--		return 0;
-+	ret = check_claim_group(bat_priv, primary_if, hw_src, hw_dst, ethhdr);
-+	if (ret == 1)
-+		bat_dbg(DBG_BLA, bat_priv, "bla_process_claim(): received "
-+			"a claim frame from another group. From: "
-+			"%pM on vid %d ...(hw_src %pM, hw_dst %pM)\n",
-+			ethhdr->h_source, vid, hw_src, hw_dst);
-+
-+	if (ret < 2)
-+		return ret;
- 
- 	/* become a backbone gw ourselves on this vlan if not happened yet */
- 	bla_update_own_backbone_gw(bat_priv, primary_if, vid);
-@@ -960,6 +1047,10 @@ void bla_update_orig_address(struct bat_priv *bat_priv,
- 	struct hashtable_t *hash;
- 	int i;
- 
-+	/* reset bridge loop avoidance group id */
-+	bat_priv->claim_dest.group =
-+		htons(crc16(0, primary_if->net_dev->dev_addr, ETH_ALEN));
-+
- 	if (!oldif) {
- 		bla_purge_claims(bat_priv, NULL, 1);
- 		bla_purge_backbone_gw(bat_priv, 1);
-@@ -1059,9 +1150,23 @@ out:
- int bla_init(struct bat_priv *bat_priv)
++#ifdef CONFIG_BATMAN_ADV_BLA
+ static int bla_claim_table_open(struct inode *inode, struct file *file)
  {
- 	int i;
-+	uint8_t claim_dest[ETH_ALEN] = {0xff, 0x43, 0x05, 0x00, 0x00, 0x00};
-+	struct hard_iface *primary_if;
- 
- 	bat_dbg(DBG_BLA, bat_priv, "bla hash registering\n");
- 
-+	/* setting claim destination address */
-+	memcpy(&bat_priv->claim_dest.magic, claim_dest, 3);
-+	bat_priv->claim_dest.type = 0;
-+	primary_if = primary_if_get_selected(bat_priv);
-+	if (primary_if) {
-+		bat_priv->claim_dest.group =
-+			htons(crc16(0, primary_if->net_dev->dev_addr,
-+				    ETH_ALEN));
-+		hardif_free_ref(primary_if);
-+	} else
-+		bat_priv->claim_dest.group = 0; /* will be set later */
-+
- 	/* initialize the duplicate list */
- 	for (i = 0; i < DUPLIST_SIZE; i++)
- 		bat_priv->bcast_duplist[i].entrytime =
-@@ -1233,9 +1338,6 @@ int bla_is_backbone_gw(struct sk_buff *skb,
- 	if (!backbone_gw)
- 		return 0;
- 
--	bat_dbg(DBG_BLA, orig_node->bat_priv,
--		"bla_is_backbone_gw(): originator %pM has a claim "
--		"for vid %d on the LAN ...\n", orig_node->orig, vid);
- 	backbone_gw_free_ref(backbone_gw);
- 	return 1;
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+ 	return single_open(file, bla_claim_table_seq_print_text, net_dev);
  }
-@@ -1395,11 +1497,6 @@ int bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid)
- 	memcpy(search_claim.addr, ethhdr->h_source, ETH_ALEN);
- 	search_claim.vid = vid;
+-
++#endif
  
--	bat_dbg(DBG_BLA, bat_priv,
--		"bla_tx(): checked for claims, now starting ..."
--		"%pM -> %pM [%04x], vid %d\n",
--		ethhdr->h_source, ethhdr->h_dest,
--		ntohs(ethhdr->h_proto), search_claim.vid);
- 	claim = claim_hash_find(bat_priv, &search_claim);
+ static int transtable_local_open(struct inode *inode, struct file *file)
+ {
+@@ -285,7 +286,9 @@ static BAT_DEBUGINFO(routing_algos, S_IRUGO, bat_algorithms_open);
+ static BAT_DEBUGINFO(originators, S_IRUGO, originators_open);
+ static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
+ static BAT_DEBUGINFO(transtable_global, S_IRUGO, transtable_global_open);
++#ifdef CONFIG_BATMAN_ADV_BLA
+ static BAT_DEBUGINFO(bla_claim_table, S_IRUGO, bla_claim_table_open);
++#endif
+ static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
+ static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
  
- 	/* if no claim exists, allow it. */
-@@ -1470,8 +1567,9 @@ int bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
- 	}
+@@ -293,7 +296,9 @@ static struct bat_debuginfo *mesh_debuginfos[] = {
+ 	&bat_debuginfo_originators,
+ 	&bat_debuginfo_gateways,
+ 	&bat_debuginfo_transtable_global,
++#ifdef CONFIG_BATMAN_ADV_BLA
+ 	&bat_debuginfo_bla_claim_table,
++#endif
+ 	&bat_debuginfo_transtable_local,
+ 	&bat_debuginfo_vis_data,
+ 	NULL,
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index 2305cad..3adb183 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -386,7 +386,9 @@ static ssize_t store_gw_bwidth(struct kobject *kobj, struct attribute *attr,
  
- 	seq_printf(seq, "Claims announced for the mesh %s "
--		   "(orig %pM)\n",
--		   net_dev->name, primary_if->net_dev->dev_addr);
-+		   "(orig %pM, group id %04x)\n",
-+		   net_dev->name, primary_if->net_dev->dev_addr,
-+		   ntohs(bat_priv->claim_dest.group));
- 	seq_printf(seq, "   %-17s    %-5s    %-17s [o] (%-4s)\n",
- 		   "Client", "VID", "Originator", "CRC");
- 	for (i = 0; i < hash->size; i++) {
-diff --git a/types.h b/types.h
-index 8cb57ca..d5e0c52 100644
---- a/types.h
-+++ b/types.h
-@@ -193,6 +193,7 @@ struct bat_priv {
- 	struct hashtable_t *vis_hash;
- 	struct bcast_duplist_entry bcast_duplist[DUPLIST_SIZE];
- 	int bcast_duplist_curr;
-+	struct bla_claim_dst claim_dest;
- 	spinlock_t forw_bat_list_lock; /* protects forw_bat_list */
- 	spinlock_t forw_bcast_list_lock; /* protects  */
- 	spinlock_t tt_changes_list_lock; /* protects tt_changes */
+ BAT_ATTR_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
+ BAT_ATTR_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
++#ifdef CONFIG_BATMAN_ADV_BLA
+ BAT_ATTR_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
++#endif
+ BAT_ATTR_BOOL(fragmentation, S_IRUGO | S_IWUSR, update_min_mtu);
+ BAT_ATTR_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
+ static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
+@@ -405,7 +407,9 @@ BAT_ATTR_UINT(log_level, S_IRUGO | S_IWUSR, 0, 15, NULL);
+ static struct bat_attribute *mesh_attrs[] = {
+ 	&bat_attr_aggregated_ogms,
+ 	&bat_attr_bonding,
++#ifdef CONFIG_BATMAN_ADV_BLA
+ 	&bat_attr_bridge_loop_avoidance,
++#endif
+ 	&bat_attr_fragmentation,
+ 	&bat_attr_ap_isolation,
+ 	&bat_attr_vis_mode,
+diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
+index 9468c24..24d7f16 100644
+--- a/bridge_loop_avoidance.h
++++ b/bridge_loop_avoidance.h
+@@ -22,6 +22,7 @@
+ #ifndef _NET_BATMAN_ADV_BLA_H_
+ #define _NET_BATMAN_ADV_BLA_H_
+ 
++#ifdef CONFIG_BATMAN_ADV_BLA
+ int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
+ int bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
+ int bla_is_backbone_gw(struct sk_buff *skb,
+@@ -37,5 +38,18 @@ int bla_init(struct bat_priv *bat_priv);
+ void bla_free(struct bat_priv *bat_priv);
+ 
+ #define BLA_CRC_INIT	0
++#else /* ifdef CONFIG_BATMAN_ADV_BLA */
++
++#define bla_rx(...)				(0)
++#define bla_tx(...)				(0)
++#define bla_is_backbone_gw(...)			(0)
++#define bla_claim_table_seq_print_text		(0)
++#define bla_is_backbone_gw_orig(...)		(0)
++#define bla_check_bcast_duplist(...)		(0)
++#define bla_update_orig_address(...)		{}
++#define bla_init(...)				(1)
++#define bla_free(...)				{}
++
++#endif /* ifdef CONFIG_BATMAN_ADV_BLA */
+ 
+ #endif /* ifndef _NET_BATMAN_ADV_BLA_H_ */
+diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
+index 1a020c1..7cf621b 100755
+--- a/gen-compat-autoconf.sh
++++ b/gen-compat-autoconf.sh
+@@ -37,6 +37,7 @@ gen_config() {
+ 
+ # write config variables
+ gen_config 'CONFIG_BATMAN_ADV_DEBUG' ${CONFIG_BATMAN_ADV_DEBUG:="n"} >> "${TMP}"
++gen_config 'CONFIG_BATMAN_ADV_BLA' ${CONFIG_BATMAN_ADV_BLA:="y"} >> "${TMP}"
+ 
+ # only regenerate compat-autoconf.h when config was changed
+ diff "${TMP}" "${TARGET}" > /dev/null 2>&1 || cp "${TMP}" "${TARGET}"
 -- 
 1.7.8.3
 
