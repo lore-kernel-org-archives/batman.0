@@ -1,9 +1,8 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 22 Jan 2012 14:15:53 +0100
-Message-Id: <1327238153-8303-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix initialised flag for tt
-	request/responses
+Date: Sun, 22 Jan 2012 14:22:12 +0100
+Message-Id: <1327238532-8433-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: exit on parse error in batctl ll
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,42 +14,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <ordex@autistici.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-When receiving a tt_response, we first delete the old entries and
-set the initialised flag to false, then add the new received entries,
-but forgot to set the initialised flag to true again. This may lead to
-endless loops of requests/responses, as a request is always issued
-if the initialised flag is not set.
-
-Fix this by moving initialised = true from tt_update_changes() to
-_tt_update_changes().
+If the argument could not be understood, we should not try to
+apply something, but return from the function.
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- translation-table.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ sys.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/translation-table.c b/translation-table.c
-index 27753a0..9a6f315 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1434,6 +1434,7 @@ static void _tt_update_changes(struct bat_priv *bat_priv,
- 				 */
- 				return;
- 	}
-+	orig_node->tt_initialised = true;
- }
+diff --git a/sys.c b/sys.c
+index 9cdccba..ab7d75f 100644
+--- a/sys.c
++++ b/sys.c
+@@ -221,8 +221,11 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
+ 				log_level |= (1 << 1);
+ 			else if (strcmp(argv[i], "tt") == 0)
+ 				log_level |= (1 << 2);
+-			else
++			else {
+ 				log_level_usage();
++				free(path_buff);
++				return EXIT_FAILURE;
++			}
+ 		}
  
- static void tt_fill_gtable(struct bat_priv *bat_priv,
-@@ -1476,7 +1477,6 @@ static void tt_update_changes(struct bat_priv *bat_priv,
- 	tt_save_orig_buffer(bat_priv, orig_node, (unsigned char *)tt_change,
- 			    tt_num_changes);
- 	atomic_set(&orig_node->last_ttvn, ttvn);
--	orig_node->tt_initialised = true;
- }
- 
- bool is_my_client(struct bat_priv *bat_priv, const uint8_t *addr)
+ 		snprintf(str, sizeof(str), "%i", log_level);
 -- 
 1.7.8.3
 
