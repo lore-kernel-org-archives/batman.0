@@ -1,12 +1,13 @@
-Return-Path: <robert.bouterse@dmh-global.com>
-From: "Bouterse, Robert" <robert.bouterse@dmh-global.com>
-Date: Mon, 23 Jan 2012 06:55:09 -0800
-Message-ID: <110B6C33195F5F4790292BDD9E7DED401AB93E918F@VA3DIAXVS371.RED001.local>
-Content-Language: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: base64
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 24 Jan 2012 01:38:46 +0800
 MIME-Version: 1.0
-Subject: [B.A.T.M.A.N.]  Disconnecting the nodes in batman-adv
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201201240138.46464.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] Announcing the Wireless Battle Mesh v5 (26th of
+	March - 1st of April 2012, Athens, Greece)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,23 +19,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-TXkgYXR0ZW1wdHMgdG8gdXNlIHRoZSBob3BfcGVuYWx0eSBmYWlsZWQsIHNpbmNlIEkgZG8gbm90
-IGhhdmUgY29udHJvbCBvdmVyIHRoZSBSRiBlbnZpcm9ubWVudC4gU28sIEkgYW0gcmVzdXJyZWN0
-aW5nIGFuIG9sZCB0aHJlYWQgdG8gZmluZCBvdXQgaWYgdGhpcyBpcyBwb3NzaWJsZSA6IGh0dHBz
-Oi8vbGlzdHMub3Blbi1tZXNoLm9yZy9waXBlcm1haWwvYi5hLnQubS5hLm4vMjAxMS1KdWx5LzAw
-NTA1OC5odG1sDQoNClRoZSBzdGF0ZSBvZiB0aGUgdGhyZWFkIHNlZW1zIHRvIGhhdmUgZW5kZWQg
-d2l0aCB0aGUgaWRlYSBvZiB3cmFwcGluZyBhIHdsYW4wIGludGVyZmFjZSBpbiBhIGJyaWRnZSwg
-YW5kIHRoZW4gYWRkaW5nIHRoZSBicmlkZ2UgdG8gYSBiYXRtYW4tYWR2IG5ldHdvcmsuIFRoaXMg
-d29ya2VkIChhcHBhcmVudGx5KSB3aXRoIGJhdG1hbi1hZHYgb3ZlciBldGhlcm5ldCwgYnV0IHdp
-bGwgbm90IHdvcmsgb3ZlciA4MDIuMTEgYmVjYXVzZSB0aGUga2VybmVsIHNwZWNpZmljYWxseSBw
-cmV2ZW50cyB0aGUgYnJpZGdlIGZyb20gYmVpbmcgY3JlYXRlZCwgaHR0cDovL2xpc3RzLnNobW9v
-LmNvbS9waXBlcm1haWwvaG9zdGFwLzIwMTAtSmFudWFyeS8wMjA5NTkuaHRtbA0KDQpUaGVyZSBp
-cyBzb21lIG1lbnRpb24gdGhhdCBiYXRtYW4tYWR2IGhhcyBlYnRhYmxlcyBzdXBwb3J0Lg0KDQog
-SG93IGNhbiBJIGdldCBhdCB0aGF0LCB0byBkbyB3aGF0IHRoZSBwZW9wbGUgaW4gdGhlIHRocmVh
-ZCwgd2VyZSB0cnlpbmcgdG8gYWNjb21wbGlzaD8NCg0KLyotLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tKi8NCkJvYiBCb3V0ZXJzZQ0KU2VuaW9yIFNvZnR3YXJlIEVuZ2lu
-ZWVyDQpNdWx0aW1lZGlhIERldmVsb3BtZW50IENlbnRlcg0KRCZNIEhvbGRpbmdzIEluYy4NCmh0
-dHA6Ly93d3cuZG0taG9sZGluZ3MuY29t
 
+==========================================================
+      Announcing the Wireless Battle Mesh v5
+   (26th of March - 1st of April 2012, Athens, Greece)
+==========================================================
+
+The next 'Wireless Battle of the Mesh' will take place from
+Mon 26th till Sun 1st of Arpil in the center of Athens 
+(close to the acropolis), Greece. The event aims to
+bring together people from across the Globe to test the
+performance of different routing protocols for ad-hoc
+networks, like Babel, B.A.T.M.A.N., BMX, and OLSR.
+
+If you are a mesh networking enthusiast, community
+networking activist, or have an interest in mesh networks
+you have to check this out!
+
+Informations about the event are gathered at:
+http://battlemesh.org/BattleMeshV5
+
+Location
+========
+
+The (optional) WBMv5 Warmup event takes place in Sarantaporo 
+(rural area in range of the Olympus mountain). The main 
+event  happens at the National Technical University of 
+Athens (NTUA) in the very center of Athens.
+
+Registration
+============
+
+Registrations will be available at different hackerspaces
+(Fusolab, HSBXL, /tmp/lab, metalab, CCC, ...) and on the
+official website for the event at:
+ - http://battlemesh.org/BattleMeshV5_Warmup
+ - http://battlemesh.org/BattleMeshV5
+
+Fees
+====
+
+The warmup requires a small fee to cover the transportation 
+costs to Sarantaporo. The main event is free of charge. We
+offer the possibility to reserve a low-cost bed close to the
+NTUA for you.
+
+Spread the word
+===============
+
+Feel free to spread the word by forwarding this mail to all
+lists / people that might be interested in it. Also blogging
+about the event is more than welcome!
+
+Contact
+=======
+
+* Web: 
+ - http://battlemesh.org/BattleMeshV5_Warmup
+ - http://battlemesh.org/BattleMeshV5
+* Email: http://ml.ninux.org/mailman/listinfo/battlemesh
+* IRC: irc.freenode.net #wbmv5
