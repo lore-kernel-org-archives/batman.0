@@ -1,13 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 25 Jan 2012 00:49:44 +0800
+Return-Path: <onelektra@gmx.net>
+From: elektra <onelektra@gmx.net>
+Date: Wed, 25 Jan 2012 00:46:05 +0100
 References: <009f01ccda89$f0502260$d0f06720$@co.za>
-In-Reply-To: <009f01ccda89$f0502260$d0f06720$@co.za>
+	<201201250049.44758.lindner_marek@yahoo.de>
+In-Reply-To: <201201250049.44758.lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201201250049.44758.lindner_marek@yahoo.de>
+Message-Id: <201201250046.05686.onelektra@gmx.net>
 Subject: Re: [B.A.T.M.A.N.] Libelf
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,24 +21,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Grant <grant@mrit.co.za>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, siwu@hrz.tu-chemnitz.de
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+Hi -
+
+> > make: can't load library 'libelf.so.0'
+
+I suppose you are trying to compile batmand or batman-adv in the OpenWrt build environment.
+
+Regardless of whether you are trying to compile batmand or batman-adv, this seems to indicate that your build environment is not sane. Did you successfully compile any other software package in this build environment?
+
+Cheers,
+Elektra
 
 
-Hi,
+-- 
+Viral meme of radical freedom
 
-> I am trying to use the latest batman solution. I have a ubiquiti
-> routerstation pro with opnewrt installed. I have even update it to 10.03.1.
-> but I cant get batman to install. When I go to the directory I untarred and
-> try run make I get this error:
-> 
-> make: can't load library 'libelf.so.0'
-> 
-> I googled it to death and tried whatever solution I can find but nothing
-> works. Any ideas how to fix this or where I can get help would be
-> appreciated? Is there a batman forum yet?
+The fact that you talk in your head doesn't mean that you think.
 
-just to be sure about that: Are you using batmand or batman-adv ?
+The best way to lose control over yourself is trying to control yourself.
 
-Regards,
-Marek
+Most people experience themselves as a voice in their head, telling them
+who they are, what they think and what they have to do.
+
+http://en.wikipedia.org/wiki/Meme
