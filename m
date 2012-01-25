@@ -1,14 +1,15 @@
-Return-Path: <onelektra@gmx.net>
-From: elektra <onelektra@gmx.net>
-Date: Wed, 25 Jan 2012 00:46:05 +0100
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 25 Jan 2012 18:08:48 +0800
 References: <009f01ccda89$f0502260$d0f06720$@co.za>
 	<201201250049.44758.lindner_marek@yahoo.de>
-In-Reply-To: <201201250049.44758.lindner_marek@yahoo.de>
+	<565583648-1327431441-cardhu_decombobulator_blackberry.rim.net-851327728-@b4.c14.bise7.blackberry>
+In-Reply-To: <565583648-1327431441-cardhu_decombobulator_blackberry.rim.net-851327728-@b4.c14.bise7.blackberry>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201201250046.05686.onelektra@gmx.net>
+Message-Id: <201201251808.49153.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Libelf
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,28 +22,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-Hi -
-
-> > make: can't load library 'libelf.so.0'
-
-I suppose you are trying to compile batmand or batman-adv in the OpenWrt build environment.
-
-Regardless of whether you are trying to compile batmand or batman-adv, this seems to indicate that your build environment is not sane. Did you successfully compile any other software package in this build environment?
-
-Cheers,
-Elektra
+To: grant@mrit.co.za
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
--- 
-Viral meme of radical freedom
+Hi,
 
-The fact that you talk in your head doesn't mean that you think.
+> Thanks for replying.
 
-The best way to lose control over yourself is trying to control yourself.
+please don't just reply to me in private but to the list.
 
-Most people experience themselves as a voice in their head, telling them
-who they are, what they think and what they have to do.
 
-http://en.wikipedia.org/wiki/Meme
+> I am using batman-adv. I eventually decided to do a
+> full new build with batman included but figuring out what the wiki says.
+> 
+> Do you have a details "batman for dummies" manual at all?
+
+We have a quick-start-guide on our website along with numerous other 
+documents. Did you have a look at that ? If that is not enough you need to be 
+more detailed on what you are looking for.
+
+Regards,
+Marek
