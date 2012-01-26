@@ -1,14 +1,16 @@
-Return-Path: <andre_mailinglist@net-forces.com>
-Content-Type: text/plain; charset=iso-8859-1
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-From: Andre Courchesne <andre_mailinglist@net-forces.com>
-In-Reply-To: <201201270313.19652.lindner_marek@yahoo.de>
-Date: Thu, 26 Jan 2012 14:44:43 -0500
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <9B5DBD81-4A35-43DB-B0FD-F9597A1D04C8@net-forces.com>
-References: <9AAB212A-A9C6-41CD-BACA-0BA1542FA8F5@net-forces.com>
-	<201201270313.19652.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] ap_isolation issue
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 27 Jan 2012 03:47:25 +0800
+References: <201201222146.51275.lindner_marek@yahoo.de>
+	<1327257063-13289-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1327257063-13289-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201201270347.25631.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: exit on parse error in batctl
+	ll
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,55 +24,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Ok, I have added the requested information to the pastebin:
+On Monday, January 23, 2012 02:31:03 Simon Wunderlich wrote:
+> If the argument could not be understood, we should not try to
+> apply something, but return from the function.
 
-	http://pastebin.com/dpF4cp8t
+Applied in revision b320bf2.
 
-> You are implying that disabling and then re-enabling the ap isolation =
-also=20
-> fixes the "ping problem" ?=20
-=20
-Yes, I see the configmation in the logs that ap_isolation was turned on =
-but contrary to 'cold boot' condition where ap_isolation is on, the ping =
-works when doing a disable/enable cycle.
-
-> What happens if you disable the bridge loop avoidance ? Does it have =
-any=20
-> effect ?
-
-I'll test that and report.
-
-
-On 2012-01-26, at 2:13 PM, Marek Lindner wrote:
-
->=20
-> Hi,
->=20
->>  We are trying to get OpenWRT with batman-adv 2011.4.0 to play nice =
-using
->> ap_isolation. However as soon as ap_isolation is turned on the meshed =
-ap
->> are not acessible anymore by our Linux firewall on which at least 1 =
-ap
->> node is physically connected. The following pastebin post shows the =
-exact
->> configuration and details:
->>=20
->> 	http://pastebin.com/2bghWLkp
->=20
-> how is the Linux firewall connected to batman-adv-AP#1 ? Via eth0 ?=20
-> Can you please also add the output of "batctl if" and "batctl sn" on =
-all=20
-> devices ?
->=20
-> What happens if you disable the bridge loop avoidance ? Does it have =
-any=20
-> effect ?
->=20
-> You are implying that disabling and then re-enabling the ap isolation =
-also=20
-> fixes the "ping problem" ?=20
->=20
-> Regards,
-> Marek
-
+Thanks,
+Marek
