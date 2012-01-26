@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 27 Jan 2012 04:34:27 +0800
-References: <201201230026.09036.lindner_marek@yahoo.de>
-	<1327257640-13530-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1327257640-13530-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Fri, 27 Jan 2012 04:36:50 +0800
+References: <110B6C33195F5F4790292BDD9E7DED401AB93E918F@VA3DIAXVS371.RED001.local>
+	<201201270336.09947.lindner_marek@yahoo.de>
+	<6B4D2168-14EC-4E8C-8260-8479F94DEB45@net-forces.com>
+In-Reply-To: <6B4D2168-14EC-4E8C-8260-8479F94DEB45@net-forces.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201201270434.27872.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix initialised flag for
-	tt request/responses
+Message-Id: <201201270436.52171.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Disconnecting the nodes in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,18 +24,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, January 23, 2012 02:40:40 Simon Wunderlich wrote:
-> When receiving a tt_response, we first delete the old entries and
-> set the initialised flag to false, then add the new received entries,
-> but forgot to set the initialised flag to true again. This may lead to
-> endless loops of requests/responses, as a request is always issued
-> if the initialised flag is not set.
+On Friday, January 27, 2012 04:08:40 Andre Courchesne wrote:
+> Ok, disabling loop avoidance has no effect.
 > 
-> This is a regression introduced by
-> 8ef201e01c57e3bfbcb7f6db69405ff259c2b907.
+> Has ap_isolation been tested in this type of scenario?
 
-Applied in revision e4172b0.
+Are you aware that you answered to a completely different mail ?
 
-Thanks,
+
+Regards,
 Marek
-
