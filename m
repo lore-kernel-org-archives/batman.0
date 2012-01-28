@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 29 Jan 2012 04:49:25 +0800
+Date: Sun, 29 Jan 2012 04:57:58 +0800
 References: <1327677116-22645-1-git-send-email-lindner_marek@yahoo.de>
+	<201201272354.26055.lindner_marek@yahoo.de>
 	<20120127191334.GF27169@lunn.ch>
-	<20120128141253.GF15766@ritirata.org>
-In-Reply-To: <20120128141253.GF15766@ritirata.org>
+In-Reply-To: <20120127191334.GF27169@lunn.ch>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201201290449.25923.lindner_marek@yahoo.de>
+Message-Id: <201201290457.58976.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: encourage batman to take
 	shorter routes by changing the default hop penalty
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,41 +25,65 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-
-Hi,
-
-> In my honest opinion we are mixing two different issues:
-> 1) current hop penalty value not really significant
-> 2) OGM link quality measurements do not reflect the metric we'd like it to
-> be
+On Saturday, January 28, 2012 03:13:34 Andrew Lunn wrote:
+> When iperf was used to measure the traffic from one end of the chain
+> to the other. With the default hop penalty we got poor
+> performance. With the traceroute facility of batctl, we could see it
+> was route flipping between 3 hops and 4 hops. When it used 3 hops, the
+> packet loss was too high and we got poor bandwidth. Then it went up to
+> 4 hops, the packet loss was lower, so we got more bandwidth.
 > 
+> This was repeatable, with each deploy we made.
 > 
-> problem 2 is not going to be solved by hacking the hop penalty. It needs
-> further investigation/research and NDP is probably a good starting point
-> towards a possible solution (I think we all agree on this).
+> Then we tried with a lower hop penalty. I think it was 5, but i don't
+> remember. BATMAN then used 5 hops and there was no route flipping. We
+> also got the best iperf bandwidth for end to end of the chain.
 
-you are right - these are 2 different issues.
+I have a hard time understanding this because the hop penalty has less 
+influence on bad links. As you can see in my previous mail below a TQ of 100 
+the default penalty of 10 make less then a 4 TQ points difference.
+
+Did you try setting a higher multicast rate ? This tends to also eliminate 
+flaky direct connections.
 
 
-> For what concern the hop penalty, as far as I understood, it is in charge
-> of making batman prefer a shorter route in case of equal TQs over the
-> traversed links. Instead of hacking the value...what about redesigning the
-> way the hop penalty affects the TQ value of forwarded OGMs? Maybe using a
-> different function (poly of deg>1 or exp) instead of a simple linear
-> decreasing? May this help all the scenarios we mentioned?
+> The fact BATMAN was route flipping with a hop penalty of 10 suggests
+> to me the links had similar TQ. So OGMs are getting through at the
+> lowest coding rate. But data packets are having trouble, maybe because
+> they are full MTU, or because the wifi driver is using the wrong
+> coding rate.
 
-The hop penalty is not as linear as you think. The formula is:
-tq * (TQ_MAX_VALUE - hop_penalty)) / (TQ_MAX_VALUE
+Actually, in most of my setups the connection all neighboring nodes is 
+perfect. Maybe that is another corner case ?  :-)
 
-With a hop penalty of 10 you get the following results:
-tq = 255, penalty = 10, resulting tq = 245
-tq = 200, penalty = 8, resulting tq = 192
-tq = 150, penalty = 6, resulting tq = 144
-tq = 100, penalty = 4, resulting tq = 96
-tq = 50, penalty = 2, resulting tq = 48
 
-As you can see the more the tq goes down the less influence the hop penalty 
-has.
+> I suspect the TQ measurements as determined by OGMs are more
+> optimistic than actual data packets. Linus's played with different NDP
+> packet sizes, and i think he ended up with big packets in order to
+> give more realistic TQ measurements.
+> 
+> Unfortunately, this project is now finished. I do have access to the
+> hardware, but no time allocated to play with it :-(
+
+It was a good idea and is not forgotten. Hopefully I have the code ready by 
+the time of the WBMv5. Then we can play a bit with that.
+
+
+> > Nevertheless, this patch was intended to get a discussion going.
+> 
+> Well, i'm happy to take part in the discussion. I've no idea if our
+> use case is typical, or an edge case. So comments, and results from
+> other peoples networks would be useful.
+> 
+> If this change it to help 11n, maybe some more intelligence would be
+> better, to ask the wireless stack is the interface abg or n, and from
+> that determine what hop penalty should be used?
+
+It is not directly related with 11n. The pain level grows with 11n as the gap 
+between packet loss and throughput grows. This setting is more intended for 
+setups in which all nodes have rather good connections to all other nodes. 
+Then the direct TQs and the "hop" TQs are too similar and batman starts using 
+multi-hop connections.
 
 Regards,
 Marek
