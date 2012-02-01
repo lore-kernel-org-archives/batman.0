@@ -1,15 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 31 Jan 2012 23:53:33 +0100
-Message-ID: <14133018.uqaqHtSXXJ@sven-laptop.home.narfation.org>
-In-Reply-To: <1328045710-32600-1-git-send-email-ordex@autistici.org>
+Return-Path: <ordex@autistici.org>
+Date: Wed, 1 Feb 2012 08:15:35 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120201071535.GC28554@ritirata.org>
 References: <1328045710-32600-1-git-send-email-ordex@autistici.org>
+	<14133018.uqaqHtSXXJ@sven-laptop.home.narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2806617.O6hQq5Hc2a";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="MnLPg7ZWsaic7Fhd"
+Content-Disposition: inline
+In-Reply-To: <14133018.uqaqHtSXXJ@sven-laptop.home.narfation.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: pass the correct header size
-	to interface_rx
+ to interface_rx
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,47 +22,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart2806617.O6hQq5Hc2a
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+--MnLPg7ZWsaic7Fhd
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tuesday 31 January 2012 22:35:10 Antonio Quartulli wrote:
-> in recv_unicast_frag(), the third parameter of the interface_rx()
-> invocation, which is the size of the current header, is wrongly computed.
+On Tue, Jan 31, 2012 at 11:53:33PM +0100, Sven Eckelmann wrote:
+> On Tuesday 31 January 2012 22:35:10 Antonio Quartulli wrote:
+> > in recv_unicast_frag(), the third parameter of the interface_rx()
+> > invocation, which is the size of the current header, is wrongly compute=
+d.
+>=20
+> Really (actually it is the fourth, but I don't want to talk about that)?=
+=20
+> Wasn't the reassembled unicast packet just a unicast packet and not a=20
+> unicast_frag packet (see frag_merge_packet)?
+>=20
+> I could be wrong (didn't checked it), but I just have the feeling that th=
+e=20
+> current version could be correct.
 
-Really (actually it is the fourth, but I don't want to talk about that)? 
-Wasn't the reassembled unicast packet just a unicast packet and not a 
-unicast_frag packet (see frag_merge_packet)?
+I double checked a few second ago and yes, you are right. Once the packet h=
+as
+been merged again it is a unicast_packet.
 
-I could be wrong (didn't checked it), but I just have the feeling that the 
-current version could be correct.
+So, please guys, drop this patch.
 
-Kind regards,
-	Sven
---nextPart2806617.O6hQq5Hc2a
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+
+Regards,
+
+
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--MnLPg7ZWsaic7Fhd
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Version: GnuPG v2.0.17 (GNU/Linux)
 
-iQIcBAABCgAGBQJPKHDtAAoJEF2HCgfBJntGYjUP/2NghLWZYq08xtDL6OqB09UD
-Vr744G+og9NUIgTWf51obtk8B+c/JopPlhJLuhUz5n5+jDFLeSKRQf/L/F06iUrE
-m+RyUTsAz5qaxLVttK+wFfhDUj2ybIpoAIQd9auM8WOj11Xv6lYy7XqUxYW2yHJo
-w94Wzr7JX8zQxs4Q74LotFtVw7HgusbWY8RQ1/y0ROvSq4mp5dfFOWryaaK7wFWt
-NeQSivzFrAmoVKkJuSbRdg5RJdhvEILdVjqrVmyA6zNDZdWJpKLGh2z6MmiQHUPT
-T5pmHmHuUe8Q0ab9ycdbGfslWO1qXDPcE0TaKMLvgXZcEXsjFa/IBqeysk8toOnS
-E8e6ltFX4IAx/siJ2q3jbdFXoTFMiMfEs2Y1ndRR87NXRBf9RO3h6mjH/LuVSnbC
-dliTT+RG9l7IR8/C/cZeNlz4oRgb2Neagi3zYPIh0VJLj2T2haKO9kGo9ZJxWKOQ
-kZaEt8ndROQMiFaVcQdcpImuE+Oo6350LNfsazJ6sqhGopxjSOUptEzO7lDJ/AZn
-1I4Q4kdSO8rjVDubttc/JIw9BqWi0Nab3jKuIyBTRx4hHT0SCx51cQtrCgHYoSrf
-4PTOFH37RyHOzZQ3qhWMkC+jqvtpjButoflSlH2WhYBrx0dfxizmNkuERjiGmByg
-Z/9kJRs3ZO3wBDpI2kYQ
-=ifHc
+iQEcBAEBAgAGBQJPKOaXAAoJEFMQTLzJFOZFufIH/3B6e/2Lrwe5yQwM7YWteoLg
+DgePy0wnMRXzEYootHHpwH7MgpdIJRUxmpstS07oRLEJgXIk0aJfiapyvtT9LpEi
+Gu54xvc/f/Oka3TVPUraTEAVOSoJGgvqsshAaicFb7/tKZ8e5R8CbOuGSFHxVS77
+H8kmJhkc05oh3UllvB6e+8uIG8/wWilB8wxoUfdPZWmq8ZLhhyxbKaY/RaRgtvcz
+FGDq+q+Kfx24LAB62EeolcpqDl5Mf4/bTE1gtFT4IuZsrDvV3cIxz017QmAHbqO0
+FpfDCnKnu9inMKZtcbsjchJDVRatdBKfJh7VQj8pO3YGmQ5Q27O/7pTRxUwBcPc=
+=GcmD
 -----END PGP SIGNATURE-----
 
---nextPart2806617.O6hQq5Hc2a--
-
+--MnLPg7ZWsaic7Fhd--
