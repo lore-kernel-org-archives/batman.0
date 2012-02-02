@@ -1,11 +1,13 @@
-Return-Path: <perazim@inbox.lt>
-From: Perazim <perazim@inbox.lt>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 02 Feb 2012 12:45:39 +0200
-Message-ID: <1328179539.3152.44.camel@travelmate.perazim.net>
-Mime-Version: 1.0
+Return-Path: <jow@openwrt.org>
+Message-ID: <4F2A6AF2.7040603@openwrt.org>
+Date: Thu, 02 Feb 2012 11:52:34 +0100
+From: Jo-Philipp Wich <jow@openwrt.org>
+MIME-Version: 1.0
+References: <1328179539.3152.44.camel@travelmate.perazim.net>
+In-Reply-To: <1328179539.3152.44.camel@travelmate.perazim.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] some basic questions
+Subject: Re: [B.A.T.M.A.N.] some basic questions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,28 +19,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-I am trying batman-adv on trunk openwrt for ubiquiti bullet2. I am using
-trunk because I want 2011.4.0.
+Hi.
 
-In menuconfig I select Kernel Modules/Network Support/Kmod-batgat +
-kmod-batman-adv + enable batctl.
+> Is this normal behavior or is there something wrong with menuconfig that
+> is causing batmand to be included?
 
-Now I see that in Network/Routing and redirection/Batmand is auto
-selected (I cannot deselect it)
-
-Is this normal behavior? I see that besides the kmods, I also have
-batmand installed on the router. I thought that this would have not been
-included after the introduction of batman-adv.
-
-Is this normal behavior or is there something wrong with menuconfig that
-is causing batmand to be included?
-
-Thanks,
-
-Perazim
+kmod-batgat belongs to the Layer 3 batman, do not select it.
 
 
-
-
+~ Jow
