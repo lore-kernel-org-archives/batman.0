@@ -1,15 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 6 Feb 2012 00:58:06 +0800
-References: <1328370732-25571-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1328370732-25571-1-git-send-email-ordex@autistici.org>
+Return-Path: <gmazzurco89@gmail.com>
+From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+Date: Sun, 05 Feb 2012 18:34:39 +0100
+Message-ID: <26576244.EFS60i6JSc@g10h4cklab>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201202060058.07043.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: use ETH_ALEN instead of
-	hardcoded numeric constants
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: [B.A.T.M.A.N.] batctl set different bw not the one passed as
+	paramenter
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,12 +20,10 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, February 04, 2012 23:52:12 Antonio Quartulli wrote:
-> In tcpdump.h the numeric constants 6 is usedinstead of the more portable
-> (and readable) define ETH_ALEN. This patch substitute any hardcoded value
-> with such define.
+as in subject
 
-Applied in revision 64ab6b5.
+eigenServer gioacchino # batctl gw server 10MBit/5MBit
+eigenServer gioacchino # batctl gw
+server (announced bw: 8MBit/5MBit)
 
-Thanks,
-Marek
+why?
