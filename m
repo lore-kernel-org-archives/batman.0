@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 6 Feb 2012 22:42:03 +0800
-References: <1328464522-7344-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1328464522-7344-1-git-send-email-sven@narfation.org>
+Date: Mon, 6 Feb 2012 22:47:15 +0800
+References: <1327258827-13861-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+	<1327258827-13861-2-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1327258827-13861-2-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202062242.03330.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove declaration of only
-	locally used functions
+Message-Id: <201202062247.16132.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 01/10] batman-adv: remove old bridge
+	loop avoidance code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,18 +24,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, February 06, 2012 01:55:22 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> This should help us to find unused code. The test was done with
-> a script that was inspired by another script from d0tslash.
-> I would like to add this to the daily tests when this patch
-> was added to next.
+On Monday, January 23, 2012 03:00:18 Simon Wunderlich wrote:
+> The functionality is to be replaced by an improved implementation,
+> so first clean up.
 
-Applied in revision c8060ad.
-
-This nifty little script seems to be a good idea. Please go ahead and add it 
-to our daily code check. :)
+Applied in revision 9c11509.
 
 Thanks,
 Marek
