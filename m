@@ -1,15 +1,12 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 7 Feb 2012 16:12:16 +0800
-References: <1328566314-16721-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1328566314-16721-1-git-send-email-sven@narfation.org>
+Date: Tue, 7 Feb 2012 17:19:21 +0800
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202071612.20947.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove declaration of only
-	locally used functions
+Message-Id: <201202071719.22804.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] B.A.T.M.A.N. V - the next steps
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,15 +18,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, February 07, 2012 06:11:53 Sven Eckelmann wrote:
-> The blaII code removed references to two functions outside of the own
-> source file. route_unicast_packet can be marked as static since
-> 9c11509d3bbf914060be1bcb4448ea69d571fcb9 and tt_global_del since
-> 7c5289cb52a5cecaeeddc719cd52b50bb17263dd
 
-Applied in revision befb4bc.
+Hi folks,
 
-Thanks,
+after having the B.A.T.M.A.N. IV routing code moved into one single file, a 
+preliminary routing protocol API and an easy to use routing protocol switch it 
+is time to move forward with B.A.T.M.A.N. V.
+
+B.A.T.M.A.N. V is going to split the various tasks handled by the B.A.T.M.A.N. 
+IV OGM protocol into subprotocols which will allow us to optimize each 
+protocol much better. The ELP protocol is the first of these subprotocols to 
+come. The initial ideas surrounding this protocol type are more than 2-3 years 
+old. At some point Linus was the driving force behind the protocol 
+development. Thanks to him we have proper documentation[1] as well as some 
+code in his repository[2] (still called ndp). I began rebasing and integrating 
+his code [3]. It will take a couple of patch series to get the API and the old 
+ELP code base into shape.
+
+Cheers,
 Marek
+
+[1] http://www.open-mesh.org/wiki/batman-adv/ELP
+[2] http://git.open-mesh.org/?p=t_x/batman-adv.git;a=summary
+[3] http://git.open-mesh.org/?p=marek/batman-adv.git;a=summary
