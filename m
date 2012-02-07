@@ -1,12 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue,  7 Feb 2012 17:20:51 +0800
-Message-Id: <1328606451-3418-7-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1328606451-3418-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <martin@hundeboll.net>
+Message-ID: <4F30EFDA.9010405@hundeboll.net>
+Date: Tue, 07 Feb 2012 10:33:14 +0100
+From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+MIME-Version: 1.0
 References: <201202071719.22804.lindner_marek@yahoo.de>
 	<1328606451-3418-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 8/8] batman-adv: mark existing ogm variables
-	as batman iv
+	<1328606451-3418-2-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1328606451-3418-2-git-send-email-lindner_marek@yahoo.de>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/8] batman-adv: randomize initial seqno
+ to avoid collision
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,75 +23,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-The coming protocol changes also will have a part called "OGM". That
-makes it necessary to introduce a distinction in the code base.
+On 2012-02-07 10:20, Marek Lindner wrote:
+> Signed-off-by: Marek Lindner<lindner_marek@yahoo.de>
+> ---
+>   bat_iv_ogm.c |    5 +++++
+>   1 files changed, 5 insertions(+), 0 deletions(-)
+>
+> diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+> index 3eff7f0..4ac2d1d 100644
+> --- a/bat_iv_ogm.c
+> +++ b/bat_iv_ogm.c
+> @@ -33,6 +33,11 @@
+>   static void bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
+>   {
+>   	struct batman_ogm_packet *batman_ogm_packet;
+> +	unsigned long random_seqno;
+> +
+> +	/* randomize initial seqno to avoid collision */
+> +	get_random_bytes(&random_seqno, sizeof(unsigned long));
+> +	atomic_set(&hard_iface->seqno, (uint32_t)random_seqno);
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- bat_iv_ogm.c     |    4 ++--
- hard-interface.c |    2 +-
- packet.h         |    4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+Wouldn't it be better to cast "unsigned long" in the call to atomic_set()?
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index da93525..caa67e4 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -47,7 +47,7 @@ static int bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
- 		goto out;
- 
- 	batman_ogm_packet = (struct batman_ogm_packet *)hard_iface->packet_buff;
--	batman_ogm_packet->header.packet_type = BAT_OGM;
-+	batman_ogm_packet->header.packet_type = BAT_IV_OGM;
- 	batman_ogm_packet->header.version = COMPAT_VERSION;
- 	batman_ogm_packet->header.ttl = 2;
- 	batman_ogm_packet->flags = NO_FLAGS;
-@@ -942,7 +942,7 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
- 	 * packet in an aggregation.  Here we expect that the padding
- 	 * is always zero (or not 0x01)
- 	 */
--	if (batman_ogm_packet->header.packet_type != BAT_OGM)
-+	if (batman_ogm_packet->header.packet_type != BAT_IV_OGM)
- 		return;
- 
- 	/* could be changed by schedule_own_packet() */
-diff --git a/hard-interface.c b/hard-interface.c
-index 2a435ec..30b1c07 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -617,7 +617,7 @@ static int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 
- 	switch (batman_ogm_packet->header.packet_type) {
- 		/* batman originator packet */
--	case BAT_OGM:
-+	case BAT_IV_OGM:
- 		ret = recv_bat_ogm_packet(skb, hard_iface);
- 		break;
- 
-diff --git a/packet.h b/packet.h
-index ed16ec3..7971a69 100644
---- a/packet.h
-+++ b/packet.h
-@@ -25,7 +25,7 @@
- #define ETH_P_BATMAN  0x4305	/* unofficial/not registered Ethertype */
- 
- enum bat_packettype {
--	BAT_OGM		 = 0x01,
-+	BAT_IV_OGM	 = 0x01,
- 	BAT_ICMP	 = 0x02,
- 	BAT_UNICAST	 = 0x03,
- 	BAT_BCAST	 = 0x04,
-@@ -38,7 +38,7 @@ enum bat_packettype {
- /* this file is included by batctl which needs these defines */
- #define COMPAT_VERSION 14
- 
--enum batman_flags {
-+enum batman_iv_flags {
- 	PRIMARIES_FIRST_HOP = 1 << 4,
- 	VIS_SERVER	    = 1 << 5,
- 	DIRECTLINK	    = 1 << 6
+
 -- 
-1.7.5.4
+Kind Regards,
+Martin Hundebøll
+Nordborggade 57, 2. 1
+8000 Aarhus C
 
++45 61 65 54 61
+martin@hundeboll.net
