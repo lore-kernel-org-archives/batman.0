@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri, 10 Feb 2012 00:41:40 +0100
-Message-Id: <1328830902-11574-8-git-send-email-ordex@autistici.org>
+Date: Fri, 10 Feb 2012 00:41:41 +0100
+Message-Id: <1328830902-11574-9-git-send-email-ordex@autistici.org>
 In-Reply-To: <1328830902-11574-1-git-send-email-ordex@autistici.org>
 References: <1328830902-11574-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv5 7/9] batman-adv: Distributed ARP Table -
-	add compile option
+Subject: [B.A.T.M.A.N.] [PATCHv5 8/9] batman-adv: add UNICAST_4ADDR packet
+	type
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,219 +19,239 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch makes it possible to decide whether to include DAT within the
-batman-adv binary or not.
-It is extremely useful when the user wants to reduce the size of the resulting
-module by cutting off any not needed feature.
+The current unicast packet type does not contain the orig source address. This
+patches add a new unicast packet (called UNICAST_4ADDR) which provide two new
+fields: the originator source address and the subtype (the type of the data
+contained in the packet payload). The former is useful to identify the node
+which injected the packet into the network and the latter is useful to avoid
+creating new unicast packet types in the future: a macro defining a new subtype
+will be enough.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- Makefile                |    2 ++
- Makefile.kbuild         |    2 +-
- distributed-arp-table.c |    9 +++++++++
- distributed-arp-table.h |   16 +++++++++++++++-
- gen-compat-autoconf.sh  |    1 +
- hard-interface.c        |    2 ++
- originator.c            |    2 ++
- send.c                  |    2 --
- soft-interface.c        |    2 ++
- types.h                 |    4 ++++
- 10 files changed, 38 insertions(+), 4 deletions(-)
+ hard-interface.c |    1 +
+ packet.h         |   29 ++++++++++++----
+ routing.c        |   10 ++++-
+ unicast.c        |   97 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ unicast.h        |    4 ++
+ 5 files changed, 131 insertions(+), 10 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 08f8c39..a54ffbc 100644
---- a/Makefile
-+++ b/Makefile
-@@ -23,6 +23,8 @@
- export CONFIG_BATMAN_ADV_DEBUG=n
- # B.A.T.M.A.N. bridge loop avoidance:
- export CONFIG_BATMAN_ADV_BLA=y
-+# B.A.T.M.A.N. distributed ARP table:
-+export CONFIG_BATMAN_ADV_DAT=n
- 
- PWD:=$(shell pwd)
- KERNELPATH ?= /lib/modules/$(shell uname -r)/build
-diff --git a/Makefile.kbuild b/Makefile.kbuild
-index 84955b3..ad002cd 100644
---- a/Makefile.kbuild
-+++ b/Makefile.kbuild
-@@ -24,7 +24,7 @@ batman-adv-y += bat_iv_ogm.o
- batman-adv-y += bat_sysfs.o
- batman-adv-y += bitarray.o
- batman-adv-$(CONFIG_BATMAN_ADV_BLA) += bridge_loop_avoidance.o
--batman-adv-y += distributed-arp-table.o
-+batman-adv-$(CONFIG_BATMAN_ADV_DAT) += distributed-arp-table.o
- batman-adv-y += gateway_client.o
- batman-adv-y += gateway_common.o
- batman-adv-y += hard-interface.o
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index 5c81086..48e97e0 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -30,10 +30,13 @@
- #include "hard-interface.h"
- #include "originator.h"
- #include "send.h"
-+#include "soft-interface.h"
- #include "types.h"
- #include "translation-table.h"
- #include "unicast.h"
- 
-+#ifdef CONFIG_BATMAN_ADV_DEBUG
-+
- static inline void bat_dbg_arp(struct bat_priv *bat_priv,
- 			       struct sk_buff *skb, uint16_t type) {
- 	bat_dbg(DBG_ARP, bat_priv, "ARP MSG = [src: %pM-%pI4 dst: %pM-%pI4]\n",
-@@ -41,6 +44,12 @@ static inline void bat_dbg_arp(struct bat_priv *bat_priv,
- 		&ARP_IP_DST(skb));
- }
- 
-+#else
-+
-+#define bat_dbg_arp(...)
-+
-+#endif /* CONFIG_BATMAN_ADV_DEBUG */
-+
- /* Given a key, selects the candidates which the DHT message has to be sent to.
-  * An originator O is selected if and only if its DHT_ID value is one of three
-  * closest values (but not greater) then the hash value of the key.
-diff --git a/distributed-arp-table.h b/distributed-arp-table.h
-index c9c6624..98fc2e1 100644
---- a/distributed-arp-table.h
-+++ b/distributed-arp-table.h
-@@ -22,9 +22,12 @@
- #ifndef _NET_BATMAN_ADV_ARP_H_
- #define _NET_BATMAN_ADV_ARP_H_
- 
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+
- #include "main.h"
- 
- #include <linux/if_arp.h>
-+#include <linux/netdevice.h>
- 
- struct bat_priv;
- struct forw_packet;
-@@ -39,7 +42,7 @@ struct forw_packet;
- #define DAT_ADDR_MAX biggest_unsigned_int(dat_addr_t)
- 
- #define ARP_HW_SRC(skb) ((uint8_t *)(skb->data) + sizeof(struct ethhdr) + \
--			sizeof(struct arphdr))
-+		sizeof(struct arphdr))
- #define ARP_IP_SRC(skb) (*(uint32_t *)(ARP_HW_SRC(skb) + ETH_ALEN))
- #define ARP_HW_DST(skb) (ARP_HW_SRC(skb) + ETH_ALEN + 4)
- #define ARP_IP_DST(skb) (*(uint32_t *)(ARP_HW_SRC(skb) + ETH_ALEN * 2 + 4))
-@@ -56,6 +59,17 @@ bool arp_drop_broadcast_packet(struct bat_priv *bat_priv,
- 			       struct forw_packet *forw_packet);
- void arp_change_timeout(struct net_device *soft_iface, const char *name);
- 
-+#else
-+
-+#define dat_snoop_outgoing_arp_request(...) (0)
-+#define dat_snoop_incoming_arp_request(...) (0)
-+#define dat_snoop_outgoing_arp_reply(...)
-+#define dat_snoop_incoming_arp_reply(...) (0)
-+#define arp_drop_broadcast_packet(...) (0)
-+#define arp_change_timeout(...)
-+
-+#endif /* CONFIG_BATMAN_ADV_DAT */
-+
- /* hash function to choose an entry in a hash table of given size */
- /* hash algorithm from http://en.wikipedia.org/wiki/Hash_table */
- static inline uint32_t hash_ipv4(const void *data, uint32_t size)
-diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
-index 7cf621b..33de95d 100755
---- a/gen-compat-autoconf.sh
-+++ b/gen-compat-autoconf.sh
-@@ -38,6 +38,7 @@ gen_config() {
- # write config variables
- gen_config 'CONFIG_BATMAN_ADV_DEBUG' ${CONFIG_BATMAN_ADV_DEBUG:="n"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_BLA' ${CONFIG_BATMAN_ADV_BLA:="y"} >> "${TMP}"
-+gen_config 'CONFIG_BATMAN_ADV_DAT' ${CONFIG_BATMAN_ADV_DAT:="n"} >> "${TMP}"
- 
- # only regenerate compat-autoconf.h when config was changed
- diff "${TMP}" "${TARGET}" > /dev/null 2>&1 || cp "${TMP}" "${TARGET}"
 diff --git a/hard-interface.c b/hard-interface.c
-index 8cd4a3d..9ad30b8 100644
+index 9ad30b8..31dcce0 100644
 --- a/hard-interface.c
 +++ b/hard-interface.c
-@@ -119,9 +119,11 @@ static void primary_if_update_addr(struct bat_priv *bat_priv,
- 	if (!primary_if)
- 		goto out;
+@@ -632,6 +632,7 @@ static int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
  
-+#ifdef CONFIG_BATMAN_ADV_DAT
- 	bat_priv->dht_hash = (dat_addr_t)
- 				choose_orig(primary_if->net_dev->dev_addr,
- 					    DAT_ADDR_MAX);
-+#endif
+ 		/* unicast packet */
+ 	case BAT_UNICAST:
++	case BAT_UNICAST_4ADDR:
+ 		ret = recv_unicast_packet(skb, hard_iface);
+ 		break;
  
- 	vis_packet = (struct vis_packet *)
- 				bat_priv->my_vis_info->skb_packet->data;
-diff --git a/originator.c b/originator.c
-index 3cade01..6130913 100644
---- a/originator.c
-+++ b/originator.c
-@@ -225,7 +225,9 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, const uint8_t *addr)
- 	orig_node->tt_poss_change = false;
- 	orig_node->bat_priv = bat_priv;
- 	memcpy(orig_node->orig, addr, ETH_ALEN);
-+#ifdef CONFIG_BATMAN_ADV_DAT
- 	orig_node->dht_hash = (dat_addr_t)choose_orig(addr, DAT_ADDR_MAX);
-+#endif
- 	orig_node->router = NULL;
- 	orig_node->tt_crc = 0;
- 	atomic_set(&orig_node->last_ttvn, 0);
-diff --git a/send.c b/send.c
-index 666a524..bc45044 100644
---- a/send.c
-+++ b/send.c
-@@ -30,8 +30,6 @@
- #include "gateway_common.h"
- #include "originator.h"
+diff --git a/packet.h b/packet.h
+index caa12fe..c59256b 100644
+--- a/packet.h
++++ b/packet.h
+@@ -25,14 +25,21 @@
+ #define ETH_P_BATMAN  0x4305	/* unofficial/not registered Ethertype */
  
--#include <net/arp.h>
--
- static void send_outstanding_bcast_packet(struct work_struct *work);
- 
- /* send out an already prepared packet to the given address via the
-diff --git a/soft-interface.c b/soft-interface.c
-index 7b11aef..4426e36 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -416,7 +416,9 @@ struct net_device *softif_create(const char *name)
- 	if (ret < 0)
- 		goto unreg_soft_iface;
- 
-+#ifdef CONFIG_BATMAN_ADV_DAT
- 	bat_priv->dht_hash = 0;
-+#endif
- 
- 	ret = sysfs_add_meshif(soft_iface);
- 	if (ret < 0)
-diff --git a/types.h b/types.h
-index d1da20e..647e873 100644
---- a/types.h
-+++ b/types.h
-@@ -68,7 +68,9 @@ struct hard_iface {
- struct orig_node {
- 	uint8_t orig[ETH_ALEN];
- 	uint8_t primary_addr[ETH_ALEN];
-+#ifdef CONFIG_BATMAN_ADV_DAT
- 	dat_addr_t dht_hash;
-+#endif
- 	struct neigh_node __rcu *router; /* rcu protected pointer */
- 	unsigned long *bcast_own;
- 	uint8_t *bcast_own_sum;
-@@ -217,7 +219,9 @@ struct bat_priv {
- 	struct gw_node __rcu *curr_gw;  /* rcu protected pointer */
- 	atomic_t gw_reselect;
- 	struct hard_iface __rcu *primary_if;  /* rcu protected pointer */
-+#ifdef CONFIG_BATMAN_ADV_DAT
- 	dat_addr_t dht_hash;
-+#endif
- 	struct vis_info *my_vis_info;
- 	struct bat_algo_ops *bat_algo_ops;
+ enum bat_packettype {
+-	BAT_OGM		 = 0x01,
+-	BAT_ICMP	 = 0x02,
+-	BAT_UNICAST	 = 0x03,
+-	BAT_BCAST	 = 0x04,
+-	BAT_VIS		 = 0x05,
+-	BAT_UNICAST_FRAG = 0x06,
+-	BAT_TT_QUERY	 = 0x07,
+-	BAT_ROAM_ADV	 = 0x08
++	BAT_OGM		  = 0x01,
++	BAT_ICMP	  = 0x02,
++	BAT_UNICAST	  = 0x03,
++	BAT_BCAST	  = 0x04,
++	BAT_VIS		  = 0x05,
++	BAT_UNICAST_FRAG  = 0x06,
++	BAT_TT_QUERY	  = 0x07,
++	BAT_ROAM_ADV	  = 0x08,
++	BAT_UNICAST_4ADDR = 0x09
++};
++
++enum bat_subtype {
++	BAT_P_DATA       = 0x01,
++	BAT_P_DHT_GET    = 0x02,
++	BAT_P_DHT_PUT    = 0x03
  };
+ 
+ /* this file is included by batctl which needs these defines */
+@@ -158,6 +165,12 @@ struct unicast_packet {
+ 	uint8_t  dest[ETH_ALEN];
+ } __packed;
+ 
++struct unicast_4addr_packet {
++	struct unicast_packet u;
++	uint8_t src[ETH_ALEN];
++	uint8_t subtype;
++} __packed;
++
+ struct unicast_frag_packet {
+ 	struct batman_header header;
+ 	uint8_t  ttvn; /* destination translation table version number */
+diff --git a/routing.c b/routing.c
+index 7b7fcbe..e3c9e5b 100644
+--- a/routing.c
++++ b/routing.c
+@@ -960,14 +960,20 @@ int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	struct unicast_packet *unicast_packet;
+ 	int hdr_size = sizeof(*unicast_packet);
+ 
++	unicast_packet = (struct unicast_packet *)skb->data;
++
++	/* the caller function should have already pulled 2 bytes */
++	if (unicast_packet->header.packet_type == BAT_UNICAST)
++		hdr_size = sizeof(struct unicast_packet);
++	else if (unicast_packet->header.packet_type == BAT_UNICAST_4ADDR)
++		hdr_size = sizeof(struct unicast_4addr_packet);
++
+ 	if (check_unicast_packet(skb, hdr_size) < 0)
+ 		return NET_RX_DROP;
+ 
+ 	if (!check_unicast_ttvn(bat_priv, skb))
+ 		return NET_RX_DROP;
+ 
+-	unicast_packet = (struct unicast_packet *)skb->data;
+-
+ 	/* packet for me */
+ 	if (is_my_mac(unicast_packet->dest)) {
+ 		interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size);
+diff --git a/unicast.c b/unicast.c
+index 887342b..feaf195 100644
+--- a/unicast.c
++++ b/unicast.c
+@@ -306,6 +306,42 @@ bool prepare_unicast_packet(struct sk_buff *skb, struct orig_node *orig_node)
+ 	return true;
+ }
+ 
++bool prepare_unicast_4addr_packet(struct bat_priv *bat_priv,
++				  struct sk_buff *skb,
++				  struct orig_node *orig_node)
++{
++	struct hard_iface *primary_if;
++	struct unicast_4addr_packet *unicast_4addr_packet;
++	bool ret = false;
++
++	primary_if = primary_if_get_selected(bat_priv);
++	if (!primary_if)
++		goto out;
++
++	if (my_skb_head_push(skb, sizeof(*unicast_4addr_packet)) < 0)
++		goto out;
++
++	unicast_4addr_packet = (struct unicast_4addr_packet *)skb->data;
++
++	unicast_4addr_packet->u.header.version = COMPAT_VERSION;
++	/* batman packet type: unicast */
++	unicast_4addr_packet->u.header.packet_type = BAT_UNICAST_4ADDR;
++	/* set unicast ttl */
++	unicast_4addr_packet->u.header.ttl = TTL;
++	/* copy the destination for faster routing */
++	memcpy(unicast_4addr_packet->u.dest, orig_node->orig, ETH_ALEN);
++	/* set the destination tt version number */
++	unicast_4addr_packet->u.ttvn =
++		(uint8_t)atomic_read(&orig_node->last_ttvn);
++	memcpy(unicast_4addr_packet->src, primary_if->net_dev->dev_addr,
++	       ETH_ALEN);
++	ret = true;
++out:
++	if (primary_if)
++		hardif_free_ref(primary_if);
++	return ret;
++}
++
+ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
+ {
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
+@@ -366,3 +402,64 @@ out:
+ 		kfree_skb(skb);
+ 	return ret;
+ }
++
++int unicast_4addr_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv)
++{
++	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
++	struct unicast_4addr_packet *unicast_4addr_packet;
++	struct orig_node *orig_node;
++	struct neigh_node *neigh_node;
++	int data_len = skb->len;
++	int ret = 1;
++
++	/* get routing information */
++	if (is_multicast_ether_addr(ethhdr->h_dest)) {
++		orig_node = gw_get_selected_orig(bat_priv);
++		if (orig_node)
++			goto find_router;
++	}
++
++	/* check for tt host - increases orig_node refcount.
++	 * returns NULL in case of AP isolation */
++	orig_node = transtable_search(bat_priv, ethhdr->h_source,
++				      ethhdr->h_dest);
++
++find_router:
++	/**
++	 * find_router():
++	 *  - if orig_node is NULL it returns NULL
++	 *  - increases neigh_nodes refcount if found.
++	 */
++	neigh_node = find_router(bat_priv, orig_node, NULL);
++
++	if (!neigh_node)
++		goto out;
++
++	if (!prepare_unicast_4addr_packet(bat_priv, skb, orig_node))
++		goto out;
++
++	unicast_4addr_packet = (struct unicast_4addr_packet *)skb->data;
++
++	if (atomic_read(&bat_priv->fragmentation) &&
++	    data_len + sizeof(*unicast_4addr_packet) >
++				neigh_node->if_incoming->net_dev->mtu) {
++		/* send frag skb decreases ttl */
++		unicast_4addr_packet->u.header.ttl++;
++		ret = frag_send_skb(skb, bat_priv,
++				    neigh_node->if_incoming, neigh_node->addr);
++		goto out;
++	}
++
++	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
++	ret = 0;
++	goto out;
++
++out:
++	if (neigh_node)
++		neigh_node_free_ref(neigh_node);
++	if (orig_node)
++		orig_node_free_ref(orig_node);
++	if (ret == 1)
++		kfree_skb(skb);
++	return ret;
++}
+diff --git a/unicast.h b/unicast.h
+index c51ad3d..1a7bf0a 100644
+--- a/unicast.h
++++ b/unicast.h
+@@ -31,9 +31,13 @@ int frag_reassemble_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 			struct sk_buff **new_skb);
+ void frag_list_free(struct list_head *head);
+ int unicast_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv);
++int unicast_4addr_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv);
+ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 		  struct hard_iface *hard_iface, const uint8_t dstaddr[]);
+ bool prepare_unicast_packet(struct sk_buff *skb, struct orig_node *orig_node);
++bool prepare_unicast_4addr_packet(struct bat_priv *bat_priv,
++				  struct sk_buff *skb,
++				  struct orig_node *orig_node);
+ 
+ static inline int frag_can_reassemble(const struct sk_buff *skb, int mtu)
+ {
 -- 
 1.7.3.4
 
