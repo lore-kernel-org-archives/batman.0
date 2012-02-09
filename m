@@ -1,14 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 9 Feb 2012 15:59:06 +0800
-References: <1328727958-16119-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1328727958-16119-1-git-send-email-martin@hundeboll.net>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 09 Feb 2012 09:44:12 +0100
+Message-ID: <4131504.bFpDbrJZp3@sven-laptop.home.narfation.org>
+In-Reply-To: <1328735457-29986-41-git-send-email-danny.kukawka@bisect.de>
+References: <1328735457-29986-1-git-send-email-danny.kukawka@bisect.de>
+	<1328735457-29986-41-git-send-email-danny.kukawka@bisect.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201202091559.07197.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Add filtering of OGM messages
+Content-Type: multipart/signed; boundary="nextPart14017467.JRCiTb72lR";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 40/50] batman-adv: use
+	dev_hw_addr_random() instead of random_ether_addr()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,70 +22,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-On Thursday, February 09, 2012 03:05:58 Martin Hundeb=C3=B8ll wrote:
-> For testing purposes, forcing specific paths in a network where all
-> nodes are within reach, can be useful. This patch allows the use to
-> enter addresses from which direct OGMs should be ignored.
->=20
-> An address is added by echoing it into
-> /sys/class/net/bat0/filter_add_addr and removed again by echoing the
-> same address into /sys/class/net/bat0/filter_del_addr. The list of
-> currently blocked direct OGM sources is available in
-> /sys/kernel/debug/batman-adv/bat0/filter_table.
-
-In addition to what Antonio has already pointed out:
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, Danny Kukawka <dkukawka@suse.de>, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Danny Kukawka <danny.kukawka@bisect.de>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
 
 
-> diff --git a/bat_sysfs.c b/bat_sysfs.c
-> index 3adb183..0fc5e3e 100644
-> --- a/bat_sysfs.c
-> +++ b/bat_sysfs.c
-> @@ -27,6 +27,7 @@
->  #include "gateway_common.h"
->  #include "gateway_client.h"
->  #include "vis.h"
-> +#include "filter.h"
->=20
->  static struct net_device *kobj_to_netdev(struct kobject *obj)
->  {
-> @@ -384,11 +385,49 @@ static ssize_t store_gw_bwidth(struct kobject *kobj,
-> struct attribute *attr, return gw_bandwidth_set(net_dev, buff, count);
+--nextPart14017467.JRCiTb72lR
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
+
+On Wednesday 08 February 2012 22:10:47 Danny Kukawka wrote:
+> Use dev_hw_addr_random() instead of calling random_ether_addr()
+> to set addr_assign_type correctly to NET_ADDR_RANDOM.
+> 
+> Reset the state to NET_ADDR_PERM as soon as the MAC get
+> changed via .ndo_set_mac_address.
+> 
+> Signed-off-by: Danny Kukawka <danny.kukawka@bisect.de>
+> ---
+>  net/batman-adv/soft-interface.c |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/net/batman-adv/soft-interface.c
+> b/net/batman-adv/soft-interface.c index 987c75a..865a485 100644
+> --- a/net/batman-adv/soft-interface.c
+> +++ b/net/batman-adv/soft-interface.c
+> @@ -541,6 +541,9 @@ static int interface_set_mac_addr(struct net_device
+> *dev, void *p) }
+> 
+>  	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
+> +	if (dev->addr_assign_type & NET_ADDR_RANDOM)
+> +		dev->addr_assign_type ^= NET_ADDR_RANDOM;
+> +
+>  	return 0;
 >  }
 
-It might be better to move filter_add/filter_del into debugfs. There we hav=
-e=20
-less "regulation rules" and more freedom when it comes to the syntax and wh=
-at=20
-we add. It is for debugging purposes anyways.
+Why not something like
 
-Do you plan to add more "filters" in the future ? Otherwise I'd rather call=
- it=20
-"block_orig/unblock_orig". Seems more obvious than the generic "filter".
+dev->addr_assign_type &= ~NET_ADDR_RANDOM;
 
+? It is a relative common way inside the kernel to do this kind of stuff.
 
-> +	if ((res =3D filter_parse_addr_str(buff, count, mac)) < 0) {
-> +		bat_info(net_dev, "Address has invalid format: %s\n", buff);
-> +		return res;
+Thanks,
+	Sven
 
-Is there no existing kernel function for the mac address parsing ?
+PS: For the batman-adv people. This functionality was introduced with 2.6.36. 
+--nextPart14017467.JRCiTb72lR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-> +void filter_addr_add(struct bat_priv *bat_priv, const uint8_t *addr)
-> +{
-> +	struct orig_node *orig_node =3D orig_hash_find(bat_priv, addr);
-> +
-> +	if (!orig_node)
-> +		return;
-> +
-> +	atomic_set(&orig_node->filter, FILTER_TRUE);
-> +	orig_node_free_ref(orig_node);
-> +}
+iQIcBAABCgAGBQJPM4dcAAoJEF2HCgfBJntGnHUP/3Vrc6d5QO0uEbhtNFkCLn+k
+0bRP1ad4SpSC4a94B8/cblQ/HXujqE1fvVkZrtRKss6gkhYLFwOzBvKff0cOt658
+v8i7jRfo4REKjdHUWFZtyUX+SnE+IXbJ3UbxJNoRwUq+WamI5aCNKBGBaHWIx2rS
+CkEZuWSc7U9g1Ic74gycS7AmLr/nCRcTRxq2Z1XieCUB81atAG5SfwdvYlWIka9p
+OWp+uPKdMQ2w+nEpwJgTdXnR3aRe5eVuiHgqGBlPRAWEgfgidLWqLSO5Hx2k4tnw
+cG5y4N/BKcF0tv5Yy24Y9C1SVyWNPwUi8xeHnpqZO9RTlkuCnykLi6q/tKZiC8kQ
+22fWSmRIc/qL4AzEuSHART4Ejtd8haoszIWTw00vCWstEkqo7K/xY2uzGEZdeH5T
+i6zH1XxtBnGDYCODTCdSD/J33s348cDdSrfpNPubYpcxBvIaKnjpDVNK1sAmVf46
+LiJfCM5d/6FqhNnkUg6lCMRv/Qiu4NiexzmzNR0HNswSPTZDqvTAK2XUwUciMQBN
+5Ks7KEXttyRksSesYHM3lI6Ig0+OOX6jUWEHmguK1FnC6WsDEFXC35S9EvPa2GmK
+ggHlJfmBqHO+wQwvLmf0tH0S2ADogCtHel70ciI8G2qSDc8A3t0POqa5Hu0E34FZ
+wpjyK1883XjbbsfK4msM
+=r1h5
+-----END PGP SIGNATURE-----
 
-This will only allow blocking an originator if it is already there. What if=
- I=20
-configure my node before the mesh is up ? For example via scripts ?
+--nextPart14017467.JRCiTb72lR--
 
-Cheers,
-Marek
