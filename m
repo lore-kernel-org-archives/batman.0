@@ -1,8 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  9 Feb 2012 09:57:11 +0100
-Message-Id: <1328777831-8788-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: fix DBG_ARP log level value
+Date: Thu,  9 Feb 2012 09:58:25 +0100
+Message-Id: <1328777905-9503-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1328777831-8788-1-git-send-email-ordex@autistici.org>
+References: <1328777831-8788-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batctl: fix DBG_BLA log level value
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,6 +23,12 @@ When "batctl ll" is launched with argument "bla", the wrong log_level value (1
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
+
+Sorry, I made a mistake in the commit subject. Now it is ok.
+
+
+
+
  sys.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
