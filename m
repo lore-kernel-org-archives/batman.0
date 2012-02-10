@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 10 Feb 2012 22:25:18 +0800
+Date: Fri, 10 Feb 2012 22:32:00 +0800
 References: <1328830902-11574-1-git-send-email-ordex@autistici.org>
-	<1328830902-11574-6-git-send-email-ordex@autistici.org>
-In-Reply-To: <1328830902-11574-6-git-send-email-ordex@autistici.org>
+	<1328830902-11574-8-git-send-email-ordex@autistici.org>
+In-Reply-To: <1328830902-11574-8-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202102225.18785.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 5/9] batman-adv: Distributed ARP Table
-	- add snooping functions for ARP messages
+Message-Id: <201202102232.01329.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5 7/9] batman-adv: Distributed ARP Table
+	- add compile option
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,28 +24,75 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, February 10, 2012 07:41:38 Antonio Quartulli wrote:
->  static inline void bat_dbg_arp(struct bat_priv *bat_priv,
->                                struct sk_buff *skb, uint16_t type) {
-> -       char buf[30];
-> -       const char *type_str[] = { "REQUEST", "REPLY", "RREQUEST",
-> "RREPLY", -                                     "InREQUEST", "InREPLY",
-> "NAK" }; -
-> -       if (type >= 1 && type <= ARRAY_SIZE(type_str))
-> -               scnprintf(buf, sizeof(buf), "%s", type_str[type - 1]);
-> -       else
-> -               scnprintf(buf, sizeof(buf), "UNKNOWN (%hu)", type);
-> -
-> -       bat_dbg(DBG_ARP, bat_priv, "ARP message of type %s recognised "
-> -               "[src: %pM-%pI4 dst: %pM-%pI4]\n", buf, ARP_HW_SRC(skb),
-> -               &ARP_IP_SRC(skb), ARP_HW_DST(skb), &ARP_IP_DST(skb));
-> +       bat_dbg(DBG_ARP, bat_priv, "ARP MSG = [src: %pM-%pI4 dst:
-> %pM-%pI4]\n", +               ARP_HW_SRC(skb), &ARP_IP_SRC(skb),
-> ARP_HW_DST(skb), +               &ARP_IP_DST(skb));
->  }
+On Friday, February 10, 2012 07:41:40 Antonio Quartulli wrote:
+> @@ -23,6 +23,8 @@
+>  export CONFIG_BATMAN_ADV_DEBUG=n
+>  # B.A.T.M.A.N. bridge loop avoidance:
+>  export CONFIG_BATMAN_ADV_BLA=y
+> +# B.A.T.M.A.N. distributed ARP table:
+> +export CONFIG_BATMAN_ADV_DAT=n
 
-Removing something that was just added in the previous patch is bad style and 
-unlikely to be accepted.
+Any particular reason why you wish to disable it by default ?
+
+> --- a/distributed-arp-table.c
+> +++ b/distributed-arp-table.c
+> @@ -30,10 +30,13 @@
+>  #include "hard-interface.h"
+>  #include "originator.h"
+>  #include "send.h"
+> +#include "soft-interface.h"
+>  #include "types.h"
+>  #include "translation-table.h"
+>  #include "unicast.h"
+
+Why changing an include in this patch ?
+
+
+> --- a/distributed-arp-table.h
+> +++ b/distributed-arp-table.h
+> @@ -22,9 +22,12 @@
+>  #ifndef _NET_BATMAN_ADV_ARP_H_
+>  #define _NET_BATMAN_ADV_ARP_H_
+> 
+> +#ifdef CONFIG_BATMAN_ADV_DAT
+> +
+>  #include "main.h"
+> 
+>  #include <linux/if_arp.h>
+> +#include <linux/netdevice.h>
+
+Another include change ?
+
+
+> --- a/hard-interface.c
+> +++ b/hard-interface.c
+> @@ -119,9 +119,11 @@ static void primary_if_update_addr(struct bat_priv
+> *bat_priv, if (!primary_if)
+>  		goto out;
+> 
+> +#ifdef CONFIG_BATMAN_ADV_DAT
+>  	bat_priv->dht_hash = (dat_addr_t)
+>  				choose_orig(primary_if->net_dev->dev_addr,
+>  					    DAT_ADDR_MAX);
+> +#endif
+
+A general dat_init()/dat_free() structure would be better than adding defines 
+everywhere.
+
+
+> --- a/send.c
+> +++ b/send.c
+> @@ -30,8 +30,6 @@
+>  #include "gateway_common.h"
+>  #include "originator.h"
+> 
+> -#include <net/arp.h>
+> -
+>  static void send_outstanding_bcast_packet(struct work_struct *work);
+
+More changing includes ..
+
+The README update is missing in this patch.
 
 Cheers,
 Marek
