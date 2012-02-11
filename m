@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 11 Feb 2012 21:59:57 +0800
+Date: Sat, 11 Feb 2012 22:09:30 +0800
 References: <1328830902-11574-1-git-send-email-ordex@autistici.org>
-	<1328830902-11574-4-git-send-email-ordex@autistici.org>
-In-Reply-To: <1328830902-11574-4-git-send-email-ordex@autistici.org>
+	<1328830902-11574-5-git-send-email-ordex@autistici.org>
+In-Reply-To: <1328830902-11574-5-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202112159.58282.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 3/9] batman-adv: Distributed ARP Table
-	- create DHT helper functions
+Message-Id: <201202112209.30987.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5 4/9] batman-adv: Distributed ARP Table
+	- add ARP parsing functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,25 +24,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, February 10, 2012 07:41:36 Antonio Quartulli wrote:
-> +       for (select = 0; select < DHT_CANDIDATES_NUM; select++) {
-> +               max = 0;
-> +               max_orig_node = NULL;
-> +               if (!chosen_me) {
-> +                       /* if true, wrap around the key space */
-> +                       if (bat_priv->dht_hash > ip_key)
-> +                               max = DAT_ADDR_MAX - bat_priv->dht_hash +
-> +                                       ip_key;
-> +                       else
-> +                               max = ip_key - bat_priv->dht_hash;
-> +                       max = bat_priv->dht_hash;
+On Friday, February 10, 2012 07:41:37 Antonio Quartulli wrote:
+> +static inline void bat_dbg_arp(struct bat_priv *bat_priv,
+> +                              struct sk_buff *skb, uint16_t type) {
+> +       char buf[30];
+> +       const char *type_str[] = { "REQUEST", "REPLY", "RREQUEST",
+> "RREPLY", +                                     "InREQUEST", "InREPLY",
+> "NAK" }; +
+> +       if (type >= 1 && type <= ARRAY_SIZE(type_str))
+> +               scnprintf(buf, sizeof(buf), "%s", type_str[type - 1]);
+> +       else
+> +               scnprintf(buf, sizeof(buf), "UNKNOWN (%hu)", type);
+> +
+> +       bat_dbg(DBG_ARP, bat_priv, "ARP message of type %s recognised "
+> +               "[src: %pM-%pI4 dst: %pM-%pI4]\n", buf, ARP_HW_SRC(skb),
+> +               &ARP_IP_SRC(skb), ARP_HW_DST(skb), &ARP_IP_DST(skb));
+> +}
 
-Somehow this does not make sense to me. Why do we calculate a magic value for 
-"max" if we set it to bat_priv->dht_hash afterwards ?
-Moreover, the name dht_hash is a bit confusing. At first I thought it is a 
-pointer to a hash (read: orig_hash/tt_local_hash/tt_global_hash/etc). Perhaps 
-the comment should explain what and why the magic is supposed to achieve 
-instead of stating what the c code is obviously doing ?
+Every time this fucntion is called an additional bat_dgb() call is made 
+directly before that (as far as I can tell). Wouldn't it make sense to include 
+this extra message as parameter to bat_dbg_arp() ?
 
-Cheers,
+Regards,
 Marek
