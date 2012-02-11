@@ -1,14 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 11 Feb 2012 17:58:28 +0800
-References: <1807712.xKAsDcUsSn@g10h4cklab>
-In-Reply-To: <1807712.xKAsDcUsSn@g10h4cklab>
+Date: Sat, 11 Feb 2012 19:03:37 +0800
+References: <1322044544-15153-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1322044544-15153-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202111758.29202.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman openwrt
+Message-Id: <201202111903.39167.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add biggest_unsigned_int(x)
+	macro
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,19 +23,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Wednesday, November 23, 2011 18:35:44 Antonio Quartulli wrote:
+> in case of dynamic type variable, it could be needed to compute at compile
+> time its maximal value. This macro helps in doing that for unsigned
+> integer types
 
-Hi,
+Applied in revision 9c7df12.
 
-> After upgrading to latest batman version on openwt batman stopped adding
-> ethernet or bridge interfaces at start...
-> 
-> it add only wireless interfaces
-> 
-> I am using backfire for the core and trunk for packages the problem is
-> related to that?
-
-can you post your /etc/config/batman-adv and as well as the batman-adv package 
-version you are using ? Did you switch to the latest and greatest ?
-
-Cheers,
+Thanks,
 Marek
