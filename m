@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 11 Feb 2012 19:16:05 +0800
-References: <1328777831-8788-1-git-send-email-ordex@autistici.org>
-	<1328777905-9503-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1328777905-9503-1-git-send-email-ordex@autistici.org>
+Date: Sat, 11 Feb 2012 19:18:34 +0800
+References: <1328537057-19373-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1328537057-19373-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202111916.05550.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: fix DBG_BLA log level value
+Message-Id: <201202111918.35059.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: tr / ping - ignore packets with
+	wrong sequence number
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,11 +23,14 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday, February 09, 2012 16:58:25 Antonio Quartulli wrote:
-> When "batctl ll" is launched with argument "bla", the wrong log_level value
-> (1 << 4) is written into sysfs instead of the correct (1 << 3)
+On Monday, February 06, 2012 22:04:17 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  ping.c       |    5 +++++
+>  traceroute.c |    5 +++++
+>  2 files changed, 10 insertions(+), 0 deletions(-)
 
-Applied in revision e01ed43.
+Applied in revision 2ecb2c8.
 
-Thanks,
+Regards,
 Marek
