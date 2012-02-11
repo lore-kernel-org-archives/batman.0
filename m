@@ -1,15 +1,11 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <4F353000.9010105@hundeboll.net>
-Date: Fri, 10 Feb 2012 15:56:00 +0100
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+Return-Path: <gmazzurco89@gmail.com>
+From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+Date: Sat, 11 Feb 2012 01:36:22 +0100
+Message-ID: <1807712.xKAsDcUsSn@g10h4cklab>
 MIME-Version: 1.0
-References: <1328727958-16119-1-git-send-email-martin@hundeboll.net>
-	<1328885591-10445-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1328885591-10445-1-git-send-email-martin@hundeboll.net>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [RFCv2] batman-adv: Add blocking of one hop OGM
- messages
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: [B.A.T.M.A.N.] batman openwrt
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,19 +19,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On 2012-02-10 15:53, Martin Hundebøll wrote:
-> For testing purposes, forcing specific paths in a network where all
-> nodes are within reach, can be useful. This patch allows the user to
-> enter addresses from which direct OGMs should be ignored or not dropped.
+Hi!
 
-The code/patch is also available in the git repositorie:
-http://git.open-mesh.org/?p=hundeboll/batman-adv.git;h=refs/heads/filter
+After upgrading to latest batman version on openwt batman stopped adding 
+ethernet or bridge interfaces at start...
 
--- 
-Kind Regards,
-Martin Hundebøll
-Nordborggade 57, 2. 1
-8000 Aarhus C
+it add only wireless interfaces
 
-+45 61 65 54 61
-martin@hundeboll.net
+I am using backfire for the core and trunk for packages the problem is related 
+to that?
