@@ -1,14 +1,13 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 12 Feb 2012 02:30:16 +0800
-References: <1807712.xKAsDcUsSn@g10h4cklab> <1909726.3aAO7925oA@g10h4cklab>
-	<1511503.TNKGsptLL7@g10h4cklab>
-In-Reply-To: <1511503.TNKGsptLL7@g10h4cklab>
+Date: Sun, 12 Feb 2012 13:50:21 +0800
+References: <1807712.xKAsDcUsSn@g10h4cklab>
+In-Reply-To: <1807712.xKAsDcUsSn@g10h4cklab>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202120230.16288.lindner_marek@yahoo.de>
+Message-Id: <201202121350.22380.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] batman openwrt
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,20 +22,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, February 12, 2012 02:15:45 Gioacchino Mazzurco wrote:
-> I am working on a patch but i have some question
+On Saturday, February 11, 2012 08:36:22 Gioacchino Mazzurco wrote:
+> After upgrading to latest batman version on openwt batman stopped adding 
+> ethernet or bridge interfaces at start...
 > 
-> here:
-> ./files/etc/hotplug.d/net/99-batman-adv:9:              [ -d
-> /sys/class/net/$INTERFACE/mesh/ ] && config_bat "$INTERFACE"
-> 
-> shouldn't it be bat_config intead of config_bat?
-> 
-> i have tried to find config_bat definition but without success :|
+> it add only wireless interfaces
 
-You are right - this is a bug. Filippo already sent me a patch for it but I 
-had a few questions regarding other changes in his patch. So, I did not apply 
-it yet.
+Last night we got to the bottom of this. The new hotplug based system is at 
+the core of the issue: The Ethernet driver on the device is compiled into the 
+kernel, thus loaded before the batman-adv kernel module is loaded. As a result 
+the "interface add" event is triggered before batman-adv is active and the 
+device can't be added to the batman-adv mesh.
 
-Cheers,
+Filippo, I cc'ed you because you are the "father" of the hotplug based system. 
+Seems we are having some side effects. Any idea how to fix it ?
+
+Regards,
 Marek
