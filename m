@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 12 Feb 2012 21:48:59 +0800
+Date: Sun, 12 Feb 2012 22:01:43 +0800
 References: <1329053731-4737-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1329053731-4737-1-git-send-email-sven@narfation.org>
+	<1329053731-4737-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1329053731-4737-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202122148.59784.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Remove useless branch
-	for NET_ADDR_RANDOM
+Message-Id: <201202122201.44394.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Backport
+	dev_hw_addr_random
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,11 +24,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, February 12, 2012 21:35:29 Sven Eckelmann wrote:
-> 910ccacb9dd2bfac8ce1ac411af514fe72fa84c0 introduced a branch for a
-> statement that doesn't need it.
+On Sunday, February 12, 2012 21:35:30 Sven Eckelmann wrote:
+> 910ccacb9dd2bfac8ce1ac411af514fe72fa84c0 introduced the hardware address
+> initialization using dev_hw_addr_random. This function was added to linux
+> with linux 2.6.36. Older kernel versions have to igore the NET_ADDR_RANDOM
+> variable and use random_ether_addr directly.
 
-Applied in revision 8e2c2d3.
+Applied in revision f86649b.
 
 Thanks,
 Marek
