@@ -1,17 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 12 Feb 2012 23:04:52 +0800
+Date: Sun, 12 Feb 2012 23:08:13 +0800
 References: <201202071719.22804.lindner_marek@yahoo.de>
 	<1328606451-3418-1-git-send-email-lindner_marek@yahoo.de>
-	<1328606451-3418-4-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1328606451-3418-4-git-send-email-lindner_marek@yahoo.de>
+	<1328606451-3418-5-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1328606451-3418-5-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202122304.52568.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 5/8] batman-adv: handle routing code
-	initialization properly
+Message-Id: <201202122308.13975.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 6/8] batman-adv: refactoring API: find
+	generalized name for bat_ogm_init_primary callback
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,15 +25,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, February 07, 2012 17:20:48 Marek Lindner wrote:
+On Tuesday, February 07, 2012 17:20:49 Marek Lindner wrote:
 > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 > ---
->  bat_iv_ogm.c     |   11 ++++++++++-
->  hard-interface.c |   14 ++++++--------
->  types.h          |    2 +-
->  3 files changed, 17 insertions(+), 10 deletions(-)
+>  bat_iv_ogm.c     |    4 ++--
+>  hard-interface.c |    2 +-
+>  main.c           |    2 +-
+>  types.h          |    4 ++--
+>  4 files changed, 6 insertions(+), 6 deletions(-)
 
-Applied in revision 13cbee1.
+Applied in revision 0b751f1.
 
 Regards,
 Marek
