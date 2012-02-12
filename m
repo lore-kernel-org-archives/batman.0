@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 12 Feb 2012 22:01:43 +0800
-References: <1329053731-4737-1-git-send-email-sven@narfation.org>
-	<1329053731-4737-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1329053731-4737-2-git-send-email-sven@narfation.org>
+Date: Sun, 12 Feb 2012 22:27:09 +0800
+References: <1328830902-11574-1-git-send-email-ordex@autistici.org>
+	<1328830902-11574-9-git-send-email-ordex@autistici.org>
+In-Reply-To: <1328830902-11574-9-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202122201.44394.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Backport
-	dev_hw_addr_random
+Message-Id: <201202122227.09751.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5 8/9] batman-adv: add UNICAST_4ADDR
+	packet type
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,13 +24,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, February 12, 2012 21:35:30 Sven Eckelmann wrote:
-> 910ccacb9dd2bfac8ce1ac411af514fe72fa84c0 introduced the hardware address
-> initialization using dev_hw_addr_random. This function was added to linux
-> with linux 2.6.36. Older kernel versions have to igore the NET_ADDR_RANDOM
-> variable and use random_ether_addr directly.
+On Friday, February 10, 2012 07:41:41 Antonio Quartulli wrote:
+> +enum bat_subtype {
+> +       BAT_P_DATA       = 0x01,
+> +       BAT_P_DHT_GET    = 0x02,
+> +       BAT_P_DHT_PUT    = 0x03
+>  };
 
-Applied in revision f86649b.
+One more before I shut up and wait for the next patchset.  ;-)
 
-Thanks,
+BAT_P_DHT_GET / BAT_P_DHT_PUT isn't used anywhere.
+
+Regards,
 Marek
