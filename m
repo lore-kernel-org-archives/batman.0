@@ -1,9 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 12 Feb 2012 14:35:29 +0100
-Message-Id: <1329053731-4737-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Remove useless branch for
-	NET_ADDR_RANDOM
+Date: Sun, 12 Feb 2012 14:35:30 +0100
+Message-Id: <1329053731-4737-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1329053731-4737-1-git-send-email-sven@narfation.org>
+References: <1329053731-4737-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Backport dev_hw_addr_random
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,28 +18,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-910ccacb9dd2bfac8ce1ac411af514fe72fa84c0 introduced a branch for a statement
-that doesn't need it.
+910ccacb9dd2bfac8ce1ac411af514fe72fa84c0 introduced the hardware address
+initialization using dev_hw_addr_random. This function was added to linux with
+linux 2.6.36. Older kernel versions have to igore the NET_ADDR_RANDOM variable
+and use random_ether_addr directly.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- soft-interface.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ compat.h |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/soft-interface.c b/soft-interface.c
-index 0087052..3750e9b 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -108,8 +108,7 @@ static int interface_set_mac_addr(struct net_device *dev, void *p)
- 	}
- 
- 	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
--	if (dev->addr_assign_type & NET_ADDR_RANDOM)
--		dev->addr_assign_type &= ~NET_ADDR_RANDOM;
-+	dev->addr_assign_type &= ~NET_ADDR_RANDOM;
- 
- 	return 0;
+diff --git a/compat.h b/compat.h
+index e90409f..88866da 100644
+--- a/compat.h
++++ b/compat.h
+@@ -104,6 +104,15 @@ static inline int __param_set_copystring(const char *val,
  }
+ #define param_set_copystring __param_set_copystring
+ 
++static inline void dev_hw_addr_random(struct net_device *dev, u8 *hwaddr)
++{
++	random_ether_addr(hwaddr);
++}
++
++/* hack for dev->addr_assign_type &= ~NET_ADDR_RANDOM; */
++#define addr_assign_type ifindex
++#define NET_ADDR_RANDOM 0
++
+ #endif /* < KERNEL_VERSION(2, 6, 36) */
+ 
+ 
 -- 
 1.7.9
 
