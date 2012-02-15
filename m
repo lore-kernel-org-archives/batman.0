@@ -1,17 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 14 Feb 2012 11:43:31 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120214104330.GA7762@ritirata.org>
-References: <1328830902-11574-1-git-send-email-ordex@autistici.org>
-	<1328830902-11574-5-git-send-email-ordex@autistici.org>
-	<201202112209.30987.lindner_marek@yahoo.de>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Wed, 15 Feb 2012 20:23:21 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20120215192321.GA24703@pandem0nium>
+References: <1328727958-16119-1-git-send-email-martin@hundeboll.net>
+	<1328885591-10445-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
+	protocol="application/pgp-signature"; boundary="tKW2IUtsqtDRztdT"
 Content-Disposition: inline
-In-Reply-To: <201202112209.30987.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 4/9] batman-adv: Distributed ARP Table
- - add ARP parsing functions
+In-Reply-To: <1328885591-10445-1-git-send-email-martin@hundeboll.net>
+Subject: Re: [B.A.T.M.A.N.] [RFCv2] batman-adv: Add blocking of one hop OGM
+ messages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,66 +25,51 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---M9NhX3UHpAaciwkO
+--tKW2IUtsqtDRztdT
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Feb 11, 2012 at 10:09:30PM +0800, Marek Lindner wrote:
-> On Friday, February 10, 2012 07:41:37 Antonio Quartulli wrote:
-> > +static inline void bat_dbg_arp(struct bat_priv *bat_priv,
-> > +                              struct sk_buff *skb, uint16_t type) {
-> > +       char buf[30];
-> > +       const char *type_str[] =3D { "REQUEST", "REPLY", "RREQUEST",
-> > "RREPLY", +                                     "InREQUEST", "InREPLY",
-> > "NAK" }; +
-> > +       if (type >=3D 1 && type <=3D ARRAY_SIZE(type_str))
-> > +               scnprintf(buf, sizeof(buf), "%s", type_str[type - 1]);
-> > +       else
-> > +               scnprintf(buf, sizeof(buf), "UNKNOWN (%hu)", type);
-> > +
-> > +       bat_dbg(DBG_ARP, bat_priv, "ARP message of type %s recognised "
-> > +               "[src: %pM-%pI4 dst: %pM-%pI4]\n", buf, ARP_HW_SRC(skb),
-> > +               &ARP_IP_SRC(skb), ARP_HW_DST(skb), &ARP_IP_DST(skb));
-> > +}
->=20
-> Every time this fucntion is called an additional bat_dgb() call is made=
-=20
-> directly before that (as far as I can tell). Wouldn't it make sense to in=
-clude=20
-> this extra message as parameter to bat_dbg_arp() ?
+Hey Martin,
 
-I'd say it's a good idea. Despite of the current usage, I thought this func=
-tion
-to be responsible to print the content of the message only. The fact that a
-bat_dbg() invocation always precedes its is just a coincident.
+On Fri, Feb 10, 2012 at 03:53:11PM +0100, Martin Hundeb=C3=B8ll wrote:
+>  13 files changed, 491 insertions(+), 0 deletions(-)
 
-But adding a another argument (which can eventually be NULL) makes much sen=
-se :)
-Thanks!
+please excuse my superficial review, but do we really need to bloat batman-=
+adv
+by 491 more lines to drop these OGMs? I'm afraid the filter will evolve
+more and more, and eventually the research/debugging code in batman-adv
+is bigger than the routing code. ;)
+
+(sorry for ranting ;] )
+
+Have you considered using and/or extending the former ebtables patch
+=66rom Linus[1]? We removed [2] it after some discussions [3], but maybe
+its worth fixing these problems if its just about dropping some neighbors
+packets. The patch has some problems, but it was really short and I guess
+we wouldn't mind accepting the performance overhead by ebtables for
+research/debugging purposes. Plus, we could make this a compile-feature too.
 
 Cheers,
+	Simon
 
+[1] http://ftp.uni-kl.de/pub/linux/kernel/people/gregkh/staging/2.6/2.6.35/=
+0120-Staging-batman-adv-Adding-netfilter-bridge-hooks.patch
+[2] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-September/003305=
+=2Ehtml
+[3] http://lkml.indiana.edu/hypermail/linux/kernel/1008.1/02232.html
 
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---M9NhX3UHpAaciwkO
-Content-Type: application/pgp-signature
+--tKW2IUtsqtDRztdT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.18 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQEcBAEBAgAGBQJPOjrSAAoJEFMQTLzJFOZFOVcH/2pc1DsuwjuarooZ4AbxIgSh
-dIUoRZg6xcWth3PqHHjzojS3k+34AOE+nJI9R7DICXYdvaQ9vDhbO1C4wvKbfa1L
-UfKcdexUBN8up+2HDgtUTfUjg8/B+lZrhUxC7BVbE4M0FKz9/VQgMUCf5cx6zpZr
-kFyUVPHCf/hj+TiCZ+sIuX2SzYt2Lq3MiqvcnwcjaWNMX7p7bwCgoh3pn3iGuv0B
-eZazX5JXgL9FfbBLhMyGH73KcD3sHAt/lE+2g1Bfs4SIFCEZEsauKNsjNEaBBxfT
-e1/J60Dxl1T66H/dLZFCftu2jlzzFgYir2w7MPFZBqLddf+dfcuZSnN7H0YHYTg=
-=0Yji
+iEYEARECAAYFAk88BikACgkQrzg/fFk7axamNACgi9M99GJoEprqdOhmpd+Lvqw9
+s0gAn2c92q0SsHcRLX2phbljzln0GBAN
+=jcvE
 -----END PGP SIGNATURE-----
 
---M9NhX3UHpAaciwkO--
+--tKW2IUtsqtDRztdT--
