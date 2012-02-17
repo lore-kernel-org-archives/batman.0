@@ -1,11 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 17 Feb 2012 15:18:30 +0800
-Message-Id: <1329463110-856-11-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1329463110-856-1-git-send-email-lindner_marek@yahoo.de>
-References: <1329463110-856-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 10/10] batman-adv: export used routing
-	algorithm via sysfs
+Date: Fri, 17 Feb 2012 18:05:42 +0800
+References: <1329349200-8507-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1329349200-8507-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201202171805.42454.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: use ETH_HLEN instead of
+	sizeof(struct ethhdr)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,67 +21,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- Documentation/ABI/testing/sysfs-class-net-mesh |    7 +++++++
- net/batman-adv/bat_sysfs.c                     |    9 +++++++++
- 2 files changed, 16 insertions(+), 0 deletions(-)
+On Thursday, February 16, 2012 07:40:00 Antonio Quartulli wrote:
+> Instead of using sizeof(struct ethhdr) it is strongly recommended to use
+> the kernel macro ETH_HLEN. This patch substitute each occurrence of the
+> former expressione with the latter one.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-mesh b/Documentation/ABI/testing/sysfs-class-net-mesh
-index b020014..b218e0f 100644
---- a/Documentation/ABI/testing/sysfs-class-net-mesh
-+++ b/Documentation/ABI/testing/sysfs-class-net-mesh
-@@ -65,6 +65,13 @@ Description:
- 		Defines the penalty which will be applied to an
- 		originator message's tq-field on every hop.
- 
-+What:		/sys/class/net/<mesh_iface>/mesh/routing_algo
-+Date:		Dec 2011
-+Contact:	Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+		Defines the routing procotol this mesh instance
-+		uses to find the optimal paths through the mesh.
-+
- What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
- Date:           May 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
-diff --git a/net/batman-adv/bat_sysfs.c b/net/batman-adv/bat_sysfs.c
-index c25492f..480ae0a 100644
---- a/net/batman-adv/bat_sysfs.c
-+++ b/net/batman-adv/bat_sysfs.c
-@@ -272,6 +272,13 @@ static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
- 	return count;
- }
- 
-+static ssize_t show_bat_algo(struct kobject *kobj, struct attribute *attr,
-+			    char *buff)
-+{
-+	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);
-+	return sprintf(buff, "%s\n", bat_priv->bat_algo_ops->name);
-+}
-+
- static void post_gw_deselect(struct net_device *net_dev)
- {
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
-@@ -382,6 +389,7 @@ BAT_ATTR_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
- BAT_ATTR_BOOL(fragmentation, S_IRUGO | S_IWUSR, update_min_mtu);
- BAT_ATTR_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
- static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
-+static BAT_ATTR(routing_algo, S_IRUGO, show_bat_algo, NULL);
- static BAT_ATTR(gw_mode, S_IRUGO | S_IWUSR, show_gw_mode, store_gw_mode);
- BAT_ATTR_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
- BAT_ATTR_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
-@@ -399,6 +407,7 @@ static struct bat_attribute *mesh_attrs[] = {
- 	&bat_attr_fragmentation,
- 	&bat_attr_ap_isolation,
- 	&bat_attr_vis_mode,
-+	&bat_attr_routing_algo,
- 	&bat_attr_gw_mode,
- 	&bat_attr_orig_interval,
- 	&bat_attr_hop_penalty,
--- 
-1.7.9
+You have missed 2 incarnations.  :)
+Check bridge_loop_avoidance.c line 859 and send.c line 54.
 
+Cheers,
+Marek
