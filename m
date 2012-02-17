@@ -1,16 +1,11 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <4F3CE080.6000409@hundeboll.net>
-Date: Thu, 16 Feb 2012 11:54:56 +0100
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 17 Feb 2012 15:18:20 +0800
+Message-Id: <1329463110-856-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-References: <1328727958-16119-1-git-send-email-martin@hundeboll.net>
-	<1328885591-10445-1-git-send-email-martin@hundeboll.net>
-	<20120215192321.GA24703@pandem0nium>
-In-Reply-To: <20120215192321.GA24703@pandem0nium>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [RFCv2] batman-adv: Add blocking of one hop OGM
- messages
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-02-17
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,41 +17,73 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Simon,
+David,
 
-On 2012-02-15 20:23, Simon Wunderlich wrote:
-> Hey Martin,
->
-> On Fri, Feb 10, 2012 at 03:53:11PM +0100, Martin Hundebøll wrote:
->>   13 files changed, 491 insertions(+), 0 deletions(-)
->
-> please excuse my superficial review, but do we really need to bloat batman-adv
-> by 491 more lines to drop these OGMs? I'm afraid the filter will evolve
-> more and more, and eventually the research/debugging code in batman-adv
-> is bigger than the routing code. ;)
+this is the first patch set I'd like you to pull into net-next-2.6/3.4. 
+It mainly brings infrastructure to dynamically change the routing alorithm
+and a couple of fixes / style improvements.
+Following the "sign your git tag" trend this is our first pull request which
+is signed with my key. Let me know if there any problems.
 
-Actually, I agree with you. The first patch was nice and (too) simple, but quickly grew :) My initial goal with the filtering was not to get it included in batman-adv, but just to make it available to others, who might need it. I use it in my work on the university and will continue to keep it updated on master.
+Thanks,
+Marek
 
-> (sorry for ranting ;] )
 
-We like to rant and bash :)
-  
-> Have you considered using and/or extending the former ebtables patch
-> from Linus[1]? We removed [2] it after some discussions [3], but maybe
-> its worth fixing these problems if its just about dropping some neighbors
-> packets. The patch has some problems, but it was really short and I guess
-> we wouldn't mind accepting the performance overhead by ebtables for
-> research/debugging purposes. Plus, we could make this a compile-feature too.
+The following changes since commit dcd6c92267155e70a94b3927bce681ce74b80d1f:
 
-With my approach, we only check OGMs, which is relatively cheap, compared to checking every incoming packet, which is why I didn't chose the netfilter path. At this point I am satisfied with the dropping of OGM's, so I don't think I will spend time looking into netfilter.
+  Linux 3.3-rc1 (2012-01-19 15:04:48 -0800)
 
--- 
-Kind regards,
-Martin Hundebøll
-Nordborggade 57, 2. 1
-8000 Aarhus C
+are available in the git repository at:
 
-+45 61 65 54 61
-martin@hundeboll.net
+  git://git.open-mesh.org/linux-merge.git batman-adv-for-davem
+
+for you to fetch changes up to ea3d2fd1b11fb3ef8706a48ece0a49a61bcd08bc:
+
+  batman-adv: export used routing algorithm via sysfs (2012-02-17 02:50:20 +0800)
+
+----------------------------------------------------------------
+infrastructure to change routing algorithm at runtime & fixes
+
+----------------------------------------------------------------
+Antonio Quartulli (1):
+      batman-adv: add tt_initialised flag to the orig_node struct
+
+Marek Lindner (6):
+      batman-adv: simplify bat_ogm_receive API call
+      batman-adv: warn if added interface is part of a bridge
+      batman-adv: add infrastructure to change routing algorithm at runtime
+      batman-adv: convert batman iv algorithm to use dynamic infrastructure
+      batman-adv: allowing changing the routing algorithm via module parameter
+      batman-adv: export used routing algorithm via sysfs
+
+Martin Hundebøll (2):
+      batman-adv: Rm empty line from is_my_mac() in main.c
+      batman-adv: Move is_out_of_time() to main.h for general use
+
+Sven Eckelmann (1):
+      batman-adv: Explicitly mark the common header structure
+
+ Documentation/ABI/testing/sysfs-class-net-mesh |    7 +
+ net/batman-adv/{bat_ogm.h => bat_algo.h}       |   20 +--
+ net/batman-adv/bat_debugfs.c                   |   22 ++
+ net/batman-adv/bat_iv_ogm.c                    |  245 +++++++++++++-----------
+ net/batman-adv/bat_sysfs.c                     |    9 +
+ net/batman-adv/hard-interface.c                |   24 ++-
+ net/batman-adv/icmp_socket.c                   |    6 +-
+ net/batman-adv/main.c                          |  107 ++++++++++
+ net/batman-adv/main.h                          |   15 ++
+ net/batman-adv/originator.c                    |    1 +
+ net/batman-adv/packet.h                        |   38 ++---
+ net/batman-adv/routing.c                       |   24 +--
+ net/batman-adv/send.c                          |    7 +-
+ net/batman-adv/soft-interface.c                |   18 +-
+ net/batman-adv/translation-table.c             |   67 +++----
+ net/batman-adv/types.h                         |   21 ++
+ net/batman-adv/unicast.c                       |   16 +-
+ net/batman-adv/vis.c                           |   14 +-
+ 18 files changed, 426 insertions(+), 235 deletions(-)
+ rename net/batman-adv/{bat_ogm.h => bat_algo.h} (51%)
+
