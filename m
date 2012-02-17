@@ -1,15 +1,15 @@
 Return-Path: <davem@davemloft.net>
-Date: Fri, 17 Feb 2012 15:50:49 -0500 (EST)
-Message-Id: <20120217.155049.1321221133602638857.davem@davemloft.net>
+Date: Fri, 17 Feb 2012 16:01:16 -0500 (EST)
+Message-Id: <20120217.160116.2085001213275947134.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1990573.JisbTKXt7B@sven-laptop.home.narfation.org>
-References: <1329463110-856-1-git-send-email-lindner_marek@yahoo.de>
-	<20120217.152323.2251437927591117547.davem@davemloft.net>
-	<1990573.JisbTKXt7B@sven-laptop.home.narfation.org>
+In-Reply-To: <1329493411-25750-7-git-send-email-danny.kukawka@bisect.de>
+References: <1329493411-25750-1-git-send-email-danny.kukawka@bisect.de>
+	<1329493411-25750-7-git-send-email-danny.kukawka@bisect.de>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-02-17
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 06/10] batman-adv: use
+ eth_hw_addr_random() instead of random_ether_addr()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,21 +21,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven@narfation.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
+To: danny.kukawka@bisect.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, dkukawka@suse.de, linux-kernel@vger.kernel.org, siwu@hrz.tu-chemnitz.de, lindner_marek@yahoo.de
 
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 17 Feb 2012 21:44:19 +0100
+From: Danny Kukawka <danny.kukawka@bisect.de>
+Date: Fri, 17 Feb 2012 16:43:27 +0100
 
-> Have you tried:
+> Use eth_hw_addr_random() instead of calling random_ether_addr()
+> to set addr_assign_type correctly to NET_ADDR_RANDOM.
 > 
->  git pull git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+> Remove dev_addr in interface_setup(), it's not needed anymore.
 > 
-> But this will drop Mareks signature when done with an old git version (so no 
-> merged tag is created).
+> Reset the state to NET_ADDR_PERM as soon as the MAC get
+> changed via .ndo_set_mac_address.
+> 
+> v2: use bitops, adapt to eth_hw_addr_random()
+> 
+> Signed-off-by: Danny Kukawka <danny.kukawka@bisect.de>
 
-Yes, that works, and I've pulled it into my tree.
-
-I'm reluctant to pull tags which are signed, I certainly don't have
-your personal keys in my key ring for example.  And distributions
-ship with GIT versions that don't support signed tags, so...
+Applied.
