@@ -1,16 +1,11 @@
-Return-Path: <ordex@autistici.org>
-Date: Sun, 19 Feb 2012 15:54:19 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120219145419.GB7006@ritirata.org>
-References: <1329583133-11681-1-git-send-email-ordex@autistici.org>
-	<1329583133-11681-2-git-send-email-ordex@autistici.org>
+Return-Path: <tonyputi@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="jho1yZJdad60DJr+"
-Content-Disposition: inline
-In-Reply-To: <1329583133-11681-2-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv6 1/7] batman-adv: add UNICAST_4ADDR
-	packet type
+From: Filippo Sallemi <tonyputi@gmail.com>
+Date: Mon, 20 Feb 2012 00:45:01 +0100
+Message-ID: <CAFevQmM12dq09+FPtwedGAXnJxw8rsCwphLAa-qfmaQFifErNg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] mesh: received packet with own address as source
+	address
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,61 +17,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+Hi all,
+after upgrade of batman package on my nodes I see a very decerase of
+performance of my mesh network. When I connect to some node i see
+every time this message:
+
+mesh: received packet with  own address as source address
+
+now in a gateway mode my network config is:
+config 'interface' 'lan'
+	option 'macaddr' '02:15:6d:7c:f0:88'
+	option 'type' 'bridge'
+	option 'ifname' 'mesh'
+	option 'proto' 'static'
+	option 'ipaddr' '10.240.136.1'
+	option 'netmask' '255.0.0.0'
+
+config 'interface' 'wan'
+	option 'ifname' 'eth0'
+	option 'proto' 'dhcp'
+
+config 'interface' 'msh0'
+	option 'proto' 'none'
+	option 'mtu' '1528'
+
+in client mode nodes the network config is:
+
+config 'interface' 'loopback'
+	option 'ifname' 'lo'
+	option 'proto' 'static'
+	option 'ipaddr' '127.0.0.1'
+	option 'netmask' '255.0.0.0'
+
+config 'interface' 'lan'
+	option 'macaddr' '02:15:6d:b0:19:48'
+	option 'type' 'bridge'
+	option 'ifname' 'eth0 mesh'
+	option 'proto' 'dhcp'
+
+config 'interface' 'msh0'
+	option 'proto' 'none'
+	option 'mtu' '1528'
 
 
---jho1yZJdad60DJr+
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Someone can help me? I've 20 nodes crazy
 
-On Sat, Feb 18, 2012 at 05:38:47 +0100, Antonio Quartulli wrote:
-> The current unicast packet type does not contain the orig source address.=
- This
-> patches add a new unicast packet (called UNICAST_4ADDR) which provides tw=
-o new
-> fields: the originator source address and the subtype (the type of the da=
-ta
-> contained in the packet payload). The former is useful to identify the no=
-de
-> which injected the packet into the network and the latter is useful to av=
-oid
-> creating new unicast packet types in the future: a macro defining a new s=
-ubtype
-> will be enough.
-
-Hello people,
-
-I was wondering...what about adding a "payload_size" field to the new packe=
-t?
-
-The handling code would probably be generic enough to handle any future cha=
-nge
-leading to a more stable compat_version (instead of increasing its value
-everyday).
-
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---jho1yZJdad60DJr+
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.18 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPQQ0bAAoJEFMQTLzJFOZFxScH/2LGWkGasnXeYd3vwGc970SR
-YPIu2YHuvgPGLfRfl/ctN4GsYD5v5LreS4KS+bteewhYvY9oiRsz06AdA+k9K+Xk
-w3pQQUPEw+b18njff2VQrgZUYNale5O03sS3gETwy2PIf8KvNdsMguON0aIghM+5
-qfdFD+7l2cRDaYcNELRZQ3z9FE/O9NkIo8NgAG881ou4JzxsnpaAy6QNoM5d/hyx
-HUh2W40mcZg5DIb/l7fusH/Wgr/w1FrPT94WhMYIrmAyT6ATVIqy4Ei41ZY9pAWd
-4LJAZCT2oarvltSdOaDvi9yc/7t/miyOlKScb0+c2QguJubxtUIUWLbnw/zmmck=
-=b9SI
------END PGP SIGNATURE-----
-
---jho1yZJdad60DJr+--
+-- 
+Filippo Sallemi
