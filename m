@@ -1,16 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 20 Feb 2012 18:31:00 +0800
-References: <1329493411-25750-7-git-send-email-danny.kukawka@bisect.de>
-	<1329513526-18980-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1329513526-18980-1-git-send-email-sven@narfation.org>
+Return-Path: <tonyputi@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201202201831.00150.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: use eth_hw_addr_random()
-	instead of random_ether_addr()
+In-Reply-To: <CAFevQmP3bduvABV2EvDYXdWbbVsRjak=uqVfAfK3UVswWM5gSg@mail.gmail.com>
+References: <CAFevQmM12dq09+FPtwedGAXnJxw8rsCwphLAa-qfmaQFifErNg@mail.gmail.com>
+	<1402666.XijZNOoGgr@sven-laptop.home.narfation.org>
+	<CAFevQmP3bduvABV2EvDYXdWbbVsRjak=uqVfAfK3UVswWM5gSg@mail.gmail.com>
+From: Filippo Sallemi <tonyputi@gmail.com>
+Date: Mon, 20 Feb 2012 11:36:24 +0100
+Message-ID: <CAFevQmPFR2_uziBtir5L2zVGJsEr4OYPMGuHj_7-1X7z2woY2A@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Fwd: mesh: received packet with own address as
+	source address
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,18 +24,56 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, February 18, 2012 05:18:46 Sven Eckelmann wrote:
-> From: Danny Kukawka <danny.kukawka@bisect.de>
-> 
-> Use eth_hw_addr_random() instead of calling random_ether_addr()
-> to set addr_assign_type correctly to NET_ADDR_RANDOM.
-> 
-> Remove dev_addr in interface_setup(), it's not needed anymore.
-> 
-> Reset the state to NET_ADDR_PERM as soon as the MAC get
-> changed via .ndo_set_mac_address.
+---------- Messaggio inoltrato ----------
+Da: Filippo Sallemi <tonyputi@gmail.com>
+Date: 20 febbraio 2012 10:50
+Oggetto: Re: [B.A.T.M.A.N.] mesh: received packet with own address as
+source address
+A: Sven Eckelmann <sven@narfation.org>
 
-Applied in revision 2e52993.
 
-Thanks,
-Marek
+Il 20 febbraio 2012 00:55, Sven Eckelmann <sven@narfation.org> ha scritto:
+> On Monday 20 February 2012 00:45:01 Filippo Sallemi wrote:
+>> Hi all,
+>> after upgrade of batman package on my nodes I see a very decerase of
+>> performance of my mesh network. When I connect to some node i see
+>> every time this message:
+>>
+>> mesh: received packet with =C2=A0own address as source address
+>
+> What was the previous version and which version do you use now?
+My previuous version was 2011.2.0 and now is 2012.0.0
+=C2=A0Do you use
+> bridge loop avoidance or bridge loop avoidance II?
+no all nodes speak only via ath/wlan
+What's your batman-adv
+> configuration?
+[for nodes in gw_mode server]
+config 'mesh' 'mesh'
+=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'interfaces' 'msh0'
+=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'ap_isolation' '0'
+=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'gw_mode' 'server'
+=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'gw_bandwidth' '4096KBit/512KBit'
+=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'vis_mode' 'server'
+
+[for nodes in gw_mode client]
+config 'mesh' 'mesh'
+=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'interfaces' 'msh0'
+=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'ap_isolation' '0'
+=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'gw_mode' 'client'
+=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'vis_mode' 'off'
+
+=C2=A0Did you only upgrade batman-adv or also other packages?
+Only batman-adv was upgrade
+>
+> Kind regards,
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0Sven
+
+Rgds
+
+--
+Filippo Sallemi
+
+
+--=20
+Filippo Sallemi
