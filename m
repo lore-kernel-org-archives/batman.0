@@ -1,16 +1,14 @@
-Return-Path: <tonyputi@gmail.com>
+Return-Path: <gmazzurco89@gmail.com>
+Message-ID: <4F42234D.4010703@gmail.com>
+Date: Mon, 20 Feb 2012 11:41:17 +0100
+From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <CAFevQmP3bduvABV2EvDYXdWbbVsRjak=uqVfAfK3UVswWM5gSg@mail.gmail.com>
 References: <CAFevQmM12dq09+FPtwedGAXnJxw8rsCwphLAa-qfmaQFifErNg@mail.gmail.com>
-	<1402666.XijZNOoGgr@sven-laptop.home.narfation.org>
-	<CAFevQmP3bduvABV2EvDYXdWbbVsRjak=uqVfAfK3UVswWM5gSg@mail.gmail.com>
-From: Filippo Sallemi <tonyputi@gmail.com>
-Date: Mon, 20 Feb 2012 11:36:24 +0100
-Message-ID: <CAFevQmPFR2_uziBtir5L2zVGJsEr4OYPMGuHj_7-1X7z2woY2A@mail.gmail.com>
+In-Reply-To: <CAFevQmM12dq09+FPtwedGAXnJxw8rsCwphLAa-qfmaQFifErNg@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] Fwd: mesh: received packet with own address as
-	source address
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] mesh: received packet with own address as source
+ address
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,56 +22,68 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
----------- Messaggio inoltrato ----------
-Da: Filippo Sallemi <tonyputi@gmail.com>
-Date: 20 febbraio 2012 10:50
-Oggetto: Re: [B.A.T.M.A.N.] mesh: received packet with own address as
-source address
-A: Sven Eckelmann <sven@narfation.org>
+Maybe related to the problem we had in Mistretta!
 
+We upgraded just ONE node and it seems that bridge loop avoidance didn't
+worked anymore
 
-Il 20 febbraio 2012 00:55, Sven Eckelmann <sven@narfation.org> ha scritto:
-> On Monday 20 February 2012 00:45:01 Filippo Sallemi wrote:
->> Hi all,
->> after upgrade of batman package on my nodes I see a very decerase of
->> performance of my mesh network. When I connect to some node i see
->> every time this message:
->>
->> mesh: received packet with =C2=A0own address as source address
->
-> What was the previous version and which version do you use now?
-My previuous version was 2011.2.0 and now is 2012.0.0
-=C2=A0Do you use
-> bridge loop avoidance or bridge loop avoidance II?
-no all nodes speak only via ath/wlan
-What's your batman-adv
-> configuration?
-[for nodes in gw_mode server]
-config 'mesh' 'mesh'
-=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'interfaces' 'msh0'
-=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'ap_isolation' '0'
-=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'gw_mode' 'server'
-=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'gw_bandwidth' '4096KBit/512KBit'
-=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'vis_mode' 'server'
+that node was attached to another node via lan and both nodes had bat0
+and eth0 bridged, the 2 nodes started flooding the network with
+rebroadcasted broadcast packet and every link was overloaded
 
-[for nodes in gw_mode client]
-config 'mesh' 'mesh'
-=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'interfaces' 'msh0'
-=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'ap_isolation' '0'
-=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'gw_mode' 'client'
-=C2=A0 =C2=A0 =C2=A0 =C2=A0option 'vis_mode' 'off'
+the solution was to turn off the new node ( i have to go and disable the
+bridging manually )
 
-=C2=A0Did you only upgrade batman-adv or also other packages?
-Only batman-adv was upgrade
->
-> Kind regards,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0Sven
+But I think that in my case the problem was triggered by the fact that
+the two nodes has different batman-adv version one 2012.0.0 and the
+other 2011.4.0 ( and i supposed that the two version have incompatible
+loop avoidance )
 
-Rgds
+Both node use batman-adv from openwrt repository
 
---
-Filippo Sallemi
-
-
---=20
-Filippo Sallemi
+On 02/20/12 00:45, Filippo Sallemi wrote:
+> Hi all,
+> after upgrade of batman package on my nodes I see a very decerase of
+> performance of my mesh network. When I connect to some node i see
+> every time this message:
+> 
+> mesh: received packet with  own address as source address
+> 
+> now in a gateway mode my network config is:
+> config 'interface' 'lan'
+> 	option 'macaddr' '02:15:6d:7c:f0:88'
+> 	option 'type' 'bridge'
+> 	option 'ifname' 'mesh'
+> 	option 'proto' 'static'
+> 	option 'ipaddr' '10.240.136.1'
+> 	option 'netmask' '255.0.0.0'
+> 
+> config 'interface' 'wan'
+> 	option 'ifname' 'eth0'
+> 	option 'proto' 'dhcp'
+> 
+> config 'interface' 'msh0'
+> 	option 'proto' 'none'
+> 	option 'mtu' '1528'
+> 
+> in client mode nodes the network config is:
+> 
+> config 'interface' 'loopback'
+> 	option 'ifname' 'lo'
+> 	option 'proto' 'static'
+> 	option 'ipaddr' '127.0.0.1'
+> 	option 'netmask' '255.0.0.0'
+> 
+> config 'interface' 'lan'
+> 	option 'macaddr' '02:15:6d:b0:19:48'
+> 	option 'type' 'bridge'
+> 	option 'ifname' 'eth0 mesh'
+> 	option 'proto' 'dhcp'
+> 
+> config 'interface' 'msh0'
+> 	option 'proto' 'none'
+> 	option 'mtu' '1528'
+> 
+> 
+> Someone can help me? I've 20 nodes crazy
+> 
