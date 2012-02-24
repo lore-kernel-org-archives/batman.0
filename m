@@ -1,18 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 21 Feb 2012 17:24:03 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120221162402.GC4624@ritirata.org>
-References: <1329583133-11681-1-git-send-email-ordex@autistici.org>
-	<1329583133-11681-2-git-send-email-ordex@autistici.org>
-	<20120219145419.GB7006@ritirata.org>
-	<201202201343.35230.lindner_marek@yahoo.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 24 Feb 2012 21:14:33 +0800
+References: <CAFevQmM12dq09+FPtwedGAXnJxw8rsCwphLAa-qfmaQFifErNg@mail.gmail.com>
+	<4F42234D.4010703@gmail.com>
+In-Reply-To: <4F42234D.4010703@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="MnLPg7ZWsaic7Fhd"
-Content-Disposition: inline
-In-Reply-To: <201202201343.35230.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv6 1/7] batman-adv: add UNICAST_4ADDR
- packet type
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201202242114.33387.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] mesh: received packet with own address as source
+	address
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,49 +24,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Monday, February 20, 2012 18:41:17 Gioacchino Mazzurco wrote:
+> But I think that in my case the problem was triggered by the fact that
+> the two nodes has different batman-adv version one 2012.0.0 and the
+> other 2011.4.0 ( and i supposed that the two version have incompatible
+> loop avoidance )
 
---MnLPg7ZWsaic7Fhd
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+No, both versions do have the same bridge loop avoidance code. The new bridge 
+loop avoidance that you read a lot about has not been part of any release yet!
 
-On Mon, Feb 20, 2012 at 01:43:35PM +0800, Marek Lindner wrote:
-> On Sunday, February 19, 2012 22:54:19 Antonio Quartulli wrote:
-> > I was wondering...what about adding a "payload_size" field to the new
-> > packet?
-> >=20
-> > The handling code would probably be generic enough to handle any future
-> > change leading to a more stable compat_version (instead of increasing i=
-ts
-> > value everyday).
->=20
-> What will be the purpose of the payload field ?
+By the way, you can always check our release info to find out about what each 
+release changes. You will notice 2012.0.0 is a bugfix release. No new features 
+have been added. When incompatibilities of any kind occur they will be 
+announced loud & clear.
 
-After discussing this on IRC we came up with not introducing this field.
-Actually we don't need it so it's not worth bloating the packet format now.
-
-Cheers!
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---MnLPg7ZWsaic7Fhd
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.18 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPQ8UiAAoJEFMQTLzJFOZFzl4IAJ39qvVkbOwkWAOy3mhpZ2Rm
-TVLjBo5/TeZ9TBckEYaSDs/bOnD7sUKpQVfNbCtqGn4EXmgdy4uevzwYE1Rv6aqm
-VNgWKAQIRl1keAuw5CijZiHO99g/o2LBxq2jYCQgAlzYGLsrrnE9cSpvGyn/BVlL
-R00puuicNglwcUTnnryw8SymtisHMZVdwyb2HuI91KxfE3qABOCBPz+A2c6I5BfS
-KUKJd9S+nDsDDWCydHerkNM4u3Dm3Mq/lFAnxFZEMKekKgzXKcxYjIIc0MTvCWkP
-Ir1B6ykiNBcdDRsi2MQgRRgOkkrfO+TEQ0o3NxyxPC71K8RzAMGFd22QK18K5uY=
-=a9eU
------END PGP SIGNATURE-----
-
---MnLPg7ZWsaic7Fhd--
+Regards,
+Marek
