@@ -1,15 +1,16 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <4F4A629F.4010004@hundeboll.net>
-Date: Sun, 26 Feb 2012 17:49:35 +0100
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+Return-Path: <tonyputi@gmail.com>
 MIME-Version: 1.0
-References: <1330267182-15607-1-git-send-email-ordex@autistici.org>
-	<1330267182-15607-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1330267182-15607-2-git-send-email-ordex@autistici.org>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: skip the window
- protection test when the originator has no neighbours
+In-Reply-To: <201202111808.54341.lindner_marek@yahoo.de>
+References: <CAFevQmN-RVQookzL-M9_G0xGKJJvAp5QXCqRfwf+X8dvWM9-Pw@mail.gmail.com>
+	<201202100053.46289.lindner_marek@yahoo.de>
+	<CAFevQmP9EDXbAVeO+9cvfhJ2i8rWeNo3PW8uTcUZkpazohsj3A@mail.gmail.com>
+	<201202111808.54341.lindner_marek@yahoo.de>
+From: Filippo Sallemi <tonyputi@gmail.com>
+Date: Sun, 26 Feb 2012 18:49:44 +0100
+Message-ID: <CAFevQmN7t5R52R6dmzz630OHi1g=5z01-q-UTMMR04iJFWXtbw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Fwd: /lib/batman-adv/config.sh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,46 +22,72 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On 02/26/2012 03:39 PM, Antonio Quartulli wrote:
-> When we receive an OGM from from a node for the first time, the last_real_seqno
-> field of the orig_node structure has not been initialised yet. The value of this
-> field is used to compute the current ogm-seqno window and therefore the
-> protection mechanism will probably drop the packet due to an out-of-window error.
-> To avoid this situation this patch adds a check to skip the window protection
-> mechanism if no neighbour nodes have already been added. When the first
-> neighbour node is added, the last_real_seqno field is initialised too.
+Ok in this email my proposal patch.
+I've to sleep 4s if you have an ap + adhoc vifs.
+
+[ "$(echo $interface | awk '$0 ~ /^wlan[0-9]*/')" ] && sleep 4s
+
+For convenience I sleep only if an wlan was triggered. If you have
+only one interface in adhoc mode per radio 3 seconds are enought.
+
+bye
+
+---------- Messaggio inoltrato ----------
+Da: Marek Lindner <lindner_marek@yahoo.de>
+Date: 11 febbraio 2012 11:08
+Oggetto: Re: /lib/batman-adv/config.sh
+A: Filippo Sallemi <tonyputi@gmail.com>
+
+
+On Friday, February 10, 2012 01:21:21 you wrote:
+> > Yeah - looks good.
+> > I still don't get why we don't need to wait 3/5 seconds anymore. Can yo=
+u
+> > explain this ?
 >
-> Reported-by: Marek Lindner<lindner_marek@yahoo.de>
-> Signed-off-by: Antonio Quartulli<ordex@autistici.org>
-> ---
->   bat_iv_ogm.c |    3 ++-
->   1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-> index c42e030..d9195b3 100644
-> --- a/bat_iv_ogm.c
-> +++ b/bat_iv_ogm.c
-> @@ -869,7 +869,8 @@ static int bat_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
->   	seq_diff = batman_ogm_packet->seqno - orig_node->last_real_seqno;
->
->   	/* signalize caller that the packet is to be dropped. */
-> -	if (window_protected(bat_priv, seq_diff,
-> +	if (!hlist_empty(&orig_node->neigh_list)&&
-> +	    window_protected(bat_priv, seq_diff,
->   			&orig_node->batman_seqno_reset))
->   		goto out;
->
+> No i'm wrong we need to wait 3 seconds... i think that the sleep call
+> could be moved to hotplug.d/99-batman-adv when an interface is added
+> to mesh interface.
+> I need some time.
+
+Ok - I left the "sleep 3s" in the file. I applied your config_bat/bat_confi=
+g
+as well as the forgotten ap_isolation config fix.
+
+Since the for loop does not fix the wait problem why do you wish to change =
+it?
+I am referring to your suggested change:
+
+# Load network config here just in case!
+config_load network
+for iface in $interfaces; do
+=C2=A0 =C2=A0 =C2=A0 =C2=A0# copy iface into ifname
+=C2=A0 =C2=A0 =C2=A0 =C2=A0local ifname=3D$iface
+=C2=A0 =C2=A0 =C2=A0 =C2=A0[ -f "/sys/class/net/$ifname/batman_adv/mesh_ifa=
+ce" ] || {
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0# if ifname was not =
+found try to find it via uci config
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0config_get ifname $i=
+face ifname
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0[ -f "/sys/class/net=
+/$ifname/batman_adv/mesh_iface" ] ||
+continue
+=C2=A0 =C2=A0 =C2=A0 =C2=A0}
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0[ "$ifname" =3D "$interface" ] && echo $mesh >
+/sys/class/net/$ifname/batman_adv/mesh_iface
+done
+
+bat_add_interface() and bat_del_interface() have the same loop but we only
+change one ? The only difference I can see is another added variable and no=
+t
+calling "uci -q -P/var/state get network.$iface.ifname". Why ?
+
+Cheers,
+Marek
 
 
-Tested this and originators now appear within 3 seconds after being added to the mesh network. Good work, Antonio and Marek!
-
--- 
-Kind regards,
-Martin Hundebøll
-Nordborggade 57, 2. 1
-8000 Aarhus C
-
-+45 61 65 54 61
-martin@hundeboll.net
+--=20
+Filippo Sallemi
