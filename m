@@ -1,8 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 27 Feb 2012 11:43:36 +0100
-Message-Id: <1330339416-25833-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: fix 'all' loglevel
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 27 Feb 2012 19:02:27 +0800
+References: <1330267182-15607-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1330267182-15607-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201202271902.27901.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: print OGM seq numbers as
+	unsigned long
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,30 +21,13 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-After having added the "bla" log level, the numeric value for "all" is now 15,
-not 7.
+On Sunday, February 26, 2012 22:39:41 Antonio Quartulli wrote:
+> OGM sequence numbers are declared as uint32_t and so they have to printed
+> using %u instead of %d in order to avoid wrong representations.
 
-Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- sys.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Applied in revision 14b1316.
 
-diff --git a/sys.c b/sys.c
-index 0b7ddf7..0b4cac3 100644
---- a/sys.c
-+++ b/sys.c
-@@ -214,7 +214,7 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
- 				log_level = 0;
- 				break;
- 			} else if (strcmp(argv[i], "all") == 0) {
--				log_level = 7;
-+				log_level = 15;
- 				break;
- 			} else if (strcmp(argv[i], "batman") == 0)
- 				log_level |= (1 << 0);
--- 
-1.7.3.4
-
+Thanks,
+Marek
