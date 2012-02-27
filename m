@@ -1,16 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 27 Feb 2012 19:28:57 +0800
-References: <1330280603-25510-1-git-send-email-ordex@autistici.org>
-	<1330280603-25510-8-git-send-email-ordex@autistici.org>
-In-Reply-To: <1330280603-25510-8-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201202271928.58042.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv7 7/7] batman-adv: Distributed ARP Table
-	- add compile option
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 27 Feb 2012 13:17:39 +0100
+Message-Id: <1330345059-11383-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: update README and man with bla
+	loglevel information
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,15 +15,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Monday, February 27, 2012 02:23:23 Antonio Quartulli wrote:
-> This patch makes it possible to decide whether to include DAT within the
-> batman-adv binary or not.
-> It is extremely useful when the user wants to reduce the size of the
-> resulting module by cutting off any not needed feature.
+Both the README and the man page have to report the new loglevel information in
+the corresponding section
 
-Applied in revision 6f6adec.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ README       |    1 +
+ man/batctl.8 |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-Thanks,
-Marek
+diff --git a/README b/README
+index da0ac68..64ee152 100644
+--- a/README
++++ b/README
+@@ -300,6 +300,7 @@ $  batctl loglevel
+ [ ] messages related to routing / flooding / broadcasting (batman)
+ [ ] messages related to route added / changed / deleted (routes)
+ [ ] messages related to translation table operations (tt)
++[ ] messages related to bridge loop avoidance (bla)
+ 
+ batctl aggregation
+ ==================
+diff --git a/man/batctl.8 b/man/batctl.8
+index f45a070..5cc37cb 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -65,7 +65,7 @@ Once started batctl will display the list of announced gateways in the network.
+ If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the originator interval. The interval is in units of milliseconds.
+ .br
+ .IP "\fBloglevel\fP|\fBll\fP      [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
+-If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting. Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to translation table operations. Level 'all' enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to see them. Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options won't be available.
++If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting. Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to translation table operations. Level 'bla' enables messages related to the bridge loop avoidance. Level 'all' enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to see them. Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options won't be available.
+ .br
+ .IP "\fBlog\fP|\fBl\fP            [\fB\-n\fP]\fP"
+ batctl will read the batman-adv debug log which has to be compiled into the kernel module. If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output.
+-- 
+1.7.3.4
+
