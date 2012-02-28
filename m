@@ -1,15 +1,15 @@
-Return-Path: <tonyputi@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <201202281344.35368.lindner_marek@yahoo.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 28 Feb 2012 16:21:13 +0800
 References: <CAFevQmN-RVQookzL-M9_G0xGKJJvAp5QXCqRfwf+X8dvWM9-Pw@mail.gmail.com>
-	<201202271611.19158.lindner_marek@yahoo.de>
-	<CAFevQmOO+kmXqyt769tdk5j4VY+6dJW9TGDV45rvN6HyT2Ps9g@mail.gmail.com>
 	<201202281344.35368.lindner_marek@yahoo.de>
-From: Filippo Sallemi <tonyputi@gmail.com>
-Date: Tue, 28 Feb 2012 09:06:44 +0100
-Message-ID: <CAFevQmN-DuWC=zmfj3S8yLH9tE3cVZkZVJRvHtOvrzCTGqpdtA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+	<CAFevQmN-DuWC=zmfj3S8yLH9tE3cVZkZVJRvHtOvrzCTGqpdtA@mail.gmail.com>
+In-Reply-To: <CAFevQmN-DuWC=zmfj3S8yLH9tE3cVZkZVJRvHtOvrzCTGqpdtA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201202281621.13484.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Fwd: /lib/batman-adv/config.sh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,46 +24,21 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Ok but i' dont wait for this. Hotplug was called when a new interface
-is added. msh0 is no a real interface so when wlan0 is added I sleep 4
-seconds and check if wlan0 is part o batman-adv interfaces.
+On Tuesday, February 28, 2012 16:06:44 Filippo Sallemi wrote:
+> Ok but i' dont wait for this. Hotplug was called when a new interface
+> is added. msh0 is no a real interface so when wlan0 is added I sleep 4
+> seconds and check if wlan0 is part o batman-adv interfaces.
 
+Sorry, I don't understand. What do you mean with "msh0" is not a real 
+interface ? The part about wlan0 I understand - the question was what happens 
+if the interface is not named wlan0?
 
-Rgds
+This could be your wireless config file:
+config 'wifi-iface'
+        option 'device' 'radio0'
+        option 'ifname' 'msh0'
+        option 'mode' 'adhoc'
+        option 'ssid' 'mesh'
 
-
-Il 28 febbraio 2012 06:44, Marek Lindner <lindner_marek@yahoo.de> ha scritt=
-o:
-> On Monday, February 27, 2012 20:42:58 Filippo Sallemi wrote:
->> Il 27 febbraio 2012 09:11, Marek Lindner <lindner_marek@yahoo.de> ha
-> scritto:
->> > On Monday, February 27, 2012 01:49:44 Filippo Sallemi wrote:
->> >> Ok in this email my proposal patch.
->> >> I've to sleep 4s if you have an ap + adhoc vifs.
->> >>
->> >> [ "$(echo $interface | awk '$0 ~ /^wlan[0-9]*/')" ] && sleep 4s
->> >>
->> >> For convenience I sleep only if an wlan was triggered. If you have
->> >> only one interface in adhoc mode per radio 3 seconds are enought.
->> >
->> > What if somebody calls his interfaces in a different way ? As you know
->> > the name can freely be chosen.
->>
->> You can chose another name instead of wlan0 wlan0-1 wlan1 wlan1-1 eth0 e=
-th1
->> ...?
->
-> Yes, you can. I thought you were doing it to after I saw your config:
->
-> config 'mesh' 'mesh'
-> =C2=A0 =C2=A0 =C2=A0 option 'interfaces' 'msh0'
->
-> msh0 does not look like wlanX at all, wouldn't you say so ?
->
-> Cheers,
-> Marek
-
-
-
---=20
-Filippo Sallemi
+Cheers,
+Marek
