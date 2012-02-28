@@ -1,11 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 28 Feb 2012 11:13:45 +0100
-Message-Id: <1330424025-3210-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1330422936-1668-1-git-send-email-sven@narfation.org>
-References: <1330422936-1668-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix indentation of multiline
-	statements
+Return-Path: <tonyputi@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <201202281621.13484.lindner_marek@yahoo.de>
+References: <CAFevQmN-RVQookzL-M9_G0xGKJJvAp5QXCqRfwf+X8dvWM9-Pw@mail.gmail.com>
+	<201202281344.35368.lindner_marek@yahoo.de>
+	<CAFevQmN-DuWC=zmfj3S8yLH9tE3cVZkZVJRvHtOvrzCTGqpdtA@mail.gmail.com>
+	<201202281621.13484.lindner_marek@yahoo.de>
+From: Filippo Sallemi <tonyputi@gmail.com>
+Date: Tue, 28 Feb 2012 11:36:58 +0100
+Message-ID: <CAFevQmNR2MBGuvXjxZg_0CYvv2+LZOUORGBV=WtLuSsGYTVBvA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Fwd: /lib/batman-adv/config.sh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,59 +22,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-79b67f7add9982115e801e99fcfa92f27ff7bb12 and
-0591c25abca985273be2aa47d128df0648184abd introduced a regression of the
-indentation of multiline statements.
+Il 28 febbraio 2012 09:21, Marek Lindner <lindner_marek@yahoo.de> ha scritt=
+o:
+> On Tuesday, February 28, 2012 16:06:44 Filippo Sallemi wrote:
+>> Ok but i' dont wait for this. Hotplug was called when a new interface
+>> is added. msh0 is no a real interface so when wlan0 is added I sleep 4
+>> seconds and check if wlan0 is part o batman-adv interfaces.
+>
+> Sorry, I don't understand. What do you mean with "msh0" is not a real
+> interface ?
+That msh0 is the name of logical network and wlan0 is the real name of
+physical interface.
+The part about wlan0 I understand - the question was what happens
+> if the interface is not named wlan0?
+yes. if in your batman-adv interface you put wlan0 (the real interface
+name) you don't have to sleep.
+The problem is that hotplug.d, when a new interface was added, at
+99-batman-adv script time it try to check if the new interface (es.
+wlan0) is part of batman-adv interface definitions so now if in your
+batman-adv config file you have msh0, the script try to find the real
+interface name of msh0 and it fail because it is not be knowned at
+this time. The only way to get it to work properly is to wait for some
+seconds (3 seconds if you have only one vif, 4 for 2 interface es
+adhoc + ap).
+>
+> This could be your wireless config file:
+> config 'wifi-iface'
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0option 'device' 'radio0'
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0option 'ifname' 'msh0'
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0option 'mode' 'adhoc'
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0option 'ssid' 'mesh'
+>
+> Cheers,
+> Marek
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-This patch is for *master* after next (with the last patch) was merged into
-master. I can also push both patches (the merge is not conflict free).
+Bye
 
- distributed-arp-table.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index a22bcda..8a20961 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -298,6 +298,7 @@ static uint16_t arp_get_type(struct bat_priv *bat_priv, struct sk_buff *skb,
- {
- 	struct arphdr *arphdr;
- 	struct ethhdr *ethhdr;
-+	uint32_t ip_src, ip_dst;
- 	uint16_t type = 0;
- 
- 	/* pull the ethernet header */
-@@ -332,10 +333,10 @@ static uint16_t arp_get_type(struct bat_priv *bat_priv, struct sk_buff *skb,
- 
- 	/* Check for bad reply/request. If the ARP message is not sane, DAT
- 	 * will simply ignore it */
--	if (ipv4_is_loopback(ARP_IP_SRC(skb, hdr_size)) ||
--	    ipv4_is_multicast(ARP_IP_SRC(skb, hdr_size)) ||
--	    ipv4_is_loopback(ARP_IP_DST(skb, hdr_size)) ||
--	    ipv4_is_multicast(ARP_IP_DST(skb, hdr_size)))
-+	ip_src = ARP_IP_SRC(skb, hdr_size);
-+	ip_dst = ARP_IP_DST(skb, hdr_size);
-+	if (ipv4_is_loopback(ip_src) || ipv4_is_multicast(ip_src) ||
-+	    ipv4_is_loopback(ip_dst) || ipv4_is_multicast(ip_dst))
- 		goto out;
- 
- 	type = ntohs(arphdr->ar_op);
-@@ -538,9 +539,8 @@ bool dat_drop_broadcast_packet(struct bat_priv *bat_priv,
- 	/* If this packet is an ARP_REQUEST and we already have the information
- 	 * that it is going to ask, we can drop the packet */
- 	if (!forw_packet->num_packets &&
--			(arp_get_type(bat_priv, forw_packet->skb,
--				      sizeof(struct bcast_packet)) ==
--							ARPOP_REQUEST)) {
-+	    (ARPOP_REQUEST == arp_get_type(bat_priv, forw_packet->skb,
-+					   sizeof(struct bcast_packet)))) {
- 		n = neigh_lookup(&arp_tbl,
- 				 &ARP_IP_DST(forw_packet->skb,
- 					     sizeof(struct bcast_packet)),
--- 
-1.7.9
-
+--=20
+Filippo Sallemi
