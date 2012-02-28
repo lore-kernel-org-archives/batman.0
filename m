@@ -1,8 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 28 Feb 2012 19:32:20 +0800
-Message-Id: <1330428748-23137-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-02-28
+Date: Tue, 28 Feb 2012 19:32:22 +0800
+Message-Id: <1330428748-23137-3-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1330428748-23137-1-git-send-email-lindner_marek@yahoo.de>
+References: <1330428748-23137-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH 2/8] batman-adv: refactor tt_global_del() to
+	avoid misalignment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,90 +18,73 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-Hi David,
+From: Sven Eckelmann <sven@narfation.org>
 
-here comes the second set of patches I'd like to see pulled into
-net-next-2.6/3.4. It mostly contains code cleanups, some code
-refactoring work and a minor fix. Let me know if there any problems.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ net/batman-adv/translation-table.c |   42 ++++++++++++++++++-----------------
+ 1 files changed, 22 insertions(+), 20 deletions(-)
 
-Thanks,
-Marek
-
-The following changes since commit ea3d2fd1b11fb3ef8706a48ece0a49a61bcd08bc:
-
-  batman-adv: export used routing algorithm via sysfs (2012-02-17 02:50:20 +0800)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git batman-adv-for-davem
-
-or older git versions:
-
- git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
-
-for you to fetch changes up to 7c64fd98ce512de6c6dae0452dc026446bd368d5:
-
-  batman-adv: Fix indentation of multiline statements (2012-02-28 19:14:31 +0800)
-
-----------------------------------------------------------------
-code cleanups and code refactoring
-
-----------------------------------------------------------------
-Antonio Quartulli (3):
-      batman-adv: set TT_CLIENT_NEW flag before invoking hash_add()
-      batman-adv: code refactoring - move debug print into tt_local_set_pending
-      batman-adv: TT_CLIENT_PENDING is never set in struct tt_global_entry
-
-Marek Lindner (1):
-      batman-adv: convert time_after instances to has_timed_out
-
-Sven Eckelmann (4):
-      batman-adv: refactor tt_global_del() to avoid misalignment
-      batman-adv: Update copyright years
-      batman-adv: Start new development cycle
-      batman-adv: Fix indentation of multiline statements
-
- net/batman-adv/Makefile            |    2 +-
- net/batman-adv/bat_algo.h          |    2 +-
- net/batman-adv/bat_debugfs.c       |    2 +-
- net/batman-adv/bat_debugfs.h       |    2 +-
- net/batman-adv/bat_iv_ogm.c        |    2 +-
- net/batman-adv/bat_sysfs.c         |    6 +-
- net/batman-adv/bat_sysfs.h         |    2 +-
- net/batman-adv/bitarray.c          |   10 ++--
- net/batman-adv/bitarray.h          |    2 +-
- net/batman-adv/gateway_client.c    |    6 +-
- net/batman-adv/gateway_client.h    |    2 +-
- net/batman-adv/gateway_common.c    |    6 +-
- net/batman-adv/gateway_common.h    |    2 +-
- net/batman-adv/hard-interface.c    |   32 +++++-----
- net/batman-adv/hard-interface.h    |    2 +-
- net/batman-adv/hash.c              |    2 +-
- net/batman-adv/hash.h              |    2 +-
- net/batman-adv/icmp_socket.c       |    2 +-
- net/batman-adv/icmp_socket.h       |    2 +-
- net/batman-adv/main.c              |    2 +-
- net/batman-adv/main.h              |   17 +++---
- net/batman-adv/originator.c        |   18 ++---
- net/batman-adv/originator.h        |    2 +-
- net/batman-adv/packet.h            |    2 +-
- net/batman-adv/ring_buffer.c       |    2 +-
- net/batman-adv/ring_buffer.h       |    2 +-
- net/batman-adv/routing.c           |   13 ++--
- net/batman-adv/routing.h           |    2 +-
- net/batman-adv/send.c              |    2 +-
- net/batman-adv/send.h              |    2 +-
- net/batman-adv/soft-interface.c    |    6 +-
- net/batman-adv/soft-interface.h    |    2 +-
- net/batman-adv/translation-table.c |  119 ++++++++++++++++-------------------
- net/batman-adv/translation-table.h |    2 +-
- net/batman-adv/types.h             |    2 +-
- net/batman-adv/unicast.c           |    2 +-
- net/batman-adv/unicast.h           |    2 +-
- net/batman-adv/vis.c               |    5 +-
- net/batman-adv/vis.h               |    5 +-
- 39 files changed, 141 insertions(+), 156 deletions(-)
-
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index ff9a1b3..30c2d1b 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -657,29 +657,31 @@ void tt_global_del(struct bat_priv *bat_priv,
+ 	struct tt_local_entry *tt_local_entry = NULL;
+ 
+ 	tt_global_entry = tt_global_hash_find(bat_priv, addr);
+-	if (!tt_global_entry)
++	if (!tt_global_entry || tt_global_entry->orig_node != orig_node)
+ 		goto out;
+ 
+-	if (tt_global_entry->orig_node == orig_node) {
+-		if (roaming) {
+-			/* if we are deleting a global entry due to a roam
+-			 * event, there are two possibilities:
+-			 * 1) the client roamed from node A to node B => we mark
+-			 *    it with TT_CLIENT_ROAM, we start a timer and we
+-			 *    wait for node B to claim it. In case of timeout
+-			 *    the entry is purged.
+-			 * 2) the client roamed to us => we can directly delete
+-			 *    the global entry, since it is useless now. */
+-			tt_local_entry = tt_local_hash_find(bat_priv,
+-							    tt_global_entry->common.addr);
+-			if (!tt_local_entry) {
+-				tt_global_entry->common.flags |= TT_CLIENT_ROAM;
+-				tt_global_entry->roam_at = jiffies;
+-				goto out;
+-			}
+-		}
+-		_tt_global_del(bat_priv, tt_global_entry, message);
++	if (!roaming)
++		goto out_del;
++
++	/* if we are deleting a global entry due to a roam
++	 * event, there are two possibilities:
++	 * 1) the client roamed from node A to node B => we mark
++	 *    it with TT_CLIENT_ROAM, we start a timer and we
++	 *    wait for node B to claim it. In case of timeout
++	 *    the entry is purged.
++	 * 2) the client roamed to us => we can directly delete
++	 *    the global entry, since it is useless now. */
++	tt_local_entry = tt_local_hash_find(bat_priv,
++					    tt_global_entry->common.addr);
++	if (!tt_local_entry) {
++		tt_global_entry->common.flags |= TT_CLIENT_ROAM;
++		tt_global_entry->roam_at = jiffies;
++		goto out;
+ 	}
++
++out_del:
++	_tt_global_del(bat_priv, tt_global_entry, message);
++
+ out:
+ 	if (tt_global_entry)
+ 		tt_global_entry_free_ref(tt_global_entry);
+-- 
+1.7.9
 
