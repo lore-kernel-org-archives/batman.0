@@ -1,15 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 28 Feb 2012 13:46:48 +0800
-References: <1330338593-17809-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1330338593-17809-1-git-send-email-ordex@autistici.org>
+Date: Tue, 28 Feb 2012 13:50:00 +0800
+References: <1330346200-23727-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1330346200-23727-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201202281346.49172.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix wrong dhcp option list
-	browsing
+Message-Id: <201202281350.00505.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove unused variable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,13 +22,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, February 27, 2012 18:29:53 Antonio Quartulli wrote:
-> In is_type_dhcprequest(), while parsing a DHCP message, if the entry we
-> found in the option list is neither a padding nor the dhcp-type, we have
-> to ignore it and jump as many bytes as its length + 1. The "+ 1" byte is
-> given by the subtype field itself that has to be jumped too.
+On Monday, February 27, 2012 20:36:40 Antonio Quartulli wrote:
+> Actually unicast_4addr_packet in interface_rx() is set but never used and
+> therefore can be safely be removed.
 
-Applied in revision 459c4e4.
+Applied in revision 4ca2a01.
 
 Thanks,
 Marek
