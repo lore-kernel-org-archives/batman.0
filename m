@@ -1,7 +1,7 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 28 Feb 2012 19:32:26 +0800
-Message-Id: <1330428748-23137-7-git-send-email-lindner_marek@yahoo.de>
+Date: Tue, 28 Feb 2012 19:38:33 +0800
+Message-Id: <1330429113-23409-1-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1330428748-23137-1-git-send-email-lindner_marek@yahoo.de>
 References: <1330428748-23137-1-git-send-email-lindner_marek@yahoo.de>
 Subject: [B.A.T.M.A.N.] [PATCH 6/8] batman-adv: TT_CLIENT_PENDING is never
