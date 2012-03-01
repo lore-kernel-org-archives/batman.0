@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu,  1 Mar 2012 15:35:18 +0800
-Message-Id: <1330587321-12177-3-git-send-email-lindner_marek@yahoo.de>
+Date: Thu,  1 Mar 2012 15:35:19 +0800
+Message-Id: <1330587321-12177-4-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1330587321-12177-1-git-send-email-lindner_marek@yahoo.de>
 References: <1330587321-12177-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/6] batman-adv: register batman ogm receive
-	function during protocol init
+Subject: [B.A.T.M.A.N.] [PATCH 4/6] batman-adv: rename last_valid to
+	last_seen
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,196 +20,132 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-The B.A.T.M.A.N. IV OGM receive function still was hard-coded although
-it is a routing protocol specific function. This patch takes advantage
-of the dynamic packet handler registration to remove the hard-coded
-function calls.
-
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- bat_iv_ogm.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++++----
- main.c       |    5 +----
- routing.c    |   33 ---------------------------------
- routing.h    |    1 -
- types.h      |    3 ---
- 5 files changed, 53 insertions(+), 45 deletions(-)
+ bat_iv_ogm.c |    8 ++++----
+ originator.c |   16 ++++++++--------
+ types.h      |    8 ++++----
+ 3 files changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index aba0204..5833a3e 100644
+index 5833a3e..209722f 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
-@@ -1166,8 +1166,8 @@ out:
- 	orig_node_free_ref(orig_node);
- }
+@@ -655,7 +655,7 @@ static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
+ 	rcu_read_unlock();
  
--static void bat_iv_ogm_receive(struct hard_iface *if_incoming,
--			       struct sk_buff *skb)
-+static void _bat_iv_ogm_receive(struct sk_buff *skb,
-+				struct hard_iface *if_incoming)
- {
- 	struct batman_ogm_packet *batman_ogm_packet;
- 	struct ethhdr *ethhdr;
-@@ -1200,6 +1200,39 @@ static void bat_iv_ogm_receive(struct hard_iface *if_incoming,
- 					batman_ogm_packet->tt_num_changes));
- }
+ 	orig_node->flags = batman_ogm_packet->flags;
+-	neigh_node->last_valid = jiffies;
++	neigh_node->last_seen = jiffies;
  
-+static int bat_iv_ogm_receive(struct sk_buff *skb,
-+			      struct hard_iface *hard_iface)
-+{
-+	struct ethhdr *ethhdr;
-+
-+	/* drop packet if it has not necessary minimum size */
-+	if (unlikely(!pskb_may_pull(skb, BATMAN_OGM_HLEN)))
-+		return NET_RX_DROP;
-+
-+	ethhdr = (struct ethhdr *)skb_mac_header(skb);
-+
-+	/* packet with broadcast indication but unicast recipient */
-+	if (!is_broadcast_ether_addr(ethhdr->h_dest))
-+		return NET_RX_DROP;
-+
-+	/* packet with broadcast sender address */
-+	if (is_broadcast_ether_addr(ethhdr->h_source))
-+		return NET_RX_DROP;
-+
-+	/* create a copy of the skb, if needed, to modify it. */
-+	if (skb_cow(skb, 0) < 0)
-+		return NET_RX_DROP;
-+
-+	/* keep skb linear */
-+	if (skb_linearize(skb) < 0)
-+		return NET_RX_DROP;
-+
-+	_bat_iv_ogm_receive(skb, hard_iface);
-+
-+	kfree_skb(skb);
-+	return NET_RX_SUCCESS;
-+}
-+
- static struct bat_algo_ops batman_iv __read_mostly = {
- 	.name = "BATMAN IV",
- 	.bat_iface_enable = bat_iv_ogm_iface_enable,
-@@ -1208,10 +1241,25 @@ static struct bat_algo_ops batman_iv __read_mostly = {
- 	.bat_ogm_update_mac = bat_iv_ogm_update_mac,
- 	.bat_ogm_schedule = bat_iv_ogm_schedule,
- 	.bat_ogm_emit = bat_iv_ogm_emit,
--	.bat_ogm_receive = bat_iv_ogm_receive,
- };
- 
- int __init bat_iv_init(void)
- {
--	return bat_algo_register(&batman_iv);
-+	int ret;
-+
-+	/* batman originator packet */
-+	ret = recv_handler_register(BAT_IV_OGM, bat_iv_ogm_receive);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = bat_algo_register(&batman_iv);
-+	if (ret < 0)
-+		goto handler_unregister;
-+
-+	goto out;
-+
-+handler_unregister:
-+	recv_handler_unregister(BAT_IV_OGM);
-+out:
-+	return ret;
- }
-diff --git a/main.c b/main.c
-index 0d0cd48..8c3ff21 100644
---- a/main.c
-+++ b/main.c
-@@ -263,8 +263,6 @@ static void recv_handler_init(void)
- 	for (i = 0; i < ARRAY_SIZE(recv_packet_handler); i++)
- 		recv_packet_handler[i] = recv_unhandled_packet;
- 
--	/* batman originator packet */
--	recv_packet_handler[BAT_IV_OGM] = recv_bat_ogm_packet;
- 	/* batman icmp packet */
- 	recv_packet_handler[BAT_ICMP] = recv_icmp_packet;
- 	/* unicast packet */
-@@ -331,8 +329,7 @@ int bat_algo_register(struct bat_algo_ops *bat_algo_ops)
- 	    !bat_algo_ops->bat_primary_iface_set ||
- 	    !bat_algo_ops->bat_ogm_update_mac ||
- 	    !bat_algo_ops->bat_ogm_schedule ||
--	    !bat_algo_ops->bat_ogm_emit ||
--	    !bat_algo_ops->bat_ogm_receive) {
-+	    !bat_algo_ops->bat_ogm_emit) {
- 		pr_info("Routing algo '%s' does not implement required ops\n",
- 			bat_algo_ops->name);
+ 	spin_lock_bh(&neigh_node->tq_lock);
+ 	ring_buffer_set(neigh_node->tq_recv,
+@@ -776,11 +776,11 @@ static int bat_iv_ogm_calc_tq(struct orig_node *orig_node,
+ 	if (!neigh_node)
  		goto out;
-diff --git a/routing.c b/routing.c
-index 0da9f5a..9ec4593 100644
---- a/routing.c
-+++ b/routing.c
-@@ -248,39 +248,6 @@ int window_protected(struct bat_priv *bat_priv, int32_t seq_num_diff,
- 	return 0;
- }
  
--int recv_bat_ogm_packet(struct sk_buff *skb, struct hard_iface *hard_iface)
--{
--	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
--	struct ethhdr *ethhdr;
--
--	/* drop packet if it has not necessary minimum size */
--	if (unlikely(!pskb_may_pull(skb, BATMAN_OGM_HLEN)))
--		return NET_RX_DROP;
--
--	ethhdr = (struct ethhdr *)skb_mac_header(skb);
--
--	/* packet with broadcast indication but unicast recipient */
--	if (!is_broadcast_ether_addr(ethhdr->h_dest))
--		return NET_RX_DROP;
--
--	/* packet with broadcast sender address */
--	if (is_broadcast_ether_addr(ethhdr->h_source))
--		return NET_RX_DROP;
--
--	/* create a copy of the skb, if needed, to modify it. */
--	if (skb_cow(skb, 0) < 0)
--		return NET_RX_DROP;
--
--	/* keep skb linear */
--	if (skb_linearize(skb) < 0)
--		return NET_RX_DROP;
--
--	bat_priv->bat_algo_ops->bat_ogm_receive(hard_iface, skb);
--
--	kfree_skb(skb);
--	return NET_RX_SUCCESS;
--}
--
- static int recv_my_icmp_packet(struct bat_priv *bat_priv,
- 			       struct sk_buff *skb, size_t icmp_len)
+-	/* if orig_node is direct neighbor update neigh_node last_valid */
++	/* if orig_node is direct neighbor update neigh_node last_seen */
+ 	if (orig_node == orig_neigh_node)
+-		neigh_node->last_valid = jiffies;
++		neigh_node->last_seen = jiffies;
+ 
+-	orig_node->last_valid = jiffies;
++	orig_node->last_seen = jiffies;
+ 
+ 	/* find packet count of corresponding one hop neighbor */
+ 	spin_lock_bh(&orig_node->ogm_cnt_lock);
+diff --git a/originator.c b/originator.c
+index 06c8187..aa33337 100644
+--- a/originator.c
++++ b/originator.c
+@@ -285,7 +285,7 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
+ 	hlist_for_each_entry_safe(neigh_node, node, node_tmp,
+ 				  &orig_node->neigh_list, list) {
+ 
+-		if ((has_timed_out(neigh_node->last_valid, PURGE_TIMEOUT)) ||
++		if ((has_timed_out(neigh_node->last_seen, PURGE_TIMEOUT)) ||
+ 		    (neigh_node->if_incoming->if_status == IF_INACTIVE) ||
+ 		    (neigh_node->if_incoming->if_status == IF_NOT_IN_USE) ||
+ 		    (neigh_node->if_incoming->if_status == IF_TO_BE_REMOVED)) {
+@@ -304,9 +304,9 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
+ 			else
+ 				bat_dbg(DBG_BATMAN, bat_priv,
+ 					"neighbor timeout: originator %pM, "
+-					"neighbor: %pM, last_valid: %lu\n",
++					"neighbor: %pM, last_seen: %lu\n",
+ 					orig_node->orig, neigh_node->addr,
+-					(neigh_node->last_valid / HZ));
++					(neigh_node->last_seen / HZ));
+ 
+ 			neigh_purged = true;
+ 
+@@ -329,10 +329,10 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
  {
-diff --git a/routing.h b/routing.h
-index 3d729cb..d69a5a0 100644
---- a/routing.h
-+++ b/routing.h
-@@ -30,7 +30,6 @@ int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_vis_packet(struct sk_buff *skb, struct hard_iface *recv_if);
--int recv_bat_ogm_packet(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if);
- int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if);
- struct neigh_node *find_router(struct bat_priv *bat_priv,
+ 	struct neigh_node *best_neigh_node;
+ 
+-	if (has_timed_out(orig_node->last_valid, 2 * PURGE_TIMEOUT)) {
++	if (has_timed_out(orig_node->last_seen, 2 * PURGE_TIMEOUT)) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Originator timeout: originator %pM, last_valid %lu\n",
+-			orig_node->orig, (orig_node->last_valid / HZ));
++			"Originator timeout: originator %pM, last_seen %lu\n",
++			orig_node->orig, (orig_node->last_seen / HZ));
+ 		return true;
+ 	} else {
+ 		if (purge_orig_neighbors(bat_priv, orig_node,
+@@ -450,9 +450,9 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
+ 				goto next;
+ 
+ 			last_seen_secs = jiffies_to_msecs(jiffies -
+-						orig_node->last_valid) / 1000;
++						orig_node->last_seen) / 1000;
+ 			last_seen_msecs = jiffies_to_msecs(jiffies -
+-						orig_node->last_valid) % 1000;
++						orig_node->last_seen) % 1000;
+ 
+ 			seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
+ 				   orig_node->orig, last_seen_secs,
 diff --git a/types.h b/types.h
-index 6a3cc88..51c59c2 100644
+index 51c59c2..0643271 100644
 --- a/types.h
 +++ b/types.h
-@@ -408,9 +408,6 @@ struct bat_algo_ops {
- 				 int tt_num_changes);
- 	/* send scheduled OGM */
- 	void (*bat_ogm_emit)(struct forw_packet *forw_packet);
--	/* receive incoming OGM */
--	void (*bat_ogm_receive)(struct hard_iface *if_incoming,
--				struct sk_buff *skb);
- };
+@@ -64,7 +64,7 @@ struct hard_iface {
+ /**
+  *	orig_node - structure for orig_list maintaining nodes of mesh
+  *	@primary_addr: hosts primary interface address
+- *	@last_valid: when last packet from this node was received
++ *	@last_seen: when last packet from this node was received
+  *	@bcast_seqno_reset: time when the broadcast seqno window was reset
+  *	@batman_seqno_reset: time when the batman seqno window was reset
+  *	@gw_flags: flags related to gateway class
+@@ -85,7 +85,7 @@ struct orig_node {
+ 	struct neigh_node __rcu *router; /* rcu protected pointer */
+ 	unsigned long *bcast_own;
+ 	uint8_t *bcast_own_sum;
+-	unsigned long last_valid;
++	unsigned long last_seen;
+ 	unsigned long bcast_seqno_reset;
+ 	unsigned long batman_seqno_reset;
+ 	uint8_t gw_flags;
+@@ -135,7 +135,7 @@ struct gw_node {
  
- struct dht_candidate {
+ /**
+  *	neigh_node
+- *	@last_valid: when last packet via this neighbor was received
++ *	@last_seen: when last packet via this neighbor was received
+  */
+ struct neigh_node {
+ 	struct hlist_node list;
+@@ -146,7 +146,7 @@ struct neigh_node {
+ 	uint8_t tq_avg;
+ 	uint8_t last_ttl;
+ 	struct list_head bonding_list;
+-	unsigned long last_valid;
++	unsigned long last_seen;
+ 	DECLARE_BITMAP(real_bits, TQ_LOCAL_WINDOW_SIZE);
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
 -- 
 1.7.9
 
