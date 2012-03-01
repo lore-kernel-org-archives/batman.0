@@ -1,11 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu,  1 Mar 2012 15:35:21 +0800
-Message-Id: <1330587321-12177-6-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1330587321-12177-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 01 Mar 2012 09:32:14 +0100
+Message-ID: <4108295.m2JrXqq1dS@sven-laptop.home.narfation.org>
+In-Reply-To: <1330587321-12177-2-git-send-email-lindner_marek@yahoo.de>
 References: <1330587321-12177-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 6/6] batman-adv: split neigh_new function
-	into generic and batman iv specific parts
+	<1330587321-12177-2-git-send-email-lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2120309.OvBjLW8D4U";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/6] batman-adv: introduce packet type
+	handler array for incoming packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,145 +25,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- bat_iv_ogm.c |   40 ++++++++++++++++++++++++++++++++++------
- originator.c |   27 ++++++++++-----------------
- originator.h |    6 ++----
- 3 files changed, 46 insertions(+), 27 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 209722f..2d2cc73 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -30,6 +30,32 @@
- #include "send.h"
- #include "bat_algo.h"
- 
-+static struct neigh_node *bat_iv_ogm_neigh_new(struct hard_iface *hard_iface,
-+					       const uint8_t *neigh_addr,
-+					       struct orig_node *orig_node,
-+					       struct orig_node *orig_neigh,
-+					       uint32_t seqno)
-+{
-+	struct neigh_node *neigh_node;
-+
-+	neigh_node = neigh_node_new(hard_iface, neigh_addr, seqno);
-+	if (!neigh_node)
-+		goto out;
-+
-+	INIT_LIST_HEAD(&neigh_node->bonding_list);
-+	spin_lock_init(&neigh_node->tq_lock);
-+
-+	neigh_node->orig_node = orig_neigh;
-+	neigh_node->if_incoming = hard_iface;
-+
-+	spin_lock_bh(&orig_node->neigh_list_lock);
-+	hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
-+	spin_unlock_bh(&orig_node->neigh_list_lock);
-+
-+out:
-+	return neigh_node;
-+}
-+
- static int bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
- {
- 	struct batman_ogm_packet *batman_ogm_packet;
-@@ -642,8 +668,9 @@ static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
- 		if (!orig_tmp)
- 			goto unlock;
- 
--		neigh_node = create_neighbor(orig_node, orig_tmp,
--					     ethhdr->h_source, if_incoming);
-+		neigh_node = bat_iv_ogm_neigh_new(if_incoming, ethhdr->h_source,
-+						  orig_node, orig_tmp,
-+						  batman_ogm_packet->seqno);
- 
- 		orig_node_free_ref(orig_tmp);
- 		if (!neigh_node)
-@@ -768,10 +795,11 @@ static int bat_iv_ogm_calc_tq(struct orig_node *orig_node,
- 	rcu_read_unlock();
- 
- 	if (!neigh_node)
--		neigh_node = create_neighbor(orig_neigh_node,
--					     orig_neigh_node,
--					     orig_neigh_node->orig,
--					     if_incoming);
-+		neigh_node = bat_iv_ogm_neigh_new(if_incoming,
-+						  orig_neigh_node->orig,
-+						  orig_neigh_node,
-+						  orig_neigh_node,
-+						  batman_ogm_packet->seqno);
- 
- 	if (!neigh_node)
- 		goto out;
-diff --git a/originator.c b/originator.c
-index 183a1fe..9f32aa0 100644
---- a/originator.c
-+++ b/originator.c
-@@ -86,35 +86,28 @@ struct neigh_node *orig_node_get_router(struct orig_node *orig_node)
- 	return router;
- }
- 
--struct neigh_node *create_neighbor(struct orig_node *orig_node,
--				   struct orig_node *orig_neigh_node,
--				   const uint8_t *neigh,
--				   struct hard_iface *if_incoming)
-+struct neigh_node *neigh_node_new(struct hard_iface *hard_iface,
-+				  const uint8_t *neigh_addr, uint32_t seqno)
- {
--	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
-+	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	struct neigh_node *neigh_node;
- 
--	bat_dbg(DBG_BATMAN, bat_priv,
--		"Creating new last-hop neighbor of originator\n");
--
- 	neigh_node = kzalloc(sizeof(*neigh_node), GFP_ATOMIC);
- 	if (!neigh_node)
--		return NULL;
-+		goto out;
- 
- 	INIT_HLIST_NODE(&neigh_node->list);
--	INIT_LIST_HEAD(&neigh_node->bonding_list);
--	spin_lock_init(&neigh_node->tq_lock);
- 
--	memcpy(neigh_node->addr, neigh, ETH_ALEN);
--	neigh_node->orig_node = orig_neigh_node;
--	neigh_node->if_incoming = if_incoming;
-+	memcpy(neigh_node->addr, neigh_addr, ETH_ALEN);
- 
- 	/* extra reference for return */
- 	atomic_set(&neigh_node->refcount, 2);
- 
--	spin_lock_bh(&orig_node->neigh_list_lock);
--	hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
--	spin_unlock_bh(&orig_node->neigh_list_lock);
-+	bat_dbg(DBG_BATMAN, bat_priv,
-+		"Creating new neighbor %pM, initial seqno %d\n",
-+		neigh_addr, seqno);
-+
-+out:
- 	return neigh_node;
- }
- 
-diff --git a/originator.h b/originator.h
-index 3fe2eda..64c5d94 100644
---- a/originator.h
-+++ b/originator.h
-@@ -29,10 +29,8 @@ void originator_free(struct bat_priv *bat_priv);
- void purge_orig_ref(struct bat_priv *bat_priv);
- void orig_node_free_ref(struct orig_node *orig_node);
- struct orig_node *get_orig_node(struct bat_priv *bat_priv, const uint8_t *addr);
--struct neigh_node *create_neighbor(struct orig_node *orig_node,
--				   struct orig_node *orig_neigh_node,
--				   const uint8_t *neigh,
--				   struct hard_iface *if_incoming);
-+struct neigh_node *neigh_node_new(struct hard_iface *hard_iface,
-+				  const uint8_t *neigh_addr, uint32_t seqno);
- void neigh_node_free_ref(struct neigh_node *neigh_node);
- struct neigh_node *orig_node_get_router(struct orig_node *orig_node);
- int orig_seq_print_text(struct seq_file *seq, void *offset);
--- 
-1.7.9
+--nextPart2120309.OvBjLW8D4U
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
+
+On Thursday 01 March 2012 15:35:17 Marek Lindner wrote:
+> The packet handler array replaces the growing switch statement,
+
+> thus
+> dealing with incoming packets in a more efficient way.
+
+Usually (there are corner cases) the compiler tries to build such kind of jump 
+table from a large switch block. So be careful with this statement.
+
+> It also adds
+> to possibility to register packet handlers on the fly.
+
+This is true.
+
+Only scrolled over the patch and it looks like the thing we discussed :)
+
+Kind regards,
+	Sven
+--nextPart2120309.OvBjLW8D4U
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJPTzQOAAoJEF2HCgfBJntGpycP/iU/Wr7VrOskNl8IkLTENhX9
+Cy4vVmErMHXgORR/nGNN8gnLA/4HwABI3PrQZg/Bt5GHgZ1usktzx/1vNL8PnW2Y
+M/5sBxFPJb5w7OgxN1KoSLZaBopNWxI8HJwZeKfII6Fj2BUkPEqTHIuft4NfJC4Q
+3F+yO0gNwtHrN4w30IQajF60Wd/iy3Iw3RE14CAtXHAZ0MZJJRTjUaXEH/6DxZu4
+q1uCZTsR3Ml+O+TEBNw32iFTWCiwWwlXvXJvpMXvfhSvF/8Ycqqfueh3/RrMQ4qT
+paI5uJ8cT59jmd31ueTKP38n/PqL7WjlpMvQN3OI3T9cdGAbsHZpHcKbHB/n1tFc
+PywqO5ujoqBfZo1mCqQKaQXodhr7eS8PFTXLdsYysfc9oZs9tcthrPPJYTi7PI1q
+lm0u4W+ugG0MmnPXY4FMJ/iRyQh6oFiGam9kCG7CFuctBxI9iFh85wXyxPDVoALA
+dGKYm06vKchq0PS9AWm4gOBXC9Fi61vzAHzB9gJjNceisLRKmgKFL5s94JC7A3+B
+PZvxbTiUt4Vm0sZ/QDLDnlUNO1JfCimehqzoO4z/G9Uxhx3moPcefek79cO1aGFQ
+ScLAueIOBib9V3TsV0mYwfQ1VpF5UOCoPJz0nuROdPcPJ9AKMFGvnpDaRrBhnHry
+svq7l7J9pPLVrODTv0tX
+=l3kb
+-----END PGP SIGNATURE-----
+
+--nextPart2120309.OvBjLW8D4U--
 
