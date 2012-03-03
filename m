@@ -1,16 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 3 Mar 2012 19:32:15 +0800
-References: <4F51CA9D.2090404@codigosur.org> <4F51EF0B.5070501@codigosur.org>
-	<4F51F168.7000605@codigosur.org>
-In-Reply-To: <4F51F168.7000605@codigosur.org>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sat, 3 Mar 2012 18:59:53 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20120303175953.GA15413@pandem0nium>
+References: <1330587321-12177-1-git-send-email-lindner_marek@yahoo.de>
+	<1330587321-12177-3-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201203031932.15663.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] routing loops on interconnected routers / adhoc
-	+ ethernet
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
+Content-Disposition: inline
+In-Reply-To: <1330587321-12177-3-git-send-email-lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/6] batman-adv: register batman ogm
+ receive function during protocol init
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,37 +24,88 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, March 03, 2012 18:24:40 Nicol=E1s Ech=E1niz wrote:
-> On 03/03/2012 07:14 AM, Nicol=E1s Ech=E1niz wrote:
-> > On 03/03/2012 05:43 AM, Marek Lindner wrote:
-> >> You should not have loops either way but it is easy to build loops in=
-=20
-> >> complicated setups. At first we should understand your setup and=20
-> >> configuration. Drawing a little picture that shows what interface is
-> >> connected  to what other interface also can help.
-> >
-> >=20
-> >
-> > alright, I'll try some ascii art, but I'm afraid you'll find out my
-> > english is better :P
->=20
-> holy s... I knew this wouldn't work
->=20
-> I've uploaded the image here:
-> http://www.lavecindaria.org.ar/picture/esquema-de-enlaces/
 
-I got your drawing. Would it possible to also post the output of:
- * brctl show
- * batctl if
- * batctl o
+--UugvWAfsgieZRqgk
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-We don't need it from all nodes. cisterna, marisa-mr and marisa-blt should =
-be=20
-enough. Please configure these nodes, so that they theoretically would prod=
-uce=20
-the routing loop although it is not necessary to wait for the loop itself. =
-As=20
-I understand it that loop occurs from time to time only?
+On Thu, Mar 01, 2012 at 03:35:18PM +0800, Marek Lindner wrote:
+> -static void bat_iv_ogm_receive(struct hard_iface *if_incoming,
+> -			       struct sk_buff *skb)
+> +static void _bat_iv_ogm_receive(struct sk_buff *skb,
+> +				struct hard_iface *if_incoming)
 
-Regards,
-Marek
+<rant>
+Personally, I don't like underscore functions. They are usually created
+because of a lack of creativity, but are later called from different places,
+do different jobs and in the end everyone is confused. :) Is it possibble to
+change the name, e.g. to bat_iv_ogm_handle()?
+</rant>
+
+
+>  {
+>  	struct batman_ogm_packet *batman_ogm_packet;
+>  	struct ethhdr *ethhdr;
+> @@ -1200,6 +1200,39 @@ static void bat_iv_ogm_receive(struct hard_iface *=
+if_incoming,
+>  					batman_ogm_packet->tt_num_changes));
+>  }
+> =20
+> +static int bat_iv_ogm_receive(struct sk_buff *skb,
+> +			      struct hard_iface *hard_iface)
+> +{
+> +	struct ethhdr *ethhdr;
+> +
+> +	/* drop packet if it has not necessary minimum size */
+> +	if (unlikely(!pskb_may_pull(skb, BATMAN_OGM_HLEN)))
+> +		return NET_RX_DROP;
+> +
+> +	ethhdr =3D (struct ethhdr *)skb_mac_header(skb);
+> +
+> +	/* packet with broadcast indication but unicast recipient */
+> +	if (!is_broadcast_ether_addr(ethhdr->h_dest))
+> +		return NET_RX_DROP;
+> +
+> +	/* packet with broadcast sender address */
+> +	if (is_broadcast_ether_addr(ethhdr->h_source))
+> +		return NET_RX_DROP;
+> +
+> +	/* create a copy of the skb, if needed, to modify it. */
+> +	if (skb_cow(skb, 0) < 0)
+> +		return NET_RX_DROP;
+> +
+> +	/* keep skb linear */
+> +	if (skb_linearize(skb) < 0)
+> +		return NET_RX_DROP;
+> +
+> +	_bat_iv_ogm_receive(skb, hard_iface);
+> +
+> +	kfree_skb(skb);
+> +	return NET_RX_SUCCESS;
+> +}
+> +
+
+We should somewhere add a check whether the hard_iface is actually assigned=
+ to
+a mesh using the BATMAN IV algorithm. When more algorithms are added, we on=
+ly want
+the assigned protocol to be handled, others should be ignored.
+
+Cheers,
+	Simon
+
+--UugvWAfsgieZRqgk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk9SXBkACgkQrzg/fFk7axbm7wCgqGcwiYdWidobXHpVhsAeJSN+
+M6YAn19HIm7CbMvXhQvivfgBCpJ6jm6H
+=G54k
+-----END PGP SIGNATURE-----
+
+--UugvWAfsgieZRqgk--
