@@ -1,16 +1,9 @@
 Return-Path: <ordex@autistici.org>
-Date: Tue, 6 Mar 2012 00:11:06 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120305231105.GD31430@ritirata.org>
-References: <1330933911-6320-1-git-send-email-ordex@autistici.org>
-	<201203060352.47058.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OBd5C1Lgu00Gd/Tn"
-Content-Disposition: inline
-In-Reply-To: <201203060352.47058.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: avoid ap_isolated check for
- broadcast packet
+Date: Wed,  7 Mar 2012 00:58:19 +0100
+Message-Id: <1331078299-2984-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix PENDING flag behaviour in
+	case of multiple roamings
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,66 +15,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+In case of multiple romaings always between the same two nodes (going back and
+forth from one to the other) within the same originator interval (this is much
+more suitable in setups where the orig_interval last longer than one sec), the
+flags should not be messed up and should eventually converge to a correct
+status. In particular, if we marked a LOCAL client as PENDING due to the
+roaming, if the client comes back to us we have to simply reset the PENDING flag
+and remove the DEL event from the sending queue. This is possible because the
+DEL operation has not been committed and advertised yet.
 
---OBd5C1Lgu00Gd/Tn
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If we don't do that, the client is deleted and then re-added, this can create
+connection problems to the client and would also create useless noise in the
+network due to the advertisement overhead.
 
-On Tue, Mar 06, 2012 at 03:52:46AM +0800, Marek Lindner wrote:
-> On Monday, March 05, 2012 15:51:51 Antonio Quartulli wrote:
-> > in case of a broadcast packet, the result of the ap_isolated check is
-> > always false (since we have no ff:ff:ff:ff:ff:ff client to check for
-> > TT_CLIENT_WIFI), therefore we can avoid searching the translation table
-> > and we can return false directly
->=20
-> How about also checking the source address ?
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
 
-Actually I assumed that "legal" data only is passed to this function and so
-there should be no need to check for the source address as well.
+diff --git a/translation-table.c b/translation-table.c
+index 9f4d706..4bd9490 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -206,6 +206,15 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 
+ 	if (tt_local_entry) {
+ 		tt_local_entry->last_seen = jiffies;
++
++		/* in case of multiple roaming in the same orig interval we
++		 * should correctly handle the client flags: a client which was
++		 * marked as pending can now be unmarked because it came back */
++		if (tt_local_entry->common.flags & TT_CLIENT_PENDING) {
++			tt_local_entry->common.flags &= ~TT_CLIENT_PENDING;
++			goto reinsertion;
++		}
++
+ 		goto out;
+ 	}
+ 
+@@ -242,7 +251,7 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 		tt_local_entry_free_ref(tt_local_entry);
+ 		goto out;
+ 	}
+-
++reinsertion:
+ 	tt_local_event(bat_priv, addr, tt_local_entry->common.flags);
+ 
+ 	/* remove address from global hash if present */
+-- 
+1.7.3.4
 
-But I think this assumption is wrong, right? Actually the "internal" data o=
-f a
-unicast/broadcast packet is never checked and so I should not assume that t=
-he
-addresses passed to this function are legal.
-
-> You probably also should add similar checks for tt_local_add() ?
-
-Yep, we probably want to have the same checks in tt_local_add() because a w=
-ired
-client could send any spoofed packet and we should protect our tables from =
-them.
-
-> Or do we have "legal" cases in which we announce multicast addresses ?
-
-Not that I know (right now)
-
-
-Cheers,
-and greetings from Bruxelles
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---OBd5C1Lgu00Gd/Tn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.18 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPVUgJAAoJEFMQTLzJFOZFS9QH/1V685LhBF0BSiqkfSj4LePQ
-/jsYb1VOUOjvNDEVWkp8ziYKAdHwUAROqxv1Sb5bSVL2hTNfpnezD3TlWxsxCv0D
-niVtHvZOHbnsrGbk3AVrdxbkIxRGl47olV+adR52Vbd0Y/VGO2hBOFb2PjWv19Up
-cW+i/ENYQA6BZ+1HdjxFagqm3dtJMylGIA9HoF+j6s+2PLYAaL3biTkkkC4NZ6t6
-v6qZE1J2Ji9YwomX++JGHLAgUImFtsM857cTdpNNJJ7OPc7jEUILtjQm9rWu5AIj
-HQ69DXhYXQNIEttrhOX6MS/xIJ3mFRopE4U+W7KwqbO9RTIUVhjADxwkBaPjYwU=
-=5I2G
------END PGP SIGNATURE-----
-
---OBd5C1Lgu00Gd/Tn--
