@@ -1,15 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 07 Mar 2012 09:07:13 +0100
-Message-ID: <1728593.56lYJWr4fc@sven-laptop.home.narfation.org>
+Date: Wed,  7 Mar 2012 09:07:45 +0100
+Message-Id: <1331107673-8986-1-git-send-email-sven@narfation.org>
 In-Reply-To: <7238641.4aX8WvziBv@sven-laptop.home.narfation.org>
 References: <7238641.4aX8WvziBv@sven-laptop.home.narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2765995.HQ1kSSfuEl";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] Fix of nightly checkpatch errors
-	[checkpatch.bundle]
+Subject: [B.A.T.M.A.N.] [PATCH 1/8-next] batman-adv: Ignore 80-chars per
+	line limits for strings
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,188 +19,841 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ bat_iv_ogm.c        |   54 ++++++++++++------------------
+ bat_sysfs.c         |   16 ++++----
+ gateway_client.c    |   31 +++++++----------
+ gateway_common.c    |    8 ++--
+ hard-interface.c    |   36 +++++++--------------
+ icmp_socket.c       |   12 ++----
+ main.c              |    8 ++--
+ originator.c        |   14 +++----
+ routing.c           |   27 +++++++--------
+ send.c              |    4 +-
+ soft-interface.c    |   15 ++++----
+ translation-table.c |   89 ++++++++++++++++++++++++--------------------------
+ 12 files changed, 137 insertions(+), 177 deletions(-)
 
---nextPart2765995.HQ1kSSfuEl
-Content-Type: multipart/mixed; boundary="nextPart1552160.2doHhF0UI2"
-Content-Transfer-Encoding: 7Bit
-
-
---nextPart1552160.2doHhF0UI2
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
-
-On Wednesday 07 March 2012 09:05:52 Sven Eckelmann wrote:
-> Here is an example how to use it:
-> 
-> $ git pull checkpatch.bundle master:master
-> $ git pull checkpatch.bundle next:next
---nextPart1552160.2doHhF0UI2
-Content-Disposition: attachment; filename="checkpatch.bundle"
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="UTF-8"; name="checkpatch.bundle"
-
-IyB2MiBnaXQgYnVuZGxlCi1kNTIzYTJmNDE3ZGZkZWNiZWU1ZWY4N2Y3ZDk4Njk0ZDYwYzM5YWM2
-IGJhdG1hbi1hZHY6IEZpeCBpbmRlbnRhdGlvbiBvZiBtdWx0aWxpbmUgc3RhdGVtZW50cwotMGM5
-YTI0OWVmNGRjYWY3MzNmNmM3ZjY0ZDRjZTVjOTdiNDcwNTk2OCBiYXRtYW4tYWR2OiBzcGxpdCBu
-ZWlnaF9uZXcgZnVuY3Rpb24gaW50byBnZW5lcmljIGFuZCBiYXRtYW4gaXYgc3BlY2lmaWMgcGFy
-dHMKNThiMDQxNjRmZTM3MTk5Yjc1OWZmYmUzNzc3MzY3ZjRjNDljODRhNyByZWZzL2hlYWRzL21h
-c3RlcgowYWRjNzAzOGNjMjY3YzIzODE3ZDI1YjZhMzJmOTA4OWEwZDFjYmQ1IHJlZnMvaGVhZHMv
-bmV4dAoKUEFDSwAAAAIAAAA5lRN4nJ2NQU7DMBBF9z7F7FGqGTt20gohNlygPcGMPS4RxK4cE4nb
-t9wAdfml997vTRWcn5Q0zbO1OKZA2U0OVScSsU48pow2hxjMjZuWDs5aisgyzsGri2HkkBMeyYsG
-GmWeEkUWmwz/9M/a4LJrgY/4pd8rlwKv22O/F26Z+1LLobbrG5BzRBi8PcILEqKJdV2X3vVJ3Qj3
-Bz5w2k9w1rXuCtuNo27A+a/KEHnrxlyWa9E01JwH+T3958zcAQflYbmeFHicnY9dTgMxDITfcwq/
-o0Vxd7M/Far6wgkqDuDEdruCTVBiKiHE3VlugHicmW+kGasiIAFlUpUY4ow6i7Lvd2tBppGjaKIx
-Bebk3qlKNpgmnXvWxQ+CtIzTsAiqasIgcsADez8lDoEdfditVLjcJcNzepW3jXKGp7brc6aqZGvJ
-j6VeT4B9j+jHYZnhwaP3LpVtW83kn3UXyXa8I74f4aUJfH1DrJSkQSq5rc1+n5QMdhOgujUoCgTN
-yGTbI+cu6zULd0W1i5/Hv6xwP7TUbSaZFHicnY9NTsMwEIX3PsXskECh/okTu0KIBZygJxjb49Rq
-MkauKertCTdALJ/0vU/v9UYExpioc3DZaa2jn5WVasrSzJhcnEj7CXWiTOITG3EHRzlI6X1K8zjm
-aAOl2Vo0yvmECXfDmJw0WeBXP9cGpxsxfMQLrRsyw8t1z2+MLWMvlZ9rW15BGaOUnLSV8CSVlCLW
-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
-
---nextPart1552160.2doHhF0UI2--
-
---nextPart2765995.HQ1kSSfuEl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJPVxcxAAoJEF2HCgfBJntG7lQP/RHGYzfMouR5G9PrmqTngRSn
-W/Ayz0q4NdcFQi2GYMYkE17nbgaXx/YgCbj2G8Jdl/pObrsfQmG4pyOgUhMgQkB2
-FCmazXpZrJkt3i5Ght2WLQMLh/ejDOilTyeFDHiu4L2xQyY4GJzOY2WXy6x/5J2W
-YKjw03Oan85HsgFs27rtvCGCOM6od7QqXuwq1Mhqs5K0W+pyr0lcL7QDsudcVDVW
-4hKS5z3b+2A6pzsR7ti/jO8RvNN5sdLPU9Zz2Soq3+KKMsDAoISEisxhjYEPvaEl
-lBLZ7DVTlJ1iMgx7M0NhMg3p6P5ZusLKtSnZFXkCu30sK1PdLveEpWyhT7njpYWa
-sMqH1FwkDg8C6zMQCPiTNkV45kxJYp9ulTKpXSTXkrwrUmb/QEYapw8yCW1EqZKx
-1B7z5tsjJOsL7NrhkjP7ZwsWOcpfJ07V2MoSIgHbnFvQLVBbScGGh09sulntWWcX
-6nfsXX23UvINySkClyAwlFPA9UHXRzuZ1uIbqwHtJB0X7wf8Pe9EE0IbHcJrbwN7
-4oD2Kpx0/hR69w160A+Fyw0FgCbjod+P8od+Q8rbeowCF025MlIqk+v3yCZyY5yg
-sfsSwBd4puU1wjobcau1eTFYlSAdrfyXQjl9fRN9T/DAQXHFp/Jgt6kvakcY9Z2M
-ZREhpEkJFpF3wF8b6tYq
-=vFvH
------END PGP SIGNATURE-----
-
---nextPart2765995.HQ1kSSfuEl--
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 2b66dae..677997b 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -132,8 +132,7 @@ static void bat_iv_ogm_send_to_if(struct forw_packet *forw_packet,
+ 							    "Sending own" :
+ 							    "Forwarding"));
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"%s %spacket (originator %pM, seqno %d, TQ %d, TTL %d,"
+-			" IDF %s, ttvn %d) on interface %s [%pM]\n",
++			"%s %spacket (originator %pM, seqno %d, TQ %d, TTL %d, IDF %s, ttvn %d) on interface %s [%pM]\n",
+ 			fwd_str, (packet_num > 0 ? "aggregated " : ""),
+ 			batman_ogm_packet->orig,
+ 			ntohl(batman_ogm_packet->seqno),
+@@ -171,8 +170,7 @@ static void bat_iv_ogm_emit(struct forw_packet *forw_packet)
+ 	directlink = (batman_ogm_packet->flags & DIRECTLINK ? 1 : 0);
+ 
+ 	if (!forw_packet->if_incoming) {
+-		pr_err("Error - can't forward packet: incoming iface not "
+-		       "specified\n");
++		pr_err("Error - can't forward packet: incoming iface not specified\n");
+ 		goto out;
+ 	}
+ 
+@@ -193,8 +191,7 @@ static void bat_iv_ogm_emit(struct forw_packet *forw_packet)
+ 
+ 		/* FIXME: what about aggregated packets ? */
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"%s packet (originator %pM, seqno %d, TTL %d) "
+-			"on interface %s [%pM]\n",
++			"%s packet (originator %pM, seqno %d, TTL %d) on interface %s [%pM]\n",
+ 			(forw_packet->own ? "Sending own" : "Forwarding"),
+ 			batman_ogm_packet->orig,
+ 			ntohl(batman_ogm_packet->seqno),
+@@ -508,8 +505,7 @@ static void bat_iv_ogm_forward(struct orig_node *orig_node,
+ 	batman_ogm_packet->tq = hop_penalty(batman_ogm_packet->tq, bat_priv);
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+-		"Forwarding packet: tq_orig: %i, tq_avg: %i, "
+-		"tq_forw: %i, ttl_orig: %i, ttl_forw: %i\n",
++		"Forwarding packet: tq_orig: %i, tq_avg: %i, tq_forw: %i, ttl_orig: %i, ttl_forw: %i\n",
+ 		in_tq, tq_avg, batman_ogm_packet->tq, in_ttl - 1,
+ 		batman_ogm_packet->header.ttl);
+ 
+@@ -589,8 +585,8 @@ static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
+ 	struct hlist_node *node;
+ 	uint8_t bcast_own_sum_orig, bcast_own_sum_neigh;
+ 
+-	bat_dbg(DBG_BATMAN, bat_priv, "update_originator(): "
+-		"Searching and updating originator entry of received packet\n");
++	bat_dbg(DBG_BATMAN, bat_priv,
++		"update_originator(): Searching and updating originator entry of received packet\n");
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(tmp_neigh_node, node,
+@@ -802,10 +798,7 @@ static int bat_iv_ogm_calc_tq(struct orig_node *orig_node,
+ 						(TQ_MAX_VALUE * TQ_MAX_VALUE));
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+-		"bidirectional: "
+-		"orig = %-15pM neigh = %-15pM => own_bcast = %2i, "
+-		"real recv = %2i, local tq: %3i, asym_penalty: %3i, "
+-		"total tq: %3i\n",
++		"bidirectional: orig = %-15pM neigh = %-15pM => own_bcast = %2i, real recv = %2i, local tq: %3i, asym_penalty: %3i, total tq: %3i\n",
+ 		orig_node->orig, orig_neigh_node->orig, total_count,
+ 		neigh_rq_count, tq_own,	tq_asym_penalty, batman_ogm_packet->tq);
+ 
+@@ -933,9 +926,7 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
+ 					   batman_ogm_packet->orig) ? 1 : 0);
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+-		"Received BATMAN packet via NB: %pM, IF: %s [%pM] "
+-		"(from OG: %pM, via prev OG: %pM, seqno %d, ttvn %u, "
+-		"crc %u, changes %u, td %d, TTL %d, V %d, IDF %d)\n",
++		"Received BATMAN packet via NB: %pM, IF: %s [%pM] (from OG: %pM, via prev OG: %pM, seqno %d, ttvn %u, crc %u, changes %u, td %d, TTL %d, V %d, IDF %d)\n",
+ 		ethhdr->h_source, if_incoming->net_dev->name,
+ 		if_incoming->net_dev->dev_addr, batman_ogm_packet->orig,
+ 		batman_ogm_packet->prev_sender, batman_ogm_packet->seqno,
+@@ -978,16 +969,15 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
+ 
+ 	if (is_my_addr) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Drop packet: received my own broadcast (sender: %pM"
+-			")\n",
++			"Drop packet: received my own broadcast (sender: %pM)\n",
+ 			ethhdr->h_source);
+ 		return;
+ 	}
+ 
+ 	if (is_broadcast) {
+-		bat_dbg(DBG_BATMAN, bat_priv, "Drop packet: "
+-		"ignoring all packets with broadcast source addr (sender: %pM"
+-		")\n", ethhdr->h_source);
++		bat_dbg(DBG_BATMAN, bat_priv,
++			"Drop packet: ignoring all packets with broadcast source addr (sender: %pM)\n",
++			ethhdr->h_source);
+ 		return;
+ 	}
+ 
+@@ -1017,16 +1007,16 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
+ 			spin_unlock_bh(&orig_neigh_node->ogm_cnt_lock);
+ 		}
+ 
+-		bat_dbg(DBG_BATMAN, bat_priv, "Drop packet: "
+-			"originator packet from myself (via neighbor)\n");
++		bat_dbg(DBG_BATMAN, bat_priv,
++			"Drop packet: originator packet from myself (via neighbor)\n");
+ 		orig_node_free_ref(orig_neigh_node);
+ 		return;
+ 	}
+ 
+ 	if (is_my_oldorig) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Drop packet: ignoring all rebroadcast echos (sender: "
+-			"%pM)\n", ethhdr->h_source);
++			"Drop packet: ignoring all rebroadcast echos (sender: %pM)\n",
++			ethhdr->h_source);
+ 		return;
+ 	}
+ 
+@@ -1039,8 +1029,8 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
+ 
+ 	if (is_duplicate == -1) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Drop packet: packet within seqno protection time "
+-			"(sender: %pM)\n", ethhdr->h_source);
++			"Drop packet: packet within seqno protection time (sender: %pM)\n",
++			ethhdr->h_source);
+ 		goto out;
+ 	}
+ 
+@@ -1061,8 +1051,8 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
+ 			  batman_ogm_packet->prev_sender)) &&
+ 	    (compare_eth(router->addr, router_router->addr))) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Drop packet: ignoring all rebroadcast packets that "
+-			"may make me loop (sender: %pM)\n", ethhdr->h_source);
++			"Drop packet: ignoring all rebroadcast packets that may make me loop (sender: %pM)\n",
++			ethhdr->h_source);
+ 		goto out;
+ 	}
+ 
+@@ -1106,8 +1096,8 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
+ 		bat_iv_ogm_forward(orig_node, ethhdr, batman_ogm_packet,
+ 				   1, if_incoming);
+ 
+-		bat_dbg(DBG_BATMAN, bat_priv, "Forwarding packet: "
+-			"rebroadcast neighbor packet with direct link flag\n");
++		bat_dbg(DBG_BATMAN, bat_priv,
++			"Forwarding packet: rebroadcast neighbor packet with direct link flag\n");
+ 		goto out_neigh;
+ 	}
+ 
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index b00101d..68ff759 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -255,8 +255,8 @@ static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
+ 			buff[count - 1] = '\0';
+ 
+ 		bat_info(net_dev,
+-			 "Invalid parameter for 'vis mode' setting received: "
+-			 "%s\n", buff);
++			 "Invalid parameter for 'vis mode' setting received: %s\n",
++			 buff);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -330,8 +330,8 @@ static ssize_t store_gw_mode(struct kobject *kobj, struct attribute *attr,
+ 
+ 	if (gw_mode_tmp < 0) {
+ 		bat_info(net_dev,
+-			 "Invalid parameter for 'gw mode' setting received: "
+-			 "%s\n", buff);
++			 "Invalid parameter for 'gw mode' setting received: %s\n",
++			 buff);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -502,8 +502,8 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 		buff[count - 1] = '\0';
+ 
+ 	if (strlen(buff) >= IFNAMSIZ) {
+-		pr_err("Invalid parameter for 'mesh_iface' setting received: "
+-		       "interface name too long '%s'\n", buff);
++		pr_err("Invalid parameter for 'mesh_iface' setting received: interface name too long '%s'\n",
++		       buff);
+ 		hardif_free_ref(hard_iface);
+ 		return -EINVAL;
+ 	}
+@@ -677,8 +677,8 @@ out:
+ 		hardif_free_ref(primary_if);
+ 
+ 	if (ret)
+-		bat_dbg(DBG_BATMAN, bat_priv, "Impossible to send "
+-			"uevent for (%s,%s,%s) event (err: %d)\n",
++		bat_dbg(DBG_BATMAN, bat_priv,
++			"Impossible to send uevent for (%s,%s,%s) event (err: %d)\n",
+ 			uev_type_str[type], uev_action_str[action],
+ 			(action == UEV_DEL ? "NULL" : data), ret);
+ 	return ret;
+diff --git a/gateway_client.c b/gateway_client.c
+index 0fa8e2d..6f9b9b7 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -224,16 +224,13 @@ void gw_election(struct bat_priv *bat_priv)
+ 	} else if ((!curr_gw) && (next_gw)) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+ 			"Adding route to gateway %pM (gw_flags: %i, tq: %i)\n",
+-			next_gw->orig_node->orig,
+-			next_gw->orig_node->gw_flags,
++			next_gw->orig_node->orig, next_gw->orig_node->gw_flags,
+ 			router->tq_avg);
+ 		throw_uevent(bat_priv, UEV_GW, UEV_ADD, gw_addr);
+ 	} else {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Changing route to gateway %pM "
+-			"(gw_flags: %i, tq: %i)\n",
+-			next_gw->orig_node->orig,
+-			next_gw->orig_node->gw_flags,
++			"Changing route to gateway %pM (gw_flags: %i, tq: %i)\n",
++			next_gw->orig_node->orig, next_gw->orig_node->gw_flags,
+ 			router->tq_avg);
+ 		throw_uevent(bat_priv, UEV_GW, UEV_CHANGE, gw_addr);
+ 	}
+@@ -287,8 +284,7 @@ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
+ 		goto out;
+ 
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+-		"Restarting gateway selection: better gateway found (tq curr: "
+-		"%i, tq new: %i)\n",
++		"Restarting gateway selection: better gateway found (tq curr: %i, tq new: %i)\n",
+ 		gw_tq_avg, orig_tq_avg);
+ 
+ deselect:
+@@ -352,8 +348,7 @@ void gw_node_update(struct bat_priv *bat_priv,
+ 			continue;
+ 
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Gateway class of originator %pM changed from "
+-			"%i to %i\n",
++			"Gateway class of originator %pM changed from %i to %i\n",
+ 			orig_node->orig, gw_node->orig_node->gw_flags,
+ 			new_gwflags);
+ 
+@@ -474,23 +469,23 @@ int gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	primary_if = primary_if_get_selected(bat_priv);
+ 	if (!primary_if) {
+-		ret = seq_printf(seq, "BATMAN mesh %s disabled - please "
+-				 "specify interfaces to enable it\n",
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+ 				 net_dev->name);
+ 		goto out;
+ 	}
+ 
+ 	if (primary_if->if_status != IF_ACTIVE) {
+-		ret = seq_printf(seq, "BATMAN mesh %s disabled - "
+-				 "primary interface not active\n",
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - primary interface not active\n",
+ 				 net_dev->name);
+ 		goto out;
+ 	}
+ 
+-	seq_printf(seq, "      %-12s (%s/%i) %17s [%10s]: gw_class ... "
+-		   "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s)]\n",
+-		   "Gateway", "#", TQ_MAX_VALUE, "Nexthop",
+-		   "outgoingIF", SOURCE_VERSION, primary_if->net_dev->name,
++	seq_printf(seq,
++		   "      %-12s (%s/%i) %17s [%10s]: gw_class ... [B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s)]\n",
++		   "Gateway", "#", TQ_MAX_VALUE, "Nexthop", "outgoingIF",
++		   SOURCE_VERSION, primary_if->net_dev->name,
+ 		   primary_if->net_dev->dev_addr, net_dev->name);
+ 
+ 	rcu_read_lock();
+diff --git a/gateway_common.c b/gateway_common.c
+index 3ccb9c8..ca57ac7 100644
+--- a/gateway_common.c
++++ b/gateway_common.c
+@@ -125,8 +125,8 @@ static bool parse_gw_bandwidth(struct net_device *net_dev, char *buff,
+ 		ret = kstrtol(slash_ptr + 1, 10, &lup);
+ 		if (ret) {
+ 			bat_err(net_dev,
+-				"Upload speed of gateway mode invalid: "
+-				"%s\n", slash_ptr + 1);
++				"Upload speed of gateway mode invalid: %s\n",
++				slash_ptr + 1);
+ 			return false;
+ 		}
+ 
+@@ -163,8 +163,8 @@ ssize_t gw_bandwidth_set(struct net_device *net_dev, char *buff, size_t count)
+ 	gw_bandwidth_to_kbit((uint8_t)gw_bandwidth_tmp, &down, &up);
+ 
+ 	gw_deselect(bat_priv);
+-	bat_info(net_dev, "Changing gateway bandwidth from: '%i' to: '%ld' "
+-		 "(propagating: %d%s/%d%s)\n",
++	bat_info(net_dev,
++		 "Changing gateway bandwidth from: '%i' to: '%ld' (propagating: %d%s/%d%s)\n",
+ 		 atomic_read(&bat_priv->gw_bandwidth), gw_bandwidth_tmp,
+ 		 (down > 2048 ? down / 1024 : down),
+ 		 (down > 2048 ? "MBit" : "KBit"),
+diff --git a/hard-interface.c b/hard-interface.c
+index 409d027..3778977 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -175,11 +175,9 @@ static void check_known_mac_addr(const struct net_device *net_dev)
+ 				 net_dev->dev_addr))
+ 			continue;
+ 
+-		pr_warning("The newly added mac address (%pM) already exists "
+-			   "on: %s\n", net_dev->dev_addr,
+-			   hard_iface->net_dev->name);
+-		pr_warning("It is strongly recommended to keep mac addresses "
+-			   "unique to avoid problems!\n");
++		pr_warning("The newly added mac address (%pM) already exists on: %s\n",
++			   net_dev->dev_addr, hard_iface->net_dev->name);
++		pr_warning("It is strongly recommended to keep mac addresses unique to avoid problems!\n");
+ 	}
+ 	rcu_read_unlock();
+ }
+@@ -282,10 +280,7 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
+ 
+ 	/* hard-interface is part of a bridge */
+ 	if (hard_iface->net_dev->priv_flags & IFF_BRIDGE_PORT)
+-		pr_err("You are about to enable batman-adv on '%s' which "
+-		       "already is part of a bridge. Unless you know exactly "
+-		       "what you are doing this is probably wrong and won't "
+-		       "work the way you think it would.\n",
++		pr_err("You are about to enable batman-adv on '%s' which already is part of a bridge. Unless you know exactly what you are doing this is probably wrong and won't work the way you think it would.\n",
+ 		       hard_iface->net_dev->name);
+ 
+ 	soft_iface = dev_get_by_name(&init_net, iface_name);
+@@ -303,8 +298,7 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
+ 	}
+ 
+ 	if (!softif_is_valid(soft_iface)) {
+-		pr_err("Can't create batman mesh interface %s: "
+-		       "already exists as regular interface\n",
++		pr_err("Can't create batman mesh interface %s: already exists as regular interface\n",
+ 		       soft_iface->name);
+ 		dev_put(soft_iface);
+ 		ret = -EINVAL;
+@@ -317,8 +311,9 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
+ 	bat_priv->bat_algo_ops->bat_ogm_init(hard_iface);
+ 
+ 	if (!hard_iface->packet_buff) {
+-		bat_err(hard_iface->soft_iface, "Can't add interface packet "
+-			"(%s): out of memory\n", hard_iface->net_dev->name);
++		bat_err(hard_iface->soft_iface,
++			"Can't add interface packet (%s): out of memory\n",
++			hard_iface->net_dev->name);
+ 		ret = -ENOMEM;
+ 		goto err;
+ 	}
+@@ -341,29 +336,22 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
+ 	if (atomic_read(&bat_priv->fragmentation) && hard_iface->net_dev->mtu <
+ 		ETH_DATA_LEN + BAT_HEADER_LEN)
+ 		bat_info(hard_iface->soft_iface,
+-			 "The MTU of interface %s is too small (%i) to handle "
+-			 "the transport of batman-adv packets. Packets going "
+-			 "over this interface will be fragmented on layer2 "
+-			 "which could impact the performance. Setting the MTU "
+-			 "to %zi would solve the problem.\n",
++			 "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to %zi would solve the problem.\n",
+ 			 hard_iface->net_dev->name, hard_iface->net_dev->mtu,
+ 			 ETH_DATA_LEN + BAT_HEADER_LEN);
+ 
+ 	if (!atomic_read(&bat_priv->fragmentation) && hard_iface->net_dev->mtu <
+ 		ETH_DATA_LEN + BAT_HEADER_LEN)
+ 		bat_info(hard_iface->soft_iface,
+-			 "The MTU of interface %s is too small (%i) to handle "
+-			 "the transport of batman-adv packets. If you "
+-			 "experience problems getting traffic through try "
+-			 "increasing the MTU to %zi.\n",
++			 "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. If you experience problems getting traffic through try increasing the MTU to %zi.\n",
+ 			 hard_iface->net_dev->name, hard_iface->net_dev->mtu,
+ 			 ETH_DATA_LEN + BAT_HEADER_LEN);
+ 
+ 	if (hardif_is_iface_up(hard_iface))
+ 		hardif_activate_interface(hard_iface);
+ 	else
+-		bat_err(hard_iface->soft_iface, "Not using interface %s "
+-			"(retrying later): interface not active\n",
++		bat_err(hard_iface->soft_iface,
++			"Not using interface %s (retrying later): interface not active\n",
+ 			hard_iface->net_dev->name);
+ 
+ 	/* begin scheduling originator messages on that interface */
+diff --git a/icmp_socket.c b/icmp_socket.c
+index 9b755f9..b87518e 100644
+--- a/icmp_socket.c
++++ b/icmp_socket.c
+@@ -59,8 +59,7 @@ static int bat_socket_open(struct inode *inode, struct file *file)
+ 	}
+ 
+ 	if (i == ARRAY_SIZE(socket_client_hash)) {
+-		pr_err("Error - can't add another packet client: "
+-		       "maximum number of clients reached\n");
++		pr_err("Error - can't add another packet client: maximum number of clients reached\n");
+ 		kfree(socket_client);
+ 		return -EXFULL;
+ 	}
+@@ -162,8 +161,7 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 
+ 	if (len < sizeof(struct icmp_packet)) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Error - can't send packet from char device: "
+-			"invalid packet size\n");
++			"Error - can't send packet from char device: invalid packet size\n");
+ 		return -EINVAL;
+ 	}
+ 
+@@ -193,16 +191,14 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 
+ 	if (icmp_packet->header.packet_type != BAT_ICMP) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Error - can't send packet from char device: "
+-			"got bogus packet type (expected: BAT_ICMP)\n");
++			"Error - can't send packet from char device: got bogus packet type (expected: BAT_ICMP)\n");
+ 		len = -EINVAL;
+ 		goto free_skb;
+ 	}
+ 
+ 	if (icmp_packet->msg_type != ECHO_REQUEST) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Error - can't send packet from char device: "
+-			"got bogus message type (expected: ECHO_REQUEST)\n");
++			"Error - can't send packet from char device: got bogus message type (expected: ECHO_REQUEST)\n");
+ 		len = -EINVAL;
+ 		goto free_skb;
+ 	}
+diff --git a/main.c b/main.c
+index 08f3b3a..6d51caa 100644
+--- a/main.c
++++ b/main.c
+@@ -64,8 +64,8 @@ static int __init batman_init(void)
+ 
+ 	register_netdevice_notifier(&hard_if_notifier);
+ 
+-	pr_info("B.A.T.M.A.N. advanced %s (compatibility version %i) "
+-		"loaded\n", SOURCE_VERSION, COMPAT_VERSION);
++	pr_info("B.A.T.M.A.N. advanced %s (compatibility version %i) loaded\n",
++		SOURCE_VERSION, COMPAT_VERSION);
+ 
+ 	return 0;
+ }
+@@ -201,8 +201,8 @@ int bat_algo_register(struct bat_algo_ops *bat_algo_ops)
+ 
+ 	bat_algo_ops_tmp = bat_algo_get(bat_algo_ops->name);
+ 	if (bat_algo_ops_tmp) {
+-		pr_info("Trying to register already registered routing "
+-			"algorithm: %s\n", bat_algo_ops->name);
++		pr_info("Trying to register already registered routing algorithm: %s\n",
++			bat_algo_ops->name);
+ 		goto out;
+ 	}
+ 
+diff --git a/originator.c b/originator.c
+index 371cc93..43c0a4f 100644
+--- a/originator.c
++++ b/originator.c
+@@ -294,14 +294,12 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
+ 			    (neigh_node->if_incoming->if_status ==
+ 							IF_TO_BE_REMOVED))
+ 				bat_dbg(DBG_BATMAN, bat_priv,
+-					"neighbor purge: originator %pM, "
+-					"neighbor: %pM, iface: %s\n",
++					"neighbor purge: originator %pM, neighbor: %pM, iface: %s\n",
+ 					orig_node->orig, neigh_node->addr,
+ 					neigh_node->if_incoming->net_dev->name);
+ 			else
+ 				bat_dbg(DBG_BATMAN, bat_priv,
+-					"neighbor timeout: originator %pM, "
+-					"neighbor: %pM, last_valid: %lu\n",
++					"neighbor timeout: originator %pM, neighbor: %pM, last_valid: %lu\n",
+ 					orig_node->orig, neigh_node->addr,
+ 					(neigh_node->last_valid / HZ));
+ 
+@@ -416,15 +414,15 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
+ 	primary_if = primary_if_get_selected(bat_priv);
+ 
+ 	if (!primary_if) {
+-		ret = seq_printf(seq, "BATMAN mesh %s disabled - "
+-				 "please specify interfaces to enable it\n",
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+ 				 net_dev->name);
+ 		goto out;
+ 	}
+ 
+ 	if (primary_if->if_status != IF_ACTIVE) {
+-		ret = seq_printf(seq, "BATMAN mesh %s "
+-				 "disabled - primary interface not active\n",
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - primary interface not active\n",
+ 				 net_dev->name);
+ 		goto out;
+ 	}
+diff --git a/routing.c b/routing.c
+index f535155..01b66d4 100644
+--- a/routing.c
++++ b/routing.c
+@@ -83,8 +83,7 @@ static void _update_route(struct bat_priv *bat_priv,
+ 	/* route changed */
+ 	} else if (neigh_node && curr_router) {
+ 		bat_dbg(DBG_ROUTES, bat_priv,
+-			"Changing route towards: %pM "
+-			"(now via %pM - was via %pM)\n",
++			"Changing route towards: %pM (now via %pM - was via %pM)\n",
+ 			orig_node->orig, neigh_node->addr,
+ 			curr_router->addr);
+ 	}
+@@ -345,9 +344,8 @@ static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
+ 
+ 	/* send TTL exceeded if packet is an echo request (traceroute) */
+ 	if (icmp_packet->msg_type != ECHO_REQUEST) {
+-		pr_debug("Warning - can't forward icmp packet from %pM to "
+-			 "%pM: ttl exceeded\n", icmp_packet->orig,
+-			 icmp_packet->dst);
++		pr_debug("Warning - can't forward icmp packet from %pM to %pM: ttl exceeded\n",
++			 icmp_packet->orig, icmp_packet->dst);
+ 		goto out;
+ 	}
+ 
+@@ -674,9 +672,9 @@ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	if (!orig_node)
+ 		goto out;
+ 
+-	bat_dbg(DBG_TT, bat_priv, "Received ROAMING_ADV from %pM "
+-		"(client %pM)\n", roam_adv_packet->src,
+-		roam_adv_packet->client);
++	bat_dbg(DBG_TT, bat_priv,
++		"Received ROAMING_ADV from %pM (client %pM)\n",
++		roam_adv_packet->src, roam_adv_packet->client);
+ 
+ 	tt_global_add(bat_priv, orig_node, roam_adv_packet->client,
+ 		      atomic_read(&orig_node->last_ttvn) + 1, true, false);
+@@ -813,9 +811,8 @@ int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 
+ 	/* TTL exceeded */
+ 	if (unicast_packet->header.ttl < 2) {
+-		pr_debug("Warning - can't forward unicast packet from %pM to "
+-			 "%pM: ttl exceeded\n", ethhdr->h_source,
+-			 unicast_packet->dest);
++		pr_debug("Warning - can't forward unicast packet from %pM to %pM: ttl exceeded\n",
++			 ethhdr->h_source, unicast_packet->dest);
+ 		goto out;
+ 	}
+ 
+@@ -934,10 +931,10 @@ static int check_unicast_ttvn(struct bat_priv *bat_priv,
+ 			orig_node_free_ref(orig_node);
+ 		}
+ 
+-		bat_dbg(DBG_ROUTES, bat_priv, "TTVN mismatch (old_ttvn %u "
+-			"new_ttvn %u)! Rerouting unicast packet (for %pM) to "
+-			"%pM\n", unicast_packet->ttvn, curr_ttvn,
+-			ethhdr->h_dest, unicast_packet->dest);
++		bat_dbg(DBG_ROUTES, bat_priv,
++			"TTVN mismatch (old_ttvn %u new_ttvn %u)! Rerouting unicast packet (for %pM) to %pM\n",
++			unicast_packet->ttvn, curr_ttvn, ethhdr->h_dest,
++			unicast_packet->dest);
+ 
+ 		unicast_packet->ttvn = curr_ttvn;
+ 	}
+diff --git a/send.c b/send.c
+index 4137580..f261ccf 100644
+--- a/send.c
++++ b/send.c
+@@ -45,8 +45,8 @@ int send_skb_packet(struct sk_buff *skb, struct hard_iface *hard_iface,
+ 		goto send_skb_err;
+ 
+ 	if (!(hard_iface->net_dev->flags & IFF_UP)) {
+-		pr_warning("Interface %s is not up - can't send packet via "
+-			   "that interface!\n", hard_iface->net_dev->name);
++		pr_warning("Interface %s is not up - can't send packet via that interface!\n",
++			   hard_iface->net_dev->name);
+ 		goto send_skb_err;
+ 	}
+ 
+diff --git a/soft-interface.c b/soft-interface.c
+index 8fb16d2..a5590f4 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -252,8 +252,8 @@ static void softif_neigh_vid_select(struct bat_priv *bat_priv,
+ 			vid, curr_neigh->addr);
+ 	else if ((curr_neigh) && (new_neigh))
+ 		bat_dbg(DBG_ROUTES, bat_priv,
+-			"Changing mesh exit point on vid: %d from %pM "
+-			"to %pM.\n", vid, curr_neigh->addr, new_neigh->addr);
++			"Changing mesh exit point on vid: %d from %pM to %pM.\n",
++			vid, curr_neigh->addr, new_neigh->addr);
+ 	else if ((!curr_neigh) && (new_neigh))
+ 		bat_dbg(DBG_ROUTES, bat_priv,
+ 			"Setting mesh exit point on vid: %d to %pM.\n",
+@@ -327,15 +327,15 @@ int softif_neigh_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	primary_if = primary_if_get_selected(bat_priv);
+ 	if (!primary_if) {
+-		ret = seq_printf(seq, "BATMAN mesh %s disabled - "
+-				 "please specify interfaces to enable it\n",
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+ 				 net_dev->name);
+ 		goto out;
+ 	}
+ 
+ 	if (primary_if->if_status != IF_ACTIVE) {
+-		ret = seq_printf(seq, "BATMAN mesh %s "
+-				 "disabled - primary interface not active\n",
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - primary interface not active\n",
+ 				 net_dev->name);
+ 		goto out;
+ 	}
+@@ -403,8 +403,7 @@ void softif_neigh_purge(struct bat_priv *bat_priv)
+ 
+ 			if (curr_softif_neigh == softif_neigh) {
+ 				bat_dbg(DBG_ROUTES, bat_priv,
+-					"Current mesh exit point on vid: %d "
+-					"'%pM' vanished.\n",
++					"Current mesh exit point on vid: %d '%pM' vanished.\n",
+ 					softif_neigh_vid->vid,
+ 					softif_neigh->addr);
+ 				do_deselect = 1;
+diff --git a/translation-table.c b/translation-table.c
+index c950705..1f86921 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -309,21 +309,21 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	primary_if = primary_if_get_selected(bat_priv);
+ 	if (!primary_if) {
+-		ret = seq_printf(seq, "BATMAN mesh %s disabled - "
+-				 "please specify interfaces to enable it\n",
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+ 				 net_dev->name);
+ 		goto out;
+ 	}
+ 
+ 	if (primary_if->if_status != IF_ACTIVE) {
+-		ret = seq_printf(seq, "BATMAN mesh %s disabled - "
+-				 "primary interface not active\n",
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - primary interface not active\n",
+ 				 net_dev->name);
+ 		goto out;
+ 	}
+ 
+-	seq_printf(seq, "Locally retrieved addresses (from %s) "
+-		   "announced via TT (TTVN: %u):\n",
++	seq_printf(seq,
++		   "Locally retrieved addresses (from %s) announced via TT (TTVN: %u):\n",
+ 		   net_dev->name, (uint8_t)atomic_read(&bat_priv->ttvn));
+ 
+ 	for (i = 0; i < hash->size; i++) {
+@@ -365,8 +365,9 @@ static void tt_local_set_pending(struct bat_priv *bat_priv,
+ 	 * response issued before the net ttvn increment (consistency check) */
+ 	tt_local_entry->common.flags |= TT_CLIENT_PENDING;
+ 
+-	bat_dbg(DBG_TT, bat_priv, "Local tt entry (%pM) pending to be removed: "
+-		"%s\n", tt_local_entry->common.addr, message);
++	bat_dbg(DBG_TT, bat_priv,
++		"Local tt entry (%pM) pending to be removed: %s\n",
++		tt_local_entry->common.addr, message);
+ }
+ 
+ void tt_local_remove(struct bat_priv *bat_priv, const uint8_t *addr,
+@@ -574,15 +575,15 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	primary_if = primary_if_get_selected(bat_priv);
+ 	if (!primary_if) {
+-		ret = seq_printf(seq, "BATMAN mesh %s disabled - please "
+-				 "specify interfaces to enable it\n",
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+ 				 net_dev->name);
+ 		goto out;
+ 	}
+ 
+ 	if (primary_if->if_status != IF_ACTIVE) {
+-		ret = seq_printf(seq, "BATMAN mesh %s disabled - "
+-				 "primary interface not active\n",
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - primary interface not active\n",
+ 				 net_dev->name);
+ 		goto out;
+ 	}
+@@ -602,18 +603,18 @@ int tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 			tt_global_entry = container_of(tt_common_entry,
+ 						       struct tt_global_entry,
+ 						       common);
+-			seq_printf(seq, " * %pM  (%3u) via %pM     (%3u)   "
+-					"[%c%c]\n",
+-					tt_global_entry->common.addr,
+-					tt_global_entry->ttvn,
+-					tt_global_entry->orig_node->orig,
+-					(uint8_t) atomic_read(
++			seq_printf(seq,
++				   " * %pM  (%3u) via %pM     (%3u)   [%c%c]\n",
++				   tt_global_entry->common.addr,
++				   tt_global_entry->ttvn,
++				   tt_global_entry->orig_node->orig,
++				   (uint8_t) atomic_read(
+ 						&tt_global_entry->orig_node->
+ 						last_ttvn),
+-					(tt_global_entry->common.flags &
+-					 TT_CLIENT_ROAM ? 'R' : '.'),
+-					(tt_global_entry->common.flags &
+-					 TT_CLIENT_WIFI ? 'W' : '.'));
++				   (tt_global_entry->common.flags &
++				    TT_CLIENT_ROAM ? 'R' : '.'),
++				   (tt_global_entry->common.flags &
++				    TT_CLIENT_WIFI ? 'W' : '.'));
+ 		}
+ 		rcu_read_unlock();
+ 	}
+@@ -710,8 +711,7 @@ void tt_global_del_orig(struct bat_priv *bat_priv,
+ 						       common);
+ 			if (tt_global_entry->orig_node == orig_node) {
+ 				bat_dbg(DBG_TT, bat_priv,
+-					"Deleting global tt entry %pM "
+-					"(via %pM): %s\n",
++					"Deleting global tt entry %pM (via %pM): %s\n",
+ 					tt_global_entry->common.addr,
+ 					tt_global_entry->orig_node->orig,
+ 					message);
+@@ -751,8 +751,8 @@ static void tt_global_roam_purge(struct bat_priv *bat_priv)
+ 					   TT_CLIENT_ROAM_TIMEOUT))
+ 				continue;
+ 
+-			bat_dbg(DBG_TT, bat_priv, "Deleting global "
+-				"tt entry (%pM): Roaming timeout\n",
++			bat_dbg(DBG_TT, bat_priv,
++				"Deleting global tt entry (%pM): Roaming timeout\n",
+ 				tt_global_entry->common.addr);
+ 			atomic_dec(&tt_global_entry->orig_node->tt_size);
+ 			hlist_del_rcu(node);
+@@ -1134,8 +1134,9 @@ static int send_tt_request(struct bat_priv *bat_priv,
+ 	if (!neigh_node)
+ 		goto out;
+ 
+-	bat_dbg(DBG_TT, bat_priv, "Sending TT_REQUEST to %pM via %pM "
+-		"[%c]\n", dst_orig_node->orig, neigh_node->addr,
++	bat_dbg(DBG_TT, bat_priv,
++		"Sending TT_REQUEST to %pM via %pM [%c]\n",
++		dst_orig_node->orig, neigh_node->addr,
+ 		(full_table ? 'F' : '.'));
+ 
+ 	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
+@@ -1172,9 +1173,8 @@ static bool send_other_tt_response(struct bat_priv *bat_priv,
+ 	struct tt_query_packet *tt_response;
+ 
+ 	bat_dbg(DBG_TT, bat_priv,
+-		"Received TT_REQUEST from %pM for "
+-		"ttvn: %u (%pM) [%c]\n", tt_request->src,
+-		tt_request->ttvn, tt_request->dst,
++		"Received TT_REQUEST from %pM for ttvn: %u (%pM) [%c]\n",
++		tt_request->src, tt_request->ttvn, tt_request->dst,
+ 		(tt_request->flags & TT_FULL_TABLE ? 'F' : '.'));
+ 
+ 	/* Let's get the orig node of the REAL destination */
+@@ -1299,9 +1299,8 @@ static bool send_my_tt_response(struct bat_priv *bat_priv,
+ 	struct tt_query_packet *tt_response;
+ 
+ 	bat_dbg(DBG_TT, bat_priv,
+-		"Received TT_REQUEST from %pM for "
+-		"ttvn: %u (me) [%c]\n", tt_request->src,
+-		tt_request->ttvn,
++		"Received TT_REQUEST from %pM for ttvn: %u (me) [%c]\n",
++		tt_request->src, tt_request->ttvn,
+ 		(tt_request->flags & TT_FULL_TABLE ? 'F' : '.'));
+ 
+ 
+@@ -1504,10 +1503,9 @@ void handle_tt_response(struct bat_priv *bat_priv,
+ 	struct tt_req_node *node, *safe;
+ 	struct orig_node *orig_node = NULL;
+ 
+-	bat_dbg(DBG_TT, bat_priv, "Received TT_RESPONSE from %pM for "
+-		"ttvn %d t_size: %d [%c]\n",
+-		tt_response->src, tt_response->ttvn,
+-		tt_response->tt_data,
++	bat_dbg(DBG_TT, bat_priv,
++		"Received TT_RESPONSE from %pM for ttvn %d t_size: %d [%c]\n",
++		tt_response->src, tt_response->ttvn, tt_response->tt_data,
+ 		(tt_response->flags & TT_FULL_TABLE ? 'F' : '.'));
+ 
+ 	orig_node = orig_hash_find(bat_priv, tt_response->src);
+@@ -1771,8 +1769,9 @@ static void tt_local_purge_pending_clients(struct bat_priv *bat_priv)
+ 			if (!(tt_common_entry->flags & TT_CLIENT_PENDING))
+ 				continue;
+ 
+-			bat_dbg(DBG_TT, bat_priv, "Deleting local tt entry "
+-				"(%pM): pending\n", tt_common_entry->addr);
++			bat_dbg(DBG_TT, bat_priv,
++				"Deleting local tt entry (%pM): pending\n",
++				tt_common_entry->addr);
+ 
+ 			atomic_dec(&bat_priv->num_local_tt);
+ 			hlist_del_rcu(node);
+@@ -1877,12 +1876,10 @@ void tt_update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 		if (!orig_node->tt_initialised || ttvn != orig_ttvn ||
+ 		    orig_node->tt_crc != tt_crc) {
+ request_table:
+-			bat_dbg(DBG_TT, bat_priv, "TT inconsistency for %pM. "
+-				"Need to retrieve the correct information "
+-				"(ttvn: %u last_ttvn: %u crc: %u last_crc: "
+-				"%u num_changes: %u)\n", orig_node->orig, ttvn,
+-				orig_ttvn, tt_crc, orig_node->tt_crc,
+-				tt_num_changes);
++			bat_dbg(DBG_TT, bat_priv,
++				"TT inconsistency for %pM. Need to retrieve the correct information (ttvn: %u last_ttvn: %u crc: %u last_crc: %u num_changes: %u)\n",
++				orig_node->orig, ttvn, orig_ttvn, tt_crc,
++				orig_node->tt_crc, tt_num_changes);
+ 			send_tt_request(bat_priv, orig_node, ttvn, tt_crc,
+ 					full_table);
+ 			return;
+-- 
+1.7.9.1
 
