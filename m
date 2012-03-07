@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed,  7 Mar 2012 09:07:52 +0100
-Message-Id: <1331107673-8986-8-git-send-email-sven@narfation.org>
+Date: Wed,  7 Mar 2012 09:07:48 +0100
+Message-Id: <1331107673-8986-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1331107673-8986-1-git-send-email-sven@narfation.org>
 References: <7238641.4aX8WvziBv@sven-laptop.home.narfation.org>
 	<1331107673-8986-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 8/8-master] batman-adv: Remove spaces after a
+Subject: [B.A.T.M.A.N.] [PATCH 4/8-next] batman-adv: Remove spaces after a
 	cast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,104 +22,44 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bridge_loop_avoidance.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+ send.c    |    2 +-
+ unicast.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index da220cf..23bfbed 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -289,7 +289,7 @@ static void bla_send_claim(struct bat_priv *bat_priv, uint8_t *mac,
- 		goto out;
+diff --git a/send.c b/send.c
+index f261ccf..af7a674 100644
+--- a/send.c
++++ b/send.c
+@@ -56,7 +56,7 @@ int send_skb_packet(struct sk_buff *skb, struct hard_iface *hard_iface,
  
- 	ethhdr = (struct ethhdr *)skb->data;
--	hw_src = (uint8_t *) ethhdr + ETH_HLEN + sizeof(struct arphdr);
-+	hw_src = (uint8_t *)ethhdr + ETH_HLEN + sizeof(struct arphdr);
+ 	skb_reset_mac_header(skb);
  
- 	/* now we pretend that the client would have sent this ... */
- 	switch (claimtype) {
-@@ -512,7 +512,7 @@ static void bla_send_announce(struct bat_priv *bat_priv,
- 
- 	memcpy(mac, announce_mac, 4);
- 	crc = htons(backbone_gw->crc);
--	memcpy(&mac[4], (uint8_t *) &crc, 2);
-+	memcpy(&mac[4], (uint8_t *)&crc, 2);
- 
- 	bla_send_claim(bat_priv, mac, backbone_gw->vid, CLAIM_TYPE_ANNOUNCE);
- 
-@@ -629,7 +629,7 @@ static int handle_announce(struct bat_priv *bat_priv,
- 
- 	/* handle as ANNOUNCE frame */
- 	backbone_gw->lasttime = jiffies;
--	crc = ntohs(*((uint16_t *) (&an_addr[4])));
-+	crc = ntohs(*((uint16_t *)(&an_addr[4])));
- 
- 	bat_dbg(DBG_BLA, bat_priv,
- 		"handle_announce(): ANNOUNCE vid %d (sent by %pM)... CRC = %04x\n",
-@@ -755,7 +755,7 @@ static int check_claim_group(struct bat_priv *bat_priv,
- 	struct orig_node *orig_node;
- 	struct bla_claim_dst *bla_dst, *bla_dst_own;
- 
--	bla_dst = (struct bla_claim_dst *) hw_dst;
-+	bla_dst = (struct bla_claim_dst *)hw_dst;
- 	bla_dst_own = &bat_priv->claim_dest;
- 
- 	/* check if it is a claim packet in general */
-@@ -834,7 +834,7 @@ static int bla_process_claim(struct bat_priv *bat_priv,
- 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
--		vhdr = (struct vlan_ethhdr *) ethhdr;
-+		vhdr = (struct vlan_ethhdr *)ethhdr;
- 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
- 		proto = ntohs(vhdr->h_vlan_encapsulated_proto);
- 		headlen = sizeof(*vhdr);
-@@ -852,8 +852,8 @@ static int bla_process_claim(struct bat_priv *bat_priv,
- 		return 0;
- 
- 	/* pskb_may_pull() may have modified the pointers, get ethhdr again */
 -	ethhdr = (struct ethhdr *) skb_mac_header(skb);
--	arphdr = (struct arphdr *) ((uint8_t *) ethhdr + headlen);
 +	ethhdr = (struct ethhdr *)skb_mac_header(skb);
-+	arphdr = (struct arphdr *)((uint8_t *)ethhdr + headlen);
+ 	memcpy(ethhdr->h_source, hard_iface->net_dev->dev_addr, ETH_ALEN);
+ 	memcpy(ethhdr->h_dest, dst_addr, ETH_ALEN);
+ 	ethhdr->h_proto = __constant_htons(ETH_P_BATMAN);
+diff --git a/unicast.c b/unicast.c
+index 0897dfa..676f6a6 100644
+--- a/unicast.c
++++ b/unicast.c
+@@ -66,7 +66,7 @@ static struct sk_buff *frag_merge_packet(struct list_head *head,
+ 	kfree_skb(tmp_skb);
  
- 	/* Check whether the ARP frame carries a valid
- 	 * IP information */
-@@ -869,7 +869,7 @@ static int bla_process_claim(struct bat_priv *bat_priv,
+ 	memmove(skb->data + uni_diff, skb->data, hdr_len);
+-	unicast_packet = (struct unicast_packet *) skb_pull(skb, uni_diff);
++	unicast_packet = (struct unicast_packet *)skb_pull(skb, uni_diff);
+ 	unicast_packet->header.packet_type = BAT_UNICAST;
  
- 	hw_src = (uint8_t *)arphdr + sizeof(struct arphdr);
- 	hw_dst = hw_src + ETH_ALEN + 4;
--	bla_dst = (struct bla_claim_dst *) hw_dst;
-+	bla_dst = (struct bla_claim_dst *)hw_dst;
+ 	return skb;
+@@ -238,7 +238,7 @@ int frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 		goto dropped;
+ 	skb_reserve(frag_skb, ucf_hdr_len);
  
- 	/* check if it is a claim frame. */
- 	ret = check_claim_group(bat_priv, primary_if, hw_src, hw_dst, ethhdr);
-@@ -1193,7 +1193,7 @@ int bla_check_bcast_duplist(struct bat_priv *bat_priv,
- 	struct bcast_duplist_entry *entry;
- 
- 	length = hdr_size - sizeof(*bcast_packet);
--	content = (uint8_t *) bcast_packet;
-+	content = (uint8_t *)bcast_packet;
- 	content += sizeof(*bcast_packet);
- 
- 	/* calculate the crc ... */
-@@ -1299,14 +1299,14 @@ int bla_is_backbone_gw(struct sk_buff *skb,
- 	if (!pskb_may_pull(skb, hdr_size + ETH_HLEN))
- 		return 0;
- 
--	ethhdr = (struct ethhdr *) (((uint8_t *)skb->data) + hdr_size);
-+	ethhdr = (struct ethhdr *)(((uint8_t *)skb->data) + hdr_size);
- 
- 	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
- 		if (!pskb_may_pull(skb, hdr_size + sizeof(struct vlan_ethhdr)))
- 			return 0;
- 
--		vhdr = (struct vlan_ethhdr *) (((uint8_t *)skb->data) +
--						hdr_size);
-+		vhdr = (struct vlan_ethhdr *)(((uint8_t *)skb->data) +
-+					      hdr_size);
- 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
- 	}
+-	unicast_packet = (struct unicast_packet *) skb->data;
++	unicast_packet = (struct unicast_packet *)skb->data;
+ 	memcpy(&tmp_uc, unicast_packet, uc_hdr_len);
+ 	skb_split(skb, frag_skb, data_len / 2 + uc_hdr_len);
  
 -- 
 1.7.9.1
