@@ -1,17 +1,25 @@
-Return-Path: <ordex@autistici.org>
-Date: Fri, 9 Mar 2012 13:39:06 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120309123905.GB436@ritirata.org>
-References: <4F4F6D18.3070403@ninux.org> <20120309085636.GA9018@pandem0nium>
-	<20120309111203.GE15059@kerneis.info>
-	<201203091926.54899.lindner_marek@yahoo.de>
-	<20120309120455.GF15059@kerneis.info>
+Return-Path: <andrew.lunn@ascom.com>
+From: <andrew.lunn@ascom.com>
+Date: Fri, 9 Mar 2012 12:44:27 +0000
+Message-ID: <74A4488FAEEC56408507A6FECA6909910122181F@SC000647.CHASCOM.INT>
+References: <201203070156.51341.lindner_marek@yahoo.de>
+	<20120306193643.GM12778@kerneis.info>
+	<201203070552.33850.lindner_marek@yahoo.de>
+	<7i62egijym.fsf@lanthane.pps.jussieu.fr>
+	<20120307144709.GA19891@ritirata.org>
+	<7ieht4mnnp.fsf@lanthane.pps.jussieu.fr>
+	<20120307171751.GC1389@ritirata.org>	<20120307221847.GR12778@kerneis.info>
+	<20120309085636.GA9018@pandem0nium>
+	<CANjd3nd5+8n2frV_FVLbONyAj4An8Rcq=mOu-pVk-3nzp8Kk_w@mail.gmail.com>
+	<20120309105921.GD15059@kerneis.info>
+	<7ik42u9f5x.fsf_-_@lanthane.pps.jussieu.fr>
+In-Reply-To: <7ik42u9f5x.fsf_-_@lanthane.pps.jussieu.fr>
+Content-Language: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Sr1nOIr3CvdE5hEN"
-Content-Disposition: inline
-In-Reply-To: <20120309120455.GF15059@kerneis.info>
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Battlemesh v5 tests
+Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Diversity in BATMAN [was:
+	Battlemesh v5 tests]
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,80 +31,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
+To: battlemesh@ml.ninux.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-
---Sr1nOIr3CvdE5hEN
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Mar 09, 2012 at 01:04:55PM +0100, Gabriel Kerneis wrote:
-> On Fri, Mar 09, 2012 at 07:26:54PM +0800, Marek Lindner wrote:
-> > The concept of a primary interface goes back into the early days of bat=
-man and=20
-> > primarily is an optimization to reduce overhead. At some point we reali=
-zed=20
-> > that it is not necessary to flood the mesh with OGMs from each and ever=
-y=20
-> > interface we have. Nearby nodes might want to know about all interfaces=
- to=20
-> > select the best one. Nodes that are far away don't care which interface=
- is=20
-> > connected to what other interface. They only care about a route to thei=
-r=20
-> > destination. This concept is briefly explained here[1] (section 2.1.6 a=
-nd=20
-> > 2.1.7).
+> Consider the following topology (all links assumed lossless), where
+> we're trying to route from A to S:
 >=20
-> Thanks for the pointer.
+>       B---C
+>      /     \\
+>     /       \\
+>    A          S
+>     \        /
+>      \      /
+>       B'---*C'  (C' has just a single interface)
 >=20
-> Does that mean that it is impossible to announce a route on some interfac=
-es
-> only?  It looks like a rather arbitrary limitation.
+> In Babel, even with just Z1,the diversity information is encoded in the
+> metric, and so B announces a smaller metric than B'; this causes A to
+> prefer the ABCS route to the AB'C'S route.  Unless I'm misunderstanding
+> something, in BATMAN no information is propagated to A -- the
+> information
+> about the extra diversity in the upper route is purely local to C.
+=20
+Hi Juliusz
 
-OGMs are broadcasted over all the interfaces (there may be some neighs reac=
-hable
-only by one interface) and you can't force an OGM to be broadcasted only ov=
-er
-one of them. I hope I correctly got your question.
+I'm no expert here, but if Simon happens to fall on his head.....
 
->=20
-> In case I misunderstood and it is actually possible, I fail to see =C4=A5=
-ow the
-> alternating algorithm takes this into account: it seems to assume that a =
-node
-> will accept to route any packet on any interface.  Did I miss something?
->=20
+The metric is simply based on TQ. C=3DS will probably have a better local T=
+Q than C'-S because of the load balancing over the two links, meaning there=
+ are less packets in the air, and so probably less collisions, etc.. A gets=
+ to know the complete link path TQ going both ways around the loop, so does=
+ get some idea that C=3DS is better than C'-S, assuming it is actually bett=
+er.
 
-Packets are alternatively routed on all the "possible" interfaces (a neighb=
-or could be
-connected only to a subset of them) until the metric on that interface is
-acceptable. I hope I correctly got your question again.
-
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---Sr1nOIr3CvdE5hEN
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.18 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPWfnpAAoJEFMQTLzJFOZFdX8IAJyFcIc6QA1RIiQb4kspWaWS
-EO8jW19hlOk4YTbgCjyS86ERIPah3PgnrmOgw65E4WUEecEl1SR26SORvAnhclza
-DUfr5rwoFpQzNnJLM6SdJS6bU1Gj8vtVnGwhqigY8WSXEa4svqKHuDWEpWHpJooN
-2LOdzf4g4PHm+2NoYV/xJvGDHf0a6jLTOib2ob3mkSuYlDBYbghN9o60A0w4M9+6
-TNGu5w9czmwp7Bt3yBSy7K7vs5MRh3orJ93OXe+xmwCm4Grjia+NbLLxF9jMm53Y
-o3Jkkju9yssIKdC2CZI8+/vij/TaNLwUCoI1G5RuYXJGgUVnFpNMHyKXt4bAUpI=
-=HeLH
------END PGP SIGNATURE-----
-
---Sr1nOIr3CvdE5hEN--
+	Andrew=20
