@@ -1,18 +1,23 @@
-Return-Path: <mitar@tnode.com>
-Message-ID: <4F59E1B4.6060608@tnode.com>
-Date: Fri, 09 Mar 2012 11:55:48 +0100
-From: Mitar <mitar@tnode.com>
-MIME-Version: 1.0
+Return-Path: <gabriel@kerneis.info>
+Date: Fri, 9 Mar 2012 12:12:03 +0100
+From: Gabriel Kerneis <kerneis@pps.jussieu.fr>
+Message-ID: <20120309111203.GE15059@kerneis.info>
 References: <4F4F6D18.3070403@ninux.org>
-	<201203091742.56498.lindner_marek@yahoo.de>
-	<CANjd3ndofho2TVYA0KKPeaE0jYO=RHGkzSmnaKpcOzg7e8oXAQ@mail.gmail.com>
-	<201203091802.39790.lindner_marek@yahoo.de>
-	<7iaa3qkr3e.fsf@lanthane.pps.jussieu.fr>
-	<CALCh5=cG9JM0pF+FWNhFtiDd8VSKTJQS4HT4jhxROq7hOMKV-A@mail.gmail.com>
-In-Reply-To: <CALCh5=cG9JM0pF+FWNhFtiDd8VSKTJQS4HT4jhxROq7hOMKV-A@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh]   Battlemesh v5 tests
+	<201203070156.51341.lindner_marek@yahoo.de>
+	<20120306193643.GM12778@kerneis.info>
+	<201203070552.33850.lindner_marek@yahoo.de>
+	<7i62egijym.fsf@lanthane.pps.jussieu.fr>
+	<20120307144709.GA19891@ritirata.org>
+	<7ieht4mnnp.fsf@lanthane.pps.jussieu.fr>
+	<20120307171751.GC1389@ritirata.org>
+	<20120307221847.GR12778@kerneis.info>
+	<20120309085636.GA9018@pandem0nium>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20120309085636.GA9018@pandem0nium>
+Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Battlemesh v5 tests
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,16 +29,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
 
-Hi!
+Hey Simon,
 
-> Just a note for those who do not know about the nice atmosphere of the
-> WBM events: those who are fighting in this thread are in fact good
-> friends and can have very very interesting discussions ;)
+On Fri, Mar 09, 2012 at 09:56:36AM +0100, Simon Wunderlich wrote:
+> 1) The detection part is batman-specific, we use the the PRIMARIES_FIRST_HOP flag
+> to do that. As a reminder (that might be documented somewhere else):
+> 
+>  * OGMs from the primary interface are broadcasted on ALL interfaces and are spread over
+>    the mesh (big TTL) --> these get the PRIMARIES_FIRST_HOP flag, which is cleared
+>    when forwarded by other nodes
+>  * OGMs from the secondary interfaces are only broadcasted on their respective interface
+>    and are only used for local link sensing (TTL = 1)
+> 
+> When we receive OGMs with PRIMARIES_FIRST_HOP flags on different interfaces, we know
+> that it came from the same neighbor, just from different interfaces. We have two
+> links to this neighbor.
 
-Love-hate relationship. ;-)
+I think my primary misunderstanding comes from this concept of “primary
+interface”.  It might be due to my lack of knowledge about Batman, but it
+definitely looks like a hack to me: why do you need this symmetry breaking in
+the first place?
 
+I believe the rest is only implementation details layered on top of this
+assumption.
 
-Mitar
+Maybe there is some explanation that I have overlooked in the wiki?  I have not
+found, for instance, how the primary interface is chosen.
+
+Best regards,
+-- 
+Gabriel
