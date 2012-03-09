@@ -1,15 +1,23 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 9 Mar 2012 19:26:54 +0800
-References: <4F4F6D18.3070403@ninux.org> <20120309085636.GA9018@pandem0nium>
-	<20120309111203.GE15059@kerneis.info>
-In-Reply-To: <20120309111203.GE15059@kerneis.info>
+Return-Path: <jch@pps.jussieu.fr>
+From: Juliusz Chroboczek <jch@pps.jussieu.fr>
+References: <201203070156.51341.lindner_marek@yahoo.de>
+	<20120306193643.GM12778@kerneis.info>
+	<201203070552.33850.lindner_marek@yahoo.de>
+	<7i62egijym.fsf@lanthane.pps.jussieu.fr>
+	<20120307144709.GA19891@ritirata.org>
+	<7ieht4mnnp.fsf@lanthane.pps.jussieu.fr>
+	<20120307171751.GC1389@ritirata.org>
+	<20120307221847.GR12778@kerneis.info>
+	<20120309085636.GA9018@pandem0nium>
+	<CANjd3nd5+8n2frV_FVLbONyAj4An8Rcq=mOu-pVk-3nzp8Kk_w@mail.gmail.com>
+	<20120309105921.GD15059@kerneis.info>
+Date: Fri, 09 Mar 2012 12:39:38 +0100
+In-Reply-To: <20120309105921.GD15059@kerneis.info> (Gabriel Kerneis's message
+	of "Fri, 9 Mar 2012 11:59:22 +0100")
+Message-ID: <7ik42u9f5x.fsf_-_@lanthane.pps.jussieu.fr>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201203091926.54899.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Battlemesh v5 tests
+Content-Type: text/plain
+Subject: [B.A.T.M.A.N.] Diversity in BATMAN [was: Battlemesh v5 tests]
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,52 +29,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
+To: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, March 09, 2012 19:12:03 Gabriel Kerneis wrote:
-> > When we receive OGMs with PRIMARIES_FIRST_HOP flags on different
-> > interfaces, we know that it came from the same neighbor, just from
-> > different interfaces. We have two links to this neighbor.
->=20
-> I think my primary misunderstanding comes from this concept of =E2=80=9Cp=
-rimary
-> interface=E2=80=9D.  It might be due to my lack of knowledge about Batman=
-, but it
-> definitely looks like a hack to me: why do you need this symmetry breaking
-> in the first place?
->=20
-> I believe the rest is only implementation details layered on top of this
-> assumption.
->=20
-> Maybe there is some explanation that I have overlooked in the wiki?  I ha=
-ve
-> not found, for instance, how the primary interface is chosen.
+> They just decide upfront a set of alternative interfaces, and then
+> choose the best interface that it is not the incoming one among this
+> set, for each packet.
 
-The concept of a primary interface goes back into the early days of batman =
-and=20
-primarily is an optimization to reduce overhead. At some point we realized=
-=20
-that it is not necessary to flood the mesh with OGMs from each and every=20
-interface we have. Nearby nodes might want to know about all interfaces to=
-=20
-select the best one. Nodes that are far away don't care which interface is=
-=20
-connected to what other interface. They only care about a route to their=20
-destination. This concept is briefly explained here[1] (section 2.1.6 and=20
-2.1.7).
+Can you confirm that, Simon?
 
-What interface is going to be the primary interface does not matter at all.=
-=20
-=46or the sake of simplicty batman chooses the first interface to be the pr=
-imary=20
-interface but it could be any interface you prefer. The key point is that o=
-nly=20
-the primary interface is known in the entire mesh whereas secondary interfa=
-ces=20
-are known by single hop neighbors only.
+> You have no way to declare that two different wifi interfaces interfere, for
+> instance; it is roughly similar to babel -z1.
 
-Regards,
-Marek
-=20
+Unlike in Babel, however, where that happens at the metric level, in
+BATMAN it appears to be implemented at the route selection level.  I'd
+like to better understand all of the tradeoffs involved.
 
-[1] http://downloads.open-mesh.org/batman/papers/batman-status.pdf
+On the one hand, doing things at the route selection level makes
+BATMAN's approach to diversity completely metric-agnostic, and avoids
+tricky issues of metric compositionality.  On the other hand, encoding
+the diversity information in the metric has the advantage of propagating
+the information to other nodes.
+
+Consider the following topology (all links assumed lossless), where
+we're trying to route from A to S:
+
+      B---C
+     /     \\
+    /       \\
+   A          S
+    \        /
+     \      /
+      B'---*C'  (C' has just a single interface)
+
+In Babel, even with just Z1,the diversity information is encoded in the
+metric, and so B announces a smaller metric than B'; this causes A to
+prefer the ABCS route to the AB'C'S route.  Unless I'm misunderstanding
+something, in BATMAN no information is propagated to A -- the information
+about the extra diversity in the upper route is purely local to C.
+
+(Note that this is completely orthogonal to explicitly propagating
+diversity information in addition to the metric, which only happens in
+Babel-Z3.)
+
+-- Juliusz
