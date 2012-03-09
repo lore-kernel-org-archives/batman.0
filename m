@@ -1,26 +1,20 @@
-Return-Path: <andrew.lunn@ascom.com>
-From: <andrew.lunn@ascom.com>
-Date: Fri, 9 Mar 2012 13:36:56 +0000
-Message-ID: <74A4488FAEEC56408507A6FECA69099101221874@SC000647.CHASCOM.INT>
-References: <201203070156.51341.lindner_marek@yahoo.de>
-	<20120306193643.GM12778@kerneis.info>
-	<201203070552.33850.lindner_marek@yahoo.de>
-	<7i62egijym.fsf@lanthane.pps.jussieu.fr>
-	<20120307144709.GA19891@ritirata.org>
-	<7ieht4mnnp.fsf@lanthane.pps.jussieu.fr>
-	<20120307171751.GC1389@ritirata.org>	<20120307221847.GR12778@kerneis.info>
-	<20120309085636.GA9018@pandem0nium>
-	<CANjd3nd5+8n2frV_FVLbONyAj4An8Rcq=mOu-pVk-3nzp8Kk_w@mail.gmail.com>
-	<20120309105921.GD15059@kerneis.info>
-	<7ik42u9f5x.fsf_-_@lanthane.pps.jussieu.fr>
-	<74A4488FAEEC56408507A6FECA6909910122181F@SC000647.CHASCOM.INT>
-	<7ieht1diol.fsf@lanthane.pps.jussieu.fr>
-In-Reply-To: <7ieht1diol.fsf@lanthane.pps.jussieu.fr>
-Content-Language: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Return-Path: <gabriel@kerneis.info>
+Date: Fri, 9 Mar 2012 14:46:00 +0100
+From: Gabriel Kerneis <kerneis@pps.jussieu.fr>
+Message-ID: <20120309134600.GK15059@kerneis.info>
+References: <4F4F6D18.3070403@ninux.org> <20120309085636.GA9018@pandem0nium>
+	<20120309111203.GE15059@kerneis.info>
+	<201203091926.54899.lindner_marek@yahoo.de>
+	<20120309120455.GF15059@kerneis.info>
+	<20120309123905.GB436@ritirata.org>
+	<20120309125741.GJ15059@kerneis.info>
+	<74A4488FAEEC56408507A6FECA6909910122184D@SC000647.CHASCOM.INT>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Diversity in BATMAN
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <74A4488FAEEC56408507A6FECA6909910122184D@SC000647.CHASCOM.INT>
+Subject: Re: [B.A.T.M.A.N.] [Battlemesh]   Battlemesh v5 tests
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -32,34 +26,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: battlemesh@ml.ninux.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: battlemesh@ml.ninux.org
 
+Andrew,
 
+On Fri, Mar 09, 2012 at 01:09:26PM +0000, andrew.lunn@ascom.com wrote:
+> > Consider the following topology:
+> > 
+> > 
+> >        l0     l1
+> >     A ---- B ==== C
+> >               l2
+> > 
+> > where --- is a single link (l0) and === are two links (l1 and l2).
+> > 
+> > Now imagine that the administator wants to dedicate the link l2 to the
+> > communication between B and C, for whatever reason.  It is fairly easy to
+> > set netfilter rules to that effect, for instance.
+> 
+> It would be possible to do what you want. Simply don't add the l2 interfaces
+> to BATMAN, put IP addresses from a different subnet on the interfaces, and B
+> and C can use the link l2 for themselves, and use the bat0 interface for
+> access to the mesh subnet.
 
-> -----Original Message-----
-> From: battlemesh-bounces@ml.ninux.org [mailto:battlemesh-
-> bounces@ml.ninux.org] On Behalf Of Juliusz Chroboczek
-> Sent: Friday, March 09, 2012 2:10 PM
-> To: Battle of the Mesh Mailing List
-> Cc: b.a.t.m.a.n@lists.open-mesh.org
-> Subject: Re: [Battlemesh] Diversity in BATMAN
->=20
-> > The metric is simply based on TQ. C=3DS will probably have a better
-> > local TQ than C'-S because of the load balancing over the two links,
->=20
-> Sorry for the confusion, I used < =3D > to mark a different frequency
-> than
-> < - >.  There's only the one link between C and S, it's just using
-> a different (non-interfering) frequency.
+This was of course a simplified example.
 
-Ah, O.K.
+What if there are an arbitrary number of nodes between B and C instead of a
+direct link?
 
-Humm, the answer stays the same :-)
+       l0        l1
+    A ---- B ---------- C  Example:
+           \           /   I want to restrict the link l1 to communication
+            D -- E -- F    between A and C. (Nice frying-pan, isn’t it? ;-)
 
-C=3DS will probably have a better TQ if it is not getting as much interfere=
-nce due to collisions. A will get to know about this in the path TQ. Better=
- still, B-C will also probably have a better TQ, since the link C=3DS is no=
-t interfering with it. So the path TQ is even better. A gets all this.
+I love ASCII-art, I can build arbitrarily complex situations (and we actually
+use this kind of stuff with babel on wifi.pps.jussieu.fr). Your solution doesn’t
+scale, it only pushes the problem outside of batman.
 
-	Andrew=20
+Best,
+-- 
+Gabriel
