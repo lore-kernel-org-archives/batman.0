@@ -1,7 +1,7 @@
 Return-Path: <andrew@lunn.ch>
-Date: Fri, 9 Mar 2012 17:57:29 +0100
+Date: Fri, 9 Mar 2012 19:17:42 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20120309165729.GG16608@lunn.ch>
+Message-ID: <20120309181742.GI16608@lunn.ch>
 References: <201203070156.51341.lindner_marek@yahoo.de>
 	<74A4488FAEEC56408507A6FECA69099101221874@SC000647.CHASCOM.INT>
 	<CANjd3nczdfd5XvNevVUtWJCP4J=ieUseSX85DVPrZcHV2ZExKg@mail.gmail.com>
@@ -11,10 +11,11 @@ References: <201203070156.51341.lindner_marek@yahoo.de>
 	<CANjd3ncNvz=QY+QiFqLh=KNXWHO_LYJMgM1G9mv0WJYbQs-jJg@mail.gmail.com>
 	<20120309162137.GF16608@lunn.ch>
 	<20120309163846.GM15059@kerneis.info>
+	<20120309165729.GG16608@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20120309163846.GM15059@kerneis.info>
+In-Reply-To: <20120309165729.GG16608@lunn.ch>
 Subject: Re: [B.A.T.M.A.N.] [Battlemesh]  Diversity in BATMAN
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -30,24 +31,14 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
 
-> > So when comparing a 1Mbps and a 54Mbps link, probably the TQ for the
-> > 54Mbps link will be better than the 1Mbps link.
+> I've got no results on 11n. I've done most of my work on 11g.  I will
+> see if i've got any results for 11g which might be appropriate.
 > 
-> That was our intuition too, but experiments we did in Brussels using 802.11n
-> multiradio routers, with Benjamin and Juliusz, seemed to show that packet loss
-> (as measured by babel at least) is not always correlated to throughput.  I do
-> not claim to understand how this is possible.
+> Maybe 
 
-How do you define throughput? Do you mean the coding rate the wifi
-driver has chosen to use, or iperf/netperf measurements of throughput?
-Also, does babel perform its measurements using unicast or
-broadcast/multicast packets/frames?
- 
-> It was in a limited setup, however, and we would be glad to get more results
-> proving or disproving this hypothesis.  Do you have any actual experimental
-> results to share on this topic?
+Upps. Got side tracked, disrupted, and hit send....
 
-I've got no results on 11n. I've done most of my work on 11g.  I will
-see if i've got any results for 11g which might be appropriate.
+Maybe you could perform some more tests in this direction at the next
+WBM in Athens?
 
-Maybe 
+      Andrew
