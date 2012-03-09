@@ -1,16 +1,17 @@
-Return-Path: <andrew@lunn.ch>
-Date: Fri, 9 Mar 2012 16:43:11 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20120309154311.GE16608@lunn.ch>
+Return-Path: <zoobab@gmail.com>
+MIME-Version: 1.0
+Sender: zoobab@gmail.com
+In-Reply-To: <20120309154311.GE16608@lunn.ch>
 References: <201203070156.51341.lindner_marek@yahoo.de>
 	<74A4488FAEEC56408507A6FECA69099101221874@SC000647.CHASCOM.INT>
 	<CANjd3nczdfd5XvNevVUtWJCP4J=ieUseSX85DVPrZcHV2ZExKg@mail.gmail.com>
 	<201203092236.51812.lindner_marek@yahoo.de>
 	<CANjd3ndFCA8LqJt1Un70zjv_OV3ye3kqiOoab1vCh73qd33+Pg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CANjd3ndFCA8LqJt1Un70zjv_OV3ye3kqiOoab1vCh73qd33+Pg@mail.gmail.com>
+	<20120309154311.GE16608@lunn.ch>
+Date: Fri, 9 Mar 2012 17:07:37 +0100
+Message-ID: <CANjd3ncNvz=QY+QiFqLh=KNXWHO_LYJMgM1G9mv0WJYbQs-jJg@mail.gmail.com>
+From: Benjamin Henrion <bh@udev.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Subject: Re: [B.A.T.M.A.N.] [Battlemesh]  Diversity in BATMAN
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -23,24 +24,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
+To: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-> With such metric, you don't make any difference between a 56K
-> telephone line and a 10Ge NIC.
-> 
-> If you 10Ge has 5pc packet loss and your 56K line has 0pc, your TQ
-> will be prefer the 56k link.
+On Fri, Mar 9, 2012 at 4:43 PM, Andrew Lunn <andrew@lunn.ch> wrote:
+>> With such metric, you don't make any difference between a 56K
+>> telephone line and a 10Ge NIC.
+>>
+>> If you 10Ge has 5pc packet loss and your 56K line has 0pc, your TQ
+>> will be prefer the 56k link.
+>
+> If my 10Ge has 5% packet loss, its broken. I don't want to use
+> it. Falling back to the 56K link is the right thing to do.
+>
+> There is a general rule of thumb. The higher the bandwidth, the less
+> packet loss there is. This is because high bandwidth links are
+> generally not wireless and so don't suffer high packet loss.
+>
+> As a side effect, BATMAN will tend to favor wired links over wireless
+> links, because wired links tend to be reliable, wireless links drop
+> packets.
 
-If my 10Ge has 5% packet loss, its broken. I don't want to use
-it. Falling back to the 56K link is the right thing to do.
+So compare a 1Mbits wireless link with a 54Mbits one.
 
-There is a general rule of thumb. The higher the bandwidth, the less
-packet loss there is. This is because high bandwidth links are
-generally not wireless and so don't suffer high packet loss.
-
-As a side effect, BATMAN will tend to favor wired links over wireless
-links, because wired links tend to be reliable, wireless links drop
-packets.
-
-    Andrew
+--
+Benjamin Henrion <bhenrion at ffii.org>
+FFII Brussels - +32-484-566109 - +32-2-3500762
+"In July 2005, after several failed attempts to legalise software
+patents in Europe, the patent establishment changed its strategy.
+Instead of explicitly seeking to sanction the patentability of
+software, they are now seeking to create a central European patent
+court, which would establish and enforce patentability rules in their
+favor, without any possibility of correction by competing courts or
+democratically elected legislators."
