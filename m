@@ -1,25 +1,18 @@
-Return-Path: <andrew.lunn@ascom.com>
-From: <andrew.lunn@ascom.com>
-Date: Fri, 9 Mar 2012 12:44:27 +0000
-Message-ID: <74A4488FAEEC56408507A6FECA6909910122181F@SC000647.CHASCOM.INT>
-References: <201203070156.51341.lindner_marek@yahoo.de>
-	<20120306193643.GM12778@kerneis.info>
-	<201203070552.33850.lindner_marek@yahoo.de>
-	<7i62egijym.fsf@lanthane.pps.jussieu.fr>
-	<20120307144709.GA19891@ritirata.org>
-	<7ieht4mnnp.fsf@lanthane.pps.jussieu.fr>
-	<20120307171751.GC1389@ritirata.org>	<20120307221847.GR12778@kerneis.info>
-	<20120309085636.GA9018@pandem0nium>
-	<CANjd3nd5+8n2frV_FVLbONyAj4An8Rcq=mOu-pVk-3nzp8Kk_w@mail.gmail.com>
-	<20120309105921.GD15059@kerneis.info>
-	<7ik42u9f5x.fsf_-_@lanthane.pps.jussieu.fr>
-In-Reply-To: <7ik42u9f5x.fsf_-_@lanthane.pps.jussieu.fr>
-Content-Language: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Return-Path: <gabriel@kerneis.info>
+Date: Fri, 9 Mar 2012 13:57:41 +0100
+From: Gabriel Kerneis <kerneis@pps.jussieu.fr>
+Message-ID: <20120309125741.GJ15059@kerneis.info>
+References: <4F4F6D18.3070403@ninux.org> <20120309085636.GA9018@pandem0nium>
+	<20120309111203.GE15059@kerneis.info>
+	<201203091926.54899.lindner_marek@yahoo.de>
+	<20120309120455.GF15059@kerneis.info>
+	<20120309123905.GB436@ritirata.org>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Diversity in BATMAN [was:
-	Battlemesh v5 tests]
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20120309123905.GB436@ritirata.org>
+Subject: Re: [B.A.T.M.A.N.] [Battlemesh] Battlemesh v5 tests
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -31,36 +24,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: battlemesh@ml.ninux.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
 
-> Consider the following topology (all links assumed lossless), where
-> we're trying to route from A to S:
+Antonio,
+
+On Fri, Mar 09, 2012 at 01:39:06PM +0100, Antonio Quartulli wrote:
+> > Does that mean that it is impossible to announce a route on some interf=
+aces
+> > only?  It looks like a rather arbitrary limitation.
 >=20
->       B---C
->      /     \\
->     /       \\
->    A          S
->     \        /
->      \      /
->       B'---*C'  (C' has just a single interface)
->=20
-> In Babel, even with just Z1,the diversity information is encoded in the
-> metric, and so B announces a smaller metric than B'; this causes A to
-> prefer the ABCS route to the AB'C'S route.  Unless I'm misunderstanding
-> something, in BATMAN no information is propagated to A -- the
-> information
-> about the extra diversity in the upper route is purely local to C.
-=20
-Hi Juliusz
+> OGMs are broadcasted over all the interfaces (there may be some neighs re=
+achable
+> only by one interface) and you can't force an OGM to be broadcasted only =
+over
+> one of them. I hope I correctly got your question.
 
-I'm no expert here, but if Simon happens to fall on his head.....
+My question is about some kind of policy routing (setup by the administrato=
+r,
+not guessed by batman).
 
-The metric is simply based on TQ. C=3DS will probably have a better local T=
-Q than C'-S because of the load balancing over the two links, meaning there=
- are less packets in the air, and so probably less collisions, etc.. A gets=
- to know the complete link path TQ going both ways around the loop, so does=
- get some idea that C=3DS is better than C'-S, assuming it is actually bett=
-er.
+Consider the following topology:
 
-	Andrew=20
+
+       l0     l1
+    A ---- B =3D=3D=3D=3D C
+              l2
+
+where --- is a single link (l0) and =3D=3D=3D are two links (l1 and l2).
+
+Now imagine that the administator wants to dedicate the link l2 to the
+communication between B=A0and C, for whatever reason.  It is fairly easy to=
+ set
+netfilter rules to that effect, for instance.
+
+1) Is it possible for the administrator of B to configure batman so that it
+   announces a route to A=A0only over l1, and not l2?  Such that C will onl=
+y ever
+   send packets for A over l1, and B never replies on l2 either.
+
+2) If that is possible, what is the mechanism in the alternating algorithm =
+which
+   prevents batman from sending packets from A to C=A0over l2 (assuming TQ1=
+ < TQ2)?
+   It looks like both l1 and l2 will end up as bonding alternates for C.
+
+Best,
+--=20
+Gabriel
