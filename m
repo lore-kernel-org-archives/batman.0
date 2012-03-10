@@ -1,17 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 11 Mar 2012 06:03:29 +0800
+Date: Sun, 11 Mar 2012 06:04:34 +0800
 References: <7238641.4aX8WvziBv@sven-laptop.home.narfation.org>
 	<1331107673-8986-1-git-send-email-sven@narfation.org>
-	<1331107673-8986-7-git-send-email-sven@narfation.org>
-In-Reply-To: <1331107673-8986-7-git-send-email-sven@narfation.org>
+	<1331107673-8986-8-git-send-email-sven@narfation.org>
+In-Reply-To: <1331107673-8986-8-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201203110603.29639.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 7/8-master] batman-adv: Use {} braces
-	consistent on the arms of a statement
+Message-Id: <201203110604.34690.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 8/8-master] batman-adv: Remove spaces
+	after a cast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,14 +25,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday, March 07, 2012 16:07:51 Sven Eckelmann wrote:
+On Wednesday, March 07, 2012 16:07:52 Sven Eckelmann wrote:
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bridge_loop_avoidance.c |    3 ++-
->  translation-table.c     |    3 ++-
->  2 files changed, 4 insertions(+), 2 deletions(-)
+>  bridge_loop_avoidance.c |   24 ++++++++++++------------
+>  1 files changed, 12 insertions(+), 12 deletions(-)
 
-Applied in revision 639d1c9.
+Applied in revision 3a206a3.
 
 Thanks,
 Marek
