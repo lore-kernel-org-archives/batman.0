@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 11 Mar 2012 06:17:51 +0800
-Message-Id: <1331417873-19354-3-git-send-email-lindner_marek@yahoo.de>
+Date: Sun, 11 Mar 2012 06:17:52 +0800
+Message-Id: <1331417873-19354-4-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1331417873-19354-1-git-send-email-lindner_marek@yahoo.de>
 References: <1331417873-19354-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: rename sysfs macros to
-	reflect the soft-interface dependency
+Subject: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: Adding hard_iface specific
+	sysfs wrapper macros for UINT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,123 +20,76 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
+From: Linus Luessing <linus.luessing@web.de>
+
+This allows us to easily add a sysfs parameter for an unsigned int
+later, which is not for a batman mesh interface (e.g. bat0), but for a
+common interface instead. It allows reading and writing an atomic_t in
+hard_iface (instead of bat_priv compared to the mesh variant).
+
+Developed by Linus during a 6 months trainee study period in Ascom
+(Switzerland) AG.
+
+Signed-off-by: Linus Luessing <linus.luessing@web.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- bat_sysfs.c |   55 ++++++++++++++++++++++++++++---------------------------
- 1 files changed, 28 insertions(+), 27 deletions(-)
+ bat_sysfs.c |   43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 43 insertions(+), 0 deletions(-)
 
 diff --git a/bat_sysfs.c b/bat_sysfs.c
-index 3439fb5..91107fd 100644
+index 91107fd..35c15e9 100644
 --- a/bat_sysfs.c
 +++ b/bat_sysfs.c
-@@ -63,7 +63,7 @@ struct bat_attribute bat_attr_##_name = {	\
- 	.store  = _store,			\
- };
- 
--#define BAT_ATTR_STORE_BOOL(_name, _post_func)				\
-+#define BAT_ATTR_SIF_STORE_BOOL(_name, _post_func)			\
- ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
- 		      char *buff, size_t count)				\
- {									\
-@@ -73,9 +73,9 @@ ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
- 				 &bat_priv->_name, net_dev);		\
- }
- 
--#define BAT_ATTR_SHOW_BOOL(_name)					\
--ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
--			    char *buff)					\
-+#define BAT_ATTR_SIF_SHOW_BOOL(_name)					\
-+ssize_t show_##_name(struct kobject *kobj,				\
-+		     struct attribute *attr, char *buff)		\
- {									\
- 	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);		\
- 	return sprintf(buff, "%s\n",					\
-@@ -83,16 +83,17 @@ ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
- 		       "disabled" : "enabled");				\
- }									\
- 
--/* Use this, if you are going to turn a [name] in bat_priv on or off */
--#define BAT_ATTR_BOOL(_name, _mode, _post_func)				\
--	static BAT_ATTR_STORE_BOOL(_name, _post_func)			\
--	static BAT_ATTR_SHOW_BOOL(_name)				\
-+/* Use this, if you are going to turn a [name] in the soft-interface
-+ * (bat_priv) on or off */
-+#define BAT_ATTR_SIF_BOOL(_name, _mode, _post_func)			\
-+	static BAT_ATTR_SIF_STORE_BOOL(_name, _post_func)		\
-+	static BAT_ATTR_SIF_SHOW_BOOL(_name)				\
+@@ -117,6 +117,49 @@ ssize_t show_##_name(struct kobject *kobj,				\
  	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
  
  
--#define BAT_ATTR_STORE_UINT(_name, _min, _max, _post_func)		\
-+#define BAT_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)		\
- ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
--			     char *buff, size_t count)			\
++#define BAT_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)		\
++ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
 +		      char *buff, size_t count)				\
- {									\
- 	struct net_device *net_dev = kobj_to_netdev(kobj);		\
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);		\
-@@ -100,19 +101,19 @@ ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
- 				 attr, &bat_priv->_name, net_dev);	\
- }
- 
--#define BAT_ATTR_SHOW_UINT(_name)					\
--ssize_t show_##_name(struct kobject *kobj, struct attribute *attr,	\
--			    char *buff)					\
-+#define BAT_ATTR_SIF_SHOW_UINT(_name)					\
++{									\
++	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct hard_iface *hard_iface = hardif_get_by_netdev(net_dev);	\
++	ssize_t length;							\
++									\
++	if (!hard_iface)						\
++		return 0;						\
++									\
++	length = __store_uint_attr(buff, count, _min, _max, _post_func,	\
++				   attr, &hard_iface->_name, net_dev);	\
++									\
++	hardif_free_ref(hard_iface);					\
++	return length;							\
++}
++
++#define BAT_ATTR_HIF_SHOW_UINT(_name)					\
 +ssize_t show_##_name(struct kobject *kobj,				\
 +		     struct attribute *attr, char *buff)		\
- {									\
- 	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);		\
- 	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_name));	\
- }									\
- 
--/* Use this, if you are going to set [name] in bat_priv to unsigned integer
-- * values only */
--#define BAT_ATTR_UINT(_name, _mode, _min, _max, _post_func)		\
--	static BAT_ATTR_STORE_UINT(_name, _min, _max, _post_func)	\
--	static BAT_ATTR_SHOW_UINT(_name)				\
-+/* Use this, if you are going to set [name] in the soft-interface
-+ * (bat_priv) to an unsigned integer value */
-+#define BAT_ATTR_SIF_UINT(_name, _mode, _min, _max, _post_func)		\
-+	static BAT_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)	\
-+	static BAT_ATTR_SIF_SHOW_UINT(_name)				\
- 	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
- 
- 
-@@ -384,24 +385,24 @@ static ssize_t store_gw_bwidth(struct kobject *kobj, struct attribute *attr,
- 	return gw_bandwidth_set(net_dev, buff, count);
- }
- 
--BAT_ATTR_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
--BAT_ATTR_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
-+BAT_ATTR_SIF_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
-+BAT_ATTR_SIF_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
- #ifdef CONFIG_BATMAN_ADV_BLA
--BAT_ATTR_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
-+BAT_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
- #endif
--BAT_ATTR_BOOL(fragmentation, S_IRUGO | S_IWUSR, update_min_mtu);
--BAT_ATTR_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
-+BAT_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, update_min_mtu);
-+BAT_ATTR_SIF_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
- static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
- static BAT_ATTR(routing_algo, S_IRUGO, show_bat_algo, NULL);
- static BAT_ATTR(gw_mode, S_IRUGO | S_IWUSR, show_gw_mode, store_gw_mode);
--BAT_ATTR_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
--BAT_ATTR_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
--BAT_ATTR_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, TQ_MAX_VALUE,
-+BAT_ATTR_SIF_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
-+BAT_ATTR_SIF_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
-+BAT_ATTR_SIF_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, TQ_MAX_VALUE,
- 	      post_gw_deselect);
- static BAT_ATTR(gw_bandwidth, S_IRUGO | S_IWUSR, show_gw_bwidth,
- 		store_gw_bwidth);
- #ifdef CONFIG_BATMAN_ADV_DEBUG
--BAT_ATTR_UINT(log_level, S_IRUGO | S_IWUSR, 0, 31, NULL);
-+BAT_ATTR_SIF_UINT(log_level, S_IRUGO | S_IWUSR, 0, 31, NULL);
- #endif
- 
- static struct bat_attribute *mesh_attrs[] = {
++{									\
++	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct hard_iface *hard_iface = hardif_get_by_netdev(net_dev);	\
++	ssize_t length;							\
++									\
++	if (!hard_iface)						\
++		return 0;						\
++									\
++	length = sprintf(buff, "%i\n", atomic_read(&hard_iface->_name));\
++									\
++	hardif_free_ref(hard_iface);					\
++	return length;							\
++}
++
++/* Use this, if you are going to set [name] in hard_iface to an
++ * unsigned integer value*/
++#define BAT_ATTR_HIF_UINT(_name, _mode, _min, _max, _post_func)		\
++	static BAT_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)	\
++	static BAT_ATTR_HIF_SHOW_UINT(_name)				\
++	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
++
++
+ static int store_bool_attr(char *buff, size_t count,
+ 			   struct net_device *net_dev,
+ 			   const char *attr_name, atomic_t *attr)
 -- 
 1.7.9.1
 
