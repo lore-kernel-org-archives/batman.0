@@ -1,22 +1,21 @@
-Return-Path: <ordex@autistici.org>
-Date: Sun, 11 Mar 2012 09:53:22 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120311085321.GA4232@ritirata.org>
-References: <201203092236.51812.lindner_marek@yahoo.de>
-	<CANjd3ndFCA8LqJt1Un70zjv_OV3ye3kqiOoab1vCh73qd33+Pg@mail.gmail.com>
-	<20120309154311.GE16608@lunn.ch>
-	<CANjd3ncNvz=QY+QiFqLh=KNXWHO_LYJMgM1G9mv0WJYbQs-jJg@mail.gmail.com>
-	<20120309162137.GF16608@lunn.ch>
-	<20120309163846.GM15059@kerneis.info>
-	<20120309165729.GG16608@lunn.ch> <20120309181742.GI16608@lunn.ch>
-	<7iaa3oc4no.fsf_-_@lanthane.pps.jussieu.fr>
-	<4F5C01BC.8070203@tnode.com>
+Return-Path: <jch@pps.jussieu.fr>
+From: Juliusz Chroboczek <jch@pps.jussieu.fr>
+References: <4F4F6D18.3070403@ninux.org> <20120309085636.GA9018@pandem0nium>
+	<20120309111203.GE15059@kerneis.info>
+	<201203091926.54899.lindner_marek@yahoo.de>
+	<20120309120455.GF15059@kerneis.info>
+	<20120309123905.GB436@ritirata.org>
+	<20120309125741.GJ15059@kerneis.info>
+	<74A4488FAEEC56408507A6FECA6909910122184D@SC000647.CHASCOM.INT>
+	<20120309134600.GK15059@kerneis.info>
+	<7ilin9voj9.fsf@lanthane.pps.jussieu.fr> <4F5B7F44.3000803@tnode.com>
+Date: Sun, 11 Mar 2012 16:32:37 +0100
+In-Reply-To: <4F5B7F44.3000803@tnode.com> (mitar@tnode.com's message of "Sat, 
+	10 Mar 2012 08:20:20 -0800")
+Message-ID: <7ihaxv5f1m.fsf_-_@lanthane.pps.jussieu.fr>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="SUOF0GtieIMvvwua"
-Content-Disposition: inline
-In-Reply-To: <4F5C01BC.8070203@tnode.com>
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh]  Diversity in BATMAN
+Content-Type: text/plain
+Subject: [B.A.T.M.A.N.] Network models [was: Battlemesh v5 tests]
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,55 +27,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Juliusz Chroboczek <jch@pps.jussieu.fr>, Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
+To: Mitar <mitar@tnode.com>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
 
+Hmm, are we getting off-topic for the Battlemesh list?
 
---SUOF0GtieIMvvwua
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>> (In a pure mesh protocol, routers with multiple interfaces should
+>> probably appear as multiple nodes;
 
-On Sat, Mar 10, 2012 at 05:37:00 -0800, Mitar wrote:
-> Hi!
->=20
-> >> Maybe you could perform some more tests in this direction at the next
-> >> WBM in Athens?
-> >=20
-> > I don't think any of us are going to Athens.
->=20
-> No? How come? Why?
+> Why? I think it is good that the routing protocol knows that something
+> (some interfaces) belongs together (node).
 
-I'm wondering the same :(:(:(
+I agree with both of you, this is precious information that should not
+be dropped.  The question is whether it should be embedded in the
+network model, or kept outside of it.
 
-=46rom the participant list it seems that all the French guys but one gave =
-up on
-WBM :(:(:( this is sad
+A pure mesh model has the attraction of being extremely clean and pure;
+most graph theory theorems apply to a pure mesh model straight away,
+which allows you to leverage a large body of existing litterature.  So
+intuitively there should be some strong advantages to keeping your model
+small and clean, and encoding the information about linked interfaces in
+a separate data structure.
 
-Only a coincidence or there is something wrong this year?
+I'm not quite sure what model BATMAN uses, but it would appear that it's
+almost, but not quite, a pure mesh model.  Perhaps the BATMAN developers
+have thought long and hard about giving up the purity of a mesh model,
+and decided that it's worth it.  Perhaps they haven't.  It's difficult
+to say, since they're not interested in communicating on technical issues.
 
+OLSR uses a pure model and encodes extra information in additional data
+structures.  That's why OLSR uses MIDs and HNAs -- they're the packets
+carrying the additional data.  An alternative "clean" model would be to
+have a router id for each interface, and an extra flag within TC entries
+that shows which links are between multiple interfaces of a single node,
+which is what I suggest might be a good choice at layer 2.
 
-Cheers,
+Babel uses a different model, the classical Internet model (very well
+described by Clark in the early 80s, but I don't have the paper handy).
+In that model, we're not working with a graph, but with a structure with
+three kind of entities: nodes, interfaces, and links, where links
+connect interfaces rather than connecting nodes.  There are some
+advantages to using a model that more faithfully represents reality, and
+that is a good fit with what classical routing protocols do, but of
+course the downside is that we're working with a somewhat messy data
+structure that hasn't been studied as exhaustively as graphs have.
 
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---SUOF0GtieIMvvwua
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.18 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPXGgBAAoJEFMQTLzJFOZFd9wH/igHVrdbR91D5u2Ir9i+i1NN
-w3cHTlVobmWZgzoQXGtwdIukcfjzToUw5UKHTvgCTiKiaGvRFy46JnEUx1lw/iSF
-Vsk+aZLNeL6siRWBu2uQ/hFrqegCR0/PQiSUTM+pdOoe3uPFszXNigLO0i+59XFS
-1TMdCyiJVdxYNTKHntshkBk2+DEwuQYaJA3s7YoowBe1zPIAKKKMmHPddWTDIwsF
-uX3FXBUnSGt1VltsxeGrgWZehMLebutUpwPDbMBYDNO1LQDdJ0vPhvmitqPQsC9B
-FsgTNbNz2nfCSpBV5EZ2hrcGDZG9ZwP6i3cjZdZOOUweGkcCkO2NZrBYq7cTZzI=
-=4NFC
------END PGP SIGNATURE-----
-
---SUOF0GtieIMvvwua--
+-- Juliusz
