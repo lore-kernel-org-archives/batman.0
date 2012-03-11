@@ -1,22 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 11 Mar 2012 21:39:42 +0100
+Date: Sun, 11 Mar 2012 22:50:39 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20120311203941.GA25349@pandem0nium>
-References: <20120309154311.GE16608@lunn.ch>
-	<CANjd3ncNvz=QY+QiFqLh=KNXWHO_LYJMgM1G9mv0WJYbQs-jJg@mail.gmail.com>
-	<20120309162137.GF16608@lunn.ch>
-	<20120309163846.GM15059@kerneis.info>
-	<20120309165729.GG16608@lunn.ch> <20120309181742.GI16608@lunn.ch>
-	<7iaa3oc4no.fsf_-_@lanthane.pps.jussieu.fr>
-	<4F5C01BC.8070203@tnode.com>
-	<7id38j5e22.fsf@lanthane.pps.jussieu.fr>
-	<4F5CCCAE.5040508@tnode.com>
+Message-ID: <20120311215039.GA26577@pandem0nium>
+References: <1331417873-19354-1-git-send-email-lindner_marek@yahoo.de>
+	<1331417873-19354-5-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="y0ulUmNC+osPPQO6"
+	protocol="application/pgp-signature"; boundary="u3/rZRmxL6MmkK24"
 Content-Disposition: inline
-In-Reply-To: <4F5CCCAE.5040508@tnode.com>
-Subject: Re: [B.A.T.M.A.N.] [Battlemesh]  Diversity in BATMAN
+In-Reply-To: <1331417873-19354-5-git-send-email-lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: avoid temporary routing
+ loops by being strict on forwarded OGMs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -29,68 +23,199 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Juliusz Chroboczek <jch@pps.jussieu.fr>, Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 
---y0ulUmNC+osPPQO6
+--u3/rZRmxL6MmkK24
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hey there,
 
-On Sun, Mar 11, 2012 at 09:02:54AM -0700, Mitar wrote:
-> Hi!
+I've tested this patch on my old ring setup which used to create temporary
+routing loops, and this patch improved the situation.
+
+Feel free to add:
+
+Tested-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+
+On Sun, Mar 11, 2012 at 06:17:53AM +0800, Marek Lindner wrote:
+> batman-adv would forward OGMs from non-besthops while replacing the the TQ
+> and TTL values with the values from the best hop. In certain corner cases
+> this leads to a temporary routing loop.
+> This patch changes this behavior: Only packets from best next hops are
+> forwarded - TQ and TTL values won't be replaced anymore. However, the pro=
+tocol
+> needs to rebroadcast OGMs from single hop neighbors regardless of whether=
+ or
+> not they are the best hop. To handle this case a new flag is introduced to
+> alert neighboring nodes about the forwarded OGM that is not from my best
+> next hop. It is to be discarded by all nodes except for the one originati=
+ng
+> the OGM.
 >=20
-> > However, in my personal case, there's also the fact that WBM has been
-> > evolving in a direction that I don't feel comfortable with (less
-> > technical content, more self- promotion, tolerance for bomb-makers,
-> > etc.)
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  bat_iv_ogm.c |   61 ++++++++++++++++++++++++++++++----------------------=
+-----
+>  packet.h     |    1 +
+>  2 files changed, 33 insertions(+), 29 deletions(-)
 >=20
-> Self-promotion of good ideas is not necessary bad. And others are there
-> to squash the bad ideas. ;-)
-
-I definitly agree. If we promote bad ideas as the batman-adv-team, I'm sure
-we'll be shouted at very loud, and thats a great thing.
-
-> But for technical content: I think you could easily volunteer to lead
-> few round tables on the topic of protocol design. For example, this
-> discussion we are now having on the mailing list about different aspects
-> of routing protocols: oh, how I would love to have them in live, with
-> everybody from all protocols together, sitting and explaining their
-> approaches, their arguments and experiences why they are doing something
-> in the way they are doing: is this theoretical argument, or is it simply
-> a practical observation, can we find a theoretical reasoning behind it,
-> can we maybe invalidate some theoretical argument with a practical
-> (repeatable) experiment?
+> diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+> index 1e92e38..85617c4 100644
+> --- a/bat_iv_ogm.c
+> +++ b/bat_iv_ogm.c
+> @@ -507,11 +507,10 @@ static void bat_iv_ogm_forward(struct orig_node *or=
+ig_node,
+>  			       const struct ethhdr *ethhdr,
+>  			       struct batman_ogm_packet *batman_ogm_packet,
+>  			       bool is_single_hop_neigh,
+> +			       bool is_from_best_next_hop,
+>  			       struct hard_iface *if_incoming)
+>  {
+>  	struct bat_priv *bat_priv =3D netdev_priv(if_incoming->soft_iface);
+> -	struct neigh_node *router;
+> -	uint8_t in_tq, in_ttl, tq_avg =3D 0;
+>  	uint8_t tt_num_changes;
+> =20
+>  	if (batman_ogm_packet->header.ttl <=3D 1) {
+> @@ -519,41 +518,31 @@ static void bat_iv_ogm_forward(struct orig_node *or=
+ig_node,
+>  		return;
+>  	}
+> =20
+> -	router =3D orig_node_get_router(orig_node);
+> +	if (!is_from_best_next_hop) {
+> +		/**
+> +		* Mark the forwarded packet when it is not coming from our best
+> +		* next hop. We still need to forward the packet for our neighbor
+> +		* link quality detection to work in case the packet originated
+> +		* from a single hop neighbor. Otherwise we can simply drop the
+> +		* ogm.
+> +		*/
+> +		if (is_single_hop_neigh)
+> +			batman_ogm_packet->flags |=3D NOT_BEST_NEXT_HOP;
+> +		else
+> +			return;
+> +	}
+> =20
+> -	in_tq =3D batman_ogm_packet->tq;
+> -	in_ttl =3D batman_ogm_packet->header.ttl;
+>  	tt_num_changes =3D batman_ogm_packet->tt_num_changes;
+> =20
+>  	batman_ogm_packet->header.ttl--;
+>  	memcpy(batman_ogm_packet->prev_sender, ethhdr->h_source, ETH_ALEN);
+> =20
+> -	/* rebroadcast tq of our best ranking neighbor to ensure the rebroadcast
+> -	 * of our best tq value */
+> -	if (router && router->tq_avg !=3D 0) {
+> -
+> -		/* rebroadcast ogm of best ranking neighbor as is */
+> -		if (!compare_eth(router->addr, ethhdr->h_source)) {
+> -			batman_ogm_packet->tq =3D router->tq_avg;
+> -
+> -			if (router->last_ttl)
+> -				batman_ogm_packet->header.ttl =3D
+> -					router->last_ttl - 1;
+> -		}
+> -
+> -		tq_avg =3D router->tq_avg;
+> -	}
+> -
+> -	if (router)
+> -		neigh_node_free_ref(router);
+> -
+>  	/* apply hop penalty */
+>  	batman_ogm_packet->tq =3D hop_penalty(batman_ogm_packet->tq, bat_priv);
+> =20
+>  	bat_dbg(DBG_BATMAN, bat_priv,
+> -		"Forwarding packet: tq_orig: %i, tq_avg: %i, tq_forw: %i, ttl_orig: %i=
+, ttl_forw: %i\n",
+> -		in_tq, tq_avg, batman_ogm_packet->tq, in_ttl - 1,
+> -		batman_ogm_packet->header.ttl);
+> +		"Forwarding packet: tq: %i, ttl: %i\n",
+> +		batman_ogm_packet->tq, batman_ogm_packet->header.ttl);
+> =20
+>  	batman_ogm_packet->seqno =3D htonl(batman_ogm_packet->seqno);
+>  	batman_ogm_packet->tt_crc =3D htons(batman_ogm_packet->tt_crc);
+> @@ -949,6 +938,7 @@ static void bat_iv_ogm_process(const struct ethhdr *e=
+thhdr,
+>  	int is_my_addr =3D 0, is_my_orig =3D 0, is_my_oldorig =3D 0;
+>  	int is_broadcast =3D 0, is_bidirectional;
+>  	bool is_single_hop_neigh =3D false;
+> +	bool is_from_best_next_hop =3D false;
+>  	int is_duplicate;
+>  	uint32_t if_incoming_seqno;
+> =20
+> @@ -1070,6 +1060,13 @@ static void bat_iv_ogm_process(const struct ethhdr=
+ *ethhdr,
+>  		return;
+>  	}
+> =20
+> +	if (batman_ogm_packet->flags & NOT_BEST_NEXT_HOP) {
+> +		bat_dbg(DBG_BATMAN, bat_priv,
+> +			"Drop packet: ignoring all packets not forwarded from "
+> +			"the best next hop (sender: %pM)\n", ethhdr->h_source);
+> +		return;
+> +	}
+> +
+>  	orig_node =3D get_orig_node(bat_priv, batman_ogm_packet->orig);
+>  	if (!orig_node)
+>  		return;
+> @@ -1094,6 +1091,10 @@ static void bat_iv_ogm_process(const struct ethhdr=
+ *ethhdr,
+>  	if (router)
+>  		router_router =3D orig_node_get_router(router->orig_node);
+> =20
+> +	if ((router && router->tq_avg !=3D 0) &&
+> +	    (compare_eth(router->addr, ethhdr->h_source)))
+> +		is_from_best_next_hop =3D true;
+> +
+>  	/* avoid temporary routing loops */
+>  	if (router && router_router &&
+>  	    (compare_eth(router->addr, batman_ogm_packet->prev_sender)) &&
+> @@ -1144,7 +1145,8 @@ static void bat_iv_ogm_process(const struct ethhdr =
+*ethhdr,
+> =20
+>  		/* mark direct link on incoming interface */
+>  		bat_iv_ogm_forward(orig_node, ethhdr, batman_ogm_packet,
+> -				   is_single_hop_neigh, if_incoming);
+> +				   is_single_hop_neigh, is_from_best_next_hop,
+> +				   if_incoming);
+> =20
+>  		bat_dbg(DBG_BATMAN, bat_priv,
+>  			"Forwarding packet: rebroadcast neighbor packet with direct link flag=
+\n");
+> @@ -1167,7 +1169,8 @@ static void bat_iv_ogm_process(const struct ethhdr =
+*ethhdr,
+>  	bat_dbg(DBG_BATMAN, bat_priv,
+>  		"Forwarding packet: rebroadcast originator packet\n");
+>  	bat_iv_ogm_forward(orig_node, ethhdr, batman_ogm_packet,
+> -			   is_single_hop_neigh, if_incoming);
+> +			   is_single_hop_neigh, is_from_best_next_hop,
+> +			   if_incoming);
+> =20
+>  out_neigh:
+>  	if ((orig_neigh_node) && (!is_single_hop_neigh))
+> diff --git a/packet.h b/packet.h
+> index 02b0c87..3c4c533 100644
+> --- a/packet.h
+> +++ b/packet.h
+> @@ -47,6 +47,7 @@ enum bat_subtype {
+>  #define COMPAT_VERSION 14
+> =20
+>  enum batman_iv_flags {
+> +	NOT_BEST_NEXT_HOP   =3D 1 << 3,
+>  	PRIMARIES_FIRST_HOP =3D 1 << 4,
+>  	VIS_SERVER	    =3D 1 << 5,
+>  	DIRECTLINK	    =3D 1 << 6
+> --=20
+> 1.7.9.1
 >=20
-> Because I think I am not the only one who does not know much about how
-> other protocols are doing things, what were the reasons they have chosen
-> the given approach, ... And it would really help understanding each
-> other, and maybe, maybe, we could in some years even agree on a common
-> routing protocol. ;-)
 >=20
-> This would also be interesting for non-technical and new people, because
-> they would be able to listen and understand how things work.
->=20
-> But because Juliusz is afraid to come, I can volunteer to moderate (and
-> mediate) such tables if others prepare me a list of topics to discuss.
 
-Sounds like a great idea! After some discussion with some other batman-adv =
-devs,
-we would really like to join this. Actually I think its a good thing that
-we have some different routing protocols. Diversity gives birth to different
-approaches, which may succeed or fail, and in both events we can learn from
-each other. Anyway, maybe we should have put a list in the wiki what we want
-to dicuss? Do you want to put it as a side-event or more like a podium disc=
-ussion
-thing?
-
-Cheers,
-	Simon
-
-
---y0ulUmNC+osPPQO6
+--u3/rZRmxL6MmkK24
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -98,9 +223,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAk9dDY0ACgkQrzg/fFk7axbSLwCgrQOOcPIuQCk4NK/+Lt0vQaGB
-AVMAoLhLE+ERwc/0L5WWBpCNVkhjJbgs
-=60bc
+iEYEARECAAYFAk9dHi8ACgkQrzg/fFk7axbJ+QCg5TaIOetOvSoTjr5vHCHr4k7M
+/6YAoKC76tkASLbl9TuYFKqLTIHXRK2s
+=JNhg
 -----END PGP SIGNATURE-----
 
---y0ulUmNC+osPPQO6--
+--u3/rZRmxL6MmkK24--
