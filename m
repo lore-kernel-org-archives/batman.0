@@ -1,15 +1,21 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Content-class: urn:content-classes:message
+Return-Path: <mitar@tnode.com>
+Message-ID: <4F5EC0E0.7020400@tnode.com>
+Date: Mon, 12 Mar 2012 20:37:04 -0700
+From: Mitar <mitar@tnode.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Date: Mon, 12 Mar 2012 13:16:43 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6E9D@saturn3.aculab.com>
-In-Reply-To: <1331419491-21333-4-git-send-email-lindner_marek@yahoo.de>
-From: "David Laight" <David.Laight@ACULAB.COM>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Use {} braces consistent
-	on the arms of a statement
+References: <20120309154311.GE16608@lunn.ch>
+	<CANjd3ncNvz=QY+QiFqLh=KNXWHO_LYJMgM1G9mv0WJYbQs-jJg@mail.gmail.com>
+	<20120309162137.GF16608@lunn.ch>
+	<20120309163846.GM15059@kerneis.info>
+	<20120309165729.GG16608@lunn.ch> <20120309181742.GI16608@lunn.ch>
+	<7iaa3oc4no.fsf_-_@lanthane.pps.jussieu.fr>
+	<4F5C01BC.8070203@tnode.com>
+	<7id38j5e22.fsf@lanthane.pps.jussieu.fr>
+	<4F5CCCAE.5040508@tnode.com> <20120311203941.GA25349@pandem0nium>
+In-Reply-To: <20120311203941.GA25349@pandem0nium>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [Battlemesh]    Diversity in BATMAN
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +27,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: Battle of the Mesh Mailing List <battlemesh@ml.ninux.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-=20
-> diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-> index 01b66d4..7f8e158 100644
-> --- a/net/batman-adv/routing.c
-> +++ b/net/batman-adv/routing.c
-> @@ -237,8 +237,9 @@ int window_protected(struct bat_priv=20
-> *bat_priv, int32_t seq_num_diff,
->  				"old packet received, start
-protection\n");
-> =20
->  			return 0;
-> -		} else
-> +		} else {
->  			return 1;
-> +		}
->  	}
->  	return 0;
->  }
+Hi!
 
-Doesn't this one fail on the "don't use 'else' after return/break" ?
-Also look like it would read better if the condition (not quoted)
-were inverted and the 'return 1' put first.
+> Sounds like a great idea!
 
-	David
+I am glad you like it.
+
+> Anyway, maybe we should have put a list in the wiki what we want
+> to dicuss?
+
+Agreed.
+
+> Do you want to put it as a side-event or more like a podium
+> discussion thing?
+
+Maybe it would be better if it would be a podium discussion thing. So
+that others could join in. If it would be a side-event, it would be more
+like a work-group meeting.
 
 
+Mitar
