@@ -1,8 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 14 Mar 2012 12:57:02 +0100
-Message-Id: <1331726222-27201-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: update copyright years
+Date: Wed, 14 Mar 2012 13:03:01 +0100
+Message-Id: <1331726581-30484-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add contributor name
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,60 +16,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-update copyright years in order to include 2012
+translation_table.{c,h} have been heavily modified by another contributor and
+for legal purposes it is better to include his name into the contributor list
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- bridge_loop_avoidance.c |    2 +-
- bridge_loop_avoidance.h |    2 +-
- distributed-arp-table.c |    2 +-
- distributed-arp-table.h |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ translation-table.c |    2 +-
+ translation-table.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 23bfbed..8a17a78 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1,5 +1,5 @@
+diff --git a/translation-table.c b/translation-table.c
+index b889806..b4a070f 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1,7 +1,7 @@
  /*
-- * Copyright (C) 2011 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2011-2012 B.A.T.M.A.N. contributors:
+  * Copyright (C) 2007-2012 B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+- * Marek Lindner, Simon Wunderlich
++ * Marek Lindner, Simon Wunderlich, Antonio Quartulli
   *
-diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
-index 2758b8c..e1a2966 100644
---- a/bridge_loop_avoidance.h
-+++ b/bridge_loop_avoidance.h
-@@ -1,5 +1,5 @@
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of version 2 of the GNU General Public
+diff --git a/translation-table.h b/translation-table.h
+index bfebe26..593d1b3 100644
+--- a/translation-table.h
++++ b/translation-table.h
+@@ -1,7 +1,7 @@
  /*
-- * Copyright (C) 2011 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2011-2012 B.A.T.M.A.N. contributors:
+  * Copyright (C) 2007-2012 B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+- * Marek Lindner, Simon Wunderlich
++ * Marek Lindner, Simon Wunderlich, Antonio Quartulli
   *
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index c610108..b43bece 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2011 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2011-2012 B.A.T.M.A.N. contributors:
-  *
-  * Antonio Quartulli
-  *
-diff --git a/distributed-arp-table.h b/distributed-arp-table.h
-index 0916661..26b98c0 100644
---- a/distributed-arp-table.h
-+++ b/distributed-arp-table.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2011 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2011-2012 B.A.T.M.A.N. contributors:
-  *
-  * Antonio Quartulli
-  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of version 2 of the GNU General Public
 -- 
 1.7.3.4
 
