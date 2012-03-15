@@ -1,8 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 14 Mar 2012 13:03:01 +0100
-Message-Id: <1331726581-30484-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add contributor name
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 15 Mar 2012 14:43:03 +0800
+References: <1331417873-19354-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1331417873-19354-1-git-send-email-lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201203151443.04212.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: ignore protocol packets
+	if the interface did not enable this protocol
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,43 +21,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-translation_table.{c,h} have been heavily modified by another contributor and
-for legal purposes it is better to include his name into the contributor list
+On Sunday, March 11, 2012 06:17:49 Marek Lindner wrote:
+> Reported-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  bat_iv_ogm.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- translation-table.c |    2 +-
- translation-table.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Applied in revision c9619b5.
 
-diff --git a/translation-table.c b/translation-table.c
-index b889806..b4a070f 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1,7 +1,7 @@
- /*
-  * Copyright (C) 2007-2012 B.A.T.M.A.N. contributors:
-  *
-- * Marek Lindner, Simon Wunderlich
-+ * Marek Lindner, Simon Wunderlich, Antonio Quartulli
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of version 2 of the GNU General Public
-diff --git a/translation-table.h b/translation-table.h
-index bfebe26..593d1b3 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -1,7 +1,7 @@
- /*
-  * Copyright (C) 2007-2012 B.A.T.M.A.N. contributors:
-  *
-- * Marek Lindner, Simon Wunderlich
-+ * Marek Lindner, Simon Wunderlich, Antonio Quartulli
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of version 2 of the GNU General Public
--- 
-1.7.3.4
-
+Regards,
+Marek
