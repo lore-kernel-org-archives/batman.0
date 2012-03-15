@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 15 Mar 2012 14:46:17 +0800
+Date: Thu, 15 Mar 2012 14:48:19 +0800
 References: <1331417873-19354-1-git-send-email-lindner_marek@yahoo.de>
-	<1331417873-19354-3-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1331417873-19354-3-git-send-email-lindner_marek@yahoo.de>
+	<1331417873-19354-4-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1331417873-19354-4-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201203151446.18479.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: rename sysfs macros to
-	reflect the soft-interface dependency
+Message-Id: <201203151448.20517.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: Adding hard_iface
+	specific sysfs wrapper macros for UINT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,13 +24,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, March 11, 2012 06:17:51 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  bat_sysfs.c |   55 ++++++++++++++++++++++++++++---------------------------
->  1 files changed, 28 insertions(+), 27 deletions(-)
+On Sunday, March 11, 2012 06:17:52 Marek Lindner wrote:
+> From: Linus Luessing <linus.luessing@web.de>
+> 
+> This allows us to easily add a sysfs parameter for an unsigned int
+> later, which is not for a batman mesh interface (e.g. bat0), but for a
+> common interface instead. It allows reading and writing an atomic_t in
+> hard_iface (instead of bat_priv compared to the mesh variant).
+> 
+> Developed by Linus during a 6 months trainee study period in Ascom
+> (Switzerland) AG.
 
-Applied in revision 7c73d4c.
+Applied in revision 4e18e83.
 
-Regards,
+Thanks,
 Marek
