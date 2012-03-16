@@ -1,11 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri, 16 Mar 2012 18:03:28 +0100
-Message-Id: <1331917408-2304-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1331909900-25173-1-git-send-email-ordex@autistici.org>
-References: <1331909900-25173-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: improve unicast packet
-	(re)routing
+Return-Path: <onelektra@gmx.net>
+Date: Fri, 16 Mar 2012 18:51:15 +0100
+From: Elektra <onelektra@gmx.net>
+Message-Id: <20120316185115.6ef5d0f2565bf89f4ec709c3@gmx.net>
+In-Reply-To: <201203170034.59126.lindner_marek@yahoo.de>
+References: <CABYe4MeeMfsLTM7stwwz1bikHtGsP+7ytUbbiz-ipMLJxuCHkA@mail.gmail.com>
+	<CABYe4MeCJTf6L3ZgvhveqRX8Pm1RpG1yHODCnfx7wW1z=dah1w@mail.gmail.com>
+	<20120316172727.67b623974207c4ac772ccaf1@gmx.net>
+	<201203170034.59126.lindner_marek@yahoo.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Meshlinux Download Link - Error 404
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,115 +24,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-In case of a client X roaming from a generic node A to another node B, it is
-possible that a third node C gets A's OGM but not B's. At this point in time, if
-C wants to send data to X it will send a unicast packet destined to A. The
-packet header will contain A's last ttvn (C got A's OGM and so it knows it).
+Hi -
 
-The packet will travel towards A without being intercepted because the ttvn
-contained in its header is the newest for A.
+the wiki already stated quite clearly that this project is old, outdated and unmaintained. The only "new" development is that the link to http://zolder.scii.nl/~elektra is broken.  
 
-Once A will receive the packet, A's state will not report to be in a "roaming
-phase" (because, after a roaming, once A sends out its OGM, all the changes are
-committed and the node is considered not to be in the roaming state anymore)
-and it will match the ttvn carried by the packet. Therefore there is no reason
-for A to try to alter the packet's route, thus dropping the packet because the
-destination client is not there anymore.
+http://wiki.c-base.org/coredump/MeshLinux still works and has the ISO image.
 
-However, C is well aware that it's routing information towards the client X is
-outdated as it received an OGM from A saying that the client roamed away.
-Thanks to this detail, this patch introduces a small change in behaviour: as
-long as C is in the state of not knowing the new location of client X it will
-forward the traffic to its last known location using ttvn-1 of the destination.
-By using an older ttvn node A will be forced to re-route the packet.
-Intermediate nodes are also allowed to update the packet's destination as long
-as they have the information about the client's new location.
+The wiki now reads as follows:
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
+MeshLinux
 
-- split a wrong two line assignment.
+Meshlinux is outdated and really old. The project hasn't been updated in a long time. It is unlikely that anyone will take up development on it again. We recommend to use OpenWrt for X86 platform.  The only purpose we can think of today is software archaeology or the use of very old legacy WiFi hardware.
 
- routing.c           |    6 ++++++
- translation-table.c |   18 ++++++++++++++++++
- translation-table.h |    2 ++
- unicast.c           |    8 ++++++++
- 4 files changed, 34 insertions(+), 0 deletions(-)
+Nothing is as outdated as old software. Meshlinux was created in the early days of mesh networking at the Freifunk community in 2004. It is a CD-Image that can be used to convert old PCs into wireless supernodes. There is a old Meshlinux version based on Linux (Kernel 2.4.26) available at (http://wiki.c-base.org/coredump/MeshLinux)
+This old version is based on Slackware and not maintained anymore. However it works nicely with old Atmel USB wireless devices (which is a problem nowadays with recent kernels), Prism-based Chipsets and Orinoco. But you won't find any modern mesh routing protocol implementations in it. If you want to build a meshrouter with nothing better than a 486 CPU and this kind of old wireless devices because you have them lying around and want to do something useful with it, you may still use it and install a recent version of Layer 3 B.A.T.M.A.N. - you can download a statically compiled version from this server. You can not use Batman-advanced, since this would require a recent Linux kernel. Some userland mesh protocol daemons like OLSR might still work with it.
 
-diff --git a/routing.c b/routing.c
-index 576ffb1..0950c53 100644
---- a/routing.c
-+++ b/routing.c
-@@ -922,6 +922,12 @@ static int check_unicast_ttvn(struct bat_priv *bat_priv,
- 
- 		ethhdr = (struct ethhdr *)(skb->data +
- 			sizeof(struct unicast_packet));
-+
-+		/* we don't have an updated route for this client, so we should
-+		 * not try to reroute the packet!! */
-+		if (tt_global_client_is_roaming(bat_priv, ethhdr->h_dest))
-+			return 1;
-+
- 		orig_node = transtable_search(bat_priv, NULL, ethhdr->h_dest);
- 
- 		if (!orig_node) {
-diff --git a/translation-table.c b/translation-table.c
-index b4a070f..945de07 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -2113,3 +2113,21 @@ request_table:
- 		}
- 	}
- }
-+
-+/* returns true whether we know that the client has moved from its old
-+ * originator to another one. This entry is kept is still kept for consistency
-+ * purposes */
-+bool tt_global_client_is_roaming(struct bat_priv *bat_priv, uint8_t *addr)
-+{
-+	bool ret = false;
-+	struct tt_global_entry *tt_global_entry;
-+	tt_global_entry = tt_global_hash_find(bat_priv, addr);
-+
-+	if (!tt_global_entry)
-+		goto out;
-+
-+	ret = tt_global_entry->common.flags & TT_CLIENT_ROAM;
-+	tt_global_entry_free_ref(tt_global_entry);
-+out:
-+	return ret;
-+}
-diff --git a/translation-table.h b/translation-table.h
-index 593d1b3..c43374d 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -53,5 +53,7 @@ bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst);
- void tt_update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 		    const unsigned char *tt_buff, uint8_t tt_num_changes,
- 		    uint8_t ttvn, uint16_t tt_crc);
-+bool tt_global_client_is_roaming(struct bat_priv *bat_priv, uint8_t *addr);
-+
- 
- #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
-diff --git a/unicast.c b/unicast.c
-index 2d61e54..63ab35b 100644
---- a/unicast.c
-+++ b/unicast.c
-@@ -392,6 +392,14 @@ find_router:
- 	}
- 
- 	unicast_packet = (struct unicast_packet *)skb->data;
-+
-+	/* inform the destination ode that we are still missing a correct route
-+	 * for this client. The destination will receive this packet and will
-+	 * try to reroute it because the ttvn contained in the header is less
-+	 * than the current one */
-+	if (tt_global_client_is_roaming(bat_priv, ethhdr->h_dest))
-+		unicast_packet->ttvn = unicast_packet->ttvn - 1;
-+
- 	/* fragmentation mechanism only works for UNICAST (now) */
- 	if (packet_type == BAT_UNICAST &&
- 	    atomic_read(&bat_priv->fragmentation) &&
--- 
-1.7.3.4
+Sooner or later this information will be removed. 
+
+
+
+Cheers,
+Elektra
 
