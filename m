@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 17 Mar 2012 15:28:34 +0800
-Message-Id: <1331969315-27535-3-git-send-email-lindner_marek@yahoo.de>
+Date: Sat, 17 Mar 2012 15:28:35 +0800
+Message-Id: <1331969315-27535-4-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1331969315-27535-1-git-send-email-lindner_marek@yahoo.de>
 References: <1331969315-27535-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: fix checkpatch string
-	complaint
+Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: fix checkpatch opening
+	parenthesis complaint
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,28 +20,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Regression introduced by: f76d019194e0a88c57371df169ecc979690a04c2
+Regression introduced by: 7c73d4c1d61b3db2f8b6bdd999ecebd231429082
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- bat_iv_ogm.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ bat_sysfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index fa41307..994369d 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -1061,8 +1061,8 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
- 
- 	if (batman_ogm_packet->flags & NOT_BEST_NEXT_HOP) {
- 		bat_dbg(DBG_BATMAN, bat_priv,
--			"Drop packet: ignoring all packets not forwarded from "
--			"the best next hop (sender: %pM)\n", ethhdr->h_source);
-+			"Drop packet: ignoring all packets not forwarded from the best next hop (sender: %pM)\n",
-+			ethhdr->h_source);
- 		return;
- 	}
- 
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index 35c15e9..d0f8453 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -441,7 +441,7 @@ static BAT_ATTR(gw_mode, S_IRUGO | S_IWUSR, show_gw_mode, store_gw_mode);
+ BAT_ATTR_SIF_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
+ BAT_ATTR_SIF_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
+ BAT_ATTR_SIF_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, TQ_MAX_VALUE,
+-	      post_gw_deselect);
++		  post_gw_deselect);
+ static BAT_ATTR(gw_bandwidth, S_IRUGO | S_IWUSR, show_gw_bwidth,
+ 		store_gw_bwidth);
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
 -- 
 1.7.9.1
 
