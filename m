@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 17 Mar 2012 15:28:33 +0800
-Message-Id: <1331969315-27535-2-git-send-email-lindner_marek@yahoo.de>
+Date: Sat, 17 Mar 2012 15:28:34 +0800
+Message-Id: <1331969315-27535-3-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1331969315-27535-1-git-send-email-lindner_marek@yahoo.de>
 References: <1331969315-27535-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: refactor window_protected to
-	avoid unnecessary return statement
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: fix checkpatch string
+	complaint
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,39 +20,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Reported-by: David Laight <David.Laight@aculab.com>
+Regression introduced by: f76d019194e0a88c57371df169ecc979690a04c2
+
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- routing.c |   15 ++++++---------
- 1 files changed, 6 insertions(+), 9 deletions(-)
+ bat_iv_ogm.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/routing.c b/routing.c
-index 962a315..73aa20e 100644
---- a/routing.c
-+++ b/routing.c
-@@ -234,17 +234,14 @@ int window_protected(struct bat_priv *bat_priv, int32_t seq_num_diff,
- {
- 	if ((seq_num_diff <= -TQ_LOCAL_WINDOW_SIZE) ||
- 	    (seq_num_diff >= EXPECTED_SEQNO_RANGE)) {
--		if (has_timed_out(*last_reset, RESET_PROTECTION_MS)) {
--
--			*last_reset = jiffies;
--			bat_dbg(DBG_BATMAN, bat_priv,
--				"old packet received, start protection\n");
--
--			return 0;
--		} else {
-+		if (!has_timed_out(*last_reset, RESET_PROTECTION_MS))
- 			return 1;
--		}
-+
-+		*last_reset = jiffies;
-+		bat_dbg(DBG_BATMAN, bat_priv,
-+			"old packet received, start protection\n");
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index fa41307..994369d 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -1061,8 +1061,8 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
+ 
+ 	if (batman_ogm_packet->flags & NOT_BEST_NEXT_HOP) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+-			"Drop packet: ignoring all packets not forwarded from "
+-			"the best next hop (sender: %pM)\n", ethhdr->h_source);
++			"Drop packet: ignoring all packets not forwarded from the best next hop (sender: %pM)\n",
++			ethhdr->h_source);
+ 		return;
  	}
-+
- 	return 0;
- }
  
 -- 
 1.7.9.1
