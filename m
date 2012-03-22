@@ -1,14 +1,12 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 22 Mar 2012 22:51:11 +0100
-Message-Id: <1332453075-27999-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <201203222250.31309.lindner_marek@yahoo.de>
+Date: Thu, 22 Mar 2012 22:51:12 +0100
+Message-Id: <1332453075-27999-2-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1332453075-27999-1-git-send-email-lindner_marek@yahoo.de>
 References: <201203222250.31309.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] =?utf-8?q?=5BRFC_1/5=5D_batman-adv=3A_ELP_-_adding?=
-	=?utf-8?q?_basic_infrastructure?=
+	<1332453075-27999-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [RFC 2/5] batman-adv: ELP - creating neighbor
+	structures, updating LQs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,373 +23,388 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 From: Linus Luessing <linus.luessing@web.de>
 
-The B.A.T.M.A.N. protocol originally only used a single message type (called
-OGM) to determine the link qualities to the direct neighbors and spreading these
-link quality information through the whole mesh. This procedure is summarized on
-the BATMAN concept page and explained in details in the RFC draft published in
-2008.
-
-This approach was chosen for its simplicity during the protocol design phase and
-the implementation. However, it also bears some drawbacks:
-
- *  Wireless interfaces usually come with some packet loss, therefore a higher
-    broadcast rate is desirable to allow a fast reaction on flaky connections.
-    Other interfaces of the same host might be connected to Ethernet LANs / VPNs
-    / etc which rarely exhibit packet loss would benefit from a lower broadcast
-    rate to reduce overhead.
- *  It generally is more desirable to detect local link quality changes at a
-    faster rate than propagating all these changes through the entire mesh (the
-    far end of the mesh does not need to care about local link quality changes
-    that much). Other optimizations strategies, like reducing overhead, might be
-    possible if OGMs weren't used for all tasks in the mesh at the same time.
-
-As a result detecting local link qualities shall be handled by an independent
-message type, ELP, whereas the OGM message type remains responsible for flooding
-the mesh with these link quality information and determining the overall path
-transmit qualities.
-
 Developed by Linus during a 6 months trainee study period in Ascom (Switzerland)
 AG.
 
 Signed-off-by: Linus Luessing <linus.luessing@web.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- Makefile               |    2 +
- Makefile.kbuild        |    1 +
- README.external        |    1 +
- bat_algo.h             |    6 ++
- bat_v_elp.c            |  175 ++++++++++++++++++++++++++++++++++++++++++++++++
- gen-compat-autoconf.sh |    1 +
- hard-interface.c       |    6 ++
- main.c                 |    1 +
- packet.h               |   14 ++++-
- types.h                |    6 ++
- 10 files changed, 212 insertions(+), 1 deletions(-)
- create mode 100644 bat_v_elp.c
+ bat_v_elp.c |  255 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ packet.h    |    6 ++
+ types.h     |    8 ++
+ 3 files changed, 267 insertions(+), 2 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index ac84fba..3d08354 100644
---- a/Makefile
-+++ b/Makefile
-@@ -25,6 +25,8 @@ export CONFIG_BATMAN_ADV_DEBUG=n
- export CONFIG_BATMAN_ADV_BLA=y
- # B.A.T.M.A.N. distributed ARP table:
- export CONFIG_BATMAN_ADV_DAT=y
-+# B.A.T.M.A.N. V routing algorithm (experimental):
-+# export CONFIG_BATMAN_ADV_BATMAN_V=y
- 
- PWD:=$(shell pwd)
- KERNELPATH ?= /lib/modules/$(shell uname -r)/build
-diff --git a/Makefile.kbuild b/Makefile.kbuild
-index ad002cd..dcffb7f 100644
---- a/Makefile.kbuild
-+++ b/Makefile.kbuild
-@@ -21,6 +21,7 @@
- obj-$(CONFIG_BATMAN_ADV) += batman-adv.o
- batman-adv-y += bat_debugfs.o
- batman-adv-y += bat_iv_ogm.o
-+batman-adv-$(CONFIG_BATMAN_ADV_BATMAN_V) += bat_v_elp.o
- batman-adv-y += bat_sysfs.o
- batman-adv-y += bitarray.o
- batman-adv-$(CONFIG_BATMAN_ADV_BLA) += bridge_loop_avoidance.o
-diff --git a/README.external b/README.external
-index 95a7eb4..f1ec46a 100644
---- a/README.external
-+++ b/README.external
-@@ -38,6 +38,7 @@ module).  Available  options  and  their    possible   values are
-  * CONFIG_BATMAN_ADV_DEBUG=[y|n*] (B.A.T.M.A.N. debugging)
-  * CONFIG_BATMAN_ADV_BLA=[y*|n] (B.A.T.M.A.N. bridge loop avoidance)
-  * CONFIG_BATMAN_ADV_DAT=[y*|n] (B.A.T.M.A.N. Distributed ARP Table)
-+ * CONFIG_BATMAN_ADV_BATMAN_V=[y|n*] (B.A.T.M.A.N. V routing algorithm)
- 
- e.g., debugging can be enabled by
- 
-diff --git a/bat_algo.h b/bat_algo.h
-index 9852a68..2932082 100644
---- a/bat_algo.h
-+++ b/bat_algo.h
-@@ -24,4 +24,10 @@
- 
- int bat_iv_init(void);
- 
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+int bat_v_init(void);
-+#else
-+#define bat_v_init(...)		{}
-+#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
-+
- #endif /* _NET_BATMAN_ADV_BAT_ALGO_H_ */
 diff --git a/bat_v_elp.c b/bat_v_elp.c
-new file mode 100644
-index 0000000..c2dee5c
---- /dev/null
+index c2dee5c..e252c04 100644
+--- a/bat_v_elp.c
 +++ b/bat_v_elp.c
-@@ -0,0 +1,175 @@
-+/*
-+ * Copyright (C) 2011-2012 B.A.T.M.A.N. contributors:
-+ *
-+ * Linus Lüssing, Marek Lindner
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ */
-+
-+#include "main.h"
-+#include "hard-interface.h"
-+#include "send.h"
-+#include "bat_algo.h"
-+
-+static void bat_v_elp_start_timer(struct hard_iface *hard_iface)
+@@ -23,6 +23,8 @@
+ #include "hard-interface.h"
+ #include "send.h"
+ #include "bat_algo.h"
++#include "originator.h"
++#include "routing.h"
+ 
+ static void bat_v_elp_start_timer(struct hard_iface *hard_iface)
+ {
+@@ -35,12 +37,78 @@ static void bat_v_elp_start_timer(struct hard_iface *hard_iface)
+ 			   &hard_iface->elp_wq, elp_interval);
+ }
+ 
++static struct neigh_node *bat_v_elp_neigh_new(struct hard_iface *hard_iface,
++					      uint8_t *neigh_addr,
++					      uint32_t seqno)
 +{
-+	unsigned long elp_interval;
++	struct neigh_node *neigh_node;
 +
-+	elp_interval = msecs_to_jiffies(atomic_read(&hard_iface->elp_interval)
-+					 - JITTER + (random32() % 2 * JITTER));
-+
-+	queue_delayed_work(bat_event_workqueue,
-+			   &hard_iface->elp_wq, elp_interval);
-+}
-+
-+static void bat_v_elp_send_outstanding(struct work_struct *work)
-+{
-+	struct hard_iface *hard_iface;
-+	struct bat_priv *bat_priv;
-+	struct batman_elp_packet *elp_packet;
-+	struct sk_buff *skb;
-+
-+	hard_iface = container_of(work, struct hard_iface, elp_wq.work);
-+	bat_priv = netdev_priv(hard_iface->soft_iface);
-+
-+	if (atomic_read(&bat_priv->mesh_state) == MESH_DEACTIVATING)
++	neigh_node = neigh_node_new(hard_iface, neigh_addr, seqno);
++	if (!neigh_node)
 +		goto out;
 +
-+	if ((hard_iface->if_status == IF_NOT_IN_USE) ||
-+	    (hard_iface->if_status == IF_TO_BE_REMOVED))
-+		goto out;
++	neigh_node->last_recv_seqno = seqno - 1;
 +
-+	/* the interface was enabled but may not be ready yet */
-+	if (hard_iface->if_status != IF_ACTIVE)
-+		goto restart_timer;
-+
-+	skb = skb_copy(hard_iface->elp_skb, GFP_ATOMIC);
-+	if (!skb)
-+		goto out;
-+
-+	elp_packet = (struct batman_elp_packet *)skb->data;
-+	elp_packet->seqno = htonl(atomic_read(&hard_iface->elp_seqno));
-+	elp_packet->num_neighbors = 0;
-+
-+	bat_dbg(DBG_BATMAN, bat_priv,
-+		"Sending elp packet on interface %s, seqno %d\n",
-+		hard_iface->net_dev->name, atomic_read(&hard_iface->elp_seqno));
-+
-+	send_skb_packet(skb, hard_iface, broadcast_addr);
-+
-+	atomic_inc(&hard_iface->elp_seqno);
-+	bat_v_elp_start_timer(hard_iface);
++	spin_lock_bh(&hard_iface->neigh_list_lock);
++	hlist_add_head_rcu(&neigh_node->list, &hard_iface->neigh_list);
++	spin_unlock_bh(&hard_iface->neigh_list_lock);
 +
 +out:
-+	return;
++	return neigh_node;
 +}
 +
-+static int bat_v_elp_iface_enable(struct hard_iface *hard_iface)
++static struct neigh_node *bat_v_elp_neigh_get(struct hard_iface *hard_iface,
++					      uint8_t *neigh_addr)
 +{
-+	struct batman_elp_packet *elp_packet;
-+	unsigned long random_seqno;
-+	int res = -1;
++	struct neigh_node *neigh_node = NULL, *neigh_node_tmp;
++	struct hlist_node *node;
 +
-+	INIT_HLIST_HEAD(&hard_iface->neigh_list);
-+	spin_lock_init(&hard_iface->neigh_list_lock);
-+
-+	hard_iface->elp_skb = dev_alloc_skb(ETH_DATA_LEN + ETH_HLEN);
-+	if (!hard_iface->elp_skb)
-+		goto out;
-+
-+	skb_reserve(hard_iface->elp_skb, ETH_HLEN + BATMAN_ELP_HLEN);
-+	elp_packet = (struct batman_elp_packet *)skb_push(hard_iface->elp_skb,
-+							  BATMAN_ELP_HLEN);
-+	memset(elp_packet, 0, BATMAN_ELP_HLEN);
-+
-+	elp_packet->header.packet_type = BAT_V_ELP;
-+	elp_packet->header.version = COMPAT_VERSION;
-+	elp_packet->header.ttl = 0;
-+
-+	/* randomize initial seqno to avoid collision */
-+	get_random_bytes(&random_seqno, sizeof(unsigned long));
-+	atomic_set(&hard_iface->elp_seqno, (uint32_t)random_seqno);
-+
-+	INIT_DELAYED_WORK(&hard_iface->elp_wq, bat_v_elp_send_outstanding);
-+	bat_v_elp_start_timer(hard_iface);
-+	res = 0;
-+
-+out:
-+	return res;
-+}
-+
-+static void bat_v_elp_iface_disable(struct hard_iface *hard_iface)
-+{
-+	cancel_delayed_work_sync(&hard_iface->elp_wq);
-+
-+	dev_kfree_skb(hard_iface->elp_skb);
-+	hard_iface->elp_skb = NULL;
-+}
-+
-+static void bat_v_elp_iface_update_mac(struct hard_iface *hard_iface)
-+{
-+	return;
-+}
-+
-+static void bat_v_elp_primary_iface_set(struct hard_iface *hard_iface)
-+{
-+	struct hard_iface *hard_iface_tmp;
-+	struct batman_elp_packet *elp_packet;
-+	struct sk_buff *skb;
-+
-+	/* update orig field of every elp iface belonging to this mesh */
 +	rcu_read_lock();
-+	list_for_each_entry_rcu(hard_iface_tmp, &hardif_list, list) {
-+		if (hard_iface->soft_iface != hard_iface_tmp->soft_iface)
++	hlist_for_each_entry_rcu(neigh_node_tmp, node,
++				 &hard_iface->neigh_list, list) {
++		if (!compare_eth(neigh_node_tmp->addr, neigh_addr))
 +			continue;
 +
-+		if (!hard_iface_tmp->elp_skb)
++		if (!atomic_inc_not_zero(&neigh_node_tmp->refcount))
 +			continue;
 +
-+		skb = hard_iface_tmp->elp_skb;
-+		elp_packet = (struct batman_elp_packet *)skb->data;
-+		memcpy(elp_packet->orig,
-+		       hard_iface->net_dev->dev_addr, ETH_ALEN);
++		neigh_node = neigh_node_tmp;
++		break;
 +	}
 +	rcu_read_unlock();
++
++	return neigh_node;
 +}
 +
-+static void bat_v_ogm_schedule(struct hard_iface *hard_iface,
-+			       int tt_num_changes)
++static void bat_v_elp_neigh_purge(struct hard_iface *hard_iface)
 +{
-+	return;
++	struct neigh_node *neigh_node;
++	struct hlist_node *node, *node_tmp;
++
++	spin_lock_bh(&hard_iface->neigh_list_lock);
++	hlist_for_each_entry_safe(neigh_node, node, node_tmp,
++				  &hard_iface->neigh_list, list) {
++
++		if ((!has_timed_out(neigh_node->last_seen, PURGE_TIMEOUT)) &&
++		    (hard_iface->if_status == IF_ACTIVE))
++			continue;
++
++		hlist_del_rcu(&neigh_node->list);
++		neigh_node_free_ref(neigh_node);
++	}
++	spin_unlock_bh(&hard_iface->neigh_list_lock);
 +}
 +
-+static void bat_v_ogm_emit(struct forw_packet *forw_packet)
+ static void bat_v_elp_send_outstanding(struct work_struct *work)
+ {
+ 	struct hard_iface *hard_iface;
+ 	struct bat_priv *bat_priv;
+ 	struct batman_elp_packet *elp_packet;
++	struct elp_neigh_entry *elp_neigh_entry;
++	struct neigh_node *neigh_node;
++	struct hlist_node *node;
+ 	struct sk_buff *skb;
++	unsigned int max_len;
+ 
+ 	hard_iface = container_of(work, struct hard_iface, elp_wq.work);
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
+@@ -48,6 +116,7 @@ static void bat_v_elp_send_outstanding(struct work_struct *work)
+ 	if (atomic_read(&bat_priv->mesh_state) == MESH_DEACTIVATING)
+ 		goto out;
+ 
++	/* we are in the process of shutting this interface down */
+ 	if ((hard_iface->if_status == IF_NOT_IN_USE) ||
+ 	    (hard_iface->if_status == IF_TO_BE_REMOVED))
+ 		goto out;
+@@ -56,14 +125,40 @@ static void bat_v_elp_send_outstanding(struct work_struct *work)
+ 	if (hard_iface->if_status != IF_ACTIVE)
+ 		goto restart_timer;
+ 
++	max_len = min_t(unsigned int, ETH_DATA_LEN, hard_iface->net_dev->mtu);
++
+ 	skb = skb_copy(hard_iface->elp_skb, GFP_ATOMIC);
+ 	if (!skb)
+ 		goto out;
+ 
++	/* purge outdated entries first */
++	bat_v_elp_neigh_purge(hard_iface);
++
+ 	elp_packet = (struct batman_elp_packet *)skb->data;
+ 	elp_packet->seqno = htonl(atomic_read(&hard_iface->elp_seqno));
+ 	elp_packet->num_neighbors = 0;
+ 
++	elp_neigh_entry = (struct elp_neigh_entry *)(elp_packet + 1);
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(neigh_node, node,
++				 &hard_iface->neigh_list, list) {
++		if (skb->len + sizeof(struct elp_neigh_entry) > max_len) {
++			if (printk_ratelimit())
++				bat_err(hard_iface->net_dev,
++					"Skipping ELP neigh entries: "
++					"packet length exhausted\n");
++			break;
++		}
++
++		memcpy(elp_neigh_entry->addr, neigh_node->addr, ETH_ALEN);
++		elp_neigh_entry->rq = neigh_node->rq;
++		elp_packet->num_neighbors++;
++		elp_neigh_entry++;
++		skb_put(skb, sizeof(struct elp_neigh_entry));
++	}
++	rcu_read_unlock();
++
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+ 		"Sending elp packet on interface %s, seqno %d\n",
+ 		hard_iface->net_dev->name, atomic_read(&hard_iface->elp_seqno));
+@@ -71,8 +166,9 @@ static void bat_v_elp_send_outstanding(struct work_struct *work)
+ 	send_skb_packet(skb, hard_iface, broadcast_addr);
+ 
+ 	atomic_inc(&hard_iface->elp_seqno);
+-	bat_v_elp_start_timer(hard_iface);
+ 
++restart_timer:
++	bat_v_elp_start_timer(hard_iface);
+ out:
+ 	return;
+ }
+@@ -117,6 +213,8 @@ static void bat_v_elp_iface_disable(struct hard_iface *hard_iface)
+ 
+ 	dev_kfree_skb(hard_iface->elp_skb);
+ 	hard_iface->elp_skb = NULL;
++
++	bat_v_elp_neigh_purge(hard_iface);
+ }
+ 
+ static void bat_v_elp_iface_update_mac(struct hard_iface *hard_iface)
+@@ -158,6 +256,143 @@ static void bat_v_ogm_emit(struct forw_packet *forw_packet)
+ 	return;
+ }
+ 
++/* extract my own tq to neighbor from the elp packet */
++static uint8_t bat_v_elp_fetch_tq(uint8_t *my_iface_addr,
++				  struct batman_elp_packet *elp_packet,
++				  int elp_packet_len)
 +{
-+	return;
++	struct elp_neigh_entry *elp_neigh_entry;
++	uint8_t tq = 0;
++	int i;
++
++	elp_neigh_entry = (struct elp_neigh_entry *)(elp_packet + 1);
++	elp_packet_len -= BATMAN_ELP_HLEN;
++
++	for (i = 0; i < elp_packet->num_neighbors; i++) {
++		if (!compare_eth(my_iface_addr, elp_neigh_entry->addr))
++			goto next;
++
++		tq = elp_neigh_entry->rq;
++		break;
++
++	next:
++		elp_packet_len -= sizeof(struct elp_neigh_entry);
++		if (elp_packet_len < 0)
++			break;
++
++		elp_neigh_entry++;
++	}
++
++	return tq;
 +}
 +
-+
-+static struct bat_algo_ops batman_v __read_mostly = {
-+	.name = "BATMAN V",
-+	.bat_iface_enable = bat_v_elp_iface_enable,
-+	.bat_iface_disable = bat_v_elp_iface_disable,
-+	.bat_iface_update_mac = bat_v_elp_iface_update_mac,
-+	.bat_primary_iface_set = bat_v_elp_primary_iface_set,
-+	.bat_ogm_schedule = bat_v_ogm_schedule,
-+	.bat_ogm_emit = bat_v_ogm_emit,
-+};
-+
-+int __init bat_v_init(void)
++static void bat_v_elp_neigh_update_lq(struct hard_iface *hard_iface,
++				      struct neigh_node *neigh_node,
++				      uint8_t my_tq, uint32_t seqno)
 +{
-+	return bat_algo_register(&batman_v);
-+}
-diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
-index 7ea42aa..f6f32e7 100755
---- a/gen-compat-autoconf.sh
-+++ b/gen-compat-autoconf.sh
-@@ -39,6 +39,7 @@ gen_config() {
- gen_config 'CONFIG_BATMAN_ADV_DEBUG' ${CONFIG_BATMAN_ADV_DEBUG:="n"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_BLA' ${CONFIG_BATMAN_ADV_BLA:="y"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_DAT' ${CONFIG_BATMAN_ADV_DAT:="y"} >> "${TMP}"
-+gen_config 'CONFIG_BATMAN_ADV_BATMAN_V' ${CONFIG_BATMAN_ADV_BATMAN_V:="n"} >> "${TMP}"
- 
- # only regenerate compat-autoconf.h when config was changed
- diff "${TMP}" "${TARGET}" > /dev/null 2>&1 || cp "${TMP}" "${TARGET}"
-diff --git a/hard-interface.c b/hard-interface.c
-index daa6adc..e53e143 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -450,6 +450,12 @@ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
- 	atomic_set(&hard_iface->seqno, 1);
- 	hard_iface->packet_buff = NULL;
- 
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+	atomic_set(&hard_iface->elp_interval, 500);
-+	atomic_set(&hard_iface->elp_seqno, 1);
-+	hard_iface->elp_skb = NULL;
-+#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
++	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
++	int32_t seq_diff;
++	int neigh_packet_count;
++	bool is_new_seqno;
 +
- 	return hard_iface;
++	seq_diff = seqno - neigh_node->last_recv_seqno;
++
++	is_new_seqno = bit_get_packet(bat_priv, neigh_node->elp_rq_bits,
++				      seq_diff, 1);
++	if (!is_new_seqno)
++		return;
++
++	bat_dbg(DBG_BATMAN, bat_priv,
++		"Updating last_seqno of neighbor %pM: old %d, new %d\n",
++		neigh_node->addr, neigh_node->last_recv_seqno, seqno);
++
++	/***
++	 * we only update the tq/last seen/last seqno fields upon
++	 * receival of a newer ELP sequence number
++	 */
++	neigh_node->tq = my_tq;
++	neigh_node->last_seen = jiffies;
++	neigh_node->last_recv_seqno = seqno;
++
++	neigh_packet_count = bitmap_weight(neigh_node->elp_rq_bits,
++					   TQ_LOCAL_WINDOW_SIZE);
++	neigh_node->rq = (neigh_packet_count * TQ_MAX_VALUE) /
++							TQ_LOCAL_WINDOW_SIZE;
++
++	bat_dbg(DBG_BATMAN, bat_priv,
++		"New rq/tq of neighbor %pM: rq %d, tq %d\n",
++		neigh_node->addr, neigh_node->rq, neigh_node->tq);
++}
++
++void bat_v_elp_neigh_update(uint8_t *neigh_addr,
++			    struct hard_iface *if_incoming,
++			    struct batman_elp_packet *elp_packet,
++			    int elp_packet_len)
++{
++	struct neigh_node *neigh_node;
++	uint8_t my_tq;
++
++	neigh_node = bat_v_elp_neigh_get(if_incoming, neigh_addr);
++	if (!neigh_node) {
++		neigh_node = bat_v_elp_neigh_new(if_incoming, neigh_addr,
++						 elp_packet->seqno);
++		if (!neigh_node)
++			goto out;
++	}
++
++	my_tq = bat_v_elp_fetch_tq(if_incoming->net_dev->dev_addr,
++				   elp_packet, elp_packet_len);
++
++	spin_lock_bh(&neigh_node->lq_update_lock);
++	bat_v_elp_neigh_update_lq(if_incoming, neigh_node,
++				  my_tq, elp_packet->seqno);
++	spin_unlock_bh(&neigh_node->lq_update_lock);
++
++out:
++	if (neigh_node)
++		neigh_node_free_ref(neigh_node);
++}
++
++static int bat_v_elp_packet_recv(struct sk_buff *skb,
++				 struct hard_iface *if_incoming)
++{
++	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
++	struct batman_elp_packet *elp_packet;
++	struct hard_iface *primary_if;
++	struct ethhdr *ethhdr;
++	bool ret;
++
++	ret = check_management_packet(skb, if_incoming, BATMAN_ELP_HLEN);
++	if (!ret)
++		return NET_RX_DROP;
++
++	/* did we receive a B.A.T.M.A.N. V ELP packet on an interface
++	 * that does not have B.A.T.M.A.N. V ELP enabled ? */
++	if (bat_priv->bat_algo_ops->bat_ogm_emit != bat_v_ogm_emit)
++		return NET_RX_DROP;
++
++	primary_if = primary_if_get_selected(bat_priv);
++	if (!primary_if)
++		goto out;
++
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
++	elp_packet = (struct batman_elp_packet *)skb->data;
++
++	/* our own ELP packet */
++	if (compare_eth(primary_if->net_dev->dev_addr, elp_packet->orig))
++		goto out;
++
++	elp_packet->seqno = ntohl(elp_packet->seqno);
++
++	bat_v_elp_neigh_update(ethhdr->h_source, if_incoming,
++			       elp_packet, skb_headlen(skb));
++
++out:
++	if (primary_if)
++		hardif_free_ref(primary_if);
++	dev_kfree_skb(skb);
++	return NET_RX_SUCCESS;
++}
  
- free_if:
-diff --git a/main.c b/main.c
-index 0757c2d..b83a693 100644
---- a/main.c
-+++ b/main.c
-@@ -56,6 +56,7 @@ static int __init batman_init(void)
+ static struct bat_algo_ops batman_v __read_mostly = {
+ 	.name = "BATMAN V",
+@@ -171,5 +406,21 @@ static struct bat_algo_ops batman_v __read_mostly = {
  
- 	recv_handler_init();
- 
-+	bat_v_init();
- 	bat_iv_init();
- 
- 	/* the name should not be longer than 10 chars - see
+ int __init bat_v_init(void)
+ {
+-	return bat_algo_register(&batman_v);
++	int ret;
++
++	/* batman v echo location protocol packet  */
++	ret = recv_handler_register(BAT_V_ELP, bat_v_elp_packet_recv);
++	if (ret < 0)
++		goto out;
++
++	ret = bat_algo_register(&batman_v);
++	if (ret < 0)
++		goto handler_unregister;
++
++	goto out;
++
++handler_unregister:
++	recv_handler_unregister(BAT_V_ELP);
++out:
++	return ret;
+ }
 diff --git a/packet.h b/packet.h
-index 3c4c533..cf516dc 100644
+index cf516dc..ea1683f 100644
 --- a/packet.h
 +++ b/packet.h
-@@ -33,7 +33,8 @@ enum bat_packettype {
- 	BAT_UNICAST_FRAG	= 0x06,
- 	BAT_TT_QUERY		= 0x07,
- 	BAT_ROAM_ADV		= 0x08,
--	BAT_UNICAST_4ADDR	= 0x09
-+	BAT_UNICAST_4ADDR	= 0x09,
-+	BAT_V_ELP		= 0x10
- };
+@@ -148,6 +148,12 @@ struct batman_elp_packet {
  
- enum bat_subtype {
-@@ -136,6 +137,17 @@ struct batman_ogm_packet {
+ #define BATMAN_ELP_HLEN sizeof(struct batman_elp_packet)
  
- #define BATMAN_OGM_HLEN sizeof(struct batman_ogm_packet)
- 
-+/* echo location packet */
-+struct batman_elp_packet {
-+	struct batman_header header;
-+	uint8_t  num_neighbors;
-+	uint32_t seqno;
-+	uint32_t elp_interval;
-+	uint8_t  orig[ETH_ALEN];
-+} __packed;
-+
-+#define BATMAN_ELP_HLEN sizeof(struct batman_elp_packet)
++struct elp_neigh_entry {
++	uint8_t addr[ETH_ALEN];
++	uint8_t rq;
++	uint8_t align;
++} __attribute__((packed));
 +
  struct icmp_packet {
  	struct batman_header header;
  	uint8_t  msg_type; /* see ICMP message types above */
 diff --git a/types.h b/types.h
-index 15f538a..86f2250 100644
+index 86f2250..abe27dd 100644
 --- a/types.h
 +++ b/types.h
-@@ -58,6 +58,12 @@ struct hard_iface {
- 	struct packet_type batman_adv_ptype;
- 	struct net_device *soft_iface;
- 	struct rcu_head rcu;
+@@ -61,6 +61,8 @@ struct hard_iface {
+ #ifdef CONFIG_BATMAN_ADV_BATMAN_V
+ 	atomic_t elp_interval;
+ 	atomic_t elp_seqno;
++	struct hlist_head neigh_list;
++	spinlock_t neigh_list_lock;
+ 	struct sk_buff *elp_skb;
+ 	struct delayed_work elp_wq;
+ #endif /* CONFIG_BATMAN_ADV_BATMAN_V */
+@@ -158,6 +160,12 @@ struct neigh_node {
+ 	struct orig_node *orig_node;
+ 	struct hard_iface *if_incoming;
+ 	spinlock_t lq_update_lock;	/* protects: tq_recv, tq_index */
 +#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+	atomic_t elp_interval;
-+	atomic_t elp_seqno;
-+	struct sk_buff *elp_skb;
-+	struct delayed_work elp_wq;
-+#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
++	uint8_t rq;
++	uint8_t tq;
++	uint32_t last_recv_seqno;
++	DECLARE_BITMAP(elp_rq_bits, TQ_LOCAL_WINDOW_SIZE);
++#endif
  };
  
- /**
+ #ifdef CONFIG_BATMAN_ADV_BLA
 -- 
 1.7.9.1
 
