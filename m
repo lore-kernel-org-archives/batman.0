@@ -1,7 +1,7 @@
 Return-Path: <andrew@lunn.ch>
-Date: Fri, 23 Mar 2012 07:41:28 +0100
+Date: Fri, 23 Mar 2012 07:50:44 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20120323064128.GC5662@lunn.ch>
+Message-ID: <20120323065044.GD5662@lunn.ch>
 References: <201203222250.31309.lindner_marek@yahoo.de>
 	<1332453075-27999-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
@@ -24,19 +24,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-> +static int bat_v_elp_iface_enable(struct hard_iface *hard_iface)
-> +{
-> +	struct batman_elp_packet *elp_packet;
-> +	unsigned long random_seqno;
-
-...
-
-> +	/* randomize initial seqno to avoid collision */
-> +	get_random_bytes(&random_seqno, sizeof(unsigned long));
-> +	atomic_set(&hard_iface->elp_seqno, (uint32_t)random_seqno);
+> --- a/packet.h
+> +++ b/packet.h
+> @@ -33,7 +33,8 @@ enum bat_packettype {
+>  	BAT_UNICAST_FRAG	= 0x06,
+>  	BAT_TT_QUERY		= 0x07,
+>  	BAT_ROAM_ADV		= 0x08,
+> -	BAT_UNICAST_4ADDR	= 0x09
+> +	BAT_UNICAST_4ADDR	= 0x09,
+> +	BAT_V_ELP		= 0x10
+>  };
 
 Hi Marek
 
-Why not just make random_seqno a uint32_t and avoid the cast?
+I guess you are not on the ARM linux kernel list. A couple of months
+ago, Rusty had a rant about the last entry in such structures should
+always have a , even though its optional. As part of the ARM cleanup
+work he had to append a new entry to many board files, and found it
+very error prone. Sometime you forget to add the , to the line before,
+and then the compiler spits out a compile error. So since then i've
+got into the habit of always having a , on the last entry.
 
-    Andrew
+     Andrew
