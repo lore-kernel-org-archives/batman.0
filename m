@@ -1,14 +1,14 @@
 Return-Path: <ordex@autistici.org>
-Date: Fri, 23 Mar 2012 08:50:10 +0100
+Date: Fri, 23 Mar 2012 08:51:46 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120323075009.GB16353@ritirata.org>
+Message-ID: <20120323075145.GC16353@ritirata.org>
 References: <201203222250.31309.lindner_marek@yahoo.de>
-	<20120323063206.GA5662@lunn.ch>
+	<20120323063418.GB5662@lunn.ch>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Bn2rw/3z4jIqBvZU"
+	protocol="application/pgp-signature"; boundary="5G06lTa6Jq83wMTw"
 Content-Disposition: inline
-In-Reply-To: <20120323063206.GA5662@lunn.ch>
+In-Reply-To: <20120323063418.GB5662@lunn.ch>
 Subject: Re: [B.A.T.M.A.N.] [RFC] ELP
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,43 +24,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---Bn2rw/3z4jIqBvZU
+--5G06lTa6Jq83wMTw
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi all,
-
-On Fri, Mar 23, 2012 at 07:32:06AM +0100, Andrew Lunn wrote:
-> The problem with broadcasting the ELP packets is that they are always
-> sent with the most robust coding rate. So ELP gives you an idea how
-> good the 1Mbps broadcast channel is, not how good the unicast channel
-> the automatic rate selection algorithm is using is. I think we
-> discussed mixing in some unicast packets in the forward direction. The
-> ELP packets containing the reports would stay the same, and so
-> function as node detection. But a node could also send out unicast ELP
-> packets to its known neighbours and they would be included into the
-> LQ.
-
-I agree with you Andrew, I didn't think about a concept yet, but adding a
-unicast reply or something like that would help a lot imho. (Actually is th=
-is
-what Babel do?)
-
+On Fri, Mar 23, 2012 at 07:34:18AM +0100, Andrew Lunn wrote:
+> > cat /sys/kernel/debug/batman_adv/routing_algos=20
+> > Available routing algorithms:
+> > BATMAN IV
+> > BATMAN V
+> >=20
+> > To activate B.A.T.M.A.N. V (ELP) you should run the following command *=
+before*
+> > adding any interface via batctl:
+> >=20
+> > echo -n "BATMAN V" > /sys/module/batman_adv/parameters/routing_algo
 >=20
-> There are obvious drawbacks. More overhead, especially in dense
-> networks. It is also not clear if the measurements would be
-> better.
+> Hi Marek
+>=20
+> How about BATMAN_V and BATMAN_IV, so avoiding the need for "" or \
+> escaping of the space?
 
-What about having a dynamic advertisement period? Again, I don't have a con=
-cept
-about that, but, if I remember correctly, there is another protocol called
-Trickle[1] which does something similar. We could take some inspiration.
-
+I agree :) Spaces are baaaad (and ugly :P (and error prone))! I already ima=
+gine a number of people
+trying to change protocol without using quotes.
 
 Cheers,
 
-[1]: http://csl.stanford.edu/~pal/pubs/trickle-nsdi04.pdf
+
+p.s. Marek thank you very much for your work
 
 --=20
 Antonio Quartulli
@@ -68,19 +61,19 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---Bn2rw/3z4jIqBvZU
+--5G06lTa6Jq83wMTw
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.18 (GNU/Linux)
 
-iQEcBAEBAgAGBQJPbCsxAAoJEFMQTLzJFOZFxmsIAMFmaFuB48qe7qDE/A0kY94S
-jUgEcVj8OaffG7fNilnvrgHM3QeZzMCrW2rQ2ldSNRx6s3JyKitgxoc9bNWudaiL
-U6B0IJMTxd7dMuTTeob+d5fQM3io2uF+IZPU4QHWW/u+6Gr0RT/kOmPIMn7Kd7Ud
-6ybnGMHE3xs08aD0G+t3TThX7jDoaoafvmcyxGMDvCLQde3FsREqVIotv0Uzd0k1
-6oHwQZnG6QP93ZFs2/QJ9bPyFxDo/mXT2YUq7gxi2DcutE0zD8Fh8qpk0d5wSol6
-d+DtXhMTqTFPowNLqTVoYNl8XfqerAihTRrkEKeBxdi28sCl9g/NnD+7Fles+1w=
-=0/cB
+iQEcBAEBAgAGBQJPbCuRAAoJEFMQTLzJFOZFlBgH/01LAIrkT7cl6ZOB4hBC38vC
+W28dtEjcM6GoKCqVb4CZDKzYiTkW8BxG9+p+SfS/DkK31Em4Dq8eiLaa/fuAET2J
+ikPKENyjfrMMWMcqG/b5ZN2I8/t7D6J8c88flRxlDOXqR4fqgrEAUTbwJdkxRiIF
+oaHot3e5lUDPx5Clyx5UECctcQEB7y/tnofwgqKsRtG+LlWRzspCuDbUweGJt9P6
+ogOm8Qhm2BaNGJJR5U90CvA+lOX73CLWqH+Yv88FthuAhXF+wbRmhBs2rc2uCjui
+/3sW1FeWbd4qa1bS/8+pUH/QniLPqNw/k+13P10Tq2cielBbtKqjtNC5Sjk4cLs=
+=7YUu
 -----END PGP SIGNATURE-----
 
---Bn2rw/3z4jIqBvZU--
+--5G06lTa6Jq83wMTw--
