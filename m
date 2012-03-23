@@ -1,7 +1,7 @@
 Return-Path: <andrew@lunn.ch>
-Date: Fri, 23 Mar 2012 21:52:12 +0100
+Date: Fri, 23 Mar 2012 22:22:33 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20120323205212.GF5662@lunn.ch>
+Message-ID: <20120323212233.GG5662@lunn.ch>
 References: <201203222250.31309.lindner_marek@yahoo.de>
 	<1332453075-27999-1-git-send-email-lindner_marek@yahoo.de>
 	<1332453075-27999-2-git-send-email-lindner_marek@yahoo.de>
@@ -25,40 +25,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-> +/* extract my own tq to neighbor from the elp packet */
-> +static uint8_t bat_v_elp_fetch_tq(uint8_t *my_iface_addr,
-> +				  struct batman_elp_packet *elp_packet,
-> +				  int elp_packet_len)
+> +static int bat_v_elp_packet_recv(struct sk_buff *skb,
+> +				 struct hard_iface *if_incoming)
 > +{
-> +	struct elp_neigh_entry *elp_neigh_entry;
-> +	uint8_t tq = 0;
-> +	int i;
+> +	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
+> +	struct batman_elp_packet *elp_packet;
+> +	struct hard_iface *primary_if;
+> +	struct ethhdr *ethhdr;
+> +	bool ret;
 > +
-> +	elp_neigh_entry = (struct elp_neigh_entry *)(elp_packet + 1);
-> +	elp_packet_len -= BATMAN_ELP_HLEN;
+> +	ret = check_management_packet(skb, if_incoming, BATMAN_ELP_HLEN);
+> +	if (!ret)
+> +		return NET_RX_DROP;
 > +
-> +	for (i = 0; i < elp_packet->num_neighbors; i++) {
-> +		if (!compare_eth(my_iface_addr, elp_neigh_entry->addr))
-> +			goto next;
-> +
-> +		tq = elp_neigh_entry->rq;
-> +		break;
-> +
-> +	next:
-> +		elp_packet_len -= sizeof(struct elp_neigh_entry);
-> +		if (elp_packet_len < 0)
-> +			break;
-> +
-> +		elp_neigh_entry++;
-> +	}
+> +	/* did we receive a B.A.T.M.A.N. V ELP packet on an interface
+> +	 * that does not have B.A.T.M.A.N. V ELP enabled ? */
+> +	if (bat_priv->bat_algo_ops->bat_ogm_emit != bat_v_ogm_emit)
+> +		return NET_RX_DROP;
 
 Hi Marek
 
-I'm personally not a fan of using goto like this. Reminds me of BASIC.
+I've not looked at the code, but i assume this can happen because
+there is not a per algorithm receive handler? Maybe it makes sense to
+have a receive handler in algo structure, which can handle per
+algorithm receive functions? The common PDUs can be handled first and
+then a call into the algo receive function made to dispatch algo
+specific PDUs.
 
-Could this be changed? Maybe first validate elp_packet->num_neighbors
-matches the packet length, and then skip elp_packet_len check in each
-iteration of the loop. A normal if then else should then be possible.
-
-  Thanks
-	Andrew	  
+	 Andrew
