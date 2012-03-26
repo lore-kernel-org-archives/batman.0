@@ -1,9 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 26 Mar 2012 16:22:45 +0200
-Message-Id: <1332771765-10351-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: use shorter pr_warn instead of
-	pr_warning
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 26 Mar 2012 17:47:17 +0300
+References: <CAHD-aqKv+7SDGC-07Or+xOZKiJATPmOy876SnDawJp_Zs0GZvg@mail.gmail.com>
+In-Reply-To: <CAHD-aqKv+7SDGC-07Or+xOZKiJATPmOy876SnDawJp_Zs0GZvg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201203261747.17373.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] BW degradation on p2p links?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,62 +20,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- compat.h         |    7 +++++++
- hard-interface.c |    4 ++--
- send.c           |    2 +-
- 3 files changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/compat.h b/compat.h
-index 95b8706..f2cf35b 100644
---- a/compat.h
-+++ b/compat.h
-@@ -57,6 +57,13 @@
- 
- #endif /* < KERNEL_VERSION(2, 6, 34) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 35)
-+
-+#define pr_warn pr_warning
-+
-+#endif /* < KERNEL_VERSION(2, 6, 35) */
-+
-+
- 
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 31)
- 
-diff --git a/hard-interface.c b/hard-interface.c
-index 3778977..7db9636 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -175,9 +175,9 @@ static void check_known_mac_addr(const struct net_device *net_dev)
- 				 net_dev->dev_addr))
- 			continue;
- 
--		pr_warning("The newly added mac address (%pM) already exists on: %s\n",
-+		pr_warn("The newly added mac address (%pM) already exists on: %s\n",
- 			   net_dev->dev_addr, hard_iface->net_dev->name);
--		pr_warning("It is strongly recommended to keep mac addresses unique to avoid problems!\n");
-+		pr_warn("It is strongly recommended to keep mac addresses unique to avoid problems!\n");
- 	}
- 	rcu_read_unlock();
- }
-diff --git a/send.c b/send.c
-index af7a674..8ec33b0 100644
---- a/send.c
-+++ b/send.c
-@@ -45,7 +45,7 @@ int send_skb_packet(struct sk_buff *skb, struct hard_iface *hard_iface,
- 		goto send_skb_err;
- 
- 	if (!(hard_iface->net_dev->flags & IFF_UP)) {
--		pr_warning("Interface %s is not up - can't send packet via that interface!\n",
-+		pr_warn("Interface %s is not up - can't send packet via that interface!\n",
- 			   hard_iface->net_dev->name);
- 		goto send_skb_err;
- 	}
--- 
-1.7.9.1
+Hi,
+
+> i'm participating in the development of a wireless mesh network in
+> Delta de Tigre, near Buenos Aires, Argentina.
+> Landscape is absolutely flat, with dense forest 15-20mts tall. Nodes
+> are being installed along the river, 50 - 150mts apart, with clear LOS
+> at ground level.
+> I collaborated with Nico Echaniz last month, bulding another community
+> network in Cordoba, and given the success, I decided to start one more
+> here. I'm also really thankful with Elektra, for recommending the
+> tl-m3220 to Nico!
+> We chose batman over olsr, in part because of avahi stuff, but also to
+> have a real-world implementation and thus collaborate in testing /
+> debugging :) So far, there are  only 4 working nodes, but luckily I'm
+> already facing unexpected behaviour.
+> 
+> I'm sorry for the long email, it's mostly terminal logs.
+> In short, iperf between two neighbouring nodes reports >20mbps, yet
+> running the same iperf between nodes separated by one hop reports
+> inexplicably low <5mbps.
+>
+> [..]
+>
+> Any ideas, thoughts, pointers? Any additional info needed?
+
+welcome on the list!
+I admit not having dived into all the details of your mail - the bigger part 
+of the batman team is sitting in Athens at the moment (see battlemesh.org). 
+The best next step is to find out whether this performance issue is a batman-
+adv or a wifi driver problem. May I suggest you remove batman-adv and repeat 
+the same test using static routing ? If you still see the problem it is the 
+wifi that is not working otherwise we have to fix batman-adv.
+
+Regards,
+Marek
 
