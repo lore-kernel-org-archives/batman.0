@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 28 Mar 2012 14:36:57 +0300
-References: <201203261241.32890.lindner_marek@yahoo.de>
-	<201203271258.57514.lindner_marek@yahoo.de>
-	<4F72E60C.2010300@nixbits.net>
-In-Reply-To: <4F72E60C.2010300@nixbits.net>
+Date: Wed, 28 Mar 2012 17:58:58 +0300
+References: <1332771765-10351-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1332771765-10351-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201203281436.57795.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv load module patch
+Message-Id: <201203281758.59028.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: use shorter pr_warn instead
+	of pr_warning
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,17 +21,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: HeXileD@nixbits.net, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday, March 28, 2012 13:21:00 HeXiLeD wrote:
-> After the patch i compiled and used the builds.
-> I tried one build from source and another made with the image builder
-> 
-> At boot; batman-adv still does not load both interfaces, only 1. (wlan0)
-> In other to load both: batman-adv restart must be executed.
+On Monday, March 26, 2012 17:22:45 Sven Eckelmann wrote:
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  compat.h         |    7 +++++++
+>  hard-interface.c |    4 ++--
+>  send.c           |    2 +-
+>  3 files changed, 10 insertions(+), 3 deletions(-)
 
-Did you verify that the patched script actually is on your router ? A quick 
-peek into the installed shell scripts should eliminate this doubt.
+Applied in revision 8329d7c.
 
-Regards,
+Thanks,
 Marek
