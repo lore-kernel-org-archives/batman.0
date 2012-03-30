@@ -1,16 +1,16 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Thu, 29 Mar 2012 14:51:26 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20120329125126.GA22422@pandem0nium>
+Return-Path: <guido@guidoi.com.ar>
+MIME-Version: 1.0
+Sender: guido@guidoi.com.ar
+In-Reply-To: <20120329125126.GA22422@pandem0nium>
 References: <CAHD-aqKv+7SDGC-07Or+xOZKiJATPmOy876SnDawJp_Zs0GZvg@mail.gmail.com>
 	<201203261747.17373.lindner_marek@yahoo.de>
 	<CAHD-aqLmGQwzK1u8vmgEwpbNTPMZuonJikjkT=uaOkcPedFptg@mail.gmail.com>
 	<CAHD-aqLs8kr5Bwk4-5gBuNepQUmX78yeAHRxRjSLQJw10=fkyA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="G4iJoqBmSsgzjUCe"
-Content-Disposition: inline
-In-Reply-To: <CAHD-aqLs8kr5Bwk4-5gBuNepQUmX78yeAHRxRjSLQJw10=fkyA@mail.gmail.com>
+	<20120329125126.GA22422@pandem0nium>
+From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
+Date: Fri, 30 Mar 2012 01:11:35 -0300
+Message-ID: <CAHD-aqJU-HWV9MHkrkP9efKyzygNkuetA2H4wHYJuKv=ur5Thw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Subject: Re: [B.A.T.M.A.N.] BW degradation on p2p links?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,105 +25,68 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Simon, you saved my day,
 
---G4iJoqBmSsgzjUCe
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Mar 29, 2012 at 9:51 AM, Simon Wunderlich
+<simon.wunderlich@s2003.tu-chemnitz.de> wrote:
+> the problem using one radio is explained further here (from another
+> company, but this applies to any WiFi mesh technology)
+>
+> http://revolutionwifi.blogspot.com/2012/02/mesh-network-performance-impact.html
 
-Hey Guido,
+I was fully aware of this problem with single-radio nodes, and that's
+why I was trying to build cheap two-radio nodes using mr3220 + usb
+dongles.
 
-the problem using one radio is explained further here (from another
-company, but this applies to any WiFi mesh technology)
+>
+> Also, if you use two-radio nodes,
+> they may interfere with each other if the antennas
+> are near to each other. There are quite a few ppl who can confirm this,
+> e.g. check this:
+>
+> https://hackerspace.be/Wbm2009v2/TestInterferenceResults
 
-http://revolutionwifi.blogspot.com/2012/02/mesh-network-performance-impact.=
-html
+Ah! you hit the nail right in the head!
+I walked around the battlemesh wiki a couple of weeks ago, interested
+into past events results, but only came across an rsync daemon serving
+a tree with videos, photos and results, mostly in raw data form,
+collected during the last (before athens) WBM edition.
 
-Also, if you use two-radio nodes, make sure that you use one module
-on 2.4 GHz and one 5 GHz - if you use two modules in the same=20
-frequency band with omni antennas, even if you use separate channels
-(like 1 and 11), they may interfere with each other if the antennas
-are near to each other. There are quite a few ppl who can confirm this,
-e.g. check this:
+I think i was a bit short-sighted, since the Wbm2009v2 link (and the
+rest of that wbm wiki) was a wonderful read!
 
-https://hackerspace.be/Wbm2009v2/TestInterferenceResults
+I did a couple of tests, and indeed increasing the distance between
+the dongle and the router makes the whole difference.
 
-Possible Solutions:
- * use different bands
- * use directional or sector antennas
- * have a reasonable distance between your omni antennas
+I googled more on the subject and found a paper with thorough testing results
+http://edoc.hu-berlin.de/oa/conferences/reSNAVwf8bA/PDF/28TjAjjEtU7ts.pdf
 
-Cheers,
-	Simon
+and even finer-grained testing here
+http://userver.ftw.at/~valerio/files/wons.pdf
 
-On Wed, Mar 28, 2012 at 07:41:05PM -0300, Guido Iribarren wrote:
-> (this time i'll keep the mail short, insane details are attached as text =
-:) )
->=20
-> Well, luckily for batman-adv devs, but unfortunately for me, the
-> problem is in fact related to relaying between wlan interfaces in
-> mr3x20 hardware (at least)
->=20
-> I understand this is not anymore batman related, but maybe someone has
-> experience on this, or can point me into the right direction /
-> maillist ?
-> Given you have a good deal of equipments at the BattleMesh, maybe
-> someone has already tried adding a wifi dongle and can confirm seeing
-> this behaviour?
-> (in a line of 2-radio nodes with static routing, packet throughput is
-> halved on each hop)
->=20
-> =3D=3D=3D=3D=3D=3D=3D=3D
->=20
-> I've repeated the iperf tests in a controlled environment, this time
-> using different subnets on each interface and static routes built with
-> "route add". iptables flushed with -F and policy -P FORWARD ACCEPT
-> no batman at all.
->=20
-> Packets coming in through wlan1 and out through wlan0 (or viceversa)
-> experience (unexpected) "bandwidth degradation". Throughput drops from
-> 30mbps to 15mbps (rough avg)
-> The speed is closely comparable to using only 1 radio (packet comes in
-> through wlan0, goes out through wlan0), so adding the dongle makes no
-> net difference. (besides alternating the channel for transmission,
-> throughput is halved over one hop anyway)
-> 2 consecutive hops, alternating wifi radios, yield 1/3 throughput.
-> (like it happens in a 1-radio mesh)
->=20
-> this does not happen if the packet comes in through eth0 and goes out
-> through wlanX (or viceversa) . Throughput is maintained high at
-> 30mbps.
->=20
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D
->=20
-> So the hardware (or kernel??) is uncapable of keeping up with the
-> transfer speed *when two radios are involved*.
->=20
-> Has anyone bumped into a similar case, or has experience with these
-> equipments? Maybe (again!) i am doing something wrong?
->=20
-> If this is confirmed, my only alternative to maintain good throughput
-> along the mesh will be to install 2 x mr3220 on each node, connected
-> back-to-back with ethernet cable. This will definitely work but the
-> cost for each node owner evidently rises ;(
->=20
-> Thanks a lot!
->=20
-> Guido
+None of them use 802.11n equipment, so i set out to make my own experiment.
+In my case, i needed about 1.5 meter between omni antennas to achieve
+full throughput, placing both omni antennas perpendicular to the
+ground and on the same plane.
+On the other hand, if i place them one over the other (that is, align
+their vertical axis, while holding them at different altitudes) a
+distance as little as 20cm was enough to overcome interference.
+(Sounds reasonable given the omnis gain spatial pattern)
 
+I was able to get 20mbps from A to C (and viceversa), hopping on B.
+[A ch=11] -- [ ch=11 B(2 radio) ch=1] -- [ch=1 C]
+This was done using either BATMAN or static routing, giving almost
+equal results (~1mbps less using batman)
 
+If i put the two radios in B really close to each other (<5 cm)
+throughput fell down to 8 mbps.
+It's a relief it was such a simple issue!
 
---G4iJoqBmSsgzjUCe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Thanks a lot Simon and Marek for getting me into the right path,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+So far we haven't heard of anyone implementing OpenWRT+batman-adv on
+mr3220+usb to build two-radio-nodes mesh network, which means we're
+mostly in a "solo adventure"
+so your help and attention was even more appreciated!
 
-iEYEARECAAYFAk90Ws4ACgkQrzg/fFk7axbWggCg0XdKuBa8cCS47fQGm/XvpQse
-cYkAoKFupxFLshD/nH0DGGqrqHFjm6yH
-=ccSk
------END PGP SIGNATURE-----
-
---G4iJoqBmSsgzjUCe--
+Guido
