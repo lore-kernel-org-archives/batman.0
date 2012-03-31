@@ -1,16 +1,16 @@
-Return-Path: <guido@guidoi.com.ar>
+Return-Path: <dandenson@gmail.com>
 MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-In-Reply-To: <BBFA727B-FECF-4C04-BCD1-3C76CBD010DE@gmail.com>
+In-Reply-To: <CAHD-aqLOLFq5LOYa94BffAzzD2uMSeKOtwaa_PG1+d8E2vrriw@mail.gmail.com>
 References: <CAA_JP8X+vPn39-QK-zPjdd1Mtn4PCTjigpV4fFM6sTVUmBiLTg@mail.gmail.com>
 	<CAHD-aqKN_+5fwg65Udpr6jxt5tFsu5XXsMWkk75ujPK3bJcqJw@mail.gmail.com>
 	<CAA_JP8UxNW18xWZe62ySY=H27HDnZY1YBQV-7ZGUHYnSS-ZSHw@mail.gmail.com>
 	<CAHD-aqK_CGbc8u5GuEBJyFzrk2rTHHTw=bAiWjFafAW9xOqWiw@mail.gmail.com>
 	<BBFA727B-FECF-4C04-BCD1-3C76CBD010DE@gmail.com>
-From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
-Date: Sat, 31 Mar 2012 15:11:47 -0300
-Message-ID: <CAHD-aqLOLFq5LOYa94BffAzzD2uMSeKOtwaa_PG1+d8E2vrriw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	<CAHD-aqLOLFq5LOYa94BffAzzD2uMSeKOtwaa_PG1+d8E2vrriw@mail.gmail.com>
+Date: Sat, 31 Mar 2012 15:03:26 -0600
+Message-ID: <CAA_JP8XtADXO=J6rKdQNTz3vGeLr0+a1fJSsyS9Lb=-zttWgug@mail.gmail.com>
+From: dan <dandenson@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] link alternation when radios are not on
 	batman-adv router?
@@ -27,21 +27,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sat, Mar 31, 2012 at 12:45 PM, Dan Denson <dandenson@gmail.com> wrote:
-> =C2=A0I think I understand. Basically, so long as two interfaces both hav=
-e a path the to destination of acceptable quality, it will send the packets=
- out the interface that did not receive the packets. Hop count doesn't have=
- a direct effect, we don't really care about hop count, only about link qua=
-lity.
+On Sat, Mar 31, 2012 at 12:11 PM, Guido Iribarren
+<guidoiribarren@buenosaireslibre.org> wrote:
+> On Sat, Mar 31, 2012 at 12:45 PM, Dan Denson <dandenson@gmail.com> wrote:
+>> =A0I think I understand. Basically, so long as two interfaces both have =
+a path the to destination of acceptable quality, it will send the packets o=
+ut the interface that did not receive the packets. Hop count doesn't have a=
+ direct effect, we don't really care about hop count, only about link quali=
+ty.
+>>
+>> Is that the case?
+>>
+>>
+>> If hop count doesn't really matter, how do I identify my high quality, h=
+igh capacity backhauls?
 >
-> Is that the case?
+> In batworld, by their high TQ (=3D AFAIU lack of packet loss to destinati=
+on.)
+> no capacity involved in the calculations.
 >
->
-> If hop count doesn't really matter, how do I identify my high quality, hi=
-gh capacity backhauls?
+> (but devs might correct me if i'm being too shortsighted!)
 
-In batworld, by their high TQ (=3D AFAIU lack of packet loss to destination=
-.)
-no capacity involved in the calculations.
+according to the docs, capacity is not used in the calculation.  It is
+assumed that lowest TQ is always the best route.  Hop count adds a
+default '10' to the TQ which is adjustable.  I figure this means that
+I can give a supernode a lower hop cost than the default 10 which
+should slide the TQ in favor of using this node as the optimal path.
 
-(but devs might correct me if i'm being too shortsighted!)
+I also infer that this means that picostations running batman-adv that
+are part of the supernode 'cluster' are going to also add a hop
+penalty to the TQ.  From what I can tell though, link aggregation only
+cares if a interaces/links have an acceptable TQ, not an equal TQ,
+though I suspect that two picos in a supernode config would end up
+providing the same hop count and similar TQ anyway, assuming solid
+wireless links.
