@@ -1,21 +1,16 @@
-Return-Path: <dandenson@gmail.com>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-In-Reply-To: <4F77B50B.6030402@codigosur.org>
-References: <CAA_JP8X+vPn39-QK-zPjdd1Mtn4PCTjigpV4fFM6sTVUmBiLTg@mail.gmail.com>
-	<CAHD-aqKN_+5fwg65Udpr6jxt5tFsu5XXsMWkk75ujPK3bJcqJw@mail.gmail.com>
-	<CAA_JP8UxNW18xWZe62ySY=H27HDnZY1YBQV-7ZGUHYnSS-ZSHw@mail.gmail.com>
-	<CAHD-aqK_CGbc8u5GuEBJyFzrk2rTHHTw=bAiWjFafAW9xOqWiw@mail.gmail.com>
-	<BBFA727B-FECF-4C04-BCD1-3C76CBD010DE@gmail.com>
-	<CAHD-aqLOLFq5LOYa94BffAzzD2uMSeKOtwaa_PG1+d8E2vrriw@mail.gmail.com>
-	<CAA_JP8XtADXO=J6rKdQNTz3vGeLr0+a1fJSsyS9Lb=-zttWgug@mail.gmail.com>
-	<4F77AFDD.7050909@codigosur.org> <4F77B50B.6030402@codigosur.org>
-Date: Sat, 31 Mar 2012 20:10:40 -0600
-Message-ID: <CAA_JP8XaxJ02w0c9UsHNbaEzUt=vQAZoM4bT97dtFaqBxatPyA@mail.gmail.com>
-From: dan <dandenson@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Sender: guido@guidoi.com.ar
+In-Reply-To: <CAA_JP8VjODMM-znsQLM-GyxWjXDJ70Y5yjh_EhgokEY3O+iKAg@mail.gmail.com>
+References: <CAA_JP8UrWSzLYoUEhrzbT1fjeedp28B0dr7dMB_TizLkr+4RNg@mail.gmail.com>
+	<20120331204322.GA31423@ritirata.org>
+	<CAA_JP8VjODMM-znsQLM-GyxWjXDJ70Y5yjh_EhgokEY3O+iKAg@mail.gmail.com>
+From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
+Date: Sat, 31 Mar 2012 23:39:05 -0300
+Message-ID: <CAHD-aqJEvYHpiMBZE5Sp8QzcHJfLVuwzK9Wh4Bf0rN6BA6t0OQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [OT] ruci / Was: link alternation when radios
- are not on batman-adv router?
+Subject: Re: [B.A.T.M.A.N.] any throughput mechanism or plans?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -29,16 +24,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-2012/3/31 Nicol=E1s Ech=E1niz <nicoechaniz@codigosur.org>:
-> on status between repo and nodes.
-> 5) can always revert nodes or the whole network to any previous state
-> (provided by mercurial), as long as you keep a useful commit
+On Sat, Mar 31, 2012 at 11:02 PM, dan <dandenson@gmail.com> wrote:
+>>
+>> Hello Dan,
+>>
+>> there is not such mechanism in batman-adv right now. It is a really good=
+ idea
+>> and we already started to think about that during WBMv5. Personally, I'm
+>> applying to the GSOC2012 and I'm proposing something similar.
+>>
+>> I also think that packet loss is not the correct way to go.
+>>
+>> Regarding your idea, how would you measure the maximum throughput?
+>
+> An easy way might be to just pull the info from ifconfig on a timer:
+>
+> eth0
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0RX bytes:2841699391 (2.6 GiB) =C2=A0TX =
+bytes:2681928474 (2.4 GiB)
+> + 5 seconds
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0RX bytes:2842069649 (2.6 GiB) =C2=A0TX =
+bytes:2682282969 (2.4 GiB)
+>
+> =3DRX of 361.5Kb, TX of 346.2Kb
+>
+> just update a value for the MAX of both as they change
+>
+> Compare the stored value to the last 5 second interval so see what
+> amount of the connection is available. =C2=A0In my case, I have a 20Mb/10=
+Mb
+> connection so I have 19.3Mb/9.3Mb available.
 
-Thanks for the comments and suggestion.  I will definitely check this out.
+That sounds like a nice start!
+I'm not sure, though, if that number includes retransmissions and/or
+unacknowledged frames.
+IIRC i think i've seen that TX number grow in an interface with such a
+lossy link that was just sending traffic (trying to reach the distant
+ap) but getting nothing in return (ap couldn't hear me)
 
-I think I am going to use the mikrotik rb751 flashed to openwrt for
-the supernode tests.  They have 5 ethernet ports that can be addressed
-individually as well as wireless that I can bridge in for client
-access.  Picostations for the standard nodes and for the radio
-interfaces on the supernode.  I'll do 2.4Ghz for all local meshing and
-5Ghz for the links between supernodes and the backhauls.
+So far, with openwrt and ath9k / ath9k_htc, i've found the "tx
+bitrate" (or MCS level) a fair indicator of the link capacity.
+if it says "65.0 MBit/s MCS 7" i cannot tell exactly how much goodput
+it will have, but i can be pretty confident that it will be better
+than when it says "6.5 MBit/s MCS 1"
