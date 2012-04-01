@@ -1,13 +1,21 @@
 Return-Path: <dandenson@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20120331204322.GA31423@ritirata.org>
-References: <CAA_JP8UrWSzLYoUEhrzbT1fjeedp28B0dr7dMB_TizLkr+4RNg@mail.gmail.com>
-	<20120331204322.GA31423@ritirata.org>
-Date: Sat, 31 Mar 2012 20:02:02 -0600
-Message-ID: <CAA_JP8VjODMM-znsQLM-GyxWjXDJ70Y5yjh_EhgokEY3O+iKAg@mail.gmail.com>
+In-Reply-To: <4F77B50B.6030402@codigosur.org>
+References: <CAA_JP8X+vPn39-QK-zPjdd1Mtn4PCTjigpV4fFM6sTVUmBiLTg@mail.gmail.com>
+	<CAHD-aqKN_+5fwg65Udpr6jxt5tFsu5XXsMWkk75ujPK3bJcqJw@mail.gmail.com>
+	<CAA_JP8UxNW18xWZe62ySY=H27HDnZY1YBQV-7ZGUHYnSS-ZSHw@mail.gmail.com>
+	<CAHD-aqK_CGbc8u5GuEBJyFzrk2rTHHTw=bAiWjFafAW9xOqWiw@mail.gmail.com>
+	<BBFA727B-FECF-4C04-BCD1-3C76CBD010DE@gmail.com>
+	<CAHD-aqLOLFq5LOYa94BffAzzD2uMSeKOtwaa_PG1+d8E2vrriw@mail.gmail.com>
+	<CAA_JP8XtADXO=J6rKdQNTz3vGeLr0+a1fJSsyS9Lb=-zttWgug@mail.gmail.com>
+	<4F77AFDD.7050909@codigosur.org> <4F77B50B.6030402@codigosur.org>
+Date: Sat, 31 Mar 2012 20:10:40 -0600
+Message-ID: <CAA_JP8XaxJ02w0c9UsHNbaEzUt=vQAZoM4bT97dtFaqBxatPyA@mail.gmail.com>
 From: dan <dandenson@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] any throughput mechanism or plans?
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [OT] ruci / Was: link alternation when radios
+ are not on batman-adv router?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,49 +29,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
->
-> Hello Dan,
->
-> there is not such mechanism in batman-adv right now. It is a really good idea
-> and we already started to think about that during WBMv5. Personally, I'm
-> applying to the GSOC2012 and I'm proposing something similar.
->
-> I also think that packet loss is not the correct way to go.
->
-> Regarding your idea, how would you measure the maximum throughput?
+2012/3/31 Nicol=E1s Ech=E1niz <nicoechaniz@codigosur.org>:
+> on status between repo and nodes.
+> 5) can always revert nodes or the whole network to any previous state
+> (provided by mercurial), as long as you keep a useful commit
 
-An easy way might be to just pull the info from ifconfig on a timer:
+Thanks for the comments and suggestion.  I will definitely check this out.
 
-eth0
-          RX bytes:2841699391 (2.6 GiB)  TX bytes:2681928474 (2.4 GiB)
-+ 5 seconds
-          RX bytes:2842069649 (2.6 GiB)  TX bytes:2682282969 (2.4 GiB)
-
-=RX of 361.5Kb, TX of 346.2Kb
-
-just update a value for the MAX of both as they change
-
-Compare the stored value to the last 5 second interval so see what
-amount of the connection is available.  In my case, I have a 20Mb/10Mb
-connection so I have 19.3Mb/9.3Mb available.  If I know the connection
-speed (reliably) then I should be able to statically assign this.
-Otherwise it should just be based on historical observations.
-Wireless links are unpredictable so we have to rely on observation
-while wired or higher end backhaul links are more predictable so it
-may be best just use a set value.
-
-It would be better if we could get total throughput on the wireless
-link if possible.
-
-I would think it would be useful to identify 1/2 duplex vs full
-duplex.  1/2 duplex should be the aggregate of the rx and tx with some
-ratio applied (70/30 by default for dl vs ul, this should be tunable)
-and full duplex wouldn't have a ratio applied..
-
-devices like an SAF freemile or Ubiquiti AirFibre are full duplex, so
-SAF = 100Mb FD and AirFibre could be 700Mb FD.
-
-I am assuming that each node knows which direction is upload and which
-is download but that might not be true unless the gateway config was
-used...  I'm not sure if that would be another type of advertisement
-or what.
+I think I am going to use the mikrotik rb751 flashed to openwrt for
+the supernode tests.  They have 5 ethernet ports that can be addressed
+individually as well as wireless that I can bridge in for client
+access.  Picostations for the standard nodes and for the radio
+interfaces on the supernode.  I'll do 2.4Ghz for all local meshing and
+5Ghz for the links between supernodes and the backhauls.
