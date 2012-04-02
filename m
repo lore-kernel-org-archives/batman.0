@@ -1,9 +1,8 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon,  2 Apr 2012 19:25:52 +0200
-Message-Id: <1333387552-18723-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: put long strings on a dedicated
-	line
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon,  2 Apr 2012 19:31:26 +0200
+Message-Id: <1333387886-17562-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add routing_algo to README
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,28 +16,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Strings that make the line exceed 80 chars should be put on a dedicated line to
-avoid making it even longer
-
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bridge_loop_avoidance.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Please apply directly to next and merge into master. Thx
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 8a17a78..aaa4b9f 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -697,7 +697,8 @@ static int handle_unclaim(struct bat_priv *bat_priv,
- 		return 1;
+ README |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/README b/README
+index 4ee2f54..82c075f 100644
+--- a/README
++++ b/README
+@@ -66,10 +66,11 @@ All  mesh  wide  settings  can be found in batman's own interface
+ folder:
  
- 	/* this must be an UNCLAIM frame */
--	bat_dbg(DBG_BLA, bat_priv, "handle_unclaim(): UNCLAIM %pM on vid %d (sent by %pM)...\n",
-+	bat_dbg(DBG_BLA, bat_priv,
-+		"handle_unclaim(): UNCLAIM %pM on vid %d (sent by %pM)...\n",
- 		claim_addr, vid, backbone_gw->orig);
+ # ls /sys/class/net/bat0/mesh/
+-# aggregated_ogms        fragmentation          hop_penalty
+-# ap_isolation           gw_bandwidth           log_level
+-# bonding                gw_mode                orig_interval
+-# bridge_loop_avoidance  gw_sel_class           vis_mode
++# aggregated_ogms        gw_bandwidth           log_level
++# ap_isolation           gw_mode                orig_interval
++# bonding                gw_sel_class           routing_algo
++# bridge_loop_avoidance  hop_penalty            vis_mode
++# fragmentation
  
- 	bla_del_claim(bat_priv, claim_addr, vid);
+ 
+ There is a special folder for debugging information:
 -- 
-1.7.9.4
+1.7.9.1
 
