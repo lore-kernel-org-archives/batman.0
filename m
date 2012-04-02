@@ -1,14 +1,16 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Mon,  2 Apr 2012 14:48:16 +0200
-Message-Id: <1333370896-11295-3-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1333370896-11295-1-git-send-email-martin@hundeboll.net>
-References: <1333370896-11295-1-git-send-email-martin@hundeboll.net>
+Return-Path: <dandenson@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC 2/2] batman-adv: Increment stat counters on rx,
-	tx, fwd
+In-Reply-To: <201204021132.42284.lindner_marek@yahoo.de>
+References: <CAA_JP8UrWSzLYoUEhrzbT1fjeedp28B0dr7dMB_TizLkr+4RNg@mail.gmail.com>
+	<201204020032.37555.lindner_marek@yahoo.de>
+	<CAA_JP8VhdK__mRZoL6DY+vPth9wOE6=BqLE5EDpV5rC0RB2kCQ@mail.gmail.com>
+	<201204021132.42284.lindner_marek@yahoo.de>
+Date: Mon, 2 Apr 2012 07:35:35 -0600
+Message-ID: <CAA_JP8WrwQ52eVZsXRh1TcVqPGOq7kZAz1UqMbhLrOEDuuQZiA@mail.gmail.com>
+From: dan <dandenson@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] any throughput mechanism or plans?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,65 +22,83 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Make actual use of the stat interface introduced in prev commit.
+On Mon, Apr 2, 2012 at 3:32 AM, Marek Lindner <lindner_marek@yahoo.de> wrot=
+e:
+> On Monday, April 02, 2012 00:23:36 dan wrote:
+>> I am making some assumptions. =A0I assume that the link will at some
+>> point become saturated. =A0If we simply track the maximum then we can
+>> advertise an available amount.
+>
+> This will result in a metric optimizing paths for the highest throughput =
+ever
+> recorded. In reality one can easily observe many links with variable
+> throughput. Sometimes you get a spike of high throughput although the ave=
+rage
+> speed is lower. Or your wifi environment changes with a negative impact o=
+n the
+> throughput.
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
----
- routing.c        |    2 ++
- soft-interface.c |    3 +++
- 2 files changed, 5 insertions(+)
+True. maybe not keep the maximum.  Maybe watch the interface queue and
+measure the throughput when frames start to get queued.  Updated the
+'max' speed whenever an interface starts to queue frames.
 
-diff --git a/routing.c b/routing.c
-index 795d3af..a119648 100644
---- a/routing.c
-+++ b/routing.c
-@@ -30,6 +30,7 @@
- #include "vis.h"
- #include "unicast.h"
- #include "bridge_loop_avoidance.h"
-+#include "bat_stats.h"
- 
- static int route_unicast_packet(struct sk_buff *skb,
- 				struct hard_iface *recv_if);
-@@ -870,6 +871,7 @@ static int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 	unicast_packet->header.ttl--;
- 
- 	/* route it */
-+	bat_stats_update(bat_priv, BAT_STAT_FORWARD);
- 	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
- 	ret = NET_RX_SUCCESS;
- 
-diff --git a/soft-interface.c b/soft-interface.c
-index 92137af..774b412 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -38,6 +38,7 @@
- #include <linux/if_vlan.h>
- #include "unicast.h"
- #include "bridge_loop_avoidance.h"
-+#include "bat_stats.h"
- 
- 
- static int bat_get_settings(struct net_device *dev, struct ethtool_cmd *cmd);
-@@ -235,6 +236,7 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 
- 		dat_snoop_outgoing_arp_reply(bat_priv, skb);
- 
-+		bat_stats_update(bat_priv, BAT_STAT_XMIT);
- 		ret = unicast_send_skb(skb, bat_priv);
- 		if (ret != 0)
- 			goto dropped_freed;
-@@ -302,6 +304,7 @@ void interface_rx(struct net_device *soft_iface,
- 
- /*	skb->ip_summed = CHECKSUM_UNNECESSARY;*/
- 
-+	bat_stats_update(bat_priv, BAT_STAT_RECV);
- 	bat_priv->stats.rx_packets++;
- 	bat_priv->stats.rx_bytes += skb->len + ETH_HLEN;
- 
--- 
-1.7.9.5
 
+>
+>
+>> How do we identify this? Well, if the C radio has historically
+>> transfered 10Mb (on the interface closest to the gateway) and we have
+>> tracked it, we can take the current 5Mb away from that an see that
+>> there is 5Mb remaining. =A0This does also assume that a specific
+>> interface has a consistent speed.
+>
+> That is not a safe assumption.
+
+maybe its ok to assume that an interface has a consistent speed for
+some period of time...
+
+>
+>
+>> I don't suggest making throughput the #1 route selection method, only
+>> what would be used if similar quality links where available. =A0in this
+>> case, A<>B and A<>F are very similar quality so we would use
+>> available throughput in the decision making. =A0Have a tunable threshold
+>> for TQ vs TQ before this load balancing is taken into account.
+>
+> Interesting idea. Have to think about this a little bit.
+>
+>
+>> I have another though on how to determine maximum speed but it is more
+>> 'destructive'
+>> Have batman-adv do a test on each link for tx, rx, and bi-directional
+>> and store the results and consider these the interfaces potential.
+>> Also identify if an interface is FD or HD. =A0retest on an interval,
+>> and/or when the TQ on a link is consistently worse than when tested
+>> last. =A0If the test was thorough enough, it would be able to identify
+>> at what throughput ping times and packet loss spike and have an
+>> effective 'safe' maximum vs absolute maximum.
+>
+> Yes, we still have the "costly" way of detecting the link throughput
+> ourselves. What do you think about the idea of asking the wifi rate algor=
+ithm
+> for the link speed ?
+
+I am a wisp.  In my experience, the wifi sync rate isn't reliable.  In
+perfect conditions yes, but when there is fresnel zone incursion on a
+wireless link, the algorythm can't take into account reflected signal
+as noise because they dont exist yet.  Not until you start transfering
+data does the signal get reflected back (as noise) and the radio has
+to adjust the rate down.  Problem is that this happens after you have
+dropped 5% of your packets, which would drop the TQ on the link and it
+would be effectively down until.  Now the data stops, reflections
+stop, link changes speed back up and very light use (pings, OGMs)
+travel safely and TQ rises. Rinse and repeat.
+
+>
+> Regards,
+> Marek
+
+I wish I had a really great solution to this.  I dont really have
+anything to complain about, batman-adv is already a mile ahead of the
+next best mesh routing protocal :)
