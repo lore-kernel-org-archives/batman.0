@@ -1,13 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Mon, 02 Apr 2012 16:51:04 -0400 (EDT)
-Message-Id: <20120402.165104.996866668147124253.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <201204021416.42200.lindner_marek@yahoo.de>
-References: <201204021416.42200.lindner_marek@yahoo.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] new batman-adv maintainer
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue,  3 Apr 2012 23:50:17 +0200
+Message-Id: <1333489822-27692-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/5] batman-adv: tt code fixes and temporary
+	client detection
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,15 +15,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: lindner_marek@yahoo.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 2 Apr 2012 14:16:41 +0200
+This set of patches aims to first clean & fix the code a little bit in order to
+prepare it for the temporary client recognition (patch 5/5).
 
-> I'd like to let you know that Antonio is going to replace me as linux kernel 
-> integrator. He has been active in our project for more than 2 years and 
-> closely follows the kernel development. Sven and I are still going to be 
-> around to help whenver there are questions or problems to discuss.
+Temporary client recognition: In the current implementation, whenever a client
+joins the network it has to wait the next OGM in order to be announced to the
+whole network (by means of the known TT mechanism). Before that time, the client
+will be unable to communicate to whichever else client, so generating some delay
+that usually leads to DHCP (or any other service) timeout. This problem is
+amplified is for large originator interval.
 
-Ok, great.
+Patch 5/5 add a temporary recognition mechanism which make every node in the
+network "autodetect" the location (namely the node serving) the node yet
+announced client
+
+Known issues: right now, multiple temporary announcement of the same client is
+not supported; roaming of temporary client is not supported.
+Support for this two features will be added soon.
+
