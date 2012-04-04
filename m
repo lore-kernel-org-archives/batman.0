@@ -1,11 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  3 Apr 2012 23:50:22 +0200
-Message-Id: <1333489822-27692-6-git-send-email-ordex@autistici.org>
-In-Reply-To: <1333489822-27692-1-git-send-email-ordex@autistici.org>
-References: <1333489822-27692-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: enable nodes to detect not
-	yet announced clients
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 4 Apr 2012 10:07:02 +0200
+References: <1333370896-11295-1-git-send-email-martin@hundeboll.net>
+	<1333370896-11295-2-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1333370896-11295-2-git-send-email-martin@hundeboll.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201204041007.02852.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC 1/2] batman-adv: Add interface to keep stats
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,448 +21,122 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-A client that connects to the mesh network is not visible to any node until it
-has been announced by its serving node in the next TT diff sent out by means of
-the next OGM.
+On Monday, April 02, 2012 14:48:15 Martin Hundeb=C3=B8ll wrote:
+> @@ -265,6 +266,18 @@ static int vis_data_open(struct inode *inode, struct
+> file *file) return single_open(file, vis_seq_print_text, net_dev);
+>  }
+>=20
+> +static int bat_stats_open(struct inode *inode, struct file *file)
+> +{
+> +	struct net_device *net_dev =3D (struct net_device *)inode->i_private;
+> +	return single_open(file, bat_stats_show, net_dev);
+> +}=20
 
-During this period the client is not able to communicate to anyone because no
-node has a route towards it yet. This is usually acceptable in networks with
-short OGM interval (=the maximum waiting time before the next announcement), but
-it is definitely problematic in networks where the OGM interval has been set to
-an higher value (e.g. 5 seconds). The client, that probably issued an ARP or
-DHCP request upon connection will suffer from several timeouts before being able
-to communicate with the rest of the network.
+Did you consider using bat_priv->stats or ethtool->get_ethtool_stats() ?
 
-This patch enable nodes to detect such "new born" clients and to add a temporary
-route towards them in order to be able to communicate. If the client is not
-claimed by any node within a certain amount of time, it will then be deleted.
 
-Roaming operations have been adapted accordingly in order to be let clients
-switch serving node even during the first OGM interval (when they have not been
-announced yet)
+> +static int bat_stats_clear_open(struct inode *inode, struct file *file)
+> +{
+> +	struct net_device *net_dev =3D (struct net_device *)inode->i_private;
+> +	return single_open(file, bat_stats_clear, net_dev);
+> +}
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- main.h              |    2 +
- packet.h            |   15 +++----
- routing.c           |   26 +++++++++---
- soft-interface.c    |    6 ++-
- soft-interface.h    |    2 +-
- translation-table.c |  111 +++++++++++++++++++++++++++++++++++++++++----------
- translation-table.h |    4 +-
- types.h             |    1 +
- 8 files changed, 130 insertions(+), 37 deletions(-)
+How about writing 0 to the stats file resets the counters, thus avoiding a=
+=20
+second file ?
 
-diff --git a/main.h b/main.h
-index c8bfe28..7340542 100644
---- a/main.h
-+++ b/main.h
-@@ -44,6 +44,8 @@
- #define PURGE_TIMEOUT 200000 /* 200 seconds */
- #define TT_LOCAL_TIMEOUT 3600000 /* in miliseconds */
- #define TT_CLIENT_ROAM_TIMEOUT 600000 /* in miliseconds */
-+#define TT_CLIENT_TEMP_TIMEOUT_FACT 10 /* multiply factor for the current orig
-+					* interval */
- /* sliding packet range of received originator messages in sequence numbers
-  * (should be a multiple of our word size) */
- #define TQ_LOCAL_WINDOW_SIZE 64
-diff --git a/packet.h b/packet.h
-index 3c4c533..496d633 100644
---- a/packet.h
-+++ b/packet.h
-@@ -91,12 +91,13 @@ enum tt_query_flags {
-  * Flags from 1 to 1 << 7 are sent on the wire, while flags from 1 << 8 to
-  * 1 << 15 are used for local computation only */
- enum tt_client_flags {
--	TT_CLIENT_DEL     = 1 << 0,
--	TT_CLIENT_ROAM    = 1 << 1,
--	TT_CLIENT_WIFI    = 1 << 2,
--	TT_CLIENT_NOPURGE = 1 << 8,
--	TT_CLIENT_NEW     = 1 << 9,
--	TT_CLIENT_PENDING = 1 << 10
-+	TT_CLIENT_DEL		= 1 << 0,
-+	TT_CLIENT_ROAM		= 1 << 1,
-+	TT_CLIENT_WIFI		= 1 << 2,
-+	TT_CLIENT_TEMP		= 1 << 3,
-+	TT_CLIENT_NOPURGE	= 1 << 8,
-+	TT_CLIENT_NEW		= 1 << 9,
-+	TT_CLIENT_PENDING	= 1 << 10,
- };
- 
- /* claim frame types for the bridge loop avoidance */
-@@ -224,7 +225,7 @@ struct tt_query_packet {
- 
- struct roam_adv_packet {
- 	struct batman_header header;
--	uint8_t  reserved;
-+	uint8_t  flags;
- 	uint8_t  dst[ETH_ALEN];
- 	uint8_t  src[ETH_ALEN];
- 	uint8_t  client[ETH_ALEN];
-diff --git a/routing.c b/routing.c
-index 2435237..44bd471 100644
---- a/routing.c
-+++ b/routing.c
-@@ -679,11 +679,13 @@ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
- 		goto out;
- 
- 	bat_dbg(DBG_TT, bat_priv,
--		"Received ROAMING_ADV from %pM (client %pM)\n",
--		roam_adv_packet->src, roam_adv_packet->client);
-+		"Received ROAMING_ADV from %pM (client: %pM flags: 0x%.2x)\n",
-+		roam_adv_packet->src, roam_adv_packet->client,
-+		roam_adv_packet->flags);
- 
- 	tt_global_add(bat_priv, orig_node, roam_adv_packet->client,
--		      TT_CLIENT_ROAM, atomic_read(&orig_node->last_ttvn) + 1);
-+		      roam_adv_packet->flags | TT_CLIENT_ROAM,
-+		      atomic_read(&orig_node->last_ttvn) + 1);
- 
- 	/* Roaming phase starts: I have new information but the ttvn has not
- 	 * been incremented yet. This flag will make me check all the incoming
-@@ -959,6 +961,7 @@ int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
- 	struct unicast_packet *unicast_packet;
- 	int hdr_size = sizeof(*unicast_packet);
-+	struct orig_node *orig_node = NULL;
- 
- 	unicast_packet = (struct unicast_packet *)skb->data;
- 
-@@ -974,7 +977,18 @@ int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 
- 	/* packet for me */
- 	if (is_my_mac(unicast_packet->dest)) {
--		interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size);
-+		/* now we can look at the source field and retrieve the orig
-+		 * node */
-+		if (unicast_packet->header.packet_type == BAT_UNICAST_4ADDR)
-+			orig_node = orig_hash_find(bat_priv,
-+			       ((struct unicast_4addr_packet *)skb->data)->src);
-+
-+		interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size,
-+			     orig_node);
-+
-+		if (orig_node)
-+			orig_node_free_ref(orig_node);
-+
- 		return NET_RX_SUCCESS;
- 	}
- 
-@@ -1010,7 +1024,7 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 			return NET_RX_SUCCESS;
- 
- 		interface_rx(recv_if->soft_iface, new_skb, recv_if,
--			     sizeof(struct unicast_packet));
-+			     sizeof(struct unicast_packet), NULL);
- 		return NET_RX_SUCCESS;
- 	}
- 
-@@ -1094,7 +1108,7 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 		goto out;
- 
- 	/* broadcast for me */
--	interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size);
-+	interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size, orig_node);
- 	ret = NET_RX_SUCCESS;
- 	goto out;
- 
-diff --git a/soft-interface.c b/soft-interface.c
-index 92137af..9e2781d 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -256,7 +256,7 @@ end:
- 
- void interface_rx(struct net_device *soft_iface,
- 		  struct sk_buff *skb, struct hard_iface *recv_if,
--		  int hdr_size)
-+		  int hdr_size, struct orig_node *orig_node)
- {
- 	struct bat_priv *bat_priv = netdev_priv(soft_iface);
- 	struct ethhdr *ethhdr;
-@@ -307,6 +307,10 @@ void interface_rx(struct net_device *soft_iface,
- 
- 	soft_iface->last_rx = jiffies;
- 
-+	if (orig_node)
-+		tt_add_temporary_global_entry(bat_priv, orig_node,
-+					      ethhdr->h_source);
-+
- 	if (is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest))
- 		goto dropped;
- 
-diff --git a/soft-interface.h b/soft-interface.h
-index 0203006..b91d8ff 100644
---- a/soft-interface.h
-+++ b/soft-interface.h
-@@ -25,7 +25,7 @@
- int my_skb_head_push(struct sk_buff *skb, unsigned int len);
- void interface_rx(struct net_device *soft_iface,
- 		  struct sk_buff *skb, struct hard_iface *recv_if,
--		  int hdr_size);
-+		  int hdr_size, struct orig_node *orig_node);
- struct net_device *softif_create(const char *name);
- void softif_destroy(struct net_device *soft_iface);
- int softif_is_valid(const struct net_device *net_dev);
-diff --git a/translation-table.c b/translation-table.c
-index 82711b8..d6ea617 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -31,10 +31,21 @@
- 
- #include <linux/crc16.h>
- 
--static void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
-+/* the temporary client timeout is defined as a multiple of the originator
-+ * interval */
-+#define TT_CLIENT_TEMP_TIMEOUT (TT_CLIENT_TEMP_TIMEOUT_FACT * \
-+				atomic_read(&bat_priv->orig_interval))
-+
-+
-+static void send_roam_adv(struct bat_priv *bat_priv,
-+			  struct tt_global_entry *tt_global_entry,
- 			  struct orig_node *orig_node);
- static void tt_purge(struct work_struct *work);
- static void tt_global_del_orig_list(struct tt_global_entry *tt_global_entry);
-+static void tt_global_del(struct bat_priv *bat_priv,
-+			  struct orig_node *orig_node,
-+			  const unsigned char *addr,
-+			  const char *message, bool roaming);
- 
- /* returns 1 if they are the same mac addr */
- static int compare_tt(const struct hlist_node *node, const void *data2)
-@@ -248,6 +259,7 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 		tt_local_entry->common.flags |= TT_CLIENT_WIFI;
- 	atomic_set(&tt_local_entry->common.refcount, 2);
- 	tt_local_entry->last_seen = jiffies;
-+	tt_local_entry->common.added_at = tt_local_entry->last_seen;
- 
- 
- 	/* the batman interface mac address should never be purged */
-@@ -291,15 +303,25 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 		hlist_for_each_entry_rcu(orig_entry, node, head, list) {
- 			orig_entry->orig_node->tt_poss_change = true;
- 
--			send_roam_adv(bat_priv, tt_global_entry->common.addr,
-+			send_roam_adv(bat_priv, tt_global_entry,
- 				      orig_entry->orig_node);
- 		}
- 		rcu_read_unlock();
--		/* The global entry has to be marked as ROAMING and
--		 * has to be kept for consistency purpose */
- 
--		tt_global_entry->common.flags |= TT_CLIENT_ROAM;
--		tt_global_entry->roam_at = jiffies;
-+		/* if the global client is marked as TEMP or ROAM we can
-+		 * directly delete it because it has never been announced yet
-+		 * and we don't need to keep it for consistency purposes */
-+		if ((tt_global_entry->common.flags & TT_CLIENT_TEMP) ||
-+		    (tt_global_entry->common.flags & TT_CLIENT_ROAM))
-+			tt_global_del(bat_priv, NULL, addr,
-+				      "Not yet announced global client roamed to us",
-+				      true);
-+		else {
-+			/* The global entry has to be marked as ROAMING and
-+			 * has to be kept for consistency purpose */
-+			tt_global_entry->common.flags |= TT_CLIENT_ROAM;
-+			tt_global_entry->roam_at = jiffies;
-+		}
- 	}
- out:
- 	if (tt_local_entry)
-@@ -615,6 +637,8 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 		tt_global_entry->common.flags = flags;
- 		tt_global_entry->roam_at = 0;
- 		atomic_set(&tt_global_entry->common.refcount, 2);
-+		tt_global_entry->common.added_at = jiffies;
-+
- 
- 		INIT_HLIST_HEAD(&tt_global_entry->orig_list);
- 		spin_lock_init(&tt_global_entry->list_lock);
-@@ -632,6 +656,14 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 		tt_global_add_orig_entry(tt_global_entry, orig_node, ttvn);
- 	} else {
- 		/* there is already a global entry, use this one. */
-+		/* if we are trying to add a temporary node, but we found an
-+		 * already existent entry, we can exit directly */
-+		if (flags & TT_CLIENT_TEMP)
-+			goto out;
-+
-+		/* if the client was temporary added before receiving the first
-+		 * OGM announcing it, we have to clear the TEMP flag */
-+		tt_global_entry->common.flags &= ~TT_CLIENT_TEMP;
- 
- 		/* If there is the TT_CLIENT_ROAM flag set, there is only one
- 		 * originator left in the list and we previously received a
-@@ -694,11 +726,12 @@ static void tt_global_print_entry(struct tt_global_entry *tt_global_entry,
- 	hlist_for_each_entry_rcu(orig_entry, node, head, list) {
- 		flags = tt_common_entry->flags;
- 		last_ttvn = atomic_read(&orig_entry->orig_node->last_ttvn);
--		seq_printf(seq, " * %pM  (%3u) via %pM     (%3u)   [%c%c]\n",
-+		seq_printf(seq,	" * %pM  (%3u) via %pM     (%3u)   [%c%c%c]\n",
- 			   tt_global_entry->common.addr, orig_entry->ttvn,
- 			   orig_entry->orig_node->orig, last_ttvn,
- 			   (flags & TT_CLIENT_ROAM ? 'R' : '.'),
--			   (flags & TT_CLIENT_WIFI ? 'W' : '.'));
-+			   (flags & TT_CLIENT_WIFI ? 'W' : '.'),
-+			   (flags & TT_CLIENT_TEMP ? 'T' : '.'));
- 	}
- }
- 
-@@ -949,7 +982,7 @@ void tt_global_del_orig(struct bat_priv *bat_priv,
- 	orig_node->tt_initialised = false;
- }
- 
--static void tt_global_roam_purge(struct bat_priv *bat_priv)
-+static void tt_global_purge(struct bat_priv *bat_priv)
- {
- 	struct hashtable_t *hash = bat_priv->tt_global_hash;
- 	struct tt_common_entry *tt_common_entry;
-@@ -958,6 +991,8 @@ static void tt_global_roam_purge(struct bat_priv *bat_priv)
- 	struct hlist_head *head;
- 	spinlock_t *list_lock; /* protects write access to the hash lists */
- 	uint32_t i;
-+	bool purge;
-+	char *msg = NULL;
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -966,18 +1001,29 @@ static void tt_global_roam_purge(struct bat_priv *bat_priv)
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(tt_common_entry, node, node_tmp,
- 					  head, hash_entry) {
-+			purge = false;
- 			tt_global_entry = container_of(tt_common_entry,
- 						       struct tt_global_entry,
- 						       common);
--			if (!(tt_global_entry->common.flags & TT_CLIENT_ROAM))
--				continue;
--			if (!has_timed_out(tt_global_entry->roam_at,
--					   TT_CLIENT_ROAM_TIMEOUT))
-+			if ((tt_global_entry->common.flags & TT_CLIENT_ROAM) &&
-+			    has_timed_out(tt_global_entry->roam_at,
-+					  TT_CLIENT_ROAM_TIMEOUT)) {
-+				purge = true;
-+				msg = "Roaming timeout\n";
-+			}
-+
-+			if ((tt_global_entry->common.flags & TT_CLIENT_TEMP) &&
-+			    has_timed_out(tt_global_entry->common.added_at,
-+					  TT_CLIENT_TEMP_TIMEOUT)) {
-+				purge = true;
-+				msg = "Temporary client timeout\n";
-+			}
-+
-+			if (!purge)
- 				continue;
- 
--			bat_dbg(DBG_TT, bat_priv,
--				"Deleting global tt entry (%pM): Roaming timeout\n",
--				tt_global_entry->common.addr);
-+			bat_dbg(DBG_TT, bat_priv, "Deleting global tt entry (%pM): %s\n",
-+				tt_global_entry->common.addr, msg);
- 
- 			hlist_del_rcu(node);
- 			tt_global_entry_free_ref(tt_global_entry);
-@@ -1886,7 +1932,8 @@ unlock:
- 	return ret;
- }
- 
--static void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
-+static void send_roam_adv(struct bat_priv *bat_priv,
-+			  struct tt_global_entry *tt_global_entry,
- 			  struct orig_node *orig_node)
- {
- 	struct neigh_node *neigh_node = NULL;
-@@ -1897,7 +1944,7 @@ static void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
- 
- 	/* before going on we have to check whether the client has
- 	 * already roamed to us too many times */
--	if (!tt_check_roam_count(bat_priv, client))
-+	if (!tt_check_roam_count(bat_priv, tt_global_entry->common.addr))
- 		goto out;
- 
- 	skb = dev_alloc_skb(sizeof(struct roam_adv_packet) + ETH_HLEN);
-@@ -1918,7 +1965,10 @@ static void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
- 	memcpy(roam_adv_packet->src, primary_if->net_dev->dev_addr, ETH_ALEN);
- 	hardif_free_ref(primary_if);
- 	memcpy(roam_adv_packet->dst, orig_node->orig, ETH_ALEN);
--	memcpy(roam_adv_packet->client, client, ETH_ALEN);
-+	memcpy(roam_adv_packet->client, tt_global_entry->common.addr, ETH_ALEN);
-+	roam_adv_packet->flags = NO_FLAGS;
-+	if (tt_global_entry->common.flags & TT_CLIENT_TEMP)
-+		roam_adv_packet->flags |= TT_CLIENT_TEMP;
- 
- 	neigh_node = orig_node_get_router(orig_node);
- 	if (!neigh_node)
-@@ -1926,7 +1976,8 @@ static void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
- 
- 	bat_dbg(DBG_TT, bat_priv,
- 		"Sending ROAMING_ADV to %pM (client %pM) via %pM\n",
--		orig_node->orig, client, neigh_node->addr);
-+		orig_node->orig, tt_global_entry->common.addr,
-+		neigh_node->addr);
- 
- 	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
- 	ret = 0;
-@@ -1947,7 +1998,7 @@ static void tt_purge(struct work_struct *work)
- 		container_of(delayed_work, struct bat_priv, tt_work);
- 
- 	tt_local_purge(bat_priv);
--	tt_global_roam_purge(bat_priv);
-+	tt_global_purge(bat_priv);
- 	tt_req_purge(bat_priv);
- 	tt_roam_purge(bat_priv);
- 
-@@ -2170,3 +2221,21 @@ bool tt_global_client_is_roaming(struct bat_priv *bat_priv, uint8_t *addr)
- out:
- 	return ret;
- }
-+
-+bool tt_add_temporary_global_entry(struct bat_priv *bat_priv,
-+				   struct orig_node *orig_node,
-+				   const unsigned char *addr)
-+{
-+	bool ret = false;
-+
-+	if (!tt_global_add(bat_priv, orig_node, addr, TT_CLIENT_TEMP,
-+			   atomic_read(&orig_node->last_ttvn)))
-+		goto out;
-+
-+	bat_dbg(DBG_TT, bat_priv,
-+		"Added temporary global client (addr: %pM orig: %pM)\n",
-+		addr, orig_node->orig);
-+	ret = true;
-+out:
-+	return ret;
-+}
-diff --git a/translation-table.h b/translation-table.h
-index 3239b72..9475c44 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -53,6 +53,8 @@ void tt_update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 		    const unsigned char *tt_buff, uint8_t tt_num_changes,
- 		    uint8_t ttvn, uint16_t tt_crc);
- bool tt_global_client_is_roaming(struct bat_priv *bat_priv, uint8_t *addr);
--
-+bool tt_add_temporary_global_entry(struct bat_priv *bat_priv,
-+				   struct orig_node *orig_node,
-+				   const unsigned char *addr);
- 
- #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
-diff --git a/types.h b/types.h
-index 15f538a..08c51c4 100644
---- a/types.h
-+++ b/types.h
-@@ -261,6 +261,7 @@ struct tt_common_entry {
- 	uint8_t addr[ETH_ALEN];
- 	struct hlist_node hash_entry;
- 	uint16_t flags;
-+	unsigned long added_at;
- 	atomic_t refcount;
- 	struct rcu_head rcu;
- };
--- 
-1.7.9.4
+
+> +/* Update one or more stat counters by passing the appropriate flags. */
+> +void bat_stats_update(struct bat_priv *bat_priv, uint32_t flags)
+> +{
+> +	if (bat_priv && flags) {
+> +		write_seqlock(&bat_priv->bat_stats->lock);
+> +		if (flags & BAT_STAT_XMIT)
+> +			atomic_inc(&bat_priv->bat_stats->transmitted);
+> +		if (flags & BAT_STAT_RECV)
+> +			atomic_inc(&bat_priv->bat_stats->received);
+> +		if (flags & BAT_STAT_FORWARD)
+> +			atomic_inc(&bat_priv->bat_stats->forwarded);
+> +		if (flags & BAT_STAT_CODE)
+> +			atomic_inc(&bat_priv->bat_stats->coded);
+> +		if (flags & BAT_STAT_DECODE)
+> +			atomic_inc(&bat_priv->bat_stats->decoded);
+> +		if (flags & BAT_STAT_DECODE_FAIL)
+> +			atomic_inc(&bat_priv->bat_stats->decode_failed);
+> +		if (flags & BAT_STAT_RECODE)
+> +			atomic_inc(&bat_priv->bat_stats->recoded);
+> +		if (flags & BAT_STAT_OVERHEARD)
+> +			atomic_inc(&bat_priv->bat_stats->overheard);
+> +		write_sequnlock(&bat_priv->bat_stats->lock);
+> +	}
+> +}
+
+The network coding flags should be added with the network coding patchset.
+
+
+> +/* debugfs function to list statistics */
+> +int bat_stats_show(struct seq_file *seq, void *offset)
+> +{
+> +	struct net_device *net_dev =3D (struct net_device *)seq->private;
+> +	struct bat_priv *bat_priv =3D netdev_priv(net_dev);
+> +	struct bat_stats *stats =3D bat_priv->bat_stats;
+> +	seqlock_t *lock =3D &stats->lock;
+> +	int transmitted, received, forwarded, coded, decoded, decode_failed,
+> +	    recoded, overheard;
+> +	unsigned long sval;
+> +
+> +	do {
+> +		sval =3D read_seqbegin(lock);
+> +		transmitted   =3D atomic_read(&stats->transmitted);
+> +		received      =3D atomic_read(&stats->received);
+> +		forwarded     =3D atomic_read(&stats->forwarded);
+> +		coded         =3D atomic_read(&stats->coded);
+> +		decoded       =3D atomic_read(&stats->decoded);
+> +		decode_failed =3D atomic_read(&stats->decode_failed);
+> +		recoded       =3D atomic_read(&stats->recoded);
+> +		overheard     =3D atomic_read(&stats->overheard);
+> +	} while (read_seqretry(lock, sval));
+> +
+> +	seq_printf(seq, "Transmitted:  %d\n", transmitted);
+> +	seq_printf(seq, "Received:     %d\n", received);
+> +	seq_printf(seq, "Forwarded:    %d\n", forwarded);
+> +	seq_printf(seq, "Coded:        %d\n", coded);
+> +	seq_printf(seq, "Recoded:      %d\n", recoded);
+> +	seq_printf(seq, "Decoded:      %d\n", decoded);
+> +	seq_printf(seq, "Failed:       %d\n", decode_failed);
+> +	seq_printf(seq, "Overheard:    %d\n", overheard);
+> +
+> +	return 0;
+> +}
+
+Why not simply printing the atomic counters ?
+I also don't quite understand why we need to add an additional layer of=20
+locking. This potentially slows down the traffic forwarding.
+
+
+> diff --git a/types.h b/types.h
+> index 15f538a..41b2217 100644
+> --- a/types.h
+> +++ b/types.h
+> @@ -240,6 +240,7 @@ struct bat_priv {
+>  #endif
+>  	struct vis_info *my_vis_info;
+>  	struct bat_algo_ops *bat_algo_ops;
+> +	struct bat_stats *bat_stats;
+>  };
+
+If you add an ifdef around the definition here would be no need to malloc=20
+bat_stats separately, right ?
+
+
+> +struct bat_stats {
+> +	seqlock_t lock;			/* seqlock for fast write operation */
+> +	struct timespec timestamp;	/* Timestamp of data */
+
+What is the timestamp used for ?
+
+Regards,
+Marek
 
