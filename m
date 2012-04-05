@@ -1,11 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  5 Apr 2012 12:38:47 +0200
-Message-Id: <1333622342-6128-2-git-send-email-ordex@autistici.org>
+Date: Thu,  5 Apr 2012 12:38:48 +0200
+Message-Id: <1333622342-6128-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1333622342-6128-1-git-send-email-ordex@autistici.org>
 References: <1333622342-6128-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 01/16] MAINTAINERS: add additional maintainer
-	for net/batman-adv
+Subject: [B.A.T.M.A.N.] [PATCH 02/16] batman-adv: clean up Kconfig
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,25 +19,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Add myself as maintainer for net/batman-adv as announced by Marek Linder
-
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- MAINTAINERS |    1 +
- 1 file changed, 1 insertion(+)
+ net/batman-adv/Kconfig |   17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index eecf344..4b55570 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1432,6 +1432,7 @@ F:	include/linux/backlight.h
- BATMAN ADVANCED
- M:	Marek Lindner <lindner_marek@yahoo.de>
- M:	Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-+M:	Antonio Quartulli <ordex@autistici.org>
- L:	b.a.t.m.a.n@lists.open-mesh.org
- W:	http://www.open-mesh.org/
- S:	Maintained
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index 2b68d06..a04d28f 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -7,19 +7,18 @@ config BATMAN_ADV
+ 	depends on NET
+ 	select CRC16
+         default n
+-	---help---
++	help
++          B.A.T.M.A.N. (better approach to mobile ad-hoc networking) is
++          a routing protocol for multi-hop ad-hoc mesh networks. The
++          networks may be wired or wireless. See
++          http://www.open-mesh.org/ for more information and user space
++          tools.
+ 
+-        B.A.T.M.A.N. (better approach to mobile ad-hoc networking) is
+-        a routing protocol for multi-hop ad-hoc mesh networks. The
+-        networks may be wired or wireless. See
+-        http://www.open-mesh.org/ for more information and user space
+-        tools.
+ 
+ config BATMAN_ADV_DEBUG
+ 	bool "B.A.T.M.A.N. debugging"
+-	depends on BATMAN_ADV != n
+-	---help---
+-
++	depends on BATMAN_ADV
++	help
+ 	  This is an option for use by developers; most people should
+ 	  say N here. This enables compilation of support for
+ 	  outputting debugging information to the kernel log. The
 -- 
 1.7.9.4
 
