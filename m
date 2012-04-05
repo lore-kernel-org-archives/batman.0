@@ -1,17 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 5 Apr 2012 23:21:06 +0300
+Date: Thu, 5 Apr 2012 23:30:06 +0300
 References: <201203222250.31309.lindner_marek@yahoo.de>
-	<1332453075-27999-1-git-send-email-lindner_marek@yahoo.de>
-	<20120323065044.GD5662@lunn.ch>
-In-Reply-To: <20120323065044.GD5662@lunn.ch>
+	<20120323063206.GA5662@lunn.ch>
+In-Reply-To: <20120323063206.GA5662@lunn.ch>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201204052321.07234.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC 1/5] batman-adv: ELP - adding basic
-	infrastructure
+Message-Id: <201204052330.06655.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC] ELP
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,18 +23,40 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, March 23, 2012 08:50:44 Andrew Lunn wrote:
-> I guess you are not on the ARM linux kernel list. A couple of months
-> ago, Rusty had a rant about the last entry in such structures should
-> always have a , even though its optional. As part of the ARM cleanup
-> work he had to append a new entry to many board files, and found it
-> very error prone. Sometime you forget to add the , to the line before,
-> and then the compiler spits out a compile error. So since then i've
-> got into the habit of always having a , on the last entry.
 
-No, I don't follow the ARM list. If we wanted the comma to be there we should 
-change the entire module. At the moment we never put the comma after the last 
-item.
+Hi Andrew,
+
+excuse the delayed answers - the wbmv5 was rather intense.  ;-)
+
+
+> The problem with broadcasting the ELP packets is that they are always
+> sent with the most robust coding rate. So ELP gives you an idea how
+> good the 1Mbps broadcast channel is, not how good the unicast channel
+> the automatic rate selection algorithm is using is. I think we
+> discussed mixing in some unicast packets in the forward direction. The
+> ELP packets containing the reports would stay the same, and so
+> function as node detection. But a node could also send out unicast ELP
+> packets to its known neighbours and they would be included into the
+> LQ.
+> 
+> There are obvious drawbacks. More overhead, especially in dense
+> networks. It is also not clear if the measurements would be
+> better. Unicast packets get a number of retries with fast ACKs, where
+> as multicast does not. So multicast might actually give a better
+> measure of the link at 1Mbps.
+> 
+> Do you know if Linus had chance to explore these ideas during his
+> GSOC?
+
+the problem is known but we did not have enough time to explore it. One idea 
+we had in mind was sending larger ELP broadcast packets every now and then in 
+the hope of better estimating the link quality. The feature to increase the 
+ELP packet size is part of this patchset and would allow to test this idea.
+
+On the other hand I think we should move towards throughput based path 
+decisions. It tells us so much more about what we really care about. Some 
+obstacles are waiting for us if we go down this path. Have you ever 
+experimented with this approach ?
 
 Regards,
 Marek
