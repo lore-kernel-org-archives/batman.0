@@ -1,15 +1,16 @@
-Return-Path: <andrew@lunn.ch>
-Date: Fri, 6 Apr 2012 11:13:20 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20120406091320.GB10020@lunn.ch>
-References: <201203222250.31309.lindner_marek@yahoo.de>
-	<20120323063206.GA5662@lunn.ch>
-	<201204052330.06655.lindner_marek@yahoo.de>
+Return-Path: <ordex@autistici.org>
+Date: Fri, 6 Apr 2012 12:13:36 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120406101335.GB10310@ritirata.org>
+References: <1333543332-26942-1-git-send-email-ordex@autistici.org>
+	<1333543332-26942-5-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="DKU6Jbt7q3WqK7+M"
 Content-Disposition: inline
-In-Reply-To: <201204052330.06655.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC] ELP
+In-Reply-To: <1333543332-26942-5-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: enable nodes to detect
+ not yet announced clients
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,91 +22,90 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thu, Apr 05, 2012 at 11:30:06PM +0300, Marek Lindner wrote:
-> 
-> Hi Andrew,
-> 
-> excuse the delayed answers - the wbmv5 was rather intense.  ;-)
 
-I got that impression for the mailing lists... 
- 
-> On the other hand I think we should move towards throughput based
-> path decisions. It tells us so much more about what we really care
-> about. Some obstacles are waiting for us if we go down this
-> path. Have you ever experimented with this approach ?
+--DKU6Jbt7q3WqK7+M
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Not directly, but we did something in SPAWN which might be relevant.
+On Wed, Apr 04, 2012 at 02:42:12PM +0200, Antonio Quartulli wrote:
+> A client that connects to the mesh network is not visible to any node unt=
+il it
+> has been announced by its serving node in the next TT diff sent out by me=
+ans of
+> the next OGM.
+>=20
+> During this period the client is not able to communicate to anyone becaus=
+e no
+> node has a route towards it yet. This is usually acceptable in networks w=
+ith
+> short OGM interval (=3Dthe maximum waiting time before the next announcem=
+ent), but
+> it is definitely problematic in networks where the OGM interval has been =
+set to
+> an higher value (e.g. 5 seconds). The client, that probably issued an ARP=
+ or
+> DHCP request upon connection will suffer from several timeouts before bei=
+ng able
+> to communicate with the rest of the network.
+>=20
+> This patch enable nodes to detect such "new born" clients and to add a te=
+mporary
+> route towards them in order to be able to communicate. If the client is n=
+ot
+> claimed by any node within a certain amount of time, it will then be dele=
+ted.
+>=20
+> Roaming operations have been adapted accordingly in order to be let clien=
+ts
+> switch serving node even during the first OGM interval (when they have no=
+t been
+> announced yet)
+>=20
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+>  main.h              |    2 +
+>  packet.h            |   15 +++----
+>  routing.c           |   26 +++++++++---
+>  soft-interface.c    |    6 ++-
+>  soft-interface.h    |    2 +-
+>  translation-table.c |  111 +++++++++++++++++++++++++++++++++++++++++----=
+------
+>  translation-table.h |    4 +-
+>  types.h             |    1 +
+>  8 files changed, 130 insertions(+), 37 deletions(-)
 
-SPAWN is the automatic deployment of nodes to form a mesh inside a
-building. The use case is for firemen deploying nodes behind them to
-give mesh access to outside the building.
 
-We want to know the link quality to the last two nodes in the chain as
-part of the decision when to deploy the next node in the chain. Due to
-work split between partners in the project, and other reasons, BATMAN
-is not involved in the deployment, it only gets involved once a node
-has been deployed. However, there is obvious overlap here...
+We definitely need to keep TEMP entries away from global CRC computation an=
+d full
+table response! So please, drop this patchset. I'll send a new one later.
 
-The user space code monitors the link quality making use of the
-monitor interface of mac80211. One minor change was made in the kernel
-that allowed us to set the rate the packet would be sent at from user
-space on a packet by packet basis. So we could send probe packets at
-different rates and see which got received. You then have some idea of
-the link quality, what coding rates work. But it does not necessarily
-tell you too much about the link capacity, since you have no idea
-about other users of the air-space.
+Cheers,
 
-For a research project, such code is O.K. However, for something going
-into mainline, i doubt it would be accepted without strong arguments
-about why the existing rate control algorithm cannot be used. One
-difference is active vs passive. Minstral, as far as i know, makes use
-of existing data packets to determine the best coding rate. What the
-project built used its own packets. Thus it was faster to react in a
-changing environment when there was little traffic, which is the exact
-conditions during deployment.
+/me acting as schizophrenic
 
-There is a continuum here. What BATMAN has, and probably also OLSR,
-Babel, etc, is:
 
-The quality of packets sent using broadcast at 1Mbps.
+--=20
+Antonio Quartulli
 
-Using the idea above, probing using different rates we get:
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
 
-The quality of packets sent using broadcast at X Mbps.
+--DKU6Jbt7q3WqK7+M
+Content-Type: application/pgp-signature
 
-We can build a metric based on (TQ, X), picking X such that TQ is
-above some threshold.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-If we can get reliable information out of minstral, we get:
+iQEcBAEBAgAGBQJPfsHPAAoJEFMQTLzJFOZFr4sH/3anj1RiWPoI91udOGxF/Jpz
+iIFozxNgZVcesYv7GvVLtu6OLFYasOjuDI0FFTlMO9/boke1l5ElPZm+EB5LPrQv
+4GAUu08HGFVmCgf+bNPhemSzh01NDKEPiwR1oUyia+EZ0cdWht57GursiaHU6Mo0
+ibFVuFb/VmjpdVkS3gILuqV76fQrkm59oL5CKOYRWwxDZE1O6U9p0I/m46GFJQgN
+if9XcwO5tDEH/40Zqg+kAmq4uBpFptPlUWwzDsXKcbJwl0XE+negnoXmdlbRNv7C
+j9OdoaSJpbVSYldwXNll9mTq0EkRAjLD8rSLxWOSNUCgoAwg4nCqmF4QYw3ysd8=
+=h3Ns
+-----END PGP SIGNATURE-----
 
-X Mbps used for sending unicast packets in the recent past.
-
-but this is a big change. We have lost TQ, but gained unicast to the
-specific originator we want the metric for. We no longer need to send
-probe packets, so have less overhead, but depend on there being some
-traffic in order that minstral can do its thing.
-
-If we send unicast probe packets, and combine it with minstral:
-
-The quality of packets send using unicast at X Mbps.
-
-We have no choice on X, Minstral decides it. This is in fact good,
-since the real data also get X. We have a metric based on (TQ, X). How
-we actually determine X is interesting. TQ is a moving window
-average. Can we do the same for X? Minstral will already be doing some
-averaging, so maybe just use the latest value?
-
-So far, we have no idea about available capacity of the link:
-
-Determine X from Minstral. Send a burst of packets forcing them to be
-sent at rate X and without retries. Time how long it takes to send the
-packets. Compare this with the theoretical time needed, assuming no
-congestion, to calculate a congestion factor C.
-
-You now can build a metric based on (TQ, X, C). But you have more
-overhead, because you need a burst of unicast packets, and a lot more
-complexity, but you have an idea of the free capacity of the link.
-
-	    Andrew
+--DKU6Jbt7q3WqK7+M--
