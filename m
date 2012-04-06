@@ -1,13 +1,11 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 05 Apr 2012 19:15:02 -0400 (EDT)
-Message-Id: <20120405.191502.146577400943539254.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1333622342-6128-1-git-send-email-ordex@autistici.org>
-References: <1333622342-6128-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-04-05
+Return-Path: <xjodoin@gmail.com>
+MIME-Version: 1.0
+Date: Thu, 5 Apr 2012 22:44:55 -0400
+Message-ID: <CAE_oyXcpynmW750th7OVgA8xmVTDyghxj4xW3k2xsnNtjxrGnQ@mail.gmail.com>
+From: "xjodoin@gmail.com" <xjodoin@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] [batman-adv] - remote access
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,50 +17,11 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  5 Apr 2012 12:38:46 +0200
+I searched on the wiki and I didn't find. =A0How I can have remote
+access on batman-adv mesh node.
 
-> This is my first pull-request, so I hope I've done everything in the right way,
-> but please, fell free to blame me so that I can learn more :-)
-> 
-> I would like to propose the following changes for net-next/3.5. The first patch
-> just adds a new maintainer for batman-adv; patches from 2 to 5 are cleanups
-> and little fixes to make batman-adv re-use kernel defines/structures (ETH_ALEN
-> and bitmap); patch 6 increases the default value of the "hop_penalty" parameter
-> in order to encourage batman-adv to choose shorter routes; patches from 7 to 16
-> consist in the renewal of the bridge loop avoidance mechanism (aka BLA2).
-> BLA2 faces the same problem that STP tries to solve in classical switched
-> networks, but in a layer 2 mesh. In this case the problem shows up when the user
-> connects two nodes belonging to the same mesh by means of an ethernet bridge.
-> It is possible to find much more details about BLA2 in our wiki [1,2,3].
-> 
-> As you can see its compile option is set to 'y' by default, but simply because
-> this mechanism (actually its old version) was already part of the batman-adv
-> core, but we decided to possibly let the users choose to remove it whether the
-> network permits it and so reduce the binary size.
+Thank you
 
-This series needs work.
-
-1) Comments were added which were formatted like this:
-
-	/* ...
-	 * ... */
-
-   Please fix all of these cases up to be:
-
-	/* ...
-	 * ...
-	 */
-
-2) Whan the bridge loop avoiding code is compiled out, you
-   replace them with macros that of all things use varargs
-   "..." instead of specifying correctly the arguments.
-
-   In any event these should not be macros, but rather
-   inline functions that do nothing, in order to get correct
-   type checking.
-
-   
+Xavier
