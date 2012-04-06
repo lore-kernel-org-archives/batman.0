@@ -1,16 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Fri, 6 Apr 2012 12:13:36 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120406101335.GB10310@ritirata.org>
-References: <1333543332-26942-1-git-send-email-ordex@autistici.org>
-	<1333543332-26942-5-git-send-email-ordex@autistici.org>
+Return-Path: <dandenson@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="DKU6Jbt7q3WqK7+M"
-Content-Disposition: inline
-In-Reply-To: <1333543332-26942-5-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: enable nodes to detect
- not yet announced clients
+In-Reply-To: <20120406091320.GB10020@lunn.ch>
+References: <201203222250.31309.lindner_marek@yahoo.de>
+	<20120323063206.GA5662@lunn.ch>
+	<201204052330.06655.lindner_marek@yahoo.de>
+	<20120406091320.GB10020@lunn.ch>
+Date: Fri, 6 Apr 2012 10:57:52 -0600
+Message-ID: <CAA_JP8VofnfLX7C7Bkfpbe1N6vqBiD3LV8N4U3seEw=NT9WnyQ@mail.gmail.com>
+From: dan <dandenson@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [RFC] ELP
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,90 +22,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+>
+> but this is a big change. We have lost TQ, but gained unicast to the
+> specific originator we want the metric for. We no longer need to send
+> probe packets, so have less overhead, but depend on there being some
+> traffic in order that minstral can do its thing.
+>
+> If we send unicast probe packets, and combine it with minstral:
+>
+> The quality of packets send using unicast at X Mbps.
+>
+> We have no choice on X, Minstral decides it. This is in fact good,
+> since the real data also get X. We have a metric based on (TQ, X). How
+> we actually determine X is interesting. TQ is a moving window
+> average. Can we do the same for X? Minstral will already be doing some
+> averaging, so maybe just use the latest value?
+>
+> So far, we have no idea about available capacity of the link:
+>
+> Determine X from Minstral. Send a burst of packets forcing them to be
+> sent at rate X and without retries. Time how long it takes to send the
+> packets. Compare this with the theoretical time needed, assuming no
+> congestion, to calculate a congestion factor C.
+>
+> You now can build a metric based on (TQ, X, C). But you have more
+> overhead, because you need a burst of unicast packets, and a lot more
+> complexity, but you have an idea of the free capacity of the link.
+>
+> =A0 =A0 =A0 =A0 =A0 =A0Andrew
 
---DKU6Jbt7q3WqK7+M
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+disclaimer: I am an end user, not a dev.  I run a wISP (no mesh right
+now, ringed).  Also, this is an evolved version of other ideas I
+posted here.
 
-On Wed, Apr 04, 2012 at 02:42:12PM +0200, Antonio Quartulli wrote:
-> A client that connects to the mesh network is not visible to any node unt=
-il it
-> has been announced by its serving node in the next TT diff sent out by me=
-ans of
-> the next OGM.
->=20
-> During this period the client is not able to communicate to anyone becaus=
-e no
-> node has a route towards it yet. This is usually acceptable in networks w=
-ith
-> short OGM interval (=3Dthe maximum waiting time before the next announcem=
-ent), but
-> it is definitely problematic in networks where the OGM interval has been =
-set to
-> an higher value (e.g. 5 seconds). The client, that probably issued an ARP=
- or
-> DHCP request upon connection will suffer from several timeouts before bei=
-ng able
-> to communicate with the rest of the network.
->=20
-> This patch enable nodes to detect such "new born" clients and to add a te=
-mporary
-> route towards them in order to be able to communicate. If the client is n=
-ot
-> claimed by any node within a certain amount of time, it will then be dele=
-ted.
->=20
-> Roaming operations have been adapted accordingly in order to be let clien=
-ts
-> switch serving node even during the first OGM interval (when they have no=
-t been
-> announced yet)
->=20
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  main.h              |    2 +
->  packet.h            |   15 +++----
->  routing.c           |   26 +++++++++---
->  soft-interface.c    |    6 ++-
->  soft-interface.h    |    2 +-
->  translation-table.c |  111 +++++++++++++++++++++++++++++++++++++++++----=
-------
->  translation-table.h |    4 +-
->  types.h             |    1 +
->  8 files changed, 130 insertions(+), 37 deletions(-)
+So here is my thought.  How can you possibly test a wireless link for
+quality and capacity without sending enough data to stress the link?
+I do a lot of statistical work on historical product movement and
+sales, so I am trying to apply some lessons learned there to this
+problem.  The only way to know capacity is to measure it.  You cannot
+measure nothing, that is 'null', and generating traffic to measure
+decreases capacity/increases overhead.
 
+My train of thought here says that you must use historical data and
+statistics.  For this period of time x (5 seconds?), interface y
+transfered the aggregate amount of data z and latency to the next node
+in the path was L.  later, x and y are unchanged but z is higher and L
+spikes. later x and y are unchanged but z in low and L is similar to
+the first entry.  Keep these high water marks around and lower them
+when the history shows them to be invalid.
 
-We definitely need to keep TEMP entries away from global CRC computation an=
-d full
-table response! So please, drop this patchset. I'll send a new one later.
+From this we can statistically say that interface y is able to
+transfer z before L spikes.  This is theoretical capacity of the
+connection.  obviously, this is over wireless links so these are
+dynamic numbers that must be adjusted within some timeframe to
+changing conditions.
 
-Cheers,
+I find that most wireless links maintain good latency until they reach
+a breaking point and then the latency collapses.  it hits a wall.
 
-/me acting as schizophrenic
+In the wISP world, I pre-test links and configure the radios
+modulation to the highest stable value.  The link might negotiate at
+MCS15 but collapses at anything over MCS13.  I do not rely on
+auto-adjustments here.  The phenomenon of fresnel zone echo can make a
+link look great until data is transfered, then the echos from fresnel
+zone infractions destroys the link.  The only way to know what is on
+the link is to push data across it.  When I do this test, I can
+negatively effect other clients on the radio.  This is a necessary
+evil for me and my tests are brief and infrequent.
 
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---DKU6Jbt7q3WqK7+M
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPfsHPAAoJEFMQTLzJFOZFr4sH/3anj1RiWPoI91udOGxF/Jpz
-iIFozxNgZVcesYv7GvVLtu6OLFYasOjuDI0FFTlMO9/boke1l5ElPZm+EB5LPrQv
-4GAUu08HGFVmCgf+bNPhemSzh01NDKEPiwR1oUyia+EZ0cdWht57GursiaHU6Mo0
-ibFVuFb/VmjpdVkS3gILuqV76fQrkm59oL5CKOYRWwxDZE1O6U9p0I/m46GFJQgN
-if9XcwO5tDEH/40Zqg+kAmq4uBpFptPlUWwzDsXKcbJwl0XE+negnoXmdlbRNv7C
-j9OdoaSJpbVSYldwXNll9mTq0EkRAjLD8rSLxWOSNUCgoAwg4nCqmF4QYw3ysd8=
-=h3Ns
------END PGP SIGNATURE-----
-
---DKU6Jbt7q3WqK7+M--
+If batman-adv is able to take these sort of measurements, or is able
+to read the results of a helper application that does the math, then
+it stands to reason that these numbers could be read by a helper
+application and the maximum modulation of a radio could be set with
+userspace utils (like iw) to fit the calculation to further stabilize
+the link.  You can nudge the values up periodically to test with.  If
+a link is MCS2 per the calculations, nudge it up to MCS3 and let the
+algorythm do its magic.  If it still thinks that 19.5Mb is optimal we
+can bring the mod back down to MCS2 (via helper app), if it shows as
+good we will leave it at MCS3 for a while then nudge it up to MCS4.
+Never jump up from MCS2 to 4 because the link might completely
+collapse. rinse, repeat.
