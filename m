@@ -1,17 +1,17 @@
-Return-Path: <andrew@lunn.ch>
-Date: Fri, 6 Apr 2012 09:17:29 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20120406071729.GA10020@lunn.ch>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 6 Apr 2012 11:18:53 +0300
 References: <201203222250.31309.lindner_marek@yahoo.de>
-	<20120324081407.GA30000@ritirata.org>
-	<20120324202117.GH5662@lunn.ch>
 	<201204052311.09200.lindner_marek@yahoo.de>
+	<20120406071729.GA10020@lunn.ch>
+In-Reply-To: <20120406071729.GA10020@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201204052311.09200.lindner_marek@yahoo.de>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201204061118.53394.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [RFC 2/5] batman-adv: ELP - creating neighbor
- structures, updating LQs
+	structures, updating LQs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,56 +25,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-> > I have been thinking about this a bit more, and also about this bit of
-> > code:
-> > 
-> > +       elp_packet = (struct batman_elp_packet
-> > *)skb_push(hard_iface->elp_skb, +                                         
-> >                BATMAN_ELP_HLEN); +       memset(elp_packet, 0,
-> > BATMAN_ELP_HLEN);
-> > +
-> > +       elp_packet->header.packet_type = BAT_V_ELP;
-> > +       elp_packet->header.version = COMPAT_VERSION;
-> > +       elp_packet->header.ttl = 0;
-> > 
-> > Marek, what are your plans for COMPAT_VERSION? Will there be a
-> > COMPAT_VERSION_IV and COMPAT_VERSION_V sometime soon?
+On Friday, April 06, 2012 10:17:29 Andrew Lunn wrote:
+> > Currently, that is not planned. We hoped to keep the compat numbers
+> > in sync across the various protocols. Otherwise we all could end up
+> > in compat hell.
 > 
+> Can they be kept in sync? I would assume that IV is becoming more and
+> more stable, with more effort going into V. So IV is less probable to
+> need an COMPAT increment than V. The three month kernel cycle helps
+> with the sync, but it would be a PITA to have to upgrade an entire IV
+> net because V have forced a COMPAT increment, but IV has not changed
+> and is compatible.
 
-> Currently, that is not planned. We hoped to keep the compat numbers
-> in sync across the various protocols. Otherwise we all could end up
-> in compat hell.
+If you check our compat number history[1] you will see that the compat number 
+changes when features are added (tt rewrite, gateway flags, unicast 
+fragmentation, etc). These features are the same across protocols.
 
-Can they be kept in sync? I would assume that IV is becoming more and
-more stable, with more effort going into V. So IV is less probable to
-need an COMPAT increment than V. The three month kernel cycle helps
-with the sync, but it would be a PITA to have to upgrade an entire IV
-net because V have forced a COMPAT increment, but IV has not changed
-and is compatible.
+Another motivation to not further grow the compat number world is backward 
+compatibility. Larger mesh installations will need to upgrade the mesh step by 
+step instead of updating everything at once. As a result we must switch 
+towards smoother compatibility breaks in the future otherwise upgrading will 
+become a real pain. We have created a wiki page [2] to collect ideas for 
+better backward compatibility. 
 
-> > Maybe when registering a receive function, you can pass both the
-> > packet_type and version. So a received ELP packet with
-> > COMPAT_VERSION_IV would automatically get tossed away, and an ELP with
-> > COMPAT_VERSION_V would get dispatched.
+
+> The COMPAT_VERSION effectively becomes an indicator of the protocol,
+> assuming they are different. However, this is the opposite to your
+> idea of keeping them in sync.
 > 
+> Since there would be no ELP registered for COMPAT_VERSION_IV, the
+> packet would be discarded by the dispatcher. However,
+> COMPACT_VERSION_V would register an ELP function and the dispatcher
+> would use it.
+> 
+> Making the dispatcher aware of these two dimensions, (MSG_Type,
+> Version), puts all the checking in one place and makes the individual
+> message handlers simpler.
 
-> What would be the use case of ELP COMPAT_VERSION_IV vs ELP
-> COMPAT_VERSION_V ?  BATMAN IV does not have ELP at all .. maybe I
-> misunderstand ?
+The dispatcher has to work on a per interface basis to make this work. It 
+would need to do the same check we currently have, to verify that a given 
+interface wants to have packets from this or that protocol.
 
-The COMPAT_VERSION effectively becomes an indicator of the protocol,
-assuming they are different. However, this is the opposite to your
-idea of keeping them in sync.
+Regards,
+Marek
 
-Since there would be no ELP registered for COMPAT_VERSION_IV, the
-packet would be discarded by the dispatcher. However,
-COMPACT_VERSION_V would register an ELP function and the dispatcher
-would use it.
 
-Making the dispatcher aware of these two dimensions, (MSG_Type,
-Version), puts all the checking in one place and makes the individual
-message handlers simpler.
-
-Anyway, just an idea...
-
-	Andrew
+[1] http://www.open-mesh.org/wiki/batman-adv/Compatversion
+[2] http://www.open-mesh.org/wiki/batman-adv/Packet-types
