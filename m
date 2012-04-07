@@ -1,8 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat,  7 Apr 2012 23:06:06 +0200
-Message-Id: <1333832769-28493-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 0/3] clean up patches
+Date: Sat,  7 Apr 2012 23:06:08 +0200
+Message-Id: <1333832769-28493-3-git-send-email-ordex@autistici.org>
+In-Reply-To: <1333832769-28493-1-git-send-email-ordex@autistici.org>
+References: <1333832769-28493-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: use static const for STP
+	constant address
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,40 +19,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-** this patches are for batman-ad/next ***
+stp_addr is now declared as a simple "uint8_t []", but since it's content is
+statically defined, it has to be declared as "static const uint8_t []"
 
-After my first pull request, David S. Miller hardly suggested me to fix some
-problems that I am going to summarise here. Please respect such suggestions in
-your next patches:
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ soft-interface.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-1) Multi-line comments must end with */ on a new line:
-
-/* ..
- * ..
- */
-
-2) if we use #ifdef in our headers to redefine some functions depending on the
-fact that we are compiling a component or not, we must use static inline
-functions doing nothing with the correct parameters instead of simple
-"foo(...)". In this way we can allow the compiler to check for the types and the
-number of arguments:
-
-Instead of:
-
-#define bla_init(...) (1)
-
-we must do:
-
-static inline bla_init(struct bat_priv *bat_priv)
-{ 
-	return 1;
-}
-
-
-Other than David's complaining I also get a suggestion from Bernd Petrovitsch
-about the type of stp_addr (it should be "static const uint8_t []" instead of
-"uint8_t []" only). I applied such change in patch 2/3.
-
-Cheers,
-
+diff --git a/soft-interface.c b/soft-interface.c
+index f8a4a59..b56dafd 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -131,7 +131,8 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	struct hard_iface *primary_if = NULL;
+ 	struct bcast_packet *bcast_packet;
+ 	struct vlan_ethhdr *vhdr;
+-	uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00, 0x00, 0x00};
++	static const uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00, 0x00,
++						   0x00};
+ 	unsigned int header_len = 0;
+ 	int data_len = skb->len, ret;
+ 	short vid __maybe_unused = -1;
+-- 
+1.7.9.4
 
