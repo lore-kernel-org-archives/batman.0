@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat,  7 Apr 2012 23:06:08 +0200
-Message-Id: <1333832769-28493-3-git-send-email-ordex@autistici.org>
+Date: Sat,  7 Apr 2012 23:06:09 +0200
+Message-Id: <1333832769-28493-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1333832769-28493-1-git-send-email-ordex@autistici.org>
 References: <1333832769-28493-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: use static const for STP
-	constant address
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: use static inline functions
+	to fake not compiled-in routines
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,28 +19,98 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-stp_addr is now declared as a simple "uint8_t []", but since it's content is
-statically defined, it has to be declared as "static const uint8_t []"
+In case of not compiled-in components, we need to fake some functions in order
+to let the rest of the code correctly build. But instead of using something
+like:
+
+We have to use:
+
+static inline bla_init(struct bat_priv *bat_priv)
+{
+	return 1;
+}
+
+In this way the compiler can correctly check the type and the number of the
+arguments passed to the function, even if the related component (bla in this
+case) is not compiled.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- soft-interface.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ bridge_loop_avoidance.h |   60 ++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 51 insertions(+), 9 deletions(-)
 
-diff --git a/soft-interface.c b/soft-interface.c
-index f8a4a59..b56dafd 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -131,7 +131,8 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 	struct hard_iface *primary_if = NULL;
- 	struct bcast_packet *bcast_packet;
- 	struct vlan_ethhdr *vhdr;
--	uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00, 0x00, 0x00};
-+	static const uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00, 0x00,
-+						   0x00};
- 	unsigned int header_len = 0;
- 	int data_len = skb->len, ret;
- 	short vid __maybe_unused = -1;
+diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
+index e1a2966..e39f93a 100644
+--- a/bridge_loop_avoidance.h
++++ b/bridge_loop_avoidance.h
+@@ -40,16 +40,58 @@ void bla_free(struct bat_priv *bat_priv);
+ #define BLA_CRC_INIT	0
+ #else /* ifdef CONFIG_BATMAN_ADV_BLA */
+ 
+-#define bla_rx(...)				(0)
+-#define bla_tx(...)				(0)
+-#define bla_is_backbone_gw(...)			(0)
+-#define bla_claim_table_seq_print_text		(0)
+-#define bla_is_backbone_gw_orig(...)		(0)
+-#define bla_check_bcast_duplist(...)		(0)
+-#define bla_update_orig_address(...)		do {} while (0)
+-#define bla_init(...)				(1)
+-#define bla_free(...)				do {} while (0)
++static inline int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb,
++			 short vid)
++{
++	return 0;
++}
+ 
++static inline int bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb,
++			 short vid)
++{
++	return 0;
++}
++
++static inline int bla_is_backbone_gw(struct sk_buff *skb,
++				     struct orig_node *orig_node,
++				     int hdr_size)
++{
++	return 0;
++}
++
++static inline int bla_claim_table_seq_print_text(struct seq_file *seq,
++						 void *offset)
++{
++	return 0;
++}
++
++static inline int bla_is_backbone_gw_orig(struct bat_priv *bat_priv,
++					  uint8_t *orig)
++{
++	return 0;
++}
++
++static inline int bla_check_bcast_duplist(struct bat_priv *bat_priv,
++					  struct bcast_packet *bcast_packet,
++					  int hdr_size)
++{
++	return 0;
++}
++
++static inline void bla_update_orig_address(struct bat_priv *bat_priv,
++					   struct hard_iface *primary_if,
++					   struct hard_iface *oldif)
++{
++}
++
++static inline int bla_init(struct bat_priv *bat_priv)
++{
++	return 1;
++}
++
++static inline void bla_free(struct bat_priv *bat_priv)
++{
++}
+ 
+ #endif /* ifdef CONFIG_BATMAN_ADV_BLA */
+ 
 -- 
 1.7.9.4
 
