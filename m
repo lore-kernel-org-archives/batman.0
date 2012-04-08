@@ -1,15 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 08 Apr 2012 09:53:56 +0200
-Message-ID: <6446119.Og1ZRWHNA3@sven-laptop.home.narfation.org>
-In-Reply-To: <CAJuY50wnaeNvHJU0x7u6i+Q29Gx9hcd=qjdmZeJeEoftkgqTtA@mail.gmail.com>
-References: <CAJuY50wnaeNvHJU0x7u6i+Q29Gx9hcd=qjdmZeJeEoftkgqTtA@mail.gmail.com>
+Return-Path: <trizonelabs@googlemail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart53357160.du5LDpWTi1";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] Subject: batman-adv Openwrt Kamikaze / 8.09
-	problem
+Date: Sun, 8 Apr 2012 14:14:15 +0300
+Message-ID: <CAJuY50z3heRa3Q_EfVvG7ao1LKnjPRtxfvaRiDiyM3UvhV=B9Q@mail.gmail.com>
+From: 3zl Trizonelabs <trizonelabs@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Question howto build batman-adv Openwrt Kamikaze
+	8.09 rev 2012 build
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,50 +17,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+How could i build a newer release of batman-adv (2012) for Openwrt
+8.09  or devel ?
 
---nextPart53357160.du5LDpWTi1
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Or maybe i did something wrong here ?
 
-On Sunday 08 April 2012 10:39:16 3zl Trizonelabs wrote:
-> Seeking for hep to get batman-adv running on Openwrt Kamikaze 8.09
-> build Kernel 2.6.30
-> 
-> Build runs ok, but module not loaded.  ....     batctl -v
-> ...batman-adv module not loaded
-> 
-> Try to load manually :     insmod /lib/modules/2.6.30.10/batman-adv.ko
->  ......... unknown symbol in module or unknown parameter
-> 
-> Any hint how to setup the build for 8.09 trunk highly appreciated
+Started with fresh build enviroment & setup :
+  feeds.conf.default
+     src-svn packages
+svn://svn.openwrt.org/openwrt/branches/packages_8.09
+svn://svn.openwrt.org/openwrt/packages
+     src-svn batman http://downloads.open-mesh.org/svn/openwrt-feed/
 
-Can you please check that kernel module crc16 is loaded.
+3zl@debian6esxi:~/OpenWRT/8.09tr$ ./scripts/feeds update
+Updating feed 'packages' from
+'svn://svn.openwrt.org/openwrt/branches/packages_8.09' ...
+A    net/batman-advanced
+A    net/batman-advanced/files
+A    net/batman-advanced/files/etc
+A    net/batman-advanced/files/etc/config
+A    net/batman-advanced/files/etc/config/batmand-adv
+A    net/batman-advanced/files/etc/init.d
+A    net/batman-advanced/files/etc/init.d/batmand-adv
+A    net/batman-advanced/patches
+A    net/batman-advanced/Makefile
+Updated to revision 31216.
 
-Kind regards,
-	Sven
---nextPart53357160.du5LDpWTi1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+make menuconfig :  Kernel Module Network select batman-adv (*)
+make.. results in : /build_dir/mips/batman-adv-r1176
+           with folders :         /batman  /batman-adv-kernelland
+/batman-adv-userspace  /batman-experimental  / battool
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+cat /feeds/packages/net/batman-advanced/makefile
+  KG_NAME:=batmand-adv
+  PKG_REV:=1176
+  PKG_VERSION:=r$(PKG_REV)
+  PKG_RELEASE:=1
+  PKG_BRANCH:=batman-adv-userspace
 
-iQIcBAABCgAGBQJPgUQUAAoJEF2HCgfBJntGVYwQAIrMg6tO3BBWcJ7jpYXePXZb
-CWMZ4RL/hUp2/5NjnEiCwn1TrDgGhGV/CSIfsIXKRArQPOrlzQCJGednMttf7TOK
-JwF123hnUKAkSCxHJL3bdvbubhmF428cva9upDjdIJ3yjBv+ulAhgMq9yqZwrYxu
-6Qiz6CGDg11xs9eZ+2V4O4xqrRgUnch3tFJhXGhzNeuW4Z8YIV//YMFq6fH3Ne4P
-BiwyUu1hcXHX9z53xURAKnXk0h1Iuhw15CZkNco5PlmBz4TvZXus/v1s1nRMOp8o
-e6NY7ASuggbYNOokN8cmRP9qDqJNMnFltUM2wwsHxy1P1Ty7+8qx/jNDwmTYYajY
-4aNqwN2DhB6GtiFzv1jQh8eEl/SM+5ZUDBazvyHAohh8Fip7PGelgYTlC0sy4lkW
-ReaoPPK+Pq8ajjkQiVLmLl0PNFQbnCP8xtM1IZdKimnYJnYX9RgWUI+iAQkClFZ6
-gZsxRzrWxPCZUx8q3gFZCquvd4Sw/8tGZI5wSTp2xFTnpz3kZXHFG4HF6GE+g4U+
-L9XdifGEc50ufvo+SICrBOmzFGs8T71pce7jkkRuzpHQHTC7pSuJp34YlXpgjHe2
-KcgZX2PUo+iHwuGG5OlVXb+6e/986ArCwntxC/VXWwnTJAPDh95NHyfhzWhQiz0e
-YfDefc32iVlamnZAupJ4
-=IAUq
------END PGP SIGNATURE-----
+PKG_SOURCE_PROTO:=svn
+PKG_SOURCE_VERSION:=$(PKG_REV)
+PKG_SOURCE_SUBDIR:=batman-adv-$(PKG_VERSION)
+PKG_SOURCE_URL:=http://downloads.open-mesh.net/svn/batman/trunk/
+PKG_SOURCE:=$(PKG_SOURCE_SUBDIR).tar.gz
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_SOURCE_SUBDIR)
 
---nextPart53357160.du5LDpWTi1--
+PKG_KMOD_BUILD_DIR:=$(PKG_BUILD_DIR)/batman-adv-kernelland
 
+PKG_TOOL_INSTALL_DIR:=$(PKG_BUILD_DIR)/ipkg-battool-install
+PKG_TOOL_BUILD_DIR:=$(PKG_BUILD_DIR)/battool
+
+on DIR-300 router :
+   uname -a 2.6.26.8 mips atheros 23xx DIR-300 A1
+   batman-adv : 01. rv1176 (cpmpatibility version 6) loaded
+
+is it possible to get rel 2012.x build on Kamikaze ?
+thanks
+3zl
