@@ -1,18 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 10 Apr 2012 20:17:03 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120410181702.GB23540@ritirata.org>
-References: <1333543332-26942-1-git-send-email-ordex@autistici.org>
-	<1333543332-26942-4-git-send-email-ordex@autistici.org>
-	<4F83146E.2080609@hundeboll.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="R3G7APHDIzY6R/pk"
-Content-Disposition: inline
-In-Reply-To: <4F83146E.2080609@hundeboll.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 3/4] batman-adv: let
- tt_global_entry_has_orig() return the orig_entry or NULL instead of 1 or 0
- only
+Return-Path: <davem@davemloft.net>
+Date: Tue, 10 Apr 2012 14:26:26 -0400 (EDT)
+Message-Id: <20120410.142626.796731994824309878.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4234545.h1xVgDKcJ2@bentobox>
+References: <1333824598-27771-1-git-send-email-ordex@autistici.org>
+	<20120410.122119.454371140692964064.davem@davemloft.net>
+	<4234545.h1xVgDKcJ2@bentobox>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-04-07
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,69 +21,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: sven@narfation.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 10 Apr 2012 20:03:43 +0200
 
---R3G7APHDIzY6R/pk
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Tuesday, April 10, 2012 12:21:19 PM David Miller wrote:
+>> From: Antonio Quartulli <ordex@autistici.org>
+>> Date: Sat,  7 Apr 2012 20:49:42 +0200
+>> 
+>> > this is the updated and cleaned up version of our last pull request
+>> > (sent on 2012-04-05).
+>> 
+>> You absolutely must base your tree off the correct tree, which is
+>> net-next
+>> 
+>> You cannot use Linus's tree or my 'net' tree to base your work,
+>> because otherwise when I pull I get all the damn crap that's in those
+>> trees but not in net-next yet and that's never right.
+> 
+> Can you please tell us your "stable point" [1].
 
-Hi Martin,
+Please, just base your work on the current tip of net-next like the
+rest of the networking developers do.  I haven't once ever had to
+talk about "stable point" or anything like that, you just simply
+work against the tip of my tree and that's the end of it.
 
-On Mon, Apr 09, 2012 at 06:55:10PM +0200, Martin Hundeb=C3=B8ll wrote:
-> Hi Antonio,
->=20
-> On 04/04/2012 02:42 PM, Antonio Quartulli wrote:
->=20
-> >   	rcu_read_lock();
-> >   	head =3D&entry->orig_list;
-> >   	hlist_for_each_entry_rcu(tmp_orig_entry, node, head, list) {
-> >   		if (tmp_orig_entry->orig_node =3D=3D orig_node) {
-> > -			found =3D true;
-> > +			orig_entry =3D tmp_orig_entry;
-> >   			break;
-> >   		}
-> >   	}
-> >   	rcu_read_unlock();
-> > -	return found;
-> > +	return orig_entry;
-> >   }
->=20
-> I'm not that well into the tt code, but shouldn't there be some reference=
- counting when handing pointers round like this?
->=20
-
-mh..I'd agree with you. The entry could be freed somewhere else causing
-something we would never imagine ;P
-
-Actually the tt_orig_list_entry doesn't have any mechanism like that and so=
- I
-forgot about taking care of this issue.
-
-Thank you very much!
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---R3G7APHDIzY6R/pk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPhHkeAAoJEFMQTLzJFOZFMYwIAJYuDUqNrqOJ97ZjBn9Wir4W
-U9SEz1KxyPA1K24Bw79fHCscI6f/gaxhNDDY+UBplRCv9bzKwlJgvdel/QeTHcZJ
-Oo4hNuBo5li+1XJOZdOl5vDkM3XKAdJn5X1o3MU5fwT/LwJ6Y5FAb8FMowikM6o4
-LTOagOPGBKLZdO/zsWBSygaljlvAWoIeuTg43ro7rmLtsi164RghcZPcwpKJTSzt
-yMwHpigB2yID5USxAX8APpgq4Rfd79puH5ik6rqc3OUJDiE76B19C24CccY2S7FI
-1xfnp8mz7WYIoKA7ieO30TanChEb2ICFMeEX3No87iqK04whynwEqjlD0rw1P+s=
-=Qdtw
------END PGP SIGNATURE-----
-
---R3G7APHDIzY6R/pk--
