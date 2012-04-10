@@ -1,16 +1,16 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <4F8416FD.5010707@hundeboll.net>
-Date: Tue, 10 Apr 2012 13:18:21 +0200
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
-MIME-Version: 1.0
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 10 Apr 2012 14:31:40 +0300
 References: <1333370896-11295-1-git-send-email-martin@hundeboll.net>
-	<201204041008.06362.lindner_marek@yahoo.de>
-	<4F840CC6.8000404@hundeboll.net>
-	<201204101408.39431.lindner_marek@yahoo.de>
-In-Reply-To: <201204101408.39431.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [RFC 0/2] Create counters for measuring behaviour
+	<201204101405.16743.lindner_marek@yahoo.de>
+	<4F8416C8.6010701@hundeboll.net>
+In-Reply-To: <4F8416C8.6010701@hundeboll.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201204101431.41143.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC 1/2] batman-adv: Add interface to keep stats
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,34 +22,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On 04/10/2012 01:08 PM, Marek Lindner wrote:
-> On Tuesday, April 10, 2012 13:34:46 Martin Hundebøll wrote:
->>>> Currently, my catwoman branch uses these counters (e.g. to tell how many
->>>> packets are coded together), but other counters can easily be added.
->>>> E.g. counters relevant to the BLA, DAT, OGM/ELP code.
->>>>
->>>> If this feature is unneeded/unwanted, I will remove the dependency in
->>>> catwoman.
->>>
->>> Could you explain in a few words how catwoman depends on the stats
->>> counter ?
->>
->> Sure, it's merely because I use the bat_stats-functions in the catwoman
->> branch. Nothing more than that.
->
-> If the traffic counter code provides empty functions to be called when it is
-> not compiled into the module it should all work ?
+On Tuesday, April 10, 2012 14:17:28 Martin Hundeb=C3=B8ll wrote:
+> >>> If you add an ifdef around the definition here would be no need to
+> >>> malloc bat_stats separately, right ?
+> >>=20
+> >> Do we prefer IFDEFs in the definition over mallocs? (I guess so by your
+> >> comment). If thats the case, then no problem with me.
+> >=20
+> > The types.h is full of ifdefs already. It helps to keep the structs
+> > smaller when functionality is not compiled into the module.
+>=20
+> As long as we agree on ifdefs. They weren't there until BLAII and DAT add=
+ed
+> them, but I don't have a problem with'em. Let's see how long this
+> patch-set will live, as I expect to use the get_ethtool_stats(), if
+> possible.
 
-Yeah, but these empty functions wan't be here, if the bat_stats code is never merged :)
+Some of the counters might exist in bat_priv->stats as Antonio already poin=
+ted=20
+out (bat_priv->stats.rx_packets). They have the advantage of being printed=
+=20
+with ifconfig and friends.
 
-
--- 
-Kind Regards
-Martin Hundebøll
-Frederiks Allé 99A, 1.th
-8000 Aarhus C
-Denmark
-+45 61 65 54 61
-martin@hundeboll.net
+Regards,
+Marek
