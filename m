@@ -1,15 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 11 Apr 2012 10:50:02 -0400 (EDT)
-Message-Id: <20120411.105002.537837753033932732.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4F85989F.6030802@gmail.com>
-References: <20120411143102.GE19365@ritirata.org>
-	<20120411.103933.846397076858317541.davem@davemloft.net>
-	<4F85989F.6030802@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-04-11
+Return-Path: <ordex@autistici.org>
+Date: Wed, 11 Apr 2012 22:52:47 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120411205246.GA29501@ritirata.org>
+References: <1333832769-28493-1-git-send-email-ordex@autistici.org>
+	<1333832769-28493-2-git-send-email-ordex@autistici.org>
+	<20120408223849.GB10101@pandem0nium>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="u3/rZRmxL6MmkK24"
+Content-Disposition: inline
+In-Reply-To: <20120408223849.GB10101@pandem0nium>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: fix comments ending style
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,19 +22,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: gmazzurco89@gmail.com
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
-Date: Wed, 11 Apr 2012 16:43:43 +0200
 
-> It is not like that for a lot of batman-adv users that works with
-> embedded devices where even 10KB makes the dfference
+--u3/rZRmxL6MmkK24
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok, but you also have the option of making it a seperate module
-too.
+On Mon, Apr 09, 2012 at 12:38:49AM +0200, Simon Wunderlich wrote:
+> On Sat, Apr 07, 2012 at 11:06:07PM +0200, Antonio Quartulli wrote:
+> > @@ -732,7 +732,7 @@ static int handle_claim(struct bat_priv *bat_priv,
+> >  }
+> > =20
+> >  /**
+> > - *
+> > + * @bat_priv: the bat priv with all the soft interface information
+> >   * @bat_priv: the bat priv with all the soft interface information
+> >   * @hw_src: the Hardware source in the ARP Header
+> >   * @hw_dst: the Hardware destination in the ARP Header
+>=20
+> guess this line was duplicated by accident ...
 
-Right now it's an all or nothing choice.  Once you make a Kconfig
-decision, later it's harder to rebuild the kernel to fix a mistake
-than to simply load the module in question.
+I took 4 days to understand what you were talking about :D
+Sorry!
 
+I will arrange this clean up in the next pull request!
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--u3/rZRmxL6MmkK24
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJPhe8eAAoJEFMQTLzJFOZF6QkH/iqVrb/43rsgfM42sDlmbodF
+4ogcgZSFX0yAdv2NtUtRgDcHofj+FNNsLNTQDYIqshIWKLz4s1TlpfErl1p8L2x3
+tAj8IOVN5jtF3J6k02adfw1RDlw7ncTIeUIPnWUk+V+KwYV67ph1fZ84IQSHf6q1
+a0jC7Jk9q1zQJN+PH3dDCeiNlQ2PIkQHIcJg0xe+W0lT0zO0nqRvMe3G3uVbP194
+/Ioylwhf4eWKsvIX/8vxQ8Hl/JGYwME4E9yQbUZHomRHK4mZGUJj0DtVnbwCInOF
+IEerhz+6XeB+sQ3ve6qOGSiqZ5qgmgl23yxh65mJOEysPRpNHYH1noKJpyE40X0=
+=R4Hs
+-----END PGP SIGNATURE-----
+
+--u3/rZRmxL6MmkK24--
