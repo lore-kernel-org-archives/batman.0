@@ -1,17 +1,15 @@
-Return-Path: <trizonelabs@googlemail.com>
+Return-Path: <mmitar@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20120412181213.GF7664@lunn.ch>
+In-Reply-To: <4F86F6BF.60406@jst.sm>
 References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
 	<4F86B02B.9060900@gmail.com> <20120412120002.GE8528@ritirata.org>
 	<CAKLmikOz3az4HWYA4XWsq+kUBx+vF9fuYQS+jjkU=9ibDxPy3A@mail.gmail.com>
-	<20120412153625.GP18675@lunn.ch>
-	<CAKLmikNQoxEDG-GSN-CG5Ox-=BE0DeL8uOYq_P-e5kA5FfzbDQ@mail.gmail.com>
-	<20120412181213.GF7664@lunn.ch>
-Date: Thu, 12 Apr 2012 22:49:59 +0300
-Message-ID: <CAJuY50xk7vWnO1poQ2ry_4UtKaPs0JmT4kg2hoD6QOWdAtAPiw@mail.gmail.com>
-From: 3zl Trizonelabs <trizonelabs@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+	<CAOaDhSRTgejL5tzAnAx6wBso1sjWn_7bVuT6P1_C1qcVu25McQ@mail.gmail.com>
+	<4F86F6BF.60406@jst.sm>
+Date: Thu, 12 Apr 2012 23:08:48 +0200
+Message-ID: <CAKLmikNtFyx9tDnOAzkMuEmSOOnhVHaLvKpf8q68Fd8qes2XYA@mail.gmail.com>
+From: Mitar <mmitar@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Subject: Re: [B.A.T.M.A.N.] Migration to Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,45 +23,28 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Mitar <mitar@tnode.com>
 
-As we did  L2 Mesh with AWDS for some years and are switching to
-batman-adv at the moment here my 2c.
+Hi!
 
-a) Networks on L2 needs some more insight because wireless mesh isn't
-just like ethernet cable, even if it looks like.
-b) "leaking" subnets must be taken care of. Often the L3 network works
-fine without exactly knowing what happening "down below" and
-astonishingly one can see packets flowing around and been transported
-with L2 all over the mesh.
-c) VLAN on L2 helps alot in design of the network topoly ( VLAN over
-WIFI was no problem with AWDS - we will test this with batman-adv)
+On Thu, Apr 12, 2012 at 5:37 PM, Jernej Kos <k@jst.sm> wrote:
+> Since from layer 3, the batman mesh looks just like a big LAN, any node
+> could simply add a route saying "prefix A via gateway B dev bat0" where
+> B is a mesh node known to batman via its L2 identifier, no?
 
-regards
-3zl
+So I have almost convinced Kostko that we could switch to Batman, but
+he does not want to run multiple routing daemons on nodes. So could
+Batman support announcing also L3 prefixes? For example, that in the
+node configuration you could define that that node (let say it has IP
+10.10.10.10) should announce also some L3 subnet. Like
+192.168.42.0/24. And when that node would be reachable from other
+node, that other node would run:
+
+ip route add prefix 192.168.42.0/24 via gateway 10.10.10.10 dev bat0
+
+Doable? Because to run additional routing daemon just to rediscover
+which nodes are around and announce things ... when Batman already
+knows all this ...
 
 
-2012/4/12 Andrew Lunn <andrew@lunn.ch>:
-> On Thu, Apr 12, 2012 at 07:12:08PM +0200, Mitar wrote:
->> Hi!
->>
->> On Thu, Apr 12, 2012 at 5:36 PM, Andrew Lunn <andrew@lunn.ch> wrote:
->> > Or, if you are in a transition phase, and don't mind your head
->> > exploding, run olsr, babel, etc, on top of BATMAN to gateway between
->> > the L2 meshes!
->>
->> Can you please explain a bit more what are you thinking here?
->
-> Well, your infrastructure already speaks olsr, babel, or what every L3
-> mesh protocol you have. It knows how to advertise additional
-> routes. So make one or more of your BATMAN nodes L2 mesh also a L3
-> mesh node. These L3 mesh nodes will see each other over the mesh, and
-> they will see other L3 mesh nodes over what every network technology
-> you have between L2 meshes. These L3 mesh nodes should also be the
-> default router for the devices in the L2 mesh. The L2 mesh devices
-> will send there packets to a L3 mesh node. It will then route it,
-> maybe back over the mesh, or maybe over an inter mesh links, to where
-> ever it needs to go. If ICMP redirect works on your L2 and L3 nodes,
-> it should add host routes to the L2 nodes when they use the wrong
-> gateway out of the L2 mesh.
->
-> =A0 =A0 =A0 =A0Andrew
+Mitar
