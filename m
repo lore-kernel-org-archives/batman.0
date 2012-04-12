@@ -1,17 +1,15 @@
-Return-Path: <gmazzurco89@gmail.com>
-Message-ID: <4F8745E1.9080701@gmail.com>
-Date: Thu, 12 Apr 2012 23:15:13 +0200
-From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
-MIME-Version: 1.0
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 13 Apr 2012 00:13:48 +0200
 References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
-	<4F86B02B.9060900@gmail.com> <20120412120002.GE8528@ritirata.org>
-	<CAKLmikOz3az4HWYA4XWsq+kUBx+vF9fuYQS+jjkU=9ibDxPy3A@mail.gmail.com>
-	<CAOaDhSRTgejL5tzAnAx6wBso1sjWn_7bVuT6P1_C1qcVu25McQ@mail.gmail.com>
-	<4F86F6BF.60406@jst.sm>
-	<CAKLmikNtFyx9tDnOAzkMuEmSOOnhVHaLvKpf8q68Fd8qes2XYA@mail.gmail.com>
-In-Reply-To: <CAKLmikNtFyx9tDnOAzkMuEmSOOnhVHaLvKpf8q68Fd8qes2XYA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	<20120412120002.GE8528@ritirata.org>
+	<CAKLmikOf_M5Btn3rmWLHQbnq+wiFooZDuJrcDJDLTUs6CjB+jw@mail.gmail.com>
+In-Reply-To: <CAKLmikOf_M5Btn3rmWLHQbnq+wiFooZDuJrcDJDLTUs6CjB+jw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201204130013.49047.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Migration to Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,36 +22,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Mitar <mmitar@gmail.com>
-Cc: Mitar <mitar@tnode.com>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jernej Kos <kostko@unimatrix-one.org>
 
-You do not need a routing daemon on all nodes but just on the gateways,
-each gateway will talk to others and saying i am announcing that subnet
-with that cost, so when the gateway receive a packet for that subnet it
-forward the packet to the right router and tell the client "next time
-you need that subnet use the other router" with an icmp message
+On Thursday, April 12, 2012 19:10:42 Mitar wrote:
+> On Thu, Apr 12, 2012 at 2:00 PM, Antonio Quartulli <ordex@autistici.org> 
+wrote:
+> > but only when the packet format (or something really
+> > crucial) is touched.
+> 
+> But couldn't the packet format be made so that unknown values in there
+> are simply ignored? And also ignore unknown packet types? So that at
+> least connectivity is possible, but not as good as it could be? For
+> example, if we have some node which reconnects after a month, it would
+> be great that it still is able to connect, so that we can at least
+> upgrade it.
 
-On 04/12/12 23:08, Mitar wrote:
-> Hi!
+Yes, exactly that is on the feature todo list (and more) to ensure better 
+backward compatibility in the future.
+
+
+> > exactly. You can add/remove interfaces at run-time. Creating a bridge
+> > with all the tunnels would not be good because it would not make
+> > batman-adv exploit the interface diversity.
 > 
-> On Thu, Apr 12, 2012 at 5:37 PM, Jernej Kos <k@jst.sm> wrote:
->> Since from layer 3, the batman mesh looks just like a big LAN, any node
->> could simply add a route saying "prefix A via gateway B dev bat0" where
->> B is a mesh node known to batman via its L2 identifier, no?
+> And it would also see all nodes as directly connected together? So:
 > 
-> So I have almost convinced Kostko that we could switch to Batman, but
-> he does not want to run multiple routing daemons on nodes. So could
-> Batman support announcing also L3 prefixes? For example, that in the
-> node configuration you could define that that node (let say it has IP
-> 10.10.10.10) should announce also some L3 subnet. Like
-> 192.168.42.0/24. And when that node would be reachable from other
-> node, that other node would run:
+> [nodeA] --- [tunA on server, tunB on server] --- [nodeB]
 > 
-> ip route add prefix 192.168.42.0/24 via gateway 10.10.10.10 dev bat0
-> 
-> Doable? Because to run additional routing daemon just to rediscover
-> which nodes are around and announce things ... when Batman already
-> knows all this ...
-> 
-> 
-> Mitar
+> If I bridge tunA and tunB together, nodeA will think that there is
+> only one hop to nodeB, no?
+
+Correct.
+
+Regards,
+Marek
