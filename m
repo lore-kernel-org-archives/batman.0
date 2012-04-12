@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 13 Apr 2012 00:13:48 +0200
+Date: Fri, 13 Apr 2012 00:17:31 +0200
 References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
-	<20120412120002.GE8528@ritirata.org>
-	<CAKLmikOf_M5Btn3rmWLHQbnq+wiFooZDuJrcDJDLTUs6CjB+jw@mail.gmail.com>
-In-Reply-To: <CAKLmikOf_M5Btn3rmWLHQbnq+wiFooZDuJrcDJDLTUs6CjB+jw@mail.gmail.com>
+	<4F86B02B.9060900@gmail.com>
+	<CAKLmikNuMEiG2SN+H8bJkwRXszMayPpn_qDcf1faCjhrow6NdQ@mail.gmail.com>
+In-Reply-To: <CAKLmikNuMEiG2SN+H8bJkwRXszMayPpn_qDcf1faCjhrow6NdQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201204130013.49047.lindner_marek@yahoo.de>
+Message-Id: <201204130017.31711.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Migration to Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,35 +25,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Jernej Kos <kostko@unimatrix-one.org>
 
-On Thursday, April 12, 2012 19:10:42 Mitar wrote:
-> On Thu, Apr 12, 2012 at 2:00 PM, Antonio Quartulli <ordex@autistici.org> 
-wrote:
-> > but only when the packet format (or something really
-> > crucial) is touched.
+On Thursday, April 12, 2012 19:05:54 Mitar wrote:
+> > In batman-adv you can add/remove interfaces at runtime without problems
+> > so you doesn't need bridging or similar nasty things
 > 
-> But couldn't the packet format be made so that unknown values in there
-> are simply ignored? And also ignore unknown packet types? So that at
-> least connectivity is possible, but not as good as it could be? For
-> example, if we have some node which reconnects after a month, it would
-> be great that it still is able to connect, so that we can at least
-> upgrade it.
+> Great. Can you also say to work on all "tun+" interfaces, so that any
+> interface which starts with "tun" is automatically operated on?
 
-Yes, exactly that is on the feature todo list (and more) to ensure better 
-backward compatibility in the future.
-
-
-> > exactly. You can add/remove interfaces at run-time. Creating a bridge
-> > with all the tunnels would not be good because it would not make
-> > batman-adv exploit the interface diversity.
-> 
-> And it would also see all nodes as directly connected together? So:
-> 
-> [nodeA] --- [tunA on server, tunB on server] --- [nodeB]
-> 
-> If I bridge tunA and tunB together, nodeA will think that there is
-> only one hop to nodeB, no?
-
-Correct.
+No, batman-adv is not a user space daemon with a configuration file, hence you 
+can't tell batman-adv to wait for tun+. However, you can easily write a simple 
+shell script for hotplug which adds whatever interface you want to batman-adv 
+as soon as it is created.
+Or, if you are using OpenWrt, you can simply extend the existing hotplug shell 
+script to interprete the "+" as you like.
 
 Regards,
 Marek
+ 
