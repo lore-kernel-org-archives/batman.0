@@ -1,13 +1,12 @@
-Return-Path: <andrew@lunn.ch>
-Date: Fri, 13 Apr 2012 18:26:49 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20120413162649.GB21399@lunn.ch>
-References: <CA+wR77r2CfzDYbNKD+G+0vNV-OCsMYLbPKkHL_JhH5Ad7A3S6A@mail.gmail.com>
+Return-Path: <viro@ftp.linux.org.uk>
+Date: Fri, 13 Apr 2012 20:46:29 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+Message-ID: <20120413194629.GP6589@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CA+wR77r2CfzDYbNKD+G+0vNV-OCsMYLbPKkHL_JhH5Ad7A3S6A@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Backwards Compatibility
+Sender: Al Viro <viro@ftp.linux.org.uk>
+Subject: [B.A.T.M.A.N.] [RFC] endianness bugs in net/batman-adv/
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,17 +18,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org
 
-> To get us started there is a wiki page
-> http://www.open-mesh.org/wiki/batman-adv/BackwardsCompatibility
-> which briefly explains the concept
+	Let's start with net/batman-adv/translation-table.c:send_tt_request(). 
+Its tt_crc argument gets stored into skb as-is and skb goes on the wire.
+OK, so it's fixed-endian, right?
 
-Hi Spyros
+	That sucker comes straight from the (only) caller - tt_update_orig().
+There it gets compared with ->tt_crc of struct orig_node instances.  Fine,
+except that just prior to that comparison we assign to ->tt_crc the return
+value of tt_global_crc().  Which is built on crc16_byte() and clearly
+returns a host-endian value.  Additionally, orig_node ->tt_crc is getting
+compared to tt_request->tt_data in send_other_tt_response(), which ultimately
+comes from recv_tt_query() where it's flipped from net-endian to host-endian.
 
-One thing i suggest you do is look and see what is already available
-in kernel and can be re-used for building and parsing TLVs. That might
-help decide which of BER, DER or PER to use.
+	It gets even funnier - we have 3 structures with ->tt_crc in them;
+one is struct orig_node (see above), another is struct batman_ogv_packet and
+then there's the weirdest one - struct bat_priv.  Where ->tt_crc is
+atomic_t, of all things.  With exactly two things ever done to it:
+        batman_ogm_packet->tt_crc = htons((uint16_t)
+                                                atomic_read(&bat_priv->tt_crc));
+in bat_iv_ogm_schedule() and
+        atomic_set(&bat_priv->tt_crc, tt_local_crc(bat_priv));
+in prepare_packet_buffer().  What the hell does that have to do with atomic_t?
+At least that one is definitely host-endian all along (tt_local_crc() is
+the same kind of built-on-crc16_byte() thing).
 
-     Andrew
+	And then there's batman_ogv_packet, where we flip the damn field
+from net-endian to host-endian and back.  That's where the argument of
+tt_update_orig() comes from, AFAICS always in host-endian form.
 
+	IOW, unless I'm misreading that code we have
+bat_priv ->tt_crc: host-endian, no need to make it atomic_t
+orig_node ->tt_crc: host-endian
+tt_update_orig()/send_tt_request() tt_crc argument: host-endian
+the value put into the packet in send_tt_request(): broken; should be
+net-endian, in reality it's host-endian.  Missing htons() at the very
+least.
+
+	Could somebody familiar with that code comment on that?
