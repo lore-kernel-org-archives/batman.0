@@ -1,18 +1,15 @@
 Return-Path: <mmitar@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20120413092447.GL7664@lunn.ch>
-References: <4F86B02B.9060900@gmail.com> <20120412120002.GE8528@ritirata.org>
-	<CAKLmikOz3az4HWYA4XWsq+kUBx+vF9fuYQS+jjkU=9ibDxPy3A@mail.gmail.com>
-	<CAOaDhSRTgejL5tzAnAx6wBso1sjWn_7bVuT6P1_C1qcVu25McQ@mail.gmail.com>
-	<4F86F6BF.60406@jst.sm>
-	<CAKLmikNtFyx9tDnOAzkMuEmSOOnhVHaLvKpf8q68Fd8qes2XYA@mail.gmail.com>
-	<20120413055947.GH7664@lunn.ch>
-	<CAKLmikNJMzdMSgCkHjf5xNWM0ibEWW+W9BPrskJjaL0b_8VK4g@mail.gmail.com>
-	<20120413081501.GJ7664@lunn.ch>
-	<CAKLmikNt0M4+MEQRsDH-fdnLD664+0G1pCcGKyCNWKim-6ro7Q@mail.gmail.com>
-	<20120413092447.GL7664@lunn.ch>
-Date: Fri, 13 Apr 2012 15:24:18 +0200
-Message-ID: <CAKLmikOpJ0O3uXwEqGvjY-Y=P1HqjZGuBjG42+c_kDYiRzoevw@mail.gmail.com>
+In-Reply-To: <86BF280A-4090-4396-A4B2-94E69FC79F60@solvare.se>
+References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
+	<4F86B02B.9060900@gmail.com>
+	<CAKLmikNuMEiG2SN+H8bJkwRXszMayPpn_qDcf1faCjhrow6NdQ@mail.gmail.com>
+	<201204130017.31711.lindner_marek@yahoo.de>
+	<20120413062241.GA14395@ritirata.org>
+	<CAKLmikN=yGHL8QZomD=GsaKYcZchd=r7kvsjsyxMCx2CYNjbzw@mail.gmail.com>
+	<86BF280A-4090-4396-A4B2-94E69FC79F60@solvare.se>
+Date: Fri, 13 Apr 2012 15:32:59 +0200
+Message-ID: <CAKLmikNBtZ=KZW_vSG_6K8QXLf8aOxxTzkStf0YTnkOD-xSoLg@mail.gmail.com>
 From: Mitar <mmitar@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Subject: Re: [B.A.T.M.A.N.] Migration to Batman
@@ -28,28 +25,24 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Mitar <mitar@tnode.com>
 
 Hi!
 
-On Fri, Apr 13, 2012 at 11:24 AM, Andrew Lunn <andrew@lunn.ch> wrote:
-> Yes, quagga has BGP, but depending on your organizational structure,
-> it might be easier to use OSPF on your peering links. It depends on
-> your peers. If its The Internet, then you probably have little choice,
-> you need BGP. However, if your peer is another mesh network, you can
-> decide for your self what routing protocol to use.
+On Fri, Apr 13, 2012 at 10:52 AM, Christian Huldt <christian@solvare.se> wrote:
+> Just asking to educate myself.
 
-OK, but quagga can run multiple protocols at the same time? Like OSPF
-into one direction and BGP into another? (Just making sure if I
-understand correctly.)
+I am also doing that.
 
-> I've used quagga on Gateworks Cambria devices, with a Xscale CPU,
-> 667MHz, 128Mbytes RAM. These tend to have more RAM than typical
-> consumer devices, but i've no idea how much is actually consumed.
+> Why would you use L2TP rather than just IPsec?
 
-We would like to run that on Foneras. Does anybody have experience
-with this? So we are running OLSR and it works good. If we switch to
-quagga and OSPF and same network, will we have more or less CPU usage?
+We want UDP transport. Does IPsec tunnels support that? And
+furthermore, we do not want/need encryption. The main reason for going
+to L2TP is that currently we are using OpenVPN for our L2 tunnels and
+have problems that our links are CPU bound and not bandwidth bound. So
+we would like to go to a in-kernel solution and probably without
+encryption. (I doubt that Fonera can encrypt 20 Mbit/s. I even doubt
+it can route that over L2TP. But I hope it will be better then current
+5 Mbit/s limit.)
 
 
 Mitar
