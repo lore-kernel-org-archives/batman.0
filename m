@@ -1,11 +1,13 @@
-Return-Path: <spyrosgaster@gmail.com>
+Return-Path: <andrew@lunn.ch>
+Date: Fri, 13 Apr 2012 18:26:49 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20120413162649.GB21399@lunn.ch>
+References: <CA+wR77r2CfzDYbNKD+G+0vNV-OCsMYLbPKkHL_JhH5Ad7A3S6A@mail.gmail.com>
 MIME-Version: 1.0
-Sender: spyrosgaster@gmail.com
-From: NorthPole <morfeas3000@gmail.com>
-Date: Fri, 13 Apr 2012 18:56:20 +0300
-Message-ID: <CA+wR77r2CfzDYbNKD+G+0vNV-OCsMYLbPKkHL_JhH5Ad7A3S6A@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] Backwards Compatibility
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CA+wR77r2CfzDYbNKD+G+0vNV-OCsMYLbPKkHL_JhH5Ad7A3S6A@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Backwards Compatibility
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,23 +19,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello Everyone!
+> To get us started there is a wiki page
+> http://www.open-mesh.org/wiki/batman-adv/BackwardsCompatibility
+> which briefly explains the concept
 
-I'm Spyros (hopefully)one of the gsoc students.
+Hi Spyros
 
-The project is to integrate information element syntax for various
-information in the packets
-and as a consequence implement backwards compatibility.
+One thing i suggest you do is look and see what is already available
+in kernel and can be re-used for building and parsing TLVs. That might
+help decide which of BER, DER or PER to use.
 
-there is a number of ways to do this though and since it affects most
-of you (every info should be transmited in information element syntax)
-it would be good if you shared your opinions.
+     Andrew
 
-To get us started there is a wiki page
-http://www.open-mesh.org/wiki/batman-adv/BackwardsCompatibility
-which briefly explains the concept
-
-Thank you,
-Spyros
