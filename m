@@ -1,12 +1,16 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Date: Fri, 13 Apr 2012 20:46:29 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-Message-ID: <20120413194629.GP6589@ZenIV.linux.org.uk>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 13 Apr 2012 22:32:50 +0200
+References: <1334214449-3996-1-git-send-email-ordex@autistici.org>
+	<1334214449-3996-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1334214449-3996-2-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Sender: Al Viro <viro@ftp.linux.org.uk>
-Subject: [B.A.T.M.A.N.] [RFC] endianness bugs in net/batman-adv/
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201204132232.50346.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/3] batman-adv: fix comments ending
+	style
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,43 +22,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-	Let's start with net/batman-adv/translation-table.c:send_tt_request(). 
-Its tt_crc argument gets stored into skb as-is and skb goes on the wire.
-OK, so it's fixed-endian, right?
+On Thursday, April 12, 2012 09:07:27 Antonio Quartulli wrote:
+> All multiline comments must end with "*/" on a newline.
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> Reviewed-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> ---
+>  bridge_loop_avoidance.c |  102
+> +++++++++++++++++++++++++----------------------
+> packet.h                |    3 +-
+>  routing.c               |    6 ++-
+>  soft-interface.c        |    6 ++-
+>  translation-table.c     |   16 +++++---
+>  5 files changed, 74 insertions(+), 59 deletions(-)
 
-	That sucker comes straight from the (only) caller - tt_update_orig().
-There it gets compared with ->tt_crc of struct orig_node instances.  Fine,
-except that just prior to that comparison we assign to ->tt_crc the return
-value of tt_global_crc().  Which is built on crc16_byte() and clearly
-returns a host-endian value.  Additionally, orig_node ->tt_crc is getting
-compared to tt_request->tt_data in send_other_tt_response(), which ultimately
-comes from recv_tt_query() where it's flipped from net-endian to host-endian.
+Applied in revision 3784ac8.
 
-	It gets even funnier - we have 3 structures with ->tt_crc in them;
-one is struct orig_node (see above), another is struct batman_ogv_packet and
-then there's the weirdest one - struct bat_priv.  Where ->tt_crc is
-atomic_t, of all things.  With exactly two things ever done to it:
-        batman_ogm_packet->tt_crc = htons((uint16_t)
-                                                atomic_read(&bat_priv->tt_crc));
-in bat_iv_ogm_schedule() and
-        atomic_set(&bat_priv->tt_crc, tt_local_crc(bat_priv));
-in prepare_packet_buffer().  What the hell does that have to do with atomic_t?
-At least that one is definitely host-endian all along (tt_local_crc() is
-the same kind of built-on-crc16_byte() thing).
-
-	And then there's batman_ogv_packet, where we flip the damn field
-from net-endian to host-endian and back.  That's where the argument of
-tt_update_orig() comes from, AFAICS always in host-endian form.
-
-	IOW, unless I'm misreading that code we have
-bat_priv ->tt_crc: host-endian, no need to make it atomic_t
-orig_node ->tt_crc: host-endian
-tt_update_orig()/send_tt_request() tt_crc argument: host-endian
-the value put into the packet in send_tt_request(): broken; should be
-net-endian, in reality it's host-endian.  Missing htons() at the very
-least.
-
-	Could somebody familiar with that code comment on that?
+Thanks,
+Marek
