@@ -1,6 +1,6 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 13 Apr 2012 22:35:40 +0200
+Date: Fri, 13 Apr 2012 23:04:23 +0200
 References: <1334214449-3996-1-git-send-email-ordex@autistici.org>
 	<1334214449-3996-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1334214449-3996-4-git-send-email-ordex@autistici.org>
@@ -8,7 +8,7 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201204132235.40980.lindner_marek@yahoo.de>
+Message-Id: <201204132304.23485.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv3 3/3] batman-adv: use static inline
 	functions to fake not compiled-in routines
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -40,7 +40,7 @@ On Thursday, April 12, 2012 09:07:29 Antonio Quartulli wrote:
 > arguments passed to the function, even if the related component (bla in
 > this case) is not compiled.
 
-Applied in revision 9b3b58e.
+The same needs to be done for DAT, right ?
 
-Thanks,
+Regards,
 Marek
