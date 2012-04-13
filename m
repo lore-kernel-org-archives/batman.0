@@ -1,19 +1,19 @@
 Return-Path: <andrew@lunn.ch>
-Date: Fri, 13 Apr 2012 10:15:01 +0200
+Date: Fri, 13 Apr 2012 10:26:48 +0200
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20120413081501.GJ7664@lunn.ch>
+Message-ID: <20120413082648.GK7664@lunn.ch>
 References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
-	<4F86B02B.9060900@gmail.com> <20120412120002.GE8528@ritirata.org>
-	<CAKLmikOz3az4HWYA4XWsq+kUBx+vF9fuYQS+jjkU=9ibDxPy3A@mail.gmail.com>
-	<CAOaDhSRTgejL5tzAnAx6wBso1sjWn_7bVuT6P1_C1qcVu25McQ@mail.gmail.com>
-	<4F86F6BF.60406@jst.sm>
-	<CAKLmikNtFyx9tDnOAzkMuEmSOOnhVHaLvKpf8q68Fd8qes2XYA@mail.gmail.com>
-	<20120413055947.GH7664@lunn.ch>
-	<CAKLmikNJMzdMSgCkHjf5xNWM0ibEWW+W9BPrskJjaL0b_8VK4g@mail.gmail.com>
+	<4F86B02B.9060900@gmail.com>
+	<CAKLmikNuMEiG2SN+H8bJkwRXszMayPpn_qDcf1faCjhrow6NdQ@mail.gmail.com>
+	<201204130017.31711.lindner_marek@yahoo.de>
+	<20120413062241.GA14395@ritirata.org>
+	<CAKLmikN=yGHL8QZomD=GsaKYcZchd=r7kvsjsyxMCx2CYNjbzw@mail.gmail.com>
+	<20120413074323.GI7664@lunn.ch>
+	<CAKLmikO8voWr9Rv9S5N-9v0GvbO=vc3y+Cnqv7XFd4ieRL=4og@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAKLmikNJMzdMSgCkHjf5xNWM0ibEWW+W9BPrskJjaL0b_8VK4g@mail.gmail.com>
+In-Reply-To: <CAKLmikO8voWr9Rv9S5N-9v0GvbO=vc3y+Cnqv7XFd4ieRL=4og@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] Migration to Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -27,46 +27,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Mitar <mitar@tnode.com>
+Cc: Jernej Kos <kostko@unimatrix-one.org>
 
-On Fri, Apr 13, 2012 at 09:58:26AM +0200, Mitar wrote:
+On Fri, Apr 13, 2012 at 09:51:51AM +0200, Mitar wrote:
 > Hi!
 > 
-> On Fri, Apr 13, 2012 at 7:59 AM, Andrew Lunn <andrew@lunn.ch> wrote:
-> > This comes back to:
-> >
-> > ?? ?? You need, in your head, a clear separation between L3 and L2.
+> On Fri, Apr 13, 2012 at 9:43 AM, Andrew Lunn <andrew@lunn.ch> wrote:
+> > Which implementation are you using of L2TP?
 > 
-> :-)
+> We are not using any, we are planning to use ones provided by OpenL2TP:
 > 
-> OK, maybe I am getting a bit of hold on this. :-)
-> 
-> OK, so if we would like to provide a way for all nodes to also
-> announce their L3 subnets which are maybe behind them, we should run
-> additional L3 routing protocol between them so that they can exchange
-> information about those subnets and configure routes accordingly.
-> Which routing protocol are you proposing for such task?
+> http://www.openl2tp.org/
 
-How many subnets do you think you will have? Are they all using
-classful networks or classless network?
+Never used it, so i "use the source luke", since its in the kernel...
 
-http://en.wikipedia.org/wiki/Classful_network
-http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing
+Looks like you have at least two options:
 
-If you have a small network which is classful, you could use RIP.
+Linux PPP over L2TP (PPPoX/PPPoL2TP) Sockets
+L2TPv3 ethernet pseudowire driver
 
-http://en.wikipedia.org/wiki/Routing_Information_Protocol
+PPP is L3 only, so you cannot add it to BATMAN. You would need to L3
+routing over it.
 
-Otherwise, i would probably use ospf.
-http://en.wikipedia.org/wiki/Ospf
+The pseudowire driver creates a network device l2tpeth0, l2tpeth1,
+l2tpeth2, etc, one for each session. Looks like you should be able to
+add these to BATMAN.
 
-OSPF is much more scale-able, and typically used for enterprise
-networks. If you are considering joining this network to some other
-network, you are probably going to end up using OSPF, or maybe BGP as
-the protocol between the networks. OSPF is designed for this sort of
-multi-organizational networks.
+    Andrew
 
-quagga is a well used suite of routing protocols.
-http://www.nongnu.org/quagga/
-
-	Andrew
