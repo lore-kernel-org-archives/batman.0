@@ -1,15 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Sat, 14 Apr 2012 15:07:14 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120414130714.GC24739@ritirata.org>
-References: <20120413194629.GP6589@ZenIV.linux.org.uk>
-	<20120414093404.GA5300@ritirata.org>
+Return-Path: <spyrosgaster@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="xesSdrSSBC0PokLI"
-Content-Disposition: inline
-In-Reply-To: <20120414093404.GA5300@ritirata.org>
-Subject: Re: [B.A.T.M.A.N.] [RFC] endianness bugs in net/batman-adv/
+Sender: spyrosgaster@gmail.com
+In-Reply-To: <20120413162649.GB21399@lunn.ch>
+References: <CA+wR77r2CfzDYbNKD+G+0vNV-OCsMYLbPKkHL_JhH5Ad7A3S6A@mail.gmail.com>
+	<20120413162649.GB21399@lunn.ch>
+From: NorthPole <morfeas3000@gmail.com>
+Date: Sat, 14 Apr 2012 19:12:46 +0300
+Message-ID: <CA+wR77q3GJMoCE4=DN9LQxQkww59D3o3xsQwk8ivoRuM3GBorw@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Backwards Compatibility
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,57 +21,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+Hi Andrew
+
+I googled bit and didnt find anything significant also I posted on
+kernel newbies mailing list and they couldnt help me.
+
+SInce i'm completely new to kernel dev could you suggest a better way
+to look or a mailing list where I should ask?
 
 
---xesSdrSSBC0PokLI
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello,
-
-On Sat, Apr 14, 2012 at 11:34:05AM +0200, Antonio Quartulli wrote:
-
-=2E...
-
->=20
-> Thank you very much. I'll fix it.
-
-
-I sent two patches to the batman-adv mailing list that will fix the bugs you
-have found.
-
-If you would like to have a look at the patches, you can find them on the l=
-ist
-archive:
-
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-April/006692.html
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-April/006693.html
-
-
-Regards,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---xesSdrSSBC0PokLI
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPiXaCAAoJEFMQTLzJFOZFyu4H/1Dhykyj2L6oIwWh3RUvXz/1
-fFpzBWUlr754eTd0MSXBbBmkLslMe3ufUPHVhXs6TVF1cDF/EwSqJ7AEIHIQTrry
-soPFg93F4//i5VKv37s0LemAD0xLv1OdPP85LZunjCAs1ZxldhfU2PFBr885aPI9
-4KJPvazAljyURs78zrRbXD6KvnqeP4hjPOVYCW5nWzZp1p4fz51NcqWYH/w5fS7n
-nH75Cul6ShqX3biWtqim0J30Aj6OTlkr7YggI+k1cfpbl1/+4Nc28okej7C/iPQr
-kdRvjqbUyJnP4liSZhAEGg7wF5o4bQ0VinDQMPU15hm7xj43N9RiDmDUOiW22gM=
-=L9uj
------END PGP SIGNATURE-----
-
---xesSdrSSBC0PokLI--
+On Fri, Apr 13, 2012 at 7:26 PM, Andrew Lunn <andrew@lunn.ch> wrote:
+>> To get us started there is a wiki page
+>> http://www.open-mesh.org/wiki/batman-adv/BackwardsCompatibility
+>> which briefly explains the concept
+>
+> Hi Spyros
+>
+> One thing i suggest you do is look and see what is already available
+> in kernel and can be re-used for building and parsing TLVs. That might
+> help decide which of BER, DER or PER to use.
+>
+> =A0 =A0 Andrew
+>
