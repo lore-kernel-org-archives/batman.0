@@ -1,11 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 14 Apr 2012 13:15:27 +0200
-Message-Id: <1334402127-5211-3-git-send-email-ordex@autistici.org>
-In-Reply-To: <1334402127-5211-1-git-send-email-ordex@autistici.org>
-References: <1334402127-5211-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: convert the tt_crc to
-	network order
+Date: Sat, 14 Apr 2012 13:15:25 +0200
+Message-Id: <1334402127-5211-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/2] Fixes reported by Al Viro
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,28 +16,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Before sending out a TT_Request packet we must convert the tt_crc field value
-to network order (since it is 16bits long).
+The following two patches fix the two issues found by Al Viro and reported in
+his email.
 
-Reported-by: Al Viro <viro@ZenIV.linux.org.uk>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- translation-table.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Patch 1) simply convert the tt_crc field in the bat_priv structure from atomic_t
+to uint16_t. Actually there is no reason to declare it as atomic_t.
 
-diff --git a/translation-table.c b/translation-table.c
-index 72dfbe1..88e4c8e 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1341,7 +1341,7 @@ static int send_tt_request(struct bat_priv *bat_priv,
- 	memcpy(tt_request->dst, dst_orig_node->orig, ETH_ALEN);
- 	tt_request->header.ttl = TTL;
- 	tt_request->ttvn = ttvn;
--	tt_request->tt_data = tt_crc;
-+	tt_request->tt_data = htons(tt_crc);
- 	tt_request->flags = TT_REQUEST;
- 
- 	if (full_table)
--- 
-1.7.9.4
+Patch 2) fixes a little bug we have when sending a tt_request message: now we
+don't convert the tt_crc that we are sending within the request to network
+order. OTOH we convert this field from NO to HO on the receiver side.
+
+Therefore, nodes on the path of the request, which have HO different from NO,
+will fail to reply to the request and will forward it towards the final
+destination.
+
+
+Cheers,
+	Antonio
+
+
 
