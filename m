@@ -1,14 +1,11 @@
 Return-Path: <ordex@autistici.org>
-Date: Sat, 14 Apr 2012 11:34:05 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120414093404.GA5300@ritirata.org>
-References: <20120413194629.GP6589@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
-Content-Disposition: inline
-In-Reply-To: <20120413194629.GP6589@ZenIV.linux.org.uk>
-Subject: Re: [B.A.T.M.A.N.] [RFC] endianness bugs in net/batman-adv/
+Date: Sat, 14 Apr 2012 13:15:26 +0200
+Message-Id: <1334402127-5211-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1334402127-5211-1-git-send-email-ordex@autistici.org>
+References: <1334402127-5211-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: convert bat_priv->tt_crc
+	from atomic_t to uint16_t
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,117 +17,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+In the code we neever need to atomically check and set the bat_priv->tt_crc
+field value. It is simply set and read once in different pieces of the code.
+Therefore this field can be safely be converted from atomic_t to uint16_t.
 
---Dxnq1zWXvFF0Q93v
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Reported-by: Al Viro <viro@ZenIV.linux.org.uk>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ bat_iv_ogm.c |    3 +--
+ send.c       |    2 +-
+ types.h      |    2 +-
+ 3 files changed, 3 insertions(+), 4 deletions(-)
 
-On Fri, Apr 13, 2012 at 08:46:29 +0100, Al Viro wrote:
-> 	Let's start with net/batman-adv/translation-table.c:send_tt_request().=
-=20
-> Its tt_crc argument gets stored into skb as-is and skb goes on the wire.
-> OK, so it's fixed-endian, right?
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 994369d..ed743a4 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -576,8 +576,7 @@ static void bat_iv_ogm_schedule(struct hard_iface *hard_iface,
+ 			htonl((uint32_t)atomic_read(&hard_iface->seqno));
+ 
+ 	batman_ogm_packet->ttvn = atomic_read(&bat_priv->ttvn);
+-	batman_ogm_packet->tt_crc = htons((uint16_t)
+-						atomic_read(&bat_priv->tt_crc));
++	batman_ogm_packet->tt_crc = htons(bat_priv->tt_crc);
+ 	if (tt_num_changes >= 0)
+ 		batman_ogm_packet->tt_num_changes = tt_num_changes;
+ 
+diff --git a/send.c b/send.c
+index 815cc9c..cebc14a 100644
+--- a/send.c
++++ b/send.c
+@@ -112,7 +112,7 @@ static int prepare_packet_buffer(struct bat_priv *bat_priv,
+ 
+ 	realloc_packet_buffer(hard_iface, new_len);
+ 
+-	atomic_set(&bat_priv->tt_crc, tt_local_crc(bat_priv));
++	bat_priv->tt_crc = tt_local_crc(bat_priv);
+ 
+ 	/* reset the sending counter */
+ 	atomic_set(&bat_priv->tt_ogm_append_cnt, TT_OGM_APPEND_MAX);
+diff --git a/types.h b/types.h
+index 15f538a..995e910 100644
+--- a/types.h
++++ b/types.h
+@@ -224,7 +224,7 @@ struct bat_priv {
+ 	spinlock_t vis_list_lock; /* protects vis_info::recv_list */
+ 	atomic_t num_local_tt;
+ 	/* Checksum of the local table, recomputed before sending a new OGM */
+-	atomic_t tt_crc;
++	uint16_t tt_crc;
+ 	unsigned char *tt_buff;
+ 	int16_t tt_buff_len;
+ 	spinlock_t tt_buff_lock; /* protects tt_buff */
+-- 
+1.7.9.4
 
-ok, it's a bug. The tt_crc field must be stored in the skb by using htons().
-
->=20
-> 	That sucker comes straight from the (only) caller - tt_update_orig().
-> There it gets compared with ->tt_crc of struct orig_node instances.  Fine,
-> except that just prior to that comparison we assign to ->tt_crc the return
-> value of tt_global_crc().  Which is built on crc16_byte() and clearly
-> returns a host-endian value.  Additionally, orig_node ->tt_crc is getting
-> compared to tt_request->tt_data in send_other_tt_response(), which ultima=
-tely
-> comes from recv_tt_query() where it's flipped from net-endian to host-end=
-ian.
->=20
-
-We want to do every computation using host-endian data. There is no "fixed
-endian" anywhere. As I wrote above, we forgot to use htons() before sending=
- the
-tt_crc over the wire.
-
-> 	It gets even funnier - we have 3 structures with ->tt_crc in them;
-> one is struct orig_node (see above), another is struct batman_ogv_packet =
-and
-> then there's the weirdest one - struct bat_priv.  Where ->tt_crc is
-> atomic_t, of all things.  With exactly two things ever done to it:
->         batman_ogm_packet->tt_crc =3D htons((uint16_t)
->                                                 atomic_read(&bat_priv->tt=
-_crc));
-> in bat_iv_ogm_schedule() and
->         atomic_set(&bat_priv->tt_crc, tt_local_crc(bat_priv));
-> in prepare_packet_buffer().  What the hell does that have to do with atom=
-ic_t?
-
-Thank you for spotting this. It was defined as atomic_t in the early develo=
-pment
-phase of this new tt framework, but, then, I'd say that we forgot to conver=
-t it
-to uint16_t once atomic_t was not needed anymore.
-
-> At least that one is definitely host-endian all along (tt_local_crc() is
-> the same kind of built-on-crc16_byte() thing).
->=20
-> 	And then there's batman_ogv_packet, where we flip the damn field
-> from net-endian to host-endian and back.  That's where the argument of
-> tt_update_orig() comes from, AFAICS always in host-endian form.
->=20
-> 	IOW, unless I'm misreading that code we have
-> bat_priv ->tt_crc: host-endian, no need to make it atomic_t
-
-I agree.
-
-> orig_node ->tt_crc: host-endian
-
-I agree. As I said before we want to use host-endian everywhere. We just wa=
-nt to
-convert the data to net-endian before sending it over the wire (like people
-should normally do).
-
-> tt_update_orig()/send_tt_request() tt_crc argument: host-endian
-
-I agree.
-
-> the value put into the packet in send_tt_request(): broken; should be
-> net-endian, in reality it's host-endian.  Missing htons() at the very
-> least.
->=20
-
-Exactly. This is the bug I was talking about in my first inline response.
-
-All the problems come from a missing htons() before sending the tt_request
-packet.
-
-Thank you very much. I'll fix it.
-
-
-Best regards,
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---Dxnq1zWXvFF0Q93v
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPiUSMAAoJEFMQTLzJFOZFGykH/1Z06lVeOXq7WyIeZdkwKEQH
-AkdNCiprzUqTdAbpM67D7Gwrhc00zDw7FgT6gCZPqf7jxZcWtD1wDvsC+PGVQ8CF
-+6ghdSiJvB8mRoMCxtJIfBFDD5iMJht3fUhK1OzcWU/+OACXbo06w+xtu07ijePw
-UbiS9GcBdJ/U+shcRew3kXa7XW1ck7dig9TlyoDw/aWDjIiOjPpZQIAg3WFXWEIf
-khfp6sbkA5gIfW6Wt7KLHJzrtP8vfvaH3gdnQMymrZZyPQrsO7Cfd8Do3gGZhV+6
-nw4U67ef3ym1+Mmk7JRfV0Om71rWujsRbVP0KB9M4WT/61OKX02EXg4x8FPpKZY=
-=JVFn
------END PGP SIGNATURE-----
-
---Dxnq1zWXvFF0Q93v--
