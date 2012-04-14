@@ -1,17 +1,22 @@
-Return-Path: <ordex@autistici.org>
-Date: Sat, 14 Apr 2012 00:13:52 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120413221351.GA19795@ritirata.org>
-References: <1334214449-3996-1-git-send-email-ordex@autistici.org>
-	<1334214449-3996-4-git-send-email-ordex@autistici.org>
-	<201204132304.23485.lindner_marek@yahoo.de>
+Return-Path: <nicoechaniz@codigosur.org>
+Message-ID: <4F88E056.4080208@codigosur.org>
+Date: Fri, 13 Apr 2012 23:26:30 -0300
+From: =?UTF-8?B?Tmljb2zDoXMgRWNow6FuaXo=?= <nicoechaniz@codigosur.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
-Content-Disposition: inline
-In-Reply-To: <201204132304.23485.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 3/3] batman-adv: use static inline
- functions to fake not compiled-in routines
+References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
+	<4F86B02B.9060900@gmail.com> <20120412120002.GE8528@ritirata.org>
+	<CAKLmikOz3az4HWYA4XWsq+kUBx+vF9fuYQS+jjkU=9ibDxPy3A@mail.gmail.com>
+	<CAOaDhSRTgejL5tzAnAx6wBso1sjWn_7bVuT6P1_C1qcVu25McQ@mail.gmail.com>
+	<4F86F6BF.60406@jst.sm>
+	<CAKLmikNtFyx9tDnOAzkMuEmSOOnhVHaLvKpf8q68Fd8qes2XYA@mail.gmail.com>
+	<20120413055947.GH7664@lunn.ch>
+	<CAKLmikNJMzdMSgCkHjf5xNWM0ibEWW+W9BPrskJjaL0b_8VK4g@mail.gmail.com>
+	<20120413081501.GJ7664@lunn.ch>
+	<CAKLmikNt0M4+MEQRsDH-fdnLD664+0G1pCcGKyCNWKim-6ro7Q@mail.gmail.com>
+In-Reply-To: <CAKLmikNt0M4+MEQRsDH-fdnLD664+0G1pCcGKyCNWKim-6ro7Q@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Migration to Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,59 +30,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On 04/13/2012 05:41 AM, Mitar wrote:
+> Hi!
+> 
+> On Fri, Apr 13, 2012 at 10:15 AM, Andrew Lunn <andrew@lunn.ch> wrote:
+>> How many subnets do you think you will have? Are they all using
+>> classful networks or classless network?
+> 
+> Probably not much. At most 10 % of nodes would announce their home
+> subnets too. But we should support also classless networks.
 
---bp/iNruPH9dso1Pn
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm curious as to why those nodes wouldn't use the same IP address space
+as the net if they will be announcing their routes to the mesh anyway.
 
-On Fri, Apr 13, 2012 at 11:04:23 +0200, Marek Lindner wrote:
-> On Thursday, April 12, 2012 09:07:29 Antonio Quartulli wrote:
-> > In case of not compiled-in components, we need to fake some functions in
-> > order to let the rest of the code correctly build. But instead of using
-> > something like:
-> >=20
-> > We have to use:
-> >=20
-> > static inline bla_init(struct bat_priv *bat_priv)
-> > {
-> >         return 1;
-> > }
-> >=20
-> > In this way the compiler can correctly check the type and the number of=
- the
-> > arguments passed to the function, even if the related component (bla in
-> > this case) is not compiled.
->=20
-> The same needs to be done for DAT, right ?
+One thing to be aware of is that when a home network (on a different
+subnet) is connected to the batman mesh you get some side-effects, like
+for example an in-house router responding to DHCP requests...
+It happens here in QuintanaLibre where one user has a router with 2 IPs,
+one for the house network and another for the mesh and DHCP server
+enabled using the home net address space, which sometimes "leak" to a
+client in the mesh.
 
-Exactly.
-the next pull request should contain this change also for DAT. Moreover we
-should provide a sysfs mechanism enable/disable DAT at runtime, so that peo=
-ple
-can disable it on all the nodes without the need of rebuilding the module.
+I understand the batman-adv mesh works almost as one big switch, so it
+makes sense that this router will answer for requests... but at first I
+could not understand what was happening.
 
-Cheers,
+One other suggestion, for VPN is to take a look at Tinc; it has a
+routing (or router?) mode which might be useful in your case.
 
---=20
-Antonio Quartulli
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
+>> quagga is a well used suite of routing protocols.
+>> http://www.nongnu.org/quagga/
+> 
+> If I understand correctly, this would allow us also easier peering
+> with other networks as quagga supports also redistribution of routes
+> and so on. So if we decide for OSPF, it will be easy also to setup BGP
+> on border nodes within the single daemon, no?
+> 
+> How CPU and memory heavy it is to run it on consumer routers like
+> TP-links and so on? Probably depends on number of routes and not on
+> itself? But is there a big penalty of running it on all nodes?
+> 
+> 
+> Mitar
 
---bp/iNruPH9dso1Pn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPiKUfAAoJEFMQTLzJFOZFXQcH/3S+VabkEWfgtrOqLqhOst8N
-nxhlVpYDjfRFQoaPmXQACw9UZ+Wz8tymScNvtMF2WVcrwFah1Kj3CCs2mmKf1b4A
-DTiGXykYQEGw3qksZoi30SPHeSf0G2i/DU46/QOxCpGepOTQ3SErc5kjGRtoQmiC
-IZrF71x4CjtZs3XY/UXnKbqh/v0NWy9RjIdOqRLdMrHqcWe2MPMqM8+XtBLgySsc
-mvoZqISipLlyy0NAPrMWob7M8hCao7p6nZf0P8eY9IDcqguSdDfRTvIhKj0FEaMq
-fM16HeQnr3um5bAQYZCR/aQ4KxnO5YhtSjWcc1qgnaZb/fEZ/fQli40bU9HWdDs=
-=QaOb
------END PGP SIGNATURE-----
-
---bp/iNruPH9dso1Pn--
