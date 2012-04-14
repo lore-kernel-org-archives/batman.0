@@ -1,8 +1,6 @@
-Return-Path: <nicoechaniz@codigosur.org>
-Message-ID: <4F88E056.4080208@codigosur.org>
-Date: Fri, 13 Apr 2012 23:26:30 -0300
-From: =?UTF-8?B?Tmljb2zDoXMgRWNow6FuaXo=?= <nicoechaniz@codigosur.org>
+Return-Path: <mmitar@gmail.com>
 MIME-Version: 1.0
+In-Reply-To: <4F88E056.4080208@codigosur.org>
 References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
 	<4F86B02B.9060900@gmail.com> <20120412120002.GE8528@ritirata.org>
 	<CAKLmikOz3az4HWYA4XWsq+kUBx+vF9fuYQS+jjkU=9ibDxPy3A@mail.gmail.com>
@@ -13,9 +11,12 @@ References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
 	<CAKLmikNJMzdMSgCkHjf5xNWM0ibEWW+W9BPrskJjaL0b_8VK4g@mail.gmail.com>
 	<20120413081501.GJ7664@lunn.ch>
 	<CAKLmikNt0M4+MEQRsDH-fdnLD664+0G1pCcGKyCNWKim-6ro7Q@mail.gmail.com>
-In-Reply-To: <CAKLmikNt0M4+MEQRsDH-fdnLD664+0G1pCcGKyCNWKim-6ro7Q@mail.gmail.com>
+	<4F88E056.4080208@codigosur.org>
+Date: Sat, 14 Apr 2012 11:06:01 +0200
+Message-ID: <CAKLmikNpsoGBKd4j=B8b5XejWBVeHF0zSYQAr5=DvzpZQyCOMQ@mail.gmail.com>
+From: Mitar <mmitar@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] Migration to Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -30,47 +31,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On 04/13/2012 05:41 AM, Mitar wrote:
-> Hi!
-> 
-> On Fri, Apr 13, 2012 at 10:15 AM, Andrew Lunn <andrew@lunn.ch> wrote:
->> How many subnets do you think you will have? Are they all using
->> classful networks or classless network?
-> 
-> Probably not much. At most 10 % of nodes would announce their home
-> subnets too. But we should support also classless networks.
+Hi!
 
-I'm curious as to why those nodes wouldn't use the same IP address space
-as the net if they will be announcing their routes to the mesh anyway.
+2012/4/14 Nicol=C3=A1s Ech=C3=A1niz <nicoechaniz@codigosur.org>:
+> I'm curious as to why those nodes wouldn't use the same IP address space
+> as the net if they will be announcing their routes to the mesh anyway.
 
-One thing to be aware of is that when a home network (on a different
-subnet) is connected to the batman mesh you get some side-effects, like
-for example an in-house router responding to DHCP requests...
-It happens here in QuintanaLibre where one user has a router with 2 IPs,
-one for the house network and another for the mesh and DHCP server
-enabled using the home net address space, which sometimes "leak" to a
-client in the mesh.
+Probably they will use the same IP address space, but we want to route
+those subnets not bridge them. This is the main difference.
 
-I understand the batman-adv mesh works almost as one big switch, so it
-makes sense that this router will answer for requests... but at first I
-could not understand what was happening.
+> One thing to be aware of is that when a home network (on a different
+> subnet) is connected to the batman mesh you get some side-effects, like
+> for example an in-house router responding to DHCP requests...
 
-One other suggestion, for VPN is to take a look at Tinc; it has a
-routing (or router?) mode which might be useful in your case.
+If we do routing between home network and mesh network, no.
+
+Also, our routers will not run DHCP itself. (Probably DHCP will be run
+inside home networks. But as I said, we would like to only route
+there, not bridge.)
+
+> One other suggestion, for VPN is to take a look at Tinc; it has a
+> routing (or router?) mode which might be useful in your case.
+
+No, it is an user-space daemon. Context switches between user-space
+and kernel-space kills much of the performance on those cheap routers.
+We are currently using OpenVPN and I doubt Tinc will improve much in
+this aspect. Or am I mistaken?
 
 
->> quagga is a well used suite of routing protocols.
->> http://www.nongnu.org/quagga/
-> 
-> If I understand correctly, this would allow us also easier peering
-> with other networks as quagga supports also redistribution of routes
-> and so on. So if we decide for OSPF, it will be easy also to setup BGP
-> on border nodes within the single daemon, no?
-> 
-> How CPU and memory heavy it is to run it on consumer routers like
-> TP-links and so on? Probably depends on number of routes and not on
-> itself? But is there a big penalty of running it on all nodes?
-> 
-> 
-> Mitar
-
+Mitar
