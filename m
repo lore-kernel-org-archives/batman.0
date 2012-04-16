@@ -1,12 +1,14 @@
 Return-Path: <mmitar@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <201204161258.04262.lindner_marek@yahoo.de>
+In-Reply-To: <20120416110259.GD24938@ritirata.org>
 References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
+	<20120413055947.GH7664@lunn.ch>
+	<CAKLmikPJBmk=Xoom0a1D2OFfx6o8OtSk7D4PdT3TDXDx9iyO1A@mail.gmail.com>
 	<201204161237.37008.lindner_marek@yahoo.de>
 	<CAKLmikMRRkrvB3Kgga51hJ=GygEto_KqLCp9TwTPseyK4gJsOw@mail.gmail.com>
-	<201204161258.04262.lindner_marek@yahoo.de>
-Date: Mon, 16 Apr 2012 14:32:09 +0200
-Message-ID: <CAKLmikPWjXYVqQkJLK=j9DB_1+cNjLsrZ3j9kHGf6SiBbusOvw@mail.gmail.com>
+	<20120416110259.GD24938@ritirata.org>
+Date: Mon, 16 Apr 2012 14:37:22 +0200
+Message-ID: <CAKLmikOufm+8yugkkmOmdAM7ENi7q6GffT7p0+iADjoCgt2XGw@mail.gmail.com>
 From: Mitar <mmitar@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Subject: Re: [B.A.T.M.A.N.] Migration to Batman
@@ -25,36 +27,28 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 
 Hi!
 
-On Mon, Apr 16, 2012 at 12:58 PM, Marek Lindner <lindner_marek@yahoo.de> wrote:
-> If you already have a shell script uevent definitely is the way to go. It is
-> far easier to script than netlink.
+On Mon, Apr 16, 2012 at 1:03 PM, Antonio Quartulli <ordex@autistici.org> wrote:
+> We are not talking about another "wireless oriented" routing protocol, which
+> would need to measure link quality (cost) and announce it. We are talking about
+> something like OSPF/BGP/RIP which can be configured to announce routes only
+> (actually I think this is the standard way they work and this is also the reason
+> why they are not suitable for wireless networks).
 
-Yes, but are there uevent events for node reachable/unreachable?
+I admit I am not familiar how those protocols work, but I imagine they
+need to check if node is available/reachable in some regular
+intervals? Or it is that node is just announcing its routes in regular
+intervals and once it stops, after some timeout other daemons remove
+the route?
 
-> How does your logic handle network splits / join ? Do you have the source
-> somewhere ?
+Yes, I am aware that wireless cost is unneeded. But reachability
+checking should still be done?
 
-Our current logic is very simple: if route to 0.0.0.0 disappears,
-display to the user error message through splash screen ("sorry, node
-is separated from the rest of the mesh" message) when user tries to
-access external IPs. When it comes back, return to normal behavior.
+BTW, if multiple nodes are announcing the same subnet/prefix, how does
+the L3 routing protocol daemon knows which one to select? From its
+point of view everything is one hope away, but in reality there could
+be huge differences?
 
-I am not sure what you mean by splits / joins. Yes, source is
-available. But I am not sure if this is what you had in mind?
-
-I was just saying that route flapping (on/off) can be dealt with some
-aggregation of events on a consumer side. (But I am now unsure, maybe
-we are doing this already on the plugin side.)
-
-For olsrd plugin:
-
-http://dev.wlan-si.net/browser/firmware/packages/opkg/net/olsrd/plugins/actions
-
-> You could even connect your routing daemon to the uevents mentioned
-> above.
-
-Are those uevents already available? Do we know of any existing
-routing protocol being capable of using them?
+For DHCP you sniff packets. But could be there some general way?
 
 
 Mitar
