@@ -1,15 +1,19 @@
-Return-Path: <andrew@lunn.ch>
-Date: Sun, 15 Apr 2012 12:10:22 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20120415101022.GB24461@lunn.ch>
-References: <CA+wR77r2CfzDYbNKD+G+0vNV-OCsMYLbPKkHL_JhH5Ad7A3S6A@mail.gmail.com>
-	<20120413162649.GB21399@lunn.ch>
-	<CA+wR77q3GJMoCE4=DN9LQxQkww59D3o3xsQwk8ivoRuM3GBorw@mail.gmail.com>
+Return-Path: <mmitar@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CA+wR77q3GJMoCE4=DN9LQxQkww59D3o3xsQwk8ivoRuM3GBorw@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Backwards Compatibility
+In-Reply-To: <20120413055947.GH7664@lunn.ch>
+References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
+	<4F86B02B.9060900@gmail.com> <20120412120002.GE8528@ritirata.org>
+	<CAKLmikOz3az4HWYA4XWsq+kUBx+vF9fuYQS+jjkU=9ibDxPy3A@mail.gmail.com>
+	<CAOaDhSRTgejL5tzAnAx6wBso1sjWn_7bVuT6P1_C1qcVu25McQ@mail.gmail.com>
+	<4F86F6BF.60406@jst.sm>
+	<CAKLmikNtFyx9tDnOAzkMuEmSOOnhVHaLvKpf8q68Fd8qes2XYA@mail.gmail.com>
+	<20120413055947.GH7664@lunn.ch>
+Date: Mon, 16 Apr 2012 12:25:42 +0200
+Message-ID: <CAKLmikPJBmk=Xoom0a1D2OFfx6o8OtSk7D4PdT3TDXDx9iyO1A@mail.gmail.com>
+From: Mitar <mmitar@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Migration to Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,40 +26,45 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Jernej Kos <kostko@unimatrix-one.org>
 
-On Sat, Apr 14, 2012 at 07:12:46PM +0300, NorthPole wrote:
-> Hi Andrew
-> 
-> I googled bit and didnt find anything significant also I posted on
-> kernel newbies mailing list and they couldnt help me.
-> 
-> SInce i'm completely new to kernel dev could you suggest a better way
-> to look or a mailing list where I should ask?
+Hi!
 
-Hi Spyros
+I have a feature request.
 
-First off, this is supposed to be Summer of code, not Spring of
-code. So you have plenty of time.
+On Fri, Apr 13, 2012 at 7:59 AM, Andrew Lunn <andrew@lunn.ch> wrote:
+> 2) BATMAN is not a daemon. Its a kernel module. Hence it cannot play
+> =C2=A0 around with routes, even if it wanted to. Also, adding/removing
+> =C2=A0 routes is policy, and the Linux/Unix view of the world is that use=
+r
+> =C2=A0 space is responsible for deciding policy.
 
-I would probably look at this backwards around. You say on the wiki
-page that wifi uses TLVs. So look in the kernel code for 802.11 and
-see how IE are handled.
+I have problems with an idea of running another routing protocol on
+top of Batman. I think this is creates unnecessary additional
+bandwidth consumption:
+1) routing protocol has to find which nodes are reachable
+2) routing protocol has to exchange information about announced routes
 
-What other network protocols use TLVs? I know ATM signaling does, so
-maybe look at the ATM code. However, ATM signaling is quite complex,
-so maybe it is in user space?
+But 1) Batman already knows. So we could have a netlink protocol where
+user-land daemon could subscribe to events and get for example two
+events: "node reachable" and "node unreachable". Then it can do some
+user-land mingling. :-)
 
-What about protocols like Bluetooth? Frame relay? X.25, ISDN?
+And for 2), Batman could allow a general key/value additional
+information to be announced by nodes. From its point of view that
+information can be anything.
 
-At the moment, you should just be getting an idea where are TLVs used
-in the kernel. Once you know that you can decide what to do next...
+And the in our case we could add to each node information which IP it
+has and which subnets it has behind. This information would then be
+announced to other nodes. And then we could run a simple daemon on
+other nodes which would listen to netlink events and once  a node is
+reachable, read that information and setup necessary routes.
 
-Maybe there is no code?
-Maybe there is lots of different implementations?
-Maybe there is lots of different implementations, but no generic code?
+I like the idea because it allows general hooks into Batman
+reachability awareness. So no duplication of this is necessary. Also,
+Batman already exchanges information, so we could just allow custom
+additional information from nodes to be exchanged. Maybe even stored
+in that DHT you have.
 
-Maybe, it makes sense to have one generic library in the kernel
-and modify all the current code to use this library?
 
-    Andrew
-
+Mitar
