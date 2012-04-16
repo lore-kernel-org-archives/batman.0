@@ -1,16 +1,15 @@
-Return-Path: <mmitar@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20120416124005.GE24938@ritirata.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 16 Apr 2012 20:28:03 +0200
 References: <CAKLmikNxzz_zNwui4xejaAgvXXsHrTUGCPG+UT-cSH5iP3cEJw@mail.gmail.com>
-	<201204161237.37008.lindner_marek@yahoo.de>
-	<CAKLmikMRRkrvB3Kgga51hJ=GygEto_KqLCp9TwTPseyK4gJsOw@mail.gmail.com>
-	<201204161258.04262.lindner_marek@yahoo.de>
-	<CAKLmikPWjXYVqQkJLK=j9DB_1+cNjLsrZ3j9kHGf6SiBbusOvw@mail.gmail.com>
 	<20120416124005.GE24938@ritirata.org>
-Date: Mon, 16 Apr 2012 15:59:11 +0200
-Message-ID: <CAKLmikOLXsv_JmeM73cFq09LPZGrOgd_rWd158c7pXpAFKcimg@mail.gmail.com>
-From: Mitar <mmitar@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	<CAKLmikOLXsv_JmeM73cFq09LPZGrOgd_rWd158c7pXpAFKcimg@mail.gmail.com>
+In-Reply-To: <CAKLmikOLXsv_JmeM73cFq09LPZGrOgd_rWd158c7pXpAFKcimg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201204162028.03631.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Migration to Batman
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,21 +24,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi!
+On Monday, April 16, 2012 15:59:11 Mitar wrote:
+> But also general subnet routing so that we do not need to bridge home
+> networks into the mesh, but route to them.
+> 
+> So, about my question from before about other routing protocols, like
+> OSPF, it probably still consumes bandwidth to detect node
+> availability, no?
 
-On Mon, Apr 16, 2012 at 2:40 PM, Antonio Quartulli <ordex@autistici.org> wrote:
-> you
-> can use this event to understand whether you have or not a default route in the
-> network (assuming that I correctly understood your scenario).
+Unless somebody shows up with real life experience regarding the routing 
+daemons you consider using you have to test it yourself. 
+I am sure there are mechanisms as network failures were not a new invention 
+that came with wifi. ;)
 
-Yes. This is one feature we need. To detect gateway availability.
-
-But also general subnet routing so that we do not need to bridge home
-networks into the mesh, but route to them.
-
-So, about my question from before about other routing protocols, like
-OSPF, it probably still consumes bandwidth to detect node
-availability, no?
-
-
-Mitar
+Cheers,
+Marek
