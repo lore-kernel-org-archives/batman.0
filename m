@@ -1,14 +1,8 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 17 Apr 2012 14:28:32 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120417122830.GB3377@ritirata.org>
-References: <CAKLmikMcCspLyMs_ub==LZ-rUtxo2QjT650s8atwp2nUnYD-vQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="8P1HSweYDcXXzwPJ"
-Content-Disposition: inline
-In-Reply-To: <CAKLmikMcCspLyMs_ub==LZ-rUtxo2QjT650s8atwp2nUnYD-vQ@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Batman as a kernel module
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 17 Apr 2012 14:29:13 +0200
+Message-Id: <1334665753-347-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix types in README.external
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,53 +14,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ README.external |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
---8P1HSweYDcXXzwPJ
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/README.external b/README.external
+index 874ee7f..787172e 100644
+--- a/README.external
++++ b/README.external
+@@ -21,7 +21,7 @@ if you want to compile against some other kernel, use:
+ 
+ # make KERNELPATH=/path/to/kernel
+ 
+-if you wont to install this module:
++if you want to install this module:
+ 
+ # sudo make install
+ 
+@@ -29,7 +29,7 @@ CONFIGURATION
+ -------------
+ 
+ The     in-kernel    module    can    be    configured    through
+-menuconfig.   When  compiling outside  of the kernel,  tree it is
++menuconfig.   When  compiling outside  of the kernel tree,  it is
+ necessary  to  configure  it  using    the   make  options.  Each
+ option  can be set to to y (enabled), n (disabled) or m (build as
+ module).  Available  options  and  their    possible   values are
+-- 
+1.7.9.1
 
-On Tue, Apr 17, 2012 at 02:05:40PM +0200, Mitar wrote:
-> Hi!
->=20
-> What are the reasons (except for performance) of Batman being a kernel
-> module? Is there a way for running it in user-space? We have some
-> servers where we get donated bandwidth, but as people are running also
-> other stuff on those servers they do not really like adding kernel
-> modules and probably even rebooting servers for upgrading to newer
-> Batman versions.
-
-Why not using the out-of-the-tree batman-adv package? You can compile the l=
-atest
-batman-adv module against the running kernel (it must be >=3D2.6.29). You c=
-an find
-more details in the README.external file that you will find in the batman-a=
-dv
-out-of-the-tree package.
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---8P1HSweYDcXXzwPJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPjWHuAAoJEFMQTLzJFOZFK48H/324/tEX4TNWDRgzvdZTXKVQ
-+9wjp572N0K0hrFS3xbEo+Uk7bH2wrqEuTybF5fzOk1wKbPcLnqgf2hpQ6jQiGoF
-6KV/DyO1n7W4XV/6aENt6q1j5AflSvBqNWgytTP+PN2DjHZusXI9ZS568veelLJD
-Y8bpqfWpcg5BEPiaJM/K9zvqpGx6TSm0LaHYaaHvi9C2HjtehLkYkT6P+yw6Zj0P
-PKnPciXv0UXeNx85ybdbAEH911yg0MbnuV9kxGNRkfA218r9Tc1xx+nsuS7zzqV1
-VYotq1BC4rgIkiGjTNK1iW5JvaaWJqxJ+bE/UWzX7nJeI2rXzYwrZ/LgfP3nRVM=
-=C+kI
------END PGP SIGNATURE-----
-
---8P1HSweYDcXXzwPJ--
