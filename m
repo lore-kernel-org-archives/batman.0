@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 17 Apr 2012 13:58:17 +0200
-Message-Id: <1334663907-22725-2-git-send-email-ordex@autistici.org>
+Date: Tue, 17 Apr 2012 13:58:18 +0200
+Message-Id: <1334663907-22725-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1334663907-22725-1-git-send-email-ordex@autistici.org>
 References: <1334663907-22725-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 01/11] batman-adv: move ogm initialization
-	into the proper function
+Subject: [B.A.T.M.A.N.] [PATCH 02/11] batman-adv: refactoring API: find
+	generalized name for bat_ogm_init callback
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,35 +25,75 @@ From: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/hard-interface.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ net/batman-adv/bat_iv_ogm.c     |    4 ++--
+ net/batman-adv/hard-interface.c |    2 +-
+ net/batman-adv/main.c           |    2 +-
+ net/batman-adv/types.h          |    4 ++--
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index fab1071..117b831 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -30,7 +30,7 @@
+ #include "send.h"
+ #include "bat_algo.h"
+ 
+-static void bat_iv_ogm_init(struct hard_iface *hard_iface)
++static void bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
+ {
+ 	struct batman_ogm_packet *batman_ogm_packet;
+ 
+@@ -1169,7 +1169,7 @@ static void bat_iv_ogm_receive(struct hard_iface *if_incoming,
+ 
+ static struct bat_algo_ops batman_iv __read_mostly = {
+ 	.name = "BATMAN IV",
+-	.bat_ogm_init = bat_iv_ogm_init,
++	.bat_iface_enable = bat_iv_ogm_iface_enable,
+ 	.bat_ogm_init_primary = bat_iv_ogm_init_primary,
+ 	.bat_ogm_update_mac = bat_iv_ogm_update_mac,
+ 	.bat_ogm_schedule = bat_iv_ogm_schedule,
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 8c4b790..f152007 100644
+index f152007..4d9b85d 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -332,7 +332,6 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
- 	hard_iface->batman_adv_ptype.dev = hard_iface->net_dev;
- 	dev_add_pack(&hard_iface->batman_adv_ptype);
+@@ -312,7 +312,7 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
+ 	hard_iface->soft_iface = soft_iface;
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
  
--	atomic_set(&hard_iface->seqno, 1);
- 	atomic_set(&hard_iface->frag_seqno, 1);
- 	bat_info(hard_iface->soft_iface, "Adding interface: %s\n",
- 		 hard_iface->net_dev->name);
-@@ -451,6 +450,13 @@ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
- 	check_known_mac_addr(hard_iface->net_dev);
- 	list_add_tail_rcu(&hard_iface->list, &hardif_list);
+-	bat_priv->bat_algo_ops->bat_ogm_init(hard_iface);
++	bat_priv->bat_algo_ops->bat_iface_enable(hard_iface);
  
-+	/**
-+	 * This can't be called via a bat_priv callback because
-+	 * we have no bat_priv yet.
-+	 */
-+	atomic_set(&hard_iface->seqno, 1);
-+	hard_iface->packet_buff = NULL;
-+
- 	return hard_iface;
+ 	if (!hard_iface->packet_buff) {
+ 		bat_err(hard_iface->soft_iface,
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index e67ca96..ca8f395 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -208,7 +208,7 @@ int bat_algo_register(struct bat_algo_ops *bat_algo_ops)
+ 	}
  
- free_if:
+ 	/* all algorithms must implement all ops (for now) */
+-	if (!bat_algo_ops->bat_ogm_init ||
++	if (!bat_algo_ops->bat_iface_enable ||
+ 	    !bat_algo_ops->bat_ogm_init_primary ||
+ 	    !bat_algo_ops->bat_ogm_update_mac ||
+ 	    !bat_algo_ops->bat_ogm_schedule ||
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index a5b1a63..4b92248 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -377,8 +377,8 @@ struct recvlist_node {
+ struct bat_algo_ops {
+ 	struct hlist_node list;
+ 	char *name;
+-	/* init OGM when hard-interface is enabled */
+-	void (*bat_ogm_init)(struct hard_iface *hard_iface);
++	/* init routing info when hard-interface is enabled */
++	void (*bat_iface_enable)(struct hard_iface *hard_iface);
+ 	/* init primary OGM when primary interface is selected */
+ 	void (*bat_ogm_init_primary)(struct hard_iface *hard_iface);
+ 	/* init mac addresses of the OGM belonging to this hard-interface */
 -- 
 1.7.9.4
 
