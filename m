@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 17 Apr 2012 13:58:24 +0200
-Message-Id: <1334663907-22725-9-git-send-email-ordex@autistici.org>
+Date: Tue, 17 Apr 2012 13:58:25 +0200
+Message-Id: <1334663907-22725-10-git-send-email-ordex@autistici.org>
 In-Reply-To: <1334663907-22725-1-git-send-email-ordex@autistici.org>
 References: <1334663907-22725-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 08/11] batman-adv: mark existing ogm
-	variables as batman iv
+Subject: [B.A.T.M.A.N.] [PATCH 09/11] batman-adv: use ETH_HLEN instead of
+	sizeof(struct ethhdr)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,78 +18,239 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+Instead of using sizeof(struct ethhdr) it is strongly recommended to use the
+kernel macro ETH_HLEN. This patch substitute each occurrence of the former
+expressione with the latter one.
 
-The coming protocol changes also will have a part called "OGM". That
-makes it necessary to introduce a distinction in the code base.
-
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_iv_ogm.c     |    4 ++--
- net/batman-adv/hard-interface.c |    2 +-
- net/batman-adv/packet.h         |    4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ net/batman-adv/bat_iv_ogm.c            |    7 +++----
+ net/batman-adv/bridge_loop_avoidance.c |   10 ++++------
+ net/batman-adv/hard-interface.c        |    3 +--
+ net/batman-adv/icmp_socket.c           |    4 ++--
+ net/batman-adv/routing.c               |    8 ++++----
+ net/batman-adv/send.c                  |    2 +-
+ net/batman-adv/soft-interface.c        |    2 +-
+ net/batman-adv/types.h                 |    2 +-
+ net/batman-adv/vis.c                   |    8 ++++----
+ 9 files changed, 21 insertions(+), 25 deletions(-)
 
 diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 2e2029c..1d365e2 100644
+index 1d365e2..5bb35df 100644
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -47,7 +47,7 @@ static int bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
+@@ -355,10 +355,9 @@ static void bat_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 	if ((atomic_read(&bat_priv->aggregated_ogms)) &&
+ 	    (packet_len < MAX_AGGREGATION_BYTES))
+ 		forw_packet_aggr->skb = dev_alloc_skb(MAX_AGGREGATION_BYTES +
+-						      sizeof(struct ethhdr));
++						      ETH_HLEN);
+ 	else
+-		forw_packet_aggr->skb = dev_alloc_skb(packet_len +
+-						      sizeof(struct ethhdr));
++		forw_packet_aggr->skb = dev_alloc_skb(packet_len + ETH_HLEN);
+ 
+ 	if (!forw_packet_aggr->skb) {
+ 		if (!own_packet)
+@@ -366,7 +365,7 @@ static void bat_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 		kfree(forw_packet_aggr);
+ 		goto out;
+ 	}
+-	skb_reserve(forw_packet_aggr->skb, sizeof(struct ethhdr));
++	skb_reserve(forw_packet_aggr->skb, ETH_HLEN);
+ 
+ 	INIT_HLIST_NODE(&forw_packet_aggr->list);
+ 
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 1cf18ac..6f188f1 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -290,9 +290,7 @@ static void bla_send_claim(struct bat_priv *bat_priv, uint8_t *mac,
  		goto out;
  
- 	batman_ogm_packet = (struct batman_ogm_packet *)hard_iface->packet_buff;
--	batman_ogm_packet->header.packet_type = BAT_OGM;
-+	batman_ogm_packet->header.packet_type = BAT_IV_OGM;
- 	batman_ogm_packet->header.version = COMPAT_VERSION;
- 	batman_ogm_packet->header.ttl = 2;
- 	batman_ogm_packet->flags = NO_FLAGS;
-@@ -934,7 +934,7 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
- 	 * packet in an aggregation.  Here we expect that the padding
- 	 * is always zero (or not 0x01)
- 	 */
--	if (batman_ogm_packet->header.packet_type != BAT_OGM)
-+	if (batman_ogm_packet->header.packet_type != BAT_IV_OGM)
- 		return;
+ 	ethhdr = (struct ethhdr *)skb->data;
+-	hw_src = (uint8_t *)ethhdr +
+-		 sizeof(struct ethhdr) +
+-		 sizeof(struct arphdr);
++	hw_src = (uint8_t *)ethhdr + ETH_HLEN + sizeof(struct arphdr);
  
- 	/* could be changed by schedule_own_packet() */
+ 	/* now we pretend that the client would have sent this ... */
+ 	switch (claimtype) {
+@@ -340,7 +338,7 @@ static void bla_send_claim(struct bat_priv *bat_priv, uint8_t *mac,
+ 	skb_reset_mac_header(skb);
+ 	skb->protocol = eth_type_trans(skb, soft_iface);
+ 	bat_priv->stats.rx_packets++;
+-	bat_priv->stats.rx_bytes += skb->len + sizeof(struct ethhdr);
++	bat_priv->stats.rx_bytes += skb->len + ETH_HLEN;
+ 	soft_iface->last_rx = jiffies;
+ 
+ 	netif_rx(skb);
+@@ -845,7 +843,7 @@ static int bla_process_claim(struct bat_priv *bat_priv,
+ 		headlen = sizeof(*vhdr);
+ 	} else {
+ 		proto = ntohs(ethhdr->h_proto);
+-		headlen = sizeof(*ethhdr);
++		headlen = ETH_HLEN;
+ 	}
+ 
+ 	if (proto != ETH_P_ARP)
+@@ -1303,7 +1301,7 @@ int bla_is_backbone_gw(struct sk_buff *skb,
+ 		return 0;
+ 
+ 	/* first, find out the vid. */
+-	if (!pskb_may_pull(skb, hdr_size + sizeof(struct ethhdr)))
++	if (!pskb_may_pull(skb, hdr_size + ETH_HLEN))
+ 		return 0;
+ 
+ 	ethhdr = (struct ethhdr *)(((uint8_t *)skb->data) + hdr_size);
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 75a555b..e8c5da3 100644
+index e8c5da3..47c79d7 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -604,7 +604,7 @@ static int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+@@ -574,8 +574,7 @@ static int batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 		goto err_free;
  
- 	switch (batman_ogm_packet->header.packet_type) {
- 		/* batman originator packet */
--	case BAT_OGM:
-+	case BAT_IV_OGM:
- 		ret = recv_bat_ogm_packet(skb, hard_iface);
- 		break;
+ 	/* expect a valid ethernet header here. */
+-	if (unlikely(skb->mac_len != sizeof(struct ethhdr) ||
+-		     !skb_mac_header(skb)))
++	if (unlikely(skb->mac_len != ETH_HLEN || !skb_mac_header(skb)))
+ 		goto err_free;
  
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index 59dec0a..f54969c 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -25,7 +25,7 @@
- #define ETH_P_BATMAN  0x4305	/* unofficial/not registered Ethertype */
+ 	if (!hard_iface->soft_iface)
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index b87518e..2e98a57 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -175,13 +175,13 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 	if (len >= sizeof(struct icmp_packet_rr))
+ 		packet_len = sizeof(struct icmp_packet_rr);
  
- enum bat_packettype {
--	BAT_OGM		 = 0x01,
-+	BAT_IV_OGM	 = 0x01,
- 	BAT_ICMP	 = 0x02,
- 	BAT_UNICAST	 = 0x03,
- 	BAT_BCAST	 = 0x04,
-@@ -38,7 +38,7 @@ enum bat_packettype {
- /* this file is included by batctl which needs these defines */
- #define COMPAT_VERSION 14
+-	skb = dev_alloc_skb(packet_len + sizeof(struct ethhdr));
++	skb = dev_alloc_skb(packet_len + ETH_HLEN);
+ 	if (!skb) {
+ 		len = -ENOMEM;
+ 		goto out;
+ 	}
  
--enum batman_flags {
-+enum batman_iv_flags {
- 	PRIMARIES_FIRST_HOP = 1 << 4,
- 	VIS_SERVER	    = 1 << 5,
- 	DIRECTLINK	    = 1 << 6
+-	skb_reserve(skb, sizeof(struct ethhdr));
++	skb_reserve(skb, ETH_HLEN);
+ 	icmp_packet = (struct icmp_packet_rr *)skb_put(skb, packet_len);
+ 
+ 	if (copy_from_user(icmp_packet, buff, packet_len)) {
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index ac13a6a..ff56086 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -313,7 +313,7 @@ static int recv_my_icmp_packet(struct bat_priv *bat_priv,
+ 		goto out;
+ 
+ 	/* create a copy of the skb, if needed, to modify it. */
+-	if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
++	if (skb_cow(skb, ETH_HLEN) < 0)
+ 		goto out;
+ 
+ 	icmp_packet = (struct icmp_packet_rr *)skb->data;
+@@ -368,7 +368,7 @@ static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
+ 		goto out;
+ 
+ 	/* create a copy of the skb, if needed, to modify it. */
+-	if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
++	if (skb_cow(skb, ETH_HLEN) < 0)
+ 		goto out;
+ 
+ 	icmp_packet = (struct icmp_packet *)skb->data;
+@@ -454,7 +454,7 @@ int recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		goto out;
+ 
+ 	/* create a copy of the skb, if needed, to modify it. */
+-	if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
++	if (skb_cow(skb, ETH_HLEN) < 0)
+ 		goto out;
+ 
+ 	icmp_packet = (struct icmp_packet_rr *)skb->data;
+@@ -841,7 +841,7 @@ static int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		goto out;
+ 
+ 	/* create a copy of the skb, if needed, to modify it. */
+-	if (skb_cow(skb, sizeof(struct ethhdr)) < 0)
++	if (skb_cow(skb, ETH_HLEN) < 0)
+ 		goto out;
+ 
+ 	unicast_packet = (struct unicast_packet *)skb->data;
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index b5f078c..7c66b61 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -51,7 +51,7 @@ int send_skb_packet(struct sk_buff *skb, struct hard_iface *hard_iface,
+ 	}
+ 
+ 	/* push to the ethernet header. */
+-	if (my_skb_head_push(skb, sizeof(*ethhdr)) < 0)
++	if (my_skb_head_push(skb, ETH_HLEN) < 0)
+ 		goto send_skb_err;
+ 
+ 	skb_reset_mac_header(skb);
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index efe0fba..6e2530b 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -292,7 +292,7 @@ void interface_rx(struct net_device *soft_iface,
+ /*	skb->ip_summed = CHECKSUM_UNNECESSARY;*/
+ 
+ 	bat_priv->stats.rx_packets++;
+-	bat_priv->stats.rx_bytes += skb->len + sizeof(struct ethhdr);
++	bat_priv->stats.rx_bytes += skb->len + ETH_HLEN;
+ 
+ 	soft_iface->last_rx = jiffies;
+ 
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 4d93aad..2f4848b 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -27,7 +27,7 @@
+ #include "packet.h"
+ #include "bitarray.h"
+ 
+-#define BAT_HEADER_LEN (sizeof(struct ethhdr) + \
++#define BAT_HEADER_LEN (ETH_HLEN + \
+ 	((sizeof(struct unicast_packet) > sizeof(struct bcast_packet) ? \
+ 	 sizeof(struct unicast_packet) : \
+ 	 sizeof(struct bcast_packet))))
+diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
+index c4a5b8c..cec216f 100644
+--- a/net/batman-adv/vis.c
++++ b/net/batman-adv/vis.c
+@@ -434,12 +434,12 @@ static struct vis_info *add_packet(struct bat_priv *bat_priv,
+ 		return NULL;
+ 
+ 	info->skb_packet = dev_alloc_skb(sizeof(*packet) + vis_info_len +
+-					 sizeof(struct ethhdr));
++					 ETH_HLEN);
+ 	if (!info->skb_packet) {
+ 		kfree(info);
+ 		return NULL;
+ 	}
+-	skb_reserve(info->skb_packet, sizeof(struct ethhdr));
++	skb_reserve(info->skb_packet, ETH_HLEN);
+ 	packet = (struct vis_packet *)skb_put(info->skb_packet, sizeof(*packet)
+ 					      + vis_info_len);
+ 
+@@ -894,11 +894,11 @@ int vis_init(struct bat_priv *bat_priv)
+ 
+ 	bat_priv->my_vis_info->skb_packet = dev_alloc_skb(sizeof(*packet) +
+ 							  MAX_VIS_PACKET_SIZE +
+-							 sizeof(struct ethhdr));
++							  ETH_HLEN);
+ 	if (!bat_priv->my_vis_info->skb_packet)
+ 		goto free_info;
+ 
+-	skb_reserve(bat_priv->my_vis_info->skb_packet, sizeof(struct ethhdr));
++	skb_reserve(bat_priv->my_vis_info->skb_packet, ETH_HLEN);
+ 	packet = (struct vis_packet *)skb_put(bat_priv->my_vis_info->skb_packet,
+ 					      sizeof(*packet));
+ 
 -- 
 1.7.9.4
 
