@@ -1,11 +1,12 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 18 Apr 2012 00:27:22 +0200
-Message-Id: <1334701645-25862-3-git-send-email-ordex@autistici.org>
+Date: Wed, 18 Apr 2012 00:27:23 +0200
+Message-Id: <1334701645-25862-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1334701645-25862-1-git-send-email-ordex@autistici.org>
 References: <1334701645-25862-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: clear ADD+DEL (and
-	viceversa) events in the same orig-interval
+Subject: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: let
+	tt_global_entry_has_orig() return the orig_entry or NULL
+	instead of 1 or 0 only
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,78 +20,63 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-During an OGM-interval (time between two different OGM sendings) the same client
-could roam away and then roam back to us. In this case the node would add two
-events to the events list (that is going to be sent appended to the next OGM). A
-DEL one and an ADD one. Obviously they will only increase the overhead (either in
-the air and on the receiver side) and eventually trigger wrong states/events
-without producing any real effect.
-
-For this reason we can safely delete any ADD event with its related DEL one.
+Instead of returning only 1 or 0 this function has to return the found
+orig_entry (if any). In this way, operations that have to to modify the
+found orig_entry structure will not need to reiterate over the list again to
+find the wanted node.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- translation-table.c |   35 ++++++++++++++++++++++++++++++-----
- 1 file changed, 30 insertions(+), 5 deletions(-)
+ translation-table.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index 88e4c8e..e02fa90 100644
+index e02fa90..cd6c2dd 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -154,23 +154,48 @@ static void tt_orig_list_entry_free_ref(struct tt_orig_list_entry *orig_entry)
- static void tt_local_event(struct bat_priv *bat_priv, const uint8_t *addr,
- 			   uint8_t flags)
- {
--	struct tt_change_node *tt_change_node;
-+	struct tt_change_node *tt_change_node, *entry, *safe;
-+	bool event_removed = false;
- 
- 	tt_change_node = kmalloc(sizeof(*tt_change_node), GFP_ATOMIC);
--
- 	if (!tt_change_node)
- 		return;
--
- 	tt_change_node->change.flags = flags;
- 	memcpy(tt_change_node->change.addr, addr, ETH_ALEN);
- 
-+	/* check for ADD+DEL or DEL+ADD events */
- 	spin_lock_bh(&bat_priv->tt_changes_list_lock);
-+	list_for_each_entry_safe(entry, safe, &bat_priv->tt_changes_list,
-+				 list) {
-+		if (!compare_eth(entry->change.addr, addr))
-+			continue;
-+		if (!(!(flags & TT_CLIENT_DEL) && /* ADD op */
-+		      entry->change.flags & TT_CLIENT_DEL) &&
-+		    !(flags & TT_CLIENT_DEL &&
-+		      !(entry->change.flags & TT_CLIENT_DEL))) /* ADD op */
-+			continue;
-+		/* DEL+ADD in the same orig interval have no effect and can be
-+		 * removed to avoid silly behaviour on the receiver side. The
-+		 * other way around (ADD+DEL) can happen in case of roaming of
-+		 * a client still in the NEW state. Roaming of NEW clients is
-+		 * now possible due to automatically recognition of "temporary"
-+		 * clients */
-+		list_del(&entry->list);
-+		kfree(entry);
-+		event_removed = true;
-+		goto unlock;
-+	}
-+
- 	/* track the change in the OGMinterval list */
- 	list_add_tail(&tt_change_node->list, &bat_priv->tt_changes_list);
--	atomic_inc(&bat_priv->tt_local_changes);
-+
-+unlock:
- 	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
- 
--	atomic_set(&bat_priv->tt_ogm_append_cnt, 0);
-+	if (event_removed)
-+		atomic_dec(&bat_priv->tt_local_changes);
-+	else
-+		atomic_inc(&bat_priv->tt_local_changes);
+@@ -543,26 +543,26 @@ static void tt_changes_list_free(struct bat_priv *bat_priv)
  }
  
- int tt_len(int changes_num)
+ /* find out if an orig_node is already in the list of a tt_global_entry.
+- * returns 1 if found, 0 otherwise
+- */
+-static bool tt_global_entry_has_orig(const struct tt_global_entry *entry,
+-				     const struct orig_node *orig_node)
++ * returns NULL if not found, the pointer to the orig_entry otherwise */
++static struct tt_orig_list_entry *tt_global_entry_has_orig(
++					const struct tt_global_entry *entry,
++					const struct orig_node *orig_node)
+ {
+ 	struct tt_orig_list_entry *tmp_orig_entry;
+ 	const struct hlist_head *head;
+ 	struct hlist_node *node;
+-	bool found = false;
++	struct tt_orig_list_entry *orig_entry = NULL;
+ 
+ 	rcu_read_lock();
+ 	head = &entry->orig_list;
+ 	hlist_for_each_entry_rcu(tmp_orig_entry, node, head, list) {
+ 		if (tmp_orig_entry->orig_node == orig_node) {
+-			found = true;
++			orig_entry = tmp_orig_entry;
+ 			break;
+ 		}
+ 	}
+ 	rcu_read_unlock();
+-	return found;
++	return orig_entry;
+ }
+ 
+ static void tt_global_add_orig_entry(struct tt_global_entry *tt_global_entry,
+@@ -1262,7 +1262,7 @@ static int tt_global_valid_entry(const void *entry_ptr, const void *data_ptr)
+ 	tt_global_entry = container_of(tt_common_entry, struct tt_global_entry,
+ 				       common);
+ 
+-	return tt_global_entry_has_orig(tt_global_entry, orig_node);
++	return (size_t)tt_global_entry_has_orig(tt_global_entry, orig_node);
+ }
+ 
+ static struct sk_buff *tt_response_fill_table(uint16_t tt_len, uint8_t ttvn,
 -- 
 1.7.9.4
 
