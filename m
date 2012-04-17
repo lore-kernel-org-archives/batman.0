@@ -1,6 +1,6 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 17 Apr 2012 12:33:31 +0200
+Date: Tue, 17 Apr 2012 12:35:05 +0200
 References: <1334658294-2413-1-git-send-email-ordex@autistici.org>
 	<1334658294-2413-2-git-send-email-ordex@autistici.org>
 In-Reply-To: <1334658294-2413-2-git-send-email-ordex@autistici.org>
@@ -8,7 +8,7 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201204171233.31979.lindner_marek@yahoo.de>
+Message-Id: <201204171235.05470.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: introduce a boolean
 	switch to enable/disable DAT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -50,25 +50,8 @@ On Tuesday, April 17, 2012 12:24:53 Antonio Quartulli wrote:
 > +
 > +       in_dev_put(in_dev);
 > +}
-> +
-> +void dat_sysfs_change(struct net_device *soft_iface)
-> +{
-> +       struct bat_priv *bat_priv = netdev_priv(soft_iface);
-> +
-> +       if (!bat_priv)
-> +               return;
-> +
-> +       /* increase or decrease the ARP timeout */
-> +       arp_change_timeout(soft_iface,
-> +                          atomic_read(&bat_priv->distributed_arp_table));
-> +}
 
-AFAIK there is no check whether the received value actually changes something 
-but arp_change_timeout() implicitely assumes so. I guess the following will 
-break the timeouts:
-
-echo 0 > /sys/class/net/bat0/mesh/distributed_arp_table
-echo 0 > /sys/class/net/bat0/mesh/distributed_arp_table
+One more thing: Are we never going to release the in_dev ?
 
 Regards,
 Marek
