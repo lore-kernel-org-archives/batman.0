@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 17 Apr 2012 13:23:55 +0200
-References: <1334661513-2261-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1334661513-2261-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201204171323.56144.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use static inline
-	functions instead of foo(...)
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 17 Apr 2012 13:58:16 +0200
+Message-Id: <1334663907-22725-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-04-17
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,14 +14,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, April 17, 2012 13:18:33 Antonio Quartulli wrote:
-> When the DAT component is not built, instead of having fake function like
-> foo(...) we must use a static inline function in order to allow the
-> compiler to check the number of the type of the passed arguments
+Hello,
 
-Applied in revision a93ba67.
+here are a set of changes I would like to propose for next-next/3.5.
+Most of the patches are simple cleanups and small fixes. The only important
+change is patch 3 which changes the Originator Message sequence number starting
+value from 0 to a random generated value.
 
-Thanks,
-Marek
+Thank you,
+	Antonio
+
+The following changes since commit ecffe75f934b4e3c5301fe5db278068e0efb0d6b:
+
+  hippi: fix printk format in rrunner.c (2012-04-16 23:48:38 -0400)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 520ada6df73ab595f7d51378b9df937371f13460:
+
+  batman-adv: skip the window protection test when the originator has no neighbours (2012-04-17 13:29:19 +0200)
+
+----------------------------------------------------------------
+Included changes:
+* several cleanups and fixes
+* OriGinator Message seqno initial value is now random
+
+----------------------------------------------------------------
+Antonio Quartulli (3):
+      batman-adv: use ETH_HLEN instead of sizeof(struct ethhdr)
+      batman-adv: print OGM seq numbers as unsigned long
+      batman-adv: skip the window protection test when the originator has no neighbours
+
+Marek Lindner (8):
+      batman-adv: move ogm initialization into the proper function
+      batman-adv: refactoring API: find generalized name for bat_ogm_init callback
+      batman-adv: randomize initial seqno to avoid collision
+      batman-adv: add iface_disable() callback to routing API
+      batman-adv: handle routing code initialization properly
+      batman-adv: refactoring API: find generalized name for bat_ogm_init_primary callback
+      batman-adv: rename BATMAN_OGM_LEN to BATMAN_OGM_HLEN
+      batman-adv: mark existing ogm variables as batman iv
+
+ net/batman-adv/bat_iv_ogm.c            |   63 +++++++++++++++++++++-----------
+ net/batman-adv/bridge_loop_avoidance.c |   10 ++---
+ net/batman-adv/hard-interface.c        |   33 +++++++++--------
+ net/batman-adv/icmp_socket.c           |    4 +-
+ net/batman-adv/main.c                  |    5 ++-
+ net/batman-adv/packet.h                |    6 +--
+ net/batman-adv/routing.c               |   10 ++---
+ net/batman-adv/send.c                  |   14 +++----
+ net/batman-adv/soft-interface.c        |    2 +-
+ net/batman-adv/types.h                 |   12 +++---
+ net/batman-adv/vis.c                   |    8 ++--
+ 11 files changed, 95 insertions(+), 72 deletions(-)
+
