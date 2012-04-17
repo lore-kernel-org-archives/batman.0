@@ -1,8 +1,10 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 17 Apr 2012 14:29:13 +0200
-Message-Id: <1334665753-347-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix types in README.external
+Date: Tue, 17 Apr 2012 14:31:34 +0200
+Message-Id: <1334665894-647-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1334665753-347-1-git-send-email-lindner_marek@yahoo.de>
+References: <1334665753-347-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: fix typos in README.external
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,6 +21,9 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
+
+Fixing typo in the subject!
+
  README.external |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
