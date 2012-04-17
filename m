@@ -1,8 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 17 Apr 2012 13:58:16 +0200
-Message-Id: <1334663907-22725-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-04-17
+Date: Tue, 17 Apr 2012 13:58:17 +0200
+Message-Id: <1334663907-22725-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1334663907-22725-1-git-send-email-ordex@autistici.org>
+References: <1334663907-22725-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 01/11] batman-adv: move ogm initialization
+	into the proper function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,61 +18,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-Hello,
+From: Marek Lindner <lindner_marek@yahoo.de>
 
-here are a set of changes I would like to propose for next-next/3.5.
-Most of the patches are simple cleanups and small fixes. The only important
-change is patch 3 which changes the Originator Message sequence number starting
-value from 0 to a random generated value.
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/hard-interface.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Thank you,
-	Antonio
-
-The following changes since commit ecffe75f934b4e3c5301fe5db278068e0efb0d6b:
-
-  hippi: fix printk format in rrunner.c (2012-04-16 23:48:38 -0400)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
-
-for you to fetch changes up to 520ada6df73ab595f7d51378b9df937371f13460:
-
-  batman-adv: skip the window protection test when the originator has no neighbours (2012-04-17 13:29:19 +0200)
-
-----------------------------------------------------------------
-Included changes:
-* several cleanups and fixes
-* OriGinator Message seqno initial value is now random
-
-----------------------------------------------------------------
-Antonio Quartulli (3):
-      batman-adv: use ETH_HLEN instead of sizeof(struct ethhdr)
-      batman-adv: print OGM seq numbers as unsigned long
-      batman-adv: skip the window protection test when the originator has no neighbours
-
-Marek Lindner (8):
-      batman-adv: move ogm initialization into the proper function
-      batman-adv: refactoring API: find generalized name for bat_ogm_init callback
-      batman-adv: randomize initial seqno to avoid collision
-      batman-adv: add iface_disable() callback to routing API
-      batman-adv: handle routing code initialization properly
-      batman-adv: refactoring API: find generalized name for bat_ogm_init_primary callback
-      batman-adv: rename BATMAN_OGM_LEN to BATMAN_OGM_HLEN
-      batman-adv: mark existing ogm variables as batman iv
-
- net/batman-adv/bat_iv_ogm.c            |   63 +++++++++++++++++++++-----------
- net/batman-adv/bridge_loop_avoidance.c |   10 ++---
- net/batman-adv/hard-interface.c        |   33 +++++++++--------
- net/batman-adv/icmp_socket.c           |    4 +-
- net/batman-adv/main.c                  |    5 ++-
- net/batman-adv/packet.h                |    6 +--
- net/batman-adv/routing.c               |   10 ++---
- net/batman-adv/send.c                  |   14 +++----
- net/batman-adv/soft-interface.c        |    2 +-
- net/batman-adv/types.h                 |   12 +++---
- net/batman-adv/vis.c                   |    8 ++--
- 11 files changed, 95 insertions(+), 72 deletions(-)
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 8c4b790..f152007 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -332,7 +332,6 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
+ 	hard_iface->batman_adv_ptype.dev = hard_iface->net_dev;
+ 	dev_add_pack(&hard_iface->batman_adv_ptype);
+ 
+-	atomic_set(&hard_iface->seqno, 1);
+ 	atomic_set(&hard_iface->frag_seqno, 1);
+ 	bat_info(hard_iface->soft_iface, "Adding interface: %s\n",
+ 		 hard_iface->net_dev->name);
+@@ -451,6 +450,13 @@ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
+ 	check_known_mac_addr(hard_iface->net_dev);
+ 	list_add_tail_rcu(&hard_iface->list, &hardif_list);
+ 
++	/**
++	 * This can't be called via a bat_priv callback because
++	 * we have no bat_priv yet.
++	 */
++	atomic_set(&hard_iface->seqno, 1);
++	hard_iface->packet_buff = NULL;
++
+ 	return hard_iface;
+ 
+ free_if:
+-- 
+1.7.9.4
 
