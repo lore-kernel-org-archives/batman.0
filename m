@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 18 Apr 2012 12:00:03 +0200
-Message-Id: <1334743210-12338-7-git-send-email-ordex@autistici.org>
+Date: Wed, 18 Apr 2012 12:00:04 +0200
+Message-Id: <1334743210-12338-8-git-send-email-ordex@autistici.org>
 In-Reply-To: <1334743210-12338-1-git-send-email-ordex@autistici.org>
 References: <1334743210-12338-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 06/13] batman-adv: add iface_disable()
-	callback to routing API
+Subject: [B.A.T.M.A.N.] [PATCH 07/13] batman-adv: handle routing code
+	initialization properly
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,76 +25,103 @@ From: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_iv_ogm.c     |    7 +++++++
- net/batman-adv/hard-interface.c |    3 +--
- net/batman-adv/main.c           |    1 +
- net/batman-adv/types.h          |    2 ++
- 4 files changed, 11 insertions(+), 2 deletions(-)
+ net/batman-adv/bat_iv_ogm.c     |   11 ++++++++++-
+ net/batman-adv/hard-interface.c |   15 ++++++---------
+ net/batman-adv/types.h          |    2 +-
+ 3 files changed, 17 insertions(+), 11 deletions(-)
 
 diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 95bfc59..4cc66db 100644
+index 4cc66db..2714670 100644
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -52,6 +52,12 @@ static void bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
- 	batman_ogm_packet->ttvn = 0;
- }
+@@ -30,10 +30,11 @@
+ #include "send.h"
+ #include "bat_algo.h"
  
-+static void bat_iv_ogm_iface_disable(struct hard_iface *hard_iface)
-+{
-+	kfree(hard_iface->packet_buff);
-+	hard_iface->packet_buff = NULL;
-+}
-+
- static void bat_iv_ogm_init_primary(struct hard_iface *hard_iface)
+-static void bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
++static int bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
  {
  	struct batman_ogm_packet *batman_ogm_packet;
-@@ -1175,6 +1181,7 @@ static void bat_iv_ogm_receive(struct hard_iface *if_incoming,
- static struct bat_algo_ops batman_iv __read_mostly = {
- 	.name = "BATMAN IV",
- 	.bat_iface_enable = bat_iv_ogm_iface_enable,
-+	.bat_iface_disable = bat_iv_ogm_iface_disable,
- 	.bat_ogm_init_primary = bat_iv_ogm_init_primary,
- 	.bat_ogm_update_mac = bat_iv_ogm_update_mac,
- 	.bat_ogm_schedule = bat_iv_ogm_schedule,
+ 	uint32_t random_seqno;
++	int res = -1;
+ 
+ 	/* randomize initial seqno to avoid collision */
+ 	get_random_bytes(&random_seqno, sizeof(random_seqno));
+@@ -42,6 +43,9 @@ static void bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
+ 	hard_iface->packet_len = BATMAN_OGM_LEN;
+ 	hard_iface->packet_buff = kmalloc(hard_iface->packet_len, GFP_ATOMIC);
+ 
++	if (!hard_iface->packet_buff)
++		goto out;
++
+ 	batman_ogm_packet = (struct batman_ogm_packet *)hard_iface->packet_buff;
+ 	batman_ogm_packet->header.packet_type = BAT_OGM;
+ 	batman_ogm_packet->header.version = COMPAT_VERSION;
+@@ -50,6 +54,11 @@ static void bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
+ 	batman_ogm_packet->tq = TQ_MAX_VALUE;
+ 	batman_ogm_packet->tt_num_changes = 0;
+ 	batman_ogm_packet->ttvn = 0;
++
++	res = 0;
++
++out:
++	return res;
+ }
+ 
+ static void bat_iv_ogm_iface_disable(struct hard_iface *hard_iface)
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 4d9b85d..fd9715e 100644
+index fd9715e..3b391fd 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -397,8 +397,7 @@ void hardif_disable_interface(struct hard_iface *hard_iface)
- 			hardif_free_ref(new_if);
+@@ -304,22 +304,17 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
+ 	if (!softif_is_valid(soft_iface)) {
+ 		pr_err("Can't create batman mesh interface %s: already exists as regular interface\n",
+ 		       soft_iface->name);
+-		dev_put(soft_iface);
+ 		ret = -EINVAL;
+-		goto err;
++		goto err_dev;
  	}
  
--	kfree(hard_iface->packet_buff);
--	hard_iface->packet_buff = NULL;
-+	bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
- 	hard_iface->if_status = IF_NOT_IN_USE;
+ 	hard_iface->soft_iface = soft_iface;
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
  
- 	/* delete all references to this hard_iface */
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index ca8f395..a47a6ce 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -209,6 +209,7 @@ int bat_algo_register(struct bat_algo_ops *bat_algo_ops)
+-	bat_priv->bat_algo_ops->bat_iface_enable(hard_iface);
+-
+-	if (!hard_iface->packet_buff) {
+-		bat_err(hard_iface->soft_iface,
+-			"Can't add interface packet (%s): out of memory\n",
+-			hard_iface->net_dev->name);
++	ret = bat_priv->bat_algo_ops->bat_iface_enable(hard_iface);
++	if (ret < 0) {
+ 		ret = -ENOMEM;
+-		goto err;
++		goto err_dev;
+ 	}
  
- 	/* all algorithms must implement all ops (for now) */
- 	if (!bat_algo_ops->bat_iface_enable ||
-+	    !bat_algo_ops->bat_iface_disable ||
- 	    !bat_algo_ops->bat_ogm_init_primary ||
- 	    !bat_algo_ops->bat_ogm_update_mac ||
- 	    !bat_algo_ops->bat_ogm_schedule ||
+ 	hard_iface->if_num = bat_priv->num_ifaces;
+@@ -363,6 +358,8 @@ int hardif_enable_interface(struct hard_iface *hard_iface,
+ out:
+ 	return 0;
+ 
++err_dev:
++	dev_put(soft_iface);
+ err:
+ 	hardif_free_ref(hard_iface);
+ 	return ret;
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 4b92248..b034cf2 100644
+index b034cf2..dd78023 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -379,6 +379,8 @@ struct bat_algo_ops {
+@@ -378,7 +378,7 @@ struct bat_algo_ops {
+ 	struct hlist_node list;
  	char *name;
  	/* init routing info when hard-interface is enabled */
- 	void (*bat_iface_enable)(struct hard_iface *hard_iface);
-+	/* de-init routing info when hard-interface is disabled */
-+	void (*bat_iface_disable)(struct hard_iface *hard_iface);
+-	void (*bat_iface_enable)(struct hard_iface *hard_iface);
++	int (*bat_iface_enable)(struct hard_iface *hard_iface);
+ 	/* de-init routing info when hard-interface is disabled */
+ 	void (*bat_iface_disable)(struct hard_iface *hard_iface);
  	/* init primary OGM when primary interface is selected */
- 	void (*bat_ogm_init_primary)(struct hard_iface *hard_iface);
- 	/* init mac addresses of the OGM belonging to this hard-interface */
 -- 
 1.7.9.4
 
