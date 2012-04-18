@@ -1,16 +1,17 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 18 Apr 2012 09:01:35 +0200
+Date: Wed, 18 Apr 2012 09:24:50 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120418070134.GD27966@ritirata.org>
+Message-ID: <20120418072449.GE27966@ritirata.org>
 References: <1334663907-22725-1-git-send-email-ordex@autistici.org>
 	<1334663907-22725-11-git-send-email-ordex@autistici.org>
 	<20120417.224746.802445483718191876.davem@davemloft.net>
 	<20120418064659.GC27966@ritirata.org>
+	<20120418070134.GD27966@ritirata.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zS7rBR6csb6tI2e1"
+	protocol="application/pgp-signature"; boundary="C94crkcyjafcjHxo"
 Content-Disposition: inline
-In-Reply-To: <20120418064659.GC27966@ritirata.org>
+In-Reply-To: <20120418070134.GD27966@ritirata.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 10/11] batman-adv: print OGM seq numbers
  as unsigned long
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,43 +29,48 @@ To: David Miller <davem@davemloft.net>
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 
---zS7rBR6csb6tI2e1
+--C94crkcyjafcjHxo
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 18, 2012 at 08:47:00AM +0200, Antonio Quartulli wrote:
-> On Tue, Apr 17, 2012 at 10:47:46 -0400, David Miller wrote:
-> > From: Antonio Quartulli <ordex@autistici.org>
-> > Date: Tue, 17 Apr 2012 13:58:26 +0200
-> >=20
-> > > OGM sequence numbers are declared as uint32_t and so they have to pri=
-nted
-> > > using %u instead of %d in order to avoid wrong representations.
+On Wed, Apr 18, 2012 at 09:01:35AM +0200, Antonio Quartulli wrote:
+> On Wed, Apr 18, 2012 at 08:47:00AM +0200, Antonio Quartulli wrote:
+> > On Tue, Apr 17, 2012 at 10:47:46 -0400, David Miller wrote:
+> > > From: Antonio Quartulli <ordex@autistici.org>
+> > > Date: Tue, 17 Apr 2012 13:58:26 +0200
 > > >=20
-> > > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> >=20
-> > Fix this commit message subject, "%u" is "unsigned int" not
-> > "unsigned long"
-> >=20
-> > "unsigned long" would be "%lu"
+> > > > OGM sequence numbers are declared as uint32_t and so they have to p=
+rinted
+> > > > using %u instead of %d in order to avoid wrong representations.
+> > > >=20
+> > > > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> > >=20
+> > > Fix this commit message subject, "%u" is "unsigned int" not
+> > > "unsigned long"
+> > >=20
+> > > "unsigned long" would be "%lu"
+>=20
+> There is a problem here. On my machine (x86_64) I have:
+>=20
+> typedef unsigned int __u32;
+> typedef         __u32           uint32_t;
+>=20
+>=20
+> So I should use %u to print my uint32_t variable (as I reported in my com=
+mit
+> message).
+>=20
+> Probably this is not the case on each and every architecture?
+> If so, how could I handle it?
 
-There is a problem here. On my machine (x86_64) I have:
+Ok. After digging in the code again I understood that the problem is either=
+ in
+my brain and in the commit subject.
 
-typedef unsigned int __u32;
-typedef         __u32           uint32_t;
-
-
-So I should use %u to print my uint32_t variable (as I reported in my commit
-message).
-
-Probably this is not the case on each and every architecture?
-If so, how could I handle it?
-
+I'll fix both.
 
 Cheers,
-
-
 
 
 --=20
@@ -73,19 +79,19 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---zS7rBR6csb6tI2e1
+--C94crkcyjafcjHxo
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQEcBAEBAgAGBQJPjmbOAAoJEFMQTLzJFOZFn+oIAKdeRG1o0X9VClIijzcMBqP9
-4FR5ZQmXh2OTNixDc8owPguAg+oo32qB1ZyyWg8tskbkJaNuoAfOzTlNRzWuF8xa
-N9fv5bH1xn9FPG6YjW+T1lQAXGWV4yAVo39LcCiiVJd4Z5SpLTZJ8yZmpM+qv4cl
-WAg+FCa8v6DaP4i7YeSJBqyQhz3ExWQRHFO4q7bZBMTJdunM8vnETpTIEAfGNn4k
-BEr80hCcTmUDuGDchDZ/UVdcOPKFHoGOxzB1UXcO9mzIQPIcVK0UBL+MM+VT2vjA
-SlikullKy1EToe2cbC4zvcselJMQ726MGm3J8VPwU2curqVAsTUObVU0Zgtx52g=
-=k+pX
+iQEcBAEBAgAGBQJPjmxBAAoJEFMQTLzJFOZFF+gH/jhv/ONO/l4Z1NJN8G08CQXr
+7VMwLcuSyK+InjoNvZ47nFfJfzn3EwjdiFKvTUhVBgr43NsRvk5o9gWppA8z/XRc
+IBFmTMGiOXjvc/W+9p06PywEa7uyCg1pHMZHDgsREhk3+KX7wsdmckG3gJppYV0f
+gVeDMZKdhfg8o1ZihWCdFIZPBSYs1xov/uNAEFci4tDtT0KwKgF3NuQLG74BD5JJ
+rJhjFaFLd4ZtpRlVJhdS2Prdk//XUgBGpOgQrCxeWippQZlenFaYUnhl8KJkuuJu
+PY8KYfGtSFsXP//QwNwjSlWoeHSKtr11EesoS8Jb5vKitTD6aesQJ2ACjZNMA3U=
+=OeLZ
 -----END PGP SIGNATURE-----
 
---zS7rBR6csb6tI2e1--
+--C94crkcyjafcjHxo--
