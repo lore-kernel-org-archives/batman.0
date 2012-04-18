@@ -1,17 +1,17 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 18 Apr 2012 08:45:05 +0200
+Date: Wed, 18 Apr 2012 08:47:00 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120418064504.GB27966@ritirata.org>
+Message-ID: <20120418064659.GC27966@ritirata.org>
 References: <1334663907-22725-1-git-send-email-ordex@autistici.org>
-	<1334663907-22725-6-git-send-email-ordex@autistici.org>
-	<20120417.224630.1104076946118354940.davem@davemloft.net>
+	<1334663907-22725-11-git-send-email-ordex@autistici.org>
+	<20120417.224746.802445483718191876.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cvVnyQ+4j833TQvp"
+	protocol="application/pgp-signature"; boundary="0vzXIDBeUiKkjNJl"
 Content-Disposition: inline
-In-Reply-To: <20120417.224630.1104076946118354940.davem@davemloft.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 05/11] batman-adv: handle routing code
- initialization properly
+In-Reply-To: <20120417.224746.802445483718191876.davem@davemloft.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 10/11] batman-adv: print OGM seq numbers
+	as unsigned long
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,46 +24,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 
---cvVnyQ+4j833TQvp
+--0vzXIDBeUiKkjNJl
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 17, 2012 at 10:46:30 -0400, David Miller wrote:
+On Tue, Apr 17, 2012 at 10:47:46 -0400, David Miller wrote:
 > From: Antonio Quartulli <ordex@autistici.org>
-> Date: Tue, 17 Apr 2012 13:58:21 +0200
+> Date: Tue, 17 Apr 2012 13:58:26 +0200
 >=20
-> > @@ -30,10 +30,11 @@
-> >  #include "send.h"
-> >  #include "bat_algo.h"
-> > =20
-> > -static void bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
-> > +static int bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
-> >  {
-> >  	struct batman_ogm_packet *batman_ogm_packet;
-> >  	unsigned long random_seqno;
-> > +	int res =3D -1;
-> > =20
-> >  	/* randomize initial seqno to avoid collision */
-> >  	get_random_bytes(&random_seqno, sizeof(unsigned long));
+> > OGM sequence numbers are declared as uint32_t and so they have to print=
+ed
+> > using %u instead of %d in order to avoid wrong representations.
+> >=20
+> > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 >=20
-> Use real error codes, even as a default, instead of meaningless
-> values like -1.
+> Fix this commit message subject, "%u" is "unsigned int" not
+> "unsigned long"
+>=20
+> "unsigned long" would be "%lu"
 
-Actually all these kind of return values are handled internally the batman-=
-adv
-code so we didn't care so much to use real error codes. However using real =
-codes
-will surely increase readability.
-
-I will modify this patch and I'll try to suggest other developers to use re=
-al
-codes too.
+Yap. The broken part is %u, because the data type we are going to print is
+uint32_t. I'll fix it.
 
 Thank you.
+
+I'll send a new pull request once I'll have fixed these errors.
+
+
+Cheers,
 
 --=20
 Antonio Quartulli
@@ -71,19 +63,19 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---cvVnyQ+4j833TQvp
+--0vzXIDBeUiKkjNJl
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQEcBAEBAgAGBQJPjmLwAAoJEFMQTLzJFOZFxAgH/2APyOD61JtjZTgEghTM1F10
-vVaLcptAqSg9oPbV4ae6HmpSWFC8L2RvXz5LPTdOfrKAbMmNxcpK0yLrfed/SvVg
-NqPEnGNu5QetJK7fmsLT2RVl3XEQLzHSJhi5fUvDnLW8d5pI0SuMw/z+N86gaTIN
-+xVs8cNyOaSSVtWsrZrOXTMwjhC/qhNIdeYeNTiO+4KZW3K1l30fcWPILnIo4IH5
-pTPTMhrXyyl8UHDIF6y7Zbrj3xAP7VM5AuGhn6Zrr0BUtbm8N2LF1zBjTAQvvxoH
-tf4YYYqcF0QVxsEq3ArzyLJILuhm5Y3/XyLF0W4KvsEWxNPtsgbg1cXesr+rews=
-=dn/P
+iQEcBAEBAgAGBQJPjmNjAAoJEFMQTLzJFOZFR+IH/i2ZyJ4xsE0sLJ9HxqxtBD9V
+yNpNjEvyVZ0TZvKLop4gqEQ4uA0iXBDk9tlfeYwA5Kj3KWdt0bhPod72UeayRJGr
+BgnMdcT2kPc1ZjGdEmiMD8bPQgsqvxGhksMkyvE6gAIEhNcyWG2hEFsugX0ozAId
+6zgZRFuP36GtWAZ25sN8t4u7fZmYGTwtr0CdJPRC0i4EqxN4lzThX874zCX+gHCy
+gVv+k9+gh4OoXdDIyrSNzKgmN3KLUE6+V8XMFPfbdobrMAS9HogYiq1rhWNACL9i
+/yWHNbRzj87xzw4rTtZ5EyndOCjm/frcnfZPOwg3Vxl8umCP4gBHhjtQYJ+3hhI=
+=cx9C
 -----END PGP SIGNATURE-----
 
---cvVnyQ+4j833TQvp--
+--0vzXIDBeUiKkjNJl--
