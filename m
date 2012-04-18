@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 18 Apr 2012 17:27:40 +0800
-References: <1334734840-816-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1334734840-816-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201204181727.40612.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: use real error codes instead
-	of meaningless -1
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Wed, 18 Apr 2012 11:59:57 +0200
+Message-Id: <1334743210-12338-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-04-18
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,24 +14,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, April 18, 2012 15:40:40 Antonio Quartulli wrote:
-> Reported-by: David Miller <davem@davemloft.net>
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
-> 
-> This patch is for *next*. This patch fixes a problem pointed out by David
-> S. Miller.
-> 
-> Actually the idea is to use real error codes instead of meaningless -1,
-> even if this codes are only used internally to the batman-adv code. IMHO
-> it is a good idea. Most of the times we convert -1 to real error codes
-> later, but I think it is better to user real code directly. This patch
-> will be squashed with a patch which is going to be sent in the next pull
-> request.
+Hello David,
 
-Applied in revision a9f3b78.
+this is the fixed version of my previous pull request (issued on 2012-04-17).
+In this patchset the issues you reported have been fixed; moreover I'm
+also including two new patches (1/13 and 2/13) which are respectively:
 
-Thanks,
-Marek
+1/13) a fix for Al Viro's report about the missing htons()
+2/13) a fix for a wrongly duplicated line in a comment
+
+The following changes since commit ecffe75f934b4e3c5301fe5db278068e0efb0d6b:
+
+  hippi: fix printk format in rrunner.c (2012-04-16 23:48:38 -0400)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 1e5cc266dbc401d11aefb966ad35e651c2f67414:
+
+  batman-adv: skip the window protection test when the originator has no neighbours (2012-04-18 09:54:02 +0200)
+
+----------------------------------------------------------------
+Included changes:
+* remove duplicated line in comment
+* add htons() invocation for tt_crc as suggested by Al Viro
+* OriGinator Message seqno initial value is now random
+* some cleanups and fixes
+
+----------------------------------------------------------------
+Antonio Quartulli (5):
+      batman-adv: convert the tt_crc to network order
+      batman-adv: remove duplicated line in comment
+      batman-adv: use ETH_HLEN instead of sizeof(struct ethhdr)
+      batman-adv: print OGM seq numbers as unsigned int
+      batman-adv: skip the window protection test when the originator has no neighbours
+
+Marek Lindner (8):
+      batman-adv: move ogm initialization into the proper function
+      batman-adv: refactoring API: find generalized name for bat_ogm_init callback
+      batman-adv: randomize initial seqno to avoid collision
+      batman-adv: add iface_disable() callback to routing API
+      batman-adv: handle routing code initialization properly
+      batman-adv: refactoring API: find generalized name for bat_ogm_init_primary callback
+      batman-adv: rename BATMAN_OGM_LEN to BATMAN_OGM_HLEN
+      batman-adv: mark existing ogm variables as batman iv
+
+ net/batman-adv/bat_iv_ogm.c            |   63 +++++++++++++++++++++-----------
+ net/batman-adv/bridge_loop_avoidance.c |   11 ++----
+ net/batman-adv/hard-interface.c        |   33 +++++++++--------
+ net/batman-adv/icmp_socket.c           |    4 +-
+ net/batman-adv/main.c                  |    5 ++-
+ net/batman-adv/packet.h                |    6 +--
+ net/batman-adv/routing.c               |   10 ++---
+ net/batman-adv/send.c                  |   14 +++----
+ net/batman-adv/soft-interface.c        |    2 +-
+ net/batman-adv/translation-table.c     |    2 +-
+ net/batman-adv/types.h                 |   12 +++---
+ net/batman-adv/vis.c                   |    8 ++--
+ 12 files changed, 96 insertions(+), 74 deletions(-)
