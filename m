@@ -1,15 +1,15 @@
 Return-Path: <martin@hundeboll.net>
-Message-ID: <4F8E7F55.8080105@hundeboll.net>
-Date: Wed, 18 Apr 2012 10:46:13 +0200
+Message-ID: <4F8E80DE.8040102@hundeboll.net>
+Date: Wed, 18 Apr 2012 10:52:46 +0200
 From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
 MIME-Version: 1.0
 References: <1334701645-25862-1-git-send-email-ordex@autistici.org>
-	<1334701645-25862-5-git-send-email-ordex@autistici.org>
-In-Reply-To: <1334701645-25862-5-git-send-email-ordex@autistici.org>
+	<1334701645-25862-6-git-send-email-ordex@autistici.org>
+In-Reply-To: <1334701645-25862-6-git-send-email-ordex@autistici.org>
 Content-Type: text/plain; charset="utf-8"; format="flowed"
 Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: update ttvn in case of
- client reannouncement
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: beautify tt_global_add()
+ argument list
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,44 +26,94 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Hi,
 
 On 04/18/2012 12:27 AM, Antonio Quartulli wrote:
-> in various scenarios it would be possible that a node receives an ADD event for
-> a client it already knows to belong to the advertiser. In this case the node has
-> to update the global entry ttvn with the one carried by the OGM.
+> Instead of adding a new bool argument each time it is needed, it is
+> better (and simpler) to pass an 8bit flag argument which contains all the
+> needed flags
 >
 > Signed-off-by: Antonio Quartulli<ordex@autistici.org>
 > ---
->   translation-table.c |   11 ++++++++++-
->   1 file changed, 10 insertions(+), 1 deletion(-)
+>   routing.c           |    2 +-
+>   translation-table.c |   18 ++++++------------
+>   translation-table.h |    3 +--
+>   3 files changed, 8 insertions(+), 15 deletions(-)
 >
+> diff --git a/routing.c b/routing.c
+> index 2181a91..22d67bb 100644
+> --- a/routing.c
+> +++ b/routing.c
+> @@ -684,7 +684,7 @@ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
+>   		roam_adv_packet->src, roam_adv_packet->client);
+>
+>   	tt_global_add(bat_priv, orig_node, roam_adv_packet->client,
+> -		      atomic_read(&orig_node->last_ttvn) + 1, true, false);
+> +		      TT_CLIENT_ROAM, atomic_read(&orig_node->last_ttvn) + 1);
+>
+>   	/* Roaming phase starts: I have new information but the ttvn has not
+>   	 * been incremented yet. This flag will make me check all the incoming
 > diff --git a/translation-table.c b/translation-table.c
-> index cd6c2dd..ab295ee 100644
+> index ab295ee..00757ea 100644
 > --- a/translation-table.c
 > +++ b/translation-table.c
-> @@ -593,6 +593,7 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
->   		  bool wifi)
+> @@ -589,8 +589,7 @@ static void tt_global_add_orig_entry(struct tt_global_entry *tt_global_entry,
+>
+>   /* caller must hold orig_node refcount */
+>   int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+> -		  const unsigned char *tt_addr, uint8_t ttvn, bool roaming,
+> -		  bool wifi)
+> +		  const unsigned char *tt_addr, uint8_t flags, uint8_t ttvn)
 >   {
 >   	struct tt_global_entry *tt_global_entry = NULL;
-> +	struct tt_orig_list_entry *orig_entry;
->   	int ret = 0;
->   	int hash_added;
+>   	struct tt_orig_list_entry *orig_entry;
+> @@ -600,14 +599,12 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+>   	tt_global_entry = tt_global_hash_find(bat_priv, tt_addr);
 >
-> @@ -640,9 +641,17 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
->   			tt_global_entry->roam_at = 0;
->   		}
->
-> -		if (!tt_global_entry_has_orig(tt_global_entry, orig_node))
-> +		orig_entry = tt_global_entry_has_orig(tt_global_entry,
-> +						      orig_node);
-> +		if (!orig_entry)
->   			tt_global_add_orig_entry(tt_global_entry, orig_node,
->   						 ttvn);
-> +		else
-> +			/* if we are "adding" global entry, we may want to
-> +			 * update the ttvn anyway. Perhaps the global entry is
-> +			 * here with a wrong ttvn because it was temporary added
-> +			 * before */
+>   	if (!tt_global_entry) {
+> -		tt_global_entry = kzalloc(sizeof(*tt_global_entry),
+> -					  GFP_ATOMIC);
+> +		tt_global_entry = kzalloc(sizeof(*tt_global_entry), GFP_ATOMIC);
 
-One more bad-ending comment block :)
+This trivial style-fix doesn't really belong in this patch, does it? (Not that I mind...)
+
+>   		if (!tt_global_entry)
+>   			goto out;
+>
+>   		memcpy(tt_global_entry->common.addr, tt_addr, ETH_ALEN);
+> -
+> -		tt_global_entry->common.flags = NO_FLAGS;
+> +		tt_global_entry->common.flags = flags;
+>   		tt_global_entry->roam_at = 0;
+>   		atomic_set(&tt_global_entry->common.refcount, 2);
+>
+> @@ -654,9 +651,6 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+>   			orig_entry->ttvn = ttvn;
+>   	}
+>
+> -	if (wifi)
+> -		tt_global_entry->common.flags |= TT_CLIENT_WIFI;
+> -
+>   	bat_dbg(DBG_TT, bat_priv,
+>   		"Creating new global tt entry: %pM (via %pM)\n",
+>   		tt_global_entry->common.addr, orig_node->orig);
+> @@ -664,7 +658,7 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+>   out_remove:
+>   	/* remove address from local hash if present */
+>   	tt_local_remove(bat_priv, tt_global_entry->common.addr,
+> -			"global tt received", roaming);
+> +			"global tt received", flags&  TT_CLIENT_ROAM);
+>   	ret = 1;
+>   out:
+>   	if (tt_global_entry)
+> @@ -1678,9 +1672,9 @@ static void _tt_update_changes(struct bat_priv *bat_priv,
+>   				      (tt_change + i)->flags&  TT_CLIENT_ROAM);
+>   		else
+>   			if (!tt_global_add(bat_priv, orig_node,
+> -					   (tt_change + i)->addr, ttvn, false,
+> +					   (tt_change + i)->addr,
+>   					   (tt_change + i)->flags&
+> -							TT_CLIENT_WIFI))
+> +							TT_CLIENT_WIFI, ttvn))
+
+If you use a temporary variable for "tt_change + i", you can avoid the last indentation and make the code easier to read...
 
 -- 
 Kind Regards
