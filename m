@@ -1,17 +1,19 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 18 Apr 2012 10:37:15 +0200
+Date: Wed, 18 Apr 2012 10:37:37 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120418083714.GG27966@ritirata.org>
+Message-ID: <20120418083737.GH27966@ritirata.org>
 References: <1334701645-25862-1-git-send-email-ordex@autistici.org>
-	<1334701645-25862-3-git-send-email-ordex@autistici.org>
-	<4F8E7C5E.9010301@hundeboll.net>
+	<1334701645-25862-2-git-send-email-ordex@autistici.org>
+	<4F8E777A.5010901@hundeboll.net>
+	<20120418083137.GF27966@ritirata.org>
+	<4F8E7CE0.2010409@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="GdbWtwDHkcXqP16f"
+	protocol="application/pgp-signature"; boundary="o71xDhNo7p97+qVi"
 Content-Disposition: inline
-In-Reply-To: <4F8E7C5E.9010301@hundeboll.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: clear ADD+DEL (and
- viceversa) events in the same orig-interval
+In-Reply-To: <4F8E7CE0.2010409@hundeboll.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: don't delay OGM
+ information announcement
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,63 +29,32 @@ To: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---GdbWtwDHkcXqP16f
+--o71xDhNo7p97+qVi
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 18, 2012 at 10:33:34AM +0200, Martin Hundeb=C3=B8ll wrote:
-> Hi Antonio,
+On Wed, Apr 18, 2012 at 10:35:44AM +0200, Martin Hundeb=C3=B8ll wrote:
+> On 04/18/2012 10:31 AM, Antonio Quartulli wrote:
+> > On Wed, Apr 18, 2012 at 10:12:42AM +0200, Martin Hundeb=C3=B8ll wrote:
+> >> Hi Antonio,
+> >>
+> >> One minor/trivial change below.
+> >>
+> >> On 04/18/2012 12:27 AM, Antonio Quartulli wrote:
+> >>> +	/* if we have too many changes for one packet don't send any
+> >>> +	 * and wait for the tt table request which will be fragmented */
+> >>
+> >> Better change that comment te end with */ on a newline, before sending=
+ to David :)
+> >
+> > I definitely agree. Thank you. I would really like to see this check in
+> > checkpatch.pl :(:(
 >=20
-> On 04/18/2012 12:27 AM, Antonio Quartulli wrote:
-> > +	/* check for ADD+DEL or DEL+ADD events */
-> >   	spin_lock_bh(&bat_priv->tt_changes_list_lock);
-> > +	list_for_each_entry_safe(entry, safe,&bat_priv->tt_changes_list,
-> > +				 list) {
-> > +		if (!compare_eth(entry->change.addr, addr))
-> > +			continue;
+> I think you are free to send a patch to checkpatch.pl :)
 >=20
-> Please add an empty line here.
 
-Is this really needed for some specific reason?
-
->=20
-> > +		if (!(!(flags&  TT_CLIENT_DEL)&&  /* ADD op */
-> > +		      entry->change.flags&  TT_CLIENT_DEL)&&
-> > +		    !(flags&  TT_CLIENT_DEL&&
-> > +		      !(entry->change.flags&  TT_CLIENT_DEL))) /* ADD op */
-> > +			continue;
->=20
-> This is messy and hard to unerstand. Couldn't you use some tmp vars like =
-this:
->=20
-> int local_del =3D (flags & TT_CLIENT_DEL) =3D=3D TT_CLIENT_DEL;
-> int change_del =3D (entry->change.flags & TT_CLIENT_DEL) =3D=3D TT_CLIENT=
-_DEL;
->=20
-> if (local_del =3D=3D change_del)
-> 	continue;
->=20
-> I'm not 100% sure I understood the original if correctly, but that just p=
-roofs the need to rework it :)
-
-eheh, I know I like to mess up the code with boolean formulas :D
-Thank you for your feedback, I will simplify it.
-
->=20
-> > +		/* DEL+ADD in the same orig interval have no effect and can be
-> > +		 * removed to avoid silly behaviour on the receiver side. The
-> > +		 * other way around (ADD+DEL) can happen in case of roaming of
-> > +		 * a client still in the NEW state. Roaming of NEW clients is
-> > +		 * now possible due to automatically recognition of "temporary"
-> > +		 * clients */
->=20
-> Remember newline for */ :)
-
-yes .-.
-
-
-Thanks again!
+Good answer :D
 
 
 --=20
@@ -92,19 +63,19 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---GdbWtwDHkcXqP16f
+--o71xDhNo7p97+qVi
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQEcBAEBAgAGBQJPjn06AAoJEFMQTLzJFOZFHU4IAJ4XtuZ6EIuiu+cmFs1M8XrF
-V5tUviCNlT1hEfPDT4JW+OfD4sdo/quebXnpr1pYePNA62Oy5AidR8UOscVGdFSH
-0nea39xkvW6jPbjjkciQHFNHEu6F4fckE/9rNeS0UVg/DYbo9tVFRh6Ogcd29yLM
-OPz4++6FzHRYbS5ocKDtrvsR6ahG86rGJz18+bdXfiYrqeXLdzr4dE7hY0mHCuRi
-AgxsX1C18KPrsGpDquQ2y9BRQrNE5PuPVLel3SUKFLTFJtOMs5k+6Gjdpk3+FkMu
-IuAbE/lTIFP28MtX7SrgjA0nXsEPAwVBOf9mCzjA01KlQIgkfYKOTkVWZy24+/w=
-=EcF5
+iQEcBAEBAgAGBQJPjn1RAAoJEFMQTLzJFOZFKgAIAK61iXvG+0QVa6mdOrIaaCl5
+1JaRiX81la68JR7TTK+KW8ah6gSHope6++Mr2vwnf8FCdiggIPvVXf20Py97LaJX
+XYE9LmCMwa+Lv9biTiMhNDgkLjFVAIAUerebXNjT9Lh57Cj/eMHBv6HTyp7iPwlO
+P6UYymGpgWTtG8rUbDg0ZANItxKby9aa3Fs52mEZyTmD4nDHxYZcluBdfagHp3Xm
+dWdNmq6jiUuipdxPdzfEzs6FP1/qHzi7Kb6YaFw9SHxCN5cl/7VBDn8y2BHlK038
+5juzYTWkmE+0GqDLufFf6UI4Uu8S2YS8+eqME07VJAdxMUkGWrzkERSQPMtidLc=
+=jlf3
 -----END PGP SIGNATURE-----
 
---GdbWtwDHkcXqP16f--
+--o71xDhNo7p97+qVi--
