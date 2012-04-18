@@ -1,9 +1,9 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 18 Apr 2012 17:15:57 +0800
-Message-Id: <1334740557-7848-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: avoid characters requiring shell
-	escapes in protocol names
+Date: Wed, 18 Apr 2012 17:16:39 +0800
+Message-Id: <1334740599-7912-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: ignore trailing CR when
+	comparing protocol names
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,39 +18,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Reported-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- bat_iv_ogm.c |    2 +-
- main.c       |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ main.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index ed743a4..19da9d5 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -1233,7 +1233,7 @@ static int bat_iv_ogm_receive(struct sk_buff *skb,
- }
- 
- static struct bat_algo_ops batman_iv __read_mostly = {
--	.name = "BATMAN IV",
-+	.name = "BATMAN_IV",
- 	.bat_iface_enable = bat_iv_ogm_iface_enable,
- 	.bat_iface_disable = bat_iv_ogm_iface_disable,
- 	.bat_iface_update_mac = bat_iv_ogm_iface_update_mac,
 diff --git a/main.c b/main.c
-index 0757c2d..1d338a3 100644
+index 1d338a3..fa29234 100644
 --- a/main.c
 +++ b/main.c
-@@ -40,7 +40,7 @@
-  * list traversals just rcu-locked */
- struct list_head hardif_list;
- static int (*recv_packet_handler[256])(struct sk_buff *, struct hard_iface *);
--char bat_routing_algo[20] = "BATMAN IV";
-+char bat_routing_algo[20] = "BATMAN_IV";
- static struct hlist_head bat_algo_list;
+@@ -378,14 +378,19 @@ int bat_algo_seq_print_text(struct seq_file *seq, void *offset)
+ static int param_set_ra(const char *val, const struct kernel_param *kp)
+ {
+ 	struct bat_algo_ops *bat_algo_ops;
++	char *algo_name = (char *)val;
++	size_t name_len = strlen(algo_name);
  
- unsigned char broadcast_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+-	bat_algo_ops = bat_algo_get((char *)val);
++	if (algo_name[name_len - 1] == '\n')
++		algo_name[name_len - 1] = '\0';
++
++	bat_algo_ops = bat_algo_get(algo_name);
+ 	if (!bat_algo_ops) {
+-		pr_err("Routing algorithm '%s' is not supported\n", val);
++		pr_err("Routing algorithm '%s' is not supported\n", algo_name);
+ 		return -EINVAL;
+ 	}
+ 
+-	return param_set_copystring(val, kp);
++	return param_set_copystring(algo_name, kp);
+ }
+ 
+ static const struct kernel_param_ops param_ops_ra = {
 -- 
 1.7.9.1
 
