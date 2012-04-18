@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 18 Apr 2012 11:59:58 +0200
-Message-Id: <1334743210-12338-2-git-send-email-ordex@autistici.org>
+Date: Wed, 18 Apr 2012 11:59:59 +0200
+Message-Id: <1334743210-12338-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1334743210-12338-1-git-send-email-ordex@autistici.org>
 References: <1334743210-12338-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 01/13] batman-adv: convert the tt_crc to
-	network order
+Subject: [B.A.T.M.A.N.] [PATCH 02/13] batman-adv: remove duplicated line in
+	comment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,28 +20,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Before sending out a TT_Request packet we must convert the tt_crc field value
-to network order (since it is 16bits long).
+Remove an accidentally added duplicated line in a function comment
 
-Reported-by: Al Viro <viro@ZenIV.linux.org.uk>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/translation-table.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bridge_loop_avoidance.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index e16a369..a38d315 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1339,7 +1339,7 @@ static int send_tt_request(struct bat_priv *bat_priv,
- 	memcpy(tt_request->dst, dst_orig_node->orig, ETH_ALEN);
- 	tt_request->header.ttl = TTL;
- 	tt_request->ttvn = ttvn;
--	tt_request->tt_data = tt_crc;
-+	tt_request->tt_data = htons(tt_crc);
- 	tt_request->flags = TT_REQUEST;
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 1cf18ac..c8642b5 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -735,7 +735,6 @@ static int handle_claim(struct bat_priv *bat_priv,
  
- 	if (full_table)
+ /**
+  * @bat_priv: the bat priv with all the soft interface information
+- * @bat_priv: the bat priv with all the soft interface information
+  * @hw_src: the Hardware source in the ARP Header
+  * @hw_dst: the Hardware destination in the ARP Header
+  * @ethhdr: pointer to the Ethernet header of the claim frame
 -- 
 1.7.9.4
 
