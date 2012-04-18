@@ -1,17 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 18 Apr 2012 10:31:38 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120418083137.GF27966@ritirata.org>
-References: <1334701645-25862-1-git-send-email-ordex@autistici.org>
-	<1334701645-25862-2-git-send-email-ordex@autistici.org>
-	<4F8E777A.5010901@hundeboll.net>
+Return-Path: <martin@hundeboll.net>
+Message-ID: <4F8E7C5E.9010301@hundeboll.net>
+Date: Wed, 18 Apr 2012 10:33:34 +0200
+From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="m1UC1K4AOz1Ywdkx"
-Content-Disposition: inline
-In-Reply-To: <4F8E777A.5010901@hundeboll.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: don't delay OGM
- information announcement
+References: <1334701645-25862-1-git-send-email-ordex@autistici.org>
+	<1334701645-25862-3-git-send-email-ordex@autistici.org>
+In-Reply-To: <1334701645-25862-3-git-send-email-ordex@autistici.org>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: clear ADD+DEL (and
+ viceversa) events in the same orig-interval
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,51 +21,84 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Antonio,
 
---m1UC1K4AOz1Ywdkx
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 04/18/2012 12:27 AM, Antonio Quartulli wrote:
+> During an OGM-interval (time between two different OGM sendings) the same client
+> could roam away and then roam back to us. In this case the node would add two
+> events to the events list (that is going to be sent appended to the next OGM). A
+> DEL one and an ADD one. Obviously they will only increase the overhead (either in
+> the air and on the receiver side) and eventually trigger wrong states/events
+> without producing any real effect.
+>
+> For this reason we can safely delete any ADD event with its related DEL one.
+>
+> Signed-off-by: Antonio Quartulli<ordex@autistici.org>
+> ---
+>   translation-table.c |   35 ++++++++++++++++++++++++++++++-----
+>   1 file changed, 30 insertions(+), 5 deletions(-)
+>
+> diff --git a/translation-table.c b/translation-table.c
+> index 88e4c8e..e02fa90 100644
+> --- a/translation-table.c
+> +++ b/translation-table.c
+> @@ -154,23 +154,48 @@ static void tt_orig_list_entry_free_ref(struct tt_orig_list_entry *orig_entry)
+>   static void tt_local_event(struct bat_priv *bat_priv, const uint8_t *addr,
+>   			   uint8_t flags)
+>   {
+> -	struct tt_change_node *tt_change_node;
+> +	struct tt_change_node *tt_change_node, *entry, *safe;
+> +	bool event_removed = false;
+>
+>   	tt_change_node = kmalloc(sizeof(*tt_change_node), GFP_ATOMIC);
+> -
+>   	if (!tt_change_node)
+>   		return;
+> -
+>   	tt_change_node->change.flags = flags;
+>   	memcpy(tt_change_node->change.addr, addr, ETH_ALEN);
+>
+> +	/* check for ADD+DEL or DEL+ADD events */
+>   	spin_lock_bh(&bat_priv->tt_changes_list_lock);
+> +	list_for_each_entry_safe(entry, safe,&bat_priv->tt_changes_list,
+> +				 list) {
+> +		if (!compare_eth(entry->change.addr, addr))
+> +			continue;
 
-On Wed, Apr 18, 2012 at 10:12:42AM +0200, Martin Hundeb=C3=B8ll wrote:
-> Hi Antonio,
->=20
-> One minor/trivial change below.
->=20
-> On 04/18/2012 12:27 AM, Antonio Quartulli wrote:
-> > +	/* if we have too many changes for one packet don't send any
-> > +	 * and wait for the tt table request which will be fragmented */
->=20
-> Better change that comment te end with */ on a newline, before sending to=
- David :)
+Please add an empty line here.
 
-I definitely agree. Thank you. I would really like to see this check in
-checkpatch.pl :(:(
+> +		if (!(!(flags&  TT_CLIENT_DEL)&&  /* ADD op */
+> +		      entry->change.flags&  TT_CLIENT_DEL)&&
+> +		    !(flags&  TT_CLIENT_DEL&&
+> +		      !(entry->change.flags&  TT_CLIENT_DEL))) /* ADD op */
+> +			continue;
 
-Cheers,
+This is messy and hard to unerstand. Couldn't you use some tmp vars like this:
 
---=20
-Antonio Quartulli
+int local_del = (flags & TT_CLIENT_DEL) == TT_CLIENT_DEL;
+int change_del = (entry->change.flags & TT_CLIENT_DEL) == TT_CLIENT_DEL;
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
+if (local_del == change_del)
+	continue;
 
---m1UC1K4AOz1Ywdkx
-Content-Type: application/pgp-signature
+I'm not 100% sure I understood the original if correctly, but that just proofs the need to rework it :)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+> +		/* DEL+ADD in the same orig interval have no effect and can be
+> +		 * removed to avoid silly behaviour on the receiver side. The
+> +		 * other way around (ADD+DEL) can happen in case of roaming of
+> +		 * a client still in the NEW state. Roaming of NEW clients is
+> +		 * now possible due to automatically recognition of "temporary"
+> +		 * clients */
 
-iQEcBAEBAgAGBQJPjnvpAAoJEFMQTLzJFOZFFawIALMCIWHrDgVjXXJwwKLfKNqc
-BRuY/c6bgGYNDYPYmxzm/Ih6COSU4K9SzrlOLH7KOKY28Cmr6LV+DjpM0g7lvmPB
-AK2i6gMCvaEOzht7Q+MNhh+ZM9SUvZNgoy026Wn6r09smMEg463DKe+8cwe5PQto
-riAtlmRXzauAetH4Wq/BNIIFr7dzS0J6FlKxz5yu55zRoqUuUT/nEiKxqvTrP7fW
-c8OpTCphf0B5jph3bYnqsn7hgUls62BaGxoqzU4Kkf3DYgFP05oQvcz2JRfNJlt5
-zZ4m3M/FuA1Stjnb+NzGWC8tvfJqi8pZ3kTstynKm9QJMHC+Kh4jTitg1GZ2E3M=
-=Jf87
------END PGP SIGNATURE-----
+Remember newline for */ :)
 
---m1UC1K4AOz1Ywdkx--
+-- 
+Kind Regards
+Martin Hundebøll
+Frederiks Allé 99A, 1.th
+8000 Aarhus C
+Denmark
++45 61 65 54 61
+martin@hundeboll.net
