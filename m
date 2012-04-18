@@ -1,16 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 18 Apr 2012 03:28:04 -0400 (EDT)
-Message-Id: <20120418.032804.800443379585204933.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20120418070134.GD27966@ritirata.org>
-References: <20120417.224746.802445483718191876.davem@davemloft.net>
-	<20120418064659.GC27966@ritirata.org>
-	<20120418070134.GD27966@ritirata.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 10/11] batman-adv: print OGM seq numbers
- as unsigned long
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Wed, 18 Apr 2012 09:35:13 +0200
+Message-Id: <1334734513-30357-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: use uint32_t instead of unsigned
+	long to avoid cast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,39 +15,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 18 Apr 2012 09:01:35 +0200
+Reported-by: David Miller <davem@davemloft.net>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-> On Wed, Apr 18, 2012 at 08:47:00AM +0200, Antonio Quartulli wrote:
->> On Tue, Apr 17, 2012 at 10:47:46 -0400, David Miller wrote:
->> > From: Antonio Quartulli <ordex@autistici.org>
->> > Date: Tue, 17 Apr 2012 13:58:26 +0200
->> > 
->> > > OGM sequence numbers are declared as uint32_t and so they have to printed
->> > > using %u instead of %d in order to avoid wrong representations.
->> > > 
->> > > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
->> > 
->> > Fix this commit message subject, "%u" is "unsigned int" not
->> > "unsigned long"
->> > 
->> > "unsigned long" would be "%lu"
-> 
-> There is a problem here. On my machine (x86_64) I have:
-> 
-> typedef unsigned int __u32;
-> typedef         __u32           uint32_t;
-> 
-> 
-> So I should use %u to print my uint32_t variable (as I reported in my commit
-> message).
-> 
-> Probably this is not the case on each and every architecture?
-> If so, how could I handle it?
+This patch is for *next*. It solves a problem pointed out by David S. Miller.
+This patch will be squashed with the one which introduced the issue and will be
+sent out in the next pull request.
 
-The problem is not the patch, it's your commit message
-you say "print ... as unsigned long", you're not printing
-it as unsigned long, you're printing it as unsigned int.
+Cheers,
+
+
+ bat_iv_ogm.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 994369d..ab2085c 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -58,12 +58,12 @@ out:
+ static int bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
+ {
+ 	struct batman_ogm_packet *batman_ogm_packet;
+-	unsigned long random_seqno;
++	uint32_t random_seqno;
+ 	int res = -1;
+ 
+ 	/* randomize initial seqno to avoid collision */
+-	get_random_bytes(&random_seqno, sizeof(unsigned long));
+-	atomic_set(&hard_iface->seqno, (uint32_t)random_seqno);
++	get_random_bytes(&random_seqno, sizeof(random_seqno));
++	atomic_set(&hard_iface->seqno, random_seqno);
+ 
+ 	hard_iface->packet_len = BATMAN_OGM_HLEN;
+ 	hard_iface->packet_buff = kmalloc(hard_iface->packet_len, GFP_ATOMIC);
+-- 
+1.7.9.4
+
