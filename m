@@ -1,11 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 18 Apr 2012 00:27:25 +0200
-Message-Id: <1334701645-25862-6-git-send-email-ordex@autistici.org>
-In-Reply-To: <1334701645-25862-1-git-send-email-ordex@autistici.org>
-References: <1334701645-25862-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: beautify tt_global_add()
-	argument list
+Return-Path: <davem@davemloft.net>
+Date: Tue, 17 Apr 2012 22:46:30 -0400 (EDT)
+Message-Id: <20120417.224630.1104076946118354940.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1334663907-22725-6-git-send-email-ordex@autistici.org>
+References: <1334663907-22725-1-git-send-email-ordex@autistici.org>
+	<1334663907-22725-6-git-send-email-ordex@autistici.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 05/11] batman-adv: handle routing code
+ initialization properly
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,108 +21,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: ordex@autistici.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
 
-Instead of adding a new bool argument each time it is needed, it is
-better (and simpler) to pass an 8bit flag argument which contains all the
-needed flags
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 17 Apr 2012 13:58:21 +0200
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- routing.c           |    2 +-
- translation-table.c |   18 ++++++------------
- translation-table.h |    3 +--
- 3 files changed, 8 insertions(+), 15 deletions(-)
+> @@ -30,10 +30,11 @@
+>  #include "send.h"
+>  #include "bat_algo.h"
+>  
+> -static void bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
+> +static int bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
+>  {
+>  	struct batman_ogm_packet *batman_ogm_packet;
+>  	unsigned long random_seqno;
+> +	int res = -1;
+>  
+>  	/* randomize initial seqno to avoid collision */
+>  	get_random_bytes(&random_seqno, sizeof(unsigned long));
 
-diff --git a/routing.c b/routing.c
-index 2181a91..22d67bb 100644
---- a/routing.c
-+++ b/routing.c
-@@ -684,7 +684,7 @@ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
- 		roam_adv_packet->src, roam_adv_packet->client);
- 
- 	tt_global_add(bat_priv, orig_node, roam_adv_packet->client,
--		      atomic_read(&orig_node->last_ttvn) + 1, true, false);
-+		      TT_CLIENT_ROAM, atomic_read(&orig_node->last_ttvn) + 1);
- 
- 	/* Roaming phase starts: I have new information but the ttvn has not
- 	 * been incremented yet. This flag will make me check all the incoming
-diff --git a/translation-table.c b/translation-table.c
-index ab295ee..00757ea 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -589,8 +589,7 @@ static void tt_global_add_orig_entry(struct tt_global_entry *tt_global_entry,
- 
- /* caller must hold orig_node refcount */
- int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
--		  const unsigned char *tt_addr, uint8_t ttvn, bool roaming,
--		  bool wifi)
-+		  const unsigned char *tt_addr, uint8_t flags, uint8_t ttvn)
- {
- 	struct tt_global_entry *tt_global_entry = NULL;
- 	struct tt_orig_list_entry *orig_entry;
-@@ -600,14 +599,12 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 	tt_global_entry = tt_global_hash_find(bat_priv, tt_addr);
- 
- 	if (!tt_global_entry) {
--		tt_global_entry = kzalloc(sizeof(*tt_global_entry),
--					  GFP_ATOMIC);
-+		tt_global_entry = kzalloc(sizeof(*tt_global_entry), GFP_ATOMIC);
- 		if (!tt_global_entry)
- 			goto out;
- 
- 		memcpy(tt_global_entry->common.addr, tt_addr, ETH_ALEN);
--
--		tt_global_entry->common.flags = NO_FLAGS;
-+		tt_global_entry->common.flags = flags;
- 		tt_global_entry->roam_at = 0;
- 		atomic_set(&tt_global_entry->common.refcount, 2);
- 
-@@ -654,9 +651,6 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 			orig_entry->ttvn = ttvn;
- 	}
- 
--	if (wifi)
--		tt_global_entry->common.flags |= TT_CLIENT_WIFI;
--
- 	bat_dbg(DBG_TT, bat_priv,
- 		"Creating new global tt entry: %pM (via %pM)\n",
- 		tt_global_entry->common.addr, orig_node->orig);
-@@ -664,7 +658,7 @@ int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
- out_remove:
- 	/* remove address from local hash if present */
- 	tt_local_remove(bat_priv, tt_global_entry->common.addr,
--			"global tt received", roaming);
-+			"global tt received", flags & TT_CLIENT_ROAM);
- 	ret = 1;
- out:
- 	if (tt_global_entry)
-@@ -1678,9 +1672,9 @@ static void _tt_update_changes(struct bat_priv *bat_priv,
- 				      (tt_change + i)->flags & TT_CLIENT_ROAM);
- 		else
- 			if (!tt_global_add(bat_priv, orig_node,
--					   (tt_change + i)->addr, ttvn, false,
-+					   (tt_change + i)->addr,
- 					   (tt_change + i)->flags &
--							TT_CLIENT_WIFI))
-+							TT_CLIENT_WIFI, ttvn))
- 				/* In case of problem while storing a
- 				 * global_entry, we stop the updating
- 				 * procedure without committing the
-diff --git a/translation-table.h b/translation-table.h
-index c43374d..3239b72 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -34,8 +34,7 @@ int tt_local_seq_print_text(struct seq_file *seq, void *offset);
- void tt_global_add_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 			const unsigned char *tt_buff, int tt_buff_len);
- int tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
--		  const unsigned char *addr, uint8_t ttvn, bool roaming,
--		  bool wifi);
-+		  const unsigned char *addr, uint8_t flags, uint8_t ttvn);
- int tt_global_seq_print_text(struct seq_file *seq, void *offset);
- void tt_global_del_orig(struct bat_priv *bat_priv,
- 			struct orig_node *orig_node, const char *message);
--- 
-1.7.9.4
-
+Use real error codes, even as a default, instead of meaningless
+values like -1.
