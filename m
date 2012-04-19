@@ -1,14 +1,8 @@
-Return-Path: <christian@solvare.se>
-Content-Type: text/plain; charset=iso-8859-1
-Mime-Version: 1.0 (Apple Message framework v1257)
-From: Christian Huldt <christian@solvare.se>
-In-Reply-To: <CAJuY50yHZUZ6USgMYHEnZHc+hzb0nu+UJ4wRz2sCSEF+f=pybA@mail.gmail.com>
-Date: Thu, 19 Apr 2012 20:46:57 +0200
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <67286569-54F7-4AF1-A6E8-E710516F9155@solvare.se>
-References: <CAJuY50yHZUZ6USgMYHEnZHc+hzb0nu+UJ4wRz2sCSEF+f=pybA@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] collaboration-group on batman-adv installation &
-	application
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 20 Apr 2012 04:36:49 +0800
+Message-Id: <1334867810-12487-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: fix man page originator entry
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,26 +14,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-19 apr 2012 kl. 18:39 skrev 3zl Trizonelabs:
+Reported-by: Jo-Philipp Wich <jow@openwrt.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ man/batctl.8 |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> I would like to organize a kind of collaboration-site on all practical
-> aspects of batman-adv installation.
->=20
-> It could be a platform to discuss, interchange know how dealing with
-> all aspects of batman-adv mesh application
->=20
-> As i did switch from AWDS-L2 to batman-adv, i am about to start
-> gathering some samples of code & information i thought would be viable
-> to help getting a batman-mesh running.
->=20
-> Anyone interested please respond to discuss how this might be setup.
-> (example: www.teamlab.com )
+diff --git a/man/batctl.8 b/man/batctl.8
+index 036412b..4f2e1c6 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -59,7 +59,7 @@ protocol.
+ If no parameter is given or the first parameter is neither "add" nor "del" the current interface settings are displayed. In order to add or delete interfaces specify "add" or "del" as first argument and append the interface names you wish to add or delete.
+ .br
+ .IP "\fBoriginators\fP|\fBo\fP    [\fB\-w\fP [\fI\interval\fP]][\fB\-n\fP][\fB\-t\fP]"
+-Once started batctl will display the list of announced gateways in the network. Use the "\-w" option to let batctl refresh the list every second or add a number to let it refresh at a custom interval in seconds (with optional decimal places). If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output. The "\-t" option filters all originators that have not been seen for the specified amount of seconds (with optional decimal places) from the output.
++Once started batctl will display the list of announced originators in the network. Use the "\-w" option to let batctl refresh the list every second or add a number to let it refresh at a custom interval in seconds (with optional decimal places). If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output. The "\-t" option filters all originators that have not been seen for the specified amount of seconds (with optional decimal places) from the output.
+ .br
+ .IP "\fBinterval\fP|\fBit\fP      [\fBorig_interval\fP]"
+ If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the originator interval. The interval is in units of milliseconds.
+-- 
+1.7.9.1
 
-+1
-
-I think one of the most important things would be an allowing =
-athmosphere,=20
-as a former lecturer I think that the "stupid questions" are the most =
-fundamental ones=
