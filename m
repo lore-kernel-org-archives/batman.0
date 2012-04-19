@@ -1,15 +1,16 @@
 Return-Path: <ordex@autistici.org>
-Date: Thu, 19 Apr 2012 07:41:14 +0200
+Date: Thu, 19 Apr 2012 07:49:49 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120419054113.GA8658@ritirata.org>
+Message-ID: <20120419054948.GB8658@ritirata.org>
 References: <1334743210-12338-1-git-send-email-ordex@autistici.org>
 	<20120418180837.GB6589@ZenIV.linux.org.uk>
 	<20120418181058.GD6589@ZenIV.linux.org.uk>
+	<20120419054113.GA8658@ritirata.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
+	protocol="application/pgp-signature"; boundary="l76fUT7nc3MelDdI"
 Content-Disposition: inline
-In-Reply-To: <20120418181058.GD6589@ZenIV.linux.org.uk>
+In-Reply-To: <20120419054113.GA8658@ritirata.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 2/4] batman: don't bother flipping
 	->tt_crc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,37 +28,27 @@ To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net
 
 
---Q68bSM7Ycu6FN28Q
+--l76fUT7nc3MelDdI
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 18, 2012 at 07:10:58 +0100, Al Viro wrote:
-> @@ -722,7 +721,7 @@ update_tt:
->  		tt_update_orig(bat_priv, orig_node, tt_buff,
->  			       batman_ogm_packet->tt_num_changes,
->  			       batman_ogm_packet->ttvn,
-> -			       batman_ogm_packet->tt_crc);
-> +			       ntohs(batman_ogm_packet->tt_crc));
+On Thu, Apr 19, 2012 at 07:41:14AM +0200, Antonio Quartulli wrote:
+> On Wed, Apr 18, 2012 at 07:10:58 +0100, Al Viro wrote:
+> > @@ -722,7 +721,7 @@ update_tt:
+> >  		tt_update_orig(bat_priv, orig_node, tt_buff,
+> >  			       batman_ogm_packet->tt_num_changes,
+> >  			       batman_ogm_packet->ttvn,
+> > -			       batman_ogm_packet->tt_crc);
+> > +			       ntohs(batman_ogm_packet->tt_crc));
+>=20
+> If we don't need to flip tt_crc, wy are you introducing ntohs here? Am I
+> overlooking something?
 
-If we don't need to flip tt_crc, wy are you introducing ntohs here? Am I
-overlooking something?
+Ok. I was missing the correct meaning of __be16. Now everything is clear.
 
-> @@ -969,7 +968,7 @@ static void bat_iv_ogm_process(const struct ethhdr *e=
-thhdr,
->  		ethhdr->h_source, if_incoming->net_dev->name,
->  		if_incoming->net_dev->dev_addr, batman_ogm_packet->orig,
->  		batman_ogm_packet->prev_sender, batman_ogm_packet->seqno,
-> -		batman_ogm_packet->ttvn, batman_ogm_packet->tt_crc,
-> +		batman_ogm_packet->ttvn, ntohs(batman_ogm_packet->tt_crc),
->  		batman_ogm_packet->tt_num_changes, batman_ogm_packet->tq,
-
-The same here..I am not understanding..
-
-Thank you for your patches!
 
 Cheers,
-
 
 --=20
 Antonio Quartulli
@@ -65,19 +56,19 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---Q68bSM7Ycu6FN28Q
+--l76fUT7nc3MelDdI
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQEcBAEBAgAGBQJPj6V5AAoJEFMQTLzJFOZFkMYH+gPCKJiyXMLqf45E1a+S++Fo
-cDGF7wSzZz3pJLGizy9MjFzY/AIrztUOms76GvILrNWC8jR+k0eWOmSjGUawDWuO
-z5UR7KmBl4K1KWodHYc9ILZuqYmXrMIgFyo6hbOGNS4eKXrI3oEPl+urJPpbeB+2
-MzgFyGs/W/0H7LNF4uvkbizRrMwrbznw+F/Vvp8Ag4tPxKyOHn89QTFEEZaq9x/J
-8URATHNDh9Uqkf9AgLA/3qqwmDSb2KJygrmQSKVIVClchj1wNAs5ikTgEikZ6VB7
-TCpJi29Z9rwtfP0ZWhAbv+re6Yl4oh3tup7ou6UiyeOCAdLCRcNDZtFXIDcxHGg=
-=seRG
+iQEcBAEBAgAGBQJPj6d8AAoJEFMQTLzJFOZF4V8H/jTqofFNL46/wnHQDc0v9QsC
+w56WPGR6vJq1bYVteSsNCJjm7l7nR8eOshx+uRGUEzUatmiw6KAnpPTO06ItbHU4
+bvchu1pKIvbDqaNg22HwMVSKfTs01qtTnPY7o04rn4Wyp0Hc+yixbzfrzQnfxHVZ
+fJWpJIs2Z27HE/2zwLN6QiFCG9TeXMKAyosezsaoQiHZ8v0Lz2mGC23yDyE+jXdR
+FHDrrTFhJ6jSA4K6pfgZgd96cIwCSxRELdMHNVmLabeAObBIPICVHCOLmMS3jqNT
+SxZYE+Cc25SzSL69DPs1T1LB2YcitfTsQF3wpmdEgc0B9CgSf55k3YUqBDatJeA=
+=6YDP
 -----END PGP SIGNATURE-----
 
---Q68bSM7Ycu6FN28Q--
+--l76fUT7nc3MelDdI--
