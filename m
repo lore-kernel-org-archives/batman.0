@@ -1,14 +1,13 @@
-Return-Path: <trizonelabs@googlemail.com>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Fri, 20 Apr 2012 17:02:45 +0200
+Message-Id: <1334934165-17430-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1334618695-28338-1-git-send-email-martin@hundeboll.net>
+References: <1334618695-28338-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-In-Reply-To: <4F9077E8.30805@nixbits.net>
-References: <4F8DD568.3040102@nixbits.net> <4F8E63E9.5020605@codigosur.org>
-	<4F9077E8.30805@nixbits.net>
-Date: Fri, 20 Apr 2012 12:15:29 +0300
-Message-ID: <CAJuY50w1HNN=X9Tx3Sw0H9yXYbdBOeXUg9Vb33igy1759_TcCA@mail.gmail.com>
-From: 3zl Trizonelabs <trizonelabs@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Batman configuration and MTU
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv4] batman-adv: Add get_ethtool_stats() support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,294 +19,407 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: HeXileD@nixbits.net, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-I have been in the same situaion and at the aned left the uci config
- alone using scripting for the complete setup.
-This made things much easier .
+Added additional counters in a bat_stats structure, which are exported
+through the ethtool api. The counters are specific to batman-adv and
+includes:
+ forwarded packets and bytes
+ management packets and bytes (aggregated OGMs at this point)
+ translation table packets
+ distributed arp table packets
 
-How abt joining a collaboration-team as i proposed in an earlier mail ?
+New counters are added by extending "enum bat_counters" in types.h and
+adding corresponding  descriptive string(s) to bat_counters_strings in
+soft-iface.c.
 
-regards
-3zl
+Counters are increased by calling add_counter() and incremented by one
+by calling inc_counter().
 
+v2: Changed to per_cpu variables. Added ifdefs for optional submodules.
+v3: Change from "struct bat_stats" to uint64_t array.
+v4: Added byte counters. Moved free function. Added spaces.
 
-2012/4/19 HeXiLeD <hexiled@nixbits.net>:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> @ Nicol=E1s
->
-> Right now i am trying this setup and batman is not complaining about MTU
-> as it can be seen as set. The purpose of this setup is to allow wireless
-> and wired clients to to use the mesh as if a user connects to the router
-> over wired and accesses the gateway one or 2 nodes after.
->
-> However i now have dhcp problems for wireless clients as the router
-> fails to assign the wireless client, the ip. The client (netbook)
-> connects but gets no ip. MTU seems to be fixed with this setup.
->
-> Would you be able to show some of those working examples ?
->
-> ~# cat /etc/config/batman-adv
-> config 'mesh' 'bat0'
-> =A0 =A0 =A0 =A0option 'ap_isolation' '0'
-> =A0 =A0 =A0 =A0option 'bonding' '0'
-> =A0 =A0 =A0 =A0option 'aggregation' '1'
-> =A0 =A0 =A0 =A0option 'fragmentation' '1'
-> =A0 =A0 =A0 =A0option 'gw_bandwidth' '3mbit/384kbit'
-> =A0 =A0 =A0 =A0option 'gw_mode' 'client'
-> =A0 =A0 =A0 =A0option 'gw_sel_class' '5'
-> =A0 =A0 =A0 =A0option 'orig_interval' '1000'
-> =A0 =A0 =A0 =A0option 'vis_mode' 'client'
-> =A0 =A0 =A0 =A0option 'interfaces' 'wlan0'
->
-> # cat /etc/config/wireless
-> config 'wifi-device' 'radio0'
-> =A0 =A0 =A0 =A0option 'type' 'mac80211'
-> =A0 =A0 =A0 =A0option 'channel' '11'
-> =A0 =A0 =A0 =A0option 'phy' 'phy0'
-> =A0 =A0 =A0 =A0option 'hwmode' '11g'
-> =A0 =A0 =A0 =A0option 'country' 'UK'
-> =A0 =A0 =A0 =A0option 'txpower' '20'
-> =A0 =A0 =A0 =A0option 'diversity' '1'
-> =A0 =A0 =A0 =A0option 'disabled' '0'
-> =A0 =A0 =A0 =A0option 'txantenna' '1'
-> =A0 =A0 =A0 =A0option 'rxantenna' '1'
->
-> config 'wifi-iface'
-> =A0 =A0 =A0 =A0option 'device' 'radio0'
-> =A0 =A0 =A0 =A0option 'hidden' '0'
-> =A0 =A0 =A0 =A0option 'mode' 'adhoc'
-> =A0 =A0 =A0 =A0option 'ssid' 'wireless'
-> =A0 =A0 =A0 =A0option 'bssid' '02:16:b8:6b:0a:1a'
-> =A0 =A0 =A0 =A0option 'encryption' 'none'
-> =A0 =A0 =A0 =A0option 'network' 'wifi'
->
-> ~# cat /etc/config/network
-> #### VLAN configuration
-> config switch eth0
-> =A0 =A0 =A0 =A0option enable =A0 1
->
-> config switch_vlan eth0_0
-> =A0 =A0 =A0 =A0option device =A0 "eth0"
-> =A0 =A0 =A0 =A0option vlan =A0 =A0 0
-> =A0 =A0 =A0 =A0option ports =A0 =A0"1 2 3 4 5"
->
-> config switch_vlan eth0_1
-> =A0 =A0 =A0 =A0option device =A0 "eth0"
-> =A0 =A0 =A0 =A0option vlan =A0 =A0 1
-> =A0 =A0 =A0 =A0option ports =A0 =A0"0 5"
->
-> #### Loopback configuration
-> config interface loopback
-> =A0 =A0 =A0 =A0option ifname =A0 "lo"
-> =A0 =A0 =A0 =A0option proto =A0 =A0static
-> =A0 =A0 =A0 =A0option ipaddr =A0 127.0.0.1
-> =A0 =A0 =A0 =A0option netmask =A0255.0.0.0
->
-> #### LAN configuration
-> config interface lan
-> =A0 =A0 =A0 =A0option type =A0 =A0 bridge
-> =A0 =A0 =A0 =A0option ifname =A0 "eth0.0 bat0"
-> =A0 =A0 =A0 =A0option proto =A0 =A0static
-> =A0 =A0 =A0 =A0option ipaddr =A0 192.168.1.1
-> =A0 =A0 =A0 =A0option netmask =A0255.255.255.0
->
-> #### WIFI configuration
-> config interface wifi
-> =A0 =A0 =A0 =A0option proto =A0 =A0none
-> =A0 =A0 =A0 =A0option mtu =A0 =A0 =A01528
->
-> #### WAN configuration
-> config interface wan
-> =A0 =A0 =A0 =A0option ifname =A0 "eth0.1"
-> =A0 =A0 =A0 =A0option proto =A0 =A0dhcp
->
-> On 04/18/2012 02:49 AM, Nicol=E1s Ech=E1niz wrote:
->> On 04/17/2012 05:41 PM, HeXiLeD wrote:
->>> I have being doing some testing with several types of configurations
->>> with custom openwrt build and batman in oder to try to come with a basi=
-c
->>> default "plug & play" ready to deploy firmware evolving the least
->>> changes possible other than the router's ip and not much more.
->>> I have tried several configurations, more than one subnet and have bein=
-g
->>> trying to see a way to make some nice HOW-Tos regarding this matter for
->>> several types of configurations.
->>>
->>> So far and from what i seen all working and half working examples do no=
-t
->>> work for everyone or at least no one or very few post complete
->>> configurations of all files in /etc/config/ =A0that actually fully work=
-.
->>>
->>> Then there is the question if bridging. Some say bridge this, others sa=
-y
->>> do not bridge that. None supply a fully working example that can be
->>> replicated. (i am glad i access the routers over serial cable which i
->>> recommend to everyone if they are working on builds and configurations.
->>
->> I can send you some sample configs if you wish, I copied some snippets
->> in this mail.
->
-> I would appreciate that very much
->
->>> config 'wifi-iface'
->>> =A0 =A0 =A0 =A0 option 'device' 'radio0'
->>> =A0 =A0 =A0 =A0 option 'hidden' '0'
->>> =A0 =A0 =A0 =A0 option 'mode' 'adhoc'
->>> =A0 =A0 =A0 =A0 option 'ssid' 'wireless'
->>> =A0 =A0 =A0 =A0 option 'bssid' '02:16:b8:6b:0a:1a'
->>> =A0 =A0 =A0 =A0 option 'encryption' 'none'
->>> =A0 =A0 =A0#option 'network' 'lan' #is optional or must match bridge na=
-me
->>> =A0 =A0 =A0 =A0 option 'mtu' '1528' #mtu seems to be ignored - needs fi=
-x
->>
->>
->> AFAIK mtu is set in config/network, not in config/wireless
->>
->>> # cat batman-adv
->>> config 'mesh' 'bat0'
->>> =A0 =A0 =A0 =A0 option 'ap_isolation' '0'
->>> =A0 =A0 =A0 =A0 option 'bonding' '0'
->>> =A0 =A0 =A0 =A0 option 'aggregation' '1'
->>> =A0 =A0 =A0 =A0 option 'fragmentation' '1'
->>> =A0 =A0 =A0 =A0 option 'gw_bandwidth' '3mbit/384kbit'
->>> =A0 =A0 =A0 =A0 option 'gw_mode' 'client'
->>> =A0 =A0 =A0 =A0 option 'gw_sel_class' '5'
->>> =A0 =A0 =A0 =A0 option 'orig_interval' '1000'
->>> =A0 =A0 =A0 =A0 option 'vis_mode' 'client'
->>> =A0 =A0 =A0 =A0 option 'interfaces' 'wlan0 eth0.0'
->>
->>
->> I believe you have your bridges mixed up.
->>
->> For a normal situation, you should make your batman interfaces members
->> of bat0 and then add bat0 to your br-lan, like so:
->>
->>
->> config 'mesh' 'bat0'
->> =A0 =A0 =A0 option 'interfaces' 'wlan0-1 eth0'
->>
->> config 'interface' 'lan'
->> =A0 =A0 =A0 option 'type' 'bridge'
->> =A0 =A0 =A0 option 'proto' 'static'
->> =A0 =A0 =A0 option 'netmask' '255.255.248.0'
->> =A0 =A0 =A0 option 'gateway' '10.5.0.1'
->> =A0 =A0 =A0 option 'dns' '8.8.8.8'
->> =A0 =A0 =A0 option 'mtu' '1500'
->> =A0 =A0 =A0 option 'ipaddr' '10.5.0.2'
->> =A0 =A0 =A0 option 'ifname' 'bat0 wlan0'
->>
->> config 'interface' 'wlan0_1'
->> =A0 =A0 =A0 option 'proto' 'none'
->> =A0 =A0 =A0 option 'mtu' '1528'
->> =A0 =A0 =A0 option 'ifname' 'wlan0-1'
->>
->>
->>
->> In this example, wlan0 runs an open AP where clients can connect, while
->> other mesh nodes connect through eth0 and wlan0-1.
->>
->> and this is the corresponding wireless config:
->>
->> config 'wifi-device' 'radio0'
->> =A0 =A0 =A0 option 'type' 'mac80211'
->> =A0 =A0 =A0 option 'macaddr' '00:15:6d:3e:XX:XX'
->> =A0 =A0 =A0 option 'hwmode' '11ng'
->> =A0 =A0 =A0 option 'channel' '1'
->> =A0 =A0 =A0 option 'country' 'US'
->> =A0 =A0 =A0 option 'txpower' '27'
->> =A0 =A0 =A0 option 'htmode' 'HT20'
->> =A0 =A0 option 'noscan' '1'
->>
->> config 'wifi-iface'
->> =A0 =A0 =A0 option 'network' 'lan'
->> =A0 =A0 =A0 option 'device' 'radio0'
->> =A0 =A0 =A0 option 'encryption' 'none'
->> =A0 =A0 =A0 option 'mode' 'ap'
->> =A0 =A0 =A0 option 'ssid' 'quintanalibre.org.ar'
->>
->> config 'wifi-iface'
->> =A0 =A0 =A0 option 'device' 'radio0'
->> =A0 =A0 =A0 option 'encryption' 'none'
->> =A0 =A0 =A0 option 'mode' 'adhoc'
->> =A0 =A0 =A0 option 'ssid' 'mesh.quintanalibre.org.ar'
->> =A0 =A0 =A0 option 'bssid' '02:12:34:56:78:9A'
->> =A0 =A0 =A0 option 'mcast_rate' '54000'
->>
->>
->> side note: experimenting with mcast_rate is an interesting to force bad
->> routes out of the picture.
->>
-> =A0According to openwrt mcast for broadcom is still in trunk stage, i
-> tried it with stable release but i am not sure it it actually worked as
-> it should.
->
->
->> I believe that the only time when you want a different bridge setup is
->> when you need to have batman and non-batman connections on the same
->> interface (a router's eth switch), then you'd use the setup described in
->> this document:
->> http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance
->>
->>
->>
->>> The last problem i now face (assuming that this configuration is valid)
->>> is the MTU settings which seem to be ignored no matter where i add them=
-;
->>> including creating the following for the other interfaces:
->>>
->>> config 'interface' 'wifi'
->>> =A0 =A0 =A0 =A0 option 'proto' 'none'
->>> =A0 =A0 =A0 =A0 option 'ifname' 'wlan0'
->>> =A0 =A0 =A0 =A0 option 'mtu' '1528'
->>
->> Here we use a similar method to get the MTU properly set (as you can see
->> in the previous config snippet).
->> This works well for us.
->>
->>
->>> I have lost quite a lot of sleep over these problems and it is natural
->>> that i might be missing something very simple.
->>>
->>> batman_adv: bat0: The MTU of interface eth0.0 is too small (1500) to
->>> handle the transport of batman-adv packets. Packets going over this
->>> interface will be fragmented on layer2 which could impact the
->>> performance. Setting the MTU to 1528 would solve the problem.
->>
->> have you tried setting the MTU from command line, like so:
->> # ifconfig wlan0 mtu 1528
->>
->> does this succeed?
->>
->>> batman_adv: bat0: The MTU of interface wlan0 is too small (1500) to
->>> handle the transport of batman-adv packets. Packets going over this
->>> interface will be fragmented on layer2 which could impact the
->>> performance. Setting the MTU to 1528 would solve the problem.
->>
->> we have found no solution for setting MTU above 1500 for wired
->> interfaces. If anyone has instructions about this, I'd also be very
->> interested.
->
-> Same issue here. Also looking for a possibility.
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v2.0.17 (GNU/Linux)
-> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
->
-> iQIcBAEBAgAGBQJPkHfoAAoJEA1GFAMAMJs7+LAP/2jWIOxwApoueW95ggzzpyjl
-> F/+vI9Dh/jwIXUByTGOVmRxG2wD8fb0iyFZ8aUKlp2xjxhiHruhPWzqcdcnvI9qQ
-> qRHXcaItnWUvRHb1eayJBrWrL6UHHgaoKR29KwDgurD6OjIZFTp0OMRXmp3w3Sc8
-> 8qlOX6NXGjNd4ovDn+RxtMzKTUbE4iX9gPNaLkAQvvpppgSrIJvrt8Alqgaj6oDj
-> MqtJRjXV+xw60+Bjndu72dFOg4NBLKXHnyLifH1LQ9yCDs6hnTdTYi9sDXgGF6Ip
-> uqNHLm6pQq2p+ubzVykYbupu68M3eHLnmHqbIplQn2mBECsax0g/NyVi1BhJmxQm
-> qKWvD3Oo23uBrXlVKAqME1casQ0IlZuHeI9XFq3sGyfpBewfsYk6JdUZEJ+ySDXA
-> lfe/YP+jHBJqnF4GBIAxELzMGJ9FK64dHL5zD+3OT0c/XQ/iXPKu0nrwCWfGxaLA
-> 54KRicheBUNCMiBmiSlqKXzKalkf063K31Ck6gVWjegBQpfvbK7WgWqy+kRmd1Fg
-> zkxesyRdG7GiWBK1CHcRRBG3KrmyrSKy5l+ZiBtkuQr+kS7h2fCCSobiVmwjLFg1
-> QgpdIQOVBQsT9GaPqrXtzHnCdlzO648kQiFJdqO9oDvV3lFvqlYSfx4I4k66zXYW
-> itBjNS3c2Y0pwqB85mQf
-> =3DdwAw
-> -----END PGP SIGNATURE-----
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
+ README                  |    5 ++++
+ bat_iv_ogm.c            |    9 +++++-
+ distributed-arp-table.c |    8 +++++-
+ main.c                  |    2 ++
+ main.h                  |   27 ++++++++++++++++++
+ routing.c               |   10 +++++++
+ soft-interface.c        |   71 +++++++++++++++++++++++++++++++++++++++++++++--
+ translation-table.c     |    8 ++++++
+ types.h                 |   23 +++++++++++++++
+ 9 files changed, 159 insertions(+), 4 deletions(-)
+
+diff --git a/README b/README
+index 82c075f..49c03d5 100644
+--- a/README
++++ b/README
+@@ -212,6 +212,11 @@ The debug output can be changed at runtime  using  the  file
+ 
+ will enable debug messages for when routes change.
+ 
++Counters for different types of packets entering and leaving the
++batman-adv module are available through ethtool:
++
++# ethtool --statistics bat0
++
+ 
+ BATCTL
+ ------
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 994369d..b222ed9 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -196,8 +196,12 @@ static void bat_iv_ogm_send_to_if(struct forw_packet *forw_packet,
+ 
+ 	/* create clone because function is called more than once */
+ 	skb = skb_clone(forw_packet->skb, GFP_ATOMIC);
+-	if (skb)
++	if (skb) {
++		inc_counter(bat_priv, BAT_CNT_MGMT_TX);
++		add_counter(bat_priv, BAT_CNT_MGMT_TX_BYTES,
++			    skb->len + ETH_HLEN);
+ 		send_skb_packet(skb, hard_iface, broadcast_addr);
++	}
+ }
+ 
+ /* send a batman ogm packet */
+@@ -1204,6 +1208,9 @@ static int bat_iv_ogm_receive(struct sk_buff *skb,
+ 	if (bat_priv->bat_algo_ops->bat_ogm_emit != bat_iv_ogm_emit)
+ 		return NET_RX_DROP;
+ 
++	inc_counter(bat_priv, BAT_CNT_MGMT_RX);
++	add_counter(bat_priv, BAT_CNT_MGMT_RX_BYTES, skb->len + ETH_HLEN);
++
+ 	packet_len = skb_headlen(skb);
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 	packet_buff = skb->data;
+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+index b43bece..a2d3821 100644
+--- a/distributed-arp-table.c
++++ b/distributed-arp-table.c
+@@ -395,9 +395,11 @@ bool dat_snoop_outgoing_arp_request(struct bat_priv *bat_priv,
+ 
+ 		netif_rx(skb_new);
+ 		bat_dbg(DBG_DAT, bat_priv, "ARP request replied locally\n");
+-	} else
++	} else {
+ 		/* Send the request on the DHT */
++		inc_counter(bat_priv, BAT_CNT_DAT_REQUEST_TX);
+ 		ret = dht_send_data(bat_priv, skb, ip_dst, BAT_P_DAT_DHT_GET);
++	}
+ out:
+ 	if (n)
+ 		neigh_release(n);
+@@ -450,6 +452,8 @@ bool dat_snoop_incoming_arp_request(struct bat_priv *bat_priv,
+ 	if (!skb_new)
+ 		goto out;
+ 
++	inc_counter(bat_priv, BAT_CNT_DAT_REPLY_TX);
++
+ 	unicast_4addr_send_skb(skb_new, bat_priv, BAT_P_DAT_CACHE_REPLY);
+ 
+ 	ret = true;
+@@ -488,6 +492,8 @@ bool dat_snoop_outgoing_arp_reply(struct bat_priv *bat_priv,
+ 	arp_neigh_update(bat_priv, ip_src, hw_src);
+ 	arp_neigh_update(bat_priv, ip_dst, hw_dst);
+ 
++	inc_counter(bat_priv, BAT_CNT_DAT_REPLY_TX);
++
+ 	/* Send the ARP reply to the candidates for both the IP addresses we
+ 	 * fetched from the ARP reply */
+ 	dht_send_data(bat_priv, skb, ip_src, BAT_P_DAT_DHT_PUT);
+diff --git a/main.c b/main.c
+index 0757c2d..5a193f5 100644
+--- a/main.c
++++ b/main.c
+@@ -153,6 +153,8 @@ void mesh_free(struct net_device *soft_iface)
+ 
+ 	bla_free(bat_priv);
+ 
++	free_percpu(bat_priv->bat_counters);
++
+ 	atomic_set(&bat_priv->mesh_state, MESH_INACTIVE);
+ }
+ 
+diff --git a/main.h b/main.h
+index c8bfe28..9dc7971 100644
+--- a/main.h
++++ b/main.h
+@@ -150,6 +150,7 @@ enum dbg_level {
+ #include <linux/kthread.h>	/* kernel threads */
+ #include <linux/pkt_sched.h>	/* schedule types */
+ #include <linux/workqueue.h>	/* workqueue */
++#include <linux/percpu.h>
+ #include <linux/slab.h>
+ #include <net/sock.h>		/* struct sock */
+ #include <linux/jiffies.h>
+@@ -259,4 +260,30 @@ static inline bool has_timed_out(unsigned long timestamp, unsigned int timeout)
+ 			  _dummy > smallest_signed_int(_dummy); })
+ #define seq_after(x, y) seq_before(y, x)
+ 
++/* Stop preemption on local cpu while incrementing the counter */
++static inline void add_counter(struct bat_priv *bat_priv, size_t idx,
++			       size_t count)
++{
++	int cpu = get_cpu();
++	per_cpu_ptr(bat_priv->bat_counters, cpu)[idx] += count;
++	put_cpu();
++}
++
++#define inc_counter(b, i) add_counter(b, i, 1)
++
++/* Sum and return the cpu-local counters for index 'idx' */
++static inline uint64_t sum_counter(struct bat_priv *bat_priv, size_t idx)
++{
++	uint64_t *counters;
++	int cpu;
++	int sum = 0;
++
++	for_each_possible_cpu(cpu) {
++		counters = per_cpu_ptr(bat_priv->bat_counters, cpu);
++		sum += counters[idx];
++	}
++
++	return sum;
++}
++
+ #endif /* _NET_BATMAN_ADV_MAIN_H_ */
+diff --git a/routing.c b/routing.c
+index 795d3af..de420c6 100644
+--- a/routing.c
++++ b/routing.c
+@@ -600,6 +600,8 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ 
+ 	switch (tt_query->flags & TT_QUERY_TYPE_MASK) {
+ 	case TT_REQUEST:
++		inc_counter(bat_priv, BAT_CNT_TT_REQUEST_RX);
++
+ 		/* If we cannot provide an answer the tt_request is
+ 		 * forwarded */
+ 		if (!send_tt_response(bat_priv, tt_query)) {
+@@ -612,6 +614,8 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		}
+ 		break;
+ 	case TT_RESPONSE:
++		inc_counter(bat_priv, BAT_CNT_TT_RESPONSE_RX);
++
+ 		if (is_my_mac(tt_query->dst)) {
+ 			/* packet needs to be linearized to access the TT
+ 			 * changes */
+@@ -663,6 +667,8 @@ int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	if (is_broadcast_ether_addr(ethhdr->h_source))
+ 		goto out;
+ 
++	inc_counter(bat_priv, BAT_CNT_TT_ROAM_ADV_RX);
++
+ 	roam_adv_packet = (struct roam_adv_packet *)skb->data;
+ 
+ 	if (!is_my_mac(roam_adv_packet->dst))
+@@ -869,6 +875,10 @@ static int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	/* decrement ttl */
+ 	unicast_packet->header.ttl--;
+ 
++	/* Update stats counter */
++	inc_counter(bat_priv, BAT_CNT_FORWARD);
++	add_counter(bat_priv, BAT_CNT_FORWARD_BYTES, skb->len + ETH_HLEN);
++
+ 	/* route it */
+ 	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
+ 	ret = NET_RX_SUCCESS;
+diff --git a/soft-interface.c b/soft-interface.c
+index 92137af..ab13af9 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -46,6 +46,10 @@ static void bat_get_drvinfo(struct net_device *dev,
+ static u32 bat_get_msglevel(struct net_device *dev);
+ static void bat_set_msglevel(struct net_device *dev, u32 value);
+ static u32 bat_get_link(struct net_device *dev);
++static void bat_get_strings(struct net_device *dev, u32 stringset, u8 *data);
++static void bat_get_ethtool_stats(struct net_device *dev,
++				  struct ethtool_stats *stats, u64 *data);
++static int bat_get_sset_count(struct net_device *dev, int stringset);
+ 
+ static const struct ethtool_ops bat_ethtool_ops = {
+ 	.get_settings = bat_get_settings,
+@@ -53,6 +57,9 @@ static const struct ethtool_ops bat_ethtool_ops = {
+ 	.get_msglevel = bat_get_msglevel,
+ 	.set_msglevel = bat_set_msglevel,
+ 	.get_link = bat_get_link,
++	.get_strings = bat_get_strings,
++	.get_ethtool_stats = bat_get_ethtool_stats,
++	.get_sset_count = bat_get_sset_count,
+ };
+ 
+ int my_skb_head_push(struct sk_buff *skb, unsigned int len)
+@@ -411,13 +418,18 @@ struct net_device *softif_create(const char *name)
+ 	bat_priv->primary_if = NULL;
+ 	bat_priv->num_ifaces = 0;
+ 
++	bat_priv->bat_counters = __alloc_percpu(sizeof(uint64_t) * BAT_CNT_NUM,
++						__alignof__(uint64_t));
++	if (!bat_priv->bat_counters)
++		goto unreg_soft_iface;
++
+ 	ret = bat_algo_select(bat_priv, bat_routing_algo);
+ 	if (ret < 0)
+-		goto unreg_soft_iface;
++		goto free_bat_counters;
+ 
+ 	ret = sysfs_add_meshif(soft_iface);
+ 	if (ret < 0)
+-		goto unreg_soft_iface;
++		goto free_bat_counters;
+ 
+ 	ret = debugfs_add_meshif(soft_iface);
+ 	if (ret < 0)
+@@ -433,6 +445,8 @@ unreg_debugfs:
+ 	debugfs_del_meshif(soft_iface);
+ unreg_sysfs:
+ 	sysfs_del_meshif(soft_iface);
++free_bat_counters:
++	free_percpu(bat_priv->bat_counters);
+ unreg_soft_iface:
+ 	unregister_netdevice(soft_iface);
+ 	return NULL;
+@@ -498,3 +512,56 @@ static u32 bat_get_link(struct net_device *dev)
+ {
+ 	return 1;
+ }
++
++/* Inspired by drivers/net/ethernet/dlink/sundance.c:1702
++ * Declare each description string in struct.name[] to get fixed sized buffer
++ * and compile time checking for strings longer than ETH_GSTRING_LEN.
++ */
++static const struct {
++	const char name[ETH_GSTRING_LEN];
++} bat_counters_strings[] = {
++	{ "forward" },
++	{ "forward_bytes" },
++	{ "mgmt_tx" },
++	{ "mgmt_tx_bytes" },
++	{ "mgmt_rx" },
++	{ "mgmt_rx_bytes" },
++	{ "tt_request_tx" },
++	{ "tt_request_rx" },
++	{ "tt_response_tx" },
++	{ "tt_response_rx" },
++	{ "tt_roam_adv_tx" },
++	{ "tt_roam_adv_rx" },
++#ifdef CONFIG_BATMAN_ADV_DAT
++	{ "dat_request_tx" },
++	{ "dat_request_rx" },
++	{ "dat_reply_tx" },
++	{ "dat_reply_rx" },
++#endif
++};
++
++static void bat_get_strings(struct net_device *dev, uint32_t stringset,
++			    uint8_t *data)
++{
++	if (stringset == ETH_SS_STATS)
++		memcpy(data, bat_counters_strings,
++		       sizeof(bat_counters_strings));
++}
++
++static void bat_get_ethtool_stats(struct net_device *dev,
++				  struct ethtool_stats *stats, uint64_t *data)
++{
++	struct bat_priv *bat_priv = netdev_priv(dev);
++	int i;
++
++	for (i = 0; i < BAT_CNT_NUM; i++)
++		data[i] = sum_counter(bat_priv, i);
++}
++
++static int bat_get_sset_count(struct net_device *dev, int stringset)
++{
++	if (stringset == ETH_SS_STATS)
++		return BAT_CNT_NUM;
++
++	return -EOPNOTSUPP;
++}
+diff --git a/translation-table.c b/translation-table.c
+index b3e608a..7f5dffe 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1352,6 +1352,8 @@ static int send_tt_request(struct bat_priv *bat_priv,
+ 		dst_orig_node->orig, neigh_node->addr,
+ 		(full_table ? 'F' : '.'));
+ 
++	inc_counter(bat_priv, BAT_CNT_TT_REQUEST_TX);
++
+ 	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
+ 	ret = 0;
+ 
+@@ -1476,6 +1478,8 @@ static bool send_other_tt_response(struct bat_priv *bat_priv,
+ 		res_dst_orig_node->orig, neigh_node->addr,
+ 		req_dst_orig_node->orig, req_ttvn);
+ 
++	inc_counter(bat_priv, BAT_CNT_TT_RESPONSE_TX);
++
+ 	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
+ 	ret = true;
+ 	goto out;
+@@ -1592,6 +1596,8 @@ static bool send_my_tt_response(struct bat_priv *bat_priv,
+ 		orig_node->orig, neigh_node->addr,
+ 		(tt_response->flags & TT_FULL_TABLE ? 'F' : '.'));
+ 
++	inc_counter(bat_priv, BAT_CNT_TT_RESPONSE_TX);
++
+ 	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
+ 	ret = true;
+ 	goto out;
+@@ -1891,6 +1897,8 @@ static void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
+ 		"Sending ROAMING_ADV to %pM (client %pM) via %pM\n",
+ 		orig_node->orig, client, neigh_node->addr);
+ 
++	inc_counter(bat_priv, BAT_CNT_TT_ROAM_ADV_TX);
++
+ 	send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
+ 	ret = 0;
+ 
+diff --git a/types.h b/types.h
+index 15f538a..57ba44f 100644
+--- a/types.h
++++ b/types.h
+@@ -162,9 +162,32 @@ struct bcast_duplist_entry {
+ };
+ #endif
+ 
++enum bat_counters {
++	BAT_CNT_FORWARD,
++	BAT_CNT_FORWARD_BYTES,
++	BAT_CNT_MGMT_TX,
++	BAT_CNT_MGMT_TX_BYTES,
++	BAT_CNT_MGMT_RX,
++	BAT_CNT_MGMT_RX_BYTES,
++	BAT_CNT_TT_REQUEST_TX,
++	BAT_CNT_TT_REQUEST_RX,
++	BAT_CNT_TT_RESPONSE_TX,
++	BAT_CNT_TT_RESPONSE_RX,
++	BAT_CNT_TT_ROAM_ADV_TX,
++	BAT_CNT_TT_ROAM_ADV_RX,
++#ifdef CONFIG_BATMAN_ADV_DAT
++	BAT_CNT_DAT_REQUEST_TX,
++	BAT_CNT_DAT_REQUEST_RX,
++	BAT_CNT_DAT_REPLY_TX,
++	BAT_CNT_DAT_REPLY_RX,
++#endif
++	BAT_CNT_NUM,
++};
++
+ struct bat_priv {
+ 	atomic_t mesh_state;
+ 	struct net_device_stats stats;
++	uint64_t *bat_counters; /* Per cpu counters */
+ 	atomic_t aggregated_ogms;	/* boolean */
+ 	atomic_t bonding;		/* boolean */
+ 	atomic_t fragmentation;		/* boolean */
+-- 
+1.7.10
+
