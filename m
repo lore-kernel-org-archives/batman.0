@@ -1,12 +1,12 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Tue, 24 Apr 2012 10:28:31 +0200
-Message-Id: <1335256111-21770-1-git-send-email-martin@hundeboll.net>
+Date: Tue, 24 Apr 2012 10:30:30 +0200
+Message-Id: <1335256230-23496-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: make __alloc_percpu 2.6.29
-	compatible
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add cast to bat_counters in
+	types.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +21,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-In 2.6.29, __alloc_percpu doesn't take a align argument, so ignore this.
-
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
- compat.h |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ types.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/compat.h b/compat.h
-index 1cf5210..98b2b4c 100644
---- a/compat.h
-+++ b/compat.h
-@@ -148,4 +148,13 @@ static inline void eth_hw_addr_random(struct net_device *dev)
- 
- #endif /* < KERNEL_VERSION(3, 4, 0) */
- 
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 30)
-+
-+#undef __alloc_percpu
-+#define __alloc_percpu(size, align) \
-+	percpu_alloc_mask((size), GFP_KERNEL, cpu_possible_map)
-+
-+#endif /* < KERNEL_VERSION(2, 6, 30) */
-+
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/types.h b/types.h
+index 2944f77..41283e0 100644
+--- a/types.h
++++ b/types.h
+@@ -187,7 +187,7 @@ enum bat_counters {
+ struct bat_priv {
+ 	atomic_t mesh_state;
+ 	struct net_device_stats stats;
+-	uint64_t *bat_counters; /* Per cpu counters */
++	uint64_t __percpu *bat_counters; /* Per cpu counters */
+ 	atomic_t aggregated_ogms;	/* boolean */
+ 	atomic_t bonding;		/* boolean */
+ 	atomic_t fragmentation;		/* boolean */
 -- 
 1.7.10
 
