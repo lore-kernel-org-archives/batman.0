@@ -1,15 +1,12 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 23 Apr 2012 10:38:48 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120423083847.GA28085@ritirata.org>
-References: <1335169975-6485-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Tue, 24 Apr 2012 10:28:31 +0200
+Message-Id: <1335256111-21770-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
-Content-Disposition: inline
-In-Reply-To: <1335169975-6485-1-git-send-email-lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: return added entries instead
- of number of possibly added entries
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: make __alloc_percpu 2.6.29
+	compatible
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,40 +18,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
+In 2.6.29, __alloc_percpu doesn't take a align argument, so ignore this.
 
---OgqxwSJOaUobr8KG
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
+ compat.h |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-On Mon, Apr 23, 2012 at 04:32:55 +0800, Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+diff --git a/compat.h b/compat.h
+index 1cf5210..98b2b4c 100644
+--- a/compat.h
++++ b/compat.h
+@@ -148,4 +148,13 @@ static inline void eth_hw_addr_random(struct net_device *dev)
+ 
+ #endif /* < KERNEL_VERSION(3, 4, 0) */
+ 
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 30)
++
++#undef __alloc_percpu
++#define __alloc_percpu(size, align) \
++	percpu_alloc_mask((size), GFP_KERNEL, cpu_possible_map)
++
++#endif /* < KERNEL_VERSION(2, 6, 30) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+-- 
+1.7.10
 
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---OgqxwSJOaUobr8KG
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPlRUXAAoJEFMQTLzJFOZFa2EH/jT/p7Hv6fysaDNLJDTsEuW2
-dkwl+Aq4gsOssRvG3rQ1n8CthRzpVbOGuxynirhlWida7M9I6HLzMlsOCIsH7n1V
-7OunftgKFNjF1r2yFqrME2VpP7sjICzYLcPe/CS4D0PX0ZaUg4tJ1bPPkzDwHO8O
-0m0MCxYgMvjESHjuFXtX7A82o4e6GcKejiwC5ju8qlr0iTAmb3TbVqos5Wgp25FR
-vx5pBpPD1I7Wn5fa9sfT+ij+VJq8vLzIbRt916+frsI4dSgt+1voud1kSKPRdMuk
-PRlK/L7NmL14Okt8XaCZm+xu2gDOTUam4ueUZAsChIsaUQJy93M6R+/ltsFkcVc=
-=4bwl
------END PGP SIGNATURE-----
-
---OgqxwSJOaUobr8KG--
