@@ -1,12 +1,8 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Tue, 24 Apr 2012 10:30:30 +0200
-Message-Id: <1335256230-23496-1-git-send-email-martin@hundeboll.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add cast to bat_counters in
-	types.h
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 24 Apr 2012 10:47:07 +0200
+Message-Id: <1335257230-14871-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/3] Cleanups
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,26 +15,19 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
----
- types.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+*** This patches are for next since they should be sent to David within the next
+pull request ***
 
-diff --git a/types.h b/types.h
-index 2944f77..41283e0 100644
---- a/types.h
-+++ b/types.h
-@@ -187,7 +187,7 @@ enum bat_counters {
- struct bat_priv {
- 	atomic_t mesh_state;
- 	struct net_device_stats stats;
--	uint64_t *bat_counters; /* Per cpu counters */
-+	uint64_t __percpu *bat_counters; /* Per cpu counters */
- 	atomic_t aggregated_ogms;	/* boolean */
- 	atomic_t bonding;		/* boolean */
- 	atomic_t fragmentation;		/* boolean */
--- 
-1.7.10
+The following three patches simply clean the code by following David's
+suggestions and more.
+
+Remember:
+- multiline comment must end with */ on a new line
+- not compiled-in routines must be faked by means of static functions, not
+  defines
+
+
+Thanks,
+	Antonio
 
