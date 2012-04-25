@@ -1,17 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 25 Apr 2012 20:18:53 +0800
+Date: Wed, 25 Apr 2012 20:25:36 +0800
 References: <1334743210-12338-1-git-send-email-ordex@autistici.org>
 	<20120419061026.GC8658@ritirata.org>
-	<20120422064750.GX6871@ZenIV.linux.org.uk>
-In-Reply-To: <20120422064750.GX6871@ZenIV.linux.org.uk>
+	<20120422064629.GW6871@ZenIV.linux.org.uk>
+In-Reply-To: <20120422064629.GW6871@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201204252018.54154.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: trivial endianness
-	annotations
+Message-Id: <201204252025.37355.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: keep batman_ogm_packet
+	->seqno net-endian all along
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,16 +26,14 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Al Viro <viro@zeniv.linux.org.uk>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, April 22, 2012 14:47:50 Al Viro wrote:
+On Sunday, April 22, 2012 14:46:29 Al Viro wrote:
 > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 > ---
->  net/batman-adv/bridge_loop_avoidance.c |    6 +++---
->  net/batman-adv/distributed-arp-table.c |   16 ++++++++--------
->  net/batman-adv/distributed-arp-table.h |    4 ++--
->  net/batman-adv/packet.h                |   12 ++++++------
->  4 files changed, 19 insertions(+), 19 deletions(-)
+>  net/batman-adv/bat_iv_ogm.c |   25 ++++++++++---------------
+>  net/batman-adv/packet.h     |    2 +-
+>  2 files changed, 11 insertions(+), 16 deletions(-)
 
-Applied in revision 276f053.
+Applied in revision e62e464.
 
 Thanks,
 Marek
