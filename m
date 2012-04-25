@@ -1,12 +1,15 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Wed, 25 Apr 2012 15:30:49 +0200
-Message-Id: <1335360649-19275-1-git-send-email-martin@hundeboll.net>
+Return-Path: <David.Laight@ACULAB.COM>
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Define attribute __percpu for <
-	2.6.33
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Date: Wed, 25 Apr 2012 15:14:21 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6EF3@saturn3.aculab.com>
+In-Reply-To: <1335360431-30027-4-git-send-email-ordex@autistici.org>
+From: "David Laight" <David.Laight@ACULAB.COM>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/15] batman-adv: add
+	biggest_unsigned_int(x) macro
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,26 +21,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+To: Antonio Quartulli <ordex@autistici.org>, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
----
- compat.h |    1 +
- 1 file changed, 1 insertion(+)
+=20
 
-diff --git a/compat.h b/compat.h
-index 2dc41b1..33c52d3 100644
---- a/compat.h
-+++ b/compat.h
-@@ -59,6 +59,7 @@
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
- 
- #define __always_unused			__attribute__((unused))
-+#define __percpu
- 
- #define skb_iif iif
- 
--- 
-1.7.10
+> +/* Returns the biggest unsigned integer with the sizeof x */
+> +#define biggest_unsigned_int(x) (~(x)0)
+
+Nope - biggest_unsigned_int(unsigned char) is probably 0xffffffff
+
+	David
+
 
