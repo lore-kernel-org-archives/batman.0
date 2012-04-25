@@ -1,15 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 25 Apr 2012 20:04:02 +0800
-References: <1335256230-23496-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1335256230-23496-1-git-send-email-martin@hundeboll.net>
+Date: Wed, 25 Apr 2012 20:14:39 +0800
+References: <1334743210-12338-1-git-send-email-ordex@autistici.org>
+	<20120419061026.GC8658@ritirata.org>
+	<20120422065029.GY6871@ZenIV.linux.org.uk>
+In-Reply-To: <20120422065029.GY6871@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201204252004.02454.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Add cast to bat_counters in
-	types.h
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201204252014.39353.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: get rid of pointless
+	cast in memcpy()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,15 +23,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, April 24, 2012 16:30:30 Martin Hundeb=C3=B8ll wrote:
-> Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
-> ---
->  types.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On Sunday, April 22, 2012 14:50:29 Al Viro wrote:
+> memcpy() arguments are void *, precisely to avoid that kind of pointless
+> casts.
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-Applied in revision e214bc7.
+Applied in revision 815cfb5.
 
 Thanks,
 Marek
