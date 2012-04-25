@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 25 Apr 2012 19:52:42 +0800
-References: <1335257230-14871-1-git-send-email-ordex@autistici.org>
-	<1335257230-14871-4-git-send-email-ordex@autistici.org>
-In-Reply-To: <1335257230-14871-4-git-send-email-ordex@autistici.org>
+Date: Wed, 25 Apr 2012 20:01:32 +0800
+References: <1335256111-21770-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1335256111-21770-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201204251952.42667.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: use fake functions
-	instead of defines for not compiled-in routines
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201204252001.32825.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: make __alloc_percpu 2.6.29
+	compatible
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,13 +23,15 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, April 24, 2012 16:47:10 Antonio Quartulli wrote:
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+On Tuesday, April 24, 2012 16:28:31 Martin Hundeb=C3=B8ll wrote:
+> In 2.6.29, __alloc_percpu doesn't take a align argument, so ignore this.
+>=20
+> Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > ---
->  distributed-arp-table.c |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+>  compat.h |    9 +++++++++
+>  1 file changed, 9 insertions(+)
 
-Applied in revision c7029f9.
+Applied (with slight modifications) in revision 4f3b54d.
 
 Thanks,
 Marek
