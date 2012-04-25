@@ -1,15 +1,14 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 25 Apr 2012 14:09:04 -0400 (EDT)
-Message-Id: <20120425.140904.935584797119761625.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6EF4@saturn3.aculab.com>
-References: <AE90C24D6B3A694183C094C60CF0A2F6026B6EF3@saturn3.aculab.com>
-	<AE90C24D6B3A694183C094C60CF0A2F6026B6EF4@saturn3.aculab.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <gtolon@inti.gob.ar>
+Message-ID: <4F985E17.8030309@inti.gob.ar>
+Date: Wed, 25 Apr 2012 17:27:03 -0300
+From: gtolon@inti.gob.ar
+MIME-Version: 1.0
+References: <AE90C24D6B3A694183C094C60CF0A2F6026B6EF3@saturn3.aculab.com>	<AE90C24D6B3A694183C094C60CF0A2F6026B6EF4@saturn3.aculab.com>
+	<20120425.140904.935584797119761625.davem@davemloft.net>
+In-Reply-To: <20120425.140904.935584797119761625.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 03/15] batman-adv: add
-	biggest_unsigned_int(x) macro
+Subject: [B.A.T.M.A.N.] Traffic Control in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,18 +20,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David.Laight@ACULAB.COM
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: "David Laight" <David.Laight@ACULAB.COM>
-Date: Wed, 25 Apr 2012 15:57:39 +0100
+Hi,
 
->  
->> > +/* Returns the biggest unsigned integer with the sizeof x */
->> > +#define biggest_unsigned_int(x) (~(x)0)
->> 
->> Nope - biggest_unsigned_int(unsigned char) is probably 0xffffffff
-> 
-> To correct myself, it is actually ((int)(-1)) (ie a signed value).
+We are doing some tests with Traffic Control (tc) in routers with 
+Openwrt running batman-adv, want to be able to share the bandwidth with 
+some degree of fairness between users, so we think that SFQ could help, 
+differentiating the flows depending on ip addresses and ports.
 
-In any event this is just a terrible macro, and too stupid to live.
+The problem is that when adding the SFQ qdisc to the wireless interface 
+managed by batman it doesn't work as expected. We tested the SFQ in 
+other configurations and it worked fine, in full queues, the dropped 
+packets affected the big flows, allowing the others to pass, but in the 
+interface managed by batman-adv when packets are dropped, the result 
+affects all flows almost equally. We thought this could be related with 
+the bridge we use to connect the batman with the non-batman interfaces, 
+but in a wireless Acces Point bridged to bat0 it also worked fine. Maybe 
+it's related with the way bat0 works with it's managed interface? We'd 
+appreciate any advices. Thanks in advance!
+
+Gabriel
