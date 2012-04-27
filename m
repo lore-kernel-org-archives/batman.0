@@ -1,15 +1,18 @@
-Return-Path: <trizonelabs@googlemail.com>
+Return-Path: <ordex@autistici.org>
 MIME-Version: 1.0
-In-Reply-To: <201204262326.06705.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Fri, 27 Apr 2012 14:51:08 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+In-Reply-To: <20120425.140904.935584797119761625.davem@davemloft.net>
 References: <AE90C24D6B3A694183C094C60CF0A2F6026B6EF3@saturn3.aculab.com>
-	<4F994681.9040300@inti.gob.ar>
-	<CAJuY50ygkeQgr=CXUpZGJdR8AXQMq3gtEs0WvM5cQeE=ARf3MQ@mail.gmail.com>
-	<201204262326.06705.lindner_marek@yahoo.de>
-Date: Thu, 26 Apr 2012 19:04:22 +0300
-Message-ID: <CAJuY50z3PfkDj0R3VUViZA_RqWk-jfwQSXp4LrgSsaAY+H2_iA@mail.gmail.com>
-From: 3zl Trizonelabs <trizonelabs@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Traffic Control in batman-adv
+	<AE90C24D6B3A694183C094C60CF0A2F6026B6EF4@saturn3.aculab.com>
+	<20120425.140904.935584797119761625.davem@davemloft.net>
+Message-ID: <f56ca946ce96504fcedbbfef0967b210@autistici.org>
+Subject: Re: [B.A.T.M.A.N.]
+ =?utf-8?q?=5BPATCH_03/15=5D_batman-adv=3A_add_bigg?=
+ =?utf-8?q?est=5Funsigned=5Fint=28x=29_macro?=
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +24,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, david.laight@aculab.com, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Marek,
-since WBM Athens, where i met you guys,i decided to prepare some stuff
-and organize it on a collaborating site for batman-adv applications
-Everybody is  welcome to join.
-I'll add your email to the Mindmono Mindmap site to get some ideas how
-to organize the site. ( teamlab.com would be nice)
-Have a look at the mindmap
-:http://www.mindomo.com/view.htm?m=bbde50c10b0b4864bde98b83f2a7cf3b
-regards
-3zl
-Greece/Germany
-
-2012/4/26 Marek Lindner <lindner_marek@yahoo.de>:
-> On Thursday, April 26, 2012 22:49:24 3zl Trizonelabs wrote:
->> maybe pic this will help
+Il 25.04.2012 20:09 David Miller ha scritto:
+> From: "David Laight" <David.Laight@ACULAB.COM>
+> Date: Wed, 25 Apr 2012 15:57:39 +0100
+>
 >>
->> http://www.bild.me/bild.php?file=9951400Batman-CPE-config.png
+>>> > +/* Returns the biggest unsigned integer with the sizeof x */
+>>> > +#define biggest_unsigned_int(x) (~(x)0)
+>>>
+>>> Nope - biggest_unsigned_int(unsigned char) is probably 0xffffffff
+>>
+>> To correct myself, it is actually ((int)(-1)) (ie a signed value).
 >
->
-> Hey,
->
-> that is a very good graphical explanation of the setup! Do you happen to have
-> more of those ? Maybe we should create a page talking about possible network
-> setups and include your stuff there ?
->
-> Cheers,
-> Marek
+> In any event this is just a terrible macro, and too stupid to live.
+
+Hello David,
+
+ok. So the suggestion is to directly use the ~ operator in the code 
+without creating a macro.
+If the rest of the patchset is ok, I will eliminate this macro and 
+resend the pull request again.
+
+Cheers,
+
+
+-- 
+Antonio Quartulli
