@@ -1,18 +1,15 @@
-Return-Path: <trizonelabs@googlemail.com>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-In-Reply-To: <CAHD-aqK3iQ9TEDjHx0F-HXU7dR8OUhJQSLZkU=dsVRcSBqJBHQ@mail.gmail.com>
-References: <AE90C24D6B3A694183C094C60CF0A2F6026B6EF3@saturn3.aculab.com>
-	<4F994681.9040300@inti.gob.ar>
-	<CAJuY50ygkeQgr=CXUpZGJdR8AXQMq3gtEs0WvM5cQeE=ARf3MQ@mail.gmail.com>
-	<201204262326.06705.lindner_marek@yahoo.de>
-	<CAJuY50z3PfkDj0R3VUViZA_RqWk-jfwQSXp4LrgSsaAY+H2_iA@mail.gmail.com>
-	<4F9AE2E6.3090909@inti.gob.ar>
-	<CAHD-aqK3iQ9TEDjHx0F-HXU7dR8OUhJQSLZkU=dsVRcSBqJBHQ@mail.gmail.com>
-Date: Sat, 28 Apr 2012 01:34:28 +0300
-Message-ID: <CAJuY50y+mJ4AvBEEb-Fi9uPUom+KPgyGrxSiwnRqiyA2H0hUGQ@mail.gmail.com>
-From: 3zl Trizonelabs <trizonelabs@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Traffic Control in batman-adv
+Sender: guido@guidoi.com.ar
+In-Reply-To: <67286569-54F7-4AF1-A6E8-E710516F9155@solvare.se>
+References: <CAJuY50yHZUZ6USgMYHEnZHc+hzb0nu+UJ4wRz2sCSEF+f=pybA@mail.gmail.com>
+	<67286569-54F7-4AF1-A6E8-E710516F9155@solvare.se>
+From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
+Date: Sat, 28 Apr 2012 04:09:26 -0300
+Message-ID: <CAHD-aqKCdR_84MhbJOKRckeEkg+jL2Hmdu68rOSqzxvPT7EEow@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] collaboration-group on batman-adv installation &
+	application
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,18 +21,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, interop-dev@lists.funkfeuer.at
 
-measuring bandwidth we test with "assolo" packet in afrimesh repos
-(builds ok with trunk)
+> 19 apr 2012 kl. 18:39 skrev 3zl Trizonelabs:
+>
+>> I would like to organize a kind of collaboration-site on all practical
+>> aspects of batman-adv installation.
+>>
+>> It could be a platform to discuss, interchange know how dealing with
+>> all aspects of batman-adv mesh application
 
-maybe also have a look at
+A maillist + wiki sounds too oldskool?
+I like the surprising visibility that pipermail archives have on
+google searches,
+and OTOH i personally read & write emails on several (mobile) devices,
+while AJAX webguis restrict my collaboration to the few times i'm
+sitting in front of a computer.
 
+maybe do something 'inside' the interop project, so that there's space
+to share config snippets and talk about use cases,
+which serves two purposes:
+1) we can help each other solve here&now the challenges we are facing
+building the networks, until the interop team develops a common
+solution..
+2) the experiences can feed the development process of the common solution.
 
-http://wiki.openwrt.org/doc/howto/packet.scheduler/packet.scheduler.theory
+The actual interop wiki sounds compatible and welcoming:
+'This site is as a common wiki, playground, drawing board, ideas
+thrasher and everything else for different aspects of open networks
+interoperability and cooperation.'
 
-  TBF with netem discussed here
-                    https://forum.openwrt.org/viewtopic.php?pid=161108
+To keep things tidy, should we nest everything under
+http://interop.wlan-si.net/wiki/WikiSquatters/  ?
+;)
 
-regards
-3zl
+What do you interop-people think? If it sounds too OT, do you have any
+pointer to give?
+
+Guido
