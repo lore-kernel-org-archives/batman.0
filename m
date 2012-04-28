@@ -1,14 +1,14 @@
-Return-Path: <mitar@tnode.com>
-Message-ID: <4F9BD725.2060702@tnode.com>
-Date: Sat, 28 Apr 2012 13:40:21 +0200
-From: Mitar <mitar@tnode.com>
+Return-Path: <trizonelabs@googlemail.com>
 MIME-Version: 1.0
+In-Reply-To: <4F9BD725.2060702@tnode.com>
 References: <CAJuY50yHZUZ6USgMYHEnZHc+hzb0nu+UJ4wRz2sCSEF+f=pybA@mail.gmail.com>
 	<67286569-54F7-4AF1-A6E8-E710516F9155@solvare.se>
 	<CAHD-aqKCdR_84MhbJOKRckeEkg+jL2Hmdu68rOSqzxvPT7EEow@mail.gmail.com>
-In-Reply-To: <CAHD-aqKCdR_84MhbJOKRckeEkg+jL2Hmdu68rOSqzxvPT7EEow@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	<4F9BD725.2060702@tnode.com>
+Date: Sat, 28 Apr 2012 15:53:06 +0300
+Message-ID: <CAJuY50yX_4=zT_oU1=hvKgsyp53HfDf3mRLfUxtFiONwfj4RXg@mail.gmail.com>
+From: 3zl Trizonelabs <trizonelabs@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Subject: Re: [B.A.T.M.A.N.] [Interop-dev] collaboration-group on batman-adv
  installation & application
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,25 +22,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, interop-dev@lists.funkfeuer.at
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi!
+Hi Mitar, tnx for answering.
+There was nearly no response on my first try, so i thought to ask around.
 
-> To keep things tidy, should we nest everything under
-> http://interop.wlan-si.net/wiki/WikiSquatters/  ?
-> ;)
+Generally i feel, that a Wiki lacks much of organization possibilites
+as do the most forum packets.
 
-No need for that. Maybe just /wiki/Gudes/ or /wiki/Tutorials/?
+Maybe we could agree on some points and weight their capabilities.
+Once started its difficult to change.
 
-Anyway, I am not sure what is wrong with current Batman wiki?
+some considerations (i started to test for myself in Teamlab and found
+useful - not in any order)
 
-http://www.open-mesh.org/wiki/batman-adv
+Tasks
+Documents
+Files
+Website
+Discussion platform
+Forum
+Wiki
+Chat
+Email-notification
+Mindmap
+access regulation (admin/maintainer/coworker/visitor)
 
-On one side I am very for combining our efforts, but we should make sure
-that content is updated/actual/maintained and this is possible only if
-communities are behind it. So yes, we could start doing a common wiki
-for everything, too. :-)
+i do hope so we can agree to a solution which suits for everyone
 
+regards
+3zl
 
-Mitar
+ps.: how about to name that "JOKER" ;-)
