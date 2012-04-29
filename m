@@ -1,15 +1,11 @@
-Return-Path: <ordex@autistici.org>
-Date: Sun, 29 Apr 2012 11:12:54 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120429091253.GB30759@ritirata.org>
-References: <1335690403-25228-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="yEPQxsgoJgBvi8ip"
-Content-Disposition: inline
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 29 Apr 2012 11:31:01 +0200
+Message-Id: <1335691861-26209-1-git-send-email-sven@narfation.org>
 In-Reply-To: <1335690403-25228-1-git-send-email-sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [RFC 1/2] batman-adv: Free local translation
- table on error in tt_init
+References: <1335690403-25228-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC 3/2] batman-adv: Free bla hashes on error in
+	bla_init
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,63 +17,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ bridge_loop_avoidance.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
---yEPQxsgoJgBvi8ip
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 6d33140..4ac1061 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -1167,15 +1167,19 @@ int bla_init(struct bat_priv *bat_priv)
+ 		return 0;
+ 
+ 	bat_priv->claim_hash = hash_new(128);
++	if (!bat_priv->claim_hash)
++		return -ENOMEM;
++
+ 	bat_priv->backbone_hash = hash_new(32);
++	if (!bat_priv->backbone_hash) {
++		hash_destroy(bat_priv->claim_hash);
++		return -ENOMEM;
++	}
+ 
+ 	hash_set_lock_class(bat_priv->claim_hash, &claim_hash_lock_class_key);
+ 	hash_set_lock_class(bat_priv->backbone_hash,
+ 			    &backbone_hash_lock_class_key);
+ 
+-	if (!bat_priv->claim_hash || !bat_priv->backbone_hash)
+-		return -ENOMEM;
+-
+ 	bat_dbg(DBG_BLA, bat_priv, "bla hashes initialized\n");
+ 
+ 	bla_start_timer(bat_priv);
+-- 
+1.7.10
 
-On Sun, Apr 29, 2012 at 11:06:42AM +0200, Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-
-Thank you Sven!
-
-> ---
->  translation-table.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->=20
-> diff --git a/translation-table.c b/translation-table.c
-> index 88c62f1..c3b7773 100644
-> --- a/translation-table.c
-> +++ b/translation-table.c
-> @@ -1776,8 +1776,10 @@ int tt_init(struct bat_priv *bat_priv)
->  	if (!tt_local_init(bat_priv))
->  		return 0;
-> =20
-> -	if (!tt_global_init(bat_priv))
-> +	if (!tt_global_init(bat_priv)) {
-> +		tt_local_table_free(bat_priv);
->  		return 0;
-> +	}
-> =20
->  	tt_start_timer(bat_priv);
-> =20
-> --=20
-> 1.7.10
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---yEPQxsgoJgBvi8ip
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPnQYVAAoJEFMQTLzJFOZF5R8IAIicNWeQ2ojCcHzGatg2F3t2
-AFhTN5SgXnQ9A5h/j3lcecF1E01tEophoLIiQSnAOXtEuYmUObzZ6pGRVtcns+nH
-3YEVKBnZDfBVpstsuwVmqP6DgvhEfb5NE0eDZGIVWDqNS/yMmlKgZinYxY4MQXad
-XtcWr6boddPOb+EnU0ibNhMMKdfuImxfqQ9OU9Fk0xv4O2o18otitBn5Qj+ahYPz
-c4hCRs1LOnPrv2AuvL4zTQQtmCo7vewzwi7SyhFR8/Jwc/a+L800KjL6JbWpWBtz
-sylzEdsXUWYKNhTZMwH3yLd7j3xMXQQjFkqkn3yMO7xHFbN54/Qyod194LZgBwQ=
-=o3us
------END PGP SIGNATURE-----
-
---yEPQxsgoJgBvi8ip--
