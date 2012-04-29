@@ -1,13 +1,8 @@
-Return-Path: <fboehm@aon.at>
-Message-ID: <4F9CFB7F.4010207@aon.at>
-Date: Sun, 29 Apr 2012 10:27:43 +0200
-From: fboehm <fboehm@aon.at>
-MIME-Version: 1.0
-References: <CAKLmikOLbh20g3j4UcKbBjhmvKsoXB9A0jHTR75NZLtuWBCtCQ@mail.gmail.com>
-In-Reply-To: <CAKLmikOLbh20g3j4UcKbBjhmvKsoXB9A0jHTR75NZLtuWBCtCQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] Batman with Ubiquiti SDK
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 29 Apr 2012 10:57:32 +0200
+Message-Id: <1335689867-8017-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-04-29
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,33 +14,90 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Mitar,
+Hello David,
 
-what Ubiquiti products are you using? Because they have the older 
-802.11a/b/g based product series and the newer 802.11n based with their 
-proprietary Airmax wireless drivers. I am asking because the Airmax 
-products have been upgraded to kernel 2.6.32 recently. Integrating 
-Batman would be much easier now. Unfortunately the SDK is only available 
-on request since some time.
+this is the new version of my last pull request (issued on 2012-04-25).
+This patchset is intended for net-next/linux-3.5.
 
-Regards,
-Franz
+Since last series I only removed the biggest_unsigned_int() macro.
 
-Am 29.04.12 01:56, schrieb Mitar:
-> Hi!
->
-> Ubiquiti provides OpenWrt based SDK for their firmware. To my
-> information, it contains some proprietary madwifi-based WiFi drivers
-> with some older OpenWrt version. My question is how it would be
-> possible to run Batman on top of their firmware (thus not latest
-> OpenWrt). As Batman is in kernel, is is enough kernel-backwards
-> compatible to be able to run also on older (2.6) kernel versions? For
-> olsrd it is much simpler: you just install olsrd package and this is
-> it.
->
->
-> Mitar
->
+Let me know if there is any other problem.
 
+Thank you,
+	Antonio
+
+===============================================================
+
+The following changes since commit 7a2a66a0ac1cf93d30869c4ecbfc71a2fda19397:
+
+  Add linux-next specific files for 20120423 (2012-04-23 16:58:43 +1000)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 3ad345e2521ef41500cc0890a717656b975c4321:
+
+  batman-adv: split neigh_new function into generic and batman iv specific parts (2012-04-29 10:50:10 +0200)
+
+----------------------------------------------------------------
+Included changes:
+
+* a new feature has been introduced: D.A.T. (Distributed ARP Table). It is a
+  mechanism based on DHT theory that creates a distributed (mesh network wide)
+  ARP cache in order to speed up ARP resolutions in sparse wireless mesh
+  networks.
+* in order to satisfy DAT requirements a new unicast packet type, namely
+  UNICAST_4ADDR, has been introduced. Backward compatibility has been kept: not
+  updated nodes will simply drop the packet and ignore DAT mechanism.
+* minor fixes and cleanups
+* minor routing protocol API cleanups
+
+----------------------------------------------------------------
+Antonio Quartulli (9):
+      batman-adv: add UNICAST_4ADDR packet type
+      batman-adv: add a new log level for DAT debugging
+      batman-adv: add biggest_unsigned_int(x) macro
+      batman-adv: Distributed ARP Table - create DHT helper functions
+      batman-adv: Distributed ARP Table - add ARP parsing functions
+      batman-adv: Distributed ARP Table - add snooping functions for ARP messages
+      batman-adv: Distributed ARP Table - increase default soft_iface ARP table timeout
+      batman-adv: Distributed ARP Table - add compile option
+      batman-adv: fix wrong dhcp option list browsing
+
+Marek Lindner (6):
+      batman-adv: introduce is_single_hop_neigh variable to increase readability
+      batman-adv: introduce packet type handler array for incoming packets
+      batman-adv: register batman ogm receive function during protocol init
+      batman-adv: rename last_valid to last_seen
+      batman-adv: replace HZ calculations with jiffies_to_msecs()
+      batman-adv: split neigh_new function into generic and batman iv specific parts
+
+ Documentation/networking/batman-adv.txt |    3 +-
+ net/batman-adv/Kconfig                  |   10 +
+ net/batman-adv/Makefile                 |    1 +
+ net/batman-adv/bat_debugfs.c            |    4 +-
+ net/batman-adv/bat_iv_ogm.c             |   95 +++--
+ net/batman-adv/bat_sysfs.c              |    2 +-
+ net/batman-adv/distributed-arp-table.c  |  605 +++++++++++++++++++++++++++++++
+ net/batman-adv/distributed-arp-table.h  |  140 +++++++
+ net/batman-adv/gateway_client.c         |    6 +-
+ net/batman-adv/hard-interface.c         |  116 +-----
+ net/batman-adv/main.c                   |  124 ++++++-
+ net/batman-adv/main.h                   |   21 +-
+ net/batman-adv/originator.c             |   52 +--
+ net/batman-adv/originator.h             |    6 +-
+ net/batman-adv/packet.h                 |   30 +-
+ net/batman-adv/routing.c                |   30 +-
+ net/batman-adv/routing.h                |    4 +-
+ net/batman-adv/send.c                   |    6 +-
+ net/batman-adv/soft-interface.c         |   17 +-
+ net/batman-adv/types.h                  |   33 +-
+ net/batman-adv/unicast.c                |  102 +++++-
+ net/batman-adv/unicast.h                |   21 +-
+ 22 files changed, 1202 insertions(+), 226 deletions(-)
+ create mode 100644 net/batman-adv/distributed-arp-table.c
+ create mode 100644 net/batman-adv/distributed-arp-table.h
