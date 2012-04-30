@@ -1,15 +1,17 @@
-Return-Path: <dandenson@gmail.com>
-References: <CAKLmikOLbh20g3j4UcKbBjhmvKsoXB9A0jHTR75NZLtuWBCtCQ@mail.gmail.com>
-	<4F9CFB7F.4010207@aon.at>
-	<CAKLmikMxPYLJbXYhh7x0=scpBUrWidoFr6pKomyf=i85qV0cZA@mail.gmail.com>
-From: Dan Denson <dandenson@gmail.com>
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKLmikMxPYLJbXYhh7x0=scpBUrWidoFr6pKomyf=i85qV0cZA@mail.gmail.com>
-Message-Id: <240A4947-3E70-4517-B022-968DA9CC1D54@gmail.com>
-Date: Mon, 30 Apr 2012 13:56:20 -0600
-Mime-Version: 1.0 (1.0)
-Subject: Re: [B.A.T.M.A.N.] Batman with Ubiquiti SDK
+Return-Path: <ordex@autistici.org>
+Date: Tue, 1 May 2012 00:22:30 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120430222226.GB21977@ritirata.org>
+References: <1335689867-8017-1-git-send-email-ordex@autistici.org>
+	<1335689867-8017-7-git-send-email-ordex@autistici.org>
+	<20120430.130555.48557916635285475.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="kORqDWCi7qDJ0mEj"
+Content-Disposition: inline
+In-Reply-To: <20120430.130555.48557916635285475.davem@davemloft.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 06/15] batman-adv: Distributed ARP Table
+ - add snooping functions for ARP messages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +23,99 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-I would be very interested in this, especially if the GUI is patched to do y=
-ou can enable batman-adv on an interface from there.
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 
-I would point out that airos doesn't support ad-hoc mode in the GUI and does=
-n't do ad-hoc on airmax interfaces.
+--kORqDWCi7qDJ0mEj
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Apr 30, 2012 at 01:05:55 -0400, David Miller wrote:
+> From: Antonio Quartulli <ordex@autistici.org>
+> Date: Sun, 29 Apr 2012 10:57:38 +0200
+>=20
+> > In case of an ARP message going in or out the soft_iface, it is interce=
+pted and
+> > a special action is performed. In particular the DHT helper functions p=
+reviously
+> > implemented are used to store all the ARP entries belonging to the netw=
+ork in
+> > order to provide a fast and unicast lookup instead of the classic broad=
+cast
+> > flooding mechanism.
+> > Each node stores the entries it is responsible for (following the DHT r=
+ules) in
+> > its soft_iface ARP table. This makes it possible to reuse the kernel da=
+ta
+> > structures and functions for ARP management.
+> >=20
+> > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+>=20
+> Sorry, I'm not letting subsystems outside of net/ipv4/arp.c and related
+> code make changes to the ARP table.
+>=20
+> I plan to make major surgery to the way neighbour table entries are
+> handled and therefore the less people who get their grubby paws
+> directly in there, the better.
+>=20
+> Find a way to propagate the ARP packet into the properl ARP receive
+> path to cause the state update to occur, I'm not letting you trigger
+> it by hand in the batman-adv code.
+>=20
+> Sorry.
 
 
-On Apr 30, 2012, at 11:21 AM, Mitar <mmitar@gmail.com> wrote:
+Hello David,
 
-> Hi!
->=20
-> On Sun, Apr 29, 2012 at 10:27 AM, fboehm <fboehm@aon.at> wrote:
->> what Ubiquiti products are you using?
->=20
-> Rocket, NanoBridges, Bullets. Probably we will use all types sooner or
-> later. :-)
->=20
->> I am asking because the Airmax products
->> have been upgraded to kernel 2.6.32 recently. Integrating Batman would be=
+I perfectly understand. We did it that way because we thought that we could=
+ use
+the exported API.
 
->> much easier now.
->=20
-> Great!
->=20
->> Unfortunately the SDK is only available on request since
->> some time.
->=20
-> I do not see this a problem. You request, you get, you distribute. GPL. :-=
-)
->=20
->=20
-> Mitar
+At this point, in my honest opinion, it is better to postpone this new feat=
+ure
+for a later pull request.
+
+However this patch also contains a procedure which queries the neigh table =
+in
+order to understand whether a given host is known or not.
+Would it be possible to do that in another way (Without manually touching t=
+he
+table)?
+
+Instead, in the next patch (patch 06/15) batman-adv manually increase the n=
+eigh
+timeouts. Do you think we should avoid doing that as well? If we are allowe=
+d to
+do that, how can we perform the same operation in a cleaner way?
+
+Last question: why can't other modules use exported functions? Are you goin=
+g to
+change them as well?
+
+
+Thank you very much,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--kORqDWCi7qDJ0mEj
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJPnxCiAAoJEFMQTLzJFOZFbdMH/30qwasPB4h9FKaA3CIAkgfQ
+6tWWzfjQ4ljHHmCwLzlo9lfcvzjuMxg6ly37RzGrPeSbzWZYdfeU6a9AqVokHkns
+A3sCX1fDrfYTiyIftg47b7TW2oq7729CgxpsPil7yPJjN31a0jiL1qKILKFUvE7Q
+hcOrN4TWqoVoHouEGAAaPJFBDQSQaNvdOI/MSRaoVg9Z6IjwdLoRGapzL4bsJwuw
+o+306I2zq2FgK1LC/cdDmHVmLzKDTQ2K9CTsEX+Oit56HI+D7Fm49Qpe9TCVhQEs
+zLvZG8ZGDY66x13hBLMoQtMc+d9Hh4OJdsA2CeoFuhWWVFtyuZO16bl9yH1gvn4=
+=w6xQ
+-----END PGP SIGNATURE-----
+
+--kORqDWCi7qDJ0mEj--
