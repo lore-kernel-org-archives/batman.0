@@ -1,15 +1,15 @@
-Return-Path: <fboehm@aon.at>
-Message-ID: <4F9EBDAB.7050006@aon.at>
-Date: Mon, 30 Apr 2012 18:28:27 +0200
-From: fboehm <fboehm@aon.at>
-MIME-Version: 1.0
-References: <CAKLmikOLbh20g3j4UcKbBjhmvKsoXB9A0jHTR75NZLtuWBCtCQ@mail.gmail.com>
-	<4F9CFB7F.4010207@aon.at>
-	<CAHD-aqKXJva8nYeWhxVcJW1LSay1WVnMhGAS7hSCoAQ=H2TtUw@mail.gmail.com>
-In-Reply-To: <CAHD-aqKXJva8nYeWhxVcJW1LSay1WVnMhGAS7hSCoAQ=H2TtUw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Return-Path: <davem@davemloft.net>
+Date: Mon, 30 Apr 2012 13:05:55 -0400 (EDT)
+Message-Id: <20120430.130555.48557916635285475.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1335689867-8017-7-git-send-email-ordex@autistici.org>
+References: <1335689867-8017-1-git-send-email-ordex@autistici.org>
+	<1335689867-8017-7-git-send-email-ordex@autistici.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] Batman with Ubiquiti SDK
+Subject: Re: [B.A.T.M.A.N.] [PATCH 06/15] batman-adv: Distributed ARP Table
+ - add snooping functions for ARP messages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +21,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: ordex@autistici.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-According to Ubiquiti support the SDK for AirOS v5.5 will be released in 
-a few weeks.
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 29 Apr 2012 10:57:38 +0200
 
-Regards,
-Franz
+> In case of an ARP message going in or out the soft_iface, it is intercepted and
+> a special action is performed. In particular the DHT helper functions previously
+> implemented are used to store all the ARP entries belonging to the network in
+> order to provide a fast and unicast lookup instead of the classic broadcast
+> flooding mechanism.
+> Each node stores the entries it is responsible for (following the DHT rules) in
+> its soft_iface ARP table. This makes it possible to reuse the kernel data
+> structures and functions for ARP management.
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 
+Sorry, I'm not letting subsystems outside of net/ipv4/arp.c and related
+code make changes to the ARP table.
 
-Am 29.04.12 16:29, schrieb Guido Iribarren:
-> On Sun, Apr 29, 2012 at 5:27 AM, fboehm<fboehm@aon.at>  wrote:
->> Hi Mitar,
->>
->> what Ubiquiti products are you using? Because they have the older
->> 802.11a/b/g based product series and the newer 802.11n based with their
->> proprietary Airmax wireless drivers. I am asking because the Airmax products
->> have been upgraded to kernel 2.6.32 recently.
-> Indeed,
->
-> XM.v5.3# uname -a
-> Linux hostname 2.6.15-5.2 #1 Fri Jan 14 14:43:07 EET 2011 mips unknown
->
-> XM.v5.5# uname -a
-> Linux hostname 2.6.32.54 #1 Fri Apr 6 14:56:27 EEST 2012 mips unknown
->
-> (run on two nano loco m900, the latter with latest firmware)
->
+I plan to make major surgery to the way neighbour table entries are
+handled and therefore the less people who get their grubby paws
+directly in there, the better.
 
+Find a way to propagate the ARP packet into the properl ARP receive
+path to cause the state update to occur, I'm not letting you trigger
+it by hand in the batman-adv code.
+
+Sorry.
