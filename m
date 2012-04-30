@@ -1,15 +1,13 @@
-Return-Path: <davem@davemloft.net>
-Date: Mon, 30 Apr 2012 13:05:55 -0400 (EDT)
-Message-Id: <20120430.130555.48557916635285475.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1335689867-8017-7-git-send-email-ordex@autistici.org>
-References: <1335689867-8017-1-git-send-email-ordex@autistici.org>
-	<1335689867-8017-7-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 06/15] batman-adv: Distributed ARP Table
- - add snooping functions for ARP messages
+Return-Path: <mmitar@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <4F9CFB7F.4010207@aon.at>
+References: <CAKLmikOLbh20g3j4UcKbBjhmvKsoXB9A0jHTR75NZLtuWBCtCQ@mail.gmail.com>
+	<4F9CFB7F.4010207@aon.at>
+Date: Mon, 30 Apr 2012 19:21:04 +0200
+Message-ID: <CAKLmikMxPYLJbXYhh7x0=scpBUrWidoFr6pKomyf=i85qV0cZA@mail.gmail.com>
+From: Mitar <mmitar@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] Batman with Ubiquiti SDK
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +19,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 29 Apr 2012 10:57:38 +0200
+Hi!
 
-> In case of an ARP message going in or out the soft_iface, it is intercepted and
-> a special action is performed. In particular the DHT helper functions previously
-> implemented are used to store all the ARP entries belonging to the network in
-> order to provide a fast and unicast lookup instead of the classic broadcast
-> flooding mechanism.
-> Each node stores the entries it is responsible for (following the DHT rules) in
-> its soft_iface ARP table. This makes it possible to reuse the kernel data
-> structures and functions for ARP management.
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+On Sun, Apr 29, 2012 at 10:27 AM, fboehm <fboehm@aon.at> wrote:
+> what Ubiquiti products are you using?
 
-Sorry, I'm not letting subsystems outside of net/ipv4/arp.c and related
-code make changes to the ARP table.
+Rocket, NanoBridges, Bullets. Probably we will use all types sooner or
+later. :-)
 
-I plan to make major surgery to the way neighbour table entries are
-handled and therefore the less people who get their grubby paws
-directly in there, the better.
+> I am asking because the Airmax products
+> have been upgraded to kernel 2.6.32 recently. Integrating Batman would be
+> much easier now.
 
-Find a way to propagate the ARP packet into the properl ARP receive
-path to cause the state update to occur, I'm not letting you trigger
-it by hand in the batman-adv code.
+Great!
 
-Sorry.
+> Unfortunately the SDK is only available on request since
+> some time.
+
+I do not see this a problem. You request, you get, you distribute. GPL. :-)
+
+
+Mitar
