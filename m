@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  1 May 2012 10:01:04 +0200
-Message-Id: <1335859266-7546-6-git-send-email-ordex@autistici.org>
+Date: Tue,  1 May 2012 10:01:05 +0200
+Message-Id: <1335859266-7546-7-git-send-email-ordex@autistici.org>
 In-Reply-To: <1335859266-7546-1-git-send-email-ordex@autistici.org>
 References: <1335859266-7546-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: rename last_valid to
-	last_seen
+Subject: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: replace HZ calculations with
+	jiffies_to_msecs()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,130 +26,94 @@ Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_iv_ogm.c |    8 ++++----
- net/batman-adv/originator.c |   16 ++++++++--------
- net/batman-adv/types.h      |    8 ++++----
- 3 files changed, 16 insertions(+), 16 deletions(-)
+ net/batman-adv/bat_debugfs.c |    4 ++--
+ net/batman-adv/originator.c  |   15 ++++++++++-----
+ net/batman-adv/send.c        |    2 +-
+ 3 files changed, 13 insertions(+), 8 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index e0aaf8c..8652a75 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -651,7 +651,7 @@ static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
- 	rcu_read_unlock();
+diff --git a/net/batman-adv/bat_debugfs.c b/net/batman-adv/bat_debugfs.c
+index 916380c..3b588f8 100644
+--- a/net/batman-adv/bat_debugfs.c
++++ b/net/batman-adv/bat_debugfs.c
+@@ -83,8 +83,8 @@ int debug_log(struct bat_priv *bat_priv, const char *fmt, ...)
  
- 	orig_node->flags = batman_ogm_packet->flags;
--	neigh_node->last_valid = jiffies;
-+	neigh_node->last_seen = jiffies;
+ 	va_start(args, fmt);
+ 	vscnprintf(tmp_log_buf, sizeof(tmp_log_buf), fmt, args);
+-	fdebug_log(bat_priv->debug_log, "[%10lu] %s",
+-		   (jiffies / HZ), tmp_log_buf);
++	fdebug_log(bat_priv->debug_log, "[%10u] %s",
++		   jiffies_to_msecs(jiffies), tmp_log_buf);
+ 	va_end(args);
  
- 	spin_lock_bh(&neigh_node->tq_lock);
- 	ring_buffer_set(neigh_node->tq_recv,
-@@ -772,11 +772,11 @@ static int bat_iv_ogm_calc_tq(struct orig_node *orig_node,
- 	if (!neigh_node)
- 		goto out;
- 
--	/* if orig_node is direct neighbor update neigh_node last_valid */
-+	/* if orig_node is direct neighbor update neigh_node last_seen */
- 	if (orig_node == orig_neigh_node)
--		neigh_node->last_valid = jiffies;
-+		neigh_node->last_seen = jiffies;
- 
--	orig_node->last_valid = jiffies;
-+	orig_node->last_seen = jiffies;
- 
- 	/* find packet count of corresponding one hop neighbor */
- 	spin_lock_bh(&orig_node->ogm_cnt_lock);
+ 	return 0;
 diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index ce49698..21c1f83 100644
+index 21c1f83..962636b 100644
 --- a/net/batman-adv/originator.c
 +++ b/net/batman-adv/originator.c
-@@ -283,7 +283,7 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
- 	hlist_for_each_entry_safe(neigh_node, node, node_tmp,
- 				  &orig_node->neigh_list, list) {
+@@ -35,7 +35,8 @@ static void purge_orig(struct work_struct *work);
+ static void start_purge_timer(struct bat_priv *bat_priv)
+ {
+ 	INIT_DELAYED_WORK(&bat_priv->orig_work, purge_orig);
+-	queue_delayed_work(bat_event_workqueue, &bat_priv->orig_work, 1 * HZ);
++	queue_delayed_work(bat_event_workqueue,
++			   &bat_priv->orig_work, msecs_to_jiffies(1000));
+ }
  
--		if ((has_timed_out(neigh_node->last_valid, PURGE_TIMEOUT)) ||
-+		if ((has_timed_out(neigh_node->last_seen, PURGE_TIMEOUT)) ||
- 		    (neigh_node->if_incoming->if_status == IF_INACTIVE) ||
+ /* returns 1 if they are the same originator */
+@@ -274,6 +275,7 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
+ 	struct hlist_node *node, *node_tmp;
+ 	struct neigh_node *neigh_node;
+ 	bool neigh_purged = false;
++	unsigned long last_seen;
+ 
+ 	*best_neigh_node = NULL;
+ 
+@@ -288,6 +290,8 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
  		    (neigh_node->if_incoming->if_status == IF_NOT_IN_USE) ||
  		    (neigh_node->if_incoming->if_status == IF_TO_BE_REMOVED)) {
-@@ -300,9 +300,9 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
+ 
++			last_seen = neigh_node->last_seen;
++
+ 			if ((neigh_node->if_incoming->if_status ==
+ 								IF_INACTIVE) ||
+ 			    (neigh_node->if_incoming->if_status ==
+@@ -300,9 +304,9 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
  					neigh_node->if_incoming->net_dev->name);
  			else
  				bat_dbg(DBG_BATMAN, bat_priv,
--					"neighbor timeout: originator %pM, neighbor: %pM, last_valid: %lu\n",
-+					"neighbor timeout: originator %pM, neighbor: %pM, last_seen: %lu\n",
+-					"neighbor timeout: originator %pM, neighbor: %pM, last_seen: %lu\n",
++					"neighbor timeout: originator %pM, neighbor: %pM, last_seen: %u\n",
  					orig_node->orig, neigh_node->addr,
--					(neigh_node->last_valid / HZ));
-+					(neigh_node->last_seen / HZ));
+-					(neigh_node->last_seen / HZ));
++					jiffies_to_msecs(last_seen));
  
  			neigh_purged = true;
  
-@@ -325,10 +325,10 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
- {
- 	struct neigh_node *best_neigh_node;
+@@ -327,8 +331,9 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
  
--	if (has_timed_out(orig_node->last_valid, 2 * PURGE_TIMEOUT)) {
-+	if (has_timed_out(orig_node->last_seen, 2 * PURGE_TIMEOUT)) {
+ 	if (has_timed_out(orig_node->last_seen, 2 * PURGE_TIMEOUT)) {
  		bat_dbg(DBG_BATMAN, bat_priv,
--			"Originator timeout: originator %pM, last_valid %lu\n",
--			orig_node->orig, (orig_node->last_valid / HZ));
-+			"Originator timeout: originator %pM, last_seen %lu\n",
-+			orig_node->orig, (orig_node->last_seen / HZ));
+-			"Originator timeout: originator %pM, last_seen %lu\n",
+-			orig_node->orig, (orig_node->last_seen / HZ));
++			"Originator timeout: originator %pM, last_seen %u\n",
++			orig_node->orig,
++			jiffies_to_msecs(orig_node->last_seen));
  		return true;
  	} else {
  		if (purge_orig_neighbors(bat_priv, orig_node,
-@@ -446,9 +446,9 @@ int orig_seq_print_text(struct seq_file *seq, void *offset)
- 				goto next;
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 7c66b61..8e74d97 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -292,7 +292,7 @@ static void send_outstanding_bcast_packet(struct work_struct *work)
+ 	/* if we still have some more bcasts to send */
+ 	if (forw_packet->num_packets < 3) {
+ 		_add_bcast_packet_to_list(bat_priv, forw_packet,
+-					  ((5 * HZ) / 1000));
++					  msecs_to_jiffies(5));
+ 		return;
+ 	}
  
- 			last_seen_secs = jiffies_to_msecs(jiffies -
--						orig_node->last_valid) / 1000;
-+						orig_node->last_seen) / 1000;
- 			last_seen_msecs = jiffies_to_msecs(jiffies -
--						orig_node->last_valid) % 1000;
-+						orig_node->last_seen) % 1000;
- 
- 			seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
- 				   orig_node->orig, last_seen_secs,
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 50e1895..9fa8b73 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -52,7 +52,7 @@ struct hard_iface {
- /**
-  *	orig_node - structure for orig_list maintaining nodes of mesh
-  *	@primary_addr: hosts primary interface address
-- *	@last_valid: when last packet from this node was received
-+ *	@last_seen: when last packet from this node was received
-  *	@bcast_seqno_reset: time when the broadcast seqno window was reset
-  *	@batman_seqno_reset: time when the batman seqno window was reset
-  *	@gw_flags: flags related to gateway class
-@@ -70,7 +70,7 @@ struct orig_node {
- 	struct neigh_node __rcu *router; /* rcu protected pointer */
- 	unsigned long *bcast_own;
- 	uint8_t *bcast_own_sum;
--	unsigned long last_valid;
-+	unsigned long last_seen;
- 	unsigned long bcast_seqno_reset;
- 	unsigned long batman_seqno_reset;
- 	uint8_t gw_flags;
-@@ -120,7 +120,7 @@ struct gw_node {
- 
- /**
-  *	neigh_node
-- *	@last_valid: when last packet via this neighbor was received
-+ *	@last_seen: when last packet via this neighbor was received
-  */
- struct neigh_node {
- 	struct hlist_node list;
-@@ -131,7 +131,7 @@ struct neigh_node {
- 	uint8_t tq_avg;
- 	uint8_t last_ttl;
- 	struct list_head bonding_list;
--	unsigned long last_valid;
-+	unsigned long last_seen;
- 	DECLARE_BITMAP(real_bits, TQ_LOCAL_WINDOW_SIZE);
- 	atomic_t refcount;
- 	struct rcu_head rcu;
 -- 
 1.7.9.4
 
