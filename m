@@ -1,15 +1,10 @@
-Return-Path: <mmitar@gmail.com>
+Return-Path: <trizonelabs@googlemail.com>
 MIME-Version: 1.0
-In-Reply-To: <240A4947-3E70-4517-B022-968DA9CC1D54@gmail.com>
-References: <CAKLmikOLbh20g3j4UcKbBjhmvKsoXB9A0jHTR75NZLtuWBCtCQ@mail.gmail.com>
-	<4F9CFB7F.4010207@aon.at>
-	<CAKLmikMxPYLJbXYhh7x0=scpBUrWidoFr6pKomyf=i85qV0cZA@mail.gmail.com>
-	<240A4947-3E70-4517-B022-968DA9CC1D54@gmail.com>
-Date: Wed, 2 May 2012 00:32:36 +0200
-Message-ID: <CAKLmikPL1xWgsCiWZSfe-eLsACkccz8txh9i2dOxKXbWRP8uUA@mail.gmail.com>
-From: Mitar <mmitar@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] Batman with Ubiquiti SDK
+Date: Wed, 2 May 2012 15:00:18 +0300
+Message-ID: <CAJuY50wYqnTpCkWtOOALdWy+RwCWpapMnprO0=Vz3SRVedmbEQ@mail.gmail.com>
+From: 3zl Trizonelabs <trizonelabs@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] scripting batman-adv - best practice
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,17 +18,66 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi!
+i did start to script some basic helper functions and would like some opinion
+Like say "best practice" :
 
-On Mon, Apr 30, 2012 at 9:56 PM, Dan Denson <dandenson@gmail.com> wrote:
-> I would be very interested in this, especially if the GUI is patched to do you can enable batman-adv on an interface from there.
+#------------get_bat_if -----------
+get_bat_if(){ #returns batman_interface_name     0= ok 1=false(bat
+interface not existing)
+     #local _bif =  DONT !! if contruction needs uninit var
+     if _bif=$(basename $(dirname $(find /sys/class/net/*/mesh -type
+d) )) 2&>/dev/null;
+        then
+         echo "$_bif"
+         return 0
+        else
+         return 1
+     fi
+}
 
-We will very probably just remove the whole GUI and have things
-configured through image generation process.
+#-----------get_bat_wif--------------------
+get_bat_wif(){ #return 0 active( wif=up) 1:inactive (wif=down) *
+echoes $_bat_wif
+     set -- $(batctl if | awk '{print $1,$2}') # $1 "wlan0:"  $2
+"active" | "inactive"
+     [ -z $(batctl if ] && exit 1
+     local _bat_wif=$1 _bat0_status=$2
+     echo ${_bat_wif%":"}
+     [ "active" = "$_bat0_status" ] && return 0 || return 1
+ }
 
-> I would point out that airos doesn't support ad-hoc mode in the GUI and doesn't do ad-hoc on airmax interfaces.
+#--------------get_bat_bridge -----------------
+get_bat_bridge(){ # $1 bat_ifname returns bridgename attached to  0=
+ok 1=false(bat interface not existing)
+   local _bat_ifn=${1:-"bat0"}
+   #ls -l /sys/devices/virtual/net/${_bat_ifn}/brport/bridge
+   if _bat_br=$(basename $(ls -l
+/sys/devices/virtual/net/${_bat_ifn}/brport/bridge | awk '{print
+$11}'))
+    then
+        echo "$_bat_br"
+         return 0
+        else
+         return 1
+     fi
+}
 
-We are using Ubuquiti equipment for backbone ptp links.
+#------------bat_isup-----------------------
+bat_isup(){ # test ok
+ [ "down" = $(cat "${_bsysfs}operstate") ] && return 1 || return 0
+#better  using carrier ??
+}
+
+#----------get_bat_neigh_cnt-----------
+get_bat_neighb_cnt(){ # return 0 if neighbours - echo no. of neighbours
+    local _bneighb=$(( $(batctl o | awk 'END{print NR}') -2))
+    echo $_bneighb
+    [ "$_bneighb" -gt 0 ] && return  || return 1
+}
 
 
-Mitar
+any input would be highly appreciated
+
+regards
+3zl
+joker.eu5.org
