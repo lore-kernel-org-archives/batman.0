@@ -1,16 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Thu, 3 May 2012 08:40:48 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120503064047.GA2307@ritirata.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 03 May 2012 08:45:32 +0200
+Message-ID: <2653620.iIEOiFjV2Q@bentobox>
+In-Reply-To: <20120503064047.GA2307@ritirata.org>
 References: <1335984651-15385-1-git-send-email-martin@hundeboll.net>
-	<20120502211612.GB2093@ritirata.org> <4871527.FqzISMEzZu@bentobox>
+	<4871527.FqzISMEzZu@bentobox> <20120503064047.GA2307@ritirata.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="r5Pyd7+fXNt84Ff3"
-Content-Disposition: inline
-In-Reply-To: <4871527.FqzISMEzZu@bentobox>
+Content-Type: multipart/signed; boundary="nextPart7196193.yJ1bD9uTxu";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Change "make install" path
- and run depmod
+	and run depmod
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,57 +22,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>, b.a.t.m.a.n@lists.open-mesh.org
+To: Antonio Quartulli <ordex@autistici.org>
+Cc: Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>, b.a.t.m.a.n@lists.open-mesh.org
 
 
---r5Pyd7+fXNt84Ff3
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--nextPart7196193.yJ1bD9uTxu
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-iOn Thu, May 03, 2012 at 08:26:40AM +0200, Sven Eckelmann wrote:
-> On Wednesday, May 02, 2012 11:16:13 PM Antonio Quartulli wrote:
-> > would it be cleaner to run depmod -e $(uname -r) instead of using -a ?
->=20
->=20
-> Why? The module doesn't have to be build for the current kernel.
->
+On Thursday, May 03, 2012 08:40:48 AM Antonio Quartulli wrote:
+> However, is a minor problem. I see every other kernel module acting the way
+> I described. But we can live anyway I think :)
 
-Ok, then maybe $(uname -r) is not the appropriate way to get the version of=
- the
-kernel we are compiling the module for, but I think we should run depmod on=
-ly
-for that kernel.
+I've just opened compat-wireless and it does a `/sbin/depmod -a`
 
-However, is a minor problem. I see every other kernel module acting the way=
- I
-described. But we can live anyway I think :)
-
-
-Cheers,
-
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---r5Pyd7+fXNt84Ff3
-Content-Type: application/pgp-signature
+Kind regards,
+	Sven
+--nextPart7196193.yJ1bD9uTxu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQEcBAEBAgAGBQJPoihvAAoJEFMQTLzJFOZF8wgH/RGFuTyfDiZXDK/BYkHPanl5
-uCB8xJIhiuWPs0dfcRCTKy2gi/hV/x1l8lemXLLqqgdPNUUoNWh7msyrXKrKF644
-Noo7OQ9fxHJSVY8vqHZ2k6mryrimVhCetTeEkLfI1w/4vBzFpdoOgGG/YcgCzlGG
-I6//7HCjOJztaGPLezSv+2CClpoEgZuY0mbko665NNX5a5nNq6BMEe0b7N6l4TB+
-QqE+JboeW0nCy9uyMVp1aIusGEy/wdohyIm5TzNyBS3fSrJC3uzTRgQooonzHLJG
-hPkenXP/NIGTaacZJdOCxTFJQ3zAJkqbmLmmDCwGV2PjTbbrxg7AqQdA4yu500U=
-=goqV
+iQIcBAABCgAGBQJPoimMAAoJEF2HCgfBJntGU7oP/jLWW6Kvu68sLQAw+ANROb2s
+ns3PfrWcGOaNFf7lESEqVwCylIsZqpzZN+ecDzvalyOl2F2UgV8N0nEmGv/4W646
+7RmwpenhxMboKX8RqUcgIm6/KQKVfsz5GgB3w5ANKbPbUJs+CLIeRftr+9VnZKp2
+nY6sDFvmq4wOe1djRVt5GDM2LJvvYLP7AubjzXp2M/Z0nf6Dq5tAtwUbAANx7mJT
+/+V0+994T7v96/qncBvjbfBhBXnDB77zHfkjA5j0VC5hI5npLRa0iPogz/tjJKLD
+WJ3apwz3BEmyEXT9YB6suCYzmb7xHudTVrt+SnOPMtWaW5Hq307HgiXfLbHYsl6A
+yxdLWyn2OkQnUR24aOWptXiS9Hjc5eu6u7E7S8JQOY7s/230AjGyRjPSDxQu3Gk1
+RgqSxiifoeeS5vqy5SzCFqWo9nWVSEFTsMMd2BLmydeyNeK7MReaZRL5lgU452bq
+/5QKAhjzY/P98Uo+dfwG1SYeRvNT+f3KZwvsQrv4vGLefIM1p2thGl+czq3wQlXM
+wpWJyJfY1LMKdBUyBqj/BQbLb0kwUNFUUBX/m5+NrTh2UV+LX/9AY5HwvFW3SNwa
+Q798BPY/u4BtFZ3At6a+49t6P1vUKGkLuAVKm0nH1lSvk0wKYsPIeM0BkDq1Tq3t
+sshKpH7LmkjTz1r6XlJK
+=52wo
 -----END PGP SIGNATURE-----
 
---r5Pyd7+fXNt84Ff3--
+--nextPart7196193.yJ1bD9uTxu--
+
