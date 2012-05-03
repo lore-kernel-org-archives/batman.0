@@ -1,14 +1,14 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Thu,  3 May 2012 10:15:07 +0200
-Message-Id: <1336032907-5215-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1335984651-15385-1-git-send-email-martin@hundeboll.net>
-References: <1335984651-15385-1-git-send-email-martin@hundeboll.net>
+Return-Path: <gtolon@inti.gob.ar>
+Message-ID: <4FA2A5F0.5090905@inti.gob.ar>
+Date: Thu, 03 May 2012 12:36:16 -0300
+From: gtolon@inti.gob.ar
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [[PATCHv2]] batman-adv: Change "make install" path
-	and run depmod
+References: <AE90C24D6B3A694183C094C60CF0A2F6026B6EF3@saturn3.aculab.com>	<4F994681.9040300@inti.gob.ar>	<CAJuY50ygkeQgr=CXUpZGJdR8AXQMq3gtEs0WvM5cQeE=ARf3MQ@mail.gmail.com>	<201204262326.06705.lindner_marek@yahoo.de>	<CAJuY50z3PfkDj0R3VUViZA_RqWk-jfwQSXp4LrgSsaAY+H2_iA@mail.gmail.com>	<4F9AE2E6.3090909@inti.gob.ar>	<CAHD-aqK3iQ9TEDjHx0F-HXU7dR8OUhJQSLZkU=dsVRcSBqJBHQ@mail.gmail.com>
+	<CAJuY50y+mJ4AvBEEb-Fi9uPUom+KPgyGrxSiwnRqiyA2H0hUGQ@mail.gmail.com>
+In-Reply-To: <CAJuY50y+mJ4AvBEEb-Fi9uPUom+KPgyGrxSiwnRqiyA2H0hUGQ@mail.gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Traffic Control in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +21,40 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-Currently, when installing the out-of-tree module on distributions that
-use gzipped modules, batman-adv.ko will be installed next to
-batman-adv.ko.gz, which is selected by kmod.
+Guido and 3zl, thanks for the replies!
 
-By changing the install path to
-/lib/modules/`uname -r`/updates/net/batman-adv/
-and running "depmod -ae", we make the newly installed module used by
-kmod.
+Regarding packet marking, i think it's a good idea, but when i tryed it=20
+i had some issues with the interaction between iptables/ebtables and the=20
+bridge, i'll read more about that.
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
----
+I've heard about gargoyle, didn't know it was based on backfire. That=20
+active congestion check sounds great!
 
-I removed the -e option from depmod, as it caused a warning on my system.
+In this link there's an abstract about that assolo method, interesting:
 
- Makefile |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+http://www.computer.org/portal/web/csdl/doi/10.1109/ICIMP.2009.28
 
-diff --git a/Makefile b/Makefile
-index ac84fba..57530db 100644
---- a/Makefile
-+++ b/Makefile
-@@ -55,7 +55,8 @@ clean:
- 	$(MAKE) -C $(KERNELPATH) M=$(PWD) PWD=$(PWD) clean
- 
- install: config
--	$(MAKE) -C $(KERNELPATH) M=$(PWD) PWD=$(PWD) INSTALL_MOD_DIR=kernel/net/batman-adv/ modules_install
-+	$(MAKE) -C $(KERNELPATH) M=$(PWD) PWD=$(PWD) INSTALL_MOD_DIR=updates/net/batman-adv/ modules_install
-+	depmod -a
- 
- config:
- 	$(PWD)/gen-compat-autoconf.sh $(PWD)/compat-autoconf.h
--- 
-1.7.10.1
 
+Best regards
+
+Gabriel
+
+
+
+
+El 27/04/2012 07:34 p.m., 3zl Trizonelabs escribi=F3:
+> measuring bandwidth we test with "assolo" packet in afrimesh repos
+> (builds ok with trunk)
+>
+> maybe also have a look at
+>
+>
+> http://wiki.openwrt.org/doc/howto/packet.scheduler/packet.scheduler.theory
+>
+>    TBF with netem discussed here
+>                      https://forum.openwrt.org/viewtopic.php?pid=3D161108
+>
+> regards
+> 3zl
+>
