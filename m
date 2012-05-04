@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  4 May 2012 09:32:30 +0200
-Message-Id: <1336116752-585-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Free local translation table
-	on error in tt_init
+Date: Fri,  4 May 2012 09:32:31 +0200
+Message-Id: <1336116752-585-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1336116752-585-1-git-send-email-sven@narfation.org>
+References: <1336116752-585-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Free bla hashes on error in
+	bla_init
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,25 +21,36 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- translation-table.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ bridge_loop_avoidance.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/translation-table.c b/translation-table.c
-index 88c62f1..c3b7773 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1776,8 +1776,10 @@ int tt_init(struct bat_priv *bat_priv)
- 	if (!tt_local_init(bat_priv))
- 		return 0;
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 8bb274b..9d1cb9b 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -1167,15 +1167,19 @@ int bla_init(struct bat_priv *bat_priv)
+ 		return 1;
  
--	if (!tt_global_init(bat_priv))
-+	if (!tt_global_init(bat_priv)) {
-+		tt_local_table_free(bat_priv);
- 		return 0;
+ 	bat_priv->claim_hash = hash_new(128);
++	if (!bat_priv->claim_hash)
++		return -1;
++
+ 	bat_priv->backbone_hash = hash_new(32);
++	if (!bat_priv->backbone_hash) {
++		hash_destroy(bat_priv->claim_hash);
++		return -1;
 +	}
  
- 	tt_start_timer(bat_priv);
+ 	hash_set_lock_class(bat_priv->claim_hash, &claim_hash_lock_class_key);
+ 	hash_set_lock_class(bat_priv->backbone_hash,
+ 			    &backbone_hash_lock_class_key);
  
+-	if (!bat_priv->claim_hash || !bat_priv->backbone_hash)
+-		return -1;
+-
+ 	bat_dbg(DBG_BLA, bat_priv, "bla hashes initialized\n");
+ 
+ 	bla_start_timer(bat_priv);
 -- 
 1.7.10
 
