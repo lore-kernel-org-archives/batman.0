@@ -1,14 +1,13 @@
-Return-Path: <gtolon@inti.gob.ar>
-Message-ID: <4FA2A5F0.5090905@inti.gob.ar>
-Date: Thu, 03 May 2012 12:36:16 -0300
-From: gtolon@inti.gob.ar
+Return-Path: <ordex@autistici.org>
+Date: Fri, 4 May 2012 02:08:52 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120504000852.GA29070@ritirata.org>
 MIME-Version: 1.0
-References: <AE90C24D6B3A694183C094C60CF0A2F6026B6EF3@saturn3.aculab.com>	<4F994681.9040300@inti.gob.ar>	<CAJuY50ygkeQgr=CXUpZGJdR8AXQMq3gtEs0WvM5cQeE=ARf3MQ@mail.gmail.com>	<201204262326.06705.lindner_marek@yahoo.de>	<CAJuY50z3PfkDj0R3VUViZA_RqWk-jfwQSXp4LrgSsaAY+H2_iA@mail.gmail.com>	<4F9AE2E6.3090909@inti.gob.ar>	<CAHD-aqK3iQ9TEDjHx0F-HXU7dR8OUhJQSLZkU=dsVRcSBqJBHQ@mail.gmail.com>
-	<CAJuY50y+mJ4AvBEEb-Fi9uPUom+KPgyGrxSiwnRqiyA2H0hUGQ@mail.gmail.com>
-In-Reply-To: <CAJuY50y+mJ4AvBEEb-Fi9uPUom+KPgyGrxSiwnRqiyA2H0hUGQ@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Traffic Control in batman-adv
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="envbJBWh7q8WU6mo"
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] Improving the roaming procedure: multiple roaming
+ within one orig interval
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,41 +19,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-
-Guido and 3zl, thanks for the replies!
-
-Regarding packet marking, i think it's a good idea, but when i tryed it=20
-i had some issues with the interaction between iptables/ebtables and the=20
-bridge, i'll read more about that.
-
-I've heard about gargoyle, didn't know it was based on backfire. That=20
-active congestion check sounds great!
-
-In this link there's an abstract about that assolo method, interesting:
-
-http://www.computer.org/portal/web/csdl/doi/10.1109/ICIMP.2009.28
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-Best regards
+--envbJBWh7q8WU6mo
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Gabriel
+Hello people,
 
+as some of you may know, batman-adv has client fast-roaming support since
+version 2011.3.0. This technique has been introduced together with the new
+client announcement mechanism and it is described on its wikipage[0].
 
+At the bottom of the same it is also written that multiple roaming of the s=
+ame
+client within one originator interval are not supported.
 
+Right now I am working on a concept that would enable such possibility. I t=
+ried
+to summarise my ideas on the wiki as well[1] in order to share with you the
+solution I am thinking about.
 
-El 27/04/2012 07:34 p.m., 3zl Trizonelabs escribi=F3:
-> measuring bandwidth we test with "assolo" packet in afrimesh repos
-> (builds ok with trunk)
->
-> maybe also have a look at
->
->
-> http://wiki.openwrt.org/doc/howto/packet.scheduler/packet.scheduler.theory
->
->    TBF with netem discussed here
->                      https://forum.openwrt.org/viewtopic.php?pid=3D161108
->
-> regards
-> 3zl
->
+The document is still a draft and may not be 100% understandable. If you ha=
+ve
+time and you are curious enough to read the wiki, please drop me your feedb=
+ack,
+it would really be appreciated :-)
+
+Thank you,
+
+[0] http://www.open-mesh.org/wiki/batman-adv/Client-roaming
+[1] http://www.open-mesh.org/wiki/batman-adv/MultipleRoaming
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--envbJBWh7q8WU6mo
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJPox4UAAoJEFMQTLzJFOZFluwH/0q8sOmUYFgT4LGwJ7sWEula
+eUmQAHf6EiY1+8jbp+q49ksYacFNMi2GdVJpDwbUe4PWYnYy2jg6PhEMzundODWT
+jgC9ck/Rc53OGl/dpcEQG3fP4e1Pg30m5XGLrWbA77H7EFhtx12B496ctwCsuUpE
+b2+SuC8/gtxpVT2oT2bRoKd3hayi+e83j6Zr3rdvSKo5gzSIw+VCvphnknp36FXr
+p5ug7EQB6ZRbAefYSzbhdTi57e67Xh3Sxh80eS/PdIvpI/BXUjKshM7XfnETBTXt
+l5x0KPuyDvoV/CVWEXhE8JRLZ7Qg/uld3a2kZtc+bPcaspol++nNCZ+bK+ParNo=
+=0SdT
+-----END PGP SIGNATURE-----
+
+--envbJBWh7q8WU6mo--
