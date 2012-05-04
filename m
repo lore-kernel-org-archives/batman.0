@@ -1,13 +1,9 @@
-Return-Path: <ordex@autistici.org>
-Date: Fri, 4 May 2012 02:08:52 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120504000852.GA29070@ritirata.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="envbJBWh7q8WU6mo"
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] Improving the roaming procedure: multiple roaming
- within one orig interval
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri,  4 May 2012 09:32:30 +0200
+Message-Id: <1336116752-585-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Free local translation table
+	on error in tt_init
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,59 +15,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ translation-table.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---envbJBWh7q8WU6mo
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/translation-table.c b/translation-table.c
+index 88c62f1..c3b7773 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1776,8 +1776,10 @@ int tt_init(struct bat_priv *bat_priv)
+ 	if (!tt_local_init(bat_priv))
+ 		return 0;
+ 
+-	if (!tt_global_init(bat_priv))
++	if (!tt_global_init(bat_priv)) {
++		tt_local_table_free(bat_priv);
+ 		return 0;
++	}
+ 
+ 	tt_start_timer(bat_priv);
+ 
+-- 
+1.7.10
 
-Hello people,
-
-as some of you may know, batman-adv has client fast-roaming support since
-version 2011.3.0. This technique has been introduced together with the new
-client announcement mechanism and it is described on its wikipage[0].
-
-At the bottom of the same it is also written that multiple roaming of the s=
-ame
-client within one originator interval are not supported.
-
-Right now I am working on a concept that would enable such possibility. I t=
-ried
-to summarise my ideas on the wiki as well[1] in order to share with you the
-solution I am thinking about.
-
-The document is still a draft and may not be 100% understandable. If you ha=
-ve
-time and you are curious enough to read the wiki, please drop me your feedb=
-ack,
-it would really be appreciated :-)
-
-Thank you,
-
-[0] http://www.open-mesh.org/wiki/batman-adv/Client-roaming
-[1] http://www.open-mesh.org/wiki/batman-adv/MultipleRoaming
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---envbJBWh7q8WU6mo
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPox4UAAoJEFMQTLzJFOZFluwH/0q8sOmUYFgT4LGwJ7sWEula
-eUmQAHf6EiY1+8jbp+q49ksYacFNMi2GdVJpDwbUe4PWYnYy2jg6PhEMzundODWT
-jgC9ck/Rc53OGl/dpcEQG3fP4e1Pg30m5XGLrWbA77H7EFhtx12B496ctwCsuUpE
-b2+SuC8/gtxpVT2oT2bRoKd3hayi+e83j6Zr3rdvSKo5gzSIw+VCvphnknp36FXr
-p5ug7EQB6ZRbAefYSzbhdTi57e67Xh3Sxh80eS/PdIvpI/BXUjKshM7XfnETBTXt
-l5x0KPuyDvoV/CVWEXhE8JRLZ7Qg/uld3a2kZtc+bPcaspol++nNCZ+bK+ParNo=
-=0SdT
------END PGP SIGNATURE-----
-
---envbJBWh7q8WU6mo--
