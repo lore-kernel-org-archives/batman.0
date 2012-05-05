@@ -1,15 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 05 May 2012 17:29:25 +0200
-Message-ID: <7681860.DNINY4YzOT@sven-laptop.home.narfation.org>
-In-Reply-To: <33fd135ed9ad65c70bd3a509b538f1d59fa20fef.1336230279.git.mschiffer@universe-factory.net>
-References: <33fd135ed9ad65c70bd3a509b538f1d59fa20fef.1336230279.git.mschiffer@universe-factory.net>
+Return-Path: <mschiffer@universe-factory.net>
+Message-ID: <4FA54C09.6000303@universe-factory.net>
+Date: Sat, 05 May 2012 17:49:29 +0200
+From: Matthias Schiffer <mschiffer@universe-factory.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8459531.O9TyjaAy8A";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
+References: <33fd135ed9ad65c70bd3a509b538f1d59fa20fef.1336230279.git.mschiffer@universe-factory.net>
+	<7681860.DNINY4YzOT@sven-laptop.home.narfation.org>
+In-Reply-To: <7681860.DNINY4YzOT@sven-laptop.home.narfation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig0443D2FC94C2F9277B3A5199"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix visualization output
-	without neighbors on the primary interface
+ without neighbors on the primary interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,48 +22,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig0443D2FC94C2F9277B3A5199
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Oops, sorry about that. I'll send a fixed version.
+
+Matthias
 
 
---nextPart8459531.O9TyjaAy8A
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+On 05/05/2012 05:29 PM, Sven Eckelmann wrote:
+> WARNING: line over 80 characters
+> #102: FILE: vis.c:236:
+> +                               if (compare_eth(entries[j].src, packet-=
+>vis_orig))
+>=20
+> WARNING: line over 80 characters
+> #123: FILE: vis.c:287:
+> +                               if (compare_eth(entries[j].src, packet-=
+>vis_orig))
+>=20
+> total: 0 errors, 2 warnings, 0 checks, 47 lines checked
+>=20
+> http://www.open-mesh.org/wiki/open-mesh/Contribute#Submitting-patches
+>=20
+> Thanks,
+> 	Sven
 
-WARNING: line over 80 characters
-#102: FILE: vis.c:236:
-+                               if (compare_eth(entries[j].src, packet->vis_orig))
 
-WARNING: line over 80 characters
-#123: FILE: vis.c:287:
-+                               if (compare_eth(entries[j].src, packet->vis_orig))
 
-total: 0 errors, 2 warnings, 0 checks, 47 lines checked
-
-http://www.open-mesh.org/wiki/open-mesh/Contribute#Submitting-patches
-
-Thanks,
-	Sven
---nextPart8459531.O9TyjaAy8A
+--------------enig0443D2FC94C2F9277B3A5199
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v2.0.19 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-iQIcBAABCgAGBQJPpUdVAAoJEF2HCgfBJntGTn8P/iXzBPfEXym4YBDjI9C+/q0c
-04YWDJLpO7S7i7c7EzyW4iFBNQAUedaYpUkXG/ZJ9+bmpu3wPJ1G7/uLgYP5B/vq
-eGpnX/CVa5AK/hNd8pJfRGe4iZ3Z+/+xwhs5aMEKW90QUT4zn+lbVSPjTSgunQt6
-CIPBtjDuwZvt+QDf7AsIuUo4PVDJJvpBv8vJ0LRuTSvJoplMMaX5uuoKk8kRijFH
-HyLY/HZ8f/bthpm96ZuZS73eIJpDZBOeFnsG3QUGCv7cHKJAcHhanzVjSjyzqEaI
-+g0QIdnIeCKugBSzEXQGuV5Kj+tloGwZgUVlyn+WmLMZreyzj+Tw99ysg1JORbA+
-FeCrCUtx28w9WeQurydGaepolWVAKkIOssKS1zhjSs8tEfy8lD0nTI+XyzR/JmlZ
-98rH2LbxirU0bfrURVb4P9BLuKzVx3EU/d9i93PXElGR4SrGxZSq1sQRQVKiKdkb
-ZaypWvdb1RjnfZtFHeb6b1L+qb58wz2M6W5FshEqQpV1IGkUlLc87R/qHrjO04Em
-V26XecrQazTj9l3l72SffovyRqHRJZqBK7MNTkYXcKnveHKVFZ0tZeiG4DpQTdGd
-04pkNTAO+1s1MbK2TpuXiMyOK0d+XbPazqwAm5a3v8Jv6uKrEmPeivWR133gNNIy
-LNrWcks26CzCvrQL7ndO
-=kSGZ
+iEYEARECAAYFAk+lTAkACgkQq3qIxbiQM9j3iQCglI4M5EweaYc3IcVEzu2rpmuO
+7CIAnisgJshI2j3BKTjKJ+SfB0IvKiJQ
+=Xuzg
 -----END PGP SIGNATURE-----
 
---nextPart8459531.O9TyjaAy8A--
-
+--------------enig0443D2FC94C2F9277B3A5199--
