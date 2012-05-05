@@ -1,16 +1,11 @@
 Return-Path: <mschiffer@universe-factory.net>
-Message-ID: <4FA54C09.6000303@universe-factory.net>
-Date: Sat, 05 May 2012 17:49:29 +0200
 From: Matthias Schiffer <mschiffer@universe-factory.net>
-MIME-Version: 1.0
-References: <33fd135ed9ad65c70bd3a509b538f1d59fa20fef.1336230279.git.mschiffer@universe-factory.net>
-	<7681860.DNINY4YzOT@sven-laptop.home.narfation.org>
-In-Reply-To: <7681860.DNINY4YzOT@sven-laptop.home.narfation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enig0443D2FC94C2F9277B3A5199"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix visualization output
- without neighbors on the primary interface
+Date: Sat,  5 May 2012 17:51:53 +0200
+Message-Id: <7f84c7e913b9a0c9a22cc19864c6b7d9e2a347de.1336233103.git.mschiffer@universe-factory.net>
+In-Reply-To: <4FA54C09.6000303@universe-factory.net>
+References: <4FA54C09.6000303@universe-factory.net>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix visualization output
+	without neighbors on the primary interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,51 +17,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig0443D2FC94C2F9277B3A5199
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+The primary entry and the corresponding secondary entries are missing when there
+are no neighbors on the primary interface. This also causes the TT entries to
+miss and makes nodes with multiply secondary interface fall apart since there
+is no way to see they are related without a primary entry.
 
-Oops, sorry about that. I'll send a fixed version.
+Fix this by always emitting a primary entry.
 
-Matthias
+Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+---
+ vis.c |   21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
+diff --git a/vis.c b/vis.c
+index cec216f..c515927 100644
+--- a/vis.c
++++ b/vis.c
+@@ -207,7 +207,6 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 	int vis_server = atomic_read(&bat_priv->vis_mode);
+ 	size_t buff_pos, buf_size;
+ 	char *buff;
+-	int compare;
+ 
+ 	primary_if = primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+@@ -228,14 +227,18 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 			entries = (struct vis_info_entry *)
+ 				((char *)packet + sizeof(*packet));
+ 
++			vis_data_insert_interface(packet->vis_orig,
++						  &vis_if_list, true);
++
+ 			for (j = 0; j < packet->entries; j++) {
+ 				if (entries[j].quality == 0)
+ 					continue;
+-				compare =
+-				 compare_eth(entries[j].src, packet->vis_orig);
++				if (compare_eth(entries[j].src,
++						packet->vis_orig))
++					continue;
+ 				vis_data_insert_interface(entries[j].src,
+ 							  &vis_if_list,
+-							  compare);
++							  false);
+ 			}
+ 
+ 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
+@@ -276,14 +279,18 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 			entries = (struct vis_info_entry *)
+ 				((char *)packet + sizeof(*packet));
+ 
++			vis_data_insert_interface(packet->vis_orig,
++						  &vis_if_list, true);
++
+ 			for (j = 0; j < packet->entries; j++) {
+ 				if (entries[j].quality == 0)
+ 					continue;
+-				compare =
+-				 compare_eth(entries[j].src, packet->vis_orig);
++				if (compare_eth(entries[j].src,
++						packet->vis_orig))
++					continue;
+ 				vis_data_insert_interface(entries[j].src,
+ 							  &vis_if_list,
+-							  compare);
++							  false);
+ 			}
+ 
+ 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
+-- 
+1.7.10.1
 
-On 05/05/2012 05:29 PM, Sven Eckelmann wrote:
-> WARNING: line over 80 characters
-> #102: FILE: vis.c:236:
-> +                               if (compare_eth(entries[j].src, packet-=
->vis_orig))
->=20
-> WARNING: line over 80 characters
-> #123: FILE: vis.c:287:
-> +                               if (compare_eth(entries[j].src, packet-=
->vis_orig))
->=20
-> total: 0 errors, 2 warnings, 0 checks, 47 lines checked
->=20
-> http://www.open-mesh.org/wiki/open-mesh/Contribute#Submitting-patches
->=20
-> Thanks,
-> 	Sven
-
-
-
---------------enig0443D2FC94C2F9277B3A5199
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAk+lTAkACgkQq3qIxbiQM9j3iQCglI4M5EweaYc3IcVEzu2rpmuO
-7CIAnisgJshI2j3BKTjKJ+SfB0IvKiJQ
-=Xuzg
------END PGP SIGNATURE-----
-
---------------enig0443D2FC94C2F9277B3A5199--
