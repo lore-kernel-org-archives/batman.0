@@ -1,17 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 4 May 2012 15:48:50 +0800
-References: <1335690403-25228-1-git-send-email-sven@narfation.org>
-	<201205041534.18504.lindner_marek@yahoo.de>
-	<1398273.h5rYArleKn@bentobox>
-In-Reply-To: <1398273.h5rYArleKn@bentobox>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201205041548.50448.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC 1/2] batman-adv: Free local translation
-	table on error in tt_init
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat,  5 May 2012 13:27:27 +0200
+Message-Id: <1336217249-16071-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1336116752-585-1-git-send-email-sven@narfation.org>
+References: <1336116752-585-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Only set hash class after
+	hash is initialized
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,47 +17,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Friday, May 04, 2012 15:43:14 Sven Eckelmann wrote:
-> On Friday, May 04, 2012 03:34:18 PM Marek Lindner wrote:
-> > On Sunday, April 29, 2012 17:06:42 Sven Eckelmann wrote:
-> > > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> > > ---
-> > > 
-> > >  translation-table.c |    4 +++-
-> > >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/translation-table.c b/translation-table.c
-> > > index 88c62f1..c3b7773 100644
-> > > --- a/translation-table.c
-> > > +++ b/translation-table.c
-> > > @@ -1776,8 +1776,10 @@ int tt_init(struct bat_priv *bat_priv)
-> > > 
-> > >  	if (!tt_local_init(bat_priv))
-> > >  	
-> > >  		return 0;
-> > > 
-> > > -	if (!tt_global_init(bat_priv))
-> > > +	if (!tt_global_init(bat_priv)) {
-> > > +		tt_local_table_free(bat_priv);
-> > > 
-> > >  		return 0;
-> > > 
-> > > +	}
-> > > 
-> > >  	tt_start_timer(bat_priv);
-> > 
-> > Is this really necessary ? If tt_init() fails mesh_free() is called to
-> > free all tt buffers / lists / hashes. This is how the other *_init()
-> > function calls do it as well.
-> 
-> Ok, forgot about that. It is just became "normal" for me to assume that the
-> local function is cleaning their stuff and does not "leak" in error
-> situations.
+We must be sure that there was no error during the creation of the hash before
+we can set the hash lock class. The class set function was added to the wrong
+place in 2c9aa3b4c37bd55148f5f25212c89e7bf5f28497
 
-Yes, I had the same thought at the beginning. If we change this function we 
-also should change all other _init() functions, no ? Simply to be consistent ?
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ bridge_loop_avoidance.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Regards,
-Marek
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 8bb274b..48831c2 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -1169,13 +1169,13 @@ int bla_init(struct bat_priv *bat_priv)
+ 	bat_priv->claim_hash = hash_new(128);
+ 	bat_priv->backbone_hash = hash_new(32);
+ 
++	if (!bat_priv->claim_hash || !bat_priv->backbone_hash)
++		return -1;
++
+ 	hash_set_lock_class(bat_priv->claim_hash, &claim_hash_lock_class_key);
+ 	hash_set_lock_class(bat_priv->backbone_hash,
+ 			    &backbone_hash_lock_class_key);
+ 
+-	if (!bat_priv->claim_hash || !bat_priv->backbone_hash)
+-		return -1;
+-
+ 	bat_dbg(DBG_BLA, bat_priv, "bla hashes initialized\n");
+ 
+ 	bla_start_timer(bat_priv);
+-- 
+1.7.10
+
