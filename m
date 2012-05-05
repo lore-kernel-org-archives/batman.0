@@ -1,18 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Sat, 5 May 2012 17:16:31 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120505151630.GA2860@ritirata.org>
-References: <1336116752-585-1-git-send-email-sven@narfation.org>
-	<1336217249-16071-1-git-send-email-sven@narfation.org>
-	<20120505144940.GB3041@ritirata.org>
-	<2514079.YGTxjqsRYi@sven-laptop.home.narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 05 May 2012 17:29:25 +0200
+Message-ID: <7681860.DNINY4YzOT@sven-laptop.home.narfation.org>
+In-Reply-To: <33fd135ed9ad65c70bd3a509b538f1d59fa20fef.1336230279.git.mschiffer@universe-factory.net>
+References: <33fd135ed9ad65c70bd3a509b538f1d59fa20fef.1336230279.git.mschiffer@universe-factory.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
-Content-Disposition: inline
-In-Reply-To: <2514079.YGTxjqsRYi@sven-laptop.home.narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Only set hash class
- after hash is initialized
+Content-Type: multipart/signed; boundary="nextPart8459531.O9TyjaAy8A";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix visualization output
+	without neighbors on the primary interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,48 +21,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---k+w/mQv8wyuph6w0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--nextPart8459531.O9TyjaAy8A
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-On Sat, May 05, 2012 at 05:04:39PM +0200, Sven Eckelmann wrote:
-> On Saturday 05 May 2012 16:49:41 Antonio Quartulli wrote:=20
-> > if one hash_new succeeds and and the other fails, should we free the
-> > allocated structure before returning?
->=20
-> Please read 201205041534.18504.lindner_marek@yahoo.de
-Done.
+WARNING: line over 80 characters
+#102: FILE: vis.c:236:
++                               if (compare_eth(entries[j].src, packet->vis_orig))
 
+WARNING: line over 80 characters
+#123: FILE: vis.c:287:
++                               if (compare_eth(entries[j].src, packet->vis_orig))
 
-Ok, great! :)
+total: 0 errors, 2 warnings, 0 checks, 47 lines checked
 
-Thank you
+http://www.open-mesh.org/wiki/open-mesh/Contribute#Submitting-patches
 
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---k+w/mQv8wyuph6w0
-Content-Type: application/pgp-signature
+Thanks,
+	Sven
+--nextPart8459531.O9TyjaAy8A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQEcBAEBAgAGBQJPpUROAAoJEFMQTLzJFOZFidIIAIezbHrhackkG0Oixs8gcB5S
-r5gfSUYMfW0PvChwr+JYooLpE1ByHb3JO5nVVZFzGtC/6E9VJji7BEfAPXKaOUzq
-Dbazn3SuwwcL/d2Mgw4Bgps9b/xerVbt4NFQEKBZOteixODuEBUJVcQ5prL2vZ9b
-QmecSMQBJYxcCcCnZpjPREYZP2UiefDdW/2DIcB7EeZrkifYPvJzI5OXdvyYvSpx
-4UXr5B9YBe/if24RLR6TPnOf0/ixKdiJq6yQSZQeBkThp8hSEACtQ32TuUZ3CS03
-Xp7K1XBgdtglVcl6FjlVLle4GN0lCW8bi9Yeh8lbyvnBMaTNLWMxbZFsk214LRI=
-=2sth
+iQIcBAABCgAGBQJPpUdVAAoJEF2HCgfBJntGTn8P/iXzBPfEXym4YBDjI9C+/q0c
+04YWDJLpO7S7i7c7EzyW4iFBNQAUedaYpUkXG/ZJ9+bmpu3wPJ1G7/uLgYP5B/vq
+eGpnX/CVa5AK/hNd8pJfRGe4iZ3Z+/+xwhs5aMEKW90QUT4zn+lbVSPjTSgunQt6
+CIPBtjDuwZvt+QDf7AsIuUo4PVDJJvpBv8vJ0LRuTSvJoplMMaX5uuoKk8kRijFH
+HyLY/HZ8f/bthpm96ZuZS73eIJpDZBOeFnsG3QUGCv7cHKJAcHhanzVjSjyzqEaI
++g0QIdnIeCKugBSzEXQGuV5Kj+tloGwZgUVlyn+WmLMZreyzj+Tw99ysg1JORbA+
+FeCrCUtx28w9WeQurydGaepolWVAKkIOssKS1zhjSs8tEfy8lD0nTI+XyzR/JmlZ
+98rH2LbxirU0bfrURVb4P9BLuKzVx3EU/d9i93PXElGR4SrGxZSq1sQRQVKiKdkb
+ZaypWvdb1RjnfZtFHeb6b1L+qb58wz2M6W5FshEqQpV1IGkUlLc87R/qHrjO04Em
+V26XecrQazTj9l3l72SffovyRqHRJZqBK7MNTkYXcKnveHKVFZ0tZeiG4DpQTdGd
+04pkNTAO+1s1MbK2TpuXiMyOK0d+XbPazqwAm5a3v8Jv6uKrEmPeivWR133gNNIy
+LNrWcks26CzCvrQL7ndO
+=kSGZ
 -----END PGP SIGNATURE-----
 
---k+w/mQv8wyuph6w0--
+--nextPart8459531.O9TyjaAy8A--
+
