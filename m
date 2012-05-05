@@ -1,9 +1,18 @@
-Return-Path: <mschiffer@universe-factory.net>
-From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Sat,  5 May 2012 17:05:19 +0200
-Message-Id: <33fd135ed9ad65c70bd3a509b538f1d59fa20fef.1336230279.git.mschiffer@universe-factory.net>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix visualization output without
-	neighbors on the primary interface
+Return-Path: <ordex@autistici.org>
+Date: Sat, 5 May 2012 17:16:31 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120505151630.GA2860@ritirata.org>
+References: <1336116752-585-1-git-send-email-sven@narfation.org>
+	<1336217249-16071-1-git-send-email-sven@narfation.org>
+	<20120505144940.GB3041@ritirata.org>
+	<2514079.YGTxjqsRYi@sven-laptop.home.narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
+Content-Disposition: inline
+In-Reply-To: <2514079.YGTxjqsRYi@sven-laptop.home.narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Only set hash class
+ after hash is initialized
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,74 +24,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The primary entry and the corresponding secondary entries are missing when there
-are no neighbors on the primary interface. This also causes the TT entries to
-miss and makes nodes with multiply secondary interface fall apart since there
-is no way to see they are related without a primary entry.
 
-Fix this by always emitting a primary entry.
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
----
- vis.c |   19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
+On Sat, May 05, 2012 at 05:04:39PM +0200, Sven Eckelmann wrote:
+> On Saturday 05 May 2012 16:49:41 Antonio Quartulli wrote:=20
+> > if one hash_new succeeds and and the other fails, should we free the
+> > allocated structure before returning?
+>=20
+> Please read 201205041534.18504.lindner_marek@yahoo.de
+Done.
 
-diff --git a/vis.c b/vis.c
-index cec216f..b293bdb 100644
---- a/vis.c
-+++ b/vis.c
-@@ -207,7 +207,6 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
- 	int vis_server = atomic_read(&bat_priv->vis_mode);
- 	size_t buff_pos, buf_size;
- 	char *buff;
--	int compare;
- 
- 	primary_if = primary_if_get_selected(bat_priv);
- 	if (!primary_if)
-@@ -228,14 +227,17 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
- 			entries = (struct vis_info_entry *)
- 				((char *)packet + sizeof(*packet));
- 
-+			vis_data_insert_interface(packet->vis_orig,
-+						  &vis_if_list, true);
-+
- 			for (j = 0; j < packet->entries; j++) {
- 				if (entries[j].quality == 0)
- 					continue;
--				compare =
--				 compare_eth(entries[j].src, packet->vis_orig);
-+				if (compare_eth(entries[j].src, packet->vis_orig))
-+					continue;
- 				vis_data_insert_interface(entries[j].src,
- 							  &vis_if_list,
--							  compare);
-+							  false);
- 			}
- 
- 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
-@@ -276,14 +278,17 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
- 			entries = (struct vis_info_entry *)
- 				((char *)packet + sizeof(*packet));
- 
-+			vis_data_insert_interface(packet->vis_orig,
-+						  &vis_if_list, true);
-+
- 			for (j = 0; j < packet->entries; j++) {
- 				if (entries[j].quality == 0)
- 					continue;
--				compare =
--				 compare_eth(entries[j].src, packet->vis_orig);
-+				if (compare_eth(entries[j].src, packet->vis_orig))
-+					continue;
- 				vis_data_insert_interface(entries[j].src,
- 							  &vis_if_list,
--							  compare);
-+							  false);
- 			}
- 
- 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
--- 
-1.7.10.1
 
+Ok, great! :)
+
+Thank you
+
+
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--k+w/mQv8wyuph6w0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJPpUROAAoJEFMQTLzJFOZFidIIAIezbHrhackkG0Oixs8gcB5S
+r5gfSUYMfW0PvChwr+JYooLpE1ByHb3JO5nVVZFzGtC/6E9VJji7BEfAPXKaOUzq
+Dbazn3SuwwcL/d2Mgw4Bgps9b/xerVbt4NFQEKBZOteixODuEBUJVcQ5prL2vZ9b
+QmecSMQBJYxcCcCnZpjPREYZP2UiefDdW/2DIcB7EeZrkifYPvJzI5OXdvyYvSpx
+4UXr5B9YBe/if24RLR6TPnOf0/ixKdiJq6yQSZQeBkThp8hSEACtQ32TuUZ3CS03
+Xp7K1XBgdtglVcl6FjlVLle4GN0lCW8bi9Yeh8lbyvnBMaTNLWMxbZFsk214LRI=
+=2sth
+-----END PGP SIGNATURE-----
+
+--k+w/mQv8wyuph6w0--
