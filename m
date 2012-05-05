@@ -1,17 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 05 May 2012 17:04:39 +0200
-Message-ID: <2514079.YGTxjqsRYi@sven-laptop.home.narfation.org>
-In-Reply-To: <20120505144940.GB3041@ritirata.org>
-References: <1336116752-585-1-git-send-email-sven@narfation.org>
-	<1336217249-16071-1-git-send-email-sven@narfation.org>
-	<20120505144940.GB3041@ritirata.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6395814.cl8eD20CMm";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Only set hash class
-	after hash is initialized
+Return-Path: <mschiffer@universe-factory.net>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+Date: Sat,  5 May 2012 17:05:19 +0200
+Message-Id: <33fd135ed9ad65c70bd3a509b538f1d59fa20fef.1336230279.git.mschiffer@universe-factory.net>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix visualization output without
+	neighbors on the primary interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,42 +15,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+The primary entry and the corresponding secondary entries are missing when there
+are no neighbors on the primary interface. This also causes the TT entries to
+miss and makes nodes with multiply secondary interface fall apart since there
+is no way to see they are related without a primary entry.
 
---nextPart6395814.cl8eD20CMm
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Fix this by always emitting a primary entry.
 
-On Saturday 05 May 2012 16:49:41 Antonio Quartulli wrote: 
-> if one hash_new succeeds and and the other fails, should we free the
-> allocated structure before returning?
+Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+---
+ vis.c |   19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
-Please read 201205041534.18504.lindner_marek@yahoo.de
-
-Kind regards,
-	Sven
---nextPart6395814.cl8eD20CMm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAABCgAGBQJPpUGHAAoJEF2HCgfBJntG1yYQAIIFAtSk8APwA7P7E9Uf/KX+
-y2lLdKC5aF1c9BnZiK45U+jbhePJ8IhJ51LOgBri2DI/Ip498JuxdElGjZdVrHHz
-2wvYaQ7ae/E+2ewXv2KqxL5Umjok1fulHPV5/ew5yEkFDcnq90T/BAkZJoxhaVbw
-/DYGsHbUcFAffCqZuakvZ+8ugxaQvYlGbg8jCwAxB0ou4hpVha8iDF/K7fnTQ1a7
-XSJ+gXDyDmuVLeTU8zswBknIoGIZzTreFk0tJ0XGdqwT6kWuqd/IGai95uP36Lq1
-zjEcifpfNo0KCWbcbJ4Ea2bX5oM1phG8+8BgLMRgs5NXhjw12+44C/4v0jIViJQV
-EX56VLNEJVdBrtwgThmiWjar60A2GL8wLUwf+v5Vi2VY7nlj6s1MgHmqXGXOgCgZ
-yFhBP/KuAkJE/MnXXrel6PFa83YynRyC6ZmEvsCGka1OMcC6qGV1P3oQuW/YEb56
-udRP7TytjYDxJ1ouWa/kLgzz5gkNX00cQUiAFJoxQa4HLos1Agjw6IuyeFUPy8yC
-bg9OaTEJxzQeVJWP4u2cLyvHBhFVPbHHLUsSyX0ouD31u2cMx5BqgObF3gNAOdlg
-LB5O6G64kAcYsDXGVQAhV5r8w8uFmpekquHJ7PENfVeMen51tXRypA1L+MTHIrTV
-WVKwhR63++el69I+Q98r
-=MMc/
------END PGP SIGNATURE-----
-
---nextPart6395814.cl8eD20CMm--
+diff --git a/vis.c b/vis.c
+index cec216f..b293bdb 100644
+--- a/vis.c
++++ b/vis.c
+@@ -207,7 +207,6 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 	int vis_server = atomic_read(&bat_priv->vis_mode);
+ 	size_t buff_pos, buf_size;
+ 	char *buff;
+-	int compare;
+ 
+ 	primary_if = primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+@@ -228,14 +227,17 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 			entries = (struct vis_info_entry *)
+ 				((char *)packet + sizeof(*packet));
+ 
++			vis_data_insert_interface(packet->vis_orig,
++						  &vis_if_list, true);
++
+ 			for (j = 0; j < packet->entries; j++) {
+ 				if (entries[j].quality == 0)
+ 					continue;
+-				compare =
+-				 compare_eth(entries[j].src, packet->vis_orig);
++				if (compare_eth(entries[j].src, packet->vis_orig))
++					continue;
+ 				vis_data_insert_interface(entries[j].src,
+ 							  &vis_if_list,
+-							  compare);
++							  false);
+ 			}
+ 
+ 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
+@@ -276,14 +278,17 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 			entries = (struct vis_info_entry *)
+ 				((char *)packet + sizeof(*packet));
+ 
++			vis_data_insert_interface(packet->vis_orig,
++						  &vis_if_list, true);
++
+ 			for (j = 0; j < packet->entries; j++) {
+ 				if (entries[j].quality == 0)
+ 					continue;
+-				compare =
+-				 compare_eth(entries[j].src, packet->vis_orig);
++				if (compare_eth(entries[j].src, packet->vis_orig))
++					continue;
+ 				vis_data_insert_interface(entries[j].src,
+ 							  &vis_if_list,
+-							  compare);
++							  false);
+ 			}
+ 
+ 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
+-- 
+1.7.10.1
 
