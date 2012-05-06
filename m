@@ -1,11 +1,16 @@
-Return-Path: <mschiffer@universe-factory.net>
-From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Sat,  5 May 2012 17:51:53 +0200
-Message-Id: <7f84c7e913b9a0c9a22cc19864c6b7d9e2a347de.1336233103.git.mschiffer@universe-factory.net>
-In-Reply-To: <4FA54C09.6000303@universe-factory.net>
-References: <4FA54C09.6000303@universe-factory.net>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix visualization output
-	without neighbors on the primary interface
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 6 May 2012 20:22:26 +0800
+References: <1335984651-15385-1-git-send-email-martin@hundeboll.net>
+	<1336032907-5215-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1336032907-5215-1-git-send-email-martin@hundeboll.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201205062022.26545.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [[PATCHv2]] batman-adv: Change "make install"
+	path and run depmod
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,76 +22,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The primary entry and the corresponding secondary entries are missing when there
-are no neighbors on the primary interface. This also causes the TT entries to
-miss and makes nodes with multiply secondary interface fall apart since there
-is no way to see they are related without a primary entry.
+On Thursday, May 03, 2012 16:15:07 Martin Hundeb=C3=B8ll wrote:
+> Currently, when installing the out-of-tree module on distributions that
+> use gzipped modules, batman-adv.ko will be installed next to
+> batman-adv.ko.gz, which is selected by kmod.
+>=20
+> By changing the install path to
+> /lib/modules/`uname -r`/updates/net/batman-adv/
+> and running "depmod -ae", we make the newly installed module used by
+> kmod.
 
-Fix this by always emitting a primary entry.
+Applied in revision 515bdd0.
 
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
----
- vis.c |   21 ++++++++++++++-------
- 1 file changed, 14 insertions(+), 7 deletions(-)
-
-diff --git a/vis.c b/vis.c
-index cec216f..c515927 100644
---- a/vis.c
-+++ b/vis.c
-@@ -207,7 +207,6 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
- 	int vis_server = atomic_read(&bat_priv->vis_mode);
- 	size_t buff_pos, buf_size;
- 	char *buff;
--	int compare;
- 
- 	primary_if = primary_if_get_selected(bat_priv);
- 	if (!primary_if)
-@@ -228,14 +227,18 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
- 			entries = (struct vis_info_entry *)
- 				((char *)packet + sizeof(*packet));
- 
-+			vis_data_insert_interface(packet->vis_orig,
-+						  &vis_if_list, true);
-+
- 			for (j = 0; j < packet->entries; j++) {
- 				if (entries[j].quality == 0)
- 					continue;
--				compare =
--				 compare_eth(entries[j].src, packet->vis_orig);
-+				if (compare_eth(entries[j].src,
-+						packet->vis_orig))
-+					continue;
- 				vis_data_insert_interface(entries[j].src,
- 							  &vis_if_list,
--							  compare);
-+							  false);
- 			}
- 
- 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
-@@ -276,14 +279,18 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
- 			entries = (struct vis_info_entry *)
- 				((char *)packet + sizeof(*packet));
- 
-+			vis_data_insert_interface(packet->vis_orig,
-+						  &vis_if_list, true);
-+
- 			for (j = 0; j < packet->entries; j++) {
- 				if (entries[j].quality == 0)
- 					continue;
--				compare =
--				 compare_eth(entries[j].src, packet->vis_orig);
-+				if (compare_eth(entries[j].src,
-+						packet->vis_orig))
-+					continue;
- 				vis_data_insert_interface(entries[j].src,
- 							  &vis_if_list,
--							  compare);
-+							  false);
- 			}
- 
- 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
--- 
-1.7.10.1
-
+Thanks,
+Marek
