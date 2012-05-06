@@ -1,16 +1,9 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 6 May 2012 22:14:35 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20120506201435.GA27416@pandem0nium>
-References: <4FA54C09.6000303@universe-factory.net>
-	<7f84c7e913b9a0c9a22cc19864c6b7d9e2a347de.1336233103.git.mschiffer@universe-factory.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="DocE+STaALJfprDB"
-Content-Disposition: inline
-In-Reply-To: <7f84c7e913b9a0c9a22cc19864c6b7d9e2a347de.1336233103.git.mschiffer@universe-factory.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix visualization output
- without neighbors on the primary interface
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon,  7 May 2012 04:22:05 +0800
+Message-Id: <1336335725-22016-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: turn tt commit code into routing
+	protocol agnostic API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,119 +15,370 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
+Prior to this patch the translation table code made assumptions about how
+the routing protocol works and where its buffers are stored (to directly
+modify them).
+Each protocol now calls the tt code with the relevant pointers, thereby
+abstracting the code.
 
---DocE+STaALJfprDB
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ bat_iv_ogm.c        |   14 ++++--
+ send.c              |   74 +---------------------------------
+ translation-table.c |  113 +++++++++++++++++++++++++++++++++++++++++++++------
+ translation-table.h |    6 +-
+ types.h             |    3 +-
+ 5 files changed, 114 insertions(+), 96 deletions(-)
 
-Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index bde28c3..14c0cdd 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -559,22 +559,28 @@ static void bat_iv_ogm_forward(struct orig_node *orig_node,
+ 			     if_incoming, 0, bat_iv_ogm_fwd_send_time());
+ }
+ 
+-static void bat_iv_ogm_schedule(struct hard_iface *hard_iface,
+-				int tt_num_changes)
++static void bat_iv_ogm_schedule(struct hard_iface *hard_iface)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	struct batman_ogm_packet *batman_ogm_packet;
+ 	struct hard_iface *primary_if;
+-	int vis_server;
++	int vis_server, tt_num_changes = 0;
+ 
+ 	vis_server = atomic_read(&bat_priv->vis_mode);
+ 	primary_if = primary_if_get_selected(bat_priv);
+ 
++	if (hard_iface == primary_if)
++		tt_num_changes = tt_append_changes(bat_priv,
++						   &hard_iface->packet_buff,
++						   &hard_iface->packet_len,
++						   BATMAN_OGM_HLEN);
++
+ 	batman_ogm_packet = (struct batman_ogm_packet *)hard_iface->packet_buff;
+ 
+ 	/* change sequence number to network order */
+ 	batman_ogm_packet->seqno =
+ 			htonl((uint32_t)atomic_read(&hard_iface->seqno));
++	atomic_inc(&hard_iface->seqno);
+ 
+ 	batman_ogm_packet->ttvn = atomic_read(&bat_priv->ttvn);
+ 	batman_ogm_packet->tt_crc = htons(bat_priv->tt_crc);
+@@ -593,8 +599,6 @@ static void bat_iv_ogm_schedule(struct hard_iface *hard_iface,
+ 	else
+ 		batman_ogm_packet->gw_flags = NO_FLAGS;
+ 
+-	atomic_inc(&hard_iface->seqno);
+-
+ 	slide_own_bcast_window(hard_iface);
+ 	bat_iv_ogm_queue_add(bat_priv, hard_iface->packet_buff,
+ 			     hard_iface->packet_len, hard_iface, 1,
+diff --git a/send.c b/send.c
+index cebc14a..836b70d 100644
+--- a/send.c
++++ b/send.c
+@@ -78,62 +78,9 @@ send_skb_err:
+ 	return NET_XMIT_DROP;
+ }
+ 
+-static void realloc_packet_buffer(struct hard_iface *hard_iface,
+-				  int new_len)
+-{
+-	unsigned char *new_buff;
+-
+-	new_buff = kmalloc(new_len, GFP_ATOMIC);
+-
+-	/* keep old buffer if kmalloc should fail */
+-	if (new_buff) {
+-		memcpy(new_buff, hard_iface->packet_buff,
+-		       BATMAN_OGM_HLEN);
+-
+-		kfree(hard_iface->packet_buff);
+-		hard_iface->packet_buff = new_buff;
+-		hard_iface->packet_len = new_len;
+-	}
+-}
+-
+-/* when calling this function (hard_iface == primary_if) has to be true */
+-static int prepare_packet_buffer(struct bat_priv *bat_priv,
+-				  struct hard_iface *hard_iface)
+-{
+-	int new_len;
+-
+-	new_len = BATMAN_OGM_HLEN +
+-		  tt_len((uint8_t)atomic_read(&bat_priv->tt_local_changes));
+-
+-	/* if we have too many changes for one packet don't send any
+-	 * and wait for the tt table request which will be fragmented */
+-	if (new_len > hard_iface->soft_iface->mtu)
+-		new_len = BATMAN_OGM_HLEN;
+-
+-	realloc_packet_buffer(hard_iface, new_len);
+-
+-	bat_priv->tt_crc = tt_local_crc(bat_priv);
+-
+-	/* reset the sending counter */
+-	atomic_set(&bat_priv->tt_ogm_append_cnt, TT_OGM_APPEND_MAX);
+-
+-	return tt_changes_fill_buffer(bat_priv,
+-				      hard_iface->packet_buff + BATMAN_OGM_HLEN,
+-				      hard_iface->packet_len - BATMAN_OGM_HLEN);
+-}
+-
+-static int reset_packet_buffer(struct bat_priv *bat_priv,
+-				struct hard_iface *hard_iface)
+-{
+-	realloc_packet_buffer(hard_iface, BATMAN_OGM_HLEN);
+-	return 0;
+-}
+-
+ void schedule_bat_ogm(struct hard_iface *hard_iface)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+-	struct hard_iface *primary_if;
+-	int tt_num_changes = -1;
+ 
+ 	if ((hard_iface->if_status == IF_NOT_IN_USE) ||
+ 	    (hard_iface->if_status == IF_TO_BE_REMOVED))
+@@ -149,26 +96,7 @@ void schedule_bat_ogm(struct hard_iface *hard_iface)
+ 	if (hard_iface->if_status == IF_TO_BE_ACTIVATED)
+ 		hard_iface->if_status = IF_ACTIVE;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
+-
+-	if (hard_iface == primary_if) {
+-		/* if at least one change happened */
+-		if (atomic_read(&bat_priv->tt_local_changes) > 0) {
+-			tt_commit_changes(bat_priv);
+-			tt_num_changes = prepare_packet_buffer(bat_priv,
+-							       hard_iface);
+-		}
+-
+-		/* if the changes have been sent often enough */
+-		if (!atomic_dec_not_zero(&bat_priv->tt_ogm_append_cnt))
+-			tt_num_changes = reset_packet_buffer(bat_priv,
+-							     hard_iface);
+-	}
+-
+-	if (primary_if)
+-		hardif_free_ref(primary_if);
+-
+-	bat_priv->bat_algo_ops->bat_ogm_schedule(hard_iface, tt_num_changes);
++	bat_priv->bat_algo_ops->bat_ogm_schedule(hard_iface);
+ }
+ 
+ static void forw_packet_free(struct forw_packet *forw_packet)
+diff --git a/translation-table.c b/translation-table.c
+index 4155918..8c223a7 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -275,14 +275,64 @@ out:
+ 		tt_global_entry_free_ref(tt_global_entry);
+ }
+ 
+-int tt_changes_fill_buffer(struct bat_priv *bat_priv,
+-			   unsigned char *buff, int buff_len)
++static void tt_realloc_packet_buff(unsigned char **packet_buff,
++				   int *packet_buff_len, int min_packet_len,
++				   int new_packet_len)
++{
++	unsigned char *new_buff;
++
++	new_buff = kmalloc(new_packet_len, GFP_ATOMIC);
++
++	/* keep old buffer if kmalloc should fail */
++	if (new_buff) {
++		memcpy(new_buff, *packet_buff, min_packet_len);
++		kfree(*packet_buff);
++		*packet_buff = new_buff;
++		*packet_buff_len = new_packet_len;
++	}
++}
++
++static void tt_prepare_packet_buff(struct bat_priv *bat_priv,
++				   unsigned char **packet_buff,
++				   int *packet_buff_len, int min_packet_len)
++{
++	struct hard_iface *primary_if;
++	int req_len;
++
++	primary_if = primary_if_get_selected(bat_priv);
++
++	req_len = min_packet_len;
++	req_len += tt_len(atomic_read(&bat_priv->tt_local_changes));
++
++	/* if we have too many changes for one packet don't send any
++	 * and wait for the tt table request which will be fragmented
++	 */
++	if ((!primary_if) || (req_len > primary_if->soft_iface->mtu))
++		req_len = min_packet_len;
++
++	tt_realloc_packet_buff(packet_buff, packet_buff_len,
++			       min_packet_len, req_len);
++
++	if (primary_if)
++		hardif_free_ref(primary_if);
++}
++
++static int tt_changes_fill_buff(struct bat_priv *bat_priv,
++				unsigned char **packet_buff,
++				int *packet_buff_len, int min_packet_len)
+ {
+-	int count = 0, tot_changes = 0;
+ 	struct tt_change_node *entry, *safe;
++	int count = 0, tot_changes = 0, new_len;
++	unsigned char *tt_buff;
++
++	tt_prepare_packet_buff(bat_priv, packet_buff,
++			       packet_buff_len, min_packet_len);
+ 
+-	if (buff_len > 0)
+-		tot_changes = buff_len / tt_len(1);
++	new_len = *packet_buff_len - min_packet_len;
++	tt_buff = *packet_buff + min_packet_len;
++
++	if (new_len > 0)
++		tot_changes = new_len / tt_len(1);
+ 
+ 	spin_lock_bh(&bat_priv->tt_changes_list_lock);
+ 	atomic_set(&bat_priv->tt_local_changes, 0);
+@@ -290,7 +340,7 @@ int tt_changes_fill_buffer(struct bat_priv *bat_priv,
+ 	list_for_each_entry_safe(entry, safe, &bat_priv->tt_changes_list,
+ 				 list) {
+ 		if (count < tot_changes) {
+-			memcpy(buff + tt_len(count),
++			memcpy(tt_buff + tt_len(count),
+ 			       &entry->change, sizeof(struct tt_change));
+ 			count++;
+ 		}
+@@ -306,15 +356,15 @@ int tt_changes_fill_buffer(struct bat_priv *bat_priv,
+ 	bat_priv->tt_buff = NULL;
+ 	/* We check whether this new OGM has no changes due to size
+ 	 * problems */
+-	if (buff_len > 0) {
++	if (new_len > 0) {
+ 		/**
+ 		 * if kmalloc() fails we will reply with the full table
+ 		 * instead of providing the diff
+ 		 */
+-		bat_priv->tt_buff = kmalloc(buff_len, GFP_ATOMIC);
++		bat_priv->tt_buff = kmalloc(new_len, GFP_ATOMIC);
+ 		if (bat_priv->tt_buff) {
+-			memcpy(bat_priv->tt_buff, buff, buff_len);
+-			bat_priv->tt_buff_len = buff_len;
++			memcpy(bat_priv->tt_buff, tt_buff, new_len);
++			bat_priv->tt_buff_len = new_len;
+ 		}
+ 	}
+ 	spin_unlock_bh(&bat_priv->tt_buff_lock);
+@@ -2025,20 +2075,57 @@ static void tt_local_purge_pending_clients(struct bat_priv *bat_priv)
+ 
+ }
+ 
+-void tt_commit_changes(struct bat_priv *bat_priv)
++static int tt_commit_changes(struct bat_priv *bat_priv,
++			     unsigned char **packet_buff, int *packet_buff_len,
++			     int packet_min_len)
+ {
+-	uint16_t changed_num = tt_set_flags(bat_priv->tt_local_hash,
+-					    TT_CLIENT_NEW, false);
++	uint16_t changed_num = 0;
++
++	if (atomic_read(&bat_priv->tt_local_changes) < 1)
++		return -ENOENT;
++
++	changed_num = tt_set_flags(bat_priv->tt_local_hash,
++				   TT_CLIENT_NEW, false);
++
+ 	/* all the reset entries have now to be effectively counted as local
+ 	 * entries */
+ 	atomic_add(changed_num, &bat_priv->num_local_tt);
+ 	tt_local_purge_pending_clients(bat_priv);
++	bat_priv->tt_crc = tt_local_crc(bat_priv);
+ 
+ 	/* Increment the TTVN only once per OGM interval */
+ 	atomic_inc(&bat_priv->ttvn);
+ 	bat_dbg(DBG_TT, bat_priv, "Local changes committed, updating to ttvn %u\n",
+ 		(uint8_t)atomic_read(&bat_priv->ttvn));
+ 	bat_priv->tt_poss_change = false;
++
++	/* reset the sending counter */
++	atomic_set(&bat_priv->tt_ogm_append_cnt, TT_OGM_APPEND_MAX);
++
++	return tt_changes_fill_buff(bat_priv, packet_buff,
++				    packet_buff_len, packet_min_len);
++}
++
++/* when calling this function (hard_iface == primary_if) has to be true */
++int tt_append_changes(struct bat_priv *bat_priv,
++		      unsigned char **packet_buff, int *packet_buff_len,
++		      int packet_min_len)
++{
++	int tt_num_changes;
++
++	/* if at least one change happened */
++	tt_num_changes = tt_commit_changes(bat_priv, packet_buff,
++					   packet_buff_len, packet_min_len);
++
++	/* if the changes have been sent often enough */
++	if ((tt_num_changes < 0) &&
++	    (!atomic_dec_not_zero(&bat_priv->tt_ogm_append_cnt))) {
++		tt_realloc_packet_buff(packet_buff, packet_buff_len,
++				       packet_min_len, packet_min_len);
++		tt_num_changes = 0;
++	}
++
++	return tt_num_changes;
+ }
+ 
+ bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst)
+diff --git a/translation-table.h b/translation-table.h
+index c43374d..58d9aae 100644
+--- a/translation-table.h
++++ b/translation-table.h
+@@ -23,8 +23,6 @@
+ #define _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
+ 
+ int tt_len(int changes_num);
+-int tt_changes_fill_buffer(struct bat_priv *bat_priv,
+-			   unsigned char *buff, int buff_len);
+ int tt_init(struct bat_priv *bat_priv);
+ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 		  int ifindex);
+@@ -48,11 +46,13 @@ bool send_tt_response(struct bat_priv *bat_priv,
+ bool is_my_client(struct bat_priv *bat_priv, const uint8_t *addr);
+ void handle_tt_response(struct bat_priv *bat_priv,
+ 			struct tt_query_packet *tt_response);
+-void tt_commit_changes(struct bat_priv *bat_priv);
+ bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst);
+ void tt_update_orig(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 		    const unsigned char *tt_buff, uint8_t tt_num_changes,
+ 		    uint8_t ttvn, uint16_t tt_crc);
++int tt_append_changes(struct bat_priv *bat_priv,
++		      unsigned char **packet_buff, int *packet_buff_len,
++		      int packet_min_len);
+ bool tt_global_client_is_roaming(struct bat_priv *bat_priv, uint8_t *addr);
+ 
+ 
+diff --git a/types.h b/types.h
+index 41283e0..f1ce75e 100644
+--- a/types.h
++++ b/types.h
+@@ -427,8 +427,7 @@ struct bat_algo_ops {
+ 	/* called when primary interface is selected / changed */
+ 	void (*bat_primary_iface_set)(struct hard_iface *hard_iface);
+ 	/* prepare a new outgoing OGM for the send queue */
+-	void (*bat_ogm_schedule)(struct hard_iface *hard_iface,
+-				 int tt_num_changes);
++	void (*bat_ogm_schedule)(struct hard_iface *hard_iface);
+ 	/* send scheduled OGM */
+ 	void (*bat_ogm_emit)(struct forw_packet *forw_packet);
+ };
+-- 
+1.7.9.1
 
-Your patch does the trick, although I think this ugly function could use a =
-rewrite.
-First counting bytes and then allocating this size to do exactly the same t=
-hing again
-is not really good style. If you would like to volunteer to do this job (or=
- plan to
-work more on vis), please tell me, otherwise I'll put it in on my TODO list.
-
-Thanks
-	Simon
-
-
-On Sat, May 05, 2012 at 05:51:53PM +0200, Matthias Schiffer wrote:
-> The primary entry and the corresponding secondary entries are missing whe=
-n there
-> are no neighbors on the primary interface. This also causes the TT entrie=
-s to
-> miss and makes nodes with multiply secondary interface fall apart since t=
-here
-> is no way to see they are related without a primary entry.
->=20
-> Fix this by always emitting a primary entry.
->=20
-> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-> ---
->  vis.c |   21 ++++++++++++++-------
->  1 file changed, 14 insertions(+), 7 deletions(-)
->=20
-> diff --git a/vis.c b/vis.c
-> index cec216f..c515927 100644
-> --- a/vis.c
-> +++ b/vis.c
-> @@ -207,7 +207,6 @@ int vis_seq_print_text(struct seq_file *seq, void *of=
-fset)
->  	int vis_server =3D atomic_read(&bat_priv->vis_mode);
->  	size_t buff_pos, buf_size;
->  	char *buff;
-> -	int compare;
-> =20
->  	primary_if =3D primary_if_get_selected(bat_priv);
->  	if (!primary_if)
-> @@ -228,14 +227,18 @@ int vis_seq_print_text(struct seq_file *seq, void *=
-offset)
->  			entries =3D (struct vis_info_entry *)
->  				((char *)packet + sizeof(*packet));
-> =20
-> +			vis_data_insert_interface(packet->vis_orig,
-> +						  &vis_if_list, true);
-> +
->  			for (j =3D 0; j < packet->entries; j++) {
->  				if (entries[j].quality =3D=3D 0)
->  					continue;
-> -				compare =3D
-> -				 compare_eth(entries[j].src, packet->vis_orig);
-> +				if (compare_eth(entries[j].src,
-> +						packet->vis_orig))
-> +					continue;
->  				vis_data_insert_interface(entries[j].src,
->  							  &vis_if_list,
-> -							  compare);
-> +							  false);
->  			}
-> =20
->  			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
-> @@ -276,14 +279,18 @@ int vis_seq_print_text(struct seq_file *seq, void *=
-offset)
->  			entries =3D (struct vis_info_entry *)
->  				((char *)packet + sizeof(*packet));
-> =20
-> +			vis_data_insert_interface(packet->vis_orig,
-> +						  &vis_if_list, true);
-> +
->  			for (j =3D 0; j < packet->entries; j++) {
->  				if (entries[j].quality =3D=3D 0)
->  					continue;
-> -				compare =3D
-> -				 compare_eth(entries[j].src, packet->vis_orig);
-> +				if (compare_eth(entries[j].src,
-> +						packet->vis_orig))
-> +					continue;
->  				vis_data_insert_interface(entries[j].src,
->  							  &vis_if_list,
-> -							  compare);
-> +							  false);
->  			}
-> =20
->  			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
-> --=20
-> 1.7.10.1
->=20
->=20
-
---DocE+STaALJfprDB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAk+m26sACgkQrzg/fFk7axYuyACfXlioPSbpAGkZU3mE68M72+S7
-i4wAoObkP81josJC4NXSQyqCzGj8+Ctp
-=whPi
------END PGP SIGNATURE-----
-
---DocE+STaALJfprDB--
