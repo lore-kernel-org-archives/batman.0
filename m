@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 6 May 2012 20:22:26 +0800
-References: <1335984651-15385-1-git-send-email-martin@hundeboll.net>
-	<1336032907-5215-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1336032907-5215-1-git-send-email-martin@hundeboll.net>
+Date: Sun, 6 May 2012 20:24:46 +0800
+References: <1336116752-585-1-git-send-email-sven@narfation.org>
+	<1336217249-16071-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1336217249-16071-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201205062022.26545.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [[PATCHv2]] batman-adv: Change "make install"
-	path and run depmod
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201205062024.46905.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Only set hash class
+	after hash is initialized
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,17 +24,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday, May 03, 2012 16:15:07 Martin Hundeb=C3=B8ll wrote:
-> Currently, when installing the out-of-tree module on distributions that
-> use gzipped modules, batman-adv.ko will be installed next to
-> batman-adv.ko.gz, which is selected by kmod.
->=20
-> By changing the install path to
-> /lib/modules/`uname -r`/updates/net/batman-adv/
-> and running "depmod -ae", we make the newly installed module used by
-> kmod.
+On Saturday, May 05, 2012 19:27:27 Sven Eckelmann wrote:
+> We must be sure that there was no error during the creation of the hash
+> before we can set the hash lock class. The class set function was added to
+> the wrong place in 2c9aa3b4c37bd55148f5f25212c89e7bf5f28497
 
-Applied in revision 515bdd0.
+Applied in revision af01e99.
 
 Thanks,
 Marek
