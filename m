@@ -1,17 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 07 May 2012 13:28:24 +0200
-Message-ID: <1722532.vrPSvYzAq4@bentobox>
-In-Reply-To: <4FA7AD9B.2030604@universe-factory.net>
-References: <4FA54C09.6000303@universe-factory.net>
-	<201205071440.21129.lindner_marek@yahoo.de>
-	<4FA7AD9B.2030604@universe-factory.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5369625.Nmrx6pmteG";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix visualization output
-	without neighbors on the primary interface
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon,  7 May 2012 23:49:06 +0800
+Message-Id: <1336405746-9229-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: tcpdump - filter by compatibility
+	number
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,68 +16,126 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ README       |    1 +
+ functions.h  |    1 +
+ man/batctl.8 |   40 +++++++++++++++++++++++++++++++---------
+ tcpdump.c    |   11 ++++++++++-
+ 4 files changed, 43 insertions(+), 10 deletions(-)
 
---nextPart5369625.Nmrx6pmteG
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Monday, May 07, 2012 01:10:19 PM Matthias Schiffer wrote:
-> On 05/07/2012 08:40 AM, Marek Lindner wrote:
-> > If you wish to replace the mac addresses with readable name you can
-> > simply use a bat-hosts file to tell batctl which mac address should be
-> > replaced. Check the bat-hosts section in our batctl online manpage:
-> > http://downloads.open-mesh.org/batman/manpages/batctl.8.html
-> 
-> I know about bat-hosts, but this only works when the host displaying the
-> data knows all the MAC address/hostname mappings. For community meshs
-> like Freifunk networks it would be much nicer to allow each host to
-> supply its own hostname for vis in my opinion. I think one possibility
-> to add this without breaking compatiblity would be adding a hostname
-> record after the neighbor entries in the vis packets.
-> 
-> It would be nice to convert the reserved field in the vis packet
-> stucture to a flags field for things like this, but AFAICS the current
-> code never sets this to zero, but this is a byte of uninitialized memory
-> that is sent over the network - but again, I might be overlooking things
-> as I'm not yet familar with the code.
-
-Please don't think too much about the current packet types... there will be 
-changes anyway [1,2]
-
-And maybe you could also use the DHT implementation [3] for your distributed 
-dns [4] (when you don't want to use already available stuff [5])
-
-Kind regards,
-	Sven
-
-[1] http://www.open-mesh.org/wiki/batman-adv/BackwardsCompatibility
-[2] http://www.open-mesh.org/wiki/batman-adv/Packet-types
-[3] http://www.open-mesh.org/wiki/batman-adv/DistributedArpTable
-[4] https://projects.universe-factory.net/projects/ngmrp/wiki
-[5] http://www.multicastdns.org/
-
---nextPart5369625.Nmrx6pmteG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAABCgAGBQJPp7HYAAoJEF2HCgfBJntGYz4P+gIAuxftYApiHozDkR/Q/oo2
-vVF5ohsF7ZptIQUBs0ox3rbcUaObCS9MOh/vOs/ersWWCA1wW6HczERHP9fIbRaV
-OPZ3i0dt2hEwK6MnmG/1s/Ds+2ijguP3DC/hVkaOXrVX79kFrKyH6XVqQqSXpj2z
-iLPCpQzNKA/s2at3VngcBaICumVvsZKqgo4L39vcKz+gV56eccB+THsieZFJxjQ1
-ARuPGfk3las/k8s2qrOK6shGfmO8usGDB2cFCBru24H3TgSeePTict00zd+r5NdN
-IAg+eiM2VueQtSC+aBa9Yr9Pd8Xh/z7yIh3S5GeZ8KktKMO7/j+1oneFLZA/1btv
-6R5dciT0g5narjcAe1WA+ed+7AFgkjHMRxEpyzLFyIctaaxB3q5Jv5rbu6rZdGom
-ZaZUysy7QcbebfhGLYiFVhfZODNhn+DuSd9893yB3hUfCCeHmDbS0ZEIQhqEDjBo
-NIuRI0LLR/JSqH6j9Iaetez9BKFPC+ts+fzd0SQ5HWgFyR68gor+1TvhBjyW0XVp
-RYseaN//9HrkgEbD7UfiLRUtspO27BEg8XTcHP8L1L05iz7UXeq6kJl13OGgMKEG
-/egUgrx2rmLqiZVQ+FAkctztjrplAyU4h6onEGHOGXpMM7d6hrpLMOUGInYP+2pl
-+qjzGupgFxdndBu8itjO
-=YO6I
------END PGP SIGNATURE-----
-
---nextPart5369625.Nmrx6pmteG--
+diff --git a/README b/README
+index 0fe192f..24dc4cf 100644
+--- a/README
++++ b/README
+@@ -88,6 +88,7 @@ tcpdump layer 2 and/or layer 3 traffic on the given interface
+ 
+ Usage: batctl tcpdump [options] interface [interface]
+ options:
++         -c compat filter - only display packets matching own compat version (14)
+          -h print this help
+          -n don't convert addresses to bat-host names
+          -p dump specific packet type
+diff --git a/functions.h b/functions.h
+index ea953dd..fe03dc0 100644
+--- a/functions.h
++++ b/functions.h
+@@ -48,4 +48,5 @@ enum {
+ 	USE_READ_BUFF = 0x10,
+ 	SILENCE_ERRORS = 0x20,
+ 	NO_OLD_ORIGS = 0x40,
++	COMPAT_FILTER = 0x80,
+ };
+diff --git a/man/batctl.8 b/man/batctl.8
+index 4f2e1c6..c788f2d 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -175,15 +175,37 @@ address. batctl will send 3 packets to each host and display the
+ response time. If "\-n" is given batctl will not replace the MAC
+ addresses with bat\-host names in the output.
+ .br
+-.IP "\fBtcpdump\fP|\fBtd\fP       [\fB\-p filter\fP][\fB\-n\fP] \fBinterface ...\fP"
+-batctl will display all packets that are seen on the given
+-interface(s). The "\-p" options allows the filtering of certain packet
+-types: 1 - batman ogm packets, 2 - batman icmp packets, 4 - unicast
+-packets, 8 - broadcast packets, 16 - vis packets, and 32 - none batman
+-packets. These numbers can be added to filter more than one packet
+-type, e.g. use "\-p 3" to display batman ogm packets and batman icmp
+-packets only. If "\-n" is given batctl will not replace the MAC
+-addresses with bat\-host names in the output.
++.IP "\fBtcpdump\fP|\fBtd\fP       [\fB\-c\fP][\fB\-n\fP][\fB\-p filter\fP][\fB\-x filter\fP] \fBinterface ...\fP"
++batctl will display all packets that are seen on the given interface(s). A variety of options to filter the output
++are available: To only print packets that match the compatibility number of batctl specify the "\-c" (compat filter)
++option. If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output. To filter
++the shown packet types you can either use "\-p" (dump only specified packet types) or "\-x" (dump all packet types
++except specified). The following packet types are available:
++.RS 17
++1 - batman ogm packets
++.RE
++.RS 17
++2 - batman icmp packets
++.RE
++.RS 17
++4 - batman unicast packets
++.RE
++.RS 17
++8 - batman broadcast packets
++.RE
++.RS 16
++16 - batman vis packets
++.RE
++.RS 16
++32 - batman fragmented packets
++.RE
++.RS 16
++64 - batman tt / roaming packets
++.RE
++.RS 15
++128 - non batman packets
++.RE
++Example: batctl td <interface> -p 129 \-> only display batman ogm packets and non batman packets
+ .br
+ .IP "\fBbisect\fP           [\fB\-l MAC\fP][\fB\-t MAC\fP][\fB\-r MAC\fP][\fB\-s min\fP [\fB\- max\fP]][\fB\-o MAC\fP][\fB\-n\fP] \fBlogfile1\fP [\fBlogfile2\fP ... \fBlogfileN\fP]"
+ Analyses the logfiles to build a small internal database of all sent
+diff --git a/tcpdump.c b/tcpdump.c
+index 72c9cf1..6672cf1 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -61,6 +61,7 @@ static void tcpdump_usage(void)
+ {
+ 	printf("Usage: batctl tcpdump [options] interface [interface]\n");
+ 	printf("options:\n");
++	printf(" \t -c compat filter - only display packets matching own compat version (%i)\n", COMPAT_VERSION);
+ 	printf(" \t -h print this help\n");
+ 	printf(" \t -n don't convert addresses to bat-host names\n");
+ 	printf(" \t -p dump specific packet type\n");
+@@ -491,6 +492,10 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
+ 	case ETH_P_BATMAN:
+ 		batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + ETH_HLEN);
+ 
++		if ((read_opt & COMPAT_FILTER) &&
++		    (batman_ogm_packet->header.version != COMPAT_VERSION))
++			return;
++
+ 		switch (batman_ogm_packet->header.packet_type) {
+ 		case BAT_IV_OGM:
+ 			if (dump_level & DUMP_TYPE_BATOGM)
+@@ -639,8 +644,12 @@ int tcpdump(int argc, char **argv)
+ 
+ 	dump_level = dump_level_all;
+ 
+-	while ((optchar = getopt(argc, argv, "hnp:x:")) != -1) {
++	while ((optchar = getopt(argc, argv, "chnp:x:")) != -1) {
+ 		switch (optchar) {
++		case 'c':
++			read_opt |= COMPAT_FILTER;
++			found_args += 1;
++			break;
+ 		case 'h':
+ 			tcpdump_usage();
+ 			return EXIT_SUCCESS;
+-- 
+1.7.9.1
 
