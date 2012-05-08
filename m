@@ -1,18 +1,15 @@
 Return-Path: <mschiffer@universe-factory.net>
-Message-ID: <4FA916EB.8030609@universe-factory.net>
-Date: Tue, 08 May 2012 14:51:55 +0200
+Message-ID: <4FA92B3A.40000@universe-factory.net>
+Date: Tue, 08 May 2012 16:18:34 +0200
 From: Matthias Schiffer <mschiffer@universe-factory.net>
 MIME-Version: 1.0
-References: <4FA54C09.6000303@universe-factory.net>
-	<201205071440.21129.lindner_marek@yahoo.de>
-	<4FA7AD9B.2030604@universe-factory.net>
-	<201205081404.14409.lindner_marek@yahoo.de>
-In-Reply-To: <201205081404.14409.lindner_marek@yahoo.de>
+References: <4FA823EB.7070309@universe-factory.net>
+	<201205081359.26707.lindner_marek@yahoo.de>
+In-Reply-To: <201205081359.26707.lindner_marek@yahoo.de>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="------------enig7DB3DBF8A7029A27E43A5916"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix visualization output
- without neighbors on the primary interface
+	boundary="------------enig493459E9CEF67855F25980E5"
+Subject: Re: [B.A.T.M.A.N.] The current state of the batman-adv vis code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,47 +24,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig7DB3DBF8A7029A27E43A5916
+--------------enig493459E9CEF67855F25980E5
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: quoted-printable
 
-On 05/08/2012 08:04 AM, Marek Lindner wrote:
-> On Monday, May 07, 2012 19:10:19 Matthias Schiffer wrote:
->> On 05/07/2012 08:40 AM, Marek Lindner wrote:
->>> If you wish to replace the mac addresses with readable name you can
->>> simply use a bat-hosts file to tell batctl which mac address should b=
-e
->>> replaced. Check the bat-hosts section in our batctl online manpage:
->>> http://downloads.open-mesh.org/batman/manpages/batctl.8.html
->>
->> I know about bat-hosts, but this only works when the host displaying t=
-he
->> data knows all the MAC address/hostname mappings. For community meshs
->> like Freifunk networks it would be much nicer to allow each host to
->> supply its own hostname for vis in my opinion. I think one possibility=
+On 05/08/2012 07:59 AM, Marek Lindner wrote:
+> On Tuesday, May 08, 2012 03:35:07 Matthias Schiffer wrote:
 
->> to add this without breaking compatiblity would be adding a hostname
->> record after the neighbor entries in the vis packets.
+>> overall hash consistency might be a issue though - I would propose add=
+ing a
+>> hash_update function that updates a hash entry without deleting and
+>> re-adding the hlist node.
 >=20
-> Flooding the network with arbitrary data like hostnames, service=20
-> announcements, weather info, etc comes up from time to time but it ofte=
-n boils=20
-> down to the question: Why does it have to be in the kernel ? There are =
-several=20
-> ways to implement this feature in user space today without changing the=
- kernel=20
-> code.
->=20
-> Regards,
-> Marek
+> Can you give an example of such an "update" ? Where would we need it ?
 
-I see your point, but then one could also ask why the visualization has
-to be in the kernel at all...
+It would be useful to keep the output consistent even when the hash is
+updated while the output is generated - as a delete-add sequence adds
+the new element at the head of the hlist, a RCU-locked reader will not
+see the element when the traversal position is between the head and the
+old position of the element. An hash_update could use
+hlist_replace_rcu() to replace an element in a way that each reader
+either sees the old or the new version, but none loses it completely.
+
+A hash_update_if version that gets an additional callback that is
+provided with the old and the new element and gets to decide which
+element to keep in the hash could be used to compare the sequence
+numbers in the vis code and update the hash atomically.
 
 Matthias
 
 
---------------enig7DB3DBF8A7029A27E43A5916
+--------------enig493459E9CEF67855F25980E5
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -76,9 +63,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v2.0.19 (GNU/Linux)
 Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-iEYEARECAAYFAk+pFuwACgkQq3qIxbiQM9h11ACgiPhOtd7URwo0Peiu74S17FY4
-F6sAn2X7mBZW/8ERZumUcbn2Pe9qWdQD
-=JxXM
+iEYEARECAAYFAk+pKzoACgkQq3qIxbiQM9h1fQCgit0orG3nDQYKGKWPuDzkylfZ
+I7wAnRH9/SgFy2lFjQe7PGfcZuerafmv
+=cLTk
 -----END PGP SIGNATURE-----
 
---------------enig7DB3DBF8A7029A27E43A5916--
+--------------enig493459E9CEF67855F25980E5--
