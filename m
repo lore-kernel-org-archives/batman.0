@@ -1,14 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 8 May 2012 13:59:26 +0800
-References: <4FA823EB.7070309@universe-factory.net>
-In-Reply-To: <4FA823EB.7070309@universe-factory.net>
+Date: Tue, 8 May 2012 14:04:14 +0800
+References: <4FA54C09.6000303@universe-factory.net>
+	<201205071440.21129.lindner_marek@yahoo.de>
+	<4FA7AD9B.2030604@universe-factory.net>
+In-Reply-To: <4FA7AD9B.2030604@universe-factory.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205081359.26707.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] The current state of the batman-adv vis code
+Message-Id: <201205081404.14409.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix visualization output
+	without neighbors on the primary interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,27 +25,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, May 08, 2012 03:35:07 Matthias Schiffer wrote:
-> It should be possible to get rid of the vis_hash_lock altogether, as the
-> hash table has spinlocks for the hash lists itself;
+On Monday, May 07, 2012 19:10:19 Matthias Schiffer wrote:
+> On 05/07/2012 08:40 AM, Marek Lindner wrote:
+> > If you wish to replace the mac addresses with readable name you can
+> > simply use a bat-hosts file to tell batctl which mac address should be
+> > replaced. Check the bat-hosts section in our batctl online manpage:
+> > http://downloads.open-mesh.org/batman/manpages/batctl.8.html
+> 
+> I know about bat-hosts, but this only works when the host displaying the
+> data knows all the MAC address/hostname mappings. For community meshs
+> like Freifunk networks it would be much nicer to allow each host to
+> supply its own hostname for vis in my opinion. I think one possibility
+> to add this without breaking compatiblity would be adding a hostname
+> record after the neighbor entries in the vis packets.
 
-Yes, the hash implementation was converted to use fine-grained locking instead 
-of one big spinlock as was the rest of the code except for vis.
-
-
-> overall hash consistency might be a issue though - I would propose adding a
-> hash_update function that updates a hash entry without deleting and
-> re-adding the hlist node.
-
-Can you give an example of such an "update" ? Where would we need it ?
-
-
-> I think I found a bug in the hash_add function though. First there is a
-> RCU-locked loop that checks if a entry does already exist, but the
-> spinlock is taken after the rcu_read_unlock() - thus allowing the same
-> entry to be appended twice if two threads try to add it at the same time.
-
-You are right - you found a bug.  :)
+Flooding the network with arbitrary data like hostnames, service 
+announcements, weather info, etc comes up from time to time but it often boils 
+down to the question: Why does it have to be in the kernel ? There are several 
+ways to implement this feature in user space today without changing the kernel 
+code.
 
 Regards,
 Marek
