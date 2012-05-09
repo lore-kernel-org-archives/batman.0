@@ -1,16 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 9 May 2012 19:04:27 +0800
-References: <4FA823EB.7070309@universe-factory.net>
-	<201205081359.26707.lindner_marek@yahoo.de>
-	<4FA92B3A.40000@universe-factory.net>
-In-Reply-To: <4FA92B3A.40000@universe-factory.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201205091904.27376.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] The current state of the batman-adv vis code
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Wed,  9 May 2012 13:12:42 +0200
+Message-Id: <1336561976-16088-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-05-09
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,25 +14,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, May 08, 2012 22:18:34 Matthias Schiffer wrote:
-> It would be useful to keep the output consistent even when the hash is
-> updated while the output is generated - as a delete-add sequence adds
-> the new element at the head of the hlist, a RCU-locked reader will not
-> see the element when the traversal position is between the head and the
-> old position of the element. An hash_update could use
-> hlist_replace_rcu() to replace an element in a way that each reader
-> either sees the old or the new version, but none loses it completely.
-> 
-> A hash_update_if version that gets an additional callback that is
-> provided with the old and the new element and gets to decide which
-> element to keep in the hash could be used to compare the sequence
-> numbers in the vis code and update the hash atomically.
+Dear David,
 
-How the rcu replace / update mechanism works is pretty clear to me. My 
-question geared towards our own code base. At which point would you use this 
-rcu update ? Every time an element in the hash is modified ?
+here is a new set of changes I would like to propose for next-next/linux-3.5.
+Changes proposed here are the same of the last unsuccessful pull request, issued
+on 2012-05-01, plus some other minor fixes.
 
-Regards,
-Marek
+The patchset is based on your net-next tree.
+Please, let me know if there is any problem.
+
+
+Sorry again for the touble I caused last time, but it was really a mistake, it
+was not my intention to let you pull an entire wrong tree.
+
+
+
+Thank you very much,
+		Antonio
+
+
+The following changes since commit 9bb862beb6e5839e92f709d33fda07678f062f20:
+
+  Merge branch 'master' of git://1984.lsi.us.es/net-next (2012-05-08 14:40:21 -0400)
+
+are available in the git repository at:
+
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to ab74e43c05964efe75472b5433ede8800ecbfc43:
+
+  batman-adv: add contributor name (2012-05-09 09:54:55 +0200)
+
+----------------------------------------------------------------
+Included changes:
+
+* fix a little bug in the DHCP packet snooping introduced so far
+* minor fixes and cleanups
+* minor routing protocol API cleanups
+* add a new contributor name to translation-table.{c,h}
+* update copyright years in file headers
+
+----------------------------------------------------------------
+Antonio Quartulli (3):
+      batman-adv: fix wrong dhcp option list browsing
+      batman-adv: update copyright years
+      batman-adv: add contributor name
+
+Linus Luessing (1):
+      batman-adv: Adding hard_iface specific sysfs wrapper macros for UINT
+
+Marek Lindner (10):
+      batman-adv: introduce is_single_hop_neigh variable to increase readability
+      batman-adv: introduce packet type handler array for incoming packets
+      batman-adv: register batman ogm receive function during protocol init
+      batman-adv: rename last_valid to last_seen
+      batman-adv: replace HZ calculations with jiffies_to_msecs()
+      batman-adv: split neigh_new function into generic and batman iv specific parts
+      batman-adv: ignore protocol packets if the interface did not enable this protocol
+      batman-adv: refactoring API: find generalized name for bat_ogm_update_mac callback
+      batman-adv: rename sysfs macros to reflect the soft-interface dependency
+      batman-adv: fix checkpatch string complaint
+
+ net/batman-adv/bat_debugfs.c           |    4 +-
+ net/batman-adv/bat_iv_ogm.c            |  176 +++++++++++++++++++++-----------
+ net/batman-adv/bat_sysfs.c             |  100 +++++++++++++-----
+ net/batman-adv/bridge_loop_avoidance.c |    2 +-
+ net/batman-adv/bridge_loop_avoidance.h |    2 +-
+ net/batman-adv/gateway_client.c        |    6 +-
+ net/batman-adv/hard-interface.c        |  117 +--------------------
+ net/batman-adv/main.c                  |  124 +++++++++++++++++++++-
+ net/batman-adv/main.h                  |    6 ++
+ net/batman-adv/originator.c            |   50 +++++----
+ net/batman-adv/originator.h            |    6 +-
+ net/batman-adv/packet.h                |    1 +
+ net/batman-adv/routing.c               |   22 ++--
+ net/batman-adv/routing.h               |    4 +-
+ net/batman-adv/send.c                  |    2 +-
+ net/batman-adv/translation-table.c     |    2 +-
+ net/batman-adv/translation-table.h     |    2 +-
+ net/batman-adv/types.h                 |   16 ++-
+ 18 files changed, 377 insertions(+), 265 deletions(-)
