@@ -1,17 +1,19 @@
-Return-Path: <mschiffer@universe-factory.net>
-Message-ID: <4FAA8634.7070809@universe-factory.net>
-Date: Wed, 09 May 2012 16:59:00 +0200
-From: Matthias Schiffer <mschiffer@universe-factory.net>
+Return-Path: <martin@hundeboll.net>
+Message-ID: <4FAA970F.7080901@hundeboll.net>
+Date: Wed, 09 May 2012 18:10:55 +0200
+From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
 MIME-Version: 1.0
-References: <4FA823EB.7070309@universe-factory.net>
-	<201205081359.26707.lindner_marek@yahoo.de>
-	<4FA92B3A.40000@universe-factory.net>
-	<201205091904.27376.lindner_marek@yahoo.de>
-In-Reply-To: <201205091904.27376.lindner_marek@yahoo.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enigB3ECF9F545950C15C1EF401C"
-Subject: Re: [B.A.T.M.A.N.] The current state of the batman-adv vis code
+References: <4FA54C09.6000303@universe-factory.net>
+	<201205071440.21129.lindner_marek@yahoo.de>
+	<4FA7AD9B.2030604@universe-factory.net>
+	<201205081404.14409.lindner_marek@yahoo.de>
+	<4FA916EB.8030609@universe-factory.net>
+	<CAHD-aqKEcv0F7ZKL1xsXOj8k1ZvRM1YXvOYKadj44SUBPpff4g@mail.gmail.com>
+In-Reply-To: <CAHD-aqKEcv0F7ZKL1xsXOj8k1ZvRM1YXvOYKadj44SUBPpff4g@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix visualization output
+ without neighbors on the primary interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,39 +27,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB3ECF9F545950C15C1EF401C
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Hi Guido,
 
-On 05/09/2012 01:04 PM, Marek Lindner wrote:
-> On Tuesday, May 08, 2012 22:18:34 Matthias Schiffer wrote:
-> How the rcu replace / update mechanism works is pretty clear to me. My =
+On 05/08/2012 10:52 PM, Guido Iribarren wrote:
+> mDNS solutions like avahi translate between hostnames and ips, while
+> batman visualization deals with MACs, and those cannot necessarily be
+> obtained from IPs (in some cases, ARP will help, but won't work in
+> interfaces without IPs)
+>
+> maybe i'm ignoring some MAC discovery protocol?
 
-> question geared towards our own code base. At which point would you use=
- this=20
-> rcu update ? Every time an element in the hash is modified ?
+While reading about TLV's on wikipedia[1], I came across a MAC discovery protocol[2], LLDP, which eventually lead me to OpenLLDP[3]. If this also works on 802.11, I think we have a winner :)
 
-Yes, my idea is to use this whenever a new packet is inserted into the
-vis hash to ensure the vis data a reader sees is always as consistant as
-possible. I know it wouldn't be fatal for the vis if a packet is missing
-from the data sometimes, but in my opinion a clean update is nicer :)
+Happy hacking!
 
-Matthias
+[1] http://en.wikipedia.org/wiki/Type-length-value
+[2] http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol
+[3] http://openlldp.sourceforge.net/
 
-
---------------enigB3ECF9F545950C15C1EF401C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAk+qhjQACgkQq3qIxbiQM9gZTQCg0yCOksIFqqf6xtRQGF+kCv5v
-g9UAn2v0b2maSmm+k9bE98YmGllCwbuw
-=8KOk
------END PGP SIGNATURE-----
-
---------------enigB3ECF9F545950C15C1EF401C--
+-- 
+Kind Regards
+Martin Hundebøll
+Frederiks Allé 99A, 1.th
+8000 Aarhus C
+Denmark
++45 61 65 54 61
+martin@hundeboll.net
