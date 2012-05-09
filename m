@@ -1,10 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed,  9 May 2012 13:12:55 +0200
-Message-Id: <1336561976-16088-14-git-send-email-ordex@autistici.org>
+Date: Wed,  9 May 2012 13:12:56 +0200
+Message-Id: <1336561976-16088-15-git-send-email-ordex@autistici.org>
 In-Reply-To: <1336561976-16088-1-git-send-email-ordex@autistici.org>
 References: <1336561976-16088-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 13/14] batman-adv: update copyright years
+Subject: [B.A.T.M.A.N.] [PATCH 14/14] batman-adv: add contributor name
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,36 +19,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-update copyright years in order to include 2012
+translation_table.{c,h} have been heavily modified by another contributor and
+for legal purposes it is better to include his name into the contributor list
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c |    2 +-
- net/batman-adv/bridge_loop_avoidance.h |    2 +-
+ net/batman-adv/translation-table.c |    2 +-
+ net/batman-adv/translation-table.h |    2 +-
  2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index ad394c6..8bf9751 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1,5 +1,5 @@
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index a38d315..2cb46f0 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1,7 +1,7 @@
  /*
-- * Copyright (C) 2011 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2011-2012 B.A.T.M.A.N. contributors:
+  * Copyright (C) 2007-2012 B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+- * Marek Lindner, Simon Wunderlich
++ * Marek Lindner, Simon Wunderlich, Antonio Quartulli
   *
-diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
-index 4a8e4fc..e39f93a 100644
---- a/net/batman-adv/bridge_loop_avoidance.h
-+++ b/net/batman-adv/bridge_loop_avoidance.h
-@@ -1,5 +1,5 @@
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of version 2 of the GNU General Public
+diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
+index bfebe26..593d1b3 100644
+--- a/net/batman-adv/translation-table.h
++++ b/net/batman-adv/translation-table.h
+@@ -1,7 +1,7 @@
  /*
-- * Copyright (C) 2011 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2011-2012 B.A.T.M.A.N. contributors:
+  * Copyright (C) 2007-2012 B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+- * Marek Lindner, Simon Wunderlich
++ * Marek Lindner, Simon Wunderlich, Antonio Quartulli
   *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of version 2 of the GNU General Public
 -- 
 1.7.9.4
 
