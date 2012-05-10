@@ -1,16 +1,9 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 10 May 2012 12:49:15 +0800
-References: <1336561976-16088-1-git-send-email-ordex@autistici.org>
-	<1336561976-16088-12-git-send-email-ordex@autistici.org>
-In-Reply-To: <1336561976-16088-12-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201205101249.16267.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 11/14] batman-adv: Adding hard_iface
-	specific sysfs wrapper macros for UINT
+Date: Thu, 10 May 2012 12:54:02 +0800
+Message-Id: <1336625644-29442-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: change comment style for
+	David
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,22 +15,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On Wednesday, May 09, 2012 19:12:53 Antonio Quartulli wrote:
-> From: Linus Luessing <linus.luessing@web.de>
-> 
-> This allows us to easily add a sysfs parameter for an unsigned int
-> later, which is not for a batman mesh interface (e.g. bat0), but for a
-> common interface instead. It allows reading and writing an atomic_t in
-> hard_iface (instead of bat_priv compared to the mesh variant).
-> 
-> Developed by Linus during a 6 months trainee study period in Ascom
-> (Switzerland) AG.
+Should be merged with c9619b5e07a756af43c196874e9e9e91e3251154
 
-Antonio, you merged 2 patches that are not to be merged. Any idea why you 
-squashed 4e18e833bb5a06ab0462c3071f733dffb2a752ee and 
-f76d019194e0a88c57371df169ecc979690a04c2 into a single patch ?
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ bat_iv_ogm.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Regards,
-Marek
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 2a1845e..96ce556 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -1200,7 +1200,8 @@ static int bat_iv_ogm_receive(struct sk_buff *skb,
+ 		return NET_RX_DROP;
+ 
+ 	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
+-	 * that does not have B.A.T.M.A.N. IV enabled ? */
++	 * that does not have B.A.T.M.A.N. IV enabled ?
++	 */
+ 	if (bat_priv->bat_algo_ops->bat_ogm_emit != bat_iv_ogm_emit)
+ 		return NET_RX_DROP;
+ 
+-- 
+1.7.9.1
+
