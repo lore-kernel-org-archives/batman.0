@@ -1,17 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 10 May 2012 09:34:25 +0200
-Message-ID: <9033916.UuGU18BIPo@bentobox>
-In-Reply-To: <20120509.204111.1931607501484626500.davem@davemloft.net>
+Return-Path: <ordex@autistici.org>
+Date: Thu, 10 May 2012 09:35:56 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120510073556.GB2204@ritirata.org>
 References: <1336561976-16088-1-git-send-email-ordex@autistici.org>
-	<1336561976-16088-8-git-send-email-ordex@autistici.org>
-	<20120509.204111.1931607501484626500.davem@davemloft.net>
+	<1336561976-16088-12-git-send-email-ordex@autistici.org>
+	<201205101249.16267.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5414075.1lfkItC5uf";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 07/14] batman-adv: split neigh_new
-	function into generic and batman iv specific parts
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="9zSXsLTf0vkW971A"
+Content-Disposition: inline
+In-Reply-To: <201205101249.16267.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 11/14] batman-adv: Adding hard_iface
+ specific sysfs wrapper macros for UINT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,56 +23,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, lindner_marek@yahoo.de, David Miller <davem@davemloft.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart5414075.1lfkItC5uf
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--9zSXsLTf0vkW971A
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Wednesday, May 09, 2012 08:41:11 PM David Miller wrote:
-[...]
-> The namespace pollution of the batman-adv code needs to improve,
-> and I'm putting my foot down starting with this change.
-> 
-> If you have a static function which is therefore private to a
-> source file, name it whatever you want.
-> 
-> But once it gets exported out of that file, you have to give it
-> an appropriate name.  Probably with a "batman_adv_" prefix or
-> similar.
+On Thu, May 10, 2012 at 12:49:15 +0800, Marek Lindner wrote:
+> On Wednesday, May 09, 2012 19:12:53 Antonio Quartulli wrote:
+> > From: Linus Luessing <linus.luessing@web.de>
+> >=20
+> > This allows us to easily add a sysfs parameter for an unsigned int
+> > later, which is not for a batman mesh interface (e.g. bat0), but for a
+> > common interface instead. It allows reading and writing an atomic_t in
+> > hard_iface (instead of bat_priv compared to the mesh variant).
+> >=20
+> > Developed by Linus during a 6 months trainee study period in Ascom
+> > (Switzerland) AG.
+>=20
+> Antonio, you merged 2 patches that are not to be merged. Any idea why you=
+=20
+> squashed 4e18e833bb5a06ab0462c3071f733dffb2a752ee and=20
+> f76d019194e0a88c57371df169ecc979690a04c2 into a single patch ?
 
-I aggree, but would like to like to have a shorter prefix batadv_. I know that 
-you said "or similar" but there are still some developers that fear your 
-response to a patch that only adds the prefix batadv_ instead of the longer 
-version.
+Yes, I misused the squash/fixup command while rebasing. I'll fix it before
+sending the next pull request with the fixes proposed by David.
 
-Could you please approve or disapprove this proposal.
+Thanks
 
-Thanks,
-	Sven
---nextPart5414075.1lfkItC5uf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--9zSXsLTf0vkW971A
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAABCgAGBQJPq2+BAAoJEF2HCgfBJntGbi0P/2+K2xVjmo43E0DtdGSknih/
-4Somg6ilKZnV60xfJkvoHMorZlbJsVk+ahrcz4gcF74W/05uire65cxzENGHJ4X4
-5/w+UdL/X+/+VfU8naVqI8rBcPJukPNC6y+BFW4J41mFm398cw8D3iTZhawEmI9V
-QyBBvezPgyjuOQH7mv1VxQ2j7s5WZZORzZWfKLZTI7Xm2qVMiDqXNulYitfW3+Ul
-8K+u5oT7oRYglgZqLlcLPBJqCGxHwDff+EikQSMalfcoqXhp7wXF+bVkUkZ+Ab9Y
-oNNUK8LvCB+IiP7Mp4Z4qg+HgVgSq6sqhC3oSaTLE7vJgqEnbwuEQZ01JRHbx0mE
-GKQ13eFW37gLa920Qnvmv7XVX1NBLRRqrIIrqcr0nvowDALWCZsRNRjRMFiS5QAK
-MBKLFa5Ef+nPV+CORwibZfudIXnfl5yQIQMDf3+kfPmdXHsHHCWZVZRj+6yHjOGh
-eHIsBpnPQVMDSVsyR6EWfdCXoE8h+50VEXtBxxPzkt3Y9yxPmlGP/RjEudfIrIHS
-RLs6mW3ErUKUq8IS09SXOT8ejJlORH95mVk3aAosxiYHSaBh5nR7sPFRqvhev5SD
-U9/+3msaaKmRD73AJPJPtFfQldCqY5lwlNMJmZqSRdgteh4qVRwqwsqwARxO6HpM
-cJQctc/3CFSyXtMIZ6xM
-=xC8U
+iQEcBAEBAgAGBQJPq2/cAAoJEFMQTLzJFOZF8O8IAL9X8OIkLttIC8qqfMWblY+j
+mMWj1rsd04fa4eU+cfl8PxIFyRfYlikLSLtwdyQZ8dB2+jatgYHViy59jrUrKIcn
+37b0Cr+Eb0deRr7dbXF3dpwIoES4y3lp7OQ07/+eHubs7Yuhx0pyeaq/HS1sU4EN
+776H3W8uzSjDKG0hnx3u7Wb3yGDKwndfxApC0CJoDXaVzm/WdHsb6Gz4p374Zn9B
+g72HmCFhygYsqWuT0PAiTAcD/YT5gQrzuRDfItNEdNca/kLRerDtqv7/K8SRqL6F
+oMyeQuTyNp5lIwLJBzQ1dnebvc8PMRwf8uklycQQ1WjA1bJH5UfDaiMAKOiqh6g=
+=BoBC
 -----END PGP SIGNATURE-----
 
---nextPart5414075.1lfkItC5uf--
-
+--9zSXsLTf0vkW971A--
