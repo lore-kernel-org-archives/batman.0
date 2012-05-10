@@ -1,15 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 09 May 2012 20:43:04 -0400 (EDT)
-Message-Id: <20120509.204304.1989479180629752763.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1336561976-16088-12-git-send-email-ordex@autistici.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 10 May 2012 12:49:15 +0800
 References: <1336561976-16088-1-git-send-email-ordex@autistici.org>
 	<1336561976-16088-12-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+In-Reply-To: <1336561976-16088-12-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201205101249.16267.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 11/14] batman-adv: Adding hard_iface
- specific sysfs wrapper macros for UINT
+	specific sysfs wrapper macros for UINT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,18 +22,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed,  9 May 2012 13:12:53 +0200
+On Wednesday, May 09, 2012 19:12:53 Antonio Quartulli wrote:
+> From: Linus Luessing <linus.luessing@web.de>
+> 
+> This allows us to easily add a sysfs parameter for an unsigned int
+> later, which is not for a batman mesh interface (e.g. bat0), but for a
+> common interface instead. It allows reading and writing an atomic_t in
+> hard_iface (instead of bat_priv compared to the mesh variant).
+> 
+> Developed by Linus during a 6 months trainee study period in Ascom
+> (Switzerland) AG.
 
-> +		/**
-> +		* Mark the forwarded packet when it is not coming from our best
-> +		* next hop. We still need to forward the packet for our neighbor
-> +		* link quality detection to work in case the packet originated
-> +		* from a single hop neighbor. Otherwise we can simply drop the
-> +		* ogm.
-> +		*/
+Antonio, you merged 2 patches that are not to be merged. Any idea why you 
+squashed 4e18e833bb5a06ab0462c3071f733dffb2a752ee and 
+f76d019194e0a88c57371df169ecc979690a04c2 into a single patch ?
 
-Start comments with "/*" not "/**", and properly indent these lines.
+Regards,
+Marek
