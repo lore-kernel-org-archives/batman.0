@@ -1,11 +1,21 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 11 May 2012 00:49:34 +0800
-Message-Id: <1336668574-16655-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1336629692-32288-1-git-send-email-lindner_marek@yahoo.de>
-References: <1336629692-32288-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman_adv: fix namespace for
-	neigh_node_new function
+Return-Path: <mschiffer@universe-factory.net>
+Message-ID: <4FAC1B52.7050804@universe-factory.net>
+Date: Thu, 10 May 2012 21:47:30 +0200
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+MIME-Version: 1.0
+References: <4FA54C09.6000303@universe-factory.net>
+	<201205071440.21129.lindner_marek@yahoo.de>
+	<4FA7AD9B.2030604@universe-factory.net>
+	<201205081404.14409.lindner_marek@yahoo.de>
+	<4FA916EB.8030609@universe-factory.net>
+	<CAHD-aqKEcv0F7ZKL1xsXOj8k1ZvRM1YXvOYKadj44SUBPpff4g@mail.gmail.com>
+	<4FAA970F.7080901@hundeboll.net>
+In-Reply-To: <4FAA970F.7080901@hundeboll.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enigD74AD256C38A00D5AC25055A"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix visualization output
+ without neighbors on the primary interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,65 +28,59 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Should be merged with 0c9a249ef4dcaf733f6c7f64d4ce5c97b4705968
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD74AD256C38A00D5AC25055A
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
+On 05/09/2012 06:10 PM, Martin Hundeb=C3=B8ll wrote:
+> While reading about TLV's on wikipedia[1], I came across a MAC discover=
+y
+> protocol[2], LLDP, which eventually lead me to OpenLLDP[3]. If this als=
+o
+> works on 802.11, I think we have a winner :)
 
- - v2: renamed batman_adv prefix to batadv.
+Okay, so I tested 4 open-source LLDP implementations yesterday [1-4]...
+while LLDP works fine over batman-adv, I didn't find it very useful.
 
- bat_iv_ogm.c |    2 +-
- originator.c |    5 +++--
- originator.h |    5 +++--
- 3 files changed, 7 insertions(+), 5 deletions(-)
+1st, implementations [1-3] aren't very configurable, and [4], an
+implementation by Intel, is hard to configure and *huge* (stripped
+binary ~400KB). Most of the implementations don't support announcing
+IPv6 addresses (I'm not sure which anymore), although that isn't really
+an important feature for me, as I'd use it mostly to announce hostnames
+for the MAC addresses, but I consider software that only supports IPv4
+as deprecated. Also, most of these projects seem to be dead for years.
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 837c8a6..984cafe 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -38,7 +38,7 @@ static struct neigh_node *bat_iv_ogm_neigh_new(struct hard_iface *hard_iface,
- {
- 	struct neigh_node *neigh_node;
- 
--	neigh_node = neigh_node_new(hard_iface, neigh_addr, seqno);
-+	neigh_node = batadv_neigh_node_new(hard_iface, neigh_addr, seqno);
- 	if (!neigh_node)
- 		goto out;
- 
-diff --git a/originator.c b/originator.c
-index 30889c9..c6a00b3 100644
---- a/originator.c
-+++ b/originator.c
-@@ -86,8 +86,9 @@ struct neigh_node *orig_node_get_router(struct orig_node *orig_node)
- 	return router;
- }
- 
--struct neigh_node *neigh_node_new(struct hard_iface *hard_iface,
--				  const uint8_t *neigh_addr, uint32_t seqno)
-+struct neigh_node *batadv_neigh_node_new(struct hard_iface *hard_iface,
-+					 const uint8_t *neigh_addr,
-+					 uint32_t seqno)
- {
- 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	struct neigh_node *neigh_node;
-diff --git a/originator.h b/originator.h
-index 64c5d94..f74d0d6 100644
---- a/originator.h
-+++ b/originator.h
-@@ -29,8 +29,9 @@ void originator_free(struct bat_priv *bat_priv);
- void purge_orig_ref(struct bat_priv *bat_priv);
- void orig_node_free_ref(struct orig_node *orig_node);
- struct orig_node *get_orig_node(struct bat_priv *bat_priv, const uint8_t *addr);
--struct neigh_node *neigh_node_new(struct hard_iface *hard_iface,
--				  const uint8_t *neigh_addr, uint32_t seqno);
-+struct neigh_node *batadv_neigh_node_new(struct hard_iface *hard_iface,
-+					 const uint8_t *neigh_addr,
-+					 uint32_t seqno);
- void neigh_node_free_ref(struct neigh_node *neigh_node);
- struct neigh_node *orig_node_get_router(struct orig_node *orig_node);
- int orig_seq_print_text(struct seq_file *seq, void *offset);
--- 
-1.7.9.1
+2nd, I think without batman-adv specific extensions LLDP isn't very
+useful, as the LLDP daemon only cares about the bat0/bridge MAC
+addresses, and not the hardif MAC addresses which are visible in the
+vis. The softif MAC addresses are shown in the vis as TT records, of
+course, but as one can't really discern between the adresses of the node
+itself and those of other clients on the bridge, it's rather useless in
+my opinion.
 
+Matthias
+
+[1] http://openlldp.sourceforge.net/
+[2] https://code.google.com/p/ladvd/
+[3] https://github.com/vincentbernat/lldpd/wiki
+[4] http://www.open-lldp.org/open-lldp
+
+
+
+--------------enigD74AD256C38A00D5AC25055A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAk+sG1IACgkQq3qIxbiQM9gMuQCaAqcEroz2o/Z2ZJntdHxquWpn
+ZQUAoKC2gyg8Q9IxI0FfBzOFHWVxZScw
+=jWN+
+-----END PGP SIGNATURE-----
+
+--------------enigD74AD256C38A00D5AC25055A--
