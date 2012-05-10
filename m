@@ -1,8 +1,10 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 10 May 2012 12:54:02 +0800
-Message-Id: <1336625644-29442-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: change comment style for
+Date: Thu, 10 May 2012 12:54:03 +0800
+Message-Id: <1336625644-29442-2-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1336625644-29442-1-git-send-email-lindner_marek@yahoo.de>
+References: <1336625644-29442-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: change comment style for
 	David
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -18,27 +20,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Should be merged with c9619b5e07a756af43c196874e9e9e91e3251154
+Should be merged with bd83b4cfaeff6a78440b955598afccafad081dbe
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- bat_iv_ogm.c |    3 ++-
+ types.h |    3 ++-
  1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 2a1845e..96ce556 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -1200,7 +1200,8 @@ static int bat_iv_ogm_receive(struct sk_buff *skb,
- 		return NET_RX_DROP;
- 
- 	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
--	 * that does not have B.A.T.M.A.N. IV enabled ? */
-+	 * that does not have B.A.T.M.A.N. IV enabled ?
+diff --git a/types.h b/types.h
+index 15f538a..6474324 100644
+--- a/types.h
++++ b/types.h
+@@ -399,7 +399,8 @@ struct bat_algo_ops {
+ 	/* de-init routing info when hard-interface is disabled */
+ 	void (*bat_iface_disable)(struct hard_iface *hard_iface);
+ 	/* (re-)init mac addresses of the protocol information
+-	 * belonging to this hard-interface */
++	 * belonging to this hard-interface
 +	 */
- 	if (bat_priv->bat_algo_ops->bat_ogm_emit != bat_iv_ogm_emit)
- 		return NET_RX_DROP;
- 
+ 	void (*bat_iface_update_mac)(struct hard_iface *hard_iface);
+ 	/* called when primary interface is selected / changed */
+ 	void (*bat_primary_iface_set)(struct hard_iface *hard_iface);
 -- 
 1.7.9.1
 
