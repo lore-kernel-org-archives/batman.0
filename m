@@ -1,17 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Thu, 10 May 2012 09:35:56 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120510073556.GB2204@ritirata.org>
-References: <1336561976-16088-1-git-send-email-ordex@autistici.org>
-	<1336561976-16088-12-git-send-email-ordex@autistici.org>
-	<201205101249.16267.lindner_marek@yahoo.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 10 May 2012 21:12:37 +0800
+References: <20120504000852.GA29070@ritirata.org>
+In-Reply-To: <20120504000852.GA29070@ritirata.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9zSXsLTf0vkW971A"
-Content-Disposition: inline
-In-Reply-To: <201205101249.16267.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 11/14] batman-adv: Adding hard_iface
- specific sysfs wrapper macros for UINT
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201205102112.37690.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Improving the roaming procedure: multiple
+	roaming within one orig interval
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,52 +24,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---9zSXsLTf0vkW971A
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Thu, May 10, 2012 at 12:49:15 +0800, Marek Lindner wrote:
-> On Wednesday, May 09, 2012 19:12:53 Antonio Quartulli wrote:
-> > From: Linus Luessing <linus.luessing@web.de>
-> >=20
-> > This allows us to easily add a sysfs parameter for an unsigned int
-> > later, which is not for a batman mesh interface (e.g. bat0), but for a
-> > common interface instead. It allows reading and writing an atomic_t in
-> > hard_iface (instead of bat_priv compared to the mesh variant).
-> >=20
-> > Developed by Linus during a 6 months trainee study period in Ascom
-> > (Switzerland) AG.
->=20
-> Antonio, you merged 2 patches that are not to be merged. Any idea why you=
-=20
-> squashed 4e18e833bb5a06ab0462c3071f733dffb2a752ee and=20
-> f76d019194e0a88c57371df169ecc979690a04c2 into a single patch ?
+> Right now I am working on a concept that would enable such possibility. I
+> tried to summarise my ideas on the wiki as well[1] in order to share with
+> you the solution I am thinking about.
+> 
+> The document is still a draft and may not be 100% understandable. If you
+> have time and you are curious enough to read the wiki, please drop me your
+> feedback, it would really be appreciated :-)
 
-Yes, I misused the squash/fixup command while rebasing. I'll fix it before
-sending the next pull request with the fixes proposed by David.
+if I understand the document correctly each mesh node a client connects to 
+will send a roaming advertisement back to the last known mesh node this client 
+was connected to. A few questions come to my mind:
 
-Thanks
+ * Does this already work with the current code ? If not what happens now ?
+ * How do all nodes get back in sync ? It sounds to me like for certain while 
+a number of nodes claim the same client, right ? Nobody tells the intermediate 
+mesh nodes that their client has moved.
+ * What if receiving a roaming advertisement triggered an immediate 
+(unscheduled) OGM broadcast ? That would potentially speed up the gap and also 
+address the "longer path" problem you outlined in the wikipage.
 
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---9zSXsLTf0vkW971A
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPq2/cAAoJEFMQTLzJFOZF8O8IAL9X8OIkLttIC8qqfMWblY+j
-mMWj1rsd04fa4eU+cfl8PxIFyRfYlikLSLtwdyQZ8dB2+jatgYHViy59jrUrKIcn
-37b0Cr+Eb0deRr7dbXF3dpwIoES4y3lp7OQ07/+eHubs7Yuhx0pyeaq/HS1sU4EN
-776H3W8uzSjDKG0hnx3u7Wb3yGDKwndfxApC0CJoDXaVzm/WdHsb6Gz4p374Zn9B
-g72HmCFhygYsqWuT0PAiTAcD/YT5gQrzuRDfItNEdNca/kLRerDtqv7/K8SRqL6F
-oMyeQuTyNp5lIwLJBzQ1dnebvc8PMRwf8uklycQQ1WjA1bJH5UfDaiMAKOiqh6g=
-=BoBC
------END PGP SIGNATURE-----
-
---9zSXsLTf0vkW971A--
+Regards,
+Marek
