@@ -1,10 +1,10 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 10 May 2012 12:54:03 +0800
-Message-Id: <1336625644-29442-2-git-send-email-lindner_marek@yahoo.de>
+Date: Thu, 10 May 2012 12:54:04 +0800
+Message-Id: <1336625644-29442-3-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1336625644-29442-1-git-send-email-lindner_marek@yahoo.de>
 References: <1336625644-29442-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: change comment style for
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: change comment style for
 	David
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,27 +20,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Should be merged with bd83b4cfaeff6a78440b955598afccafad081dbe
+Should be merged with f76d019194e0a88c57371df169ecc979690a04c2
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- types.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ bat_iv_ogm.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/types.h b/types.h
-index 15f538a..6474324 100644
---- a/types.h
-+++ b/types.h
-@@ -399,7 +399,8 @@ struct bat_algo_ops {
- 	/* de-init routing info when hard-interface is disabled */
- 	void (*bat_iface_disable)(struct hard_iface *hard_iface);
- 	/* (re-)init mac addresses of the protocol information
--	 * belonging to this hard-interface */
-+	 * belonging to this hard-interface
-+	 */
- 	void (*bat_iface_update_mac)(struct hard_iface *hard_iface);
- 	/* called when primary interface is selected / changed */
- 	void (*bat_primary_iface_set)(struct hard_iface *hard_iface);
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 96ce556..837c8a6 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -518,13 +518,12 @@ static void bat_iv_ogm_forward(struct orig_node *orig_node,
+ 	}
+ 
+ 	if (!is_from_best_next_hop) {
+-		/**
+-		* Mark the forwarded packet when it is not coming from our best
+-		* next hop. We still need to forward the packet for our neighbor
+-		* link quality detection to work in case the packet originated
+-		* from a single hop neighbor. Otherwise we can simply drop the
+-		* ogm.
+-		*/
++		/* Mark the forwarded packet when it is not coming from our best
++		 * next hop. We still need to forward the packet for our neighbor
++		 * link quality detection to work in case the packet originated
++		 * from a single hop neighbor. Otherwise we can simply drop the
++		 * ogm.
++		 */
+ 		if (is_single_hop_neigh)
+ 			batman_ogm_packet->flags |= NOT_BEST_NEXT_HOP;
+ 		else
 -- 
 1.7.9.1
 
