@@ -1,15 +1,15 @@
 Return-Path: <davem@davemloft.net>
-Date: Wed, 09 May 2012 20:41:33 -0400 (EDT)
-Message-Id: <20120509.204133.1004885376943340431.davem@davemloft.net>
+Date: Wed, 09 May 2012 20:42:11 -0400 (EDT)
+Message-Id: <20120509.204211.1682541114536655093.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1336561976-16088-9-git-send-email-ordex@autistici.org>
+In-Reply-To: <1336561976-16088-10-git-send-email-ordex@autistici.org>
 References: <1336561976-16088-1-git-send-email-ordex@autistici.org>
-	<1336561976-16088-9-git-send-email-ordex@autistici.org>
+	<1336561976-16088-10-git-send-email-ordex@autistici.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 08/14] batman-adv: ignore protocol
- packets if the interface did not enable this protocol
+Subject: Re: [B.A.T.M.A.N.] [PATCH 09/14] batman-adv: refactoring API: find
+ generalized name for bat_ogm_update_mac callback
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,13 +25,13 @@ To: ordex@autistici.org
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
 
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed,  9 May 2012 13:12:50 +0200
+Date: Wed,  9 May 2012 13:12:51 +0200
 
-> +	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
-> +	 * that does not have B.A.T.M.A.N. IV enabled ? */
+> +	/* (re-)init mac addresses of the protocol information
+> +	 * belonging to this hard-interface */
 
 Needs to be:
 
-	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
-	 * that does not have B.A.T.M.A.N. IV enabled ?
+	/* (re-)init mac addresses of the protocol information
+	 * belonging to this hard-interface
 	 */
