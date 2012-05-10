@@ -1,16 +1,11 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 10 May 2012 12:07:28 -0400 (EDT)
-Message-Id: <20120510.120728.1691568555429264215.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <9033916.UuGU18BIPo@bentobox>
-References: <1336561976-16088-8-git-send-email-ordex@autistici.org>
-	<20120509.204111.1931607501484626500.davem@davemloft.net>
-	<9033916.UuGU18BIPo@bentobox>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 07/14] batman-adv: split neigh_new
- function into generic and batman iv specific parts
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 11 May 2012 00:49:34 +0800
+Message-Id: <1336668574-16655-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1336629692-32288-1-git-send-email-lindner_marek@yahoo.de>
+References: <1336629692-32288-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman_adv: fix namespace for
+	neigh_node_new function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,27 +17,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven@narfation.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 10 May 2012 09:34:25 +0200
+Should be merged with 0c9a249ef4dcaf733f6c7f64d4ce5c97b4705968
 
-> On Wednesday, May 09, 2012 08:41:11 PM David Miller wrote:
-> [...]
->> The namespace pollution of the batman-adv code needs to improve,
->> and I'm putting my foot down starting with this change.
->> 
->> If you have a static function which is therefore private to a
->> source file, name it whatever you want.
->> 
->> But once it gets exported out of that file, you have to give it
->> an appropriate name.  Probably with a "batman_adv_" prefix or
->> similar.
-> 
-> I aggree, but would like to like to have a shorter prefix batadv_. I know that 
-> you said "or similar" but there are still some developers that fear your 
-> response to a patch that only adds the prefix batadv_ instead of the longer 
-> version.
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
 
-batadv_ is fine.
+ - v2: renamed batman_adv prefix to batadv.
+
+ bat_iv_ogm.c |    2 +-
+ originator.c |    5 +++--
+ originator.h |    5 +++--
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 837c8a6..984cafe 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -38,7 +38,7 @@ static struct neigh_node *bat_iv_ogm_neigh_new(struct hard_iface *hard_iface,
+ {
+ 	struct neigh_node *neigh_node;
+ 
+-	neigh_node = neigh_node_new(hard_iface, neigh_addr, seqno);
++	neigh_node = batadv_neigh_node_new(hard_iface, neigh_addr, seqno);
+ 	if (!neigh_node)
+ 		goto out;
+ 
+diff --git a/originator.c b/originator.c
+index 30889c9..c6a00b3 100644
+--- a/originator.c
++++ b/originator.c
+@@ -86,8 +86,9 @@ struct neigh_node *orig_node_get_router(struct orig_node *orig_node)
+ 	return router;
+ }
+ 
+-struct neigh_node *neigh_node_new(struct hard_iface *hard_iface,
+-				  const uint8_t *neigh_addr, uint32_t seqno)
++struct neigh_node *batadv_neigh_node_new(struct hard_iface *hard_iface,
++					 const uint8_t *neigh_addr,
++					 uint32_t seqno)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	struct neigh_node *neigh_node;
+diff --git a/originator.h b/originator.h
+index 64c5d94..f74d0d6 100644
+--- a/originator.h
++++ b/originator.h
+@@ -29,8 +29,9 @@ void originator_free(struct bat_priv *bat_priv);
+ void purge_orig_ref(struct bat_priv *bat_priv);
+ void orig_node_free_ref(struct orig_node *orig_node);
+ struct orig_node *get_orig_node(struct bat_priv *bat_priv, const uint8_t *addr);
+-struct neigh_node *neigh_node_new(struct hard_iface *hard_iface,
+-				  const uint8_t *neigh_addr, uint32_t seqno);
++struct neigh_node *batadv_neigh_node_new(struct hard_iface *hard_iface,
++					 const uint8_t *neigh_addr,
++					 uint32_t seqno);
+ void neigh_node_free_ref(struct neigh_node *neigh_node);
+ struct neigh_node *orig_node_get_router(struct orig_node *orig_node);
+ int orig_seq_print_text(struct seq_file *seq, void *offset);
+-- 
+1.7.9.1
+
