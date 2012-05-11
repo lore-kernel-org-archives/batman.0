@@ -1,15 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 12 May 2012 03:56:55 +0800
-References: <1336723850-487-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1336723850-487-1-git-send-email-lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Return-Path: <davem@davemloft.net>
+Date: Fri, 11 May 2012 18:01:44 -0400 (EDT)
+Message-Id: <20120511.180144.174337959525316777.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1336738892-7401-1-git-send-email-ordex@autistici.org>
+References: <1336738892-7401-1-git-send-email-ordex@autistici.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205120356.55391.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: only store changed
-	gw_bandwidth values
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-05-11
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,15 +19,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: ordex@autistici.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Friday, May 11, 2012 16:10:50 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  gateway_common.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Fri, 11 May 2012 14:21:17 +0200
 
-Applied in revision cbe9711.
+> this is a fixed version of the pull request issued on 2012-05-09.
+> 
+> Comments introduced in this patchset are not following the net-tree
+> guidelines. Another patch changing all the already existing comments will follow
+> later. 
+> 
+> New exported functions follow the new name convention we discussed so far.
+> A patch renaming all the existing exported functions will follow.
 
-Regards,
-Marek
+Pulled, but you have to cleanup the namespace on lots of other
+functions too.
+
+For example, the packet receive handle register/unregister routines
+you added in this series as well.
+
+Go through the entire batman-adv stack, and if the function or data
+object is not static, make sure it has a batadv_*() prefix.
