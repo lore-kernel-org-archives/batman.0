@@ -1,12 +1,14 @@
-Return-Path: <davem@davemloft.net>
-Date: Fri, 11 May 2012 18:01:44 -0400 (EDT)
-Message-Id: <20120511.180144.174337959525316777.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1336738892-7401-1-git-send-email-ordex@autistici.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 12 May 2012 00:10:25 +0200
+Message-ID: <1580622.xq0LFHtR2u@bentobox>
+In-Reply-To: <20120511.180144.174337959525316777.davem@davemloft.net>
 References: <1336738892-7401-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	<20120511.180144.174337959525316777.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1771440.M4XkGvE5Cm";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-05-11
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,26 +21,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri, 11 May 2012 14:21:17 +0200
 
-> this is a fixed version of the pull request issued on 2012-05-09.
+--nextPart1771440.M4XkGvE5Cm
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Friday, May 11, 2012 06:01:44 PM David Miller wrote:
+> From: Antonio Quartulli <ordex@autistici.org>
+> Date: Fri, 11 May 2012 14:21:17 +0200
 > 
-> Comments introduced in this patchset are not following the net-tree
-> guidelines. Another patch changing all the already existing comments will follow
-> later. 
+> > this is a fixed version of the pull request issued on 2012-05-09.
+> > 
+> > Comments introduced in this patchset are not following the net-tree
+> > guidelines. Another patch changing all the already existing comments
+> > will follow later.
+> > 
+> > New exported functions follow the new name convention we discussed so
+> > far. A patch renaming all the existing exported functions will follow.
+> Pulled, but you have to cleanup the namespace on lots of other
+> functions too.
 > 
-> New exported functions follow the new name convention we discussed so far.
-> A patch renaming all the existing exported functions will follow.
+> For example, the packet receive handle register/unregister routines
+> you added in this series as well.
+> 
+> Go through the entire batman-adv stack, and if the function or data
+> object is not static, make sure it has a batadv_*() prefix.
 
-Pulled, but you have to cleanup the namespace on lots of other
-functions too.
+The patches for this are posted on the batman-adv mailinglist [1]. I am 
+currently splitting this large patch for easier consumption.
 
-For example, the packet receive handle register/unregister routines
-you added in this series as well.
+Thanks,
+	Sven
 
-Go through the entire batman-adv stack, and if the function or data
-object is not static, make sure it has a batadv_*() prefix.
+[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-May/007062.html
+--nextPart1771440.M4XkGvE5Cm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAABCgAGBQJPrY5RAAoJEF2HCgfBJntGFgYP/RhKTOYvfvP6z9tZa0V7Qz0Z
+7SfNKpEf06TEk/lnEnh63U7oqywakQnfrJWvC7Nuarj7Wg8vZs011u4FCNr16a53
+lnpwDxgvTQKT1hxm6WejOJylUulqpxRx1Mdf1U5NFwfrjh4fuLcetYS0cI7TJhaI
+YNY61aCQ4Xru79TBQ9HYzfA4jeX3WXYJIIhGDsTSHG1jfwGHzMLn2N3FPhwUT9Bz
+55CWRsUSipXPprSr9abnTqvkSuNGj28eZ8poKU5TeOdZwhoNpLEDRSmaB9TNVPoO
+9ihu/zcW3FL5TERnTQXIY38/ySxPtzYIMTG9sK8X9Bs+AlksClkepg+IZwCo2iXA
+vOytqJ9pOmTw1FUtzd1Kt0bTiOo9LvPwV9NELlCt7hrzXeEgO9D4OkcFBbynOt+R
+cGfBWRVoWb6fAnQuH2zvcMXrVhdbhqf83js9kUNwzZ8o9t2LQMPJhKzOdrr8Y1xc
+pfxaH3EC/2G3dOBTXvCF9y+qyUKPiqnDqYttFpLnk/onb0V5i16+4OgX3xlYVyLo
+62l9gX6OzYothYrj+hxASIvr131bHO/EgWpAQ98v1hO3giDUkDiXIQ8leWx7qOn2
+YNQCXu3rUmw/0iquzVabgStXZm27DiW/B5N2iooQLYNCQyy3lKbFI1ywD9O5FS3v
+2ZxhxwS9BTy+9uM2agP5
+=KsYI
+-----END PGP SIGNATURE-----
+
+--nextPart1771440.M4XkGvE5Cm--
+
