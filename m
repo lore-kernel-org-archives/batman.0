@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 12 May 2012 03:38:35 +0800
-References: <1336405746-9229-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1336405746-9229-1-git-send-email-lindner_marek@yahoo.de>
+Date: Sat, 12 May 2012 03:40:41 +0800
+References: <1336549845-13765-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1336549845-13765-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205120338.35817.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: tcpdump - filter by
-	compatibility number
+Message-Id: <201205120340.41368.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: use DBG_ALL in log_level
+	sysfs definition
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,16 +23,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, May 07, 2012 23:49:06 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  README       |    1 +
->  functions.h  |    1 +
->  man/batctl.8 |   40 +++++++++++++++++++++++++++++++---------
->  tcpdump.c    |   11 ++++++++++-
->  4 files changed, 43 insertions(+), 10 deletions(-)
+On Wednesday, May 09, 2012 15:50:45 Antonio Quartulli wrote:
+> Each time a new log level is added the developer must change either the
+> DBG_ALL enum definition and the hard coded value in the bat_sysfs.c for
+> the log_level attribute max value. This is extremely error prone.
+> With this patch the code directly uses DBG_ALL in the sysfs definition
 
-Applied in revision 8d06132.
+Applied in revision 3806f0f.
 
-Regards,
+Thanks,
 Marek
