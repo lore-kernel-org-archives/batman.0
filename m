@@ -1,11 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 11 May 2012 20:29:47 +0200
-Message-Id: <1336760987-1523-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1336760987-1523-1-git-send-email-sven@narfation.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 12 May 2012 03:15:19 +0800
 References: <1336760987-1523-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix namespace for
-	hash_set_lock_class
+In-Reply-To: <1336760987-1523-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201205120315.19641.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Prefix non-static
+	functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,64 +21,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This function was introduced in 2c9aa3b4c37bd55148f5f25212c89e7bf5f28497
-without a proper namespace prefix.
+On Saturday, May 12, 2012 02:29:46 Sven Eckelmann wrote:
+> @@ -138,7 +138,8 @@ static uint8_t hop_penalty(uint8_t tq, const struct
+> bat_priv *bat_priv) static int bat_iv_ogm_aggr_packet(int buff_pos, int
+> packet_len,
+>                                   int tt_num_changes)
+>  {
+> -       int next_buff_pos = buff_pos + BATMAN_OGM_HLEN +
+> tt_len(tt_num_changes); +       int next_buff_pos = buff_pos +
+> BATMAN_OGM_HLEN +
+> +                           batadv_tt_len(tt_num_changes);
+>  
+>         return (next_buff_pos <= packet_len) &&
+>                 (next_buff_pos <= MAX_AGGREGATION_BYTES);
+> @@ -189,7 +190,7 @@ static void bat_iv_ogm_send_to_if(struct forw_packet
+> *forw_packet, hard_iface->net_dev->dev_addr);
+>  
+>                 buff_pos += BATMAN_OGM_HLEN +
+> -                               tt_len(batman_ogm_packet->tt_num_changes);
+> +                           batadv_tt_len(batman_ogm_packet->tt_num_changes
+> ); packet_num++;
+>                 batman_ogm_packet = (struct batman_ogm_packet *)
+>                                         (forw_packet->skb->data +
+> buff_pos);
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- bridge_loop_avoidance.c |    7 ++++---
- hash.c                  |    3 ++-
- hash.h                  |    3 ++-
- 3 files changed, 8 insertions(+), 5 deletions(-)
+Here we have indentation David does not like (although not problematic for 
+checkpatch).
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 0c5a3ef..27f451a 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1172,9 +1172,10 @@ int batadv_bla_init(struct bat_priv *bat_priv)
- 	if (!bat_priv->claim_hash || !bat_priv->backbone_hash)
- 		return -ENOMEM;
- 
--	hash_set_lock_class(bat_priv->claim_hash, &claim_hash_lock_class_key);
--	hash_set_lock_class(bat_priv->backbone_hash,
--			    &backbone_hash_lock_class_key);
-+	batadv_hash_set_lock_class(bat_priv->claim_hash,
-+				   &claim_hash_lock_class_key);
-+	batadv_hash_set_lock_class(bat_priv->backbone_hash,
-+				   &backbone_hash_lock_class_key);
- 
- 	bat_dbg(DBG_BLA, bat_priv, "bla hashes initialized\n");
- 
-diff --git a/hash.c b/hash.c
-index 260d092..439f5d7 100644
---- a/hash.c
-+++ b/hash.c
-@@ -70,7 +70,8 @@ free_hash:
- 	return NULL;
- }
- 
--void hash_set_lock_class(struct hashtable_t *hash, struct lock_class_key *key)
-+void batadv_hash_set_lock_class(struct hashtable_t *hash,
-+				struct lock_class_key *key)
- {
- 	uint32_t i;
- 
-diff --git a/hash.h b/hash.h
-index 486b94b..74f74bb 100644
---- a/hash.h
-+++ b/hash.h
-@@ -46,7 +46,8 @@ struct hashtable_t {
- struct hashtable_t *batadv_hash_new(uint32_t size);
- 
- /* set class key for all locks */
--void hash_set_lock_class(struct hashtable_t *hash, struct lock_class_key *key);
-+void batadv_hash_set_lock_class(struct hashtable_t *hash,
-+				struct lock_class_key *key);
- 
- /* free only the hashtable and the hash itself. */
- void batadv_hash_destroy(struct hashtable_t *hash);
--- 
-1.7.10
 
+> @@ -1222,7 +1226,7 @@ static int bat_iv_ogm_receive(struct sk_buff *skb,
+>                                    tt_buff, if_incoming);
+>  
+>                 buff_pos += BATMAN_OGM_HLEN +
+> -                               tt_len(batman_ogm_packet->tt_num_changes);
+> +                           batadv_tt_len(batman_ogm_packet-
+>tt_num_changes);
+>  
+>                 batman_ogm_packet = (struct batman_ogm_packet *)
+>                                                 (packet_buff + buff_pos);
+
+Same here.
+
+Regards,
+Marek
