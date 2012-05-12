@@ -1,16 +1,9 @@
-Return-Path: <pedroncr@sapo.pt>
-Date: Sat, 12 May 2012 16:08:05 +0100
-Message-ID: <20120512160805.Horde.1o2CEeanEAJPrnzVjLOmXOA@beta.mail.sapo.pt>
-From: Pedro Nuno Costa Rodrigues <pedroncr@sapo.pt>
-References: <20120501190319.Horde.oIfHDR3HAoJPoCVnYaUF_lA@beta.mail.sapo.pt>
-	<43098025.shuUEIUiJR@sven-desktop.home.narfation.org>
-	<20120510224854.Horde.0SO0XL5SZhxPrDfGUeTRkCA@beta.mail.sapo.pt>
-	<201205111459.40354.lindner_marek@yahoo.de>
-In-Reply-To: <201205111459.40354.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; DelSp=Yes
-MIME-Version: 1.0
-Content-Disposition: inline
-Subject: Re: [B.A.T.M.A.N.] Batman-adv simple configuration example
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 12 May 2012 18:33:50 +0200
+Message-Id: <1336840447-6580-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 01/18] batman-adv: Prefix bat_debugfs local
+	static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,77 +15,347 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+All non-static symbols of batman-adv were prefixed with batadv_ to avoid
+collisions with other symbols of the kernel. Other symbols of batman-adv
+should use the same prefix to keep the naming scheme consistent.
 
-Citando Marek Lindner <lindner_marek@yahoo.de>:
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ bat_debugfs.c |  143 +++++++++++++++++++++++++++++----------------------------
+ 1 file changed, 72 insertions(+), 71 deletions(-)
 
-> On Friday, May 11, 2012 05:48:54 Pedro Nuno Costa Rodrigues wrote:
->> I'm using backfire (openwrt build):
->> cat /home/pedro/backfire/feeds/packages/net/batman-adv/Makefile | grep
->> 2012# Copyright (C) 2010-2012
->> OpenWrt.orgPKG_VERSION:=2012.0.0BATCTL_VERSION:=2012.0.0
->
-> You are trying to mix 2 different branches: backfire + trunk batman-adv
->  * the batman-adv package coming with backfire is working fine with backfire
->  * the batman-adv package from trunk works fine with trunk
->
-> Mixing the package with another branch is officially unsupported  
-> because there
-> are some OpenWrt incompatibilities we can't not automatically handle. It
-> certainly is doable but requires deeper knowledge of OpenWrt.
->
-> Cheers,
-> Marek
-
-
-
-
-hello!
-
-I didn't tryed to mix 2 different branches...
-Perhaps i wasn't very clear.
-
-I build the backfire branch and i tested the batman-adv and it worked fine...
-I also build (another build completely independent) of the trunk  
-bruch, but it didn't worked...
-
-I used the same configurations files on both... exactly the same, but  
-the trunk build gave the error:
-
-
-root at OpenWrt:/lib/batman-adv# batman-adv start
-/usr/sbin/batman-adv: eval: line 1: can't
-create/sys/class/net/bat0/mesh/orig_interval: nonexistent directory
-
-/usr/sbin/batman-adv: eval: line 1: can't create
-/sys/class/net/bat0/mesh/log_level: nonexistent directory
-
-/usr/sbin/batman-adv: eval: line 1: can't create
-/sys/class/net/bat0/mesh/bonding: nonexistent
-directory/usr/sbin/batman-adv: eval: line 1: can't create
-/sys/class/net/bat0/mesh/fragmentation: nonexistent directory
-
-/usr/sbin/batman-adv: eval: line 1: can't create
-/sys/class/net/bat0/mesh/gw_bandwidth: nonexistent directory
-
-/usr/sbin/batman-adv: eval: line 1: can't create
-/sys/class/net/bat0/mesh/gw_mode: nonexistent
-directory/usr/sbin/batman-adv: eval: line 1: can't create
-/sys/class/net/bat0/mesh/vis_mode: nonexistent directory
-
-/usr/sbin/batman-adv: eval: line 1: can't create
-/sys/class/net/bat0/mesh/ap_isolation: nonexistent directory
-
-
-and i checked if it was the crc-16 problem livrary, but it wasn't.
-
-I know that's an openwrt problem. Or something that missed me...
-
-I will try to analyze and if it is necessary i will try to contact  
-openwrt developers...
-
-Thank you!!
-best regards
-Pedro Rodrigues
+diff --git a/bat_debugfs.c b/bat_debugfs.c
+index cd636db..004d94f 100644
+--- a/bat_debugfs.c
++++ b/bat_debugfs.c
+@@ -32,25 +32,25 @@
+ #include "icmp_socket.h"
+ #include "bridge_loop_avoidance.h"
+ 
+-static struct dentry *bat_debugfs;
++static struct dentry *batadv_debugfs;
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+-#define LOG_BUFF_MASK (log_buff_len-1)
++#define LOG_BUFF_MASK (batadv_log_buff_len - 1)
+ #define LOG_BUFF(idx) (debug_log->log_buff[(idx) & LOG_BUFF_MASK])
+ 
+-static int log_buff_len = LOG_BUF_LEN;
++static int batadv_log_buff_len = LOG_BUF_LEN;
+ 
+-static void emit_log_char(struct debug_log *debug_log, char c)
++static void batadv_emit_log_char(struct debug_log *debug_log, char c)
+ {
+ 	LOG_BUFF(debug_log->log_end) = c;
+ 	debug_log->log_end++;
+ 
+-	if (debug_log->log_end - debug_log->log_start > log_buff_len)
+-		debug_log->log_start = debug_log->log_end - log_buff_len;
++	if (debug_log->log_end - debug_log->log_start > batadv_log_buff_len)
++		debug_log->log_start = debug_log->log_end - batadv_log_buff_len;
+ }
+ 
+ __printf(2, 3)
+-static int fdebug_log(struct debug_log *debug_log, const char *fmt, ...)
++static int batadv_fdebug_log(struct debug_log *debug_log, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	static char debug_log_buf[256];
+@@ -65,7 +65,7 @@ static int fdebug_log(struct debug_log *debug_log, const char *fmt, ...)
+ 	va_end(args);
+ 
+ 	for (p = debug_log_buf; *p != 0; p++)
+-		emit_log_char(debug_log, *p);
++		batadv_emit_log_char(debug_log, *p);
+ 
+ 	spin_unlock_bh(&debug_log->lock);
+ 
+@@ -81,14 +81,14 @@ int batadv_debug_log(struct bat_priv *bat_priv, const char *fmt, ...)
+ 
+ 	va_start(args, fmt);
+ 	vscnprintf(tmp_log_buf, sizeof(tmp_log_buf), fmt, args);
+-	fdebug_log(bat_priv->debug_log, "[%10u] %s",
+-		   jiffies_to_msecs(jiffies), tmp_log_buf);
++	batadv_fdebug_log(bat_priv->debug_log, "[%10u] %s",
++			  jiffies_to_msecs(jiffies), tmp_log_buf);
+ 	va_end(args);
+ 
+ 	return 0;
+ }
+ 
+-static int log_open(struct inode *inode, struct file *file)
++static int batadv_log_open(struct inode *inode, struct file *file)
+ {
+ 	nonseekable_open(inode, file);
+ 	file->private_data = inode->i_private;
+@@ -96,14 +96,14 @@ static int log_open(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static int log_release(struct inode *inode, struct file *file)
++static int batadv_log_release(struct inode *inode, struct file *file)
+ {
+ 	batadv_dec_module_count();
+ 	return 0;
+ }
+ 
+-static ssize_t log_read(struct file *file, char __user *buf,
+-			size_t count, loff_t *ppos)
++static ssize_t batadv_log_read(struct file *file, char __user *buf,
++			       size_t count, loff_t *ppos)
+ {
+ 	struct bat_priv *bat_priv = file->private_data;
+ 	struct debug_log *debug_log = bat_priv->debug_log;
+@@ -156,7 +156,7 @@ static ssize_t log_read(struct file *file, char __user *buf,
+ 	return error;
+ }
+ 
+-static unsigned int log_poll(struct file *file, poll_table *wait)
++static unsigned int batadv_log_poll(struct file *file, poll_table *wait)
+ {
+ 	struct bat_priv *bat_priv = file->private_data;
+ 	struct debug_log *debug_log = bat_priv->debug_log;
+@@ -169,15 +169,15 @@ static unsigned int log_poll(struct file *file, poll_table *wait)
+ 	return 0;
+ }
+ 
+-static const struct file_operations log_fops = {
+-	.open           = log_open,
+-	.release        = log_release,
+-	.read           = log_read,
+-	.poll           = log_poll,
++static const struct file_operations batadv_log_fops = {
++	.open           = batadv_log_open,
++	.release        = batadv_log_release,
++	.read           = batadv_log_read,
++	.poll           = batadv_log_poll,
+ 	.llseek         = no_llseek,
+ };
+ 
+-static int debug_log_setup(struct bat_priv *bat_priv)
++static int batadv_debug_log_setup(struct bat_priv *bat_priv)
+ {
+ 	struct dentry *d;
+ 
+@@ -192,7 +192,8 @@ static int debug_log_setup(struct bat_priv *bat_priv)
+ 	init_waitqueue_head(&bat_priv->debug_log->queue_wait);
+ 
+ 	d = debugfs_create_file("log", S_IFREG | S_IRUSR,
+-				bat_priv->debug_dir, bat_priv, &log_fops);
++				bat_priv->debug_dir, bat_priv,
++				&batadv_log_fops);
+ 	if (d)
+ 		goto err;
+ 
+@@ -202,49 +203,49 @@ err:
+ 	return 1;
+ }
+ 
+-static void debug_log_cleanup(struct bat_priv *bat_priv)
++static void batadv_debug_log_cleanup(struct bat_priv *bat_priv)
+ {
+ 	kfree(bat_priv->debug_log);
+ 	bat_priv->debug_log = NULL;
+ }
+ #else /* CONFIG_BATMAN_ADV_DEBUG */
+-static int debug_log_setup(struct bat_priv *bat_priv)
++static int batadv_debug_log_setup(struct bat_priv *bat_priv)
+ {
+ 	bat_priv->debug_log = NULL;
+ 	return 0;
+ }
+ 
+-static void debug_log_cleanup(struct bat_priv *bat_priv)
++static void batadv_debug_log_cleanup(struct bat_priv *bat_priv)
+ {
+ 	return;
+ }
+ #endif
+ 
+-static int bat_algorithms_open(struct inode *inode, struct file *file)
++static int batadv_algorithms_open(struct inode *inode, struct file *file)
+ {
+ 	return single_open(file, batadv_algo_seq_print_text, NULL);
+ }
+ 
+-static int originators_open(struct inode *inode, struct file *file)
++static int batadv_originators_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+ 	return single_open(file, batadv_orig_seq_print_text, net_dev);
+ }
+ 
+-static int gateways_open(struct inode *inode, struct file *file)
++static int batadv_gateways_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+ 	return single_open(file, batadv_gw_client_seq_print_text, net_dev);
+ }
+ 
+-static int transtable_global_open(struct inode *inode, struct file *file)
++static int batadv_transtable_global_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+ 	return single_open(file, batadv_tt_global_seq_print_text, net_dev);
+ }
+ 
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-static int bla_claim_table_open(struct inode *inode, struct file *file)
++static int batadv_bla_claim_table_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+ 	return single_open(file, batadv_bla_claim_table_seq_print_text,
+@@ -252,13 +253,13 @@ static int bla_claim_table_open(struct inode *inode, struct file *file)
+ }
+ #endif
+ 
+-static int transtable_local_open(struct inode *inode, struct file *file)
++static int batadv_transtable_local_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+ 	return single_open(file, batadv_tt_local_seq_print_text, net_dev);
+ }
+ 
+-static int vis_data_open(struct inode *inode, struct file *file)
++static int batadv_vis_data_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+ 	return single_open(file, batadv_vis_seq_print_text, net_dev);
+@@ -269,37 +270,37 @@ struct bat_debuginfo {
+ 	const struct file_operations fops;
+ };
+ 
+-#define BAT_DEBUGINFO(_name, _mode, _open)	\
+-struct bat_debuginfo bat_debuginfo_##_name = {	\
+-	.attr = { .name = __stringify(_name),	\
+-		  .mode = _mode, },		\
+-	.fops = { .owner = THIS_MODULE,		\
+-		  .open = _open,		\
+-		  .read	= seq_read,		\
+-		  .llseek = seq_lseek,		\
+-		  .release = single_release,	\
+-		}				\
++#define BAT_DEBUGINFO(_name, _mode, _open)		\
++struct bat_debuginfo batadv_debuginfo_##_name = {	\
++	.attr = { .name = __stringify(_name),		\
++		  .mode = _mode, },			\
++	.fops = { .owner = THIS_MODULE,			\
++		  .open = _open,			\
++		  .read	= seq_read,			\
++		  .llseek = seq_lseek,			\
++		  .release = single_release,		\
++		}					\
+ };
+ 
+-static BAT_DEBUGINFO(routing_algos, S_IRUGO, bat_algorithms_open);
+-static BAT_DEBUGINFO(originators, S_IRUGO, originators_open);
+-static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
+-static BAT_DEBUGINFO(transtable_global, S_IRUGO, transtable_global_open);
++static BAT_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
++static BAT_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
++static BAT_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
++static BAT_DEBUGINFO(transtable_global, S_IRUGO, batadv_transtable_global_open);
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-static BAT_DEBUGINFO(bla_claim_table, S_IRUGO, bla_claim_table_open);
++static BAT_DEBUGINFO(bla_claim_table, S_IRUGO, batadv_bla_claim_table_open);
+ #endif
+-static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
+-static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
++static BAT_DEBUGINFO(transtable_local, S_IRUGO, batadv_transtable_local_open);
++static BAT_DEBUGINFO(vis_data, S_IRUGO, batadv_vis_data_open);
+ 
+-static struct bat_debuginfo *mesh_debuginfos[] = {
+-	&bat_debuginfo_originators,
+-	&bat_debuginfo_gateways,
+-	&bat_debuginfo_transtable_global,
++static struct bat_debuginfo *batadv_mesh_debuginfos[] = {
++	&batadv_debuginfo_originators,
++	&batadv_debuginfo_gateways,
++	&batadv_debuginfo_transtable_global,
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-	&bat_debuginfo_bla_claim_table,
++	&batadv_debuginfo_bla_claim_table,
+ #endif
+-	&bat_debuginfo_transtable_local,
+-	&bat_debuginfo_vis_data,
++	&batadv_debuginfo_transtable_local,
++	&batadv_debuginfo_vis_data,
+ 	NULL,
+ };
+ 
+@@ -308,17 +309,17 @@ void batadv_debugfs_init(void)
+ 	struct bat_debuginfo *bat_debug;
+ 	struct dentry *file;
+ 
+-	bat_debugfs = debugfs_create_dir(DEBUGFS_BAT_SUBDIR, NULL);
+-	if (bat_debugfs == ERR_PTR(-ENODEV))
+-		bat_debugfs = NULL;
++	batadv_debugfs = debugfs_create_dir(DEBUGFS_BAT_SUBDIR, NULL);
++	if (batadv_debugfs == ERR_PTR(-ENODEV))
++		batadv_debugfs = NULL;
+ 
+-	if (!bat_debugfs)
++	if (!batadv_debugfs)
+ 		goto out;
+ 
+-	bat_debug = &bat_debuginfo_routing_algos;
++	bat_debug = &batadv_debuginfo_routing_algos;
+ 	file = debugfs_create_file(bat_debug->attr.name,
+ 				   S_IFREG | bat_debug->attr.mode,
+-				   bat_debugfs, NULL, &bat_debug->fops);
++				   batadv_debugfs, NULL, &bat_debug->fops);
+ 	if (!file)
+ 		pr_err("Can't add debugfs file: %s\n", bat_debug->attr.name);
+ 
+@@ -328,9 +329,9 @@ out:
+ 
+ void batadv_debugfs_destroy(void)
+ {
+-	if (bat_debugfs) {
+-		debugfs_remove_recursive(bat_debugfs);
+-		bat_debugfs = NULL;
++	if (batadv_debugfs) {
++		debugfs_remove_recursive(batadv_debugfs);
++		batadv_debugfs = NULL;
+ 	}
+ }
+ 
+@@ -340,17 +341,17 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
+ 	struct bat_debuginfo **bat_debug;
+ 	struct dentry *file;
+ 
+-	if (!bat_debugfs)
++	if (!batadv_debugfs)
+ 		goto out;
+ 
+-	bat_priv->debug_dir = debugfs_create_dir(dev->name, bat_debugfs);
++	bat_priv->debug_dir = debugfs_create_dir(dev->name, batadv_debugfs);
+ 	if (!bat_priv->debug_dir)
+ 		goto out;
+ 
+ 	batadv_socket_setup(bat_priv);
+-	debug_log_setup(bat_priv);
++	batadv_debug_log_setup(bat_priv);
+ 
+-	for (bat_debug = mesh_debuginfos; *bat_debug; ++bat_debug) {
++	for (bat_debug = batadv_mesh_debuginfos; *bat_debug; ++bat_debug) {
+ 		file = debugfs_create_file(((*bat_debug)->attr).name,
+ 					  S_IFREG | ((*bat_debug)->attr).mode,
+ 					  bat_priv->debug_dir,
+@@ -378,9 +379,9 @@ void batadv_debugfs_del_meshif(struct net_device *dev)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(dev);
+ 
+-	debug_log_cleanup(bat_priv);
++	batadv_debug_log_cleanup(bat_priv);
+ 
+-	if (bat_debugfs) {
++	if (batadv_debugfs) {
+ 		debugfs_remove_recursive(bat_priv->debug_dir);
+ 		bat_priv->debug_dir = NULL;
+ 	}
+-- 
+1.7.10
 
