@@ -1,8 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 12 May 2012 14:38:01 +0200
-Message-Id: <1336826281-9096-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix comment style and typo
+Return-Path: <pedroncr@sapo.pt>
+Date: Sat, 12 May 2012 16:08:05 +0100
+Message-ID: <20120512160805.Horde.1o2CEeanEAJPrnzVjLOmXOA@beta.mail.sapo.pt>
+From: Pedro Nuno Costa Rodrigues <pedroncr@sapo.pt>
+References: <20120501190319.Horde.oIfHDR3HAoJPoCVnYaUF_lA@beta.mail.sapo.pt>
+	<43098025.shuUEIUiJR@sven-desktop.home.narfation.org>
+	<20120510224854.Horde.0SO0XL5SZhxPrDfGUeTRkCA@beta.mail.sapo.pt>
+	<201205111459.40354.lindner_marek@yahoo.de>
+In-Reply-To: <201205111459.40354.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; DelSp=Yes
+MIME-Version: 1.0
+Content-Disposition: inline
+Subject: Re: [B.A.T.M.A.N.] Batman-adv simple configuration example
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,69 +22,77 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-
-Fix to David's style
-
-Introduced by b46c60b9e1ee7a1909c542413a85875a750955d6
-
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
-
-This patch is for next
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
- routing.c           |    3 ++-
- translation-table.c |    3 ++-
- unicast.c           |    5 +++--
- 3 files changed, 7 insertions(+), 4 deletions(-)
+Citando Marek Lindner <lindner_marek@yahoo.de>:
 
-diff --git a/routing.c b/routing.c
-index 2181a91..4f2059f 100644
---- a/routing.c
-+++ b/routing.c
-@@ -922,7 +922,8 @@ static int check_unicast_ttvn(struct bat_priv *bat_priv,
- 			sizeof(struct unicast_packet));
- 
- 		/* we don't have an updated route for this client, so we should
--		 * not try to reroute the packet!! */
-+		 * not try to reroute the packet!!
-+		 */
- 		if (tt_global_client_is_roaming(bat_priv, ethhdr->h_dest))
- 			return 1;
- 
-diff --git a/translation-table.c b/translation-table.c
-index 88e4c8e..a66c2dc 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -2122,7 +2122,8 @@ request_table:
- 
- /* returns true whether we know that the client has moved from its old
-  * originator to another one. This entry is kept is still kept for consistency
-- * purposes */
-+ * purposes
-+ */
- bool tt_global_client_is_roaming(struct bat_priv *bat_priv, uint8_t *addr)
- {
- 	struct tt_global_entry *tt_global_entry;
-diff --git a/unicast.c b/unicast.c
-index 62ea9f1..e5c7999 100644
---- a/unicast.c
-+++ b/unicast.c
-@@ -395,10 +395,11 @@ find_router:
- 
- 	unicast_packet = (struct unicast_packet *)skb->data;
- 
--	/* inform the destination ode that we are still missing a correct route
-+	/* inform the destination node that we are still missing a correct route
- 	 * for this client. The destination will receive this packet and will
- 	 * try to reroute it because the ttvn contained in the header is less
--	 * than the current one */
-+	 * than the current one
-+	 */
- 	if (tt_global_client_is_roaming(bat_priv, ethhdr->h_dest))
- 		unicast_packet->ttvn = unicast_packet->ttvn - 1;
- 
--- 
-1.7.9.4
+> On Friday, May 11, 2012 05:48:54 Pedro Nuno Costa Rodrigues wrote:
+>> I'm using backfire (openwrt build):
+>> cat /home/pedro/backfire/feeds/packages/net/batman-adv/Makefile | grep
+>> 2012# Copyright (C) 2010-2012
+>> OpenWrt.orgPKG_VERSION:=2012.0.0BATCTL_VERSION:=2012.0.0
+>
+> You are trying to mix 2 different branches: backfire + trunk batman-adv
+>  * the batman-adv package coming with backfire is working fine with backfire
+>  * the batman-adv package from trunk works fine with trunk
+>
+> Mixing the package with another branch is officially unsupported  
+> because there
+> are some OpenWrt incompatibilities we can't not automatically handle. It
+> certainly is doable but requires deeper knowledge of OpenWrt.
+>
+> Cheers,
+> Marek
+
+
+
+
+hello!
+
+I didn't tryed to mix 2 different branches...
+Perhaps i wasn't very clear.
+
+I build the backfire branch and i tested the batman-adv and it worked fine...
+I also build (another build completely independent) of the trunk  
+bruch, but it didn't worked...
+
+I used the same configurations files on both... exactly the same, but  
+the trunk build gave the error:
+
+
+root at OpenWrt:/lib/batman-adv# batman-adv start
+/usr/sbin/batman-adv: eval: line 1: can't
+create/sys/class/net/bat0/mesh/orig_interval: nonexistent directory
+
+/usr/sbin/batman-adv: eval: line 1: can't create
+/sys/class/net/bat0/mesh/log_level: nonexistent directory
+
+/usr/sbin/batman-adv: eval: line 1: can't create
+/sys/class/net/bat0/mesh/bonding: nonexistent
+directory/usr/sbin/batman-adv: eval: line 1: can't create
+/sys/class/net/bat0/mesh/fragmentation: nonexistent directory
+
+/usr/sbin/batman-adv: eval: line 1: can't create
+/sys/class/net/bat0/mesh/gw_bandwidth: nonexistent directory
+
+/usr/sbin/batman-adv: eval: line 1: can't create
+/sys/class/net/bat0/mesh/gw_mode: nonexistent
+directory/usr/sbin/batman-adv: eval: line 1: can't create
+/sys/class/net/bat0/mesh/vis_mode: nonexistent directory
+
+/usr/sbin/batman-adv: eval: line 1: can't create
+/sys/class/net/bat0/mesh/ap_isolation: nonexistent directory
+
+
+and i checked if it was the crc-16 problem livrary, but it wasn't.
+
+I know that's an openwrt problem. Or something that missed me...
+
+I will try to analyze and if it is necessary i will try to contact  
+openwrt developers...
+
+Thank you!!
+best regards
+Pedro Rodrigues
 
