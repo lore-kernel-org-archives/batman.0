@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 May 2012 02:09:22 +0200
-Message-Id: <1336781383-15649-2-git-send-email-sven@narfation.org>
+Date: Sat, 12 May 2012 02:09:23 +0200
+Message-Id: <1336781383-15649-3-git-send-email-sven@narfation.org>
 In-Reply-To: <1336781383-15649-1-git-send-email-sven@narfation.org>
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 02/23] batman-adv: Prefix bat_algo
+Subject: [B.A.T.M.A.N.] [PATCHv3 03/23] batman-adv: Prefix bat_debugfs
 	non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,49 +28,153 @@ such a problem.
 Reported-by: David Miller <davem@davemloft.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bat_algo.h   |    2 +-
- bat_iv_ogm.c |    2 +-
- main.c       |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ bat_debugfs.c    |   10 +++++-----
+ bat_debugfs.h    |    8 ++++----
+ main.c           |    4 ++--
+ main.h           |    5 +++--
+ soft-interface.c |    6 +++---
+ 5 files changed, 17 insertions(+), 16 deletions(-)
 
-diff --git a/bat_algo.h b/bat_algo.h
-index 9852a68..a14336a 100644
---- a/bat_algo.h
-+++ b/bat_algo.h
-@@ -22,6 +22,6 @@
- #ifndef _NET_BATMAN_ADV_BAT_ALGO_H_
- #define _NET_BATMAN_ADV_BAT_ALGO_H_
+diff --git a/bat_debugfs.c b/bat_debugfs.c
+index 3b588f8..3b3790e 100644
+--- a/bat_debugfs.c
++++ b/bat_debugfs.c
+@@ -76,7 +76,7 @@ static int fdebug_log(struct debug_log *debug_log, const char *fmt, ...)
+ 	return 0;
+ }
  
--int bat_iv_init(void);
-+int batadv_iv_init(void);
- 
- #endif /* _NET_BATMAN_ADV_BAT_ALGO_H_ */
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index f724d44..470fe01 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -1247,7 +1247,7 @@ static struct bat_algo_ops batman_iv __read_mostly = {
- 	.bat_ogm_emit = bat_iv_ogm_emit,
+-int debug_log(struct bat_priv *bat_priv, const char *fmt, ...)
++int batadv_debug_log(struct bat_priv *bat_priv, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	char tmp_log_buf[256];
+@@ -304,7 +304,7 @@ static struct bat_debuginfo *mesh_debuginfos[] = {
+ 	NULL,
  };
  
--int __init bat_iv_init(void)
-+int __init batadv_iv_init(void)
+-void debugfs_init(void)
++void batadv_debugfs_init(void)
  {
- 	int ret;
+ 	struct bat_debuginfo *bat_debug;
+ 	struct dentry *file;
+@@ -327,7 +327,7 @@ out:
+ 	return;
+ }
  
+-void debugfs_destroy(void)
++void batadv_debugfs_destroy(void)
+ {
+ 	if (bat_debugfs) {
+ 		debugfs_remove_recursive(bat_debugfs);
+@@ -335,7 +335,7 @@ void debugfs_destroy(void)
+ 	}
+ }
+ 
+-int debugfs_add_meshif(struct net_device *dev)
++int batadv_debugfs_add_meshif(struct net_device *dev)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(dev);
+ 	struct bat_debuginfo **bat_debug;
+@@ -375,7 +375,7 @@ out:
+ #endif /* CONFIG_DEBUG_FS */
+ }
+ 
+-void debugfs_del_meshif(struct net_device *dev)
++void batadv_debugfs_del_meshif(struct net_device *dev)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(dev);
+ 
+diff --git a/bat_debugfs.h b/bat_debugfs.h
+index d605c67..3b206c8 100644
+--- a/bat_debugfs.h
++++ b/bat_debugfs.h
+@@ -25,9 +25,9 @@
+ 
+ #define DEBUGFS_BAT_SUBDIR "batman_adv"
+ 
+-void debugfs_init(void);
+-void debugfs_destroy(void);
+-int debugfs_add_meshif(struct net_device *dev);
+-void debugfs_del_meshif(struct net_device *dev);
++void batadv_debugfs_init(void);
++void batadv_debugfs_destroy(void);
++int batadv_debugfs_add_meshif(struct net_device *dev);
++void batadv_debugfs_del_meshif(struct net_device *dev);
+ 
+ #endif /* _NET_BATMAN_ADV_DEBUGFS_H_ */
 diff --git a/main.c b/main.c
-index 805373f..f272ed4 100644
+index f272ed4..3bddd63 100644
 --- a/main.c
 +++ b/main.c
-@@ -56,7 +56,7 @@ static int __init batman_init(void)
+@@ -66,7 +66,7 @@ static int __init batman_init(void)
+ 		return -ENOMEM;
  
- 	recv_handler_init();
+ 	bat_socket_init();
+-	debugfs_init();
++	batadv_debugfs_init();
  
--	bat_iv_init();
-+	batadv_iv_init();
+ 	register_netdevice_notifier(&hard_if_notifier);
  
- 	/* the name should not be longer than 10 chars - see
- 	 * http://lwn.net/Articles/23634/ */
+@@ -78,7 +78,7 @@ static int __init batman_init(void)
+ 
+ static void __exit batman_exit(void)
+ {
+-	debugfs_destroy();
++	batadv_debugfs_destroy();
+ 	unregister_netdevice_notifier(&hard_if_notifier);
+ 	hardif_remove_interfaces();
+ 
+diff --git a/main.h b/main.h
+index a94ceae..fef7fd6 100644
+--- a/main.h
++++ b/main.h
+@@ -182,12 +182,13 @@ int bat_algo_select(struct bat_priv *bat_priv, char *name);
+ int bat_algo_seq_print_text(struct seq_file *seq, void *offset);
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+-int debug_log(struct bat_priv *bat_priv, const char *fmt, ...) __printf(2, 3);
++int batadv_debug_log(struct bat_priv *bat_priv, const char *fmt, ...)
++__printf(2, 3);
+ 
+ #define bat_dbg(type, bat_priv, fmt, arg...)			\
+ 	do {							\
+ 		if (atomic_read(&bat_priv->log_level) & type)	\
+-			debug_log(bat_priv, fmt, ## arg);	\
++			batadv_debug_log(bat_priv, fmt, ## arg);\
+ 	}							\
+ 	while (0)
+ #else /* !CONFIG_BATMAN_ADV_DEBUG */
+diff --git a/soft-interface.c b/soft-interface.c
+index 101253d..1a9ba93 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -434,7 +434,7 @@ struct net_device *softif_create(const char *name)
+ 	if (ret < 0)
+ 		goto free_bat_counters;
+ 
+-	ret = debugfs_add_meshif(soft_iface);
++	ret = batadv_debugfs_add_meshif(soft_iface);
+ 	if (ret < 0)
+ 		goto unreg_sysfs;
+ 
+@@ -445,7 +445,7 @@ struct net_device *softif_create(const char *name)
+ 	return soft_iface;
+ 
+ unreg_debugfs:
+-	debugfs_del_meshif(soft_iface);
++	batadv_debugfs_del_meshif(soft_iface);
+ unreg_sysfs:
+ 	sysfs_del_meshif(soft_iface);
+ free_bat_counters:
+@@ -462,7 +462,7 @@ out:
+ 
+ void softif_destroy(struct net_device *soft_iface)
+ {
+-	debugfs_del_meshif(soft_iface);
++	batadv_debugfs_del_meshif(soft_iface);
+ 	sysfs_del_meshif(soft_iface);
+ 	mesh_free(soft_iface);
+ 	unregister_netdevice(soft_iface);
 -- 
 1.7.10
 
