@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 May 2012 02:09:35 +0200
-Message-Id: <1336781383-15649-15-git-send-email-sven@narfation.org>
+Date: Sat, 12 May 2012 02:09:36 +0200
+Message-Id: <1336781383-15649-16-git-send-email-sven@narfation.org>
 In-Reply-To: <1336781383-15649-1-git-send-email-sven@narfation.org>
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 15/23] batman-adv: Prefix ring_buffer
+Subject: [B.A.T.M.A.N.] [PATCHv3 16/23] batman-adv: Prefix routing
 	non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,80 +28,421 @@ such a problem.
 Reported-by: David Miller <davem@davemloft.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bat_iv_ogm.c  |   14 +++++++-------
- ring_buffer.c |    5 +++--
- ring_buffer.h |    5 +++--
- 3 files changed, 13 insertions(+), 11 deletions(-)
+ bat_iv_ogm.c     |   15 +++++++-------
+ gateway_client.c |    5 +++--
+ main.c           |   16 +++++++--------
+ originator.c     |    5 +++--
+ routing.c        |   60 ++++++++++++++++++++++++++++--------------------------
+ routing.h        |   52 +++++++++++++++++++++++-----------------------
+ unicast.c        |    2 +-
+ 7 files changed, 81 insertions(+), 74 deletions(-)
 
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 8589014..9afbe17 100644
+index 9afbe17..b045bf7 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
-@@ -642,10 +642,10 @@ static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
- 			continue;
+@@ -599,7 +599,7 @@ static void bat_iv_ogm_schedule(struct hard_iface *hard_iface)
+ 	else
+ 		batman_ogm_packet->gw_flags = NO_FLAGS;
  
- 		spin_lock_bh(&tmp_neigh_node->lq_update_lock);
--		ring_buffer_set(tmp_neigh_node->tq_recv,
--				&tmp_neigh_node->tq_index, 0);
-+		batadv_ring_buffer_set(tmp_neigh_node->tq_recv,
-+				       &tmp_neigh_node->tq_index, 0);
- 		tmp_neigh_node->tq_avg =
--			ring_buffer_avg(tmp_neigh_node->tq_recv);
-+			batadv_ring_buffer_avg(tmp_neigh_node->tq_recv);
- 		spin_unlock_bh(&tmp_neigh_node->lq_update_lock);
+-	slide_own_bcast_window(hard_iface);
++	batadv_slide_own_bcast_window(hard_iface);
+ 	bat_iv_ogm_queue_add(bat_priv, hard_iface->packet_buff,
+ 			     hard_iface->packet_len, hard_iface, 1,
+ 			     bat_iv_ogm_emit_send_time(bat_priv));
+@@ -684,7 +684,7 @@ static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
+ 		neigh_node->last_ttl = batman_ogm_packet->header.ttl;
  	}
  
-@@ -673,10 +673,10 @@ static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
- 	neigh_node->last_seen = jiffies;
+-	bonding_candidate_add(orig_node, neigh_node);
++	batadv_bonding_candidate_add(orig_node, neigh_node);
  
- 	spin_lock_bh(&neigh_node->lq_update_lock);
--	ring_buffer_set(neigh_node->tq_recv,
--			&neigh_node->tq_index,
--			batman_ogm_packet->tq);
--	neigh_node->tq_avg = ring_buffer_avg(neigh_node->tq_recv);
-+	batadv_ring_buffer_set(neigh_node->tq_recv,
-+			       &neigh_node->tq_index,
-+			       batman_ogm_packet->tq);
-+	neigh_node->tq_avg = batadv_ring_buffer_avg(neigh_node->tq_recv);
- 	spin_unlock_bh(&neigh_node->lq_update_lock);
+ 	/* if this neighbor already is our next hop there is nothing
+ 	 * to change */
+@@ -715,7 +715,7 @@ static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
+ 			goto update_tt;
+ 	}
  
- 	if (!is_duplicate) {
-diff --git a/ring_buffer.c b/ring_buffer.c
-index fd63951..db8f5ef 100644
---- a/ring_buffer.c
-+++ b/ring_buffer.c
-@@ -22,13 +22,14 @@
- #include "main.h"
- #include "ring_buffer.h"
+-	update_route(bat_priv, orig_node, neigh_node);
++	batadv_update_route(bat_priv, orig_node, neigh_node);
  
--void ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index, uint8_t value)
-+void batadv_ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index,
-+			    uint8_t value)
- {
- 	lq_recv[*lq_index] = value;
- 	*lq_index = (*lq_index + 1) % TQ_GLOBAL_WINDOW_SIZE;
+ update_tt:
+ 	/* I have to check for transtable changes only if the OGM has been
+@@ -884,8 +884,8 @@ static int bat_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
+ 
+ 	/* signalize caller that the packet is to be dropped. */
+ 	if (!hlist_empty(&orig_node->neigh_list) &&
+-	    window_protected(bat_priv, seq_diff,
+-			     &orig_node->batman_seqno_reset))
++	    batadv_window_protected(bat_priv, seq_diff,
++				    &orig_node->batman_seqno_reset))
+ 		goto out;
+ 
+ 	rcu_read_lock();
+@@ -1133,7 +1133,8 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
+ 	is_bidirectional = bat_iv_ogm_calc_tq(orig_node, orig_neigh_node,
+ 					      batman_ogm_packet, if_incoming);
+ 
+-	bonding_save_primary(orig_node, orig_neigh_node, batman_ogm_packet);
++	batadv_bonding_save_primary(orig_node, orig_neigh_node,
++				    batman_ogm_packet);
+ 
+ 	/* update ranking if it is not a duplicate or has the same
+ 	 * seqno and similar ttl as the non-duplicate */
+@@ -1201,7 +1202,7 @@ static int bat_iv_ogm_receive(struct sk_buff *skb,
+ 	unsigned char *tt_buff, *packet_buff;
+ 	bool ret;
+ 
+-	ret = check_management_packet(skb, if_incoming, BATMAN_OGM_HLEN);
++	ret = batadv_check_management_packet(skb, if_incoming, BATMAN_OGM_HLEN);
+ 	if (!ret)
+ 		return NET_RX_DROP;
+ 
+diff --git a/gateway_client.c b/gateway_client.c
+index e92055d..2bf330d 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -682,7 +682,8 @@ bool batadv_gw_out_of_range(struct bat_priv *bat_priv,
+ 		/* If the dhcp packet has been sent to a different gw,
+ 		 * we have to evaluate whether the old gw is still
+ 		 * reliable enough */
+-		neigh_curr = find_router(bat_priv, curr_gw->orig_node, NULL);
++		neigh_curr = batadv_find_router(bat_priv, curr_gw->orig_node,
++						NULL);
+ 		if (!neigh_curr)
+ 			goto out;
+ 
+@@ -693,7 +694,7 @@ bool batadv_gw_out_of_range(struct bat_priv *bat_priv,
+ 		goto out;
+ 	}
+ 
+-	neigh_old = find_router(bat_priv, orig_dst_node, NULL);
++	neigh_old = batadv_find_router(bat_priv, orig_dst_node, NULL);
+ 	if (!neigh_old)
+ 		goto out;
+ 
+diff --git a/main.c b/main.c
+index 4524502..c3eb3d5 100644
+--- a/main.c
++++ b/main.c
+@@ -272,21 +272,21 @@ static void recv_handler_init(void)
+ 		recv_packet_handler[i] = recv_unhandled_packet;
+ 
+ 	/* batman icmp packet */
+-	recv_packet_handler[BAT_ICMP] = recv_icmp_packet;
++	recv_packet_handler[BAT_ICMP] = batadv_recv_icmp_packet;
+ 	/* unicast with 4 addresses packet */
+-	recv_packet_handler[BAT_UNICAST_4ADDR] = recv_unicast_packet;
++	recv_packet_handler[BAT_UNICAST_4ADDR] = batadv_recv_unicast_packet;
+ 	/* unicast packet */
+-	recv_packet_handler[BAT_UNICAST] = recv_unicast_packet;
++	recv_packet_handler[BAT_UNICAST] = batadv_recv_unicast_packet;
+ 	/* fragmented unicast packet */
+-	recv_packet_handler[BAT_UNICAST_FRAG] = recv_ucast_frag_packet;
++	recv_packet_handler[BAT_UNICAST_FRAG] = batadv_recv_ucast_frag_packet;
+ 	/* broadcast packet */
+-	recv_packet_handler[BAT_BCAST] = recv_bcast_packet;
++	recv_packet_handler[BAT_BCAST] = batadv_recv_bcast_packet;
+ 	/* vis packet */
+-	recv_packet_handler[BAT_VIS] = recv_vis_packet;
++	recv_packet_handler[BAT_VIS] = batadv_recv_vis_packet;
+ 	/* Translation table query (request or response) */
+-	recv_packet_handler[BAT_TT_QUERY] = recv_tt_query;
++	recv_packet_handler[BAT_TT_QUERY] = batadv_recv_tt_query;
+ 	/* Roaming advertisement */
+-	recv_packet_handler[BAT_ROAM_ADV] = recv_roam_adv;
++	recv_packet_handler[BAT_ROAM_ADV] = batadv_recv_roam_adv;
  }
  
--uint8_t ring_buffer_avg(const uint8_t lq_recv[])
-+uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[])
+ int recv_handler_register(uint8_t packet_type,
+diff --git a/originator.c b/originator.c
+index 329b4ea..e6a2680 100644
+--- a/originator.c
++++ b/originator.c
+@@ -309,7 +309,7 @@ static bool purge_orig_neighbors(struct bat_priv *bat_priv,
+ 			neigh_purged = true;
+ 
+ 			hlist_del_rcu(&neigh_node->list);
+-			bonding_candidate_del(orig_node, neigh_node);
++			batadv_bonding_candidate_del(orig_node, neigh_node);
+ 			batadv_neigh_node_free_ref(neigh_node);
+ 		} else {
+ 			if ((!*best_neigh_node) ||
+@@ -336,7 +336,8 @@ static bool purge_orig_node(struct bat_priv *bat_priv,
+ 	} else {
+ 		if (purge_orig_neighbors(bat_priv, orig_node,
+ 					 &best_neigh_node))
+-			update_route(bat_priv, orig_node, best_neigh_node);
++			batadv_update_route(bat_priv, orig_node,
++					    best_neigh_node);
+ 	}
+ 
+ 	return false;
+diff --git a/routing.c b/routing.c
+index 8228624..4241d7d 100644
+--- a/routing.c
++++ b/routing.c
+@@ -34,7 +34,7 @@
+ static int route_unicast_packet(struct sk_buff *skb,
+ 				struct hard_iface *recv_if);
+ 
+-void slide_own_bcast_window(struct hard_iface *hard_iface)
++void batadv_slide_own_bcast_window(struct hard_iface *hard_iface)
  {
- 	const uint8_t *ptr;
- 	uint16_t count = 0, i = 0, sum = 0;
-diff --git a/ring_buffer.h b/ring_buffer.h
-index 8b58bd8..fbaf9d2 100644
---- a/ring_buffer.h
-+++ b/ring_buffer.h
-@@ -22,7 +22,8 @@
- #ifndef _NET_BATMAN_ADV_RING_BUFFER_H_
- #define _NET_BATMAN_ADV_RING_BUFFER_H_
+ 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	struct hashtable_t *hash = bat_priv->orig_hash;
+@@ -108,8 +108,8 @@ static void _update_route(struct bat_priv *bat_priv,
+ 		batadv_neigh_node_free_ref(curr_router);
+ }
  
--void ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index, uint8_t value);
--uint8_t ring_buffer_avg(const uint8_t lq_recv[]);
-+void batadv_ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index,
-+			    uint8_t value);
-+uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[]);
+-void update_route(struct bat_priv *bat_priv, struct orig_node *orig_node,
+-		  struct neigh_node *neigh_node)
++void batadv_update_route(struct bat_priv *bat_priv, struct orig_node *orig_node,
++			 struct neigh_node *neigh_node)
+ {
+ 	struct neigh_node *router = NULL;
  
- #endif /* _NET_BATMAN_ADV_RING_BUFFER_H_ */
+@@ -127,8 +127,8 @@ out:
+ }
+ 
+ /* caller must hold the neigh_list_lock */
+-void bonding_candidate_del(struct orig_node *orig_node,
+-			   struct neigh_node *neigh_node)
++void batadv_bonding_candidate_del(struct orig_node *orig_node,
++				  struct neigh_node *neigh_node)
+ {
+ 	/* this neighbor is not part of our candidate list */
+ 	if (list_empty(&neigh_node->bonding_list))
+@@ -143,8 +143,8 @@ out:
+ 	return;
+ }
+ 
+-void bonding_candidate_add(struct orig_node *orig_node,
+-			   struct neigh_node *neigh_node)
++void batadv_bonding_candidate_add(struct orig_node *orig_node,
++				  struct neigh_node *neigh_node)
+ {
+ 	struct hlist_node *node;
+ 	struct neigh_node *tmp_neigh_node, *router = NULL;
+@@ -204,7 +204,7 @@ void bonding_candidate_add(struct orig_node *orig_node,
+ 	goto out;
+ 
+ candidate_del:
+-	bonding_candidate_del(orig_node, neigh_node);
++	batadv_bonding_candidate_del(orig_node, neigh_node);
+ 
+ out:
+ 	spin_unlock_bh(&orig_node->neigh_list_lock);
+@@ -214,9 +214,10 @@ out:
+ }
+ 
+ /* copy primary address for bonding */
+-void bonding_save_primary(const struct orig_node *orig_node,
+-			  struct orig_node *orig_neigh_node,
+-			  const struct batman_ogm_packet *batman_ogm_packet)
++void
++batadv_bonding_save_primary(const struct orig_node *orig_node,
++			    struct orig_node *orig_neigh_node,
++			    const struct batman_ogm_packet *batman_ogm_packet)
+ {
+ 	if (!(batman_ogm_packet->flags & PRIMARIES_FIRST_HOP))
+ 		return;
+@@ -229,8 +230,8 @@ void bonding_save_primary(const struct orig_node *orig_node,
+  *  0 if the packet is to be accepted
+  *  1 if the packet is to be ignored.
+  */
+-int window_protected(struct bat_priv *bat_priv, int32_t seq_num_diff,
+-		     unsigned long *last_reset)
++int batadv_window_protected(struct bat_priv *bat_priv, int32_t seq_num_diff,
++			    unsigned long *last_reset)
+ {
+ 	if ((seq_num_diff <= -TQ_LOCAL_WINDOW_SIZE) ||
+ 	    (seq_num_diff >= EXPECTED_SEQNO_RANGE)) {
+@@ -245,9 +246,9 @@ int window_protected(struct bat_priv *bat_priv, int32_t seq_num_diff,
+ 	return 0;
+ }
+ 
+-bool check_management_packet(struct sk_buff *skb,
+-			     struct hard_iface *hard_iface,
+-			     int header_len)
++bool batadv_check_management_packet(struct sk_buff *skb,
++				    struct hard_iface *hard_iface,
++				    int header_len)
+ {
+ 	struct ethhdr *ethhdr;
+ 
+@@ -387,7 +388,7 @@ out:
+ }
+ 
+ 
+-int recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if)
++int batadv_recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct icmp_packet_rr *icmp_packet;
+@@ -569,7 +570,7 @@ static struct neigh_node *find_ifalter_router(struct orig_node *primary_orig,
+ 	return router;
+ }
+ 
+-int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
++int batadv_recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct tt_query_packet *tt_query;
+@@ -642,7 +643,7 @@ out:
+ 	return NET_RX_DROP;
+ }
+ 
+-int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
++int batadv_recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct roam_adv_packet *roam_adv_packet;
+@@ -702,9 +703,9 @@ out:
+ /* find a suitable router for this originator, and use
+  * bonding if possible. increases the found neighbors
+  * refcount.*/
+-struct neigh_node *find_router(struct bat_priv *bat_priv,
+-			       struct orig_node *orig_node,
+-			       const struct hard_iface *recv_if)
++struct neigh_node *batadv_find_router(struct bat_priv *bat_priv,
++				      struct orig_node *orig_node,
++				      const struct hard_iface *recv_if)
+ {
+ 	struct orig_node *primary_orig_node;
+ 	struct orig_node *router_orig;
+@@ -832,7 +833,7 @@ static int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		goto out;
+ 
+ 	/* find_router() increases neigh_nodes refcount if found. */
+-	neigh_node = find_router(bat_priv, orig_node, recv_if);
++	neigh_node = batadv_find_router(bat_priv, orig_node, recv_if);
+ 
+ 	if (!neigh_node)
+ 		goto out;
+@@ -961,7 +962,7 @@ static int check_unicast_ttvn(struct bat_priv *bat_priv,
+ 	return 1;
+ }
+ 
+-int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
++int batadv_recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct unicast_packet *unicast_packet;
+@@ -988,7 +989,8 @@ int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	return route_unicast_packet(skb, recv_if);
+ }
+ 
+-int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if)
++int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
++				  struct hard_iface *recv_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct unicast_frag_packet *unicast_packet;
+@@ -1025,7 +1027,7 @@ int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ }
+ 
+ 
+-int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
++int batadv_recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct orig_node *orig_node = NULL;
+@@ -1077,8 +1079,8 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 	seq_diff = ntohl(bcast_packet->seqno) - orig_node->last_bcast_seqno;
+ 
+ 	/* check whether the packet is old and the host just restarted. */
+-	if (window_protected(bat_priv, seq_diff,
+-			     &orig_node->bcast_seqno_reset))
++	if (batadv_window_protected(bat_priv, seq_diff,
++				    &orig_node->bcast_seqno_reset))
+ 		goto spin_unlock;
+ 
+ 	/* mark broadcast in flood history, update window position
+@@ -1114,7 +1116,7 @@ out:
+ 	return ret;
+ }
+ 
+-int recv_vis_packet(struct sk_buff *skb, struct hard_iface *recv_if)
++int batadv_recv_vis_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ {
+ 	struct vis_packet *vis_packet;
+ 	struct ethhdr *ethhdr;
+diff --git a/routing.h b/routing.h
+index d6bbbeb..4652f0c 100644
+--- a/routing.h
++++ b/routing.h
+@@ -22,30 +22,32 @@
+ #ifndef _NET_BATMAN_ADV_ROUTING_H_
+ #define _NET_BATMAN_ADV_ROUTING_H_
+ 
+-void slide_own_bcast_window(struct hard_iface *hard_iface);
+-bool check_management_packet(struct sk_buff *skb,
+-			     struct hard_iface *hard_iface,
+-			     int header_len);
+-void update_route(struct bat_priv *bat_priv, struct orig_node *orig_node,
+-		  struct neigh_node *neigh_node);
+-int recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+-int recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+-int recv_ucast_frag_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+-int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+-int recv_vis_packet(struct sk_buff *skb, struct hard_iface *recv_if);
+-int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if);
+-int recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if);
+-struct neigh_node *find_router(struct bat_priv *bat_priv,
+-			       struct orig_node *orig_node,
+-			       const struct hard_iface *recv_if);
+-void bonding_candidate_del(struct orig_node *orig_node,
+-			   struct neigh_node *neigh_node);
+-void bonding_candidate_add(struct orig_node *orig_node,
+-			   struct neigh_node *neigh_node);
+-void bonding_save_primary(const struct orig_node *orig_node,
+-			  struct orig_node *orig_neigh_node,
+-			  const struct batman_ogm_packet *batman_ogm_packet);
+-int window_protected(struct bat_priv *bat_priv, int32_t seq_num_diff,
+-		     unsigned long *last_reset);
++void batadv_slide_own_bcast_window(struct hard_iface *hard_iface);
++bool batadv_check_management_packet(struct sk_buff *skb,
++				    struct hard_iface *hard_iface,
++				    int header_len);
++void batadv_update_route(struct bat_priv *bat_priv, struct orig_node *orig_node,
++			 struct neigh_node *neigh_node);
++int batadv_recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if);
++int batadv_recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
++int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
++				  struct hard_iface *recv_if);
++int batadv_recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if);
++int batadv_recv_vis_packet(struct sk_buff *skb, struct hard_iface *recv_if);
++int batadv_recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if);
++int batadv_recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if);
++struct neigh_node *batadv_find_router(struct bat_priv *bat_priv,
++				      struct orig_node *orig_node,
++				      const struct hard_iface *recv_if);
++void batadv_bonding_candidate_del(struct orig_node *orig_node,
++				  struct neigh_node *neigh_node);
++void batadv_bonding_candidate_add(struct orig_node *orig_node,
++				  struct neigh_node *neigh_node);
++void batadv_bonding_save_primary(const struct orig_node *orig_node,
++				 struct orig_node *orig_neigh_node,
++				 const struct batman_ogm_packet
++				 *batman_ogm_packet);
++int batadv_window_protected(struct bat_priv *bat_priv, int32_t seq_num_diff,
++			    unsigned long *last_reset);
+ 
+ #endif /* _NET_BATMAN_ADV_ROUTING_H_ */
+diff --git a/unicast.c b/unicast.c
+index 702fa98..c176f5a 100644
+--- a/unicast.c
++++ b/unicast.c
+@@ -374,7 +374,7 @@ find_router:
+ 	 *  - if orig_node is NULL it returns NULL
+ 	 *  - increases neigh_nodes refcount if found.
+ 	 */
+-	neigh_node = find_router(bat_priv, orig_node, NULL);
++	neigh_node = batadv_find_router(bat_priv, orig_node, NULL);
+ 	if (!neigh_node)
+ 		goto out;
+ 
 -- 
 1.7.10
 
