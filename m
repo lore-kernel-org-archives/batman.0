@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 May 2012 18:33:51 +0200
-Message-Id: <1336840447-6580-2-git-send-email-sven@narfation.org>
+Date: Sat, 12 May 2012 18:33:52 +0200
+Message-Id: <1336840447-6580-3-git-send-email-sven@narfation.org>
 In-Reply-To: <1336840447-6580-1-git-send-email-sven@narfation.org>
 References: <1336840447-6580-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 02/18] batman-adv: Prefix bat_iv_ogm local
+Subject: [B.A.T.M.A.N.] [PATCH 03/18] batman-adv: Prefix bat_sysfs local
 	static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,563 +25,539 @@ should use the same prefix to keep the naming scheme consistent.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bat_iv_ogm.c |  255 +++++++++++++++++++++++++++++-----------------------------
- 1 file changed, 129 insertions(+), 126 deletions(-)
+ bat_sysfs.c |  250 ++++++++++++++++++++++++++++++++---------------------------
+ 1 file changed, 135 insertions(+), 115 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 304284d..70c2c69 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -28,11 +28,11 @@
- #include "send.h"
- #include "bat_algo.h"
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index 1e1060f..194a581 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -26,15 +26,15 @@
+ #include "gateway_client.h"
+ #include "vis.h"
  
--static struct neigh_node *bat_iv_ogm_neigh_new(struct hard_iface *hard_iface,
--					       const uint8_t *neigh_addr,
--					       struct orig_node *orig_node,
--					       struct orig_node *orig_neigh,
--					       __be32 seqno)
-+static struct neigh_node *batadv_iv_ogm_neigh_new(struct hard_iface *hard_iface,
-+						  const uint8_t *neigh_addr,
-+						  struct orig_node *orig_node,
-+						  struct orig_node *orig_neigh,
-+						  __be32 seqno)
+-static struct net_device *kobj_to_netdev(struct kobject *obj)
++static struct net_device *batadv_kobj_to_netdev(struct kobject *obj)
  {
- 	struct neigh_node *neigh_node;
- 
-@@ -54,7 +54,7 @@ out:
- 	return neigh_node;
+ 	struct device *dev = container_of(obj->parent, struct device, kobj);
+ 	return to_net_dev(dev);
  }
  
--static int bat_iv_ogm_iface_enable(struct hard_iface *hard_iface)
-+static int batadv_iv_ogm_iface_enable(struct hard_iface *hard_iface)
+-static struct bat_priv *kobj_to_batpriv(struct kobject *obj)
++static struct bat_priv *batadv_kobj_to_batpriv(struct kobject *obj)
  {
- 	struct batman_ogm_packet *batman_ogm_packet;
- 	uint32_t random_seqno;
-@@ -85,13 +85,13 @@ out:
- 	return res;
+-	struct net_device *net_dev = kobj_to_netdev(obj);
++	struct net_device *net_dev = batadv_kobj_to_netdev(obj);
+ 	return netdev_priv(net_dev);
  }
  
--static void bat_iv_ogm_iface_disable(struct hard_iface *hard_iface)
-+static void batadv_iv_ogm_iface_disable(struct hard_iface *hard_iface)
- {
- 	kfree(hard_iface->packet_buff);
- 	hard_iface->packet_buff = NULL;
+@@ -42,19 +42,19 @@ static struct bat_priv *kobj_to_batpriv(struct kobject *obj)
+ #define UEV_ACTION_VAR	"BATACTION="
+ #define UEV_DATA_VAR	"BATDATA="
+ 
+-static char *uev_action_str[] = {
++static char *batadv_uev_action_str[] = {
+ 	"add",
+ 	"del",
+ 	"change"
+ };
+ 
+-static char *uev_type_str[] = {
++static char *batadv_uev_type_str[] = {
+ 	"gw"
+ };
+ 
+ /* Use this, if you have customized show and store functions */
+ #define BAT_ATTR(_name, _mode, _show, _store)	\
+-struct bat_attribute bat_attr_##_name = {	\
++struct bat_attribute batadv_attr_##_name = {	\
+ 	.attr = {.name = __stringify(_name),	\
+ 		 .mode = _mode },		\
+ 	.show   = _show,			\
+@@ -62,20 +62,21 @@ struct bat_attribute bat_attr_##_name = {	\
+ };
+ 
+ #define BAT_ATTR_SIF_STORE_BOOL(_name, _post_func)			\
+-ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
+-		      char *buff, size_t count)				\
++ssize_t batadv_store_##_name(struct kobject *kobj,			\
++			     struct attribute *attr, char *buff,	\
++			     size_t count)				\
+ {									\
+-	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
+ 	struct bat_priv *bat_priv = netdev_priv(net_dev);		\
+-	return __store_bool_attr(buff, count, _post_func, attr,		\
+-				 &bat_priv->_name, net_dev);		\
++	return __batadv_store_bool_attr(buff, count, _post_func, attr,	\
++					&bat_priv->_name, net_dev);	\
  }
  
--static void bat_iv_ogm_iface_update_mac(struct hard_iface *hard_iface)
-+static void batadv_iv_ogm_iface_update_mac(struct hard_iface *hard_iface)
- {
- 	struct batman_ogm_packet *batman_ogm_packet;
+ #define BAT_ATTR_SIF_SHOW_BOOL(_name)					\
+-ssize_t show_##_name(struct kobject *kobj,				\
+-		     struct attribute *attr, char *buff)		\
++ssize_t batadv_show_##_name(struct kobject *kobj,			\
++			    struct attribute *attr, char *buff)		\
+ {									\
+-	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);		\
++	struct bat_priv *bat_priv = batadv_kobj_to_batpriv(kobj);	\
+ 	return sprintf(buff, "%s\n",					\
+ 		       atomic_read(&bat_priv->_name) == 0 ?		\
+ 		       "disabled" : "enabled");				\
+@@ -87,24 +88,27 @@ ssize_t show_##_name(struct kobject *kobj,				\
+ #define BAT_ATTR_SIF_BOOL(_name, _mode, _post_func)			\
+ 	static BAT_ATTR_SIF_STORE_BOOL(_name, _post_func)		\
+ 	static BAT_ATTR_SIF_SHOW_BOOL(_name)				\
+-	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
++	static BAT_ATTR(_name, _mode, batadv_show_##_name,		\
++			batadv_store_##_name)
  
-@@ -102,7 +102,7 @@ static void bat_iv_ogm_iface_update_mac(struct hard_iface *hard_iface)
- 	       hard_iface->net_dev->dev_addr, ETH_ALEN);
+ 
+ #define BAT_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)		\
+-ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
+-		      char *buff, size_t count)				\
++ssize_t batadv_store_##_name(struct kobject *kobj,			\
++			     struct attribute *attr, char *buff,	\
++			     size_t count)				\
+ {									\
+-	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
+ 	struct bat_priv *bat_priv = netdev_priv(net_dev);		\
+-	return __store_uint_attr(buff, count, _min, _max, _post_func,	\
+-				 attr, &bat_priv->_name, net_dev);	\
++	return __batadv_store_uint_attr(buff, count, _min, _max,	\
++					_post_func, attr,		\
++					&bat_priv->_name, net_dev);	\
  }
  
--static void bat_iv_ogm_primary_iface_set(struct hard_iface *hard_iface)
-+static void batadv_iv_ogm_primary_iface_set(struct hard_iface *hard_iface)
- {
- 	struct batman_ogm_packet *batman_ogm_packet;
+ #define BAT_ATTR_SIF_SHOW_UINT(_name)					\
+-ssize_t show_##_name(struct kobject *kobj,				\
+-		     struct attribute *attr, char *buff)		\
++ssize_t batadv_show_##_name(struct kobject *kobj,			\
++			    struct attribute *attr, char *buff)		\
+ {									\
+-	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);		\
++	struct bat_priv *bat_priv = batadv_kobj_to_batpriv(kobj);	\
+ 	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_name));	\
+ }									\
  
-@@ -112,7 +112,8 @@ static void bat_iv_ogm_primary_iface_set(struct hard_iface *hard_iface)
+@@ -114,14 +118,16 @@ ssize_t show_##_name(struct kobject *kobj,				\
+ #define BAT_ATTR_SIF_UINT(_name, _mode, _min, _max, _post_func)		\
+ 	static BAT_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)	\
+ 	static BAT_ATTR_SIF_SHOW_UINT(_name)				\
+-	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
++	static BAT_ATTR(_name, _mode, batadv_show_##_name,		\
++			batadv_store_##_name)
+ 
+ 
+ #define BAT_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)		\
+-ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
+-		      char *buff, size_t count)				\
++ssize_t batadv_store_##_name(struct kobject *kobj,			\
++			     struct attribute *attr, char *buff,	\
++			     size_t count)				\
+ {									\
+-	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
+ 	struct hard_iface *hard_iface = batadv_hardif_get_by_netdev(net_dev); \
+ 	ssize_t length;							\
+ 									\
+@@ -136,10 +142,10 @@ ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
  }
  
- /* when do we schedule our own ogm to be sent */
--static unsigned long bat_iv_ogm_emit_send_time(const struct bat_priv *bat_priv)
-+static unsigned long
-+batadv_iv_ogm_emit_send_time(const struct bat_priv *bat_priv)
+ #define BAT_ATTR_HIF_SHOW_UINT(_name)					\
+-ssize_t show_##_name(struct kobject *kobj,				\
+-		     struct attribute *attr, char *buff)		\
++ssize_t batadv_show_##_name(struct kobject *kobj,			\
++			    struct attribute *attr, char *buff)		\
+ {									\
+-	struct net_device *net_dev = kobj_to_netdev(kobj);		\
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
+ 	struct hard_iface *hard_iface = batadv_hardif_get_by_netdev(net_dev); \
+ 	ssize_t length;							\
+ 									\
+@@ -158,12 +164,13 @@ ssize_t show_##_name(struct kobject *kobj,				\
+ #define BAT_ATTR_HIF_UINT(_name, _mode, _min, _max, _post_func)		\
+ 	static BAT_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)	\
+ 	static BAT_ATTR_HIF_SHOW_UINT(_name)				\
+-	static BAT_ATTR(_name, _mode, show_##_name, store_##_name)
++	static BAT_ATTR(_name, _mode, batadv_show_##_name,		\
++			batadv_store_##_name)
+ 
+ 
+-static int store_bool_attr(char *buff, size_t count,
+-			   struct net_device *net_dev,
+-			   const char *attr_name, atomic_t *attr)
++static int batadv_store_bool_attr(char *buff, size_t count,
++				  struct net_device *net_dev,
++				  const char *attr_name, atomic_t *attr)
  {
- 	return jiffies + msecs_to_jiffies(
- 		   atomic_read(&bat_priv->orig_interval) -
-@@ -120,20 +121,20 @@ static unsigned long bat_iv_ogm_emit_send_time(const struct bat_priv *bat_priv)
+ 	int enabled = -1;
+ 
+@@ -198,23 +205,27 @@ static int store_bool_attr(char *buff, size_t count,
+ 	return count;
  }
  
- /* when do we schedule a ogm packet to be sent */
--static unsigned long bat_iv_ogm_fwd_send_time(void)
-+static unsigned long batadv_iv_ogm_fwd_send_time(void)
+-static inline ssize_t __store_bool_attr(char *buff, size_t count,
+-			void (*post_func)(struct net_device *),
+-			struct attribute *attr,
+-			atomic_t *attr_store, struct net_device *net_dev)
++static inline ssize_t
++__batadv_store_bool_attr(char *buff, size_t count,
++			 void (*post_func)(struct net_device *),
++			 struct attribute *attr,
++			 atomic_t *attr_store, struct net_device *net_dev)
  {
- 	return jiffies + msecs_to_jiffies(random32() % (JITTER/2));
- }
+ 	int ret;
  
- /* apply hop penalty for a normal link */
--static uint8_t hop_penalty(uint8_t tq, const struct bat_priv *bat_priv)
-+static uint8_t batadv_hop_penalty(uint8_t tq, const struct bat_priv *bat_priv)
- {
- 	int hop_penalty = atomic_read(&bat_priv->hop_penalty);
- 	return (tq * (TQ_MAX_VALUE - hop_penalty)) / (TQ_MAX_VALUE);
- }
+-	ret = store_bool_attr(buff, count, net_dev, attr->name, attr_store);
++	ret = batadv_store_bool_attr(buff, count, net_dev, attr->name,
++				     attr_store);
+ 	if (post_func && ret)
+ 		post_func(net_dev);
  
- /* is there another aggregated packet here? */
--static int bat_iv_ogm_aggr_packet(int buff_pos, int packet_len,
-+static int batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
- 				  int tt_num_changes)
- {
- 	int next_buff_pos = 0;
-@@ -146,7 +147,7 @@ static int bat_iv_ogm_aggr_packet(int buff_pos, int packet_len,
- }
- 
- /* send a batman ogm to a given interface */
--static void bat_iv_ogm_send_to_if(struct forw_packet *forw_packet,
-+static void batadv_iv_ogm_send_to_if(struct forw_packet *forw_packet,
- 				  struct hard_iface *hard_iface)
- {
- 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-@@ -164,8 +165,8 @@ static void bat_iv_ogm_send_to_if(struct forw_packet *forw_packet,
- 	batman_ogm_packet = (struct batman_ogm_packet *)forw_packet->skb->data;
- 
- 	/* adjust all flags and log packets */
--	while (bat_iv_ogm_aggr_packet(buff_pos, forw_packet->packet_len,
--				      batman_ogm_packet->tt_num_changes)) {
-+	while (batadv_iv_ogm_aggr_packet(buff_pos, forw_packet->packet_len,
-+					 batman_ogm_packet->tt_num_changes)) {
- 
- 		/* we might have aggregated direct link packets with an
- 		 * ordinary base packet
-@@ -208,7 +209,7 @@ static void bat_iv_ogm_send_to_if(struct forw_packet *forw_packet,
- }
- 
- /* send a batman ogm packet */
--static void bat_iv_ogm_emit(struct forw_packet *forw_packet)
-+static void batadv_iv_ogm_emit(struct forw_packet *forw_packet)
- {
- 	struct hard_iface *hard_iface;
- 	struct net_device *soft_iface;
-@@ -267,7 +268,7 @@ static void bat_iv_ogm_emit(struct forw_packet *forw_packet)
- 		if (hard_iface->soft_iface != soft_iface)
- 			continue;
- 
--		bat_iv_ogm_send_to_if(forw_packet, hard_iface);
-+		batadv_iv_ogm_send_to_if(forw_packet, hard_iface);
- 	}
- 	rcu_read_unlock();
- 
-@@ -277,13 +278,13 @@ out:
- }
- 
- /* return true if new_packet can be aggregated with forw_packet */
--static bool bat_iv_ogm_can_aggregate(const struct batman_ogm_packet
--							*new_batman_ogm_packet,
--				     struct bat_priv *bat_priv,
--				     int packet_len, unsigned long send_time,
--				     bool directlink,
--				     const struct hard_iface *if_incoming,
--				     const struct forw_packet *forw_packet)
-+static bool
-+batadv_iv_ogm_can_aggregate(const struct batman_ogm_packet *new_bat_ogm_packet,
-+			    struct bat_priv *bat_priv,
-+			    int packet_len, unsigned long send_time,
-+			    bool directlink,
-+			    const struct hard_iface *if_incoming,
-+			    const struct forw_packet *forw_packet)
- {
- 	struct batman_ogm_packet *batman_ogm_packet;
- 	int aggregated_bytes = forw_packet->packet_len + packet_len;
-@@ -335,7 +336,7 @@ static bool bat_iv_ogm_can_aggregate(const struct batman_ogm_packet
- 		 * interface only - we still can aggregate
- 		 */
- 		if ((directlink) &&
--		    (new_batman_ogm_packet->header.ttl == 1) &&
-+		    (new_bat_ogm_packet->header.ttl == 1) &&
- 		    (forw_packet->if_incoming == if_incoming) &&
- 
- 		    /* packets from direct neighbors or
-@@ -357,11 +358,11 @@ out:
- }
- 
- /* create a new aggregated packet and add this packet to it */
--static void bat_iv_ogm_aggregate_new(const unsigned char *packet_buff,
--				     int packet_len, unsigned long send_time,
--				     bool direct_link,
--				     struct hard_iface *if_incoming,
--				     int own_packet)
-+static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
-+					int packet_len, unsigned long send_time,
-+					bool direct_link,
-+					struct hard_iface *if_incoming,
-+					int own_packet)
- {
- 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct forw_packet *forw_packet_aggr;
-@@ -435,9 +436,9 @@ out:
- }
- 
- /* aggregate a new packet into the existing ogm packet */
--static void bat_iv_ogm_aggregate(struct forw_packet *forw_packet_aggr,
--				 const unsigned char *packet_buff,
--				 int packet_len, bool direct_link)
-+static void batadv_iv_ogm_aggregate(struct forw_packet *forw_packet_aggr,
-+				    const unsigned char *packet_buff,
-+				    int packet_len, bool direct_link)
- {
- 	unsigned char *skb_buff;
- 
-@@ -452,10 +453,11 @@ static void bat_iv_ogm_aggregate(struct forw_packet *forw_packet_aggr,
- 			(1 << forw_packet_aggr->num_packets);
- }
- 
--static void bat_iv_ogm_queue_add(struct bat_priv *bat_priv,
--				 unsigned char *packet_buff,
--				 int packet_len, struct hard_iface *if_incoming,
--				 int own_packet, unsigned long send_time)
-+static void batadv_iv_ogm_queue_add(struct bat_priv *bat_priv,
-+				    unsigned char *packet_buff,
-+				    int packet_len,
-+				    struct hard_iface *if_incoming,
-+				    int own_packet, unsigned long send_time)
- {
- 	/* _aggr -> pointer to the packet we want to aggregate with
- 	 * _pos -> pointer to the position in the queue
-@@ -474,11 +476,11 @@ static void bat_iv_ogm_queue_add(struct bat_priv *bat_priv,
- 	if ((atomic_read(&bat_priv->aggregated_ogms)) && (!own_packet)) {
- 		hlist_for_each_entry(forw_packet_pos, tmp_node,
- 				     &bat_priv->forw_bat_list, list) {
--			if (bat_iv_ogm_can_aggregate(batman_ogm_packet,
--						     bat_priv, packet_len,
--						     send_time, direct_link,
--						     if_incoming,
--						     forw_packet_pos)) {
-+			if (batadv_iv_ogm_can_aggregate(batman_ogm_packet,
-+							bat_priv, packet_len,
-+							send_time, direct_link,
-+							if_incoming,
-+							forw_packet_pos)) {
- 				forw_packet_aggr = forw_packet_pos;
- 				break;
- 			}
-@@ -500,22 +502,22 @@ static void bat_iv_ogm_queue_add(struct bat_priv *bat_priv,
- 		    (atomic_read(&bat_priv->aggregated_ogms)))
- 			send_time += msecs_to_jiffies(MAX_AGGREGATION_MS);
- 
--		bat_iv_ogm_aggregate_new(packet_buff, packet_len,
--					 send_time, direct_link,
--					 if_incoming, own_packet);
-+		batadv_iv_ogm_aggregate_new(packet_buff, packet_len,
-+					    send_time, direct_link,
-+					    if_incoming, own_packet);
- 	} else {
--		bat_iv_ogm_aggregate(forw_packet_aggr, packet_buff,
--				     packet_len, direct_link);
-+		batadv_iv_ogm_aggregate(forw_packet_aggr, packet_buff,
-+					packet_len, direct_link);
- 		spin_unlock_bh(&bat_priv->forw_bat_list_lock);
- 	}
- }
- 
--static void bat_iv_ogm_forward(struct orig_node *orig_node,
--			       const struct ethhdr *ethhdr,
--			       struct batman_ogm_packet *batman_ogm_packet,
--			       bool is_single_hop_neigh,
--			       bool is_from_best_next_hop,
--			       struct hard_iface *if_incoming)
-+static void batadv_iv_ogm_forward(struct orig_node *orig_node,
-+				  const struct ethhdr *ethhdr,
-+				  struct batman_ogm_packet *batman_ogm_packet,
-+				  bool is_single_hop_neigh,
-+				  bool is_from_best_next_hop,
-+				  struct hard_iface *if_incoming)
- {
- 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	uint8_t tt_num_changes;
-@@ -544,7 +546,8 @@ static void bat_iv_ogm_forward(struct orig_node *orig_node,
- 	memcpy(batman_ogm_packet->prev_sender, ethhdr->h_source, ETH_ALEN);
- 
- 	/* apply hop penalty */
--	batman_ogm_packet->tq = hop_penalty(batman_ogm_packet->tq, bat_priv);
-+	batman_ogm_packet->tq = batadv_hop_penalty(batman_ogm_packet->tq,
-+						   bat_priv);
- 
- 	batadv_dbg(DBG_BATMAN, bat_priv,
- 		   "Forwarding packet: tq: %i, ttl: %i\n",
-@@ -557,12 +560,12 @@ static void bat_iv_ogm_forward(struct orig_node *orig_node,
- 	else
- 		batman_ogm_packet->flags &= ~DIRECTLINK;
- 
--	bat_iv_ogm_queue_add(bat_priv, (unsigned char *)batman_ogm_packet,
--			     BATMAN_OGM_HLEN + batadv_tt_len(tt_num_changes),
--			     if_incoming, 0, bat_iv_ogm_fwd_send_time());
-+	batadv_iv_ogm_queue_add(bat_priv, (unsigned char *)batman_ogm_packet,
-+				BATMAN_OGM_HLEN + batadv_tt_len(tt_num_changes),
-+				if_incoming, 0, batadv_iv_ogm_fwd_send_time());
- }
- 
--static void bat_iv_ogm_schedule(struct hard_iface *hard_iface)
-+static void batadv_iv_ogm_schedule(struct hard_iface *hard_iface)
- {
- 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	struct batman_ogm_packet *batman_ogm_packet;
-@@ -603,22 +606,22 @@ static void bat_iv_ogm_schedule(struct hard_iface *hard_iface)
- 		batman_ogm_packet->gw_flags = NO_FLAGS;
- 
- 	batadv_slide_own_bcast_window(hard_iface);
--	bat_iv_ogm_queue_add(bat_priv, hard_iface->packet_buff,
--			     hard_iface->packet_len, hard_iface, 1,
--			     bat_iv_ogm_emit_send_time(bat_priv));
-+	batadv_iv_ogm_queue_add(bat_priv, hard_iface->packet_buff,
-+				hard_iface->packet_len, hard_iface, 1,
-+				batadv_iv_ogm_emit_send_time(bat_priv));
- 
- 	if (primary_if)
- 		batadv_hardif_free_ref(primary_if);
- }
- 
--static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
--				   struct orig_node *orig_node,
--				   const struct ethhdr *ethhdr,
--				   const struct batman_ogm_packet
--							*batman_ogm_packet,
--				   struct hard_iface *if_incoming,
--				   const unsigned char *tt_buff,
--				   int is_duplicate)
-+static void
-+batadv_iv_ogm_orig_update(struct bat_priv *bat_priv,
-+			  struct orig_node *orig_node,
-+			  const struct ethhdr *ethhdr,
-+			  const struct batman_ogm_packet *batman_ogm_packet,
-+			  struct hard_iface *if_incoming,
-+			  const unsigned char *tt_buff,
-+			  int is_duplicate)
- {
- 	struct neigh_node *neigh_node = NULL, *tmp_neigh_node = NULL;
- 	struct neigh_node *router = NULL;
-@@ -661,9 +664,10 @@ static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
- 		if (!orig_tmp)
- 			goto unlock;
- 
--		neigh_node = bat_iv_ogm_neigh_new(if_incoming, ethhdr->h_source,
--						  orig_node, orig_tmp,
--						  batman_ogm_packet->seqno);
-+		neigh_node = batadv_iv_ogm_neigh_new(if_incoming,
-+						     ethhdr->h_source,
-+						     orig_node, orig_tmp,
-+						     batman_ogm_packet->seqno);
- 
- 		batadv_orig_node_free_ref(orig_tmp);
- 		if (!neigh_node)
-@@ -759,10 +763,10 @@ out:
- 		batadv_neigh_node_free_ref(router);
- }
- 
--static int bat_iv_ogm_calc_tq(struct orig_node *orig_node,
--			      struct orig_node *orig_neigh_node,
--			      struct batman_ogm_packet *batman_ogm_packet,
--			      struct hard_iface *if_incoming)
-+static int batadv_iv_ogm_calc_tq(struct orig_node *orig_node,
-+				 struct orig_node *orig_neigh_node,
-+				 struct batman_ogm_packet *batman_ogm_packet,
-+				 struct hard_iface *if_incoming)
- {
- 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct neigh_node *neigh_node = NULL, *tmp_neigh_node;
-@@ -792,11 +796,11 @@ static int bat_iv_ogm_calc_tq(struct orig_node *orig_node,
- 	rcu_read_unlock();
- 
- 	if (!neigh_node)
--		neigh_node = bat_iv_ogm_neigh_new(if_incoming,
--						  orig_neigh_node->orig,
--						  orig_neigh_node,
--						  orig_neigh_node,
--						  batman_ogm_packet->seqno);
-+		neigh_node = batadv_iv_ogm_neigh_new(if_incoming,
-+						     orig_neigh_node->orig,
-+						     orig_neigh_node,
-+						     orig_neigh_node,
-+						     batman_ogm_packet->seqno);
- 
- 	if (!neigh_node)
- 		goto out;
-@@ -873,10 +877,10 @@ out:
-  *  -1 the packet is old and has been received while the seqno window
-  *     was protected. Caller should drop it.
-  */
--static int bat_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
--				    const struct batman_ogm_packet
--							*batman_ogm_packet,
--				    const struct hard_iface *if_incoming)
-+static int
-+batadv_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
-+			    const struct batman_ogm_packet *batman_ogm_packet,
-+			    const struct hard_iface *if_incoming)
- {
- 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct orig_node *orig_node;
-@@ -943,10 +947,10 @@ out:
  	return ret;
  }
  
--static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
--			       struct batman_ogm_packet *batman_ogm_packet,
--			       const unsigned char *tt_buff,
--			       struct hard_iface *if_incoming)
-+static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
-+				  struct batman_ogm_packet *batman_ogm_packet,
-+				  const unsigned char *tt_buff,
-+				  struct hard_iface *if_incoming)
+-static int store_uint_attr(const char *buff, size_t count,
+-			   struct net_device *net_dev, const char *attr_name,
+-			   unsigned int min, unsigned int max, atomic_t *attr)
++static int batadv_store_uint_attr(const char *buff, size_t count,
++				  struct net_device *net_dev,
++				  const char *attr_name,
++				  unsigned int min, unsigned int max,
++				  atomic_t *attr)
  {
- 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct hard_iface *hard_iface;
-@@ -955,10 +959,10 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
- 	struct neigh_node *orig_neigh_router = NULL;
- 	int has_directlink_flag;
- 	int is_my_addr = 0, is_my_orig = 0, is_my_oldorig = 0;
--	int is_broadcast = 0, is_bidirectional;
-+	int is_broadcast = 0, is_bidirect;
- 	bool is_single_hop_neigh = false;
- 	bool is_from_best_next_hop = false;
--	int is_duplicate;
-+	int is_duplicate, sameseq, simlar_ttl;
- 	uint32_t if_incoming_seqno;
- 	uint8_t *prev_sender;
- 
-@@ -1095,8 +1099,8 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
- 	if (!orig_node)
- 		return;
- 
--	is_duplicate = bat_iv_ogm_update_seqnos(ethhdr, batman_ogm_packet,
--						if_incoming);
-+	is_duplicate = batadv_iv_ogm_update_seqnos(ethhdr, batman_ogm_packet,
-+						   if_incoming);
- 
- 	if (is_duplicate == -1) {
- 		batadv_dbg(DBG_BATMAN, bat_priv,
-@@ -1151,8 +1155,8 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
- 		goto out_neigh;
- 	}
- 
--	is_bidirectional = bat_iv_ogm_calc_tq(orig_node, orig_neigh_node,
--					      batman_ogm_packet, if_incoming);
-+	is_bidirect = batadv_iv_ogm_calc_tq(orig_node, orig_neigh_node,
-+					    batman_ogm_packet, if_incoming);
- 
- 	batadv_bonding_save_primary(orig_node, orig_neigh_node,
- 				    batman_ogm_packet);
-@@ -1160,21 +1164,20 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
- 	/* update ranking if it is not a duplicate or has the same
- 	 * seqno and similar ttl as the non-duplicate
- 	 */
--	if (is_bidirectional &&
--	    (!is_duplicate ||
--	     ((orig_node->last_real_seqno == ntohl(batman_ogm_packet->seqno)) &&
--	      (orig_node->last_ttl - 3 <= batman_ogm_packet->header.ttl))))
--		bat_iv_ogm_orig_update(bat_priv, orig_node, ethhdr,
--				       batman_ogm_packet, if_incoming,
--				       tt_buff, is_duplicate);
-+	sameseq = orig_node->last_real_seqno == ntohl(batman_ogm_packet->seqno);
-+	simlar_ttl = orig_node->last_ttl - 3 <= batman_ogm_packet->header.ttl;
-+	if (is_bidirect && (!is_duplicate || (sameseq && simlar_ttl)))
-+		batadv_iv_ogm_orig_update(bat_priv, orig_node, ethhdr,
-+					  batman_ogm_packet, if_incoming,
-+					  tt_buff, is_duplicate);
- 
- 	/* is single hop (direct) neighbor */
- 	if (is_single_hop_neigh) {
- 
- 		/* mark direct link on incoming interface */
--		bat_iv_ogm_forward(orig_node, ethhdr, batman_ogm_packet,
--				   is_single_hop_neigh, is_from_best_next_hop,
--				   if_incoming);
-+		batadv_iv_ogm_forward(orig_node, ethhdr, batman_ogm_packet,
-+				      is_single_hop_neigh,
-+				      is_from_best_next_hop, if_incoming);
- 
- 		batadv_dbg(DBG_BATMAN, bat_priv,
- 			   "Forwarding packet: rebroadcast neighbor packet with direct link flag\n");
-@@ -1182,7 +1185,7 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
- 	}
- 
- 	/* multihop originator */
--	if (!is_bidirectional) {
-+	if (!is_bidirect) {
- 		batadv_dbg(DBG_BATMAN, bat_priv,
- 			   "Drop packet: not received via bidirectional link\n");
- 		goto out_neigh;
-@@ -1196,9 +1199,9 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
- 
- 	batadv_dbg(DBG_BATMAN, bat_priv,
- 		   "Forwarding packet: rebroadcast originator packet\n");
--	bat_iv_ogm_forward(orig_node, ethhdr, batman_ogm_packet,
--			   is_single_hop_neigh, is_from_best_next_hop,
--			   if_incoming);
-+	batadv_iv_ogm_forward(orig_node, ethhdr, batman_ogm_packet,
-+			      is_single_hop_neigh, is_from_best_next_hop,
-+			      if_incoming);
- 
- out_neigh:
- 	if ((orig_neigh_node) && (!is_single_hop_neigh))
-@@ -1214,8 +1217,8 @@ out:
- 	batadv_orig_node_free_ref(orig_node);
+ 	unsigned long uint_val;
+ 	int ret;
+@@ -249,26 +260,27 @@ static int store_uint_attr(const char *buff, size_t count,
+ 	return count;
  }
  
--static int bat_iv_ogm_receive(struct sk_buff *skb,
--			      struct hard_iface *if_incoming)
-+static int batadv_iv_ogm_receive(struct sk_buff *skb,
-+				 struct hard_iface *if_incoming)
+-static inline ssize_t __store_uint_attr(const char *buff, size_t count,
+-			int min, int max,
+-			void (*post_func)(struct net_device *),
+-			const struct attribute *attr,
+-			atomic_t *attr_store, struct net_device *net_dev)
++static inline ssize_t
++__batadv_store_uint_attr(const char *buff, size_t count,
++			 int min, int max,
++			 void (*post_func)(struct net_device *),
++			 const struct attribute *attr,
++			 atomic_t *attr_store, struct net_device *net_dev)
  {
- 	struct bat_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct batman_ogm_packet *batman_ogm_packet;
-@@ -1231,7 +1234,7 @@ static int bat_iv_ogm_receive(struct sk_buff *skb,
- 	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
- 	 * that does not have B.A.T.M.A.N. IV enabled ?
- 	 */
--	if (bat_priv->bat_algo_ops->bat_ogm_emit != bat_iv_ogm_emit)
-+	if (bat_priv->bat_algo_ops->bat_ogm_emit != batadv_iv_ogm_emit)
- 		return NET_RX_DROP;
- 
- 	inc_counter(bat_priv, BAT_CNT_MGMT_RX);
-@@ -1247,29 +1250,29 @@ static int bat_iv_ogm_receive(struct sk_buff *skb,
- 	do {
- 		tt_buff = packet_buff + buff_pos + BATMAN_OGM_HLEN;
- 
--		bat_iv_ogm_process(ethhdr, batman_ogm_packet,
--				   tt_buff, if_incoming);
-+		batadv_iv_ogm_process(ethhdr, batman_ogm_packet, tt_buff,
-+				      if_incoming);
- 
- 		buff_pos += BATMAN_OGM_HLEN;
- 		buff_pos += batadv_tt_len(batman_ogm_packet->tt_num_changes);
- 
- 		batman_ogm_packet = (struct batman_ogm_packet *)
- 						(packet_buff + buff_pos);
--	} while (bat_iv_ogm_aggr_packet(buff_pos, packet_len,
--					batman_ogm_packet->tt_num_changes));
-+	} while (batadv_iv_ogm_aggr_packet(buff_pos, packet_len,
-+					   batman_ogm_packet->tt_num_changes));
- 
- 	kfree_skb(skb);
- 	return NET_RX_SUCCESS;
- }
- 
--static struct bat_algo_ops batman_iv __read_mostly = {
-+static struct bat_algo_ops batadv_batman_iv __read_mostly = {
- 	.name = "BATMAN_IV",
--	.bat_iface_enable = bat_iv_ogm_iface_enable,
--	.bat_iface_disable = bat_iv_ogm_iface_disable,
--	.bat_iface_update_mac = bat_iv_ogm_iface_update_mac,
--	.bat_primary_iface_set = bat_iv_ogm_primary_iface_set,
--	.bat_ogm_schedule = bat_iv_ogm_schedule,
--	.bat_ogm_emit = bat_iv_ogm_emit,
-+	.bat_iface_enable = batadv_iv_ogm_iface_enable,
-+	.bat_iface_disable = batadv_iv_ogm_iface_disable,
-+	.bat_iface_update_mac = batadv_iv_ogm_iface_update_mac,
-+	.bat_primary_iface_set = batadv_iv_ogm_primary_iface_set,
-+	.bat_ogm_schedule = batadv_iv_ogm_schedule,
-+	.bat_ogm_emit = batadv_iv_ogm_emit,
- };
- 
- int __init batadv_iv_init(void)
-@@ -1277,11 +1280,11 @@ int __init batadv_iv_init(void)
  	int ret;
  
- 	/* batman originator packet */
--	ret = batadv_recv_handler_register(BAT_IV_OGM, bat_iv_ogm_receive);
-+	ret = batadv_recv_handler_register(BAT_IV_OGM, batadv_iv_ogm_receive);
- 	if (ret < 0)
+-	ret = store_uint_attr(buff, count, net_dev, attr->name,
+-			      min, max, attr_store);
++	ret = batadv_store_uint_attr(buff, count, net_dev, attr->name, min, max,
++				     attr_store);
+ 	if (post_func && ret)
+ 		post_func(net_dev);
+ 
+ 	return ret;
+ }
+ 
+-static ssize_t show_vis_mode(struct kobject *kobj, struct attribute *attr,
+-			     char *buff)
++static ssize_t batadv_show_vis_mode(struct kobject *kobj,
++				    struct attribute *attr, char *buff)
+ {
+-	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);
++	struct bat_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 	int vis_mode = atomic_read(&bat_priv->vis_mode);
+ 
+ 	return sprintf(buff, "%s\n",
+@@ -276,10 +288,11 @@ static ssize_t show_vis_mode(struct kobject *kobj, struct attribute *attr,
+ 							"client" : "server");
+ }
+ 
+-static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
+-			      char *buff, size_t count)
++static ssize_t batadv_store_vis_mode(struct kobject *kobj,
++				     struct attribute *attr, char *buff,
++				     size_t count)
+ {
+-	struct net_device *net_dev = kobj_to_netdev(kobj);
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
+ 	struct bat_priv *bat_priv = netdev_priv(net_dev);
+ 	unsigned long val;
+ 	int ret, vis_mode_tmp = -1;
+@@ -317,23 +330,23 @@ static ssize_t store_vis_mode(struct kobject *kobj, struct attribute *attr,
+ 	return count;
+ }
+ 
+-static ssize_t show_bat_algo(struct kobject *kobj, struct attribute *attr,
+-			    char *buff)
++static ssize_t batadv_show_bat_algo(struct kobject *kobj,
++				    struct attribute *attr, char *buff)
+ {
+-	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);
++	struct bat_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 	return sprintf(buff, "%s\n", bat_priv->bat_algo_ops->name);
+ }
+ 
+-static void post_gw_deselect(struct net_device *net_dev)
++static void batadv_post_gw_deselect(struct net_device *net_dev)
+ {
+ 	struct bat_priv *bat_priv = netdev_priv(net_dev);
+ 	batadv_gw_deselect(bat_priv);
+ }
+ 
+-static ssize_t show_gw_mode(struct kobject *kobj, struct attribute *attr,
+-			    char *buff)
++static ssize_t batadv_show_gw_mode(struct kobject *kobj, struct attribute *attr,
++				   char *buff)
+ {
+-	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);
++	struct bat_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 	int bytes_written;
+ 
+ 	switch (atomic_read(&bat_priv->gw_mode)) {
+@@ -351,10 +364,11 @@ static ssize_t show_gw_mode(struct kobject *kobj, struct attribute *attr,
+ 	return bytes_written;
+ }
+ 
+-static ssize_t store_gw_mode(struct kobject *kobj, struct attribute *attr,
+-			     char *buff, size_t count)
++static ssize_t batadv_store_gw_mode(struct kobject *kobj,
++				    struct attribute *attr, char *buff,
++				    size_t count)
+ {
+-	struct net_device *net_dev = kobj_to_netdev(kobj);
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
+ 	struct bat_priv *bat_priv = netdev_priv(net_dev);
+ 	char *curr_gw_mode_str;
+ 	int gw_mode_tmp = -1;
+@@ -403,10 +417,10 @@ static ssize_t store_gw_mode(struct kobject *kobj, struct attribute *attr,
+ 	return count;
+ }
+ 
+-static ssize_t show_gw_bwidth(struct kobject *kobj, struct attribute *attr,
+-			      char *buff)
++static ssize_t batadv_show_gw_bwidth(struct kobject *kobj,
++				     struct attribute *attr, char *buff)
+ {
+-	struct bat_priv *bat_priv = kobj_to_batpriv(kobj);
++	struct bat_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 	int down, up;
+ 	int gw_bandwidth = atomic_read(&bat_priv->gw_bandwidth);
+ 
+@@ -418,10 +432,11 @@ static ssize_t show_gw_bwidth(struct kobject *kobj, struct attribute *attr,
+ 		       (up > 2048 ? "MBit" : "KBit"));
+ }
+ 
+-static ssize_t store_gw_bwidth(struct kobject *kobj, struct attribute *attr,
+-			       char *buff, size_t count)
++static ssize_t batadv_store_gw_bwidth(struct kobject *kobj,
++				      struct attribute *attr, char *buff,
++				      size_t count)
+ {
+-	struct net_device *net_dev = kobj_to_netdev(kobj);
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
+ 
+ 	if (buff[count - 1] == '\n')
+ 		buff[count - 1] = '\0';
+@@ -436,36 +451,38 @@ BAT_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
+ #endif
+ BAT_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, batadv_update_min_mtu);
+ BAT_ATTR_SIF_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
+-static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, show_vis_mode, store_vis_mode);
+-static BAT_ATTR(routing_algo, S_IRUGO, show_bat_algo, NULL);
+-static BAT_ATTR(gw_mode, S_IRUGO | S_IWUSR, show_gw_mode, store_gw_mode);
++static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, batadv_show_vis_mode,
++		batadv_store_vis_mode);
++static BAT_ATTR(routing_algo, S_IRUGO, batadv_show_bat_algo, NULL);
++static BAT_ATTR(gw_mode, S_IRUGO | S_IWUSR, batadv_show_gw_mode,
++		batadv_store_gw_mode);
+ BAT_ATTR_SIF_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
+ BAT_ATTR_SIF_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
+ BAT_ATTR_SIF_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, TQ_MAX_VALUE,
+-		  post_gw_deselect);
+-static BAT_ATTR(gw_bandwidth, S_IRUGO | S_IWUSR, show_gw_bwidth,
+-		store_gw_bwidth);
++		  batadv_post_gw_deselect);
++static BAT_ATTR(gw_bandwidth, S_IRUGO | S_IWUSR, batadv_show_gw_bwidth,
++		batadv_store_gw_bwidth);
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+ BAT_ATTR_SIF_UINT(log_level, S_IRUGO | S_IWUSR, 0, DBG_ALL, NULL);
+ #endif
+ 
+-static struct bat_attribute *mesh_attrs[] = {
+-	&bat_attr_aggregated_ogms,
+-	&bat_attr_bonding,
++static struct bat_attribute *batadv_mesh_attrs[] = {
++	&batadv_attr_aggregated_ogms,
++	&batadv_attr_bonding,
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-	&bat_attr_bridge_loop_avoidance,
++	&batadv_attr_bridge_loop_avoidance,
+ #endif
+-	&bat_attr_fragmentation,
+-	&bat_attr_ap_isolation,
+-	&bat_attr_vis_mode,
+-	&bat_attr_routing_algo,
+-	&bat_attr_gw_mode,
+-	&bat_attr_orig_interval,
+-	&bat_attr_hop_penalty,
+-	&bat_attr_gw_sel_class,
+-	&bat_attr_gw_bandwidth,
++	&batadv_attr_fragmentation,
++	&batadv_attr_ap_isolation,
++	&batadv_attr_vis_mode,
++	&batadv_attr_routing_algo,
++	&batadv_attr_gw_mode,
++	&batadv_attr_orig_interval,
++	&batadv_attr_hop_penalty,
++	&batadv_attr_gw_sel_class,
++	&batadv_attr_gw_bandwidth,
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+-	&bat_attr_log_level,
++	&batadv_attr_log_level,
+ #endif
+ 	NULL,
+ };
+@@ -485,7 +502,7 @@ int batadv_sysfs_add_meshif(struct net_device *dev)
+ 		goto out;
+ 	}
+ 
+-	for (bat_attr = mesh_attrs; *bat_attr; ++bat_attr) {
++	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr) {
+ 		err = sysfs_create_file(bat_priv->mesh_obj,
+ 					&((*bat_attr)->attr));
+ 		if (err) {
+@@ -499,7 +516,7 @@ int batadv_sysfs_add_meshif(struct net_device *dev)
+ 	return 0;
+ 
+ rem_attr:
+-	for (bat_attr = mesh_attrs; *bat_attr; ++bat_attr)
++	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr)
+ 		sysfs_remove_file(bat_priv->mesh_obj, &((*bat_attr)->attr));
+ 
+ 	kobject_put(bat_priv->mesh_obj);
+@@ -513,17 +530,17 @@ void batadv_sysfs_del_meshif(struct net_device *dev)
+ 	struct bat_priv *bat_priv = netdev_priv(dev);
+ 	struct bat_attribute **bat_attr;
+ 
+-	for (bat_attr = mesh_attrs; *bat_attr; ++bat_attr)
++	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr)
+ 		sysfs_remove_file(bat_priv->mesh_obj, &((*bat_attr)->attr));
+ 
+ 	kobject_put(bat_priv->mesh_obj);
+ 	bat_priv->mesh_obj = NULL;
+ }
+ 
+-static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
+-			       char *buff)
++static ssize_t batadv_show_mesh_iface(struct kobject *kobj,
++				      struct attribute *attr, char *buff)
+ {
+-	struct net_device *net_dev = kobj_to_netdev(kobj);
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
+ 	struct hard_iface *hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	ssize_t length;
+ 
+@@ -538,10 +555,11 @@ static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 	return length;
+ }
+ 
+-static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+-				char *buff, size_t count)
++static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
++				       struct attribute *attr, char *buff,
++				       size_t count)
+ {
+-	struct net_device *net_dev = kobj_to_netdev(kobj);
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
+ 	struct hard_iface *hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	int status_tmp = -1;
+ 	int ret = count;
+@@ -594,10 +612,10 @@ out:
+ 	return ret;
+ }
+ 
+-static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
+-				 char *buff)
++static ssize_t batadv_show_iface_status(struct kobject *kobj,
++					struct attribute *attr, char *buff)
+ {
+-	struct net_device *net_dev = kobj_to_netdev(kobj);
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
+ 	struct hard_iface *hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	ssize_t length;
+ 
+@@ -629,12 +647,12 @@ static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
+ }
+ 
+ static BAT_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
+-		show_mesh_iface, store_mesh_iface);
+-static BAT_ATTR(iface_status, S_IRUGO, show_iface_status, NULL);
++		batadv_show_mesh_iface, batadv_store_mesh_iface);
++static BAT_ATTR(iface_status, S_IRUGO, batadv_show_iface_status, NULL);
+ 
+-static struct bat_attribute *batman_attrs[] = {
+-	&bat_attr_mesh_iface,
+-	&bat_attr_iface_status,
++static struct bat_attribute *batadv_batman_attrs[] = {
++	&batadv_attr_mesh_iface,
++	&batadv_attr_iface_status,
+ 	NULL,
+ };
+ 
+@@ -653,7 +671,7 @@ int batadv_sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
+ 		goto out;
+ 	}
+ 
+-	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr) {
++	for (bat_attr = batadv_batman_attrs; *bat_attr; ++bat_attr) {
+ 		err = sysfs_create_file(*hardif_obj, &((*bat_attr)->attr));
+ 		if (err) {
+ 			bat_err(dev, "Can't add sysfs file: %s/%s/%s\n",
+@@ -666,7 +684,7 @@ int batadv_sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
+ 	return 0;
+ 
+ rem_attr:
+-	for (bat_attr = batman_attrs; *bat_attr; ++bat_attr)
++	for (bat_attr = batadv_batman_attrs; *bat_attr; ++bat_attr)
+ 		sysfs_remove_file(*hardif_obj, &((*bat_attr)->attr));
+ out:
+ 	return -ENOMEM;
+@@ -693,20 +711,21 @@ int batadv_throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
+ 	bat_kobj = &primary_if->soft_iface->dev.kobj;
+ 
+ 	uevent_env[0] = kmalloc(strlen(UEV_TYPE_VAR) +
+-				strlen(uev_type_str[type]) + 1,
++				strlen(batadv_uev_type_str[type]) + 1,
+ 				GFP_ATOMIC);
+ 	if (!uevent_env[0])
  		goto out;
  
--	ret = batadv_algo_register(&batman_iv);
-+	ret = batadv_algo_register(&batadv_batman_iv);
- 	if (ret < 0)
- 		goto handler_unregister;
+-	sprintf(uevent_env[0], "%s%s", UEV_TYPE_VAR, uev_type_str[type]);
++	sprintf(uevent_env[0], "%s%s", UEV_TYPE_VAR, batadv_uev_type_str[type]);
  
+ 	uevent_env[1] = kmalloc(strlen(UEV_ACTION_VAR) +
+-				strlen(uev_action_str[action]) + 1,
++				strlen(batadv_uev_action_str[action]) + 1,
+ 				GFP_ATOMIC);
+ 	if (!uevent_env[1])
+ 		goto out;
+ 
+-	sprintf(uevent_env[1], "%s%s", UEV_ACTION_VAR, uev_action_str[action]);
++	sprintf(uevent_env[1], "%s%s", UEV_ACTION_VAR,
++		batadv_uev_action_str[action]);
+ 
+ 	/* If the event is DEL, ignore the data field */
+ 	if (action != UEV_DEL) {
+@@ -730,7 +749,8 @@ out:
+ 	if (ret)
+ 		batadv_dbg(DBG_BATMAN, bat_priv,
+ 			   "Impossible to send uevent for (%s,%s,%s) event (err: %d)\n",
+-			   uev_type_str[type], uev_action_str[action],
++			   batadv_uev_type_str[type],
++			   batadv_uev_action_str[action],
+ 			   (action == UEV_DEL ? "NULL" : data), ret);
+ 	return ret;
+ }
 -- 
 1.7.10
 
