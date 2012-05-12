@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 May 2012 02:09:24 +0200
-Message-Id: <1336781383-15649-4-git-send-email-sven@narfation.org>
+Date: Sat, 12 May 2012 02:09:25 +0200
+Message-Id: <1336781383-15649-5-git-send-email-sven@narfation.org>
 In-Reply-To: <1336781383-15649-1-git-send-email-sven@narfation.org>
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 04/23] batman-adv: Prefix bat_sysfs
+Subject: [B.A.T.M.A.N.] [PATCHv3 05/23] batman-adv: Prefix bitarray
 	non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,165 +28,98 @@ such a problem.
 Reported-by: David Miller <davem@davemloft.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bat_sysfs.c      |   12 ++++++------
- bat_sysfs.h      |   13 +++++++------
- gateway_client.c |    6 +++---
- hard-interface.c |    4 ++--
- soft-interface.c |    6 +++---
- 5 files changed, 21 insertions(+), 20 deletions(-)
+ bat_iv_ogm.c |    6 +++---
+ bitarray.c   |    8 ++++----
+ bitarray.h   |    4 ++--
+ routing.c    |    4 ++--
+ 4 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/bat_sysfs.c b/bat_sysfs.c
-index dc1edbe..5dce1ab 100644
---- a/bat_sysfs.c
-+++ b/bat_sysfs.c
-@@ -469,7 +469,7 @@ static struct bat_attribute *mesh_attrs[] = {
- 	NULL,
- };
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 470fe01..1e8b2d4 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -903,9 +903,9 @@ static int bat_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
+ 			set_mark = 0;
  
--int sysfs_add_meshif(struct net_device *dev)
-+int batadv_sysfs_add_meshif(struct net_device *dev)
+ 		/* if the window moved, set the update flag. */
+-		need_update |= bit_get_packet(bat_priv,
+-					      tmp_neigh_node->real_bits,
+-					      seq_diff, set_mark);
++		need_update |= batadv_bit_get_packet(bat_priv,
++						     tmp_neigh_node->real_bits,
++						     seq_diff, set_mark);
+ 
+ 		tmp_neigh_node->real_packet_count =
+ 			bitmap_weight(tmp_neigh_node->real_bits,
+diff --git a/bitarray.c b/bitarray.c
+index 07ae6e1..99ed991 100644
+--- a/bitarray.c
++++ b/bitarray.c
+@@ -25,7 +25,7 @@
+ #include <linux/bitops.h>
+ 
+ /* shift the packet array by n places. */
+-static void bat_bitmap_shift_left(unsigned long *seq_bits, int32_t n)
++static void batadv_bitmap_shift_left(unsigned long *seq_bits, int32_t n)
  {
- 	struct kobject *batif_kobject = &dev->dev.kobj;
- 	struct bat_priv *bat_priv = netdev_priv(dev);
-@@ -507,7 +507,7 @@ out:
- 	return -ENOMEM;
- }
- 
--void sysfs_del_meshif(struct net_device *dev)
-+void batadv_sysfs_del_meshif(struct net_device *dev)
- {
- 	struct bat_priv *bat_priv = netdev_priv(dev);
- 	struct bat_attribute **bat_attr;
-@@ -637,7 +637,7 @@ static struct bat_attribute *batman_attrs[] = {
- 	NULL,
- };
- 
--int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
-+int batadv_sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- {
- 	struct kobject *hardif_kobject = &dev->dev.kobj;
- 	struct bat_attribute **bat_attr;
-@@ -671,14 +671,14 @@ out:
- 	return -ENOMEM;
- }
- 
--void sysfs_del_hardif(struct kobject **hardif_obj)
-+void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
- {
- 	kobject_put(*hardif_obj);
- 	*hardif_obj = NULL;
- }
- 
--int throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
--		 enum uev_action action, const char *data)
-+int batadv_throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
-+			enum uev_action action, const char *data)
- {
- 	int ret = -ENOMEM;
- 	struct hard_iface *primary_if = NULL;
-diff --git a/bat_sysfs.h b/bat_sysfs.h
-index fece77a..f01aea8 100644
---- a/bat_sysfs.h
-+++ b/bat_sysfs.h
-@@ -34,11 +34,12 @@ struct bat_attribute {
- 			 char *buf, size_t count);
- };
- 
--int sysfs_add_meshif(struct net_device *dev);
--void sysfs_del_meshif(struct net_device *dev);
--int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev);
--void sysfs_del_hardif(struct kobject **hardif_obj);
--int throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
--		 enum uev_action action, const char *data);
-+int batadv_sysfs_add_meshif(struct net_device *dev);
-+void batadv_sysfs_del_meshif(struct net_device *dev);
-+int batadv_sysfs_add_hardif(struct kobject **hardif_obj,
-+			    struct net_device *dev);
-+void batadv_sysfs_del_hardif(struct kobject **hardif_obj);
-+int batadv_throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
-+			enum uev_action action, const char *data);
- 
- #endif /* _NET_BATMAN_ADV_SYSFS_H_ */
-diff --git a/gateway_client.c b/gateway_client.c
-index 47f7186..1d7f08e 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -220,19 +220,19 @@ void gw_election(struct bat_priv *bat_priv)
- 	if ((curr_gw) && (!next_gw)) {
- 		bat_dbg(DBG_BATMAN, bat_priv,
- 			"Removing selected gateway - no gateway in range\n");
--		throw_uevent(bat_priv, UEV_GW, UEV_DEL, NULL);
-+		batadv_throw_uevent(bat_priv, UEV_GW, UEV_DEL, NULL);
- 	} else if ((!curr_gw) && (next_gw)) {
- 		bat_dbg(DBG_BATMAN, bat_priv,
- 			"Adding route to gateway %pM (gw_flags: %i, tq: %i)\n",
- 			next_gw->orig_node->orig, next_gw->orig_node->gw_flags,
- 			router->tq_avg);
--		throw_uevent(bat_priv, UEV_GW, UEV_ADD, gw_addr);
-+		batadv_throw_uevent(bat_priv, UEV_GW, UEV_ADD, gw_addr);
- 	} else {
- 		bat_dbg(DBG_BATMAN, bat_priv,
- 			"Changing route to gateway %pM (gw_flags: %i, tq: %i)\n",
- 			next_gw->orig_node->orig, next_gw->orig_node->gw_flags,
- 			router->tq_avg);
--		throw_uevent(bat_priv, UEV_GW, UEV_CHANGE, gw_addr);
-+		batadv_throw_uevent(bat_priv, UEV_GW, UEV_CHANGE, gw_addr);
- 	}
- 
- 	gw_select(bat_priv, next_gw);
-diff --git a/hard-interface.c b/hard-interface.c
-index 843caa7..ceaf632 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -426,7 +426,7 @@ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
- 	if (!hard_iface)
- 		goto release_dev;
- 
--	ret = sysfs_add_hardif(&hard_iface->hardif_obj, net_dev);
-+	ret = batadv_sysfs_add_hardif(&hard_iface->hardif_obj, net_dev);
- 	if (ret)
- 		goto free_if;
- 
-@@ -470,7 +470,7 @@ static void hardif_remove_interface(struct hard_iface *hard_iface)
+ 	if (n <= 0 || n >= TQ_LOCAL_WINDOW_SIZE)
  		return;
- 
- 	hard_iface->if_status = IF_TO_BE_REMOVED;
--	sysfs_del_hardif(&hard_iface->hardif_obj);
-+	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
- 	hardif_free_ref(hard_iface);
- }
- 
-diff --git a/soft-interface.c b/soft-interface.c
-index 1a9ba93..6f21e65 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -430,7 +430,7 @@ struct net_device *softif_create(const char *name)
- 	if (ret < 0)
- 		goto free_bat_counters;
- 
--	ret = sysfs_add_meshif(soft_iface);
-+	ret = batadv_sysfs_add_meshif(soft_iface);
- 	if (ret < 0)
- 		goto free_bat_counters;
- 
-@@ -447,7 +447,7 @@ struct net_device *softif_create(const char *name)
- unreg_debugfs:
- 	batadv_debugfs_del_meshif(soft_iface);
- unreg_sysfs:
--	sysfs_del_meshif(soft_iface);
-+	batadv_sysfs_del_meshif(soft_iface);
- free_bat_counters:
- 	free_percpu(bat_priv->bat_counters);
- unreg_soft_iface:
-@@ -463,7 +463,7 @@ out:
- void softif_destroy(struct net_device *soft_iface)
+@@ -40,8 +40,8 @@ static void bat_bitmap_shift_left(unsigned long *seq_bits, int32_t n)
+  *  1 if the window was moved (either new or very old)
+  *  0 if the window was not moved/shifted.
+  */
+-int bit_get_packet(void *priv, unsigned long *seq_bits,
+-		    int32_t seq_num_diff, int set_mark)
++int batadv_bit_get_packet(void *priv, unsigned long *seq_bits,
++			  int32_t seq_num_diff, int set_mark)
  {
- 	batadv_debugfs_del_meshif(soft_iface);
--	sysfs_del_meshif(soft_iface);
-+	batadv_sysfs_del_meshif(soft_iface);
- 	mesh_free(soft_iface);
- 	unregister_netdevice(soft_iface);
- }
+ 	struct bat_priv *bat_priv = priv;
+ 
+@@ -58,7 +58,7 @@ int bit_get_packet(void *priv, unsigned long *seq_bits,
+ 	 * set the mark if required */
+ 
+ 	if ((seq_num_diff > 0) && (seq_num_diff < TQ_LOCAL_WINDOW_SIZE)) {
+-		bat_bitmap_shift_left(seq_bits, seq_num_diff);
++		batadv_bitmap_shift_left(seq_bits, seq_num_diff);
+ 
+ 		if (set_mark)
+ 			bat_set_bit(seq_bits, 0);
+diff --git a/bitarray.h b/bitarray.h
+index 1835c15..e855ddd 100644
+--- a/bitarray.h
++++ b/bitarray.h
+@@ -48,7 +48,7 @@ static inline void bat_set_bit(unsigned long *seq_bits, int32_t n)
+ 
+ /* receive and process one packet, returns 1 if received seq_num is considered
+  * new, 0 if old  */
+-int bit_get_packet(void *priv, unsigned long *seq_bits,
+-		   int32_t seq_num_diff, int set_mark);
++int batadv_bit_get_packet(void *priv, unsigned long *seq_bits,
++			  int32_t seq_num_diff, int set_mark);
+ 
+ #endif /* _NET_BATMAN_ADV_BITARRAY_H_ */
+diff --git a/routing.c b/routing.c
+index 9beb2e2..9032708 100644
+--- a/routing.c
++++ b/routing.c
+@@ -54,7 +54,7 @@ void slide_own_bcast_window(struct hard_iface *hard_iface)
+ 			word_index = hard_iface->if_num * NUM_WORDS;
+ 			word = &(orig_node->bcast_own[word_index]);
+ 
+-			bit_get_packet(bat_priv, word, 1, 0);
++			batadv_bit_get_packet(bat_priv, word, 1, 0);
+ 			orig_node->bcast_own_sum[hard_iface->if_num] =
+ 				bitmap_weight(word, TQ_LOCAL_WINDOW_SIZE);
+ 			spin_unlock_bh(&orig_node->ogm_cnt_lock);
+@@ -1083,7 +1083,7 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 
+ 	/* mark broadcast in flood history, update window position
+ 	 * if required. */
+-	if (bit_get_packet(bat_priv, orig_node->bcast_bits, seq_diff, 1))
++	if (batadv_bit_get_packet(bat_priv, orig_node->bcast_bits, seq_diff, 1))
+ 		orig_node->last_bcast_seqno = ntohl(bcast_packet->seqno);
+ 
+ 	spin_unlock_bh(&orig_node->bcast_seqno_lock);
 -- 
 1.7.10
 
