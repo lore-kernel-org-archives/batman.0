@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 May 2012 02:09:28 +0200
-Message-Id: <1336781383-15649-8-git-send-email-sven@narfation.org>
+Date: Sat, 12 May 2012 02:09:29 +0200
+Message-Id: <1336781383-15649-9-git-send-email-sven@narfation.org>
 In-Reply-To: <1336781383-15649-1-git-send-email-sven@narfation.org>
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 08/23] batman-adv: Prefix
-	distributed-arp-table non-static functions with batadv_
+Subject: [B.A.T.M.A.N.] [PATCHv3 09/23] batman-adv: Prefix gateway-client
+	non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,288 +28,357 @@ such a problem.
 Reported-by: David Miller <davem@davemloft.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- distributed-arp-table.c |   22 ++++++++--------
- distributed-arp-table.h |   67 +++++++++++++++++++++++++----------------------
- hard-interface.c        |    2 +-
- originator.c            |    2 +-
- send.c                  |    2 +-
- soft-interface.c        |   10 +++----
- 6 files changed, 55 insertions(+), 50 deletions(-)
+ bat_debugfs.c    |    2 +-
+ bat_iv_ogm.c     |    6 +++---
+ bat_sysfs.c      |    4 ++--
+ gateway_client.c |   40 +++++++++++++++++++++-------------------
+ gateway_client.h |   26 ++++++++++++++------------
+ gateway_common.c |    2 +-
+ main.c           |    2 +-
+ originator.c     |    7 ++++---
+ soft-interface.c |    6 +++---
+ unicast.c        |    2 +-
+ 10 files changed, 51 insertions(+), 46 deletions(-)
 
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index 31699a4..d9f1c9b 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -362,8 +362,8 @@ out:
-  * otherwise. In case of true the message has to be enqueued to permit the
-  * fallback
-  */
--bool dat_snoop_outgoing_arp_request(struct bat_priv *bat_priv,
--				    struct sk_buff *skb)
-+bool batadv_dat_snoop_outgoing_arp_request(struct bat_priv *bat_priv,
-+					   struct sk_buff *skb)
+diff --git a/bat_debugfs.c b/bat_debugfs.c
+index 900c640..939c5be 100644
+--- a/bat_debugfs.c
++++ b/bat_debugfs.c
+@@ -236,7 +236,7 @@ static int originators_open(struct inode *inode, struct file *file)
+ static int gateways_open(struct inode *inode, struct file *file)
  {
- 	uint16_t type = 0;
- 	__be32 ip_dst, ip_src;
-@@ -428,8 +428,8 @@ out:
-  * into the local table. If found, an ARP reply is sent immediately, otherwise
-  * the caller has to deliver the ARP request to the upper layer
-  */
--bool dat_snoop_incoming_arp_request(struct bat_priv *bat_priv,
--				    struct sk_buff *skb, int hdr_size)
-+bool batadv_dat_snoop_incoming_arp_request(struct bat_priv *bat_priv,
-+					   struct sk_buff *skb, int hdr_size)
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+-	return single_open(file, gw_client_seq_print_text, net_dev);
++	return single_open(file, batadv_gw_client_seq_print_text, net_dev);
+ }
+ 
+ static int transtable_global_open(struct inode *inode, struct file *file)
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 1e8b2d4..71b6b2f 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -729,8 +729,8 @@ update_tt:
+ 			       ntohs(batman_ogm_packet->tt_crc));
+ 
+ 	if (orig_node->gw_flags != batman_ogm_packet->gw_flags)
+-		gw_node_update(bat_priv, orig_node,
+-			       batman_ogm_packet->gw_flags);
++		batadv_gw_node_update(bat_priv, orig_node,
++				      batman_ogm_packet->gw_flags);
+ 
+ 	orig_node->gw_flags = batman_ogm_packet->gw_flags;
+ 
+@@ -738,7 +738,7 @@ update_tt:
+ 	if ((orig_node->gw_flags) &&
+ 	    (atomic_read(&bat_priv->gw_mode) == GW_MODE_CLIENT) &&
+ 	    (atomic_read(&bat_priv->gw_sel_class) > 2))
+-		gw_check_election(bat_priv, orig_node);
++		batadv_gw_check_election(bat_priv, orig_node);
+ 
+ 	goto out;
+ 
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index 5dce1ab..31d23db 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -326,7 +326,7 @@ static ssize_t show_bat_algo(struct kobject *kobj, struct attribute *attr,
+ static void post_gw_deselect(struct net_device *net_dev)
  {
- 	uint16_t type;
- 	__be32 ip_src, ip_dst;
-@@ -487,8 +487,8 @@ out:
-  * soft interface. The related neighbour entry has to be updated and the DHT has
-  * to be populated as well
-  */
--bool dat_snoop_outgoing_arp_reply(struct bat_priv *bat_priv,
--				  struct sk_buff *skb)
-+bool batadv_dat_snoop_outgoing_arp_reply(struct bat_priv *bat_priv,
-+					 struct sk_buff *skb)
+ 	struct bat_priv *bat_priv = netdev_priv(net_dev);
+-	gw_deselect(bat_priv);
++	batadv_gw_deselect(bat_priv);
+ }
+ 
+ static ssize_t show_gw_mode(struct kobject *kobj, struct attribute *attr,
+@@ -397,7 +397,7 @@ static ssize_t store_gw_mode(struct kobject *kobj, struct attribute *attr,
+ 	bat_info(net_dev, "Changing gw mode from: %s to: %s\n",
+ 		 curr_gw_mode_str, buff);
+ 
+-	gw_deselect(bat_priv);
++	batadv_gw_deselect(bat_priv);
+ 	atomic_set(&bat_priv->gw_mode, (unsigned int)gw_mode_tmp);
+ 	return count;
+ }
+diff --git a/gateway_client.c b/gateway_client.c
+index 1d7f08e..a28d9ce 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -60,7 +60,7 @@ out:
+ 	return gw_node;
+ }
+ 
+-struct orig_node *gw_get_selected_orig(struct bat_priv *bat_priv)
++struct orig_node *batadv_gw_get_selected_orig(struct bat_priv *bat_priv)
  {
- 	uint16_t type;
- 	__be32 ip_src, ip_dst;
-@@ -524,8 +524,8 @@ out:
- /* This function has to be invoked on an ARP reply coming into the soft
-  * interface from the mesh network. The local table has to be updated
-  */
--bool dat_snoop_incoming_arp_reply(struct bat_priv *bat_priv,
--				  struct sk_buff *skb, int hdr_size)
-+bool batadv_dat_snoop_incoming_arp_reply(struct bat_priv *bat_priv,
-+					 struct sk_buff *skb, int hdr_size)
+ 	struct gw_node *gw_node;
+ 	struct orig_node *orig_node = NULL;
+@@ -103,7 +103,7 @@ static void gw_select(struct bat_priv *bat_priv, struct gw_node *new_gw_node)
+ 	spin_unlock_bh(&bat_priv->gw_list_lock);
+ }
+ 
+-void gw_deselect(struct bat_priv *bat_priv)
++void batadv_gw_deselect(struct bat_priv *bat_priv)
  {
- 	uint16_t type;
- 	__be32 ip_src, ip_dst;
-@@ -559,8 +559,8 @@ out:
+ 	atomic_set(&bat_priv->gw_reselect, 1);
+ }
+@@ -182,7 +182,7 @@ next:
+ 	return curr_gw;
+ }
+ 
+-void gw_election(struct bat_priv *bat_priv)
++void batadv_gw_election(struct bat_priv *bat_priv)
+ {
+ 	struct gw_node *curr_gw = NULL, *next_gw = NULL;
+ 	struct neigh_node *router = NULL;
+@@ -212,7 +212,7 @@ void gw_election(struct bat_priv *bat_priv)
+ 
+ 		router = orig_node_get_router(next_gw->orig_node);
+ 		if (!router) {
+-			gw_deselect(bat_priv);
++			batadv_gw_deselect(bat_priv);
+ 			goto out;
+ 		}
+ 	}
+@@ -246,13 +246,14 @@ out:
+ 		neigh_node_free_ref(router);
+ }
+ 
+-void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
++void batadv_gw_check_election(struct bat_priv *bat_priv,
++			      struct orig_node *orig_node)
+ {
+ 	struct orig_node *curr_gw_orig;
+ 	struct neigh_node *router_gw = NULL, *router_orig = NULL;
+ 	uint8_t gw_tq_avg, orig_tq_avg;
+ 
+-	curr_gw_orig = gw_get_selected_orig(bat_priv);
++	curr_gw_orig = batadv_gw_get_selected_orig(bat_priv);
+ 	if (!curr_gw_orig)
+ 		goto deselect;
+ 
+@@ -288,7 +289,7 @@ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
+ 		gw_tq_avg, orig_tq_avg);
+ 
+ deselect:
+-	gw_deselect(bat_priv);
++	batadv_gw_deselect(bat_priv);
+ out:
+ 	if (curr_gw_orig)
+ 		orig_node_free_ref(curr_gw_orig);
+@@ -328,8 +329,8 @@ static void gw_node_add(struct bat_priv *bat_priv,
+ 		(up > 2048 ? "MBit" : "KBit"));
+ }
+ 
+-void gw_node_update(struct bat_priv *bat_priv,
+-		    struct orig_node *orig_node, uint8_t new_gwflags)
++void batadv_gw_node_update(struct bat_priv *bat_priv,
++			   struct orig_node *orig_node, uint8_t new_gwflags)
+ {
+ 	struct hlist_node *node;
+ 	struct gw_node *gw_node, *curr_gw;
+@@ -374,7 +375,7 @@ void gw_node_update(struct bat_priv *bat_priv,
+ 	goto unlock;
+ 
+ deselect:
+-	gw_deselect(bat_priv);
++	batadv_gw_deselect(bat_priv);
+ unlock:
+ 	rcu_read_unlock();
+ 
+@@ -382,12 +383,13 @@ unlock:
+ 		gw_node_free_ref(curr_gw);
+ }
+ 
+-void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node)
++void batadv_gw_node_delete(struct bat_priv *bat_priv,
++			   struct orig_node *orig_node)
+ {
+-	gw_node_update(bat_priv, orig_node, 0);
++	batadv_gw_node_update(bat_priv, orig_node, 0);
+ }
+ 
+-void gw_node_purge(struct bat_priv *bat_priv)
++void batadv_gw_node_purge(struct bat_priv *bat_priv)
+ {
+ 	struct gw_node *gw_node, *curr_gw;
+ 	struct hlist_node *node, *node_tmp;
+@@ -416,7 +418,7 @@ void gw_node_purge(struct bat_priv *bat_priv)
+ 
+ 	/* gw_deselect() needs to acquire the gw_list_lock */
+ 	if (do_deselect)
+-		gw_deselect(bat_priv);
++		batadv_gw_deselect(bat_priv);
+ 
+ 	if (curr_gw)
+ 		gw_node_free_ref(curr_gw);
+@@ -458,7 +460,7 @@ out:
  	return ret;
  }
  
--bool dat_drop_broadcast_packet(struct bat_priv *bat_priv,
--			       struct forw_packet *forw_packet)
-+bool batadv_dat_drop_broadcast_packet(struct bat_priv *bat_priv,
-+				      struct forw_packet *forw_packet)
+-int gw_client_seq_print_text(struct seq_file *seq, void *offset)
++int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
  {
- 	struct neighbour *n;
- 
-@@ -590,7 +590,7 @@ bool dat_drop_broadcast_packet(struct bat_priv *bat_priv,
- 	return false;
+ 	struct net_device *net_dev = (struct net_device *)seq->private;
+ 	struct bat_priv *bat_priv = netdev_priv(net_dev);
+@@ -568,7 +570,7 @@ out:
+ 	return ret;
  }
  
--void arp_change_timeout(struct net_device *soft_iface, const char *name)
-+void batadv_arp_change_timeout(struct net_device *soft_iface, const char *name)
+-bool gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
++bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
  {
- 	struct in_device *in_dev = in_dev_get(soft_iface);
- 	if (!in_dev) {
-diff --git a/distributed-arp-table.h b/distributed-arp-table.h
-index bf72275..23ffbfb 100644
---- a/distributed-arp-table.h
-+++ b/distributed-arp-table.h
-@@ -39,17 +39,17 @@
- #define ARP_IP_DST(skb, hdr_size) (*(__be32 *)(ARP_HW_SRC(skb, hdr_size) + \
- 				   ETH_ALEN * 2 + 4))
- 
--bool dat_snoop_outgoing_arp_request(struct bat_priv *bat_priv,
--				    struct sk_buff *skb);
--bool dat_snoop_incoming_arp_request(struct bat_priv *bat_priv,
--				    struct sk_buff *skb, int hdr_size);
--bool dat_snoop_outgoing_arp_reply(struct bat_priv *bat_priv,
--				  struct sk_buff *skb);
--bool dat_snoop_incoming_arp_reply(struct bat_priv *bat_priv,
--				  struct sk_buff *skb, int hdr_size);
--bool dat_drop_broadcast_packet(struct bat_priv *bat_priv,
--			       struct forw_packet *forw_packet);
--void arp_change_timeout(struct net_device *soft_iface, const char *name);
-+bool batadv_dat_snoop_outgoing_arp_request(struct bat_priv *bat_priv,
-+					   struct sk_buff *skb);
-+bool batadv_dat_snoop_incoming_arp_request(struct bat_priv *bat_priv,
-+					   struct sk_buff *skb, int hdr_size);
-+bool batadv_dat_snoop_outgoing_arp_reply(struct bat_priv *bat_priv,
-+					 struct sk_buff *skb);
-+bool batadv_dat_snoop_incoming_arp_reply(struct bat_priv *bat_priv,
-+					 struct sk_buff *skb, int hdr_size);
-+bool batadv_dat_drop_broadcast_packet(struct bat_priv *bat_priv,
-+				      struct forw_packet *forw_packet);
-+void batadv_arp_change_timeout(struct net_device *soft_iface, const char *name);
- 
- /* hash function to choose an entry in a hash table of given size.
-  * hash algorithm from http://en.wikipedia.org/wiki/Hash_table
-@@ -73,14 +73,15 @@ static inline uint32_t hash_ipv4(const void *data, uint32_t size)
- 	return hash % size;
+ 	struct ethhdr *ethhdr;
+ 	struct iphdr *iphdr;
+@@ -634,8 +636,8 @@ bool gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
+ 	return true;
  }
  
--static inline void dat_init_orig_node_dht_addr(struct orig_node *orig_node)
-+static inline void
-+batadv_dat_init_orig_node_dht_addr(struct orig_node *orig_node)
+-bool gw_out_of_range(struct bat_priv *bat_priv,
+-		     struct sk_buff *skb, struct ethhdr *ethhdr)
++bool batadv_gw_out_of_range(struct bat_priv *bat_priv,
++			    struct sk_buff *skb, struct ethhdr *ethhdr)
  {
- 	orig_node->dht_addr = (dat_addr_t)choose_orig(orig_node->orig,
- 						      DAT_ADDR_MAX);
- }
+ 	struct neigh_node *neigh_curr = NULL, *neigh_old = NULL;
+ 	struct orig_node *orig_dst_node = NULL;
+@@ -644,7 +646,7 @@ bool gw_out_of_range(struct bat_priv *bat_priv,
+ 	unsigned int header_len = 0;
+ 	uint8_t curr_tq_avg;
  
--static inline void dat_init_own_dht_addr(struct bat_priv *bat_priv,
--					 struct hard_iface *primary_if)
-+static inline void batadv_dat_init_own_dht_addr(struct bat_priv *bat_priv,
-+						struct hard_iface *primary_if)
- {
- 	bat_priv->dht_addr = (dat_addr_t)
- 				choose_orig(primary_if->net_dev->dev_addr,
-@@ -89,49 +90,53 @@ static inline void dat_init_own_dht_addr(struct bat_priv *bat_priv,
- 
- #else
- 
--static inline bool dat_snoop_outgoing_arp_request(struct bat_priv *bat_priv,
--						  struct sk_buff *skb)
-+static inline bool
-+batadv_dat_snoop_outgoing_arp_request(struct bat_priv *bat_priv,
-+				      struct sk_buff *skb)
- {
- 	return false;
- }
- 
--static inline bool dat_snoop_incoming_arp_request(struct bat_priv *bat_priv,
--						  struct sk_buff *skb,
--						  int hdr_size)
-+static inline bool
-+batadv_dat_snoop_incoming_arp_request(struct bat_priv *bat_priv,
-+				      struct sk_buff *skb, int hdr_size)
- {
- 	return false;
- }
- 
--static inline bool dat_snoop_outgoing_arp_reply(struct bat_priv *bat_priv,
--						struct sk_buff *skb)
-+static inline bool
-+batadv_dat_snoop_outgoing_arp_reply(struct bat_priv *bat_priv,
-+				    struct sk_buff *skb)
- {
- 	return false;
- }
- 
--static inline bool dat_snoop_incoming_arp_reply(struct bat_priv *bat_priv,
--						struct sk_buff *skb,
--						int hdr_size)
-+static inline bool
-+batadv_dat_snoop_incoming_arp_reply(struct bat_priv *bat_priv,
-+				    struct sk_buff *skb, int hdr_size)
- {
- 	return false;
- }
- 
--static inline bool dat_drop_broadcast_packet(struct bat_priv *bat_priv,
--					     struct forw_packet *forw_packet)
-+static inline bool
-+batadv_dat_drop_broadcast_packet(struct bat_priv *bat_priv,
-+				 struct forw_packet *forw_packet)
- {
- 	return false;
- }
- 
--static inline void dat_init_orig_node_dht_addr(struct orig_node *orig_node)
-+static inline void
-+batadv_dat_init_orig_node_dht_addr(struct orig_node *orig_node)
- {
- }
- 
--static inline void dat_init_own_dht_addr(struct bat_priv *bat_priv,
--					 struct hard_iface *primary_if)
-+static inline void batadv_dat_init_own_dht_addr(struct bat_priv *bat_priv,
-+						struct hard_iface *primary_if)
- {
- }
- 
--static inline void arp_change_timeout(struct net_device *soft_iface,
--				      const char *name)
-+static inline void batadv_arp_change_timeout(struct net_device *soft_iface,
-+					     const char *name)
- {
- }
- 
-diff --git a/hard-interface.c b/hard-interface.c
-index a42b2d3..6cf9c13 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -113,7 +113,7 @@ static void primary_if_update_addr(struct bat_priv *bat_priv,
- 	if (!primary_if)
+-	ret = gw_is_dhcp_target(skb, &header_len);
++	ret = batadv_gw_is_dhcp_target(skb, &header_len);
+ 	if (!ret)
  		goto out;
  
--	dat_init_own_dht_addr(bat_priv, primary_if);
-+	batadv_dat_init_own_dht_addr(bat_priv, primary_if);
+diff --git a/gateway_client.h b/gateway_client.h
+index bf56a5a..2c2446f 100644
+--- a/gateway_client.h
++++ b/gateway_client.h
+@@ -22,17 +22,19 @@
+ #ifndef _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
+ #define _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
  
- 	vis_packet = (struct vis_packet *)
- 				bat_priv->my_vis_info->skb_packet->data;
+-void gw_deselect(struct bat_priv *bat_priv);
+-void gw_election(struct bat_priv *bat_priv);
+-struct orig_node *gw_get_selected_orig(struct bat_priv *bat_priv);
+-void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node);
+-void gw_node_update(struct bat_priv *bat_priv,
+-		    struct orig_node *orig_node, uint8_t new_gwflags);
+-void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node);
+-void gw_node_purge(struct bat_priv *bat_priv);
+-int gw_client_seq_print_text(struct seq_file *seq, void *offset);
+-bool gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len);
+-bool gw_out_of_range(struct bat_priv *bat_priv,
+-		     struct sk_buff *skb, struct ethhdr *ethhdr);
++void batadv_gw_deselect(struct bat_priv *bat_priv);
++void batadv_gw_election(struct bat_priv *bat_priv);
++struct orig_node *batadv_gw_get_selected_orig(struct bat_priv *bat_priv);
++void batadv_gw_check_election(struct bat_priv *bat_priv,
++			      struct orig_node *orig_node);
++void batadv_gw_node_update(struct bat_priv *bat_priv,
++			   struct orig_node *orig_node, uint8_t new_gwflags);
++void batadv_gw_node_delete(struct bat_priv *bat_priv,
++			   struct orig_node *orig_node);
++void batadv_gw_node_purge(struct bat_priv *bat_priv);
++int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset);
++bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len);
++bool batadv_gw_out_of_range(struct bat_priv *bat_priv,
++			    struct sk_buff *skb, struct ethhdr *ethhdr);
+ 
+ #endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
+diff --git a/gateway_common.c b/gateway_common.c
+index 6e3b052..a0b0f52 100644
+--- a/gateway_common.c
++++ b/gateway_common.c
+@@ -165,7 +165,7 @@ ssize_t gw_bandwidth_set(struct net_device *net_dev, char *buff, size_t count)
+ 	if (atomic_read(&bat_priv->gw_bandwidth) == gw_bandwidth_tmp)
+ 		return count;
+ 
+-	gw_deselect(bat_priv);
++	batadv_gw_deselect(bat_priv);
+ 	bat_info(net_dev,
+ 		 "Changing gateway bandwidth from: '%i' to: '%ld' (propagating: %d%s/%d%s)\n",
+ 		 atomic_read(&bat_priv->gw_bandwidth), gw_bandwidth_tmp,
+diff --git a/main.c b/main.c
+index eb1d266..81d9718 100644
+--- a/main.c
++++ b/main.c
+@@ -149,7 +149,7 @@ void mesh_free(struct net_device *soft_iface)
+ 
+ 	vis_quit(bat_priv);
+ 
+-	gw_node_purge(bat_priv);
++	batadv_gw_node_purge(bat_priv);
+ 	originator_free(bat_priv);
+ 
+ 	tt_free(bat_priv);
 diff --git a/originator.c b/originator.c
-index c17dc0c..6f3e7fc 100644
+index 6f3e7fc..5e2b4d4 100644
 --- a/originator.c
 +++ b/originator.c
-@@ -221,7 +221,7 @@ struct orig_node *get_orig_node(struct bat_priv *bat_priv, const uint8_t *addr)
- 	orig_node->tt_poss_change = false;
- 	orig_node->bat_priv = bat_priv;
- 	memcpy(orig_node->orig, addr, ETH_ALEN);
--	dat_init_orig_node_dht_addr(orig_node);
-+	batadv_dat_init_orig_node_dht_addr(orig_node);
- 	orig_node->router = NULL;
- 	orig_node->tt_crc = 0;
- 	atomic_set(&orig_node->last_ttvn, 0);
-diff --git a/send.c b/send.c
-index 836b70d..43f6f39 100644
---- a/send.c
-+++ b/send.c
-@@ -203,7 +203,7 @@ static void send_outstanding_bcast_packet(struct work_struct *work)
- 	if (atomic_read(&bat_priv->mesh_state) == MESH_DEACTIVATING)
- 		goto out;
- 
--	if (dat_drop_broadcast_packet(bat_priv, forw_packet))
-+	if (batadv_dat_drop_broadcast_packet(bat_priv, forw_packet))
- 		goto out;
- 
- 	/* rebroadcast packet */
-diff --git a/soft-interface.c b/soft-interface.c
-index 92956c6..74b31e9 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -206,7 +206,7 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 		if (!primary_if)
- 			goto dropped;
- 
--		if (dat_snoop_outgoing_arp_request(bat_priv, skb))
-+		if (batadv_dat_snoop_outgoing_arp_request(bat_priv, skb))
- 			brd_delay = msecs_to_jiffies(ARP_REQ_DELAY);
- 
- 		if (my_skb_head_push(skb, sizeof(*bcast_packet)) < 0)
-@@ -242,7 +242,7 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 				goto dropped;
- 		}
- 
--		dat_snoop_outgoing_arp_reply(bat_priv, skb);
-+		batadv_dat_snoop_outgoing_arp_reply(bat_priv, skb);
- 
- 		ret = unicast_send_skb(skb, bat_priv);
- 		if (ret != 0)
-@@ -276,10 +276,10 @@ void interface_rx(struct net_device *soft_iface,
- 	if (!pskb_may_pull(skb, hdr_size))
- 		goto dropped;
- 
--	if (dat_snoop_incoming_arp_request(bat_priv, skb, hdr_size))
-+	if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb, hdr_size))
- 		goto out;
- 
--	if (dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size))
-+	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size))
- 		goto out;
- 
- 	skb_pull_rcsum(skb, hdr_size);
-@@ -388,7 +388,7 @@ struct net_device *softif_create(const char *name)
- 		goto free_soft_iface;
+@@ -363,7 +363,8 @@ static void _purge_orig(struct bat_priv *bat_priv)
+ 					  head, hash_entry) {
+ 			if (purge_orig_node(bat_priv, orig_node)) {
+ 				if (orig_node->gw_flags)
+-					gw_node_delete(bat_priv, orig_node);
++					batadv_gw_node_delete(bat_priv,
++							      orig_node);
+ 				hlist_del_rcu(node);
+ 				orig_node_free_ref(orig_node);
+ 				continue;
+@@ -376,8 +377,8 @@ static void _purge_orig(struct bat_priv *bat_priv)
+ 		spin_unlock_bh(list_lock);
  	}
  
--	arp_change_timeout(soft_iface, name);
-+	batadv_arp_change_timeout(soft_iface, name);
+-	gw_node_purge(bat_priv);
+-	gw_election(bat_priv);
++	batadv_gw_node_purge(bat_priv);
++	batadv_gw_election(bat_priv);
+ }
  
- 	bat_priv = netdev_priv(soft_iface);
+ static void purge_orig(struct work_struct *work)
+diff --git a/soft-interface.c b/soft-interface.c
+index 74b31e9..ee8a309 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -183,14 +183,14 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 		case GW_MODE_SERVER:
+ 			/* gateway servers should not send dhcp
+ 			 * requests into the mesh */
+-			ret = gw_is_dhcp_target(skb, &header_len);
++			ret = batadv_gw_is_dhcp_target(skb, &header_len);
+ 			if (ret)
+ 				goto dropped;
+ 			break;
+ 		case GW_MODE_CLIENT:
+ 			/* gateway clients should send dhcp requests
+ 			 * via unicast to their gateway */
+-			ret = gw_is_dhcp_target(skb, &header_len);
++			ret = batadv_gw_is_dhcp_target(skb, &header_len);
+ 			if (ret)
+ 				do_bcast = false;
+ 			break;
+@@ -237,7 +237,7 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 	/* unicast packet */
+ 	} else {
+ 		if (atomic_read(&bat_priv->gw_mode) != GW_MODE_OFF) {
+-			ret = gw_out_of_range(bat_priv, skb, ethhdr);
++			ret = batadv_gw_out_of_range(bat_priv, skb, ethhdr);
+ 			if (ret)
+ 				goto dropped;
+ 		}
+diff --git a/unicast.c b/unicast.c
+index 62ea9f1..485aa42 100644
+--- a/unicast.c
++++ b/unicast.c
+@@ -359,7 +359,7 @@ int unicast_generic_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
  
+ 	/* get routing information */
+ 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
+-		orig_node = gw_get_selected_orig(bat_priv);
++		orig_node = batadv_gw_get_selected_orig(bat_priv);
+ 		if (orig_node)
+ 			goto find_router;
+ 	}
 -- 
 1.7.10
 
