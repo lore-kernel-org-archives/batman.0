@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 May 2012 02:09:32 +0200
-Message-Id: <1336781383-15649-12-git-send-email-sven@narfation.org>
+Date: Sat, 12 May 2012 02:09:33 +0200
+Message-Id: <1336781383-15649-13-git-send-email-sven@narfation.org>
 In-Reply-To: <1336781383-15649-1-git-send-email-sven@narfation.org>
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 12/23] batman-adv: Prefix hash non-static
-	functions with batadv_
+Subject: [B.A.T.M.A.N.] [PATCHv3 13/23] batman-adv: Prefix icmp-socket
+	non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,171 +28,103 @@ such a problem.
 Reported-by: David Miller <davem@davemloft.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bridge_loop_avoidance.c |    8 ++++----
- hash.c                  |    4 ++--
- hash.h                  |    6 +++---
- originator.c            |    4 ++--
- translation-table.c     |    8 ++++----
- vis.c                   |    2 +-
- 6 files changed, 16 insertions(+), 16 deletions(-)
+ bat_debugfs.c |    2 +-
+ icmp_socket.c |    8 ++++----
+ icmp_socket.h |    8 ++++----
+ main.c        |    2 +-
+ routing.c     |    2 +-
+ 5 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index b0561e3..eb21789 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1166,8 +1166,8 @@ int batadv_bla_init(struct bat_priv *bat_priv)
- 	if (bat_priv->claim_hash)
- 		return 0;
+diff --git a/bat_debugfs.c b/bat_debugfs.c
+index 939c5be..f8b3fa5 100644
+--- a/bat_debugfs.c
++++ b/bat_debugfs.c
+@@ -349,7 +349,7 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
+ 	if (!bat_priv->debug_dir)
+ 		goto out;
  
--	bat_priv->claim_hash = hash_new(128);
--	bat_priv->backbone_hash = hash_new(32);
-+	bat_priv->claim_hash = batadv_hash_new(128);
-+	bat_priv->backbone_hash = batadv_hash_new(32);
+-	bat_socket_setup(bat_priv);
++	batadv_socket_setup(bat_priv);
+ 	debug_log_setup(bat_priv);
  
- 	if (!bat_priv->claim_hash || !bat_priv->backbone_hash)
- 		return -ENOMEM;
-@@ -1348,12 +1348,12 @@ void batadv_bla_free(struct bat_priv *bat_priv)
+ 	for (bat_debug = mesh_debuginfos; *bat_debug; ++bat_debug) {
+diff --git a/icmp_socket.c b/icmp_socket.c
+index 2e98a57..c734655 100644
+--- a/icmp_socket.c
++++ b/icmp_socket.c
+@@ -34,7 +34,7 @@ static void bat_socket_add_packet(struct socket_client *socket_client,
+ 				  struct icmp_packet_rr *icmp_packet,
+ 				  size_t icmp_len);
  
- 	if (bat_priv->claim_hash) {
- 		bla_purge_claims(bat_priv, primary_if, 1);
--		hash_destroy(bat_priv->claim_hash);
-+		batadv_hash_destroy(bat_priv->claim_hash);
- 		bat_priv->claim_hash = NULL;
- 	}
- 	if (bat_priv->backbone_hash) {
- 		bla_purge_backbone_gw(bat_priv, 1);
--		hash_destroy(bat_priv->backbone_hash);
-+		batadv_hash_destroy(bat_priv->backbone_hash);
- 		bat_priv->backbone_hash = NULL;
- 	}
- 	if (primary_if)
-diff --git a/hash.c b/hash.c
-index a7dcff0..439f5d7 100644
---- a/hash.c
-+++ b/hash.c
-@@ -34,7 +34,7 @@ static void hash_init(struct hashtable_t *hash)
- }
- 
- /* free only the hashtable and the hash itself. */
--void hash_destroy(struct hashtable_t *hash)
-+void batadv_hash_destroy(struct hashtable_t *hash)
+-void bat_socket_init(void)
++void batadv_socket_init(void)
  {
- 	kfree(hash->list_locks);
- 	kfree(hash->table);
-@@ -42,7 +42,7 @@ void hash_destroy(struct hashtable_t *hash)
+ 	memset(socket_client_hash, 0, sizeof(socket_client_hash));
  }
- 
- /* allocates and clears the hash */
--struct hashtable_t *hash_new(uint32_t size)
-+struct hashtable_t *batadv_hash_new(uint32_t size)
- {
- 	struct hashtable_t *hash;
- 
-diff --git a/hash.h b/hash.h
-index 3d67ce4..e75df6b 100644
---- a/hash.h
-+++ b/hash.h
-@@ -43,14 +43,14 @@ struct hashtable_t {
+@@ -276,7 +276,7 @@ static const struct file_operations fops = {
+ 	.llseek = no_llseek,
  };
  
- /* allocates and clears the hash */
--struct hashtable_t *hash_new(uint32_t size);
-+struct hashtable_t *batadv_hash_new(uint32_t size);
+-int bat_socket_setup(struct bat_priv *bat_priv)
++int batadv_socket_setup(struct bat_priv *bat_priv)
+ {
+ 	struct dentry *d;
  
- /* set class key for all locks */
- void batadv_hash_set_lock_class(struct hashtable_t *hash,
- 				struct lock_class_key *key);
- 
- /* free only the hashtable and the hash itself. */
--void hash_destroy(struct hashtable_t *hash);
-+void batadv_hash_destroy(struct hashtable_t *hash);
- 
- /* remove the hash structure. if hashdata_free_cb != NULL, this function will be
-  * called to remove the elements inside of the hash.  if you don't remove the
-@@ -77,7 +77,7 @@ static inline void hash_delete(struct hashtable_t *hash,
- 		spin_unlock_bh(list_lock);
- 	}
- 
--	hash_destroy(hash);
-+	batadv_hash_destroy(hash);
+@@ -336,8 +336,8 @@ static void bat_socket_add_packet(struct socket_client *socket_client,
+ 	wake_up(&socket_client->queue_wait);
  }
  
- /**
-diff --git a/originator.c b/originator.c
-index 5e2b4d4..4d00f0f 100644
---- a/originator.c
-+++ b/originator.c
-@@ -53,7 +53,7 @@ int originator_init(struct bat_priv *bat_priv)
- 	if (bat_priv->orig_hash)
- 		return 0;
+-void bat_socket_receive_packet(struct icmp_packet_rr *icmp_packet,
+-			       size_t icmp_len)
++void batadv_socket_receive_packet(struct icmp_packet_rr *icmp_packet,
++				  size_t icmp_len)
+ {
+ 	struct socket_client *hash = socket_client_hash[icmp_packet->uid];
  
--	bat_priv->orig_hash = hash_new(1024);
-+	bat_priv->orig_hash = batadv_hash_new(1024);
+diff --git a/icmp_socket.h b/icmp_socket.h
+index 380ed4c..7b88636 100644
+--- a/icmp_socket.h
++++ b/icmp_socket.h
+@@ -24,9 +24,9 @@
  
- 	if (!bat_priv->orig_hash)
- 		goto err;
-@@ -185,7 +185,7 @@ void originator_free(struct bat_priv *bat_priv)
- 		spin_unlock_bh(list_lock);
- 	}
+ #define ICMP_SOCKET "socket"
  
--	hash_destroy(hash);
-+	batadv_hash_destroy(hash);
- }
+-void bat_socket_init(void);
+-int bat_socket_setup(struct bat_priv *bat_priv);
+-void bat_socket_receive_packet(struct icmp_packet_rr *icmp_packet,
+-			       size_t icmp_len);
++void batadv_socket_init(void);
++int batadv_socket_setup(struct bat_priv *bat_priv);
++void batadv_socket_receive_packet(struct icmp_packet_rr *icmp_packet,
++				  size_t icmp_len);
  
- /* this function finds or creates an originator entry for the given
-diff --git a/translation-table.c b/translation-table.c
-index 60a2771..7ec2af5 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -183,7 +183,7 @@ static int tt_local_init(struct bat_priv *bat_priv)
- 	if (bat_priv->tt_local_hash)
- 		return 0;
- 
--	bat_priv->tt_local_hash = hash_new(1024);
-+	bat_priv->tt_local_hash = batadv_hash_new(1024);
- 
- 	if (!bat_priv->tt_local_hash)
+ #endif /* _NET_BATMAN_ADV_ICMP_SOCKET_H_ */
+diff --git a/main.c b/main.c
+index 0d42edf..534956b 100644
+--- a/main.c
++++ b/main.c
+@@ -65,7 +65,7 @@ static int __init batman_init(void)
+ 	if (!bat_event_workqueue)
  		return -ENOMEM;
-@@ -531,7 +531,7 @@ static void tt_local_table_free(struct bat_priv *bat_priv)
- 		spin_unlock_bh(list_lock);
+ 
+-	bat_socket_init();
++	batadv_socket_init();
+ 	batadv_debugfs_init();
+ 
+ 	register_netdevice_notifier(&batadv_hard_if_notifier);
+diff --git a/routing.c b/routing.c
+index 97901f3..3f03427 100644
+--- a/routing.c
++++ b/routing.c
+@@ -289,7 +289,7 @@ static int recv_my_icmp_packet(struct bat_priv *bat_priv,
+ 
+ 	/* add data to device queue */
+ 	if (icmp_packet->msg_type != ECHO_REQUEST) {
+-		bat_socket_receive_packet(icmp_packet, icmp_len);
++		batadv_socket_receive_packet(icmp_packet, icmp_len);
+ 		goto out;
  	}
  
--	hash_destroy(hash);
-+	batadv_hash_destroy(hash);
- 
- 	bat_priv->tt_local_hash = NULL;
- }
-@@ -541,7 +541,7 @@ static int tt_global_init(struct bat_priv *bat_priv)
- 	if (bat_priv->tt_global_hash)
- 		return 0;
- 
--	bat_priv->tt_global_hash = hash_new(1024);
-+	bat_priv->tt_global_hash = batadv_hash_new(1024);
- 
- 	if (!bat_priv->tt_global_hash)
- 		return -ENOMEM;
-@@ -1031,7 +1031,7 @@ static void tt_global_table_free(struct bat_priv *bat_priv)
- 		spin_unlock_bh(list_lock);
- 	}
- 
--	hash_destroy(hash);
-+	batadv_hash_destroy(hash);
- 
- 	bat_priv->tt_global_hash = NULL;
- }
-diff --git a/vis.c b/vis.c
-index 01d5da5..99f1931 100644
---- a/vis.c
-+++ b/vis.c
-@@ -889,7 +889,7 @@ int vis_init(struct bat_priv *bat_priv)
- 
- 	spin_lock_bh(&bat_priv->vis_hash_lock);
- 
--	bat_priv->vis_hash = hash_new(256);
-+	bat_priv->vis_hash = batadv_hash_new(256);
- 	if (!bat_priv->vis_hash) {
- 		pr_err("Can't initialize vis_hash\n");
- 		goto err;
 -- 
 1.7.10
 
