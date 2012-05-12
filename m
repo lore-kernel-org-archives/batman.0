@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 May 2012 02:09:23 +0200
-Message-Id: <1336781383-15649-3-git-send-email-sven@narfation.org>
+Date: Sat, 12 May 2012 02:09:24 +0200
+Message-Id: <1336781383-15649-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1336781383-15649-1-git-send-email-sven@narfation.org>
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 03/23] batman-adv: Prefix bat_debugfs
+Subject: [B.A.T.M.A.N.] [PATCHv3 04/23] batman-adv: Prefix bat_sysfs
 	non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,153 +28,165 @@ such a problem.
 Reported-by: David Miller <davem@davemloft.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bat_debugfs.c    |   10 +++++-----
- bat_debugfs.h    |    8 ++++----
- main.c           |    4 ++--
- main.h           |    5 +++--
+ bat_sysfs.c      |   12 ++++++------
+ bat_sysfs.h      |   13 +++++++------
+ gateway_client.c |    6 +++---
+ hard-interface.c |    4 ++--
  soft-interface.c |    6 +++---
- 5 files changed, 17 insertions(+), 16 deletions(-)
+ 5 files changed, 21 insertions(+), 20 deletions(-)
 
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index 3b588f8..3b3790e 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -76,7 +76,7 @@ static int fdebug_log(struct debug_log *debug_log, const char *fmt, ...)
- 	return 0;
- }
- 
--int debug_log(struct bat_priv *bat_priv, const char *fmt, ...)
-+int batadv_debug_log(struct bat_priv *bat_priv, const char *fmt, ...)
- {
- 	va_list args;
- 	char tmp_log_buf[256];
-@@ -304,7 +304,7 @@ static struct bat_debuginfo *mesh_debuginfos[] = {
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index dc1edbe..5dce1ab 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -469,7 +469,7 @@ static struct bat_attribute *mesh_attrs[] = {
  	NULL,
  };
  
--void debugfs_init(void)
-+void batadv_debugfs_init(void)
+-int sysfs_add_meshif(struct net_device *dev)
++int batadv_sysfs_add_meshif(struct net_device *dev)
  {
- 	struct bat_debuginfo *bat_debug;
- 	struct dentry *file;
-@@ -327,7 +327,7 @@ out:
- 	return;
+ 	struct kobject *batif_kobject = &dev->dev.kobj;
+ 	struct bat_priv *bat_priv = netdev_priv(dev);
+@@ -507,7 +507,7 @@ out:
+ 	return -ENOMEM;
  }
  
--void debugfs_destroy(void)
-+void batadv_debugfs_destroy(void)
+-void sysfs_del_meshif(struct net_device *dev)
++void batadv_sysfs_del_meshif(struct net_device *dev)
  {
- 	if (bat_debugfs) {
- 		debugfs_remove_recursive(bat_debugfs);
-@@ -335,7 +335,7 @@ void debugfs_destroy(void)
+ 	struct bat_priv *bat_priv = netdev_priv(dev);
+ 	struct bat_attribute **bat_attr;
+@@ -637,7 +637,7 @@ static struct bat_attribute *batman_attrs[] = {
+ 	NULL,
+ };
+ 
+-int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
++int batadv_sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
+ {
+ 	struct kobject *hardif_kobject = &dev->dev.kobj;
+ 	struct bat_attribute **bat_attr;
+@@ -671,14 +671,14 @@ out:
+ 	return -ENOMEM;
+ }
+ 
+-void sysfs_del_hardif(struct kobject **hardif_obj)
++void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
+ {
+ 	kobject_put(*hardif_obj);
+ 	*hardif_obj = NULL;
+ }
+ 
+-int throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
+-		 enum uev_action action, const char *data)
++int batadv_throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
++			enum uev_action action, const char *data)
+ {
+ 	int ret = -ENOMEM;
+ 	struct hard_iface *primary_if = NULL;
+diff --git a/bat_sysfs.h b/bat_sysfs.h
+index fece77a..f01aea8 100644
+--- a/bat_sysfs.h
++++ b/bat_sysfs.h
+@@ -34,11 +34,12 @@ struct bat_attribute {
+ 			 char *buf, size_t count);
+ };
+ 
+-int sysfs_add_meshif(struct net_device *dev);
+-void sysfs_del_meshif(struct net_device *dev);
+-int sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev);
+-void sysfs_del_hardif(struct kobject **hardif_obj);
+-int throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
+-		 enum uev_action action, const char *data);
++int batadv_sysfs_add_meshif(struct net_device *dev);
++void batadv_sysfs_del_meshif(struct net_device *dev);
++int batadv_sysfs_add_hardif(struct kobject **hardif_obj,
++			    struct net_device *dev);
++void batadv_sysfs_del_hardif(struct kobject **hardif_obj);
++int batadv_throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
++			enum uev_action action, const char *data);
+ 
+ #endif /* _NET_BATMAN_ADV_SYSFS_H_ */
+diff --git a/gateway_client.c b/gateway_client.c
+index 47f7186..1d7f08e 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -220,19 +220,19 @@ void gw_election(struct bat_priv *bat_priv)
+ 	if ((curr_gw) && (!next_gw)) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+ 			"Removing selected gateway - no gateway in range\n");
+-		throw_uevent(bat_priv, UEV_GW, UEV_DEL, NULL);
++		batadv_throw_uevent(bat_priv, UEV_GW, UEV_DEL, NULL);
+ 	} else if ((!curr_gw) && (next_gw)) {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+ 			"Adding route to gateway %pM (gw_flags: %i, tq: %i)\n",
+ 			next_gw->orig_node->orig, next_gw->orig_node->gw_flags,
+ 			router->tq_avg);
+-		throw_uevent(bat_priv, UEV_GW, UEV_ADD, gw_addr);
++		batadv_throw_uevent(bat_priv, UEV_GW, UEV_ADD, gw_addr);
+ 	} else {
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+ 			"Changing route to gateway %pM (gw_flags: %i, tq: %i)\n",
+ 			next_gw->orig_node->orig, next_gw->orig_node->gw_flags,
+ 			router->tq_avg);
+-		throw_uevent(bat_priv, UEV_GW, UEV_CHANGE, gw_addr);
++		batadv_throw_uevent(bat_priv, UEV_GW, UEV_CHANGE, gw_addr);
  	}
+ 
+ 	gw_select(bat_priv, next_gw);
+diff --git a/hard-interface.c b/hard-interface.c
+index 843caa7..ceaf632 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -426,7 +426,7 @@ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
+ 	if (!hard_iface)
+ 		goto release_dev;
+ 
+-	ret = sysfs_add_hardif(&hard_iface->hardif_obj, net_dev);
++	ret = batadv_sysfs_add_hardif(&hard_iface->hardif_obj, net_dev);
+ 	if (ret)
+ 		goto free_if;
+ 
+@@ -470,7 +470,7 @@ static void hardif_remove_interface(struct hard_iface *hard_iface)
+ 		return;
+ 
+ 	hard_iface->if_status = IF_TO_BE_REMOVED;
+-	sysfs_del_hardif(&hard_iface->hardif_obj);
++	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
+ 	hardif_free_ref(hard_iface);
  }
  
--int debugfs_add_meshif(struct net_device *dev)
-+int batadv_debugfs_add_meshif(struct net_device *dev)
- {
- 	struct bat_priv *bat_priv = netdev_priv(dev);
- 	struct bat_debuginfo **bat_debug;
-@@ -375,7 +375,7 @@ out:
- #endif /* CONFIG_DEBUG_FS */
- }
- 
--void debugfs_del_meshif(struct net_device *dev)
-+void batadv_debugfs_del_meshif(struct net_device *dev)
- {
- 	struct bat_priv *bat_priv = netdev_priv(dev);
- 
-diff --git a/bat_debugfs.h b/bat_debugfs.h
-index d605c67..3b206c8 100644
---- a/bat_debugfs.h
-+++ b/bat_debugfs.h
-@@ -25,9 +25,9 @@
- 
- #define DEBUGFS_BAT_SUBDIR "batman_adv"
- 
--void debugfs_init(void);
--void debugfs_destroy(void);
--int debugfs_add_meshif(struct net_device *dev);
--void debugfs_del_meshif(struct net_device *dev);
-+void batadv_debugfs_init(void);
-+void batadv_debugfs_destroy(void);
-+int batadv_debugfs_add_meshif(struct net_device *dev);
-+void batadv_debugfs_del_meshif(struct net_device *dev);
- 
- #endif /* _NET_BATMAN_ADV_DEBUGFS_H_ */
-diff --git a/main.c b/main.c
-index f272ed4..3bddd63 100644
---- a/main.c
-+++ b/main.c
-@@ -66,7 +66,7 @@ static int __init batman_init(void)
- 		return -ENOMEM;
- 
- 	bat_socket_init();
--	debugfs_init();
-+	batadv_debugfs_init();
- 
- 	register_netdevice_notifier(&hard_if_notifier);
- 
-@@ -78,7 +78,7 @@ static int __init batman_init(void)
- 
- static void __exit batman_exit(void)
- {
--	debugfs_destroy();
-+	batadv_debugfs_destroy();
- 	unregister_netdevice_notifier(&hard_if_notifier);
- 	hardif_remove_interfaces();
- 
-diff --git a/main.h b/main.h
-index a94ceae..fef7fd6 100644
---- a/main.h
-+++ b/main.h
-@@ -182,12 +182,13 @@ int bat_algo_select(struct bat_priv *bat_priv, char *name);
- int bat_algo_seq_print_text(struct seq_file *seq, void *offset);
- 
- #ifdef CONFIG_BATMAN_ADV_DEBUG
--int debug_log(struct bat_priv *bat_priv, const char *fmt, ...) __printf(2, 3);
-+int batadv_debug_log(struct bat_priv *bat_priv, const char *fmt, ...)
-+__printf(2, 3);
- 
- #define bat_dbg(type, bat_priv, fmt, arg...)			\
- 	do {							\
- 		if (atomic_read(&bat_priv->log_level) & type)	\
--			debug_log(bat_priv, fmt, ## arg);	\
-+			batadv_debug_log(bat_priv, fmt, ## arg);\
- 	}							\
- 	while (0)
- #else /* !CONFIG_BATMAN_ADV_DEBUG */
 diff --git a/soft-interface.c b/soft-interface.c
-index 101253d..1a9ba93 100644
+index 1a9ba93..6f21e65 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
-@@ -434,7 +434,7 @@ struct net_device *softif_create(const char *name)
+@@ -430,7 +430,7 @@ struct net_device *softif_create(const char *name)
  	if (ret < 0)
  		goto free_bat_counters;
  
--	ret = debugfs_add_meshif(soft_iface);
-+	ret = batadv_debugfs_add_meshif(soft_iface);
+-	ret = sysfs_add_meshif(soft_iface);
++	ret = batadv_sysfs_add_meshif(soft_iface);
  	if (ret < 0)
- 		goto unreg_sysfs;
+ 		goto free_bat_counters;
  
-@@ -445,7 +445,7 @@ struct net_device *softif_create(const char *name)
- 	return soft_iface;
- 
+@@ -447,7 +447,7 @@ struct net_device *softif_create(const char *name)
  unreg_debugfs:
--	debugfs_del_meshif(soft_iface);
-+	batadv_debugfs_del_meshif(soft_iface);
+ 	batadv_debugfs_del_meshif(soft_iface);
  unreg_sysfs:
- 	sysfs_del_meshif(soft_iface);
+-	sysfs_del_meshif(soft_iface);
++	batadv_sysfs_del_meshif(soft_iface);
  free_bat_counters:
-@@ -462,7 +462,7 @@ out:
- 
+ 	free_percpu(bat_priv->bat_counters);
+ unreg_soft_iface:
+@@ -463,7 +463,7 @@ out:
  void softif_destroy(struct net_device *soft_iface)
  {
--	debugfs_del_meshif(soft_iface);
-+	batadv_debugfs_del_meshif(soft_iface);
- 	sysfs_del_meshif(soft_iface);
+ 	batadv_debugfs_del_meshif(soft_iface);
+-	sysfs_del_meshif(soft_iface);
++	batadv_sysfs_del_meshif(soft_iface);
  	mesh_free(soft_iface);
  	unregister_netdevice(soft_iface);
+ }
 -- 
 1.7.10
 
