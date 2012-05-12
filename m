@@ -1,17 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 12 May 2012 16:26:38 +0800
-References: <1335689867-8017-7-git-send-email-ordex@autistici.org>
-	<20120430222226.GB21977@ritirata.org>
-	<20120430.205904.288157818941040253.davem@davemloft.net>
-In-Reply-To: <20120430.205904.288157818941040253.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201205121626.38520.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 06/15] batman-adv: Distributed ARP Table
-	- add snooping functions for ARP messages
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 12 May 2012 10:45:53 +0200
+Message-Id: <1336812353-25309-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1336781383-15649-7-git-send-email-sven@narfation.org>
+References: <1336781383-15649-7-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4 07/23] batman-adv: Prefix compat non-static
+	functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,41 +18,85 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>
 
+batman-adv can be compiled as part of the kernel instead of an module. In that
+case the linker will see all non-static symbols of batman-adv and all other
+non-static symbols of the kernel. This could lead to symbol collisions. A
+prefix for the batman-adv symbols that defines their private namespace avoids
+such a problem.
 
-David,
+Reported-by: David Miller <davem@davemloft.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+Corrected declaration of batadv_free_rcu_*
 
-On Tuesday, May 01, 2012 08:59:04 David Miller wrote:
-> From: Antonio Quartulli <ordex@autistici.org>
-> Date: Tue, 1 May 2012 00:22:30 +0200
-> 
-> > However this patch also contains a procedure which queries the neigh
-> > table in order to understand whether a given host is known or not.
-> > Would it be possible to do that in another way (Without manually touching
-> > the table)?
-> > 
-> > Instead, in the next patch (patch 06/15) batman-adv manually increase the
-> > neigh timeouts. Do you think we should avoid doing that as well? If we
-> > are allowed to do that, how can we perform the same operation in a
-> > cleaner way?
-> > 
-> > Last question: why can't other modules use exported functions? Are you
-> > going to change them as well?
-> 
-> I really don't have time to discuss your neigh issues right now as I'm
-> busy speaking at conferences and dealing with the backlog of other
-> patches.
-> 
-> You'll need to find someone else to discuss it with you, sorry.
+ compat.c |    8 ++++----
+ compat.h |   10 +++++-----
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-I hope now is a good moment to bring the questions back onto the table. We 
-still are not sure how to proceed because we have no clear picture of what is 
-going to come and how the exported functions are supposed to be used.
+diff --git a/compat.c b/compat.c
+index 35ad397..702c7c1 100644
+--- a/compat.c
++++ b/compat.c
+@@ -28,7 +28,7 @@
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 0, 0)
+ 
+-void free_rcu_gw_node(struct rcu_head *rcu)
++void batadv_free_rcu_gw_node(struct rcu_head *rcu)
+ {
+ 	struct gw_node *gw_node;
+ 
+@@ -36,7 +36,7 @@ void free_rcu_gw_node(struct rcu_head *rcu)
+ 	kfree(gw_node);
+ }
+ 
+-void free_rcu_neigh_node(struct rcu_head *rcu)
++void batadv_free_rcu_neigh_node(struct rcu_head *rcu)
+ {
+ 	struct neigh_node *neigh_node;
+ 
+@@ -44,7 +44,7 @@ void free_rcu_neigh_node(struct rcu_head *rcu)
+ 	kfree(neigh_node);
+ }
+ 
+-void free_rcu_tt_local_entry(struct rcu_head *rcu)
++void batadv_free_rcu_tt_local_entry(struct rcu_head *rcu)
+ {
+ 	struct tt_common_entry *tt_common_entry;
+ 	struct tt_local_entry *tt_local_entry;
+@@ -56,7 +56,7 @@ void free_rcu_tt_local_entry(struct rcu_head *rcu)
+ }
+ 
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-void free_rcu_backbone_gw(struct rcu_head *rcu)
++void batadv_free_rcu_backbone_gw(struct rcu_head *rcu)
+ {
+ 	struct backbone_gw *backbone_gw;
+ 
+diff --git a/compat.h b/compat.h
+index 33c52d3..13ca624 100644
+--- a/compat.h
++++ b/compat.h
+@@ -138,13 +138,13 @@ static inline int __param_set_copystring(const char *val,
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 0, 0)
+ 
+-#define kfree_rcu(ptr, rcu_head) call_rcu(&ptr->rcu_head, free_rcu_##ptr)
++#define kfree_rcu(ptr, rcu_head) call_rcu(&ptr->rcu_head, batadv_free_rcu_##ptr)
+ #define vlan_insert_tag(skb, vid) __vlan_put_tag(skb, vid)
+ 
+-void free_rcu_gw_node(struct rcu_head *rcu);
+-void free_rcu_neigh_node(struct rcu_head *rcu);
+-void free_rcu_tt_local_entry(struct rcu_head *rcu);
+-void free_rcu_backbone_gw(struct rcu_head *rcu);
++void batadv_free_rcu_gw_node(struct rcu_head *rcu);
++void batadv_free_rcu_neigh_node(struct rcu_head *rcu);
++void batadv_free_rcu_tt_local_entry(struct rcu_head *rcu);
++void batadv_free_rcu_backbone_gw(struct rcu_head *rcu);
+ 
+ #endif /* < KERNEL_VERSION(3, 0, 0) */
+ 
+-- 
+1.7.10
 
-David, if you don't have the time to discuss the ARP handling with us could 
-you name someone who knows your plans and the code equally well ? So far, 
-nobody has stepped up.
-
-Thanks,
-Marek
