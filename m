@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 May 2012 02:09:29 +0200
-Message-Id: <1336781383-15649-9-git-send-email-sven@narfation.org>
+Date: Sat, 12 May 2012 02:09:30 +0200
+Message-Id: <1336781383-15649-10-git-send-email-sven@narfation.org>
 In-Reply-To: <1336781383-15649-1-git-send-email-sven@narfation.org>
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 09/23] batman-adv: Prefix gateway-client
+Subject: [B.A.T.M.A.N.] [PATCHv3 10/23] batman-adv: Prefix gateway-common
 	non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,357 +28,131 @@ such a problem.
 Reported-by: David Miller <davem@davemloft.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bat_debugfs.c    |    2 +-
- bat_iv_ogm.c     |    6 +++---
  bat_sysfs.c      |    4 ++--
- gateway_client.c |   40 +++++++++++++++++++++-------------------
- gateway_client.h |   26 ++++++++++++++------------
- gateway_common.c |    2 +-
- main.c           |    2 +-
- originator.c     |    7 ++++---
- soft-interface.c |    6 +++---
- unicast.c        |    2 +-
- 10 files changed, 51 insertions(+), 46 deletions(-)
+ gateway_client.c |   12 +++++++-----
+ gateway_common.c |    7 ++++---
+ gateway_common.h |    5 +++--
+ 4 files changed, 16 insertions(+), 12 deletions(-)
 
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index 900c640..939c5be 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -236,7 +236,7 @@ static int originators_open(struct inode *inode, struct file *file)
- static int gateways_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
--	return single_open(file, gw_client_seq_print_text, net_dev);
-+	return single_open(file, batadv_gw_client_seq_print_text, net_dev);
- }
- 
- static int transtable_global_open(struct inode *inode, struct file *file)
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 1e8b2d4..71b6b2f 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -729,8 +729,8 @@ update_tt:
- 			       ntohs(batman_ogm_packet->tt_crc));
- 
- 	if (orig_node->gw_flags != batman_ogm_packet->gw_flags)
--		gw_node_update(bat_priv, orig_node,
--			       batman_ogm_packet->gw_flags);
-+		batadv_gw_node_update(bat_priv, orig_node,
-+				      batman_ogm_packet->gw_flags);
- 
- 	orig_node->gw_flags = batman_ogm_packet->gw_flags;
- 
-@@ -738,7 +738,7 @@ update_tt:
- 	if ((orig_node->gw_flags) &&
- 	    (atomic_read(&bat_priv->gw_mode) == GW_MODE_CLIENT) &&
- 	    (atomic_read(&bat_priv->gw_sel_class) > 2))
--		gw_check_election(bat_priv, orig_node);
-+		batadv_gw_check_election(bat_priv, orig_node);
- 
- 	goto out;
- 
 diff --git a/bat_sysfs.c b/bat_sysfs.c
-index 5dce1ab..31d23db 100644
+index 31d23db..a8fb660 100644
 --- a/bat_sysfs.c
 +++ b/bat_sysfs.c
-@@ -326,7 +326,7 @@ static ssize_t show_bat_algo(struct kobject *kobj, struct attribute *attr,
- static void post_gw_deselect(struct net_device *net_dev)
- {
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
--	gw_deselect(bat_priv);
-+	batadv_gw_deselect(bat_priv);
+@@ -409,7 +409,7 @@ static ssize_t show_gw_bwidth(struct kobject *kobj, struct attribute *attr,
+ 	int down, up;
+ 	int gw_bandwidth = atomic_read(&bat_priv->gw_bandwidth);
+ 
+-	gw_bandwidth_to_kbit(gw_bandwidth, &down, &up);
++	batadv_gw_bandwidth_to_kbit(gw_bandwidth, &down, &up);
+ 	return sprintf(buff, "%i%s/%i%s\n",
+ 		       (down > 2048 ? down / 1024 : down),
+ 		       (down > 2048 ? "MBit" : "KBit"),
+@@ -425,7 +425,7 @@ static ssize_t store_gw_bwidth(struct kobject *kobj, struct attribute *attr,
+ 	if (buff[count - 1] == '\n')
+ 		buff[count - 1] = '\0';
+ 
+-	return gw_bandwidth_set(net_dev, buff, count);
++	return batadv_gw_bandwidth_set(net_dev, buff, count);
  }
  
- static ssize_t show_gw_mode(struct kobject *kobj, struct attribute *attr,
-@@ -397,7 +397,7 @@ static ssize_t store_gw_mode(struct kobject *kobj, struct attribute *attr,
- 	bat_info(net_dev, "Changing gw mode from: %s to: %s\n",
- 		 curr_gw_mode_str, buff);
- 
--	gw_deselect(bat_priv);
-+	batadv_gw_deselect(bat_priv);
- 	atomic_set(&bat_priv->gw_mode, (unsigned int)gw_mode_tmp);
- 	return count;
- }
+ BAT_ATTR_SIF_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
 diff --git a/gateway_client.c b/gateway_client.c
-index 1d7f08e..a28d9ce 100644
+index a28d9ce..a3f944b 100644
 --- a/gateway_client.c
 +++ b/gateway_client.c
-@@ -60,7 +60,7 @@ out:
- 	return gw_node;
- }
+@@ -116,13 +116,15 @@ static struct gw_node *gw_get_best_gw_node(struct bat_priv *bat_priv)
+ 	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
+ 	uint8_t max_tq = 0;
+ 	int down, up;
++	struct orig_node *orig_node;
  
--struct orig_node *gw_get_selected_orig(struct bat_priv *bat_priv)
-+struct orig_node *batadv_gw_get_selected_orig(struct bat_priv *bat_priv)
- {
- 	struct gw_node *gw_node;
- 	struct orig_node *orig_node = NULL;
-@@ -103,7 +103,7 @@ static void gw_select(struct bat_priv *bat_priv, struct gw_node *new_gw_node)
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(gw_node, node, &bat_priv->gw_list, list) {
+ 		if (gw_node->deleted)
+ 			continue;
+ 
+-		router = orig_node_get_router(gw_node->orig_node);
++		orig_node = gw_node->orig_node;
++		router = orig_node_get_router(orig_node);
+ 		if (!router)
+ 			continue;
+ 
+@@ -131,8 +133,8 @@ static struct gw_node *gw_get_best_gw_node(struct bat_priv *bat_priv)
+ 
+ 		switch (atomic_read(&bat_priv->gw_sel_class)) {
+ 		case 1: /* fast connection */
+-			gw_bandwidth_to_kbit(gw_node->orig_node->gw_flags,
+-					     &down, &up);
++			batadv_gw_bandwidth_to_kbit(orig_node->gw_flags,
++						    &down, &up);
+ 
+ 			tmp_gw_factor = (router->tq_avg * router->tq_avg *
+ 					 down * 100 * 100) /
+@@ -319,7 +321,7 @@ static void gw_node_add(struct bat_priv *bat_priv,
+ 	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw_list);
  	spin_unlock_bh(&bat_priv->gw_list_lock);
+ 
+-	gw_bandwidth_to_kbit(new_gwflags, &down, &up);
++	batadv_gw_bandwidth_to_kbit(new_gwflags, &down, &up);
+ 	bat_dbg(DBG_BATMAN, bat_priv,
+ 		"Found new gateway %pM -> gw_class: %i - %i%s/%i%s\n",
+ 		orig_node->orig, new_gwflags,
+@@ -434,7 +436,7 @@ static int _write_buffer_text(struct bat_priv *bat_priv, struct seq_file *seq,
+ 	struct neigh_node *router;
+ 	int down, up, ret = -1;
+ 
+-	gw_bandwidth_to_kbit(gw_node->orig_node->gw_flags, &down, &up);
++	batadv_gw_bandwidth_to_kbit(gw_node->orig_node->gw_flags, &down, &up);
+ 
+ 	router = orig_node_get_router(gw_node->orig_node);
+ 	if (!router)
+diff --git a/gateway_common.c b/gateway_common.c
+index a0b0f52..722c932 100644
+--- a/gateway_common.c
++++ b/gateway_common.c
+@@ -59,7 +59,7 @@ static void kbit_to_gw_bandwidth(int down, int up, long *gw_srv_class)
  }
  
--void gw_deselect(struct bat_priv *bat_priv)
-+void batadv_gw_deselect(struct bat_priv *bat_priv)
+ /* returns the up and downspeeds in kbit, calculated from the class */
+-void gw_bandwidth_to_kbit(uint8_t gw_srv_class, int *down, int *up)
++void batadv_gw_bandwidth_to_kbit(uint8_t gw_srv_class, int *down, int *up)
  {
- 	atomic_set(&bat_priv->gw_reselect, 1);
- }
-@@ -182,7 +182,7 @@ next:
- 	return curr_gw;
- }
- 
--void gw_election(struct bat_priv *bat_priv)
-+void batadv_gw_election(struct bat_priv *bat_priv)
- {
- 	struct gw_node *curr_gw = NULL, *next_gw = NULL;
- 	struct neigh_node *router = NULL;
-@@ -212,7 +212,7 @@ void gw_election(struct bat_priv *bat_priv)
- 
- 		router = orig_node_get_router(next_gw->orig_node);
- 		if (!router) {
--			gw_deselect(bat_priv);
-+			batadv_gw_deselect(bat_priv);
- 			goto out;
- 		}
- 	}
-@@ -246,13 +246,14 @@ out:
- 		neigh_node_free_ref(router);
- }
- 
--void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
-+void batadv_gw_check_election(struct bat_priv *bat_priv,
-+			      struct orig_node *orig_node)
- {
- 	struct orig_node *curr_gw_orig;
- 	struct neigh_node *router_gw = NULL, *router_orig = NULL;
- 	uint8_t gw_tq_avg, orig_tq_avg;
- 
--	curr_gw_orig = gw_get_selected_orig(bat_priv);
-+	curr_gw_orig = batadv_gw_get_selected_orig(bat_priv);
- 	if (!curr_gw_orig)
- 		goto deselect;
- 
-@@ -288,7 +289,7 @@ void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node)
- 		gw_tq_avg, orig_tq_avg);
- 
- deselect:
--	gw_deselect(bat_priv);
-+	batadv_gw_deselect(bat_priv);
- out:
- 	if (curr_gw_orig)
- 		orig_node_free_ref(curr_gw_orig);
-@@ -328,8 +329,8 @@ static void gw_node_add(struct bat_priv *bat_priv,
- 		(up > 2048 ? "MBit" : "KBit"));
- }
- 
--void gw_node_update(struct bat_priv *bat_priv,
--		    struct orig_node *orig_node, uint8_t new_gwflags)
-+void batadv_gw_node_update(struct bat_priv *bat_priv,
-+			   struct orig_node *orig_node, uint8_t new_gwflags)
- {
- 	struct hlist_node *node;
- 	struct gw_node *gw_node, *curr_gw;
-@@ -374,7 +375,7 @@ void gw_node_update(struct bat_priv *bat_priv,
- 	goto unlock;
- 
- deselect:
--	gw_deselect(bat_priv);
-+	batadv_gw_deselect(bat_priv);
- unlock:
- 	rcu_read_unlock();
- 
-@@ -382,12 +383,13 @@ unlock:
- 		gw_node_free_ref(curr_gw);
- }
- 
--void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node)
-+void batadv_gw_node_delete(struct bat_priv *bat_priv,
-+			   struct orig_node *orig_node)
- {
--	gw_node_update(bat_priv, orig_node, 0);
-+	batadv_gw_node_update(bat_priv, orig_node, 0);
- }
- 
--void gw_node_purge(struct bat_priv *bat_priv)
-+void batadv_gw_node_purge(struct bat_priv *bat_priv)
- {
- 	struct gw_node *gw_node, *curr_gw;
- 	struct hlist_node *node, *node_tmp;
-@@ -416,7 +418,7 @@ void gw_node_purge(struct bat_priv *bat_priv)
- 
- 	/* gw_deselect() needs to acquire the gw_list_lock */
- 	if (do_deselect)
--		gw_deselect(bat_priv);
-+		batadv_gw_deselect(bat_priv);
- 
- 	if (curr_gw)
- 		gw_node_free_ref(curr_gw);
-@@ -458,7 +460,7 @@ out:
- 	return ret;
- }
- 
--int gw_client_seq_print_text(struct seq_file *seq, void *offset)
-+int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
- {
- 	struct net_device *net_dev = (struct net_device *)seq->private;
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
-@@ -568,7 +570,7 @@ out:
- 	return ret;
- }
- 
--bool gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
-+bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- {
- 	struct ethhdr *ethhdr;
- 	struct iphdr *iphdr;
-@@ -634,8 +636,8 @@ bool gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
+ 	int sbit = (gw_srv_class & 0x80) >> 7;
+ 	int dpart = (gw_srv_class & 0x78) >> 3;
+@@ -136,7 +136,8 @@ static bool parse_gw_bandwidth(struct net_device *net_dev, char *buff,
  	return true;
  }
  
--bool gw_out_of_range(struct bat_priv *bat_priv,
--		     struct sk_buff *skb, struct ethhdr *ethhdr)
-+bool batadv_gw_out_of_range(struct bat_priv *bat_priv,
-+			    struct sk_buff *skb, struct ethhdr *ethhdr)
+-ssize_t gw_bandwidth_set(struct net_device *net_dev, char *buff, size_t count)
++ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
++				size_t count)
  {
- 	struct neigh_node *neigh_curr = NULL, *neigh_old = NULL;
- 	struct orig_node *orig_dst_node = NULL;
-@@ -644,7 +646,7 @@ bool gw_out_of_range(struct bat_priv *bat_priv,
- 	unsigned int header_len = 0;
- 	uint8_t curr_tq_avg;
+ 	struct bat_priv *bat_priv = netdev_priv(net_dev);
+ 	long gw_bandwidth_tmp = 0;
+@@ -160,7 +161,7 @@ ssize_t gw_bandwidth_set(struct net_device *net_dev, char *buff, size_t count)
+ 	 * speeds, hence we need to calculate it back to show the number
+ 	 * that is going to be propagated
+ 	 **/
+-	gw_bandwidth_to_kbit((uint8_t)gw_bandwidth_tmp, &down, &up);
++	batadv_gw_bandwidth_to_kbit((uint8_t)gw_bandwidth_tmp, &down, &up);
  
--	ret = gw_is_dhcp_target(skb, &header_len);
-+	ret = batadv_gw_is_dhcp_target(skb, &header_len);
- 	if (!ret)
- 		goto out;
- 
-diff --git a/gateway_client.h b/gateway_client.h
-index bf56a5a..2c2446f 100644
---- a/gateway_client.h
-+++ b/gateway_client.h
-@@ -22,17 +22,19 @@
- #ifndef _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
- #define _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
- 
--void gw_deselect(struct bat_priv *bat_priv);
--void gw_election(struct bat_priv *bat_priv);
--struct orig_node *gw_get_selected_orig(struct bat_priv *bat_priv);
--void gw_check_election(struct bat_priv *bat_priv, struct orig_node *orig_node);
--void gw_node_update(struct bat_priv *bat_priv,
--		    struct orig_node *orig_node, uint8_t new_gwflags);
--void gw_node_delete(struct bat_priv *bat_priv, struct orig_node *orig_node);
--void gw_node_purge(struct bat_priv *bat_priv);
--int gw_client_seq_print_text(struct seq_file *seq, void *offset);
--bool gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len);
--bool gw_out_of_range(struct bat_priv *bat_priv,
--		     struct sk_buff *skb, struct ethhdr *ethhdr);
-+void batadv_gw_deselect(struct bat_priv *bat_priv);
-+void batadv_gw_election(struct bat_priv *bat_priv);
-+struct orig_node *batadv_gw_get_selected_orig(struct bat_priv *bat_priv);
-+void batadv_gw_check_election(struct bat_priv *bat_priv,
-+			      struct orig_node *orig_node);
-+void batadv_gw_node_update(struct bat_priv *bat_priv,
-+			   struct orig_node *orig_node, uint8_t new_gwflags);
-+void batadv_gw_node_delete(struct bat_priv *bat_priv,
-+			   struct orig_node *orig_node);
-+void batadv_gw_node_purge(struct bat_priv *bat_priv);
-+int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset);
-+bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len);
-+bool batadv_gw_out_of_range(struct bat_priv *bat_priv,
-+			    struct sk_buff *skb, struct ethhdr *ethhdr);
- 
- #endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
-diff --git a/gateway_common.c b/gateway_common.c
-index 6e3b052..a0b0f52 100644
---- a/gateway_common.c
-+++ b/gateway_common.c
-@@ -165,7 +165,7 @@ ssize_t gw_bandwidth_set(struct net_device *net_dev, char *buff, size_t count)
  	if (atomic_read(&bat_priv->gw_bandwidth) == gw_bandwidth_tmp)
  		return count;
+diff --git a/gateway_common.h b/gateway_common.h
+index b8fb11c..e256040 100644
+--- a/gateway_common.h
++++ b/gateway_common.h
+@@ -32,7 +32,8 @@ enum gw_modes {
+ #define GW_MODE_CLIENT_NAME	"client"
+ #define GW_MODE_SERVER_NAME	"server"
  
--	gw_deselect(bat_priv);
-+	batadv_gw_deselect(bat_priv);
- 	bat_info(net_dev,
- 		 "Changing gateway bandwidth from: '%i' to: '%ld' (propagating: %d%s/%d%s)\n",
- 		 atomic_read(&bat_priv->gw_bandwidth), gw_bandwidth_tmp,
-diff --git a/main.c b/main.c
-index eb1d266..81d9718 100644
---- a/main.c
-+++ b/main.c
-@@ -149,7 +149,7 @@ void mesh_free(struct net_device *soft_iface)
+-void gw_bandwidth_to_kbit(uint8_t gw_class, int *down, int *up);
+-ssize_t gw_bandwidth_set(struct net_device *net_dev, char *buff, size_t count);
++void batadv_gw_bandwidth_to_kbit(uint8_t gw_class, int *down, int *up);
++ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
++				size_t count);
  
- 	vis_quit(bat_priv);
- 
--	gw_node_purge(bat_priv);
-+	batadv_gw_node_purge(bat_priv);
- 	originator_free(bat_priv);
- 
- 	tt_free(bat_priv);
-diff --git a/originator.c b/originator.c
-index 6f3e7fc..5e2b4d4 100644
---- a/originator.c
-+++ b/originator.c
-@@ -363,7 +363,8 @@ static void _purge_orig(struct bat_priv *bat_priv)
- 					  head, hash_entry) {
- 			if (purge_orig_node(bat_priv, orig_node)) {
- 				if (orig_node->gw_flags)
--					gw_node_delete(bat_priv, orig_node);
-+					batadv_gw_node_delete(bat_priv,
-+							      orig_node);
- 				hlist_del_rcu(node);
- 				orig_node_free_ref(orig_node);
- 				continue;
-@@ -376,8 +377,8 @@ static void _purge_orig(struct bat_priv *bat_priv)
- 		spin_unlock_bh(list_lock);
- 	}
- 
--	gw_node_purge(bat_priv);
--	gw_election(bat_priv);
-+	batadv_gw_node_purge(bat_priv);
-+	batadv_gw_election(bat_priv);
- }
- 
- static void purge_orig(struct work_struct *work)
-diff --git a/soft-interface.c b/soft-interface.c
-index 74b31e9..ee8a309 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -183,14 +183,14 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 		case GW_MODE_SERVER:
- 			/* gateway servers should not send dhcp
- 			 * requests into the mesh */
--			ret = gw_is_dhcp_target(skb, &header_len);
-+			ret = batadv_gw_is_dhcp_target(skb, &header_len);
- 			if (ret)
- 				goto dropped;
- 			break;
- 		case GW_MODE_CLIENT:
- 			/* gateway clients should send dhcp requests
- 			 * via unicast to their gateway */
--			ret = gw_is_dhcp_target(skb, &header_len);
-+			ret = batadv_gw_is_dhcp_target(skb, &header_len);
- 			if (ret)
- 				do_bcast = false;
- 			break;
-@@ -237,7 +237,7 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 	/* unicast packet */
- 	} else {
- 		if (atomic_read(&bat_priv->gw_mode) != GW_MODE_OFF) {
--			ret = gw_out_of_range(bat_priv, skb, ethhdr);
-+			ret = batadv_gw_out_of_range(bat_priv, skb, ethhdr);
- 			if (ret)
- 				goto dropped;
- 		}
-diff --git a/unicast.c b/unicast.c
-index 62ea9f1..485aa42 100644
---- a/unicast.c
-+++ b/unicast.c
-@@ -359,7 +359,7 @@ int unicast_generic_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 
- 	/* get routing information */
- 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
--		orig_node = gw_get_selected_orig(bat_priv);
-+		orig_node = batadv_gw_get_selected_orig(bat_priv);
- 		if (orig_node)
- 			goto find_router;
- 	}
+ #endif /* _NET_BATMAN_ADV_GATEWAY_COMMON_H_ */
 -- 
 1.7.10
 
