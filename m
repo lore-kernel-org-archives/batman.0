@@ -1,15 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Sat, 12 May 2012 13:56:55 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120512115652.GB14279@ritirata.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 12 May 2012 14:01:41 +0200
+Message-ID: <1379829.aiuEal9R8A@sven-desktop.home.narfation.org>
+In-Reply-To: <20120512115652.GB14279@ritirata.org>
 References: <1336823339-4095-1-git-send-email-sven@narfation.org>
+	<20120512115652.GB14279@ritirata.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="E/DnYTRukya0zdZ1"
-Content-Disposition: inline
-In-Reply-To: <1336823339-4095-1-git-send-email-sven@narfation.org>
+Content-Type: multipart/signed; boundary="nextPart1784554.sFqPWoXLxO";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH 1/8] batman-adv: Move hash_ipv4 to
- distributed-arp-table.c
+	distributed-arp-table.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,62 +22,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---E/DnYTRukya0zdZ1
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--nextPart1784554.sFqPWoXLxO
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-On Sat, May 12, 2012 at 01:48:52 +0200, Sven Eckelmann wrote:
-> hash_ipv4 is only used in distributed-arp-table.c and therefore can be pl=
-aced
-> inside this file instead of the header.
->=20
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  distributed-arp-table.c |   24 +++++++++++++++++++++++-
->  distributed-arp-table.h |   22 ----------------------
->  2 files changed, 23 insertions(+), 23 deletions(-)
->=20
-> diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-> index e678ec4..4894a85 100644
-> --- a/distributed-arp-table.c
-> +++ b/distributed-arp-table.c
-> @@ -32,6 +32,28 @@
->  #include "translation-table.h"
->  #include "unicast.h"
-> =20
-> +/* hash function to choose an entry in a hash table of given size.
-> + * hash algorithm from http://en.wikipedia.org/wiki/Hash_table
-> + */
-> +static uint32_t batadv_hash_ipv4(const void *data, uint32_t size)
+On Saturday 12 May 2012 13:56:55 Antonio Quartulli wrote:
+> On Sat, May 12, 2012 at 01:48:52 +0200, Sven Eckelmann wrote:
+> > hash_ipv4 is only used in distributed-arp-table.c and therefore can be
+> > placed inside this file instead of the header.
+> > 
+> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> > ---
+> > 
+> >  distributed-arp-table.c |   24 +++++++++++++++++++++++-
+> >  distributed-arp-table.h |   22 ----------------------
+> >  2 files changed, 23 insertions(+), 23 deletions(-)
+> > 
+> > diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+> > index e678ec4..4894a85 100644
+> > --- a/distributed-arp-table.c
+> > +++ b/distributed-arp-table.c
+> > @@ -32,6 +32,28 @@
+> > 
+> >  #include "translation-table.h"
+> >  #include "unicast.h"
+> > 
+> > +/* hash function to choose an entry in a hash table of given size.
+> > + * hash algorithm from http://en.wikipedia.org/wiki/Hash_table
+> > + */
+> > +static uint32_t batadv_hash_ipv4(const void *data, uint32_t size)
+> 
+> since the function is static, why do we want to use the batadv prefix? would
+> this create confusion?
 
-since the function is static, why do we want to use the batadv prefix? would
-this create confusion?
+Consistent naming scheme.
 
-Cheers,
+Just imagine that somebody needs some function like that in another file and 
+don't want to move it to the header. That would mean that he removes the 
+static and add a declaration in the header file.... and now we have the 
+problem of the missing batadv_ prefix. Either he changes the name everywhere 
+or creates those potential namespace problems.
 
---=20
-Antonio Quartulli
+So I would recommend to use the batadv_ prefix everywhere. Less problems in 
+the future and maybe a happier David. :)
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---E/DnYTRukya0zdZ1
-Content-Type: application/pgp-signature
+Kind regards,
+	Sven
+--nextPart1784554.sFqPWoXLxO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQEcBAEBAgAGBQJPrlAEAAoJEFMQTLzJFOZFVeYH/j8dgXT5MkJ1CjWkSOTOChYX
-zo495Hw126CM7RYeVIoSdER2A8lGBeaebk2kv94zKqElTyCMJ2gDs3qeX9qbZY3u
-apeSwgBpKzWfVFUFOOQIjBh8XzyxHsR6cqC1DmiErtDIQxM+BdnvaCfpdpmC84OD
-EGAZ62XBE88i/WnRmjB7MLvTL0YPWPQSrxQziRY2imArucSZy3Y6Ez7cYIaZWktH
-kWjWJR25j++wNqyrw8/ZiT9Fi2cA2rbsTIF/go2t38SvBX7N5GQfO6OxXgjUfPLs
-l8LqfcnVJMTjYJKj/a1ySabmXE2qAth1V5YFrUrh480bDV3zpJ9O1IM6ZKtUqVM=
-=TMZj
+iQIcBAABCgAGBQJPrlElAAoJEF2HCgfBJntG40gP+QEZDNNQV8Jnd5WS1eD/hSH7
+tyhoVvavURXj+f4jMit5MOWjvQf49WYT+Rx+sLzXYSigFl5fukgC34sHH9aT8WMG
+vDuj4WahLXNPtg+H97+TiEKOATgFb1pZVsqpEaUzdjuxQ7sQWvEskgT7kmackd/+
+RtIlYnjFk1uzKKSKCmfqkPCXNg6ImW+Yk+mJUrSq8UiMNR+tKVgnfo/PxCuEH/q6
+OyO1lC5mkoBDgN4vz7hbsCKDSGuW5DVbCUgO847fpX8+5soD14gQ68EmvqJZ0QPy
+sSKj4/EKDqsW2YI6/5EV81vlUgIuE58Vro/1r404UOIFfj+fjDCMf0UXmXud9mIc
+pLjc5njPvPO9LjVuGvWFGW2QKAiEiNjueva9xMXawC87MrdBmUynNa5YFN1UyOsU
+XDFxdLXjUY87GyfCgKYu337+whtd/qPZUHBXltWL1GYgQ+we2BseQLn1m6kzeGFQ
+v4q978/gjEfQ+rsVLlGdq+vXWSlKFRd2x1XTuzlzWcJnY/08PJJb75ge3V59/6c/
+Nf45m5aN3O/G0t42mVyvC0r62j+ejVCXH+MC72pbQpVhMzPBJNSFJsNZFAB48+Q+
+46qMJTL0VuQ8YZ3rYPUL3brJmyIiimeX2EQl9MCUkAbmvh5spzFR9y6JDkmum/b1
+05OWxbPEmbJO7NJ1BL97
+=pBML
 -----END PGP SIGNATURE-----
 
---E/DnYTRukya0zdZ1--
+--nextPart1784554.sFqPWoXLxO--
+
