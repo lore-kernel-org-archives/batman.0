@@ -1,16 +1,9 @@
-Return-Path: <ordex@autistici.org>
-Date: Sat, 12 May 2012 20:31:18 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120512183104.GA27709@ritirata.org>
-References: <20120504000852.GA29070@ritirata.org>
-	<201205102112.37690.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="RASg3xLB4tUQ4RcS"
-Content-Disposition: inline
-In-Reply-To: <201205102112.37690.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Improving the roaming procedure: multiple
- roaming within one orig interval
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 13 May 2012 08:45:17 +0200
+Message-Id: <1336891517-20890-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Mark only locally used symbol
+	batadv_tt_local_crc as static
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,96 +15,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+29ccfec94d51f7725124786e29d023b212920661 changed the translation table code in
+such a way that it doesn't use the symbol tt_local_crc outside of
+translation-table.c
 
---RASg3xLB4tUQ4RcS
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ translation-table.c |    2 +-
+ translation-table.h |    1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-On Thu, May 10, 2012 at 09:12:37 +0800, Marek Lindner wrote:
->=20
-> Hi,
->=20
-> > Right now I am working on a concept that would enable such possibility.=
- I
-> > tried to summarise my ideas on the wiki as well[1] in order to share wi=
-th
-> > you the solution I am thinking about.
-> >=20
-> > The document is still a draft and may not be 100% understandable. If you
-> > have time and you are curious enough to read the wiki, please drop me y=
-our
-> > feedback, it would really be appreciated :-)
->=20
-> if I understand the document correctly each mesh node a client connects t=
-o=20
-> will send a roaming advertisement back to the last known mesh node this c=
-lient=20
-> was connected to.
+diff --git a/translation-table.c b/translation-table.c
+index f50e795..62dda2b 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1172,7 +1172,7 @@ static uint16_t batadv_tt_global_crc(struct bat_priv *bat_priv,
+ }
+ 
+ /* Calculates the checksum of the local table */
+-uint16_t batadv_tt_local_crc(struct bat_priv *bat_priv)
++static uint16_t batadv_tt_local_crc(struct bat_priv *bat_priv)
+ {
+ 	uint16_t total = 0, total_one;
+ 	struct hashtable_t *hash = bat_priv->tt_local_hash;
+diff --git a/translation-table.h b/translation-table.h
+index 56e8016..7edc9df 100644
+--- a/translation-table.h
++++ b/translation-table.h
+@@ -41,7 +41,6 @@ void batadv_tt_global_del_orig(struct bat_priv *bat_priv,
+ struct orig_node *batadv_transtable_search(struct bat_priv *bat_priv,
+ 					   const uint8_t *src,
+ 					   const uint8_t *addr);
+-uint16_t batadv_tt_local_crc(struct bat_priv *bat_priv);
+ void batadv_tt_free(struct bat_priv *bat_priv);
+ bool batadv_send_tt_response(struct bat_priv *bat_priv,
+ 			     struct tt_query_packet *tt_request);
+-- 
+1.7.10
 
-Yes, this is the idea.
-
-> A few questions come to my mind:
->=20
->  * Does this already work with the current code ? If not what happens now=
- ?
-
-Now the ROAM_ADV is still sent to the last known mesh node the client was
-connected to, but the rerouting mechanism could be broken by other nodes th=
-at
-still think the client is connected to them. (if a client at A roams to B a=
-nd
-then to C, B could break the rerouting).
-
->  * How do all nodes get back in sync ? It sounds to me like for certain w=
-hile=20
-> a number of nodes claim the same client, right ? Nobody tells the interme=
-diate=20
-> mesh nodes that their client has moved.
-
-all the nodes will advertise the entry and so all the nodes will delete it,
-but, eventually, the node that is really serving the client will re-add it =
-and
-advertise it again.
-Yap, this must be improved. thank you for pointing it out.
-
->  * What if receiving a roaming advertisement triggered an immediate=20
-> (unscheduled) OGM broadcast ? That would potentially speed up the gap and=
- also=20
-> address the "longer path" problem you outlined in the wikipage.
-
-I have to think about that... Imho the OGM should not be the solution, beca=
-use an
-OGM have a not negligible prob to be lost. So we should not rely on it.
-
-
-Thank you for your comments!
-I'll try to refine the concept a bit more to address the problem you pointed
-out and then I will post an update here :-)
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---RASg3xLB4tUQ4RcS
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPrqxtAAoJEFMQTLzJFOZFZVcH+wU64OgHITz7TrfELskokyeU
-pMpZB5A7/mWrJppdRoz6nS9MlOb8T0wuxtzucTPvEoMUdifB/7pju8+toX0omIHw
-NowWfOCy+9s8HpLlfaXoDUgp91vThnX+Xv7dvIV5i+Xez9l7KxV5JwfE4/UTRqM8
-696kGG65Nb+wM4FPkRgQamuyj0n6BIWxRoGAMBlDM6FVs9jRusWTnkR1VEMUn3TC
-uwj0WiO/xf+gwb/A1dKcOvxlV1tv9GeXlPt6fn++YrnCtQq/ktMD04rw7qLIN62H
-aIzzJRO/av6R+QtLObrfVYiNZ41JnKhqfg/tEWkSLuA7Lf80SYkeubKXmImFj/0=
-=fmbd
------END PGP SIGNATURE-----
-
---RASg3xLB4tUQ4RcS--
