@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 14 May 2012 00:40:30 +0800
+Date: Mon, 14 May 2012 00:44:09 +0800
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-	<1336781383-15649-9-git-send-email-sven@narfation.org>
-In-Reply-To: <1336781383-15649-9-git-send-email-sven@narfation.org>
+	<1336781383-15649-10-git-send-email-sven@narfation.org>
+In-Reply-To: <1336781383-15649-10-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205140040.30988.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 09/23] batman-adv: Prefix
-	gateway-client non-static functions with batadv_
+Message-Id: <201205140044.09684.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 10/23] batman-adv: Prefix
+	gateway-common non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,7 +24,7 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, May 12, 2012 08:09:29 Sven Eckelmann wrote:
+On Saturday, May 12, 2012 08:09:30 Sven Eckelmann wrote:
 > batman-adv can be compiled as part of the kernel instead of an module. In
 > that case the linker will see all non-static symbols of batman-adv and all
 > other non-static symbols of the kernel. This could lead to symbol
@@ -34,19 +34,13 @@ On Saturday, May 12, 2012 08:09:29 Sven Eckelmann wrote:
 > Reported-by: David Miller <davem@davemloft.net>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bat_debugfs.c    |    2 +-
->  bat_iv_ogm.c     |    6 +++---
 >  bat_sysfs.c      |    4 ++--
->  gateway_client.c |   40 +++++++++++++++++++++-------------------
->  gateway_client.h |   26 ++++++++++++++------------
->  gateway_common.c |    2 +-
->  main.c           |    2 +-
->  originator.c     |    7 ++++---
->  soft-interface.c |    6 +++---
->  unicast.c        |    2 +-
->  10 files changed, 51 insertions(+), 46 deletions(-)
+>  gateway_client.c |   12 +++++++-----
+>  gateway_common.c |    7 ++++---
+>  gateway_common.h |    5 +++--
+>  4 files changed, 16 insertions(+), 12 deletions(-)
 
-Applied in revision 9db3953.
+Applied in revision 86c4605.
 
 Thanks,
 Marek
