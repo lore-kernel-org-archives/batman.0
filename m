@@ -1,9 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 13 May 2012 08:45:17 +0200
-Message-Id: <1336891517-20890-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Mark only locally used symbol
-	batadv_tt_local_crc as static
+Return-Path: <daniele.furlan@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <CAG7VhQSjyQRtCZfC9FUr1f+Fxg6mdwFfBJZOyXowhmW7r+a-eA@mail.gmail.com>
+References: <CAG7VhQSjyQRtCZfC9FUr1f+Fxg6mdwFfBJZOyXowhmW7r+a-eA@mail.gmail.com>
+Date: Sun, 13 May 2012 10:56:02 +0200
+Message-ID: <CAG7VhQQKKv67Qb4ywQmJp7BCvJARRYT29AwBX1rQDgidaCP5iQ@mail.gmail.com>
+From: Daniele Furlan <daniele.furlan@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Possible OGM forwarding misbehavior
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,43 +18,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-29ccfec94d51f7725124786e29d023b212920661 changed the translation table code in
-such a way that it doesn't use the symbol tt_local_crc outside of
-translation-table.c
+Hi all,
+incidentally I noticed that with the modification that introduced the
+'NOT_BEST_NEXT_HOP' flag only OGM coming from best next hop neighbour
+are forwarded in case of multi-hop originators.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- translation-table.c |    2 +-
- translation-table.h |    1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+The problem is that in the routing code it is forwarded only the first OGM
+received with a fresh sequence number (that could be received from a
+sub-optimal router).
 
-diff --git a/translation-table.c b/translation-table.c
-index f50e795..62dda2b 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1172,7 +1172,7 @@ static uint16_t batadv_tt_global_crc(struct bat_priv *bat_priv,
- }
- 
- /* Calculates the checksum of the local table */
--uint16_t batadv_tt_local_crc(struct bat_priv *bat_priv)
-+static uint16_t batadv_tt_local_crc(struct bat_priv *bat_priv)
- {
- 	uint16_t total = 0, total_one;
- 	struct hashtable_t *hash = bat_priv->tt_local_hash;
-diff --git a/translation-table.h b/translation-table.h
-index 56e8016..7edc9df 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -41,7 +41,6 @@ void batadv_tt_global_del_orig(struct bat_priv *bat_priv,
- struct orig_node *batadv_transtable_search(struct bat_priv *bat_priv,
- 					   const uint8_t *src,
- 					   const uint8_t *addr);
--uint16_t batadv_tt_local_crc(struct bat_priv *bat_priv);
- void batadv_tt_free(struct bat_priv *bat_priv);
- bool batadv_send_tt_response(struct bat_priv *bat_priv,
- 			     struct tt_query_packet *tt_request);
--- 
-1.7.10
+This means that if the OGM from best next hop neighbour is not received as
+the first OGM, it is not forwarded and I think this can be a problem.
 
+Maybe it can be better to maintain also an index of the last FORWARDED
+sequence number instead of checking the last RECEIVED sequence number.
+
+Regards
+
+--
+Daniele Furlan
