@@ -1,11 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 13 May 2012 11:01:43 +0200
-Message-Id: <1336899703-20933-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1336899703-20933-1-git-send-email-sven@narfation.org>
-References: <1336899703-20933-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Prefix remaining function
-	like macros with batadv_
+Date: Sun, 13 May 2012 11:39:01 +0200
+Message-Id: <1336901941-4986-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Directly print to seq_file in vis
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,629 +16,295 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+The vis output doesn't need to be buffered in an character buffer before it can
+be send to the userspace program that reads from the vis debug file.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bat_debugfs.c           |    4 +--
- bat_iv_ogm.c            |    6 ++--
- bat_sysfs.c             |   81 +++++++++++++++++++++++++----------------------
- distributed-arp-table.c |    6 ++--
- gateway_client.c        |    2 +-
- gateway_common.c        |   26 +++++++--------
- hard-interface.c        |   38 +++++++++++-----------
- main.h                  |   22 ++++++-------
- routing.c               |   12 ++++---
- send.c                  |    2 +-
- translation-table.c     |   12 +++----
- vis.c                   |    4 +--
- 12 files changed, 112 insertions(+), 103 deletions(-)
+ vis.c |  228 ++++++++++++++++++++++++-----------------------------------------
+ 1 file changed, 83 insertions(+), 145 deletions(-)
 
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index b4d622b..c3f7e2f 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -354,8 +354,8 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
- 					  bat_priv->debug_dir,
- 					  dev, &(*bat_debug)->fops);
- 		if (!file) {
--			bat_err(dev, "Can't add debugfs file: %s/%s\n",
--				dev->name, ((*bat_debug)->attr).name);
-+			batadv_err(dev, "Can't add debugfs file: %s/%s\n",
-+				   dev->name, ((*bat_debug)->attr).name);
- 			goto rem_attr;
- 		}
- 	}
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 70c2c69..9e83f35 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -201,7 +201,7 @@ static void batadv_iv_ogm_send_to_if(struct forw_packet *forw_packet,
- 	/* create clone because function is called more than once */
- 	skb = skb_clone(forw_packet->skb, GFP_ATOMIC);
- 	if (skb) {
--		inc_counter(bat_priv, BAT_CNT_MGMT_TX);
-+		batadv_inc_counter(bat_priv, BAT_CNT_MGMT_TX);
- 		batadv_add_counter(bat_priv, BAT_CNT_MGMT_TX_BYTES,
- 				   skb->len + ETH_HLEN);
- 		batadv_send_skb_packet(skb, hard_iface, batadv_broadcast_addr);
-@@ -373,7 +373,7 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 
- 	/* own packet should always be scheduled */
- 	if (!own_packet) {
--		if (!atomic_dec_not_zero(&bat_priv->batman_queue_left)) {
-+		if (!batadv_atomic_dec_not_zero(&bat_priv->batman_queue_left)) {
- 			batadv_dbg(DBG_BATMAN, bat_priv,
- 				   "batman packet queue full\n");
- 			goto out;
-@@ -1237,7 +1237,7 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
- 	if (bat_priv->bat_algo_ops->bat_ogm_emit != batadv_iv_ogm_emit)
- 		return NET_RX_DROP;
- 
--	inc_counter(bat_priv, BAT_CNT_MGMT_RX);
-+	batadv_inc_counter(bat_priv, BAT_CNT_MGMT_RX);
- 	batadv_add_counter(bat_priv, BAT_CNT_MGMT_RX_BYTES,
- 			   skb->len + ETH_HLEN);
- 
-diff --git a/bat_sysfs.c b/bat_sysfs.c
-index 194a581..2bd1cf1 100644
---- a/bat_sysfs.c
-+++ b/bat_sysfs.c
-@@ -188,18 +188,17 @@ static int batadv_store_bool_attr(char *buff, size_t count,
- 		enabled = 0;
- 
- 	if (enabled < 0) {
--		bat_info(net_dev,
--			 "%s: Invalid parameter received: %s\n",
--			 attr_name, buff);
-+		batadv_info(net_dev, "%s: Invalid parameter received: %s\n",
-+			    attr_name, buff);
- 		return -EINVAL;
- 	}
- 
- 	if (atomic_read(attr) == enabled)
- 		return count;
- 
--	bat_info(net_dev, "%s: Changing from: %s to: %s\n", attr_name,
--		 atomic_read(attr) == 1 ? "enabled" : "disabled",
--		 enabled == 1 ? "enabled" : "disabled");
-+	batadv_info(net_dev, "%s: Changing from: %s to: %s\n", attr_name,
-+		    atomic_read(attr) == 1 ? "enabled" : "disabled",
-+		    enabled == 1 ? "enabled" : "disabled");
- 
- 	atomic_set(attr, (unsigned int)enabled);
- 	return count;
-@@ -232,29 +231,28 @@ static int batadv_store_uint_attr(const char *buff, size_t count,
- 
- 	ret = kstrtoul(buff, 10, &uint_val);
- 	if (ret) {
--		bat_info(net_dev,
--			 "%s: Invalid parameter received: %s\n",
--			 attr_name, buff);
-+		batadv_info(net_dev, "%s: Invalid parameter received: %s\n",
-+			    attr_name, buff);
- 		return -EINVAL;
- 	}
- 
- 	if (uint_val < min) {
--		bat_info(net_dev, "%s: Value is too small: %lu min: %u\n",
--			 attr_name, uint_val, min);
-+		batadv_info(net_dev, "%s: Value is too small: %lu min: %u\n",
-+			    attr_name, uint_val, min);
- 		return -EINVAL;
- 	}
- 
- 	if (uint_val > max) {
--		bat_info(net_dev, "%s: Value is too big: %lu max: %u\n",
--			 attr_name, uint_val, max);
-+		batadv_info(net_dev, "%s: Value is too big: %lu max: %u\n",
-+			    attr_name, uint_val, max);
- 		return -EINVAL;
- 	}
- 
- 	if (atomic_read(attr) == uint_val)
- 		return count;
- 
--	bat_info(net_dev, "%s: Changing from: %i to: %lu\n",
--		 attr_name, atomic_read(attr), uint_val);
-+	batadv_info(net_dev, "%s: Changing from: %i to: %lu\n",
-+		    attr_name, atomic_read(attr), uint_val);
- 
- 	atomic_set(attr, uint_val);
- 	return count;
-@@ -296,6 +294,7 @@ static ssize_t batadv_store_vis_mode(struct kobject *kobj,
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
- 	unsigned long val;
- 	int ret, vis_mode_tmp = -1;
-+	const char *old_mode, *new_mode;
- 
- 	ret = kstrtoul(buff, 10, &val);
- 
-@@ -312,19 +311,27 @@ static ssize_t batadv_store_vis_mode(struct kobject *kobj,
- 		if (buff[count - 1] == '\n')
- 			buff[count - 1] = '\0';
- 
--		bat_info(net_dev,
--			 "Invalid parameter for 'vis mode' setting received: %s\n",
--			 buff);
-+		batadv_info(net_dev,
-+			    "Invalid parameter for 'vis mode' setting received: %s\n",
-+			    buff);
- 		return -EINVAL;
- 	}
- 
- 	if (atomic_read(&bat_priv->vis_mode) == vis_mode_tmp)
- 		return count;
- 
--	bat_info(net_dev, "Changing vis mode from: %s to: %s\n",
--		 atomic_read(&bat_priv->vis_mode) == VIS_TYPE_CLIENT_UPDATE ?
--		 "client" : "server", vis_mode_tmp == VIS_TYPE_CLIENT_UPDATE ?
--		 "client" : "server");
-+	if (atomic_read(&bat_priv->vis_mode) == VIS_TYPE_CLIENT_UPDATE)
-+		old_mode =  "client";
-+	else
-+		old_mode = "server";
-+
-+	if (vis_mode_tmp == VIS_TYPE_CLIENT_UPDATE)
-+		new_mode =  "client";
-+	else
-+		new_mode = "server";
-+
-+	batadv_info(net_dev, "Changing vis mode from: %s to: %s\n", old_mode,
-+		    new_mode);
- 
- 	atomic_set(&bat_priv->vis_mode, (unsigned int)vis_mode_tmp);
- 	return count;
-@@ -388,9 +395,9 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
- 		gw_mode_tmp = GW_MODE_SERVER;
- 
- 	if (gw_mode_tmp < 0) {
--		bat_info(net_dev,
--			 "Invalid parameter for 'gw mode' setting received: %s\n",
--			 buff);
-+		batadv_info(net_dev,
-+			    "Invalid parameter for 'gw mode' setting received: %s\n",
-+			    buff);
- 		return -EINVAL;
- 	}
- 
-@@ -409,8 +416,8 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
- 		break;
- 	}
- 
--	bat_info(net_dev, "Changing gw mode from: %s to: %s\n",
--		 curr_gw_mode_str, buff);
-+	batadv_info(net_dev, "Changing gw mode from: %s to: %s\n",
-+		    curr_gw_mode_str, buff);
- 
- 	batadv_gw_deselect(bat_priv);
- 	atomic_set(&bat_priv->gw_mode, (unsigned int)gw_mode_tmp);
-@@ -497,8 +504,8 @@ int batadv_sysfs_add_meshif(struct net_device *dev)
- 	bat_priv->mesh_obj = kobject_create_and_add(SYSFS_IF_MESH_SUBDIR,
- 						    batif_kobject);
- 	if (!bat_priv->mesh_obj) {
--		bat_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
--			SYSFS_IF_MESH_SUBDIR);
-+		batadv_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
-+			   SYSFS_IF_MESH_SUBDIR);
- 		goto out;
- 	}
- 
-@@ -506,9 +513,9 @@ int batadv_sysfs_add_meshif(struct net_device *dev)
- 		err = sysfs_create_file(bat_priv->mesh_obj,
- 					&((*bat_attr)->attr));
- 		if (err) {
--			bat_err(dev, "Can't add sysfs file: %s/%s/%s\n",
--				dev->name, SYSFS_IF_MESH_SUBDIR,
--				((*bat_attr)->attr).name);
-+			batadv_err(dev, "Can't add sysfs file: %s/%s/%s\n",
-+				   dev->name, SYSFS_IF_MESH_SUBDIR,
-+				   ((*bat_attr)->attr).name);
- 			goto rem_attr;
- 		}
- 	}
-@@ -666,17 +673,17 @@ int batadv_sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- 						    hardif_kobject);
- 
- 	if (!*hardif_obj) {
--		bat_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
--			SYSFS_IF_BAT_SUBDIR);
-+		batadv_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
-+			   SYSFS_IF_BAT_SUBDIR);
- 		goto out;
- 	}
- 
- 	for (bat_attr = batadv_batman_attrs; *bat_attr; ++bat_attr) {
- 		err = sysfs_create_file(*hardif_obj, &((*bat_attr)->attr));
- 		if (err) {
--			bat_err(dev, "Can't add sysfs file: %s/%s/%s\n",
--				dev->name, SYSFS_IF_BAT_SUBDIR,
--				((*bat_attr)->attr).name);
-+			batadv_err(dev, "Can't add sysfs file: %s/%s/%s\n",
-+				   dev->name, SYSFS_IF_BAT_SUBDIR,
-+				   ((*bat_attr)->attr).name);
- 			goto rem_attr;
- 		}
- 	}
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index ebe9969..a20420f 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -478,7 +478,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct bat_priv *bat_priv,
- 		batadv_dbg(DBG_DAT, bat_priv, "ARP request replied locally\n");
- 	} else {
- 		/* Send the request on the DHT */
--		inc_counter(bat_priv, BAT_CNT_DAT_REQUEST_TX);
-+		batadv_inc_counter(bat_priv, BAT_CNT_DAT_REQUEST_TX);
- 		ret = batadv_dht_send_data(bat_priv, skb, ip_dst,
- 					   BAT_P_DAT_DHT_GET);
- 	}
-@@ -535,7 +535,7 @@ bool batadv_dat_snoop_incoming_arp_request(struct bat_priv *bat_priv,
- 	if (!skb_new)
- 		goto out;
- 
--	inc_counter(bat_priv, BAT_CNT_DAT_REPLY_TX);
-+	batadv_inc_counter(bat_priv, BAT_CNT_DAT_REPLY_TX);
- 
- 	batadv_unicast_4addr_send_skb(skb_new, bat_priv, BAT_P_DAT_CACHE_REPLY);
- 
-@@ -576,7 +576,7 @@ bool batadv_dat_snoop_outgoing_arp_reply(struct bat_priv *bat_priv,
- 	batadv_arp_neigh_update(bat_priv, ip_src, hw_src);
- 	batadv_arp_neigh_update(bat_priv, ip_dst, hw_dst);
- 
--	inc_counter(bat_priv, BAT_CNT_DAT_REPLY_TX);
-+	batadv_inc_counter(bat_priv, BAT_CNT_DAT_REPLY_TX);
- 
- 	/* Send the ARP reply to the candidates for both the IP addresses we
- 	 * fetched from the ARP reply
-diff --git a/gateway_client.c b/gateway_client.c
-index 8cdcc8e..fe7d846 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -197,7 +197,7 @@ void batadv_gw_election(struct bat_priv *bat_priv)
- 	if (atomic_read(&bat_priv->gw_mode) != GW_MODE_CLIENT)
- 		goto out;
- 
--	if (!atomic_dec_not_zero(&bat_priv->gw_reselect))
-+	if (!batadv_atomic_dec_not_zero(&bat_priv->gw_reselect))
- 		goto out;
- 
- 	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
-diff --git a/gateway_common.c b/gateway_common.c
-index 6edf37f..f5c3980 100644
---- a/gateway_common.c
-+++ b/gateway_common.c
-@@ -97,9 +97,9 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 
- 	ret = kstrtol(buff, 10, &ldown);
- 	if (ret) {
--		bat_err(net_dev,
--			"Download speed of gateway mode invalid: %s\n",
--			buff);
-+		batadv_err(net_dev,
-+			   "Download speed of gateway mode invalid: %s\n",
-+			   buff);
- 		return false;
- 	}
- 
-@@ -122,9 +122,9 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 
- 		ret = kstrtol(slash_ptr + 1, 10, &lup);
- 		if (ret) {
--			bat_err(net_dev,
--				"Upload speed of gateway mode invalid: %s\n",
--				slash_ptr + 1);
-+			batadv_err(net_dev,
-+				   "Upload speed of gateway mode invalid: %s\n",
-+				   slash_ptr + 1);
- 			return false;
- 		}
- 
-@@ -164,13 +164,13 @@ ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
- 		return count;
- 
- 	batadv_gw_deselect(bat_priv);
--	bat_info(net_dev,
--		 "Changing gateway bandwidth from: '%i' to: '%ld' (propagating: %d%s/%d%s)\n",
--		 atomic_read(&bat_priv->gw_bandwidth), gw_bandwidth_tmp,
--		 (down > 2048 ? down / 1024 : down),
--		 (down > 2048 ? "MBit" : "KBit"),
--		 (up > 2048 ? up / 1024 : up),
--		 (up > 2048 ? "MBit" : "KBit"));
-+	batadv_info(net_dev,
-+		    "Changing gateway bandwidth from: '%i' to: '%ld' (propagating: %d%s/%d%s)\n",
-+		    atomic_read(&bat_priv->gw_bandwidth), gw_bandwidth_tmp,
-+		    (down > 2048 ? down / 1024 : down),
-+		    (down > 2048 ? "MBit" : "KBit"),
-+		    (up > 2048 ? up / 1024 : up),
-+		    (up > 2048 ? "MBit" : "KBit"));
- 
- 	atomic_set(&bat_priv->gw_bandwidth, gw_bandwidth_tmp);
- 
-diff --git a/hard-interface.c b/hard-interface.c
-index 4b9db9a..dbb9ef4 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -237,8 +237,8 @@ static void batadv_hardif_activate_interface(struct hard_iface *hard_iface)
- 	if (!primary_if)
- 		batadv_primary_if_select(bat_priv, hard_iface);
- 
--	bat_info(hard_iface->soft_iface, "Interface activated: %s\n",
--		 hard_iface->net_dev->name);
-+	batadv_info(hard_iface->soft_iface, "Interface activated: %s\n",
-+		    hard_iface->net_dev->name);
- 
- 	batadv_update_min_mtu(hard_iface->soft_iface);
- 
-@@ -255,8 +255,8 @@ static void batadv_hardif_deactivate_interface(struct hard_iface *hard_iface)
- 
- 	hard_iface->if_status = IF_INACTIVE;
- 
--	bat_info(hard_iface->soft_iface, "Interface deactivated: %s\n",
--		 hard_iface->net_dev->name);
-+	batadv_info(hard_iface->soft_iface, "Interface deactivated: %s\n",
-+		    hard_iface->net_dev->name);
- 
- 	batadv_update_min_mtu(hard_iface->soft_iface);
- }
-@@ -318,29 +318,29 @@ int batadv_hardif_enable_interface(struct hard_iface *hard_iface,
- 	dev_add_pack(&hard_iface->batman_adv_ptype);
- 
- 	atomic_set(&hard_iface->frag_seqno, 1);
--	bat_info(hard_iface->soft_iface, "Adding interface: %s\n",
--		 hard_iface->net_dev->name);
-+	batadv_info(hard_iface->soft_iface, "Adding interface: %s\n",
-+		    hard_iface->net_dev->name);
- 
- 	if (atomic_read(&bat_priv->fragmentation) && hard_iface->net_dev->mtu <
- 		ETH_DATA_LEN + BAT_HEADER_LEN)
--		bat_info(hard_iface->soft_iface,
--			 "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to %zi would solve the problem.\n",
--			 hard_iface->net_dev->name, hard_iface->net_dev->mtu,
--			 ETH_DATA_LEN + BAT_HEADER_LEN);
-+		batadv_info(hard_iface->soft_iface,
-+			    "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to %zi would solve the problem.\n",
-+			    hard_iface->net_dev->name, hard_iface->net_dev->mtu,
-+			    ETH_DATA_LEN + BAT_HEADER_LEN);
- 
- 	if (!atomic_read(&bat_priv->fragmentation) && hard_iface->net_dev->mtu <
- 		ETH_DATA_LEN + BAT_HEADER_LEN)
--		bat_info(hard_iface->soft_iface,
--			 "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. If you experience problems getting traffic through try increasing the MTU to %zi.\n",
--			 hard_iface->net_dev->name, hard_iface->net_dev->mtu,
--			 ETH_DATA_LEN + BAT_HEADER_LEN);
-+		batadv_info(hard_iface->soft_iface,
-+			    "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. If you experience problems getting traffic through try increasing the MTU to %zi.\n",
-+			    hard_iface->net_dev->name, hard_iface->net_dev->mtu,
-+			    ETH_DATA_LEN + BAT_HEADER_LEN);
- 
- 	if (batadv_hardif_is_iface_up(hard_iface))
- 		batadv_hardif_activate_interface(hard_iface);
- 	else
--		bat_err(hard_iface->soft_iface,
--			"Not using interface %s (retrying later): interface not active\n",
--			hard_iface->net_dev->name);
-+		batadv_err(hard_iface->soft_iface,
-+			   "Not using interface %s (retrying later): interface not active\n",
-+			   hard_iface->net_dev->name);
- 
- 	/* begin scheduling originator messages on that interface */
- 	batadv_schedule_bat_ogm(hard_iface);
-@@ -366,8 +366,8 @@ void batadv_hardif_disable_interface(struct hard_iface *hard_iface)
- 	if (hard_iface->if_status != IF_INACTIVE)
- 		goto out;
- 
--	bat_info(hard_iface->soft_iface, "Removing interface: %s\n",
--		 hard_iface->net_dev->name);
-+	batadv_info(hard_iface->soft_iface, "Removing interface: %s\n",
-+		    hard_iface->net_dev->name);
- 	dev_remove_pack(&hard_iface->batman_adv_ptype);
- 
- 	bat_priv->num_ifaces--;
-diff --git a/main.h b/main.h
-index ea5d7d5..37f2a30 100644
---- a/main.h
-+++ b/main.h
-@@ -218,14 +218,14 @@ static inline void batadv_dbg(int type, struct bat_priv *bat_priv,
- 	va_end(args);
- }
- 
--#define bat_info(net_dev, fmt, arg...)					\
-+#define batadv_info(net_dev, fmt, arg...)				\
- 	do {								\
- 		struct net_device *_netdev = (net_dev);                 \
- 		struct bat_priv *_batpriv = netdev_priv(_netdev);       \
- 		batadv_dbg(DBG_ALL, _batpriv, fmt, ## arg);		\
- 		pr_info("%s: " fmt, _netdev->name, ## arg);		\
- 	} while (0)
--#define bat_err(net_dev, fmt, arg...)					\
-+#define batadv_err(net_dev, fmt, arg...)				\
- 	do {								\
- 		struct net_device *_netdev = (net_dev);                 \
- 		struct bat_priv *_batpriv = netdev_priv(_netdev);       \
-@@ -254,10 +254,10 @@ static inline bool batadv_has_timed_out(unsigned long timestamp,
- 	return time_is_before_jiffies(timestamp + msecs_to_jiffies(timeout));
- }
- 
--#define atomic_dec_not_zero(v)	atomic_add_unless((v), -1, 0)
-+#define batadv_atomic_dec_not_zero(v)	atomic_add_unless((v), -1, 0)
- 
- /* Returns the smallest signed integer in two's complement with the sizeof x */
--#define smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
-+#define batadv_smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
- 
- /* Checks if a sequence number x is a predecessor/successor of y.
-  * they handle overflows/underflows and can correctly check for a
-@@ -269,12 +269,12 @@ static inline bool batadv_has_timed_out(unsigned long timestamp,
-  *  - when adding 128 - it is neither a predecessor nor a successor,
-  *  - after adding more than 127 to the starting value - it is a successor
-  */
--#define seq_before(x, y) ({typeof(x) _d1 = (x); \
--			  typeof(y) _d2 = (y); \
--			  typeof(x) _dummy = (_d1 - _d2); \
--			  (void) (&_d1 == &_d2); \
--			  _dummy > smallest_signed_int(_dummy); })
--#define seq_after(x, y) seq_before(y, x)
-+#define batadv_seq_before(x, y) ({typeof(x) _d1 = (x); \
-+				 typeof(y) _d2 = (y); \
-+				 typeof(x) _dummy = (_d1 - _d2); \
-+				 (void) (&_d1 == &_d2); \
-+				 _dummy > batadv_smallest_signed_int(_dummy); })
-+#define batadv_seq_after(x, y) batadv_seq_before(y, x)
- 
- /* Stop preemption on local cpu while incrementing the counter */
- static inline void batadv_add_counter(struct bat_priv *bat_priv, size_t idx,
-@@ -285,7 +285,7 @@ static inline void batadv_add_counter(struct bat_priv *bat_priv, size_t idx,
- 	put_cpu();
- }
- 
--#define inc_counter(b, i) batadv_add_counter(b, i, 1)
-+#define batadv_inc_counter(b, i) batadv_add_counter(b, i, 1)
- 
- /* Sum and return the cpu-local counters for index 'idx' */
- static inline uint64_t batadv_sum_counter(struct bat_priv *bat_priv, size_t idx)
-diff --git a/routing.c b/routing.c
-index 4176c78..c3160be 100644
---- a/routing.c
-+++ b/routing.c
-@@ -605,7 +605,7 @@ int batadv_recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 
- 	switch (tt_query->flags & TT_QUERY_TYPE_MASK) {
- 	case TT_REQUEST:
--		inc_counter(bat_priv, BAT_CNT_TT_REQUEST_RX);
-+		batadv_inc_counter(bat_priv, BAT_CNT_TT_REQUEST_RX);
- 
- 		/* If we cannot provide an answer the tt_request is
- 		 * forwarded
-@@ -620,7 +620,7 @@ int batadv_recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 		}
- 		break;
- 	case TT_RESPONSE:
--		inc_counter(bat_priv, BAT_CNT_TT_RESPONSE_RX);
-+		batadv_inc_counter(bat_priv, BAT_CNT_TT_RESPONSE_RX);
- 
- 		if (batadv_is_my_mac(tt_query->dst)) {
- 			/* packet needs to be linearized to access the TT
-@@ -674,7 +674,7 @@ int batadv_recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
- 	if (is_broadcast_ether_addr(ethhdr->h_source))
- 		goto out;
- 
--	inc_counter(bat_priv, BAT_CNT_TT_ROAM_ADV_RX);
-+	batadv_inc_counter(bat_priv, BAT_CNT_TT_ROAM_ADV_RX);
- 
- 	roam_adv_packet = (struct roam_adv_packet *)skb->data;
- 
-@@ -896,7 +896,7 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
- 	unicast_packet->header.ttl--;
- 
- 	/* Update stats counter */
--	inc_counter(bat_priv, BAT_CNT_FORWARD);
-+	batadv_inc_counter(bat_priv, BAT_CNT_FORWARD);
- 	batadv_add_counter(bat_priv, BAT_CNT_FORWARD_BYTES,
- 			   skb->len + ETH_HLEN);
- 
-@@ -920,6 +920,7 @@ static int batadv_check_unicast_ttvn(struct bat_priv *bat_priv,
- 	struct hard_iface *primary_if;
- 	struct unicast_packet *unicast_packet;
- 	bool tt_poss_change;
-+	int is_old_ttvn;
- 
- 	/* I could need to modify it */
- 	if (skb_cow(skb, sizeof(struct unicast_packet)) < 0)
-@@ -943,7 +944,8 @@ static int batadv_check_unicast_ttvn(struct bat_priv *bat_priv,
- 	}
- 
- 	/* Check whether I have to reroute the packet */
--	if (seq_before(unicast_packet->ttvn, curr_ttvn) || tt_poss_change) {
-+	is_old_ttvn = batadv_seq_before(unicast_packet->ttvn, curr_ttvn);
-+	if (is_old_ttvn || tt_poss_change) {
- 		/* check if there is enough data before accessing it */
- 		if (pskb_may_pull(skb, sizeof(struct unicast_packet) +
- 				  ETH_HLEN) < 0)
-diff --git a/send.c b/send.c
-index e19265a..d38fe2a 100644
---- a/send.c
-+++ b/send.c
-@@ -142,7 +142,7 @@ int batadv_add_bcast_packet_to_list(struct bat_priv *bat_priv,
- 	struct bcast_packet *bcast_packet;
- 	struct sk_buff *newskb;
- 
--	if (!atomic_dec_not_zero(&bat_priv->bcast_queue_left)) {
-+	if (!batadv_atomic_dec_not_zero(&bat_priv->bcast_queue_left)) {
- 		batadv_dbg(DBG_BATMAN, bat_priv, "bcast packet queue full\n");
- 		goto out;
- 	}
-diff --git a/translation-table.c b/translation-table.c
-index 62dda2b..cb1d3a8 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1431,7 +1431,7 @@ static int batadv_send_tt_request(struct bat_priv *bat_priv,
- 		   dst_orig_node->orig, neigh_node->addr,
- 		   (full_table ? 'F' : '.'));
- 
--	inc_counter(bat_priv, BAT_CNT_TT_REQUEST_TX);
-+	batadv_inc_counter(bat_priv, BAT_CNT_TT_REQUEST_TX);
- 
- 	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
- 	ret = 0;
-@@ -1559,7 +1559,7 @@ static bool batadv_send_other_tt_response(struct bat_priv *bat_priv,
- 		   res_dst_orig_node->orig, neigh_node->addr,
- 		   req_dst_orig_node->orig, req_ttvn);
- 
--	inc_counter(bat_priv, BAT_CNT_TT_RESPONSE_TX);
-+	batadv_inc_counter(bat_priv, BAT_CNT_TT_RESPONSE_TX);
- 
- 	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
- 	ret = true;
-@@ -1680,7 +1680,7 @@ static bool batadv_send_my_tt_response(struct bat_priv *bat_priv,
- 		   orig_node->orig, neigh_node->addr,
- 		   (tt_response->flags & TT_FULL_TABLE ? 'F' : '.'));
- 
--	inc_counter(bat_priv, BAT_CNT_TT_RESPONSE_TX);
-+	batadv_inc_counter(bat_priv, BAT_CNT_TT_RESPONSE_TX);
- 
- 	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
- 	ret = true;
-@@ -1930,7 +1930,7 @@ static bool batadv_tt_check_roam_count(struct bat_priv *bat_priv,
- 					 ROAMING_MAX_TIME))
- 			continue;
- 
--		if (!atomic_dec_not_zero(&tt_roam_node->counter))
-+		if (!batadv_atomic_dec_not_zero(&tt_roam_node->counter))
- 			/* Sorry, you roamed too many times! */
- 			goto unlock;
- 		ret = true;
-@@ -1998,7 +1998,7 @@ static void batadv_send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
- 		   "Sending ROAMING_ADV to %pM (client %pM) via %pM\n",
- 		   orig_node->orig, client, neigh_node->addr);
- 
--	inc_counter(bat_priv, BAT_CNT_TT_ROAM_ADV_TX);
-+	batadv_inc_counter(bat_priv, BAT_CNT_TT_ROAM_ADV_TX);
- 
- 	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
- 	ret = 0;
-@@ -2162,7 +2162,7 @@ int batadv_tt_append_diff(struct bat_priv *bat_priv,
- 
- 	/* if the changes have been sent often enough */
- 	if ((tt_num_changes < 0) &&
--	    (!atomic_dec_not_zero(&bat_priv->tt_ogm_append_cnt))) {
-+	    (!batadv_atomic_dec_not_zero(&bat_priv->tt_ogm_append_cnt))) {
- 		batadv_tt_realloc_packet_buff(packet_buff, packet_buff_len,
- 					      packet_min_len, packet_min_len);
- 		tt_num_changes = 0;
 diff --git a/vis.c b/vis.c
-index 607b101..6b7a1c0 100644
+index 6b7a1c0..3095c41 100644
 --- a/vis.c
 +++ b/vis.c
-@@ -424,8 +424,8 @@ static struct vis_info *batadv_add_packet(struct bat_priv *bat_priv,
+@@ -140,72 +140,117 @@ static void batadv_vis_data_insert_interface(const uint8_t *interface,
+ 	hlist_add_head(&entry->list, if_list);
+ }
  
- 	if (old_info) {
- 		old_packet = (struct vis_packet *)old_info->skb_packet->data;
--		if (!seq_after(ntohl(vis_packet->seqno),
--			       ntohl(old_packet->seqno))) {
-+		if (!batadv_seq_after(ntohl(vis_packet->seqno),
-+				      ntohl(old_packet->seqno))) {
- 			if (old_packet->seqno == vis_packet->seqno) {
- 				batadv_recv_list_add(bat_priv,
- 						     &old_info->recv_list,
+-static ssize_t batadv_vis_prim_sec(char *buff, const struct hlist_head *if_list)
++static void batadv_vis_data_read_prim_sec(struct seq_file *seq,
++					  const struct hlist_head *if_list)
+ {
+ 	struct if_list_entry *entry;
+ 	struct hlist_node *pos;
+-	size_t len = 0;
+ 
+ 	hlist_for_each_entry(entry, pos, if_list, list) {
+ 		if (entry->primary)
+-			len += sprintf(buff + len, "PRIMARY, ");
++			seq_printf(seq, "PRIMARY, ");
+ 		else
+-			len += sprintf(buff + len,  "SEC %pM, ", entry->addr);
++			seq_printf(seq,  "SEC %pM, ", entry->addr);
+ 	}
+-
+-	return len;
+-}
+-
+-static size_t batadv_vis_cnt_prim_sec(struct hlist_head *if_list)
+-{
+-	struct if_list_entry *entry;
+-	struct hlist_node *pos;
+-	size_t count = 0;
+-
+-	hlist_for_each_entry(entry, pos, if_list, list) {
+-		if (entry->primary)
+-			count += 9;
+-		else
+-			count += 23;
+-	}
+-
+-	return count;
+ }
+ 
+ /* read an entry  */
+-static ssize_t batadv_vis_data_read_entry(char *buff,
++static ssize_t batadv_vis_data_read_entry(struct seq_file *seq,
+ 					  const struct vis_info_entry *entry,
+ 					  const uint8_t *src, bool primary)
+ {
+-	/* maximal length: max(4+17+2, 3+17+1+3+2) == 26 */
+ 	if (primary && entry->quality == 0)
+-		return sprintf(buff, "TT %pM, ", entry->dest);
++		return seq_printf(seq, "TT %pM, ", entry->dest);
+ 	else if (batadv_compare_eth(entry->src, src))
+-		return sprintf(buff, "TQ %pM %d, ", entry->dest,
+-			       entry->quality);
++		return seq_printf(seq, "TQ %pM %d, ", entry->dest,
++				  entry->quality);
+ 
+ 	return 0;
+ }
+ 
++static void batadv_vis_data_insert_interfaces(struct hlist_head *list,
++					      struct vis_packet *packet,
++					      struct vis_info_entry *entries)
++{
++	int i;
++
++	for (i = 0; i < packet->entries; i++) {
++		if (entries[i].quality == 0)
++			continue;
++
++		if (batadv_compare_eth(entries[i].src, packet->vis_orig))
++			continue;
++
++		batadv_vis_data_insert_interface(entries[i].src, list, false);
++	}
++}
++
++static void batadv_vis_data_read_entries(struct seq_file *seq,
++					 struct hlist_head *list,
++					 struct vis_packet *packet,
++					 struct vis_info_entry *entries)
++{
++	int i;
++	struct if_list_entry *entry;
++	struct hlist_node *pos;
++
++	hlist_for_each_entry(entry, pos, list, list) {
++		seq_printf(seq, "%pM,", entry->addr);
++
++		for (i = 0; i < packet->entries; i++)
++			batadv_vis_data_read_entry(seq, &entries[i],
++						   entry->addr, entry->primary);
++
++		/* add primary/secondary records */
++		if (batadv_compare_eth(entry->addr, packet->vis_orig))
++			batadv_vis_data_read_prim_sec(seq, list);
++
++		seq_printf(seq, "\n");
++	}
++}
++
++static void batadv_vis_seq_print_text_bucket(struct seq_file *seq,
++					     const struct hlist_head *head)
++{
++	struct hlist_node *node;
++	struct vis_info *info;
++	struct vis_packet *packet;
++	uint8_t *entries_pos;
++	struct vis_info_entry *entries;
++	struct if_list_entry *entry;
++	struct hlist_node *pos, *n;
++
++	HLIST_HEAD(vis_if_list);
++
++	hlist_for_each_entry_rcu(info, node, head, hash_entry) {
++		packet = (struct vis_packet *)info->skb_packet->data;
++		entries_pos = (uint8_t *)packet + sizeof(*packet);
++		entries = (struct vis_info_entry *)entries_pos;
++
++		batadv_vis_data_insert_interface(packet->vis_orig, &vis_if_list,
++						 true);
++		batadv_vis_data_insert_interfaces(&vis_if_list, packet,
++						  entries);
++		batadv_vis_data_read_entries(seq, &vis_if_list, packet,
++					     entries);
++
++		hlist_for_each_entry_safe(entry, pos, n, &vis_if_list, list) {
++			hlist_del(&entry->list);
++			kfree(entry);
++		}
++	}
++}
++
+ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
+ {
+ 	struct hard_iface *primary_if;
+-	struct hlist_node *node;
+ 	struct hlist_head *head;
+-	struct vis_info *info;
+-	struct vis_packet *packet;
+-	struct vis_info_entry *entries;
+ 	struct net_device *net_dev = (struct net_device *)seq->private;
+ 	struct bat_priv *bat_priv = netdev_priv(net_dev);
+ 	struct hashtable_t *hash = bat_priv->vis_hash;
+-	HLIST_HEAD(vis_if_list);
+-	struct if_list_entry *entry;
+-	struct hlist_node *pos, *n;
+ 	uint32_t i;
+-	int j, ret = 0;
++	int ret = 0;
+ 	int vis_server = atomic_read(&bat_priv->vis_mode);
+-	size_t buff_pos, buf_size;
+-	char *buff;
+ 
+ 	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+@@ -214,120 +259,13 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
+ 	if (vis_server == VIS_TYPE_CLIENT_UPDATE)
+ 		goto out;
+ 
+-	buf_size = 1;
+-	/* Estimate length */
+ 	spin_lock_bh(&bat_priv->vis_hash_lock);
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+-
+-		rcu_read_lock();
+-		hlist_for_each_entry_rcu(info, node, head, hash_entry) {
+-			packet = (struct vis_packet *)info->skb_packet->data;
+-			entries = (struct vis_info_entry *)
+-				((char *)packet + sizeof(*packet));
+-
+-			batadv_vis_data_insert_interface(packet->vis_orig,
+-							 &vis_if_list, true);
+-
+-			for (j = 0; j < packet->entries; j++) {
+-				if (entries[j].quality == 0)
+-					continue;
+-				if (batadv_compare_eth(entries[j].src,
+-						       packet->vis_orig))
+-					continue;
+-				batadv_vis_data_insert_interface(entries[j].src,
+-								 &vis_if_list,
+-								 false);
+-			}
+-
+-			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
+-				buf_size += 18 + 26 * packet->entries;
+-
+-				/* add primary/secondary records */
+-				if (batadv_compare_eth(entry->addr,
+-						       packet->vis_orig))
+-					buf_size +=
+-					  batadv_vis_cnt_prim_sec(&vis_if_list);
+-
+-				buf_size += 1;
+-			}
+-
+-			hlist_for_each_entry_safe(entry, pos, n, &vis_if_list,
+-						  list) {
+-				hlist_del(&entry->list);
+-				kfree(entry);
+-			}
+-		}
+-		rcu_read_unlock();
++		batadv_vis_seq_print_text_bucket(seq, head);
+ 	}
+-
+-	buff = kmalloc(buf_size, GFP_ATOMIC);
+-	if (!buff) {
+-		spin_unlock_bh(&bat_priv->vis_hash_lock);
+-		ret = -ENOMEM;
+-		goto out;
+-	}
+-	buff[0] = '\0';
+-	buff_pos = 0;
+-
+-	for (i = 0; i < hash->size; i++) {
+-		head = &hash->table[i];
+-
+-		rcu_read_lock();
+-		hlist_for_each_entry_rcu(info, node, head, hash_entry) {
+-			packet = (struct vis_packet *)info->skb_packet->data;
+-			entries = (struct vis_info_entry *)
+-				((char *)packet + sizeof(*packet));
+-
+-			batadv_vis_data_insert_interface(packet->vis_orig,
+-							 &vis_if_list, true);
+-
+-			for (j = 0; j < packet->entries; j++) {
+-				if (entries[j].quality == 0)
+-					continue;
+-				if (batadv_compare_eth(entries[j].src,
+-						       packet->vis_orig))
+-					continue;
+-				batadv_vis_data_insert_interface(entries[j].src,
+-								 &vis_if_list,
+-								 false);
+-			}
+-
+-			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
+-				buff_pos += sprintf(buff + buff_pos, "%pM,",
+-						entry->addr);
+-
+-				for (j = 0; j < packet->entries; j++)
+-					buff_pos += batadv_vis_data_read_entry(
+-							buff + buff_pos,
+-							&entries[j],
+-							entry->addr,
+-							entry->primary);
+-
+-				/* add primary/secondary records */
+-				if (batadv_compare_eth(entry->addr,
+-						       packet->vis_orig))
+-					buff_pos +=
+-					 batadv_vis_prim_sec(buff + buff_pos,
+-							     &vis_if_list);
+-
+-				buff_pos += sprintf(buff + buff_pos, "\n");
+-			}
+-
+-			hlist_for_each_entry_safe(entry, pos, n, &vis_if_list,
+-						  list) {
+-				hlist_del(&entry->list);
+-				kfree(entry);
+-			}
+-		}
+-		rcu_read_unlock();
+-	}
+-
+ 	spin_unlock_bh(&bat_priv->vis_hash_lock);
+ 
+-	seq_printf(seq, "%s", buff);
+-	kfree(buff);
+-
+ out:
+ 	if (primary_if)
+ 		batadv_hardif_free_ref(primary_if);
 -- 
 1.7.10
 
