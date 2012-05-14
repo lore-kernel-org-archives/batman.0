@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 14 May 2012 16:34:52 +0800
+Date: Mon, 14 May 2012 16:38:03 +0800
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-	<1336781383-15649-19-git-send-email-sven@narfation.org>
-In-Reply-To: <1336781383-15649-19-git-send-email-sven@narfation.org>
+	<1336781383-15649-20-git-send-email-sven@narfation.org>
+In-Reply-To: <1336781383-15649-20-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205141634.53049.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 19/23] batman-adv: Prefix
-	translation-table non-static functions with batadv_
+Message-Id: <201205141638.04203.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 20/23] batman-adv: Prefix unicast
+	non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,7 +24,7 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, May 12, 2012 08:09:39 Sven Eckelmann wrote:
+On Saturday, May 12, 2012 08:09:40 Sven Eckelmann wrote:
 > batman-adv can be compiled as part of the kernel instead of an module. In
 > that case the linker will see all non-static symbols of batman-adv and all
 > other non-static symbols of the kernel. This could lead to symbol
@@ -34,22 +34,14 @@ On Saturday, May 12, 2012 08:09:39 Sven Eckelmann wrote:
 > Reported-by: David Miller <davem@davemloft.net>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bat_debugfs.c           |    4 +--
->  bat_iv_ogm.c            |   23 +++++++------
->  bridge_loop_avoidance.c |    4 +--
->  distributed-arp-table.c |    2 +-
->  gateway_client.c        |    4 +--
->  main.c                  |    6 ++--
->  originator.c            |    4 +--
->  routing.c               |   23 +++++++------
->  soft-interface.c        |   10 +++---
->  translation-table.c     |   88
-> +++++++++++++++++++++++++----------------------
-> translation-table.h     |   65 ++++++++++++++++++----------------
-> unicast.c               |    6 ++--
->  12 files changed, 129 insertions(+), 110 deletions(-)
+>  distributed-arp-table.c |    6 +++---
+>  originator.c            |    4 ++--
+>  routing.c               |    9 +++++----
+>  unicast.c               |   34 ++++++++++++++++++----------------
+>  unicast.h               |   30 ++++++++++++++++--------------
+>  5 files changed, 44 insertions(+), 39 deletions(-)
 
-Applied in revision cc6f72b.
+Applied in revision 6b8bdc6.
 
 Thanks,
 Marek
