@@ -1,11 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 14 May 2012 09:47:46 +0200
-Message-Id: <1336981666-31269-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1336980762-23149-1-git-send-email-ordex@autistici.org>
-References: <1336980762-23149-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: clear ADD+DEL (and viceversa)
-	events in the same orig-interval
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 14 May 2012 16:05:22 +0800
+References: <1336781383-15649-1-git-send-email-sven@narfation.org>
+	<1336781383-15649-11-git-send-email-sven@narfation.org>
+In-Reply-To: <1336781383-15649-11-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201205141605.22647.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 11/23] batman-adv: Prefix
+	hard-interface non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,88 +22,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-During an OGM-interval (time between two different OGM sendings) the same client
-could roam away and then roam back to us. In this case the node would add two
-events to the events list (that is going to be sent appended to the next OGM). A
-DEL one and an ADD one. Obviously they will only increase the overhead (either in
-the air and on the receiver side) and eventually trigger wrong states/events
-without producing any real effect.
+On Saturday, May 12, 2012 08:09:31 Sven Eckelmann wrote:
+> batman-adv can be compiled as part of the kernel instead of an module. In
+> that case the linker will see all non-static symbols of batman-adv and all
+> other non-static symbols of the kernel. This could lead to symbol
+> collisions. A prefix for the batman-adv symbols that defines their private
+> namespace avoids such a problem.
+> 
+> Reported-by: David Miller <davem@davemloft.net>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  bat_sysfs.c         |   18 +++++++++---------
+>  hard-interface.c    |   32 ++++++++++++++++----------------
+>  hard-interface.h    |   22 +++++++++++-----------
+>  main.c              |    6 +++---
+>  soft-interface.c    |    2 +-
+>  translation-table.c |    2 +-
+>  6 files changed, 41 insertions(+), 41 deletions(-)
 
-For this reason we can safely delete any ADD event with its related DEL one.
+Applied in revision db317ef.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
-
-- Removed useless "else"
-
- translation-table.c |   40 +++++++++++++++++++++++++++++++++++++---
- 1 file changed, 37 insertions(+), 3 deletions(-)
-
-diff --git a/translation-table.c b/translation-table.c
-index 2ecf3a2..11bb142 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -154,7 +154,9 @@ static void tt_orig_list_entry_free_ref(struct tt_orig_list_entry *orig_entry)
- static void tt_local_event(struct bat_priv *bat_priv, const uint8_t *addr,
- 			   uint8_t flags)
- {
--	struct tt_change_node *tt_change_node;
-+	struct tt_change_node *tt_change_node, *entry, *safe;
-+	bool event_removed = false;
-+	bool del_op_requested, del_op_entry;
- 
- 	tt_change_node = kmalloc(sizeof(*tt_change_node), GFP_ATOMIC);
- 
-@@ -164,13 +166,45 @@ static void tt_local_event(struct bat_priv *bat_priv, const uint8_t *addr,
- 	tt_change_node->change.flags = flags;
- 	memcpy(tt_change_node->change.addr, addr, ETH_ALEN);
- 
-+	del_op_requested = flags & TT_CLIENT_DEL;
-+
-+	/* check for ADD+DEL or DEL+ADD events */
- 	spin_lock_bh(&bat_priv->tt_changes_list_lock);
-+	list_for_each_entry_safe(entry, safe, &bat_priv->tt_changes_list,
-+				 list) {
-+		if (!compare_eth(entry->change.addr, addr))
-+			continue;
-+
-+		/* DEL+ADD in the same orig interval have no effect and can be
-+		 * removed to avoid silly behaviour on the receiver side. The
-+		 * other way around (ADD+DEL) can happen in case of roaming of
-+		 * a client still in the NEW state. Roaming of NEW clients is
-+		 * now possible due to automatically recognition of "temporary"
-+		 * clients
-+		 */
-+		del_op_entry = entry->change.flags & TT_CLIENT_DEL;
-+		if (!del_op_requested && del_op_entry)
-+			goto del;
-+		if (del_op_requested && !del_op_entry)
-+			goto del;
-+		continue;
-+del:
-+		list_del(&entry->list);
-+		kfree(entry);
-+		event_removed = true;
-+		goto unlock;
-+	}
-+
- 	/* track the change in the OGMinterval list */
- 	list_add_tail(&tt_change_node->list, &bat_priv->tt_changes_list);
--	atomic_inc(&bat_priv->tt_local_changes);
-+
-+unlock:
- 	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
- 
--	atomic_set(&bat_priv->tt_ogm_append_cnt, 0);
-+	if (event_removed)
-+		atomic_dec(&bat_priv->tt_local_changes);
-+	else
-+		atomic_inc(&bat_priv->tt_local_changes);
- }
- 
- int tt_len(int changes_num)
--- 
-1.7.9.4
-
+Thanks,
+Marek
