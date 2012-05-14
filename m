@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 14 May 2012 16:13:29 +0800
+Date: Mon, 14 May 2012 16:19:11 +0800
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-	<1336781383-15649-15-git-send-email-sven@narfation.org>
-In-Reply-To: <1336781383-15649-15-git-send-email-sven@narfation.org>
+	<1336781383-15649-16-git-send-email-sven@narfation.org>
+In-Reply-To: <1336781383-15649-16-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205141613.29519.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 15/23] batman-adv: Prefix ring_buffer
+Message-Id: <201205141619.11987.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 16/23] batman-adv: Prefix routing
 	non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,7 +24,7 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, May 12, 2012 08:09:35 Sven Eckelmann wrote:
+On Saturday, May 12, 2012 08:09:36 Sven Eckelmann wrote:
 > batman-adv can be compiled as part of the kernel instead of an module. In
 > that case the linker will see all non-static symbols of batman-adv and all
 > other non-static symbols of the kernel. This could lead to symbol
@@ -34,12 +34,17 @@ On Saturday, May 12, 2012 08:09:35 Sven Eckelmann wrote:
 > Reported-by: David Miller <davem@davemloft.net>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bat_iv_ogm.c  |   14 +++++++-------
->  ring_buffer.c |    5 +++--
->  ring_buffer.h |    5 +++--
->  3 files changed, 13 insertions(+), 11 deletions(-)
+>  bat_iv_ogm.c     |   15 +++++++-------
+>  gateway_client.c |    5 +++--
+>  main.c           |   16 +++++++--------
+>  originator.c     |    5 +++--
+>  routing.c        |   60
+> ++++++++++++++++++++++++++++--------------------------
+> routing.h        |   52 +++++++++++++++++++++++-----------------------
+> unicast.c        |    2 +-
+>  7 files changed, 81 insertions(+), 74 deletions(-)
 
-Applied in revision 217bc92.
+Applied in revision fa358e5.
 
 Thanks,
 Marek
