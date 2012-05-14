@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 14 May 2012 16:05:22 +0800
+Date: Mon, 14 May 2012 16:06:50 +0800
 References: <1336781383-15649-1-git-send-email-sven@narfation.org>
-	<1336781383-15649-11-git-send-email-sven@narfation.org>
-In-Reply-To: <1336781383-15649-11-git-send-email-sven@narfation.org>
+	<1336781383-15649-12-git-send-email-sven@narfation.org>
+In-Reply-To: <1336781383-15649-12-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205141605.22647.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 11/23] batman-adv: Prefix
-	hard-interface non-static functions with batadv_
+Message-Id: <201205141606.50481.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 12/23] batman-adv: Prefix hash
+	non-static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,7 +24,7 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, May 12, 2012 08:09:31 Sven Eckelmann wrote:
+On Saturday, May 12, 2012 08:09:32 Sven Eckelmann wrote:
 > batman-adv can be compiled as part of the kernel instead of an module. In
 > that case the linker will see all non-static symbols of batman-adv and all
 > other non-static symbols of the kernel. This could lead to symbol
@@ -34,15 +34,15 @@ On Saturday, May 12, 2012 08:09:31 Sven Eckelmann wrote:
 > Reported-by: David Miller <davem@davemloft.net>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bat_sysfs.c         |   18 +++++++++---------
->  hard-interface.c    |   32 ++++++++++++++++----------------
->  hard-interface.h    |   22 +++++++++++-----------
->  main.c              |    6 +++---
->  soft-interface.c    |    2 +-
->  translation-table.c |    2 +-
->  6 files changed, 41 insertions(+), 41 deletions(-)
+>  bridge_loop_avoidance.c |    8 ++++----
+>  hash.c                  |    4 ++--
+>  hash.h                  |    6 +++---
+>  originator.c            |    4 ++--
+>  translation-table.c     |    8 ++++----
+>  vis.c                   |    2 +-
+>  6 files changed, 16 insertions(+), 16 deletions(-)
 
-Applied in revision db317ef.
+Applied in revision 7a0c308.
 
 Thanks,
 Marek
