@@ -1,10 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 14 May 2012 09:17:37 +0200
-Message-Id: <1336979858-13928-8-git-send-email-ordex@autistici.org>
+Date: Mon, 14 May 2012 09:17:38 +0200
+Message-Id: <1336979858-13928-9-git-send-email-ordex@autistici.org>
 In-Reply-To: <1336979858-13928-1-git-send-email-ordex@autistici.org>
 References: <1336979858-13928-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 7/8] batman-adv: README cleanups
+Subject: [B.A.T.M.A.N.] [PATCH 8/8] batman-adv: unset the TT_CLIENT_PENDING
+	flag if the new local entry already exists
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,51 +20,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
+When trying to add a new tt_local_entry, if such entry already exists, we have
+to ensure that the TT_CLIENT_PENDING flag is not set, otherwise the entry will
+be deleted soon.
 
-- Add routing_algo
-
-- Remove date from README:
-The date has to be updated when a patch touches the README. Therefore, nearly
-every feature will modify this date. It can happens quite often that not only
-one feature is currently in development or waiting on the mailinglist. This
-creates merge conflicts when applying a patchset.
-
-The date itself doesn't provide any additional information when this file is
-only available in a release tarball or as part of a SCM repository.
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Reported-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- Documentation/networking/batman-adv.txt |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ net/batman-adv/translation-table.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/networking/batman-adv.txt b/Documentation/networking/batman-adv.txt
-index 220a58c..75a5923 100644
---- a/Documentation/networking/batman-adv.txt
-+++ b/Documentation/networking/batman-adv.txt
-@@ -1,5 +1,3 @@
--[state: 21-08-2011]
--
- BATMAN-ADV
- ----------
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index b3fb597..a66c2dc 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -206,6 +206,8 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
  
-@@ -68,10 +66,11 @@ All  mesh  wide  settings  can be found in batman's own interface
- folder:
+ 	if (tt_local_entry) {
+ 		tt_local_entry->last_seen = jiffies;
++		/* possibly unset the TT_CLIENT_PENDING flag */
++		tt_local_entry->common.flags &= ~TT_CLIENT_PENDING;
+ 		goto out;
+ 	}
  
- # ls /sys/class/net/bat0/mesh/
--# aggregated_ogms        fragmentation          hop_penalty
--# ap_isolation           gw_bandwidth           log_level
--# bonding                gw_mode                orig_interval
--# bridge_loop_avoidance  gw_sel_class           vis_mode
-+# aggregated_ogms        gw_bandwidth           log_level
-+# ap_isolation           gw_mode                orig_interval
-+# bonding                gw_sel_class           routing_algo
-+# bridge_loop_avoidance  hop_penalty            vis_mode
-+# fragmentation
- 
- 
- There is a special folder for debugging information:
 -- 
 1.7.9.4
 
