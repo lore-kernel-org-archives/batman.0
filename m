@@ -1,11 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 14 May 2012 09:17:38 +0200
-Message-Id: <1336979858-13928-9-git-send-email-ordex@autistici.org>
-In-Reply-To: <1336979858-13928-1-git-send-email-ordex@autistici.org>
-References: <1336979858-13928-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 8/8] batman-adv: unset the TT_CLIENT_PENDING
-	flag if the new local entry already exists
+Date: Mon, 14 May 2012 09:32:42 +0200
+Message-Id: <1336980762-23149-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: clear ADD+DEL (and viceversa)
+	events in the same orig-interval
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,32 +15,86 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-When trying to add a new tt_local_entry, if such entry already exists, we have
-to ensure that the TT_CLIENT_PENDING flag is not set, otherwise the entry will
-be deleted soon.
+During an OGM-interval (time between two different OGM sendings) the same client
+could roam away and then roam back to us. In this case the node would add two
+events to the events list (that is going to be sent appended to the next OGM). A
+DEL one and an ADD one. Obviously they will only increase the overhead (either in
+the air and on the receiver side) and eventually trigger wrong states/events
+without producing any real effect.
 
-Reported-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+For this reason we can safely delete any ADD event with its related DEL one.
+
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/translation-table.c |    2 ++
- 1 file changed, 2 insertions(+)
+ translation-table.c |   41 ++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 38 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index b3fb597..a66c2dc 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -206,6 +206,8 @@ void tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+diff --git a/translation-table.c b/translation-table.c
+index 2ecf3a2..c134a29 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -154,7 +154,9 @@ static void tt_orig_list_entry_free_ref(struct tt_orig_list_entry *orig_entry)
+ static void tt_local_event(struct bat_priv *bat_priv, const uint8_t *addr,
+ 			   uint8_t flags)
+ {
+-	struct tt_change_node *tt_change_node;
++	struct tt_change_node *tt_change_node, *entry, *safe;
++	bool event_removed = false;
++	bool del_op_requested, del_op_entry;
  
- 	if (tt_local_entry) {
- 		tt_local_entry->last_seen = jiffies;
-+		/* possibly unset the TT_CLIENT_PENDING flag */
-+		tt_local_entry->common.flags &= ~TT_CLIENT_PENDING;
- 		goto out;
- 	}
+ 	tt_change_node = kmalloc(sizeof(*tt_change_node), GFP_ATOMIC);
  
+@@ -164,13 +166,46 @@ static void tt_local_event(struct bat_priv *bat_priv, const uint8_t *addr,
+ 	tt_change_node->change.flags = flags;
+ 	memcpy(tt_change_node->change.addr, addr, ETH_ALEN);
+ 
++	del_op_requested = flags & TT_CLIENT_DEL;
++
++	/* check for ADD+DEL or DEL+ADD events */
+ 	spin_lock_bh(&bat_priv->tt_changes_list_lock);
++	list_for_each_entry_safe(entry, safe, &bat_priv->tt_changes_list,
++				 list) {
++		if (!compare_eth(entry->change.addr, addr))
++			continue;
++
++		/* DEL+ADD in the same orig interval have no effect and can be
++		 * removed to avoid silly behaviour on the receiver side. The
++		 * other way around (ADD+DEL) can happen in case of roaming of
++		 * a client still in the NEW state. Roaming of NEW clients is
++		 * now possible due to automatically recognition of "temporary"
++		 * clients
++		 */
++		del_op_entry = entry->change.flags & TT_CLIENT_DEL;
++		if (!del_op_requested && del_op_entry)
++			goto del;
++		else if (del_op_requested && !del_op_entry)
++			goto del;
++		else
++			continue;
++del:
++		list_del(&entry->list);
++		kfree(entry);
++		event_removed = true;
++		goto unlock;
++	}
++
+ 	/* track the change in the OGMinterval list */
+ 	list_add_tail(&tt_change_node->list, &bat_priv->tt_changes_list);
+-	atomic_inc(&bat_priv->tt_local_changes);
++
++unlock:
+ 	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
+ 
+-	atomic_set(&bat_priv->tt_ogm_append_cnt, 0);
++	if (event_removed)
++		atomic_dec(&bat_priv->tt_local_changes);
++	else
++		atomic_inc(&bat_priv->tt_local_changes);
+ }
+ 
+ int tt_len(int changes_num)
 -- 
 1.7.9.4
 
