@@ -1,13 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 15 May 2012 00:37:34 +0800
-References: <1337010808.2814.70.camel@E-PC-JJ>
+Return-Path: <onelektra@gmx.net>
+Date: Mon, 14 May 2012 18:42:54 +0200
+From: Elektra <onelektra@gmx.net>
+Message-Id: <20120514184254.f79056e44db765d4f85b4f75@gmx.net>
 In-Reply-To: <1337010808.2814.70.camel@E-PC-JJ>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+References: <1337010808.2814.70.camel@E-PC-JJ>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205150037.35178.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Some problems with batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,35 +19,13 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Hello Jochen -
 
-Hi,
+welcome to driver & firmware hell. This is very likely a problem related to stability issues with your WiFi interfaces. I would expect this behavior since you are using USB WiFi dongles. All USB WiFi devices depend on firmware, which is loaded when you initialize the devices. Ad-hoc mode has been neglected far and wide by the industry. Since you have to load a proprietary binary blob, which is more likely broken in ad-hoc mode rather than not, I am afraid you are out of luck. I'd love to get a USB WiFi solution in my hands that actually works in a reliable and stable manner. Unfortunately I know of none.
 
-> I've set up the ad-hoc network with WPA-Encryption. This is working
-> fine. I can access all nodes if i configure the ra0 (ralink wifi)
-> interface with static ip addresses. I've done this for testing purpose
-> only. Normally only the bat0 interface has an ip address.
->
-> [..]
->
-> # iwconfig 
-> lo        no wireless extensions.
-> dummy0    no wireless extensions.
-> usb0      no wireless extensions.
-> eth0      no wireless extensions.
-> ra0       Ralink STA  ESSID:"ceR{)|n$v#pp|fJX"  Nickname:"RT2870STA"
->           Mode:Ad-Hoc  Frequency=2.442 GHz  Cell: DE:BB:8C:08:B8:EC   
->           Bit Rate=36 Mb/s   
->           RTS thr:off   Fragment thr:off
->           Encryption key:D83E-521A-8B9F-7C95-3ACE-D477-****-****
+If anybody has something that actually works, I'd love to know.
 
-the ralink driver misses one very important feature to reliably run a larger 
-adhoc mode cell: Assigning a manually chosen BSSID. Therefore, it would not 
-suprise me if you experienced "cell splits" from time to time.
-To verify this theory you can watch the BSSID (Cell) field on the involved 
-nodes and run a continuous ping on your statically configured setup. If I am 
-correct you also will experience packet loss and the BSSID will change.
-
-Regards,
-Marek
+Cheers,
+Elektra
