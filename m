@@ -1,15 +1,12 @@
-Return-Path: <trizonelabs@gmail.com>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Wed, 16 May 2012 00:06:20 +0200
+Message-Id: <1337119580-1026-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-In-Reply-To: <1337099068.2951.8.camel@E-PC-JJ>
-References: <1337010808.2814.70.camel@E-PC-JJ>
-	<20120514184254.f79056e44db765d4f85b4f75@gmx.net>
-	<CAJuY50ycsfyTGfKHJ0RR8T8z-wA4cqRnhJn_DB1v+MvbWCPv6Q@mail.gmail.com>
-	<1337099068.2951.8.camel@E-PC-JJ>
-Date: Tue, 15 May 2012 21:43:56 +0300
-Message-ID: <CAJuY50w99_iHwoNSE_iw9q80H7NTcghQ09Vn-bOgb5-B3W4sSA@mail.gmail.com>
-From: 3zl Trizonelabs <trizonelabs@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Some problems with batman-adv
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Correctly check return value
+	from debugfs_create_dir
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,64 +18,79 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-here's the data of my Openwrt at the VM i have at hand :
+The setup code in batadv_socket_setup() and debug_log_setup() wrongly
+assumes that debugfs_create_file() returns !0 on error. Since it
+actually returns a pointer on success[1], the following check should
+be inverted.
 
+Also, use the return value from the two setup functions in
+batadv_debugfs_add_meshif().
 
-Openwrt ATTITUDE ADJUSTMENT (bleeding edge, r31151)
+[1] http://www.fsl.cs.sunysb.edu/kernel-api/re464.html
 
-# uname -a
-Linux e64f14 2.6.39.4 #2 Fri Mar 30 18:44:22 BST 2012 i686 GNU/Linux
-#
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
+ bat_debugfs.c |   11 +++++++----
+ icmp_socket.c |    4 ++--
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
-# lsmod | grep rt73
-rt73usb                20320  0
-rt2x00usb               6012  1 rt73usb
-rt2x00lib              25052  2 rt73usb,rt2x00usb
-usbcore                85712  6 uhci_hcd,ohci_hcd,ehci_hcd,rt73usb,rt2x00usb
-crc_itu_t                892  1 rt73usb
-#
-/lib/firmware/rt73.bin
-#
-# cat /etc/config/wireless
+diff --git a/bat_debugfs.c b/bat_debugfs.c
+index cd636db..bd9325d 100644
+--- a/bat_debugfs.c
++++ b/bat_debugfs.c
+@@ -193,13 +193,13 @@ static int debug_log_setup(struct bat_priv *bat_priv)
+ 
+ 	d = debugfs_create_file("log", S_IFREG | S_IRUSR,
+ 				bat_priv->debug_dir, bat_priv, &log_fops);
+-	if (d)
++	if (!d)
+ 		goto err;
+ 
+ 	return 0;
+ 
+ err:
+-	return 1;
++	return -ENOMEM;
+ }
+ 
+ static void debug_log_cleanup(struct bat_priv *bat_priv)
+@@ -347,8 +347,11 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
+ 	if (!bat_priv->debug_dir)
+ 		goto out;
+ 
+-	batadv_socket_setup(bat_priv);
+-	debug_log_setup(bat_priv);
++	if (batadv_socket_setup(bat_priv))
++		goto rem_attr;
++
++	if (debug_log_setup(bat_priv))
++		goto rem_attr;
+ 
+ 	for (bat_debug = mesh_debuginfos; *bat_debug; ++bat_debug) {
+ 		file = debugfs_create_file(((*bat_debug)->attr).name,
+diff --git a/icmp_socket.c b/icmp_socket.c
+index 3fad5aa..40c5e18 100644
+--- a/icmp_socket.c
++++ b/icmp_socket.c
+@@ -283,13 +283,13 @@ int batadv_socket_setup(struct bat_priv *bat_priv)
+ 
+ 	d = debugfs_create_file(ICMP_SOCKET, S_IFREG | S_IWUSR | S_IRUSR,
+ 				bat_priv->debug_dir, bat_priv, &fops);
+-	if (d)
++	if (!d)
+ 		goto err;
+ 
+ 	return 0;
+ 
+ err:
+-	return 1;
++	return -ENOMEM;
+ }
+ 
+ static void bat_socket_add_packet(struct socket_client *socket_client,
+-- 
+1.7.10.2
 
-config wifi-device 'phy0'
-        option phy 'phy0'
-        option type 'mac80211'
-        option channel '1'
-
-config wifi-iface
-        option device 'phy0'
-        option mode 'adhoc'
-        option ssid 'BRUCE-MESH'
-        option bssid '02:AF:FE:00:11:22'
-
-cat /etc/config/network
-
-config interface 'lan'
-        option ifname 'bat0'
-        option type 'bridge'
-        option proto 'dhcp'
-
-#
-#iwconfig
-
-wlan0     IEEE 802.11bg  ESSID:"BRUCE-MESH"
-          Mode:Ad-Hoc  Frequency:2.412 GHz  Cell: 02:AF:FE:00:11:22
-          Tx-Power=20 dBm
-          RTS thr:off   Fragment thr:off
-          Encryption key:off
-          Power Management:on
-
-
-#ifconfig wlan0 mtu 1528
-
-##################################
-for the Linux Slitaz setup i have to dig for it
-
-for thorough test i would propose to run check-spripts + iperf on
-non-encryptet channels
-
-regards
-3zl
