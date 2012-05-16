@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 16 May 2012 16:56:42 +0800
+Date: Wed, 16 May 2012 16:58:11 +0800
 References: <1336840447-6580-1-git-send-email-sven@narfation.org>
-	<1336840447-6580-7-git-send-email-sven@narfation.org>
-In-Reply-To: <1336840447-6580-7-git-send-email-sven@narfation.org>
+	<1336840447-6580-8-git-send-email-sven@narfation.org>
+In-Reply-To: <1336840447-6580-8-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205161656.42861.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 07/18] batman-adv: Prefix gateway_common
+Message-Id: <201205161658.11406.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 08/18] batman-adv: Prefix hard-interface
 	local static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,17 +24,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, May 13, 2012 00:33:56 Sven Eckelmann wrote:
+On Sunday, May 13, 2012 00:33:57 Sven Eckelmann wrote:
 > All non-static symbols of batman-adv were prefixed with batadv_ to avoid
 > collisions with other symbols of the kernel. Other symbols of batman-adv
 > should use the same prefix to keep the naming scheme consistent.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  gateway_common.c |   10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+>  hard-interface.c |   62
+> ++++++++++++++++++++++++++++-------------------------- 1 file changed, 32
+> insertions(+), 30 deletions(-)
 
-Applied in revision a80c651.
+Applied in revision 5615c46.
 
 Thanks,
 Marek
