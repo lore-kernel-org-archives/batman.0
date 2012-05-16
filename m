@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 16 May 2012 20:23:23 +0200
-Message-Id: <1337192605-8652-11-git-send-email-sven@narfation.org>
+Date: Wed, 16 May 2012 20:23:24 +0200
+Message-Id: <1337192605-8652-12-git-send-email-sven@narfation.org>
 In-Reply-To: <1337192605-8652-1-git-send-email-sven@narfation.org>
 References: <1779270.uUsuEFyTM4@sven-desktop.home.narfation.org>
 	<1337192605-8652-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 11/13] batman-adv: Directly print to seq_file
-	in vis
+Subject: [B.A.T.M.A.N.] [PATCH 12/13] batman-adv: Remove unused define
+	BAT_ATTR_HIF_UINT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,295 +20,69 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The vis output doesn't need to be buffered in an character buffer before it can
-be send to the userspace program that reads from the vis debug file.
-
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- vis.c |  228 ++++++++++++++++++++++++-----------------------------------------
- 1 file changed, 83 insertions(+), 145 deletions(-)
+ bat_sysfs.c |   47 -----------------------------------------------
+ 1 file changed, 47 deletions(-)
 
-diff --git a/vis.c b/vis.c
-index 6b7a1c0..3095c41 100644
---- a/vis.c
-+++ b/vis.c
-@@ -140,72 +140,117 @@ static void batadv_vis_data_insert_interface(const uint8_t *interface,
- 	hlist_add_head(&entry->list, if_list);
- }
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index 336a61d..e4e4b84 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -122,53 +122,6 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			batadv_store_##_name)
  
--static ssize_t batadv_vis_prim_sec(char *buff, const struct hlist_head *if_list)
-+static void batadv_vis_data_read_prim_sec(struct seq_file *seq,
-+					  const struct hlist_head *if_list)
- {
- 	struct if_list_entry *entry;
- 	struct hlist_node *pos;
--	size_t len = 0;
  
- 	hlist_for_each_entry(entry, pos, if_list, list) {
- 		if (entry->primary)
--			len += sprintf(buff + len, "PRIMARY, ");
-+			seq_printf(seq, "PRIMARY, ");
- 		else
--			len += sprintf(buff + len,  "SEC %pM, ", entry->addr);
-+			seq_printf(seq,  "SEC %pM, ", entry->addr);
- 	}
--
--	return len;
+-#define BAT_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)		\
+-ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
+-		      char *buff, size_t count)				\
+-{									\
+-	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
+-	struct hard_iface *hard_iface;					\
+-	ssize_t length;							\
+-									\
+-	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
+-	if (!hard_iface)						\
+-		return 0;						\
+-									\
+-	length = __store_uint_attr(buff, count, _min, _max, _post_func,	\
+-				   attr, &hard_iface->_name, net_dev);	\
+-									\
+-	hardif_free_ref(hard_iface);					\
+-	return length;							\
 -}
 -
--static size_t batadv_vis_cnt_prim_sec(struct hlist_head *if_list)
--{
--	struct if_list_entry *entry;
--	struct hlist_node *pos;
--	size_t count = 0;
+-#define BAT_ATTR_HIF_SHOW_UINT(_name)					\
+-ssize_t show_##_name(struct kobject *kobj,				\
+-		     struct attribute *attr, char *buff)		\
+-{									\
+-	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
+-	struct hard_iface *hard_iface;					\
+-	ssize_t length;							\
+-									\
+-	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
+-	if (!hard_iface)						\
+-		return 0;						\
+-									\
+-	length = sprintf(buff, "%i\n", atomic_read(&hard_iface->_name));\
+-									\
+-	hardif_free_ref(hard_iface);					\
+-	return length;							\
+-}
 -
--	hlist_for_each_entry(entry, pos, if_list, list) {
--		if (entry->primary)
--			count += 9;
--		else
--			count += 23;
--	}
+-/* Use this, if you are going to set [name] in hard_iface to an
+- * unsigned integer value
+- */
+-#define BAT_ATTR_HIF_UINT(_name, _mode, _min, _max, _post_func)		\
+-	static BAT_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)	\
+-	static BAT_ATTR_HIF_SHOW_UINT(_name)				\
+-	static BAT_ATTR(_name, _mode, batadv_show_##_name,		\
+-			batadv_store_##_name)
 -
--	return count;
- }
- 
- /* read an entry  */
--static ssize_t batadv_vis_data_read_entry(char *buff,
-+static ssize_t batadv_vis_data_read_entry(struct seq_file *seq,
- 					  const struct vis_info_entry *entry,
- 					  const uint8_t *src, bool primary)
- {
--	/* maximal length: max(4+17+2, 3+17+1+3+2) == 26 */
- 	if (primary && entry->quality == 0)
--		return sprintf(buff, "TT %pM, ", entry->dest);
-+		return seq_printf(seq, "TT %pM, ", entry->dest);
- 	else if (batadv_compare_eth(entry->src, src))
--		return sprintf(buff, "TQ %pM %d, ", entry->dest,
--			       entry->quality);
-+		return seq_printf(seq, "TQ %pM %d, ", entry->dest,
-+				  entry->quality);
- 
- 	return 0;
- }
- 
-+static void batadv_vis_data_insert_interfaces(struct hlist_head *list,
-+					      struct vis_packet *packet,
-+					      struct vis_info_entry *entries)
-+{
-+	int i;
-+
-+	for (i = 0; i < packet->entries; i++) {
-+		if (entries[i].quality == 0)
-+			continue;
-+
-+		if (batadv_compare_eth(entries[i].src, packet->vis_orig))
-+			continue;
-+
-+		batadv_vis_data_insert_interface(entries[i].src, list, false);
-+	}
-+}
-+
-+static void batadv_vis_data_read_entries(struct seq_file *seq,
-+					 struct hlist_head *list,
-+					 struct vis_packet *packet,
-+					 struct vis_info_entry *entries)
-+{
-+	int i;
-+	struct if_list_entry *entry;
-+	struct hlist_node *pos;
-+
-+	hlist_for_each_entry(entry, pos, list, list) {
-+		seq_printf(seq, "%pM,", entry->addr);
-+
-+		for (i = 0; i < packet->entries; i++)
-+			batadv_vis_data_read_entry(seq, &entries[i],
-+						   entry->addr, entry->primary);
-+
-+		/* add primary/secondary records */
-+		if (batadv_compare_eth(entry->addr, packet->vis_orig))
-+			batadv_vis_data_read_prim_sec(seq, list);
-+
-+		seq_printf(seq, "\n");
-+	}
-+}
-+
-+static void batadv_vis_seq_print_text_bucket(struct seq_file *seq,
-+					     const struct hlist_head *head)
-+{
-+	struct hlist_node *node;
-+	struct vis_info *info;
-+	struct vis_packet *packet;
-+	uint8_t *entries_pos;
-+	struct vis_info_entry *entries;
-+	struct if_list_entry *entry;
-+	struct hlist_node *pos, *n;
-+
-+	HLIST_HEAD(vis_if_list);
-+
-+	hlist_for_each_entry_rcu(info, node, head, hash_entry) {
-+		packet = (struct vis_packet *)info->skb_packet->data;
-+		entries_pos = (uint8_t *)packet + sizeof(*packet);
-+		entries = (struct vis_info_entry *)entries_pos;
-+
-+		batadv_vis_data_insert_interface(packet->vis_orig, &vis_if_list,
-+						 true);
-+		batadv_vis_data_insert_interfaces(&vis_if_list, packet,
-+						  entries);
-+		batadv_vis_data_read_entries(seq, &vis_if_list, packet,
-+					     entries);
-+
-+		hlist_for_each_entry_safe(entry, pos, n, &vis_if_list, list) {
-+			hlist_del(&entry->list);
-+			kfree(entry);
-+		}
-+	}
-+}
-+
- int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
- {
- 	struct hard_iface *primary_if;
--	struct hlist_node *node;
- 	struct hlist_head *head;
--	struct vis_info *info;
--	struct vis_packet *packet;
--	struct vis_info_entry *entries;
- 	struct net_device *net_dev = (struct net_device *)seq->private;
- 	struct bat_priv *bat_priv = netdev_priv(net_dev);
- 	struct hashtable_t *hash = bat_priv->vis_hash;
--	HLIST_HEAD(vis_if_list);
--	struct if_list_entry *entry;
--	struct hlist_node *pos, *n;
- 	uint32_t i;
--	int j, ret = 0;
-+	int ret = 0;
- 	int vis_server = atomic_read(&bat_priv->vis_mode);
--	size_t buff_pos, buf_size;
--	char *buff;
- 
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 	if (!primary_if)
-@@ -214,120 +259,13 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
- 	if (vis_server == VIS_TYPE_CLIENT_UPDATE)
- 		goto out;
- 
--	buf_size = 1;
--	/* Estimate length */
- 	spin_lock_bh(&bat_priv->vis_hash_lock);
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
 -
--		rcu_read_lock();
--		hlist_for_each_entry_rcu(info, node, head, hash_entry) {
--			packet = (struct vis_packet *)info->skb_packet->data;
--			entries = (struct vis_info_entry *)
--				((char *)packet + sizeof(*packet));
--
--			batadv_vis_data_insert_interface(packet->vis_orig,
--							 &vis_if_list, true);
--
--			for (j = 0; j < packet->entries; j++) {
--				if (entries[j].quality == 0)
--					continue;
--				if (batadv_compare_eth(entries[j].src,
--						       packet->vis_orig))
--					continue;
--				batadv_vis_data_insert_interface(entries[j].src,
--								 &vis_if_list,
--								 false);
--			}
--
--			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
--				buf_size += 18 + 26 * packet->entries;
--
--				/* add primary/secondary records */
--				if (batadv_compare_eth(entry->addr,
--						       packet->vis_orig))
--					buf_size +=
--					  batadv_vis_cnt_prim_sec(&vis_if_list);
--
--				buf_size += 1;
--			}
--
--			hlist_for_each_entry_safe(entry, pos, n, &vis_if_list,
--						  list) {
--				hlist_del(&entry->list);
--				kfree(entry);
--			}
--		}
--		rcu_read_unlock();
-+		batadv_vis_seq_print_text_bucket(seq, head);
- 	}
--
--	buff = kmalloc(buf_size, GFP_ATOMIC);
--	if (!buff) {
--		spin_unlock_bh(&bat_priv->vis_hash_lock);
--		ret = -ENOMEM;
--		goto out;
--	}
--	buff[0] = '\0';
--	buff_pos = 0;
--
--	for (i = 0; i < hash->size; i++) {
--		head = &hash->table[i];
--
--		rcu_read_lock();
--		hlist_for_each_entry_rcu(info, node, head, hash_entry) {
--			packet = (struct vis_packet *)info->skb_packet->data;
--			entries = (struct vis_info_entry *)
--				((char *)packet + sizeof(*packet));
--
--			batadv_vis_data_insert_interface(packet->vis_orig,
--							 &vis_if_list, true);
--
--			for (j = 0; j < packet->entries; j++) {
--				if (entries[j].quality == 0)
--					continue;
--				if (batadv_compare_eth(entries[j].src,
--						       packet->vis_orig))
--					continue;
--				batadv_vis_data_insert_interface(entries[j].src,
--								 &vis_if_list,
--								 false);
--			}
--
--			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
--				buff_pos += sprintf(buff + buff_pos, "%pM,",
--						entry->addr);
--
--				for (j = 0; j < packet->entries; j++)
--					buff_pos += batadv_vis_data_read_entry(
--							buff + buff_pos,
--							&entries[j],
--							entry->addr,
--							entry->primary);
--
--				/* add primary/secondary records */
--				if (batadv_compare_eth(entry->addr,
--						       packet->vis_orig))
--					buff_pos +=
--					 batadv_vis_prim_sec(buff + buff_pos,
--							     &vis_if_list);
--
--				buff_pos += sprintf(buff + buff_pos, "\n");
--			}
--
--			hlist_for_each_entry_safe(entry, pos, n, &vis_if_list,
--						  list) {
--				hlist_del(&entry->list);
--				kfree(entry);
--			}
--		}
--		rcu_read_unlock();
--	}
--
- 	spin_unlock_bh(&bat_priv->vis_hash_lock);
- 
--	seq_printf(seq, "%s", buff);
--	kfree(buff);
--
- out:
- 	if (primary_if)
- 		batadv_hardif_free_ref(primary_if);
+ static int batadv_store_bool_attr(char *buff, size_t count,
+ 				  struct net_device *net_dev,
+ 				  const char *attr_name, atomic_t *attr)
 -- 
 1.7.10
 
