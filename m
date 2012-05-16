@@ -1,12 +1,16 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Wed, 16 May 2012 00:06:20 +0200
-Message-Id: <1337119580-1026-1-git-send-email-martin@hundeboll.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 16 May 2012 16:53:20 +0800
+References: <1336840447-6580-1-git-send-email-sven@narfation.org>
+	<1336840447-6580-5-git-send-email-sven@narfation.org>
+In-Reply-To: <1336840447-6580-5-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Correctly check return value
-	from debugfs_create_dir
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201205161653.20933.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 05/18] batman-adv: Prefix
+	distributed-arp-table local static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,79 +22,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The setup code in batadv_socket_setup() and debug_log_setup() wrongly
-assumes that debugfs_create_file() returns !0 on error. Since it
-actually returns a pointer on success[1], the following check should
-be inverted.
+On Sunday, May 13, 2012 00:33:54 Sven Eckelmann wrote:
+> All non-static symbols of batman-adv were prefixed with batadv_ to avoid
+> collisions with other symbols of the kernel. Other symbols of batman-adv
+> should use the same prefix to keep the naming scheme consistent.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  distributed-arp-table.c |  106
+> ++++++++++++++++++++++++----------------------- 1 file changed, 55
+> insertions(+), 51 deletions(-)
 
-Also, use the return value from the two setup functions in
-batadv_debugfs_add_meshif().
+Applied in revision 01f5a2a.
 
-[1] http://www.fsl.cs.sunysb.edu/kernel-api/re464.html
-
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
----
- bat_debugfs.c |   11 +++++++----
- icmp_socket.c |    4 ++--
- 2 files changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index cd636db..bd9325d 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -193,13 +193,13 @@ static int debug_log_setup(struct bat_priv *bat_priv)
- 
- 	d = debugfs_create_file("log", S_IFREG | S_IRUSR,
- 				bat_priv->debug_dir, bat_priv, &log_fops);
--	if (d)
-+	if (!d)
- 		goto err;
- 
- 	return 0;
- 
- err:
--	return 1;
-+	return -ENOMEM;
- }
- 
- static void debug_log_cleanup(struct bat_priv *bat_priv)
-@@ -347,8 +347,11 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
- 	if (!bat_priv->debug_dir)
- 		goto out;
- 
--	batadv_socket_setup(bat_priv);
--	debug_log_setup(bat_priv);
-+	if (batadv_socket_setup(bat_priv))
-+		goto rem_attr;
-+
-+	if (debug_log_setup(bat_priv))
-+		goto rem_attr;
- 
- 	for (bat_debug = mesh_debuginfos; *bat_debug; ++bat_debug) {
- 		file = debugfs_create_file(((*bat_debug)->attr).name,
-diff --git a/icmp_socket.c b/icmp_socket.c
-index 3fad5aa..40c5e18 100644
---- a/icmp_socket.c
-+++ b/icmp_socket.c
-@@ -283,13 +283,13 @@ int batadv_socket_setup(struct bat_priv *bat_priv)
- 
- 	d = debugfs_create_file(ICMP_SOCKET, S_IFREG | S_IWUSR | S_IRUSR,
- 				bat_priv->debug_dir, bat_priv, &fops);
--	if (d)
-+	if (!d)
- 		goto err;
- 
- 	return 0;
- 
- err:
--	return 1;
-+	return -ENOMEM;
- }
- 
- static void bat_socket_add_packet(struct socket_client *socket_client,
--- 
-1.7.10.2
-
+Thanks,
+Marek
