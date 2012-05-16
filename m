@@ -1,11 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 16 May 2012 20:23:13 +0200
-Message-Id: <1337192605-8652-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1779270.uUsuEFyTM4@sven-desktop.home.narfation.org>
+Date: Wed, 16 May 2012 20:23:14 +0200
+Message-Id: <1337192605-8652-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1337192605-8652-1-git-send-email-sven@narfation.org>
 References: <1779270.uUsuEFyTM4@sven-desktop.home.narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 01/13] batman-adv: Prefix routing local
-	static functions with batadv_
+	<1337192605-8652-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 02/13] batman-adv: Prefix send local static
+	functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,219 +26,124 @@ should use the same prefix to keep the naming scheme consistent.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- routing.c |   65 ++++++++++++++++++++++++++++++++-----------------------------
- 1 file changed, 34 insertions(+), 31 deletions(-)
+ send.c |   30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/routing.c b/routing.c
-index 977e44c..4176c78 100644
---- a/routing.c
-+++ b/routing.c
-@@ -29,8 +29,8 @@
- #include "unicast.h"
- #include "bridge_loop_avoidance.h"
+diff --git a/send.c b/send.c
+index ef4b4b3..e19265a 100644
+--- a/send.c
++++ b/send.c
+@@ -28,7 +28,7 @@
+ #include "gateway_common.h"
+ #include "originator.h"
  
--static int route_unicast_packet(struct sk_buff *skb,
--				struct hard_iface *recv_if);
-+static int batadv_route_unicast_packet(struct sk_buff *skb,
-+				       struct hard_iface *recv_if);
+-static void send_outstanding_bcast_packet(struct work_struct *work);
++static void batadv_send_outstanding_bcast_packet(struct work_struct *work);
  
- void batadv_slide_own_bcast_window(struct hard_iface *hard_iface)
- {
-@@ -61,9 +61,9 @@ void batadv_slide_own_bcast_window(struct hard_iface *hard_iface)
- 	}
+ /* send out an already prepared packet to the given address via the
+  * specified batman interface
+@@ -97,7 +97,7 @@ void batadv_schedule_bat_ogm(struct hard_iface *hard_iface)
+ 	bat_priv->bat_algo_ops->bat_ogm_schedule(hard_iface);
  }
  
--static void _update_route(struct bat_priv *bat_priv,
--			  struct orig_node *orig_node,
--			  struct neigh_node *neigh_node)
-+static void _batadv_update_route(struct bat_priv *bat_priv,
-+				 struct orig_node *orig_node,
-+				 struct neigh_node *neigh_node)
+-static void forw_packet_free(struct forw_packet *forw_packet)
++static void batadv_forw_packet_free(struct forw_packet *forw_packet)
  {
- 	struct neigh_node *curr_router;
+ 	if (forw_packet->skb)
+ 		kfree_skb(forw_packet->skb);
+@@ -106,9 +106,9 @@ static void forw_packet_free(struct forw_packet *forw_packet)
+ 	kfree(forw_packet);
+ }
  
-@@ -117,7 +117,7 @@ void batadv_update_route(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 	router = batadv_orig_node_get_router(orig_node);
+-static void _add_bcast_packet_to_list(struct bat_priv *bat_priv,
+-				      struct forw_packet *forw_packet,
+-				      unsigned long send_time)
++static void _batadv_add_bcast_packet_to_list(struct bat_priv *bat_priv,
++					     struct forw_packet *forw_packet,
++					     unsigned long send_time)
+ {
+ 	INIT_HLIST_NODE(&forw_packet->list);
  
- 	if (router != neigh_node)
--		_update_route(bat_priv, orig_node, neigh_node);
-+		_batadv_update_route(bat_priv, orig_node, neigh_node);
+@@ -119,7 +119,7 @@ static void _add_bcast_packet_to_list(struct bat_priv *bat_priv,
+ 
+ 	/* start timer for this packet */
+ 	INIT_DELAYED_WORK(&forw_packet->delayed_work,
+-			  send_outstanding_bcast_packet);
++			  batadv_send_outstanding_bcast_packet);
+ 	queue_delayed_work(batadv_event_workqueue, &forw_packet->delayed_work,
+ 			   send_time);
+ }
+@@ -172,7 +172,7 @@ int batadv_add_bcast_packet_to_list(struct bat_priv *bat_priv,
+ 	/* how often did we send the bcast packet ? */
+ 	forw_packet->num_packets = 0;
+ 
+-	_add_bcast_packet_to_list(bat_priv, forw_packet, delay);
++	_batadv_add_bcast_packet_to_list(bat_priv, forw_packet, delay);
+ 	return NETDEV_TX_OK;
+ 
+ packet_free:
+@@ -185,7 +185,7 @@ out:
+ 	return NETDEV_TX_BUSY;
+ }
+ 
+-static void send_outstanding_bcast_packet(struct work_struct *work)
++static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+ {
+ 	struct hard_iface *hard_iface;
+ 	struct delayed_work *delayed_work =
+@@ -224,13 +224,13 @@ static void send_outstanding_bcast_packet(struct work_struct *work)
+ 
+ 	/* if we still have some more bcasts to send */
+ 	if (forw_packet->num_packets < 3) {
+-		_add_bcast_packet_to_list(bat_priv, forw_packet,
+-					  msecs_to_jiffies(5));
++		_batadv_add_bcast_packet_to_list(bat_priv, forw_packet,
++						 msecs_to_jiffies(5));
+ 		return;
+ 	}
  
  out:
- 	if (router)
-@@ -276,8 +276,8 @@ bool batadv_check_management_packet(struct sk_buff *skb,
- 	return true;
+-	forw_packet_free(forw_packet);
++	batadv_forw_packet_free(forw_packet);
+ 	atomic_inc(&bat_priv->bcast_queue_left);
  }
  
--static int recv_my_icmp_packet(struct bat_priv *bat_priv,
--			       struct sk_buff *skb, size_t icmp_len)
-+static int batadv_recv_my_icmp_packet(struct bat_priv *bat_priv,
-+				      struct sk_buff *skb, size_t icmp_len)
- {
- 	struct hard_iface *primary_if = NULL;
- 	struct orig_node *orig_node = NULL;
-@@ -331,8 +331,8 @@ out:
- 	return ret;
+@@ -264,7 +264,7 @@ out:
+ 	if (!forw_packet->own)
+ 		atomic_inc(&bat_priv->batman_queue_left);
+ 
+-	forw_packet_free(forw_packet);
++	batadv_forw_packet_free(forw_packet);
  }
  
--static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
--				  struct sk_buff *skb)
-+static int batadv_recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
-+					 struct sk_buff *skb)
- {
- 	struct hard_iface *primary_if = NULL;
- 	struct orig_node *orig_node = NULL;
-@@ -431,11 +431,11 @@ int batadv_recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ void batadv_purge_outstanding_packets(struct bat_priv *bat_priv,
+@@ -296,7 +296,7 @@ void batadv_purge_outstanding_packets(struct bat_priv *bat_priv,
  
- 	/* packet for me */
- 	if (batadv_is_my_mac(icmp_packet->dst))
--		return recv_my_icmp_packet(bat_priv, skb, hdr_size);
-+		return batadv_recv_my_icmp_packet(bat_priv, skb, hdr_size);
+ 		spin_unlock_bh(&bat_priv->forw_bcast_list_lock);
  
- 	/* TTL exceeded */
- 	if (icmp_packet->header.ttl < 2)
--		return recv_icmp_ttl_exceeded(bat_priv, skb);
-+		return batadv_recv_icmp_ttl_exceeded(bat_priv, skb);
+-		/* send_outstanding_bcast_packet() will lock the list to
++		/* batadv_send_outstanding_bcast_packet() will lock the list to
+ 		 * delete the item from the list
+ 		 */
+ 		pending = cancel_delayed_work_sync(&forw_packet->delayed_work);
+@@ -304,7 +304,7 @@ void batadv_purge_outstanding_packets(struct bat_priv *bat_priv,
  
- 	/* get routing information */
- 	orig_node = batadv_orig_hash_find(bat_priv, icmp_packet->dst);
-@@ -473,8 +473,9 @@ out:
-  * This method rotates the bonding list and increases the
-  * returned router's refcount.
-  */
--static struct neigh_node *find_bond_router(struct orig_node *primary_orig,
--					   const struct hard_iface *recv_if)
-+static struct neigh_node *
-+batadv_find_bond_router(struct orig_node *primary_orig,
-+			const struct hard_iface *recv_if)
- {
- 	struct neigh_node *tmp_neigh_node;
- 	struct neigh_node *router = NULL, *first_candidate = NULL;
-@@ -527,8 +528,9 @@ out:
-  *
-  * Increases the returned router's refcount
-  */
--static struct neigh_node *find_ifalter_router(struct orig_node *primary_orig,
--					      const struct hard_iface *recv_if)
-+static struct neigh_node *
-+batadv_find_ifalter_router(struct orig_node *primary_orig,
-+			   const struct hard_iface *recv_if)
- {
- 	struct neigh_node *tmp_neigh_node;
- 	struct neigh_node *router = NULL, *first_candidate = NULL;
-@@ -614,7 +616,7 @@ int batadv_recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 				   "Routing TT_REQUEST to %pM [%c]\n",
- 				   tt_query->dst,
- 				   tt_flag);
--			return route_unicast_packet(skb, recv_if);
-+			return batadv_route_unicast_packet(skb, recv_if);
+ 		if (pending) {
+ 			hlist_del(&forw_packet->list);
+-			forw_packet_free(forw_packet);
++			batadv_forw_packet_free(forw_packet);
  		}
- 		break;
- 	case TT_RESPONSE:
-@@ -641,7 +643,7 @@ int batadv_recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 				   "Routing TT_RESPONSE to %pM [%c]\n",
- 				   tt_query->dst,
- 				   tt_flag);
--			return route_unicast_packet(skb, recv_if);
-+			return batadv_route_unicast_packet(skb, recv_if);
+ 	}
+ 	spin_unlock_bh(&bat_priv->forw_bcast_list_lock);
+@@ -331,7 +331,7 @@ void batadv_purge_outstanding_packets(struct bat_priv *bat_priv,
+ 
+ 		if (pending) {
+ 			hlist_del(&forw_packet->list);
+-			forw_packet_free(forw_packet);
++			batadv_forw_packet_free(forw_packet);
  		}
- 		break;
  	}
-@@ -677,7 +679,7 @@ int batadv_recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
- 	roam_adv_packet = (struct roam_adv_packet *)skb->data;
- 
- 	if (!batadv_is_my_mac(roam_adv_packet->dst))
--		return route_unicast_packet(skb, recv_if);
-+		return batadv_route_unicast_packet(skb, recv_if);
- 
- 	/* check if it is a backbone gateway. we don't accept
- 	 * roaming advertisement from it, as it has the same
-@@ -781,9 +783,9 @@ struct neigh_node *batadv_find_router(struct bat_priv *bat_priv,
- 	batadv_neigh_node_free_ref(router);
- 
- 	if (bonding_enabled)
--		router = find_bond_router(primary_orig_node, recv_if);
-+		router = batadv_find_bond_router(primary_orig_node, recv_if);
- 	else
--		router = find_ifalter_router(primary_orig_node, recv_if);
-+		router = batadv_find_ifalter_router(primary_orig_node, recv_if);
- 
- return_router:
- 	if (router && router->if_incoming->if_status != IF_ACTIVE)
-@@ -799,7 +801,7 @@ err:
- 	return NULL;
- }
- 
--static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
-+static int batadv_check_unicast_packet(struct sk_buff *skb, int hdr_size)
- {
- 	struct ethhdr *ethhdr;
- 
-@@ -824,7 +826,8 @@ static int check_unicast_packet(struct sk_buff *skb, int hdr_size)
- 	return 0;
- }
- 
--static int route_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
-+static int batadv_route_unicast_packet(struct sk_buff *skb,
-+				       struct hard_iface *recv_if)
- {
- 	struct bat_priv *bat_priv = netdev_priv(recv_if->soft_iface);
- 	struct orig_node *orig_node = NULL;
-@@ -909,8 +912,8 @@ out:
- 	return ret;
- }
- 
--static int check_unicast_ttvn(struct bat_priv *bat_priv,
--			       struct sk_buff *skb) {
-+static int batadv_check_unicast_ttvn(struct bat_priv *bat_priv,
-+				     struct sk_buff *skb) {
- 	uint8_t curr_ttvn;
- 	struct orig_node *orig_node;
- 	struct ethhdr *ethhdr;
-@@ -998,10 +1001,10 @@ int batadv_recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 	if (unicast_packet->header.packet_type == BAT_UNICAST_4ADDR)
- 		hdr_size = sizeof(struct unicast_4addr_packet);
- 
--	if (check_unicast_packet(skb, hdr_size) < 0)
-+	if (batadv_check_unicast_packet(skb, hdr_size) < 0)
- 		return NET_RX_DROP;
- 
--	if (!check_unicast_ttvn(bat_priv, skb))
-+	if (!batadv_check_unicast_ttvn(bat_priv, skb))
- 		return NET_RX_DROP;
- 
- 	/* packet for me */
-@@ -1011,7 +1014,7 @@ int batadv_recv_unicast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 		return NET_RX_SUCCESS;
- 	}
- 
--	return route_unicast_packet(skb, recv_if);
-+	return batadv_route_unicast_packet(skb, recv_if);
- }
- 
- int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
-@@ -1023,10 +1026,10 @@ int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
- 	struct sk_buff *new_skb = NULL;
- 	int ret;
- 
--	if (check_unicast_packet(skb, hdr_size) < 0)
-+	if (batadv_check_unicast_packet(skb, hdr_size) < 0)
- 		return NET_RX_DROP;
- 
--	if (!check_unicast_ttvn(bat_priv, skb))
-+	if (!batadv_check_unicast_ttvn(bat_priv, skb))
- 		return NET_RX_DROP;
- 
- 	unicast_packet = (struct unicast_frag_packet *)skb->data;
-@@ -1048,7 +1051,7 @@ int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
- 		return NET_RX_SUCCESS;
- 	}
- 
--	return route_unicast_packet(skb, recv_if);
-+	return batadv_route_unicast_packet(skb, recv_if);
- }
- 
- 
+ 	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
 -- 
 1.7.10
 
