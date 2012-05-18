@@ -1,17 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 18 May 2012 23:03:26 +0800
-References: <1779270.uUsuEFyTM4@sven-desktop.home.narfation.org>
-	<1337192605-8652-1-git-send-email-sven@narfation.org>
-	<1337192605-8652-11-git-send-email-sven@narfation.org>
-In-Reply-To: <1337192605-8652-11-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201205182303.26867.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 11/13] batman-adv: Directly print to
-	seq_file in vis
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 18 May 2012 17:16:13 +0200
+Message-Id: <1337354173-23825-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1337192605-8652-12-git-send-email-sven@narfation.org>
+References: <1337192605-8652-12-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Prefix bat_sysfs local static
+	functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,19 +17,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, May 17, 2012 02:23:23 Sven Eckelmann wrote:
-> The vis output doesn't need to be buffered in an character buffer before it
-> can be send to the userspace program that reads from the vis debug file.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  vis.c |  228
-> ++++++++++++++++++++++++----------------------------------------- 1 file
-> changed, 83 insertions(+), 145 deletions(-)
+All non-static symbols of batman-adv were prefixed with batadv_ to avoid
+collisions with other symbols of the kernel. Other symbols of batman-adv
+should use the same prefix to keep the naming scheme consistent.
 
-Applied in revision 6977ef4.
+This was actually part of patch used to create the commit
+98881e49493eb1a6ae2330d861386432064b2222.
 
-Thanks,
-Marek
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+This is the alternative version of this patch... that keeps the functionality
+for ELP
+
+ bat_sysfs.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index 336a61d..07fde83 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -123,8 +123,9 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 
+ 
+ #define BAT_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)		\
+-ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
+-		      char *buff, size_t count)				\
++ssize_t batadv_store_##_name(struct kobject *kobj,			\
++			     struct attribute *attr, char *buff,	\
++			     size_t count)				\
+ {									\
+ 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
+ 	struct hard_iface *hard_iface;					\
+@@ -142,8 +143,8 @@ ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
+ }
+ 
+ #define BAT_ATTR_HIF_SHOW_UINT(_name)					\
+-ssize_t show_##_name(struct kobject *kobj,				\
+-		     struct attribute *attr, char *buff)		\
++ssize_t batadv_show_##_name(struct kobject *kobj,			\
++			    struct attribute *attr, char *buff)		\
+ {									\
+ 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
+ 	struct hard_iface *hard_iface;					\
+-- 
+1.7.10
+
