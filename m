@@ -1,15 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Thu, 17 May 2012 21:05:14 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120517190513.GA31345@ritirata.org>
-References: <1337267913-14693-1-git-send-email-sven@narfation.org>
-	<63684276.bozYGFlTKx@sven-desktop.home.narfation.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 18 May 2012 16:24:08 +0800
+References: <1779270.uUsuEFyTM4@sven-desktop.home.narfation.org>
+	<1337192605-8652-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1337192605-8652-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="X1bOJ3K7DJ5YkBrT"
-Content-Disposition: inline
-In-Reply-To: <63684276.bozYGFlTKx@sven-desktop.home.narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Revert Distributed ARP Table
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201205181624.08682.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 01/13] batman-adv: Prefix routing local
+	static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,41 +24,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Thursday, May 17, 2012 02:23:13 Sven Eckelmann wrote:
+> All non-static symbols of batman-adv were prefixed with batadv_ to avoid
+> collisions with other symbols of the kernel. Other symbols of batman-adv
+> should use the same prefix to keep the naming scheme consistent.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  routing.c |   65
+> ++++++++++++++++++++++++++++++++----------------------------- 1 file
+> changed, 34 insertions(+), 31 deletions(-)
 
---X1bOJ3K7DJ5YkBrT
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Applied in revision c63e1d1.
 
-On Thu, May 17, 2012 at 06:23:33PM +0200, Sven Eckelmann wrote:
-> Kind regards,
-> 	Sven
-
-Thank you Sven,
-
-this will really help a lot. At least it will help me :-)
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---X1bOJ3K7DJ5YkBrT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJPtUvpAAoJEFMQTLzJFOZFUiIIAIayvfn/SBF64Cc3e9q7JaTv
-FVPHpn15xatTMxXC1l9IZwpnycQFF/T3KkJ+OgXIJHbqogzUiU51s0owN7saEUtG
-eRS74A8uRNFlmYfun3L8VddhnexM8QkmAX22fzo0O1l94Zo6clrPlqcAa/z1bJ/b
-8geLfAZ251lJX9lhx2bFqHVwSxpceR3O6nVTXWz/6X8yF3zchjBRh9CJlDRC0Pbl
-G3niWelXxnDXR/C/4+WUd0HNzCEF8pYAMc1kwuJelhoD+QqD4xOHzq/eGWkn20sP
-SnKWU7+pYaoFiCOrld23TIpn6oUxfWKQlXpnAbmKvryItWBD3uFUEd/cSpE2/Ps=
-=K8C5
------END PGP SIGNATURE-----
-
---X1bOJ3K7DJ5YkBrT--
+Thanks,
+Marek
