@@ -1,17 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 18 May 2012 16:28:50 +0800
+Date: Fri, 18 May 2012 16:34:47 +0800
 References: <1779270.uUsuEFyTM4@sven-desktop.home.narfation.org>
 	<1337192605-8652-1-git-send-email-sven@narfation.org>
-	<1337192605-8652-3-git-send-email-sven@narfation.org>
-In-Reply-To: <1337192605-8652-3-git-send-email-sven@narfation.org>
+	<1337192605-8652-4-git-send-email-sven@narfation.org>
+In-Reply-To: <1337192605-8652-4-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205181628.50580.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 03/13] batman-adv: Prefix soft-interface
-	local static functions with batadv_
+Message-Id: <201205181634.47440.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 04/13] batman-adv: Prefix
+	translation-table local static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,18 +25,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday, May 17, 2012 02:23:15 Sven Eckelmann wrote:
+On Thursday, May 17, 2012 02:23:16 Sven Eckelmann wrote:
 > All non-static symbols of batman-adv were prefixed with batadv_ to avoid
 > collisions with other symbols of the kernel. Other symbols of batman-adv
 > should use the same prefix to keep the naming scheme consistent.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  soft-interface.c |  105
-> ++++++++++++++++++++++++++++-------------------------- 1 file changed, 54
-> insertions(+), 51 deletions(-)
+>  translation-table.c |  540
+> +++++++++++++++++++++++++++------------------------ 1 file changed, 282
+> insertions(+), 258 deletions(-)
 
-Applied in revision 258f84d.
+Applied in revision 0114926.
 
 Thanks,
 Marek
