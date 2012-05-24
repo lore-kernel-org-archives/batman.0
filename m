@@ -1,9 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri, 25 May 2012 00:00:42 +0200
-Message-Id: <1337896842-13154-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: clear ADD+DEL (and viceversa)
-	events in the same orig-interval
+Date: Fri, 25 May 2012 00:00:54 +0200
+Message-Id: <1337896854-13300-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: beautify tt_global_add()
+	argument list
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,87 +17,128 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-During an OGM-interval (time between two different OGM sendings) the same client
-could roam away and then roam back to us. In this case the node would add two
-events to the events list (that is going to be sent appended to the next OGM). A
-DEL one and an ADD one. Obviously they will only increase the overhead (either in
-the air and on the receiver side) and eventually trigger wrong states/events
-without producing any real effect.
-
-For this reason we can safely delete any ADD event with its related DEL one.
+Instead of adding a new bool argument each time it is needed, it is better (and
+simpler) to pass an 8bit flag argument which contains all the needed flags
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
 
-changes in v3:
+changes in v2:
 - rebased on top of the last patches for code restyling
 
- translation-table.c |   40 +++++++++++++++++++++++++++++++++++++---
- 1 file changed, 37 insertions(+), 3 deletions(-)
+ routing.c           |    4 ++--
+ translation-table.c |   24 +++++++++---------------
+ translation-table.h |    4 ++--
+ 3 files changed, 13 insertions(+), 19 deletions(-)
 
+diff --git a/routing.c b/routing.c
+index c3160be..1260253 100644
+--- a/routing.c
++++ b/routing.c
+@@ -697,8 +697,8 @@ int batadv_recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		   roam_adv_packet->src, roam_adv_packet->client);
+ 
+ 	batadv_tt_global_add(bat_priv, orig_node, roam_adv_packet->client,
+-			     atomic_read(&orig_node->last_ttvn) + 1, true,
+-			     false);
++			     TT_CLIENT_ROAM,
++			     atomic_read(&orig_node->last_ttvn) + 1);
+ 
+ 	/* Roaming phase starts: I have new information but the ttvn has not
+ 	 * been incremented yet. This flag will make me check all the incoming
 diff --git a/translation-table.c b/translation-table.c
-index cb1d3a8..2c8266a 100644
+index 2c8266a..c03c479 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -156,7 +156,9 @@ batadv_tt_orig_list_entry_free_ref(struct tt_orig_list_entry *orig_entry)
- static void batadv_tt_local_event(struct bat_priv *bat_priv,
- 				  const uint8_t *addr, uint8_t flags)
+@@ -656,8 +656,8 @@ batadv_tt_global_add_orig_entry(struct tt_global_entry *tt_global_entry,
+ 
+ /* caller must hold orig_node refcount */
+ int batadv_tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+-			 const unsigned char *tt_addr, uint8_t ttvn,
+-			 bool roaming, bool wifi)
++			 const unsigned char *tt_addr, uint8_t flags,
++			 uint8_t ttvn)
  {
--	struct tt_change_node *tt_change_node;
-+	struct tt_change_node *tt_change_node, *entry, *safe;
-+	bool event_removed = false;
-+	bool del_op_requested, del_op_entry;
+ 	struct tt_global_entry *tt_global_entry = NULL;
+ 	int ret = 0;
+@@ -667,15 +667,14 @@ int batadv_tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 	tt_global_entry = batadv_tt_global_hash_find(bat_priv, tt_addr);
  
- 	tt_change_node = kmalloc(sizeof(*tt_change_node), GFP_ATOMIC);
+ 	if (!tt_global_entry) {
+-		tt_global_entry = kzalloc(sizeof(*tt_global_entry),
+-					  GFP_ATOMIC);
++		tt_global_entry = kzalloc(sizeof(*tt_global_entry), GFP_ATOMIC);
+ 		if (!tt_global_entry)
+ 			goto out;
  
-@@ -166,13 +168,45 @@ static void batadv_tt_local_event(struct bat_priv *bat_priv,
- 	tt_change_node->change.flags = flags;
- 	memcpy(tt_change_node->change.addr, addr, ETH_ALEN);
+ 		common = &tt_global_entry->common;
+ 		memcpy(common->addr, tt_addr, ETH_ALEN);
  
-+	del_op_requested = flags & TT_CLIENT_DEL;
-+
-+	/* check for ADD+DEL or DEL+ADD events */
- 	spin_lock_bh(&bat_priv->tt_changes_list_lock);
-+	list_for_each_entry_safe(entry, safe, &bat_priv->tt_changes_list,
-+				 list) {
-+		if (!batadv_compare_eth(entry->change.addr, addr))
-+			continue;
-+
-+		/* DEL+ADD in the same orig interval have no effect and can be
-+		 * removed to avoid silly behaviour on the receiver side. The
-+		 * other way around (ADD+DEL) can happen in case of roaming of
-+		 * a client still in the NEW state. Roaming of NEW clients is
-+		 * now possible due to automatically recognition of "temporary"
-+		 * clients
-+		 */
-+		del_op_entry = entry->change.flags & TT_CLIENT_DEL;
-+		if (!del_op_requested && del_op_entry)
-+			goto del;
-+		if (del_op_requested && !del_op_entry)
-+			goto del;
-+		continue;
-+del:
-+		list_del(&entry->list);
-+		kfree(entry);
-+		event_removed = true;
-+		goto unlock;
-+	}
-+
- 	/* track the change in the OGMinterval list */
- 	list_add_tail(&tt_change_node->list, &bat_priv->tt_changes_list);
--	atomic_inc(&bat_priv->tt_local_changes);
-+
-+unlock:
- 	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
+-		common->flags = NO_FLAGS;
++		common->flags = flags;
+ 		tt_global_entry->roam_at = 0;
+ 		atomic_set(&common->refcount, 2);
  
--	atomic_set(&bat_priv->tt_ogm_append_cnt, 0);
-+	if (event_removed)
-+		atomic_dec(&bat_priv->tt_local_changes);
-+	else
-+		atomic_inc(&bat_priv->tt_local_changes);
- }
+@@ -717,9 +716,6 @@ int batadv_tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ 							orig_node, ttvn);
+ 	}
  
- int batadv_tt_len(int changes_num)
+-	if (wifi)
+-		tt_global_entry->common.flags |= TT_CLIENT_WIFI;
+-
+ 	batadv_dbg(DBG_TT, bat_priv,
+ 		   "Creating new global tt entry: %pM (via %pM)\n",
+ 		   tt_global_entry->common.addr, orig_node->orig);
+@@ -727,7 +723,7 @@ int batadv_tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+ out_remove:
+ 	/* remove address from local hash if present */
+ 	batadv_tt_local_remove(bat_priv, tt_global_entry->common.addr,
+-			       "global tt received", roaming);
++			       "global tt received", flags & TT_CLIENT_ROAM);
+ 	ret = 1;
+ out:
+ 	if (tt_global_entry)
+@@ -1755,7 +1751,6 @@ static void _batadv_tt_update_changes(struct bat_priv *bat_priv,
+ 				      uint16_t tt_num_changes, uint8_t ttvn)
+ {
+ 	int i;
+-	int is_wifi;
+ 	int roams;
+ 
+ 	for (i = 0; i < tt_num_changes; i++) {
+@@ -1763,13 +1758,12 @@ static void _batadv_tt_update_changes(struct bat_priv *bat_priv,
+ 			roams = (tt_change + i)->flags & TT_CLIENT_ROAM;
+ 			batadv_tt_global_del(bat_priv, orig_node,
+ 					     (tt_change + i)->addr,
+-					      "tt removed by changes",
+-					      roams);
++					     "tt removed by changes",
++					     roams);
+ 		} else {
+-			is_wifi = (tt_change + i)->flags & TT_CLIENT_WIFI;
+ 			if (!batadv_tt_global_add(bat_priv, orig_node,
+-						  (tt_change + i)->addr, ttvn,
+-						  false, is_wifi))
++						  (tt_change + i)->addr,
++						  (tt_change + i)->flags, ttvn))
+ 				/* In case of problem while storing a
+ 				 * global_entry, we stop the updating
+ 				 * procedure without committing the
+diff --git a/translation-table.h b/translation-table.h
+index 7edc9df..46b60bd 100644
+--- a/translation-table.h
++++ b/translation-table.h
+@@ -32,8 +32,8 @@ void batadv_tt_global_add_orig(struct bat_priv *bat_priv,
+ 			       struct orig_node *orig_node,
+ 			       const unsigned char *tt_buff, int tt_buff_len);
+ int batadv_tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
+-			 const unsigned char *addr, uint8_t ttvn, bool roaming,
+-			 bool wifi);
++			 const unsigned char *addr, uint8_t flags,
++			 uint8_t ttvn);
+ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
+ void batadv_tt_global_del_orig(struct bat_priv *bat_priv,
+ 			       struct orig_node *orig_node,
 -- 
 1.7.9.4
 
