@@ -1,9 +1,9 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri, 25 May 2012 00:00:54 +0200
-Message-Id: <1337896854-13300-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: beautify tt_global_add()
-	argument list
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 25 May 2012 08:55:55 +0200
+Message-Id: <1337928955-20454-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Use batctl indentation of
+	bat_packettype
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,128 +17,40 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Instead of adding a new bool argument each time it is needed, it is better (and
-simpler) to pass an 8bit flag argument which contains all the needed flags
+The style of the indentation was changed in
+206af118414355e867e725ea83bc3a2989db5a40
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+ packet.h |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-changes in v2:
-- rebased on top of the last patches for code restyling
-
- routing.c           |    4 ++--
- translation-table.c |   24 +++++++++---------------
- translation-table.h |    4 ++--
- 3 files changed, 13 insertions(+), 19 deletions(-)
-
-diff --git a/routing.c b/routing.c
-index c3160be..1260253 100644
---- a/routing.c
-+++ b/routing.c
-@@ -697,8 +697,8 @@ int batadv_recv_roam_adv(struct sk_buff *skb, struct hard_iface *recv_if)
- 		   roam_adv_packet->src, roam_adv_packet->client);
+diff --git a/packet.h b/packet.h
+index 205879e..c90219c 100644
+--- a/packet.h
++++ b/packet.h
+@@ -23,14 +23,14 @@
+ #define ETH_P_BATMAN  0x4305	/* unofficial/not registered Ethertype */
  
- 	batadv_tt_global_add(bat_priv, orig_node, roam_adv_packet->client,
--			     atomic_read(&orig_node->last_ttvn) + 1, true,
--			     false);
-+			     TT_CLIENT_ROAM,
-+			     atomic_read(&orig_node->last_ttvn) + 1);
+ enum bat_packettype {
+-	BAT_IV_OGM       = 0x01,
+-	BAT_ICMP         = 0x02,
+-	BAT_UNICAST      = 0x03,
+-	BAT_BCAST        = 0x04,
+-	BAT_VIS          = 0x05,
++	BAT_IV_OGM	 = 0x01,
++	BAT_ICMP	 = 0x02,
++	BAT_UNICAST	 = 0x03,
++	BAT_BCAST	 = 0x04,
++	BAT_VIS		 = 0x05,
+ 	BAT_UNICAST_FRAG = 0x06,
+-	BAT_TT_QUERY     = 0x07,
+-	BAT_ROAM_ADV     = 0x08
++	BAT_TT_QUERY	 = 0x07,
++	BAT_ROAM_ADV	 = 0x08
+ };
  
- 	/* Roaming phase starts: I have new information but the ttvn has not
- 	 * been incremented yet. This flag will make me check all the incoming
-diff --git a/translation-table.c b/translation-table.c
-index 2c8266a..c03c479 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -656,8 +656,8 @@ batadv_tt_global_add_orig_entry(struct tt_global_entry *tt_global_entry,
- 
- /* caller must hold orig_node refcount */
- int batadv_tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
--			 const unsigned char *tt_addr, uint8_t ttvn,
--			 bool roaming, bool wifi)
-+			 const unsigned char *tt_addr, uint8_t flags,
-+			 uint8_t ttvn)
- {
- 	struct tt_global_entry *tt_global_entry = NULL;
- 	int ret = 0;
-@@ -667,15 +667,14 @@ int batadv_tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 	tt_global_entry = batadv_tt_global_hash_find(bat_priv, tt_addr);
- 
- 	if (!tt_global_entry) {
--		tt_global_entry = kzalloc(sizeof(*tt_global_entry),
--					  GFP_ATOMIC);
-+		tt_global_entry = kzalloc(sizeof(*tt_global_entry), GFP_ATOMIC);
- 		if (!tt_global_entry)
- 			goto out;
- 
- 		common = &tt_global_entry->common;
- 		memcpy(common->addr, tt_addr, ETH_ALEN);
- 
--		common->flags = NO_FLAGS;
-+		common->flags = flags;
- 		tt_global_entry->roam_at = 0;
- 		atomic_set(&common->refcount, 2);
- 
-@@ -717,9 +716,6 @@ int batadv_tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
- 							orig_node, ttvn);
- 	}
- 
--	if (wifi)
--		tt_global_entry->common.flags |= TT_CLIENT_WIFI;
--
- 	batadv_dbg(DBG_TT, bat_priv,
- 		   "Creating new global tt entry: %pM (via %pM)\n",
- 		   tt_global_entry->common.addr, orig_node->orig);
-@@ -727,7 +723,7 @@ int batadv_tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
- out_remove:
- 	/* remove address from local hash if present */
- 	batadv_tt_local_remove(bat_priv, tt_global_entry->common.addr,
--			       "global tt received", roaming);
-+			       "global tt received", flags & TT_CLIENT_ROAM);
- 	ret = 1;
- out:
- 	if (tt_global_entry)
-@@ -1755,7 +1751,6 @@ static void _batadv_tt_update_changes(struct bat_priv *bat_priv,
- 				      uint16_t tt_num_changes, uint8_t ttvn)
- {
- 	int i;
--	int is_wifi;
- 	int roams;
- 
- 	for (i = 0; i < tt_num_changes; i++) {
-@@ -1763,13 +1758,12 @@ static void _batadv_tt_update_changes(struct bat_priv *bat_priv,
- 			roams = (tt_change + i)->flags & TT_CLIENT_ROAM;
- 			batadv_tt_global_del(bat_priv, orig_node,
- 					     (tt_change + i)->addr,
--					      "tt removed by changes",
--					      roams);
-+					     "tt removed by changes",
-+					     roams);
- 		} else {
--			is_wifi = (tt_change + i)->flags & TT_CLIENT_WIFI;
- 			if (!batadv_tt_global_add(bat_priv, orig_node,
--						  (tt_change + i)->addr, ttvn,
--						  false, is_wifi))
-+						  (tt_change + i)->addr,
-+						  (tt_change + i)->flags, ttvn))
- 				/* In case of problem while storing a
- 				 * global_entry, we stop the updating
- 				 * procedure without committing the
-diff --git a/translation-table.h b/translation-table.h
-index 7edc9df..46b60bd 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -32,8 +32,8 @@ void batadv_tt_global_add_orig(struct bat_priv *bat_priv,
- 			       struct orig_node *orig_node,
- 			       const unsigned char *tt_buff, int tt_buff_len);
- int batadv_tt_global_add(struct bat_priv *bat_priv, struct orig_node *orig_node,
--			 const unsigned char *addr, uint8_t ttvn, bool roaming,
--			 bool wifi);
-+			 const unsigned char *addr, uint8_t flags,
-+			 uint8_t ttvn);
- int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
- void batadv_tt_global_del_orig(struct bat_priv *bat_priv,
- 			       struct orig_node *orig_node,
+ /* this file is included by batctl which needs these defines */
 -- 
-1.7.9.4
+1.7.10
 
