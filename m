@@ -1,16 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 27 May 2012 19:20:00 +0800
-References: <CAFevQmPp152mUiJfjm-476=ASnCZEh0UQbhvjKAyeaxHwJ=Tow@mail.gmail.com>
-	<201205270350.30491.lindner_marek@yahoo.de>
-	<4906132.My1k7u0VYv@sven-desktop.home.narfation.org>
-In-Reply-To: <4906132.My1k7u0VYv@sven-desktop.home.narfation.org>
+Return-Path: <spyrosgaster@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201205271920.01260.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] hotplug.d
+Sender: spyrosgaster@gmail.com
+From: NorthPole <morfeas3000@gmail.com>
+Date: Sun, 27 May 2012 17:00:42 +0300
+Message-ID: <CA+wR77oJFdK9RZN+zoJ0wL30bv-K=ifwU2tLbFUaNKNecx2YaA@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Questions regarding the Emulation envirnment setup
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,31 +17,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, May 27, 2012 17:42:33 Sven Eckelmann wrote:
-> On Sunday 27 May 2012 03:50:30 Marek Lindner wrote:
-> > Filippo,
-> > 
-> > > there is an error in /etc/hotplug.d/net/99-batman-adv at line 9.
-> > > 
-> > > The function that be called is bat_config and not config_bat
-> > > 
-> > > Could someone fix it in latest batman-adv stable release?
-> > 
-> > could you please be more precise which package you are talking about ? I
-> > wasn't able to find the line you are referring to anywhere.
-> 
-> https://dev.openwrt.org/browser/branches/packages_10.03.2/net/batman-adv/fi
-> les/etc/hotplug.d/net/99-batman-adv
-> 
-> and
-> 
-> https://dev.openwrt.org/browser/branches/packages_10.03.2/net/batman-adv/fi
-> les/lib/batman-adv/config.sh
+Hello everyone, i'm trying to setup an emulation environment and i
+have some questions:
 
-This package is not maintained by us. Please contact the OpenWrt stable 
-maintainers.
+* although i downloaded the vde2-2.3.1 source and the appropriate
+patches (vde2-2.3.1_colour.patch and
+vde2-2.3.1-wirefilter-ethertype.patch ) the wirefilter patch could not
+be applied giving the following output
 
-Thanks,
-Marek
+ $patch <vde2-2.3.1-wirefilter-ethertype.patch
+patching file wirefilter.c
+Hunk #1 FAILED at 59.
+Hunk #2 FAILED at 524.
+Hunk #3 FAILED at 1391.
+Hunk #4 FAILED at 1402.
+Hunk #5 FAILED at 1421.
+Hunk #6 FAILED at 1475.
+6 out of 6 hunks FAILED -- saving rejects to file wirefilter.c.rej
+
+any tips on how I can find why it failed and how to apply the patch?
+
+
+*I ran the script without the wirefilter patch and I got a blank
+terminal,is this expected?
+
+* how can I get the dmesg(and generally any command) output
+from the qemu instances?
+
+
+*provided i have built open-wrt with batman and have put the
+appropriate script in wrt's  ./files/etc/rc.local batman should start
+as a daemon right?
+given that, I should be seeing batman packets in the capture, right?
+
+*wireshark should recognize that a given packet is an ogm packet or
+there is another way to filter only the relevant ones?
+
+
+Thank you for your time
