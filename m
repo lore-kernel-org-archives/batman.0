@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 31 May 2012 21:40:25 +0800
-References: <CAFevQmPp152mUiJfjm-476=ASnCZEh0UQbhvjKAyeaxHwJ=Tow@mail.gmail.com>
-	<CAFevQmNDgATV5vaAp8qxprX6O0f=qEs=sK1OkaMM50T-QZhU_A@mail.gmail.com>
-	<CAFevQmOVGEfrk6XBr2Scit=hS9hpcxHyJ4Ta3oPW8RgHMv9KTg@mail.gmail.com>
-In-Reply-To: <CAFevQmOVGEfrk6XBr2Scit=hS9hpcxHyJ4Ta3oPW8RgHMv9KTg@mail.gmail.com>
+Date: Fri, 1 Jun 2012 14:24:48 +0800
+References: <1337896842-13154-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1337896842-13154-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201205312140.25663.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] hotplug.d
+Message-Id: <201206011424.48795.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: clear ADD+DEL (and
+	viceversa) events in the same orig-interval
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,18 +21,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Filippo Sallemi <tonyputi@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-
-On Thursday, May 31, 2012 21:21:19 you wrote:
-> i'm sorry but in the makefile of openwrt package the mantainer is
-> marek linder......
+On Friday, May 25, 2012 06:00:42 Antonio Quartulli wrote:
+> During an OGM-interval (time between two different OGM sendings) the same
+> client could roam away and then roam back to us. In this case the node
+> would add two events to the events list (that is going to be sent appended
+> to the next OGM). A DEL one and an ADD one. Obviously they will only
+> increase the overhead (either in the air and on the receiver side) and
+> eventually trigger wrong states/events without producing any real effect.
 > 
-> ???
+> For this reason we can safely delete any ADD event with its related DEL
+> one.
 
-Guess that due to copy & paste. Maybe you simply send a patch to the openwrt-
-devel list ?
+Applied in revision 51ce62d.
 
-
+Thanks,
 Marek
