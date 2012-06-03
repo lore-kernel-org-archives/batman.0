@@ -1,12 +1,12 @@
-Return-Path: <guido@guidoi.com.ar>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun,  3 Jun 2012 22:19:07 +0200
+Message-Id: <1338754762-28424-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
-Date: Sun, 3 Jun 2012 10:24:51 -0300
-Message-ID: <CAHD-aqKpKB=rpHyf0_KDeu0Jbhd2ah+wcXfccCRJyTLKWzxbTQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] MAC discovery protocol for filling /etc/bat-hosts
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 01/16] batman-adv: Prefix local defines with
+	BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,72 +18,397 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Martin said:
-> On 05/08/2012 10:52 PM, Guido Iribarren wrote:
-> > mDNS solutions like avahi translate between hostnames and ips, while
-> > batman visualization deals with MACs, and those cannot necessarily be
-> > obtained from IPs (in some cases, ARP will help, but won't work in
-> > interfaces without IPs)
-> >
-> > maybe i'm ignoring some MAC discovery protocol?
->
-> While reading about TLV's on wikipedia[1], I came across a MAC discovery =
-protocol[2], LLDP, which
-> eventually lead me to OpenLLDP[3]. If this also works on 802.11, I think =
-we have a winner :)
->
-> Happy hacking!
->
-> [1] http://en.wikipedia.org/wiki/Type-length-value
-> [2] http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol
-> [3] http://openlldp.sourceforge.net/
->
-> --
-> Kind Regards
-> Martin Hundeb=C3=B8ll
-> >
+Reported-by: Martin Hundebøll <martin@hundeboll.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ bat_debugfs.c    |   26 +++++++------
+ bat_sysfs.c      |  112 +++++++++++++++++++++++++++---------------------------
+ gateway_client.c |   12 +++---
+ vis.c            |   18 +++++----
+ 4 files changed, 87 insertions(+), 81 deletions(-)
 
-It looks promising:
+diff --git a/bat_debugfs.c b/bat_debugfs.c
+index 87349f4..095e6e8 100644
+--- a/bat_debugfs.c
++++ b/bat_debugfs.c
+@@ -35,14 +35,14 @@
+ static struct dentry *batadv_debugfs;
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+-#define LOG_BUFF_MASK (batadv_log_buff_len - 1)
+-#define LOG_BUFF(idx) (debug_log->log_buff[(idx) & LOG_BUFF_MASK])
++#define BATADV_LOG_BUFF_MASK (batadv_log_buff_len - 1)
++#define BATADV_LOG_BUFF(idx) (debug_log->log_buff[(idx) & BATADV_LOG_BUFF_MASK])
+ 
+ static int batadv_log_buff_len = LOG_BUF_LEN;
+ 
+ static void batadv_emit_log_char(struct debug_log *debug_log, char c)
+ {
+-	LOG_BUFF(debug_log->log_end) = c;
++	BATADV_LOG_BUFF(debug_log->log_end) = c;
+ 	debug_log->log_end++;
+ 
+ 	if (debug_log->log_end - debug_log->log_start > batadv_log_buff_len)
+@@ -133,7 +133,7 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
+ 
+ 	while ((!error) && (i < count) &&
+ 	       (debug_log->log_start != debug_log->log_end)) {
+-		c = LOG_BUFF(debug_log->log_start);
++		c = BATADV_LOG_BUFF(debug_log->log_start);
+ 
+ 		debug_log->log_start++;
+ 
+@@ -270,7 +270,7 @@ struct bat_debuginfo {
+ 	const struct file_operations fops;
+ };
+ 
+-#define BAT_DEBUGINFO(_name, _mode, _open)		\
++#define BATADV_DEBUGINFO(_name, _mode, _open)		\
+ struct bat_debuginfo batadv_debuginfo_##_name = {	\
+ 	.attr = { .name = __stringify(_name),		\
+ 		  .mode = _mode, },			\
+@@ -282,15 +282,17 @@ struct bat_debuginfo batadv_debuginfo_##_name = {	\
+ 		}					\
+ };
+ 
+-static BAT_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
+-static BAT_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
+-static BAT_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
+-static BAT_DEBUGINFO(transtable_global, S_IRUGO, batadv_transtable_global_open);
++static BATADV_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
++static BATADV_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
++static BATADV_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
++static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
++			batadv_transtable_global_open);
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-static BAT_DEBUGINFO(bla_claim_table, S_IRUGO, batadv_bla_claim_table_open);
++static BATADV_DEBUGINFO(bla_claim_table, S_IRUGO, batadv_bla_claim_table_open);
+ #endif
+-static BAT_DEBUGINFO(transtable_local, S_IRUGO, batadv_transtable_local_open);
+-static BAT_DEBUGINFO(vis_data, S_IRUGO, batadv_vis_data_open);
++static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
++			batadv_transtable_local_open);
++static BATADV_DEBUGINFO(vis_data, S_IRUGO, batadv_vis_data_open);
+ 
+ static struct bat_debuginfo *batadv_mesh_debuginfos[] = {
+ 	&batadv_debuginfo_originators,
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index 07fde83..109c537 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -38,9 +38,9 @@ static struct bat_priv *batadv_kobj_to_batpriv(struct kobject *obj)
+ 	return netdev_priv(net_dev);
+ }
+ 
+-#define UEV_TYPE_VAR	"BATTYPE="
+-#define UEV_ACTION_VAR	"BATACTION="
+-#define UEV_DATA_VAR	"BATDATA="
++#define BATADV_UEV_TYPE_VAR	"BATTYPE="
++#define BATADV_UEV_ACTION_VAR	"BATACTION="
++#define BATADV_UEV_DATA_VAR	"BATDATA="
+ 
+ static char *batadv_uev_action_str[] = {
+ 	"add",
+@@ -53,15 +53,15 @@ static char *batadv_uev_type_str[] = {
+ };
+ 
+ /* Use this, if you have customized show and store functions */
+-#define BAT_ATTR(_name, _mode, _show, _store)	\
+-struct bat_attribute batadv_attr_##_name = {	\
+-	.attr = {.name = __stringify(_name),	\
+-		 .mode = _mode },		\
+-	.show   = _show,			\
+-	.store  = _store,			\
++#define BATADV_ATTR(_name, _mode, _show, _store)	\
++struct bat_attribute batadv_attr_##_name = {		\
++	.attr = {.name = __stringify(_name),		\
++		 .mode = _mode },			\
++	.show   = _show,				\
++	.store  = _store,				\
+ };
+ 
+-#define BAT_ATTR_SIF_STORE_BOOL(_name, _post_func)			\
++#define BATADV_ATTR_SIF_STORE_BOOL(_name, _post_func)			\
+ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 			     struct attribute *attr, char *buff,	\
+ 			     size_t count)				\
+@@ -72,7 +72,7 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 					&bat_priv->_name, net_dev);	\
+ }
+ 
+-#define BAT_ATTR_SIF_SHOW_BOOL(_name)					\
++#define BATADV_ATTR_SIF_SHOW_BOOL(_name)				\
+ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			    struct attribute *attr, char *buff)		\
+ {									\
+@@ -85,14 +85,14 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ /* Use this, if you are going to turn a [name] in the soft-interface
+  * (bat_priv) on or off
+  */
+-#define BAT_ATTR_SIF_BOOL(_name, _mode, _post_func)			\
+-	static BAT_ATTR_SIF_STORE_BOOL(_name, _post_func)		\
+-	static BAT_ATTR_SIF_SHOW_BOOL(_name)				\
+-	static BAT_ATTR(_name, _mode, batadv_show_##_name,		\
+-			batadv_store_##_name)
++#define BATADV_ATTR_SIF_BOOL(_name, _mode, _post_func)			\
++	static BATADV_ATTR_SIF_STORE_BOOL(_name, _post_func)		\
++	static BATADV_ATTR_SIF_SHOW_BOOL(_name)				\
++	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
++			   batadv_store_##_name)
+ 
+ 
+-#define BAT_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)		\
++#define BATADV_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)	\
+ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 			     struct attribute *attr, char *buff,	\
+ 			     size_t count)				\
+@@ -104,7 +104,7 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 					&bat_priv->_name, net_dev);	\
+ }
+ 
+-#define BAT_ATTR_SIF_SHOW_UINT(_name)					\
++#define BATADV_ATTR_SIF_SHOW_UINT(_name)				\
+ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			    struct attribute *attr, char *buff)		\
+ {									\
+@@ -115,14 +115,14 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ /* Use this, if you are going to set [name] in the soft-interface
+  * (bat_priv) to an unsigned integer value
+  */
+-#define BAT_ATTR_SIF_UINT(_name, _mode, _min, _max, _post_func)		\
+-	static BAT_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)	\
+-	static BAT_ATTR_SIF_SHOW_UINT(_name)				\
+-	static BAT_ATTR(_name, _mode, batadv_show_##_name,		\
++#define BATADV_ATTR_SIF_UINT(_name, _mode, _min, _max, _post_func)	\
++	static BATADV_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)\
++	static BATADV_ATTR_SIF_SHOW_UINT(_name)				\
++	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
+ 			batadv_store_##_name)
+ 
+ 
+-#define BAT_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)		\
++#define BATADV_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)	\
+ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 			     struct attribute *attr, char *buff,	\
+ 			     size_t count)				\
+@@ -142,7 +142,7 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 	return length;							\
+ }
+ 
+-#define BAT_ATTR_HIF_SHOW_UINT(_name)					\
++#define BATADV_ATTR_HIF_SHOW_UINT(_name)				\
+ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			    struct attribute *attr, char *buff)		\
+ {									\
+@@ -163,11 +163,11 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ /* Use this, if you are going to set [name] in hard_iface to an
+  * unsigned integer value
+  */
+-#define BAT_ATTR_HIF_UINT(_name, _mode, _min, _max, _post_func)		\
+-	static BAT_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)	\
+-	static BAT_ATTR_HIF_SHOW_UINT(_name)				\
+-	static BAT_ATTR(_name, _mode, batadv_show_##_name,		\
+-			batadv_store_##_name)
++#define BATADV_ATTR_HIF_UINT(_name, _mode, _min, _max, _post_func)	\
++	static BATADV_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)\
++	static BATADV_ATTR_HIF_SHOW_UINT(_name)				\
++	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
++			   batadv_store_##_name)
+ 
+ 
+ static int batadv_store_bool_attr(char *buff, size_t count,
+@@ -453,26 +453,27 @@ static ssize_t batadv_store_gw_bwidth(struct kobject *kobj,
+ 	return batadv_gw_bandwidth_set(net_dev, buff, count);
+ }
+ 
+-BAT_ATTR_SIF_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
+-BAT_ATTR_SIF_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
++BATADV_ATTR_SIF_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
++BATADV_ATTR_SIF_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-BAT_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
++BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
+ #endif
+-BAT_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, batadv_update_min_mtu);
+-BAT_ATTR_SIF_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
+-static BAT_ATTR(vis_mode, S_IRUGO | S_IWUSR, batadv_show_vis_mode,
+-		batadv_store_vis_mode);
+-static BAT_ATTR(routing_algo, S_IRUGO, batadv_show_bat_algo, NULL);
+-static BAT_ATTR(gw_mode, S_IRUGO | S_IWUSR, batadv_show_gw_mode,
+-		batadv_store_gw_mode);
+-BAT_ATTR_SIF_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX, NULL);
+-BAT_ATTR_SIF_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
+-BAT_ATTR_SIF_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, TQ_MAX_VALUE,
+-		  batadv_post_gw_deselect);
+-static BAT_ATTR(gw_bandwidth, S_IRUGO | S_IWUSR, batadv_show_gw_bwidth,
+-		batadv_store_gw_bwidth);
++BATADV_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, batadv_update_min_mtu);
++BATADV_ATTR_SIF_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
++static BATADV_ATTR(vis_mode, S_IRUGO | S_IWUSR, batadv_show_vis_mode,
++		   batadv_store_vis_mode);
++static BATADV_ATTR(routing_algo, S_IRUGO, batadv_show_bat_algo, NULL);
++static BATADV_ATTR(gw_mode, S_IRUGO | S_IWUSR, batadv_show_gw_mode,
++		   batadv_store_gw_mode);
++BATADV_ATTR_SIF_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * JITTER, INT_MAX,
++		     NULL);
++BATADV_ATTR_SIF_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, TQ_MAX_VALUE, NULL);
++BATADV_ATTR_SIF_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, TQ_MAX_VALUE,
++		     batadv_post_gw_deselect);
++static BATADV_ATTR(gw_bandwidth, S_IRUGO | S_IWUSR, batadv_show_gw_bwidth,
++		   batadv_store_gw_bwidth);
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+-BAT_ATTR_SIF_UINT(log_level, S_IRUGO | S_IWUSR, 0, DBG_ALL, NULL);
++BATADV_ATTR_SIF_UINT(log_level, S_IRUGO | S_IWUSR, 0, DBG_ALL, NULL);
+ #endif
+ 
+ static struct bat_attribute *batadv_mesh_attrs[] = {
+@@ -655,9 +656,9 @@ static ssize_t batadv_show_iface_status(struct kobject *kobj,
+ 	return length;
+ }
+ 
+-static BAT_ATTR(mesh_iface, S_IRUGO | S_IWUSR,
+-		batadv_show_mesh_iface, batadv_store_mesh_iface);
+-static BAT_ATTR(iface_status, S_IRUGO, batadv_show_iface_status, NULL);
++static BATADV_ATTR(mesh_iface, S_IRUGO | S_IWUSR, batadv_show_mesh_iface,
++		   batadv_store_mesh_iface);
++static BATADV_ATTR(iface_status, S_IRUGO, batadv_show_iface_status, NULL);
+ 
+ static struct bat_attribute *batadv_batman_attrs[] = {
+ 	&batadv_attr_mesh_iface,
+@@ -719,31 +720,32 @@ int batadv_throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
+ 
+ 	bat_kobj = &primary_if->soft_iface->dev.kobj;
+ 
+-	uevent_env[0] = kmalloc(strlen(UEV_TYPE_VAR) +
++	uevent_env[0] = kmalloc(strlen(BATADV_UEV_TYPE_VAR) +
+ 				strlen(batadv_uev_type_str[type]) + 1,
+ 				GFP_ATOMIC);
+ 	if (!uevent_env[0])
+ 		goto out;
+ 
+-	sprintf(uevent_env[0], "%s%s", UEV_TYPE_VAR, batadv_uev_type_str[type]);
++	sprintf(uevent_env[0], "%s%s", BATADV_UEV_TYPE_VAR,
++		batadv_uev_type_str[type]);
+ 
+-	uevent_env[1] = kmalloc(strlen(UEV_ACTION_VAR) +
++	uevent_env[1] = kmalloc(strlen(BATADV_UEV_ACTION_VAR) +
+ 				strlen(batadv_uev_action_str[action]) + 1,
+ 				GFP_ATOMIC);
+ 	if (!uevent_env[1])
+ 		goto out;
+ 
+-	sprintf(uevent_env[1], "%s%s", UEV_ACTION_VAR,
++	sprintf(uevent_env[1], "%s%s", BATADV_UEV_ACTION_VAR,
+ 		batadv_uev_action_str[action]);
+ 
+ 	/* If the event is DEL, ignore the data field */
+ 	if (action != UEV_DEL) {
+-		uevent_env[2] = kmalloc(strlen(UEV_DATA_VAR) +
++		uevent_env[2] = kmalloc(strlen(BATADV_UEV_DATA_VAR) +
+ 					strlen(data) + 1, GFP_ATOMIC);
+ 		if (!uevent_env[2])
+ 			goto out;
+ 
+-		sprintf(uevent_env[2], "%s%s", UEV_DATA_VAR, data);
++		sprintf(uevent_env[2], "%s%s", BATADV_UEV_DATA_VAR, data);
+ 	}
+ 
+ 	ret = kobject_uevent_env(bat_kobj, KOBJ_CHANGE, uevent_env);
+diff --git a/gateway_client.c b/gateway_client.c
+index fe7d846..7d186a7 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -33,8 +33,8 @@
+ /* This is the offset of the options field in a dhcp packet starting at
+  * the beginning of the dhcp header
+  */
+-#define DHCP_OPTIONS_OFFSET 240
+-#define DHCP_REQUEST 3
++#define BATADV_DHCP_OPTIONS_OFFSET 240
++#define BATADV_DHCP_REQUEST 3
+ 
+ static void batadv_gw_node_free_ref(struct gw_node *gw_node)
+ {
+@@ -521,11 +521,11 @@ static bool batadv_is_type_dhcprequest(struct sk_buff *skb, int header_len)
+ 
+ 	pkt_len = skb_headlen(skb);
+ 
+-	if (pkt_len < header_len + DHCP_OPTIONS_OFFSET + 1)
++	if (pkt_len < header_len + BATADV_DHCP_OPTIONS_OFFSET + 1)
+ 		goto out;
+ 
+-	p = skb->data + header_len + DHCP_OPTIONS_OFFSET;
+-	pkt_len -= header_len + DHCP_OPTIONS_OFFSET + 1;
++	p = skb->data + header_len + BATADV_DHCP_OPTIONS_OFFSET;
++	pkt_len -= header_len + BATADV_DHCP_OPTIONS_OFFSET + 1;
+ 
+ 	/* Access the dhcp option lists. Each entry is made up by:
+ 	 * - octet 1: option type
+@@ -543,7 +543,7 @@ static bool batadv_is_type_dhcprequest(struct sk_buff *skb, int header_len)
+ 			p += 2;
+ 
+ 			/* check if the message type is what we need */
+-			if (*p == DHCP_REQUEST)
++			if (*p == BATADV_DHCP_REQUEST)
+ 				ret = true;
+ 			break;
+ 		} else if (*p == 0) {
+diff --git a/vis.c b/vis.c
+index 3095c41..7dc7506 100644
+--- a/vis.c
++++ b/vis.c
+@@ -26,7 +26,7 @@
+ #include "hash.h"
+ #include "originator.h"
+ 
+-#define MAX_VIS_PACKET_SIZE 1000
++#define BATADV_MAX_VIS_PACKET_SIZE 1000
+ 
+ static void batadv_start_vis_timer(struct bat_priv *bat_priv);
+ 
+@@ -544,10 +544,12 @@ static int batadv_find_best_vis_server(struct bat_priv *bat_priv,
+ static bool batadv_vis_packet_full(const struct vis_info *info)
+ {
+ 	const struct vis_packet *packet;
+-	packet = (struct vis_packet *)info->skb_packet->data;
++	size_t num_items;
+ 
+-	if (MAX_VIS_PACKET_SIZE / sizeof(struct vis_info_entry)
+-		< packet->entries + 1)
++	packet = (struct vis_packet *)info->skb_packet->data;
++	num_items = BATADV_MAX_VIS_PACKET_SIZE / sizeof(struct vis_info_entry);
++
++	if (num_items < packet->entries + 1)
+ 		return true;
+ 	return false;
+ }
+@@ -838,6 +840,7 @@ int batadv_vis_init(struct bat_priv *bat_priv)
+ {
+ 	struct vis_packet *packet;
+ 	int hash_added;
++	unsigned int len;
+ 
+ 	if (bat_priv->vis_hash)
+ 		return 0;
+@@ -850,13 +853,12 @@ int batadv_vis_init(struct bat_priv *bat_priv)
+ 		goto err;
+ 	}
+ 
+-	bat_priv->my_vis_info = kmalloc(MAX_VIS_PACKET_SIZE, GFP_ATOMIC);
++	bat_priv->my_vis_info = kmalloc(BATADV_MAX_VIS_PACKET_SIZE, GFP_ATOMIC);
+ 	if (!bat_priv->my_vis_info)
+ 		goto err;
+ 
+-	bat_priv->my_vis_info->skb_packet = dev_alloc_skb(sizeof(*packet) +
+-							  MAX_VIS_PACKET_SIZE +
+-							  ETH_HLEN);
++	len = sizeof(*packet) + BATADV_MAX_VIS_PACKET_SIZE + ETH_HLEN;
++	bat_priv->my_vis_info->skb_packet = dev_alloc_skb(len);
+ 	if (!bat_priv->my_vis_info->skb_packet)
+ 		goto free_info;
+ 
+-- 
+1.7.10
 
-did on two different routers connected by batman 2012.1.0 with adhoc interf=
-aces
-# opkg list lldpd
-lldpd - 0.3-3 - LLDP (Link Layer Discovery Protocol)
-# opkg install lldpd
-# /etc/init.d/lldpd
-### wait a couple of minutes
-#  lldpctl |head
----------------------------------------------------------------------------=
-----
-    LLDP neighbors
----------------------------------------------------------------------------=
-----
-Interface: wlan0-2
- ChassisID: 54:e6:fc:be:29:d1 (MAC)
- SysName:   colmena
- SysDescr:  Linux 3.3.2 #1 Thu May 24 17:06:23 UTC 2012 mips
- MgmtIP:    10.6.2.170
- Caps:      Bridge(E) Wlan(E)
-
-# lldpctl |egrep "(SysName|PortID|PortDescr)"|sed -rn "s/[^:]*:
-*([[:graph:]]*)( \(MAC\))?$/\1/;p;" | sed -nr "N;N;s/\n/|/g;s/(.*)\
-|(.*)\|(.*)/\2 \1_\3/;p" >/etc/bat-hosts
-# cat /etc/bat-hosts
-56:e6:fc:be:29:d4 colmena_wlan0-2
-3a:3c:98:fe:55:2f colmena_bat0
-
-### Yes, that's a repulsive 5 min sed hack. I feel sorry for your eyes.
-
-Unfortunately, lldpd 0.3 is designed to work with just 1 neighbour on
-each interface.
-So when i started lldpd on a third node in the mesh network, didn't
-work as expected.
-Version 0.4alpha has an option to disable this behaviour and
-apparently show many neighbours per interface. Haven't had the time to
-compile and try it.
-
-Thanks Martin!
-
-Guido
