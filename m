@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  3 Jun 2012 22:19:14 +0200
-Message-Id: <1338754762-28424-8-git-send-email-sven@narfation.org>
+Date: Sun,  3 Jun 2012 22:19:16 +0200
+Message-Id: <1338754762-28424-10-git-send-email-sven@narfation.org>
 In-Reply-To: <1338754762-28424-1-git-send-email-sven@narfation.org>
 References: <1338754762-28424-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 08/16] batman-adv: Prefix types defines with
+Subject: [B.A.T.M.A.N.] [PATCH 10/16] batman-adv: Prefix vis defines with
 	BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,82 +25,36 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Reported-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- hard-interface.c |   11 ++++++-----
- soft-interface.c |    2 +-
- types.h          |    9 ++++-----
- 3 files changed, 11 insertions(+), 11 deletions(-)
+ vis.c |    2 +-
+ vis.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/hard-interface.c b/hard-interface.c
-index 1db2d05..3bf426a 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -196,7 +196,8 @@ int batadv_hardif_min_mtu(struct net_device *soft_iface)
- 		if (hard_iface->soft_iface != soft_iface)
- 			continue;
+diff --git a/vis.c b/vis.c
+index 596eacc..a439ed6 100644
+--- a/vis.c
++++ b/vis.c
+@@ -674,7 +674,7 @@ static void batadv_purge_vis_packets(struct bat_priv *bat_priv)
+ 				continue;
  
--		min_mtu = min_t(int, hard_iface->net_dev->mtu - BAT_HEADER_LEN,
-+		min_mtu = min_t(int,
-+				hard_iface->net_dev->mtu - BATADV_HEADER_LEN,
- 				min_mtu);
- 	}
- 	rcu_read_unlock();
-@@ -320,18 +321,18 @@ int batadv_hardif_enable_interface(struct hard_iface *hard_iface,
- 		    hard_iface->net_dev->name);
+ 			if (batadv_has_timed_out(info->first_seen,
+-						 VIS_TIMEOUT)) {
++						 BATADV_VIS_TIMEOUT)) {
+ 				hlist_del(node);
+ 				batadv_send_list_del(info);
+ 				kref_put(&info->refcount, batadv_free_info);
+diff --git a/vis.h b/vis.h
+index dad5958..16a1a6b 100644
+--- a/vis.h
++++ b/vis.h
+@@ -21,7 +21,7 @@
+ #define _NET_BATMAN_ADV_VIS_H_
  
- 	if (atomic_read(&bat_priv->fragmentation) && hard_iface->net_dev->mtu <
--		ETH_DATA_LEN + BAT_HEADER_LEN)
-+		ETH_DATA_LEN + BATADV_HEADER_LEN)
- 		batadv_info(hard_iface->soft_iface,
- 			    "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to %zi would solve the problem.\n",
- 			    hard_iface->net_dev->name, hard_iface->net_dev->mtu,
--			    ETH_DATA_LEN + BAT_HEADER_LEN);
-+			    ETH_DATA_LEN + BATADV_HEADER_LEN);
+ /* timeout of vis packets in miliseconds */
+-#define VIS_TIMEOUT		200000
++#define BATADV_VIS_TIMEOUT		200000
  
- 	if (!atomic_read(&bat_priv->fragmentation) && hard_iface->net_dev->mtu <
--		ETH_DATA_LEN + BAT_HEADER_LEN)
-+		ETH_DATA_LEN + BATADV_HEADER_LEN)
- 		batadv_info(hard_iface->soft_iface,
- 			    "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. If you experience problems getting traffic through try increasing the MTU to %zi.\n",
- 			    hard_iface->net_dev->name, hard_iface->net_dev->mtu,
--			    ETH_DATA_LEN + BAT_HEADER_LEN);
-+			    ETH_DATA_LEN + BATADV_HEADER_LEN);
- 
- 	if (batadv_hardif_is_iface_up(hard_iface))
- 		batadv_hardif_activate_interface(hard_iface);
-diff --git a/soft-interface.c b/soft-interface.c
-index e726419..bbbc9a9 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -351,7 +351,7 @@ static void batadv_interface_setup(struct net_device *dev)
- 	 */
- 	dev->mtu = ETH_DATA_LEN;
- 	/* reserve more space in the skbuff for our header */
--	dev->hard_header_len = BAT_HEADER_LEN;
-+	dev->hard_header_len = BATADV_HEADER_LEN;
- 
- 	/* generate random address */
- 	eth_hw_addr_random(dev);
-diff --git a/types.h b/types.h
-index 053c5d4..e4ba4dc 100644
---- a/types.h
-+++ b/types.h
-@@ -22,12 +22,11 @@
- 
- #include "packet.h"
- #include "bitarray.h"
-+#include "linux/kernel.h"
- 
--#define BAT_HEADER_LEN (ETH_HLEN + \
--	((sizeof(struct unicast_packet) > sizeof(struct bcast_packet) ? \
--	 sizeof(struct unicast_packet) : \
--	 sizeof(struct bcast_packet))))
--
-+#define BATADV_HEADER_LEN \
-+	(ETH_HLEN + max(sizeof(struct unicast_packet), \
-+			sizeof(struct bcast_packet)))
- 
- struct hard_iface {
- 	struct list_head list;
+ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset);
+ void batadv_receive_server_sync_packet(struct bat_priv *bat_priv,
 -- 
 1.7.10
 
