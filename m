@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  3 Jun 2012 22:19:08 +0200
-Message-Id: <1338754762-28424-2-git-send-email-sven@narfation.org>
+Date: Sun,  3 Jun 2012 22:19:10 +0200
+Message-Id: <1338754762-28424-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1338754762-28424-1-git-send-email-sven@narfation.org>
 References: <1338754762-28424-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 02/16] batman-adv: Prefix debugfs defines
-	with BATADV_
+Subject: [B.A.T.M.A.N.] [PATCH 04/16] batman-adv: Prefix
+	bridge_loop_avoidance defines with BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,36 +25,45 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Reported-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bat_debugfs.c |    2 +-
- bat_debugfs.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ bridge_loop_avoidance.c |    4 ++--
+ bridge_loop_avoidance.h |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/bat_debugfs.c b/bat_debugfs.c
-index 095e6e8..c28b9de 100644
---- a/bat_debugfs.c
-+++ b/bat_debugfs.c
-@@ -311,7 +311,7 @@ void batadv_debugfs_init(void)
- 	struct bat_debuginfo *bat_debug;
- 	struct dentry *file;
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 0592d2b..42b8a20 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -237,7 +237,7 @@ static void batadv_bla_del_backbone_claims(struct backbone_gw *backbone_gw)
+ 	}
  
--	batadv_debugfs = debugfs_create_dir(DEBUGFS_BAT_SUBDIR, NULL);
-+	batadv_debugfs = debugfs_create_dir(BATADV_DEBUGFS_SUBDIR, NULL);
- 	if (batadv_debugfs == ERR_PTR(-ENODEV))
- 		batadv_debugfs = NULL;
+ 	/* all claims gone, intialize CRC */
+-	backbone_gw->crc = BLA_CRC_INIT;
++	backbone_gw->crc = BATADV_BLA_CRC_INIT;
+ }
  
-diff --git a/bat_debugfs.h b/bat_debugfs.h
-index eb0d576..3319e1f 100644
---- a/bat_debugfs.h
-+++ b/bat_debugfs.h
-@@ -20,7 +20,7 @@
- #ifndef _NET_BATMAN_ADV_DEBUGFS_H_
- #define _NET_BATMAN_ADV_DEBUGFS_H_
+ /* @bat_priv: the bat priv with all the soft interface information
+@@ -375,7 +375,7 @@ static struct backbone_gw *batadv_bla_get_backbone_gw(struct bat_priv *bat_priv,
  
--#define DEBUGFS_BAT_SUBDIR "batman_adv"
-+#define BATADV_DEBUGFS_SUBDIR "batman_adv"
+ 	entry->vid = vid;
+ 	entry->lasttime = jiffies;
+-	entry->crc = BLA_CRC_INIT;
++	entry->crc = BATADV_BLA_CRC_INIT;
+ 	entry->bat_priv = bat_priv;
+ 	atomic_set(&entry->request_sent, 0);
+ 	memcpy(entry->orig, orig, ETH_ALEN);
+diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
+index 9818b1e..58563f0 100644
+--- a/bridge_loop_avoidance.h
++++ b/bridge_loop_avoidance.h
+@@ -36,7 +36,7 @@ void batadv_bla_update_orig_address(struct bat_priv *bat_priv,
+ int batadv_bla_init(struct bat_priv *bat_priv);
+ void batadv_bla_free(struct bat_priv *bat_priv);
  
- void batadv_debugfs_init(void);
- void batadv_debugfs_destroy(void);
+-#define BLA_CRC_INIT	0
++#define BATADV_BLA_CRC_INIT	0
+ #else /* ifdef CONFIG_BATMAN_ADV_BLA */
+ 
+ static inline int batadv_bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb,
 -- 
 1.7.10
 
