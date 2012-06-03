@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  3 Jun 2012 22:19:19 +0200
-Message-Id: <1338754762-28424-13-git-send-email-sven@narfation.org>
+Date: Sun,  3 Jun 2012 22:19:13 +0200
+Message-Id: <1338754762-28424-7-git-send-email-sven@narfation.org>
 In-Reply-To: <1338754762-28424-1-git-send-email-sven@narfation.org>
 References: <1338754762-28424-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 13/16] batman-adv: Prefix hard-interface enum
-	with BATADV_
+Subject: [B.A.T.M.A.N.] [PATCH 07/16] batman-adv: Prefix packet defines with
+	BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,481 +25,399 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Reported-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bat_iv_ogm.c            |    6 +++---
- bat_sysfs.c             |   27 ++++++++++++++++-----------
- bridge_loop_avoidance.c |    2 +-
- gateway_client.c        |    2 +-
- hard-interface.c        |   40 ++++++++++++++++++++--------------------
- hard-interface.h        |   14 +++++++-------
- icmp_socket.c           |    2 +-
- main.c                  |    4 ++--
- originator.c            |   16 ++++++++--------
- routing.c               |    2 +-
- send.c                  |   10 +++++-----
- translation-table.c     |    4 ++--
- vis.c                   |    2 +-
- 13 files changed, 68 insertions(+), 63 deletions(-)
+ bat_iv_ogm.c        |   20 ++++++++++----------
+ hard-interface.c    |    3 ++-
+ icmp_socket.c       |    4 ++--
+ main.c              |    4 ++--
+ packet.h            |   12 ++++++------
+ routing.c           |    4 ++--
+ send.c              |    4 ++--
+ soft-interface.c    |   12 +++++++-----
+ translation-table.c |    8 ++++----
+ unicast.c           |    4 ++--
+ vis.c               |    2 +-
+ 11 files changed, 40 insertions(+), 37 deletions(-)
 
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 110e76f..2fd6bee 100644
+index 9e83f35..825054a 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
-@@ -165,7 +165,7 @@ static void batadv_iv_ogm_send_to_if(struct forw_packet *forw_packet,
- 	struct batman_ogm_packet *batman_ogm_packet;
- 	struct sk_buff *skb;
+@@ -64,7 +64,7 @@ static int batadv_iv_ogm_iface_enable(struct hard_iface *hard_iface)
+ 	get_random_bytes(&random_seqno, sizeof(random_seqno));
+ 	atomic_set(&hard_iface->seqno, random_seqno);
  
--	if (hard_iface->if_status != IF_ACTIVE)
-+	if (hard_iface->if_status != BATADV_IF_ACTIVE)
- 		return;
+-	hard_iface->packet_len = BATMAN_OGM_HLEN;
++	hard_iface->packet_len = BATADV_OGM_HLEN;
+ 	hard_iface->packet_buff = kmalloc(hard_iface->packet_len, GFP_ATOMIC);
  
- 	packet_num = 0;
-@@ -238,7 +238,7 @@ static void batadv_iv_ogm_emit(struct forw_packet *forw_packet)
- 	soft_iface = forw_packet->if_incoming->soft_iface;
- 	bat_priv = netdev_priv(soft_iface);
+ 	if (!hard_iface->packet_buff)
+@@ -72,7 +72,7 @@ static int batadv_iv_ogm_iface_enable(struct hard_iface *hard_iface)
  
--	if (forw_packet->if_incoming->if_status != IF_ACTIVE)
-+	if (forw_packet->if_incoming->if_status != BATADV_IF_ACTIVE)
- 		goto out;
+ 	batman_ogm_packet = (struct batman_ogm_packet *)hard_iface->packet_buff;
+ 	batman_ogm_packet->header.packet_type = BAT_IV_OGM;
+-	batman_ogm_packet->header.version = COMPAT_VERSION;
++	batman_ogm_packet->header.version = BATADV_COMPAT_VERSION;
+ 	batman_ogm_packet->header.ttl = 2;
+ 	batman_ogm_packet->flags = NO_FLAGS;
+ 	batman_ogm_packet->tq = TQ_MAX_VALUE;
+@@ -139,7 +139,7 @@ static int batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
+ {
+ 	int next_buff_pos = 0;
  
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
-@@ -1017,7 +1017,7 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
+-	next_buff_pos += buff_pos + BATMAN_OGM_HLEN;
++	next_buff_pos += buff_pos + BATADV_OGM_HLEN;
+ 	next_buff_pos += batadv_tt_len(tt_num_changes);
  
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
--		if (hard_iface->if_status != IF_ACTIVE)
-+		if (hard_iface->if_status != BATADV_IF_ACTIVE)
- 			continue;
+ 	return (next_buff_pos <= packet_len) &&
+@@ -191,7 +191,7 @@ static void batadv_iv_ogm_send_to_if(struct forw_packet *forw_packet,
+ 			   batman_ogm_packet->ttvn, hard_iface->net_dev->name,
+ 			   hard_iface->net_dev->dev_addr);
  
- 		if (hard_iface->soft_iface != if_incoming->soft_iface)
-diff --git a/bat_sysfs.c b/bat_sysfs.c
-index 2abf7c9..311a327 100644
---- a/bat_sysfs.c
-+++ b/bat_sysfs.c
-@@ -558,12 +558,17 @@ static ssize_t batadv_show_mesh_iface(struct kobject *kobj,
- 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
- 	struct hard_iface *hard_iface = batadv_hardif_get_by_netdev(net_dev);
- 	ssize_t length;
-+	const char *ifname;
+-		buff_pos += BATMAN_OGM_HLEN;
++		buff_pos += BATADV_OGM_HLEN;
+ 		buff_pos += batadv_tt_len(batman_ogm_packet->tt_num_changes);
+ 		packet_num++;
+ 		batman_ogm_packet = (struct batman_ogm_packet *)
+@@ -561,7 +561,7 @@ static void batadv_iv_ogm_forward(struct orig_node *orig_node,
+ 		batman_ogm_packet->flags &= ~DIRECTLINK;
  
- 	if (!hard_iface)
- 		return 0;
+ 	batadv_iv_ogm_queue_add(bat_priv, (unsigned char *)batman_ogm_packet,
+-				BATMAN_OGM_HLEN + batadv_tt_len(tt_num_changes),
++				BATADV_OGM_HLEN + batadv_tt_len(tt_num_changes),
+ 				if_incoming, 0, batadv_iv_ogm_fwd_send_time());
+ }
  
--	length = sprintf(buff, "%s\n", hard_iface->if_status == IF_NOT_IN_USE ?
--			 "none" : hard_iface->soft_iface->name);
-+	if (hard_iface->if_status == BATADV_IF_NOT_IN_USE)
-+		ifname =  "none";
-+	else
-+		ifname = hard_iface->soft_iface->name;
-+
-+	length = sprintf(buff, "%s\n", ifname);
+@@ -579,7 +579,7 @@ static void batadv_iv_ogm_schedule(struct hard_iface *hard_iface)
+ 		tt_num_changes = batadv_tt_append_diff(bat_priv,
+ 						       &hard_iface->packet_buff,
+ 						       &hard_iface->packet_len,
+-						       BATMAN_OGM_HLEN);
++						       BATADV_OGM_HLEN);
  
- 	batadv_hardif_free_ref(hard_iface);
+ 	batman_ogm_packet = (struct batman_ogm_packet *)hard_iface->packet_buff;
  
-@@ -593,9 +598,9 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
+@@ -1025,7 +1025,7 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
  	}
+ 	rcu_read_unlock();
  
- 	if (strncmp(buff, "none", 4) == 0)
--		status_tmp = IF_NOT_IN_USE;
-+		status_tmp = BATADV_IF_NOT_IN_USE;
- 	else
--		status_tmp = IF_I_WANT_YOU;
-+		status_tmp = BATADV_IF_I_WANT_YOU;
+-	if (batman_ogm_packet->header.version != COMPAT_VERSION) {
++	if (batman_ogm_packet->header.version != BATADV_COMPAT_VERSION) {
+ 		batadv_dbg(DBG_BATMAN, bat_priv,
+ 			   "Drop packet: incompatible batman version (%i)\n",
+ 			   batman_ogm_packet->header.version);
+@@ -1227,7 +1227,7 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+ 	unsigned char *tt_buff, *packet_buff;
+ 	bool ret;
  
- 	if (hard_iface->if_status == status_tmp)
- 		goto out;
-@@ -609,13 +614,13 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
- 		goto out;
- 	}
+-	ret = batadv_check_management_packet(skb, if_incoming, BATMAN_OGM_HLEN);
++	ret = batadv_check_management_packet(skb, if_incoming, BATADV_OGM_HLEN);
+ 	if (!ret)
+ 		return NET_RX_DROP;
  
--	if (status_tmp == IF_NOT_IN_USE) {
-+	if (status_tmp == BATADV_IF_NOT_IN_USE) {
- 		batadv_hardif_disable_interface(hard_iface);
- 		goto unlock;
- 	}
+@@ -1248,12 +1248,12 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
  
- 	/* if the interface already is in use */
--	if (hard_iface->if_status != IF_NOT_IN_USE)
-+	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
- 		batadv_hardif_disable_interface(hard_iface);
+ 	/* unpack the aggregated packets and process them one by one */
+ 	do {
+-		tt_buff = packet_buff + buff_pos + BATMAN_OGM_HLEN;
++		tt_buff = packet_buff + buff_pos + BATADV_OGM_HLEN;
  
- 	ret = batadv_hardif_enable_interface(hard_iface, buff);
-@@ -638,19 +643,19 @@ static ssize_t batadv_show_iface_status(struct kobject *kobj,
- 		return 0;
+ 		batadv_iv_ogm_process(ethhdr, batman_ogm_packet, tt_buff,
+ 				      if_incoming);
  
- 	switch (hard_iface->if_status) {
--	case IF_TO_BE_REMOVED:
-+	case BATADV_IF_TO_BE_REMOVED:
- 		length = sprintf(buff, "disabling\n");
- 		break;
--	case IF_INACTIVE:
-+	case BATADV_IF_INACTIVE:
- 		length = sprintf(buff, "inactive\n");
- 		break;
--	case IF_ACTIVE:
-+	case BATADV_IF_ACTIVE:
- 		length = sprintf(buff, "active\n");
- 		break;
--	case IF_TO_BE_ACTIVATED:
-+	case BATADV_IF_TO_BE_ACTIVATED:
- 		length = sprintf(buff, "enabling\n");
- 		break;
--	case IF_NOT_IN_USE:
-+	case BATADV_IF_NOT_IN_USE:
- 	default:
- 		length = sprintf(buff, "not in use\n");
- 		break;
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index ee75fa6..66fd8c1 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1552,7 +1552,7 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
- 		goto out;
- 	}
+-		buff_pos += BATMAN_OGM_HLEN;
++		buff_pos += BATADV_OGM_HLEN;
+ 		buff_pos += batadv_tt_len(batman_ogm_packet->tt_num_changes);
  
--	if (primary_if->if_status != IF_ACTIVE) {
-+	if (primary_if->if_status != BATADV_IF_ACTIVE) {
- 		ret = seq_printf(seq,
- 				 "BATMAN mesh %s disabled - primary interface not active\n",
- 				 net_dev->name);
-diff --git a/gateway_client.c b/gateway_client.c
-index 026b181..6a92035 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -475,7 +475,7 @@ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
- 		goto out;
- 	}
- 
--	if (primary_if->if_status != IF_ACTIVE) {
-+	if (primary_if->if_status != BATADV_IF_ACTIVE) {
- 		ret = seq_printf(seq,
- 				 "BATMAN mesh %s disabled - primary interface not active\n",
- 				 net_dev->name);
+ 		batman_ogm_packet = (struct batman_ogm_packet *)
 diff --git a/hard-interface.c b/hard-interface.c
-index a8f5af8..2468e15 100644
+index ef81f01..1db2d05 100644
 --- a/hard-interface.c
 +++ b/hard-interface.c
-@@ -85,7 +85,7 @@ batadv_hardif_get_active(const struct net_device *soft_iface)
- 		if (hard_iface->soft_iface != soft_iface)
- 			continue;
- 
--		if (hard_iface->if_status == IF_ACTIVE &&
-+		if (hard_iface->if_status == BATADV_IF_ACTIVE &&
- 		    atomic_inc_not_zero(&hard_iface->refcount))
- 			goto out;
- 	}
-@@ -157,8 +157,8 @@ static void batadv_check_known_mac_addr(const struct net_device *net_dev)
- 
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
--		if ((hard_iface->if_status != IF_ACTIVE) &&
--		    (hard_iface->if_status != IF_TO_BE_ACTIVATED))
-+		if ((hard_iface->if_status != BATADV_IF_ACTIVE) &&
-+		    (hard_iface->if_status != BATADV_IF_TO_BE_ACTIVATED))
- 			continue;
- 
- 		if (hard_iface->net_dev == net_dev)
-@@ -189,8 +189,8 @@ int batadv_hardif_min_mtu(struct net_device *soft_iface)
- 
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
--		if ((hard_iface->if_status != IF_ACTIVE) &&
--		    (hard_iface->if_status != IF_TO_BE_ACTIVATED))
-+		if ((hard_iface->if_status != BATADV_IF_ACTIVE) &&
-+		    (hard_iface->if_status != BATADV_IF_TO_BE_ACTIVATED))
- 			continue;
- 
- 		if (hard_iface->soft_iface != soft_iface)
-@@ -220,13 +220,13 @@ static void batadv_hardif_activate_interface(struct hard_iface *hard_iface)
- 	struct bat_priv *bat_priv;
- 	struct hard_iface *primary_if = NULL;
- 
--	if (hard_iface->if_status != IF_INACTIVE)
-+	if (hard_iface->if_status != BATADV_IF_INACTIVE)
- 		goto out;
- 
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
- 
- 	bat_priv->bat_algo_ops->bat_iface_update_mac(hard_iface);
--	hard_iface->if_status = IF_TO_BE_ACTIVATED;
-+	hard_iface->if_status = BATADV_IF_TO_BE_ACTIVATED;
- 
- 	/* the first active interface becomes our primary interface or
- 	 * the next active interface after the old primary interface was removed
-@@ -247,11 +247,11 @@ out:
- 
- static void batadv_hardif_deactivate_interface(struct hard_iface *hard_iface)
+@@ -263,6 +263,7 @@ int batadv_hardif_enable_interface(struct hard_iface *hard_iface,
  {
--	if ((hard_iface->if_status != IF_ACTIVE) &&
--	    (hard_iface->if_status != IF_TO_BE_ACTIVATED))
-+	if ((hard_iface->if_status != BATADV_IF_ACTIVE) &&
-+	    (hard_iface->if_status != BATADV_IF_TO_BE_ACTIVATED))
- 		return;
- 
--	hard_iface->if_status = IF_INACTIVE;
-+	hard_iface->if_status = BATADV_IF_INACTIVE;
- 
- 	batadv_info(hard_iface->soft_iface, "Interface deactivated: %s\n",
- 		    hard_iface->net_dev->name);
-@@ -267,7 +267,7 @@ int batadv_hardif_enable_interface(struct hard_iface *hard_iface,
- 	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
+ 	struct bat_priv *bat_priv;
+ 	struct net_device *soft_iface;
++	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
  	int ret;
  
--	if (hard_iface->if_status != IF_NOT_IN_USE)
-+	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
- 		goto out;
- 
- 	if (!atomic_inc_not_zero(&hard_iface->refcount))
-@@ -308,7 +308,7 @@ int batadv_hardif_enable_interface(struct hard_iface *hard_iface,
- 
- 	hard_iface->if_num = bat_priv->num_ifaces;
- 	bat_priv->num_ifaces++;
--	hard_iface->if_status = IF_INACTIVE;
-+	hard_iface->if_status = BATADV_IF_INACTIVE;
+ 	if (hard_iface->if_status != IF_NOT_IN_USE)
+@@ -309,7 +310,7 @@ int batadv_hardif_enable_interface(struct hard_iface *hard_iface,
+ 	hard_iface->if_status = IF_INACTIVE;
  	batadv_orig_hash_add_if(hard_iface, bat_priv->num_ifaces);
  
- 	hard_iface->batman_adv_ptype.type = ethertype;
-@@ -359,10 +359,10 @@ void batadv_hardif_disable_interface(struct hard_iface *hard_iface)
- 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	struct hard_iface *primary_if = NULL;
- 
--	if (hard_iface->if_status == IF_ACTIVE)
-+	if (hard_iface->if_status == BATADV_IF_ACTIVE)
- 		batadv_hardif_deactivate_interface(hard_iface);
- 
--	if (hard_iface->if_status != IF_INACTIVE)
-+	if (hard_iface->if_status != BATADV_IF_INACTIVE)
- 		goto out;
- 
- 	batadv_info(hard_iface->soft_iface, "Removing interface: %s\n",
-@@ -384,7 +384,7 @@ void batadv_hardif_disable_interface(struct hard_iface *hard_iface)
- 	}
- 
- 	bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
--	hard_iface->if_status = IF_NOT_IN_USE;
-+	hard_iface->if_status = BATADV_IF_NOT_IN_USE;
- 
- 	/* delete all references to this hard_iface */
- 	batadv_purge_orig_ref(bat_priv);
-@@ -428,7 +428,7 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 	hard_iface->if_num = -1;
- 	hard_iface->net_dev = net_dev;
- 	hard_iface->soft_iface = NULL;
--	hard_iface->if_status = IF_NOT_IN_USE;
-+	hard_iface->if_status = BATADV_IF_NOT_IN_USE;
- 	INIT_LIST_HEAD(&hard_iface->list);
- 	/* extra reference for return */
- 	atomic_set(&hard_iface->refcount, 2);
-@@ -457,13 +457,13 @@ static void batadv_hardif_remove_interface(struct hard_iface *hard_iface)
- 	ASSERT_RTNL();
- 
- 	/* first deactivate interface */
--	if (hard_iface->if_status != IF_NOT_IN_USE)
-+	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
- 		batadv_hardif_disable_interface(hard_iface);
- 
--	if (hard_iface->if_status != IF_NOT_IN_USE)
-+	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
- 		return;
- 
--	hard_iface->if_status = IF_TO_BE_REMOVED;
-+	hard_iface->if_status = BATADV_IF_TO_BE_REMOVED;
- 	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
- 	batadv_hardif_free_ref(hard_iface);
- }
-@@ -513,7 +513,7 @@ static int batadv_hard_if_event(struct notifier_block *this,
- 			batadv_update_min_mtu(hard_iface->soft_iface);
- 		break;
- 	case NETDEV_CHANGEADDR:
--		if (hard_iface->if_status == IF_NOT_IN_USE)
-+		if (hard_iface->if_status == BATADV_IF_NOT_IN_USE)
- 			goto hardif_put;
- 
- 		batadv_check_known_mac_addr(hard_iface->net_dev);
-diff --git a/hard-interface.h b/hard-interface.h
-index d66dabd..4b60d58 100644
---- a/hard-interface.h
-+++ b/hard-interface.h
-@@ -20,13 +20,13 @@
- #ifndef _NET_BATMAN_ADV_HARD_INTERFACE_H_
- #define _NET_BATMAN_ADV_HARD_INTERFACE_H_
- 
--enum hard_if_state {
--	IF_NOT_IN_USE,
--	IF_TO_BE_REMOVED,
--	IF_INACTIVE,
--	IF_ACTIVE,
--	IF_TO_BE_ACTIVATED,
--	IF_I_WANT_YOU
-+enum batadv_hard_if_state {
-+	BATADV_IF_NOT_IN_USE,
-+	BATADV_IF_TO_BE_REMOVED,
-+	BATADV_IF_INACTIVE,
-+	BATADV_IF_ACTIVE,
-+	BATADV_IF_TO_BE_ACTIVATED,
-+	BATADV_IF_I_WANT_YOU,
- };
- 
- extern struct notifier_block batadv_hard_if_notifier;
+-	hard_iface->batman_adv_ptype.type = __constant_htons(ETH_P_BATMAN);
++	hard_iface->batman_adv_ptype.type = ethertype;
+ 	hard_iface->batman_adv_ptype.func = batadv_batman_skb_recv;
+ 	hard_iface->batman_adv_ptype.dev = hard_iface->net_dev;
+ 	dev_add_pack(&hard_iface->batman_adv_ptype);
 diff --git a/icmp_socket.c b/icmp_socket.c
-index 319235d..9247d97 100644
+index 1f6df39..319235d 100644
 --- a/icmp_socket.c
 +++ b/icmp_socket.c
-@@ -225,7 +225,7 @@ static ssize_t batadv_socket_write(struct file *file, const char __user *buff,
- 	if (!neigh_node->if_incoming)
- 		goto dst_unreach;
+@@ -203,9 +203,9 @@ static ssize_t batadv_socket_write(struct file *file, const char __user *buff,
  
--	if (neigh_node->if_incoming->if_status != IF_ACTIVE)
-+	if (neigh_node->if_incoming->if_status != BATADV_IF_ACTIVE)
- 		goto dst_unreach;
+ 	icmp_packet->uid = socket_client->index;
  
- 	memcpy(icmp_packet->orig,
+-	if (icmp_packet->header.version != COMPAT_VERSION) {
++	if (icmp_packet->header.version != BATADV_COMPAT_VERSION) {
+ 		icmp_packet->msg_type = PARAMETER_PROBLEM;
+-		icmp_packet->header.version = COMPAT_VERSION;
++		icmp_packet->header.version = BATADV_COMPAT_VERSION;
+ 		batadv_socket_add_packet(socket_client, icmp_packet,
+ 					 packet_len);
+ 		goto free_skb;
 diff --git a/main.c b/main.c
-index df7335c..23f5c8e 100644
+index 9cf0b38..986be72 100644
 --- a/main.c
 +++ b/main.c
-@@ -179,7 +179,7 @@ int batadv_is_my_mac(const uint8_t *addr)
+@@ -72,7 +72,7 @@ static int __init batadv_init(void)
+ 	register_netdevice_notifier(&batadv_hard_if_notifier);
  
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
--		if (hard_iface->if_status != IF_ACTIVE)
-+		if (hard_iface->if_status != BATADV_IF_ACTIVE)
- 			continue;
+ 	pr_info("B.A.T.M.A.N. advanced %s (compatibility version %i) loaded\n",
+-		SOURCE_VERSION, COMPAT_VERSION);
++		SOURCE_VERSION, BATADV_COMPAT_VERSION);
  
- 		if (batadv_compare_eth(hard_iface->net_dev->dev_addr, addr)) {
-@@ -234,7 +234,7 @@ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 		goto err_free;
- 
- 	/* discard frames on not active interfaces */
--	if (hard_iface->if_status != IF_ACTIVE)
-+	if (hard_iface->if_status != BATADV_IF_ACTIVE)
- 		goto err_free;
+ 	return 0;
+ }
+@@ -238,7 +238,7 @@ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
  
  	batman_ogm_packet = (struct batman_ogm_packet *)skb->data;
-diff --git a/originator.c b/originator.c
-index f04f591..9e60cc0 100644
---- a/originator.c
-+++ b/originator.c
-@@ -286,13 +286,13 @@ static bool batadv_purge_orig_neighbors(struct bat_priv *bat_priv,
- 		if_incoming = neigh_node->if_incoming;
  
- 		if ((batadv_has_timed_out(last_seen, BATADV_PURGE_TIMEOUT)) ||
--		    (if_incoming->if_status == IF_INACTIVE) ||
--		    (if_incoming->if_status == IF_NOT_IN_USE) ||
--		    (if_incoming->if_status == IF_TO_BE_REMOVED)) {
-+		    (if_incoming->if_status == BATADV_IF_INACTIVE) ||
-+		    (if_incoming->if_status == BATADV_IF_NOT_IN_USE) ||
-+		    (if_incoming->if_status == BATADV_IF_TO_BE_REMOVED)) {
+-	if (batman_ogm_packet->header.version != COMPAT_VERSION) {
++	if (batman_ogm_packet->header.version != BATADV_COMPAT_VERSION) {
+ 		batadv_dbg(DBG_BATMAN, bat_priv,
+ 			   "Drop packet: incompatible batman version (%i)\n",
+ 			   batman_ogm_packet->header.version);
+diff --git a/packet.h b/packet.h
+index c90219c..e562414 100644
+--- a/packet.h
++++ b/packet.h
+@@ -20,7 +20,7 @@
+ #ifndef _NET_BATMAN_ADV_PACKET_H_
+ #define _NET_BATMAN_ADV_PACKET_H_
  
--			if ((if_incoming->if_status == IF_INACTIVE) ||
--			    (if_incoming->if_status == IF_NOT_IN_USE) ||
--			    (if_incoming->if_status == IF_TO_BE_REMOVED))
-+			if ((if_incoming->if_status == BATADV_IF_INACTIVE) ||
-+			    (if_incoming->if_status == BATADV_IF_NOT_IN_USE) ||
-+			    (if_incoming->if_status == BATADV_IF_TO_BE_REMOVED))
- 				batadv_dbg(DBG_BATMAN, bat_priv,
- 					   "neighbor purge: originator %pM, neighbor: %pM, iface: %s\n",
- 					   orig_node->orig, neigh_node->addr,
-@@ -422,7 +422,7 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
- 		goto out;
- 	}
+-#define ETH_P_BATMAN  0x4305	/* unofficial/not registered Ethertype */
++#define BATADV_ETH_P_BATMAN  0x4305 /* unofficial/not registered Ethertype */
  
--	if (primary_if->if_status != IF_ACTIVE) {
-+	if (primary_if->if_status != BATADV_IF_ACTIVE) {
- 		ret = seq_printf(seq,
- 				 "BATMAN mesh %s disabled - primary interface not active\n",
- 				 net_dev->name);
-@@ -627,7 +627,7 @@ int batadv_orig_hash_del_if(struct hard_iface *hard_iface, int max_if_num)
- 	/* renumber remaining batman interfaces _inside_ of orig_hash_lock */
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface_tmp, &batadv_hardif_list, list) {
--		if (hard_iface_tmp->if_status == IF_NOT_IN_USE)
-+		if (hard_iface_tmp->if_status == BATADV_IF_NOT_IN_USE)
- 			continue;
+ enum bat_packettype {
+ 	BAT_IV_OGM	 = 0x01,
+@@ -34,7 +34,7 @@ enum bat_packettype {
+ };
  
- 		if (hard_iface == hard_iface_tmp)
+ /* this file is included by batctl which needs these defines */
+-#define COMPAT_VERSION 14
++#define BATADV_COMPAT_VERSION 14
+ 
+ enum batman_iv_flags {
+ 	NOT_BEST_NEXT_HOP   = 1 << 3,
+@@ -65,7 +65,7 @@ enum unicast_frag_flags {
+ };
+ 
+ /* TT_QUERY subtypes */
+-#define TT_QUERY_TYPE_MASK 0x3
++#define BATADV_TT_QUERY_TYPE_MASK 0x3
+ 
+ enum tt_query_packettype {
+ 	TT_REQUEST    = 0,
+@@ -126,7 +126,7 @@ struct batman_ogm_packet {
+ 	__be16   tt_crc;
+ } __packed;
+ 
+-#define BATMAN_OGM_HLEN sizeof(struct batman_ogm_packet)
++#define BATADV_OGM_HLEN sizeof(struct batman_ogm_packet)
+ 
+ struct icmp_packet {
+ 	struct batman_header header;
+@@ -138,7 +138,7 @@ struct icmp_packet {
+ 	uint8_t  reserved;
+ } __packed;
+ 
+-#define BAT_RR_LEN 16
++#define BATADV_RR_LEN 16
+ 
+ /* icmp_packet_rr must start with all fields from imcp_packet
+  * as this is assumed by code that handles ICMP packets
+@@ -151,7 +151,7 @@ struct icmp_packet_rr {
+ 	__be16   seqno;
+ 	uint8_t  uid;
+ 	uint8_t  rr_cur;
+-	uint8_t  rr[BAT_RR_LEN][ETH_ALEN];
++	uint8_t  rr[BATADV_RR_LEN][ETH_ALEN];
+ } __packed;
+ 
+ struct unicast_packet {
 diff --git a/routing.c b/routing.c
-index fa0b4ee..8085cb5 100644
+index c0737fa..f62fd85 100644
 --- a/routing.c
 +++ b/routing.c
-@@ -790,7 +790,7 @@ struct neigh_node *batadv_find_router(struct bat_priv *bat_priv,
- 		router = batadv_find_ifalter_router(primary_orig_node, recv_if);
+@@ -423,7 +423,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if)
  
- return_router:
--	if (router && router->if_incoming->if_status != IF_ACTIVE)
-+	if (router && router->if_incoming->if_status != BATADV_IF_ACTIVE)
- 		goto err_unlock;
+ 	/* add record route information if not full */
+ 	if ((hdr_size == sizeof(struct icmp_packet_rr)) &&
+-	    (icmp_packet->rr_cur < BAT_RR_LEN)) {
++	    (icmp_packet->rr_cur < BATADV_RR_LEN)) {
+ 		memcpy(&(icmp_packet->rr[icmp_packet->rr_cur]),
+ 		       ethhdr->h_dest, ETH_ALEN);
+ 		icmp_packet->rr_cur++;
+@@ -603,7 +603,7 @@ int batadv_recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
  
- 	rcu_read_unlock();
+ 	tt_query = (struct tt_query_packet *)skb->data;
+ 
+-	switch (tt_query->flags & TT_QUERY_TYPE_MASK) {
++	switch (tt_query->flags & BATADV_TT_QUERY_TYPE_MASK) {
+ 	case TT_REQUEST:
+ 		batadv_inc_counter(bat_priv, BAT_CNT_TT_REQUEST_RX);
+ 
 diff --git a/send.c b/send.c
-index 72542cb..8de6e25 100644
+index 3d725e0..72542cb 100644
 --- a/send.c
 +++ b/send.c
-@@ -37,7 +37,7 @@ int batadv_send_skb_packet(struct sk_buff *skb, struct hard_iface *hard_iface,
- {
+@@ -58,11 +58,11 @@ int batadv_send_skb_packet(struct sk_buff *skb, struct hard_iface *hard_iface,
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 	memcpy(ethhdr->h_source, hard_iface->net_dev->dev_addr, ETH_ALEN);
+ 	memcpy(ethhdr->h_dest, dst_addr, ETH_ALEN);
+-	ethhdr->h_proto = __constant_htons(ETH_P_BATMAN);
++	ethhdr->h_proto = __constant_htons(BATADV_ETH_P_BATMAN);
+ 
+ 	skb_set_network_header(skb, ETH_HLEN);
+ 	skb->priority = TC_PRIO_CONTROL;
+-	skb->protocol = __constant_htons(ETH_P_BATMAN);
++	skb->protocol = __constant_htons(BATADV_ETH_P_BATMAN);
+ 
+ 	skb->dev = hard_iface->net_dev;
+ 
+diff --git a/soft-interface.c b/soft-interface.c
+index 2de1d74..e726419 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -135,6 +135,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	struct hard_iface *primary_if = NULL;
+ 	struct bcast_packet *bcast_packet;
+ 	struct vlan_ethhdr *vhdr;
++	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
+ 	static const uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00, 0x00,
+ 						   0x00};
+ 	unsigned int header_len = 0;
+@@ -152,11 +153,11 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 		vhdr = (struct vlan_ethhdr *)skb->data;
+ 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
+ 
+-		if (ntohs(vhdr->h_vlan_encapsulated_proto) != ETH_P_BATMAN)
++		if (vhdr->h_vlan_encapsulated_proto != ethertype)
+ 			break;
+ 
+ 		/* fall through */
+-	case ETH_P_BATMAN:
++	case BATADV_ETH_P_BATMAN:
+ 		goto dropped;
+ 	}
+ 
+@@ -208,7 +209,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 			goto dropped;
+ 
+ 		bcast_packet = (struct bcast_packet *)skb->data;
+-		bcast_packet->header.version = COMPAT_VERSION;
++		bcast_packet->header.version = BATADV_COMPAT_VERSION;
+ 		bcast_packet->header.ttl = TTL;
+ 
+ 		/* batman packet type: broadcast */
+@@ -266,6 +267,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
  	struct ethhdr *ethhdr;
+ 	struct vlan_ethhdr *vhdr;
+ 	short vid __maybe_unused = -1;
++	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
  
--	if (hard_iface->if_status != IF_ACTIVE)
-+	if (hard_iface->if_status != BATADV_IF_ACTIVE)
- 		goto send_skb_err;
+ 	/* check if enough space is available for pulling, and pull */
+ 	if (!pskb_may_pull(skb, hdr_size))
+@@ -281,11 +283,11 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 		vhdr = (struct vlan_ethhdr *)skb->data;
+ 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
  
- 	if (unlikely(!hard_iface->net_dev))
-@@ -80,8 +80,8 @@ void batadv_schedule_bat_ogm(struct hard_iface *hard_iface)
- {
- 	struct bat_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+-		if (ntohs(vhdr->h_vlan_encapsulated_proto) != ETH_P_BATMAN)
++		if (vhdr->h_vlan_encapsulated_proto != ethertype)
+ 			break;
  
--	if ((hard_iface->if_status == IF_NOT_IN_USE) ||
--	    (hard_iface->if_status == IF_TO_BE_REMOVED))
-+	if ((hard_iface->if_status == BATADV_IF_NOT_IN_USE) ||
-+	    (hard_iface->if_status == BATADV_IF_TO_BE_REMOVED))
- 		return;
+ 		/* fall through */
+-	case ETH_P_BATMAN:
++	case BATADV_ETH_P_BATMAN:
+ 		goto dropped;
+ 	}
  
- 	/* the interface gets activated here to avoid race conditions between
-@@ -90,8 +90,8 @@ void batadv_schedule_bat_ogm(struct hard_iface *hard_iface)
- 	 * outdated packets (especially uninitialized mac addresses) in the
- 	 * packet queue
- 	 */
--	if (hard_iface->if_status == IF_TO_BE_ACTIVATED)
--		hard_iface->if_status = IF_ACTIVE;
-+	if (hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED)
-+		hard_iface->if_status = BATADV_IF_ACTIVE;
- 
- 	bat_priv->bat_algo_ops->bat_ogm_schedule(hard_iface);
- }
 diff --git a/translation-table.c b/translation-table.c
-index 330a83f..56b714f 100644
+index c03c479..d6363a4 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -432,7 +432,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 		goto out;
+@@ -1441,7 +1441,7 @@ static int batadv_send_tt_request(struct bat_priv *bat_priv,
+ 				sizeof(struct tt_query_packet));
+ 
+ 	tt_request->header.packet_type = BAT_TT_QUERY;
+-	tt_request->header.version = COMPAT_VERSION;
++	tt_request->header.version = BATADV_COMPAT_VERSION;
+ 	memcpy(tt_request->src, primary_if->net_dev->dev_addr, ETH_ALEN);
+ 	memcpy(tt_request->dst, dst_orig_node->orig, ETH_ALEN);
+ 	tt_request->header.ttl = TTL;
+@@ -1575,7 +1575,7 @@ static bool batadv_send_other_tt_response(struct bat_priv *bat_priv,
  	}
  
--	if (primary_if->if_status != IF_ACTIVE) {
-+	if (primary_if->if_status != BATADV_IF_ACTIVE) {
- 		ret = seq_printf(seq,
- 				 "BATMAN mesh %s disabled - primary interface not active\n",
- 				 net_dev->name);
-@@ -784,7 +784,7 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 		goto out;
+ 	tt_response->header.packet_type = BAT_TT_QUERY;
+-	tt_response->header.version = COMPAT_VERSION;
++	tt_response->header.version = BATADV_COMPAT_VERSION;
+ 	tt_response->header.ttl = TTL;
+ 	memcpy(tt_response->src, req_dst_orig_node->orig, ETH_ALEN);
+ 	memcpy(tt_response->dst, tt_request->src, ETH_ALEN);
+@@ -1696,7 +1696,7 @@ static bool batadv_send_my_tt_response(struct bat_priv *bat_priv,
  	}
  
--	if (primary_if->if_status != IF_ACTIVE) {
-+	if (primary_if->if_status != BATADV_IF_ACTIVE) {
- 		ret = seq_printf(seq,
- 				 "BATMAN mesh %s disabled - primary interface not active\n",
- 				 net_dev->name);
+ 	tt_response->header.packet_type = BAT_TT_QUERY;
+-	tt_response->header.version = COMPAT_VERSION;
++	tt_response->header.version = BATADV_COMPAT_VERSION;
+ 	tt_response->header.ttl = TTL;
+ 	memcpy(tt_response->src, primary_if->net_dev->dev_addr, ETH_ALEN);
+ 	memcpy(tt_response->dst, tt_request->src, ETH_ALEN);
+@@ -2008,7 +2008,7 @@ static void batadv_send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
+ 					sizeof(struct roam_adv_packet));
+ 
+ 	roam_adv_packet->header.packet_type = BAT_ROAM_ADV;
+-	roam_adv_packet->header.version = COMPAT_VERSION;
++	roam_adv_packet->header.version = BATADV_COMPAT_VERSION;
+ 	roam_adv_packet->header.ttl = TTL;
+ 	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+diff --git a/unicast.c b/unicast.c
+index f7a8cde..bafbbbf 100644
+--- a/unicast.c
++++ b/unicast.c
+@@ -253,7 +253,7 @@ int batadv_frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 	memcpy(frag1, &tmp_uc, sizeof(tmp_uc));
+ 
+ 	frag1->header.ttl--;
+-	frag1->header.version = COMPAT_VERSION;
++	frag1->header.version = BATADV_COMPAT_VERSION;
+ 	frag1->header.packet_type = BAT_UNICAST_FRAG;
+ 
+ 	memcpy(frag1->orig, primary_if->net_dev->dev_addr, ETH_ALEN);
+@@ -321,7 +321,7 @@ find_router:
+ 
+ 	unicast_packet = (struct unicast_packet *)skb->data;
+ 
+-	unicast_packet->header.version = COMPAT_VERSION;
++	unicast_packet->header.version = BATADV_COMPAT_VERSION;
+ 	/* batman packet type: unicast */
+ 	unicast_packet->header.packet_type = BAT_UNICAST;
+ 	/* set unicast ttl */
 diff --git a/vis.c b/vis.c
-index 7418169..c920b4b 100644
+index 7dc7506..596eacc 100644
 --- a/vis.c
 +++ b/vis.c
-@@ -599,7 +599,7 @@ static int batadv_generate_vis_packet(struct bat_priv *bat_priv)
- 			if (!batadv_compare_eth(router->addr, orig_node->orig))
- 				goto next;
- 
--			if (router->if_incoming->if_status != IF_ACTIVE)
-+			if (router->if_incoming->if_status != BATADV_IF_ACTIVE)
- 				goto next;
- 
- 			if (router->tq_avg < 1)
+@@ -873,7 +873,7 @@ int batadv_vis_init(struct bat_priv *bat_priv)
+ 	INIT_LIST_HEAD(&bat_priv->my_vis_info->send_list);
+ 	kref_init(&bat_priv->my_vis_info->refcount);
+ 	bat_priv->my_vis_info->bat_priv = bat_priv;
+-	packet->header.version = COMPAT_VERSION;
++	packet->header.version = BATADV_COMPAT_VERSION;
+ 	packet->header.packet_type = BAT_VIS;
+ 	packet->header.ttl = TTL;
+ 	packet->seqno = 0;
 -- 
 1.7.10
 
