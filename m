@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  3 Jun 2012 22:19:10 +0200
-Message-Id: <1338754762-28424-4-git-send-email-sven@narfation.org>
+Date: Sun,  3 Jun 2012 22:19:11 +0200
+Message-Id: <1338754762-28424-5-git-send-email-sven@narfation.org>
 In-Reply-To: <1338754762-28424-1-git-send-email-sven@narfation.org>
 References: <1338754762-28424-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 04/16] batman-adv: Prefix
-	bridge_loop_avoidance defines with BATADV_
+Subject: [B.A.T.M.A.N.] [PATCH 05/16] batman-adv: Prefix gateway defines
+	with BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,45 +25,90 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Reported-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bridge_loop_avoidance.c |    4 ++--
- bridge_loop_avoidance.h |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ bat_sysfs.c      |   26 +++++++++++++++-----------
+ gateway_common.h |    6 +++---
+ 2 files changed, 18 insertions(+), 14 deletions(-)
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 0592d2b..42b8a20 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -237,7 +237,7 @@ static void batadv_bla_del_backbone_claims(struct backbone_gw *backbone_gw)
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index 937f61f..24881d8 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -360,13 +360,16 @@ static ssize_t batadv_show_gw_mode(struct kobject *kobj, struct attribute *attr,
+ 
+ 	switch (atomic_read(&bat_priv->gw_mode)) {
+ 	case GW_MODE_CLIENT:
+-		bytes_written = sprintf(buff, "%s\n", GW_MODE_CLIENT_NAME);
++		bytes_written = sprintf(buff, "%s\n",
++					BATADV_GW_MODE_CLIENT_NAME);
+ 		break;
+ 	case GW_MODE_SERVER:
+-		bytes_written = sprintf(buff, "%s\n", GW_MODE_SERVER_NAME);
++		bytes_written = sprintf(buff, "%s\n",
++					BATADV_GW_MODE_SERVER_NAME);
+ 		break;
+ 	default:
+-		bytes_written = sprintf(buff, "%s\n", GW_MODE_OFF_NAME);
++		bytes_written = sprintf(buff, "%s\n",
++					BATADV_GW_MODE_OFF_NAME);
+ 		break;
  	}
  
- 	/* all claims gone, intialize CRC */
--	backbone_gw->crc = BLA_CRC_INIT;
-+	backbone_gw->crc = BATADV_BLA_CRC_INIT;
- }
+@@ -385,15 +388,16 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
+ 	if (buff[count - 1] == '\n')
+ 		buff[count - 1] = '\0';
  
- /* @bat_priv: the bat priv with all the soft interface information
-@@ -375,7 +375,7 @@ static struct backbone_gw *batadv_bla_get_backbone_gw(struct bat_priv *bat_priv,
+-	if (strncmp(buff, GW_MODE_OFF_NAME, strlen(GW_MODE_OFF_NAME)) == 0)
++	if (strncmp(buff, BATADV_GW_MODE_OFF_NAME,
++		    strlen(BATADV_GW_MODE_OFF_NAME)) == 0)
+ 		gw_mode_tmp = GW_MODE_OFF;
  
- 	entry->vid = vid;
- 	entry->lasttime = jiffies;
--	entry->crc = BLA_CRC_INIT;
-+	entry->crc = BATADV_BLA_CRC_INIT;
- 	entry->bat_priv = bat_priv;
- 	atomic_set(&entry->request_sent, 0);
- 	memcpy(entry->orig, orig, ETH_ALEN);
-diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
-index 9818b1e..58563f0 100644
---- a/bridge_loop_avoidance.h
-+++ b/bridge_loop_avoidance.h
-@@ -36,7 +36,7 @@ void batadv_bla_update_orig_address(struct bat_priv *bat_priv,
- int batadv_bla_init(struct bat_priv *bat_priv);
- void batadv_bla_free(struct bat_priv *bat_priv);
+-	if (strncmp(buff, GW_MODE_CLIENT_NAME,
+-		    strlen(GW_MODE_CLIENT_NAME)) == 0)
++	if (strncmp(buff, BATADV_GW_MODE_CLIENT_NAME,
++		    strlen(BATADV_GW_MODE_CLIENT_NAME)) == 0)
+ 		gw_mode_tmp = GW_MODE_CLIENT;
  
--#define BLA_CRC_INIT	0
-+#define BATADV_BLA_CRC_INIT	0
- #else /* ifdef CONFIG_BATMAN_ADV_BLA */
+-	if (strncmp(buff, GW_MODE_SERVER_NAME,
+-		    strlen(GW_MODE_SERVER_NAME)) == 0)
++	if (strncmp(buff, BATADV_GW_MODE_SERVER_NAME,
++		    strlen(BATADV_GW_MODE_SERVER_NAME)) == 0)
+ 		gw_mode_tmp = GW_MODE_SERVER;
  
- static inline int batadv_bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb,
+ 	if (gw_mode_tmp < 0) {
+@@ -408,13 +412,13 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
+ 
+ 	switch (atomic_read(&bat_priv->gw_mode)) {
+ 	case GW_MODE_CLIENT:
+-		curr_gw_mode_str = GW_MODE_CLIENT_NAME;
++		curr_gw_mode_str = BATADV_GW_MODE_CLIENT_NAME;
+ 		break;
+ 	case GW_MODE_SERVER:
+-		curr_gw_mode_str = GW_MODE_SERVER_NAME;
++		curr_gw_mode_str = BATADV_GW_MODE_SERVER_NAME;
+ 		break;
+ 	default:
+-		curr_gw_mode_str = GW_MODE_OFF_NAME;
++		curr_gw_mode_str = BATADV_GW_MODE_OFF_NAME;
+ 		break;
+ 	}
+ 
+diff --git a/gateway_common.h b/gateway_common.h
+index 6f8a4d0..31bbc3c 100644
+--- a/gateway_common.h
++++ b/gateway_common.h
+@@ -26,9 +26,9 @@ enum gw_modes {
+ 	GW_MODE_SERVER,
+ };
+ 
+-#define GW_MODE_OFF_NAME	"off"
+-#define GW_MODE_CLIENT_NAME	"client"
+-#define GW_MODE_SERVER_NAME	"server"
++#define BATADV_GW_MODE_OFF_NAME	"off"
++#define BATADV_GW_MODE_CLIENT_NAME	"client"
++#define BATADV_GW_MODE_SERVER_NAME	"server"
+ 
+ void batadv_gw_bandwidth_to_kbit(uint8_t gw_class, int *down, int *up);
+ ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
 -- 
 1.7.10
 
