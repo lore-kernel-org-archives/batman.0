@@ -1,16 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 06 Jun 2012 08:59 +0200
-Message-ID: <1794568.t7tZJ9NAC6@bentobox>
-In-Reply-To: <!&!AAAAAAAAAAAYAAAAAAAAAOJK0u4CH31Kl5v1RPAzyrZCgQAAEAAAAPNuGB5hMDtNhUs29egcVLUBAAAAAA==@gmail.com>
-References: <!&!AAAAAAAAAAAYAAAAAAAAAOJK0u4CH31Kl5v1RPAzyrZCgQAAEAAAAPvMiqao58dPrVwIXxeghf4BAAAAAA==@gmail.com>
-	<1773376.eftnT4ifSy@sven-desktop.home.narfation.org>
-	<!&!AAAAAAAAAAAYAAAAAAAAAOJK0u4CH31Kl5v1RPAzyrZCgQAAEAAAAPNuGB5hMDtNhUs29egcVLUBAAAAAA==@gmail.com>
+Date: Wed,  6 Jun 2012 13:17:25 +0200
+Message-Id: <1338981447-25754-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2867242.4eRTA2f5x7";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] bridging problem
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batctl: Prefix packet defines with
+	BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,83 +18,201 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Walter Robert Ditzler <ditwal001@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Reported-by: Martin Hundebøll <martin@hundeboll.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ packet.h     |   12 ++++++------
+ ping.c       |   16 ++++++++--------
+ tcpdump.c    |    8 ++++----
+ traceroute.c |    4 ++--
+ 4 files changed, 20 insertions(+), 20 deletions(-)
 
---nextPart2867242.4eRTA2f5x7
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Wednesday 06 June 2012 00:16:07 Walter Robert Ditzler wrote:
-> hi sven,
-> 
-> thank you very much for your reply, in fact my email hasn't arrived as
-> wished!
-> 
-> attached i send you a pdf to have a look, if you dont mind, would be very
-> cool!
-> 
-> so what works:
-> 1) lan to lan bridge (10.41.200.11 <> 10.41.200.12)
-> 
-> what i am too stupid to do:
-> 1) attached wireless ad-hoc devices to give a dhcp lease
-
-You need another vap/vif [1] adhoc device to serve such devices. This one 
-would have to run in 4addr mode to be able to get bridged. Usually you don't 
-do this because the client also needs to understand the 4addr mode. Therefore, 
-just create a master mode vap/vif and attach it to the bridge (you get it into 
-master mode using hostapd... please keep in mind that squeeze's hostapd is 
-buggy and maybe has problems with that setup).
-
-> 2) that ex. a attached laptop has a address 10.41.200.71 > bridged analogue
-> tot he base lan
-> 
-> so my question is:
-> 1) do i need 2 wireless network card for each batman host?
-
-Not really. It could be a good idea to run the mesh on another frequency and 
-use another wlan device for this.
-
-But the basic setup is really to create two interfaces (VAPs) for phy0 using 
-iw. One is added to bat0 (the adhoc one) and the other one (managed) is 
-transformed using hostapd in an master mode/AP interface and added to the same 
-bridge.
-
-> 2) can i connect tot he batman mesh essid to get access the base lan?
-
-Using non mesh aware clients? No.
-
-batman-adv is a layer on top of the adhoc layer and clients that don't 
-understand batman-adv cannot decode this extra layer information.
-
-Kind regards,
-	Sven
-
-[1] http://linuxwireless.org/en/users/Documentation/iw/vif/
-
---nextPart2867242.4eRTA2f5x7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAABCgAGBQJPzv+0AAoJEF2HCgfBJntGGvQP/1rsNeTCHilcCTjKSiJGKHpQ
-NGWsJ7BK8/qrM8HvsneR5RPp3VFsHD7T36ZrZaUd26unCVqBSnqxry1XcozJ2Tou
-S7Do3G5hQwES0yMJMgbJgovs1WoVG3wKcHOaSh83gFw7hiuCgOIqtEAa+/y9pisy
-MRIkst1rD2JWKP7iR4Jif8W9O3V9cRcpGna0+6CurWGI0KCaPQq521Xnpv8hPkR9
-eAjeSO8kS0Y54F0mhKUrFVrz+5GYPGGL70J3lD9obfg5I8+w/LF/hy+mvQzrEEa+
-d5HGUsVLQBpvKD4JYcrHBEfJNHAURK8dA8mxshA+mhf6ys+WCVrOm6XD3gKoalE3
-s0WIThhEJ0xktilDUby+VD38nDaez4kTH8MvBAwos7blP+HuWxKC3wDP+FDzDFCk
-+/ysNexJKEblFze//yVhrQJ7H5L+JMxQLnIKZPMrR4oKv8V0gfTKa9WbT2eqLy/q
-90C4NaIZp56usRGO0O6kigpUke5aLnGRw596MZxxNWThjoVoeTVsuw8zvpqc3dmi
-wqPVIyZ94fJ5RUCooSHpnf14dlocQcVnX3xvtPr6vKwpk0nqdKlE4LVSir3Oq/ms
-+MTQDdB1uVZELHoyI97x80HZEVLkYkq8U7OAdEzQdbXar2tOdZkDJ43XczlTSCcD
-dRUH51p8bmiQwMNLZkk7
-=UPI5
------END PGP SIGNATURE-----
-
---nextPart2867242.4eRTA2f5x7--
+diff --git a/packet.h b/packet.h
+index c90219c..e562414 100644
+--- a/packet.h
++++ b/packet.h
+@@ -20,7 +20,7 @@
+ #ifndef _NET_BATMAN_ADV_PACKET_H_
+ #define _NET_BATMAN_ADV_PACKET_H_
+ 
+-#define ETH_P_BATMAN  0x4305	/* unofficial/not registered Ethertype */
++#define BATADV_ETH_P_BATMAN  0x4305 /* unofficial/not registered Ethertype */
+ 
+ enum bat_packettype {
+ 	BAT_IV_OGM	 = 0x01,
+@@ -34,7 +34,7 @@ enum bat_packettype {
+ };
+ 
+ /* this file is included by batctl which needs these defines */
+-#define COMPAT_VERSION 14
++#define BATADV_COMPAT_VERSION 14
+ 
+ enum batman_iv_flags {
+ 	NOT_BEST_NEXT_HOP   = 1 << 3,
+@@ -65,7 +65,7 @@ enum unicast_frag_flags {
+ };
+ 
+ /* TT_QUERY subtypes */
+-#define TT_QUERY_TYPE_MASK 0x3
++#define BATADV_TT_QUERY_TYPE_MASK 0x3
+ 
+ enum tt_query_packettype {
+ 	TT_REQUEST    = 0,
+@@ -126,7 +126,7 @@ struct batman_ogm_packet {
+ 	__be16   tt_crc;
+ } __packed;
+ 
+-#define BATMAN_OGM_HLEN sizeof(struct batman_ogm_packet)
++#define BATADV_OGM_HLEN sizeof(struct batman_ogm_packet)
+ 
+ struct icmp_packet {
+ 	struct batman_header header;
+@@ -138,7 +138,7 @@ struct icmp_packet {
+ 	uint8_t  reserved;
+ } __packed;
+ 
+-#define BAT_RR_LEN 16
++#define BATADV_RR_LEN 16
+ 
+ /* icmp_packet_rr must start with all fields from imcp_packet
+  * as this is assumed by code that handles ICMP packets
+@@ -151,7 +151,7 @@ struct icmp_packet_rr {
+ 	__be16   seqno;
+ 	uint8_t  uid;
+ 	uint8_t  rr_cur;
+-	uint8_t  rr[BAT_RR_LEN][ETH_ALEN];
++	uint8_t  rr[BATADV_RR_LEN][ETH_ALEN];
+ } __packed;
+ 
+ struct unicast_packet {
+diff --git a/ping.c b/ping.c
+index 791cfb7..213f1e3 100644
+--- a/ping.c
++++ b/ping.c
+@@ -79,7 +79,7 @@ int ping(char *mesh_iface, int argc, char **argv)
+ 	char *dst_string, *mac_string, *rr_string;
+ 	double time_delta;
+ 	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
+-	uint8_t last_rr_cur = 0, last_rr[BAT_RR_LEN][ETH_ALEN];
++	uint8_t last_rr_cur = 0, last_rr[BATADV_RR_LEN][ETH_ALEN];
+ 	size_t packet_len;
+ 	char *debugfs_mnt;
+ 	char icmp_socket[MAX_PATH+1];
+@@ -164,7 +164,7 @@ int ping(char *mesh_iface, int argc, char **argv)
+ 
+ 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
+ 	icmp_packet_out.header.packet_type = BAT_ICMP;
+-	icmp_packet_out.header.version = COMPAT_VERSION;
++	icmp_packet_out.header.version = BATADV_COMPAT_VERSION;
+ 	icmp_packet_out.msg_type = ECHO_REQUEST;
+ 	icmp_packet_out.header.ttl = 50;
+ 	icmp_packet_out.seqno = 0;
+@@ -172,8 +172,8 @@ int ping(char *mesh_iface, int argc, char **argv)
+ 	if (rr) {
+ 		packet_len = sizeof(struct icmp_packet_rr);
+ 		icmp_packet_out.rr_cur = 1;
+-		memset(&icmp_packet_out.rr, 0, BAT_RR_LEN * ETH_ALEN);
+-		memset(last_rr, 0, BAT_RR_LEN * ETH_ALEN);
++		memset(&icmp_packet_out.rr, 0, BATADV_RR_LEN * ETH_ALEN);
++		memset(last_rr, 0, BATADV_RR_LEN * ETH_ALEN);
+ 	}
+ 
+ 	printf("PING %s (%s) %zu(%zu) bytes of data\n", dst_string, mac_string,
+@@ -243,14 +243,14 @@ read_packet:
+ 
+ 			if (read_len == sizeof(struct icmp_packet_rr)) {
+ 				if (last_rr_cur == icmp_packet_in.rr_cur
+-					&& !memcmp(last_rr, icmp_packet_in.rr, BAT_RR_LEN * ETH_ALEN)) {
++					&& !memcmp(last_rr, icmp_packet_in.rr, BATADV_RR_LEN * ETH_ALEN)) {
+ 
+ 					printf("\t(same route)");
+ 
+ 				} else {
+ 					printf("\nRR: ");
+ 
+-					for (i = 0; i < BAT_RR_LEN
++					for (i = 0; i < BATADV_RR_LEN
+ 						&& i < icmp_packet_in.rr_cur; i++) {
+ 
+ 						rr_mac = (struct ether_addr *)&icmp_packet_in.rr[i];
+@@ -266,7 +266,7 @@ read_packet:
+ 					}
+ 
+ 					last_rr_cur = icmp_packet_in.rr_cur;
+-					memcpy(last_rr, icmp_packet_in.rr, BAT_RR_LEN * ETH_ALEN);
++					memcpy(last_rr, icmp_packet_in.rr, BATADV_RR_LEN * ETH_ALEN);
+ 				}
+ 			}
+ 
+@@ -288,7 +288,7 @@ read_packet:
+ 			break;
+ 		case PARAMETER_PROBLEM:
+ 			printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
+-					icmp_packet_in.header.version, COMPAT_VERSION);
++					icmp_packet_in.header.version, BATADV_COMPAT_VERSION);
+ 			printf("Please make sure to use compatible versions!\n");
+ 			goto out;
+ 		default:
+diff --git a/tcpdump.c b/tcpdump.c
+index 6672cf1..1ead780 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -61,7 +61,7 @@ static void tcpdump_usage(void)
+ {
+ 	printf("Usage: batctl tcpdump [options] interface [interface]\n");
+ 	printf("options:\n");
+-	printf(" \t -c compat filter - only display packets matching own compat version (%i)\n", COMPAT_VERSION);
++	printf(" \t -c compat filter - only display packets matching own compat version (%i)\n", BATADV_COMPAT_VERSION);
+ 	printf(" \t -h print this help\n");
+ 	printf(" \t -n don't convert addresses to bat-host names\n");
+ 	printf(" \t -p dump specific packet type\n");
+@@ -264,7 +264,7 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
+ 	if (!time_printed)
+ 		print_time();
+ 
+-	switch (tt_query_packet->flags & TT_QUERY_TYPE_MASK) {
++	switch (tt_query_packet->flags & BATADV_TT_QUERY_TYPE_MASK) {
+ 	case TT_REQUEST:
+ 		tt_desc = "request";
+ 		tt_data = "crc";
+@@ -489,11 +489,11 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
+ 		if ((dump_level & DUMP_TYPE_NONBAT) || (time_printed))
+ 			dump_vlan(packet_buff, buff_len, read_opt, time_printed);
+ 		break;
+-	case ETH_P_BATMAN:
++	case BATADV_ETH_P_BATMAN:
+ 		batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + ETH_HLEN);
+ 
+ 		if ((read_opt & COMPAT_FILTER) &&
+-		    (batman_ogm_packet->header.version != COMPAT_VERSION))
++		    (batman_ogm_packet->header.version != BATADV_COMPAT_VERSION))
+ 			return;
+ 
+ 		switch (batman_ogm_packet->header.packet_type) {
+diff --git a/traceroute.c b/traceroute.c
+index fdc9e4a..da0ba60 100644
+--- a/traceroute.c
++++ b/traceroute.c
+@@ -121,7 +121,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
+ 	}
+ 
+ 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
+-	icmp_packet_out.header.version = COMPAT_VERSION;
++	icmp_packet_out.header.version = BATADV_COMPAT_VERSION;
+ 	icmp_packet_out.header.packet_type = BAT_ICMP;
+ 	icmp_packet_out.msg_type = ECHO_REQUEST;
+ 	icmp_packet_out.seqno = 0;
+@@ -193,7 +193,7 @@ read_packet:
+ 				goto out;
+ 			case PARAMETER_PROBLEM:
+ 				printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
+-						icmp_packet_in.header.version, COMPAT_VERSION);
++						icmp_packet_in.header.version, BATADV_COMPAT_VERSION);
+ 				printf("Please make sure to use compatible versions!\n");
+ 				goto out;
+ 			default:
+-- 
+1.7.10
 
