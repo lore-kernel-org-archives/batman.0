@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 9 Jun 2012 23:05:52 +0800
+Date: Sat, 9 Jun 2012 23:07:42 +0800
 References: <1338754762-28424-1-git-send-email-sven@narfation.org>
-	<1338754762-28424-5-git-send-email-sven@narfation.org>
-In-Reply-To: <1338754762-28424-5-git-send-email-sven@narfation.org>
+	<1338754762-28424-6-git-send-email-sven@narfation.org>
+In-Reply-To: <1338754762-28424-6-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <201206092305.52882.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 05/16] batman-adv: Prefix gateway defines
-	with BATADV_
+Message-Id: <201206092307.42861.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 06/16] batman-adv: Prefix icmp_socket
+	defines with BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,15 +24,15 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, June 04, 2012 04:19:11 Sven Eckelmann wrote:
+On Monday, June 04, 2012 04:19:12 Sven Eckelmann wrote:
 > Reported-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bat_sysfs.c      |   26 +++++++++++++++-----------
->  gateway_common.h |    6 +++---
->  2 files changed, 18 insertions(+), 14 deletions(-)
+>  icmp_socket.c |    2 +-
+>  icmp_socket.h |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-Applied in revision 00a0c7e.
+Applied in revision 22d4128.
 
 Thanks,
 Marek
