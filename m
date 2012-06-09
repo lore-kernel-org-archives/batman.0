@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 9 Jun 2012 23:10:16 +0800
+Date: Sat, 9 Jun 2012 23:12:09 +0800
 References: <1338754762-28424-1-git-send-email-sven@narfation.org>
-	<1338754762-28424-7-git-send-email-sven@narfation.org>
-In-Reply-To: <1338754762-28424-7-git-send-email-sven@narfation.org>
+	<1338754762-28424-8-git-send-email-sven@narfation.org>
+In-Reply-To: <1338754762-28424-8-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <201206092310.16380.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 07/16] batman-adv: Prefix packet defines
+Message-Id: <201206092312.10189.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 08/16] batman-adv: Prefix types defines
 	with BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,24 +24,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, June 04, 2012 04:19:13 Sven Eckelmann wrote:
+On Monday, June 04, 2012 04:19:14 Sven Eckelmann wrote:
 > Reported-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bat_iv_ogm.c        |   20 ++++++++++----------
->  hard-interface.c    |    3 ++-
->  icmp_socket.c       |    4 ++--
->  main.c              |    4 ++--
->  packet.h            |   12 ++++++------
->  routing.c           |    4 ++--
->  send.c              |    4 ++--
->  soft-interface.c    |   12 +++++++-----
->  translation-table.c |    8 ++++----
->  unicast.c           |    4 ++--
->  vis.c               |    2 +-
->  11 files changed, 40 insertions(+), 37 deletions(-)
+>  hard-interface.c |   11 ++++++-----
+>  soft-interface.c |    2 +-
+>  types.h          |    9 ++++-----
+>  3 files changed, 11 insertions(+), 11 deletions(-)
 
-Applied in revision 2bff7e2.
+Applied in revision dfaf026.
 
 Thanks,
 Marek
