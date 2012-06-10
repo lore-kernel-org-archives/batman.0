@@ -1,16 +1,9 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 10 Jun 2012 20:09:52 +0800
-References: <1338981447-25754-1-git-send-email-sven@narfation.org>
-	<1338981447-25754-3-git-send-email-sven@narfation.org>
-In-Reply-To: <1338981447-25754-3-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201206102009.52732.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batctl: Prefix packet structs with
-	batadv_
+Date: Sun, 10 Jun 2012 22:05:40 +0800
+Message-Id: <1339337141-3938-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix SIF show / store uint
+	regression
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,20 +15,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On Wednesday, June 06, 2012 19:17:27 Sven Eckelmann wrote:
-> Reported-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  packet.h     |   44 +++++++++++++++++++--------------------
->  ping.c       |    8 +++----
->  tcpdump.c    |   66
-> +++++++++++++++++++++++++++++----------------------------- traceroute.c
-> |    2 +-
->  4 files changed, 60 insertions(+), 60 deletions(-)
+Regression was introduced with commit: 98881e49
 
-Applied in revision 203b107.
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ bat_sysfs.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-Thanks,
-Marek
+diff --git a/bat_sysfs.c b/bat_sysfs.c
+index e0272fe..e1ba286 100644
+--- a/bat_sysfs.c
++++ b/bat_sysfs.c
+@@ -135,8 +135,9 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 	if (!hard_iface)						\
+ 		return 0;						\
+ 									\
+-	length = __store_uint_attr(buff, count, _min, _max, _post_func,	\
+-				   attr, &hard_iface->_name, net_dev);	\
++	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
++					  _post_func, attr,		\
++					  &hard_iface->_name, net_dev);	\
+ 									\
+ 	hardif_free_ref(hard_iface);					\
+ 	return length;							\
+-- 
+1.7.9.1
+
