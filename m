@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 10 Jun 2012 20:01:22 +0800
-References: <1338928292-23085-1-git-send-email-sven@narfation.org>
-	<1338928292-23085-6-git-send-email-sven@narfation.org>
-In-Reply-To: <1338928292-23085-6-git-send-email-sven@narfation.org>
+Date: Sun, 10 Jun 2012 20:06:08 +0800
+References: <1338981447-25754-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1338981447-25754-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201206102001.23043.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 6/6] batman-adv: Transform
-	BATADV_LOG_BUFF(idx) into function
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201206102006.08289.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batctl: Prefix packet defines with
+	BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,18 +23,17 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday, June 06, 2012 04:31:32 Sven Eckelmann wrote:
-> The linux Documentation/CodingStyle says that:
->  * Chapter 12: "inline functions are preferable to macros resembling
-> functions" * Chapter 12.2: Depending on local variables with a magic name
-> is bad * Chapter 12.3: Macros with arguments used as l-value are bad
-> 
+On Wednesday, June 06, 2012 19:17:25 Sven Eckelmann wrote:
+> Reported-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bat_debugfs.c |   19 +++++++++++++++----
->  1 file changed, 15 insertions(+), 4 deletions(-)
+>  packet.h     |   12 ++++++------
+>  ping.c       |   16 ++++++++--------
+>  tcpdump.c    |    8 ++++----
+>  traceroute.c |    4 ++--
+>  4 files changed, 20 insertions(+), 20 deletions(-)
 
-Applied in revision 4738c60.
+Applied in revision 9498c64.
 
 Thanks,
 Marek
