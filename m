@@ -1,13 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 11 Jun 2012 07:29:05 +0800
-References: <CAHD-aqK3yvVCDi9wucx4nX5jM4OjxbjbUFz3QHG+KzzuoMhz7Q@mail.gmail.com>
-In-Reply-To: <CAHD-aqK3yvVCDi9wucx4nX5jM4OjxbjbUFz3QHG+KzzuoMhz7Q@mail.gmail.com>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201206110729.05945.lindner_marek@yahoo.de>
+Sender: guido@guidoi.com.ar
+In-Reply-To: <201206110729.05945.lindner_marek@yahoo.de>
+References: <CAHD-aqK3yvVCDi9wucx4nX5jM4OjxbjbUFz3QHG+KzzuoMhz7Q@mail.gmail.com>
+	<201206110729.05945.lindner_marek@yahoo.de>
+From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
+Date: Sun, 10 Jun 2012 20:48:19 -0300
+Message-ID: <CAHD-aqKsz1cYJCZwUFo9LmK8YfbN35ZWJhdJiv+Cg-v+N436fw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Subject: Re: [B.A.T.M.A.N.] batman-adv gw_mode and ipv6 router advertisements
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,17 +22,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, June 11, 2012 07:14:27 Guido Iribarren wrote:
-> Are there any plans of implementing in batman-adv something analog to
-> the mangling done on DHCPv4 packets, to RA packets as well? (the
-> mechanism would be the inverse: instead of unicasting queries and
-> replies, propagate to clients only 1 RA packet out of all incoming;
-> decide which one to propagate based on gw_mode current logic)
-> 
-> Or, at least, extend the current mangling done in DHCPv4 packets to
-> DHCPv6 packets as well?
+On Sun, Jun 10, 2012 at 8:29 PM, Marek Lindner <lindner_marek@yahoo.de> wrote:
+> On Monday, June 11, 2012 07:14:27 Guido Iribarren wrote:
+>> Or, at least, extend the current mangling done in DHCPv4 packets to
+>> DHCPv6 packets as well?
+>
+> What makes you think DHCPv6 is not working ? It should ...
 
-What makes you think DHCPv6 is not working ? It should ...
+Nothing but my own unfounded prejudice...
+loving batman-adv every day a bit more!
 
-Regards,
-Marek
+one of these days i'm going to try "batctl solve life"
+
+cheers!
