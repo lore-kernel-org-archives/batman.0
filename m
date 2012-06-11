@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 11 Jun 2012 07:45:36 +0200
-Message-ID: <2563899.9QQv9Pr4OL@sven-desktop.home.narfation.org>
-In-Reply-To: <20120610232259.GA23542@ritirata.org>
-References: <CAHD-aqK3yvVCDi9wucx4nX5jM4OjxbjbUFz3QHG+KzzuoMhz7Q@mail.gmail.com>
-	<20120610232259.GA23542@ritirata.org>
+Date: Mon, 11 Jun 2012 07:49:27 +0200
+Message-ID: <2593507.jzePn0gxaX@sven-desktop.home.narfation.org>
+In-Reply-To: <1339337141-3938-1-git-send-email-lindner_marek@yahoo.de>
+References: <1339337141-3938-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1817796.eErIM7r0Fy";
+Content-Type: multipart/signed; boundary="nextPart1458935.fA5bjRk2aL";
 	micalg="pgp-sha512"; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv gw_mode and ipv6 router advertisements
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix SIF show / store
+	uint regression
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,47 +22,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 
---nextPart1817796.eErIM7r0Fy
+--nextPart1458935.fA5bjRk2aL
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Monday 11 June 2012 01:23:00 Antonio Quartulli wrote:
-> > Are there any plans of implementing in batman-adv something analog to
-> > the mangling done on DHCPv4 packets, to RA packets as well? (the
-> > mechanism would be the inverse: instead of unicasting queries and
-> > replies, propagate to clients only 1 RA packet out of all incoming;
-> > decide which one to propagate based on gw_mode current logic)
+On Sunday 10 June 2012 22:05:40 Marek Lindner wrote:
+> Regression was introduced with commit: 98881e49
 > 
-> someone proposed the idea on the bugtraq, but no plans about implementation
-> have been seen so far..
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 
-Just for completeness: http://www.open-mesh.org/issues/159
+Thanks for the fix. This part was in the code that I wanted to remove (but
+you need in your next patch).
 
-Kind regards,
-	Sven
---nextPart1817796.eErIM7r0Fy
+Acked-by: Sven Eckelmann <sven@narfation.org>
+--nextPart1458935.fA5bjRk2aL
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAABCgAGBQJP1YYAAAoJEF2HCgfBJntGtocP/1n56ibHswd4DBqjCELlW+18
-UG1MonP+ZYD1XHiF/jFjgEN2dJ3mhsKPB08jdqoF4qtODpewBeRMHYiIy7aTV6bo
-dOxIwG1ddWGZTJ6+BSklW2xHIbV3S3vB8fWZ0Kub48K6lQS6ksesaUaUTvsjLCQq
-Nozmi9AnaiTEMAusrIYOSu49vByGYwCR+cSO5UFrPpvbq/EEvgBcu5FQGJvO60qN
-ltyn2oFpk7cZifyPHSJ7Pu1ofoYmq0q1nUJsTX7c4CWtycl1MA6MnMOoWSi4Td4v
-r3B1zplHG68LvHijV8k2otaIPwMp5elCa+JxFtL58dUfK2eeQBDExnILFz2T5jdX
-/2XPCcVud4FIuy2g7c1hXSUX8Wgcb3oDFO8ac/lz2RIoi092gzTg7dqeWrgq8leA
-tVpZjTbnVNIuDL9KqxdrM3gKtZa2PBr6Vy3RXYSqmbsq5/S/SopPWUkYray1iV13
-F41FbSQ2eLGnQT3QRR/YFPg7YyctrTx7ENnmtfsR/WhvfCbiJQUdAinaesvUbisH
-K3tyskEMxnqJ/OkAiyKdqPhULv+aqm5C5Dzu+fVeYQ3HzFf+f6sQURscu3QAmwJl
-HQy6845vY7BRpNGy/7AaUJ1NVZpVPH3u+kZEJGErb16kMgR49OJwssx2N8P5nNPB
-NeHgjSf+rN5+ZNTy+nz8
-=0ynq
+iQIcBAABCgAGBQJP1YbnAAoJEF2HCgfBJntG4kEP/ix+HGo3kisJ2CXhiIaYWjRQ
+19VaEn+6ZVRZ4m41dBEAwOO5krfoWw1/TC3lkafup/vrz3UzGZryMSJjxPA0WanH
+dQOXQVNTHOtiPkJgWOyAXK+4Z/pBZorahigXyaCirBnxTfBI2KIIFzVXQA0fpuWw
+JvQKucZ+SSekWSh8r+O0n5AQ3hDYZ0uN9bJRQlbz/GD4zqcP0gGQPa6mDM2f9JVy
+HMyOQSPzaHar7++mujy6JU8xkz1l+mgUnShjXtcl56TkSUX+rXoKnPIma3MhTGlv
+Of1+LZQFR1ggLSK+QQxfwH4Cp2153FqMiLoT+1bOlFpmFlOYvMI4yRj9owktjwbO
+m7PAj9A+6aNC0I7hfIyVaRGzS2t06dMUmlxlPU+aWnLNAqkTbMWvcbXTGVfxmSZj
+SHDnfkZT3nOUIzOFWLAIvQ2cA3LpJuJ/YNbITrHN1Qsd3SkQuF44K+TFNX+a2t26
+fxn7MJY9WoAY2hl8+hsNwrIqsQQJylIH6RcYklXwtxorZvlEzfz1htFungd+eQm9
+YscvbNTBoa+TEpJoPJVxlEqEOokxIeGdI1t7jwbViSQaWJL8dAihmYl7mz3Hz3Up
+Pk7O87OPhsumJiOP+0o1Qt4XScHHdzvPgwUOLU03hZ8TCkV0BMs8S3w8kwTJy0gm
+ja2WahW4FzjITyz3Qchg
+=3cEj
 -----END PGP SIGNATURE-----
 
---nextPart1817796.eErIM7r0Fy--
+--nextPart1458935.fA5bjRk2aL--
 
