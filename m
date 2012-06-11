@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 12 Jun 2012 03:36:49 +0800
+Date: Tue, 12 Jun 2012 03:39:01 +0800
 References: <1339337141-3938-1-git-send-email-lindner_marek@yahoo.de>
-	<2593507.jzePn0gxaX@sven-desktop.home.narfation.org>
-In-Reply-To: <2593507.jzePn0gxaX@sven-desktop.home.narfation.org>
+	<1339337141-3938-2-git-send-email-lindner_marek@yahoo.de>
+	<1549109.ZrkNiW6tym@sven-desktop.home.narfation.org>
+In-Reply-To: <1549109.ZrkNiW6tym@sven-desktop.home.narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201206120336.49815.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix SIF show / store
+Message-Id: <201206120339.01723.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: fix SIF show / store
 	uint regression
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,9 +25,9 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, June 11, 2012 13:49:27 Sven Eckelmann wrote:
-> On Sunday 10 June 2012 22:05:40 Marek Lindner wrote:
-> > Regression was introduced with commit: 98881e49
+On Monday, June 11, 2012 13:49:35 Sven Eckelmann wrote:
+>   On Sunday 10 June 2012 22:05:41 Marek Lindner wrote:
+> > Regression was introduced with commit: 36709939
 > >
 > > 
 > >
@@ -37,7 +38,7 @@ On Monday, June 11, 2012 13:49:27 Sven Eckelmann wrote:
 > 
 > Acked-by: Sven Eckelmann <sven@narfation.org>
 
-Applied in revision 535bb40.
+Applied in revision ea7260d.
 
 Regards,
 Marek
