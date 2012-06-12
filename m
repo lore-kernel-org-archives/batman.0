@@ -1,15 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 12 Jun 2012 15:10:33 +0800
-References: <1339365531-22386-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1339365531-22386-1-git-send-email-sven@narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 12 Jun 2012 09:25:03 +0200
+Message-Id: <1339485903-8857-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1337119580-1026-1-git-send-email-martin@hundeboll.net>
+References: <1337119580-1026-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201206121510.34058.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove bat_ prefix from
-	bat_{debugfs, sysfs}.{c, h}
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Correctly check return value
+	from debugfs_create_dir
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,36 +20,83 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On Monday, June 11, 2012 05:58:51 Sven Eckelmann wrote:
-> The "bat_" prefix in the source files implementing the batman-adv sysfs and
-> debugfs interface doesn't have a special meaning and are only used by these
-> files and files that implement the actual B.A.T.M.A.N. path finding
-> algorithm.
-> 
-> The prefix is better suited to mark files that are used to implement the
-> main part of the path finding. All other files should not use it and
-> therefore gets renamed.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  Makefile.kbuild            |    4 ++--
->  bat_debugfs.c => debugfs.c |    2 +-
->  bat_debugfs.h => debugfs.h |    0
->  gateway_client.c           |    2 +-
->  hard-interface.c           |    2 +-
->  main.c                     |    4 ++--
->  soft-interface.c           |    4 ++--
->  bat_sysfs.c => sysfs.c     |    2 +-
->  bat_sysfs.h => sysfs.h     |    0
->  9 files changed, 10 insertions(+), 10 deletions(-)
->  rename bat_debugfs.c => debugfs.c (99%)
->  rename bat_debugfs.h => debugfs.h (100%)
->  rename bat_sysfs.c => sysfs.c (99%)
->  rename bat_sysfs.h => sysfs.h (100%)
+From: Martin Hundebøll <martin@hundeboll.net>
 
-Applied in revision 80135a8.
+The setup code in batadv_socket_setup() and debug_log_setup() wrongly
+assumes that debugfs_create_file() returns !0 on error. Since it
+actually returns a pointer on success[1], the following check should
+be inverted.
 
-Thanks,
-Marek
+Also, use the return value from the two setup functions in
+batadv_debugfs_add_meshif().
+
+[1] http://www.fsl.cs.sunysb.edu/kernel-api/re464.html
+
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+[sven@narfation.org: Fix conflicts with namespace patches]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ debugfs.c     |   11 +++++++----
+ icmp_socket.c |    4 ++--
+ 2 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/debugfs.c b/debugfs.c
+index de610ba..e45cf0e 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -206,13 +206,13 @@ static int batadv_debug_log_setup(struct batadv_priv *bat_priv)
+ 	d = debugfs_create_file("log", S_IFREG | S_IRUSR,
+ 				bat_priv->debug_dir, bat_priv,
+ 				&batadv_log_fops);
+-	if (d)
++	if (!d)
+ 		goto err;
+ 
+ 	return 0;
+ 
+ err:
+-	return 1;
++	return -ENOMEM;
+ }
+ 
+ static void batadv_debug_log_cleanup(struct batadv_priv *bat_priv)
+@@ -362,8 +362,11 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
+ 	if (!bat_priv->debug_dir)
+ 		goto out;
+ 
+-	batadv_socket_setup(bat_priv);
+-	batadv_debug_log_setup(bat_priv);
++	if (batadv_socket_setup(bat_priv) < 0)
++		goto rem_attr;
++
++	if (batadv_debug_log_setup(bat_priv) < 0)
++		goto rem_attr;
+ 
+ 	for (bat_debug = batadv_mesh_debuginfos; *bat_debug; ++bat_debug) {
+ 		file = debugfs_create_file(((*bat_debug)->attr).name,
+diff --git a/icmp_socket.c b/icmp_socket.c
+index d370061..bde3cf7 100644
+--- a/icmp_socket.c
++++ b/icmp_socket.c
+@@ -284,13 +284,13 @@ int batadv_socket_setup(struct batadv_priv *bat_priv)
+ 
+ 	d = debugfs_create_file(BATADV_ICMP_SOCKET, S_IFREG | S_IWUSR | S_IRUSR,
+ 				bat_priv->debug_dir, bat_priv, &batadv_fops);
+-	if (d)
++	if (!d)
+ 		goto err;
+ 
+ 	return 0;
+ 
+ err:
+-	return 1;
++	return -ENOMEM;
+ }
+ 
+ static void batadv_socket_add_packet(struct batadv_socket_client *socket_client,
+-- 
+1.7.10
+
