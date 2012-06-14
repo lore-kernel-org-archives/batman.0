@@ -1,9 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Thu, 14 Jun 2012 18:43:32 +0200
-Message-Id: <1339692212-27221-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add the backbone gateway list to
-	debugfs
+Date: Thu, 14 Jun 2012 18:51:59 +0200
+Message-Id: <1339692719-27313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1339692212-27221-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+References: <1339692212-27221-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Add the backbone gateway list
+	to debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,13 +25,15 @@ to know which gateways are using bridge loop avoidance in the network.
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
+[EDIT: forgot to rename the function ...]
+---
  bridge_loop_avoidance.c |   68 +++++++++++++++++++++++++++++++++++++++++++++++
  bridge_loop_avoidance.h |    8 ++++++
  debugfs.c               |   12 +++++++++
  3 files changed, 88 insertions(+)
 
 diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 38aab1e..f3c6dc0 100644
+index 38aab1e..75587af 100644
 --- a/bridge_loop_avoidance.c
 +++ b/bridge_loop_avoidance.c
 @@ -1592,3 +1592,71 @@ out:
@@ -37,7 +41,7 @@ index 38aab1e..f3c6dc0 100644
  	return ret;
  }
 +
-+int batadv_bla_gw_table_seq_print_text(struct seq_file *seq, void *offset)
++int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
 +{
 +	struct net_device *net_dev = (struct net_device *)seq->private;
 +	struct batadv_priv *bat_priv = netdev_priv(net_dev);
