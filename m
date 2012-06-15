@@ -1,15 +1,16 @@
 Return-Path: <ordex@autistici.org>
-Date: Fri, 15 Jun 2012 22:20:35 +0200
+Date: Fri, 15 Jun 2012 22:21:05 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120615202034.GA603@ritirata.org>
+Message-ID: <20120615202103.GB603@ritirata.org>
 References: <1339709247-8703-1-git-send-email-ordex@autistici.org>
 	<1339709917-15971-1-git-send-email-ordex@autistici.org>
 	<201206160350.01223.lindner_marek@yahoo.de>
+	<20120615202034.GA603@ritirata.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="uAKRQypu60I7Lcqm"
+	protocol="application/pgp-signature"; boundary="DBIVS5p969aUjpLe"
 Content-Disposition: inline
-In-Reply-To: <201206160350.01223.lindner_marek@yahoo.de>
+In-Reply-To: <20120615202034.GA603@ritirata.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: don't reroute tt_request
  for me
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,25 +27,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---uAKRQypu60I7Lcqm
+--DBIVS5p969aUjpLe
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Jun 16, 2012 at 03:50:00AM +0800, Marek Lindner wrote:
-> On Friday, June 15, 2012 05:38:37 Antonio Quartulli wrote:
-> > If a tt_request is directed to me, it never has to be rerouted
+On Fri, Jun 15, 2012 at 10:20:35PM +0200, Antonio Quartulli wrote:
+> On Sat, Jun 16, 2012 at 03:50:00AM +0800, Marek Lindner wrote:
+> > On Friday, June 15, 2012 05:38:37 Antonio Quartulli wrote:
+> > > If a tt_request is directed to me, it never has to be rerouted
+> >=20
+> > We will need a little more explanation here about what is going on and =
+what is=20
+> > fixed and why we want it to be fixed.
 >=20
-> We will need a little more explanation here about what is going on and wh=
-at is=20
-> fixed and why we want it to be fixed.
-
-Sure,
-I'll send v2 with a improved message
-
+> Sure,
+> I'll send v2 with a improved message
 >=20
-> Cheers,
-> Marek
+
+I clearly meant v3, sorry
+
+
+> >=20
+> > Cheers,
+> > Marek
+>=20
+> --=20
+> Antonio Quartulli
+>=20
+> ..each of us alone is worth nothing..
+> Ernesto "Che" Guevara
+
+
 
 --=20
 Antonio Quartulli
@@ -52,15 +66,15 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---uAKRQypu60I7Lcqm
+--DBIVS5p969aUjpLe
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iEYEARECAAYFAk/bmRIACgkQpGgxIkP9cwdhIQCeOBMoymzM1XLlaOVgzMepnYYk
-oSAAnjIlTfwhUlpBkDu+QgnbOdplL6a4
-=SRwo
+iEYEARECAAYFAk/bmS8ACgkQpGgxIkP9cwdfVgCeJY3ILnZH/CDD3Y6JzMqEtYdr
+s84An1jhHSA4HO7A3sFqqGErAMgfuPxM
+=NsH8
 -----END PGP SIGNATURE-----
 
---uAKRQypu60I7Lcqm--
+--DBIVS5p969aUjpLe--
