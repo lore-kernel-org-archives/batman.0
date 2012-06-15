@@ -1,11 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Fri, 15 Jun 2012 11:46:02 +0200
-Message-Id: <1339753563-313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Fri, 15 Jun 2012 11:46:03 +0200
+Message-Id: <1339753563-313-2-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <20120615084751.GA32430@pandem0nium>
 References: <20120615084751.GA32430@pandem0nium>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: add support for the bla backbone
-	table in debugfs
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Add the backbone gateway list
+	to debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,78 +20,177 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
+This is especially useful if there are no claims yet, but we still want
+to know which gateways are using bridge loop avoidance in the network.
+
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- debug.c |   10 ++++++++++
- debug.h |    2 ++
- main.c  |    6 ++++++
- 3 files changed, 18 insertions(+)
+[EDITv2: forgot to rename the function ...]
+[EDITv3: add README entry]
+---
+ README                  |    7 ++---
+ bridge_loop_avoidance.c |   68 +++++++++++++++++++++++++++++++++++++++++++++++
+ bridge_loop_avoidance.h |    8 ++++++
+ debugfs.c               |   12 +++++++++
+ 4 files changed, 92 insertions(+), 3 deletions(-)
 
-diff --git a/debug.c b/debug.c
-index 928f81d..5dca633 100644
---- a/debug.c
-+++ b/debug.c
-@@ -70,6 +70,16 @@ void bla_claim_table_usage(void)
- 	printf(" \t -w [interval] watch mode - refresh the bridge loop avoidance claim table continuously\n");
+diff --git a/README b/README
+index 8f3ae4a..a173d2a 100644
+--- a/README
++++ b/README
+@@ -75,9 +75,10 @@ folder:
+ 
+ There is a special folder for debugging information:
+ 
+-#  ls /sys/kernel/debug/batman_adv/bat0/
+-# bla_claim_table    log                socket             transtable_local
+-# gateways           originators        transtable_global  vis_data
++# ls /sys/kernel/debug/batman_adv/bat0/
++# bla_backbone_table  log                 transtable_global
++# bla_claim_table     originators         transtable_local
++# gateways            socket              vis_data
+ 
+ Some of the files contain all sort of status information  regard-
+ ing  the  mesh  network.  For  example, you can view the table of
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 38aab1e..75587af 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -1592,3 +1592,71 @@ out:
+ 		batadv_hardif_free_ref(primary_if);
+ 	return ret;
+ }
++
++int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
++{
++	struct net_device *net_dev = (struct net_device *)seq->private;
++	struct batadv_priv *bat_priv = netdev_priv(net_dev);
++	struct batadv_hashtable *hash = bat_priv->backbone_hash;
++	struct batadv_backbone_gw *backbone_gw;
++	struct batadv_hard_iface *primary_if;
++	struct hlist_node *node;
++	struct hlist_head *head;
++	int last_seen_secs;
++	int last_seen_msecs;
++	uint32_t i;
++	bool is_own;
++	int ret = 0;
++	uint8_t *primary_addr;
++
++	primary_if = batadv_primary_if_get_selected(bat_priv);
++	if (!primary_if) {
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
++				 net_dev->name);
++		goto out;
++	}
++
++	if (primary_if->if_status != BATADV_IF_ACTIVE) {
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - primary interface not active\n",
++				 net_dev->name);
++		goto out;
++	}
++
++	primary_addr = primary_if->net_dev->dev_addr;
++	seq_printf(seq,
++		   "Backbones announced for the mesh %s (orig %pM, group id %04x)\n",
++		   net_dev->name, primary_addr,
++		   ntohs(bat_priv->claim_dest.group));
++	seq_printf(seq, "   %-17s    %-5s %-9s (%-4s)\n",
++		   "Originator", "VID", "last seen", "CRC");
++	for (i = 0; i < hash->size; i++) {
++		head = &hash->table[i];
++
++		rcu_read_lock();
++		hlist_for_each_entry_rcu(backbone_gw, node, head, hash_entry) {
++			last_seen_msecs = jiffies_to_msecs(jiffies -
++							backbone_gw->lasttime);
++			last_seen_secs = last_seen_msecs / 1000;
++			last_seen_msecs = last_seen_msecs % 1000;
++
++
++			is_own = batadv_compare_eth(backbone_gw->orig,
++						    primary_addr);
++			if (is_own)
++				continue;
++
++			seq_printf(seq,
++				   " * %pM on % 5d % 4i.%03is (%04x)\n",
++				   backbone_gw->orig, backbone_gw->vid,
++				   last_seen_secs, last_seen_msecs,
++				   backbone_gw->crc);
++		}
++		rcu_read_unlock();
++	}
++out:
++	if (primary_if)
++		batadv_hardif_free_ref(primary_if);
++	return ret;
++}
+diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
+index 08d13cb..58015ce 100644
+--- a/bridge_loop_avoidance.h
++++ b/bridge_loop_avoidance.h
+@@ -26,6 +26,8 @@ int batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb, short vid);
+ int batadv_bla_is_backbone_gw(struct sk_buff *skb,
+ 			      struct batadv_orig_node *orig_node, int hdr_size);
+ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
++int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq,
++					     void *offset);
+ int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv, uint8_t *orig);
+ int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+ 				   struct batadv_bcast_packet *bcast_packet,
+@@ -64,6 +66,12 @@ static inline int batadv_bla_claim_table_seq_print_text(struct seq_file *seq,
+ 	return 0;
  }
  
-+void bla_backbone_table_usage(void)
++static inline int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq,
++							void *offset)
 +{
-+	printf("Usage: batctl [options] backbone table\n");
-+	printf("options:\n");
-+	printf(" \t -h print this help\n");
-+	printf(" \t -n don't replace mac addresses with bat-host names\n");
-+	printf(" \t -w [interval] watch mode - refresh the bridge loop avoidance backbone table continuously\n");
++	return 0;
 +}
 +
-+
- void gateways_usage(void)
+ static inline int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv,
+ 						 uint8_t *orig)
  {
- 	printf("Usage: batctl [options] gateways \n");
-diff --git a/debug.h b/debug.h
-index 50d0e24..2c6d24c 100644
---- a/debug.h
-+++ b/debug.h
-@@ -25,6 +25,7 @@
- #define DEBUG_TRANSTABLE_LOCAL "transtable_local"
- #define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
- #define DEBUG_BLA_CLAIM_TABLE "bla_claim_table"
-+#define DEBUG_BLA_BACKBONE_TABLE "bla_backbone_table"
- #define DEBUG_GATEWAYS "gateways"
- #define DEBUG_VIS_DATA "vis_data"
- #define DEBUG_LOG "log"
-@@ -33,6 +34,7 @@ void originators_usage(void);
- void trans_local_usage(void);
- void trans_global_usage(void);
- void bla_claim_table_usage(void);
-+void bla_backbone_table_usage(void);
- void gateways_usage(void);
- int handle_debug_table(char *mesh_iface, int argc, char **argv,
- 		       char *file_path, void table_usage(void));
-diff --git a/main.c b/main.c
-index 72b1ea4..929b762 100644
---- a/main.c
-+++ b/main.c
-@@ -56,6 +56,7 @@ void print_usage(void) {
- 	printf(" \ttranslocal|tl                                \tdisplay the local translation table\n");
- 	printf(" \ttransglobal|tg                               \tdisplay the global translation table\n");
- 	printf(" \tclaimtable|cl                                \tdisplay the bridge loop avoidance claim table\n");
-+	printf(" \tbackbonetable|bbl                            \tdisplay the bridge loop avoidance backbone table\n");
- 	printf(" \tvis_mode|vm                [mode]            \tdisplay or modify the status of the VIS server\n");
- 	printf(" \tvis_data|vd                [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
- 	printf(" \taggregation|ag             [0|1]             \tdisplay or modify the packet aggregation setting\n");
-@@ -158,6 +159,11 @@ int main(int argc, char **argv)
- 
- 		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
- 					 DEBUG_BLA_CLAIM_TABLE, bla_claim_table_usage);
-+	} else if ((strcmp(argv[1], "backbonetable") == 0) || (strcmp(argv[1], "bbl") == 0)) {
+diff --git a/debugfs.c b/debugfs.c
+index e45cf0e..ee8b322 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -263,6 +263,15 @@ static int batadv_bla_claim_table_open(struct inode *inode, struct file *file)
+ 	return single_open(file, batadv_bla_claim_table_seq_print_text,
+ 			   net_dev);
+ }
 +
-+		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
-+					 DEBUG_BLA_BACKBONE_TABLE,
-+					 bla_backbone_table_usage);
++static int batadv_bla_backbone_table_open(struct inode *inode,
++					  struct file *file)
++{
++	struct net_device *net_dev = (struct net_device *)inode->i_private;
++	return single_open(file, batadv_bla_backbone_table_seq_print_text,
++			   net_dev);
++}
++
+ #endif
  
- 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
- 
+ static int batadv_transtable_local_open(struct inode *inode, struct file *file)
+@@ -301,6 +310,8 @@ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
+ 			batadv_transtable_global_open);
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ static BATADV_DEBUGINFO(bla_claim_table, S_IRUGO, batadv_bla_claim_table_open);
++static BATADV_DEBUGINFO(bla_backbone_table, S_IRUGO,
++			batadv_bla_backbone_table_open);
+ #endif
+ static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
+ 			batadv_transtable_local_open);
+@@ -312,6 +323,7 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
+ 	&batadv_debuginfo_transtable_global,
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ 	&batadv_debuginfo_bla_claim_table,
++	&batadv_debuginfo_bla_backbone_table,
+ #endif
+ 	&batadv_debuginfo_transtable_local,
+ 	&batadv_debuginfo_vis_data,
 -- 
 1.7.10
 
