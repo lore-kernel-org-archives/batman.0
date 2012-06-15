@@ -1,11 +1,19 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Fri, 15 Jun 2012 11:55:25 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Fri, 15 Jun 2012 11:46:03 +0200
-Message-Id: <1339753563-313-2-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <20120615084751.GA32430@pandem0nium>
-References: <20120615084751.GA32430@pandem0nium>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Add the backbone gateway list
-	to debugfs
+Message-ID: <20120615095525.GA32707@pandem0nium>
+References: <CAA_JP8X+vPn39-QK-zPjdd1Mtn4PCTjigpV4fFM6sTVUmBiLTg@mail.gmail.com>
+	<CAHD-aqKN_+5fwg65Udpr6jxt5tFsu5XXsMWkk75ujPK3bJcqJw@mail.gmail.com>
+	<CAA_JP8UxNW18xWZe62ySY=H27HDnZY1YBQV-7ZGUHYnSS-ZSHw@mail.gmail.com>
+	<CAHD-aqK_CGbc8u5GuEBJyFzrk2rTHHTw=bAiWjFafAW9xOqWiw@mail.gmail.com>
+	<4FDA40A5.1050008@inti.gob.ar>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
+Content-Disposition: inline
+In-Reply-To: <4FDA40A5.1050008@inti.gob.ar>
+Subject: Re: [B.A.T.M.A.N.] link alternation when radios are not on
+ batman-adv router?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,180 +25,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is especially useful if there are no claims yet, but we still want
-to know which gateways are using bridge loop avoidance in the network.
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
-[EDITv2: forgot to rename the function ...]
-[EDITv3: add README entry]
----
- README                  |    7 ++---
- bridge_loop_avoidance.c |   68 +++++++++++++++++++++++++++++++++++++++++++++++
- bridge_loop_avoidance.h |    8 ++++++
- debugfs.c               |   12 +++++++++
- 4 files changed, 92 insertions(+), 3 deletions(-)
+--yrj/dFKFPuw6o+aM
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/README b/README
-index 8f3ae4a..a173d2a 100644
---- a/README
-+++ b/README
-@@ -75,9 +75,10 @@ folder:
- 
- There is a special folder for debugging information:
- 
--#  ls /sys/kernel/debug/batman_adv/bat0/
--# bla_claim_table    log                socket             transtable_local
--# gateways           originators        transtable_global  vis_data
-+# ls /sys/kernel/debug/batman_adv/bat0/
-+# bla_backbone_table  log                 transtable_global
-+# bla_claim_table     originators         transtable_local
-+# gateways            socket              vis_data
- 
- Some of the files contain all sort of status information  regard-
- ing  the  mesh  network.  For  example, you can view the table of
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 38aab1e..75587af 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1592,3 +1592,71 @@ out:
- 		batadv_hardif_free_ref(primary_if);
- 	return ret;
- }
-+
-+int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct batadv_priv *bat_priv = netdev_priv(net_dev);
-+	struct batadv_hashtable *hash = bat_priv->backbone_hash;
-+	struct batadv_backbone_gw *backbone_gw;
-+	struct batadv_hard_iface *primary_if;
-+	struct hlist_node *node;
-+	struct hlist_head *head;
-+	int last_seen_secs;
-+	int last_seen_msecs;
-+	uint32_t i;
-+	bool is_own;
-+	int ret = 0;
-+	uint8_t *primary_addr;
-+
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+	if (!primary_if) {
-+		ret = seq_printf(seq,
-+				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
-+				 net_dev->name);
-+		goto out;
-+	}
-+
-+	if (primary_if->if_status != BATADV_IF_ACTIVE) {
-+		ret = seq_printf(seq,
-+				 "BATMAN mesh %s disabled - primary interface not active\n",
-+				 net_dev->name);
-+		goto out;
-+	}
-+
-+	primary_addr = primary_if->net_dev->dev_addr;
-+	seq_printf(seq,
-+		   "Backbones announced for the mesh %s (orig %pM, group id %04x)\n",
-+		   net_dev->name, primary_addr,
-+		   ntohs(bat_priv->claim_dest.group));
-+	seq_printf(seq, "   %-17s    %-5s %-9s (%-4s)\n",
-+		   "Originator", "VID", "last seen", "CRC");
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(backbone_gw, node, head, hash_entry) {
-+			last_seen_msecs = jiffies_to_msecs(jiffies -
-+							backbone_gw->lasttime);
-+			last_seen_secs = last_seen_msecs / 1000;
-+			last_seen_msecs = last_seen_msecs % 1000;
-+
-+
-+			is_own = batadv_compare_eth(backbone_gw->orig,
-+						    primary_addr);
-+			if (is_own)
-+				continue;
-+
-+			seq_printf(seq,
-+				   " * %pM on % 5d % 4i.%03is (%04x)\n",
-+				   backbone_gw->orig, backbone_gw->vid,
-+				   last_seen_secs, last_seen_msecs,
-+				   backbone_gw->crc);
-+		}
-+		rcu_read_unlock();
-+	}
-+out:
-+	if (primary_if)
-+		batadv_hardif_free_ref(primary_if);
-+	return ret;
-+}
-diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
-index 08d13cb..58015ce 100644
---- a/bridge_loop_avoidance.h
-+++ b/bridge_loop_avoidance.h
-@@ -26,6 +26,8 @@ int batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb, short vid);
- int batadv_bla_is_backbone_gw(struct sk_buff *skb,
- 			      struct batadv_orig_node *orig_node, int hdr_size);
- int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
-+int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq,
-+					     void *offset);
- int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv, uint8_t *orig);
- int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
- 				   struct batadv_bcast_packet *bcast_packet,
-@@ -64,6 +66,12 @@ static inline int batadv_bla_claim_table_seq_print_text(struct seq_file *seq,
- 	return 0;
- }
- 
-+static inline int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq,
-+							void *offset)
-+{
-+	return 0;
-+}
-+
- static inline int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv,
- 						 uint8_t *orig)
- {
-diff --git a/debugfs.c b/debugfs.c
-index e45cf0e..ee8b322 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -263,6 +263,15 @@ static int batadv_bla_claim_table_open(struct inode *inode, struct file *file)
- 	return single_open(file, batadv_bla_claim_table_seq_print_text,
- 			   net_dev);
- }
-+
-+static int batadv_bla_backbone_table_open(struct inode *inode,
-+					  struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+	return single_open(file, batadv_bla_backbone_table_seq_print_text,
-+			   net_dev);
-+}
-+
- #endif
- 
- static int batadv_transtable_local_open(struct inode *inode, struct file *file)
-@@ -301,6 +310,8 @@ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
- 			batadv_transtable_global_open);
- #ifdef CONFIG_BATMAN_ADV_BLA
- static BATADV_DEBUGINFO(bla_claim_table, S_IRUGO, batadv_bla_claim_table_open);
-+static BATADV_DEBUGINFO(bla_backbone_table, S_IRUGO,
-+			batadv_bla_backbone_table_open);
- #endif
- static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
- 			batadv_transtable_local_open);
-@@ -312,6 +323,7 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- 	&batadv_debuginfo_transtable_global,
- #ifdef CONFIG_BATMAN_ADV_BLA
- 	&batadv_debuginfo_bla_claim_table,
-+	&batadv_debuginfo_bla_backbone_table,
- #endif
- 	&batadv_debuginfo_transtable_local,
- 	&batadv_debuginfo_vis_data,
--- 
-1.7.10
+On Thu, Jun 14, 2012 at 04:51:01PM -0300, gtolon@inti.gob.ar wrote:
+> Hi,
+>=20
+>     we are interested too in interface alternating, so we made some
+> tests to understand how it works. As you can see on the attached
+> sketch.png, we connected two pair of routers using their ethernet
+> interfaces, E6 with E7, and E8 with E9. All of them have eth0, and
+> an ad hoc interface, wlan0-1, managed by batman. E6 and E8 are in
+> channel 11, whereas E7 and E9 are in channel 1. Besides we used two
+> other routers, E12 and E13, both in channel 11, with their tx power
+> set to just 0 dbm, to avoid a direct sight between them.
+>=20
+>     Then we sent traffic from E12 to E13. We expected that packets
+> travelled from E12 to E6, and that E6 forwarded them to his eth0 to
+> use the interface alternating feature, making traffic flow to E7,
+> then E9, E8 and finally E13. But instead, we observed that the
+> actual path was E12--E6--E8--E13. The resulting routes for each
+> router are attached in a text file, and also the graph from the
+> batctl vd dot command.
+>=20
+>     After this result, we read again the thread mentioned by Guido,
+> specially in this part:
+>=20
+> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-March/006344.html
+>=20
+>    And if we understand correctly, the alternation feature works
+> after the batman path has been selected. So in our case, E12 looks
+> at his table to know where to send a packet to E13, and finds E6.
+> Then E6 receives the packet and looks in his own table, finding that
+> the best path to reach E13 is E8. At this point, the alternating
+> should work, but there's only one interface directly connected to
+> E8, so the packet goes there, and so on. We think that if E6 and E7
+> were not two different routers running batman-adv but they were two
+> radios of the same batman-adv router, and the same for E8 and E9,
+> the alternating would work, because the unique router would choose
+> the best path, and then would find two possible interfaces to the
+> same next-hop, changing the interface.
 
+This is entirely correct - batman-adv has only one link to choose from
+(E6 -> E8) to reach its best nexthop E8, so there is no way to
+"alternate" the interfaces.
+
+>     We'd like to know if this interpretation is correct, and in that
+> case, if it were possible to use interface alternating in a case
+> like this, with two routers connected to work together. Thanks!
+
+Mhm, with the current implementation - no, unfortunately not. We would
+need some kind of multipath routing to select between routes, this is
+much more complex.
+
+An alternative might be to use the routers E7/E9 as secondary routers
+without batman, but only forwarding traffic between Ethernet and
+WiFi. Then the "primary" routers (E6 -> E8) would think they have
+an alternative route via Ethernet (because they don't see the
+intermediate hops E7/E9). This comes with some caveats however, e.g.
+4-addr mode in Ad-Hoc, you need some very simple ethernet forwarder,
+and most probably other things I forgot.
+
+Cheers,
+	Simon
+
+
+--yrj/dFKFPuw6o+aM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk/bBo0ACgkQrzg/fFk7axa+fACgt2bWesFvMtOlej5ViJOsxXfA
+j24AoOmyBtDNsBIeXsGK/HHc/NhBF09o
+=S/6D
+-----END PGP SIGNATURE-----
+
+--yrj/dFKFPuw6o+aM--
