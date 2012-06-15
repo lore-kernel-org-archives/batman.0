@@ -1,8 +1,17 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 14 Jun 2012 23:27:27 +0200
-Message-Id: <1339709247-8703-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: don't redirect tt_request for me
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Fri, 15 Jun 2012 10:47:51 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20120615084751.GA32430@pandem0nium>
+References: <1339692212-27221-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+	<1339692719-27313-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+	<2637165.TIHWgPI098@sven-desktop.home.narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="AqsLC8rIMeq19msA"
+Content-Disposition: inline
+In-Reply-To: <2637165.TIHWgPI098@sven-desktop.home.narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Add the backbone gateway
+ list to debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,64 +23,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-If a tt_request is directed to me, it never has to be redirected
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- translation-table.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+--AqsLC8rIMeq19msA
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 
-diff --git a/translation-table.c b/translation-table.c
-index 2a6d7d6..c32c5f6 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1648,7 +1648,7 @@ out:
- 
- }
- 
--static bool
-+static void
- batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 			   struct batadv_tt_query_packet *tt_request)
- {
-@@ -1656,7 +1656,6 @@ batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 	struct batadv_neigh_node *neigh_node = NULL;
- 	struct batadv_hard_iface *primary_if = NULL;
- 	uint8_t my_ttvn, req_ttvn, ttvn;
--	int ret = false;
- 	unsigned char *tt_buff;
- 	bool full_table;
- 	uint16_t tt_len, tt_tot;
-@@ -1751,7 +1750,6 @@ batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_RESPONSE_TX);
- 
- 	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
--	ret = true;
- 	goto out;
- 
- unlock:
-@@ -1765,8 +1763,6 @@ out:
- 		batadv_hardif_free_ref(primary_if);
- 	if (!ret)
- 		kfree_skb(skb);
--	/* This packet was for me, so it doesn't need to be re-routed */
--	return true;
- }
- 
- bool batadv_send_tt_response(struct batadv_priv *bat_priv,
-@@ -1777,7 +1773,9 @@ bool batadv_send_tt_response(struct batadv_priv *bat_priv,
- 		if (batadv_bla_is_backbone_gw_orig(bat_priv, tt_request->src))
- 			return true;
- 
--		return batadv_send_my_tt_response(bat_priv, tt_request);
-+		batadv_send_my_tt_response(bat_priv, tt_request);
-+		/* This packet was for me, so it never needs to be re-routed */
-+		return true;
- 	} else {
- 		return batadv_send_other_tt_response(bat_priv, tt_request);
- 	}
--- 
-1.7.9.4
+Hey Sven,
 
+On Thu, Jun 14, 2012 at 10:43:55PM +0200, Sven Eckelmann wrote:
+> You forgot the README and most likely the batctl part.
+
+I planned to send the batctl patch later, but README is definitly
+missing. Thanks!
+
+	Simon
+
+--AqsLC8rIMeq19msA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk/a9rcACgkQrzg/fFk7axYEsQCffGMSPH/a16MrqKJFkcf//eDi
+1OQAoNZnq5HW2Itm2zmgPOmccBAGQjQQ
+=FYmT
+-----END PGP SIGNATURE-----
+
+--AqsLC8rIMeq19msA--
