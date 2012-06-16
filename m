@@ -1,11 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 16 Jun 2012 08:27:41 +0200
-Message-Id: <1339828061-15884-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1339709917-15971-1-git-send-email-ordex@autistici.org>
-References: <1339709917-15971-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: don't try to re-route
-	tt_request for me
+Return-Path: <sven@narfation.org>
+Date: Sat, 16 Jun 2012 08:37:03 +0200
+From: Sven Eckelmann <sven@narfation.org>
+Message-ID: <20120616063703.GA32026@sven-atom.home.narfation.org>
+References: <20120615084751.GA32430@pandem0nium>
+	<1339753563-313-2-git-send-email-siwu@hrz.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="7JfCtLOvnd9MIVvH"
+Content-Disposition: inline
+In-Reply-To: <1339753563-313-2-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Add the backbone gateway
+ list to debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,70 +22,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-If a TT_Request is directed to a node and it fails in handling it (e.g. it
-does not know the source node yet), the node will print a "re-routing" message
-and will try to forward the packet. However it will fails because the
-destination is itself. To avoid this misbehaviour, the node has to never try to
-re-route a packet directed to it.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- translation-table.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+--7JfCtLOvnd9MIVvH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/translation-table.c b/translation-table.c
-index 2a6d7d6..9eb45c8 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1648,7 +1648,7 @@ out:
- 
- }
- 
--static bool
-+static void
- batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 			   struct batadv_tt_query_packet *tt_request)
- {
-@@ -1656,7 +1656,6 @@ batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 	struct batadv_neigh_node *neigh_node = NULL;
- 	struct batadv_hard_iface *primary_if = NULL;
- 	uint8_t my_ttvn, req_ttvn, ttvn;
--	int ret = false;
- 	unsigned char *tt_buff;
- 	bool full_table;
- 	uint16_t tt_len, tt_tot;
-@@ -1751,7 +1750,6 @@ batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_RESPONSE_TX);
- 
- 	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
--	ret = true;
- 	goto out;
- 
- unlock:
-@@ -1763,10 +1761,6 @@ out:
- 		batadv_neigh_node_free_ref(neigh_node);
- 	if (primary_if)
- 		batadv_hardif_free_ref(primary_if);
--	if (!ret)
--		kfree_skb(skb);
--	/* This packet was for me, so it doesn't need to be re-routed */
--	return true;
- }
- 
- bool batadv_send_tt_response(struct batadv_priv *bat_priv,
-@@ -1777,7 +1771,9 @@ bool batadv_send_tt_response(struct batadv_priv *bat_priv,
- 		if (batadv_bla_is_backbone_gw_orig(bat_priv, tt_request->src))
- 			return true;
- 
--		return batadv_send_my_tt_response(bat_priv, tt_request);
-+		batadv_send_my_tt_response(bat_priv, tt_request);
-+		/* This packet was for me, so it never needs to be re-routed */
-+		return true;
- 	} else {
- 		return batadv_send_other_tt_response(bat_priv, tt_request);
- 	}
--- 
-1.7.9.4
+On Fri, Jun 15, 2012 at 11:46:03AM +0200, Simon Wunderlich wrote:
+> +		hlist_for_each_entry_rcu(backbone_gw, node, head, hash_entry) {
+> +			last_seen_msecs = jiffies_to_msecs(jiffies -
+> +							backbone_gw->lasttime);
 
+Please fix that in another way and not by wrong alignment.
+
+Kind regards,
+	Sven
+
+--7JfCtLOvnd9MIVvH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCgAGBQJP3CmPAAoJEF2HCgfBJntGJVsQAM12Dt7jUIfAIHvJGX1JMF1m
+tm/dK+eAAK5WlWOYOo4GuXMHBamt1vS1Fh0Wx5nKN03MXwxOWwwvmzR+0iuPItxJ
+GHSrS5/O/YOZwSwhjoaBU5uN+JeuAgQFWeUs98dZIaLq8T0Gv+ANVp8p8sP9AHh+
+/6Jxo7ed5UetNikOFZ/RdRIaadiBQ+WLSQbjdIQ1tYX1Whfv0uYSYiVJsVKRXrVj
+oJ/ev1U5Ddx9vlITGTcliqDvKMt3/f4rRFI6UCd9MNeLe/5k97Re8BcwUCfeuQUC
+s3+L2I/b+DgMI0z888sLcyh8fIQIQe5IMhf8fx50OeLFlRB2XtkytGkvkuemDmsV
+Ui+SNoztZRDact2Koe1TMPawXE8g4MqEYPl3V3YAAUkDM/GefzNmPWak98uuFXHg
+XoX5SXk/Bc2O6buE+cfjYbLQrLwcxQ954jM61jynFjWAiAG41dErw03IX3mZ3Mn7
+CdkcVAI7g5YM1AeX2ogaqrQwbslI80QBSozJ3YjOBvo1lmSR5et3hlAocAowJStu
+k4EDEPWcltjhncpCjzenldt4vUyivhQi9mpP51G29qF+bAacU/Wz9Z2wvjVQgwtV
+xVKn4u+fZD9m8GH5sokoi0jKkK1a6s0heW0NTZ5N81DThnSwdyrkcm/y78sTQfHz
+tOcMH/ykzekA/TEz6s0B
+=tS1t
+-----END PGP SIGNATURE-----
+
+--7JfCtLOvnd9MIVvH--
