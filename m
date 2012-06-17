@@ -1,10 +1,18 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 Jun 2012 16:27:22 +0200
-Message-Id: <1339943242-29741-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1339942903-27681-1-git-send-email-sven@narfation.org>
-References: <1339942903-27681-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Remove space before semicolon
+Return-Path: <ordex@autistici.org>
+Date: Sun, 17 Jun 2012 20:05:52 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120617180549.GA25505@ritirata.org>
+References: <1339709917-15971-1-git-send-email-ordex@autistici.org>
+	<1339828061-15884-1-git-send-email-ordex@autistici.org>
+	<201206170300.14767.lindner_marek@yahoo.de>
+	<20120616221117.GB15888@ritirata.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
+Content-Disposition: inline
+In-Reply-To: <20120616221117.GB15888@ritirata.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: don't try to re-route
+ tt_request for me
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,51 +24,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
 
-This cleanup is for next
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- bridge_loop_avoidance.c |    2 +-
- hash.c                  |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+On Sun, Jun 17, 2012 at 12:11:18AM +0200, Antonio Quartulli wrote:
+> On Sun, Jun 17, 2012 at 03:00:14AM +0800, Marek Lindner wrote:
+> > On Saturday, June 16, 2012 14:27:41 Antonio Quartulli wrote:
+> You are right. I misinterpreted this skb.
+> I'll send v4 soon!
+>=20
+> Thank you
+>=20
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 38aab1e..49e10d9 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1222,7 +1222,7 @@ int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
- 	/* calculate the crc ... */
- 	crc = crc16(0, content, length);
- 
--	for (i = 0 ; i < BATADV_DUPLIST_SIZE; i++) {
-+	for (i = 0; i < BATADV_DUPLIST_SIZE; i++) {
- 		curr = (bat_priv->bcast_duplist_curr + i) % BATADV_DUPLIST_SIZE;
- 		entry = &bat_priv->bcast_duplist[curr];
- 
-diff --git a/hash.c b/hash.c
-index 2b16381..15a849c 100644
---- a/hash.c
-+++ b/hash.c
-@@ -25,7 +25,7 @@ static void batadv_hash_init(struct batadv_hashtable *hash)
- {
- 	uint32_t i;
- 
--	for (i = 0 ; i < hash->size; i++) {
-+	for (i = 0; i < hash->size; i++) {
- 		INIT_HLIST_HEAD(&hash->table[i]);
- 		spin_lock_init(&hash->list_locks[i]);
- 	}
-@@ -73,6 +73,6 @@ void batadv_hash_set_lock_class(struct batadv_hashtable *hash,
- {
- 	uint32_t i;
- 
--	for (i = 0 ; i < hash->size; i++)
-+	for (i = 0; i < hash->size; i++)
- 		lockdep_set_class(&hash->list_locks[i], key);
- }
--- 
-1.7.10
+After having read this patch more and more I can conclude that we do not re=
+ally
+need it. send_my_tt_response() will always return true and so the problem I
+mentioned cannot be triggered at all.
+I don't know if we really need a bool function if it does always return tru=
+e.
+But this is a different issue.
 
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--GvXjxJ+pjyke8COw
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAk/eHH0ACgkQpGgxIkP9cwc+5gCgiC5yY0VGRcx6TBTmKDdepyNV
+rAcAoId7Qrw4M6BJbvJhYWbjATdRPm9I
+=iGdz
+-----END PGP SIGNATURE-----
+
+--GvXjxJ+pjyke8COw--
