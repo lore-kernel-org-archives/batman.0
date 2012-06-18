@@ -1,16 +1,9 @@
-Return-Path: <sven@narfation.org>
-Date: Mon, 18 Jun 2012 12:41:09 +0200
-From: Sven Eckelmann <sven@narfation.org>
-Message-ID: <20120618104108.GA17473@sven-atom.home.narfation.org>
-References: <20120616063703.GA32026@sven-atom.home.narfation.org>
-	<1340014892-22722-2-git-send-email-siwu@hrz.tu-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="YiEDa0DAkWCtVeE4"
-Content-Disposition: inline
-In-Reply-To: <1340014892-22722-2-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4] batman-adv: Add the backbone gateway
- list to debugfs
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 18 Jun 2012 18:10:34 +0200
+Message-Id: <1340035834-29105-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix race condition in TT
+	full-table replacement
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,56 +15,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+In the current TT code, when a TT_Response containing a full table is received
+form an originator, the node first purges all the clients for that originator in
+the global translation-table and then merges the new received table.
+During the purging phase each client deletion is done by means of a call_rcu()
+invocation and at the end the global entry counter for that originator is set to
+0. However the invoked rcu function decreases by one the global entry counter
+for that originator as well and since the rcu invocation is likely to be
+postponed, the node will end up in first setting the counter to 0 and then
+decreasing it one by one for each deleted client.
+To solve this problem the counter is not explicitly set to 0 anymore and the
+counter decrement is performed right before the invocation of call_rcu().
 
---YiEDa0DAkWCtVeE4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-On Mon, Jun 18, 2012 at 12:21:32PM +0200, Simon Wunderlich wrote:
-> +			msecs =3D msecs % 1000;
-> +
-> +
-> +			is_own =3D batadv_compare_eth(backbone_gw->orig,
+diff --git a/translation-table.c b/translation-table.c
+index 2a6d7d6..b08cb76 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -145,7 +145,6 @@ static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
+ 	struct batadv_tt_orig_list_entry *orig_entry;
+ 
+ 	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
+-	atomic_dec(&orig_entry->orig_node->tt_size);
+ 	batadv_orig_node_free_ref(orig_entry->orig_node);
+ 	kfree(orig_entry);
+ }
+@@ -153,6 +152,8 @@ static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
+ static void
+ batadv_tt_orig_list_entry_free_ref(struct batadv_tt_orig_list_entry *orig_entry)
+ {
++	/* to avoid race conditions, immediately decrease the tt counter */
++	atomic_dec(&orig_entry->orig_node->tt_size);
+ 	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
+ }
+ 
+@@ -1025,7 +1026,6 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+ 		}
+ 		spin_unlock_bh(list_lock);
+ 	}
+-	atomic_set(&orig_node->tt_size, 0);
+ 	orig_node->tt_initialised = false;
+ }
+ 
+-- 
+1.7.9.4
 
-Why two empty lines?
-
-> +static inline int batadv_bla_backbone_table_seq_print_text(struct seq_fi=
-le *seq,
-> +							void *offset)
-> +{
-> +	return 0;
-> +}
-> +d
-
-This also looks wrong aligned.=20
-
-Kind regards,
-	Sven
-
---YiEDa0DAkWCtVeE4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCgAGBQJP3wXDAAoJEF2HCgfBJntGIQEQANX2/BKy3kqGAv67UtD+DCxz
-+3GP2ZEz8+sV9pfBGlhMooXCRrTFjUUqkjMO60PrYZtdktyrld+7Y5ppky++WtC8
-pdgI9zFjooRLTiFHLCKu7IogQqj/4SzLa02ZnUEKfreuwcgpnFX4jaSHW4KyQVtu
-rlAtL6qB+7C33Rw65o06WSGhu16k/3dd2vpu17yQBzghCC6W/azDgRyUbMQFBLG9
-9y+VXYodC9VcWTwKyFx6rOfhdWO4Iy+m/OEBe5wV9CEFKo8dBSduq6s4HVi16xB0
-6GVgPHOzs6zXQIBlYSbIzrNI557t+PlbuJy/ttWFa4217t6KFePjpg8NepkFV587
-BmO4mx4XizreeEpcnODXOXuwsMXgztxEPfAluPyg1lVV1kZsl/RlXeGSkaAw8VdE
-5hRUU7RYZvAEyVWyB7GGYYGer4EZiH1p73dqTQblhMBvEjFH9usxpKmk0A7NasH+
-OZsuB8JbqlE1l5HGlOF5ZHp4IWB6HS3s7rbFzIJIyi+dQdRUPMcMz1up0xcl0omQ
-lZkuhVgEBbWflz08v9xGXMS37VkKh6bxVvWSuKOuWcSDfcx3//0C+Hj+bwxNjXh5
-ApTpH1IQ4YFmzpnG+xzPvR8CDxmlLK46FlCuWB7wWMzABTYEfzKxAp6BO31ecwYa
-RseAgKKCy6ESL+fFPcNy
-=C3E0
------END PGP SIGNATURE-----
-
---YiEDa0DAkWCtVeE4--
