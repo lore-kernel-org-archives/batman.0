@@ -1,10 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 18 Jun 2012 22:39:22 +0200
-Message-Id: <1340051963-14836-19-git-send-email-ordex@autistici.org>
+Date: Mon, 18 Jun 2012 22:39:23 +0200
+Message-Id: <1340051963-14836-20-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340051963-14836-1-git-send-email-ordex@autistici.org>
 References: <1340051963-14836-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 18/19] batman-adv: fix locking in hash_add()
+Subject: [B.A.T.M.A.N.] [PATCH 19/19] batman-adv: only store changed
+	gw_bandwidth values
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,60 +18,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Matthias Schiffer <mschiffer@universe-factory.net>
+From: Marek Lindner <lindner_marek@yahoo.de>
 
-To ensure an entry isn't added twice all comparisons have to be protected by the
-hash line write spinlock. This doesn't really hurt as the case that it is tried
-to add an element already present to the hash shouldn't occur very often, so in
-most cases the lock would have have to be taken anyways.
-
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-Acked-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/hash.h |   15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+ net/batman-adv/gateway_common.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
-index 93b3c71..3d67ce4 100644
---- a/net/batman-adv/hash.h
-+++ b/net/batman-adv/hash.h
-@@ -110,26 +110,23 @@ static inline int hash_add(struct hashtable_t *hash,
- 	head = &hash->table[index];
- 	list_lock = &hash->list_locks[index];
+diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
+index ca57ac7..6e3b052 100644
+--- a/net/batman-adv/gateway_common.c
++++ b/net/batman-adv/gateway_common.c
+@@ -162,6 +162,9 @@ ssize_t gw_bandwidth_set(struct net_device *net_dev, char *buff, size_t count)
+ 	 **/
+ 	gw_bandwidth_to_kbit((uint8_t)gw_bandwidth_tmp, &down, &up);
  
--	rcu_read_lock();
--	__hlist_for_each_rcu(node, head) {
-+	spin_lock_bh(list_lock);
++	if (atomic_read(&bat_priv->gw_bandwidth) == gw_bandwidth_tmp)
++		return count;
 +
-+	hlist_for_each(node, head) {
- 		if (!compare(node, data))
- 			continue;
- 
- 		ret = 1;
--		goto err_unlock;
-+		goto unlock;
- 	}
--	rcu_read_unlock();
- 
- 	/* no duplicate found in list, add new element */
--	spin_lock_bh(list_lock);
- 	hlist_add_head_rcu(data_node, head);
--	spin_unlock_bh(list_lock);
- 
- 	ret = 0;
--	goto out;
- 
--err_unlock:
--	rcu_read_unlock();
-+unlock:
-+	spin_unlock_bh(list_lock);
- out:
- 	return ret;
- }
+ 	gw_deselect(bat_priv);
+ 	bat_info(net_dev,
+ 		 "Changing gateway bandwidth from: '%i' to: '%ld' (propagating: %d%s/%d%s)\n",
 -- 
 1.7.9.4
 
