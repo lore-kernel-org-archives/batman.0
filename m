@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 18 Jun 2012 22:39:18 +0200
-Message-Id: <1340051963-14836-15-git-send-email-ordex@autistici.org>
+Date: Mon, 18 Jun 2012 22:39:19 +0200
+Message-Id: <1340051963-14836-16-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340051963-14836-1-git-send-email-ordex@autistici.org>
 References: <1340051963-14836-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 14/19] batman-adv: don't bother flipping
-	->tt_crc
+Subject: [B.A.T.M.A.N.] [PATCH 15/19] batman-adv: fix visualization output
+	without neighbors on the primary interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,75 +18,80 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Al Viro <viro@zeniv.linux.org.uk>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Al Viro <viro@ZenIV.linux.org.uk>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
 
-Keep it net-endian
+The primary entry and the corresponding secondary entries are missing when there
+are no neighbors on the primary interface. This also causes the TT entries to
+miss and makes nodes with multiply secondary interface fall apart since there
+is no way to see they are related without a primary entry.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Fix this by always emitting a primary entry.
+
+Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_iv_ogm.c |   10 ++--------
- net/batman-adv/packet.h     |    2 +-
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ net/batman-adv/vis.c |   21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 896287e..ec3542c 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -547,8 +547,6 @@ static void bat_iv_ogm_forward(struct orig_node *orig_node,
- 		"Forwarding packet: tq: %i, ttl: %i\n",
- 		batman_ogm_packet->tq, batman_ogm_packet->header.ttl);
+diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
+index 411c0e1..01d5da5 100644
+--- a/net/batman-adv/vis.c
++++ b/net/batman-adv/vis.c
+@@ -207,7 +207,6 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 	int vis_server = atomic_read(&bat_priv->vis_mode);
+ 	size_t buff_pos, buf_size;
+ 	char *buff;
+-	int compare;
  
--	batman_ogm_packet->tt_crc = htons(batman_ogm_packet->tt_crc);
--
- 	/* switch of primaries first hop flag when forwarding */
- 	batman_ogm_packet->flags &= ~PRIMARIES_FIRST_HOP;
- 	if (is_single_hop_neigh)
-@@ -724,7 +722,7 @@ update_tt:
- 		tt_update_orig(bat_priv, orig_node, tt_buff,
- 			       batman_ogm_packet->tt_num_changes,
- 			       batman_ogm_packet->ttvn,
--			       batman_ogm_packet->tt_crc);
-+			       ntohs(batman_ogm_packet->tt_crc));
+ 	primary_if = primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+@@ -228,14 +227,18 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 			entries = (struct vis_info_entry *)
+ 				((char *)packet + sizeof(*packet));
  
- 	if (orig_node->gw_flags != batman_ogm_packet->gw_flags)
- 		gw_node_update(bat_priv, orig_node,
-@@ -972,7 +970,7 @@ static void bat_iv_ogm_process(const struct ethhdr *ethhdr,
- 		ethhdr->h_source, if_incoming->net_dev->name,
- 		if_incoming->net_dev->dev_addr, batman_ogm_packet->orig,
- 		batman_ogm_packet->prev_sender, ntohl(batman_ogm_packet->seqno),
--		batman_ogm_packet->ttvn, batman_ogm_packet->tt_crc,
-+		batman_ogm_packet->ttvn, ntohs(batman_ogm_packet->tt_crc),
- 		batman_ogm_packet->tt_num_changes, batman_ogm_packet->tq,
- 		batman_ogm_packet->header.ttl,
- 		batman_ogm_packet->header.version, has_directlink_flag);
-@@ -1219,10 +1217,6 @@ static int bat_iv_ogm_receive(struct sk_buff *skb,
++			vis_data_insert_interface(packet->vis_orig,
++						  &vis_if_list, true);
++
+ 			for (j = 0; j < packet->entries; j++) {
+ 				if (entries[j].quality == 0)
+ 					continue;
+-				compare =
+-				 compare_eth(entries[j].src, packet->vis_orig);
++				if (compare_eth(entries[j].src,
++						packet->vis_orig))
++					continue;
+ 				vis_data_insert_interface(entries[j].src,
+ 							  &vis_if_list,
+-							  compare);
++							  false);
+ 			}
  
- 	/* unpack the aggregated packets and process them one by one */
- 	do {
--		/* network to host order for our 32bit seqno and the
--		   orig_interval */
--		batman_ogm_packet->tt_crc = ntohs(batman_ogm_packet->tt_crc);
--
- 		tt_buff = packet_buff + buff_pos + BATMAN_OGM_HLEN;
+ 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
+@@ -276,14 +279,18 @@ int vis_seq_print_text(struct seq_file *seq, void *offset)
+ 			entries = (struct vis_info_entry *)
+ 				((char *)packet + sizeof(*packet));
  
- 		bat_iv_ogm_process(ethhdr, batman_ogm_packet,
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index 372fc88..033d994 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -124,7 +124,7 @@ struct batman_ogm_packet {
- 	uint8_t  tq;
- 	uint8_t  tt_num_changes;
- 	uint8_t  ttvn; /* translation table version number */
--	uint16_t tt_crc;
-+	__be16   tt_crc;
- } __packed;
++			vis_data_insert_interface(packet->vis_orig,
++						  &vis_if_list, true);
++
+ 			for (j = 0; j < packet->entries; j++) {
+ 				if (entries[j].quality == 0)
+ 					continue;
+-				compare =
+-				 compare_eth(entries[j].src, packet->vis_orig);
++				if (compare_eth(entries[j].src,
++						packet->vis_orig))
++					continue;
+ 				vis_data_insert_interface(entries[j].src,
+ 							  &vis_if_list,
+-							  compare);
++							  false);
+ 			}
  
- #define BATMAN_OGM_HLEN sizeof(struct batman_ogm_packet)
+ 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
 -- 
 1.7.9.4
 
