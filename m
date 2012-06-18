@@ -1,18 +1,11 @@
-Return-Path: <gtolon@inti.gob.ar>
-Message-ID: <4FDF7780.1040704@inti.gob.ar>
-Date: Mon, 18 Jun 2012 15:46:24 -0300
-From: gtolon@inti.gob.ar
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 18 Jun 2012 22:39:04 +0200
+Message-Id: <1340051963-14836-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-References: <CAA_JP8X+vPn39-QK-zPjdd1Mtn4PCTjigpV4fFM6sTVUmBiLTg@mail.gmail.com>
-	<CAHD-aqKN_+5fwg65Udpr6jxt5tFsu5XXsMWkk75ujPK3bJcqJw@mail.gmail.com>
-	<CAA_JP8UxNW18xWZe62ySY=H27HDnZY1YBQV-7ZGUHYnSS-ZSHw@mail.gmail.com>
-	<CAHD-aqK_CGbc8u5GuEBJyFzrk2rTHHTw=bAiWjFafAW9xOqWiw@mail.gmail.com>
-	<4FDA40A5.1050008@inti.gob.ar> <20120615095525.GA32707@pandem0nium>
-In-Reply-To: <20120615095525.GA32707@pandem0nium>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] link alternation when radios are not on
- batman-adv router?
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-06-18
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,82 +17,101 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Simon, thanks for your reply!
+Hello David,
+	here is our first set of changes intended for next-next/linux-3.6.
+
+Patch 2 fixes a major bug in the TranslationTable code where the old value of
+skb->data is used for memory access even if the data was relocated.
+Patches 4, 10, 11, 13, 14 are endianess-related cleanups that we wrote thanks
+to Al Viro's advice and help.
+Thanks to Martin Hundebøll batman-adv now supports the ethtool API and can
+export several counters that are specific to our module (patch 5).
+Then patch 16 improves the routing protocol API by making part of the
+TranslationTable code routing agnostic.
+The rest are minor fixes and other cleanups.
+
+Thank you very much,
+		Antonio
 
 
-El 15/06/2012 06:55 a.m., Simon Wunderlich escribió:
-> On Thu, Jun 14, 2012 at 04:51:01PM -0300, gtolon@inti.gob.ar wrote:
->> Hi,
->>
->>      we are interested too in interface alternating, so we made some
->> tests to understand how it works. As you can see on the attached
->> sketch.png, we connected two pair of routers using their ethernet
->> interfaces, E6 with E7, and E8 with E9. All of them have eth0, and
->> an ad hoc interface, wlan0-1, managed by batman. E6 and E8 are in
->> channel 11, whereas E7 and E9 are in channel 1. Besides we used two
->> other routers, E12 and E13, both in channel 11, with their tx power
->> set to just 0 dbm, to avoid a direct sight between them.
->>
->>      Then we sent traffic from E12 to E13. We expected that packets
->> travelled from E12 to E6, and that E6 forwarded them to his eth0 to
->> use the interface alternating feature, making traffic flow to E7,
->> then E9, E8 and finally E13. But instead, we observed that the
->> actual path was E12--E6--E8--E13. The resulting routes for each
->> router are attached in a text file, and also the graph from the
->> batctl vd dot command.
->>
->>      After this result, we read again the thread mentioned by Guido,
->> specially in this part:
->>
->> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-March/006344.html
->>
->>     And if we understand correctly, the alternation feature works
->> after the batman path has been selected. So in our case, E12 looks
->> at his table to know where to send a packet to E13, and finds E6.
->> Then E6 receives the packet and looks in his own table, finding that
->> the best path to reach E13 is E8. At this point, the alternating
->> should work, but there's only one interface directly connected to
->> E8, so the packet goes there, and so on. We think that if E6 and E7
->> were not two different routers running batman-adv but they were two
->> radios of the same batman-adv router, and the same for E8 and E9,
->> the alternating would work, because the unique router would choose
->> the best path, and then would find two possible interfaces to the
->> same next-hop, changing the interface.
-> This is entirely correct - batman-adv has only one link to choose from
-> (E6 ->  E8) to reach its best nexthop E8, so there is no way to
-> "alternate" the interfaces.
->
->>      We'd like to know if this interpretation is correct, and in that
->> case, if it were possible to use interface alternating in a case
->> like this, with two routers connected to work together. Thanks!
-> Mhm, with the current implementation - no, unfortunately not. We would
-> need some kind of multipath routing to select between routes, this is
-> much more complex.
 
-Ok, i understand.
+The following changes since commit 6fac262526ee91ee66210b8919a4297dcf7d544e:
 
->
-> An alternative might be to use the routers E7/E9 as secondary routers
-> without batman, but only forwarding traffic between Ethernet and
-> WiFi. Then the "primary" routers (E6 ->  E8) would think they have
-> an alternative route via Ethernet (because they don't see the
-> intermediate hops E7/E9). This comes with some caveats however, e.g.
-> 4-addr mode in Ad-Hoc, you need some very simple ethernet forwarder,
-> and most probably other things I forgot.
+  ipv4: Cap ADVMSS metric in the FIB rather than the routing cache. (2012-06-17 19:47:34 -0700)
 
-We had tried with something like that using ap and sta modes in E7 and 
-E9, and it hadn't worked. Thanks to your suggestion we noticed the 
-necessity of the 4-address mode, so we are now trying with wds:
+are available in the git repository at:
 
-http://wiki.openwrt.org/doc/recipes/atheroswds
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
 
-Unfortunately, we haven't found yet a way to use 4-address mode in ad 
-hoc. Apparentrly, it's not possible:
+for you to fetch changes up to dafe94b278e052c3901b137fe6f666f8f92d839a:
 
-http://linuxwireless.org/en/users/Documentation/iw#Using_4-address_for_AP_and_client_mode
+  batman-adv: only store changed gw_bandwidth values (2012-06-18 18:01:07 +0200)
 
-Best Regards
+----------------------------------------------------------------
+Included changes:
 
-Gabriel
+* major skb->data pointer usage fix
+* interval version update
+* added get_ethtool_stats() support
+* endianess clean up
+* routing protocol API improvement wrt TT commit code
+* fix locking in hash table code
+* minor cleanups and fixes
+
+----------------------------------------------------------------
+Al Viro (5):
+      batman-adv: get rid of pointless cast in memcpy()
+      batman-adv: trivial endianness annotations
+      batman-adv: keep batman_ogm_packet ->seqno net-endian all along
+      batman-adv: don't bother flipping ->tt_data
+      batman-adv: don't bother flipping ->tt_crc
+
+Antonio Quartulli (3):
+      batman-adv: fix skb->data assignment
+      batman-adv: convert bat_priv->tt_crc from atomic_t to uint16_t
+      batman-adv: use DBG_ALL in log_level sysfs definition
+
+Marek Lindner (5):
+      batman-adv: avoid characters requiring shell escapes in protocol names
+      batman-adv: ignore trailing CR when comparing protocol names
+      batman-adv: return added entries instead of number of possibly added entries
+      batman-adv: turn tt commit code into routing protocol agnostic API
+      batman-adv: only store changed gw_bandwidth values
+
+Martin Hundebøll (1):
+      batman-adv: Add get_ethtool_stats() support
+
+Matthias Schiffer (2):
+      batman-adv: fix visualization output without neighbors on the primary interface
+      batman-adv: fix locking in hash_add()
+
+Sven Eckelmann (3):
+      batman-adv: update internal version number
+      batman-adv: Initialize lockdep class keys for hashes
+      batman-adv: Return error codes instead of -1 on failures
+
+ Documentation/networking/batman-adv.txt |    5 +
+ net/batman-adv/bat_debugfs.c            |   11 +-
+ net/batman-adv/bat_iv_ogm.c             |   63 ++++++------
+ net/batman-adv/bat_sysfs.c              |    4 +-
+ net/batman-adv/bridge_loop_avoidance.c  |   27 +++--
+ net/batman-adv/gateway_common.c         |    3 +
+ net/batman-adv/hard-interface.c         |    4 +-
+ net/batman-adv/hash.c                   |    9 ++
+ net/batman-adv/hash.h                   |   19 ++--
+ net/batman-adv/icmp_socket.c            |    4 +-
+ net/batman-adv/main.c                   |   42 +++++---
+ net/batman-adv/main.h                   |   29 +++++-
+ net/batman-adv/originator.c             |   18 ++--
+ net/batman-adv/packet.h                 |   18 ++--
+ net/batman-adv/routing.c                |   23 +++--
+ net/batman-adv/send.c                   |   74 +-------------
+ net/batman-adv/soft-interface.c         |   66 +++++++++++-
+ net/batman-adv/translation-table.c      |  168 ++++++++++++++++++++++++-------
+ net/batman-adv/translation-table.h      |    7 +-
+ net/batman-adv/types.h                  |   22 +++-
+ net/batman-adv/vis.c                    |   29 ++++--
+ 21 files changed, 420 insertions(+), 225 deletions(-)
