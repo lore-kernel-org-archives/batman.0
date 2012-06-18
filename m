@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 18 Jun 2012 22:39:10 +0200
-Message-Id: <1340051963-14836-7-git-send-email-ordex@autistici.org>
+Date: Mon, 18 Jun 2012 22:39:11 +0200
+Message-Id: <1340051963-14836-8-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340051963-14836-1-git-send-email-ordex@autistici.org>
 References: <1340051963-14836-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 06/19] batman-adv: avoid characters requiring
-	shell escapes in protocol names
+Subject: [B.A.T.M.A.N.] [PATCH 07/19] batman-adv: ignore trailing CR when
+	comparing protocol names
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,41 +22,40 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lind
 
 From: Marek Lindner <lindner_marek@yahoo.de>
 
-Reported-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_iv_ogm.c |    2 +-
- net/batman-adv/main.c       |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/main.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 99ec218..e94ac0b 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1241,7 +1241,7 @@ static int bat_iv_ogm_receive(struct sk_buff *skb,
- }
- 
- static struct bat_algo_ops batman_iv __read_mostly = {
--	.name = "BATMAN IV",
-+	.name = "BATMAN_IV",
- 	.bat_iface_enable = bat_iv_ogm_iface_enable,
- 	.bat_iface_disable = bat_iv_ogm_iface_disable,
- 	.bat_iface_update_mac = bat_iv_ogm_iface_update_mac,
 diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index bd83aa4..65b4f08 100644
+index 65b4f08..8610b5c 100644
 --- a/net/batman-adv/main.c
 +++ b/net/batman-adv/main.c
-@@ -40,7 +40,7 @@
-  * list traversals just rcu-locked */
- struct list_head hardif_list;
- static int (*recv_packet_handler[256])(struct sk_buff *, struct hard_iface *);
--char bat_routing_algo[20] = "BATMAN IV";
-+char bat_routing_algo[20] = "BATMAN_IV";
- static struct hlist_head bat_algo_list;
+@@ -381,14 +381,19 @@ int bat_algo_seq_print_text(struct seq_file *seq, void *offset)
+ static int param_set_ra(const char *val, const struct kernel_param *kp)
+ {
+ 	struct bat_algo_ops *bat_algo_ops;
++	char *algo_name = (char *)val;
++	size_t name_len = strlen(algo_name);
  
- unsigned char broadcast_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+-	bat_algo_ops = bat_algo_get((char *)val);
++	if (algo_name[name_len - 1] == '\n')
++		algo_name[name_len - 1] = '\0';
++
++	bat_algo_ops = bat_algo_get(algo_name);
+ 	if (!bat_algo_ops) {
+-		pr_err("Routing algorithm '%s' is not supported\n", val);
++		pr_err("Routing algorithm '%s' is not supported\n", algo_name);
+ 		return -EINVAL;
+ 	}
+ 
+-	return param_set_copystring(val, kp);
++	return param_set_copystring(algo_name, kp);
+ }
+ 
+ static const struct kernel_param_ops param_ops_ra = {
 -- 
 1.7.9.4
 
