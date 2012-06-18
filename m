@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 18 Jun 2012 22:39:12 +0200
-Message-Id: <1340051963-14836-9-git-send-email-ordex@autistici.org>
+Date: Mon, 18 Jun 2012 22:39:13 +0200
+Message-Id: <1340051963-14836-10-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340051963-14836-1-git-send-email-ordex@autistici.org>
 References: <1340051963-14836-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 08/19] batman-adv: return added entries
-	instead of number of possibly added entries
+Subject: [B.A.T.M.A.N.] [PATCH 09/19] batman-adv: get rid of pointless cast
+	in memcpy()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,31 +18,33 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Al Viro <viro@zeniv.linux.org.uk>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+From: Al Viro <viro@ZenIV.linux.org.uk>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Acked-by: Antonio Quartulli <ordex@autistici.org>
+memcpy() arguments are void *, precisely to avoid that kind of pointless
+casts.
+
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/translation-table.c |    2 +-
+ net/batman-adv/bridge_loop_avoidance.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index ca53542..f9675b7 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -319,7 +319,7 @@ int tt_changes_fill_buffer(struct bat_priv *bat_priv,
- 	}
- 	spin_unlock_bh(&bat_priv->tt_buff_lock);
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 5c1ac55..89e2b1c 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -510,7 +510,7 @@ static void bla_send_announce(struct bat_priv *bat_priv,
  
--	return tot_changes;
-+	return count;
- }
+ 	memcpy(mac, announce_mac, 4);
+ 	crc = htons(backbone_gw->crc);
+-	memcpy(&mac[4], (uint8_t *)&crc, 2);
++	memcpy(&mac[4], &crc, 2);
  
- int tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	bla_send_claim(bat_priv, mac, backbone_gw->vid, CLAIM_TYPE_ANNOUNCE);
+ 
 -- 
 1.7.9.4
 
