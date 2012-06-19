@@ -1,7 +1,7 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 19 Jun 2012 09:20:30 +0200
-Message-Id: <1340090430-356-1-git-send-email-ordex@autistici.org>
+Date: Tue, 19 Jun 2012 09:23:03 +0200
+Message-Id: <1340090583-18336-1-git-send-email-ordex@autistici.org>
 Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix skb->data assignment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -29,25 +29,26 @@ in pointing to poisoned memory. The packet is then dropped but the
 translation-table mechanism is corrupted.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-Cc: <stable@vger.kernel.org> # 3.3
+Cc: <stable@vger.kernel.org> # 3.1
+Cc: <stable@vger.kernel.org> # 3.2
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
  net/batman-adv/routing.c |    2 ++
  1 file changed, 2 insertions(+)
 
 diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 773e606..7d3ac4e 100644
+index 0f32c81..55136e5 100644
 --- a/net/batman-adv/routing.c
 +++ b/net/batman-adv/routing.c
-@@ -622,6 +622,8 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 			 * changes */
- 			if (skb_linearize(skb) < 0)
- 				goto out;
-+			/* skb_linearize() possibly changed skb->data */
-+			tt_query = (struct tt_query_packet *)skb->data;
+@@ -1246,6 +1246,8 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		/* packet needs to be linearised to access the TT changes */
+ 		if (skb_linearize(skb) < 0)
+ 			goto out;
++		/* skb_linearize() possibly changed skb->data */
++		tt_query = (struct tt_query_packet *)skb->data;
  
- 			tt_len = tt_query->tt_data * sizeof(struct tt_change);
- 
+ 		if (is_my_mac(tt_query->dst))
+ 			handle_tt_response(bat_priv, tt_query);
 -- 
 1.7.9.4
 
