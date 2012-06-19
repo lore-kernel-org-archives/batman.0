@@ -1,11 +1,13 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 18 Jun 2012 22:39:23 +0200
-Message-Id: <1340051963-14836-20-git-send-email-ordex@autistici.org>
+Return-Path: <davem@davemloft.net>
+Date: Mon, 18 Jun 2012 20:28:55 -0700 (PDT)
+Message-Id: <20120618.202855.272613444878909098.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <1340051963-14836-1-git-send-email-ordex@autistici.org>
 References: <1340051963-14836-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 19/19] batman-adv: only store changed
-	gw_bandwidth values
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-06-18
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,32 +19,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: ordex@autistici.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 18 Jun 2012 22:39:04 +0200
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/gateway_common.c |    3 +++
- 1 file changed, 3 insertions(+)
+> Hello David,
+> 	here is our first set of changes intended for next-next/linux-3.6.
+> =
 
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
-index ca57ac7..6e3b052 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -162,6 +162,9 @@ ssize_t gw_bandwidth_set(struct net_device *net_dev, char *buff, size_t count)
- 	 **/
- 	gw_bandwidth_to_kbit((uint8_t)gw_bandwidth_tmp, &down, &up);
- 
-+	if (atomic_read(&bat_priv->gw_bandwidth) == gw_bandwidth_tmp)
-+		return count;
-+
- 	gw_deselect(bat_priv);
- 	bat_info(net_dev,
- 		 "Changing gateway bandwidth from: '%i' to: '%ld' (propagating: %d%s/%d%s)\n",
--- 
-1.7.9.4
+> Patch 2 fixes a major bug in the TranslationTable code where the old =
+value of
+> skb->data is used for memory access even if the data was relocated.
+> Patches 4, 10, 11, 13, 14 are endianess-related cleanups that we wrot=
+e thanks
+> to Al Viro's advice and help.
+> Thanks to Martin Hundeb=F8ll batman-adv now supports the ethtool API =
+and can
+> export several counters that are specific to our module (patch 5).
+> Then patch 16 improves the routing protocol API by making part of the=
 
+> TranslationTable code routing agnostic.
+> The rest are minor fixes and other cleanups.
+
+Pulled, thanks.
