@@ -1,13 +1,8 @@
-Return-Path: <davem@davemloft.net>
-Date: Mon, 18 Jun 2012 20:28:55 -0700 (PDT)
-Message-Id: <20120618.202855.272613444878909098.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1340051963-14836-1-git-send-email-ordex@autistici.org>
-References: <1340051963-14836-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-06-18
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 19 Jun 2012 09:20:30 +0200
+Message-Id: <1340090430-356-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix skb->data assignment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,28 +14,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: stable@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 18 Jun 2012 22:39:04 +0200
+commit d2b6cc8e460494251442a877fcbc150faa175b4f upstream.
 
-> Hello David,
-> 	here is our first set of changes intended for next-next/linux-3.6.
-> =
+skb_linearize(skb) possibly rearranges the skb internal data and then changes
+the skb->data pointer value. For this reason any other pointer in the code that
+was assigned skb->data before invoking skb_linearise(skb) must be re-assigned.
 
-> Patch 2 fixes a major bug in the TranslationTable code where the old =
-value of
-> skb->data is used for memory access even if the data was relocated.
-> Patches 4, 10, 11, 13, 14 are endianess-related cleanups that we wrot=
-e thanks
-> to Al Viro's advice and help.
-> Thanks to Martin Hundeb=F8ll batman-adv now supports the ethtool API =
-and can
-> export several counters that are specific to our module (patch 5).
-> Then patch 16 improves the routing protocol API by making part of the=
+In the current tt_query message handling code this is not done and therefore, in
+case of skb linearization, the pointer used to handle the packet header ends up
+in pointing to poisoned memory. The packet is then dropped but the
+translation-table mechanism is corrupted.
 
-> TranslationTable code routing agnostic.
-> The rest are minor fixes and other cleanups.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Cc: <stable@vger.kernel.org> # 3.3
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/routing.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Pulled, thanks.
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 773e606..7d3ac4e 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -622,6 +622,8 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ 			 * changes */
+ 			if (skb_linearize(skb) < 0)
+ 				goto out;
++			/* skb_linearize() possibly changed skb->data */
++			tt_query = (struct tt_query_packet *)skb->data;
+ 
+ 			tt_len = tt_query->tt_data * sizeof(struct tt_change);
+ 
+-- 
+1.7.9.4
+
