@@ -1,6 +1,6 @@
 Return-Path: <davem@davemloft.net>
-Date: Tue, 19 Jun 2012 14:28:03 -0700 (PDT)
-Message-Id: <20120619.142803.977377594415293854.davem@davemloft.net>
+Date: Tue, 19 Jun 2012 14:49:41 -0700 (PDT)
+Message-Id: <20120619.144941.1042145718266158529.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
 In-Reply-To: <1340133999-26838-1-git-send-email-ordex@autistici.org>
 References: <1340133999-26838-1-git-send-email-ordex@autistici.org>
@@ -25,21 +25,21 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, stable@vger.kernel.
 From: Antonio Quartulli <ordex@autistici.org>
 Date: Tue, 19 Jun 2012 21:26:39 +0200
 
-> This patch has already been merged in net-next. I am sorry about that, but we
-> were missing some knowledge about sending patches for stable.
+> skb_linearize(skb) possibly rearranges the skb internal data and then changes
+> the skb->data pointer value. For this reason any other pointer in the code that
+> was assigned skb->data before invoking skb_linearise(skb) must be re-assigned.
+> 
+> In the current tt_query message handling code this is not done and therefore, in
+> case of skb linearization, the pointer used to handle the packet header ends up
+> in pointing to free'd memory.
+> 
+> This bug was introduced by a73105b8d4c765d9ebfb664d0a66802127d8e4c7
+> (batman-adv: improved client announcement mechanism)
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> Cc: <stable@vger.kernel.org>
 
-You really like making my life miserable.
+Applied.
 
-What is so damn complicated about:
-
-1) BUG FIXES go to 'net'
-
-2) NON BUG FIXES go to 'net-next'
-
-This gets stated repeatedly here.
-
-I do see you guys erroneously submit bug fixes into net-next all
-the time but I just assumed you simply didn't give a shit about
-bug fixes propagating quickly.
-
-You guys definitely need to get your asses in gear.
+Submit things properly in the future so you don't give me unnecessary
+merge hassles like this again.
