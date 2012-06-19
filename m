@@ -1,8 +1,13 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 19 Jun 2012 21:26:39 +0200
-Message-Id: <1340133999-26838-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH net] batman-adv: fix skb->data assignment
+Return-Path: <davem@davemloft.net>
+Date: Tue, 19 Jun 2012 14:28:03 -0700 (PDT)
+Message-Id: <20120619.142803.977377594415293854.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1340133999-26838-1-git-send-email-ordex@autistici.org>
+References: <1340133999-26838-1-git-send-email-ordex@autistici.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH net] batman-adv: fix skb->data assignment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,48 +19,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
+To: ordex@autistici.org
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, stable@vger.kernel.org
 
-skb_linearize(skb) possibly rearranges the skb internal data and then changes
-the skb->data pointer value. For this reason any other pointer in the code that
-was assigned skb->data before invoking skb_linearise(skb) must be re-assigned.
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 19 Jun 2012 21:26:39 +0200
 
-In the current tt_query message handling code this is not done and therefore, in
-case of skb linearization, the pointer used to handle the packet header ends up
-in pointing to free'd memory.
+> This patch has already been merged in net-next. I am sorry about that, but we
+> were missing some knowledge about sending patches for stable.
 
-This bug was introduced by a73105b8d4c765d9ebfb664d0a66802127d8e4c7
-(batman-adv: improved client announcement mechanism)
+You really like making my life miserable.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-Cc: <stable@vger.kernel.org>
----
+What is so damn complicated about:
 
-This patch has already been merged in net-next. I am sorry about that, but we
-were missing some knowledge about sending patches for stable.
+1) BUG FIXES go to 'net'
 
-Thank you,
-	Antonio
+2) NON BUG FIXES go to 'net-next'
 
+This gets stated repeatedly here.
 
+I do see you guys erroneously submit bug fixes into net-next all
+the time but I just assumed you simply didn't give a shit about
+bug fixes propagating quickly.
 
- net/batman-adv/routing.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 840e2c6..015471d 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -617,6 +617,8 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 			 * changes */
- 			if (skb_linearize(skb) < 0)
- 				goto out;
-+			/* skb_linearize() possibly changed skb->data */
-+			tt_query = (struct tt_query_packet *)skb->data;
- 
- 			tt_len = tt_query->tt_data * sizeof(struct tt_change);
- 
--- 
-1.7.9.4
-
+You guys definitely need to get your asses in gear.
