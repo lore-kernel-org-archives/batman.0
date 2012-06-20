@@ -1,11 +1,9 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 20 Jun 2012 14:12:56 +0200
-Message-Id: <1340194376-11220-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1340035834-29105-1-git-send-email-ordex@autistici.org>
-References: <1340035834-29105-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix race condition in TT
-	full-table replacement
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 20 Jun 2012 17:16:05 +0200
+Message-Id: <1340205365-25052-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: only drop packets of known wifi
+	clients
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,68 +16,52 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-bug introduced with cea194d90b11aff7fc289149e4c7f305fad3535a
+If the source or destination mac address of an ethernet packet
+could not be found in the translation table the packet was
+dropped if AP isolation was turned on. This behavior would
+make it impossible to send broadcast packets over the mesh as
+the broadcast address will never enter the translation table.
 
-In the current TT code, when a TT_Response containing a full table is received
-form an originator, the node first purges all the clients for that originator in
-the global translation-table and then merges the new received table.
-During the purging phase each client deletion is done by means of a call_rcu()
-invocation and at the end of this phase the global entry counter for that
-originator is set to 0. However the invoked rcu function decreases by one the
-global entry counter for that originator too and since the rcu invocation is
-likely to be postponed, the node will end up in first setting the counter to 0
-and then decreasing it one by one for each deleted client.
-
-This bug leads to having a wrong global entry counter for the related node, say
-X. Then when the node with the broken counter will answer to a TT_REQUEST on
-behalf of node X, it will create faulty TT_RESPONSE that will generate an
-unrecoverable situation on the node that asked for the full table recover.
-
-The non-recoverability is given by the fact that the node with the broken
-counter will keep answering on behalf of X because its knowledge about X's state
-(ttvn + tt_crc) is correct.
-
-To solve this problem the counter is not explicitly set to 0 anymore and the
-counter decrement is performed right before the invocation of call_rcu().
-
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
-v2:
-- patch rebased on top of maint
-- commit message extended
 
- translation-table.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+This patch is for maint and possibly for stable.
+
+ translation-table.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index a66c2dc..21e493d 100644
+index a66c2dc..660c40f 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -141,13 +141,14 @@ static void tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
- 	struct tt_orig_list_entry *orig_entry;
- 
- 	orig_entry = container_of(rcu, struct tt_orig_list_entry, rcu);
--	atomic_dec(&orig_entry->orig_node->tt_size);
- 	orig_node_free_ref(orig_entry->orig_node);
- 	kfree(orig_entry);
- }
- 
- static void tt_orig_list_entry_free_ref(struct tt_orig_list_entry *orig_entry)
+@@ -2031,10 +2031,10 @@ bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst)
  {
-+	/* to avoid race conditions, immediately decrease the tt counter */
-+	atomic_dec(&orig_entry->orig_node->tt_size);
- 	call_rcu(&orig_entry->rcu, tt_orig_list_entry_free_rcu);
- }
+ 	struct tt_local_entry *tt_local_entry = NULL;
+ 	struct tt_global_entry *tt_global_entry = NULL;
+-	bool ret = true;
++	bool ret = false;
  
-@@ -910,7 +911,6 @@ void tt_global_del_orig(struct bat_priv *bat_priv,
- 		}
- 		spin_unlock_bh(list_lock);
- 	}
--	atomic_set(&orig_node->tt_size, 0);
- 	orig_node->tt_initialised = false;
- }
+ 	if (!atomic_read(&bat_priv->ap_isolation))
+-		return false;
++		goto out;
  
+ 	tt_local_entry = tt_local_hash_find(bat_priv, dst);
+ 	if (!tt_local_entry)
+@@ -2044,10 +2044,10 @@ bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst)
+ 	if (!tt_global_entry)
+ 		goto out;
+ 
+-	if (_is_ap_isolated(tt_local_entry, tt_global_entry))
++	if (!_is_ap_isolated(tt_local_entry, tt_global_entry))
+ 		goto out;
+ 
+-	ret = false;
++	ret = true;
+ 
+ out:
+ 	if (tt_global_entry)
 -- 
-1.7.9.4
+1.7.9.1
 
