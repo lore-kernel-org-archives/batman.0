@@ -1,8 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 21 Jun 2012 18:57:36 +0200
-Message-Id: <1340297876-29923-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-06-21
+Date: Thu, 21 Jun 2012 18:57:37 +0200
+Message-Id: <1340297876-29923-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1340297876-29923-1-git-send-email-ordex@autistici.org>
+References: <1340297876-29923-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 01/20] batman-adv: Prefix bat_algo non-static
+	functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,98 +20,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hello David,
+From: Sven Eckelmann <sven@narfation.org>
 
-here is another set of changes intended for net-next/linux-3.6.
-From 1/20 to 19/20 you have our first set of changes aiming to rename the
-exported symbols, as you suggested some time ago.
+batman-adv can be compiled as part of the kernel instead of an module. In that
+case the linker will see all non-static symbols of batman-adv and all other
+non-static symbols of the kernel. This could lead to symbol collisions. A
+prefix for the batman-adv symbols that defines their private namespace avoids
+such a problem.
 
-Patch 20/20 restyles all the comments in our code in order to follow the new
-guidelines.
+Reported-by: David Miller <davem@davemloft.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/bat_algo.h   |    2 +-
+ net/batman-adv/bat_iv_ogm.c |    2 +-
+ net/batman-adv/main.c       |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-Thank you,
-	Antonio
+diff --git a/net/batman-adv/bat_algo.h b/net/batman-adv/bat_algo.h
+index 9852a68..a14336a 100644
+--- a/net/batman-adv/bat_algo.h
++++ b/net/batman-adv/bat_algo.h
+@@ -22,6 +22,6 @@
+ #ifndef _NET_BATMAN_ADV_BAT_ALGO_H_
+ #define _NET_BATMAN_ADV_BAT_ALGO_H_
+ 
+-int bat_iv_init(void);
++int batadv_iv_init(void);
+ 
+ #endif /* _NET_BATMAN_ADV_BAT_ALGO_H_ */
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 6e0859f..b445739 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1248,7 +1248,7 @@ static struct bat_algo_ops batman_iv __read_mostly = {
+ 	.bat_ogm_emit = bat_iv_ogm_emit,
+ };
+ 
+-int __init bat_iv_init(void)
++int __init batadv_iv_init(void)
+ {
+ 	int ret;
+ 
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 46ba302..1f064d4 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -56,7 +56,7 @@ static int __init batman_init(void)
+ 
+ 	recv_handler_init();
+ 
+-	bat_iv_init();
++	batadv_iv_init();
+ 
+ 	/* the name should not be longer than 10 chars - see
+ 	 * http://lwn.net/Articles/23634/ */
+-- 
+1.7.9.4
 
-
-
-The following changes since commit 41063e9dd11956f2d285e12e4342e1d232ba0ea2:
-
-  ipv4: Early TCP socket demux. (2012-06-19 21:22:05 -0700)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
-
-for you to fetch changes up to 9cfc7bd608b97463993b4f3e4775d99022253f8d:
-
-  batman-adv: Reformat multiline comments to consistent style (2012-06-20 22:15:33 +0200)
-
-----------------------------------------------------------------
-Included changes:
-- first set of patches that add the batadv_ prefix to all the exported symbols
-- restyling of comments
-
-----------------------------------------------------------------
-Sven Eckelmann (20):
-      batman-adv: Prefix bat_algo non-static functions with batadv_
-      batman-adv: Prefix bat_debugfs non-static functions with batadv_
-      batman-adv: Prefix bat_sysfs non-static functions with batadv_
-      batman-adv: Prefix bitarray non-static functions with batadv_
-      batman-adv: Prefix bridge_loop_avoidance non-static functions with batadv_
-      batman-adv: Prefix gateway-client non-static functions with batadv_
-      batman-adv: Prefix gateway-common non-static functions with batadv_
-      batman-adv: Prefix hard-interface non-static functions with batadv_
-      batman-adv: Prefix hash non-static functions with batadv_
-      batman-adv: Prefix icmp-socket non-static functions with batadv_
-      batman-adv: Prefix originator non-static functions with batadv_
-      batman-adv: Prefix ring_buffer non-static functions with batadv_
-      batman-adv: Prefix routing non-static functions with batadv_
-      batman-adv: Prefix send non-static functions with batadv_
-      batman-adv: Prefix soft-interface non-static functions with batadv_
-      batman-adv: Prefix translation-table non-static functions with batadv_
-      batman-adv: Prefix unicast non-static functions with batadv_
-      batman-adv: Prefix vis non-static functions with batadv_
-      batman-adv: Prefix main non-static functions with batadv_
-      batman-adv: Reformat multiline comments to consistent style
-
- net/batman-adv/bat_algo.h              |    6 +-
- net/batman-adv/bat_debugfs.c           |   35 ++--
- net/batman-adv/bat_debugfs.h           |   13 +-
- net/batman-adv/bat_iv_ogm.c            |  205 ++++++++++++-----------
- net/batman-adv/bat_sysfs.c             |   53 +++---
- net/batman-adv/bat_sysfs.h             |   18 +-
- net/batman-adv/bitarray.c              |   25 ++-
- net/batman-adv/bitarray.h              |   14 +-
- net/batman-adv/bridge_loop_avoidance.c |  113 +++++--------
- net/batman-adv/bridge_loop_avoidance.h |   71 ++++----
- net/batman-adv/gateway_client.c        |  134 +++++++--------
- net/batman-adv/gateway_client.h        |   30 ++--
- net/batman-adv/gateway_common.c        |   18 +-
- net/batman-adv/gateway_common.h        |    9 +-
- net/batman-adv/hard-interface.c        |   93 +++++------
- net/batman-adv/hard-interface.h        |   26 ++-
- net/batman-adv/hash.c                  |    8 +-
- net/batman-adv/hash.h                  |   30 ++--
- net/batman-adv/icmp_socket.c           |   27 ++-
- net/batman-adv/icmp_socket.h           |   12 +-
- net/batman-adv/main.c                  |  117 ++++++-------
- net/batman-adv/main.h                  |   84 +++++-----
- net/batman-adv/originator.c            |   76 +++++----
- net/batman-adv/originator.h            |   30 ++--
- net/batman-adv/packet.h                |   21 ++-
- net/batman-adv/ring_buffer.c           |    9 +-
- net/batman-adv/ring_buffer.h           |    9 +-
- net/batman-adv/routing.c               |  282 +++++++++++++++++---------------
- net/batman-adv/routing.h               |   56 +++----
- net/batman-adv/send.c                  |   60 ++++---
- net/batman-adv/send.h                  |   21 ++-
- net/batman-adv/soft-interface.c        |   87 +++++-----
- net/batman-adv/soft-interface.h        |   17 +-
- net/batman-adv/translation-table.c     |  222 ++++++++++++++-----------
- net/batman-adv/translation-table.h     |   67 ++++----
- net/batman-adv/types.h                 |   29 ++--
- net/batman-adv/unicast.c               |   59 ++++---
- net/batman-adv/unicast.h               |   17 +-
- net/batman-adv/vis.c                   |   96 ++++++-----
- net/batman-adv/vis.h                   |   26 ++-
- 40 files changed, 1171 insertions(+), 1154 deletions(-)
