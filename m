@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 22 Jun 2012 19:50:53 +0200
-References: <1339942903-27681-1-git-send-email-sven@narfation.org>
-	<1339943242-29741-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1339943242-29741-1-git-send-email-sven@narfation.org>
+Date: Fri, 22 Jun 2012 20:01:21 +0200
+References: <1340310534-7578-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1340310534-7578-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201206221950.53543.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Remove space before
-	semicolon
+Message-Id: <201206222001.21558.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: prepend BATADV_ to TT flags
+	in comments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,17 +23,22 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, June 17, 2012 16:27:22 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+On Thursday, June 21, 2012 22:28:54 Antonio Quartulli wrote:
+> After having added the BATADV_ prefix to all the TT_CLIENT flags, we have
+> to add the same prefix in every comment where they are mentioned.
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 > ---
 > 
-> This cleanup is for next
+> this patch is based on top of next. It should be merged into next in order
+> to fix the patch adding the prefix in front of the TT flags
 > 
->  bridge_loop_avoidance.c |    2 +-
->  hash.c                  |    4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+>  packet.h            |    2 +-
+>  translation-table.c |   14 +++++++-------
+>  2 files changed, 8 insertions(+), 8 deletions(-)
 
-Applied in revision f2867c4.
+Applied in revision 8dcb403.
 
 Thanks,
 Marek
