@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 22 Jun 2012 20:12:38 +0200
-References: <20120616063703.GA32026@sven-atom.home.narfation.org>
-	<1340014892-22722-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1340014892-22722-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Fri, 22 Jun 2012 20:19:05 +0200
+References: <1340205365-25052-1-git-send-email-lindner_marek@yahoo.de>
+	<20120620153402.GA17596@ritirata.org>
+In-Reply-To: <20120620153402.GA17596@ritirata.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201206222012.38834.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: add support for the bla
-	backbone table in debugfs
+Message-Id: <201206222019.05974.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: only drop packets of known
+	wifi clients
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,18 +24,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, June 18, 2012 12:21:31 Simon Wunderlich wrote:
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> ---
-> [EDITv2: add manpage entry]
-> ---
->  debug.c      |   10 ++++++++++
->  debug.h      |    2 ++
->  main.c       |    6 ++++++
->  man/batctl.8 |    3 +++
->  4 files changed, 21 insertions(+)
+On Wednesday, June 20, 2012 17:34:03 Antonio Quartulli wrote:
+>   On Wed, Jun 20, 2012 at 05:16:05 +0200, Marek Lindner wrote:
+> > If the source or destination mac address of an ethernet packet
+> > could not be found in the translation table the packet was
+> > dropped if AP isolation was turned on. This behavior would
+> > make it impossible to send broadcast packets over the mesh as
+> > the broadcast address will never enter the translation table.
+> >
+> > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> 
+> Acked-by: Antonio Quartulli <ordex@autistici.org>
 
-Applied in revision a738c35.
+Applied in revision 03a0e3d.
 
-Thanks,
+Regards,
 Marek
