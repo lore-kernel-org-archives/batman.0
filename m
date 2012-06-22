@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 22 Jun 2012 19:46:52 +0200
-References: <1339924798-14845-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1339924798-14845-1-git-send-email-lindner_marek@yahoo.de>
+Date: Fri, 22 Jun 2012 19:50:53 +0200
+References: <1339942903-27681-1-git-send-email-sven@narfation.org>
+	<1339943242-29741-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1339943242-29741-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201206221946.52868.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: tcpdump support for bla2 claim
-	packets
+Message-Id: <201206221950.53543.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Remove space before
+	semicolon
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,14 +24,17 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, June 17, 2012 11:19:58 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+On Sunday, June 17, 2012 16:27:22 Sven Eckelmann wrote:
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  tcpdump.c |   75
-> +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++- 1 files
-> changed, 73 insertions(+), 2 deletions(-)
+> 
+> This cleanup is for next
+> 
+>  bridge_loop_avoidance.c |    2 +-
+>  hash.c                  |    4 ++--
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 
-Applied in revision 39c05d0.
+Applied in revision f2867c4.
 
-Regards,
+Thanks,
 Marek
