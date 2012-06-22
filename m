@@ -1,16 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 22 Jun 2012 20:50:38 +0200
-References: <1340035834-29105-1-git-send-email-ordex@autistici.org>
-	<1340194376-11220-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1340194376-11220-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201206222050.38442.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix race condition in TT
-	full-table replacement
+Return-Path: <gbastien@versatic.net>
+MIME-version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Message-id: <4FE4BF45.3050705@versatic.net>
+Date: Fri, 22 Jun 2012 14:53:57 -0400
+From: =?ISO-8859-1?Q?Genevi=E8ve_Bastien?= <gbastien@versatic.net>
+References: <4FE1350E.9040807@versatic.net>
+	<201206211028.18281.lindner_marek@yahoo.de>
+	<4FE3DA9B.9040401@versatic.net>
+	<4FE3E069.1090309@universe-factory.net>
+In-reply-to: <4FE3E069.1090309@universe-factory.net>
+Subject: Re: [B.A.T.M.A.N.] packets not processed by batman on eth0
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,46 +22,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, June 20, 2012 14:12:56 Antonio Quartulli wrote:
-> bug introduced with cea194d90b11aff7fc289149e4c7f305fad3535a
-> 
-> In the current TT code, when a TT_Response containing a full table is
-> received form an originator, the node first purges all the clients for
-> that originator in the global translation-table and then merges the new
-> received table. During the purging phase each client deletion is done by
-> means of a call_rcu() invocation and at the end of this phase the global
-> entry counter for that originator is set to 0. However the invoked rcu
-> function decreases by one the global entry counter for that originator too
-> and since the rcu invocation is likely to be postponed, the node will end
-> up in first setting the counter to 0 and then decreasing it one by one for
-> each deleted client.
-> 
-> This bug leads to having a wrong global entry counter for the related node,
-> say X. Then when the node with the broken counter will answer to a
-> TT_REQUEST on behalf of node X, it will create faulty TT_RESPONSE that
-> will generate an unrecoverable situation on the node that asked for the
-> full table recover.
-> 
-> The non-recoverability is given by the fact that the node with the broken
-> counter will keep answering on behalf of X because its knowledge about X's
-> state (ttvn + tt_crc) is correct.
-> 
-> To solve this problem the counter is not explicitly set to 0 anymore and
-> the counter decrement is performed right before the invocation of
-> call_rcu().
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
-> v2:
-> - patch rebased on top of maint
-> - commit message extended
-> 
->  translation-table.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Wow!  It works!  I just added the line
+option 'type' 'bridge'
+to my mesh1 interface and my whole mesh is now working.  Thanks!
 
-Applied in revision d1f13e2.
+Was that documented somewhere?  It gave me quite a headache for such a=20
+simple solution.
 
 Thanks,
-Marek
+Genevi=E8ve
+
+
+On 12-06-21 11:03 PM, Matthias Schiffer wrote:
+> Hi,
+> it might be your VLAN configuration - as far as I know, 0 is not a valid
+> VLAN id.
+>
+> But I also found that batman-adv doesn't work on VLAN interfaces on my
+> OpenWRT routers. As a workaround you can create a new bridge that only
+> contains the VLAN interface and add the bridge to bat0 instead.
+>
+> Regards,
+> Matthias
+>
+>
+> On 06/22/2012 04:38 AM, Genevi=E8ve Bastien wrote:
+>> Hi,
+>>
+>> On 12-06-21 04:28 AM, Marek Lindner wrote:
+>>> Hi,
+>>>
+>>>> I talked to marec last week on irc (I'm tahini).  I have a linksys
+>>>> router that runs batman on the eth0 interface and other routers or
+>>>> laptops are connected to it.  Problem is, even though the batman packe=
+ts
+>>>> pass from the other machines to the linksys, it seems something weird
+>>>> happens on the linksys and the interface is not recognized as a batman
+>>>> neighbor.
+>>> the problem is that leon does not receive any packets from its
+>>> neighbors. Its
+>>> log only repeatedly states "Sending own packet" but no information about
+>>> incoming packets is printed. If you compare it with the other logs you
+>>> will
+>>> see what I mean.
+>> But doesn't the 'batctl td eth0' output show it receives the packets
+>> from the neighbors?  What happens to those packets?
+>>
+>>> A common mistake leading to this symptom is a bridge misconfiguration.
+>>> Is eth0
+>>> on leon part of a bridge ?
+>> No, the bat0 interface is on the bridge, but eth0 is a vlan, I think.
+>> Maybe it is a vlan misconfiguration?
+>> Attached are some outputs and config files from leon.  What other
+>> commands should I look for to help find the problem?
+>>
+>> Thanks,
+>> Genevi=E8ve
+>
+>
+
