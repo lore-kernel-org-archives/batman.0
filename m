@@ -1,16 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 22 Jun 2012 20:19:05 +0200
-References: <1340205365-25052-1-git-send-email-lindner_marek@yahoo.de>
-	<20120620153402.GA17596@ritirata.org>
-In-Reply-To: <20120620153402.GA17596@ritirata.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201206222019.05974.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: only drop packets of known
-	wifi clients
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Fri, 22 Jun 2012 20:42:23 +0200
+Message-Id: <1340390543-7606-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1340194376-11220-1-git-send-email-ordex@autistici.org>
+References: <1340194376-11220-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: fix race condition in TT
+	full-table replacement
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,21 +17,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, June 20, 2012 17:34:03 Antonio Quartulli wrote:
->   On Wed, Jun 20, 2012 at 05:16:05 +0200, Marek Lindner wrote:
-> > If the source or destination mac address of an ethernet packet
-> > could not be found in the translation table the packet was
-> > dropped if AP isolation was turned on. This behavior would
-> > make it impossible to send broadcast packets over the mesh as
-> > the broadcast address will never enter the translation table.
-> >
-> > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> 
-> Acked-by: Antonio Quartulli <ordex@autistici.org>
+bug introduced with cea194d90b11aff7fc289149e4c7f305fad3535a
 
-Applied in revision 03a0e3d.
+In the current TT code, when a TT_Response containing a full table is received
+form an originator, the node first purges all the clients for that originator in
+the global translation-table and then merges the new received table.
+During the purging phase each client deletion is done by means of a call_rcu()
+invocation and at the end of this phase the global entry counter for that
+originator is set to 0. However the invoked rcu function decreases by one the
+global entry counter for that originator too and since the rcu invocation is
+likely to be postponed, the node will end up in first setting the counter to 0
+and then decreasing it one by one for each deleted client.
 
-Regards,
-Marek
+This bug leads to having a wrong global entry counter for the related node, say
+X. Then when the node with the broken counter will answer to a TT_REQUEST on
+behalf of node X, it will create faulty TT_RESPONSE that will generate an
+unrecoverable situation on the node that asked for the full table recover.
+
+The non-recoverability is given by the fact that the node with the broken
+counter will keep answering on behalf of X because its knowledge about X's state
+(ttvn + tt_crc) is correct.
+
+To solve this problem the counter is not explicitly set to 0.
+
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/translation-table.c b/translation-table.c
+index a66c2dc..19d23b4 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -910,7 +910,6 @@ void tt_global_del_orig(struct bat_priv *bat_priv,
+ 		}
+ 		spin_unlock_bh(list_lock);
+ 	}
+-	atomic_set(&orig_node->tt_size, 0);
+ 	orig_node->tt_initialised = false;
+ }
+ 
+-- 
+1.7.9.4
+
