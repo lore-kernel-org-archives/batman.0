@@ -1,11 +1,16 @@
 Return-Path: <ordex@autistici.org>
+Date: Fri, 22 Jun 2012 20:46:37 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri, 22 Jun 2012 20:42:23 +0200
-Message-Id: <1340390543-7606-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1340194376-11220-1-git-send-email-ordex@autistici.org>
+Message-ID: <20120622184636.GA2302@ritirata.org>
 References: <1340194376-11220-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: fix race condition in TT
-	full-table replacement
+	<1340390543-7606-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
+Content-Disposition: inline
+In-Reply-To: <1340390543-7606-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: fix race condition in TT
+ full-table replacement
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,46 +24,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-bug introduced with cea194d90b11aff7fc289149e4c7f305fad3535a
 
-In the current TT code, when a TT_Response containing a full table is received
-form an originator, the node first purges all the clients for that originator in
-the global translation-table and then merges the new received table.
-During the purging phase each client deletion is done by means of a call_rcu()
-invocation and at the end of this phase the global entry counter for that
-originator is set to 0. However the invoked rcu function decreases by one the
-global entry counter for that originator too and since the rcu invocation is
-likely to be postponed, the node will end up in first setting the counter to 0
-and then decreasing it one by one for each deleted client.
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This bug leads to having a wrong global entry counter for the related node, say
-X. Then when the node with the broken counter will answer to a TT_REQUEST on
-behalf of node X, it will create faulty TT_RESPONSE that will generate an
-unrecoverable situation on the node that asked for the full table recover.
+On Fri, Jun 22, 2012 at 08:42:23 +0200, Antonio Quartulli wrote:
+>=20
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+>=20
 
-The non-recoverability is given by the fact that the node with the broken
-counter will keep answering on behalf of X because its knowledge about X's state
-(ttvn + tt_crc) is correct.
+Please drop this patch. PATCH v2 was correct.
 
-To solve this problem the counter is not explicitly set to 0.
+Thanks
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- translation-table.c |    1 -
- 1 file changed, 1 deletion(-)
+--=20
+Antonio Quartulli
 
-diff --git a/translation-table.c b/translation-table.c
-index a66c2dc..19d23b4 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -910,7 +910,6 @@ void tt_global_del_orig(struct bat_priv *bat_priv,
- 		}
- 		spin_unlock_bh(list_lock);
- 	}
--	atomic_set(&orig_node->tt_size, 0);
- 	orig_node->tt_initialised = false;
- }
- 
--- 
-1.7.9.4
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
 
+--k+w/mQv8wyuph6w0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAk/kvYwACgkQpGgxIkP9cwcMFwCgh9vMc7wFz2g4zFF7oDadhYT5
+uIYAn08fbPrEObU/5PjxwG6xX0xoAyLe
+=eCLt
+-----END PGP SIGNATURE-----
+
+--k+w/mQv8wyuph6w0--
