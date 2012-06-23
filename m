@@ -1,10 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 23 Jun 2012 11:49:50 +0200
-Message-Id: <1340444990-5171-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1340444873-5063-1-git-send-email-lindner_marek@yahoo.de>
-References: <1340444873-5063-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: purge redundant statistic code
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sat, 23 Jun 2012 12:34:17 +0200
+Message-Id: <1340447658-27405-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: correct comments in bridge
+	loop avoidance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,82 +16,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- ioctl.c |   51 ---------------------------------------------------
- 1 files changed, 0 insertions(+), 51 deletions(-)
+ bridge_loop_avoidance.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/ioctl.c b/ioctl.c
-index 92ffdb3..5056d2f 100644
---- a/ioctl.c
-+++ b/ioctl.c
-@@ -37,53 +37,6 @@
- 
- typedef unsigned long long u64;
- 
--const char proc_net_dev_path[] = "/proc/net/dev";
--
--static int statistics_common_get(char *mesh_iface)
--{
--	FILE *fp;
--	char iface[IFNAMSIZ + 1], *line_ptr = NULL;;
--	unsigned long long rx_bytes, rx_packets, tx_bytes, tx_packets;
--	unsigned long tx_errors;
--	size_t len = 0;
--	int res, ret = EXIT_FAILURE;
--
--	rx_bytes = rx_packets = tx_bytes = tx_packets = tx_errors = 0;
--
--	fp = fopen(proc_net_dev_path, "r");
--	if (!fp) {
--		printf("Error - can't open '%s' for read: %s\n",
--		       proc_net_dev_path, strerror(errno));
--		goto out;
--	}
--
--	while (getline(&line_ptr, &len, fp) != -1) {
--		res = sscanf(line_ptr, " %" STR(IFNAMSIZ) "[^: \t]: %llu %llu %*d %*d %*d %*d %*d %*d %llu %llu %lu\n",
--			     iface, &rx_bytes, &rx_packets, &tx_bytes, &tx_packets, &tx_errors);
--
--		if (res != 6)
--			continue;
--
--		if (strcmp(iface, mesh_iface) != 0)
--			continue;
--
--		printf("\t%.*s: %llu\n", ETH_GSTRING_LEN, "tx", tx_packets);
--		printf("\t%.*s: %llu\n", ETH_GSTRING_LEN, "tx_bytes", tx_bytes);
--		printf("\t%.*s: %lu\n", ETH_GSTRING_LEN, "tx_errors", tx_errors);
--		printf("\t%.*s: %llu\n", ETH_GSTRING_LEN, "rx", rx_packets);
--		printf("\t%.*s: %llu\n", ETH_GSTRING_LEN, "rx_bytes", rx_bytes);
--		ret = EXIT_SUCCESS;
--		goto out;
--	}
--
--	printf("Error - interface '%s' not found\n", mesh_iface);
--
--out:
--	fclose(fp);
--	free(line_ptr);
--	return ret;
--}
--
- /* code borrowed from ethtool */
- static int statistics_custom_get(int fd, struct ifreq *ifr)
- {
-@@ -162,10 +115,6 @@ int ioctl_statistics_get(char *mesh_iface)
- 		goto out;
- 	}
- 
--	ret = statistics_common_get(mesh_iface);
--	if (ret != EXIT_SUCCESS)
--		goto out;
--
- 	ret = statistics_custom_get(fd, &ifr);
- 
- out:
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 38aab1e..a61bb74 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -280,7 +280,7 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
+ 			 NULL,
+ 			 /* Ethernet SRC/HW SRC:  originator mac */
+ 			 primary_if->net_dev->dev_addr,
+-			 /* HW DST: FF:43:05:XX:00:00
++			 /* HW DST: FF:43:05:XX:YY:YY
+ 			  * with XX   = claim type
+ 			  * and YY:YY = group id
+ 			  */
+@@ -322,7 +322,8 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
+ 		break;
+ 	case BATADV_CLAIM_TYPE_REQUEST:
+ 		/* request frame
+-		 * set HW SRC to the special mac containg the crc
++		 * set HW SRC and header destination to the receiving backbone
++		 * gws mac
+ 		 */
+ 		memcpy(hw_src, mac, ETH_ALEN);
+ 		memcpy(ethhdr->h_dest, mac, ETH_ALEN);
 -- 
-1.7.9.1
+1.7.10
 
