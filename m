@@ -1,11 +1,15 @@
 Return-Path: <ordex@autistici.org>
+Date: Sat, 23 Jun 2012 17:45:12 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 23 Jun 2012 17:30:58 +0200
-Message-Id: <1340465459-2949-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1340465459-2949-1-git-send-email-ordex@autistici.org>
+Message-ID: <20120623154512.GA14022@ritirata.org>
 References: <1340465459-2949-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2 net] batman-adv: only drop packets of
-	known wifi clients
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
+Content-Disposition: inline
+In-Reply-To: <1340465459-2949-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/2 net] Bug fixes for batman-adv
+	2012-06-23
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,55 +22,134 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
 
-bug introduced with 59b699cdee039d75915c354da06937102d1f9a84
+--82I3+IH0IqGh5yIs
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-If the source or destination mac address of an ethernet packet
-could not be found in the translation table the packet was
-dropped if AP isolation was turned on. This behavior would
-make it impossible to send broadcast packets over the mesh as
-the broadcast address will never enter the translation table.
+On Sat, Jun 23, 2012 at 05:30:57 +0200, Antonio Quartulli wrote:
+> Hello David,
+>=20
+> here are two fixes intended for net/linux-3.5.
+>=20
+> Patch 1 is a fix for the AP-Isolation feature. A wrong check made all the
+> broadcast packets coming from any client be dropped before delivery to the
+> interface.
+> Patch 2 instead fixes a "real" race condition in the TranslationTable cod=
+e.
+>=20
+> Please, tell me if there is any problem.
+> Thank you,
+> 	Antonio
+>=20
+>=20
+>=20
+> The following changes since commit a18e08bdcf845efb7344cea146e683df746bbf=
+b4:
+>=20
+>   net: sh_eth: fix the condition to fix the cur_tx/dirty_rx (2012-06-22 2=
+1:50:37 -0700)
+>=20
+> are available in the git repository at:
+>=20
+>   git://git.open-mesh.org/linux-merge.git batman-adv/maint
+>=20
+> for you to fetch changes up to 8b8e4bc0391f8abbcdb9e1c54415bcc0f4f5a2a0:
+>=20
+>   batman-adv: fix race condition in TT full-table replacement (2012-06-23=
+ 17:21:35 +0200)
+>=20
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/translation-table.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Hello David,
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index a66c2dc..660c40f 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -2031,10 +2031,10 @@ bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst)
- {
- 	struct tt_local_entry *tt_local_entry = NULL;
- 	struct tt_global_entry *tt_global_entry = NULL;
--	bool ret = true;
-+	bool ret = false;
- 
- 	if (!atomic_read(&bat_priv->ap_isolation))
--		return false;
-+		goto out;
- 
- 	tt_local_entry = tt_local_hash_find(bat_priv, dst);
- 	if (!tt_local_entry)
-@@ -2044,10 +2044,10 @@ bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst)
- 	if (!tt_global_entry)
- 		goto out;
- 
--	if (_is_ap_isolated(tt_local_entry, tt_global_entry))
-+	if (!_is_ap_isolated(tt_local_entry, tt_global_entry))
- 		goto out;
- 
--	ret = false;
-+	ret = true;
- 
- out:
- 	if (tt_global_entry)
--- 
-1.7.9.4
+after pulling these patchset in net, you should hit a conflict while trying=
+ to
+merge net into net-next. The conflict is caused by the renaming patches tha=
+t you
+already have in the next tree.
 
+Here are our instructions about how to solve it. Hope they will help.
+Thank you.
+
+
+Conflict 1:
+<<<<<<<
+	orig_entry =3D container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
+	atomic_dec(&orig_entry->orig_node->tt_size);
+	batadv_orig_node_free_ref(orig_entry->orig_node);
+=3D=3D=3D=3D=3D=3D=3D
+	orig_entry =3D container_of(rcu, struct tt_orig_list_entry, rcu);
+	orig_node_free_ref(orig_entry->orig_node);
+>>>>>>>
+
+Resolves to:
+=3D=3D=3D=3D=3D=3D=3D
+	orig_entry =3D container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
+	batadv_orig_node_free_ref(orig_entry->orig_node);
+=3D=3D=3D=3D=3D=3D=3D
+
+
+Conflict 2:
+<<<<<<<
+	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
+=3D=3D=3D=3D=3D=3D=3D
+	/* to avoid race conditions, immediately decrease the tt counter */
+	atomic_dec(&orig_entry->orig_node->tt_size);
+	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
+>>>>>>>
+
+Resolves to:
+=3D=3D=3D=3D=3D=3D=3D
+	/* to avoid race conditions, immediately decrease the tt counter */
+	atomic_dec(&orig_entry->orig_node->tt_size);
+	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
+=3D=3D=3D=3D=3D=3D=3D
+
+
+Conflict 3:
+<<<<<<<
+	struct batadv_tt_local_entry *tt_local_entry =3D NULL;
+	struct batadv_tt_global_entry *tt_global_entry =3D NULL;
+	bool ret =3D true;
+=3D=3D=3D=3D=3D=3D=3D
+	struct tt_local_entry *tt_local_entry =3D NULL;
+	struct tt_global_entry *tt_global_entry =3D NULL;
+	bool ret =3D false;
+>>>>>>>
+
+Resolves to:
+=3D=3D=3D=3D=3D=3D=3D
+	struct batadv_tt_local_entry *tt_local_entry =3D NULL;
+	struct batadv_tt_global_entry *tt_global_entry =3D NULL;
+	bool ret =3D false;
+=3D=3D=3D=3D=3D=3D=3D
+
+
+Conflict 4:
+<<<<<<<
+	if (_batadv_is_ap_isolated(tt_local_entry, tt_global_entry))
+=3D=3D=3D=3D=3D=3D=3D
+	if (!_is_ap_isolated(tt_local_entry, tt_global_entry))
+>>>>>>>
+
+Resolves to:
+=3D=3D=3D=3D=3D=3D=3D
+	if (!_batadv_is_ap_isolated(tt_local_entry, tt_global_entry))
+=3D=3D=3D=3D=3D=3D=3D
+
+
+--82I3+IH0IqGh5yIs
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAk/l5IgACgkQpGgxIkP9cwd1DwCfeyUhDeaWN8ywaknMeuawwHUN
+b+QAn1VABoLYH37EG43uQaiXOLSU4UqC
+=5no+
+-----END PGP SIGNATURE-----
+
+--82I3+IH0IqGh5yIs--
