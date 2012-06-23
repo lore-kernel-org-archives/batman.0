@@ -1,11 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 23 Jun 2012 17:30:59 +0200
-Message-Id: <1340465459-2949-3-git-send-email-ordex@autistici.org>
-In-Reply-To: <1340465459-2949-1-git-send-email-ordex@autistici.org>
-References: <1340465459-2949-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2 net] batman-adv: fix race condition in TT
-	full-table replacement
+Date: Sat, 23 Jun 2012 17:30:57 +0200
+Message-Id: <1340465459-2949-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/2 net] Bug fixes for batman-adv 2012-06-23
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,63 +17,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-bug introduced with cea194d90b11aff7fc289149e4c7f305fad3535a
+Hello David,
 
-In the current TT code, when a TT_Response containing a full table is received
-from an originator, first the node purges all the clients for that originator in
-the global translation-table and then merges the newly received table.
-During the purging phase each client deletion is done by means of a call_rcu()
-invocation and at the end of this phase the global entry counter for that
-originator is set to 0. However the invoked rcu function decreases the global
-entry counter for that originator by one too and since the rcu invocation is
-likely to be postponed, the node will end up in first setting the counter to 0
-and then decreasing it one by one for each deleted client.
+here are two fixes intended for net/linux-3.5.
 
-This bug leads to having a wrong global entry counter for the related node, say
-X. Then when the node with the broken counter will answer to a TT_REQUEST on
-behalf of node X, it will create faulty TT_RESPONSE that will generate an
-unrecoverable situation on the node that asked for the full table recover.
+Patch 1 is a fix for the AP-Isolation feature. A wrong check made all the
+broadcast packets coming from any client be dropped before delivery to the
+interface.
+Patch 2 instead fixes a "real" race condition in the TranslationTable code.
 
-The non-recoverability is given by the fact that the node with the broken
-counter will keep answering on behalf of X because its knowledge about X's state
-(ttvn + tt_crc) is correct.
+Please, tell me if there is any problem.
+Thank you,
+	Antonio
 
-To solve this problem the counter is not explicitly set to 0 anymore and the
-counter decrement is performed right before the invocation of call_rcu().
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/translation-table.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 660c40f..2ab83d7 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -141,13 +141,14 @@ static void tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
- 	struct tt_orig_list_entry *orig_entry;
- 
- 	orig_entry = container_of(rcu, struct tt_orig_list_entry, rcu);
--	atomic_dec(&orig_entry->orig_node->tt_size);
- 	orig_node_free_ref(orig_entry->orig_node);
- 	kfree(orig_entry);
- }
- 
- static void tt_orig_list_entry_free_ref(struct tt_orig_list_entry *orig_entry)
- {
-+	/* to avoid race conditions, immediately decrease the tt counter */
-+	atomic_dec(&orig_entry->orig_node->tt_size);
- 	call_rcu(&orig_entry->rcu, tt_orig_list_entry_free_rcu);
- }
- 
-@@ -910,7 +911,6 @@ void tt_global_del_orig(struct bat_priv *bat_priv,
- 		}
- 		spin_unlock_bh(list_lock);
- 	}
--	atomic_set(&orig_node->tt_size, 0);
- 	orig_node->tt_initialised = false;
- }
- 
--- 
-1.7.9.4
+The following changes since commit a18e08bdcf845efb7344cea146e683df746bbfb4:
 
+  net: sh_eth: fix the condition to fix the cur_tx/dirty_rx (2012-06-22 21:50:37 -0700)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git batman-adv/maint
+
+for you to fetch changes up to 8b8e4bc0391f8abbcdb9e1c54415bcc0f4f5a2a0:
+
+  batman-adv: fix race condition in TT full-table replacement (2012-06-23 17:21:35 +0200)
+
+----------------------------------------------------------------
+Included changes:
+- fix for the AP-isolation feature
+- fix for a race condition in the TranslationTable code
+
+----------------------------------------------------------------
+Antonio Quartulli (1):
+      batman-adv: fix race condition in TT full-table replacement
+
+Marek Lindner (1):
+      batman-adv: only drop packets of known wifi clients
+
+ net/batman-adv/translation-table.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
