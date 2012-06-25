@@ -1,13 +1,14 @@
 Return-Path: <martin@hundeboll.net>
-Message-ID: <4FE849CD.1030807@hundeboll.net>
-Date: Mon, 25 Jun 2012 13:21:49 +0200
+Message-ID: <4FE8466E.6010304@hundeboll.net>
+Date: Mon, 25 Jun 2012 13:07:26 +0200
 From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
 MIME-Version: 1.0
-References: <1340444765-4959-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1340444765-4959-1-git-send-email-lindner_marek@yahoo.de>
+References: <1340444873-5063-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1340444873-5063-1-git-send-email-lindner_marek@yahoo.de>
 Content-Type: text/plain; charset="utf-8"; format="flowed"
 Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix counter summary length
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: convert remaining packet
+ counters to per_cpu_ptr() infrastructure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,9 +23,8 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On 06/23/2012 11:46 AM, Marek Lindner wrote:
+On 06/23/2012 11:47 AM, Marek Lindner wrote:
 > Signed-off-by: Marek Lindner<lindner_marek@yahoo.de>
-
 Acked-by: Martin Hundebøll <martin@hundeboll.net>
 
 -- 
