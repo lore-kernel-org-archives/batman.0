@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 25 Jun 2012 16:30:01 +0200
-References: <1340447658-27405-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-	<1340447658-27405-2-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1340447658-27405-2-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Mon, 25 Jun 2012 16:35:40 +0200
+References: <1340444765-4959-1-git-send-email-lindner_marek@yahoo.de>
+	<4FE849CD.1030807@hundeboll.net>
+In-Reply-To: <4FE849CD.1030807@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201206251630.01504.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: rename bridge loop
-	avoidance claim types
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201206251635.40801.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix counter summary length
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,17 +23,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, June 23, 2012 12:34:18 Simon Wunderlich wrote:
-> for consistency reasons within the code and with the documentation,
-> we should always call it "claim" and "unclaim".
-> 
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> ---
->  bridge_loop_avoidance.c |   18 +++++++++---------
->  packet.h                |    4 ++--
->  2 files changed, 11 insertions(+), 11 deletions(-)
+On Monday, June 25, 2012 13:21:49 Martin Hundeb=C3=B8ll wrote:
+> On 06/23/2012 11:46 AM, Marek Lindner wrote:
+> > Signed-off-by: Marek Lindner<lindner_marek@yahoo.de>
+>=20
+> Acked-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 
-Applied in revision f9bb019.
+Applied in revision ce3dbe0.
 
-Thanks,
+Regards,
 Marek
