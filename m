@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 25 Jun 2012 08:54:25 +0200
-Message-Id: <1340607284-29950-2-git-send-email-ordex@autistici.org>
+Date: Mon, 25 Jun 2012 08:54:27 +0200
+Message-Id: <1340607284-29950-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340607284-29950-1-git-send-email-ordex@autistici.org>
 References: <1340607284-29950-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 01/20] batman-adv: Prefix bat_debugfs local
-	static functions with batadv_
+Subject: [B.A.T.M.A.N.] [PATCH 03/20] batman-adv: Prefix hard-interface
+	static inline functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -29,342 +29,797 @@ should use the same prefix to keep the naming scheme consistent.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_debugfs.c |  143 +++++++++++++++++++++---------------------
- 1 file changed, 72 insertions(+), 71 deletions(-)
+ net/batman-adv/bat_iv_ogm.c            |   14 +++++++-------
+ net/batman-adv/bat_sysfs.c             |   16 ++++++++--------
+ net/batman-adv/bridge_loop_avoidance.c |   28 ++++++++++++++--------------
+ net/batman-adv/gateway_client.c        |    4 ++--
+ net/batman-adv/hard-interface.c        |   28 ++++++++++++++--------------
+ net/batman-adv/hard-interface.h        |    7 ++++---
+ net/batman-adv/icmp_socket.c           |    4 ++--
+ net/batman-adv/originator.c            |    4 ++--
+ net/batman-adv/routing.c               |   12 ++++++------
+ net/batman-adv/send.c                  |    6 +++---
+ net/batman-adv/soft-interface.c        |    4 ++--
+ net/batman-adv/translation-table.c     |   28 ++++++++++++++--------------
+ net/batman-adv/unicast.c               |    4 ++--
+ net/batman-adv/vis.c                   |    8 ++++----
+ 14 files changed, 84 insertions(+), 83 deletions(-)
 
-diff --git a/net/batman-adv/bat_debugfs.c b/net/batman-adv/bat_debugfs.c
-index 4001c57..03f09f0 100644
---- a/net/batman-adv/bat_debugfs.c
-+++ b/net/batman-adv/bat_debugfs.c
-@@ -32,25 +32,25 @@
- #include "icmp_socket.h"
- #include "bridge_loop_avoidance.h"
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index ad641e8..94e6fdb 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -232,7 +232,7 @@ static void bat_iv_ogm_emit(struct forw_packet *forw_packet)
+ 	if (forw_packet->if_incoming->if_status != IF_ACTIVE)
+ 		goto out;
  
--static struct dentry *bat_debugfs;
-+static struct dentry *batadv_debugfs;
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
  
- #ifdef CONFIG_BATMAN_ADV_DEBUG
--#define LOG_BUFF_MASK (log_buff_len-1)
-+#define LOG_BUFF_MASK (batadv_log_buff_len - 1)
- #define LOG_BUFF(idx) (debug_log->log_buff[(idx) & LOG_BUFF_MASK])
+@@ -273,7 +273,7 @@ static void bat_iv_ogm_emit(struct forw_packet *forw_packet)
  
--static int log_buff_len = LOG_BUF_LEN;
-+static int batadv_log_buff_len = LOG_BUF_LEN;
- 
--static void emit_log_char(struct debug_log *debug_log, char c)
-+static void batadv_emit_log_char(struct debug_log *debug_log, char c)
- {
- 	LOG_BUFF(debug_log->log_end) = c;
- 	debug_log->log_end++;
- 
--	if (debug_log->log_end - debug_log->log_start > log_buff_len)
--		debug_log->log_start = debug_log->log_end - log_buff_len;
-+	if (debug_log->log_end - debug_log->log_start > batadv_log_buff_len)
-+		debug_log->log_start = debug_log->log_end - batadv_log_buff_len;
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
  }
  
- __printf(2, 3)
--static int fdebug_log(struct debug_log *debug_log, const char *fmt, ...)
-+static int batadv_fdebug_log(struct debug_log *debug_log, const char *fmt, ...)
- {
- 	va_list args;
- 	static char debug_log_buf[256];
-@@ -65,7 +65,7 @@ static int fdebug_log(struct debug_log *debug_log, const char *fmt, ...)
- 	va_end(args);
+ /* return true if new_packet can be aggregated with forw_packet */
+@@ -311,7 +311,7 @@ static bool bat_iv_ogm_can_aggregate(const struct batman_ogm_packet
+ 		 *    a "global" packet as well as the base
+ 		 *    packet
+ 		 */
+-		primary_if = primary_if_get_selected(bat_priv);
++		primary_if = batadv_primary_if_get_selected(bat_priv);
+ 		if (!primary_if)
+ 			goto out;
  
- 	for (p = debug_log_buf; *p != 0; p++)
--		emit_log_char(debug_log, *p);
-+		batadv_emit_log_char(debug_log, *p);
+@@ -352,7 +352,7 @@ static bool bat_iv_ogm_can_aggregate(const struct batman_ogm_packet
  
- 	spin_unlock_bh(&debug_log->lock);
- 
-@@ -81,14 +81,14 @@ int batadv_debug_log(struct bat_priv *bat_priv, const char *fmt, ...)
- 
- 	va_start(args, fmt);
- 	vscnprintf(tmp_log_buf, sizeof(tmp_log_buf), fmt, args);
--	fdebug_log(bat_priv->debug_log, "[%10u] %s",
--		   jiffies_to_msecs(jiffies), tmp_log_buf);
-+	batadv_fdebug_log(bat_priv->debug_log, "[%10u] %s",
-+			  jiffies_to_msecs(jiffies), tmp_log_buf);
- 	va_end(args);
- 
- 	return 0;
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return res;
  }
  
--static int log_open(struct inode *inode, struct file *file)
-+static int batadv_log_open(struct inode *inode, struct file *file)
- {
- 	nonseekable_open(inode, file);
- 	file->private_data = inode->i_private;
-@@ -96,14 +96,14 @@ static int log_open(struct inode *inode, struct file *file)
- 	return 0;
- }
+@@ -431,7 +431,7 @@ static void bat_iv_ogm_aggregate_new(const unsigned char *packet_buff,
  
--static int log_release(struct inode *inode, struct file *file)
-+static int batadv_log_release(struct inode *inode, struct file *file)
- {
- 	batadv_dec_module_count();
- 	return 0;
- }
- 
--static ssize_t log_read(struct file *file, char __user *buf,
--			size_t count, loff_t *ppos)
-+static ssize_t batadv_log_read(struct file *file, char __user *buf,
-+			       size_t count, loff_t *ppos)
- {
- 	struct bat_priv *bat_priv = file->private_data;
- 	struct debug_log *debug_log = bat_priv->debug_log;
-@@ -156,7 +156,7 @@ static ssize_t log_read(struct file *file, char __user *buf,
- 	return error;
- }
- 
--static unsigned int log_poll(struct file *file, poll_table *wait)
-+static unsigned int batadv_log_poll(struct file *file, poll_table *wait)
- {
- 	struct bat_priv *bat_priv = file->private_data;
- 	struct debug_log *debug_log = bat_priv->debug_log;
-@@ -169,15 +169,15 @@ static unsigned int log_poll(struct file *file, poll_table *wait)
- 	return 0;
- }
- 
--static const struct file_operations log_fops = {
--	.open           = log_open,
--	.release        = log_release,
--	.read           = log_read,
--	.poll           = log_poll,
-+static const struct file_operations batadv_log_fops = {
-+	.open           = batadv_log_open,
-+	.release        = batadv_log_release,
-+	.read           = batadv_log_read,
-+	.poll           = batadv_log_poll,
- 	.llseek         = no_llseek,
- };
- 
--static int debug_log_setup(struct bat_priv *bat_priv)
-+static int batadv_debug_log_setup(struct bat_priv *bat_priv)
- {
- 	struct dentry *d;
- 
-@@ -192,7 +192,8 @@ static int debug_log_setup(struct bat_priv *bat_priv)
- 	init_waitqueue_head(&bat_priv->debug_log->queue_wait);
- 
- 	d = debugfs_create_file("log", S_IFREG | S_IRUSR,
--				bat_priv->debug_dir, bat_priv, &log_fops);
-+				bat_priv->debug_dir, bat_priv,
-+				&batadv_log_fops);
- 	if (!d)
- 		goto err;
- 
-@@ -202,49 +203,49 @@ err:
- 	return -ENOMEM;
- }
- 
--static void debug_log_cleanup(struct bat_priv *bat_priv)
-+static void batadv_debug_log_cleanup(struct bat_priv *bat_priv)
- {
- 	kfree(bat_priv->debug_log);
- 	bat_priv->debug_log = NULL;
- }
- #else /* CONFIG_BATMAN_ADV_DEBUG */
--static int debug_log_setup(struct bat_priv *bat_priv)
-+static int batadv_debug_log_setup(struct bat_priv *bat_priv)
- {
- 	bat_priv->debug_log = NULL;
- 	return 0;
- }
- 
--static void debug_log_cleanup(struct bat_priv *bat_priv)
-+static void batadv_debug_log_cleanup(struct bat_priv *bat_priv)
- {
  	return;
- }
- #endif
- 
--static int bat_algorithms_open(struct inode *inode, struct file *file)
-+static int batadv_algorithms_open(struct inode *inode, struct file *file)
- {
- 	return single_open(file, batadv_algo_seq_print_text, NULL);
+ out:
+-	hardif_free_ref(if_incoming);
++	batadv_hardif_free_ref(if_incoming);
  }
  
--static int originators_open(struct inode *inode, struct file *file)
-+static int batadv_originators_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 	return single_open(file, batadv_orig_seq_print_text, net_dev);
+ /* aggregate a new packet into the existing ogm packet */
+@@ -570,7 +570,7 @@ static void bat_iv_ogm_schedule(struct hard_iface *hard_iface)
+ 	int vis_server, tt_num_changes = 0;
+ 
+ 	vis_server = atomic_read(&bat_priv->vis_mode);
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 
+ 	if (hard_iface == primary_if)
+ 		tt_num_changes = batadv_tt_append_diff(bat_priv,
+@@ -608,7 +608,7 @@ static void bat_iv_ogm_schedule(struct hard_iface *hard_iface)
+ 			     bat_iv_ogm_emit_send_time(bat_priv));
+ 
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
  }
  
--static int gateways_open(struct inode *inode, struct file *file)
-+static int batadv_gateways_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 	return single_open(file, batadv_gw_client_seq_print_text, net_dev);
+ static void bat_iv_ogm_orig_update(struct bat_priv *bat_priv,
+diff --git a/net/batman-adv/bat_sysfs.c b/net/batman-adv/bat_sysfs.c
+index 8196fa6..0c7e22e 100644
+--- a/net/batman-adv/bat_sysfs.c
++++ b/net/batman-adv/bat_sysfs.c
+@@ -132,7 +132,7 @@ ssize_t store_##_name(struct kobject *kobj, struct attribute *attr,	\
+ 	length = __store_uint_attr(buff, count, _min, _max, _post_func,	\
+ 				   attr, &hard_iface->_name, net_dev);	\
+ 									\
+-	hardif_free_ref(hard_iface);					\
++	batadv_hardif_free_ref(hard_iface);				\
+ 	return length;							\
  }
  
--static int transtable_global_open(struct inode *inode, struct file *file)
-+static int batadv_transtable_global_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 	return single_open(file, batadv_tt_global_seq_print_text, net_dev);
+@@ -150,7 +150,7 @@ ssize_t show_##_name(struct kobject *kobj,				\
+ 									\
+ 	length = sprintf(buff, "%i\n", atomic_read(&hard_iface->_name));\
+ 									\
+-	hardif_free_ref(hard_iface);					\
++	batadv_hardif_free_ref(hard_iface);				\
+ 	return length;							\
  }
  
- #ifdef CONFIG_BATMAN_ADV_BLA
--static int bla_claim_table_open(struct inode *inode, struct file *file)
-+static int batadv_bla_claim_table_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 	return single_open(file, batadv_bla_claim_table_seq_print_text,
-@@ -252,13 +253,13 @@ static int bla_claim_table_open(struct inode *inode, struct file *file)
+@@ -535,7 +535,7 @@ static ssize_t show_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 	length = sprintf(buff, "%s\n", hard_iface->if_status == IF_NOT_IN_USE ?
+ 			 "none" : hard_iface->soft_iface->name);
+ 
+-	hardif_free_ref(hard_iface);
++	batadv_hardif_free_ref(hard_iface);
+ 
+ 	return length;
  }
- #endif
- 
--static int transtable_local_open(struct inode *inode, struct file *file)
-+static int batadv_transtable_local_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 	return single_open(file, batadv_tt_local_seq_print_text, net_dev);
- }
- 
--static int vis_data_open(struct inode *inode, struct file *file)
-+static int batadv_vis_data_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 	return single_open(file, batadv_vis_seq_print_text, net_dev);
-@@ -269,37 +270,37 @@ struct bat_debuginfo {
- 	const struct file_operations fops;
- };
- 
--#define BAT_DEBUGINFO(_name, _mode, _open)	\
--struct bat_debuginfo bat_debuginfo_##_name = {	\
--	.attr = { .name = __stringify(_name),	\
--		  .mode = _mode, },		\
--	.fops = { .owner = THIS_MODULE,		\
--		  .open = _open,		\
--		  .read	= seq_read,		\
--		  .llseek = seq_lseek,		\
--		  .release = single_release,	\
--		}				\
-+#define BAT_DEBUGINFO(_name, _mode, _open)		\
-+struct bat_debuginfo batadv_debuginfo_##_name = {	\
-+	.attr = { .name = __stringify(_name),		\
-+		  .mode = _mode, },			\
-+	.fops = { .owner = THIS_MODULE,			\
-+		  .open = _open,			\
-+		  .read	= seq_read,			\
-+		  .llseek = seq_lseek,			\
-+		  .release = single_release,		\
-+		}					\
- };
- 
--static BAT_DEBUGINFO(routing_algos, S_IRUGO, bat_algorithms_open);
--static BAT_DEBUGINFO(originators, S_IRUGO, originators_open);
--static BAT_DEBUGINFO(gateways, S_IRUGO, gateways_open);
--static BAT_DEBUGINFO(transtable_global, S_IRUGO, transtable_global_open);
-+static BAT_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
-+static BAT_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
-+static BAT_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
-+static BAT_DEBUGINFO(transtable_global, S_IRUGO, batadv_transtable_global_open);
- #ifdef CONFIG_BATMAN_ADV_BLA
--static BAT_DEBUGINFO(bla_claim_table, S_IRUGO, bla_claim_table_open);
-+static BAT_DEBUGINFO(bla_claim_table, S_IRUGO, batadv_bla_claim_table_open);
- #endif
--static BAT_DEBUGINFO(transtable_local, S_IRUGO, transtable_local_open);
--static BAT_DEBUGINFO(vis_data, S_IRUGO, vis_data_open);
-+static BAT_DEBUGINFO(transtable_local, S_IRUGO, batadv_transtable_local_open);
-+static BAT_DEBUGINFO(vis_data, S_IRUGO, batadv_vis_data_open);
- 
--static struct bat_debuginfo *mesh_debuginfos[] = {
--	&bat_debuginfo_originators,
--	&bat_debuginfo_gateways,
--	&bat_debuginfo_transtable_global,
-+static struct bat_debuginfo *batadv_mesh_debuginfos[] = {
-+	&batadv_debuginfo_originators,
-+	&batadv_debuginfo_gateways,
-+	&batadv_debuginfo_transtable_global,
- #ifdef CONFIG_BATMAN_ADV_BLA
--	&bat_debuginfo_bla_claim_table,
-+	&batadv_debuginfo_bla_claim_table,
- #endif
--	&bat_debuginfo_transtable_local,
--	&bat_debuginfo_vis_data,
-+	&batadv_debuginfo_transtable_local,
-+	&batadv_debuginfo_vis_data,
- 	NULL,
- };
- 
-@@ -308,17 +309,17 @@ void batadv_debugfs_init(void)
- 	struct bat_debuginfo *bat_debug;
- 	struct dentry *file;
- 
--	bat_debugfs = debugfs_create_dir(DEBUGFS_BAT_SUBDIR, NULL);
--	if (bat_debugfs == ERR_PTR(-ENODEV))
--		bat_debugfs = NULL;
-+	batadv_debugfs = debugfs_create_dir(DEBUGFS_BAT_SUBDIR, NULL);
-+	if (batadv_debugfs == ERR_PTR(-ENODEV))
-+		batadv_debugfs = NULL;
- 
--	if (!bat_debugfs)
-+	if (!batadv_debugfs)
- 		goto out;
- 
--	bat_debug = &bat_debuginfo_routing_algos;
-+	bat_debug = &batadv_debuginfo_routing_algos;
- 	file = debugfs_create_file(bat_debug->attr.name,
- 				   S_IFREG | bat_debug->attr.mode,
--				   bat_debugfs, NULL, &bat_debug->fops);
-+				   batadv_debugfs, NULL, &bat_debug->fops);
- 	if (!file)
- 		pr_err("Can't add debugfs file: %s\n", bat_debug->attr.name);
- 
-@@ -328,9 +329,9 @@ out:
- 
- void batadv_debugfs_destroy(void)
- {
--	if (bat_debugfs) {
--		debugfs_remove_recursive(bat_debugfs);
--		bat_debugfs = NULL;
-+	if (batadv_debugfs) {
-+		debugfs_remove_recursive(batadv_debugfs);
-+		batadv_debugfs = NULL;
+@@ -557,7 +557,7 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ 	if (strlen(buff) >= IFNAMSIZ) {
+ 		pr_err("Invalid parameter for 'mesh_iface' setting received: interface name too long '%s'\n",
+ 		       buff);
+-		hardif_free_ref(hard_iface);
++		batadv_hardif_free_ref(hard_iface);
+ 		return -EINVAL;
  	}
+ 
+@@ -592,7 +592,7 @@ static ssize_t store_mesh_iface(struct kobject *kobj, struct attribute *attr,
+ unlock:
+ 	rtnl_unlock();
+ out:
+-	hardif_free_ref(hard_iface);
++	batadv_hardif_free_ref(hard_iface);
+ 	return ret;
  }
  
-@@ -340,20 +341,20 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
- 	struct bat_debuginfo **bat_debug;
- 	struct dentry *file;
- 
--	if (!bat_debugfs)
-+	if (!batadv_debugfs)
- 		goto out;
- 
--	bat_priv->debug_dir = debugfs_create_dir(dev->name, bat_debugfs);
-+	bat_priv->debug_dir = debugfs_create_dir(dev->name, batadv_debugfs);
- 	if (!bat_priv->debug_dir)
- 		goto out;
- 
- 	if (batadv_socket_setup(bat_priv) < 0)
- 		goto rem_attr;
- 
--	if (debug_log_setup(bat_priv) < 0)
-+	if (batadv_debug_log_setup(bat_priv) < 0)
- 		goto rem_attr;
- 
--	for (bat_debug = mesh_debuginfos; *bat_debug; ++bat_debug) {
-+	for (bat_debug = batadv_mesh_debuginfos; *bat_debug; ++bat_debug) {
- 		file = debugfs_create_file(((*bat_debug)->attr).name,
- 					  S_IFREG | ((*bat_debug)->attr).mode,
- 					  bat_priv->debug_dir,
-@@ -381,9 +382,9 @@ void batadv_debugfs_del_meshif(struct net_device *dev)
- {
- 	struct bat_priv *bat_priv = netdev_priv(dev);
- 
--	debug_log_cleanup(bat_priv);
-+	batadv_debug_log_cleanup(bat_priv);
- 
--	if (bat_debugfs) {
-+	if (batadv_debugfs) {
- 		debugfs_remove_recursive(bat_priv->debug_dir);
- 		bat_priv->debug_dir = NULL;
+@@ -625,7 +625,7 @@ static ssize_t show_iface_status(struct kobject *kobj, struct attribute *attr,
+ 		break;
  	}
+ 
+-	hardif_free_ref(hard_iface);
++	batadv_hardif_free_ref(hard_iface);
+ 
+ 	return length;
+ }
+@@ -688,7 +688,7 @@ int batadv_throw_uevent(struct bat_priv *bat_priv, enum uev_type type,
+ 	struct kobject *bat_kobj;
+ 	char *uevent_env[4] = { NULL, NULL, NULL, NULL };
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -727,7 +727,7 @@ out:
+ 	kfree(uevent_env[2]);
+ 
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 
+ 	if (ret)
+ 		bat_dbg(DBG_BATMAN, bat_priv,
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 52c0d63..72ff8b9 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -255,7 +255,7 @@ static void bla_send_claim(struct bat_priv *bat_priv, uint8_t *mac,
+ 	struct bla_claim_dst local_claim_dest;
+ 	__be32 zeroip = 0;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		return;
+ 
+@@ -339,7 +339,7 @@ static void bla_send_claim(struct bat_priv *bat_priv, uint8_t *mac,
+ 	netif_rx(skb);
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ }
+ 
+ /* @bat_priv: the bat priv with all the soft interface information
+@@ -1075,7 +1075,7 @@ static void bla_periodic_work(struct work_struct *work)
+ 	struct hard_iface *primary_if;
+ 	int i;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -1106,7 +1106,7 @@ static void bla_periodic_work(struct work_struct *work)
+ 	}
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 
+ 	bla_start_timer(bat_priv);
+ }
+@@ -1131,12 +1131,12 @@ int batadv_bla_init(struct bat_priv *bat_priv)
+ 	/* setting claim destination address */
+ 	memcpy(&bat_priv->claim_dest.magic, claim_dest, 3);
+ 	bat_priv->claim_dest.type = 0;
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (primary_if) {
+ 		bat_priv->claim_dest.group =
+ 			htons(crc16(0, primary_if->net_dev->dev_addr,
+ 				    ETH_ALEN));
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	} else {
+ 		bat_priv->claim_dest.group = 0; /* will be set later */
+ 	}
+@@ -1319,7 +1319,7 @@ void batadv_bla_free(struct bat_priv *bat_priv)
+ 	struct hard_iface *primary_if;
+ 
+ 	cancel_delayed_work_sync(&bat_priv->bla_work);
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 
+ 	if (bat_priv->claim_hash) {
+ 		bla_purge_claims(bat_priv, primary_if, 1);
+@@ -1332,7 +1332,7 @@ void batadv_bla_free(struct bat_priv *bat_priv)
+ 		bat_priv->backbone_hash = NULL;
+ 	}
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ }
+ 
+ /* @bat_priv: the bat priv with all the soft interface information
+@@ -1356,7 +1356,7 @@ int batadv_bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid)
+ 
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto handled;
+ 
+@@ -1416,7 +1416,7 @@ handled:
+ 
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	if (claim)
+ 		claim_free_ref(claim);
+ 	return ret;
+@@ -1441,7 +1441,7 @@ int batadv_bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid)
+ 	struct hard_iface *primary_if;
+ 	int ret = 0;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -1502,7 +1502,7 @@ handled:
+ 	ret = 1;
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	if (claim)
+ 		claim_free_ref(claim);
+ 	return ret;
+@@ -1521,7 +1521,7 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
+ 	bool is_own;
+ 	int ret = 0;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if) {
+ 		ret = seq_printf(seq,
+ 				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+@@ -1559,6 +1559,6 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
+ 	}
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return ret;
+ }
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 0d90fff..c917a2e 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -464,7 +464,7 @@ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct hlist_node *node;
+ 	int gw_count = 0, ret = 0;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if) {
+ 		ret = seq_printf(seq,
+ 				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+@@ -503,7 +503,7 @@ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return ret;
+ }
+ 
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 2a4d394..06f8d63 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -102,7 +102,7 @@ static void primary_if_update_addr(struct bat_priv *bat_priv,
+ 	struct vis_packet *vis_packet;
+ 	struct hard_iface *primary_if;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -115,7 +115,7 @@ static void primary_if_update_addr(struct bat_priv *bat_priv,
+ 	batadv_bla_update_orig_address(bat_priv, primary_if, oldif);
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ }
+ 
+ static void primary_if_select(struct bat_priv *bat_priv,
+@@ -139,7 +139,7 @@ static void primary_if_select(struct bat_priv *bat_priv,
+ 
+ out:
+ 	if (curr_hard_iface)
+-		hardif_free_ref(curr_hard_iface);
++		batadv_hardif_free_ref(curr_hard_iface);
+ }
+ 
+ static bool hardif_is_iface_up(const struct hard_iface *hard_iface)
+@@ -229,7 +229,7 @@ static void hardif_activate_interface(struct hard_iface *hard_iface)
+ 	/* the first active interface becomes our primary interface or
+ 	 * the next active interface after the old primary interface was removed
+ 	 */
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		primary_if_select(bat_priv, hard_iface);
+ 
+@@ -240,7 +240,7 @@ static void hardif_activate_interface(struct hard_iface *hard_iface)
+ 
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ }
+ 
+ static void hardif_deactivate_interface(struct hard_iface *hard_iface)
+@@ -347,7 +347,7 @@ out:
+ err_dev:
+ 	dev_put(soft_iface);
+ err:
+-	hardif_free_ref(hard_iface);
++	batadv_hardif_free_ref(hard_iface);
+ 	return ret;
+ }
+ 
+@@ -369,7 +369,7 @@ void batadv_hardif_disable_interface(struct hard_iface *hard_iface)
+ 	bat_priv->num_ifaces--;
+ 	batadv_orig_hash_del_if(hard_iface, bat_priv->num_ifaces);
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (hard_iface == primary_if) {
+ 		struct hard_iface *new_if;
+ 
+@@ -377,7 +377,7 @@ void batadv_hardif_disable_interface(struct hard_iface *hard_iface)
+ 		primary_if_select(bat_priv, new_if);
+ 
+ 		if (new_if)
+-			hardif_free_ref(new_if);
++			batadv_hardif_free_ref(new_if);
+ 	}
+ 
+ 	bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
+@@ -393,11 +393,11 @@ void batadv_hardif_disable_interface(struct hard_iface *hard_iface)
+ 		batadv_softif_destroy(hard_iface->soft_iface);
+ 
+ 	hard_iface->soft_iface = NULL;
+-	hardif_free_ref(hard_iface);
++	batadv_hardif_free_ref(hard_iface);
+ 
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ }
+ 
+ static struct hard_iface *hardif_add_interface(struct net_device *net_dev)
+@@ -461,7 +461,7 @@ static void hardif_remove_interface(struct hard_iface *hard_iface)
+ 
+ 	hard_iface->if_status = IF_TO_BE_REMOVED;
+ 	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
+-	hardif_free_ref(hard_iface);
++	batadv_hardif_free_ref(hard_iface);
+ }
+ 
+ void batadv_hardif_remove_interfaces(void)
+@@ -517,7 +517,7 @@ static int hard_if_event(struct notifier_block *this,
+ 		bat_priv = netdev_priv(hard_iface->soft_iface);
+ 		bat_priv->bat_algo_ops->bat_iface_update_mac(hard_iface);
+ 
+-		primary_if = primary_if_get_selected(bat_priv);
++		primary_if = batadv_primary_if_get_selected(bat_priv);
+ 		if (!primary_if)
+ 			goto hardif_put;
+ 
+@@ -529,10 +529,10 @@ static int hard_if_event(struct notifier_block *this,
+ 	}
+ 
+ hardif_put:
+-	hardif_free_ref(hard_iface);
++	batadv_hardif_free_ref(hard_iface);
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return NOTIFY_DONE;
+ }
+ 
+diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
+index 6bc12c0..d66dabd 100644
+--- a/net/batman-adv/hard-interface.h
++++ b/net/batman-adv/hard-interface.h
+@@ -42,14 +42,15 @@ void batadv_update_min_mtu(struct net_device *soft_iface);
+ void batadv_hardif_free_rcu(struct rcu_head *rcu);
+ bool batadv_is_wifi_iface(int ifindex);
+ 
+-static inline void hardif_free_ref(struct hard_iface *hard_iface)
++static inline void
++batadv_hardif_free_ref(struct hard_iface *hard_iface)
+ {
+ 	if (atomic_dec_and_test(&hard_iface->refcount))
+ 		call_rcu(&hard_iface->rcu, batadv_hardif_free_rcu);
+ }
+ 
+-static inline struct hard_iface *primary_if_get_selected(
+-						struct bat_priv *bat_priv)
++static inline struct hard_iface *
++batadv_primary_if_get_selected(struct bat_priv *bat_priv)
+ {
+ 	struct hard_iface *hard_iface;
+ 
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 40c5e18..2523436 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -163,7 +163,7 @@ static ssize_t bat_socket_write(struct file *file, const char __user *buff,
+ 		return -EINVAL;
+ 	}
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 
+ 	if (!primary_if) {
+ 		len = -EFAULT;
+@@ -244,7 +244,7 @@ free_skb:
+ 	kfree_skb(skb);
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	if (neigh_node)
+ 		batadv_neigh_node_free_ref(neigh_node);
+ 	if (orig_node)
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 86e7e08..90d24fc 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -412,7 +412,7 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
+ 	uint32_t i;
+ 	int ret = 0;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 
+ 	if (!primary_if) {
+ 		ret = seq_printf(seq,
+@@ -479,7 +479,7 @@ next:
+ 
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return ret;
+ }
+ 
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 9c90cce..9c6edc2 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -292,7 +292,7 @@ static int recv_my_icmp_packet(struct bat_priv *bat_priv,
+ 		goto out;
+ 	}
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -322,7 +322,7 @@ static int recv_my_icmp_packet(struct bat_priv *bat_priv,
+ 
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	if (router)
+ 		batadv_neigh_node_free_ref(router);
+ 	if (orig_node)
+@@ -348,7 +348,7 @@ static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
+ 		goto out;
+ 	}
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -377,7 +377,7 @@ static int recv_icmp_ttl_exceeded(struct bat_priv *bat_priv,
+ 
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	if (router)
+ 		batadv_neigh_node_free_ref(router);
+ 	if (orig_node)
+@@ -955,12 +955,12 @@ static int check_unicast_ttvn(struct bat_priv *bat_priv,
+ 		if (!orig_node) {
+ 			if (!batadv_is_my_client(bat_priv, ethhdr->h_dest))
+ 				return 0;
+-			primary_if = primary_if_get_selected(bat_priv);
++			primary_if = batadv_primary_if_get_selected(bat_priv);
+ 			if (!primary_if)
+ 				return 0;
+ 			memcpy(unicast_packet->dest,
+ 			       primary_if->net_dev->dev_addr, ETH_ALEN);
+-			hardif_free_ref(primary_if);
++			batadv_hardif_free_ref(primary_if);
+ 		} else {
+ 			memcpy(unicast_packet->dest, orig_node->orig,
+ 			       ETH_ALEN);
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 2c92a32..54091db 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -101,7 +101,7 @@ static void forw_packet_free(struct forw_packet *forw_packet)
+ 	if (forw_packet->skb)
+ 		kfree_skb(forw_packet->skb);
+ 	if (forw_packet->if_incoming)
+-		hardif_free_ref(forw_packet->if_incoming);
++		batadv_hardif_free_ref(forw_packet->if_incoming);
+ 	kfree(forw_packet);
+ }
+ 
+@@ -146,7 +146,7 @@ int batadv_add_bcast_packet_to_list(struct bat_priv *bat_priv,
+ 		goto out;
+ 	}
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out_and_inc;
+ 
+@@ -180,7 +180,7 @@ out_and_inc:
+ 	atomic_inc(&bat_priv->bcast_queue_left);
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return NETDEV_TX_BUSY;
+ }
+ 
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 0658781..85fe9c1 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -199,7 +199,7 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
+ 
+ 	/* ethernet packet should be broadcasted */
+ 	if (do_bcast) {
+-		primary_if = primary_if_get_selected(bat_priv);
++		primary_if = batadv_primary_if_get_selected(bat_priv);
+ 		if (!primary_if)
+ 			goto dropped;
+ 
+@@ -253,7 +253,7 @@ dropped_freed:
+ 	bat_priv->stats.tx_dropped++;
+ end:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return NETDEV_TX_OK;
+ }
+ 
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 5180d50..bc06af4 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -298,7 +298,7 @@ static void tt_prepare_packet_buff(struct bat_priv *bat_priv,
+ 	struct hard_iface *primary_if;
+ 	int req_len;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 
+ 	req_len = min_packet_len;
+ 	req_len += batadv_tt_len(atomic_read(&bat_priv->tt_local_changes));
+@@ -313,7 +313,7 @@ static void tt_prepare_packet_buff(struct bat_priv *bat_priv,
+ 			       min_packet_len, req_len);
+ 
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ }
+ 
+ static int tt_changes_fill_buff(struct bat_priv *bat_priv,
+@@ -381,7 +381,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	uint32_t i;
+ 	int ret = 0;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if) {
+ 		ret = seq_printf(seq,
+ 				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+@@ -423,7 +423,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	}
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return ret;
+ }
+ 
+@@ -727,7 +727,7 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 	uint32_t i;
+ 	int ret = 0;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if) {
+ 		ret = seq_printf(seq,
+ 				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
+@@ -763,7 +763,7 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 	}
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return ret;
+ }
+ 
+@@ -1370,7 +1370,7 @@ static int send_tt_request(struct bat_priv *bat_priv,
+ 	struct tt_req_node *tt_req_node = NULL;
+ 	int ret = 1;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -1420,7 +1420,7 @@ out:
+ 	if (neigh_node)
+ 		batadv_neigh_node_free_ref(neigh_node);
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	if (ret)
+ 		kfree_skb(skb);
+ 	if (ret && tt_req_node) {
+@@ -1464,7 +1464,7 @@ static bool send_other_tt_response(struct bat_priv *bat_priv,
+ 	if (!neigh_node)
+ 		goto out;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -1555,7 +1555,7 @@ out:
+ 	if (neigh_node)
+ 		batadv_neigh_node_free_ref(neigh_node);
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	if (!ret)
+ 		kfree_skb(skb);
+ 	return ret;
+@@ -1592,7 +1592,7 @@ static bool send_my_tt_response(struct bat_priv *bat_priv,
+ 	if (!neigh_node)
+ 		goto out;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -1672,7 +1672,7 @@ out:
+ 	if (neigh_node)
+ 		batadv_neigh_node_free_ref(neigh_node);
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	if (!ret)
+ 		kfree_skb(skb);
+ 	/* This packet was for me, so it doesn't need to be re-routed */
+@@ -1956,11 +1956,11 @@ static void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
+ 	roam_adv_packet->header.packet_type = BAT_ROAM_ADV;
+ 	roam_adv_packet->header.version = COMPAT_VERSION;
+ 	roam_adv_packet->header.ttl = TTL;
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 	memcpy(roam_adv_packet->src, primary_if->net_dev->dev_addr, ETH_ALEN);
+-	hardif_free_ref(primary_if);
++	batadv_hardif_free_ref(primary_if);
+ 	memcpy(roam_adv_packet->dst, orig_node->orig, ETH_ALEN);
+ 	memcpy(roam_adv_packet->client, client, ETH_ALEN);
+ 
+diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
+index b2b76df..fff34e0 100644
+--- a/net/batman-adv/unicast.c
++++ b/net/batman-adv/unicast.c
+@@ -227,7 +227,7 @@ int batadv_frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 	int large_tail = 0, ret = NET_RX_DROP;
+ 	uint16_t seqno;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto dropped;
+ 
+@@ -277,7 +277,7 @@ dropped:
+ 	kfree_skb(skb);
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return ret;
+ }
+ 
+diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
+index 20eef04..619f0a5 100644
+--- a/net/batman-adv/vis.c
++++ b/net/batman-adv/vis.c
+@@ -208,7 +208,7 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
+ 	size_t buff_pos, buf_size;
+ 	char *buff;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -329,7 +329,7 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ 	return ret;
+ }
+ 
+@@ -828,7 +828,7 @@ static void send_vis_packet(struct bat_priv *bat_priv, struct vis_info *info)
+ 	struct hard_iface *primary_if;
+ 	struct vis_packet *packet;
+ 
+-	primary_if = primary_if_get_selected(bat_priv);
++	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -849,7 +849,7 @@ static void send_vis_packet(struct bat_priv *bat_priv, struct vis_info *info)
+ 
+ out:
+ 	if (primary_if)
+-		hardif_free_ref(primary_if);
++		batadv_hardif_free_ref(primary_if);
+ }
+ 
+ /* called from timer; send (and maybe generate) vis packet. */
 -- 
 1.7.9.4
 
