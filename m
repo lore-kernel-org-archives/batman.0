@@ -1,14 +1,15 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <4FE8466E.6010304@hundeboll.net>
-Date: Mon, 25 Jun 2012 13:07:26 +0200
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 25 Jun 2012 16:28:39 +0200
+References: <1340447658-27405-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1340447658-27405-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-References: <1340444873-5063-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1340444873-5063-1-git-send-email-lindner_marek@yahoo.de>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: convert remaining packet
- counters to per_cpu_ptr() infrastructure
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201206251628.39601.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: correct comments in
+	bridge loop avoidance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,19 +22,14 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On 06/23/2012 11:47 AM, Marek Lindner wrote:
-> Signed-off-by: Marek Lindner<lindner_marek@yahoo.de>
-Acked-by: Martin Hundebøll <martin@hundeboll.net>
+On Saturday, June 23, 2012 12:34:17 Simon Wunderlich wrote:
+> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> ---
+>  bridge_loop_avoidance.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
--- 
-Kind Regards
-Martin Hundebøll
-Frederiks Allé 99A, 1.th
-8000 Aarhus C
-Denmark
-+45 61 65 54 61
-martin@hundeboll.net
+Applied in revision 4c66b7d.
 
-
+Thanks,
+Marek
