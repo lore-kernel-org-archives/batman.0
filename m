@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 26 Jun 2012 22:00:18 +0200
-Message-Id: <1340740822-4516-2-git-send-email-ordex@autistici.org>
+Date: Tue, 26 Jun 2012 22:00:19 +0200
+Message-Id: <1340740822-4516-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340740822-4516-1-git-send-email-ordex@autistici.org>
 References: <1340740822-4516-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: add reference counting for
-	type batadv_tt_orig_list_entry
+Subject: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: implement
+	batadv_tt_global_entry_get_orig()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,72 +19,81 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+batadv_tt_global_entry_get_orig() searches the originator list associated to a
+given tt_global_entry and possibly for the tt_orig_list_entry associated to the
+orig_node passed as argument.
+
+batadv_tt_global_entry_has_orig() has been modified in order to use the new
+function and avoid code duplication. Now it also returns bool instead of int.
+
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- translation-table.c |   19 ++++++++++++++-----
- types.h             |    1 +
- 2 files changed, 15 insertions(+), 5 deletions(-)
+ translation-table.c |   37 +++++++++++++++++++++++++++----------
+ 1 file changed, 27 insertions(+), 10 deletions(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index 245cc9a..0f02514 100644
+index 0f02514..2e90a97 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -152,9 +152,12 @@ static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
- static void
- batadv_tt_orig_list_entry_free_ref(struct batadv_tt_orig_list_entry *orig_entry)
- {
--	/* to avoid race conditions, immediately decrease the tt counter */
--	atomic_dec(&orig_entry->orig_node->tt_size);
--	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
-+	if (atomic_dec_and_test(&orig_entry->refcount)) {
-+		/* to avoid race conditions, immediately decrease the tt counter
-+		 */
-+		atomic_dec(&orig_entry->orig_node->tt_size);
-+		call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
-+	}
+@@ -627,17 +627,17 @@ static void batadv_tt_changes_list_free(struct batadv_priv *bat_priv)
+ 	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
  }
  
- static void batadv_tt_local_event(struct batadv_priv *bat_priv,
-@@ -639,12 +642,17 @@ batadv_tt_global_entry_has_orig(const struct batadv_tt_global_entry *entry,
+-/* find out if an orig_node is already in the list of a tt_global_entry.
+- * returns 1 if found, 0 otherwise
++/* find out if an orig_node is already in the list of a tt_global_entry and
++ * returns it with an increased refcounter if found, NULL otherwise.
++ *
+  */
+-static bool
+-batadv_tt_global_entry_has_orig(const struct batadv_tt_global_entry *entry,
++static struct batadv_tt_orig_list_entry *
++batadv_tt_global_entry_get_orig(const struct batadv_tt_global_entry *entry,
+ 				const struct batadv_orig_node *orig_node)
+ {
+-	struct batadv_tt_orig_list_entry *tmp_orig_entry;
++	struct batadv_tt_orig_list_entry *tmp_orig_entry, *orig_entry = NULL;
+ 	const struct hlist_head *head;
+ 	struct hlist_node *node;
+-	bool found = false;
+ 
  	rcu_read_lock();
  	head = &entry->orig_list;
- 	hlist_for_each_entry_rcu(tmp_orig_entry, node, head, list) {
--		if (tmp_orig_entry->orig_node == orig_node) {
-+		if (tmp_orig_entry->orig_node != orig_node)
-+			continue;
-+		if (!atomic_inc_not_zero(&tmp_orig_entry->refcount))
-+			continue;
-+
- 			found = true;
-+			batadv_tt_orig_list_entry_free_ref(tmp_orig_entry);
- 			break;
--		}
+@@ -647,13 +647,30 @@ batadv_tt_global_entry_has_orig(const struct batadv_tt_global_entry *entry,
+ 		if (!atomic_inc_not_zero(&tmp_orig_entry->refcount))
+ 			continue;
+ 
+-			found = true;
+-			batadv_tt_orig_list_entry_free_ref(tmp_orig_entry);
+-			break;
++		orig_entry = tmp_orig_entry;
++		break;
  	}
  	rcu_read_unlock();
+ 
+-	return found;
++	return orig_entry;
++}
 +
- 	return found;
++/* find out if an orig_node is already in the list of a tt_global_entry.
++ * returns true if found, false otherwise
++ */
++static bool
++batadv_tt_global_entry_has_orig(const struct batadv_tt_global_entry *entry,
++				const struct batadv_orig_node *orig_node)
++{
++	bool res = false;
++	struct batadv_tt_orig_list_entry *orig_entry;
++
++	orig_entry = batadv_tt_global_entry_get_orig(entry, orig_node);
++	if (orig_entry) {
++		res = true;
++		batadv_tt_orig_list_entry_free_ref(orig_entry);
++	}
++	return res;
  }
  
-@@ -663,6 +671,7 @@ batadv_tt_global_add_orig_entry(struct batadv_tt_global_entry *tt_global_entry,
- 	atomic_inc(&orig_node->tt_size);
- 	orig_entry->orig_node = orig_node;
- 	orig_entry->ttvn = ttvn;
-+	atomic_set(&orig_entry->refcount, 0);
- 
- 	spin_lock_bh(&tt_global_entry->list_lock);
- 	hlist_add_head_rcu(&orig_entry->list,
-diff --git a/types.h b/types.h
-index 64b4317..82b97c3 100644
---- a/types.h
-+++ b/types.h
-@@ -281,6 +281,7 @@ struct batadv_tt_global_entry {
- struct batadv_tt_orig_list_entry {
- 	struct batadv_orig_node *orig_node;
- 	uint8_t ttvn;
-+	atomic_t refcount;
- 	struct rcu_head rcu;
- 	struct hlist_node list;
- };
+ static void
 -- 
 1.7.9.4
 
