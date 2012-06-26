@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 26 Jun 2012 12:27:20 +0200
-References: <1340469612-6543-1-git-send-email-lindner_marek@yahoo.de>
-	<1340469612-6543-3-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1340469612-6543-3-git-send-email-lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201206261227.21058.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batctl: beef up man page
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 26 Jun 2012 22:00:17 +0200
+Message-Id: <1340740822-4516-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/5] new feature: Speedy Join 2012-06-26
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,24 +14,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Saturday, June 23, 2012 18:40:12 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
->  README       |   14 ++--
->  bisect.c     |    4 +-
->  debug.c      |    8 +-
->  main.c       |    4 +-
->  man/batctl.8 |  251
-> +++++++++++++++++++++++++++++++---------------------------
-> ping.c       |    4 +-
->  sys.c        |   12 ++--
->  tcpdump.c    |    4 +-
->  traceroute.c |    4 +-
->  9 files changed, 160 insertions(+), 145 deletions(-)
+Hello people,
 
-Applied in revision 40cc393.
+this feature was proposed some time ago but then many changes were needed and
+I took my time to refine the code :-).
 
-Regards,
-Marek
+Speedy Join enables new client to communicates with other hosts in the network
+before being announced by its own mesh node.
+
+In the current implementation a new client has to wait until the first OGM after
+its join is sent out and only then it can start communicating with other
+clients. However it could be the case that the originator interval is set to an
+high value (e.g. 10 secs), which means that the client has to wait a long period
+before becoming active. This would lead to several malfunctions like DHCP
+timeouts.
+
+This patchset faces this problem by letting nodes in the network "learn" about
+the new client by means of its broadcast packets (the client will most likely
+send a DHCP or an ARP request upon connection).
+
+This new version composed by 5 patches. 1/5 adds the refcounting to the
+tt_orig_list_entry structure, 2/5 generalises already existent code, 3/5 enables
+roaming_adv packet to carry flags (this is needed to correctly make the new
+client roam), 4/5 adds the code needed to handle the "temporary" clients and,
+finally, 5/5 adds an hook for detecting new clients in the RX path.
+
+Thank you!
+	Antonio
+
+
