@@ -1,15 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Mon, 25 Jun 2012 23:55:22 -0700 (PDT)
-Message-Id: <20120625.235522.1872081305186028575.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1340693391-16434-1-git-send-email-ordex@autistici.org>
-References: <20120625.161933.730861831753419928.davem@davemloft.net>
-	<1340693391-16434-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 26 Jun 2012 12:07:52 +0200
+References: <1340469612-6543-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1340469612-6543-1-git-send-email-lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/2 net-next]: fixups for wrong conflict
-	resolution
+Message-Id: <201206261207.52851.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batctl: unify debug table handling
+	and remove redundant code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,14 +21,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 26 Jun 2012 08:49:49 +0200
+On Saturday, June 23, 2012 18:40:10 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  debug.c |  111
+> +++++++++++++++++++++++++++++---------------------------------- debug.h
+> |   27 +++++++++++----
+>  main.c  |   74 +++++++++++++++++-------------------------
+>  main.h  |    5 +++
+>  4 files changed, 105 insertions(+), 112 deletions(-)
 
-> here are our two fixes to recover from the little problems introduced during the
-> last conflict resolution involving translation-table.c.
-> Sorry for the inconvenient.
+Applied in revision 4f6745d.
 
-Both applied, thanks.
+Regards,
+Marek
