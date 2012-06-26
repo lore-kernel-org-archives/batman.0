@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 26 Jun 2012 12:07:52 +0200
+Date: Tue, 26 Jun 2012 12:11:12 +0200
 References: <1340469612-6543-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1340469612-6543-1-git-send-email-lindner_marek@yahoo.de>
+	<1340469612-6543-2-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1340469612-6543-2-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201206261207.52851.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batctl: unify debug table handling
-	and remove redundant code
+Message-Id: <201206261211.12294.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batctl: unify settings handling and
+	remove redundant code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,17 +24,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, June 23, 2012 18:40:10 Marek Lindner wrote:
+On Saturday, June 23, 2012 18:40:11 Marek Lindner wrote:
 > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 > ---
->  debug.c |  111
-> +++++++++++++++++++++++++++++---------------------------------- debug.h
-> |   27 +++++++++++----
->  main.c  |   74 +++++++++++++++++-------------------------
->  main.h  |    5 +++
->  4 files changed, 105 insertions(+), 112 deletions(-)
+>  functions.c |    2 +-
+>  main.c      |   67 +++++++++++-------------------
+>  main.h      |    1 +
+>  sys.c       |  131
+> ++++++++++++++++++++++++++++++++--------------------------
+> sys.h       |   30 +++++++++-----
+>  5 files changed, 118 insertions(+), 113 deletions(-)
 
-Applied in revision 4f6745d.
+Applied in revision 5ec3a91.
 
 Regards,
 Marek
