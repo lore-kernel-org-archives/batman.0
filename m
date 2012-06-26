@@ -1,11 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 26 Jun 2012 22:00:22 +0200
-Message-Id: <1340740822-4516-6-git-send-email-ordex@autistici.org>
-In-Reply-To: <1340740822-4516-1-git-send-email-ordex@autistici.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 26 Jun 2012 23:22:23 +0200
+Message-ID: <4495078.i4mdBapCR8@sven-laptop.home.narfation.org>
+In-Reply-To: <1340740822-4516-4-git-send-email-ordex@autistici.org>
 References: <1340740822-4516-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: change interface_rx to get
-	orig node
+	<1340740822-4516-4-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3422545.zoHi1BB7uo";
+	micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: enable roaming packets
+	to carry flags
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,95 +24,69 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-In order to understand  where a broadcast packet is coming from and use
-this information to detect not yet announced clients, this patch modifies the
-interface_rx() function by passing a new argument: the orig node
-corresponding to the node that originated the received packet (if known).
-This new argument if not NULL for broadcast packets only (other packets does not
-have source field).
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- routing.c        |   10 ++++++----
- soft-interface.c |    6 +++++-
- soft-interface.h |    5 +++--
- 3 files changed, 14 insertions(+), 7 deletions(-)
+--nextPart3422545.zoHi1BB7uo
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/routing.c b/routing.c
-index b3da42c..30fa89f 100644
---- a/routing.c
-+++ b/routing.c
-@@ -1026,8 +1026,9 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 
- 	/* packet for me */
- 	if (batadv_is_my_mac(unicast_packet->dest)) {
--		batadv_interface_rx(recv_if->soft_iface, skb, recv_if,
--				    hdr_size);
-+		batadv_interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size,
-+				    NULL);
-+
- 		return NET_RX_SUCCESS;
- 	}
- 
-@@ -1064,7 +1065,7 @@ int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
- 			return NET_RX_SUCCESS;
- 
- 		batadv_interface_rx(recv_if->soft_iface, new_skb, recv_if,
--				    sizeof(struct batadv_unicast_packet));
-+				    sizeof(struct batadv_unicast_packet), NULL);
- 		return NET_RX_SUCCESS;
- 	}
- 
-@@ -1151,7 +1152,8 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 		goto out;
- 
- 	/* broadcast for me */
--	batadv_interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size);
-+	batadv_interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size,
-+			    orig_node);
- 	ret = NET_RX_SUCCESS;
- 	goto out;
- 
-diff --git a/soft-interface.c b/soft-interface.c
-index c77473e..8606a5e 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -268,7 +268,7 @@ end:
- 
- void batadv_interface_rx(struct net_device *soft_iface,
- 			 struct sk_buff *skb, struct batadv_hard_iface *recv_if,
--			 int hdr_size)
-+			 int hdr_size, struct batadv_orig_node *orig_node)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
- 	struct ethhdr *ethhdr;
-@@ -316,6 +316,10 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 
- 	soft_iface->last_rx = jiffies;
- 
-+	if (orig_node)
-+		batadv_tt_add_temporary_global_entry(bat_priv, orig_node,
-+						     ethhdr->h_source);
-+
- 	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest))
- 		goto dropped;
- 
-diff --git a/soft-interface.h b/soft-interface.h
-index 852c683..07a08fe 100644
---- a/soft-interface.h
-+++ b/soft-interface.h
-@@ -21,8 +21,9 @@
- #define _NET_BATMAN_ADV_SOFT_INTERFACE_H_
- 
- int batadv_skb_head_push(struct sk_buff *skb, unsigned int len);
--void batadv_interface_rx(struct net_device *soft_iface, struct sk_buff *skb,
--			 struct batadv_hard_iface *recv_if, int hdr_size);
-+void batadv_interface_rx(struct net_device *soft_iface,
-+			 struct sk_buff *skb, struct batadv_hard_iface *recv_if,
-+			 int hdr_size, struct batadv_orig_node *orig_node);
- struct net_device *batadv_softif_create(const char *name);
- void batadv_softif_destroy(struct net_device *soft_iface);
- int batadv_softif_is_valid(const struct net_device *net_dev);
--- 
-1.7.9.4
+On Tuesday 26 June 2012 22:00:20 Antonio Quartulli wrote:
+> In case of client-roaming it would be useful to carry TT flags along with
+> the client entry. Information contained in the flags could be used on the
+> new mesh node for several reasons (e.g. particular roaming treatment).
+> 
+> This patch modifies the ROAMING_ADV packet according to this idea so that it
+> can also carry the flags together with the MAC address of the moving
+> client.
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+>  packet.h            |    2 +-
+>  routing.c           |    7 ++++---
+>  translation-table.c |   17 ++++++++++-------
+>  3 files changed, 15 insertions(+), 11 deletions(-)
+> 
+> diff --git a/packet.h b/packet.h
+> index 65d66e4..e0b94a3 100644
+> --- a/packet.h
+> +++ b/packet.h
+> @@ -214,7 +214,7 @@ struct batadv_tt_query_packet {
+> 
+>  struct batadv_roam_adv_packet {
+>  	struct batadv_header header;
+> -	uint8_t  reserved;
+> +	uint8_t  flags;
+>  	uint8_t  dst[ETH_ALEN];
+>  	uint8_t  src[ETH_ALEN];
+>  	uint8_t  client[ETH_ALEN];
+
+I am not 100% sure because I haven't checked the code, but couldn't it be the 
+case that we send random bits inside reserved at the moment? At least I cannot 
+remember the part of the code that initialized reserver to any specific value. 
+That would make the change incompatible with older batman-adv version.
+
+Kind regards,
+	Sven
+--nextPart3422545.zoHi1BB7uo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAABCgAGBQJP6igPAAoJEF2HCgfBJntGMtoP/AhdRchJOFRef/FdInSwRrJr
+3a0m/AQCPSeDo5wlwMI2NyNL9RMcQlxw46Be8VD2p3mAPee7ucHmDa4JYyrEri8x
+86gRSBWA9aaMRbDFJowOmfdLfKxtl44P8K3MFa91/AqtYDV6bndbJtawQfuYw03N
+PL57qlkOYqAVLQQe6vN6mOibvITCvS0w8YKQlfBB7Wp62OKMeBq64dPszTDrBgMH
+EDIzf/278Meke9Bd1rVXEaz6djLmhLmzi/JyHB32wBufcFM9g3JWb0BAlw6qk9l0
+CMy9HWORetXT593vyX0aM/OaPcKyRjRmHoZLpyM2Tj5WfOkINRhboh1VGm1C8wur
+YfWTkHGfZMfVazrPkG5JLH/fuX30ldy8c4t6R/S9DJ2kamCH+lnPrjINsyWpNU/A
+o6/ILFADEiu3OlWYpYbkOD77M7HeQTwPEz7R4o7/IFn6/svOcb4KqV9sMMIM30pF
+KB/tth2ybIKknrkp07y1HsZ7dR2nLHDEy5OPpebShkPcFeu8/PTSwMWuaZ3Bdxmq
+7wv+TN46jzJ3hHS2KyTURoEf7cphuLe3yAyQ7LefXASGArWGUs1ejJ0ULVNE4bP6
+gtRzeI9lGhws3PVGbqu0Qt94Yp1DxPDFxvZOW27gQWsPKajOY0u5Lg0V+W8ev4gL
+HEsLbn4fuywDZl2kkGXz
+=DBgw
+-----END PGP SIGNATURE-----
+
+--nextPart3422545.zoHi1BB7uo--
 
