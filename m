@@ -1,17 +1,17 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 27 Jun 2012 08:26:45 +0200
+Date: Wed, 27 Jun 2012 08:30:22 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120627062644.GB3290@ritirata.org>
+Message-ID: <20120627063021.GC3290@ritirata.org>
 References: <1340740822-4516-1-git-send-email-ordex@autistici.org>
-	<1340740822-4516-2-git-send-email-ordex@autistici.org>
-	<1403237.H233GFHdJC@sven-laptop.home.narfation.org>
+	<1340740822-4516-4-git-send-email-ordex@autistici.org>
+	<3265215.erIRmWtS44@sven-laptop.home.narfation.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="v9Ux+11Zm5mwPlX6"
+	protocol="application/pgp-signature"; boundary="ncSAzJYg3Aa9+CRW"
 Content-Disposition: inline
-In-Reply-To: <1403237.H233GFHdJC@sven-laptop.home.narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: add reference counting
- for type batadv_tt_orig_list_entry
+In-Reply-To: <3265215.erIRmWtS44@sven-laptop.home.narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: enable roaming packets
+ to carry flags
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,18 +27,25 @@ To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
---v9Ux+11Zm5mwPlX6
+--ncSAzJYg3Aa9+CRW
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 26, 2012 at 11:14:27PM +0200, Sven Eckelmann wrote:
->    You can just invert the atomic_dec_and_test and use a return to avoid =
-the
->    weird comment.
+On Tue, Jun 26, 2012 at 11:18:29PM +0200, Sven Eckelmann wrote:
+>    I am not 100% sure because I haven't checked the code, but couldn't it=
+ be
+>    the case that we send random bits inside reserved at the moment? At le=
+ast
+>    I cannot remember the part of the code that initialized reserver to any
+>    specific value. That would make the change incompatible with older
+>    batman-adv version.
 
-Right. Thank you!
+Damn, that's true! It is not initialised anywhere....
+What if I append a new field to the roam_adv_packet struct? Old version will
+ignore it and there is no size check to drop packets longer than expected.
 
+Cheers,
 
 
 --=20
@@ -47,15 +54,15 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---v9Ux+11Zm5mwPlX6
+--ncSAzJYg3Aa9+CRW
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iEYEARECAAYFAk/qp6QACgkQpGgxIkP9cweLQACeKYEEPJh+QeFuO81M97SEQRM3
-GoIAn0ozwyUdqH0HFTzcOmWA/BhIIXnS
-=pV+O
+iEYEARECAAYFAk/qqH0ACgkQpGgxIkP9cwfZMwCeI52I6bj1nDwX1VytUSAkty4b
+2zoAniGPso9hfG+NHqPnWQ3RVhWvrujQ
+=yLS6
 -----END PGP SIGNATURE-----
 
---v9Ux+11Zm5mwPlX6--
+--ncSAzJYg3Aa9+CRW--
