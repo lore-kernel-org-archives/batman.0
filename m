@@ -1,11 +1,9 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 27 Jun 2012 10:23:07 +0200
-Message-Id: <1340785387-3821-5-git-send-email-ordex@autistici.org>
-In-Reply-To: <1340785387-3821-1-git-send-email-ordex@autistici.org>
-References: <1340785387-3821-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: change interface_rx to get
-	orig node
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 27 Jun 2012 22:28:17 +0200
+Message-Id: <1340828898-12352-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batctl: Don't leak information through
+	initialized packet fields
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,95 +17,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-In order to understand  where a broadcast packet is coming from and use
-this information to detect not yet announced clients, this patch modifies the
-interface_rx() function by passing a new argument: the orig node
-corresponding to the node that originated the received packet (if known).
-This new argument if not NULL for broadcast packets only (other packets does not
-have source field).
+The reserved fields in batman-adv packets are not set to a constant value. The
+content of these memory regions is leaked unintentionally to the network.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+This regression was introduced in ee319368e5d6385458345731e519640889c177c4
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- routing.c        |   10 ++++++----
- soft-interface.c |    6 +++++-
- soft-interface.h |    5 +++--
- 3 files changed, 14 insertions(+), 7 deletions(-)
+ ping.c       |    2 ++
+ traceroute.c |    1 +
+ 2 files changed, 3 insertions(+)
 
-diff --git a/routing.c b/routing.c
-index bc2b88b..b043ef9 100644
---- a/routing.c
-+++ b/routing.c
-@@ -1025,8 +1025,9 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 
- 	/* packet for me */
- 	if (batadv_is_my_mac(unicast_packet->dest)) {
--		batadv_interface_rx(recv_if->soft_iface, skb, recv_if,
--				    hdr_size);
-+		batadv_interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size,
-+				    NULL);
-+
- 		return NET_RX_SUCCESS;
+diff --git a/ping.c b/ping.c
+index 9f64a8f..ce8f457 100644
+--- a/ping.c
++++ b/ping.c
+@@ -174,6 +174,8 @@ int ping(char *mesh_iface, int argc, char **argv)
+ 		icmp_packet_out.rr_cur = 1;
+ 		memset(&icmp_packet_out.rr, 0, BATADV_RR_LEN * ETH_ALEN);
+ 		memset(last_rr, 0, BATADV_RR_LEN * ETH_ALEN);
++	} else {
++		((struct batadv_icmp_packet *)&icmp_packet_out)->reserved = 0;
  	}
  
-@@ -1063,7 +1064,7 @@ int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
- 			return NET_RX_SUCCESS;
+ 	printf("PING %s (%s) %zu(%zu) bytes of data\n", dst_string, mac_string,
+diff --git a/traceroute.c b/traceroute.c
+index c1aaad8..75ff2b3 100644
+--- a/traceroute.c
++++ b/traceroute.c
+@@ -125,6 +125,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
+ 	icmp_packet_out.header.packet_type = BATADV_ICMP;
+ 	icmp_packet_out.msg_type = BATADV_ECHO_REQUEST;
+ 	icmp_packet_out.seqno = 0;
++	icmp_packet_out.reserved = 0;
  
- 		batadv_interface_rx(recv_if->soft_iface, new_skb, recv_if,
--				    sizeof(struct batadv_unicast_packet));
-+				    sizeof(struct batadv_unicast_packet), NULL);
- 		return NET_RX_SUCCESS;
- 	}
- 
-@@ -1150,7 +1151,8 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 		goto out;
- 
- 	/* broadcast for me */
--	batadv_interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size);
-+	batadv_interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size,
-+			    orig_node);
- 	ret = NET_RX_SUCCESS;
- 	goto out;
- 
-diff --git a/soft-interface.c b/soft-interface.c
-index c77473e..8606a5e 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -268,7 +268,7 @@ end:
- 
- void batadv_interface_rx(struct net_device *soft_iface,
- 			 struct sk_buff *skb, struct batadv_hard_iface *recv_if,
--			 int hdr_size)
-+			 int hdr_size, struct batadv_orig_node *orig_node)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
- 	struct ethhdr *ethhdr;
-@@ -316,6 +316,10 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 
- 	soft_iface->last_rx = jiffies;
- 
-+	if (orig_node)
-+		batadv_tt_add_temporary_global_entry(bat_priv, orig_node,
-+						     ethhdr->h_source);
-+
- 	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest))
- 		goto dropped;
- 
-diff --git a/soft-interface.h b/soft-interface.h
-index 852c683..07a08fe 100644
---- a/soft-interface.h
-+++ b/soft-interface.h
-@@ -21,8 +21,9 @@
- #define _NET_BATMAN_ADV_SOFT_INTERFACE_H_
- 
- int batadv_skb_head_push(struct sk_buff *skb, unsigned int len);
--void batadv_interface_rx(struct net_device *soft_iface, struct sk_buff *skb,
--			 struct batadv_hard_iface *recv_if, int hdr_size);
-+void batadv_interface_rx(struct net_device *soft_iface,
-+			 struct sk_buff *skb, struct batadv_hard_iface *recv_if,
-+			 int hdr_size, struct batadv_orig_node *orig_node);
- struct net_device *batadv_softif_create(const char *name);
- void batadv_softif_destroy(struct net_device *soft_iface);
- int batadv_softif_is_valid(const struct net_device *net_dev);
+ 	printf("traceroute to %s (%s), %d hops max, %zu byte packets\n",
+ 		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 -- 
-1.7.9.4
+1.7.10
 
