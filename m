@@ -1,18 +1,17 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 27 Jun 2012 08:31:36 +0200
+Date: Wed, 27 Jun 2012 08:34:05 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120627063136.GD3290@ritirata.org>
+Message-ID: <20120627063404.GE3290@ritirata.org>
 References: <1340740822-4516-1-git-send-email-ordex@autistici.org>
-	<1340740822-4516-4-git-send-email-ordex@autistici.org>
-	<4495078.i4mdBapCR8@sven-laptop.home.narfation.org>
-	<4FEA2D81.5030407@universe-factory.net>
+	<1340740822-4516-5-git-send-email-ordex@autistici.org>
+	<1564568.1LY5lsXFIC@sven-laptop.home.narfation.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Hf61M2y+wYpnELGG"
+	protocol="application/pgp-signature"; boundary="2qXFWqzzG3v1+95a"
 Content-Disposition: inline
-In-Reply-To: <4FEA2D81.5030407@universe-factory.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: enable roaming packets
- to carry flags
+In-Reply-To: <1564568.1LY5lsXFIC@sven-laptop.home.narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: detect not yet announced
+ clients
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,71 +23,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
---Hf61M2y+wYpnELGG
+--2qXFWqzzG3v1+95a
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 26, 2012 at 11:45:37PM +0200, Matthias Schiffer wrote:
-> On 06/26/2012 11:22 PM, Sven Eckelmann wrote:
-> > On Tuesday 26 June 2012 22:00:20 Antonio Quartulli wrote:
-> >> In case of client-roaming it would be useful to carry TT flags along w=
-ith
-> >> the client entry. Information contained in the flags could be used on =
-the
-> >> new mesh node for several reasons (e.g. particular roaming treatment).
-> >>
-> >> This patch modifies the ROAMING_ADV packet according to this idea so t=
-hat it
-> >> can also carry the flags together with the MAC address of the moving
-> >> client.
-> >>
-> >> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> >> ---
-> >>  packet.h            |    2 +-
-> >>  routing.c           |    7 ++++---
-> >>  translation-table.c |   17 ++++++++++-------
-> >>  3 files changed, 15 insertions(+), 11 deletions(-)
-> >>
-> >> diff --git a/packet.h b/packet.h
-> >> index 65d66e4..e0b94a3 100644
-> >> --- a/packet.h
-> >> +++ b/packet.h
-> >> @@ -214,7 +214,7 @@ struct batadv_tt_query_packet {
-> >>
-> >>  struct batadv_roam_adv_packet {
-> >>  	struct batadv_header header;
-> >> -	uint8_t  reserved;
-> >> +	uint8_t  flags;
-> >>  	uint8_t  dst[ETH_ALEN];
-> >>  	uint8_t  src[ETH_ALEN];
-> >>  	uint8_t  client[ETH_ALEN];
+On Tue, Jun 26, 2012 at 11:50:22PM +0200, Sven Eckelmann wrote:
 > >=20
-> > I am not 100% sure because I haven't checked the code, but couldn't it =
-be the=20
-> > case that we send random bits inside reserved at the moment? At least I=
- cannot=20
-> > remember the part of the code that initialized reserver to any specific=
- value.=20
-> > That would make the change incompatible with older batman-adv version.
+> >  	for (i =3D 0; i < hash->size; i++) {
+> >  		head =3D &hash->table[i];
+> >  		list_lock =3D &hash->list_locks[i];
+> >=20
+> >  		spin_lock_bh(list_lock);
+> > -		batadv_tt_global_roam_purge_list(bat_priv, head);
+> > +		hlist_for_each_entry_safe(tt_common_entry, node, node_tmp,
+> > +					  head, hash_entry) {
+> > +			purge =3D false;
+> > +			tt_global =3D container_of(tt_common_entry,
+> > +						 struct batadv_tt_global_entry,
+> > +						 common);
+> > +			if ((tt_global->common.flags & BATADV_TT_CLIENT_ROAM) &&
+> > +			    batadv_has_timed_out(tt_global->roam_at,
+> > +						 roam_timeout)) {
+> > +				purge =3D true;
+> > +				msg =3D "Roaming timeout\n";
+> > +			}
+> > +
+> > +			if ((tt_global->common.flags & BATADV_TT_CLIENT_TEMP) &&
+> > +			    batadv_has_timed_out(tt_global->common.added_at,
+> > +						 temp_timeout)) {
+> > +				purge =3D true;
+> > +				msg =3D "Temporary client timeout\n";
+> > +			}
+> > +
+> > +			if (!purge)
+> > +				continue;
+> > +
+> > +			batadv_dbg(BATADV_DBG_TT, bat_priv,
+> > +				   "Deleting global tt entry (%pM): %s\n",
+> > +				   tt_global->common.addr, msg);
+> > +
+> > +			hlist_del_rcu(node);
+> > +			batadv_tt_global_entry_free_ref(tt_global);
+> > +		}
+> >  		spin_unlock_bh(list_lock);
+> >  	}
 >=20
-> As stated in an earlier mail, the `reserved' field in the vis packets
-> isn't initialized either, leading to the same problem, being unable to
-> ever use this field for anything when you want to stay compatible with
-> older versions.
->=20
-> IMO this should be fixed in all packets, it's a really bad idea to send
-> uninitialized memory over the network...
+> Why writing this whole thing in one function? You don't get a price for t=
+he=20
+> highest indentation level that banged the hardest against the 80 characte=
+r=20
+> limit.
 
-Yes, I agree. we have to remember this fix the next time we decide to break
-compatibility. I don't think we are going to do it now.
+Mh, I like challenges :-) However, I'll add another function like:
+has_to_be_purged() or similar in which i will check for the conditions and I
+will use it only in the loop.
+
+
+>=20
+>=20
+> > -	if (tt_common_entry->flags & BATADV_TT_CLIENT_ROAM)
+> > +	if (tt_common_entry->flags & BATADV_TT_CLIENT_ROAM ||
+> > +	    tt_common_entry->flags & BATADV_TT_CLIENT_TEMP)
+> >  		return 0;
+> >=20
+> > +
+> >  	tt_global_entry =3D container_of(tt_common_entry,
+> >  				       struct batadv_tt_global_entry,
+> >  				       common);
+>=20
+> And this new line doesn't make sense
+
+I agree.
+
+
+Thank you very much Sven.
 
 Cheers,
-
-
 
 
 --=20
@@ -97,15 +112,15 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---Hf61M2y+wYpnELGG
+--2qXFWqzzG3v1+95a
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iEYEARECAAYFAk/qqMgACgkQpGgxIkP9cweI8wCgiv85Kl2AQfr3VAiVBBTl8rmO
-0VMAn0Gy0t0jJbHbfjIW4n5QUa53jgzK
-=jjqV
+iEYEARECAAYFAk/qqVwACgkQpGgxIkP9cwddAwCgku+VvocQuxf2Iusg+Jz13D7Z
+ZDEAoJlmQ5IyRR+0wqaRfSOC5D0jlgxp
+=Z3ax
 -----END PGP SIGNATURE-----
 
---Hf61M2y+wYpnELGG--
+--2qXFWqzzG3v1+95a--
