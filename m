@@ -1,17 +1,18 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 27 Jun 2012 08:34:05 +0200
+Date: Wed, 27 Jun 2012 08:58:19 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120627063404.GE3290@ritirata.org>
+Message-ID: <20120627065818.GF3290@ritirata.org>
 References: <1340740822-4516-1-git-send-email-ordex@autistici.org>
-	<1340740822-4516-5-git-send-email-ordex@autistici.org>
-	<1564568.1LY5lsXFIC@sven-laptop.home.narfation.org>
+	<1340740822-4516-4-git-send-email-ordex@autistici.org>
+	<3265215.erIRmWtS44@sven-laptop.home.narfation.org>
+	<20120627063021.GC3290@ritirata.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2qXFWqzzG3v1+95a"
+	protocol="application/pgp-signature"; boundary="5CUMAwwhRxlRszMD"
 Content-Disposition: inline
-In-Reply-To: <1564568.1LY5lsXFIC@sven-laptop.home.narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: detect not yet announced
- clients
+In-Reply-To: <20120627063021.GC3290@ritirata.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: enable roaming packets
+ to carry flags
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,81 +28,44 @@ To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
---2qXFWqzzG3v1+95a
+--5CUMAwwhRxlRszMD
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 26, 2012 at 11:50:22PM +0200, Sven Eckelmann wrote:
-> >=20
-> >  	for (i =3D 0; i < hash->size; i++) {
-> >  		head =3D &hash->table[i];
-> >  		list_lock =3D &hash->list_locks[i];
-> >=20
-> >  		spin_lock_bh(list_lock);
-> > -		batadv_tt_global_roam_purge_list(bat_priv, head);
-> > +		hlist_for_each_entry_safe(tt_common_entry, node, node_tmp,
-> > +					  head, hash_entry) {
-> > +			purge =3D false;
-> > +			tt_global =3D container_of(tt_common_entry,
-> > +						 struct batadv_tt_global_entry,
-> > +						 common);
-> > +			if ((tt_global->common.flags & BATADV_TT_CLIENT_ROAM) &&
-> > +			    batadv_has_timed_out(tt_global->roam_at,
-> > +						 roam_timeout)) {
-> > +				purge =3D true;
-> > +				msg =3D "Roaming timeout\n";
-> > +			}
-> > +
-> > +			if ((tt_global->common.flags & BATADV_TT_CLIENT_TEMP) &&
-> > +			    batadv_has_timed_out(tt_global->common.added_at,
-> > +						 temp_timeout)) {
-> > +				purge =3D true;
-> > +				msg =3D "Temporary client timeout\n";
-> > +			}
-> > +
-> > +			if (!purge)
-> > +				continue;
-> > +
-> > +			batadv_dbg(BATADV_DBG_TT, bat_priv,
-> > +				   "Deleting global tt entry (%pM): %s\n",
-> > +				   tt_global->common.addr, msg);
-> > +
-> > +			hlist_del_rcu(node);
-> > +			batadv_tt_global_entry_free_ref(tt_global);
-> > +		}
-> >  		spin_unlock_bh(list_lock);
-> >  	}
+On Wed, Jun 27, 2012 at 08:30:22AM +0200, Antonio Quartulli wrote:
+> On Tue, Jun 26, 2012 at 11:18:29PM +0200, Sven Eckelmann wrote:
+> >    I am not 100% sure because I haven't checked the code, but couldn't =
+it be
+> >    the case that we send random bits inside reserved at the moment? At =
+least
+> >    I cannot remember the part of the code that initialized reserver to =
+any
+> >    specific value. That would make the change incompatible with older
+> >    batman-adv version.
 >=20
-> Why writing this whole thing in one function? You don't get a price for t=
-he=20
-> highest indentation level that banged the hardest against the 80 characte=
-r=20
-> limit.
+> Damn, that's true! It is not initialised anywhere....
+> What if I append a new field to the roam_adv_packet struct? Old version w=
+ill
+> ignore it and there is no size check to drop packets longer than expected.
 
-Mh, I like challenges :-) However, I'll add another function like:
-has_to_be_purged() or similar in which i will check for the conditions and I
-will use it only in the loop.
+Ok, after discussing with Sven on irc I got to the point that it is simply
+better to skip this patch. Appending a new field would make the new code mu=
+ch
+more complicated (and ugly) because we have to consider that we could recei=
+ve
+old packets with a smaller size (and they should not be dropped).
 
+I think that the best solution is to remove this patch.
 
->=20
->=20
-> > -	if (tt_common_entry->flags & BATADV_TT_CLIENT_ROAM)
-> > +	if (tt_common_entry->flags & BATADV_TT_CLIENT_ROAM ||
-> > +	    tt_common_entry->flags & BATADV_TT_CLIENT_TEMP)
-> >  		return 0;
-> >=20
-> > +
-> >  	tt_global_entry =3D container_of(tt_common_entry,
-> >  				       struct batadv_tt_global_entry,
-> >  				       common);
->=20
-> And this new line doesn't make sense
-
-I agree.
-
-
-Thank you very much Sven.
+The idea in this code
+was to send the new TT_CLIENT_TEMP flag within the roam_adv so that the rec=
+eiver
+node can eventually purge this entry if not claimed anymore. However this i=
+s not
+needed because a roaming client is already marked as ROAM on the receiver s=
+ide and
+so it will already be purged if not claimed within a fixed amount of time.
 
 Cheers,
 
@@ -112,15 +76,15 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---2qXFWqzzG3v1+95a
+--5CUMAwwhRxlRszMD
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iEYEARECAAYFAk/qqVwACgkQpGgxIkP9cwddAwCgku+VvocQuxf2Iusg+Jz13D7Z
-ZDEAoJlmQ5IyRR+0wqaRfSOC5D0jlgxp
-=Z3ax
+iEYEARECAAYFAk/qrwoACgkQpGgxIkP9cweu/QCdH3o91tRWLAoxOU1LQltXx5xp
+bjcAn1CEKYrOCdvTH/kTcXplVy2tS/uu
+=6aV1
 -----END PGP SIGNATURE-----
 
---2qXFWqzzG3v1+95a--
+--5CUMAwwhRxlRszMD--
