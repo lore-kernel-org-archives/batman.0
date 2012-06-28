@@ -1,14 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Jun 2012 11:34:21 +0200
-Message-Id: <1340876067-28333-13-git-send-email-ordex@autistici.org>
+Date: Thu, 28 Jun 2012 11:34:10 +0200
+Message-Id: <1340876067-28333-2-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 References: <1340876067-28333-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 12/18] batman-adv: Prefix gateway defines
-	with BATADV_
+Subject: [B.A.T.M.A.N.] [PATCH 01/18] batman-adv: Prefix unicast local
+	static functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,94 +22,94 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Sven Eckelmann <sven@narfation.org>
 
-Reported-by: Martin Hundebøll <martin@hundeboll.net>
+All non-static symbols of batman-adv were prefixed with batadv_ to avoid
+collisions with other symbols of the kernel. Other symbols of batman-adv
+should use the same prefix to keep the naming scheme consistent.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_sysfs.c      |   26 +++++++++++++++-----------
- net/batman-adv/gateway_common.h |    6 +++---
- 2 files changed, 18 insertions(+), 14 deletions(-)
+ net/batman-adv/unicast.c |   29 ++++++++++++++++-------------
+ 1 file changed, 16 insertions(+), 13 deletions(-)
 
-diff --git a/net/batman-adv/bat_sysfs.c b/net/batman-adv/bat_sysfs.c
-index 725e7d7..a6c27f0 100644
---- a/net/batman-adv/bat_sysfs.c
-+++ b/net/batman-adv/bat_sysfs.c
-@@ -361,13 +361,16 @@ static ssize_t batadv_show_gw_mode(struct kobject *kobj, struct attribute *attr,
+diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
+index d021055..472436a 100644
+--- a/net/batman-adv/unicast.c
++++ b/net/batman-adv/unicast.c
+@@ -29,9 +29,10 @@
+ #include "hard-interface.h"
  
- 	switch (atomic_read(&bat_priv->gw_mode)) {
- 	case GW_MODE_CLIENT:
--		bytes_written = sprintf(buff, "%s\n", GW_MODE_CLIENT_NAME);
-+		bytes_written = sprintf(buff, "%s\n",
-+					BATADV_GW_MODE_CLIENT_NAME);
- 		break;
- 	case GW_MODE_SERVER:
--		bytes_written = sprintf(buff, "%s\n", GW_MODE_SERVER_NAME);
-+		bytes_written = sprintf(buff, "%s\n",
-+					BATADV_GW_MODE_SERVER_NAME);
- 		break;
- 	default:
--		bytes_written = sprintf(buff, "%s\n", GW_MODE_OFF_NAME);
-+		bytes_written = sprintf(buff, "%s\n",
-+					BATADV_GW_MODE_OFF_NAME);
- 		break;
+ 
+-static struct sk_buff *frag_merge_packet(struct list_head *head,
+-					 struct frag_packet_list_entry *tfp,
+-					 struct sk_buff *skb)
++static struct sk_buff *
++batadv_frag_merge_packet(struct list_head *head,
++			 struct frag_packet_list_entry *tfp,
++			 struct sk_buff *skb)
+ {
+ 	struct unicast_frag_packet *up =
+ 		(struct unicast_frag_packet *)skb->data;
+@@ -75,7 +76,8 @@ err:
+ 	return NULL;
+ }
+ 
+-static void frag_create_entry(struct list_head *head, struct sk_buff *skb)
++static void batadv_frag_create_entry(struct list_head *head,
++				     struct sk_buff *skb)
+ {
+ 	struct frag_packet_list_entry *tfp;
+ 	struct unicast_frag_packet *up =
+@@ -91,7 +93,7 @@ static void frag_create_entry(struct list_head *head, struct sk_buff *skb)
+ 	return;
+ }
+ 
+-static int frag_create_buffer(struct list_head *head)
++static int batadv_frag_create_buffer(struct list_head *head)
+ {
+ 	int i;
+ 	struct frag_packet_list_entry *tfp;
+@@ -111,8 +113,9 @@ static int frag_create_buffer(struct list_head *head)
+ 	return 0;
+ }
+ 
+-static struct frag_packet_list_entry *frag_search_packet(struct list_head *head,
+-					   const struct unicast_frag_packet *up)
++static struct frag_packet_list_entry *
++batadv_frag_search_packet(struct list_head *head,
++			  const struct unicast_frag_packet *up)
+ {
+ 	struct frag_packet_list_entry *tfp;
+ 	struct unicast_frag_packet *tmp_up = NULL;
+@@ -188,22 +191,22 @@ int batadv_frag_reassemble_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 	orig_node->last_frag_packet = jiffies;
+ 
+ 	if (list_empty(&orig_node->frag_list) &&
+-	    frag_create_buffer(&orig_node->frag_list)) {
++	    batadv_frag_create_buffer(&orig_node->frag_list)) {
+ 		pr_debug("couldn't create frag buffer\n");
+ 		goto out;
  	}
  
-@@ -386,15 +389,16 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
+-	tmp_frag_entry = frag_search_packet(&orig_node->frag_list,
+-					    unicast_packet);
++	tmp_frag_entry = batadv_frag_search_packet(&orig_node->frag_list,
++						   unicast_packet);
  
--	if (strncmp(buff, GW_MODE_OFF_NAME, strlen(GW_MODE_OFF_NAME)) == 0)
-+	if (strncmp(buff, BATADV_GW_MODE_OFF_NAME,
-+		    strlen(BATADV_GW_MODE_OFF_NAME)) == 0)
- 		gw_mode_tmp = GW_MODE_OFF;
- 
--	if (strncmp(buff, GW_MODE_CLIENT_NAME,
--		    strlen(GW_MODE_CLIENT_NAME)) == 0)
-+	if (strncmp(buff, BATADV_GW_MODE_CLIENT_NAME,
-+		    strlen(BATADV_GW_MODE_CLIENT_NAME)) == 0)
- 		gw_mode_tmp = GW_MODE_CLIENT;
- 
--	if (strncmp(buff, GW_MODE_SERVER_NAME,
--		    strlen(GW_MODE_SERVER_NAME)) == 0)
-+	if (strncmp(buff, BATADV_GW_MODE_SERVER_NAME,
-+		    strlen(BATADV_GW_MODE_SERVER_NAME)) == 0)
- 		gw_mode_tmp = GW_MODE_SERVER;
- 
- 	if (gw_mode_tmp < 0) {
-@@ -409,13 +413,13 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
- 
- 	switch (atomic_read(&bat_priv->gw_mode)) {
- 	case GW_MODE_CLIENT:
--		curr_gw_mode_str = GW_MODE_CLIENT_NAME;
-+		curr_gw_mode_str = BATADV_GW_MODE_CLIENT_NAME;
- 		break;
- 	case GW_MODE_SERVER:
--		curr_gw_mode_str = GW_MODE_SERVER_NAME;
-+		curr_gw_mode_str = BATADV_GW_MODE_SERVER_NAME;
- 		break;
- 	default:
--		curr_gw_mode_str = GW_MODE_OFF_NAME;
-+		curr_gw_mode_str = BATADV_GW_MODE_OFF_NAME;
- 		break;
+ 	if (!tmp_frag_entry) {
+-		frag_create_entry(&orig_node->frag_list, skb);
++		batadv_frag_create_entry(&orig_node->frag_list, skb);
+ 		ret = NET_RX_SUCCESS;
+ 		goto out;
  	}
  
-diff --git a/net/batman-adv/gateway_common.h b/net/batman-adv/gateway_common.h
-index 6f8a4d0..31bbc3c 100644
---- a/net/batman-adv/gateway_common.h
-+++ b/net/batman-adv/gateway_common.h
-@@ -26,9 +26,9 @@ enum gw_modes {
- 	GW_MODE_SERVER,
- };
- 
--#define GW_MODE_OFF_NAME	"off"
--#define GW_MODE_CLIENT_NAME	"client"
--#define GW_MODE_SERVER_NAME	"server"
-+#define BATADV_GW_MODE_OFF_NAME	"off"
-+#define BATADV_GW_MODE_CLIENT_NAME	"client"
-+#define BATADV_GW_MODE_SERVER_NAME	"server"
- 
- void batadv_gw_bandwidth_to_kbit(uint8_t gw_class, int *down, int *up);
- ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
+-	*new_skb = frag_merge_packet(&orig_node->frag_list, tmp_frag_entry,
+-				     skb);
++	*new_skb = batadv_frag_merge_packet(&orig_node->frag_list,
++					    tmp_frag_entry, skb);
+ 	/* if not, merge failed */
+ 	if (*new_skb)
+ 		ret = NET_RX_SUCCESS;
 -- 
 1.7.9.4
 
