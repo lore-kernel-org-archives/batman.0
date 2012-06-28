@@ -1,14 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Jun 2012 11:34:24 +0200
-Message-Id: <1340876067-28333-16-git-send-email-ordex@autistici.org>
+Date: Thu, 28 Jun 2012 11:34:25 +0200
+Message-Id: <1340876067-28333-17-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 References: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 15/18] batman-adv: Prefix types defines with
-	BATADV_
+Subject: [B.A.T.M.A.N.] [PATCH 16/18] batman-adv: Prefix unicast defines
+	with BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -29,82 +29,52 @@ Reported-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/hard-interface.c |   11 ++++++-----
- net/batman-adv/soft-interface.c |    2 +-
- net/batman-adv/types.h          |    9 ++++-----
- 3 files changed, 11 insertions(+), 11 deletions(-)
+ net/batman-adv/originator.c |    2 +-
+ net/batman-adv/unicast.c    |    2 +-
+ net/batman-adv/unicast.h    |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 3401084..9b1cb23 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -196,7 +196,8 @@ int batadv_hardif_min_mtu(struct net_device *soft_iface)
- 		if (hard_iface->soft_iface != soft_iface)
- 			continue;
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index bf9ec39a..1980696 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -370,7 +370,7 @@ static void _batadv_purge_orig(struct bat_priv *bat_priv)
+ 			}
  
--		min_mtu = min_t(int, hard_iface->net_dev->mtu - BAT_HEADER_LEN,
-+		min_mtu = min_t(int,
-+				hard_iface->net_dev->mtu - BATADV_HEADER_LEN,
- 				min_mtu);
- 	}
- 	rcu_read_unlock();
-@@ -320,18 +321,18 @@ int batadv_hardif_enable_interface(struct hard_iface *hard_iface,
- 		    hard_iface->net_dev->name);
+ 			if (batadv_has_timed_out(orig_node->last_frag_packet,
+-						 FRAG_TIMEOUT))
++						 BATADV_FRAG_TIMEOUT))
+ 				batadv_frag_list_free(&orig_node->frag_list);
+ 		}
+ 		spin_unlock_bh(list_lock);
+diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
+index c8da6b0..8098320 100644
+--- a/net/batman-adv/unicast.c
++++ b/net/batman-adv/unicast.c
+@@ -98,7 +98,7 @@ static int batadv_frag_create_buffer(struct list_head *head)
+ 	int i;
+ 	struct frag_packet_list_entry *tfp;
  
- 	if (atomic_read(&bat_priv->fragmentation) && hard_iface->net_dev->mtu <
--		ETH_DATA_LEN + BAT_HEADER_LEN)
-+		ETH_DATA_LEN + BATADV_HEADER_LEN)
- 		batadv_info(hard_iface->soft_iface,
- 			    "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to %zi would solve the problem.\n",
- 			    hard_iface->net_dev->name, hard_iface->net_dev->mtu,
--			    ETH_DATA_LEN + BAT_HEADER_LEN);
-+			    ETH_DATA_LEN + BATADV_HEADER_LEN);
- 
- 	if (!atomic_read(&bat_priv->fragmentation) && hard_iface->net_dev->mtu <
--		ETH_DATA_LEN + BAT_HEADER_LEN)
-+		ETH_DATA_LEN + BATADV_HEADER_LEN)
- 		batadv_info(hard_iface->soft_iface,
- 			    "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. If you experience problems getting traffic through try increasing the MTU to %zi.\n",
- 			    hard_iface->net_dev->name, hard_iface->net_dev->mtu,
--			    ETH_DATA_LEN + BAT_HEADER_LEN);
-+			    ETH_DATA_LEN + BATADV_HEADER_LEN);
- 
- 	if (batadv_hardif_is_iface_up(hard_iface))
- 		batadv_hardif_activate_interface(hard_iface);
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index e726419..bbbc9a9 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -351,7 +351,7 @@ static void batadv_interface_setup(struct net_device *dev)
- 	 */
- 	dev->mtu = ETH_DATA_LEN;
- 	/* reserve more space in the skbuff for our header */
--	dev->hard_header_len = BAT_HEADER_LEN;
-+	dev->hard_header_len = BATADV_HEADER_LEN;
- 
- 	/* generate random address */
- 	eth_hw_addr_random(dev);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 053c5d4..1d5d21e 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -22,12 +22,11 @@
+-	for (i = 0; i < FRAG_BUFFER_SIZE; i++) {
++	for (i = 0; i < BATADV_FRAG_BUFFER_SIZE; i++) {
+ 		tfp = kmalloc(sizeof(*tfp), GFP_ATOMIC);
+ 		if (!tfp) {
+ 			batadv_frag_list_free(head);
+diff --git a/net/batman-adv/unicast.h b/net/batman-adv/unicast.h
+index 9257b83..936287f 100644
+--- a/net/batman-adv/unicast.h
++++ b/net/batman-adv/unicast.h
+@@ -22,8 +22,8 @@
  
  #include "packet.h"
- #include "bitarray.h"
-+#include <linux/kernel.h>
  
--#define BAT_HEADER_LEN (ETH_HLEN + \
--	((sizeof(struct unicast_packet) > sizeof(struct bcast_packet) ? \
--	 sizeof(struct unicast_packet) : \
--	 sizeof(struct bcast_packet))))
--
-+#define BATADV_HEADER_LEN \
-+	(ETH_HLEN + max(sizeof(struct unicast_packet), \
-+			sizeof(struct bcast_packet)))
+-#define FRAG_TIMEOUT 10000	/* purge frag list entries after time in ms */
+-#define FRAG_BUFFER_SIZE 6	/* number of list elements in buffer */
++#define BATADV_FRAG_TIMEOUT 10000 /* purge frag list entries after time in ms */
++#define BATADV_FRAG_BUFFER_SIZE 6 /* number of list elements in buffer */
  
- struct hard_iface {
- 	struct list_head list;
+ int batadv_frag_reassemble_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
+ 			       struct sk_buff **new_skb);
 -- 
 1.7.9.4
 
