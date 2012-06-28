@@ -1,11 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Jun 2012 11:34:10 +0200
-Message-Id: <1340876067-28333-2-git-send-email-ordex@autistici.org>
+Date: Thu, 28 Jun 2012 11:34:22 +0200
+Message-Id: <1340876067-28333-14-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 References: <1340876067-28333-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 01/18] batman-adv: Prefix unicast local
-	static functions with batadv_
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 13/18] batman-adv: Prefix icmp_socket defines
+	with BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,94 +25,40 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Sven Eckelmann <sven@narfation.org>
 
-All non-static symbols of batman-adv were prefixed with batadv_ to avoid
-collisions with other symbols of the kernel. Other symbols of batman-adv
-should use the same prefix to keep the naming scheme consistent.
-
+Reported-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/unicast.c |   29 ++++++++++++++++-------------
- 1 file changed, 16 insertions(+), 13 deletions(-)
+ net/batman-adv/icmp_socket.c |    2 +-
+ net/batman-adv/icmp_socket.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
-index d021055..472436a 100644
---- a/net/batman-adv/unicast.c
-+++ b/net/batman-adv/unicast.c
-@@ -29,9 +29,10 @@
- #include "hard-interface.h"
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index b285c31..4f45ca7 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -282,7 +282,7 @@ int batadv_socket_setup(struct bat_priv *bat_priv)
+ 	if (!bat_priv->debug_dir)
+ 		goto err;
  
+-	d = debugfs_create_file(ICMP_SOCKET, S_IFREG | S_IWUSR | S_IRUSR,
++	d = debugfs_create_file(BATADV_ICMP_SOCKET, S_IFREG | S_IWUSR | S_IRUSR,
+ 				bat_priv->debug_dir, bat_priv, &batadv_fops);
+ 	if (!d)
+ 		goto err;
+diff --git a/net/batman-adv/icmp_socket.h b/net/batman-adv/icmp_socket.h
+index a62ab80..f88f9f0 100644
+--- a/net/batman-adv/icmp_socket.h
++++ b/net/batman-adv/icmp_socket.h
+@@ -20,7 +20,7 @@
+ #ifndef _NET_BATMAN_ADV_ICMP_SOCKET_H_
+ #define _NET_BATMAN_ADV_ICMP_SOCKET_H_
  
--static struct sk_buff *frag_merge_packet(struct list_head *head,
--					 struct frag_packet_list_entry *tfp,
--					 struct sk_buff *skb)
-+static struct sk_buff *
-+batadv_frag_merge_packet(struct list_head *head,
-+			 struct frag_packet_list_entry *tfp,
-+			 struct sk_buff *skb)
- {
- 	struct unicast_frag_packet *up =
- 		(struct unicast_frag_packet *)skb->data;
-@@ -75,7 +76,8 @@ err:
- 	return NULL;
- }
+-#define ICMP_SOCKET "socket"
++#define BATADV_ICMP_SOCKET "socket"
  
--static void frag_create_entry(struct list_head *head, struct sk_buff *skb)
-+static void batadv_frag_create_entry(struct list_head *head,
-+				     struct sk_buff *skb)
- {
- 	struct frag_packet_list_entry *tfp;
- 	struct unicast_frag_packet *up =
-@@ -91,7 +93,7 @@ static void frag_create_entry(struct list_head *head, struct sk_buff *skb)
- 	return;
- }
- 
--static int frag_create_buffer(struct list_head *head)
-+static int batadv_frag_create_buffer(struct list_head *head)
- {
- 	int i;
- 	struct frag_packet_list_entry *tfp;
-@@ -111,8 +113,9 @@ static int frag_create_buffer(struct list_head *head)
- 	return 0;
- }
- 
--static struct frag_packet_list_entry *frag_search_packet(struct list_head *head,
--					   const struct unicast_frag_packet *up)
-+static struct frag_packet_list_entry *
-+batadv_frag_search_packet(struct list_head *head,
-+			  const struct unicast_frag_packet *up)
- {
- 	struct frag_packet_list_entry *tfp;
- 	struct unicast_frag_packet *tmp_up = NULL;
-@@ -188,22 +191,22 @@ int batadv_frag_reassemble_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 	orig_node->last_frag_packet = jiffies;
- 
- 	if (list_empty(&orig_node->frag_list) &&
--	    frag_create_buffer(&orig_node->frag_list)) {
-+	    batadv_frag_create_buffer(&orig_node->frag_list)) {
- 		pr_debug("couldn't create frag buffer\n");
- 		goto out;
- 	}
- 
--	tmp_frag_entry = frag_search_packet(&orig_node->frag_list,
--					    unicast_packet);
-+	tmp_frag_entry = batadv_frag_search_packet(&orig_node->frag_list,
-+						   unicast_packet);
- 
- 	if (!tmp_frag_entry) {
--		frag_create_entry(&orig_node->frag_list, skb);
-+		batadv_frag_create_entry(&orig_node->frag_list, skb);
- 		ret = NET_RX_SUCCESS;
- 		goto out;
- 	}
- 
--	*new_skb = frag_merge_packet(&orig_node->frag_list, tmp_frag_entry,
--				     skb);
-+	*new_skb = batadv_frag_merge_packet(&orig_node->frag_list,
-+					    tmp_frag_entry, skb);
- 	/* if not, merge failed */
- 	if (*new_skb)
- 		ret = NET_RX_SUCCESS;
+ void batadv_socket_init(void);
+ int batadv_socket_setup(struct bat_priv *bat_priv);
 -- 
 1.7.9.4
 
