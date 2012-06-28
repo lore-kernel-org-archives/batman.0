@@ -1,10 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Jun 2012 11:34:11 +0200
-Message-Id: <1340876067-28333-3-git-send-email-ordex@autistici.org>
+Date: Thu, 28 Jun 2012 11:34:12 +0200
+Message-Id: <1340876067-28333-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 References: <1340876067-28333-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 02/18] batman-adv: Prefix vis local static
+Subject: [B.A.T.M.A.N.] [PATCH 03/18] batman-adv: Prefix main local static
 	functions with batadv_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -29,587 +29,219 @@ should use the same prefix to keep the naming scheme consistent.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/vis.c |  201 ++++++++++++++++++++++++++------------------------
- 1 file changed, 103 insertions(+), 98 deletions(-)
+ net/batman-adv/main.c |   76 +++++++++++++++++++++++++------------------------
+ 1 file changed, 39 insertions(+), 37 deletions(-)
 
-diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
-index d45989e..607b101 100644
---- a/net/batman-adv/vis.c
-+++ b/net/batman-adv/vis.c
-@@ -28,10 +28,10 @@
- 
- #define MAX_VIS_PACKET_SIZE 1000
- 
--static void start_vis_timer(struct bat_priv *bat_priv);
-+static void batadv_start_vis_timer(struct bat_priv *bat_priv);
- 
- /* free the info */
--static void free_info(struct kref *ref)
-+static void batadv_free_info(struct kref *ref)
- {
- 	struct vis_info *info = container_of(ref, struct vis_info, refcount);
- 	struct bat_priv *bat_priv = info->bat_priv;
-@@ -50,7 +50,7 @@ static void free_info(struct kref *ref)
- }
- 
- /* Compare two vis packets, used by the hashing algorithm */
--static int vis_info_cmp(const struct hlist_node *node, const void *data2)
-+static int batadv_vis_info_cmp(const struct hlist_node *node, const void *data2)
- {
- 	const struct vis_info *d1, *d2;
- 	const struct vis_packet *p1, *p2;
-@@ -65,7 +65,7 @@ static int vis_info_cmp(const struct hlist_node *node, const void *data2)
- /* hash function to choose an entry in a hash table of given size
-  * hash algorithm from http://en.wikipedia.org/wiki/Hash_table
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index e456430..9cf0b38 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -38,22 +38,23 @@
+  * list traversals just rcu-locked
   */
--static uint32_t vis_info_choose(const void *data, uint32_t size)
-+static uint32_t batadv_vis_info_choose(const void *data, uint32_t size)
+ struct list_head batadv_hardif_list;
+-static int (*recv_packet_handler[256])(struct sk_buff *, struct hard_iface *);
++static int (*batadv_rx_handler[256])(struct sk_buff *,
++				     struct hard_iface *);
+ char batadv_routing_algo[20] = "BATMAN_IV";
+-static struct hlist_head bat_algo_list;
++static struct hlist_head batadv_algo_list;
+ 
+ unsigned char batadv_broadcast_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+ 
+ struct workqueue_struct *batadv_event_workqueue;
+ 
+-static void recv_handler_init(void);
++static void batadv_recv_handler_init(void);
+ 
+-static int __init batman_init(void)
++static int __init batadv_init(void)
  {
- 	const struct vis_info *vis_info = data;
- 	const struct vis_packet *packet;
-@@ -88,8 +88,8 @@ static uint32_t vis_info_choose(const void *data, uint32_t size)
- 	return hash % size;
+ 	INIT_LIST_HEAD(&batadv_hardif_list);
+-	INIT_HLIST_HEAD(&bat_algo_list);
++	INIT_HLIST_HEAD(&batadv_algo_list);
+ 
+-	recv_handler_init();
++	batadv_recv_handler_init();
+ 
+ 	batadv_iv_init();
+ 
+@@ -76,7 +77,7 @@ static int __init batman_init(void)
+ 	return 0;
  }
  
--static struct vis_info *vis_hash_find(struct bat_priv *bat_priv,
--				      const void *data)
-+static struct vis_info *batadv_vis_hash_find(struct bat_priv *bat_priv,
-+					     const void *data)
+-static void __exit batman_exit(void)
++static void __exit batadv_exit(void)
  {
- 	struct hashtable_t *hash = bat_priv->vis_hash;
- 	struct hlist_head *head;
-@@ -100,12 +100,12 @@ static struct vis_info *vis_hash_find(struct bat_priv *bat_priv,
- 	if (!hash)
- 		return NULL;
+ 	batadv_debugfs_destroy();
+ 	unregister_netdevice_notifier(&batadv_hard_if_notifier);
+@@ -189,8 +190,8 @@ int batadv_is_my_mac(const uint8_t *addr)
+ 	return 0;
+ }
  
--	index = vis_info_choose(data, hash->size);
-+	index = batadv_vis_info_choose(data, hash->size);
- 	head = &hash->table[index];
+-static int recv_unhandled_packet(struct sk_buff *skb,
+-				 struct hard_iface *recv_if)
++static int batadv_recv_unhandled_packet(struct sk_buff *skb,
++					struct hard_iface *recv_if)
+ {
+ 	return NET_RX_DROP;
+ }
+@@ -248,7 +249,7 @@ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 	 * the supplied skb. if not, we have to free the skb.
+ 	 */
+ 	idx = batman_ogm_packet->header.packet_type;
+-	ret = (*recv_packet_handler[idx])(skb, hard_iface);
++	ret = (*batadv_rx_handler[idx])(skb, hard_iface);
  
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(vis_info, node, head, hash_entry) {
--		if (!vis_info_cmp(node, data))
-+		if (!batadv_vis_info_cmp(node, data))
+ 	if (ret == NET_RX_DROP)
+ 		kfree_skb(skb);
+@@ -265,51 +266,51 @@ err_out:
+ 	return NET_RX_DROP;
+ }
+ 
+-static void recv_handler_init(void)
++static void batadv_recv_handler_init(void)
+ {
+ 	int i;
+ 
+-	for (i = 0; i < ARRAY_SIZE(recv_packet_handler); i++)
+-		recv_packet_handler[i] = recv_unhandled_packet;
++	for (i = 0; i < ARRAY_SIZE(batadv_rx_handler); i++)
++		batadv_rx_handler[i] = batadv_recv_unhandled_packet;
+ 
+ 	/* batman icmp packet */
+-	recv_packet_handler[BAT_ICMP] = batadv_recv_icmp_packet;
++	batadv_rx_handler[BAT_ICMP] = batadv_recv_icmp_packet;
+ 	/* unicast packet */
+-	recv_packet_handler[BAT_UNICAST] = batadv_recv_unicast_packet;
++	batadv_rx_handler[BAT_UNICAST] = batadv_recv_unicast_packet;
+ 	/* fragmented unicast packet */
+-	recv_packet_handler[BAT_UNICAST_FRAG] = batadv_recv_ucast_frag_packet;
++	batadv_rx_handler[BAT_UNICAST_FRAG] = batadv_recv_ucast_frag_packet;
+ 	/* broadcast packet */
+-	recv_packet_handler[BAT_BCAST] = batadv_recv_bcast_packet;
++	batadv_rx_handler[BAT_BCAST] = batadv_recv_bcast_packet;
+ 	/* vis packet */
+-	recv_packet_handler[BAT_VIS] = batadv_recv_vis_packet;
++	batadv_rx_handler[BAT_VIS] = batadv_recv_vis_packet;
+ 	/* Translation table query (request or response) */
+-	recv_packet_handler[BAT_TT_QUERY] = batadv_recv_tt_query;
++	batadv_rx_handler[BAT_TT_QUERY] = batadv_recv_tt_query;
+ 	/* Roaming advertisement */
+-	recv_packet_handler[BAT_ROAM_ADV] = batadv_recv_roam_adv;
++	batadv_rx_handler[BAT_ROAM_ADV] = batadv_recv_roam_adv;
+ }
+ 
+ int batadv_recv_handler_register(uint8_t packet_type,
+ 				 int (*recv_handler)(struct sk_buff *,
+ 						     struct hard_iface *))
+ {
+-	if (recv_packet_handler[packet_type] != &recv_unhandled_packet)
++	if (batadv_rx_handler[packet_type] != &batadv_recv_unhandled_packet)
+ 		return -EBUSY;
+ 
+-	recv_packet_handler[packet_type] = recv_handler;
++	batadv_rx_handler[packet_type] = recv_handler;
+ 	return 0;
+ }
+ 
+ void batadv_recv_handler_unregister(uint8_t packet_type)
+ {
+-	recv_packet_handler[packet_type] = recv_unhandled_packet;
++	batadv_rx_handler[packet_type] = batadv_recv_unhandled_packet;
+ }
+ 
+-static struct bat_algo_ops *bat_algo_get(char *name)
++static struct bat_algo_ops *batadv_algo_get(char *name)
+ {
+ 	struct bat_algo_ops *bat_algo_ops = NULL, *bat_algo_ops_tmp;
+ 	struct hlist_node *node;
+ 
+-	hlist_for_each_entry(bat_algo_ops_tmp, node, &bat_algo_list, list) {
++	hlist_for_each_entry(bat_algo_ops_tmp, node, &batadv_algo_list, list) {
+ 		if (strcmp(bat_algo_ops_tmp->name, name) != 0)
  			continue;
  
- 		vis_info_tmp = vis_info;
-@@ -119,9 +119,9 @@ static struct vis_info *vis_hash_find(struct bat_priv *bat_priv,
- /* insert interface to the list of interfaces of one originator, if it
-  * does not already exist in the list
-  */
--static void vis_data_insert_interface(const uint8_t *interface,
--				      struct hlist_head *if_list,
--				      bool primary)
-+static void batadv_vis_data_insert_interface(const uint8_t *interface,
-+					     struct hlist_head *if_list,
-+					     bool primary)
- {
- 	struct if_list_entry *entry;
- 	struct hlist_node *pos;
-@@ -140,8 +140,7 @@ static void vis_data_insert_interface(const uint8_t *interface,
- 	hlist_add_head(&entry->list, if_list);
- }
+@@ -325,7 +326,7 @@ int batadv_algo_register(struct bat_algo_ops *bat_algo_ops)
+ 	struct bat_algo_ops *bat_algo_ops_tmp;
+ 	int ret;
  
--static ssize_t vis_data_read_prim_sec(char *buff,
--				      const struct hlist_head *if_list)
-+static ssize_t batadv_vis_prim_sec(char *buff, const struct hlist_head *if_list)
- {
- 	struct if_list_entry *entry;
- 	struct hlist_node *pos;
-@@ -157,7 +156,7 @@ static ssize_t vis_data_read_prim_sec(char *buff,
- 	return len;
- }
- 
--static size_t vis_data_count_prim_sec(struct hlist_head *if_list)
-+static size_t batadv_vis_cnt_prim_sec(struct hlist_head *if_list)
- {
- 	struct if_list_entry *entry;
- 	struct hlist_node *pos;
-@@ -174,9 +173,9 @@ static size_t vis_data_count_prim_sec(struct hlist_head *if_list)
- }
- 
- /* read an entry  */
--static ssize_t vis_data_read_entry(char *buff,
--				   const struct vis_info_entry *entry,
--				   const uint8_t *src, bool primary)
-+static ssize_t batadv_vis_data_read_entry(char *buff,
-+					  const struct vis_info_entry *entry,
-+					  const uint8_t *src, bool primary)
- {
- 	/* maximal length: max(4+17+2, 3+17+1+3+2) == 26 */
- 	if (primary && entry->quality == 0)
-@@ -227,8 +226,8 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
- 			entries = (struct vis_info_entry *)
- 				((char *)packet + sizeof(*packet));
- 
--			vis_data_insert_interface(packet->vis_orig,
--						  &vis_if_list, true);
-+			batadv_vis_data_insert_interface(packet->vis_orig,
-+							 &vis_if_list, true);
- 
- 			for (j = 0; j < packet->entries; j++) {
- 				if (entries[j].quality == 0)
-@@ -236,9 +235,9 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
- 				if (batadv_compare_eth(entries[j].src,
- 						       packet->vis_orig))
- 					continue;
--				vis_data_insert_interface(entries[j].src,
--							  &vis_if_list,
--							  false);
-+				batadv_vis_data_insert_interface(entries[j].src,
-+								 &vis_if_list,
-+								 false);
- 			}
- 
- 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
-@@ -248,7 +247,7 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
- 				if (batadv_compare_eth(entry->addr,
- 						       packet->vis_orig))
- 					buf_size +=
--					  vis_data_count_prim_sec(&vis_if_list);
-+					  batadv_vis_cnt_prim_sec(&vis_if_list);
- 
- 				buf_size += 1;
- 			}
-@@ -280,8 +279,8 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
- 			entries = (struct vis_info_entry *)
- 				((char *)packet + sizeof(*packet));
- 
--			vis_data_insert_interface(packet->vis_orig,
--						  &vis_if_list, true);
-+			batadv_vis_data_insert_interface(packet->vis_orig,
-+							 &vis_if_list, true);
- 
- 			for (j = 0; j < packet->entries; j++) {
- 				if (entries[j].quality == 0)
-@@ -289,9 +288,9 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
- 				if (batadv_compare_eth(entries[j].src,
- 						       packet->vis_orig))
- 					continue;
--				vis_data_insert_interface(entries[j].src,
--							  &vis_if_list,
--							  false);
-+				batadv_vis_data_insert_interface(entries[j].src,
-+								 &vis_if_list,
-+								 false);
- 			}
- 
- 			hlist_for_each_entry(entry, pos, &vis_if_list, list) {
-@@ -299,7 +298,7 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
- 						entry->addr);
- 
- 				for (j = 0; j < packet->entries; j++)
--					buff_pos += vis_data_read_entry(
-+					buff_pos += batadv_vis_data_read_entry(
- 							buff + buff_pos,
- 							&entries[j],
- 							entry->addr,
-@@ -309,8 +308,8 @@ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset)
- 				if (batadv_compare_eth(entry->addr,
- 						       packet->vis_orig))
- 					buff_pos +=
--					 vis_data_read_prim_sec(buff + buff_pos,
--								&vis_if_list);
-+					 batadv_vis_prim_sec(buff + buff_pos,
-+							     &vis_if_list);
- 
- 				buff_pos += sprintf(buff + buff_pos, "\n");
- 			}
-@@ -338,7 +337,8 @@ out:
- /* add the info packet to the send list, if it was not
-  * already linked in.
-  */
--static void send_list_add(struct bat_priv *bat_priv, struct vis_info *info)
-+static void batadv_send_list_add(struct bat_priv *bat_priv,
-+				 struct vis_info *info)
- {
- 	if (list_empty(&info->send_list)) {
- 		kref_get(&info->refcount);
-@@ -349,17 +349,17 @@ static void send_list_add(struct bat_priv *bat_priv, struct vis_info *info)
- /* delete the info packet from the send list, if it was
-  * linked in.
-  */
--static void send_list_del(struct vis_info *info)
-+static void batadv_send_list_del(struct vis_info *info)
- {
- 	if (!list_empty(&info->send_list)) {
- 		list_del_init(&info->send_list);
--		kref_put(&info->refcount, free_info);
-+		kref_put(&info->refcount, batadv_free_info);
- 	}
- }
- 
- /* tries to add one entry to the receive list. */
--static void recv_list_add(struct bat_priv *bat_priv,
--			  struct list_head *recv_list, const char *mac)
-+static void batadv_recv_list_add(struct bat_priv *bat_priv,
-+				 struct list_head *recv_list, const char *mac)
- {
- 	struct recvlist_node *entry;
- 
-@@ -374,8 +374,9 @@ static void recv_list_add(struct bat_priv *bat_priv,
- }
- 
- /* returns 1 if this mac is in the recv_list */
--static int recv_list_is_in(struct bat_priv *bat_priv,
--			   const struct list_head *recv_list, const char *mac)
-+static int batadv_recv_list_is_in(struct bat_priv *bat_priv,
-+				  const struct list_head *recv_list,
-+				  const char *mac)
- {
- 	const struct recvlist_node *entry;
- 
-@@ -394,10 +395,10 @@ static int recv_list_is_in(struct bat_priv *bat_priv,
-  * broken.. ).	vis hash must be locked outside.  is_new is set when the packet
-  * is newer than old entries in the hash.
-  */
--static struct vis_info *add_packet(struct bat_priv *bat_priv,
--				   struct vis_packet *vis_packet,
--				   int vis_info_len, int *is_new,
--				   int make_broadcast)
-+static struct vis_info *batadv_add_packet(struct bat_priv *bat_priv,
-+					  struct vis_packet *vis_packet,
-+					  int vis_info_len, int *is_new,
-+					  int make_broadcast)
- {
- 	struct vis_info *info, *old_info;
- 	struct vis_packet *search_packet, *old_packet;
-@@ -418,7 +419,7 @@ static struct vis_info *add_packet(struct bat_priv *bat_priv,
- 						     sizeof(*search_packet));
- 
- 	memcpy(search_packet->vis_orig, vis_packet->vis_orig, ETH_ALEN);
--	old_info = vis_hash_find(bat_priv, &search_elem);
-+	old_info = batadv_vis_hash_find(bat_priv, &search_elem);
- 	kfree_skb(search_elem.skb_packet);
- 
- 	if (old_info) {
-@@ -426,8 +427,9 @@ static struct vis_info *add_packet(struct bat_priv *bat_priv,
- 		if (!seq_after(ntohl(vis_packet->seqno),
- 			       ntohl(old_packet->seqno))) {
- 			if (old_packet->seqno == vis_packet->seqno) {
--				recv_list_add(bat_priv, &old_info->recv_list,
--					      vis_packet->sender_orig);
-+				batadv_recv_list_add(bat_priv,
-+						     &old_info->recv_list,
-+						     vis_packet->sender_orig);
- 				return old_info;
- 			} else {
- 				/* newer packet is already in hash. */
-@@ -435,10 +437,10 @@ static struct vis_info *add_packet(struct bat_priv *bat_priv,
- 			}
- 		}
- 		/* remove old entry */
--		batadv_hash_remove(bat_priv->vis_hash, vis_info_cmp,
--				   vis_info_choose, old_info);
--		send_list_del(old_info);
--		kref_put(&old_info->refcount, free_info);
-+		batadv_hash_remove(bat_priv->vis_hash, batadv_vis_info_cmp,
-+				   batadv_vis_info_choose, old_info);
-+		batadv_send_list_del(old_info);
-+		kref_put(&old_info->refcount, batadv_free_info);
+-	bat_algo_ops_tmp = bat_algo_get(bat_algo_ops->name);
++	bat_algo_ops_tmp = batadv_algo_get(bat_algo_ops->name);
+ 	if (bat_algo_ops_tmp) {
+ 		pr_info("Trying to register already registered routing algorithm: %s\n",
+ 			bat_algo_ops->name);
+@@ -347,7 +348,7 @@ int batadv_algo_register(struct bat_algo_ops *bat_algo_ops)
  	}
  
- 	info = kmalloc(sizeof(*info), GFP_ATOMIC);
-@@ -473,14 +475,15 @@ static struct vis_info *add_packet(struct bat_priv *bat_priv,
- 	if (packet->entries * sizeof(struct vis_info_entry) > vis_info_len)
- 		packet->entries = vis_info_len / sizeof(struct vis_info_entry);
- 
--	recv_list_add(bat_priv, &info->recv_list, packet->sender_orig);
-+	batadv_recv_list_add(bat_priv, &info->recv_list, packet->sender_orig);
- 
- 	/* try to add it */
--	hash_added = batadv_hash_add(bat_priv->vis_hash, vis_info_cmp,
--				     vis_info_choose, info, &info->hash_entry);
-+	hash_added = batadv_hash_add(bat_priv->vis_hash, batadv_vis_info_cmp,
-+				     batadv_vis_info_choose, info,
-+				     &info->hash_entry);
- 	if (hash_added != 0) {
- 		/* did not work (for some reason) */
--		kref_put(&info->refcount, free_info);
-+		kref_put(&info->refcount, batadv_free_info);
- 		info = NULL;
- 	}
- 
-@@ -499,8 +502,8 @@ void batadv_receive_server_sync_packet(struct bat_priv *bat_priv,
- 	make_broadcast = (vis_server == VIS_TYPE_SERVER_SYNC);
- 
- 	spin_lock_bh(&bat_priv->vis_hash_lock);
--	info = add_packet(bat_priv, vis_packet, vis_info_len,
--			  &is_new, make_broadcast);
-+	info = batadv_add_packet(bat_priv, vis_packet, vis_info_len,
-+				 &is_new, make_broadcast);
- 	if (!info)
- 		goto end;
- 
-@@ -508,7 +511,7 @@ void batadv_receive_server_sync_packet(struct bat_priv *bat_priv,
- 	 * hash.
- 	 */
- 	if (vis_server == VIS_TYPE_SERVER_SYNC && is_new)
--		send_list_add(bat_priv, info);
-+		batadv_send_list_add(bat_priv, info);
- end:
- 	spin_unlock_bh(&bat_priv->vis_hash_lock);
- }
-@@ -534,8 +537,8 @@ void batadv_receive_client_update_packet(struct bat_priv *bat_priv,
- 		are_target = 1;
- 
- 	spin_lock_bh(&bat_priv->vis_hash_lock);
--	info = add_packet(bat_priv, vis_packet, vis_info_len,
--			  &is_new, are_target);
-+	info = batadv_add_packet(bat_priv, vis_packet, vis_info_len,
-+				 &is_new, are_target);
- 
- 	if (!info)
- 		goto end;
-@@ -546,11 +549,11 @@ void batadv_receive_client_update_packet(struct bat_priv *bat_priv,
- 	/* send only if we're the target server or ... */
- 	if (are_target && is_new) {
- 		packet->vis_type = VIS_TYPE_SERVER_SYNC;	/* upgrade! */
--		send_list_add(bat_priv, info);
-+		batadv_send_list_add(bat_priv, info);
- 
- 		/* ... we're not the recipient (and thus need to forward). */
- 	} else if (!batadv_is_my_mac(packet->target_orig)) {
--		send_list_add(bat_priv, info);
-+		batadv_send_list_add(bat_priv, info);
- 	}
- 
- end:
-@@ -562,8 +565,8 @@ end:
-  *
-  * Must be called with the originator hash locked
-  */
--static int find_best_vis_server(struct bat_priv *bat_priv,
--				struct vis_info *info)
-+static int batadv_find_best_vis_server(struct bat_priv *bat_priv,
-+				       struct vis_info *info)
- {
- 	struct hashtable_t *hash = bat_priv->orig_hash;
- 	struct neigh_node *router;
-@@ -600,7 +603,7 @@ static int find_best_vis_server(struct bat_priv *bat_priv,
- }
- 
- /* Return true if the vis packet is full. */
--static bool vis_packet_full(const struct vis_info *info)
-+static bool batadv_vis_packet_full(const struct vis_info *info)
- {
- 	const struct vis_packet *packet;
- 	packet = (struct vis_packet *)info->skb_packet->data;
-@@ -614,7 +617,7 @@ static bool vis_packet_full(const struct vis_info *info)
- /* generates a packet of own vis data,
-  * returns 0 on success, -1 if no packet could be generated
-  */
--static int generate_vis_packet(struct bat_priv *bat_priv)
-+static int batadv_generate_vis_packet(struct bat_priv *bat_priv)
- {
- 	struct hashtable_t *hash = bat_priv->orig_hash;
- 	struct hlist_node *node;
-@@ -638,7 +641,7 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
- 	skb_trim(info->skb_packet, sizeof(*packet));
- 
- 	if (packet->vis_type == VIS_TYPE_CLIENT_UPDATE) {
--		best_tq = find_best_vis_server(bat_priv, info);
-+		best_tq = batadv_find_best_vis_server(bat_priv, info);
- 
- 		if (best_tq < 0)
- 			return best_tq;
-@@ -675,7 +678,7 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
- next:
- 			batadv_neigh_node_free_ref(router);
- 
--			if (vis_packet_full(info))
-+			if (batadv_vis_packet_full(info))
- 				goto unlock;
- 		}
- 		rcu_read_unlock();
-@@ -697,7 +700,7 @@ next:
- 			entry->quality = 0; /* 0 means TT */
- 			packet->entries++;
- 
--			if (vis_packet_full(info))
-+			if (batadv_vis_packet_full(info))
- 				goto unlock;
- 		}
- 		rcu_read_unlock();
-@@ -713,7 +716,7 @@ unlock:
- /* free old vis packets. Must be called with this vis_hash_lock
-  * held
-  */
--static void purge_vis_packets(struct bat_priv *bat_priv)
-+static void batadv_purge_vis_packets(struct bat_priv *bat_priv)
- {
- 	uint32_t i;
- 	struct hashtable_t *hash = bat_priv->vis_hash;
-@@ -733,15 +736,15 @@ static void purge_vis_packets(struct bat_priv *bat_priv)
- 			if (batadv_has_timed_out(info->first_seen,
- 						 VIS_TIMEOUT)) {
- 				hlist_del(node);
--				send_list_del(info);
--				kref_put(&info->refcount, free_info);
-+				batadv_send_list_del(info);
-+				kref_put(&info->refcount, batadv_free_info);
- 			}
- 		}
- 	}
- }
- 
--static void broadcast_vis_packet(struct bat_priv *bat_priv,
--				 struct vis_info *info)
-+static void batadv_broadcast_vis_packet(struct bat_priv *bat_priv,
-+					struct vis_info *info)
- {
- 	struct neigh_node *router;
- 	struct hashtable_t *hash = bat_priv->orig_hash;
-@@ -774,8 +777,8 @@ static void broadcast_vis_packet(struct bat_priv *bat_priv,
- 			/* don't send it if we already received the packet from
- 			 * this node.
- 			 */
--			if (recv_list_is_in(bat_priv, &info->recv_list,
--					    orig_node->orig)) {
-+			if (batadv_recv_list_is_in(bat_priv, &info->recv_list,
-+						   orig_node->orig)) {
- 				batadv_neigh_node_free_ref(router);
- 				continue;
- 			}
-@@ -796,8 +799,8 @@ static void broadcast_vis_packet(struct bat_priv *bat_priv,
- 	}
- }
- 
--static void unicast_vis_packet(struct bat_priv *bat_priv,
--			       struct vis_info *info)
-+static void batadv_unicast_vis_packet(struct bat_priv *bat_priv,
-+				      struct vis_info *info)
- {
- 	struct orig_node *orig_node;
- 	struct neigh_node *router = NULL;
-@@ -825,8 +828,9 @@ out:
- 		batadv_orig_node_free_ref(orig_node);
- }
- 
--/* only send one vis packet. called from send_vis_packets() */
--static void send_vis_packet(struct bat_priv *bat_priv, struct vis_info *info)
-+/* only send one vis packet. called from batadv_send_vis_packets() */
-+static void batadv_send_vis_packet(struct bat_priv *bat_priv,
-+				   struct vis_info *info)
- {
- 	struct hard_iface *primary_if;
- 	struct vis_packet *packet;
-@@ -845,9 +849,9 @@ static void send_vis_packet(struct bat_priv *bat_priv, struct vis_info *info)
- 	packet->header.ttl--;
- 
- 	if (is_broadcast_ether_addr(packet->target_orig))
--		broadcast_vis_packet(bat_priv, info);
-+		batadv_broadcast_vis_packet(bat_priv, info);
- 	else
--		unicast_vis_packet(bat_priv, info);
-+		batadv_unicast_vis_packet(bat_priv, info);
- 	packet->header.ttl++; /* restore TTL */
+ 	INIT_HLIST_NODE(&bat_algo_ops->list);
+-	hlist_add_head(&bat_algo_ops->list, &bat_algo_list);
++	hlist_add_head(&bat_algo_ops->list, &batadv_algo_list);
+ 	ret = 0;
  
  out:
-@@ -856,7 +860,7 @@ out:
- }
+@@ -359,7 +360,7 @@ int batadv_algo_select(struct bat_priv *bat_priv, char *name)
+ 	struct bat_algo_ops *bat_algo_ops;
+ 	int ret = -EINVAL;
  
- /* called from timer; send (and maybe generate) vis packet. */
--static void send_vis_packets(struct work_struct *work)
-+static void batadv_send_vis_packets(struct work_struct *work)
- {
- 	struct delayed_work *delayed_work =
- 		container_of(work, struct delayed_work, work);
-@@ -865,11 +869,11 @@ static void send_vis_packets(struct work_struct *work)
- 	struct vis_info *info;
+-	bat_algo_ops = bat_algo_get(name);
++	bat_algo_ops = batadv_algo_get(name);
+ 	if (!bat_algo_ops)
+ 		goto out;
  
- 	spin_lock_bh(&bat_priv->vis_hash_lock);
--	purge_vis_packets(bat_priv);
-+	batadv_purge_vis_packets(bat_priv);
+@@ -377,14 +378,14 @@ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
  
--	if (generate_vis_packet(bat_priv) == 0) {
-+	if (batadv_generate_vis_packet(bat_priv) == 0) {
- 		/* schedule if generation was successful */
--		send_list_add(bat_priv, bat_priv->my_vis_info);
-+		batadv_send_list_add(bat_priv, bat_priv->my_vis_info);
+ 	seq_printf(seq, "Available routing algorithms:\n");
+ 
+-	hlist_for_each_entry(bat_algo_ops, node, &bat_algo_list, list) {
++	hlist_for_each_entry(bat_algo_ops, node, &batadv_algo_list, list) {
+ 		seq_printf(seq, "%s\n", bat_algo_ops->name);
  	}
  
- 	while (!list_empty(&bat_priv->vis_send_list)) {
-@@ -879,14 +883,14 @@ static void send_vis_packets(struct work_struct *work)
- 		kref_get(&info->refcount);
- 		spin_unlock_bh(&bat_priv->vis_hash_lock);
- 
--		send_vis_packet(bat_priv, info);
-+		batadv_send_vis_packet(bat_priv, info);
- 
- 		spin_lock_bh(&bat_priv->vis_hash_lock);
--		send_list_del(info);
--		kref_put(&info->refcount, free_info);
-+		batadv_send_list_del(info);
-+		kref_put(&info->refcount, batadv_free_info);
- 	}
- 	spin_unlock_bh(&bat_priv->vis_hash_lock);
--	start_vis_timer(bat_priv);
-+	batadv_start_vis_timer(bat_priv);
- }
- 
- /* init the vis server. this may only be called when if_list is already
-@@ -937,18 +941,19 @@ int batadv_vis_init(struct bat_priv *bat_priv)
- 
- 	INIT_LIST_HEAD(&bat_priv->vis_send_list);
- 
--	hash_added = batadv_hash_add(bat_priv->vis_hash, vis_info_cmp,
--				     vis_info_choose, bat_priv->my_vis_info,
-+	hash_added = batadv_hash_add(bat_priv->vis_hash, batadv_vis_info_cmp,
-+				     batadv_vis_info_choose,
-+				     bat_priv->my_vis_info,
- 				     &bat_priv->my_vis_info->hash_entry);
- 	if (hash_added != 0) {
- 		pr_err("Can't add own vis packet into hash\n");
- 		/* not in hash, need to remove it manually. */
--		kref_put(&bat_priv->my_vis_info->refcount, free_info);
-+		kref_put(&bat_priv->my_vis_info->refcount, batadv_free_info);
- 		goto err;
- 	}
- 
- 	spin_unlock_bh(&bat_priv->vis_hash_lock);
--	start_vis_timer(bat_priv);
-+	batadv_start_vis_timer(bat_priv);
  	return 0;
- 
- free_info:
-@@ -961,13 +966,13 @@ err:
  }
  
- /* Decrease the reference count on a hash item info */
--static void free_info_ref(struct hlist_node *node, void *arg)
-+static void batadv_free_info_ref(struct hlist_node *node, void *arg)
+-static int param_set_ra(const char *val, const struct kernel_param *kp)
++static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
  {
- 	struct vis_info *info;
+ 	struct bat_algo_ops *bat_algo_ops;
+ 	char *algo_name = (char *)val;
+@@ -393,7 +394,7 @@ static int param_set_ra(const char *val, const struct kernel_param *kp)
+ 	if (algo_name[name_len - 1] == '\n')
+ 		algo_name[name_len - 1] = '\0';
  
- 	info = container_of(node, struct vis_info, hash_entry);
--	send_list_del(info);
--	kref_put(&info->refcount, free_info);
-+	batadv_send_list_del(info);
-+	kref_put(&info->refcount, batadv_free_info);
+-	bat_algo_ops = bat_algo_get(algo_name);
++	bat_algo_ops = batadv_algo_get(algo_name);
+ 	if (!bat_algo_ops) {
+ 		pr_err("Routing algorithm '%s' is not supported\n", algo_name);
+ 		return -EINVAL;
+@@ -402,19 +403,20 @@ static int param_set_ra(const char *val, const struct kernel_param *kp)
+ 	return param_set_copystring(algo_name, kp);
  }
  
- /* shutdown vis-server */
-@@ -980,16 +985,16 @@ void batadv_vis_quit(struct bat_priv *bat_priv)
+-static const struct kernel_param_ops param_ops_ra = {
+-	.set = param_set_ra,
++static const struct kernel_param_ops batadv_param_ops_ra = {
++	.set = batadv_param_set_ra,
+ 	.get = param_get_string,
+ };
  
- 	spin_lock_bh(&bat_priv->vis_hash_lock);
- 	/* properly remove, kill timers ... */
--	batadv_hash_delete(bat_priv->vis_hash, free_info_ref, NULL);
-+	batadv_hash_delete(bat_priv->vis_hash, batadv_free_info_ref, NULL);
- 	bat_priv->vis_hash = NULL;
- 	bat_priv->my_vis_info = NULL;
- 	spin_unlock_bh(&bat_priv->vis_hash_lock);
- }
+-static struct kparam_string __param_string_ra = {
++static struct kparam_string batadv_param_string_ra = {
+ 	.maxlen = sizeof(batadv_routing_algo),
+ 	.string = batadv_routing_algo,
+ };
  
- /* schedule packets for (re)transmission */
--static void start_vis_timer(struct bat_priv *bat_priv)
-+static void batadv_start_vis_timer(struct bat_priv *bat_priv)
- {
--	INIT_DELAYED_WORK(&bat_priv->vis_work, send_vis_packets);
-+	INIT_DELAYED_WORK(&bat_priv->vis_work, batadv_send_vis_packets);
- 	queue_delayed_work(batadv_event_workqueue, &bat_priv->vis_work,
- 			   msecs_to_jiffies(VIS_INTERVAL));
- }
+-module_param_cb(routing_algo, &param_ops_ra, &__param_string_ra, 0644);
+-module_init(batman_init);
+-module_exit(batman_exit);
++module_param_cb(routing_algo, &batadv_param_ops_ra, &batadv_param_string_ra,
++		0644);
++module_init(batadv_init);
++module_exit(batadv_exit);
+ 
+ MODULE_LICENSE("GPL");
+ 
 -- 
 1.7.9.4
 
