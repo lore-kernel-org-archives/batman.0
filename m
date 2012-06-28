@@ -1,14 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Jun 2012 11:34:19 +0200
-Message-Id: <1340876067-28333-11-git-send-email-ordex@autistici.org>
+Date: Thu, 28 Jun 2012 11:34:21 +0200
+Message-Id: <1340876067-28333-13-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 References: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 10/18] batman-adv: Prefix sysfs defines with
-	BATADV_
+Subject: [B.A.T.M.A.N.] [PATCH 12/18] batman-adv: Prefix gateway defines
+	with BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -29,77 +29,90 @@ Reported-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_sysfs.c |   14 +++++++-------
- net/batman-adv/bat_sysfs.h |    4 ++--
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ net/batman-adv/bat_sysfs.c      |   26 +++++++++++++++-----------
+ net/batman-adv/gateway_common.h |    6 +++---
+ 2 files changed, 18 insertions(+), 14 deletions(-)
 
 diff --git a/net/batman-adv/bat_sysfs.c b/net/batman-adv/bat_sysfs.c
-index 3862fe1..725e7d7 100644
+index 725e7d7..a6c27f0 100644
 --- a/net/batman-adv/bat_sysfs.c
 +++ b/net/batman-adv/bat_sysfs.c
-@@ -505,11 +505,11 @@ int batadv_sysfs_add_meshif(struct net_device *dev)
- 	struct bat_attribute **bat_attr;
- 	int err;
+@@ -361,13 +361,16 @@ static ssize_t batadv_show_gw_mode(struct kobject *kobj, struct attribute *attr,
  
--	bat_priv->mesh_obj = kobject_create_and_add(SYSFS_IF_MESH_SUBDIR,
-+	bat_priv->mesh_obj = kobject_create_and_add(BATADV_SYSFS_IF_MESH_SUBDIR,
- 						    batif_kobject);
- 	if (!bat_priv->mesh_obj) {
- 		batadv_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
--			   SYSFS_IF_MESH_SUBDIR);
-+			   BATADV_SYSFS_IF_MESH_SUBDIR);
- 		goto out;
+ 	switch (atomic_read(&bat_priv->gw_mode)) {
+ 	case GW_MODE_CLIENT:
+-		bytes_written = sprintf(buff, "%s\n", GW_MODE_CLIENT_NAME);
++		bytes_written = sprintf(buff, "%s\n",
++					BATADV_GW_MODE_CLIENT_NAME);
+ 		break;
+ 	case GW_MODE_SERVER:
+-		bytes_written = sprintf(buff, "%s\n", GW_MODE_SERVER_NAME);
++		bytes_written = sprintf(buff, "%s\n",
++					BATADV_GW_MODE_SERVER_NAME);
+ 		break;
+ 	default:
+-		bytes_written = sprintf(buff, "%s\n", GW_MODE_OFF_NAME);
++		bytes_written = sprintf(buff, "%s\n",
++					BATADV_GW_MODE_OFF_NAME);
+ 		break;
  	}
  
-@@ -518,7 +518,7 @@ int batadv_sysfs_add_meshif(struct net_device *dev)
- 					&((*bat_attr)->attr));
- 		if (err) {
- 			batadv_err(dev, "Can't add sysfs file: %s/%s/%s\n",
--				   dev->name, SYSFS_IF_MESH_SUBDIR,
-+				   dev->name, BATADV_SYSFS_IF_MESH_SUBDIR,
- 				   ((*bat_attr)->attr).name);
- 			goto rem_attr;
- 		}
-@@ -673,12 +673,12 @@ int batadv_sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- 	struct bat_attribute **bat_attr;
- 	int err;
+@@ -386,15 +389,16 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
+ 	if (buff[count - 1] == '\n')
+ 		buff[count - 1] = '\0';
  
--	*hardif_obj = kobject_create_and_add(SYSFS_IF_BAT_SUBDIR,
--						    hardif_kobject);
-+	*hardif_obj = kobject_create_and_add(BATADV_SYSFS_IF_BAT_SUBDIR,
-+					     hardif_kobject);
+-	if (strncmp(buff, GW_MODE_OFF_NAME, strlen(GW_MODE_OFF_NAME)) == 0)
++	if (strncmp(buff, BATADV_GW_MODE_OFF_NAME,
++		    strlen(BATADV_GW_MODE_OFF_NAME)) == 0)
+ 		gw_mode_tmp = GW_MODE_OFF;
  
- 	if (!*hardif_obj) {
- 		batadv_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
--			   SYSFS_IF_BAT_SUBDIR);
-+			   BATADV_SYSFS_IF_BAT_SUBDIR);
- 		goto out;
+-	if (strncmp(buff, GW_MODE_CLIENT_NAME,
+-		    strlen(GW_MODE_CLIENT_NAME)) == 0)
++	if (strncmp(buff, BATADV_GW_MODE_CLIENT_NAME,
++		    strlen(BATADV_GW_MODE_CLIENT_NAME)) == 0)
+ 		gw_mode_tmp = GW_MODE_CLIENT;
+ 
+-	if (strncmp(buff, GW_MODE_SERVER_NAME,
+-		    strlen(GW_MODE_SERVER_NAME)) == 0)
++	if (strncmp(buff, BATADV_GW_MODE_SERVER_NAME,
++		    strlen(BATADV_GW_MODE_SERVER_NAME)) == 0)
+ 		gw_mode_tmp = GW_MODE_SERVER;
+ 
+ 	if (gw_mode_tmp < 0) {
+@@ -409,13 +413,13 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
+ 
+ 	switch (atomic_read(&bat_priv->gw_mode)) {
+ 	case GW_MODE_CLIENT:
+-		curr_gw_mode_str = GW_MODE_CLIENT_NAME;
++		curr_gw_mode_str = BATADV_GW_MODE_CLIENT_NAME;
+ 		break;
+ 	case GW_MODE_SERVER:
+-		curr_gw_mode_str = GW_MODE_SERVER_NAME;
++		curr_gw_mode_str = BATADV_GW_MODE_SERVER_NAME;
+ 		break;
+ 	default:
+-		curr_gw_mode_str = GW_MODE_OFF_NAME;
++		curr_gw_mode_str = BATADV_GW_MODE_OFF_NAME;
+ 		break;
  	}
  
-@@ -686,7 +686,7 @@ int batadv_sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
- 		err = sysfs_create_file(*hardif_obj, &((*bat_attr)->attr));
- 		if (err) {
- 			batadv_err(dev, "Can't add sysfs file: %s/%s/%s\n",
--				   dev->name, SYSFS_IF_BAT_SUBDIR,
-+				   dev->name, BATADV_SYSFS_IF_BAT_SUBDIR,
- 				   ((*bat_attr)->attr).name);
- 			goto rem_attr;
- 		}
-diff --git a/net/batman-adv/bat_sysfs.h b/net/batman-adv/bat_sysfs.h
-index 3672277..23a8390 100644
---- a/net/batman-adv/bat_sysfs.h
-+++ b/net/batman-adv/bat_sysfs.h
-@@ -20,8 +20,8 @@
- #ifndef _NET_BATMAN_ADV_SYSFS_H_
- #define _NET_BATMAN_ADV_SYSFS_H_
+diff --git a/net/batman-adv/gateway_common.h b/net/batman-adv/gateway_common.h
+index 6f8a4d0..31bbc3c 100644
+--- a/net/batman-adv/gateway_common.h
++++ b/net/batman-adv/gateway_common.h
+@@ -26,9 +26,9 @@ enum gw_modes {
+ 	GW_MODE_SERVER,
+ };
  
--#define SYSFS_IF_MESH_SUBDIR "mesh"
--#define SYSFS_IF_BAT_SUBDIR "batman_adv"
-+#define BATADV_SYSFS_IF_MESH_SUBDIR "mesh"
-+#define BATADV_SYSFS_IF_BAT_SUBDIR "batman_adv"
+-#define GW_MODE_OFF_NAME	"off"
+-#define GW_MODE_CLIENT_NAME	"client"
+-#define GW_MODE_SERVER_NAME	"server"
++#define BATADV_GW_MODE_OFF_NAME	"off"
++#define BATADV_GW_MODE_CLIENT_NAME	"client"
++#define BATADV_GW_MODE_SERVER_NAME	"server"
  
- struct bat_attribute {
- 	struct attribute attr;
+ void batadv_gw_bandwidth_to_kbit(uint8_t gw_class, int *down, int *up);
+ ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
 -- 
 1.7.9.4
 
