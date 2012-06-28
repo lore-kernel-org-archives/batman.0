@@ -1,11 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 27 Jun 2012 22:28:18 +0200
-Message-Id: <1340828898-12352-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1340828898-12352-1-git-send-email-sven@narfation.org>
-References: <1340828898-12352-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Don't leak information
-	through initialized packet fields
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu, 28 Jun 2012 11:34:09 +0200
+Message-Id: <1340876067-28333-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-06-28
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,64 +14,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-The reserved fields in batman-adv packets are not set to a constant value. The
-content of these memory regions is leaked unintentionally to the network.
+this is another set of patches I'd like to see included in net-next/linux-3.6.
+Here you have some more patches aimed to clean our namespace, a minor cleanup
+for the vis code that eliminates a useless intermediate buffer used to
+provide the output and two other minor cleanups for the TranslationTable code.
 
-This regression was introduced in c7fb529996cbc47bc8243d6860dac716ae70af82
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- soft-interface.c    |    1 +
- translation-table.c |    1 +
- vis.c               |    2 ++
- 3 files changed, 4 insertions(+)
+Tell me if there is any problem!
 
-diff --git a/soft-interface.c b/soft-interface.c
-index 6e2530b..80e667a 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -206,6 +206,7 @@ static int interface_tx(struct sk_buff *skb, struct net_device *soft_iface)
- 
- 		/* batman packet type: broadcast */
- 		bcast_packet->header.packet_type = BAT_BCAST;
-+		bcast_packet->reserved = 0;
- 
- 		/* hw address of first interface is the orig mac because only
- 		 * this mac is known throughout the mesh */
-diff --git a/translation-table.c b/translation-table.c
-index 2ab83d7..6cb4f79 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1879,6 +1879,7 @@ static void send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
- 	roam_adv_packet->header.packet_type = BAT_ROAM_ADV;
- 	roam_adv_packet->header.version = COMPAT_VERSION;
- 	roam_adv_packet->header.ttl = TTL;
-+	roam_adv_packet->reserved = 0;
- 	primary_if = primary_if_get_selected(bat_priv);
- 	if (!primary_if)
- 		goto out;
-diff --git a/vis.c b/vis.c
-index cec216f..70806af 100644
---- a/vis.c
-+++ b/vis.c
-@@ -620,6 +620,7 @@ static int generate_vis_packet(struct bat_priv *bat_priv)
- 	packet->header.ttl = TTL;
- 	packet->seqno = htonl(ntohl(packet->seqno) + 1);
- 	packet->entries = 0;
-+	packet->reserved = 0;
- 	skb_trim(info->skb_packet, sizeof(*packet));
- 
- 	if (packet->vis_type == VIS_TYPE_CLIENT_UPDATE) {
-@@ -913,6 +914,7 @@ int vis_init(struct bat_priv *bat_priv)
- 	packet->header.packet_type = BAT_VIS;
- 	packet->header.ttl = TTL;
- 	packet->seqno = 0;
-+	packet->reserved = 0;
- 	packet->entries = 0;
- 
- 	INIT_LIST_HEAD(&bat_priv->vis_send_list);
--- 
-1.7.10
+Thank you,
+	Antonio
 
+
+
+The following changes since commit 160eb5a6b14ca2eab5c598bdbbb24c24624bad34:
+
+  ipv4: Kill early demux method return value. (2012-06-27 22:01:22 -0700)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 42d0b044b7c9e5821f1bf3e2b4ea7861417c11c2:
+
+  batman-adv: Prefix main defines with BATADV_ (2012-06-28 08:45:05 +0200)
+
+----------------------------------------------------------------
+Included changes:
+- another batch of patches meant to clean batman-adv namespace
+- deletion of an obsolete intermediate buffer used in the visualization code to
+  print the output
+- TT code cleanups
+
+----------------------------------------------------------------
+Antonio Quartulli (2):
+      batman-adv: clear ADD+DEL (and viceversa) events in the same orig-interval
+      batman-adv: beautify tt_global_add() argument list
+
+Sven Eckelmann (16):
+      batman-adv: Prefix unicast local static functions with batadv_
+      batman-adv: Prefix vis local static functions with batadv_
+      batman-adv: Prefix main local static functions with batadv_
+      batman-adv: Prefix remaining function like macros with batadv_
+      batman-adv: Directly print to seq_file in vis
+      batman-adv: Prefix local defines with BATADV_
+      batman-adv: Prefix debugfs defines with BATADV_
+      batman-adv: Prefix sysfs defines with BATADV_
+      batman-adv: Prefix bridge_loop_avoidance defines with BATADV_
+      batman-adv: Prefix gateway defines with BATADV_
+      batman-adv: Prefix icmp_socket defines with BATADV_
+      batman-adv: Prefix packet defines with BATADV_
+      batman-adv: Prefix types defines with BATADV_
+      batman-adv: Prefix unicast defines with BATADV_
+      batman-adv: Prefix vis defines with BATADV_
+      batman-adv: Prefix main defines with BATADV_
+
+ net/batman-adv/bat_debugfs.c           |   34 +--
+ net/batman-adv/bat_debugfs.h           |    2 +-
+ net/batman-adv/bat_iv_ogm.c            |  125 ++++++----
+ net/batman-adv/bat_sysfs.c             |  228 +++++++++--------
+ net/batman-adv/bat_sysfs.h             |    4 +-
+ net/batman-adv/bitarray.c              |   20 +-
+ net/batman-adv/bitarray.h              |    4 +-
+ net/batman-adv/bridge_loop_avoidance.c |   24 +-
+ net/batman-adv/bridge_loop_avoidance.h |    2 +-
+ net/batman-adv/gateway_client.c        |   32 +--
+ net/batman-adv/gateway_common.c        |   26 +-
+ net/batman-adv/gateway_common.h        |    6 +-
+ net/batman-adv/hard-interface.c        |   50 ++--
+ net/batman-adv/icmp_socket.c           |    6 +-
+ net/batman-adv/icmp_socket.h           |    2 +-
+ net/batman-adv/main.c                  |   91 +++----
+ net/batman-adv/main.h                  |  101 ++++----
+ net/batman-adv/originator.c            |   34 +--
+ net/batman-adv/packet.h                |   12 +-
+ net/batman-adv/ring_buffer.c           |    4 +-
+ net/batman-adv/routing.c               |   32 +--
+ net/batman-adv/send.c                  |    6 +-
+ net/batman-adv/soft-interface.c        |   24 +-
+ net/batman-adv/translation-table.c     |  163 +++++++-----
+ net/batman-adv/translation-table.h     |    4 +-
+ net/batman-adv/types.h                 |   19 +-
+ net/batman-adv/unicast.c               |   37 +--
+ net/batman-adv/unicast.h               |    4 +-
+ net/batman-adv/vis.c                   |  422 ++++++++++++++------------------
+ net/batman-adv/vis.h                   |    2 +-
+ 30 files changed, 780 insertions(+), 740 deletions(-)
