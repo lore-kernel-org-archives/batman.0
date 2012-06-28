@@ -1,14 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Jun 2012 11:34:26 +0200
-Message-Id: <1340876067-28333-18-git-send-email-ordex@autistici.org>
+Date: Thu, 28 Jun 2012 11:34:20 +0200
+Message-Id: <1340876067-28333-12-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 References: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 17/18] batman-adv: Prefix vis defines with
-	BATADV_
+Subject: [B.A.T.M.A.N.] [PATCH 11/18] batman-adv: Prefix
+	bridge_loop_avoidance defines with BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -29,36 +29,45 @@ Reported-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/vis.c |    2 +-
- net/batman-adv/vis.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c |    4 ++--
+ net/batman-adv/bridge_loop_avoidance.h |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
-index 596eacc..a439ed6 100644
---- a/net/batman-adv/vis.c
-+++ b/net/batman-adv/vis.c
-@@ -674,7 +674,7 @@ static void batadv_purge_vis_packets(struct bat_priv *bat_priv)
- 				continue;
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 0592d2b..42b8a20 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -237,7 +237,7 @@ static void batadv_bla_del_backbone_claims(struct backbone_gw *backbone_gw)
+ 	}
  
- 			if (batadv_has_timed_out(info->first_seen,
--						 VIS_TIMEOUT)) {
-+						 BATADV_VIS_TIMEOUT)) {
- 				hlist_del(node);
- 				batadv_send_list_del(info);
- 				kref_put(&info->refcount, batadv_free_info);
-diff --git a/net/batman-adv/vis.h b/net/batman-adv/vis.h
-index dad5958..16a1a6b 100644
---- a/net/batman-adv/vis.h
-+++ b/net/batman-adv/vis.h
-@@ -21,7 +21,7 @@
- #define _NET_BATMAN_ADV_VIS_H_
+ 	/* all claims gone, intialize CRC */
+-	backbone_gw->crc = BLA_CRC_INIT;
++	backbone_gw->crc = BATADV_BLA_CRC_INIT;
+ }
  
- /* timeout of vis packets in miliseconds */
--#define VIS_TIMEOUT		200000
-+#define BATADV_VIS_TIMEOUT		200000
+ /* @bat_priv: the bat priv with all the soft interface information
+@@ -375,7 +375,7 @@ static struct backbone_gw *batadv_bla_get_backbone_gw(struct bat_priv *bat_priv,
  
- int batadv_vis_seq_print_text(struct seq_file *seq, void *offset);
- void batadv_receive_server_sync_packet(struct bat_priv *bat_priv,
+ 	entry->vid = vid;
+ 	entry->lasttime = jiffies;
+-	entry->crc = BLA_CRC_INIT;
++	entry->crc = BATADV_BLA_CRC_INIT;
+ 	entry->bat_priv = bat_priv;
+ 	atomic_set(&entry->request_sent, 0);
+ 	memcpy(entry->orig, orig, ETH_ALEN);
+diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
+index 9818b1e..58563f0 100644
+--- a/net/batman-adv/bridge_loop_avoidance.h
++++ b/net/batman-adv/bridge_loop_avoidance.h
+@@ -36,7 +36,7 @@ void batadv_bla_update_orig_address(struct bat_priv *bat_priv,
+ int batadv_bla_init(struct bat_priv *bat_priv);
+ void batadv_bla_free(struct bat_priv *bat_priv);
+ 
+-#define BLA_CRC_INIT	0
++#define BATADV_BLA_CRC_INIT	0
+ #else /* ifdef CONFIG_BATMAN_ADV_BLA */
+ 
+ static inline int batadv_bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb,
 -- 
 1.7.9.4
 
