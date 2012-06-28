@@ -1,14 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Jun 2012 11:34:25 +0200
-Message-Id: <1340876067-28333-17-git-send-email-ordex@autistici.org>
+Date: Thu, 28 Jun 2012 11:34:26 +0200
+Message-Id: <1340876067-28333-18-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 References: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 16/18] batman-adv: Prefix unicast defines
-	with BATADV_
+Subject: [B.A.T.M.A.N.] [PATCH 17/18] batman-adv: Prefix vis defines with
+	BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -29,52 +29,36 @@ Reported-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/originator.c |    2 +-
- net/batman-adv/unicast.c    |    2 +-
- net/batman-adv/unicast.h    |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ net/batman-adv/vis.c |    2 +-
+ net/batman-adv/vis.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index bf9ec39a..1980696 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -370,7 +370,7 @@ static void _batadv_purge_orig(struct bat_priv *bat_priv)
- 			}
+diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
+index 596eacc..a439ed6 100644
+--- a/net/batman-adv/vis.c
++++ b/net/batman-adv/vis.c
+@@ -674,7 +674,7 @@ static void batadv_purge_vis_packets(struct bat_priv *bat_priv)
+ 				continue;
  
- 			if (batadv_has_timed_out(orig_node->last_frag_packet,
--						 FRAG_TIMEOUT))
-+						 BATADV_FRAG_TIMEOUT))
- 				batadv_frag_list_free(&orig_node->frag_list);
- 		}
- 		spin_unlock_bh(list_lock);
-diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
-index c8da6b0..8098320 100644
---- a/net/batman-adv/unicast.c
-+++ b/net/batman-adv/unicast.c
-@@ -98,7 +98,7 @@ static int batadv_frag_create_buffer(struct list_head *head)
- 	int i;
- 	struct frag_packet_list_entry *tfp;
+ 			if (batadv_has_timed_out(info->first_seen,
+-						 VIS_TIMEOUT)) {
++						 BATADV_VIS_TIMEOUT)) {
+ 				hlist_del(node);
+ 				batadv_send_list_del(info);
+ 				kref_put(&info->refcount, batadv_free_info);
+diff --git a/net/batman-adv/vis.h b/net/batman-adv/vis.h
+index dad5958..16a1a6b 100644
+--- a/net/batman-adv/vis.h
++++ b/net/batman-adv/vis.h
+@@ -21,7 +21,7 @@
+ #define _NET_BATMAN_ADV_VIS_H_
  
--	for (i = 0; i < FRAG_BUFFER_SIZE; i++) {
-+	for (i = 0; i < BATADV_FRAG_BUFFER_SIZE; i++) {
- 		tfp = kmalloc(sizeof(*tfp), GFP_ATOMIC);
- 		if (!tfp) {
- 			batadv_frag_list_free(head);
-diff --git a/net/batman-adv/unicast.h b/net/batman-adv/unicast.h
-index 9257b83..936287f 100644
---- a/net/batman-adv/unicast.h
-+++ b/net/batman-adv/unicast.h
-@@ -22,8 +22,8 @@
+ /* timeout of vis packets in miliseconds */
+-#define VIS_TIMEOUT		200000
++#define BATADV_VIS_TIMEOUT		200000
  
- #include "packet.h"
- 
--#define FRAG_TIMEOUT 10000	/* purge frag list entries after time in ms */
--#define FRAG_BUFFER_SIZE 6	/* number of list elements in buffer */
-+#define BATADV_FRAG_TIMEOUT 10000 /* purge frag list entries after time in ms */
-+#define BATADV_FRAG_BUFFER_SIZE 6 /* number of list elements in buffer */
- 
- int batadv_frag_reassemble_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 			       struct sk_buff **new_skb);
+ int batadv_vis_seq_print_text(struct seq_file *seq, void *offset);
+ void batadv_receive_server_sync_packet(struct bat_priv *bat_priv,
 -- 
 1.7.9.4
 
