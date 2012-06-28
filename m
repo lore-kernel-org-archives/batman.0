@@ -1,13 +1,13 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Jun 2012 11:34:23 +0200
-Message-Id: <1340876067-28333-15-git-send-email-ordex@autistici.org>
+Date: Thu, 28 Jun 2012 11:34:24 +0200
+Message-Id: <1340876067-28333-16-git-send-email-ordex@autistici.org>
 In-Reply-To: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 References: <1340876067-28333-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 14/18] batman-adv: Prefix packet defines with
+Subject: [B.A.T.M.A.N.] [PATCH 15/18] batman-adv: Prefix types defines with
 	BATADV_
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -29,399 +29,82 @@ Reported-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_iv_ogm.c        |   20 ++++++++++----------
- net/batman-adv/hard-interface.c    |    3 ++-
- net/batman-adv/icmp_socket.c       |    4 ++--
- net/batman-adv/main.c              |    4 ++--
- net/batman-adv/packet.h            |   12 ++++++------
- net/batman-adv/routing.c           |    4 ++--
- net/batman-adv/send.c              |    4 ++--
- net/batman-adv/soft-interface.c    |   12 +++++++-----
- net/batman-adv/translation-table.c |    8 ++++----
- net/batman-adv/unicast.c           |    4 ++--
- net/batman-adv/vis.c               |    2 +-
- 11 files changed, 40 insertions(+), 37 deletions(-)
+ net/batman-adv/hard-interface.c |   11 ++++++-----
+ net/batman-adv/soft-interface.c |    2 +-
+ net/batman-adv/types.h          |    9 ++++-----
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index ffe9d1d..245bb2d 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -64,7 +64,7 @@ static int batadv_iv_ogm_iface_enable(struct hard_iface *hard_iface)
- 	get_random_bytes(&random_seqno, sizeof(random_seqno));
- 	atomic_set(&hard_iface->seqno, random_seqno);
- 
--	hard_iface->packet_len = BATMAN_OGM_HLEN;
-+	hard_iface->packet_len = BATADV_OGM_HLEN;
- 	hard_iface->packet_buff = kmalloc(hard_iface->packet_len, GFP_ATOMIC);
- 
- 	if (!hard_iface->packet_buff)
-@@ -72,7 +72,7 @@ static int batadv_iv_ogm_iface_enable(struct hard_iface *hard_iface)
- 
- 	batman_ogm_packet = (struct batman_ogm_packet *)hard_iface->packet_buff;
- 	batman_ogm_packet->header.packet_type = BAT_IV_OGM;
--	batman_ogm_packet->header.version = COMPAT_VERSION;
-+	batman_ogm_packet->header.version = BATADV_COMPAT_VERSION;
- 	batman_ogm_packet->header.ttl = 2;
- 	batman_ogm_packet->flags = NO_FLAGS;
- 	batman_ogm_packet->tq = TQ_MAX_VALUE;
-@@ -139,7 +139,7 @@ static int batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
- {
- 	int next_buff_pos = 0;
- 
--	next_buff_pos += buff_pos + BATMAN_OGM_HLEN;
-+	next_buff_pos += buff_pos + BATADV_OGM_HLEN;
- 	next_buff_pos += batadv_tt_len(tt_num_changes);
- 
- 	return (next_buff_pos <= packet_len) &&
-@@ -191,7 +191,7 @@ static void batadv_iv_ogm_send_to_if(struct forw_packet *forw_packet,
- 			   batman_ogm_packet->ttvn, hard_iface->net_dev->name,
- 			   hard_iface->net_dev->dev_addr);
- 
--		buff_pos += BATMAN_OGM_HLEN;
-+		buff_pos += BATADV_OGM_HLEN;
- 		buff_pos += batadv_tt_len(batman_ogm_packet->tt_num_changes);
- 		packet_num++;
- 		batman_ogm_packet = (struct batman_ogm_packet *)
-@@ -561,7 +561,7 @@ static void batadv_iv_ogm_forward(struct orig_node *orig_node,
- 		batman_ogm_packet->flags &= ~DIRECTLINK;
- 
- 	batadv_iv_ogm_queue_add(bat_priv, (unsigned char *)batman_ogm_packet,
--				BATMAN_OGM_HLEN + batadv_tt_len(tt_num_changes),
-+				BATADV_OGM_HLEN + batadv_tt_len(tt_num_changes),
- 				if_incoming, 0, batadv_iv_ogm_fwd_send_time());
- }
- 
-@@ -579,7 +579,7 @@ static void batadv_iv_ogm_schedule(struct hard_iface *hard_iface)
- 		tt_num_changes = batadv_tt_append_diff(bat_priv,
- 						       &hard_iface->packet_buff,
- 						       &hard_iface->packet_len,
--						       BATMAN_OGM_HLEN);
-+						       BATADV_OGM_HLEN);
- 
- 	batman_ogm_packet = (struct batman_ogm_packet *)hard_iface->packet_buff;
- 
-@@ -1025,7 +1025,7 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
- 	}
- 	rcu_read_unlock();
- 
--	if (batman_ogm_packet->header.version != COMPAT_VERSION) {
-+	if (batman_ogm_packet->header.version != BATADV_COMPAT_VERSION) {
- 		batadv_dbg(DBG_BATMAN, bat_priv,
- 			   "Drop packet: incompatible batman version (%i)\n",
- 			   batman_ogm_packet->header.version);
-@@ -1227,7 +1227,7 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
- 	unsigned char *tt_buff, *packet_buff;
- 	bool ret;
- 
--	ret = batadv_check_management_packet(skb, if_incoming, BATMAN_OGM_HLEN);
-+	ret = batadv_check_management_packet(skb, if_incoming, BATADV_OGM_HLEN);
- 	if (!ret)
- 		return NET_RX_DROP;
- 
-@@ -1248,12 +1248,12 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
- 
- 	/* unpack the aggregated packets and process them one by one */
- 	do {
--		tt_buff = packet_buff + buff_pos + BATMAN_OGM_HLEN;
-+		tt_buff = packet_buff + buff_pos + BATADV_OGM_HLEN;
- 
- 		batadv_iv_ogm_process(ethhdr, batman_ogm_packet, tt_buff,
- 				      if_incoming);
- 
--		buff_pos += BATMAN_OGM_HLEN;
-+		buff_pos += BATADV_OGM_HLEN;
- 		buff_pos += batadv_tt_len(batman_ogm_packet->tt_num_changes);
- 
- 		batman_ogm_packet = (struct batman_ogm_packet *)
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index c1ba6e2..3401084 100644
+index 3401084..9b1cb23 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -263,6 +263,7 @@ int batadv_hardif_enable_interface(struct hard_iface *hard_iface,
- {
- 	struct bat_priv *bat_priv;
- 	struct net_device *soft_iface;
-+	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
- 	int ret;
+@@ -196,7 +196,8 @@ int batadv_hardif_min_mtu(struct net_device *soft_iface)
+ 		if (hard_iface->soft_iface != soft_iface)
+ 			continue;
  
- 	if (hard_iface->if_status != IF_NOT_IN_USE)
-@@ -309,7 +310,7 @@ int batadv_hardif_enable_interface(struct hard_iface *hard_iface,
- 	hard_iface->if_status = IF_INACTIVE;
- 	batadv_orig_hash_add_if(hard_iface, bat_priv->num_ifaces);
+-		min_mtu = min_t(int, hard_iface->net_dev->mtu - BAT_HEADER_LEN,
++		min_mtu = min_t(int,
++				hard_iface->net_dev->mtu - BATADV_HEADER_LEN,
+ 				min_mtu);
+ 	}
+ 	rcu_read_unlock();
+@@ -320,18 +321,18 @@ int batadv_hardif_enable_interface(struct hard_iface *hard_iface,
+ 		    hard_iface->net_dev->name);
  
--	hard_iface->batman_adv_ptype.type = __constant_htons(ETH_P_BATMAN);
-+	hard_iface->batman_adv_ptype.type = ethertype;
- 	hard_iface->batman_adv_ptype.func = batadv_batman_skb_recv;
- 	hard_iface->batman_adv_ptype.dev = hard_iface->net_dev;
- 	dev_add_pack(&hard_iface->batman_adv_ptype);
-diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
-index 4f45ca7..f2f578b 100644
---- a/net/batman-adv/icmp_socket.c
-+++ b/net/batman-adv/icmp_socket.c
-@@ -203,9 +203,9 @@ static ssize_t batadv_socket_write(struct file *file, const char __user *buff,
+ 	if (atomic_read(&bat_priv->fragmentation) && hard_iface->net_dev->mtu <
+-		ETH_DATA_LEN + BAT_HEADER_LEN)
++		ETH_DATA_LEN + BATADV_HEADER_LEN)
+ 		batadv_info(hard_iface->soft_iface,
+ 			    "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to %zi would solve the problem.\n",
+ 			    hard_iface->net_dev->name, hard_iface->net_dev->mtu,
+-			    ETH_DATA_LEN + BAT_HEADER_LEN);
++			    ETH_DATA_LEN + BATADV_HEADER_LEN);
  
- 	icmp_packet->uid = socket_client->index;
+ 	if (!atomic_read(&bat_priv->fragmentation) && hard_iface->net_dev->mtu <
+-		ETH_DATA_LEN + BAT_HEADER_LEN)
++		ETH_DATA_LEN + BATADV_HEADER_LEN)
+ 		batadv_info(hard_iface->soft_iface,
+ 			    "The MTU of interface %s is too small (%i) to handle the transport of batman-adv packets. If you experience problems getting traffic through try increasing the MTU to %zi.\n",
+ 			    hard_iface->net_dev->name, hard_iface->net_dev->mtu,
+-			    ETH_DATA_LEN + BAT_HEADER_LEN);
++			    ETH_DATA_LEN + BATADV_HEADER_LEN);
  
--	if (icmp_packet->header.version != COMPAT_VERSION) {
-+	if (icmp_packet->header.version != BATADV_COMPAT_VERSION) {
- 		icmp_packet->msg_type = PARAMETER_PROBLEM;
--		icmp_packet->header.version = COMPAT_VERSION;
-+		icmp_packet->header.version = BATADV_COMPAT_VERSION;
- 		batadv_socket_add_packet(socket_client, icmp_packet,
- 					 packet_len);
- 		goto free_skb;
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 9cf0b38..986be72 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -72,7 +72,7 @@ static int __init batadv_init(void)
- 	register_netdevice_notifier(&batadv_hard_if_notifier);
- 
- 	pr_info("B.A.T.M.A.N. advanced %s (compatibility version %i) loaded\n",
--		SOURCE_VERSION, COMPAT_VERSION);
-+		SOURCE_VERSION, BATADV_COMPAT_VERSION);
- 
- 	return 0;
- }
-@@ -238,7 +238,7 @@ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 
- 	batman_ogm_packet = (struct batman_ogm_packet *)skb->data;
- 
--	if (batman_ogm_packet->header.version != COMPAT_VERSION) {
-+	if (batman_ogm_packet->header.version != BATADV_COMPAT_VERSION) {
- 		batadv_dbg(DBG_BATMAN, bat_priv,
- 			   "Drop packet: incompatible batman version (%i)\n",
- 			   batman_ogm_packet->header.version);
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index c90219c..e562414 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -20,7 +20,7 @@
- #ifndef _NET_BATMAN_ADV_PACKET_H_
- #define _NET_BATMAN_ADV_PACKET_H_
- 
--#define ETH_P_BATMAN  0x4305	/* unofficial/not registered Ethertype */
-+#define BATADV_ETH_P_BATMAN  0x4305 /* unofficial/not registered Ethertype */
- 
- enum bat_packettype {
- 	BAT_IV_OGM	 = 0x01,
-@@ -34,7 +34,7 @@ enum bat_packettype {
- };
- 
- /* this file is included by batctl which needs these defines */
--#define COMPAT_VERSION 14
-+#define BATADV_COMPAT_VERSION 14
- 
- enum batman_iv_flags {
- 	NOT_BEST_NEXT_HOP   = 1 << 3,
-@@ -65,7 +65,7 @@ enum unicast_frag_flags {
- };
- 
- /* TT_QUERY subtypes */
--#define TT_QUERY_TYPE_MASK 0x3
-+#define BATADV_TT_QUERY_TYPE_MASK 0x3
- 
- enum tt_query_packettype {
- 	TT_REQUEST    = 0,
-@@ -126,7 +126,7 @@ struct batman_ogm_packet {
- 	__be16   tt_crc;
- } __packed;
- 
--#define BATMAN_OGM_HLEN sizeof(struct batman_ogm_packet)
-+#define BATADV_OGM_HLEN sizeof(struct batman_ogm_packet)
- 
- struct icmp_packet {
- 	struct batman_header header;
-@@ -138,7 +138,7 @@ struct icmp_packet {
- 	uint8_t  reserved;
- } __packed;
- 
--#define BAT_RR_LEN 16
-+#define BATADV_RR_LEN 16
- 
- /* icmp_packet_rr must start with all fields from imcp_packet
-  * as this is assumed by code that handles ICMP packets
-@@ -151,7 +151,7 @@ struct icmp_packet_rr {
- 	__be16   seqno;
- 	uint8_t  uid;
- 	uint8_t  rr_cur;
--	uint8_t  rr[BAT_RR_LEN][ETH_ALEN];
-+	uint8_t  rr[BATADV_RR_LEN][ETH_ALEN];
- } __packed;
- 
- struct unicast_packet {
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 864692a..c8fee74 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -423,7 +423,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 
- 	/* add record route information if not full */
- 	if ((hdr_size == sizeof(struct icmp_packet_rr)) &&
--	    (icmp_packet->rr_cur < BAT_RR_LEN)) {
-+	    (icmp_packet->rr_cur < BATADV_RR_LEN)) {
- 		memcpy(&(icmp_packet->rr[icmp_packet->rr_cur]),
- 		       ethhdr->h_dest, ETH_ALEN);
- 		icmp_packet->rr_cur++;
-@@ -603,7 +603,7 @@ int batadv_recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
- 
- 	tt_query = (struct tt_query_packet *)skb->data;
- 
--	switch (tt_query->flags & TT_QUERY_TYPE_MASK) {
-+	switch (tt_query->flags & BATADV_TT_QUERY_TYPE_MASK) {
- 	case TT_REQUEST:
- 		batadv_inc_counter(bat_priv, BAT_CNT_TT_REQUEST_RX);
- 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 3d725e0..72542cb 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -58,11 +58,11 @@ int batadv_send_skb_packet(struct sk_buff *skb, struct hard_iface *hard_iface,
- 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 	memcpy(ethhdr->h_source, hard_iface->net_dev->dev_addr, ETH_ALEN);
- 	memcpy(ethhdr->h_dest, dst_addr, ETH_ALEN);
--	ethhdr->h_proto = __constant_htons(ETH_P_BATMAN);
-+	ethhdr->h_proto = __constant_htons(BATADV_ETH_P_BATMAN);
- 
- 	skb_set_network_header(skb, ETH_HLEN);
- 	skb->priority = TC_PRIO_CONTROL;
--	skb->protocol = __constant_htons(ETH_P_BATMAN);
-+	skb->protocol = __constant_htons(BATADV_ETH_P_BATMAN);
- 
- 	skb->dev = hard_iface->net_dev;
- 
+ 	if (batadv_hardif_is_iface_up(hard_iface))
+ 		batadv_hardif_activate_interface(hard_iface);
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 2de1d74..e726419 100644
+index e726419..bbbc9a9 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -135,6 +135,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	struct hard_iface *primary_if = NULL;
- 	struct bcast_packet *bcast_packet;
- 	struct vlan_ethhdr *vhdr;
-+	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
- 	static const uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00, 0x00,
- 						   0x00};
- 	unsigned int header_len = 0;
-@@ -152,11 +153,11 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 		vhdr = (struct vlan_ethhdr *)skb->data;
- 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
+@@ -351,7 +351,7 @@ static void batadv_interface_setup(struct net_device *dev)
+ 	 */
+ 	dev->mtu = ETH_DATA_LEN;
+ 	/* reserve more space in the skbuff for our header */
+-	dev->hard_header_len = BAT_HEADER_LEN;
++	dev->hard_header_len = BATADV_HEADER_LEN;
  
--		if (ntohs(vhdr->h_vlan_encapsulated_proto) != ETH_P_BATMAN)
-+		if (vhdr->h_vlan_encapsulated_proto != ethertype)
- 			break;
+ 	/* generate random address */
+ 	eth_hw_addr_random(dev);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 053c5d4..1d5d21e 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -22,12 +22,11 @@
  
- 		/* fall through */
--	case ETH_P_BATMAN:
-+	case BATADV_ETH_P_BATMAN:
- 		goto dropped;
- 	}
+ #include "packet.h"
+ #include "bitarray.h"
++#include <linux/kernel.h>
  
-@@ -208,7 +209,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 			goto dropped;
+-#define BAT_HEADER_LEN (ETH_HLEN + \
+-	((sizeof(struct unicast_packet) > sizeof(struct bcast_packet) ? \
+-	 sizeof(struct unicast_packet) : \
+-	 sizeof(struct bcast_packet))))
+-
++#define BATADV_HEADER_LEN \
++	(ETH_HLEN + max(sizeof(struct unicast_packet), \
++			sizeof(struct bcast_packet)))
  
- 		bcast_packet = (struct bcast_packet *)skb->data;
--		bcast_packet->header.version = COMPAT_VERSION;
-+		bcast_packet->header.version = BATADV_COMPAT_VERSION;
- 		bcast_packet->header.ttl = TTL;
- 
- 		/* batman packet type: broadcast */
-@@ -266,6 +267,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 	struct ethhdr *ethhdr;
- 	struct vlan_ethhdr *vhdr;
- 	short vid __maybe_unused = -1;
-+	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
- 
- 	/* check if enough space is available for pulling, and pull */
- 	if (!pskb_may_pull(skb, hdr_size))
-@@ -281,11 +283,11 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 		vhdr = (struct vlan_ethhdr *)skb->data;
- 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
- 
--		if (ntohs(vhdr->h_vlan_encapsulated_proto) != ETH_P_BATMAN)
-+		if (vhdr->h_vlan_encapsulated_proto != ethertype)
- 			break;
- 
- 		/* fall through */
--	case ETH_P_BATMAN:
-+	case BATADV_ETH_P_BATMAN:
- 		goto dropped;
- 	}
- 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 3ca2e48..79cd3f7 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1441,7 +1441,7 @@ static int batadv_send_tt_request(struct bat_priv *bat_priv,
- 				sizeof(struct tt_query_packet));
- 
- 	tt_request->header.packet_type = BAT_TT_QUERY;
--	tt_request->header.version = COMPAT_VERSION;
-+	tt_request->header.version = BATADV_COMPAT_VERSION;
- 	memcpy(tt_request->src, primary_if->net_dev->dev_addr, ETH_ALEN);
- 	memcpy(tt_request->dst, dst_orig_node->orig, ETH_ALEN);
- 	tt_request->header.ttl = TTL;
-@@ -1575,7 +1575,7 @@ static bool batadv_send_other_tt_response(struct bat_priv *bat_priv,
- 	}
- 
- 	tt_response->header.packet_type = BAT_TT_QUERY;
--	tt_response->header.version = COMPAT_VERSION;
-+	tt_response->header.version = BATADV_COMPAT_VERSION;
- 	tt_response->header.ttl = TTL;
- 	memcpy(tt_response->src, req_dst_orig_node->orig, ETH_ALEN);
- 	memcpy(tt_response->dst, tt_request->src, ETH_ALEN);
-@@ -1696,7 +1696,7 @@ static bool batadv_send_my_tt_response(struct bat_priv *bat_priv,
- 	}
- 
- 	tt_response->header.packet_type = BAT_TT_QUERY;
--	tt_response->header.version = COMPAT_VERSION;
-+	tt_response->header.version = BATADV_COMPAT_VERSION;
- 	tt_response->header.ttl = TTL;
- 	memcpy(tt_response->src, primary_if->net_dev->dev_addr, ETH_ALEN);
- 	memcpy(tt_response->dst, tt_request->src, ETH_ALEN);
-@@ -2008,7 +2008,7 @@ static void batadv_send_roam_adv(struct bat_priv *bat_priv, uint8_t *client,
- 					sizeof(struct roam_adv_packet));
- 
- 	roam_adv_packet->header.packet_type = BAT_ROAM_ADV;
--	roam_adv_packet->header.version = COMPAT_VERSION;
-+	roam_adv_packet->header.version = BATADV_COMPAT_VERSION;
- 	roam_adv_packet->header.ttl = TTL;
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 	if (!primary_if)
-diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
-index 472436a..c8da6b0 100644
---- a/net/batman-adv/unicast.c
-+++ b/net/batman-adv/unicast.c
-@@ -253,7 +253,7 @@ int batadv_frag_send_skb(struct sk_buff *skb, struct bat_priv *bat_priv,
- 	memcpy(frag1, &tmp_uc, sizeof(tmp_uc));
- 
- 	frag1->header.ttl--;
--	frag1->header.version = COMPAT_VERSION;
-+	frag1->header.version = BATADV_COMPAT_VERSION;
- 	frag1->header.packet_type = BAT_UNICAST_FRAG;
- 
- 	memcpy(frag1->orig, primary_if->net_dev->dev_addr, ETH_ALEN);
-@@ -319,7 +319,7 @@ find_router:
- 
- 	unicast_packet = (struct unicast_packet *)skb->data;
- 
--	unicast_packet->header.version = COMPAT_VERSION;
-+	unicast_packet->header.version = BATADV_COMPAT_VERSION;
- 	/* batman packet type: unicast */
- 	unicast_packet->header.packet_type = BAT_UNICAST;
- 	/* set unicast ttl */
-diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
-index 7dc7506..596eacc 100644
---- a/net/batman-adv/vis.c
-+++ b/net/batman-adv/vis.c
-@@ -873,7 +873,7 @@ int batadv_vis_init(struct bat_priv *bat_priv)
- 	INIT_LIST_HEAD(&bat_priv->my_vis_info->send_list);
- 	kref_init(&bat_priv->my_vis_info->refcount);
- 	bat_priv->my_vis_info->bat_priv = bat_priv;
--	packet->header.version = COMPAT_VERSION;
-+	packet->header.version = BATADV_COMPAT_VERSION;
- 	packet->header.packet_type = BAT_VIS;
- 	packet->header.ttl = TTL;
- 	packet->seqno = 0;
+ struct hard_iface {
+ 	struct list_head list;
 -- 
 1.7.9.4
 
