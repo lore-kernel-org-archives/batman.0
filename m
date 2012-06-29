@@ -1,11 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri, 29 Jun 2012 22:58:04 +0200
-Message-Id: <1341003484-8457-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1341003484-8457-1-git-send-email-ordex@autistici.org>
-References: <1341003484-8457-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2 stable 3.2-3.3-3.4] batman-adv: only drop
-	packets of known wifi clients
+Date: Fri, 29 Jun 2012 22:58:03 +0200
+Message-Id: <1341003484-8457-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2 stable 3.1-3.2] batman-adv: fix skb->data
+	assignment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,56 +16,49 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+commit 2c995ff892313009e336ecc8ec3411022f5b1c39 upstream.
 
-commit 5870adc68fc39d81089f1e80efdf64b97e5c37a1 upstream
+skb_linearize(skb) possibly rearranges the skb internal data and then changes
+the skb->data pointer value. For this reason any other pointer in the code that
+was assigned skb->data before invoking skb_linearise(skb) must be re-assigned.
 
-bug introduced with 59b699cdee039d75915c354da06937102d1f9a84
+In the current tt_query message handling code this is not done and therefore, in
+case of skb linearization, the pointer used to handle the packet header ends up
+in pointing to poisoned memory. The packet is then dropped but the
+translation-table mechanism is corrupted.
 
-If the source or destination mac address of an ethernet packet
-could not be found in the translation table the packet was
-dropped if AP isolation was turned on. This behavior would
-make it impossible to send broadcast packets over the mesh as
-the broadcast address will never enter the translation table.
-
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Acked-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/translation-table.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Hello,
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index a66c2dc..660c40f 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -2031,10 +2031,10 @@ bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst)
- {
- 	struct tt_local_entry *tt_local_entry = NULL;
- 	struct tt_global_entry *tt_global_entry = NULL;
--	bool ret = true;
-+	bool ret = false;
+the patch committed upstream already contains Cc: stable@vger.kernel.org but
+that patch does apply only on 3.5, 3.4 and 3.3.
+
+This patch is a backport for kernel versions 3.1 and 3.2
+
+Thank you,
+	Antonio
+
+
+ net/batman-adv/routing.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 0f32c81..55136e5 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -1246,6 +1246,8 @@ int recv_tt_query(struct sk_buff *skb, struct hard_iface *recv_if)
+ 		/* packet needs to be linearised to access the TT changes */
+ 		if (skb_linearize(skb) < 0)
+ 			goto out;
++		/* skb_linearize() possibly changed skb->data */
++		tt_query = (struct tt_query_packet *)skb->data;
  
- 	if (!atomic_read(&bat_priv->ap_isolation))
--		return false;
-+		goto out;
- 
- 	tt_local_entry = tt_local_hash_find(bat_priv, dst);
- 	if (!tt_local_entry)
-@@ -2044,10 +2044,10 @@ bool is_ap_isolated(struct bat_priv *bat_priv, uint8_t *src, uint8_t *dst)
- 	if (!tt_global_entry)
- 		goto out;
- 
--	if (_is_ap_isolated(tt_local_entry, tt_global_entry))
-+	if (!_is_ap_isolated(tt_local_entry, tt_global_entry))
- 		goto out;
- 
--	ret = false;
-+	ret = true;
- 
- out:
- 	if (tt_global_entry)
+ 		if (is_my_mac(tt_query->dst))
+ 			handle_tt_response(bat_priv, tt_query);
 -- 
 1.7.9.4
 
