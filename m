@@ -1,14 +1,15 @@
 Return-Path: <ben@decadent.org.uk>
-Message-ID: <1341111646.4852.70.camel@deadeye.wl.decadent.org.uk>
+Message-ID: <1341111847.4852.71.camel@deadeye.wl.decadent.org.uk>
 From: Ben Hutchings <ben@decadent.org.uk>
-Date: Sun, 01 Jul 2012 04:00:46 +0100
-In-Reply-To: <1341003484-8457-1-git-send-email-ordex@autistici.org>
+Date: Sun, 01 Jul 2012 04:04:07 +0100
+In-Reply-To: <1341003484-8457-2-git-send-email-ordex@autistici.org>
 References: <1341003484-8457-1-git-send-email-ordex@autistici.org>
+	<1341003484-8457-2-git-send-email-ordex@autistici.org>
 Content-Type: multipart/signed; micalg="pgp-sha512";
-	protocol="application/pgp-signature"; boundary="=-sHYs0ZuTuAP+Kf419u3S"
+	protocol="application/pgp-signature"; boundary="=-HUzUZMH/KQwLzHv6uKnl"
 Mime-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2 stable 3.1-3.2] batman-adv: fix
-	skb->data assignment
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2 stable 3.2-3.3-3.4] batman-adv: only
+ drop packets of known wifi clients
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,87 +21,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <ordex@autistici.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, stable@vger.kernel.org
+To: David Miller <davem@davemloft.net>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, stable@vger.kernel.org
 
 
---=-sHYs0ZuTuAP+Kf419u3S
+--=-HUzUZMH/KQwLzHv6uKnl
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Fri, 2012-06-29 at 22:58 +0200, Antonio Quartulli wrote:
-> commit 2c995ff892313009e336ecc8ec3411022f5b1c39 upstream.
+> From: Marek Lindner <lindner_marek@yahoo.de>
 >=20
-> skb_linearize(skb) possibly rearranges the skb internal data and then cha=
-nges
-> the skb->data pointer value. For this reason any other pointer in the cod=
-e that
-> was assigned skb->data before invoking skb_linearise(skb) must be re-assi=
-gned.
+> commit 5870adc68fc39d81089f1e80efdf64b97e5c37a1 upstream
 >=20
-> In the current tt_query message handling code this is not done and theref=
-ore, in
-> case of skb linearization, the pointer used to handle the packet header e=
-nds up
-> in pointing to poisoned memory. The packet is then dropped but the
-> translation-table mechanism is corrupted.
+> bug introduced with 59b699cdee039d75915c354da06937102d1f9a84
 >=20
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> Hello,
->=20
-> the patch committed upstream already contains Cc: stable@vger.kernel.org =
-but
-> that patch does apply only on 3.5, 3.4 and 3.3.
->=20
-> This patch is a backport for kernel versions 3.1 and 3.2
+> If the source or destination mac address of an ethernet packet
+> could not be found in the translation table the packet was
+> dropped if AP isolation was turned on. This behavior would
+> make it impossible to send broadcast packets over the mesh as
+> the broadcast address will never enter the translation table.
 [...]
-> --- a/net/batman-adv/routing.c
-> +++ b/net/batman-adv/routing.c
-> @@ -1246,6 +1246,8 @@ int recv_tt_query(struct sk_buff *skb, struct hard_=
-iface *recv_if)
->  		/* packet needs to be linearised to access the TT changes */
 
-Interesting context; the spelling of 'linearized' doesn't match and the
-line numbers are way off. :-)
-
-But OK, I've added this to the queue.
+Are you OK with this going into 3.2.y, David?
 
 Ben.
-
->  		if (skb_linearize(skb) < 0)
->  			goto out;
-> +		/* skb_linearize() possibly changed skb->data */
-> +		tt_query =3D (struct tt_query_packet *)skb->data;
-> =20
->  		if (is_my_mac(tt_query->dst))
->  			handle_tt_response(bat_priv, tt_query);
 
 --=20
 Ben Hutchings
 If you seem to know what you are doing, you'll be given more to do.
 
---=-sHYs0ZuTuAP+Kf419u3S
+--=-HUzUZMH/KQwLzHv6uKnl
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIVAwUAT++9Xue/yOyVhhEJAQr/IBAAjjL2AsS3LyWjyqR+4IuDIUlZBXRIY317
-xRFDwubjlBe27Irm4ezgQvHTgmFd3sXW2qAUdhsibyoAINykgrHx8TDmW0y1MBxB
-CVN8DXLed+MNJCNRPIlMGDQ1f4JR7c0zrZRcEAnLSu19RKvCpqCNUXIU3UICrV1Z
-QAlupLLMS2tm6zp+JTESA4TRAFGSddiFuAtyg0ybaWSyt/G61EeX+N+Oe/7nh/Rw
-B5x8f+rFoywsrc/DoJVSMDF53BcQX1YzwusntyW+bgXsiEVKcBrvqTZ+b8GUisQL
-mOLlgQwjMkIArkrvwrTjTMdnpuhVJUqRvuGGjgOWAFwwU4WEMIhki7PKRkzCD4ht
-08v60d76DvXVTfOK1piR6z6JMHbYIZO9ggCpYTV+QAUobfrk+vcwERODHKRHzJ6x
-FXBv0nwSYRPvnJLzsFvV2MVB1OEfOEtzzMicvDV2y1troqeKoP70t7JP+aFCa6Ba
-VlZxLdJjrCgKGG454atq3B5gQrCwUtiECo8/Rdk+re+K6zaCpAXGoF5Vml4nDvmX
-QC8qKYKZeKzGg2UvNF/RZ8YLEUopWjP33Hg2cXGGQDSKXaSsXvpCS0AupuH7ACaE
-7UAvRFGYHZXqLbMUS2mrnYfDm1p5scXwGH/ACdeZmf66zsA57kZtOFZ5jDRgPKqy
-QvJA6JC6Ybk=
-=OiR5
+iQIVAwUAT+++J+e/yOyVhhEJAQoJ3xAAyA55U92YBXJTlrtJpKkSf6RAxV6XpSts
+pAwujrFDoEFwSjnTVjcOopLmjHn5p6Tywc4tp9C6yAYlx3mb3PbdtlhMvZ2yVHLM
+aV8KNV/XAWY62GfRAcrdV+8Q2x/bEKOxhDEUKY+iD66AIlp2cYnoMFS0r1yCIyaJ
+KG5v3AoBVK9HZ7ROapjOrh0FofwzJuV++ofzwRe6YbN3cP0kzL/qcie+zbr6u0rY
+yN+Sx4o+1fMydumuRnKc0HTt4JYIEzC2vLdIVobS25M7unpG/0Bnw6AtjXo5NK70
+ZSd1lP1sLBwgkjbZf6FbGQXbgnZneZTQn698MSwY4JdXvQXm0q/fbj80WRmykbz1
+ZONfuJ3D9Za/uVnIiwmcnct3sgG9xHY1mppYwRb1o0U+QT2MELt4IaG0xI49Zafs
+bZyKzq6p8spw67ONxANPdu2L4XEcO/f2ALtV0T21R/Mv1zf33bLGBGhOvlRJ3J4R
+2Sow2V+DQ8jtEJj/m8TGbuaOmuPPxdiEFNhTQ2okUptQ8xYzvahoAbRYfkF00Zpl
+EJ1wq6lsjDeMvkjX6bCpWeUMpT/mZUzOsIw/qyY2dnUlvwZJMEy3hQBXakRXrH76
+G1kBwkN4PgE0LxdPFsfJ4OPbMR9n2aZNTFkos6c1NgT8Ul6wvHf7GK6bEsX9XQPl
++dust8bHsYI=
+=qzni
 -----END PGP SIGNATURE-----
 
---=-sHYs0ZuTuAP+Kf419u3S--
+--=-HUzUZMH/KQwLzHv6uKnl--
