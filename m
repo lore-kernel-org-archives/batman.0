@@ -1,16 +1,8 @@
-Return-Path: <davem@davemloft.net>
-Date: Sat, 30 Jun 2012 22:41:27 -0700 (PDT)
-Message-Id: <20120630.224127.2026489533108686887.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1341111847.4852.71.camel@deadeye.wl.decadent.org.uk>
-References: <1341003484-8457-1-git-send-email-ordex@autistici.org>
-	<1341003484-8457-2-git-send-email-ordex@autistici.org>
-	<1341111847.4852.71.camel@deadeye.wl.decadent.org.uk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2 stable 3.2-3.3-3.4] batman-adv: only
- drop packets of known wifi clients
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun,  1 Jul 2012 11:35:30 +0200
+Message-Id: <1341135333-31650-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3 0/3] new feature: Speedy Join 2012-07-01
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,26 +14,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ben@decadent.org.uk
-Cc: b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de, stable@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Ben Hutchings <ben@decadent.org.uk>
-Date: Sun, 01 Jul 2012 04:04:07 +0100
+Hello people,
 
-> On Fri, 2012-06-29 at 22:58 +0200, Antonio Quartulli wrote:
->> From: Marek Lindner <lindner_marek@yahoo.de>
->> 
->> commit 5870adc68fc39d81089f1e80efdf64b97e5c37a1 upstream
->> 
->> bug introduced with 59b699cdee039d75915c354da06937102d1f9a84
->> 
->> If the source or destination mac address of an ethernet packet
->> could not be found in the translation table the packet was
->> dropped if AP isolation was turned on. This behavior would
->> make it impossible to send broadcast packets over the mesh as
->> the broadcast address will never enter the translation table.
-> [...]
-> 
-> Are you OK with this going into 3.2.y, David?
+this is the third version of the Speedy Join patchset below
 
-Yes.
+
+Changes history:
+v1 -> v2:
+- indentation and style has been fixed taking into consideration Sven's
+  suggestions
+- Old patch 4 has been removed. TT flags do not really need to be carry along
+  with the tt_entry in a roaming_adv packet. (at least this is not needed for
+  the purpose of this feature). A roaming client will be marked as ROAM on
+  the new mesh node and therefore it will be already purged if nobody claims it
+
+v2 -> v3:
+- patch 1 and 2 have been merged in 1/3. Changes were all related to the new
+  refcounting mechanism. ..orig_entry_find() function has been improved as well as
+  ..orig_entry_add() (it does internally check if the orig_entry already exists or
+  not) and ..has_orig() (now it does use ..orig_entry_find()).
+- patch 2/3 has been modified to take into consideration the change above
+- temp timeout changed to an absolute value instead of being computed as product
+  of the local orig_interval times a constant factor.
+
+
+Thank you,
+	Antonio
+
+
+Antonio Quartulli (3):
+  batman-adv: add reference counting for type batadv_tt_orig_list_entry
+  batman-adv: detect not yet announced clients
+  batman-adv: change interface_rx to get orig node
+
+ main.h              |    1 +
+ packet.h            |    1 +
+ routing.c           |   10 +--
+ soft-interface.c    |    6 +-
+ soft-interface.h    |    5 +-
+ translation-table.c |  196 +++++++++++++++++++++++++++++++++++++--------------
+ translation-table.h |    4 +-
+ types.h             |    2 +
+ 8 files changed, 163 insertions(+), 62 deletions(-)
+
+-- 
+1.7.9.4
+
