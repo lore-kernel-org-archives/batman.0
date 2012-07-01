@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon,  2 Jul 2012 01:43:41 +0200
-Message-Id: <1341186226-10549-12-git-send-email-ordex@autistici.org>
+Date: Mon,  2 Jul 2012 01:43:42 +0200
+Message-Id: <1341186226-10549-13-git-send-email-ordex@autistici.org>
 In-Reply-To: <1341186226-10549-1-git-send-email-ordex@autistici.org>
 References: <1341186226-10549-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 11/16] batman-adv: Transform
-	BATADV_LOG_BUFF(idx) into function
+Subject: [B.A.T.M.A.N.] [PATCH 12/16] batman-adv: Remove bat_ prefix from
+	bat_{debugfs, sysfs}.{c, h}
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,65 +22,157 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The linux Documentation/CodingStyle says that:
- * Chapter 12: "inline functions are preferable to macros resembling functions"
- * Chapter 12.2: Depending on local variables with a magic name is bad
- * Chapter 12.3: Macros with arguments used as l-value are bad
+The "bat_" prefix in the source files implementing the batman-adv sysfs and
+debugfs interface doesn't have a special meaning and are only used by these
+files and files that implement the actual B.A.T.M.A.N. path finding algorithm.
+
+The prefix is better suited to mark files that are used to implement the main
+part of the path finding. All other files should not use it and therefore gets
+renamed.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_debugfs.c |   19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+ net/batman-adv/Makefile                     |    4 ++--
+ net/batman-adv/{bat_debugfs.c => debugfs.c} |    2 +-
+ net/batman-adv/{bat_debugfs.h => debugfs.h} |    0
+ net/batman-adv/gateway_client.c             |    2 +-
+ net/batman-adv/hard-interface.c             |    2 +-
+ net/batman-adv/main.c                       |    4 ++--
+ net/batman-adv/soft-interface.c             |    4 ++--
+ net/batman-adv/{bat_sysfs.c => sysfs.c}     |    2 +-
+ net/batman-adv/{bat_sysfs.h => sysfs.h}     |    0
+ 9 files changed, 10 insertions(+), 10 deletions(-)
+ rename net/batman-adv/{bat_debugfs.c => debugfs.c} (99%)
+ rename net/batman-adv/{bat_debugfs.h => debugfs.h} (100%)
+ rename net/batman-adv/{bat_sysfs.c => sysfs.c} (99%)
+ rename net/batman-adv/{bat_sysfs.h => sysfs.h} (100%)
 
-diff --git a/net/batman-adv/bat_debugfs.c b/net/batman-adv/bat_debugfs.c
-index db7b9bf..acf33e2 100644
+diff --git a/net/batman-adv/Makefile b/net/batman-adv/Makefile
+index 6d5c194..8676d2b 100644
+--- a/net/batman-adv/Makefile
++++ b/net/batman-adv/Makefile
+@@ -19,11 +19,10 @@
+ #
+ 
+ obj-$(CONFIG_BATMAN_ADV) += batman-adv.o
+-batman-adv-y += bat_debugfs.o
+ batman-adv-y += bat_iv_ogm.o
+-batman-adv-y += bat_sysfs.o
+ batman-adv-y += bitarray.o
+ batman-adv-$(CONFIG_BATMAN_ADV_BLA) += bridge_loop_avoidance.o
++batman-adv-y += debugfs.o
+ batman-adv-y += gateway_client.o
+ batman-adv-y += gateway_common.o
+ batman-adv-y += hard-interface.o
+@@ -35,6 +34,7 @@ batman-adv-y += ring_buffer.o
+ batman-adv-y += routing.o
+ batman-adv-y += send.o
+ batman-adv-y += soft-interface.o
++batman-adv-y += sysfs.o
+ batman-adv-y += translation-table.o
+ batman-adv-y += unicast.o
+ batman-adv-y += vis.o
+diff --git a/net/batman-adv/bat_debugfs.c b/net/batman-adv/debugfs.c
+similarity index 99%
+rename from net/batman-adv/bat_debugfs.c
+rename to net/batman-adv/debugfs.c
+index acf33e2..e45cf0e 100644
 --- a/net/batman-adv/bat_debugfs.c
-+++ b/net/batman-adv/bat_debugfs.c
-@@ -36,13 +36,21 @@ static struct dentry *batadv_debugfs;
++++ b/net/batman-adv/debugfs.c
+@@ -21,7 +21,7 @@
  
- #ifdef CONFIG_BATMAN_ADV_DEBUG
- #define BATADV_LOG_BUFF_MASK (batadv_log_buff_len - 1)
--#define BATADV_LOG_BUFF(idx) (debug_log->log_buff[(idx) & BATADV_LOG_BUFF_MASK])
+ #include <linux/debugfs.h>
  
--static int batadv_log_buff_len = BATADV_LOG_BUF_LEN;
-+static const int batadv_log_buff_len = BATADV_LOG_BUF_LEN;
-+
-+static char *batadv_log_char_addr(struct batadv_debug_log *debug_log,
-+				  size_t idx)
-+{
-+	return &debug_log->log_buff[idx & BATADV_LOG_BUFF_MASK];
-+}
+-#include "bat_debugfs.h"
++#include "debugfs.h"
+ #include "translation-table.h"
+ #include "originator.h"
+ #include "hard-interface.h"
+diff --git a/net/batman-adv/bat_debugfs.h b/net/batman-adv/debugfs.h
+similarity index 100%
+rename from net/batman-adv/bat_debugfs.h
+rename to net/batman-adv/debugfs.h
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 43b9c17..b421cc4 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -18,7 +18,7 @@
+  */
  
- static void batadv_emit_log_char(struct batadv_debug_log *debug_log, char c)
- {
--	BATADV_LOG_BUFF(debug_log->log_end) = c;
-+	char *char_addr;
-+
-+	char_addr = batadv_log_char_addr(debug_log, debug_log->log_end);
-+	*char_addr = c;
- 	debug_log->log_end++;
+ #include "main.h"
+-#include "bat_sysfs.h"
++#include "sysfs.h"
+ #include "gateway_client.h"
+ #include "gateway_common.h"
+ #include "hard-interface.h"
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index eb765a7..60f50c5 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -23,7 +23,7 @@
+ #include "send.h"
+ #include "translation-table.h"
+ #include "routing.h"
+-#include "bat_sysfs.h"
++#include "sysfs.h"
+ #include "originator.h"
+ #include "hash.h"
+ #include "bridge_loop_avoidance.h"
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 17dcdd9..13c88b2 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -18,8 +18,8 @@
+  */
  
- 	if (debug_log->log_end - debug_log->log_start > batadv_log_buff_len)
-@@ -109,6 +117,7 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
- 	struct batadv_priv *bat_priv = file->private_data;
- 	struct batadv_debug_log *debug_log = bat_priv->debug_log;
- 	int error, i = 0;
-+	char *char_addr;
- 	char c;
+ #include "main.h"
+-#include "bat_sysfs.h"
+-#include "bat_debugfs.h"
++#include "sysfs.h"
++#include "debugfs.h"
+ #include "routing.h"
+ #include "send.h"
+ #include "originator.h"
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 7a7d821..b7c655c 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -22,12 +22,12 @@
+ #include "hard-interface.h"
+ #include "routing.h"
+ #include "send.h"
+-#include "bat_debugfs.h"
++#include "debugfs.h"
+ #include "translation-table.h"
+ #include "hash.h"
+ #include "gateway_common.h"
+ #include "gateway_client.h"
+-#include "bat_sysfs.h"
++#include "sysfs.h"
+ #include "originator.h"
+ #include <linux/slab.h>
+ #include <linux/ethtool.h>
+diff --git a/net/batman-adv/bat_sysfs.c b/net/batman-adv/sysfs.c
+similarity index 99%
+rename from net/batman-adv/bat_sysfs.c
+rename to net/batman-adv/sysfs.c
+index a0a9ea4..66518c7 100644
+--- a/net/batman-adv/bat_sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -18,7 +18,7 @@
+  */
  
- 	if ((file->f_flags & O_NONBLOCK) &&
-@@ -134,7 +143,9 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
- 
- 	while ((!error) && (i < count) &&
- 	       (debug_log->log_start != debug_log->log_end)) {
--		c = BATADV_LOG_BUFF(debug_log->log_start);
-+		char_addr = batadv_log_char_addr(debug_log,
-+						 debug_log->log_start);
-+		c = *char_addr;
- 
- 		debug_log->log_start++;
- 
+ #include "main.h"
+-#include "bat_sysfs.h"
++#include "sysfs.h"
+ #include "translation-table.h"
+ #include "originator.h"
+ #include "hard-interface.h"
+diff --git a/net/batman-adv/bat_sysfs.h b/net/batman-adv/sysfs.h
+similarity index 100%
+rename from net/batman-adv/bat_sysfs.h
+rename to net/batman-adv/sysfs.h
 -- 
 1.7.9.4
 
