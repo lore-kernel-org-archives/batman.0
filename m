@@ -1,8 +1,9 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun,  1 Jul 2012 19:07:31 +0200
-Message-Id: <1341162451-26688-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix typos in comments
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun,  1 Jul 2012 22:51:55 +0200
+Message-Id: <1341175915-26856-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: check batadv_orig_hash_add_if()
+	return code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,58 +16,41 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-the word millisecond is misspelled in several comments. This patch fixes it.
+If this call fails, some of the orig_nodes spaces may have been
+resized for the increased number of interface, and some may not.
+If we would just continue with the larger number of interfaces,
+this would lead to access to not allocated memory later.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+We better check the return code, and don't add the interface if
+no memory is available. OTOH, keeping some of the orig_nodes
+with too much memory allocated should hurt no one (except for
+a few too many bytes allocated).
+
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- main.h |    8 ++++----
- vis.h  |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ hard-interface.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/main.h b/main.h
-index 6dca9c4..0c6903c 100644
---- a/main.h
-+++ b/main.h
-@@ -41,13 +41,13 @@
-  * -> TODO: check influence on BATADV_TQ_LOCAL_WINDOW_SIZE
-  */
- #define BATADV_PURGE_TIMEOUT 200000 /* 200 seconds */
--#define BATADV_TT_LOCAL_TIMEOUT 3600000 /* in miliseconds */
--#define BATADV_TT_CLIENT_ROAM_TIMEOUT 600000 /* in miliseconds */
-+#define BATADV_TT_LOCAL_TIMEOUT 3600000 /* in milliseconds */
-+#define BATADV_TT_CLIENT_ROAM_TIMEOUT 600000 /* in milliseconds */
- /* sliding packet range of received originator messages in sequence numbers
-  * (should be a multiple of our word size)
-  */
- #define BATADV_TQ_LOCAL_WINDOW_SIZE 64
--/* miliseconds we have to keep pending tt_req */
-+/* milliseconds we have to keep pending tt_req */
- #define BATADV_TT_REQUEST_TIMEOUT 3000
+diff --git a/hard-interface.c b/hard-interface.c
+index 282bf6e..2d7f4f2 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -313,7 +313,12 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	hard_iface->if_num = bat_priv->num_ifaces;
+ 	bat_priv->num_ifaces++;
+ 	hard_iface->if_status = BATADV_IF_INACTIVE;
+-	batadv_orig_hash_add_if(hard_iface, bat_priv->num_ifaces);
++	ret = batadv_orig_hash_add_if(hard_iface, bat_priv->num_ifaces);
++	if (ret < 0) {
++		bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
++		bat_priv->num_ifaces--;
++		goto err_dev;
++	}
  
- #define BATADV_TQ_GLOBAL_WINDOW_SIZE 5
-@@ -59,7 +59,7 @@
- #define BATADV_TT_OGM_APPEND_MAX 3
- 
- /* Time in which a client can roam at most ROAMING_MAX_COUNT times in
-- * miliseconds
-+ * milliseconds
-  */
- #define BATADV_ROAMING_MAX_TIME 20000
- #define BATADV_ROAMING_MAX_COUNT 5
-diff --git a/vis.h b/vis.h
-index 84e716e..873282f 100644
---- a/vis.h
-+++ b/vis.h
-@@ -20,7 +20,7 @@
- #ifndef _NET_BATMAN_ADV_VIS_H_
- #define _NET_BATMAN_ADV_VIS_H_
- 
--/* timeout of vis packets in miliseconds */
-+/* timeout of vis packets in milliseconds */
- #define BATADV_VIS_TIMEOUT		200000
- 
- int batadv_vis_seq_print_text(struct seq_file *seq, void *offset);
+ 	hard_iface->batman_adv_ptype.type = ethertype;
+ 	hard_iface->batman_adv_ptype.func = batadv_batman_skb_recv;
 -- 
-1.7.9.4
+1.7.10
 
