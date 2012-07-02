@@ -1,15 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 2 Jul 2012 18:26:52 +0200
-References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
-	<201207021752.32274.lindner_marek@yahoo.de>
-	<CAHD-aq+gr5_gM4Qtg0qH=eQfjQvxyrhzGqCk-UwE6z9_tf+bsQ@mail.gmail.com>
-In-Reply-To: <CAHD-aq+gr5_gM4Qtg0qH=eQfjQvxyrhzGqCk-UwE6z9_tf+bsQ@mail.gmail.com>
+Return-Path: <gmazzurco89@gmail.com>
+Message-ID: <4FF1CED5.3020100@gmail.com>
+Date: Mon, 02 Jul 2012 18:39:49 +0200
+From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
+In-Reply-To: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <201207021826.52532.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] batman majareta? I can batctl ping but not ping
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,32 +21,70 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, July 02, 2012 18:11:24 Guido Iribarren wrote:
-> Hi Marek!
-> Just to confirm and avoid useless compiling
-> PKG_VERSION:=2012.2.0
-> BATCTL_VERSION:=2012.2.0
-> PKG_MD5SUM:=68967ed1df709de18ab795722dde9341
-> BATCTL_MD5SUM:=7abd284098c514d3f2858e8a956c495e
-> 
-> ~/trunk/feeds/packages/net/batman-adv$ svn info .
-> Path: .
-> URL: svn://svn.openwrt.org/openwrt/packages/net/batman-adv
-> Repository Root: svn://svn.openwrt.org/openwrt
-> Repository UUID: 3c298f89-4303-0410-b956-a3cf2f4a3e73
-> Revision: 32578
-> Node Kind: directory
-> Schedule: normal
-> Last Changed Author: marek
-> Last Changed Rev: 32578
-> Last Changed Date: 2012-07-02 12:51:27 -0300 (Mon, 02 Jul 2012)
-> 
-> Given the date and the author ;) I assume this rev should do the trick,
-> right?
+That bug was happening in Pisa some times
+I have discussed about that antonio too
 
-Yes, that looks about right. If you wish to update the package and not the 
-full image you should update one more time because Jow reminded me to increase 
-the packet version. 
+hope more test case can help to understand what is happening!
 
-Cheers,
-Marek
+On 07/02/12 15:30, Guido Iribarren wrote:
+> (which roughly translates as "batman gone nuts?")
+> Hey great devs!
+> we've been having a particular issue in deltalibre and quintanalibre
+> (local WCN) with batman-adv, but so far we haven't found a precise way
+> to reproduce it.
+> The symptom is that (after some reboots or physical displacements?)
+> one batman-adv host becomes unreachable on layer3, although it is seen
+> on originators table, and can be batctl ping'ed or batctl tracerout'ed
+> with no problem whatsoever.
+> 
+> Even more, it not unreachable from the whole network, but instead from
+> just a few other nodes. So, let's say that the nearer nodes can layer3
+> ping it , but some others farther away cannot (although i can't assure
+> it depends on the hop distance)
+> All of them can batctl ping it (layer2)
+> A hard reboot of all the nodes solves it, connectivity is restored in
+> all directions.
+> 
+> Thing is, I've just came across it again, and managed to do some tests
+> to aid in description / debugging
+> As an aid in understanding network topology,
+> I'm attaching the wonderful output of "batctl vd dot |grep -v TT" for
+> your viewing delight
+> 
+> problem node is ana
+> it can be reached from ruth and hquilla (direct neighbours)
+> but arping behaves erratically from colmena or charly
+> and normal ping (v4 or v6) doesn't receive any reply at all when run
+> from colmena or charly
+> 
+> I used arping, with and without -b , and seemed like i could narrow
+> the problem down to incoming broadcast packet handling, but further
+> tests just left me more puzzled!
+> 
+> all nodes are tl-mr3220 running openwrt trunk r31316 with batman-adv
+> 2012.2.0 , driver ath9k
+> secondary interfaces named _wlan1 are all tl-wn722n which uses driver ath9k_htc
+> nodes are around 100meters (+/-50mts) apart from each other
+> 
+> this behaviour has been observed (but not reported) in dissimilar
+> setups, using ubnt bullet2 mixed with mr3220, running r29936 with
+> batman-adv 2011.4.0 , with nodes 1 or 2km apart from each other.
+> 
+> Tests are the combined crude output of batctl td and arping, so to
+> make this email ease on the eye, i'm publishing them elsewhere:
+> http://pastebin.com/6PPwN3PS
+> 
+> The live openwrt configuration can be analysed in detail at
+> https://bitbucket.org/guidoi/deltalibre-configs/src
+> (it's a free, open network after all! :D )
+> in particular:
+> ana -> https://bitbucket.org/guidoi/deltalibre-configs/src/6de4ce970fe2/mac/54_E6_FC_BE_26_12
+> hquilla -> https://bitbucket.org/guidoi/deltalibre-configs/src/6de4ce970fe2/mac/54_E6_FC_BE_28_34
+> colmena -> https://bitbucket.org/guidoi/deltalibre-configs/src/6de4ce970fe2/mac/54_E6_FC_BE_29_D2
+> 
+> Thanks a lot for the attention,
+> Hope that you are having fun, and that I'm not spoiling it :)
+> 
+> Cheers!
+> 
+> Gui
