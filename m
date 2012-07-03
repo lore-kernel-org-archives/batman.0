@@ -1,16 +1,10 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 3 Jul 2012 10:37:55 +0200
-References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
-	<201207031007.42202.lindner_marek@yahoo.de>
-	<CAKeC-QGEmZJG-Cw0GhLJy+PreGm2m3Wd9AfD3A-C4Q=gOmum6A@mail.gmail.com>
-In-Reply-To: <CAKeC-QGEmZJG-Cw0GhLJy+PreGm2m3Wd9AfD3A-C4Q=gOmum6A@mail.gmail.com>
+Return-Path: <lambertarthur22@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201207031037.55843.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman majareta? I can batctl ping but not ping
+From: Arthur Lambert <lambertarthur22@gmail.com>
+Date: Tue, 3 Jul 2012 10:57:28 +0200
+Message-ID: <CAGpqJgoJ2V5TNcr5j+c=y88Vj4ipE0ke=y9ZDKqOvsaci+u54A@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] [B.A.T.M.A.N] OGM problem and documentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,23 +16,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, July 03, 2012 10:27:55 Wayne Abroue wrote:
-> Thanks Marek, Unfortunately all my nodes run one or other default
-> openwrt version depending  on ubnt/Mp/wrt  driver compat .
-> Would it maybe be viable to add a package to older versions of openwrt
-> repo's i.e. Batman-adv-new_stable?
+Hi,
 
-I don't quite follow you. Your nodes run pre-compiled images from the openwrt 
-snapshot directory ? If so, there isn't much we can do. As far as I know the 
-openwrt team builds snapshots from time to time. Whenever they do they also 
-upgrade the entire platform - these package may or may not be backward 
-compatible. 
+I am testing Batman Advance (Batman release 2012 1.0) and I am trying
+to measure signaling on some topology of VMs. I have 81 nodes (Debian,
+3.0.9) with KVM virtualization. My topology is something like this :
+http://imgur.com/Xh1gM
 
-Take this with a grain of salt. I don't really know how they are doing it. You 
-should contact the OpenWrt developers because you use their binaries (unless I 
-am totally on the wrong track).
 
-Regards,
-Marek
+I have a topology with an adjacency matrix of maximum 4 as you can see
+on my screenshot. I record on each VM signaling received and sent. On
+some VM, my node send OGM at each "orig_interval" but does not receive
+any OGM at all.
+
+Is it normal ?
+
+Moreover, I have found a wonderful documention here :
+http://gitorious.org/batman-adv-doc. Unfortunatly, it is not maintened
+since two years. I have also found some papers which describe your
+protocol, but most of the time, the paper are too old or not correct
+in the protocol description. At this moment, my first source of
+information is the code. Can you advise me a good paper or
+documentation on the architecture and features of Batman Advance set
+apart your twiki.
+
+Kind regards, my apology for my English.
+
+-- 
+Arthur
