@@ -1,19 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 4 Jul 2012 20:30:55 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20120704183054.GA12020@pandem0nium>
-References: <CAHD-aqKoP3NDSWNHv=vOUCF_ANTRkVWGyXq-v=WC8iRPHJkdhQ@mail.gmail.com>
-	<20120704091225.GA10142@pandem0nium>
-	<CAHD-aqKo=uzeu6_oc4BXj2WRWObMADyWCHp0sNFn8cJDX8sdjA@mail.gmail.com>
-	<CAHD-aqJYXy_Y1vnzHqV6yyrTPAZCHOshGK2HboeYuEzx8i0xNA@mail.gmail.com>
-	<20120704140500.GA11212@pandem0nium>
-	<CAHD-aqJcFYHCEMh66JaR3a_AbkKmNtAkvZ2s6j8Szd=xmvh8jg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
-Content-Disposition: inline
+Date: Wed,  4 Jul 2012 20:33:06 +0200
+Message-Id: <1341426786-12278-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <CAHD-aqJcFYHCEMh66JaR3a_AbkKmNtAkvZ2s6j8Szd=xmvh8jg@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] BLAII + gw_mode, DHCP sometimes gets dropped
+References: <CAHD-aqJcFYHCEMh66JaR3a_AbkKmNtAkvZ2s6j8Szd=xmvh8jg@mail.gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: check incoming packet type
+	for bla
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,115 +17,127 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
+If the gateway functionality is used, some broadcast packets (DHCP
+requests) may be transmitted as unicast packets. As the bridge loop
+avoidance code now only considers the payload Ethernet destination,
+it may drop the DHCP request for clients which are claimed by other
+backbone gateways, because it falsely infers from the broadcast address
+that the right backbone gateway should havehandled the broadcast.
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fix this by checking and delegating the batman-adv packet type used
+for transmission.
 
-Sorry, my fault. Will send a patch based on maint in a minute.
+Reported-by: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+PATCHv2 adds a comment why we are doing this, and adds the is_bcast
+check to the other is_multicast_ether_addr() check in this function.
 
-On Wed, Jul 04, 2012 at 03:12:59PM -0300, Guido Iribarren wrote:
-> On Wed, Jul 4, 2012 at 11:05 AM, Simon Wunderlich
-> <simon.wunderlich@s2003.tu-chemnitz.de> wrote:
-> > Hey Guido,
-> >
-> > thanks again for the good debugging, that really helped
-> > to understand the problem :)
-> Thanks free software! :D
->=20
-> > I've sent a patch, is it possible for you to apply it
-> > and retry? it should be enough to update the two
-> > gateway nodes.
-> Definitely!
-> here's the output, tho:
->=20
-> Applying ./patches/9999-batman-adv-check-incoming-packet-type-for-bla.pat=
-ch
-> using plaintext:
-> patching file bridge_loop_avoidance.c
-> Hunk #1 succeeded at 1351 with fuzz 1 (offset -17 lines).
-> Hunk #2 FAILED at 1378.
-> Hunk #3 FAILED at 1423.
-> 2 out of 3 hunks FAILED -- saving rejects to file bridge_loop_avoidance.c=
-=2Erej
-> patching file bridge_loop_avoidance.h
-> Hunk #1 FAILED at 21.
-> Hunk #2 FAILED at 42.
-> 2 out of 2 hunks FAILED -- saving rejects to file bridge_loop_avoidance.h=
-=2Erej
-> patching file soft-interface.c
-> Hunk #1 FAILED at 274.
-> Hunk #2 FAILED at 323.
-> 2 out of 2 hunks FAILED -- saving rejects to file soft-interface.c.rej
-> Patch failed!  Please fix
-> ./patches/9999-batman-adv-check-incoming-packet-type-for-bla.patch!
->=20
-> i'm trying to apply against
-> openwrt@torvic:~/trunk/feeds/packages/net/batman-adv$ svn info
-> Path: .
-> URL: svn://svn.openwrt.org/openwrt/packages/net/batman-adv
-> Repository Root: svn://svn.openwrt.org/openwrt
-> Repository UUID: 3c298f89-4303-0410-b956-a3cf2f4a3e73
-> Revision: 32587
-> Node Kind: directory
-> Schedule: normal
-> Last Changed Author: marek
-> Last Changed Rev: 32579
-> Last Changed Date: 2012-07-02 13:20:20 -0300 (Mon, 02 Jul 2012)
->=20
->=20
-> Visually inspecting the rejects, seems my source code still doesn't
-> have the batadv_ prefix in functions names.
-> i.e.:
->=20
-> int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid)
->=20
-> I've seen many patches flying around dealing with the batadv_ prefix
-> for dave, but didn't pay much attention to them: which of those should
-> i grab?
->=20
-> Or, Simon, could you kindly send another patch that i can apply
-> cleanly to r32587 of
->  svn://svn.openwrt.org/openwrt/packages/net/batman-adv
->=20
-> in any case, i see the changes are simple, so i *could* try a manual
-> apply of the patch....... but last time i tried (with other patch), it
-> got overwritten by openwrt build system.
->=20
-> Thanks a lot for the support!
->=20
-> Gui
->=20
->=20
->=20
-> >
-> > Cheers
-> >         Simon
-> >
-> > -----BEGIN PGP SIGNATURE-----
-> > Version: GnuPG v1.4.10 (GNU/Linux)
-> >
-> > iEYEARECAAYFAk/0TYwACgkQrzg/fFk7axbznwCg5oyyF4UaWJBV8GXztFSGG8sa
-> > vnAAoJYcgNuCcdA5fZKrIvaUE888FzSI
-> > =3Dzd3Q
-> > -----END PGP SIGNATURE-----
-> >
->=20
+PATCH-maint is the backport for maint
+---
+ bridge_loop_avoidance.c |   15 +++++++++++----
+ bridge_loop_avoidance.h |    5 +++--
+ soft-interface.c        |    6 +++++-
+ 3 files changed, 19 insertions(+), 7 deletions(-)
 
---45Z9DzgjV8m4Oswq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 8bf9751..2b82a0f 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -1351,6 +1351,7 @@ void bla_free(struct bat_priv *bat_priv)
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the frame to be checked
+  * @vid: the VLAN ID of the frame
++ * @is_bcast: the packet came in a broadcast packet type.
+  *
+  * bla_rx avoidance checks if:
+  *  * we have to race for a claim
+@@ -1361,7 +1362,8 @@ void bla_free(struct bat_priv *bat_priv)
+  * process the skb.
+  *
+  */
+-int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid)
++int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid,
++	   bool is_bcast)
+ {
+ 	struct ethhdr *ethhdr;
+ 	struct claim search_claim, *claim = NULL;
+@@ -1380,7 +1382,7 @@ int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid)
+ 
+ 	if (unlikely(atomic_read(&bat_priv->bla_num_requests)))
+ 		/* don't allow broadcasts while requests are in flight */
+-		if (is_multicast_ether_addr(ethhdr->h_dest))
++		if (is_multicast_ether_addr(ethhdr->h_dest) && is_bcast)
+ 			goto handled;
+ 
+ 	memcpy(search_claim.addr, ethhdr->h_source, ETH_ALEN);
+@@ -1406,8 +1408,13 @@ int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid)
+ 	}
+ 
+ 	/* if it is a broadcast ... */
+-	if (is_multicast_ether_addr(ethhdr->h_dest)) {
+-		/* ... drop it. the responsible gateway is in charge. */
++	if (is_multicast_ether_addr(ethhdr->h_dest) && is_bcast) {
++		/* ... drop it. the responsible gateway is in charge.
++		 *
++		 * We need to check is_bcast because with the gateway
++		 * feature, broadcasts (like DHCP requests) may be sent
++		 * using a unicast packet type. 
++		 */
+ 		goto handled;
+ 	} else {
+ 		/* seems the client considers us as its best gateway.
+diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
+index e39f93a..dc5227b 100644
+--- a/bridge_loop_avoidance.h
++++ b/bridge_loop_avoidance.h
+@@ -23,7 +23,8 @@
+ #define _NET_BATMAN_ADV_BLA_H_
+ 
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
++int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid,
++	   bool is_bcast);
+ int bla_tx(struct bat_priv *bat_priv, struct sk_buff *skb, short vid);
+ int bla_is_backbone_gw(struct sk_buff *skb,
+ 		       struct orig_node *orig_node, int hdr_size);
+@@ -41,7 +42,7 @@ void bla_free(struct bat_priv *bat_priv);
+ #else /* ifdef CONFIG_BATMAN_ADV_BLA */
+ 
+ static inline int bla_rx(struct bat_priv *bat_priv, struct sk_buff *skb,
+-			 short vid)
++			 short vid, bool is_bcast)
+ {
+ 	return 0;
+ }
+diff --git a/soft-interface.c b/soft-interface.c
+index 6e2530b..92a4070 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -256,7 +256,11 @@ void interface_rx(struct net_device *soft_iface,
+ 	struct bat_priv *bat_priv = netdev_priv(soft_iface);
+ 	struct ethhdr *ethhdr;
+ 	struct vlan_ethhdr *vhdr;
++	struct batman_header *batadv_header = (struct batman_header *)skb->data;
+ 	short vid __maybe_unused = -1;
++	bool is_bcast;
++
++	is_bcast = !!(batadv_header->packet_type == BAT_BCAST);
+ 
+ 	/* check if enough space is available for pulling, and pull */
+ 	if (!pskb_may_pull(skb, hdr_size))
+@@ -302,7 +306,7 @@ void interface_rx(struct net_device *soft_iface,
+ 	/* Let the bridge loop avoidance check the packet. If will
+ 	 * not handle it, we can safely push it up.
+ 	 */
+-	if (bla_rx(bat_priv, skb, vid))
++	if (bla_rx(bat_priv, skb, vid, is_bcast))
+ 		goto out;
+ 
+ 	netif_rx(skb);
+-- 
+1.7.10
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAk/0i94ACgkQrzg/fFk7axacJACgrNhvuaORNLdLLTdPOcL/spbb
-7W4An2SweTilzTjZOE/jzwSa7aDYk6dT
-=oo7x
------END PGP SIGNATURE-----
-
---45Z9DzgjV8m4Oswq--
