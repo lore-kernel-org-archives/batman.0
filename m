@@ -1,15 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 4 Jul 2012 12:18:39 +0200
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Wed, 4 Jul 2012 12:21:55 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20120704102155.GA10503@pandem0nium>
 References: <CAGpqJgoJ2V5TNcr5j+c=y88Vj4ipE0ke=y9ZDKqOvsaci+u54A@mail.gmail.com>
 	<20120704092052.GB10142@pandem0nium>
 	<CAGpqJgoZz+m9d41L2rVtOUzenzue_BjCt+YQ8h_TSEi7QbxwoQ@mail.gmail.com>
-In-Reply-To: <CAGpqJgoZz+m9d41L2rVtOUzenzue_BjCt+YQ8h_TSEi7QbxwoQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201207041218.39362.lindner_marek@yahoo.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
+Content-Disposition: inline
+In-Reply-To: <CAGpqJgoZz+m9d41L2rVtOUzenzue_BjCt+YQ8h_TSEi7QbxwoQ@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] [B.A.T.M.A.N] OGM problem and documentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,19 +25,72 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-Hi,
+--huq684BweRXVnRxX
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> This document discribes most of the features of Batman and some interesting
-> stuffs. But I am looking for information about global architecture, how
+Hey Arthur,
+
+On Wed, Jul 04, 2012 at 12:00:09PM +0200, Arthur Lambert wrote:
+> Hello,
+>=20
+> thanks for your answer,
+>=20
+> This is what I thought.. Its probably a mistake in my script to
+> measure signaling. I will check that.
+> I have already read the document that you give to me. This document
+> discribes most of the features
+> of Batman and some interesting stuffs. But I am looking for
+> information about global architecture, how
 > the protocol handles threads. An example of usefull draw  :
 > http://imgur.com/3ecCY. Its not always easy
 > to study or understand a complex project like Batman when you does not
 > know how a ad-hoc protocol works.
+>=20
+> I am trying for example to follow the execution of the module with
+> tools like LTTNG to see how works
+> the implementation of workqueue or using GCOV to follow the data path.
 
-looking at your drawing I'd say your are more interested in the actual 
-implementation than the protocol. Is that right?
-Chapter 4 of the mentioned paper explains how the packets travels through the 
-invidual functions and files. Might that be what you are looking for ?
+That's pretty interesting! I don't know if we have something like
+an architecture illustration (but haven't see any recently).  If you get
+anything interesting out of that (illustration, performance insights,
+etc), please tell us.
 
-Regards,
-Marek
+>=20
+> And I interconnect my vm with special way. Its a king of bridge but
+> the tool that
+> I use simulate network topology so it more complicated than that.
+
+Ah ok. Is it a self-written tool or something public? We usually use
+vde/wirefilter to build up different topologies, see:
+
+http://www.open-mesh.org/wiki/open-mesh/Emulation
+
+Would be interesting if there are other possibilities :)
+
+>=20
+> I will come back problably later to ask questions, but at this moment,
+> I have to many questions,
+> I need first to continue reading the code and twiki, running my tests,
+> ... again and again.
+
+Good luck!
+
+Cheers
+	Simon
+
+--huq684BweRXVnRxX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk/0GUMACgkQrzg/fFk7axbFcwCdFocGULEefZT9ZY5UgdOtTYKL
+GK8AoKaInEeynwAs9oKmNd17kA7I64YS
+=Cj9K
+-----END PGP SIGNATURE-----
+
+--huq684BweRXVnRxX--
