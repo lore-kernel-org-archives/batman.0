@@ -1,11 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed,  4 Jul 2012 20:33:06 +0200
-Message-Id: <1341426786-12278-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Wed,  4 Jul 2012 20:38:19 +0200
+Message-Id: <1341427099-12368-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <CAHD-aqJcFYHCEMh66JaR3a_AbkKmNtAkvZ2s6j8Szd=xmvh8jg@mail.gmail.com>
 References: <CAHD-aqJcFYHCEMh66JaR3a_AbkKmNtAkvZ2s6j8Szd=xmvh8jg@mail.gmail.com>
-Subject: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: check incoming packet type
-	for bla
+Subject: [B.A.T.M.A.N.] [PATCH-maint-v2] batman-adv: check incoming packet
+	type for bla
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -37,6 +37,8 @@ PATCHv2 adds a comment why we are doing this, and adds the is_bcast
 check to the other is_multicast_ether_addr() check in this function.
 
 PATCH-maint is the backport for maint
+
+PATCH-maint-v2 is even checkpatch clean, and remove obsolete !!
 ---
  bridge_loop_avoidance.c |   15 +++++++++++----
  bridge_loop_avoidance.h |    5 +++--
@@ -44,7 +46,7 @@ PATCH-maint is the backport for maint
  3 files changed, 19 insertions(+), 7 deletions(-)
 
 diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 8bf9751..2b82a0f 100644
+index 8bf9751..c5863f4 100644
 --- a/bridge_loop_avoidance.c
 +++ b/bridge_loop_avoidance.c
 @@ -1351,6 +1351,7 @@ void bla_free(struct bat_priv *bat_priv)
@@ -85,7 +87,7 @@ index 8bf9751..2b82a0f 100644
 +		 *
 +		 * We need to check is_bcast because with the gateway
 +		 * feature, broadcasts (like DHCP requests) may be sent
-+		 * using a unicast packet type. 
++		 * using a unicast packet type.
 +		 */
  		goto handled;
  	} else {
@@ -114,7 +116,7 @@ index e39f93a..dc5227b 100644
  	return 0;
  }
 diff --git a/soft-interface.c b/soft-interface.c
-index 6e2530b..92a4070 100644
+index 6e2530b..a0ec0e4 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
 @@ -256,7 +256,11 @@ void interface_rx(struct net_device *soft_iface,
@@ -125,7 +127,7 @@ index 6e2530b..92a4070 100644
  	short vid __maybe_unused = -1;
 +	bool is_bcast;
 +
-+	is_bcast = !!(batadv_header->packet_type == BAT_BCAST);
++	is_bcast = (batadv_header->packet_type == BAT_BCAST);
  
  	/* check if enough space is available for pulling, and pull */
  	if (!pskb_may_pull(skb, hdr_size))
