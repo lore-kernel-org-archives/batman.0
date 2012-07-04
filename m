@@ -1,14 +1,14 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 4 Jul 2012 11:12:25 +0200
+Date: Wed, 4 Jul 2012 11:20:52 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20120704091225.GA10142@pandem0nium>
-References: <CAHD-aqKoP3NDSWNHv=vOUCF_ANTRkVWGyXq-v=WC8iRPHJkdhQ@mail.gmail.com>
+Message-ID: <20120704092052.GB10142@pandem0nium>
+References: <CAGpqJgoJ2V5TNcr5j+c=y88Vj4ipE0ke=y9ZDKqOvsaci+u54A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
+	protocol="application/pgp-signature"; boundary="l76fUT7nc3MelDdI"
 Content-Disposition: inline
-In-Reply-To: <CAHD-aqKoP3NDSWNHv=vOUCF_ANTRkVWGyXq-v=WC8iRPHJkdhQ@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] BLAII + gw_mode, DHCP sometimes gets dropped
+In-Reply-To: <CAGpqJgoJ2V5TNcr5j+c=y88Vj4ipE0ke=y9ZDKqOvsaci+u54A@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] [B.A.T.M.A.N] OGM problem and documentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,86 +23,59 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---Q68bSM7Ycu6FN28Q
+--l76fUT7nc3MelDdI
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hello Guido,
+Hello Arthur,
 
-On Tue, Jul 03, 2012 at 05:07:17PM -0300, Guido Iribarren wrote:
-> Hello there again,
-> I have observed a problem since updating to 2012.2 and enabled BLAII
+On Tue, Jul 03, 2012 at 10:57:28AM +0200, Arthur Lambert wrote:
+> Hi,
 >=20
-> I'm compiling logs to understand what's happening, but as always,
-> reading logs only gets me more lost :(
-> So here i am again begging for help
+> I am testing Batman Advance (Batman release 2012 1.0) and I am trying
+> to measure signaling on some topology of VMs. I have 81 nodes (Debian,
+> 3.0.9) with KVM virtualization. My topology is something like this :
+> http://imgur.com/Xh1gM
+>=20
+>=20
+> I have a topology with an adjacency matrix of maximum 4 as you can see
+> on my screenshot. I record on each VM signaling received and sent. On
+> some VM, my node send OGM at each "orig_interval" but does not receive
+> any OGM at all.
+>=20
+> Is it normal ?
 
-There are some debug levels for BLA as well, and you can now get the
-claimlist with batctl (which is basically the list of clients a gateway
-feels responsible for) - this may help for debugging. But first,
-we should clarify some more details for your setup.
+Well, no. :) Have you checked that the problem is really with batman and
+not with a layer below (I don't know how you interconnect your VMs,
+wirefilter/bridges/etc)? You can check using tcpdump on the interface
+batman is using and see if you have any incoming packets of other nodes.
 
->=20
-> the setup is the same I described in yesterday's attachment, but
-> what's not pictured is an ethernet cable between colmena-casa and
-> f8d11504758.
-> f8d11504758 is the only router that connects to the internet (through
-> WAN cable), and it's also the only one that has dnsmasq running and
-> gw_mode=3Dserver.
-> All the other nodes have gw_mode=3Dclient
->=20
-> All of the nodes have bridge_loop_avoidance=3D1
-> (even though there are no other utp connections, so it could in fact
-> be enabled only on colmena-casa and f8d11504758)
->=20
-> with this setup, dhcp requests from the mesh sometimes get "lost",
-> either they don't reach f8d11504758 or the reply doesn't get out
-
-Questions:
- * which node runs the DHCP server? colmena-casa, f8d11504758 or something =
-else?
- * at which point is DHCP getting lost? is the DISCOVER/REQUEST from the cl=
-ient
-   getting lost, or the reply from the server?
- * Can you specify "sometimes" a little bit more? What are the circumstance=
-s, how
-   often does it happen?
+If not, there is most probably something wrong with the interconnect.
 
 >=20
-> this didn't happen with batman 2012.1 , setup as indicated by the BLAI
-> wiki page (batctl if add br-lan)
-> furthermore, with batman 2012.2 , BLAII activated, but gw_mode=3Doff in
-> all nodes, DHCP also works fine.
+> Moreover, I have found a wonderful documention here :
+> http://gitorious.org/batman-adv-doc. Unfortunatly, it is not maintened
+> since two years. I have also found some papers which describe your
+> protocol, but most of the time, the paper are too old or not correct
+> in the protocol description. At this moment, my first source of
+> information is the code. Can you advise me a good paper or
+> documentation on the architecture and features of Batman Advance set
+> apart your twiki.
 
-Mhm, that's rather strange ... we had a similar problem when ap isolation
-was activated. Do you have this feature turned on?
+Well yeah, this documentation is pretty old. I'd suggest to read
 
-So DHCP is only having problems when gw-mode is turned on colmena-casa
-and f8d11504758?
+http://downloads.open-mesh.org/batman/papers/batman-adv_network_coding.pdf
 
->=20
-> So, a few questions arise:
-> is it a problem to activate bridge_loop_avoidance=3D1 in all nodes,
-> regardless of the fact that they "need" it or not? (that is, it is
-> activated on nodes that don't have any ethernet cables connected and
-> couldn't possibly create a bridge loop)
-
-No, that it is not a problem - you can activate it everywhere. It will
-just send some additional control packets on bat0, but won't do anything
-as long as it does not detect other gateways.
-
->=20
-> would it make a difference, if I add br-lan to bat0 (batctl if add
-> br-lan) the way I used to do with batman 2012.1 ?
-
-That won't help, because the design of BLA changed and the old BLA has been
-removed. Please keep the bridge out of bat0. :)
+which has a nice and (quite) up-to-date introduction to batman-adv included.
+Furthermore, we try to keep the Wiki as much up to date as possible, if the=
+re
+is something missing feel free to ask.
 
 Cheers,
 	Simon
 
---Q68bSM7Ycu6FN28Q
+--l76fUT7nc3MelDdI
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -110,9 +83,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAk/0CPkACgkQrzg/fFk7axaJuwCfaZ6nn7ufwSDRkkbxtgQO5QXu
-x1UAniPjp+i5dobFFCQK6Id6MK3M9mVm
-=yEO3
+iEYEARECAAYFAk/0CvQACgkQrzg/fFk7axYygACfa0uCbrlMDd9bklpcEm3XFnik
+sq4An09exU1zZWlVF27ybLMVFZyFM8FZ
+=gIYi
 -----END PGP SIGNATURE-----
 
---Q68bSM7Ycu6FN28Q--
+--l76fUT7nc3MelDdI--
