@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 5 Jul 2012 23:47:53 +0200
-References: <1341175915-26856-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1341175915-26856-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Thu, 5 Jul 2012 23:59:59 +0200
+References: <1341235378-3111-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1341235378-3111-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201207052347.54053.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: check
-	batadv_orig_hash_add_if() return code
+Message-Id: <201207060000.00086.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: generalise size in bitarray
+	API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,23 +23,34 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, July 01, 2012 22:51:55 Simon Wunderlich wrote:
-> If this call fails, some of the orig_nodes spaces may have been
-> resized for the increased number of interface, and some may not.
-> If we would just continue with the larger number of interfaces,
-> this would lead to access to not allocated memory later.
-> 
-> We better check the return code, and don't add the interface if
-> no memory is available. OTOH, keeping some of the orig_nodes
-> with too much memory allocated should hurt no one (except for
-> a few too many bytes allocated).
-> 
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> ---
->  hard-interface.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+On Monday, July 02, 2012 15:22:58 Antonio Quartulli wrote:
+>         /* sequence number is much newer, probably missed a lot of packets
+> */ -       if (seq_num_diff >= BATADV_TQ_LOCAL_WINDOW_SIZE &&
+> +       if (seq_num_diff >= size &&
+>             seq_num_diff < BATADV_EXPECTED_SEQNO_RANGE) {
+>                 batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+>                            "We missed a lot of packets (%i) !\n",
+>                            seq_num_diff - 1);
+> -               bitmap_zero(seq_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
+> +               bitmap_zero(seq_bits, size);
+>                 if (set_mark)
+> -                       batadv_set_bit(seq_bits, 0);
+> +                       batadv_set_bit(seq_bits, 0, size);
+>                 return 1;
+>         }
+>  
+> @@ -80,15 +81,15 @@ int batadv_bit_get_packet(void *priv, unsigned long
+> *seq_bits, * packet should be dropped without calling this function if the
+> * seqno window is protected.
+>          */
+> -       if (seq_num_diff <= -BATADV_TQ_LOCAL_WINDOW_SIZE ||
+> +       if (seq_num_diff <= -size ||
+>             seq_num_diff >= BATADV_EXPECTED_SEQNO_RANGE) {
 
-Applied in revision c4499bb.
+Without addressing BATADV_EXPECTED_SEQNO_RANGE this change does not make sense 
+for batadv_bit_get_packet(). Looking at the function as a whole I'd say it is 
+very specific for the OGM handling. Thus, it will be difficult to use it for 
+anything else or do you have a sample use case ?
 
-Thanks,
+Regards,
 Marek
