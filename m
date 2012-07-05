@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 5 Jul 2012 23:59:59 +0200
-References: <1341235378-3111-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1341235378-3111-1-git-send-email-ordex@autistici.org>
+Date: Fri, 6 Jul 2012 00:04:49 +0200
+References: <CAHD-aqJcFYHCEMh66JaR3a_AbkKmNtAkvZ2s6j8Szd=xmvh8jg@mail.gmail.com>
+	<1341427099-12368-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1341427099-12368-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201207060000.00086.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: generalise size in bitarray
-	API
+Message-Id: <201207060004.49919.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maint-v2] batman-adv: check incoming
+	packet type for bla
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,34 +24,21 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, July 02, 2012 15:22:58 Antonio Quartulli wrote:
->         /* sequence number is much newer, probably missed a lot of packets
-> */ -       if (seq_num_diff >= BATADV_TQ_LOCAL_WINDOW_SIZE &&
-> +       if (seq_num_diff >= size &&
->             seq_num_diff < BATADV_EXPECTED_SEQNO_RANGE) {
->                 batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
->                            "We missed a lot of packets (%i) !\n",
->                            seq_num_diff - 1);
-> -               bitmap_zero(seq_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
-> +               bitmap_zero(seq_bits, size);
->                 if (set_mark)
-> -                       batadv_set_bit(seq_bits, 0);
-> +                       batadv_set_bit(seq_bits, 0, size);
->                 return 1;
->         }
->  
-> @@ -80,15 +81,15 @@ int batadv_bit_get_packet(void *priv, unsigned long
-> *seq_bits, * packet should be dropped without calling this function if the
-> * seqno window is protected.
->          */
-> -       if (seq_num_diff <= -BATADV_TQ_LOCAL_WINDOW_SIZE ||
-> +       if (seq_num_diff <= -size ||
->             seq_num_diff >= BATADV_EXPECTED_SEQNO_RANGE) {
+On Wednesday, July 04, 2012 20:38:19 Simon Wunderlich wrote:
+> If the gateway functionality is used, some broadcast packets (DHCP
+> requests) may be transmitted as unicast packets. As the bridge loop
+> avoidance code now only considers the payload Ethernet destination,
+> it may drop the DHCP request for clients which are claimed by other
+> backbone gateways, because it falsely infers from the broadcast address
+> that the right backbone gateway should havehandled the broadcast.
+> 
+> Fix this by checking and delegating the batman-adv packet type used
+> for transmission.
+> 
+> Reported-by: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
+> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Without addressing BATADV_EXPECTED_SEQNO_RANGE this change does not make sense 
-for batadv_bit_get_packet(). Looking at the function as a whole I'd say it is 
-very specific for the OGM handling. Thus, it will be difficult to use it for 
-anything else or do you have a sample use case ?
+Applied in revision e324701.
 
-Regards,
+Thanks,
 Marek
