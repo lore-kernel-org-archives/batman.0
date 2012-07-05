@@ -1,20 +1,14 @@
-Return-Path: <guido@guidoi.com.ar>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 5 Jul 2012 22:55:22 +0200
+References: <20120630104913.30e059ea@lwn.net>
+In-Reply-To: <20120630104913.30e059ea@lwn.net>
 MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-In-Reply-To: <CAHD-aqJnPAHYq3992k-Y2pP59R9-LV1G9a7P0-u+aGyNnbpCZg@mail.gmail.com>
-References: <CAHD-aqKoP3NDSWNHv=vOUCF_ANTRkVWGyXq-v=WC8iRPHJkdhQ@mail.gmail.com>
-	<20120704091225.GA10142@pandem0nium>
-	<CAHD-aqKo=uzeu6_oc4BXj2WRWObMADyWCHp0sNFn8cJDX8sdjA@mail.gmail.com>
-	<CAHD-aqJYXy_Y1vnzHqV6yyrTPAZCHOshGK2HboeYuEzx8i0xNA@mail.gmail.com>
-	<20120704140500.GA11212@pandem0nium>
-	<CAHD-aqJcFYHCEMh66JaR3a_AbkKmNtAkvZ2s6j8Szd=xmvh8jg@mail.gmail.com>
-	<20120704183054.GA12020@pandem0nium>
-	<CAHD-aqJnPAHYq3992k-Y2pP59R9-LV1G9a7P0-u+aGyNnbpCZg@mail.gmail.com>
-From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
-Date: Thu, 5 Jul 2012 16:51:57 -0300
-Message-ID: <CAHD-aqJHRmd6RdQOWJQodQoDTUtPOoSm2KqBDpBwnqtRj_65jA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] BLAII + gw_mode, DHCP sometimes gets dropped
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201207052255.22637.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove a misleading comment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,36 +20,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Jonathan Corbet <corbet@lwn.net>
 
-Your patch works flawlessly Simon,
-I sysupgraded f8d11504758 with the patched batman, and DHCP requests
-are back to normal when using gw_mode=client
+On Saturday, June 30, 2012 18:49:13 Jonathan Corbet wrote:
+> As much as I'm happy to see LWN links sprinkled through the kernel by the
+> dozen, this one in particular reflects a very old state of reality; the 
+> associated comment is now incorrect.  So just delete it.
 
-I patched colmena-casa first, but it didn't make a difference; which
-was expected, since colmena-casa is just a backbone gateway, and it
-doesn't have the actual DHCP server running, as such, it's only job
-was to forward unicast requests to f8d11504758, which was already
-doing fine.
-The problem was that f8d11504758 was dropping the packets, and with
-your patch it doesn't anymore.
-Thanks a lot!
+Applied in revision 130b9be.
 
-
-On Wed, Jul 4, 2012 at 3:46 PM, Guido Iribarren
-<guidoiribarren@buenosaireslibre.org> wrote:
-> On Wed, Jul 4, 2012 at 3:30 PM, Simon Wunderlich
-> <simon.wunderlich@s2003.tu-chemnitz.de> wrote:
->> Sorry, my fault. Will send a patch based on maint in a minute.
->>
->
-> Applying ./patches/9999-batman-adv-check-incoming-packet-type-for-bla.patch
-> using plaintext:
-> patching file bridge_loop_avoidance.c
-> patching file bridge_loop_avoidance.h
-> patching file soft-interface.c
->
-> Now i'm having fun, heh
-> Thanks!
->
-> Gui
+Thanks,
+Marek
