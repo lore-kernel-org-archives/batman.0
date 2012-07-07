@@ -1,12 +1,23 @@
-Return-Path: <guido@guidoi.com.ar>
+Return-Path: <clowenstein@ymail.com>
+References: <CAKLmikNYEWJUGSirmaxfSWDe_gB1dE+abfcFEHAG0vumnHf+aA@mail.gmail.com>
+	<7i8vi1az07.fsf@lanthane.pps.jussieu.fr>
+	<CAKYr3zyg_hb258gGRb-vmnmtWPKtRgWVnFPh0XffUEy7+occfA@mail.gmail.com>
+	<20120412131423.GA2712@ritirata.org>
+	<CAKYr3zw3+0k4VXXRSnz+EdP-V6wyESeA5_B2BvYTgnt7_zqDeg@mail.gmail.com>
+	<CAKLmikN93xSSRbTyEMqX4RArkaMRi2U6eSBGN7k0UqLYgSCuHw@mail.gmail.com>
+	<7ipqbcss6l.fsf@lanthane.pps.jussieu.fr>
+	<1341650926.68957.YahooMailNeo@web171506.mail.ir2.yahoo.com>
+	<7i7gufpz8x.fsf@lanthane.pps.jussieu.fr>
+Message-ID: <1341662785.56834.YahooMailNeo@web171501.mail.ir2.yahoo.com>
+Date: Sat, 7 Jul 2012 13:06:25 +0100 (BST)
+From: Catherine Lowenstein <clowenstein@ymail.com>
+In-Reply-To: <7i7gufpz8x.fsf@lanthane.pps.jussieu.fr>
 MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
-Date: Sat, 7 Jul 2012 00:37:24 -0300
-Message-ID: <CAHD-aqKaF4tfsMBQLnyrn4wkqDHQpPjsfCDjhXPzrCbkzM7tsg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: [B.A.T.M.A.N.] 2012.2 OGMs over ethernet issue?
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Question about Babel
+Reply-To: Catherine Lowenstein <clowenstein@ymail.com>,
+	The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,44 +28,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: babel-users <babel-users@lists.alioth.debian.org>
+Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello again nice folks,
-I updated today another segment of the network with just 4 nodes, to
-batman-adv 2012.2 (the one i compiled yesterday with simon patches for
-blaII, marek stability fixes, and debug log enabled , yikes!)
-and i couldn't get batman to work over wired ethernet?? (?)
-
-P -(50mts wlan)- D -----(ubnt transparent bridge) 2km -- C
- \----eth-------------------/
-
-Node P and D connected by ethernet on eth0 but close enough that could
-also see each other through adhoc wlan, with bla enabled, correctly
-preferred ethernet connection to communicate between them (iperf
-yielded 92mbps), so far so good.
-now, node D and C, too far away from each other to communicate over
-wlan, but connected by a "loooong eth cable" (mediated by a wds
-transparent bridge) wouldn't find each other batman originator.
-C originator table was empty, and D only showed P.
-I thought the transparent bridge was misbehaving, so I tried in a
-simpler setup using P and D, with the wifi off:
-but after disabling wlan0 (batctl if del wlan0-2) and adding eth0
-(batctl if add eth0) on both nodes, batman could not see each other
-anymore :(
-i thought i was doing something wrong, so i tried in different ways,
-but could not get it to work.
-batctl td eth0 shows both outgoing OGMs from local , and incoming OGMs
-from remote,
-but batctl l only reported outgoing OGMs.
-
-http://pastebin.com/7DDUaXu1
-
-diego is local node ("D"), palmeras is on the other side of the
-ethernet cable ("P") (and jure is further away, connected to palmeras
-by adhoc wlan, not illustrated in the previous ascii art)
-
-i hope i'm overlooking something really obvious?
-
-Have a nice weekend!
-
-Gui
+Juliusz wrote:=0A=0A> Sorry, I know the people but I don't know the details=
+ about their=0A=0A> business.=A0 Why don't you get in touch with the people=
+ on the BATMAN list=0A> instead?=0A=0AI told you that I searched for the co=
+mpany but only found the community site open-mesh.org that doesn't seem to =
+be related to any company. You said that you know about their commercial de=
+velopment/company. So I tried to contact you to get more information where =
+I can find the contact information of the BATMAN company.=0A=0AWhy don't yo=
+u want to give me contact information of these people when you know the peo=
+ple behind the company?=0A=0ASincerely, I am,=0ACatherine Lowenstein
