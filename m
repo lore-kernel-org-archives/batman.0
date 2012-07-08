@@ -1,12 +1,14 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Sun,  8 Jul 2012 23:24:18 +0200
-Message-Id: <1341782658-10978-1-git-send-email-martin@hundeboll.net>
+Date: Sun,  8 Jul 2012 23:50:37 +0200
+Message-Id: <1341784237-29600-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1341782658-10978-1-git-send-email-martin@hundeboll.net>
+References: <1341782658-10978-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add wrapper to look up neighbor
-	and send skb
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Add wrapper to look up
+	neighbor and send skb
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -36,6 +38,8 @@ translation-table.c, since it is looked up elsewhere.
 
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
+v2: batadv_send_skb_to_orig() returns boolean and let the caller decide what to propagate.
+
  routing.c           | 33 ++++-----------------------
  send.c              | 20 +++++++++++++++++
  send.h              |  3 +++
