@@ -1,14 +1,9 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 8 Jul 2012 12:09:56 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20120708100956.GA10210@pandem0nium>
-References: <CAHD-aqKaF4tfsMBQLnyrn4wkqDHQpPjsfCDjhXPzrCbkzM7tsg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="wac7ysb48OaltWcw"
-Content-Disposition: inline
-In-Reply-To: <CAHD-aqKaF4tfsMBQLnyrn4wkqDHQpPjsfCDjhXPzrCbkzM7tsg@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] 2012.2 OGMs over ethernet issue?
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun,  8 Jul 2012 16:32:09 +0200
+Message-Id: <1341757930-15040-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Use BIT(x) macro to
+	calculate bit positions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,73 +15,148 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ bat_iv_ogm.c |   12 +++++++-----
+ main.h       |   18 +++++++++---------
+ packet.h     |   30 +++++++++++++++---------------
+ 3 files changed, 31 insertions(+), 29 deletions(-)
 
---wac7ysb48OaltWcw
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index e877af8..e7fcb54 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -181,8 +181,8 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
+ 		/* we might have aggregated direct link packets with an
+ 		 * ordinary base packet
+ 		 */
+-		if ((forw_packet->direct_link_flags & (1 << packet_num)) &&
+-		    (forw_packet->if_incoming == hard_iface))
++		if (forw_packet->direct_link_flags & BIT(packet_num) &&
++		    forw_packet->if_incoming == hard_iface)
+ 			batadv_ogm_packet->flags |= BATADV_DIRECTLINK;
+ 		else
+ 			batadv_ogm_packet->flags &= ~BATADV_DIRECTLINK;
+@@ -454,6 +454,7 @@ static void batadv_iv_ogm_aggregate(struct batadv_forw_packet *forw_packet_aggr,
+ 				    int packet_len, bool direct_link)
+ {
+ 	unsigned char *skb_buff;
++	unsigned long new_direct_link_flag;
+ 
+ 	skb_buff = skb_put(forw_packet_aggr->skb, packet_len);
+ 	memcpy(skb_buff, packet_buff, packet_len);
+@@ -461,9 +462,10 @@ static void batadv_iv_ogm_aggregate(struct batadv_forw_packet *forw_packet_aggr,
+ 	forw_packet_aggr->num_packets++;
+ 
+ 	/* save packet direct link flag status */
+-	if (direct_link)
+-		forw_packet_aggr->direct_link_flags |=
+-			(1 << forw_packet_aggr->num_packets);
++	if (direct_link) {
++		new_direct_link_flag = BIT(forw_packet_aggr->num_packets);
++		forw_packet_aggr->direct_link_flags |= new_direct_link_flag;
++	}
+ }
+ 
+ static void batadv_iv_ogm_queue_add(struct batadv_priv *bat_priv,
+diff --git a/main.h b/main.h
+index 0c6903c..25c7c92 100644
+--- a/main.h
++++ b/main.h
+@@ -123,15 +123,6 @@ enum batadv_uev_type {
+ /* Append 'batman-adv: ' before kernel messages */
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
+-/* all messages related to routing / flooding / broadcasting / etc */
+-enum batadv_dbg_level {
+-	BATADV_DBG_BATMAN = 1 << 0,
+-	BATADV_DBG_ROUTES = 1 << 1, /* route added / changed / deleted */
+-	BATADV_DBG_TT	  = 1 << 2, /* translation table operations */
+-	BATADV_DBG_BLA    = 1 << 3, /* bridge loop avoidance */
+-	BATADV_DBG_ALL    = 15,
+-};
+-
+ /* Kernel headers */
+ 
+ #include <linux/mutex.h>	/* mutex */
+@@ -175,6 +166,15 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
+ 
++/* all messages related to routing / flooding / broadcasting / etc */
++enum batadv_dbg_level {
++	BATADV_DBG_BATMAN = BIT(0),
++	BATADV_DBG_ROUTES = BIT(1), /* route added / changed / deleted */
++	BATADV_DBG_TT	  = BIT(2), /* translation table operations */
++	BATADV_DBG_BLA    = BIT(3), /* bridge loop avoidance */
++	BATADV_DBG_ALL    = 15,
++};
++
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+ int batadv_debug_log(struct batadv_priv *bat_priv, const char *fmt, ...)
+ __printf(2, 3);
+diff --git a/packet.h b/packet.h
+index 65d66e4..eb45934 100644
+--- a/packet.h
++++ b/packet.h
+@@ -37,10 +37,10 @@ enum batadv_packettype {
+ #define BATADV_COMPAT_VERSION 14
+ 
+ enum batadv_iv_flags {
+-	BATADV_NOT_BEST_NEXT_HOP   = 1 << 3,
+-	BATADV_PRIMARIES_FIRST_HOP = 1 << 4,
+-	BATADV_VIS_SERVER	   = 1 << 5,
+-	BATADV_DIRECTLINK	   = 1 << 6,
++	BATADV_NOT_BEST_NEXT_HOP   = BIT(3),
++	BATADV_PRIMARIES_FIRST_HOP = BIT(4),
++	BATADV_VIS_SERVER	   = BIT(5),
++	BATADV_DIRECTLINK	   = BIT(6),
+ };
+ 
+ /* ICMP message types */
+@@ -60,8 +60,8 @@ enum batadv_vis_packettype {
+ 
+ /* fragmentation defines */
+ enum batadv_unicast_frag_flags {
+-	BATADV_UNI_FRAG_HEAD	  = 1 << 0,
+-	BATADV_UNI_FRAG_LARGETAIL = 1 << 1,
++	BATADV_UNI_FRAG_HEAD	  = BIT(0),
++	BATADV_UNI_FRAG_LARGETAIL = BIT(1),
+ };
+ 
+ /* TT_QUERY subtypes */
+@@ -74,20 +74,20 @@ enum batadv_tt_query_packettype {
+ 
+ /* TT_QUERY flags */
+ enum batadv_tt_query_flags {
+-	BATADV_TT_FULL_TABLE = 1 << 2,
++	BATADV_TT_FULL_TABLE = BIT(2),
+ };
+ 
+ /* BATADV_TT_CLIENT flags.
+- * Flags from 1 to 1 << 7 are sent on the wire, while flags from 1 << 8 to
+- * 1 << 15 are used for local computation only
++ * Flags from BIT(0) to BIT(7) are sent on the wire, while flags from BIT(8) to
++ * BIT(15) are used for local computation only
+  */
+ enum batadv_tt_client_flags {
+-	BATADV_TT_CLIENT_DEL     = 1 << 0,
+-	BATADV_TT_CLIENT_ROAM    = 1 << 1,
+-	BATADV_TT_CLIENT_WIFI    = 1 << 2,
+-	BATADV_TT_CLIENT_NOPURGE = 1 << 8,
+-	BATADV_TT_CLIENT_NEW     = 1 << 9,
+-	BATADV_TT_CLIENT_PENDING = 1 << 10,
++	BATADV_TT_CLIENT_DEL     = BIT(0),
++	BATADV_TT_CLIENT_ROAM    = BIT(1),
++	BATADV_TT_CLIENT_WIFI    = BIT(2),
++	BATADV_TT_CLIENT_NOPURGE = BIT(8),
++	BATADV_TT_CLIENT_NEW     = BIT(9),
++	BATADV_TT_CLIENT_PENDING = BIT(10),
+ };
+ 
+ /* claim frame types for the bridge loop avoidance */
+-- 
+1.7.10.4
 
-Hey Guido,
-
-On Sat, Jul 07, 2012 at 12:37:24AM -0300, Guido Iribarren wrote:
-> Hello again nice folks,
-> I updated today another segment of the network with just 4 nodes, to
-> batman-adv 2012.2 (the one i compiled yesterday with simon patches for
-> blaII, marek stability fixes, and debug log enabled , yikes!)
-> and i couldn't get batman to work over wired ethernet?? (?)
->=20
-> P -(50mts wlan)- D -----(ubnt transparent bridge) 2km -- C
->  \----eth-------------------/
->=20
-> Node P and D connected by ethernet on eth0 but close enough that could
-> also see each other through adhoc wlan, with bla enabled, correctly
-> preferred ethernet connection to communicate between them (iperf
-> yielded 92mbps), so far so good.
-
-As seen on the dump, you only use eth0 in batman? Is the Ad-Hoc connection
-still active (on wlan0 or wlan-1)?
-
-> now, node D and C, too far away from each other to communicate over
-> wlan, but connected by a "loooong eth cable" (mediated by a wds
-> transparent bridge) wouldn't find each other batman originator.
-> C originator table was empty, and D only showed P.
-> I thought the transparent bridge was misbehaving, so I tried in a
-> simpler setup using P and D, with the wifi off:
-> but after disabling wlan0 (batctl if del wlan0-2) and adding eth0
-> (batctl if add eth0) on both nodes, batman could not see each other
-> anymore :(
-> i thought i was doing something wrong, so i tried in different ways,
-> but could not get it to work.
-> batctl td eth0 shows both outgoing OGMs from local , and incoming OGMs
-> from remote,
-> but batctl l only reported outgoing OGMs.
->=20
-> http://pastebin.com/7DDUaXu1
-
-Mhm, that's weird indeed. Is eth0 really not included in any other bridge?
-It looks like the incoming packets don't reach BATMAN for some reason.
-
-Also have you checked that the WDS bridge works via IP? You could first set
-up some IP addresses and ping each other, confirm traffic with tcpdump, and
-then activate batman-adv to see if the OGMs go through. So far, it  doesn't
-seem like anything from your C node comes through at all.
-
-Cheers,
-	Simon
-
---wac7ysb48OaltWcw
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAk/5XHQACgkQrzg/fFk7axa+ewCfcRyHh6HGSkM6hIYRhucVdWal
-SbsAnjhDN2rYnw9Uc70+N1HZnD82CfEL
-=fcKB
------END PGP SIGNATURE-----
-
---wac7ysb48OaltWcw--
