@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  8 Jul 2012 16:32:09 +0200
-Message-Id: <1341757930-15040-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Use BIT(x) macro to
-	calculate bit positions
+Date: Sun,  8 Jul 2012 16:32:10 +0200
+Message-Id: <1341757930-15040-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1341757930-15040-1-git-send-email-sven@narfation.org>
+References: <1341757930-15040-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: Use BIT(x) macro to calculate
+	bit positions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,84 +21,22 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bat_iv_ogm.c |   12 +++++++-----
- main.h       |   18 +++++++++---------
- packet.h     |   30 +++++++++++++++---------------
- 3 files changed, 31 insertions(+), 29 deletions(-)
+ main.h   |    1 +
+ packet.h |   30 +++++++++++++++---------------
+ sys.c    |    8 ++++----
+ 3 files changed, 20 insertions(+), 19 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index e877af8..e7fcb54 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -181,8 +181,8 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
- 		/* we might have aggregated direct link packets with an
- 		 * ordinary base packet
- 		 */
--		if ((forw_packet->direct_link_flags & (1 << packet_num)) &&
--		    (forw_packet->if_incoming == hard_iface))
-+		if (forw_packet->direct_link_flags & BIT(packet_num) &&
-+		    forw_packet->if_incoming == hard_iface)
- 			batadv_ogm_packet->flags |= BATADV_DIRECTLINK;
- 		else
- 			batadv_ogm_packet->flags &= ~BATADV_DIRECTLINK;
-@@ -454,6 +454,7 @@ static void batadv_iv_ogm_aggregate(struct batadv_forw_packet *forw_packet_aggr,
- 				    int packet_len, bool direct_link)
- {
- 	unsigned char *skb_buff;
-+	unsigned long new_direct_link_flag;
- 
- 	skb_buff = skb_put(forw_packet_aggr->skb, packet_len);
- 	memcpy(skb_buff, packet_buff, packet_len);
-@@ -461,9 +462,10 @@ static void batadv_iv_ogm_aggregate(struct batadv_forw_packet *forw_packet_aggr,
- 	forw_packet_aggr->num_packets++;
- 
- 	/* save packet direct link flag status */
--	if (direct_link)
--		forw_packet_aggr->direct_link_flags |=
--			(1 << forw_packet_aggr->num_packets);
-+	if (direct_link) {
-+		new_direct_link_flag = BIT(forw_packet_aggr->num_packets);
-+		forw_packet_aggr->direct_link_flags |= new_direct_link_flag;
-+	}
- }
- 
- static void batadv_iv_ogm_queue_add(struct batadv_priv *bat_priv,
 diff --git a/main.h b/main.h
-index 0c6903c..25c7c92 100644
+index 4c8b60b..34ac4f5 100644
 --- a/main.h
 +++ b/main.h
-@@ -123,15 +123,6 @@ enum batadv_uev_type {
- /* Append 'batman-adv: ' before kernel messages */
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+@@ -34,5 +34,6 @@
+ #define SETTINGS_PATH_MAX_LEN 25
  
--/* all messages related to routing / flooding / broadcasting / etc */
--enum batadv_dbg_level {
--	BATADV_DBG_BATMAN = 1 << 0,
--	BATADV_DBG_ROUTES = 1 << 1, /* route added / changed / deleted */
--	BATADV_DBG_TT	  = 1 << 2, /* translation table operations */
--	BATADV_DBG_BLA    = 1 << 3, /* bridge loop avoidance */
--	BATADV_DBG_ALL    = 15,
--};
--
- /* Kernel headers */
+ #define __packed __attribute((packed))   /* linux kernel compat */
++#define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
  
- #include <linux/mutex.h>	/* mutex */
-@@ -175,6 +166,15 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
- int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
- int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
- 
-+/* all messages related to routing / flooding / broadcasting / etc */
-+enum batadv_dbg_level {
-+	BATADV_DBG_BATMAN = BIT(0),
-+	BATADV_DBG_ROUTES = BIT(1), /* route added / changed / deleted */
-+	BATADV_DBG_TT	  = BIT(2), /* translation table operations */
-+	BATADV_DBG_BLA    = BIT(3), /* bridge loop avoidance */
-+	BATADV_DBG_ALL    = 15,
-+};
-+
- #ifdef CONFIG_BATMAN_ADV_DEBUG
- int batadv_debug_log(struct batadv_priv *bat_priv, const char *fmt, ...)
- __printf(2, 3);
+ extern char module_ver_path[];
 diff --git a/packet.h b/packet.h
 index 65d66e4..eb45934 100644
 --- a/packet.h
@@ -157,6 +97,28 @@ index 65d66e4..eb45934 100644
  };
  
  /* claim frame types for the bridge loop avoidance */
+diff --git a/sys.c b/sys.c
+index 9787875..e40ddcd 100644
+--- a/sys.c
++++ b/sys.c
+@@ -291,13 +291,13 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
+ 				log_level = 15;
+ 				break;
+ 			} else if (strcmp(argv[i], "batman") == 0)
+-				log_level |= (1 << 0);
++				log_level |= BIT(0);
+ 			else if (strcmp(argv[i], "routes") == 0)
+-				log_level |= (1 << 1);
++				log_level |= BIT(1);
+ 			else if (strcmp(argv[i], "tt") == 0)
+-				log_level |= (1 << 2);
++				log_level |= BIT(2);
+ 			else if (strcmp(argv[i], "bla") == 0)
+-				log_level |= (1 << 3);
++				log_level |= BIT(3);
+ 			else {
+ 				log_level_usage();
+ 				goto out;
 -- 
 1.7.10.4
 
