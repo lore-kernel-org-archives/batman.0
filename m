@@ -1,9 +1,10 @@
 Return-Path: <davem@davemloft.net>
-Date: Tue, 10 Jul 2012 23:35:59 -0700 (PDT)
-Message-Id: <20120710.233559.133199610337807776.davem@davemloft.net>
+Date: Tue, 10 Jul 2012 23:36:08 -0700 (PDT)
+Message-Id: <20120710.233608.1063040661808593104.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1341528514-27906-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <20120705225140.GA9745@ritirata.org>
 References: <1341528514-27906-1-git-send-email-ordex@autistici.org>
+	<20120705225140.GA9745@ritirata.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -23,8 +24,9 @@ To: ordex@autistici.org
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri,  6 Jul 2012 00:48:33 +0200
+Date: Fri, 6 Jul 2012 00:51:40 +0200
 
->   git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+> here you have our instructions to resolve the conflicts that you will hit while
+> merging net into net-next:
 
-Pulled, thanks.
+Thanks for this.
