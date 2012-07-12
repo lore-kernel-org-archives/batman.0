@@ -1,13 +1,11 @@
-Return-Path: <guido@guidoi.com.ar>
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu, 12 Jul 2012 22:35:19 +0200
+Message-Id: <1342125327-11676-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-In-Reply-To: <CAAOvAThfuXjDRDbhkPWxwzdJ+zZb5uUbdkXWxYDBDMJjVTU4NA@mail.gmail.com>
-References: <CAAOvAThfuXjDRDbhkPWxwzdJ+zZb5uUbdkXWxYDBDMJjVTU4NA@mail.gmail.com>
-From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
-Date: Wed, 11 Jul 2012 13:01:20 -0300
-Message-ID: <CAHD-aqKH8PsSmawMUpTLTB0=tMYawJj=rkPTt4GfyqD_Mvs8Aw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] newbie error or repo misconfig?
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv8 0/8] Distributed ARP Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,37 +17,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue, Jul 10, 2012 at 2:13 PM, Tony Godshall <togo@of.net> wrote:
-> root@OpenWrt:~# opkg install kmod-batman-adv
-> Installing kmod-batman-adv (3.3.8+2012.2.0-2) to root...
-> Downloading http://downloads.openwrt.org/snapshots/trunk/ar71xx/packages/kmod-batman-adv_3.3.8+2012.2.0-2_ar71xx.ipk.
-> Collected errors:
->  * satisfy_dependencies_for: Cannot satisfy the following dependencies
-> for kmod-batman-adv:
->  *      kernel (= 3.3.8-1-65fa3307447a560c3a618c4d54bfa4dc) *   kernel
-> (= 3.3.8-1-65fa3307447a560c3a618c4d54bfa4dc) *
->  * opkg_install_cmd: Cannot install package kmod-batman-adv.
->
-> This is my foray into batman-adv land, with a freshly flashed
-> TL-WR703n
+Hello people,
 
-You probably downloaded a snapshot (daily build), flashed the
-TL-WR703n, and after a few days tried to install kmod-batman-adv.
-The problem: every day the whole package tree is discarded and
-rebuilt, so a particular trunk rev snapshot will only be able to "opkg
-install kmod-*" successfully only for a few days (or weeks, or few
-hours in worst-case scenario)
-After that, the http://downloads.openwrt.org/ package tree
-corresponding to your binary is gone forever.
+****
+This is the **eigthth** version of this patchset.
 
-Alternatives:
-a) download today's trunk snapshot, reflash your router, and opkg
-install kmod-* right away.
-b) download svn source, compile your binary with kmod-batman-adv
-included, reflash.
-c) download svn source, compile packages and set up your own private
-repo for trunk rXXXXX
+The major change since v7 is the introduction of a local storage for ARP
+entries.
 
-Cheers!
+Up to v7 DAT was using the batX ARP table as local cache, but the kernel
+maintainers complained about this solution because they had already planned
+to redesign most of the neighbour handling code and so they wanted to avoid to
+add other code depending on the current implementation....
+
+Then something else has been fixed:
+- unicast ARP request are correctly handled now
+- debug messages improved
+- requests coming in unicast now get replied with unicast (no 4addr)
+****
+
+Cheers,
+
+
+
+Antonio Quartulli (7):
+  batman-adv: add UNICAST_4ADDR packet type
+  batman-adv: Distributed ARP Table - add a new debug log level
+  batman-adv: Distributed ARP Table - create DHT helper functions
+  batman-adv: Distributed ARP Table - implement local storage
+  batman-adv: Distributed ARP Table - add ARP parsing functions
+  batman-adv: Distributed ARP Table - add snooping functions for ARP
+    messages
+  batman-adv: Distributed ARP Table - add compile option
+
+Martin Hundebøll (1):
+  batman-adv: Add get_ethtool_stats() support for DAT
+
+ Makefile                |    2 +
+ Makefile.kbuild         |    1 +
+ README                  |    3 +-
+ README.external         |    1 +
+ compat.c                |   10 +
+ compat.h                |    1 +
+ debugfs.c               |   15 +
+ distributed-arp-table.c |  925 +++++++++++++++++++++++++++++++++++++++++++++++
+ distributed-arp-table.h |  132 +++++++
+ gen-compat-autoconf.sh  |    1 +
+ hard-interface.c        |    3 +
+ main.c                  |    9 +
+ main.h                  |   12 +-
+ originator.c            |    2 +
+ packet.h                |   30 +-
+ routing.c               |   37 +-
+ send.c                  |    4 +
+ soft-interface.c        |   22 +-
+ types.h                 |   44 +++
+ unicast.c               |  102 +++++-
+ unicast.h               |   24 +-
+ 21 files changed, 1347 insertions(+), 33 deletions(-)
+ create mode 100644 distributed-arp-table.c
+ create mode 100644 distributed-arp-table.h
+
+-- 
+1.7.9.4
+
