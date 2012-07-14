@@ -1,16 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 14 Jul 2012 09:04:55 +0200
-Message-ID: <4617557.uTg8l34TUo@sven-desktop.home.narfation.org>
-In-Reply-To: <1342222910-20627-2-git-send-email-ordex@autistici.org>
+Return-Path: <ordex@autistici.org>
+Date: Sat, 14 Jul 2012 11:31:17 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120714093117.GL19461@ritirata.org>
 References: <1342222910-20627-1-git-send-email-ordex@autistici.org>
 	<1342222910-20627-2-git-send-email-ordex@autistici.org>
+	<4617557.uTg8l34TUo@sven-desktop.home.narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3126526.PNS9c0rirv";
-	micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ZOudaV4lSIjFTlHv"
+Content-Disposition: inline
+In-Reply-To: <4617557.uTg8l34TUo@sven-desktop.home.narfation.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv9 1/8] batman-adv: add UNICAST_4ADDR
-	packet type
+ packet type
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,94 +23,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart3126526.PNS9c0rirv
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+--ZOudaV4lSIjFTlHv
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Sat, Jul 14, 2012 at 09:04:55AM +0200, Sven Eckelmann wrote:
+=2E..
 
-just some things that came to my mind after reading Ben Hutchings patch.
+> http://www.kernel.org/doc/Documentation/kernel-doc-nano-HOWTO.txt
+>=20
 
-On Saturday 14 July 2012 01:41:43 Antonio Quartulli wrote:
-> +/**
-> + * batadv_prepare_unicast_packet - encapsulate an skb with a unicast header
-> + *
-> + * @skb: the skb containing the payload to encapsulate
-> + * @orig_node: the destination node
-> + *
-> + * Returns false if the payload could not be encapsulated or true otherwise
-> + */
+=2E..
 
-http://www.kernel.org/doc/Documentation/kernel-doc-nano-HOWTO.txt
-
-No blank line between "function_name(:)? (- short description)?" and
-"@parameterx(space)*: (description of parameter x)?)*"
+> Kind regards,
+> 	Sven
 
 
-> +struct batadv_unicast_4addr_packet {
-> +       struct batadv_unicast_packet u;
-> +       uint8_t src[ETH_ALEN];
-> +       uint8_t subtype;
-> +} __packed;
-> +
+Thank you very much Sven,
 
-Where is the kerneldoc for "struct batadv_unicast_4addr_packet"?
+I'll send a new version. (I think I won the patchset version competition!)
 
+Cheers,
 
-> +/**
-> + * batadv_dht_select_candidates - given a key, selects the candidates which the
-> + * DHT message has to be sent to. An originator O is selected if and only if
-> + * its DHT_ID value is one of three closest values (from the LEFT, with wrap
-> + * around if needed) then the hash value of the key. ip_dst is the key.
-> + *
-> + * @bat_priv: the bat priv with all the soft interface information
-> + * @ip_dst: ipv4 to look up in the DHT
-> + *
-> + * Returns the candidate array of size DHT_CANDIDATE_NUM
-> + */
-> +static struct batadv_dht_candidate *
-> +batadv_dht_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst)
-> +{
+--=20
+Antonio Quartulli
 
-Please use the correct order:
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
 
-/**
- * function_name(:)? (- short description)?
-(* @parameterx(space)*: (description of parameter x)?)*
-(* a blank line)?
- * (Description:)? (Description of function)?
- * (section header: (section description)? )*
-(*)?*/
-
-And I think we should add () for function names and prepend
-"struct " for structs, ...
-
-Kind regards,
-	Sven
---nextPart3126526.PNS9c0rirv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+--ZOudaV4lSIjFTlHv
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAABCgAGBQJQARoXAAoJEF2HCgfBJntG2AgQAMqUz04uUMlLsXGkea7rYppG
-QMUHKLNX8Q1lc8zUNIHHLC00aSe0xKxPlWwY/gzCm1XUnH/YumwMKcgCU5HHIhsi
-v0n/XSJlOHBXzgl/2IF1ABe8GXJlPBPC2r8LO+atAensJI0SftWkHZgtsEqJEzCq
-dsTfViSfnMDQ/4X4n/sajWaLAqIOsbTHdsnH9bnxoy8XprdhXAg+sjyvjViUSxOJ
-RzPU9CUqwK9gzoUjaWhPp8G6tYfMlSXuZkxXIPwcDH3RT81W8JiRbimzAcVHQQsl
-9KAuiZtY/xDErdCgkgnP2SnvgHdGofJgvsoGTbkvkdDK6A2UwZ9DUtpVVp3gnqEa
-wwsTFlquWpGF4PO5q3r0RyX3vIewd1WNpl3N7iiKBeCfOmwU00UlcnYJaGOgDwm8
-K0JxIibatq2rua+afo7MfJZkAopPWodCuiASp5h6o35D9iqOwRgiquGxNO9Q5fC3
-hmXR0avJG/qRmO7nR0B2eRnd1mo/IkVaWgAMm4cvLFIaWHlSlrEuOyHTNLeIq5nB
-x7wYlNBitwEUKIRdGgsJSynVEWBuQkb/iNQ4+IEzn7boaY+ZXr/Hf1o0bm9nzTRN
-/RNdkvDYBzgvJzN9Vf3iFyReNNL9aAK/XC6bktO6jjvE+ci4DMWC7yN3RrvQOGLJ
-gRXH6a7SDDmvOQFOIkP0
-=Trpw
+iEYEARECAAYFAlABPGUACgkQpGgxIkP9cwcnoACglNAWymBtJogZ9q6YvwiewRJT
+ngAAn1uUOkd2Lrn9iP98RVqs9HXmqvG7
+=4ylO
 -----END PGP SIGNATURE-----
 
---nextPart3126526.PNS9c0rirv--
-
+--ZOudaV4lSIjFTlHv--
