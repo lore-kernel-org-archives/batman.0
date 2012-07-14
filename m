@@ -1,14 +1,16 @@
 Return-Path: <ordex@autistici.org>
+Date: Sat, 14 Jul 2012 19:18:46 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 14 Jul 2012 19:15:44 +0200
-Message-Id: <1342286144-24490-9-git-send-email-ordex@autistici.org>
-In-Reply-To: <1342286144-24490-1-git-send-email-ordex@autistici.org>
+Message-ID: <20120714171846.GM19461@ritirata.org>
 References: <1342286144-24490-1-git-send-email-ordex@autistici.org>
+	<1342286144-24490-2-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv10 8/8] batman-adv: Add get_ethtool_stats()
-	support for DAT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UlxN1C6awaFNesUv"
+Content-Disposition: inline
+In-Reply-To: <1342286144-24490-2-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv10 1/8] batman-adv: add UNICAST_4ADDR
+	packet type
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,94 +23,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-From: Martin Hundebøll <martin@hundeboll.net>
 
-Added additional counters for D.A.T.
+--UlxN1C6awaFNesUv
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- distributed-arp-table.c |   17 +++++++++++++++--
- soft-interface.c        |    7 +++++++
- types.h                 |    7 +++++++
- 3 files changed, 29 insertions(+), 2 deletions(-)
+On Sat, Jul 14, 2012 at 07:15:37PM +0200, Antonio Quartulli wrote:
+> =20
+> +struct batadv_unicast_4addr_packet {
+> +	struct batadv_unicast_packet u;
+> +	uint8_t src[ETH_ALEN];
+> +	uint8_t subtype;
+> +} __packed;
+> +
 
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index 2ece8be..cb86126 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -601,9 +601,20 @@ static bool batadv_dht_send_data(struct batadv_priv *bat_priv,
- 		send_status = batadv_send_skb_packet(tmp_skb,
- 						     neigh_node->if_incoming,
- 						     neigh_node->addr);
--		if (send_status == NET_XMIT_SUCCESS)
-+		if (send_status == NET_XMIT_SUCCESS) {
-+			/* count the sent packet */
-+			switch (packet_subtype) {
-+			case BATADV_P_DAT_DHT_GET:
-+				batadv_inc_counter(bat_priv,
-+						   BATADV_CNT_DAT_REQUEST_TX);
-+			case BATADV_P_DAT_DHT_PUT:
-+				batadv_inc_counter(bat_priv,
-+						   BATADV_CNT_DAT_REPLY_TX);
-+			}
-+
- 			/* packet sent to a candidate: we can return true */
- 			ret = true;
-+		}
- free_neigh:
- 		batadv_neigh_node_free_ref(neigh_node);
- free_orig:
-@@ -936,8 +947,10 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	else
- 		err = batadv_unicast_send_skb(skb_new, bat_priv);
- 
--	if (!err)
-+	if (!err) {
-+		batadv_inc_counter(bat_priv, BATADV_CNT_DAT_CACHED_REPLY_TX);
- 		ret = true;
-+	}
- out:
- 	if (dat_entry)
- 		batadv_dat_entry_free_ref(dat_entry);
-diff --git a/soft-interface.c b/soft-interface.c
-index b881e34..0dae7e9 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -565,6 +565,13 @@ static const struct {
- 	{ "tt_response_rx" },
- 	{ "tt_roam_adv_tx" },
- 	{ "tt_roam_adv_rx" },
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+	{ "dat_request_tx" },
-+	{ "dat_request_rx" },
-+	{ "dat_reply_tx" },
-+	{ "dat_reply_rx" },
-+	{ "dat_cached_reply_tx" },
-+#endif
- };
- 
- static void batadv_get_strings(struct net_device *dev, uint32_t stringset,
-diff --git a/types.h b/types.h
-index c821ebf..de3c5ef 100644
---- a/types.h
-+++ b/types.h
-@@ -175,6 +175,13 @@ enum batadv_counters {
- 	BATADV_CNT_TT_RESPONSE_RX,
- 	BATADV_CNT_TT_ROAM_ADV_TX,
- 	BATADV_CNT_TT_ROAM_ADV_RX,
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+	BATADV_CNT_DAT_REQUEST_TX,
-+	BATADV_CNT_DAT_REQUEST_RX,
-+	BATADV_CNT_DAT_REPLY_TX,
-+	BATADV_CNT_DAT_REPLY_RX,
-+	BATADV_CNT_DAT_CACHED_REPLY_TX,
-+#endif
- 	BATADV_CNT_NUM,
- };
- 
--- 
-1.7.9.4
+DAMN!
+I added kernel doc everywhere but here.
+Sorry for the noise people..will send v11. I hope it will be definitive..
 
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--UlxN1C6awaFNesUv
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAlABqfUACgkQpGgxIkP9cweR0ACeKCk6xr6D1JVIqA/1IO2yQuSk
+RmgAniM5ZLhlUDnH3Al4Xh+iiphpkpif
+=FUqE
+-----END PGP SIGNATURE-----
+
+--UlxN1C6awaFNesUv--
