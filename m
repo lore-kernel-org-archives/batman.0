@@ -1,16 +1,11 @@
 Return-Path: <ordex@autistici.org>
-Date: Sat, 14 Jul 2012 19:18:46 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120714171846.GM19461@ritirata.org>
-References: <1342286144-24490-1-git-send-email-ordex@autistici.org>
-	<1342286144-24490-2-git-send-email-ordex@autistici.org>
+Date: Sat, 14 Jul 2012 19:25:48 +0200
+Message-Id: <1342286756-1678-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UlxN1C6awaFNesUv"
-Content-Disposition: inline
-In-Reply-To: <1342286144-24490-2-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv10 1/8] batman-adv: add UNICAST_4ADDR
-	packet type
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv11 0/8] Distributed ARP Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,42 +19,79 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Hello people,
 
---UlxN1C6awaFNesUv
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+****
+This is the **eleventh** version of this patchset.
 
-On Sat, Jul 14, 2012 at 07:15:37PM +0200, Antonio Quartulli wrote:
-> =20
-> +struct batadv_unicast_4addr_packet {
-> +	struct batadv_unicast_packet u;
-> +	uint8_t src[ETH_ALEN];
-> +	uint8_t subtype;
-> +} __packed;
-> +
+v8:
+- introduce batman-adv private local storage for arp entries
+- unicast ARP request are correctly handled now
+- debug messages improved
+- requests coming in unicast now get replied with unicast (no 4addr)
 
-DAMN!
-I added kernel doc everywhere but here.
-Sorry for the noise people..will send v11. I hope it will be definitive..
+v9:
+- added kernel-doc
+- fixed counters
+- added new counter: BATADV_CNT_DAT_CACHED_REPLY_TX
+- ensure arp reply has been sent before dropping incoming arp request
+
+v10:
+- several fixes on kernel-doc style
+- readded wrongly removed blankline
+
+v11:
+- added kernel-doc for struct unicast_4addr_packet
+****
+
+This patches are based on top of speedy join patches:
+ batman-adv: detect not yet announced clients
+ batman-adv: change interface_rx to get orig node
+
 
 Cheers,
+	Antonio
 
---=20
-Antonio Quartulli
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
 
---UlxN1C6awaFNesUv
-Content-Type: application/pgp-signature
+Antonio Quartulli (7):
+  batman-adv: add UNICAST_4ADDR packet type
+  batman-adv: Distributed ARP Table - add a new debug log level
+  batman-adv: Distributed ARP Table - create DHT helper functions
+  batman-adv: Distributed ARP Table - implement local storage
+  batman-adv: Distributed ARP Table - add ARP parsing functions
+  batman-adv: Distributed ARP Table - add snooping functions for ARP
+    messages
+  batman-adv: Distributed ARP Table - add compile option
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Martin Hundebøll (1):
+  batman-adv: Add get_ethtool_stats() support for DAT
 
-iEYEARECAAYFAlABqfUACgkQpGgxIkP9cweR0ACeKCk6xr6D1JVIqA/1IO2yQuSk
-RmgAniM5ZLhlUDnH3Al4Xh+iiphpkpif
-=FUqE
------END PGP SIGNATURE-----
+ Makefile                |    2 +
+ Makefile.kbuild         |    1 +
+ README                  |    3 +-
+ README.external         |    1 +
+ compat.c                |   10 +
+ compat.h                |    1 +
+ debugfs.c               |   15 +
+ distributed-arp-table.c | 1082 +++++++++++++++++++++++++++++++++++++++++++++++
+ distributed-arp-table.h |  132 ++++++
+ gen-compat-autoconf.sh  |    1 +
+ hard-interface.c        |    3 +
+ main.c                  |    9 +
+ main.h                  |   12 +-
+ originator.c            |    2 +
+ packet.h                |   39 +-
+ routing.c               |   37 +-
+ send.c                  |    4 +
+ soft-interface.c        |   23 +-
+ types.h                 |   46 ++
+ unicast.c               |  131 +++++-
+ unicast.h               |   24 +-
+ 21 files changed, 1547 insertions(+), 31 deletions(-)
+ create mode 100644 distributed-arp-table.c
+ create mode 100644 distributed-arp-table.h
 
---UlxN1C6awaFNesUv--
+-- 
+1.7.9.4
+
