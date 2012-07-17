@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 17 Jul 2012 12:49:43 +0200
-References: <1342167232-7469-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1342167232-7469-1-git-send-email-sven@narfation.org>
+Date: Tue, 17 Jul 2012 12:57:23 +0200
+References: <CAKLmikNDZQL2bDWYMMUHcHA5WTMj2Ou0yFiZ7wg134OHFQZWrw@mail.gmail.com>
+ <201207161202.45306.lindner_marek@yahoo.de>
+ <CAKLmikOuvdvdzV+UD-qr=FSKA0s+1yMHcdYr4GU6S4VzvqcMcw@mail.gmail.com>
+In-Reply-To: <CAKLmikOuvdvdzV+UD-qr=FSKA0s+1yMHcdYr4GU6S4VzvqcMcw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201207171249.44195.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix (nearly-)kernel-doc
-	comments for various functions
+Message-Id: <201207171257.23627.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Route selection over VPN links
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,27 +24,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, July 13, 2012 10:13:52 Sven Eckelmann wrote:
-> From: Ben Hutchings <bhutchings@solarflare.com>
+On Tuesday, July 17, 2012 08:36:30 Mitar wrote:
+> > the later versions of batman support a routing protocol plugin structure
+> > (check bat_iv_ogm.c to get an idea). Using bandwidth information for the
+> > routing decision is a nice idea but how does your concept look like ? How
+> > should the routing logic look like ?
 > 
-> Fix incorrect start markers, wrapped summary lines, missing section
-> breaks, incorrect separators, and some name mismatches.
+> I thought I explained it enough. So for now, I would just go with only
+> measuring latency (I don't know what would be the best way to measure
+> this, though). If I have the latency (and this could be only one hop),
+> I would do:
 > 
-> Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> This patch is already part of net-next
-> 
-> 
->  bridge_loop_avoidance.c |   51
-> +++++++++++++++++++++++++++++++----------------
-> hash.h                  |    3 ++-
->  main.h                  |    3 ++-
->  types.h                 |    3 ++-
->  4 files changed, 40 insertions(+), 20 deletions(-)
+> * if packet loss is different, choose the one with lower packet loss
+> * if packet loss is the same, choose the one with lower latency in the next
+> hop
 
-Applied in revision 7bce341.
+I was more curious about the bandwidth routing than the latency stuff. The 
+current routing algorithm already takes latency into account. An alternate 
+path always need to be better than the current path. If both paths are equal 
+the faster packets win the race.
 
-Thanks,
+Regards,
 Marek
