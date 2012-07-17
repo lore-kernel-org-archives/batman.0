@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 17 Jul 2012 12:43:52 +0200
-References: <1341524310-26740-1-git-send-email-ordex@autistici.org>
- <1341524310-26740-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1341524310-26740-2-git-send-email-ordex@autistici.org>
+Date: Tue, 17 Jul 2012 12:47:04 +0200
+References: <1341782658-10978-1-git-send-email-martin@hundeboll.net>
+ <1341784829-31559-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1341784829-31559-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201207171243.52926.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 3/3] batman-adv: change interface_rx to
-	get orig node
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201207171247.05177.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Add wrapper to look up
+	neighbor and send skb
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,26 +24,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday, July 05, 2012 23:38:30 Antonio Quartulli wrote:
-> In order to understand  where a broadcast packet is coming from and use
-> this information to detect not yet announced clients, this patch modifies
-> the interface_rx() function by passing a new argument: the orig node
-> corresponding to the node that originated the received packet (if known).
-> This new argument if not NULL for broadcast packets only (other packets
-> does not have source field).
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
-> 
-> Changes since v4:
->  - noop
-> 
->  routing.c        |   10 ++++++----
->  soft-interface.c |    6 +++++-
->  soft-interface.h |    5 +++--
->  3 files changed, 14 insertions(+), 7 deletions(-)
+On Monday, July 09, 2012 00:00:29 Martin Hundeb=C3=B8ll wrote:
+> +bool batadv_send_skb_to_orig(struct batadv_orig_node *orig_node,
+> +                            struct sk_buff *skb,
+> +                            struct batadv_hard_iface *recv_if)
+> +{
+> +       struct batadv_priv *bat_priv =3D orig_node->bat_priv;
+> +       struct batadv_neigh_node *neigh_node;
+> +
+> +       /* batadv_find_router() increases neigh_nodes refcount if found. =
+*/
+> +       neigh_node =3D batadv_find_router(bat_priv, orig_node, recv_if);
+> +       if (!neigh_node)
+> +               return false;
+> +
+> +       /* route it */
+> +       batadv_send_skb_packet(skb, neigh_node->if_incoming,
+> neigh_node->addr); +
+> +       batadv_neigh_node_free_ref(neigh_node);
+> +
+> +       return true;
+> +}
 
-Applied in revision 9cbc67d.
+Can we make the skb variable the first argument ? Something like this:
 
-Thanks,
+bool batadv_send_skb_to_orig(struct sk_buff *skb,
+                             struct batadv_orig_node *orig_node,
+                             struct batadv_hard_iface *recv_if)
+
+Regards,
 Marek
