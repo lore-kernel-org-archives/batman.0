@@ -1,21 +1,15 @@
-Return-Path: <gtolon@inti.gob.ar>
-Message-ID: <50056A68.2070200@inti.gob.ar>
-Date: Tue, 17 Jul 2012 10:36:40 -0300
-From: gtolon@inti.gob.ar
+Return-Path: <mmitar@gmail.com>
 MIME-Version: 1.0
-References: <CAA_JP8X+vPn39-QK-zPjdd1Mtn4PCTjigpV4fFM6sTVUmBiLTg@mail.gmail.com>
- <CAHD-aqKN_+5fwg65Udpr6jxt5tFsu5XXsMWkk75ujPK3bJcqJw@mail.gmail.com>
- <CAA_JP8UxNW18xWZe62ySY=H27HDnZY1YBQV-7ZGUHYnSS-ZSHw@mail.gmail.com>
- <CAHD-aqK_CGbc8u5GuEBJyFzrk2rTHHTw=bAiWjFafAW9xOqWiw@mail.gmail.com>
- <4FDA40A5.1050008@inti.gob.ar> <20120615095525.GA32707@pandem0nium>
- <4FDF7780.1040704@inti.gob.ar> <50008B97.5010403@inti.gob.ar>
- <CAHD-aqJE9U44t15xPzDKgzZGjnKDU-p2QG8+UFbcdvW2fvSr=Q@mail.gmail.com>
- <CAHD-aqLcxNfP_CM8+4rB8h4cVwt_beQPxW3jy+c4-tAo=UZ7Gg@mail.gmail.com>
-In-Reply-To: <CAHD-aqLcxNfP_CM8+4rB8h4cVwt_beQPxW3jy+c4-tAo=UZ7Gg@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] link alternation when radios are not on
- batman-adv router?
+In-Reply-To: <201207171257.23627.lindner_marek@yahoo.de>
+References: <CAKLmikNDZQL2bDWYMMUHcHA5WTMj2Ou0yFiZ7wg134OHFQZWrw@mail.gmail.com>
+ <201207161202.45306.lindner_marek@yahoo.de>
+ <CAKLmikOuvdvdzV+UD-qr=FSKA0s+1yMHcdYr4GU6S4VzvqcMcw@mail.gmail.com>
+ <201207171257.23627.lindner_marek@yahoo.de>
+Date: Tue, 17 Jul 2012 11:06:27 -0700
+Message-ID: <CAKLmikPKq3Ys8L=wtc08-GBeX04huu85OYJR17MByqOBGbi6sw@mail.gmail.com>
+From: Mitar <mmitar@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] Route selection over VPN links
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,208 +21,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Guido,
+Hi!
 
-In both configurations described, there's one router running batman and 
-the other connected via ethernet which is not. The function of the 
-latter is just to forward batman packets between ethernet and wifi. That 
-way the batman routers see alternative paths to their neighbours through 
-their ethernet interfaces.
+On Tue, Jul 17, 2012 at 3:57 AM, Marek Lindner <lindner_marek@yahoo.de> wrote:
+> I was more curious about the bandwidth routing than the latency stuff. The
+> current routing algorithm already takes latency into account. An alternate
+> path always need to be better than the current path. If both paths are equal
+> the faster packets win the race.
 
-For this to work, however, it's necessary to do something in the router 
-which doesn't run batman, because a normal ad hoc interface using 2 MAC 
-addresses doesn't work in a bridged configuration. That's why Simon 
-suggested the 4-addr mode in ad hoc, but unfortunately, we found that 
-with ath9k it's not possible to use that mode. So we began with the 
-configuration 1) where we didn't use ad hoc, but instead we tried with 
-ap and sta using wds (a mode with 4-address for access points and 
-stations). As mentioned previously, the problem with this configuration 
-was that as we were using both ap and sta bridged in the same non-batman 
-forwarding router (to achieve alternative paths between all nodes), the 
-batman broadcast packets were being forwarded directly.
+Hm. This happens only first time, it does not really change the route
+latter on, if chosen path latency increases and becomes worse than the
+second path, but packet loss stays the same (zero). Or it does?
 
-That's where we tried with ebtables + ad hoc (config 2). This way using 
-ebtables and the cloned MACs we don't need 4-addr mode, and the batman 
-routers see the alternative paths through their ethernet interfaces. But 
-for this to work, the batman routers need to use ebtables also, not just 
-the forwarding routers, because we change the dst MACs in both the 
-forwarding and the batman routers. And for using ebtables in a router 
-running batman, we had to add eth0 to a bridge, and then add the bridge 
-to bat0, that's what i was saying with that sentence. Look at this thread:
+For bandwidth, I would say that we first need multipath routing. And
+then route on all possible paths some percentage of packets, based on
+given capacity ratio. So if you have three paths A, B, and C with same
+packet loss and capacity Ca, Cb, and Cc, you route over A with Ca/(Ca
++ Cb + Cc) ratio.
 
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-May/002716.html
+The other way would be to route based on free capacity, but this means
+you would also have to know how much capacity is already taken for the
+given path. This is probably hard. But for given interface maybe not
+so much.
 
-By the way, we're using batman-adv 2012.0.0
+So for wall links we probably cannot know capacity. (This is
+especially true for WiFi.) But for some links we can know (VPN links,
+especially where people can set caplimit how much of their link they
+want to donate to the network). So probably this information (link cap
+and free capability) should be transmitted to all neighbors. And for
+those links where you have this additional information, I would route
+like:
 
-Anyway, all this was just to achieve link alternation using two routers 
-with 1 radio each. With 2 radios it would be much better i guess. Please 
-tell me if something is still unclear.
+- if packet loss on a path is different for some epsilon, route based on that
+- if latency on a path is different for some epsilon, route based on that
+- otherwise route based on the largest free capacity for some epsilon
+available for the next hop (or preferably even path)
 
+This would do correct thing for the case of VPN links, where most of
+links will have almost zero packet loss, latency will be or small (for
+local VPN servers) or big (for foreign VPN servers), and then based on
+free capacity we would route on that.
 
-Best regards
+So there should be some hysteresis and some "epsilon equality" so that
+we do not flap the links all the time.
 
-Gabriel
+One more thing, we have currently one gateway server and multiple VPN
+servers connecting to it. So most of the time traffic flows from or to
+this gateway server from VPN servers. So if we transmit around
+information about capacity on links, this would be a case where nodes
+connected to multiple VPN servers could decide not just on next hop
+capacity link, but also on the link to gateway. And so not just
+congest the VPN server, because the link to it is free, but that also
+link from it to gateway server should be free.
 
-El 14/07/2012 06:35 p.m., Guido Iribarren escribió:
-> Ah, i missed this sentence
-> "In the normal configuration with batman managing eth0 it doesn't work."
-> why? How was the setup? Which batman version?
-> I came across something like this (reported in a previous thread) but
-> so far i haven't had spare time to reproduce it again to debug it.
->
-> On 7/14/12, Guido Iribarren <guidoiribarren@buenosaireslibre.org> wrote:
->> You can try taking eth0 out of the bridge and adding it to bat0
->> that way you wouldn't need to mess with ebtables?
->> As there would be no bridged interfaces, batman would be the only one
->> forwarding packets between eth0 and wlan0. With hop penalty.
->>
->> On 7/13/12, gtolon@inti.gob.ar <gtolon@inti.gob.ar> wrote:
->>> Hi.
->>>
->>> We've been trying two different configurations to use link alternation
->>> with two routers conected via ethernet. In both cases in each pair of
->>> routers one runs batman and the other only forwards traffic between
->>> ethernet and wifi, as Simon suggested:
->>>
->>> 1) First in the forwarding routers we configured an AP and a station,
->>> both using wds. The idea was to form a chain of pairs of routers, where
->>> each forwarding router were connected to the previous and the next
->>> forwarder using those sta and AP interfaces, as can be seen in
->>> conf_1.png. Unfortunately we found that with this configuration the
->>> broadcast batman packets were forwarded through all the chain without
->>> any batman processing. For example, Batman 1 sends an Originator which
->>> goes out through its ad hoc interface, and also through ethernet, then
->>> Forward 1 sends it through its sta to Forward 2. In Forward 2 the sta,
->>> ap and ethernet interfaces are bridged, so the Originator goes to Batman
->>> 2 via ethernet (that's ok) but also goes directly to Forward 3 without
->>> the hop penalty applied. As a result Batman 3 sees the ethernet
->>> interface of Batman 1 as a direct neighbour with a good quality. In a
->>> longer chain the result would be the same.
->>>
->>> 2) A solution to the first configuration could be use some ebtables
->>> rules, but using ebtables we directly tried with normal ad hoc
->>> interfaces. So we used the configuration seen in conf_2.png. We cloned
->>> the MACs of the Batman ethernet interfaces to the ad hoc interfaces.
->>> That way the packets destined by Batman to the ethernet interfaces of
->>> their neighbours enter through the wireless interfaces because they have
->>> the same MAC. Once inside the Forwarding routers we use this rule:
->>>
->>>    ebtables -t broute -A BROUTING -i wlan0 -d <MAC1> -j dnat --to-dst
->>> <MACX> --dnat-target ACCEPT
->>>
->>> So changing the dst MAC the packets are forwarded through ethernet. In
->>> the BATMAN routers we used this rule to change again the dst MAC:
->>>
->>>    ebtables -t broute -A BROUTING -i eth0 -d <MACX> -j dnat --to-dst
->>> <MAC1> --dnat-target ACCEPT
->>>
->>> For using ebtables with Batman we had to attach eth0 to a bridge, and
->>> add that bridge to batman. In the normal configuration with batman
->>> managing eth0 it doesn't work.
->>> For the reverse path, packets entering to Forwarding routers from Batman
->>> routers it wasn't necessary to use any rule, we just saw many warnings
->>> advicing that packets with own address as source address were received.
->>>
->>> We had read in openwrt forum that ebtables could cause performance
->>> issues on routers, but we didn't notice a great difference in the tests
->>> we've made with iperf up to now.
->>>
->>> The problem that we are facing now is the impossibility of increasing
->>> the MTU of ethernet interfaces in the routers. We saw this patch:
->>>
->>> http://permalink.gmane.org/gmane.comp.embedded.openwrt.devel/14678
->>>
->>> and thought that maybe we could increase a bit more the MTU, but we
->>> couldn't. So the other possibility is to decrease all the other
->>> interfaces MTU to 1470 and let the ethernet to 1500 right? We guess that
->>> could cause IP fragmentation in some cases.
->>>
->>> I hope my explanations are understandable.
->>>
->>> Best regards!
->>>
->>> Gabriel
->>>
->>> El 18/06/2012 03:46 p.m., gtolon@inti.gob.ar escribió:
->>>> Hi Simon, thanks for your reply!
->>>>
->>>>
->>>> El 15/06/2012 06:55 a.m., Simon Wunderlich escribió:
->>>>> On Thu, Jun 14, 2012 at 04:51:01PM -0300, gtolon@inti.gob.ar wrote:
->>>>>> Hi,
->>>>>>
->>>>>>       we are interested too in interface alternating, so we made some
->>>>>> tests to understand how it works. As you can see on the attached
->>>>>> sketch.png, we connected two pair of routers using their ethernet
->>>>>> interfaces, E6 with E7, and E8 with E9. All of them have eth0, and
->>>>>> an ad hoc interface, wlan0-1, managed by batman. E6 and E8 are in
->>>>>> channel 11, whereas E7 and E9 are in channel 1. Besides we used two
->>>>>> other routers, E12 and E13, both in channel 11, with their tx power
->>>>>> set to just 0 dbm, to avoid a direct sight between them.
->>>>>>
->>>>>>       Then we sent traffic from E12 to E13. We expected that packets
->>>>>> travelled from E12 to E6, and that E6 forwarded them to his eth0 to
->>>>>> use the interface alternating feature, making traffic flow to E7,
->>>>>> then E9, E8 and finally E13. But instead, we observed that the
->>>>>> actual path was E12--E6--E8--E13. The resulting routes for each
->>>>>> router are attached in a text file, and also the graph from the
->>>>>> batctl vd dot command.
->>>>>>
->>>>>>       After this result, we read again the thread mentioned by Guido,
->>>>>> specially in this part:
->>>>>>
->>>>>> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-March/006344.html
->>>>>>
->>>>>>
->>>>>>
->>>>>>      And if we understand correctly, the alternation feature works
->>>>>> after the batman path has been selected. So in our case, E12 looks
->>>>>> at his table to know where to send a packet to E13, and finds E6.
->>>>>> Then E6 receives the packet and looks in his own table, finding that
->>>>>> the best path to reach E13 is E8. At this point, the alternating
->>>>>> should work, but there's only one interface directly connected to
->>>>>> E8, so the packet goes there, and so on. We think that if E6 and E7
->>>>>> were not two different routers running batman-adv but they were two
->>>>>> radios of the same batman-adv router, and the same for E8 and E9,
->>>>>> the alternating would work, because the unique router would choose
->>>>>> the best path, and then would find two possible interfaces to the
->>>>>> same next-hop, changing the interface.
->>>>> This is entirely correct - batman-adv has only one link to choose from
->>>>> (E6 ->  E8) to reach its best nexthop E8, so there is no way to
->>>>> "alternate" the interfaces.
->>>>>
->>>>>>       We'd like to know if this interpretation is correct, and in that
->>>>>> case, if it were possible to use interface alternating in a case
->>>>>> like this, with two routers connected to work together. Thanks!
->>>>> Mhm, with the current implementation - no, unfortunately not. We would
->>>>> need some kind of multipath routing to select between routes, this is
->>>>> much more complex.
->>>> Ok, i understand.
->>>>
->>>>> An alternative might be to use the routers E7/E9 as secondary routers
->>>>> without batman, but only forwarding traffic between Ethernet and
->>>>> WiFi. Then the "primary" routers (E6 ->  E8) would think they have
->>>>> an alternative route via Ethernet (because they don't see the
->>>>> intermediate hops E7/E9). This comes with some caveats however, e.g.
->>>>> 4-addr mode in Ad-Hoc, you need some very simple ethernet forwarder,
->>>>> and most probably other things I forgot.
->>>> We had tried with something like that using ap and sta modes in E7 and
->>>> E9, and it hadn't worked. Thanks to your suggestion we noticed the
->>>> necessity of the 4-address mode, so we are now trying with wds:
->>>>
->>>> http://wiki.openwrt.org/doc/recipes/atheroswds
->>>>
->>>> Unfortunately, we haven't found yet a way to use 4-address mode in ad
->>>> hoc. Apparentrly, it's not possible:
->>>>
->>>> http://linuxwireless.org/en/users/Documentation/iw#Using_4-address_for_AP_and_client_mode
->>>>
->>>>
->>>>
->>>> Best Regards
->>>>
->>>> Gabriel
+The above logic tells me, that routing plugins could be stacked. So
+that you could have a stack of routing decisions where each of plugins
+in the stack, in order, over which paths the packet should be routed.
+It simply returns a list of those with some ratio/vote on each path.
+Or simply remove some out of the list if it determines it is really
+bad. For example, for above logic, for paths A, B and C:
+
+- packet loss would return [A:0.33, B:0.33, C:0.33] because there is
+no significant packet loss
+- latency would return the same
+- free capacity would return [A:(Ca/(Ca + Cb + Cc)), ...]
+
+And at the end, for now, Batman could choose the best one route. Later
+on with multipath routing, it could use this information to choose for
+example n best.
+
+Just some ideas ...
 
 
+Mitar
