@@ -1,16 +1,16 @@
-Return-Path: <andrew@lunn.ch>
-Date: Tue, 17 Jul 2012 20:22:54 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20120717182254.GN4015@lunn.ch>
+Return-Path: <mmitar@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <20120717182254.GN4015@lunn.ch>
 References: <CAKLmikNDZQL2bDWYMMUHcHA5WTMj2Ou0yFiZ7wg134OHFQZWrw@mail.gmail.com>
  <201207161202.45306.lindner_marek@yahoo.de>
  <CAKLmikOuvdvdzV+UD-qr=FSKA0s+1yMHcdYr4GU6S4VzvqcMcw@mail.gmail.com>
  <201207171257.23627.lindner_marek@yahoo.de>
  <CAKLmikPKq3Ys8L=wtc08-GBeX04huu85OYJR17MByqOBGbi6sw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAKLmikPKq3Ys8L=wtc08-GBeX04huu85OYJR17MByqOBGbi6sw@mail.gmail.com>
+ <20120717182254.GN4015@lunn.ch>
+Date: Tue, 17 Jul 2012 12:29:02 -0700
+Message-ID: <CAKLmikNosnGfr+Qx4KV39mmjcA1M-+VqpM7Nd6B_GQpXwjA_4Q@mail.gmail.com>
+From: Mitar <mmitar@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Subject: Re: [B.A.T.M.A.N.] Route selection over VPN links
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,43 +25,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tue, Jul 17, 2012 at 11:06:27AM -0700, Mitar wrote:
-> Hi!
-> 
-> On Tue, Jul 17, 2012 at 3:57 AM, Marek Lindner <lindner_marek@yahoo.de> wrote:
-> > I was more curious about the bandwidth routing than the latency stuff. The
-> > current routing algorithm already takes latency into account. An alternate
-> > path always need to be better than the current path. If both paths are equal
-> > the faster packets win the race.
-> 
-> Hm. This happens only first time, it does not really change the route
-> latter on, if chosen path latency increases and becomes worse than the
-> second path, but packet loss stays the same (zero). Or it does?
-> 
-> For bandwidth, I would say that we first need multipath routing. And
-> then route on all possible paths some percentage of packets, based on
-> given capacity ratio. So if you have three paths A, B, and C with same
-> packet loss and capacity Ca, Cb, and Cc, you route over A with Ca/(Ca
-> + Cb + Cc) ratio.
+Hi!
 
-You have to be careful with packet reordering. If i remember
-correctly, Linus did some measurements when link bonding was
-introduced in BATMAN. TCP can cope with packet reordering, but it has
-negative effects on goodput.
+On Tue, Jul 17, 2012 at 11:22 AM, Andrew Lunn <andrew@lunn.ch> wrote:
+> You have to be careful with packet reordering.
 
-...
+Hm. True. Yes, maybe multipath routing is just in theory a good idea.
+;-) I also don't really believe in it. Or even believe it is
+necessary. But some balancing could be useful to have. For example,
+based on origin. So all packets from same origin goes on the same
+link, and the other on the other. Is this possible to achieve?
 
-> This would do correct thing for the case of VPN links, where most of
-> links will have almost zero packet loss, latency will be or small (for
-> local VPN servers) or big (for foreign VPN servers), and then based on
-> free capacity we would route on that.
+> Are these assumptions really true? In my home setup, my ADSL modem is
+> where my telephone socket is. My VPN server is somewhere else and
+> there is a wifi and a powerline link in between. If my neighbors swamp
+> the wifi channel with their torrent download, my VPN will
+> suffer. (Well not really, i known this wifi stuff better than my
+> neighbors)
 
-Are these assumptions really true? In my home setup, my ADSL modem is
-where my telephone socket is. My VPN server is somewhere else and
-there is a wifi and a powerline link in between. If my neighbors swamp
-the wifi channel with their torrent download, my VPN will
-suffer. (Well not really, i known this wifi stuff better than my
-neighbors)
+I think we talk about different topologies here. We have a gateway
+server on collocation, with VPN servers spread around the country. We
+connect all nodes to those VPN servers, and VPN servers to gateway
+server. We do not use ADSL uplinks for anything else than just to
+connect to those VPN servers.
 
-   Andrew
+I am not talking about user's VPN servers, but network's. The ones
+which allow nodes to be in the same network even if there is no (yet)
+existing WiFi link between them.
 
+
+Mitar
