@@ -1,12 +1,15 @@
-Return-Path: <nicoechaniz@codigosur.org>
-Message-ID: <5008C14B.6040707@codigosur.org>
-Date: Thu, 19 Jul 2012 23:24:11 -0300
-From: =?ISO-8859-1?Q?Nicol=E1s_Ech=E1niz?= <nicoechaniz@codigosur.org>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] batman-adv not selecting a gateway when using
- "client 1" through uci config
+Sender: guido@guidoi.com.ar
+In-Reply-To: <20120702143604.GD2917@ritirata.org>
+References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
+ <CAHD-aqK-SrQ0VxmrZSzq3gb_aVZQY5ZYxN7qjdC8dind+jgeuw@mail.gmail.com>
+ <20120702143604.GD2917@ritirata.org>
+From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
+Date: Fri, 20 Jul 2012 17:25:46 -0300
+Message-ID: <CAHD-aq+vsMugkr8CWQaw-bOYzLbxBL6V7zP=cfURNMacyBL+oQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] batman majareta? I can batctl ping but not ping
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,36 +23,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi everyone,
+Resurrecting thread...
 
-I've been experimenting with gateway selection in QuintanaLibre. I have
-a very bad gateway that I want to work as a last resort gateway when the
-other is down, so I tried changing to gw_mode client 1 and used some
-unreal values for the Up/Down speeds to "force" the selection.
-
-Anyway, this is all well, the good gateway gets selected from almost all
-the mesh, but the problem is that when I updated the client routers
-configuration using uci to make it permanent, I stumbled with this
-strange result that you can see here:
-
-http://pastebin.com/pEhcq2TW
+On Mon, Jul 2, 2012 at 11:36 AM, Antonio Quartulli <ordex@autistici.org> wrote:
+> Hello!
+>
+> Has debug support been compiled in batman-adv? IF yes, it would be interesting
+> so see the output of the tt log (batctl ll tt; batctl l)
+Ah, I should have re-read this before :(
 
 
-there's no gateway being selected until I manually run:
-# batctl gw_mode client 1
-(which was te current mode anyway)
-on each client.
+> Recently we fixed a bug that which fix has not been released yet. If we are sure
+> that this is the cause, you could eventually try an upgrade to a more recente
+> dev-version. But let's see the log first (if possible)
+> --
+> Antonio Quartulli
 
-In fact, connected computers are not being served DHCP offers because of
-this.
+Last week I came across this bug again, with the latest firm which
+includes the fixes mentioned, pushed by Marek.
+We were kinda in a hurry so i didn't have much time to check it
+thoroughly, so there's a *slim* chance it was just a coincidence, such
+as very poor signal giving erratic results.
+But if I recall correctly Nico Echaniz did stump on this too, using
+the latest firm.
+So, although i can't confirm it 100%, it seems so far the fixes didn't help :(
 
-Is this some known behavior or just something I overlooked?
+We'll keep an eye on it and try a "batctl l"
 
+Cheers!
 
-Thanks as ever for your help with batman-adv, which here at the far
-south we are loving every day more as little mesh clouds keep spawning
-around us :)
-
-
-Cheers,
-NicoEch=E1niz
+Gui
