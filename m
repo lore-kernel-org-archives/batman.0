@@ -1,15 +1,15 @@
-Return-Path: <guido@guidoi.com.ar>
+Return-Path: <mmitar@gmail.com>
 MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-In-Reply-To: <20120702143604.GD2917@ritirata.org>
-References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
- <CAHD-aqK-SrQ0VxmrZSzq3gb_aVZQY5ZYxN7qjdC8dind+jgeuw@mail.gmail.com>
- <20120702143604.GD2917@ritirata.org>
-From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
-Date: Fri, 20 Jul 2012 17:25:46 -0300
-Message-ID: <CAHD-aq+vsMugkr8CWQaw-bOYzLbxBL6V7zP=cfURNMacyBL+oQ@mail.gmail.com>
+In-Reply-To: <201207182206.00711.lindner_marek@yahoo.de>
+References: <CAKLmikNDZQL2bDWYMMUHcHA5WTMj2Ou0yFiZ7wg134OHFQZWrw@mail.gmail.com>
+ <201207171257.23627.lindner_marek@yahoo.de>
+ <CAKLmikPKq3Ys8L=wtc08-GBeX04huu85OYJR17MByqOBGbi6sw@mail.gmail.com>
+ <201207182206.00711.lindner_marek@yahoo.de>
+Date: Fri, 20 Jul 2012 14:14:30 -0700
+Message-ID: <CAKLmikMgapyGL38cbNb7NHvAc8Ro6Uq_LtYju+p6YXCxbmk9Rg@mail.gmail.com>
+From: Mitar <mmitar@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] batman majareta? I can batctl ping but not ping
+Subject: Re: [B.A.T.M.A.N.] Route selection over VPN links
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,33 +23,14 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Resurrecting thread...
+Hi!
 
-On Mon, Jul 2, 2012 at 11:36 AM, Antonio Quartulli <ordex@autistici.org> wrote:
-> Hello!
->
-> Has debug support been compiled in batman-adv? IF yes, it would be interesting
-> so see the output of the tt log (batctl ll tt; batctl l)
-Ah, I should have re-read this before :(
+On Wed, Jul 18, 2012 at 1:06 PM, Marek Lindner <lindner_marek@yahoo.de> wrote:
+> No, it always works. The slower route needs to be better than the faster
+> route. If there is a new "faster" route the same applies. Just give it a try
+> and see for yourself.
+
+But is there any hysteresis? Or route just flap?
 
 
-> Recently we fixed a bug that which fix has not been released yet. If we are sure
-> that this is the cause, you could eventually try an upgrade to a more recente
-> dev-version. But let's see the log first (if possible)
-> --
-> Antonio Quartulli
-
-Last week I came across this bug again, with the latest firm which
-includes the fixes mentioned, pushed by Marek.
-We were kinda in a hurry so i didn't have much time to check it
-thoroughly, so there's a *slim* chance it was just a coincidence, such
-as very poor signal giving erratic results.
-But if I recall correctly Nico Echaniz did stump on this too, using
-the latest firm.
-So, although i can't confirm it 100%, it seems so far the fixes didn't help :(
-
-We'll keep an eye on it and try a "batctl l"
-
-Cheers!
-
-Gui
+Mitar
