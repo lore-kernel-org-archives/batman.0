@@ -1,16 +1,14 @@
 Return-Path: <ordex@autistici.org>
-Date: Sat, 21 Jul 2012 23:38:57 +0200
+Date: Sat, 21 Jul 2012 23:40:26 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120721213856.GB3610@ritirata.org>
+Message-ID: <20120721214026.GC3610@ritirata.org>
 References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
- <CAHD-aqK-SrQ0VxmrZSzq3gb_aVZQY5ZYxN7qjdC8dind+jgeuw@mail.gmail.com>
- <20120702143604.GD2917@ritirata.org>
- <CAHD-aq+vsMugkr8CWQaw-bOYzLbxBL6V7zP=cfURNMacyBL+oQ@mail.gmail.com>
+ <500AFACD.7070207@eigenlab.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="XOIedfhf+7KOe/yw"
+ protocol="application/pgp-signature"; boundary="vOmOzSkFvhd7u8Ms"
 Content-Disposition: inline
-In-Reply-To: <CAHD-aq+vsMugkr8CWQaw-bOYzLbxBL6V7zP=cfURNMacyBL+oQ@mail.gmail.com>
+In-Reply-To: <500AFACD.7070207@eigenlab.org>
 Subject: Re: [B.A.T.M.A.N.] batman majareta? I can batctl ping but not ping
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -26,70 +24,99 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---XOIedfhf+7KOe/yw
+--vOmOzSkFvhd7u8Ms
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Guido,
+Hello Gioacchino,
 
-On Fri, Jul 20, 2012 at 05:25:46PM -0300, Guido Iribarren wrote:
-> Resurrecting thread...
+On Sat, Jul 21, 2012 at 08:54:05PM +0200, Gioacchino Mazzurco wrote:
+> Same bug today in ninux pisa after a node was turned off the entire
+> network became crazy for 2 hours, to solve i had to restart a lot of
+> nodes... :|
 >=20
-> On Mon, Jul 2, 2012 at 11:36 AM, Antonio Quartulli <ordex@autistici.org> =
-wrote:
-> > Hello!
-> >
-> > Has debug support been compiled in batman-adv? IF yes, it would be inte=
-resting
-> > so see the output of the tt log (batctl ll tt; batctl l)
-> Ah, I should have re-read this before :(
->=20
->=20
-> > Recently we fixed a bug that which fix has not been released yet. If we=
- are sure
-> > that this is the cause, you could eventually try an upgrade to a more r=
-ecente
-> > dev-version. But let's see the log first (if possible)
-> > --
-> > Antonio Quartulli
->=20
-> Last week I came across this bug again, with the latest firm which
-> includes the fixes mentioned, pushed by Marek.
-> We were kinda in a hurry so i didn't have much time to check it
-> thoroughly, so there's a *slim* chance it was just a coincidence, such
-> as very poor signal giving erratic results.
-> But if I recall correctly Nico Echaniz did stump on this too, using
-> the latest firm.
 
-How did you solve it then? Rebooting?
+Which version are you using? The lastest openwrt package version (so with a=
+ll
+the new patches?)
 
-> So, although i can't confirm it 100%, it seems so far the fixes didn't he=
-lp :(
->=20
-> We'll keep an eye on it and try a "batctl l"
+Could you provide the log of the involved nodes whenever you get this probl=
+ems?
+I wrote something about the desired logs to Guido, you could follow the same
+instruction. It would really be appreciated!
 
-Yes, please. Remember to set the TT log level (batctl ll tt) before launchi=
-ng
-batctl l.
-Actually it would be very interesting to see the log of the involved nodes
-during the "wrong behaviour period".
+Thank you!
 
-However, please keep an eye on the log anyway and report if you get any
-message matching "*inconsistency*" (but report the whole part of the log, n=
-ot
-only this message). When you see those messages, please be sure that no cli=
-ents
-is connecting at that time (if so, it could be the normal procedure). If yo=
-u get
-this message, you should also see which node is involved in the inconsisten=
-cy
-(it is reported in the message too) and please report the tt log from that =
-node
-too.
 
-Thank you very much!
+Cheers,
 
+> On 07/02/12 15:30, Guido Iribarren wrote:
+> > (which roughly translates as "batman gone nuts?")
+> > Hey great devs!
+> > we've been having a particular issue in deltalibre and quintanalibre
+> > (local WCN) with batman-adv, but so far we haven't found a precise way
+> > to reproduce it.
+> > The symptom is that (after some reboots or physical displacements?)
+> > one batman-adv host becomes unreachable on layer3, although it is seen
+> > on originators table, and can be batctl ping'ed or batctl tracerout'ed
+> > with no problem whatsoever.
+> >=20
+> > Even more, it not unreachable from the whole network, but instead from
+> > just a few other nodes. So, let's say that the nearer nodes can layer3
+> > ping it , but some others farther away cannot (although i can't assure
+> > it depends on the hop distance)
+> > All of them can batctl ping it (layer2)
+> > A hard reboot of all the nodes solves it, connectivity is restored in
+> > all directions.
+> >=20
+> > Thing is, I've just came across it again, and managed to do some tests
+> > to aid in description / debugging
+> > As an aid in understanding network topology,
+> > I'm attaching the wonderful output of "batctl vd dot |grep -v TT" for
+> > your viewing delight
+> >=20
+> > problem node is ana
+> > it can be reached from ruth and hquilla (direct neighbours)
+> > but arping behaves erratically from colmena or charly
+> > and normal ping (v4 or v6) doesn't receive any reply at all when run
+> > from colmena or charly
+> >=20
+> > I used arping, with and without -b , and seemed like i could narrow
+> > the problem down to incoming broadcast packet handling, but further
+> > tests just left me more puzzled!
+> >=20
+> > all nodes are tl-mr3220 running openwrt trunk r31316 with batman-adv
+> > 2012.2.0 , driver ath9k
+> > secondary interfaces named _wlan1 are all tl-wn722n which uses driver a=
+th9k_htc
+> > nodes are around 100meters (+/-50mts) apart from each other
+> >=20
+> > this behaviour has been observed (but not reported) in dissimilar
+> > setups, using ubnt bullet2 mixed with mr3220, running r29936 with
+> > batman-adv 2011.4.0 , with nodes 1 or 2km apart from each other.
+> >=20
+> > Tests are the combined crude output of batctl td and arping, so to
+> > make this email ease on the eye, i'm publishing them elsewhere:
+> > http://pastebin.com/6PPwN3PS
+> >=20
+> > The live openwrt configuration can be analysed in detail at
+> > https://bitbucket.org/guidoi/deltalibre-configs/src
+> > (it's a free, open network after all! :D )
+> > in particular:
+> > ana -> https://bitbucket.org/guidoi/deltalibre-configs/src/6de4ce970fe2=
+/mac/54_E6_FC_BE_26_12
+> > hquilla -> https://bitbucket.org/guidoi/deltalibre-configs/src/6de4ce97=
+0fe2/mac/54_E6_FC_BE_28_34
+> > colmena -> https://bitbucket.org/guidoi/deltalibre-configs/src/6de4ce97=
+0fe2/mac/54_E6_FC_BE_29_D2
+> >=20
+> > Thanks a lot for the attention,
+> > Hope that you are having fun, and that I'm not spoiling it :)
+> >=20
+> > Cheers!
+> >=20
+> > Gui
 
 --=20
 Antonio Quartulli
@@ -97,15 +124,15 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---XOIedfhf+7KOe/yw
+--vOmOzSkFvhd7u8Ms
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iEUEARECAAYFAlALIXAACgkQpGgxIkP9cwe+8ACYjR4Lg6R4KMKBy9v9uR4mYJtq
-AACcCgohK7zuQP/jkkPpJRivNOnAA8I=
-=0Rjm
+iEYEARECAAYFAlALIcoACgkQpGgxIkP9cwdk4QCeJNL6WVmtx7sMEDVO5XM7ySG1
+lNIAn0DsD5DSpSoUhsdMLKruPr90uiMD
+=AyBH
 -----END PGP SIGNATURE-----
 
---XOIedfhf+7KOe/yw--
+--vOmOzSkFvhd7u8Ms--
