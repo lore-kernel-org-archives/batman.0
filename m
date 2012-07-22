@@ -1,14 +1,18 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 22 Jul 2012 13:20:13 +0200
-References: <5008C14B.6040707@codigosur.org>
-In-Reply-To: <5008C14B.6040707@codigosur.org>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_uH+CQjfhmufiZ2b"
-Message-Id: <201207221320.14242.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv not selecting a gateway when using
-	"client 1" through uci config
+Sender: guido@guidoi.com.ar
+In-Reply-To: <CAHD-aqKiFkq_HXBHMERhbv2uS-8ZcxsfVGv_H6asZf3L2Ruq8A@mail.gmail.com>
+References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
+ <CAHD-aqK-SrQ0VxmrZSzq3gb_aVZQY5ZYxN7qjdC8dind+jgeuw@mail.gmail.com>
+ <20120702143604.GD2917@ritirata.org>
+ <CAHD-aq+vsMugkr8CWQaw-bOYzLbxBL6V7zP=cfURNMacyBL+oQ@mail.gmail.com>
+ <20120721213856.GB3610@ritirata.org>
+ <CAHD-aqKiFkq_HXBHMERhbv2uS-8ZcxsfVGv_H6asZf3L2Ruq8A@mail.gmail.com>
+From: Guido Iribarren <guidoiribarren@buenosaireslibre.org>
+Date: Sun, 22 Jul 2012 08:20:21 -0300
+Message-ID: <CAHD-aqK7Wt0YMf1Sr1WrUGOi++D2DEpu-ieNyh0DZQ_6ntBRrA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] batman majareta? I can batctl ping but not ping
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,78 +26,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---Boundary-00=_uH+CQjfhmufiZ2b
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Sun, Jul 22, 2012 at 7:57 AM, Guido Iribarren
+<guidoiribarren@buenosaireslibre.org> wrote:
 
-On Friday, July 20, 2012 04:24:11 Nicol=E1s Ech=E1niz wrote:
-> there's no gateway being selected until I manually run:
-> # batctl gw_mode client 1
-> (which was te current mode anyway)
-> on each client.
->=20
-> In fact, connected computers are not being served DHCP offers because of
-> this.
->=20
-> Is this some known behavior or just something I overlooked?
+>
+> This time it solved itself after some brief time (a minute) but the
+> symptoms were the same.
+> So I could catch some logs,
+> http://pastebin.com/MEENj94i
+>
+> sadly, i wasn't fast enough to get a live log from the node involved
+> in the inconsistency as you suggested, so the report might be pretty
+> useless.
 
-In fact you managed to uncover a regression that was overlooked for quite s=
-ome=20
-time. Guess gw selection class 1 is rarely used.  :-)
+from this particular node i ran previous report (colmena-casa) that
+was rebooted recently, L3 ping to all of the network had the same
+issue, (no replies for a minute or so) so i had the chance to
+"recreate" the situation several times.
+Turns out, a "batctl ll tt ; batctl l" on the nodes mentioned in the
+inconsistencies gave no output at all, so the previous pastebin report
+is in fact complete :P
+Looks like the inconsistency is being resolved locally between
+neighbours, without the need to contact the far end of the network
+(which is coherent with what's described in the wiki)
 
-Can you apply the attached patch and verify that it fixes the problem ? Her=
-e=20
-in my test setup it does.
-
-Regards,
-Marek
-
---Boundary-00=_uH+CQjfhmufiZ2b
-Content-Type: text/x-patch;
-  charset="UTF-8";
-  name="0001-batman-adv-select-an-internet-gateway-if-none-was-ch.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="0001-batman-adv-select-an-internet-gateway-if-none-was-ch.patch"
-
-=46rom 0a29f3a348c68f375585e25153da0f0a061fd71d Mon Sep 17 00:00:00 2001
-=46rom: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 22 Jul 2012 13:04:48 +0200
-Subject: [PATCH] batman-adv: select an internet gateway if none was chosen
-MIME-Version: 1.0
-Content-Type: text/plain; charset=3DUTF-8
-Content-Transfer-Encoding: 8bit
-
-This is a regression introduced by: 6a17ecc4603be7f065c38b288d038a0082bbf21d
-
-Reported-by: Nicol=C3=A1s Ech=C3=A1niz <nicoechaniz@codigosur.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-=2D--
- gateway_client.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/gateway_client.c b/gateway_client.c
-index 47f7186..dace001 100644
-=2D-- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -197,11 +197,11 @@ void gw_election(struct bat_priv *bat_priv)
- 	if (atomic_read(&bat_priv->gw_mode) !=3D GW_MODE_CLIENT)
- 		goto out;
-=20
-=2D	if (!atomic_dec_not_zero(&bat_priv->gw_reselect))
-=2D		goto out;
-=2D
- 	curr_gw =3D gw_get_selected_gw_node(bat_priv);
-=20
-+	if (!atomic_dec_not_zero(&bat_priv->gw_reselect) && curr_gw)
-+		goto out;
-+
- 	next_gw =3D gw_get_best_gw_node(bat_priv);
-=20
- 	if (curr_gw =3D=3D next_gw)
-=2D-=20
-1.7.9.1
-
-
---Boundary-00=_uH+CQjfhmufiZ2b--
+In any case, AFAIR previous ocurrences of the bug didn't resolve by
+themselves (in a reasonable amount of time) so what I'm looking at now
+might be perfectly normal behaviour? (tt tables take some time to
+propagate?)
