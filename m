@@ -1,20 +1,15 @@
 Return-Path: <ordex@autistici.org>
-Date: Mon, 23 Jul 2012 19:28:28 +0200
+Date: Mon, 23 Jul 2012 19:33:56 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120723172828.GF3610@ritirata.org>
-References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
- <CAHD-aqK-SrQ0VxmrZSzq3gb_aVZQY5ZYxN7qjdC8dind+jgeuw@mail.gmail.com>
- <20120702143604.GD2917@ritirata.org>
- <CAHD-aq+vsMugkr8CWQaw-bOYzLbxBL6V7zP=cfURNMacyBL+oQ@mail.gmail.com>
- <20120721213856.GB3610@ritirata.org>
- <CAHD-aqKiFkq_HXBHMERhbv2uS-8ZcxsfVGv_H6asZf3L2Ruq8A@mail.gmail.com>
- <CAHD-aqK7Wt0YMf1Sr1WrUGOi++D2DEpu-ieNyh0DZQ_6ntBRrA@mail.gmail.com>
+Message-ID: <20120723173356.GG3610@ritirata.org>
+References: <1343048353-23456-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="hUH5gZbnpyIv7Mn4"
+ protocol="application/pgp-signature"; boundary="B8ONY/mu/bqBak9m"
 Content-Disposition: inline
-In-Reply-To: <CAHD-aqK7Wt0YMf1Sr1WrUGOi++D2DEpu-ieNyh0DZQ_6ntBRrA@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] batman majareta? I can batctl ping but not ping
+In-Reply-To: <1343048353-23456-1-git-send-email-lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: select an internet gateway
+ if none was chosen
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,59 +22,26 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 
---hUH5gZbnpyIv7Mn4
+--B8ONY/mu/bqBak9m
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Jul 22, 2012 at 08:20:21AM -0300, Guido Iribarren wrote:
-> On Sun, Jul 22, 2012 at 7:57 AM, Guido Iribarren
-> <guidoiribarren@buenosaireslibre.org> wrote:
+On Mon, Jul 23, 2012 at 02:59:13PM +0200, Marek Lindner wrote:
+> This is a regression introduced by: 6a17ecc4603be7f065c38b288d038a0082bbf=
+21d
 >=20
-> >
-> > This time it solved itself after some brief time (a minute) but the
-> > symptoms were the same.
-> > So I could catch some logs,
-> > http://pastebin.com/MEENj94i
-> >
-> > sadly, i wasn't fast enough to get a live log from the node involved
-> > in the inconsistency as you suggested, so the report might be pretty
-> > useless.
->=20
-> from this particular node i ran previous report (colmena-casa) that
-> was rebooted recently, L3 ping to all of the network had the same
-> issue, (no replies for a minute or so) so i had the chance to
-> "recreate" the situation several times.
-> Turns out, a "batctl ll tt ; batctl l" on the nodes mentioned in the
-> inconsistencies gave no output at all, so the previous pastebin report
-> is in fact complete :P
-> Looks like the inconsistency is being resolved locally between
-> neighbours, without the need to contact the far end of the network
-> (which is coherent with what's described in the wiki)
+> Reported-by: Nicol=C3=A1s Ech=C3=A1niz <nicoechaniz@codigosur.org>
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
 
-Exactly! If the neighbour has the needed information, the node can directly=
- get
-answered without bothering the real destination ;)
 
->=20
-> In any case, AFAIR previous ocurrences of the bug didn't resolve by
-> themselves (in a reasonable amount of time) so what I'm looking at now
-> might be perfectly normal behaviour? (tt tables take some time to
-> propagate?)
+Thank you Marek for fixing bugs that I silently introduce :)
 
-Well, the log you posted is perfectly correct. You missed some OGMs, theref=
-ore
-the node is asking for an update that he missed.
-
-it would be interesting to run batctl ll tt; batctl l all the time on the n=
-ode
-that usually experiences the "problem". The log should be not so big, unles=
-s the
-bug happens.
-
-Cheers,
+Acked-by: Antonio Quartulli <ordex@autistici.org>
 
 
 --=20
@@ -88,15 +50,15 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---hUH5gZbnpyIv7Mn4
+--B8ONY/mu/bqBak9m
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iEYEARECAAYFAlANibwACgkQpGgxIkP9cweK0QCeP0E1U/og5EDNz5UmiCsTr9bR
-Su0An1qj+r57zk+gttoOEqneYVHLWOiV
-=fWDK
+iEYEARECAAYFAlANiwQACgkQpGgxIkP9cwf3tQCglwZMLiQnvADvetufx/xsF3R8
+m2sAn12MrcDtdRRm3E4r4o6tnuuqGmcC
+=Aidk
 -----END PGP SIGNATURE-----
 
---hUH5gZbnpyIv7Mn4--
+--B8ONY/mu/bqBak9m--
