@@ -1,15 +1,13 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 23 Jul 2012 19:33:56 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120723173356.GG3610@ritirata.org>
-References: <1343048353-23456-1-git-send-email-lindner_marek@yahoo.de>
+Return-Path: <nicoechaniz@codigosur.org>
+Message-ID: <500DEE19.6010201@codigosur.org>
+Date: Mon, 23 Jul 2012 21:36:41 -0300
+From: =?UTF-8?B?Tmljb2zDoXMgRWNow6FuaXo=?= <nicoechaniz@codigosur.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="B8ONY/mu/bqBak9m"
-Content-Disposition: inline
-In-Reply-To: <1343048353-23456-1-git-send-email-lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: select an internet gateway
- if none was chosen
+References: <CAHD-aqLxF0HHXbW0YtZa700qbUytyv3Gd40FC6E7nRWLMD-=Ew@mail.gmail.com>
+In-Reply-To: <CAHD-aqLxF0HHXbW0YtZa700qbUytyv3Gd40FC6E7nRWLMD-=Ew@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] avahi broadcasts over two-radio batman.. dropped?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,43 +20,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+
+On 07/19/2012 01:20 AM, Guido Iribarren wrote:
+> Hello again,
+> can't determine exactly since when, but avahi is acting funny in
+> QuintanaLibre :(
+> 
+[...]
+
+> I don't find any reason batman would be involved in this, but iptables
+> is discarded as a suspect, and AFAICS there are no other factors
+> messing with the packets (maybe it's a bit late night :) ). No bridges
+> whatsoever.
+> In fact, packet is catched by batctl td coming in at wlan0.
+> 
+> Any hints or experiences will be greatly appreciated as always!
 
 
---B8ONY/mu/bqBak9m
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Jul 23, 2012 at 02:59:13PM +0200, Marek Lindner wrote:
-> This is a regression introduced by: 6a17ecc4603be7f065c38b288d038a0082bbf=
-21d
->=20
-> Reported-by: Nicol=C3=A1s Ech=C3=A1niz <nicoechaniz@codigosur.org>
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> ---
+Sorry to just bump this thread but we are connecting more people to the
+net here and avahi is a central piece of our
+small-town-community-network experiment. ...so, if anyone can think of
+further testing/debugging that we could do, we will be more than pleased
+to collaborate, as usual!
 
 
-Thank you Marek for fixing bugs that I silently introduce :)
-
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---B8ONY/mu/bqBak9m
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlANiwQACgkQpGgxIkP9cwf3tQCglwZMLiQnvADvetufx/xsF3R8
-m2sAn12MrcDtdRRm3E4r4o6tnuuqGmcC
-=Aidk
------END PGP SIGNATURE-----
-
---B8ONY/mu/bqBak9m--
+abraxi,
+NicoEchániz
