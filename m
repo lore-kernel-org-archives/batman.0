@@ -1,9 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 24 Jul 2012 14:41:36 +0200
-Message-Id: <1343133696-4981-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: tcpdump - print all warnings and
-	errors on stderr
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Wed, 25 Jul 2012 22:22:57 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20120725202257.GA11999@pandem0nium>
+References: <1368807.4KENUl02G1@sven-laptop.home.narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="lrZ03NoBR/3+SXJZ"
+Content-Disposition: inline
+In-Reply-To: <1368807.4KENUl02G1@sven-laptop.home.narfation.org>
+Subject: Re: [B.A.T.M.A.N.] RFC: Migration to a new git server backend
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,139 +20,109 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- tcpdump.c |   28 ++++++++++++++--------------
- 1 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/tcpdump.c b/tcpdump.c
-index beac2ac..1a4a9a0 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -46,7 +46,7 @@
- 
- #define LEN_CHECK(buff_len, check_len, desc) \
- if ((size_t)(buff_len) < (check_len)) { \
--	printf("Warning - dropping received %s packet as it is smaller than expected (%zu): %zu\n", \
-+	fprintf(stderr, "Warning - dropping received %s packet as it is smaller than expected (%zu): %zu\n", \
- 		desc, (check_len), (size_t)(buff_len)); \
- 	return; \
- }
-@@ -586,7 +586,7 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
- 			break;
- 		case BATADV_VIS:
- 			if (dump_level & DUMP_TYPE_BATVIS)
--				printf("Warning - batman vis packet received: function not implemented yet\n");
-+				fprintf(stderr, "Warning - batman vis packet received: function not implemented yet\n");
- 			break;
- 		case BATADV_UNICAST_FRAG:
- 			if (dump_level & DUMP_TYPE_BATFRAG)
-@@ -601,14 +601,14 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
- 				dump_batman_roam(packet_buff, buff_len, read_opt, time_printed);
- 			break;
- 		default:
--			printf("Warning - packet contains unknown batman packet type: 0x%02x\n", batman_ogm_packet->header.packet_type);
-+			fprintf(stderr, "Warning - packet contains unknown batman packet type: 0x%02x\n", batman_ogm_packet->header.packet_type);
- 			break;
- 		}
- 
- 		break;
- 
- 	default:
--		printf("Warning - packet contains unknown ether type: 0x%04x\n", ntohs(eth_hdr->ether_type));
-+		fprintf(stderr, "Warning - packet contains unknown ether type: 0x%04x\n", ntohs(eth_hdr->ether_type));
- 		break;
- 	}
- }
-@@ -747,7 +747,7 @@ int tcpdump(int argc, char **argv)
- 	}
- 
- 	if (argc <= found_args) {
--		printf("Error - target interface not specified\n");
-+		fprintf(stderr, "Error - target interface not specified\n");
- 		tcpdump_usage();
- 		return EXIT_FAILURE;
- 	}
-@@ -767,14 +767,14 @@ int tcpdump(int argc, char **argv)
- 		dump_if->dev = argv[found_args];
- 
- 		if (strlen(dump_if->dev) > IFNAMSIZ - 1) {
--			printf("Error - interface name too long: %s\n", dump_if->dev);
-+			fprintf(stderr, "Error - interface name too long: %s\n", dump_if->dev);
- 			goto out;
- 		}
- 
- 		dump_if->raw_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
- 
- 		if (dump_if->raw_sock < 0) {
--			printf("Error - can't create raw socket: %s\n", strerror(errno));
-+			fprintf(stderr, "Error - can't create raw socket: %s\n", strerror(errno));
- 			goto out;
- 		}
- 
-@@ -783,7 +783,7 @@ int tcpdump(int argc, char **argv)
- 
- 		res = ioctl(dump_if->raw_sock, SIOCGIFHWADDR, &req);
- 		if (res < 0) {
--			printf("Error - can't create raw socket (SIOCGIFHWADDR): %s\n", strerror(errno));
-+			fprintf(stderr, "Error - can't create raw socket (SIOCGIFHWADDR): %s\n", strerror(errno));
- 			close(dump_if->raw_sock);
- 			goto out;
- 		}
-@@ -796,7 +796,7 @@ int tcpdump(int argc, char **argv)
- 		case ARPHRD_IEEE80211_RADIOTAP:
- 			break;
- 		default:
--			printf("Error - interface '%s' is of unknown type: %i\n", dump_if->dev, dump_if->hw_type);
-+			fprintf(stderr, "Error - interface '%s' is of unknown type: %i\n", dump_if->dev, dump_if->hw_type);
- 			goto out;
- 		}
- 
-@@ -806,7 +806,7 @@ int tcpdump(int argc, char **argv)
- 		res = ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req);
- 
- 		if (res < 0) {
--			printf("Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno));
-+			fprintf(stderr, "Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno));
- 			close(dump_if->raw_sock);
- 			goto out;
- 		}
-@@ -818,7 +818,7 @@ int tcpdump(int argc, char **argv)
- 		res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr, sizeof(struct sockaddr_ll));
- 
- 		if (res < 0) {
--			printf("Error - can't bind raw socket: %s\n", strerror(errno));
-+			fprintf(stderr, "Error - can't bind raw socket: %s\n", strerror(errno));
- 			close(dump_if->raw_sock);
- 			goto out;
- 		}
-@@ -844,7 +844,7 @@ int tcpdump(int argc, char **argv)
- 			continue;
- 
- 		if (res < 0) {
--			printf("Error - can't select on raw socket: %s\n", strerror(errno));
-+			fprintf(stderr, "Error - can't select on raw socket: %s\n", strerror(errno));
- 			continue;
- 		}
- 
-@@ -855,12 +855,12 @@ int tcpdump(int argc, char **argv)
- 			read_len = read(dump_if->raw_sock, packet_buff, sizeof(packet_buff));
- 
- 			if (read_len < 0) {
--				printf("Error - can't read from interface '%s': %s\n", dump_if->dev, strerror(errno));
-+				fprintf(stderr, "Error - can't read from interface '%s': %s\n", dump_if->dev, strerror(errno));
- 				continue;
- 			}
- 
- 			if ((size_t)read_len < sizeof(struct ether_header)) {
--				printf("Warning - dropping received packet as it is smaller than expected (%zu): %zd\n",
-+				fprintf(stderr, "Warning - dropping received packet as it is smaller than expected (%zu): %zd\n",
- 					sizeof(struct ether_header), read_len);
- 				continue;
- 			}
--- 
-1.7.9.1
+--lrZ03NoBR/3+SXJZ
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hey,
+
+On Sun, Jul 22, 2012 at 01:43:25AM +0200, Sven Eckelmann wrote:
+> Hi,
+>=20
+> maybe some of you have seen that I talked in the channel to Antonio wheth=
+er we=20
+> should migrate to a different solution to serve our git repositories. Thi=
+s is=20
+> (in my opinion) a good idea because gitosis [1] (the software that we are=
+=20
+> currently using) isn't maintained anymore and will be dropped [2] in the =
+next=20
+> version of Debian. My preferred replacement is gitolite [3].
+>=20
+> I already talked with Simon and discussed what side effect this could hav=
+e.=20
+> Maybe side effects is not the correct word to describe it... lets call it=
+=20
+> options. Gitolite allows to define access rights for refs. For people tha=
+t are=20
+> not familiar with the storage in git: You can for example say that people=
+ can=20
+> only commit to branches with a specific prefix.
+>=20
+> Just to give an example. We want that only the release team can create ta=
+gs ->=20
+> refs/tags/ is only marked for the release team as read-write. Now we have=
+ more=20
+> interesting features like ordex is only allowed to write in branches star=
+ting=20
+> with ordex/ -> refs/heads/ordex/ is marked as rw for ordex.
+>=20
+> Now the question is: Do we want to use this feature or not. We had follow=
+ing=20
+> ideas:
+>=20
+> 1. 1 repository per project
+>=20
+>    use only one repo for each project (batman-adv, batctl, batmand, ...) =
+and
+>    use branch namespaces for individual users:
+>    * master, next, maint for the main stuff
+>    * ordex/ (for example ordex/dat), hundeboll/, ... for users
+>    * tags only for release team
+>=20
+> 2. 2 repositories per project
+>=20
+>    use one official repo for each project (batman-adv, batctl, batmand, .=
+=2E.)
+>    and one for other people
+>    * master, next, maint in both repos (synced from the main one)
+>    * ordex/ (for example ordex/dat), hundeboll/, ... for users in the sec=
+ond
+>      repo
+>    * tags in both repositories allowed (but in the second repo only with
+>      user prefix)
+>
+> 3. 1+x repositories per project
+>=20
+>    Keep everything like now
+>    * master, next, maint for the main stuff
+>    * each user has his own copy of the main repo in his user folder
+>    * tags can freely commit in his own repo
+>=20
+> Special repositories with big differences like linux-merge are kept in a=
+=20
+> special repository.
+
+
+I'd prefer to go with option one, or maybe two. To me, it looks like having=
+ tags=20
+is the main practical difference? (I don't use any, but maybe others do ...=
+).
+
+Changing the repos is more a cosmetic change IMHO and may decrease administ=
+ration
+work. I have no practical concerns whatsoever, but git.open-mesh.org will l=
+ook
+more beautiful :)
+
+Cheers,
+	Simon
+
+--lrZ03NoBR/3+SXJZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAlAQVaEACgkQrzg/fFk7axaC8wCaAleXRu63Z+CMMawU0KppQzPU
+nfMAoKEjgpKnle3VMlwUnS8TPWoUxMPG
+=OA0I
+-----END PGP SIGNATURE-----
+
+--lrZ03NoBR/3+SXJZ--
