@@ -1,14 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 25 Jul 2012 22:22:57 +0200
+Date: Wed, 25 Jul 2012 22:34:25 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20120725202257.GA11999@pandem0nium>
-References: <1368807.4KENUl02G1@sven-laptop.home.narfation.org>
+Message-ID: <20120725203425.GB11999@pandem0nium>
+References: <CAHD-aqKaF4tfsMBQLnyrn4wkqDHQpPjsfCDjhXPzrCbkzM7tsg@mail.gmail.com>
+ <20120708100956.GA10210@pandem0nium>
+ <CAHD-aq+wSvBc56KGJ6RFDMgnP_sir5TXx83EYPw_WWh8=Geqag@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="lrZ03NoBR/3+SXJZ"
+ protocol="application/pgp-signature"; boundary="6sX45UoQRIJXqkqR"
 Content-Disposition: inline
-In-Reply-To: <1368807.4KENUl02G1@sven-laptop.home.narfation.org>
-Subject: Re: [B.A.T.M.A.N.] RFC: Migration to a new git server backend
+In-Reply-To: <CAHD-aq+wSvBc56KGJ6RFDMgnP_sir5TXx83EYPw_WWh8=Geqag@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] 2012.2 OGMs over ethernet issue?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,96 +25,86 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---lrZ03NoBR/3+SXJZ
+--6sX45UoQRIJXqkqR
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hey,
+Hey Gui,
 
-On Sun, Jul 22, 2012 at 01:43:25AM +0200, Sven Eckelmann wrote:
-> Hi,
->=20
-> maybe some of you have seen that I talked in the channel to Antonio wheth=
-er we=20
-> should migrate to a different solution to serve our git repositories. Thi=
-s is=20
-> (in my opinion) a good idea because gitosis [1] (the software that we are=
-=20
-> currently using) isn't maintained anymore and will be dropped [2] in the =
-next=20
-> version of Debian. My preferred replacement is gitolite [3].
->=20
-> I already talked with Simon and discussed what side effect this could hav=
-e.=20
-> Maybe side effects is not the correct word to describe it... lets call it=
-=20
-> options. Gitolite allows to define access rights for refs. For people tha=
-t are=20
-> not familiar with the storage in git: You can for example say that people=
- can=20
-> only commit to branches with a specific prefix.
->=20
-> Just to give an example. We want that only the release team can create ta=
-gs ->=20
-> refs/tags/ is only marked for the release team as read-write. Now we have=
- more=20
-> interesting features like ordex is only allowed to write in branches star=
-ting=20
-> with ordex/ -> refs/heads/ordex/ is marked as rw for ordex.
->=20
-> Now the question is: Do we want to use this feature or not. We had follow=
-ing=20
-> ideas:
->=20
-> 1. 1 repository per project
->=20
->    use only one repo for each project (batman-adv, batctl, batmand, ...) =
-and
->    use branch namespaces for individual users:
->    * master, next, maint for the main stuff
->    * ordex/ (for example ordex/dat), hundeboll/, ... for users
->    * tags only for release team
->=20
-> 2. 2 repositories per project
->=20
->    use one official repo for each project (batman-adv, batctl, batmand, .=
-=2E.)
->    and one for other people
->    * master, next, maint in both repos (synced from the main one)
->    * ordex/ (for example ordex/dat), hundeboll/, ... for users in the sec=
-ond
->      repo
->    * tags in both repositories allowed (but in the second repo only with
->      user prefix)
+On Mon, Jul 23, 2012 at 04:20:39AM -0300, Gui Iribarren wrote:
+> On Sun, Jul 8, 2012 at 7:09 AM, Simon Wunderlich
+> <simon.wunderlich@s2003.tu-chemnitz.de> wrote:
+> [..]
 >
-> 3. 1+x repositories per project
+> When it doesn't work is when the ad-hoc connection is severed.
+> which makes the thing look like
+> http://www.open-mesh.org/attachments/download/128
+> that is, there are two gateways that can only talk to each other
+> through ethernet (although it's not "batctl if add"ed) don't get each
+> other OGMs
+> after careful re-reading of BLAII docs in the wiki, and extensive
+> chats with NicoEchaniz, i understood this is the planned behaviour (no
+> OGMs on lan)
 >=20
->    Keep everything like now
->    * master, next, maint for the main stuff
->    * each user has his own copy of the main repo in his user folder
->    * tags can freely commit in his own repo
+
+Yes, that is expected behaviour. We don't want OGMs on the LAN, there were
+issues with some more "intelligent" switches which regarded OGMs as threat
+to the network. :)
+
+
+OGMs are only sent on interfaces added with "batctl if add", and nowhere el=
+se.
+
+
+> >> now, node D and C, too far away from each other to communicate over
+> >> wlan, but connected by a "loooong eth cable" (mediated by a wds
+> >> transparent bridge) wouldn't find each other batman originator.
+> >> C originator table was empty, and D only showed P.
+> >> I thought the transparent bridge was misbehaving, so I tried in a
+> >> simpler setup using P and D, with the wifi off:
+> >> but after disabling wlan0 (batctl if del wlan0-2) and adding eth0
+> >> (batctl if add eth0) on both nodes, batman could not see each other
+> >> anymore :(
+> >> i thought i was doing something wrong, so i tried in different ways,
+> >> but could not get it to work.
+> >> batctl td eth0 shows both outgoing OGMs from local , and incoming OGMs
+> >> from remote,
+> >> but batctl l only reported outgoing OGMs.
+> >>
+> >> http://pastebin.com/7DDUaXu1
+> >
+> > Mhm, that's weird indeed. Is eth0 really not included in any other brid=
+ge?
+> > It looks like the incoming packets don't reach BATMAN for some reason.
+> Definitely not included in any bridge.
+> Funny thing is, the only workaround i found for the bug is to
+> *include* the interface in a bridge, and add that bridge to bat0
+> as in:
+> brctl delif br-lan eth0
+> batctl if add eth0
+> # doesn't work
 >=20
-> Special repositories with big differences like linux-merge are kept in a=
-=20
-> special repository.
+> brctl delif br-lan eth0
+> brctl addbr blah
+> brctl addif blah eth0
+> batctl if add blah
+> # works fine, OGMs pass through perfectly
+>=20
 
+OK, so you say that it doesn't work when you simply add eth0 batctl, but it=
+ works
+with the bridge? What is the minimal setup which is not working, two routers
+and one cable?
 
-I'd prefer to go with option one, or maybe two. To me, it looks like having=
- tags=20
-is the main practical difference? (I don't use any, but maybe others do ...=
-).
+I'm sorry but you lost me somewhere, would be nice to get the smallest repr=
+oducable
+setup. :)
 
-Changing the repos is more a cosmetic change IMHO and may decrease administ=
-ration
-work. I have no practical concerns whatsoever, but git.open-mesh.org will l=
-ook
-more beautiful :)
-
-Cheers,
+Cheers and thanks,
 	Simon
 
---lrZ03NoBR/3+SXJZ
+--6sX45UoQRIJXqkqR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -120,9 +112,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAlAQVaEACgkQrzg/fFk7axaC8wCaAleXRu63Z+CMMawU0KppQzPU
-nfMAoKEjgpKnle3VMlwUnS8TPWoUxMPG
-=OA0I
+iEYEARECAAYFAlAQWFEACgkQrzg/fFk7axb0fwCcDDoLVtS/HbwyV5ou7AFuIUSE
+VWMAoOw+4o4uvOjyNQ5LjT4mASrEDZFn
+=Z3Up
 -----END PGP SIGNATURE-----
 
---lrZ03NoBR/3+SXJZ--
+--6sX45UoQRIJXqkqR--
