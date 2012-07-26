@@ -1,11 +1,14 @@
-Return-Path: <bottleman@icf.org.ru>
-Date: Thu, 26 Jul 2012 03:34:16 +0400 (MSK)
-From: Georgiewskiy Yuriy <bottleman@icf.org.ru>
-Message-ID: <alpine.DEB.2.02.1207260305120.11476@icf.org.ru>
+Return-Path: <nicoechaniz@codigosur.org>
+Message-ID: <5010BC32.5050606@codigosur.org>
+Date: Thu, 26 Jul 2012 00:40:34 -0300
+From: =?UTF-8?B?Tmljb2zDoXMgRWNow6FuaXo=?= <nicoechaniz@codigosur.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
- BOUNDARY="-1051000339-135185690-1343259256=:11476"
-Subject: [B.A.T.M.A.N.] gateway<->client DHCP problem
+References: <CAHD-aqLxF0HHXbW0YtZa700qbUytyv3Gd40FC6E7nRWLMD-=Ew@mail.gmail.com>
+ <20120724070603.GI3610@ritirata.org>
+In-Reply-To: <20120724070603.GI3610@ritirata.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] avahi broadcasts over two-radio batman.. dropped?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,111 +20,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
----1051000339-135185690-1343259256=:11476
-Content-Type: TEXT/PLAIN; format="flowed"; charset="koi8-r"
-Content-Transfer-Encoding: base64
+On 07/24/2012 04:06 AM, Antonio Quartulli wrote:
 
-CkhpIGFsbCwgaSBoYXZlIHN0cmFuZ2UgcHJvYmxlbSB3aXRoIGdhdGV3YXQ8PmNsaWVudCBzZXR1
-cCBhcyBkZXNjcmliZWQgaGVyZToKCmh0dHA6Ly93d3cub3Blbi1tZXNoLm9yZy9wcm9qZWN0cy9i
-YXRtYW4tYWR2L3dpa2kvR2F0ZXdheXMKCnNldHVwIGlzIHNpbXBsZQoKW2RoY3Agc2VydmVyIG9u
-IGJhdDBdPHdpcmVkIGNvbm5lY3Rpb24+W21lc2ggbm9kZV08d2lyZWxlc3MgY29ubmVjdGlvbj5b
-Y2xpZW50XQoKc2VydmVyIGNvbmZpZ3VyYXRpb246Cgpyb290QGRyb2NoOn4jIGlmY29uZmlnIApi
-YXQwICAgICAgTGluayBlbmNhcDpFdGhlcm5ldCAgSFdhZGRyIGEyOmExOmZmOjk4OmNkOjM3CiAg
-ICAgICAgICAgaW5ldCBhZGRyOjE5Mi4xNjguMi4xICBCY2FzdDoxOTIuMTY4LjIuMjU1ICBNYXNr
-OjI1NS4yNTUuMjU1LjAKICAgICAgICAgICBVUCBCUk9BRENBU1QgUlVOTklORyBNVUxUSUNBU1Qg
-IE1UVToxNTAwICBNZXRyaWM6MQogICAgICAgICAgIFJYIHBhY2tldHM6NTU0MSBlcnJvcnM6MCBk
-cm9wcGVkOjAgb3ZlcnJ1bnM6MCBmcmFtZTowCiAgICAgICAgICAgVFggcGFja2V0czozNjM2IGVy
-cm9yczowIGRyb3BwZWQ6MjAgb3ZlcnJ1bnM6MCBjYXJyaWVyOjAKICAgICAgICAgICBjb2xsaXNp
-b25zOjAgdHhxdWV1ZWxlbjowCiAgICAgICAgICAgUlggYnl0ZXM6NTA2Nzg0ICg0OTQuOSBLaUIp
-ICBUWCBieXRlczozNjQ0ODUgKDM1NS45IEtpQikKCmV0aDAgICAgICBMaW5rIGVuY2FwOkV0aGVy
-bmV0ICBIV2FkZHIgMDA6MWQ6MDk6MzY6OTY6ODQKICAgICAgICAgICBVUCBCUk9BRENBU1QgUlVO
-TklORyBNVUxUSUNBU1QgIE1UVToxNTAwICBNZXRyaWM6MQogICAgICAgICAgIFJYIHBhY2tldHM6
-MjAwMjAgZXJyb3JzOjAgZHJvcHBlZDowIG92ZXJydW5zOjAgZnJhbWU6MAogICAgICAgICAgIFRY
-IHBhY2tldHM6MTIxOTMgZXJyb3JzOjAgZHJvcHBlZDowIG92ZXJydW5zOjAgY2FycmllcjowCiAg
-ICAgICAgICAgY29sbGlzaW9uczowIHR4cXVldWVsZW46MTAwMAogICAgICAgICAgIFJYIGJ5dGVz
-OjE1MTkwMjggKDEuNCBNaUIpICBUWCBieXRlczo4MjA0OTggKDgwMS4yIEtpQikKICAgICAgICAg
-ICBJbnRlcnJ1cHQ6MTYKCnJvb3RAZHJvY2g6fiMgcm91dGUgLW4KS2VybmVsIElQIHJvdXRpbmcg
-dGFibGUKRGVzdGluYXRpb24gICAgIEdhdGV3YXkgICAgICAgICBHZW5tYXNrICAgICAgICAgRmxh
-Z3MgTWV0cmljIFJlZiAgICBVc2UgSWZhY2UKMTkyLjE2OC4yLjAgICAgIDAuMC4wLjAgICAgICAg
-ICAyNTUuMjU1LjI1NS4wICAgVSAgICAgMCAgICAgIDAgICAgICAgIDAgYmF0MAoKcm9vdEBkcm9j
-aDp+IyBiYXRjdGwgaWYKZXRoMDogYWN0aXZlCgpyb290QGRyb2NoOn4jIGJhdGN0bCBndwpzZXJ2
-ZXIgKGFubm91bmNlZCBidzogMTAyNE1CaXQvMTAyNE1CaXQpCgpkaGNwIGRhZW1vbiAoaXNjLWRo
-Y3Atc2VydmVyIDQuMi4yKSBydW5uaW5nIG9uIGJhdDAKCm1lc2ggbm9kZSBjb25maWd1cmF0aW9u
-OgoKaWZjb25maWcgCmJhdDAgICAgICBMaW5rIGVuY2FwOkV0aGVybmV0ICBIV2FkZHIgMTI6Y2I6
-NGE6NjE6YzU6MGMKICAgICAgICAgICBpbmV0IGFkZHI6MTkyLjE2OC4yLjMgIEJjYXN0OjE5Mi4x
-NjguMi4yNTUgIE1hc2s6MjU1LjI1NS4yNTUuMAogICAgICAgICAgIFVQIEJST0FEQ0FTVCBSVU5O
-SU5HIE1VTFRJQ0FTVCAgTVRVOjE1MDAgIE1ldHJpYzoxCiAgICAgICAgICAgUlggcGFja2V0czox
-NTQgZXJyb3JzOjAgZHJvcHBlZDowIG92ZXJydW5zOjAgZnJhbWU6MAogICAgICAgICAgIFRYIHBh
-Y2tldHM6MTAxIGVycm9yczowIGRyb3BwZWQ6MCBvdmVycnVuczowIGNhcnJpZXI6MAogICAgICAg
-ICAgIGNvbGxpc2lvbnM6MCB0eHF1ZXVlbGVuOjAKICAgICAgICAgICBSWCBieXRlczoxNDMyNyAo
-MTMuOSBLaUIpICBUWCBieXRlczoxNDgzNiAoMTQuNCBLaUIpCgpldGgwICAgICAgTGluayBlbmNh
-cDpFdGhlcm5ldCAgSFdhZGRyIDAwOjBkOmI5OjI0OmUzOjQ0CiAgICAgICAgICAgVVAgQlJPQURD
-QVNUIFJVTk5JTkcgTVVMVElDQVNUICBNVFU6MTUwMCAgTWV0cmljOjEKICAgICAgICAgICBSWCBw
-YWNrZXRzOjM2MjYgZXJyb3JzOjAgZHJvcHBlZDowIG92ZXJydW5zOjAgZnJhbWU6MAogICAgICAg
-ICAgIFRYIHBhY2tldHM6MTg5OCBlcnJvcnM6MCBkcm9wcGVkOjAgb3ZlcnJ1bnM6MCBjYXJyaWVy
-OjAKICAgICAgICAgICBjb2xsaXNpb25zOjAgdHhxdWV1ZWxlbjoxMDAwCiAgICAgICAgICAgUlgg
-Ynl0ZXM6MjMyOTU5ICgyMjcuNCBLaUIpICBUWCBieXRlczo4NDc2NyAoODIuNyBLaUIpCiAgICAg
-ICAgICAgSW50ZXJydXB0OjEwIEJhc2UgYWRkcmVzczoweDgwMDAKCndsYW4wICAgICBMaW5rIGVu
-Y2FwOkV0aGVybmV0ICBIV2FkZHIgMDA6MDI6NmY6Yjg6OTU6NWUKICAgICAgICAgICBVUCBCUk9B
-RENBU1QgUlVOTklORyBNVUxUSUNBU1QgIE1UVToxNTI4ICBNZXRyaWM6MQogICAgICAgICAgIFJY
-IHBhY2tldHM6MzUzOSBlcnJvcnM6MCBkcm9wcGVkOjAgb3ZlcnJ1bnM6MCBmcmFtZTowCiAgICAg
-ICAgICAgVFggcGFja2V0czoyMTM0IGVycm9yczowIGRyb3BwZWQ6MCBvdmVycnVuczowIGNhcnJp
-ZXI6MAogICAgICAgICAgIGNvbGxpc2lvbnM6MCB0eHF1ZXVlbGVuOjMyCiAgICAgICAgICAgUlgg
-Ynl0ZXM6MTYxMDk2ICgxNTcuMyBLaUIpICBUWCBieXRlczoxNzM3MzMgKDE2OS42IEtpQikKCnJv
-b3RAcHJvdG8tMzp+IyByb3V0ZSAtbgpLZXJuZWwgSVAgcm91dGluZyB0YWJsZQpEZXN0aW5hdGlv
-biAgICAgR2F0ZXdheSAgICAgICAgIEdlbm1hc2sgICAgICAgICBGbGFncyBNZXRyaWMgUmVmICAg
-IFVzZSBJZmFjZQowLjAuMC4wICAgICAgICAgMTkyLjE2OC4yLjEgICAgIDAuMC4wLjAgICAgICAg
-ICBVRyAgICAwICAgICAgMCAgICAgICAgMCBiYXQwCjE5Mi4xNjguMi4wICAgICAwLjAuMC4wICAg
-ICAgICAgMjU1LjI1NS4yNTUuMCAgIFUgICAgIDAgICAgICAwICAgICAgICAwIGJhdDAKCnJvb3RA
-cHJvdG8tMzp+IyBiYXRjdGwgaWYKZXRoMDogYWN0aXZlCndsYW4wOiBhY3RpdmUKCnJvb3RAcHJv
-dG8tMzp+IyBiYXRjdGwgZ3dsCiAgICAgICBHYXRld2F5ICAgICAgKCMvMjU1KSAgICAgICAgICAg
-TmV4dGhvcCBbb3V0Z29pbmdJRl06IGd3X2NsYXNzIC4uLiBbQi5BLlQuTS5BLk4uIGFkdiAyMDEy
-LjIuMCwgTWFpbklGL01BQzogZXRoMC8wMDowZDpiOToyNDplMzo0NCAoYmF0MCldCiAgICAgICAg
-ICAwMDoxZDowOTozNjo5Njo4NCAoMjU1KSAwMDoxZDowOTozNjo5Njo4NCBbICAgICAgZXRoMF06
-IDExOSAtIDEwMjRNQml0LzEwMjRNQml0CgoKY2xpZW50IGNvbmZpZ3VyYXRpb246CgppZmNvbmZp
-ZyAKYmF0MCAgICAgIExpbmsgZW5jYXA6RXRoZXJuZXQgIEhXYWRkciBkNjo1MDpkZDo0ZDo1NDo3
-NQogICAgICAgICAgIGluZXQgYWRkcjoxOTIuMTY4LjIuMTM1ICBCY2FzdDoxOTIuMTY4LjIuMjU1
-ICBNYXNrOjI1NS4yNTUuMjU1LjAKICAgICAgICAgICBpbmV0NiBhZGRyOiBmZTgwOjpkNDUwOmRk
-ZmY6ZmU0ZDo1NDc1LzY0IFNjb3BlOkxpbmsKICAgICAgICAgICBVUCBCUk9BRENBU1QgUlVOTklO
-RyBNVUxUSUNBU1QgIE1UVToxNTAwICBNZXRyaWM6MQogICAgICAgICAgIFJYIHBhY2tldHM6MTY2
-NCBlcnJvcnM6MCBkcm9wcGVkOjAgb3ZlcnJ1bnM6MCBmcmFtZTowCiAgICAgICAgICAgVFggcGFj
-a2V0czoxNzI4IGVycm9yczowIGRyb3BwZWQ6MCBvdmVycnVuczowIGNhcnJpZXI6MAogICAgICAg
-ICAgIGNvbGxpc2lvbnM6MCB0eHF1ZXVlbGVuOjAKICAgICAgICAgICBSWCBieXRlczoxNzQ3MzIg
-KDE3MC42IEtpQikgIFRYIGJ5dGVzOjE3MDQ2OCAoMTY2LjQgS2lCKQoKbXAxICAgICAgIExpbmsg
-ZW5jYXA6RXRoZXJuZXQgIEhXYWRkciAwMDoyMTphNDozNTozNjoyNgogICAgICAgICAgIFVQIEJS
-T0FEQ0FTVCBSVU5OSU5HIE1VTFRJQ0FTVCAgTVRVOjE1MjggIE1ldHJpYzoxCiAgICAgICAgICAg
-UlggcGFja2V0czo4MjQ4IGVycm9yczowIGRyb3BwZWQ6MCBvdmVycnVuczowIGZyYW1lOjAKICAg
-ICAgICAgICBUWCBwYWNrZXRzOjU5MTAgZXJyb3JzOjAgZHJvcHBlZDowIG92ZXJydW5zOjAgY2Fy
-cmllcjowCiAgICAgICAgICAgY29sbGlzaW9uczowIHR4cXVldWVsZW46MzIKICAgICAgICAgICBS
-WCBieXRlczo0Nzc0NjEgKDQ2Ni4yIEtpQikgIFRYIGJ5dGVzOjU2MDAzNCAoNTQ2LjkgS2lCKQoK
-YmF0Y3RsIGlmCm1wMTogYWN0aXZlCgpiYXRjdGwgZ3dsCiAgICAgICBHYXRld2F5ICAgICAgKCMv
-MjU1KSAgICAgICAgICAgTmV4dGhvcCBbb3V0Z29pbmdJRl06IGd3X2NsYXNzIC4uLiBbQi5BLlQu
-TS5BLk4uIGFkdiAyMDEyLjIuMCwgTWFpbklGL01BQzogbXAxLzAwOjIxOmE0OjM1OjM2OjI2IChi
-YXQwKV0KICAgICAgID0+IDAwOjFkOjA5OjM2Ojk2Ojg0ICgyMjUpIDAwOjAyOjZmOmI4Ojk1OjVl
-IFsgICAgICAgbXAxXTogMTE5IC0gMTAyNE1CaXQvMTAyNE1CaXQKCmJhdGN0bCBndwpjbGllbnQg
-KHNlbGVjdGlvbiBjbGFzczogMjApCgpkaGNwIGNsaWVudCBpcyBkaGNwY2QgdmVyc2lvbiAzLjIu
-My4KCgpJbiBmaXJzdCBzdGVwIGFsbCB3b3JrIGZpbmUsIGJyaW5nIHVwIGJhdDAgb24gY2xpZW50
-LCBicmluZyB1cCBkaGNwIG9uIGl0LCBpdCBnZXQgaXAgYWRkcmVzcyBhbmQgd29yawpmaW5lLiBi
-dXQgaWYgaSBqdXN0IGJyaW5nIGJhdDAgb24gY2xpZW50IGRvd24gdGhlbiB1cCBpdCBkb24ndCB3
-b3JrLCBpdCBzZWUgZ2F0ZXdheSwgaSBzZWUgZGhjcCAKcmVxdWVzdCBhbmQgcmVwbGllcyBvbiBz
-ZXJ2ZXIgb24gYmF0MCwgYnV0IG9uIG1lc2ggbm9kZSBhbmQgY2xpZW50IGkgZG9uJ3Qgc2VlIGFu
-eSByZXBseSBpbiBiYXRjdGwgdHIgCm5vciB0Y3BkdW1wIGFuZCBpdCBzdGF5IGluIHRoaXMgc3Rh
-dGUgZm9yZXZlci4KCkJ1dCwgaWYgaSBicmluZyBiYXQwIG9uIGNsaWVudCBkb3duLCB3YWl0IDIw
-MCBzZWNvbmRzIHVudGlsIGNsaWVudCBpcyByZW1vdmVkIGZyb20gb3JpZ2luYXRvcnMKb24gc2Vy
-dmVyIGJ5IHRpbWVvdXQgYW5kIGJyaW5nIGJhdDAgb24gY2xpZW50IGJhY2sgdXAgaXQgc3RhcnRz
-IHdvcmtpbmcgYWdhaW4gYW5kIGdldCBpcCBmcm9tIGRoY3Agc2VydmVyLgoKT24gYWxsIGJhdG1h
-biBub2RlcyBpIHVzZSBiYXRtYW4tYWR2IHZlcnNpb24gMjAxMi4yLjAuCgpDINXXwdbFzsnFzSAg
-ICAgICAgICAgICAgICAgICAgICAgV2l0aCBCZXN0IFJlZ2FyZHMK58XP0sfJxdfTy8nKIODSycou
-ICAgICAgICAgICAgICAgIEdlb3JnaWV3c2tpeSBZdXJpeQorNyA0ODcyIDcxMTY2NiAgICAgICAg
-ICAgICAgICAgICAgKzcgNDg3MiA3MTE2NjYKxsHL0yArNyA0ODcyIDcxMTE0MyAgICAgICAgICAg
-ICAgIGZheCArNyA0ODcyIDcxMTE0Mwrrz83Qwc7J0SDv7+8gIuHKIPTJIPPF0tfJ0yIgICAgICAg
-SVQgU2VydmljZSBMdGQKaHR0cDovL25rb29ydC5ydSAgICAgICAgICAgICAgICAgIGh0dHA6Ly9u
-a29vcnQucnUKSklEOiBHSGhvc3RAaWNmLm9yZy5ydSAgICAgICAgICAgIEpJRDogR0hob3N0QGlj
-Zi5vcmcucnUKWUcxMjktUklQRSAgICAgICAgICAgICAgICAgICAgICAgIFlHMTI5LVJJUEU=
+> I trust you on this because there are too many rules :) (have you
+> tried a 'iptables -F' just in case?)
 
----1051000339-135185690-1343259256=:11476--
+Antonio, I tried iptables -F today but nothing changed. Tried iptables
+- -F along the whole route, and still no difference.
+
+> is BLA2 enabled on czuk?
+
+yes BLA2 is enabled on every node by default. I've also tried
+disabling in every involved node but it made no difference.
+
+
+I'm testing now on a different route (see Guido's graphic on first
+mail for reference): from a computer connected through ethernet (no
+batman) at nicoyjesi to one connected the same way to marisa-mr. The
+same thing happens: when I run avahi-resolve it gets to the computer
+at marisa's, which responds as it should, but the response never gets
+to the other end.
+
+this is what the setup looks like:
+
+pc1===nicoyjesi==b==nogal - - - - marisa-blt==b==marisa-mr===pc2
+
+==b== is bat-enabled ethernet
+=== ethernet
+- - - - bat-enabled adhoc link
+
+I'm out of ideas here... but I'll sleep it over and chat again with
+Guido tomorrow to try to find out some way to at least reduce this to
+the smallest possible setup to reproduce the problem.
+
+On a side-note, avahi is not completely broken, it actually works
+(from user experience) as if there were no batman on the net, those on
+the same phisical portion of the net can see and interact with each
+other just fine; it does not even always fail when more nodes are
+involved I just can't seem to find a pattern just yet.
+
+
+cheers,
+Nico
+
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJQELwyAAoJEElSmZeKi74/O9IH/1Kphkl2oghN8f9YkDGczeOV
+L/8nTVFXlDftfHPgcSZfNieLLZwK/hL9cieGZ4+vrpEPSw5gv3qDq3dKeEEkAVdG
+1DTWl77dEgvz9B9uHkKUq3HEbPlEQiPGbISJlsxhKvtyWZcNfimFzggjU23DahKC
+ptGymL44cTX0JijvEnHPBsAV59dhYg7EsbQv+/nNqfSKhiif2XANIFxqQoae8wr2
+fAdoH2huhUx5ze8UqYmjZwXGXPOo75UgqViE2DLsw98p4urre8FvqYRD682xiEb1
+9pxIO68WyQanf/Gk0VQXa9Wp/DVEU398pnvkTaarvxC34yRumkmyBDB8dD9WQDE=
+=n3fu
+-----END PGP SIGNATURE-----
