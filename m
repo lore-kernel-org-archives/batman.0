@@ -1,11 +1,11 @@
-Return-Path: <emunicio@gmail.com>
-MIME-Version: 1.0
-From: Esteban Municio <emunicio@gmail.com>
-Date: Thu, 2 Aug 2012 19:35:34 -0500
-Message-ID: <CAMVTf1hm9Q8Ppu2Lq6h4+7OpvZ9meLYhxFKHFLhudD3LCTNXmg@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] Problems with internet connection in a mesh-network,
- (and dhcp and wireless access)
+Return-Path: <luca.pretto@gmail.com>
+From: Luca Pretto <luca.pretto@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+Date: Fri, 3 Aug 2012 11:08:37 +0200
+Message-Id: <BB2F02D2-9B93-465E-BB7D-FA13492511BF@gmail.com>
+Mime-Version: 1.0 (Apple Message framework v1278)
+Subject: [B.A.T.M.A.N.] Batman-adv and routed subnets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,88 +19,53 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi all
+Hi folks,
 
-I wrote recently about problems with our batman-adv mesh
-implementation in a development proyect in Peru:
+I really need a bit of your help! I've already spent a week on this and =
+I can't succeed! :(
 
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-August/007820.html
+I'm going to install a small mesh (12 nodes, initially) covering my city =
+and linking some friends of mine.
+At the moment the equipment (Ubiquiti) is already installed, structured =
+as AP-STA (PSK2) in one large LAN (all connections bridged L2) with one =
+central dhcp/firewall serving the 192.168.9.0/24 subnet (now that's all =
+inside this net only).
 
-Now we are having problems again.
-Our mesh-network are formed with Ubiquiti nanostation M5 nodes running
-OpenWRT(10.03.x, r32751)+ Batman-adv 2.6.32.
-In one of the nodes, the wan gate is connected with Public IP to
-internet and I can access to internet from there.
+I would like to migrate the topology to a routed network, where the =
+wireless mesh nodes have IPs allocated inside 10.9.0.0/16, and below =
+each one of these nodes there will be a local LAN with reserved subnet =
+(IP offered by OpenWRT through dnsmasq). I've done some experiment with =
+OLSRd and I got a working system that way, but I'd REALLY LOVE to use =
+batman-adv instead.
+Some of the networks already have internet connectivity, that will be =
+shared through the mesh to whom needs it.
 
-But from a laptop(without batman-adv), I can make ping to all the
-nodes of the mesh, but i can't make ping to 8.8.8.8 neither the Ip
-public gateway. However, I can make ping to my Ip Public, in the
-interface wan of my gateway node.
+10.9.11.1 <----> 192.168.11.0/24 --> 192.168.11.1 (internet gateway)
+    ||
+    ||
+10.9.12.1 <----> 192.168.12.0/24
+    ||
+    ||
+10.9.13.1 <----> 192.168.13.0/24 --> 192.168.13.1 (internet gateway)
+    ||
+    ||
+10.9.14.1 <----> 192.168.14.0/24
+    ||
+    ||
+10.9.xx.1 <----> 192.168.xx.0/24
 
-What am I doing wrong? I have tried to write static routes, but I
-think that the problem is about the mesh-bridge.
-Is it beacuse of i need do NAT?
+Batman-adv will take care of the routing inside the wireless mesh (links =
+" || " in the diagram).
+Anyway, I need that any host on the 192.168.xx.0/24 subnets will be able =
+to talk to each other.
 
-All the nodes of the mesh can see themselves, and I set the node with
-the gateway to internet like the gateway of the mesh, but it does not
-work.
+How can this be done with batman-adv?
 
-Any help or comment?
+And then, in your opinion, would be better to stay on BackFire ath9k =
+Open IBSS or is the Attitude Adjustment ath9k RSN IBSS (PtMP) stable =
+enough?
 
-That is my /etc/rc.local and /etc/config/network in the gateway node:
+Many many thanks in advance for your time.
 
-/etc/rc.local
-
-wifi up
-ifconfig wlan0 mtu 1528
-batctl if add wlan0
-ifconfig wlan0 up
-ifconfig bat0 up
-brctl addbr mesh-bridge
-brctl addif mesh-bridge eth0
-brctl addif mesh-bridge bat0
-ifconfig eth0 up
-ifconfig bat0 up
-ifconfig mesh-bridge inet 1.1.1.1 netmask 255.255.255.0
-ifconfig mesh-bridge up
-exit 0
-
-/etc/config/network
-
-config 'interface' 'loopback'
-    option 'ifname' 'lo'
-    option 'proto' 'static'
-    option 'ipaddr' '127.0.0.1'
-    option 'netmask' '255.0.0.0'
-
-config 'interface' 'lan'
-    option 'ifname' 'eth0'
-    option 'proto' 'static'
-    option 'ipaddr' '192.168.1.2'
-    option 'netmask' '255.255.255.0'
-
-config 'interface' 'wan'
-    option 'ifname' 'eth1'
-    option 'proto' 'static'
-    option 'ipaddr' my Ip public
-    option 'netmask' '255.255.255.192'
-    option 'gateway' my ip public gateway
-    option 'dns' '8.8.8.8'
-
-config 'route'
-
-And some offtopic questions...
-
-What should i do for permit to others laptops without batman-adv can
-connect by wireless to the mesh, make another wlan interface with
-another ssid in ap mode and add it to the mesh-bridge?
-
- With ethernet all works fine, the problem is without wire...
-Should I check the dhcp in order to the laptops can connect directly
-to the mesh network? How could I configurate it?
-
-
-Thanks you very much and regards
-
--- 
-Esteban
+Sincerely,
+Luca=
