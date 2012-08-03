@@ -1,14 +1,15 @@
-Return-Path: <luca.pretto@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Apple Message framework v1278)
-From: Luca Pretto <luca.pretto@gmail.com>
-In-Reply-To: <2670997.NDZah7qDiQ@bentobox>
-Date: Fri, 3 Aug 2012 11:40:43 +0200
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <B6EC8CB5-DDE0-4708-B89E-FADE58F33026@gmail.com>
-References: <BB2F02D2-9B93-465E-BB7D-FA13492511BF@gmail.com>
- <2670997.NDZah7qDiQ@bentobox>
-Subject: Re: [B.A.T.M.A.N.] Batman-adv and routed subnets
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 03 Aug 2012 11:48:28 +0200
+Message-ID: <12564988.U0eif3lDW2@bentobox>
+In-Reply-To: <CAMVTf1hm9Q8Ppu2Lq6h4+7OpvZ9meLYhxFKHFLhudD3LCTNXmg@mail.gmail.com>
+References: <CAMVTf1hm9Q8Ppu2Lq6h4+7OpvZ9meLYhxFKHFLhudD3LCTNXmg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart8352106.fb23zS2d1A";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] Problems with internet connection in a
+	mesh-network, (and dhcp and wireless access)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,41 +23,137 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Thanks for your answer Sven.
 
-So, I've obviously misunderstood the part "mixing non-B.A.T.M.A.N. =
-systems with batman-adv" [&]
-I admit: the fact that batman-adv operates al L2 really confuses me a =
-lot!
-I'm a DIY nerd with no background training, so it's quite difficult to =
-me.. But I won't give up! ;D
+--nextPart8352106.fb23zS2d1A
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-So, do you think that I should try to setup OSPF on every node, to keep =
-the thing as-much-auto-scaling-as-possible?
+On Thursday 02 August 2012 19:35:34 Esteban Municio wrote:
+> Hi all
+> 
+> I wrote recently about problems with our batman-adv mesh
+> implementation in a development proyect in Peru:
+> 
+> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-August/007820.html
+> 
+> Now we are having problems again.
+> Our mesh-network are formed with Ubiquiti nanostation M5 nodes running
+> OpenWRT(10.03.x, r32751)+ Batman-adv 2.6.32.
 
-But in that case I suspect I won't be able to use the "Gateway support" =
-functions. Is it correct? [%]
+batman-adv was not included in 2.6.32. We had our first version in 2.6.33. So, 
+this information is bogus. Please update to a recent version (for example 
+2012.2.0 + the updates from the maint branch; or just batman-adv-devel).
 
-Have a nice day,
-Luca
+> In one of the nodes, the wan gate is connected with Public IP to
+> internet and I can access to internet from there.
+> 
+> But from a laptop(without batman-adv), I can make ping to all the
+> nodes of the mesh, but i can't make ping to 8.8.8.8 neither the Ip
+> public gateway. However, I can make ping to my Ip Public, in the
+> interface wan of my gateway node.
+> 
+> What am I doing wrong? I have tried to write static routes, but I
+> think that the problem is about the mesh-bridge.
+> Is it beacuse of i need do NAT?
 
-[&] http://www.open-mesh.org/projects/batman-adv/wiki/Quick-start-guide
-[%] http://www.open-mesh.org/projects/batman-adv/wiki/Gateways
+It is hard to understand what you are doing and what you want. All you are 
+doing here is L3 stuff... so out of scope for batman-adv. batman-adv provides 
+only the l2 stuff (+ a dhcp routing hack when you enable the gateway stuff).
 
-Il giorno 03/ago/2012, alle ore 11:22, Sven Eckelmann ha scritto:
+So you need to do the same stuff you are doing when you want to configure an 
+"internet gateway" for your private network. That usually includes 
+masquerading, dhcp, dns, ...
 
-> First thing: batman-adv doesn't route (as in l3 routing). batman-adv =
-creates a=20
-> distributed switch on l2 (so, batman-adv does path finding). =
-Therefore,=20
-> batman-adv doesn't care about the l3 stuff.
->=20
-> And the stuff you've mentioned above is l3 stuff. So out of scope for =
-batman-
-> adv. Either you create static routes, use proxy arp or use another =
-software=20
-> that distributes the l3 routes.
->=20
-> Kind regards,
-> 	Sven
+> All the nodes of the mesh can see themselves, and I set the node with
+> the gateway to internet like the gateway of the mesh, but it does not
+> work.
+> 
+> Any help or comment?
+
+Sry, my parser failed. Maybe someone else can help.
+
+> That is my /etc/rc.local and /etc/config/network in the gateway node:
+> 
+> /etc/rc.local
+> 
+> wifi up
+> ifconfig wlan0 mtu 1528
+> batctl if add wlan0
+> ifconfig wlan0 up
+> ifconfig bat0 up
+> brctl addbr mesh-bridge
+> brctl addif mesh-bridge eth0
+> brctl addif mesh-bridge bat0
+> ifconfig eth0 up
+> ifconfig bat0 up
+> ifconfig mesh-bridge inet 1.1.1.1 netmask 255.255.255.0
+> ifconfig mesh-bridge up
+> exit 0
+> 
+> /etc/config/network
+> 
+> config 'interface' 'loopback'
+>     option 'ifname' 'lo'
+>     option 'proto' 'static'
+>     option 'ipaddr' '127.0.0.1'
+>     option 'netmask' '255.0.0.0'
+> 
+> config 'interface' 'lan'
+>     option 'ifname' 'eth0'
+>     option 'proto' 'static'
+>     option 'ipaddr' '192.168.1.2'
+>     option 'netmask' '255.255.255.0'
+> 
+> config 'interface' 'wan'
+>     option 'ifname' 'eth1'
+>     option 'proto' 'static'
+>     option 'ipaddr' my Ip public
+>     option 'netmask' '255.255.255.192'
+>     option 'gateway' my ip public gateway
+>     option 'dns' '8.8.8.8'
+> 
+> config 'route'
+> 
+> And some offtopic questions...
+> 
+> What should i do for permit to others laptops without batman-adv can
+> connect by wireless to the mesh, make another wlan interface with
+> another ssid in ap mode and add it to the mesh-bridge?
+
+Didn't you say that you are already doing something like that? At least you've 
+mentioned that that you are can connect with you non-mesh laptop. But yes, 
+you should have a second interface configured as AP attached to your mesh-
+bridge to allow wireless clients connected to this interface to work like the 
+ethernet clients. It doesn't make much sense to have a non-batman-adv-aware 
+client connected on a interface that is attached as slave (hard) interface to 
+batman-adv.
+
+At least the configuration looks a little bit like you are trying to do 
+something like this.
+
+Kind regards,
+	Sven
+--nextPart8352106.fb23zS2d1A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAABCgAGBQJQG55sAAoJEF2HCgfBJntGoocQAKuRgPQRPMqBcpZ/xnwHdVHh
+24DKoVvpsAZR6POwl8A84QzQ+qvKDPOuCTLLl1SJDl4lAB7j/9L9M9ZlwDaLOZCB
+C52w9b8ggyP2ZjlTC/Q+D02Yh+9YclPiAR+TPP11QSCX8LPFiw0wYuc6XSSNbEtI
+8ufF5up1iPEJN7uYtHKWxi4VaQ8HvUYMumnmjBVXMvWfSmsAeob9IquJb8lfnrZr
+D50fz06ouIRTBYfYQlBMGjSHT/4D0iqDpSCFH+afgM+YtWFpnjWSPz+vZSOZlwin
+jVnbhKI7yL5k740ATZVn+7VhUfAFSaEqDeiNMJTbZm12V+n+niTABucWy8NVwPio
+G83xq064MFikjmpm7JxVgBFtfGfIhwAHgQjz5Jy0rt1Vhfttp+iO7rRceNxKgPbt
+eUX/8d5taVk+9A0nB5ADFv/dSmVfD9wQrPbxcwMnmfKlOPqPyFyZnqdcFQx2teMY
+wDBzZXWYFJeCck4D9lsG+IsB9AC+JMZEqjuxscMd1MedYcdH8K4US77568V173he
+RcdLAL5r5/GlI49QhbPg70P3l0w73P3OOnXfqWsD5ngHBqvBQN4nf9kzv3WNYRFa
+xFXH49IbLfknJtlpgjMB4baUJ+TNwqDUghGSrlWF3d9R1dFupE6ix3P96UM7BYE5
+JnEIngA7Kq0qlLMeRX+g
+=ApPS
+-----END PGP SIGNATURE-----
+
+--nextPart8352106.fb23zS2d1A--
 
