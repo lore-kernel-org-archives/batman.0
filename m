@@ -1,17 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 03 Aug 2012 23:08:48 +0200
-Message-ID: <13310929.DWNbFFCIHG@sven-laptop.home.narfation.org>
-In-Reply-To: <CAMVTf1iJv-Eiduk6jpgz_qTTtED=niZAmPCfTQ4t7dFeEhVOvg@mail.gmail.com>
-References: <CAMVTf1hm9Q8Ppu2Lq6h4+7OpvZ9meLYhxFKHFLhudD3LCTNXmg@mail.gmail.com>
- <CAMVTf1hncmbgHS9PL0uEuRA8TL+8rp1cX_iv+iiO6NHzFTU4cA@mail.gmail.com>
- <CAMVTf1iJv-Eiduk6jpgz_qTTtED=niZAmPCfTQ4t7dFeEhVOvg@mail.gmail.com>
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat,  4 Aug 2012 16:13:26 +0200
+Message-Id: <1344089606-9573-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1810209.3APLMR4K3I";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] Problems with internet connection in a
-	mesh-network, (and dhcp and wireless access)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH net] batman-adv: select an internet gateway
+	if none was chosen
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,47 +18,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
+From: Marek Lindner <lindner_marek@yahoo.de>
 
---nextPart1810209.3APLMR4K3I
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+This is a regression introduced by: 2265c141086474bbae55a5bb3afa1ebb78ccaa7c
 
-On Friday 03 August 2012 12:41:46 Esteban Municio wrote:
-> Solved!
-> 
-> It was a fool thing. I needed to add
-> /sbin/iptables -t nat -A POSTROUTING -o <wan interface> -j MASQUERADE
->  to the gateway node. A L3 matter!
-> 
-> The help came from forum.openwrt , but thanks for your patience ;-)
+Reported-by: Nicolás Echániz <nicoechaniz@codigosur.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Acked-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/gateway_client.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-? I wrote that you have to do masquerading in my first mail.
-
-Kind regards,
-	Sven
---nextPart1810209.3APLMR4K3I
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAABCgAGBQJQHD3gAAoJEF2HCgfBJntG7hwQAIoU1Q58rJMCSF3+H1jYaIxb
-SoucOhEKlNfemn39MJDaf8CfgY/QXc3EMGRdhXhf5zf422TRI6eV65HDWuzkiNfd
-ijpHn7im4Y+i4JfstMjw7vtLpitFR3X5+T4jhuCrYv5WTc62ITWyhESV3WPsrGBA
-g6eodmr1/9h0dZQBy7GNTrmrJzoHaqV+N6JXhNTpRW46paG0EKsc9ShuN+Ncjxpl
-WQW/RXzzj5lgMhHuXgV/TQSJ1aBcXxQFmuGQZky4U33gRT6NlHPpGpO6LOY6BiBl
-ZThuMW68ir7sM0BZlddv5iv8MBLky2+bBns9cIkhWRMzFxGjfxGp0BtATPvv+niS
-gLuuoo5k5yYtN80CC8KwD5EOAtB91z0nmLABGL9YJM+mB84NfKTgtoiv2efpGdWD
-JUEAE4KEzF619cOWmnzaEpLl/PX2kQNjcNKfftNWrlR8leQHM2K4XAWPJ7bnw/5o
-a/UzWCDzCFd+dA/rUPhFkwV6qUijU/9dWNoeEf+tnFN3B5c9ZUSjBeA4qof1JJQl
-KQIMcf1EtbPF48alze1lFXww4yLkGOlmnb+IiSHXn3pZm9NORpLJCaHAUzSgxNoW
-pSuQEiXYuagTrkeKBPDbyMOYE8SXg2j9y8FAlMFJ8CNkpWJ5msHEQBfj0vHhiDqE
-F0nLQqgi6xlT8AL95vqa
-=+GZa
------END PGP SIGNATURE-----
-
---nextPart1810209.3APLMR4K3I--
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index b421cc4..fc866f2 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -200,11 +200,11 @@ void batadv_gw_election(struct batadv_priv *bat_priv)
+ 	if (atomic_read(&bat_priv->gw_mode) != BATADV_GW_MODE_CLIENT)
+ 		goto out;
+ 
+-	if (!batadv_atomic_dec_not_zero(&bat_priv->gw_reselect))
+-		goto out;
+-
+ 	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
+ 
++	if (!batadv_atomic_dec_not_zero(&bat_priv->gw_reselect) && curr_gw)
++		goto out;
++
+ 	next_gw = batadv_gw_get_best_gw_node(bat_priv);
+ 
+ 	if (curr_gw == next_gw)
+-- 
+1.7.9.4
 
