@@ -1,12 +1,22 @@
-Return-Path: <guido@guidoi.com.ar>
+Return-Path: <ordex@autistici.org>
+Date: Sun, 5 Aug 2012 09:58:17 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120805075817.GG12879@ritirata.org>
+References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
+ <CAHD-aqK-SrQ0VxmrZSzq3gb_aVZQY5ZYxN7qjdC8dind+jgeuw@mail.gmail.com>
+ <20120702143604.GD2917@ritirata.org>
+ <CAHD-aq+vsMugkr8CWQaw-bOYzLbxBL6V7zP=cfURNMacyBL+oQ@mail.gmail.com>
+ <20120721213856.GB3610@ritirata.org>
+ <CAHD-aqKiFkq_HXBHMERhbv2uS-8ZcxsfVGv_H6asZf3L2Ruq8A@mail.gmail.com>
+ <CAHD-aqK7Wt0YMf1Sr1WrUGOi++D2DEpu-ieNyh0DZQ_6ntBRrA@mail.gmail.com>
+ <20120723172828.GF3610@ritirata.org>
+ <CAHD-aq+Bw6MtzS_2YZDoQaTS6Rsrwr+8xCE4O+pWGc97ED4Jig@mail.gmail.com>
 MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-From: Gui Iribarren <gui@altermundi.net>
-Date: Sun, 5 Aug 2012 03:26:43 -0300
-Message-ID: <CAHD-aqJubnMBSuyjyS+aOXnS8FSQe=w8Aj2-SnaohNqXSs_xJg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: [B.A.T.M.A.N.] propagate gw_mode over two mesh linked by ethernet
-	with bla2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="FUaywKC54iCcLzqT"
+Content-Disposition: inline
+In-Reply-To: <CAHD-aq+Bw6MtzS_2YZDoQaTS6Rsrwr+8xCE4O+pWGc97ED4Jig@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] batman majareta? I can batctl ping but not ping
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,55 +30,108 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Here i am again,
-the involuntary stress-tester of gw_mode + bla2
-and mailing-list readers' headache ;)
 
-Given the setup described here
-http://www.open-mesh.org/attachments/download/128
+--FUaywKC54iCcLzqT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-let's say one node in mesh1 sets gw_mode=server
-any node in mesh1 will list it in "batctl gwl"
+On Sun, Aug 05, 2012 at 02:34:15AM -0300, Gui Iribarren wrote:
+> On Mon, Jul 23, 2012 at 2:28 PM, Antonio Quartulli <ordex@autistici.org> =
+wrote:
+> > On Sun, Jul 22, 2012 at 08:20:21AM -0300, Guido Iribarren wrote:
+> >> On Sun, Jul 22, 2012 at 7:57 AM, Guido Iribarren
+> >> <guidoiribarren@buenosaireslibre.org> wrote:
+> >>
+> >> >
+> >> > This time it solved itself after some brief time (a minute) but the
+> >> > symptoms were the same.
+> >> > So I could catch some logs,
+> >> > http://pastebin.com/MEENj94i
+> >> >
+> >> > sadly, i wasn't fast enough to get a live log from the node involved
+> >> > in the inconsistency as you suggested, so the report might be pretty
+> >> > useless.
+> >>
+> >> from this particular node i ran previous report (colmena-casa) that
+> >> was rebooted recently, L3 ping to all of the network had the same
+> >> issue, (no replies for a minute or so) so i had the chance to
+> >> "recreate" the situation several times.
+> >> Turns out, a "batctl ll tt ; batctl l" on the nodes mentioned in the
+> >> inconsistencies gave no output at all, so the previous pastebin report
+> >> is in fact complete :P
+> >> Looks like the inconsistency is being resolved locally between
+> >> neighbours, without the need to contact the far end of the network
+> >> (which is coherent with what's described in the wiki)
+> >
+> > Exactly! If the neighbour has the needed information, the node can dire=
+ctly get
+> > answered without bothering the real destination ;)
+> >
+> >>
+> >> In any case, AFAIR previous ocurrences of the bug didn't resolve by
+> >> themselves (in a reasonable amount of time) so what I'm looking at now
+> >> might be perfectly normal behaviour? (tt tables take some time to
+> >> propagate?)
+> >
+> > Well, the log you posted is perfectly correct. You missed some OGMs, th=
+erefore
+> > the node is asking for an update that he missed.
+> >
+> > it would be interesting to run batctl ll tt; batctl l all the time on t=
+he node
+> > that usually experiences the "problem". The log should be not so big, u=
+nless the
+> > bug happens.
+>=20
+> I admit i haven't left this running as instructed, but on the other
+> hand, so far I haven't come across the original bug again, and a few
+> days ago I asked Nico Echaniz which confirmed that he's not suffering
+> it as previously.
+> he does bump from time to time with [a few moments | a few minutes] of
+> "nodes majaretas" (at first sight) but it resolves by itself
+> quickly[*], which indicates normal behaviour, of missing OGMs and
+> consequently a delay in TT table updating, as you explained.
+>=20
+> [*] "quickly" means under 15 minutes , at most. Previously, problem
+> would never resolve by itself, being L3-unreachable for hours or days
+> until manual reboot was done.
+>=20
+> In conclusion, so far so good, i think we can close this as fixed for
+> lack of evidence stating the contrary, heh.
+> I hope gioacchino managed to recompile ninux images and is having the
+> same stableness as we do :)
+>=20
+> Gui
 
-but nodes in mesh2 won't get it, since backbone gateways (BGs) of
-mesh2 only get claims from BGs of mesh1, which do not include gw_mode
-status
+Hello Guido and thank you for reporting back your results :) However, even =
+if
+the "behaviour" is good (table gets recovered and everything starts working
+again) it is a bit strange that it takes 15 minutes to do so.
 
-with bla1 setup, OGMs did flood the ethernet backbone, carrying
-gw_mode information, and both mesh1 and mesh2 would get to know
-gateways
-I miss that functionality! :(
+If you accidentally see the bug, it would be interesting to get the log of =
+the
+"non-working" node and see why it is taking so long.
 
-so, as Simon himself suggests [0] in the wiki' shortest-ever FAQ ;),
-having full control of the ethernet backbone, I batctl-if-added an
-ethernet vlan on BGs of both sides of the ethernet cable.
+Thank you very much!
 
-OGMs flood the ethernet backbone again as expected; running "batctl o"
-in mesh1 nodes show nodes from mesh2, and viceversa; i smiled!
-unfortunately, trying to get a DHCP lease while connected to a mesh
-node was again malfunctioning :(
-a couple of quick "batctl td", and i thiiiink that looked like dhcp
-request packets were being dropped at the backbone gateway, kinda like
-the "check incoming type for bla" bug, but i didn't try to narrow it
-down
-instead reverted configs back to gw_mode=off and things started working again
+Cheers,
 
-i won't dig much into that since it's quite possible i entangled up my
-configs yet again, so i'll focus on the original question:
-are there any plans (or is it even feasible) to propagate gw_mode
-status through the ethernet backbone (assuming not sending OGMs)?
-maybe including/appending it in claim frames?
+--=20
+Antonio Quartulli
 
-what i understand so far is that with current blaII, meshes connected
-solely by ethernet backbone (which can't overhear each other OGMs
-through wifi) only know which macs are "on the other side of the eth
-backbone" so as to keep the single broadcast domain united, but are
-fragmented in terms of VIS data, gw, TT, and orig table.
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
 
-sorry if i'm asking obvious questions, the blaII wiki explains notably
-clear the model, but is missing gw_mode interactions, and it wasn't
-evident to me how would that work - in fact, coming from bla1, i
-wrongly assumed it would be similar. if it's relevant, i can try to
-add validated snippets from this thread to the wiki[0]
+--FUaywKC54iCcLzqT
+Content-Type: application/pgp-signature
 
-[0] http://www.open-mesh.org/wiki/batman-adv/Bridge-loop-avoidance-II
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAlAeJ5kACgkQpGgxIkP9cwfEDgCfbFaEXEFFwaDq8AfFnpPDLbYs
+w0EAn1DnaRC2IS55RTkRT3/zsnu3b0ka
+=nbjg
+-----END PGP SIGNATURE-----
+
+--FUaywKC54iCcLzqT--
