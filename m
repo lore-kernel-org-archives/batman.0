@@ -1,9 +1,9 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun,  5 Aug 2012 18:09:49 +0200
-Message-Id: <1344182989-25754-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: split hard_iface struct for each
-	routing protocol
+Date: Sun,  5 Aug 2012 18:10:45 +0200
+Message-Id: <1344183045-25826-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: separate BATADV_ATTR_HIF_UINT
+	sysfs name from hard-iface variable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,176 +20,61 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- bat_iv_ogm.c     |   43 ++++++++++++++++++++++++-------------------
- hard-interface.c |    4 ++--
- types.h          |   10 +++++++---
- 3 files changed, 33 insertions(+), 24 deletions(-)
+ sysfs.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index df79300..7f0adad 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -57,20 +57,22 @@ out:
- static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_ogm_packet *batadv_ogm_packet;
-+	unsigned char *ogm_buff;
- 	uint32_t random_seqno;
- 	int res = -ENOMEM;
+diff --git a/sysfs.c b/sysfs.c
+index 66518c7..fa6c8b1 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -122,7 +122,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			   batadv_store_##_name)
  
- 	/* randomize initial seqno to avoid collision */
- 	get_random_bytes(&random_seqno, sizeof(random_seqno));
--	atomic_set(&hard_iface->seqno, random_seqno);
-+	atomic_set(&hard_iface->bat_iv.ogm_seqno, random_seqno);
  
--	hard_iface->packet_len = BATADV_OGM_HLEN;
--	hard_iface->packet_buff = kmalloc(hard_iface->packet_len, GFP_ATOMIC);
--
--	if (!hard_iface->packet_buff)
-+	hard_iface->bat_iv.ogm_buff_len = BATADV_OGM_HLEN;
-+	ogm_buff = kmalloc(hard_iface->bat_iv.ogm_buff_len, GFP_ATOMIC);
-+	if (!ogm_buff)
- 		goto out;
- 
--	batadv_ogm_packet = (struct batadv_ogm_packet *)hard_iface->packet_buff;
-+	hard_iface->bat_iv.ogm_buff = ogm_buff;
-+
-+	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
- 	batadv_ogm_packet->header.packet_type = BATADV_IV_OGM;
- 	batadv_ogm_packet->header.version = BATADV_COMPAT_VERSION;
- 	batadv_ogm_packet->header.ttl = 2;
-@@ -87,15 +89,16 @@ out:
- 
- static void batadv_iv_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
- {
--	kfree(hard_iface->packet_buff);
--	hard_iface->packet_buff = NULL;
-+	kfree(hard_iface->bat_iv.ogm_buff);
-+	hard_iface->bat_iv.ogm_buff = NULL;
+-#define BATADV_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)	\
++#define BATADV_ATTR_HIF_STORE_UINT(_name, _var, _min, _max, _post_func)	\
+ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 			     struct attribute *attr, char *buff,	\
+ 			     size_t count)				\
+@@ -137,13 +137,13 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 									\
+ 	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
+ 					  _post_func, attr,		\
+-					  &hard_iface->_name, net_dev);	\
++					  &hard_iface->_var, net_dev);	\
+ 									\
+ 	batadv_hardif_free_ref(hard_iface);				\
+ 	return length;							\
  }
  
- static void batadv_iv_ogm_iface_update_mac(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_ogm_packet *batadv_ogm_packet;
-+	unsigned char *ogm_buff = hard_iface->bat_iv.ogm_buff;
+-#define BATADV_ATTR_HIF_SHOW_UINT(_name)				\
++#define BATADV_ATTR_HIF_SHOW_UINT(_name, _var)				\
+ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			    struct attribute *attr, char *buff)		\
+ {									\
+@@ -155,7 +155,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 	if (!hard_iface)						\
+ 		return 0;						\
+ 									\
+-	length = sprintf(buff, "%i\n", atomic_read(&hard_iface->_name));\
++	length = sprintf(buff, "%i\n", atomic_read(&hard_iface->_var));	\
+ 									\
+ 	batadv_hardif_free_ref(hard_iface);				\
+ 	return length;							\
+@@ -164,9 +164,10 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ /* Use this, if you are going to set [name] in hard_iface to an
+  * unsigned integer value
+  */
+-#define BATADV_ATTR_HIF_UINT(_name, _mode, _min, _max, _post_func)	\
+-	static BATADV_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)\
+-	static BATADV_ATTR_HIF_SHOW_UINT(_name)				\
++#define BATADV_ATTR_HIF_UINT(_name, _var, _mode, _min, _max, _post_func)\
++	static BATADV_ATTR_HIF_STORE_UINT(_name, _var, _min,		\
++					  _max, _post_func)		\
++	static BATADV_ATTR_HIF_SHOW_UINT(_name, _var)			\
+ 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
+ 			   batadv_store_##_name)
  
--	batadv_ogm_packet = (struct batadv_ogm_packet *)hard_iface->packet_buff;
-+	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
- 	memcpy(batadv_ogm_packet->orig,
- 	       hard_iface->net_dev->dev_addr, ETH_ALEN);
- 	memcpy(batadv_ogm_packet->prev_sender,
-@@ -106,8 +109,9 @@ static void
- batadv_iv_ogm_primary_iface_set(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_ogm_packet *batadv_ogm_packet;
-+	unsigned char *ogm_buff = hard_iface->bat_iv.ogm_buff;
- 
--	batadv_ogm_packet = (struct batadv_ogm_packet *)hard_iface->packet_buff;
-+	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
- 	batadv_ogm_packet->flags = BATADV_PRIMARIES_FIRST_HOP;
- 	batadv_ogm_packet->header.ttl = BATADV_TTL;
- }
-@@ -590,8 +594,10 @@ static void batadv_iv_ogm_forward(struct batadv_orig_node *orig_node,
- static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	unsigned char **ogm_buff = &hard_iface->bat_iv.ogm_buff;
- 	struct batadv_ogm_packet *batadv_ogm_packet;
- 	struct batadv_hard_iface *primary_if;
-+	int *ogm_buff_len = &hard_iface->bat_iv.ogm_buff_len;
- 	int vis_server, tt_num_changes = 0;
- 	uint32_t seqno;
- 	uint8_t bandwidth;
-@@ -600,17 +606,16 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 
- 	if (hard_iface == primary_if)
--		tt_num_changes = batadv_tt_append_diff(bat_priv,
--						       &hard_iface->packet_buff,
--						       &hard_iface->packet_len,
-+		tt_num_changes = batadv_tt_append_diff(bat_priv, ogm_buff,
-+						       ogm_buff_len,
- 						       BATADV_OGM_HLEN);
- 
--	batadv_ogm_packet = (struct batadv_ogm_packet *)hard_iface->packet_buff;
-+	batadv_ogm_packet = (struct batadv_ogm_packet *)(*ogm_buff);
- 
- 	/* change sequence number to network order */
--	seqno = (uint32_t)atomic_read(&hard_iface->seqno);
-+	seqno = (uint32_t)atomic_read(&hard_iface->bat_iv.ogm_seqno);
- 	batadv_ogm_packet->seqno = htonl(seqno);
--	atomic_inc(&hard_iface->seqno);
-+	atomic_inc(&hard_iface->bat_iv.ogm_seqno);
- 
- 	batadv_ogm_packet->ttvn = atomic_read(&bat_priv->tt.vn);
- 	batadv_ogm_packet->tt_crc = htons(bat_priv->tt.local_crc);
-@@ -631,8 +636,8 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 	}
- 
- 	batadv_slide_own_bcast_window(hard_iface);
--	batadv_iv_ogm_queue_add(bat_priv, hard_iface->packet_buff,
--				hard_iface->packet_len, hard_iface, 1,
-+	batadv_iv_ogm_queue_add(bat_priv, hard_iface->bat_iv.ogm_buff,
-+				hard_iface->bat_iv.ogm_buff_len, hard_iface, 1,
- 				batadv_iv_ogm_emit_send_time(bat_priv));
- 
- 	if (primary_if)
-@@ -1012,7 +1017,7 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
- 		return;
- 
- 	/* could be changed by schedule_own_packet() */
--	if_incoming_seqno = atomic_read(&if_incoming->seqno);
-+	if_incoming_seqno = atomic_read(&if_incoming->bat_iv.ogm_seqno);
- 
- 	if (batadv_ogm_packet->flags & BATADV_DIRECTLINK)
- 		has_directlink_flag = 1;
-diff --git a/hard-interface.c b/hard-interface.c
-index d112fd6..fab9e41 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -450,8 +450,8 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 	/* This can't be called via a bat_priv callback because
- 	 * we have no bat_priv yet.
- 	 */
--	atomic_set(&hard_iface->seqno, 1);
--	hard_iface->packet_buff = NULL;
-+	atomic_set(&hard_iface->bat_iv.ogm_seqno, 1);
-+	hard_iface->bat_iv.ogm_buff = NULL;
- 
- 	return hard_iface;
- 
-diff --git a/types.h b/types.h
-index 2ed82ca..82b25a6 100644
---- a/types.h
-+++ b/types.h
-@@ -28,20 +28,24 @@
- 	(ETH_HLEN + max(sizeof(struct batadv_unicast_packet), \
- 			sizeof(struct batadv_bcast_packet)))
- 
-+struct batadv_hard_iface_bat_iv {
-+	unsigned char *ogm_buff;
-+	int ogm_buff_len;
-+	atomic_t ogm_seqno;
-+};
-+
- struct batadv_hard_iface {
- 	struct list_head list;
- 	int16_t if_num;
- 	char if_status;
- 	struct net_device *net_dev;
--	atomic_t seqno;
- 	atomic_t frag_seqno;
--	unsigned char *packet_buff;
--	int packet_len;
- 	struct kobject *hardif_obj;
- 	atomic_t refcount;
- 	struct packet_type batman_adv_ptype;
- 	struct net_device *soft_iface;
- 	struct rcu_head rcu;
-+	struct batadv_hard_iface_bat_iv bat_iv;
- };
- 
- /**
 -- 
 1.7.9.1
 
