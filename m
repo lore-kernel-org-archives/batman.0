@@ -1,12 +1,20 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat,  4 Aug 2012 16:13:26 +0200
-Message-Id: <1344089606-9573-1-git-send-email-ordex@autistici.org>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH net] batman-adv: select an internet gateway
-	if none was chosen
+Sender: guido@guidoi.com.ar
+In-Reply-To: <20120723172828.GF3610@ritirata.org>
+References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
+ <CAHD-aqK-SrQ0VxmrZSzq3gb_aVZQY5ZYxN7qjdC8dind+jgeuw@mail.gmail.com>
+ <20120702143604.GD2917@ritirata.org>
+ <CAHD-aq+vsMugkr8CWQaw-bOYzLbxBL6V7zP=cfURNMacyBL+oQ@mail.gmail.com>
+ <20120721213856.GB3610@ritirata.org>
+ <CAHD-aqKiFkq_HXBHMERhbv2uS-8ZcxsfVGv_H6asZf3L2Ruq8A@mail.gmail.com>
+ <CAHD-aqK7Wt0YMf1Sr1WrUGOi++D2DEpu-ieNyh0DZQ_6ntBRrA@mail.gmail.com>
+ <20120723172828.GF3610@ritirata.org>
+From: Gui Iribarren <gui@altermundi.net>
+Date: Sun, 5 Aug 2012 02:34:15 -0300
+Message-ID: <CAHD-aq+Bw6MtzS_2YZDoQaTS6Rsrwr+8xCE4O+pWGc97ED4Jig@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] batman majareta? I can batctl ping but not ping
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,40 +26,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+On Mon, Jul 23, 2012 at 2:28 PM, Antonio Quartulli <ordex@autistici.org> wrote:
+> On Sun, Jul 22, 2012 at 08:20:21AM -0300, Guido Iribarren wrote:
+>> On Sun, Jul 22, 2012 at 7:57 AM, Guido Iribarren
+>> <guidoiribarren@buenosaireslibre.org> wrote:
+>>
+>> >
+>> > This time it solved itself after some brief time (a minute) but the
+>> > symptoms were the same.
+>> > So I could catch some logs,
+>> > http://pastebin.com/MEENj94i
+>> >
+>> > sadly, i wasn't fast enough to get a live log from the node involved
+>> > in the inconsistency as you suggested, so the report might be pretty
+>> > useless.
+>>
+>> from this particular node i ran previous report (colmena-casa) that
+>> was rebooted recently, L3 ping to all of the network had the same
+>> issue, (no replies for a minute or so) so i had the chance to
+>> "recreate" the situation several times.
+>> Turns out, a "batctl ll tt ; batctl l" on the nodes mentioned in the
+>> inconsistencies gave no output at all, so the previous pastebin report
+>> is in fact complete :P
+>> Looks like the inconsistency is being resolved locally between
+>> neighbours, without the need to contact the far end of the network
+>> (which is coherent with what's described in the wiki)
+>
+> Exactly! If the neighbour has the needed information, the node can directly get
+> answered without bothering the real destination ;)
+>
+>>
+>> In any case, AFAIR previous ocurrences of the bug didn't resolve by
+>> themselves (in a reasonable amount of time) so what I'm looking at now
+>> might be perfectly normal behaviour? (tt tables take some time to
+>> propagate?)
+>
+> Well, the log you posted is perfectly correct. You missed some OGMs, therefore
+> the node is asking for an update that he missed.
+>
+> it would be interesting to run batctl ll tt; batctl l all the time on the node
+> that usually experiences the "problem". The log should be not so big, unless the
+> bug happens.
 
-This is a regression introduced by: 2265c141086474bbae55a5bb3afa1ebb78ccaa7c
+I admit i haven't left this running as instructed, but on the other
+hand, so far I haven't come across the original bug again, and a few
+days ago I asked Nico Echaniz which confirmed that he's not suffering
+it as previously.
+he does bump from time to time with [a few moments | a few minutes] of
+"nodes majaretas" (at first sight) but it resolves by itself
+quickly[*], which indicates normal behaviour, of missing OGMs and
+consequently a delay in TT table updating, as you explained.
 
-Reported-by: Nicolás Echániz <nicoechaniz@codigosur.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/gateway_client.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+[*] "quickly" means under 15 minutes , at most. Previously, problem
+would never resolve by itself, being L3-unreachable for hours or days
+until manual reboot was done.
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index b421cc4..fc866f2 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -200,11 +200,11 @@ void batadv_gw_election(struct batadv_priv *bat_priv)
- 	if (atomic_read(&bat_priv->gw_mode) != BATADV_GW_MODE_CLIENT)
- 		goto out;
- 
--	if (!batadv_atomic_dec_not_zero(&bat_priv->gw_reselect))
--		goto out;
--
- 	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
- 
-+	if (!batadv_atomic_dec_not_zero(&bat_priv->gw_reselect) && curr_gw)
-+		goto out;
-+
- 	next_gw = batadv_gw_get_best_gw_node(bat_priv);
- 
- 	if (curr_gw == next_gw)
--- 
-1.7.9.4
+In conclusion, so far so good, i think we can close this as fixed for
+lack of evidence stating the contrary, heh.
+I hope gioacchino managed to recompile ninux images and is having the
+same stableness as we do :)
 
+Gui
