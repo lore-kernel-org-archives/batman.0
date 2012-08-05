@@ -1,22 +1,9 @@
-Return-Path: <ordex@autistici.org>
-Date: Sun, 5 Aug 2012 09:58:17 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120805075817.GG12879@ritirata.org>
-References: <CAHD-aqJUX0LxRfxrqJL4-oc7+QxLRdfiHikY40FvafL3pgEUyw@mail.gmail.com>
- <CAHD-aqK-SrQ0VxmrZSzq3gb_aVZQY5ZYxN7qjdC8dind+jgeuw@mail.gmail.com>
- <20120702143604.GD2917@ritirata.org>
- <CAHD-aq+vsMugkr8CWQaw-bOYzLbxBL6V7zP=cfURNMacyBL+oQ@mail.gmail.com>
- <20120721213856.GB3610@ritirata.org>
- <CAHD-aqKiFkq_HXBHMERhbv2uS-8ZcxsfVGv_H6asZf3L2Ruq8A@mail.gmail.com>
- <CAHD-aqK7Wt0YMf1Sr1WrUGOi++D2DEpu-ieNyh0DZQ_6ntBRrA@mail.gmail.com>
- <20120723172828.GF3610@ritirata.org>
- <CAHD-aq+Bw6MtzS_2YZDoQaTS6Rsrwr+8xCE4O+pWGc97ED4Jig@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="FUaywKC54iCcLzqT"
-Content-Disposition: inline
-In-Reply-To: <CAHD-aq+Bw6MtzS_2YZDoQaTS6Rsrwr+8xCE4O+pWGc97ED4Jig@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] batman majareta? I can batctl ping but not ping
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun,  5 Aug 2012 18:09:49 +0200
+Message-Id: <1344182989-25754-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: split hard_iface struct for each
+	routing protocol
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,110 +15,181 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ bat_iv_ogm.c     |   43 ++++++++++++++++++++++++-------------------
+ hard-interface.c |    4 ++--
+ types.h          |   10 +++++++---
+ 3 files changed, 33 insertions(+), 24 deletions(-)
 
---FUaywKC54iCcLzqT
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index df79300..7f0adad 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -57,20 +57,22 @@ out:
+ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
++	unsigned char *ogm_buff;
+ 	uint32_t random_seqno;
+ 	int res = -ENOMEM;
+ 
+ 	/* randomize initial seqno to avoid collision */
+ 	get_random_bytes(&random_seqno, sizeof(random_seqno));
+-	atomic_set(&hard_iface->seqno, random_seqno);
++	atomic_set(&hard_iface->bat_iv.ogm_seqno, random_seqno);
+ 
+-	hard_iface->packet_len = BATADV_OGM_HLEN;
+-	hard_iface->packet_buff = kmalloc(hard_iface->packet_len, GFP_ATOMIC);
+-
+-	if (!hard_iface->packet_buff)
++	hard_iface->bat_iv.ogm_buff_len = BATADV_OGM_HLEN;
++	ogm_buff = kmalloc(hard_iface->bat_iv.ogm_buff_len, GFP_ATOMIC);
++	if (!ogm_buff)
+ 		goto out;
+ 
+-	batadv_ogm_packet = (struct batadv_ogm_packet *)hard_iface->packet_buff;
++	hard_iface->bat_iv.ogm_buff = ogm_buff;
++
++	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
+ 	batadv_ogm_packet->header.packet_type = BATADV_IV_OGM;
+ 	batadv_ogm_packet->header.version = BATADV_COMPAT_VERSION;
+ 	batadv_ogm_packet->header.ttl = 2;
+@@ -87,15 +89,16 @@ out:
+ 
+ static void batadv_iv_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
+ {
+-	kfree(hard_iface->packet_buff);
+-	hard_iface->packet_buff = NULL;
++	kfree(hard_iface->bat_iv.ogm_buff);
++	hard_iface->bat_iv.ogm_buff = NULL;
+ }
+ 
+ static void batadv_iv_ogm_iface_update_mac(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
++	unsigned char *ogm_buff = hard_iface->bat_iv.ogm_buff;
+ 
+-	batadv_ogm_packet = (struct batadv_ogm_packet *)hard_iface->packet_buff;
++	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
+ 	memcpy(batadv_ogm_packet->orig,
+ 	       hard_iface->net_dev->dev_addr, ETH_ALEN);
+ 	memcpy(batadv_ogm_packet->prev_sender,
+@@ -106,8 +109,9 @@ static void
+ batadv_iv_ogm_primary_iface_set(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
++	unsigned char *ogm_buff = hard_iface->bat_iv.ogm_buff;
+ 
+-	batadv_ogm_packet = (struct batadv_ogm_packet *)hard_iface->packet_buff;
++	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
+ 	batadv_ogm_packet->flags = BATADV_PRIMARIES_FIRST_HOP;
+ 	batadv_ogm_packet->header.ttl = BATADV_TTL;
+ }
+@@ -590,8 +594,10 @@ static void batadv_iv_ogm_forward(struct batadv_orig_node *orig_node,
+ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
++	unsigned char **ogm_buff = &hard_iface->bat_iv.ogm_buff;
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
+ 	struct batadv_hard_iface *primary_if;
++	int *ogm_buff_len = &hard_iface->bat_iv.ogm_buff_len;
+ 	int vis_server, tt_num_changes = 0;
+ 	uint32_t seqno;
+ 	uint8_t bandwidth;
+@@ -600,17 +606,16 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ 	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 
+ 	if (hard_iface == primary_if)
+-		tt_num_changes = batadv_tt_append_diff(bat_priv,
+-						       &hard_iface->packet_buff,
+-						       &hard_iface->packet_len,
++		tt_num_changes = batadv_tt_append_diff(bat_priv, ogm_buff,
++						       ogm_buff_len,
+ 						       BATADV_OGM_HLEN);
+ 
+-	batadv_ogm_packet = (struct batadv_ogm_packet *)hard_iface->packet_buff;
++	batadv_ogm_packet = (struct batadv_ogm_packet *)(*ogm_buff);
+ 
+ 	/* change sequence number to network order */
+-	seqno = (uint32_t)atomic_read(&hard_iface->seqno);
++	seqno = (uint32_t)atomic_read(&hard_iface->bat_iv.ogm_seqno);
+ 	batadv_ogm_packet->seqno = htonl(seqno);
+-	atomic_inc(&hard_iface->seqno);
++	atomic_inc(&hard_iface->bat_iv.ogm_seqno);
+ 
+ 	batadv_ogm_packet->ttvn = atomic_read(&bat_priv->tt.vn);
+ 	batadv_ogm_packet->tt_crc = htons(bat_priv->tt.local_crc);
+@@ -631,8 +636,8 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ 	}
+ 
+ 	batadv_slide_own_bcast_window(hard_iface);
+-	batadv_iv_ogm_queue_add(bat_priv, hard_iface->packet_buff,
+-				hard_iface->packet_len, hard_iface, 1,
++	batadv_iv_ogm_queue_add(bat_priv, hard_iface->bat_iv.ogm_buff,
++				hard_iface->bat_iv.ogm_buff_len, hard_iface, 1,
+ 				batadv_iv_ogm_emit_send_time(bat_priv));
+ 
+ 	if (primary_if)
+@@ -1012,7 +1017,7 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
+ 		return;
+ 
+ 	/* could be changed by schedule_own_packet() */
+-	if_incoming_seqno = atomic_read(&if_incoming->seqno);
++	if_incoming_seqno = atomic_read(&if_incoming->bat_iv.ogm_seqno);
+ 
+ 	if (batadv_ogm_packet->flags & BATADV_DIRECTLINK)
+ 		has_directlink_flag = 1;
+diff --git a/hard-interface.c b/hard-interface.c
+index d112fd6..fab9e41 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -450,8 +450,8 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	/* This can't be called via a bat_priv callback because
+ 	 * we have no bat_priv yet.
+ 	 */
+-	atomic_set(&hard_iface->seqno, 1);
+-	hard_iface->packet_buff = NULL;
++	atomic_set(&hard_iface->bat_iv.ogm_seqno, 1);
++	hard_iface->bat_iv.ogm_buff = NULL;
+ 
+ 	return hard_iface;
+ 
+diff --git a/types.h b/types.h
+index 2ed82ca..82b25a6 100644
+--- a/types.h
++++ b/types.h
+@@ -28,20 +28,24 @@
+ 	(ETH_HLEN + max(sizeof(struct batadv_unicast_packet), \
+ 			sizeof(struct batadv_bcast_packet)))
+ 
++struct batadv_hard_iface_bat_iv {
++	unsigned char *ogm_buff;
++	int ogm_buff_len;
++	atomic_t ogm_seqno;
++};
++
+ struct batadv_hard_iface {
+ 	struct list_head list;
+ 	int16_t if_num;
+ 	char if_status;
+ 	struct net_device *net_dev;
+-	atomic_t seqno;
+ 	atomic_t frag_seqno;
+-	unsigned char *packet_buff;
+-	int packet_len;
+ 	struct kobject *hardif_obj;
+ 	atomic_t refcount;
+ 	struct packet_type batman_adv_ptype;
+ 	struct net_device *soft_iface;
+ 	struct rcu_head rcu;
++	struct batadv_hard_iface_bat_iv bat_iv;
+ };
+ 
+ /**
+-- 
+1.7.9.1
 
-On Sun, Aug 05, 2012 at 02:34:15AM -0300, Gui Iribarren wrote:
-> On Mon, Jul 23, 2012 at 2:28 PM, Antonio Quartulli <ordex@autistici.org> =
-wrote:
-> > On Sun, Jul 22, 2012 at 08:20:21AM -0300, Guido Iribarren wrote:
-> >> On Sun, Jul 22, 2012 at 7:57 AM, Guido Iribarren
-> >> <guidoiribarren@buenosaireslibre.org> wrote:
-> >>
-> >> >
-> >> > This time it solved itself after some brief time (a minute) but the
-> >> > symptoms were the same.
-> >> > So I could catch some logs,
-> >> > http://pastebin.com/MEENj94i
-> >> >
-> >> > sadly, i wasn't fast enough to get a live log from the node involved
-> >> > in the inconsistency as you suggested, so the report might be pretty
-> >> > useless.
-> >>
-> >> from this particular node i ran previous report (colmena-casa) that
-> >> was rebooted recently, L3 ping to all of the network had the same
-> >> issue, (no replies for a minute or so) so i had the chance to
-> >> "recreate" the situation several times.
-> >> Turns out, a "batctl ll tt ; batctl l" on the nodes mentioned in the
-> >> inconsistencies gave no output at all, so the previous pastebin report
-> >> is in fact complete :P
-> >> Looks like the inconsistency is being resolved locally between
-> >> neighbours, without the need to contact the far end of the network
-> >> (which is coherent with what's described in the wiki)
-> >
-> > Exactly! If the neighbour has the needed information, the node can dire=
-ctly get
-> > answered without bothering the real destination ;)
-> >
-> >>
-> >> In any case, AFAIR previous ocurrences of the bug didn't resolve by
-> >> themselves (in a reasonable amount of time) so what I'm looking at now
-> >> might be perfectly normal behaviour? (tt tables take some time to
-> >> propagate?)
-> >
-> > Well, the log you posted is perfectly correct. You missed some OGMs, th=
-erefore
-> > the node is asking for an update that he missed.
-> >
-> > it would be interesting to run batctl ll tt; batctl l all the time on t=
-he node
-> > that usually experiences the "problem". The log should be not so big, u=
-nless the
-> > bug happens.
->=20
-> I admit i haven't left this running as instructed, but on the other
-> hand, so far I haven't come across the original bug again, and a few
-> days ago I asked Nico Echaniz which confirmed that he's not suffering
-> it as previously.
-> he does bump from time to time with [a few moments | a few minutes] of
-> "nodes majaretas" (at first sight) but it resolves by itself
-> quickly[*], which indicates normal behaviour, of missing OGMs and
-> consequently a delay in TT table updating, as you explained.
->=20
-> [*] "quickly" means under 15 minutes , at most. Previously, problem
-> would never resolve by itself, being L3-unreachable for hours or days
-> until manual reboot was done.
->=20
-> In conclusion, so far so good, i think we can close this as fixed for
-> lack of evidence stating the contrary, heh.
-> I hope gioacchino managed to recompile ninux images and is having the
-> same stableness as we do :)
->=20
-> Gui
-
-Hello Guido and thank you for reporting back your results :) However, even =
-if
-the "behaviour" is good (table gets recovered and everything starts working
-again) it is a bit strange that it takes 15 minutes to do so.
-
-If you accidentally see the bug, it would be interesting to get the log of =
-the
-"non-working" node and see why it is taking so long.
-
-Thank you very much!
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---FUaywKC54iCcLzqT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlAeJ5kACgkQpGgxIkP9cwfEDgCfbFaEXEFFwaDq8AfFnpPDLbYs
-w0EAn1DnaRC2IS55RTkRT3/zsnu3b0ka
-=nbjg
------END PGP SIGNATURE-----
-
---FUaywKC54iCcLzqT--
