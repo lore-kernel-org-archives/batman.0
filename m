@@ -1,13 +1,16 @@
-Return-Path: <gmazzurco89@gmail.com>
-Message-ID: <501FE731.6050306@gmail.com>
-Date: Mon, 06 Aug 2012 17:48:01 +0200
-From: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+Return-Path: <fboehm@aon.at>
+Message-ID: <501FF93D.90204@aon.at>
+Date: Mon, 06 Aug 2012 19:05:01 +0200
+From: fboehm <fboehm@aon.at>
 MIME-Version: 1.0
-References: <501FC12D.3040608@gmail.com> <20120806134309.GK12879@ritirata.org>
-In-Reply-To: <20120806134309.GK12879@ritirata.org>
-Content-Type: text/plain; charset=UTF-8
+References: <CAKLmikOLbh20g3j4UcKbBjhmvKsoXB9A0jHTR75NZLtuWBCtCQ@mail.gmail.com>
+ <4F9CFB7F.4010207@aon.at>
+ <CAHD-aqKXJva8nYeWhxVcJW1LSay1WVnMhGAS7hSCoAQ=H2TtUw@mail.gmail.com>
+ <4F9EBDAB.7050006@aon.at>
+In-Reply-To: <4F9EBDAB.7050006@aon.at>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] multicast packet loss
+Subject: Re: [B.A.T.M.A.N.] Batman with Ubiquiti SDK
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,41 +22,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <ordex@autistici.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, babel-users@lists.alioth.debian.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The problem was that babeld assumed bat0 as a wired interface so when 2
-or 3 packet was lost it marked the route as unreachable, now the problem
-is fixed thanks to a patch from julius
+Hi,
 
-by the way it is not normal that batman loss packet on wired links and I
-think we should do some debug to understand what is happening...
+I just wanted to add the information that Ubiquiti Networks released SDK 
+for AirOS v5.5. You can download it from ubnt.com --> support. So no 
+longer "on request" like mentioned earlier.
 
-I am going to do some test as ordex said trying to make things clear
+Regards,
+Franz
 
-On 08/06/2012 03:43 PM, Antonio Quartulli wrote:
-> On Mon, Aug 06, 2012 at 03:05:49PM +0200, Gioacchino Mazzurco wrote:
->> Hi all!
+Am 30.04.12 18:28, schrieb fboehm:
+> According to Ubiquiti support the SDK for AirOS v5.5 will be released 
+> in a few weeks.
+>
+> Regards,
+> Franz
+>
+>
+> Am 29.04.12 16:29, schrieb Guido Iribarren:
+>> On Sun, Apr 29, 2012 at 5:27 AM, fboehm<fboehm@aon.at>  wrote:
+>>> Hi Mitar,
+>>>
+>>> what Ubiquiti products are you using? Because they have the older
+>>> 802.11a/b/g based product series and the newer 802.11n based with their
+>>> proprietary Airmax wireless drivers. I am asking because the Airmax 
+>>> products
+>>> have been upgraded to kernel 2.6.32 recently.
+>> Indeed,
 >>
->> I am experiencing a multicast packet loss on batman-adv mesh, this can
->> appear normal but it is not because the mesh is on top of wired Ethernet
->> link!
+>> XM.v5.3# uname -a
+>> Linux hostname 2.6.15-5.2 #1 Fri Jan 14 14:43:07 EET 2011 mips unknown
 >>
->> the host fe80::c8e0:2cff:fe9b:6d1f is sending a multicast hello message
->> every 4 seconds on bat0 interface, but as you can see from the dump
->> timing on a machine attached on the same switch they are not arriving
->> regurarly so what is happening? Is this normal?
-> 
-> Hello Gioacchino,
-> 
-> I'd say that losing packets is not normal :-)
-> Have you tried to use batctl td on the wired interface? You should see the
-> "broadcast" packets going around. It would be interesting to understand if on
-> batctl you had more packets than what you are receiving on the node.
-> 
-> Cheers,
-> 
-> 
-> p.s. what kind of hello messages are they? Their size is changing over time..
-> 
+>> XM.v5.5# uname -a
+>> Linux hostname 2.6.32.54 #1 Fri Apr 6 14:56:27 EEST 2012 mips unknown
+>>
+>> (run on two nano loco m900, the latter with latest firmware)
+>>
+>
+>
 
