@@ -1,15 +1,10 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 7 Aug 2012 12:46:51 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20120807104651.GA25568@pandem0nium>
-References: <CAHD-aqJubnMBSuyjyS+aOXnS8FSQe=w8Aj2-SnaohNqXSs_xJg@mail.gmail.com>
+Return-Path: <gibsonsg91921@yahoo.com>
+Message-ID: <1344359893.8678.YahooMailClassic@web162701.mail.bf1.yahoo.com>
+Date: Tue, 7 Aug 2012 10:18:13 -0700 (PDT)
+From: adam wiz <gibsonsg91921@yahoo.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
-Content-Disposition: inline
-In-Reply-To: <CAHD-aqJubnMBSuyjyS+aOXnS8FSQe=w8Aj2-SnaohNqXSs_xJg@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] propagate gw_mode over two mesh linked by
- ethernet with bla2
+Content-Type: text/plain; charset=us-ascii
+Subject: [B.A.T.M.A.N.] trouble setting up my mesh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,115 +16,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+I am having some trouble setting up batman-adv for my mesh. I can get each access point to see the other using "batctl o" but I am not able to route messages between my client devices. I think there is something wrong with my bridging.
 
---gKMricLos+KVdGMg
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Here is the nature of my testbed:
 
-Hello Guido,
+2 Pandaboards 
+running Ubuntu 12.04. They are connected to each other with wired 
+Ethernet (eth0) and wireless ad-hoc (wlan1). wlan0 is set up as an 
+access point using hostapd and udhcpd.
 
-On Sun, Aug 05, 2012 at 03:26:43AM -0300, Gui Iribarren wrote:
-> Here i am again,
-> the involuntary stress-tester of gw_mode + bla2
-> and mailing-list readers' headache ;)
->=20
-> Given the setup described here
-> http://www.open-mesh.org/attachments/download/128
->=20
-> let's say one node in mesh1 sets gw_mode=3Dserver
-> any node in mesh1 will list it in "batctl gwl"
->=20
-> but nodes in mesh2 won't get it, since backbone gateways (BGs) of
-> mesh2 only get claims from BGs of mesh1, which do not include gw_mode
-> status
->=20
-> with bla1 setup, OGMs did flood the ethernet backbone, carrying
-> gw_mode information, and both mesh1 and mesh2 would get to know
-> gateways
-> I miss that functionality! :(
->=20
-> so, as Simon himself suggests [0] in the wiki' shortest-ever FAQ ;),
-> having full control of the ethernet backbone, I batctl-if-added an
-> ethernet vlan on BGs of both sides of the ethernet cable.
->=20
-> OGMs flood the ethernet backbone again as expected; running "batctl o"
-> in mesh1 nodes show nodes from mesh2, and viceversa; i smiled!
-> unfortunately, trying to get a DHCP lease while connected to a mesh
-> node was again malfunctioning :(
-> a couple of quick "batctl td", and i thiiiink that looked like dhcp
-> request packets were being dropped at the backbone gateway, kinda like
-> the "check incoming type for bla" bug, but i didn't try to narrow it
-> down
-> instead reverted configs back to gw_mode=3Doff and things started working=
- again
+2 client Android phones, 
+one connected to each access point. Using the Scripting Layer for 
+Android app, they are running Python scripts. One is set to receive UDP 
+messages, and the other is hardcoded to send UDP messages at a 
+2-per-second clip to the IP address of the receiver. 
 
-Mhm, we could track this further down if you want. So you have eth0 in your
-bridge and batman using a VLAN (e.g. eth0.1234) at the same time?
->=20
-> i won't dig much into that since it's quite possible i entangled up my
-> configs yet again, so i'll focus on the original question:
-> are there any plans (or is it even feasible) to propagate gw_mode
-> status through the ethernet backbone (assuming not sending OGMs)?
-> maybe including/appending it in claim frames?
+In setting up batman-adv, I run these commands:
 
-No, at least I didn't plan to do so, and I wouldn't favor to build a second
-"attachment" system on claims as we did on OGMs - this will only bring
-more complexity. Instead, we should focus/support/fix the situation as
-you described above - let batman use Ethernet directly.
+sudo modprobe batman-adv
+sudo batctl if add eth0
+sudo batctl if add wlan1
+sudo ifconfig eth0 0.0.0.0 mtu 1528
+sudo ifconfig wlan1 0.0.0.0 mtu 1528
+sudo ifconfig bat0 10.50.0.x (x being a unique number for each access point) netmask 255.255.0.0 up
 
+At this point, and after any modification to bat0, I receive several instances of the error message: "bat0: hw csum failure." However, when I run "batctl o" I am able to see the MAC addresses of the opposite access point's eth0 and wlan1 interfaces, indicating so far so good. I can even ping the opposite board with a regular ping of their bat0 IP address. My difficulty is getting the access points to share HNA messages that show routes to their respective client devices. I can capably use batmand for such a task (sudo batmand -a 10.x.0.0/16 -d 1 eth0 wlan1) because the -a is easy for announcing the wlan0 network. How do I perform a similar task using this architecture?
 
->=20
-> what i understand so far is that with current blaII, meshes connected
-> solely by ethernet backbone (which can't overhear each other OGMs
-> through wifi) only know which macs are "on the other side of the eth
-> backbone" so as to keep the single broadcast domain united, but are
-> fragmented in terms of VIS data, gw, TT, and orig table.
-
-Yes, there are two separate meshes, and the only stuff which is supposed
-to be shared is the users payload traffic.
-
->=20
-> sorry if i'm asking obvious questions, the blaII wiki explains notably
-> clear the model, but is missing gw_mode interactions, and it wasn't
-> evident to me how would that work - in fact, coming from bla1, i
-> wrongly assumed it would be similar. if it's relevant, i can try to
-> add validated snippets from this thread to the wiki[0]
-
-Each node at the edge to the wired network may announce itself as a gateway,
-provided that a DHCP server is available in the LAN (or any network behind =
-it,
-e.g. a mesh). From a concept view, a gateway (or maybe even multiple gatewa=
-ys)
-in mesh2 will not automatically announced in mesh1 - this must be configured
-manually, or let batman use Ethernet if this is explicitly required.
-
-Feel free to update the Wiki, although I'd suggest to add an FAQ to the
-user page and not on the technical documentation. :)
-
-If you want, I'd be happy to work things out regarding
-multiple meshes+bridge+vlan+ethernet+batman+blaII with you. ;)
-
-Cheers,
-	Simon
-
-[1] http://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoidance
-
-
-
---gKMricLos+KVdGMg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAlAg8hsACgkQrzg/fFk7axbwuQCfbFRjYxMjbWcdw0WoQRgSVk8g
-8mgAn0D6HUqJOhs6ggwqwTVmaKbXecY2
-=Ch3d
------END PGP SIGNATURE-----
-
---gKMricLos+KVdGMg--
+Regards,
+Adam
