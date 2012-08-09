@@ -1,9 +1,8 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  9 Aug 2012 02:35:43 +0200
-Message-Id: <1344472543-11913-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: use the BIT macro instead of
-	constant values
+Return-Path: <montik@autistici.org>
+From: Edo Monticelli <montik@autistici.org>
+Date: Thu,  9 Aug 2012 14:15:23 +0200
+Message-Id: <1344514526-30256-1-git-send-email-montik@autistici.org>
+Subject: [B.A.T.M.A.N.] [RFC 0/3] GSOC 2012: bandwidth meter project
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,34 +16,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- sys.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Hi,
 
-diff --git a/sys.c b/sys.c
-index e40ddcd..6f94483 100644
---- a/sys.c
-+++ b/sys.c
-@@ -318,14 +318,14 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
- 
- 	printf("[%c] %s (%s)\n", (!log_level) ? 'x' : ' ',
- 	       "all debug output disabled", "none");
--	printf("[%c] %s (%s)\n", (log_level & 1) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level & BIT(0)) ? 'x' : ' ',
- 	       "messages related to routing / flooding / broadcasting",
- 	       "batman");
--	printf("[%c] %s (%s)\n", (log_level & 2) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level & BIT(1)) ? 'x' : ' ',
- 	       "messages related to route added / changed / deleted", "routes");
--	printf("[%c] %s (%s)\n", (log_level & 4) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level & BIT(2)) ? 'x' : ' ',
- 	       "messages related to translation table operations", "tt");
--	printf("[%c] %s (%s)\n", (log_level & 8) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level & BIT(3)) ? 'x' : ' ',
- 	       "messages related to bridge loop avoidance", "bla");
- 
- out:
+I have almost completed my Google Summer of Code project and I'd like to have a
+feedback from the batman community. The project is a kernel-space bandwidth
+meter, a lightweight tool to measure network performance between batman nodes.
+You can find a general project description in the project wiki page:
+
+http://www.open-mesh.org/projects/batman-adv/wiki/GSOC2012_BW
+
+Any advice is welcome,
+Edo Monticelli
+
+
+Edo Monticelli (3):
+  batman-adv: bandwidth meter implementation
+  batman-adv: sender retransmission counter
+  batman-adv: seqnumber is wrap around safe
+
+ Makefile         |    2 +-
+ Makefile.kbuild  |    1 +
+ bw_meter.c       |  531 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ bw_meter.h       |    7 +
+ icmp_socket.c    |   18 ++
+ main.c           |    2 +
+ packet.h         |   22 ++-
+ routing.c        |   15 ++-
+ soft-interface.c |    5 +
+ types.h          |   38 ++++
+ 10 files changed, 634 insertions(+), 7 deletions(-)
+ create mode 100644 bw_meter.c
+ create mode 100644 bw_meter.h
+
 -- 
-1.7.9.4
+1.7.8.6
 
