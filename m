@@ -1,15 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 08 Aug 2012 16:04:28 -0700 (PDT)
-Message-Id: <20120808.160428.2244694881256062176.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20120807185036.GG3891@ritirata.org>
-References: <alpine.LNX.2.00.1208072030500.3227@swampdragon.chaosbits.net>
- <20120807185036.GG3891@ritirata.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix mem leak in the
- batadv_tt_local_event() function
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu,  9 Aug 2012 02:35:43 +0200
+Message-Id: <1344472543-11913-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: use the BIT macro instead of
+	constant values
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,20 +15,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, siwu@hrz.tu-chemnitz.de, jj@chaosbits.net, lindner_marek@yahoo.de
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 7 Aug 2012 20:50:36 +0200
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ sys.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-> On Tue, Aug 07, 2012 at 08:32:34PM +0200, Jesper Juhl wrote:
->> Memory is allocated for 'tt_change_node' with kmalloc().
->> 'tt_change_node' may go out of scope really being used for anything
->> (except have a few members initialized) if we hit the 'del:' label.
->> This patch makes sure we free the memory in that case.
->> 
->> Signed-off-by: Jesper Juhl <jj@chaosbits.net>
-> 
-> Acked-by: Antonio Quartulli <ordex@autistici.org>
+diff --git a/sys.c b/sys.c
+index e40ddcd..6f94483 100644
+--- a/sys.c
++++ b/sys.c
+@@ -318,14 +318,14 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
+ 
+ 	printf("[%c] %s (%s)\n", (!log_level) ? 'x' : ' ',
+ 	       "all debug output disabled", "none");
+-	printf("[%c] %s (%s)\n", (log_level & 1) ? 'x' : ' ',
++	printf("[%c] %s (%s)\n", (log_level & BIT(0)) ? 'x' : ' ',
+ 	       "messages related to routing / flooding / broadcasting",
+ 	       "batman");
+-	printf("[%c] %s (%s)\n", (log_level & 2) ? 'x' : ' ',
++	printf("[%c] %s (%s)\n", (log_level & BIT(1)) ? 'x' : ' ',
+ 	       "messages related to route added / changed / deleted", "routes");
+-	printf("[%c] %s (%s)\n", (log_level & 4) ? 'x' : ' ',
++	printf("[%c] %s (%s)\n", (log_level & BIT(2)) ? 'x' : ' ',
+ 	       "messages related to translation table operations", "tt");
+-	printf("[%c] %s (%s)\n", (log_level & 8) ? 'x' : ' ',
++	printf("[%c] %s (%s)\n", (log_level & BIT(3)) ? 'x' : ' ',
+ 	       "messages related to bridge loop avoidance", "bla");
+ 
+ out:
+-- 
+1.7.9.4
 
-Applied, thanks.
