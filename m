@@ -1,14 +1,12 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Fri, 10 Aug 2012 15:44:10 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20120810134409.GA18045@pandem0nium>
-References: <1344514526-30256-1-git-send-email-montik@autistici.org>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Fri, 10 Aug 2012 15:46:32 +0200
+Message-Id: <1344606392-27130-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
-Content-Disposition: inline
-In-Reply-To: <1344514526-30256-1-git-send-email-montik@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [RFC 0/3] GSOC 2012: bandwidth meter project
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unused hlist macros in
+	compat.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,80 +18,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
+ compat.h | 8 --------
+ 1 file changed, 8 deletions(-)
 
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/compat.h b/compat.h
+index 13253dd..8ac22a8 100644
+--- a/compat.h
++++ b/compat.h
+@@ -67,14 +67,6 @@
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 34)
+ 
+-#define hlist_first_rcu(head) (*((struct hlist_node **)(&(head)->first)))
+-#define hlist_next_rcu(node) (*((struct hlist_node **)(&(node)->next)))
+-
+-#define __hlist_for_each_rcu(pos, head) \
+-	for (pos = rcu_dereference(hlist_first_rcu(head)); \
+-	     pos && ({ prefetch(pos->next); 1; }); \
+-	     pos = rcu_dereference(hlist_next_rcu(pos)))
+-
+ #define rcu_dereference_protected(p, c) (p)
+ 
+ #endif /* < KERNEL_VERSION(2, 6, 34) */
+-- 
+1.7.11.4
 
-Hello Edo,
-
-as discussed already, some general remarks:
-
- * please squash these patches to one - as far as I can see, the 2 others a=
-re mostly
-   fixes to the first one
- * Don't turn on debugging in the Makefile - we don't want that by default
- * please also include the batctl patch, it is important for testing
-
-Thanks
-	Simon
-
-On Thu, Aug 09, 2012 at 02:15:23PM +0200, Edo Monticelli wrote:
-> Hi,
->=20
-> I have almost completed my Google Summer of Code project and I'd like to =
-have a
-> feedback from the batman community. The project is a kernel-space bandwid=
-th
-> meter, a lightweight tool to measure network performance between batman n=
-odes.
-> You can find a general project description in the project wiki page:
->=20
-> http://www.open-mesh.org/projects/batman-adv/wiki/GSOC2012_BW
->=20
-> Any advice is welcome,
-> Edo Monticelli
->=20
->=20
-> Edo Monticelli (3):
->   batman-adv: bandwidth meter implementation
->   batman-adv: sender retransmission counter
->   batman-adv: seqnumber is wrap around safe
->=20
->  Makefile         |    2 +-
->  Makefile.kbuild  |    1 +
->  bw_meter.c       |  531 ++++++++++++++++++++++++++++++++++++++++++++++++=
-++++++
->  bw_meter.h       |    7 +
->  icmp_socket.c    |   18 ++
->  main.c           |    2 +
->  packet.h         |   22 ++-
->  routing.c        |   15 ++-
->  soft-interface.c |    5 +
->  types.h          |   38 ++++
->  10 files changed, 634 insertions(+), 7 deletions(-)
->  create mode 100644 bw_meter.c
->  create mode 100644 bw_meter.h
->=20
-> --=20
-> 1.7.8.6
->=20
->=20
-
---vkogqOf2sHV7VnPd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAlAlECkACgkQrzg/fFk7axZn6gCfVbzAXsDLlQ+WdYT03O+9FAFY
-GW4AmwWwGBG/vC3geE7Z/Q7S1YZ9grtJ
-=kZOY
------END PGP SIGNATURE-----
-
---vkogqOf2sHV7VnPd--
