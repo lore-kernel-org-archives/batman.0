@@ -1,12 +1,15 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Fri, 10 Aug 2012 15:46:32 +0200
-Message-Id: <1344606392-27130-1-git-send-email-martin@hundeboll.net>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unused hlist macros in
-	compat.h
+Sender: guido@guidoi.com.ar
+In-Reply-To: <20120807104651.GA25568@pandem0nium>
+References: <CAHD-aqJubnMBSuyjyS+aOXnS8FSQe=w8Aj2-SnaohNqXSs_xJg@mail.gmail.com>
+ <20120807104651.GA25568@pandem0nium>
+From: Gui Iribarren <gui@altermundi.net>
+Date: Fri, 10 Aug 2012 16:27:13 -0300
+Message-ID: <CAHD-aqLExJDuKfYE+TBtruth=YFwbH4PhzYfgWje6N+pxj93hQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] propagate gw_mode over two mesh linked by
+ ethernet with bla2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,33 +21,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
----
- compat.h | 8 --------
- 1 file changed, 8 deletions(-)
+On Tue, Aug 7, 2012 at 7:46 AM, Simon Wunderlich
+<simon.wunderlich@s2003.tu-chemnitz.de> wrote:
+> Hello Guido,
+>
+>> OGMs flood the ethernet backbone again as expected; running "batctl o"
+>> in mesh1 nodes show nodes from mesh2, and viceversa; i smiled!
+>> unfortunately, trying to get a DHCP lease while connected to a mesh
+>> node was again malfunctioning :(
+>> a couple of quick "batctl td", and i thiiiink that looked like dhcp
+>> request packets were being dropped at the backbone gateway, kinda like
+>> the "check incoming type for bla" bug, but i didn't try to narrow it
+>> down
+>> instead reverted configs back to gw_mode=off and things started working again
+>
+> Mhm, we could track this further down if you want. So you have eth0 in your
+> bridge and batman using a VLAN (e.g. eth0.1234) at the same time?
 
-diff --git a/compat.h b/compat.h
-index 13253dd..8ac22a8 100644
---- a/compat.h
-+++ b/compat.h
-@@ -67,14 +67,6 @@
- 
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 34)
- 
--#define hlist_first_rcu(head) (*((struct hlist_node **)(&(head)->first)))
--#define hlist_next_rcu(node) (*((struct hlist_node **)(&(node)->next)))
--
--#define __hlist_for_each_rcu(pos, head) \
--	for (pos = rcu_dereference(hlist_first_rcu(head)); \
--	     pos && ({ prefetch(pos->next); 1; }); \
--	     pos = rcu_dereference(hlist_next_rcu(pos)))
--
- #define rcu_dereference_protected(p, c) (p)
- 
- #endif /* < KERNEL_VERSION(2, 6, 34) */
--- 
-1.7.11.4
+Case closed: i had gone lost in a myriad of different openwrt
+revisions, compiled binaries, and patches, so I unknowingly "updated"
+that part of the network to a more recent openwrt version, but that
+didn't have the "check incoming type for bla" patch.
+So it was a simple regression on my part. I just reflashed those
+routers to a firmware confirmed to include the patch, and everything
+is working again. (bla2+gw_mode+vlan)
+Thanks a lot Marek for pushing that patch to openwrt batman-adv stable
+package, it helped a lot in getting things straight :)
 
+> Feel free to update the Wiki, although I'd suggest to add an FAQ to the
+> user page and not on the technical documentation. :)
+
+Done, added two entries to the FAQ rewording this thread :)
+
+Thanks as always,
+
+Gui
