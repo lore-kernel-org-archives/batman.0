@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-Date: Sat, 11 Aug 2012 10:58:12 +0200
-From: Sven Eckelmann <sven@narfation.org>
-Message-ID: <20120811085812.GA2317@narfation.org>
+Return-Path: <ordex@autistici.org>
+Date: Sat, 11 Aug 2012 10:59:59 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120811085959.GJ10376@ritirata.org>
 References: <1344632966-24233-1-git-send-email-ordex@autistici.org>
+ <20120811085812.GA2317@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="nzri8VXeXB/g5ayr"
 Content-Disposition: inline
-In-Reply-To: <1344632966-24233-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <20120811085812.GA2317@narfation.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: return proper value in case
  of hash_add failure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,39 +24,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Fri, Aug 10, 2012 at 11:09:26PM +0200, Antonio Quartulli wrote:
-> In case of hash_add failure tt_global_add() must return 0 (which means on entry
-> insertion).
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
-> 
-> This patch is based on master. This bug exists since "a bit" but nobody actually
-> found it because this bug should have been triggered in the unlikely case of hash
-> adding failure. Therefore I do not think it is a crucial bug and it is not worth
-> sending this patch to stable.
-> 
-> Cheers,
-> 
-> 
->  Makefile            |    2 +-
->  translation-table.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index bd8d30c..12aebe5 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -20,7 +20,7 @@
->  
->  # changing the CONFIG_* line to 'y' enables the related feature
->  # B.A.T.M.A.N. debugging:
-> -export CONFIG_BATMAN_ADV_DEBUG=n
-> +export CONFIG_BATMAN_ADV_DEBUG=y
->  # B.A.T.M.A.N. bridge loop avoidance:
->  export CONFIG_BATMAN_ADV_BLA=y
 
-Sry, but disapproved.
+--nzri8VXeXB/g5ayr
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Kind regards,
-	Sven
+On Sat, Aug 11, 2012 at 10:58:12AM +0200, Sven Eckelmann wrote:
+> Sry, but disapproved.
+
+
+Thank you Sven. Too lazy to add files to the commit and I typed "git commit=
+ -a".
+Sorry for wasting time/resources.
+
+Will send v2.
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--nzri8VXeXB/g5ayr
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAlAmHw8ACgkQpGgxIkP9cwczSgCeM32wWL8FDt7IJUs06PgCTggE
+q6AAniKEnH55xtvLB542mFYcRjmnodEH
+=weNH
+-----END PGP SIGNATURE-----
+
+--nzri8VXeXB/g5ayr--
