@@ -1,11 +1,14 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 11 Aug 2012 00:43:19 +0200
-Message-Id: <1344638599-31985-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1343736871-7131-1-git-send-email-ordex@autistici.org>
-References: <1343736871-7131-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3] batman-adv: pass the WIFI flag from the
-	local to global entry
+Return-Path: <sven@narfation.org>
+Date: Sat, 11 Aug 2012 10:58:12 +0200
+From: Sven Eckelmann <sven@narfation.org>
+Message-ID: <20120811085812.GA2317@narfation.org>
+References: <1344632966-24233-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1344632966-24233-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: return proper value in case
+ of hash_add failure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,109 +20,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-in case of client roaming a new global entry is added while a corresponding
-local one is still present. In this case the node can safely pass the WIFI flag
-from the local to the global entry.
+On Fri, Aug 10, 2012 at 11:09:26PM +0200, Antonio Quartulli wrote:
+> In case of hash_add failure tt_global_add() must return 0 (which means on entry
+> insertion).
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+> 
+> This patch is based on master. This bug exists since "a bit" but nobody actually
+> found it because this bug should have been triggered in the unlikely case of hash
+> adding failure. Therefore I do not think it is a crucial bug and it is not worth
+> sending this patch to stable.
+> 
+> Cheers,
+> 
+> 
+>  Makefile            |    2 +-
+>  translation-table.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Makefile b/Makefile
+> index bd8d30c..12aebe5 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -20,7 +20,7 @@
+>  
+>  # changing the CONFIG_* line to 'y' enables the related feature
+>  # B.A.T.M.A.N. debugging:
+> -export CONFIG_BATMAN_ADV_DEBUG=n
+> +export CONFIG_BATMAN_ADV_DEBUG=y
+>  # B.A.T.M.A.N. bridge loop avoidance:
+>  export CONFIG_BATMAN_ADV_BLA=y
 
-This change is required to let the AP-isolation correctly working in case of
-roaming: if a generic WIFI client C roams from node A to B, A adds a global
-entry for C without adding any WIFI flag. The latter will be set only later,
-once A has received C's advertisement from B. In this time period the
-AP-Isolation (if enabled) would not correctly work since C is not marked as
-WIFI, so allowing it to communicate with other WIFI clients.
+Sry, but disapproved.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
-
-v3:
-- rebased on top of latest master + "batman-adv: return proper value in case of
-  hash_add failure" there the latter patch must be merged before applying this
-  one.
-
-
- translation-table.c |   36 ++++++++++++++++++++++++++++--------
- 1 file changed, 28 insertions(+), 8 deletions(-)
-
-diff --git a/translation-table.c b/translation-table.c
-index eb352db..b257067 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -501,21 +501,30 @@ batadv_tt_local_set_pending(struct batadv_priv *bat_priv,
- 		   tt_local_entry->common.addr, message);
- }
- 
-+static void __batadv_tt_local_remove(struct batadv_priv *bat_priv,
-+				     struct batadv_tt_local_entry *tt_local,
-+				     const char *message, bool roaming)
-+{
-+	uint16_t flags;
-+
-+	flags = BATADV_TT_CLIENT_DEL;
-+	if (roaming)
-+		flags |= BATADV_TT_CLIENT_ROAM;
-+
-+	batadv_tt_local_set_pending(bat_priv, tt_local, flags, message);
-+}
-+
- void batadv_tt_local_remove(struct batadv_priv *bat_priv, const uint8_t *addr,
- 			    const char *message, bool roaming)
- {
- 	struct batadv_tt_local_entry *tt_local_entry = NULL;
--	uint16_t flags;
- 
- 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr);
- 	if (!tt_local_entry)
- 		goto out;
- 
--	flags = BATADV_TT_CLIENT_DEL;
--	if (roaming)
--		flags |= BATADV_TT_CLIENT_ROAM;
-+	__batadv_tt_local_remove(bat_priv, tt_local_entry, message, roaming);
- 
--	batadv_tt_local_set_pending(bat_priv, tt_local_entry, flags, message);
- out:
- 	if (tt_local_entry)
- 		batadv_tt_local_entry_free_ref(tt_local_entry);
-@@ -722,9 +731,11 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
- 			 uint8_t ttvn)
- {
- 	struct batadv_tt_global_entry *tt_global_entry = NULL;
-+	struct batadv_tt_local_entry *tt_local_entry = NULL;
- 	int ret = 0;
- 	int hash_added;
- 	struct batadv_tt_common_entry *common;
-+	uint16_t wifi_flag;
- 
- 	tt_global_entry = batadv_tt_global_hash_find(bat_priv, tt_addr);
- 
-@@ -791,13 +802,22 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
- 	ret = 1;
- 
- out_remove:
-+	tt_local_entry = batadv_tt_local_hash_find(bat_priv, tt_addr);
-+	if (!tt_local_entry)
-+		goto out;
-+
-+	wifi_flag = tt_local_entry->common.flags & BATADV_TT_CLIENT_WIFI;
-+	tt_global_entry->common.flags |= wifi_flag;
-+
- 	/* remove address from local hash if present */
--	batadv_tt_local_remove(bat_priv, tt_global_entry->common.addr,
--			       "global tt received",
--			       flags & BATADV_TT_CLIENT_ROAM);
-+	__batadv_tt_local_remove(bat_priv, tt_local_entry, "global tt received",
-+				 flags & BATADV_TT_CLIENT_ROAM);
-+
- out:
- 	if (tt_global_entry)
- 		batadv_tt_global_entry_free_ref(tt_global_entry);
-+	if (tt_local_entry)
-+		batadv_tt_local_entry_free_ref(tt_local_entry);
- 	return ret;
- }
- 
--- 
-1.7.9.4
-
+Kind regards,
+	Sven
