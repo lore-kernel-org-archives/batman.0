@@ -1,15 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 12 Aug 2012 16:43:37 +0200
-Message-ID: <3916161.gilKzHejHU@sven-desktop.home.narfation.org>
-In-Reply-To: <1344606392-27130-1-git-send-email-martin@hundeboll.net>
-References: <1344606392-27130-1-git-send-email-martin@hundeboll.net>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun, 12 Aug 2012 18:10:52 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20120812161052.GA1919@pandem0nium>
+References: <CAHD-aqJubnMBSuyjyS+aOXnS8FSQe=w8Aj2-SnaohNqXSs_xJg@mail.gmail.com>
+ <20120807104651.GA25568@pandem0nium>
+ <CAHD-aqLExJDuKfYE+TBtruth=YFwbH4PhzYfgWje6N+pxj93hQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1468630.3NjUqLhgb8";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unused hlist macros
-	in compat.h
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
+Content-Disposition: inline
+In-Reply-To: <CAHD-aqLExJDuKfYE+TBtruth=YFwbH4PhzYfgWje6N+pxj93hQ@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] propagate gw_mode over two mesh linked by
+ ethernet with bla2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,63 +26,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart1468630.3NjUqLhgb8
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
 
-On Friday 10 August 2012 15:46:32 Martin Hundeb=C3=B8ll wrote:
-> Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
-> ---
->  compat.h | 8 --------
->  1 file changed, 8 deletions(-)
->=20
-> diff --git a/compat.h b/compat.h
-> index 13253dd..8ac22a8 100644
-> --- a/compat.h
-> +++ b/compat.h
-> @@ -67,14 +67,6 @@
->=20
->  #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 34)
->=20
-> -#define hlist_first_rcu(head) (*((struct hlist_node **)(&(head)->fir=
-st)))
-> -#define hlist_next_rcu(node) (*((struct hlist_node **)(&(node)->next=
-)))
-> -
-> -#define __hlist_for_each_rcu(pos, head) \
-> -=09for (pos =3D rcu_dereference(hlist_first_rcu(head)); \
-> -=09     pos && ({ prefetch(pos->next); 1; }); \
-> -=09     pos =3D rcu_dereference(hlist_next_rcu(pos)))
-> -
->  #define rcu_dereference_protected(p, c) (p)
->=20
->  #endif /* < KERNEL_VERSION(2, 6, 34) */
+Hey Guido,
 
-Acked-by: Sven Eckelmann <sven@narfation.org>
+On Fri, Aug 10, 2012 at 04:27:13PM -0300, Gui Iribarren wrote:
+> Case closed: i had gone lost in a myriad of different openwrt
+> revisions, compiled binaries, and patches, so I unknowingly "updated"
+> that part of the network to a more recent openwrt version, but that
+> didn't have the "check incoming type for bla" patch.
+> So it was a simple regression on my part. I just reflashed those
+> routers to a firmware confirmed to include the patch, and everything
+> is working again. (bla2+gw_mode+vlan)
+> Thanks a lot Marek for pushing that patch to openwrt batman-adv stable
+> package, it helped a lot in getting things straight :)
+>=20
 
-Kind regards,
-=09Sven
---nextPart1468630.3NjUqLhgb8
+OK, thanks for letting us know!
+> > Feel free to update the Wiki, although I'd suggest to add an FAQ to the
+> > user page and not on the technical documentation. :)
+>=20
+> Done, added two entries to the FAQ rewording this thread :)
+>=20
+
+Looks good, thanks for your contribution. :)
+
+Cheers,
+	Simon
+
+--GvXjxJ+pjyke8COw
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJQJ8EZAAoJEF2HCgfBJntGpogP/AmgtTB5UuZenoIl/rYycZuI
-Y+8FPjc0QyLEjsdwFSfqr7Bm7wFhbExPSLB2nlz8QoRQ0N7W5ObgHdB13DGFbU8N
-bAqXM23Eg5XOezLfWsfQBF97AQ/Hboosgja6Vz0ygMg/Vp2t+WMQAXHjQ5BAoLLG
-XtwcKqq3SW0IKgAzUFx8jYrD/XTtbpK+5artDdHrK2e2FX/79HatnExtwo3ri2HV
-pvi5t0AQ/3YmqEMULP9QFUPV1mFD6/PyzbyxaRmBopusXi3IM7zBHE9eb1oqYZ+j
-kShxIy5Wi7DQBKd++y1FZJeUwNTsJXwTDG1F6RN+59dZoSjJ6rjzqQNNa6fhnzXm
-VjVoENGg6otS8A99uqrQD7GKUWv13aKx4H0kjH4cYvyFGDfSrmoelhnzINjnjIo4
-AZ7mSJiCOCMXwjAQBT6j/hg01GUeKYK7G8QFBrnMkjJsiqbqGnjUL9qRhkzi8LBD
-9igQdI1PULHUIoyqWP7Rsd4bE/DKC3OE+BC6v7VLVmGuKCOL9ntYEbGlyFx3uGPu
-4MNsUbuBwzLpK/ywD4W4DpzkMFyvcgC5hlt8lmKlHgF9kL/PQvo/S/bwWn3SMVje
-Ix1LFhyuOyH0kl48iA5vIvTnEpB9ETS5BralXdnU3sEGsX/wOEm5sFsInETmyZAy
-brZU9nfDSxHvUTUNt6Xb
-=hI5R
+iEYEARECAAYFAlAn1YwACgkQrzg/fFk7axZaQgCePWMSnAQ19k1ZRWBDrKHCElQ7
+inIAnj7T5eTGLjIvUjhqqDjt+Izull2R
+=wvAz
 -----END PGP SIGNATURE-----
 
---nextPart1468630.3NjUqLhgb8--
-
+--GvXjxJ+pjyke8COw--
