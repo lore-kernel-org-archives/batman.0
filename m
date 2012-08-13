@@ -1,13 +1,11 @@
-Return-Path: <martin@hundeboll.net>
-Date: Mon, 13 Aug 2012 16:22:26 +0200
-From: Martin =?UTF-8?B?SHVuZGViw7hsbA==?= <martin@hundeboll.net>
-Message-ID: <20120813162226.78e1b8ac@hundeboll.net>
-In-Reply-To: <1344867287.41025.YahooMailClassic@web162705.mail.bf1.yahoo.com>
-References: <1344867287.41025.YahooMailClassic@web162705.mail.bf1.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] difficulty with audio packets
+Return-Path: <emunicio@gmail.com>
+MIME-Version: 1.0
+From: Esteban Municio <emunicio@gmail.com>
+Date: Mon, 13 Aug 2012 18:18:43 -0500
+Message-ID: <CAMVTf1gPjH6GiNy1fnoFCE3-qx42NBTZSgFafgTGBsaOW3tEcA@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Change metric and priorize links with the best
+	Bandwidth
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,23 +19,34 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Adam,
+Hi all
 
-On Mon, 13 Aug 2012 07:14:47 -0700 (PDT)
-adam wiz <gibsonsg91921@yahoo.com> wrote:
+I'm asking myself if should be possible change the actual metric(TQ)
+in batman-adv or if there is a tool to configurte it.
 
-> I am having a strange issue with my mesh. I have four access points
-> running Batman-advanced and it works well when testing simple Python
-> socket programming scripts with Android phones connected to separate
-> access points. However, when I try to send audio packets, it won't
-> work to the same success. My test Android app has the recipient
-> device's IP address hardcoded. The recipient phone can successfully
-> call itself, but the other phone connected to a different access
-> point can't call the destination. The buffer size is 2048 bytes. Is
-> this too large a buffer? What would cause this problem?
+We are deploying a rural mesh network where the nodes generally will
+be static in the same place, but maybe the links beetwen the nodes
+will have a unnestable bandwidth.
 
-You should try to follow the packets with "batctl -m bat0 td" and
-"tcpdump -i wlan0" and see if they actually make into and through the
-mesh.
+So we are looking for what protocol (with any plugin) is more
+efficient for our network.
 
-// Martin
+Batman-adv have TQ like metric, but we would like that the nodes route
+the traffic priorizing the links with best bandwith available instead
+the links with best QoS. That is because finally, all the links tend
+to have ETX=1 at the expense of reduce de bandwidth(reducing the
+modulation and codification scheme in order to reduce looses), so the
+nodes route always for the shortest path...
+
+Is there any solution for this?Do you recommend us change to another
+mesh protocol(OLSR+plugin) or another "static" protocol(ej: OSPF)? It
+is possible configurate batman-adv to get the fastest route instead
+the safer?
+Or maybe I am not understanding something...Am I proposing a fool thing?
+
+Thanks you
+
+Regards
+
+-- 
+Esteban
