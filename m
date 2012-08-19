@@ -1,14 +1,12 @@
-Return-Path: <nicoechaniz@codigosur.org>
-Message-ID: <5029A55A.7060500@codigosur.org>
-Date: Mon, 13 Aug 2012 22:09:46 -0300
-From: =?ISO-8859-1?Q?Nicol=E1s_Ech=E1niz?= <nicoechaniz@codigosur.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 19 Aug 2012 09:29:53 +0200
+Message-Id: <1345361393-8759-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-References: <CAMVTf1gPjH6GiNy1fnoFCE3-qx42NBTZSgFafgTGBsaOW3tEcA@mail.gmail.com>
-In-Reply-To: <CAMVTf1gPjH6GiNy1fnoFCE3-qx42NBTZSgFafgTGBsaOW3tEcA@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Change metric and priorize links with the best
- Bandwidth
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [RFC] batman-adv: Set special lockdep classes to
+	avoid lockdep warning
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,55 +18,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On 08/13/2012 08:18 PM, Esteban Municio wrote:
-> Hi all
->=20
-> I'm asking myself if should be possible change the actual metric(TQ)
-> in batman-adv or if there is a tool to configurte it.
->=20
-> We are deploying a rural mesh network where the nodes generally will
-> be static in the same place, but maybe the links beetwen the nodes
-> will have a unnestable bandwidth.
->=20
-> So we are looking for what protocol (with any plugin) is more
-> efficient for our network.
->=20
-> Batman-adv have TQ like metric, but we would like that the nodes route
-> the traffic priorizing the links with best bandwith available instead
-> the links with best QoS. That is because finally, all the links tend
-> to have ETX=3D1 at the expense of reduce de bandwidth(reducing the
-> modulation and codification scheme in order to reduce looses), so the
-> nodes route always for the shortest path...
->=20
-> Is there any solution for this?Do you recommend us change to another
-> mesh protocol(OLSR+plugin) or another "static" protocol(ej: OSPF)? It
-> is possible configurate batman-adv to get the fastest route instead
-> the safer?
-> Or maybe I am not understanding something...Am I proposing a fool thing?
+[text will be added after I am awake... maybe]
 
-At QuintanaLibre we experimented quite a bit with this and came to the
-conclusion that setting a high multicast rate is a good solution to
-"force" batman to only use good (in terms of bandwidth) links.
+[Should be fix the problem found in bug 162... formerly known as 161. code
+stolen from macvlan... this is just a reimplementation of a solution proposed
+by Simon Wunderlich]
 
-If you set the mcast_rate high, for example (OpenWRT):
+Reported-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ soft-interface.c |   29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-config 'wifi-iface'
-	option 'device' 'radio0'
-	option 'mcast_rate' '54000'
+diff --git a/soft-interface.c b/soft-interface.c
+index 1aee7db..588c6f6 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -344,7 +344,36 @@ out:
+ 	return;
+ }
+ 
++/*
++ * batman-adv network devices have devices nesting below it and are a special
++ * "super class" of normal network devices; split their locks off into a
++ * separate class since they always nest.
++ */
++static struct lock_class_key batadv_netdev_xmit_lock_key;
++static struct lock_class_key batadv_netdev_addr_lock_key;
++
++static void batadv_set_lockdep_class_one(struct net_device *dev,
++					 struct netdev_queue *txq,
++					 void *_unused)
++{
++	lockdep_set_class(&txq->_xmit_lock, &batadv_netdev_xmit_lock_key);
++}
++
++static void batadv_set_lockdep_class(struct net_device *dev)
++{
++	lockdep_set_class(&dev->addr_list_lock, &batadv_netdev_addr_lock_key);
++	netdev_for_each_tx_queue(dev, batadv_set_lockdep_class_one, NULL);
++}
++
++static int batadv_softif_init(struct net_device *dev)
++{
++	batadv_set_lockdep_class(dev);
++
++	return 0;
++}
++
+ static const struct net_device_ops batadv_netdev_ops = {
++	.ndo_init = batadv_softif_init,
+ 	.ndo_open = batadv_interface_open,
+ 	.ndo_stop = batadv_interface_release,
+ 	.ndo_get_stats = batadv_interface_stats,
+-- 
+1.7.10.4
 
-then low bandwidth routes will effectively become invisible to batman.
-
-We are using this setup in a semi-rural network, 3.5Km wide with 15
-active nodes (as of today) and it works very well.
-
-By doing this you loose redundancy, so if you have a node with only one
-high bandwidth link and that link fails, the node won't have other
-routes to use. In our experience this is OK because the alternative
-low-bandwidth routes that are available if mcast_rate is very low are
-not of much real use.
-
-
-Cheers,
-NicoEch=E1niz
