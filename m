@@ -1,14 +1,16 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 20 Aug 2012 01:22:39 +0200
-Message-Id: <1345418559-27150-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1345361393-8759-1-git-send-email-sven@narfation.org>
+Date: Mon, 20 Aug 2012 09:00:14 +0200
+Message-ID: <7478673.Y7b8uEpliJ@bentobox>
+In-Reply-To: <1345418559-27150-1-git-send-email-sven@narfation.org>
 References: <1345361393-8759-1-git-send-email-sven@narfation.org>
+ <1345418559-27150-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Set special lockdep classes to
-	avoid lockdep warning
+Content-Type: multipart/signed; boundary="nextPart149497974.BnzkSS34XK";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Set special lockdep classes
+	to avoid lockdep warning
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,63 +24,40 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Transmissions over batman-adv devices always start another nested transmission
-over devices attached to the batman-adv interface. These devices usually use
-the ethernet lockdep class for the tx_queue lock which is also set by default
-for all batman-adv devices. Lockdep will detect a nested locking attempt of two
-locks with the same class and warn about a possible deadlock.
 
-This is the default and expected behavior and should not alarm the locking
-correctness prove mechanism. Therefore, the locks for all netdevice specific
-lock get a special batman-adv lock class to avoid a false positive for each
-transmission.
+--nextPart149497974.BnzkSS34XK
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Reported-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- soft-interface.c |   22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+On Monday 20 August 2012 01:22:39 Sven Eckelmann wrote:
 
-diff --git a/soft-interface.c b/soft-interface.c
-index 1aee7db..513d50a 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -354,6 +354,27 @@ static const struct net_device_ops batadv_netdev_ops = {
- 	.ndo_validate_addr = eth_validate_addr
- };
- 
-+/*
-+ * batman-adv network devices have devices nesting below it and are a special
-+ * "super class" of normal network devices; split their locks off into a
-+ * separate class since they always nest.
-+ */
-+static struct lock_class_key batadv_netdev_xmit_lock_key;
-+static struct lock_class_key batadv_netdev_addr_lock_key;
-+
-+static void batadv_set_lockdep_class_one(struct net_device *dev,
-+					 struct netdev_queue *txq,
-+					 void *_unused)
-+{
-+	lockdep_set_class(&txq->_xmit_lock, &batadv_netdev_xmit_lock_key);
-+}
-+
-+static void batadv_set_lockdep_class(struct net_device *dev)
-+{
-+	lockdep_set_class(&dev->addr_list_lock, &batadv_netdev_addr_lock_key);
-+	netdev_for_each_tx_queue(dev, batadv_set_lockdep_class_one, NULL);
-+}
-+
- static void batadv_interface_setup(struct net_device *dev)
- {
- 	struct batadv_priv *priv = netdev_priv(dev);
-@@ -363,6 +384,7 @@ static void batadv_interface_setup(struct net_device *dev)
- 	dev->netdev_ops = &batadv_netdev_ops;
- 	dev->destructor = free_netdev;
- 	dev->tx_queue_len = 0;
-+	batadv_set_lockdep_class(dev);
- 
- 	/* can't call min_mtu, because the needed variables
- 	 * have not been initialized yet
--- 
-1.7.10.4
+> lock get a special batman-adv lock class to avoid a false positive for each
+
+The first "lock" should have been "queues"
+
+Kind regards,
+	Sven
+--nextPart149497974.BnzkSS34XK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAABCgAGBQJQMeB+AAoJEF2HCgfBJntGBOgQAIhtXwloaAFm45VhNDuNUuMx
+cmf00/gIsbxmj2WGqayUBSbWR64bzr5IJxibI2UIJqj3nwoYoKnovBK/yvYWgbGd
+qF1Nxhz2PJJnLNCvkmybCRJX/H/PlsApOZXSwlBbwz1ol26HOCXN4GR+EJzcakpH
+r4jAVKiwRCggJyTnvHjCqQELMiOJX8ACujbN1D1BiGOY3OO95CW2H50ISi3Xkbez
+CIXWt1WFyaiwdkS9Fwy32KskjJfbSpVWDkTGkNcNHo5uXMoFL3EiW1lYdtN219Nx
+l6gBgtsdVzOnk6RboOOZnHAbltCXKch3LRh8PJCu8nn8Z0Zwe2nIfYeLPwazpxbp
+hbQbS439xvDOX9NhMfU5FPHwAhAlO/iQwWR8fqRsglcq2HKiRhIGJgStEzXL/WL3
+kokyAa4ZD3TlhXYR6LIWvNl/r2+O12jdZGQG7ckFRWnKGbgU+t3Kb933DhU8Co0y
+MJCS2gqclnyu7LDbQsi3sQ278+FfKupTKxv2RtLcKzKu4zndaMjvPBYYk2mAYd+t
+oY+E2nE6kADwXwghwqzEkBc463lAM0DYaC4xi1mbUZZu0orm0Qk4I+3aPGNCncOm
+6CVtizy0fZgKbUKBNUT0Q+dgPGwrc1SzZDu5J08/gFY57+52SEoEztdYR9fDYR3F
+P/TsiUcdvKY8GEWjAPSH
+=c5N4
+-----END PGP SIGNATURE-----
+
+--nextPart149497974.BnzkSS34XK--
 
