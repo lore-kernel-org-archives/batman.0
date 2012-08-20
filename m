@@ -1,14 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 20 Aug 2012 09:03:59 +0200
-Message-Id: <1345446239-5115-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1345418559-27150-1-git-send-email-sven@narfation.org>
-References: <1345418559-27150-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Set special lockdep classes to
-	avoid lockdep warning
+Date: Mon, 20 Aug 2012 10:26:47 +0200
+Message-Id: <1345451209-8898-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Remove extra check in
+	batadv_bit_get_packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,65 +17,53 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Transmissions over batman-adv devices always start another nested transmission
-over devices attached to the batman-adv interface. These devices usually use
-the ethernet lockdep class for the tx_queue lock which is also set by default
-for all batman-adv devices. Lockdep will detect a nested locking attempt of two
-locks with the same class and warn about a possible deadlock.
+batadv_bit_get_packet checks for all common situations before it decides that
+the new received packet indicates that the host was restarted. This extra
+condition check at the end of the function is not necessary because this
+condition is always true.
 
-This is the default and expected behavior and should not alarm the locking
-correctness prove mechanism. Therefore, the locks for all netdevice specific tx
-queues get a special batman-adv lock class to avoid a false positive for each
-transmission.
+This patch addresses Coverity #712296: Logically dead code
 
-Reported-by: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-* fixed comment style
-* fixed commit message
+ bitarray.c |   23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
 
- soft-interface.c |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-
-diff --git a/soft-interface.c b/soft-interface.c
-index 1aee7db..909ab54 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -354,6 +354,26 @@ static const struct net_device_ops batadv_netdev_ops = {
- 	.ndo_validate_addr = eth_validate_addr
- };
+diff --git a/bitarray.c b/bitarray.c
+index aea174c..5453b17 100644
+--- a/bitarray.c
++++ b/bitarray.c
+@@ -79,20 +79,17 @@ int batadv_bit_get_packet(void *priv, unsigned long *seq_bits,
+ 	 * or the old packet got delayed somewhere in the network. The
+ 	 * packet should be dropped without calling this function if the
+ 	 * seqno window is protected.
++	 *
++	 * seq_num_diff <= -BATADV_TQ_LOCAL_WINDOW_SIZE
++	 * or
++	 * seq_num_diff >= BATADV_EXPECTED_SEQNO_RANGE
+ 	 */
+-	if (seq_num_diff <= -BATADV_TQ_LOCAL_WINDOW_SIZE ||
+-	    seq_num_diff >= BATADV_EXPECTED_SEQNO_RANGE) {
++	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++		   "Other host probably restarted!\n");
  
-+/* batman-adv network devices have devices nesting below it and are a special
-+ * "super class" of normal network devices; split their locks off into a
-+ * separate class since they always nest.
-+ */
-+static struct lock_class_key batadv_netdev_xmit_lock_key;
-+static struct lock_class_key batadv_netdev_addr_lock_key;
-+
-+static void batadv_set_lockdep_class_one(struct net_device *dev,
-+					 struct netdev_queue *txq,
-+					 void *_unused)
-+{
-+	lockdep_set_class(&txq->_xmit_lock, &batadv_netdev_xmit_lock_key);
-+}
-+
-+static void batadv_set_lockdep_class(struct net_device *dev)
-+{
-+	lockdep_set_class(&dev->addr_list_lock, &batadv_netdev_addr_lock_key);
-+	netdev_for_each_tx_queue(dev, batadv_set_lockdep_class_one, NULL);
-+}
-+
- static void batadv_interface_setup(struct net_device *dev)
- {
- 	struct batadv_priv *priv = netdev_priv(dev);
-@@ -363,6 +383,7 @@ static void batadv_interface_setup(struct net_device *dev)
- 	dev->netdev_ops = &batadv_netdev_ops;
- 	dev->destructor = free_netdev;
- 	dev->tx_queue_len = 0;
-+	batadv_set_lockdep_class(dev);
+-		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+-			   "Other host probably restarted!\n");
++	bitmap_zero(seq_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
++	if (set_mark)
++		batadv_set_bit(seq_bits, 0);
  
- 	/* can't call min_mtu, because the needed variables
- 	 * have not been initialized yet
+-		bitmap_zero(seq_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
+-		if (set_mark)
+-			batadv_set_bit(seq_bits, 0);
+-
+-		return 1;
+-	}
+-
+-	/* never reached */
+-	return 0;
++	return 1;
+ }
 -- 
 1.7.10.4
 
