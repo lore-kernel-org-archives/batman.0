@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 22 Aug 2012 01:36:10 +0200
-References: <1343602203-11584-1-git-send-email-ordex@autistici.org>
- <1343747955-5657-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1343747955-5657-1-git-send-email-ordex@autistici.org>
+Date: Wed, 22 Aug 2012 01:46:55 +0200
+References: <1344182989-25754-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1344182989-25754-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201208220136.10267.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: use check_unicast_packet()
-	in recv_roam_adv()
+Message-Id: <201208220146.55567.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: split hard_iface struct for
+	each routing protocol
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,24 +23,15 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, July 31, 2012 17:19:15 Antonio Quartulli wrote:
-> To avoid code duplication and to simplify further changes,
-> check_unicast_packet() is now used in recv_roam_adv() to check for not
-> well formed packets and so discard them.
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+On Sunday, August 05, 2012 18:09:49 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 > ---
-> 
-> v2
-> - coment rearrangement
-> v3
-> - fixed sizeof argument (use the variable name instead of the type, if
-> possible)
-> 
->  routing.c |   15 +--------------
->  1 file changed, 1 insertion(+), 14 deletions(-)
+>  bat_iv_ogm.c     |   43 ++++++++++++++++++++++++-------------------
+>  hard-interface.c |    4 ++--
+>  types.h          |   10 +++++++---
+>  3 files changed, 33 insertions(+), 24 deletions(-)
 
-Applied in revision 2ce4b9b.
+Applied in revision d174d14.
 
-Thanks,
+Regards,
 Marek
