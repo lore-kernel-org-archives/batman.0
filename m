@@ -1,9 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 22 Aug 2012 00:40:05 +0200
-Message-Id: <1345588805-27249-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: swap lines to get in sync with
-	networking branch
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 22 Aug 2012 01:32:32 +0200
+References: <1343133696-4981-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1343133696-4981-1-git-send-email-lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201208220132.32552.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: tcpdump - print all warnings and
+	errors on stderr
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,36 +21,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-due to a merge conflict resolution handled differently in the networking branch,
-we now have a small divergence between our next branch and what we already have
-in net/batman-adv/ in the kernel. Since we cannot ask the kernel guys to "swap
-two lines", with this patch we fix the problem in our repo
+On Tuesday, July 24, 2012 14:41:36 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  tcpdump.c |   28 ++++++++++++++--------------
+>  1 files changed, 14 insertions(+), 14 deletions(-)
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
+Applied in revision 056bdb3.
 
-- this patch is for next
-
-
- soft-interface.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/soft-interface.c b/soft-interface.c
-index 1aee7db..7b683e0 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -277,8 +277,8 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 	struct vlan_ethhdr *vhdr;
- 	struct batadv_header *batadv_header = (struct batadv_header *)skb->data;
- 	short vid __maybe_unused = -1;
--	bool is_bcast;
- 	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
-+	bool is_bcast;
- 
- 	is_bcast = (batadv_header->packet_type == BATADV_BCAST);
- 
--- 
-1.7.9.4
-
+Regards,
+Marek
