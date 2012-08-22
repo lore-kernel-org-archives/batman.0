@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 22 Aug 2012 01:49:59 +0200
-References: <1344183045-25826-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1344183045-25826-1-git-send-email-lindner_marek@yahoo.de>
+Date: Wed, 22 Aug 2012 02:02:03 +0200
+References: <1344183197-25945-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1344183197-25945-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201208220150.00024.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: separate
-	BATADV_ATTR_HIF_UINT sysfs name from hard-iface variable
+Message-Id: <201208220202.03509.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: consolidate duplicated
+	primary_if checking code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,13 +23,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sunday, August 05, 2012 18:10:45 Marek Lindner wrote:
+On Sunday, August 05, 2012 18:13:17 Marek Lindner wrote:
 > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 > ---
->  sysfs.c |   15 ++++++++-------
->  1 files changed, 8 insertions(+), 7 deletions(-)
+>  bridge_loop_avoidance.c |   36 ++++++------------------------------
+>  gateway_client.c        |   19 ++++---------------
+>  main.c                  |   29 +++++++++++++++++++++++++++++
+>  main.h                  |    2 ++
+>  originator.c            |   19 +++----------------
+>  translation-table.c     |   36 ++++++------------------------------
+>  6 files changed, 50 insertions(+), 91 deletions(-)
 
-Applied in revision afffd55.
+Applied in revision 6539338.
 
 Regards,
 Marek
