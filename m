@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 23 Aug 2012 15:10:16 +0200
-Message-Id: <1345727427-20805-8-git-send-email-ordex@autistici.org>
+Date: Thu, 23 Aug 2012 15:10:13 +0200
+Message-Id: <1345727427-20805-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1345727427-20805-1-git-send-email-ordex@autistici.org>
 References: <1345727427-20805-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 07/18] batman-adv: add reference counting for
-	type batadv_tt_orig_list_entry
+Subject: [B.A.T.M.A.N.] [PATCH 04/18] batman-adv: rename bridge loop
+	avoidance claim types
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,166 +18,113 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-The batadv_tt_orig_list_entry structure didn't have any refcounting mechanism so
-far. This patch introduces it and makes the structure being usable in much more
-complex context.
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
 
+for consistency reasons within the code and with the documentation,
+we should always call it "claim" and "unclaim".
+
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/translation-table.c |   77 +++++++++++++++++++++++++-----------
- net/batman-adv/types.h             |    1 +
- 2 files changed, 54 insertions(+), 24 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c |   18 +++++++++---------
+ net/batman-adv/packet.h                |    4 ++--
+ 2 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 99dd8f7..eb8490e 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -152,6 +152,8 @@ static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
- static void
- batadv_tt_orig_list_entry_free_ref(struct batadv_tt_orig_list_entry *orig_entry)
- {
-+	if (!atomic_dec_and_test(&orig_entry->refcount))
-+		return;
- 	/* to avoid race conditions, immediately decrease the tt counter */
- 	atomic_dec(&orig_entry->orig_node->tt_size);
- 	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
-@@ -625,50 +627,82 @@ static void batadv_tt_changes_list_free(struct batadv_priv *bat_priv)
- 	spin_unlock_bh(&bat_priv->tt_changes_list_lock);
- }
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 5f1ad80..84dd841 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -295,7 +295,7 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
  
-+/* retrieves the orig_tt_list_entry belonging to orig_node from the
-+ * batadv_tt_global_entry list
-+ *
-+ * returns it with an increased refcounter, NULL if not found
-+ */
-+static struct batadv_tt_orig_list_entry *
-+batadv_tt_global_orig_entry_find(const struct batadv_tt_global_entry *entry,
-+				 const struct batadv_orig_node *orig_node)
-+{
-+	struct batadv_tt_orig_list_entry *tmp_orig_entry, *orig_entry = NULL;
-+	const struct hlist_head *head;
-+	struct hlist_node *node;
-+
-+	rcu_read_lock();
-+	head = &entry->orig_list;
-+	hlist_for_each_entry_rcu(tmp_orig_entry, node, head, list) {
-+		if (tmp_orig_entry->orig_node != orig_node)
-+			continue;
-+		if (!atomic_inc_not_zero(&tmp_orig_entry->refcount))
-+			continue;
-+
-+		orig_entry = tmp_orig_entry;
-+		break;
-+	}
-+	rcu_read_unlock();
-+
-+	return orig_entry;
-+}
-+
- /* find out if an orig_node is already in the list of a tt_global_entry.
-- * returns 1 if found, 0 otherwise
-+ * returns true if found, false otherwise
-  */
- static bool
- batadv_tt_global_entry_has_orig(const struct batadv_tt_global_entry *entry,
- 				const struct batadv_orig_node *orig_node)
- {
--	struct batadv_tt_orig_list_entry *tmp_orig_entry;
--	const struct hlist_head *head;
--	struct hlist_node *node;
-+	struct batadv_tt_orig_list_entry *orig_entry;
- 	bool found = false;
+ 	/* now we pretend that the client would have sent this ... */
+ 	switch (claimtype) {
+-	case BATADV_CLAIM_TYPE_ADD:
++	case BATADV_CLAIM_TYPE_CLAIM:
+ 		/* normal claim frame
+ 		 * set Ethernet SRC to the clients mac
+ 		 */
+@@ -303,7 +303,7 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
+ 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
+ 			   "bla_send_claim(): CLAIM %pM on vid %d\n", mac, vid);
+ 		break;
+-	case BATADV_CLAIM_TYPE_DEL:
++	case BATADV_CLAIM_TYPE_UNCLAIM:
+ 		/* unclaim frame
+ 		 * set HW SRC to the clients mac
+ 		 */
+@@ -468,7 +468,7 @@ static void batadv_bla_answer_request(struct batadv_priv *bat_priv,
+ 				continue;
  
--	rcu_read_lock();
--	head = &entry->orig_list;
--	hlist_for_each_entry_rcu(tmp_orig_entry, node, head, list) {
--		if (tmp_orig_entry->orig_node == orig_node) {
--			found = true;
--			break;
--		}
-+	orig_entry = batadv_tt_global_orig_entry_find(entry, orig_node);
-+	if (orig_entry) {
-+		found = true;
-+		batadv_tt_orig_list_entry_free_ref(orig_entry);
- 	}
--	rcu_read_unlock();
-+
- 	return found;
- }
- 
- static void
--batadv_tt_global_add_orig_entry(struct batadv_tt_global_entry *tt_global_entry,
-+batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
- 				struct batadv_orig_node *orig_node, int ttvn)
- {
- 	struct batadv_tt_orig_list_entry *orig_entry;
- 
-+	orig_entry = batadv_tt_global_orig_entry_find(tt_global, orig_node);
-+	if (orig_entry)
-+		goto out;
-+
- 	orig_entry = kzalloc(sizeof(*orig_entry), GFP_ATOMIC);
- 	if (!orig_entry)
--		return;
-+		goto out;
- 
- 	INIT_HLIST_NODE(&orig_entry->list);
- 	atomic_inc(&orig_node->refcount);
- 	atomic_inc(&orig_node->tt_size);
- 	orig_entry->orig_node = orig_node;
- 	orig_entry->ttvn = ttvn;
-+	atomic_set(&orig_entry->refcount, 2);
- 
--	spin_lock_bh(&tt_global_entry->list_lock);
-+	spin_lock_bh(&tt_global->list_lock);
- 	hlist_add_head_rcu(&orig_entry->list,
--			   &tt_global_entry->orig_list);
--	spin_unlock_bh(&tt_global_entry->list_lock);
-+			   &tt_global->orig_list);
-+	spin_unlock_bh(&tt_global->list_lock);
-+out:
-+	if (orig_entry)
-+		batadv_tt_orig_list_entry_free_ref(orig_entry);
- }
- 
- /* caller must hold orig_node refcount */
-@@ -709,9 +743,6 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
- 			batadv_tt_global_entry_free_ref(tt_global_entry);
- 			goto out_remove;
+ 			batadv_bla_send_claim(bat_priv, claim->addr, claim->vid,
+-					      BATADV_CLAIM_TYPE_ADD);
++					      BATADV_CLAIM_TYPE_CLAIM);
  		}
--
--		batadv_tt_global_add_orig_entry(tt_global_entry, orig_node,
--						ttvn);
- 	} else {
- 		/* there is already a global entry, use this one. */
- 
-@@ -728,11 +759,9 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
- 			tt_global_entry->roam_at = 0;
- 		}
- 
--		if (!batadv_tt_global_entry_has_orig(tt_global_entry,
--						     orig_node))
--			batadv_tt_global_add_orig_entry(tt_global_entry,
--							orig_node, ttvn);
+ 		rcu_read_unlock();
  	}
-+	/* add the new orig_entry (if needed) */
-+	batadv_tt_global_orig_entry_add(tt_global_entry, orig_node, ttvn);
+@@ -703,7 +703,7 @@ static int batadv_handle_unclaim(struct batadv_priv *bat_priv,
+ 	if (primary_if && batadv_compare_eth(backbone_addr,
+ 					     primary_if->net_dev->dev_addr))
+ 		batadv_bla_send_claim(bat_priv, claim_addr, vid,
+-				      BATADV_CLAIM_TYPE_DEL);
++				      BATADV_CLAIM_TYPE_UNCLAIM);
  
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Creating new global tt entry: %pM (via %pM)\n",
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 7812b6e..664ef81 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -282,6 +282,7 @@ struct batadv_tt_global_entry {
- struct batadv_tt_orig_list_entry {
- 	struct batadv_orig_node *orig_node;
- 	uint8_t ttvn;
-+	atomic_t refcount;
- 	struct rcu_head rcu;
- 	struct hlist_node list;
+ 	backbone_gw = batadv_backbone_hash_find(bat_priv, backbone_addr, vid);
+ 
+@@ -739,7 +739,7 @@ static int batadv_handle_claim(struct batadv_priv *bat_priv,
+ 	batadv_bla_add_claim(bat_priv, claim_addr, vid, backbone_gw);
+ 	if (batadv_compare_eth(backbone_addr, primary_if->net_dev->dev_addr))
+ 		batadv_bla_send_claim(bat_priv, claim_addr, vid,
+-				      BATADV_CLAIM_TYPE_ADD);
++				      BATADV_CLAIM_TYPE_CLAIM);
+ 
+ 	/* TODO: we could call something like tt_local_del() here. */
+ 
+@@ -784,12 +784,12 @@ static int batadv_check_claim_group(struct batadv_priv *bat_priv,
+ 	 * otherwise assume it is in the hw_src
+ 	 */
+ 	switch (bla_dst->type) {
+-	case BATADV_CLAIM_TYPE_ADD:
++	case BATADV_CLAIM_TYPE_CLAIM:
+ 		backbone_addr = hw_src;
+ 		break;
+ 	case BATADV_CLAIM_TYPE_REQUEST:
+ 	case BATADV_CLAIM_TYPE_ANNOUNCE:
+-	case BATADV_CLAIM_TYPE_DEL:
++	case BATADV_CLAIM_TYPE_UNCLAIM:
+ 		backbone_addr = ethhdr->h_source;
+ 		break;
+ 	default:
+@@ -905,12 +905,12 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
+ 
+ 	/* check for the different types of claim frames ... */
+ 	switch (bla_dst->type) {
+-	case BATADV_CLAIM_TYPE_ADD:
++	case BATADV_CLAIM_TYPE_CLAIM:
+ 		if (batadv_handle_claim(bat_priv, primary_if, hw_src,
+ 					ethhdr->h_source, vid))
+ 			return 1;
+ 		break;
+-	case BATADV_CLAIM_TYPE_DEL:
++	case BATADV_CLAIM_TYPE_UNCLAIM:
+ 		if (batadv_handle_unclaim(bat_priv, primary_if,
+ 					  ethhdr->h_source, hw_src, vid))
+ 			return 1;
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index 8d3e55a..65d66e4 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -92,8 +92,8 @@ enum batadv_tt_client_flags {
+ 
+ /* claim frame types for the bridge loop avoidance */
+ enum batadv_bla_claimframe {
+-	BATADV_CLAIM_TYPE_ADD		= 0x00,
+-	BATADV_CLAIM_TYPE_DEL		= 0x01,
++	BATADV_CLAIM_TYPE_CLAIM		= 0x00,
++	BATADV_CLAIM_TYPE_UNCLAIM	= 0x01,
+ 	BATADV_CLAIM_TYPE_ANNOUNCE	= 0x02,
+ 	BATADV_CLAIM_TYPE_REQUEST	= 0x03,
  };
 -- 
 1.7.9.4
