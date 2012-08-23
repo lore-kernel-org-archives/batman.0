@@ -1,10 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 23 Aug 2012 15:10:17 +0200
-Message-Id: <1345727427-20805-9-git-send-email-ordex@autistici.org>
+Date: Thu, 23 Aug 2012 15:10:18 +0200
+Message-Id: <1345727427-20805-10-git-send-email-ordex@autistici.org>
 In-Reply-To: <1345727427-20805-1-git-send-email-ordex@autistici.org>
 References: <1345727427-20805-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 08/18] batman-adv: fix typos in comments
+Subject: [B.A.T.M.A.N.] [PATCH 09/18] batman-adv: check
+	batadv_orig_hash_add_if() return code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,59 +18,45 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-the word millisecond is misspelled in several comments. This patch fixes it.
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
 
+If this call fails, some of the orig_nodes spaces may have been
+resized for the increased number of interface, and some may not.
+If we would just continue with the larger number of interfaces,
+this would lead to access to not allocated memory later.
+
+We better check the return code, and don't add the interface if
+no memory is available. OTOH, keeping some of the orig_nodes
+with too much memory allocated should hurt no one (except for
+a few too many bytes allocated).
+
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/main.h |    8 ++++----
- net/batman-adv/vis.h  |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ net/batman-adv/hard-interface.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 5d8fa07..4dfeae5 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -41,13 +41,13 @@
-  * -> TODO: check influence on BATADV_TQ_LOCAL_WINDOW_SIZE
-  */
- #define BATADV_PURGE_TIMEOUT 200000 /* 200 seconds */
--#define BATADV_TT_LOCAL_TIMEOUT 3600000 /* in miliseconds */
--#define BATADV_TT_CLIENT_ROAM_TIMEOUT 600000 /* in miliseconds */
-+#define BATADV_TT_LOCAL_TIMEOUT 3600000 /* in milliseconds */
-+#define BATADV_TT_CLIENT_ROAM_TIMEOUT 600000 /* in milliseconds */
- /* sliding packet range of received originator messages in sequence numbers
-  * (should be a multiple of our word size)
-  */
- #define BATADV_TQ_LOCAL_WINDOW_SIZE 64
--/* miliseconds we have to keep pending tt_req */
-+/* milliseconds we have to keep pending tt_req */
- #define BATADV_TT_REQUEST_TIMEOUT 3000
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 282bf6e..2c5a247 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -313,7 +313,13 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	hard_iface->if_num = bat_priv->num_ifaces;
+ 	bat_priv->num_ifaces++;
+ 	hard_iface->if_status = BATADV_IF_INACTIVE;
+-	batadv_orig_hash_add_if(hard_iface, bat_priv->num_ifaces);
++	ret = batadv_orig_hash_add_if(hard_iface, bat_priv->num_ifaces);
++	if (ret < 0) {
++		bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
++		bat_priv->num_ifaces--;
++		hard_iface->if_status = BATADV_IF_NOT_IN_USE;
++		goto err_dev;
++	}
  
- #define BATADV_TQ_GLOBAL_WINDOW_SIZE 5
-@@ -59,7 +59,7 @@
- #define BATADV_TT_OGM_APPEND_MAX 3
- 
- /* Time in which a client can roam at most ROAMING_MAX_COUNT times in
-- * miliseconds
-+ * milliseconds
-  */
- #define BATADV_ROAMING_MAX_TIME 20000
- #define BATADV_ROAMING_MAX_COUNT 5
-diff --git a/net/batman-adv/vis.h b/net/batman-adv/vis.h
-index 84e716e..873282f 100644
---- a/net/batman-adv/vis.h
-+++ b/net/batman-adv/vis.h
-@@ -20,7 +20,7 @@
- #ifndef _NET_BATMAN_ADV_VIS_H_
- #define _NET_BATMAN_ADV_VIS_H_
- 
--/* timeout of vis packets in miliseconds */
-+/* timeout of vis packets in milliseconds */
- #define BATADV_VIS_TIMEOUT		200000
- 
- int batadv_vis_seq_print_text(struct seq_file *seq, void *offset);
+ 	hard_iface->batman_adv_ptype.type = ethertype;
+ 	hard_iface->batman_adv_ptype.func = batadv_batman_skb_recv;
 -- 
 1.7.9.4
 
