@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 23 Aug 2012 15:10:09 +0200
-Message-Id: <1345727427-20805-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-08-23
+Date: Thu, 23 Aug 2012 15:10:11 +0200
+Message-Id: <1345727427-20805-3-git-send-email-ordex@autistici.org>
+In-Reply-To: <1345727427-20805-1-git-send-email-ordex@autistici.org>
+References: <1345727427-20805-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 02/18] batman-adv: Add the backbone gateway
+	list to debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,93 +18,176 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Hello David,
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
 
-this is our set of changes intended for net-next/linux-3.7.
-It is mostly composed by style fixes and cleanups. Other than that you have a
-patch introducing a new table in debugfs (backbone gateways table for the Bridge
-Loop Avoidance) and a new mechanism for the TranslationTable component. The
-latter allows mesh nodes to immediately detect new clients joining the network,
-without waiting for any periodic advertisement.
+This is especially useful if there are no claims yet, but we still want
+to know which gateways are using bridge loop avoidance in the network.
 
-Thank you,
-	Antonio
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ Documentation/networking/batman-adv.txt |    7 ++--
+ net/batman-adv/bridge_loop_avoidance.c  |   65 +++++++++++++++++++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.h  |    8 ++++
+ net/batman-adv/debugfs.c                |   12 ++++++
+ 4 files changed, 89 insertions(+), 3 deletions(-)
 
+diff --git a/Documentation/networking/batman-adv.txt b/Documentation/networking/batman-adv.txt
+index 8f3ae4a..a173d2a 100644
+--- a/Documentation/networking/batman-adv.txt
++++ b/Documentation/networking/batman-adv.txt
+@@ -75,9 +75,10 @@ folder:
+ 
+ There is a special folder for debugging information:
+ 
+-#  ls /sys/kernel/debug/batman_adv/bat0/
+-# bla_claim_table    log                socket             transtable_local
+-# gateways           originators        transtable_global  vis_data
++# ls /sys/kernel/debug/batman_adv/bat0/
++# bla_backbone_table  log                 transtable_global
++# bla_claim_table     originators         transtable_local
++# gateways            socket              vis_data
+ 
+ Some of the files contain all sort of status information  regard-
+ ing  the  mesh  network.  For  example, you can view the table of
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 6705d35..7e60466 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1616,3 +1616,68 @@ out:
+ 		batadv_hardif_free_ref(primary_if);
+ 	return ret;
+ }
++
++int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
++{
++	struct net_device *net_dev = (struct net_device *)seq->private;
++	struct batadv_priv *bat_priv = netdev_priv(net_dev);
++	struct batadv_hashtable *hash = bat_priv->backbone_hash;
++	struct batadv_backbone_gw *backbone_gw;
++	struct batadv_hard_iface *primary_if;
++	struct hlist_node *node;
++	struct hlist_head *head;
++	int secs, msecs;
++	uint32_t i;
++	bool is_own;
++	int ret = 0;
++	uint8_t *primary_addr;
++
++	primary_if = batadv_primary_if_get_selected(bat_priv);
++	if (!primary_if) {
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - please specify interfaces to enable it\n",
++				 net_dev->name);
++		goto out;
++	}
++
++	if (primary_if->if_status != BATADV_IF_ACTIVE) {
++		ret = seq_printf(seq,
++				 "BATMAN mesh %s disabled - primary interface not active\n",
++				 net_dev->name);
++		goto out;
++	}
++
++	primary_addr = primary_if->net_dev->dev_addr;
++	seq_printf(seq,
++		   "Backbones announced for the mesh %s (orig %pM, group id %04x)\n",
++		   net_dev->name, primary_addr,
++		   ntohs(bat_priv->claim_dest.group));
++	seq_printf(seq, "   %-17s    %-5s %-9s (%-4s)\n",
++		   "Originator", "VID", "last seen", "CRC");
++	for (i = 0; i < hash->size; i++) {
++		head = &hash->table[i];
++
++		rcu_read_lock();
++		hlist_for_each_entry_rcu(backbone_gw, node, head, hash_entry) {
++			msecs = jiffies_to_msecs(jiffies -
++						 backbone_gw->lasttime);
++			secs = msecs / 1000;
++			msecs = msecs % 1000;
++
++			is_own = batadv_compare_eth(backbone_gw->orig,
++						    primary_addr);
++			if (is_own)
++				continue;
++
++			seq_printf(seq,
++				   " * %pM on % 5d % 4i.%03is (%04x)\n",
++				   backbone_gw->orig, backbone_gw->vid,
++				   secs, msecs, backbone_gw->crc);
++		}
++		rcu_read_unlock();
++	}
++out:
++	if (primary_if)
++		batadv_hardif_free_ref(primary_if);
++	return ret;
++}
+diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
+index 3f0dfa2..789cb73 100644
+--- a/net/batman-adv/bridge_loop_avoidance.h
++++ b/net/batman-adv/bridge_loop_avoidance.h
+@@ -27,6 +27,8 @@ int batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb, short vid);
+ int batadv_bla_is_backbone_gw(struct sk_buff *skb,
+ 			      struct batadv_orig_node *orig_node, int hdr_size);
+ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
++int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq,
++					     void *offset);
+ int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv, uint8_t *orig);
+ int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+ 				   struct batadv_bcast_packet *bcast_packet,
+@@ -65,6 +67,12 @@ static inline int batadv_bla_claim_table_seq_print_text(struct seq_file *seq,
+ 	return 0;
+ }
+ 
++static inline int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq,
++							   void *offset)
++{
++	return 0;
++}
++
+ static inline int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv,
+ 						 uint8_t *orig)
+ {
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 34fbb16..391d4fb 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -267,6 +267,15 @@ static int batadv_bla_claim_table_open(struct inode *inode, struct file *file)
+ 	return single_open(file, batadv_bla_claim_table_seq_print_text,
+ 			   net_dev);
+ }
++
++static int batadv_bla_backbone_table_open(struct inode *inode,
++					  struct file *file)
++{
++	struct net_device *net_dev = (struct net_device *)inode->i_private;
++	return single_open(file, batadv_bla_backbone_table_seq_print_text,
++			   net_dev);
++}
++
+ #endif
+ 
+ static int batadv_transtable_local_open(struct inode *inode, struct file *file)
+@@ -305,6 +314,8 @@ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
+ 			batadv_transtable_global_open);
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ static BATADV_DEBUGINFO(bla_claim_table, S_IRUGO, batadv_bla_claim_table_open);
++static BATADV_DEBUGINFO(bla_backbone_table, S_IRUGO,
++			batadv_bla_backbone_table_open);
+ #endif
+ static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
+ 			batadv_transtable_local_open);
+@@ -316,6 +327,7 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
+ 	&batadv_debuginfo_transtable_global,
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ 	&batadv_debuginfo_bla_claim_table,
++	&batadv_debuginfo_bla_backbone_table,
+ #endif
+ 	&batadv_debuginfo_transtable_local,
+ 	&batadv_debuginfo_vis_data,
+-- 
+1.7.9.4
 
-
-
-The following changes since commit 0fa7fa98dbcc2789409ed24e885485e645803d7f:
-
-  packet: Protect packet sk list with mutex (v2) (2012-08-22 22:58:27 -0700)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
-
-for you to fetch changes up to fa4f0afcf40361bf67ed3abd520a5fbe12d11166:
-
-  batman-adv: Start new development cycle (2012-08-23 14:20:23 +0200)
-
-----------------------------------------------------------------
-Included changes:
-- a set of codestyle rearrangements/fixes
-- new feature to early detect new joining (mesh-unaware) clients
-- a minor fix for the gw-feature
-- substitution of shift operations with the BIT() macro
-- reorganization of the main batman-adv structure (struct batadv_priv)
-- some more (very) minor cleanups and fixes
-
-----------------------------------------------------------------
-Antonio Quartulli (5):
-      batman-adv: move function arguments on one line
-      batman-adv: add reference counting for type batadv_tt_orig_list_entry
-      batman-adv: fix typos in comments
-      batman-adv: detect not yet announced clients
-      batman-adv: change interface_rx to get orig node
-
-Jonathan Corbet (1):
-      batman-adv: remove a misleading comment
-
-Marek Lindner (1):
-      batman-adv: convert remaining packet counters to per_cpu_ptr() infrastructure
-
-Martin Hundebøll (2):
-      batman-adv: Move batadv_check_unicast_packet()
-      batman-adv: Drop tt queries with foreign dest
-
-Simon Wunderlich (4):
-      batman-adv: Add the backbone gateway list to debugfs
-      batman-adv: correct comments in bridge loop avoidance
-      batman-adv: rename bridge loop avoidance claim types
-      batman-adv: check batadv_orig_hash_add_if() return code
-
-Sven Eckelmann (5):
-      batman-adv: Split batadv_priv in sub-structures for features
-      batman-adv: Use BIT(x) macro to calculate bit positions
-      batman-adv: Don't break statements after assignment operator
-      batman-adv: Reduce accumulated length of simple statements
-      batman-adv: Start new development cycle
-
- Documentation/networking/batman-adv.txt |    7 +-
- net/batman-adv/bat_iv_ogm.c             |   96 ++++---
- net/batman-adv/bridge_loop_avoidance.c  |  214 ++++++++++------
- net/batman-adv/bridge_loop_avoidance.h  |   11 +-
- net/batman-adv/debugfs.c                |   12 +
- net/batman-adv/gateway_client.c         |   53 ++--
- net/batman-adv/hard-interface.c         |   13 +-
- net/batman-adv/main.c                   |   27 +-
- net/batman-adv/main.h                   |   29 +--
- net/batman-adv/packet.h                 |   35 +--
- net/batman-adv/routing.c                |   85 +++----
- net/batman-adv/send.c                   |    8 +-
- net/batman-adv/soft-interface.c         |   79 +++---
- net/batman-adv/soft-interface.h         |    5 +-
- net/batman-adv/translation-table.c      |  416 +++++++++++++++++++------------
- net/batman-adv/translation-table.h      |    4 +-
- net/batman-adv/types.h                  |  120 +++++----
- net/batman-adv/unicast.c                |   16 +-
- net/batman-adv/vis.c                    |  144 +++++------
- net/batman-adv/vis.h                    |    2 +-
- 20 files changed, 818 insertions(+), 558 deletions(-)
