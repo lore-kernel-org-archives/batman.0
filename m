@@ -1,11 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 23 Aug 2012 15:10:18 +0200
-Message-Id: <1345727427-20805-10-git-send-email-ordex@autistici.org>
+Date: Thu, 23 Aug 2012 15:10:20 +0200
+Message-Id: <1345727427-20805-12-git-send-email-ordex@autistici.org>
 In-Reply-To: <1345727427-20805-1-git-send-email-ordex@autistici.org>
 References: <1345727427-20805-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 09/18] batman-adv: check
-	batadv_orig_hash_add_if() return code
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 11/18] batman-adv: Move
+	batadv_check_unicast_packet()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,45 +21,87 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Cc: netdev@vger.kernel.org, =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Martin Hundebøll <martin@hundeboll.net>
 
-If this call fails, some of the orig_nodes spaces may have been
-resized for the increased number of interface, and some may not.
-If we would just continue with the larger number of interfaces,
-this would lead to access to not allocated memory later.
+batadv_check_unicast_packet() is needed in batadv_recv_tt_query(), so
+move the former to before the latter.
 
-We better check the return code, and don't add the interface if
-no memory is available. OTOH, keeping some of the orig_nodes
-with too much memory allocated should hurt no one (except for
-a few too many bytes allocated).
-
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/hard-interface.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ net/batman-adv/routing.c |   50 +++++++++++++++++++++++-----------------------
+ 1 file changed, 25 insertions(+), 25 deletions(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 282bf6e..2c5a247 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -313,7 +313,13 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	hard_iface->if_num = bat_priv->num_ifaces;
- 	bat_priv->num_ifaces++;
- 	hard_iface->if_status = BATADV_IF_INACTIVE;
--	batadv_orig_hash_add_if(hard_iface, bat_priv->num_ifaces);
-+	ret = batadv_orig_hash_add_if(hard_iface, bat_priv->num_ifaces);
-+	if (ret < 0) {
-+		bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
-+		bat_priv->num_ifaces--;
-+		hard_iface->if_status = BATADV_IF_NOT_IN_USE;
-+		goto err_dev;
-+	}
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index d5edee7..a79ded5 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -579,6 +579,31 @@ batadv_find_ifalter_router(struct batadv_orig_node *primary_orig,
+ 	return router;
+ }
  
- 	hard_iface->batman_adv_ptype.type = ethertype;
- 	hard_iface->batman_adv_ptype.func = batadv_batman_skb_recv;
++static int batadv_check_unicast_packet(struct sk_buff *skb, int hdr_size)
++{
++	struct ethhdr *ethhdr;
++
++	/* drop packet if it has not necessary minimum size */
++	if (unlikely(!pskb_may_pull(skb, hdr_size)))
++		return -1;
++
++	ethhdr = (struct ethhdr *)skb_mac_header(skb);
++
++	/* packet with unicast indication but broadcast recipient */
++	if (is_broadcast_ether_addr(ethhdr->h_dest))
++		return -1;
++
++	/* packet with broadcast sender address */
++	if (is_broadcast_ether_addr(ethhdr->h_source))
++		return -1;
++
++	/* not for me */
++	if (!batadv_is_my_mac(ethhdr->h_dest))
++		return -1;
++
++	return 0;
++}
++
+ int batadv_recv_tt_query(struct sk_buff *skb, struct batadv_hard_iface *recv_if)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+@@ -819,31 +844,6 @@ err:
+ 	return NULL;
+ }
+ 
+-static int batadv_check_unicast_packet(struct sk_buff *skb, int hdr_size)
+-{
+-	struct ethhdr *ethhdr;
+-
+-	/* drop packet if it has not necessary minimum size */
+-	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+-		return -1;
+-
+-	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+-
+-	/* packet with unicast indication but broadcast recipient */
+-	if (is_broadcast_ether_addr(ethhdr->h_dest))
+-		return -1;
+-
+-	/* packet with broadcast sender address */
+-	if (is_broadcast_ether_addr(ethhdr->h_source))
+-		return -1;
+-
+-	/* not for me */
+-	if (!batadv_is_my_mac(ethhdr->h_dest))
+-		return -1;
+-
+-	return 0;
+-}
+-
+ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 				       struct batadv_hard_iface *recv_if)
+ {
 -- 
 1.7.9.4
 
