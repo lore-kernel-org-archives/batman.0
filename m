@@ -1,12 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 24 Aug 2012 17:00:04 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201208241700.04486.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] batman-adv 2012.3.0 released
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Fri, 24 Aug 2012 17:43:06 +0200
+Message-Id: <1345822986-9079-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4] batman-adv: pass the WIFI flag from the
+	local to global entry
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,113 +15,114 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+in case of client roaming a new global entry is added while a corresponding
+local one is still present. In this case the node can safely pass the WIFI flag
+from the local to the global entry.
 
-The B.A.T.M.A.N. team is delighted to announce its latest release, batman-a=
-dv=20
-2012.3.0, focused on cleanups, stability and bugfixes bundled with a few=20
-smaller features. As the kernel module always depends on the Linux kernel i=
-t=20
-was compiled against, it does not make sense to provide binaries on our=20
-website. As usual, you will find the signed tarballs in our download sectio=
-n:
+This change is required to let the AP-isolation correctly working in case of
+roaming: if a generic WIFI client C roams from node A to B, A adds a global
+entry for C without adding any WIFI flag. The latter will be set only later,
+once A has received C's advertisement from B. In this time period the
+AP-Isolation (if enabled) would not correctly work since C is not marked as
+WIFI, so allowing it to communicate with other WIFI clients.
 
-http://downloads.open-mesh.org/batman/releases/batman-adv-2012.3.0/
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-as well as prepackaged binaries in your distribution.
+v4:
+- rebased on top of the latest master
+- added kernel doc for __batadv_tt_local_remove
 
+ translation-table.c |   43 +++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 35 insertions(+), 8 deletions(-)
 
-Thanks
-=2D-----
+diff --git a/translation-table.c b/translation-table.c
+index 42a74e3..cacf7b7 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -489,21 +489,37 @@ batadv_tt_local_set_pending(struct batadv_priv *bat_priv,
+ 		   tt_local_entry->common.addr, message);
+ }
+ 
++/**
++ * __batadv_tt_local_remove - logically deletes an entry from the local table
++ * @bat_priv: the bat priv with all the soft interface information
++ * @tt_local: the local entry to delete
++ * @message: the message to append to the log on deletion
++ * @roaming: true if the deletion is due to a roaming event
++ */
++static void __batadv_tt_local_remove(struct batadv_priv *bat_priv,
++				     struct batadv_tt_local_entry *tt_local,
++				     const char *message, bool roaming)
++{
++	uint16_t flags;
++
++	flags = BATADV_TT_CLIENT_DEL;
++	if (roaming)
++		flags |= BATADV_TT_CLIENT_ROAM;
++
++	batadv_tt_local_set_pending(bat_priv, tt_local, flags, message);
++}
++
+ void batadv_tt_local_remove(struct batadv_priv *bat_priv, const uint8_t *addr,
+ 			    const char *message, bool roaming)
+ {
+ 	struct batadv_tt_local_entry *tt_local_entry = NULL;
+-	uint16_t flags;
+ 
+ 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr);
+ 	if (!tt_local_entry)
+ 		goto out;
+ 
+-	flags = BATADV_TT_CLIENT_DEL;
+-	if (roaming)
+-		flags |= BATADV_TT_CLIENT_ROAM;
++	__batadv_tt_local_remove(bat_priv, tt_local_entry, message, roaming);
+ 
+-	batadv_tt_local_set_pending(bat_priv, tt_local_entry, flags, message);
+ out:
+ 	if (tt_local_entry)
+ 		batadv_tt_local_entry_free_ref(tt_local_entry);
+@@ -710,9 +726,11 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 			 uint8_t ttvn)
+ {
+ 	struct batadv_tt_global_entry *tt_global_entry = NULL;
++	struct batadv_tt_local_entry *tt_local_entry = NULL;
+ 	int ret = 0;
+ 	int hash_added;
+ 	struct batadv_tt_common_entry *common;
++	uint16_t wifi_flag;
+ 
+ 	tt_global_entry = batadv_tt_global_hash_find(bat_priv, tt_addr);
+ 
+@@ -779,13 +797,22 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 	ret = 1;
+ 
+ out_remove:
++	tt_local_entry = batadv_tt_local_hash_find(bat_priv, tt_addr);
++	if (!tt_local_entry)
++		goto out;
++
++	wifi_flag = tt_local_entry->common.flags & BATADV_TT_CLIENT_WIFI;
++	tt_global_entry->common.flags |= wifi_flag;
++
+ 	/* remove address from local hash if present */
+-	batadv_tt_local_remove(bat_priv, tt_global_entry->common.addr,
+-			       "global tt received",
+-			       flags & BATADV_TT_CLIENT_ROAM);
++	__batadv_tt_local_remove(bat_priv, tt_local_entry, "global tt received",
++				 flags & BATADV_TT_CLIENT_ROAM);
++
+ out:
+ 	if (tt_global_entry)
+ 		batadv_tt_global_entry_free_ref(tt_global_entry);
++	if (tt_local_entry)
++		batadv_tt_local_entry_free_ref(tt_local_entry);
+ 	return ret;
+ }
+ 
+-- 
+1.7.9.4
 
-Thanks to all people sending in patches:
-
- * Al Viro <viro@ZenIV.linux.org.uk>
- * Antonio Quartulli <ordex@autistici.org>
- * Ben Hutchings <bhutchings@solarflare.com>
- * Jesper Juhl <jj@chaosbits.net>
- * Marek Lindner <lindner_marek@yahoo.de>
- * Martin Hundeb=F8ll <martin@hundeboll.net>
- * Matthias Schiffer <mschiffer@universe-factory.net>
- * Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
- * Sven Eckelmann <sven@narfation.org>
-
-and to all those that supported us with good advice, code review and/or=20
-rigorous testing:
-
- * Andrew Lunn <andrew@lunn.ch>
- * David S. Miller <davem@davemloft.net>
- * Guido Iribarren <guidoiribarren@buenosaireslibre.org>
- * Nicol=E1s Ech=E1niz <nicoechaniz@codigosur.org>
-
-Special thanks to Sven Eckelmann who took on the nearly-impossible task of=
-=20
-restyling / renaming of all existing variable declarations and function nam=
-es=20
-throughout the code. With 68 patches he submitted about 5000 changes to=20
-achieve the goal of making the code more coherent.
-
-
-batman-adv
-=2D---------
-
-David Miller, the Linux kernel network maintainer, wanted batman-adv to bec=
-ome=20
-a better Linux-citizen by conforming to the Linux namespace convention. Sin=
-ce=20
-this topic was neglected for quite some time a fair amount of code changes=
-=20
-were required to comply with the convention. This renaming / restyling work=
-=20
-represents the bulk of the changes coming with this release. The newly=20
-introduced extended traffic statistics support also is worth mentioning: Up=
-=20
-until now batman-adv only collected statistics about the payload traffic. T=
-his=20
-release adds counters about mesh internal traffic like forwarded traffic, O=
-GM=20
-and TT management traffic that can be accessed through the ethtool API.
-
-Numerous components received bugfixes: The translation table handling code=
-=20
-fixed a race condition in the full-table replacement logic and correctly=20
-handles endianness when forwarding TT Request packets. Furthermore, the=20
-cooperation between the routing protocol and the translation table has been=
-=20
-abstracted to allow a smooth integration with the routing protocol API. The=
-=20
-gateway code dealt with a regression which made it impossible to select a=20
-gateway on a client if a selection class smaller than 3 was chosen. The=20
-recently renovated bridge loop avoidance falsely dropped DHCP packets comin=
-g=20
-through the gateway code as it believed to prevent a loop. This has been=20
-addressed. The AP isolation was a little too aggressively dropping all=20
-broadcast traffic from WiFi clients which made it impossible, for example, =
-to=20
-exchange mac address entries via ARP. The visualization output of the vis=20
-component does not fail on primary interfaces without neighbors anymore.=20
-Batman-adv was modified to initialize all reserved protocol fields with zer=
-o=20
-to ensure later compatibility when the packet format may be changed. A race=
-=20
-condition in the hash implementation was found and fixed as well.
-
-
-batctl
-=2D-----
-
-New in this release is the packet statistics retrieval component which=20
-displays the data gathered by batman-adv through a new command line switch.=
-=20
-The mini-tcpdump allows to filter parsed packets by compatibility number on=
-ly=20
-showing packets that match its own compat number. In addition, it learned t=
-he=20
-new bridge loop avoidance (BLA II) packet format to also display those=20
-packets. The ping and traceroute components properly initialize all ICMP=20
-fields to avoid unexpected behavior.
-
-
-Happy routing,
-The B.A.T.M.A.N. team
