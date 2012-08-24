@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 24 Aug 2012 23:59:20 +0200
-References: <1345451209-8898-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1345451209-8898-1-git-send-email-sven@narfation.org>
+Date: Sat, 25 Aug 2012 00:08:45 +0200
+References: <1345451209-8898-2-git-send-email-sven@narfation.org>
+ <1345498646-21878-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1345498646-21878-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201208242359.21231.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Remove extra check in
-	batadv_bit_get_packet
+Message-Id: <201208250008.45829.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/3] batman-adv: Check return value of
+	try_module_get
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,20 +24,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Monday, August 20, 2012 10:26:47 Sven Eckelmann wrote:
-> batadv_bit_get_packet checks for all common situations before it decides
-> that the new received packet indicates that the host was restarted. This
-> extra condition check at the end of the function is not necessary because
-> this condition is always true.
+On Monday, August 20, 2012 23:37:26 Sven Eckelmann wrote:
+> New operations should not be started when they need an increased module
+> reference counter and try_module_get failed.
 > 
-> This patch addresses Coverity #712296: Logically dead code
+> This patch addresses Coverity #712284: Unchecked return value
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bitarray.c |   23 ++++++++++-------------
->  1 file changed, 10 insertions(+), 13 deletions(-)
+> Removed the wrapper functions
+> 
+>  debugfs.c     |    6 ++++--
+>  icmp_socket.c |   12 ++++++++----
+>  main.c        |   10 ----------
+>  main.h        |    2 --
+>  4 files changed, 12 insertions(+), 18 deletions(-)
 
-Applied in revision d2da57c.
+Applied in revision 2e66c5e.
 
 Thanks,
 Marek
