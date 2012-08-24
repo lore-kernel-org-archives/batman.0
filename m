@@ -1,9 +1,15 @@
 Return-Path: <ordex@autistici.org>
+Date: Fri, 24 Aug 2012 18:26:53 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri, 24 Aug 2012 18:18:42 +0200
-Message-Id: <1345825122-1601-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: print packets re-routing on
-	DBG_TT and ratelimit it
+Message-ID: <20120824162653.GK27849@ritirata.org>
+References: <1345825122-1601-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="j3olVFx0FsM75XyV"
+Content-Disposition: inline
+In-Reply-To: <1345825122-1601-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: print packets re-routing on
+ DBG_TT and ratelimit it
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,38 +23,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-To simplify TranslationTable debugging it is better to print the packet
-rerouting message on the DBG_TT log level. In this way a developer interested in
-packets rerouting doesn't need to filter it out of the whole ROUTES log.
 
-Moreover, since this message will appear for each rerouted message, it is now
-"ratelimited".
+--j3olVFx0FsM75XyV
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- routing.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+On Fri, Aug 24, 2012 at 06:18:42PM +0200, Antonio Quartulli wrote:
+> To simplify TranslationTable debugging it is better to print the packet
+> rerouting message on the DBG_TT log level. In this way a developer intere=
+sted in
+> packets rerouting doesn't need to filter it out of the whole ROUTES log.
+>=20
+> Moreover, since this message will appear for each rerouted message, it is=
+ now
+> "ratelimited".
+>=20
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 
-diff --git a/routing.c b/routing.c
-index e7a4e25..f9751a0 100644
---- a/routing.c
-+++ b/routing.c
-@@ -972,10 +972,11 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 			batadv_orig_node_free_ref(orig_node);
- 		}
- 
--		batadv_dbg(BATADV_DBG_ROUTES, bat_priv,
--			   "TTVN mismatch (old_ttvn %u new_ttvn %u)! Rerouting unicast packet (for %pM) to %pM\n",
--			   unicast_packet->ttvn, curr_ttvn, ethhdr->h_dest,
--			   unicast_packet->dest);
-+		if (net_ratelimit())
-+			batadv_dbg(BATADV_DBG_TT, bat_priv,
-+				   "TTVN mismatch (old_ttvn %u new_ttvn %u)! Rerouting unicast packet (for %pM) to %pM\n",
-+				   unicast_packet->ttvn, curr_ttvn,
-+				   ethhdr->h_dest, unicast_packet->dest);
- 
- 		unicast_packet->ttvn = curr_ttvn;
- 	}
--- 
-1.7.9.4
+Sorry, drop this patch, I should have used net_ratelimited_function, as I t=
+old
+to Martin.
 
+Will send v2.
+
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--j3olVFx0FsM75XyV
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAlA3q00ACgkQpGgxIkP9cwfd1gCdFhS5YUvwHqgL6K36IWj77MMA
+9eAAn2Nvwk5s2n8oYCHmMEOKvUUHpd4g
+=2em0
+-----END PGP SIGNATURE-----
+
+--j3olVFx0FsM75XyV--
