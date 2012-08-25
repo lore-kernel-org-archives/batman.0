@@ -1,15 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 25 Aug 2012 13:02:33 +0200
-References: <1345822986-9079-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1345822986-9079-1-git-send-email-ordex@autistici.org>
+Return-Path: <ordex@autistici.org>
+Date: Sun, 26 Aug 2012 01:01:58 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120825230158.GB5003@ritirata.org>
+References: <1345825951-24041-1-git-send-email-ordex@autistici.org>
+ <20120824191804.232524cc@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201208251302.33951.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4] batman-adv: pass the WIFI flag from
-	the local to global entry
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="0eh6TmSyL6TZE2Uz"
+Content-Disposition: inline
+In-Reply-To: <20120824191804.232524cc@hundeboll.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: print packets re-routing
+ on DBG_TT and ratelimit it
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,38 +22,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, August 24, 2012 17:43:06 Antonio Quartulli wrote:
-> @@ -779,13 +797,22 @@ int batadv_tt_global_add(struct batadv_priv
-> *bat_priv, ret = 1;
->  
->  out_remove:
-> +       tt_local_entry = batadv_tt_local_hash_find(bat_priv, tt_addr);
-> +       if (!tt_local_entry)
-> +               goto out;
-> +
-> +       wifi_flag = tt_local_entry->common.flags & BATADV_TT_CLIENT_WIFI;
-> +       tt_global_entry->common.flags |= wifi_flag;
-> +
->         /* remove address from local hash if present */
-> -       batadv_tt_local_remove(bat_priv, tt_global_entry->common.addr,
-> -                              "global tt received",
-> -                              flags & BATADV_TT_CLIENT_ROAM);
-> +       __batadv_tt_local_remove(bat_priv, tt_local_entry, "global tt
-> received", +                                flags &
-> BATADV_TT_CLIENT_ROAM);
-> +
->  out:
->         if (tt_global_entry)
->                 batadv_tt_global_entry_free_ref(tt_global_entry);
-> +       if (tt_local_entry)
-> +               batadv_tt_local_entry_free_ref(tt_local_entry);
->         return ret;
->  }
 
-Wouldn't it be much simplier if batadv_tt_local_remove() returned the tt_local 
-flags somehow ?
+--0eh6TmSyL6TZE2Uz
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Aug 24, 2012 at 07:18:04 +0200, Martin Hundeb=C3=B8ll wrote:
+> Hi Antonio,
+>=20
+> Please add net_ratelimited_function() to compat.h, since it didn't make
+> its way into mainline before 3.5.
+
+oh right. Thank Martin. I'll send a new version of the patch including the
+change in compat.h
 
 Cheers,
-Marek
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--0eh6TmSyL6TZE2Uz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAlA5WWYACgkQpGgxIkP9cwe/vwCfZR80S48BLDRTB2/vuHxdYmzk
+bQ0AnAh10vlzCsMe34/EC/YweB159icL
+=9Rbt
+-----END PGP SIGNATURE-----
+
+--0eh6TmSyL6TZE2Uz--
