@@ -1,16 +1,9 @@
 Return-Path: <ordex@autistici.org>
-Date: Sun, 26 Aug 2012 01:01:58 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120825230158.GB5003@ritirata.org>
-References: <1345825951-24041-1-git-send-email-ordex@autistici.org>
- <20120824191804.232524cc@hundeboll.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="0eh6TmSyL6TZE2Uz"
-Content-Disposition: inline
-In-Reply-To: <20120824191804.232524cc@hundeboll.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: print packets re-routing
- on DBG_TT and ratelimit it
+Date: Sun, 26 Aug 2012 01:05:56 +0200
+Message-Id: <1345935956-28111-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: print packets re-routing on
+	DBG_TT and ratelimit it
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,42 +15,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+To simplify TranslationTable debugging it is better to print the packet
+rerouting message on the DBG_TT log level. In this way a developer interested in
+packets rerouting doesn't need to filter it out of the whole ROUTES log.
 
---0eh6TmSyL6TZE2Uz
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Moreover, since this message will appear for each rerouted message, it is now
+"ratelimited".
 
-On Fri, Aug 24, 2012 at 07:18:04 +0200, Martin Hundeb=C3=B8ll wrote:
-> Hi Antonio,
->=20
-> Please add net_ratelimited_function() to compat.h, since it didn't make
-> its way into mainline before 3.5.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-oh right. Thank Martin. I'll send a new version of the patch including the
-change in compat.h
+v3:
+- added net_ratelimited_function() macro to compat.h
 
-Cheers,
+ compat.h  | 10 ++++++++++
+ routing.c |  8 ++++----
+ 2 files changed, 14 insertions(+), 4 deletions(-)
 
---=20
-Antonio Quartulli
+diff --git a/compat.h b/compat.h
+index 8ac22a8..14969e0 100644
+--- a/compat.h
++++ b/compat.h
+@@ -149,4 +149,14 @@ static inline void eth_hw_addr_random(struct net_device *dev)
+ 
+ #endif /* < KERNEL_VERSION(3, 4, 0) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0)
++
++#define net_ratelimited_function(func, ...) \
++	do { \
++		if (net_ratelimit()) \
++			func(__VA_ARGS__); \
++	} while (0)
++
++#endif /* < KERNEL_VERSION(3, 5, 0) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/routing.c b/routing.c
+index 1c545f6..784e9cc 100644
+--- a/routing.c
++++ b/routing.c
+@@ -965,10 +965,10 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+ 			batadv_orig_node_free_ref(orig_node);
+ 		}
+ 
+-		batadv_dbg(BATADV_DBG_ROUTES, bat_priv,
+-			   "TTVN mismatch (old_ttvn %u new_ttvn %u)! Rerouting unicast packet (for %pM) to %pM\n",
+-			   unicast_packet->ttvn, curr_ttvn, ethhdr->h_dest,
+-			   unicast_packet->dest);
++		net_ratelimited_function(batadv_dbg, BATADV_DBG_TT, bat_priv,
++					 "TTVN mismatch (old_ttvn %u new_ttvn %u)! Rerouting unicast packet (for %pM) to %pM\n",
++					 unicast_packet->ttvn, curr_ttvn,
++					 ethhdr->h_dest, unicast_packet->dest);
+ 
+ 		unicast_packet->ttvn = curr_ttvn;
+ 	}
+-- 
+1.7.12
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---0eh6TmSyL6TZE2Uz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlA5WWYACgkQpGgxIkP9cwe/vwCfZR80S48BLDRTB2/vuHxdYmzk
-bQ0AnAh10vlzCsMe34/EC/YweB159icL
-=9Rbt
------END PGP SIGNATURE-----
-
---0eh6TmSyL6TZE2Uz--
