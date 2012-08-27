@@ -1,9 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 26 Aug 2012 23:25:59 +0200
-Message-Id: <1346016359-27041-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: check for more space before
-	accessing the skb
+Date: Mon, 27 Aug 2012 09:35:54 +0200
+Message-Id: <1346052954-22147-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: properly convert flag into a
+	boolean value
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,34 +17,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-In batadv_check_unicast_ttvn() the code accesses both the unicast header and the
-Ethernet header in the payload. For this reason pskb_may_pull() must be invoked
-to check for the required space.
+In order to properly convert a bitwise AND to a boolean value, the whole
+expression must be prepended by "!!".
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- routing.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ translation-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/routing.c b/routing.c
-index 784e9cc..44109cc 100644
---- a/routing.c
-+++ b/routing.c
-@@ -908,8 +908,12 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 	bool tt_poss_change;
- 	int is_old_ttvn;
+diff --git a/translation-table.c b/translation-table.c
+index 1d53a06..a570d95 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -2439,7 +2439,7 @@ bool batadv_tt_global_client_is_roaming(struct batadv_priv *bat_priv,
+ 	if (!tt_global_entry)
+ 		goto out;
  
--	/* I could need to modify it */
--	if (skb_cow(skb, sizeof(struct batadv_unicast_packet)) < 0)
-+	/* check if there is enough data before accessing it */
-+	if (pskb_may_pull(skb, sizeof(*unicast_packet) + ETH_HLEN) < 0)
-+		return 0;
-+
-+	/* create a copy of the skb (in case of for re-routing) to modify it. */
-+	if (skb_cow(skb, sizeof(*unicast_packet)) < 0)
- 		return 0;
- 
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
+-	ret = tt_global_entry->common.flags & BATADV_TT_CLIENT_ROAM;
++	ret = !!(tt_global_entry->common.flags & BATADV_TT_CLIENT_ROAM);
+ 	batadv_tt_global_entry_free_ref(tt_global_entry);
+ out:
+ 	return ret;
 -- 
 1.7.12
 
