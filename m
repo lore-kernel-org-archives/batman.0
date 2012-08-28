@@ -1,9 +1,11 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 27 Aug 2012 11:45:37 +0200
-Message-Id: <1346060737-11768-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add kernel-doc for enum
-	batadv_dbg_level
+Return-Path: <weiyj.lk@gmail.com>
+MIME-Version: 1.0
+Date: Tue, 28 Aug 2012 21:06:08 +0800
+Message-ID: <CAPgLHd8jAk-4C1w4Z-q=WeMT_SgB99HCrGCtEPa5Xe4VYnZCOA@mail.gmail.com>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove pointless conditional
+	before kfree_skb()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,41 +17,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: lindner_marek@yahoo.de, siwu@hrz.tu-chemnitz.de, ordex@autistici.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, yongjun_wei@trendmicro.com.cn, b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+
+Remove pointless conditional before kfree_skb().
+
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 ---
- main.h | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+ net/batman-adv/send.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/main.h b/main.h
-index c243294..e828755 100644
---- a/main.h
-+++ b/main.h
-@@ -167,12 +167,19 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
- int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
- int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 3b4b2da..534dc46 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -99,8 +99,7 @@ void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface)
  
--/* all messages related to routing / flooding / broadcasting / etc */
-+/**
-+ * enum batadv_dbg_level - available log levels
-+ * @BATADV_DBG_BATMAN: OGM and TQ computations related messages
-+ * @BATADV_DBG_ROUTES: route added / changed / deleted
-+ * @BATADV_DBG_TT: translation table messages
-+ * @BATADV_DBG_BLA: bridge loop avoidance messages
-+ * @BATADV_DBG_ALL: the union of all the above log levels
-+ */
- enum batadv_dbg_level {
- 	BATADV_DBG_BATMAN = BIT(0),
--	BATADV_DBG_ROUTES = BIT(1), /* route added / changed / deleted */
--	BATADV_DBG_TT	  = BIT(2), /* translation table operations */
--	BATADV_DBG_BLA    = BIT(3), /* bridge loop avoidance */
-+	BATADV_DBG_ROUTES = BIT(1),
-+	BATADV_DBG_TT	  = BIT(2),
-+	BATADV_DBG_BLA    = BIT(3),
- 	BATADV_DBG_ALL    = 15,
- };
- 
--- 
-1.7.12
+ static void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
+ {
+-	if (forw_packet->skb)
+-		kfree_skb(forw_packet->skb);
++	kfree_skb(forw_packet->skb);
+ 	if (forw_packet->if_incoming)
+ 		batadv_hardif_free_ref(forw_packet->if_incoming);
+ 	kfree(forw_packet);
 
