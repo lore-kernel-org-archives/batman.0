@@ -1,11 +1,15 @@
-Return-Path: <weiyj.lk@gmail.com>
+Return-Path: <ordex@autistici.org>
+Date: Wed, 29 Aug 2012 11:14:31 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120829091430.GC29305@ritirata.org>
+References: <CAPgLHd8jAk-4C1w4Z-q=WeMT_SgB99HCrGCtEPa5Xe4VYnZCOA@mail.gmail.com>
 MIME-Version: 1.0
-Date: Tue, 28 Aug 2012 21:06:08 +0800
-Message-ID: <CAPgLHd8jAk-4C1w4Z-q=WeMT_SgB99HCrGCtEPa5Xe4VYnZCOA@mail.gmail.com>
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove pointless conditional
-	before kfree_skb()
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="/Uq4LBwYP4y1W6pO"
+Content-Disposition: inline
+In-Reply-To: <CAPgLHd8jAk-4C1w4Z-q=WeMT_SgB99HCrGCtEPa5Xe4VYnZCOA@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove pointless conditional
+ before kfree_skb()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,30 +21,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: lindner_marek@yahoo.de, siwu@hrz.tu-chemnitz.de, ordex@autistici.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, yongjun_wei@trendmicro.com.cn, b.a.t.m.a.n@lists.open-mesh.org
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, siwu@hrz.tu-chemnitz.de, yongjun_wei@trendmicro.com.cn, lindner_marek@yahoo.de, davem@davemloft.net
 
-From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Remove pointless conditional before kfree_skb().
+--/Uq4LBwYP4y1W6pO
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
----
- net/batman-adv/send.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+On Tue, Aug 28, 2012 at 09:06:08PM +0800, Wei Yongjun wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+>=20
+> Remove pointless conditional before kfree_skb().
+>=20
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 3b4b2da..534dc46 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -99,8 +99,7 @@ void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface)
- 
- static void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
- {
--	if (forw_packet->skb)
--		kfree_skb(forw_packet->skb);
-+	kfree_skb(forw_packet->skb);
- 	if (forw_packet->if_incoming)
- 		batadv_hardif_free_ref(forw_packet->if_incoming);
- 	kfree(forw_packet);
+Acked-by: Antonio Quartulli <ordex@autistici.org>
 
+Thank you Wei!
+
+Regards,
+
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--/Uq4LBwYP4y1W6pO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAlA93XYACgkQpGgxIkP9cwfMewCbBSfLE0ZQ9QNYdqnBKvvKnCuq
+ZcIAoJb8mEe1BfgodqOaJzjuEdRIbBJh
+=nvoF
+-----END PGP SIGNATURE-----
+
+--/Uq4LBwYP4y1W6pO--
