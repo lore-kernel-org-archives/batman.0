@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 2 Sep 2012 16:47:48 +0800
-References: <1346060737-11768-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1346060737-11768-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201209021647.49344.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add kernel-doc for enum
-	batadv_dbg_level
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun,  2 Sep 2012 19:00:38 +0200
+Message-Id: <1346605238-26672-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix wrong spinlock inline comment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,13 +16,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Monday, August 27, 2012 17:45:37 Antonio Quartulli wrote:
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  main.h | 15 +++++++++++----
->  1 file changed, 11 insertions(+), 4 deletions(-)
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ types.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 32d59e4.
+diff --git a/types.h b/types.h
+index dc126e7..e0c7ac2 100644
+--- a/types.h
++++ b/types.h
+@@ -263,7 +263,7 @@ struct batadv_priv {
+ 	struct hlist_head forw_bcast_list;
+ 	struct batadv_hashtable *orig_hash;
+ 	spinlock_t forw_bat_list_lock; /* protects forw_bat_list */
+-	spinlock_t forw_bcast_list_lock; /* protects  */
++	spinlock_t forw_bcast_list_lock; /* protects forw_bcast_list */
+ 	struct delayed_work orig_work;
+ 	struct batadv_hard_iface __rcu *primary_if;  /* rcu protected pointer */
+ 	struct batadv_algo_ops *bat_algo_ops;
+-- 
+1.7.12
 
-Thanks,
-Marek
