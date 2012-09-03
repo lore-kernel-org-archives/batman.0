@@ -1,14 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 03 Sep 2012 23:13:41 +0200
-Message-ID: <1490055.1D0A7yRGtZ@sven-laptop.home.narfation.org>
-In-Reply-To: <2787714.Hq4L2aOJPu@sven-laptop.home.narfation.org>
+Date: Mon, 03 Sep 2012 23:24:17 +0200
+Message-ID: <14643387.Jjzfh3X5qT@sven-laptop.home.narfation.org>
+In-Reply-To: <1490055.1D0A7yRGtZ@sven-laptop.home.narfation.org>
 References: <1346703631-17948-1-git-send-email-linus.luessing@web.de>
  <2787714.Hq4L2aOJPu@sven-laptop.home.narfation.org>
+ <1490055.1D0A7yRGtZ@sven-laptop.home.narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2799260.gPFYvnVdWU";
+Content-Type: multipart/signed; boundary="nextPart1754233.HMN0bGJ8A1";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: make batadv_test_bit()
 	return 0 or 1 only
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,61 +26,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart2799260.gPFYvnVdWU
-Content-Transfer-Encoding: quoted-printable
+--nextPart1754233.HMN0bGJ8A1
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Monday 03 September 2012 23:11:39 Sven Eckelmann wrote:
-> On Monday 03 September 2012 22:20:31 Linus L=FCssing wrote:
-> > On some architectures test_bit() can return other values than 0 or =
-1:
-> >=20
-> > With a generic x86 OpenWrt image in a kvm setup (batadv_)test_bit()=
+On Monday 03 September 2012 23:13:41 Sven Eckelmann wrote:
+[...]
+> >And the both version of the variable_test_bit seem to
+> > return 0 and -1 (at least my quick interpretation of the asm listings).
+> 
+> Just checked a asm reference and noticed that I remembered sbb wrong. The
+> calculation behind it is: op2 - (op1 + CF).
+> I thought that it was: op2 - op1 + CF
 
-> > frequently returns -1 for me, leading to batadv_iv_ogm_update_seqno=
-s()
-> > wrongly signaling a protected seqno window.
-> >=20
-> > This patch tries to fix this issue by making batadv_test_bit() retu=
-rn 0
-> > or 1 only.
-> >=20
-> > Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
->=20
-> Weird, I couldn't find the code that would cause a -1 here (but I jus=
-t
-> checked recent kernel versions). Most of them already added the "!=3D=
- 0" in
-> the function itself. And the both version of the variable_test_bit se=
-em to
-> return 0 and -1 (at least my quick interpretation of the asm listings=
-).
+And I think I confused everyone right now. My original sentence should have 
+said "seem to return 0 and 1" and not something about "-1".
 
-Just checked a asm reference and noticed that I remembered sbb wrong. T=
-he=20
-calculation behind it is: op2 - (op1 + CF).
-I thought that it was: op2 - op1 + CF
---nextPart2799260.gPFYvnVdWU
+The variable_test_bit for non-boot is implemented in asm and uses "btc" to 
+check for the bit (that info is stored in CF as 0 for "not set" and 1 for 
+"set"). sbb is used to store this information in the destination variable by 
+substracting the original content of the variable from itself + also 
+substracting the content of CF from it. That's why we get a -1 as result of 
+test_bit on kvm.
+
+Great finding and excellent patch.
+
+Kind regards,
+	Sven
+--nextPart1754233.HMN0bGJ8A1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAABCgAGBQJQRR2FAAoJEF2HCgfBJntGKwAP/i5xHKDOOj5cnhpfTCAO9oTx
-jdAQu3ruUqjj2jrleIUnsseuhTSRN5wl9gNnCwyTO1bnxYDcnKV50Nls6rEGvuuA
-n2Zx0qrMdxGKr0ZufX1zHCpaFfvA7TEZ7ieZ5Gai2GNm4dDjA4M4eqOtKl2zKRZU
-8GaEpk1HZJT7ApwgXMiLFY/o/gAxb/TX49UZYo4JbeitQydoQV2H+QaWpL3iTpuv
-rI7NY5D0Sg2k6ilQYoYdR91hGPAi/i+Z/ii00161t8KbQiIR31+D4p9g1jiKFRar
-T6cwqp/bK+uWVNzjqJAUwYiH7uNxWi5VZgGA+r1GmYQFt536Z021oiivPLmD9oGE
-YZOlCuh8+LEK/75CHDXjDoRamkPFxUmRCYN85uYL8mdcdsgIs513fc0DaHedxS1R
-x2foF3K6921Xl18CjYbYlnJPlvYsLnuhBRjWg77IgQzUJTmfxYyTlFT5g9igBbkt
-8T823kXR/0jZKtlta93eYej93xqHznf4yPU+JDc5aukMda+oLrMzTKUBiqd2AL7k
-gW2PeOs1o638eRFPkm4Aj7Rj4tDKhSe7f57ADIFEsbxlu9bKuRMAiGllQ83BIGYZ
-j/yMLqGrOfRcbQMrNYLeqBysb3l8nzmjIYNaJTGteOy67csyPOXkwrETCm3eF8hK
-/p2yy5fxvrEEWNTZn0IV
-=2KIi
+iQIcBAABCgAGBQJQRSABAAoJEF2HCgfBJntG/ZwQAI/NPD/7YW2VkVM2zz0YFZi7
+dbl7+gk2NixCaAToW0+8y0xuq40okwERNFndsPLN1QL4F/baOwTJcItnwIYOJPge
+1iivT2IJxpgyo2Jr8ZGBka0Pu2UxDbL3Yh0lrSqfwEokO3C5w1TRVwiCUGJ3klOg
+1pkUG7P4/Gq3tW2W2DPeBEbvQCEci/vefr9j0PP/FxLbO7PVxoXQp0twMzgmobKl
+/yCqiDeFxwsXfak8CwKyebdAo++X9+1Vb9jEP2Rb1g659iKJb/dQKyBi0Z68atRQ
+zdKT1xzh9Vjkn4cZWeI4M/slsnpmo11/c2wNaW3eZnjt8QQhqQL+TbZeOH3fUK3v
+9YxQKGPnYjf4T9e/WFKdbNQiMSsBSJCSPkSun/XlrB/Pv4k7Ehwxxp+nNLVkunAw
+jbIH+ZMVju6c06YtkSyCtebG59+SvgsaOindyUKC9lpJamtTELXINcSJmMqBwaR9
+yE9o0Ex21oHfhOStiThEKx1z9pmMbyCLrtnf2yfAEqfEac2JCEwSXfyDPO4hSwyp
+SO4UqzdwTDdL1IRAfWXelYSuXxeXfAr/boLn3Cbpy1lbciK5EeOixJNudCPMgDfp
+gs8PZbr8nW+PhzcNakvROTtTPn75/UEXYq8yBK0LTf4L1ybBgLxKJdcgTjCfjS8U
+ptPnk7mkHUyTIIXR2VY5
+=Z2v7
 -----END PGP SIGNATURE-----
 
---nextPart2799260.gPFYvnVdWU--
+--nextPart1754233.HMN0bGJ8A1--
 
