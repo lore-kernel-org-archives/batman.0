@@ -1,8 +1,12 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun,  2 Sep 2012 19:00:38 +0200
-Message-Id: <1346605238-26672-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix wrong spinlock inline comment
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Mon,  3 Sep 2012 22:20:31 +0200
+Message-Id: <1346703631-17948-1-git-send-email-linus.luessing@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: make batadv_test_bit() return 0
+	or 1 only
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,24 +20,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- types.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On some architectures test_bit() can return other values than 0 or 1:
 
-diff --git a/types.h b/types.h
-index dc126e7..e0c7ac2 100644
---- a/types.h
-+++ b/types.h
-@@ -263,7 +263,7 @@ struct batadv_priv {
- 	struct hlist_head forw_bcast_list;
- 	struct batadv_hashtable *orig_hash;
- 	spinlock_t forw_bat_list_lock; /* protects forw_bat_list */
--	spinlock_t forw_bcast_list_lock; /* protects  */
-+	spinlock_t forw_bcast_list_lock; /* protects forw_bcast_list */
- 	struct delayed_work orig_work;
- 	struct batadv_hard_iface __rcu *primary_if;  /* rcu protected pointer */
- 	struct batadv_algo_ops *bat_algo_ops;
+With a generic x86 OpenWrt image in a kvm setup (batadv_)test_bit()
+frequently returns -1 for me, leading to batadv_iv_ogm_update_seqnos()
+wrongly signaling a protected seqno window.
+
+This patch tries to fix this issue by making batadv_test_bit() return 0
+or 1 only.
+
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+ bitarray.h |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/bitarray.h b/bitarray.h
+index a081ce1..cebaae7 100644
+--- a/bitarray.h
++++ b/bitarray.h
+@@ -20,8 +20,8 @@
+ #ifndef _NET_BATMAN_ADV_BITARRAY_H_
+ #define _NET_BATMAN_ADV_BITARRAY_H_
+ 
+-/* returns true if the corresponding bit in the given seq_bits indicates true
+- * and curr_seqno is within range of last_seqno
++/* Returns 1 if the corresponding bit in the given seq_bits indicates true
++ * and curr_seqno is within range of last_seqno. Otherwise returns 0.
+  */
+ static inline int batadv_test_bit(const unsigned long *seq_bits,
+ 				  uint32_t last_seqno, uint32_t curr_seqno)
+@@ -32,7 +32,7 @@ static inline int batadv_test_bit(const unsigned long *seq_bits,
+ 	if (diff < 0 || diff >= BATADV_TQ_LOCAL_WINDOW_SIZE)
+ 		return 0;
+ 	else
+-		return  test_bit(diff, seq_bits);
++		return test_bit(diff, seq_bits) != 0;
+ }
+ 
+ /* turn corresponding bit on, so we can remember that we got the packet */
 -- 
-1.7.12
+1.7.10.4
 
