@@ -1,10 +1,14 @@
-Return-Path: <dominicfollett@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 4 Sep 2012 09:27:03 +0800
+References: <CA+h5VgqWxwCu3M0Y-D+Tuqyx5dj9oiduvvkiL7Op5KVoaac=Lw@mail.gmail.com>
+In-Reply-To: <CA+h5VgqWxwCu3M0Y-D+Tuqyx5dj9oiduvvkiL7Op5KVoaac=Lw@mail.gmail.com>
 MIME-Version: 1.0
-Date: Tue, 4 Sep 2012 00:00:11 +0200
-Message-ID: <CA+h5VgqWxwCu3M0Y-D+Tuqyx5dj9oiduvvkiL7Op5KVoaac=Lw@mail.gmail.com>
-From: Dominic Follett-Smith <dominicfollett@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] best way to piggy back data on OGM in batmand
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201209040927.04139.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] best way to piggy back data on OGM in batmand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,20 +20,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Could anyone point me in the best direction for how to include some
-extra information in the OGM packet without increasing its size?
+On Tuesday, September 04, 2012 06:00:11 Dominic Follett-Smith wrote:
+> Could anyone point me in the best direction for how to include some
+> extra information in the OGM packet without increasing its size?
+> 
+> Say for instance I want to send a specific value in the range [0:100]
+> along with the OGM.
 
-Say for instance I want to send a specific value in the range [0:100]
-along with the OGM.
+You wish to append additional data without increasing the size of the OGM ? I 
+don't see how this would be possible unless we sent useless data with OGM 
+today which you could replace with useful data. That is not the case.
 
-Regards
-Dominic
-UCT
-
---
-If you are going to achieve excellence in big things, you develop the
-habit in little matters. Excellence is not an exception, it is a
-prevailing attitude.
-Colin Powell
+Regards,
+Marek
