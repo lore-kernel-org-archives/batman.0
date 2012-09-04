@@ -1,14 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 4 Sep 2012 09:27:03 +0800
-References: <CA+h5VgqWxwCu3M0Y-D+Tuqyx5dj9oiduvvkiL7Op5KVoaac=Lw@mail.gmail.com>
-In-Reply-To: <CA+h5VgqWxwCu3M0Y-D+Tuqyx5dj9oiduvvkiL7Op5KVoaac=Lw@mail.gmail.com>
+Return-Path: <cem.f.karan.civ@mail.mil>
+From: "Karan, Cem F CIV (US)" <cem.f.karan.civ@mail.mil>
+Date: Tue, 4 Sep 2012 12:48:00 +0000
+Message-ID: <A677A9FB362B2F499BEFD6F80687FE972AF159C4@umechphe.easf.csd.disa.mil>
+Content-Language: en-US
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
+ micalg=SHA1; boundary="----=_NextPart_000_0000_01CD8A79.DF847C10"
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201209040927.04139.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] best way to piggy back data on OGM in batmand
+Subject: [B.A.T.M.A.N.] Batman, TTL, broadcast, etc. (UNCLASSIFIED)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,18 +18,155 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, September 04, 2012 06:00:11 Dominic Follett-Smith wrote:
-> Could anyone point me in the best direction for how to include some
-> extra information in the OGM packet without increasing its size?
-> 
-> Say for instance I want to send a specific value in the range [0:100]
-> along with the OGM.
+------=_NextPart_000_0000_01CD8A79.DF847C10
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-You wish to append additional data without increasing the size of the OGM ? I 
-don't see how this would be possible unless we sent useless data with OGM 
-today which you could replace with useful data. That is not the case.
+Classification: UNCLASSIFIED
+Caveats: NONE
 
-Regards,
-Marek
+Hi all, I'm trying to get some information on how batman works to determine
+what my next steps are for an experiment I'm running.  I'm hoping someone on
+the list can tell me how Batman operates RIGHT NOW, not just how it is
+intended to operate in the future, so I can make reasonable plans. 
+
+1) I'm guessing from the following pages (which only describe roaming and
+announcement behaviors) that the TTL field of all packets is decremented by
+1.  Is this true?
+http://www.open-mesh.org/projects/batman-adv/wiki/Client-roaming
+http://www.open-mesh.org/projects/batman-adv/wiki/Client-announcement
+
+2) Follow up to question 1; are the TTL fields of Batman packets and IP
+packets linked in some way?  The library I'm using (zeromq,
+http://www.zeromq.org/) has a reliable multicast transport built on top of
+OpenPGM (http://code.google.com/p/openpgm/).  My plan is to simulate
+reliable 1-hop broadcast by using reliable multicast and setting the TTL
+field to 1.  However, this will only affect the IP layer.  Unless batman
+also decrements the TTL field of the IP packets traveling over it, I'm kind
+of stuck.
+
+3) Finally, does batman have the equivalent of multicast or (better yet)
+broadcast for data packets?  That is, if I send something to a multicast IP
+address which all of its 1-hop neighbors are listening to, will all of them
+listen to the packet simultaneously, or will it act like a series of unicast
+messages?
+
+If you're wondering what I'm trying to do, message me directly.  It's easy
+to explain, but off topic for this list.
+
+Thanks,
+Cem Karan   
+
+Classification: UNCLASSIFIED
+Caveats: NONE
+
+
+
+------=_NextPart_000_0000_01CD8A79.DF847C10
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+
+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
+A1UEAxMPRE9EIEVNQUlMIENBLTI5MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkmIv
+QcIgABYGVWSfvaeIFW6Cm0jBhXe9AqsM2fErYIEBuj51cI4Spqc4hJCz6UCAEtxqylHNrS2GEMxE
+vA7FWDgZshQyJUFUWFxDDshscw/DDBgYFgSaUj2BonHOPDIAn3FVuvjONnceIbcolOc9Pqb2wHox
+YJEol3ciUPLGk26yG8VBxvmhN/sQv9pWpvtSTV+/78SWdyjlMv/o4RjMQ1IYrI13mnJM6J0DXrCi
+7+Td0ufmp6ZSreGYCJZKQ8xzPUuijYnv3IJMuEqAJGUrHpGC9QT2ch9XGEAX8DlRto/ziTtn91hO
+Srza+Q7BwAy98whx+IMPyS6AlfSFDs6uqQIDAQABo4ICHDCCAhgwDgYDVR0PAQH/BAQDAgGGMB8G
+A1UdIwQYMBaAFEl0uwxeunr+AlTve6DGlcYJgHCWMB0GA1UdDgQWBBS4Q4NkIXrucIHepd4MYCiH
+eK5eeDASBgNVHRMBAf8ECDAGAQH/AgEAMAwGA1UdJAQFMAOAAQAwZgYDVR0gBF8wXTALBglghkgB
+ZQIBCwUwCwYJYIZIAWUCAQsJMAsGCWCGSAFlAgELETALBglghkgBZQIBCxIwCwYJYIZIAWUCAQsT
+MAwGCmCGSAFlAwIBAxowDAYKYIZIAWUDAgEDGzA3BgNVHR8EMDAuMCygKqAohiZodHRwOi8vY3Js
+LmRpc2EubWlsL2NybC9ET0RST09UQ0EyLmNybDCCAQEGCCsGAQUFBwEBBIH0MIHxMDoGCCsGAQUF
+BzAChi5odHRwOi8vY3JsLmRpc2EubWlsL2lzc3VlZHRvL0RPRFJPT1RDQTJfSVQucDdjMCAGCCsG
+AQUFBzABhhRodHRwOi8vb2NzcC5kaXNhLm1pbDCBkAYIKwYBBQUHMAKGgYNsZGFwOi8vY3JsLmdk
+cy5kaXNhLm1pbC9jbiUzZERvRCUyMFJvb3QlMjBDQSUyMDIlMmNvdSUzZFBLSSUyY291JTNkRG9E
+JTJjbyUzZFUuUy4lMjBHb3Zlcm5tZW50JTJjYyUzZFVTP2Nyb3NzQ2VydGlmaWNhdGVQYWlyO2Jp
+bmFyeTANBgkqhkiG9w0BAQUFAAOCAQEALGsseTXb8B4ch3ur4ehpajeL23pPVWBplS9TncbKQ7bU
+N5HWA11+WrG4HfeegdOuUFQwpG9LLrsUGxeqXBDTlHoxOZakVHn16VYuVcMbFuqqAsjPUfcygSLG
+NDqpzZqqSJPH6fseMn5xxHbwRVQSHVXqvVwyhzquk5pumSJfqFE17rJTYF/2T0W4FoQdZVXNFcoQ
+AR+p0pynV5Gj1+ewhj0t9Ik62Ml3cFDGbO/y65j4EKo92shcKa3OuHNJTKGSu+btzbqCGmMhGWX0
+Bhm/g6pz5dMbsZj/Rd/7Scxz6OLnB5YAMel/2SQI58pEekgGw0LYP/l5h6U3khaphCCSYzGCAv4w
+ggL6AgEBMGQwXTELMAkGA1UEBhMCVVMxGDAWBgNVBAoTD1UuUy4gR292ZXJubWVudDEMMAoGA1UE
+CxMDRG9EMQwwCgYDVQQLEwNQS0kxGDAWBgNVBAMTD0RPRCBFTUFJTCBDQS0yOQIDFNx/MAkGBSsO
+AwIaBQCgggFvMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTEyMDkw
+NDEyNDcxMFowIwYJKoZIhvcNAQkEMRYEFGT8ZMCLtlQXKR3jASmNQnuZsXySMCQGCSqGSIb3DQEJ
+DzEXMBUwCgYIKoZIhvcNAwcwBwYFKw4DAhowcwYJKwYBBAGCNxAEMWYwZDBdMQswCQYDVQQGEwJV
+UzEYMBYGA1UEChMPVS5TLiBHb3Zlcm5tZW50MQwwCgYDVQQLEwNEb0QxDDAKBgNVBAsTA1BLSTEY
+MBYGA1UEAxMPRE9EIEVNQUlMIENBLTI5AgMU3IwwdQYLKoZIhvcNAQkQAgsxZqBkMF0xCzAJBgNV
+BAYTAlVTMRgwFgYDVQQKEw9VLlMuIEdvdmVybm1lbnQxDDAKBgNVBAsTA0RvRDEMMAoGA1UECxMD
+UEtJMRgwFgYDVQQDEw9ET0QgRU1BSUwgQ0EtMjkCAxTcjDANBgkqhkiG9w0BAQEFAASCAQAFQodG
+avhAeLxnqld5LS2Eb4BSMGV7JGpw49g4MS8t/GEf900C3eJqFWVFq3l0vAhlZLLxTVQQ4sDYRyIe
+u0mBqD4hPWuD4aGQK5pKq0mudfUUIxFW+kTsYisGwAsId2sbHf5mQb0ABGSBoiZ9EMOsisVq/hhR
+uyi1EDnr1RBBmpIFYjUvG0VGpM/ZD/nNePPM2BHbLgCn6DhQYVL15FGNkQLWOOaYJDlDAupfTOc+
+/ioV+qWBjUkXfaDtQUEiRw+DUW8f+dmFs1kXTFcaRNbhU6/utZ7ZERQSXqNgfDvU5NibsRoT2WZL
+uofctPTY/rIiBYjn4MhdZzsmE76uMrPCAAAAAAAA
+
+------=_NextPart_000_0000_01CD8A79.DF847C10--
