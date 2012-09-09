@@ -1,9 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun,  9 Sep 2012 10:46:46 +0200
-Message-Id: <1347180406-12475-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: prevent using any virtual
-	device created on batman-adv as hard-interface
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 9 Sep 2012 20:51:08 +0800
+References: <1347120174-29589-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+ <1347120174-29589-2-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1347120174-29589-2-git-send-email-siwu@hrz.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201209092051.09078.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: allow bla traffic only
+	after first worker period
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,80 +23,16 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Any virtual device created on top of a batman-adv mesh interface must be
-prevented to be used to create a new mesh network (this would lead to an
-unwanted batman-over-batman configuration)
+On Sunday, September 09, 2012 00:02:54 Simon Wunderlich wrote:
+> +                       /* request_sent is only set after creation to avoid
+> +                        * problems when we are not yet known as backbone gw 
+> +                        * in the backbone.
+> +                        *
+> +                        * We can reset this now and allow traffic again. */
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
+Please use the David comment style here.
 
-v2:
-- added check for !parent_dev with WARN_ON()
-
-
- hard-interface.c | 41 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 40 insertions(+), 1 deletion(-)
-
-diff --git a/hard-interface.c b/hard-interface.c
-index fab9e41..7967f14 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -58,6 +58,45 @@ out:
- 	return hard_iface;
- }
- 
-+/**
-+ * batadv_is_on_batman_iface - check if a device is a batman iface descendant
-+ * @net_dev: the device to check
-+ *
-+ * If the user creates any virtual device on top of a batman-adv interface, it
-+ * is important to prevent this new interface to be used to create a new mesh
-+ * network (this behaviour would lead to a batman-over-batman configuration).
-+ * This function recursively checks all the fathers of the device passed as
-+ * argument looking for a batman-adv soft interface.
-+ *
-+ * Returns true if the device is descendant of a batman-adv mesh interface (or
-+ * if it is a batman-adv interface itself), false otherwise
-+ */
-+static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
-+{
-+	struct net_device *parent_dev;
-+	bool ret;
-+
-+	/* check if this is a batman-adv mesh interface */
-+	if (batadv_softif_is_valid(net_dev))
-+		return true;
-+
-+	/* no more parents..stop recursion */
-+	if (net_dev->iflink == net_dev->ifindex)
-+		return false;
-+
-+	/* recurse over the parent device */
-+	parent_dev = dev_get_by_index(&init_net, net_dev->iflink);
-+	/* if we got a NULL parent_dev there is something broken.. */
-+	if (WARN(!parent_dev, "Cannot find parent device"))
-+		return false;
-+
-+	ret = batadv_is_on_batman_iface(parent_dev);
-+
-+	if (parent_dev)
-+		dev_put(parent_dev);
-+	return ret;
-+}
-+
- static int batadv_is_valid_iface(const struct net_device *net_dev)
- {
- 	if (net_dev->flags & IFF_LOOPBACK)
-@@ -70,7 +109,7 @@ static int batadv_is_valid_iface(const struct net_device *net_dev)
- 		return 0;
- 
- 	/* no batman over batman */
--	if (batadv_softif_is_valid(net_dev))
-+	if (batadv_is_on_batman_iface(net_dev))
- 		return 0;
- 
- 	return 1;
--- 
-1.7.12
-
+Cheers,
+Marek
