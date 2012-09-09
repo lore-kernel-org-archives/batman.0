@@ -1,15 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 9 Sep 2012 16:44:28 +0800
-References: <1346703631-17948-1-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1346703631-17948-1-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201209091644.28521.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: make batadv_test_bit()
-	return 0 or 1 only
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun,  9 Sep 2012 10:46:46 +0200
+Message-Id: <1347180406-12475-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: prevent using any virtual
+	device created on batman-adv as hard-interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,24 +15,81 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, September 04, 2012 04:20:31 Linus L=C3=BCssing wrote:
-> On some architectures test_bit() can return other values than 0 or 1:
->=20
-> With a generic x86 OpenWrt image in a kvm setup (batadv_)test_bit()
-> frequently returns -1 for me, leading to batadv_iv_ogm_update_seqnos()
-> wrongly signaling a protected seqno window.
->=20
-> This patch tries to fix this issue by making batadv_test_bit() return 0
-> or 1 only.
->=20
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
-> ---
->  bitarray.h |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+Any virtual device created on top of a batman-adv mesh interface must be
+prevented to be used to create a new mesh network (this would lead to an
+unwanted batman-over-batman configuration)
 
-Applied in revision bf73b14.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-Thanks,
-Marek
+v2:
+- added check for !parent_dev with WARN_ON()
+
+
+ hard-interface.c | 41 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 40 insertions(+), 1 deletion(-)
+
+diff --git a/hard-interface.c b/hard-interface.c
+index fab9e41..7967f14 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -58,6 +58,45 @@ out:
+ 	return hard_iface;
+ }
+ 
++/**
++ * batadv_is_on_batman_iface - check if a device is a batman iface descendant
++ * @net_dev: the device to check
++ *
++ * If the user creates any virtual device on top of a batman-adv interface, it
++ * is important to prevent this new interface to be used to create a new mesh
++ * network (this behaviour would lead to a batman-over-batman configuration).
++ * This function recursively checks all the fathers of the device passed as
++ * argument looking for a batman-adv soft interface.
++ *
++ * Returns true if the device is descendant of a batman-adv mesh interface (or
++ * if it is a batman-adv interface itself), false otherwise
++ */
++static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
++{
++	struct net_device *parent_dev;
++	bool ret;
++
++	/* check if this is a batman-adv mesh interface */
++	if (batadv_softif_is_valid(net_dev))
++		return true;
++
++	/* no more parents..stop recursion */
++	if (net_dev->iflink == net_dev->ifindex)
++		return false;
++
++	/* recurse over the parent device */
++	parent_dev = dev_get_by_index(&init_net, net_dev->iflink);
++	/* if we got a NULL parent_dev there is something broken.. */
++	if (WARN(!parent_dev, "Cannot find parent device"))
++		return false;
++
++	ret = batadv_is_on_batman_iface(parent_dev);
++
++	if (parent_dev)
++		dev_put(parent_dev);
++	return ret;
++}
++
+ static int batadv_is_valid_iface(const struct net_device *net_dev)
+ {
+ 	if (net_dev->flags & IFF_LOOPBACK)
+@@ -70,7 +109,7 @@ static int batadv_is_valid_iface(const struct net_device *net_dev)
+ 		return 0;
+ 
+ 	/* no batman over batman */
+-	if (batadv_softif_is_valid(net_dev))
++	if (batadv_is_on_batman_iface(net_dev))
+ 		return 0;
+ 
+ 	return 1;
+-- 
+1.7.12
+
