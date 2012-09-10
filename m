@@ -1,11 +1,13 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun,  9 Sep 2012 22:27:57 +0200
-Message-Id: <1347222477-24144-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <201209092051.09078.lindner_marek@yahoo.de>
-References: <201209092051.09078.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: allow bla traffic only
-	after first worker period
+Return-Path: <emunicio@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <h1pf9bti26g2966o34ml5cv4.1347057546796@email.android.com>
+References: <h1pf9bti26g2966o34ml5cv4.1347057546796@email.android.com>
+From: Esteban Municio <emunicio@gmail.com>
+Date: Mon, 10 Sep 2012 10:18:31 -0500
+Message-ID: <CAMVTf1hKCgkmwgz_bUYwULcgFdoSraog2D1HRSZiTi46w7GcDw@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] How to force a specific network topology
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,60 +19,77 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-When adding a backbone gateway for the first time, it might not yet
-be known in the backbone, and therefore we should not forward
-broadcasts yet. This behaviour is the same as when sending a request
-to another backbone gw because of a CRC mismatch. The backbone gw
-will operate normal after the next periodic bla work.
+Hi Sven
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
- bridge_loop_avoidance.c |   20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
+I don't understand very well what are you meaning. Now I have 1 bridge
+over with batman-adv:
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index c522bdf..db046d8 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -410,9 +410,14 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, uint8_t *orig,
- 		batadv_orig_node_free_ref(orig_node);
- 	}
- 
--	if (own_backbone)
-+	if (own_backbone) {
- 		batadv_bla_send_announce(bat_priv, entry);
- 
-+		/* this will be decreased in the worker thread */
-+		atomic_inc(&entry->request_sent);
-+		atomic_inc(&bat_priv->bla.num_requests);
-+	}
-+
- 	return entry;
- }
- 
-@@ -1146,6 +1151,19 @@ static void batadv_bla_periodic_work(struct work_struct *work)
- 			backbone_gw->lasttime = jiffies;
- 
- 			batadv_bla_send_announce(bat_priv, backbone_gw);
-+
-+			/* request_sent is only set after creation to avoid
-+			 * problems when we are not yet known as backbone gw
-+			 * in the backbone.
-+			 *
-+			 * We can reset this now and allow traffic again.
-+			 */
-+
-+			if (atomic_read(&backbone_gw->request_sent) == 0)
-+				continue;
-+
-+			atomic_dec(&backbone_gw->bat_priv->bla.num_requests);
-+			atomic_set(&backbone_gw->request_sent, 0);
- 		}
- 		rcu_read_unlock();
- 	}
--- 
-1.7.10
+batctl if add wlan0
+brctl addbr mesh-bridge
+brctl addif mesh-bridge eth0
+brctl addif mesh-bridge bat0
 
+Then, should I add a bridge to wlan0 and after bridge it again with the eth=
+0?
+
+brctl addbr bridgeWlan
+brctl addif bridgeWlan wlan0
+
+batctl if add mesh-bridge
+brctl addbr mesh-bridge
+brctl addif mesh-bridge eth0
+brctl addif mesh-bridge bat0
+
+And then, should I install ebtables in all the nodes(now we have 9
+nodes, and only 1 have internet access to install it directly)
+It seem a little difficult for me :-)
+
+Could I try another method?something like set paths manually?
+In 802.11s we have a usefull comand for block links undesirables:
+iw dev INTERFACE_MESH_NAME station set MAC_ADD plink_option block
+nothing similar like that in batman-adv?
+
+Regards
+
+2012/9/7 Martin Hundeb=F8ll <martin@hundeboll.net>:
+> Hi Esteban
+>
+> You can try my patch to filter OGMs:
+> http://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/hundeboll/fil=
+ter
+>
+> The commit message tells how to use it. Unfortunately, its base is quite =
+old, but it should be easy to rebase. Otherwise I can rebase it when I retu=
+rn from Canada next week...
+>
+> Cheers,
+> Martin
+>
+> PS: Sorry for top posting. This Android client want let me change it :(
+>
+> Sven Eckelmann <sven@narfation.org> wrote:
+>
+>>On Friday 07 September 2012 16:58:33 Esteban Municio wrote:
+>>> Hi list
+>>>
+>>> Is there any way to block some links between nodes in order to force a
+>>> specific network topology in batman-adv?
+>>>
+>>> Por example, if y have 3 nodes A, B, C and I want to create a string
+>>> topology A <-> B <-> C, where A can not connect directly with C, how
+>>> could I get it without move far away the nodes?
+>>
+>>You can try to add a your interface to a bridge (only one interface per
+>>bridge) and add this bridge to batman-adv. Now you can filter packets usi=
+ng
+>>ebtables (and therefore drop packets from specific hosts).
+>>
+>>Kind regards,
+>>       Sven
+
+
+
+--=20
+Esteban
