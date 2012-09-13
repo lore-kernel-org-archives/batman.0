@@ -1,18 +1,9 @@
-Return-Path: <guido@guidoi.com.ar>
-MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-In-Reply-To: <20120730103117.GA28562@pandem0nium>
-References: <CAHD-aqKaF4tfsMBQLnyrn4wkqDHQpPjsfCDjhXPzrCbkzM7tsg@mail.gmail.com>
- <20120708100956.GA10210@pandem0nium>
- <CAHD-aq+wSvBc56KGJ6RFDMgnP_sir5TXx83EYPw_WWh8=Geqag@mail.gmail.com>
- <20120725203425.GB11999@pandem0nium>
- <CAHD-aqK68-74CHsL4FUhAXdxJcbJjvdJcGEh6z9XQt5zXvvFGw@mail.gmail.com>
- <20120730103117.GA28562@pandem0nium>
-From: Gui Iribarren <gui@altermundi.net>
-Date: Thu, 13 Sep 2012 13:10:14 -0300
-Message-ID: <CAHD-aqK5ap6xqfCi+x4RtUxBryRmG4qaQSeDTiSYUDUjASuUbQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] 2012.2 OGMs over ethernet issue?
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Thu, 13 Sep 2012 18:18:46 +0200
+Message-Id: <1347553126-13816-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: wait multiple periods before
+	activating bla
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,40 +15,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On Mon, Jul 30, 2012 at 7:31 AM, Simon Wunderlich
-<simon.wunderlich@s2003.tu-chemnitz.de> wrote:
-> Hello Guido,
->
-> Thanks for working that out. I've just tried out VLANs on Ethernet with
-> BATMAN myself, and it worked well here - so I can't reproduce it by simply
-> using VLANs.
->
-> Another cause of the fault may be the VLAN stuff in OpenWRT, as this is not
-> a "real" VLAN but just a way to address the ports on your box. I have not
-> much experience with that, but I've heard funny things about it. ;) Have you
-> tried changing the VLAN config? E.g. changing ports '0t 2t' for eth0.2 to
-> '0t 2' (to remove tagging)?
->
-> Do you have the same problem on other types of devices? (Maybe the internal
-> switch is acting weird)
+For some reasons (bridge forward delay, network device setup order, etc)
+the initial bridge loop avoidance announcement packets may be lost. This
+may lead to problems in finding other backbone gws, and therfore create
+loops in the startup time.
 
-Sorry for necrotizing the thread, but i just wanted to leave a quick
-note in case anyone else stumps on this.
+Fix this by extending the waiting periods to 3 (define can be changed)
+before allowing broadcast traffic.
 
-you were right once again Simon,
-TP-Link TL-MR3220 (and MR3420) has, in fact, "true" VLAN capability in
-the hardware switch, but unfortunately that capability has
-limitations.
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ bridge_loop_avoidance.c |    9 ++++++++-
+ main.h                  |    1 +
+ types.h                 |    1 +
+ 3 files changed, 10 insertions(+), 1 deletion(-)
 
-notably, it can't send tagged and untagged frames through the same
-port, and falling back to software tagging doesn't give meaningful
-results either (switch is broken: packets aren't forwarded between
-ports)
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index db046d8..93cf799 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -386,6 +386,7 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, uint8_t *orig,
+ 	entry->crc = BATADV_BLA_CRC_INIT;
+ 	entry->bat_priv = bat_priv;
+ 	atomic_set(&entry->request_sent, 0);
++	atomic_set(&entry->wait_periods, 0);
+ 	memcpy(entry->orig, orig, ETH_ALEN);
+ 
+ 	/* one for the hash, one for returning */
+@@ -415,6 +416,7 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, uint8_t *orig,
+ 
+ 		/* this will be decreased in the worker thread */
+ 		atomic_inc(&entry->request_sent);
++		atomic_set(&entry->wait_periods, BATADV_BLA_WAIT_PERIODS);
+ 		atomic_inc(&bat_priv->bla.num_requests);
+ 	}
+ 
+@@ -1156,12 +1158,17 @@ static void batadv_bla_periodic_work(struct work_struct *work)
+ 			 * problems when we are not yet known as backbone gw
+ 			 * in the backbone.
+ 			 *
+-			 * We can reset this now and allow traffic again.
++			 * We can reset this now after we waited some periods
++			 * to give bridge forward delays and bla group forming
++			 * some grace time.
+ 			 */
+ 
+ 			if (atomic_read(&backbone_gw->request_sent) == 0)
+ 				continue;
+ 
++			if (!atomic_dec_and_test(&backbone_gw->wait_periods))
++				continue;
++
+ 			atomic_dec(&backbone_gw->bat_priv->bla.num_requests);
+ 			atomic_set(&backbone_gw->request_sent, 0);
+ 		}
+diff --git a/main.h b/main.h
+index e828755..b45d5ad 100644
+--- a/main.h
++++ b/main.h
+@@ -89,6 +89,7 @@
+ #define BATADV_BLA_PERIOD_LENGTH	10000	/* 10 seconds */
+ #define BATADV_BLA_BACKBONE_TIMEOUT	(BATADV_BLA_PERIOD_LENGTH * 3)
+ #define BATADV_BLA_CLAIM_TIMEOUT	(BATADV_BLA_PERIOD_LENGTH * 10)
++#define BATADV_BLA_WAIT_PERIODS		3
+ 
+ #define BATADV_DUPLIST_SIZE		16
+ #define BATADV_DUPLIST_TIMEOUT		500	/* 500 ms */
+diff --git a/types.h b/types.h
+index dc126e7..b425dde 100644
+--- a/types.h
++++ b/types.h
+@@ -326,6 +326,7 @@ struct batadv_backbone_gw {
+ 	struct hlist_node hash_entry;
+ 	struct batadv_priv *bat_priv;
+ 	unsigned long lasttime;	/* last time we heard of this backbone gw */
++	atomic_t wait_periods;
+ 	atomic_t request_sent;
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
+-- 
+1.7.10
 
-I just dumped the whole vlan thing altogether on this hardware.
-
-Thanks as always!
-
-Gui
