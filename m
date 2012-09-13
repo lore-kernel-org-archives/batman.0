@@ -1,14 +1,10 @@
-Return-Path: <emunicio@gmail.com>
+Return-Path: <gibsonsg91921@yahoo.com>
+Message-ID: <1347495936.15654.YahooMailClassic@web121402.mail.ne1.yahoo.com>
+Date: Wed, 12 Sep 2012 17:25:36 -0700 (PDT)
+From: adam wiz <gibsonsg91921@yahoo.com>
 MIME-Version: 1.0
-In-Reply-To: <CAHD-aqJzD54DXkW+wPJV0r4zOoTedgKsSSjPS6STSAYaxfMLOg@mail.gmail.com>
-References: <h1pf9bti26g2966o34ml5cv4.1347057546796@email.android.com>
- <CAMVTf1hKCgkmwgz_bUYwULcgFdoSraog2D1HRSZiTi46w7GcDw@mail.gmail.com>
- <CAHD-aqJzD54DXkW+wPJV0r4zOoTedgKsSSjPS6STSAYaxfMLOg@mail.gmail.com>
-From: Esteban Municio <emunicio@gmail.com>
-Date: Mon, 10 Sep 2012 10:43:28 -0500
-Message-ID: <CAMVTf1j8S7-Ars4Ugt=jz_noyS0Zvs9SyVH-RTZoJ2qBGGO1UQ@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] How to force a specific network topology
+Content-Type: text/plain; charset=us-ascii
+Subject: [B.A.T.M.A.N.] interface preference
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,52 +16,8 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Thanks you very much Gui and Sven
+Is there any manual way to prioritize a wired interface over a wireless interface? It seems to do so naturally at first, but if I unplug and replug the Ethernet cable a couple times when testing it will stay on wireless. Is this considered an optimization or a bug, and how can I make it so it should always choose the Ethernet, even in multi-hop situations? For example, Babel uses an "rxcost" metric for each interface to manually increase the cost of a route on each interface.
 
-Now I understand the configuration and install ebtables has seem quite simple.
-
-Regards
-
-
-2012/9/10 Gui Iribarren <gui@altermundi.net>:
-> On Mon, Sep 10, 2012 at 12:18 PM, Esteban Municio <emunicio@gmail.com> wrote:
->> Hi Sven
->>
->> I don't understand very well what are you meaning. Now I have 1 bridge
->> over with batman-adv:
->>
->> batctl if add wlan0
->> brctl addbr mesh-bridge
->> brctl addif mesh-bridge eth0
->> brctl addif mesh-bridge bat0
->>
->> Then, should I add a bridge to wlan0 and after bridge it again with the eth0?
->>
->> brctl addbr bridgeWlan
->> brctl addif bridgeWlan wlan0
->>
->> batctl if add mesh-bridge
->> brctl addbr mesh-bridge
->> brctl addif mesh-bridge eth0
->> brctl addif mesh-bridge bat0
->
-> Not quite. I think he meant:
->
-> brctl addbr mesh-bridge
-> brctl addif mesh-bridge eth0
-> brctl addif mesh-bridge bat0
->
-> batctl if del wlan0
-> brctl addbr bridgeWlan
-> brctl addif bridgeWlan wlan0
->
-> batctl if add bridgeWlan
->
-> and from there, ebtables.
-
-
-
--- 
-Esteban
+Thanks for your help.
