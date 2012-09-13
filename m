@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 13 Sep 2012 19:10:47 +0800
-References: <1347120174-29589-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1347120174-29589-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Thu, 13 Sep 2012 19:13:15 +0800
+References: <201209092051.09078.lindner_marek@yahoo.de>
+ <1347222477-24144-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1347222477-24144-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201209131910.48097.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: send announcement when
-	backbone gw is registered
+Message-Id: <201209131913.16430.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: allow bla traffic only
+	after first worker period
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,20 +25,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On Sunday, September 09, 2012 00:02:53 Simon Wunderlich wrote:
-> To avoid loops in the startup phase until the first announcement is
-> sent, send an announcement immediately as soon as a backbone gw is
-> added.
-> 
-> This may happen due to various reasons, e.g. a packet passes the rx
-> or tx path.
+On Monday, September 10, 2012 04:27:57 Simon Wunderlich wrote:
+> When adding a backbone gateway for the first time, it might not yet
+> be known in the backbone, and therefore we should not forward
+> broadcasts yet. This behaviour is the same as when sending a request
+> to another backbone gw because of a CRC mismatch. The backbone gw
+> will operate normal after the next periodic bla work.
 > 
 > Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 > ---
->  bridge_loop_avoidance.c |   14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
+>  bridge_loop_avoidance.c |   20 +++++++++++++++++++-
+>  1 file changed, 19 insertions(+), 1 deletion(-)
 
-Applied in revision 5c28095.
+Applied in revision e344097.
 
 Thanks,
 Marek
