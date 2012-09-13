@@ -1,10 +1,15 @@
-Return-Path: <gibsonsg91921@yahoo.com>
-Message-ID: <1347495936.15654.YahooMailClassic@web121402.mail.ne1.yahoo.com>
-Date: Wed, 12 Sep 2012 17:25:36 -0700 (PDT)
-From: adam wiz <gibsonsg91921@yahoo.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 13 Sep 2012 19:06:58 +0800
+References: <1347180406-12475-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1347180406-12475-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: [B.A.T.M.A.N.] interface preference
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201209131906.59005.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: prevent using any virtual
+	device created on batman-adv as hard-interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,6 +23,22 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Is there any manual way to prioritize a wired interface over a wireless interface? It seems to do so naturally at first, but if I unplug and replug the Ethernet cable a couple times when testing it will stay on wireless. Is this considered an optimization or a bug, and how can I make it so it should always choose the Ethernet, even in multi-hop situations? For example, Babel uses an "rxcost" metric for each interface to manually increase the cost of a route on each interface.
+On Sunday, September 09, 2012 16:46:46 Antonio Quartulli wrote:
+> Any virtual device created on top of a batman-adv mesh interface must be
+> prevented to be used to create a new mesh network (this would lead to an
+> unwanted batman-over-batman configuration)
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+> 
+> v2:
+> - added check for !parent_dev with WARN_ON()
+> 
+> 
+>  hard-interface.c | 41 ++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 40 insertions(+), 1 deletion(-)
 
-Thanks for your help.
+Applied in revision 3d48811.
+
+Thanks,
+Marek
