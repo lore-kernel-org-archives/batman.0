@@ -1,16 +1,12 @@
-Return-Path: <emunicio@gmail.com>
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Fri, 14 Sep 2012 12:40:54 +0200
+Message-Id: <1347619254-22862-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-In-Reply-To: <CAMVTf1j8S7-Ars4Ugt=jz_noyS0Zvs9SyVH-RTZoJ2qBGGO1UQ@mail.gmail.com>
-References: <h1pf9bti26g2966o34ml5cv4.1347057546796@email.android.com>
- <CAMVTf1hKCgkmwgz_bUYwULcgFdoSraog2D1HRSZiTi46w7GcDw@mail.gmail.com>
- <CAHD-aqJzD54DXkW+wPJV0r4zOoTedgKsSSjPS6STSAYaxfMLOg@mail.gmail.com>
- <CAMVTf1j8S7-Ars4Ugt=jz_noyS0Zvs9SyVH-RTZoJ2qBGGO1UQ@mail.gmail.com>
-From: Esteban Municio <emunicio@gmail.com>
-Date: Thu, 13 Sep 2012 12:00:50 -0500
-Message-ID: <CAMVTf1iC00WxRVs6ogHVcNqi590Nqtwtisv-TmSQm+vAPV=Bkg@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] How to force a specific network topology
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH net] batman-adv: make batadv_test_bit()
+	return 0 or 1 only
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,98 +18,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi again
+From: Linus Lüssing <linus.luessing@web.de>
 
-I'm still having problems with this issue
+On some architectures test_bit() can return other values than 0 or 1:
 
-I can not bridge wlan0 for use ebtables.Now I am bridging without
-eth0, only with the wireless interfaces. With the device freshly
-rebooted and with empty /etc/rc.local :
+With a generic x86 OpenWrt image in a kvm setup (batadv_)test_bit()
+frequently returns -1 for me, leading to batadv_iv_ogm_update_seqnos()
+wrongly signaling a protected seqno window.
 
-brctl addbr bridgeWlan
-brctl addif bridgeWlan wlan0
-brctl: bridge bridgeWlan: Operation not supported
+This patch tries to fix this issue by making batadv_test_bit() return 0
+or 1 only.
 
-I searched for this I found that you can set this if you do:
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Acked-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/bitarray.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-iw dev wlan0 set 4addr on
+diff --git a/net/batman-adv/bitarray.h b/net/batman-adv/bitarray.h
+index a081ce1..cebaae7 100644
+--- a/net/batman-adv/bitarray.h
++++ b/net/batman-adv/bitarray.h
+@@ -20,8 +20,8 @@
+ #ifndef _NET_BATMAN_ADV_BITARRAY_H_
+ #define _NET_BATMAN_ADV_BITARRAY_H_
+ 
+-/* returns true if the corresponding bit in the given seq_bits indicates true
+- * and curr_seqno is within range of last_seqno
++/* Returns 1 if the corresponding bit in the given seq_bits indicates true
++ * and curr_seqno is within range of last_seqno. Otherwise returns 0.
+  */
+ static inline int batadv_test_bit(const unsigned long *seq_bits,
+ 				  uint32_t last_seqno, uint32_t curr_seqno)
+@@ -32,7 +32,7 @@ static inline int batadv_test_bit(const unsigned long *seq_bits,
+ 	if (diff < 0 || diff >= BATADV_TQ_LOCAL_WINDOW_SIZE)
+ 		return 0;
+ 	else
+-		return  test_bit(diff, seq_bits);
++		return test_bit(diff, seq_bits) != 0;
+ }
+ 
+ /* turn corresponding bit on, so we can remember that we got the packet */
+-- 
+1.7.12
 
-but you only can do this if your wireless interface is in mode ap, and
-mine is on adhoc.
-So I can't set the bridge with batman (batctl if add bridgeWlan)
-This is my wireless device configuration in /etc/confiog/wireless
-
-config wifi-iface
-	option device   radio0
-	option network  lan
-	option mode     adhoc
-	option ssid     netmesh
-	option encryption none
-
-=BFDo you know how could I set the bridges correctly for ebtables filtering=
-?
-
-Thanks!
-Regards
-
-Esteban
-
-
-2012/9/10 Esteban Municio <emunicio@gmail.com>:
-> Thanks you very much Gui and Sven
->
-> Now I understand the configuration and install ebtables has seem quite si=
-mple.
->
-> Regards
->
->
-> 2012/9/10 Gui Iribarren <gui@altermundi.net>:
->> On Mon, Sep 10, 2012 at 12:18 PM, Esteban Municio <emunicio@gmail.com> w=
-rote:
->>> Hi Sven
->>>
->>> I don't understand very well what are you meaning. Now I have 1 bridge
->>> over with batman-adv:
->>>
->>> batctl if add wlan0
->>> brctl addbr mesh-bridge
->>> brctl addif mesh-bridge eth0
->>> brctl addif mesh-bridge bat0
->>>
->>> Then, should I add a bridge to wlan0 and after bridge it again with the=
- eth0?
->>>
->>> brctl addbr bridgeWlan
->>> brctl addif bridgeWlan wlan0
->>>
->>> batctl if add mesh-bridge
->>> brctl addbr mesh-bridge
->>> brctl addif mesh-bridge eth0
->>> brctl addif mesh-bridge bat0
->>
->> Not quite. I think he meant:
->>
->> brctl addbr mesh-bridge
->> brctl addif mesh-bridge eth0
->> brctl addif mesh-bridge bat0
->>
->> batctl if del wlan0
->> brctl addbr bridgeWlan
->> brctl addif bridgeWlan wlan0
->>
->> batctl if add bridgeWlan
->>
->> and from there, ebtables.
->
->
->
-> --
-> Esteban
-
-
-
---=20
-Esteban
