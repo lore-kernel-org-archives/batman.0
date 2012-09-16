@@ -1,15 +1,10 @@
-Return-Path: <ordex@autistici.org>
-Date: Sun, 16 Sep 2012 12:12:50 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120916101250.GA7087@ritirata.org>
-References: <1347745906-12749-1-git-send-email-linus.luessing@web.de>
+Return-Path: <dominicfollett@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="J/dobhs11T7y2rNN"
-Content-Disposition: inline
-In-Reply-To: <1347745906-12749-1-git-send-email-linus.luessing@web.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix symmetry check / route
- flapping in multi interface setups
+Date: Sun, 16 Sep 2012 17:17:01 +0200
+Message-ID: <CA+h5VgqHDke=U-dNZ8Z+27Oe2vvbNZmnARMZodFqxLp_PFTH6w@mail.gmail.com>
+From: Dominic Follett-Smith <dominicfollett@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] echo counting in batmand
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,76 +16,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+HI there,
 
---J/dobhs11T7y2rNN
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I am trying to trace where the protocol updates its count of echos via
+a neighbour. So far this is what I am interpreting: If I know that the
+OGM came from this station, then we can record that we got the packet
+in bit_mark, and update our neighbour's bcast_own_sum in their
+originator entry.
 
-On Sat, Sep 15, 2012 at 11:51:46 +0200, Linus L=C3=BCssing wrote:
-> If receiving an OGM from a neighbor other than the currently selected
-> and if it has the same TQ then we are supposed to switch if this
-> neighbor provides a more symmetric link than the currently selected one.
->=20
-> However this symmetry check currently is broken if the interface of the
-> neighbor we received the OGM from and the one of the currently selected
-> neighbor differ: We are currently trying to determine the symmetry of the
-> link towards the selected router via the link we received the OGM from
-> instead of just checking via the link towards the currently selected
-> router.
->=20
-> This leads to way more route switches than necessary and can lead to
-> permanent route flapping in many common multi interface setups.
->=20
-> This patch fixes this issue by using the right interface for this
-> symmetry check.
->=20
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
-> ---
-> This fixes the route flapping observed in ticket 163 (but unfortunately
-> doesn't fix the main issue of this ticket, the starving routes, yet).
->=20
->  bat_iv_ogm.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->=20
-> diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-> index 7f0adad..2c6b560 100644
-> --- a/bat_iv_ogm.c
-> +++ b/bat_iv_ogm.c
-> @@ -743,7 +743,8 @@ batadv_iv_ogm_orig_update(struct batadv_priv *bat_pri=
-v,
->  	if (router && (neigh_node->tq_avg =3D=3D router->tq_avg)) {
->  		orig_node_tmp =3D router->orig_node;
->  		spin_lock_bh(&orig_node_tmp->ogm_cnt_lock);
-> -		sum_orig =3D orig_node_tmp->bcast_own_sum[if_incoming->if_num];
-> +		sum_orig =3D orig_node_tmp->
-> +				bcast_own_sum[router->if_incoming->if_num];
+if ((has_directlink_flag) && (if_incoming->addr.sin_addr.s_addr ==
+bat_packet->orig) && (bat_packet->seqno - if_incoming->out.seqno + 2
+== 0)) {
 
-what about:
-	int if_num;
-	...
-		if_num =3D router->if_incoming->if_num;
-		sum_orig =3D orig_node_tmp->bcast_own_sum[if_num];
+					debug_output(4, "count own bcast (is_my_orig): old = %i, ",
+orig_neigh_node->bcast_own_sum[if_incoming->if_num]);
 
-?
+					bit_mark((TYPE_OF_WORD
+*)&(orig_neigh_node->bcast_own[if_incoming->if_num * num_words]), 0);
+					orig_neigh_node->bcast_own_sum[if_incoming->if_num] =
+bit_packet_count((TYPE_OF_WORD
+*)&(orig_neigh_node->bcast_own[if_incoming->if_num * num_words]));
 
---=20
-Antonio Quartulli
+					debug_output(4, "new = %i \n",
+orig_neigh_node->bcast_own_sum[if_incoming->if_num]);
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
+				}
 
---J/dobhs11T7y2rNN
-Content-Type: application/pgp-signature
+What I am trying to see is where the sliding window (of size
+local_window_size) for echos is defined. This I cannot locate, and in
+my report I am saying that bcast_own_sum is the sliding window for
+echos, which I am not sure is correct or incorrect.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Thanks in advance for the help.
 
-iEYEARECAAYFAlBVpiIACgkQpGgxIkP9cwchrgCfQJf4f44K5/aTWtT46kWGCdqX
-a9cAnjAV/DV+h513UUJlRE65c1sWo7hm
-=+sH5
------END PGP SIGNATURE-----
-
---J/dobhs11T7y2rNN--
+Regards
+Dominic
+UCT, SA
