@@ -1,14 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 18 Sep 2012 10:59:03 +0800
-References: <CA+h5VgqHDke=U-dNZ8Z+27Oe2vvbNZmnARMZodFqxLp_PFTH6w@mail.gmail.com>
-In-Reply-To: <CA+h5VgqHDke=U-dNZ8Z+27Oe2vvbNZmnARMZodFqxLp_PFTH6w@mail.gmail.com>
+Return-Path: <defdef128@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201209181059.03866.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] echo counting in batmand
+Sender: defdef128@gmail.com
+Date: Tue, 18 Sep 2012 16:41:58 +0200
+Message-ID: <CANMkaozByUVfK9h_UAY08UDCZd6xJWg7NqPpCTWJfsyaBnEJEA@mail.gmail.com>
+From: Def <def@laposte.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix change mac address of soft
+	iface.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,32 +18,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+ Into function interface_set_mac_addr, the function tt_local_add
+ was invoked before updating dev->dev_addr. The new MAC
+ addresse was not tagged as NoPurge.
 
-Hi,
+---
+ soft-interface.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-> if ((has_directlink_flag) && (if_incoming->addr.sin_addr.s_addr ==
-> bat_packet->orig) && (bat_packet->seqno - if_incoming->out.seqno + 2
-> == 0)) {
-> 
-> 					debug_output(4, "count own bcast (is_my_orig): old = %i, 
-",
-> orig_neigh_node->bcast_own_sum[if_incoming->if_num]);
-> 
-> 					bit_mark((TYPE_OF_WORD
-> *)&(orig_neigh_node->bcast_own[if_incoming->if_num * num_words]), 0);
-> 					orig_neigh_node->bcast_own_sum[if_incoming->if_num] =
-> bit_packet_count((TYPE_OF_WORD
-> *)&(orig_neigh_node->bcast_own[if_incoming->if_num * num_words]));
-> 
-> 					debug_output(4, "new = %i \n",
-> orig_neigh_node->bcast_own_sum[if_incoming->if_num]);
-> 
-> 				}
+diff --git a/soft-interface.c b/soft-interface.c
+index cf26e41..1345b86
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -100,18 +100,21 @@ static int batadv_interface_set_mac_addr(struct
+net_device *dev, void *p)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+ 	struct sockaddr *addr = p;
++	uint8_t old_addr[ETH_ALEN];
 
-you may want to look at the corresponding kernel code because it is way 
-cleaner and easier to understand.
+ 	if (!is_valid_ether_addr(addr->sa_data))
+ 		return -EADDRNOTAVAIL;
 
-Cheers,
-Marek
++	memcpy(old_addr, dev->dev_addr, ETH_ALEN);
++	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
++
+ 	/* only modify transtable if it has been initialized before */
+ 	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE) {
+-		batadv_tt_local_remove(bat_priv, dev->dev_addr,
++		batadv_tt_local_remove(bat_priv, old_addr,
+ 				       "mac address changed", false);
+ 		batadv_tt_local_add(dev, addr->sa_data, BATADV_NULL_IFINDEX);
+ 	}
+-
+-	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
++	
+ 	dev->addr_assign_type &= ~NET_ADDR_RANDOM;
+ 	return 0;
+ }
+-- 
+1.7.10.4
