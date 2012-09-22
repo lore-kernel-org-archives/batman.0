@@ -1,17 +1,10 @@
-Return-Path: <ordex@autistici.org>
-Date: Thu, 20 Sep 2012 20:10:01 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20120920181001.GE29329@ritirata.org>
-References: <CANMkaozByUVfK9h_UAY08UDCZd6xJWg7NqPpCTWJfsyaBnEJEA@mail.gmail.com>
- <1860743.fUGhpHrPxd@bentobox> <20120920114250.GA29329@ritirata.org>
- <CANMkaoyhATZnFpRTDQXPFUOyPXnVOzTHgr5O1+UwZgmYZ9tvYA@mail.gmail.com>
+Return-Path: <dominicfollett@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="bjuZg6miEcdLYP6q"
-Content-Disposition: inline
-In-Reply-To: <CANMkaoyhATZnFpRTDQXPFUOyPXnVOzTHgr5O1+UwZgmYZ9tvYA@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Fix change mac address of
- soft iface.
+Date: Sat, 22 Sep 2012 18:06:22 +0200
+Message-ID: <CA+h5Vgp5Pwjn0tVnC1bWg=R8tXdwxskesgtt2uTuwdSDtaNzDg@mail.gmail.com>
+From: Dominic Follett-Smith <dominicfollett@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] running batmand on Debian for Alix
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,39 +16,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Hi,
 
---bjuZg6miEcdLYP6q
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I am having trouble running the batman protocol on my debian distro
+(2.6.32) on PC Engine's Alix boards. I am using CM9 pci cards, with
+ath5k driver from the compat-wireless-3.5 package. I can scan for
+networks, and view a survey dump using the iw tool. despite being able
+to start the daemon successfully, neither node can receive packets
+from one another. I set the mode to ad-hoc and channel to channel 7 on
+both alix boards. The following url is a link to my system profile on
+pastebin:
 
-On Thu, Sep 20, 2012 at 02:56:13PM +0200, Def wrote:
-> Into function interface_set_mac_addr, the function tt_local_add was
-> invoked before updating dev->dev_addr. The new MAC address was not
-> tagged as NoPurge.
->=20
-> Signed-off-by: Def <def@laposte.net>
+http://pastebin.com/RtpTe31C
 
-Acked by: Antonio Quartulli <ordex@autistici.org>
+it includes (ifconfig, iwconfig, interfaces configuration, sample of
+running batman, dmesg for wireless interface wlan0 and modinfo for
+ath5k )
 
+I can't figure out what I am doing wrong, I had perhaps naively
+assumed that passing a configured wireless interface would be enough,
+but I guess I have missed something important.
 
---=20
-Antonio Quartulli
+Help is always greatly appreciated.
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
+Thanks
+Dominic
+UCT, SA
 
---bjuZg6miEcdLYP6q
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlBbW/kACgkQpGgxIkP9cwdR7wCfeybsg+k/MTfbU26O0xBaqvwq
-3m4An1ONRhdR2yfzcjWIfKaS8XKvomIB
-=xYYv
------END PGP SIGNATURE-----
-
---bjuZg6miEcdLYP6q--
+--
+If you are going to achieve excellence in big things, you develop the
+habit in little matters. Excellence is not an exception, it is a
+prevailing attitude.
+Colin Powell
