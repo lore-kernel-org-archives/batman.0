@@ -1,12 +1,14 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 23 Sep 2012 22:41:32 +0200
-Message-Id: <1348432892-16841-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH stable 3.5] batman-adv: make
-	batadv_test_bit() return 0 or 1 only
+Return-Path: <davem@davemloft.net>
+Date: Sun, 23 Sep 2012 16:48:05 -0400 (EDT)
+Message-Id: <20120923.164805.2225560139420938711.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1348432892-16841-1-git-send-email-ordex@autistici.org>
+References: <1348432892-16841-1-git-send-email-ordex@autistici.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH stable 3.5] batman-adv: make
+ batadv_test_bit() return 0 or 1 only
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,54 +20,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: ordex@autistici.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, stable@vger.kernel.org
 
-From: Linus Lüssing <linus.luessing@web.de>
 
-commit dbd6b11e15a2f96030da17dbeda943a8a98ee990 upstream.
+This is not how the make stable submissions for networking changes.
 
-On some architectures test_bit() can return other values than 0 or 1:
+I already have this patch queued up at:
 
-With a generic x86 OpenWrt image in a kvm setup (batadv_)test_bit()
-frequently returns -1 for me, leading to batadv_iv_ogm_update_seqnos()
-wrongly signaling a protected seqno window.
+http://patchwork.ozlabs.org/user/bundle/2566/?state=*
 
-This patch tries to fix this issue by making batadv_test_bit() return 0
-or 1 only.
+When you submit networking fixes incorrectly like this, it make more
+work for me and the -stable maintainers.  So please don't do this.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-Acked-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/bitarray.h | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/net/batman-adv/bitarray.h b/net/batman-adv/bitarray.h
-index 1835c15..7d1840b 100644
---- a/net/batman-adv/bitarray.h
-+++ b/net/batman-adv/bitarray.h
-@@ -22,8 +22,9 @@
- #ifndef _NET_BATMAN_ADV_BITARRAY_H_
- #define _NET_BATMAN_ADV_BITARRAY_H_
- 
--/* returns true if the corresponding bit in the given seq_bits indicates true
-- * and curr_seqno is within range of last_seqno */
-+/* Returns 1 if the corresponding bit in the given seq_bits indicates true
-+ * and curr_seqno is within range of last_seqno. Otherwise returns 0.
-+ */
- static inline int bat_test_bit(const unsigned long *seq_bits,
- 			       uint32_t last_seqno, uint32_t curr_seqno)
- {
-@@ -33,7 +34,7 @@ static inline int bat_test_bit(const unsigned long *seq_bits,
- 	if (diff < 0 || diff >= TQ_LOCAL_WINDOW_SIZE)
- 		return 0;
- 	else
--		return  test_bit(diff, seq_bits);
-+		return test_bit(diff, seq_bits) != 0;
- }
- 
- /* turn corresponding bit on, so we can remember that we got the packet */
--- 
-1.7.12
-
+Thanks.
