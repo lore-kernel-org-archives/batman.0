@@ -1,14 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 25 Sep 2012 17:57:17 +0200
-Message-Id: <1348588637-18441-3-git-send-email-ordex@autistici.org>
-In-Reply-To: <1348588637-18441-1-git-send-email-ordex@autistici.org>
-References: <1348588637-18441-1-git-send-email-ordex@autistici.org>
+Date: Tue, 25 Sep 2012 17:57:15 +0200
+Message-Id: <1348588637-18441-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH net 2/2] batman-adv: Fix symmetry check /
-	route flapping in multi interface setups
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-09-25
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,68 +20,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <linus.luessing@web.de>
+Hello David,
 
-If receiving an OGM from a neighbor other than the currently selected
-and if it has the same TQ then we are supposed to switch if this
-neighbor provides a more symmetric link than the currently selected one.
+here are two fixes (the last set) we would to propose for net/linux-3.6.
 
-However this symmetry check currently is broken if the interface of the
-neighbor we received the OGM from and the one of the currently selected
-neighbor differ: We are currently trying to determine the symmetry of the
-link towards the selected router via the link we received the OGM from
-instead of just checking via the link towards the currently selected
-router.
+The one from Def fixes a wrong behaviour of batman-adv in case of virtual
+interface mac address change, while the other from Linüs fixes a problem in the
+route selection which can lead to a continuous route flapping under certain
+conditions.
 
-This leads to way more route switches than necessary and can lead to
-permanent route flapping in many common multi interface setups.
+We would also like to enqueue both patches for sending to stable-3.5.
 
-This patch fixes this issue by using the right interface for this
-symmetry check.
+During merge with net/master you will hit a conflict. I'm going to send some
+instructions on how to solve it.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/bat_iv_ogm.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+Thank you very much,
+		Antonio
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index e877af8..469daab 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -642,7 +642,8 @@ batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
- 	struct batadv_neigh_node *router = NULL;
- 	struct batadv_orig_node *orig_node_tmp;
- 	struct hlist_node *node;
--	uint8_t bcast_own_sum_orig, bcast_own_sum_neigh;
-+	int if_num;
-+	uint8_t sum_orig, sum_neigh;
- 	uint8_t *neigh_addr;
- 
- 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-@@ -727,17 +728,17 @@ batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
- 	if (router && (neigh_node->tq_avg == router->tq_avg)) {
- 		orig_node_tmp = router->orig_node;
- 		spin_lock_bh(&orig_node_tmp->ogm_cnt_lock);
--		bcast_own_sum_orig =
--			orig_node_tmp->bcast_own_sum[if_incoming->if_num];
-+		if_num = router->if_incoming->if_num;
-+		sum_orig = orig_node_tmp->bcast_own_sum[if_num];
- 		spin_unlock_bh(&orig_node_tmp->ogm_cnt_lock);
- 
- 		orig_node_tmp = neigh_node->orig_node;
- 		spin_lock_bh(&orig_node_tmp->ogm_cnt_lock);
--		bcast_own_sum_neigh =
--			orig_node_tmp->bcast_own_sum[if_incoming->if_num];
-+		if_num = neigh_node->if_incoming->if_num;
-+		sum_neigh = orig_node_tmp->bcast_own_sum[if_num];
- 		spin_unlock_bh(&orig_node_tmp->ogm_cnt_lock);
- 
--		if (bcast_own_sum_orig >= bcast_own_sum_neigh)
-+		if (sum_orig >= sum_neigh)
- 			goto update_tt;
- 	}
- 
--- 
-1.7.12
 
+
+The following changes since commit 2b018d57ff18e5405823e5cb59651a5b4d946d7b:
+
+  pppoe: drop PPPOX_ZOMBIEs in pppoe_release (2012-09-22 15:49:31 -0400)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 7caf69fb9c5017df01945a1861c042f6aa08edeb:
+
+  batman-adv: Fix symmetry check / route flapping in multi interface setups (2012-09-23 23:12:49 +0200)
+
+----------------------------------------------------------------
+Included fixes:
+- fix the behaviour of batman-adv in case of virtual interface MAC change event
+- fix symmetric link check in neighbour selection
+
+----------------------------------------------------------------
+Def (1):
+      batman-adv: Fix change mac address of soft iface.
+
+Linus Lüssing (1):
+      batman-adv: Fix symmetry check / route flapping in multi interface setups
+
+ net/batman-adv/bat_iv_ogm.c     | 13 +++++++------
+ net/batman-adv/soft-interface.c |  7 +++++--
+ 2 files changed, 12 insertions(+), 8 deletions(-)
