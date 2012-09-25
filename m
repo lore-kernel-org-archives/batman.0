@@ -1,17 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 24 Sep 2012 05:42:17 +0800
-References: <1348432892-16841-1-git-send-email-ordex@autistici.org>
- <201209240520.12162.lindner_marek@yahoo.de>
- <20120923.172224.428875911402404722.davem@davemloft.net>
-In-Reply-To: <20120923.172224.428875911402404722.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201209240542.18274.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH stable 3.5] batman-adv: make
-	batadv_test_bit() return 0 or 1 only
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 25 Sep 2012 17:57:16 +0200
+Message-Id: <1348588637-18441-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1348588637-18441-1-git-send-email-ordex@autistici.org>
+References: <1348588637-18441-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH net 1/2] batman-adv: Fix change mac address
+	of soft iface.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,26 +17,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David Miller <davem@davemloft.net>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Monday, September 24, 2012 05:22:24 David Miller wrote:
-> > do you have some kind of "news feed" (website / announce list / blog /
-> > twitter  / $web2.0 tech / whatever) we can follow to stay informed about
-> > policy changes regarding the net tree ? At the moment our only method of
-> > "informing ourselves" consists of bumping into something which we'd like
-> > to avoid as much as you do.
-> 
-> No.
-> 
-> Anyone doing networking development should follow the netdev mailing list,
-> where you can see policy in action and become familiar with the norms
-> and expectations of the project.
+From: Def <def@laposte.net>
 
-Of course, it is up to you to make that call. Though it might be worth 
-considering that a smart information policy might save you some breath in the 
-long run. In the current state of affairs creating an extra burden on you is 
-hardly avoidable.
+Into function interface_set_mac_addr, the function tt_local_add was
+invoked before updating dev->dev_addr. The new MAC address was not
+tagged as NoPurge.
 
-Regards,
-Marek
+Signed-off-by: Def <def@laposte.net>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/soft-interface.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 109ea2a..21c5357 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -100,18 +100,21 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+ 	struct sockaddr *addr = p;
++	uint8_t old_addr[ETH_ALEN];
+ 
+ 	if (!is_valid_ether_addr(addr->sa_data))
+ 		return -EADDRNOTAVAIL;
+ 
++	memcpy(old_addr, dev->dev_addr, ETH_ALEN);
++	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
++
+ 	/* only modify transtable if it has been initialized before */
+ 	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE) {
+-		batadv_tt_local_remove(bat_priv, dev->dev_addr,
++		batadv_tt_local_remove(bat_priv, old_addr,
+ 				       "mac address changed", false);
+ 		batadv_tt_local_add(dev, addr->sa_data, BATADV_NULL_IFINDEX);
+ 	}
+ 
+-	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
+ 	dev->addr_assign_type &= ~NET_ADDR_RANDOM;
+ 	return 0;
+ }
+-- 
+1.7.12
+
