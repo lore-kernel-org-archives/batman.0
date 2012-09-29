@@ -1,14 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Fri, 28 Sep 2012 14:42:25 -0400 (EDT)
-Message-Id: <20120928.144225.998897985645074639.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20120925160119.GA31069@ritirata.org>
-References: <1348588637-18441-1-git-send-email-ordex@autistici.org>
- <20120925160119.GA31069@ritirata.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-09-25
+Return-Path: <ordex@autistici.org>
+Date: Sat, 29 Sep 2012 13:27:57 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20120929112757.GB3022@ritirata.org>
+References: <1347712461-9031-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="eAbsdosE1cNLO4uF"
+Content-Disposition: inline
+In-Reply-To: <1347712461-9031-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: recompute mac_len at the
+ beginning of the rx path
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,13 +21,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 25 Sep 2012 18:01:19 +0200
 
-> here are some instructions to solve the conflict you will hit while merging net
-> with net-next.
+--eAbsdosE1cNLO4uF
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks a lot.
+On Sat, Sep 15, 2012 at 02:34:21 +0200, Antonio Quartulli wrote:
+> It is possible that the mac_len is not properly exported because of stran=
+ge
+> device configuration (this behaviour has been observed when using batman-=
+adv on
+> top of a vlan interface). Therefore it is needed to explicitly recompute =
+it at
+> the very beginning of the rx path
+>=20
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+
+Instead of merging this patch I think that the best approach would be to fi=
+x the
+problem in VLAN code in the kernel.
+I'll try to send a patch to netdev.
+
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--eAbsdosE1cNLO4uF
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAlBm2z0ACgkQpGgxIkP9cwfm2gCfY9kjB0cy0P/IFGam/HDltByP
+u7IAn0M41b/Z2vJE2H1NVaI66lWHenWH
+=JmO3
+-----END PGP SIGNATURE-----
+
+--eAbsdosE1cNLO4uF--
