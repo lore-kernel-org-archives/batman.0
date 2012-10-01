@@ -1,16 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 1 Oct 2012 16:47:21 +0800
-References: <1348432717-20913-1-git-send-email-ordex@autistici.org>
- <1348432717-20913-4-git-send-email-ordex@autistici.org>
-In-Reply-To: <1348432717-20913-4-git-send-email-ordex@autistici.org>
+Return-Path: <gmazzurco89@gmail.com>
+Sender: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+Message-ID: <50697D78.3040005@eigenlab.org>
+Date: Mon, 01 Oct 2012 13:24:40 +0200
+From: Gioacchino Mazzurco <gio@eigenlab.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201210011647.22214.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/4] batman-adv: roaming handling
-	mechanism redesign
+Subject: [B.A.T.M.A.N.] reboot sometimes doesn't work well
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,27 +18,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Antonio Quartulli <ordex@autistici.org>
 
-On Monday, September 24, 2012 04:38:37 Antonio Quartulli wrote:
-> This patch allows clients to roam multiple times within the same
-> originator-interval.
-> 
-> To enable this new feature two key aspects that have been introduced:
-> 1) packets are always directed to the node that was originally
-> serving the roamed client which will then re-route the data
-> to the correct destination at any point in time;
-> 2) the client flags handling mechanism has been properly modified
-> in order to allow multiple roamings withinin the same orig-int.
-> Therefore flags are now set properly even in this scenario.
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  translation-table.c | 160
-> ++++++++++++++++++++++++++++++++++++++++------------ 1 file changed, 123
-> insertions(+), 37 deletions(-)
+Hi all!
 
-Applied in revision 2443ba3.
+Some times ago' in ninux Pisa we was experiencing kernel powering off
+the machine caused by batman-adv, with ordex help we debugged what was
+happening and the issue was solved bat that was possible because it was
+happening on x86 computers ( with screen )
 
-Thanks,
-Marek
+Now it SEEMS the same is happening but on mips ( Ubiquity M devices )
+but here i don't know how to make sure the problem is this, the symptoms
+is exactly the same, someone have idea how to save the powering off
+kernel output on some file so after detach/attach cable we can find what
+happened ?
