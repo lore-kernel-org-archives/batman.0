@@ -1,11 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon,  1 Oct 2012 09:57:42 +0200
-Message-Id: <1349078263-5834-9-git-send-email-ordex@autistici.org>
+Date: Mon,  1 Oct 2012 09:57:43 +0200
+Message-Id: <1349078263-5834-10-git-send-email-ordex@autistici.org>
 In-Reply-To: <1349078263-5834-1-git-send-email-ordex@autistici.org>
 References: <1349078263-5834-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv12 8/9] batman-adv: Distributed ARP Table -
-	add runtime switch
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv12 9/9] batman-adv: Add get_ethtool_stats()
+	support for DAT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,160 +21,177 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-This patch adds a runtime switch that enables the user to turn the DAT feature
-on or off at runtime
+From: Martin Hundebøll <martin@hundeboll.net>
 
+Added additional counters for D.A.T.
+
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- distributed-arp-table.c | 25 +++++++++++++++++++++++++
- distributed-arp-table.h |  1 +
- soft-interface.c        |  3 +++
- sysfs.c                 |  8 ++++++++
- types.h                 |  3 +++
- 5 files changed, 40 insertions(+)
+ distributed-arp-table.c | 19 +++++++++++++++++--
+ distributed-arp-table.h | 27 +++++++++++++++++++++++++++
+ routing.c               |  8 +++++++-
+ soft-interface.c        |  7 +++++++
+ types.h                 |  7 +++++++
+ 5 files changed, 65 insertions(+), 3 deletions(-)
 
 diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index f43bf8e..d637d62 100644
+index d637d62..c933615 100644
 --- a/distributed-arp-table.c
 +++ b/distributed-arp-table.c
-@@ -790,6 +790,9 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 	struct sk_buff *skb_new;
- 	struct batadv_hard_iface *primary_if = NULL;
- 
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		goto out;
+@@ -601,9 +601,22 @@ static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
+ 		send_status = batadv_send_skb_packet(tmp_skb,
+ 						     neigh_node->if_incoming,
+ 						     neigh_node->addr);
+-		if (send_status == NET_XMIT_SUCCESS)
++		if (send_status == NET_XMIT_SUCCESS) {
++			/* count the sent packet */
++			switch (packet_subtype) {
++			case BATADV_P_DAT_DHT_GET:
++				batadv_inc_counter(bat_priv,
++						   BATADV_CNT_DAT_GET_TX);
++				break;
++			case BATADV_P_DAT_DHT_PUT:
++				batadv_inc_counter(bat_priv,
++						   BATADV_CNT_DAT_PUT_TX);
++				break;
++			}
 +
- 	type = batadv_arp_get_type(bat_priv, skb, 0);
- 	/* If the node gets an ARP_REQUEST it has to send a DHT_GET unicast
- 	 * message to the selected DHT candidates
-@@ -861,6 +864,9 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	bool ret = false;
- 	int err;
+ 			/* packet sent to a candidate: return true */
+ 			ret = true;
++		}
+ free_neigh:
+ 		batadv_neigh_node_free_ref(neigh_node);
+ free_orig:
+@@ -906,8 +919,10 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
+ 	else
+ 		err = batadv_unicast_send_skb(bat_priv, skb_new);
  
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		goto out;
-+
- 	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
- 	if (type != ARPOP_REQUEST)
- 		goto out;
-@@ -924,6 +930,9 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 	__be32 ip_src, ip_dst;
- 	uint8_t *hw_src, *hw_dst;
- 
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		return;
-+
- 	type = batadv_arp_get_type(bat_priv, skb, 0);
- 	if (type != ARPOP_REPLY)
- 		return;
-@@ -959,6 +968,9 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	uint8_t *hw_src, *hw_dst;
- 	bool ret = false;
- 
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		goto out;
-+
- 	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
- 	if (type != ARPOP_REPLY)
- 		goto out;
-@@ -1003,6 +1015,9 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 	bool ret = false;
- 	const size_t bcast_len = sizeof(struct batadv_bcast_packet);
- 
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		goto out;
-+
- 	/* If this packet is an ARP_REQUEST and the node already has the
- 	 * information that it is going to ask, then the packet can be dropped
- 	 */
-@@ -1031,3 +1046,13 @@ out:
+-	if (!err)
++	if (!err) {
++		batadv_inc_counter(bat_priv, BATADV_CNT_DAT_CACHED_REPLY_TX);
+ 		ret = true;
++	}
+ out:
+ 	if (dat_entry)
  		batadv_dat_entry_free_ref(dat_entry);
- 	return ret;
- }
-+
-+void batadv_dat_switch(struct net_device *net_dev)
-+{
-+	struct batadv_priv *bat_priv = netdev_priv(net_dev);
-+
-+	if (atomic_read(&bat_priv->distributed_arp_table))
-+		batadv_dat_init(bat_priv);
-+	else
-+		batadv_dat_free(bat_priv);
-+}
 diff --git a/distributed-arp-table.h b/distributed-arp-table.h
-index 77814e8..abdae59 100644
+index abdae59..22dd983 100644
 --- a/distributed-arp-table.h
 +++ b/distributed-arp-table.h
-@@ -73,6 +73,7 @@ batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
- int batadv_dat_init(struct batadv_priv *bat_priv);
- void batadv_dat_free(struct batadv_priv *bat_priv);
+@@ -75,6 +75,28 @@ void batadv_dat_free(struct batadv_priv *bat_priv);
  int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset);
-+void batadv_dat_switch(struct net_device *net_dev);
+ void batadv_dat_switch(struct net_device *net_dev);
  
++/**
++ * batadv_dat_inc_counter - increment the correct DAT packet counter
++ * @bat_priv: the bat priv with all the soft interface information
++ * @subtype: the 4addr subtype of the packet to be counted
++ *
++ * Updates the ethtool statistics for the received packet if it is a DAT subtype
++ */
++static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
++					  uint8_t subtype)
++{
++	switch (subtype) {
++	case BATADV_P_DAT_DHT_GET:
++		batadv_inc_counter(bat_priv,
++				   BATADV_CNT_DAT_GET_RX);
++		break;
++	case BATADV_P_DAT_DHT_PUT:
++		batadv_inc_counter(bat_priv,
++				   BATADV_CNT_DAT_PUT_RX);
++		break;
++	}
++}
++
  #else
  
+ static inline bool
+@@ -136,6 +158,11 @@ static inline void batadv_dat_free(struct batadv_priv *bat_priv)
+ {
+ }
+ 
++static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
++					  uint8_t subtype)
++{
++}
++
+ #endif /* CONFIG_BATMAN_ADV_DAT */
+ 
+ #endif /* _NET_BATMAN_ADV_ARP_H_ */
+diff --git a/routing.c b/routing.c
+index 5fa5f74..c75f9b4 100644
+--- a/routing.c
++++ b/routing.c
+@@ -985,15 +985,17 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct batadv_unicast_packet *unicast_packet;
++	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
+ 	int hdr_size = sizeof(*unicast_packet);
+ 	bool is4addr;
+ 
+ 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
++	unicast_4addr_packet = (struct batadv_unicast_4addr_packet *)skb->data;
+ 
+ 	is4addr = unicast_packet->header.packet_type == BATADV_UNICAST_4ADDR;
+ 	/* the caller function should have already pulled 2 bytes */
+ 	if (is4addr)
+-		hdr_size = sizeof(struct batadv_unicast_4addr_packet);
++		hdr_size = sizeof(*unicast_4addr_packet);
+ 
+ 	if (batadv_check_unicast_packet(skb, hdr_size) < 0)
+ 		return NET_RX_DROP;
+@@ -1010,6 +1012,10 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 							hdr_size))
+ 			goto rx_success;
+ 
++		if (is4addr)
++			batadv_dat_inc_counter(bat_priv,
++					       unicast_4addr_packet->subtype);
++
+ 		batadv_interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size,
+ 				    NULL);
+ 
 diff --git a/soft-interface.c b/soft-interface.c
-index 9dc0ae1..7b4a3a3 100644
+index 7b4a3a3..c283d87 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
-@@ -480,6 +480,9 @@ struct net_device *batadv_softif_create(const char *name)
- 	atomic_set(&bat_priv->aggregated_ogms, 1);
- 	atomic_set(&bat_priv->bonding, 0);
- 	atomic_set(&bat_priv->bridge_loop_avoidance, 0);
+@@ -625,6 +625,13 @@ static const struct {
+ 	{ "tt_response_rx" },
+ 	{ "tt_roam_adv_tx" },
+ 	{ "tt_roam_adv_rx" },
 +#ifdef CONFIG_BATMAN_ADV_DAT
-+	atomic_set(&bat_priv->distributed_arp_table, 1);
++	{ "dat_get_tx" },
++	{ "dat_get_rx" },
++	{ "dat_put_tx" },
++	{ "dat_put_rx" },
++	{ "dat_cached_reply_tx" },
 +#endif
- 	atomic_set(&bat_priv->ap_isolation, 0);
- 	atomic_set(&bat_priv->vis_mode, BATADV_VIS_TYPE_CLIENT_UPDATE);
- 	atomic_set(&bat_priv->gw_mode, BATADV_GW_MODE_OFF);
-diff --git a/sysfs.c b/sysfs.c
-index fa6c8b1..7fdc220 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -20,6 +20,7 @@
- #include "main.h"
- #include "sysfs.h"
- #include "translation-table.h"
-+#include "distributed-arp-table.h"
- #include "originator.h"
- #include "hard-interface.h"
- #include "gateway_common.h"
-@@ -470,6 +471,10 @@ BATADV_ATTR_SIF_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
- #ifdef CONFIG_BATMAN_ADV_BLA
- BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
- #endif
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+BATADV_ATTR_SIF_BOOL(distributed_arp_table, S_IRUGO | S_IWUSR,
-+		     batadv_dat_switch);
-+#endif
- BATADV_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, batadv_update_min_mtu);
- BATADV_ATTR_SIF_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
- static BATADV_ATTR(vis_mode, S_IRUGO | S_IWUSR, batadv_show_vis_mode,
-@@ -495,6 +500,9 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
- #ifdef CONFIG_BATMAN_ADV_BLA
- 	&batadv_attr_bridge_loop_avoidance,
- #endif
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+	&batadv_attr_distributed_arp_table,
-+#endif
- 	&batadv_attr_fragmentation,
- 	&batadv_attr_ap_isolation,
- 	&batadv_attr_vis_mode,
+ };
+ 
+ static void batadv_get_strings(struct net_device *dev, uint32_t stringset,
 diff --git a/types.h b/types.h
-index 2960acb..6b55645 100644
+index 6b55645..be46660 100644
 --- a/types.h
 +++ b/types.h
-@@ -273,6 +273,9 @@ struct batadv_priv {
- 	atomic_t fragmentation;		/* boolean */
- 	atomic_t ap_isolation;		/* boolean */
- 	atomic_t bridge_loop_avoidance;	/* boolean */
+@@ -186,6 +186,13 @@ enum batadv_counters {
+ 	BATADV_CNT_TT_RESPONSE_RX,
+ 	BATADV_CNT_TT_ROAM_ADV_TX,
+ 	BATADV_CNT_TT_ROAM_ADV_RX,
 +#ifdef CONFIG_BATMAN_ADV_DAT
-+	atomic_t distributed_arp_table;	/* boolean */
++	BATADV_CNT_DAT_GET_TX,
++	BATADV_CNT_DAT_GET_RX,
++	BATADV_CNT_DAT_PUT_TX,
++	BATADV_CNT_DAT_PUT_RX,
++	BATADV_CNT_DAT_CACHED_REPLY_TX,
 +#endif
- 	atomic_t vis_mode;		/* VIS_TYPE_* */
- 	atomic_t gw_mode;		/* GW_MODE_* */
- 	atomic_t gw_sel_class;		/* uint */
+ 	BATADV_CNT_NUM,
+ };
+ 
 -- 
 1.7.12
 
