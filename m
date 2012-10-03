@@ -1,16 +1,9 @@
 Return-Path: <ordex@autistici.org>
-Date: Tue, 2 Oct 2012 11:42:21 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121002094221.GA30831@ritirata.org>
-References: <50697D78.3040005@eigenlab.org>
- <CAHD-aqLcyaxH7QvFy5Yb80AjWWrBkF5ei=2F=j3YqpTZ6+BbVQ@mail.gmail.com>
- <5069D0FD.4090805@eigenlab.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
-Content-Disposition: inline
-In-Reply-To: <5069D0FD.4090805@eigenlab.org>
-Subject: Re: [B.A.T.M.A.N.] reboot sometimes doesn't work well
+Date: Wed,  3 Oct 2012 18:35:36 +0200
+Message-Id: <1349282136-23059-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: export compatibility version via
+	debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,83 +15,100 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Different versions of the batman-adv module may use the same compatibility
+version, but this is not understandable at runtime (the only way is to parse the
+kernel log and fetch the batman-adv advertisement message on loading). The user
+may want to know whether two nodes using different versions can communicate or
+not. For this purpose the module has to export this value through debugfs.
 
---Q68bSM7Ycu6FN28Q
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Reported-by: Moritz Warning <moritzwarning@web.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ debugfs.c | 18 ++++++++++++++++++
+ main.c    | 12 ++++++++++++
+ main.h    |  1 +
+ 3 files changed, 31 insertions(+)
 
-On Mon, Oct 01, 2012 at 07:21:01PM +0200, Gioacchino Mazzurco wrote:
-> reboot is called by a script called through ssh
->=20
-> > does it reboot succesfully,
-> no it doesn't
->=20
-> > or simply hangs in there, requiring a
-> > manual power cycle?
-> It hangs there but I lost connectivity the device became unreachable
-> from ipv4 and also ipv6, also link local ipv6 is gone :|
+diff --git a/debugfs.c b/debugfs.c
+index bd032bc..26349e5 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -244,6 +244,16 @@ static int batadv_algorithms_open(struct inode *inode, struct file *file)
+ 	return single_open(file, batadv_algo_seq_print_text, NULL);
+ }
+ 
++/**
++ * batadv_compat_open - Prepare file handler for printing of the compat version
++ * @inode: inode which was opened
++ * @file: file handle to be initialized
++ */
++static int batadv_compat_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, batadv_compat_seq_print_text, NULL);
++}
++
+ static int batadv_originators_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+@@ -310,6 +320,7 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
+ };
+ 
+ static BATADV_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
++static BATADV_DEBUGINFO(compat_version, S_IRUGO, batadv_compat_open);
+ static BATADV_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
+ static BATADV_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
+ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
+@@ -355,6 +366,13 @@ void batadv_debugfs_init(void)
+ 	if (!file)
+ 		pr_err("Can't add debugfs file: %s\n", bat_debug->attr.name);
+ 
++	bat_debug = &batadv_debuginfo_compat_version;
++	file = debugfs_create_file(bat_debug->attr.name,
++				   S_IFREG | bat_debug->attr.mode,
++				   batadv_debugfs, NULL, &bat_debug->fops);
++	if (!file)
++		pr_err("Can't add debugfs file: %s\n", bat_debug->attr.name);
++
+ out:
+ 	return;
+ }
+diff --git a/main.c b/main.c
+index f9bcfa1..b37e08f 100644
+--- a/main.c
++++ b/main.c
+@@ -411,6 +411,18 @@ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
+ 	return 0;
+ }
+ 
++/**
++ * batadv_compat_seq_print_text - print the compatibility version
++ * @seq: not used
++ * @offset: not used
++ */
++int batadv_compat_seq_print_text(struct seq_file *seq, void *offset)
++{
++	seq_printf(seq, "%d\n", BATADV_COMPAT_VERSION);
++
++	return 0;
++}
++
+ static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
+ {
+ 	struct batadv_algo_ops *bat_algo_ops;
+diff --git a/main.h b/main.h
+index b45d5ad..2c5412d 100644
+--- a/main.h
++++ b/main.h
+@@ -167,6 +167,7 @@ void batadv_recv_handler_unregister(uint8_t packet_type);
+ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
++int batadv_compat_seq_print_text(struct seq_file *seq, void *offset);
+ 
+ /**
+  * enum batadv_dbg_level - available log levels
+-- 
+1.7.12
 
-well, what about removing the batman-adv module _before_ rebooting? In this=
- way
-we can somehow move the problem.
-
-(remember to do not connect via the mesh when you do this :-P)
-
-ciao
-
->=20
->=20
-> On 10/01/12 15:39, Gui Iribarren wrote:
-> > On Mon, Oct 1, 2012 at 8:24 AM, Gioacchino Mazzurco <gio@eigenlab.org> =
-wrote:
-> >> Hi all!
-> >>
-> >> Some times ago' in ninux Pisa we was experiencing kernel powering off
-> >> the machine caused by batman-adv, with ordex help we debugged what was
-> >> happening and the issue was solved bat that was possible because it was
-> >> happening on x86 computers ( with screen )
-> >>
-> >> Now it SEEMS the same is happening but on mips ( Ubiquity M devices )
-> >> but here i don't know how to make sure the problem is this, the sympto=
-ms
-> >> is exactly the same, someone have idea how to save the powering off
-> >> kernel output on some file so after detach/attach cable we can find wh=
-at
-> >> happened ?
-> >=20
-> > Your best option is getting a serial cable; you *might* try in
-> > /etc/config/system to enable persistent syslog output, and make it
-> > write to the flash , but no guarantees you'll catch the kernel panic
-> > that way. Serial console definitely would.
-> >=20
-> > Does this happen every time?
-> >> "on powering off"
-> > you mean when you issue a "reboot" command through ssh, or what?
-> > does it reboot succesfully, or simply hangs in there, requiring a
-> > manual power cycle?
-> >=20
-> > We haven't come across anything similar, using this hardware:
-> > tl-mr3020, tl-mr3220, tl-mr3420, tl-wr842nd, ubnt bullet2 , ubnt bullet=
- m2
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---Q68bSM7Ycu6FN28Q
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlBqtv0ACgkQpGgxIkP9cwcXjgCfRsKOMbYmzDxftH1TAyFziyXH
-RFoAniwr3/dHatDBktM7sYPwRHz8cBio
-=RlOM
------END PGP SIGNATURE-----
-
---Q68bSM7Ycu6FN28Q--
