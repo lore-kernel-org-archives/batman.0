@@ -1,16 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 3 Oct 2012 23:18:00 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121003211800.GH10663@ritirata.org>
-References: <1349282136-23059-1-git-send-email-ordex@autistici.org>
- <201210040106.55685.lindner_marek@yahoo.de>
+Return-Path: <gmazzurco89@gmail.com>
+Sender: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+Message-ID: <506CAFA3.7000403@eigenlab.org>
+Date: Wed, 03 Oct 2012 23:35:31 +0200
+From: Gioacchino Mazzurco <gio@eigenlab.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="jaoouwwPWoQSJZYp"
-Content-Disposition: inline
-In-Reply-To: <201210040106.55685.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: export compatibility version
- via debugfs
+References: <50697D78.3040005@eigenlab.org>
+ <CAHD-aqLcyaxH7QvFy5Yb80AjWWrBkF5ei=2F=j3YqpTZ6+BbVQ@mail.gmail.com>
+ <5069D0FD.4090805@eigenlab.org> <20121002094221.GA30831@ritirata.org>
+In-Reply-To: <20121002094221.GA30831@ritirata.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] reboot sometimes doesn't work well
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,58 +24,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+It seems that compiling with newer openwrt revisions happily the problem
+is not happening anymore so probably it was not batman-adv related
 
---jaoouwwPWoQSJZYp
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Sorry for the inconvenient but the behavior was pretty the same the
+other time
 
-On Thu, Oct 04, 2012 at 01:06:55AM +0800, Marek Lindner wrote:
-> On Thursday, October 04, 2012 00:35:36 Antonio Quartulli wrote:
-> > @@ -355,6 +366,13 @@ void batadv_debugfs_init(void)
-> >         if (!file)
-> >                 pr_err("Can't add debugfs file: %s\n",
-> > bat_debug->attr.name);=20
-> > +       bat_debug =3D &batadv_debuginfo_compat_version;
-> > +       file =3D debugfs_create_file(bat_debug->attr.name,
-> > +                                  S_IFREG | bat_debug->attr.mode,
-> > +                                  batadv_debugfs, NULL, &bat_debug->fo=
-ps);
-> > +       if (!file)
-> > +               pr_err("Can't add debugfs file: %s\n",
-> > bat_debug->attr.name); +
-> >  out:
-> >         return;
-> >  }
->=20
-> If we start to create more files here you should add a a loop like in=20
-> batadv_debugfs_add_meshif() to avoid duplicate code.
+Anyway thanks for debugging suggestions!
 
-do you think we should do that for two files already?
-I do not think there will be so much to add in this debugfs folder. Maybe
-we can add a loop as soon as add the next one, but for two I think we can s=
-till
-leave with this implementation.
-
-Don't you think so?
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---jaoouwwPWoQSJZYp
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlBsq4gACgkQpGgxIkP9cwfnuACeJGYM0IC2D6UWKL6ARk1wMATm
-6KQAn0WLZsT6OtuV68ac23d3ucRcsehk
-=alaf
------END PGP SIGNATURE-----
-
---jaoouwwPWoQSJZYp--
+On 10/02/12 11:42, Antonio Quartulli wrote:
+> On Mon, Oct 01, 2012 at 07:21:01PM +0200, Gioacchino Mazzurco wrote:
+>> reboot is called by a script called through ssh
+>>
+>>> does it reboot succesfully,
+>> no it doesn't
+>>
+>>> or simply hangs in there, requiring a
+>>> manual power cycle?
+>> It hangs there but I lost connectivity the device became unreachable
+>> from ipv4 and also ipv6, also link local ipv6 is gone :|
+> 
+> well, what about removing the batman-adv module _before_ rebooting? In this way
+> we can somehow move the problem.
+> 
+> (remember to do not connect via the mesh when you do this :-P)
+> 
+> ciao
+> 
+>>
+>>
+>> On 10/01/12 15:39, Gui Iribarren wrote:
+>>> On Mon, Oct 1, 2012 at 8:24 AM, Gioacchino Mazzurco <gio@eigenlab.org> wrote:
+>>>> Hi all!
+>>>>
+>>>> Some times ago' in ninux Pisa we was experiencing kernel powering off
+>>>> the machine caused by batman-adv, with ordex help we debugged what was
+>>>> happening and the issue was solved bat that was possible because it was
+>>>> happening on x86 computers ( with screen )
+>>>>
+>>>> Now it SEEMS the same is happening but on mips ( Ubiquity M devices )
+>>>> but here i don't know how to make sure the problem is this, the symptoms
+>>>> is exactly the same, someone have idea how to save the powering off
+>>>> kernel output on some file so after detach/attach cable we can find what
+>>>> happened ?
+>>>
+>>> Your best option is getting a serial cable; you *might* try in
+>>> /etc/config/system to enable persistent syslog output, and make it
+>>> write to the flash , but no guarantees you'll catch the kernel panic
+>>> that way. Serial console definitely would.
+>>>
+>>> Does this happen every time?
+>>>> "on powering off"
+>>> you mean when you issue a "reboot" command through ssh, or what?
+>>> does it reboot succesfully, or simply hangs in there, requiring a
+>>> manual power cycle?
+>>>
+>>> We haven't come across anything similar, using this hardware:
+>>> tl-mr3020, tl-mr3220, tl-mr3420, tl-wr842nd, ubnt bullet2 , ubnt bullet m2
+> 
