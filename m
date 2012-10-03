@@ -1,15 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 4 Oct 2012 01:06:55 +0800
-References: <1349282136-23059-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1349282136-23059-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201210040106.55685.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: export compatibility version
-	via debugfs
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed,  3 Oct 2012 19:31:15 +0200
+Message-Id: <1349285475-9782-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: Print compat version when querying
+	the version
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,26 +15,98 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, October 04, 2012 00:35:36 Antonio Quartulli wrote:
-> @@ -355,6 +366,13 @@ void batadv_debugfs_init(void)
->         if (!file)
->                 pr_err("Can't add debugfs file: %s\n",
-> bat_debug->attr.name); 
-> +       bat_debug = &batadv_debuginfo_compat_version;
-> +       file = debugfs_create_file(bat_debug->attr.name,
-> +                                  S_IFREG | bat_debug->attr.mode,
-> +                                  batadv_debugfs, NULL, &bat_debug->fops);
-> +       if (!file)
-> +               pr_err("Can't add debugfs file: %s\n",
-> bat_debug->attr.name); +
->  out:
->         return;
->  }
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ main.c |   53 +++++++++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 41 insertions(+), 12 deletions(-)
 
-If we start to create more files here you should add a a loop like in 
-batadv_debugfs_add_meshif() to avoid duplicate code.
+diff --git a/main.c b/main.c
+index 01a435b..eaaec0a 100644
+--- a/main.c
++++ b/main.c
+@@ -31,6 +31,7 @@
+ #include "main.h"
+ #include "sys.h"
+ #include "debug.h"
++#include "debugfs.h"
+ #include "ping.h"
+ #include "traceroute.h"
+ #include "tcpdump.h"
+@@ -42,6 +43,7 @@
+ 
+ char mesh_dfl_iface[] = "bat0";
+ char module_ver_path[] = "/sys/module/batman_adv/version";
++char module_compat_ver_file[] = "batman_adv/compat_version";
+ 
+ void print_usage(void)
+ {
+@@ -90,6 +92,44 @@ void print_usage(void)
+ #endif
+ }
+ 
++static void print_version(void)
++{
++	int ret;
++	char *debugfs_mnt;
++
++	printf("batctl %s [", SOURCE_VERSION);
++
++	ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
++	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
++		line_ptr[strlen(line_ptr) - 1] = '\0';
++
++	if (ret == EXIT_SUCCESS) {
++		printf("batman-adv: %s", line_ptr);
++	} else {
++		printf("module not loaded");
++		goto out;
++	}
++
++	free(line_ptr);
++	line_ptr = NULL;
++
++	debugfs_mnt = debugfs_mount(NULL);
++	if (!debugfs_mnt)
++		goto out;
++
++	ret = read_file(debugfs_mnt, module_compat_ver_file, USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
++	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
++		line_ptr[strlen(line_ptr) - 1] = '\0';
++
++	if (ret == EXIT_SUCCESS)
++		printf(", compat: %s", line_ptr);
++
++out:
++	free(line_ptr);
++	line_ptr = NULL;
++	printf("]\n");
++}
++
+ int main(int argc, char **argv)
+ {
+ 	int i, ret = EXIT_FAILURE;
+@@ -116,18 +156,7 @@ int main(int argc, char **argv)
+ 		goto err;
+ 
+ 	if (strcmp(argv[1], "-v") == 0) {
+-		printf("batctl %s [batman-adv: ", SOURCE_VERSION);
+-
+-		ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
+-		if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
+-			line_ptr[strlen(line_ptr) - 1] = '\0';
+-
+-		if (ret == EXIT_SUCCESS)
+-			printf("%s]\n", line_ptr);
+-		else
+-			printf("module not loaded]\n");
+-
+-		free(line_ptr);
++		print_version();
+ 		exit(EXIT_SUCCESS);
+ 	}
+ 
+-- 
+1.7.10.4
 
-Cheers,
-Marek
