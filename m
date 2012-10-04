@@ -1,13 +1,9 @@
-Return-Path: <dominicfollett@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <1934520.YmdkrNAjpg@bentobox>
-References: <CA+h5VgqB82br1u9Cdg423Eedd8m23wMO=PWo86q+TTAXVtuy8Q@mail.gmail.com>
- <16662960.TUJbz1tKdU@bentobox> <1934520.YmdkrNAjpg@bentobox>
-Date: Thu, 4 Oct 2012 21:30:24 +0200
-Message-ID: <CA+h5VgqcOikZGAGhw7Ztz+H6E8EtA39o0V-qFYxPGRv=d4ws=w@mail.gmail.com>
-From: Dominic Follett-Smith <dominicfollett@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] mac address from packet
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu,  4 Oct 2012 22:03:34 +0200
+Message-Id: <1349381015-7935-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batctl: Translate client mac to
+	originator mac for ping/traceroute
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,64 +15,264 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+A user may want to check the path selected by batman-adv for any client when
+only the MAC of the device with the IPv4 is known, but not the originator
+address. batctl can assist the user by parsing the global translation table
+to automatically translate it for him.
 
-We have set up a 4x4 test bed composed of  Alix PC engines routers,
-with debian 2.6.32 OS,  CM9 Atheros pci cards with ath5k driver. We
-are using batmand, in this mesh.
+The ping itself will only be done until the originator is reached and not until
+the actual client could be contacted because the client cannot understand
+batman-adv ping packets.
 
-We have set the txpower level to 0dBm to enforce mutli-hopping in the
-testbed. We have the pci cards operating in ad-hoc mode.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ debug.h      |    1 +
+ functions.c  |   82 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ functions.h  |    1 +
+ man/batctl.8 |   10 ++++---
+ ping.c       |   11 +++++++-
+ traceroute.c |   11 +++++++-
+ 6 files changed, 110 insertions(+), 6 deletions(-)
 
-What we are trying to do is use the physical interference model for a
-new interference metric we have made. In order to do this, we need to
-obtain the received signal strength of an OGM that a station has
-received from a neighbour.
-
-We initially thought that a simple method would be to use the iw tool
-as follows:
-
-iw dev wlan0 station get <mac address of neighbour station>
-
-However we need the mac address of the neighbouring station that sent
-the OGM. But we are not sure how to go about retrieving the mac
-address which is part of the ethernet mac header at the beginning of
-the frame.
-
-I am happy to provide more details, if I have left anything out.
-
-Kind Regards
-Dominic
-
-On Thu, Oct 4, 2012 at 6:32 PM, Sven Eckelmann <sven@narfation.org> wrote:
-> On Thursday 04 October 2012 18:30:25 Sven Eckelmann wrote:
->> On Thursday 04 October 2012 18:21:02 Dominic Follett-Smith wrote:
->> > Hi,
->> >
->> > is there a way to get the mac address of the station that sent the
->> > bat_packet? We want to get hold of parameters such as signal strength. We
->> > could do this by using the radiotap header, or by looking at the iw
->> > station
->> > dump of a neighbour. The second option requires the use of the mac
->> > address.
->>
->> Hm? What is a bat_packet? And the sender is encoded in the ethernet mac
->> header before any batman-adv header fields.
->
-> Ok, next time please write that you are speaking about batmand. But it is
-> still the same. The mac is part of the ethernet mac header at the beginning of
-> the frame.
->
-> Kind regards,
->         Sven
-
-
-
+diff --git a/debug.h b/debug.h
+index 6068c2c..cd9dce0 100644
+--- a/debug.h
++++ b/debug.h
+@@ -22,6 +22,7 @@
+ 
+ #define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
+ #define DEBUG_VIS_DATA "vis_data"
++#define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
+ #define DEBUG_LOG "log"
+ 
+ enum batctl_debug_tables {
+diff --git a/functions.c b/functions.c
+index e095fd0..090341d 100644
+--- a/functions.c
++++ b/functions.c
+@@ -37,6 +37,7 @@
+ #include "bat-hosts.h"
+ #include "sys.h"
+ #include "debug.h"
++#include "debugfs.h"
+ 
+ static struct timeval start_time;
+ static char *host_name;
+@@ -318,3 +319,84 @@ out:
+ 		close(fd);
+ 	return res;
+ }
++
++struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac)
++{
++	enum {
++		tg_start,
++		tg_mac,
++		tg_via,
++		tg_originator,
++	} pos;
++	char full_path[MAX_PATH+1];
++	char *debugfs_mnt;
++	static struct ether_addr in_mac;
++	struct ether_addr *mac_result, *mac_tmp;
++	FILE *f = NULL;
++	size_t len = 0;
++	char *line = NULL;
++	char *input, *saveptr, *token;
++	int line_invalid;
++
++	memcpy(&in_mac, mac, sizeof(in_mac));
++	mac_result = &in_mac;
++
++	debugfs_mnt = debugfs_mount(NULL);
++	if (!debugfs_mnt)
++		goto out;
++
++	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/" DEBUG_TRANSTABLE_GLOBAL, mesh_iface, full_path, sizeof(full_path));
++
++	f = fopen(full_path, "r");
++	if (!f)
++		goto out;
++
++	while (getline(&line, &len, f) != -1) {
++		line_invalid = 0;
++		pos = tg_start;
++		input = line;
++
++		while ((token = strtok_r(input, " \t", &saveptr))) {
++			input = NULL;
++
++			switch (pos) {
++			case tg_start:
++				if (strcmp(token, "*") != 0)
++					line_invalid = 1;
++				else
++					pos = tg_mac;
++				break;
++			case tg_mac:
++				mac_tmp = ether_aton(token);
++				if (!mac_tmp || memcmp(mac_tmp, &in_mac,
++						       sizeof(in_mac)) != 0)
++					line_invalid = 1;
++				else
++					pos = tg_via;
++				break;
++			case tg_via:
++				if (strcmp(token, "via") == 0)
++					pos = tg_originator;
++				break;
++			case tg_originator:
++				mac_tmp = ether_aton(token);
++				if (!mac_tmp) {
++					line_invalid = 1;
++				} else {
++					mac_result = mac_tmp;
++					goto out;
++				}
++				break;
++			}
++
++			if (line_invalid)
++				break;
++		}
++	}
++
++out:
++	if (f)
++		fclose(f);
++	free(line);
++	return mac_result;
++}
+diff --git a/functions.h b/functions.h
+index 92d6ae5..a59bb24 100644
+--- a/functions.h
++++ b/functions.h
+@@ -37,6 +37,7 @@ int file_exists(const char *fpath);
+ int read_file(char *dir, char *path, int read_opt,
+ 	      float orig_timeout, float watch_interval);
+ int write_file(char *dir, char *fname, char *arg1, char *arg2);
++struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
+ 
+ extern char *line_ptr;
+ 
+diff --git a/man/batctl.8 b/man/batctl.8
+index ab02e9a..a9f032d 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -204,17 +204,19 @@ tt - translation table counters
+ All counters without a prefix concern payload (pure user data) traffic.
+ .RE
+ .br
+-.IP "\fBping\fP|\fBp\fP [\fB\-c count\fP][\fB\-i interval\fP][\fB\-t time\fP][\fB\-R\fP] \fBMAC_address\fP|\fBbat\-host_name\fP"
++.IP "\fBping\fP|\fBp\fP [\fB\-c count\fP][\fB\-i interval\fP][\fB\-t time\fP][\fB\-R\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP"
+ Layer 2 ping of a MAC address or bat\-host name.  batctl will try to find the bat\-host name if the given parameter was
+ not a MAC address. The "\-c" option tells batctl how man pings should be sent before the program exits. Without the "\-c"
+ option batctl will continue pinging without end. Use CTRL + C to stop it.  With "\-i" and "\-t" you can set the default
+ interval between pings and the timeout time for replies, both in seconds. When run with "\-R", the route taken by the ping
+-messages will be recorded.
++messages will be recorded. With "\-T" you can disable the automatic translation of a client MAC address to the originator
++address which is responsible for this client.
+ .br
+-.IP "\fBtraceroute\fP|\fBtr\fP [\fB\-n\fP] \fBMAC_address\fP|\fBbat\-host_name\fP"
++.IP "\fBtraceroute\fP|\fBtr\fP [\fB\-n\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP"
+ Layer 2 traceroute to a MAC address or bat\-host name. batctl will try to find the bat\-host name if the given parameter
+ was not a MAC address. batctl will send 3 packets to each host and display the response time. If "\-n" is given batctl will
+-not replace the MAC addresses with bat\-host names in the output.
++not replace the MAC addresses with bat\-host names in the output. With "\-T" you can disable the automatic translation of a
++client MAC address to the originator address which is responsible for this client.
+ .br
+ .IP "\fBtcpdump\fP|\fBtd\fP [\fB\-c\fP][\fB\-n\fP][\fB\-p filter\fP][\fB\-x filter\fP] \fBinterface ...\fP"
+ batctl will display all packets that are seen on the given interface(s). A variety of options to filter the output
+diff --git a/ping.c b/ping.c
+index ce8f457..02132f4 100644
+--- a/ping.c
++++ b/ping.c
+@@ -51,6 +51,7 @@ void ping_usage(void)
+ 	printf(" \t -i interval in seconds\n");
+ 	printf(" \t -t timeout in seconds\n");
+ 	printf(" \t -R record route\n");
++	printf(" \t -T don't try to translate mac to originator address\n");
+ }
+ 
+ void sig_handler(int sig)
+@@ -83,8 +84,9 @@ int ping(char *mesh_iface, int argc, char **argv)
+ 	size_t packet_len;
+ 	char *debugfs_mnt;
+ 	char icmp_socket[MAX_PATH+1];
++	int disable_translate_mac = 0;
+ 
+-	while ((optchar = getopt(argc, argv, "hc:i:t:R")) != -1) {
++	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
+ 		switch (optchar) {
+ 		case 'c':
+ 			loop_count = strtol(optarg, NULL , 10);
+@@ -111,6 +113,10 @@ int ping(char *mesh_iface, int argc, char **argv)
+ 			rr = 1;
+ 			found_args++;
+ 			break;
++		case 'T':
++			disable_translate_mac = 1;
++			found_args += 1;
++			break;
+ 		default:
+ 			ping_usage();
+ 			return EXIT_FAILURE;
+@@ -139,6 +145,9 @@ int ping(char *mesh_iface, int argc, char **argv)
+ 		}
+ 	}
+ 
++	if (!disable_translate_mac)
++		dst_mac = translate_mac(mesh_iface, dst_mac);
++
+ 	mac_string = ether_ntoa_long(dst_mac);
+ 	signal(SIGINT, sig_handler);
+ 	signal(SIGTERM, sig_handler);
+diff --git a/traceroute.c b/traceroute.c
+index 75ff2b3..4e42419 100644
+--- a/traceroute.c
++++ b/traceroute.c
+@@ -47,6 +47,7 @@ void traceroute_usage(void)
+ 	printf("parameters:\n");
+ 	printf(" \t -h print this help\n");
+ 	printf(" \t -n don't convert addresses to bat-host names\n");
++	printf(" \t -T don't try to translate mac to originator address\n");
+ }
+ 
+ int traceroute(char *mesh_iface, int argc, char **argv)
+@@ -63,8 +64,9 @@ int traceroute(char *mesh_iface, int argc, char **argv)
+ 	double time_delta[NUM_PACKETS];
+ 	char *debugfs_mnt;
+ 	char icmp_socket[MAX_PATH+1];
++	int disable_translate_mac = 0;
+ 
+-	while ((optchar = getopt(argc, argv, "hn")) != -1) {
++	while ((optchar = getopt(argc, argv, "hnT")) != -1) {
+ 		switch (optchar) {
+ 		case 'h':
+ 			traceroute_usage();
+@@ -73,6 +75,10 @@ int traceroute(char *mesh_iface, int argc, char **argv)
+ 			read_opt &= ~USE_BAT_HOSTS;
+ 			found_args += 1;
+ 			break;
++		case 'T':
++			disable_translate_mac = 1;
++			found_args += 1;
++			break;
+ 		default:
+ 			traceroute_usage();
+ 			return EXIT_FAILURE;
+@@ -101,6 +107,9 @@ int traceroute(char *mesh_iface, int argc, char **argv)
+ 		}
+ 	}
+ 
++	if (!disable_translate_mac)
++		dst_mac = translate_mac(mesh_iface, dst_mac);
++
+ 	mac_string = ether_ntoa_long(dst_mac);
+ 
+ 	debugfs_mnt = debugfs_mount(NULL);
 -- 
-If you are going to achieve excellence in big things, you develop the
-habit in little matters. Excellence is not an exception, it is a
-prevailing attitude.
-Colin Powell
+1.7.10.4
+
