@@ -1,10 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat,  6 Oct 2012 21:11:22 +0200
-Message-Id: <1349550683-22892-2-git-send-email-ordex@autistici.org>
+Date: Sat,  6 Oct 2012 21:11:23 +0200
+Message-Id: <1349550683-22892-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1349550683-22892-1-git-send-email-ordex@autistici.org>
 References: <1349550683-22892-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batctl: add support for the DAT log level
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batctl: add DAT runtime switch support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,80 +20,55 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- README       | 1 +
- man/batctl.8 | 7 ++++---
- sys.c        | 7 ++++++-
- 3 files changed, 11 insertions(+), 4 deletions(-)
+ man/batctl.8 | 4 ++++
+ sys.c        | 6 ++++++
+ sys.h        | 1 +
+ 3 files changed, 11 insertions(+)
 
-diff --git a/README b/README
-index 8ee2c9f..b3127a0 100644
---- a/README
-+++ b/README
-@@ -342,6 +342,7 @@ $  batctl loglevel
- [ ] messages related to route added / changed / deleted (routes)
- [ ] messages related to translation table operations (tt)
- [ ] messages related to bridge loop avoidance (bla)
-+[ ] messages related to arp snooping and distributetd arp table (dat)
- 
- batctl aggregation
- ==================
 diff --git a/man/batctl.8 b/man/batctl.8
-index 310b43f..250e461 100644
+index 250e461..4359411 100644
 --- a/man/batctl.8
 +++ b/man/batctl.8
-@@ -85,9 +85,10 @@ disable fragmentation.
- If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log
- level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.
- Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to
--translation table operations. Level 'bla' enables messages related to the bridge loop avoidance. Level 'all' enables all
--messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it. Make sure to have debugging
--output enabled when compiling the module otherwise the output as well as the loglevel options won't be available.
-+translation table operations. Level 'bla' enables messages related to the bridge loop avoidance. Level 'dat' enables
-+messages related to ARP snooping and the Distributed Arp Table. Level 'all' enables all messages. The messages are sent
-+to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it. Make sure to have debugging output enabled when compiling
-+the module otherwise the output as well as the loglevel options won't be available.
+@@ -66,6 +66,10 @@ If no parameter is given the current bridge loop avoidance setting is displayed.
+ or disable the bridge loop avoidance. Bridge loop avoidance support has to be enabled when compiling the module otherwise
+ this option won't be available.
  .br
- .IP "\fBlog\fP|\fBl\fP [\fB\-n\fP]\fP"
- batctl will read the batman-adv debug log which has to be compiled into the kernel module. If "\-n" is given batctl will not
++.IP "\fBdistributed_arp_table\fP|\fBdat\fP [\fB0\fP|\fB1\fP]"
++If no parameter is given the current distributed arp table setting is displayed. Otherwise the parameter is used to
++enable or disable the distributed arp table.
++.br
+ .IP "\fBvis_mode|vm\fP [\fBclient|server\fP]\fP"
+ If no parameter is given the current vis mode is displayed otherwise the parameter is used to set the vis mode.
+ .br
 diff --git a/sys.c b/sys.c
-index 6f94483..4c2d6a5 100644
+index 4c2d6a5..d4d2175 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -258,6 +258,7 @@ static void log_level_usage(void)
- 	printf(" \t routes  Messages related to route added / changed / deleted\n");
- 	printf(" \t tt      Messages related to translation table operations\n");
- 	printf(" \t bla     Messages related to bridge loop avoidance\n");
-+	printf(" \t dat     Messages reated to arp snooping and sitributed arp table\n");
- }
- 
- int handle_loglevel(char *mesh_iface, int argc, char **argv)
-@@ -288,7 +289,7 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
- 				log_level = 0;
- 				break;
- 			} else if (strcmp(argv[i], "all") == 0) {
--				log_level = 15;
-+				log_level = 31;
- 				break;
- 			} else if (strcmp(argv[i], "batman") == 0)
- 				log_level |= BIT(0);
-@@ -298,6 +299,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
- 				log_level |= BIT(2);
- 			else if (strcmp(argv[i], "bla") == 0)
- 				log_level |= BIT(3);
-+			else if (strcmp(argv[i], "dat") == 0)
-+				log_level |= BIT(4);
- 			else {
- 				log_level_usage();
- 				goto out;
-@@ -327,6 +330,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
- 	       "messages related to translation table operations", "tt");
- 	printf("[%c] %s (%s)\n", (log_level & BIT(3)) ? 'x' : ' ',
- 	       "messages related to bridge loop avoidance", "bla");
-+	printf("[%c] %s (%s)\n", (log_level & 16) ? 'x' : ' ',
-+	       "messages related to arp snooping and distributetd arp table", "dat");
- 
- out:
- 	free(path_buff);
+@@ -69,6 +69,12 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
+ 		.params = sysfs_param_enable,
+ 	},
+ 	{
++		.opt_long = "distributed_arp_table",
++		.opt_short = "dat",
++		.sysfs_name = "distributed_arp_table",
++		.params = sysfs_param_enable,
++	},
++	{
+ 		.opt_long = "vis_mode",
+ 		.opt_short = "vm",
+ 		.sysfs_name = "vis_mode",
+diff --git a/sys.h b/sys.h
+index 1fc473e..40b64b1 100644
+--- a/sys.h
++++ b/sys.h
+@@ -35,6 +35,7 @@ enum batctl_settings_list {
+ 	BATCTL_SETTINGS_ORIG_INTERVAL,
+ 	BATCTL_SETTINGS_AP_ISOLATION,
+ 	BATCTL_SETTINGS_BLA,
++	BATCTL_SETTINGS_DAT,
+ 	BATCTL_SETTINGS_VIS_MODE,
+ 	BATCTL_SETTINGS_AGGREGATION,
+ 	BATCTL_SETTINGS_BONDING,
 -- 
 1.7.12
 
