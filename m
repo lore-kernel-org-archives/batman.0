@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 7 Oct 2012 02:43:49 +0800
+Date: Sun, 7 Oct 2012 02:44:53 +0800
 References: <1349078263-5834-1-git-send-email-ordex@autistici.org>
- <1349078263-5834-7-git-send-email-ordex@autistici.org>
-In-Reply-To: <1349078263-5834-7-git-send-email-ordex@autistici.org>
+ <1349078263-5834-8-git-send-email-ordex@autistici.org>
+In-Reply-To: <1349078263-5834-8-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201210070243.50305.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv12 6/9] batman-adv: Distributed ARP Table
-	- add snooping functions for ARP messages
+Message-Id: <201210070244.54018.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv12 7/9] batman-adv: Distributed ARP Table
+	- add compile option
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,28 +24,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Monday, October 01, 2012 15:57:40 Antonio Quartulli wrote:
-> In case of an ARP message going in or out the soft_iface, it is intercepted
-> and a special action is performed. In particular the DHT helper functions
-> previously implemented are used to store all the ARP entries belonging to
-> the network in order to provide a fast and unicast lookup instead of the
-> classic broadcast flooding mechanism.
-> Each node stores the entries it is responsible for (following the DHT
-> rules) in its soft_iface ARP table. This makes it possible to reuse the
-> kernel data structures and functions for ARP management.
+On Monday, October 01, 2012 15:57:41 Antonio Quartulli wrote:
+> This patch makes it possible to decide whether to include DAT within the
+> batman-adv binary or not.
+> It is extremely useful when the user wants to reduce the size of the
+> resulting module by cutting off any not needed feature.
 > 
 > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 > ---
->  distributed-arp-table.c | 265
-> ++++++++++++++++++++++++++++++++++++++++++++++++ distributed-arp-table.h
-> |  11 ++
->  main.h                  |   2 +
->  routing.c               |  29 +++++-
->  send.c                  |   4 +
->  soft-interface.c        |  16 ++-
->  6 files changed, 325 insertions(+), 2 deletions(-)
+>  Makefile                |  2 ++
+>  Makefile.kbuild         |  2 +-
+>  README.external         |  1 +
+>  compat.c                |  2 ++
+>  debugfs.c               |  7 +++++-
+>  distributed-arp-table.h | 65
+> +++++++++++++++++++++++++++++++++++++++++++++++++
+> gen-compat-autoconf.sh  |  1 +
+>  types.h                 | 10 ++++++++
+>  8 files changed, 88 insertions(+), 2 deletions(
 
-Applied in revision 75ca71d.
+Applied in revision 909377e.
 
 Thanks,
 Marek
