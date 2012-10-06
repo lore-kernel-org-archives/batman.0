@@ -1,16 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 7 Oct 2012 03:36:23 +0800
-References: <1349551832-22283-1-git-send-email-ordex@autistici.org>
- <1349551832-22283-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1349551832-22283-2-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201210070336.23832.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/3] batctl: add support for the DAT
-	log level
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat,  6 Oct 2012 21:40:32 +0200
+Message-Id: <1349552434-6845-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3 1/3] batctl: add support for the DAT local
+	table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,20 +15,103 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sunday, October 07, 2012 03:30:31 Antonio Quartulli wrote:
-> @@ -327,6 +330,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
->                "messages related to translation table operations", "tt");
->         printf("[%c] %s (%s)\n", (log_level & BIT(3)) ? 'x' : ' ',
->                "messages related to bridge loop avoidance", "bla");
-> +       printf("[%c] %s (%s)\n", (log_level & 16) ? 'x' : ' ',
-> +              "messages related to arp snooping and distributetd arp table", "dat");
->  
->  out:
->         free(path_buff);
+With the introduction of DAT in batman-adv, another table is now exported
+through debugfs. This patch adds the possibility to print it
 
-How about using BIT(4) like in the rest of the patch ?
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ README       | 18 ++++++++++++++++++
+ debug.c      |  5 +++++
+ debug.h      |  1 +
+ functions.c  |  1 +
+ man/batctl.8 |  3 +++
+ 5 files changed, 28 insertions(+)
 
-Cheers,
-Marek
+diff --git a/README b/README
+index 03d36c4..8ee2c9f 100644
+--- a/README
++++ b/README
+@@ -408,6 +408,24 @@ where:
+ 
+ If any of the flags is not enabled, a '.' will substitute its symbol.
+ 
++batctl datcache
++=================
++
++display the local D.A.T. cache
++
++Usage batctl datcache|dc
++
++Example:
++
++Distributed ARP Table (bat0):
++          IPv4             MAC           last-seen
++ *     172.100.0.1 b6:9b:d0:ea:b1:13      0:00
++
++where:
++- IPv4 is the IP address of a client in the mesh network
++- MAC is the MAC address associated to that IP
++- last-seen is the amount of time since last refresh of this entry
++
+ batctl vis_mode
+ =================
+ 
+diff --git a/debug.c b/debug.c
+index 9b5146f..163bfc9 100644
+--- a/debug.c
++++ b/debug.c
+@@ -64,6 +64,11 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
+ 		.opt_short = "bbt",
+ 		.debugfs_name = "bla_backbone_table",
+ 	},
++	{
++		.opt_long = "datcache",
++		.opt_short = "dc",
++		.debugfs_name = "dat_cache",
++	},
+ };
+ 
+ void debug_table_usage(int debug_table)
+diff --git a/debug.h b/debug.h
+index 6068c2c..4e935cb 100644
+--- a/debug.h
++++ b/debug.h
+@@ -31,6 +31,7 @@ enum batctl_debug_tables {
+ 	BATCTL_TABLE_TRANSGLOBAL,
+ 	BATCTL_TABLE_BLA_CLAIMS,
+ 	BATCTL_TABLE_BLA_BACKBONES,
++	BATCTL_TABLE_DAT,
+ 	BATCTL_TABLE_NUM,
+ };
+ 
+diff --git a/functions.c b/functions.c
+index e095fd0..0d88137 100644
+--- a/functions.c
++++ b/functions.c
+@@ -48,6 +48,7 @@ const char *fs_compile_out_param[] = {
+ 	batctl_settings[BATCTL_SETTINGS_BLA].sysfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_BLA_CLAIMS].debugfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
++	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
+ 	NULL,
+ };
+ 
+diff --git a/man/batctl.8 b/man/batctl.8
+index ab02e9a..310b43f 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -187,6 +187,9 @@ List of debug tables:
+ .RS 10
+ \- backbonetable|bbt (compile time option)
+ .RE
++.RS 10
++\- datcache|dc (compile time option)
++.RE
+ .RE
+ .br
+ .IP "\fBstatistics\fP|\fBs\fP"
+-- 
+1.7.12
+
