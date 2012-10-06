@@ -1,16 +1,9 @@
 Return-Path: <ordex@autistici.org>
-Date: Sat, 6 Oct 2012 21:29:53 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121006192953.GR10663@ritirata.org>
-References: <1349550683-22892-1-git-send-email-ordex@autistici.org>
- <201210070322.09980.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="LXqH7sWsIplhrbjF"
-Content-Disposition: inline
-In-Reply-To: <201210070322.09980.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batctl: add support for the DAT
- local table
+Date: Sat,  6 Oct 2012 21:30:30 +0200
+Message-Id: <1349551832-22283-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/3] batctl: add support for the DAT local
+	table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,55 +15,103 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+With the introduction of DAT in batman-adv, another table is now exported
+through debugfs. This patch adds the possibility to print it
 
---LXqH7sWsIplhrbjF
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ README       | 18 ++++++++++++++++++
+ debug.c      |  5 +++++
+ debug.h      |  1 +
+ functions.c  |  1 +
+ man/batctl.8 |  3 +++
+ 5 files changed, 28 insertions(+)
 
-On Sun, Oct 07, 2012 at 03:22:06AM +0800, Marek Lindner wrote:
-> On Sunday, October 07, 2012 03:11:21 Antonio Quartulli wrote:
-> > --- a/debug.c
-> > +++ b/debug.c
-> > @@ -64,6 +64,11 @@ const struct debug_table_data
-> > batctl_debug_tables[BATCTL_TABLE_NUM] =3D { .opt_short =3D "bbt",
-> >                 .debugfs_name =3D "bla_backbone_table",
-> >         },
-> > +       {
-> > +               .opt_long =3D "datcache",
-> > +               .opt_short =3D "dc",
-> > +               .debugfs_name =3D "dat_cache",
-> > +       },
-> >  };
->=20
-> How about adding this entry to the "can be compiled out" parameter list ?=
-=20
-> Check "fs_compile_out_param" list in functions.c. Same applies to patch3.
+diff --git a/README b/README
+index 03d36c4..8ee2c9f 100644
+--- a/README
++++ b/README
+@@ -408,6 +408,24 @@ where:
+ 
+ If any of the flags is not enabled, a '.' will substitute its symbol.
+ 
++batctl datcache
++=================
++
++display the local D.A.T. cache
++
++Usage batctl datcache|dc
++
++Example:
++
++Distributed ARP Table (bat0):
++          IPv4             MAC           last-seen
++ *     172.100.0.1 b6:9b:d0:ea:b1:13      0:00
++
++where:
++- IPv4 is the IP address of a client in the mesh network
++- MAC is the MAC address associated to that IP
++- last-seen is the amount of time since last refresh of this entry
++
+ batctl vis_mode
+ =================
+ 
+diff --git a/debug.c b/debug.c
+index 9b5146f..163bfc9 100644
+--- a/debug.c
++++ b/debug.c
+@@ -64,6 +64,11 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
+ 		.opt_short = "bbt",
+ 		.debugfs_name = "bla_backbone_table",
+ 	},
++	{
++		.opt_long = "datcache",
++		.opt_short = "dc",
++		.debugfs_name = "dat_cache",
++	},
+ };
+ 
+ void debug_table_usage(int debug_table)
+diff --git a/debug.h b/debug.h
+index 6068c2c..4e935cb 100644
+--- a/debug.h
++++ b/debug.h
+@@ -31,6 +31,7 @@ enum batctl_debug_tables {
+ 	BATCTL_TABLE_TRANSGLOBAL,
+ 	BATCTL_TABLE_BLA_CLAIMS,
+ 	BATCTL_TABLE_BLA_BACKBONES,
++	BATCTL_TABLE_DAT,
+ 	BATCTL_TABLE_NUM,
+ };
+ 
+diff --git a/functions.c b/functions.c
+index e095fd0..0d88137 100644
+--- a/functions.c
++++ b/functions.c
+@@ -48,6 +48,7 @@ const char *fs_compile_out_param[] = {
+ 	batctl_settings[BATCTL_SETTINGS_BLA].sysfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_BLA_CLAIMS].debugfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
++	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
+ 	NULL,
+ };
+ 
+diff --git a/man/batctl.8 b/man/batctl.8
+index ab02e9a..310b43f 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -187,6 +187,9 @@ List of debug tables:
+ .RS 10
+ \- backbonetable|bbt (compile time option)
+ .RE
++.RS 10
++\- datcache|dc (compile time option)
++.RE
+ .RE
+ .br
+ .IP "\fBstatistics\fP|\fBs\fP"
+-- 
+1.7.12
 
-Oh right! Bactl is getting better every day! :-)
-
-Will send v2.
-
-thanks!
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---LXqH7sWsIplhrbjF
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlBwhrEACgkQpGgxIkP9cwdjfgCeN6mvqUTN58vizd6KDjAkJmt6
-SiMAmwULZHYJnh6pM5ArKF/bTSL+xY7m
-=aaX5
------END PGP SIGNATURE-----
-
---LXqH7sWsIplhrbjF--
