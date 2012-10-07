@@ -1,10 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat,  6 Oct 2012 21:58:24 +0200
-Message-Id: <1349553504-4377-3-git-send-email-ordex@autistici.org>
-In-Reply-To: <1349553504-4377-1-git-send-email-ordex@autistici.org>
-References: <1349553504-4377-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv4 3/3] batctl: add DAT runtime switch support
+Date: Sun,  7 Oct 2012 09:05:36 +0200
+Message-Id: <1349593536-21213-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix new line alignment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,70 +16,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Introduced with ("batman-adv: Distributed ARP Table - create DHT helper
+functions")
+
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- functions.c  | 1 +
- man/batctl.8 | 4 ++++
- sys.c        | 6 ++++++
- sys.h        | 1 +
- 4 files changed, 12 insertions(+)
+ distributed-arp-table.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/functions.c b/functions.c
-index 0d88137..1cde235 100644
---- a/functions.c
-+++ b/functions.c
-@@ -46,6 +46,7 @@ const char *fs_compile_out_param[] = {
- 	SYS_LOG,
- 	SYS_LOG_LEVEL,
- 	batctl_settings[BATCTL_SETTINGS_BLA].sysfs_name,
-+	batctl_settings[BATCTL_SETTINGS_DAT].sysfs_name,
- 	batctl_debug_tables[BATCTL_TABLE_BLA_CLAIMS].debugfs_name,
- 	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
- 	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
-diff --git a/man/batctl.8 b/man/batctl.8
-index 250e461..4359411 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -66,6 +66,10 @@ If no parameter is given the current bridge loop avoidance setting is displayed.
- or disable the bridge loop avoidance. Bridge loop avoidance support has to be enabled when compiling the module otherwise
- this option won't be available.
- .br
-+.IP "\fBdistributed_arp_table\fP|\fBdat\fP [\fB0\fP|\fB1\fP]"
-+If no parameter is given the current distributed arp table setting is displayed. Otherwise the parameter is used to
-+enable or disable the distributed arp table.
-+.br
- .IP "\fBvis_mode|vm\fP [\fBclient|server\fP]\fP"
- If no parameter is given the current vis mode is displayed otherwise the parameter is used to set the vis mode.
- .br
-diff --git a/sys.c b/sys.c
-index 815ff88..3d5e129 100644
---- a/sys.c
-+++ b/sys.c
-@@ -69,6 +69,12 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
- 		.params = sysfs_param_enable,
- 	},
- 	{
-+		.opt_long = "distributed_arp_table",
-+		.opt_short = "dat",
-+		.sysfs_name = "distributed_arp_table",
-+		.params = sysfs_param_enable,
-+	},
-+	{
- 		.opt_long = "vis_mode",
- 		.opt_short = "vm",
- 		.sysfs_name = "vis_mode",
-diff --git a/sys.h b/sys.h
-index 1fc473e..40b64b1 100644
---- a/sys.h
-+++ b/sys.h
-@@ -35,6 +35,7 @@ enum batctl_settings_list {
- 	BATCTL_SETTINGS_ORIG_INTERVAL,
- 	BATCTL_SETTINGS_AP_ISOLATION,
- 	BATCTL_SETTINGS_BLA,
-+	BATCTL_SETTINGS_DAT,
- 	BATCTL_SETTINGS_VIS_MODE,
- 	BATCTL_SETTINGS_AGGREGATION,
- 	BATCTL_SETTINGS_BONDING,
+diff --git a/distributed-arp-table.h b/distributed-arp-table.h
+index 22dd983..63a13a5 100644
+--- a/distributed-arp-table.h
++++ b/distributed-arp-table.h
+@@ -60,7 +60,7 @@ batadv_dat_init_orig_node_addr(struct batadv_orig_node *orig_node)
+  */
+ static inline void
+ batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
+-			     struct batadv_hard_iface *primary_if)
++			 struct batadv_hard_iface *primary_if)
+ {
+ 	uint32_t addr;
+ 
 -- 
 1.7.12
 
