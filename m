@@ -1,9 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  7 Oct 2012 12:02:22 +0200
-Message-Id: <1349604142-9308-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove instant overwritten
-	variable initialization
+Date: Sun,  7 Oct 2012 13:34:15 +0200
+Message-Id: <1349609655-15988-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Mark best gateway in
+	transtable_global debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,119 +17,146 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+The transtable_global debug file can show multiple entries for a single client
+when multiple gateways exist. The chosen gateway isn't marked in the list and
+therefore the user cannot easily debug the situation when there is a problem
+with the currently used gateway.
+
+The best gateway is now marked with "*" and secondary gateways are marked with
+"+".
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- routing.c           |    2 +-
- sysfs.c             |    2 +-
- translation-table.c |   20 ++++++++++----------
- 3 files changed, 12 insertions(+), 12 deletions(-)
+ translation-table.c |   80 +++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 56 insertions(+), 24 deletions(-)
 
-diff --git a/routing.c b/routing.c
-index 12af7d3..e146370 100644
---- a/routing.c
-+++ b/routing.c
-@@ -911,7 +911,7 @@ batadv_reroute_unicast_packet(struct batadv_priv *bat_priv,
- 			      struct batadv_unicast_packet *unicast_packet,
- 			      uint8_t *dst_addr)
- {
--	struct batadv_orig_node *orig_node = NULL;
-+	struct batadv_orig_node *orig_node;
- 	bool ret = false;
- 
- 	orig_node = batadv_transtable_search(bat_priv, NULL, dst_addr);
-diff --git a/sysfs.c b/sysfs.c
-index 7fdc220..cc56ed0 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -739,7 +739,7 @@ int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
- 			enum batadv_uev_action action, const char *data)
- {
- 	int ret = -ENOMEM;
--	struct batadv_hard_iface *primary_if = NULL;
-+	struct batadv_hard_iface *primary_if;
- 	struct kobject *bat_kobj;
- 	char *uevent_env[4] = { NULL, NULL, NULL, NULL };
- 
 diff --git a/translation-table.c b/translation-table.c
-index 1f5ad91..41613b7 100644
+index 41613b7..ddef48d 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -256,8 +256,8 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 			 int ifindex)
+@@ -912,6 +912,36 @@ out:
+ 	return ret;
+ }
+ 
++/* batadv_transtable_best_orig - Get best originator list entry from tt entry
++ * @tt_global_entry: global translation table entry to be analyzed
++ *
++ * Returns best originator list entry or NULL on errors.
++ */
++static struct batadv_tt_orig_list_entry *
++batadv_transtable_best_orig(struct batadv_tt_global_entry *tt_global_entry)
++{
++	struct batadv_neigh_node *router = NULL;
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct batadv_tt_orig_list_entry *orig_entry, *best_entry = NULL;
++	int best_tq = 0;
++
++	head = &tt_global_entry->orig_list;
++	hlist_for_each_entry_rcu(orig_entry, node, head, list) {
++		router = batadv_orig_node_get_router(orig_entry->orig_node);
++		if (!router)
++			continue;
++
++		if (router->tq_avg > best_tq) {
++			best_entry = orig_entry;
++			best_tq = router->tq_avg;
++		}
++		batadv_neigh_node_free_ref(router);
++	}
++
++	return best_entry;
++}
++
+ /* print all orig nodes who announce the address for this global entry.
+  * it is assumed that the caller holds rcu_read_lock();
+  */
+@@ -921,21 +951,37 @@ batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
  {
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
--	struct batadv_tt_local_entry *tt_local = NULL;
--	struct batadv_tt_global_entry *tt_global = NULL;
-+	struct batadv_tt_local_entry *tt_local;
-+	struct batadv_tt_global_entry *tt_global;
  	struct hlist_head *head;
  	struct hlist_node *node;
- 	struct batadv_tt_orig_list_entry *orig_entry;
-@@ -543,7 +543,7 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 				const uint8_t *addr, const char *message,
- 				bool roaming)
- {
--	struct batadv_tt_local_entry *tt_local_entry = NULL;
-+	struct batadv_tt_local_entry *tt_local_entry;
- 	uint16_t flags, curr_flags = BATADV_NO_FLAGS;
+-	struct batadv_tt_orig_list_entry *orig_entry;
++	struct batadv_tt_orig_list_entry *orig_entry, *best_entry;
+ 	struct batadv_tt_common_entry *tt_common_entry;
+ 	uint16_t flags;
+ 	uint8_t last_ttvn;
  
- 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr);
-@@ -783,8 +783,8 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
- 			 const unsigned char *tt_addr, uint8_t flags,
- 			 uint8_t ttvn)
- {
--	struct batadv_tt_global_entry *tt_global_entry = NULL;
--	struct batadv_tt_local_entry *tt_local_entry = NULL;
-+	struct batadv_tt_global_entry *tt_global_entry;
-+	struct batadv_tt_local_entry *tt_local_entry;
- 	int ret = 0;
- 	int hash_added;
- 	struct batadv_tt_common_entry *common;
-@@ -1074,7 +1074,7 @@ static void batadv_tt_global_del(struct batadv_priv *bat_priv,
- 				 const unsigned char *addr,
- 				 const char *message, bool roaming)
- {
--	struct batadv_tt_global_entry *tt_global_entry = NULL;
-+	struct batadv_tt_global_entry *tt_global_entry;
- 	struct batadv_tt_local_entry *local_entry = NULL;
+ 	tt_common_entry = &tt_global_entry->common;
++	flags = tt_common_entry->flags;
++
++	best_entry = batadv_transtable_best_orig(tt_global_entry);
++	if (best_entry) {
++		last_ttvn = atomic_read(&best_entry->orig_node->last_ttvn);
++		seq_printf(seq,	" %c %pM  (%3u) via %pM     (%3u)   [%c%c%c]\n",
++			   '*', tt_global_entry->common.addr,
++			   best_entry->ttvn, best_entry->orig_node->orig,
++			   last_ttvn,
++			   (flags & BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
++			   (flags & BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
++			   (flags & BATADV_TT_CLIENT_TEMP ? 'T' : '.'));
++	}
  
- 	tt_global_entry = batadv_tt_global_hash_find(bat_priv, addr);
-@@ -1677,7 +1677,7 @@ static bool
- batadv_send_other_tt_response(struct batadv_priv *bat_priv,
- 			      struct batadv_tt_query_packet *tt_request)
- {
--	struct batadv_orig_node *req_dst_orig_node = NULL;
-+	struct batadv_orig_node *req_dst_orig_node;
- 	struct batadv_orig_node *res_dst_orig_node = NULL;
- 	struct batadv_neigh_node *neigh_node = NULL;
- 	struct batadv_hard_iface *primary_if = NULL;
-@@ -1812,7 +1812,7 @@ static bool
- batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 			   struct batadv_tt_query_packet *tt_request)
- {
--	struct batadv_orig_node *orig_node = NULL;
-+	struct batadv_orig_node *orig_node;
- 	struct batadv_neigh_node *neigh_node = NULL;
- 	struct batadv_hard_iface *primary_if = NULL;
- 	uint8_t my_ttvn, req_ttvn, ttvn;
-@@ -1978,7 +1978,7 @@ static void _batadv_tt_update_changes(struct batadv_priv *bat_priv,
- static void batadv_tt_fill_gtable(struct batadv_priv *bat_priv,
- 				  struct batadv_tt_query_packet *tt_response)
- {
--	struct batadv_orig_node *orig_node = NULL;
-+	struct batadv_orig_node *orig_node;
+ 	head = &tt_global_entry->orig_list;
  
- 	orig_node = batadv_orig_hash_find(bat_priv, tt_response->src);
- 	if (!orig_node)
-@@ -2020,7 +2020,7 @@ static void batadv_tt_update_changes(struct batadv_priv *bat_priv,
+ 	hlist_for_each_entry_rcu(orig_entry, node, head, list) {
+-		flags = tt_common_entry->flags;
++		if (best_entry == orig_entry)
++			continue;
++
+ 		last_ttvn = atomic_read(&orig_entry->orig_node->last_ttvn);
+-		seq_printf(seq,	" * %pM  (%3u) via %pM     (%3u)   [%c%c%c]\n",
+-			   tt_global_entry->common.addr, orig_entry->ttvn,
+-			   orig_entry->orig_node->orig, last_ttvn,
++		seq_printf(seq,	" %c %pM  (%3u) via %pM     (%3u)   [%c%c%c]\n",
++			   '+', tt_global_entry->common.addr,
++			   orig_entry->ttvn, orig_entry->orig_node->orig,
++			   last_ttvn,
+ 			   (flags & BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
+ 			   (flags & BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
+ 			   (flags & BATADV_TT_CLIENT_TEMP ? 'T' : '.'));
+@@ -1281,11 +1327,7 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
+ 	struct batadv_tt_local_entry *tt_local_entry = NULL;
+ 	struct batadv_tt_global_entry *tt_global_entry = NULL;
+ 	struct batadv_orig_node *orig_node = NULL;
+-	struct batadv_neigh_node *router = NULL;
+-	struct hlist_head *head;
+-	struct hlist_node *node;
+-	struct batadv_tt_orig_list_entry *orig_entry;
+-	int best_tq;
++	struct batadv_tt_orig_list_entry *best_entry;
  
- bool batadv_is_my_client(struct batadv_priv *bat_priv, const uint8_t *addr)
- {
--	struct batadv_tt_local_entry *tt_local_entry = NULL;
-+	struct batadv_tt_local_entry *tt_local_entry;
- 	bool ret = false;
+ 	if (src && atomic_read(&bat_priv->ap_isolation)) {
+ 		tt_local_entry = batadv_tt_local_hash_find(bat_priv, src);
+@@ -1305,25 +1347,15 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
+ 	    _batadv_is_ap_isolated(tt_local_entry, tt_global_entry))
+ 		goto out;
  
- 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr);
+-	best_tq = 0;
+-
+ 	rcu_read_lock();
+-	head = &tt_global_entry->orig_list;
+-	hlist_for_each_entry_rcu(orig_entry, node, head, list) {
+-		router = batadv_orig_node_get_router(orig_entry->orig_node);
+-		if (!router)
+-			continue;
+-
+-		if (router->tq_avg > best_tq) {
+-			orig_node = orig_entry->orig_node;
+-			best_tq = router->tq_avg;
+-		}
+-		batadv_neigh_node_free_ref(router);
+-	}
++	best_entry = batadv_transtable_best_orig(tt_global_entry);
+ 	/* found anything? */
++	if (best_entry)
++		orig_node = best_entry->orig_node;
+ 	if (orig_node && !atomic_inc_not_zero(&orig_node->refcount))
+ 		orig_node = NULL;
+ 	rcu_read_unlock();
++
+ out:
+ 	if (tt_global_entry)
+ 		batadv_tt_global_entry_free_ref(tt_global_entry);
 -- 
 1.7.10.4
 
