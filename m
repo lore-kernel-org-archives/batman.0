@@ -1,15 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Fri, 12 Oct 2012 09:15:59 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121012071559.GB2564@ritirata.org>
-References: <507798EE.80305@codigosur.org> <50779CA3.9070208@yahoo.de>
- <5077A77B.3040803@altermundi.net>
+Return-Path: <jow@openwrt.org>
+Message-ID: <5077EB2E.1040906@openwrt.org>
+Date: Fri, 12 Oct 2012 12:04:30 +0200
+From: Jo-Philipp Wich <jow@openwrt.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="7iMSBzlTiPOCCT2k"
-Content-Disposition: inline
-In-Reply-To: <5077A77B.3040803@altermundi.net>
-Subject: Re: [B.A.T.M.A.N.] batman-adv: ap mode with isolation enabled
+References: <CAMVTf1hohrQTfKbhD+SfhgX4xvdBZPvTATw+gLPjdek3VOU_zQ@mail.gmail.com>
+ <50776C62.4040406@nixbits.net>
+In-Reply-To: <50776C62.4040406@nixbits.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] How to create a Firmware o Image with a specific
+ batman-adv configuration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,54 +21,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+
+Hey.
+
+> That is very much all about openwrt and the wiki provides all the 
+> information. When you build the image just ad your configuration
+> files to "backfire/package/base-files/files/etc/config/
+
+Don't do that. Not all targets use the base-files configs and its a
+nuissance to have local changes while trying to stay in sync with the repo.
+
+The proper wqay to overlay the build with custom configs is to create a
+toplevel files/ directory and put the configs there, e.g.
+
+files/etc/rc.local
+files/etc/config/network
+
+and so on. Toplevel here means the directory where you run make in.
 
 
---7iMSBzlTiPOCCT2k
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Oct 12, 2012 at 02:15:39 -0300, NicoEch=C3=A1niz wrote:
->=20
-> Is the setup clear enough now? or am I missing the point as to what is
-> unclear? Please ask whatever needs to be clarified.
->=20
-
-Hello Nicol=C3=A1s,
-
-I think I got your point. First, you are talking about the "normal" AP isol=
-ation
-feature that you can enable in hostapd, right? Because in batman-adv we hav=
-e our
-own (Distributed) AP-isolation but it has different effects and behaviours.
-
-The behaviour is correct: OGMs are broadcast packets. In infrastructure mod=
-e,
-whatever broadcast packet a station sends gets to the AP which will re-broa=
-dcast
-it again. In this way every station gets it and from the batman-adv point of
-view it is like the packet was received directly from the other sta (the MAC
-addresses in the packet say so). Therefore you must enable ap-isolation in
-hostapd if you want batman-adv to behave as you expect.
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---7iMSBzlTiPOCCT2k
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlB3w68ACgkQpGgxIkP9cwdQMQCcCP02se9H/wdtwY1IjXU31k+3
-AMsAniAr71Ng41n3EmRyUXQnQotAVwUk
-=UCT1
------END PGP SIGNATURE-----
-
---7iMSBzlTiPOCCT2k--
+Regards,
+Jow
