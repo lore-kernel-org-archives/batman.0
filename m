@@ -1,16 +1,12 @@
-Return-Path: <hexiled@nixbits.net>
-Message-ID: <50776C62.4040406@nixbits.net>
-Date: Thu, 11 Oct 2012 21:03:30 -0400
-From: HeXiLeD <hexiled@nixbits.net>
+Return-Path: <nicoechaniz@codigosur.org>
+Message-ID: <507798EE.80305@codigosur.org>
+Date: Fri, 12 Oct 2012 01:13:34 -0300
+From: =?windows-1252?Q?Nicol=E1s_Ech=E1niz?= <nicoechaniz@codigosur.org>
 MIME-Version: 1.0
-References: <CAMVTf1hohrQTfKbhD+SfhgX4xvdBZPvTATw+gLPjdek3VOU_zQ@mail.gmail.com>
-In-Reply-To: <CAMVTf1hohrQTfKbhD+SfhgX4xvdBZPvTATw+gLPjdek3VOU_zQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] How to create a Firmware o Image with a specific
- batman-adv configuration
-Reply-To: HeXileD@nixbits.net,
- The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] batman-adv: ap mode with isolation enabled
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,25 +19,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-That is very much all about openwrt and the wiki provides all the
-information.
-When you build the image just ad your configuration files to
-"backfire/package/base-files/files/etc/config/
+Hi folks,
 
-Then build the image and that is it.
+I don't know if this is common knowledge, but we have been experimenting
+with isolation in our mixed mode batman-adv network and got some
+interesting results we'd like to share.
+
+Here's a blog post on this matter with related graphics:
+http://blog.altermundi.net/article/batman-adv-ap-mode-with-isolation-enable=
+d/
+
+Summary:
+Infrastrucutre nodes tend to "confuse" batman-adv. Every client
+connected to an ap will =93think=94 that it is directly connected to every
+other client, which creates a mess in potential hops selection.
+
+Turing isolation on in the AP solves the problem. Client nodes will no
+longer see OGMs from other clients and will correctly show their AP as
+next hop.
 
 
-On 10/11/2012 08:00 PM, Esteban Municio wrote:
-> Hi list
-> 
-> I would like to create/compile a OpenWRT image with a specific
-> batman-adv configuration previously loaded.
-> I mean that the final user don't need to edit the configuration
-> files(dhcp, bridges, wireless etc...), like /etc/rc.local or
-> /etc/config/network , only flash the device with the image to use it.
-> 
-> Maybe it would be more suitable to ask it in a OpenWRT forum/list, but
-> if anyone know something about it, I would be thankful
-> 
-> Regards
-> 
+
+Would you say there are any bad side-effects to this approach?
+
+
+
+Cheers,
+NicoEch=E1niz
