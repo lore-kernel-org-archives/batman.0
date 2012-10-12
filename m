@@ -1,14 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-Message-ID: <50751CA9.3050109@yahoo.de>
-Date: Wed, 10 Oct 2012 14:58:49 +0800
-From: Marek Lindner <lindner_marek@yahoo.de>
+Return-Path: <emunicio@gmail.com>
 MIME-Version: 1.0
-References: <1349624610-24638-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1349624610-24638-1-git-send-email-sven@narfation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Add minimal unicast 4addr
- dissector support
+From: Esteban Municio <emunicio@gmail.com>
+Date: Thu, 11 Oct 2012 19:00:35 -0500
+Message-ID: <CAMVTf1hohrQTfKbhD+SfhgX4xvdBZPvTATw+gLPjdek3VOU_zQ@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] How to create a Firmware o Image with a specific
+	batman-adv configuration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,17 +17,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On 10/07/2012 11:43 PM, Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann<sven@narfation.org>
-> ---
->   packet.h  |   43 +++++++++++++++++++++++++++++++++++--------
->   tcpdump.c |   31 +++++++++++++++++++++++++++++++
->   2 files changed, 66 insertions(+), 8 deletions(-)
+Hi list
 
-Applied (with slight modification) in revision 70aefcf.
+I would like to create/compile a OpenWRT image with a specific
+batman-adv configuration previously loaded.
+I mean that the final user don't need to edit the configuration
+files(dhcp, bridges, wireless etc...), like /etc/rc.local or
+/etc/config/network , only flash the device with the image to use it.
 
-Thanks,
-Marek
+Maybe it would be more suitable to ask it in a OpenWRT forum/list, but
+if anyone know something about it, I would be thankful
 
+Regards
+-- 
+Esteban
