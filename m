@@ -1,15 +1,14 @@
-Return-Path: <jow@openwrt.org>
-Message-ID: <5077EB2E.1040906@openwrt.org>
-Date: Fri, 12 Oct 2012 12:04:30 +0200
-From: Jo-Philipp Wich <jow@openwrt.org>
+Return-Path: <lindner_marek@yahoo.de>
+Message-ID: <5077EE5F.8030601@yahoo.de>
+Date: Fri, 12 Oct 2012 18:18:07 +0800
+From: Marek Lindner <lindner_marek@yahoo.de>
 MIME-Version: 1.0
-References: <CAMVTf1hohrQTfKbhD+SfhgX4xvdBZPvTATw+gLPjdek3VOU_zQ@mail.gmail.com>
- <50776C62.4040406@nixbits.net>
-In-Reply-To: <50776C62.4040406@nixbits.net>
-Content-Type: text/plain; charset=UTF-8
+References: <507798EE.80305@codigosur.org> <50779CA3.9070208@yahoo.de>
+ <5077A77B.3040803@altermundi.net> <20121012071559.GB2564@ritirata.org>
+In-Reply-To: <20121012071559.GB2564@ritirata.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] How to create a Firmware o Image with a specific
- batman-adv configuration
+Subject: Re: [B.A.T.M.A.N.] batman-adv: ap mode with isolation enabled
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,25 +20,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hey.
+On 10/12/2012 03:15 PM, Antonio Quartulli wrote:
+> The behaviour is correct: OGMs are broadcast packets. In infrastructure mode,
+> whatever broadcast packet a station sends gets to the AP which will re-broadcast
+> it again. In this way every station gets it and from the batman-adv point of
+> view it is like the packet was received directly from the other sta (the MAC
+> addresses in the packet say so). Therefore you must enable ap-isolation in
+> hostapd if you want batman-adv to behave as you expect.
 
-> That is very much all about openwrt and the wiki provides all the 
-> information. When you build the image just ad your configuration
-> files to "backfire/package/base-files/files/etc/config/
+I'd like to stress the point that batman-adv is not "confused" as you 
+describe it in your blog post. Antonio explained it already: In 
+infrastructure mode all station _are_ neighbors.
 
-Don't do that. Not all targets use the base-files configs and its a
-nuissance to have local changes while trying to stay in sync with the repo.
-
-The proper wqay to overlay the build with custom configs is to create a
-toplevel files/ directory and put the configs there, e.g.
-
-files/etc/rc.local
-files/etc/config/network
-
-and so on. Toplevel here means the directory where you run make in.
-
-
-Regards,
-Jow
+Cheers,
+Marek
