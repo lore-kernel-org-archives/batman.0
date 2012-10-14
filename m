@@ -1,11 +1,16 @@
 Return-Path: <ordex@autistici.org>
+Date: Sun, 14 Oct 2012 22:05:02 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 14 Oct 2012 22:03:01 +0200
-Message-Id: <1350244981-14026-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1350244981-14026-1-git-send-email-ordex@autistici.org>
+Message-ID: <20121014200502.GF7023@ritirata.org>
 References: <1350244981-14026-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: export compatibility version
-	via debugfs
+ <1350244981-14026-2-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="vJguvTgX93MxBIIe"
+Content-Disposition: inline
+In-Reply-To: <1350244981-14026-2-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: export compatibility
+	version via debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,88 +24,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Different versions of the batman-adv module may use the same compatibility
-version, but this is not understandable at runtime (the only way is to parse the
-kernel log and fetch the batman-adv advertisement message on loading). The user
-may want to know whether two nodes using different versions can communicate or
-not. For this purpose the module has to export this value through debugfs.
 
-Reported-by: Moritz Warning <moritzwarning@web.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- debugfs.c | 12 ++++++++++++
- main.c    | 12 ++++++++++++
- main.h    |  1 +
- 3 files changed, 25 insertions(+)
+--vJguvTgX93MxBIIe
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/debugfs.c b/debugfs.c
-index 43e0fde..57eddc6 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -245,6 +245,16 @@ static int batadv_algorithms_open(struct inode *inode, struct file *file)
- 	return single_open(file, batadv_algo_seq_print_text, NULL);
- }
- 
-+/**
-+ * batadv_compat_open - Prepare file handler for printing of the compat version
-+ * @inode: inode which was opened
-+ * @file: file handle to be initialized
-+ */
-+static int batadv_compat_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, batadv_compat_seq_print_text, NULL);
-+}
-+
- static int batadv_originators_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
-@@ -332,9 +342,11 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
-  * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
-  */
- static BATADV_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
-+static BATADV_DEBUGINFO(compat_version, S_IRUGO, batadv_compat_open);
- 
- static struct batadv_debuginfo *batadv_general_debuginfos[] = {
- 	&batadv_debuginfo_routing_algos,
-+	&batadv_debuginfo_compat_version,
- 	NULL,
- };
- 
-diff --git a/main.c b/main.c
-index dc33a0c..53dedbf 100644
---- a/main.c
-+++ b/main.c
-@@ -420,6 +420,18 @@ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
- 	return 0;
- }
- 
-+/**
-+ * batadv_compat_seq_print_text - print the compatibility version
-+ * @seq: not used
-+ * @offset: not used
-+ */
-+int batadv_compat_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	seq_printf(seq, "%d\n", BATADV_COMPAT_VERSION);
-+
-+	return 0;
-+}
-+
- static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
- {
- 	struct batadv_algo_ops *bat_algo_ops;
-diff --git a/main.h b/main.h
-index 4d92ce6..2dfcf8c 100644
---- a/main.h
-+++ b/main.h
-@@ -176,6 +176,7 @@ void batadv_recv_handler_unregister(uint8_t packet_type);
- int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
- int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
- int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
-+int batadv_compat_seq_print_text(struct seq_file *seq, void *offset);
- 
- /**
-  * enum batadv_dbg_level - available log levels
--- 
-1.7.12.3
+On Sun, Oct 14, 2012 at 10:03:01PM +0200, Antonio Quartulli wrote:
+> Different versions of the batman-adv module may use the same compatibility
+> version, but this is not understandable at runtime (the only way is to pa=
+rse the
+> kernel log and fetch the batman-adv advertisement message on loading). Th=
+e user
+> may want to know whether two nodes using different versions can communica=
+te or
+> not. For this purpose the module has to export this value through debugfs.
+>=20
+> Reported-by: Moritz Warning <moritzwarning@web.de>
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 
+2/2 intended to be v2 of a patch with the same name sent some days
+ago over the ml. This PATCHv2 is based on the array of general attributes
+introduced with 1/2.
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--vJguvTgX93MxBIIe
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEUEARECAAYFAlB7Gu4ACgkQpGgxIkP9cwcZdwCfb+xer7xPsdPQht1nXV77qWCc
+ntAAlAu7jpb3ZMgQ/rgZw9o1/Uct/dk=
+=d17f
+-----END PGP SIGNATURE-----
+
+--vJguvTgX93MxBIIe--
