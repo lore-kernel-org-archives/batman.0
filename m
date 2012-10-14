@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 14 Oct 2012 23:06:24 +0800
+Date: Sun, 14 Oct 2012 23:09:17 +0800
 References: <1350226473-18335-1-git-send-email-ordex@autistici.org>
- <1350226473-18335-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1350226473-18335-2-git-send-email-ordex@autistici.org>
+ <1350226473-18335-3-git-send-email-ordex@autistici.org>
+In-Reply-To: <1350226473-18335-3-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201210142306.24290.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 2/3] batctl: add support for the DAT
-	log level
+Message-Id: <201210142309.17539.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5 3/3] batctl: add DAT runtime switch
+	support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,19 +24,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sunday, October 14, 2012 22:54:32 Antonio Quartulli wrote:
+On Sunday, October 14, 2012 22:54:33 Antonio Quartulli wrote:
 > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 > ---
 > 
 > v5:
 > - noop.
 > 
->  README       | 1 +
->  man/batctl.8 | 7 ++++---
->  sys.c        | 7 ++++++-
->  3 files changed, 11 insertions(+), 4 deletions(-)
+>  functions.c  | 1 +
+>  man/batctl.8 | 4 ++++
+>  sys.c        | 6 ++++++
+>  sys.h        | 1 +
+>  4 files changed, 12 insertions(+)
 
-Applied in revision ac27265.
+Applied in revision f395fb7.
 
 Thanks,
 Marek
