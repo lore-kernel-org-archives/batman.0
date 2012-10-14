@@ -1,15 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 14 Oct 2012 22:48:50 +0800
-References: <1349609655-15988-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1349609655-15988-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201210142248.50484.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Mark best gateway in
-	transtable_global debugfs
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 14 Oct 2012 16:54:31 +0200
+Message-Id: <1350226473-18335-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv5 1/3] batctl: add support for the DAT local
+	table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,25 +15,108 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sunday, October 07, 2012 19:34:15 Sven Eckelmann wrote:
-> The transtable_global debug file can show multiple entries for a single
-> client when multiple gateways exist. The chosen gateway isn't marked in
-> the list and therefore the user cannot easily debug the situation when
-> there is a problem with the currently used gateway.
-> 
-> The best gateway is now marked with "*" and secondary gateways are marked
-> with "+".
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  translation-table.c |   80
-> +++++++++++++++++++++++++++++++++++---------------- 1 file changed, 56
-> insertions(+), 24 deletions(-)
+With the introduction of DAT in batman-adv, another table is now exported
+through debugfs. This patch adds the possibility to print it
 
-Applied in revision 1421221.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-Thanks,
-Marek
+v5:
+- long option renamed from 'datcache' to dat_cache'
+
+
+ README       | 18 ++++++++++++++++++
+ debug.c      |  5 +++++
+ debug.h      |  1 +
+ functions.c  |  1 +
+ man/batctl.8 |  3 +++
+ 5 files changed, 28 insertions(+)
+
+diff --git a/README b/README
+index 03d36c4..5e58452 100644
+--- a/README
++++ b/README
+@@ -408,6 +408,24 @@ where:
+ 
+ If any of the flags is not enabled, a '.' will substitute its symbol.
+ 
++batctl dat_cache
++=================
++
++display the local D.A.T. cache
++
++Usage batctl dat_cache|dc
++
++Example:
++
++Distributed ARP Table (bat0):
++          IPv4             MAC           last-seen
++ *     172.100.0.1 b6:9b:d0:ea:b1:13      0:00
++
++where:
++- IPv4 is the IP address of a client in the mesh network
++- MAC is the MAC address associated to that IP
++- last-seen is the amount of time since last refresh of this entry
++
+ batctl vis_mode
+ =================
+ 
+diff --git a/debug.c b/debug.c
+index 9b5146f..a230a12 100644
+--- a/debug.c
++++ b/debug.c
+@@ -64,6 +64,11 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
+ 		.opt_short = "bbt",
+ 		.debugfs_name = "bla_backbone_table",
+ 	},
++	{
++		.opt_long = "dat_cache",
++		.opt_short = "dc",
++		.debugfs_name = "dat_cache",
++	},
+ };
+ 
+ void debug_table_usage(int debug_table)
+diff --git a/debug.h b/debug.h
+index 6068c2c..4e935cb 100644
+--- a/debug.h
++++ b/debug.h
+@@ -31,6 +31,7 @@ enum batctl_debug_tables {
+ 	BATCTL_TABLE_TRANSGLOBAL,
+ 	BATCTL_TABLE_BLA_CLAIMS,
+ 	BATCTL_TABLE_BLA_BACKBONES,
++	BATCTL_TABLE_DAT,
+ 	BATCTL_TABLE_NUM,
+ };
+ 
+diff --git a/functions.c b/functions.c
+index e095fd0..0d88137 100644
+--- a/functions.c
++++ b/functions.c
+@@ -48,6 +48,7 @@ const char *fs_compile_out_param[] = {
+ 	batctl_settings[BATCTL_SETTINGS_BLA].sysfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_BLA_CLAIMS].debugfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
++	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
+ 	NULL,
+ };
+ 
+diff --git a/man/batctl.8 b/man/batctl.8
+index ab02e9a..310b43f 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -187,6 +187,9 @@ List of debug tables:
+ .RS 10
+ \- backbonetable|bbt (compile time option)
+ .RE
++.RS 10
++\- datcache|dc (compile time option)
++.RE
+ .RE
+ .br
+ .IP "\fBstatistics\fP|\fBs\fP"
+-- 
+1.7.12.3
+
