@@ -1,15 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 14 Oct 2012 23:02:07 +0800
-References: <1350226473-18335-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1350226473-18335-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201210142302.07989.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 1/3] batctl: add support for the DAT
-	local table
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 14 Oct 2012 17:05:40 +0200
+Message-Id: <1350227140-5099-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: enable fast client detection
+	using unicast_4addr packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,25 +17,60 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sunday, October 14, 2012 22:54:31 Antonio Quartulli wrote:
-> With the introduction of DAT in batman-adv, another table is now exported
-> through debugfs. This patch adds the possibility to print it
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
-> 
-> v5:
-> - long option renamed from 'datcache' to dat_cache'
-> 
-> 
->  README       | 18 ++++++++++++++++++
->  debug.c      |  5 +++++
->  debug.h      |  1 +
->  functions.c  |  1 +
->  man/batctl.8 |  3 +++
->  5 files changed, 28 insertions(+)
+The "early client detection mechanism" can be extended to find new clients by
+means of unicast_4addr packets.
 
-Applied in revision 167c37a.
+The unicast_4addr packet contains as well as the broadcast packet (which is
+currently used in this mechanism) the address of the originating node and can
+therefore be used to install new entries in the Global Translation Table
 
-Thanks,
-Marek
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+
+v2:
+- fixed refcounting
+
+ routing.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/routing.c b/routing.c
+index 96375c5..2615f91 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1042,6 +1042,8 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct batadv_unicast_packet *unicast_packet;
+ 	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
++	uint8_t *orig_addr;
++	struct batadv_orig_node *orig_node = NULL;
+ 	int hdr_size = sizeof(*unicast_packet);
+ 	bool is4addr;
+ 
+@@ -1061,9 +1063,12 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 
+ 	/* packet for me */
+ 	if (batadv_is_my_mac(unicast_packet->dest)) {
+-		if (is4addr)
++		if (is4addr) {
+ 			batadv_dat_inc_counter(bat_priv,
+ 					       unicast_4addr_packet->subtype);
++			orig_addr = unicast_4addr_packet->src;
++			orig_node = batadv_orig_hash_find(bat_priv, orig_addr);
++		}
+ 
+ 		if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb,
+ 							  hdr_size))
+@@ -1073,7 +1078,9 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 			goto rx_success;
+ 
+ 		batadv_interface_rx(recv_if->soft_iface, skb, recv_if, hdr_size,
+-				    NULL);
++				    orig_node);
++		if (orig_node)
++			batadv_orig_node_free_ref(orig_node);
+ 
+ rx_success:
+ 		return NET_RX_SUCCESS;
+-- 
+1.7.12.3
+
