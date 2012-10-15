@@ -1,15 +1,10 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 16 Oct 2012 04:28:46 +0800
-References: <1350332596-23684-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Mon, 15 Oct 2012 22:38:04 +0200
+Message-Id: <1350333484-23781-2-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <1350332596-23684-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201210160428.46880.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: move hash_bytes into
-	hash.h
+References: <1350332596-23684-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: fix bla compare function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +16,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On Tuesday, October 16, 2012 04:23:15 Simon Wunderlich wrote:
->  /**
-> + *     batadv_hash_bytes - hash some bytes and add them to the previous
-> hash + *     @hash: previous hash value
-> + *     @data: data to be hashed
-> + *     @size: number of bytes to be hashed
-> + *
-> + *     Returns 0 on success, 1 if the element already is in the hash
-> + *     and -1 on error.
-> + */
-> +static inline void batadv_hash_bytes(uint32_t *hash, void *data, uint32_t
-> size) +{
-> +       const unsigned char *key = data;
-> +       int i;
-> +
-> +       for (i = 0; i < size; i++) {
-> +               *hash += key[i];
-> +               *hash += (*hash << 10);
-> +               *hash ^= (*hash >> 6);
-> +       }
-> +}
+The address and the VLAN VID may not be packed in the respective
+structs. Fix this by comparing the elements individually.
 
-Seems the function lacks the documented return behavior ..  ;-)
+Reported-by: Marek Lindner <lindner_marek@yahoo.de>
+Reported-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ bridge_loop_avoidance.c |   18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-Cheers,
-Marek
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 758d921..a617f2c 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -77,8 +77,15 @@ static int batadv_compare_backbone_gw(const struct hlist_node *node,
+ {
+ 	const void *data1 = container_of(node, struct batadv_backbone_gw,
+ 					 hash_entry);
++	const struct batadv_backbone_gw *gw1 = data1, *gw2 = data2;
+ 
+-	return (memcmp(data1, data2, ETH_ALEN + sizeof(short)) == 0 ? 1 : 0);
++	if (memcmp(gw1->orig, gw2->orig, ETH_ALEN))
++		return 0;
++
++	if (gw1->vid != gw2->vid)
++		return 0;
++
++	return 1;
+ }
+ 
+ /* compares address and vid of two claims */
+@@ -87,8 +94,15 @@ static int batadv_compare_claim(const struct hlist_node *node,
+ {
+ 	const void *data1 = container_of(node, struct batadv_claim,
+ 					 hash_entry);
++	const struct batadv_claim *cl1 = data1, *cl2 = data2;
+ 
+-	return (memcmp(data1, data2, ETH_ALEN + sizeof(short)) == 0 ? 1 : 0);
++	if (memcmp(cl1->addr, cl2->addr, ETH_ALEN))
++		return 0;
++
++	if (cl1->vid != cl2->vid)
++		return 0;
++
++	return 1;
+ }
+ 
+ /* free a backbone gw */
+-- 
+1.7.10
+
