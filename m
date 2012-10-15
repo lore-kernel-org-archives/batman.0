@@ -1,8 +1,15 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 15 Oct 2012 22:23:15 +0200
-Message-Id: <1350332596-23684-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: move hash_bytes into hash.h
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 16 Oct 2012 04:28:46 +0800
+References: <1350332596-23684-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1350332596-23684-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201210160428.46880.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: move hash_bytes into
+	hash.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,95 +21,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This function will be used by other parts of batman-adv as well.
+On Tuesday, October 16, 2012 04:23:15 Simon Wunderlich wrote:
+>  /**
+> + *     batadv_hash_bytes - hash some bytes and add them to the previous
+> hash + *     @hash: previous hash value
+> + *     @data: data to be hashed
+> + *     @size: number of bytes to be hashed
+> + *
+> + *     Returns 0 on success, 1 if the element already is in the hash
+> + *     and -1 on error.
+> + */
+> +static inline void batadv_hash_bytes(uint32_t *hash, void *data, uint32_t
+> size) +{
+> +       const unsigned char *key = data;
+> +       int i;
+> +
+> +       for (i = 0; i < size; i++) {
+> +               *hash += key[i];
+> +               *hash += (*hash << 10);
+> +               *hash ^= (*hash >> 6);
+> +       }
+> +}
 
-Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-Reported-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
- bridge_loop_avoidance.c |   20 ++++----------------
- hash.h                  |   21 +++++++++++++++++++++
- 2 files changed, 25 insertions(+), 16 deletions(-)
+Seems the function lacks the documented return behavior ..  ;-)
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 23a6359..758d921 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -37,26 +37,14 @@ static void batadv_bla_periodic_work(struct work_struct *work);
- static void batadv_bla_send_announce(struct batadv_priv *bat_priv,
- 				     struct batadv_backbone_gw *backbone_gw);
- 
--static inline void hash_bytes(uint32_t *hash, void *data, uint32_t size)
--{
--	const unsigned char *key = data;
--	int i;
--
--	for (i = 0; i < size; i++) {
--		*hash += key[i];
--		*hash += (*hash << 10);
--		*hash ^= (*hash >> 6);
--	}
--}
--
- /* return the index of the claim */
- static inline uint32_t batadv_choose_claim(const void *data, uint32_t size)
- {
- 	struct batadv_claim *claim = (struct batadv_claim *)data;
- 	uint32_t hash = 0;
- 
--	hash_bytes(&hash, &claim->addr, sizeof(claim->addr));
--	hash_bytes(&hash, &claim->vid, sizeof(claim->vid));
-+	batadv_hash_bytes(&hash, &claim->addr, sizeof(claim->addr));
-+	batadv_hash_bytes(&hash, &claim->vid, sizeof(claim->vid));
- 
- 	hash += (hash << 3);
- 	hash ^= (hash >> 11);
-@@ -72,8 +60,8 @@ static inline uint32_t batadv_choose_backbone_gw(const void *data,
- 	struct batadv_claim *claim = (struct batadv_claim *)data;
- 	uint32_t hash = 0;
- 
--	hash_bytes(&hash, &claim->addr, sizeof(claim->addr));
--	hash_bytes(&hash, &claim->vid, sizeof(claim->vid));
-+	batadv_hash_bytes(&hash, &claim->addr, sizeof(claim->addr));
-+	batadv_hash_bytes(&hash, &claim->vid, sizeof(claim->vid));
- 
- 	hash += (hash << 3);
- 	hash ^= (hash >> 11);
-diff --git a/hash.h b/hash.h
-index 977de9c..ddfa4d1 100644
---- a/hash.h
-+++ b/hash.h
-@@ -82,6 +82,27 @@ static inline void batadv_hash_delete(struct batadv_hashtable *hash,
- }
- 
- /**
-+ *	batadv_hash_bytes - hash some bytes and add them to the previous hash
-+ *	@hash: previous hash value
-+ *	@data: data to be hashed
-+ *	@size: number of bytes to be hashed
-+ *
-+ *	Returns 0 on success, 1 if the element already is in the hash
-+ *	and -1 on error.
-+ */
-+static inline void batadv_hash_bytes(uint32_t *hash, void *data, uint32_t size)
-+{
-+	const unsigned char *key = data;
-+	int i;
-+
-+	for (i = 0; i < size; i++) {
-+		*hash += key[i];
-+		*hash += (*hash << 10);
-+		*hash ^= (*hash >> 6);
-+	}
-+}
-+
-+/**
-  *	batadv_hash_add - adds data to the hashtable
-  *	@hash: storage hash table
-  *	@compare: callback to determine if 2 hash elements are identical
--- 
-1.7.10
-
+Cheers,
+Marek
