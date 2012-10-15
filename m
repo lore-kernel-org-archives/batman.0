@@ -1,10 +1,13 @@
-Return-Path: <sophana78@gmail.com>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-Date: Sun, 14 Oct 2012 22:36:09 +0200
-Message-ID: <CADP5dB6JgRxvUK_3OzC8E9tpBXxwzPPC5uh31QDpEjozEdf7_w@mail.gmail.com>
-From: Sophana K <sophana78@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] How to detect gateway mode in openwrt?
+Sender: guido@guidoi.com.ar
+In-Reply-To: <CADP5dB6JgRxvUK_3OzC8E9tpBXxwzPPC5uh31QDpEjozEdf7_w@mail.gmail.com>
+References: <CADP5dB6JgRxvUK_3OzC8E9tpBXxwzPPC5uh31QDpEjozEdf7_w@mail.gmail.com>
+From: Gui Iribarren <gui@altermundi.net>
+Date: Mon, 15 Oct 2012 12:33:48 -0300
+Message-ID: <CAHD-aq+sdGMx67Wq4QFW==EBoWifHvCC_HgUHWFPsC0e2Ox8dg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] How to detect gateway mode in openwrt?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,29 +19,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi
+> The problem is that if I bridge the wan port, I can't use
+> hotplug.d/iface feature because the whole bridge is declared up wether
+> or not the internet port is connected.
+Hey Sophana,
+Don't bridge the wan, as you won't be able to route then.
 
-I'm trying batman-adv on openwrt on tp-link hardware. Some month ago,
-there were some bugs in the ar71xx adhoc mode which now seem resolved.
-I could setup a 2 node mesh test with batman-adv quite easily.
-One node is a gateway, the other is a repeater.
-The gateway has coova-chilli and 2 networks exported with batman-adv:
-the private and the public network.
-Both networks are bridged to batman-adv vlans, ethernet ports and wifi ssids.
-The repeater doesn't have coova-chilli, but bridge both networks to
-the wifi ssid and ethernet ports.
-But I would like to automate deployment with a single firmware, and
-need to auto-detect if the internet come from the WAN port or not.
+> Anyone have an idea on how I could do this?
 
-The problem is that if I bridge the wan port, I can't use
-hotplug.d/iface feature because the whole bridge is declared up wether
-or not the internet port is connected.
+we solved that "missing piece" with a few scripts
 
-Should I unconfigure the bridges first, then detect if internet works,
-then connect the bridge to batman?
+https://bitbucket.org/guidoi/batmesh/src/tip/packages/batman-adv-auto-gw-mode
+https://bitbucket.org/guidoi/batmesh/src/tip/packages/watchping
 
-Anyone have an idea on how I could do this?
+Disclaimer (?)
+watchping suffers some race conditions in corner cases (watching on
+usb interfaces that take long to be detected at boot time, sometimes
+fails), and <wishlist> the hook environment could definitely be
+improved by some bash loving geek.</wishlist>
+On the other hand, i don't think batman-adv-auto-gw-mode could get any
+simpler than currently is. (since it offloads the work to watchping)
 
-Thanks
+All in all, they work well, we've been using them on 4 different
+networks for the past 6 months, with no major hiccups.
+
+you can add the repo as a feed to your openwrt build environment,
+$ grep batmesh feeds.conf
+src-hg batmesh https://bitbucket.org/guidoi/batmesh
+
+and compile them yourself.
+
+Given that it's all posix ash (no binaries), you can probably grab our
+precompiled packages as well.
+http://openwrt.altermundi.net/snapshots/current/ar71xx/packages/batman-adv-auto-gw-mode_2.3-1_ar71xx.ipk
+http://openwrt.altermundi.net/snapshots/current/ar71xx/packages/watchping_1.1-1_ar71xx.ipk
+
+if you give them a try , any feedback will be appreciated!
+
+Cheers,
+
+Gui
+
+pd. Note that you need a relatively recent openwrt build , since it
+depends on netifd.
+If you're still on backfire, you can dig the repo for rev be69dc644a4b
+, it's a hacky no-netifd version
