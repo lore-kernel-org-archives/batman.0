@@ -1,16 +1,12 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 16 Oct 2012 17:31:17 +0800
-References: <1350374680-8103-1-git-send-email-ordex@autistici.org>
- <1350374680-8103-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1350374680-8103-2-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201210161731.17259.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/2] batman-adv: export compatibility
-	version via debugfs
+Return-Path: <moritz.warning@uni-bielefeld.de>
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=ISO-8859-1
+Date: Tue, 16 Oct 2012 14:43:52 +0200
+From: Moritz Warning <moritz.warning@uni-bielefeld.de>
+Message-id: <14969_1350392034_ZZi171PvmcSCs.00_507D5688.1010203@uni-bielefeld.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove footer from originators
+	list
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,23 +20,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, October 16, 2012 16:04:40 Antonio Quartulli wrote:
-> Different versions of the batman-adv module may use the same compatibility
-> version, but this is not understandable at runtime (the only way is to
-> parse the kernel log and fetch the batman-adv advertisement message on
-> loading). The user may want to know whether two nodes using different
-> versions can communicate or not. For this purpose the module has to export
-> this value through debugfs.
-> 
-> Reported-by: Moritz Warning <moritzwarning@web.de>
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  debugfs.c | 12 ++++++++++++
->  main.c    | 12 ++++++++++++
->  main.h    |  1 +
->  3 files changed, 25 insertions(+)
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Applied in revision 0679ec7.
+This patch would make the output consistent with the "batctl tg" output
+by sending no output if there is no entry to be displayed.
 
-Thanks,
-Marek
+The intention is to make it easier to parse the output using console facilities.
+Of course you could use grep -v "^No" to filter out this line,
+but that would be ugly and somewhat harsh for low performance machines such as routers
+and big tables (I haven't done benchmarks in this regard).
+This also helps the intention of the -H patch (https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-October/008143.html).
+
+Relevant ticket: http://www.open-mesh.org/issues/165
+
+Signed-off-by: Moritz Warning <moritzwarning at web.de>
+diff --git a/originator.c b/originator.c
+index 8c32cf1..d559a77 100644
+- --- a/originator.c
++++ b/originator.c
+@@ -467,9 +467,6 @@ next:
+                rcu_read_unlock();
+        }
+ 
+- -       if (batman_count == 0)
+- -               seq_printf(seq, "No batman nodes in range ...\n");
+- -
+ out:
+        if (primary_if)
+                batadv_hardif_free_ref(primary_if);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iQEcBAEBAgAGBQJQfVaIAAoJECHrh56PP4wpuzQH/ib2VlbQ1ulVsvNMoZ3Vltxp
+F+CXAPLymPrWPu30+vzFN2FauEtjT8K3WY4J0JgnlZqt1D9163kxvEnaCXTMRPsV
+B1YT5dnPIyKMdJfX/XULdSJtxAy1PCL4HqbJvRm+QhqXnDisUMMjfL3rX9tCyAb0
+ctQt+VxVhodNbznTAbol2jeEnnNsZOvyoSQ/0x850grnx0kRRLWy9y2xsrBxuhtn
+hyEBepOTx84z2bw1IIQJgOiafNVz+NtvMWKBnhZgkIsJbZac8g0IWY18uW0icqWC
+JyuYQHlsuYO3v9pez4MLkO6DWlez1+3tKiTs/Yj5qS1cAmEfrrUGHV9ouetF80Q=
+=MoTM
+-----END PGP SIGNATURE-----
