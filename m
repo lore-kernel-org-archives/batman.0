@@ -1,10 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 16 Oct 2012 08:27:28 +0200
-Message-Id: <1350368848-29677-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1350368848-29677-1-git-send-email-ordex@autistici.org>
-References: <1350368848-29677-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: support array of debugfs
+Date: Tue, 16 Oct 2012 10:04:39 +0200
+Message-Id: <1350374680-8103-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3 1/2] batman-adv: support array of debugfs
 	general attributes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,9 +22,16 @@ specific) attributes. With this change it will be possible to add more general
 attributes by simply appending them to the array without touching the rest of
 the code.
 
+Reported-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Acked-by: Sven Eckelmann <sven@narfation.org>
 ---
+
+v2:
+ - fixed kernel-doc
+v3:
+ - added report-by
+
  debugfs.c | 34 +++++++++++++++++++++++++---------
  1 file changed, 25 insertions(+), 9 deletions(-)
 
