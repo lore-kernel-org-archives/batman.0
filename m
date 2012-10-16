@@ -1,16 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 17 Oct 2012 04:38:34 +0800
-References: <1349285475-9782-1-git-send-email-sven@narfation.org>
- <1350394294-9401-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1350394294-9401-1-git-send-email-sven@narfation.org>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201210170438.34580.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH-rebased] batctl: Print compat version
-	when querying the version
+Sender: guido@guidoi.com.ar
+In-Reply-To: <CAHD-aq+4FiT1Na7KiErHFujEetFSKOppDKu8HBf0ueOiTa4nvQ@mail.gmail.com>
+References: <CADP5dB6JgRxvUK_3OzC8E9tpBXxwzPPC5uh31QDpEjozEdf7_w@mail.gmail.com>
+ <CAHD-aq+sdGMx67Wq4QFW==EBoWifHvCC_HgUHWFPsC0e2Ox8dg@mail.gmail.com>
+ <CADP5dB44Or62qRPptw-J0MC4tTD92GupZeB5dgXyeJg4ycjAow@mail.gmail.com>
+ <CAHD-aq+4FiT1Na7KiErHFujEetFSKOppDKu8HBf0ueOiTa4nvQ@mail.gmail.com>
+From: Gui Iribarren <gui@altermundi.net>
+Date: Tue, 16 Oct 2012 17:44:28 -0300
+Message-ID: <CAHD-aqLqQB=r9070Zv3tFoK-JBDBK7358mGqKZCGhrYc0Bcwbg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] How to detect gateway mode in openwrt?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,18 +22,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, October 16, 2012 21:31:34 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> patch rebased on top of ipv4 patches... just in case you want to merge the
-> ipv4 patchset and this patch ;)
-> 
->  main.c |   53 +++++++++++++++++++++++++++++++++++++++++------------
->  1 file changed, 41 insertions(+), 12 deletions(-)
+On Tue, Oct 16, 2012 at 5:17 PM, Gui Iribarren <gui@altermundi.net> wrote:
+>
+>> Too bad you don't have all default ar71xx router images ready to flash.
+>
+> Will do.
 
-Applied in revision a88e6b7.
+Here you go,
 
-Thanks,
-Marek
+http://openwrt.altermundi.net/snapshots/r33399/ar71xx/batman-ipv6/
+
+They are built using this ImageBuilder
+
+http://openwrt.altermundi.net/snapshots/r33399/ar71xx/OpenWrt-ImageBuilder-ar71xx_generic-for-linux-i486_r33399.tar.bz2
+
+with PACKAGES='kmod-batman-adv kmod-ipv6 -dnsmasq dnsmasq-dhcpv6
+ip6tables kmod-ath9k-htc safe-reboot iperf qos-scripts -ppp
+-ppp-mod-pppoe mini-snmpd'
+
+other than that, it's a vanilla openwrt.
+so after flashing, you can telnet to 192.168.1.1 and
+
+opkg update
+opkg install batman-adv-auto-gw-mode
+reboot # so that uci-default scripts are run
+
+:)
+
+alternatively, you can download our ImageBuilder.tar.bz2 and generate
+your own images, adding "batman-adv-auto-gw-mode" to the PACKAGES
+argument.
+
+http://wiki.openwrt.org/doc/howto/imagebuilder
