@@ -1,9 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 16 Oct 2012 08:27:27 +0200
-Message-Id: <1350368848-29677-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: remove bogus kernel-doc
-	for batadv_vis_data_open()
+Date: Tue, 16 Oct 2012 08:27:28 +0200
+Message-Id: <1350368848-29677-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1350368848-29677-1-git-send-email-ordex@autistici.org>
+References: <1350368848-29677-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: support array of debugfs
+	general attributes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,37 +19,80 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch removes some bogus kernel-doc for batadv_vis_data_open() in debugfs.c
-
-This was introduced with ("batman-adv: Distributed ARP Table - implement local
-storage")
+This patch adds support for an array of debugfs general (not soft_iface
+specific) attributes. With this change it will be possible to add more general
+attributes by simply appending them to the array without touching the rest of
+the code.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Acked-by: Sven Eckelmann <sven@narfation.org>
 ---
-
-v2:
- 1/2) simple re-spin
- 2/2) fixed kernel-doc
-
- debugfs.c | 5 -----
- 1 file changed, 5 deletions(-)
+ debugfs.c | 34 +++++++++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 9 deletions(-)
 
 diff --git a/debugfs.c b/debugfs.c
-index 61c7d4d..3f679cb 100644
+index 3f679cb..6f58ddd 100644
 --- a/debugfs.c
 +++ b/debugfs.c
-@@ -300,11 +300,6 @@ static int batadv_transtable_local_open(struct inode *inode, struct file *file)
- 	return single_open(file, batadv_tt_local_seq_print_text, net_dev);
+@@ -323,7 +323,17 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
+ 		}					\
+ };
+ 
++/* the following attributes are general and therefore they will be directly
++ * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
++ */
+ static BATADV_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
++
++static struct batadv_debuginfo *batadv_general_debuginfos[] = {
++	&batadv_debuginfo_routing_algos,
++	NULL,
++};
++
++/* The following attributes are per soft interface */
+ static BATADV_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
+ static BATADV_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
+ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
+@@ -358,7 +368,7 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
+ 
+ void batadv_debugfs_init(void)
+ {
+-	struct batadv_debuginfo *bat_debug;
++	struct batadv_debuginfo **bat_debug;
+ 	struct dentry *file;
+ 
+ 	batadv_debugfs = debugfs_create_dir(BATADV_DEBUGFS_SUBDIR, NULL);
+@@ -366,17 +376,23 @@ void batadv_debugfs_init(void)
+ 		batadv_debugfs = NULL;
+ 
+ 	if (!batadv_debugfs)
+-		goto out;
++		goto err;
+ 
+-	bat_debug = &batadv_debuginfo_routing_algos;
+-	file = debugfs_create_file(bat_debug->attr.name,
+-				   S_IFREG | bat_debug->attr.mode,
+-				   batadv_debugfs, NULL, &bat_debug->fops);
+-	if (!file)
+-		pr_err("Can't add debugfs file: %s\n", bat_debug->attr.name);
++	for (bat_debug = batadv_general_debuginfos; *bat_debug; ++bat_debug) {
++		file = debugfs_create_file(((*bat_debug)->attr).name,
++					   S_IFREG | ((*bat_debug)->attr).mode,
++					   batadv_debugfs, NULL,
++					   &(*bat_debug)->fops);
++		if (!file) {
++			pr_err("Can't add general debugfs file: %s\n",
++			       ((*bat_debug)->attr).name);
++			goto err;
++		}
++	}
+ 
+-out:
+ 	return;
++err:
++	debugfs_remove_recursive(batadv_debugfs);
  }
  
--/**
-- * batadv_vis_data_open - prepare file handler for reads from dat_cache
-- * @inode:
-- * @file:
-- */
- static int batadv_vis_data_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+ void batadv_debugfs_destroy(void)
 -- 
 1.7.12.3
 
