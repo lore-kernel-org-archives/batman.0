@@ -1,9 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 16 Oct 2012 08:24:41 +0200
-Message-Id: <1350368681-24616-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove bogus kernel-doc for
-	batadv_vis_data_open()
+Date: Tue, 16 Oct 2012 08:27:27 +0200
+Message-Id: <1350368848-29677-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: remove bogus kernel-doc
+	for batadv_vis_data_open()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,6 +24,11 @@ storage")
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
+
+v2:
+ 1/2) simple re-spin
+ 2/2) fixed kernel-doc
+
  debugfs.c | 5 -----
  1 file changed, 5 deletions(-)
 
