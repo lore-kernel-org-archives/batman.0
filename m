@@ -1,10 +1,10 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 17 Oct 2012 22:20:40 +0200
-Message-Id: <1350505240-32005-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1350504478-31854-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-References: <1350504478-31854-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Fix broadcast duplist for
+Date: Wed, 17 Oct 2012 22:28:57 +0200
+Message-Id: <1350505737-32105-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1350505240-32005-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+References: <1350505240-32005-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Fix broadcast duplist for
 	fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -30,6 +30,7 @@ Reported-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
 PATCHv2: change uint32_t to __be32
+PATCHv3: this time also changed in types.h
 ---
  bridge_loop_avoidance.c |   18 +++++++-----------
  bridge_loop_avoidance.h |    3 +--
@@ -117,7 +118,7 @@ index 5da62df..5da7724 100644
  	batadv_add_bcast_packet_to_list(bat_priv, skb, 1);
  
 diff --git a/types.h b/types.h
-index 7b3d0d7..354b699 100644
+index 7b3d0d7..ae9ac9a 100644
 --- a/types.h
 +++ b/types.h
 @@ -156,7 +156,7 @@ struct batadv_neigh_node {
@@ -125,7 +126,7 @@ index 7b3d0d7..354b699 100644
  struct batadv_bcast_duplist_entry {
  	uint8_t orig[ETH_ALEN];
 -	uint16_t crc;
-+	uint32_t crc;
++	__be32 crc;
  	unsigned long entrytime;
  };
  #endif
