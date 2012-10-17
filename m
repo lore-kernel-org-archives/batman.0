@@ -1,17 +1,14 @@
-Return-Path: <sophana78@gmail.com>
+Return-Path: <linus.luessing@web.de>
 MIME-Version: 1.0
-In-Reply-To: <CADP5dB4pSgbAMu9yUSwp_fqnanN=wS2Mgz6qdKLqqLNwn7FgWQ@mail.gmail.com>
-References: <CADP5dB6JgRxvUK_3OzC8E9tpBXxwzPPC5uh31QDpEjozEdf7_w@mail.gmail.com>
- <CAHD-aq+sdGMx67Wq4QFW==EBoWifHvCC_HgUHWFPsC0e2Ox8dg@mail.gmail.com>
- <CADP5dB44Or62qRPptw-J0MC4tTD92GupZeB5dgXyeJg4ycjAow@mail.gmail.com>
- <CAHD-aq+4FiT1Na7KiErHFujEetFSKOppDKu8HBf0ueOiTa4nvQ@mail.gmail.com>
- <CAHD-aqLqQB=r9070Zv3tFoK-JBDBK7358mGqKZCGhrYc0Bcwbg@mail.gmail.com>
- <CADP5dB4pSgbAMu9yUSwp_fqnanN=wS2Mgz6qdKLqqLNwn7FgWQ@mail.gmail.com>
-Date: Wed, 17 Oct 2012 23:14:50 +0200
-Message-ID: <CADP5dB6YJjcDDchkP5pYQ=d+xVn9X=Sm3U4zmQaF+43ED=QfbA@mail.gmail.com>
-From: Sophana K <sophana78@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] How to detect gateway mode in openwrt?
+Message-ID: <trinity-ff83224e-2ea7-4811-8ca5-817a9832b39a-1350510320779@3capp-webde-bs10>
+From: =?UTF-8?Q?=22Linus_L=C3=BCssing=22?= <linus.luessing@web.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Date: Wed, 17 Oct 2012 23:45:20 +0200 (CEST)
+In-Reply-To: <CAD_CWO2BOGa5xRzgwaTzCvKmgkKwTNzak17iZ1XAPuOL5GZgbg@mail.gmail.com>
+References: <CAD_CWO2BOGa5xRzgwaTzCvKmgkKwTNzak17iZ1XAPuOL5GZgbg@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Web-based Visualisation Tool of Choice for
+ batman-adv?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,42 +20,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: steve@villagetelco.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-I may have found a possible solution by parsing the output of batctl
-transglobal, and look for the gateway mac address. If the gateway is
-in the transglobal table, it is accessed through the mesh, and it is
-probably not connected directly to the router.
-
-If 2 nodes are connected to the same wired ethernet network, there
-will be 2 "gateways", and I will have to do something to detect this,
-maybe using some broadcast?
-
-On Wed, Oct 17, 2012 at 9:31 AM, Sophana K <sophana78@gmail.com> wrote:
-> On Tue, Oct 16, 2012 at 10:44 PM, Gui Iribarren <gui@altermundi.net> wrote:
->
->> i think i don't fully understand your setup. could you care to
->> describe it a little bit further?
->
-> The setup I would like is quite simple.
-> I would like a mesh exporting 2 ssid.
-> The private one would be a transparent bridge to the WAN network,
-> because I don't want the mesh nodes to handle the routing thing, and
-> let the existing network as it is. Here, the WAN network is in fact
-> the existing LAN.
-> The second network would be a public network, with coova-chilli
-> handling the whole network. There would be a single hotspot controller
-> in the gateway node. This is why I would need to know which node is
-> connected to internet.
-> I know the "gateway" node is not really a gateway as it is bridged.
->
->> Here you go,
->>
->> http://openwrt.altermundi.net/snapshots/r33399/ar71xx/batman-ipv6/
->
-> Thanks.
-> ipv6 in the name means that it is compatible with ipv6? or does it need ipv6?
->
-> Do you have a link to somewhere explaining all the features of your
-> firmware? You may create a readme file somewhere explaining all this,
-> including the network achitecture?
+=0A=0A>=20Gesendet:=20Mittwoch,=2017.=20Oktober=202012=20um=2021:44=20Uhr=
+=0A>=20Von:=20"Steve=20Song"=20<steve@villagetelco.org>=0A>=20An:=20b.a.t.m=
+.a.n@lists.open-mesh.org=0A>=20Betreff:=20[B.A.T.M.A.N.]=20Web-based=20Visu=
+alisation=20Tool=20of=20Choice=20for=20batman-adv?=0A>=0A>=20Hi=20all,=0A>=
+=20=0A>=20Is=20there=20an=20obvious=20choice=20for=20web-based=20visualisat=
+ion=20of=20batman-adv=0A>=20networks?=20=20We=20currently=20use=20a=20custo=
+m=20product=20(SPUD=20-=0A>=20http://dev.villagetelco.org/trac/browser/spud=
+/trunk/INSTALL)=20built=0A>=20specifically=20for=20Village=20Telco=20but=20=
+would=20prefer=20to=20join=20our=20efforts=20to=0A>=20a=20broader=20communi=
+ty-based=20effort.=20=20I=20am=20aware=20of=0A>=20=0A>=20Nodewatcher=0A>=20=
+http://nodewatcher.readthedocs.org/en/latest/installation.html=0A>=20and=0A=
+>=20Nodeshot=0A>=20http://wiki.ninux.org/InstallNodeshot=0A>=20=0A>=20but=
+=20both=20of=20these=20take=20a=20little=20adapting=20to=20batman-adv.=20=
+=20Is=20there=0A>=20anything=20out=20there=20that=20has=20been=20developed=
+=20specifically=20for=0A>=20batman-adv?=0A=0AFor=20our=20local=20Freifunk=
+=20community=20here=20in=20L=C3=BCbeck=20we=20are=20currently=20using=20a=
+=0Ahome-brewed=20solution=20called=20'ffmap-d3'=20developed=20by=20Nils=20S=
+chneider=0Ato=20visualize=20our=20batman-adv=20topology.=20Source=20code=20=
+is=20available=20on=20github:=0A=0Ahttp://tcatm.github.com/ffmap-d3/=0A=0AI=
+t=20is=20still=20quite=20new=20and=20still=20gets=20its=20regular=20tweaks,=
+=20but=20this=0Apage=20should=20already=20give=20you=20an=20idea=20about=20=
+how=20it=20looks=20like,=20its=20current=0Afeatures=20and=20general=20usabi=
+lity:=0A=0Ahttp://holstentor.metameute.de/mesh/nodes.html=0A=0A=0ANot=20sur=
+e=20whether=20this=20is=20something=20you=20are=20looking=20for,=20but=20th=
+ought=20I'd=0Amention=20it=20anyway.=0A=0ACheers=0A=0A=0A>=20=0A>=20Thanks.=
+..=20Steve=0A>=20=0A>=20--=20=0A>=20Steve=20Song=0A>=20http://villagetelco.=
+org=0A>=20http://manypossibilities.net=0A>=20
