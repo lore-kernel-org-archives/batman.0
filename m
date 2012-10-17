@@ -1,11 +1,17 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 17 Oct 2012 22:28:57 +0200
-Message-Id: <1350505737-32105-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1350505240-32005-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-References: <1350505240-32005-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Fix broadcast duplist for
-	fragmentation
+Return-Path: <sophana78@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <CADP5dB4pSgbAMu9yUSwp_fqnanN=wS2Mgz6qdKLqqLNwn7FgWQ@mail.gmail.com>
+References: <CADP5dB6JgRxvUK_3OzC8E9tpBXxwzPPC5uh31QDpEjozEdf7_w@mail.gmail.com>
+ <CAHD-aq+sdGMx67Wq4QFW==EBoWifHvCC_HgUHWFPsC0e2Ox8dg@mail.gmail.com>
+ <CADP5dB44Or62qRPptw-J0MC4tTD92GupZeB5dgXyeJg4ycjAow@mail.gmail.com>
+ <CAHD-aq+4FiT1Na7KiErHFujEetFSKOppDKu8HBf0ueOiTa4nvQ@mail.gmail.com>
+ <CAHD-aqLqQB=r9070Zv3tFoK-JBDBK7358mGqKZCGhrYc0Bcwbg@mail.gmail.com>
+ <CADP5dB4pSgbAMu9yUSwp_fqnanN=wS2Mgz6qdKLqqLNwn7FgWQ@mail.gmail.com>
+Date: Wed, 17 Oct 2012 23:14:50 +0200
+Message-ID: <CADP5dB6YJjcDDchkP5pYQ=d+xVn9X=Sm3U4zmQaF+43ED=QfbA@mail.gmail.com>
+From: Sophana K <sophana78@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] How to detect gateway mode in openwrt?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,119 +23,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-If the skb is fragmented, the checksum must be computed on the
-individual fragments, just using skb->data may fail on fragmented
-data. Instead of doing linearizing the packet, use the new
-batadv_crc32 to do that more efficiently- it should not hurt
-replacing the old crc16 by the new crc32.
+I may have found a possible solution by parsing the output of batctl
+transglobal, and look for the gateway mac address. If the gateway is
+in the transglobal table, it is accessed through the mesh, and it is
+probably not connected directly to the router.
 
-Reported-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
-PATCHv2: change uint32_t to __be32
-PATCHv3: this time also changed in types.h
----
- bridge_loop_avoidance.c |   18 +++++++-----------
- bridge_loop_avoidance.h |    3 +--
- routing.c               |   10 +++-------
- types.h                 |    2 +-
- 4 files changed, 12 insertions(+), 21 deletions(-)
+If 2 nodes are connected to the same wired ethernet network, there
+will be 2 "gateways", and I will have to do something to detect this,
+maybe using some broadcast?
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index c6c1c59..e04b15f 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1247,8 +1247,7 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
- /**
-  * batadv_bla_check_bcast_duplist
-  * @bat_priv: the bat priv with all the soft interface information
-- * @bcast_packet: encapsulated broadcast frame plus batman header
-- * @bcast_packet_len: length of encapsulated broadcast frame plus batman header
-+ * @skb: contains the bcast_packet to be checked
-  *
-  * check if it is on our broadcast list. Another gateway might
-  * have sent the same packet because it is connected to the same backbone,
-@@ -1260,20 +1259,17 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
-  * the same host however as this might be intended.
-  */
- int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
--				   struct batadv_bcast_packet *bcast_packet,
--				   int bcast_packet_len)
-+				   struct sk_buff *skb)
- {
--	int i, length, curr, ret = 0;
--	uint8_t *content;
--	uint16_t crc;
-+	int i, curr, ret = 0;
-+	__be32 crc;
-+	struct batadv_bcast_packet *bcast_packet;
- 	struct batadv_bcast_duplist_entry *entry;
- 
--	length = bcast_packet_len - sizeof(*bcast_packet);
--	content = (uint8_t *)bcast_packet;
--	content += sizeof(*bcast_packet);
-+	bcast_packet = (struct batadv_bcast_packet *)skb->data;
- 
- 	/* calculate the crc ... */
--	crc = crc16(0, content, length);
-+	crc = batadv_skb_crc32(skb, (u8 *)(bcast_packet + 1));
- 
- 	spin_lock_bh(&bat_priv->bla.bcast_duplist_lock);
- 
-diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
-index 789cb73..f1bc9cd 100644
---- a/bridge_loop_avoidance.h
-+++ b/bridge_loop_avoidance.h
-@@ -31,8 +31,7 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq,
- 					     void *offset);
- int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv, uint8_t *orig);
- int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
--				   struct batadv_bcast_packet *bcast_packet,
--				   int hdr_size);
-+				   struct sk_buff *skb);
- void batadv_bla_update_orig_address(struct batadv_priv *bat_priv,
- 				    struct batadv_hard_iface *primary_if,
- 				    struct batadv_hard_iface *oldif);
-diff --git a/routing.c b/routing.c
-index 5da62df..5da7724 100644
---- a/routing.c
-+++ b/routing.c
-@@ -1181,16 +1181,12 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 
- 	spin_unlock_bh(&orig_node->bcast_seqno_lock);
- 
--	/* keep skb linear for crc calculation */
--	if (skb_linearize(skb) < 0)
--		goto out;
--
--	bcast_packet = (struct batadv_bcast_packet *)skb->data;
--
- 	/* check whether this has been sent by another originator before */
--	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, skb->len))
-+	if (batadv_bla_check_bcast_duplist(bat_priv, skb))
- 		goto out;
- 
-+	bcast_packet = (struct batadv_bcast_packet *)skb->data;
-+
- 	/* rebroadcast packet */
- 	batadv_add_bcast_packet_to_list(bat_priv, skb, 1);
- 
-diff --git a/types.h b/types.h
-index 7b3d0d7..ae9ac9a 100644
---- a/types.h
-+++ b/types.h
-@@ -156,7 +156,7 @@ struct batadv_neigh_node {
- #ifdef CONFIG_BATMAN_ADV_BLA
- struct batadv_bcast_duplist_entry {
- 	uint8_t orig[ETH_ALEN];
--	uint16_t crc;
-+	__be32 crc;
- 	unsigned long entrytime;
- };
- #endif
--- 
-1.7.10
-
+On Wed, Oct 17, 2012 at 9:31 AM, Sophana K <sophana78@gmail.com> wrote:
+> On Tue, Oct 16, 2012 at 10:44 PM, Gui Iribarren <gui@altermundi.net> wrote:
+>
+>> i think i don't fully understand your setup. could you care to
+>> describe it a little bit further?
+>
+> The setup I would like is quite simple.
+> I would like a mesh exporting 2 ssid.
+> The private one would be a transparent bridge to the WAN network,
+> because I don't want the mesh nodes to handle the routing thing, and
+> let the existing network as it is. Here, the WAN network is in fact
+> the existing LAN.
+> The second network would be a public network, with coova-chilli
+> handling the whole network. There would be a single hotspot controller
+> in the gateway node. This is why I would need to know which node is
+> connected to internet.
+> I know the "gateway" node is not really a gateway as it is bridged.
+>
+>> Here you go,
+>>
+>> http://openwrt.altermundi.net/snapshots/r33399/ar71xx/batman-ipv6/
+>
+> Thanks.
+> ipv6 in the name means that it is compatible with ipv6? or does it need ipv6?
+>
+> Do you have a link to somewhere explaining all the features of your
+> firmware? You may create a readme file somewhere explaining all this,
+> including the network achitecture?
