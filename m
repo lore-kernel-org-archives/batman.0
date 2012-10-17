@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 17 Oct 2012 21:55:56 +0200
-Message-Id: <1350503758-20685-2-git-send-email-sven@narfation.org>
+Date: Wed, 17 Oct 2012 21:55:57 +0200
+Message-Id: <1350503758-20685-3-git-send-email-sven@narfation.org>
 In-Reply-To: <1350503758-20685-1-git-send-email-sven@narfation.org>
 References: <1350503758-20685-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] alfred: Fix parsing of short program
-	parameter -v and -V
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] alfred: Test for failed global memory
+	allocation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,22 +21,27 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ main.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/main.c b/main.c
-index 0315fe3..96e401a 100644
+index 96e401a..ccb72cd 100644
 --- a/main.c
 +++ b/main.c
-@@ -78,7 +78,7 @@ struct globals *alfred_init(int argc, char *argv[])
- 	globals->best_server = NULL;
- 	globals->clientmode_version = 0;
+@@ -67,11 +67,11 @@ struct globals *alfred_init(int argc, char *argv[])
+ 	};
  
--	while ((opt = getopt_long(argc, argv, "ms:r:hi:", long_options,
-+	while ((opt = getopt_long(argc, argv, "ms:r:hi:vV:", long_options,
- 				  &opt_ind)) != -1) {
- 		switch (opt) {
- 		case 'r':
+ 	globals = malloc(sizeof(*globals));
+-	memset(globals, 0, sizeof(*globals));
+-
+ 	if (!globals)
+ 		return NULL;
+ 
++	memset(globals, 0, sizeof(*globals));
++
+ 	globals->opmode = OPMODE_SLAVE;
+ 	globals->clientmode = CLIENT_NONE;
+ 	globals->interface = NULL;
 -- 
 1.7.10.4
 
