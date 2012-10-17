@@ -1,13 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-MIME-Version: 1.0
-Message-ID: <trinity-466685df-dab6-476d-be38-9f1320389eff-1350499385870@3capp-webde-bs10>
-From: =?UTF-8?Q?=22Linus_L=C3=BCssing=22?= <linus.luessing@web.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Date: Wed, 17 Oct 2012 20:43:05 +0200 (CEST)
-In-Reply-To: <20121017133640.GR7023@ritirata.org>
-References: <1350479255-904-1-git-send-email-linus.luessing@web.de>,
+Return-Path: <ordex@autistici.org>
+Date: Wed, 17 Oct 2012 20:48:39 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20121017184839.GS7023@ritirata.org>
+References: <1350479255-904-1-git-send-email-linus.luessing@web.de>
  <20121017133640.GR7023@ritirata.org>
+ <trinity-466685df-dab6-476d-be38-9f1320389eff-1350499385870@3capp-webde-bs10>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="mz5eWKkhz39mMVQV"
+Content-Disposition: inline
+In-Reply-To: <trinity-466685df-dab6-476d-be38-9f1320389eff-1350499385870@3capp-webde-bs10>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Do not add multicast MAC
  addresses to translation table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,47 +24,100 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-=0A=0A>=20Gesendet:=20Mittwoch,=2017.=20Oktober=202012=20um=2015:36=20Uhr=
-=0A>=20Von:=20"Antonio=20Quartulli"=20<ordex@autistici.org>=0A>=20An:=20"Th=
-e=20list=20for=20a=20Better=20Approach=20To=20Mobile=20Ad-hoc=20Networking"=
-=20<b.a.t.m.a.n@lists.open-mesh.org>=0A>=20Betreff:=20Re:=20[B.A.T.M.A.N.]=
-=20[PATCH]=20batman-adv:=20Do=20not=20add=20multicast=20MAC=20addresses=20t=
-o=20translation=20table=0A>=0A>=20On=20Wed,=20Oct=2017,=202012=20at=2003:07=
-:35PM=20+0200,=20Linus=20L=C3=BCssing=20wrote:=0A>=20>=20The=20current=20tr=
-anslation=20table=20mechanism=20is=20not=20suitable=20for=20multicast=0A>=
-=20>=20addresses=20and=20we=20are=20currently=20flooding=20such=20frames=20=
-anyway.=0A>=20>=20=0A>=20>=20Therefore=20this=20patch=20prevents=20multicas=
-t=20MAC=20addresses=20being=20added=20to=20the=0A>=20>=20translation=20tabl=
-e.=0A>=20>=20=0A>=20>=20Signed-off-by:=20Linus=20L=C3=BCssing=20<linus.lues=
-sing@web.de>=0A>=20>=20---=0A>=20>=20=20soft-interface.c=20|=20=20=20=203=
-=20++-=0A>=20>=20=201=20file=20changed,=202=20insertions(+),=201=20deletion=
-(-)=0A>=20>=20=0A>=20>=20diff=20--git=20a/soft-interface.c=20b/soft-interfa=
-ce.c=0A>=20>=20index=202d1f895..9955319=20100644=0A>=20>=20---=20a/soft-int=
-erface.c=0A>=20>=20+++=20b/soft-interface.c=0A>=20>=20@@=20-180,7=20+180,8=
-=20@@=20static=20int=20batadv_interface_tx(struct=20sk_buff=20*skb,=0A>=20>=
-=20=20=09=09goto=20dropped;=0A>=20>=20=20=0A>=20>=20=20=09/*=20Register=20t=
-he=20client=20MAC=20in=20the=20transtable=20*/=0A>=20>=20-=09batadv_tt_loca=
-l_add(soft_iface,=20ethhdr->h_source,=20skb->skb_iif);=0A>=20>=20+=09if=20(=
-!is_multicast_ether_addr(ethhdr->h_source))=0A>=20>=20+=09=09batadv_tt_loca=
-l_add(soft_iface,=20ethhdr->h_source,=20skb->skb_iif);=0A>=20=0A>=20How=20c=
-an=20the=20source=20address=20be=20multicast?=20Usually=20multicast=20addre=
-sses=20are=20found=0A>=20in=20the=20destination=20field...=0A>=20=0A>=20Is=
-=20there=20any=20scenario=20where=20this=20is=20possible?=20I=20am=20wonder=
-ing=20whether=20we=20should=0A>=20directly=20drop=20packet=20having=20mcast=
-=20address=20as=20source..=0A=0AHm,=20no,=20I=20do=20not=20have=20a=20speci=
-fic=20scenario=20in=20mind.=20I=20only=20accidentally=20noticed=20such=20an=
-=20FF:FF:FF:FF:FF:FF=20mac=20address=20in=20our=20vis=20graph=20here=20when=
-=20I=20made=20a=20typo=20with=20the=20tool=20'mausezahn'.=0A=0AI=20don't=20=
-know=20of=20any=20RFC=20or=20so=20which=20would=20generally=20forbid=20usin=
-g=20a=20multicast=20source=20MAC=20for=20every=20ether=20type=20(although=
-=20for=20sane=20IPv4/v6=20stacks=20I=20haven't=20seen=20something=20like=20=
-this=20before=20either=20and=20yes,=20I=20bet=20it's=20not=20allowed=20ther=
-e).=0A=0AThe=20Linux=20bridge=20I=20had=20on=20top=20of=20bat0=20was=20happ=
-ily=20forwarding=20such=20frames=20into=20batman-adv.=20So=20I=20thought=20=
-doing=20it=20like=20the=20bridge=20code=20-=20forwarding=20but=20with=20no=
-=20learning=20-=20might=20be=20the=20right=20way?=0A=0ACheers=0A=0A>=20=0A>=
-=20Cheers,=0A>=20=0A>=20=0A>=20--=20=0A>=20Antonio=20Quartulli=0A>=20=0A>=
-=20..each=20of=20us=20alone=20is=20worth=20nothing..=0A>=20Ernesto=20"Che"=
-=20Guevara=0A>=20
+
+--mz5eWKkhz39mMVQV
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Oct 17, 2012 at 08:43:05PM +0200, "Linus L=C3=BCssing" wrote:
+>=20
+>=20
+> > Gesendet: Mittwoch, 17. Oktober 2012 um 15:36 Uhr
+> > Von: "Antonio Quartulli" <ordex@autistici.org>
+> > An: "The list for a Better Approach To Mobile Ad-hoc Networking" <b.a.t=
+=2Em.a.n@lists.open-mesh.org>
+> > Betreff: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Do not add multicast MA=
+C addresses to translation table
+> >
+> > On Wed, Oct 17, 2012 at 03:07:35PM +0200, Linus L=C3=BCssing wrote:
+> > > The current translation table mechanism is not suitable for multicast
+> > > addresses and we are currently flooding such frames anyway.
+> > >=20
+> > > Therefore this patch prevents multicast MAC addresses being added to =
+the
+> > > translation table.
+> > >=20
+> > > Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
+> > > ---
+> > >  soft-interface.c |    3 ++-
+> > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > >=20
+> > > diff --git a/soft-interface.c b/soft-interface.c
+> > > index 2d1f895..9955319 100644
+> > > --- a/soft-interface.c
+> > > +++ b/soft-interface.c
+> > > @@ -180,7 +180,8 @@ static int batadv_interface_tx(struct sk_buff *sk=
+b,
+> > >  		goto dropped;
+> > > =20
+> > >  	/* Register the client MAC in the transtable */
+> > > -	batadv_tt_local_add(soft_iface, ethhdr->h_source, skb->skb_iif);
+> > > +	if (!is_multicast_ether_addr(ethhdr->h_source))
+> > > +		batadv_tt_local_add(soft_iface, ethhdr->h_source, skb->skb_iif);
+> >=20
+> > How can the source address be multicast? Usually multicast addresses ar=
+e found
+> > in the destination field...
+> >=20
+> > Is there any scenario where this is possible? I am wondering whether we=
+ should
+> > directly drop packet having mcast address as source..
+>=20
+> Hm, no, I do not have a specific scenario in mind. I only accidentally no=
+ticed such an FF:FF:FF:FF:FF:FF mac address in our vis graph here when I ma=
+de a typo with the tool 'mausezahn'.
+>=20
+> I don't know of any RFC or so which would generally forbid using a multic=
+ast source MAC for every ether type (although for sane IPv4/v6 stacks I hav=
+en't seen something like this before either and yes, I bet it's not allowed=
+ there).
+>=20
+> The Linux bridge I had on top of bat0 was happily forwarding such frames =
+into batman-adv. So I thought doing it like the bridge code - forwarding bu=
+t with no learning - might be the right way?
+
+I think you are right. We should not care about the payload logic. If that =
+is
+not allowed for the upper layer, then that layer will drop the packet once
+received.
+
+
+So we should keep forwarding such packets and yes, we should prevent learni=
+ng
+=66rom them. Therefore:
+
+Acked-by: Antonio Quartulli <ordex@autistici.org>
+
+Thanks a lot Lin=C3=BCs.
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--mz5eWKkhz39mMVQV
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAlB+/YcACgkQpGgxIkP9cwd1ngCfTJ8ziW3GxGaAZb42wK9oNqPB
+DzMAoJymIVTgAuKrkFGczNeywRgZXGxG
+=8Mvt
+-----END PGP SIGNATURE-----
+
+--mz5eWKkhz39mMVQV--
