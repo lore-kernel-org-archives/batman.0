@@ -1,16 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 17 Oct 2012 22:17:34 +0200
+Date: Wed, 17 Oct 2012 22:17:54 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20121017201734.GB31782@pandem0nium>
+Message-ID: <20121017201754.GC31782@pandem0nium>
 References: <1350503758-20685-1-git-send-email-sven@narfation.org>
- <1350503758-20685-2-git-send-email-sven@narfation.org>
+ <1350503758-20685-3-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="Bn2rw/3z4jIqBvZU"
+ protocol="application/pgp-signature"; boundary="5G06lTa6Jq83wMTw"
 Content-Disposition: inline
-In-Reply-To: <1350503758-20685-2-git-send-email-sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/4] alfred: Fix parsing of short program
- parameter -v and -V
+In-Reply-To: <1350503758-20685-3-git-send-email-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] alfred: Test for failed global
+ memory allocation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,41 +25,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---Bn2rw/3z4jIqBvZU
+--5G06lTa6Jq83wMTw
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Applied in revision 3c2de69.
+Applied in revision 09c40ac.
 
 Thanks,
 	Simon
 
-On Wed, Oct 17, 2012 at 09:55:56PM +0200, Sven Eckelmann wrote:
+On Wed, Oct 17, 2012 at 09:55:57PM +0200, Sven Eckelmann wrote:
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  main.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  main.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >=20
 > diff --git a/main.c b/main.c
-> index 0315fe3..96e401a 100644
+> index 96e401a..ccb72cd 100644
 > --- a/main.c
 > +++ b/main.c
-> @@ -78,7 +78,7 @@ struct globals *alfred_init(int argc, char *argv[])
->  	globals->best_server =3D NULL;
->  	globals->clientmode_version =3D 0;
+> @@ -67,11 +67,11 @@ struct globals *alfred_init(int argc, char *argv[])
+>  	};
 > =20
-> -	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:", long_options,
-> +	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:vV:", long_options,
->  				  &opt_ind)) !=3D -1) {
->  		switch (opt) {
->  		case 'r':
+>  	globals =3D malloc(sizeof(*globals));
+> -	memset(globals, 0, sizeof(*globals));
+> -
+>  	if (!globals)
+>  		return NULL;
+> =20
+> +	memset(globals, 0, sizeof(*globals));
+> +
+>  	globals->opmode =3D OPMODE_SLAVE;
+>  	globals->clientmode =3D CLIENT_NONE;
+>  	globals->interface =3D NULL;
 > --=20
 > 1.7.10.4
 >=20
 >=20
 
---Bn2rw/3z4jIqBvZU
+--5G06lTa6Jq83wMTw
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -67,9 +72,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAlB/El4ACgkQrzg/fFk7axbVqACgyMdL+AkOabPC7XlyNy5Z6RKM
-2+EAoNekQbZXgNbjh0lNT65+t5FMOxpY
-=jIFI
+iEYEARECAAYFAlB/EnIACgkQrzg/fFk7axaiaQCfZcaKbCn+fPMDksDR4C9VWFdm
+t1YAn2qHfouehXt7XZS5c5NMe69DUimZ
+=1UpE
 -----END PGP SIGNATURE-----
 
---Bn2rw/3z4jIqBvZU--
+--5G06lTa6Jq83wMTw--
