@@ -1,15 +1,9 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 17 Oct 2012 16:17:33 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20121017141733.GB30441@pandem0nium>
-References: <1350478385-676-1-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="R3G7APHDIzY6R/pk"
-Content-Disposition: inline
-In-Reply-To: <1350478385-676-1-git-send-email-linus.luessing@web.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Fix broadcast packet
- CRC calculation
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 17 Oct 2012 17:59:43 +0200
+Message-Id: <1350489584-10428-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC] batman-adv: Add function to calculate crc32c
+	for the skb payload
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,116 +15,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ main.c |   34 ++++++++++++++++++++++++++++++++++
+ main.h |    1 +
+ 2 files changed, 35 insertions(+)
 
---R3G7APHDIzY6R/pk
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/main.c b/main.c
+index 70797de..122c675 100644
+--- a/main.c
++++ b/main.c
+@@ -33,6 +33,7 @@
+ #include "vis.h"
+ #include "hash.h"
+ #include "bat_algo.h"
++#include <linux/crc32c.h>
+ 
+ 
+ /* List manipulations on hardif_list have to be rtnl_lock()'ed,
+@@ -432,6 +433,39 @@ int batadv_compat_seq_print_text(struct seq_file *seq, void *offset)
+ 	return 0;
+ }
+ 
++/**
++ * batadv_crc32 - calculate CRC32 of the whole packet and skip bytes in header
++ * @skb: skb pointing to fragmented socket buffers
++ * @payload_ptr: Pointer to position inside the head buffer of the skb
++ *  marking the start of the data to be CRC'ed
++ *
++ * payload_ptr must always point to the point in the skb head buffer and not to
++ * a fragment.
++ */
++__be32 batadv_crc32(const struct sk_buff *skb, u8 *payload_ptr)
++{
++	u32 crc = 0;
++	struct sk_buff *iter;
++	size_t skip_len, read_len;
++	const skb_frag_t *f;
++	int i;
++
++	skip_len = payload_ptr - skb->data;
++	read_len = skb_headlen(skb) - skip_len;
++	if (read_len)
++		crc = crc32c(crc, payload_ptr, read_len);
++
++	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
++		f = &skb_shinfo(skb)->frags[i];
++		crc = crc32c(crc, skb_frag_address(f), skb_frag_size(f));
++	}
++
++	skb_walk_frags(skb, iter)
++		crc = crc32c(crc, iter->data, skb_headlen(iter));
++
++	return htonl(crc);
++}
++
+ static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
+ {
+ 	struct batadv_algo_ops *bat_algo_ops;
+diff --git a/main.h b/main.h
+index 2dfcf8c..bb0a710 100644
+--- a/main.h
++++ b/main.h
+@@ -177,6 +177,7 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
+ int batadv_compat_seq_print_text(struct seq_file *seq, void *offset);
++__be32 batadv_crc32(const struct sk_buff *skb, u8 *payload_ptr);
+ 
+ /**
+  * enum batadv_dbg_level - available log levels
+-- 
+1.7.10.4
 
-Good catch! When can I buy you the beer? :D
-
-Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-
-On Wed, Oct 17, 2012 at 02:53:04PM +0200, Linus L=C3=BCssing wrote:
-> So far the crc16 checksum for a batman-adv broadcast data packet, received
-> on a batman-adv hard interface, was calculated over zero bytes of its
-> content leading to many incoming broadcast data packets wrongly being
-> dropped.
->=20
-> This patch fixes this issue by calculating the crc16 over the actual,
-> complete broadcast payload.
->=20
-> The issue is a regression introduced by
-> "batman-adv: add broadcast duplicate check".
->=20
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
-> ---
-> It led to about 60-80% broadcast packet loss to a direct neighbor
-> with a ping6 with a 1s interval in our scenario, but about no
-> packet loss with an interval smaller than 0.2s.
->=20
-> Also see: https://projects.universe-factory.net/issues/65 (German)
->=20
-> v2:
-> ~ fixed typo (regrission vs. regression)
-> ~ commit name instead of commit hash in the commit message
->=20
->  bridge_loop_avoidance.c |    8 ++++----
->  routing.c               |    8 +++++++-
->  2 files changed, 11 insertions(+), 5 deletions(-)
->=20
-> diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-> index a617f2c..b828875 100644
-> --- a/bridge_loop_avoidance.c
-> +++ b/bridge_loop_avoidance.c
-> @@ -1247,8 +1247,8 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
->  /**
->   * batadv_bla_check_bcast_duplist
->   * @bat_priv: the bat priv with all the soft interface information
-> - * @bcast_packet: originator mac address
-> - * @hdr_size: maximum length of the frame
-> + * @bcast_packet: encapsulated broadcast frame plus batman header
-> + * @bcast_packet_len: length of encapsulated broadcast frame plus batman=
- header
->   *
->   * check if it is on our broadcast list. Another gateway might
->   * have sent the same packet because it is connected to the same backbon=
-e,
-> @@ -1261,14 +1261,14 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
->   */
->  int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
->  				   struct batadv_bcast_packet *bcast_packet,
-> -				   int hdr_size)
-> +				   int bcast_packet_len)
->  {
->  	int i, length, curr;
->  	uint8_t *content;
->  	uint16_t crc;
->  	struct batadv_bcast_duplist_entry *entry;
-> =20
-> -	length =3D hdr_size - sizeof(*bcast_packet);
-> +	length =3D bcast_packet_len - sizeof(*bcast_packet);
->  	content =3D (uint8_t *)bcast_packet;
->  	content +=3D sizeof(*bcast_packet);
-> =20
-> diff --git a/routing.c b/routing.c
-> index 6b2104d..5da62df 100644
-> --- a/routing.c
-> +++ b/routing.c
-> @@ -1181,8 +1181,14 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
-> =20
->  	spin_unlock_bh(&orig_node->bcast_seqno_lock);
-> =20
-> +	/* keep skb linear for crc calculation */
-> +	if (skb_linearize(skb) < 0)
-> +		goto out;
-> +
-> +	bcast_packet =3D (struct batadv_bcast_packet *)skb->data;
-> +
->  	/* check whether this has been sent by another originator before */
-> -	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
-> +	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, skb->len))
->  		goto out;
-> =20
->  	/* rebroadcast packet */
-> --=20
-> 1.7.10.4
->=20
->=20
-
---R3G7APHDIzY6R/pk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAlB+vf0ACgkQrzg/fFk7axa97ACff2Tf+z6hp58vIrnyB4tIAxyR
-Y9kAoPTrv9MyHvCWwLsFoJasZ4WwgceS
-=ZKPj
------END PGP SIGNATURE-----
-
---R3G7APHDIzY6R/pk--
