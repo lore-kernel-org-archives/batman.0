@@ -1,16 +1,15 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 17 Oct 2012 16:17:05 +0200
+Date: Wed, 17 Oct 2012 16:17:33 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20121017141705.GA30441@pandem0nium>
+Message-ID: <20121017141733.GB30441@pandem0nium>
 References: <1350478385-676-1-git-send-email-linus.luessing@web.de>
- <1350478385-676-2-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
+ protocol="application/pgp-signature"; boundary="R3G7APHDIzY6R/pk"
 Content-Disposition: inline
-In-Reply-To: <1350478385-676-2-git-send-email-linus.luessing@web.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: Fix potential
- broadcast BLA-duplicate-check race condition
+In-Reply-To: <1350478385-676-1-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Fix broadcast packet
+ CRC calculation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,125 +24,103 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---82I3+IH0IqGh5yIs
+--R3G7APHDIzY6R/pk
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Looks good, although I don't think this will happen very often - it
-is only called when receiving packets, and AFAIK there can only be
-multiple threads when using multiple interfaces.
-
-Anyway, doing the spinlock shouldn't hurt and might save us some pain
-when this function is used more often, or with multiple interfaces, or
-cases I don't see now. :)
+Good catch! When can I buy you the beer? :D
 
 Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-
-On Wed, Oct 17, 2012 at 02:53:05PM +0200, Linus L=C3=BCssing wrote:
-> Threads in the bottom half of batadv_bla_check_bcast_duplist() might
-> otherwise for instance overwrite variables which other threads might
-> be using/reading at the same time in the top half, potentially
-> leading to messing up the bcast_duplist, possibly resulting in false
-> bridge loop avoidance duplicate check decisions.
+On Wed, Oct 17, 2012 at 02:53:04PM +0200, Linus L=C3=BCssing wrote:
+> So far the crc16 checksum for a batman-adv broadcast data packet, received
+> on a batman-adv hard interface, was calculated over zero bytes of its
+> content leading to many incoming broadcast data packets wrongly being
+> dropped.
+>=20
+> This patch fixes this issue by calculating the crc16 over the actual,
+> complete broadcast payload.
+>=20
+> The issue is a regression introduced by
+> "batman-adv: add broadcast duplicate check".
 >=20
 > Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
 > ---
-> Note: I didn't observe such issues yet, probably because of the=20
-> usually quite low broadcast data throughput - and on high broadcast
-> throughput, then packet loss is usually caused by the limited capacity
-> for broadcast packets on 802.11 media anyway.
+> It led to about 60-80% broadcast packet loss to a direct neighbor
+> with a ping6 with a 1s interval in our scenario, but about no
+> packet loss with an interval smaller than 0.2s.
 >=20
->  bridge_loop_avoidance.c |   16 +++++++++++-----
->  main.c                  |    1 +
->  types.h                 |    2 ++
->  3 files changed, 14 insertions(+), 5 deletions(-)
+> Also see: https://projects.universe-factory.net/issues/65 (German)
+>=20
+> v2:
+> ~ fixed typo (regrission vs. regression)
+> ~ commit name instead of commit hash in the commit message
+>=20
+>  bridge_loop_avoidance.c |    8 ++++----
+>  routing.c               |    8 +++++++-
+>  2 files changed, 11 insertions(+), 5 deletions(-)
 >=20
 > diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-> index b828875..c6c1c59 100644
+> index a617f2c..b828875 100644
 > --- a/bridge_loop_avoidance.c
 > +++ b/bridge_loop_avoidance.c
-> @@ -1263,7 +1263,7 @@ int batadv_bla_check_bcast_duplist(struct batadv_pr=
-iv *bat_priv,
+> @@ -1247,8 +1247,8 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
+>  /**
+>   * batadv_bla_check_bcast_duplist
+>   * @bat_priv: the bat priv with all the soft interface information
+> - * @bcast_packet: originator mac address
+> - * @hdr_size: maximum length of the frame
+> + * @bcast_packet: encapsulated broadcast frame plus batman header
+> + * @bcast_packet_len: length of encapsulated broadcast frame plus batman=
+ header
+>   *
+>   * check if it is on our broadcast list. Another gateway might
+>   * have sent the same packet because it is connected to the same backbon=
+e,
+> @@ -1261,14 +1261,14 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
+>   */
+>  int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
 >  				   struct batadv_bcast_packet *bcast_packet,
->  				   int bcast_packet_len)
+> -				   int hdr_size)
+> +				   int bcast_packet_len)
 >  {
-> -	int i, length, curr;
-> +	int i, length, curr, ret =3D 0;
+>  	int i, length, curr;
 >  	uint8_t *content;
 >  	uint16_t crc;
 >  	struct batadv_bcast_duplist_entry *entry;
-> @@ -1275,6 +1275,8 @@ int batadv_bla_check_bcast_duplist(struct batadv_pr=
-iv *bat_priv,
->  	/* calculate the crc ... */
->  	crc =3D crc16(0, content, length);
 > =20
-> +	spin_lock_bh(&bat_priv->bla.bcast_duplist_lock);
-> +
->  	for (i =3D 0; i < BATADV_DUPLIST_SIZE; i++) {
->  		curr =3D (bat_priv->bla.bcast_duplist_curr + i);
->  		curr %=3D BATADV_DUPLIST_SIZE;
-> @@ -1296,9 +1298,11 @@ int batadv_bla_check_bcast_duplist(struct batadv_p=
-riv *bat_priv,
->  		/* this entry seems to match: same crc, not too old,
->  		 * and from another gw. therefore return 1 to forbid it.
->  		 */
-> -		return 1;
-> +		ret =3D 1;
+> -	length =3D hdr_size - sizeof(*bcast_packet);
+> +	length =3D bcast_packet_len - sizeof(*bcast_packet);
+>  	content =3D (uint8_t *)bcast_packet;
+>  	content +=3D sizeof(*bcast_packet);
+> =20
+> diff --git a/routing.c b/routing.c
+> index 6b2104d..5da62df 100644
+> --- a/routing.c
+> +++ b/routing.c
+> @@ -1181,8 +1181,14 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
+> =20
+>  	spin_unlock_bh(&orig_node->bcast_seqno_lock);
+> =20
+> +	/* keep skb linear for crc calculation */
+> +	if (skb_linearize(skb) < 0)
 > +		goto out;
->  	}
-> -	/* not found, add a new entry (overwrite the oldest entry) */
-> +	/* not found, add a new entry (overwrite the oldest entry)
-> +	 * and allow it, its the first occurence. */
->  	curr =3D (bat_priv->bla.bcast_duplist_curr + BATADV_DUPLIST_SIZE - 1);
->  	curr %=3D BATADV_DUPLIST_SIZE;
->  	entry =3D &bat_priv->bla.bcast_duplist[curr];
-> @@ -1307,8 +1311,10 @@ int batadv_bla_check_bcast_duplist(struct batadv_p=
-riv *bat_priv,
->  	memcpy(entry->orig, bcast_packet->orig, ETH_ALEN);
->  	bat_priv->bla.bcast_duplist_curr =3D curr;
-> =20
-> -	/* allow it, its the first occurence. */
-> -	return 0;
-> +out:
-> +	spin_unlock_bh(&bat_priv->bla.bcast_duplist_lock);
 > +
-> +	return ret;
->  }
+> +	bcast_packet =3D (struct batadv_bcast_packet *)skb->data;
+> +
+>  	/* check whether this has been sent by another originator before */
+> -	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
+> +	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, skb->len))
+>  		goto out;
 > =20
-> =20
-> diff --git a/main.c b/main.c
-> index 70797de..f54efe9 100644
-> --- a/main.c
-> +++ b/main.c
-> @@ -102,6 +102,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
->  	spin_lock_init(&bat_priv->gw.list_lock);
->  	spin_lock_init(&bat_priv->vis.hash_lock);
->  	spin_lock_init(&bat_priv->vis.list_lock);
-> +	spin_lock_init(&bat_priv->bla.bcast_duplist_lock);
-> =20
->  	INIT_HLIST_HEAD(&bat_priv->forw_bat_list);
->  	INIT_HLIST_HEAD(&bat_priv->forw_bcast_list);
-> diff --git a/types.h b/types.h
-> index 8a5d84c..7b3d0d7 100644
-> --- a/types.h
-> +++ b/types.h
-> @@ -228,6 +228,8 @@ struct batadv_priv_bla {
->  	struct batadv_hashtable *backbone_hash;
->  	struct batadv_bcast_duplist_entry bcast_duplist[BATADV_DUPLIST_SIZE];
->  	int bcast_duplist_curr;
-> +	/* protects bcast_duplist and bcast_duplist_curr */
-> +	spinlock_t bcast_duplist_lock;
->  	struct batadv_bla_claim_dst claim_dest;
->  	struct delayed_work work;
->  };
+>  	/* rebroadcast packet */
 > --=20
 > 1.7.10.4
 >=20
 >=20
 
---82I3+IH0IqGh5yIs
+--R3G7APHDIzY6R/pk
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -151,9 +128,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAlB+veEACgkQrzg/fFk7axayAgCfZ8QS5Omf5eeyRCKZFlgahs6S
-ffsAnA91mqaxKrzeKm+X/3ZmAY0RC9si
-=6HkM
+iEYEARECAAYFAlB+vf0ACgkQrzg/fFk7axa97ACff2Tf+z6hp58vIrnyB4tIAxyR
+Y9kAoPTrv9MyHvCWwLsFoJasZ4WwgceS
+=ZKPj
 -----END PGP SIGNATURE-----
 
---82I3+IH0IqGh5yIs--
+--R3G7APHDIzY6R/pk--
