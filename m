@@ -1,9 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 18 Oct 2012 11:43:54 +0200
-Message-Id: <1350553434-6722-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Recommend not to change Makefile
-	for configuration
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 18 Oct 2012 18:00:15 +0800
+References: <1350553434-6722-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1350553434-6722-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201210181800.16028.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Recommend not to change
+	Makefile for configuration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,31 +23,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The Makefile suggests to change it to enable or disable features. This resulted
-in patch submissions with changed Makefile even when this change would not be
-necessary.
+On Thursday, October 18, 2012 17:43:54 Sven Eckelmann wrote:
+> The Makefile suggests to change it to enable or disable features. This
+> resulted in patch submissions with changed Makefile even when this change
+> would not be necessary.
+> 
+> Instead the configuration should be done using the make parameters
+> explained in README.external
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  Makefile |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Instead the configuration should be done using the make parameters explained in
-README.external
+Applied in revision 4e3c233.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- Makefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/Makefile b/Makefile
-index c6266a2..4d70e40 100644
---- a/Makefile
-+++ b/Makefile
-@@ -18,7 +18,7 @@
- # 02110-1301, USA
- #
- 
--# changing the CONFIG_* line to 'y' enables the related feature
-+# read README.external for more information about the configuration
- # B.A.T.M.A.N. debugging:
- export CONFIG_BATMAN_ADV_DEBUG=n
- # B.A.T.M.A.N. bridge loop avoidance:
--- 
-1.7.10.4
-
+Thanks,
+Marek
