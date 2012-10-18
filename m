@@ -1,11 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 18 Oct 2012 10:48:32 +0200
-Message-Id: <1350550112-5857-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1350550112-5857-1-git-send-email-sven@narfation.org>
-References: <1350550112-5857-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix build of batman-adv
-	without BLA
+Date: Thu, 18 Oct 2012 11:43:54 +0200
+Message-Id: <1350553434-6722-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Recommend not to change Makefile
+	for configuration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,45 +17,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-4c1721b39c8a77c99e8f4de97b5d5d112006406c ("batman-adv: Fix potential broadcast
-BLA-duplicate-check race condition") introduced a spinlock for bridge loop
-avoidance which was initialized outside of bla. This causes an build error when
-BLA is disabled. Instead the batadv_bla_init function should handle the
-initialization.
+The Makefile suggests to change it to enable or disable features. This resulted
+in patch submissions with changed Makefile even when this change would not be
+necessary.
+
+Instead the configuration should be done using the make parameters explained in
+README.external
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Please merge in next
+ Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- bridge_loop_avoidance.c |    2 ++
- main.c                  |    1 -
- 2 files changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 776a73d..a05b1b4 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1204,6 +1204,8 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
- 	uint16_t crc;
- 	unsigned long entrytime;
+diff --git a/Makefile b/Makefile
+index c6266a2..4d70e40 100644
+--- a/Makefile
++++ b/Makefile
+@@ -18,7 +18,7 @@
+ # 02110-1301, USA
+ #
  
-+	spin_lock_init(&bat_priv->bla.bcast_duplist_lock);
-+
- 	batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla hash registering\n");
- 
- 	/* setting claim destination address */
-diff --git a/main.c b/main.c
-index 76d653a..2b1123d 100644
---- a/main.c
-+++ b/main.c
-@@ -104,7 +104,6 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 	spin_lock_init(&bat_priv->gw.list_lock);
- 	spin_lock_init(&bat_priv->vis.hash_lock);
- 	spin_lock_init(&bat_priv->vis.list_lock);
--	spin_lock_init(&bat_priv->bla.bcast_duplist_lock);
- 
- 	INIT_HLIST_HEAD(&bat_priv->forw_bat_list);
- 	INIT_HLIST_HEAD(&bat_priv->forw_bcast_list);
+-# changing the CONFIG_* line to 'y' enables the related feature
++# read README.external for more information about the configuration
+ # B.A.T.M.A.N. debugging:
+ export CONFIG_BATMAN_ADV_DEBUG=n
+ # B.A.T.M.A.N. bridge loop avoidance:
 -- 
 1.7.10.4
 
