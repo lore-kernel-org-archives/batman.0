@@ -1,11 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 18 Oct 2012 21:24:53 +0200
-Message-Id: <1350588295-22587-1-git-send-email-ordex@autistici.org>
+Date: Thu, 18 Oct 2012 21:24:54 +0200
+Message-Id: <1350588295-22587-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1350588295-22587-1-git-send-email-ordex@autistici.org>
+References: <1350588295-22587-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-10-18
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix broadcast packet CRC
+	calculation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,52 +21,82 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-Hello David,
+From: Linus Lüssing <linus.luessing@web.de>
 
-here are two fixes intended for net. The first one fixes the CRC computation
-used to check for broadcast packet duplicates. The wrong result lead to many
-(more than 80%) broadcast packets being dropped and so making the network very
-slow and mostly unusable. Think about all the ARP or DHCP requests not going
-through.
+So far the crc16 checksum for a batman-adv broadcast data packet, received
+on a batman-adv hard interface, was calculated over zero bytes of its
+content leading to many incoming broadcast data packets wrongly being
+dropped (60-80% packet loss).
 
-The second patch fixes a potential race condition, still in the same duplicated
-broadcast check procedure, which can lead to wrong outcomes under certain
-circumstances.
+This patch fixes this issue by calculating the crc16 over the actual,
+complete broadcast payload.
 
-I would also like to enqueue patch 1/2 for sending to stable-{3.5/3.6}.
+The issue is a regression introduced by
+("batman-adv: add broadcast duplicate check").
 
-Thanks a lot,
-	Antonio
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/bridge_loop_avoidance.c | 8 ++++----
+ net/batman-adv/routing.c               | 8 +++++++-
+ 2 files changed, 11 insertions(+), 5 deletions(-)
 
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 0a9084a..eebab20 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1210,8 +1210,8 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
+ /**
+  * batadv_bla_check_bcast_duplist
+  * @bat_priv: the bat priv with all the soft interface information
+- * @bcast_packet: originator mac address
+- * @hdr_size: maximum length of the frame
++ * @bcast_packet: encapsulated broadcast frame plus batman header
++ * @bcast_packet_len: length of encapsulated broadcast frame plus batman header
+  *
+  * check if it is on our broadcast list. Another gateway might
+  * have sent the same packet because it is connected to the same backbone,
+@@ -1224,14 +1224,14 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
+  */
+ int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+ 				   struct batadv_bcast_packet *bcast_packet,
+-				   int hdr_size)
++				   int bcast_packet_len)
+ {
+ 	int i, length, curr;
+ 	uint8_t *content;
+ 	uint16_t crc;
+ 	struct batadv_bcast_duplist_entry *entry;
+ 
+-	length = hdr_size - sizeof(*bcast_packet);
++	length = bcast_packet_len - sizeof(*bcast_packet);
+ 	content = (uint8_t *)bcast_packet;
+ 	content += sizeof(*bcast_packet);
+ 
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 939fc01..376b4cc 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -1124,8 +1124,14 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
+ 
+ 	spin_unlock_bh(&orig_node->bcast_seqno_lock);
+ 
++	/* keep skb linear for crc calculation */
++	if (skb_linearize(skb) < 0)
++		goto out;
++
++	bcast_packet = (struct batadv_bcast_packet *)skb->data;
++
+ 	/* check whether this has been sent by another originator before */
+-	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
++	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, skb->len))
+ 		goto out;
+ 
+ 	/* rebroadcast packet */
+-- 
+1.7.12.3
 
-
-
-The following changes since commit 43c422eda99b894f18d1cca17bcd2401efaf7bd0:
-
-  apparmor: fix apparmor OOPS in audit_log_untrustedstring+0x1c/0x40 (2012-10-17 16:29:46 -0700)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
-
-for you to fetch changes up to 7dac7b76b8db87fc79857a53a09730fb2148579b:
-
-  batman-adv: Fix potential broadcast BLA-duplicate-check race condition (2012-10-18 18:17:31 +0200)
-
-----------------------------------------------------------------
-Included fixes:
-- Fix broadcast packet CRC calculation which can lead to ~80% broadcast packet
-  loss
-- Fix a race condition in duplicate broadcast packet check
-
-----------------------------------------------------------------
-Linus Lüssing (2):
-      batman-adv: Fix broadcast packet CRC calculation
-      batman-adv: Fix potential broadcast BLA-duplicate-check race condition
-
- net/batman-adv/bridge_loop_avoidance.c | 27 ++++++++++++++++++---------
- net/batman-adv/routing.c               |  8 +++++++-
- net/batman-adv/types.h                 |  2 ++
- 3 files changed, 27 insertions(+), 10 deletions(-)
