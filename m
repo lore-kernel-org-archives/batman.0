@@ -1,14 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 18 Oct 2012 21:24:54 +0200
-Message-Id: <1350588295-22587-2-git-send-email-ordex@autistici.org>
+Date: Thu, 18 Oct 2012 21:24:55 +0200
+Message-Id: <1350588295-22587-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1350588295-22587-1-git-send-email-ordex@autistici.org>
 References: <1350588295-22587-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix broadcast packet CRC
-	calculation
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix potential broadcast
+	BLA-duplicate-check race condition
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,78 +25,93 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lind
 
 From: Linus Lüssing <linus.luessing@web.de>
 
-So far the crc16 checksum for a batman-adv broadcast data packet, received
-on a batman-adv hard interface, was calculated over zero bytes of its
-content leading to many incoming broadcast data packets wrongly being
-dropped (60-80% packet loss).
-
-This patch fixes this issue by calculating the crc16 over the actual,
-complete broadcast payload.
-
-The issue is a regression introduced by
-("batman-adv: add broadcast duplicate check").
+Threads in the bottom half of batadv_bla_check_bcast_duplist() might
+otherwise for instance overwrite variables which other threads might
+be using/reading at the same time in the top half, potentially
+leading to messing up the bcast_duplist, possibly resulting in false
+bridge loop avoidance duplicate check decisions.
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 8 ++++----
- net/batman-adv/routing.c               | 8 +++++++-
- 2 files changed, 11 insertions(+), 5 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c | 19 ++++++++++++++-----
+ net/batman-adv/types.h                 |  2 ++
+ 2 files changed, 16 insertions(+), 5 deletions(-)
 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 0a9084a..eebab20 100644
+index eebab20..fd8d5af 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1210,8 +1210,8 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
- /**
-  * batadv_bla_check_bcast_duplist
-  * @bat_priv: the bat priv with all the soft interface information
-- * @bcast_packet: originator mac address
-- * @hdr_size: maximum length of the frame
-+ * @bcast_packet: encapsulated broadcast frame plus batman header
-+ * @bcast_packet_len: length of encapsulated broadcast frame plus batman header
-  *
-  * check if it is on our broadcast list. Another gateway might
-  * have sent the same packet because it is connected to the same backbone,
-@@ -1224,14 +1224,14 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
-  */
- int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+@@ -1167,6 +1167,8 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
+ 	uint16_t crc;
+ 	unsigned long entrytime;
+ 
++	spin_lock_init(&bat_priv->bla.bcast_duplist_lock);
++
+ 	batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla hash registering\n");
+ 
+ 	/* setting claim destination address */
+@@ -1226,7 +1228,7 @@ int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
  				   struct batadv_bcast_packet *bcast_packet,
--				   int hdr_size)
-+				   int bcast_packet_len)
+ 				   int bcast_packet_len)
  {
- 	int i, length, curr;
+-	int i, length, curr;
++	int i, length, curr, ret = 0;
  	uint8_t *content;
  	uint16_t crc;
  	struct batadv_bcast_duplist_entry *entry;
+@@ -1238,6 +1240,8 @@ int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+ 	/* calculate the crc ... */
+ 	crc = crc16(0, content, length);
  
--	length = hdr_size - sizeof(*bcast_packet);
-+	length = bcast_packet_len - sizeof(*bcast_packet);
- 	content = (uint8_t *)bcast_packet;
- 	content += sizeof(*bcast_packet);
- 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 939fc01..376b4cc 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1124,8 +1124,14 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 
- 	spin_unlock_bh(&orig_node->bcast_seqno_lock);
- 
-+	/* keep skb linear for crc calculation */
-+	if (skb_linearize(skb) < 0)
++	spin_lock_bh(&bat_priv->bla.bcast_duplist_lock);
++
+ 	for (i = 0; i < BATADV_DUPLIST_SIZE; i++) {
+ 		curr = (bat_priv->bla.bcast_duplist_curr + i);
+ 		curr %= BATADV_DUPLIST_SIZE;
+@@ -1259,9 +1263,12 @@ int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+ 		/* this entry seems to match: same crc, not too old,
+ 		 * and from another gw. therefore return 1 to forbid it.
+ 		 */
+-		return 1;
++		ret = 1;
 +		goto out;
-+
-+	bcast_packet = (struct batadv_bcast_packet *)skb->data;
-+
- 	/* check whether this has been sent by another originator before */
--	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
-+	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, skb->len))
- 		goto out;
+ 	}
+-	/* not found, add a new entry (overwrite the oldest entry) */
++	/* not found, add a new entry (overwrite the oldest entry)
++	 * and allow it, its the first occurence.
++	 */
+ 	curr = (bat_priv->bla.bcast_duplist_curr + BATADV_DUPLIST_SIZE - 1);
+ 	curr %= BATADV_DUPLIST_SIZE;
+ 	entry = &bat_priv->bla.bcast_duplist[curr];
+@@ -1270,8 +1277,10 @@ int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+ 	memcpy(entry->orig, bcast_packet->orig, ETH_ALEN);
+ 	bat_priv->bla.bcast_duplist_curr = curr;
  
- 	/* rebroadcast packet */
+-	/* allow it, its the first occurence. */
+-	return 0;
++out:
++	spin_unlock_bh(&bat_priv->bla.bcast_duplist_lock);
++
++	return ret;
+ }
+ 
+ 
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 2ed82ca..ac1e07a 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -205,6 +205,8 @@ struct batadv_priv_bla {
+ 	struct batadv_hashtable *backbone_hash;
+ 	struct batadv_bcast_duplist_entry bcast_duplist[BATADV_DUPLIST_SIZE];
+ 	int bcast_duplist_curr;
++	/* protects bcast_duplist and bcast_duplist_curr */
++	spinlock_t bcast_duplist_lock;
+ 	struct batadv_bla_claim_dst claim_dest;
+ 	struct delayed_work work;
+ };
 -- 
 1.7.12.3
 
