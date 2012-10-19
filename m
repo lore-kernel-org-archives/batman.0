@@ -1,14 +1,19 @@
-Return-Path: <eric.dumazet@gmail.com>
-From: Eric Dumazet <eric.dumazet@gmail.com>
-In-Reply-To: <cover.1350618006.git.joe@perches.com>
-References: <cover.1350618006.git.joe@perches.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 19 Oct 2012 09:04:14 +0200
-Message-ID: <1350630254.2293.183.camel@edumazet-glaptop>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH net-next 00/21] treewide: Use consistent
- api style for address testing
+Return-Path: <sophana78@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <CAHD-aqKiZGOHmAnzZxF2T8G_HSAf6KW-UWQ62apUN0fus1k5jQ@mail.gmail.com>
+References: <CADP5dB6JgRxvUK_3OzC8E9tpBXxwzPPC5uh31QDpEjozEdf7_w@mail.gmail.com>
+ <CAHD-aq+sdGMx67Wq4QFW==EBoWifHvCC_HgUHWFPsC0e2Ox8dg@mail.gmail.com>
+ <CADP5dB44Or62qRPptw-J0MC4tTD92GupZeB5dgXyeJg4ycjAow@mail.gmail.com>
+ <CAHD-aq+4FiT1Na7KiErHFujEetFSKOppDKu8HBf0ueOiTa4nvQ@mail.gmail.com>
+ <CAHD-aqLqQB=r9070Zv3tFoK-JBDBK7358mGqKZCGhrYc0Bcwbg@mail.gmail.com>
+ <CADP5dB4pSgbAMu9yUSwp_fqnanN=wS2Mgz6qdKLqqLNwn7FgWQ@mail.gmail.com>
+ <CADP5dB6YJjcDDchkP5pYQ=d+xVn9X=Sm3U4zmQaF+43ED=QfbA@mail.gmail.com>
+ <CAHD-aqKiZGOHmAnzZxF2T8G_HSAf6KW-UWQ62apUN0fus1k5jQ@mail.gmail.com>
+Date: Fri, 19 Oct 2012 10:32:12 +0200
+Message-ID: <CADP5dB5XOqFncK34xg7-+jrqQH3qEeZnpoj-92LQjk-HUO3_WA@mail.gmail.com>
+From: Sophana K <sophana78@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] How to detect gateway mode in openwrt?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,78 +25,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Joe Perches <joe@perches.com>
-Cc: linux-mips@linux-mips.org, linux-usb@vger.kernel.org, linux-doc@vger.kernel.org, brcm80211-dev-list@broadcom.com, linux-kernel@vger.kernel.org, linux-sctp@vger.kernel.org, devel@open-fcoe.org, dev@openvswitch.org, linux-s390@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, bridge@lists.linux-foundation.org, lvs-devel@vger.kernel.org, coreteam@netfilter.org, b43-dev@lists.infradead.org, cbe-oss-dev@lists.ozlabs.org, devel@driverdev.osuosl.org, wimax@linuxwimax.org, devicetree-discuss@lists.ozlabs.org, linux-nfs@vger.kernel.org, netfilter@vger.kernel.org, user-mode-linux-user@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, davinci-linux-open-source@linux.davincidsp.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org, users@rt2x00.serialmonkey.com, e1000-devel@lists.sourceforge.net, ath9k-devel@lists.ath9k.org, netfilter-devel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thu, 2012-10-18 at 20:55 -0700, Joe Perches wrote:
-> ethernet, ipv4, and ipv6 address testing uses 3 different api naming styles.
-> 
-> ethernet uses:	is_<foo>_ether_addr
-> ipv4 uses:	ipv4_is_<foo>
-> ipv6 uses:	ipv6_addr_<foo>
-> 
-> Standardize on the ipv6 style of <prefix>_addr_<type> to reduce
-> the number of styles to remember.
-> 
-> The new consistent styles are:
-> 
-> eth_addr_<foo>(const u8 *)
-> ipv4_addr_<foo>(__be32)
-> ipv6_addr_<foo>(const struct in6_addr *)
-> 
-> Add temporary backward compatibility #defines for the old names too.
-> 
-> Joe Perches (21):
->   etherdevice: Rename is_<foo>_ether_addr tests to eth_addr_<foo>
->   net: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   arch: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   wireless: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   drivers: net: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   staging: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   infiniband: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   scsi: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   of: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   s390: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   usb: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   uwb: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   Documentation: networking: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   llc_if.h: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
->   in.h: Rename ipv4_is_<foo> functions to ipv4_addr_<foo>
->   net: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
->   infiniband: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
->   ath6kl: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
->   parisc: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
->   lockd: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
->   sctp: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
+With this solution (if it works), both the WAN(private) and
+LAN(public) network would always remain bridged to the mesh and LAN
+and WAN ethernet ports.
 
-Yes they are some names discrepancies, thats a big deal.
+The script has to determine if it is the gateway, mainly because there
+must be only one coova-chilli hotspot instance which manages the LAN
+network. This coova-chilli IS the gateway for the LAN (public)
+network.
+Note that it seems that coova-chilli has a cluster mode which is not
+documented, and seems to allows multiple hotspot instances to work in
+failover mode. (have to test it)
 
-And we have alloc_skb() / kfree_skb() / skb_clone() 
-
-Why not skb_alloc() / skb_free() / skb_clone() ?
-
-Some people actually know current code by name of functions, they dont
-want to change their mind and having to grep include files and git log
-to learn the new names of an old function, especially when traveling and
-using a laptop.
-
-Sure, when we want to use eth_random_addr(), a grep into include files
-to check if its still the right name (old one was random_ether_addr())
-is OK because we dont use this one often.
-
-If you think about it, eth_random_addr() was not the perfect name.
-
-Think about all the documentation you can find outside of kernel tree,
-RFC and things like that, copy/pasting some linux kernel code.
-
-This kind of changes make our life more difficult, when we have to
-backport patches or rebase code, or even perform some searches to find
-prior issues/discussions.
-
-Life of a kernel developer is not only dealing with latest Linus (or
--next) tree, and using automatic 'tools'.
-
-Thats a real pain for me at least.
+About translocal and transglobal tables, if I understood correctly,
+translocal shows only mesh nodes, while transglobal shows all the mac
+addresses in the arp table?
 
 
+On Fri, Oct 19, 2012 at 6:45 AM, Gui Iribarren <gui@altermundi.net> wrote:
 
+> It's more.. robust.. if you parse translocal table instead. BUT...
+>
+> Why not just connect the gateway to the LAN switch (or permanently
+> bridge the WAN, which is equivalent)?
+> Why do you want to "break" the bridge? Under what circumstances does
+> that make sense (or why is it a problem to leave the WAN bridged when
+> the gateway is not directly connected)?
