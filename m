@@ -1,15 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 19 Oct 2012 18:48:36 +0800
-References: <1350640310-8968-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1350640310-8968-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201210191848.37014.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Simplify crc for skb with
-	skb_prepare_seq_read
+Return-Path: <proski@gnu.org>
+Date: Fri, 19 Oct 2012 11:55:17 -0400
+From: Pavel Roskin <proski@gnu.org>
+Message-ID: <20121019115517.7b8514a8@mj>
+In-Reply-To: <1350630254.2293.183.camel@edumazet-glaptop>
+References: <cover.1350618006.git.joe@perches.com>
+ <1350630254.2293.183.camel@edumazet-glaptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [ath9k-devel] [PATCH net-next 00/21] treewide:
+ Use consistent api style for address testing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,26 +21,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: linux-mips@linux-mips.org, b.a.t.m.a.n@lists.open-mesh.org, linux-doc@vger.kernel.org, brcm80211-dev-list@broadcom.com, users@rt2x00.serialmonkey.com, linux-sctp@vger.kernel.org, devel@open-fcoe.org, dev@openvswitch.org, linux-s390@vger.kernel.org, wimax@linuxwimax.org, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, bridge@lists.linux-foundation.org, lvs-devel@vger.kernel.org, coreteam@netfilter.org, b43-dev@lists.infradead.org, cbe-oss-dev@lists.ozlabs.org, devel@driverdev.osuosl.org, user-mode-linux-devel@lists.sourceforge.net, devicetree-discuss@lists.ozlabs.org, davinci-linux-open-source@linux.davincidsp.com, netfilter@vger.kernel.org, user-mode-linux-user@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net, ath9k-devel@lists.ath9k.org, netfilter-devel@vger.kernel.org, Joe Perches <joe@perches.com>, uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
 
-On Friday, October 19, 2012 17:51:50 Sven Eckelmann wrote:
-> a7fe30736a46d203b74e9fb2df3fb4e1d94222bc ("batman-adv: Add function to
-> calculate crc32c for the skb payload") introduced a function that walked
-> through the three different socket buffer classes to compute the crc32 for
-> an skb. This function is affected by many changes to the sk_buff structure
-> in future. This can be avoided by using the sequential read functions to
-> access blocks transparently.
->=20
-> Reported-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
-> Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  compat.h |   35 -----------------------------------
->  main.c   |   31 +++++++++++++------------------
->  main.h   |    2 +-
->  3 files changed, 14 insertions(+), 54 deletions(-)
+On Fri, 19 Oct 2012 09:04:14 +0200
+Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
-Applied in revision 3c26295.
+> Yes they are some names discrepancies, thats a big deal.
+> 
+> And we have alloc_skb() / kfree_skb() / skb_clone() 
+> 
+> Why not skb_alloc() / skb_free() / skb_clone() ?
+> 
+> Some people actually know current code by name of functions, they dont
+> want to change their mind and having to grep include files and git log
+> to learn the new names of an old function, especially when traveling
+> and using a laptop.
 
-Thanks,
-Marek
+I agree.
+
+Also, it makes sense to introduce a more consistent name for a function
+when it's improved in some way and the callers need to be adjusted or
+re-checked.
+
+That way, the old name can be phased out as the code is made compatible
+with the new function.
+
+-- 
+Regards,
+Pavel Roskin
