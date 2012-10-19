@@ -1,13 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 18 Oct 2012 15:37:36 -0400 (EDT)
-Message-Id: <20121018.153736.1003806671294091595.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1350588295-22587-1-git-send-email-ordex@autistici.org>
-References: <1350588295-22587-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-10-18
+Return-Path: <guido@guidoi.com.ar>
+MIME-Version: 1.0
+Sender: guido@guidoi.com.ar
+In-Reply-To: <CADP5dB6YJjcDDchkP5pYQ=d+xVn9X=Sm3U4zmQaF+43ED=QfbA@mail.gmail.com>
+References: <CADP5dB6JgRxvUK_3OzC8E9tpBXxwzPPC5uh31QDpEjozEdf7_w@mail.gmail.com>
+ <CAHD-aq+sdGMx67Wq4QFW==EBoWifHvCC_HgUHWFPsC0e2Ox8dg@mail.gmail.com>
+ <CADP5dB44Or62qRPptw-J0MC4tTD92GupZeB5dgXyeJg4ycjAow@mail.gmail.com>
+ <CAHD-aq+4FiT1Na7KiErHFujEetFSKOppDKu8HBf0ueOiTa4nvQ@mail.gmail.com>
+ <CAHD-aqLqQB=r9070Zv3tFoK-JBDBK7358mGqKZCGhrYc0Bcwbg@mail.gmail.com>
+ <CADP5dB4pSgbAMu9yUSwp_fqnanN=wS2Mgz6qdKLqqLNwn7FgWQ@mail.gmail.com>
+ <CADP5dB6YJjcDDchkP5pYQ=d+xVn9X=Sm3U4zmQaF+43ED=QfbA@mail.gmail.com>
+From: Gui Iribarren <gui@altermundi.net>
+Date: Fri, 19 Oct 2012 01:45:53 -0300
+Message-ID: <CAHD-aqKiZGOHmAnzZxF2T8G_HSAf6KW-UWQ62apUN0fus1k5jQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] How to detect gateway mode in openwrt?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,26 +25,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 18 Oct 2012 21:24:53 +0200
+On Wed, Oct 17, 2012 at 6:14 PM, Sophana K <sophana78@gmail.com> wrote:
+> I may have found a possible solution by parsing the output of batctl
+> transglobal, and look for the gateway mac address. If the gateway is
+> in the transglobal table, it is accessed through the mesh, and it is
+> probably not connected directly to the router.
+It's more.. robust.. if you parse translocal table instead. BUT...
 
-> here are two fixes intended for net. The first one fixes the CRC computation
-> used to check for broadcast packet duplicates. The wrong result lead to many
-> (more than 80%) broadcast packets being dropped and so making the network very
-> slow and mostly unusable. Think about all the ARP or DHCP requests not going
-> through.
-> 
-> The second patch fixes a potential race condition, still in the same duplicated
-> broadcast check procedure, which can lead to wrong outcomes under certain
-> circumstances.
-
-Pulled, thanks.
-
-> I would also like to enqueue patch 1/2 for sending to stable-{3.5/3.6}.
-
-Feel free to submit this to -stable once it hits Linus's tree.
-
-Thanks.
+Why not just connect the gateway to the LAN switch (or permanently
+bridge the WAN, which is equivalent)?
+Why do you want to "break" the bridge? Under what circumstances does
+that make sense (or why is it a problem to leave the WAN bridged when
+the gateway is not directly connected)?
