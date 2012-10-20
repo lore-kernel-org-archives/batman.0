@@ -1,15 +1,16 @@
-Return-Path: <proski@gnu.org>
-Date: Fri, 19 Oct 2012 11:55:17 -0400
-From: Pavel Roskin <proski@gnu.org>
-Message-ID: <20121019115517.7b8514a8@mj>
-In-Reply-To: <1350630254.2293.183.camel@edumazet-glaptop>
-References: <cover.1350618006.git.joe@perches.com>
- <1350630254.2293.183.camel@edumazet-glaptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [ath9k-devel] [PATCH net-next 00/21] treewide:
- Use consistent api style for address testing
+Return-Path: <guido@guidoi.com.ar>
+MIME-Version: 1.0
+Sender: guido@guidoi.com.ar
+In-Reply-To: <20121017115604.GO7023@ritirata.org>
+References: <1350473910-27496-1-git-send-email-linus.luessing@web.de>
+ <20121017115604.GO7023@ritirata.org>
+From: Gui Iribarren <gui@altermundi.net>
+Date: Sat, 20 Oct 2012 01:18:13 -0300
+Message-ID: <CAHD-aqJqCih9rZNGyOy5X8CLgysUZZs2w4vELSaKLeEq-oehhg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix broadcast packet CRC
+	calculation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +22,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-mips@linux-mips.org, b.a.t.m.a.n@lists.open-mesh.org, linux-doc@vger.kernel.org, brcm80211-dev-list@broadcom.com, users@rt2x00.serialmonkey.com, linux-sctp@vger.kernel.org, devel@open-fcoe.org, dev@openvswitch.org, linux-s390@vger.kernel.org, wimax@linuxwimax.org, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, bridge@lists.linux-foundation.org, lvs-devel@vger.kernel.org, coreteam@netfilter.org, b43-dev@lists.infradead.org, cbe-oss-dev@lists.ozlabs.org, devel@driverdev.osuosl.org, user-mode-linux-devel@lists.sourceforge.net, devicetree-discuss@lists.ozlabs.org, davinci-linux-open-source@linux.davincidsp.com, netfilter@vger.kernel.org, user-mode-linux-user@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net, ath9k-devel@lists.ath9k.org, netfilter-devel@vger.kernel.org, Joe Perches <joe@perches.com>, uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Fri, 19 Oct 2012 09:04:14 +0200
-Eric Dumazet <eric.dumazet@gmail.com> wrote:
+[resending as plaintext since maillist refused to accept apparently a
+Content-Type: text/html]
 
-> Yes they are some names discrepancies, thats a big deal.
-> 
-> And we have alloc_skb() / kfree_skb() / skb_clone() 
-> 
-> Why not skb_alloc() / skb_free() / skb_clone() ?
-> 
-> Some people actually know current code by name of functions, they dont
-> want to change their mind and having to grep include files and git log
-> to learn the new names of an old function, especially when traveling
-> and using a laptop.
+On Wed, Oct 17, 2012 at 9:42 AM, Gui Iribarren <gui@altermundi.net> wrote:
+Ah, interesting! Does this affect multi-hop broadcasts as well? Maybe
+this could be somehow related to the misteriously dropped avahi
+packets we experience here. Nico Echaniz reported the case in a
+previous thread[0] but so far we didn't have time to debug it further.
+If this patch affects anything described in that mail (a couple of
+months ago) we are eager to test it out :)
 
-I agree.
+[0] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-July/007763.html
 
-Also, it makes sense to introduce a more consistent name for a function
-when it's improved in some way and the callers need to be adjusted or
-re-checked.
-
-That way, the old name can be phased out as the code is made compatible
-with the new function.
-
--- 
-Regards,
-Pavel Roskin
+On Wed, Oct 17, 2012 at 8:56 AM, Antonio Quartulli <ordex@autistici.org> wr=
+ote:
+> On Wed, Oct 17, 2012 at 01:38:30PM +0200, Linus L=C3=BCssing wrote:
+>> So far the crc16 checksum for a batman-adv broadcast data packet, receiv=
+ed
+>> on a batman-adv hard interface, was calculated over zero bytes of its
+>> content leading to many incoming broadcast data packets wrongly being
+>> dropped.
+>>
+>> This patch fixes this issue by calculating the crc16 over the actual,
+>> complete broadcast payload.
+>>
+>> The issue is a regrission introduced by
+>> e5cf86d30a9b32feccb6b866a3f23b0e0483a3b0.
+>>
+>> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
+>
+> Hi Linus,
+>
+> nice catch!! Don't know how much time you spent to find the correct point=
+ where
+> your broadcast packets were getting lost.. :-)
+>
+>
+> Is it ok for you if we change the commit hash to ("batman-adv: add broadc=
+ast
+> duplicate check") when merging this patch? Lately Dave complained about c=
+ommit
+> hashes in patch because it may happen that a developer uses a different h=
+ash
+> function for his git repo.
+>
+> Cheers,
+>
+> --
+> Antonio Quartulli
+>
+> ..each of us alone is worth nothing..
+> Ernesto "Che" Guevara
