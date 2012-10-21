@@ -1,16 +1,12 @@
-Return-Path: <guido@guidoi.com.ar>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 21 Oct 2012 17:02:25 +0800
+Message-Id: <1350810145-26632-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-In-Reply-To: <20121017115604.GO7023@ritirata.org>
-References: <1350473910-27496-1-git-send-email-linus.luessing@web.de>
- <20121017115604.GO7023@ritirata.org>
-From: Gui Iribarren <gui@altermundi.net>
-Date: Sat, 20 Oct 2012 01:18:13 -0300
-Message-ID: <CAHD-aqJqCih9rZNGyOy5X8CLgysUZZs2w4vELSaKLeEq-oehhg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix broadcast packet CRC
-	calculation
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] =?utf-8?q?=5BPATCH=5D_batman-adv=3A_sysfs_document?=
+	=?utf-8?q?ation_should_keep_alphabetical_order?=
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,57 +18,112 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-[resending as plaintext since maillist refused to accept apparently a
-Content-Type: text/html]
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ sysfs-class-net-batman-adv |   11 ++++++-----
+ sysfs-class-net-mesh       |   40 ++++++++++++++++++++--------------------
+ 2 files changed, 26 insertions(+), 25 deletions(-)
 
-On Wed, Oct 17, 2012 at 9:42 AM, Gui Iribarren <gui@altermundi.net> wrote:
-Ah, interesting! Does this affect multi-hop broadcasts as well? Maybe
-this could be somehow related to the misteriously dropped avahi
-packets we experience here. Nico Echaniz reported the case in a
-previous thread[0] but so far we didn't have time to debug it further.
-If this patch affects anything described in that mail (a couple of
-months ago) we are eager to test it out :)
+diff --git a/sysfs-class-net-batman-adv b/sysfs-class-net-batman-adv
+index 38dd762..bdc0070 100644
+--- a/sysfs-class-net-batman-adv
++++ b/sysfs-class-net-batman-adv
+@@ -1,4 +1,10 @@
+ 
++What:           /sys/class/net/<iface>/batman-adv/iface_status
++Date:           May 2010
++Contact:        Marek Lindner <lindner_marek@yahoo.de>
++Description:
++                Indicates the status of <iface> as it is seen by batman.
++
+ What:           /sys/class/net/<iface>/batman-adv/mesh_iface
+ Date:           May 2010
+ Contact:        Marek Lindner <lindner_marek@yahoo.de>
+@@ -7,8 +13,3 @@ Description:
+                 displays the batman mesh interface this <iface>
+                 currently is associated with.
+ 
+-What:           /sys/class/net/<iface>/batman-adv/iface_status
+-Date:           May 2010
+-Contact:        Marek Lindner <lindner_marek@yahoo.de>
+-Description:
+-                Indicates the status of <iface> as it is seen by batman.
+diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
+index c81fe89..bc41da6 100644
+--- a/sysfs-class-net-mesh
++++ b/sysfs-class-net-mesh
+@@ -6,6 +6,14 @@ Description:
+                 Indicates whether the batman protocol messages of the
+                 mesh <mesh_iface> shall be aggregated or not.
+ 
++What:           /sys/class/net/<mesh_iface>/mesh/ap_isolation
++Date:           May 2011
++Contact:        Antonio Quartulli <ordex@autistici.org>
++Description:
++                Indicates whether the data traffic going from a
++                wireless client to another wireless client will be
++                silently dropped.
++
+ What:           /sys/class/net/<mesh_iface>/mesh/bonding
+ Date:           June 2010
+ Contact:        Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+@@ -31,14 +39,6 @@ Description:
+                 mesh will be fragmented or silently discarded if the
+                 packet size exceeds the outgoing interface MTU.
+ 
+-What:		/sys/class/net/<mesh_iface>/mesh/ap_isolation
+-Date:		May 2011
+-Contact:	Antonio Quartulli <ordex@autistici.org>
+-Description:
+-		Indicates whether the data traffic going from a
+-		wireless client to another wireless client will be
+-		silently dropped.
+-
+ What:           /sys/class/net/<mesh_iface>/mesh/gw_bandwidth
+ Date:           October 2010
+ Contact:        Marek Lindner <lindner_marek@yahoo.de>
+@@ -60,6 +60,13 @@ Description:
+                 Defines the selection criteria this node will use
+                 to choose a gateway if gw_mode was set to 'client'.
+ 
++What:           /sys/class/net/<mesh_iface>/mesh/hop_penalty
++Date:           Oct 2010
++Contact:        Linus Lüssing <linus.luessing@web.de>
++Description:
++                Defines the penalty which will be applied to an
++                originator message's tq-field on every hop.
++
+ What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
+ Date:           May 2010
+ Contact:        Marek Lindner <lindner_marek@yahoo.de>
+@@ -67,19 +74,12 @@ Description:
+                 Defines the interval in milliseconds in which batman
+                 sends its protocol messages.
+ 
+-What:           /sys/class/net/<mesh_iface>/mesh/hop_penalty
+-Date:           Oct 2010
+-Contact:        Linus Lüssing <linus.luessing@web.de>
+-Description:
+-		Defines the penalty which will be applied to an
+-		originator message's tq-field on every hop.
+-
+-What:		/sys/class/net/<mesh_iface>/mesh/routing_algo
+-Date:		Dec 2011
+-Contact:	Marek Lindner <lindner_marek@yahoo.de>
++What:           /sys/class/net/<mesh_iface>/mesh/routing_algo
++Date:           Dec 2011
++Contact:        Marek Lindner <lindner_marek@yahoo.de>
+ Description:
+-		Defines the routing procotol this mesh instance
+-		uses to find the optimal paths through the mesh.
++                Defines the routing procotol this mesh instance
++                uses to find the optimal paths through the mesh.
+ 
+ What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
+ Date:           May 2010
+-- 
+1.7.10.4
 
-[0] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-July/007763.html
-
-On Wed, Oct 17, 2012 at 8:56 AM, Antonio Quartulli <ordex@autistici.org> wr=
-ote:
-> On Wed, Oct 17, 2012 at 01:38:30PM +0200, Linus L=C3=BCssing wrote:
->> So far the crc16 checksum for a batman-adv broadcast data packet, receiv=
-ed
->> on a batman-adv hard interface, was calculated over zero bytes of its
->> content leading to many incoming broadcast data packets wrongly being
->> dropped.
->>
->> This patch fixes this issue by calculating the crc16 over the actual,
->> complete broadcast payload.
->>
->> The issue is a regrission introduced by
->> e5cf86d30a9b32feccb6b866a3f23b0e0483a3b0.
->>
->> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
->
-> Hi Linus,
->
-> nice catch!! Don't know how much time you spent to find the correct point=
- where
-> your broadcast packets were getting lost.. :-)
->
->
-> Is it ok for you if we change the commit hash to ("batman-adv: add broadc=
-ast
-> duplicate check") when merging this patch? Lately Dave complained about c=
-ommit
-> hashes in patch because it may happen that a developer uses a different h=
-ash
-> function for his git repo.
->
-> Cheers,
->
-> --
-> Antonio Quartulli
->
-> ..each of us alone is worth nothing..
-> Ernesto "Che" Guevara
