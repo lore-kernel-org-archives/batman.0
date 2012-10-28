@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 28 Oct 2012 12:17:12 +0100
-Message-Id: <1351423037-5292-12-git-send-email-ordex@autistici.org>
+Date: Sun, 28 Oct 2012 12:17:13 +0100
+Message-Id: <1351423037-5292-13-git-send-email-ordex@autistici.org>
 In-Reply-To: <1351423037-5292-1-git-send-email-ordex@autistici.org>
 References: <1351423037-5292-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 11/16] batman-adv: properly store the roaming
-	time
+Subject: [B.A.T.M.A.N.] [PATCH 12/16] batman-adv: print packets re-routing
+	on DBG_TT and ratelimit it
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,34 +20,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-in case of a new global entry added because of roaming, the roam_at field must
-be properly initiated with the current time. This value will be later use to
-purge this entry out on time out (if nobody claims it). Instead roam_at field
-is now set to zero in this situation leading to an immediate purging of the
-related entry.
+To simplify TranslationTable debugging it is better to print the packet
+rerouting message on the DBG_TT log level. In this way a developer interested in
+packets rerouting doesn't need to filter it out of the whole ROUTES log.
+
+Moreover, since this message will appear for each rerouted message, it is now
+"ratelimited".
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/translation-table.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ net/batman-adv/routing.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 42a74e3..0ac39d5 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -726,6 +726,12 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 1ac072d..456a0a9 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -965,10 +965,10 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+ 			batadv_orig_node_free_ref(orig_node);
+ 		}
  
- 		common->flags = flags;
- 		tt_global_entry->roam_at = 0;
-+		/* node must store current time in case of roaming. This is
-+		 * needed to purge this entry out on timeout (if nobody claims
-+		 * it)
-+		 */
-+		if (flags & BATADV_TT_CLIENT_ROAM)
-+			tt_global_entry->roam_at = jiffies;
- 		atomic_set(&common->refcount, 2);
- 		common->added_at = jiffies;
+-		batadv_dbg(BATADV_DBG_ROUTES, bat_priv,
+-			   "TTVN mismatch (old_ttvn %u new_ttvn %u)! Rerouting unicast packet (for %pM) to %pM\n",
+-			   unicast_packet->ttvn, curr_ttvn, ethhdr->h_dest,
+-			   unicast_packet->dest);
++		net_ratelimited_function(batadv_dbg, BATADV_DBG_TT, bat_priv,
++					 "TTVN mismatch (old_ttvn %u new_ttvn %u)! Rerouting unicast packet (for %pM) to %pM\n",
++					 unicast_packet->ttvn, curr_ttvn,
++					 ethhdr->h_dest, unicast_packet->dest);
  
+ 		unicast_packet->ttvn = curr_ttvn;
+ 	}
 -- 
 1.7.12.4
 
