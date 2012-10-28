@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 28 Oct 2012 12:17:02 +0100
-Message-Id: <1351423037-5292-2-git-send-email-ordex@autistici.org>
+Date: Sun, 28 Oct 2012 12:17:04 +0100
+Message-Id: <1351423037-5292-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1351423037-5292-1-git-send-email-ordex@autistici.org>
 References: <1351423037-5292-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 01/16] batman-adv: use check_unicast_packet()
-	in recv_roam_adv()
+Subject: [B.A.T.M.A.N.] [PATCH 03/16] batman-adv: separate
+	BATADV_ATTR_HIF_UINT sysfs name from hard-iface variable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,44 +18,68 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-To avoid code duplication and to simplify further changes,
-check_unicast_packet() is now used in recv_roam_adv() to check for not
-well formed packets and so discard them.
+From: Marek Lindner <lindner_marek@yahoo.de>
 
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/routing.c | 15 +--------------
- 1 file changed, 1 insertion(+), 14 deletions(-)
+ net/batman-adv/sysfs.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 376b4cc..8bdafc8 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -687,21 +687,8 @@ int batadv_recv_roam_adv(struct sk_buff *skb, struct batadv_hard_iface *recv_if)
- 	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
- 	struct batadv_roam_adv_packet *roam_adv_packet;
- 	struct batadv_orig_node *orig_node;
--	struct ethhdr *ethhdr;
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 66518c7..fa6c8b1 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -122,7 +122,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			   batadv_store_##_name)
  
--	/* drop packet if it has not necessary minimum size */
--	if (unlikely(!pskb_may_pull(skb,
--				    sizeof(struct batadv_roam_adv_packet))))
--		goto out;
--
--	ethhdr = (struct ethhdr *)skb_mac_header(skb);
--
--	/* packet with unicast indication but broadcast recipient */
--	if (is_broadcast_ether_addr(ethhdr->h_dest))
--		goto out;
--
--	/* packet with broadcast sender address */
--	if (is_broadcast_ether_addr(ethhdr->h_source))
-+	if (batadv_check_unicast_packet(skb, sizeof(*roam_adv_packet)) < 0)
- 		goto out;
  
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_ROAM_ADV_RX);
+-#define BATADV_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)	\
++#define BATADV_ATTR_HIF_STORE_UINT(_name, _var, _min, _max, _post_func)	\
+ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 			     struct attribute *attr, char *buff,	\
+ 			     size_t count)				\
+@@ -137,13 +137,13 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 									\
+ 	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
+ 					  _post_func, attr,		\
+-					  &hard_iface->_name, net_dev);	\
++					  &hard_iface->_var, net_dev);	\
+ 									\
+ 	batadv_hardif_free_ref(hard_iface);				\
+ 	return length;							\
+ }
+ 
+-#define BATADV_ATTR_HIF_SHOW_UINT(_name)				\
++#define BATADV_ATTR_HIF_SHOW_UINT(_name, _var)				\
+ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			    struct attribute *attr, char *buff)		\
+ {									\
+@@ -155,7 +155,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 	if (!hard_iface)						\
+ 		return 0;						\
+ 									\
+-	length = sprintf(buff, "%i\n", atomic_read(&hard_iface->_name));\
++	length = sprintf(buff, "%i\n", atomic_read(&hard_iface->_var));	\
+ 									\
+ 	batadv_hardif_free_ref(hard_iface);				\
+ 	return length;							\
+@@ -164,9 +164,10 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ /* Use this, if you are going to set [name] in hard_iface to an
+  * unsigned integer value
+  */
+-#define BATADV_ATTR_HIF_UINT(_name, _mode, _min, _max, _post_func)	\
+-	static BATADV_ATTR_HIF_STORE_UINT(_name, _min, _max, _post_func)\
+-	static BATADV_ATTR_HIF_SHOW_UINT(_name)				\
++#define BATADV_ATTR_HIF_UINT(_name, _var, _mode, _min, _max, _post_func)\
++	static BATADV_ATTR_HIF_STORE_UINT(_name, _var, _min,		\
++					  _max, _post_func)		\
++	static BATADV_ATTR_HIF_SHOW_UINT(_name, _var)			\
+ 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
+ 			   batadv_store_##_name)
+ 
 -- 
 1.7.12.4
 
