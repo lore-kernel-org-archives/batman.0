@@ -1,16 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 27 Oct 2012 21:35:05 +0800
-References: <1350505737-32105-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <1350560862-2155-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1350560862-2155-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201210272135.06160.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4] batman-adv: Fix broadcast duplist for
-	fragmentation
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 28 Oct 2012 12:17:01 +0100
+Message-Id: <1351423037-5292-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-10-28
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,30 +14,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, October 18, 2012 19:47:42 Simon Wunderlich wrote:
-> If the skb is fragmented, the checksum must be computed on the
-> individual fragments, just using skb->data may fail on fragmented
-> data. Instead of doing linearizing the packet, use the new
-> batadv_crc32 to do that more efficiently- it should not hurt
-> replacing the old crc16 by the new crc32.
-> 
-> Reported-by: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> ---
-> PATCHv2: change uint32_t to __be32
-> PATCHv3: this time also changed in types.h
-> PATCHv4: also compile if bla is disabled
-> ---
->  bridge_loop_avoidance.c |   18 +++++++-----------
->  bridge_loop_avoidance.h |    6 ++----
->  routing.c               |   10 +++-------
->  types.h                 |    2 +-
->  4 files changed, 13 insertions(+), 23 deletions(-)
+Hello David,
 
-Applied in revision da14489.
+this is our first set of changes intended for net-next/linux-3.8.
+Here you have a patch by Sven Eckelmann that introduces new lockdep classes for
+batman-adv virtual interfaces. Then a patch by Simon Wunderlich that adds a
+filter aimed to silently drop ECTP packets (we saw there are still some devices
+sending them around and then creating problems to our bridge loop avoidance
+mechanism).
+The rest are cleanups, minor fixes and a small struct re-shaping.
 
-Thanks,
-Marek
+
+Thank you very much,
+		Antonio
+
+
+
+The following changes since commit f019948dbb388eacbc0fb61db1d30e686224df77:
+
+  Merge branch 'master' of git://1984.lsi.us.es/nf-next (2012-10-26 14:40:55 -0400)
+
+are available in the git repository at:
+
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 2186a06ac573db625b5864d1feb963c2bf0dacac:
+
+  batman-adv: add kernel-doc for enum batadv_dbg_level (2012-10-27 17:06:38 +0200)
+
+----------------------------------------------------------------
+included changes:
+- some code cleanups and minor fixes (3 of them were reported by Coverity)
+- 'struct hard_iface' re-shaping to improve multi-protocol support
+- ECTP packets silent drop
+- transfer the WIFI flag on clients in case of roaming
+
+----------------------------------------------------------------
+Antonio Quartulli (8):
+      batman-adv: use check_unicast_packet() in recv_roam_adv()
+      batman-adv: return proper value in case of hash_add failure
+      batman-adv: properly store the roaming time
+      batman-adv: print packets re-routing on DBG_TT and ratelimit it
+      batman-adv: check for more space before accessing the skb
+      batman-adv: properly convert flag into a boolean value
+      batman-adv: pass the WIFI flag from the local to global entry
+      batman-adv: add kernel-doc for enum batadv_dbg_level
+
+Marek Lindner (3):
+      batman-adv: split hard_iface struct for each routing protocol
+      batman-adv: separate BATADV_ATTR_HIF_UINT sysfs name from hard-iface variable
+      batman-adv: consolidate duplicated primary_if checking code
+
+Simon Wunderlich (1):
+      batman-adv: don't allow ECTP traffic on batman-adv
+
+Sven Eckelmann (4):
+      batman-adv: Set special lockdep classes to avoid lockdep warning
+      batman-adv: Remove extra check in batadv_bit_get_packet
+      batman-adv: Check return value of try_module_get
+      batman-adv: Only increase refcounter once for alternate router
+
+ net/batman-adv/bat_iv_ogm.c            | 43 ++++++++++---------
+ net/batman-adv/bitarray.c              | 23 +++++-----
+ net/batman-adv/bridge_loop_avoidance.c | 36 +++-------------
+ net/batman-adv/debugfs.c               |  6 ++-
+ net/batman-adv/gateway_client.c        | 19 ++-------
+ net/batman-adv/hard-interface.c        |  4 +-
+ net/batman-adv/icmp_socket.c           | 12 ++++--
+ net/batman-adv/main.c                  | 46 +++++++++++++++-----
+ net/batman-adv/main.h                  | 19 ++++++---
+ net/batman-adv/originator.c            | 19 ++-------
+ net/batman-adv/routing.c               | 54 +++++++++---------------
+ net/batman-adv/soft-interface.c        | 56 ++++++++++++++++++++++++-
+ net/batman-adv/sysfs.c                 | 15 +++----
+ net/batman-adv/translation-table.c     | 77 +++++++++++++++++-----------------
+ net/batman-adv/translation-table.h     |  6 +--
+ net/batman-adv/types.h                 | 16 +++++--
+ 16 files changed, 246 insertions(+), 205 deletions(-)
+
