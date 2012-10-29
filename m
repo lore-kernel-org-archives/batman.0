@@ -1,14 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 29 Oct 2012 08:49:16 +0100
-Message-ID: <1601485.8Csc0q9gCP@bentobox>
-In-Reply-To: <!&!AAAAAAAAAAAYAAAAAAAAAOJK0u4CH31Kl5v1RPAzyrZCgQAAEAAAAGJwzLps+6ZBjmHUmr3zOB8BAAAAAA==@gmail.com>
-References: <!&!AAAAAAAAAAAYAAAAAAAAAOJK0u4CH31Kl5v1RPAzyrZCgQAAEAAAAGJwzLps+6ZBjmHUmr3zOB8BAAAAAA==@gmail.com>
+Return-Path: <ordex@autistici.org>
+Date: Mon, 29 Oct 2012 09:13:40 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20121029081340.GA5944@ritirata.org>
+References: <1351423037-5292-1-git-send-email-ordex@autistici.org>
+ <1351423037-5292-4-git-send-email-ordex@autistici.org>
+ <20121028.185927.374901219739099234.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9867022.SH3bycAF4n";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] batman for production
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="1yeeQ81UyVL57Vl7"
+Content-Disposition: inline
+In-Reply-To: <20121028.185927.374901219739099234.davem@davemloft.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/16] batman-adv: separate
+ BATADV_ATTR_HIF_UINT sysfs name from hard-iface variable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,48 +23,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Walter Robert Ditzler <ditwal001@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
 
 
---nextPart9867022.SH3bycAF4n
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--1yeeQ81UyVL57Vl7
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sunday 28 October 2012 20:13:26 Walter Robert Ditzler wrote:
-> so are those patches for batctl or for the batman-adv
-> itself and how can I get the right batctl corresponding to the batman-adv
-> version from kernel.org 3.6.3?
+Hello David,
 
-Forgot to answer the first part of the question: Depends on the patch. We 
-don't send batctl patches to David S. Miller. So the latest set of patches 
-were only for batman-adv. But usually you can check it by looking for "batctl: 
-" or "batman-adv: " in the subject line. And you can easily find patches for 
-batctl in the mail archive of this month.
+On Sun, Oct 28, 2012 at 06:59:27PM -0400, David Miller wrote:
+> From: Antonio Quartulli <ordex@autistici.org>
+> Date: Sun, 28 Oct 2012 12:17:04 +0100
+>=20
+> > From: Marek Lindner <lindner_marek@yahoo.de>
+> >=20
+> > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> > ---
+> >  net/batman-adv/sysfs.c | 15 ++++++++-------
+> >  1 file changed, 8 insertions(+), 7 deletions(-)
+>=20
+> I was wondering how you could possibly change the list of arguments to
+> these macros, yet avoid changing any of the users.
+>=20
+> And sure enough it's because these macros are completely unused.
 
-Kind regards,
-	Sven
---nextPart9867022.SH3bycAF4n
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+when this macro was introduced a user was going to be added as well, but th=
+en we
+delayed some work and the user was not introduced anymore..
+
+>=20
+> Please just remove them instead of changing their interfaces when no
+> users exist.
+
+Yes, I will resend the pull request with a patch that removes this macro at=
+ all.
+We will re-introduce it as soon as the user is ready too.
+
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--1yeeQ81UyVL57Vl7
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAABCgAGBQJQjjT8AAoJEF2HCgfBJntGgDAP/j1TpNA35deqsiDfBZKQPXxE
-QPBrypgGy7byIzEPGt6w9M6MzgH7D0pdLoG9iYXEd8t0M6+2YiMEz8Nt+s9bgEt6
-DQ2+P027/+qfMAysxdnPx4mhSqj87JTWHn09oB5+ax2shtsb0VkqxCWEa6oJXLqp
-n8agpL3Z4ro8ok/dBfbXiLTpfmO48GzDq5NXBvx9d+RceRWqorDxn8nvaC/jJ2oA
-yRNoqZz3oKZCh/8GHcd5GolYRfQKLt0nj2kCa92uEQVxvYJ5KFiI2Rag81eN/s0q
-uu9nF+LvsnpVbCAQQOrnILm+X51A+nA5hX645vmz2YmDAlY4EmhbNEt2x80KYoWL
-J3B4sL09yJr5M1ofd1Nk6YZv9MJdCEIKwn0dehViS05YOif0tjgwBWS6CLwW+jtr
-NHwaPpCB9UByZmV/626znwK0AMwmMXjFr3IXVAOCIJ5JL+lmPvv/zZbZl4/LAHZZ
-x3l4TckXk1N53nLCQtou0oTO1kcXWE796czNp0TWfHqoQXxCapLjhFLGgFjaW00k
-dX1jPWM0F5RgkcDCSnkgiPPsrJsGTexsqp2GV6YYMpogI5LH82mFzGUWMzJ3GkWb
-0tv2/izStzk3iyT0A8sD0AT8aPJB+Ato1isqPrQ/Q3ufKk22x4SrHHAG32ptzfWp
-jxyFzs8ZnVa5rp4nEjhU
-=fuge
+iEYEARECAAYFAlCOOrQACgkQpGgxIkP9cwfnUwCeJox1sRMZlt9FwShaPHzfFxgB
+uoMAmwcaNEQCA3PafurKoMBY/JtpbPdl
+=J6D5
 -----END PGP SIGNATURE-----
 
---nextPart9867022.SH3bycAF4n--
-
+--1yeeQ81UyVL57Vl7--
