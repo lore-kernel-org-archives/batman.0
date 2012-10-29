@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 29 Oct 2012 09:58:14 +0100
-Message-Id: <1351501097-1289-14-git-send-email-ordex@autistici.org>
+Date: Mon, 29 Oct 2012 09:58:17 +0100
+Message-Id: <1351501097-1289-17-git-send-email-ordex@autistici.org>
 In-Reply-To: <1351501097-1289-1-git-send-email-ordex@autistici.org>
 References: <1351501097-1289-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 13/16] batman-adv: check for more space
-	before accessing the skb
+Subject: [B.A.T.M.A.N.] [PATCH 16/16] batman-adv: add kernel-doc for enum
+	batadv_dbg_level
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,34 +20,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-In batadv_check_unicast_ttvn() the code accesses both the unicast header and the
-Ethernet header in the payload. For this reason pskb_may_pull() must be invoked
-to check for the required space.
-
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/routing.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ net/batman-adv/main.h | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 456a0a9..46dd5b4 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -908,8 +908,12 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 	bool tt_poss_change;
- 	int is_old_ttvn;
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 9b94f05..897ba6a 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -165,12 +165,19 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
  
--	/* I could need to modify it */
--	if (skb_cow(skb, sizeof(struct batadv_unicast_packet)) < 0)
-+	/* check if there is enough data before accessing it */
-+	if (pskb_may_pull(skb, sizeof(*unicast_packet) + ETH_HLEN) < 0)
-+		return 0;
-+
-+	/* create a copy of the skb (in case of for re-routing) to modify it. */
-+	if (skb_cow(skb, sizeof(*unicast_packet)) < 0)
- 		return 0;
+-/* all messages related to routing / flooding / broadcasting / etc */
++/**
++ * enum batadv_dbg_level - available log levels
++ * @BATADV_DBG_BATMAN: OGM and TQ computations related messages
++ * @BATADV_DBG_ROUTES: route added / changed / deleted
++ * @BATADV_DBG_TT: translation table messages
++ * @BATADV_DBG_BLA: bridge loop avoidance messages
++ * @BATADV_DBG_ALL: the union of all the above log levels
++ */
+ enum batadv_dbg_level {
+ 	BATADV_DBG_BATMAN = BIT(0),
+-	BATADV_DBG_ROUTES = BIT(1), /* route added / changed / deleted */
+-	BATADV_DBG_TT	  = BIT(2), /* translation table operations */
+-	BATADV_DBG_BLA    = BIT(3), /* bridge loop avoidance */
++	BATADV_DBG_ROUTES = BIT(1),
++	BATADV_DBG_TT	  = BIT(2),
++	BATADV_DBG_BLA    = BIT(3),
+ 	BATADV_DBG_ALL    = 15,
+ };
  
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
 -- 
 1.7.12.4
 
