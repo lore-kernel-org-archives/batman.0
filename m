@@ -1,11 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 29 Oct 2012 09:58:15 +0100
-Message-Id: <1351501097-1289-15-git-send-email-ordex@autistici.org>
-In-Reply-To: <1351501097-1289-1-git-send-email-ordex@autistici.org>
-References: <1351501097-1289-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 14/16] batman-adv: properly convert flag into
-	a boolean value
+Date: Mon, 29 Oct 2012 15:38:08 +0100
+Message-Id: <1351521488-17271-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: free the dat hash only if not
+	NULL
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,30 +15,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-In order to properly convert a bitwise AND to a boolean value, the whole
-expression must be prepended by "!!".
+It could be the case that the user tries to disable DAT when it is already
+disabled. To prevent kernel oops, batadv_dat_hash_free() has to check for the
+hash table pointer being different from NULL before to try to free it.
+
+This was introduced by ("batman-adv: Distributed ARP Table - add runtime
+switch")
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/translation-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ distributed-arp-table.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 0ac39d5..c61209f 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -2420,7 +2420,7 @@ bool batadv_tt_global_client_is_roaming(struct batadv_priv *bat_priv,
- 	if (!tt_global_entry)
- 		goto out;
+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+index c933615..0fea29a 100644
+--- a/distributed-arp-table.c
++++ b/distributed-arp-table.c
+@@ -634,6 +634,9 @@ out:
+  */
+ static void batadv_dat_hash_free(struct batadv_priv *bat_priv)
+ {
++	if (!bat_priv->dat.hash)
++		return;
++
+ 	__batadv_dat_purge(bat_priv, NULL);
  
--	ret = tt_global_entry->common.flags & BATADV_TT_CLIENT_ROAM;
-+	ret = !!(tt_global_entry->common.flags & BATADV_TT_CLIENT_ROAM);
- 	batadv_tt_global_entry_free_ref(tt_global_entry);
- out:
- 	return ret;
+ 	batadv_hash_destroy(bat_priv->dat.hash);
 -- 
 1.7.12.4
 
