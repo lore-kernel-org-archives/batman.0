@@ -1,13 +1,13 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 29 Oct 2012 16:11:20 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121029151120.GC3142@ritirata.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 29 Oct 2012 16:30:10 +0100
+Message-ID: <1704253.EuqF38gjUr@bentobox>
+In-Reply-To: <1351523401-9188-1-git-send-email-ordex@autistici.org>
 References: <1351523401-9188-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="u65IjBhB3TIa72Vp"
-Content-Disposition: inline
-In-Reply-To: <1351523401-9188-1-git-send-email-ordex@autistici.org>
+Content-Type: multipart/signed; boundary="nextPart1555557.9pjGssCebm";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: don't free resources when
 	DAT is disabled
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,43 +24,64 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---u65IjBhB3TIa72Vp
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--nextPart1555557.9pjGssCebm
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Mon, Oct 29, 2012 at 04:10:01PM +0100, Antonio Quartulli wrote:
-> Freeing all the resources when DAT is disabled need a much more complicat=
-ed
-> locking system to prevent concurrent enable/disable operations to destroy=
- the
-> internal state of the component. For now it is safe to avoid such freeing
-> operation at all when DAT gets disabled.
->=20
+On Monday 29 October 2012 16:10:01 Antonio Quartulli wrote:
+> Freeing all the resources when DAT is disabled need a much more complicated
+> locking system to prevent concurrent enable/disable operations to destroy
+> the internal state of the component. For now it is safe to avoid such
+> freeing operation at all when DAT gets disabled.
+> 
 > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 > ---
+>  distributed-arp-table.c | 10 ----------
+>  sysfs.c                 |  3 +--
+>  2 files changed, 1 insertion(+), 12 deletions(-)
+> 
+> diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+> index c933615..7921030 100644
+> --- a/distributed-arp-table.c
+> +++ b/distributed-arp-table.c
+> @@ -1061,13 +1061,3 @@ out:
+>  		batadv_dat_entry_free_ref(dat_entry);
+>  	return ret;
+>  }
+> -
+> -void batadv_dat_switch(struct net_device *net_dev)
+> -{
+> -	struct batadv_priv *bat_priv = netdev_priv(net_dev);
+> -
+> -	if (atomic_read(&bat_priv->distributed_arp_table))
+> -		batadv_dat_init(bat_priv);
+> -	else
+> -		batadv_dat_free(bat_priv);
+> -}
 
+Also remove it from distributed-arp-table.h
 
-This was introduced with ("batman-adv: Distributed ARP Table - add runtime
-switch")
-
-
-Cheers,
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---u65IjBhB3TIa72Vp
-Content-Type: application/pgp-signature
+--nextPart1555557.9pjGssCebm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlCOnJgACgkQpGgxIkP9cwcucQCfd40B+ITGRoNY8CL69vXIx+ko
-L/0An0nibow8ETXpEGZszREaH11rFXKI
-=6M/3
+iQIcBAABCgAGBQJQjqECAAoJEF2HCgfBJntGhC4P/jTeVbhPRlAnWs+J83/AG2ga
+QUPQrvgXE1rXUGwE/bnQyWbtFWZHzBlTGCQfbjwGZOPgzeGo9pLguGLwLLroRTGz
+jH7PHjxo3+ZbITXwrvwAfaUMgwfxliE733ZmNbA9oxtC5JYgFMY954eB0xs1mxWE
+ESgwyRbCnKaXm2laBCm7jZIqKABRJYpHXaqxaLjmvGPdezwC2mc1v29t/krlsipu
+yMNyBQi3ksQaLOEWw0f3WVReNOVV2+KZ48ozbdpxVOaYaZfmRsqJS8MRJlu2lZme
+s3xipu7enRG8vKumRZTREKxrSU1RDWVZdWh4M0S33EMqOogGa9JBdyO9uPj8eegv
+aslMRjyDBFsusXORSzVsUWTeH5gu2GO3guXWJ9RJ4jYdAmFYnd88x8iFPYVFaCI6
+xq2x541AdbR489kbJu2gK3iiHDDfwdQkXxP+OtkWIdlrXf6XL80VUPhH+itcpzkb
+kNdD89oje3MwQgdDkgiSdmxuzx6Nd9mbNfwgoKE95FChuB31qGUHGv3Tza+qJLwh
+6PMDGRsljl3dqj3cDUJwipy2bPU04X15FcdwDLCGRR0f4Ty/5lLv/4ROM4+o2UNS
+TjfTBoCT2Z7J4c05KAx1RphOWGp6Gd18o2asOI2eZ3X3OUtD3vrKtYxRV4CIZJz8
+gvcp76alr+oV/IzeP+Au
+=LOgV
 -----END PGP SIGNATURE-----
 
---u65IjBhB3TIa72Vp--
+--nextPart1555557.9pjGssCebm--
+
