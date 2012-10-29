@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 29 Oct 2012 16:23:06 +0800
-References: <1351498570-5409-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1351498570-5409-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201210291623.07106.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Remove unused define
-	BAT_ATTR_HIF_UINT
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 29 Oct 2012 09:58:01 +0100
+Message-Id: <1351501097-1289-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 202-10-29
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,18 +14,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Monday, October 29, 2012 16:16:10 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> v2:
-> - Rebased this patch from May on top of current master
-> 
->  sysfs.c |   50 --------------------------------------------------
->  1 file changed, 50 deletions(-)
+Hello David,
 
-Applied in revision f72bd3e.
+this is again our first set of changes intended for net-next/linux-3.8.
+With respect to the previous changeset we substituted the patch changing the
+BAT_ATTR_HIF_UINT macro with a new one that removes it (we will re-add such
+macro together with the user).
+The rest is exactly the same as before.
 
-Thanks,
-Marek
+Thank you very much,
+		Antonio
+
+
+The following changes since commit a932657f51eadb8280166e82dc7034dfbff3985a:
+
+  net: sierra: shut up sparse restricted type warnings (2012-10-28 19:09:02 -0400)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 0aca86cd92282359d2f7202804bd92e7d092c04e:
+
+  batman-adv: add kernel-doc for enum batadv_dbg_level (2012-10-29 09:42:51 +0100)
+
+----------------------------------------------------------------
+included changes:
+- some code cleanups and minor fixes (3 of them were reported by Coverity)
+- 'struct hard_iface' re-shaping to improve multi-protocol support
+- ECTP packets silent drop
+- transfer the WIFI flag on clients in case of roaming
+
+----------------------------------------------------------------
+Antonio Quartulli (8):
+      batman-adv: use check_unicast_packet() in recv_roam_adv()
+      batman-adv: return proper value in case of hash_add failure
+      batman-adv: properly store the roaming time
+      batman-adv: print packets re-routing on DBG_TT and ratelimit it
+      batman-adv: check for more space before accessing the skb
+      batman-adv: properly convert flag into a boolean value
+      batman-adv: pass the WIFI flag from the local to global entry
+      batman-adv: add kernel-doc for enum batadv_dbg_level
+
+Marek Lindner (2):
+      batman-adv: split hard_iface struct for each routing protocol
+      batman-adv: consolidate duplicated primary_if checking code
+
+Simon Wunderlich (1):
+      batman-adv: don't allow ECTP traffic on batman-adv
+
+Sven Eckelmann (5):
+      batman-adv: Remove unused define BAT_ATTR_HIF_UINT
+      batman-adv: Set special lockdep classes to avoid lockdep warning
+      batman-adv: Remove extra check in batadv_bit_get_packet
+      batman-adv: Check return value of try_module_get
+      batman-adv: Only increase refcounter once for alternate router
+
+ net/batman-adv/bat_iv_ogm.c            | 43 ++++++++++---------
+ net/batman-adv/bitarray.c              | 23 +++++-----
+ net/batman-adv/bridge_loop_avoidance.c | 36 +++-------------
+ net/batman-adv/debugfs.c               |  6 ++-
+ net/batman-adv/gateway_client.c        | 19 ++-------
+ net/batman-adv/hard-interface.c        |  4 +-
+ net/batman-adv/icmp_socket.c           | 12 ++++--
+ net/batman-adv/main.c                  | 46 +++++++++++++++-----
+ net/batman-adv/main.h                  | 19 ++++++---
+ net/batman-adv/originator.c            | 19 ++-------
+ net/batman-adv/routing.c               | 54 +++++++++---------------
+ net/batman-adv/soft-interface.c        | 56 ++++++++++++++++++++++++-
+ net/batman-adv/sysfs.c                 | 49 ----------------------
+ net/batman-adv/translation-table.c     | 77 +++++++++++++++++-----------------
+ net/batman-adv/translation-table.h     |  6 +--
+ net/batman-adv/types.h                 | 16 +++++--
+ 16 files changed, 238 insertions(+), 247 deletions(-)
+
