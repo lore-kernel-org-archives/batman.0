@@ -1,10 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 30 Oct 2012 14:09:44 +0100
-Message-Id: <1351602589-22844-2-git-send-email-ordex@autistici.org>
+Date: Tue, 30 Oct 2012 14:09:45 +0100
+Message-Id: <1351602589-22844-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1351602589-22844-1-git-send-email-ordex@autistici.org>
 References: <1351602589-22844-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: fix TT packet rerouting
+Subject: [B.A.T.M.A.N.] [PATCH 2/6] batman-adv: fix debug message
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,64 +18,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-when the node checks for a packet to be re-routed or not, first it should
-consider whether the destination is a local client. Only after this check,
-the node can eventually search the global table.
+In case of re-routing, the old_ttvn must be saved before being overwritten,
+otherwise the debug message will obviously print the new one.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- routing.c | 31 +++++++++++++++++++++++--------
- 1 file changed, 23 insertions(+), 8 deletions(-)
+ routing.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/routing.c b/routing.c
-index 5da7724..c8d2fbf 100644
+index c8d2fbf..6a84f0d 100644
 --- a/routing.c
 +++ b/routing.c
-@@ -890,22 +890,37 @@ batadv_reroute_unicast_packet(struct batadv_priv *bat_priv,
- 			      struct batadv_unicast_packet *unicast_packet,
- 			      uint8_t *dst_addr)
- {
--	struct batadv_orig_node *orig_node;
-+	struct batadv_orig_node *orig_node = NULL;
-+	struct batadv_hard_iface *primary_if = NULL;
- 	bool ret = false;
-+	uint8_t *orig_addr, orig_ttvn;
+@@ -929,7 +929,7 @@ out:
  
--	orig_node = batadv_transtable_search(bat_priv, NULL, dst_addr);
--	if (!orig_node)
--		goto out;
-+	if (batadv_is_my_client(bat_priv, dst_addr)) {
-+		primary_if = batadv_primary_if_get_selected(bat_priv);
-+		if (!primary_if)
-+			goto out;
-+		orig_addr = primary_if->net_dev->dev_addr;
-+		orig_ttvn = (uint8_t)atomic_read(&bat_priv->tt.vn);
-+	} else {
-+		orig_node = batadv_transtable_search(bat_priv, NULL, dst_addr);
-+		if (!orig_node)
-+			goto out;
+ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+ 				     struct sk_buff *skb) {
+-	uint8_t curr_ttvn;
++	uint8_t curr_ttvn, old_ttvn;
+ 	struct batadv_orig_node *orig_node;
+ 	struct ethhdr *ethhdr;
+ 	struct batadv_hard_iface *primary_if;
+@@ -994,6 +994,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+ 	if (!is_old_ttvn)
+ 		return 1;
  
--	if (batadv_compare_eth(orig_node->orig, unicast_packet->dest))
--		goto out;
-+		if (batadv_compare_eth(orig_node->orig, unicast_packet->dest))
-+			goto out;
-+
-+		orig_addr = orig_node->orig;
-+		orig_ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
-+	}
- 
- 	/* update the packet header */
--	memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
--	unicast_packet->ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
-+	memcpy(unicast_packet->dest, orig_addr, ETH_ALEN);
-+	unicast_packet->ttvn = orig_ttvn;
- 
- 	ret = true;
- out:
-+	if (primary_if)
-+		batadv_hardif_free_ref(primary_if);
- 	if (orig_node)
- 		batadv_orig_node_free_ref(orig_node);
++	old_ttvn = unicast_packet->ttvn;
+ 	/* the packet was forged based on outdated network information. Its
+ 	 * destination can possibly be updated and forwarded towards the new
+ 	 * target host
+@@ -1003,7 +1004,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+ 		net_ratelimited_function(batadv_dbg, BATADV_DBG_TT, bat_priv,
+ 					 "Rerouting unicast packet to %pM (dst=%pM): TTVN mismatch old_ttvn=%u new_ttvn=%u\n",
+ 					 unicast_packet->dest, ethhdr->h_dest,
+-					 unicast_packet->ttvn, curr_ttvn);
++					 old_ttvn, curr_ttvn);
+ 		return 1;
+ 	}
  
 -- 
 1.7.12.4
