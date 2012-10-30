@@ -1,10 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 30 Oct 2012 14:09:47 +0100
-Message-Id: <1351602589-22844-5-git-send-email-ordex@autistici.org>
+Date: Tue, 30 Oct 2012 14:09:48 +0100
+Message-Id: <1351602589-22844-6-git-send-email-ordex@autistici.org>
 In-Reply-To: <1351602589-22844-1-git-send-email-ordex@autistici.org>
 References: <1351602589-22844-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 4/6] batman-adv: send ROAMING_ADV once
+Subject: [B.A.T.M.A.N.] [PATCH 5/6] batman-adv: remove useless assignment in
+	tt_local_add()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,36 +19,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-If a client roaming has already been advertised, the node should prevent it from
-doing the same more than once. To achieve this, the node has to check the ROAM
-flag on the global client: if this is set already, then the ROAMING_ADV for this
-client has already been sent.
-
-This should be merged with changes done by ("batman-adv: roaming handling
-mechanism redesign")
+The flag field of the tt_local_entry->common structure in tt_local_add()
+is first assigned NO_FLAGS and then TT_CLIENT_NEW so nullifying the first
+operation. For this reason it is safe to remove the first assignment.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- translation-table.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ translation-table.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index 59e64bc..517324a 100644
+index 517324a..0e18348 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -336,8 +336,10 @@ add_event:
- 	batadv_tt_local_event(bat_priv, addr, tt_local->common.flags);
+@@ -305,7 +305,11 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 		   (uint8_t)atomic_read(&bat_priv->tt.vn));
  
- check_roaming:
--	/* Check whether it is a roaming! */
--	if (tt_global) {
-+	/* Check whether it is a roaming, but don't do anything if the roaming
-+	 * process has already been handled
+ 	memcpy(tt_local->common.addr, addr, ETH_ALEN);
+-	tt_local->common.flags = BATADV_NO_FLAGS;
++	/* The local entry has to be marked as NEW to avoid to send it in
++	 * a full table response going out before the next ttvn increment
++	 * (consistency check)
 +	 */
-+	if (tt_global && !(tt_global->common.flags & BATADV_TT_CLIENT_ROAM)) {
- 		/* These node are probably going to update their tt table */
- 		head = &tt_global->orig_list;
- 		rcu_read_lock();
++	tt_local->common.flags = BATADV_TT_CLIENT_NEW;
+ 	if (batadv_is_wifi_iface(ifindex))
+ 		tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
+ 	atomic_set(&tt_local->common.refcount, 2);
+@@ -316,12 +320,6 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	if (batadv_compare_eth(addr, soft_iface->dev_addr))
+ 		tt_local->common.flags |= BATADV_TT_CLIENT_NOPURGE;
+ 
+-	/* The local entry has to be marked as NEW to avoid to send it in
+-	 * a full table response going out before the next ttvn increment
+-	 * (consistency check)
+-	 */
+-	tt_local->common.flags |= BATADV_TT_CLIENT_NEW;
+-
+ 	hash_added = batadv_hash_add(bat_priv->tt.local_hash, batadv_compare_tt,
+ 				     batadv_choose_orig, &tt_local->common,
+ 				     &tt_local->common.hash_entry);
 -- 
 1.7.12.4
 
