@@ -1,11 +1,13 @@
-Return-Path: <0000013ac23ca1c8-740e6cfa-8166-4369-80d6-88bdfa8117d6-000000@amazonses.com>
-Date: Fri, 2 Nov 2012 17:48:04 +0000
-From: Christoph Lameter <cl@linux.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 02 Nov 2012 18:55:21 +0100
+Message-ID: <5905519.yWN2Ke3YlE@bentobox>
 In-Reply-To: <5093EE7E.6040400@gmail.com>
-Message-ID: <0000013ac23ca1c8-740e6cfa-8166-4369-80d6-88bdfa8117d6-000000@email.amazonses.com>
 References: <5093EE7E.6040400@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; boundary="nextPart3842683.NmRLt5WN2J";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH v2 9/9] net: batman-adv: use per_cpu_add
 	helper
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,24 +21,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Shan Wei <shanwei88@gmail.com>
-Cc: NetDev <netdev@vger.kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, Kernel-Maillist <linux-kernel@vger.kernel.org>, siwu@hrz.tu-chemnitz.de, lindner_marek@yahoo.de, David Miller <davem@davemloft.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: NetDev <netdev@vger.kernel.org>, Kernel-Maillist <linux-kernel@vger.kernel.org>, siwu@hrz.tu-chemnitz.de, Shan Wei <shanwei88@gmail.com>, Christoph Lameter <cl@linux.com>, lindner_marek@yahoo.de, David Miller <davem@davemloft.net>
 
-On Sat, 3 Nov 2012, Shan Wei wrote:
 
-> diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-> index 897ba6a..3aef5b2 100644
-> --- a/net/batman-adv/main.h
-> +++ b/net/batman-adv/main.h
-> @@ -263,9 +263,7 @@ static inline bool batadv_has_timed_out(unsigned long timestamp,
->  static inline void batadv_add_counter(struct batadv_priv *bat_priv, size_t idx,
->  				      size_t count)
->  {
-> -	int cpu = get_cpu();
-> -	per_cpu_ptr(bat_priv->bat_counters, cpu)[idx] += count;
-> -	put_cpu();
-> +	this_cpu_add(bat_priv->bat_counters[idx], count);
->  }
+--nextPart3842683.NmRLt5WN2J
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Reviewed-by: Christoph Lameter <cl@linux.com>
+On Saturday 03 November 2012 00:02:06 Shan Wei wrote:
+> From: Shan Wei <davidshan@tencent.com>
+> 
+> As Christoph Lameter said:
+> > In addition, following usage of per_cpu_ptr can be replaced by
+> > this_cpu_read.
+> > 
+> > cpu=get_cpu()
+> > ....
+> > *per_cpu_ptr(p,cpu)
+> > ....
+> > ....
+> > put_cpu()
+> 
+> Right.
+> 
+> Signed-off-by: Shan Wei <davidshan@tencent.com>
+> ---
+
+Is this really supposed to be the commit message?
+
+Kind regards,
+	Sven
+--nextPart3842683.NmRLt5WN2J
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAABCgAGBQJQlAkKAAoJEF2HCgfBJntGs2EQAJVHCL0sb6v7CpICRpuh8CT+
+XytktNVJdL65e9O7NN+wwen//Va33rpAHtePk7xmPaJUl1Dp9ao++6EjDSljU1cE
+y7XRVz1O4m1d+hG3cFvQt+H8rQ6Nm5SNBLiDu06rIYglMqf21mKrVBjoHSEKaBWt
+mHpwabItaTore4GdV293AbvHI/5VwqP5nmFrgZoV7b+EF2WSBn7Dl2aweGKJUcC6
+QbGOYJTQkXRBPetLgfbBxiisZDlrJfkwmZSmDtFx5R74L/TMsFg6NDaIlZM//vNp
+CtU32RnUInSM9iav+Sv2knDuiDEzr2PyNw4393ADhEcQorK/luh7S/EV+DBiMh4V
+AxVU9CreeWCKjlP5r/5/3E6znt5x8SkyEDWsAYg8GaRfmmUBdL2CqA/9phm4omYB
+rRhgaaXuCd65G3GCwDNjzkrql6FMvK3AgMqS1qQ/OBHhq3TL0p9Oe8vZboadRLdP
+h3tonwDQOnBFKceAvRzRd7n9vCkcnkGPRgTA7RmeCV6S1qgPyaQryzw+nBkw5/C6
+1DZqTkpPxqdOn+uRC4yP7LS7HVAxgNC1NC6v65yN/wjeLuz+KtpXEIDX5lFWRoe4
+LJ47KLWnBhbIHCIs1qbDPS0Nq+tMZhpxAzB8GpH9zUeQZ+5mo49OAaWOioEociyW
+MVx7xTIxaw/+t+Kb+9jk
+=DjCC
+-----END PGP SIGNATURE-----
+
+--nextPart3842683.NmRLt5WN2J--
 
