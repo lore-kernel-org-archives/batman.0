@@ -1,15 +1,12 @@
-Return-Path: <davem@davemloft.net>
-Date: Sat, 03 Nov 2012 15:22:26 -0400 (EDT)
-Message-Id: <20121103.152226.244759041688205348.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1351968514-12357-2-git-send-email-ordex@autistici.org>
-References: <1351968514-12357-1-git-send-email-ordex@autistici.org>
- <1351968514-12357-2-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: add UNICAST_4ADDR packet
-	type
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat,  3 Nov 2012 21:55:10 +0100
+Message-Id: <1351976110-3671-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH stable 3.5] batman-adv: Fix broadcast packet
+	CRC calculation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +18,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: stable@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat,  3 Nov 2012 19:48:26 +0100
+From: Linus Lüssing <linus.luessing@web.de>
 
-> The current unicast packet type does not contain the orig source address. This
-> patches add a new unicast packet (called UNICAST_4ADDR) which provides two new
-> fields: the originator source address and the subtype (the type of the data
-> contained in the packet payload). The former is useful to identify the node
-> which injected the packet into the network and the latter is useful to avoid
-> creating new unicast packet types in the future: a macro defining a new subtype
-> will be enough.
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+commit 7f112af40fecf5399b61e69ffc6b55a9d82789f7 upstream.
 
-Your packet layouts are very poorly designed and I want you to stop
-and think seriously about things before extending things further.
+So far the crc16 checksum for a batman-adv broadcast data packet, received
+on a batman-adv hard interface, was calculated over zero bytes of its
+content leading to many incoming broadcast data packets wrongly being
+dropped (60-80% packet loss).
 
-All of this __packed stuff is a serious problem.
+This patch fixes this issue by calculating the crc16 over the actual,
+complete broadcast payload.
 
-It means that on RISC system, fields such as your 32-bit sequence
-number, will be read and written using byte loads and stores.
+The issue is a regression introduced by
+("batman-adv: add broadcast duplicate check").
 
-This is terrible.
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/bridge_loop_avoidance.c | 16 +++++++---------
+ net/batman-adv/routing.c               |  8 +++++++-
+ 2 files changed, 14 insertions(+), 10 deletions(-)
 
-Instead, design the structures so that they are full filled out to
-at least 4 byte boundaries, so that they and the contents after
-them, are 4 byte aligned too.
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index c5863f4..740bb6f 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1172,8 +1172,8 @@ int bla_init(struct bat_priv *bat_priv)
+ 
+ /**
+  * @bat_priv: the bat priv with all the soft interface information
+- * @bcast_packet: originator mac address
+- * @hdr_size: maximum length of the frame
++ * @bcast_packet: encapsulated broadcast frame plus batman header
++ * @bcast_packet_len: length of encapsulated broadcast frame plus batman header
+  *
+  * check if it is on our broadcast list. Another gateway might
+  * have sent the same packet because it is connected to the same backbone,
+@@ -1183,19 +1183,17 @@ int bla_init(struct bat_priv *bat_priv)
+  * with a good chance that it is the same packet. If it is furthermore
+  * sent by another host, drop it. We allow equal packets from
+  * the same host however as this might be intended.
+- *
+- **/
+-
+-int bla_check_bcast_duplist(struct bat_priv *bat_priv,
+-			    struct bcast_packet *bcast_packet,
+-			    int hdr_size)
++ */
++int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
++				   struct batadv_bcast_packet *bcast_packet,
++				   int bcast_packet_len)
+ {
+ 	int i, length, curr;
+ 	uint8_t *content;
+ 	uint16_t crc;
+ 	struct bcast_duplist_entry *entry;
+ 
+-	length = hdr_size - sizeof(*bcast_packet);
++	length = bcast_packet_len - sizeof(*bcast_packet);
+ 	content = (uint8_t *)bcast_packet;
+ 	content += sizeof(*bcast_packet);
+ 
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 015471d..0c2cb6b 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -1081,8 +1081,14 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+ 
+ 	spin_unlock_bh(&orig_node->bcast_seqno_lock);
+ 
++	/* keep skb linear for crc calculation */
++	if (skb_linearize(skb) < 0)
++		goto out;
++
++	bcast_packet = (struct batadv_bcast_packet *)skb->data;
++
+ 	/* check whether this has been sent by another originator before */
+-	if (bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
++	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, skb->len))
+ 		goto out;
+ 
+ 	/* rebroadcast packet */
+-- 
+1.8.0
 
-Then you won't need to mark all of your packet header structs
-with __packed, and therefore the compiler can use full 32-bit
-loads and stores to access 32-bit fields.
-
-I'm not applying this series, sorry, it just continues a major
-problem that the batman-adv code already has.
