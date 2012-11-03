@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat,  3 Nov 2012 21:55:10 +0100
-Message-Id: <1351976110-3671-1-git-send-email-ordex@autistici.org>
+Date: Sat,  3 Nov 2012 21:56:15 +0100
+Message-Id: <1351976175-5542-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH stable 3.5] batman-adv: Fix broadcast packet
+Subject: [B.A.T.M.A.N.] [PATCH patch 3.6] batman-adv: Fix broadcast packet
 	CRC calculation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -41,17 +41,17 @@ Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 16 +++++++---------
- net/batman-adv/routing.c               |  8 +++++++-
- 2 files changed, 14 insertions(+), 10 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c | 8 ++++----
+ net/batman-adv/routing.c               | 8 +++++++-
+ 2 files changed, 11 insertions(+), 5 deletions(-)
 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index c5863f4..740bb6f 100644
+index 6705d35..e7b5777 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1172,8 +1172,8 @@ int bla_init(struct bat_priv *bat_priv)
- 
+@@ -1205,8 +1205,8 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
  /**
+  * batadv_bla_check_bcast_duplist
   * @bat_priv: the bat priv with all the soft interface information
 - * @bcast_packet: originator mac address
 - * @hdr_size: maximum length of the frame
@@ -60,25 +60,17 @@ index c5863f4..740bb6f 100644
   *
   * check if it is on our broadcast list. Another gateway might
   * have sent the same packet because it is connected to the same backbone,
-@@ -1183,19 +1183,17 @@ int bla_init(struct bat_priv *bat_priv)
-  * with a good chance that it is the same packet. If it is furthermore
-  * sent by another host, drop it. We allow equal packets from
-  * the same host however as this might be intended.
-- *
-- **/
--
--int bla_check_bcast_duplist(struct bat_priv *bat_priv,
--			    struct bcast_packet *bcast_packet,
--			    int hdr_size)
-+ */
-+int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
-+				   struct batadv_bcast_packet *bcast_packet,
+@@ -1219,14 +1219,14 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
+  */
+ int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+ 				   struct batadv_bcast_packet *bcast_packet,
+-				   int hdr_size)
 +				   int bcast_packet_len)
  {
  	int i, length, curr;
  	uint8_t *content;
  	uint16_t crc;
- 	struct bcast_duplist_entry *entry;
+ 	struct batadv_bcast_duplist_entry *entry;
  
 -	length = hdr_size - sizeof(*bcast_packet);
 +	length = bcast_packet_len - sizeof(*bcast_packet);
@@ -86,10 +78,10 @@ index c5863f4..740bb6f 100644
  	content += sizeof(*bcast_packet);
  
 diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 015471d..0c2cb6b 100644
+index bc2b88b..f861b7c 100644
 --- a/net/batman-adv/routing.c
 +++ b/net/batman-adv/routing.c
-@@ -1081,8 +1081,14 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
+@@ -1136,8 +1136,14 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
  
  	spin_unlock_bh(&orig_node->bcast_seqno_lock);
  
@@ -100,7 +92,7 @@ index 015471d..0c2cb6b 100644
 +	bcast_packet = (struct batadv_bcast_packet *)skb->data;
 +
  	/* check whether this has been sent by another originator before */
--	if (bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
+-	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
 +	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, skb->len))
  		goto out;
  
