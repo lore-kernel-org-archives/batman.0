@@ -1,14 +1,11 @@
-Return-Path: <shanwei88@gmail.com>
-Message-ID: <5094A485.4060409@gmail.com>
-Date: Sat, 03 Nov 2012 12:58:45 +0800
-From: Shan Wei <shanwei88@gmail.com>
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat,  3 Nov 2012 19:48:25 +0100
+Message-Id: <1351968514-12357-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-References: <5093EE7E.6040400@gmail.com> <5905519.yWN2Ke3YlE@bentobox>
-In-Reply-To: <5905519.yWN2Ke3YlE@bentobox>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 9/9] net: batman-adv: use per_cpu_add
- helper
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-11-03
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,47 +17,86 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: NetDev <netdev@vger.kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, Kernel-Maillist <linux-kernel@vger.kernel.org>, siwu@hrz.tu-chemnitz.de, Christoph Lameter <cl@linux.com>, lindner_marek@yahoo.de, David Miller <davem@davemloft.net>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Sven Eckelmann said, at 2012/11/3 1:55:
-> On Saturday 03 November 2012 00:02:06 Shan Wei wrote:
->> From: Shan Wei <davidshan@tencent.com>
->>
->> As Christoph Lameter said:
->>> In addition, following usage of per_cpu_ptr can be replaced by
->>> this_cpu_read.
->>>
->>> cpu=get_cpu()
->>> ....
->>> *per_cpu_ptr(p,cpu)
->>> ....
->>> ....
->>> put_cpu()
->>
->> Right.
->>
->> Signed-off-by: Shan Wei <davidshan@tencent.com>
->> ---
-> 
-> Is this really supposed to be the commit message?
+Hello David,
 
-Maybe it's ok when Linus said this. :-)
+here you have another patchset with two new features intended for
+net-next/linux-3.8.
 
-Christoph is the maintainer of per-cpu.
-So........
+Patch 1/9 adds the new UNICAST_4ADDR packet type which contains both the source
+and the destination node addresses (unlike the classic UNICAST which contains
+the destination only) and can encapsulate different packet subtypes.
 
-PER-CPU MEMORY ALLOCATOR
-M:      Tejun Heo <tj@kernel.org>
-M:      Christoph Lameter <cl@linux-foundation.org>
-T:      git git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git
-S:      Maintained
-F:      include/linux/percpu*.h
-F:      mm/percpu*.c
-F:      arch/*/include/asm/percpu.h
+Then all the remaining patches introduce the new Distributed ARP Table (DAT)
+component. It is the first user of the new packet type introduced by 1/9.
 
-> 
-> Kind regards,
-> 	Sven
-> 
+DAT is the results of Antonio Quartulli's Google Summer Of Code 2011.
+It was already sent to netdev once in the past, but got rejected because of its
+dependency on the ARP/neigh layer internals. In this new version a batman-adv
+private ARP storage has been implemented, so dropping any possible relationship
+with the inner neigh code.
 
+Please, let me know if there is any problem.
+
+Thank you very much,
+		Antonio
+
+
+
+The following changes since commit b77bc2069d1e437d5a1a71bb5cfcf4556ee40015:
+
+  ppp: make ppp_get_stats64 static (2012-11-01 12:38:31 -0400)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to f113f61fd0af6dfd08f8110236cd47c410b36711:
+
+  batman-adv: Add get_ethtool_stats() support for DAT (2012-11-02 21:50:15 +0100)
+
+----------------------------------------------------------------
+Included changes:
+- new packet type called UNICAST_4ADDR: in this packet it is possible to find
+  both source and destination node (in the classic UNICAST header only the
+  destination field exists).
+- a new feature: Distributed ARP Table (D.A.T.). It aims to reduce ARP lookups
+  latency by means of a simil-DHT approach.
+
+----------------------------------------------------------------
+Antonio Quartulli (8):
+      batman-adv: add UNICAST_4ADDR packet type
+      batman-adv: Distributed ARP Table - add a new debug log level
+      batman-adv: Distributed ARP Table - create DHT helper functions
+      batman-adv: Distributed ARP Table - implement local storage
+      batman-adv: Distributed ARP Table - add ARP parsing functions
+      batman-adv: Distributed ARP Table - add snooping functions for ARP messages
+      batman-adv: Distributed ARP Table - add compile option
+      batman-adv: Distributed ARP Table - add runtime switch
+
+Martin Hundebøll (1):
+      batman-adv: Add get_ethtool_stats() support for DAT
+
+ Documentation/networking/batman-adv.txt |    3 +-
+ net/batman-adv/Kconfig                  |   10 +
+ net/batman-adv/Makefile                 |    1 +
+ net/batman-adv/debugfs.c                |   20 +
+ net/batman-adv/distributed-arp-table.c  | 1066 +++++++++++++++++++++++++++++++
+ net/batman-adv/distributed-arp-table.h  |  167 +++++
+ net/batman-adv/hard-interface.c         |    3 +
+ net/batman-adv/main.c                   |    9 +
+ net/batman-adv/main.h                   |   13 +-
+ net/batman-adv/originator.c             |    2 +
+ net/batman-adv/packet.h                 |   43 +-
+ net/batman-adv/routing.c                |   41 +-
+ net/batman-adv/send.c                   |    4 +
+ net/batman-adv/soft-interface.c         |   28 +-
+ net/batman-adv/sysfs.c                  |    7 +
+ net/batman-adv/types.h                  |   73 +++
+ net/batman-adv/unicast.c                |  134 +++-
+ net/batman-adv/unicast.h                |   36 +-
+ 18 files changed, 1631 insertions(+), 29 deletions(-)
+ create mode 100644 net/batman-adv/distributed-arp-table.c
+ create mode 100644 net/batman-adv/distributed-arp-table.h
