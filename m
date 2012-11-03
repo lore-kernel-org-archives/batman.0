@@ -1,12 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat,  3 Nov 2012 21:56:15 +0100
-Message-Id: <1351976175-5542-1-git-send-email-ordex@autistici.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 03 Nov 2012 23:39:44 +0100
+Message-ID: <6126628.VHIlOyj2ru@sven-desktop.home.narfation.org>
+In-Reply-To: <5094A485.4060409@gmail.com>
+References: <5093EE7E.6040400@gmail.com> <5905519.yWN2Ke3YlE@bentobox>
+ <5094A485.4060409@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH patch 3.6] batman-adv: Fix broadcast packet
-	CRC calculation
+Content-Type: multipart/signed; boundary="nextPart1797397.lfZIgvKNiC";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 9/9] net: batman-adv: use per_cpu_add
+	helper
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,85 +22,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: Shan Wei <shanwei88@gmail.com>
+Cc: NetDev <netdev@vger.kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, Kernel-Maillist <linux-kernel@vger.kernel.org>, siwu@hrz.tu-chemnitz.de, Christoph Lameter <cl@linux.com>, lindner_marek@yahoo.de, David Miller <davem@davemloft.net>
 
-From: Linus Lüssing <linus.luessing@web.de>
 
-commit 7f112af40fecf5399b61e69ffc6b55a9d82789f7 upstream.
+--nextPart1797397.lfZIgvKNiC
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-So far the crc16 checksum for a batman-adv broadcast data packet, received
-on a batman-adv hard interface, was calculated over zero bytes of its
-content leading to many incoming broadcast data packets wrongly being
-dropped (60-80% packet loss).
+On Saturday 03 November 2012 12:58:45 Shan Wei wrote:
+> Sven Eckelmann said, at 2012/11/3 1:55:
+> > On Saturday 03 November 2012 00:02:06 Shan Wei wrote:
+> >> From: Shan Wei <davidshan@tencent.com>
+> >> 
+> >> As Christoph Lameter said:
+> >>> In addition, following usage of per_cpu_ptr can be replaced by
+> >>> this_cpu_read.
+> >>> 
+> >>> cpu=get_cpu()
+> >>> ....
+> >>> *per_cpu_ptr(p,cpu)
+> >>> ....
+> >>> ....
+> >>> put_cpu()
+> >> 
+> >> Right.
+> >> 
+> >> Signed-off-by: Shan Wei <davidshan@tencent.com>
+> >> ---
+> > 
+> > Is this really supposed to be the commit message?
+> 
+> Maybe it's ok when Linus said this. :-)
+> 
+> Christoph is the maintainer of per-cpu.
+> So........
 
-This patch fixes this issue by calculating the crc16 over the actual,
-complete broadcast payload.
+Hm? This wasn't my question, but ok...
 
-The issue is a regression introduced by
-("batman-adv: add broadcast duplicate check").
+Kind regards,
+	Sven
+--nextPart1797397.lfZIgvKNiC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/bridge_loop_avoidance.c | 8 ++++----
- net/batman-adv/routing.c               | 8 +++++++-
- 2 files changed, 11 insertions(+), 5 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 6705d35..e7b5777 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1205,8 +1205,8 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
- /**
-  * batadv_bla_check_bcast_duplist
-  * @bat_priv: the bat priv with all the soft interface information
-- * @bcast_packet: originator mac address
-- * @hdr_size: maximum length of the frame
-+ * @bcast_packet: encapsulated broadcast frame plus batman header
-+ * @bcast_packet_len: length of encapsulated broadcast frame plus batman header
-  *
-  * check if it is on our broadcast list. Another gateway might
-  * have sent the same packet because it is connected to the same backbone,
-@@ -1219,14 +1219,14 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
-  */
- int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
- 				   struct batadv_bcast_packet *bcast_packet,
--				   int hdr_size)
-+				   int bcast_packet_len)
- {
- 	int i, length, curr;
- 	uint8_t *content;
- 	uint16_t crc;
- 	struct batadv_bcast_duplist_entry *entry;
- 
--	length = hdr_size - sizeof(*bcast_packet);
-+	length = bcast_packet_len - sizeof(*bcast_packet);
- 	content = (uint8_t *)bcast_packet;
- 	content += sizeof(*bcast_packet);
- 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index bc2b88b..f861b7c 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1136,8 +1136,14 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 
- 	spin_unlock_bh(&orig_node->bcast_seqno_lock);
- 
-+	/* keep skb linear for crc calculation */
-+	if (skb_linearize(skb) < 0)
-+		goto out;
-+
-+	bcast_packet = (struct batadv_bcast_packet *)skb->data;
-+
- 	/* check whether this has been sent by another originator before */
--	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
-+	if (batadv_bla_check_bcast_duplist(bat_priv, bcast_packet, skb->len))
- 		goto out;
- 
- 	/* rebroadcast packet */
--- 
-1.8.0
+iQIcBAABCgAGBQJQlZ0wAAoJEF2HCgfBJntGyDUQALAPrg6zTPAyMpKdS3PNXEsb
+JSwhZtUHdEpgxg9DKqjt+1+d20Ts4yWiMuN50+MFirgiFr/I99gatwXBO59JzONx
+QPipCTA1LiguBkrWKbjuNvehx3VugNrV63NK0vkQ/6ZYnYtA1lTNGpYln648/FY+
+3+O8uq1RN3IvakTuQvxAmT5yH0ekCOud/GZZQxbxDBkTNEcQzHgpeo4kNUPv59B6
+lrLSCy5xrbqf+faiwbVlTwERIhiT/T94aPoYPQMlAtbQWjEBagy43YEm51Pk8ypC
+hdeB5KSyODj2BSfFNFxOZzVIU9nhDqdK89QPKMrrLz6YFfvFDg8dfJmpr0ZR2O/J
+cBsfqM4lFfkM3sWO35J5YVMLZPPE5Ow12iJHIEgADytXUomR2HlqacbuxhPSJKTv
+O/y3bol4zQsbLY2svZnKnu5Z8RY8yI9rqraP47a91jcNP20asdLOF3r1BvdHnG8V
+iB9ssmnihV6eT3Fx/rDQVSa+yVNHHJFula2C63dzyYABz3l+DqZZ2+kytgVyqD5B
+68qofLyzh/eh9N4vWaWgbLHQZl5eezDw9/IMQ4s+9qrKuiX99osnl5Lyi/o7A7fz
+qDneMxs1mr619E7e8GNlyJRqAJAzyzV9nPLM5dVpF85NOz3sKctrMq/nvJbGxoAh
+UaxRMFnt63+pdRQjLe7c
+=pgnc
+-----END PGP SIGNATURE-----
+
+--nextPart1797397.lfZIgvKNiC--
 
