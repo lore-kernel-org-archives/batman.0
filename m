@@ -1,11 +1,11 @@
 Return-Path: <davem@davemloft.net>
-Date: Sun, 04 Nov 2012 12:26:11 -0500 (EST)
-Message-Id: <20121104.122611.1457246059414191903.davem@davemloft.net>
+Date: Sun, 04 Nov 2012 12:30:57 -0500 (EST)
+Message-Id: <20121104.123057.59138392933877977.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <12758662.vFhVQet4vg@sven-laptop.home.narfation.org>
-References: <1351968514-12357-2-git-send-email-ordex@autistici.org>
- <20121103.152226.244759041688205348.davem@davemloft.net>
+In-Reply-To: <5244128.ID77evUSAJ@sven-laptop.home.narfation.org>
+References: <20121103.152226.244759041688205348.davem@davemloft.net>
  <12758662.vFhVQet4vg@sven-laptop.home.narfation.org>
+ <5244128.ID77evUSAJ@sven-laptop.home.narfation.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -26,16 +26,21 @@ To: sven@narfation.org
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 04 Nov 2012 11:29:29 +0100
+Date: Sun, 04 Nov 2012 12:20:13 +0100
 
-> Now also assume following really unusual situation: We get our data from a 
-> ethernet driver and the skb stores the ethernet header. The start of the 
-> ethernet header is perfectly aligned (4 or even 16 byte boundary aligned). The 
-> the header is 14/18 byte long (6 byte src, 6 byte dst, 2 byte ethertype and 
-> maybe 4 byte vlan). Now the payload starts only on a 2 byte boundary -> it is 
-> never 4 byte boundary aligned. A 32 bit read now causes different variations 
-> of problems (reminder: bus error).
+> To push this question in a direction: May I assume that the driver always 
+> ensures that the ethernet header is 4 byte boundary - NET_IP_ALIGN (2) 
+> aligned?
 
-Every ethernet driver must provide the networking stack with a modulo 2
-aligned ethernet header, which makes sure that everything after the
-ethernet header is at least 4 byte aligned.
+Yes.
+
+> When yes, this would result in a slight variations of your suggestion: 
+> unicast/bcast headers have to end at 4 bytes boundary + 2 bytes. The reason is 
+> easy to explain. batman-adv unicast/bcast headers are used to encapsulate the 
+> important parts of an ethernet frame:
+> 
+> Ethernet Header for P2P | batman-adv header stuff | ethernet header | payload.
+> 
+> Would you aggree?
+
+Then you can get rid of the packed crap.
