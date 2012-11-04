@@ -1,14 +1,17 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun,  4 Nov 2012 02:05:27 +0100
-Message-Id: <1351991127-10420-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1351976110-3671-1-git-send-email-ordex@autistici.org>
-References: <1351976110-3671-1-git-send-email-ordex@autistici.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 04 Nov 2012 11:29:29 +0100
+Message-ID: <12758662.vFhVQet4vg@sven-laptop.home.narfation.org>
+In-Reply-To: <20121103.152226.244759041688205348.davem@davemloft.net>
+References: <1351968514-12357-1-git-send-email-ordex@autistici.org>
+ <1351968514-12357-2-git-send-email-ordex@autistici.org>
+ <20121103.152226.244759041688205348.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 stable 3.5] batman-adv: Fix broadcast
-	packet CRC calculation
+Content-Type: multipart/signed; boundary="nextPart6149278.16tMfUHuyf";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: add UNICAST_4ADDR packet
+	type
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,96 +23,77 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
-
-From: Linus Lüssing <linus.luessing@web.de>
-
-commit 7f112af40fecf5399b61e69ffc6b55a9d82789f7 upstream.
-
-So far the crc16 checksum for a batman-adv broadcast data packet, received
-on a batman-adv hard interface, was calculated over zero bytes of its
-content leading to many incoming broadcast data packets wrongly being
-dropped (60-80% packet loss).
-
-This patch fixes this issue by calculating the crc16 over the actual,
-complete broadcast payload.
-
-The issue is a regression introduced by
-("batman-adv: add broadcast duplicate check").
-
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
-
-Sorry, but I made a mistake in backporting the patch to 3.5. Now it's ok.
-Thanks,
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>
 
 
- net/batman-adv/bridge_loop_avoidance.c | 12 +++++-------
- net/batman-adv/routing.c               |  8 +++++++-
- 2 files changed, 12 insertions(+), 8 deletions(-)
+--nextPart6149278.16tMfUHuyf
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index c5863f4..87a6235 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1172,8 +1172,8 @@ int bla_init(struct bat_priv *bat_priv)
- 
- /**
-  * @bat_priv: the bat priv with all the soft interface information
-- * @bcast_packet: originator mac address
-- * @hdr_size: maximum length of the frame
-+ * @bcast_packet: encapsulated broadcast frame plus batman header
-+ * @bcast_packet_len: length of encapsulated broadcast frame plus batman header
-  *
-  * check if it is on our broadcast list. Another gateway might
-  * have sent the same packet because it is connected to the same backbone,
-@@ -1183,19 +1183,17 @@ int bla_init(struct bat_priv *bat_priv)
-  * with a good chance that it is the same packet. If it is furthermore
-  * sent by another host, drop it. We allow equal packets from
-  * the same host however as this might be intended.
-- *
-- **/
--
-+ */
- int bla_check_bcast_duplist(struct bat_priv *bat_priv,
- 			    struct bcast_packet *bcast_packet,
--			    int hdr_size)
-+			    int bcast_packet_len)
- {
- 	int i, length, curr;
- 	uint8_t *content;
- 	uint16_t crc;
- 	struct bcast_duplist_entry *entry;
- 
--	length = hdr_size - sizeof(*bcast_packet);
-+	length = bcast_packet_len - sizeof(*bcast_packet);
- 	content = (uint8_t *)bcast_packet;
- 	content += sizeof(*bcast_packet);
- 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 015471d..af40ca3 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1081,8 +1081,14 @@ int recv_bcast_packet(struct sk_buff *skb, struct hard_iface *recv_if)
- 
- 	spin_unlock_bh(&orig_node->bcast_seqno_lock);
- 
-+	/* keep skb linear for crc calculation */
-+	if (skb_linearize(skb) < 0)
-+		goto out;
-+
-+	bcast_packet = (struct bcast_packet *)skb->data;
-+
- 	/* check whether this has been sent by another originator before */
--	if (bla_check_bcast_duplist(bat_priv, bcast_packet, hdr_size))
-+	if (bla_check_bcast_duplist(bat_priv, bcast_packet, skb->len))
- 		goto out;
- 
- 	/* rebroadcast packet */
--- 
-1.8.0
+On Saturday 03 November 2012 15:22:26 David Miller wrote:
+[...]
+> Your packet layouts are very poorly designed and I want you to stop
+> and think seriously about things before extending things further.
+
+You are right about the packet design/layout. But I also have some problems 
+with the following statement. Maybe you can help me to resolve it.
+
+> All of this __packed stuff is a serious problem.
+> 
+> It means that on RISC system, fields such as your 32-bit sequence
+> number, will be read and written using byte loads and stores.
+> 
+> This is terrible.
+> 
+> Instead, design the structures so that they are full filled out to
+> at least 4 byte boundaries, so that they and the contents after
+> them, are 4 byte aligned too.
+> 
+> Then you won't need to mark all of your packet header structs
+> with __packed, and therefore the compiler can use full 32-bit
+> loads and stores to access 32-bit fields.
+
+Ok, lets assume batman-adv has everything 4 byte aligned and we are running on 
+a machine without unaligned r/w access. The machine may issues bus errors and 
+so on.
+
+Now also assume following really unusual situation: We get our data from a 
+ethernet driver and the skb stores the ethernet header. The start of the 
+ethernet header is perfectly aligned (4 or even 16 byte boundary aligned). The 
+the header is 14/18 byte long (6 byte src, 6 byte dst, 2 byte ethertype and 
+maybe 4 byte vlan). Now the payload starts only on a 2 byte boundary -> it is 
+never 4 byte boundary aligned. A 32 bit read now causes different variations 
+of problems (reminder: bus error).
+
+This brings me to the question: Why should the "32 bit align everything 
+relative to the start of the struct" approach help to resolve the situation 
+for the access of 32 bit data structure members? May I am missing some 
+information?
+
+Kind regards,
+	Sven
+--nextPart6149278.16tMfUHuyf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAABCgAGBQJQlkOJAAoJEF2HCgfBJntGBuIP/06JXx/X1xT6EQZHPPHSQAjI
+/LUZTIN33EW+PxyEbcTMmiKeA+KfZnvHm1jeiVA+EFaw4yYxS4Vh6EOreR0F9sUq
+SP/ErNTJQqPlmolfaCjHhBqbyb6YZ5rQpCvFqWZoqL8IPzywkNikGTdXr7XZifWN
+a+k0eZJwS2kZkhYhZFSQtcDxYO3k1SFQwg4joGcpb6Cr5eeOytQ3r1/Mi3pfzNfl
++vWSO6qxBE+dmqUGGg7K0uvHcfl90qlRnx4i6MBmSAwB0NMmPB7LMJ4Phktj3YYo
+UXgi9wMTMdmyBFYuclmKu1wCaBgr+jetwKIYUHxKSvOZVOVbQHSQnDUOeNqDJ3d4
+9Ck7JRAZ3/fImye3gFYw33NWpvylp5BK7YZJ4UDAxCz8Ym87Tg8CcaNRE7RrA0Ef
+xzC+3exEdsbzbniGFB3NjDhCQER1XB1mToInSogqMn6CJyuWMkqNwJ+QLnLKRSiT
+p6An00SuR/YwO1qg6C9fK/6lkXmyusIymKLE2sVi1eQaj2a5Ohh7j6CmVx3CM7nP
+9yQZRiEqQRMpVOMvlOIZ0qPVA0pLX1jyQJIFMiyqna2CIudWBoh/IbOoU3o9fCda
+Nj7FAcn7jrzXpVDyA8gfRRSHtfpJ2+VcBorY8FLr/lPeb9XOKmfLJ2xGmwi6DwvD
+MxySPcDhaAN4WGuDb/CT
+=uZal
+-----END PGP SIGNATURE-----
+
+--nextPart6149278.16tMfUHuyf--
 
