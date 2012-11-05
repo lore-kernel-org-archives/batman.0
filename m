@@ -1,14 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 5 Nov 2012 17:05:42 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121105160542.GA3534@ritirata.org>
-References: <1352129674-11080-1-git-send-email-ordex@autistici.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 6 Nov 2012 02:55:04 +0800
+References: <1351677149-6045-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1351677149-6045-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="AqsLC8rIMeq19msA"
-Content-Disposition: inline
-In-Reply-To: <1352129674-11080-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix ROAM flag de-selection
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201211060255.05103.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Guarantee delimiter after
+	snprintf
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,41 +23,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+On Wednesday, October 31, 2012 17:52:29 Sven Eckelmann wrote:
+> snprintf doesn't add a \0 delimiter when the size of the buffer is not big
+> enough. The caller has to fix it manually to avoid crashes.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  bisect_iv.c |   10 ++++++----
+>  debugfs.c   |    1 +
+>  sys.c       |    8 ++++++++
+>  3 files changed, 15 insertions(+), 4 deletions(-)
 
---AqsLC8rIMeq19msA
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Applied in revision a5ead71.
 
-On Mon, Nov 05, 2012 at 04:34:34PM +0100, Antonio Quartulli wrote:
-> In tt_global_add() the ROAM flag is improperly unset. This makes the
-> next check fail and so preventing emptying the old originator_list for
-> the involved tt_global_entry
->=20
-> This was introduced by ("batman-adv: roaming handling mechanism redesign")
->=20
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-
-Ops, I just forgot:
-
-Reported-by: Mike Burmeister-Brown <mike@open-mesh.com>
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---AqsLC8rIMeq19msA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlCX49YACgkQpGgxIkP9cwfi+QCeI1HBoztp3lShPMDSV+8Tl73l
-/G0An0q0HAYR+rY9TieuVlGYnLFT54WB
-=g3Ax
------END PGP SIGNATURE-----
-
---AqsLC8rIMeq19msA--
+Thanks,
+Marek
