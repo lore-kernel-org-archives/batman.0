@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 6 Nov 2012 02:55:04 +0800
-References: <1351677149-6045-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1351677149-6045-1-git-send-email-sven@narfation.org>
+Date: Tue, 6 Nov 2012 02:58:54 +0800
+References: <1351982508-16991-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1351982508-16991-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201211060255.05103.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Guarantee delimiter after
-	snprintf
+Message-Id: <201211060258.54459.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Reorder structs to reduce
+	padding
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,20 +21,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday, October 31, 2012 17:52:29 Sven Eckelmann wrote:
-> snprintf doesn't add a \0 delimiter when the size of the buffer is not big
-> enough. The caller has to fix it manually to avoid crashes.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  bisect_iv.c |   10 ++++++----
->  debugfs.c   |    1 +
->  sys.c       |    8 ++++++++
->  3 files changed, 15 insertions(+), 4 deletions(-)
+On Sunday, November 04, 2012 06:41:48 Sven Eckelmann wrote:
+> -       struct batadv_neigh_node __rcu *router; /* rcu protected pointer */
+>  #ifdef CONFIG_BATMAN_ADV_DAT
+>         batadv_dat_addr_t dat_addr;
+>  #endif
+> +       uint8_t flags;
+> +       uint8_t gw_flags;
+> +       struct batadv_neigh_node __rcu *router; /* rcu protected pointer */
 
-Applied in revision a5ead71.
+Shouldn't we move batadv_dat_addr_t to the end of the struct to achieve the 
+smallest possible struct regardless of whether DAT is compiled in or not ? Or 
+does it have no effect ?
 
-Thanks,
+Cheers,
 Marek
