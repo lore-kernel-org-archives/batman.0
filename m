@@ -1,13 +1,16 @@
-Return-Path: <renne.bartsch@gmail.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Date: Mon, 5 Nov 2012 09:15:40 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+Message-ID: <20121105081540.GA3657@kroah.com>
+References: <1351976110-3671-1-git-send-email-ordex@autistici.org>
+ <1351991127-10420-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-In-Reply-To: <50969D65.5010909@futurec.net>
-References: <CAJZtC_=Hjdiu=ZR3EiFuUaPCFu_BoDv9X=frQLqGg9hrSx7kQw@mail.gmail.com>
- <50969D65.5010909@futurec.net>
-Date: Sun, 4 Nov 2012 20:49:18 +0100
-Message-ID: <CAJZtC_n_EeOYCXK3fpCzA5_K=e=Nbahr9O-d_7bjm5HW9Ld5WQ@mail.gmail.com>
-From: Rene Bartsch <renne.bartsch@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] Broadcasting of GPS-coordinates?
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1351991127-10420-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 stable 3.5] batman-adv: Fix broadcast
+ packet CRC calculation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,66 +22,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Antonio Quartulli <ordex@autistici.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, stable@vger.kernel.org
 
-That's an option, of course.
+On Sun, Nov 04, 2012 at 02:05:27AM +0100, Antonio Quartulli wrote:
+> From: Linus L=FCssing <linus.luessing@web.de>
+>=20
+> commit 7f112af40fecf5399b61e69ffc6b55a9d82789f7 upstream.
+>=20
+> So far the crc16 checksum for a batman-adv broadcast data packet, received
+> on a batman-adv hard interface, was calculated over zero bytes of its
+> content leading to many incoming broadcast data packets wrongly being
+> dropped (60-80% packet loss).
+>=20
+> This patch fixes this issue by calculating the crc16 over the actual,
+> complete broadcast payload.
+>=20
+> The issue is a regression introduced by
+> ("batman-adv: add broadcast duplicate check").
+>=20
+> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
+> Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+>=20
+> Sorry, but I made a mistake in backporting the patch to 3.5. Now it's ok.
+> Thanks,
 
-But centralized servers are a single point of failure. So my idea is
-any node broadcasts his GPS position with TX- and RX-Gain. Any node
-can e.g. use a transparent HTTP-proxy to provide a map to the LAN
-attached. In case of a Google Maps overlay, each node can be displayed
-on the map with a coverage radius calculated by TX-/RX-gain. By using
-the "navigator.geolocation.getCurrentPosition".tag the map can be
-centered to the current position of the HTTP-client. Info-boxes on the
-nodes can use the RX-/TX-gain of the mouse-over-node and the
-HTTP-client to show the theoretically maximum link speed. That would
-improve nomadic use und finding gaps in network coverage. The
-geographic positions can also be use to optimize routing and
-beam-forming, e.g. calculating vector and distance of the first
-fresnel zone of the next node.
+3.5 is end-of-life, so I can't take any patches for it anymore, sorry.
+In the future, take a look at the front page of www.kernel.org, it shows
+what trees are still "alive" and which are end-of-life.
 
-Regards,
+thanks,
 
-Renne
-
-
-Am 04.11.2012 18:53:11, schrieb Ray Gibson:
-
-I'm doing this with my nodes but I have a garmin receiver hooked up to a
-serial port on a routerstation pro, and using a combination of cat, sed,
-awk, bc, and tail to get determine the coordinates and wget to post them
-to another server that handles the mapping. Pretty simple actually.
-
-Ray
-
-
-
-On 11/4/2012 7:32 AM, Rene Bartsch wrote:
-> Hi,
->
-> I'm new to B.A.T.M.A.N, so a "Hello" to all! :)
->
-> Does B.A.T.M.A.N support some kind of broadcasting node positions?
->
-> The idea is to broadcast TX-Power/RX-Gain and the position of a node
-> determined by a GPS-device to create maps with network coverage.
->
-> Is that possible anyhow?
->
-> Regards,
->
-> Renne
-
-
-
-
-This communication constitutes an electronic communication within the
-meaning of the Electronic Communications Privacy Act, 18 USC 2510, and
-its disclosure is strictly limited to the recipient intended by the
-sender of this message. This e-mail and any files transmitted with it
-are proprietary and intended for the sole use of the individual or
-entity to whom they are addressed. They are not to be viewed, shared,
-copied or forwarded, regardless to whom, without the expressed
-permission of Future Concepts I.S., Inc. If you have received this
-e-mail in error, please notify the sender and immediately delete it
-from your system. Thank you.
+greg k-h
