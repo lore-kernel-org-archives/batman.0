@@ -1,16 +1,11 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Date: Mon, 5 Nov 2012 09:15:40 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-Message-ID: <20121105081540.GA3657@kroah.com>
-References: <1351976110-3671-1-git-send-email-ordex@autistici.org>
- <1351991127-10420-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <1351991127-10420-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 stable 3.5] batman-adv: Fix broadcast
- packet CRC calculation
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon,  5 Nov 2012 10:15:24 +0100
+Message-Id: <1352106924-6755-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1352038798-29658-3-git-send-email-sven@narfation.org>
+References: <1352038798-29658-3-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC-alt 3/4] batman-adv: Fix alignment for payload
+	after batadv_unicast_4addr_packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,38 +17,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <ordex@autistici.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, stable@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun, Nov 04, 2012 at 02:05:27AM +0100, Antonio Quartulli wrote:
-> From: Linus L=FCssing <linus.luessing@web.de>
->=20
-> commit 7f112af40fecf5399b61e69ffc6b55a9d82789f7 upstream.
->=20
-> So far the crc16 checksum for a batman-adv broadcast data packet, received
-> on a batman-adv hard interface, was calculated over zero bytes of its
-> content leading to many incoming broadcast data packets wrongly being
-> dropped (60-80% packet loss).
->=20
-> This patch fixes this issue by calculating the crc16 over the actual,
-> complete broadcast payload.
->=20
-> The issue is a regression introduced by
-> ("batman-adv: add broadcast duplicate check").
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
-> Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->=20
-> Sorry, but I made a mistake in backporting the patch to 3.5. Now it's ok.
-> Thanks,
+batadv_unicast_4addr_packet created an odd aligned ethernet header and a not 4
+bytes boundary aligned IP header. Adding an extra reserved bytes avoids this
+problem.
 
-3.5 is end-of-life, so I can't take any patches for it anymore, sorry.
-In the future, take a look at the front page of www.kernel.org, it shows
-what trees are still "alive" and which are end-of-life.
+This problem was introduced in 78fc6bbe0aca868b65b92723b1e259e7ef7b35c0
+("batman-adv: add UNICAST_4ADDR packet type")
 
-thanks,
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+This is an alternative version of the third patch.
 
-greg k-h
+DONT APPLY PATCH 4 WHEN NOT APPLYING THE INITIAL VERSION OF THE THIRD PATCH
+
+ packet.h  |    6 +++++-
+ unicast.c |    1 +
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/packet.h b/packet.h
+index 43c863c..0a9886c 100644
+--- a/packet.h
++++ b/packet.h
+@@ -191,7 +191,11 @@ struct batadv_unicast_4addr_packet {
+ 	struct batadv_unicast_packet u;
+ 	uint8_t src[ETH_ALEN];
+ 	uint8_t subtype;
+-} __packed;
++	uint8_t reserved;
++	/* "4 bytes boundary + 2 bytes" long to make the payload after the
++	 * following ethernet header again 4 bytes boundary aligned
++	 */
++};
+ 
+ struct batadv_unicast_frag_packet {
+ 	struct batadv_header header;
+diff --git a/unicast.c b/unicast.c
+index 9416136..10aff49 100644
+--- a/unicast.c
++++ b/unicast.c
+@@ -374,6 +374,7 @@ bool batadv_unicast_4addr_prepare_skb(struct batadv_priv *bat_priv,
+ 	memcpy(unicast_4addr_packet->src, primary_if->net_dev->dev_addr,
+ 	       ETH_ALEN);
+ 	unicast_4addr_packet->subtype = packet_subtype;
++	unicast_4addr_packet->reserved = 0;
+ 
+ 	ret = true;
+ out:
+-- 
+1.7.10.4
+
