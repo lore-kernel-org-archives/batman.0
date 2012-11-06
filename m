@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  6 Nov 2012 12:05:23 +0100
-Message-Id: <1352199923-16653-6-git-send-email-ordex@autistici.org>
-In-Reply-To: <1352199923-16653-1-git-send-email-ordex@autistici.org>
-References: <1352199923-16653-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 5/5] batman-adv: fix local client
-	recognition in is_my_client()
+Date: Tue,  6 Nov 2012 14:14:03 +0100
+Message-Id: <1352207643-11274-3-git-send-email-ordex@autistici.org>
+In-Reply-To: <1352207643-11274-1-git-send-email-ordex@autistici.org>
+References: <1352207643-11274-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: remove useless assignment in
+	tt_local_add()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,32 +19,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-A tt_local_entry which ROAM flag is set cannot be considered a local
-client anymore. Having the ROAM flag set means that the client roamed
-away and that the nodes received a ROAMING_ADV for such event
+The flag field of the tt_local_entry->common structure in
+tt_local_add() is first assigned NO_FLAGS and then TT_CLIENT_NEW so
+nullifying the first operation. For this reason it is safe to remove
+the first assignment.
 
-This was introduced by ("batman-adv: roaming handling mechanism
-redesign")
+This was introuduced by ("batman-adv: keep local table consistency for
+further TT_RESPONSE")
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- translation-table.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ translation-table.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index 517324a..fdcb726 100644
+index be6e103..05fa06e 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -2044,7 +2044,8 @@ bool batadv_is_my_client(struct batadv_priv *bat_priv, const uint8_t *addr)
- 	/* Check if the client has been logically deleted (but is kept for
- 	 * consistency purpose)
- 	 */
--	if (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING)
-+	if ((tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING) ||
-+	    (tt_local_entry->common.flags & BATADV_TT_CLIENT_ROAM))
- 		goto out;
- 	ret = true;
- out:
+@@ -306,7 +306,11 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 		   (uint8_t)atomic_read(&bat_priv->tt.vn));
+ 
+ 	memcpy(tt_local->common.addr, addr, ETH_ALEN);
+-	tt_local->common.flags = BATADV_NO_FLAGS;
++	/* The local entry has to be marked as NEW to avoid to send it in
++	 * a full table response going out before the next ttvn increment
++	 * (consistency check)
++	 */
++	tt_local->common.flags = BATADV_TT_CLIENT_NEW;
+ 	if (batadv_is_wifi_iface(ifindex))
+ 		tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
+ 	atomic_set(&tt_local->common.refcount, 2);
+@@ -317,12 +321,6 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	if (batadv_compare_eth(addr, soft_iface->dev_addr))
+ 		tt_local->common.flags |= BATADV_TT_CLIENT_NOPURGE;
+ 
+-	/* The local entry has to be marked as NEW to avoid to send it in
+-	 * a full table response going out before the next ttvn increment
+-	 * (consistency check)
+-	 */
+-	tt_local->common.flags |= BATADV_TT_CLIENT_NEW;
+-
+ 	hash_added = batadv_hash_add(bat_priv->tt.local_hash, batadv_compare_tt,
+ 				     batadv_choose_orig, &tt_local->common,
+ 				     &tt_local->common.hash_entry);
 -- 
 1.8.0
 
