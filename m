@@ -1,10 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  6 Nov 2012 12:05:22 +0100
-Message-Id: <1352199923-16653-5-git-send-email-ordex@autistici.org>
+Date: Tue,  6 Nov 2012 12:05:23 +0100
+Message-Id: <1352199923-16653-6-git-send-email-ordex@autistici.org>
 In-Reply-To: <1352199923-16653-1-git-send-email-ordex@autistici.org>
 References: <1352199923-16653-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 4/5] batman-adv: send ROAMING_ADV once
+Subject: [B.A.T.M.A.N.] [PATCHv2 5/5] batman-adv: fix local client
+	recognition in is_my_client()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,36 +19,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-If a client roaming has already been advertised, the node should
-prevent it from doing the same more than once. To achieve this, the
-node has to check the ROAM flag on the global client: if this is set
-already, then the ROAMING_ADV for this client has already been sent.
+A tt_local_entry which ROAM flag is set cannot be considered a local
+client anymore. Having the ROAM flag set means that the client roamed
+away and that the nodes received a ROAMING_ADV for such event
 
-This should be merged with changes done by ("batman-adv: roaming
-handling mechanism redesign")
+This was introduced by ("batman-adv: roaming handling mechanism
+redesign")
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- translation-table.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ translation-table.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index 59e64bc..517324a 100644
+index 517324a..fdcb726 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -336,8 +336,10 @@ add_event:
- 	batadv_tt_local_event(bat_priv, addr, tt_local->common.flags);
- 
- check_roaming:
--	/* Check whether it is a roaming! */
--	if (tt_global) {
-+	/* Check whether it is a roaming, but don't do anything if the roaming
-+	 * process has already been handled
-+	 */
-+	if (tt_global && !(tt_global->common.flags & BATADV_TT_CLIENT_ROAM)) {
- 		/* These node are probably going to update their tt table */
- 		head = &tt_global->orig_list;
- 		rcu_read_lock();
+@@ -2044,7 +2044,8 @@ bool batadv_is_my_client(struct batadv_priv *bat_priv, const uint8_t *addr)
+ 	/* Check if the client has been logically deleted (but is kept for
+ 	 * consistency purpose)
+ 	 */
+-	if (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING)
++	if ((tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING) ||
++	    (tt_local_entry->common.flags & BATADV_TT_CLIENT_ROAM))
+ 		goto out;
+ 	ret = true;
+ out:
 -- 
 1.8.0
 
