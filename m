@@ -1,9 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  6 Nov 2012 14:14:01 +0100
-Message-Id: <1352207643-11274-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: print the CRC together with
-	the translation tables
+Date: Tue,  6 Nov 2012 14:14:02 +0100
+Message-Id: <1352207643-11274-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1352207643-11274-1-git-send-email-ordex@autistici.org>
+References: <1352207643-11274-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: unify and properly print hex
+	values
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,60 +19,120 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-To simplify debugging operations, it is better to print the related
-CRC together with the translation table (local CRC for the local
-table and global CRC for each entry in the global table)
+Values are printed in hexadecimal format in several points in the
+code, but they are not printed using the same format string.
+
+This patches unifies the format used for such numbers so that they
+look the same everywhere.
+
+Given the fact that all the variables printed as hexadecimal are 16
+bit long, this is the chosen printing format: %#.4x
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
+ bat_iv_ogm.c            |  2 +-
+ bridge_loop_avoidance.c | 18 +++++++++---------
+ translation-table.c     |  2 +-
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
-** this patches are based on top of master
-
- translation-table.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
-
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 75403a4..c8bc7c4 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -1031,7 +1031,7 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
+ 		is_single_hop_neigh = true;
+ 
+ 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+-		   "Received BATMAN packet via NB: %pM, IF: %s [%pM] (from OG: %pM, via prev OG: %pM, seqno %u, ttvn %u, crc %u, changes %u, td %d, TTL %d, V %d, IDF %d)\n",
++		   "Received BATMAN packet via NB: %pM, IF: %s [%pM] (from OG: %pM, via prev OG: %pM, seqno %u, ttvn %u, crc %#.4x, changes %u, td %d, TTL %d, V %d, IDF %d)\n",
+ 		   ethhdr->h_source, if_incoming->net_dev->name,
+ 		   if_incoming->net_dev->dev_addr, batadv_ogm_packet->orig,
+ 		   batadv_ogm_packet->prev_sender,
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index b6da6ae..dd910b4 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -661,12 +661,12 @@ static int batadv_handle_announce(struct batadv_priv *bat_priv,
+ 	crc = ntohs(*((__be16 *)(&an_addr[4])));
+ 
+ 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
+-		   "handle_announce(): ANNOUNCE vid %d (sent by %pM)... CRC = %04x\n",
++		   "handle_announce(): ANNOUNCE vid %d (sent by %pM)... CRC = %#.4x\n",
+ 		   vid, backbone_gw->orig, crc);
+ 
+ 	if (backbone_gw->crc != crc) {
+ 		batadv_dbg(BATADV_DBG_BLA, backbone_gw->bat_priv,
+-			   "handle_announce(): CRC FAILED for %pM/%d (my = %04x, sent = %04x)\n",
++			   "handle_announce(): CRC FAILED for %pM/%d (my = %#.4x, sent = %#.4x)\n",
+ 			   backbone_gw->orig, backbone_gw->vid,
+ 			   backbone_gw->crc, crc);
+ 
+@@ -835,7 +835,7 @@ static int batadv_check_claim_group(struct batadv_priv *bat_priv,
+ 	/* if our mesh friends mac is bigger, use it for ourselves. */
+ 	if (ntohs(bla_dst->group) > ntohs(bla_dst_own->group)) {
+ 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
+-			   "taking other backbones claim group: %04x\n",
++			   "taking other backbones claim group: %#.4x\n",
+ 			   ntohs(bla_dst->group));
+ 		bla_dst_own->group = bla_dst->group;
+ 	}
+@@ -1626,10 +1626,10 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	primary_addr = primary_if->net_dev->dev_addr;
+ 	seq_printf(seq,
+-		   "Claims announced for the mesh %s (orig %pM, group id %04x)\n",
++		   "Claims announced for the mesh %s (orig %pM, group id %#.4x)\n",
+ 		   net_dev->name, primary_addr,
+ 		   ntohs(bat_priv->bla.claim_dest.group));
+-	seq_printf(seq, "   %-17s    %-5s    %-17s [o] (%-4s)\n",
++	seq_printf(seq, "   %-17s    %-5s    %-17s [o] (%-6s)\n",
+ 		   "Client", "VID", "Originator", "CRC");
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -1638,7 +1638,7 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
+ 		hlist_for_each_entry_rcu(claim, node, head, hash_entry) {
+ 			is_own = batadv_compare_eth(claim->backbone_gw->orig,
+ 						    primary_addr);
+-			seq_printf(seq,	" * %pM on % 5d by %pM [%c] (%04x)\n",
++			seq_printf(seq,	" * %pM on % 5d by %pM [%c] (%#.4x)\n",
+ 				   claim->addr, claim->vid,
+ 				   claim->backbone_gw->orig,
+ 				   (is_own ? 'x' : ' '),
+@@ -1672,10 +1672,10 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	primary_addr = primary_if->net_dev->dev_addr;
+ 	seq_printf(seq,
+-		   "Backbones announced for the mesh %s (orig %pM, group id %04x)\n",
++		   "Backbones announced for the mesh %s (orig %pM, group id %#.4x)\n",
+ 		   net_dev->name, primary_addr,
+ 		   ntohs(bat_priv->bla.claim_dest.group));
+-	seq_printf(seq, "   %-17s    %-5s %-9s (%-4s)\n",
++	seq_printf(seq, "   %-17s    %-5s %-9s (%-6s)\n",
+ 		   "Originator", "VID", "last seen", "CRC");
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -1693,7 +1693,7 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
+ 				continue;
+ 
+ 			seq_printf(seq,
+-				   " * %pM on % 5d % 4i.%03is (%04x)\n",
++				   " * %pM on % 5d % 4i.%03is (%#.4x)\n",
+ 				   backbone_gw->orig, backbone_gw->vid,
+ 				   secs, msecs, backbone_gw->crc);
+ 		}
 diff --git a/translation-table.c b/translation-table.c
-index 6fecb94..b14f418 100644
+index b14f418..be6e103 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -481,8 +481,9 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 		goto out;
- 
- 	seq_printf(seq,
--		   "Locally retrieved addresses (from %s) announced via TT (TTVN: %u):\n",
--		   net_dev->name, (uint8_t)atomic_read(&bat_priv->tt.vn));
-+		   "Locally retrieved addresses (from %s) announced via TT (TTVN: %u CRC: %#.4x):\n",
-+		   net_dev->name, (uint8_t)atomic_read(&bat_priv->tt.vn),
-+		   bat_priv->tt.local_crc);
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -968,10 +969,11 @@ batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
- 	best_entry = batadv_transtable_best_orig(tt_global_entry);
- 	if (best_entry) {
- 		last_ttvn = atomic_read(&best_entry->orig_node->last_ttvn);
--		seq_printf(seq,	" %c %pM  (%3u) via %pM     (%3u)   [%c%c%c]\n",
-+		seq_printf(seq,
-+			   " %c %pM  (%3u) via %pM     (%3u)   (%#.4x) [%c%c%c]\n",
- 			   '*', tt_global_entry->common.addr,
- 			   best_entry->ttvn, best_entry->orig_node->orig,
--			   last_ttvn,
-+			   last_ttvn, best_entry->orig_node->tt_crc,
- 			   (flags & BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
- 			   (flags & BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
- 			   (flags & BATADV_TT_CLIENT_TEMP ? 'T' : '.'));
-@@ -1013,8 +1015,9 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq,
- 		   "Globally announced TT entries received via the mesh %s\n",
- 		   net_dev->name);
--	seq_printf(seq, "       %-13s %s       %-15s %s %s\n",
--		   "Client", "(TTVN)", "Originator", "(Curr TTVN)", "Flags");
-+	seq_printf(seq, "       %-13s %s       %-15s %s (%-6s) %s\n",
-+		   "Client", "(TTVN)", "Originator", "(Curr TTVN)", "CRC",
-+		   "Flags");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
+@@ -2499,7 +2499,7 @@ void batadv_tt_update_orig(struct batadv_priv *bat_priv,
+ 		    orig_node->tt_crc != tt_crc) {
+ request_table:
+ 			batadv_dbg(BATADV_DBG_TT, bat_priv,
+-				   "TT inconsistency for %pM. Need to retrieve the correct information (ttvn: %u last_ttvn: %u crc: %u last_crc: %u num_changes: %u)\n",
++				   "TT inconsistency for %pM. Need to retrieve the correct information (ttvn: %u last_ttvn: %u crc: %#.4x last_crc: %#.4x num_changes: %u)\n",
+ 				   orig_node->orig, ttvn, orig_ttvn, tt_crc,
+ 				   orig_node->tt_crc, tt_num_changes);
+ 			batadv_send_tt_request(bat_priv, orig_node, ttvn,
 -- 
 1.8.0
 
