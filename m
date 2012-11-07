@@ -1,9 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed,  7 Nov 2012 15:05:33 +0100
-Message-Id: <1352297133-17652-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix tt_global_entries flags
-	update
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 7 Nov 2012 22:44:35 +0800
+References: <1352038798-29658-1-git-send-email-sven@narfation.org>
+ <1352045505-8435-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1352045505-8435-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201211072244.35334.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFCv2 1/4] batman-adv: Reserve extra bytes in
+	skb for better alignment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,42 +24,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Flags carried by a change_entry have to be always copied into the
-client entry as they may contain important attributes (e.g.
-TT_CLIENT_WIFI).
+On Monday, November 05, 2012 00:11:45 Sven Eckelmann wrote:
+> The ethernet header is 14 bytes long. Therefore, the data after it is not 4
+> byte aligned and may cause problems on systems without unaligned data
+> access. Reserving NET_IP_ALIGN more byes can fix the misalignment of the
+> ethernet header.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> Oops, the allocation of the skb also has to be changed
+> 
+>  bat_iv_ogm.c        |    8 +++++---
+>  icmp_socket.c       |    4 ++--
+>  translation-table.c |   20 ++++++++++----------
+>  vis.c               |    9 +++++----
+>  4 files changed, 22 insertions(+), 19 deletions(-)
 
-For instance, a client added by means of the "early detection
-mechanism" has no flag set at the beginning, so they must be updated once the
-proper ADD event is received.
+Applied in revision 7f91790.
 
-This was introduced by ("batman-adv: detect not yet announced clients")
-
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
-
-This patch is based on "maint"
-
-
- translation-table.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/translation-table.c b/translation-table.c
-index 112edd3..64c0012 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -769,6 +769,12 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
- 		 */
- 		tt_global_entry->common.flags &= ~BATADV_TT_CLIENT_TEMP;
- 
-+		/* the change can carry possible "attribute" flags like the
-+		 * TT_CLIENT_WIFI, therefore they have to be copied in the
-+		 * client entry
-+		 */
-+		tt_global_entry->common.flags |= flags;
-+
- 		/* If there is the BATADV_TT_CLIENT_ROAM flag set, there is only
- 		 * one originator left in the list and we previously received a
- 		 * delete + roaming change for this originator.
--- 
-1.8.0
-
+Thanks,
+Marek
