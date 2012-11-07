@@ -1,11 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed,  7 Nov 2012 20:11:39 +0100
-Message-Id: <1352315502-20324-10-git-send-email-ordex@autistici.org>
+Date: Wed,  7 Nov 2012 20:11:41 +0100
+Message-Id: <1352315502-20324-12-git-send-email-ordex@autistici.org>
 In-Reply-To: <1352315502-20324-1-git-send-email-ordex@autistici.org>
 References: <1352315502-20324-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 09/12] batman-adv: Distributed ARP Table -
-	add compile option
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 11/12] batman-adv: Add get_ethtool_stats()
+	support for DAT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,252 +21,177 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>, b.a.t.m.a.n@lists.open-mesh.org
 
-This patch makes it possible to decide whether to include DAT within the
-batman-adv binary or not.
-It is extremely useful when the user wants to reduce the size of the resulting
-module by cutting off any not needed feature.
+From: Martin Hundebøll <martin@hundeboll.net>
 
+Added additional counters for D.A.T.
+
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/Kconfig                 | 14 ++++++--
- net/batman-adv/Makefile                |  2 +-
- net/batman-adv/debugfs.c               |  7 +++-
- net/batman-adv/distributed-arp-table.h | 65 ++++++++++++++++++++++++++++++++++
- net/batman-adv/types.h                 | 10 ++++++
- 5 files changed, 94 insertions(+), 4 deletions(-)
+ net/batman-adv/distributed-arp-table.c | 19 +++++++++++++++++--
+ net/batman-adv/distributed-arp-table.h | 27 +++++++++++++++++++++++++++
+ net/batman-adv/routing.c               |  8 +++++++-
+ net/batman-adv/soft-interface.c        |  7 +++++++
+ net/batman-adv/types.h                 |  7 +++++++
+ 5 files changed, 65 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index e77f805..250e0b5 100644
---- a/net/batman-adv/Kconfig
-+++ b/net/batman-adv/Kconfig
-@@ -4,7 +4,7 @@
- 
- config BATMAN_ADV
- 	tristate "B.A.T.M.A.N. Advanced Meshing Protocol"
--	depends on NET && INET
-+	depends on NET
- 	select CRC16
-         default n
- 	help
-@@ -16,7 +16,7 @@ config BATMAN_ADV
- 
- config BATMAN_ADV_BLA
- 	bool "Bridge Loop Avoidance"
--	depends on BATMAN_ADV
-+	depends on BATMAN_ADV && INET
- 	default y
- 	help
- 	  This option enables BLA (Bridge Loop Avoidance), a mechanism
-@@ -25,6 +25,16 @@ config BATMAN_ADV_BLA
- 	  more than one mesh node in the same LAN, you can safely remove
- 	  this feature and save some space.
- 
-+config BATMAN_ADV_DAT
-+	bool "Distributed ARP Table"
-+	depends on BATMAN_ADV && INET
-+	default n
-+	help
-+	  This option enables DAT (Distributed ARP Table), a DHT based
-+	  mechanism that increases ARP reliability on sparse wireless
-+	  mesh networks. If you think that your network does not need
-+	  this option you can safely remove it and save some space.
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index c1a74a1..8e1d89d 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -601,9 +601,22 @@ static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
+ 		send_status = batadv_send_skb_packet(tmp_skb,
+ 						     neigh_node->if_incoming,
+ 						     neigh_node->addr);
+-		if (send_status == NET_XMIT_SUCCESS)
++		if (send_status == NET_XMIT_SUCCESS) {
++			/* count the sent packet */
++			switch (packet_subtype) {
++			case BATADV_P_DAT_DHT_GET:
++				batadv_inc_counter(bat_priv,
++						   BATADV_CNT_DAT_GET_TX);
++				break;
++			case BATADV_P_DAT_DHT_PUT:
++				batadv_inc_counter(bat_priv,
++						   BATADV_CNT_DAT_PUT_TX);
++				break;
++			}
 +
- config BATMAN_ADV_DEBUG
- 	bool "B.A.T.M.A.N. debugging"
- 	depends on BATMAN_ADV
-diff --git a/net/batman-adv/Makefile b/net/batman-adv/Makefile
-index 7604159..e45e3b4 100644
---- a/net/batman-adv/Makefile
-+++ b/net/batman-adv/Makefile
-@@ -23,7 +23,7 @@ batman-adv-y += bat_iv_ogm.o
- batman-adv-y += bitarray.o
- batman-adv-$(CONFIG_BATMAN_ADV_BLA) += bridge_loop_avoidance.o
- batman-adv-y += debugfs.o
--batman-adv-y += distributed-arp-table.o
-+batman-adv-$(CONFIG_BATMAN_ADV_DAT) += distributed-arp-table.o
- batman-adv-y += gateway_client.o
- batman-adv-y += gateway_common.o
- batman-adv-y += hard-interface.o
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index ebc5f4d..3f679cb 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -281,6 +281,7 @@ static int batadv_bla_backbone_table_open(struct inode *inode,
+ 			/* packet sent to a candidate: return true */
+ 			ret = true;
++		}
+ free_neigh:
+ 		batadv_neigh_node_free_ref(neigh_node);
+ free_orig:
+@@ -909,8 +922,10 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
+ 	else
+ 		err = batadv_unicast_send_skb(bat_priv, skb_new);
  
- #endif
- 
-+#ifdef CONFIG_BATMAN_ADV_DAT
- /**
-  * batadv_dat_cache_open - Prepare file handler for reads from dat_chache
-  * @inode: inode which was opened
-@@ -291,7 +292,7 @@ static int batadv_dat_cache_open(struct inode *inode, struct file *file)
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 	return single_open(file, batadv_dat_cache_seq_print_text, net_dev);
- }
--
-+#endif
- 
- static int batadv_transtable_local_open(struct inode *inode, struct file *file)
- {
-@@ -332,7 +333,9 @@ static BATADV_DEBUGINFO(bla_claim_table, S_IRUGO, batadv_bla_claim_table_open);
- static BATADV_DEBUGINFO(bla_backbone_table, S_IRUGO,
- 			batadv_bla_backbone_table_open);
- #endif
-+#ifdef CONFIG_BATMAN_ADV_DAT
- static BATADV_DEBUGINFO(dat_cache, S_IRUGO, batadv_dat_cache_open);
-+#endif
- static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
- 			batadv_transtable_local_open);
- static BATADV_DEBUGINFO(vis_data, S_IRUGO, batadv_vis_data_open);
-@@ -345,7 +348,9 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- 	&batadv_debuginfo_bla_claim_table,
- 	&batadv_debuginfo_bla_backbone_table,
- #endif
-+#ifdef CONFIG_BATMAN_ADV_DAT
- 	&batadv_debuginfo_dat_cache,
-+#endif
- 	&batadv_debuginfo_transtable_local,
- 	&batadv_debuginfo_vis_data,
- 	NULL,
+-	if (!err)
++	if (!err) {
++		batadv_inc_counter(bat_priv, BATADV_CNT_DAT_CACHED_REPLY_TX);
+ 		ret = true;
++	}
+ out:
+ 	if (dat_entry)
+ 		batadv_dat_entry_free_ref(dat_entry);
 diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
-index 01308ce..fdb3522 100644
+index fdb3522..d060c03 100644
 --- a/net/batman-adv/distributed-arp-table.h
 +++ b/net/batman-adv/distributed-arp-table.h
-@@ -20,6 +20,8 @@
- #ifndef _NET_BATMAN_ADV_ARP_H_
- #define _NET_BATMAN_ADV_ARP_H_
- 
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+
- #include "types.h"
- #include "originator.h"
- 
-@@ -72,4 +74,67 @@ int batadv_dat_init(struct batadv_priv *bat_priv);
+@@ -74,6 +74,28 @@ int batadv_dat_init(struct batadv_priv *bat_priv);
  void batadv_dat_free(struct batadv_priv *bat_priv);
  int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset);
  
-+#else
-+
-+static inline bool
-+batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
-+				      struct sk_buff *skb)
++/**
++ * batadv_dat_inc_counter - increment the correct DAT packet counter
++ * @bat_priv: the bat priv with all the soft interface information
++ * @subtype: the 4addr subtype of the packet to be counted
++ *
++ * Updates the ethtool statistics for the received packet if it is a DAT subtype
++ */
++static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
++					  uint8_t subtype)
 +{
-+	return false;
++	switch (subtype) {
++	case BATADV_P_DAT_DHT_GET:
++		batadv_inc_counter(bat_priv,
++				   BATADV_CNT_DAT_GET_RX);
++		break;
++	case BATADV_P_DAT_DHT_PUT:
++		batadv_inc_counter(bat_priv,
++				   BATADV_CNT_DAT_PUT_RX);
++		break;
++	}
 +}
 +
-+static inline bool
-+batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
-+				      struct sk_buff *skb, int hdr_size)
-+{
-+	return false;
-+}
-+
-+static inline bool
-+batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-+				    struct sk_buff *skb)
-+{
-+	return false;
-+}
-+
-+static inline bool
-+batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
-+				    struct sk_buff *skb, int hdr_size)
-+{
-+	return false;
-+}
-+
-+static inline bool
-+batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
-+				 struct batadv_forw_packet *forw_packet)
-+{
-+	return false;
-+}
-+
-+static inline void
-+batadv_dat_init_orig_node_addr(struct batadv_orig_node *orig_node)
+ #else
+ 
+ static inline bool
+@@ -135,6 +157,11 @@ static inline void batadv_dat_free(struct batadv_priv *bat_priv)
+ {
+ }
+ 
++static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
++					  uint8_t subtype)
 +{
 +}
 +
-+static inline void batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
-+					    struct batadv_hard_iface *iface)
-+{
-+}
-+
-+static inline void batadv_arp_change_timeout(struct net_device *soft_iface,
-+					     const char *name)
-+{
-+}
-+
-+static inline int batadv_dat_init(struct batadv_priv *bat_priv)
-+{
-+	return 0;
-+}
-+
-+static inline void batadv_dat_free(struct batadv_priv *bat_priv)
-+{
-+}
-+
-+#endif /* CONFIG_BATMAN_ADV_DAT */
-+
+ #endif /* CONFIG_BATMAN_ADV_DAT */
+ 
  #endif /* _NET_BATMAN_ADV_ARP_H_ */
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 1826699..3f21c09 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -985,15 +985,17 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct batadv_unicast_packet *unicast_packet;
++	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
+ 	int hdr_size = sizeof(*unicast_packet);
+ 	bool is4addr;
+ 
+ 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
++	unicast_4addr_packet = (struct batadv_unicast_4addr_packet *)skb->data;
+ 
+ 	is4addr = unicast_packet->header.packet_type == BATADV_UNICAST_4ADDR;
+ 	/* the caller function should have already pulled 2 bytes */
+ 	if (is4addr)
+-		hdr_size = sizeof(struct batadv_unicast_4addr_packet);
++		hdr_size = sizeof(*unicast_4addr_packet);
+ 
+ 	if (batadv_check_unicast_packet(skb, hdr_size) < 0)
+ 		return NET_RX_DROP;
+@@ -1003,6 +1005,10 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 
+ 	/* packet for me */
+ 	if (batadv_is_my_mac(unicast_packet->dest)) {
++		if (is4addr)
++			batadv_dat_inc_counter(bat_priv,
++					       unicast_4addr_packet->subtype);
++
+ 		if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb,
+ 							  hdr_size))
+ 			goto rx_success;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 7b4a3a3..c283d87 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -625,6 +625,13 @@ static const struct {
+ 	{ "tt_response_rx" },
+ 	{ "tt_roam_adv_tx" },
+ 	{ "tt_roam_adv_rx" },
++#ifdef CONFIG_BATMAN_ADV_DAT
++	{ "dat_get_tx" },
++	{ "dat_get_rx" },
++	{ "dat_put_tx" },
++	{ "dat_put_rx" },
++	{ "dat_cached_reply_tx" },
++#endif
+ };
+ 
+ static void batadv_get_strings(struct net_device *dev, uint32_t stringset,
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 9ed1bb2..00d3093 100644
+index 0afeb2b..8ce16c1 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -28,6 +28,8 @@
- 	(ETH_HLEN + max(sizeof(struct batadv_unicast_packet), \
- 			sizeof(struct batadv_bcast_packet)))
- 
+@@ -186,6 +186,13 @@ enum batadv_counters {
+ 	BATADV_CNT_TT_RESPONSE_RX,
+ 	BATADV_CNT_TT_ROAM_ADV_TX,
+ 	BATADV_CNT_TT_ROAM_ADV_RX,
 +#ifdef CONFIG_BATMAN_ADV_DAT
-+
- /* batadv_dat_addr_t is the type used for all DHT addresses. If it is changed,
-  * BATADV_DAT_ADDR_MAX is changed as well.
-  *
-@@ -35,6 +37,8 @@
-  */
- #define batadv_dat_addr_t uint16_t
- 
-+#endif /* CONFIG_BATMAN_ADV_DAT */
-+
- /**
-  * struct batadv_hard_iface_bat_iv - per hard interface B.A.T.M.A.N. IV data
-  * @ogm_buff: buffer holding the OGM packet
-@@ -80,7 +84,9 @@ struct batadv_orig_node {
- 	uint8_t orig[ETH_ALEN];
- 	uint8_t primary_addr[ETH_ALEN];
- 	struct batadv_neigh_node __rcu *router; /* rcu protected pointer */
-+#ifdef CONFIG_BATMAN_ADV_DAT
- 	batadv_dat_addr_t dat_addr;
++	BATADV_CNT_DAT_GET_TX,
++	BATADV_CNT_DAT_GET_RX,
++	BATADV_CNT_DAT_PUT_TX,
++	BATADV_CNT_DAT_PUT_RX,
++	BATADV_CNT_DAT_CACHED_REPLY_TX,
 +#endif
- 	unsigned long *bcast_own;
- 	uint8_t *bcast_own_sum;
- 	unsigned long last_seen;
-@@ -252,11 +258,13 @@ struct batadv_priv_vis {
-  * @hash: hashtable representing the local ARP cache
-  * @work: work queue callback item for cache purging
-  */
-+#ifdef CONFIG_BATMAN_ADV_DAT
- struct batadv_priv_dat {
- 	batadv_dat_addr_t addr;
- 	struct batadv_hashtable *hash;
- 	struct delayed_work work;
- };
-+#endif
- 
- struct batadv_priv {
- 	atomic_t mesh_state;
-@@ -295,7 +303,9 @@ struct batadv_priv {
- 	struct batadv_priv_gw gw;
- 	struct batadv_priv_tt tt;
- 	struct batadv_priv_vis vis;
-+#ifdef CONFIG_BATMAN_ADV_DAT
- 	struct batadv_priv_dat dat;
-+#endif
+ 	BATADV_CNT_NUM,
  };
  
- struct batadv_socket_client {
 -- 
 1.8.0
 
