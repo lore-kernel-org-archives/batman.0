@@ -1,11 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed,  7 Nov 2012 20:11:40 +0100
-Message-Id: <1352315502-20324-11-git-send-email-ordex@autistici.org>
-In-Reply-To: <1352315502-20324-1-git-send-email-ordex@autistici.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 07 Nov 2012 20:17:08 +0100
+Message-ID: <1403033.aGBWZgaJ6z@sven-desktop.home.narfation.org>
+In-Reply-To: <1352315502-20324-4-git-send-email-ordex@autistici.org>
 References: <1352315502-20324-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 10/12] batman-adv: Distributed ARP Table -
-	add runtime switch
+ <1352315502-20324-4-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2955775.Cma9ToWc4s";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/12] batman-adv: add UNICAST_4ADDR
+	packet type
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,144 +22,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, davem@davemloft.net
 
-This patch adds a runtime switch that enables the user to turn the DAT feature
-on or off at runtime
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/distributed-arp-table.c | 18 ++++++++++++++++++
- net/batman-adv/soft-interface.c        |  3 +++
- net/batman-adv/sysfs.c                 |  7 +++++++
- net/batman-adv/types.h                 |  3 +++
- 4 files changed, 31 insertions(+)
+--nextPart2955775.Cma9ToWc4s
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index f43bf8e..c1a74a1 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -621,6 +621,9 @@ out:
-  */
- static void batadv_dat_hash_free(struct batadv_priv *bat_priv)
- {
-+	if (!bat_priv->dat.hash)
-+		return;
-+
- 	__batadv_dat_purge(bat_priv, NULL);
- 
- 	batadv_hash_destroy(bat_priv->dat.hash);
-@@ -790,6 +793,9 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 	struct sk_buff *skb_new;
- 	struct batadv_hard_iface *primary_if = NULL;
- 
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		goto out;
-+
- 	type = batadv_arp_get_type(bat_priv, skb, 0);
- 	/* If the node gets an ARP_REQUEST it has to send a DHT_GET unicast
- 	 * message to the selected DHT candidates
-@@ -861,6 +867,9 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	bool ret = false;
- 	int err;
- 
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		goto out;
-+
- 	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
- 	if (type != ARPOP_REQUEST)
- 		goto out;
-@@ -924,6 +933,9 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 	__be32 ip_src, ip_dst;
- 	uint8_t *hw_src, *hw_dst;
- 
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		return;
-+
- 	type = batadv_arp_get_type(bat_priv, skb, 0);
- 	if (type != ARPOP_REPLY)
- 		return;
-@@ -959,6 +971,9 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	uint8_t *hw_src, *hw_dst;
- 	bool ret = false;
- 
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		goto out;
-+
- 	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
- 	if (type != ARPOP_REPLY)
- 		goto out;
-@@ -1003,6 +1018,9 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 	bool ret = false;
- 	const size_t bcast_len = sizeof(struct batadv_bcast_packet);
- 
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		goto out;
-+
- 	/* If this packet is an ARP_REQUEST and the node already has the
- 	 * information that it is going to ask, then the packet can be dropped
- 	 */
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 9dc0ae1..7b4a3a3 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -480,6 +480,9 @@ struct net_device *batadv_softif_create(const char *name)
- 	atomic_set(&bat_priv->aggregated_ogms, 1);
- 	atomic_set(&bat_priv->bonding, 0);
- 	atomic_set(&bat_priv->bridge_loop_avoidance, 0);
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+	atomic_set(&bat_priv->distributed_arp_table, 1);
-+#endif
- 	atomic_set(&bat_priv->ap_isolation, 0);
- 	atomic_set(&bat_priv->vis_mode, BATADV_VIS_TYPE_CLIENT_UPDATE);
- 	atomic_set(&bat_priv->gw_mode, BATADV_GW_MODE_OFF);
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 42cd09e..fa3cc1a 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -20,6 +20,7 @@
- #include "main.h"
- #include "sysfs.h"
- #include "translation-table.h"
-+#include "distributed-arp-table.h"
- #include "originator.h"
- #include "hard-interface.h"
- #include "gateway_common.h"
-@@ -420,6 +421,9 @@ BATADV_ATTR_SIF_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
- #ifdef CONFIG_BATMAN_ADV_BLA
- BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
- #endif
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+BATADV_ATTR_SIF_BOOL(distributed_arp_table, S_IRUGO | S_IWUSR, NULL);
-+#endif
- BATADV_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, batadv_update_min_mtu);
- BATADV_ATTR_SIF_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
- static BATADV_ATTR(vis_mode, S_IRUGO | S_IWUSR, batadv_show_vis_mode,
-@@ -445,6 +449,9 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
- #ifdef CONFIG_BATMAN_ADV_BLA
- 	&batadv_attr_bridge_loop_avoidance,
- #endif
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+	&batadv_attr_distributed_arp_table,
-+#endif
- 	&batadv_attr_fragmentation,
- 	&batadv_attr_ap_isolation,
- 	&batadv_attr_vis_mode,
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 00d3093..0afeb2b 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -275,6 +275,9 @@ struct batadv_priv {
- 	atomic_t fragmentation;		/* boolean */
- 	atomic_t ap_isolation;		/* boolean */
- 	atomic_t bridge_loop_avoidance;	/* boolean */
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+	atomic_t distributed_arp_table;	/* boolean */
-+#endif
- 	atomic_t vis_mode;		/* VIS_TYPE_* */
- 	atomic_t gw_mode;		/* GW_MODE_* */
- 	atomic_t gw_sel_class;		/* uint */
--- 
-1.8.0
+On Wednesday 07 November 2012 20:11:33 Antonio Quartulli wrote:
+> +/**
+> + * struct batadv_unicast_4addr_packet - extended unicast packet
+> + * @u: common unicast packet header
+> + * @src: address of the source
+> + * @subtype: packet subtype
+> + */
+> +struct batadv_unicast_4addr_packet {
+> +       struct batadv_unicast_packet u;
+> +       uint8_t src[ETH_ALEN];
+> +       uint8_t subtype;
+> +       uint8_t reserved;
+> +       /* "4 bytes boundary + 2 bytes" long to make the payload after the
+> +        * following ethernet header again 4 bytes boundary aligned
+> +        */
+> +};
+
+This doesn't work as you think. Now you have 2 extra padding bytes at the end 
+of the batadv_unicast_4addr_packet and therefore make the payload (IPv4 
+header..) after the following ethernet header again wrongly aligned.
+
+Kind regards,
+	Sven
+--nextPart2955775.Cma9ToWc4s
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAABCgAGBQJQmrO0AAoJEF2HCgfBJntG4MkQALhMzDQi+skMtKKX5xovkX53
+61eeGZzwDUzhiV6z4YIsCVErZDb9kvTUYHD7hbeFHJcwCcGTIKBONH1IOetlD+cs
+aM+fGA067U+x62V1V1TGMwz+mJ/wHFEnj4EGlAS9Xm5D2e22Wo1v1LlCaKCtS6Bp
+CMEPOljXIMIs/dFfYK+DgV0U96eAA1ZyerkU8zlTgFqEetP2P1GhLUOh3F7ZFNmn
+XRM+eJULUv+uQQm3UsbIglW0pg+5Ir/znjPebRI4G76NM6p/Qj2EbL+FLLfRjysN
+L8eY2ExCsvXql0ipbILUTZLyiaS1q/wUksaJLTe2xe4jsaYGjoDqdFb2xq65L6ng
+Cj23nQXTQKJhgZv6/ZourtcMAmfJpDpmTbJOyjj2AQlemD0bW2Nhe6jG5tZIMKv1
+nl5ZfXnAlRDn2WypkxPJBAghLP9vQAENieO8QqLlodUR03SjjccyvuRruRWteGYZ
+DMTHORVvLgFghr0SPfS6Ibg9UZTuBKZJSNfrQ+YzGVwDAzKoWfmqvhoJYpVsSvuz
+xw3Zqh4dAQRZ++yTO16lMb/CPI4RColUTEZCfdTXQYXknlU5RILWJY06n7BLW+qd
+f9NQgLfh3Eyu9+hf/tB3CaOOWAXPPlA+Cd+GefBaWLNKnT1PpOrjpPUMW4i8O+9c
+nDht8TrMfYwynb3030ZS
+=DSr6
+-----END PGP SIGNATURE-----
+
+--nextPart2955775.Cma9ToWc4s--
 
