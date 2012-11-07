@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 7 Nov 2012 22:44:35 +0800
-References: <1352038798-29658-1-git-send-email-sven@narfation.org>
- <1352045505-8435-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1352045505-8435-1-git-send-email-sven@narfation.org>
+Date: Wed, 7 Nov 2012 22:56:04 +0800
+References: <1352038798-29658-2-git-send-email-sven@narfation.org>
+ <1352147127-2932-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1352147127-2932-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201211072244.35334.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [RFCv2 1/4] batman-adv: Reserve extra bytes in
-	skb for better alignment
+Message-Id: <201211072256.04521.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC-alt1/2 2/4] batman-adv: Mark correctly
+	aligned headers not as __packed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,23 +24,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Monday, November 05, 2012 00:11:45 Sven Eckelmann wrote:
-> The ethernet header is 14 bytes long. Therefore, the data after it is not 4
-> byte aligned and may cause problems on systems without unaligned data
-> access. Reserving NET_IP_ALIGN more byes can fix the misalignment of the
-> ethernet header.
+On Tuesday, November 06, 2012 04:25:26 Sven Eckelmann wrote:
+> Headers which are already perfectly aligned and create a 4 byte boundary
+> non-ethernet header payload can have the __packed attribute removed. The
+> __packed attribute doesn't change the appeareance of the packet for these
+> headers because no extra padding is necessary to align the data members.
+> The compiler will also create slightly faster code for loads of multi-byte
+> members.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> Oops, the allocation of the skb also has to be changed
+> Because we had protests against the approach of splitting the 32 bit
+> seqno... here is a different approach. Now get your dices to find out what
+> David may will like.
 > 
->  bat_iv_ogm.c        |    8 +++++---
->  icmp_socket.c       |    4 ++--
->  translation-table.c |   20 ++++++++++----------
->  vis.c               |    9 +++++----
->  4 files changed, 22 insertions(+), 19 deletions(-)
+>  packet.h |   20 ++++++++++++++------
+>  1 file changed, 14 insertions(+), 6 deletions(-)
 
-Applied in revision 7f91790.
+Applied in revision e754ea0.
 
 Thanks,
 Marek
