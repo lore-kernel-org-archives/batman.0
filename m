@@ -1,15 +1,11 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 7 Nov 2012 17:21:39 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20121107162139.GA3046@pandem0nium>
-References: <CAJZtC_=Hjdiu=ZR3EiFuUaPCFu_BoDv9X=frQLqGg9hrSx7kQw@mail.gmail.com>
- <1940735.62JGhZVJKt@sven-laptop.home.narfation.org>
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Wed,  7 Nov 2012 20:11:30 +0100
+Message-Id: <1352315502-20324-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="mP3DRpeJDSE+ciuQ"
-Content-Disposition: inline
-In-Reply-To: <1940735.62JGhZVJKt@sven-laptop.home.narfation.org>
-Subject: Re: [B.A.T.M.A.N.] Broadcasting of GPS-coordinates?
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-11-07
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,71 +17,109 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+
+Hello David,
+
+first of all thank you for having made us aware of the packet format problem in
+batman-adv! The impact of __packed on performances was not entirely known to me,
+in particular for what concerns the RISC arch.
+
+We have to change a number of packet formats before we can remove __packed
+everywhere which will obviously break compatibility.
+
+However we already scheduled a compatibility break because we want to
+heavily improve our packet formats and to provide a more flexible framework that
+would allow us to add new types and features while reducing the probability of
+breaking compatibility again and again as happened in the past (we are
+implementing TypeLengthValue (TLV) containers among other things).
+
+To avoid breaking compatibility (at least) twice we decided to fix now (in this
+patchset) what is fixable with no consequences to compatibility while we would
+ilike to defer the remaining changes for the scheduled compatibility break.
+
+In this patchset you have the two new features intended for net-next/linux-3.8:
+1) the new UNICAST_4ADDR packet type
+2) the Distributed ARP Table (DAT) component
+
+The new packet type has been reviewed to entirely address the alignment issue.
+At the same time we also reviewed the other packet types but as I told you
+before, we will send these changes later.
+
+Other than that you have patch 02/12 that removes the __packed attribute from
+the structures where it was not really needed.
+
+Please, let me know if there is any problem.
+
+Thank you very much,
+		Antonio
 
 
---mP3DRpeJDSE+ciuQ
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hello Rene, Sven,
+The following changes since commit 6f0a0986e328dd61610d898a09c9f4aa960ae64a:
 
-On Sun, Nov 04, 2012 at 04:39:04PM +0100, Sven Eckelmann wrote:
-> On Sunday 04 November 2012 16:32:00 Rene Bartsch wrote:
-> > Does B.A.T.M.A.N support some kind of broadcasting node positions?
-> >=20
-> > The idea is to broadcast TX-Power/RX-Gain and the position of a node
-> > determined by a GPS-device to create maps with network coverage.
->=20
-> No, batman-adv and batmand don't support this kind of semantic data excha=
-nge.=20
-> But the new daemon alfred is (will be?) flexibible enough to do these kin=
-d of=20
-> things together with batman-adv. Maybe you can ask Simon and help him to=
-=20
-> create alfred.
+  usbnet: runtime wake up device before calling usbnet_{read|write}_cmd (2012-11-07 03:53:38 -0500)
 
-Yep, we have received quite a few requests to transport arbitrary informati=
-on
-(node gps position, host name, neighbor information, client station list,=
-=20
-the weather forecast, etc ...). Actually we don't want that in batman-adv
-to not bloat the kernel code, so we are currently in the process
-to implement a userspace daemon to allow broadcasting this kind of data - in
-a clever way, that is collect information on one (or a few) designated serv=
-ers
-and request from then.
+are available in the git repository at:
 
-This software is called A.L.F.R.E.D (Almighty Lightweight Fact Remote Excha=
-nge Daemon),
-and it's still in the middle of development[1] and will not be usable for p=
-roductive
-use right now. As soon as it is finished, we will move the vis server to it=
-, and it
-will be possible to use for custom purposes (like your tx-power/rx-gain/...=
- info).
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
 
-I'd like to ask for a little bit more patience, we will announce a release =
-as soon
-as we consider it usable. :)
+for you to fetch changes up to 9affec6be810d1d529cb9dc95126119451696ba6:
 
-Thanks,
-	Simon
+  batman-adv: enable fast client detection using unicast_4addr packets (2012-11-07 20:00:24 +0100)
 
-[1] http://git.open-mesh.org/alfred.git
+----------------------------------------------------------------
+Included changes:
+- minimal fixes to the packet layout to avoid the __packed attribute when not
+  needed
+- new packet type called UNICAST_4ADDR: in this packet it is possible to find
+  both source and destination node (in the classic UNICAST header only the
+  destination field exists).
+- a new feature: Distributed ARP Table (D.A.T.). It aims to reduce ARP lookups
+  latency by means of a simil-DHT approach.
 
---mP3DRpeJDSE+ciuQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+----------------------------------------------------------------
+Antonio Quartulli (9):
+      batman-adv: add UNICAST_4ADDR packet type
+      batman-adv: Distributed ARP Table - add a new debug log level
+      batman-adv: Distributed ARP Table - create DHT helper functions
+      batman-adv: Distributed ARP Table - implement local storage
+      batman-adv: Distributed ARP Table - add ARP parsing functions
+      batman-adv: Distributed ARP Table - add snooping functions for ARP messages
+      batman-adv: Distributed ARP Table - add compile option
+      batman-adv: Distributed ARP Table - add runtime switch
+      batman-adv: enable fast client detection using unicast_4addr packets
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Martin Hundebøll (1):
+      batman-adv: Add get_ethtool_stats() support for DAT
 
-iEYEARECAAYFAlCaipMACgkQrzg/fFk7axbVDgCgz+e4N0tcXKqi+rTICsC5fkxq
-YkYAoLLbizZ90teZ3DbyFaTjxhJYSkkW
-=d2ly
------END PGP SIGNATURE-----
+Sven Eckelmann (2):
+      batman-adv: Reserve extra bytes in skb for better alignment
+      batman-adv: Mark correctly aligned headers not as __packed
 
---mP3DRpeJDSE+ciuQ--
+ Documentation/networking/batman-adv.txt |    3 +-
+ net/batman-adv/Kconfig                  |   10 +
+ net/batman-adv/Makefile                 |    1 +
+ net/batman-adv/bat_iv_ogm.c             |    8 +-
+ net/batman-adv/debugfs.c                |   20 +
+ net/batman-adv/distributed-arp-table.c  | 1066 +++++++++++++++++++++++++++++++
+ net/batman-adv/distributed-arp-table.h  |  167 +++++
+ net/batman-adv/hard-interface.c         |    3 +
+ net/batman-adv/icmp_socket.c            |    4 +-
+ net/batman-adv/main.c                   |    9 +
+ net/batman-adv/main.h                   |   13 +-
+ net/batman-adv/originator.c             |    2 +
+ net/batman-adv/packet.h                 |   68 +-
+ net/batman-adv/routing.c                |   51 +-
+ net/batman-adv/send.c                   |    4 +
+ net/batman-adv/soft-interface.c         |   28 +-
+ net/batman-adv/sysfs.c                  |    7 +
+ net/batman-adv/translation-table.c      |   20 +-
+ net/batman-adv/types.h                  |   73 +++
+ net/batman-adv/unicast.c                |  135 +++-
+ net/batman-adv/unicast.h                |   36 +-
+ net/batman-adv/vis.c                    |    9 +-
+ 22 files changed, 1682 insertions(+), 55 deletions(-)
+ create mode 100644 net/batman-adv/distributed-arp-table.c
+ create mode 100644 net/batman-adv/distributed-arp-table.h
