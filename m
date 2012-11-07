@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed,  7 Nov 2012 20:11:30 +0100
-Message-Id: <1352315502-20324-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-11-07
+Date: Wed,  7 Nov 2012 20:11:31 +0100
+Message-Id: <1352315502-20324-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1352315502-20324-1-git-send-email-ordex@autistici.org>
+References: <1352315502-20324-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 01/12] batman-adv: Reserve extra bytes in skb
+	for better alignment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,108 +18,181 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-Hello David,
+From: Sven Eckelmann <sven@narfation.org>
 
-first of all thank you for having made us aware of the packet format problem in
-batman-adv! The impact of __packed on performances was not entirely known to me,
-in particular for what concerns the RISC arch.
+The ethernet header is 14 bytes long. Therefore, the data after it is not 4
+byte aligned and may cause problems on systems without unaligned data access.
+Reserving NET_IP_ALIGN more byes can fix the misalignment of the ethernet
+header.
 
-We have to change a number of packet formats before we can remove __packed
-everywhere which will obviously break compatibility.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/bat_iv_ogm.c        |  8 +++++---
+ net/batman-adv/icmp_socket.c       |  4 ++--
+ net/batman-adv/translation-table.c | 20 ++++++++++----------
+ net/batman-adv/vis.c               |  9 +++++----
+ 4 files changed, 22 insertions(+), 19 deletions(-)
 
-However we already scheduled a compatibility break because we want to
-heavily improve our packet formats and to provide a more flexible framework that
-would allow us to add new types and features while reducing the probability of
-breaking compatibility again and again as happened in the past (we are
-implementing TypeLengthValue (TLV) containers among other things).
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 75403a4..9f3925a 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -411,9 +411,11 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 
+ 	if ((atomic_read(&bat_priv->aggregated_ogms)) &&
+ 	    (packet_len < BATADV_MAX_AGGREGATION_BYTES))
+-		skb_size = BATADV_MAX_AGGREGATION_BYTES + ETH_HLEN;
++		skb_size = BATADV_MAX_AGGREGATION_BYTES;
+ 	else
+-		skb_size = packet_len + ETH_HLEN;
++		skb_size = packet_len;
++
++	skb_size += ETH_HLEN + NET_IP_ALIGN;
+ 
+ 	forw_packet_aggr->skb = dev_alloc_skb(skb_size);
+ 	if (!forw_packet_aggr->skb) {
+@@ -422,7 +424,7 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 		kfree(forw_packet_aggr);
+ 		goto out;
+ 	}
+-	skb_reserve(forw_packet_aggr->skb, ETH_HLEN);
++	skb_reserve(forw_packet_aggr->skb, ETH_HLEN + NET_IP_ALIGN);
+ 
+ 	INIT_HLIST_NODE(&forw_packet_aggr->list);
+ 
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 5874c0e..87ca809 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -177,13 +177,13 @@ static ssize_t batadv_socket_write(struct file *file, const char __user *buff,
+ 	if (len >= sizeof(struct batadv_icmp_packet_rr))
+ 		packet_len = sizeof(struct batadv_icmp_packet_rr);
+ 
+-	skb = dev_alloc_skb(packet_len + ETH_HLEN);
++	skb = dev_alloc_skb(packet_len + ETH_HLEN + NET_IP_ALIGN);
+ 	if (!skb) {
+ 		len = -ENOMEM;
+ 		goto out;
+ 	}
+ 
+-	skb_reserve(skb, ETH_HLEN);
++	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
+ 	icmp_packet = (struct batadv_icmp_packet_rr *)skb_put(skb, packet_len);
+ 
+ 	if (copy_from_user(icmp_packet, buff, packet_len)) {
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index a570d95..f8b9c32 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1472,11 +1472,11 @@ batadv_tt_response_fill_table(uint16_t tt_len, uint8_t ttvn,
+ 	tt_tot = tt_len / sizeof(struct batadv_tt_change);
+ 
+ 	len = tt_query_size + tt_len;
+-	skb = dev_alloc_skb(len + ETH_HLEN);
++	skb = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
+ 	if (!skb)
+ 		goto out;
+ 
+-	skb_reserve(skb, ETH_HLEN);
++	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
+ 	tt_response = (struct batadv_tt_query_packet *)skb_put(skb, len);
+ 	tt_response->ttvn = ttvn;
+ 
+@@ -1538,11 +1538,11 @@ static int batadv_send_tt_request(struct batadv_priv *bat_priv,
+ 	if (!tt_req_node)
+ 		goto out;
+ 
+-	skb = dev_alloc_skb(sizeof(*tt_request) + ETH_HLEN);
++	skb = dev_alloc_skb(sizeof(*tt_request) + ETH_HLEN + NET_IP_ALIGN);
+ 	if (!skb)
+ 		goto out;
+ 
+-	skb_reserve(skb, ETH_HLEN);
++	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
+ 
+ 	tt_req_len = sizeof(*tt_request);
+ 	tt_request = (struct batadv_tt_query_packet *)skb_put(skb, tt_req_len);
+@@ -1653,11 +1653,11 @@ batadv_send_other_tt_response(struct batadv_priv *bat_priv,
+ 		tt_tot = tt_len / sizeof(struct batadv_tt_change);
+ 
+ 		len = sizeof(*tt_response) + tt_len;
+-		skb = dev_alloc_skb(len + ETH_HLEN);
++		skb = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
+ 		if (!skb)
+ 			goto unlock;
+ 
+-		skb_reserve(skb, ETH_HLEN);
++		skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
+ 		packet_pos = skb_put(skb, len);
+ 		tt_response = (struct batadv_tt_query_packet *)packet_pos;
+ 		tt_response->ttvn = req_ttvn;
+@@ -1780,11 +1780,11 @@ batadv_send_my_tt_response(struct batadv_priv *bat_priv,
+ 		tt_tot = tt_len / sizeof(struct batadv_tt_change);
+ 
+ 		len = sizeof(*tt_response) + tt_len;
+-		skb = dev_alloc_skb(len + ETH_HLEN);
++		skb = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
+ 		if (!skb)
+ 			goto unlock;
+ 
+-		skb_reserve(skb, ETH_HLEN);
++		skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
+ 		packet_pos = skb_put(skb, len);
+ 		tt_response = (struct batadv_tt_query_packet *)packet_pos;
+ 		tt_response->ttvn = req_ttvn;
+@@ -2118,11 +2118,11 @@ static void batadv_send_roam_adv(struct batadv_priv *bat_priv, uint8_t *client,
+ 	if (!batadv_tt_check_roam_count(bat_priv, client))
+ 		goto out;
+ 
+-	skb = dev_alloc_skb(sizeof(*roam_adv_packet) + ETH_HLEN);
++	skb = dev_alloc_skb(sizeof(*roam_adv_packet) + ETH_HLEN + NET_IP_ALIGN);
+ 	if (!skb)
+ 		goto out;
+ 
+-	skb_reserve(skb, ETH_HLEN);
++	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
+ 
+ 	roam_adv_packet = (struct batadv_roam_adv_packet *)skb_put(skb, len);
+ 
+diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
+index 5abd145..ad14a6c 100644
+--- a/net/batman-adv/vis.c
++++ b/net/batman-adv/vis.c
+@@ -396,12 +396,12 @@ batadv_add_packet(struct batadv_priv *bat_priv,
+ 		return NULL;
+ 
+ 	len = sizeof(*packet) + vis_info_len;
+-	info->skb_packet = dev_alloc_skb(len + ETH_HLEN);
++	info->skb_packet = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
+ 	if (!info->skb_packet) {
+ 		kfree(info);
+ 		return NULL;
+ 	}
+-	skb_reserve(info->skb_packet, ETH_HLEN);
++	skb_reserve(info->skb_packet, ETH_HLEN + NET_IP_ALIGN);
+ 	packet = (struct batadv_vis_packet *)skb_put(info->skb_packet, len);
+ 
+ 	kref_init(&info->refcount);
+@@ -873,12 +873,13 @@ int batadv_vis_init(struct batadv_priv *bat_priv)
+ 	if (!bat_priv->vis.my_info)
+ 		goto err;
+ 
+-	len = sizeof(*packet) + BATADV_MAX_VIS_PACKET_SIZE + ETH_HLEN;
++	len = sizeof(*packet) + BATADV_MAX_VIS_PACKET_SIZE;
++	len += ETH_HLEN + NET_IP_ALIGN;
+ 	bat_priv->vis.my_info->skb_packet = dev_alloc_skb(len);
+ 	if (!bat_priv->vis.my_info->skb_packet)
+ 		goto free_info;
+ 
+-	skb_reserve(bat_priv->vis.my_info->skb_packet, ETH_HLEN);
++	skb_reserve(bat_priv->vis.my_info->skb_packet, ETH_HLEN + NET_IP_ALIGN);
+ 	tmp_skb = bat_priv->vis.my_info->skb_packet;
+ 	packet = (struct batadv_vis_packet *)skb_put(tmp_skb, sizeof(*packet));
+ 
+-- 
+1.8.0
 
-To avoid breaking compatibility (at least) twice we decided to fix now (in this
-patchset) what is fixable with no consequences to compatibility while we would
-ilike to defer the remaining changes for the scheduled compatibility break.
-
-In this patchset you have the two new features intended for net-next/linux-3.8:
-1) the new UNICAST_4ADDR packet type
-2) the Distributed ARP Table (DAT) component
-
-The new packet type has been reviewed to entirely address the alignment issue.
-At the same time we also reviewed the other packet types but as I told you
-before, we will send these changes later.
-
-Other than that you have patch 02/12 that removes the __packed attribute from
-the structures where it was not really needed.
-
-Please, let me know if there is any problem.
-
-Thank you very much,
-		Antonio
-
-
-
-The following changes since commit 6f0a0986e328dd61610d898a09c9f4aa960ae64a:
-
-  usbnet: runtime wake up device before calling usbnet_{read|write}_cmd (2012-11-07 03:53:38 -0500)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
-
-for you to fetch changes up to 9affec6be810d1d529cb9dc95126119451696ba6:
-
-  batman-adv: enable fast client detection using unicast_4addr packets (2012-11-07 20:00:24 +0100)
-
-----------------------------------------------------------------
-Included changes:
-- minimal fixes to the packet layout to avoid the __packed attribute when not
-  needed
-- new packet type called UNICAST_4ADDR: in this packet it is possible to find
-  both source and destination node (in the classic UNICAST header only the
-  destination field exists).
-- a new feature: Distributed ARP Table (D.A.T.). It aims to reduce ARP lookups
-  latency by means of a simil-DHT approach.
-
-----------------------------------------------------------------
-Antonio Quartulli (9):
-      batman-adv: add UNICAST_4ADDR packet type
-      batman-adv: Distributed ARP Table - add a new debug log level
-      batman-adv: Distributed ARP Table - create DHT helper functions
-      batman-adv: Distributed ARP Table - implement local storage
-      batman-adv: Distributed ARP Table - add ARP parsing functions
-      batman-adv: Distributed ARP Table - add snooping functions for ARP messages
-      batman-adv: Distributed ARP Table - add compile option
-      batman-adv: Distributed ARP Table - add runtime switch
-      batman-adv: enable fast client detection using unicast_4addr packets
-
-Martin Hundebøll (1):
-      batman-adv: Add get_ethtool_stats() support for DAT
-
-Sven Eckelmann (2):
-      batman-adv: Reserve extra bytes in skb for better alignment
-      batman-adv: Mark correctly aligned headers not as __packed
-
- Documentation/networking/batman-adv.txt |    3 +-
- net/batman-adv/Kconfig                  |   10 +
- net/batman-adv/Makefile                 |    1 +
- net/batman-adv/bat_iv_ogm.c             |    8 +-
- net/batman-adv/debugfs.c                |   20 +
- net/batman-adv/distributed-arp-table.c  | 1066 +++++++++++++++++++++++++++++++
- net/batman-adv/distributed-arp-table.h  |  167 +++++
- net/batman-adv/hard-interface.c         |    3 +
- net/batman-adv/icmp_socket.c            |    4 +-
- net/batman-adv/main.c                   |    9 +
- net/batman-adv/main.h                   |   13 +-
- net/batman-adv/originator.c             |    2 +
- net/batman-adv/packet.h                 |   68 +-
- net/batman-adv/routing.c                |   51 +-
- net/batman-adv/send.c                   |    4 +
- net/batman-adv/soft-interface.c         |   28 +-
- net/batman-adv/sysfs.c                  |    7 +
- net/batman-adv/translation-table.c      |   20 +-
- net/batman-adv/types.h                  |   73 +++
- net/batman-adv/unicast.c                |  135 +++-
- net/batman-adv/unicast.h                |   36 +-
- net/batman-adv/vis.c                    |    9 +-
- 22 files changed, 1682 insertions(+), 55 deletions(-)
- create mode 100644 net/batman-adv/distributed-arp-table.c
- create mode 100644 net/batman-adv/distributed-arp-table.h
