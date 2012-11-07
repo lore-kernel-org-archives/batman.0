@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 7 Nov 2012 23:12:10 +0800
-References: <1352129674-11080-1-git-send-email-ordex@autistici.org>
- <20121105160542.GA3534@ritirata.org>
-In-Reply-To: <20121105160542.GA3534@ritirata.org>
+Date: Wed, 7 Nov 2012 23:16:45 +0800
+References: <1352038798-29658-3-git-send-email-sven@narfation.org>
+ <1352106924-6755-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1352106924-6755-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201211072312.10727.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix ROAM flag de-selection
+Message-Id: <201211072316.45774.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC-alt 3/4] batman-adv: Fix alignment for
+	payload after batadv_unicast_4addr_packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,22 +24,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, November 06, 2012 00:05:42 Antonio Quartulli wrote:
-> On Mon, Nov 05, 2012 at 04:34:34PM +0100, Antonio Quartulli wrote:
-> > In tt_global_add() the ROAM flag is improperly unset. This makes the
-> > next check fail and so preventing emptying the old originator_list for
-> > the involved tt_global_entry
-> >
-> > This was introduced by ("batman-adv: roaming handling mechanism
-> > redesign")
-> >
-> > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+On Monday, November 05, 2012 17:15:24 Sven Eckelmann wrote:
+> batadv_unicast_4addr_packet created an odd aligned ethernet header and a
+> not 4 bytes boundary aligned IP header. Adding an extra reserved bytes
+> avoids this problem.
 > 
-> Ops, I just forgot:
+> This problem was introduced in 78fc6bbe0aca868b65b92723b1e259e7ef7b35c0
+> ("batman-adv: add UNICAST_4ADDR packet type")
 > 
-> Reported-by: Mike Burmeister-Brown <mike@open-mesh.com>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> This is an alternative version of the third patch.
+> 
+> DONT APPLY PATCH 4 WHEN NOT APPLYING THE INITIAL VERSION OF THE THIRD PATCH
+> 
+>  packet.h  |    6 +++++-
+>  unicast.c |    1 +
+>  2 files changed, 6 insertions(+), 1 deletion(-)
 
-Applied in revision 846815f.
+Applied in revision cc9fb91.
 
 Thanks,
 Marek
