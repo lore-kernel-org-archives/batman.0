@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed,  7 Nov 2012 20:11:31 +0100
-Message-Id: <1352315502-20324-2-git-send-email-ordex@autistici.org>
+Date: Wed,  7 Nov 2012 20:11:32 +0100
+Message-Id: <1352315502-20324-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1352315502-20324-1-git-send-email-ordex@autistici.org>
 References: <1352315502-20324-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 01/12] batman-adv: Reserve extra bytes in skb
-	for better alignment
+Subject: [B.A.T.M.A.N.] [PATCH 02/12] batman-adv: Mark correctly aligned
+	headers not as __packed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,177 +22,89 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lind
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The ethernet header is 14 bytes long. Therefore, the data after it is not 4
-byte aligned and may cause problems on systems without unaligned data access.
-Reserving NET_IP_ALIGN more byes can fix the misalignment of the ethernet
-header.
+Headers which are already perfectly aligned and create a 4 byte boundary
+non-ethernet header payload can have the __packed attribute removed. The
+__packed attribute doesn't change the appeareance of the packet for these
+headers because no extra padding is necessary to align the data members. The
+compiler will also create slightly faster code for loads of multi-byte members.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_iv_ogm.c        |  8 +++++---
- net/batman-adv/icmp_socket.c       |  4 ++--
- net/batman-adv/translation-table.c | 20 ++++++++++----------
- net/batman-adv/vis.c               |  9 +++++----
- 4 files changed, 22 insertions(+), 19 deletions(-)
+ net/batman-adv/packet.h | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 75403a4..9f3925a 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -411,9 +411,11 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index 2d23a14..b5f67a2 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -106,13 +106,16 @@ struct batadv_bla_claim_dst {
+ 	uint8_t magic[3];	/* FF:43:05 */
+ 	uint8_t type;		/* bla_claimframe */
+ 	__be16 group;		/* group id */
+-} __packed;
++};
  
- 	if ((atomic_read(&bat_priv->aggregated_ogms)) &&
- 	    (packet_len < BATADV_MAX_AGGREGATION_BYTES))
--		skb_size = BATADV_MAX_AGGREGATION_BYTES + ETH_HLEN;
-+		skb_size = BATADV_MAX_AGGREGATION_BYTES;
- 	else
--		skb_size = packet_len + ETH_HLEN;
-+		skb_size = packet_len;
-+
-+	skb_size += ETH_HLEN + NET_IP_ALIGN;
+ struct batadv_header {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;  /* batman version field */
+ 	uint8_t  ttl;
+-} __packed;
++	/* the parent struct has to add a byte after the header to make
++	 * everything 4 bytes aligned again
++	 */
++};
  
- 	forw_packet_aggr->skb = dev_alloc_skb(skb_size);
- 	if (!forw_packet_aggr->skb) {
-@@ -422,7 +424,7 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 		kfree(forw_packet_aggr);
- 		goto out;
- 	}
--	skb_reserve(forw_packet_aggr->skb, ETH_HLEN);
-+	skb_reserve(forw_packet_aggr->skb, ETH_HLEN + NET_IP_ALIGN);
+ struct batadv_ogm_packet {
+ 	struct batadv_header header;
+@@ -137,7 +140,7 @@ struct batadv_icmp_packet {
+ 	__be16   seqno;
+ 	uint8_t  uid;
+ 	uint8_t  reserved;
+-} __packed;
++};
  
- 	INIT_HLIST_NODE(&forw_packet_aggr->list);
+ #define BATADV_RR_LEN 16
  
-diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
-index 5874c0e..87ca809 100644
---- a/net/batman-adv/icmp_socket.c
-+++ b/net/batman-adv/icmp_socket.c
-@@ -177,13 +177,13 @@ static ssize_t batadv_socket_write(struct file *file, const char __user *buff,
- 	if (len >= sizeof(struct batadv_icmp_packet_rr))
- 		packet_len = sizeof(struct batadv_icmp_packet_rr);
+@@ -153,13 +156,16 @@ struct batadv_icmp_packet_rr {
+ 	uint8_t  uid;
+ 	uint8_t  rr_cur;
+ 	uint8_t  rr[BATADV_RR_LEN][ETH_ALEN];
+-} __packed;
++};
  
--	skb = dev_alloc_skb(packet_len + ETH_HLEN);
-+	skb = dev_alloc_skb(packet_len + ETH_HLEN + NET_IP_ALIGN);
- 	if (!skb) {
- 		len = -ENOMEM;
- 		goto out;
- 	}
+ struct batadv_unicast_packet {
+ 	struct batadv_header header;
+ 	uint8_t  ttvn; /* destination translation table version number */
+ 	uint8_t  dest[ETH_ALEN];
+-} __packed;
++	/* "4 bytes boundary + 2 bytes" long to make the payload after the
++	 * following ethernet header again 4 bytes boundary aligned
++	 */
++};
  
--	skb_reserve(skb, ETH_HLEN);
-+	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
- 	icmp_packet = (struct batadv_icmp_packet_rr *)skb_put(skb, packet_len);
+ struct batadv_unicast_frag_packet {
+ 	struct batadv_header header;
+@@ -176,6 +182,9 @@ struct batadv_bcast_packet {
+ 	uint8_t  reserved;
+ 	__be32   seqno;
+ 	uint8_t  orig[ETH_ALEN];
++	/* "4 bytes boundary + 2 bytes" long to make the payload after the
++	 * following ethernet header again 4 bytes boundary aligned
++	 */
+ } __packed;
  
- 	if (copy_from_user(icmp_packet, buff, packet_len)) {
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index a570d95..f8b9c32 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1472,11 +1472,11 @@ batadv_tt_response_fill_table(uint16_t tt_len, uint8_t ttvn,
- 	tt_tot = tt_len / sizeof(struct batadv_tt_change);
+ struct batadv_vis_packet {
+@@ -187,7 +196,7 @@ struct batadv_vis_packet {
+ 	uint8_t  vis_orig[ETH_ALEN];	/* originator reporting its neighbors */
+ 	uint8_t  target_orig[ETH_ALEN]; /* who should receive this packet */
+ 	uint8_t  sender_orig[ETH_ALEN]; /* who sent or forwarded this packet */
+-} __packed;
++};
  
- 	len = tt_query_size + tt_len;
--	skb = dev_alloc_skb(len + ETH_HLEN);
-+	skb = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
- 	if (!skb)
- 		goto out;
- 
--	skb_reserve(skb, ETH_HLEN);
-+	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
- 	tt_response = (struct batadv_tt_query_packet *)skb_put(skb, len);
- 	tt_response->ttvn = ttvn;
- 
-@@ -1538,11 +1538,11 @@ static int batadv_send_tt_request(struct batadv_priv *bat_priv,
- 	if (!tt_req_node)
- 		goto out;
- 
--	skb = dev_alloc_skb(sizeof(*tt_request) + ETH_HLEN);
-+	skb = dev_alloc_skb(sizeof(*tt_request) + ETH_HLEN + NET_IP_ALIGN);
- 	if (!skb)
- 		goto out;
- 
--	skb_reserve(skb, ETH_HLEN);
-+	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
- 
- 	tt_req_len = sizeof(*tt_request);
- 	tt_request = (struct batadv_tt_query_packet *)skb_put(skb, tt_req_len);
-@@ -1653,11 +1653,11 @@ batadv_send_other_tt_response(struct batadv_priv *bat_priv,
- 		tt_tot = tt_len / sizeof(struct batadv_tt_change);
- 
- 		len = sizeof(*tt_response) + tt_len;
--		skb = dev_alloc_skb(len + ETH_HLEN);
-+		skb = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
- 		if (!skb)
- 			goto unlock;
- 
--		skb_reserve(skb, ETH_HLEN);
-+		skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
- 		packet_pos = skb_put(skb, len);
- 		tt_response = (struct batadv_tt_query_packet *)packet_pos;
- 		tt_response->ttvn = req_ttvn;
-@@ -1780,11 +1780,11 @@ batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 		tt_tot = tt_len / sizeof(struct batadv_tt_change);
- 
- 		len = sizeof(*tt_response) + tt_len;
--		skb = dev_alloc_skb(len + ETH_HLEN);
-+		skb = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
- 		if (!skb)
- 			goto unlock;
- 
--		skb_reserve(skb, ETH_HLEN);
-+		skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
- 		packet_pos = skb_put(skb, len);
- 		tt_response = (struct batadv_tt_query_packet *)packet_pos;
- 		tt_response->ttvn = req_ttvn;
-@@ -2118,11 +2118,11 @@ static void batadv_send_roam_adv(struct batadv_priv *bat_priv, uint8_t *client,
- 	if (!batadv_tt_check_roam_count(bat_priv, client))
- 		goto out;
- 
--	skb = dev_alloc_skb(sizeof(*roam_adv_packet) + ETH_HLEN);
-+	skb = dev_alloc_skb(sizeof(*roam_adv_packet) + ETH_HLEN + NET_IP_ALIGN);
- 	if (!skb)
- 		goto out;
- 
--	skb_reserve(skb, ETH_HLEN);
-+	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
- 
- 	roam_adv_packet = (struct batadv_roam_adv_packet *)skb_put(skb, len);
- 
-diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
-index 5abd145..ad14a6c 100644
---- a/net/batman-adv/vis.c
-+++ b/net/batman-adv/vis.c
-@@ -396,12 +396,12 @@ batadv_add_packet(struct batadv_priv *bat_priv,
- 		return NULL;
- 
- 	len = sizeof(*packet) + vis_info_len;
--	info->skb_packet = dev_alloc_skb(len + ETH_HLEN);
-+	info->skb_packet = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
- 	if (!info->skb_packet) {
- 		kfree(info);
- 		return NULL;
- 	}
--	skb_reserve(info->skb_packet, ETH_HLEN);
-+	skb_reserve(info->skb_packet, ETH_HLEN + NET_IP_ALIGN);
- 	packet = (struct batadv_vis_packet *)skb_put(info->skb_packet, len);
- 
- 	kref_init(&info->refcount);
-@@ -873,12 +873,13 @@ int batadv_vis_init(struct batadv_priv *bat_priv)
- 	if (!bat_priv->vis.my_info)
- 		goto err;
- 
--	len = sizeof(*packet) + BATADV_MAX_VIS_PACKET_SIZE + ETH_HLEN;
-+	len = sizeof(*packet) + BATADV_MAX_VIS_PACKET_SIZE;
-+	len += ETH_HLEN + NET_IP_ALIGN;
- 	bat_priv->vis.my_info->skb_packet = dev_alloc_skb(len);
- 	if (!bat_priv->vis.my_info->skb_packet)
- 		goto free_info;
- 
--	skb_reserve(bat_priv->vis.my_info->skb_packet, ETH_HLEN);
-+	skb_reserve(bat_priv->vis.my_info->skb_packet, ETH_HLEN + NET_IP_ALIGN);
- 	tmp_skb = bat_priv->vis.my_info->skb_packet;
- 	packet = (struct batadv_vis_packet *)skb_put(tmp_skb, sizeof(*packet));
- 
+ struct batadv_tt_query_packet {
+ 	struct batadv_header header;
 -- 
 1.8.0
 
