@@ -1,15 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 8 Nov 2012 23:47:00 +0800
-References: <1352318855-20696-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1352318855-20696-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201211082347.00915.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix kernel-doc for
-	batadv_reroute_unicast_packet()
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu,  8 Nov 2012 21:55:29 +0100
+Message-Id: <1352408130-22971-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: don't add TEMP clients
+	belonging to other backbone nodes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,17 +17,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, November 08, 2012 04:07:35 Antonio Quartulli wrote:
-> This was introduced by ("batman-adv: substitute tt_poss_change with a
-> per-tt_entry flag")
-> 
-> Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  routing.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
+The "early client detection" mechanism must not add clients belonging
+to other backbone nodes. Such clients must be reached by directly
+using the LAN instead of the mesh.
 
-Applied in revision bc91a4a.
+This was introduced by 724d05c8215e4e8186097121595ef20b6ba601b7
+("batman-adv: detect not yet announced clients")
 
-Thanks,
-Marek
+Reported-by: Glen Page <glen.page@thet.net>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/translation-table.c b/translation-table.c
+index fec1a00..baae715 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -2456,6 +2456,13 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
+ {
+ 	bool ret = false;
+ 
++	/* if the originator is a backbone node (meaning it belongs to the same
++	 * LAN of this node) the temporary client must not be added because to
++	 * reach such destination the node must use the LAN instead of the mesh
++	 */
++	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig))
++		goto out;
++
+ 	if (!batadv_tt_global_add(bat_priv, orig_node, addr,
+ 				  BATADV_TT_CLIENT_TEMP,
+ 				  atomic_read(&orig_node->last_ttvn)))
+-- 
+1.8.0
+
