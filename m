@@ -1,15 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 8 Nov 2012 21:06:16 +0800
-References: <1352297133-17652-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1352297133-17652-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201211082106.16746.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix tt_global_entries flags
-	update
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu,  8 Nov 2012 14:21:11 +0100
+Message-Id: <1352380871-13610-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1352379248-31144-1-git-send-email-ordex@autistici.org>
+References: <1352379248-31144-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: correctly pass the client flag
+	on tt_response
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,27 +19,35 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, November 07, 2012 22:05:33 Antonio Quartulli wrote:
-> Flags carried by a change_entry have to be always copied into the
-> client entry as they may contain important attributes (e.g.
-> TT_CLIENT_WIFI).
-> 
-> For instance, a client added by means of the "early detection
-> mechanism" has no flag set at the beginning, so they must be updated once
-> the proper ADD event is received.
-> 
-> This was introduced by ("batman-adv: detect not yet announced clients")
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
-> 
-> This patch is based on "maint"
-> 
-> 
->  translation-table.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+When a TT response with the full table is sent, the client flags
+should be sent as well. This patch fix the flags assignment when
+populating the tt_response to send back
 
-Applied in revision fa614fd.
+This was introduced by ("batman-adv: detect not yet announced clients")
 
-Thanks,
-Marek
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+v2:
+ - added missing BATADV_
+v3:
+ - instead of passing the WIFI flag only, we now pass all the flags
+
+ translation-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/translation-table.c b/translation-table.c
+index 64c0012..fec1a00 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1502,7 +1502,7 @@ batadv_tt_response_fill_table(uint16_t tt_len, uint8_t ttvn,
+ 
+ 			memcpy(tt_change->addr, tt_common_entry->addr,
+ 			       ETH_ALEN);
+-			tt_change->flags = BATADV_NO_FLAGS;
++			tt_change->flags = tt_common_entry->flags;
+ 
+ 			tt_count++;
+ 			tt_change++;
+-- 
+1.8.0
+
