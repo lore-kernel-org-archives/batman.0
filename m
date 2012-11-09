@@ -1,12 +1,11 @@
-Return-Path: <shanwei88@gmail.com>
-Message-ID: <509C68D7.8040603@gmail.com>
-Date: Fri, 09 Nov 2012 10:22:15 +0800
-From: Shan Wei <shanwei88@gmail.com>
+Return-Path: <frleonel@gmail.com>
+Message-ID: <509CFA00.7000106@gmail.com>
+Date: Fri, 09 Nov 2012 10:41:36 -0200
+From: Flavio Leonel <frleonel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH v3 9/9] net: batman-adv: use per_cpu_add
-	helper
+Subject: [B.A.T.M.A.N.] 11s mesh mode on openwrt + batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,37 +17,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: lindner_marek@yahoo.de, siwu@hrz.tu-chemnitz.de, ordex@autistici.org, b.a.t.m.a.n@lists.open-mesh.org, David Miller <davem@davemloft.net>, NetDev <netdev@vger.kernel.org>, Kernel-Maillist <linux-kernel@vger.kernel.org>, Shan Wei <shanwei88@gmail.com>, Christoph Lameter <cl@linux.com>
+To: b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org, linus.luessing@web.de
 
-From: Shan Wei <davidshan@tencent.com>
+hello friends
+come again disturb the lords
 
-this_cpu_add is an atomic operation.
-and be more faster than per_cpu_ptr operation.
+- I have a network with openrando opewrt customized by me, here in 
+Brazil as jah reported in other emails, but this network is growing and 
+am having some difficulties that I can not solve it alone ...
 
-Signed-off-by: Shan Wei <davidshan@tencent.com>
-Reviewed-by: Christoph Lameter <cl@linux.com>
----
-v3: change commit message.
----
- net/batman-adv/main.h |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+my ath9k driver operates today with 802.11s (mesh) on a virtual 
+interface and another interface with 802.11g + n for wifi connections ..
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 897ba6a..3aef5b2 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -263,9 +263,7 @@ static inline bool batadv_has_timed_out(unsigned long timestamp,
- static inline void batadv_add_counter(struct batadv_priv *bat_priv, size_t idx,
- 				      size_t count)
- {
--	int cpu = get_cpu();
--	per_cpu_ptr(bat_priv->bat_counters, cpu)[idx] += count;
--	put_cpu();
-+	this_cpu_add(bat_priv->bat_counters[idx], count);
- }
- 
- #define batadv_inc_counter(b, i) batadv_add_counter(b, i, 1)
--- 
-1.7.1
+but I'm from the beginning in 2011 fighting with routing in the network ..
+
+AP: (config)
+Attached ...
+
+eg not know where I really run batman-adv or even whether he really 
+works well with HWMP ...
 
 
+help me ...
