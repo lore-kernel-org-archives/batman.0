@@ -1,11 +1,12 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  8 Nov 2012 22:16:16 +0100
-Message-Id: <1352409376-28885-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1352409376-28885-1-git-send-email-ordex@autistici.org>
-References: <1352409376-28885-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: improve local translation
-	table output
+Return-Path: <shanwei88@gmail.com>
+Message-ID: <509C68D7.8040603@gmail.com>
+Date: Fri, 09 Nov 2012 10:22:15 +0800
+From: Shan Wei <shanwei88@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] [PATCH v3 9/9] net: batman-adv: use per_cpu_add
+	helper
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,71 +18,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: lindner_marek@yahoo.de, siwu@hrz.tu-chemnitz.de, ordex@autistici.org, b.a.t.m.a.n@lists.open-mesh.org, David Miller <davem@davemloft.net>, NetDev <netdev@vger.kernel.org>, Kernel-Maillist <linux-kernel@vger.kernel.org>, Shan Wei <shanwei88@gmail.com>, Christoph Lameter <cl@linux.com>
 
-This patch adds a nice header to the local translation table and
-the last_seen time for each local entry
+From: Shan Wei <davidshan@tencent.com>
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+this_cpu_add is an atomic operation.
+and be more faster than per_cpu_ptr operation.
+
+Signed-off-by: Shan Wei <davidshan@tencent.com>
+Reviewed-by: Christoph Lameter <cl@linux.com>
 ---
- translation-table.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+v3: change commit message.
+---
+ net/batman-adv/main.h |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/translation-table.c b/translation-table.c
-index cb0281a..4657d9e 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -472,10 +472,14 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 	struct batadv_priv *bat_priv = netdev_priv(net_dev);
- 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
- 	struct batadv_tt_common_entry *tt_common_entry;
-+	struct batadv_tt_local_entry *tt_local;
- 	struct batadv_hard_iface *primary_if;
- 	struct hlist_node *node;
- 	struct hlist_head *head;
- 	uint32_t i;
-+	int last_seen_secs;
-+	int last_seen_msecs;
-+	unsigned long last_seen_jiffies;
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 897ba6a..3aef5b2 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -263,9 +263,7 @@ static inline bool batadv_has_timed_out(unsigned long timestamp,
+ static inline void batadv_add_counter(struct batadv_priv *bat_priv, size_t idx,
+ 				      size_t count)
+ {
+-	int cpu = get_cpu();
+-	per_cpu_ptr(bat_priv->bat_counters, cpu)[idx] += count;
+-	put_cpu();
++	this_cpu_add(bat_priv->bat_counters[idx], count);
+ }
  
- 	primary_if = batadv_seq_print_text_primary_if_get(seq);
- 	if (!primary_if)
-@@ -484,6 +488,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq,
- 		   "Locally retrieved addresses (from %s) announced via TT (TTVN: %u):\n",
- 		   net_dev->name, (uint8_t)atomic_read(&bat_priv->tt.vn));
-+	seq_printf(seq, "       %-13s %-7s %-10s\n", "Client", "Flags",
-+		   "Last seen");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -491,7 +497,15 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(tt_common_entry, node,
- 					 head, hash_entry) {
--			seq_printf(seq, " * %pM [%c%c%c%c%c]\n",
-+			tt_local = container_of(tt_common_entry,
-+						struct batadv_tt_local_entry,
-+						common);
-+			last_seen_jiffies = jiffies - tt_local->last_seen;
-+			last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
-+			last_seen_secs = last_seen_msecs / 1000;
-+			last_seen_msecs = last_seen_msecs % 1000;
-+
-+			seq_printf(seq, " * %pM [%c%c%c%c%c] %3u.%03u\n",
- 				   tt_common_entry->addr,
- 				   (tt_common_entry->flags &
- 				    BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
-@@ -502,7 +516,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 				   (tt_common_entry->flags &
- 				    BATADV_TT_CLIENT_PENDING ? 'X' : '.'),
- 				   (tt_common_entry->flags &
--				    BATADV_TT_CLIENT_WIFI ? 'W' : '.'));
-+				    BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
-+				   last_seen_secs, last_seen_msecs);
- 		}
- 		rcu_read_unlock();
- 	}
+ #define batadv_inc_counter(b, i) batadv_add_counter(b, i, 1)
 -- 
-1.8.0
+1.7.1
+
 
