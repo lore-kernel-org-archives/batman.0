@@ -1,14 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 09 Nov 2012 14:15:26 +0100
-Message-ID: <3285003.E6HttQ5L4c@bentobox>
-In-Reply-To: <509CFA00.7000106@gmail.com>
-References: <509CFA00.7000106@gmail.com>
+Return-Path: <sasha.levin@oracle.com>
+Message-ID: <509DB6AC.1030204@oracle.com>
+Date: Fri, 09 Nov 2012 21:06:36 -0500
+From: Sasha Levin <sasha.levin@oracle.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2470322.G0zFtTdH7l";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] 11s mesh mode on openwrt + batman-adv
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] net,
+	batman: NULL ptr deref in batadv_iv_ogm_queue_add
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,64 +18,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Flavio Leonel <frleonel@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Marek Lindner <lindner_marek@yahoo.de>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Antonio Quartulli <ordex@autistici.org>, "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+
+Hi all,
+
+While fuzzing with trinity in a KVM tools (lkvm) guest running latest -next
+kernel, I've stumbled on the following:
+
+[  469.854708] batman_adv: �,�]+: Removing interface: bond0
+[  469.890909] BUG: unable to handle kernel NULL pointer dereference at 0000000000000003
+[  469.906428] IP: [<ffffffff839e3810>] batadv_iv_ogm_queue_add+0x20/0x700
+[  469.906428] PGD 907c067 PUD 907b067 PMD 0
+[  469.906428] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+[  469.906428] Dumping ftrace buffer:
+[  469.921756]    (ftrace buffer empty)
+[  469.921756] CPU 1
+[  469.921756] Pid: 43, comm: kworker/u:1 Tainted: G        W    3.7.0-rc4-next-20121109-sasha-00013-g9407f3c #125
+[  469.921756] RIP: 0010:[<ffffffff839e3810>]  [<ffffffff839e3810>] batadv_iv_ogm_queue_add+0x20/0x700
+[  469.921756] RSP: 0000:ffff880013361c08  EFLAGS: 00010292
+[  469.921756] RAX: 0000000000000062 RBX: 0000000000000000 RCX: ffff8800622d2c00
+[  469.921756] RDX: 000000000000001a RSI: 0000000000000000 RDI: 0000000000000064
+[  469.921756] RBP: ffff880013361c88 R08: 0000000000000001 R09: 00000001000042bf
+[  469.921756] R10: 0000000000000000 R11: 0000000000000000 R12: 00000001000042bf
+[  469.921756] R13: ffff8800088e8b00 R14: ffff8800088e8b00 R15: 0000000000000001
+[  469.921756] FS:  0000000000000000(0000) GS:ffff880027800000(0000) knlGS:0000000000000000
+[  469.921756] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  469.921756] CR2: 0000000000000003 CR3: 000000000788e000 CR4: 00000000000406e0
+[  469.921756] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  469.921756] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[  469.921756] Process kworker/u:1 (pid: 43, threadinfo ffff880013360000, task ffff880013358000)
+[  469.921756] Stack:
+[  469.921756]  ffff880013361c28 ffffffff81135a74 ffff8800088e8b00 0000000000000000
+[  469.921756]  ffff880013361c88 ffffffff839f32ed ffffffff839f3160 0000000000000000
+[  469.921756]  ffff880021f0cae0 0000000000000000 ffff8800622d2c00 0000000000000000
+[  469.921756] Call Trace:
+[  469.921756]  [<ffffffff81135a74>] ? __rcu_read_unlock+0x44/0xb0
+[  469.921756]  [<ffffffff839f32ed>] ? batadv_slide_own_bcast_window+0x1cd/0x1f0
+[  469.921756]  [<ffffffff839f3160>] ? batadv_slide_own_bcast_window+0x40/0x1f0
+[  469.921756]  [<ffffffff839e4196>] batadv_iv_ogm_schedule+0x2a6/0x300
+[  469.921756]  [<ffffffff839e3ef0>] ? batadv_iv_ogm_queue_add+0x700/0x700
+[  469.921756]  [<ffffffff811135cf>] ? local_bh_enable_ip+0xef/0x150
+[  469.921756]  [<ffffffff839f6d90>] batadv_send_outstanding_bat_ogm_packet+0xd0/0xf0
+[  469.921756]  [<ffffffff8112d539>] process_one_work+0x3b9/0x770
+[  469.921756]  [<ffffffff8112d3e8>] ? process_one_work+0x268/0x770
+[  469.921756]  [<ffffffff8117d3f2>] ? get_lock_stats+0x22/0x70
+[  469.921756]  [<ffffffff839f6cc0>] ? batadv_add_bcast_packet_to_list+0x320/0x320
+[  469.921756]  [<ffffffff8112deba>] worker_thread+0x2ba/0x3f0
+[  469.921756]  [<ffffffff8112dc00>] ? rescuer_thread+0x2d0/0x2d0
+[  469.921756]  [<ffffffff81138c23>] kthread+0xe3/0xf0
+[  469.921756]  [<ffffffff8117d47e>] ? put_lock_stats.isra.16+0xe/0x40
+[  469.921756]  [<ffffffff81138b40>] ? insert_kthread_work+0x90/0x90
+[  469.921756]  [<ffffffff83be1fbc>] ret_from_fork+0x7c/0xb0
+[  469.921756]  [<ffffffff81138b40>] ? insert_kthread_work+0x90/0x90
+[  469.921756] Code: 16 7a fd e8 43 22 75 fd 5d c3 90 55 48 89 e5 41 57 41 56 41 55 49 89 fd bf 64 00 00 00 41 54 4d 89 cc 53 48
+83 ec 58 48 89 75 b8 <0f> b6 5e 03 89 55 c0 48 89 4d b0 44 89 45 c4 e8 9c ec 72 fd 49
+[  469.921756] RIP  [<ffffffff839e3810>] batadv_iv_ogm_queue_add+0x20/0x700
+[  469.921756]  RSP <ffff880013361c08>
+[  469.921756] CR2: 0000000000000003
+[  470.016647] ---[ end trace 42fb97717ce977ba ]---
 
 
---nextPart2470322.G0zFtTdH7l
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Friday 09 November 2012 10:41:36 Flavio Leonel wrote:
-> hello friends
-> come again disturb the lords
-> 
-> - I have a network with openrando opewrt customized by me, here in
-> Brazil as jah reported in other emails, but this network is growing and
-> am having some difficulties that I can not solve it alone ...
-> 
-> my ath9k driver operates today with 802.11s (mesh) on a virtual
-> interface and another interface with 802.11g + n for wifi connections ..
-> 
-> but I'm from the beginning in 2011 fighting with routing in the network ..
-> 
-> AP: (config)
-> Attached ...
-
-There is nothing attached.
-
-> eg not know where I really run batman-adv or even whether he really
-> works well with HWMP ...
-
-First: IEEE 802.11s (HWMP) and batman-adv are complete different things. 
-Please don't use batman-adv over HWMP links. And you can check whether you are 
-using batman-adv on an interface by checking the output of "batctl if". It 
-should show you all interfaces which are attached at (and therefore known by) 
-batman-adv (at least for bat0).
-
-Kind regards,
-	Sven
---nextPart2470322.G0zFtTdH7l
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAABCgAGBQJQnQHuAAoJEF2HCgfBJntGpDsP/iebNZhoDVW30DODcEv0hfm4
-zpH4EDE7kCaHJTNyYSH03BoTSJrKtIw0jnakyHfRKvAhwTU0qlrglwMSjBleQmge
-c90qta6a7ZG4gaFsTZVnrjIsKrwXLWY/ZMc6YsSdYUtMdVejBgESbTbTj8kR4keg
-TBfHCM0wYRiEFwnuwvf6pYJpGMkSFNmCkrW1ew7nqVsVSypYazjbmj2Qm9J6SlTD
-krBJmN113NyObky/4CeRYolv70+Pv7Q9R0cDVQCT8u1ZOZIG9RbWTvyEbq7QLVqS
-R67tMp/B1zCZo2Y4au+i3KSWCIeJ2iXsMFF9X9Y89VL4UZfTBg68humrAo6IlDnK
-iRQ24O1g/zF1166VwExMrtK32lBVGhOWMNanx+3Xz2t9mFLU+QcZYzvmBl03aZIZ
-EhPf+IW5S0XimPabwFCTcWzA5EvoJNqWbluB4E3q+e09LL12QIRPHitIjxrnqOjW
-pHVH3PnSecIUiMnQrGDVC8/gA7UcSkkGG7FgMRB2U+SeGF0VarHm65HKlCKhNowO
-5omdnHp4H7n3kbNLHuPQZGQ+syB2vhylVNVvIzBG6+7uspVXN/22M5KxPXDIc7zg
-3bI4r5h3hV1pL4SiajHLkjYoO1HAmXkhm+tyVF/Og4KDbLdzL5yhjiBeds3W8y4N
-CC/oV8MkqM7EKYpyfdGv
-=3Orh
------END PGP SIGNATURE-----
-
---nextPart2470322.G0zFtTdH7l--
-
+Thanks,
+Sasha
