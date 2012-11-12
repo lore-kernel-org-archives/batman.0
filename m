@@ -1,9 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 10 Nov 2012 11:00:32 +0100
-Message-Id: <1352541632-25336-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Initialize lockdep class keys
-	for hashes
+Date: Mon, 12 Nov 2012 20:48:21 +0100
+Message-Id: <1352749701-19288-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: remove useless !! when
+	converting to bool
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,103 +17,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Different hashes have the same class key key because they get
-initialised with the same one. For this reason lockdep can create
-false warning when they are used recursively.
+In C standard any expression different from 0 will be converted to
+'true' when casting to bool (whatever is the length of the value).
+Therefore the "!!" conversion can be removed.
 
-Re-initialise the key for each hash after the invocation to hash_new()
-to avoid this problem.
+This was introduced by 3fbd7ac8c71b3778c5751b3d096ea36f96ef534e
+("batman-adv: substitute tt_poss_change with a per-tt_entry flag")
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- originator.c        |  6 ++++++
- translation-table.c | 10 ++++++++++
- vis.c               |  6 ++++++
- 3 files changed, 22 insertions(+)
+ translation-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/originator.c b/originator.c
-index 8c32cf1..109081c 100644
---- a/originator.c
-+++ b/originator.c
-@@ -29,6 +29,9 @@
- #include "soft-interface.h"
- #include "bridge_loop_avoidance.h"
- 
-+/* hash class keys */
-+static struct lock_class_key batadv_orig_hash_lock_class_key;
-+
- static void batadv_purge_orig(struct work_struct *work);
- 
- static void batadv_start_purge_timer(struct batadv_priv *bat_priv)
-@@ -57,6 +60,9 @@ int batadv_originator_init(struct batadv_priv *bat_priv)
- 	if (!bat_priv->orig_hash)
- 		goto err;
- 
-+	batadv_hash_set_lock_class(bat_priv->orig_hash,
-+				   &batadv_orig_hash_lock_class_key);
-+
- 	batadv_start_purge_timer(bat_priv);
- 	return 0;
- 
 diff --git a/translation-table.c b/translation-table.c
-index 4657d9e..1bcb705 100644
+index cb0281a..39ae6b0 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -29,6 +29,10 @@
+@@ -2545,7 +2545,7 @@ bool batadv_tt_local_client_is_roaming(struct batadv_priv *bat_priv,
+ 	if (!tt_local_entry)
+ 		goto out;
  
- #include <linux/crc16.h>
- 
-+/* hash class keys */
-+static struct lock_class_key batadv_tt_local_hash_lock_class_key;
-+static struct lock_class_key batadv_tt_global_hash_lock_class_key;
-+
- static void batadv_send_roam_adv(struct batadv_priv *bat_priv, uint8_t *client,
- 				 struct batadv_orig_node *orig_node);
- static void batadv_tt_purge(struct work_struct *work);
-@@ -235,6 +239,9 @@ static int batadv_tt_local_init(struct batadv_priv *bat_priv)
- 	if (!bat_priv->tt.local_hash)
- 		return -ENOMEM;
- 
-+	batadv_hash_set_lock_class(bat_priv->tt.local_hash,
-+				   &batadv_tt_local_hash_lock_class_key);
-+
- 	return 0;
- }
- 
-@@ -691,6 +698,9 @@ static int batadv_tt_global_init(struct batadv_priv *bat_priv)
- 	if (!bat_priv->tt.global_hash)
- 		return -ENOMEM;
- 
-+	batadv_hash_set_lock_class(bat_priv->tt.global_hash,
-+				   &batadv_tt_global_hash_lock_class_key);
-+
- 	return 0;
- }
- 
-diff --git a/vis.c b/vis.c
-index 0f65a9d..60eb9b7 100644
---- a/vis.c
-+++ b/vis.c
-@@ -28,6 +28,9 @@
- 
- #define BATADV_MAX_VIS_PACKET_SIZE 1000
- 
-+/* hash class keys */
-+static struct lock_class_key batadv_vis_hash_lock_class_key;
-+
- static void batadv_start_vis_timer(struct batadv_priv *bat_priv);
- 
- /* free the info */
-@@ -852,6 +855,9 @@ int batadv_vis_init(struct batadv_priv *bat_priv)
- 		goto err;
- 	}
- 
-+	batadv_hash_set_lock_class(bat_priv->vis.hash,
-+				   &batadv_vis_hash_lock_class_key);
-+
- 	bat_priv->vis.my_info = kmalloc(BATADV_MAX_VIS_PACKET_SIZE, GFP_ATOMIC);
- 	if (!bat_priv->vis.my_info)
- 		goto err;
+-	ret = !!(tt_local_entry->common.flags & BATADV_TT_CLIENT_ROAM);
++	ret = tt_local_entry->common.flags & BATADV_TT_CLIENT_ROAM;
+ 	batadv_tt_local_entry_free_ref(tt_local_entry);
+ out:
+ 	return ret;
 -- 
 1.8.0
 
