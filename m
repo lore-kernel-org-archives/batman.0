@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 13 Nov 2012 10:15:31 +0100
-Message-Id: <1352798139-19458-4-git-send-email-ordex@autistici.org>
+Date: Tue, 13 Nov 2012 10:15:32 +0100
+Message-Id: <1352798139-19458-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1352798139-19458-1-git-send-email-ordex@autistici.org>
 References: <1352798139-19458-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 03/11] batman-adv: prevent using any virtual
-	device created on batman-adv as hard-interface
+Subject: [B.A.T.M.A.N.] [PATCH 04/11] batman-adv: send announcement when
+	backbone gw is registered
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,76 +18,76 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Any virtual device created on top of a batman-adv mesh interface must be
-prevented to be used to create a new mesh network (this would lead to an
-unwanted batman-over-batman configuration)
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
 
+To avoid loops in the startup phase until the first announcement is
+sent, send an announcement immediately as soon as a backbone gw is
+added.
+
+This may happen due to various reasons, e.g. a packet passes the rx
+or tx path.
+
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/hard-interface.c | 41 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 40 insertions(+), 1 deletion(-)
+ net/batman-adv/bridge_loop_avoidance.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 6b7a5d3..365ed74 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -59,6 +59,45 @@ out:
- 	return hard_iface;
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index decc042..d1a817f 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -366,7 +366,7 @@ out:
+  */
+ static struct batadv_backbone_gw *
+ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, uint8_t *orig,
+-			   short vid)
++			   short vid, bool own_backbone)
+ {
+ 	struct batadv_backbone_gw *entry;
+ 	struct batadv_orig_node *orig_node;
+@@ -413,6 +413,10 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, uint8_t *orig,
+ 					  "became a backbone gateway");
+ 		batadv_orig_node_free_ref(orig_node);
+ 	}
++
++	if (own_backbone)
++		batadv_bla_send_announce(bat_priv, entry);
++
+ 	return entry;
  }
  
-+/**
-+ * batadv_is_on_batman_iface - check if a device is a batman iface descendant
-+ * @net_dev: the device to check
-+ *
-+ * If the user creates any virtual device on top of a batman-adv interface, it
-+ * is important to prevent this new interface to be used to create a new mesh
-+ * network (this behaviour would lead to a batman-over-batman configuration).
-+ * This function recursively checks all the fathers of the device passed as
-+ * argument looking for a batman-adv soft interface.
-+ *
-+ * Returns true if the device is descendant of a batman-adv mesh interface (or
-+ * if it is a batman-adv interface itself), false otherwise
-+ */
-+static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
-+{
-+	struct net_device *parent_dev;
-+	bool ret;
-+
-+	/* check if this is a batman-adv mesh interface */
-+	if (batadv_softif_is_valid(net_dev))
-+		return true;
-+
-+	/* no more parents..stop recursion */
-+	if (net_dev->iflink == net_dev->ifindex)
-+		return false;
-+
-+	/* recurse over the parent device */
-+	parent_dev = dev_get_by_index(&init_net, net_dev->iflink);
-+	/* if we got a NULL parent_dev there is something broken.. */
-+	if (WARN(!parent_dev, "Cannot find parent device"))
-+		return false;
-+
-+	ret = batadv_is_on_batman_iface(parent_dev);
-+
-+	if (parent_dev)
-+		dev_put(parent_dev);
-+	return ret;
-+}
-+
- static int batadv_is_valid_iface(const struct net_device *net_dev)
- {
- 	if (net_dev->flags & IFF_LOOPBACK)
-@@ -71,7 +110,7 @@ static int batadv_is_valid_iface(const struct net_device *net_dev)
+@@ -428,7 +432,7 @@ batadv_bla_update_own_backbone_gw(struct batadv_priv *bat_priv,
+ 
+ 	backbone_gw = batadv_bla_get_backbone_gw(bat_priv,
+ 						 primary_if->net_dev->dev_addr,
+-						 vid);
++						 vid, true);
+ 	if (unlikely(!backbone_gw))
+ 		return;
+ 
+@@ -636,7 +640,8 @@ static int batadv_handle_announce(struct batadv_priv *bat_priv,
+ 	if (memcmp(an_addr, batadv_announce_mac, 4) != 0)
  		return 0;
  
- 	/* no batman over batman */
--	if (batadv_softif_is_valid(net_dev))
-+	if (batadv_is_on_batman_iface(net_dev))
- 		return 0;
+-	backbone_gw = batadv_bla_get_backbone_gw(bat_priv, backbone_addr, vid);
++	backbone_gw = batadv_bla_get_backbone_gw(bat_priv, backbone_addr, vid,
++						 false);
  
- 	return 1;
+ 	if (unlikely(!backbone_gw))
+ 		return 1;
+@@ -734,7 +739,8 @@ static int batadv_handle_claim(struct batadv_priv *bat_priv,
+ 
+ 	/* register the gateway if not yet available, and add the claim. */
+ 
+-	backbone_gw = batadv_bla_get_backbone_gw(bat_priv, backbone_addr, vid);
++	backbone_gw = batadv_bla_get_backbone_gw(bat_priv, backbone_addr, vid,
++						 false);
+ 
+ 	if (unlikely(!backbone_gw))
+ 		return 1;
 -- 
 1.8.0
 
