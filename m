@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 13 Nov 2012 10:15:36 +0100
-Message-Id: <1352798139-19458-9-git-send-email-ordex@autistici.org>
+Date: Tue, 13 Nov 2012 10:15:37 +0100
+Message-Id: <1352798139-19458-10-git-send-email-ordex@autistici.org>
 In-Reply-To: <1352798139-19458-1-git-send-email-ordex@autistici.org>
 References: <1352798139-19458-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 08/11] batman-adv: refactor code to simplify
-	long lines
+Subject: [B.A.T.M.A.N.] [PATCH 09/11] batman-adv: refactor
+	tt_global_del_struct()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,132 +20,67 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+batadv_tt_global_del_struct() function is not properly named.
+Having a more meaningful name which reflects the current behavior helps other
+developers to easily understand what it does.
+
+A parameter has also been renamed in order to let the function header better fit
+the 80-chars line-width
+
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/translation-table.c | 62 ++++++++++++++++++--------------------
- 1 file changed, 30 insertions(+), 32 deletions(-)
+ net/batman-adv/translation-table.c | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index d741851..c24e604 100644
+index c24e604..cb8433a 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -242,86 +242,84 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 			 int ifindex)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
--	struct batadv_tt_local_entry *tt_local_entry = NULL;
--	struct batadv_tt_global_entry *tt_global_entry = NULL;
-+	struct batadv_tt_local_entry *tt_local = NULL;
-+	struct batadv_tt_global_entry *tt_global = NULL;
- 	struct hlist_head *head;
- 	struct hlist_node *node;
- 	struct batadv_tt_orig_list_entry *orig_entry;
- 	int hash_added;
- 
--	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr);
-+	tt_local = batadv_tt_local_hash_find(bat_priv, addr);
- 
--	if (tt_local_entry) {
--		tt_local_entry->last_seen = jiffies;
-+	if (tt_local) {
-+		tt_local->last_seen = jiffies;
- 		/* possibly unset the BATADV_TT_CLIENT_PENDING flag */
--		tt_local_entry->common.flags &= ~BATADV_TT_CLIENT_PENDING;
-+		tt_local->common.flags &= ~BATADV_TT_CLIENT_PENDING;
- 		goto out;
- 	}
- 
--	tt_local_entry = kmalloc(sizeof(*tt_local_entry), GFP_ATOMIC);
--	if (!tt_local_entry)
-+	tt_local = kmalloc(sizeof(*tt_local), GFP_ATOMIC);
-+	if (!tt_local)
- 		goto out;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Creating new local tt entry: %pM (ttvn: %d)\n", addr,
- 		   (uint8_t)atomic_read(&bat_priv->tt.vn));
- 
--	memcpy(tt_local_entry->common.addr, addr, ETH_ALEN);
--	tt_local_entry->common.flags = BATADV_NO_FLAGS;
-+	memcpy(tt_local->common.addr, addr, ETH_ALEN);
-+	tt_local->common.flags = BATADV_NO_FLAGS;
- 	if (batadv_is_wifi_iface(ifindex))
--		tt_local_entry->common.flags |= BATADV_TT_CLIENT_WIFI;
--	atomic_set(&tt_local_entry->common.refcount, 2);
--	tt_local_entry->last_seen = jiffies;
--	tt_local_entry->common.added_at = tt_local_entry->last_seen;
-+		tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
-+	atomic_set(&tt_local->common.refcount, 2);
-+	tt_local->last_seen = jiffies;
-+	tt_local->common.added_at = tt_local->last_seen;
- 
- 	/* the batman interface mac address should never be purged */
- 	if (batadv_compare_eth(addr, soft_iface->dev_addr))
--		tt_local_entry->common.flags |= BATADV_TT_CLIENT_NOPURGE;
-+		tt_local->common.flags |= BATADV_TT_CLIENT_NOPURGE;
- 
- 	/* The local entry has to be marked as NEW to avoid to send it in
- 	 * a full table response going out before the next ttvn increment
- 	 * (consistency check)
- 	 */
--	tt_local_entry->common.flags |= BATADV_TT_CLIENT_NEW;
-+	tt_local->common.flags |= BATADV_TT_CLIENT_NEW;
- 
- 	hash_added = batadv_hash_add(bat_priv->tt.local_hash, batadv_compare_tt,
--				     batadv_choose_orig,
--				     &tt_local_entry->common,
--				     &tt_local_entry->common.hash_entry);
-+				     batadv_choose_orig, &tt_local->common,
-+				     &tt_local->common.hash_entry);
- 
- 	if (unlikely(hash_added != 0)) {
- 		/* remove the reference for the hash */
--		batadv_tt_local_entry_free_ref(tt_local_entry);
-+		batadv_tt_local_entry_free_ref(tt_local);
- 		goto out;
- 	}
- 
--	batadv_tt_local_event(bat_priv, addr, tt_local_entry->common.flags);
-+	batadv_tt_local_event(bat_priv, addr, tt_local->common.flags);
- 
- 	/* remove address from global hash if present */
--	tt_global_entry = batadv_tt_global_hash_find(bat_priv, addr);
-+	tt_global = batadv_tt_global_hash_find(bat_priv, addr);
- 
- 	/* Check whether it is a roaming! */
--	if (tt_global_entry) {
-+	if (tt_global) {
- 		/* These node are probably going to update their tt table */
--		head = &tt_global_entry->orig_list;
-+		head = &tt_global->orig_list;
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_entry, node, head, list) {
--			batadv_send_roam_adv(bat_priv,
--					     tt_global_entry->common.addr,
-+			batadv_send_roam_adv(bat_priv, tt_global->common.addr,
- 					     orig_entry->orig_node);
- 		}
- 		rcu_read_unlock();
- 		/* The global entry has to be marked as ROAMING and
- 		 * has to be kept for consistency purpose
- 		 */
--		tt_global_entry->common.flags |= BATADV_TT_CLIENT_ROAM;
--		tt_global_entry->roam_at = jiffies;
-+		tt_global->common.flags |= BATADV_TT_CLIENT_ROAM;
-+		tt_global->roam_at = jiffies;
- 	}
- out:
--	if (tt_local_entry)
--		batadv_tt_local_entry_free_ref(tt_local_entry);
--	if (tt_global_entry)
--		batadv_tt_global_entry_free_ref(tt_global_entry);
-+	if (tt_local)
-+		batadv_tt_local_entry_free_ref(tt_local);
-+	if (tt_global)
-+		batadv_tt_global_entry_free_ref(tt_global);
+@@ -927,18 +927,17 @@ batadv_tt_global_del_orig_entry(struct batadv_priv *bat_priv,
+ 	spin_unlock_bh(&tt_global_entry->list_lock);
  }
  
- static void batadv_tt_realloc_packet_buff(unsigned char **packet_buff,
+-static void
+-batadv_tt_global_del_struct(struct batadv_priv *bat_priv,
+-			    struct batadv_tt_global_entry *tt_global_entry,
+-			    const char *message)
++static void batadv_tt_global_free(struct batadv_priv *bat_priv,
++				  struct batadv_tt_global_entry *tt_global,
++				  const char *message)
+ {
+ 	batadv_dbg(BATADV_DBG_TT, bat_priv,
+ 		   "Deleting global tt entry %pM: %s\n",
+-		   tt_global_entry->common.addr, message);
++		   tt_global->common.addr, message);
+ 
+ 	batadv_hash_remove(bat_priv->tt.global_hash, batadv_compare_tt,
+-			   batadv_choose_orig, tt_global_entry->common.addr);
+-	batadv_tt_global_entry_free_ref(tt_global_entry);
++			   batadv_choose_orig, tt_global->common.addr);
++	batadv_tt_global_entry_free_ref(tt_global);
+ 
+ }
+ 
+@@ -1002,8 +1001,8 @@ static void batadv_tt_global_del(struct batadv_priv *bat_priv,
+ 						orig_node, message);
+ 
+ 		if (hlist_empty(&tt_global_entry->orig_list))
+-			batadv_tt_global_del_struct(bat_priv, tt_global_entry,
+-						    message);
++			batadv_tt_global_free(bat_priv, tt_global_entry,
++					      message);
+ 
+ 		goto out;
+ 	}
+@@ -1026,7 +1025,7 @@ static void batadv_tt_global_del(struct batadv_priv *bat_priv,
+ 	if (local_entry) {
+ 		/* local entry exists, case 2: client roamed to us. */
+ 		batadv_tt_global_del_orig_list(tt_global_entry);
+-		batadv_tt_global_del_struct(bat_priv, tt_global_entry, message);
++		batadv_tt_global_free(bat_priv, tt_global_entry, message);
+ 	} else
+ 		/* no local entry exists, case 1: check for roaming */
+ 		batadv_tt_global_del_roaming(bat_priv, tt_global_entry,
 -- 
 1.8.0
 
