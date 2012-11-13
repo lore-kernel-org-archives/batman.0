@@ -1,16 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 13 Nov 2012 09:08:12 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121113080811.GK16547@ritirata.org>
-References: <1352541632-25336-1-git-send-email-ordex@autistici.org>
- <20121113080622.GJ16547@ritirata.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 13 Nov 2012 16:30:02 +0800
+References: <1352408130-22971-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1352408130-22971-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="T4IYkFBVPN84tP7K"
-Content-Disposition: inline
-In-Reply-To: <20121113080622.GJ16547@ritirata.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Initialize lockdep class
- keys for hashes
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201211131630.02654.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: don't add TEMP
+	clients belonging to other backbone nodes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,53 +23,21 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+On Friday, November 09, 2012 04:55:29 Antonio Quartulli wrote:
+> The "early client detection" mechanism must not add clients belonging
+> to other backbone nodes. Such clients must be reached by directly
+> using the LAN instead of the mesh.
+> 
+> This was introduced by 724d05c8215e4e8186097121595ef20b6ba601b7
+> ("batman-adv: detect not yet announced clients")
+> 
+> Reported-by: Glen Page <glen.page@thet.net>
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+>  translation-table.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
 
---T4IYkFBVPN84tP7K
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Applied in revision 9b5c6ae.
 
-On Tue, Nov 13, 2012 at 09:06:22AM +0100, Antonio Quartulli wrote:
-> On Sat, Nov 10, 2012 at 11:00:32AM +0100, Antonio Quartulli wrote:
-> > Different hashes have the same class key key because they get
-> > initialised with the same one. For this reason lockdep can create
-> > false warning when they are used recursively.
-> >=20
-> > Re-initialise the key for each hash after the invocation to hash_new()
-> > to avoid this problem.
-> >=20
-> > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
->=20
-> I was thinking...instead of creating such "a free noise" in udev, we may =
-want to
-> add a configuration facility so that the user can choose which uevents to=
- enable
-> and which not..
->=20
-> If we don't do so batman-adv will start throwing uevents even if not need=
-ed.
->=20
-> Please, drop this patch. We need some more code here :-)
-
-Sorry, the message above was meant for another patch -.-
-
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---T4IYkFBVPN84tP7K
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlCh/+sACgkQpGgxIkP9cwe3zQCcDmfoBlgk2v7myp2d7vSCnO2Y
-1vIAnif9uRUZxAfhiChmOgUXIJePWz6/
-=OVpH
------END PGP SIGNATURE-----
-
---T4IYkFBVPN84tP7K--
+Thanks,
+Marek
