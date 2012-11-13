@@ -1,17 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 13 Nov 2012 18:04:49 +0800
-References: <1350479255-904-1-git-send-email-linus.luessing@web.de>
- <trinity-466685df-dab6-476d-be38-9f1320389eff-1350499385870@3capp-webde-bs10>
- <20121017184839.GS7023@ritirata.org>
-In-Reply-To: <20121017184839.GS7023@ritirata.org>
+Return-Path: <shanwei88@gmail.com>
+Message-ID: <50A22019.2090804@gmail.com>
+Date: Tue, 13 Nov 2012 18:25:29 +0800
+From: Shan Wei <shanwei88@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+References: <50A1A816.3070900@gmail.com>
+ <201211131755.13299.lindner_marek@yahoo.de>
+In-Reply-To: <201211131755.13299.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201211131804.49542.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Do not add multicast MAC
-	addresses to translation table
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 9/9] net: batman-adv: use per_cpu_add
+ helper
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,37 +21,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Marek Lindner <lindner_marek@yahoo.de>
+Cc: NetDev <netdev@vger.kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, Kernel-Maillist <linux-kernel@vger.kernel.org>, siwu@hrz.tu-chemnitz.de, Christoph Lameter <cl@linux.com>, David Miller <davem@davemloft.net>
 
-On Thursday, October 18, 2012 02:48:39 Antonio Quartulli wrote:
-> > Hm, no, I do not have a specific scenario in mind. I only accidentally
-> > noticed such an FF:FF:FF:FF:FF:FF mac address in our vis graph here when
-> > I made a typo with the tool 'mausezahn'.
-> >
-> > 
-> >
-> > I don't know of any RFC or so which would generally forbid using a
-> > multicast source MAC for every ether type (although for sane IPv4/v6
-> > stacks I haven't seen something like this before either and yes, I bet
-> > it's not allowed there).
-> >
-> > 
-> >
-> > The Linux bridge I had on top of bat0 was happily forwarding such frames
-> > into batman-adv. So I thought doing it like the bridge code - forwarding
-> > but with no learning - might be the right way?
+Marek Lindner said, at 2012/11/13 17:55:
+>>  net/batman-adv/main.h |    4 +---
+>>  1 files changed, 1 insertions(+), 3 deletions(-)
 > 
-> I think you are right. We should not care about the payload logic. If that
-> is not allowed for the upper layer, then that layer will drop the packet
-> once received.
-> 
-> 
-> So we should keep forwarding such packets and yes, we should prevent
-> learning from them. Therefore:
-> 
-> Acked-by: Antonio Quartulli <ordex@autistici.org>
+> Applied in our tree (revision f8b19e1). We will pass along this patch through 
+> our standard workflow. No need to resend this patch in the future.
 
-Applied in revision 9868989.
+OK thanks~
 
-Thanks,
-Marek
+> 
+> Thanks,
+> Marek
+> 
+
