@@ -1,16 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 13 Nov 2012 18:42:22 +0800
-References: <1352409376-28885-1-git-send-email-ordex@autistici.org>
- <1352409376-28885-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1352409376-28885-2-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Return-Path: <davem@davemloft.net>
+Date: Tue, 13 Nov 2012 14:24:01 -0500 (EST)
+Message-Id: <20121113.142401.1673481049958731174.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1352798139-19458-2-git-send-email-ordex@autistici.org>
+References: <1352798139-19458-1-git-send-email-ordex@autistici.org>
+ <1352798139-19458-2-git-send-email-ordex@autistici.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <201211131842.22867.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: improve local
-	translation table output
+Subject: Re: [B.A.T.M.A.N.] [PATCH 01/11] batman-adv: don't rely on
+ positions in struct for hashing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,18 +21,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: ordex@autistici.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, siwu@hrz.tu-chemnitz.de
 
-On Friday, November 09, 2012 05:16:16 Antonio Quartulli wrote:
-> This patch adds a nice header to the local translation table and
-> the last_seen time for each local entry
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  translation-table.c | 19 +++++++++++++++++--
->  1 file changed, 17 insertions(+), 2 deletions(-)
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 13 Nov 2012 10:15:29 +0100
 
-Applied in revision 59cb086.
+> @@ -37,18 +37,26 @@ static void batadv_bla_periodic_work(struct work_struct *work);
+>  static void batadv_bla_send_announce(struct batadv_priv *bat_priv,
+>  				     struct batadv_backbone_gw *backbone_gw);
+>  
+> +static inline void hash_bytes(uint32_t *hash, void *data, uint32_t size)
+> +{
+> +	const unsigned char *key = data;
+> +	int i;
+> +
+> +	for (i = 0; i < size; i++) {
+> +		*hash += key[i];
+> +		*hash += (*hash << 10);
+> +		*hash ^= (*hash >> 6);
+> +	}
+> +}
+> +
 
-Thanks,
-Marek
+Remove the inline tag.
+
+Return the uint32_t resulting hash value rather than passing it by
+reference.
