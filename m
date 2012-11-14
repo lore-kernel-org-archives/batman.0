@@ -1,15 +1,8 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 13 Nov 2012 14:24:01 -0500 (EST)
-Message-Id: <20121113.142401.1673481049958731174.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1352798139-19458-2-git-send-email-ordex@autistici.org>
-References: <1352798139-19458-1-git-send-email-ordex@autistici.org>
- <1352798139-19458-2-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 01/11] batman-adv: don't rely on
- positions in struct for hashing
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Wed, 14 Nov 2012 10:53:48 +0100
+Message-Id: <1352886828-24651-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [RFC] batman-adv: pass value in batadv_hash_bytes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,30 +14,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, siwu@hrz.tu-chemnitz.de
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 13 Nov 2012 10:15:29 +0100
+Passing the hash value by reference creates unneeded overhead. Pass by
+value instead.
 
-> @@ -37,18 +37,26 @@ static void batadv_bla_periodic_work(struct work_struct *work);
->  static void batadv_bla_send_announce(struct batadv_priv *bat_priv,
->  				     struct batadv_backbone_gw *backbone_gw);
->  
-> +static inline void hash_bytes(uint32_t *hash, void *data, uint32_t size)
-> +{
-> +	const unsigned char *key = data;
-> +	int i;
-> +
-> +	for (i = 0; i < size; i++) {
-> +		*hash += key[i];
-> +		*hash += (*hash << 10);
-> +		*hash ^= (*hash >> 6);
-> +	}
-> +}
-> +
+Reported-by: David Miller <davem@davemloft.net>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ bridge_loop_avoidance.c |    8 ++++----
+ hash.h                  |   12 ++++++++----
+ 2 files changed, 12 insertions(+), 8 deletions(-)
 
-Remove the inline tag.
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index b6da6ae..fc56ea2 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -43,8 +43,8 @@ static inline uint32_t batadv_choose_claim(const void *data, uint32_t size)
+ 	struct batadv_claim *claim = (struct batadv_claim *)data;
+ 	uint32_t hash = 0;
+ 
+-	batadv_hash_bytes(&hash, &claim->addr, sizeof(claim->addr));
+-	batadv_hash_bytes(&hash, &claim->vid, sizeof(claim->vid));
++	hash = batadv_hash_bytes(hash, &claim->addr, sizeof(claim->addr));
++	hash = batadv_hash_bytes(hash, &claim->vid, sizeof(claim->vid));
+ 
+ 	hash += (hash << 3);
+ 	hash ^= (hash >> 11);
+@@ -60,8 +60,8 @@ static inline uint32_t batadv_choose_backbone_gw(const void *data,
+ 	struct batadv_claim *claim = (struct batadv_claim *)data;
+ 	uint32_t hash = 0;
+ 
+-	batadv_hash_bytes(&hash, &claim->addr, sizeof(claim->addr));
+-	batadv_hash_bytes(&hash, &claim->vid, sizeof(claim->vid));
++	hash = batadv_hash_bytes(hash, &claim->addr, sizeof(claim->addr));
++	hash = batadv_hash_bytes(hash, &claim->vid, sizeof(claim->vid));
+ 
+ 	hash += (hash << 3);
+ 	hash ^= (hash >> 11);
+diff --git a/hash.h b/hash.h
+index f173427..e053339 100644
+--- a/hash.h
++++ b/hash.h
+@@ -86,17 +86,21 @@ static inline void batadv_hash_delete(struct batadv_hashtable *hash,
+  *	@hash: previous hash value
+  *	@data: data to be hashed
+  *	@size: number of bytes to be hashed
++ *
++ *	Returns the new hash value.
+  */
+-static inline void batadv_hash_bytes(uint32_t *hash, void *data, uint32_t size)
++static inline uint32_t batadv_hash_bytes(uint32_t hash, void *data,
++					 uint32_t size)
+ {
+ 	const unsigned char *key = data;
+ 	int i;
+ 
+ 	for (i = 0; i < size; i++) {
+-		*hash += key[i];
+-		*hash += (*hash << 10);
+-		*hash ^= (*hash >> 6);
++		hash += key[i];
++		hash += (hash << 10);
++		hash ^= (hash >> 6);
+ 	}
++	return hash;
+ }
+ 
+ /**
+-- 
+1.7.10
 
-Return the uint32_t resulting hash value rather than passing it by
-reference.
