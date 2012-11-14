@@ -1,11 +1,13 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 14 Nov 2012 21:16:27 +0100
-Message-Id: <1352924189-18843-10-git-send-email-ordex@autistici.org>
+Return-Path: <davem@davemloft.net>
+Date: Wed, 14 Nov 2012 18:01:35 -0500 (EST)
+Message-Id: <20121114.180135.2123533391563274941.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <1352924189-18843-1-git-send-email-ordex@autistici.org>
 References: <1352924189-18843-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 09/11] batman-adv: refactor
-	tt_global_del_struct()
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2012-11-14
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,70 +19,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org, ordex@autistici.org
+Cc: netdev@vger.kernel.org
 
-batadv_tt_global_del_struct() function is not properly named.
-Having a more meaningful name which reflects the current behavior helps other
-developers to easily understand what it does.
 
-A parameter has also been renamed in order to let the function header better fit
-the 80-chars line-width
+I'm starting to get spammed by the b.a.t.m.a.n list somehow, it's
+emitting tons of postings and I can tell it's coming from the
+list or similar because:
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/translation-table.c | 19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+1) Every Subject line is prefixed "[B.A.T.M.A.N]", whereas your netdev
+   posting and your direct email to me doesn't have this prefix.
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index c24e604..cb8433a 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -927,18 +927,17 @@ batadv_tt_global_del_orig_entry(struct batadv_priv *bat_priv,
- 	spin_unlock_bh(&tt_global_entry->list_lock);
- }
- 
--static void
--batadv_tt_global_del_struct(struct batadv_priv *bat_priv,
--			    struct batadv_tt_global_entry *tt_global_entry,
--			    const char *message)
-+static void batadv_tt_global_free(struct batadv_priv *bat_priv,
-+				  struct batadv_tt_global_entry *tt_global,
-+				  const char *message)
- {
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Deleting global tt entry %pM: %s\n",
--		   tt_global_entry->common.addr, message);
-+		   tt_global->common.addr, message);
- 
- 	batadv_hash_remove(bat_priv->tt.global_hash, batadv_compare_tt,
--			   batadv_choose_orig, tt_global_entry->common.addr);
--	batadv_tt_global_entry_free_ref(tt_global_entry);
-+			   batadv_choose_orig, tt_global->common.addr);
-+	batadv_tt_global_entry_free_ref(tt_global);
- 
- }
- 
-@@ -1002,8 +1001,8 @@ static void batadv_tt_global_del(struct batadv_priv *bat_priv,
- 						orig_node, message);
- 
- 		if (hlist_empty(&tt_global_entry->orig_list))
--			batadv_tt_global_del_struct(bat_priv, tt_global_entry,
--						    message);
-+			batadv_tt_global_free(bat_priv, tt_global_entry,
-+					      message);
- 
- 		goto out;
- 	}
-@@ -1026,7 +1025,7 @@ static void batadv_tt_global_del(struct batadv_priv *bat_priv,
- 	if (local_entry) {
- 		/* local entry exists, case 2: client roamed to us. */
- 		batadv_tt_global_del_orig_list(tt_global_entry);
--		batadv_tt_global_del_struct(bat_priv, tt_global_entry, message);
-+		batadv_tt_global_free(bat_priv, tt_global_entry, message);
- 	} else
- 		/* no local entry exists, case 1: check for roaming */
- 		batadv_tt_global_del_roaming(bat_priv, tt_global_entry,
--- 
-1.8.0
+2) Every email has this Reply-To:
 
+====================
+Reply-to: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+====================
+
+I'm getting postings by other people from several days ago, fox example
+the fuzzer report from Sasha Levin on November 12th.
+
+Please fix this now, or I'm simply going to filter all batman-adv
+postings from my inbox and patchwork until this is resolved as I
+simply do not have the time for sorting through extra emails like
+this.
+
+Thanks.
