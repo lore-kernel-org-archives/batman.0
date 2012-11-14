@@ -1,13 +1,14 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 14 Nov 2012 12:59:07 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121114115907.GA29879@ritirata.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 14 Nov 2012 21:13:36 +0800
 References: <1352886828-24651-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+ <20121114115907.GA29879@ritirata.org>
+In-Reply-To: <20121114115907.GA29879@ritirata.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
-Content-Disposition: inline
-In-Reply-To: <1352886828-24651-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201211142113.37050.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: pass value in batadv_hash_bytes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,44 +21,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
+On Wednesday, November 14, 2012 19:59:07 Antonio Quartulli wrote:
+>   On Wed, Nov 14, 2012 at 10:53:48 +0100, Simon Wunderlich wrote:
+> > Passing the hash value by reference creates unneeded overhead. Pass by
+> > value instead.
+> >
+> > 
+> >
+> > Reported-by: David Miller <davem@davemloft.net>
+> > Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> 
+> I think this was not meant to be an RFC :-)
+> And I suppose this patch should be applied to next and no to master,
+> because it should be merged with the next pull request.
 
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Nov 14, 2012 at 10:53:48 +0100, Simon Wunderlich wrote:
-> Passing the hash value by reference creates unneeded overhead. Pass by
-> value instead.
->=20
-> Reported-by: David Miller <davem@davemloft.net>
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-
-I think this was not meant to be an RFC :-)
-And I suppose this patch should be applied to next and no to master, becaus=
-e it
-should be merged with the next pull request.
+Aren't we supposed to remove the inline tag as well ?
 
 Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---vkogqOf2sHV7VnPd
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlCjh4sACgkQpGgxIkP9cwdLJACeLU+n7G4lILZUNURJjJ9zE0W+
-4YoAnjFuYCLs33Vw2Zf8uERFeDG/ixvn
-=Ds7M
------END PGP SIGNATURE-----
-
---vkogqOf2sHV7VnPd--
+Marek
