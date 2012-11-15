@@ -1,14 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 15 Nov 2012 15:52:39 +0100
-Message-ID: <2209585.UvM0g0TlVj@bentobox>
-In-Reply-To: <20121115110159.GA32359@pandem0nium>
-References: <20121115110159.GA32359@pandem0nium>
+Return-Path: <don@dis.org.nz>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2257407.MjlvRYxqaZ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] Misconfigured mail-server, anyone?
+In-Reply-To: <20121001210650.GB15826@pandem0nium>
+References: <CAK+uisD5AddOnF+o5U4LdFu+7CAnNCJna8wBZL1huHqZyeLOfg@mail.gmail.com>
+ <20121001210650.GB15826@pandem0nium>
+Date: Fri, 16 Nov 2012 12:04:08 +1300
+Message-ID: <CAK+uisAU3eakeuWkuWXR676vpzdoXtM42uM+A-nTM-73d-G9jQ@mail.gmail.com>
+From: Donald Gordon <don@dis.org.nz>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] batman-adv on ethernet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,47 +19,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi
 
---nextPart2257407.MjlvRYxqaZ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+(sorry for the very late reply)
 
-On Thursday 15 November 2012 12:01:59 Simon Wunderlich wrote:
-[...]
-> If you (partly) match this description, please check your mail server
-> and fix this. If you could drop me a mail too, that would be great
-> - I won't tell on you, promise - but then we can stop looking for
-> the culprit. ;)
+On Tue, Oct 2, 2012 at 10:06 AM, Simon Wunderlich
+<simon.wunderlich@s2003.tu-chemnitz.de> wrote:
+> You are about to enable batman-adv on 'eth0' which already is part of a bridge. Unless you know exactly what you are doing this is probably wrong and won't work the way you think it would.
+...
+> You may want to explain your scenario, maybe we can come up with a solution together.
 
-Ok, the person responsible for the mail spam was found. It was an user who 
-accidently resent all messages with the original headers (but not with the 
-envelopes). He promised not do it again.
+I think what I really want to know is the answer to this question.
 
-Kind regards,
-	Sven
---nextPart2257407.MjlvRYxqaZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+In a network with topology:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+node 1: bat0 bridged to wired lan 0, over wifi batman can see node 2
 
-iQIcBAABCgAGBQJQpQG3AAoJEF2HCgfBJntGHfMQAII1+omq4JN38VTd4bp/s3Ig
-VPQnL7WkLc/D+0uPbHFb1dtTtEDwwRDxLXe3RApN32OSjNF0RppbclxU0Mr0Pl4k
-/p9dsZ9huoCoRoq7AeQ9kTf9WE/GzALCQI2uFAFk8O1JpL5XBP/ysN7vTOMfQTLQ
-vtGApVO7WRE7XiWOrTJb+mEoiJvPwfUZ8fyxwH2xml/wmRwR01ciJiZP0tSVA2WA
-YNxd4342CZqCQnweeGCAG/ZWGr012xEuiTrebio1ck4mRyQEoz2Zl25Xv05YGYqc
-0pYEK5ac8moHH2QHujqv7sqqmxx4q7p+gHLiaXi/2Ds1JO/Jkymsr15CQaGoas/o
-4ckrKGAflLq6I+XMLSGnu4bgdzD7Xl6Ow8x4PpKsjQZNxurm4H8Yeq6HHPgiQjRh
-9+4moqxHtyCUHzU92GbHl23YHAiqzbzbJbP9+hNXu6VWpbsKYbWBrxNL+UpWt9HA
-HmSOxAZ7RRkGMBypouCKaKIXc+h4Rb2ZUt4+hWEioPqScPn5geYmcUizinVVGcfD
-h/S0DeAgd8lS1Wkp8+uc4iMN6124JmvdSzRBSWliz6bhoqlXoGRAJLeaLYS+QZKX
-Q8Psw7jUeMJ4MoqLUgl4S22hIAHgh0SD23YX8o4OarKG+sMvaZu0G7op+E7n0OJx
-1hn9uyKbBtTBSOGcgdRf
-=qhJb
------END PGP SIGNATURE-----
+node 2: bat0 bridged to wired lan 1, over wifi batman can see nodes 1,3
 
---nextPart2257407.MjlvRYxqaZ--
+node 3: bat0 bridged to wired lan 1, over wifi batman can see nodes 2,4
 
+node 4: bat0 bridged to wired lan 2, over wifi batman can see node 3
+
+how will packets from wired lan 0 to wired lan 2 make their way
+between nodes 2 and 3?  Will Batman be able to use the wired link or
+will they just go through wifi?
+
+thanks
+
+donald
