@@ -1,16 +1,16 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 16 Nov 2012 10:26:56 +0100
-Message-ID: <2758031.CBsSgkzjUr@bentobox>
-In-Reply-To: <CAK+uisAU3eakeuWkuWXR676vpzdoXtM42uM+A-nTM-73d-G9jQ@mail.gmail.com>
-References: <CAK+uisD5AddOnF+o5U4LdFu+7CAnNCJna8wBZL1huHqZyeLOfg@mail.gmail.com>
- <20121001210650.GB15826@pandem0nium>
- <CAK+uisAU3eakeuWkuWXR676vpzdoXtM42uM+A-nTM-73d-G9jQ@mail.gmail.com>
+Date: Fri, 16 Nov 2012 20:17:14 +0100
+Message-ID: <2584311.tkU79LDNzZ@bentobox>
+In-Reply-To: <201211060258.54459.lindner_marek@yahoo.de>
+References: <1351982508-16991-1-git-send-email-sven@narfation.org>
+ <201211060258.54459.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1536392.kqI04ameOZ";
+Content-Type: multipart/signed; boundary="nextPart4400578.oQCKhda3AA";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv on ethernet
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Reorder structs to
+	reduce	padding
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,70 +23,64 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 
---nextPart1536392.kqI04ameOZ
+--nextPart4400578.oQCKhda3AA
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 16 November 2012 12:04:08 Donald Gordon wrote:
-> Hi
+On Monday 05 November 2012 19:58:54 Marek Lindner wrote:
+> On Sunday, November 04, 2012 06:41:48 Sven Eckelmann wrote:
+> > -       struct batadv_neigh_node __rcu *router; /* rcu protected pointer
+> > */
+> > 
+> >  #ifdef CONFIG_BATMAN_ADV_DAT
+> >  
+> >         batadv_dat_addr_t dat_addr;
+> >  
+> >  #endif
+> > 
+> > +       uint8_t flags;
+> > +       uint8_t gw_flags;
+> > +       struct batadv_neigh_node __rcu *router; /* rcu protected pointer
+> > */
 > 
-> (sorry for the very late reply)
-> 
-> On Tue, Oct 2, 2012 at 10:06 AM, Simon Wunderlich
-> 
-> <simon.wunderlich@s2003.tu-chemnitz.de> wrote:
-> > You are about to enable batman-adv on 'eth0' which already is part of a
-> > bridge. Unless you know exactly what you are doing this is probably wrong
-> > and won't work the way you think it would.
-> ...
-> 
-> > You may want to explain your scenario, maybe we can come up with a
-> > solution together.
-> I think what I really want to know is the answer to this question.
-> 
-> In a network with topology:
-> 
-> node 1: bat0 bridged to wired lan 0, over wifi batman can see node 2
-> 
-> node 2: bat0 bridged to wired lan 1, over wifi batman can see nodes 1,3
-> 
-> node 3: bat0 bridged to wired lan 1, over wifi batman can see nodes 2,4
-> 
-> node 4: bat0 bridged to wired lan 2, over wifi batman can see node 3
-> 
-> how will packets from wired lan 0 to wired lan 2 make their way
-> between nodes 2 and 3?  Will Batman be able to use the wired link or
-> will they just go through wifi?
+> Shouldn't we move batadv_dat_addr_t to the end of the struct to achieve the
+> smallest possible struct regardless of whether DAT is compiled in or not ?
+> Or does it have no effect ?
 
-Ethernet is not added as interface to bat0? Then it will only use the wifi-
-links for the mesh because it was told to do so by the person creating the 
-configuration.
+More or less. It is hard to optimize it for both situation. Just moving to the 
+end will not fix the problem because it will create an 1 byte whole which has 
+to filled using something else. And optimizing it for all architectures is 
+even harder.
+
+But this RFC is not really important. It was just a small fun test of pahole 
+for me.
 
 Kind regards,
 	Sven
---nextPart1536392.kqI04ameOZ
+--nextPart4400578.oQCKhda3AA
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAABCgAGBQJQpgbgAAoJEF2HCgfBJntGde4QAIJPGtuvAVBrulYnwnkXzOWc
-E13RwW2IjVB/PS6/JOAJFGId612vhkdvEdjvH3WqYj5xHkwkayp0vK32ZDgm2E9p
-1arLHSfhTvYP0rmZW32VFuo/ZCNWj39h0A34A1qj94kx1xSxzZqXRJzPZs7EwvyH
-WyCLV9CxTTDD7tY9DcRXXgBnl9O2wW/42B+UYV3SvqLv1TkmWg/FeFNiFojNT8wj
-X1Aale/dXpquFN9IMreM50iJ09JXizjzWC0mwFb8AA39gwhlTb+AD9zc8jt3ELWW
-1yNW6PSVt/hP8o2k8X1WNvSDCRlrzhjdQecAEfBaS0sotu26KTB6YGrvTwwQaj1i
-svWj2pgfGN3NGoSn1Z/ZDwAHnPXuwfomgw0x7TD2ll5si/663pI4pnBozNl4zWvX
-eERexYYZiBAV9Titie01fZktp0SaXWiZxGdb9wr0IssZ0BTL9oxXGiwZCeTX9eUe
-v7V0s6ZBF7xd1z3+Jj3SBH9fmXx8ISX6e4PSVPT6ogvBs9z/PmqG3RoLLKynZIlO
-AnrVrBWWOgNbD9ZIxrxBYkOYmgFKC13Kc2rJq9Sbz9rk0exIyxSHbmzUXRo4n/Y7
-vi9Zxd26pHkBIhYerVC7cUMlqEL47+0SbFlPS7LmGSiFVQ3CUuT6x23kIutAuwVD
-BGCqwdW8WE5MU6TsWb3z
-=DCS8
+iQIcBAABCgAGBQJQppE6AAoJEF2HCgfBJntGyJ8P/2Gr+3uyCckoQ7PC/DUHxU6b
+Tpql02f+Lt6NSrSaBf5c4Ll3t/7PNPiM4vGZ7sIaNe4f/3Yuh8+J3P1f/Hqk6VQN
+wdYoMPUXjtPNPKqKDSMkBOlve6tL0/6xtvNKj9qSXU3qL6lrpXNKIGFGnL/ZcflB
+mLLXWoi4xUE1InAZUrUW9Ckg6hCqH8Sf3kbQMjkM910f2AFje5AxgwLNoi0OutJE
+ghIzx2AVV6I7zBket1sC1qOnTGuAGFqM82CN4jO2Zxg6KWpL8lZit/k1e9Sdgtxt
+lyJdEH/0gLRu9866Wxug58m9HrdXb99BS11Ivz+C/ztFj+eNvKI6oeuwRjw0cIcQ
+PemTERg6iFzsVQU1ejjk2IODKERKTfVFfR3eQtEiWZqpVXqvjA4ChxHJ813T3LfC
+NaS5ao7DjEuo+/onp4yxBwdERyUHYgonWzTwQ/2NJtyO/M0ElyJWle0sOFUGTRWV
+cTwBA9F80TPScsq4eo33TgqFtRpcdm9+KsVVA+2NfsMtmush4jdzVytSREzP1rCd
+kJJlvzDQtcFIY6WkCvjZv/+H2IG7IZRL9DqrEJpsXvLl/treG6YfbqilaIMO+Ws2
+LjFuLuNoQ8wfBo7bxx/mfSxys8MqzOwf3ASF3uZwNK069RClVOeQlGtuQasJSvg3
+5BWXIrIgbkF1GdbR8klw
+=i3Uc
 -----END PGP SIGNATURE-----
 
---nextPart1536392.kqI04ameOZ--
+--nextPart4400578.oQCKhda3AA--
 
