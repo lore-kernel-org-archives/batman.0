@@ -1,16 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 16 Nov 2012 20:17:14 +0100
-Message-ID: <2584311.tkU79LDNzZ@bentobox>
-In-Reply-To: <201211060258.54459.lindner_marek@yahoo.de>
-References: <1351982508-16991-1-git-send-email-sven@narfation.org>
- <201211060258.54459.lindner_marek@yahoo.de>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4400578.oQCKhda3AA";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Reorder structs to
-	reduce	padding
+Sender: guido@guidoi.com.ar
+In-Reply-To: <50944FF6.5070504@eigenlab.org>
+References: <CAHD-aqLcsciDBA=4D3ZH0yP4WEYsgY7BhZ+3NFmnm4vQF_apmw@mail.gmail.com>
+ <50944FF6.5070504@eigenlab.org>
+From: Gui Iribarren <gui@altermundi.net>
+Date: Fri, 16 Nov 2012 23:40:18 -0300
+Message-ID: <CAHD-aqLC=xuknD_HWJS1NzrZAcwgxYb3Q4DBVm6cgUYMosCiUw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] A batman-adv success story
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,65 +20,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: Gioacchino Mazzurco <gio@eigenlab.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Fri, Nov 2, 2012 at 7:57 PM, Gioacchino Mazzurco <gio@eigenlab.org> wrote:
+> In Ninux Pisa we use batman-adv too with similar results!
 
---nextPart4400578.oQCKhda3AA
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Great! I'm partially aware of it, but have no idea of the scale and
+the details. Do share your experience! :D
 
-On Monday 05 November 2012 19:58:54 Marek Lindner wrote:
-> On Sunday, November 04, 2012 06:41:48 Sven Eckelmann wrote:
-> > -       struct batadv_neigh_node __rcu *router; /* rcu protected pointer
-> > */
-> > 
-> >  #ifdef CONFIG_BATMAN_ADV_DAT
-> >  
-> >         batadv_dat_addr_t dat_addr;
-> >  
-> >  #endif
-> > 
-> > +       uint8_t flags;
-> > +       uint8_t gw_flags;
-> > +       struct batadv_neigh_node __rcu *router; /* rcu protected pointer
-> > */
-> 
-> Shouldn't we move batadv_dat_addr_t to the end of the struct to achieve the
-> smallest possible struct regardless of whether DAT is compiled in or not ?
-> Or does it have no effect ?
+I also came accross this
 
-More or less. It is hard to optimize it for both situation. Just moving to the 
-end will not fix the problem because it will create an 1 byte whole which has 
-to filled using something else. And optimizing it for all architectures is 
-even harder.
+http://www.open-mesh.org/projects/open-mesh/wiki/New_papers
 
-But this RFC is not really important. It was just a small fun test of pahole 
-for me.
+some interesting readings
 
-Kind regards,
-	Sven
---nextPart4400578.oQCKhda3AA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+>
+> eccept for this:
+>
+> On 11/02/12 22:21, Gui Iribarren wrote:
+>> As it is today, you can't put 2 ipv6 gateways doing SLAAC in the same
+>> batman-adv cloud.
+>
+> This sentence is a little misleading, it is not true you cannot do it,
+> you can but you just receive multiple route announcement that may be not
+> optimal but it is not problematic in most cases
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+IF they are announcing the same prefix, then i agree with your statement
+But AFAIU it's currently not possible to have different gateways
+announcing two different prefixes... Clients get SLAAC addresses on
+two different networks, and things break, (at least that's what i
+understand about how things should work?)
 
-iQIcBAABCgAGBQJQppE6AAoJEF2HCgfBJntGyJ8P/2Gr+3uyCckoQ7PC/DUHxU6b
-Tpql02f+Lt6NSrSaBf5c4Ll3t/7PNPiM4vGZ7sIaNe4f/3Yuh8+J3P1f/Hqk6VQN
-wdYoMPUXjtPNPKqKDSMkBOlve6tL0/6xtvNKj9qSXU3qL6lrpXNKIGFGnL/ZcflB
-mLLXWoi4xUE1InAZUrUW9Ckg6hCqH8Sf3kbQMjkM910f2AFje5AxgwLNoi0OutJE
-ghIzx2AVV6I7zBket1sC1qOnTGuAGFqM82CN4jO2Zxg6KWpL8lZit/k1e9Sdgtxt
-lyJdEH/0gLRu9866Wxug58m9HrdXb99BS11Ivz+C/ztFj+eNvKI6oeuwRjw0cIcQ
-PemTERg6iFzsVQU1ejjk2IODKERKTfVFfR3eQtEiWZqpVXqvjA4ChxHJ813T3LfC
-NaS5ao7DjEuo+/onp4yxBwdERyUHYgonWzTwQ/2NJtyO/M0ElyJWle0sOFUGTRWV
-cTwBA9F80TPScsq4eo33TgqFtRpcdm9+KsVVA+2NfsMtmush4jdzVytSREzP1rCd
-kJJlvzDQtcFIY6WkCvjZv/+H2IG7IZRL9DqrEJpsXvLl/treG6YfbqilaIMO+Ws2
-LjFuLuNoQ8wfBo7bxx/mfSxys8MqzOwf3ASF3uZwNK069RClVOeQlGtuQasJSvg3
-5BWXIrIgbkF1GdbR8klw
-=i3Uc
------END PGP SIGNATURE-----
+If batman-adv could segregate RAs broadcast domains, it would separate
+ipv6 networks much like it does now with dhcpv4 servers offering ips
+on different subnets
 
---nextPart4400578.oQCKhda3AA--
-
+Gui
