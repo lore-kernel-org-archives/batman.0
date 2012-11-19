@@ -1,18 +1,14 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 19 Nov 2012 22:09:56 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121119210955.GA3129@ritirata.org>
-References: <1353313451-2930-5-git-send-email-ordex@autistici.org>
- <1353351150.4156.4.camel@bwh-desktop.uk.solarflarecom.com>
- <5268262.CIrZ93ERtB@bentobox>
- <20121119.144745.1093556126398582629.davem@davemloft.net>
+Return-Path: <emunicio@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="k1lZvvs/B4yU6o8G"
-Content-Disposition: inline
-In-Reply-To: <20121119.144745.1093556126398582629.davem@davemloft.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 04/10] batman-adv: export compatibility
- version via debugfs
+In-Reply-To: <CAHD-aqLC=xuknD_HWJS1NzrZAcwgxYb3Q4DBVm6cgUYMosCiUw@mail.gmail.com>
+References: <CAHD-aqLcsciDBA=4D3ZH0yP4WEYsgY7BhZ+3NFmnm4vQF_apmw@mail.gmail.com>
+ <50944FF6.5070504@eigenlab.org>
+ <CAHD-aqLC=xuknD_HWJS1NzrZAcwgxYb3Q4DBVm6cgUYMosCiUw@mail.gmail.com>
+From: Esteban Municio <emunicio@gmail.com>
+Date: Mon, 19 Nov 2012 16:32:51 -0500
+Message-ID: <CAMVTf1jua9ZN58Jx=p7kDOn3QbQi_Eo1Mt3taZ2D0ra_td=gGQ@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] A batman-adv success story
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,88 +20,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David Miller <davem@davemloft.net>
-Cc: bhutchings@solarflare.com, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+Thanks Gui for share your experiences. As soon as we can give formal
+results from our implementation in Huancavelica, (Peru) we'll share it
+too.
+
+PD: it's nice the test of the roaming through the river ;-)
+
+2012/11/16 Gui Iribarren <gui@altermundi.net>:
+> On Fri, Nov 2, 2012 at 7:57 PM, Gioacchino Mazzurco <gio@eigenlab.org> wrote:
+>> In Ninux Pisa we use batman-adv too with similar results!
+>
+> Great! I'm partially aware of it, but have no idea of the scale and
+> the details. Do share your experience! :D
+>
+> I also came accross this
+>
+> http://www.open-mesh.org/projects/open-mesh/wiki/New_papers
+>
+> some interesting readings
+>
+>>
+>> eccept for this:
+>>
+>> On 11/02/12 22:21, Gui Iribarren wrote:
+>>> As it is today, you can't put 2 ipv6 gateways doing SLAAC in the same
+>>> batman-adv cloud.
+>>
+>> This sentence is a little misleading, it is not true you cannot do it,
+>> you can but you just receive multiple route announcement that may be not
+>> optimal but it is not problematic in most cases
+>
+> IF they are announcing the same prefix, then i agree with your statement
+> But AFAIU it's currently not possible to have different gateways
+> announcing two different prefixes... Clients get SLAAC addresses on
+> two different networks, and things break, (at least that's what i
+> understand about how things should work?)
+>
+> If batman-adv could segregate RAs broadcast domains, it would separate
+> ipv6 networks much like it does now with dhcpv4 servers offering ips
+> on different subnets
+>
+> Gui
 
 
---k1lZvvs/B4yU6o8G
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Nov 19, 2012 at 02:47:45PM -0500, David Miller wrote:
-> From: Sven Eckelmann <sven@narfation.org>
-> Date: Mon, 19 Nov 2012 20:29:07 +0100
->=20
-> > On Monday 19 November 2012 18:52:30 Ben Hutchings wrote:
-> >> On Mon, 2012-11-19 at 09:24 +0100, Antonio Quartulli wrote:
-> >> > Different versions of the batman-adv module may use the same compati=
-bility
-> >> > version, but this is not understandable at runtime (the only way is =
-to
-> >> > parse the kernel log and fetch the batman-adv advertisement message =
-on
-> >> > loading). The user may want to know whether two nodes using different
-> >> > versions can communicate or not. For this purpose the module has to
-> >> > export this value through debugfs.
-> >> [...]
-> >>=20
-> >> I do hope that you're not planning to use unstable debugfs interfaces
-> >> indefinitely.
-> >=20
-> > Why are you refering to the adding of an file as "incompatible" debugfs=
-=20
-> > interface? I would call it additional information. And the rest of the =
-commit=20
-> > message is talking about *possible* protocol incompatibilies of the net=
-work=20
-> > protocol (which caused this uncontrolled erruption of anger in a networ=
-k=20
-> > maintainer).
->=20
-> Debugfs files aren't where you store information that userspace actually
-> uses in normal situations.
->=20
-> It's for developer debug, to expose internals that otherwise have no
-> business being part of the user visible interfaces.
-
-Ok, you are right. As you already stated, I do see two problems here:
-1) debugfs not used properly (this information is not really for "devs")
-2) this compatibility version export is like the claim: "compatibility is b=
-roken
-   everyday". But actually this is not what we really wanted.
-
-This patch simply came from a feature request raised by a user of ours. As =
-Sven
-pointed out, we have seen it just as "more information available for network
-debugging" and we (in particular me) didn't think about the fact that having
-such a patch was against the "stabilisation" process that we are following =
-(we
-discussed about this process during the last pull request, so you already k=
-now
-that we are already going towards this direction).
-
-David, Ben, if you agree I would remove this patch and repost the pull requ=
-est.
-
-
-Regards,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---k1lZvvs/B4yU6o8G
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlCqoCMACgkQpGgxIkP9cwfuSgCfWdmoWU40GG44YPohSM3VRErc
-xFkAn1bvqqcJSm0A4cOFc9dU87fzSagi
-=9kq8
------END PGP SIGNATURE-----
-
---k1lZvvs/B4yU6o8G--
+-- 
+Esteban
