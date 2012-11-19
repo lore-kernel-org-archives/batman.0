@@ -1,9 +1,17 @@
-Return-Path: <sasha.levin@oracle.com>
-From: Sasha Levin <sasha.levin@oracle.com>
-Date: Mon, 19 Nov 2012 15:08:15 -0500
-Message-Id: <1353355695-23252-1-git-send-email-sasha.levin@oracle.com>
-Subject: [B.A.T.M.A.N.] [PATCH] net,
-	batman: don't crash on zero length strings in routing_algo
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 19 Nov 2012 21:25:23 +0100
+Message-ID: <2101957.c21FspBRQs@sven-laptop.home.narfation.org>
+In-Reply-To: <1353354018.4156.13.camel@bwh-desktop.uk.solarflarecom.com>
+References: <1353313451-2930-1-git-send-email-ordex@autistici.org>
+ <5268262.CIrZ93ERtB@bentobox>
+ <1353354018.4156.13.camel@bwh-desktop.uk.solarflarecom.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1390365.niZB4vpOmQ";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 04/10] batman-adv: export compatibility
+	version via debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,67 +23,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: lindner_marek@yahoo.de, siwu@hrz.tu-chemnitz.de, ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, Sasha Levin <sasha.levin@oracle.com>, linux-kernel@vger.kernel.org
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, davem@davemloft.net
 
-The code that works with routing_algo assumes that the string passed is non
-empty, this assumption is wrong:
 
-sh-4.2# echo -ne '\0' > /sys/module/batman_adv/parameters/routing_algo
-[   34.531340] BUG: unable to handle kernel paging request at ffff880015142fff
-[   34.539191] IP: [<ffffffff8390ac7a>] batadv_param_set_ra+0x3a/0x90
-[   34.541128] PGD 5027063 PUD 502b063 PMD 1bfc6067 PTE 15142160
-[   34.541128] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-[   34.541128] CPU 0
-[   34.541128] Pid: 6612, comm: sh Tainted: G        W    3.7.0-rc6-sasha-00024-g33da443-dirty #157
-[   34.541128] RIP: 0010:[<ffffffff8390ac7a>]  [<ffffffff8390ac7a>] batadv_param_set_ra+0x3a/0x90
-[   34.541128] RSP: 0018:ffff880014f81e48  EFLAGS: 00010292
-[   34.541128] RAX: 000000000000003b RBX: ffff880015143000 RCX: 0000000000000006
-[   34.550025] RDX: 0000000000000006 RSI: ffff8800151cb960 RDI: 0000000000000282
-[   34.550025] RBP: ffff880014f81e68 R08: 0000000000000003 R09: 0000000000000000
-[   34.550025] R10: 0000000000000000 R11: 0000000000000001 R12: ffff880015142fff
-[   34.550025] R13: ffffffff84e6b390 R14: ffff880014f86a00 R15: ffffffff83c35170
-[   34.550025] FS:  00007f9ebc796700(0000) GS:ffff88001a600000(0000) knlGS:0000000000000000
-[   34.550025] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[   34.550025] CR2: ffff880015142fff CR3: 000000001522f000 CR4: 00000000000406f0
-[   34.550025] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[   34.550025] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[   34.550025] Process sh (pid: 6612, threadinfo ffff880014f80000, task ffff8800151cb000)
-[   34.550025] Stack:
-[   34.550025]  ffff880014f81e68 ffff8800198ee020 0000000000000001 ffff880015143000
-[   34.550025]  ffff880014f81e98 ffffffff81133776 ffff880014f81ea8 ffff880014f86a20
-[   34.550025]  ffff880014f81f50 ffff880019d86d20 ffff880014f81ea8 ffffffff811335f8
-[   34.550025] Call Trace:
-[   34.550025]  [<ffffffff81133776>] param_attr_store+0x46/0x80
-[   34.550025]  [<ffffffff811335f8>] module_attr_store+0x18/0x40
-[   34.550025]  [<ffffffff812ed751>] sysfs_write_file+0x101/0x170
-[   34.550025]  [<ffffffff8126fcb8>] vfs_write+0xb8/0x180
-[   34.550025]  [<ffffffff8126fe70>] sys_write+0x50/0xa0
-[   34.550025]  [<ffffffff83b30018>] tracesys+0xe1/0xe6
-[   34.550025] Code: 4c 89 65 f0 4c 89 6d f8 49 89 f5 e8 71 c5 0b fe 48 c7 c7 38 2e df 84 4c 8d 60 ff 48 89 c6 31 c0 4c 89 e2 49 01 dc e8 a6 d8 15 00 <41> 80 3c 24 0a 75 05 41 c6 04 24 00 48 89 df e8 62 ff ff ff 48
-[   34.550025] RIP  [<ffffffff8390ac7a>] batadv_param_set_ra+0x3a/0x90
-[   34.550025]  RSP <ffff880014f81e48>
-[   34.550025] CR2: ffff880015142fff
-[   34.550025] ---[ end trace 6c53b662c574774b ]---
+--nextPart1390365.niZB4vpOmQ
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Signed-off-by: Sasha Levin <sasha.levin@oracle.com>
----
- net/batman-adv/main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Monday 19 November 2012 19:40:18 Ben Hutchings wrote:
+[...]
+> > > I do hope that you're not planning to use unstable debugfs interfaces
+> > > indefinitely.
+> > 
+> > Why are you refering to the adding of an file as "incompatible" debugfs
+> > interface? I would call it additional information. And the rest of the
+> > commit message is talking about *possible* protocol incompatibilies of
+> > the network protocol (which caused this uncontrolled erruption of anger
+> > in a network maintainer).
+> 
+> I didn't say that.  But debugfs tends to be exempted from expectations
+> of interface stability or cleanliness (as it's for development, not
+> production... right?).  It's also an optional feature that might not be
+> enabled at compile time or run-time.  If BATMAN is ever going to be
+> ready for general use it will need stable interfaces that are updated in
+> a backward-compatible way and don't depend on debugfs.
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index dc33a0c..3b8e368 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -426,7 +426,7 @@ static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
- 	char *algo_name = (char *)val;
- 	size_t name_len = strlen(algo_name);
- 
--	if (algo_name[name_len - 1] == '\n')
-+	if (name_len > 0 && algo_name[name_len - 1] == '\n')
- 		algo_name[name_len - 1] = '\0';
- 
- 	bat_algo_ops = batadv_algo_get(algo_name);
--- 
-1.8.0
+Ok, I thought this file was meant for an optional developer information (the 
+interface to work with batman-adv is in /sys) and concluded too fast that you 
+are questioning this change because it makes something "unstable" (sry, for 
+using the wrong term before).
+
+Thanks,
+	Sven
+--nextPart1390365.niZB4vpOmQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAABCgAGBQJQqpWzAAoJEF2HCgfBJntGVskQALB+Qb3QzenDoW2MwGYn1A3d
+qg/64+Iiu92jVAdAUpPA7XIyHDAc2JmLPp4uWN3LOFO3Z9GN3yjt81bgbNFUg2Z7
+rhWTrmt/ai8Ojp8Lqp28aM5un1DRJfBAmDQ8JcEZ8KgzdSd5WtRd6ibcfMcMryYO
+oApGrDL0uELWgDCKNpbHz067B8qymp+lpXHTzZoaxZcm+lQ+r5z1LE6yRnilG/CK
+i1atjZuZvxqTa/YZgVJDUqJFLSHMSkWnvoORsOEM0WdDx9xxkQ1fX580JWXS8M9/
+bMz79SWI0AqGpbOku3EbmWD0pt8ZJ1HfuEgxpKhUsEJ32OUAcB+GlA6GAs95Er0m
+/J/JYP3SlKex/q1xSSAv3/ik3AN66GGWZomxrMMyAbRHhTyaDd9mxQK0PRTkeYgp
+PwRLiRjqssfwuioHfuUSNI0m4pygwNyuY4hBe3fTj27v4+ICBpMAOmYdiQRE0IZd
+WVtdWM4HDw8ZNIzzEri0aa1zVxgvbd3GR9JBIeJ5UuaHNFLciBho4Il6OAavikVh
+UWJFheZGKSpfrOECD251o4HEczjURqZxv8p/T6qsJObgM0zAZ692g9+Suj0w3kRT
+VEDWTnU+Ai5fCYm82FHqRumUOIRiorakpDK7hS4SpzEYOl4vCyKEIy3Anc44LpAw
+G0ROW+ol5JntOc6Vs1gZ
+=RWLk
+-----END PGP SIGNATURE-----
+
+--nextPart1390365.niZB4vpOmQ--
 
