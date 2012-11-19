@@ -1,14 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 19 Nov 2012 09:24:07 +0100
-Message-Id: <1353313451-2930-7-git-send-email-ordex@autistici.org>
+Date: Mon, 19 Nov 2012 09:24:04 +0100
+Message-Id: <1353313451-2930-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1353313451-2930-1-git-send-email-ordex@autistici.org>
 References: <1353313451-2930-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] =?utf-8?q?=5BPATCH_06/10=5D_batman-adv=3A_sysfs_do?=
-	=?utf-8?q?cumentation_should_keep_alphabetical_order?=
+Subject: [B.A.T.M.A.N.] [PATCH 03/10] batman-adv: support array of debugfs
+	general attributes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,114 +20,82 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+This patch adds support for an array of debugfs general (not soft_iface
+specific) attributes. With this change it will be possible to add more general
+attributes by simply appending them to the array without touching the rest of
+the code.
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Reported-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Acked-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- .../ABI/testing/sysfs-class-net-batman-adv         | 11 +++---
- Documentation/ABI/testing/sysfs-class-net-mesh     | 44 +++++++++++-----------
- 2 files changed, 28 insertions(+), 27 deletions(-)
+ net/batman-adv/debugfs.c | 34 +++++++++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-batman-adv b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-index 38dd762..bdc0070 100644
---- a/Documentation/ABI/testing/sysfs-class-net-batman-adv
-+++ b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-@@ -1,4 +1,10 @@
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 3f679cb..6f58ddd 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -323,7 +323,17 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
+ 		}					\
+ };
  
-+What:           /sys/class/net/<iface>/batman-adv/iface_status
-+Date:           May 2010
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+                Indicates the status of <iface> as it is seen by batman.
++/* the following attributes are general and therefore they will be directly
++ * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
++ */
+ static BATADV_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
 +
- What:           /sys/class/net/<iface>/batman-adv/mesh_iface
- Date:           May 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
-@@ -7,8 +13,3 @@ Description:
-                 displays the batman mesh interface this <iface>
-                 currently is associated with.
- 
--What:           /sys/class/net/<iface>/batman-adv/iface_status
--Date:           May 2010
--Contact:        Marek Lindner <lindner_marek@yahoo.de>
--Description:
--                Indicates the status of <iface> as it is seen by batman.
-diff --git a/Documentation/ABI/testing/sysfs-class-net-mesh b/Documentation/ABI/testing/sysfs-class-net-mesh
-index c81fe89..bc41da6 100644
---- a/Documentation/ABI/testing/sysfs-class-net-mesh
-+++ b/Documentation/ABI/testing/sysfs-class-net-mesh
-@@ -6,6 +6,14 @@ Description:
-                 Indicates whether the batman protocol messages of the
-                 mesh <mesh_iface> shall be aggregated or not.
- 
-+What:           /sys/class/net/<mesh_iface>/mesh/ap_isolation
-+Date:           May 2011
-+Contact:        Antonio Quartulli <ordex@autistici.org>
-+Description:
-+                Indicates whether the data traffic going from a
-+                wireless client to another wireless client will be
-+                silently dropped.
++static struct batadv_debuginfo *batadv_general_debuginfos[] = {
++	&batadv_debuginfo_routing_algos,
++	NULL,
++};
 +
- What:           /sys/class/net/<mesh_iface>/mesh/bonding
- Date:           June 2010
- Contact:        Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-@@ -31,14 +39,6 @@ Description:
-                 mesh will be fragmented or silently discarded if the
-                 packet size exceeds the outgoing interface MTU.
++/* The following attributes are per soft interface */
+ static BATADV_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
+ static BATADV_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
+ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
+@@ -358,7 +368,7 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
  
--What:		/sys/class/net/<mesh_iface>/mesh/ap_isolation
--Date:		May 2011
--Contact:	Antonio Quartulli <ordex@autistici.org>
--Description:
--		Indicates whether the data traffic going from a
--		wireless client to another wireless client will be
--		silently dropped.
--
- What:           /sys/class/net/<mesh_iface>/mesh/gw_bandwidth
- Date:           October 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
-@@ -60,26 +60,26 @@ Description:
-                 Defines the selection criteria this node will use
-                 to choose a gateway if gw_mode was set to 'client'.
+ void batadv_debugfs_init(void)
+ {
+-	struct batadv_debuginfo *bat_debug;
++	struct batadv_debuginfo **bat_debug;
+ 	struct dentry *file;
  
--What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
--Date:           May 2010
--Contact:        Marek Lindner <lindner_marek@yahoo.de>
--Description:
--                Defines the interval in milliseconds in which batman
--                sends its protocol messages.
--
- What:           /sys/class/net/<mesh_iface>/mesh/hop_penalty
- Date:           Oct 2010
- Contact:        Linus Lüssing <linus.luessing@web.de>
- Description:
--		Defines the penalty which will be applied to an
--		originator message's tq-field on every hop.
-+                Defines the penalty which will be applied to an
-+                originator message's tq-field on every hop.
+ 	batadv_debugfs = debugfs_create_dir(BATADV_DEBUGFS_SUBDIR, NULL);
+@@ -366,17 +376,23 @@ void batadv_debugfs_init(void)
+ 		batadv_debugfs = NULL;
  
--What:		/sys/class/net/<mesh_iface>/mesh/routing_algo
--Date:		Dec 2011
--Contact:	Marek Lindner <lindner_marek@yahoo.de>
-+What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
-+Date:           May 2010
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
- Description:
--		Defines the routing procotol this mesh instance
--		uses to find the optimal paths through the mesh.
-+                Defines the interval in milliseconds in which batman
-+                sends its protocol messages.
-+
-+What:           /sys/class/net/<mesh_iface>/mesh/routing_algo
-+Date:           Dec 2011
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+                Defines the routing procotol this mesh instance
-+                uses to find the optimal paths through the mesh.
+ 	if (!batadv_debugfs)
+-		goto out;
++		goto err;
  
- What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
- Date:           May 2010
+-	bat_debug = &batadv_debuginfo_routing_algos;
+-	file = debugfs_create_file(bat_debug->attr.name,
+-				   S_IFREG | bat_debug->attr.mode,
+-				   batadv_debugfs, NULL, &bat_debug->fops);
+-	if (!file)
+-		pr_err("Can't add debugfs file: %s\n", bat_debug->attr.name);
++	for (bat_debug = batadv_general_debuginfos; *bat_debug; ++bat_debug) {
++		file = debugfs_create_file(((*bat_debug)->attr).name,
++					   S_IFREG | ((*bat_debug)->attr).mode,
++					   batadv_debugfs, NULL,
++					   &(*bat_debug)->fops);
++		if (!file) {
++			pr_err("Can't add general debugfs file: %s\n",
++			       ((*bat_debug)->attr).name);
++			goto err;
++		}
++	}
+ 
+-out:
+ 	return;
++err:
++	debugfs_remove_recursive(batadv_debugfs);
+ }
+ 
+ void batadv_debugfs_destroy(void)
 -- 
 1.8.0
 
