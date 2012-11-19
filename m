@@ -1,10 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 19 Nov 2012 09:24:03 +0100
-Message-Id: <1353313451-2930-3-git-send-email-ordex@autistici.org>
+Date: Mon, 19 Nov 2012 09:24:05 +0100
+Message-Id: <1353313451-2930-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1353313451-2930-1-git-send-email-ordex@autistici.org>
 References: <1353313451-2930-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 02/10] batman-adv: fix bla compare function
+Subject: [B.A.T.M.A.N.] [PATCH 04/10] batman-adv: export compatibility
+	version via debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,60 +18,91 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Different versions of the batman-adv module may use the same compatibility
+version, but this is not understandable at runtime (the only way is to parse the
+kernel log and fetch the batman-adv advertisement message on loading). The user
+may want to know whether two nodes using different versions can communicate or
+not. For this purpose the module has to export this value through debugfs.
 
-The address and the VLAN VID may not be packed in the respective
-structs. Fix this by comparing the elements individually.
-
-Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-Reported-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Reported-by: Moritz Warning <moritzwarning@web.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ net/batman-adv/debugfs.c | 12 ++++++++++++
+ net/batman-adv/main.c    | 12 ++++++++++++
+ net/batman-adv/main.h    |  1 +
+ 3 files changed, 25 insertions(+)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index bda8b17..7ffef8b 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -77,8 +77,15 @@ static int batadv_compare_backbone_gw(const struct hlist_node *node,
- {
- 	const void *data1 = container_of(node, struct batadv_backbone_gw,
- 					 hash_entry);
-+	const struct batadv_backbone_gw *gw1 = data1, *gw2 = data2;
- 
--	return (memcmp(data1, data2, ETH_ALEN + sizeof(short)) == 0 ? 1 : 0);
-+	if (!batadv_compare_eth(gw1->orig, gw2->orig))
-+		return 0;
-+
-+	if (gw1->vid != gw2->vid)
-+		return 0;
-+
-+	return 1;
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 6f58ddd..ae79b19 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -245,6 +245,16 @@ static int batadv_algorithms_open(struct inode *inode, struct file *file)
+ 	return single_open(file, batadv_algo_seq_print_text, NULL);
  }
  
- /* compares address and vid of two claims */
-@@ -87,8 +94,15 @@ static int batadv_compare_claim(const struct hlist_node *node,
++/**
++ * batadv_compat_open - Prepare file handler for printing of the compat version
++ * @inode: inode which was opened
++ * @file: file handle to be initialized
++ */
++static int batadv_compat_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, batadv_compat_seq_print_text, NULL);
++}
++
+ static int batadv_originators_open(struct inode *inode, struct file *file)
  {
- 	const void *data1 = container_of(node, struct batadv_claim,
- 					 hash_entry);
-+	const struct batadv_claim *cl1 = data1, *cl2 = data2;
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+@@ -327,9 +337,11 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
+  * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
+  */
+ static BATADV_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
++static BATADV_DEBUGINFO(compat_version, S_IRUGO, batadv_compat_open);
  
--	return (memcmp(data1, data2, ETH_ALEN + sizeof(short)) == 0 ? 1 : 0);
-+	if (!batadv_compare_eth(cl1->addr, cl2->addr))
-+		return 0;
-+
-+	if (cl1->vid != cl2->vid)
-+		return 0;
-+
-+	return 1;
+ static struct batadv_debuginfo *batadv_general_debuginfos[] = {
+ 	&batadv_debuginfo_routing_algos,
++	&batadv_debuginfo_compat_version,
+ 	NULL,
+ };
+ 
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index dc33a0c..70797de 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -420,6 +420,18 @@ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
+ 	return 0;
  }
  
- /* free a backbone gw */
++/**
++ * batadv_compat_seq_print_text - print the compatibility version
++ * @seq: debugfs table seq_file struct
++ * @offset: not used
++ */
++int batadv_compat_seq_print_text(struct seq_file *seq, void *offset)
++{
++	seq_printf(seq, "%d\n", BATADV_COMPAT_VERSION);
++
++	return 0;
++}
++
+ static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
+ {
+ 	struct batadv_algo_ops *bat_algo_ops;
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 8f149bb..3243189 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -174,6 +174,7 @@ void batadv_recv_handler_unregister(uint8_t packet_type);
+ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
++int batadv_compat_seq_print_text(struct seq_file *seq, void *offset);
+ 
+ /**
+  * enum batadv_dbg_level - available log levels
 -- 
 1.8.0
 
