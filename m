@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 19 Nov 2012 09:24:04 +0100
-Message-Id: <1353313451-2930-4-git-send-email-ordex@autistici.org>
+Date: Mon, 19 Nov 2012 09:24:08 +0100
+Message-Id: <1353313451-2930-8-git-send-email-ordex@autistici.org>
 In-Reply-To: <1353313451-2930-1-git-send-email-ordex@autistici.org>
 References: <1353313451-2930-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 03/10] batman-adv: support array of debugfs
-	general attributes
+Subject: [B.A.T.M.A.N.] [PATCH 07/10] batman-adv: Add function to calculate
+	crc32c for the skb payload
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,82 +20,93 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-This patch adds support for an array of debugfs general (not soft_iface
-specific) attributes. With this change it will be possible to add more general
-attributes by simply appending them to the array without touching the rest of
-the code.
+From: Sven Eckelmann <sven@narfation.org>
 
-Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-Acked-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/debugfs.c | 34 +++++++++++++++++++++++++---------
- 1 file changed, 25 insertions(+), 9 deletions(-)
+ net/batman-adv/Kconfig |  1 +
+ net/batman-adv/main.c  | 34 ++++++++++++++++++++++++++++++++++
+ net/batman-adv/main.h  |  1 +
+ 3 files changed, 36 insertions(+)
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index 3f679cb..6f58ddd 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -323,7 +323,17 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
- 		}					\
- };
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index 250e0b5..8d8afb1 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -6,6 +6,7 @@ config BATMAN_ADV
+ 	tristate "B.A.T.M.A.N. Advanced Meshing Protocol"
+ 	depends on NET
+ 	select CRC16
++	select LIBCRC32C
+         default n
+ 	help
+           B.A.T.M.A.N. (better approach to mobile ad-hoc networking) is
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 70797de..253e240 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -17,6 +17,8 @@
+  * 02110-1301, USA
+  */
  
-+/* the following attributes are general and therefore they will be directly
-+ * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
-+ */
- static BATADV_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
-+
-+static struct batadv_debuginfo *batadv_general_debuginfos[] = {
-+	&batadv_debuginfo_routing_algos,
-+	NULL,
-+};
-+
-+/* The following attributes are per soft interface */
- static BATADV_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
- static BATADV_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
- static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
-@@ -358,7 +368,7 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- 
- void batadv_debugfs_init(void)
- {
--	struct batadv_debuginfo *bat_debug;
-+	struct batadv_debuginfo **bat_debug;
- 	struct dentry *file;
- 
- 	batadv_debugfs = debugfs_create_dir(BATADV_DEBUGFS_SUBDIR, NULL);
-@@ -366,17 +376,23 @@ void batadv_debugfs_init(void)
- 		batadv_debugfs = NULL;
- 
- 	if (!batadv_debugfs)
--		goto out;
-+		goto err;
- 
--	bat_debug = &batadv_debuginfo_routing_algos;
--	file = debugfs_create_file(bat_debug->attr.name,
--				   S_IFREG | bat_debug->attr.mode,
--				   batadv_debugfs, NULL, &bat_debug->fops);
--	if (!file)
--		pr_err("Can't add debugfs file: %s\n", bat_debug->attr.name);
-+	for (bat_debug = batadv_general_debuginfos; *bat_debug; ++bat_debug) {
-+		file = debugfs_create_file(((*bat_debug)->attr).name,
-+					   S_IFREG | ((*bat_debug)->attr).mode,
-+					   batadv_debugfs, NULL,
-+					   &(*bat_debug)->fops);
-+		if (!file) {
-+			pr_err("Can't add general debugfs file: %s\n",
-+			       ((*bat_debug)->attr).name);
-+			goto err;
-+		}
-+	}
- 
--out:
- 	return;
-+err:
-+	debugfs_remove_recursive(batadv_debugfs);
++#include <linux/crc32c.h>
++#include <linux/highmem.h>
+ #include "main.h"
+ #include "sysfs.h"
+ #include "debugfs.h"
+@@ -432,6 +434,38 @@ int batadv_compat_seq_print_text(struct seq_file *seq, void *offset)
+ 	return 0;
  }
  
- void batadv_debugfs_destroy(void)
++/**
++ * batadv_skb_crc32 - calculate CRC32 of the whole packet and skip bytes in
++ *  the header
++ * @skb: skb pointing to fragmented socket buffers
++ * @payload_ptr: Pointer to position inside the head buffer of the skb
++ *  marking the start of the data to be CRC'ed
++ *
++ * payload_ptr must always point to an address in the skb head buffer and not to
++ * a fragment.
++ */
++__be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr)
++{
++	u32 crc = 0;
++	unsigned int from;
++	unsigned int to = skb->len;
++	struct skb_seq_state st;
++	const u8 *data;
++	unsigned int len;
++	unsigned int consumed = 0;
++
++	from = (unsigned int)(payload_ptr - skb->data);
++
++	skb_prepare_seq_read(skb, from, to, &st);
++	while ((len = skb_seq_read(consumed, &data, &st)) != 0) {
++		crc = crc32c(crc, data, len);
++		consumed += len;
++	}
++	skb_abort_seq_read(&st);
++
++	return htonl(crc);
++}
++
+ static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
+ {
+ 	struct batadv_algo_ops *bat_algo_ops;
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 3243189..0213cb5 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -175,6 +175,7 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
+ int batadv_compat_seq_print_text(struct seq_file *seq, void *offset);
++__be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
+ 
+ /**
+  * enum batadv_dbg_level - available log levels
 -- 
 1.8.0
 
