@@ -1,16 +1,17 @@
-Return-Path: <davem@davemloft.net>
-Date: Mon, 19 Nov 2012 14:10:41 -0500 (EST)
-Message-Id: <20121119.141041.1333512822842997190.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 19 Nov 2012 20:29:07 +0100
+Message-ID: <5268262.CIrZ93ERtB@bentobox>
 In-Reply-To: <1353351150.4156.4.camel@bwh-desktop.uk.solarflarecom.com>
 References: <1353313451-2930-1-git-send-email-ordex@autistici.org>
  <1353313451-2930-5-git-send-email-ordex@autistici.org>
  <1353351150.4156.4.camel@bwh-desktop.uk.solarflarecom.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart6508802.VGmHYGSYs7";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH 04/10] batman-adv: export compatibility
- version via debugfs
+	version via debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,32 +23,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: bhutchings@solarflare.com
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Ben Hutchings <bhutchings@solarflare.com>, netdev@vger.kernel.org, Marek Lindner <lindner_marek@yahoo.de>, davem@davemloft.net
 
-From: Ben Hutchings <bhutchings@solarflare.com>
-Date: Mon, 19 Nov 2012 18:52:30 +0000
 
+--nextPart6508802.VGmHYGSYs7
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Monday 19 November 2012 18:52:30 Ben Hutchings wrote:
 > On Mon, 2012-11-19 at 09:24 +0100, Antonio Quartulli wrote:
->> Different versions of the batman-adv module may use the same compatibility
->> version, but this is not understandable at runtime (the only way is to parse the
->> kernel log and fetch the batman-adv advertisement message on loading). The user
->> may want to know whether two nodes using different versions can communicate or
->> not. For this purpose the module has to export this value through debugfs.
+> > Different versions of the batman-adv module may use the same compatibility
+> > version, but this is not understandable at runtime (the only way is to
+> > parse the kernel log and fetch the batman-adv advertisement message on
+> > loading). The user may want to know whether two nodes using different
+> > versions can communicate or not. For this purpose the module has to
+> > export this value through debugfs.
 > [...]
 > 
 > I do hope that you're not planning to use unstable debugfs interfaces
 > indefinitely.
 
-I think this is a huge mess and I don't think I'm going to pull this
-series for that reason.
+Why are you refering to the adding of an file as "incompatible" debugfs 
+interface? I would call it additional information. And the rest of the commit 
+message is talking about *possible* protocol incompatibilies of the network 
+protocol (which caused this uncontrolled erruption of anger in a network 
+maintainer).
 
-Once we allow you to merge your protocol/facility/whatever into the
-main kernel tree, you have to be mindful of compatability in a very
-real way.
+Kind regards,
+	Sven
+--nextPart6508802.VGmHYGSYs7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
-These kinds of changes show that this isn't actually happening.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-So the only weapon I have against you doing more foolishly
-incompatable changes is to simply stop taking your submissions until
-things are corrected.
+iQIcBAABCgAGBQJQqoiDAAoJEF2HCgfBJntG9KoP/ijqUPa/sKIKOajMLSMl9Z9i
+IRuwe3FLT3CMy1Eei+e6f9nGlYvYaT3YV9j355PnDWneY+CPP09qNWYet2znbnwL
+B50/SRYzvV0CAWs3bjczSZXtPvaIe43gEYSkgSdwd3XBWnkkicY/A3J4JxGwtUhL
+TvocJK7XpAOyOj0ESFzactfGYZhs4c0WkcHM4pvWoMVdAFAO2PvmUkOzTZCHVoU1
+Z0TjKbZzMzJRFJjtfQqdb2nijeaXzzWlQ419KEfYPmfqjLE2skBkSS3rMRB0ha82
+7z+CCJbrnFjsAu3MMzpQbIh3/mPgVvBd4hW+x1+QmJ93JIpy8eeP1cHd0Hh/kh4p
+2V5t3FWOofPNSqMd9lsKrNaquMbDnIqCOrCychgCdigxY59UPeOTjLAfpU9MUZSt
+eFCJCTcJw4cJ/jbKjvVhjcTq3WCcWAkkXS3vNUh6UOmhGwssFQKEpAGN9PTZ+rlo
+RCOAVcrDVruIWeuNOhQcGBfAT+aElnVWP13M4IYojA1fiqJkSOlR9w6bKxkm5UXc
+AwuGc8iljhXexsHQ4EZClKN1Y3+Rj3u/OjqIcq2NvGibAy0CR6YQIj6qOdLQKLuz
+O5AkEX2mIkaaaC+uQOHV6zBvU0sbl4Tx+DrHFfpAtcGiD5GeA995TMSqzJgbzV97
+gsUve5iX+1+l0GVCQhiz
+=BNJk
+-----END PGP SIGNATURE-----
+
+--nextPart6508802.VGmHYGSYs7--
+
