@@ -1,11 +1,11 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 19 Nov 2012 09:24:11 +0100
-Message-Id: <1353313451-2930-11-git-send-email-ordex@autistici.org>
-In-Reply-To: <1353313451-2930-1-git-send-email-ordex@autistici.org>
-References: <1353313451-2930-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 10/10] batman-adv: Use packing of 2 for all
-	headers before an ethernet header
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Mon, 19 Nov 2012 14:21:58 +0100
+Message-Id: <cover.1353331252.git.martin@hundeboll.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [RFC 0/6] CATWOMAN: Network coding in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,62 +17,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-From: Sven Eckelmann <sven@narfation.org>
+I hereby bring you network coding in batman-adv. This allows a relay
+to send two packets (to two destinations) in a single transmission.
+Tests[1] have shown an increase in throughput up to 1.6 under the right
+circumstances.
 
-All packet headers in front of an ethernet header have to be completely
-divisible by 2 but not by 4 to make the payload after the ethernet header again
-4 bytes boundary aligned.
+For this to work, you will need to compile batman-adv with
+CONFIG_BATMAN_ADV_NC=y and a wireless interface with working
+promiscuous mode. The rest is taken care of by batman-adv and the
+following patches.
 
-A packing of 2 is necessary to avoid extra padding at the end of the struct
-caused by a structure member which is larger than two bytes. Otherwise the
-structure would not fulfill the previously mentioned rule to avoid the
-misalignment of the payload after the ethernet header. It may also lead to
-leakage of information when the padding it not initialized before sending.
+[1] http://www.open-mesh.org/projects/open-mesh/wiki/2011-08-18-network-coding-first-steps
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/packet.h | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+Martin Hundebøll (6):
+  batman-adv: Add the initial code for network coding.
+  batman-adv: Detect coding nodes and remove these after timeout
+  batman-adv: Buffer unicast packets before forward.
+  batman-adv: Code and transmit packets if possible.
+  batman-adv: Save overheard and tx packets for decoding.
+  batman-adv: Receive coded packets and decode them.
 
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index df548ed..1c5454d 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -173,6 +173,18 @@ struct batadv_icmp_packet_rr {
- 	uint8_t  rr[BATADV_RR_LEN][ETH_ALEN];
- };
- 
-+/* All packet headers in front of an ethernet header have to be completely
-+ * divisible by 2 but not by 4 to make the payload after the ethernet
-+ * header again 4 bytes boundary aligned.
-+ *
-+ * A packing of 2 is necessary to avoid extra padding at the end of the struct
-+ * caused by a structure member which is larger than two bytes. Otherwise
-+ * the structure would not fulfill the previously mentioned rule to avoid the
-+ * misalignment of the payload after the ethernet header. It may also lead to
-+ * leakage of information when the padding it not initialized before sending.
-+ */
-+#pragma pack(2)
-+
- struct batadv_unicast_packet {
- 	struct batadv_header header;
- 	uint8_t  ttvn; /* destination translation table version number */
-@@ -216,7 +228,9 @@ struct batadv_bcast_packet {
- 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
- 	 * following ethernet header again 4 bytes boundary aligned
- 	 */
--} __packed;
-+};
-+
-+#pragma pack()
- 
- struct batadv_vis_packet {
- 	struct batadv_header header;
+ Makefile               |    2 +
+ Makefile.kbuild        |    1 +
+ bat_iv_ogm.c           |    5 +
+ compat.c               |   10 +
+ compat.h               |    1 +
+ debugfs.c              |   18 +
+ gen-compat-autoconf.sh |    1 +
+ main.c                 |    6 +
+ main.h                 |   13 +-
+ network-coding.c       | 1818 ++++++++++++++++++++++++++++++++++++++++++++++++
+ network-coding.h       |  122 ++++
+ originator.c           |    6 +
+ packet.h               |   33 +
+ routing.c              |   26 +-
+ send.c                 |    5 +
+ soft-interface.c       |   14 +
+ sysfs-class-net-mesh   |    8 +
+ sysfs.c                |    6 +
+ types.h                |  123 ++++
+ 19 files changed, 2209 insertions(+), 9 deletions(-)
+ create mode 100644 network-coding.c
+ create mode 100644 network-coding.h
+
 -- 
 1.8.0
 
