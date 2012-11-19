@@ -1,11 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 19 Nov 2012 09:01:44 +0100
-Message-Id: <1353312104-29333-3-git-send-email-ordex@autistici.org>
-In-Reply-To: <1353312104-29333-1-git-send-email-ordex@autistici.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 19 Nov 2012 16:10:36 +0800
 References: <1353312104-29333-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 3/3] batman-adv: remove useless assignment
-	in tt_local_add()
+In-Reply-To: <1353312104-29333-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201211191610.38809.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/3] batman-adv: print the CRC together
+	with the translation tables
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,49 +23,21 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The flag field of the tt_local_entry->common structure in
-tt_local_add() is first assigned NO_FLAGS and then TT_CLIENT_NEW so
-nullifying the first operation. For this reason it is safe to remove
-the first assignment.
+On Monday, November 19, 2012 16:01:42 Antonio Quartulli wrote:
+> To simplify debugging operations, it is better to print the related
+> CRC together with the translation table (local CRC for the local
+> table and global CRC for each entry in the global table)
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+> 
+> v2:
+>  - patches have been rebased on top of the latest master
+> 
+>  translation-table.c | 15 +++++++++------
+>  1 file changed, 9 insertions(+), 6 deletions(-)
 
-This was introuduced by ("batman-adv: keep local table consistency for
-further TT_RESPONSE")
+Applied in revision df64b11.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- translation-table.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
-
-diff --git a/translation-table.c b/translation-table.c
-index 9769e62..1335294 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -305,7 +305,11 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 		   (uint8_t)atomic_read(&bat_priv->tt.vn));
- 
- 	memcpy(tt_local->common.addr, addr, ETH_ALEN);
--	tt_local->common.flags = BATADV_NO_FLAGS;
-+	/* The local entry has to be marked as NEW to avoid to send it in
-+	 * a full table response going out before the next ttvn increment
-+	 * (consistency check)
-+	 */
-+	tt_local->common.flags = BATADV_TT_CLIENT_NEW;
- 	if (batadv_is_wifi_iface(ifindex))
- 		tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
- 	atomic_set(&tt_local->common.refcount, 2);
-@@ -316,12 +320,6 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 	if (batadv_compare_eth(addr, soft_iface->dev_addr))
- 		tt_local->common.flags |= BATADV_TT_CLIENT_NOPURGE;
- 
--	/* The local entry has to be marked as NEW to avoid to send it in
--	 * a full table response going out before the next ttvn increment
--	 * (consistency check)
--	 */
--	tt_local->common.flags |= BATADV_TT_CLIENT_NEW;
--
- 	hash_added = batadv_hash_add(bat_priv->tt.local_hash, batadv_compare_tt,
- 				     batadv_choose_orig, &tt_local->common,
- 				     &tt_local->common.hash_entry);
--- 
-1.8.0
-
+Thanks,
+Marek
