@@ -1,14 +1,15 @@
-Return-Path: <emunicio@gmail.com>
+Return-Path: <ordex@autistici.org>
+Date: Mon, 19 Nov 2012 23:07:34 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20121119220734.GB3129@ritirata.org>
+References: <1353355695-23252-1-git-send-email-sasha.levin@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <CAHD-aqLC=xuknD_HWJS1NzrZAcwgxYb3Q4DBVm6cgUYMosCiUw@mail.gmail.com>
-References: <CAHD-aqLcsciDBA=4D3ZH0yP4WEYsgY7BhZ+3NFmnm4vQF_apmw@mail.gmail.com>
- <50944FF6.5070504@eigenlab.org>
- <CAHD-aqLC=xuknD_HWJS1NzrZAcwgxYb3Q4DBVm6cgUYMosCiUw@mail.gmail.com>
-From: Esteban Municio <emunicio@gmail.com>
-Date: Mon, 19 Nov 2012 16:32:51 -0500
-Message-ID: <CAMVTf1jua9ZN58Jx=p7kDOn3QbQi_Eo1Mt3taZ2D0ra_td=gGQ@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] A batman-adv success story
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="aVD9QWMuhilNxW9f"
+Content-Disposition: inline
+In-Reply-To: <1353355695-23252-1-git-send-email-sasha.levin@oracle.com>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] net,
+ batman: don't crash on zero length strings in routing_algo
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,51 +21,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-Thanks Gui for share your experiences. As soon as we can give formal
-results from our implementation in Huancavelica, (Peru) we'll share it
-too.
-
-PD: it's nice the test of the roaming through the river ;-)
-
-2012/11/16 Gui Iribarren <gui@altermundi.net>:
-> On Fri, Nov 2, 2012 at 7:57 PM, Gioacchino Mazzurco <gio@eigenlab.org> wrote:
->> In Ninux Pisa we use batman-adv too with similar results!
->
-> Great! I'm partially aware of it, but have no idea of the scale and
-> the details. Do share your experience! :D
->
-> I also came accross this
->
-> http://www.open-mesh.org/projects/open-mesh/wiki/New_papers
->
-> some interesting readings
->
->>
->> eccept for this:
->>
->> On 11/02/12 22:21, Gui Iribarren wrote:
->>> As it is today, you can't put 2 ipv6 gateways doing SLAAC in the same
->>> batman-adv cloud.
->>
->> This sentence is a little misleading, it is not true you cannot do it,
->> you can but you just receive multiple route announcement that may be not
->> optimal but it is not problematic in most cases
->
-> IF they are announcing the same prefix, then i agree with your statement
-> But AFAIU it's currently not possible to have different gateways
-> announcing two different prefixes... Clients get SLAAC addresses on
-> two different networks, and things break, (at least that's what i
-> understand about how things should work?)
->
-> If batman-adv could segregate RAs broadcast domains, it would separate
-> ipv6 networks much like it does now with dhcpv4 servers offering ips
-> on different subnets
->
-> Gui
+To: Sasha Levin <sasha.levin@oracle.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, siwu@hrz.tu-chemnitz.de, lindner_marek@yahoo.de, davem@davemloft.net
 
 
+--aVD9QWMuhilNxW9f
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Esteban
+On Mon, Nov 19, 2012 at 03:08:15PM -0500, Sasha Levin wrote:
+> The code that works with routing_algo assumes that the string passed is n=
+on
+> empty, this assumption is wrong:
+>=20
+> sh-4.2# echo -ne '\0' > /sys/module/batman_adv/parameters/routing_algo
+> [   34.531340] BUG: unable to handle kernel paging request at ffff8800151=
+42fff
+
+[CUT]
+
+> [   34.550025] ---[ end trace 6c53b662c574774b ]---
+>=20
+> Signed-off-by: Sasha Levin <sasha.levin@oracle.com>
+
+
+Hello Sasha,
+
+thank you very much for fixing this bug!
+
+However, any patch sent against the B.A.T.M.A.N.-Advanced code should have a
+subject starting with "batman-adv:".
+
+Other than that I think this kind of patch
+doesn't really need to report the entire kernel message: a more exhaustive
+commit message is enough (e.g. use function names). I personally needed to =
+read
+the patch before understanding what you were trying to explain in the messa=
+ge.
+
+
+Then, we usually pick this patches up in our repo and then we send them as =
+batch
+to the networking tree via pull request, therefore you can also skip the ne=
+tdev
+ml when sending the fixes.
+
+Thank you very much!
+
+Regards,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--aVD9QWMuhilNxW9f
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAlCqraYACgkQpGgxIkP9cwfHpwCeMXI1IGzmmd1AnCgOUrMerNuw
+tGQAn1SVuhxYNpsd9Q/dD26ivMcbFrUA
+=GiPT
+-----END PGP SIGNATURE-----
+
+--aVD9QWMuhilNxW9f--
