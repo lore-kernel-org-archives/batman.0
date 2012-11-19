@@ -1,17 +1,18 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 19 Nov 2012 21:25:23 +0100
-Message-ID: <2101957.c21FspBRQs@sven-laptop.home.narfation.org>
-In-Reply-To: <1353354018.4156.13.camel@bwh-desktop.uk.solarflarecom.com>
-References: <1353313451-2930-1-git-send-email-ordex@autistici.org>
+Return-Path: <ordex@autistici.org>
+Date: Mon, 19 Nov 2012 22:09:56 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20121119210955.GA3129@ritirata.org>
+References: <1353313451-2930-5-git-send-email-ordex@autistici.org>
+ <1353351150.4156.4.camel@bwh-desktop.uk.solarflarecom.com>
  <5268262.CIrZ93ERtB@bentobox>
- <1353354018.4156.13.camel@bwh-desktop.uk.solarflarecom.com>
+ <20121119.144745.1093556126398582629.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1390365.niZB4vpOmQ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="k1lZvvs/B4yU6o8G"
+Content-Disposition: inline
+In-Reply-To: <20121119.144745.1093556126398582629.davem@davemloft.net>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 04/10] batman-adv: export compatibility
-	version via debugfs
+ version via debugfs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,60 +24,88 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, davem@davemloft.net
+To: David Miller <davem@davemloft.net>
+Cc: bhutchings@solarflare.com, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, lindner_marek@yahoo.de
 
 
---nextPart1390365.niZB4vpOmQ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+--k1lZvvs/B4yU6o8G
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Monday 19 November 2012 19:40:18 Ben Hutchings wrote:
-[...]
-> > > I do hope that you're not planning to use unstable debugfs interfaces
-> > > indefinitely.
-> > 
-> > Why are you refering to the adding of an file as "incompatible" debugfs
-> > interface? I would call it additional information. And the rest of the
-> > commit message is talking about *possible* protocol incompatibilies of
-> > the network protocol (which caused this uncontrolled erruption of anger
-> > in a network maintainer).
-> 
-> I didn't say that.  But debugfs tends to be exempted from expectations
-> of interface stability or cleanliness (as it's for development, not
-> production... right?).  It's also an optional feature that might not be
-> enabled at compile time or run-time.  If BATMAN is ever going to be
-> ready for general use it will need stable interfaces that are updated in
-> a backward-compatible way and don't depend on debugfs.
+On Mon, Nov 19, 2012 at 02:47:45PM -0500, David Miller wrote:
+> From: Sven Eckelmann <sven@narfation.org>
+> Date: Mon, 19 Nov 2012 20:29:07 +0100
+>=20
+> > On Monday 19 November 2012 18:52:30 Ben Hutchings wrote:
+> >> On Mon, 2012-11-19 at 09:24 +0100, Antonio Quartulli wrote:
+> >> > Different versions of the batman-adv module may use the same compati=
+bility
+> >> > version, but this is not understandable at runtime (the only way is =
+to
+> >> > parse the kernel log and fetch the batman-adv advertisement message =
+on
+> >> > loading). The user may want to know whether two nodes using different
+> >> > versions can communicate or not. For this purpose the module has to
+> >> > export this value through debugfs.
+> >> [...]
+> >>=20
+> >> I do hope that you're not planning to use unstable debugfs interfaces
+> >> indefinitely.
+> >=20
+> > Why are you refering to the adding of an file as "incompatible" debugfs=
+=20
+> > interface? I would call it additional information. And the rest of the =
+commit=20
+> > message is talking about *possible* protocol incompatibilies of the net=
+work=20
+> > protocol (which caused this uncontrolled erruption of anger in a networ=
+k=20
+> > maintainer).
+>=20
+> Debugfs files aren't where you store information that userspace actually
+> uses in normal situations.
+>=20
+> It's for developer debug, to expose internals that otherwise have no
+> business being part of the user visible interfaces.
 
-Ok, I thought this file was meant for an optional developer information (the 
-interface to work with batman-adv is in /sys) and concluded too fast that you 
-are questioning this change because it makes something "unstable" (sry, for 
-using the wrong term before).
+Ok, you are right. As you already stated, I do see two problems here:
+1) debugfs not used properly (this information is not really for "devs")
+2) this compatibility version export is like the claim: "compatibility is b=
+roken
+   everyday". But actually this is not what we really wanted.
 
-Thanks,
-	Sven
---nextPart1390365.niZB4vpOmQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+This patch simply came from a feature request raised by a user of ours. As =
+Sven
+pointed out, we have seen it just as "more information available for network
+debugging" and we (in particular me) didn't think about the fact that having
+such a patch was against the "stabilisation" process that we are following =
+(we
+discussed about this process during the last pull request, so you already k=
+now
+that we are already going towards this direction).
+
+David, Ben, if you agree I would remove this patch and repost the pull requ=
+est.
+
+
+Regards,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--k1lZvvs/B4yU6o8G
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAABCgAGBQJQqpWzAAoJEF2HCgfBJntGVskQALB+Qb3QzenDoW2MwGYn1A3d
-qg/64+Iiu92jVAdAUpPA7XIyHDAc2JmLPp4uWN3LOFO3Z9GN3yjt81bgbNFUg2Z7
-rhWTrmt/ai8Ojp8Lqp28aM5un1DRJfBAmDQ8JcEZ8KgzdSd5WtRd6ibcfMcMryYO
-oApGrDL0uELWgDCKNpbHz067B8qymp+lpXHTzZoaxZcm+lQ+r5z1LE6yRnilG/CK
-i1atjZuZvxqTa/YZgVJDUqJFLSHMSkWnvoORsOEM0WdDx9xxkQ1fX580JWXS8M9/
-bMz79SWI0AqGpbOku3EbmWD0pt8ZJ1HfuEgxpKhUsEJ32OUAcB+GlA6GAs95Er0m
-/J/JYP3SlKex/q1xSSAv3/ik3AN66GGWZomxrMMyAbRHhTyaDd9mxQK0PRTkeYgp
-PwRLiRjqssfwuioHfuUSNI0m4pygwNyuY4hBe3fTj27v4+ICBpMAOmYdiQRE0IZd
-WVtdWM4HDw8ZNIzzEri0aa1zVxgvbd3GR9JBIeJ5UuaHNFLciBho4Il6OAavikVh
-UWJFheZGKSpfrOECD251o4HEczjURqZxv8p/T6qsJObgM0zAZ692g9+Suj0w3kRT
-VEDWTnU+Ai5fCYm82FHqRumUOIRiorakpDK7hS4SpzEYOl4vCyKEIy3Anc44LpAw
-G0ROW+ol5JntOc6Vs1gZ
-=RWLk
+iEYEARECAAYFAlCqoCMACgkQpGgxIkP9cwfuSgCfWdmoWU40GG44YPohSM3VRErc
+xFkAn1bvqqcJSm0A4cOFc9dU87fzSagi
+=9kq8
 -----END PGP SIGNATURE-----
 
---nextPart1390365.niZB4vpOmQ--
-
+--k1lZvvs/B4yU6o8G--
