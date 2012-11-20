@@ -1,8 +1,14 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 20 Nov 2012 20:44:15 +0100
-Message-Id: <1353440655-10461-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH next] Revert "batman-adv: export
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 20 Nov 2012 20:52:40 +0100
+Message-ID: <1590451.4kf8l5UVXH@sven-laptop.home.narfation.org>
+In-Reply-To: <1353440655-10461-1-git-send-email-ordex@autistici.org>
+References: <1353440655-10461-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2148682.R5TEBqOjrl";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] Revert "batman-adv: export
 	compatibility version via debugfs"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -17,87 +23,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This reverts commit 0679ec75758588e185ceec11e5823de65b427a6f.
 
-Conflicts:
-	main.c
-	main.h
+--nextPart2148682.R5TEBqOjrl
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- debugfs.c | 12 ------------
- main.c    | 12 ------------
- main.h    |  1 -
- 3 files changed, 25 deletions(-)
+On Tuesday 20 November 2012 20:44:15 Antonio Quartulli wrote:
+> This reverts commit 0679ec75758588e185ceec11e5823de65b427a6f.
+> 
+> Conflicts:
+> 	main.c
+> 	main.h
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 
-diff --git a/debugfs.c b/debugfs.c
-index ae79b19..6f58ddd 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -245,16 +245,6 @@ static int batadv_algorithms_open(struct inode *inode, struct file *file)
- 	return single_open(file, batadv_algo_seq_print_text, NULL);
- }
- 
--/**
-- * batadv_compat_open - Prepare file handler for printing of the compat version
-- * @inode: inode which was opened
-- * @file: file handle to be initialized
-- */
--static int batadv_compat_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, batadv_compat_seq_print_text, NULL);
--}
--
- static int batadv_originators_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
-@@ -337,11 +327,9 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
-  * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
-  */
- static BATADV_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
--static BATADV_DEBUGINFO(compat_version, S_IRUGO, batadv_compat_open);
- 
- static struct batadv_debuginfo *batadv_general_debuginfos[] = {
- 	&batadv_debuginfo_routing_algos,
--	&batadv_debuginfo_compat_version,
- 	NULL,
- };
- 
-diff --git a/main.c b/main.c
-index 253e240..f65a222 100644
---- a/main.c
-+++ b/main.c
-@@ -423,18 +423,6 @@ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
- }
- 
- /**
-- * batadv_compat_seq_print_text - print the compatibility version
-- * @seq: debugfs table seq_file struct
-- * @offset: not used
-- */
--int batadv_compat_seq_print_text(struct seq_file *seq, void *offset)
--{
--	seq_printf(seq, "%d\n", BATADV_COMPAT_VERSION);
--
--	return 0;
--}
--
--/**
-  * batadv_skb_crc32 - calculate CRC32 of the whole packet and skip bytes in
-  *  the header
-  * @skb: skb pointing to fragmented socket buffers
-diff --git a/main.h b/main.h
-index ec9c5ad..94de8ee 100644
---- a/main.h
-+++ b/main.h
-@@ -176,7 +176,6 @@ void batadv_recv_handler_unregister(uint8_t packet_type);
- int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
- int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
- int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
--int batadv_compat_seq_print_text(struct seq_file *seq, void *offset);
- __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
- 
- /**
--- 
-1.8.0
+Please also revert a88e6b7b938ae201deba074e819b299ebb1c165f in batctl.
+
+Kind regards,
+	Sven
+--nextPart2148682.R5TEBqOjrl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAABCgAGBQJQq9+IAAoJEF2HCgfBJntGG64QAJfeX0APsDuagwFDaXpd7/KR
+iVl7O6ZwJFnrJDTTQxNF8gVZqvfdNDEZtw0tL+4hBsvVN3lIB/chgGD79nzJYx4U
+YULQz+ORnpwEqdfvj9q040fhFQEx63IhfVpQ3IWdzq1T1zgKqMwjZfStRs6wdEXU
+/iOIYGjHGKGatrpExxqZ7j7Tcoa84P1Gnqy7ft5AFeRiOSPSGj+T/kfFCMmDBOTl
+lyA9jU6Da9Vs6eHcvSOMsinWsNlNtcdhPtrq7tNLBQYSzO5bd1+vJHKY+1IMv+bU
+HZj56e/TLcZV2RxKKmuvPpci226zKQRsQEJSxDfw6XjHNKNKdFcEplCDzDki8dLT
+Uwv1JecEMZJHTxaxvxGGKZqElNBMfhSnVh/AZwbs/ZPnWiEgndLhxJEx7jY3UBxc
+yTDjJpOLwIr515bVXkatsIzVYUXeOEOiR+LSu8SyOmVQgtWY1dsounj1vEIwIype
+pZwXI/iJMFYQzMAZEgvxR3hnQrJklEprkIrmlOQmWeWLvt+sthoXQIo8JjW5/z1M
+Q/KJopwRs5zFxpWizQAtaRJngfB5tyqLsWA1T5fDEYP7ETO8jQIM9UY2ksHm0Tbj
+TAJI4uABV44grpJEBk7MrzbYc5X+nXbQVCmEkMVvDCP8WBX5U+Sxq9ML1JJCg6R7
+4HuXLYqD+lCQ316GuMZK
+=aOsu
+-----END PGP SIGNATURE-----
+
+--nextPart2148682.R5TEBqOjrl--
 
