@@ -1,9 +1,13 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 20 Nov 2012 20:59:36 +0100
-Message-Id: <1353441576-4081-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH batctl-next] Revert "batctl: Print compat
-	version when querying the version"
+Return-Path: <surfbytes@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <20121120092421.GC3129@ritirata.org>
+References: <CAG_HyLz9B9r=u5jSw8xy+4rfG9anB6vqK+ggMGSmRossMCx4CQ@mail.gmail.com>
+ <75191138.5RcUHhBkvt@bentobox> <20121120092421.GC3129@ritirata.org>
+Date: Tue, 20 Nov 2012 15:37:17 -0800
+Message-ID: <CAG_HyLwVWZdkDqxEDfDQL0k35UHeNrAOaVqKYJsMeN4VkWucHQ@mail.gmail.com>
+From: Randy Graham <surfbytes@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] batman over 802.15.4 .
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,103 +21,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This reverts commit a88e6b7b938ae201deba074e819b299ebb1c165f.
+Thanks for all of your replies, you have answered my questions !
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
+It seems that batman-adv is not suitable for a 802.15.4 mesh network,
+so I guess I'll need to look elsewhere.
 
-Thanks Sven!
+Does anyone know of a non-proprietary mesh network stack for 802.15.4 on linux ?
+I know that zigbee has not made into the kernel due to GPL issues.
+
+Thanks again for your help.
+
+-Randy
 
 
-
- main.c | 53 ++++++++++++-----------------------------------------
- 1 file changed, 12 insertions(+), 41 deletions(-)
-
-diff --git a/main.c b/main.c
-index e239b2a..5d85d8b 100644
---- a/main.c
-+++ b/main.c
-@@ -31,7 +31,6 @@
- #include "main.h"
- #include "sys.h"
- #include "debug.h"
--#include "debugfs.h"
- #include "ping.h"
- #include "translate.h"
- #include "traceroute.h"
-@@ -44,7 +43,6 @@
- 
- char mesh_dfl_iface[] = "bat0";
- char module_ver_path[] = "/sys/module/batman_adv/version";
--char module_compat_ver_file[] = "batman_adv/compat_version";
- 
- void print_usage(void)
- {
-@@ -94,44 +92,6 @@ void print_usage(void)
- #endif
- }
- 
--static void print_version(void)
--{
--	int ret;
--	char *debugfs_mnt;
--
--	printf("batctl %s [", SOURCE_VERSION);
--
--	ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
--	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
--		line_ptr[strlen(line_ptr) - 1] = '\0';
--
--	if (ret == EXIT_SUCCESS) {
--		printf("batman-adv: %s", line_ptr);
--	} else {
--		printf("module not loaded");
--		goto out;
--	}
--
--	free(line_ptr);
--	line_ptr = NULL;
--
--	debugfs_mnt = debugfs_mount(NULL);
--	if (!debugfs_mnt)
--		goto out;
--
--	ret = read_file(debugfs_mnt, module_compat_ver_file, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
--	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
--		line_ptr[strlen(line_ptr) - 1] = '\0';
--
--	if (ret == EXIT_SUCCESS)
--		printf(", compat: %s", line_ptr);
--
--out:
--	free(line_ptr);
--	line_ptr = NULL;
--	printf("]\n");
--}
--
- int main(int argc, char **argv)
- {
- 	int i, ret = EXIT_FAILURE;
-@@ -158,7 +118,18 @@ int main(int argc, char **argv)
- 		goto err;
- 
- 	if (strcmp(argv[1], "-v") == 0) {
--		print_version();
-+		printf("batctl %s [batman-adv: ", SOURCE_VERSION);
-+
-+		ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
-+		if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
-+			line_ptr[strlen(line_ptr) - 1] = '\0';
-+
-+		if (ret == EXIT_SUCCESS)
-+			printf("%s]\n", line_ptr);
-+		else
-+			printf("module not loaded]\n");
-+
-+		free(line_ptr);
- 		exit(EXIT_SUCCESS);
- 	}
- 
--- 
-1.8.0
-
+On Tue, Nov 20, 2012 at 1:24 AM, Antonio Quartulli <ordex@autistici.org> wrote:
+> On Tue, Nov 20, 2012 at 09:27:39AM +0100, Sven Eckelmann wrote:
+>> On Monday 19 November 2012 20:25:34 Randy Graham wrote:
+>> [...]
+>> > 1. Will batman-adv work over 802.15.4 ?
+>> [...]
+>> > 2. Can batman-adv work with either of these interfaces ?
+>> >
+>> > I tried configuring these interfaces using 'batctl' but it complains
+>> > that they are an unsupported type.
+>> > 'iwconfig' reports these interfaces as having 'no wireless extensions'
+>> > which I suspect is the issue.
+>>
+>> No, batman-adv works on 802.3 compatible interfaces (aka ARPHRD_ETHER) which
+>> provide special mac behaviour. This has nothing to do with the wireless
+>> extensions (which are deprecated anyway).
+>>
+>> > Please let me know if running b.a.t.m.a.n. over 802.15.4 is feasible.
+>>
+>> 802.15.4 has the type ARPHRD_IEEE802154 for its fake hard interfaces. So you
+>> need an "ethernet emulation" layer on top of it to use it with batman-adv. I
+>> don't know whether the mac layer works well enough in theory to be used with
+>> batman-adv.
+>
+>
+> And other than these technical details, I would say that batman-adv is not a
+> very good protocol for 802.15.4/low-power wireless. It might need heavy
+> restructuring if you really want to use it in a deployment.
+>
+> However, I'm pretty familiar with 802.15.4, therefore if you really want to go
+> ahead, we can even discuss further what batman-adv would need and what would
+> not.
+>
+> Regards,
+>
+>
+> --
+> Antonio Quartulli
+>
+> ..each of us alone is worth nothing..
+> Ernesto "Che" Guevara
