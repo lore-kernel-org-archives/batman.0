@@ -1,15 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 20 Nov 2012 20:52:40 +0100
-Message-ID: <1590451.4kf8l5UVXH@sven-laptop.home.narfation.org>
-In-Reply-To: <1353440655-10461-1-git-send-email-ordex@autistici.org>
-References: <1353440655-10461-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2148682.R5TEBqOjrl";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] Revert "batman-adv: export
-	compatibility version via debugfs"
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 20 Nov 2012 20:59:36 +0100
+Message-Id: <1353441576-4081-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH batctl-next] Revert "batctl: Print compat
+	version when querying the version"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,45 +17,103 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+This reverts commit a88e6b7b938ae201deba074e819b299ebb1c165f.
 
---nextPart2148682.R5TEBqOjrl
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-On Tuesday 20 November 2012 20:44:15 Antonio Quartulli wrote:
-> This reverts commit 0679ec75758588e185ceec11e5823de65b427a6f.
-> 
-> Conflicts:
-> 	main.c
-> 	main.h
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Thanks Sven!
 
-Please also revert a88e6b7b938ae201deba074e819b299ebb1c165f in batctl.
 
-Kind regards,
-	Sven
---nextPart2148682.R5TEBqOjrl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+ main.c | 53 ++++++++++++-----------------------------------------
+ 1 file changed, 12 insertions(+), 41 deletions(-)
 
-iQIcBAABCgAGBQJQq9+IAAoJEF2HCgfBJntGG64QAJfeX0APsDuagwFDaXpd7/KR
-iVl7O6ZwJFnrJDTTQxNF8gVZqvfdNDEZtw0tL+4hBsvVN3lIB/chgGD79nzJYx4U
-YULQz+ORnpwEqdfvj9q040fhFQEx63IhfVpQ3IWdzq1T1zgKqMwjZfStRs6wdEXU
-/iOIYGjHGKGatrpExxqZ7j7Tcoa84P1Gnqy7ft5AFeRiOSPSGj+T/kfFCMmDBOTl
-lyA9jU6Da9Vs6eHcvSOMsinWsNlNtcdhPtrq7tNLBQYSzO5bd1+vJHKY+1IMv+bU
-HZj56e/TLcZV2RxKKmuvPpci226zKQRsQEJSxDfw6XjHNKNKdFcEplCDzDki8dLT
-Uwv1JecEMZJHTxaxvxGGKZqElNBMfhSnVh/AZwbs/ZPnWiEgndLhxJEx7jY3UBxc
-yTDjJpOLwIr515bVXkatsIzVYUXeOEOiR+LSu8SyOmVQgtWY1dsounj1vEIwIype
-pZwXI/iJMFYQzMAZEgvxR3hnQrJklEprkIrmlOQmWeWLvt+sthoXQIo8JjW5/z1M
-Q/KJopwRs5zFxpWizQAtaRJngfB5tyqLsWA1T5fDEYP7ETO8jQIM9UY2ksHm0Tbj
-TAJI4uABV44grpJEBk7MrzbYc5X+nXbQVCmEkMVvDCP8WBX5U+Sxq9ML1JJCg6R7
-4HuXLYqD+lCQ316GuMZK
-=aOsu
------END PGP SIGNATURE-----
-
---nextPart2148682.R5TEBqOjrl--
+diff --git a/main.c b/main.c
+index e239b2a..5d85d8b 100644
+--- a/main.c
++++ b/main.c
+@@ -31,7 +31,6 @@
+ #include "main.h"
+ #include "sys.h"
+ #include "debug.h"
+-#include "debugfs.h"
+ #include "ping.h"
+ #include "translate.h"
+ #include "traceroute.h"
+@@ -44,7 +43,6 @@
+ 
+ char mesh_dfl_iface[] = "bat0";
+ char module_ver_path[] = "/sys/module/batman_adv/version";
+-char module_compat_ver_file[] = "batman_adv/compat_version";
+ 
+ void print_usage(void)
+ {
+@@ -94,44 +92,6 @@ void print_usage(void)
+ #endif
+ }
+ 
+-static void print_version(void)
+-{
+-	int ret;
+-	char *debugfs_mnt;
+-
+-	printf("batctl %s [", SOURCE_VERSION);
+-
+-	ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+-	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
+-		line_ptr[strlen(line_ptr) - 1] = '\0';
+-
+-	if (ret == EXIT_SUCCESS) {
+-		printf("batman-adv: %s", line_ptr);
+-	} else {
+-		printf("module not loaded");
+-		goto out;
+-	}
+-
+-	free(line_ptr);
+-	line_ptr = NULL;
+-
+-	debugfs_mnt = debugfs_mount(NULL);
+-	if (!debugfs_mnt)
+-		goto out;
+-
+-	ret = read_file(debugfs_mnt, module_compat_ver_file, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+-	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
+-		line_ptr[strlen(line_ptr) - 1] = '\0';
+-
+-	if (ret == EXIT_SUCCESS)
+-		printf(", compat: %s", line_ptr);
+-
+-out:
+-	free(line_ptr);
+-	line_ptr = NULL;
+-	printf("]\n");
+-}
+-
+ int main(int argc, char **argv)
+ {
+ 	int i, ret = EXIT_FAILURE;
+@@ -158,7 +118,18 @@ int main(int argc, char **argv)
+ 		goto err;
+ 
+ 	if (strcmp(argv[1], "-v") == 0) {
+-		print_version();
++		printf("batctl %s [batman-adv: ", SOURCE_VERSION);
++
++		ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
++		if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
++			line_ptr[strlen(line_ptr) - 1] = '\0';
++
++		if (ret == EXIT_SUCCESS)
++			printf("%s]\n", line_ptr);
++		else
++			printf("module not loaded]\n");
++
++		free(line_ptr);
+ 		exit(EXIT_SUCCESS);
+ 	}
+ 
+-- 
+1.8.0
 
