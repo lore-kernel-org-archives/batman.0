@@ -1,14 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 21 Nov 2012 09:29:29 +0100
-Message-ID: <2374167.VuZWv0WanE@sven-laptop.home.narfation.org>
-In-Reply-To: <CAHQ_bggGWNkc7hes19PpGCvAMERG+7ErOEHC6Qtpcm-hSboV7w@mail.gmail.com>
-References: <CAHQ_bggGWNkc7hes19PpGCvAMERG+7ErOEHC6Qtpcm-hSboV7w@mail.gmail.com>
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Wed, 21 Nov 2012 13:11:50 +0100
+Message-Id: <1353499919-28596-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1775367.17HpYrXuZ7";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] Batman-adv compatibility with FullMAC devices
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2012-11-21
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,51 +17,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ajeet singh <ajeetbbr@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+
+Hello David,
+
+here is again our changeset intended for net-next/linux-3.8.
+Since the last pull request I removed the patch we were discussing about (the
+one exporting the batman-adv compatibility version) as we intend to do not
+provide the user the feeling of being "incompatible everyday".
+
+As we discussed some time ago, we are doing what we can to speed our
+stabilisation process up and we are not going to break compatibility anymore
+before we ultimate such process.
+
+However, I see that every now and then you have the feeling we are not really
+doing so. In that case, please, point out what you think is not adequate so that
+we can quickly fix it.
+
+Again: we want to stabilise the protocol/messages format and any help/suggestion
+from you or the other maintainers is always well accepted (other than being
+"rude" only or not answering at all. When you do so, then we have to spend the
+entire day in trying to decrypt what was wrong and what we should do to address
+the problem, limiting our fun and productivity).
 
 
---nextPart1775367.17HpYrXuZ7
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Please pull or let me know if there is any other problem in this batch.
 
-On Wednesday 21 November 2012 13:49:48 ajeet singh wrote:
-[...]
-> 1: Does it support the FullMAC devices like AR6003?
 
-batman-adv doesn't care about the wifi device mac implementation. It just has 
-to be a working implementation (aka working implementation in the mode you are 
-using). I don't know whether the IBSS mode of AR6003 is broken or not.
+Thank you very much,
+		Antonio
 
-> 2: Is it possible to support gateway or bridge to extend the IBBS or to
-> provide internet access?
 
-I don't understand your question. I though you wanted to use batman-adv to 
-"extend" the IBSS.
+The following changes since commit de4594a51c904ddcd6c3a6cdd100f7c1d94d3239:
 
-Kind regards,
-	Sven
---nextPart1775367.17HpYrXuZ7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+  sctp: send abort chunk when max_retrans exceeded (2012-11-20 15:50:37 -0500)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+are available in the git repository at:
 
-iQIcBAABCgAGBQJQrJDpAAoJEF2HCgfBJntGGNQP+wU7opoVPs/flKLsJK4Cl112
-exJht+0AhLTo16iNqKVW8FNYzhdyRg+ZZgepCfRPG8vT7lAJGUYRFosNAehRh1bp
-PSFZobR3NXCp2k2KlWduAJEn5gu5hIq2kVEwOMg26MI5guxNqyFiV5E7AJpH94o8
-GVUnJRQ/USPorBYGK3A2sSgi8h6A0lsBsOPi7N0hmk0OqtJdHC5n5Uxhq7JHqJDT
-5xDTxvs0id6JH+/6LV8EAlK1IzRyrcdvKDQEnEKpVxX5RwFxR93EyUiO1EQLQWsG
-0dBmcPFz3AEf4Vwd6rsjeUru548hOv9SHuX2eJNcrVGzvYJ6rOiIVB7LhUrhybnk
-naWiqOt60Ccnlc4vMY2zti5Zo40Pt7g07s7RVvvZZVGTDey/hal9wg0Ok0+Rd/KV
-FiK8VL7cIV7q8Ismwaa0GlvwLEaPmFJ0AKn7WzPStuVlJ51X1NFEwak0fNLtYHrn
-cBZQo9Qc1NODKVyiKjYut4MC+gkl20tLeuilbB/POOxo/Uow9L8hnYQ1Wu5vcEGC
-XKW5t+SAioaNNvqOZvfW64yj7ton3EVb3AkGLcxra4qCY0nq/LkWUdEGtueeMD0Y
-8j9q/K9ysxPRvE44mnONrA8E961hhwsQ6XJoku1NCCMaMGJTwYvDjqnT5A9salkt
-qvgk68Fcn5XApewHf11A
-=68eu
------END PGP SIGNATURE-----
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
 
---nextPart1775367.17HpYrXuZ7--
+for you to fetch changes up to e022b956c11084f3ee1c6ece523e14ac07b7c645:
 
+  batman-adv: Use packing of 2 for all headers before an ethernet header (2012-11-21 12:35:47 +0100)
+
+----------------------------------------------------------------
+Included changes:
+- Increase batman-adv version
+- Bridge Loop Avoidance: compute checksum (using crc32) on skb fragments instead
+  of linearising it
+- sort the sysfs documentation
+- some other minor cleanups
+
+----------------------------------------------------------------
+Antonio Quartulli (1):
+      batman-adv: support array of debugfs general attributes
+
+Marek Lindner (1):
+      batman-adv: sysfs documentation should keep alphabetical order
+
+Martin Hundebøll (1):
+      batman-adv: Add wrapper to look up neighbor and send skb
+
+Simon Wunderlich (2):
+      batman-adv: fix bla compare function
+      batman-adv: Fix broadcast duplist for fragmentation
+
+Sven Eckelmann (4):
+      batman-adv: Mark best gateway in transtable_global debugfs
+      batman-adv: Add function to calculate crc32c for the skb payload
+      batman-adv: Start new development cycle
+      batman-adv: Use packing of 2 for all headers before an ethernet header
+
+ .../ABI/testing/sysfs-class-net-batman-adv         |  11 +-
+ Documentation/ABI/testing/sysfs-class-net-mesh     |  40 +++---
+ net/batman-adv/Kconfig                             |   1 +
+ net/batman-adv/bridge_loop_avoidance.c             |  36 +++--
+ net/batman-adv/bridge_loop_avoidance.h             |   6 +-
+ net/batman-adv/debugfs.c                           |  34 +++--
+ net/batman-adv/main.c                              |  34 +++++
+ net/batman-adv/main.h                              |   3 +-
+ net/batman-adv/packet.h                            |  16 ++-
+ net/batman-adv/routing.c                           |  45 ++----
+ net/batman-adv/send.c                              |  33 +++++
+ net/batman-adv/send.h                              |   3 +
+ net/batman-adv/translation-table.c                 | 155 +++++++++++----------
+ net/batman-adv/types.h                             |   2 +-
+ net/batman-adv/unicast.c                           |   8 +-
+ net/batman-adv/vis.c                               |  35 ++---
+ 16 files changed, 268 insertions(+), 194 deletions(-)
