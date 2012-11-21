@@ -1,16 +1,11 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 21 Nov 2012 15:31:25 -0500 (EST)
-Message-Id: <20121121.153125.1757983463301480246.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <8108710.8oNxxR0rRd@sven-laptop.home.narfation.org>
-References: <1353499919-28596-10-git-send-email-ordex@autistici.org>
- <20121121.125759.322762083309845086.davem@davemloft.net>
- <8108710.8oNxxR0rRd@sven-laptop.home.narfation.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Use packing of 2 for all
- headers before an ethernet header
+Return-Path: <lmy19901031@gmail.com>
+MIME-Version: 1.0
+Date: Wed, 21 Nov 2012 16:13:28 -0500
+Message-ID: <CALDpWg5uMQzHkJeOiFAY4nF1OPS_d_47QPKJs5v2NheBmKP_8A@mail.gmail.com>
+From: liu muye <lmy19901031@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] [B.A.T.M.A.N] batman-adv : client to client
+	communication
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,14 +17,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven@narfation.org
-Cc: fubar@us.ibm.com, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, kevin.curtis@farsite.co.uk, rmody@brocade.com, ron.mercer@qlogic.com, linux-driver@qlogic.com, lindner_marek@yahoo.de, jitendra.kalsaria@qlogic.com, andy@greyhouse.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 21 Nov 2012 19:20:21 +0100
+Thank you so much for your suggestions. Yes, we are using batman-adv.
+The one running as a kernel module.
+Just a few quick follow up questions.
 
-> Agree. But we should get this message also to the other guys
-> 
-> $ git grep pragma -- drivers/net
+Our goal is to build an ad hoc mesh network. Each node may not have IP
+address. I can use batctl ping functionality to ping my peer with MAC
+address. Just wondering if I can send data packet to my peers with MAC
+address.
 
-Good point, I've pulled your tree, thanks!
+I have noticed the packet.h file in the batctl source code contains
+several C structures. One of  them is
+
+struct batadv_unicast_packet {
+    struct batadv_header header;
+    uint8_t  ttvn; /* destination translation table version number */
+    uint8_t  dest[ETH_ALEN];
+} __packed;
+
+To send my data packet, I have to use this C structure. Is that
+correct? and where to look up the value for ttvn?
+
+Thanks for your time
+Have a nice day
