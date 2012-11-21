@@ -1,10 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 21 Nov 2012 13:11:59 +0100
-Message-Id: <1353499919-28596-10-git-send-email-ordex@autistici.org>
-In-Reply-To: <1353499919-28596-1-git-send-email-ordex@autistici.org>
+Return-Path: <David.Laight@ACULAB.COM>
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+Date: Wed, 21 Nov 2012 13:36:54 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B70BB@saturn3.aculab.com>
+In-Reply-To: <1353499919-28596-10-git-send-email-ordex@autistici.org>
 References: <1353499919-28596-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Use packing of 2 for all
+ <1353499919-28596-10-git-send-email-ordex@autistici.org>
+From: "David Laight" <David.Laight@ACULAB.COM>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Use packing of 2 for all
 	headers before an ethernet header
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -17,62 +23,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
+To: Antonio Quartulli <ordex@autistici.org>, davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Sven Eckelmann <sven@narfation.org>
+> All packet headers in front of an ethernet header have to be =
+completely
+> divisible by 2 but not by 4 to make the payload after the ethernet =
+header again
+> 4 bytes boundary aligned.
 
-All packet headers in front of an ethernet header have to be completely
-divisible by 2 but not by 4 to make the payload after the ethernet header again
-4 bytes boundary aligned.
+I'm not sure that statement is correct - whether the patches are
+correct rather depends on the actual packet format(s) you are
+generating/modifying.
 
-A packing of 2 is necessary to avoid extra padding at the end of the struct
-caused by a structure member which is larger than two bytes. Otherwise the
-structure would not fulfill the previously mentioned rule to avoid the
-misalignment of the payload after the ethernet header. It may also lead to
-leakage of information when the padding it not initialized before sending.
+If you are adding data to an ethernet packet you'll need
+to add a multiple of 4 bytes in order maintain the alignment
+of the IP header (which needs to be 4 byte aligned and is
+usually 14 bytes from the start of the receive data).
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/packet.h | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+This means that the data you add probably has to be 4n+2
+aligned - since I guess you are adding between the source
+MAC address and ethertype?
+If you are inserting data after the ethertype (ie after some
+protocol identifier), then your header can be 4 byte aligned
+provided it ends with the replacement ethertype (0800 or 0806
+for IP protocols).
 
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index df548ed..1c5454d 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -173,6 +173,18 @@ struct batadv_icmp_packet_rr {
- 	uint8_t  rr[BATADV_RR_LEN][ETH_ALEN];
- };
- 
-+/* All packet headers in front of an ethernet header have to be completely
-+ * divisible by 2 but not by 4 to make the payload after the ethernet
-+ * header again 4 bytes boundary aligned.
-+ *
-+ * A packing of 2 is necessary to avoid extra padding at the end of the struct
-+ * caused by a structure member which is larger than two bytes. Otherwise
-+ * the structure would not fulfill the previously mentioned rule to avoid the
-+ * misalignment of the payload after the ethernet header. It may also lead to
-+ * leakage of information when the padding it not initialized before sending.
-+ */
-+#pragma pack(2)
-+
- struct batadv_unicast_packet {
- 	struct batadv_header header;
- 	uint8_t  ttvn; /* destination translation table version number */
-@@ -216,7 +228,9 @@ struct batadv_bcast_packet {
- 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
- 	 * following ethernet header again 4 bytes boundary aligned
- 	 */
--} __packed;
-+};
-+
-+#pragma pack()
- 
- struct batadv_vis_packet {
- 	struct batadv_header header;
--- 
-1.8.0
+	David
+
+
 
