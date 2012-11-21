@@ -1,10 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 21 Nov 2012 13:11:52 +0100
-Message-Id: <1353499919-28596-3-git-send-email-ordex@autistici.org>
+Date: Wed, 21 Nov 2012 13:11:53 +0100
+Message-Id: <1353499919-28596-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1353499919-28596-1-git-send-email-ordex@autistici.org>
 References: <1353499919-28596-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/9] batman-adv: fix bla compare function
+Subject: [B.A.T.M.A.N.] [PATCH 3/9] batman-adv: support array of debugfs
+	general attributes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,60 +18,84 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-
-The address and the VLAN VID may not be packed in the respective
-structs. Fix this by comparing the elements individually.
+This patch adds support for an array of debugfs general (not soft_iface
+specific) attributes. With this change it will be possible to add more general
+attributes by simply appending them to the array without touching the rest of
+the code.
 
 Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-Reported-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Acked-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ net/batman-adv/debugfs.c | 34 +++++++++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 9 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index bda8b17..7ffef8b 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -77,8 +77,15 @@ static int batadv_compare_backbone_gw(const struct hlist_node *node,
- {
- 	const void *data1 = container_of(node, struct batadv_backbone_gw,
- 					 hash_entry);
-+	const struct batadv_backbone_gw *gw1 = data1, *gw2 = data2;
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 3f679cb..6f58ddd 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -323,7 +323,17 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
+ 		}					\
+ };
  
--	return (memcmp(data1, data2, ETH_ALEN + sizeof(short)) == 0 ? 1 : 0);
-+	if (!batadv_compare_eth(gw1->orig, gw2->orig))
-+		return 0;
++/* the following attributes are general and therefore they will be directly
++ * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
++ */
+ static BATADV_DEBUGINFO(routing_algos, S_IRUGO, batadv_algorithms_open);
 +
-+	if (gw1->vid != gw2->vid)
-+		return 0;
++static struct batadv_debuginfo *batadv_general_debuginfos[] = {
++	&batadv_debuginfo_routing_algos,
++	NULL,
++};
 +
-+	return 1;
++/* The following attributes are per soft interface */
+ static BATADV_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
+ static BATADV_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
+ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
+@@ -358,7 +368,7 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
+ 
+ void batadv_debugfs_init(void)
+ {
+-	struct batadv_debuginfo *bat_debug;
++	struct batadv_debuginfo **bat_debug;
+ 	struct dentry *file;
+ 
+ 	batadv_debugfs = debugfs_create_dir(BATADV_DEBUGFS_SUBDIR, NULL);
+@@ -366,17 +376,23 @@ void batadv_debugfs_init(void)
+ 		batadv_debugfs = NULL;
+ 
+ 	if (!batadv_debugfs)
+-		goto out;
++		goto err;
+ 
+-	bat_debug = &batadv_debuginfo_routing_algos;
+-	file = debugfs_create_file(bat_debug->attr.name,
+-				   S_IFREG | bat_debug->attr.mode,
+-				   batadv_debugfs, NULL, &bat_debug->fops);
+-	if (!file)
+-		pr_err("Can't add debugfs file: %s\n", bat_debug->attr.name);
++	for (bat_debug = batadv_general_debuginfos; *bat_debug; ++bat_debug) {
++		file = debugfs_create_file(((*bat_debug)->attr).name,
++					   S_IFREG | ((*bat_debug)->attr).mode,
++					   batadv_debugfs, NULL,
++					   &(*bat_debug)->fops);
++		if (!file) {
++			pr_err("Can't add general debugfs file: %s\n",
++			       ((*bat_debug)->attr).name);
++			goto err;
++		}
++	}
+ 
+-out:
+ 	return;
++err:
++	debugfs_remove_recursive(batadv_debugfs);
  }
  
- /* compares address and vid of two claims */
-@@ -87,8 +94,15 @@ static int batadv_compare_claim(const struct hlist_node *node,
- {
- 	const void *data1 = container_of(node, struct batadv_claim,
- 					 hash_entry);
-+	const struct batadv_claim *cl1 = data1, *cl2 = data2;
- 
--	return (memcmp(data1, data2, ETH_ALEN + sizeof(short)) == 0 ? 1 : 0);
-+	if (!batadv_compare_eth(cl1->addr, cl2->addr))
-+		return 0;
-+
-+	if (cl1->vid != cl2->vid)
-+		return 0;
-+
-+	return 1;
- }
- 
- /* free a backbone gw */
+ void batadv_debugfs_destroy(void)
 -- 
 1.8.0
 
