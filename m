@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 21 Nov 2012 14:37:00 +0800
-References: <1353440655-10461-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1353440655-10461-1-git-send-email-ordex@autistici.org>
+Date: Wed, 21 Nov 2012 14:39:26 +0800
+References: <1353441576-4081-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1353441576-4081-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201211211437.00804.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] Revert "batman-adv: export
-	compatibility version via debugfs"
+Message-Id: <201211211439.26495.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH batctl-next] Revert "batctl: Print compat
+	version when querying the version"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,21 +23,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, November 21, 2012 03:44:15 Antonio Quartulli wrote:
-> This reverts commit 0679ec75758588e185ceec11e5823de65b427a6f.
-> 
-> Conflicts:
->         main.c
->         main.h
+On Wednesday, November 21, 2012 03:59:36 Antonio Quartulli wrote:
+> This reverts commit a88e6b7b938ae201deba074e819b299ebb1c165f.
 > 
 > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 > ---
->  debugfs.c | 12 ------------
->  main.c    | 12 ------------
->  main.h    |  1 -
->  3 files changed, 25 deletions(-)
+> 
+> Thanks Sven!
+> 
+> 
+> 
+>  main.c | 53 ++++++++++++-----------------------------------------
+>  1 file changed, 12 insertions(+), 41 deletions(-)
 
-Applied in revision eba8ed0.
+Applied in revision 449d4f7.
 
 Thanks,
 Marek
