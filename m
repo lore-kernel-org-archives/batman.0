@@ -1,14 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 21 Nov 2012 13:11:55 +0100
-Message-Id: <1353499919-28596-6-git-send-email-ordex@autistici.org>
+Date: Wed, 21 Nov 2012 13:11:56 +0100
+Message-Id: <1353499919-28596-7-git-send-email-ordex@autistici.org>
 In-Reply-To: <1353499919-28596-1-git-send-email-ordex@autistici.org>
 References: <1353499919-28596-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] =?utf-8?q?=5BPATCH_5/9=5D_batman-adv=3A_sysfs_docu?=
-	=?utf-8?q?mentation_should_keep_alphabetical_order?=
+Subject: [B.A.T.M.A.N.] [PATCH 6/9] batman-adv: Add function to calculate
+	crc32c for the skb payload
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,114 +20,93 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+From: Sven Eckelmann <sven@narfation.org>
 
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- .../ABI/testing/sysfs-class-net-batman-adv         | 11 +++---
- Documentation/ABI/testing/sysfs-class-net-mesh     | 44 +++++++++++-----------
- 2 files changed, 28 insertions(+), 27 deletions(-)
+ net/batman-adv/Kconfig |  1 +
+ net/batman-adv/main.c  | 34 ++++++++++++++++++++++++++++++++++
+ net/batman-adv/main.h  |  1 +
+ 3 files changed, 36 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-batman-adv b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-index 38dd762..bdc0070 100644
---- a/Documentation/ABI/testing/sysfs-class-net-batman-adv
-+++ b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-@@ -1,4 +1,10 @@
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index 250e0b5..8d8afb1 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -6,6 +6,7 @@ config BATMAN_ADV
+ 	tristate "B.A.T.M.A.N. Advanced Meshing Protocol"
+ 	depends on NET
+ 	select CRC16
++	select LIBCRC32C
+         default n
+ 	help
+           B.A.T.M.A.N. (better approach to mobile ad-hoc networking) is
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index dc33a0c..f65a222 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -17,6 +17,8 @@
+  * 02110-1301, USA
+  */
  
-+What:           /sys/class/net/<iface>/batman-adv/iface_status
-+Date:           May 2010
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+                Indicates the status of <iface> as it is seen by batman.
++#include <linux/crc32c.h>
++#include <linux/highmem.h>
+ #include "main.h"
+ #include "sysfs.h"
+ #include "debugfs.h"
+@@ -420,6 +422,38 @@ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
+ 	return 0;
+ }
+ 
++/**
++ * batadv_skb_crc32 - calculate CRC32 of the whole packet and skip bytes in
++ *  the header
++ * @skb: skb pointing to fragmented socket buffers
++ * @payload_ptr: Pointer to position inside the head buffer of the skb
++ *  marking the start of the data to be CRC'ed
++ *
++ * payload_ptr must always point to an address in the skb head buffer and not to
++ * a fragment.
++ */
++__be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr)
++{
++	u32 crc = 0;
++	unsigned int from;
++	unsigned int to = skb->len;
++	struct skb_seq_state st;
++	const u8 *data;
++	unsigned int len;
++	unsigned int consumed = 0;
 +
- What:           /sys/class/net/<iface>/batman-adv/mesh_iface
- Date:           May 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
-@@ -7,8 +13,3 @@ Description:
-                 displays the batman mesh interface this <iface>
-                 currently is associated with.
- 
--What:           /sys/class/net/<iface>/batman-adv/iface_status
--Date:           May 2010
--Contact:        Marek Lindner <lindner_marek@yahoo.de>
--Description:
--                Indicates the status of <iface> as it is seen by batman.
-diff --git a/Documentation/ABI/testing/sysfs-class-net-mesh b/Documentation/ABI/testing/sysfs-class-net-mesh
-index c81fe89..bc41da6 100644
---- a/Documentation/ABI/testing/sysfs-class-net-mesh
-+++ b/Documentation/ABI/testing/sysfs-class-net-mesh
-@@ -6,6 +6,14 @@ Description:
-                 Indicates whether the batman protocol messages of the
-                 mesh <mesh_iface> shall be aggregated or not.
- 
-+What:           /sys/class/net/<mesh_iface>/mesh/ap_isolation
-+Date:           May 2011
-+Contact:        Antonio Quartulli <ordex@autistici.org>
-+Description:
-+                Indicates whether the data traffic going from a
-+                wireless client to another wireless client will be
-+                silently dropped.
++	from = (unsigned int)(payload_ptr - skb->data);
 +
- What:           /sys/class/net/<mesh_iface>/mesh/bonding
- Date:           June 2010
- Contact:        Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-@@ -31,14 +39,6 @@ Description:
-                 mesh will be fragmented or silently discarded if the
-                 packet size exceeds the outgoing interface MTU.
- 
--What:		/sys/class/net/<mesh_iface>/mesh/ap_isolation
--Date:		May 2011
--Contact:	Antonio Quartulli <ordex@autistici.org>
--Description:
--		Indicates whether the data traffic going from a
--		wireless client to another wireless client will be
--		silently dropped.
--
- What:           /sys/class/net/<mesh_iface>/mesh/gw_bandwidth
- Date:           October 2010
- Contact:        Marek Lindner <lindner_marek@yahoo.de>
-@@ -60,26 +60,26 @@ Description:
-                 Defines the selection criteria this node will use
-                 to choose a gateway if gw_mode was set to 'client'.
- 
--What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
--Date:           May 2010
--Contact:        Marek Lindner <lindner_marek@yahoo.de>
--Description:
--                Defines the interval in milliseconds in which batman
--                sends its protocol messages.
--
- What:           /sys/class/net/<mesh_iface>/mesh/hop_penalty
- Date:           Oct 2010
- Contact:        Linus Lüssing <linus.luessing@web.de>
- Description:
--		Defines the penalty which will be applied to an
--		originator message's tq-field on every hop.
-+                Defines the penalty which will be applied to an
-+                originator message's tq-field on every hop.
- 
--What:		/sys/class/net/<mesh_iface>/mesh/routing_algo
--Date:		Dec 2011
--Contact:	Marek Lindner <lindner_marek@yahoo.de>
-+What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
-+Date:           May 2010
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
- Description:
--		Defines the routing procotol this mesh instance
--		uses to find the optimal paths through the mesh.
-+                Defines the interval in milliseconds in which batman
-+                sends its protocol messages.
++	skb_prepare_seq_read(skb, from, to, &st);
++	while ((len = skb_seq_read(consumed, &data, &st)) != 0) {
++		crc = crc32c(crc, data, len);
++		consumed += len;
++	}
++	skb_abort_seq_read(&st);
 +
-+What:           /sys/class/net/<mesh_iface>/mesh/routing_algo
-+Date:           Dec 2011
-+Contact:        Marek Lindner <lindner_marek@yahoo.de>
-+Description:
-+                Defines the routing procotol this mesh instance
-+                uses to find the optimal paths through the mesh.
++	return htonl(crc);
++}
++
+ static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
+ {
+ 	struct batadv_algo_ops *bat_algo_ops;
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 8f149bb..ce5e5b9 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -174,6 +174,7 @@ void batadv_recv_handler_unregister(uint8_t packet_type);
+ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
++__be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
  
- What:           /sys/class/net/<mesh_iface>/mesh/vis_mode
- Date:           May 2010
+ /**
+  * enum batadv_dbg_level - available log levels
 -- 
 1.8.0
 
