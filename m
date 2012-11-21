@@ -1,16 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 21 Nov 2012 00:41:13 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121120234113.GH3129@ritirata.org>
-References: <CAG_HyLz9B9r=u5jSw8xy+4rfG9anB6vqK+ggMGSmRossMCx4CQ@mail.gmail.com>
- <75191138.5RcUHhBkvt@bentobox> <20121120092421.GC3129@ritirata.org>
- <CAG_HyLwVWZdkDqxEDfDQL0k35UHeNrAOaVqKYJsMeN4VkWucHQ@mail.gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 21 Nov 2012 14:37:00 +0800
+References: <1353440655-10461-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1353440655-10461-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="EDJsL2R9iCFAt7IV"
-Content-Disposition: inline
-In-Reply-To: <CAG_HyLwVWZdkDqxEDfDQL0k35UHeNrAOaVqKYJsMeN4VkWucHQ@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] batman over 802.15.4 .
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201211211437.00804.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] Revert "batman-adv: export
+	compatibility version via debugfs"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,55 +21,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+On Wednesday, November 21, 2012 03:44:15 Antonio Quartulli wrote:
+> This reverts commit 0679ec75758588e185ceec11e5823de65b427a6f.
+> 
+> Conflicts:
+>         main.c
+>         main.h
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+>  debugfs.c | 12 ------------
+>  main.c    | 12 ------------
+>  main.h    |  1 -
+>  3 files changed, 25 deletions(-)
 
---EDJsL2R9iCFAt7IV
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Applied in revision eba8ed0.
 
-On Tue, Nov 20, 2012 at 03:37:17PM -0800, Randy Graham wrote:
-> Thanks for all of your replies, you have answered my questions !
->=20
-> It seems that batman-adv is not suitable for a 802.15.4 mesh network,
-> so I guess I'll need to look elsewhere.
->=20
-> Does anyone know of a non-proprietary mesh network stack for 802.15.4 on =
-linux ?
-> I know that zigbee has not made into the kernel due to GPL issues.
-
-
-We are going OT, but it is worth an answer. :)
-As far as I know there is nothing for multi-hop routing on 802.15.4 in the =
-linux
-kernel. So I think you need to implement something yourself.
-You can either start a port of RPL (e.g. from Contiki) or you can start an
-experiment and try to adapt batman-adv to run on top of those interfaces.
-I would say that the second is a really juicy topic.
-If you do so, we could also think about having a mixed mesh network, part w=
-hich
-runs low power and part which runs common 802.11.
-
-
-Cheers,
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---EDJsL2R9iCFAt7IV
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlCsFRkACgkQpGgxIkP9cwcgBgCfbUMXhKM2paoHvEbaRMzh2BW+
-XCoAn1VjdBHqUK97VRRIsL+RpxWX9w0W
-=+LFn
------END PGP SIGNATURE-----
-
---EDJsL2R9iCFAt7IV--
+Thanks,
+Marek
