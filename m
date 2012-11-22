@@ -1,16 +1,18 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 21 Nov 2012 22:21:23 +0100
-Message-ID: <3122527.LRLpTyPT9y@sven-laptop.home.narfation.org>
-In-Reply-To: <CALDpWg5_cWwXu3NxMcXcSnMc5PWk_qF2uder7HA=4+huiWY3Tg@mail.gmail.com>
-References: <CALDpWg4kZSisvbA4DFdZSDgt0OzYgH8-dNDJE3HUm8xxeCPMeg@mail.gmail.com>
- <1920966.iU3YQxcXDK@sven-laptop.home.narfation.org>
- <CALDpWg5_cWwXu3NxMcXcSnMc5PWk_qF2uder7HA=4+huiWY3Tg@mail.gmail.com>
+Return-Path: <Kevin.Curtis@farsite.com>
+From: Kevin Curtis <Kevin.Curtis@farsite.com>
+Date: Thu, 22 Nov 2012 08:12:38 +0000
+Message-ID: <E603DC592C92B54A89CEF6B0919A0B1CA7D5A6CC87@SOLO.hq.farsitecommunications.com>
+References: <1353499919-28596-1-git-send-email-ordex@autistici.org>
+ <1353499919-28596-10-git-send-email-ordex@autistici.org>
+ <20121121.125759.322762083309845086.davem@davemloft.net>
+ <8108710.8oNxxR0rRd@sven-laptop.home.narfation.org>
+In-Reply-To: <8108710.8oNxxR0rRd@sven-laptop.home.narfation.org>
+Content-Language: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart19339972.o82zUMH35o";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv: node socket communication
+Subject: Re: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Use packing of 2 for all
+ headers before an ethernet header
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,77 +24,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: liu muye <lmy19901031@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>, David Miller <davem@davemloft.net>
+Cc: "fubar@us.ibm.com" <fubar@us.ibm.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, "rmody@brocade.com" <rmody@brocade.com>, "ron.mercer@qlogic.com" <ron.mercer@qlogic.com>, "linux-driver@qlogic.com" <linux-driver@qlogic.com>, "lindner_marek@yahoo.de" <lindner_marek@yahoo.de>, "jitendra.kalsaria@qlogic.com" <jitendra.kalsaria@qlogic.com>, "andy@greyhouse.net" <andy@greyhouse.net>
+
+>> Agree. But we should get this message also to the other guys
+
+What message would this be?
+Are you advocating a different use of #pragma pack()?
 
 
---nextPart19339972.o82zUMH35o
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Kevin Curtis
+Linux Development
+FarSite Communications Ltd http://www.farsite.com
+Winner of The Queen's Award for Enterprise 2009
+tel:=A0 +44 1256 330461
+fax:=A0 +44 1256 854931
 
-On Wednesday 21 November 2012 16:08:37 liu muye wrote:
-> Thank you so much for your suggestions. Yes, we are using batman-adv. The
-> one running as a kernel module.
-> Just a few quick follow up questions.
-> 
-> Our goal is to build an ad hoc mesh network. Each node may not have IP
-> address. I can use batctl ping functionality to ping my peer with MAC
-> address. Just wondering if I can send data packet to my peers with MAC
-> address.
 
-Of course. This is the raw socket stuff I've mentioned before. Just bind a raw
-socket to your bat0 device and sent ethernet frames between your nodes (mac
-address as source/destionation). An easy example is rawsend [1].
 
-But it is propably easier to use an actual transport protocol for communication.
+-----Original Message-----
+From: Sven Eckelmann [mailto:sven@narfation.org]=20
+Sent: 21 November 2012 18:20
+To: David Miller
+Cc: ordex@autistici.org; netdev@vger.kernel.org; b.a.t.m.a.n@lists.open-mes=
+h.org; lindner_marek@yahoo.de; Kevin Curtis; linux-driver@qlogic.com; ron.m=
+ercer@qlogic.com; jitendra.kalsaria@qlogic.com; rmody@brocade.com; andy@gre=
+yhouse.net; fubar@us.ibm.com
+Subject: Re: Re: [PATCH 9/9] batman-adv: Use packing of 2 for all headers b=
+efore an ethernet header
 
-> I have noticed the packet.h file in the batctl source code contains several
-> C structures. One of  them is
-> 
-> struct batadv_unicast_packet {
->     struct batadv_header header;
->     uint8_t  ttvn; /* destination translation table version number */
->     uint8_t  dest[ETH_ALEN];
-> } __packed;
-> 
-> To send my data packet, I have to use this C structure. Is that correct?
-> and where to look up the value for ttvn?
+On Wednesday 21 November 2012 12:57:59 David Miller wrote:
+> From: Antonio Quartulli <ordex@autistici.org>
+> Date: Wed, 21 Nov 2012 13:11:59 +0100
+>=20
+> > +#pragma pack(2)
+>=20
+>  ...
+>=20
+> > -} __packed;
+>=20
+> The __packed attribute is an abstraction of the actual syntax the=20
+> compiler uses, if it is supported at all.
+>=20
+> Therefore, you can't just unconditionally use the #pragma, and you=20
+> would need to use some kind of similar compiler abstraction for it.
+>=20
+> But to be honest this is really ugly and for very little, if any,=20
+> gain.
 
-No, this is internal stuff used for the tunneling. Don't try to create packets
-from userspace with this format as you would have to implement a complete
-batman-adv replacement. And you still would have to create a valid ethernet
-packet followed by the unicast header anyway. So better use raw sockets
-when you just want to sent ethernet frames between bat0 devices of different
-nodes.
+Agree. But we should get this message also to the other guys
+
+$ git grep pragma -- drivers/net
+drivers/net/bonding/bond_3ad.h:#pragma pack(1) drivers/net/bonding/bond_3ad=
+.h:#pragma pack() drivers/net/bonding/bond_3ad.h:#pragma pack(8) drivers/ne=
+t/bonding/bond_3ad.h:#pragma pack() drivers/net/bonding/bond_alb.c:#pragma =
+pack(1) drivers/net/bonding/bond_alb.c:#pragma pack() drivers/net/ethernet/=
+brocade/bna/bfa_defs.h:#pragma pack(1) drivers/net/ethernet/brocade/bna/bfa=
+_defs.h:#pragma pack() drivers/net/ethernet/brocade/bna/bfa_defs_cna.h:#pra=
+gma pack(1) drivers/net/ethernet/brocade/bna/bfa_defs_cna.h:#pragma pack() =
+drivers/net/ethernet/brocade/bna/bfa_defs_mfg_comm.h:#pragma pack(1) driver=
+s/net/ethernet/brocade/bna/bfa_defs_mfg_comm.h:#pragma pack() drivers/net/e=
+thernet/brocade/bna/bfi.h:#pragma pack(1) drivers/net/ethernet/brocade/bna/=
+bfi.h:#pragma pack() drivers/net/ethernet/brocade/bna/bfi_cna.h:#pragma pac=
+k(1) drivers/net/ethernet/brocade/bna/bfi_cna.h:#pragma pack() drivers/net/=
+ethernet/brocade/bna/bfi_enet.h:#pragma pack(1) drivers/net/ethernet/brocad=
+e/bna/bfi_enet.h:#pragma pack() drivers/net/ethernet/brocade/bna/cna.h:#pra=
+gma pack(1) drivers/net/ethernet/brocade/bna/cna.h:#pragma pack() drivers/n=
+et/ethernet/qlogic/qla3xxx.h:#pragma pack(1) drivers/net/ethernet/qlogic/ql=
+a3xxx.h:#pragma pack() drivers/net/wan/farsync.c:#pragma pack(1) drivers/ne=
+t/wan/farsync.c:#pragma pack()
 
 Kind regards,
 	Sven
-
-[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/attachments/20111206/52f060cb/attachment.c
-    https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2011-December/005865.html
-
-
---nextPart19339972.o82zUMH35o
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAABCgAGBQJQrUXTAAoJEF2HCgfBJntGDvcP/1xt4jUkLCvMPAyaQCM32Dlt
-oL9PJKGjoZEdKcOsShtroD64WTvoO73Tltm8VxZqs+gvWdncceSPeGZIscOD9uUO
-sKiz65KDmofV1oeEMfeQpu7HmSsWhel+PyqsKy6RPimd6mSwTq3C2NItzxDrDisG
-VAoaElZh/s9gIvxUaIrAer/zLdGtbzOsmGLLQGgg/Ux3XD5U6Cvc/NgVw/odo4qK
-mHM8A2ocBUU+p5K6+4qz6siMpcX5Y43lALfcn9/pp9JmEmWzKX1myuzX3tShZLw3
-riC7uMWnFOw27//eGO+xYzGZIYgL5Dxp8LGeAzHxDQSKJdcHZNKJ0HJpexbDtttK
-R19NWjoENS65fcM30PElyRisnkw+KLl1f9wxdlB7NAOLaSXDU/OeoVKxPjRm/OkO
-Y9TmhjEDurkhVmjf42eAzrHfzq3+6Ix0SFlAgeTag6MUCYdyhUXAvVm1Ub0Ruewp
-LMW7GZ8RcyAU6Etqi69KjWdA2+QTgH5Qs3gDsWLTdC4eiwXwqawRtFGU5yrFhaVL
-+SjQ6jxuCu0zEVtvsvTNodNrauFkf1NXQVDjjnuhccMdexkx0b7GxWb5GLQ3IjKe
-IqOv+3ii/ZohhcUWvhsFIKizObkBJWlFUqctaLmd9PHIs6KaH4Ba9rnrBNuQBH+L
-CrrhYYlXJIhp0sXTVE8D
-=CuZF
------END PGP SIGNATURE-----
-
---nextPart19339972.o82zUMH35o--
-
