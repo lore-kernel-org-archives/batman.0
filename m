@@ -1,15 +1,11 @@
-Return-Path: <emunicio@gmail.com>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
-In-Reply-To: <4821015.mIvdhMMzeK@sven-laptop.home.narfation.org>
-References: <CAMVTf1ieWEkLOjcK0w2prCvFRmR4W+BYMett7ySrTQP1Yt2m_Q@mail.gmail.com>
- <1587719.gZG6lsm63o@bentobox>
- <CAMVTf1jTfdwLzOm9_n97VVO4t8fMxyCX_w0tbv-i6euMUAy71A@mail.gmail.com>
- <4821015.mIvdhMMzeK@sven-laptop.home.narfation.org>
-From: Esteban Municio <emunicio@gmail.com>
-Date: Thu, 22 Nov 2012 16:40:29 -0500
-Message-ID: <CAMVTf1h0v_E1rxAxHpZrf0gH4rAFVineCLG9Uq_Q4cNEMEwNHg@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Compile batman-adv code
+Sender: guido@guidoi.com.ar
+From: Gui Iribarren <gui@altermundi.net>
+Date: Fri, 23 Nov 2012 09:52:48 -0300
+Message-ID: <CAHD-aqKfNck0Z4Zqw_MJYzTFN=dEVp=Xxu6SfgRSwtOeCpPXnw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] [RFC] batman-adv boot setup scheme on OpenWRT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,17 +19,34 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-> I already told you. You can do it with
-> `make package/batman-adv/{clean,prepare,compile,install}`
->
-> But first you have to compile a complete image of openwrt and flash your
-> device with it. All following builds for this image/kernel can be done using
-> `make package/batman-adv/{clean,prepare,compile,install}`
+Hello Marek and folks,
+chasing a race condition, I might have delved a little too deep into
+openwrt boot sequence :(
 
-Nice! Now I understood, I had only to execute that sentence.That was
-just what I was looking for. Thank you very much
+AFAICU, currently there's a /etc/hotplug.d/net/99-batman-adv script
+which tries to configure both bat0 , and any interfaces coming up that
+might have to be included there. Problem is, hotplug.d/net scripts are
+called when interface is "added" but not necessarilly brought up yet.
+So there's a "sleep 3s" that works in most cases as a window for slow
+hardware bring up the interface.
+...in most cases :(
+on an old nanoloco2, creating 2 wifi-ifaces in ap mode and 1 in ibss
+mode, managed with batman-adv, the sleep 3s is not enough. A 6s
+timeout works around it, but maybe there's a better solution?
 
-Regards
+I've divided the script, putting the "add candidate interfaces to
+bat0" into /etc/hotplug.d/*iface*/99-batman-adv , which gets called
+precisely after an interface is actually brought up.
 
--- 
-Esteban
+This works as expected, and i could even eliminate the original 3s sleep.
+
+hotplug.d/iface script adds candidate interfaces to batX after they
+are brought up
+hotplug.d/net script configures batX as they appear,
+
+Would that work in general? Or was the single hotplug.d/net
+implemented that way, for a reason i'm missing?
+
+Thanks!
+
+Gui
