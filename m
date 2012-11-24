@@ -1,13 +1,9 @@
-Return-Path: <guido@guidoi.com.ar>
-MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-In-Reply-To: <CAHD-aqKfNck0Z4Zqw_MJYzTFN=dEVp=Xxu6SfgRSwtOeCpPXnw@mail.gmail.com>
-References: <CAHD-aqKfNck0Z4Zqw_MJYzTFN=dEVp=Xxu6SfgRSwtOeCpPXnw@mail.gmail.com>
-From: Gui Iribarren <gui@altermundi.net>
-Date: Fri, 23 Nov 2012 11:00:47 -0300
-Message-ID: <CAHD-aq+pkXDfaVXtvMtSV6OK-umobdvYrUMeVYkW1Rsh7uM7iQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv boot setup scheme on OpenWRT
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 24 Nov 2012 01:02:06 +0100
+Message-Id: <1353715332-4284-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/7] batman-adv: Move soft-interface
+	initialization to ndo_init
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,85 +15,215 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, davem@davemloft.net
 
-Boring bootlog at http://pastebin.com/59FEPttY
+The initialization of an net_device object should be done in the
+init/constructor function and not from the outside after the register_netdevice
+was done to avoid race conditions.
 
-Proposed patch follows (against current batman-adv in openwrt 'packages' feed)
-
-Signed-off-by: Gui Iribarren <gui@altermundi.net>
-
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-diff --git a/Makefile b/Makefile
-index d12665e..e37467f 100644
---- a/Makefile
-+++ b/Makefile
-@@ -113,9 +113,10 @@ define KernelPackage/batman-adv/conffiles
- endef
+ net/batman-adv/hard-interface.c |    5 ++
+ net/batman-adv/soft-interface.c |  147 ++++++++++++++++++---------------------
+ 2 files changed, 73 insertions(+), 79 deletions(-)
 
- define KernelPackage/batman-adv/install
--    $(INSTALL_DIR) $(1)/etc/config $(1)/etc/hotplug.d/net
-$(1)/lib/batman-adv $(1)/usr/sbin
-+    $(INSTALL_DIR) $(1)/etc/config $(1)/etc/hotplug.d/iface
-$(1)/etc/hotplug.d/net $(1)/lib/batman-adv $(1)/usr/sbin
-     $(INSTALL_DATA) ./files/etc/config/batman-adv $(1)/etc/config
-     $(INSTALL_DATA) ./files/lib/batman-adv/config.sh $(1)/lib/batman-adv
-+    $(INSTALL_BIN) ./files/etc/hotplug.d/iface/99-batman-adv
-$(1)/etc/hotplug.d/iface
-     $(INSTALL_BIN) ./files/etc/hotplug.d/net/99-batman-adv
-$(1)/etc/hotplug.d/net
-     $(INSTALL_BIN) ./files/usr/sbin/batman-adv $(1)/usr/sbin
-     $(BATCTL_INSTALL)
-diff --git a/files/etc/hotplug.d/iface/99-batman-adv
-b/files/etc/hotplug.d/iface/99-batman-adv
-new file mode 100644
-index 0000000..a4f4ed0
---- /dev/null
-+++ b/files/etc/hotplug.d/iface/99-batman-adv
-@@ -0,0 +1,15 @@
-+#!/bin/sh
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 365ed74..50f4a5c 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -542,6 +542,11 @@ static int batadv_hard_if_event(struct notifier_block *this,
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_priv *bat_priv;
+ 
++	if (batadv_softif_is_valid(net_dev) && event == NETDEV_REGISTER) {
++		batadv_sysfs_add_meshif(net_dev);
++		return NOTIFY_DONE;
++	}
 +
-+. /lib/batman-adv/config.sh
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	if (!hard_iface && event == NETDEV_REGISTER)
+ 		hard_iface = batadv_hardif_add_interface(net_dev);
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 54800c7..b545595 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -407,9 +407,73 @@ static void batadv_set_lockdep_class(struct net_device *dev)
+  */
+ static int batadv_softif_init(struct net_device *dev)
+ {
++	struct batadv_priv *bat_priv;
++	int ret;
++	size_t cnt_len = sizeof(uint64_t) * BATADV_CNT_NUM;
 +
-+bat_load_module
-+config_load batman-adv
+ 	batadv_set_lockdep_class(dev);
+ 
++	bat_priv = netdev_priv(dev);
 +
-+case "$ACTION" in
-+    ifup)
-+        [ -d /sys/class/net/$DEVICE/batman_adv/ ] && config_foreach
-bat_add_interface mesh "$DEVICE"
-+        ;;
-+    ifdown)
-+        [ -d /sys/class/net/$DEVICE/batman_adv/ ] && config_foreach
-bat_del_interface mesh "$DEVICE"
-+        ;;
-+esac
-diff --git a/files/etc/hotplug.d/net/99-batman-adv
-b/files/etc/hotplug.d/net/99-batman-adv
-index 42d4c29..f0c391f 100644
---- a/files/etc/hotplug.d/net/99-batman-adv
-+++ b/files/etc/hotplug.d/net/99-batman-adv
-@@ -8,9 +8,5 @@ config_load batman-adv
- case "$ACTION" in
-     add)
-         [ -d /sys/class/net/$INTERFACE/mesh/ ] && bat_config "$INTERFACE"
--        [ -d /sys/class/net/$INTERFACE/batman_adv/ ] &&
-config_foreach bat_add_interface mesh "$INTERFACE"
--        ;;
--    remove)
--        [ -d /sys/class/net/$INTERFACE/batman_adv/ ] &&
-config_foreach bat_del_interface mesh "$INTERFACE"
-         ;;
- esac
-diff --git a/files/lib/batman-adv/config.sh b/files/lib/batman-adv/config.sh
-index cb78867..646e953 100644
---- a/files/lib/batman-adv/config.sh
-+++ b/files/lib/batman-adv/config.sh
-@@ -50,7 +50,6 @@ bat_add_interface()
-     local interface="$2"
-     local interfaces
++	/* batadv_interface_stats() needs to be available as soon as
++	 * register_netdevice() has been called
++	 */
++	bat_priv->bat_counters = __alloc_percpu(cnt_len, __alignof__(uint64_t));
++	if (!bat_priv->bat_counters)
++		return -ENOMEM;
++
++	atomic_set(&bat_priv->aggregated_ogms, 1);
++	atomic_set(&bat_priv->bonding, 0);
++	atomic_set(&bat_priv->bridge_loop_avoidance, 0);
++#ifdef CONFIG_BATMAN_ADV_DAT
++	atomic_set(&bat_priv->distributed_arp_table, 1);
++#endif
++	atomic_set(&bat_priv->ap_isolation, 0);
++	atomic_set(&bat_priv->vis_mode, BATADV_VIS_TYPE_CLIENT_UPDATE);
++	atomic_set(&bat_priv->gw_mode, BATADV_GW_MODE_OFF);
++	atomic_set(&bat_priv->gw_sel_class, 20);
++	atomic_set(&bat_priv->gw_bandwidth, 41);
++	atomic_set(&bat_priv->orig_interval, 1000);
++	atomic_set(&bat_priv->hop_penalty, 30);
++	atomic_set(&bat_priv->log_level, 0);
++	atomic_set(&bat_priv->fragmentation, 1);
++	atomic_set(&bat_priv->bcast_queue_left, BATADV_BCAST_QUEUE_LEN);
++	atomic_set(&bat_priv->batman_queue_left, BATADV_BATMAN_QUEUE_LEN);
++
++	atomic_set(&bat_priv->mesh_state, BATADV_MESH_INACTIVE);
++	atomic_set(&bat_priv->bcast_seqno, 1);
++	atomic_set(&bat_priv->tt.vn, 0);
++	atomic_set(&bat_priv->tt.local_changes, 0);
++	atomic_set(&bat_priv->tt.ogm_append_cnt, 0);
++#ifdef CONFIG_BATMAN_ADV_BLA
++	atomic_set(&bat_priv->bla.num_requests, 0);
++#endif
++	bat_priv->tt.last_changeset = NULL;
++	bat_priv->tt.last_changeset_len = 0;
++
++	bat_priv->primary_if = NULL;
++	bat_priv->num_ifaces = 0;
++
++	ret = batadv_algo_select(bat_priv, batadv_routing_algo);
++	if (ret < 0)
++		goto free_bat_counters;
++
++	ret = batadv_debugfs_add_meshif(dev);
++	if (ret < 0)
++		goto free_bat_counters;
++
++	ret = batadv_mesh_init(dev);
++	if (ret < 0)
++		goto unreg_debugfs;
++
+ 	return 0;
++
++unreg_debugfs:
++	batadv_debugfs_del_meshif(dev);
++free_bat_counters:
++	free_percpu(bat_priv->bat_counters);
++
++	return ret;
+ }
+ 
+ static const struct net_device_ops batadv_netdev_ops = {
+@@ -451,97 +515,22 @@ static void batadv_interface_setup(struct net_device *dev)
+ struct net_device *batadv_softif_create(const char *name)
+ {
+ 	struct net_device *soft_iface;
+-	struct batadv_priv *bat_priv;
+ 	int ret;
+-	size_t cnt_len = sizeof(uint64_t) * BATADV_CNT_NUM;
+ 
+-	soft_iface = alloc_netdev(sizeof(*bat_priv), name,
++	soft_iface = alloc_netdev(sizeof(struct batadv_priv), name,
+ 				  batadv_interface_setup);
+-
+ 	if (!soft_iface)
+-		goto out;
+-
+-	bat_priv = netdev_priv(soft_iface);
+-
+-	/* batadv_interface_stats() needs to be available as soon as
+-	 * register_netdevice() has been called
+-	 */
+-	bat_priv->bat_counters = __alloc_percpu(cnt_len, __alignof__(uint64_t));
+-	if (!bat_priv->bat_counters)
+-		goto free_soft_iface;
++		return NULL;
+ 
+ 	ret = register_netdevice(soft_iface);
+ 	if (ret < 0) {
+ 		pr_err("Unable to register the batman interface '%s': %i\n",
+ 		       name, ret);
+-		goto free_bat_counters;
++		free_netdev(soft_iface);
++		return NULL;
+ 	}
+ 
+-	atomic_set(&bat_priv->aggregated_ogms, 1);
+-	atomic_set(&bat_priv->bonding, 0);
+-	atomic_set(&bat_priv->bridge_loop_avoidance, 0);
+-#ifdef CONFIG_BATMAN_ADV_DAT
+-	atomic_set(&bat_priv->distributed_arp_table, 1);
+-#endif
+-	atomic_set(&bat_priv->ap_isolation, 0);
+-	atomic_set(&bat_priv->vis_mode, BATADV_VIS_TYPE_CLIENT_UPDATE);
+-	atomic_set(&bat_priv->gw_mode, BATADV_GW_MODE_OFF);
+-	atomic_set(&bat_priv->gw_sel_class, 20);
+-	atomic_set(&bat_priv->gw_bandwidth, 41);
+-	atomic_set(&bat_priv->orig_interval, 1000);
+-	atomic_set(&bat_priv->hop_penalty, 30);
+-	atomic_set(&bat_priv->log_level, 0);
+-	atomic_set(&bat_priv->fragmentation, 1);
+-	atomic_set(&bat_priv->bcast_queue_left, BATADV_BCAST_QUEUE_LEN);
+-	atomic_set(&bat_priv->batman_queue_left, BATADV_BATMAN_QUEUE_LEN);
+-
+-	atomic_set(&bat_priv->mesh_state, BATADV_MESH_INACTIVE);
+-	atomic_set(&bat_priv->bcast_seqno, 1);
+-	atomic_set(&bat_priv->tt.vn, 0);
+-	atomic_set(&bat_priv->tt.local_changes, 0);
+-	atomic_set(&bat_priv->tt.ogm_append_cnt, 0);
+-#ifdef CONFIG_BATMAN_ADV_BLA
+-	atomic_set(&bat_priv->bla.num_requests, 0);
+-#endif
+-	bat_priv->tt.last_changeset = NULL;
+-	bat_priv->tt.last_changeset_len = 0;
+-
+-	bat_priv->primary_if = NULL;
+-	bat_priv->num_ifaces = 0;
+-
+-	ret = batadv_algo_select(bat_priv, batadv_routing_algo);
+-	if (ret < 0)
+-		goto unreg_soft_iface;
+-
+-	ret = batadv_sysfs_add_meshif(soft_iface);
+-	if (ret < 0)
+-		goto unreg_soft_iface;
+-
+-	ret = batadv_debugfs_add_meshif(soft_iface);
+-	if (ret < 0)
+-		goto unreg_sysfs;
+-
+-	ret = batadv_mesh_init(soft_iface);
+-	if (ret < 0)
+-		goto unreg_debugfs;
+-
+ 	return soft_iface;
+-
+-unreg_debugfs:
+-	batadv_debugfs_del_meshif(soft_iface);
+-unreg_sysfs:
+-	batadv_sysfs_del_meshif(soft_iface);
+-unreg_soft_iface:
+-	free_percpu(bat_priv->bat_counters);
+-	unregister_netdevice(soft_iface);
+-	return NULL;
+-
+-free_bat_counters:
+-	free_percpu(bat_priv->bat_counters);
+-free_soft_iface:
+-	free_netdev(soft_iface);
+-out:
+-	return NULL;
+ }
+ 
+ void batadv_softif_destroy(struct net_device *soft_iface)
+-- 
+1.7.10.4
 
--    sleep 3s # some device (ath) is very lazy to start
-     config_get interfaces $mesh interfaces
-     for iface in $interfaces; do
-         [ -f "/sys/class/net/$iface/batman_adv/mesh_iface" ] || {
