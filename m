@@ -1,13 +1,14 @@
-Return-Path: <guido@guidoi.com.ar>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 26 Nov 2012 01:12:16 +0800
+References: <CAHD-aqKfNck0Z4Zqw_MJYzTFN=dEVp=Xxu6SfgRSwtOeCpPXnw@mail.gmail.com>
+In-Reply-To: <CAHD-aqKfNck0Z4Zqw_MJYzTFN=dEVp=Xxu6SfgRSwtOeCpPXnw@mail.gmail.com>
 MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-In-Reply-To: <!&!AAAAAAAAAAAYAAAAAAAAAOJK0u4CH31Kl5v1RPAzyrZCgQAAEAAAAEPAu5oarOFFtlUPu/NsHLsBAAAAAA==@gmail.com>
-References: <!&!AAAAAAAAAAAYAAAAAAAAAOJK0u4CH31Kl5v1RPAzyrZCgQAAEAAAAEPAu5oarOFFtlUPu/NsHLsBAAAAAA==@gmail.com>
-From: Gui Iribarren <gui@altermundi.net>
-Date: Sun, 25 Nov 2012 13:59:40 -0300
-Message-ID: <CAHD-aq+mvhxjYyuNmYC+ZMgB+m43R3+XMqB3o7N5fu6TbSJmZA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] trigger events
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201211260112.16957.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv boot setup scheme on OpenWRT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +22,22 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The gateway server dis/appearance is handled by /etc/hotplug.d/net/
-framework, i'm currently working on a general script to handle that
-using uci config,
 
+Hi,
 
-In the meanwhile, you can find more info in batman-adv wiki page
+> AFAICU, currently there's a /etc/hotplug.d/net/99-batman-adv script
+> which tries to configure both bat0 , and any interfaces coming up that
+> might have to be included there. Problem is, hotplug.d/net scripts are
+> called when interface is "added" but not necessarilly brought up yet.
+> So there's a "sleep 3s" that works in most cases as a window for slow
+> hardware bring up the interface.
 
-http://www.open-mesh.org/wiki/batman-adv/Uevent
+I like the idea of using the iface "ifup" hook for adding hard-interfaces. On 
+the other hand I opt for keeping the net "remove" hook for removing them 
+because batman-adv handles these ifup/ifdown blips internally. If you adjust 
+that part I'll will merge your patch.
 
-or if you are in a hurry, check a hacky script
+Excellent catch!
 
-https://bitbucket.org/guidoi/batmesh/src/tip/batman-adv-auto-gw-mode/files/etc/hotplug.d/net/99-batman-gw
-
-On Sun, Nov 25, 2012 at 12:52 PM, Walter Robert Ditzler
-<ditwal001@gmail.com> wrote:
-> hi all,
->
-> i am wondering if events in batman-adv can be triggered such as:
->
-> - get message when: host/batman-adv lost connection
-> - get message when: host/batman-adv is connected to min. 1 gateway server
->
-> if yes, even whith other events, does anyone have an example how to read the
-> event in a bash script for further processing?
->
-> thanks a lot,
->
-> walter.
->
+Cheers,
+Marek
