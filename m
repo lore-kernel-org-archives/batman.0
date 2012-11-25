@@ -1,11 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 25 Nov 2012 19:23:31 +0100
-Message-Id: <1353867811-8452-5-git-send-email-sven@narfation.org>
-In-Reply-To: <1353867811-8452-1-git-send-email-sven@narfation.org>
-References: <1353867811-8452-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: Allow to use different sized
-	hash locks array
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 26 Nov 2012 00:38:50 +0100
+Message-Id: <1353886730-32477-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: use ETH_P_BATMAN
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,472 +16,140 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The amount of locks of a hash directly affects the parallelity when all access
-independent parts of the hash. But this also affects the amount of memory used
-for each hash. Allowing to decouple the hash size and the lock size allows to
-reduce this memory consumption for hashes which don't allow this parallelism.
+The ETH_P_BATMAN ethertype is now defined kernel-wide. Use it instead
+of the private BATADV_ETH_P_BATMAN define.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- bridge_loop_avoidance.c |   28 ++++++++++++++--------------
- distributed-arp-table.c |   16 ++++++++--------
- distributed-arp-table.h |    6 +++---
- hash.h                  |   19 +++++++++----------
- originator.c            |    6 ++++--
- originator.h            |   13 +++++--------
- translation-table.c     |   27 ++++++++++++++++-----------
- vis.c                   |    8 ++++----
- 8 files changed, 63 insertions(+), 60 deletions(-)
+ compat.h         | 2 ++
+ hard-interface.c | 3 ++-
+ packet.h         | 2 --
+ send.c           | 6 ++++--
+ soft-interface.c | 9 +++++----
+ 5 files changed, 13 insertions(+), 9 deletions(-)
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 1a78bac..781119f 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -38,7 +38,7 @@ static void batadv_bla_send_announce(struct batadv_priv *bat_priv,
- 				     struct batadv_backbone_gw *backbone_gw);
+diff --git a/compat.h b/compat.h
+index be685aa..e4ebee0 100644
+--- a/compat.h
++++ b/compat.h
+@@ -166,6 +166,8 @@ static inline void eth_hw_addr_random(struct net_device *dev)
  
- /* return the index of the claim */
--static inline uint32_t batadv_choose_claim(const void *data, uint32_t size)
-+static inline uint32_t batadv_choose_claim(const void *data)
- {
- 	struct batadv_claim *claim = (struct batadv_claim *)data;
- 	uint32_t hash;
-@@ -46,12 +46,11 @@ static inline uint32_t batadv_choose_claim(const void *data, uint32_t size)
- 	hash = jhash(&claim->addr, sizeof(claim->addr), 0);
- 	hash = jhash(&claim->vid, sizeof(claim->vid), hash);
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
  
--	return hash % size;
-+	return hash;
- }
- 
- /* return the index of the backbone gateway */
--static inline uint32_t batadv_choose_backbone_gw(const void *data,
--						 uint32_t size)
-+static inline uint32_t batadv_choose_backbone_gw(const void *data)
- {
- 	struct batadv_claim *claim = (struct batadv_claim *)data;
- 	uint32_t hash;
-@@ -59,7 +58,7 @@ static inline uint32_t batadv_choose_backbone_gw(const void *data,
- 	hash = jhash(&claim->addr, sizeof(claim->addr), 0);
- 	hash = jhash(&claim->vid, sizeof(claim->vid), hash);
- 
--	return hash % size;
-+	return hash;
- }
- 
- 
-@@ -136,10 +135,10 @@ static struct batadv_claim *batadv_claim_hash_find(struct batadv_priv *bat_priv,
- 	struct hlist_node *node;
- 	struct batadv_claim *claim;
- 	struct batadv_claim *claim_tmp = NULL;
--	int index;
-+	uint32_t index;
- 
--	index = batadv_choose_claim(data, ARRAY_SIZE(bat_priv->bla.claim_hash));
--	head = &hash[index];
-+	index = batadv_choose_claim(data);
-+	head = &hash[index % ARRAY_SIZE(bat_priv->bla.claim_hash)];
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(claim, node, head, hash_entry) {
-@@ -174,14 +173,13 @@ batadv_backbone_hash_find(struct batadv_priv *bat_priv,
- 	struct hlist_node *node;
- 	struct batadv_backbone_gw search_entry, *backbone_gw;
- 	struct batadv_backbone_gw *backbone_gw_tmp = NULL;
--	int index;
--	uint32_t hash_size = ARRAY_SIZE(bat_priv->bla.backbone_hash);
-+	uint32_t index;
- 
- 	memcpy(search_entry.orig, addr, ETH_ALEN);
- 	search_entry.vid = vid;
- 
--	index = batadv_choose_backbone_gw(&search_entry, hash_size);
--	head = &hash[index];
-+	index = batadv_choose_backbone_gw(&search_entry);
-+	head = &hash[index % ARRAY_SIZE(bat_priv->bla.backbone_hash)];
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(backbone_gw, node, head, hash_entry) {
-@@ -211,12 +209,13 @@ batadv_bla_del_backbone_claims(struct batadv_backbone_gw *backbone_gw)
- 	struct batadv_claim *claim;
- 	int i;
- 	spinlock_t *list_lock;	/* protects write access to the hash lists */
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->bla.claim_hash_locks);
- 
- 	hash = bat_priv->bla.claim_hash;
- 
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->bla.claim_hash); i++) {
- 		head = &hash[i];
--		list_lock = &bat_priv->bla.claim_hash_locks[i];
-+		list_lock = &bat_priv->bla.claim_hash_locks[i % locks_size];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(claim, node, node_tmp,
-@@ -953,12 +952,13 @@ static void batadv_bla_purge_backbone_gw(struct batadv_priv *bat_priv, int now)
- 	struct hlist_head *hash;
- 	spinlock_t *list_lock;	/* protects write access to the hash lists */
- 	int i;
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->bla.backbone_hash_locks);
- 
- 	hash = bat_priv->bla.backbone_hash;
- 
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->bla.backbone_hash); i++) {
- 		head = &hash[i];
--		list_lock = &bat_priv->bla.backbone_hash_locks[i];
-+		list_lock = &bat_priv->bla.backbone_hash_locks[i % locks_size];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(backbone_gw, node, node_tmp,
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index b4f8eef..8c8dbc5 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -86,10 +86,11 @@ static void __batadv_dat_purge(struct batadv_priv *bat_priv,
- 	struct hlist_node *node, *node_tmp;
- 	struct hlist_head *head;
- 	uint32_t i;
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->dat.hash_locks);
- 
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->dat.hash); i++) {
- 		head = &bat_priv->dat.hash[i];
--		list_lock = &bat_priv->dat.hash_locks[i];
-+		list_lock = &bat_priv->dat.hash_locks[i % locks_size];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(dat_entry, node, node_tmp, head,
-@@ -197,11 +198,10 @@ static __be32 batadv_arp_ip_dst(struct sk_buff *skb, int hdr_size)
- /**
-  * batadv_hash_dat - compute the hash value for an IP address
-  * @data: data to hash
-- * @size: size of the hash table
++#define ETH_P_BATMAN	0x4305
++
+ /* hack for not correctly set mac_len. This may happen for some special
+  * configurations like batman-adv on VLANs.
   *
-  * Returns the selected index in the hash table for the given data
-  */
--static uint32_t batadv_hash_dat(const void *data, uint32_t size)
-+static uint32_t batadv_hash_dat(const void *data)
+diff --git a/hard-interface.c b/hard-interface.c
+index 365ed74..f1d37cd 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -30,6 +30,7 @@
+ #include "bridge_loop_avoidance.h"
+ 
+ #include <linux/if_arp.h>
++#include <linux/if_ether.h>
+ 
+ void batadv_hardif_free_rcu(struct rcu_head *rcu)
  {
- 	const unsigned char *key = data;
- 	uint32_t hash = 0;
-@@ -217,7 +217,7 @@ static uint32_t batadv_hash_dat(const void *data, uint32_t size)
- 	hash ^= (hash >> 11);
- 	hash += (hash << 15);
- 
--	return hash % size;
-+	return hash;
- }
- 
- /**
-@@ -237,8 +237,8 @@ batadv_dat_entry_hash_find(struct batadv_priv *bat_priv, __be32 ip)
- 	struct hlist_head *hash = bat_priv->dat.hash;
- 	uint32_t index;
- 
--	index = batadv_hash_dat(&ip, ARRAY_SIZE(bat_priv->dat.hash));
--	head = &hash[index];
-+	index = batadv_hash_dat(&ip);
-+	head = &hash[index % ARRAY_SIZE(bat_priv->dat.hash)];
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(dat_entry, node, head, hash_entry) {
-@@ -531,8 +531,8 @@ batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst)
- 	if (!res)
- 		return NULL;
- 
--	ip_key = (batadv_dat_addr_t)batadv_hash_dat(&ip_dst,
--						    BATADV_DAT_ADDR_MAX);
-+	ip_key = (batadv_dat_addr_t)batadv_hash_dat(&ip_dst);
-+	ip_key %= BATADV_DAT_ADDR_MAX;
- 
- 	batadv_dbg(BATADV_DBG_DAT, bat_priv,
- 		   "dat_select_candidates(): IP=%pI4 hash(IP)=%u\n", &ip_dst,
-diff --git a/distributed-arp-table.h b/distributed-arp-table.h
-index d060c03..642e28b 100644
---- a/distributed-arp-table.h
-+++ b/distributed-arp-table.h
-@@ -49,7 +49,7 @@ batadv_dat_init_orig_node_addr(struct batadv_orig_node *orig_node)
+@@ -311,7 +312,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
  {
- 	uint32_t addr;
+ 	struct batadv_priv *bat_priv;
+ 	struct net_device *soft_iface;
+-	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
++	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
+ 	int ret;
  
--	addr = batadv_choose_orig(orig_node->orig, BATADV_DAT_ADDR_MAX);
-+	addr = batadv_choose_orig(orig_node->orig) % BATADV_DAT_ADDR_MAX;
- 	orig_node->dat_addr = (batadv_dat_addr_t)addr;
- }
+ 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
+diff --git a/packet.h b/packet.h
+index 1c5454d..cb6405b 100644
+--- a/packet.h
++++ b/packet.h
+@@ -20,8 +20,6 @@
+ #ifndef _NET_BATMAN_ADV_PACKET_H_
+ #define _NET_BATMAN_ADV_PACKET_H_
  
-@@ -64,8 +64,8 @@ batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
- {
- 	uint32_t addr;
- 
--	addr = batadv_choose_orig(primary_if->net_dev->dev_addr,
--				  BATADV_DAT_ADDR_MAX);
-+	addr = batadv_choose_orig(primary_if->net_dev->dev_addr);
-+	addr %= BATADV_DAT_ADDR_MAX;
- 
- 	bat_priv->dat.addr = (batadv_dat_addr_t)addr;
- }
-diff --git a/hash.h b/hash.h
-index 1cd3ae3..33b0be1 100644
---- a/hash.h
-+++ b/hash.h
-@@ -37,11 +37,10 @@
- typedef int (*batadv_hashdata_compare_cb)(const struct hlist_node *,
- 					  const void *);
- 
--/* the hashfunction, should return an index
-- * based on the key in the data of the first
-- * argument and the size the second
-+/* the hashfunction, should return an unmapped index based on the key in the
-+ * data of the first argument
-  */
--typedef uint32_t (*batadv_hashdata_choose_cb)(const void *, uint32_t);
-+typedef uint32_t (*batadv_hashdata_choose_cb)(const void *);
- typedef void (*batadv_hashdata_free_cb)(struct hlist_node *, void *);
- 
- /* remove the hash structure. if hashdata_free_cb != NULL, this function will be
-@@ -109,9 +108,9 @@ static inline int _batadv_hash_add(struct hlist_head *hash, uint32_t hash_size,
- 	if (!hash)
- 		goto out;
- 
--	index = choose(data, hash_size);
--	head = &hash[index];
--	list_lock = &locks[index];
-+	index = choose(data);
-+	head = &hash[index % hash_size];
-+	list_lock = &locks[index % lock_size];
- 
- 	spin_lock_bh(list_lock);
- 
-@@ -155,10 +154,10 @@ static inline void *_batadv_hash_remove(struct hlist_head *hash,
- 	struct hlist_head *head;
- 	void *data_save = NULL;
- 
--	index = choose(data, hash_size);
--	head = &hash[index];
-+	index = choose(data);
-+	head = &hash[index % hash_size];
- 
--	spin_lock_bh(&locks[index]);
-+	spin_lock_bh(&locks[index % lock_size]);
- 	hlist_for_each(node, head) {
- 		if (!compare(node, data))
- 			continue;
-diff --git a/originator.c b/originator.c
-index 2145005..3909862 100644
---- a/originator.c
-+++ b/originator.c
-@@ -155,12 +155,13 @@ void batadv_originator_free(struct batadv_priv *bat_priv)
- 	spinlock_t *list_lock; /* spinlock to protect write access */
- 	struct batadv_orig_node *orig_node;
- 	uint32_t i;
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->orig_hash_locks);
- 
- 	cancel_delayed_work_sync(&bat_priv->orig_work);
- 
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->orig_hash); i++) {
- 		head = &hash[i];
--		list_lock = &bat_priv->orig_hash_locks[i];
-+		list_lock = &bat_priv->orig_hash_locks[i % locks_size];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(orig_node, node, node_tmp,
-@@ -339,11 +340,12 @@ static void _batadv_purge_orig(struct batadv_priv *bat_priv)
- 	spinlock_t *list_lock; /* spinlock to protect write access */
- 	struct batadv_orig_node *orig_node;
- 	uint32_t i;
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->orig_hash_locks);
- 
- 	/* for all origins... */
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->orig_hash); i++) {
- 		head = &hash[i];
--		list_lock = &bat_priv->orig_hash_locks[i];
-+		list_lock = &bat_priv->orig_hash_locks[i % locks_size];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(orig_node, node, node_tmp,
-diff --git a/originator.h b/originator.h
-index 0661479..9d188c0 100644
---- a/originator.h
-+++ b/originator.h
-@@ -44,12 +44,9 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
- /* hashfunction to choose an entry in a hash table of given size
-  * hash algorithm from http://en.wikipedia.org/wiki/Hash_table
-  */
--static inline uint32_t batadv_choose_orig(const void *data, uint32_t size)
-+static inline uint32_t batadv_choose_orig(const void *data)
- {
--	uint32_t hash;
+-#define BATADV_ETH_P_BATMAN  0x4305 /* unofficial/not registered Ethertype */
 -
--	hash = jhash(data, ETH_ALEN, 0);
--	return hash % size;
-+	return jhash(data, ETH_ALEN, 0);
- }
+ enum batadv_packettype {
+ 	BATADV_IV_OGM		= 0x01,
+ 	BATADV_ICMP		= 0x02,
+diff --git a/send.c b/send.c
+index c7f7023..4425af9 100644
+--- a/send.c
++++ b/send.c
+@@ -28,6 +28,8 @@
+ #include "gateway_common.h"
+ #include "originator.h"
  
- static inline struct batadv_orig_node *
-@@ -59,13 +56,13 @@ batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data)
- 	struct hlist_head *head;
- 	struct hlist_node *node;
- 	struct batadv_orig_node *orig_node, *orig_node_tmp = NULL;
--	int index;
-+	uint32_t index;
++#include <linux/if_ether.h>
++
+ static void batadv_send_outstanding_bcast_packet(struct work_struct *work);
  
- 	if (!hash)
- 		return NULL;
+ /* send out an already prepared packet to the given address via the
+@@ -60,11 +62,11 @@ int batadv_send_skb_packet(struct sk_buff *skb,
+ 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 	memcpy(ethhdr->h_source, hard_iface->net_dev->dev_addr, ETH_ALEN);
+ 	memcpy(ethhdr->h_dest, dst_addr, ETH_ALEN);
+-	ethhdr->h_proto = __constant_htons(BATADV_ETH_P_BATMAN);
++	ethhdr->h_proto = __constant_htons(ETH_P_BATMAN);
  
--	index = batadv_choose_orig(data, ARRAY_SIZE(bat_priv->orig_hash));
--	head = &hash[index];
-+	index = batadv_choose_orig(data);
-+	head = &hash[index % ARRAY_SIZE(bat_priv->orig_hash)];
+ 	skb_set_network_header(skb, ETH_HLEN);
+ 	skb->priority = TC_PRIO_CONTROL;
+-	skb->protocol = __constant_htons(BATADV_ETH_P_BATMAN);
++	skb->protocol = __constant_htons(ETH_P_BATMAN);
  
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(orig_node, node, head, hash_entry) {
-diff --git a/translation-table.c b/translation-table.c
-index 28e992c..9c0e7bd 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -51,9 +51,8 @@ static int batadv_compare_tt(const struct hlist_node *node, const void *data2)
- /**
-  * batadv_choose_tt - Calculate hash value for a translation table entry
-  * @data: translation table entry
-- * @size: size of the translation table hash
-  */
--static uint32_t batadv_choose_tt(const void *data, uint32_t size)
-+static uint32_t batadv_choose_tt(const void *data)
- {
- 	const unsigned char *key = data;
- 	uint32_t hash = 0;
-@@ -69,7 +68,7 @@ static uint32_t batadv_choose_tt(const void *data, uint32_t size)
- 	hash ^= (hash >> 11);
- 	hash += (hash << 15);
+ 	skb->dev = hard_iface->net_dev;
  
--	return hash % size;
-+	return hash;
- }
+diff --git a/soft-interface.c b/soft-interface.c
+index 54800c7..6b548fd 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -34,6 +34,7 @@
+ #include <linux/ethtool.h>
+ #include <linux/etherdevice.h>
+ #include <linux/if_vlan.h>
++#include <linux/if_ether.h>
+ #include "unicast.h"
+ #include "bridge_loop_avoidance.h"
  
- static void batadv_tt_start_timer(struct batadv_priv *bat_priv)
-@@ -94,8 +93,8 @@ _batadv_tt_hash_find(struct hlist_head *hash, uint32_t size, const void *data)
- 	if (!hash)
- 		return NULL;
+@@ -146,7 +147,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_bcast_packet *bcast_packet;
+ 	struct vlan_ethhdr *vhdr;
+-	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
++	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
+ 	static const uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00,
+ 						   0x00, 0x00};
+ 	static const uint8_t ectp_addr[ETH_ALEN] = {0xCF, 0x00, 0x00, 0x00,
+@@ -172,7 +173,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 			break;
  
--	index = batadv_choose_tt(data, size);
--	head = &hash[index];
-+	index = batadv_choose_tt(data);
-+	head = &hash[index % size];
+ 		/* fall through */
+-	case BATADV_ETH_P_BATMAN:
++	case ETH_P_BATMAN:
+ 		goto dropped;
+ 	}
  
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(tt_common_entry, node, head, hash_entry) {
-@@ -659,10 +658,11 @@ static void batadv_tt_local_purge(struct batadv_priv *bat_priv)
- 	struct hlist_head *head;
- 	spinlock_t *list_lock; /* protects write access to the hash lists */
- 	uint32_t i;
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->tt.local_hash_locks);
+@@ -302,7 +303,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 	struct vlan_ethhdr *vhdr;
+ 	struct batadv_header *batadv_header = (struct batadv_header *)skb->data;
+ 	short vid __maybe_unused = -1;
+-	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
++	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
+ 	bool is_bcast;
  
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->tt.local_hash); i++) {
- 		head = &hash[i];
--		list_lock = &bat_priv->tt.local_hash_locks[i];
-+		list_lock = &bat_priv->tt.local_hash_locks[i % locks_size];
+ 	is_bcast = (batadv_header->packet_type == BATADV_BCAST);
+@@ -325,7 +326,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 			break;
  
- 		spin_lock_bh(list_lock);
- 		batadv_tt_local_purge_list(bat_priv, head);
-@@ -680,12 +680,13 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
- 	struct hlist_node *node, *node_tmp;
- 	struct hlist_head *head;
- 	uint32_t i;
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->tt.local_hash_locks);
+ 		/* fall through */
+-	case BATADV_ETH_P_BATMAN:
++	case ETH_P_BATMAN:
+ 		goto dropped;
+ 	}
  
- 	hash = bat_priv->tt.local_hash;
- 
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->tt.local_hash); i++) {
- 		head = &hash[i];
--		list_lock = &bat_priv->tt.local_hash_locks[i];
-+		list_lock = &bat_priv->tt.local_hash_locks[i % locks_size];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(tt_common_entry, node, node_tmp,
-@@ -1218,10 +1219,11 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
- 	struct hlist_node *node, *safe;
- 	struct hlist_head *head;
- 	spinlock_t *list_lock; /* protects write access to the hash lists */
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->tt.global_hash_locks);
- 
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->tt.global_hash); i++) {
- 		head = &hash[i];
--		list_lock = &bat_priv->tt.global_hash_locks[i];
-+		list_lock = &bat_priv->tt.global_hash_locks[i % locks_size];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(tt_common_entry, node, safe,
-@@ -1278,10 +1280,11 @@ static void batadv_tt_global_purge(struct batadv_priv *bat_priv)
- 	char *msg = NULL;
- 	struct batadv_tt_common_entry *tt_common;
- 	struct batadv_tt_global_entry *tt_global;
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->tt.global_hash_locks);
- 
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->tt.global_hash); i++) {
- 		head = &hash[i];
--		list_lock = &bat_priv->tt.global_hash_locks[i];
-+		list_lock = &bat_priv->tt.global_hash_locks[i % locks_size];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(tt_common, node, node_tmp, head,
-@@ -1314,12 +1317,13 @@ static void batadv_tt_global_table_free(struct batadv_priv *bat_priv)
- 	struct hlist_node *node, *node_tmp;
- 	struct hlist_head *head;
- 	uint32_t i;
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->tt.global_hash_locks);
- 
- 	hash = bat_priv->tt.global_hash;
- 
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->tt.global_hash); i++) {
- 		head = &hash[i];
--		list_lock = &bat_priv->tt.global_hash_locks[i];
-+		list_lock = &bat_priv->tt.global_hash_locks[i % locks_size];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(tt_common_entry, node, node_tmp,
-@@ -2360,10 +2364,11 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
- 	struct hlist_head *head;
- 	spinlock_t *list_lock; /* protects write access to the hash lists */
- 	uint32_t i;
-+	uint32_t locks_size = ARRAY_SIZE(bat_priv->tt.local_hash_locks);
- 
- 	for (i = 0; i < ARRAY_SIZE(bat_priv->tt.local_hash); i++) {
- 		head = &hash[i];
--		list_lock = &bat_priv->tt.local_hash_locks[i];
-+		list_lock = &bat_priv->tt.local_hash_locks[i % locks_size];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(tt_common, node, node_tmp, head,
-diff --git a/vis.c b/vis.c
-index 54401e3..8fd03f0 100644
---- a/vis.c
-+++ b/vis.c
-@@ -68,7 +68,7 @@ static int batadv_vis_info_cmp(const struct hlist_node *node, const void *data2)
- /* hash function to choose an entry in a hash table of given size
-  * hash algorithm from http://en.wikipedia.org/wiki/Hash_table
-  */
--static uint32_t batadv_vis_info_choose(const void *data, uint32_t size)
-+static uint32_t batadv_vis_info_choose(const void *data)
- {
- 	const struct batadv_vis_info *vis_info = data;
- 	const struct batadv_vis_packet *packet;
-@@ -77,7 +77,7 @@ static uint32_t batadv_vis_info_choose(const void *data, uint32_t size)
- 	packet = (struct batadv_vis_packet *)vis_info->skb_packet->data;
- 	hash = jhash(&packet->vis_orig, sizeof(packet->vis_orig), 0);
- 
--	return hash % size;
-+	return hash;
- }
- 
- static struct batadv_vis_info *
-@@ -89,8 +89,8 @@ batadv_vis_hash_find(struct batadv_priv *bat_priv, const void *data)
- 	struct batadv_vis_info *vis_info, *vis_info_tmp = NULL;
- 	uint32_t index;
- 
--	index = batadv_vis_info_choose(data, ARRAY_SIZE(bat_priv->vis.hash));
--	head = &hash[index];
-+	index = batadv_vis_info_choose(data);
-+	head = &hash[index % ARRAY_SIZE(bat_priv->vis.hash)];
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(vis_info, node, head, hash_entry) {
 -- 
-1.7.10.4
+1.8.0
 
