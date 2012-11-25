@@ -1,13 +1,14 @@
-Return-Path: <ditwal001@gmail.com>
-From: "Walter Robert Ditzler" <ditwal001@gmail.com>
-Date: Sun, 25 Nov 2012 16:52:56 +0100
-Message-ID: <!&!AAAAAAAAAAAYAAAAAAAAAOJK0u4CH31Kl5v1RPAzyrZCgQAAEAAAAEPAu5oarOFFtlUPu/NsHLsBAAAAAA==@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 26 Nov 2012 00:56:25 +0800
+References: <!&!AAAAAAAAAAAYAAAAAAAAAOJK0u4CH31Kl5v1RPAzyrZCgQAAEAAAAEPAu5oarOFFtlUPu/NsHLsBAAAAAA==@gmail.com>
+In-Reply-To: <!&!AAAAAAAAAAAYAAAAAAAAAOJK0u4CH31Kl5v1RPAzyrZCgQAAEAAAAEPAu5oarOFFtlUPu/NsHLsBAAAAAA==@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Language: de-ch
-Subject: [B.A.T.M.A.N.] trigger events
+Message-Id: <201211260056.25605.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] trigger events
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,19 +20,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-hi all,
 
-i am wondering if events in batman-adv can be triggered such as:
+Hi,
 
-- get message when: host/batman-adv lost connection
-- get message when: host/batman-adv is connected to min. 1 gateway server
+> i am wondering if events in batman-adv can be triggered such as:
+> 
+> - get message when: host/batman-adv lost connection
+> - get message when: host/batman-adv is connected to min. 1 gateway server
+> 
+> if yes, even whith other events, does anyone have an example how to read
+> the event in a bash script for further processing?
 
-if yes, even whith other events, does anyone have an example how to read the
-event in a bash script for further processing?
+you mean like here: http://www.open-mesh.org/projects/batman-adv/wiki/Uevent ?
 
-thanks a lot,
-
-walter.
-
+Cheers,
+Marek
