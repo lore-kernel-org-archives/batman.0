@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 25 Nov 2012 19:23:27 +0100
-Message-Id: <1353867811-8452-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Use common Jenkins Hash
-	implementation
+Date: Sun, 25 Nov 2012 19:23:28 +0100
+Message-Id: <1353867811-8452-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1353867811-8452-1-git-send-email-sven@narfation.org>
+References: <1353867811-8452-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: Define the size of
+	hashtables by hash bits
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,238 +19,135 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-An unoptimized version of the Jenkins one-at-a-time hash function is copied all
-over the code wherever an hashtable is used. Instead the optimized version
-shared between the whole kernel should be used to reduce code duplication and
-keep bugs at a single point.
-
-Only the TT and DAT code must use the old implementation to guarantee the same
-distribution of the elements in the hash. The TT code needs it because the CRC
-exchanged between the mesh nodes is computed over the entries in the hash. The
-order depends on the buckets chosen by the hash. The DAT code needs it because
-it is used as distributed hash function which has to be common for all nodes.
+The common hashtable implementation in the kernel uses bits of the hash to
+compute the final size of the hastable. The current batman-adv hash
+implementations should do the same to allow a migration to the common hashtable
+implementation.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bridge_loop_avoidance.c |   20 ++++++--------------
- hash.h                  |   22 ----------------------
- main.h                  |    1 +
- originator.h            |   15 ++-------------
- translation-table.c     |   32 ++++++++++++++++++++++++++++----
- vis.c                   |   15 ++-------------
- 6 files changed, 39 insertions(+), 66 deletions(-)
+ bridge_loop_avoidance.c |    6 ++++--
+ distributed-arp-table.c |    2 +-
+ main.h                  |    8 ++++++++
+ originator.c            |    2 +-
+ translation-table.c     |    8 ++++++--
+ vis.c                   |    2 +-
+ 6 files changed, 21 insertions(+), 7 deletions(-)
 
 diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index ec12c79..1400274 100644
+index 1400274..2fd5f09 100644
 --- a/bridge_loop_avoidance.c
 +++ b/bridge_loop_avoidance.c
-@@ -41,14 +41,10 @@ static void batadv_bla_send_announce(struct batadv_priv *bat_priv,
- static inline uint32_t batadv_choose_claim(const void *data, uint32_t size)
- {
- 	struct batadv_claim *claim = (struct batadv_claim *)data;
--	uint32_t hash = 0;
-+	uint32_t hash;
+@@ -1195,6 +1195,8 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
+ 	struct batadv_hard_iface *primary_if;
+ 	uint16_t crc;
+ 	unsigned long entrytime;
++	uint32_t hash_claim_size = 1 << BATADV_BLA_CLAIM_HASH_BITS;
++	uint32_t hash_backbone_size = 1 << BATADV_BLA_BACKBONE_HASH_BITS;
  
--	hash = batadv_hash_bytes(hash, &claim->addr, sizeof(claim->addr));
--	hash = batadv_hash_bytes(hash, &claim->vid, sizeof(claim->vid));
--
--	hash += (hash << 3);
--	hash ^= (hash >> 11);
--	hash += (hash << 15);
-+	hash = jhash(&claim->addr, sizeof(claim->addr), 0);
-+	hash = jhash(&claim->vid, sizeof(claim->vid), hash);
+ 	spin_lock_init(&bat_priv->bla.bcast_duplist_lock);
  
- 	return hash % size;
- }
-@@ -58,14 +54,10 @@ static inline uint32_t batadv_choose_backbone_gw(const void *data,
- 						 uint32_t size)
- {
- 	struct batadv_claim *claim = (struct batadv_claim *)data;
--	uint32_t hash = 0;
-+	uint32_t hash;
+@@ -1221,8 +1223,8 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
+ 	if (bat_priv->bla.claim_hash)
+ 		return 0;
  
--	hash = batadv_hash_bytes(hash, &claim->addr, sizeof(claim->addr));
--	hash = batadv_hash_bytes(hash, &claim->vid, sizeof(claim->vid));
--
--	hash += (hash << 3);
--	hash ^= (hash >> 11);
--	hash += (hash << 15);
-+	hash = jhash(&claim->addr, sizeof(claim->addr), 0);
-+	hash = jhash(&claim->vid, sizeof(claim->vid), hash);
+-	bat_priv->bla.claim_hash = batadv_hash_new(128);
+-	bat_priv->bla.backbone_hash = batadv_hash_new(32);
++	bat_priv->bla.claim_hash = batadv_hash_new(hash_claim_size);
++	bat_priv->bla.backbone_hash = batadv_hash_new(hash_backbone_size);
  
- 	return hash % size;
- }
-diff --git a/hash.h b/hash.h
-index e053339..977de9c 100644
---- a/hash.h
-+++ b/hash.h
-@@ -82,28 +82,6 @@ static inline void batadv_hash_delete(struct batadv_hashtable *hash,
- }
+ 	if (!bat_priv->bla.claim_hash || !bat_priv->bla.backbone_hash)
+ 		return -ENOMEM;
+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+index 8e1d89d..7285496 100644
+--- a/distributed-arp-table.c
++++ b/distributed-arp-table.c
+@@ -653,7 +653,7 @@ int batadv_dat_init(struct batadv_priv *bat_priv)
+ 	if (bat_priv->dat.hash)
+ 		return 0;
  
- /**
-- *	batadv_hash_bytes - hash some bytes and add them to the previous hash
-- *	@hash: previous hash value
-- *	@data: data to be hashed
-- *	@size: number of bytes to be hashed
-- *
-- *	Returns the new hash value.
-- */
--static inline uint32_t batadv_hash_bytes(uint32_t hash, void *data,
--					 uint32_t size)
--{
--	const unsigned char *key = data;
--	int i;
--
--	for (i = 0; i < size; i++) {
--		hash += key[i];
--		hash += (hash << 10);
--		hash ^= (hash >> 6);
--	}
--	return hash;
--}
--
--/**
-  *	batadv_hash_add - adds data to the hashtable
-  *	@hash: storage hash table
-  *	@compare: callback to determine if 2 hash elements are identical
+-	bat_priv->dat.hash = batadv_hash_new(1024);
++	bat_priv->dat.hash = batadv_hash_new(1 << BATADV_DAT_HASH_BITS);
+ 
+ 	if (!bat_priv->dat.hash)
+ 		return -ENOMEM;
 diff --git a/main.h b/main.h
-index 2032de2..f58e373 100644
+index f58e373..78ea63f 100644
 --- a/main.h
 +++ b/main.h
-@@ -147,6 +147,7 @@ enum batadv_uev_type {
- #include <linux/workqueue.h>	/* workqueue */
- #include <linux/percpu.h>
- #include <linux/slab.h>
-+#include <linux/jhash.h>
- #include <net/sock.h>		/* struct sock */
- #include <linux/jiffies.h>
- #include <linux/seq_file.h>
-diff --git a/originator.h b/originator.h
-index 9778e65..1311d39 100644
---- a/originator.h
-+++ b/originator.h
-@@ -46,20 +46,9 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
-  */
- static inline uint32_t batadv_choose_orig(const void *data, uint32_t size)
- {
--	const unsigned char *key = data;
--	uint32_t hash = 0;
--	size_t i;
--
--	for (i = 0; i < 6; i++) {
--		hash += key[i];
--		hash += (hash << 10);
--		hash ^= (hash >> 6);
--	}
--
--	hash += (hash << 3);
--	hash ^= (hash >> 11);
--	hash += (hash << 15);
-+	uint32_t hash;
+@@ -127,6 +127,14 @@ enum batadv_uev_type {
+ #define BATADV_DAT_CANDIDATE_NOT_FOUND	0
+ #define BATADV_DAT_CANDIDATE_ORIG	1
  
-+	hash = jhash(data, ETH_ALEN, 0);
- 	return hash % size;
- }
++#define BATADV_BLA_CLAIM_HASH_BITS 7
++#define BATADV_BLA_BACKBONE_HASH_BITS 5
++#define BATADV_DAT_HASH_BITS 10
++#define BATADV_ORIG_HASH_BITS 10
++#define BATADV_TT_LOCAL_HASH_BITS 10
++#define BATADV_TT_GLOBAL_HASH_BITS 10
++#define BATADV_VIS_HASH_BITS 8
++
+ /* Debug Messages */
+ #ifdef pr_fmt
+ #undef pr_fmt
+diff --git a/originator.c b/originator.c
+index 8c32cf1..bd3f5d2 100644
+--- a/originator.c
++++ b/originator.c
+@@ -52,7 +52,7 @@ int batadv_originator_init(struct batadv_priv *bat_priv)
+ 	if (bat_priv->orig_hash)
+ 		return 0;
  
+-	bat_priv->orig_hash = batadv_hash_new(1024);
++	bat_priv->orig_hash = batadv_hash_new(1 << BATADV_ORIG_HASH_BITS);
+ 
+ 	if (!bat_priv->orig_hash)
+ 		goto err;
 diff --git a/translation-table.c b/translation-table.c
-index 1335294..86f8f82 100644
+index 86f8f82..7128576 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -48,6 +48,30 @@ static int batadv_compare_tt(const struct hlist_node *node, const void *data2)
- 	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
- }
+@@ -251,10 +251,12 @@ int batadv_tt_len(int changes_num)
  
-+/**
-+ * batadv_choose_tt - Calculate hash value for a translation table entry
-+ * @data: translation table entry
-+ * @size: size of the translation table hash
-+ */
-+static uint32_t batadv_choose_tt(const void *data, uint32_t size)
-+{
-+	const unsigned char *key = data;
-+	uint32_t hash = 0;
-+	size_t i;
-+
-+	for (i = 0; i < 6; i++) {
-+		hash += key[i];
-+		hash += (hash << 10);
-+		hash ^= (hash >> 6);
-+	}
-+
-+	hash += (hash << 3);
-+	hash ^= (hash >> 11);
-+	hash += (hash << 15);
-+
-+	return hash % size;
-+}
-+
- static void batadv_tt_start_timer(struct batadv_priv *bat_priv)
+ static int batadv_tt_local_init(struct batadv_priv *bat_priv)
  {
- 	INIT_DELAYED_WORK(&bat_priv->tt.work, batadv_tt_purge);
-@@ -67,7 +91,7 @@ batadv_tt_hash_find(struct batadv_hashtable *hash, const void *data)
- 	if (!hash)
- 		return NULL;
++	uint32_t hash_size = 1 << BATADV_TT_LOCAL_HASH_BITS;
++
+ 	if (bat_priv->tt.local_hash)
+ 		return 0;
  
--	index = batadv_choose_orig(data, hash->size);
-+	index = batadv_choose_tt(data, hash->size);
- 	head = &hash->table[index];
+-	bat_priv->tt.local_hash = batadv_hash_new(1024);
++	bat_priv->tt.local_hash = batadv_hash_new(hash_size);
  
- 	rcu_read_lock();
-@@ -247,7 +271,7 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
- 		   tt_global->common.addr, message);
+ 	if (!bat_priv->tt.local_hash)
+ 		return -ENOMEM;
+@@ -706,10 +708,12 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
  
- 	batadv_hash_remove(bat_priv->tt.global_hash, batadv_compare_tt,
--			   batadv_choose_orig, tt_global->common.addr);
-+			   batadv_choose_tt, tt_global->common.addr);
- 	batadv_tt_global_entry_free_ref(tt_global);
+ static int batadv_tt_global_init(struct batadv_priv *bat_priv)
+ {
++	uint32_t hash_size = 1 << BATADV_TT_GLOBAL_HASH_BITS;
++
+ 	if (bat_priv->tt.global_hash)
+ 		return 0;
  
- }
-@@ -321,7 +345,7 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 		tt_local->common.flags |= BATADV_TT_CLIENT_NOPURGE;
+-	bat_priv->tt.global_hash = batadv_hash_new(1024);
++	bat_priv->tt.global_hash = batadv_hash_new(hash_size);
  
- 	hash_added = batadv_hash_add(bat_priv->tt.local_hash, batadv_compare_tt,
--				     batadv_choose_orig, &tt_local->common,
-+				     batadv_choose_tt, &tt_local->common,
- 				     &tt_local->common.hash_entry);
- 
- 	if (unlikely(hash_added != 0)) {
-@@ -840,7 +864,7 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
- 
- 		hash_added = batadv_hash_add(bat_priv->tt.global_hash,
- 					     batadv_compare_tt,
--					     batadv_choose_orig, common,
-+					     batadv_choose_tt, common,
- 					     &common->hash_entry);
- 
- 		if (unlikely(hash_added != 0)) {
+ 	if (!bat_priv->tt.global_hash)
+ 		return -ENOMEM;
 diff --git a/vis.c b/vis.c
-index 0f65a9d..2eb6878 100644
+index 2eb6878..30e1405 100644
 --- a/vis.c
 +++ b/vis.c
-@@ -72,21 +72,10 @@ static uint32_t batadv_vis_info_choose(const void *data, uint32_t size)
- {
- 	const struct batadv_vis_info *vis_info = data;
- 	const struct batadv_vis_packet *packet;
--	const unsigned char *key;
--	uint32_t hash = 0;
--	size_t i;
-+	uint32_t hash;
+@@ -835,7 +835,7 @@ int batadv_vis_init(struct batadv_priv *bat_priv)
  
- 	packet = (struct batadv_vis_packet *)vis_info->skb_packet->data;
--	key = packet->vis_orig;
--	for (i = 0; i < ETH_ALEN; i++) {
--		hash += key[i];
--		hash += (hash << 10);
--		hash ^= (hash >> 6);
--	}
--
--	hash += (hash << 3);
--	hash ^= (hash >> 11);
--	hash += (hash << 15);
-+	hash = jhash(&packet->vis_orig, sizeof(packet->vis_orig), 0);
+ 	spin_lock_bh(&bat_priv->vis.hash_lock);
  
- 	return hash % size;
- }
+-	bat_priv->vis.hash = batadv_hash_new(256);
++	bat_priv->vis.hash = batadv_hash_new(1 << BATADV_VIS_HASH_BITS);
+ 	if (!bat_priv->vis.hash) {
+ 		pr_err("Can't initialize vis_hash\n");
+ 		goto err;
 -- 
 1.7.10.4
 
