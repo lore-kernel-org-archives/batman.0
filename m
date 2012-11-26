@@ -1,16 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 26 Nov 2012 10:40:07 +0100
-Message-ID: <2094937.nutMCHjP7e@bentobox>
-In-Reply-To: <20121126093309.GB22729@ritirata.org>
-References: <1353867811-8452-1-git-send-email-sven@narfation.org>
- <20121126093309.GB22729@ritirata.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1516776.d638hlgyCm";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Use common Jenkins Hash
-	implementation
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 26 Nov 2012 10:50:17 +0100
+Message-Id: <1353923417-29900-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: use ETH_P_BATMAN
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,54 +16,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+ETH_P_BATMAN is now defined in linux/if_ether.h. batctl does not need
+to use the private BATADV_ETH_P_BATMAN define.
+However, depending on the kernel-headers version installed on the
+system, this new constant may not be available, therefore a redefinition
+inside an ifndef check is needed.
 
---nextPart1516776.d638hlgyCm
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ packet.h  | 2 --
+ tcpdump.c | 5 ++++-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-On Monday 26 November 2012 10:33:09 Antonio Quartulli wrote:
-> On Sun, Nov 25, 2012 at 07:23:27PM +0100, Sven Eckelmann wrote:
-> > An unoptimized version of the Jenkins one-at-a-time hash function is
-> > copied all over the code wherever an hashtable is used. Instead the
-> > optimized version shared between the whole kernel should be used to
-> > reduce code duplication and keep bugs at a single point.
-> > 
-> > Only the TT and DAT code must use the old implementation to guarantee the
-> > same distribution of the elements in the hash. The TT code needs it
-> > because the CRC exchanged between the mesh nodes is computed over the
-> > entries in the hash.
-> Hi Sven,
-> 
-> I don't fully get why we can't use this new implementation in TT. What's
-> wrong with the CRC computation?
-
-The in kernel implementation will create a different hash sum -> tt entries 
-will end up in a different bucket -> CRC will be different (please correct me 
-about the last step... just had this problem in the back of my head).
-
-Kind regards,
-	Sven
---nextPart1516776.d638hlgyCm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAABCgAGBQJQszj3AAoJEF2HCgfBJntGOaYP/0aI4vV+nQpxFfeFsUqHTOoP
-q8RxXcoQy1pVGo+qPirV5MjaUJVU2mRP4O5XjFJtwrvvq2G9aOnf6VYsdqr0QKRf
-kctQLwGiH8jIdulDtuN6WiLbWQUsxEAVonI4x/sjy4s6v1Lz09Q4fjMRbGSgHic2
-yuupKjR+ncvd6R5fREtVh+h7n69bJkjPJVJBNPFPQVElRdeqJcI8hi0IJW86Kknd
-4Xq6TbMu6jntgIsFAXM2nK7NWjUXwk9DVCNtYB9To1cqCRYaqy7YMMF9NskFZb8c
-H2mO4PEfskPa/Xp9wykf/5jLcFc8irrYczl6mPgJ3k6BShTODHwIdMAESXbGmwtl
-dJzC5uzCl9e6VcP4GHZKUXIMm0eDptoR6wh/WS9i5burwE2yslFDcJ34rPmxvIpU
-uzAh1mK4iE42pDN1nHY6OOgfCWz+Tgik0rG/JLgc6k7y4XkNmEsSdTtRwSEvCDkI
-betOn43ihOfreP0HQ7up4kHi4n2oYVaU+PWUgT32HeUJ9DKI+b6hl1OZBPT9rpjG
-O1UdqRCSQQFh3+HmQ8Qfc77+ybTiKQRAQe2veOcpR3z/jx6TfgTuX5WuEOQa+Gnb
-xLBRkFJphL3V8oMg1Uqw0zCLaRTE/3911yQX8rr2inV1I5wu8TQ8SwBeevZUxiz0
-L5pGGwNdR1quPY5l5V09
-=9DE4
------END PGP SIGNATURE-----
-
---nextPart1516776.d638hlgyCm--
+diff --git a/packet.h b/packet.h
+index 1c5454d..cb6405b 100644
+--- a/packet.h
++++ b/packet.h
+@@ -20,8 +20,6 @@
+ #ifndef _NET_BATMAN_ADV_PACKET_H_
+ #define _NET_BATMAN_ADV_PACKET_H_
+ 
+-#define BATADV_ETH_P_BATMAN  0x4305 /* unofficial/not registered Ethertype */
+-
+ enum batadv_packettype {
+ 	BATADV_IV_OGM		= 0x01,
+ 	BATADV_ICMP		= 0x02,
+diff --git a/tcpdump.c b/tcpdump.c
+index 84abd74..4424dfd 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -43,6 +43,9 @@
+ #include "bat-hosts.h"
+ #include "functions.h"
+ 
++#ifndef ETH_P_BATMAN
++#define ETH_P_BATMAN	0x4305
++#endif /* ETH_P_BATMAN */
+ 
+ #define LEN_CHECK(buff_len, check_len, desc) \
+ if ((size_t)(buff_len) < (check_len)) { \
+@@ -587,7 +590,7 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
+ 		if ((dump_level & DUMP_TYPE_NONBAT) || (time_printed))
+ 			dump_vlan(packet_buff, buff_len, read_opt, time_printed);
+ 		break;
+-	case BATADV_ETH_P_BATMAN:
++	case ETH_P_BATMAN:
+ 		batman_ogm_packet = (struct batadv_ogm_packet *)(packet_buff + ETH_HLEN);
+ 
+ 		if ((read_opt & COMPAT_FILTER) &&
+-- 
+1.8.0
 
