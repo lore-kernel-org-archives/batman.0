@@ -1,16 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 26 Nov 2012 11:10:58 +0100
-Message-ID: <1421529.CDZ816kfjh@bentobox>
-In-Reply-To: <2094937.nutMCHjP7e@bentobox>
-References: <1353867811-8452-1-git-send-email-sven@narfation.org>
- <20121126093309.GB22729@ritirata.org> <2094937.nutMCHjP7e@bentobox>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Mon, 26 Nov 2012 11:35:31 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20121126103531.GA23570@pandem0nium>
+References: <1353889649-19264-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3482847.VbqLL3QeyW";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Use common Jenkins Hash
-	implementation
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ew6BAiZeqk4r7MaW"
+Content-Disposition: inline
+In-Reply-To: <1353889649-19264-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: don't compile the BLA switch
+ if not requested
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,49 +21,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart3482847.VbqLL3QeyW
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--ew6BAiZeqk4r7MaW
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Monday 26 November 2012 10:40:07 Sven Eckelmann wrote:
-[...]
-> > I don't fully get why we can't use this new implementation in TT. What's
-> > wrong with the CRC computation?
-> 
-> The in kernel implementation will create a different hash sum -> tt entries
-> will end up in a different bucket -> CRC will be different (please correct
-> me about the last step... just had this problem in the back of my head).
+On Mon, Nov 26, 2012 at 01:27:29AM +0100, Antonio Quartulli wrote:
+> When the Bridge Loop Avoidance component is not compiled-in, its boolean =
+switch
+> should be not compiled as well. This patch surrounds the switch with a pr=
+oper
+> ifdef.
+>=20
+> This behaviour was introduced by 9fd6b0615b5499b270d39a92b8790e206cf75833
+> ("batman-adv: add bridge loop avoidance compile option")
+>=20
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 
-Just checked the code and you are doing an XOR of the crc16 of all TT entries. 
-So TT can also use the jhash function. Will change this stuff in the lunch 
-break
+Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Thanks,
-	Sven
---nextPart3482847.VbqLL3QeyW
+> ---
+>  soft-interface.c | 2 ++
+>  types.h          | 2 ++
+>  2 files changed, 4 insertions(+)
+>=20
+> diff --git a/soft-interface.c b/soft-interface.c
+> index 8000639..aa34267 100644
+> --- a/soft-interface.c
+> +++ b/soft-interface.c
+> @@ -480,7 +480,9 @@ struct net_device *batadv_softif_create(const char *n=
+ame)
+> =20
+>  	atomic_set(&bat_priv->aggregated_ogms, 1);
+>  	atomic_set(&bat_priv->bonding, 0);
+> +#ifdef CONFIG_BATMAN_ADV_BLA
+>  	atomic_set(&bat_priv->bridge_loop_avoidance, 0);
+> +#endif
+>  #ifdef CONFIG_BATMAN_ADV_DAT
+>  	atomic_set(&bat_priv->distributed_arp_table, 1);
+>  #endif
+> diff --git a/types.h b/types.h
+> index ae9ac9a..030ce41 100644
+> --- a/types.h
+> +++ b/types.h
+> @@ -273,7 +273,9 @@ struct batadv_priv {
+>  	atomic_t bonding;		/* boolean */
+>  	atomic_t fragmentation;		/* boolean */
+>  	atomic_t ap_isolation;		/* boolean */
+> +#ifdef CONFIG_BATMAN_ADV_BLA
+>  	atomic_t bridge_loop_avoidance;	/* boolean */
+> +#endif
+>  #ifdef CONFIG_BATMAN_ADV_DAT
+>  	atomic_t distributed_arp_table;	/* boolean */
+>  #endif
+> --=20
+> 1.8.0
+>=20
+>=20
+
+--ew6BAiZeqk4r7MaW
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAABCgAGBQJQs0AyAAoJEF2HCgfBJntGAhIQAKyiwrgO/JpDoAHWP0SWOKI+
-xRadcTLHplhldvK5CcBt7BdbIJqjuLwEkxTbAlcOFU6qegXBev2cbQicAhooNYWI
-e+7nf1oyAXvObqQJbt0+p1NWNQ1VaV7rXCSiMdR1uPZixuQHtXDiCvEF79unSxGH
-oJZYK6mAcXhZybunoWiR7ErBocx2k4hcoPVnwE/0kWBnuSE62f5dfpnADI7714Sd
-NLGMItkrJvfIdYTyMatFt+DYOVoy1fI6dOehUCt3bgZFptEw9eOEMVuCN3MQ6h8z
-zOTIo9c6NmXlnm5EhelWE0cSkiSo+lh7SDf2dP17aqPJQq37/ULR5dQV2iSRFHV/
-IJgqyS5dh1vEAmzpsIbQDaafF8honwEkL+axKXcmixX/bZfDWc/SofZW0K9qJswZ
-Nz0v0gVSQQPxNjoErC7qI1sq4p6qqtut9Dydm2/teaKwHO76AQph3aenTXGhsMO2
-eypsV4ufDK9Ga8psG8cXu8ip+hYWY8ce9WF3XJB0fcIVnF/B/hyVsstxvAXRxCR/
-aECgG69vcIhKp5oSFa5tpswUW0Q1pdNrjMPvi+ckr/4KxTZorphMbtzasms9sZx4
-zlUFaeWRA4bOptlkF3JDqLOYGux3qSOf2cguAAQoNJs3eTIILvGindYE5j7Hrkty
-snQraiW78MDlHh6/4got
-=JeMt
+iEYEARECAAYFAlCzRfMACgkQrzg/fFk7axbArwCfbwEE4GMmCpBY5R4F0amhYdyC
+dLAAoNNpy2sXA9eqRpmXbnEs5RYxqGnv
+=QYpQ
 -----END PGP SIGNATURE-----
 
---nextPart3482847.VbqLL3QeyW--
-
+--ew6BAiZeqk4r7MaW--
