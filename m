@@ -1,8 +1,16 @@
 Return-Path: <ordex@autistici.org>
+Date: Mon, 26 Nov 2012 01:23:02 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 26 Nov 2012 00:38:50 +0100
-Message-Id: <1353886730-32477-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: use ETH_P_BATMAN
+Message-ID: <20121126002302.GH14547@ritirata.org>
+References: <cover.1353331252.git.martin@hundeboll.net>
+ <b5f675c75c4dffa2454e635c19c73f7912eb7e74.1353331252.git.martin@hundeboll.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="Wb5NtZlyOqqy58h0"
+Content-Disposition: inline
+In-Reply-To: <b5f675c75c4dffa2454e635c19c73f7912eb7e74.1353331252.git.martin@hundeboll.net>
+Subject: Re: [B.A.T.M.A.N.] [RFC 1/6] batman-adv: Add the initial code for
+ network coding.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,142 +22,153 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-The ETH_P_BATMAN ethertype is now defined kernel-wide. Use it instead
-of the private BATADV_ETH_P_BATMAN define.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- compat.h         | 2 ++
- hard-interface.c | 3 ++-
- packet.h         | 2 --
- send.c           | 6 ++++--
- soft-interface.c | 9 +++++----
- 5 files changed, 13 insertions(+), 9 deletions(-)
+--Wb5NtZlyOqqy58h0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/compat.h b/compat.h
-index be685aa..e4ebee0 100644
---- a/compat.h
-+++ b/compat.h
-@@ -166,6 +166,8 @@ static inline void eth_hw_addr_random(struct net_device *dev)
- 
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
- 
-+#define ETH_P_BATMAN	0x4305
-+
- /* hack for not correctly set mac_len. This may happen for some special
-  * configurations like batman-adv on VLANs.
-  *
-diff --git a/hard-interface.c b/hard-interface.c
-index 365ed74..f1d37cd 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -30,6 +30,7 @@
- #include "bridge_loop_avoidance.h"
- 
- #include <linux/if_arp.h>
-+#include <linux/if_ether.h>
- 
- void batadv_hardif_free_rcu(struct rcu_head *rcu)
- {
-@@ -311,7 +312,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- {
- 	struct batadv_priv *bat_priv;
- 	struct net_device *soft_iface;
--	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
-+	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
- 	int ret;
- 
- 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
-diff --git a/packet.h b/packet.h
-index 1c5454d..cb6405b 100644
---- a/packet.h
-+++ b/packet.h
-@@ -20,8 +20,6 @@
- #ifndef _NET_BATMAN_ADV_PACKET_H_
- #define _NET_BATMAN_ADV_PACKET_H_
- 
--#define BATADV_ETH_P_BATMAN  0x4305 /* unofficial/not registered Ethertype */
--
- enum batadv_packettype {
- 	BATADV_IV_OGM		= 0x01,
- 	BATADV_ICMP		= 0x02,
-diff --git a/send.c b/send.c
-index c7f7023..4425af9 100644
---- a/send.c
-+++ b/send.c
-@@ -28,6 +28,8 @@
- #include "gateway_common.h"
- #include "originator.h"
- 
-+#include <linux/if_ether.h>
-+
- static void batadv_send_outstanding_bcast_packet(struct work_struct *work);
- 
- /* send out an already prepared packet to the given address via the
-@@ -60,11 +62,11 @@ int batadv_send_skb_packet(struct sk_buff *skb,
- 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 	memcpy(ethhdr->h_source, hard_iface->net_dev->dev_addr, ETH_ALEN);
- 	memcpy(ethhdr->h_dest, dst_addr, ETH_ALEN);
--	ethhdr->h_proto = __constant_htons(BATADV_ETH_P_BATMAN);
-+	ethhdr->h_proto = __constant_htons(ETH_P_BATMAN);
- 
- 	skb_set_network_header(skb, ETH_HLEN);
- 	skb->priority = TC_PRIO_CONTROL;
--	skb->protocol = __constant_htons(BATADV_ETH_P_BATMAN);
-+	skb->protocol = __constant_htons(ETH_P_BATMAN);
- 
- 	skb->dev = hard_iface->net_dev;
- 
-diff --git a/soft-interface.c b/soft-interface.c
-index 54800c7..6b548fd 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -34,6 +34,7 @@
- #include <linux/ethtool.h>
- #include <linux/etherdevice.h>
- #include <linux/if_vlan.h>
-+#include <linux/if_ether.h>
- #include "unicast.h"
- #include "bridge_loop_avoidance.h"
- 
-@@ -146,7 +147,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	struct batadv_hard_iface *primary_if = NULL;
- 	struct batadv_bcast_packet *bcast_packet;
- 	struct vlan_ethhdr *vhdr;
--	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
-+	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
- 	static const uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00,
- 						   0x00, 0x00};
- 	static const uint8_t ectp_addr[ETH_ALEN] = {0xCF, 0x00, 0x00, 0x00,
-@@ -172,7 +173,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 			break;
- 
- 		/* fall through */
--	case BATADV_ETH_P_BATMAN:
-+	case ETH_P_BATMAN:
- 		goto dropped;
- 	}
- 
-@@ -302,7 +303,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 	struct vlan_ethhdr *vhdr;
- 	struct batadv_header *batadv_header = (struct batadv_header *)skb->data;
- 	short vid __maybe_unused = -1;
--	__be16 ethertype = __constant_htons(BATADV_ETH_P_BATMAN);
-+	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
- 	bool is_bcast;
- 
- 	is_bcast = (batadv_header->packet_type == BATADV_BCAST);
-@@ -325,7 +326,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 			break;
- 
- 		/* fall through */
--	case BATADV_ETH_P_BATMAN:
-+	case ETH_P_BATMAN:
- 		goto dropped;
- 	}
- 
--- 
-1.8.0
+On Mon, Nov 19, 2012 at 02:21:59PM +0100, Martin Hundeb=C3=B8ll wrote:
+=2E..
 
+> +/**
+> + * batadv_nc_start_timer - initialise the nc periodic worker
+> + * @bat_priv: the bat priv with all the soft interface information
+> + */
+> +static void batadv_nc_start_timer(struct batadv_priv *bat_priv)
+> +{
+> +	INIT_DELAYED_WORK(&bat_priv->nc.work, batadv_nc_worker);
+
+INIT_DELAYED_WORK is not really needed each and every time. It can be invok=
+ed
+when setting up the worker for the first time only. It's pure beautificatio=
+n in
+this case. There is a little performance implication but this does not hurt=
+ this
+code.
+
+> +	queue_delayed_work(batadv_event_workqueue, &bat_priv->nc.work,
+> +			   msecs_to_jiffies(10));
+> +}
+> +
+> +/**
+> + * batadv_network_coding_init - initialise coding hash table and start
+
+why not keeping the same namespace everywhere? The previous function name s=
+tarts
+with batadv_nc_, now you are moving to batadv_network_coding_.
+
+> + *  house keeping
+> + * @bat_priv: the bat priv with all the soft interface information
+> + */
+> +int batadv_network_coding_init(struct batadv_priv *bat_priv)
+> +{
+
+I think you could move the INIT_DELAYED_WORK here..
+
+> +	batadv_nc_start_timer(bat_priv);
+> +
+> +	return 0;
+> +}
+
+[...]
+
+> +/**
+> + * batadv_nc_worker - periodic task for house keeping related to network=
+ coding
+> + * @work: kernel work struct
+> + */
+> +static void batadv_nc_worker(struct work_struct *work)
+> +{
+> +	struct delayed_work *delayed_work;
+> +	struct batadv_priv_nc *priv_nc;
+> +	struct batadv_priv *bat_priv;
+> +
+> +	delayed_work =3D container_of(work, struct delayed_work, work);
+> +	priv_nc =3D container_of(delayed_work, struct batadv_priv_nc, work);
+> +	bat_priv =3D container_of(priv_nc, struct batadv_priv, nc);
+> +
+> +	/* Schedule a new check */
+> +	batadv_nc_start_timer(bat_priv);
+> +}
+
+What's the meaning of this function? It just runs and reset the worker?
+
+
+> diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
+> index bc41da6..c75e594 100644
+> --- a/sysfs-class-net-mesh
+> +++ b/sysfs-class-net-mesh
+> @@ -74,6 +74,14 @@ Description:
+>                  Defines the interval in milliseconds in which batman
+>                  sends its protocol messages.
+> =20
+> +What:           /sys/class/net/<mesh_iface>/mesh/network_coding
+> +Date:           Nov 2012
+> +Contact:        Martin Hundeboll <martin@hundeboll.net>
+> +Description:
+> +                Controls whether Network Coding (using some magic
+> +                to send fewer wifi packets but still the same
+> +                content) is enabled or not.
+> +
+
+Marek spent a lot of time to sort this list by alphabetical order, make him
+happy :)
+
+>  What:           /sys/class/net/<mesh_iface>/mesh/routing_algo
+>  Date:           Dec 2011
+>  Contact:        Marek Lindner <lindner_marek@yahoo.de>
+
+[...]
+
+> +/**
+> + * struct batadv_priv - per mesh interface private data
+> + * @network_coding: enable/disable network coding
+> + * @batadv_priv_nc: network coding private data
+> + */
+>  struct batadv_priv {
+>  	atomic_t mesh_state;
+>  	struct net_device_stats stats;
+> @@ -308,6 +321,10 @@ struct batadv_priv {
+>  #ifdef CONFIG_BATMAN_ADV_DAT
+>  	struct batadv_priv_dat dat;
+>  #endif
+> +#ifdef CONFIG_BATMAN_ADV_NC
+> +	atomic_t network_coding; /* boolean */
+
+just another style note: why don't you put this boolean switch together wit=
+h the
+others?
+
+> +	struct batadv_priv_nc nc;
+> +#endif /* CONFIG_BATMAN_ADV_NC */
+>  };
+> =20
+>  struct batadv_socket_client {
+> --=20
+> 1.8.0
+
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--Wb5NtZlyOqqy58h0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEARECAAYFAlCytmYACgkQpGgxIkP9cwdbzwCdE6zu8w+SuNQndgUhSc4wApEW
+T/4Anibkqaj96awHxRy/DumFzBC2w5a6
+=PEFI
+-----END PGP SIGNATURE-----
+
+--Wb5NtZlyOqqy58h0--
