@@ -1,18 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 26 Nov 2012 10:34:28 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121126093428.GC22729@ritirata.org>
-References: <cover.1353331252.git.martin@hundeboll.net>
- <e0944b8b9fcc9f288f11789a5f7f499b266caa2a.1353331252.git.martin@hundeboll.net>
- <20121126004117.GI14547@ritirata.org>
- <201211260915.44897.lindner_marek@yahoo.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 26 Nov 2012 10:40:07 +0100
+Message-ID: <2094937.nutMCHjP7e@bentobox>
+In-Reply-To: <20121126093309.GB22729@ritirata.org>
+References: <1353867811-8452-1-git-send-email-sven@narfation.org>
+ <20121126093309.GB22729@ritirata.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="sHrvAb52M6C8blB9"
-Content-Disposition: inline
-In-Reply-To: <201211260915.44897.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC 2/6] batman-adv: Detect coding nodes and
- remove these after timeout
+Content-Type: multipart/signed; boundary="nextPart1516776.d638hlgyCm";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Use common Jenkins Hash
+	implementation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,54 +22,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>
-Cc: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---sHrvAb52M6C8blB9
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--nextPart1516776.d638hlgyCm
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Mon, Nov 26, 2012 at 09:15:44AM +0800, Marek Lindner wrote:
-> On Monday, November 26, 2012 08:41:17 Antonio Quartulli wrote:
-> > >  struct batadv_priv_nc {
-> > > =20
-> > >  	struct delayed_work work;
-> > >=20
-> > > +	struct dentry *debug_dir;
-> > > +	u8 min_tq;
-> >=20
-> > If I am not mistaken min_tq is never modified. Why do we need to store =
-it
-> > in a bat_priv field? And being a constant is it worth a define? In this
-> > way it an be easily found and tuned like the other constant params.
->=20
-> It can be modified via debugfs:
->=20
-> +       file =3D debugfs_create_u8("min_tq", S_IRUGO | S_IWUSR, nc_dir,
-> +                                &bat_priv->nc.min_tq);
+On Monday 26 November 2012 10:33:09 Antonio Quartulli wrote:
+> On Sun, Nov 25, 2012 at 07:23:27PM +0100, Sven Eckelmann wrote:
+> > An unoptimized version of the Jenkins one-at-a-time hash function is
+> > copied all over the code wherever an hashtable is used. Instead the
+> > optimized version shared between the whole kernel should be used to
+> > reduce code duplication and keep bugs at a single point.
+> > 
+> > Only the TT and DAT code must use the old implementation to guarantee the
+> > same distribution of the elements in the hash. The TT code needs it
+> > because the CRC exchanged between the mesh nodes is computed over the
+> > entries in the hash.
+> Hi Sven,
+> 
+> I don't fully get why we can't use this new implementation in TT. What's
+> wrong with the CRC computation?
 
-Oh, ok! I hadn't seen the "W" in the mode.
-Thanks.
+The in kernel implementation will create a different hash sum -> tt entries 
+will end up in a different bucket -> CRC will be different (please correct me 
+about the last step... just had this problem in the back of my head).
 
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---sHrvAb52M6C8blB9
-Content-Type: application/pgp-signature
+Kind regards,
+	Sven
+--nextPart1516776.d638hlgyCm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlCzN6QACgkQpGgxIkP9cwdA9gCeNSMFT8fmD9pykQeew7duJfp0
-GX0An2Joo/mS/E1T4s2R6D2R0UynxKMK
-=vxTG
+iQIcBAABCgAGBQJQszj3AAoJEF2HCgfBJntGOaYP/0aI4vV+nQpxFfeFsUqHTOoP
+q8RxXcoQy1pVGo+qPirV5MjaUJVU2mRP4O5XjFJtwrvvq2G9aOnf6VYsdqr0QKRf
+kctQLwGiH8jIdulDtuN6WiLbWQUsxEAVonI4x/sjy4s6v1Lz09Q4fjMRbGSgHic2
+yuupKjR+ncvd6R5fREtVh+h7n69bJkjPJVJBNPFPQVElRdeqJcI8hi0IJW86Kknd
+4Xq6TbMu6jntgIsFAXM2nK7NWjUXwk9DVCNtYB9To1cqCRYaqy7YMMF9NskFZb8c
+H2mO4PEfskPa/Xp9wykf/5jLcFc8irrYczl6mPgJ3k6BShTODHwIdMAESXbGmwtl
+dJzC5uzCl9e6VcP4GHZKUXIMm0eDptoR6wh/WS9i5burwE2yslFDcJ34rPmxvIpU
+uzAh1mK4iE42pDN1nHY6OOgfCWz+Tgik0rG/JLgc6k7y4XkNmEsSdTtRwSEvCDkI
+betOn43ihOfreP0HQ7up4kHi4n2oYVaU+PWUgT32HeUJ9DKI+b6hl1OZBPT9rpjG
+O1UdqRCSQQFh3+HmQ8Qfc77+ybTiKQRAQe2veOcpR3z/jx6TfgTuX5WuEOQa+Gnb
+xLBRkFJphL3V8oMg1Uqw0zCLaRTE/3911yQX8rr2inV1I5wu8TQ8SwBeevZUxiz0
+L5pGGwNdR1quPY5l5V09
+=9DE4
 -----END PGP SIGNATURE-----
 
---sHrvAb52M6C8blB9--
+--nextPart1516776.d638hlgyCm--
+
