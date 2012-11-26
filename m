@@ -1,17 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 26 Nov 2012 09:15:44 +0800
-References: <cover.1353331252.git.martin@hundeboll.net>
- <e0944b8b9fcc9f288f11789a5f7f499b266caa2a.1353331252.git.martin@hundeboll.net>
- <20121126004117.GI14547@ritirata.org>
-In-Reply-To: <20121126004117.GI14547@ritirata.org>
+Date: Mon, 26 Nov 2012 09:17:31 +0800
+References: <1353886730-32477-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1353886730-32477-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201211260915.44897.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC 2/6] batman-adv: Detect coding nodes and
-	remove these after timeout
+Message-Id: <201211260917.31243.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: use ETH_P_BATMAN
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,25 +21,12 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Martin =?iso-8859-15?q?Hundeb=F8ll?= <martin@hundeboll.net>
 
-On Monday, November 26, 2012 08:41:17 Antonio Quartulli wrote:
-> >  struct batadv_priv_nc {
-> >  
-> >  	struct delayed_work work;
-> > 
-> > +	struct dentry *debug_dir;
-> > +	u8 min_tq;
-> 
-> If I am not mistaken min_tq is never modified. Why do we need to store it
-> in a bat_priv field? And being a constant is it worth a define? In this
-> way it an be easily found and tuned like the other constant params.
+On Monday, November 26, 2012 07:38:50 Antonio Quartulli wrote:
+> The ETH_P_BATMAN ethertype is now defined kernel-wide. Use it instead
+> of the private BATADV_ETH_P_BATMAN define.
 
-It can be modified via debugfs:
-
-+       file = debugfs_create_u8("min_tq", S_IRUGO | S_IWUSR, nc_dir,
-+                                &bat_priv->nc.min_tq);
-
+How about batctl ?
 
 Cheers,
 Marek
