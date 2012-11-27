@@ -1,17 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 26 Nov 2012 13:46:06 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121126124605.GF22729@ritirata.org>
-References: <1353867811-8452-1-git-send-email-sven@narfation.org>
- <2094937.nutMCHjP7e@bentobox> <20121126123002.GE22729@ritirata.org>
- <2262644.KoOtvs7upt@bentobox>
+Return-Path: <martin@hundeboll.net>
+Message-ID: <50B478D4.3080308@hundeboll.net>
+Date: Tue, 27 Nov 2012 09:24:52 +0100
+From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="eNMatiwYGLtwo1cJ"
-Content-Disposition: inline
-In-Reply-To: <2262644.KoOtvs7upt@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Use common Jenkins Hash
- implementation
+References: <cover.1353331252.git.martin@hundeboll.net>
+ <b5f675c75c4dffa2454e635c19c73f7912eb7e74.1353331252.git.martin@hundeboll.net>
+ <20121126002302.GH14547@ritirata.org>
+In-Reply-To: <20121126002302.GH14547@ritirata.org>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] [RFC 1/6] batman-adv: Add the initial code for
+ network coding.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,72 +22,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Antonio Quartulli <ordex@autistici.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+On 2012-11-26 01:23, Antonio Quartulli wrote:
+>> +/**
+>> >+ * struct batadv_priv - per mesh interface private data
+>> >+ * @network_coding: enable/disable network coding
+>> >+ * @batadv_priv_nc: network coding private data
+>> >+ */
+>> >  struct batadv_priv {
+>> >  	atomic_t mesh_state;
+>> >  	struct net_device_stats stats;
+>> >@@ -308,6 +321,10 @@ struct batadv_priv {
+>> >  #ifdef CONFIG_BATMAN_ADV_DAT
+>> >  	struct batadv_priv_dat dat;
+>> >  #endif
+>> >+#ifdef CONFIG_BATMAN_ADV_NC
+>> >+	atomic_t network_coding; /* boolean */
+> just another style note: why don't you put this boolean switch together with the
+> others?
+
+Because of the sysfs-framework in batman-adv, that expects an atomic_t 
+with the same name as the file to be in batadv_priv - just like with 
+your DAT and Simon's BLAII :)
 
 
---eNMatiwYGLtwo1cJ
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+-- 
+Kind Regards
+Martin Hundebøll
+Frederiks Allé 99, 1.th
+8000 Aarhus C
+Denmark
 
-On Mon, Nov 26, 2012 at 01:39:00PM +0100, Sven Eckelmann wrote:
-> On Monday 26 November 2012 13:30:02 Antonio Quartulli wrote:
-> [...]
-> > > The in kernel implementation will create a different hash sum -> tt
-> > > entries
-> > > will end up in a different bucket -> CRC will be different (please co=
-rrect
-> > > me about the last step... just had this problem in the back of my hea=
-d).
-> > CRC computation does not rely on entries positions, because the real CR=
-C16
-> > is computed on the client mac address only (and this is the same
-> > everywhere) then the results are XOR'd together. Since XOR is commutati=
-ve
-> > we do not need to keep the same order network wide.
->=20
-> I've already wrote this two 2 1/2 hours ago.
->=20
-> > Instead, your reasoning is correct for DAT, but for the global DAT hash
-> > function only.
-> > The local one can be whatever we need, so we can also use jhash for thi=
-s.
->=20
-> Please define global and local DAT hash function. Because you use the sam=
-e=20
-> function in both places.
-
-Yes, sorry, it's my fault. At the very beginning DAT had two distinct hash
-functions (before it got merged) but then I decided to use the same everywh=
-ere.
-
-At this point I would rather suggest to leave DAT as it is (so v2 it's fine=
- with
-me).
-
-
-Thank you.
-
-Cheers,
-
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---eNMatiwYGLtwo1cJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlCzZI0ACgkQpGgxIkP9cwdcXQCghOkDWUjkUBHbII7UurrwqlQ0
-YRUAnRnWrCfG/+e+zpVe7nXtLY8Mhlcb
-=N4s8
------END PGP SIGNATURE-----
-
---eNMatiwYGLtwo1cJ--
++45 61 65 54 61
+martin@hundeboll.net
