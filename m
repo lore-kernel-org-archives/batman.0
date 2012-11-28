@@ -1,16 +1,10 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <50B478D4.3080308@hundeboll.net>
-Date: Tue, 27 Nov 2012 09:24:52 +0100
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+Return-Path: <lmy19901031@gmail.com>
 MIME-Version: 1.0
-References: <cover.1353331252.git.martin@hundeboll.net>
- <b5f675c75c4dffa2454e635c19c73f7912eb7e74.1353331252.git.martin@hundeboll.net>
- <20121126002302.GH14547@ritirata.org>
-In-Reply-To: <20121126002302.GH14547@ritirata.org>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [RFC 1/6] batman-adv: Add the initial code for
- network coding.
+Date: Tue, 27 Nov 2012 23:15:51 -0500
+Message-ID: <CALDpWg5UxkqP2_f-waB===fDPHg6vC0xf8=oxVx7aH5XvXd6uQ@mail.gmail.com>
+From: liu muye <lmy19901031@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.]  batman-adv: Raw Socket Communication
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,38 +16,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <ordex@autistici.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On 2012-11-26 01:23, Antonio Quartulli wrote:
->> +/**
->> >+ * struct batadv_priv - per mesh interface private data
->> >+ * @network_coding: enable/disable network coding
->> >+ * @batadv_priv_nc: network coding private data
->> >+ */
->> >  struct batadv_priv {
->> >  	atomic_t mesh_state;
->> >  	struct net_device_stats stats;
->> >@@ -308,6 +321,10 @@ struct batadv_priv {
->> >  #ifdef CONFIG_BATMAN_ADV_DAT
->> >  	struct batadv_priv_dat dat;
->> >  #endif
->> >+#ifdef CONFIG_BATMAN_ADV_NC
->> >+	atomic_t network_coding; /* boolean */
-> just another style note: why don't you put this boolean switch together with the
-> others?
+Hello:
 
-Because of the sysfs-framework in batman-adv, that expects an atomic_t 
-with the same name as the file to be in batadv_priv - just like with 
-your DAT and Simon's BLAII :)
+This is Muye again. I have encountered another problem recently when I
+am using B.A.T.M.A.N to do the socket programming.
 
+Currently, I have three nodes. Namely, node A, node B, and node C. The
+testing environment is a hall way in our department.
 
--- 
-Kind Regards
-Martin Hundebøll
-Frederiks Allé 99, 1.th
-8000 Aarhus C
-Denmark
+I put node A in one end of the hall way, node C in another end of the
+hall way. Node B is in the middle of the hall way.
 
-+45 61 65 54 61
-martin@hundeboll.net
+I can ping node C from node A and vice versa. In node A, I can
+traceroute to node C. The traceroute shows it needs to go through node
+B.
+
+However, when I send packet from node A to node C. Node C does not
+receive anything. But if I send packet from node A to node B, node B
+can receive that packet.
+Not sure what happened.  The link shown below is the program I used to
+send packet. Both source and destination are MAC address.
+
+https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/attachments/20111206/52f060cb/attachment.c
+
+I greatly appreciate any suggestion, comment, and help.
+
+Thanks
