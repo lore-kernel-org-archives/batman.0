@@ -1,9 +1,19 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 29 Nov 2012 04:54:45 +0100
-Message-Id: <1354161285-1992-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: don't print the last_seen time
-	for bat0 TT local entry
+Return-Path: <lmy19901031@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <CALDpWg5uoeERLHMawtLP5F5EC9Xvkyf5WAu7DVYwOXDw3fwfYw@mail.gmail.com>
+References: <CALDpWg5UxkqP2_f-waB===fDPHg6vC0xf8=oxVx7aH5XvXd6uQ@mail.gmail.com>
+ <CALDpWg7F3MNsy5gtcP=pcd0R_tFUmCTsyZ-K9bYMnCf0-YmArQ@mail.gmail.com>
+ <CALDpWg6BczTcB3g=njyTfTHGuuKODB8AkxrLguOyH8Y3nMB5yA@mail.gmail.com>
+ <CALDpWg7qErZ=kEp8hE__tYw0oWpfLVrR2V_c3hCQ3wx33oaE1w@mail.gmail.com>
+ <CALDpWg6aGx+6eKwhbYUaNKeaMhiwPUWwgKVj7Smw6+9HrmZ1gA@mail.gmail.com>
+ <CALDpWg6ikWqdgEsEnuDUeU9S-AfDDWicuixoSZhO2GN5tQzHUA@mail.gmail.com>
+ <CALDpWg5UinZxugVHYRyK70tUFTPQ7FHqRAsn0GP_gV=EZVMWtQ@mail.gmail.com>
+ <CALDpWg5uoeERLHMawtLP5F5EC9Xvkyf5WAu7DVYwOXDw3fwfYw@mail.gmail.com>
+Date: Thu, 29 Nov 2012 14:52:08 -0500
+Message-ID: <CALDpWg6Ci0DDUs=Y8TKWn98uwLXnhG1Mdb5NEje1jdvJJoiFdA@mail.gmail.com>
+From: liu muye <lmy19901031@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] batman-adv: Raw Socket Communication
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,56 +27,112 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-bat0 MAC address will never deleted from the local translation table, therefore
-printing its last_Seen time is useless and will also produce ugly output and
-eventually a variable overflow.
+Hello:
 
-This was introduced by 59cb0861498776c62bd17584c31f34477fa301a0 ("batman-adv:
-improve local translation table output")
+By looking at the packet.h from the batctl source code. I found this:
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- translation-table.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+#define BATADV_ETH_P_BATMAN  0x4305 /* unofficial/not registered Ethertype */
 
-diff --git a/translation-table.c b/translation-table.c
-index 1335294..5f44232 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -478,6 +478,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 	int last_seen_secs;
- 	int last_seen_msecs;
- 	unsigned long last_seen_jiffies;
-+	bool no_purge;
-+	uint16_t np_flag = BATADV_TT_CLIENT_NOPURGE;
- 
- 	primary_if = batadv_seq_print_text_primary_if_get(seq);
- 	if (!primary_if)
-@@ -504,19 +506,21 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 			last_seen_secs = last_seen_msecs / 1000;
- 			last_seen_msecs = last_seen_msecs % 1000;
- 
-+			no_purge = tt_common_entry->flags & np_flag;
-+
- 			seq_printf(seq, " * %pM [%c%c%c%c%c] %3u.%03u\n",
- 				   tt_common_entry->addr,
- 				   (tt_common_entry->flags &
- 				    BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
--				   (tt_common_entry->flags &
--				    BATADV_TT_CLIENT_NOPURGE ? 'P' : '.'),
-+				   no_purge ? 'P' : '.',
- 				   (tt_common_entry->flags &
- 				    BATADV_TT_CLIENT_NEW ? 'N' : '.'),
- 				   (tt_common_entry->flags &
- 				    BATADV_TT_CLIENT_PENDING ? 'X' : '.'),
- 				   (tt_common_entry->flags &
- 				    BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
--				   last_seen_secs, last_seen_msecs);
-+				   no_purge ? last_seen_secs : 0,
-+				   no_purge ? last_seen_msecs : 0);
- 		}
- 		rcu_read_unlock();
- 	}
--- 
-1.8.0
+I guess it would be the packet type batman would recognized. When I
+set the type to 0x4305.
+However, I cannot even see any output from the receiver side when I
+run batctl tcpdump bat0 on it.
 
+Just wondering if you guys can have simple examples about the socket
+programming on B.A.T.M.A.N.
+
+Thank you so much
+
+
+On Wed, Nov 28, 2012 at 9:49 PM, liu muye <lmy19901031@gmail.com> wrote:
+> Hello:
+>
+> Now I switch to MAC address of bat0 as the source and destination
+> address. In this case, I only have two nodes. Node A and node C.
+>
+> Now, I cannot send packet from node A to node C, and vice versa.
+> However, when I do batctl tcpdump bat0 on the receiver side, I can see
+> print out shown in the following.
+>
+> Warning - packet contains unknown ether type: 0x1337.
+>
+> Not sure what should I do now.
+>
+> Thanks
+>
+> On Wed, Nov 28, 2012 at 7:09 PM, liu muye <lmy19901031@gmail.com> wrote:
+>> Yes. Thanks for your help. I will try the way you suggested.
+>>
+>>
+>>
+>> On Wed, Nov 28, 2012 at 7:02 PM, liu muye <lmy19901031@gmail.com> wrote:
+>>> Even though all my nodes are running batman-adv. I still do the same
+>>> thing to obtain the MAC address of bat0.
+>>> Is that right?
+>>>
+>>> Thanks
+>>>
+>>> On Wed, Nov 28, 2012 at 6:48 PM, liu muye <lmy19901031@gmail.com> wrote:
+>>>> So, if I understood correctly. The best way to do is to run command
+>>>> "ifconfig bat0" on both sides and fill in the HWAddr info accordingly.
+>>>>
+>>>> Thanks
+>>>>
+>>>> On Wed, Nov 28, 2012 at 6:29 PM, liu muye <lmy19901031@gmail.com> wrote:
+>>>>> OK, Thanks for the clarification. Just wonder if there is any way to
+>>>>> get the MAC address of bat0 on other end.
+>>>>>
+>>>>> For example: I got node A and node C. I want to send data packet from
+>>>>> node A to node C. The MAC address of bat0 in nodeA is the source. Just
+>>>>> wandering if there is a way to get the MAC address of bat0 in node C
+>>>>> without physically show up in front of node C and run these commands.
+>>>>>
+>>>>> Thank you so much
+>>>>>
+>>>>>
+>>>>>
+>>>>> On Wed, Nov 28, 2012 at 6:09 PM, liu muye <lmy19901031@gmail.com> wrote:
+>>>>>> Besides, when do batctl ping. I am using the MAC address of ah0. I can
+>>>>>> ping other node.
+>>>>>> If the MAC address is wrong, I think I cannot even ping another node,
+>>>>>> or traceroute to another node.
+>>>>>>
+>>>>>> Thanks
+>>>>>>
+>>>>>> On Wed, Nov 28, 2012 at 6:02 PM, liu muye <lmy19901031@gmail.com> wrote:
+>>>>>>> One follow up question:
+>>>>>>>
+>>>>>>> When I do batctl o. It shows the MAC address of my network interface.
+>>>>>>> In my case, is ah0.
+>>>>>>> Not sure what to do in order to show the MAC address of the bat0.
+>>>>>>>
+>>>>>>> Thanks
+>>>>>>> Muye Liu
+>>>>>>>
+>>>>>>> On Tue, Nov 27, 2012 at 11:15 PM, liu muye <lmy19901031@gmail.com> wrote:
+>>>>>>>> Hello:
+>>>>>>>>
+>>>>>>>> This is Muye again. I have encountered another problem recently when I
+>>>>>>>> am using B.A.T.M.A.N to do the socket programming.
+>>>>>>>>
+>>>>>>>> Currently, I have three nodes. Namely, node A, node B, and node C. The
+>>>>>>>> testing environment is a hall way in our department.
+>>>>>>>>
+>>>>>>>> I put node A in one end of the hall way, node C in another end of the
+>>>>>>>> hall way. Node B is in the middle of the hall way.
+>>>>>>>>
+>>>>>>>> I can ping node C from node A and vice versa. In node A, I can
+>>>>>>>> traceroute to node C. The traceroute shows it needs to go through node
+>>>>>>>> B.
+>>>>>>>>
+>>>>>>>> However, when I send packet from node A to node C. Node C does not
+>>>>>>>> receive anything. But if I send packet from node A to node B, node B
+>>>>>>>> can receive that packet.
+>>>>>>>> Not sure what happened.  The link shown below is the program I used to
+>>>>>>>> send packet. Both source and destination are MAC address.
+>>>>>>>>
+>>>>>>>> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/attachments/20111206/52f060cb/attachment.c
+>>>>>>>>
+>>>>>>>> I greatly appreciate any suggestion, comment, and help.
+>>>>>>>>
+>>>>>>>> Thanks
