@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 29 Nov 2012 11:18:30 +0800
-References: <1354150462-4253-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1354150462-4253-1-git-send-email-ordex@autistici.org>
+Date: Thu, 29 Nov 2012 11:25:33 +0800
+References: <CALDpWg5UxkqP2_f-waB===fDPHg6vC0xf8=oxVx7aH5XvXd6uQ@mail.gmail.com>
+ <CALDpWg5UinZxugVHYRyK70tUFTPQ7FHqRAsn0GP_gV=EZVMWtQ@mail.gmail.com>
+ <CALDpWg5uoeERLHMawtLP5F5EC9Xvkyf5WAu7DVYwOXDw3fwfYw@mail.gmail.com>
+In-Reply-To: <CALDpWg5uoeERLHMawtLP5F5EC9Xvkyf5WAu7DVYwOXDw3fwfYw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201211291118.30461.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: don't print the last_seen
-	time for bat0 TT local entry
+Message-Id: <201211291125.33400.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] batman-adv: Raw Socket Communication
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,16 +24,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday, November 29, 2012 08:54:22 Antonio Quartulli wrote:
-> @@ -504,19 +505,22 @@ int batadv_tt_local_seq_print_text(struct seq_file
-> *seq, void *offset) last_seen_secs = last_seen_msecs / 1000;
->                         last_seen_msecs = last_seen_msecs % 1000;
->  
-> +                       no_purge = tt_common_entry->flags &
-> +                                  BATADV_TT_CLIENT_NOPURGE;
 
+HI,
 
-Do you think David will accept this ?
+> Now I switch to MAC address of bat0 as the source and destination
+> address. In this case, I only have two nodes. Node A and node C.
+> 
+> Now, I cannot send packet from node A to node C, and vice versa.
+> However, when I do batctl tcpdump bat0 on the receiver side, I can see
+> print out shown in the following.
+> 
+> Warning - packet contains unknown ether type: 0x1337.
+> 
+> Not sure what should I do now.
+
+this just means that batctl does not know how to print this packet type. Not 
+surprising - you just created the packet type yourself. How should batctl know 
+about it ? 
+
+I'd say if you get this warning on the other end your packet was successfully 
+delivered.
+
+Antonio, wouldn't it be possible to get the bat0 mac address from the global 
+table even if there were other clients bridged into that node ? The bat0 entry 
+should be the only one with the no_purge flag set.
 
 Cheers,
 Marek
+
