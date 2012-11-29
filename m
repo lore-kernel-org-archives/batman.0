@@ -1,17 +1,9 @@
 Return-Path: <ordex@autistici.org>
-Date: Thu, 29 Nov 2012 04:28:21 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121129032821.GI32479@ritirata.org>
-References: <CALDpWg5UxkqP2_f-waB===fDPHg6vC0xf8=oxVx7aH5XvXd6uQ@mail.gmail.com>
- <CALDpWg5UinZxugVHYRyK70tUFTPQ7FHqRAsn0GP_gV=EZVMWtQ@mail.gmail.com>
- <CALDpWg5uoeERLHMawtLP5F5EC9Xvkyf5WAu7DVYwOXDw3fwfYw@mail.gmail.com>
- <201211291125.33400.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="PNpeiK4tTqhYOExY"
-Content-Disposition: inline
-In-Reply-To: <201211291125.33400.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv: Raw Socket Communication
+Date: Thu, 29 Nov 2012 04:54:45 +0100
+Message-Id: <1354161285-1992-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: don't print the last_seen time
+	for bat0 TT local entry
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,66 +15,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+bat0 MAC address will never deleted from the local translation table, therefore
+printing its last_Seen time is useless and will also produce ugly output and
+eventually a variable overflow.
 
---PNpeiK4tTqhYOExY
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This was introduced by 59cb0861498776c62bd17584c31f34477fa301a0 ("batman-adv:
+improve local translation table output")
 
-On Thu, Nov 29, 2012 at 11:25:33AM +0800, Marek Lindner wrote:
->=20
-> HI,
->=20
-> > Now I switch to MAC address of bat0 as the source and destination
-> > address. In this case, I only have two nodes. Node A and node C.
-> >=20
-> > Now, I cannot send packet from node A to node C, and vice versa.
-> > However, when I do batctl tcpdump bat0 on the receiver side, I can see
-> > print out shown in the following.
-> >=20
-> > Warning - packet contains unknown ether type: 0x1337.
-> >=20
-> > Not sure what should I do now.
->=20
-> this just means that batctl does not know how to print this packet type. =
-Not=20
-> surprising - you just created the packet type yourself. How should batctl=
- know=20
-> about it ?=20
->=20
-> I'd say if you get this warning on the other end your packet was successf=
-ully=20
-> delivered.
->=20
-> Antonio, wouldn't it be possible to get the bat0 mac address from the glo=
-bal=20
-> table even if there were other clients bridged into that node ? The bat0 =
-entry=20
-> should be the only one with the no_purge flag set.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-That is a local flag. It is not advertised and so not reported by the Global
-Translation Table.
+diff --git a/translation-table.c b/translation-table.c
+index 1335294..5f44232 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -478,6 +478,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	int last_seen_secs;
+ 	int last_seen_msecs;
+ 	unsigned long last_seen_jiffies;
++	bool no_purge;
++	uint16_t np_flag = BATADV_TT_CLIENT_NOPURGE;
+ 
+ 	primary_if = batadv_seq_print_text_primary_if_get(seq);
+ 	if (!primary_if)
+@@ -504,19 +506,21 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 			last_seen_secs = last_seen_msecs / 1000;
+ 			last_seen_msecs = last_seen_msecs % 1000;
+ 
++			no_purge = tt_common_entry->flags & np_flag;
++
+ 			seq_printf(seq, " * %pM [%c%c%c%c%c] %3u.%03u\n",
+ 				   tt_common_entry->addr,
+ 				   (tt_common_entry->flags &
+ 				    BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
+-				   (tt_common_entry->flags &
+-				    BATADV_TT_CLIENT_NOPURGE ? 'P' : '.'),
++				   no_purge ? 'P' : '.',
+ 				   (tt_common_entry->flags &
+ 				    BATADV_TT_CLIENT_NEW ? 'N' : '.'),
+ 				   (tt_common_entry->flags &
+ 				    BATADV_TT_CLIENT_PENDING ? 'X' : '.'),
+ 				   (tt_common_entry->flags &
+ 				    BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
+-				   last_seen_secs, last_seen_msecs);
++				   no_purge ? last_seen_secs : 0,
++				   no_purge ? last_seen_msecs : 0);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+-- 
+1.8.0
 
-Cheers,
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---PNpeiK4tTqhYOExY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlC21lUACgkQpGgxIkP9cwd9eACgmRZ/5eqh7BUsuvmNblG9qZVZ
-4r0AnAkEvjjFpEL8dEq3/WqU4GaYCVEE
-=IZVO
------END PGP SIGNATURE-----
-
---PNpeiK4tTqhYOExY--
