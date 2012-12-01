@@ -1,15 +1,17 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 1 Dec 2012 21:15:40 +0800
-References: <1354325521-9144-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1354325521-9144-1-git-send-email-ordex@autistici.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 01 Dec 2012 14:16:38 +0100
+Message-ID: <15221362.NFC3M7kpXE@sven-laptop.home.narfation.org>
+In-Reply-To: <20121201131108.GL24115@ritirata.org>
+References: <1353715332-4284-1-git-send-email-sven@narfation.org>
+ <1353715332-4284-6-git-send-email-sven@narfation.org>
+ <20121201131108.GL24115@ritirata.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201212012115.41214.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove useless blank lines
-	before and after brackets
+Content-Type: multipart/signed; boundary="nextPart4171032.o65fDLRZnF";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: Allow to use rntl_link
+	for device creation/deletion
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,22 +23,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Antonio Quartulli <ordex@autistici.org>
+Cc: netdev@vger.kernel.org, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, December 01, 2012 09:32:01 Antonio Quartulli wrote:
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  bat_iv_ogm.c            | 6 ------
->  bridge_loop_avoidance.c | 4 ----
->  debugfs.c               | 1 -
->  originator.c            | 3 ---
->  routing.c               | 4 ----
->  send.c                  | 2 --
->  translation-table.c     | 7 -------
->  unicast.c               | 2 --
->  8 files changed, 29 deletions(-)
 
-Applied in revision 3d278d6.
+--nextPart4171032.o65fDLRZnF
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-Thanks,
-Marek
+Please don't remove netdev from this discussion without a reason.
+
+On Saturday 01 December 2012 14:11:08 Antonio Quartulli wrote:
+> On Sat, Nov 24, 2012 at 01:02:11AM +0100, Sven Eckelmann wrote:
+> > The sysfs configuration interface of batman-adv to add/remove
+> > soft-interfaces is not deadlock free and doesn't follow the currently
+> > common way to create new virtual interfaces.
+> > 
+> > An additional interface though rtnl_link is introduced which provides easy
+> > device creation/deletion with tools like "ip":
+> > 
+> > $ ip link add dev bat0 type batadv
+> > $ ip link del dev bat0
+> > 
+> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> 
+> Hello Sven,
+> 
+> why are we adding yet another API? What's the purpose? Is this intended to
+> fix the lock bug we get while using sysfs?
+
+Because this is the normal way to create virtual network devices (please feel 
+free to correct me). And no, it doesn't fix the sysfs problem because the 
+sysfs stuff isn't removed.
+
+Kind regards,
+	Sven
+--nextPart4171032.o65fDLRZnF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAABCgAGBQJQugM2AAoJEF2HCgfBJntG4wIP/i5jt5K820bPgXHlbt6+TPQK
+mXVC3lwTaJXSNe4QGUV8E350RFjsiO+Is3L1+ci9UkPYYw0pSxGUOZptxRk+VwRB
+6vXgwZ6v8aKbp9ZBF7/9TzNZMViGlzyXpyz4Z/SZJKlad4KzhJe3fuuUzlFfYAPH
+IXQCbC0SCOKwvgHE2isD8GzLehIyDeMHLvEs32PciO2sZNEoMf/meATWO7LM73XJ
+WZUcGKuMWD3j/rzZUMR7z7KREbOFHvVbC+NfRRW8+Zh+e7B+Utv8yEfvncdhrGbZ
+pb/e+Y2SGtCs35Dzt2sd6bP3nibOG8+LKn26uIIE7QSEKPHqi6M97Du09cTvV8f8
+sEM5s47OTDtHVmFiUSJrdRHey35deI1FRkYe2AfFmq70P/7nxbKxBJNMsLWNaHFM
+jKQHGWE7dmkpPafXrtynXdF2eR5TP2hIRy5DmIK6/teJB5f/y3Hryz1mFFIXUpuB
+ZBKeu3c9rXvMlYX+ylGQ6zVgSSwEkwFhOIkkpn56pT2zm9AUm7k8wToETEEeYkYt
+HmFWNmnpLg9Z2XUZwaNwZ0WhPVujzjyyVCpp5QIg33k1mGue5JjXwp5/no7QeO1d
+NmYPF1Wk09M6nhIli/3Vy0IzZEoxnUbmczuWSzi9KvH8BosDwezpj2XMQli7STFh
+8vsmUWhY96T+t3ouEtU5
+=uicR
+-----END PGP SIGNATURE-----
+
+--nextPart4171032.o65fDLRZnF--
+
