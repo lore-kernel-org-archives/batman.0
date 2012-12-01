@@ -1,8 +1,14 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sat,  1 Dec 2012 18:29:51 +0100
-Message-Id: <1354382991-31350-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCH] net: fix possible deadlocks in
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 01 Dec 2012 19:07:56 +0100
+Message-ID: <5233033.Yg8T20E3Sl@sven-laptop.home.narfation.org>
+In-Reply-To: <1354382991-31350-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+References: <1354382991-31350-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4022694.fXEdSxRaOt";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH] net: fix possible deadlocks in
 	rtnl_trylock/unlock
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -15,104 +21,110 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux-foundation.org, linux-rdma@vger.kernel.org, linux-s390@vger.kernel.org, Andy Gospodarek <andy@greyhouse.net>, Jay Vosburgh <fubar@us.ibm.com>, Divy Le Ray <divy@chelsio.com>
+Cc: netdev@vger.kernel.org, davem@davemloft.net, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-If rtnl_trylock() is used to prevent circular dependencies, rtnl_unlock()
-may destroy this attempt because it first unlocks rtnl_mutex but may
-lock it again later. The callgraph roughly looks like:
 
-rtnl_unlock()
-   netdev_run_todo()
-      __rtnl_unlock()
-      netdev_wait_allrefs()
-         rtnl_lock()
-         ...
-         __rtnl_unlock()
+--nextPart4022694.fXEdSxRaOt
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-There are two users which have possible deadlocks and are fixed in this
-patch: batman-adv and bridge. Their problematic access pattern is the same:
+On Saturday 01 December 2012 18:29:51 Simon Wunderlich wrote:
+> If rtnl_trylock() is used to prevent circular dependencies, rtnl_unlock()
+> may destroy this attempt because it first unlocks rtnl_mutex but may
+> lock it again later. The callgraph roughly looks like:
+> 
+> rtnl_unlock()
+>    netdev_run_todo()
+>       __rtnl_unlock()
+>       netdev_wait_allrefs()
+>          rtnl_lock()
+>          ...
+>          __rtnl_unlock()
+> 
+> There are two users which have possible deadlocks and are fixed in this
+> patch: batman-adv and bridge. Their problematic access pattern is the same:
+> 
+> notifier_call handler:
+>  * holds rtnl lock when called
+>  * calls sysfs code at some point (acquiring sysfs locks)
+> 
+> sysfs code:
+>  * holds sysfs lock when called
+>  * calls rtnl_trylock() and rtnl_unlock(), rtnl_unlock() calls rtnl_lock
+>    implicitly
+> 
+> Fix this by exporting __rtnl_unlock() to just unlock the mutex without
+> implicitly locking again.
+> 
+> Reported-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> 
+> ---
+> Of course, an alternative would be to not lock again after unlocking
+> within rtnl_unlock(), or put the todo handling into the locked section.
+> I'm not familiar enough with this code to know what would be best.
+> 
+> There are others using rtnl_trylock(), but I'm not sure if they
+> are affected.
 
-notifier_call handler:
- * holds rtnl lock when called
- * calls sysfs code at some point (acquiring sysfs locks)
+At least they look like they have a problem in a parallel user scenario 
+involving another lock and locking order (most of them s_active or a device 
+lock). So just to list the places and poke some other users. They can better 
+decide for themself because they know the code.
 
-sysfs code:
- * holds sysfs lock when called
- * calls rtnl_trylock() and rtnl_unlock(), rtnl_unlock() calls rtnl_lock
-   implicitly
+drivers/infiniband/ulp/ipoib/ipoib_cm.c:  if (!rtnl_trylock())
+drivers/infiniband/ulp/ipoib/ipoib_vlan.c:        if (!rtnl_trylock())
+drivers/infiniband/ulp/ipoib/ipoib_vlan.c:        if (!rtnl_trylock())
+drivers/net/bonding/bond_alb.c:                   if (!rtnl_trylock()) {
+drivers/net/bonding/bond_main.c:          if (!rtnl_trylock()) {
+drivers/net/bonding/bond_main.c:          if (!rtnl_trylock()) {
+drivers/net/bonding/bond_main.c:          if (!rtnl_trylock()) {
+drivers/net/bonding/bond_main.c:          if (!rtnl_trylock()) {
+drivers/net/bonding/bond_sysfs.c: if (!rtnl_trylock())
+drivers/net/bonding/bond_sysfs.c: if (!rtnl_trylock())
+drivers/net/bonding/bond_sysfs.c: if (!rtnl_trylock())
+drivers/net/bonding/bond_sysfs.c: if (!rtnl_trylock())
+drivers/net/bonding/bond_sysfs.c: if (!rtnl_trylock())
+drivers/net/bonding/bond_sysfs.c: if (!rtnl_trylock())
+drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c:  if (!rtnl_trylock())    /* 
+synchronize with ifdown */
+drivers/s390/net/qeth_l2_main.c:          if (rtnl_trylock()) {
+drivers/s390/net/qeth_l3_main.c:          if (rtnl_trylock()) {
+net/bridge/br_sysfs_br.c: if (!rtnl_trylock())
+net/bridge/br_sysfs_if.c:         if (!rtnl_trylock())
+net/core/net-sysfs.c:     if (!rtnl_trylock())
+net/core/net-sysfs.c:     if (!rtnl_trylock())
+net/core/net-sysfs.c:     if (!rtnl_trylock())
+net/core/net-sysfs.c:     if (!rtnl_trylock())
+net/core/net-sysfs.c:     if (!rtnl_trylock())
+net/ipv4/devinet.c:                       if (!rtnl_trylock()) {
+net/ipv6/addrconf.c:      if (!rtnl_trylock())
+net/ipv6/addrconf.c:      if (!rtnl_trylock())
 
-Fix this by exporting __rtnl_unlock() to just unlock the mutex without
-implicitly locking again.
+Kind regards,
+	Sven
+--nextPart4022694.fXEdSxRaOt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
-Reported-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
----
-Of course, an alternative would be to not lock again after unlocking
-within rtnl_unlock(), or put the todo handling into the locked section.
-I'm not familiar enough with this code to know what would be best.
+iQIcBAABCgAGBQJQukd8AAoJEF2HCgfBJntGjQAP/iZNTmIofZitO2/2cOQ8+87S
+PwWyB7onTT1f0YW96anwb/fas+X5+9gd2DhIX1b7IywuJ02Y8MiY5vaCUSkmCdi9
+2MUSGk4l+dRCu3H4Bo/8iNZyEFgDeZXp+YeJkq7Ry8riYWCAEnIG/zdigqBVUO+N
+3mMcs9wEbzj2tBBIzkXyPrB5Gm4sut6nmjOxNbDY7CIb7VWQI/s4r5kqb+uKYsLL
+Xl75m/HR45ZcS71uw7s62u+A+eyYW9o937If4rgMWmoO/MEl5LIXa7i7+xcfSNUQ
+HUT367nmM+AMjLozlFbGsqOKDlUQIZLRj1uVAjcXSIeqf7ObnTdlJp1Gp0NHlBv9
+4YRPldVO+wU5tB6zazvs4JLtf3/+9iz0bYQ0Afw4BFwSLWHhOfVc4JO4CGO2iHqP
+9CWgM+eirZ0lVTBgTrANpX+M+iVQN2zPGDuS/iNyh6BNtu0SHo/Wih1TIjivYKTn
+Z2B4bcms085ipdAMCoboBnmTeCYIUDm51Sf16To0oikZb45Z1DBhm6tMfIl1QyM2
+Dp4FinhmcZBuAO8LBVTYfQisLiL26XWs+q4g+MS5QJXe9NbfdjkvIAjGu/J2e9FL
+XEwXPhnlU9WDPIZn5dtiEftVPKF4zPdo0Dt5UPczvhvkaQaMIUzCu/NiAfuGNLgp
+kS9injKwBA5v1cZCfBZK
+=E+pM
+-----END PGP SIGNATURE-----
 
-There are others using rtnl_trylock(), but I'm not sure if they
-are affected.
----
- net/batman-adv/sysfs.c   |    2 +-
- net/bridge/br_sysfs_br.c |    2 +-
- net/bridge/br_sysfs_if.c |    2 +-
- net/core/rtnetlink.c     |    1 +
- 4 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 66518c7..41b74aa 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -635,7 +635,7 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
- 	ret = batadv_hardif_enable_interface(hard_iface, buff);
- 
- unlock:
--	rtnl_unlock();
-+	__rtnl_unlock();
- out:
- 	batadv_hardif_free_ref(hard_iface);
- 	return ret;
-diff --git a/net/bridge/br_sysfs_br.c b/net/bridge/br_sysfs_br.c
-index c5c0593..c122782 100644
---- a/net/bridge/br_sysfs_br.c
-+++ b/net/bridge/br_sysfs_br.c
-@@ -142,7 +142,7 @@ static ssize_t store_stp_state(struct device *d,
- 	if (!rtnl_trylock())
- 		return restart_syscall();
- 	br_stp_set_enabled(br, val);
--	rtnl_unlock();
-+	__rtnl_unlock();
- 
- 	return len;
- }
-diff --git a/net/bridge/br_sysfs_if.c b/net/bridge/br_sysfs_if.c
-index 13b36bd..d99f394 100644
---- a/net/bridge/br_sysfs_if.c
-+++ b/net/bridge/br_sysfs_if.c
-@@ -223,7 +223,7 @@ static ssize_t brport_store(struct kobject * kobj,
- 			if (ret == 0)
- 				ret = count;
- 		}
--		rtnl_unlock();
-+		__rtnl_unlock();
- 	}
- 	return ret;
- }
-diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
-index fad649a..d95ba6f 100644
---- a/net/core/rtnetlink.c
-+++ b/net/core/rtnetlink.c
-@@ -72,6 +72,7 @@ void __rtnl_unlock(void)
- {
- 	mutex_unlock(&rtnl_mutex);
- }
-+EXPORT_SYMBOL(__rtnl_unlock);
- 
- void rtnl_unlock(void)
- {
--- 
-1.7.10.4
+--nextPart4022694.fXEdSxRaOt--
 
