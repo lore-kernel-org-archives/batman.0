@@ -1,9 +1,16 @@
 Return-Path: <ordex@autistici.org>
+Date: Sat, 1 Dec 2012 03:03:55 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat,  1 Dec 2012 02:32:01 +0100
-Message-Id: <1354325521-9144-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove useless blank lines
-	before and after brackets
+Message-ID: <20121201020355.GG24115@ritirata.org>
+References: <cover.1354287613.git.martin@hundeboll.net>
+ <18b535aef6c8db0d0dfcd55a9dfde6c7bb62e2c7.1354287613.git.martin@hundeboll.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="m1UC1K4AOz1Ywdkx"
+Content-Disposition: inline
+In-Reply-To: <18b535aef6c8db0d0dfcd55a9dfde6c7bb62e2c7.1354287613.git.martin@hundeboll.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/6] batman-adv: Buffer unicast packets
+ before forward.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,284 +22,275 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- bat_iv_ogm.c            | 6 ------
- bridge_loop_avoidance.c | 4 ----
- debugfs.c               | 1 -
- originator.c            | 3 ---
- routing.c               | 4 ----
- send.c                  | 2 --
- translation-table.c     | 7 -------
- unicast.c               | 2 --
- 8 files changed, 29 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 662743e..83dfcb4 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -183,7 +183,6 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
- 	/* adjust all flags and log packets */
- 	while (batadv_iv_ogm_aggr_packet(buff_pos, forw_packet->packet_len,
- 					 batadv_ogm_packet->tt_num_changes)) {
--
- 		/* we might have aggregated direct link packets with an
- 		 * ordinary base packet
- 		 */
-@@ -261,7 +260,6 @@ static void batadv_iv_ogm_emit(struct batadv_forw_packet *forw_packet)
- 	 */
- 	if ((directlink && (batadv_ogm_packet->header.ttl == 1)) ||
- 	    (forw_packet->own && (forw_packet->if_incoming != primary_if))) {
--
- 		/* FIXME: what about aggregated packets ? */
- 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 			   "%s packet (originator %pM, seqno %u, TTL %d) on interface %s [%pM]\n",
-@@ -325,7 +323,6 @@ batadv_iv_ogm_can_aggregate(const struct batadv_ogm_packet *new_bat_ogm_packet,
- 	if (time_before(send_time, forw_packet->send_time) &&
- 	    time_after_eq(aggregation_end_time, forw_packet->send_time) &&
- 	    (aggregated_bytes <= BATADV_MAX_AGGREGATION_BYTES)) {
--
- 		/* check aggregation compatibility
- 		 * -> direct link packets are broadcasted on
- 		 *    their interface only
-@@ -815,7 +812,6 @@ static int batadv_iv_ogm_calc_tq(struct batadv_orig_node *orig_node,
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(tmp_neigh_node, node,
- 				 &orig_neigh_node->neigh_list, list) {
--
- 		if (!batadv_compare_eth(tmp_neigh_node->addr,
- 					orig_neigh_node->orig))
- 			continue;
-@@ -949,7 +945,6 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(tmp_neigh_node, node,
- 				 &orig_node->neigh_list, list) {
--
- 		is_duplicate |= batadv_test_bit(tmp_neigh_node->real_bits,
- 						orig_node->last_real_seqno,
- 						seqno);
-@@ -1223,7 +1218,6 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
- 
- 	/* is single hop (direct) neighbor */
- 	if (is_single_hop_neigh) {
--
- 		/* mark direct link on incoming interface */
- 		batadv_iv_ogm_forward(orig_node, ethhdr, batadv_ogm_packet,
- 				      is_single_hop_neigh,
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index ec12c79..724adf0 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -235,7 +235,6 @@ batadv_bla_del_backbone_claims(struct batadv_backbone_gw *backbone_gw)
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(claim, node, node_tmp,
- 					  head, hash_entry) {
--
- 			if (claim->backbone_gw != backbone_gw)
- 				continue;
- 
-@@ -338,7 +337,6 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
- 			   "bla_send_claim(): REQUEST of %pM to %pMon vid %d\n",
- 			   ethhdr->h_source, ethhdr->h_dest, vid);
- 		break;
--
- 	}
- 
- 	if (vid != -1)
-@@ -539,7 +537,6 @@ static void batadv_bla_send_announce(struct batadv_priv *bat_priv,
- 
- 	batadv_bla_send_claim(bat_priv, mac, backbone_gw->vid,
- 			      BATADV_CLAIM_TYPE_ANNOUNCE);
--
- }
- 
- /**
-@@ -598,7 +595,6 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 
- 		claim->backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
- 		batadv_backbone_gw_free_ref(claim->backbone_gw);
--
- 	}
- 	/* set (new) backbone gw */
- 	atomic_inc(&backbone_gw->refcount);
-diff --git a/debugfs.c b/debugfs.c
-index 6f58ddd..0049837 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -164,7 +164,6 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
- 
- 		buf++;
- 		i++;
--
- 	}
- 
- 	spin_unlock_bh(&debug_log->lock);
-diff --git a/originator.c b/originator.c
-index 8c32cf1..812de81 100644
---- a/originator.c
-+++ b/originator.c
-@@ -178,7 +178,6 @@ void batadv_originator_free(struct batadv_priv *bat_priv)
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(orig_node, node, node_tmp,
- 					  head, hash_entry) {
--
- 			hlist_del_rcu(node);
- 			batadv_orig_node_free_ref(orig_node);
- 		}
-@@ -285,7 +284,6 @@ batadv_purge_orig_neighbors(struct batadv_priv *bat_priv,
- 	/* for all neighbors towards this originator ... */
- 	hlist_for_each_entry_safe(neigh_node, node, node_tmp,
- 				  &orig_node->neigh_list, list) {
--
- 		last_seen = neigh_node->last_seen;
- 		if_incoming = neigh_node->if_incoming;
- 
-@@ -293,7 +291,6 @@ batadv_purge_orig_neighbors(struct batadv_priv *bat_priv,
- 		    (if_incoming->if_status == BATADV_IF_INACTIVE) ||
- 		    (if_incoming->if_status == BATADV_IF_NOT_IN_USE) ||
- 		    (if_incoming->if_status == BATADV_IF_TO_BE_REMOVED)) {
--
- 			if ((if_incoming->if_status == BATADV_IF_INACTIVE) ||
- 			    (if_incoming->if_status == BATADV_IF_NOT_IN_USE) ||
- 			    (if_incoming->if_status == BATADV_IF_TO_BE_REMOVED))
-diff --git a/routing.c b/routing.c
-index 1aa1722..db89238 100644
---- a/routing.c
-+++ b/routing.c
-@@ -80,7 +80,6 @@ static void _batadv_update_route(struct batadv_priv *bat_priv,
- 
- 	/* route added */
- 	} else if ((!curr_router) && (neigh_node)) {
--
- 		batadv_dbg(BATADV_DBG_ROUTES, bat_priv,
- 			   "Adding route towards: %pM (via %pM)\n",
- 			   orig_node->orig, neigh_node->addr);
-@@ -172,7 +171,6 @@ void batadv_bonding_candidate_add(struct batadv_orig_node *orig_node,
- 	 */
- 	hlist_for_each_entry_rcu(tmp_neigh_node, node,
- 				 &orig_node->neigh_list, list) {
--
- 		if (tmp_neigh_node == neigh_node)
- 			continue;
- 
-@@ -836,7 +834,6 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
- 	if (unicast_packet->header.packet_type == BATADV_UNICAST_FRAG &&
- 	    batadv_frag_can_reassemble(skb,
- 				       neigh_node->if_incoming->net_dev->mtu)) {
--
- 		ret = batadv_frag_reassemble_skb(skb, bat_priv, &new_skb);
- 
- 		if (ret == NET_RX_DROP)
-@@ -1103,7 +1100,6 @@ int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
- 
- 	/* packet for me */
- 	if (batadv_is_my_mac(unicast_packet->dest)) {
--
- 		ret = batadv_frag_reassemble_skb(skb, bat_priv, &new_skb);
- 
- 		if (ret == NET_RX_DROP)
-diff --git a/send.c b/send.c
-index 4425af9..89810ce 100644
---- a/send.c
-+++ b/send.c
-@@ -330,7 +330,6 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 	spin_lock_bh(&bat_priv->forw_bcast_list_lock);
- 	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node,
- 				  &bat_priv->forw_bcast_list, list) {
--
- 		/* if purge_outstanding_packets() was called with an argument
- 		 * we delete only packets belonging to the given interface
- 		 */
-@@ -357,7 +356,6 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 	spin_lock_bh(&bat_priv->forw_bat_list_lock);
- 	hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node,
- 				  &bat_priv->forw_bat_list, list) {
--
- 		/* if purge_outstanding_packets() was called with an argument
- 		 * we delete only packets belonging to the given interface
- 		 */
-diff --git a/translation-table.c b/translation-table.c
-index 1335294..0e9ae64 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -112,7 +112,6 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const void *data)
- 					       struct batadv_tt_global_entry,
- 					       common);
- 	return tt_global_entry;
--
- }
- 
- static void
-@@ -249,7 +248,6 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
- 	batadv_hash_remove(bat_priv->tt.global_hash, batadv_compare_tt,
- 			   batadv_choose_orig, tt_global->common.addr);
- 	batadv_tt_global_entry_free_ref(tt_global);
--
- }
- 
- void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
-@@ -641,7 +639,6 @@ static void batadv_tt_local_purge(struct batadv_priv *bat_priv)
- 		batadv_tt_local_purge_list(bat_priv, head);
- 		spin_unlock_bh(list_lock);
- 	}
--
- }
- 
- static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
-@@ -1065,7 +1062,6 @@ batadv_tt_global_del_orig_list(struct batadv_tt_global_entry *tt_global_entry)
- 		batadv_tt_orig_list_entry_free_ref(orig_entry);
- 	}
- 	spin_unlock_bh(&tt_global_entry->list_lock);
--
- }
- 
- static void
-@@ -1841,7 +1837,6 @@ out:
- 	if (!ret)
- 		kfree_skb(skb);
- 	return ret;
--
- }
- 
- static bool
-@@ -2368,7 +2363,6 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
- 		}
- 		spin_unlock_bh(list_lock);
- 	}
--
- }
- 
- static int batadv_tt_commit_changes(struct batadv_priv *bat_priv,
-@@ -2565,7 +2559,6 @@ bool batadv_tt_local_client_is_roaming(struct batadv_priv *bat_priv,
- 	batadv_tt_local_entry_free_ref(tt_local_entry);
- out:
- 	return ret;
--
- }
- 
- bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
-diff --git a/unicast.c b/unicast.c
-index 10aff49..f56bccf 100644
---- a/unicast.c
-+++ b/unicast.c
-@@ -133,7 +133,6 @@ batadv_frag_search_packet(struct list_head *head,
- 	is_head = !!(up->flags & BATADV_UNI_FRAG_HEAD);
- 
- 	list_for_each_entry(tfp, head, list) {
--
- 		if (!tfp->skb)
- 			continue;
- 
-@@ -162,7 +161,6 @@ void batadv_frag_list_free(struct list_head *head)
- 	struct batadv_frag_packet_list_entry *pf, *tmp_pf;
- 
- 	if (!list_empty(head)) {
--
- 		list_for_each_entry_safe(pf, tmp_pf, head, list) {
- 			kfree_skb(pf->skb);
- 			list_del(&pf->list);
--- 
-1.8.0
+--m1UC1K4AOz1Ywdkx
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Martin,
+
+On Fri, Nov 30, 2012 at 04:08:32PM +0100, Martin Hundeb=C3=B8ll wrote:
+> diff --git a/network-coding.c b/network-coding.c
+> index d9a601d..85288f2 100644
+> --- a/network-coding.c
+> +++ b/network-coding.c
+
+[...]
+
+>  int batadv_nc_init(struct batadv_priv *bat_priv)
+>  {
+> +	bat_priv->nc.timestamp_fwd_flush =3D jiffies;
+> +
+> +	if (bat_priv->nc.coding_hash)
+> +		return 0;
+> +
+> +	bat_priv->nc.coding_hash =3D batadv_hash_new(128);
+> +	if (!bat_priv->nc.coding_hash)
+> +		goto err;
+> +
+> +	batadv_hash_set_lock_class(bat_priv->nc.coding_hash,
+> +				   &batadv_nc_coding_hash_lock_class_key);
+> +
+>  	INIT_DELAYED_WORK(&bat_priv->nc.work, batadv_nc_worker);
+>  	batadv_nc_start_timer(bat_priv);
+> -
+>  	return 0;
+
+ehm..why removing this blank line now? Either you leave it there or you don=
+'t
+introduce it at all in the previous patch.
+
+> +
+> +err:
+> +	return -ENOMEM;
+>  }
+> =20
+>  /**
+> @@ -56,6 +74,7 @@ void batadv_nc_init_bat_priv(struct batadv_priv *bat_pr=
+iv)
+>  {
+>  	atomic_set(&bat_priv->network_coding, 1);
+>  	bat_priv->nc.min_tq =3D 200;
+> +	bat_priv->nc.max_fwd_delay =3D 10;
+
+Maybe it's just my taste, but I would rather prefer to have all these const=
+ants
+defined somewhere (main.h ?) instead of throwing numbers directly in the co=
+de. I
+personally find much easier to change default parameters directly in a sing=
+le
+file instead of digging into the code (especially if I didn't write it :-))
+
+[...]
+
+> +static bool batadv_nc_to_purge_nc_path_coding(struct batadv_priv *bat_pr=
+iv,
+> +					      struct batadv_nc_path *nc_path)
+> +{
+> +	if (atomic_read(&bat_priv->mesh_state) !=3D BATADV_MESH_ACTIVE)
+> +		return true;
+> +
+> +	/* purge the path when no packets has been added for 10 times the
+> +	 * max_fwd_delay time
+> +	 */
+> +	return batadv_has_timed_out(nc_path->last_valid,
+> +				    bat_priv->nc.max_fwd_delay*10);
+
+operands should be separated from the operator               ^^^
+
+
+[...]
+
+> +			/* purging an non-empty nc_path should never happen and
+> +			 * leaks memory, so warn about it
+> +			 */
+> +			if (!unlikely(list_empty(&nc_path->packet_list))) {
+> +				net_ratelimited_function(printk,
+> +							 KERN_WARNING
+> +							 "Skipping free of non-empty nc_path (%pM -> %pM)!\n",
+> +							 nc_path->prev_hop,
+> +							 nc_path->next_hop);
+
+I don't have a clear overview of the whole thing, so this comment might be
+wrong: here you state that if this condition occurs we are going to leak me=
+mory,
+so why not freeing all the packets in the list here?
+If this is not really possible and this situation is a real "bug" (meaning =
+the
+code should never enter this if-loop) then I think it is worth a WARN_ON().
+
+
+> +/**
+> + * batadv_nc_hash_compare - comparing function used in the network codin=
+g hash
+> + *  tables
+> + * @node: node in the local table
+> + * @data2: second object to compare the node to
+> + *
+> + * Returns 1 if the two entry are the same, 0 otherwise
+> + */
+> +static int batadv_nc_hash_compare(const struct hlist_node *node,
+> +				  const void *data2)
+> +{
+> +	const struct batadv_nc_path *nc_path1, *nc_path2;
+> +
+> +	nc_path1 =3D container_of(node, struct batadv_nc_path, hash_entry);
+> +	nc_path2 =3D data2;
+> +
+> +	/* Return true if the two keys are identical */
+
+you are returning 1/0, not true/false
+
+[...]
+
+> +/**
+> + * batadv_nc_fwd_flush - Checks whether the given nc packet has hit its =
+forward
+> + *  timeout. If so, the packet is no longer delayed, immediately sent an=
+d the
+> + *  entry deleted from the queue. Has to be called with the appropriate =
+locks.
+
+This is supposed to be a short description (if needed it can span multiple
+lines, but I would suggest to keep it simple). You can move big part of the=
+ description
+(don't remove it! It is very useful) below, together with the rest of the l=
+ong
+description (yes, the one
+below the args is the long description; it is not supposed to contain the
+returns value only)
+
+> + * @bat_priv: the bat priv with all the soft interface information
+> + * @nc_path: the nc path the packet belongs to
+> + * @nc_packet: the nc packet to be checked
+> + *
+> + * Returns false as soon as the entry in the fifo queue has not been tim=
+ed out
+> + * yet and true otherwise.
+> + */
+> +static bool batadv_nc_fwd_flush(struct batadv_priv *bat_priv,
+> +				struct batadv_nc_path *nc_path,
+> +				struct batadv_nc_packet *nc_packet)
+> +{
+
+[...]
+
+> +/**
+> + * batadv_nc_process_nc_paths - traverse given nc packet pool and
+> + * @bat_priv: the bat priv with all the soft interface information
+> + * @hash: to be processed hash table
+> + * process_fn: Function called to process given nc packet. Should return=
+ true
+> + *	       to encourage this function to proceed with the next packet.
+> + *	       Otherwise the rest of the current queue is skipped.
+
+missing @ and please align the second/third line right below the beginning =
+of
+the first (refer to Documentation/kernel-doc-nano-HOWTO.txt for more detail=
+s)
+
+> + */
+> +static void
+> +batadv_nc_process_nc_paths(struct batadv_priv *bat_priv,
+> +			   struct batadv_hashtable *hash,
+> +			   bool (*process_fn)(struct batadv_priv *,
+> +					      struct batadv_nc_path *,
+> +					      struct batadv_nc_packet *))
+> +{
+> +	struct hlist_node *node;
+> +	struct hlist_head *head;
+> +	spinlock_t *packet_list_lock; /* Protects lists in hash table */
+> +	struct batadv_nc_packet *nc_packet, *nc_packet_tmp;
+> +	struct batadv_nc_path *nc_path;
+> +	bool ret;
+> +	int i;
+> +
+> +	if (!hash)
+> +		return;
+> +
+> +	/* Loop hash table bins */
+> +	for (i =3D 0; i < hash->size; i++) {
+> +		head =3D &hash->table[i];
+> +
+> +		/* Loop coding paths */
+> +		rcu_read_lock();
+> +		hlist_for_each_entry_rcu(nc_path, node, head, hash_entry) {
+> +			packet_list_lock =3D &nc_path->packet_list_lock;
+> +
+
+Please remove this blank line right after the opening bracket.
+
+> +			/* Loop packets */
+> +			spin_lock_bh(packet_list_lock);
+> +			list_for_each_entry_safe(nc_packet, nc_packet_tmp,
+> +						 &nc_path->packet_list, list) {
+> +
+
+same here
+
+> +				ret =3D process_fn(bat_priv, nc_path, nc_packet);
+> +				if (!ret)
+> +					break;
+> +			}
+> +			spin_unlock_bh(packet_list_lock);
+> +		}
+> +		rcu_read_unlock();
+> +	}
+> +}
+
+[...]
+
+> =20
+>  /**
+> -<<<<<<< HEAD
+> -=3D=3D=3D=3D=3D=3D=3D
+
+mh..interesting ;-)
+
+[...]
+
+> +
+> +	/* Add nc_path to hash table */
+> +	hash_added =3D batadv_hash_add(hash, batadv_nc_hash_compare,
+> +				     batadv_nc_hash_choose,
+> +				     (void *)&nc_path_key,
+
+you don't need to cast to (void *)
+
+
+
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--m1UC1K4AOz1Ywdkx
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQuWWLAAoJEADl0hg6qKeO8xMQAKIATCaDmg96r2ta0C+2smGZ
+r6eL9kIjapBwsVo2qhNWjwsPlD748Ef+ly1c4GoZ14B+kfD4hKEeMVlupcbQQOrA
+eaL0TZjHG9U8etZn1s6T9ZEG3HrrKfEFqyKT1Nm4RqHcHFwuBHs2ynQc2JFqqa1Y
+pFQ/7NhQm06Bn2vppfTiyn8/mBOK8hKwSIaiJcAwOnr/wTW7L7iOUB06G+Er0vFj
+3dr4B1v7qkE+zAGnoiWgl50IaML/c3XwIUMP1XIfwKMXeembD667gaUkytJeZTm2
+S8cFGa4YFl2KMiu1/GkcMzJtN37c1okuNaaY5NTbpAhDzSq/vPtVBsMiIj26puh5
+FDaG1aTAc3woYZQX6vN2sipzy3agO0P87Qa8GSrSTVopenZDbq5O15l06ndzeR/B
+rEfQzzr9zQKqqcr24xddqIGJ0AHsONLESd+1Ds+8aiF7y78XQn0iUaDQoeZmInB/
+kPhuIUHWKoxG3qq/EZxhzJY/fAWyK9llLDCNtusxMswlvkPXEd8r8hj0CzgWFMgR
+COOvNnLZnHHrrr7mKf5K4KnDU5tGe6/ooVQ/yGXoVQCoR9oGhd+UUULmnDNg4aWP
+UMf85Cuyy3bMh+uB8zsjabOe0i3tlqi8aVFMKlsDS0Q/s+Cs8yDBB0/BuZ7VoN/x
+Ldr0FJ+sq7zacxb1i2hp
+=Tv2o
+-----END PGP SIGNATURE-----
+
+--m1UC1K4AOz1Ywdkx--
