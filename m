@@ -1,16 +1,16 @@
 Return-Path: <ordex@autistici.org>
-Date: Sat, 1 Dec 2012 03:03:55 +0100
+Date: Sat, 1 Dec 2012 03:23:46 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121201020355.GG24115@ritirata.org>
+Message-ID: <20121201022346.GH24115@ritirata.org>
 References: <cover.1354287613.git.martin@hundeboll.net>
- <18b535aef6c8db0d0dfcd55a9dfde6c7bb62e2c7.1354287613.git.martin@hundeboll.net>
+ <96863da15554203e10f89fde514157b1acaed698.1354287613.git.martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="m1UC1K4AOz1Ywdkx"
+ protocol="application/pgp-signature"; boundary="GdbWtwDHkcXqP16f"
 Content-Disposition: inline
-In-Reply-To: <18b535aef6c8db0d0dfcd55a9dfde6c7bb62e2c7.1354287613.git.martin@hundeboll.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/6] batman-adv: Buffer unicast packets
- before forward.
+In-Reply-To: <96863da15554203e10f89fde514157b1acaed698.1354287613.git.martin@hundeboll.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/6] batman-adv: Code and transmit
+ packets if possible.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,245 +26,309 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
 
---m1UC1K4AOz1Ywdkx
+--GdbWtwDHkcXqP16f
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Martin,
+On Fri, Nov 30, 2012 at 04:08:33PM +0100, Martin Hundeb=C3=B8ll wrote:
+> diff --git a/main.h b/main.h
+> index 9fd81b8..c738d27 100644
+> --- a/main.h
+> +++ b/main.h
+> @@ -303,4 +303,10 @@ static inline uint64_t batadv_sum_counter(struct bat=
+adv_priv *bat_priv,
+>  	return sum;
+>  }
+> =20
+> +/* Define a macro to reach the control buffer of the skb. The members of=
+ the
+> + * control buffer are defined in struct bat_skb_cb in types.h.
 
-On Fri, Nov 30, 2012 at 04:08:32PM +0100, Martin Hundeb=C3=B8ll wrote:
+is it batadv?				   ^^^
+
+> + * The macro is inspired by the similar macro TCP_SKB_CB() in tcp.h.
+> + */
+> +#define BATADV_SKB_CB(__skb)       ((struct batadv_skb_cb *)&((__skb)->c=
+b[0]))
+> +
+>  #endif /* _NET_BATMAN_ADV_MAIN_H_ */
 > diff --git a/network-coding.c b/network-coding.c
-> index d9a601d..85288f2 100644
+> index 85288f2..ebbe0e9 100644
 > --- a/network-coding.c
 > +++ b/network-coding.c
-
-[...]
-
->  int batadv_nc_init(struct batadv_priv *bat_priv)
->  {
-> +	bat_priv->nc.timestamp_fwd_flush =3D jiffies;
-> +
-> +	if (bat_priv->nc.coding_hash)
-> +		return 0;
-> +
-> +	bat_priv->nc.coding_hash =3D batadv_hash_new(128);
-> +	if (!bat_priv->nc.coding_hash)
-> +		goto err;
-> +
-> +	batadv_hash_set_lock_class(bat_priv->nc.coding_hash,
-> +				   &batadv_nc_coding_hash_lock_class_key);
-> +
->  	INIT_DELAYED_WORK(&bat_priv->nc.work, batadv_nc_worker);
->  	batadv_nc_start_timer(bat_priv);
-> -
->  	return 0;
-
-ehm..why removing this blank line now? Either you leave it there or you don=
-'t
-introduce it at all in the previous patch.
-
-> +
-> +err:
-> +	return -ENOMEM;
+> @@ -803,6 +803,396 @@ static struct batadv_nc_path *batadv_nc_get_path(st=
+ruct batadv_priv *bat_priv,
 >  }
 > =20
 >  /**
-> @@ -56,6 +74,7 @@ void batadv_nc_init_bat_priv(struct batadv_priv *bat_pr=
-iv)
->  {
->  	atomic_set(&bat_priv->network_coding, 1);
->  	bat_priv->nc.min_tq =3D 200;
-> +	bat_priv->nc.max_fwd_delay =3D 10;
+> + * batadv_random_weight_tq - scale the receivers TQ-value to avoid unfair
+> + *  selection of a receiver with slightly lower TQ than the other
+> + * @tq: to be weighted tq value
+> + */
+> +static uint8_t batadv_random_weight_tq(uint8_t tq)
+> +{
 
-Maybe it's just my taste, but I would rather prefer to have all these const=
-ants
-defined somewhere (main.h ?) instead of throwing numbers directly in the co=
-de. I
-personally find much easier to change default parameters directly in a sing=
-le
-file instead of digging into the code (especially if I didn't write it :-))
+namespace: why didn't you put _nc_ here?
+
+> +	uint8_t rand_val, rand_tq;
+> +
+> +	get_random_bytes(&rand_val, sizeof(rand_val));
+> +
+> +	rand_tq =3D rand_val * (BATADV_TQ_MAX_VALUE - tq);
+> +	rand_tq /=3D BATADV_TQ_MAX_VALUE;
+> +
+
+is this computation worth a comment? with the short description I got "why"=
+, but
+it would be nice to understand "how", so that we don't forget in the future=
+ what
+we are doing here exactly?
+
+> +	return BATADV_TQ_MAX_VALUE - rand_tq;
+> +}
+> +
+> +/* Code the bytes from data2 into data1 */
+> +static void batadv_memxor(char *data1, const char *data2,
+> +				 unsigned int len)
+
+and here?
+
+> +{
+> +	unsigned int i;
+> +
+> +	for (i =3D 0; i < len; ++i)
+> +		data1[i] ^=3D data2[i];
+> +}
+> +
+> +/**
+> + * batadv_nc_code_packets - code a received unicast_packet with an nc pa=
+cket
+> + *  into a coded_packet and send it
+> + * @bat_priv: the bat priv with all the soft interface information
+> + * @skb: data skb to forward
+> + * @ethhdr: pointer to the ethernet header inside the skb
+> + * @nc_packet: structure containing the packet to the skb can be coded w=
+ith
+> + * @neigh_node: next hop to forward packet to
+> + *
+> + * Returns true if both packets are consumed, false otherwise.
+> + */
+> +static bool batadv_nc_code_packets(struct batadv_priv *bat_priv,
+> +				   struct sk_buff *skb,
+> +				   struct ethhdr *ethhdr,
+> +				   struct batadv_nc_packet *nc_packet,
+> +				   struct batadv_neigh_node *neigh_node)
+> +{
+> +	const int unicast_size =3D sizeof(struct batadv_unicast_packet);
+> +	const int coded_size =3D sizeof(struct batadv_coded_packet);
+> +	const int header_add =3D sizeof(struct batadv_coded_packet) -
+> +			       sizeof(struct batadv_unicast_packet);
+
+we just have a discussion about assignment over multiple lines like this. It
+seems that David doesn't like it that much..please refactor it so that you =
+don't
+have a two line assignment.
+ +
 
 [...]
 
-> +static bool batadv_nc_to_purge_nc_path_coding(struct batadv_priv *bat_pr=
-iv,
-> +					      struct batadv_nc_path *nc_path)
+> +	/* Make room for the larger coded_packet header. */
+> +	if (skb_cow(skb_dest, header_add) < 0)
+> +		goto out;
+> +
+
+what's the purpose of this cow()?
+
+
+> +	if (skb_linearize(skb_dest) < 0 || skb_linearize(skb_src) < 0)
+> +		goto out;
+> +
+> +	skb_push(skb_dest, header_add);
+> +
+> +	coded_packet =3D (struct batadv_coded_packet *)skb_dest->data;
+> +	skb_reset_mac_header(skb_dest);
+> +
+> +	coded_packet->header.packet_type =3D BATADV_CODED;
+> +	coded_packet->header.version =3D BATADV_COMPAT_VERSION;
+> +	coded_packet->header.ttl =3D packet1->header.ttl;
+> +
+> +	/* Info about first unicast packet */
+> +	memcpy(coded_packet->first_source, first_source, ETH_ALEN);
+> +	memcpy(coded_packet->first_orig_dest, packet1->dest, ETH_ALEN);
+> +	coded_packet->first_crc =3D packet_id1;
+> +	coded_packet->first_ttvn =3D packet1->ttvn;
+> +
+> +	/* Info about second unicast packet */
+> +	memcpy(coded_packet->second_dest, second_dest, ETH_ALEN);
+> +	memcpy(coded_packet->second_source, second_source, ETH_ALEN);
+> +	memcpy(coded_packet->second_orig_dest, packet2->dest, ETH_ALEN);
+> +	coded_packet->second_crc =3D packet_id2;
+> +	coded_packet->second_ttl =3D packet2->header.ttl;
+> +	coded_packet->second_ttvn =3D packet2->ttvn;
+> +	coded_packet->coded_len =3D htons(coding_len);
+> +
+> +	/* This is where the magic happens: Code skb_src into skb_dest */
+> +	batadv_memxor(skb_dest->data + coded_size, skb_src->data + unicast_size,
+> +		      coding_len);
+> +
+> +	/* Update counters accordingly */
+> +	if (BATADV_SKB_CB(skb_src)->decoded &&
+> +	    BATADV_SKB_CB(skb_dest)->decoded) {
+> +		/* Both packets are recoded */
+> +		count =3D skb_src->len + ETH_HLEN;
+> +		count +=3D skb_dest->len + ETH_HLEN;
+> +		batadv_add_counter(bat_priv, BATADV_CNT_NC_RECODE, 2);
+> +		batadv_add_counter(bat_priv, BATADV_CNT_NC_RECODE_BYTES, count);
+> +	} else if (!BATADV_SKB_CB(skb_src)->decoded &&
+> +		   !BATADV_SKB_CB(skb_dest)->decoded) {
+> +		/* Both packets are newly coded */
+> +		count =3D skb_src->len + ETH_HLEN;
+> +		count +=3D skb_dest->len + ETH_HLEN;
+> +		batadv_add_counter(bat_priv, BATADV_CNT_NC_CODE, 2);
+> +		batadv_add_counter(bat_priv, BATADV_CNT_NC_CODE_BYTES, count);
+> +	} else if (BATADV_SKB_CB(skb_src)->decoded &&
+> +		   !BATADV_SKB_CB(skb_dest)->decoded) {
+> +		/* skb_src recoded and skb_dest is newly coded */
+> +		batadv_inc_counter(bat_priv, BATADV_CNT_NC_RECODE);
+> +		batadv_add_counter(bat_priv, BATADV_CNT_NC_RECODE_BYTES,
+> +				   skb_src->len + ETH_HLEN);
+> +		batadv_inc_counter(bat_priv, BATADV_CNT_NC_CODE);
+> +		batadv_add_counter(bat_priv, BATADV_CNT_NC_CODE_BYTES,
+> +				   skb_dest->len + ETH_HLEN);
+> +	} else if (!BATADV_SKB_CB(skb_src)->decoded &&
+> +		   BATADV_SKB_CB(skb_dest)->decoded) {
+> +		/* skb_src is newly coded and skb_dest is recoded */
+> +		batadv_inc_counter(bat_priv, BATADV_CNT_NC_CODE);
+> +		batadv_add_counter(bat_priv, BATADV_CNT_NC_CODE_BYTES,
+> +				   skb_src->len + ETH_HLEN);
+> +		batadv_inc_counter(bat_priv, BATADV_CNT_NC_RECODE);
+> +		batadv_add_counter(bat_priv, BATADV_CNT_NC_RECODE_BYTES,
+> +				   skb_dest->len + ETH_HLEN);
+> +	}
+> +
+> +	/* skb_dest might be the one from nc_packet, so free only skb_src */
+
+might be? what if it is not? or it IS always so?
+
+> +	kfree_skb(skb_src);
+> +	nc_packet->skb =3D NULL;
+> +	batadv_nc_packet_free(nc_packet);
+> +
+> +	/* Send the coded packet and return true */
+> +	batadv_send_skb_packet(skb_dest, neigh_node->if_incoming, first_dest);
+> +	res =3D true;
+> +out:
+> +	if (router_neigh)
+> +		batadv_neigh_node_free_ref(router_neigh);
+> +	if (router_coding)
+> +		batadv_neigh_node_free_ref(router_coding);
+> +	return res;
+> +}
+> +
+> +/**
+> + * batadv_nc_skb_coding_possible - Whenever we network code a packet we =
+have to
+> + *  check whether we received it in a network coded form. If so, we may =
+not be
+> + *  able to use it for coding because some neighbors may also have recei=
+ved
+> + *  (overheard) the packet in the network coded form without being able =
+to
+> + *  decode it. It is hard to know which of the neighboring nodes was abl=
+e to
+> + *  decode the packet, therefore we can only re-code the packet if the s=
+ource
+> + *  of the previous encoded packet is involved. Since the source encoded=
+ the
+> + *  packet we can be certain it has all necessary decode information.
+
+Here I would suggest the same as the other description (in the other patch).
+Move the core of the description below and leave here just the flavour, in =
+order
+to immediately grasp what this function is about, but without entering the
+details.
+
+> + * @skb: data skb to forward
+> + * @dst: destination mac address of the other skb to code with
+> + * @src: source mac address of skb
+> + *
+> + * Returns true if coding of a decoded packet is allowed.
+> + */
+> +static bool batadv_nc_skb_coding_possible(struct sk_buff *skb,
+> +						 uint8_t *dst,
+> +						 uint8_t *src)
 > +{
-> +	if (atomic_read(&bat_priv->mesh_state) !=3D BATADV_MESH_ACTIVE)
+> +	if (BATADV_SKB_CB(skb)->decoded && !batadv_compare_eth(dst, src))
+> +		return false;
+> +	else
+> +		return true;
+> +}
+> +
+
+[...]
+
+> +/**
+> + * batadv_nc_skb_dst_search - Loops through list of neighboring nodes th=
+e next
+> + *  hop has a good connection to (receives OGMs with a sufficient qualit=
+y). We
+> + *  need to find a neighbor of our next hop that potentially sent a pack=
+et which
+> + *  our next hop also received (overheard) and has stored for later deco=
+ding.
+
+ehm.. :-)
+
+> + * @skb: data skb to forward
+> + * @neigh_node: next hop to forward packet to
+> + * @ethhdr: pointer to the ethernet header inside the skb
+> + *
+> + * Returns true if the skb was consumed (encoded packet sent) or false o=
+therwise
+> + */
+> +static bool batadv_nc_skb_dst_search(struct sk_buff *skb,
+> +				     struct batadv_neigh_node *neigh_node,
+> +				     struct ethhdr *ethhdr)
+> +{
+> +	struct net_device *netdev =3D neigh_node->if_incoming->soft_iface;
+> +	struct batadv_priv *bat_priv =3D netdev_priv(netdev);
+> +	struct batadv_orig_node *orig_node =3D neigh_node->orig_node;
+> +	struct batadv_nc_node *nc_node;
+> +	struct batadv_nc_packet *nc_packet =3D NULL;
+> +
+> +	rcu_read_lock();
+> +	list_for_each_entry_rcu(nc_node, &orig_node->in_coding_list, list) {
+> +		/* Search for coding opportunity with this in_nc_node */
+> +		nc_packet =3D batadv_nc_skb_src_search(bat_priv, skb,
+> +						     neigh_node->addr,
+> +						     ethhdr->h_source, nc_node);
+> +
+> +		/* Opportunity was found, so stop searching */
+> +		if (nc_packet)
+> +			break;
+> +	}
+> +	rcu_read_unlock();
+> +
+> +	if (!nc_packet)
+> +		return false;
+> +
+> +	/* Code and send packets */
+> +	if (batadv_nc_code_packets(bat_priv, skb, ethhdr, nc_packet,
+> +				   neigh_node))
 > +		return true;
 > +
-> +	/* purge the path when no packets has been added for 10 times the
-> +	 * max_fwd_delay time
+> +	/* out of mem ? Coding failed - we have to free the buffered packet
+> +	 * to avoid memleaks. The skb passed as argument will be dealt with
+> +	 * by the calling function.
 > +	 */
-> +	return batadv_has_timed_out(nc_path->last_valid,
-> +				    bat_priv->nc.max_fwd_delay*10);
-
-operands should be separated from the operator               ^^^
-
-
-[...]
-
-> +			/* purging an non-empty nc_path should never happen and
-> +			 * leaks memory, so warn about it
-> +			 */
-> +			if (!unlikely(list_empty(&nc_path->packet_list))) {
-> +				net_ratelimited_function(printk,
-> +							 KERN_WARNING
-> +							 "Skipping free of non-empty nc_path (%pM -> %pM)!\n",
-> +							 nc_path->prev_hop,
-> +							 nc_path->next_hop);
-
-I don't have a clear overview of the whole thing, so this comment might be
-wrong: here you state that if this condition occurs we are going to leak me=
-mory,
-so why not freeing all the packets in the list here?
-If this is not really possible and this situation is a real "bug" (meaning =
-the
-code should never enter this if-loop) then I think it is worth a WARN_ON().
-
-
-> +/**
-> + * batadv_nc_hash_compare - comparing function used in the network codin=
-g hash
-> + *  tables
-> + * @node: node in the local table
-> + * @data2: second object to compare the node to
-> + *
-> + * Returns 1 if the two entry are the same, 0 otherwise
-> + */
-> +static int batadv_nc_hash_compare(const struct hlist_node *node,
-> +				  const void *data2)
-> +{
-> +	const struct batadv_nc_path *nc_path1, *nc_path2;
-> +
-> +	nc_path1 =3D container_of(node, struct batadv_nc_path, hash_entry);
-> +	nc_path2 =3D data2;
-> +
-> +	/* Return true if the two keys are identical */
-
-you are returning 1/0, not true/false
-
-[...]
-
-> +/**
-> + * batadv_nc_fwd_flush - Checks whether the given nc packet has hit its =
-forward
-> + *  timeout. If so, the packet is no longer delayed, immediately sent an=
-d the
-> + *  entry deleted from the queue. Has to be called with the appropriate =
-locks.
-
-This is supposed to be a short description (if needed it can span multiple
-lines, but I would suggest to keep it simple). You can move big part of the=
- description
-(don't remove it! It is very useful) below, together with the rest of the l=
-ong
-description (yes, the one
-below the args is the long description; it is not supposed to contain the
-returns value only)
-
-> + * @bat_priv: the bat priv with all the soft interface information
-> + * @nc_path: the nc path the packet belongs to
-> + * @nc_packet: the nc packet to be checked
-> + *
-> + * Returns false as soon as the entry in the fifo queue has not been tim=
-ed out
-> + * yet and true otherwise.
-> + */
-> +static bool batadv_nc_fwd_flush(struct batadv_priv *bat_priv,
-> +				struct batadv_nc_path *nc_path,
-> +				struct batadv_nc_packet *nc_packet)
-> +{
-
-[...]
-
-> +/**
-> + * batadv_nc_process_nc_paths - traverse given nc packet pool and
-> + * @bat_priv: the bat priv with all the soft interface information
-> + * @hash: to be processed hash table
-> + * process_fn: Function called to process given nc packet. Should return=
- true
-> + *	       to encourage this function to proceed with the next packet.
-> + *	       Otherwise the rest of the current queue is skipped.
-
-missing @ and please align the second/third line right below the beginning =
-of
-the first (refer to Documentation/kernel-doc-nano-HOWTO.txt for more detail=
-s)
-
-> + */
-> +static void
-> +batadv_nc_process_nc_paths(struct batadv_priv *bat_priv,
-> +			   struct batadv_hashtable *hash,
-> +			   bool (*process_fn)(struct batadv_priv *,
-> +					      struct batadv_nc_path *,
-> +					      struct batadv_nc_packet *))
-> +{
-> +	struct hlist_node *node;
-> +	struct hlist_head *head;
-> +	spinlock_t *packet_list_lock; /* Protects lists in hash table */
-> +	struct batadv_nc_packet *nc_packet, *nc_packet_tmp;
-> +	struct batadv_nc_path *nc_path;
-> +	bool ret;
-> +	int i;
-> +
-> +	if (!hash)
-> +		return;
-> +
-> +	/* Loop hash table bins */
-> +	for (i =3D 0; i < hash->size; i++) {
-> +		head =3D &hash->table[i];
-> +
-> +		/* Loop coding paths */
-> +		rcu_read_lock();
-> +		hlist_for_each_entry_rcu(nc_path, node, head, hash_entry) {
-> +			packet_list_lock =3D &nc_path->packet_list_lock;
-> +
-
-Please remove this blank line right after the opening bracket.
-
-> +			/* Loop packets */
-> +			spin_lock_bh(packet_list_lock);
-> +			list_for_each_entry_safe(nc_packet, nc_packet_tmp,
-> +						 &nc_path->packet_list, list) {
-> +
-
-same here
-
-> +				ret =3D process_fn(bat_priv, nc_path, nc_packet);
-> +				if (!ret)
-> +					break;
-> +			}
-> +			spin_unlock_bh(packet_list_lock);
-> +		}
-> +		rcu_read_unlock();
-> +	}
+> +	batadv_nc_send_packet(nc_packet);
+> +	return false;
 > +}
-
-[...]
-
-> =20
->  /**
-> -<<<<<<< HEAD
-> -=3D=3D=3D=3D=3D=3D=3D
-
-mh..interesting ;-)
-
-[...]
-
-> +
-> +	/* Add nc_path to hash table */
-> +	hash_added =3D batadv_hash_add(hash, batadv_nc_hash_compare,
-> +				     batadv_nc_hash_choose,
-> +				     (void *)&nc_path_key,
-
-you don't need to cast to (void *)
-
+>=20
 
 
 Cheers,
-
 
 --=20
 Antonio Quartulli
@@ -272,25 +336,25 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---m1UC1K4AOz1Ywdkx
+--GdbWtwDHkcXqP16f
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBAgAGBQJQuWWLAAoJEADl0hg6qKeO8xMQAKIATCaDmg96r2ta0C+2smGZ
-r6eL9kIjapBwsVo2qhNWjwsPlD748Ef+ly1c4GoZ14B+kfD4hKEeMVlupcbQQOrA
-eaL0TZjHG9U8etZn1s6T9ZEG3HrrKfEFqyKT1Nm4RqHcHFwuBHs2ynQc2JFqqa1Y
-pFQ/7NhQm06Bn2vppfTiyn8/mBOK8hKwSIaiJcAwOnr/wTW7L7iOUB06G+Er0vFj
-3dr4B1v7qkE+zAGnoiWgl50IaML/c3XwIUMP1XIfwKMXeembD667gaUkytJeZTm2
-S8cFGa4YFl2KMiu1/GkcMzJtN37c1okuNaaY5NTbpAhDzSq/vPtVBsMiIj26puh5
-FDaG1aTAc3woYZQX6vN2sipzy3agO0P87Qa8GSrSTVopenZDbq5O15l06ndzeR/B
-rEfQzzr9zQKqqcr24xddqIGJ0AHsONLESd+1Ds+8aiF7y78XQn0iUaDQoeZmInB/
-kPhuIUHWKoxG3qq/EZxhzJY/fAWyK9llLDCNtusxMswlvkPXEd8r8hj0CzgWFMgR
-COOvNnLZnHHrrr7mKf5K4KnDU5tGe6/ooVQ/yGXoVQCoR9oGhd+UUULmnDNg4aWP
-UMf85Cuyy3bMh+uB8zsjabOe0i3tlqi8aVFMKlsDS0Q/s+Cs8yDBB0/BuZ7VoN/x
-Ldr0FJ+sq7zacxb1i2hp
-=Tv2o
+iQIcBAEBAgAGBQJQuWoyAAoJEADl0hg6qKeOcvoQAJ+HKPbKULt6e5/VazaiNVMk
+CVl0Dp7K2xJmNFTeBDI3xTz6or3Brtb5JNYWvkDwuri7up81I5KlxJ1b2APoqCTi
+aRWAIFtf6hzblNViIjXbCWsb7DugHYXuU3BMhuA/80Ia4VWSScL4fiWG3HHDsyoC
+4kNKV+AnsfODa30QFMsCB+8fEc4Y+eZupUWRbsIvaahOJ0ZfmwuobOAIf1yQ6HFP
+eEfBfZhGPbPqBGEyoDS+XJkv8DoatvzKT8Uv8S2vWZSl5Am4uZiZTxDEFYoSWIyq
+Xdo4H0Co3cXKiG9ga2fBRnoIynbj24xHV40clZe7+Ij7herLVLkzZh0wWv4V/FBa
+EZmNGHoni/seHRutdk2UlNUvs7fkF7IS5dAPwRi++ii80fwfI1RicWTwWTQz7Ic4
+BczL99MEhZGBDhDoY4UZqV1Twkeit2qEQ5W+TFK54yPf3vFVgzqz1NObD/2XOXz4
+G/1nXalOsmR8g+WIXPuhhY3hMKWvsAC1EVL8hPTkwnBQLKBSvr7oyAx8qEw4Wb0y
+sQK5x2eB1vv+vz8zf4Hiyx8BGYq9dbGYyuVlhK+g8CPuwLopdN/nXFPJk+VL1nLf
+OHV9S3aL6f73D7wTqRtqXAeGN/sV+/uIk8vGQN0b0xUv+EVKNsaINsxGCMRPwkUR
+i9GPWHzeRpbdxWpvaUiW
+=pZzU
 -----END PGP SIGNATURE-----
 
---m1UC1K4AOz1Ywdkx--
+--GdbWtwDHkcXqP16f--
