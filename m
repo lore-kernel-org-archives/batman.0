@@ -1,19 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 3 Dec 2012 21:09:06 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121203200906.GJ27828@ritirata.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 03 Dec 2012 21:50:16 +0100
+Message-ID: <2405524.vnLJteJr23@sven-laptop.home.narfation.org>
+In-Reply-To: <20121203200906.GJ27828@ritirata.org>
 References: <1354382991-31350-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <1354386972.20109.523.camel@edumazet-glaptop>
- <10264267.HX5FJDguj3@sven-laptop.home.narfation.org>
- <1354391074.20109.527.camel@edumazet-glaptop>
- <20121201200153.GA1002@pandem0nium>
+ <20121201200153.GA1002@pandem0nium> <20121203200906.GJ27828@ritirata.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="16qp2B0xu0fRvRD7"
-Content-Disposition: inline
-In-Reply-To: <20121201200153.GA1002@pandem0nium>
+Content-Type: multipart/signed; boundary="nextPart1669944.gnPz9kdrbm";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH] net: fix possible deadlocks in
- rtnl_trylock/unlock
+	rtnl_trylock/unlock
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,109 +22,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, davem@davemloft.net
+To: Antonio Quartulli <ordex@autistici.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, davem@davemloft.net
 
 
---16qp2B0xu0fRvRD7
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--nextPart1669944.gnPz9kdrbm
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-On Sat, Dec 01, 2012 at 09:01:53PM +0100, Simon Wunderlich wrote:
-> On Sat, Dec 01, 2012 at 11:44:34AM -0800, Eric Dumazet wrote:
-> > On Sat, 2012-12-01 at 20:04 +0100, Sven Eckelmann wrote:
-> > > On Saturday 01 December 2012 10:36:12 Eric Dumazet wrote:
-> > > =20
-> > > > > diff --git a/net/bridge/br_sysfs_br.c b/net/bridge/br_sysfs_br.c
-> > > > > index c5c0593..c122782 100644
-> > > > > --- a/net/bridge/br_sysfs_br.c
-> > > > > +++ b/net/bridge/br_sysfs_br.c
-> > > > > @@ -142,7 +142,7 @@ static ssize_t store_stp_state(struct device =
-*d,
-> > > > >=20
-> > > > >  	if (!rtnl_trylock())
-> > > > >  =09
-> > > > >  		return restart_syscall();
-> > > > >  =09
-> > > > >  	br_stp_set_enabled(br, val);
-> > > > >=20
-> > > > > -	rtnl_unlock();
-> > > > > +	__rtnl_unlock();
-> > > > >=20
-> > > > >  	return len;
-> > > > > =20
-> > > > >  }
-> > > >=20
-> > > > I have no idea of why you believe there is a problem here.
-> > > >=20
-> > > > Could you explain how net_todo_list could be not empty ?
-> > > >=20
-> > > > As long as no device is unregistered between
-> > > > rtnl_trylock()/rtnl_unlock(), there is no possible deadlock.
-> > >=20
-> > > I am not sure what "here" means for your. At least batman-adv tries t=
-o=20
-> > > unregister a device -> problem [1]. I will not make any judgements ab=
-out the=20
-> > > other uses in the kernel/other parts patched by Simon.
-> > >=20
-> >=20
-> > I was reacting to the change in net/bridge/br_sysfs_br.c
-> >=20
-> > rtnl_trylock() could set a boolean flag to explicitly WARN_ON()
-> > in case we try to unregister a device.
->=20
-> Well, I'm not sure if this can happen in the bridge code, but from lookin=
-g at the
-> code it doesn't appear to be impossible. It would be better to be sure th=
-at it can't
-> deadlock IMHO.
->=20
-> (Although doing unlock/lock/unlock in an unlock function is also a little=
- "uncommon").
+On Monday 03 December 2012 21:09:06 Antonio Quartulli wrote:
+> But still we have the problem in batman-adv (as Sven pointed out in a
+> previous email) that tries to unregister a device in that "critical
+> window".
+> 
+> Exporting __rtnl_unlock() would solve the issue in this case.
+> 
+> If you think the bridge code should not end up in such situation, what if
+> Simon resends the patch with only the __rtnl_unlock() exportation and the
+> change in batman-adv?
 
-But still we have the problem in batman-adv (as Sven pointed out in a previ=
-ous
-email) that tries to unregister a device in that "critical window".
+I personally have big doubts about the removal of the second half of the 
+unregister. Doesn't sound like the best idea. This would result in side 
+effects... one of them for example would be the possible deadlock scenario 
+moved to the other users of rtnl_trylock which don't unregister a device 
+inside their critical section.... so either you do it always this way when 
+using rtnl_trylock or it will break. I don't want to imagine other problems 
+caused by this change.
 
-Exporting __rtnl_unlock() would solve the issue in this case.
-
-If you think the bridge code should not end up in such situation, what if S=
-imon
-resends the patch with only the __rtnl_unlock() exportation and the change =
-in=20
-batman-adv?
-
-
-Cheers,
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---16qp2B0xu0fRvRD7
-Content-Type: application/pgp-signature
+Kind regards,
+	Sven
+--nextPart1669944.gnPz9kdrbm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBAgAGBQJQvQbiAAoJEADl0hg6qKeOn7YP/RvJOFCkQxhoo36LWrLeBLYE
-5Ok0V2i893uyYQWKiobjlJm3SMxsfLRx6orP4z2joST0L2ucH2YPerYnkOD4ds8+
-WPkIcX8lTABaAtjrOqiD+bgzAB3hiDEyiktA+jVVnLR5TIMVIPBWzg5HvfYCtQKv
-GTkSf0sZA5RxbvOTB/gco+kVWBKnj1YnoPr3jpvGSCIocuabYHBG+sAHhiKUsfxC
-pPrQ6S05bjiF6sS2Z07pGdi47x1O7kop5mfX1ciyEeqR4sIC53rx0+lXE5JZ2WU/
-phwqjIDV+o4IOIhRyhbNYWj7rCn5jlxwtZea2tV6YJPpiLlMu6M6e/a/lRS13Jqa
-MdFAsABaK+OxIX+Ep5/UfHN7G4LhHxrx5WK3oFs7uA7rVxvNz/1czs6qdzjlHsjR
-DilROiMuQDM2OzMAEYqJkF4OVW0zLKSulRHDjFT+B/SZQ+1UA+rN9OwWjV6EClzR
-lHdYKzOEWXDJoBMtYj/TgLCV6F41uiw9fvqvNwNZOJZgnljPsCt12LNRzC89DnEg
-7866CkgcfOeR/E6HcVlLkDDzqjMHsFXA4Zlv9cSOo2vx4ZROsT477YNEfXkLmZ4S
-NReBali6P6VuP8J5GerDnsivOCVPGceD9scbN+2INOgZHrpArZYFvpoPAsRjkyfY
-t0NC5kxF/Lyr2xAeQzB5
-=YSuu
+iQIcBAABCgAGBQJQvRCIAAoJEF2HCgfBJntGuoIQANMQ1t6a4QOtTQaOtunLmYGT
+aEBfABjiF3m2ET3oScdgtH9cueNcxVTtSC54UAgCtGAKHVyNDqrAun9q3NRBIOjg
+CUsTSkKc8h4syjfTVb8E6dhJvOF+Gj2gHhXWcairGc9OciSZEQfI2Iigu4g97ybo
+UtpgfbLaym0gmLjMtGhetPYnQp9DVEhT27ljN3zlZTzoJQVwDVrF3+neW3a4ATx2
+fHZB4eUWXs13DKh3fTv99D/ihfhdyyW3+KD9P0//qbIrNRONBEpkuvB+dxOPHzYw
+hH39nzQtOwFOUob1iLwlR3UiyTWSfIn5nbZiCP7GCkSE+1I9KxyyfJN0WmJoQFFR
+RGauCQk/1jOrxbzbVMQNEfvydeSQEmLy2cecsA3ZwXFo1puBucQahlMV+Ycg9Y58
+aPqPbPuIeNMeYI4fserzxFIiqdrrJIn6fiVed0c4cICLbZnkJM2hVddkwcFjQxRu
+DUBn//IKmpUaDY3SKXnjspThEFZS4xvDGfyz/MiM4lQBM4i4QaEOhl7bSc203K5x
+ugmMP0HV47lUC0xGnGwSSu3UcEtIfGZlc5OqrwmPftFAjnW9iJlAnLJqFyReHcxH
+uQpahbhhsDFMAc1XytY8AH08ijUjwVhBq8Ekhe6XMuxTpYAZP860ngP5dj1fbwa6
+vLgQDXmeRgGm4m+dba/o
+=52EV
 -----END PGP SIGNATURE-----
 
---16qp2B0xu0fRvRD7--
+--nextPart1669944.gnPz9kdrbm--
+
