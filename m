@@ -1,14 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 04 Dec 2012 15:51:55 +0100
-Message-ID: <2538946.bxqpERrOoj@bentobox>
-In-Reply-To: <50A15E1B.1010001@oracle.com>
-References: <50A15E1B.1010001@oracle.com>
+Date: Tue, 04 Dec 2012 22:50:08 +0100
+Message-ID: <1371478.oVHDQkQ7OX@sven-desktop.home.narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1956917.Spt0yMSqin";
+Content-Type: multipart/signed; boundary="nextPart5600896.nasFKpPoNi";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] net, batman: lockdep circular dependency warning
+Content-Transfer-Encoding: 7Bit
+Subject: [B.A.T.M.A.N.] RFC: Removing one indirection layer for patches
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,182 +18,125 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
-Cc: Sasha Levin <sasha.levin@oracle.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart1956917.Spt0yMSqin
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart5600896.nasFKpPoNi
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
 Hi,
 
-thanks for your report. It seems nobody else wanted to give an answer..=
-. so I=20
-try to give a small overview.
+I am here to think loud about the batman-adv way of dealing with patches. I 
+think everybody knows how it works right now [1]. Patches will be accepted by 
+Marek and applied on master (we ignore some exceptions for now). From time to 
+time a new kernel is released, this is the time when next is used to create a 
+new release which is more or less the stuff also in the released^W"next to be 
+released" kernel. Now all the stuff in master is merged into next and Antonio 
+will use the stuff in next to create pull requests for David S. Miller. In 
+case he accepts it in net-next (this isn't as easy as it sounds), this stuff 
+will be part of the next+1 kernel.
 
-On Monday 12 November 2012 15:37:47 Sasha Levin wrote:
-> Hi all,
->=20
-> While fuzzing with trinity inside a KVM tools (lkvm) guest running la=
-test
-> -next kernel, I've stumbled on the following:
->=20
-> [ 1002.969392] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> [ 1002.971639] [ INFO: possible circular locking dependency detected =
-]
-> [ 1002.975805] 3.7.0-rc5-next-20121112-sasha-00018-g2f4ce0e #127 Tain=
-ted: G=20
->       W [ 1002.983691]
-> ------------------------------------------------------- [ 1002.983691=
-]
-> trinity-child18/8149 is trying to acquire lock:
-> [ 1002.983691]  (s_active#313){++++.+}, at: [<ffffffff812f9941>]
-> sysfs_addrm_finish+0x31/0x60 [ 1002.983691]
-> [ 1002.983691] but task is already holding lock:
-> [ 1002.983691]  (rtnl_mutex){+.+.+.}, at: [<ffffffff834fcc62>]
-> rtnl_lock+0x12/0x20 [ 1002.983691]
-> [ 1002.983691] which lock already depends on the new lock.
+This concept of "let everything wait in master until it is smells funny" 
+worked perfectly in the past and helped a lot to organize some things. But it 
+seems more and more problematic to continue to work with it because David S. 
+Miller isn't the most easy person and therefore a lot of things got pushed 
+back or got rejected.
 
-It is known that batman-adv has a problem with the attaching/detaching =
-of=20
-interfaces over this sysfs. The cause of this problem is related to the=
- fact=20
-that batman-adv not only creates its own net_devices, but also unregist=
-ers=20
-net_devices. This unregister will add a new element in the net_todo_lis=
-t. This=20
-will cause a rtnl_lock when it calls netdev_wait_allrefs (there are som=
-e=20
-condition, but we just ignore them for now). So the whole exercise of u=
-sing=20
-rtnl_trylock was useless.
+So, what happens when something gets rejected or has to be reworked? Yes, some 
+people have to run around and do a lot of magic. These things will end up in 
+next (because this is were Antonio is working when he sends patches to David) 
+and all the new stuff in master has to be rebased later on top of the new 
+things in next [did I just loose most of my audience or is this snoring coming 
+out of my PC?].
 
-This extra rtnl_lock can cause a deadlock as you found out because it i=
-s=20
-activated through a sysfs file and therefore the s_active mutex is lock=
-ed (we=20
-have the dependency s_active -> rtnl_mutex, but other users have rtnl_m=
-utex ->=20
-s_active).
+To make it short: An extra release cycle waiting time for feature patches is 
+added and creates an extra burden for the involved maintainers because they 
+have to rebase/revert/move/... patches when something unexpected happens (or 
+we can say: "when David happens"). I will just remind everyone of the DAT fun.
 
-So, what to do? There are different possibilities. We have to keep in m=
-ind=20
-that there is a patchset (not yet accepted by the batman-adv maintainer=
-s)=20
-which allows to use `ip link` or compatible tools to create/destroy bat=
-man-adv=20
-devices and attach/detach other devices.
+The big question is: Is this extra waiting time for new feature patches really 
+useful in the current situation and does batman-adv benefit from it in a 
+special/irreplaceable way?
 
-1. Remove the sysfs interface to attach/detach net_devices (which
-   destroys/creates batman-adv devices)
+My personal observation is rather negative. Most problems are detected by 
+people using the release and by people checking the patches (on the 
+b.a.t.m.a.n. mailing list and on netdev... this includes "i am really really 
+angry about what you did" David). But of course, my impressions could be 
+slightly biased. I think Antonio can give more insights about it because he 
+has to squash all the stuff together.
 
-   This is not really backward compatible and therefore not really acce=
-ptable.
-   Marek Lindner and Simon Wunderlich are also against forcing users to=
+Here just a calculation for a new feature patch:
+ * Send to b.a.t.m.a.n@lists.open-mesh.org at the beginning of the first month
+ * accepted by Marek in the middle of the first month (had to be resent or so)
+ * will be part of next in the middle of the third month
+ * will be sent to David in the middle of the third month (uh, fast Antonio)
+ * will be send to Linus by David at the the beginning of the fifth month
+ * will be released as a separate kernel module in the middle of the fifth
+   month
+ * will be released in a kernel at the beginning of the seventh month
 
-   require special tools to add/configure batman-adv devices (even batc=
-tl, ip
-   and so on).
+Or it could easily happen that the author of the patches get a late "sry, it 
+will not be accepted" in months three-five by David. Of course, it can also 
+happen after month five, but this is rather unlikely because it already passed 
+the fuzzy Heimdall reincarnation David.
 
-2. Ignore the possible deadlock
+Antonio already showed that he can handle adhoc pull requests very well. 
+Therefore, the idea would be to remove the two month extra waiting time. Here 
+are just two random branch names:
 
-   (sry, fill in your own comment...)
+* next - new patches are excepted here - so it is something like net-next for
+  batman-adv. Antonio will gather some patches and then sent them to David.
+  Davids reaction will come heavy and hard... but the effort for an reaction
+  is reduced.
+* master - bugfix gathering place. So it is like net for batman-adv. Patches
+  will end up really fast in Linus' tree.
 
-3. Add workarounds in the core net code
+But I would still say it is a good idea to create releases from next because 
+more people will test it and therefore it is easier to get bugfixes to Linus' 
+instead through the stable queue. .1 releases from master can still be created 
+when necessary.
 
-   Simon Wunderlich already tried it... I personally think it is not th=
-e right
-   way because it more likely to introduce more bugs by hiding a batman=
--adv
-   bug. And these bugs are a lot harder to find... trust me
+So, why bringing this up now? We currently have 12 Patches in master and Linux 
+3.7 will be released soon. So switching the patch strategy will not break 
+loose hell. And as a nice side effect: it is not too tragic when 
+C.A.T.W.O.M.A.N. is not merged right now.
 
-   For example the usage of __rtnl_unlock will let this bug to appear i=
-n
-   other places which use rtnl_trylock. This is caused by the fact that=
- the
-   todo item isn't processed by __rtnl_unlock (this is the whole idea b=
-y
-   calling it) and therefore the todo work stays in net_todo_list. Anot=
-her
-   user of rtnl_trylock will now call rtnl_unlock and don't expect an e=
-ntry in
-   net_todo_list because he never unregistered a device. So he now has =
-the
-   problem of batman-adv (what an unsocial l=E4derlappen).
+But what would it mean for the next release? Hm, the next release would be 
+created from next, but then we propably have to use some tricks. Right now 
+master is too far ahead because it has the role of next+1. We would have to 
+move the patches to next (simple merge) and reset master to the release.
 
-   And moving everybody using rtnl_trylock to __rtnl_unlock has still t=
-he
-   problem that batman-adv don't immediatelly work on its todo and so
-   maybe causes other side effects because... the notifications weren't=
+Further .0 releases would just be made on next and then master merges the 
+release. Additional fixes in master can "simply" be merged in next.
 
-   sent and therefore the refcount of the unregistered device didn't we=
-nt
-   to zero.
-
-   (I'll leave other side effects as homework for the reader)
-
-4. Don't automatically remove batman-adv devices
-
-   The current approach is to automatically unregister batman-adv devic=
-es
-   when they don't have attached slave-devices (hardif called by batman=
--adv).
-   Removing this will slightly change the behaviour, but the interface =
-can
-   still be removed using `ip link del dev bat0` or a similar tool.
-
-5. Add a workaround solution and promote the use of the standard interf=
-ace
-
-   So, the basic problem is the s_active mutex locked by the sysfs inte=
-rface.
-   An idea is to postpone the part which needs the rtnl_mutex to a late=
-r time.
-   This has obviously the problem that we cannot return an error code t=
-o the
-   caller when the device creation failed in the postponed part. This p=
-roblem
-   can reduced slightly be moving only the unregister part, but now I'l=
-l leave
-   this out for simplicity of the description.
-
-   A possible implementation would create a work_struct and add it to
-   batadv_event_workqueue. This work item has to contain all informatio=
-n given
-   by the user (which hardif, name of the batman-adv device).
-
-   Simon Wunderlich already disliked this workaround, but Antonio Quart=
-ulli
-   tried to encourage an RFC implementation. I've prefered a textual
-   description rather than a patch missing explanations of the other
-   alternatives.
+Let the fight begin...
 
 Kind regards,
-=09Sven
---nextPart1956917.Spt0yMSqin
+	Sven
+
+[1] http://www.open-mesh.org/projects/batman-adv/wiki/Release-todo?version=133
+--nextPart5600896.nasFKpPoNi
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAABCgAGBQJQvg4LAAoJEF2HCgfBJntGCpEQAMiM9DeLIDvj/ZX+cAwzJaju
-JXORRJawtc8yfcxQuBxwzHntC0ker/SiFVDSN3YelWr1Ld9jEWT3ALm3qZu+TYYK
-79sQeTSaGFETv1m6toJkI41D7DWnHop1d24aI133+fBTOmUVDcvVgcIfMCqELkSs
-yZYj3SP5BsG/BaAA2wxkRI7aTguvIIRlN9IqDeRGx3//iYiX48ZIvy6XOm/jUhAI
-rSkMMxR7KTrHEX8g0qBhPo1fJROqtlyTGU/ywpvbwWdvdpl5dbcSWd+KcBhUdbiH
-2hWlwBJLwN20y9NhHWuc4HPl3NAxAVz20oX5cn3HP1PBCB6kECvx/m+uaLA/TpcV
-/GIgufXGrZZFSRvnCZVEbbRYcAnHhgmIJ0HCCIMC5WPudA9EoYwBCUfRWEJeFWLc
-JaIV4R2NYzyZaKfLNI3z5iohx4EMTh5x0ykOOsVJqaGgfrUiToscrtLsd1YSgCoL
-uffHKE5inodMMfb2qp2McgF3CZepGXfWYg/xgot8XhKtGIjrwGEuGhgBTiUmdYNu
-aBwPsDz15F989EN7vb9bWgA3P9n4a6aaGn3Fh4UlKnOnxjVqFI2RhYSpYUjnD4Kj
-YbTuAs6gtMETY7lvoBF3TSkshARkdt3/QcqAN6FtqVaVKi1gTiLrwL32/GQKXFkt
-pBOraxxVYyZQUxokQGUp
-=VZml
+iQIcBAABCgAGBQJQvnAQAAoJEF2HCgfBJntGbYwP+gNA0U5r6oG9c7qst2Y28VC2
+5uZ5sK5XmxPPoGHQsbUK+Sd4wERalCYBdwyqu/UdwWb9d/htn8Ao/oLv93U+2+Cu
+QHmcbcOlJlzXfgRw49JL10k1h6H3eBGjijadC0CQ0eQjG+XCNUYd42CRNzUL3V9s
+NqyH1jj32DmmOpmv2euwz8m2nOCrRQbFVsk+L3+VVhlRhd/P87StMDFDZ0MUy7ny
+etVRh1DI+u9f8RRZqKN+vXdXk7gYdeQtfWkmdaF46TiFNIfEYFTyK3VmYpG14L0J
+oQ8UaBSQF1QXVtXAU4FC4AeJJiz8qEWTrpFmL6ZLVZxOtuEPNYdQGGT9CGeWAE1j
+2JlQvZZWF9PA8BMTWt66payvR1nC7qQfr/Lk49A11aU6e0m2h7UI0cbnVga5ditH
+rmg+Rxzy0mC6tNCb3EvPTdGjcRqpkcOITfqqW3aHYwCl1GepVwVYWbDYw6Yo6D/H
+VqdJWptheedidUs0+LgoZhkxRQXIdQPKXvwfdKrE7zwk8hc/+li15gKAWTVjlmEc
+Q21KMHkAWDFlBQgHlCId2DPpklyUS3dEUn2BUaP0nbw3fFIV9JLANskWmmGCB+rV
+gEkWmxDyx0LTajcobmXpsRJyHFGK9/Qr+PPyleJYhSmAtZwnK7vQc59uWWLEjStn
+ID1IvkWBE6yrHjVkuhr0
+=H1uB
 -----END PGP SIGNATURE-----
 
---nextPart1956917.Spt0yMSqin--
+--nextPart5600896.nasFKpPoNi--
 
