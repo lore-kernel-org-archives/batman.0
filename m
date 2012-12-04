@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 04 Dec 2012 22:50:08 +0100
-Message-ID: <1371478.oVHDQkQ7OX@sven-desktop.home.narfation.org>
+Return-Path: <ordex@autistici.org>
+Date: Wed, 5 Dec 2012 00:01:26 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20121204230126.GZ27828@ritirata.org>
+References: <1371478.oVHDQkQ7OX@sven-desktop.home.narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5600896.nasFKpPoNi";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: [B.A.T.M.A.N.] RFC: Removing one indirection layer for patches
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="oIKd4Ysag+ysiDHn"
+Content-Disposition: inline
+In-Reply-To: <1371478.oVHDQkQ7OX@sven-desktop.home.narfation.org>
+Subject: Re: [B.A.T.M.A.N.] RFC: Removing one indirection layer for patches
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,125 +20,192 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart5600896.nasFKpPoNi
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--oIKd4Ysag+ysiDHn
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hello Sven, list,
 
-I am here to think loud about the batman-adv way of dealing with patches. I 
-think everybody knows how it works right now [1]. Patches will be accepted by 
-Marek and applied on master (we ignore some exceptions for now). From time to 
-time a new kernel is released, this is the time when next is used to create a 
-new release which is more or less the stuff also in the released^W"next to be 
-released" kernel. Now all the stuff in master is merged into next and Antonio 
-will use the stuff in next to create pull requests for David S. Miller. In 
-case he accepts it in net-next (this isn't as easy as it sounds), this stuff 
-will be part of the next+1 kernel.
+Thank you for your effort in writing this email
 
-This concept of "let everything wait in master until it is smells funny" 
-worked perfectly in the past and helped a lot to organize some things. But it 
-seems more and more problematic to continue to work with it because David S. 
-Miller isn't the most easy person and therefore a lot of things got pushed 
-back or got rejected.
+On Tue, Dec 04, 2012 at 10:50:08PM +0100, Sven Eckelmann wrote:
+[...]
+> So, what happens when something gets rejected or has to be reworked? Yes,=
+ some=20
+> people have to run around and do a lot of magic. These things will end up=
+ in=20
+> next (because this is were Antonio is working when he sends patches to Da=
+vid)=20
+> and all the new stuff in master has to be rebased later on top of the new=
+=20
+> things in next [did I just loose most of my audience or is this snoring c=
+oming=20
+> out of my PC?].
+>=20
 
-So, what happens when something gets rejected or has to be reworked? Yes, some 
-people have to run around and do a lot of magic. These things will end up in 
-next (because this is were Antonio is working when he sends patches to David) 
-and all the new stuff in master has to be rebased later on top of the new 
-things in next [did I just loose most of my audience or is this snoring coming 
-out of my PC?].
+no, not yet :) maybe your fan is running too much.
 
-To make it short: An extra release cycle waiting time for feature patches is 
-added and creates an extra burden for the involved maintainers because they 
-have to rebase/revert/move/... patches when something unexpected happens (or 
-we can say: "when David happens"). I will just remind everyone of the DAT fun.
+[...]=20
+> The big question is: Is this extra waiting time for new feature patches r=
+eally=20
+> useful in the current situation and does batman-adv benefit from it in a=
+=20
+> special/irreplaceable way?
+>=20
 
-The big question is: Is this extra waiting time for new feature patches really 
-useful in the current situation and does batman-adv benefit from it in a 
-special/irreplaceable way?
+the added value I see in having this extra time is the that we can spend so=
+me
+days in testing it, running it on nodes and trying to find bugs. But, to be
+honest, I don't know if out there we have people really doing this on a
+daily/weekly basis.
 
-My personal observation is rather negative. Most problems are detected by 
-people using the release and by people checking the patches (on the 
-b.a.t.m.a.n. mailing list and on netdev... this includes "i am really really 
-angry about what you did" David). But of course, my impressions could be 
-slightly biased. I think Antonio can give more insights about it because he 
-has to squash all the stuff together.
+> My personal observation is rather negative. Most problems are detected by=
+=20
+> people using the release and by people checking the patches (on the=20
+> b.a.t.m.a.n. mailing list and on netdev... this includes "i am really rea=
+lly=20
+> angry about what you did" David). But of course, my impressions could be=
+=20
+> slightly biased. I think Antonio can give more insights about it because =
+he=20
+> has to squash all the stuff together.
+>
 
-Here just a calculation for a new feature patch:
- * Send to b.a.t.m.a.n@lists.open-mesh.org at the beginning of the first month
- * accepted by Marek in the middle of the first month (had to be resent or so)
- * will be part of next in the middle of the third month
- * will be sent to David in the middle of the third month (uh, fast Antonio)
- * will be send to Linus by David at the the beginning of the fifth month
- * will be released as a separate kernel module in the middle of the fifth
-   month
- * will be released in a kernel at the beginning of the seventh month
+well, if I got you correctly the problem here is "only" about time: with the
+current method we "wait" more time before sending patches upstream, while in
+your suggestion we will immediately (well we could still wait some days in =
+order
+to let the build tests do their optimum job and double check the code - bec=
+ause
+yes, I re-read each and every patch before sending them to David..strange e=
+h?
+:D).
 
-Or it could easily happen that the author of the patches get a late "sry, it 
-will not be accepted" in months three-five by David. Of course, it can also 
-happen after month five, but this is rather unlikely because it already passed 
-the fuzzy Heimdall reincarnation David.
+So, you would like a mac80211 like process, I think.
 
-Antonio already showed that he can handle adhoc pull requests very well. 
-Therefore, the idea would be to remove the two month extra waiting time. Here 
-are just two random branch names:
+> Here just a calculation for a new feature patch:
+>  * Send to b.a.t.m.a.n@lists.open-mesh.org at the beginning of the first =
+month
+>  * accepted by Marek in the middle of the first month (had to be resent o=
+r so)
+>  * will be part of next in the middle of the third month
+>  * will be sent to David in the middle of the third month (uh, fast Anton=
+io)
+>  * will be send to Linus by David at the the beginning of the fifth month
+>  * will be released as a separate kernel module in the middle of the fifth
+>    month
+>  * will be released in a kernel at the beginning of the seventh month
+>=20
 
-* next - new patches are excepted here - so it is something like net-next for
-  batman-adv. Antonio will gather some patches and then sent them to David.
-  Davids reaction will come heavy and hard... but the effort for an reaction
-  is reduced.
-* master - bugfix gathering place. So it is like net for batman-adv. Patches
-  will end up really fast in Linus' tree.
+you meant weeks here? It sounds like a birth :)
 
-But I would still say it is a good idea to create releases from next because 
-more people will test it and therefore it is easier to get bugfixes to Linus' 
-instead through the stable queue. .1 releases from master can still be created 
-when necessary.
+> Antonio already showed that he can handle adhoc pull requests very well.=
+=20
+> Therefore, the idea would be to remove the two month extra waiting time.=
+=20
 
-So, why bringing this up now? We currently have 12 Patches in master and Linux 
-3.7 will be released soon. So switching the patch strategy will not break 
-loose hell. And as a nice side effect: it is not too tragic when 
-C.A.T.W.O.M.A.N. is not merged right now.
+I hope you still meant weeks here..or am I missing something?
 
-But what would it mean for the next release? Hm, the next release would be 
-created from next, but then we propably have to use some tricks. Right now 
-master is too far ahead because it has the role of next+1. We would have to 
-move the patches to next (simple merge) and reset master to the release.
+> Here=20
+> are just two random branch names:
+>=20
+> * next - new patches are excepted here - so it is something like net-next=
+ for
+>   batman-adv. Antonio will gather some patches and then sent them to Davi=
+d.
+>   Davids reaction will come heavy and hard... but the effort for an react=
+ion
+>   is reduced.
+> * master - bugfix gathering place. So it is like net for batman-adv. Patc=
+hes
+>   will end up really fast in Linus' tree.
+>=20
 
-Further .0 releases would just be made on next and then master merges the 
-release. Additional fixes in master can "simply" be merged in next.
+To be honest I thought the same some time ago, but I think there was a good
+reason to have it like it is now. I exposed my thoughts to Marek (? I can't
+really remember) and he explained me why it was nice to have a pre-incubati=
+on.
 
-Let the fight begin...
+> But I would still say it is a good idea to create releases from next beca=
+use=20
+> more people will test it and therefore it is easier to get bugfixes to Li=
+nus'=20
+> instead through the stable queue. .1 releases from master can still be cr=
+eated=20
+> when necessary.
+>=20
+> So, why bringing this up now? We currently have 12 Patches in master and =
+Linux=20
+> 3.7 will be released soon. So switching the patch strategy will not break=
+=20
+> loose hell. And as a nice side effect: it is not too tragic when=20
+> C.A.T.W.O.M.A.N. is not merged right now.
+>=20
+> But what would it mean for the next release? Hm, the next release would b=
+e=20
+> created from next, but then we propably have to use some tricks. Right no=
+w=20
+> master is too far ahead because it has the role of next+1. We would have =
+to=20
+> move the patches to next (simple merge) and reset master to the release.
+>=20
+> Further .0 releases would just be made on next and then master merges the=
+=20
+> release. Additional fixes in master can "simply" be merged in next.
+>=20
+> Let the fight begin...
 
-Kind regards,
-	Sven
 
-[1] http://www.open-mesh.org/projects/batman-adv/wiki/Release-todo?version=133
---nextPart5600896.nasFKpPoNi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+Ok, as I stated before, this mac80211 approach is fine with me. I like the =
+idea
+of a direct flow that goes to upstream without a waiting time in our
+pre-incubation repository.
+
+However, I'd like to hear about why we have this
+strategy now from the people that decided this (Sven maybe you were involve=
+d in
+the initial decision too?), because if it is such, I think there is an adva=
+ntage
+somewhere. So before losing this advantage just because "now" we think it is
+better way B, I'd rather prefer hear all the other people opinions.
+
+The advantage I see is that, if we make a mistake and we send a fix, we can
+still merge the original patch and fix together before sending it to David.
+I think this give us a not negligible margin of error. But maybe we became =
+good
+enough to get rid of this margin? :)
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--oIKd4Ysag+ysiDHn
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAABCgAGBQJQvnAQAAoJEF2HCgfBJntGbYwP+gNA0U5r6oG9c7qst2Y28VC2
-5uZ5sK5XmxPPoGHQsbUK+Sd4wERalCYBdwyqu/UdwWb9d/htn8Ao/oLv93U+2+Cu
-QHmcbcOlJlzXfgRw49JL10k1h6H3eBGjijadC0CQ0eQjG+XCNUYd42CRNzUL3V9s
-NqyH1jj32DmmOpmv2euwz8m2nOCrRQbFVsk+L3+VVhlRhd/P87StMDFDZ0MUy7ny
-etVRh1DI+u9f8RRZqKN+vXdXk7gYdeQtfWkmdaF46TiFNIfEYFTyK3VmYpG14L0J
-oQ8UaBSQF1QXVtXAU4FC4AeJJiz8qEWTrpFmL6ZLVZxOtuEPNYdQGGT9CGeWAE1j
-2JlQvZZWF9PA8BMTWt66payvR1nC7qQfr/Lk49A11aU6e0m2h7UI0cbnVga5ditH
-rmg+Rxzy0mC6tNCb3EvPTdGjcRqpkcOITfqqW3aHYwCl1GepVwVYWbDYw6Yo6D/H
-VqdJWptheedidUs0+LgoZhkxRQXIdQPKXvwfdKrE7zwk8hc/+li15gKAWTVjlmEc
-Q21KMHkAWDFlBQgHlCId2DPpklyUS3dEUn2BUaP0nbw3fFIV9JLANskWmmGCB+rV
-gEkWmxDyx0LTajcobmXpsRJyHFGK9/Qr+PPyleJYhSmAtZwnK7vQc59uWWLEjStn
-ID1IvkWBE6yrHjVkuhr0
-=H1uB
+iQIcBAEBAgAGBQJQvoDGAAoJEADl0hg6qKeOcH0QAJUgm2VMewumzG6NllJotQub
+vcaHuHs18q02H/BWc7DjN1zKm/VUe3ZDI1piFOwpPrlGN2qg9RVmcX7Z3sK04ekg
+zapB2RT1LeyFSFTkhCROtqFLyp3+PL5mF8K1f68MBeuO5nHOk2okgv2+9WeJdpTr
+Hjc5KulKaIvx4WHD9wRWY51WZJz4AnHnBm1CIR5OFw90IEk4HddkGoOhR7JfytvY
+DI7curoM0qEydGrsTFXD4kGUHB3Fq8oqC4DsZqyrgFz0NwiJIpCEEbxArlUNVhTM
+cYFW/fK9piuB4ErfuXyBXp25KQvFKsJWhZnzQH+NPHPVUCWMq1CPpJqMfQT7mJG5
+Xabpp8J/WxK99soqxZZphkl77UN+IA62v65ZePQjssS45dbKJG7dA/qkopvF2UAE
+/F6xhLenCqseSKDOz9MBiAp7O5UCe7Bq7JF/MVJ2DXyv4g6UE/26hfe4GiSzUGe7
+9pk74Z+L4nCx5o0X+aoqqJDFy52+hUOdKS8rpjM6vbiX8jIq+IdTyCe3SlqY7Qfi
+kkRA4sx5tiKO8WHqpZOakq6u36mxFvSgep5t3HcAIbEGI/1j2oTepm9kCdCrO97C
+wYpFoWHexI558Ambz0wGKZORCv21JoZ15Ovgf/YElQA0LTI+5fTytGN1C8BrDAWx
+Ms2netoc/AZ/IvGfGEg4
+=ZKZe
 -----END PGP SIGNATURE-----
 
---nextPart5600896.nasFKpPoNi--
-
+--oIKd4Ysag+ysiDHn--
