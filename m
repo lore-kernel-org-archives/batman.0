@@ -1,12 +1,14 @@
-Return-Path: <andrew@lunn.ch>
-Date: Wed, 5 Dec 2012 11:35:27 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20121205103527.GC26922@lunn.ch>
+Return-Path: <ordex@autistici.org>
+Date: Wed, 5 Dec 2012 12:06:42 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20121205110642.GD27828@ritirata.org>
 References: <1371478.oVHDQkQ7OX@sven-desktop.home.narfation.org>
+ <20121205103527.GC26922@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="+OcHDfVcPO70+1iC"
 Content-Disposition: inline
-In-Reply-To: <1371478.oVHDQkQ7OX@sven-desktop.home.narfation.org>
+In-Reply-To: <20121205103527.GC26922@lunn.ch>
 Subject: Re: [B.A.T.M.A.N.] RFC: Removing one indirection layer for patches
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,57 +23,91 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Sven
 
-I've been working on Marvell SoC chips for the last few months, mostly
-those used in NAS devices. Maybe a few comments from a different
-corner of the kernel may be useful. But this corner is also quite
-different, so not everything i say bellow may be relevant for BATMAN.
-We are about the same size in terms of number of active developers,
-but our methodology is quite different.
+--+OcHDfVcPO70+1iC
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It seems like the biggest problem is the late feedback from David
-S. Miller, et al, about patches. Getting this feedback earlier in the
-life of a patchset would easy people lives.
+Hi Andrew,
 
-For Marvell work, we post all our patches to the linux arm kernel
-list, where the ARM maintainers will see the patches. All patches go
-there, in all stages of their life, from early RFCs, to patches we
-want the upstream maintainers to take in a following pull request.
-Thus there is the possibility to get early feedback from the upstream
-maintainers and avoid most last minutes surprises.
+I have a few comments on what you wrote:
 
-So maybe it would be good to stop using BATMAN mailing list for
-patches and instead use netdev. Or at least CC: netdev.
+On Wed, Dec 05, 2012 at 11:35:27AM +0100, Andrew Lunn wrote:
+> Hi Sven
 
-We try, but often fail, to send pull requests early. The arm-soc
-maintainers will accept pull requests at any time and queue them up in
-there for-next tree. Sending pull request during -rc2 or -rc3 is not a
-problem and if the maintainer decides to reject it, you have a few
-weeks before -rc6/-rc7 and impending opening of the merge window.
+[...]
 
-We don't have anything like a master tree. Each developers work on his
-own clone of linus's tree, generally on the last -rc tag. We have a
-nominal lead maintainer, who builds trees for pull requests direction
-arm-soc maintainers. This maintainer takes either patches from the
-linux-arm-kernel mailing list, or pull request from other Marvell
-developers, shapes up the tree in the form the arm-soc maintainer
-likes, and sends pull-requests when ready. The tree is then throw
-away.
+> We don't have anything like a master tree.=20
 
-The BATMAN master tree, if i understand correctly, is to allow
-releases for older kernels? Maybe turn the process around? When Linus
-makes a release, pull the mainline code into a branch, add in the
-compat stuff and release a tarball from that? If any stable patch
-touches the batman code, again, import it and make a new tarball.
+Yeah, I think this is exactly Sven's point. In the end, the whole email from
+Sven can be concentrated in the suggestion to think about this direction, i=
+mho.
 
-We also make use of the -rc tags and the around 7 weeks before final
-release for testing. Testing of these releases probably has more value
-than testing of BATMAN master, or for-next, since any other changes in
-the stack are included and issues because of changes outside of BATMAN
-will be found. I've never had problems getting fixes into -rc
-releases.
+>=20
+> The BATMAN master tree, if i understand correctly, is to allow
+> releases for older kernels? Maybe turn the process around? When Linus
+> makes a release, pull the mainline code into a branch, add in the
+> compat stuff and release a tarball from that? If any stable patch
+> touches the batman code, again, import it and make a new tarball.
+>=20
 
-Just some ideas....
+The master branch is used to create the out-of-the-kernel-tree package that=
+ we
+release every now and then (Actually together with each kernel release).
 
-     Andrew
+I think the major advantage here is that, whenever a person sends a patch w=
+hich
+is not going to work on older kernels, he must also send a patch for compat=
+=2Eh/c.
+This would be impossible if the patch was directly aimed to the kernel tree=
+, or,
+to say it in other words, we should each and every time run behind the comm=
+itter
+to ask him to send another patch for compat.
+
+This is my feeling about the master branch/repository. I also asked to do i=
+t the
+other way around, as you are suggesting, in order to also simplify (and red=
+uce
+probability of making mistakes) the process of creating pull requests. But,=
+ in
+the end, we are simply moving complexity from one corner to the other.
+
+However, I think this particular topic (patch against package vs kernel tre=
+e) is
+orthogonal to what Sven is proposing.
+
+
+Thank you for throwing more ideas on the plate :-)
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--+OcHDfVcPO70+1iC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQvyrCAAoJEADl0hg6qKeOFIcP/Ryn7Web2p9w0KDzORPR9rFz
+F9wleQFFA4snRRh8KHExvZmXIG/vvbeF5VBIp5hFVh1iIJ/Nf+2OG7mdQB/OXaR0
+b9icMuFo4aMSEPjvJ3M90mdjPioILf5eVPAWG85C+JpiqqGh0EEsdKuEXIaw+kfU
+mtAn30cBcygD9emP6Tw/dYc9RZKwaJEmxDNNMeM5lqNTFHPZlK0j8ytxHZi3N+0s
+nYTiSRvJWNFFRlnoPfk/ch0l7pBXNAF3/5bQ88lxT4DWCrrBYqj54ZpH3C9QIEz+
+vsT6JIl5zcIs/ljhV7vPpSfSUROXmo11kLDTcqrWdgmj4YerI/tXble9q5H09by4
+SLCnthP46dZYoDxra0xY2q7ixebZz5pGe5IPD5USHgpR6zyJ3x2QbKk8M51pEW7N
+ofV6WelBYN4Bu3PkvNvtmcXZ7Q72HSenwh4cTzxzhlyL2akZULhAfICMWt8yCw/A
+LHzMZwHSQ1xn5jquDW4rZ+eBQ0zstPYPrmp07qv5soYvmUk/8U40tnEidOZtHKML
+X22fEDFDC8vByDWQfDfr8T9qnenqnc1e+XbFGMhgIdNi1dERSU5Lz4tI8M4GkI5t
+F0DCB2qHnbuLrPsatBMQSekV83qBjZ60nWGbKWiUSnwODd8Ybp/MvfiuNQUgjwfm
+Vk2vasprPpB+mrg0OZuu
+=pRCf
+-----END PGP SIGNATURE-----
+
+--+OcHDfVcPO70+1iC--
