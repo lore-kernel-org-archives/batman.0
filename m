@@ -1,11 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 6 Dec 2012 01:40:48 +0800
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 05 Dec 2012 18:50:38 +0100
+Message-ID: <2632840.Oo1cF1BkWq@bentobox>
+In-Reply-To: <201212060140.48732.lindner_marek@yahoo.de>
+References: <201212060140.48732.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201212060140.48732.lindner_marek@yahoo.de>
+Content-Type: multipart/signed; boundary="nextPart3644043.ESSYpIB2NM";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
 Subject: Re: [B.A.T.M.A.N.] RFC: Removing one indirection layer for patches
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -18,41 +20,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 
-Hi,
+--nextPart3644043.ESSYpIB2NM
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-[trimmed long explanation of how things are done today]
+On Thursday 06 December 2012 01:40:48 Marek Lindner wrote:
+> It would be even better if those who
+> believe to know how it all will work out stepped up and took the job of
+> collecting & merging the patches into the "new next". I certainly would not
+> mind.
 
-> Antonio already showed that he can handle adhoc pull requests very well.
-> Therefore, the idea would be to remove the two month extra waiting time.
-> Here are just two random branch names:
-> 
-> * next - new patches are excepted here - so it is something like net-next
-> for batman-adv. Antonio will gather some patches and then sent them to
-> David. Davids reaction will come heavy and hard... but the effort for an
-> reaction is reduced.
-> * master - bugfix gathering place. So it is like net for batman-adv.
-> Patches will end up really fast in Linus' tree.
+I translate: Not with me.
 
-I am a little confused here. Our "next" branch will be the new "master" and 
-the new "master" will be what "maint" is today ?
+Kind regards,
+	Sven
 
-I also don't see the implementation of the new merge policy yet. David can 
-only receive what we merged before but how do we determine what patch to merge 
-when and how ? Up to now there was a simple rule (spawned from your head 
-iirc): Features into master, cleanups into master, fixes for next into next 
-and very critical stuff into maint. How is that supposed to work in the 
-future?
+--nextPart3644043.ESSYpIB2NM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
-One very vocal voice keeps telling me: Just merge everything into the "new 
-next" - the rest will fall into place. No need to worry. 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-However, it would be great if your suggestion could be contemplated by such a 
-merge policy. I don't see it yet. It would be even better if those who believe 
-to know how it all will work out stepped up and took the job of collecting & 
-merging the patches into the "new next". I certainly would not mind.
+iQIcBAABCgAGBQJQv4luAAoJEF2HCgfBJntGB9gP/1/BszpkcuNwsxv13mGUy1oz
+rfmqc+8a+ieDPlluJjSzTy6OXV0q9vWg5Voz/Y4g9AH3TRRAs47bhUMof3TRGY69
+FGnw45UQo1GZmlDux0luCZVhqMKbicEBsU7zFjZz93g/gSTvinDkd7sJB4R9zk7c
++6VuPjaWFbOidnwLAjiFgMrSMRl41DW8lWuvPIVPxmSIqeIvQssXPYysoiDxljwI
+q+/0ESE27mGIGe7wsBfn1/HqzB0Gz1m35GawG9+UAllFPdhxuLQHT4Tp6qjjE2VE
+KygHgZVQTUO1/Y42DzfQweFrJEiq946xKIZGtY98XB2SPH3gL1jIc/ny5WH98Aam
+Rvgyf9yENsDRAIP0HnAjY3R1CXRCzrE/9mWHHqRXFhEyshQYhQ6HOOe+ocuwJwRw
+redHFm7sznM6vFQxcePjK1fsB+Q9u7YYqjymexNjujxxrxpou7vA6rjA67ErhoYi
+QWboGNxCwRgVDr2cR3LBOWCOriVQrHV8g/KQrQ4x/IHDq5FzRUHCBOfmD5E2DDgV
+fwgW34enuMIoarwWgHAWRa8CWWeokYzoflcl1LS6XMNOBtnGmGK3iIDhk3iSUBK3
+GJM6wUJS+2aHhkj18M7y/Upnbn3OWv1NqMl4fjgI8qElTwkjN0RXLr6k/tCieMgD
+g94c66FxNQgdK2pLIj8l
+=SB5b
+-----END PGP SIGNATURE-----
 
-Cheers,
-Marek
+--nextPart3644043.ESSYpIB2NM--
+
