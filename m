@@ -1,15 +1,9 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 11 Dec 2012 23:34:35 +0100
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20121211223435.GA17765@pandem0nium>
-References: <1355263044-13131-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
-Content-Disposition: inline
-In-Reply-To: <1355263044-13131-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: postpone OGM preparation to
- sending time
+Date: Wed, 12 Dec 2012 00:05:05 +0100
+Message-Id: <1355267105-18479-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [RFC] batman-adv: postpone sysfs removal when
+	unregistering
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,68 +15,83 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, sven@narfation.org
 
+When processing the unregister notify for a hard interface, removing
+the sysfs files may lead to a circular deadlock (rtnl mutex <->
+s_active).
 
---8t9RHnE3ZwKMSgU+
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+To overcome this problem, postpone the sysfs removal in a worker.
 
-On Tue, Dec 11, 2012 at 10:57:24PM +0100, Antonio Quartulli wrote:
-> OGMs are currently prepared 1 originator interval in advance then the tim=
-e they
-> are used to be sent. This means that once in the air they carry old infor=
-mation
-> (e.g. TT announcements).
->=20
-> To fix this, postpone the OGM creation to the same time of sending, in th=
-is way
-> the OGM is first created and then immediately sent.
->=20
-> This patch also removes an insane "-2" that was introduced with
-> 4d30670880c84071dba4b220f595e64d6c01d1ba ("batman-adv: accept delayed
-> rebroadcasts to avoid bogus routing under heavy load") in the OGM seqno
-> validation code that was put there to fix a possible heavy loaded scenari=
-o.
-> First that operation shown to be completely not valid and consequently it=
- was
-> creating problem to the new behaviour introduced by this patch
+Reported-by: Sasha Levin <sasha.levin@oracle.com>
+Reported-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+Postponing the sysfs removal for the hardif unregister is easier than
+other alternatives involving deferring. This should bring us to the
+same level to the bridge code, which also messes with sysfs in the
+notifier processing function, and uses rtnl_trylock when called
+from within sysfs.
 
-Actually the -2 was not introduced there but was present (in some form) for=
- a much
-longer time ... something before 2009, didn't trace it to the very end. :)
+As far as I could understand the net/core code, only the unregister
+case is the critical one, so the original bug should hopefully be
+fixed.
 
-The reason for this was:
- * seqno is increased right after scheduling a new (own OGM)
- * the scheduled OGM was waiting one more cycle before beeing finally sent
+Anyway, I might overlook something so I'm sending this as RFC.
+---
+ hard-interface.c |   18 ++++++++++++++++--
+ types.h          |    1 +
+ 2 files changed, 17 insertions(+), 2 deletions(-)
 
-Seems we forgot to document this properly, but removing this one is a good =
-idea. :)
-Your patch thankfully seems to correctly eliminate both reasons for "correc=
-ting" the
-incoming seqno.
+diff --git a/hard-interface.c b/hard-interface.c
+index f1d37cd..075cb27 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -506,6 +506,19 @@ out:
+ 	return NULL;
+ }
+ 
++static void batadv_hardif_remove_interface_finish(struct work_struct *work)
++{
++	struct delayed_work *delayed_work;
++	struct batadv_hard_iface *hard_iface;
++
++	delayed_work = container_of(work, struct delayed_work, work);
++	hard_iface = container_of(delayed_work, struct batadv_hard_iface,
++				  cleanup_work);
++
++	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
++	batadv_hardif_free_ref(hard_iface);
++}
++
+ static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
+ {
+ 	ASSERT_RTNL();
+@@ -518,8 +531,9 @@ static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
+ 		return;
+ 
+ 	hard_iface->if_status = BATADV_IF_TO_BE_REMOVED;
+-	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
+-	batadv_hardif_free_ref(hard_iface);
++	INIT_DELAYED_WORK(&hard_iface->cleanup_work,
++			  batadv_hardif_remove_interface_finish);
++	queue_work(batadv_event_workqueue, &hard_iface->cleanup_work);
+ }
+ 
+ void batadv_hardif_remove_interfaces(void)
+diff --git a/types.h b/types.h
+index 030ce41..6e9746a 100644
+--- a/types.h
++++ b/types.h
+@@ -63,6 +63,7 @@ struct batadv_hard_iface {
+ 	struct net_device *soft_iface;
+ 	struct rcu_head rcu;
+ 	struct batadv_hard_iface_bat_iv bat_iv;
++	struct delayed_work cleanup_work;
+ };
+ 
+ /**
+-- 
+1.7.10.4
 
-I haven't reviewed the rest (don't know if this will stir trouble for the a=
-ggregation),
-but wanted to comment on this history bit. :) Please remove/correct the ref=
-erence if
-you merge or send it again.
-
-Thanks!
-	Simon
-
---8t9RHnE3ZwKMSgU+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAlDHtPsACgkQrzg/fFk7axabpACfbMWuXgnknMDT44Ly+CBSsBqu
-l1gAn3qTPxQPbJ8qJH9jLvZr7fssjQMy
-=ijeF
------END PGP SIGNATURE-----
-
---8t9RHnE3ZwKMSgU+--
