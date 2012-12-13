@@ -1,16 +1,15 @@
 Return-Path: <ordex@autistici.org>
-Date: Thu, 13 Dec 2012 18:57:30 +0100
+Date: Thu, 13 Dec 2012 19:04:17 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121213175730.GD23890@ritirata.org>
-References: <1355267105-18479-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <20121212104159.GA20392@pandem0nium>
+Message-ID: <20121213180417.GE23890@ritirata.org>
+References: <1355263044-13131-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="1sNVjLsmu1MXqwQ/"
+ protocol="application/pgp-signature"; boundary="EXKGNeO8l0xGFBjy"
 Content-Disposition: inline
-In-Reply-To: <20121212104159.GA20392@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: postpone sysfs removal when
- unregistering
+In-Reply-To: <1355263044-13131-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: postpone OGM preparation to
+	sending time
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,120 +21,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: sven@narfation.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---1sNVjLsmu1MXqwQ/
+--EXKGNeO8l0xGFBjy
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Dec 12, 2012 at 11:41:59AM +0100, Simon Wunderlich wrote:
-> This patch needs rework for two reasons:
->  * we still need to defer the softif as well, otherwise we keep the
->    deadlock for the softif
->  * work struct and delayed_work are mixed up here
+On Tue, Dec 11, 2012 at 10:57:24PM +0100, Antonio Quartulli wrote:
+[...]
 
-if you think to the fact that you are using INIT_DELAYED_WORK instead of
-INIT_WORK, then yes, you are right :) I was going to comment on this, but t=
-hen I
-saw you already got the problem ;)
+>  /* when do we schedule a ogm packet to be sent */
+>  static unsigned long batadv_iv_ogm_fwd_send_time(void)
+>  {
+> -	return jiffies + msecs_to_jiffies(random32() % (BATADV_JITTER / 2));
+> +	return jiffies + BATADV_MAX_AGGREGATION_MS +
+> +	       msecs_to_jiffies(random32() % (BATADV_JITTER / 2));
+>  }
 
-Thank for your work Simon!
+I just realise that I cannot add BATADV_MAX_AGGREGATION_MS here directly be=
+cause
+this function is used to compute the forwarding time of OGMs the node recei=
+ved
+and that it has to rebroadcast.
+I'll fix this and post a patch.
 
 Cheers,
-
->=20
-> I'll post a revised version soon.
->=20
-> Cheers,
-> 	Simon
->=20
-> On Wed, Dec 12, 2012 at 12:05:05AM +0100, Simon Wunderlich wrote:
-> > When processing the unregister notify for a hard interface, removing
-> > the sysfs files may lead to a circular deadlock (rtnl mutex <->
-> > s_active).
-> >=20
-> > To overcome this problem, postpone the sysfs removal in a worker.
-> >=20
-> > Reported-by: Sasha Levin <sasha.levin@oracle.com>
-> > Reported-by: Sven Eckelmann <sven@narfation.org>
-> > Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> > ---
-> > Postponing the sysfs removal for the hardif unregister is easier than
-> > other alternatives involving deferring. This should bring us to the
-> > same level to the bridge code, which also messes with sysfs in the
-> > notifier processing function, and uses rtnl_trylock when called
-> > from within sysfs.
-> >=20
-> > As far as I could understand the net/core code, only the unregister
-> > case is the critical one, so the original bug should hopefully be
-> > fixed.
-> >=20
-> > Anyway, I might overlook something so I'm sending this as RFC.
-> > ---
-> >  hard-interface.c |   18 ++++++++++++++++--
-> >  types.h          |    1 +
-> >  2 files changed, 17 insertions(+), 2 deletions(-)
-> >=20
-> > diff --git a/hard-interface.c b/hard-interface.c
-> > index f1d37cd..075cb27 100644
-> > --- a/hard-interface.c
-> > +++ b/hard-interface.c
-> > @@ -506,6 +506,19 @@ out:
-> >  	return NULL;
-> >  }
-> > =20
-> > +static void batadv_hardif_remove_interface_finish(struct work_struct *=
-work)
-> > +{
-> > +	struct delayed_work *delayed_work;
-> > +	struct batadv_hard_iface *hard_iface;
-> > +
-> > +	delayed_work =3D container_of(work, struct delayed_work, work);
-> > +	hard_iface =3D container_of(delayed_work, struct batadv_hard_iface,
-> > +				  cleanup_work);
-> > +
-> > +	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
-> > +	batadv_hardif_free_ref(hard_iface);
-> > +}
-> > +
-> >  static void batadv_hardif_remove_interface(struct batadv_hard_iface *h=
-ard_iface)
-> >  {
-> >  	ASSERT_RTNL();
-> > @@ -518,8 +531,9 @@ static void batadv_hardif_remove_interface(struct b=
-atadv_hard_iface *hard_iface)
-> >  		return;
-> > =20
-> >  	hard_iface->if_status =3D BATADV_IF_TO_BE_REMOVED;
-> > -	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
-> > -	batadv_hardif_free_ref(hard_iface);
-> > +	INIT_DELAYED_WORK(&hard_iface->cleanup_work,
-> > +			  batadv_hardif_remove_interface_finish);
-> > +	queue_work(batadv_event_workqueue, &hard_iface->cleanup_work);
-> >  }
-> > =20
-> >  void batadv_hardif_remove_interfaces(void)
-> > diff --git a/types.h b/types.h
-> > index 030ce41..6e9746a 100644
-> > --- a/types.h
-> > +++ b/types.h
-> > @@ -63,6 +63,7 @@ struct batadv_hard_iface {
-> >  	struct net_device *soft_iface;
-> >  	struct rcu_head rcu;
-> >  	struct batadv_hard_iface_bat_iv bat_iv;
-> > +	struct delayed_work cleanup_work;
-> >  };
-> > =20
-> >  /**
-> > --=20
-> > 1.7.10.4
-> >=20
-> >=20
-
-
 
 --=20
 Antonio Quartulli
@@ -143,25 +55,25 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---1sNVjLsmu1MXqwQ/
+--EXKGNeO8l0xGFBjy
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBAgAGBQJQyhcKAAoJEADl0hg6qKeOvOUP/1PIls/KpUeDl4jsF3UW2+d6
-V3ur/s3zSUH3eK6aYxEQMkvs44rzG8ygQD5j6mXdqhSjAg3JuSfcDzd3qicZ+3cb
-e1aOSx4ieOzjMdCIZsyHr44GWuZf2QsPMK0rag/mZw44f70OMhg9ww3dS8r/rbNF
-tRWAI8LLVeL+0v/K/yMru4rG2ZTDsWBEVvEoX6BZE8haIfjB+yl7tNwAl9/kQHw5
-oYycwbuWPEjbx7u18y3E/pEdQTgRrTg6dtDQI4330dc/etRbNiQeA0dTVCYU03L2
-/6SWYhq4iftm5mmbQVHxNpmS0aEUjqwLt/M9uUFvSA9EJV4/SFwHRfidM5Grt/K1
-PTxyY5UBYGZqEaVV4yzHLRA6AAt40ZerLqHkETboKSfoBNmfeBvlONwE0hw/l2Rs
-9gb28X/aJniJmdeGsagAwpoCojCVNuLPQ2OGeAOTIzGwzdkAYe4rS8GPV0Bccchl
-mK1OgwsbJuVzOfopxZSUJ0vamQFbjv0I9kbW+llYaImnY8NzdrpsqgjVjm74ZxJ7
-wHw8G53Oi5VhzZ/vfyPtq/n+J4UZ8ZYdgxTNhXni3iVzn8E62mt3XvylUKpYTV+/
-RfhuV4mf37tm6RMSjTLT9Ri5wQkpfkcTsTuqZOXPyDTWkOsgg/zLfIRps4ZWSiLx
-Sj58B6I3HHWrdQis+drd
-=60fr
+iQIcBAEBAgAGBQJQyhihAAoJEADl0hg6qKeOqiQQAKHFBtMb0X0wCk8sfKy/49Ty
+SHBGs9BZTAjkNGK06erMgcTrt3DJFjHc7x0c03g5FFB2ZzwWjIBVGYJkwfpN57b/
+GJWDSY6j6fXzXe8zL8rLMdp0R0ll6fQKlGU/2ZLcBf40K+5mDj1/Sz2j5gnl5srr
+bcazvsyrtI/+ooFCF/FpzcNni6ZRgbddM09bstyULIxOFlWppmhN08WQnQbPpeVH
+U+u10ZFFmFn1OyduaG0xqjWdHsGRUCz8uchCECgbofa9/p2Nl7pjkpGtwuaoXH0L
+y0/xCDLMmiY9AlhT3AVji2DXHgTIj0Ogrn8hATDnC9udW8TfRyNbg5WzQRsbOi+X
+ZCyxcgn71OG3vbiHpVngSaPu83Qfa8Xwg3j6x++VC1zvrzEvAExUemY7qjUROjEX
+65aQiH1pQNkzojZYJZFhtJDD8xvHrCSV8WnKdWcallsDez1bWPAYNAfwkhAo1xET
+tCXeRmrqGUI3ISCOylb5h4AjYIMVmuh5/btaS6RZx3V9OgqYWpl+A4d+n/ScS7Js
+STHf5aP6162zve2/K4YcNUzgwM/i9intThNm7A+hNIdCYH/R6LKqyvCFkI8u+T2B
+rn4W+hibV64kgFLZuGR6njU15G+bvtw9PkSDfQRADcdE4aQLT+VtPEa7uNHU0dat
+zTD2ZLhTtxl+xnLj3fG8
+=Ae2+
 -----END PGP SIGNATURE-----
 
---1sNVjLsmu1MXqwQ/--
+--EXKGNeO8l0xGFBjy--
