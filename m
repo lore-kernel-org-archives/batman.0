@@ -1,15 +1,11 @@
-Return-Path: <ordex@autistici.org>
-Date: Thu, 13 Dec 2012 19:04:17 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121213180417.GE23890@ritirata.org>
-References: <1355263044-13131-1-git-send-email-ordex@autistici.org>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Fri, 14 Dec 2012 07:32:45 +0100
+Message-Id: <cover.1355466678.git.martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="EXKGNeO8l0xGFBjy"
-Content-Disposition: inline
-In-Reply-To: <1355263044-13131-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: postpone OGM preparation to
-	sending time
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv2 0/7] CATWOMAN: Network coding in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,58 +18,51 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
+I hereby bring you network coding in batman-adv. (Changed according
+to Antonios latest review). This allows a relay to send two packets
+(to two destinations) in a single transmission. Tests[1] have shown
+an increase in throughput up to 1.6 under the right circumstances.
 
---EXKGNeO8l0xGFBjy
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For this to work, you will need to compile batman-adv with
+CONFIG_BATMAN_ADV_NC=y and a wireless interface with working
+promiscuous mode. The rest is taken care of by batman-adv and the
+following patches.
 
-On Tue, Dec 11, 2012 at 10:57:24PM +0100, Antonio Quartulli wrote:
-[...]
+[1] http://www.open-mesh.org/projects/open-mesh/wiki/2011-08-18-network-coding-first-steps
 
->  /* when do we schedule a ogm packet to be sent */
->  static unsigned long batadv_iv_ogm_fwd_send_time(void)
->  {
-> -	return jiffies + msecs_to_jiffies(random32() % (BATADV_JITTER / 2));
-> +	return jiffies + BATADV_MAX_AGGREGATION_MS +
-> +	       msecs_to_jiffies(random32() % (BATADV_JITTER / 2));
->  }
+Martin Hundebøll (7):
+  batman-adv: Return reason for failure in batadv_check_unicast_packet()  batman-adv: Add the initial code for network coding.
+  batman-adv: Detect coding nodes and remove these after timeout
+  batman-adv: Buffer unicast packets before forward.
+  batman-adv: Code and transmit packets if possible.
+  batman-adv: Save overheard and tx packets for decoding.
+  batman-adv: Receive coded packets and decode them.
 
-I just realise that I cannot add BATADV_MAX_AGGREGATION_MS here directly be=
-cause
-this function is used to compute the forwarding time of OGMs the node recei=
-ved
-and that it has to rebroadcast.
-I'll fix this and post a patch.
+ Makefile               |    2 +
+ Makefile.kbuild        |    1 +
+ bat_iv_ogm.c           |    5 +
+ compat.c               |   10 +
+ compat.h               |    1 +
+ debugfs.c              |   18 +
+ gen-compat-autoconf.sh |    1 +
+ main.c                 |    6 +
+ main.h                 |   13 +-
+ network-coding.c       | 1828 ++++++++++++++++++++++++++++++++++++++++++++++++
+ network-coding.h       |  123 ++++
+ originator.c           |    6 +
+ packet.h               |   33 +
+ routing.c              |   47 +-
+ send.c                 |    5 +
+ soft-interface.c       |   14 +
+ sysfs-class-net-mesh   |    8 +
+ sysfs.c                |    6 +
+ types.h                |  123 ++++
+ 19 files changed, 2237 insertions(+), 13 deletions(-)
+ create mode 100644 network-coding.c
+ create mode 100644 network-coding.h
 
-Cheers,
+-- 
+1.8.0.2
 
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---EXKGNeO8l0xGFBjy
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQyhihAAoJEADl0hg6qKeOqiQQAKHFBtMb0X0wCk8sfKy/49Ty
-SHBGs9BZTAjkNGK06erMgcTrt3DJFjHc7x0c03g5FFB2ZzwWjIBVGYJkwfpN57b/
-GJWDSY6j6fXzXe8zL8rLMdp0R0ll6fQKlGU/2ZLcBf40K+5mDj1/Sz2j5gnl5srr
-bcazvsyrtI/+ooFCF/FpzcNni6ZRgbddM09bstyULIxOFlWppmhN08WQnQbPpeVH
-U+u10ZFFmFn1OyduaG0xqjWdHsGRUCz8uchCECgbofa9/p2Nl7pjkpGtwuaoXH0L
-y0/xCDLMmiY9AlhT3AVji2DXHgTIj0Ogrn8hATDnC9udW8TfRyNbg5WzQRsbOi+X
-ZCyxcgn71OG3vbiHpVngSaPu83Qfa8Xwg3j6x++VC1zvrzEvAExUemY7qjUROjEX
-65aQiH1pQNkzojZYJZFhtJDD8xvHrCSV8WnKdWcallsDez1bWPAYNAfwkhAo1xET
-tCXeRmrqGUI3ISCOylb5h4AjYIMVmuh5/btaS6RZx3V9OgqYWpl+A4d+n/ScS7Js
-STHf5aP6162zve2/K4YcNUzgwM/i9intThNm7A+hNIdCYH/R6LKqyvCFkI8u+T2B
-rn4W+hibV64kgFLZuGR6njU15G+bvtw9PkSDfQRADcdE4aQLT+VtPEa7uNHU0dat
-zTD2ZLhTtxl+xnLj3fG8
-=Ae2+
------END PGP SIGNATURE-----
-
---EXKGNeO8l0xGFBjy--
