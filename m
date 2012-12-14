@@ -1,11 +1,16 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Fri, 14 Dec 2012 07:32:45 +0100
-Message-Id: <cover.1355466678.git.martin@hundeboll.net>
+Date: Fri, 14 Dec 2012 07:32:46 +0100
+Message-Id: <e283ab952a3393aa0128d377436bc127cedd244a.1355466678.git.martin@hundeboll.net>
+In-Reply-To: <cover.1355466678.git.martin@hundeboll.net>
+References: <cover.1355466678.git.martin@hundeboll.net>
+In-Reply-To: <cover.1355466678.git.martin@hundeboll.net>
+References: <cover.1355466678.git.martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 0/7] CATWOMAN: Network coding in batman-adv
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/7] batman-adv: Return reason for failure
+	in batadv_check_unicast_packet()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,49 +25,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-I hereby bring you network coding in batman-adv. (Changed according
-to Antonios latest review). This allows a relay to send two packets
-(to two destinations) in a single transmission. Tests[1] have shown
-an increase in throughput up to 1.6 under the right circumstances.
+For network coding it is needed to know if a packet has another host as
+destination as the packet should be buffered for decoding. To avoid
+double checking the destination, the behaviour of
+batadv_check_unicast_packet() is changed to return a value based on the
+reason to drop the packet, which will be used in later patches for
+network coding.
 
-For this to work, you will need to compile batman-adv with
-CONFIG_BATMAN_ADV_NC=y and a wireless interface with working
-promiscuous mode. The rest is taken care of by batman-adv and the
-following patches.
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
+ routing.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-[1] http://www.open-mesh.org/projects/open-mesh/wiki/2011-08-18-network-coding-first-steps
-
-Martin Hundebøll (7):
-  batman-adv: Return reason for failure in batadv_check_unicast_packet()  batman-adv: Add the initial code for network coding.
-  batman-adv: Detect coding nodes and remove these after timeout
-  batman-adv: Buffer unicast packets before forward.
-  batman-adv: Code and transmit packets if possible.
-  batman-adv: Save overheard and tx packets for decoding.
-  batman-adv: Receive coded packets and decode them.
-
- Makefile               |    2 +
- Makefile.kbuild        |    1 +
- bat_iv_ogm.c           |    5 +
- compat.c               |   10 +
- compat.h               |    1 +
- debugfs.c              |   18 +
- gen-compat-autoconf.sh |    1 +
- main.c                 |    6 +
- main.h                 |   13 +-
- network-coding.c       | 1828 ++++++++++++++++++++++++++++++++++++++++++++++++
- network-coding.h       |  123 ++++
- originator.c           |    6 +
- packet.h               |   33 +
- routing.c              |   47 +-
- send.c                 |    5 +
- soft-interface.c       |   14 +
- sysfs-class-net-mesh   |    8 +
- sysfs.c                |    6 +
- types.h                |  123 ++++
- 19 files changed, 2237 insertions(+), 13 deletions(-)
- create mode 100644 network-coding.c
- create mode 100644 network-coding.h
-
+diff --git a/routing.c b/routing.c
+index 1aa1722..0cea96b 100644
+--- a/routing.c
++++ b/routing.c
+@@ -552,6 +552,16 @@ batadv_find_ifalter_router(struct batadv_orig_node *primary_orig,
+ 	return router;
+ }
+ 
++/**
++ * batadv_check_unicast_packet - Check for malformed unicast packets
++ * @skb: packet to check
++ * @hdr_size: size of header to pull
++ *
++ * Check for short header and bad addresses in given packet. Returns negative
++ * value when check fails and 0 otherwise. The negative value depends on the
++ * reason: -1 for bad header, -2 for broadcast destination, -3 for broadcast
++ * source, and -4 for non-local (other host) destination.
++ */
+ static int batadv_check_unicast_packet(struct sk_buff *skb, int hdr_size)
+ {
+ 	struct ethhdr *ethhdr;
+@@ -564,15 +574,15 @@ static int batadv_check_unicast_packet(struct sk_buff *skb, int hdr_size)
+ 
+ 	/* packet with unicast indication but broadcast recipient */
+ 	if (is_broadcast_ether_addr(ethhdr->h_dest))
+-		return -1;
++		return -2;
+ 
+ 	/* packet with broadcast sender address */
+ 	if (is_broadcast_ether_addr(ethhdr->h_source))
+-		return -1;
++		return -3;
+ 
+ 	/* not for me */
+ 	if (!batadv_is_my_mac(ethhdr->h_dest))
+-		return -1;
++		return -4;
+ 
+ 	return 0;
+ }
 -- 
 1.8.0.2
 
