@@ -1,9 +1,17 @@
 Return-Path: <ordex@autistici.org>
+Date: Sat, 15 Dec 2012 13:39:35 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 15 Dec 2012 12:14:42 +0100
-Message-Id: <1355570082-19574-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: postpone OGM preparation to
-	sending time
+Message-ID: <20121215123935.GA10690@ritirata.org>
+References: <cover.1355466678.git.martin@hundeboll.net>
+ <e283ab952a3393aa0128d377436bc127cedd244a.1355466678.git.martin@hundeboll.net>
+ <201212151610.17929.lindner_marek@yahoo.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
+Content-Disposition: inline
+In-Reply-To: <201212151610.17929.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/7] batman-adv: Return reason for
+ failure in batadv_check_unicast_packet()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,298 +23,94 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-
-OGMs are currently prepared 1 originator interval in advance
-then the time they are used to be sent. This means that once
-in the air they carry old information (like TT announcements
-and possibly other flags).
-
-To fix this, postpone the OGM creation to the same time of
-sending, in this way the OGM is first created and then
-immediately sent.
-
-This patch also removes a "magic" -2 operation that was
-introduced in the past to address the fact that batman-adv
-was sending "delayed OGM" plus the fact that the OGM seqno
-was increased right after having sent a new packet. Since
-this change is removing both the behaviours, the "magic"
-operation is not needed anymore.
-
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
-
-v3:
-* add more kernel doc
-
-v2:
-* added kernel doc
-* fixed sending time computation: previously msecs were summed to jiffies and
-  max_aggregation_time was wrongly summed twice
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
- bat_iv_ogm.c | 139 +++++++++++++++++++++++++++++++++++++----------------------
- types.h      |   1 +
- 2 files changed, 89 insertions(+), 51 deletions(-)
+--OXfL5xGRrasGEqWY
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index ff56fd5..244751c 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -54,39 +54,6 @@ out:
- 	return neigh_node;
- }
- 
--static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
--{
--	struct batadv_ogm_packet *batadv_ogm_packet;
--	unsigned char *ogm_buff;
--	uint32_t random_seqno;
--	int res = -ENOMEM;
--
--	/* randomize initial seqno to avoid collision */
--	get_random_bytes(&random_seqno, sizeof(random_seqno));
--	atomic_set(&hard_iface->bat_iv.ogm_seqno, random_seqno);
--
--	hard_iface->bat_iv.ogm_buff_len = BATADV_OGM_HLEN;
--	ogm_buff = kmalloc(hard_iface->bat_iv.ogm_buff_len, GFP_ATOMIC);
--	if (!ogm_buff)
--		goto out;
--
--	hard_iface->bat_iv.ogm_buff = ogm_buff;
--
--	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
--	batadv_ogm_packet->header.packet_type = BATADV_IV_OGM;
--	batadv_ogm_packet->header.version = BATADV_COMPAT_VERSION;
--	batadv_ogm_packet->header.ttl = 2;
--	batadv_ogm_packet->flags = BATADV_NO_FLAGS;
--	batadv_ogm_packet->tq = BATADV_TQ_MAX_VALUE;
--	batadv_ogm_packet->tt_num_changes = 0;
--	batadv_ogm_packet->ttvn = 0;
--
--	res = 0;
--
--out:
--	return res;
--}
--
- static void batadv_iv_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
- {
- 	kfree(hard_iface->bat_iv.ogm_buff);
-@@ -116,16 +83,22 @@ batadv_iv_ogm_primary_iface_set(struct batadv_hard_iface *hard_iface)
- 	batadv_ogm_packet->header.ttl = BATADV_TTL;
- }
- 
--/* when do we schedule our own ogm to be sent */
-+/**
-+ * batadv_iv_ogm_emit_wait_time - compute the OGM preparation waiting time
-+ * @bat_priv: the bat priv with all the soft interface information
-+ *
-+ * Returns the amount of jiffies to wait before preparing and sending the next
-+ * own OGM
-+ */
- static unsigned long
--batadv_iv_ogm_emit_send_time(const struct batadv_priv *bat_priv)
-+batadv_iv_ogm_emit_wait_time(const struct batadv_priv *bat_priv)
- {
- 	unsigned int msecs;
- 
- 	msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
- 	msecs += (random32() % 2 * BATADV_JITTER);
- 
--	return jiffies + msecs_to_jiffies(msecs);
-+	return msecs_to_jiffies(msecs);
- }
- 
- /* when do we schedule a ogm packet to be sent */
-@@ -459,7 +432,8 @@ out:
- /* aggregate a new packet into the existing ogm packet */
- static void batadv_iv_ogm_aggregate(struct batadv_forw_packet *forw_packet_aggr,
- 				    const unsigned char *packet_buff,
--				    int packet_len, bool direct_link)
-+				    int packet_len, bool direct_link,
-+				    int own_packet)
- {
- 	unsigned char *skb_buff;
- 	unsigned long new_direct_link_flag;
-@@ -468,6 +442,7 @@ static void batadv_iv_ogm_aggregate(struct batadv_forw_packet *forw_packet_aggr,
- 	memcpy(skb_buff, packet_buff, packet_len);
- 	forw_packet_aggr->packet_len += packet_len;
- 	forw_packet_aggr->num_packets++;
-+	forw_packet_aggr->own |= own_packet;
- 
- 	/* save packet direct link flag status */
- 	if (direct_link) {
-@@ -498,8 +473,7 @@ static void batadv_iv_ogm_queue_add(struct batadv_priv *bat_priv,
- 
- 	/* find position for the packet in the forward queue */
- 	spin_lock_bh(&bat_priv->forw_bat_list_lock);
--	/* own packets are not to be aggregated */
--	if ((atomic_read(&bat_priv->aggregated_ogms)) && (!own_packet)) {
-+	if ((atomic_read(&bat_priv->aggregated_ogms))) {
- 		hlist_for_each_entry(forw_packet_pos, tmp_node,
- 				     &bat_priv->forw_bat_list, list) {
- 			if (batadv_iv_ogm_can_aggregate(batadv_ogm_packet,
-@@ -532,7 +506,7 @@ static void batadv_iv_ogm_queue_add(struct batadv_priv *bat_priv,
- 					    if_incoming, own_packet);
- 	} else {
- 		batadv_iv_ogm_aggregate(forw_packet_aggr, packet_buff,
--					packet_len, direct_link);
-+					packet_len, direct_link, own_packet);
- 		spin_unlock_bh(&bat_priv->forw_bat_list_lock);
- 	}
- }
-@@ -593,14 +567,39 @@ static void batadv_iv_ogm_forward(struct batadv_orig_node *orig_node,
- static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
--	unsigned char **ogm_buff = &hard_iface->bat_iv.ogm_buff;
-+
-+	queue_delayed_work(batadv_event_workqueue, &hard_iface->bat_iv.work,
-+			   batadv_iv_ogm_emit_wait_time(bat_priv));
-+}
-+
-+/**
-+ * batadv_iv_ogm_send - prepare an send an own OGM
-+ * @work: kernel work struct
-+ *
-+ * Prepare the OGM and immediately enqueue it for sending
-+ */
-+static void batadv_iv_ogm_send(struct work_struct *work)
-+{
-+	struct delayed_work *delayed_work;
-+	struct batadv_hard_iface_bat_iv *bat_iv;
-+	struct batadv_hard_iface *primary_if, *hard_iface;
-+	struct batadv_priv *bat_priv;
-+	unsigned char **ogm_buff;
- 	struct batadv_ogm_packet *batadv_ogm_packet;
--	struct batadv_hard_iface *primary_if;
--	int *ogm_buff_len = &hard_iface->bat_iv.ogm_buff_len;
-+	int *ogm_buff_len;
- 	int vis_server, tt_num_changes = 0;
- 	uint32_t seqno;
- 	uint8_t bandwidth;
- 
-+	delayed_work = container_of(work, struct delayed_work, work);
-+	bat_iv = container_of(delayed_work, struct batadv_hard_iface_bat_iv,
-+			      work);
-+	hard_iface = container_of(bat_iv, struct batadv_hard_iface, bat_iv);
-+
-+	bat_priv = netdev_priv(hard_iface->soft_iface);
-+	ogm_buff = &hard_iface->bat_iv.ogm_buff;
-+	ogm_buff_len = &hard_iface->bat_iv.ogm_buff_len;
-+
- 	vis_server = atomic_read(&bat_priv->vis_mode);
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 
-@@ -611,10 +610,9 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 
- 	batadv_ogm_packet = (struct batadv_ogm_packet *)(*ogm_buff);
- 
-+	seqno = (uint32_t)atomic_add_return(1, &hard_iface->bat_iv.ogm_seqno);
- 	/* change sequence number to network order */
--	seqno = (uint32_t)atomic_read(&hard_iface->bat_iv.ogm_seqno);
- 	batadv_ogm_packet->seqno = htonl(seqno);
--	atomic_inc(&hard_iface->bat_iv.ogm_seqno);
- 
- 	batadv_ogm_packet->ttvn = atomic_read(&bat_priv->tt.vn);
- 	batadv_ogm_packet->tt_crc = htons(bat_priv->tt.local_crc);
-@@ -637,12 +635,55 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 	batadv_slide_own_bcast_window(hard_iface);
- 	batadv_iv_ogm_queue_add(bat_priv, hard_iface->bat_iv.ogm_buff,
- 				hard_iface->bat_iv.ogm_buff_len, hard_iface, 1,
--				batadv_iv_ogm_emit_send_time(bat_priv));
-+				batadv_iv_ogm_fwd_send_time());
- 
- 	if (primary_if)
- 		batadv_hardif_free_ref(primary_if);
- }
- 
-+/**
-+ * batadv_iv_ogm_iface_enable - initialize protocol specific hard_iface members
-+ * @hard_iface: the interface getting enabled
-+ *
-+ * Returns 0 on success and a negative value representing the error in case of
-+ * failure
-+ *
-+ */
-+static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
-+{
-+	struct batadv_ogm_packet *batadv_ogm_packet;
-+	unsigned char *ogm_buff;
-+	uint32_t random_seqno;
-+	int res = -ENOMEM;
-+
-+	/* randomize initial seqno to avoid collision */
-+	get_random_bytes(&random_seqno, sizeof(random_seqno));
-+	atomic_set(&hard_iface->bat_iv.ogm_seqno, random_seqno);
-+
-+	hard_iface->bat_iv.ogm_buff_len = BATADV_OGM_HLEN;
-+	ogm_buff = kmalloc(hard_iface->bat_iv.ogm_buff_len, GFP_ATOMIC);
-+	if (!ogm_buff)
-+		goto out;
-+
-+	hard_iface->bat_iv.ogm_buff = ogm_buff;
-+
-+	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
-+	batadv_ogm_packet->header.packet_type = BATADV_IV_OGM;
-+	batadv_ogm_packet->header.version = BATADV_COMPAT_VERSION;
-+	batadv_ogm_packet->header.ttl = 2;
-+	batadv_ogm_packet->flags = BATADV_NO_FLAGS;
-+	batadv_ogm_packet->tq = BATADV_TQ_MAX_VALUE;
-+	batadv_ogm_packet->tt_num_changes = 0;
-+	batadv_ogm_packet->ttvn = 0;
-+
-+	INIT_DELAYED_WORK(&hard_iface->bat_iv.work, batadv_iv_ogm_send);
-+
-+	res = 0;
-+
-+out:
-+	return res;
-+}
-+
- static void
- batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
- 			  struct batadv_orig_node *orig_node,
-@@ -998,7 +1039,6 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
- 	bool is_single_hop_neigh = false;
- 	bool is_from_best_next_hop = false;
- 	int is_duplicate, sameseq, simlar_ttl;
--	uint32_t if_incoming_seqno;
- 	uint8_t *prev_sender;
- 
- 	/* Silently drop when the batman packet is actually not a
-@@ -1016,9 +1056,6 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
- 	if (batadv_ogm_packet->header.packet_type != BATADV_IV_OGM)
- 		return;
- 
--	/* could be changed by schedule_own_packet() */
--	if_incoming_seqno = atomic_read(&if_incoming->bat_iv.ogm_seqno);
--
- 	if (batadv_ogm_packet->flags & BATADV_DIRECTLINK)
- 		has_directlink_flag = 1;
- 	else
-@@ -1108,7 +1145,7 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
- 
- 			spin_lock_bh(&orig_neigh_node->ogm_cnt_lock);
- 			word = &(orig_neigh_node->bcast_own[offset]);
--			bit_pos = if_incoming_seqno - 2;
-+			bit_pos = atomic_read(&if_incoming->bat_iv.ogm_seqno);
- 			bit_pos -= ntohl(batadv_ogm_packet->seqno);
- 			batadv_set_bit(word, bit_pos);
- 			weight = &orig_neigh_node->bcast_own_sum[if_num];
-diff --git a/types.h b/types.h
-index 030ce41..978381a 100644
---- a/types.h
-+++ b/types.h
-@@ -49,6 +49,7 @@ struct batadv_hard_iface_bat_iv {
- 	unsigned char *ogm_buff;
- 	int ogm_buff_len;
- 	atomic_t ogm_seqno;
-+	struct delayed_work work;
- };
- 
- struct batadv_hard_iface {
--- 
-1.8.0.2
+On Sat, Dec 15, 2012 at 04:10:17PM +0800, Marek Lindner wrote:
+> On Friday, December 14, 2012 14:32:46 Martin Hundeb=C3=B8ll wrote:
+> >  static int batadv_check_unicast_packet(struct sk_buff *skb, int hdr_si=
+ze)
+> >  {
+> >  	struct ethhdr *ethhdr;
+> > @@ -564,15 +574,15 @@ static int batadv_check_unicast_packet(struct sk_=
+buff
+> > *skb, int hdr_size)
+> >=20
+> >  	/* packet with unicast indication but broadcast recipient */
+> >  	if (is_broadcast_ether_addr(ethhdr->h_dest))
+> > -		return -1;
+> > +		return -2;
+> >=20
+> >  	/* packet with broadcast sender address */
+> >  	if (is_broadcast_ether_addr(ethhdr->h_source))
+> > -		return -1;
+> > +		return -3;
+> >=20
+> >  	/* not for me */
+> >  	if (!batadv_is_my_mac(ethhdr->h_dest))
+> > -		return -1;
+> > +		return -4;
+> >=20
+> >  	return 0;
+> >  }
+>=20
+> Returning meaningless numbers isn't the way to go. Either we make our own=
+=20
+> defines or we re-use our E***** friends.
 
+If I am not mistaken you only use "-4" in your network coding code. Maybe y=
+ou
+want to reduce this distinction to two cases only?
+
+e.g.
+* -EINVAL : incorrect header or bad fields (-1, -2, -3)..the packet is not =
+valid
+  in the end
+* something else for your case..what about -EREMOTE ?
+
+
+>=20
+> By the way, I suggest to send this patch separately. It increases the cha=
+nce=20
+> of getting merged faster and reduces your patchset.
+
+I agree on this. It would simplify your daily rebasing task. And when/if yo=
+u do
+so, remember to change the commit message: networking does not exist yet.
+
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--OXfL5xGRrasGEqWY
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQzG+HAAoJEADl0hg6qKeOneQQAMZzd6b/0+9KS5DVqhtuFzD/
+TjiILg4S8xqA3aMw8UqmXifuJsXDRG8vx4fknkcXGdw1heCxdYMUzK30/5xpePrk
+YMfGEl0naTWYsuyvPE2zQUiCEG2EI+qw88aU6EpC1uEIrFMd36/y2IapeW68pEr4
+X35iJhxsriyxwZX1HTxTpQhutxJD2csS0sUBChc6Bt/H39fYe3fKBrUuI+JkjlJQ
+liqvPDXtnaAekjpYjdZ8C3gu3GNlaeWBaW939z+hK5VFpFuADF2ER/ixh6DuUeM4
+t7gXCKZrGGvpHd0GfpGNX8eNxjDFHzaWZQG5DnWqTRjC4gkIolx742RHiBS6J9rV
+4NAmFdbqthOx8BqF7KukiMSRNwWcYtiiGdyMuaDn6QAdqPqONPUdmMmAc/PzhD6J
+Ugck4gATjEueSH1GEAxYY8toev38Kw31VsU3tiALWC6JJt6OFuWnW1mGbcepNb3R
+C3NyX/HtMVQvFFdxXFO19NLnYIMwxaoJlf8M7fDFRQrl5pzq99JD7xg6kWTDFh1/
+GW5rzgJTh3e+UgzieIdKRXL7/1nuz8LkphLCJ8mdMUBvq4g9XQ4wf3H9yB6cWszF
+BY024eeNGWo6nwChnqqnRoK9RySUKUymW9N23gUTESPrpLwHXmMFTLD1osK8pmXV
+xJ4Oo+w46+FmTLSHbvqa
+=jDXP
+-----END PGP SIGNATURE-----
+
+--OXfL5xGRrasGEqWY--
