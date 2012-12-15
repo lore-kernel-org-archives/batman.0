@@ -1,14 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 15 Dec 2012 16:20:16 +0800
-References: <50BF0779.4080906@web.de>
-In-Reply-To: <50BF0779.4080906@web.de>
+Date: Sat, 15 Dec 2012 16:21:25 +0800
+References: <50BF086A.4020505@web.de>
+In-Reply-To: <50BF086A.4020505@web.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201212151620.16913.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: output errors to stderr
+Message-Id: <201212151621.25822.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: indicate successful termination
+	when -h is used
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,34 +23,22 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, December 05, 2012 16:36:09 Moritz Warning wrote:
-> batctl outputs many errors to stdout instead of stderr.
-> This patch corrects this behavior by redirecting errors
-> and the usage texts to stderr.
+On Wednesday, December 05, 2012 16:40:10 Moritz Warning wrote:
+> The return value of batctl -h indicates failure while
+> it should indicate a successful execution.
+> 
 > 
 > Signed-off-by: Moritz Warning <moritzwarning@web.de>
 > ---
 > From: Moritz Warning <moritzwarning@web.de>
-> Subject: [PATCH] batctl: output errors to stderr
-> Context: http://www.open-mesh.org/issues/167
+> Subject: [PATCH] batctl: change return value to indicate successful
+>  termination when -h is used
 > 
 > ---
->  bisect_iv.c  |   34 ++++++++++++-------------
->  debug.c      |   36 +++++++++++++-------------
->  debugfs.c    |    2 +-
->  functions.c  |   18 ++++++-------
->  ioctl.c      |   10 ++++----
->  main.c       |   62 ++++++++++++++++++++++-----------------------
->  ping.c       |   30 +++++++++++-----------
->  sys.c        |   80
-> +++++++++++++++++++++++++++++-----------------------------
-> tcpdump.c    |   34 ++++++++++++-------------
->  traceroute.c |   28 ++++++++++----------
->  translate.c  |    2 +-
->  vis.c        |    8 +++---
->  12 files changed, 172 insertions(+), 172 deletions(-)
+>  main.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 
-Applied in revision 2b80a87.
+Applied in revision 1932d4e.
 
 Thanks,
 Marek
