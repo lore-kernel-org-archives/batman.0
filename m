@@ -1,14 +1,10 @@
-Return-Path: <gmazzurco89@gmail.com>
-Sender: Gioacchino Mazzurco <gmazzurco89@gmail.com>
-Message-ID: <50CDC8CA.1020808@eigenlab.org>
-Date: Sun, 16 Dec 2012 14:12:42 +0100
-From: Gioacchino Mazzurco <gio@eigenlab.org>
+Return-Path: <paukoning@gmail.com>
 MIME-Version: 1.0
-References: <CA+Cq8Jfri-08__Bfj1b2S9otKaL5PqbvcdR7aHnnYV4HRjbACg@mail.gmail.com>
-In-Reply-To: <CA+Cq8Jfri-08__Bfj1b2S9otKaL5PqbvcdR7aHnnYV4HRjbACg@mail.gmail.com>
+Date: Sun, 16 Dec 2012 16:43:28 +0100
+Message-ID: <CANiGF9_ACQq3i9tp3mi9GtYuM0H0fpG5OzNvMJQtbTo52WFSeA@mail.gmail.com>
+From: Pau Koning <paukoning@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv and babel hybrid status
+Subject: [B.A.T.M.A.N.] Wiki is advertisement platform
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,20 +16,13 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Shubham Aher <shubham.aher@juggler.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On 12/16/12 12:30, Shubham Aher wrote:
->  Hello ecsv,
-> 
-> We had discussed the idea of running babel over batman-adv on the IRC
-> Channel #batman.I am currently working on the same.I was curious about
-> the commit https://github.com/jech/babeld/commit/8d4d2c9e763ae1e04a0fb3486b222ec8a3ce3b.Can
-> you elaborate on what does it facilitate also what is present status
-> of the same.
-> 
-> Regards,
-> Shubham Aher
-> 
+Hi,
 
-It simply treat batman-adv interfaces like bat0 as wireless by default
+your wiki is used for advertisement of profit organisations.
+
+http://www.open-mesh.org/projects/open-mesh/wiki/New_papers?version=16
+http://www.open-mesh.org/projects/open-mesh/wiki/New_papers?version=15
+http://www.open-mesh.org/projects/open-mesh/wiki/New_papers?version=14
+http://www.open-mesh.org/projects/open-mesh/wiki/2011-10-08-new-outfit-for-batman?version=9
