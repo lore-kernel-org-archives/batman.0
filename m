@@ -1,16 +1,9 @@
-Return-Path: <ordex@autistici.org>
-Date: Sat, 15 Dec 2012 14:15:49 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20121215131549.GB10690@ritirata.org>
-References: <cover.1355466678.git.martin@hundeboll.net>
- <c0363aea3f9eb1ce31e2e0bdfd48aeb66c6e1180.1355466678.git.martin@hundeboll.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="E39vaYmALEf/7YXx"
-Content-Disposition: inline
-In-Reply-To: <c0363aea3f9eb1ce31e2e0bdfd48aeb66c6e1180.1355466678.git.martin@hundeboll.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/7] batman-adv: Add the initial code
- for network coding.
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 16 Dec 2012 13:53:15 +0800
+Message-Id: <1355637195-28768-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: unbloat batadv_priv if debug is
+	not enabled
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,55 +15,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ debugfs.c        |    1 -
+ soft-interface.c |    2 ++
+ types.h          |    4 ++++
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
---E39vaYmALEf/7YXx
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/debugfs.c b/debugfs.c
+index 5136d32..55a9007 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -229,7 +229,6 @@ static void batadv_debug_log_cleanup(struct batadv_priv *bat_priv)
+ #else /* CONFIG_BATMAN_ADV_DEBUG */
+ static int batadv_debug_log_setup(struct batadv_priv *bat_priv)
+ {
+-	bat_priv->debug_log = NULL;
+ 	return 0;
+ }
+ 
+diff --git a/soft-interface.c b/soft-interface.c
+index adafa96..a8eb963 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -494,7 +494,9 @@ struct net_device *batadv_softif_create(const char *name)
+ 	atomic_set(&bat_priv->gw_bandwidth, 41);
+ 	atomic_set(&bat_priv->orig_interval, 1000);
+ 	atomic_set(&bat_priv->hop_penalty, 30);
++#ifdef CONFIG_BATMAN_ADV_DEBUG
+ 	atomic_set(&bat_priv->log_level, 0);
++#endif
+ 	atomic_set(&bat_priv->fragmentation, 1);
+ 	atomic_set(&bat_priv->bcast_queue_left, BATADV_BCAST_QUEUE_LEN);
+ 	atomic_set(&bat_priv->batman_queue_left, BATADV_BATMAN_QUEUE_LEN);
+diff --git a/types.h b/types.h
+index 441880a..d8061ac 100644
+--- a/types.h
++++ b/types.h
+@@ -284,12 +284,16 @@ struct batadv_priv {
+ 	atomic_t gw_bandwidth;		/* gw bandwidth */
+ 	atomic_t orig_interval;		/* uint */
+ 	atomic_t hop_penalty;		/* uint */
++#ifdef CONFIG_BATMAN_ADV_DEBUG
+ 	atomic_t log_level;		/* uint */
++#endif
+ 	atomic_t bcast_seqno;
+ 	atomic_t bcast_queue_left;
+ 	atomic_t batman_queue_left;
+ 	char num_ifaces;
++#ifdef CONFIG_BATMAN_ADV_DEBUG
+ 	struct batadv_debug_log *debug_log;
++#endif
+ 	struct kobject *mesh_obj;
+ 	struct dentry *debug_dir;
+ 	struct hlist_head forw_bat_list;
+-- 
+1.7.10.4
 
-On Fri, Dec 14, 2012 at 07:32:47AM +0100, Martin Hundeb=C3=B8ll wrote:
-> diff --git a/network-coding.c b/network-coding.c
-> new file mode 100644
-> index 0000000..4f0409d
-> --- /dev/null
-> +++ b/network-coding.c
-> @@ -0,0 +1,81 @@
-> +/* Copyright (C) 2007-2012 B.A.T.M.A.N. contributors:
-
-mh...I didn't know this has been released but was hidden somewhere since 20=
-07...
-
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---E39vaYmALEf/7YXx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQzHgFAAoJEADl0hg6qKeOS5kQAKMNyht92MMc1jq3Jri3agFI
-thf+fZaEuVvu1p26IPHsi7g9vr7CB7H9D1KVIbdtm24Mkua5cCxMjv2kmeMHiIDO
-yS9Zq92DuH37zX3mjBJcOEVvecFkWahH6Qr3G/vWDvxIRQGEhHnBhcV4vdOYEx04
-kKuj3QqShuQsBqj0I45QxLF81V0MVYWosvRfKrtnNSeo9ic6+DzukCviPP3VND7b
-kOIefwA9UCXV3A3f1/eREHBs5QVDjceoJrlTJbtqq9QI0El75MLZbBdcI2q+gJ3M
-/cOlzfWfiOV7bCPze4aQ5NqLjjIVQ/mIcOTobQe994ftI/YmulEJIwaDVK5drgpR
-SToKWceDoOtUSjLeHt5xd4ZLd0bXE1eLM5ZPweHgC8C4ImYlklU7nIyLHhUC82Qf
-jwdu0papTXV+LINIyYpmWCiLETdu5K36cGAgNCIWh2VGoRmkR2K3/TTr5zFxI/Kt
-K8mM8cb5fuz2fQgiVzwnbOUz7syoSo5fgGOW9YAlmyTeTHNlcYbLjUpRrb/wW5Xd
-xFO0fKUtrBK95Ef7ITGJxbRnOkhQDahOxGXysQ0dO1LIYglFJGEl+IkR6g5j1Nky
-mTOu7hl4Xr6BrAC/dsSPIt8HIpv04BBxlFIkQtlXeClJjEyxw/WKwI9LwvuU8s8l
-j1Heagp0qyaVoYuDZx6M
-=ms10
------END PGP SIGNATURE-----
-
---E39vaYmALEf/7YXx--
