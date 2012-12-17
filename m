@@ -1,13 +1,13 @@
-Return-Path: <gmazzurco89@gmail.com>
-Sender: Gioacchino Mazzurco <gmazzurco89@gmail.com>
-Message-ID: <50CDF98D.5020804@eigenlab.org>
-Date: Sun, 16 Dec 2012 17:40:45 +0100
-From: Gioacchino Mazzurco <gio@eigenlab.org>
-MIME-Version: 1.0
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 17 Dec 2012 20:16:15 +0800
 References: <CANiGF9_ACQq3i9tp3mi9GtYuM0H0fpG5OzNvMJQtbTo52WFSeA@mail.gmail.com>
 In-Reply-To: <CANiGF9_ACQq3i9tp3mi9GtYuM0H0fpG5OzNvMJQtbTo52WFSeA@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201212172016.15941.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Wiki is advertisement platform
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,15 +22,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On 12/16/12 16:43, Pau Koning wrote:
-> Hi,
-> 
+On Sunday, December 16, 2012 23:43:28 Pau Koning wrote:
 > your wiki is used for advertisement of profit organisations.
 > 
 > http://www.open-mesh.org/projects/open-mesh/wiki/New_papers?version=16
 > http://www.open-mesh.org/projects/open-mesh/wiki/New_papers?version=15
 > http://www.open-mesh.org/projects/open-mesh/wiki/New_papers?version=14
-> http://www.open-mesh.org/projects/open-mesh/wiki/2011-10-08-new-outfit-for-batman?version=9
-> 
+> http://www.open-mesh.org/projects/open-mesh/wiki/2011-10-08-new-outfit-for-
+> batman?version=9
 
-I think some text captcha would prevent that
+Thanks for the information. I deleted the spam.
+
+Cheers,
+Marek
