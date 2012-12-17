@@ -1,14 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 17 Dec 2012 20:16:33 +0800
-References: <CANiGF9_ACQq3i9tp3mi9GtYuM0H0fpG5OzNvMJQtbTo52WFSeA@mail.gmail.com>
- <50CDF98D.5020804@eigenlab.org>
-In-Reply-To: <50CDF98D.5020804@eigenlab.org>
+Return-Path: <gmazzurco89@gmail.com>
+Sender: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+Message-ID: <50CF0D9E.5000400@eigenlab.org>
+Date: Mon, 17 Dec 2012 13:18:38 +0100
+From: Gioacchino Mazzurco <gio@eigenlab.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+References: <CANiGF9_ACQq3i9tp3mi9GtYuM0H0fpG5OzNvMJQtbTo52WFSeA@mail.gmail.com>
+ <50CDF98D.5020804@eigenlab.org> <201212172016.34203.lindner_marek@yahoo.de>
+In-Reply-To: <201212172016.34203.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201212172016.34203.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Wiki is advertisement platform
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,22 +22,16 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On Monday, December 17, 2012 00:40:45 Gioacchino Mazzurco wrote:
-> On 12/16/12 16:43, Pau Koning wrote:
-> > Hi,
-> > 
-> > your wiki is used for advertisement of profit organisations.
-> > 
-> > http://www.open-mesh.org/projects/open-mesh/wiki/New_papers?version=16
-> > http://www.open-mesh.org/projects/open-mesh/wiki/New_papers?version=15
-> > http://www.open-mesh.org/projects/open-mesh/wiki/New_papers?version=14
-> > http://www.open-mesh.org/projects/open-mesh/wiki/2011-10-08-new-outfit-fo
-> > r-batman?version=9
+On 12/17/12 13:16, Marek Lindner wrote:
+>> I think some text captcha would prevent that
 > 
-> I think some text captcha would prevent that
+> Good idea! Want to set it up ?
+> 
+> Cheers,
+> Marek
 
-Good idea! Want to set it up ?
+I have two exam in two days so I can't now sorry :|
 
-Cheers,
-Marek
+
