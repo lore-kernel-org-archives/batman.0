@@ -1,14 +1,16 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 18 Dec 2012 12:02:36 +0800
-References: <50CFB476.4070207@nixbits.net>
-In-Reply-To: <50CFB476.4070207@nixbits.net>
+Return-Path: <gmazzurco89@gmail.com>
+Sender: Gioacchino Mazzurco <gmazzurco89@gmail.com>
+Message-ID: <50D03307.2030509@eigenlab.org>
+Date: Tue, 18 Dec 2012 10:10:31 +0100
+From: Gioacchino Mazzurco <gio@eigenlab.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+References: <CA+Cq8Jfri-08__Bfj1b2S9otKaL5PqbvcdR7aHnnYV4HRjbACg@mail.gmail.com>
+ <50CDC8CA.1020808@eigenlab.org>
+ <CA+Cq8JeR8r+hY7c+=28iL-JfCW=gdbgHNU6-3bhYv89r0EoBBg@mail.gmail.com>
+In-Reply-To: <CA+Cq8JeR8r+hY7c+=28iL-JfCW=gdbgHNU6-3bhYv89r0EoBBg@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201212181202.37062.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Batman-Adv & iptables mac filtering
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv and babel hybrid status
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,26 +22,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, HeXileD@nixbits.net
+To: Shubham Aher <shubham.aher@juggler.net>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, December 18, 2012 08:10:30 HeXiLeD wrote:
-> This is probably a openwrt question but even so it might have some
-> impact on batman-adv.
-> 
-> I am planing to use mac filtering through iptables on openwrt with a
-> default policy of deny all, allowing only by white list the clients that
-> will be allowed t connect.
-> 
-> 
-> My question to the batman team is if by applying this idea and since
-> batman-adv uses MACs to manage the routing; if i will have to white list
-> the other router MACs on the router or routers that will be filtering
-> MACs with iptables or batman-adv is not affected by mac filtering.
+On 12/18/12 09:56, Shubham Aher wrote:
+> Can you tell me the status of running babel over batman-adv ?
 
-iptables works on layer3. Even though you have a mac address filter option it 
-will only catch anything if the packet is moved up to layer3 which does not 
-happen for batman-adv packets. So, iptables will never even see the packets 
-used by batman-adv.
+We doesn't have particular problems, but sometimes babel mark some route
+as unreachable also if the route is reachable, at moment we doesn't know
+what is causing that but we are trying to figure it out.
 
-Cheers,
-Marek
+If you show your interest also on babel mailing list about that topic i
+think it will help because babel community will realize that it is not a
+strange isolated case someone who run babel over batman, if they doesn't
+have realized yet
+
