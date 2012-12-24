@@ -1,11 +1,13 @@
-Return-Path: <akinobu.mita@gmail.com>
-From: Akinobu Mita <akinobu.mita@gmail.com>
-Date: Mon, 24 Dec 2012 11:14:07 +0900
-Message-Id: <1356315256-6572-21-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1356315256-6572-1-git-send-email-akinobu.mita@gmail.com>
-References: <1356315256-6572-1-git-send-email-akinobu.mita@gmail.com>
-Subject: [B.A.T.M.A.N.] [PATCH 20/29] batman-adv: rename random32() to
-	prandom_u32()
+Return-Path: <paukoning@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <1353355695-23252-1-git-send-email-sasha.levin@oracle.com>
+References: <1353355695-23252-1-git-send-email-sasha.levin@oracle.com>
+Date: Mon, 24 Dec 2012 15:18:52 +0100
+Message-ID: <CANiGF9-_roU2oD5uTRvjvaS5=bv-VoRBdULZN3PtgFzs5z1=CQ@mail.gmail.com>
+From: Pau Koning <paukoning@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] [PATCH] net,
+	batman: don't crash on zero length strings in routing_algo
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,45 +19,12 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Akinobu Mita <akinobu.mita@gmail.com>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, siwu@hrz.tu-chemnitz.de, Sasha Levin <sasha.levin@oracle.com>, lindner_marek@yahoo.de, davem@davemloft.net
 
-Use more preferable function name which implies using a pseudo-random
-number generator.
+On Mon, Nov 19, 2012 at 9:08 PM, Sasha Levin <sasha.levin@oracle.com> wrote:
+> The code that works with routing_algo assumes that the string passed is non
+> empty, this assumption is wrong:
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Cc: Antonio Quartulli <ordex@autistici.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org
----
- net/batman-adv/bat_iv_ogm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 7d02ebd..bc434c4 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -123,7 +123,7 @@ batadv_iv_ogm_emit_send_time(const struct batadv_priv *bat_priv)
- 	unsigned int msecs;
- 
- 	msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
--	msecs += random32() % (2 * BATADV_JITTER);
-+	msecs += prandom_u32() % (2 * BATADV_JITTER);
- 
- 	return jiffies + msecs_to_jiffies(msecs);
- }
-@@ -131,7 +131,7 @@ batadv_iv_ogm_emit_send_time(const struct batadv_priv *bat_priv)
- /* when do we schedule a ogm packet to be sent */
- static unsigned long batadv_iv_ogm_fwd_send_time(void)
- {
--	return jiffies + msecs_to_jiffies(random32() % (BATADV_JITTER / 2));
-+	return jiffies + msecs_to_jiffies(prandom_u32() % (BATADV_JITTER / 2));
- }
- 
- /* apply hop penalty for a normal link */
--- 
-1.7.11.7
-
+Why isn't this patch part of Linux 3.7? It seems to be a bugfix and it
+was sent early enough?
