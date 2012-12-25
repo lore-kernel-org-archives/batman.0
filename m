@@ -1,11 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 25 Dec 2012 17:03:20 +0800
-Message-Id: <1356426206-8667-2-git-send-email-lindner_marek@yahoo.de>
+Date: Tue, 25 Dec 2012 17:03:21 +0800
+Message-Id: <1356426206-8667-3-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1356426206-8667-1-git-send-email-lindner_marek@yahoo.de>
 References: <1356426206-8667-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/8] batman-adv: mark debug_log struct as
-	bat_priv only struct
+Subject: [B.A.T.M.A.N.] [PATCH 3/8] batman-adv: group tt type definitions
+	together
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,124 +22,77 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- debugfs.c |   13 +++++++------
- types.h   |   25 +++++++++++++------------
- 2 files changed, 20 insertions(+), 18 deletions(-)
+ types.h |   50 +++++++++++++++++++++++++-------------------------
+ 1 file changed, 25 insertions(+), 25 deletions(-)
 
-diff --git a/debugfs.c b/debugfs.c
-index 55a9007..e47555b 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -40,13 +40,14 @@ static struct dentry *batadv_debugfs;
- 
- static const int batadv_log_buff_len = BATADV_LOG_BUF_LEN;
- 
--static char *batadv_log_char_addr(struct batadv_debug_log *debug_log,
-+static char *batadv_log_char_addr(struct batadv_priv_debug_log *debug_log,
- 				  size_t idx)
- {
- 	return &debug_log->log_buff[idx & BATADV_LOG_BUFF_MASK];
- }
- 
--static void batadv_emit_log_char(struct batadv_debug_log *debug_log, char c)
-+static void batadv_emit_log_char(struct batadv_priv_debug_log *debug_log,
-+				 char c)
- {
- 	char *char_addr;
- 
-@@ -59,7 +60,7 @@ static void batadv_emit_log_char(struct batadv_debug_log *debug_log, char c)
- }
- 
- __printf(2, 3)
--static int batadv_fdebug_log(struct batadv_debug_log *debug_log,
-+static int batadv_fdebug_log(struct batadv_priv_debug_log *debug_log,
- 			     const char *fmt, ...)
- {
- 	va_list args;
-@@ -114,7 +115,7 @@ static int batadv_log_release(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--static int batadv_log_empty(struct batadv_debug_log *debug_log)
-+static int batadv_log_empty(struct batadv_priv_debug_log *debug_log)
- {
- 	return !(debug_log->log_start - debug_log->log_end);
- }
-@@ -123,7 +124,7 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
- 			       size_t count, loff_t *ppos)
- {
- 	struct batadv_priv *bat_priv = file->private_data;
--	struct batadv_debug_log *debug_log = bat_priv->debug_log;
-+	struct batadv_priv_debug_log *debug_log = bat_priv->debug_log;
- 	int error, i = 0;
- 	char *char_addr;
- 	char c;
-@@ -177,7 +178,7 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
- static unsigned int batadv_log_poll(struct file *file, poll_table *wait)
- {
- 	struct batadv_priv *bat_priv = file->private_data;
--	struct batadv_debug_log *debug_log = bat_priv->debug_log;
-+	struct batadv_priv_debug_log *debug_log = bat_priv->debug_log;
- 
- 	poll_wait(file, &debug_log->queue_wait, wait);
- 
 diff --git a/types.h b/types.h
-index dffbdff..db3fb25 100644
+index db3fb25..9a66115 100644
 --- a/types.h
 +++ b/types.h
-@@ -233,6 +233,16 @@ struct batadv_priv_bla {
+@@ -339,6 +339,31 @@ struct batadv_socket_packet {
+ 	struct batadv_icmp_packet_rr icmp_packet;
  };
- #endif
  
-+#ifdef CONFIG_BATMAN_ADV_DEBUG
-+struct batadv_priv_debug_log {
-+	char log_buff[BATADV_LOG_BUF_LEN];
-+	unsigned long log_start;
-+	unsigned long log_end;
-+	spinlock_t lock; /* protects log_buff, log_start and log_end */
-+	wait_queue_head_t queue_wait;
++#ifdef CONFIG_BATMAN_ADV_BLA
++struct batadv_backbone_gw {
++	uint8_t orig[ETH_ALEN];
++	short vid;		/* used VLAN ID */
++	struct hlist_node hash_entry;
++	struct batadv_priv *bat_priv;
++	unsigned long lasttime;	/* last time we heard of this backbone gw */
++	atomic_t wait_periods;
++	atomic_t request_sent;
++	atomic_t refcount;
++	struct rcu_head rcu;
++	uint16_t crc;		/* crc checksum over all claims */
++};
++
++struct batadv_claim {
++	uint8_t addr[ETH_ALEN];
++	short vid;
++	struct batadv_backbone_gw *backbone_gw;
++	unsigned long lasttime;	/* last time we heard of claim (locals only) */
++	struct rcu_head rcu;
++	atomic_t refcount;
++	struct hlist_node hash_entry;
 +};
 +#endif
 +
- struct batadv_priv_gw {
- 	struct hlist_head list;
- 	spinlock_t list_lock; /* protects gw_list and curr_gw */
-@@ -290,9 +300,6 @@ struct batadv_priv {
- 	atomic_t bcast_queue_left;
- 	atomic_t batman_queue_left;
- 	char num_ifaces;
--#ifdef CONFIG_BATMAN_ADV_DEBUG
--	struct batadv_debug_log *debug_log;
--#endif
- 	struct kobject *mesh_obj;
- 	struct dentry *debug_dir;
- 	struct hlist_head forw_bat_list;
-@@ -306,6 +313,9 @@ struct batadv_priv {
- #ifdef CONFIG_BATMAN_ADV_BLA
- 	struct batadv_priv_bla bla;
- #endif
-+#ifdef CONFIG_BATMAN_ADV_DEBUG
-+	struct batadv_priv_debug_log *debug_log;
-+#endif
- 	struct batadv_priv_gw gw;
- 	struct batadv_priv_tt tt;
- 	struct batadv_priv_vis vis;
-@@ -425,15 +435,6 @@ struct batadv_if_list_entry {
- 	bool primary;
+ struct batadv_tt_common_entry {
+ 	uint8_t addr[ETH_ALEN];
+ 	struct hlist_node hash_entry;
+@@ -368,31 +393,6 @@ struct batadv_tt_orig_list_entry {
  	struct hlist_node list;
  };
--
--struct batadv_debug_log {
--	char log_buff[BATADV_LOG_BUF_LEN];
--	unsigned long log_start;
--	unsigned long log_end;
--	spinlock_t lock; /* protects log_buff, log_start and log_end */
--	wait_queue_head_t queue_wait;
+ 
+-#ifdef CONFIG_BATMAN_ADV_BLA
+-struct batadv_backbone_gw {
+-	uint8_t orig[ETH_ALEN];
+-	short vid;		/* used VLAN ID */
+-	struct hlist_node hash_entry;
+-	struct batadv_priv *bat_priv;
+-	unsigned long lasttime;	/* last time we heard of this backbone gw */
+-	atomic_t wait_periods;
+-	atomic_t request_sent;
+-	atomic_t refcount;
+-	struct rcu_head rcu;
+-	uint16_t crc;		/* crc checksum over all claims */
 -};
 -
- struct batadv_frag_packet_list_entry {
+-struct batadv_claim {
+-	uint8_t addr[ETH_ALEN];
+-	short vid;
+-	struct batadv_backbone_gw *backbone_gw;
+-	unsigned long lasttime;	/* last time we heard of claim (locals only) */
+-	struct rcu_head rcu;
+-	atomic_t refcount;
+-	struct hlist_node hash_entry;
+-};
+-#endif
+-
+ struct batadv_tt_change_node {
  	struct list_head list;
- 	uint16_t seqno;
+ 	struct batadv_tt_change change;
 -- 
 1.7.10.4
 
