@@ -1,10 +1,10 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 25 Dec 2012 17:03:26 +0800
-Message-Id: <1356426206-8667-8-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1356426206-8667-1-git-send-email-lindner_marek@yahoo.de>
-References: <1356426206-8667-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 8/8] batman-adv: kernel doc for types.h
+Date: Tue, 25 Dec 2012 17:11:24 +0800
+Message-Id: <1356426684-8944-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1356426206-8667-8-git-send-email-lindner_marek@yahoo.de>
+References: <1356426206-8667-8-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2 8/8] batman-adv: kernel doc for types.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,11 +23,13 @@ Thanks to Sven Eckelmann and Simon Wunderlich for their support.
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- types.h |  460 ++++++++++++++++++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 394 insertions(+), 66 deletions(-)
+ v2: Properly aligned neigh_node comment.
+
+ types.h |  458 ++++++++++++++++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 393 insertions(+), 65 deletions(-)
 
 diff --git a/types.h b/types.h
-index 549ba56..21e6eda 100644
+index 549ba56..0c87494 100644
 --- a/types.h
 +++ b/types.h
 @@ -24,6 +24,9 @@
@@ -142,9 +144,8 @@ index 549ba56..21e6eda 100644
 -	unsigned long last_frag_packet;
  	/* ogm_cnt_lock protects: bcast_own, bcast_own_sum,
 -	 * neigh_node->real_bits, neigh_node->real_packet_count
--	 */
-+	* neigh_node->real_bits & neigh_node->real_packet_count
-+	*/
++	 * neigh_node->real_bits & neigh_node->real_packet_count
+ 	 */
  	spinlock_t ogm_cnt_lock;
 -	/* bcast_seqno_lock protects bcast_bits, last_bcast_seqno */
 +	/* bcast_seqno_lock protects: bcast_bits & last_bcast_seqno */
