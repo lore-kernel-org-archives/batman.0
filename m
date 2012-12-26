@@ -1,8 +1,13 @@
-Return-Path: <akinobu.mita@gmail.com>
-From: Akinobu Mita <akinobu.mita@gmail.com>
-Date: Wed, 26 Dec 2012 21:32:10 +0900
-Message-Id: <1356525130-2688-1-git-send-email-akinobu.mita@gmail.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix random jitter calculation
+Return-Path: <davem@davemloft.net>
+Date: Wed, 26 Dec 2012 14:13:50 -0800 (PST)
+Message-Id: <20121226.141350.999199516661256197.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1356525130-2688-1-git-send-email-akinobu.mita@gmail.com>
+References: <1356525130-2688-1-git-send-email-akinobu.mita@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix random jitter calculation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,51 +19,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Akinobu Mita <akinobu.mita@gmail.com>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
+To: akinobu.mita@gmail.com
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, siwu@hrz.tu-chemnitz.de, lindner_marek@yahoo.de
 
-batadv_iv_ogm_emit_send_time() attempts to calculates a random integer
-in the range of 'orig_interval +- BATADV_JITTER' by the below lines.
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Date: Wed, 26 Dec 2012 21:32:10 +0900
 
-        msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
-        msecs += (random32() % 2 * BATADV_JITTER);
+> batadv_iv_ogm_emit_send_time() attempts to calculates a random integer
+> in the range of 'orig_interval +- BATADV_JITTER' by the below lines.
+> 
+>         msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
+>         msecs += (random32() % 2 * BATADV_JITTER);
+> 
+> But it actually gets 'orig_interval' or 'orig_interval - BATADV_JITTER'
+> because '%' and '*' have same precedence and associativity is
+> left-to-right.
+> 
+> This adds the parentheses at the appropriate position so that it matches
+> original intension.
+> 
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Acked-by: Antonio Quartulli <ordex@autistici.org>
 
-But it actually gets 'orig_interval' or 'orig_interval - BATADV_JITTER'
-because '%' and '*' have same precedence and associativity is
-left-to-right.
-
-This adds the parentheses at the appropriate position so that it matches
-original intension.
-
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Cc: Antonio Quartulli <ordex@autistici.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org
----
-
-This patch is extracted from the patch series "rename random32 and
-net_random to prandom" since it is a fix.
-
- net/batman-adv/bat_iv_ogm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 9f3925a..7d02ebd 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -123,7 +123,7 @@ batadv_iv_ogm_emit_send_time(const struct batadv_priv *bat_priv)
- 	unsigned int msecs;
- 
- 	msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
--	msecs += (random32() % 2 * BATADV_JITTER);
-+	msecs += random32() % (2 * BATADV_JITTER);
- 
- 	return jiffies + msecs_to_jiffies(msecs);
- }
--- 
-1.7.11.7
-
+Applied, thanks.
