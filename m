@@ -1,13 +1,13 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 26 Dec 2012 14:13:50 -0800 (PST)
-Message-Id: <20121226.141350.999199516661256197.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1356525130-2688-1-git-send-email-akinobu.mita@gmail.com>
-References: <1356525130-2688-1-git-send-email-akinobu.mita@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix random jitter calculation
+Return-Path: <emunicio@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <201212181202.37062.lindner_marek@yahoo.de>
+References: <50CFB476.4070207@nixbits.net>
+ <201212181202.37062.lindner_marek@yahoo.de>
+From: Esteban Municio <emunicio@gmail.com>
+Date: Thu, 27 Dec 2012 17:59:40 -0500
+Message-ID: <CAMVTf1jF4eLRFVxiijFRGbohit2umFN1gSn7xce0+NN6H7SxNA@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] Batman-Adv & iptables mac filtering
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,26 +19,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: akinobu.mita@gmail.com
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, siwu@hrz.tu-chemnitz.de, lindner_marek@yahoo.de
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Akinobu Mita <akinobu.mita@gmail.com>
-Date: Wed, 26 Dec 2012 21:32:10 +0900
+Could you use ebtables instead?
 
-> batadv_iv_ogm_emit_send_time() attempts to calculates a random integer
-> in the range of 'orig_interval +- BATADV_JITTER' by the below lines.
-> 
->         msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
->         msecs += (random32() % 2 * BATADV_JITTER);
-> 
-> But it actually gets 'orig_interval' or 'orig_interval - BATADV_JITTER'
-> because '%' and '*' have same precedence and associativity is
-> left-to-right.
-> 
-> This adds the parentheses at the appropriate position so that it matches
-> original intension.
-> 
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Acked-by: Antonio Quartulli <ordex@autistici.org>
+2012/12/17 Marek Lindner <lindner_marek@yahoo.de>:
+> On Tuesday, December 18, 2012 08:10:30 HeXiLeD wrote:
+>> This is probably a openwrt question but even so it might have some
+>> impact on batman-adv.
+>>
+>> I am planing to use mac filtering through iptables on openwrt with a
+>> default policy of deny all, allowing only by white list the clients that
+>> will be allowed t connect.
+>>
+>>
+>> My question to the batman team is if by applying this idea and since
+>> batman-adv uses MACs to manage the routing; if i will have to white list
+>> the other router MACs on the router or routers that will be filtering
+>> MACs with iptables or batman-adv is not affected by mac filtering.
+>
+> iptables works on layer3. Even though you have a mac address filter option it
+> will only catch anything if the packet is moved up to layer3 which does not
+> happen for batman-adv packets. So, iptables will never even see the packets
+> used by batman-adv.
+>
+> Cheers,
+> Marek
 
-Applied, thanks.
+
+
+-- 
+Esteban
