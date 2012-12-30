@@ -1,13 +1,10 @@
-Return-Path: <emunicio@gmail.com>
+Return-Path: <paukoning@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <201212181202.37062.lindner_marek@yahoo.de>
-References: <50CFB476.4070207@nixbits.net>
- <201212181202.37062.lindner_marek@yahoo.de>
-From: Esteban Municio <emunicio@gmail.com>
-Date: Thu, 27 Dec 2012 17:59:40 -0500
-Message-ID: <CAMVTf1jF4eLRFVxiijFRGbohit2umFN1gSn7xce0+NN6H7SxNA@mail.gmail.com>
+Date: Sun, 30 Dec 2012 20:34:38 +0100
+Message-ID: <CANiGF9-dq-HrvWrgu9EMC94rP=1YdrmaFbCF2g1SZ9ocu77ysw@mail.gmail.com>
+From: Pau Koning <paukoning@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Batman-Adv & iptables mac filtering
+Subject: [B.A.T.M.A.N.] batman-adv: Unable to add interface in LXC
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,34 +16,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org
 
-Could you use ebtables instead?
+I am running LXC (SID) under Debian SID and the current git version of
+batman-adv (v3.7-rc7-1325-gaf5d4f7) +batctl (v2012.4.0-30-ga395164).
+But it fails to add any of my interfaces and non-batman-adv interfaces
+can be created without problems
 
-2012/12/17 Marek Lindner <lindner_marek@yahoo.de>:
-> On Tuesday, December 18, 2012 08:10:30 HeXiLeD wrote:
->> This is probably a openwrt question but even so it might have some
->> impact on batman-adv.
->>
->> I am planing to use mac filtering through iptables on openwrt with a
->> default policy of deny all, allowing only by white list the clients that
->> will be allowed t connect.
->>
->>
->> My question to the batman team is if by applying this idea and since
->> batman-adv uses MACs to manage the routing; if i will have to white list
->> the other router MACs on the router or routers that will be filtering
->> MACs with iptables or batman-adv is not affected by mac filtering.
->
-> iptables works on layer3. Even though you have a mac address filter option it
-> will only catch anything if the packet is moved up to layer3 which does not
-> happen for batman-adv packets. So, iptables will never even see the packets
-> used by batman-adv.
->
-> Cheers,
-> Marek
-
-
-
--- 
-Esteban
+# ip link
+13: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast
+state UP mode DEFAULT qlen 1000
+    link/ether 00:ff:aa:00:00:01 brd ff:ff:ff:ff:ff:ff
+15: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
+mode DEFAULT
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+# batctl if add eth0
+Error - can't open file '/sys/class/net/eth0/batman_adv/mesh_iface':
+Read-only file system
+# ls -l /sys/class/net/eth0/batman_adv/mesh_iface
+-rw-r--r-- 1 root root 4096 Dec 30 18:26
+/sys/class/net/eth0/batman_adv/mesh_iface
+# id
+uid=0(root) gid=0(root) groups=0(root)
+# ip link add dev br0 type bridge
+# ip link set dev eth0 master br0
+# ip link
+18: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast
+master br0 state UP mode DEFAULT qlen 1000
+    link/ether 00:ff:aa:00:00:01 brd ff:ff:ff:ff:ff:ff
+20: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
+mode DEFAULT
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+21: br0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT
+    link/ether 00:ff:aa:00:00:01 brd ff:ff:ff:ff:ff:ff
