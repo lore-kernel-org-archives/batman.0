@@ -1,14 +1,14 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 31 Dec 2012 15:11:24 +0800
-References: <CANiGF9-dq-HrvWrgu9EMC94rP=1YdrmaFbCF2g1SZ9ocu77ysw@mail.gmail.com>
-In-Reply-To: <CANiGF9-dq-HrvWrgu9EMC94rP=1YdrmaFbCF2g1SZ9ocu77ysw@mail.gmail.com>
+Return-Path: <nicoechaniz@altermundi.net>
+Message-ID: <50E31C20.6010604@altermundi.net>
+Date: Tue, 01 Jan 2013 14:25:52 -0300
+From: =?ISO-8859-1?Q?NicoEch=E1niz?= <nicoechaniz@altermundi.net>
 MIME-Version: 1.0
-Message-Id: <201212311511.24877.lindner_marek@yahoo.de>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] batman-adv: Unable to add interface in LXC
+References: <B9683C50-CBE6-40F6-B084-187E41B04CE4@stephan.homeunix.net>
+In-Reply-To: <B9683C50-CBE6-40F6-B084-187E41B04CE4@stephan.homeunix.net>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Unterstanding gateway-mode - why does node have
+ a "sticky" gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +20,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, Pau Koning <paukoning@gmail.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, December 31, 2012 03:34:38 Pau Koning wrote:
-> I am running LXC (SID) under Debian SID and the current git version of
-> batman-adv (v3.7-rc7-1325-gaf5d4f7) +batctl (v2012.4.0-30-ga395164).
-> But it fails to add any of my interfaces and non-batman-adv interfaces
-> can be created without problems
-> 
-> # ip link
-> 13: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast
-> state UP mode DEFAULT qlen 1000
->     link/ether 00:ff:aa:00:00:01 brd ff:ff:ff:ff:ff:ff
-> 15: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
-> mode DEFAULT
->     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-> # batctl if add eth0
-> Error - can't open file '/sys/class/net/eth0/batman_adv/mesh_iface':
-> Read-only file system
+On 12/30/2012 10:16 PM, Jan L=FChr wrote:
+> Hello,
+>=20
+> I started using batman-adv's gateway mode. Sadly, I ran into some trouble=
+ - A client is connected to two gateways via vpn (fastd):
+> # batctl gw_mode
+> client (selection class: 1)
+>=20
+> # batctl gwl
+>       Gateway      (#/255)           Nexthop [outgoingIF]: gw_class ... [=
+B.A.T.M.A.N. adv 2012.4.0, MainIF/MAC: wlan0-1/f6:ec:38:e9:72:35 (bat0)]
+>    6a:4b:93:de:00:84 (255) 6a:4b:93:de:00:84 [  mesh-vpn]: 207 - 48MBit/4=
+8MBit
+> =3D> aa:31:0e:4a:0f:1d (254) aa:31:0e:4a:0f:1d [  mesh-vpn]:  39 - 1024KB=
+it/1024KBit
+>=20
+> # batctl o
+> [B.A.T.M.A.N. adv 2012.4.0, MainIF/MAC: wlan0-1/f6:ec:38:e9:72:35 (bat0)]
+>   Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Pot=
+ential nexthops ...
+> aa:31:0e:4a:0f:1d    0.500s   (255) aa:31:0e:4a:0f:1d [  mesh-vpn]: aa:31=
+:0e:4a:0f:1d (255)
+> 6a:4b:93:de:00:84    0.940s   (255) 6a:4b:93:de:00:84 [  mesh-vpn]: 6a:4b=
+:93:de:00:84 (255)
+>=20
+> The client should use 6a:4b:93:de:00:84 as a gatway, since it provides mu=
+ch higher data rates - however, it is stuck at aa:31:0e:4a:0f:1d.
 
 
-Did you check your kernel log messages ? I'd expect batman-adv to print 
-something there in case of an error.
+I have observed the same behavior.
 
-Cheers,
-Marek
+
