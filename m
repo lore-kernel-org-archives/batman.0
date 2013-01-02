@@ -1,17 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 2 Jan 2013 19:44:21 +0800
-References: <1355570082-19574-1-git-send-email-ordex@autistici.org>
- <201212261808.51135.lindner_marek@yahoo.de>
- <20130102074813.GB27589@ritirata.org>
-In-Reply-To: <20130102074813.GB27589@ritirata.org>
+Date: Wed, 2 Jan 2013 19:52:49 +0800
+References: <1356315256-6572-1-git-send-email-akinobu.mita@gmail.com>
+ <1356315256-6572-21-git-send-email-akinobu.mita@gmail.com>
+ <20121225113036.GD2604@ritirata.org>
+In-Reply-To: <20121225113036.GD2604@ritirata.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201301021944.21367.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: postpone OGM preparation
-	to sending time
+Message-Id: <201301021952.49979.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 20/29] batman-adv: rename random32() to
+	prandom_u32()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,71 +23,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, Akinobu Mita <akinobu.mita@gmail.com>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, "David S. Miller" <davem@davemloft.net>
 
-On Wednesday, January 02, 2013 15:48:13 Antonio Quartulli wrote:
-> > > @@ -468,6 +442,7 @@ static void batadv_iv_ogm_aggregate(struct
-> > > batadv_forw_packet *forw_packet_aggr, memcpy(skb_buff, packet_buff,
-> > > packet_len);
-> > > 
-> > >  	forw_packet_aggr->packet_len += packet_len;
-> > >  	forw_packet_aggr->num_packets++;
-> > > 
-> > > +	forw_packet_aggr->own |= own_packet;
-> > > 
-> > >  	/* save packet direct link flag status */
-> > >  	if (direct_link) {
+On Tuesday, December 25, 2012 19:30:36 Antonio Quartulli wrote:
+> On Mon, Dec 24, 2012 at 11:14:07AM +0900, Akinobu Mita wrote:
+> > Use more preferable function name which implies using a pseudo-random
+> > number generator.
 > > 
-> > Using "|= own_packet" isn't strictly necessary because
-> > "forw_packet_aggr->own" isn't a bit field.
+> > Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> > Cc: Marek Lindner <lindner_marek@yahoo.de>
+> > Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> > Cc: Antonio Quartulli <ordex@autistici.org>
+> > Cc: b.a.t.m.a.n@lists.open-mesh.org
+> > Cc: "David S. Miller" <davem@davemloft.net>
+> > Cc: netdev@vger.kernel.org
 > 
-> Well the point is that here own_packet could be false, but
-> forw_packet_aggr->own might already be true, so I didn't want to destroy
-> the original value.
+> Acked-by: Antonio Quartulli <ordex@autistici.org>
 
-Good point. However, your "solution" is far from obvious. Either you make it 
-more obvious or you should add a comment.
+Applied in revision 02c5591.
 
-
-> > Did you vigorously test this code ? Especially, multi-node with multiple
-> > interface setups are of interest. Also use different orig intervals to
-> > ensure it still works everywhere.
-> 
-> I will try more topologies and in particular different orig intervals as
-> soon as I have the possibility
-
-Ok.
-
-
-> > The thing is: Throughout the code you can find the implicite assumption
-> > of the first aggregated packet being an "own packet" (if
-> > forw_packet_aggr->own is set). Therefore, you have to be very careful
-> > changing that logic. One function you definitely overlooked is
-> > batadv_iv_ogm_send_to_if() but there might be others.
-
-You did not comment this section. Hopefully it wasn't overlooked ?
-
-
-> > > +/**
-> > > + * batadv_iv_ogm_send - prepare an send an own OGM
-> > > + * @work: kernel work struct
-> > > + *
-> > > + * Prepare the OGM and immediately enqueue it for sending
-> > > + */
-> > 
-> > prepare and send an own OGM
-> > 
-> >         ^^^
-> 
-> well, technically it is enqueued, not sent..
-
-Your kernel doc states:
-batadv_iv_ogm_send - prepare an send an own OGM
-
-Therefore I proposed a fix:
-batadv_iv_ogm_send - prepare and send an own OGM
-
-If you wish to reword it altogether that's also ok for me.
-
-Cheers,
+Thanks,
 Marek
