@@ -1,9 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu,  3 Jan 2013 23:32:03 +0800
-Message-Id: <1357227125-14190-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batctl: man page - improve selection
-	class 1 explanation
+Date: Thu,  3 Jan 2013 23:32:04 +0800
+Message-Id: <1357227125-14190-2-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1357227125-14190-1-git-send-email-lindner_marek@yahoo.de>
+References: <1357227125-14190-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batctl: man page - align selection class
+	examples
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,22 +22,27 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- man/batctl.8 |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ man/batctl.8 |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/man/batctl.8 b/man/batctl.8
-index 3c8edce..7e4f391 100644
+index 7e4f391..a1bfbc0 100644
 --- a/man/batctl.8
 +++ b/man/batctl.8
-@@ -128,7 +128,7 @@ default: 20 \-> late switch (TQ 20)
- .RS 16
- examples:  1 -> fast connection
- .RS 16
--consider the gateway's advertised throughput as well as the link quality towards the gateway
-+consider the gateway's advertised throughput as well as the link quality towards the gateway and stick with the selection until the gateway disappears
+@@ -132,11 +132,11 @@ consider the gateway's advertised throughput as well as the link quality towards
  .RE
  .RE
  .RS 25
+- 2  \-> stable connection
++  2 \-> stable connection
+ .RS 7
+ chooses the gateway with the best link quality and stick with it (ignore the advertised throughput)
+ .RE
+- 3  \-> fast switch connection
++  3 \-> fast switch connection
+ .RS 7
+ chooses the gateway with the best link quality but switches to another gateway as soon as a better one is found
+ .RE
 -- 
 1.7.10.4
 
