@@ -1,12 +1,14 @@
-Return-Path: <ff@stephan.homeunix.net>
-Content-Type: text/plain; charset=iso-8859-1
-Mime-Version: 1.0 (Apple Message framework v1085)
-From: =?iso-8859-1?Q?Jan_L=FChr?= <ff@stephan.homeunix.net>
-In-Reply-To: <201301032300.04942.lindner_marek@yahoo.de>
-Date: Thu, 3 Jan 2013 16:52:42 +0100
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <6D44E9FE-9AC6-4747-8BF6-52E6647C0625@stephan.homeunix.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 4 Jan 2013 00:05:05 +0800
 References: <201301032300.04942.lindner_marek@yahoo.de>
+ <6D44E9FE-9AC6-4747-8BF6-52E6647C0625@stephan.homeunix.net>
+In-Reply-To: <6D44E9FE-9AC6-4747-8BF6-52E6647C0625@stephan.homeunix.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201301040005.05457.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Packet-Loss-Peaks in a Freifunk-Network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,47 +23,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello,
-
-Am 03.01.2013 um 16:00 schrieb Marek Lindner:
-
-> On Thursday, January 03, 2013 22:16:32 Jan L=FChr wrote:
->> We noticed a few, unusual things:
->> -> regardless of the link tested (kif or fastd3) and regardless of =
-the node
->> (node1, node2) small interruptions (loss-peaks) are appearing. -> =
-These
->> peaks appear almost synchronous, a few "noise" comes from different
->> vpn-links and node-wan-uplinks. -> Since all links are wired, =
-radio-noise
->> won't have an impact
->> -> The losses appear in batman-adv 2011.2.0 as well as in batman-adv
->> 2012.4.0. Thus I suspect that batman-adv is triggering theses
->> interruptions.
+On Thursday, January 03, 2013 23:52:42 Jan L=FChr wrote:
+> Well, I started echoing on the underlying VPN-connection as well and
+> changed the chart-titles for clearance:
 >=20
-> If you believe batman-adv is the culprit, please remove batman-adv =
-from your=20
-> test setup and repeat the exact same test. Otherwise we move into the =
-realm of=20
-> speculation.
+> In chart 4 and chart 5 RTT / Loss from kif.kbu to node-1 is measured.
+> In chart 4 kif is sending ICMPv6 to the link-local address of
+> bat0-interface - in chart 5 the link_local address of the underlying
+> vpn-interface is used.
 
-Well, I started echoing on the underlying VPN-connection as well and =
-changed the chart-titles for clearance:
+All tests are from the same node to the same node using exactly the same me=
+ans=20
+(protocols, etc) with the exception of batman-adv ? Sorry for my dumb quest=
+ion=20
+but your topology might be obvious to you but isn't for me (us?).
 
-In chart 4 and chart 5 RTT / Loss from kif.kbu to node-1 is measured.=20
-In chart 4 kif is sending ICMPv6 to the link-local address of =
-bat0-interface - in chart 5 the link_local address of the underlying =
-vpn-interface is used.
+The spikes on your graphs show the packet loss ? How can we have a RTT < 50=
+ms=20
+while experiencing packet loss ?
 
-The loss-peaks appear in char 4 (bat0) only.
-
-Thanks for your help,
-
-Keep smiling
-yanosz
-
->=20
-> PS: Forgot to click "reply to all", sorry for that.
-
-Well, I set it f2up this list, since you're node subscribed. Sorry for =
-not mentioning it.=
+Cheers,
+Marek
