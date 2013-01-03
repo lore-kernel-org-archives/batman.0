@@ -1,12 +1,17 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 3 Jan 2013 23:00:04 +0800
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Return-Path: <ff@stephan.homeunix.net>
+Content-Type: text/plain; charset=iso-8859-1
+Mime-Version: 1.0 (Apple Message framework v1085)
+From: =?iso-8859-1?Q?Jan_L=FChr?= <ff@stephan.homeunix.net>
+In-Reply-To: <201301032258.15573.lindner_marek@yahoo.de>
+Date: Thu, 3 Jan 2013 16:01:07 +0100
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <201301032300.04942.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Packet-Loss-Peaks in a Freifunk-Network
+Message-Id: <82C77F63-2AB3-4AEB-A86A-23B3488E6C51@stephan.homeunix.net>
+References: <B9683C50-CBE6-40F6-B084-187E41B04CE4@stephan.homeunix.net>
+ <201301030957.04081.lindner_marek@yahoo.de>
+ <4687DDE1-A80F-46C5-B6BC-99763C1D856F@stephan.homeunix.net>
+ <201301032258.15573.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Unterstanding gateway-mode - why do nodes have a
+	"sticky" gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,30 +24,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Bonn und Umgebung Allgemeine Mailingliste zum Freifunk =?iso-8859-1?q?K=F6ln?= <freifunk-bonn@lists.bonn.freifunk.net>
 
-On Thursday, January 03, 2013 22:16:32 Jan L=FChr wrote:
-> We noticed a few, unusual things:
-> -> regardless of the link tested (kif or fastd3) and regardless of the no=
-de
-> (node1, node2) small interruptions (loss-peaks) are appearing. -> These
-> peaks appear almost synchronous, a few "noise" comes from different
-> vpn-links and node-wan-uplinks. -> Since all links are wired, radio-noise
-> won't have an impact
-> -> The losses appear in batman-adv 2011.2.0 as well as in batman-adv
-> 2012.4.0. Thus I suspect that batman-adv is triggering theses
-> interruptions.
+Hello,
 
-If you believe batman-adv is the culprit, please remove batman-adv from you=
-r=20
-test setup and repeat the exact same test. Otherwise we move into the realm=
- of=20
-speculation.
+Am 03.01.2013 um 15:58 schrieb Marek Lindner:
 
-Haven't heard of any "peak loss" due to batman-adv.
+> On Thursday, January 03, 2013 19:03:11 Jan L=FChr wrote:
+>> c) Disable regular gateway, force node to switch to backup
+>> kif:~# batctl gw_mode client
+>>=20
+>> Gateway-List is:
+>> reifunk-b0487acb2d58:~# batctl gwl
+>>      Gateway      (#/255)           Nexthop [outgoingIF]: gw_class =
+...
+>> [B.A.T.M.A.N. adv 2012.4.0, MainIF/MAC: wlan0-1/b2:48:7a:cb:2d:59 =
+(bat0)]
+>> =3D> aa:31:0e:4a:0f:1d (255) aa:31:0e:4a:0f:1d [  mesh-vpn]:  39 -
+>> 1024KBit/1024KBit
+>>=20
+>> d) Re-enable regular gateway
+>> root@kif:~# /usr/local/sbin/batctl gw server 100Mbit/100Mbit
+>=20
+> Ah! You failed to mention this part in your initial email.
+>=20
+> The behavior is easily explained: batman-adv does not switch gateway =
+whenever=20
+> a new gateway is found (even if it is a better gateway) unless the =
+selection=20
+> class is on fast or late switching.
+>=20
 
-Cheers,
-Marek
+It is. - Sorry, forgot to mention:
+Freifunk-b0487acb2d58:~# batctl gw_mode
+client (selection class: 1)
 
+=3D> 1 -> fast connection consider the gateway's advertised  throughput =
+as well as the link quality towards the gateway
 
-PS: Forgot to click "reply to all", sorry for that.
+Keep smiling
+yanosz=
