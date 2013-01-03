@@ -1,14 +1,17 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 3 Jan 2013 09:52:57 +0800
-References: <CAFevQmMNTep6A0-+0dCc4-qX3ty+Mo7EUFR4CE2WohgRdA3ZjA@mail.gmail.com>
-In-Reply-To: <CAFevQmMNTep6A0-+0dCc4-qX3ty+Mo7EUFR4CE2WohgRdA3ZjA@mail.gmail.com>
+Date: Thu, 3 Jan 2013 09:57:03 +0800
+References: <B9683C50-CBE6-40F6-B084-187E41B04CE4@stephan.homeunix.net>
+ <50E31C20.6010604@altermundi.net>
+ <ABCFB139-9D63-48DB-8C1F-8A0D6E10AD02@stephan.homeunix.net>
+In-Reply-To: <ABCFB139-9D63-48DB-8C1F-8A0D6E10AD02@stephan.homeunix.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201301030952.57862.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] netifd batman-adv proto
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201301030957.04081.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Unterstanding gateway-mode - why do nodes have a
+	"sticky" gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,30 +23,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday, January 02, 2013 21:11:41 Filippo Sallemi wrote:
-> I've writed a batman-adv proto in according on new netifd system of
-> attitude adjustement release.
-> With this script the batman-adv configuration could be moved on
-> /etc/config/network file istead of /etc/config/batman-adv and the
-> /lib/batman-adv/config.sh is no longer required.
-> 
-> es.
-> 
-> config interface mesh
->     option proto bat
->     option device bat0
->     option interfaces 'wlan0 wlan1'
->     option gw_mode server
->     ...
-> 
-> if someone think that my work could be useful and can provide a better
-> and elegant integration on openwrt please keep in touch.
+On Thursday, January 03, 2013 07:28:02 Jan L=FChr wrote:
+> >> The client should use 6a:4b:93:de:00:84 as a gatway, since it provides
+> >> much higher data rates - however, it is stuck at aa:31:0e:4a:0f:1d.
+> >=20
+> > I have observed the same behavior.
+>=20
+> That's quite frustrating. Can I debug, when and why batman-adv actually
+> chooses as specific gateway?
 
-Can you explain the advantages of your approach compared to the netifd 
-integration posted a couple of weeks ago ? I am not netifd expert therefore I 
-am looking for the best way forward.
+Yes, you can. Enable the batman-adv debug log at compile and runtime. While=
+=20
+retrieving the 'batman' log messages you should see something like:
+Adding route to gateway ..
+Changing route to gateway ..
+=46ound new gateway ..
+etc
 
-Thanks,
+Maybe you can post the result here ?
+
+Cheers,
 Marek
