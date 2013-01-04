@@ -1,16 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 4 Jan 2013 08:39:00 +0800
-References: <B9683C50-CBE6-40F6-B084-187E41B04CE4@stephan.homeunix.net>
- <201301032314.22606.lindner_marek@yahoo.de> <50E61CF9.2050305@altermundi.net>
-In-Reply-To: <50E61CF9.2050305@altermundi.net>
+Return-Path: <ordex@autistici.org>
+Date: Fri, 4 Jan 2013 02:44:00 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130104014400.GD27589@ritirata.org>
+References: <1357212205-7410-1-git-send-email-ordex@autistici.org>
+ <201301031948.34172.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201301040839.00852.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Unterstanding gateway-mode - why do nodes have a
-	"sticky" gateway
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="hoZxPH4CaxYzWscb"
+Content-Disposition: inline
+In-Reply-To: <201301031948.34172.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Start new development cycle
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,46 +23,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, January 04, 2013 08:06:17 NicoEch=E1niz wrote:
-> > You did mention you were using selection class 1. I was referring to yo=
-ur
-> > test in which you turn on/off your best gateway. As I explained in my
-> > previous mail: batman-adv does not switch the gateway once it has chosen
-> > a gateway unless you select fast or late switching as selection class.
-> > Selection class 1 does not fall into this category which means a gateway
-> > reselection only happens if the currently selected gateway disappears.
->=20
-> Marek, could you please clarify this?
->=20
-> From the man page I don't see an option that would behave as Jan (and I)
-> seem to be expecting it to work. That is: switch to a better gateway -
-> with more bandwidth and comparable link quality - when it's available.
->=20
-> [..]
->=20
-> Would mode 3 accomplish this fast switching? It doesn't mention if this
-> mode will consider advertised throughput or not; only selection class 1
-> mentions throughput.
 
-Selection class 3 and beyond do change the gateway when a better one become=
-s=20
-available. But as you correctly pointed out these selection classes don't=20
-consider the announced bandwidth for the simple reason that nobody cared. I=
-n=20
-most wireless scenarios (the main playground for batman-adv) the path towar=
-ds=20
-the gateway turned out to be more critical than the gateway's pipe to the=20
-internet.
+--hoZxPH4CaxYzWscb
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-=46eel free to propose something if you care about having this option. The=
-=20
-necessary code shouldn't be too hard to add. Backward compatibility will be=
-=20
-more difficult to achieve.
+On Thu, Jan 03, 2013 at 07:48:33PM +0800, Marek Lindner wrote:
+> On Thursday, January 03, 2013 19:23:25 Antonio Quartulli wrote:
+> >  #ifndef BATADV_SOURCE_VERSION
+> > -#define BATADV_SOURCE_VERSION "2012.5.0"
+> > +#define BATADV_SOURCE_VERSION "2012.6.0"
+> >  #endif
+>=20
+> Guess you wanted to write "2013.0.0" ?
 
-By the way, I posted a patch to improve the man page explanation a couple o=
-f=20
-hours ago.
+
+oh right! Happy new year people! :)
+
 
 Cheers,
-Marek
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--hoZxPH4CaxYzWscb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQ5jPgAAoJEADl0hg6qKeOV4QP/2+UCKdui228OLXf4dEpu8Q1
+hOOwtimRgqEWUqvdiKgOUg9w87Hfmq6CE0nBgcZntsPEg5NvariQiVljbbtnD5yd
+fdNM/H4qfqXykhxOZkxnpnkHes/GQUHg8SQpu0lhIHjnGZpdzIZMXLzuGWfyAyqQ
+kc9wG2DkQB4dFQ/HRoWhwvjR744SrOOFCA/LT/ahIr+B/L63Cdy5lOTL/bmPVfuo
+HZ9DaRE+Gyv7klwTXukDT/7HAD0LPJKf9cvNka2pGqda0cE9HFCRs00onq/L3lZH
+9P1oBIS7zyvLVG/tAiwto2dMgfjC9bpjy6Eu2UTasksZuvqPTFZHYL8e+7D0pSqI
+JqO3ppCYMBySUy4o9P8RSMq5+v4Od5stL3XxQbS0w2E8Hg92wkOhzenxBINC7yfA
+/xzICsx7/pYCgG4x/K0heLnRlVhxhcNq1PeYkLrqGU5vGmgug1LYEcgpHOPvxdR+
+0jUBN/kUJ24JCzMbH5eSWu67tbZT0/7uL0Qbem64OckHMVQvGn/b4rVGgoe7nda3
+27rGp3Kkx3TLW5/aw4PAvujN2alWvL36VVR8kb/DG87kOyyk48HrPh55mEqrTNJH
+W62EOZbfuScJFLDxVA2/AiUZGAUeczubTlKc3WjYRPlpuEsinA20Mj/kcwSBcRYs
+fM1TaCeLPyxFJGKos/bn
+=sdBV
+-----END PGP SIGNATURE-----
+
+--hoZxPH4CaxYzWscb--
