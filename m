@@ -1,15 +1,17 @@
-Return-Path: <ff@stephan.homeunix.net>
-Content-Type: text/plain; charset=iso-8859-1
-Mime-Version: 1.0 (Apple Message framework v1085)
-From: =?iso-8859-1?Q?Jan_L=FChr?= <ff@stephan.homeunix.net>
-In-Reply-To: <201301040005.05457.lindner_marek@yahoo.de>
-Date: Thu, 3 Jan 2013 17:17:50 +0100
+Return-Path: <nicoechaniz@altermundi.net>
+Message-ID: <50E61CF9.2050305@altermundi.net>
+Date: Thu, 03 Jan 2013 21:06:17 -0300
+From: =?ISO-8859-1?Q?NicoEch=E1niz?= <nicoechaniz@altermundi.net>
+MIME-Version: 1.0
+References: <B9683C50-CBE6-40F6-B084-187E41B04CE4@stephan.homeunix.net>
+ <201301032258.15573.lindner_marek@yahoo.de>
+ <82C77F63-2AB3-4AEB-A86A-23B3488E6C51@stephan.homeunix.net>
+ <201301032314.22606.lindner_marek@yahoo.de>
+In-Reply-To: <201301032314.22606.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <11DE1CAB-ADE0-429F-97F1-ED38894E1CE1@stephan.homeunix.net>
-References: <201301032300.04942.lindner_marek@yahoo.de>
- <6D44E9FE-9AC6-4747-8BF6-52E6647C0625@stephan.homeunix.net>
- <201301040005.05457.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Packet-Loss-Peaks in a Freifunk-Network
+Subject: Re: [B.A.T.M.A.N.] Unterstanding gateway-mode - why do nodes have a
+ "sticky" gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,46 +25,87 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello,
-
-Am 03.01.2013 um 17:05 schrieb Marek Lindner:
-
-> On Thursday, January 03, 2013 23:52:42 Jan L=FChr wrote:
->> Well, I started echoing on the underlying VPN-connection as well and
->> changed the chart-titles for clearance:
->>=20
->> In chart 4 and chart 5 RTT / Loss from kif.kbu to node-1 is measured.
->> In chart 4 kif is sending ICMPv6 to the link-local address of
->> bat0-interface - in chart 5 the link_local address of the underlying
->> vpn-interface is used.
+On 01/03/2013 12:14 PM, Marek Lindner wrote:
+> On Thursday, January 03, 2013 23:01:07 Jan L=FChr wrote:
+>>> Ah! You failed to mention this part in your initial email.
+>>>
+>>> The behavior is easily explained: batman-adv does not switch gateway
+>>> whenever a new gateway is found (even if it is a better gateway) unless
+>>> the selection class is on fast or late switching.
+>>
+>> It is. - Sorry, forgot to mention:
+>> Freifunk-b0487acb2d58:~# batctl gw_mode
+>> client (selection class: 1)
+>>
+>> =3D> 1 -> fast connection consider the gateway's advertised  throughput =
+as
+>> well as the link quality towards the gateway
 >=20
-> All tests are from the same node to the same node using exactly the =
-same means=20
-> (protocols, etc) with the exception of batman-adv ? Sorry for my dumb =
-question=20
-> but your topology might be obvious to you but isn't for me (us?).
-
-yes.
-
->=20
-> The spikes on your graphs show the packet loss ?
-
-yes.
-
-> How can we have a RTT < 50ms=20
-> while experiencing packet loss ?
+> You did mention you were using selection class 1. I was referring to your=
+ test=20
+> in which you turn on/off your best gateway. As I explained in my previous=
+=20
+> mail: batman-adv does not switch the gateway once it has chosen a gateway=
+=20
+> unless you select fast or late switching as selection class. Selection cl=
+ass 1=20
+> does not fall into this category which means a gateway reselection only=20
+> happens if the currently selected gateway disappears.
 
 
-Collectd uses a ping rate of 10 seconds here, RTT >=3D 0.9s =3D 900ms is =
-"loss"
-If 1/3 arrives in < 50ms and 2/3 are lost, RTT is < 50ms  while loss =3D =
-2/3.
+Marek, could you please clarify this?
 
-Btw. I you wanna see our setup, we can take a tour via ssh / tmux - I =
-can provide the rrd-Files, too.
-You can contact my by jabber (yanosz@jabber.ccc.de) as well,
+From the man page I don't see an option that would behave as Jan (and I) s=
+eem to be expecting it to work. That is: switch to a better gateway - with =
+more bandwidth and comparable link quality - when it's available.
 
-Thanks,
-Keep smiling
-yanosz
+
+gw_mode|gw [off|client|server] [sel_class|bandwidth]
+[...]
+              If the node is a gateway client the parameter will decide whi=
+ch
+              criterias to consider when the batman-adv module has to choose
+              between different internet connections announced by the afore-
+              mentioned servers.
+                        default: 20 -> late switch (TQ 20)
+                       examples:  1 -> fast connection
+                                       consider the gateway's advertised
+                                       throughput as well as the link quali=
+ty
+                                       towards the gateway
+                                 2  -> stable connection
+                                       chooses the gateway with the best li=
+nk
+                                       quality and stick with it (ignore the
+                                       advertised throughput)
+                                 3  -> fast switch connection
+                                       chooses the gateway with the best li=
+nk
+                                       quality but switches to another gate=
+way
+                                       as soon as a better one is found
+                                 XX -> late switch connection
+                                       chooses the gateway with the best li=
+nk
+                                       quality but switches to another gate=
+way
+                                       as soon as a better one is found whi=
+ch
+                                       is at least XX TQ better than the cu=
+r-
+                                       rently selected gateway (XX has to b=
+e a
+                                       number between 3 and 256).
+
+
+Would mode 3 accomplish this fast switching? It doesn't mention if this mod=
+e will consider advertised throughput or not; only selection class 1 mentio=
+ns throughput.
+
+
+--
+NicoEch=E1niz
+
+
+
 
