@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 6 Jan 2013 21:47:08 +0800
+Date: Sun, 6 Jan 2013 21:48:23 +0800
 References: <1357227125-14190-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1357227125-14190-1-git-send-email-lindner_marek@yahoo.de>
+ <1357227125-14190-2-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1357227125-14190-2-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201301062147.08479.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batctl: man page - improve selection
-	class 1 explanation
+Message-Id: <201301062148.23545.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batctl: man page - align selection
+	class examples
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,13 +24,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday, January 03, 2013 23:32:03 Marek Lindner wrote:
+On Thursday, January 03, 2013 23:32:04 Marek Lindner wrote:
 > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 > ---
->  man/batctl.8 |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  man/batctl.8 |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Applied in revision 82e29af.
+Applied in revision 7053482.
 
 Regards,
 Marek
