@@ -1,16 +1,18 @@
-Return-Path: <ff@stephan.homeunix.net>
-Content-Type: text/plain; charset=iso-8859-1
-Mime-Version: 1.0 (Apple Message framework v1085)
-From: =?iso-8859-1?Q?Jan_L=FChr?= <ff@stephan.homeunix.net>
-In-Reply-To: <50E76594.5010903@altermundi.net>
-Date: Sat, 5 Jan 2013 10:47:57 +0100
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <4FD8BE79-700F-402E-AC8B-ACA10D6DD61C@stephan.homeunix.net>
-References: <B9683C50-CBE6-40F6-B084-187E41B04CE4@stephan.homeunix.net>
- <201301040839.00852.lindner_marek@yahoo.de> <50E6F17B.1010305@altermundi.net>
- <201301050141.04885.lindner_marek@yahoo.de> <50E76594.5010903@altermundi.net>
-Subject: Re: [B.A.T.M.A.N.] Unterstanding gateway-mode - why do nodes have a
-	"sticky" gateway
+Return-Path: <ordex@autistici.org>
+Date: Sun, 6 Jan 2013 10:00:17 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130106090016.GF27589@ritirata.org>
+References: <1357215562-6288-1-git-send-email-akinobu.mita@gmail.com>
+ <1357215562-6288-20-git-send-email-akinobu.mita@gmail.com>
+ <20130104021252.GE27589@ritirata.org>
+ <CAC5umyhLB++mh=-pFRzhD-YxZH2RwC5ED4g8mYxS5pYGcbxsvw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ULyIDA2m8JTe+TiX"
+Content-Disposition: inline
+In-Reply-To: <CAC5umyhLB++mh=-pFRzhD-YxZH2RwC5ED4g8mYxS5pYGcbxsvw@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] [PATCH -v2 19/26] batman-adv: rename random32()
+	to prandom_u32()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,104 +24,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-Hello,
-
-Am 05.01.2013 um 00:28 schrieb NicoEch=E1niz:
-
-> On 01/04/2013 02:41 PM, Marek Lindner wrote:
->> On Friday, January 04, 2013 23:12:59 NicoEch=E1niz wrote:
->>>> Selection class 3 and beyond do change the gateway when a better =
-one
->>>> becomes available. But as you correctly pointed out these selection
->>>> classes don't consider the announced bandwidth for the simple =
-reason
->>>> that nobody cared. In most wireless scenarios (the main playground =
-for
->>>> batman-adv) the path towards the gateway turned out to be more =
-critical
->>>> than the gateway's pipe to the internet.
->>>>=20
->>>> Feel free to propose something if you care about having this =
-option. The
->>>> necessary code shouldn't be too hard to add. Backward compatibility =
-will
->>>> be more difficult to achieve.
->>>=20
->>> I believe that those of us who chose to use selection class 1 would
->>> prefer if it were "dynamic". So if a new gateway appears, then the
->>> client would evaluate with the same previous criteria if it is =
-better or
->>> not (considering "the gateway's advertised throughput as well as the
->>> link quality") and switch accordingly. I see no reason why when =
-someone
->>> chooses selection class 1 she would be expecting to choose the best
->>> available gw once and not ever check again.
->>>=20
->>> If a network is stable, when a new better gw appears in some area it
->>> won't be selected until nodes are restarted, and that might be a =
-long time.
->>=20
->> You misread my statement. Nobody needs to be convinced of the =
-usefulness of=20
->> such a feature (at least for what concerns myself). Somebody needs to =
-come up=20
->> with a solid proposal which then needs to be implemented. That is =
-what I meant=20
->> by saying "Feel free to propose something [..]".
->=20
->>> One other change that might be interesting would be the addition of =
-a
->>> setting for how much the advertised throughput affects gw selection.
->>> I've seen Jan uses 96/96Mbit as advertised throughput on one router; =
-I
->>> do the same on our "main gateway", but maybe it would be better if =
-we
->>> could actually advertise the real throughput and have a setting to
->>> control how much the bandwidth difference affects the selection.
->>=20
->> Again, feel free to propose something which can be discussed.
->=20
-> It could just be implemented as a new setting like: gw_bw_weight
->=20
-> which would regulate how much gw bandwidth/throughput affects best gw
-> calculation.
->=20
-> I don't know what's the current algorithm but I guess there would be =
-no
-> problem with backwards compatibility here; if the value is not set, =
-the
-> default should produce the same result we get now.
->=20
->=20
-> So to make the proposal clear:
->=20
-> I'd change options for gw_mode client to something like this:
->=20
-> gw_sel_class [1|2] (1 considers TQ and bw, 2 only considers TQ)
->=20
-> gw_tq_threshold [3...256]
-> the minimum TQ delta to switch to a better gw, defaults to 20.
->=20
-> gw_bw_weight [value from 0 to 1]
-> how much does advertised gw bandwidth affect the selection. 0 does not
-> affect selection, 1 has most effect. Defaults to 1 but has no effect =
-if
-> gw_sel_class is 2.
->=20
-> For backwards compatibility, if gw_sel_class > 2, it should behave as
-> the proposed option 2 with gw_tq_threshold set to the actual value. =
-So,
-> for example gw_sel_class 20 would be "translated" to: gw_sel_class 2,
-> gw_tq_threshold 20, al least until it's deprecated.
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, akpm@linux-foundation.org, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
 
 
-I guess, we'll be fine with this. However, it's not clear to me, in what =
-way (formula) gw_bw_weight will actually influence the selection =
-process.
-Do you have any proposals?
+--ULyIDA2m8JTe+TiX
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks
-Keep smiling
-yanosz=
+On Fri, Jan 04, 2013 at 10:50:41PM +0900, Akinobu Mita wrote:
+> 2013/1/4 Antonio Quartulli <ordex@autistici.org>:
+> > On Thu, Jan 03, 2013 at 09:19:15PM +0900, Akinobu Mita wrote:
+> >> Use more preferable function name which implies using a pseudo-random
+> >> number generator.
+> >>
+> >> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> >> Acked-by: Antonio Quartulli <ordex@autistici.org>
+> >> Cc: Marek Lindner <lindner_marek@yahoo.de>
+> >> Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> >> Cc: Antonio Quartulli <ordex@autistici.org>
+> >> Cc: b.a.t.m.a.n@lists.open-mesh.org
+> >> Cc: "David S. Miller" <davem@davemloft.net>
+> >> Cc: netdev@vger.kernel.org
+> >> ---
+> >
+> > Hello Akinobu,
+> >
+> > as you can see in <201301021952.49979.lindner_marek@yahoo.de>, Marek Li=
+ndner
+> > already applied this change onto our tree. You didn't need to resend th=
+is patch
+> > to netdev, it will be sent by us through a future pull request.
+>=20
+> Yes. I read Marek's email. But I included it in v2 again in order not
+> to break the build. Because it doesn't show up the latest linux-next yet
+> and the last patch 26/26 removes random32() and srandom32().
+>=20
+> But I should have mentioned it and trimmed the Cc list.
+> Sorry for the confusion.
+
+Ok..everything is fine as soon David won't apply this patch.
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--ULyIDA2m8JTe+TiX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQ6T0gAAoJEADl0hg6qKeORmoP/0ufdpjCTS3JAqZTBxhxztqA
+66ijELkVTinlb5XENn72cTm3kSvFzacZN0+nOFyW+MiQ34xCuuvZPeKSHZPa5fdF
+YBbWX8+KZPBVKRekMFv12P8wRuh3FBIHF9tnJE//uZ98w5GKyrCjSlC58kLf1Xqy
+2jssHcPi/fsqHzjxF7V7NdZV5PtrekUtjyddwmH2pAicpcbwWWpmO4FZH6DkPcho
+lR8tbXJh/I3bDo8Qrwk0wW6yAuFduiAwYwXkOOKoTuauq25tP+9VwrU4/yrcl7Fp
+JJWHHgUsAAMu/saey22dGR8fckGBYRcxBsuk080vsQ82lsbII5nx9NSDFOsZLyW2
+uVbQLZEeERrwPLbovabPwb+rre9QgaW0x57vPpkm5EwJa/0ukO7ojUrymoKhiGcr
+kHVNmO633vq+yM2/IYxpAaWGEViuFr0hFkg/9PXqRjUzbnOBLVThUYKqwOO0LIq2
+ILA7mEknuQxToFGS3uujxroRRsvTEEh0lOwEJQsOwqzCr61zzPBcAaQbyhONmpnz
+bHOAxQcgbuvkCH3x9RknfyPpbJlg/J/ezdG2BV7lsgirBNMLE+7d6xNB0IG6SXyc
+CCiVRMFS5Lbp/1RF0KBEAvKiVm+m5X55BcIy1KPr0cFzyAxZy6cRoH3u6TvAp8xn
+dAjmVFueY0eZ0lj8yOzQ
+=VonP
+-----END PGP SIGNATURE-----
+
+--ULyIDA2m8JTe+TiX--
