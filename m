@@ -1,14 +1,8 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 7 Jan 2013 07:42:27 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130107064227.GA10699@pandem0nium>
-References: <50E9FAD0.8000004@futurec.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="Nq2Wo0NMKNjxTN9z"
-Content-Disposition: inline
-In-Reply-To: <50E9FAD0.8000004@futurec.net>
-Subject: Re: [B.A.T.M.A.N.] wpa-none through openwrt config
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon,  7 Jan 2013 12:11:26 +0100
+Message-Id: <1357557088-17866-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2013-01-07
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,81 +14,81 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+
+here are two harmless "fixes" intended for net:
+one is fixing the versioning number in order to keep it in sync with the year of
+release and the other simply updates the copyright years in each and every file.
+
+Please pull or let me know if you find any problem.
+
+Thanks a lot,
+	Antonio
 
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The following changes since commit c7e2e1d72ed7707239d20525e0ebcad7e3303659:
 
-Hello Ray,
+  ipv4: fix NULL checking in devinet_ioctl() (2013-01-06 21:11:18 -0800)
 
-On Sun, Jan 06, 2013 at 02:29:36PM -0800, Ray Gibson wrote:
-> Hello,
->=20
-> I'm trying to get wpa-none happy on my bullet m5's running
-> batman-adv (aa-rc1 with batman-adv 2012.3.0).  I can make it work by
-> running wpa_supplicant manually with the correct options but am
-> interested in having it work through the uci config files.  Is this
-> possible?  The wpa_supplicant.sh script seems to want to force
-> wpa-psk with any options that force wpa_supplicant, which generate a
-> relatively useless supplicant config file for ibss. This also makes
-> wlan0 get the default 1500 MTU.
->=20
-> Here's my "semi-working" wpa_supplicant.conf file, after I increase
-> the MTU then batman talks properly and sees the other node.
-> semi-working because even though batctl o sees the other node it
-> can't ping it unless the psk is commented out.. :-\
->=20
-> ctrl_interface=3D/var/run/wpa_supplicant
-> ctrl_interface_group=3D0
-> eapol_version=3D1
-> ap_scan=3D2
-> fast_reauth=3D1
-> #IBSS/ad-hoc mode with WPA2/AES encryption
-> network=3D{
->     ssid=3D"batmesh"
->     bssid=3D20:aa:bb:cc:dd:ee
->     mode=3D1
->     scan_ssid=3D1
->     frequency=3D5765
->     fixed_freq=3D1
->     mcast_rate=3D18
->     htmode=3DHT20
->     proto=3DWPA
->     key_mgmt=3DWPA-NONE
->     pairwise=3DNONE
->     group=3DCCMP
->     psk=3D"xxxxxxxx"
-> }
+are available in the git repository at:
 
-Have you made sure that WPA-NONE works without batman-adv? It appears
-that openwrt currently doesn't support WPA-NONE at all driver-wise, at
-least this bug report suggests it (don't know if its a problem in wpa_suppl=
-icant,
-madwifi, or any other driver):
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
 
-https://dev.openwrt.org/ticket/9190
+for you to fetch changes up to d5c184eec815d28d042683f578f6d93224d9dfa9:
 
-You can try running WPA-NONE, set some IPs and let the nodes ping each othe=
-r.
-If this works, batman-adv should[tm] work too.
+  batman-adv: update copyright years (2013-01-07 11:43:19 +0100)
 
-Cheers,
-	Simon
+----------------------------------------------------------------
+Included fixes are:
+- Fix version number to keep consistency with the year of release
+- Update copyright years to 2013 in each file
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+----------------------------------------------------------------
+Antonio Quartulli (2):
+      batman-adv: Start new development cycle
+      batman-adv: update copyright years
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAlDqblMACgkQrzg/fFk7axZ/aACgvQPQY7oG2Zz6E7uellW93cE5
-E+AAoIZPh++CRqArkEwzoDBCecmfoozp
-=HXQU
------END PGP SIGNATURE-----
-
---Nq2Wo0NMKNjxTN9z--
+ net/batman-adv/bat_algo.h              | 2 +-
+ net/batman-adv/bat_iv_ogm.c            | 2 +-
+ net/batman-adv/bitarray.c              | 2 +-
+ net/batman-adv/bitarray.h              | 2 +-
+ net/batman-adv/bridge_loop_avoidance.c | 2 +-
+ net/batman-adv/bridge_loop_avoidance.h | 2 +-
+ net/batman-adv/debugfs.c               | 2 +-
+ net/batman-adv/debugfs.h               | 2 +-
+ net/batman-adv/distributed-arp-table.c | 2 +-
+ net/batman-adv/distributed-arp-table.h | 2 +-
+ net/batman-adv/gateway_client.c        | 2 +-
+ net/batman-adv/gateway_client.h        | 2 +-
+ net/batman-adv/gateway_common.c        | 2 +-
+ net/batman-adv/gateway_common.h        | 2 +-
+ net/batman-adv/hard-interface.c        | 2 +-
+ net/batman-adv/hard-interface.h        | 2 +-
+ net/batman-adv/hash.c                  | 2 +-
+ net/batman-adv/hash.h                  | 2 +-
+ net/batman-adv/icmp_socket.c           | 2 +-
+ net/batman-adv/icmp_socket.h           | 2 +-
+ net/batman-adv/main.c                  | 2 +-
+ net/batman-adv/main.h                  | 4 ++--
+ net/batman-adv/originator.c            | 2 +-
+ net/batman-adv/originator.h            | 2 +-
+ net/batman-adv/packet.h                | 2 +-
+ net/batman-adv/ring_buffer.c           | 2 +-
+ net/batman-adv/ring_buffer.h           | 2 +-
+ net/batman-adv/routing.c               | 2 +-
+ net/batman-adv/routing.h               | 2 +-
+ net/batman-adv/send.c                  | 2 +-
+ net/batman-adv/send.h                  | 2 +-
+ net/batman-adv/soft-interface.c        | 2 +-
+ net/batman-adv/soft-interface.h        | 2 +-
+ net/batman-adv/sysfs.c                 | 2 +-
+ net/batman-adv/sysfs.h                 | 2 +-
+ net/batman-adv/translation-table.c     | 2 +-
+ net/batman-adv/translation-table.h     | 2 +-
+ net/batman-adv/types.h                 | 2 +-
+ net/batman-adv/unicast.c               | 2 +-
+ net/batman-adv/unicast.h               | 2 +-
+ net/batman-adv/vis.c                   | 2 +-
+ net/batman-adv/vis.h                   | 2 +-
+ 42 files changed, 43 insertions(+), 43 deletions(-)
