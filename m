@@ -1,9 +1,16 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue,  8 Jan 2013 15:23:04 +0100
-Message-Id: <1357654984-19098-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix NET_ADDR_RANDOM usage for
-	pre-3.9 kernel
+Return-Path: <nicoechaniz@altermundi.net>
+Message-ID: <50EC4A67.2000107@altermundi.net>
+Date: Tue, 08 Jan 2013 13:33:43 -0300
+From: =?UTF-8?B?Tmljb0VjaMOhbml6?= <nicoechaniz@altermundi.net>
+MIME-Version: 1.0
+References: <CAHQ_bgg4rRDVAhNce9SdONkFbF946EYrMgvT79kyp_bxk8T8NQ@mail.gmail.com>
+ <201301081906.33146.lindner_marek@yahoo.de>
+ <CAHQ_bgiL+tEz+3Lz+CFWH3Q-n7JhcDqSxRCQRxx-gcd=nYwjEw@mail.gmail.com>
+ <201301082052.12517.lindner_marek@yahoo.de>
+In-Reply-To: <201301082052.12517.lindner_marek@yahoo.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] Latency Related Problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,41 +22,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Kernel before 3.9 have the NET_ADDR_RANDOM flag which needs to be set.
-This patch adds the necessary compat change for older kernel.
+On 01/08/2013 09:52 AM, Marek Lindner wrote:
+> 
+> Hi,
+> 
+> you don't like the mailing list ? Why do you keep mailing me privately ? this 
+> is the last time I respond to mails you send to me privately concerning 
+> batman-adv. Use the mailing list!
+> 
+> On Tuesday, January 08, 2013 19:36:45 you wrote:
+>> I am not comparing the ping between two nodes.
+>>
+>> I am just concerned about the ping latency between nodes.
+>>
+>> As per my experiment, I am getting 100ms delay between one hop(SPK3
+>> –to-SPK2) and 200 ms delay between two hops (SPK3-to-SPK1) and so on.
+>>
+>> Even 100ms delay seems a lot, some applications may not work properly.
+>>
+>> Is there any delay (buffer) involved in local packet delivery from  bat0 to
+>> local mesh interfaces (wlan0)?
+> 
+> yes, there is standard wifi buffering. Consider this:
+> 
+> ping time from node1 to node2: ~100ms
+> ping time from node2 to node3: ~100ms
+> 
+> => ping time from node1 to node3: ~200ms
+> 
+> The delays simply add up because wifi is a shared medium. The node in the 
+> middle can only forward the packet while it does not receive. That is due to 
+> how wifi works and has nothing to do with batman-adv.
+> 
+> If you wish to mitigate the delay you should not use a shared medium. For 
+> example using multiple wifi cards on different channels is a solution.
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
- compat.h |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
 
-diff --git a/compat.h b/compat.h
-index 3d03a2f..e21b310 100644
---- a/compat.h
-+++ b/compat.h
-@@ -198,6 +198,19 @@ static inline void eth_hw_addr_random(struct net_device *dev)
- 
- #define prandom_u32() random32()
- 
-+#define batadv_interface_set_mac_addr(x, y) \
-+__batadv_interface_set_mac_addr(struct net_device *dev, void *p);\
-+static int batadv_interface_set_mac_addr(struct net_device *dev, void *p) \
-+{\
-+	int ret;\
-+\
-+	ret = __batadv_interface_set_mac_addr(dev, p);\
-+	if (!ret) \
-+		dev->addr_assign_type &= ~NET_ADDR_RANDOM;\
-+	return ret;\
-+}\
-+static int __batadv_interface_set_mac_addr(x, y)
-+
- #endif /* < KERNEL_VERSION(3, 9, 0) */
- 
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
--- 
-1.7.10.4
+There must be some other problem involved here. We have very good ping
+times with batman advanced in working networks as well as test setups.
+See this article for example:
+
+http://blog.altermundi.net/article/multiple-hop-mesh-performance-with-multi-band-dual/
+
+
 
