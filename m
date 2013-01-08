@@ -1,13 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 8 Jan 2013 15:44:27 +0800
+Date: Tue, 8 Jan 2013 20:52:12 +0800
 References: <CAHQ_bgg4rRDVAhNce9SdONkFbF946EYrMgvT79kyp_bxk8T8NQ@mail.gmail.com>
-In-Reply-To: <CAHQ_bgg4rRDVAhNce9SdONkFbF946EYrMgvT79kyp_bxk8T8NQ@mail.gmail.com>
+ <201301081906.33146.lindner_marek@yahoo.de>
+ <CAHQ_bgiL+tEz+3Lz+CFWH3Q-n7JhcDqSxRCQRxx-gcd=nYwjEw@mail.gmail.com>
+In-Reply-To: <CAHQ_bgiL+tEz+3Lz+CFWH3Q-n7JhcDqSxRCQRxx-gcd=nYwjEw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201301081544.28105.lindner_marek@yahoo.de>
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201301082052.12517.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] Latency Related Problem
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -26,24 +28,40 @@ Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 Hi,
 
-> I am using batman-adv for my project. I have configured my network in
-> following topology,
-> 
-> 
-> NODE 1 (STA|AP) ------ NODE 2 (STA|AP) ------ NODE 3 (STA|AP) ------
-> 
-> I am getting very high latency if I ping NODE 2 or NODE 3 from NODE 1. Ping
-> latency is approx 100ms.
-> 
-> I am getting the normal delay ( 1ms) if I ping the Nodes without
-> batman-adv.
->
-> I have also tested with "batctl ping" and getting the same issue.
+you don't like the mailing list ? Why do you keep mailing me privately ? th=
+is=20
+is the last time I respond to mails you send to me privately concerning=20
+batman-adv. Use the mailing list!
 
-can you please provide packet dumps (tcpdump or wireshark) of the different 
-traffic types flowing through your network ?
+On Tuesday, January 08, 2013 19:36:45 you wrote:
+> I am not comparing the ping between two nodes.
+>=20
+> I am just concerned about the ping latency between nodes.
+>=20
+> As per my experiment, I am getting 100ms delay between one hop(SPK3
+> =E2=80=93to-SPK2) and 200 ms delay between two hops (SPK3-to-SPK1) and so=
+ on.
+>=20
+> Even 100ms delay seems a lot, some applications may not work properly.
+>=20
+> Is there any delay (buffer) involved in local packet delivery from  bat0 =
+to
+> local mesh interfaces (wlan0)?
 
-Which batman-adv version are you using ?
+yes, there is standard wifi buffering. Consider this:
+
+ping time from node1 to node2: ~100ms
+ping time from node2 to node3: ~100ms
+
+=3D> ping time from node1 to node3: ~200ms
+
+The delays simply add up because wifi is a shared medium. The node in the=20
+middle can only forward the packet while it does not receive. That is due t=
+o=20
+how wifi works and has nothing to do with batman-adv.
+
+If you wish to mitigate the delay you should not use a shared medium. For=20
+example using multiple wifi cards on different channels is a solution.
 
 Cheers,
 Marek
