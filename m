@@ -1,10 +1,10 @@
 Return-Path: <gregkh@linuxfoundation.org>
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed,  9 Jan 2013 12:35:49 -0800
-Message-Id: <20130109201507.762332404@linuxfoundation.org>
-In-Reply-To: <20130109201500.410171651@linuxfoundation.org>
-References: <20130109201500.410171651@linuxfoundation.org>
-Subject: [B.A.T.M.A.N.] [ 57/80] batman-adv: fix random jitter calculation
+Date: Wed,  9 Jan 2013 12:35:23 -0800
+Message-Id: <20130109201509.395329312@linuxfoundation.org>
+In-Reply-To: <20130109201458.392601412@linuxfoundation.org>
+References: <20130109201458.392601412@linuxfoundation.org>
+Subject: [B.A.T.M.A.N.] [ 084/123] batman-adv: fix random jitter calculation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,7 +19,7 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, b.a.t.m.a.n@lists.open-mesh.org, Akinobu Mita <akinobu.mita@gmail.com>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, netdev@vger.kernel.org, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 
-3.4-stable review patch.  If anyone has any objections, please let me know.
+3.7-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -57,14 +57,14 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -72,7 +72,7 @@ static unsigned long bat_iv_ogm_emit_sen
- {
- 	return jiffies + msecs_to_jiffies(
- 		   atomic_read(&bat_priv->orig_interval) -
--		   JITTER + (random32() % 2*JITTER));
-+		   JITTER + (random32() % (2*JITTER)));
- }
+@@ -119,7 +119,7 @@ batadv_iv_ogm_emit_send_time(const struc
+ 	unsigned int msecs;
  
- /* when do we schedule a ogm packet to be sent */
+ 	msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
+-	msecs += (random32() % 2 * BATADV_JITTER);
++	msecs += random32() % (2 * BATADV_JITTER);
+ 
+ 	return jiffies + msecs_to_jiffies(msecs);
+ }
 
 
