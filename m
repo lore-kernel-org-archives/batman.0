@@ -1,15 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 9 Jan 2013 16:11:17 +1000
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130109061117.GA7110@ritirata.org>
-References: <1357557088-17866-1-git-send-email-ordex@autistici.org>
- <20130107.195029.1992483782689863668.davem@davemloft.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 9 Jan 2013 14:30:13 +0800
+References: <B9683C50-CBE6-40F6-B084-187E41B04CE4@stephan.homeunix.net>
+ <201301081415.31205.lindner_marek@yahoo.de> <50EC4AC5.60103@altermundi.net>
+In-Reply-To: <50EC4AC5.60103@altermundi.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="BXVAT5kNtrzKuDFl"
-Content-Disposition: inline
-In-Reply-To: <20130107.195029.1992483782689863668.davem@davemloft.net>
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-01-07
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201301091430.14138.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] Unterstanding gateway-mode - why do nodes have a
+	"sticky" gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,65 +22,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-
---BXVAT5kNtrzKuDFl
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Dave,
-
-On Mon, Jan 07, 2013 at 07:50:29PM -0800, David Miller wrote:
+On Wednesday, January 09, 2013 00:35:17 NicoEch=E1niz wrote:
+> On 01/08/2013 03:15 AM, Marek Lindner wrote:
+> > May I propose that we schedule an IRC discussion for this topic ? I lost
+> > track of what you are actually trying to achieve and I see things
+> > getting more and more complicated.
+> > Whatever idea you come up with keep in mind that somebody has to do the
+> >=20
+> > following before this solution can be merged:
+> >  * batman-adv code has to be written, tested & debugged
+> >  * batman-adv kernel doc has to be written
+> >  * batctl code has to be written, tested & debugged
+> >  * man page has to be updated
+> >  * user documentation for $your_new_mechanism has to be written
+> >=20
+> > Unless you manage to convince somebody else to do the work for you that
+> > somebody who has to do all work will be you. In other words: It is in
+> > your best interest to keep things as simple as possible.  :-)
 >=20
-> Are you kidding me?
->=20
+> agreed. When would it be a good time for an IRC discussion on this matter?
 
-To be honest I was not.
+I am idling on IRC most of the time. Depends on you guys.
 
-> 'net' is for bug fixes not futzing around with version numbers and copyri=
-ght years
-> inc omments.
->=20
-
-Last week you have just pulled a similar commit
-(brcmsmac: add copyright information for Canonical) from the wireless
-tree...that gave me the impression that such "legal fixes" were welcome in =
-'net'
-as well (otherwise I would have not sent these ones). But it seems it depen=
-ds
-on the person sending them.
-
-No worries.
 Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---BXVAT5kNtrzKuDFl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQ7QoFAAoJEADl0hg6qKeO4xIP/Rro5m5ipxe7E3ZH458FEeHp
-PQ6TJV8NEhSoHhmckWUp/XnZZdmhn7XdRil1gDzyTQyX4/l8A/PSrTgEKJMx1nRJ
-02nyxEX1DP7qCPLqew2hwqzKh6uLvB/kJ+4IySOh5c+uALZuicbT8q8CPcXXbHGh
-lUP8hog5oeJ8kXYDy3FP8SHfzfuAf6MJrpKLMM0DmlKoeT/FmPv28UsxDQe4HidC
-V3KqLgDCb0KPLUUBfP6LornIxkdAPMCC7DVFj90KaX6+N1bErnzh1Ndo1PqHFr0m
-tyCFejCH0UCeDNm1nztg/lISBaL3o9hd18QlUorcKBbkulBVQwPJvhGSkiPAjPX9
-9ZXJ1w8d4unPpwS7NoO3VQjn8r42n/k+RAaI4O3/VS4e04Pt6dUTpa46XP57M3Bj
-EnHXzeTsTII7pPnO2Fw7Z/EYZDUNoTy26yfk7cBc1ztI8W8rgVeJtyZz4lOFvOyR
-aDwVhd69ZZ7+xvAB/PGqGwwl00x9TfsW53wYFTce6IliJOFpiyKMaALfhF8MIJGY
-opYNCgSbrvRDI0xnvpngTWRa1q3O1YeN1uFuNaue6wKajxkXRNJPGg+3Zg8+OipK
-j52rKbR1T9lp20l7BeyV6B7bBBK/Q8e+uNCIufXli1q8lF2KZxedBjEQb0AXq1gb
-uyonz6c3iJeVA8tW/HDi
-=jiNi
------END PGP SIGNATURE-----
-
---BXVAT5kNtrzKuDFl--
+Marek
