@@ -1,13 +1,15 @@
-Return-Path: <hexiled@nixbits.net>
-Message-ID: <50EFEB5D.7030703@nixbits.net>
-Date: Fri, 11 Jan 2013 05:37:17 -0500
-From: HeXiLeD <hexiled@nixbits.net>
+Return-Path: <guido@guidoi.com.ar>
 MIME-Version: 1.0
+Sender: guido@guidoi.com.ar
+In-Reply-To: <50EFEB5D.7030703@nixbits.net>
+References: <50EFEB5D.7030703@nixbits.net>
+From: Gui Iribarren <gui@altermundi.net>
+Date: Fri, 11 Jan 2013 09:12:16 -0300
+Message-ID: <CAHD-aqLrnwLYiKvLyF3Tp8mSSumyKPR=7JJyxYfg7xHUUYzNEQ@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] Batman-adv 2012.4.0 into attitude adjustment
-Reply-To: HeXileD@nixbits.net,
- The list for a Better Approach To Mobile Ad-hoc Networking
+Subject: Re: [B.A.T.M.A.N.] [OpenWrt-Devel] Batman-adv 2012.4.0 into
+	attitude adjustment
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,31 +20,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: OpenWrt Development List <openwrt-devel@lists.openwrt.org>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: HeXileD@nixbits.net, OpenWrt Development List <openwrt-devel@lists.openwrt.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-I have posted this question on irc but since i may not be available on
-irc today here it goes again.
+IIRC the openwrt package uses the out-of-kernel-tree batman release,
+i.e. it doesn't depend on a particular kernel version.
 
-I need to build 2012.4 into openwrt attitude adjustment which uses 3.3
-kernel. By default this is not available through openwrt feeds which is
-providing batman 2012.3.0
+So manually updating the package version in the makefile of your
+openwrt AA build environment should work.
+You don't need to add batman-adv feed in this case - having the 'packages'
+official feed is enough.
 
-Which batman-adv feed should i use if there is one available ?
+What follows is taken from trunk, to serve you as a reference.
 
-This
-(http://www.open-mesh.org/projects/batman-adv/wiki/Building-with-openwrt)
-takes me to git (batman-adv-devel) which i might not want & need. Will
-change the revision help ?
+~/openwrt/ $ head feeds/packages/net/batman-adv/Makefile
+PKG_VERSION:=2012.4.0
+BATCTL_VERSION:=2012.4.0
+PKG_MD5SUM:=24e922a64a507b146c32c585538407f2
+BATCTL_MD5SUM:=79d5aa796ae8b008a9fa42c27d4da2c1
 
-If i am not mistaken; unless  batman-adv 2012.4.0 is moved by someone
-from openwrt trunk to openwrt attitude adjustment i am not able to find
-a feed that provides me what i need and build batman-adv 2012.4.0 with
-attitude adjustment (kernel 3.3)
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=http://downloads.open-mesh.org/batman/releases/batman-adv-$(PKG_VERSION)
 
-What are my options ?
+hope that helps,
 
+Cheers!
 
-
-
-
-
+On Fri, Jan 11, 2013 at 7:37 AM, HeXiLeD <hexiled@nixbits.net> wrote:
+> Which batman-adv feed should i use if there is one available ?
+>
+> This
+> (http://www.open-mesh.org/projects/batman-adv/wiki/Building-with-openwrt)
+> takes me to git (batman-adv-devel) which i might not want & need. Will
+> change the revision help ?
+>
+> If i am not mistaken; unless  batman-adv 2012.4.0 is moved by someone
+> from openwrt trunk to openwrt attitude adjustment i am not able to find
+> a feed that provides me what i need and build batman-adv 2012.4.0 with
+> attitude adjustment (kernel 3.3)
+>
+> What are my options ?
+>
+>
+>
+>
+>
+>
+> _______________________________________________
+> openwrt-devel mailing list
+> openwrt-devel@lists.openwrt.org
+> https://lists.openwrt.org/mailman/listinfo/openwrt-devel
