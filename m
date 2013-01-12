@@ -1,14 +1,16 @@
-Return-Path: <guido@guidoi.com.ar>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 12 Jan 2013 18:53:25 +0800
+References: <1357837761-30461-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+ <1357895991-2865-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1357895991-2865-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-In-Reply-To: <50EFEB5D.7030703@nixbits.net>
-References: <50EFEB5D.7030703@nixbits.net>
-From: Gui Iribarren <gui@altermundi.net>
-Date: Fri, 11 Jan 2013 09:12:16 -0300
-Message-ID: <CAHD-aqLrnwLYiKvLyF3Tp8mSSumyKPR=7JJyxYfg7xHUUYzNEQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] [OpenWrt-Devel] Batman-adv 2012.4.0 into
-	attitude adjustment
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201301121853.25901.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: postpone sysfs removal
+	when unregistering
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,53 +22,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: HeXileD@nixbits.net, OpenWrt Development List <openwrt-devel@lists.openwrt.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-IIRC the openwrt package uses the out-of-kernel-tree batman release,
-i.e. it doesn't depend on a particular kernel version.
+On Friday, January 11, 2013 17:19:51 Simon Wunderlich wrote:
+> When processing the unregister notify for a hard interface, removing
+> the sysfs files may lead to a circular deadlock (rtnl mutex <->
+> s_active).
+> 
+> To overcome this problem, postpone the sysfs removal in a worker.
+> 
+> Reported-by: Sasha Levin <sasha.levin@oracle.com>
+> Reported-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> ---
+> Changes from PATCHv2:
+>  * kerneldoc for functions
+> 
+> Changes from PATCHv1:
+>  * INIT_WORK() in respective struct initialization functions
+>  * kerneldoc
+> 
+> Changes from RFCv1:
+>  * use work_struct properly, instead of delayed_work
+>  * postpone for softifs as well as for hardifs
+> 
+> Postponing the sysfs removal for the hardif unregister is easier than
+> other alternatives involving deferring. This should bring us to the
+> same level to the bridge code, which also messes with sysfs in the
+> notifier processing function, and uses rtnl_trylock when called
+> from within sysfs.
+> 
+> As far as I could understand the net/core code, only the unregister
+> case is the critical one, so the original bug should hopefully be
+> fixed.
+> ---
+>  hard-interface.c |   24 ++++++++++++++++++++++--
+>  soft-interface.c |   32 +++++++++++++++++++++++++++++---
+>  types.h          |    6 ++++++
+>  3 files changed, 57 insertions(+), 5 deletions(-)
 
-So manually updating the package version in the makefile of your
-openwrt AA build environment should work.
-You don't need to add batman-adv feed in this case - having the 'packages'
-official feed is enough.
+Applied in revision a33c882.
 
-What follows is taken from trunk, to serve you as a reference.
-
-~/openwrt/ $ head feeds/packages/net/batman-adv/Makefile
-PKG_VERSION:=2012.4.0
-BATCTL_VERSION:=2012.4.0
-PKG_MD5SUM:=24e922a64a507b146c32c585538407f2
-BATCTL_MD5SUM:=79d5aa796ae8b008a9fa42c27d4da2c1
-
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=http://downloads.open-mesh.org/batman/releases/batman-adv-$(PKG_VERSION)
-
-hope that helps,
-
-Cheers!
-
-On Fri, Jan 11, 2013 at 7:37 AM, HeXiLeD <hexiled@nixbits.net> wrote:
-> Which batman-adv feed should i use if there is one available ?
->
-> This
-> (http://www.open-mesh.org/projects/batman-adv/wiki/Building-with-openwrt)
-> takes me to git (batman-adv-devel) which i might not want & need. Will
-> change the revision help ?
->
-> If i am not mistaken; unless  batman-adv 2012.4.0 is moved by someone
-> from openwrt trunk to openwrt attitude adjustment i am not able to find
-> a feed that provides me what i need and build batman-adv 2012.4.0 with
-> attitude adjustment (kernel 3.3)
->
-> What are my options ?
->
->
->
->
->
->
-> _______________________________________________
-> openwrt-devel mailing list
-> openwrt-devel@lists.openwrt.org
-> https://lists.openwrt.org/mailman/listinfo/openwrt-devel
+Thanks,
+Marek
