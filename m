@@ -1,11 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 14 Jan 2013 09:41:17 +1000
-Message-Id: <1358120480-25960-13-git-send-email-ordex@autistici.org>
+Date: Mon, 14 Jan 2013 09:41:18 +1000
+Message-Id: <1358120480-25960-14-git-send-email-ordex@autistici.org>
 In-Reply-To: <1358120480-25960-1-git-send-email-ordex@autistici.org>
 References: <1358120480-25960-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 12/15] batman-adv: use the const qualifier in
-	hash functions
+Subject: [B.A.T.M.A.N.] [PATCH 13/15] batman-adv: fix typo in debug message
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,47 +17,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <antonio@open-mesh.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+in bat_iv_ogm.c a debug message should print "tq" instead of "td"
 
-The data argument in each hash function should carry the
-"const" qualifier as it is never modified.
-
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 2 +-
- net/batman-adv/hash.h                  | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 724adf0..5e834c1 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -57,7 +57,7 @@ static inline uint32_t batadv_choose_claim(const void *data, uint32_t size)
- static inline uint32_t batadv_choose_backbone_gw(const void *data,
- 						 uint32_t size)
- {
--	struct batadv_claim *claim = (struct batadv_claim *)data;
-+	const struct batadv_claim *claim = (struct batadv_claim *)data;
- 	uint32_t hash = 0;
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index d90e925..8f2de43 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1028,7 +1028,7 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
+ 		is_single_hop_neigh = true;
  
- 	hash = batadv_hash_bytes(hash, &claim->addr, sizeof(claim->addr));
-diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
-index e053339..ea02148 100644
---- a/net/batman-adv/hash.h
-+++ b/net/batman-adv/hash.h
-@@ -89,7 +89,7 @@ static inline void batadv_hash_delete(struct batadv_hashtable *hash,
-  *
-  *	Returns the new hash value.
-  */
--static inline uint32_t batadv_hash_bytes(uint32_t hash, void *data,
-+static inline uint32_t batadv_hash_bytes(uint32_t hash, const void *data,
- 					 uint32_t size)
- {
- 	const unsigned char *key = data;
+ 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+-		   "Received BATMAN packet via NB: %pM, IF: %s [%pM] (from OG: %pM, via prev OG: %pM, seqno %u, ttvn %u, crc %#.4x, changes %u, td %d, TTL %d, V %d, IDF %d)\n",
++		   "Received BATMAN packet via NB: %pM, IF: %s [%pM] (from OG: %pM, via prev OG: %pM, seqno %u, ttvn %u, crc %#.4x, changes %u, tq %d, TTL %d, V %d, IDF %d)\n",
+ 		   ethhdr->h_source, if_incoming->net_dev->name,
+ 		   if_incoming->net_dev->dev_addr, batadv_ogm_packet->orig,
+ 		   batadv_ogm_packet->prev_sender,
 -- 
 1.8.0.2
 
