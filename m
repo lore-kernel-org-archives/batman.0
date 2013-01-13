@@ -1,11 +1,13 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Mon, 14 Jan 2013 00:12:20 +0100
-Message-Id: <1358118740-10458-1-git-send-email-martin@hundeboll.net>
+Date: Mon, 14 Jan 2013 00:20:32 +0100
+Message-Id: <1358119232-14781-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1358118740-10458-1-git-send-email-martin@hundeboll.net>
+References: <1358118740-10458-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Return reason for failure in
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Return reason for failure in
 	batadv_check_unicast_packet()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,20 +27,24 @@ batadv_check_unicast_packet() is changed to return a value based on the
 reason to drop the packet, which will be useful information for
 future users of batadv_check_unicast_packet().
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
 v2:
  * Changed return values to defined error codes.
  * Send as separate patch
 
+v3:
+ * Fixed typo in kernel doc
+
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
  routing.c | 18 ++++++++++++++----
  1 file changed, 14 insertions(+), 4 deletions(-)
 
 diff --git a/routing.c b/routing.c
-index 1aa1722..a3ee5be 100644
+index 60ba03f..b070163 100644
 --- a/routing.c
 +++ b/routing.c
-@@ -552,27 +552,37 @@ batadv_find_ifalter_router(struct batadv_orig_node *primary_orig,
+@@ -550,27 +550,37 @@ batadv_find_ifalter_router(struct batadv_orig_node *primary_orig,
  	return router;
  }
  
@@ -49,8 +55,8 @@ index 1aa1722..a3ee5be 100644
 + *
 + * Check for short header and bad addresses in given packet. Returns negative
 + * value when check fails and 0 otherwise. The negative value depends on the
-+ * reason: -ENODATA for bad header, -EBADR for broadcast destination or source
-+ * source, and -EREMOTE for non-local (other host) destination.
++ * reason: -ENODATA for bad header, -EBADR for broadcast destination or source,
++ * and -EREMOTE for non-local (other host) destination.
 + */
  static int batadv_check_unicast_packet(struct sk_buff *skb, int hdr_size)
  {
