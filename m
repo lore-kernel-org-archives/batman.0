@@ -1,14 +1,11 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Mon, 14 Jan 2013 00:20:32 +0100
-Message-Id: <1358119232-14781-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1358118740-10458-1-git-send-email-martin@hundeboll.net>
-References: <1358118740-10458-1-git-send-email-martin@hundeboll.net>
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 14 Jan 2013 09:41:05 +1000
+Message-Id: <1358120480-25960-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Return reason for failure in
-	batadv_check_unicast_packet()
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2013-01-14
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,72 +17,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-batadv_check_unicast_packet() is changed to return a value based on the
-reason to drop the packet, which will be useful information for
-future users of batadv_check_unicast_packet().
+this is our first changeset intended for net-next/linux-3.9.
+In this batch you have mostly code refactoring, style adjustments and output
+beautifications.
+The only new 'behaviours' are:
+- prevent the TT component from learning multicast mac addresses as they are not
+  really handled (yet)
+- initialise own lockdep class for each hash table in order to avoid false
+  positive from lockdep
 
----
-v2:
- * Changed return values to defined error codes.
- * Send as separate patch
 
-v3:
- * Fixed typo in kernel doc
+Please pull or let me know if there is any problem.
+Thanks a lot,
+	Antonio
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
----
- routing.c | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/routing.c b/routing.c
-index 60ba03f..b070163 100644
---- a/routing.c
-+++ b/routing.c
-@@ -550,27 +550,37 @@ batadv_find_ifalter_router(struct batadv_orig_node *primary_orig,
- 	return router;
- }
- 
-+/**
-+ * batadv_check_unicast_packet - Check for malformed unicast packets
-+ * @skb: packet to check
-+ * @hdr_size: size of header to pull
-+ *
-+ * Check for short header and bad addresses in given packet. Returns negative
-+ * value when check fails and 0 otherwise. The negative value depends on the
-+ * reason: -ENODATA for bad header, -EBADR for broadcast destination or source,
-+ * and -EREMOTE for non-local (other host) destination.
-+ */
- static int batadv_check_unicast_packet(struct sk_buff *skb, int hdr_size)
- {
- 	struct ethhdr *ethhdr;
- 
- 	/* drop packet if it has not necessary minimum size */
- 	if (unlikely(!pskb_may_pull(skb, hdr_size)))
--		return -1;
-+		return -ENODATA;
- 
- 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
- 
- 	/* packet with unicast indication but broadcast recipient */
- 	if (is_broadcast_ether_addr(ethhdr->h_dest))
--		return -1;
-+		return -EBADR;
- 
- 	/* packet with broadcast sender address */
- 	if (is_broadcast_ether_addr(ethhdr->h_source))
--		return -1;
-+		return -EBADR;
- 
- 	/* not for me */
- 	if (!batadv_is_my_mac(ethhdr->h_dest))
--		return -1;
-+		return -EREMOTE;
- 
- 	return 0;
- }
--- 
-1.8.1
+The following changes since commit 00494be4546432a11d62ebfeca363256ff9822b5:
 
+  networking/cs89x0.txt: delete stale information about hand patching (2013-01-11 16:52:26 -0800)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 0c430d0d7b8bafa74959a84156ef0bda1417a3d4:
+
+  batman-adv: unbloat batadv_priv if debug is not enabled (2013-01-12 20:58:23 +1000)
+
+----------------------------------------------------------------
+Included changes:
+- use per_cpu_add when possible
+- prevent the TT component to add multicast address as "mesh clients"
+- some debug output improvements
+- proper lockdeps class initializations
+- new style fixes (space before/after brackets)
+- other minor fixes and refactoring
+
+----------------------------------------------------------------
+Antonio Quartulli (11):
+      batman-adv: reduce local TT entry timeout to 10 minutes
+      batman-adv: improve local translation table output
+      batman-adv: print the CRC together with the translation tables
+      batman-adv: unify and properly print hex values
+      batman-adv: remove useless assignment in tt_local_add()
+      batman-adv: Initialize lockdep class keys for hashes
+      batman-adv: remove useless blank lines before and after brackets
+      batman-adv: remove useless NULL check
+      batman-adv: don't compile the BLA switch if not requested
+      batman-adv: use the const qualifier in hash functions
+      batman-adv: fix typo in debug message
+
+Linus Lüssing (1):
+      batman-adv: Do not add multicast MAC addresses to translation table
+
+Marek Lindner (2):
+      batman-adv: remove unused variable from orig_node struct
+      batman-adv: unbloat batadv_priv if debug is not enabled
+
+Shan Wei (1):
+      batman-adv: use per_cpu_add helper
+
+ net/batman-adv/bat_iv_ogm.c            |  8 +---
+ net/batman-adv/bridge_loop_avoidance.c | 24 +++++------
+ net/batman-adv/debugfs.c               |  8 +---
+ net/batman-adv/hash.h                  |  2 +-
+ net/batman-adv/main.h                  |  6 +--
+ net/batman-adv/originator.c            |  9 +++--
+ net/batman-adv/routing.c               |  4 --
+ net/batman-adv/send.c                  |  2 -
+ net/batman-adv/soft-interface.c        |  7 +++-
+ net/batman-adv/translation-table.c     | 73 ++++++++++++++++++++++------------
+ net/batman-adv/types.h                 |  7 +++-
+ net/batman-adv/unicast.c               |  2 -
+ net/batman-adv/vis.c                   |  6 +++
+ 13 files changed, 88 insertions(+), 70 deletions(-)
