@@ -1,10 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 14 Jan 2013 09:41:06 +1000
-Message-Id: <1358120480-25960-2-git-send-email-ordex@autistici.org>
+Date: Mon, 14 Jan 2013 09:41:07 +1000
+Message-Id: <1358120480-25960-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1358120480-25960-1-git-send-email-ordex@autistici.org>
 References: <1358120480-25960-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 01/15] batman-adv: use per_cpu_add helper
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 02/15] batman-adv: Do not add multicast MAC
+	addresses to translation table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,37 +21,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Shan Wei <davidshan@tencent.com>, Marek Lindner <lindner_marek@yahoo.de>, Sven Eckelmann <sven@narfation.org>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Shan Wei <davidshan@tencent.com>
+From: Linus Lüssing <linus.luessing@web.de>
 
-this_cpu_add is an atomic operation.
-and be more faster than per_cpu_ptr operation.
+The current translation table mechanism is not suitable for multicast
+addresses and we are currently flooding such frames anyway.
 
-Signed-off-by: Shan Wei <davidshan@tencent.com>
-Reviewed-by: Christoph Lameter <cl@linux.com>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Therefore this patch prevents multicast MAC addresses being added to the
+translation table.
+
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Acked-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/main.h | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ net/batman-adv/soft-interface.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 2f85577..c4fe41f 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -276,9 +276,7 @@ static inline bool batadv_has_timed_out(unsigned long timestamp,
- static inline void batadv_add_counter(struct batadv_priv *bat_priv, size_t idx,
- 				      size_t count)
- {
--	int cpu = get_cpu();
--	per_cpu_ptr(bat_priv->bat_counters, cpu)[idx] += count;
--	put_cpu();
-+	this_cpu_add(bat_priv->bat_counters[idx], count);
- }
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 90f4049..f8cc142 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -180,7 +180,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 		goto dropped;
  
- #define batadv_inc_counter(b, i) batadv_add_counter(b, i, 1)
+ 	/* Register the client MAC in the transtable */
+-	batadv_tt_local_add(soft_iface, ethhdr->h_source, skb->skb_iif);
++	if (!is_multicast_ether_addr(ethhdr->h_source))
++		batadv_tt_local_add(soft_iface, ethhdr->h_source, skb->skb_iif);
+ 
+ 	/* don't accept stp packets. STP does not help in meshes.
+ 	 * better use the bridge loop avoidance ...
 -- 
 1.8.0.2
 
