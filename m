@@ -1,13 +1,8 @@
-Return-Path: <davem@davemloft.net>
-Date: Sun, 13 Jan 2013 20:39:40 -0500 (EST)
-Message-Id: <20130113.203940.971636104315231474.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1358120480-25960-1-git-send-email-ordex@autistici.org>
-References: <1358120480-25960-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-01-14
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 14 Jan 2013 12:21:28 +1000
+Message-Id: <1358130088-22650-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: don't use !! in bool conversion
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,21 +14,70 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 14 Jan 2013 09:41:05 +1000
+when converting an integer value to bool, whatever the length of the value is,
+"!!" because of the standard Bool conversion definition
 
-> this is our first changeset intended for net-next/linux-3.9.
-> In this batch you have mostly code refactoring, style adjustments and output
-> beautifications.
-> The only new 'behaviours' are:
-> - prevent the TT component from learning multicast mac addresses as they are not
->   really handled (yet)
-> - initialise own lockdep class for each hash table in order to avoid false
->   positive from lockdep
-...
->   git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c | 4 ++--
+ unicast.c           | 6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Pulled, thanks.
+diff --git a/translation-table.c b/translation-table.c
+index fb15b4c..e711b05 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -912,7 +912,7 @@ out_remove:
+ 	/* remove address from local hash if present */
+ 	local_flags = batadv_tt_local_remove(bat_priv, tt_addr,
+ 					     "global tt received",
+-					     !!(flags & BATADV_TT_CLIENT_ROAM));
++					     flags & BATADV_TT_CLIENT_ROAM);
+ 	tt_global_entry->common.flags |= local_flags & BATADV_TT_CLIENT_WIFI;
+ 
+ 	if (!(flags & BATADV_TT_CLIENT_ROAM))
+@@ -2540,7 +2540,7 @@ bool batadv_tt_global_client_is_roaming(struct batadv_priv *bat_priv,
+ 	if (!tt_global_entry)
+ 		goto out;
+ 
+-	ret = !!(tt_global_entry->common.flags & BATADV_TT_CLIENT_ROAM);
++	ret = tt_global_entry->common.flags & BATADV_TT_CLIENT_ROAM;
+ 	batadv_tt_global_entry_free_ref(tt_global_entry);
+ out:
+ 	return ret;
+diff --git a/unicast.c b/unicast.c
+index 50e079f..0bb3b59 100644
+--- a/unicast.c
++++ b/unicast.c
+@@ -122,7 +122,7 @@ batadv_frag_search_packet(struct list_head *head,
+ {
+ 	struct batadv_frag_packet_list_entry *tfp;
+ 	struct batadv_unicast_frag_packet *tmp_up = NULL;
+-	int is_head_tmp, is_head;
++	bool is_head_tmp, is_head;
+ 	uint16_t search_seqno;
+ 
+ 	if (up->flags & BATADV_UNI_FRAG_HEAD)
+@@ -130,7 +130,7 @@ batadv_frag_search_packet(struct list_head *head,
+ 	else
+ 		search_seqno = ntohs(up->seqno)-1;
+ 
+-	is_head = !!(up->flags & BATADV_UNI_FRAG_HEAD);
++	is_head = up->flags & BATADV_UNI_FRAG_HEAD;
+ 
+ 	list_for_each_entry(tfp, head, list) {
+ 		if (!tfp->skb)
+@@ -142,7 +142,7 @@ batadv_frag_search_packet(struct list_head *head,
+ 		tmp_up = (struct batadv_unicast_frag_packet *)tfp->skb->data;
+ 
+ 		if (tfp->seqno == search_seqno) {
+-			is_head_tmp = !!(tmp_up->flags & BATADV_UNI_FRAG_HEAD);
++			is_head_tmp = tmp_up->flags & BATADV_UNI_FRAG_HEAD;
+ 			if (is_head_tmp != is_head)
+ 				return tfp;
+ 			else
+-- 
+1.8.0.2
+
