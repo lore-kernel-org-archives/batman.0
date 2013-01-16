@@ -1,12 +1,16 @@
-Return-Path: <herton.krzesinski@canonical.com>
-From: Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>
-Date: Wed, 16 Jan 2013 13:56:22 -0200
-Message-Id: <1358351822-7675-183-git-send-email-herton.krzesinski@canonical.com>
-In-Reply-To: <1358351822-7675-1-git-send-email-herton.krzesinski@canonical.com>
-References: <1358351822-7675-1-git-send-email-herton.krzesinski@canonical.com>
-Subject: [B.A.T.M.A.N.] [PATCH 182/222] batman-adv: fix random jitter
-	calculation
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Return-Path: <cmsv@wirelesspt.net>
+Message-ID: <50F6ECE5.90802@wirelesspt.net>
+Date: Wed, 16 Jan 2013 13:09:41 -0500
+From: cmsv <cmsv@wirelesspt.net>
+MIME-Version: 1.0
+References: <50F68D22.7090709@wirelesspt.net>
+ <CAHD-aqJrdXNJeVEti+HTFkSg47B642gJ7wUDvFGrNNp6merjkw@mail.gmail.com>
+In-Reply-To: <CAHD-aqJrdXNJeVEti+HTFkSg47B642gJ7wUDvFGrNNp6merjkw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] dns/routing/ issue (batman-adv mesh)
+Reply-To: cmsv@wirelesspt.net,
+ The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,57 +21,174 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org, kernel-team@lists.ubuntu.com
-Cc: Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Akinobu Mita <akinobu.mita@gmail.com>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
+To: Gui Iribarren <gui@altermundi.net>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-3.5.7.3 -stable review patch.  If anyone has any objections, please let me know.
+just like you ; i would like to have the mesh working even if a gateway 
+dies.
+http://dpaste.com/hold/879202/
 
-------------------
+cable connected clients on the client routers can access the wan
+just not wirelessly connected.
 
-From: Akinobu Mita <akinobu.mita@gmail.com>
-
-commit 143cdd8f33909ff5a153e3f02048738c5964ba26 upstream.
-
-batadv_iv_ogm_emit_send_time() attempts to calculates a random integer
-in the range of 'orig_interval +- BATADV_JITTER' by the below lines.
-
-        msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
-        msecs += (random32() % 2 * BATADV_JITTER);
-
-But it actually gets 'orig_interval' or 'orig_interval - BATADV_JITTER'
-because '%' and '*' have same precedence and associativity is
-left-to-right.
-
-This adds the parentheses at the appropriate position so that it matches
-original intension.
-
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Cc: Antonio Quartulli <ordex@autistici.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>
----
- net/batman-adv/bat_iv_ogm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index dc53798..bcf3760 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -117,7 +117,7 @@ static unsigned long bat_iv_ogm_emit_send_time(const struct bat_priv *bat_priv)
- {
- 	return jiffies + msecs_to_jiffies(
- 		   atomic_read(&bat_priv->orig_interval) -
--		   JITTER + (random32() % 2*JITTER));
-+		   JITTER + (random32() % (2*JITTER)));
- }
- 
- /* when do we schedule a ogm packet to be sent */
--- 
-1.7.9.5
-
+On 01/16/13 12:31, Gui Iribarren wrote:
+> You posted only one set of configurations, but it's not clear to me
+> whether that belongs to router 1 or 2.
+> Could you please repost (maybe in a pastebin.com link)
+> /etc/config/network
+> /etc/config/dhcp
+> /etc/config/wireless
+> for router 1
+>
+> and the same, clearly labeled , for router 2
+>
+> On Wed, Jan 16, 2013 at 8:21 AM, cmsv<cmsv@wirelesspt.net>  wrote:
+>> # cat /etc/openwrt_release
+>> DISTRIB_ID="OpenWrt"
+>> DISTRIB_RELEASE="Attitude Adjustment"
+>> DISTRIB_REVISION="r35153"
+>> DISTRIB_CODENAME="attitude_adjustment"
+>> DISTRIB_TARGET="ar71xx/generic"
+>> DISTRIB_DESCRIPTION="OpenWrt Attitude Adjustment 12.09-rc1"
+>>
+>> Batman-adv 2012.3.0
+>>
+>> Scenario:
+>> router 1 is the internet gateway
+>> router 2 is a client router of that gateway
+>> Both routers in vap mode with 2 diff ssid's
+>> one dhcp pool for 'lan'
+>>
+>> config dnsmasq
+>> option domainneeded     1
+>> option boguspriv        1
+>> option filterwin2k      0  # enable for dial on demand
+>> option localise_queries 1
+>> option rebind_protection 1  # disable if upstream must serve RFC1918
+>> addresses
+>> option rebind_localhost 1  # enable for RBL checking and similar services
+>> #list rebind_domain example.lan  # whitelist RFC1918 responses for domains
+>> option local    '/lan/'
+>> option domain   'wirelesspt.net'
+>> option expandhosts      1
+>> option nonegcache       0
+>> option authoritative    1
+>> option readethers       1
+>> option leasefile        '/tmp/dhcp.leases'
+>> option resolvfile       '/tmp/resolv.conf.auto'
+>> #list server            '/mycompany.local/1.2.3.4'
+>> #option nonwildcard     1
+>> #list interface         br-lan
+>> #list notinterface      lo
+>> #list bogusnxdomain     '64.94.110.11'
+>> #list dns               208.67.222.222
+>> #list dns               208.67.220.220
+>> #list dns               8.8.8.8
+>>
+>> config dhcp lan
+>> option interface        lan
+>> option start    50
+>> option limit    254
+>> option leasetime        24h
+>> #option force   1
+>>
+>> config dhcp wan
+>> option interface        wan
+>> option ignore   1 # 0 for non gw
+>>
+>>
+>> Problem:
+>> router 1 clients (people with computers) can connect to it either with cable
+>> or wirelessly and ping/access the wan. router 1 works well this way
+>>
+>> router 1 can ping router 2 either on layer 2 or layer 3
+>>
+>> router 2 can ping router 1 either on layer 2 or layer 3
+>> router
+>>
+>> clients (connected to router 2 via cable) are able to access and ping the
+>> wan.
+>> clients connected to router 2 wirelessly are NOT able to access the wan.
+>> Seems a routing/dns issue
+>>
+>> # ping yahoo.com
+>> ping: bad address 'yahoo.com
+>>
+>> both /etc/resolv.com contain 127.0.0.1 as nameserver
+>>
+>> # cat network
+>> config interface 'loopback'
+>>          option ifname 'lo'
+>>          option proto 'static'
+>>          option ipaddr '127.0.0.1'
+>>          option netmask '255.0.0.0'
+>>
+>> config interface 'lan'
+>>          option ifname 'eth0 bat0'
+>>          option type 'bridge'
+>>          option proto 'static'
+>>          option ipaddr '192.168.1.2'
+>>          option netmask '255.255.255.0'
+>>
+>> config 'interface' 'mesh'
+>>          option ifname 'wlan0-1'
+>>          option 'proto' 'none'
+>>          option 'mtu' '1528'
+>>
+>> config interface 'wan'
+>>          option ifname 'eth1'
+>>          option proto 'dhcp'
+>>
+>> config switch
+>>          option name 'eth0'
+>>          option reset '1'
+>>          option enable_vlan '1'
+>>
+>> config switch_vlan
+>>          option device 'eth0'
+>>          option vlan '1'
+>>          option ports '0 1 2 3 4'
+>>
+>> # cat batman-adv
+>> config 'mesh' 'bat0'
+>>          option 'interfaces' 'mesh'
+>>          option 'aggregated_ogms' '1'
+>>          option 'ap_isolation' '0'
+>>          option 'bonding' '0'
+>>          option 'fragmentation' '1'
+>>          option 'gw_bandwidth' '3mbit/384kbit'
+>>          option 'gw_mode' 'client'
+>>          option 'gw_sel_class' '20'
+>>          option 'orig_interval' '1000'
+>>          option 'vis_mode' 'client'
+>>          option 'bridge_loop_avoidance' '1'
+>>          #option 'log_level'
+>>
+>>
+>> /etc/firewall contains openwrt default settings and i have questioned myself
+>> if some rules need to be set there.
+>>
+>> i tried this:
+>> http://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-May/007131.html and no
+>> success.
+>>
+>> and read this which is somewhat related tp my issue too.
+>> www.mail-archive.com/b.a.t.m.a.n@lists.open-mesh.org/msg07643.html
+>>
+>> what am i missing ? iptables forward rules ?
+>>
+>>
+>>
+>>
+>>
+>>
+>>
+>> --
+>>
+>>
+>>
+>>
+>>
+>>
+>> Redes wireless
+>> http://wirelesspt.net
+>
