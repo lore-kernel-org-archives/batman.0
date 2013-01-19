@@ -1,10 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 19 Jan 2013 21:27:48 +0800
-Message-Id: <1358602079-24024-3-git-send-email-ordex@autistici.org>
+Date: Sat, 19 Jan 2013 21:27:49 +0800
+Message-Id: <1358602079-24024-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1358602079-24024-1-git-send-email-ordex@autistici.org>
 References: <1358602079-24024-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 02/13] batman-adv: align kernel doc properly
+Subject: [B.A.T.M.A.N.] [PATCH 03/13] batman-adv: mark debug_log struct as
+	bat_priv only struct
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,45 +25,124 @@ From: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/types.h | 25 ++++++++++++-------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
+ net/batman-adv/debugfs.c | 13 +++++++------
+ net/batman-adv/types.h   | 25 +++++++++++++------------
+ 2 files changed, 20 insertions(+), 18 deletions(-)
 
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 55a9007..e47555b 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -40,13 +40,14 @@ static struct dentry *batadv_debugfs;
+ 
+ static const int batadv_log_buff_len = BATADV_LOG_BUF_LEN;
+ 
+-static char *batadv_log_char_addr(struct batadv_debug_log *debug_log,
++static char *batadv_log_char_addr(struct batadv_priv_debug_log *debug_log,
+ 				  size_t idx)
+ {
+ 	return &debug_log->log_buff[idx & BATADV_LOG_BUFF_MASK];
+ }
+ 
+-static void batadv_emit_log_char(struct batadv_debug_log *debug_log, char c)
++static void batadv_emit_log_char(struct batadv_priv_debug_log *debug_log,
++				 char c)
+ {
+ 	char *char_addr;
+ 
+@@ -59,7 +60,7 @@ static void batadv_emit_log_char(struct batadv_debug_log *debug_log, char c)
+ }
+ 
+ __printf(2, 3)
+-static int batadv_fdebug_log(struct batadv_debug_log *debug_log,
++static int batadv_fdebug_log(struct batadv_priv_debug_log *debug_log,
+ 			     const char *fmt, ...)
+ {
+ 	va_list args;
+@@ -114,7 +115,7 @@ static int batadv_log_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static int batadv_log_empty(struct batadv_debug_log *debug_log)
++static int batadv_log_empty(struct batadv_priv_debug_log *debug_log)
+ {
+ 	return !(debug_log->log_start - debug_log->log_end);
+ }
+@@ -123,7 +124,7 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
+ 			       size_t count, loff_t *ppos)
+ {
+ 	struct batadv_priv *bat_priv = file->private_data;
+-	struct batadv_debug_log *debug_log = bat_priv->debug_log;
++	struct batadv_priv_debug_log *debug_log = bat_priv->debug_log;
+ 	int error, i = 0;
+ 	char *char_addr;
+ 	char c;
+@@ -177,7 +178,7 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
+ static unsigned int batadv_log_poll(struct file *file, poll_table *wait)
+ {
+ 	struct batadv_priv *bat_priv = file->private_data;
+-	struct batadv_debug_log *debug_log = bat_priv->debug_log;
++	struct batadv_priv_debug_log *debug_log = bat_priv->debug_log;
+ 
+ 	poll_wait(file, &debug_log->queue_wait, wait);
+ 
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index d8061ac..dffbdff 100644
+index dffbdff..db3fb25 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -66,19 +66,18 @@ struct batadv_hard_iface {
+@@ -233,6 +233,16 @@ struct batadv_priv_bla {
  };
+ #endif
  
- /**
-- *	struct batadv_orig_node - structure for orig_list maintaining nodes of mesh
-- *	@primary_addr: hosts primary interface address
-- *	@last_seen: when last packet from this node was received
-- *	@bcast_seqno_reset: time when the broadcast seqno window was reset
-- *	@batman_seqno_reset: time when the batman seqno window was reset
-- *	@gw_flags: flags related to gateway class
-- *	@flags: for now only VIS_SERVER flag
-- *	@last_real_seqno: last and best known sequence number
-- *	@last_ttl: ttl of last received packet
-- *	@last_bcast_seqno: last broadcast sequence number received by this host
-- *
-- *	@candidates: how many candidates are available
-- *	@selected: next bonding candidate
-+ * struct batadv_orig_node - structure for orig_list maintaining nodes of mesh
-+ * @primary_addr: hosts primary interface address
-+ * @last_seen: when last packet from this node was received
-+ * @bcast_seqno_reset: time when the broadcast seqno window was reset
-+ * @batman_seqno_reset: time when the batman seqno window was reset
-+ * @gw_flags: flags related to gateway class
-+ * @flags: for now only VIS_SERVER flag
-+ * @last_real_seqno: last and best known sequence number
-+ * @last_ttl: ttl of last received packet
-+ * @last_bcast_seqno: last broadcast sequence number received by this host
-+ * @candidates: how many candidates are available
-+ * @selected: next bonding candidate
-  */
- struct batadv_orig_node {
- 	uint8_t orig[ETH_ALEN];
++#ifdef CONFIG_BATMAN_ADV_DEBUG
++struct batadv_priv_debug_log {
++	char log_buff[BATADV_LOG_BUF_LEN];
++	unsigned long log_start;
++	unsigned long log_end;
++	spinlock_t lock; /* protects log_buff, log_start and log_end */
++	wait_queue_head_t queue_wait;
++};
++#endif
++
+ struct batadv_priv_gw {
+ 	struct hlist_head list;
+ 	spinlock_t list_lock; /* protects gw_list and curr_gw */
+@@ -290,9 +300,6 @@ struct batadv_priv {
+ 	atomic_t bcast_queue_left;
+ 	atomic_t batman_queue_left;
+ 	char num_ifaces;
+-#ifdef CONFIG_BATMAN_ADV_DEBUG
+-	struct batadv_debug_log *debug_log;
+-#endif
+ 	struct kobject *mesh_obj;
+ 	struct dentry *debug_dir;
+ 	struct hlist_head forw_bat_list;
+@@ -306,6 +313,9 @@ struct batadv_priv {
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ 	struct batadv_priv_bla bla;
+ #endif
++#ifdef CONFIG_BATMAN_ADV_DEBUG
++	struct batadv_priv_debug_log *debug_log;
++#endif
+ 	struct batadv_priv_gw gw;
+ 	struct batadv_priv_tt tt;
+ 	struct batadv_priv_vis vis;
+@@ -425,15 +435,6 @@ struct batadv_if_list_entry {
+ 	bool primary;
+ 	struct hlist_node list;
+ };
+-
+-struct batadv_debug_log {
+-	char log_buff[BATADV_LOG_BUF_LEN];
+-	unsigned long log_start;
+-	unsigned long log_end;
+-	spinlock_t lock; /* protects log_buff, log_start and log_end */
+-	wait_queue_head_t queue_wait;
+-};
+-
+ struct batadv_frag_packet_list_entry {
+ 	struct list_head list;
+ 	uint16_t seqno;
 -- 
 1.8.0.2
 
