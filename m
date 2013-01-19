@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 19 Jan 2013 21:27:49 +0800
-Message-Id: <1358602079-24024-4-git-send-email-ordex@autistici.org>
+Date: Sat, 19 Jan 2013 21:27:50 +0800
+Message-Id: <1358602079-24024-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1358602079-24024-1-git-send-email-ordex@autistici.org>
 References: <1358602079-24024-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 03/13] batman-adv: mark debug_log struct as
-	bat_priv only struct
+Subject: [B.A.T.M.A.N.] [PATCH 04/13] batman-adv: group tt type definitions
+	together
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,124 +25,85 @@ From: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/debugfs.c | 13 +++++++------
- net/batman-adv/types.h   | 25 +++++++++++++------------
- 2 files changed, 20 insertions(+), 18 deletions(-)
+ net/batman-adv/types.h | 58 +++++++++++++++++++++++++-------------------------
+ 1 file changed, 29 insertions(+), 29 deletions(-)
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index 55a9007..e47555b 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -40,13 +40,14 @@ static struct dentry *batadv_debugfs;
- 
- static const int batadv_log_buff_len = BATADV_LOG_BUF_LEN;
- 
--static char *batadv_log_char_addr(struct batadv_debug_log *debug_log,
-+static char *batadv_log_char_addr(struct batadv_priv_debug_log *debug_log,
- 				  size_t idx)
- {
- 	return &debug_log->log_buff[idx & BATADV_LOG_BUFF_MASK];
- }
- 
--static void batadv_emit_log_char(struct batadv_debug_log *debug_log, char c)
-+static void batadv_emit_log_char(struct batadv_priv_debug_log *debug_log,
-+				 char c)
- {
- 	char *char_addr;
- 
-@@ -59,7 +60,7 @@ static void batadv_emit_log_char(struct batadv_debug_log *debug_log, char c)
- }
- 
- __printf(2, 3)
--static int batadv_fdebug_log(struct batadv_debug_log *debug_log,
-+static int batadv_fdebug_log(struct batadv_priv_debug_log *debug_log,
- 			     const char *fmt, ...)
- {
- 	va_list args;
-@@ -114,7 +115,7 @@ static int batadv_log_release(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--static int batadv_log_empty(struct batadv_debug_log *debug_log)
-+static int batadv_log_empty(struct batadv_priv_debug_log *debug_log)
- {
- 	return !(debug_log->log_start - debug_log->log_end);
- }
-@@ -123,7 +124,7 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
- 			       size_t count, loff_t *ppos)
- {
- 	struct batadv_priv *bat_priv = file->private_data;
--	struct batadv_debug_log *debug_log = bat_priv->debug_log;
-+	struct batadv_priv_debug_log *debug_log = bat_priv->debug_log;
- 	int error, i = 0;
- 	char *char_addr;
- 	char c;
-@@ -177,7 +178,7 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
- static unsigned int batadv_log_poll(struct file *file, poll_table *wait)
- {
- 	struct batadv_priv *bat_priv = file->private_data;
--	struct batadv_debug_log *debug_log = bat_priv->debug_log;
-+	struct batadv_priv_debug_log *debug_log = bat_priv->debug_log;
- 
- 	poll_wait(file, &debug_log->queue_wait, wait);
- 
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index dffbdff..db3fb25 100644
+index db3fb25..9a66115 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -233,6 +233,16 @@ struct batadv_priv_bla {
+@@ -339,35 +339,6 @@ struct batadv_socket_packet {
+ 	struct batadv_icmp_packet_rr icmp_packet;
+ };
+ 
+-struct batadv_tt_common_entry {
+-	uint8_t addr[ETH_ALEN];
+-	struct hlist_node hash_entry;
+-	uint16_t flags;
+-	unsigned long added_at;
+-	atomic_t refcount;
+-	struct rcu_head rcu;
+-};
+-
+-struct batadv_tt_local_entry {
+-	struct batadv_tt_common_entry common;
+-	unsigned long last_seen;
+-};
+-
+-struct batadv_tt_global_entry {
+-	struct batadv_tt_common_entry common;
+-	struct hlist_head orig_list;
+-	spinlock_t list_lock;	/* protects the list */
+-	unsigned long roam_at; /* time at which TT_GLOBAL_ROAM was set */
+-};
+-
+-struct batadv_tt_orig_list_entry {
+-	struct batadv_orig_node *orig_node;
+-	uint8_t ttvn;
+-	atomic_t refcount;
+-	struct rcu_head rcu;
+-	struct hlist_node list;
+-};
+-
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ struct batadv_backbone_gw {
+ 	uint8_t orig[ETH_ALEN];
+@@ -393,6 +364,35 @@ struct batadv_claim {
  };
  #endif
  
-+#ifdef CONFIG_BATMAN_ADV_DEBUG
-+struct batadv_priv_debug_log {
-+	char log_buff[BATADV_LOG_BUF_LEN];
-+	unsigned long log_start;
-+	unsigned long log_end;
-+	spinlock_t lock; /* protects log_buff, log_start and log_end */
-+	wait_queue_head_t queue_wait;
++struct batadv_tt_common_entry {
++	uint8_t addr[ETH_ALEN];
++	struct hlist_node hash_entry;
++	uint16_t flags;
++	unsigned long added_at;
++	atomic_t refcount;
++	struct rcu_head rcu;
 +};
-+#endif
 +
- struct batadv_priv_gw {
- 	struct hlist_head list;
- 	spinlock_t list_lock; /* protects gw_list and curr_gw */
-@@ -290,9 +300,6 @@ struct batadv_priv {
- 	atomic_t bcast_queue_left;
- 	atomic_t batman_queue_left;
- 	char num_ifaces;
--#ifdef CONFIG_BATMAN_ADV_DEBUG
--	struct batadv_debug_log *debug_log;
--#endif
- 	struct kobject *mesh_obj;
- 	struct dentry *debug_dir;
- 	struct hlist_head forw_bat_list;
-@@ -306,6 +313,9 @@ struct batadv_priv {
- #ifdef CONFIG_BATMAN_ADV_BLA
- 	struct batadv_priv_bla bla;
- #endif
-+#ifdef CONFIG_BATMAN_ADV_DEBUG
-+	struct batadv_priv_debug_log *debug_log;
-+#endif
- 	struct batadv_priv_gw gw;
- 	struct batadv_priv_tt tt;
- 	struct batadv_priv_vis vis;
-@@ -425,15 +435,6 @@ struct batadv_if_list_entry {
- 	bool primary;
- 	struct hlist_node list;
- };
--
--struct batadv_debug_log {
--	char log_buff[BATADV_LOG_BUF_LEN];
--	unsigned long log_start;
--	unsigned long log_end;
--	spinlock_t lock; /* protects log_buff, log_start and log_end */
--	wait_queue_head_t queue_wait;
--};
--
- struct batadv_frag_packet_list_entry {
++struct batadv_tt_local_entry {
++	struct batadv_tt_common_entry common;
++	unsigned long last_seen;
++};
++
++struct batadv_tt_global_entry {
++	struct batadv_tt_common_entry common;
++	struct hlist_head orig_list;
++	spinlock_t list_lock;	/* protects the list */
++	unsigned long roam_at; /* time at which TT_GLOBAL_ROAM was set */
++};
++
++struct batadv_tt_orig_list_entry {
++	struct batadv_orig_node *orig_node;
++	uint8_t ttvn;
++	atomic_t refcount;
++	struct rcu_head rcu;
++	struct hlist_node list;
++};
++
+ struct batadv_tt_change_node {
  	struct list_head list;
- 	uint16_t seqno;
+ 	struct batadv_tt_change change;
 -- 
 1.8.0.2
 
