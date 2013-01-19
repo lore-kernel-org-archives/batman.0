@@ -1,15 +1,8 @@
-Return-Path: <guido@guidoi.com.ar>
-MIME-Version: 1.0
-Sender: guido@guidoi.com.ar
-In-Reply-To: <50F6ECE5.90802@wirelesspt.net>
-References: <50F68D22.7090709@wirelesspt.net>
- <CAHD-aqJrdXNJeVEti+HTFkSg47B642gJ7wUDvFGrNNp6merjkw@mail.gmail.com>
- <50F6ECE5.90802@wirelesspt.net>
-From: Gui Iribarren <gui@altermundi.net>
-Date: Thu, 17 Jan 2013 09:15:32 -0300
-Message-ID: <CAHD-aqKdC+QBPb6orQUnMh5m=hYzDHTL3Zf1b4jvf9kyw-7+_A@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] dns/routing/ issue (batman-adv mesh)
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat, 19 Jan 2013 21:27:46 +0800
+Message-Id: <1358602079-24024-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2013-01-19
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,207 +14,112 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: cmsv@wirelesspt.net
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Right, you're mixing up dhcp.wan.ignore with dhcp.lan.ignore.
+here is our second patchset intended for net-next/linux-3.9.
+In this batch you have some struct refactoring and a great kernel doc
+improvement by Marek Lindner. In patch 10/13 you have the random32() function
+renaming proposed by Akinobu Mita.
 
-it should be:
+In 11/13 instead you have a behavioural change brought by Simon Wunderlich which
+is modifying the way a batman-adv virtual interface is unregistered in order to
+prevent a possible deadlock involving rntl_lock and s_active. We have
+already been discussing about this problem and its possible solution on the
+netdev mailing list.
+The rest is just clean up work.
 
-### router 1 gateway
-uci set dhcp.lan.ignore=0
-uci set dhcp.lan.force=1
-uci set dhcp.wan.ignore=1
+Please pull or let me know if there is any problem.
 
-### router 2 client
-uci set dhcp.lan.ignore=1
-uci set dhcp.lan.force=0
-uci set dhcp.wan.ignore=1
+Thanks a lot,
+	Antonio
 
-so, on gateway router DHCP is always served,
-and on client router, DHCP is never started.
 
-in the config you posted, the "client" router has DHCP enabled on LAN
-interface, thus serves the wrong lease to wireless clients.
 
-good luck!
+The following changes since commit 1ad759d8479b4b28f2a6c874d380066cf987b341:
 
-On Wed, Jan 16, 2013 at 3:09 PM, cmsv <cmsv@wirelesspt.net> wrote:
-> just like you ; i would like to have the mesh working even if a gateway
-> dies.
-> http://dpaste.com/hold/879202/
->
-> cable connected clients on the client routers can access the wan
-> just not wirelessly connected.
->
->
-> On 01/16/13 12:31, Gui Iribarren wrote:
->>
->> You posted only one set of configurations, but it's not clear to me
->> whether that belongs to router 1 or 2.
->> Could you please repost (maybe in a pastebin.com link)
->> /etc/config/network
->> /etc/config/dhcp
->> /etc/config/wireless
->> for router 1
->>
->> and the same, clearly labeled , for router 2
->>
->> On Wed, Jan 16, 2013 at 8:21 AM, cmsv<cmsv@wirelesspt.net>  wrote:
->>>
->>> # cat /etc/openwrt_release
->>> DISTRIB_ID="OpenWrt"
->>> DISTRIB_RELEASE="Attitude Adjustment"
->>> DISTRIB_REVISION="r35153"
->>> DISTRIB_CODENAME="attitude_adjustment"
->>> DISTRIB_TARGET="ar71xx/generic"
->>> DISTRIB_DESCRIPTION="OpenWrt Attitude Adjustment 12.09-rc1"
->>>
->>> Batman-adv 2012.3.0
->>>
->>> Scenario:
->>> router 1 is the internet gateway
->>> router 2 is a client router of that gateway
->>> Both routers in vap mode with 2 diff ssid's
->>> one dhcp pool for 'lan'
->>>
->>> config dnsmasq
->>> option domainneeded     1
->>> option boguspriv        1
->>> option filterwin2k      0  # enable for dial on demand
->>> option localise_queries 1
->>> option rebind_protection 1  # disable if upstream must serve RFC1918
->>> addresses
->>> option rebind_localhost 1  # enable for RBL checking and similar services
->>> #list rebind_domain example.lan  # whitelist RFC1918 responses for
->>> domains
->>> option local    '/lan/'
->>> option domain   'wirelesspt.net'
->>> option expandhosts      1
->>> option nonegcache       0
->>> option authoritative    1
->>> option readethers       1
->>> option leasefile        '/tmp/dhcp.leases'
->>> option resolvfile       '/tmp/resolv.conf.auto'
->>> #list server            '/mycompany.local/1.2.3.4'
->>> #option nonwildcard     1
->>> #list interface         br-lan
->>> #list notinterface      lo
->>> #list bogusnxdomain     '64.94.110.11'
->>> #list dns               208.67.222.222
->>> #list dns               208.67.220.220
->>> #list dns               8.8.8.8
->>>
->>> config dhcp lan
->>> option interface        lan
->>> option start    50
->>> option limit    254
->>> option leasetime        24h
->>> #option force   1
->>>
->>> config dhcp wan
->>> option interface        wan
->>> option ignore   1 # 0 for non gw
->>>
->>>
->>> Problem:
->>> router 1 clients (people with computers) can connect to it either with
->>> cable
->>> or wirelessly and ping/access the wan. router 1 works well this way
->>>
->>> router 1 can ping router 2 either on layer 2 or layer 3
->>>
->>> router 2 can ping router 1 either on layer 2 or layer 3
->>> router
->>>
->>> clients (connected to router 2 via cable) are able to access and ping the
->>> wan.
->>> clients connected to router 2 wirelessly are NOT able to access the wan.
->>> Seems a routing/dns issue
->>>
->>> # ping yahoo.com
->>> ping: bad address 'yahoo.com
->>>
->>> both /etc/resolv.com contain 127.0.0.1 as nameserver
->>>
->>> # cat network
->>> config interface 'loopback'
->>>          option ifname 'lo'
->>>          option proto 'static'
->>>          option ipaddr '127.0.0.1'
->>>          option netmask '255.0.0.0'
->>>
->>> config interface 'lan'
->>>          option ifname 'eth0 bat0'
->>>          option type 'bridge'
->>>          option proto 'static'
->>>          option ipaddr '192.168.1.2'
->>>          option netmask '255.255.255.0'
->>>
->>> config 'interface' 'mesh'
->>>          option ifname 'wlan0-1'
->>>          option 'proto' 'none'
->>>          option 'mtu' '1528'
->>>
->>> config interface 'wan'
->>>          option ifname 'eth1'
->>>          option proto 'dhcp'
->>>
->>> config switch
->>>          option name 'eth0'
->>>          option reset '1'
->>>          option enable_vlan '1'
->>>
->>> config switch_vlan
->>>          option device 'eth0'
->>>          option vlan '1'
->>>          option ports '0 1 2 3 4'
->>>
->>> # cat batman-adv
->>> config 'mesh' 'bat0'
->>>          option 'interfaces' 'mesh'
->>>          option 'aggregated_ogms' '1'
->>>          option 'ap_isolation' '0'
->>>          option 'bonding' '0'
->>>          option 'fragmentation' '1'
->>>          option 'gw_bandwidth' '3mbit/384kbit'
->>>          option 'gw_mode' 'client'
->>>          option 'gw_sel_class' '20'
->>>          option 'orig_interval' '1000'
->>>          option 'vis_mode' 'client'
->>>          option 'bridge_loop_avoidance' '1'
->>>          #option 'log_level'
->>>
->>>
->>> /etc/firewall contains openwrt default settings and i have questioned
->>> myself
->>> if some rules need to be set there.
->>>
->>> i tried this:
->>> http://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-May/007131.html and
->>> no
->>> success.
->>>
->>> and read this which is somewhat related tp my issue too.
->>> www.mail-archive.com/b.a.t.m.a.n@lists.open-mesh.org/msg07643.html
->>>
->>> what am i missing ? iptables forward rules ?
->>>
->>>
->>>
->>>
->>>
->>>
->>>
->>> --
->>>
->>>
->>>
->>>
->>>
->>>
->>> Redes wireless
->>> http://wirelesspt.net
->>
->>
->
+  ipv6: remove unneeded check to pskb_may_pull in ipip6_rcv (2013-01-18 14:43:51 -0500)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 5ac2a177298e1f245aa54cce4030842f3abe5aea:
+
+  batman-adv: Start new development cycle (2013-01-19 21:18:13 +0800)
+
+----------------------------------------------------------------
+Included changes:
+- sysfs removal postponement during interface un-registration
+- random32() function renaming
+- struct refactoring
+- kernel doc improvement
+- deleyed_work initialisation clean up work
+- copyright year and internal version number update
+- kernel doc improvement
+
+----------------------------------------------------------------
+Akinobu Mita (1):
+      batman-adv: rename random32() to prandom_u32()
+
+Antonio Quartulli (3):
+      batman-adv: a delayed_work has to be initialised once
+      batman-adv: update copyright years
+      batman-adv: Start new development cycle
+
+Marek Lindner (8):
+      batman-adv: align kernel doc properly
+      batman-adv: mark debug_log struct as bat_priv only struct
+      batman-adv: group tt type definitions together
+      batman-adv: rename batadv_if_list_entry struct to make clear it is used by vis
+      batman-adv: rename batadv_recvlist_node struct to make clear it is used by vis
+      batman-adv: rename batadv_backbone_gw struct to make clear it is used by bla
+      batman-adv: rename batadv_claim struct to make clear it is used by bla
+      batman-adv: kernel doc for types.h
+
+Simon Wunderlich (1):
+      batman-adv: postpone sysfs removal when unregistering
+
+ net/batman-adv/bat_algo.h              |   2 +-
+ net/batman-adv/bat_iv_ogm.c            |   6 +-
+ net/batman-adv/bitarray.c              |   2 +-
+ net/batman-adv/bitarray.h              |   2 +-
+ net/batman-adv/bridge_loop_avoidance.c | 113 ++++---
+ net/batman-adv/bridge_loop_avoidance.h |   2 +-
+ net/batman-adv/debugfs.c               |  15 +-
+ net/batman-adv/debugfs.h               |   2 +-
+ net/batman-adv/distributed-arp-table.c |   2 +-
+ net/batman-adv/distributed-arp-table.h |   2 +-
+ net/batman-adv/gateway_client.c        |   2 +-
+ net/batman-adv/gateway_client.h        |   2 +-
+ net/batman-adv/gateway_common.c        |   2 +-
+ net/batman-adv/gateway_common.h        |   2 +-
+ net/batman-adv/hard-interface.c        |  26 +-
+ net/batman-adv/hard-interface.h        |   2 +-
+ net/batman-adv/hash.c                  |   2 +-
+ net/batman-adv/hash.h                  |   2 +-
+ net/batman-adv/icmp_socket.c           |   2 +-
+ net/batman-adv/icmp_socket.h           |   2 +-
+ net/batman-adv/main.c                  |   2 +-
+ net/batman-adv/main.h                  |   6 +-
+ net/batman-adv/originator.c            |  19 +-
+ net/batman-adv/originator.h            |   2 +-
+ net/batman-adv/packet.h                |   2 +-
+ net/batman-adv/ring_buffer.c           |   2 +-
+ net/batman-adv/ring_buffer.h           |   2 +-
+ net/batman-adv/routing.c               |   2 +-
+ net/batman-adv/routing.h               |   2 +-
+ net/batman-adv/send.c                  |   7 +-
+ net/batman-adv/send.h                  |   2 +-
+ net/batman-adv/soft-interface.c        |  34 +-
+ net/batman-adv/soft-interface.h        |   2 +-
+ net/batman-adv/sysfs.c                 |   2 +-
+ net/batman-adv/sysfs.h                 |   2 +-
+ net/batman-adv/translation-table.c     |  16 +-
+ net/batman-adv/translation-table.h     |   2 +-
+ net/batman-adv/types.h                 | 568 ++++++++++++++++++++++++++-------
+ net/batman-adv/unicast.c               |   2 +-
+ net/batman-adv/unicast.h               |   2 +-
+ net/batman-adv/vis.c                   |  36 +--
+ net/batman-adv/vis.h                   |   2 +-
+ 42 files changed, 641 insertions(+), 267 deletions(-)
