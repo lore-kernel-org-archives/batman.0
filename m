@@ -1,13 +1,13 @@
-Return-Path: <davem@davemloft.net>
-Date: Sat, 19 Jan 2013 10:50:17 -0500 (EST)
-Message-Id: <20130119.105017.886816855929937540.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1358602079-24024-1-git-send-email-ordex@autistici.org>
-References: <1358602079-24024-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-01-19
+Return-Path: <paukoning@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <201212311511.24877.lindner_marek@yahoo.de>
+References: <CANiGF9-dq-HrvWrgu9EMC94rP=1YdrmaFbCF2g1SZ9ocu77ysw@mail.gmail.com>
+ <201212311511.24877.lindner_marek@yahoo.de>
+Date: Mon, 21 Jan 2013 10:11:15 +0100
+Message-ID: <CANiGF99LSHAOsKiW=mwR9v3pvEXAV8_8BcBJYzxddZ2rzCQW5A@mail.gmail.com>
+From: Pau Koning <paukoning@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] batman-adv: Unable to add interface in LXC
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,24 +19,10 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
+To: Marek Lindner <lindner_marek@yahoo.de>
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 19 Jan 2013 21:27:46 +0800
+> Did you check your kernel log messages ? I'd expect batman-adv to print
+> something there in case of an error.
 
-> here is our second patchset intended for net-next/linux-3.9.
-> In this batch you have some struct refactoring and a great kernel doc
-> improvement by Marek Lindner. In patch 10/13 you have the random32() function
-> renaming proposed by Akinobu Mita.
-> 
-> In 11/13 instead you have a behavioural change brought by Simon Wunderlich which
-> is modifying the way a batman-adv virtual interface is unregistered in order to
-> prevent a possible deadlock involving rntl_lock and s_active. We have
-> already been discussing about this problem and its possible solution on the
-> netdev mailing list.
-> The rest is just clean up work.
-> 
-> Please pull or let me know if there is any problem.
-
-Pulled, thanks Antonio.
+No output at all
