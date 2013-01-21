@@ -1,13 +1,11 @@
-Return-Path: <paukoning@gmail.com>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Mon, 21 Jan 2013 11:22:20 +0100
+Message-Id: <1358763746-16742-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-In-Reply-To: <201212311511.24877.lindner_marek@yahoo.de>
-References: <CANiGF9-dq-HrvWrgu9EMC94rP=1YdrmaFbCF2g1SZ9ocu77ysw@mail.gmail.com>
- <201212311511.24877.lindner_marek@yahoo.de>
-Date: Mon, 21 Jan 2013 10:11:15 +0100
-Message-ID: <CANiGF99LSHAOsKiW=mwR9v3pvEXAV8_8BcBJYzxddZ2rzCQW5A@mail.gmail.com>
-From: Pau Koning <paukoning@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] batman-adv: Unable to add interface in LXC
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv3 0/6] CATWOMAN: Network coding in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,10 +17,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <lindner_marek@yahoo.de>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-> Did you check your kernel log messages ? I'd expect batman-adv to print
-> something there in case of an error.
+I hereby bring you network coding in batman-adv (in its third revision.
+This allows a relay to send two packets (to two destinations) in a single
+transmission. Tests[1] have shown an increase in throughput up to 1.6
+under the right circumstances.
 
-No output at all
+For this to work, you will need to compile batman-adv with
+CONFIG_BATMAN_ADV_NC=y and a wireless interface with working
+promiscuous mode. The rest is taken care of by batman-adv and the
+following patches.
+
+Patch 5/6 depends on my previous patch on the mailing list:
+"Return reason for failure in batadv_check_unicast_packet()"
+
+[1] http://www.open-mesh.org/projects/open-mesh/wiki/2011-08-18-network-coding-first-steps
+
+Martin Hundebøll (6):
+  batman-adv: Add the initial code for network coding.
+  batman-adv: Detect coding nodes and remove these after timeout
+  batman-adv: Buffer unicast packets before forward.
+  batman-adv: Code and transmit packets if possible.
+  batman-adv: Save overheard and tx packets for decoding.
+  batman-adv: Receive coded packets and decode them.
+
+ Makefile               |    2 +
+ Makefile.kbuild        |    1 +
+ bat_iv_ogm.c           |    5 +
+ compat.c               |   10 +
+ compat.h               |    1 +
+ debugfs.c              |   18 +
+ gen-compat-autoconf.sh |    1 +
+ main.c                 |    6 +
+ main.h                 |   12 +-
+ network-coding.c       | 1832 ++++++++++++++++++++++++++++++++++++++++++++++++
+ network-coding.h       |  123 ++++
+ originator.c           |    6 +
+ packet.h               |   33 +
+ routing.c              |   31 +-
+ send.c                 |    5 +
+ soft-interface.c       |   14 +
+ sysfs-class-net-mesh   |    8 +
+ sysfs.c                |    6 +
+ types.h                |  124 ++++
+ 19 files changed, 2228 insertions(+), 10 deletions(-)
+ create mode 100644 network-coding.c
+ create mode 100644 network-coding.h
+
+-- 
+1.8.1.1
+
