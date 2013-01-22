@@ -1,11 +1,11 @@
-Return-Path: <ff@stephan.homeunix.net>
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Apple Message framework v1085)
-From: =?iso-8859-1?Q?Jan_L=FChr?= <ff@stephan.homeunix.net>
+Return-Path: <aaron@lo-res.org>
+Content-Type: text/plain; charset=iso-8859-1
+Mime-Version: 1.0 (Mac OS X Mail 6.2 \(1499\))
+From: "L. Aaron Kaplan" <aaron@lo-res.org>
 In-Reply-To: <CAD_CWO1hPN=7RVQA+W25oM5nCxxYxV1yefXAYboTvK5_H+hxJg@mail.gmail.com>
-Date: Tue, 22 Jan 2013 14:27:41 +0100
+Date: Tue, 22 Jan 2013 16:37:00 +0100
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <DF3313C4-3A11-43A1-9CB8-8D27A2D226A1@stephan.homeunix.net>
+Message-Id: <CAC0629B-4343-48A8-9321-87A5B2A5B832@lo-res.org>
 References: <CAD_CWO3cQMtPns+xzc2hs4sUCmZM1ux4-335rhicUn05Upvu-g@mail.gmail.com>
  <CAD_CWO1hPN=7RVQA+W25oM5nCxxYxV1yefXAYboTvK5_H+hxJg@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] Advice for dense meshes
@@ -22,10 +22,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: steve@villagetelco.org, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello,
 
-Am 22.01.2013 um 13:54 schrieb Steve Song:
+On Jan 22, 2013, at 1:54 PM, Steve Song <steve@villagetelco.org> wrote:
 
+> Hi all,
+>=20
 > A colleague of mine is building a batman-adv mesh network in an
 > apartment building with essentially one node per apartment.   Not
 > surprisingly, results in a very dense mesh with each node having a
@@ -40,28 +41,20 @@ Am 22.01.2013 um 13:54 schrieb Steve Song:
 > However, it is not clear to us what is the best strategy in this
 > context.  Grateful for any tips or suggestions you may have.
 >=20
+> Thanks in advance.... Steve Song
+>=20
 
-using different channels is always a good idea when it comes to crowded =
-places.
-Another option in to use 5 Ghz for mesh and 2.4 Ghz for clients.
+Hi Steve,
 
-Another options is to use less nodes - one node per appartment might be =
-too much.
+The following is my experience.
 
-Turning down the transmit power can help, but might have the opposite =
-effect.
-(Interference- vs. transmission range)
-
-Another - imho the most important rule - is to limit hops
-Each hop limits the total throughput: if using same wireless channels =
-one hop cannot forward data while receiving. It has to wait.
-=20
-To summarize:
--> Minimize the (expected) hop count.
--> Use as many channels as possible (incl. 5 Ghz)
--> Use as few nodes per channel as needed to provide coverage
-
-Keep smiling
-yanosz
+Optimise layer 1 by:
+*) proper channel assignments
+*) reduce txpower
+*) dont's send when you don't have to send
+*) use spacial separation of frequencies and directionality if possible =
+(ok, this is more of a general advice, won't matter so much in =
+apartments)
+*) most importantly: use 802.11n!
 
 
