@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 24 Jan 2013 21:31:18 +0800
+Date: Thu, 24 Jan 2013 21:36:11 +0800
 References: <c15e0026ed81d2da11ee59ab7bfcb3a6271cd10b.1358961079.git.mschiffer@universe-factory.net>
- <20130123211137.GB10344@ritirata.org> <20130123211403.GC10344@ritirata.org>
-In-Reply-To: <20130123211403.GC10344@ritirata.org>
+ <51005884.7090106@universe-factory.net> <20130123215352.GD10344@ritirata.org>
+In-Reply-To: <20130123215352.GD10344@ritirata.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201301242131.18392.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix skb leak in
-	batadv_dat_snoop_incoming_arp_reply()
+Message-Id: <201301242136.11695.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: filter out invalid DAT
+	entries
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,25 +24,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, January 24, 2013 05:14:03 Antonio Quartulli wrote:
-> On Thu, Jan 24, 2013 at 05:11:37AM +0800, Antonio Quartulli wrote:
-> > Hi Matthias,
-> > 
-> > very good catch!
-> > 
-> > On Wed, Jan 23, 2013 at 06:11:53PM +0100, Matthias Schiffer wrote:
-> > > The callers of batadv_dat_snoop_incoming_arp_reply() assume the skb has
-> > > been freed when it returns true; fix this by calling kfree_skb before
-> > > returning as it is done in batadv_dat_snoop_incoming_arp_request().
-> > > 
-> > > Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-> > 
-> > Acked-by: Antonio Quartulli <ordex@autistici.org>
+On Thursday, January 24, 2013 05:53:52 Antonio Quartulli wrote:
+> > It might make sense though to check for different types of addresses
+> > that are invalid for ARP (zeronet, loopback, multicast, etc.), but I
+> > wanted to keep the patch as simple as possible. If you think these
+> > should be filtered as well, I'll prepare a v2.
 > 
-> I forgot to say that this fix should be merged into maint, so that we can
-> send it to net.
+> in distributed-arp-table.c:784 you can already find these checks ;)
 
-Applied in revision 977d8c6.
+If most of the checking is done in batadv_arp_get_type() why not moving these 
+checks there too ? That would allow to have all checks in the same place ?
 
-Thanks,
+Cheers,
 Marek
