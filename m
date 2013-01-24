@@ -1,19 +1,8 @@
 Return-Path: <ordex@autistici.org>
-Date: Thu, 24 Jan 2013 05:55:31 +0800
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130123215531.GE10344@ritirata.org>
-References: <c15e0026ed81d2da11ee59ab7bfcb3a6271cd10b.1358961079.git.mschiffer@universe-factory.net>
- <4b41fb1f387acd24ecab6e4e47b2126b6dbddb5a.1358961079.git.mschiffer@universe-factory.net>
- <20130123210730.GA10344@ritirata.org>
- <51005884.7090106@universe-factory.net>
- <51005B89.6050506@universe-factory.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="FEz7ebHBGB6b2e8X"
-Content-Disposition: inline
-In-Reply-To: <51005B89.6050506@universe-factory.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: filter out invalid DAT
- entries
+Date: Thu, 24 Jan 2013 11:38:35 +0100
+Message-Id: <1359023915-31358-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix local translation output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,67 +14,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Matthias Schiffer <mschiffer@universe-factory.net>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+The last-seen field has to be print for all the entries but the one marked as
+no-purge.
 
---FEz7ebHBGB6b2e8X
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Introduced by 15727323d9f8864b2d41930940acc38de987045a
+("batman-adv: don't print the last_seen time for bat0 TT local entry")
 
-On Wed, Jan 23, 2013 at 10:52:09PM +0100, Matthias Schiffer wrote:
-> On 01/23/2013 10:39 PM, Matthias Schiffer wrote:
-> > ipv4_is_zeronet() checks if the first byte of the address is zero, to my
-> > knowledge there is no special funtion for checking for the unspecified
-> > address, as the case is trivial and independent of byte ordering.
-> >=20
-> > It might make sense though to check for different types of addresses
-> > that are invalid for ARP (zeronet, loopback, multicast, etc.), but I
-> > wanted to keep the patch as simple as possible. If you think these
-> > should be filtered as well, I'll prepare a v2.
-> >=20
-> > Matthias
->=20
-> Oh, I shouldn't top post. Well, continuing here now...
->=20
-> I just noticed that batadv_arp_get_type() already checks for loopback
-> and multicast addresses, so adding ipv4_is_zeronet() should be enough.
-> I'd keep that in batadv_dat_entry_add() though as the source of ARP
-> replies with 0.0.0.0 destination is still valid and can be should to the
-> DAT.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-mh I would not split these checks if they are all logically connected.
-Better to leave the patch as it is, imho.
+diff --git a/translation-table.c b/translation-table.c
+index fb15b4c..d44672f 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -517,8 +517,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 				    BATADV_TT_CLIENT_PENDING ? 'X' : '.'),
+ 				   (tt_common_entry->flags &
+ 				    BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
+-				   no_purge ? last_seen_secs : 0,
+-				   no_purge ? last_seen_msecs : 0);
++				   no_purge ? 0 : last_seen_secs,
++				   no_purge ? 0 : last_seen_msecs);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+-- 
+1.8.1.1
 
-Cheers,
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---FEz7ebHBGB6b2e8X
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRAFxTAAoJEADl0hg6qKeOFQYQAJyv31oq1CFBOTAF/CQovU1Y
-1vNEp6x8uct9WKeqKXCzx9DzxIeB6f8GolhCzPftZmm8J4Z7jWturBbYGd92vstg
-4BevXK3NNMeuCY8tO3cDKvpoHzXTMfFI59tvs+m9kMGrHD/wV/WWZhtb9x3yH4od
-ft0VfY2xn08+fjDT8YxMMSctNrQiVFY8wsYr2IVDdqIerOcIgj5mXOgvCApNPSgW
-1MSydaSSqQFPWnvwageUr6hqkiG+viG79icfjzTY2tsVHyEsgix0Jyd5p6u51RJZ
-LqpqKsHVYXoIMFtqyEXFeJa2PnYeWQYgbTS9lh1gIYKZLLz9wn3MebZeew74p2Jo
-U1sYNvxJ34dUd0XhHarYtiZyoP9qzl1c0oq1XDD4vj0VUzZuxR5EUz4RqIvgbktM
-PJm5aSBA4P/8OeiTnapYIKxZtOHT8IyotWMtI1m7ItzvBrr0hGZuzo+7tbIpG3S+
-MWaDjByBKbQJGZtIVbBbqt/mGVkNgwKZ03pljH8c3RS8eH8LMnR3obuNa7+sKG/P
-9VvCI/SBni9rARahsYdRsADHh1bUtDabEy0dbGJOWyQnReiYaO6CsVzVxgwJS1gB
-FsqjxuoW/McIOH7iro+KX9ACNDwmg8c++dvA5hcl65pL9L8eAvSnEwU6YdNuRuOe
-WzEobVVdZcYLzd6+826J
-=oKxg
------END PGP SIGNATURE-----
-
---FEz7ebHBGB6b2e8X--
