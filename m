@@ -1,11 +1,16 @@
 Return-Path: <ordex@autistici.org>
+Date: Thu, 24 Jan 2013 13:17:02 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 24 Jan 2013 11:41:39 +0100
-Message-Id: <1359024099-5158-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1359023915-31358-1-git-send-email-ordex@autistici.org>
-References: <1359023915-31358-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix local translation
-	table output
+Message-ID: <20130124121702.GA2507@ritirata.org>
+References: <CANiGF9-dq-HrvWrgu9EMC94rP=1YdrmaFbCF2g1SZ9ocu77ysw@mail.gmail.com>
+ <201212311511.24877.lindner_marek@yahoo.de>
+ <CANiGF99LSHAOsKiW=mwR9v3pvEXAV8_8BcBJYzxddZ2rzCQW5A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="0F1p//8PRICkK4MW"
+Content-Disposition: inline
+In-Reply-To: <CANiGF99LSHAOsKiW=mwR9v3pvEXAV8_8BcBJYzxddZ2rzCQW5A@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] batman-adv: Unable to add interface in LXC
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,38 +22,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Pau Koning <paukoning@gmail.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-The last-seen field has to be printed for all the local
-entries but the one marked with the no-purge flag
 
-Introduced by 15727323d9f8864b2d41930940acc38de987045a
-("batman-adv: don't print the last_seen time for bat0 TT local entry")
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
+Hello Pau,
 
-v2:
-- commit message "fixed"
+On Mon, Jan 21, 2013 at 10:11:15AM +0100, Pau Koning wrote:
+> > Did you check your kernel log messages ? I'd expect batman-adv to print
+> > something there in case of an error.
+>=20
+> No output at all
 
- translation-table.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Sorry for the long delay. However batman-adv does not support lxc at the mo=
+ment.
+Therefore the error you are getting is likely to be related to this.
 
-diff --git a/translation-table.c b/translation-table.c
-index fb15b4c..d44672f 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -517,8 +517,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 				    BATADV_TT_CLIENT_PENDING ? 'X' : '.'),
- 				   (tt_common_entry->flags &
- 				    BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
--				   no_purge ? last_seen_secs : 0,
--				   no_purge ? last_seen_msecs : 0);
-+				   no_purge ? 0 : last_seen_secs,
-+				   no_purge ? 0 : last_seen_msecs);
- 		}
- 		rcu_read_unlock();
- 	}
--- 
-1.8.1.1
 
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--0F1p//8PRICkK4MW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJRASY+AAoJEADl0hg6qKeOFu4P/AlgX26a9cq1aOxAcP1JypYw
+KQ0gB8QIbAlFM7KWm32I6oil2q+tlFb0xKc55ZH6Yn/vxvuKxXmYZNnjHxesAxuk
+wlS9QS93e3bHZtvYyeDD6akMNLUSdmWLgRn/GOBnieTnBek+aK6nt9H+DABRytB0
+zYcBhYQamCa41AbbGi5VLrZ0UhmElzmrGs7U+WPEgi54iyRgGIgv5PWX6S2slyQ8
+95RMX/KoU49hcZ8Fn9EIuB+t4kbkNdAJG0RLZexZfUrhB+JmMdQYjTLXPxD4IJsS
+RMdcJn0b5OEKwToEalZsc9ZMONcUjWzSJfKD1q/AOOCr2ebWVWx0FWTw5lhJ1xxb
+3TILLgrzXE4Sm0dconpiQmPABCknb/hPYOatt0oLvfCMjEV23ZWTG7n+gZCPFmNY
+SLuhbIahLPCuXMn2F/0C1505iXvbrsA1yqKT4ckLk1aFeDN95VhaBexx5ySPq22B
+AxQHSDvq9FdShcOIqX6vfPSifaEpqpOONMKpBKJq4nzhm0LuAIQzQD6ZqMd0bra8
+kiROpUWANbqOMYvRtRlzin+GNseYttRF50lab4CXZqNtKXY35pdT1m48pgoTmoIE
+G3tXKqJGGqIOYQpRz0OyaLkh14QQppUTcxrYWpllOUbhk/q7zm+KxswHvVDkU2OX
+0YLXo3FZJwAbsxUN74U8
+=+e/c
+-----END PGP SIGNATURE-----
+
+--0F1p//8PRICkK4MW--
