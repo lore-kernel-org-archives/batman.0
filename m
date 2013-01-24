@@ -1,8 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 24 Jan 2013 11:38:35 +0100
-Message-Id: <1359023915-31358-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix local translation output
+Date: Thu, 24 Jan 2013 11:41:39 +0100
+Message-Id: <1359024099-5158-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1359023915-31358-1-git-send-email-ordex@autistici.org>
+References: <1359023915-31358-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix local translation
+	table output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,14 +19,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The last-seen field has to be print for all the entries but the one marked as
-no-purge.
+The last-seen field has to be printed for all the local
+entries but the one marked with the no-purge flag
 
 Introduced by 15727323d9f8864b2d41930940acc38de987045a
 ("batman-adv: don't print the last_seen time for bat0 TT local entry")
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
+
+v2:
+- commit message "fixed"
+
  translation-table.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
