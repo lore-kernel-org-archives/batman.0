@@ -1,17 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 27 Jan 2013 08:38:28 +0800
-References: <a6ad84c212e89c411dab6b40ac613a61c8b9621c.1359047612.git.mschiffer@universe-factory.net>
- <463977c0dcf7b3fcc6a2aebbb87add0d2377d3de.1359047612.git.mschiffer@universe-factory.net>
- <20130125132849.GC8211@ritirata.org>
-In-Reply-To: <20130125132849.GC8211@ritirata.org>
+Date: Sun, 27 Jan 2013 13:21:30 +0800
+References: <1357989546-12762-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1357989546-12762-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201301270838.28986.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/2] batman-adv: filter ARP packets
-	with invalid MAC addresses in DAT
+Message-Id: <201301271321.30516.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: replace redudant
+	primary_if_get calls
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,17 +23,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, January 25, 2013 21:28:49 Antonio Quartulli wrote:
-> On Thu, Jan 24, 2013 at 06:18:27PM +0100, Matthias Schiffer wrote:
-> > We never want multicast MAC addresses in the Distributed ARP Table, so
-> > it's best to completely ignore ARP packets containing them where we
-> > expect unicast addresses.
-> >
-> > Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+On Saturday, January 12, 2013 19:19:06 Marek Lindner wrote:
+> The batadv_priv struct carries a pointer to its own interface
+> struct. Therefore, it is not necessary to retrieve the soft_iface
+> via the primary interface.
 > 
-> Acked-by: Antonio Quartulli <ordex@autistici.org>
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> ---
+>  distributed-arp-table.c |   22 ++++------------------
+>  sysfs.c                 |   10 +---------
+>  translation-table.c     |   25 ++++++-------------------
+>  3 files changed, 11 insertions(+), 46 deletions(-)
 
-Applied in revision ab361a9.
+Applied in revision 8d58064.
 
-Thanks,
+Regards,
 Marek
