@@ -1,11 +1,13 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 27 Jan 2013 20:43:59 +0100
-Message-Id: <1359315839-24136-4-git-send-email-ordex@autistici.org>
+Return-Path: <davem@davemloft.net>
+Date: Sun, 27 Jan 2013 19:11:40 -0500 (EST)
+Message-Id: <20130127.191140.655904034749695176.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <1359315839-24136-1-git-send-email-ordex@autistici.org>
 References: <1359315839-24136-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: filter ARP packets with
-	invalid MAC addresses in DAT
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-01-27
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,54 +19,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: ordex@autistici.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Matthias Schiffer <mschiffer@universe-factory.net>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 27 Jan 2013 20:43:56 +0100
 
-We never want multicast MAC addresses in the Distributed ARP Table, so it's
-best to completely ignore ARP packets containing them where we expect unicast
-addresses.
+> This is a small patchset intended for net/linux-3.8.
+> Here there are three small patches from Matthias Schiffer aimed to fix some
+> memory problems in the recently introduced D.A.T. component. One of them is
+> fixing an skb memleak, one is fixing the ARP filter routine by preventing DAT to
+> parse not useful messages (so reducing the amount of memory used by the local
+> cache) and one fixing again the ARP filter routine by preventing DAT to
+> overwrite correct entries with bogus ones in the local cache.
+> 
+> Please pull or let me know if there is any problem.
 
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/distributed-arp-table.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index be3be28..ea0bd31 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -738,6 +738,7 @@ static uint16_t batadv_arp_get_type(struct batadv_priv *bat_priv,
- 	struct arphdr *arphdr;
- 	struct ethhdr *ethhdr;
- 	__be32 ip_src, ip_dst;
-+	uint8_t *hw_src, *hw_dst;
- 	uint16_t type = 0;
- 
- 	/* pull the ethernet header */
-@@ -782,6 +783,18 @@ static uint16_t batadv_arp_get_type(struct batadv_priv *bat_priv,
- 	    ipv4_is_zeronet(ip_dst) || ipv4_is_lbcast(ip_dst))
- 		goto out;
- 
-+	hw_src = batadv_arp_hw_src(skb, hdr_size);
-+	if (is_zero_ether_addr(hw_src) || is_multicast_ether_addr(hw_src))
-+		goto out;
-+
-+	/* we don't care about the destination MAC address in ARP requests */
-+	if (arphdr->ar_op != htons(ARPOP_REQUEST)) {
-+		hw_dst = batadv_arp_hw_dst(skb, hdr_size);
-+		if (is_zero_ether_addr(hw_dst) ||
-+		    is_multicast_ether_addr(hw_dst))
-+			goto out;
-+	}
-+
- 	type = ntohs(arphdr->ar_op);
- out:
- 	return type;
--- 
-1.8.1.1
-
+Pulled, thanks Antonio.
