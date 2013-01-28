@@ -1,13 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Date: Sun, 27 Jan 2013 19:11:40 -0500 (EST)
-Message-Id: <20130127.191140.655904034749695176.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1359315839-24136-1-git-send-email-ordex@autistici.org>
-References: <1359315839-24136-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 29 Jan 2013 01:23:07 +0800
+References: <1359023915-31358-1-git-send-email-ordex@autistici.org>
+ <1359024099-5158-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1359024099-5158-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-01-27
+Message-Id: <201301290123.07372.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix local translation
+	table output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,20 +22,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 27 Jan 2013 20:43:56 +0100
-
-> This is a small patchset intended for net/linux-3.8.
-> Here there are three small patches from Matthias Schiffer aimed to fix some
-> memory problems in the recently introduced D.A.T. component. One of them is
-> fixing an skb memleak, one is fixing the ARP filter routine by preventing DAT to
-> parse not useful messages (so reducing the amount of memory used by the local
-> cache) and one fixing again the ARP filter routine by preventing DAT to
-> overwrite correct entries with bogus ones in the local cache.
+On Thursday, January 24, 2013 18:41:39 Antonio Quartulli wrote:
+> The last-seen field has to be printed for all the local
+> entries but the one marked with the no-purge flag
 > 
-> Please pull or let me know if there is any problem.
+> Introduced by 15727323d9f8864b2d41930940acc38de987045a
+> ("batman-adv: don't print the last_seen time for bat0 TT local entry")
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+> 
+> v2:
+> - commit message "fixed"
+> 
+>  translation-table.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Pulled, thanks Antonio.
+Applied in revision 46360b2.
+
+Thanks,
+Marek
