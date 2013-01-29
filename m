@@ -1,8 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 29 Jan 2013 08:07:59 +0100
-Message-Id: <1359443280-28835-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 2013-01-29
+Date: Tue, 29 Jan 2013 08:08:00 +0100
+Message-Id: <1359443280-28835-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1359443280-28835-1-git-send-email-ordex@autistici.org>
+References: <1359443280-28835-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix local translation table
+	output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,40 +18,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-Hello David,
+The last-seen field has to be printed for all the local
+entries but the one marked with the no-purge flag
 
-here you have just a single patch which is fixing a pesky bug that I introduced
-within a patchset recently sent to net-next/linux-3.9.
-It is not big, but I think it is worth fixing the new behaviour before it
-gets released.
+Introduced by 15727323d9f8864b2d41930940acc38de987045a
+("batman-adv: don't print the last_seen time for bat0 TT local entry")
 
-Please pull or let me know if there is any problem.
-Thanks a lot,
-	Antonio
-
-
-
-The following changes since commit cef401de7be8c4e155c6746bfccf721a4fa5fab9:
-
-  net: fix possible wrong checksum generation (2013-01-28 00:27:15 -0500)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
-
-for you to fetch changes up to a7966d908ae8472e8183496916b7baec5f65b3a6:
-
-  batman-adv: fix local translation table output (2013-01-28 20:46:03 +0100)
-
-----------------------------------------------------------------
-Included changes:
-- fix recently introduced output behaviour
-
-----------------------------------------------------------------
-Antonio Quartulli (1):
-      batman-adv: fix local translation table output
-
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
  net/batman-adv/translation-table.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index fb15b4c..d44672f 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -517,8 +517,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 				    BATADV_TT_CLIENT_PENDING ? 'X' : '.'),
+ 				   (tt_common_entry->flags &
+ 				    BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
+-				   no_purge ? last_seen_secs : 0,
+-				   no_purge ? last_seen_msecs : 0);
++				   no_purge ? 0 : last_seen_secs,
++				   no_purge ? 0 : last_seen_msecs);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+-- 
+1.8.1.1
+
