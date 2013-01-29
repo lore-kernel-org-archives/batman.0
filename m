@@ -1,16 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 29 Jan 2013 01:23:07 +0800
-References: <1359023915-31358-1-git-send-email-ordex@autistici.org>
- <1359024099-5158-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1359024099-5158-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201301290123.07372.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix local translation
-	table output
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 29 Jan 2013 08:07:59 +0100
+Message-Id: <1359443280-28835-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2013-01-29
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,25 +14,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, January 24, 2013 18:41:39 Antonio Quartulli wrote:
-> The last-seen field has to be printed for all the local
-> entries but the one marked with the no-purge flag
-> 
-> Introduced by 15727323d9f8864b2d41930940acc38de987045a
-> ("batman-adv: don't print the last_seen time for bat0 TT local entry")
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
-> 
-> v2:
-> - commit message "fixed"
-> 
->  translation-table.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Hello David,
 
-Applied in revision 46360b2.
+here you have just a single patch which is fixing a pesky bug that I introduced
+within a patchset recently sent to net-next/linux-3.9.
+It is not big, but I think it is worth fixing the new behaviour before it
+gets released.
 
-Thanks,
-Marek
+Please pull or let me know if there is any problem.
+Thanks a lot,
+	Antonio
+
+
+
+The following changes since commit cef401de7be8c4e155c6746bfccf721a4fa5fab9:
+
+  net: fix possible wrong checksum generation (2013-01-28 00:27:15 -0500)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to a7966d908ae8472e8183496916b7baec5f65b3a6:
+
+  batman-adv: fix local translation table output (2013-01-28 20:46:03 +0100)
+
+----------------------------------------------------------------
+Included changes:
+- fix recently introduced output behaviour
+
+----------------------------------------------------------------
+Antonio Quartulli (1):
+      batman-adv: fix local translation table output
+
+ net/batman-adv/translation-table.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
