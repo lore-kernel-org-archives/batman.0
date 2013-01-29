@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 29 Jan 2013 23:35:04 +0800
+Date: Tue, 29 Jan 2013 23:35:39 +0800
 References: <1359108763-31846-1-git-send-email-martin@hundeboll.net>
- <1359108763-31846-4-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1359108763-31846-4-git-send-email-martin@hundeboll.net>
+ <1359108763-31846-5-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1359108763-31846-5-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <201301292335.04543.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 3/6] batman-adv: Buffer unicast packets
-	before forward.
+Message-Id: <201301292335.40186.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/6] batman-adv: Code and transmit
+	packets if possible.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,33 +25,34 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Martin =?utf-8?q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On Friday, January 25, 2013 18:12:40 Martin Hundeb=C3=B8ll wrote:
-> Two be able to network code two packets, one packet must be buffered
-> until the next is available. This is done in a "coding buffer", which is
-> essentially a hash table with lists of packets. Each entry in the hash
-> table corresponds to a specific src-dst pair, which has a linked list of
-> packets that are buffered.
+On Friday, January 25, 2013 18:12:41 Martin Hundeb=C3=B8ll wrote:
+> Before adding forward-skbs to the coding buffer, the buffer is searched
+> for a potential coding opportunity. If one is found, the two packets are
+> network coded and transmitted right away. If not, the forward-skb is
+> added to the buffer.
 >=20
-> This patch adds skbs to the buffer just before forwarding them. The
-> buffer is traversed every 10 ms, where timed skbs are removed from the
-> buffer and transmitted. To allow experiments with the network coding
-> scheme, the timeout is tunable through a file in debugfs.
+> Network coded packets are transmitted with information about the two
+> receivers and the two coded packets. The first receiver is given by the
+> MAC header, while the second is given in the payload/bat-header. The
+> second receiver uses promiscuous mode to receive the packet and check
+> the second destination.
 >=20
 > Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > ---
 > v3:
->  * Removed unused define
+>  * Fix header-diff in batadv_nc_code_packets()
+> v4:
+>  * Add missing kernel doc entry for enum batadv_counters
 >=20
->  compat.c         |  10 ++
->  compat.h         |   1 +
->  network-coding.c | 492
-> +++++++++++++++++++++++++++++++++++++++++++++++++++++++ network-coding.h
-> |  10 ++
->  routing.c        |  18 +-
->  types.h          |  49 ++++++
->  6 files changed, 573 insertions(+), 7 deletions(-)
+>  main.h           |   6 +
+>  network-coding.c | 403
+> +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> packet.h         |  33 +++++
+>  soft-interface.c |   6 +
+>  types.h          |  20 +++
+>  5 files changed, 468 insertions(+)
 
-Applied in revision d287859.
+Applied in revision c3289f3.
 
 Thanks,
 Marek
