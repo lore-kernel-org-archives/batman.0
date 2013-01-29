@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 29 Jan 2013 23:36:10 +0800
+Date: Tue, 29 Jan 2013 23:36:40 +0800
 References: <1359108763-31846-1-git-send-email-martin@hundeboll.net>
- <1359108763-31846-6-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1359108763-31846-6-git-send-email-martin@hundeboll.net>
+ <1359108763-31846-7-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1359108763-31846-7-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <201301292336.10438.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 5/6] batman-adv: Save overheard and tx
-	packets for decoding.
+Message-Id: <201301292336.40952.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 6/6] batman-adv: Receive coded packets
+	and decode them.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,36 +25,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Martin =?utf-8?q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On Friday, January 25, 2013 18:12:42 Martin Hundeb=C3=B8ll wrote:
-> To be able to decode a network coded packet, a node must already know
-> one of the two coded packets. This is done by buffering skbs before
-> transmission and buffering packets sniffed with promiscuous mode from
-> other hosts.
->=20
-> Packets are kept in a buffer similar to the one with forward-skbs: A
-> hash table, where each entry, which corresponds to a src-dst pair, has a
-> linked list packets.
+On Friday, January 25, 2013 18:12:43 Martin Hundeb=C3=B8ll wrote:
+> When receiving a network coded packet, the decoding buffer is searched
+> for a packet to use for decoding. The source, destination, and crc32 from
+> the coded packet is used to identify the wanted packet. The decoded
+> packet is passed to the usual unicast receiver function, as had it never
+> been network coded.
 >=20
 > Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > ---
-> This patch depends on my previous patch on the mailing list:
-> "Return reason for failure in batadv_check_unicast_packet()"
->=20
 > v3:
->  * Use new return values from batadv_check_unicast_packet()
+>  * Free nc_packet in batadv_nc_recv_coded_packet() to avoid mem-leaks
 > v4:
->  * Added missing kernel doc entry for enum batadv_counters
+>  * Add missing kernel doc entry for enum batadv_counters
 >=20
->  network-coding.c | 208
-> ++++++++++++++++++++++++++++++++++++++++++++++++++++++- network-coding.h
-> |  18 +++++
->  routing.c        |  13 +++-
->  send.c           |   5 ++
->  soft-interface.c |   1 +
->  types.h          |  11 +++
->  6 files changed, 253 insertions(+), 3 deletions(-)
+>  network-coding.c | 234
+> +++++++++++++++++++++++++++++++++++++++++++++++++++++++ soft-interface.c
+> |   4 +
+>  types.h          |  10 +++
+>  3 files changed, 248 insertions(+)
 
-Applied in revision 65aa656.
+Applied in revision aa45b9b.
 
 Thanks,
 Marek
