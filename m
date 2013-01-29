@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 29 Jan 2013 23:33:23 +0800
+Date: Tue, 29 Jan 2013 23:33:50 +0800
 References: <1359108763-31846-1-git-send-email-martin@hundeboll.net>
- <1359108763-31846-2-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1359108763-31846-2-git-send-email-martin@hundeboll.net>
+ <1359108763-31846-3-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1359108763-31846-3-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <201301292333.23541.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 1/6] batman-adv: Add the initial code
-	for network coding.
+Message-Id: <201301292333.50455.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 2/6] batman-adv: Detect coding nodes
+	and remove these after timeout
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,78 +25,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Martin =?utf-8?q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On Friday, January 25, 2013 18:12:38 Martin Hundeb=C3=B8ll wrote:
-> Network coding exploits the 802.11 shared medium to allow multiple
-> packets to be sent in a single transmission. In brief, a relay can XOR
-> two packets, and send the coded packet to two destinations. The
-> receivers can decode one of the original packets by XOR'ing the coded
-> packet with the other original packet. This will lead to increased
-> throughput in topologies where two packets cross one relay.
+On Friday, January 25, 2013 18:12:39 Martin Hundeb=C3=B8ll wrote:
+> To use network coding efficiently, a relay must know when neighbor nodes
+> are likely to have enough information to be able to decode a network
+> coded packet. This is detected by using OGMs from batman-adv to discover
+> when one neighbor is in range of another neighbor. The relay check the
+> TLL to detect when an OGM is forwarded from one neighbor by another
+> neighbor, and thereby knows that the two neighbors are in range and thus
+> overhear packets sent by each other.
 >=20
-> In a simple topology with three nodes, it takes four transmissions
-> without network coding to get one packet from Node A to Node B and one
-> from Node B to Node A:
+> This information is saved in the orig_node struct to be used when
+> searching for coding opportunities. Two lists are added to the
+> orig_node struct: One for neighbors that can hear the orig_node
+> (outgoing nc_nodes) and one for neighbors that the orig_node can hear
+> (incoming nc_nodes).
 >=20
->  1.  Node A  ---- p1 --->  Node R                Node B
->  2.  Node A                Node R  <--- p2 ----  Node B
->  3.  Node A  <--- p2 ----  Node R                Node B
->  4.  Node A                Node R  ---- p1 --->  Node B
->=20
-> With network coding, the relay only needs one transmission, which saves
-> us one slot of valuable airtime:
->=20
->  1.  Node A  ---- p1 --->  Node R                Node B
->  2.  Node A                Node R  <--- p2 ----  Node B
->  3.  Node A  <- p1 x p2 -  Node R  - p1 x p2 ->  Node B
->=20
-> The same principle holds for a topology including five nodes. Here the
-> packets from Node A and Node B are overheard by Node C and Node D,
-> respectively. This allows Node R to send a network coded packet to save
-> one transmission:
->=20
->    Node A                  Node B
->=20
->     |     \              /    |
->     |      p1          p2     |
->     |       \          /      |
->     p1       > Node R <       p2
->     |                         |
->     |         /      \        |
->     |    p1 x p2    p1 x p2   |
->     v       /          \      v
->            /            \
->    Node C <              > Node D
->=20
-> More information is available on the open-mesh.org wiki[1].
->=20
-> This patch adds the initial code to support network coding in
-> batman-adv. It sets up a worker thread to do house keeping and adds a
-> sysfs file to enable/disable network coding. The feature is disabled by
-> default, as it requires a wifi-driver with working promiscuous mode, and
-> also because it adds a small delay at each hop.
->=20
-> [1] http://www.open-mesh.org/projects/batman-adv/wiki/Catwoman
+> Information about nc_nodes is kept for 10 seconds and is available
+> through debugfs in batman_adv/nc_nodes to use when debugging network
+> coding.
 >=20
 > Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > ---
 > v3:
->  * Changed and updated copyright years
+>  * Fixed typos in kernel doc
+> v4:
+>  * Added missing kernel doc entry for struct batadv_priv_nc
 >=20
->  Makefile               |  2 ++
->  Makefile.kbuild        |  1 +
->  gen-compat-autoconf.sh |  1 +
->  main.c                 |  6 ++++
->  main.h                 |  4 ++-
->  network-coding.c       | 81
-> ++++++++++++++++++++++++++++++++++++++++++++++++++
-> network-coding.h       | 48 ++++++++++++++++++++++++++++++
->  soft-interface.c       |  3 ++
->  sysfs-class-net-mesh   |  8 +++++
->  sysfs.c                |  6 ++++
->  types.h                | 14 +++++++++
->  11 files changed, 173 insertions(+), 1 deletion(-)
+>  bat_iv_ogm.c     |   5 +
+>  debugfs.c        |  18 +++
+>  main.h           |   2 +
+>  network-coding.c | 416
+> +++++++++++++++++++++++++++++++++++++++++++++++++++++++ network-coding.h
+> |  47 +++++++
+>  originator.c     |   6 +
+>  types.h          |  32 +++++
+>  7 files changed, 526 insertions(+)
 
-Applied in revision 2f92809.
+Applied in revision 3ed7ada.
 
 Thanks,
 Marek
