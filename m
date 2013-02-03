@@ -1,10 +1,15 @@
 Return-Path: <ordex@autistici.org>
+Date: Sun, 3 Feb 2013 19:49:24 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun,  3 Feb 2013 19:41:54 +0100
-Message-Id: <1359916914-9798-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1405827.5RSdDMUrGW@sven-desktop.home.narfation.org>
+Message-ID: <20130203184924.GA3429@ritirata.org>
 References: <1405827.5RSdDMUrGW@sven-desktop.home.narfation.org>
-Subject: [B.A.T.M.A.N.] [FIX] batman-adv: fix master setting in rtnl
+ <1359916914-9798-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="RnlQjJ0d97Da+TV1"
+Content-Disposition: inline
+In-Reply-To: <1359916914-9798-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [FIX] batman-adv: fix master setting in rtnl
 	interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,59 +24,53 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-To be merged with ("batman-adv: Allow to modify slaves of soft-interfaces
-through rntl_link")
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
+--RnlQjJ0d97Da+TV1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sven: I think this is enough to account the correct "master" setting? In net-next it
-is now called upper_device and they also changed some api. Therefore a compat
-solution is also provided.
+On Sun, Feb 03, 2013 at 07:41:54PM +0100, Antonio Quartulli wrote:
+> diff --git a/hard-interface.c b/hard-interface.c
+> index 6c32607..bbc6188 100644
+> --- a/hard-interface.c
+> +++ b/hard-interface.c
+> @@ -313,7 +313,7 @@ int batadv_hardif_enable_interface(struct batadv_hard=
+_iface *hard_iface,
+>  	struct batadv_priv *bat_priv;
+>  	struct net_device *soft_iface;
+>  	__be16 ethertype =3D __constant_htons(ETH_P_BATMAN);
+> -	int ret;
+> +	int ret =3D 0;
 
+mh, maybe this is not really needed.
 Cheers,
 
- compat.h         | 2 ++
- hard-interface.c | 6 +++++-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+--=20
+Antonio Quartulli
 
-diff --git a/compat.h b/compat.h
-index e21b310..e5807d7 100644
---- a/compat.h
-+++ b/compat.h
-@@ -211,6 +211,8 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p) \
- }\
- static int __batadv_interface_set_mac_addr(x, y)
- 
-+#define netdev_master_upper_dev_link netdev_set_master
-+
- #endif /* < KERNEL_VERSION(3, 9, 0) */
- 
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
-diff --git a/hard-interface.c b/hard-interface.c
-index 6c32607..bbc6188 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -313,7 +313,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	struct batadv_priv *bat_priv;
- 	struct net_device *soft_iface;
- 	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
--	int ret;
-+	int ret = 0;
- 
- 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
- 		goto out;
-@@ -398,6 +398,10 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	/* begin scheduling originator messages on that interface */
- 	batadv_schedule_bat_ogm(hard_iface);
- 
-+	ret = netdev_master_upper_dev_link(hard_iface->net_dev, soft_iface);
-+	if (ret)
-+		goto err_dev;
-+
- out:
- 	return 0;
- 
--- 
-1.8.1.2
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
 
+--RnlQjJ0d97Da+TV1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRDrE0AAoJEADl0hg6qKeOQZgP/25YDtk+Rqx02t3LbRWcr6TQ
+soZCjMQOC4wkesTVtGZM3kmHvX8mfCqwA87igBlnZ/Rf18JpBILJK6mmxrP+yr6h
+751UAaRiY0cMhR6KyxIux5CYwbOLAeuGjO8ZWdFLWG6oVMmZwWrqwCahr9+/Z9O7
+7veliSzKvTg5UoJCFvAx0mrWs0tvHqF478saPH3J8aL9hselRlSm1sM6+6qKROoW
+5psxV4wIH8mcXGGEczaqqF5KC9fDuqZUyi77mnvpm5GMbxtmgQr95DGATgSJqNH9
+GdjJrGG15rbEBauq/ZF05fSzbFAWqQalmsuFpWZJ/yYEdsRl0m116tClIvqGKjJ8
+KXrtZYypoZdOqJRLPi99G2P0E4WwLkOposR8ZYmnogpJJD5huteztNe/eiow5wIV
+Pvt9KFXM2Ix48CD9S0OZrzxCk7ElRvqi1VP6FxE7V9MH0eZWI6vopa8stsEqOcso
+YSjXyyGQf1xmxF9Vm0gceyA0MMqFVAdyxClKppe2FcFEXM03WTP42dlX9m+1Bolk
+JVv0x5Xj/6HU8wzlM455Glh437147F3Rk1Zc2YzI0a/XE9Swyz5FsqL1bNRSah3N
+N85dVeL3C1+KIrWc1tsiOuBPF6KM+uvGCKx3jAo+IAPQwaGrQsEi3O5z2pfObF0s
+BHkfwnZ7kqDPxp3t6oYK
+=q1Pe
+-----END PGP SIGNATURE-----
+
+--RnlQjJ0d97Da+TV1--
