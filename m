@@ -1,11 +1,14 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun,  3 Feb 2013 20:02:19 +0100
-Message-Id: <1359918139-12130-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1359916914-9798-1-git-send-email-ordex@autistici.org>
-References: <1359916914-9798-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [FIXv2] batman-adv: fix master setting in rtnl
-	interface
+Return-Path: <linus.luessing@web.de>
+MIME-Version: 1.0
+Message-ID: <trinity-37ee694d-d9f0-43cf-8714-9311142e7837-1359979779496@3capp-webde-bs03>
+From: =?UTF-8?Q?=22Linus_L=C3=BCssing=22?= <linus.luessing@web.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Date: Mon, 4 Feb 2013 13:09:39 +0100 (CET)
+In-Reply-To: <CAM8o6HRvyK7LjLJezRNjBzAZg9Mwe+phyE+raPJTg_uxB7Y9Yw@mail.gmail.com>
+References: <CAM8o6HRAd7FWEyYv+GktSHaDsqJ3UJefnXjui86JVfV2fzXxeg@mail.gmail.com>, 
+ <CAM8o6HRvyK7LjLJezRNjBzAZg9Mwe+phyE+raPJTg_uxB7Y9Yw@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Help and Suggestions Please! :)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,59 +20,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-To be merged with ("batman-adv: Allow to modify slaves of soft-interfaces
-through rntl_link")
+Hi Ashwin,
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
+> Gesendet: Donnerstag, 31. Januar 2013 um 17:04 Uhr
+> Von: "Ashwin Chauhan" <ashwin.chauhan05@gmail.com>
+> An: "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.org>
+> Betreff: [B.A.T.M.A.N.] Help and Suggestions Please! :)
+>
+> I'm a Computer Science Final Year Undergraduate student. We are a
+> group of Four students and are wanting to do our final group project
+> on B.A.T.M.A.N protocol. Can you help us with the simulating a simple
+> sample network.
 
-v2:
-- ndo_del_slave() also have to unset the master/upper_dev device
+For simulating various network topologies with batman-adv, kvm is quite
+often used. Have a look at: http://www.open-mesh.org/projects/open-mesh/wiki/Emulation
 
+> 
+> Also I was thinking, If instead of Broadcasting the OGM Packets every
+> time into the network, we could broadcast them the first time a node
+> joins the network and then just Multicast the OGM packets to its
+> one-hop neighbours from the next time. So that their immediate nodes
+> are still informed about the existence of the node in the network.
+> This way we can reduce the unnecessary flooding of packets. Also when
+> a node moves out of the network its immediate node would know about it
+> much faster and can then broadcast it to other nodes.
 
- compat.h         | 3 +++
- hard-interface.c | 5 +++++
- 2 files changed, 8 insertions(+)
+   B
+ /   \
+A     D
+ \   /
+   C
 
-diff --git a/compat.h b/compat.h
-index e21b310..2fe555f 100644
---- a/compat.h
-+++ b/compat.h
-@@ -211,6 +211,9 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p) \
- }\
- static int __batadv_interface_set_mac_addr(x, y)
- 
-+#define netdev_master_upper_dev_link netdev_set_master
-+#define netdev_upper_dev_unlink(slave, master) netdev_set_master(slave, NULL)
-+
- #endif /* < KERNEL_VERSION(3, 9, 0) */
- 
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
-diff --git a/hard-interface.c b/hard-interface.c
-index 6c32607..f034f26 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -398,6 +398,10 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	/* begin scheduling originator messages on that interface */
- 	batadv_schedule_bat_ogm(hard_iface);
- 
-+	ret = netdev_master_upper_dev_link(hard_iface->net_dev, soft_iface);
-+	if (ret)
-+		goto err_dev;
-+
- out:
- 	return 0;
- 
-@@ -450,6 +454,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 	if (!bat_priv->num_ifaces && autodel == BATADV_IF_CLEANUP_AUTO)
- 		batadv_softif_destroy_sysfs(hard_iface->soft_iface);
- 
-+	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->soft_iface);
- 	hard_iface->soft_iface = NULL;
- 	batadv_hardif_free_ref(hard_iface);
- 
--- 
-1.8.1.2
+If, let's say D wants to forward packets to A and sometimes the path
+via B and sometimes the one via C is better due to link quality changes
+between A-B and A-C. How is D supposed to learn about the better route
+if link quality changes on A-B and A-C do not propagate any further?
 
+> 
+>  Trying to do our final year project in this area.
+> Also can someone suggest us some ideas to work upon as our final year
+> Project. :)
+
+There's a list of rough ideas from the last Google Summer of Codes:
+http://wiki.freifunk.net/Ideas#batman-adv
+
+Cheers, Linus
+
+> 
+> 
+> 
+> --
+> 
+> Ashwin
+> 
