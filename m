@@ -1,14 +1,13 @@
-Return-Path: <linus.luessing@web.de>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Tue, 5 Feb 2013 15:01:26 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20130205140126.GA8733@pandem0nium>
 MIME-Version: 1.0
-Message-ID: <trinity-37ee694d-d9f0-43cf-8714-9311142e7837-1359979779496@3capp-webde-bs03>
-From: =?UTF-8?Q?=22Linus_L=C3=BCssing=22?= <linus.luessing@web.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Date: Mon, 4 Feb 2013 13:09:39 +0100 (CET)
-In-Reply-To: <CAM8o6HRvyK7LjLJezRNjBzAZg9Mwe+phyE+raPJTg_uxB7Y9Yw@mail.gmail.com>
-References: <CAM8o6HRAd7FWEyYv+GktSHaDsqJ3UJefnXjui86JVfV2fzXxeg@mail.gmail.com>, 
- <CAM8o6HRvyK7LjLJezRNjBzAZg9Mwe+phyE+raPJTg_uxB7Y9Yw@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Help and Suggestions Please! :)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] The B.A.T.M.A.N. project endorses the Battle of the
+	Mesh v6
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,58 +19,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Ashwin,
 
-> Gesendet: Donnerstag, 31. Januar 2013 um 17:04 Uhr
-> Von: "Ashwin Chauhan" <ashwin.chauhan05@gmail.com>
-> An: "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.org>
-> Betreff: [B.A.T.M.A.N.] Help and Suggestions Please! :)
->
-> I'm a Computer Science Final Year Undergraduate student. We are a
-> group of Four students and are wanting to do our final group project
-> on B.A.T.M.A.N protocol. Can you help us with the simulating a simple
-> sample network.
+--yrj/dFKFPuw6o+aM
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 
-For simulating various network topologies with batman-adv, kvm is quite
-often used. Have a look at: http://www.open-mesh.org/projects/open-mesh/wiki/Emulation
+The Wireless Battle of the Mesh[1] is an event that aims to bring together
+people from across the globe to test the performance of different routing
+protocols for ad-hoc networks, like Babel, B.A.T.M.A.N., BMX, OLSR, and
+802.11s. Of course, new protocols (working on OpenWRT[2]) are always welcome!
 
-> 
-> Also I was thinking, If instead of Broadcasting the OGM Packets every
-> time into the network, we could broadcast them the first time a node
-> joins the network and then just Multicast the OGM packets to its
-> one-hop neighbours from the next time. So that their immediate nodes
-> are still informed about the existence of the node in the network.
-> This way we can reduce the unnecessary flooding of packets. Also when
-> a node moves out of the network its immediate node would know about it
-> much faster and can then broadcast it to other nodes.
+This year the even will take place from Monday 15th till Sunday 21st of April
+at the University of Aalborg, Denmark.
 
-   B
- /   \
-A     D
- \   /
-   C
+The B.A.T.M.A.N. project endorses and supports the Battle of the Mesh v6
+because of the efforts made by its community to advance the field of wireless
+mesh networking and foster the development of grassroots community networks.
+As last year, many members of the B.A.T.M.A.N. team will gather at the event
+to attend the B.A.T.M.A.N. developer meeting and present, discuss and
+experiment with new ideas. Above all, we are all looking forward to connect
+with interesting people at this event!
 
-If, let's say D wants to forward packets to A and sometimes the path
-via B and sometimes the one via C is better due to link quality changes
-between A-B and A-C. How is D supposed to learn about the better route
-if link quality changes on A-B and A-C do not propagate any further?
+The B.A.T.M.A.N. project will support the event by:
 
-> 
->  Trying to do our final year project in this area.
-> Also can someone suggest us some ideas to work upon as our final year
-> Project. :)
+ * help to promote the event
+ * numerous members of the B.A.T.M.A.N. community have already confirmed
+   their attendance
+ * co-fund travel costs for attendees from South America
+ * give talks about advancement of our community in certain aspects
+ * help setting up testbed for protocol testing
 
-There's a list of rough ideas from the last Google Summer of Codes:
-http://wiki.freifunk.net/Ideas#batman-adv
+Of course, we are available for discussions, ideas, and live tests!
 
-Cheers, Linus
+Many other communities endorse and support the Wireless Battle of The Mesh v6,
+an up to date list of the endorsers[3] of the Battlemesh v6 can be found at the
+main Battlemesh website[4].
 
-> 
-> 
-> 
-> --
-> 
-> Ashwin
-> 
+Happy routing,
+The B.A.T.M.A.N. team
+
+[1] http://battlemesh.org/
+[2] http://openwrt.org/
+[3] http://battlemesh.org/Endorsements2013
+[4] http://battlemesh.org/BattleMeshV6
+
+--yrj/dFKFPuw6o+aM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAlERELUACgkQrzg/fFk7axYZQgCgkXUQx1Mwt90B2OTUGF6lcQ6I
+QnQAoIr59OT3elxwyEXeOd9ZB4sjRLgm
+=m8lC
+-----END PGP SIGNATURE-----
+
+--yrj/dFKFPuw6o+aM--
