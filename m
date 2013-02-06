@@ -1,13 +1,11 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 5 Feb 2013 15:01:26 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130205140126.GA8733@pandem0nium>
+Return-Path: <emilgoode@gmail.com>
+From: Emil Goode <emilgoode@gmail.com>
+Date: Wed,  6 Feb 2013 17:37:41 +0100
+Message-Id: <1360168661-16871-1-git-send-email-emilgoode@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] The B.A.T.M.A.N. project endorses the Battle of the
-	Mesh v6
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unused variable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,63 +17,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: lindner_marek@yahoo.de, siwu@hrz.tu-chemnitz.de, ordex@autistici.org, davem@davemloft.net
+Cc: Emil Goode <emilgoode@gmail.com>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
+The commit ed242d01 removed a node parameter from iterators.
+This patch removes a hlist_node struct that is no longer used.
 
---yrj/dFKFPuw6o+aM
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Sparse gives a warning:
 
-The Wireless Battle of the Mesh[1] is an event that aims to bring together
-people from across the globe to test the performance of different routing
-protocols for ad-hoc networks, like Babel, B.A.T.M.A.N., BMX, OLSR, and
-802.11s. Of course, new protocols (working on OpenWRT[2]) are always welcome!
+net/batman-adv/originator.c:411:21: warning:
+	unused variable ‘node_tmp’ [-Wunused-variable]
 
-This year the even will take place from Monday 15th till Sunday 21st of April
-at the University of Aalborg, Denmark.
+Signed-off-by: Emil Goode <emilgoode@gmail.com>
+---
+ net/batman-adv/originator.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-The B.A.T.M.A.N. project endorses and supports the Battle of the Mesh v6
-because of the efforts made by its community to advance the field of wireless
-mesh networking and foster the development of grassroots community networks.
-As last year, many members of the B.A.T.M.A.N. team will gather at the event
-to attend the B.A.T.M.A.N. developer meeting and present, discuss and
-experiment with new ideas. Above all, we are all looking forward to connect
-with interesting people at this event!
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 43d0f89..96fb80b 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -408,7 +408,6 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct net_device *net_dev = (struct net_device *)seq->private;
+ 	struct batadv_priv *bat_priv = netdev_priv(net_dev);
+ 	struct batadv_hashtable *hash = bat_priv->orig_hash;
+-	struct hlist_node *node_tmp;
+ 	struct hlist_head *head;
+ 	struct batadv_hard_iface *primary_if;
+ 	struct batadv_orig_node *orig_node;
+-- 
+1.7.10.4
 
-The B.A.T.M.A.N. project will support the event by:
-
- * help to promote the event
- * numerous members of the B.A.T.M.A.N. community have already confirmed
-   their attendance
- * co-fund travel costs for attendees from South America
- * give talks about advancement of our community in certain aspects
- * help setting up testbed for protocol testing
-
-Of course, we are available for discussions, ideas, and live tests!
-
-Many other communities endorse and support the Wireless Battle of The Mesh v6,
-an up to date list of the endorsers[3] of the Battlemesh v6 can be found at the
-main Battlemesh website[4].
-
-Happy routing,
-The B.A.T.M.A.N. team
-
-[1] http://battlemesh.org/
-[2] http://openwrt.org/
-[3] http://battlemesh.org/Endorsements2013
-[4] http://battlemesh.org/BattleMeshV6
-
---yrj/dFKFPuw6o+aM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAlERELUACgkQrzg/fFk7axYZQgCgkXUQx1Mwt90B2OTUGF6lcQ6I
-QnQAoIr59OT3elxwyEXeOd9ZB4sjRLgm
-=m8lC
------END PGP SIGNATURE-----
-
---yrj/dFKFPuw6o+aM--
