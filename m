@@ -1,14 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Thu, 7 Feb 2013 08:13:05 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130207071305.GG6008@ritirata.org>
-References: <1360193557-27554-1-git-send-email-emilgoode@gmail.com>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 9 Feb 2013 19:06:30 +0800
+References: <1359916914-9798-1-git-send-email-ordex@autistici.org>
+ <1359918139-12130-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1359918139-12130-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="QWpDgw58+k1mSFBj"
-Content-Disposition: inline
-In-Reply-To: <1360193557-27554-1-git-send-email-emilgoode@gmail.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Remove unused variable
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201302091906.31026.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [FIXv2] batman-adv: fix master setting in rtnl
+	interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,60 +22,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Emil Goode <emilgoode@gmail.com>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, siwu@hrz.tu-chemnitz.de, sasha.levin@oracle.com, akpm@linux-foundation.org, lindner_marek@yahoo.de, davem@davemloft.net
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
+On Monday, February 04, 2013 03:02:19 Antonio Quartulli wrote:
+> To be merged with ("batman-adv: Allow to modify slaves of soft-interfaces
+> through rntl_link")
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+> 
+> v2:
+> - ndo_del_slave() also have to unset the master/upper_dev device
 
---QWpDgw58+k1mSFBj
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Feb 07, 2013 at 12:32:37AM +0100, Emil Goode wrote:
-> The below commit removed one node parameter from iterators.
-> ed242d01bbe22ea0877472db49b2752d866c921c
-> (hlist: drop the node parameter from iterators)
->=20
-> This patch removes a hlist_node struct that is no longer used.
->=20
-> Sparse gives a warning:
->=20
-> net/batman-adv/originator.c:411:21: warning:
-> 	unused variable =E2=80=98node_tmp=E2=80=99 [-Wunused-variable]
->=20
-> Signed-off-by: Emil Goode <emilgoode@gmail.com>
-
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-
-Thanks Emil
+Did you actually test the stuff you are proposing ??
+batctl if del <iface> results in a kernel crash ...
 
 Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---QWpDgw58+k1mSFBj
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRE1QBAAoJEADl0hg6qKeOIbQP/0619SbVBdH3FJ7s6Z7LFgI/
-wo3N/zUqxX4oIzR4lSfKRmFks7JoEnXneAK/tEr5YRzGFdeC9y9/ua7VQ3PCL7t8
-ivsB+qJ/be2ZyOn9QLY72e1sR5zn48HZLNdqGNGgoDY+C8H1qCZBNt3DY2sbpRpS
-Ojxp1jhl/PsFvqY2WXq6Vwvv0l85+ZY11fHACKAFrsDnKfJSuFxniQ09ir/Y/kHA
-L9CDGVHOTnkVFQitAs5y0fnIH3wwU8CSMF1DHGuNK0h/WBwuAQoXceO10bqKijcH
-guFY2kfJp0wyFsJmVIw/5CbdMBiYKgSlu7YynI9XbF/vahZUrcblW7qd9zzVABge
-t3SrtU3/oPWsSgMcpsZqHQbiPCg2z1zt7On46ExEpIqh3K7EcmvCyhLXNbQXR5H/
-DBV5/aY8yHEyq+njhenht4wteRHaFOF7n60MEuf2tr8d5A7dQUGVi+/gS4p1Ul91
-Rda4dV+2bcuMVNLPYuuxeY8HLm+ahvbPSdMsvxK+yyZ1z0fpiK+fPljB0gUBoDHp
-MWc2AFQ9WXQmjkhzW1m63C1ZwQ/z4Af8FOfM0k8JAhLc0fKAz7QgMp0RekisZ9NG
-AK2ZAxflxoI+wbZOI7uRvs/rzQqARhxf4AfzY4fNYeQDHsOWwgljazCTXEMblXX4
-UgowgwUjnmI8dHLfQv7D
-=SB6i
------END PGP SIGNATURE-----
-
---QWpDgw58+k1mSFBj--
+Marek
+ 
