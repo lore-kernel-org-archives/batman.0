@@ -1,12 +1,12 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 11 Feb 2013 17:10:24 +0800
-Message-Id: <1360573828-24399-3-git-send-email-lindner_marek@yahoo.de>
+Date: Mon, 11 Feb 2013 17:10:25 +0800
+Message-Id: <1360573828-24399-4-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1360573828-24399-1-git-send-email-lindner_marek@yahoo.de>
 References: <201302111710.04911.lindner_marek@yahoo.de>
  <1360573828-24399-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCHv3 3/6] batman-adv: Don't always delete softif
-	when last slave was removed
+Subject: [B.A.T.M.A.N.] [PATCHv3 4/6] batman-adv: rename
+	batadv_softif_destroy to reflect sysfs use case
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,110 +19,59 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>, Sven Eckelmann <sven@narfation.org>
 
-From: Sven Eckelmann <sven@narfation.org>
-
-batman-adv has an unusual way to manage softinterfaces. These will be created
-automatically when a user writes to the batman-adv/mesh_iface file in sysfs and
-removed when no slave device exists anymore.
-
-This behaviour cannot be changed without breaking compatibility with existing
-code. Instead other interfaces should be able to slightly reduce this behaviour
-and provide a more common reaction to a removal of a slave interface.
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+CC: Sven Eckelmann <sven@narfation.org>
 ---
- hard-interface.c |    8 +++++---
- hard-interface.h |   13 ++++++++++++-
- sysfs.c          |    6 ++++--
- 3 files changed, 21 insertions(+), 6 deletions(-)
+ hard-interface.c |    2 +-
+ soft-interface.c |    6 +++++-
+ soft-interface.h |    2 +-
+ 3 files changed, 7 insertions(+), 3 deletions(-)
 
 diff --git a/hard-interface.c b/hard-interface.c
-index da000e9..74e3ec2 100644
+index 74e3ec2..6c32607 100644
 --- a/hard-interface.c
 +++ b/hard-interface.c
-@@ -408,7 +408,8 @@ err:
- 	return ret;
- }
- 
--void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface)
-+void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
-+				     enum batadv_hard_if_cleanup autodel)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	struct batadv_hard_iface *primary_if = NULL;
-@@ -446,7 +447,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface)
- 	dev_put(hard_iface->soft_iface);
+@@ -448,7 +448,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
  
  	/* nobody uses this interface anymore */
--	if (!bat_priv->num_ifaces)
-+	if (!bat_priv->num_ifaces && autodel == BATADV_IF_CLEANUP_AUTO)
- 		batadv_softif_destroy(hard_iface->soft_iface);
+ 	if (!bat_priv->num_ifaces && autodel == BATADV_IF_CLEANUP_AUTO)
+-		batadv_softif_destroy(hard_iface->soft_iface);
++		batadv_softif_destroy_sysfs(hard_iface->soft_iface);
  
  	hard_iface->soft_iface = NULL;
-@@ -533,7 +534,8 @@ static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
+ 	batadv_hardif_free_ref(hard_iface);
+diff --git a/soft-interface.c b/soft-interface.c
+index e889bfb..bc77a5b 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -581,7 +581,11 @@ struct net_device *batadv_softif_create(const char *name)
+ 	return soft_iface;
+ }
  
- 	/* first deactivate interface */
- 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
--		batadv_hardif_disable_interface(hard_iface);
-+		batadv_hardif_disable_interface(hard_iface,
-+						BATADV_IF_CLEANUP_AUTO);
- 
- 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
- 		return;
-diff --git a/hard-interface.h b/hard-interface.h
-index 308437d..4989288 100644
---- a/hard-interface.h
-+++ b/hard-interface.h
-@@ -29,13 +29,24 @@ enum batadv_hard_if_state {
- 	BATADV_IF_I_WANT_YOU,
- };
- 
+-void batadv_softif_destroy(struct net_device *soft_iface)
 +/**
-+ * enum batadv_hard_if_cleanup - Cleanup modi for soft_iface after slave removal
-+ * @BATADV_IF_CLEANUP_KEEP: Don't automatically delete soft-interface
-+ * @BATADV_IF_CLEANUP_AUTO: Delete soft-interface after last slave was removed
++ * batadv_softif_destroy_sysfs - deletion of batadv_soft_interface via sysfs
++ * @soft_iface: the to-be-removed batman-adv interface
 + */
-+enum batadv_hard_if_cleanup {
-+	BATADV_IF_CLEANUP_KEEP,
-+	BATADV_IF_CLEANUP_AUTO,
-+};
-+
- extern struct notifier_block batadv_hard_if_notifier;
++void batadv_softif_destroy_sysfs(struct net_device *soft_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
  
- struct batadv_hard_iface*
- batadv_hardif_get_by_netdev(const struct net_device *net_dev);
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 				   const char *iface_name);
--void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface);
-+void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
-+				     enum batadv_hard_if_cleanup autodel);
- void batadv_hardif_remove_interfaces(void);
- int batadv_hardif_min_mtu(struct net_device *soft_iface);
- void batadv_update_min_mtu(struct net_device *soft_iface);
-diff --git a/sysfs.c b/sysfs.c
-index ce39f62..15a22ef 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -588,13 +588,15 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
- 	}
+diff --git a/soft-interface.h b/soft-interface.h
+index 43182e5..49bc66b 100644
+--- a/soft-interface.h
++++ b/soft-interface.h
+@@ -25,7 +25,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 			 struct sk_buff *skb, struct batadv_hard_iface *recv_if,
+ 			 int hdr_size, struct batadv_orig_node *orig_node);
+ struct net_device *batadv_softif_create(const char *name);
+-void batadv_softif_destroy(struct net_device *soft_iface);
++void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
+ int batadv_softif_is_valid(const struct net_device *net_dev);
  
- 	if (status_tmp == BATADV_IF_NOT_IN_USE) {
--		batadv_hardif_disable_interface(hard_iface);
-+		batadv_hardif_disable_interface(hard_iface,
-+						BATADV_IF_CLEANUP_AUTO);
- 		goto unlock;
- 	}
- 
- 	/* if the interface already is in use */
- 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
--		batadv_hardif_disable_interface(hard_iface);
-+		batadv_hardif_disable_interface(hard_iface,
-+						BATADV_IF_CLEANUP_AUTO);
- 
- 	ret = batadv_hardif_enable_interface(hard_iface, buff);
- 
+ #endif /* _NET_BATMAN_ADV_SOFT_INTERFACE_H_ */
 -- 
 1.7.10.4
 
