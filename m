@@ -1,15 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 12 Feb 2013 13:24:48 +0800
-References: <CAPkwMUf0fN-nVMCeMvm=EvrTLzjXK6ajbJsv5-KBZBEQAJUQ-g@mail.gmail.com>
- <CAPkwMUfKFcpt6cQDdJ9OZYQg2vSYWHc3Whdgce_kt2nSk3urpw@mail.gmail.com>
-In-Reply-To: <CAPkwMUfKFcpt6cQDdJ9OZYQg2vSYWHc3Whdgce_kt2nSk3urpw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201302121324.48418.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] Fwd: Beacons colliding with OGMs
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 12 Feb 2013 16:21:55 +0100
+Message-Id: <1360682516-11005-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: free an hard-interface
+	before adding it
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,34 +15,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, February 12, 2013 13:00:33 Carlos Rey-Moreno wrote:
-> In one of the networks I'm facing from the beginning some problems due
-> to collisions, thus reducing the TQ in some links, that I'd like to
-> avoid in order to optimize performance. One of the messages that could
-> be colliding with the OGMs are the WiFi beacons. I'm a bit confused
-> about the beacon transmission. I posted these questions in the
-> villagetelco list, but they recommended me to ask them here too. Hope
-> you can help me.
+When adding a new hard interface (e.h. wlan0) to a soft interface (e.g. bat0)
+and the former is already enslaved in another virtual interface (e.g. a software
+bridge) batman-adv has to free the it first and then continue with the
+adding mechanism.
 
-Don't know who sent you here but this list does not seem like the right spot 
-for your questions. Most of them center around madwifi, ahdemo mode and 
-beaconing - none of these are related to batman-adv (unless I misunderstand?).
+In this way the behaviour becomes consistent with what "ip link set master"
+does. At the moment batman-adv enslaves the hard interface without checking for
+the master device, possibly causing strange behaviours which are never wanted by
+the users.
 
+Reported-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-> - Given the network it is going to be, at least during some months,
-> very static (both in mesh nodes and clients) and assuming the beacons
-> are coming from the VAP, what values would make sense to use as beacon
-> interval and OGM interval, respectively, for avoiding collisions and
-> keeping performance?
-
-If you wish to avoid packet collisions in the air I suggest sending less 
-packets, hence make the intervals longer. Suggesting exact values is a little 
-hard as those always depend on your environment & setup. I'd recommend to 
-experiment with these values to find out what works for you.
+** Work based on top of the 6 patches adding the new rtnl interface for
+interface enslaving.
 
 Cheers,
-Marek
 
+ hard-interface.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/hard-interface.c b/hard-interface.c
+index c08e39e..fd99e42 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -311,7 +311,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 				   const char *iface_name)
+ {
+ 	struct batadv_priv *bat_priv;
+-	struct net_device *soft_iface;
++	struct net_device *soft_iface, *master;
+ 	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
+ 	int ret;
+ 
+@@ -321,11 +321,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	if (!atomic_inc_not_zero(&hard_iface->refcount))
+ 		goto out;
+ 
+-	/* hard-interface is part of a bridge */
+-	if (hard_iface->net_dev->priv_flags & IFF_BRIDGE_PORT)
+-		pr_err("You are about to enable batman-adv on '%s' which already is part of a bridge. Unless you know exactly what you are doing this is probably wrong and won't work the way you think it would.\n",
+-		       hard_iface->net_dev->name);
+-
+ 	soft_iface = dev_get_by_name(&init_net, iface_name);
+ 
+ 	if (!soft_iface) {
+@@ -347,6 +342,13 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 		goto err_dev;
+ 	}
+ 
++	/* check if the interface is enslaved in another virtual one and
++	 * in that case unlink it first
++	 */
++	master = netdev_master_upper_dev_get(hard_iface->net_dev);
++	if (master)
++		netdev_upper_dev_unlink(hard_iface->net_dev, master);
++
+ 	hard_iface->soft_iface = soft_iface;
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
+ 
+-- 
+1.8.1.2
 
