@@ -1,14 +1,12 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 11 Feb 2013 21:14:28 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130211201428.GB16760@ritirata.org>
-References: <201302111710.04911.lindner_marek@yahoo.de>
+Return-Path: <carlos.reymoreno@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="MfFXiAuoTsnnDAfZ"
-Content-Disposition: inline
-In-Reply-To: <201302111710.04911.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] create batman-adv interfaces with netlink v3
+In-Reply-To: <CAPkwMUf0fN-nVMCeMvm=EvrTLzjXK6ajbJsv5-KBZBEQAJUQ-g@mail.gmail.com>
+References: <CAPkwMUf0fN-nVMCeMvm=EvrTLzjXK6ajbJsv5-KBZBEQAJUQ-g@mail.gmail.com>
+Date: Tue, 12 Feb 2013 07:00:33 +0200
+Message-ID: <CAPkwMUfKFcpt6cQDdJ9OZYQg2vSYWHc3Whdgce_kt2nSk3urpw@mail.gmail.com>
+From: Carlos Rey-Moreno <carlos.reymoreno@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Fwd: Beacons colliding with OGMs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,60 +18,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+
+Hi everyone,
+
+I'm new to the list, although I've been using batman-adv for a year
+now via a couple of networks I've deployed using Mesh Potatoes (based
+on openwrt). Thank you very much for the work, the result is very,
+very good.
+
+In one of the networks I'm facing from the beginning some problems due
+to collisions, thus reducing the TQ in some links, that I'd like to
+avoid in order to optimize performance. One of the messages that could
+be colliding with the OGMs are the WiFi beacons. I'm a bit confused
+about the beacon transmission. I posted these questions in the
+villagetelco list, but they recommended me to ask them here too. Hope
+you can help me.
+
+The mesh is created using ahdemo and according to Madwifi this mode
+does not use beacons. However, athstats is showing many beacons being
+transmitted. I guess those are the ones transmitted from the VAP also
+configured in the same physical interface as the ahdemo.
+The option sw_merge is recommended to be active in the ahdemo
+interface to avoid the hardware to try to synchronize the timestamps
+from the beacons. In addition, it is recommended to create the VAP
+with option nosbeacon activated for the same reason.
+
+According to athstats, beacons are being tx, I guess those from the
+VAP. However, I'm not sure if athstats is reporting properly, since
+the chipset does not have diversity for TX, but athstats is reporting
+so.
+- If there are no beacons in the mesh (due to ahdemo), or even if
+there are (from the VAP), and we disable the synchronization of
+timestamps with the options sw_merge and nosbeacon, how the MPs get
+their time synchronization as for sharing the same reference when
+using protocol timers (slottimes, DIFS, etc...) so important for
+avoiding collisions?
+- If there are no beacons in the mesh, how do the nodes get the
+information contained in the beacons about the capabilities of their
+neighbors (protection, short preamble, etc) as for allowing 11bg
+seamless operation, from the VAP beacons?
+- Given the network it is going to be, at least during some months,
+very static (both in mesh nodes and clients) and assuming the beacons
+are coming from the VAP, what values would make sense to use as beacon
+interval and OGM interval, respectively, for avoiding collisions and
+keeping performance?
+
+Thank you very much in advance,
+
+Regards
+
+carlos
 
 
---MfFXiAuoTsnnDAfZ
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Feb 11, 2013 at 05:10:04 +0800, Marek Lindner wrote:
->=20
-> Hi,
->=20
-> here the third patch series to get the netlink interface creation into sh=
-ape.
-> Changes since v2:
->  * Reference counting bugfix in batadv_add_slave() & batadv_del_slave()
->  * Master settings & compat support
->=20
-> Kudos to Antonio for providing the compat support and debugging the inter=
-face=20
-> to the bitter end!
+--
+Note that I am using a new email account carlos.reymoreno@gmail.com,
+and that the former email address crey@ehas.org will be disappearing
+soon. Thanks for changing this in your contact list.
 
-But..has the patchset been rebased on top of the latest master? Git am is
-complaining and cannot apply the patches.
+Carlos Rey-Moreno
+Research Assistant
+Office 1.28
+Department of Computer Science
+University of the Western Cape
+Private Bag X17 - Bellville, 7535
+Cape Town - South Africa
 
-Cheers,
+Tel: +27 (0) 21 959 2562
+Cel: +27 (0) 76 986 3633
 
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---MfFXiAuoTsnnDAfZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRGVEkAAoJEADl0hg6qKeO6MQQAJx8xun9DkaqesHl8KcRCopu
-TsFhdfvyWbTbWtkIr/0d9kAM+XGrP/c1n9lOMOU0XiVEbD03Y5B8ImH4XF1I/CBD
-/xD7JA95P99sexh//FfWxnrAecl2Y2flIwxHObIcjkOUXAmQbP2Edt0KLZH/QS2H
-h4YbXvIXMCi9X0fF6jEWCWHVkTv7bHO8gaUEl/hsFUL9X38k2XcGjAsxI30KDBha
-OIK3V3OLVIOjAoLb3gWlVLGo8iRd9lPrIqLB5/E37Z1fS14DVC0rm8xdGfHCxtGA
-LERKG3TKndSwnaZF+JzfSkdEaXD2qdkBCslciSv19Tfx5i4KyvHwwRBIwWXGigvq
-pXb61LYaaO0DMPcJeWlBKUPICL2ZV3ClsZMZZoSCcWM+QmMRrEb6pbtxu7QIm88j
-TXUuDIqdgL067mME0kdiNm2fmybry7iHTXq2WYLQPGDlJnzOk/KNhwhXTI8mnmR7
-3moUECUIXOtgSpr5UhUOAb1dm8Y5lpdlD2dALUJWSyFuxE3sly0rpMVQA5kZNf2D
-Yu7m3C8eE3KCmNM10+TiinwmCbSf+Fwpm7HNHposET0Uh5WcxielwzGO9dgjv4BW
-QiCQ/9aeE3uLqVTFljWkZYPNTv5lADw3URSC2tZopQx4TkDGJmEerSSeNEL7wFM/
-sLV0evuUNA6lPxbX5cea
-=CCg/
------END PGP SIGNATURE-----
-
---MfFXiAuoTsnnDAfZ--
+Skype: carlos.reymoreno
+Twitter: Creym
