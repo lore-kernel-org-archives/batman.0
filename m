@@ -1,14 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 12 Feb 2013 17:14:38 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130212161438.GE16760@ritirata.org>
-References: <201302111710.04911.lindner_marek@yahoo.de>
+Return-Path: <carlos.reymoreno@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="jCrbxBqMcLqd4mOl"
-Content-Disposition: inline
-In-Reply-To: <201302111710.04911.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] create batman-adv interfaces with netlink v3
+In-Reply-To: <CAPkwMUfjSPo-WS9OhT5p0g2Br=xtJwDs6t44LthGy7W2Q+YKXA@mail.gmail.com>
+References: <CAPkwMUf0fN-nVMCeMvm=EvrTLzjXK6ajbJsv5-KBZBEQAJUQ-g@mail.gmail.com>
+ <CAPkwMUfKFcpt6cQDdJ9OZYQg2vSYWHc3Whdgce_kt2nSk3urpw@mail.gmail.com>
+ <201302121324.48418.lindner_marek@yahoo.de>
+ <CAPkwMUfjSPo-WS9OhT5p0g2Br=xtJwDs6t44LthGy7W2Q+YKXA@mail.gmail.com>
+Date: Wed, 13 Feb 2013 12:13:05 +0200
+Message-ID: <CAPkwMUf1M48nfaDafWC-i6KG9ofZEdTzrVrRr6MmhjTWBztsjA@mail.gmail.com>
+From: Carlos Rey-Moreno <carlos.reymoreno@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Fwd:  Fwd: Beacons colliding with OGMs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,57 +22,48 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Sven Eckelmann <sven@narfation.org>
+
+>
+> Don't know who sent you here but this list does not seem like the right spot
+> for your questions. Most of them center around madwifi, ahdemo mode and
+> beaconing - none of these are related to batman-adv (unless I misunderstand?).
 
 
---jCrbxBqMcLqd4mOl
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I though I could ask them here too, but you are right,they are more
+related to madwifi, I have posted them there.
 
-On Mon, Feb 11, 2013 at 05:10:04PM +0800, Marek Lindner wrote:
->=20
-> Hi,
->=20
-> here the third patch series to get the netlink interface creation into sh=
-ape.
-> Changes since v2:
->  * Reference counting bugfix in batadv_add_slave() & batadv_del_slave()
->  * Master settings & compat support
->=20
-> Kudos to Antonio for providing the compat support and debugging the inter=
-face=20
-> to the bitter end!
+>
+>
+>
+> If you wish to avoid packet collisions in the air I suggest sending less
+> packets, hence make the intervals longer. Suggesting exact values is a little
+> hard as those always depend on your environment & setup. I'd recommend to
+> experiment with these values to find out what works for you.
 
-For the whole series:
 
-Acked-by: Antonio Quartulli <ordex@autistici.org>
+Thanks, I will play them.
 
---=20
-Antonio Quartulli
+best,
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
+carlos
 
---jCrbxBqMcLqd4mOl
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRGmpuAAoJEADl0hg6qKeOBmoQAJR9RQH9kpiWVVT0FcgaGxTT
-u+OiRgHqqs2SYBNIAyfHmpOoYjfhf+LPhUnnC2AMnh2rI1YgTmbJ5V0t+6fATmf/
-0ZjHsvkxlWKAuICFO/aDVFQxgfEO72BtLQlW995W7mpQ+3tWkBJUeX13vDpgiaGZ
-DuV0ydjU2ANbWixmdDj2/rQQ68JwezvlXMr8+OqpB8avIBhpHTV3NnUePYH2SH1F
-UNxLNNAsd/Rsgo5oUc8cc//s8gXQrv1QTqlMJyAnxdii7N01XODCDDQtYR80SWT9
-WFG1kZxhCjUjjLdvtyG5m0vyce745x/s/dh9XppALj/jRFaaKUyrw1tXU3Qi3UJL
-ACCnbiwsaN/hkrMpIgXt2R69dt/w7/e2xz8qV/uIf7pHMmbhmVY1YIbUwwP+mwTM
-Jw0w73ARolMVWlnJX2o7LLmXYQSocHoYFFT1WapVsIGN6H7ZYSTGf/ODYmJepF0+
-JAHt8ifFk/tsJAAJ0gEJyok8kNkdugN5+TjUppNeJHaJjSqNRvxChjZOuv6bZY0f
-dfGbfWrIEK5OyD0X4hFi73RjUY0Kr4xlqXK8jMpHAv1t7QWo2D0YcP3qiOY2zyb7
-9llZ0NSTZcuKEC6KL8Ej6P/0WR1TsE4ppOqh1DCyQh109gvC60XvSBseF6CQiRAb
-uig801++XOyyE4KOqqDP
-=f+70
------END PGP SIGNATURE-----
+--
+Note that I am using a new email account carlos.reymoreno@gmail.com,
+and that the former email address crey@ehas.org will be disappearing
+soon. Thanks for changing this in your contact list.
 
---jCrbxBqMcLqd4mOl--
+Carlos Rey-Moreno
+Research Assistant
+Office 1.28
+Department of Computer Science
+University of the Western Cape
+Private Bag X17 - Bellville, 7535
+Cape Town - South Africa
+
+Tel: +27 (0) 21 959 2562
+Cel: +27 (0) 76 986 3633
+
+Skype: carlos.reymoreno
+Twitter: Creym
