@@ -1,16 +1,13 @@
-Return-Path: <ordex@autistici.org>
-Date: Fri, 15 Feb 2013 09:30:29 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130215083029.GK6973@ritirata.org>
-References: <1360664325-7323-1-git-send-email-paukoning@gmail.com>
+Return-Path: <cmsv@wirelesspt.net>
+Message-ID: <511E55B5.60900@wirelesspt.net>
+Date: Fri, 15 Feb 2013 10:35:17 -0500
+From: cmsv <cmsv@wirelesspt.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="qo7zVO9a9OQ5oQtr"
-Content-Disposition: inline
-In-Reply-To: <1360664325-7323-1-git-send-email-paukoning@gmail.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix NULL pointer dereference
- in DAT hash collision avoidance
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] Classes and purposed classes (problem to solve)
+Reply-To: cmsv@wirelesspt.net,
+ The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -21,82 +18,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Pau Koning <paukoning@gmail.com>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+Scenario:
+I have recently moved 13 nodes previously using wds  to batman-adv.
+One problem that i am encountering is the gateway selection and its
+actually defectiveness.
+This problem has be seen when the client nodes are set on class 20.
+
+The node clients in fact select the gateways that advertise better link
+quality usually above 200 but at the same time some clients  end up
+connecting to a gateway that is either too slow or unusable either due
+to routing or other factors such as distance and even clear visibility.
+In one case the node connects to something that defies logic.
+
+I thought about ways to work around this and came up with an idea that
+may help which means the creation of 2 new classes.
+
+- Preferred gateway fall-back
+
+- Preferred fixed gateway
+
+For  Preferred gateway fall-back:
+
+consider the gateway's advertised quality towards the gateway and stick
+with the selection until the gateway disappears returning to it soon as
+it returns regardless of any other data.
+
+- Preferred fixed gateway
+Manual gateway selection by the node owner or admin. (wds type)
+
+If these classes cannot be created; maybe a plugin of some sort could
+be. could be called "gordon".
 
 
---qo7zVO9a9OQ5oQtr
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ I understand that this idea may sound useless the same way blocking
+originators may be for someone but in some scenarios just like blocking
+originators it look to me very valid.
+My current problem is that the link quality seems to go up and down like
+ a roller coaster in a specific order which causes the clients to switch
+constantly sometimes many times per hour.
+While this does not seem to be an issue for most client nodes; for 2 of
+them it means no internet access at all.
 
-On Tue, Feb 12, 2013 at 11:18:45AM +0100, Pau Koning wrote:
-> An entry in DAT with the hashed position of 0 can cause a NULL pointer
-> dereference when the first entry is checked by batadv_choose_next_candida=
-te.
-> This first candidate automatically has the max value of 0 and the max_ori=
-g_node
-> of NULL. Not checking max_orig_node for NULL in batadv_is_orig_node_eligi=
-ble
-> will lead to a NULL pointer dereference when checking for the lowest addr=
-ess.
->=20
-> This problem was added in 785ea1144182c341b8b85b0f8180291839d176a8
-> ("batman-adv: Distributed ARP Table - create DHT helper functions").
->=20
-> Signed-off-by: Pau Koning <paukoning@gmail.com>
+The solution for now seems to be having these 2 nodes forced to use 1
+specific gateway.
 
 
-Hello Pau,
-
-thank you very much for this fix, this was not an easy one!
-
-However, next time please CC our mailing list as well (get_maintainer.pl wi=
-ll
-give you all the needed addresses), otherwise it may be the case that we
-overlook such patches and:
-1) we don't review it
-2) we don't merge it into our repository (which is where the real developme=
-nt
-   goes on).
-
-Both 1) and 2) happened with this patch and, in my humble opinion, it is no=
-t a
-good idea to merge such delicate fixes without having a reply from the
-maintainers.
-
-Therefore, please keep us in the loop when sending patches. It would be rea=
-lly
-appreciated.
+I am quite open to any ideas that may help resolve this issue that has
+been casing some "uninformed people" to become headaches.
 
 
-Regards,
 
---=20
-Antonio Quartulli
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
 
---qo7zVO9a9OQ5oQtr
-Content-Type: application/pgp-signature
+-- 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRHfIlAAoJEADl0hg6qKeOUtcQAKoc+S+ZXAJo8yIY+uRVbOUv
-Irj41zKTkg0Enop239VrNVy0SFvnNq0abJH4iq/mqe67meFR5lyHKO9B+i2Ss4KR
-wD2rR/4kTw5Fr7GSKHv4qHgz3dofdHoRD+gSg1oQFgxcPvAApGOEKpdIalZ5VepJ
-Ogev2GooBCdu/k6i7qtjnerowoMWkvWT3ijdOwwgb51Z7Zmnv3LmkrSzDCTVzDE6
-rlWPskG5fMqZ4c3iXO/F+CBld9mLytQeLSPOExxJ/xDIEj0mg4MKfH4ly4P8542D
-Bz3hUjIrareq/ufKKJxNxErgHfZkIt5KIskXMlrZmUOzvRduZWQBbOuwAtX4Q+gg
-srLeJHaIAHZCaXaVDd93CJQHQrXIOBOV+20oS9KhxLC7YOAh8JFgaHErKNuxjVPT
-mOo3TYfbSa7+KMHX2JNzXQ69gvZlkREef4aJa6gC4UjJP7fxWRLxgsmrIH+Ys39R
-+oeu2k1nuMZd0dtoA/MYbiil3rd2yE3kC9CKyFZkysFkXv4fzH5GM/015bTEatPi
-nvwXzLY9wVLjUzWEk8q6FUNAllFc9cf8QPEYVc4aVKzmDFn1Bm/4qFk/2IbhfYQe
-u3UkZbp3b/J8AZGmIRzaRXdl0L7v2q1fL53LcXKPuWOtc1y0Ty1uPrB/ziykp7so
-7LfBYlOFv18dnsze9P6e
-=4pp9
------END PGP SIGNATURE-----
 
---qo7zVO9a9OQ5oQtr--
+
+
+
+Redes wireless
+http://wirelesspt.net
