@@ -1,11 +1,13 @@
 Return-Path: <jroland@linux-migration.net>
-Message-ID: <511E5C7A.9050301@linux-migration.net>
-Date: Fri, 15 Feb 2013 10:04:10 -0600
+Message-ID: <511E626F.3080105@linux-migration.net>
+Date: Fri, 15 Feb 2013 10:29:35 -0600
 From: Jon Roland <jroland@linux-migration.net>
 MIME-Version: 1.0
+References: <511E5C7A.9050301@linux-migration.net>
+In-Reply-To: <511E5C7A.9050301@linux-migration.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] Android mesh networking app in the works
+Subject: Re: [B.A.T.M.A.N.] Android mesh networking app in the works
 Reply-To: jon.roland@constitution.org,
  The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -18,18 +20,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-
-
-http://www.networkworld.com/community/blog/android-phones-are-connecting-without-carrier-networks
-
+We have at least three project working on this:
+SPAN: https://groups.google.com/forum/#!forum/spandev
+Serval: http://www.servalproject.org
+Guardian-Commotion: https://guardianproject.info
 
 -- Jon
 
 ----------------------------------------------------------
-Constitution Society               http://constitution.org
-2900 W Anderson Ln C-200-322           twitter.com/lex_rex
-Austin, TX 78757 512/299-5001  jon.roland@constitution.org
+Linux Migration Net             http://linux-migration.net
+2900 W Anderson Ln C-200-322              Austin, TX 78757
+512/299-5001                   jroland@linux-migration.net
 ----------------------------------------------------------
 
