@@ -1,14 +1,16 @@
-Return-Path: <moritzwarning@web.de>
-Message-ID: <511E6D79.4060300@web.de>
-Date: Fri, 15 Feb 2013 18:16:41 +0100
-From: Moritz Warning <moritzwarning@web.de>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 16 Feb 2013 17:11:01 +0800
+References: <201302111710.04911.lindner_marek@yahoo.de>
+ <1360573828-24399-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1360573828-24399-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-References: <511E5C7A.9050301@linux-migration.net>
- <511E626F.3080105@linux-migration.net>
-In-Reply-To: <511E626F.3080105@linux-migration.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] Android mesh networking app in the works
+Message-Id: <201302161711.02194.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 1/6] batman-adv: Move soft-interface
+	initialization to ndo_init
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,21 +23,23 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-On 02/15/2013 05:29 PM, Jon Roland wrote:
-> We have at least three project working on this:
-> SPAN: https://groups.google.com/forum/#!forum/spandev
-> Serval: http://www.servalproject.org
-> Guardian-Commotion: https://guardianproject.info
+On Monday, February 11, 2013 17:10:22 Marek Lindner wrote:
+> From: Sven Eckelmann <sven@narfation.org>
 > 
-> -- Jon
+> The initialization of an net_device object should be done in the
+> init/constructor function and not from the outside after the
+> register_netdevice was done to avoid race conditions.
 > 
-> ----------------------------------------------------------
-> Linux Migration Net             http://linux-migration.net
-> 2900 W Anderson Ln C-200-322              Austin, TX 78757
-> 512/299-5001                   jroland@linux-migration.net
-> ----------------------------------------------------------
-> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  hard-interface.c |    5 ++
+>  soft-interface.c |  169
+> ++++++++++++++++++++++++++---------------------------- 2 files changed, 86
+> insertions(+), 88 deletions(-)
 
-Are these about batman or batman-adv?
-- mwarning
+Applied in revision 03522f0.
+
+Thanks,
+Marek
