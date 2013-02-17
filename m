@@ -1,11 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 16 Feb 2013 14:42:40 +0100
-Message-Id: <1361022160-25693-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1361022160-25693-1-git-send-email-ordex@autistici.org>
-References: <1361022160-25693-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 2/2] batman-adv: remove interfacing
-	enslaving loop private check
+Date: Sun, 17 Feb 2013 15:43:04 +0100
+Message-Id: <1361112184-9927-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add compat support for the new
+	netlink ops
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,75 +17,76 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Now that the new dev_upper API is used, the private check for enslaving loops is
-not needed anymore as this is performed by the new API itself.
+This patches enable the new rtnl ops to compile on kernels starting from 2.6.32
 
-Reported-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- hard-interface.c | 43 -------------------------------------------
- 1 file changed, 43 deletions(-)
 
-diff --git a/hard-interface.c b/hard-interface.c
-index fd99e42..b96f819 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -60,45 +60,6 @@ out:
- 	return hard_iface;
+Could not be uglier.
+*Compile tested only* because linux-2.6.32 does not compile on my laptop
+
+
+
+ compat.h | 40 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+
+diff --git a/compat.h b/compat.h
+index 885e551..de22e2b 100644
+--- a/compat.h
++++ b/compat.h
+@@ -71,6 +71,9 @@ static inline void batadv_this_cpu_add(uint64_t *count_ptr, size_t count)
+ 	put_cpu();
  }
  
--/**
-- * batadv_is_on_batman_iface - check if a device is a batman iface descendant
-- * @net_dev: the device to check
-- *
-- * If the user creates any virtual device on top of a batman-adv interface, it
-- * is important to prevent this new interface to be used to create a new mesh
-- * network (this behaviour would lead to a batman-over-batman configuration).
-- * This function recursively checks all the fathers of the device passed as
-- * argument looking for a batman-adv soft interface.
-- *
-- * Returns true if the device is descendant of a batman-adv mesh interface (or
-- * if it is a batman-adv interface itself), false otherwise
-- */
--static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
--{
--	struct net_device *parent_dev;
--	bool ret;
--
--	/* check if this is a batman-adv mesh interface */
--	if (batadv_softif_is_valid(net_dev))
--		return true;
--
--	/* no more parents..stop recursion */
--	if (net_dev->iflink == net_dev->ifindex)
--		return false;
--
--	/* recurse over the parent device */
--	parent_dev = dev_get_by_index(&init_net, net_dev->iflink);
--	/* if we got a NULL parent_dev there is something broken.. */
--	if (WARN(!parent_dev, "Cannot find parent device"))
--		return false;
--
--	ret = batadv_is_on_batman_iface(parent_dev);
--
--	if (parent_dev)
--		dev_put(parent_dev);
--	return ret;
--}
--
- static int batadv_is_valid_iface(const struct net_device *net_dev)
- {
- 	if (net_dev->flags & IFF_LOOPBACK)
-@@ -110,10 +71,6 @@ static int batadv_is_valid_iface(const struct net_device *net_dev)
- 	if (net_dev->addr_len != ETH_ALEN)
- 		return 0;
++#define batadv_softif_destroy_netlink(dev, head) batadv_softif_destroy_netlink(dev)
++#define unregister_netdevice_queue(dev, head) unregister_netdevice(dev)
++
+ #endif /* < KERNEL_VERSION(2, 6, 33) */
  
--	/* no batman over batman */
--	if (batadv_is_on_batman_iface(net_dev))
--		return 0;
--
- 	return 1;
- }
+ 
+@@ -132,6 +135,43 @@ static inline int batadv_param_set_copystring(const char *val,
+ #define kstrtoul strict_strtoul
+ #define kstrtol  strict_strtol
+ 
++#define batadv_softif_slave_add(x, y) \
++batadv_softif_slave_add(struct net_device *dev, struct ifreq *rq, int cmd)\
++{\
++	return 0;\
++}\
++static int __batadv_softif_slave_add(x, y)
++
++#define batadv_softif_slave_del(x, y) \
++__batadv_softif_slave_del(struct net_device *dev, struct net_device *slave_dev);\
++static int batadv_softif_slave_del(struct net_device *dev, struct ifreq *rq, int cmd)\
++{\
++	struct batadv_priv *bat_priv = netdev_priv(dev);\
++	struct net_device *slave_dev;\
++	int ret;\
++	if (!capable(CAP_NET_ADMIN))\
++		return -EPERM;\
++	slave_dev = dev_get_by_index(&init_net, rq->ifr_ifindex);\
++	if (!dev)\
++		return -EINVAL;\
++	switch(cmd) {\
++	case SIOCBRADDIF:\
++		ret = __batadv_softif_slave_add(bat_priv->soft_iface, slave_dev);\
++	case SIOCBRDELIF:\
++		ret = __batadv_softif_slave_del(bat_priv->soft_iface, slave_dev);\
++	default:\
++		pr_debug("batman-adv does not support ioctl 0x%x\n", cmd);\
++		return -EOPNOTSUPP;\
++	}\
++\
++	dev_put(slave_dev);\
++	return ret;\
++}\
++static int __batadv_softif_slave_del(x, y)
++
++#define ndo_add_slave ndo_do_ioctl
++#define ndo_del_slave ndo_do_ioctl
++
+ #endif /* < KERNEL_VERSION(2, 6, 39) */
+ 
  
 -- 
 1.8.1.2
