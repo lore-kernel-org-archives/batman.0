@@ -1,16 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 19 Feb 2013 09:08:44 +0800
-References: <1361112184-9927-1-git-send-email-ordex@autistici.org>
- <20130218234904.GA24241@pandem0nium>
-In-Reply-To: <20130218234904.GA24241@pandem0nium>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Tue, 19 Feb 2013 16:13:36 +0100
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20130219151336.GA26780@pandem0nium>
+References: <1361284606-17565-1-git-send-email-antonio@open-mesh.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201302190908.44891.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add compat support for the
-	new netlink ops
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="SLDf9lqlvOQaIe6s"
+Content-Disposition: inline
+In-Reply-To: <1361284606-17565-1-git-send-email-antonio@open-mesh.com>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: in recv_alfred_packet() add
+ break at the end of the case block
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,42 +21,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Antonio Quartulli <antonio@open-mesh.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org, siwu@hrz.tu-chemnitz.de
 
 
-Hi Simon,
+--SLDf9lqlvOQaIe6s
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> I've tested this (just test, no code review) in my 2.6.32 qemu (Debian
-> squeeze, iproute from wheezy). It generally loads and batctl if add/del
-> seems to work, but there is something weird going on with bridge
-> interaction. After calling the following 3 commands:
-> 
-> brctl addbr br0
-> batctl if add eth0
-> ip link set dev eth0 master br0
-> 
-> I would expect that eth0 moved from bat0 to br0 (or some error is
-> reported). 
+On Tue, Feb 19, 2013 at 03:36:46PM +0100, Antonio Quartulli wrote:
+> In recv_alfred_packet() a "break" statement is missing at the end of a ca=
+se
+> block and the function is returning -1 instead of 0 even if the packet ty=
+pe was
+> known. Add a break to let the function behave correctly.
+>=20
+> However this bug is harmless at the moment because the return value of the
+> function is not checked anywhere.
+>=20
+> Signed-off: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  recv.c | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/recv.c b/recv.c
+> index 0170695..ffabba5 100644
+> --- a/recv.c
+> +++ b/recv.c
+> @@ -416,6 +416,7 @@ int recv_alfred_packet(struct globals *globals)
+>  	case ALFRED_STATUS_TXEND:
+>  		process_alfred_status_txend(globals, &source.sin6_addr,
+>  					    (struct alfred_status_v0 *)packet);
+> +		break;
 
-I feel some confusion here. It could very well be that 2.6.32 did not yet 
-support this kind of "interface transfer". You could repeat your test without 
-any of the later patches (just go back to the last stable release) to see what 
-happens. It is very likely that our patches have nothing to do with that.
+Applied (git rev 274133d)
 
-These are the tests we should do in order to confirm the compat patch in 
-question:
+Thanks,
+	Simon
 
-* batctl if add $iface && some OGMS here && batctl if del $iface
-* ip link add dev bat0 type batadv && ip link set dev $iface master bat0 && 
-some OGMS here && ip link set dev $iface nomaster && ip link del dev bat0
+--SLDf9lqlvOQaIe6s
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Even more interesting are combinations of those:
-* batctl if add $iface && some OGMS here && ip link set dev $iface nomaster && 
-ip link del dev bat0
-* ip link add dev bat0 type batadv && ip link set dev $iface master bat0 && 
-some OGMS here && batctl if del $iface
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Thanks for testing!
+iEYEARECAAYFAlEjlp8ACgkQrzg/fFk7axaDYgCfT48YFFA/FURgb/VEADlN4UXR
+ZmYAoNzVYBD9u38pDlt7huDmshRbs5Di
+=BlQZ
+-----END PGP SIGNATURE-----
 
-Cheers,
-Marek
+--SLDf9lqlvOQaIe6s--
