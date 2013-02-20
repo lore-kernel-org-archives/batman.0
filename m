@@ -1,15 +1,16 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 19 Feb 2013 22:43:40 +0100
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130219214340.GA29174@pandem0nium>
+Return-Path: <ordex@autistici.org>
+Date: Wed, 20 Feb 2013 14:26:25 +0100
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130220132625.GL3523@ritirata.org>
 References: <1361112184-9927-1-git-send-email-ordex@autistici.org>
  <20130218234904.GA24241@pandem0nium>
  <201302190908.44891.lindner_marek@yahoo.de>
+ <20130219214340.GA29174@pandem0nium>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="VbJkn9YxBvnuCH5J"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="cyV/sMl4KAhiehtf"
 Content-Disposition: inline
-In-Reply-To: <201302190908.44891.lindner_marek@yahoo.de>
+In-Reply-To: <20130219214340.GA29174@pandem0nium>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add compat support for the
  new netlink ops
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,107 +27,80 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---VbJkn9YxBvnuCH5J
+--cyV/sMl4KAhiehtf
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Feb 19, 2013 at 09:08:44AM +0800, Marek Lindner wrote:
+Hi Simon,
+
 >=20
-> Hi Simon,
+> > ip link set dev $iface master bat0
 >=20
-> > I've tested this (just test, no code review) in my 2.6.32 qemu (Debian
-> > squeeze, iproute from wheezy). It generally loads and batctl if add/del
-> > seems to work, but there is something weird going on with bridge
-> > interaction. After calling the following 3 commands:
+> This doesn't work. eth0 is not added to batman. To further test, I've add=
+ed
+> it via batctl.
+
+I'm not sure..but I think this does not work because the "set master" comma=
+nd
+does not use ioctl, but rtnl only. Since in this kernel we don't have rtnl =
+for
+these operations (this is why we have this hacky patch) I did not expect th=
+is
+command to work.
+
+> >ip link set dev $iface nomaster
+>=20
+> has no effect
+
+same as before.
+
 > >=20
-> > brctl addbr br0
-> > batctl if add eth0
-> > ip link set dev eth0 master br0
-> >=20
-> > I would expect that eth0 moved from bat0 to br0 (or some error is
-> > reported).=20
+> > Even more interesting are combinations of those:
+> > * batctl if add $iface && some OGMS here && ip link set dev $iface noma=
+ster &&=20
+> > ip link del dev bat0
+> > * ip link add dev bat0 type batadv && ip link set dev $iface master bat=
+0 &&=20
+> > some OGMS here && batctl if del $iface
 >=20
-> I feel some confusion here. It could very well be that 2.6.32 did not yet=
-=20
-> support this kind of "interface transfer". You could repeat your test wit=
-hout=20
-> any of the later patches (just go back to the last stable release) to see=
- what=20
-> happens. It is very likely that our patches have nothing to do with that.
+> Some of these combinations are tested above, but I'd suggest we should fi=
+x the
+> general case first. :)
 
-you are right - I've checked 2013.0.0, same behaviour - and now that you me=
-ntion
-it, this is all completely independent from batman-adv/netlink. Sorry for r=
-eporting
-stuff like that ... :)
+what would you like to fix? :) We have just implemented a feature and now we
+don't have any userspace tool which can exploit it! :-D
 
-Also it seems that batctl (2010.0.0, from debian stable) reports all device=
-s, even
-if they are not added to batman-adv. It reports them as "not in use". This =
-confused
-me, haven't seen that on other systems (unused devices are just skipped ...=
-). After
-upding to the wheezy version of batctl (2012.1.0), this effect was gone.
-
-Anyway, I've tested a little more and still I see some issues:
-
->=20
-> These are the tests we should do in order to confirm the compat patch in=
-=20
-> question:
->=20
-> * batctl if add $iface && some OGMS here && batctl if del $iface
-
-This works fine, I see OGMs, and the interface is removed cleanly.
-
-> * ip link add dev bat0 type batadv
-
-This works fine.
-
-> ip link set dev $iface master bat0
-
-This doesn't work. eth0 is not added to batman. To further test, I've added
-it via batctl.
-
-> some OGMS here=20
-
-yes (bat0 created with ip, eth0 added using batctl)
-
->ip link set dev $iface nomaster
-
-has no effect
-
-> ip link del dev bat0
-
-works.
->=20
-> Even more interesting are combinations of those:
-> * batctl if add $iface && some OGMS here && ip link set dev $iface nomast=
-er &&=20
-> ip link del dev bat0
-> * ip link add dev bat0 type batadv && ip link set dev $iface master bat0 =
-&&=20
-> some OGMS here && batctl if del $iface
-
-Some of these combinations are tested above, but I'd suggest we should fix =
-the
-general case first. :)
+Simon, Thanks a lot for testing!
 
 Cheers,
-	Simon
 
---VbJkn9YxBvnuCH5J
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--cyV/sMl4KAhiehtf
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-iEYEARECAAYFAlEj8gwACgkQrzg/fFk7axa0GgCdE5y1kOnMspoPHpP2wcWuu5Lh
-U9MAoOFpYEBI0Cwd2pogVZ67lKuCrILv
-=8ROT
+iQIcBAEBCAAGBQJRJM8BAAoJEADl0hg6qKeO99cQAIhLJ8WYt3zqkU5rkE7QqHua
+kHKdrpu/wXe0wplKNYRCixIZq2+exkg/OxS5Dx7znJsiBzBUPI61Edzr55UIRvHc
+BWmE4TWvvvnzUvBHrgPwYHexUDUG4ecIXG9wasOia/nwUqOlIJYSxMqhkqQgZH+b
+DtgR6Xg72fepSJ3pDDcO+Hjhr7mZMuymD+GiN7SPIwkgJXMh5Kv+Zy+Avi8vgEwG
+ySt2O7Od2yRaI77iE4hIBFsbBE/W4bahk6lvX1rORa8oTX8TNSn5axhMGp2pSIR5
+M7PDnh4E4XSWbMD5Cj++z8SgHq4L18jm/TO28aCJ/fbQtTeb9vUOPL2Gdvmgg+tm
+VsIArSTzKtmvhaHtn72avTNorrJVw4kvw+3i7hmrw0to/Uz76eJCJrbGf9tPGatg
+KFpNhckLSrGE8G0RL1H3kBTNZg74KWiH7ZQm/vvQ3UKqDym+U++QxqGPhG0lPcLH
+GZA+2AqrlQSzxotSjVtWSDCJEwPg0lz/OWzoSwMDsymz9P57bGZGAk23z2OWXYhA
+i5/NEk4KyzEjZGnWzX/xtx74YjRsmkz2DI8R7fKF0Exw9odFCxmMT2LsS2clJ+eS
+aNNBXIk27YV1nDrHQtrwkpqCwxOgFXBThmps6ADoiEKN1C20PXSwyDrHwu7zcqdI
++WGn6uCOJRy6MXTghFSZ
+=10Iz
 -----END PGP SIGNATURE-----
 
---VbJkn9YxBvnuCH5J--
+--cyV/sMl4KAhiehtf--
