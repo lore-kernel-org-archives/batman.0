@@ -1,18 +1,19 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 20 Feb 2013 15:27:27 +0100
+Date: Wed, 20 Feb 2013 15:40:49 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130220142727.GO3523@ritirata.org>
+Message-ID: <20130220144025.GP3523@ritirata.org>
 References: <1361112184-9927-1-git-send-email-ordex@autistici.org>
  <20130218234904.GA24241@pandem0nium>
  <201302190908.44891.lindner_marek@yahoo.de>
  <20130219214340.GA29174@pandem0nium>
  <20130220132625.GL3523@ritirata.org>
  <20130220141413.GA1058@pandem0nium>
+ <20130220142727.GO3523@ritirata.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="O3WNCzIuUImKerqE"
+ protocol="application/pgp-signature"; boundary="oN4OvwWIcd1E23D1"
 Content-Disposition: inline
-In-Reply-To: <20130220141413.GA1058@pandem0nium>
+In-Reply-To: <20130220142727.GO3523@ritirata.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add compat support for the
  new netlink ops
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -29,71 +30,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---O3WNCzIuUImKerqE
+--oN4OvwWIcd1E23D1
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 20, 2013 at 03:14:13PM +0100, Simon Wunderlich wrote:
-> On Wed, Feb 20, 2013 at 02:26:25PM +0100, Antonio Quartulli wrote:
-> > Hi Simon,
-> >=20
-> > >=20
-> > > > ip link set dev $iface master bat0
-> > >=20
-> > > This doesn't work. eth0 is not added to batman. To further test, I've=
- added
-> > > it via batctl.
-> >=20
-> > I'm not sure..but I think this does not work because the "set master" c=
-ommand
-> > does not use ioctl, but rtnl only. Since in this kernel we don't have r=
-tnl for
-> > these operations (this is why we have this hacky patch) I did not expec=
-t this
-> > command to work.
+On Wed, Feb 20, 2013 at 03:27:27PM +0100, Antonio Quartulli wrote:
 >=20
-> OK
->=20
-> > > >=20
-> > > > Even more interesting are combinations of those:
-> > > > * batctl if add $iface && some OGMS here && ip link set dev $iface =
-nomaster &&=20
-> > > > ip link del dev bat0
-> > > > * ip link add dev bat0 type batadv && ip link set dev $iface master=
- bat0 &&=20
-> > > > some OGMS here && batctl if del $iface
-> > >=20
-> > > Some of these combinations are tested above, but I'd suggest we shoul=
-d fix the
-> > > general case first. :)
-> >=20
-> > what would you like to fix? :) We have just implemented a feature and n=
-ow we
-> > don't have any userspace tool which can exploit it! :-D
->=20
-> Well, if we don't expect this command to work then it's fine.
+> Nothing on my side.
+> Thanks again :)
 
-I just double-checked. iplink handles the master subcommand by sending a rt=
-nl
-request with the IFLA_MASTER flasg set, nothing else. Unluckily, this flag =
-is
-not supported in 2.6.32.
+I just realised that the ioctl commands this code is handling are for a bri=
+dge
+interface. Since batman-adv does not have its own set of ioctls, then the
+ndo_do_ioctl() callback should simply return EOPNOTSUPP.
 
->=20
-> Personally I don't care as long as batctl works. :)
-
-yeah, that's the important point. And batman-adv is still working with this
-patch.
-
->=20
-> If there are any other things to test, please let me know.
->=20
-
-Nothing on my side.
-Thanks again :)
+I'm going to send v2. This will not affect any tested behaviour.
 
 Cheers,
+
 
 
 --=20
@@ -102,25 +57,25 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---O3WNCzIuUImKerqE
+--oN4OvwWIcd1E23D1
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRJN1PAAoJEADl0hg6qKeODssQAMVXxVoepngKa+G8dyQvGlcY
-/hiRu2G4sqBrI5spxWPUOmLibE2O0ThJagFWA71dpsGLCI3WloizUXu7E78qM59Z
-5hAXo9NriXHoB/9EsYXPdkl+ml8EFLi2P7Nr6meMCck5OPEkEdAvoh0fUmOgGjJz
-leFWhjiDE6mn5wDBW5rk7DSPYfTjnFx+zcAJJIcOgwGEVdGR/GrANviFMX3ZtZBu
-j/KXOVDDJiXyshzYz5x4Unz59UVEoYrcMEv2BWXgke2YzKnlAfGIT05w3zA47h1M
-+5SAPPRPUFr3sD8P6lPJCryH8fzFPR7VYSmxOn/acOvzRiW0ynpA/IhGhdgajN/F
-0iVsy3HKV+no+lU27jFxUzyUCBHf+B2xxRE2UAHHK4eN82ufYVHy0o6KmF8dsd6z
-KSG2pxYToIQcBPmzHRASvc+PDnTInmBcdDbjnZBAbJI3sTFgwWiiSh3J4N3BqF8H
-ErR/iIFHn6VIrKik5MkSbNvjRoWTLKu/o3d9A+zrLNdJ4vZvXzreV0rfYAYbP1mf
-dGOdNvWZJkGF27elKkRInIjZlqM7zj9cRELp7ptxNqNVCB90QQI/zcuxf3xtk6IC
-X7fWvHhf4+tU4AZMst/ar8vPkUZGszvuO6ul6nwCQtINXFr+Jz13ujY3M/Azw8bs
-7PxoMvCX48xYIoEqiKQY
-=Lkoz
+iQIcBAEBCAAGBQJRJOBxAAoJEADl0hg6qKeO6kgQAKN/NXelivyGWSL5gG+qeemb
+KoKWiJMofJkGCh/PQY8CJ6WtuHHHWdbxaO3eTvMq2GX+TDA3RNc8V+ZYKT/zEt+e
+0Wuyh0c4qQXQ6UksHsBV2Rm0OHS97JYHpvc9iIvsQWLo5sn0ZClgETADx0qTxrgw
+C+DYgJnFBHWqCJeOJDMf+0l5IFyU4+iFTX244CDDoKYJZ/CkFJTwqPpTyywdeqMH
+ffc2jDzqOxBhCaCzlY+Uv8NA93zVMm9YsTXV4E+qMcZqH93lO3T5RiQU+05fRvmu
+E14H6hdojsy5Xl83cgVyLF+P4lCBrZ+/qb8cT9pDookNQF8Z2oojCUd55vNwlE7y
+Yxa/VZyzd0XK1lRAGt7CUGGMvo7mTnUDOU9iAGwhWaosISeIFbTS6O12d50HAW4r
+oRGckK2exnl/TBsT5KmUZt7UVypghb2iwtvpEwPGRIMfounQeBsG9FNL2M22RwUM
+o7XO1ZT9EkTzQhROABmXUCm0ZAqDl7nPUSFsSOs25kCW39nMghdHdLlh4Z9ypoge
+dFJhoqHcRDYsc6o+yiX2Zxkjd6flXfFLWek0M8jne+qZ0+o4opUN3GZMUDM0iEOK
+/GTsaiwKQ/1cVzs1pVaeLmtakj8aK3JSqc6pWXX3kJ5tXNmwKX3YSLcdrzby90P2
+SaHjPedTUEiy5/NXPK/W
+=jpk4
 -----END PGP SIGNATURE-----
 
---O3WNCzIuUImKerqE--
+--oN4OvwWIcd1E23D1--
