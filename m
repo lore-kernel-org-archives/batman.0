@@ -1,12 +1,14 @@
-Return-Path: <sasha.levin@oracle.com>
-Message-ID: <5127BAD2.1040007@oracle.com>
-Date: Fri, 22 Feb 2013 13:37:06 -0500
-From: Sasha Levin <sasha.levin@oracle.com>
-MIME-Version: 1.0
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 26 Feb 2013 13:52:46 +0800
 References: <5127A2AF.9030502@oracle.com> <20130222170621.GU3523@ritirata.org>
-In-Reply-To: <20130222170621.GU3523@ritirata.org>
-Content-Type: text/plain; charset=UTF-8
+ <5127BAD2.1040007@oracle.com>
+In-Reply-To: <5127BAD2.1040007@oracle.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201302261352.47191.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] batman-adv: gpf in batadv_slide_own_bcast_window
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,32 +21,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <ordex@autistici.org>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Dave Jones <davej@redhat.com>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Dave Jones <davej@redhat.com>, Sasha Levin <sasha.levin@oracle.com>, "David S. Miller" <davem@davemloft.net>
 
-On 02/22/2013 12:06 PM, Antonio Quartulli wrote:
-> Hi Sasha and thank you very much for reporting this issue.
+On Saturday, February 23, 2013 02:37:06 Sasha Levin wrote:
+> I'm confused about how batadv_orig_hash_del_if removes an interface from
+> the hashtable. I see the hashtable is using rcu to protect it, but when we
+> delete an entry we free it straight away by calling
+> batadv_orig_node_del_if() and not going through kfree_rcu().
 > 
-> IIRC this is similar to a bug you already reported in the past.
-> This bug should be the result of a race condition batman-adv has in the
-> hard-interface handling code (this is why it has been triggered while removing
-> eth0).
-> 
-> Now that the rtnl-deadlock has been solved I think we can try to further
-> investigate on this bug and try to find a solution..though it will not be easy
-> as it probably requires another lock to protect the hard-interface during this
-> operations.
-> 
-> If you have any fix proposal feel free to contribute!
+> Is there a reason behind doing that, or might it be the cause of the
+> problem we're seeing here?
 
-I'm confused about how batadv_orig_hash_del_if removes an interface from the
-hashtable. I see the hashtable is using rcu to protect it, but when we
-delete an entry we free it straight away by calling batadv_orig_node_del_if()
-and not going through kfree_rcu().
+Maybe I am overlooking something but it seems to me access to this memory is 
+protected by the same lock: orig_node->ogm_cnt_lock
+Before batadv_orig_node_del_if() is called this lock is acquired and 
+batadv_slide_own_bcast_window() also attempts acquire the orig_node-
+>ogm_cnt_lock spinlock before writing to this chunk of memory.
 
-Is there a reason behind doing that, or might it be the cause of the problem
-we're seeing here?
+Do we know for certain that batadv_orig_hash_del_if() is involved or is that a 
+guess at this point ? If you ask me the next for-loop in 
+batadv_orig_hash_del_if() looks more suspicious than the first one. The 
+interfaces get renumbered without any protection. Could be a regression from 
+the orig_hash_lock removal (the comments refer to a now inexisting lock).
 
-
-Thanks,
-Sasha
+Cheers,
+Marek
