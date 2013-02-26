@@ -1,15 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 26 Feb 2013 13:52:46 +0800
-References: <5127A2AF.9030502@oracle.com> <20130222170621.GU3523@ritirata.org>
- <5127BAD2.1040007@oracle.com>
-In-Reply-To: <5127BAD2.1040007@oracle.com>
+Return-Path: <gui@altermundi.net>
+Message-ID: <512C8BAF.3010704@altermundi.net>
+Date: Tue, 26 Feb 2013 07:17:19 -0300
+From: Gui Iribarren <gui@altermundi.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+References: <CAFevQmMNTep6A0-+0dCc4-qX3ty+Mo7EUFR4CE2WohgRdA3ZjA@mail.gmail.com>
+In-Reply-To: <CAFevQmMNTep6A0-+0dCc4-qX3ty+Mo7EUFR4CE2WohgRdA3ZjA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201302261352.47191.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] batman-adv: gpf in batadv_slide_own_bcast_window
+Subject: Re: [B.A.T.M.A.N.] netifd batman-adv proto
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,29 +19,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Dave Jones <davej@redhat.com>, Sasha Levin <sasha.levin@oracle.com>, "David S. Miller" <davem@davemloft.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, February 23, 2013 02:37:06 Sasha Levin wrote:
-> I'm confused about how batadv_orig_hash_del_if removes an interface from
-> the hashtable. I see the hashtable is using rcu to protect it, but when we
-> delete an entry we free it straight away by calling
-> batadv_orig_node_del_if() and not going through kfree_rcu().
-> 
-> Is there a reason behind doing that, or might it be the cause of the
-> problem we're seeing here?
+On 02/01/13 10:11, Filippo Sallemi wrote:
+> Hi all,
+>
+> I've writed a batman-adv proto in according on new netifd system of
+> attitude adjustement release.
+> With this script the batman-adv configuration could be moved on
+> /etc/config/network file istead of /etc/config/batman-adv and the
+> /lib/batman-adv/config.sh is no longer required.
+>
+> es.
+>
+> config interface mesh
+>      option proto bat
+>      option device bat0
+>      option interfaces 'wlan0 wlan1'
+>      option gw_mode server
+>      ...
+>
+> if someone think that my work could be useful and can provide a better
+> and elegant integration on openwrt please keep in touch.
 
-Maybe I am overlooking something but it seems to me access to this memory is 
-protected by the same lock: orig_node->ogm_cnt_lock
-Before batadv_orig_node_del_if() is called this lock is acquired and 
-batadv_slide_own_bcast_window() also attempts acquire the orig_node-
->ogm_cnt_lock spinlock before writing to this chunk of memory.
+hey filippo,
+is that code published anywhere?
+a pastebin or pad would suffice
 
-Do we know for certain that batadv_orig_hash_del_if() is involved or is that a 
-guess at this point ? If you ask me the next for-loop in 
-batadv_orig_hash_del_if() looks more suspicious than the first one. The 
-interfaces get renumbered without any protection. Could be a regression from 
-the orig_hash_lock removal (the comments refer to a now inexisting lock).
+from your description it looks very promising, so i'm curious to have a 
+look at it, if it can be used to extend the current netifd integration 
+in openwrt :)
 
-Cheers,
-Marek
+Thanks a lot, cheers!
+
+Gui
+
+>
+> --
+> Filippo Sallemi
+>
