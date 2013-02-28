@@ -1,17 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 27 Feb 2013 18:41:56 +0800
-References: <1361022160-25693-1-git-send-email-ordex@autistici.org>
- <201302271821.19114.lindner_marek@yahoo.de>
- <20130227102751.GY3523@ritirata.org>
-In-Reply-To: <20130227102751.GY3523@ritirata.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201302271841.56757.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/2] batman-adv: remove interfacing
-	enslaving loop private check
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Thu, 28 Feb 2013 12:08:47 +0100
+Message-Id: <1362049727-16411-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: change compat code to remove
+	sparse warning
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,40 +15,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On Wednesday, February 27, 2013 18:27:51 Antonio Quartulli wrote:
-> On Wed, Feb 27, 2013 at 06:21:18PM +0800, Marek Lindner wrote:
-> > On Wednesday, February 27, 2013 18:09:48 Marek Lindner wrote:
-> > > On Saturday, February 16, 2013 21:42:40 Antonio Quartulli wrote:
-> > > > Now that the new dev_upper API is used, the private check for
-> > > > enslaving loops is not needed anymore as this is performed by the
-> > > > new API itself.
-> > > 
-> > > Are you sure ? Isn't the following supposed to fail:
-> > > 
-> > > $ batctl if add eth0
-> > > $ vconfig add bat0 5
-> > > $ batctl if add bat0.5
-> > > 
-> > > $ batctl if
-> > > 
-> > >   eth0: active
-> > >   bat0.5: active
-> > 
-> > Without your patch this is what happens:
-> > 
-> > $ batctl if add eth0
-> > $ vconfig add bat0 5
-> > $ batctl if add bat0.5
-> > 
-> >   Error - interface type not supported by batman-adv: bat0.5
-> 
-> Are you testing this with < linux-3.9/net-next ?
-> We need some compat stuff as if we want to remove this check and keep the
-> behaviour on old kernels.
+The latest compat patch fixing rtnl ops compile errors from 2.6.32
+("batman-adv: add compat support for the new netlink ops") fixes
+the compilation, but leaves some sparse errors:
+batman-adv/soft-interface.c:573:10: warning: Initializer entry defined twice
+batman-adv/soft-interface.c:574:10: also defined here
 
-I am not running net-next. This is on linux 3.3.8.
+This patch uses another approach by moving the initializers in a dummy
+struct instead. This also removes the sparse errors.
 
-Cheers,
-Marek
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ compat.h |   30 +++++++++++++-----------------
+ 1 file changed, 13 insertions(+), 17 deletions(-)
+
+diff --git a/compat.h b/compat.h
+index 64244ac..69c3dc2 100644
+--- a/compat.h
++++ b/compat.h
+@@ -135,23 +135,19 @@ static inline int batadv_param_set_copystring(const char *val,
+ #define kstrtoul strict_strtoul
+ #define kstrtol  strict_strtol
+ 
+-#define batadv_softif_slave_add(x, y) \
+-batadv_softif_slave_add(struct net_device *dev, struct ifreq *rq, int cmd)\
+-{\
+-	return -EOPNOTSUPP;\
+-}\
+-static int __attribute__((unused)) __batadv_softif_slave_add(x, y)
+-
+-#define batadv_softif_slave_del(x, y) \
+-__batadv_softif_slave_del(struct net_device *dev, struct net_device *slave_dev);\
+-static int batadv_softif_slave_del(struct net_device *dev, struct ifreq *rq, int cmd)\
+-{\
+-	return -EOPNOTSUPP;\
+-}\
+-static int __attribute__((unused)) __batadv_softif_slave_del(x, y)
+-
+-#define ndo_add_slave ndo_do_ioctl
+-#define ndo_del_slave ndo_do_ioctl
++/* Hack for removing ndo_add/del_slave at the end of net_device_ops.
++ * This is somewhat ugly because it requires that ndo_validate_addr
++ * is at the end of this struct in soft-interface.c.
++ */
++#define ndo_validate_addr \
++	ndo_validate_addr = eth_validate_addr, \
++}; \
++static const struct { \
++	void *ndo_validate_addr; \
++	void *ndo_add_slave; \
++	void *ndo_del_slave; \
++} __attribute__((unused)) __useless_ops1 = { \
++	.ndo_validate_addr
+ 
+ #endif /* < KERNEL_VERSION(2, 6, 39) */
+ 
+-- 
+1.7.10.4
+
