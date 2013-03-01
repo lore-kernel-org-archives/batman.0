@@ -1,15 +1,9 @@
-Return-Path: <mihail.costea90@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20130301114300.GE20607@ritirata.org>
-References: <CAP5XTDP_8pCJA8uXpQoMNExiVaCvmBCmkKT_aDErk0qYk7-pmw@mail.gmail.com>
- <20130301110809.GC20607@ritirata.org>
- <CAP5XTDMV9dQucnRpe-fHvKUt-E3RKzEPQcNruG--fA8BnCv7UQ@mail.gmail.com>
- <20130301114300.GE20607@ritirata.org>
-Date: Fri, 1 Mar 2013 13:56:52 +0200
-Message-ID: <CAP5XTDNVPDVD_CXUScqc2D8D4+Xh7NFn=4YM6c8aBmjF7Lbi8A@mail.gmail.com>
-From: Mihail Costea <mihail.costea90@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Implement DAT for IPv6
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Fri,  1 Mar 2013 22:44:47 +0100
+Message-Id: <1362174287-15561-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4] batman-adv: remove interfacing enslaving
+	loop private check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,75 +15,171 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On 1 March 2013 13:43, Antonio Quartulli <ordex@autistici.org> wrote:
-> On Fri, Mar 01, 2013 at 01:38:43PM +0200, Mihail Costea wrote:
->> On 1 March 2013 13:08, Antonio Quartulli <ordex@autistici.org> wrote:
->> > On Fri, Mar 01, 2013 at 12:59:18PM +0200, Mihail Costea wrote:
->> >> Hi,
->> >>
->> >> I've started implementing DAT for IPv6 and I have a few questions
->> >> regarding the design.
->> >> I've already implemented a snooping mechanism for Network Solicitation
->> >> package, but now I have to add it to the ipv6 distributed table.
->> >> I'm also a beginner in kernel programming so any help would be useful.
->> >>
->> >> From what I've seen there is a lot of code in distributed-arp-table.c
->> >> that could be used for ipv6 distributed table.
->> >
->> > yeah, I think that the table handling and DHT primitives can be reused for IPv6
->> > (they were designed on purpose).
->> >
->> >> A problem in using that code, from what I've seen, is the fact that
->> >> <struct batadv_dat_entry > has a field for ip with only 32 bits
->> >> (__be32).
->> >
->> > Yes, here a way to generalise the structure is needed.
->> >
->> >>
->> >> So I was thinking to make it more general by:
->> >> 1. transforming that into a pointer (unsigned char *ip) and add a
->> >> field size which will represent the total size of the ip.
->> >> The ip itself would be allocated dynamically.
->> >> 2. use a union with both _be32 / struct in6_addr. In this case the
->> >> problem is that if we use ipv4 then all the other space for struct
->> >> in6_addr would be wasted.
->> >
->> > correct. and for point 2) I think we waste a not negligible amount of memory..
->> >
->> >>
->> >> The second problem from what I've seen in the code is that the
->> >> batadv_priv->dat field is hardcoded.
->> >> For ipv6 we would need a new field to memorize the table, but I don't
->> >> think it's a really hard problem to solve in order to make it general.
->> >>
->> >
->> > I did not get the problem with the dat field?
->> > Can't you use the same table to store both IPv4 and IPv6? The DHT is made to
->> > store general data, so I think (with the suggestions you wrote above) that you
->> > should be able to use one table only.
->> >
->>
->> I think it can be reuse. If I understood well the DHT has buckets for
->> each entry, so it shouldn't be a problem if
->> the IPv6 hash collides with the IPv4 hash.
->
-> yeah in general hash collisions are not a problem (well it is better to reduce
-> them in order to provide a better distribution of the data).
->
->> I just thought that they should be separated because because they are
->> different concepts.
->
-> yes, but in the end they are still separated at the logical level (the data
-> size will make the difference). Maybe you can add a "type" field on the bucket?
-> In this way we can easily differentiate one data type from another (this maybe
-> helpful for future use of the DHT too) instead of replying only on the
-> "addr_size" field.
->
+Now that the new dev_upper API is used, the private check for enslaving loops is
+not needed anymore as this is performed by the new API itself.
 
-Yes, the type is a better idea.
-Then, back to coding :).
+Reported-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-Cheers,
-Mihail
+v2, v3, v4:
+ - no change to this patch
+
+v4:
+ - added compat code
+
+ compat.c         | 53 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ compat.h         |  5 ++++-
+ hard-interface.c | 43 -------------------------------------------
+ 3 files changed, 57 insertions(+), 44 deletions(-)
+
+diff --git a/compat.c b/compat.c
+index 764878f..da63ea6 100644
+--- a/compat.c
++++ b/compat.c
+@@ -24,6 +24,7 @@
+ #include <linux/in.h>
+ #include <linux/version.h>
+ #include "main.h"
++#include "soft-interface.h"
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 0, 0)
+ 
+@@ -85,3 +86,55 @@ void batadv_free_rcu_nc_path(struct rcu_head *rcu)
+ #endif
+ 
+ #endif /* < KERNEL_VERSION(3, 0, 0) */
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
++
++/**
++ * batadv_is_on_batman_iface - check if a device is a batman iface descendant
++ * @net_dev: the device to check
++ *
++ * If the user creates any virtual device on top of a batman-adv interface, it
++ * is important to prevent this new interface to be used to create a new mesh
++ * network (this behaviour would lead to a batman-over-batman configuration).
++ * This function recursively checks all the fathers of the device passed as
++ * argument looking for a batman-adv soft interface.
++ *
++ * Returns true if the device is descendant of a batman-adv mesh interface (or
++ * if it is a batman-adv interface itself), false otherwise
++ */
++static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
++{
++	struct net_device *parent_dev;
++	bool ret;
++
++	/* check if this is a batman-adv mesh interface */
++	if (batadv_softif_is_valid(net_dev))
++		return true;
++
++	/* no more parents..stop recursion */
++	if (net_dev->iflink == net_dev->ifindex)
++		return false;
++
++	/* recurse over the parent device */
++	parent_dev = dev_get_by_index(&init_net, net_dev->iflink);
++	/* if we got a NULL parent_dev there is something broken.. */
++	if (WARN(!parent_dev, "Cannot find parent device"))
++		return false;
++
++	ret = batadv_is_on_batman_iface(parent_dev);
++
++	if (parent_dev)
++		dev_put(parent_dev);
++	return ret;
++}
++
++int batadv_netdev_set_master(struct net_device *slave,
++			     struct net_device *master)
++{
++	if (batadv_is_on_batman_iface(slave))
++		return -1;
++
++	return netdev_set_master(slave, master);
++}
++
++#endif /* < KERNEL_VERSION(3, 9, 0) */
+diff --git a/compat.h b/compat.h
+index 69c3dc2..79d4217 100644
+--- a/compat.h
++++ b/compat.h
+@@ -229,7 +229,10 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p) \
+ }\
+ static int __batadv_interface_set_mac_addr(x, y)
+ 
+-#define netdev_master_upper_dev_link netdev_set_master
++int batadv_netdev_set_master(struct net_device *slave,
++			     struct net_device *master);
++
++#define netdev_master_upper_dev_link batadv_netdev_set_master
+ #define netdev_upper_dev_unlink(slave, master) netdev_set_master(slave, NULL)
+ #define netdev_master_upper_dev_get(dev) \
+ ({\
+diff --git a/hard-interface.c b/hard-interface.c
+index fd99e42..b96f819 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -60,45 +60,6 @@ out:
+ 	return hard_iface;
+ }
+ 
+-/**
+- * batadv_is_on_batman_iface - check if a device is a batman iface descendant
+- * @net_dev: the device to check
+- *
+- * If the user creates any virtual device on top of a batman-adv interface, it
+- * is important to prevent this new interface to be used to create a new mesh
+- * network (this behaviour would lead to a batman-over-batman configuration).
+- * This function recursively checks all the fathers of the device passed as
+- * argument looking for a batman-adv soft interface.
+- *
+- * Returns true if the device is descendant of a batman-adv mesh interface (or
+- * if it is a batman-adv interface itself), false otherwise
+- */
+-static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
+-{
+-	struct net_device *parent_dev;
+-	bool ret;
+-
+-	/* check if this is a batman-adv mesh interface */
+-	if (batadv_softif_is_valid(net_dev))
+-		return true;
+-
+-	/* no more parents..stop recursion */
+-	if (net_dev->iflink == net_dev->ifindex)
+-		return false;
+-
+-	/* recurse over the parent device */
+-	parent_dev = dev_get_by_index(&init_net, net_dev->iflink);
+-	/* if we got a NULL parent_dev there is something broken.. */
+-	if (WARN(!parent_dev, "Cannot find parent device"))
+-		return false;
+-
+-	ret = batadv_is_on_batman_iface(parent_dev);
+-
+-	if (parent_dev)
+-		dev_put(parent_dev);
+-	return ret;
+-}
+-
+ static int batadv_is_valid_iface(const struct net_device *net_dev)
+ {
+ 	if (net_dev->flags & IFF_LOOPBACK)
+@@ -110,10 +71,6 @@ static int batadv_is_valid_iface(const struct net_device *net_dev)
+ 	if (net_dev->addr_len != ETH_ALEN)
+ 		return 0;
+ 
+-	/* no batman over batman */
+-	if (batadv_is_on_batman_iface(net_dev))
+-		return 0;
+-
+ 	return 1;
+ }
+ 
+-- 
+1.8.1.4
+
