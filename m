@@ -1,15 +1,14 @@
-Return-Path: <ordex@autistici.org>
-Date: Fri, 1 Mar 2013 12:48:03 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130301114803.GF20607@ritirata.org>
-References: <CAP5XTDP_8pCJA8uXpQoMNExiVaCvmBCmkKT_aDErk0qYk7-pmw@mail.gmail.com>
- <20130301111118.GD20607@ritirata.org>
- <CAP5XTDPApa0OvO-Z3mWRFsvk=aL+No09_Ce2eUxkZp+B_rXC9g@mail.gmail.com>
+Return-Path: <mihail.costea90@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="B0nZA57HJSoPbsHY"
-Content-Disposition: inline
-In-Reply-To: <CAP5XTDPApa0OvO-Z3mWRFsvk=aL+No09_Ce2eUxkZp+B_rXC9g@mail.gmail.com>
+In-Reply-To: <20130301114300.GE20607@ritirata.org>
+References: <CAP5XTDP_8pCJA8uXpQoMNExiVaCvmBCmkKT_aDErk0qYk7-pmw@mail.gmail.com>
+ <20130301110809.GC20607@ritirata.org>
+ <CAP5XTDMV9dQucnRpe-fHvKUt-E3RKzEPQcNruG--fA8BnCv7UQ@mail.gmail.com>
+ <20130301114300.GE20607@ritirata.org>
+Date: Fri, 1 Mar 2013 13:56:52 +0200
+Message-ID: <CAP5XTDNVPDVD_CXUScqc2D8D4+Xh7NFn=4YM6c8aBmjF7Lbi8A@mail.gmail.com>
+From: Mihail Costea <mihail.costea90@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Subject: Re: [B.A.T.M.A.N.] Implement DAT for IPv6
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,70 +23,73 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On 1 March 2013 13:43, Antonio Quartulli <ordex@autistici.org> wrote:
+> On Fri, Mar 01, 2013 at 01:38:43PM +0200, Mihail Costea wrote:
+>> On 1 March 2013 13:08, Antonio Quartulli <ordex@autistici.org> wrote:
+>> > On Fri, Mar 01, 2013 at 12:59:18PM +0200, Mihail Costea wrote:
+>> >> Hi,
+>> >>
+>> >> I've started implementing DAT for IPv6 and I have a few questions
+>> >> regarding the design.
+>> >> I've already implemented a snooping mechanism for Network Solicitation
+>> >> package, but now I have to add it to the ipv6 distributed table.
+>> >> I'm also a beginner in kernel programming so any help would be useful.
+>> >>
+>> >> From what I've seen there is a lot of code in distributed-arp-table.c
+>> >> that could be used for ipv6 distributed table.
+>> >
+>> > yeah, I think that the table handling and DHT primitives can be reused for IPv6
+>> > (they were designed on purpose).
+>> >
+>> >> A problem in using that code, from what I've seen, is the fact that
+>> >> <struct batadv_dat_entry > has a field for ip with only 32 bits
+>> >> (__be32).
+>> >
+>> > Yes, here a way to generalise the structure is needed.
+>> >
+>> >>
+>> >> So I was thinking to make it more general by:
+>> >> 1. transforming that into a pointer (unsigned char *ip) and add a
+>> >> field size which will represent the total size of the ip.
+>> >> The ip itself would be allocated dynamically.
+>> >> 2. use a union with both _be32 / struct in6_addr. In this case the
+>> >> problem is that if we use ipv4 then all the other space for struct
+>> >> in6_addr would be wasted.
+>> >
+>> > correct. and for point 2) I think we waste a not negligible amount of memory..
+>> >
+>> >>
+>> >> The second problem from what I've seen in the code is that the
+>> >> batadv_priv->dat field is hardcoded.
+>> >> For ipv6 we would need a new field to memorize the table, but I don't
+>> >> think it's a really hard problem to solve in order to make it general.
+>> >>
+>> >
+>> > I did not get the problem with the dat field?
+>> > Can't you use the same table to store both IPv4 and IPv6? The DHT is made to
+>> > store general data, so I think (with the suggestions you wrote above) that you
+>> > should be able to use one table only.
+>> >
+>>
+>> I think it can be reuse. If I understood well the DHT has buckets for
+>> each entry, so it shouldn't be a problem if
+>> the IPv6 hash collides with the IPv4 hash.
+>
+> yeah in general hash collisions are not a problem (well it is better to reduce
+> them in order to provide a better distribution of the data).
+>
+>> I just thought that they should be separated because because they are
+>> different concepts.
+>
+> yes, but in the end they are still separated at the logical level (the data
+> size will make the difference). Maybe you can add a "type" field on the bucket?
+> In this way we can easily differentiate one data type from another (this maybe
+> helpful for future use of the DHT too) instead of replying only on the
+> "addr_size" field.
+>
 
---B0nZA57HJSoPbsHY
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Mar 01, 2013 at 01:41:28PM +0200, Mihail Costea wrote:
-> On 1 March 2013 13:11, Antonio Quartulli <ordex@autistici.org> wrote:
-> > On Fri, Mar 01, 2013 at 12:59:18PM +0200, Mihail Costea wrote:
-> >> Hi,
-> >>
-> >> I've started implementing DAT for IPv6 and I have a few questions
-> >> regarding the design.
-> >> I've already implemented a snooping mechanism for Network Solicitation
-> >> package,
-> >
-> > I forgot to ask here: packets generated by the IPv6 the Neigh Discovery=
- Protocol
-> > are sent on a periodic basis, right? so what is the idea behind the sno=
-oping
-> > mechanism? There is not a request (like for ARP), right? So when should=
- the data
-> > in distributed table be used?
->=20
-> From what I understood the Neighbor Solicitation and Neighbor
-> Advertisement packets are the ARP equivalents.
-> So if we receive a Neighbor Solicitation than we would use the
-> distributed table and send the Neighbor Advertisement directly.
-
-Oh ok, It was my fault. I quickly re-read part of the RFC4861: only router
-advertisement are sent on a periodic basis, while the neighbour advertiseme=
-nt is
-asynchronously sent either on address change or as a reply to a neighbour
-solicitation.
-
-Thanks.
+Yes, the type is a better idea.
+Then, back to coding :).
 
 Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---B0nZA57HJSoPbsHY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRMJVzAAoJEADl0hg6qKeOB00P/iL5X/USOnL8aEfdvJuKsYQT
-CTACNBrDU0q0brUUbW8micAcZdW2V8L/Vm8MxBm1GN2zUlyZZ5Ddo6Lu3gXk6hMI
-oMrK1jTNRwVxvRVQJUZfnv4su3gNifLN4nenFdDeYqJzRxRWHX+YPl+HTOyavOdo
-7kqHN3xlP8wQswMgZ8qT+a5OtGSuqHdHN8BCkxL1kzQuX5LMzO/QWWZffyQ8fT00
-p5NRZKCvnHXfQHfciqfaeYpjiAf3UbqJU2+LedrFUED7ztB0mAfidvqjjCxetJdl
-zsqJIGFg8iJGPQPaYHoABfLFoD8m7FEMlWj7b0btqzo1aaw3K7GiDQzLOz7Yl18K
-fA2oSORFeWY31ZEjg7H9mKDyH1CVA1TX+fp0jvwgl67nuL6YnbHmlP6wkiYgZFwM
-/xArRQZL+TDj+sG3H97k74SXWatt1C+d+Hwbx6BoWqs0Qv/cfzHFyVcGrGZUmR0m
-eDzOi3R8U7JB3QkEcUq28aeCZLkWinnVyb7CAqhUblecz0TYLj3YqDRQ+y0PiH33
-C/irKPnqVa3rzdjqyI9eICBTtKeP6b0uXD5aQeLcrQyJchb2v17MxCRMM53xau50
-RENvvkEAKBv+uI4EXYZe70z3aA/7MCJ1iaoqrZsQxkTDLEJ0IhfbotbFtvdFigVi
-2rRKGm1S94D877+7OeBi
-=7xDO
------END PGP SIGNATURE-----
-
---B0nZA57HJSoPbsHY--
+Mihail
