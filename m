@@ -1,16 +1,10 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 1 Mar 2013 10:15:01 +0800
-References: <1362049727-16411-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <20130228111330.GC4530@ritirata.org>
-In-Reply-To: <20130228111330.GC4530@ritirata.org>
+Return-Path: <mihail.costea90@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201303011015.01793.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: change compat code to remove
-	sparse warning
+Date: Fri, 1 Mar 2013 12:59:18 +0200
+Message-ID: <CAP5XTDP_8pCJA8uXpQoMNExiVaCvmBCmkKT_aDErk0qYk7-pmw@mail.gmail.com>
+From: Mihail Costea <mihail.costea90@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Implement DAT for IPv6
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,24 +17,37 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On Thursday, February 28, 2013 19:13:30 Antonio Quartulli wrote:
-> On Thu, Feb 28, 2013 at 12:08:47 +0100, Simon Wunderlich wrote:
-> > The latest compat patch fixing rtnl ops compile errors from 2.6.32
-> > ("batman-adv: add compat support for the new netlink ops") fixes
-> > the compilation, but leaves some sparse errors:
-> > batman-adv/soft-interface.c:573:10: warning: Initializer entry defined
-> > twice batman-adv/soft-interface.c:574:10: also defined here
-> >
-> > This patch uses another approach by moving the initializers in a dummy
-> > struct instead. This also removes the sparse errors.
-> >
-> > Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> 
-> Acked-by: Antonio Quartulli <ordex@autistici.org>
+Hi,
 
-Applied in revision 2caa9e1.
+I've started implementing DAT for IPv6 and I have a few questions
+regarding the design.
+I've already implemented a snooping mechanism for Network Solicitation
+package, but now I have to add it to the ipv6 distributed table.
+I'm also a beginner in kernel programming so any help would be useful.
+
+From what I've seen there is a lot of code in distributed-arp-table.c
+that could be used for ipv6 distributed table.
+A problem in using that code, from what I've seen, is the fact that
+<struct batadv_dat_entry > has a field for ip with only 32 bits
+(__be32).
+
+So I was thinking to make it more general by:
+1. transforming that into a pointer (unsigned char *ip) and add a
+field size which will represent the total size of the ip.
+The ip itself would be allocated dynamically.
+2. use a union with both _be32 / struct in6_addr. In this case the
+problem is that if we use ipv4 then all the other space for struct
+in6_addr would be wasted.
+
+The second problem from what I've seen in the code is that the
+batadv_priv->dat field is hardcoded.
+For ipv6 we would need a new field to memorize the table, but I don't
+think it's a really hard problem to solve in order to make it general.
+
+This solution would be to avoid code duplicate. Off course, I could
+still write all the code in parallel just for IPv6, but I think that a
+common base would be useful.
 
 Thanks,
-Marek
+Mihail
