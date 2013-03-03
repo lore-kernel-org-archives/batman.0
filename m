@@ -1,8 +1,12 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun,  3 Mar 2013 18:34:36 +0100
-Message-Id: <1362332076-27516-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix old master freeing operation
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 4 Mar 2013 01:46:19 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201303040146.19284.lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] batman-adv 2013.1.0 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,45 +18,94 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-When a new hard_iface has a master already, ndo_del_slave
-has to be used in order to let the old master perform its
-cleaning up routing correctly. Unregistering the master
-iface only could lead to a inconsistent state in the old
-master knowledge.
 
-Introduced by 5e57e3bff429cd403f0e30af69cf87a2cd55598f
-("batman-adv: free an hard-interface before adding it").
+Today, the B.A.T.M.A.N. team publishes batman-adv 2013.1.0 - a stability an=
+d=20
+bugfix release, addressing bugs and open issues only. No new features were=
+=20
+added to ensure maximum stability. As the kernel module always depends on t=
+he=20
+Linux kernel it was compiled against, it does not make sense to provide=20
+binaries on our website. As usual, you will find the signed tarballs in our=
+=20
+download section:
 
-Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- hard-interface.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+http://downloads.open-mesh.org/batman/releases/batman-adv-2013.1.0/
 
-diff --git a/hard-interface.c b/hard-interface.c
-index fd99e42..f446e69 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -346,8 +346,15 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	 * in that case unlink it first
- 	 */
- 	master = netdev_master_upper_dev_get(hard_iface->net_dev);
--	if (master)
--		netdev_upper_dev_unlink(hard_iface->net_dev, master);
-+	if (master && master->netdev_ops->ndo_del_slave) {
-+		ret = master->netdev_ops->ndo_del_slave(master,
-+							hard_iface->net_dev);
-+		if (ret < 0)
-+			goto err_dev;
-+	} else if (master) {
-+		ret = -EINVAL;
-+		goto err_dev;
-+	}
- 
- 	hard_iface->soft_iface = soft_iface;
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
--- 
-1.8.1.5
+as well as prepackaged binaries in your distribution.
 
+
+Thanks
+=2D-----
+
+Thanks to all people sending in patches:
+
+ * Akinobu Mita <akinobu.mita@gmail.com>
+ * Antonio Quartulli <ordex@autistici.org>
+ * Jiri Pirko <jiri@resnulli.us>
+ * Linus L=FCssing <linus.luessing@web.de>
+ * Marek Lindner <lindner_marek@yahoo.de>
+ * Matthias Schiffer <mschiffer@universe-factory.net>
+ * Pau Koning <paukoning@gmail.com>
+ * Shan Wei <davidshan@tencent.com>
+ * Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+
+and to all those that supported us with good advice, code review and/or=20
+rigorous testing:
+
+ * Sasha Levin <sasha.levin@oracle.com>
+
+
+batman-adv
+=2D---------
+
+The translation table has been further polished by not adding multicast=20
+addresses to avoid interfering with multicast traffic. The output of the=20
+translation tables has been modified to not print the 'last seen' values fo=
+r=20
+batX interfaces (these entries are never subject to purging). Moreover, the=
+=20
+CRC consistency checksums are printed along with the rest of the table to=20
+facilitate debugging. As part of our ongoing effort to document the code=20
+itself the entire types.h file was 'kernel doc'-ified, thereby documenting =
+the=20
+bulk of all struct definitions and defines used throughout the batman-adv c=
+ode=20
+base. While reviewing and documenting all these definitions a few unused bu=
+t=20
+forgotten variables we identified and removed, reducing the memory consumpt=
+ion=20
+by a few bytes.
+
+The previously added distributed ARP table (DAT) received more testing and=
+=20
+reviews which led to a number of fixes: ARP packets with invalid MAC or IP=
+=20
+addresses are not added to the ARP table anymore. A potential crash due to =
+a=20
+NULL pointer dereference in the hash collision avoidance section was fixed.=
+=20
+The batman-adv interface removal could lead to deadlock in the kernel if it=
+=20
+was triggered at the wrong moment. To resolve the issue  the internal=20
+interface cleanup is delayed until all necessary locks can safely be acquir=
+ed.=20
+The initialization of the lockdep class keys for has structures inside batm=
+an-
+adv has been improved to mitigate false warnings when running lockdep to fi=
+nd=20
+problems in the locking routines.
+
+
+batctl
+=2D-----
+
+The batctl man page carried a broken format instruction leading to an=20
+"undefined macro" warning and partial disappearance of text. The text=20
+misinterpretation was removed and the man page text restored.
+
+
+Happy routing,
+The B.A.T.M.A.N. team
