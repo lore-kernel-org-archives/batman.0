@@ -1,16 +1,14 @@
 Return-Path: <ordex@autistici.org>
-Date: Sun, 3 Mar 2013 22:01:15 +0100
+Date: Sun, 3 Mar 2013 22:03:20 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130303210115.GA1400@ritirata.org>
-References: <1362332076-27516-1-git-send-email-ordex@autistici.org>
- <201303040147.05547.lindner_marek@yahoo.de>
+Message-ID: <20130303210320.GB1400@ritirata.org>
+References: <5133B0A6.6010306@wirelesspt.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
+ protocol="application/pgp-signature"; boundary="ADZbWkCsHQ7r3kzd"
 Content-Disposition: inline
-In-Reply-To: <201303040147.05547.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix old master freeing
- operation
+In-Reply-To: <5133B0A6.6010306@wirelesspt.net>
+Subject: Re: [B.A.T.M.A.N.] batctl.8 suggested correction.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,27 +20,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: cmsv@wirelesspt.net, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---Kj7319i9nmIyA2yE
+--ADZbWkCsHQ7r3kzd
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 04, 2013 at 01:47:05 +0800, Marek Lindner wrote:
-> On Monday, March 04, 2013 01:34:36 Antonio Quartulli wrote:
-> > +       if (master && master->netdev_ops->ndo_del_slave) {
-> > +               ret =3D master->netdev_ops->ndo_del_slave(master,
-> > +                                                       hard_iface->net=
-_dev
-> > );
+Hello,
+
+On Sun, Mar 03, 2013 at 03:20:54 -0500, cmsv wrote:
+> Having in mind that throughput and bandwidth are not the same and do not =
+necessarily match; the use of the word "throughput" in batman-adv (Layer2)=
+=20
+> is misleading and can cause confusion when in measuring the real throughp=
+ut on layer3 with L3 software.
 >=20
-> Aren't we going to have compat trouble with this one ?
+> As far as i know; at the moment batman-adv (L2) has no way to know what i=
+s the real throughput that the announced gateway bandwidth (l3) actually al=
+lows therefore the "
+> throughput" should be changed to announced bandwidth.=20
+>=20
 
-Yes. Kernels before 2.6.39 do not have the ndo_del_slave() op.
-We need a way to make this code compatible..
+Yeah, batman-adv does not know anything about the real throughput.
 
+> Example:
+>=20
+>               If the node is a gateway client the parameter will decide w=
+hich
+>               criterias to consider when the batman-adv module has to cho=
+ose
+>               between different internet connections announced by the afo=
+re-
+>               mentioned servers.
+>                         default: 20 -> late switch (TQ 20)
+>                        examples:  1 -> fast connection
+>                                        consider the gateway's advertised
+>                                        bandwidth as well as the link qual=
+ity
+>                                        towards the gateway and stick with=
+ the
+>                                        selection until the gateway disapp=
+ears
+>                                   2 -> stable connection
+>                                        chooses the gateway with the best =
+link
+>                                        quality and sticks with it (ignore=
+ the
+>                                        advertised bandwidth)
+>                                   3 -> fast switch connection
+>                                        chooses the gateway with the best =
+link
+>                                        quality but switches to another ga=
+teway
+>                                        as soon as a better one is found
+>                                  XX -> late switch connection
+>                                        chooses the gateway with the best =
+link
+>                                        quality but switches to another ga=
+teway
+>                                        as soon as a better one is found w=
+hich
+>                                        is at least XX TQ better than the =
+cur-
+>                                        rently selected gateway (XX has to=
+ be a
+>                                        number between 3 and 256).
+>=20
+>=20
+
+I think this change is correct. Why not sending a patch that we can directly
+apply in the batctl repository?
+
+Thanks.
 Cheers,
 
 --=20
@@ -51,25 +102,25 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---Kj7319i9nmIyA2yE
+--ADZbWkCsHQ7r3kzd
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRM7obAAoJEADl0hg6qKeOEM0P/2fGsBjpbHzCcehkPPYNQZGW
-6C9g3HlytAGbUN3KAcI2jEWCD+aSHbIKMyqdg+E5skfAZTfFl5eUEbLIO3ba2m2/
-Wp4MWvnJz6JsHdO27SVaDequcetbVNhCDv1IR0QtAvrB2t3+7qOxLZ3vZEI/lhXA
-rjto77HA0PJRdBRg7RWy97aUPKwtLUXKh24uJ+kfyO3HF75NMlsh3eigliLo+Cuz
-QXxiJbrNTbi2qfhqXe5yY0MGsaAjX7X20fyZo0Eg04itcEt0i4g5lbsUFRFYudX1
-6Uxp0BYqfuJ/aJDrL2drV20A+JIrD2oEDWq4YtOn63VmGnQR5TlL/1Ll8fI5WYC7
-p7TsZKDopgfv256n8xyzMXH0SwdYtZfLzVf4tKJbbmgemWry3SHQuA3MwMpLPxMy
-FdGQPRJQg7mJNAyMp233h5WccX36Nmptm2Nqj8XGxNH4u2aATqm+TTa6opruiI5o
-xM6CljzaFcrMfKbcu7rHrYNSuofFfuukkE2HBfjIdnU+I0txaMCxVlGrA1qilaQg
-bTmrEbpKwDRtgQzliSG84F54Ju9wL8L5L1yjAygQfvjAKXkIaijXvAIyMcMN2lVT
-Av4tgOemZP86qNVeMEG51wArhXCzbVmOd2GQWSln9n3Zm0+aGm6cZLsh59POTj5k
-YodvjqsHASafCGUy6e8s
-=44BJ
+iQIcBAEBCAAGBQJRM7qYAAoJEADl0hg6qKeO/iYQAKuMJ/5muwmGO0fIhloiuPA4
+e4t7l3sIZ1sLyrutQpYXEs+hoLxkTBByrHdAFbPyu3lWyp5Tzor68UPUYjOAmNCL
+4q+X1eGVWqJyqTD3KGIey3guihuGHWFRSTwwwjgyye7Mnb/iW/my0lWAaK8jRmnB
+mnu9i4f1YYyzNKjUnU8OhGsA/IRJZg+mPMl6RBPqRfezBr0U02cshpqemNQZc9gV
+Ps/oqYieNkuWndiDjT7DXoiPGvAraZXsUW66j0Bt0I0D62tSMaggei7dI4eR55DV
+kb1IKanodz4bSGkLx1JvpGq5VJQ6CpVTtEg/5EYT/OapbZgvjQc1WrKfjDtD3AvA
+F0SAjNDifr9Hhh6GYgcEgOK0r/r70TWFPDdpqUjsWfBw7N7uv58z2C5nrpEcka7B
+hb4F257Dcc6bESAEZVk2JekdC7GEG1OCK/bQy2tqNlBp4V/NT6PBZDiOHF2gAPrk
+pmQsF1OHgdFlhBdeb9ucVtcnwJUOOjiva8WGdaFuEV/7DNiSX27xF0AovYh2zwQr
+9geNzrU8OifA1jq5xFjDFgEZAPoRZsBbWcujkgPRpN3yuKnzcyvDvMwuo5U4wGlI
+mvRKPEvgwbeK+AyTk1DqbdQ2GtukuSXnrJed4xMNsmVn3v+vWanYg2wP+fw3f+qi
+NHRjM1Mw/3qk75uUPzt/
+=3/VP
 -----END PGP SIGNATURE-----
 
---Kj7319i9nmIyA2yE--
+--ADZbWkCsHQ7r3kzd--
