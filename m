@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 3 Mar 2013 13:06:41 +0800
-References: <1361959096-30522-1-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1361959096-30522-1-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201303031306.41769.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix broadcast+ogm queue
-	purging race condition
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun,  3 Mar 2013 18:34:36 +0100
+Message-Id: <1362332076-27516-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix old master freeing operation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,38 +16,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, February 27, 2013 17:58:15 Linus L=C3=BCssing wrote:
-> +/**
-> + * batadv_canceled_packets_free - Frees canceled forward packets
-> + * @head:      A list of to be freed forw_packets
-> + *
-> + * This function canceles the scheduling of any packet in the provided
-> list, + * waits for any possibly running packet forwarding thread to
-> finish and + * finally, safely frees this forward packet.
-> + *
-> + * This function might sleep.
-> + */
-> +static void batadv_canceled_packets_free(struct hlist_head *head)
-> +{
-> +       struct batadv_forw_packet *forw_packet;
-> +       struct hlist_node *tmp_node, *safe_tmp_node;
-> +
-> +       hlist_for_each_entry_safe(forw_packet, tmp_node, safe_tmp_node,
-> head, +                                 canceled_list) {
-> +               cancel_delayed_work_sync(&forw_packet->delayed_work);
-> +
-> +               hlist_del(&forw_packet->canceled_list);
-> +               batadv_forw_packet_free(forw_packet);
-> +       }
-> +}
+When a new hard_iface has a master already, ndo_del_slave
+has to be used in order to let the old master perform its
+cleaning up routing correctly. Unregistering the master
+iface only could lead to a inconsistent state in the old
+master knowledge.
 
-I don't quite see how your patch can work when only one interface is=20
-deactivated and not the mesh as a whole. batadv_purge_outstanding_packets()=
-=20
-also is called from batadv_hardif_disable_interface() in which case the=20
-broadcast packets re-arm themselves by appending the work item to their=20
-respective queues. That is why we have the magic "pending" check in the=20
-cleanup functions.
+Introduced by 5e57e3bff429cd403f0e30af69cf87a2cd55598f
+("batman-adv: free an hard-interface before adding it").
 
-Cheers,
-Marek
+Reported-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ hard-interface.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/hard-interface.c b/hard-interface.c
+index fd99e42..f446e69 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -346,8 +346,15 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	 * in that case unlink it first
+ 	 */
+ 	master = netdev_master_upper_dev_get(hard_iface->net_dev);
+-	if (master)
+-		netdev_upper_dev_unlink(hard_iface->net_dev, master);
++	if (master && master->netdev_ops->ndo_del_slave) {
++		ret = master->netdev_ops->ndo_del_slave(master,
++							hard_iface->net_dev);
++		if (ret < 0)
++			goto err_dev;
++	} else if (master) {
++		ret = -EINVAL;
++		goto err_dev;
++	}
+ 
+ 	hard_iface->soft_iface = soft_iface;
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
+-- 
+1.8.1.5
+
