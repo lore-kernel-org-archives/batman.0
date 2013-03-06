@@ -1,16 +1,11 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 6 Mar 2013 11:54:23 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130306105423.GI1400@ritirata.org>
-References: <1362565981-31117-1-git-send-email-ordex@autistici.org>
- <201303061853.03020.lindner_marek@yahoo.de>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Wed,  6 Mar 2013 13:17:58 +0100
+Message-Id: <1362572280-17945-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="WHz+neNWvhIGAO8A"
-Content-Disposition: inline
-In-Reply-To: <201303061853.03020.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC 1/2] batman-adv: invoke post_func only if
- the attribute has been changed
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batctl: Add NC runtime switch support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,67 +17,94 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
+ README       | 9 +++++++++
+ functions.c  | 1 +
+ man/batctl.8 | 4 ++++
+ sys.c        | 6 ++++++
+ sys.h        | 1 +
+ 5 files changed, 21 insertions(+)
 
---WHz+neNWvhIGAO8A
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/README b/README
+index efdd3cb..2bc085e 100644
+--- a/README
++++ b/README
+@@ -363,6 +363,15 @@ $  batctl loglevel
+ [ ] messages related to bridge loop avoidance (bla)
+ [ ] messages related to arp snooping and distributed arp table (dat)
+ 
++batctl network_coding
++=====================
++
++display or modify the network coding setting
++
++Usage: batctl network_coding|nc [0|1]
++
++Note that network coding requires a working promiscuous mode on all interfaces.
++
+ batctl aggregation
+ ==================
+ 
+diff --git a/functions.c b/functions.c
+index 16acbb5..14fb45e 100644
+--- a/functions.c
++++ b/functions.c
+@@ -51,6 +51,7 @@ const char *fs_compile_out_param[] = {
+ 	SYS_LOG_LEVEL,
+ 	batctl_settings[BATCTL_SETTINGS_BLA].sysfs_name,
+ 	batctl_settings[BATCTL_SETTINGS_DAT].sysfs_name,
++	batctl_settings[BATCTL_SETTINGS_NETWORK_CODING].sysfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_BLA_CLAIMS].debugfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
+diff --git a/man/batctl.8 b/man/batctl.8
+index 7af78e9..533fdb7 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -87,6 +87,10 @@ the bonding mode.
+ If no parameter is given the current fragmentation mode setting is displayed. Otherwise the parameter is used to enable or
+ disable fragmentation.
+ .br
++.IP "\fBnetwork_coding\fP|\fBnc\fP [\fB0\fP|\fB1\fP]"
++If no parameter is given the current network coding mode setting is displayed. Otherwise the parameter is used to enable or
++disable network coding.
++.br
+ .IP "\fBloglevel\fP|\fBll\fP [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
+ If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log
+ level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.
+diff --git a/sys.c b/sys.c
+index d45d1a2..74a6c65 100644
+--- a/sys.c
++++ b/sys.c
+@@ -98,6 +98,12 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
+ 		.sysfs_name = "fragmentation",
+ 		.params = sysfs_param_enable,
+ 	},
++	{
++		.opt_long = "network_coding",
++		.opt_short = "nc",
++		.sysfs_name = "network_coding",
++		.params = sysfs_param_enable,
++	}
+ 
+ };
+ 
+diff --git a/sys.h b/sys.h
+index 5ab4135..a7187af 100644
+--- a/sys.h
++++ b/sys.h
+@@ -40,6 +40,7 @@ enum batctl_settings_list {
+ 	BATCTL_SETTINGS_AGGREGATION,
+ 	BATCTL_SETTINGS_BONDING,
+ 	BATCTL_SETTINGS_FRAGMENTATION,
++	BATCTL_SETTINGS_NETWORK_CODING,
+ 	BATCTL_SETTINGS_NUM,
+ };
+ 
+-- 
+1.8.1.5
 
-On Wed, Mar 06, 2013 at 06:53:02PM +0800, Marek Lindner wrote:
-> On Wednesday, March 06, 2013 18:33:00 Antonio Quartulli wrote:
-> > @@ -169,7 +169,7 @@ __batadv_store_bool_attr(char *buff, size_t count,
-> > =20
-> >         ret =3D batadv_store_bool_attr(buff, count, net_dev, attr->name,
-> >                                      attr_store);
-> > -       if (post_func && ret)
-> > +       if (post_func && ret > 0)
-> >                 post_func(net_dev);
-> > =20
-> >         return ret;
->=20
-> If I remember correctly the shell or some other system between the kernel=
- and=20
-> userspace did not like to have 0 returned. It resulted in some funny "try=
- to=20
-> set this value over and over" reaction. You might want to test that.
-
-Oh ok. I will look for that. I think in that case we can simply change the =
-value
-returned by __batadv_store_bool_attr() and leave batadv_store_bool_attr()
-returning 0 so that from outside we can still understand if the value has b=
-een
-changed or not.
-
-Thanks a lot!
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---WHz+neNWvhIGAO8A
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRNyBfAAoJEADl0hg6qKeO4IEQAIOVDnujvNFhz7+UnWJL/6/2
-UYSZbHngWwS9iJ92j0ydDuvcasXHdrExINMZJ7urZk0QTeT47TwrBlkZVUfyV9xA
-3vEqrCBijXJYPZhYGIobhZtM+Q61+qBhuTvTYhoBNrPz5C3M9rdVtOfliEVOtlYe
-Eepie90658B38n919vblW9LEx+GzbKQapQMmDAgsU94MTrQyYWRDAY/LA++D3+yd
-YJU26p7LV+uKKwGfZjT1z7/JufSV/dFdKoMqJIcMv2tGHAbVnUz8OBehMns+AGBB
-jo41N2LuveH4EGWpQsU2nXlw7C/goAyj11uLJaAZ5WnBsG4DT699eQCLuKcr3dAx
-NywM3CYkxVvBQ3sc7Oqxxh8jRSwxQjgUmGhXC3682UcBfx/2c51FP4Lo+Nck5YDA
-/VvBRNLtViRrj5cMTVBvxK5SJV+dfPLHigmLtPs8/PvGyAJnrwqIBzR3MKiAP1Vn
-1/ryOuT84Nso4kBVX+EkWzilL42KhQsiiFSF5M5AwSrgpuxRIKovzezYfO3ngwj/
-mwsjD1rpLDJaulmOb5K7a8XIU8evOqHnfRhxS9omU7a+GzEyKqSjBxqX2YlY7GP2
-fzZdumCKAu+kuHbsozmC20anJA9xEEHezXkpW9HVYmGee4rTm92U1pNcASazvZo9
-XKEGTCOTQM34vmQdUFx9
-=LGcE
------END PGP SIGNATURE-----
-
---WHz+neNWvhIGAO8A--
