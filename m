@@ -1,11 +1,14 @@
-Return-Path: <mschiffer@universe-factory.net>
-From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Sat,  9 Mar 2013 11:40:26 +0100
-Message-Id: <f3fbb764235104e6dbc9a8e58ba66283d15e9d9f.1362825572.git.mschiffer@universe-factory.net>
-In-Reply-To: <cbb43bcdb70a791087a6d9284732ff94963ce51b.1362825185.git.mschiffer@universe-factory.net>
-References: <cbb43bcdb70a791087a6d9284732ff94963ce51b.1362825185.git.mschiffer@universe-factory.net>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: send each broadcast only once
-	on non-wireless interfaces
+Return-Path: <mihail.costea90@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <201303091812.18563.lindner_marek@yahoo.de>
+References: <CAP5XTDMu4ujnntwCANw1etKK_KYWt22UvR0HBCbama41hViQ9Q@mail.gmail.com>
+ <201303091812.18563.lindner_marek@yahoo.de>
+Date: Sat, 9 Mar 2013 12:55:46 +0200
+Message-ID: <CAP5XTDOfduGu-pELQJOcXvt09AFXc_V0rYzJJ6nvyHgxKpGmRg@mail.gmail.com>
+From: Mihail Costea <mihail.costea90@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Added IP enum types for dat
+ and generic functions for comparing IPs and calculating hash
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,99 +20,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-While it makes sense to send each broadcast thrice on 802.11 (WLAN) interfaces
-as broadcasts are often unreliable on these, there is no reason to do so on
-other interface types.
+On 9 March 2013 12:12, Marek Lindner <lindner_marek@yahoo.de> wrote:
+> On Friday, March 08, 2013 18:50:46 Mihail Costea wrote:
+>> From d7a67d268ddd4d8788f806872459609994da7586 Mon Sep 17 00:00:00 2001
+>> From: Mihail Costea <mihail.costea90@gmail.com>
+>> Date: Fri, 8 Mar 2013 12:43:16 +0200
+>> Subject: [PATCH] batman-adv: Added IP enum types for dat and generic
+>> functions for
+>>  comparing IPs and calculating hash
+>>
+>> Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
+>>
+>> ---
+>>  distributed-arp-table.c |   54
+>> ++++++++++++++++++++++++++++++++++++++---------
+>> types.h                 |   10 +++++++++
+>>  2 files changed, 54 insertions(+), 10 deletions(-)
+>
+> Is the rest of the patchset still coming or did it get lost in transit ?
+>
+> Cheers,
+> Marek
 
-The increased the overhead can be harmful on low-bandwidth links like VPN
-connections over slow internet lines, therefore it is better to reduce the
-number of broadcast packets sent on non-wireless links to one.
+I thought do send it in steps to make it easier for reading. This is
+the first part. The second would be generic debug method and the last
+would be all functions transformed.
+Or should I send it all (its the first time I submit a patch, so I'm not sure).
 
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
----
-v3: fixed typo in commit message
-
- hard-interface.c | 11 +++++++++++
- main.h           |  5 +++++
- send.c           |  5 ++++-
- types.h          |  1 +
- 4 files changed, 21 insertions(+), 1 deletion(-)
-
-diff --git a/hard-interface.c b/hard-interface.c
-index fd99e42..3f3ff9f 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -515,6 +515,17 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 	INIT_WORK(&hard_iface->cleanup_work,
- 		  batadv_hardif_remove_interface_finish);
- 
-+	hard_iface->num_bcasts = BATADV_NUM_BCASTS_DEFAULT;
-+
-+#if IS_ENABLED(CONFIG_WIRELESS_EXT) || IS_ENABLED(CONFIG_CFG80211)
-+	if (net_dev->ieee80211_ptr)
-+		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
-+#if IS_ENABLED(CONFIG_WIRELESS_EXT)
-+	else if (net_dev->wireless_handlers)
-+		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
-+#endif
-+#endif
-+
- 	/* extra reference for return */
- 	atomic_set(&hard_iface->refcount, 2);
- 
-diff --git a/main.h b/main.h
-index e6eaf43..2c751c6 100644
---- a/main.h
-+++ b/main.h
-@@ -76,6 +76,11 @@
- 
- #define BATADV_LOG_BUF_LEN 8192	  /* has to be a power of 2 */
- 
-+/* number of packets to send for broadcasts on different interface types */
-+#define BATADV_NUM_BCASTS_DEFAULT 1
-+#define BATADV_NUM_BCASTS_WIRELESS 3
-+#define BATADV_NUM_BCASTS_MAX 3
-+
- /* msecs after which an ARP_REQUEST is sent in broadcast as fallback */
- #define ARP_REQ_DELAY 250
- /* numbers of originator to contact for any PUT/GET DHT operation */
-diff --git a/send.c b/send.c
-index 0a0bb45..e21138f 100644
---- a/send.c
-+++ b/send.c
-@@ -260,6 +260,9 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 		if (hard_iface->soft_iface != soft_iface)
- 			continue;
- 
-+		if (forw_packet->num_packets >= hard_iface->num_bcasts)
-+			continue;
-+
- 		/* send a copy of the saved skb */
- 		skb1 = skb_clone(forw_packet->skb, GFP_ATOMIC);
- 		if (skb1)
-@@ -271,7 +274,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 	forw_packet->num_packets++;
- 
- 	/* if we still have some more bcasts to send */
--	if (forw_packet->num_packets < 3) {
-+	if (forw_packet->num_packets < BATADV_NUM_BCASTS_MAX) {
- 		_batadv_add_bcast_packet_to_list(bat_priv, forw_packet,
- 						 msecs_to_jiffies(5));
- 		return;
-diff --git a/types.h b/types.h
-index aba8364..0c5009f 100644
---- a/types.h
-+++ b/types.h
-@@ -76,6 +76,7 @@ struct batadv_hard_iface {
- 	char if_status;
- 	struct net_device *net_dev;
- 	atomic_t frag_seqno;
-+	uint8_t num_bcasts;
- 	struct kobject *hardif_obj;
- 	atomic_t refcount;
- 	struct packet_type batman_adv_ptype;
 -- 
-1.8.1.5
-
+Mihail Costea
+E-mail : mihail.costea90@gmail.com
+Telephone : +40725245085
