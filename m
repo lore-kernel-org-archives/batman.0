@@ -1,16 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Sat, 9 Mar 2013 21:17:21 +0100
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130309201721.GQ1400@ritirata.org>
-References: <cbb43bcdb70a791087a6d9284732ff94963ce51b.1362825185.git.mschiffer@universe-factory.net>
- <f3fbb764235104e6dbc9a8e58ba66283d15e9d9f.1362825572.git.mschiffer@universe-factory.net>
+Return-Path: <linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="6iXXu7NwgEt9u5a7"
-Content-Disposition: inline
-In-Reply-To: <f3fbb764235104e6dbc9a8e58ba66283d15e9d9f.1362825572.git.mschiffer@universe-factory.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: send each broadcast only
- once on non-wireless interfaces
+Message-ID: <trinity-27069899-f60c-4931-9e7b-7b5c426148dc-1362863034733@3capp-webde-bs30>
+From: =?UTF-8?Q?=22Linus_L=C3=BCssing=22?= <linus.luessing@web.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Date: Sat, 9 Mar 2013 22:03:54 +0100 (CET)
+In-Reply-To: <201303090328.38621.lindner_marek@yahoo.de>
+References: <1362764336-1591-1-git-send-email-linus.luessing@web.de>
+ <1362764336-1591-2-git-send-email-linus.luessing@web.de>,
+ <201303090328.38621.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: make number of
+ broadcasts configurable per hardif
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,71 +23,72 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---6iXXu7NwgEt9u5a7
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Matthias,
+> Gesendet: Freitag, 08. M=C3=A4rz 2013 um 20:28 Uhr
+> Von: "Marek Lindne=
+r" <lindner_marek@yahoo.de>
+> An: "The list for a Better Approach To Mobile=
+ Ad-hoc Networking" <b.a.t.m.a.n@lists.open-mesh.org>
+> Betreff: Re: [B.A.T=
+.M.A.N.] [PATCH 2/2] batman-adv: make number of broadcasts configurable per=
+ hardif
+>
+> On Saturday, March 09, 2013 01:38:56 Linus L=C3=BCssing wrote:
+=
+> > From: Matthias Schiffer <mschiffer@universe-factory.net>
+> >
+> > In het=
+erogenous networks, setting the number of broadcasts to differing
+> > value=
+s on different interfaces can be beneficial.
+> >
+> > E.g., on wireless inte=
+rfaces with high packet loss a higher number of
+> > broadcasts may be neces=
+sary, whereas on low-bandwidth interfaces with
+> > relatively high reliabli=
+ly (such as VPN links over slow internet lines)
+> > sending only a single p=
+acket makes more sense to preserve bandwidth.
+>
+> In general, I like the id=
+ea but the approach isn't the best. Can't we automate
+> these settings inst=
+ead of adding hundreds of little knobs nobody will
+> understand ? Why not d=
+etecting wifi interfaces as such and configure the
+> broadcast value accord=
+ingly ? The same goes for ethernet / vpns ?
 
-On Sat, Mar 09, 2013 at 11:40:26AM +0100, Matthias Schiffer wrote:
-> @@ -515,6 +515,17 @@ batadv_hardif_add_interface(struct net_device *net_d=
-ev)
->  	INIT_WORK(&hard_iface->cleanup_work,
->  		  batadv_hardif_remove_interface_finish);
-> =20
-> +	hard_iface->num_bcasts =3D BATADV_NUM_BCASTS_DEFAULT;
-> +
-> +#if IS_ENABLED(CONFIG_WIRELESS_EXT) || IS_ENABLED(CONFIG_CFG80211)
-> +	if (net_dev->ieee80211_ptr)
-> +		hard_iface->num_bcasts =3D BATADV_NUM_BCASTS_WIRELESS;
-> +#if IS_ENABLED(CONFIG_WIRELESS_EXT)
-> +	else if (net_dev->wireless_handlers)
-> +		hard_iface->num_bcasts =3D BATADV_NUM_BCASTS_WIRELESS;
-> +#endif
-> +#endif
-> +
->  	/* extra reference for return */
->  	atomic_set(&hard_iface->refcount, 2);
+I like the idea of automating =
+things, especially if the automated mechanism isn't too complex and therefo=
+re I like the idea of Matthias latest patch. And it helps us just as well f=
+or our setup.
 
-What about re-using batadv_is_wifi_iface() instead of adding the same code =
-here?
-:)
+Nevertheless I'm still wondering, whether a manually configu=
+rable number of broadcast might be of general interest, not only for debugg=
+ing and not only for obscure scenarios.
 
-batadv_is_wifi_iface() takes an ifindex as parameter and then gets the
-net_device by means of dev_get_by_index. You may want to split it up so tha=
-t you
-can avoid the research since you already have the related net_device object.
+Two things I could think of: A sce=
+nario where people might use a higher multicast rate, where maybe a slightl=
+y higher rebroadcast number might become necessary. Or for wifi longshots, =
+which could have a very changing, whether dependant link quality (while gen=
+eralizing a dynamic number of broadcast isn't that easy, it's very easy to =
+write a script to check the current link-quality (or even the local whether=
+ station :) ) towards the target which adjusts the number of rebroadcasts f=
+rom this upper level.)
 
-Cheers,
+What do the others think? Or are such scenarios sti=
+ll too obscure to justify the addition of such a sysctl parameters? Has any=
+one on this ML maybe had a setup where s/he thought such a sysctl parameter=
+ could be useful?
 
---=20
-Antonio Quartulli
+Cheers, Linus
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---6iXXu7NwgEt9u5a7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRO5jRAAoJEADl0hg6qKeOkoAP/1NuTyhX8et45RSr5qNyDxLE
-NNGDAmilX9qJT/kYd1uNwiXUDnGjY9G/Tp8fvCAD9WpT5bnoLLrFwBgY7TfJEp9P
-Y+wnfXYEuFKiDb2khvB2ErCyiaedeGuUklCUqER0wBz6GAr/CjYloy0OeokdhCyg
-puTqkkGziN1NICx7kXX0WZMuCmmJkv7pvTQQ73SnlZiKY4RVg8FqZZd3i/esfcLh
-py9xvQ31gKGzpiMy20KGipjZflI8j2lzpqoWGhmu/qjOgS6U0OfqbOmqaUNLBuTZ
-jqk9QwIqevhhFtMkJhIZVv0tFfuGcjAlKJTmgvFlphK1YY06fXrTNsNJelPAmk2v
-ks1RR5GA+iT+EaEiBTqha1aBLfThKf5UfmeL5q1zcnskVPI2Uukmj3HgfMm6YagR
-J6ofFeGqitf1ehntBziMvU46mjKYU6bmY2F564jYqW1fHKuR7WeekHf3zNEFFZjk
-x7xjwLgtYz0IbZcNMiLmTLH3Fjw3yTy/KjkA+LXSq9HyP/SB+QgmhkKkk6WY4p73
-P7ZgC9zlp2LPJ+f6aHBnEutfuifWQwfGRVItoGJQUO67yiPh12DFtk9PkaKpA3OM
-X+hhdPgY0Tqtr+z66iBibJxNa47zQUx8CjEoXvEl1gehjCnnKfsWzxVp6zokP6CL
-p1qzMPoxWsK1qW0evCu3
-=LIY9
------END PGP SIGNATURE-----
-
---6iXXu7NwgEt9u5a7--
+>
+> Cheers,
+> Marek
+>
