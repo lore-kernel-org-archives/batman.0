@@ -1,8 +1,10 @@
 Return-Path: <mschiffer@universe-factory.net>
 From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Sat,  9 Mar 2013 11:33:52 +0100
-Message-Id: <cbb43bcdb70a791087a6d9284732ff94963ce51b.1362825185.git.mschiffer@universe-factory.net>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: send each broadcast only once
+Date: Sat,  9 Mar 2013 11:40:26 +0100
+Message-Id: <f3fbb764235104e6dbc9a8e58ba66283d15e9d9f.1362825572.git.mschiffer@universe-factory.net>
+In-Reply-To: <cbb43bcdb70a791087a6d9284732ff94963ce51b.1362825185.git.mschiffer@universe-factory.net>
+References: <cbb43bcdb70a791087a6d9284732ff94963ce51b.1362825185.git.mschiffer@universe-factory.net>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: send each broadcast only once
 	on non-wireless interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -18,7 +20,7 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 While it makes sense to send each broadcast thrice on 802.11 (WLAN) interfaces
-as broadcasts are often unreliable on there, there is no reason to do so on
+as broadcasts are often unreliable on these, there is no reason to do so on
 other interface types.
 
 The increased the overhead can be harmful on low-bandwidth links like VPN
@@ -27,6 +29,8 @@ number of broadcast packets sent on non-wireless links to one.
 
 Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 ---
+v3: fixed typo in commit message
+
  hard-interface.c | 11 +++++++++++
  main.h           |  5 +++++
  send.c           |  5 ++++-
