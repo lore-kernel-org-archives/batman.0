@@ -1,15 +1,14 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 9 Mar 2013 18:12:18 +0800
-References: <CAP5XTDMu4ujnntwCANw1etKK_KYWt22UvR0HBCbama41hViQ9Q@mail.gmail.com>
-In-Reply-To: <CAP5XTDMu4ujnntwCANw1etKK_KYWt22UvR0HBCbama41hViQ9Q@mail.gmail.com>
+Date: Sat, 9 Mar 2013 18:28:13 +0800
+References: <1362572280-17945-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1362572280-17945-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201303091812.18563.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Added IP enum types for dat
-	and generic functions for comparing IPs and calculating hash
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201303091828.13526.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batctl: Add NC runtime switch support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,25 +20,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Martin =?utf-8?q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On Friday, March 08, 2013 18:50:46 Mihail Costea wrote:
-> From d7a67d268ddd4d8788f806872459609994da7586 Mon Sep 17 00:00:00 2001
-> From: Mihail Costea <mihail.costea90@gmail.com>
-> Date: Fri, 8 Mar 2013 12:43:16 +0200
-> Subject: [PATCH] batman-adv: Added IP enum types for dat and generic
-> functions for
->  comparing IPs and calculating hash
-> 
-> Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
-> 
+On Wednesday, March 06, 2013 20:17:58 Martin Hundeb=C3=B8ll wrote:
+> Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > ---
->  distributed-arp-table.c |   54
-> ++++++++++++++++++++++++++++++++++++++---------
-> types.h                 |   10 +++++++++
->  2 files changed, 54 insertions(+), 10 deletions(-)
+>  README       | 9 +++++++++
+>  functions.c  | 1 +
+>  man/batctl.8 | 4 ++++
+>  sys.c        | 6 ++++++
+>  sys.h        | 1 +
+>  5 files changed, 21 insertions(+)
 
-Is the rest of the patchset still coming or did it get lost in transit ?
+Applied in revision a6d74ca.
 
-Cheers,
+Thanks,
 Marek
