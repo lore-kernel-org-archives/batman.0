@@ -1,9 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 10 Mar 2013 01:19:43 +0100
-Message-Id: <1362874783-8220-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: correct super define in network
-	coding header
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 10 Mar 2013 13:58:11 +0800
+References: <1362874783-8220-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1362874783-8220-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201303101358.11410.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: correct super define in
+	network coding header
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,34 +21,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- network-coding.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On Sunday, March 10, 2013 08:19:43 Antonio Quartulli wrote:
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+>  network-coding.h | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/network-coding.h b/network-coding.h
-index 352c693..4fa6d0c 100644
---- a/network-coding.h
-+++ b/network-coding.h
-@@ -17,8 +17,8 @@
-  * 02110-1301, USA
-  */
- 
--#ifndef _NET_BATMAN_ADV_NETWORK_CODING_H
--#define _NET_BATMAN_ADV_NETWORK_CODING_H
-+#ifndef _NET_BATMAN_ADV_NETWORK_CODING_H_
-+#define _NET_BATMAN_ADV_NETWORK_CODING_H_
- 
- #ifdef CONFIG_BATMAN_ADV_NC
- 
-@@ -120,4 +120,4 @@ static inline int batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
- 
- #endif /* ifdef CONFIG_BATMAN_ADV_NC */
- 
--#endif /* _NET_BATMAN_ADV_NETWORK_CODING_H */
-+#endif /* _NET_BATMAN_ADV_NETWORK_CODING_H_ */
--- 
-1.8.1.5
+Applied in revision e15b737.
 
+Thanks,
+Marek
