@@ -1,14 +1,9 @@
-Return-Path: <mschiffer@universe-factory.net>
-From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Sat,  9 Mar 2013 23:14:23 +0100
-Message-Id: <011ead7529e3c7e2b2a906cae3b1e8c8e3e40967.1362867238.git.mschiffer@universe-factory.net>
-In-Reply-To: <b6b8ee26c56ef0c28d1efe1c54218c4d7090bd98.1362867238.git.mschiffer@universe-factory.net>
-References: <b6b8ee26c56ef0c28d1efe1c54218c4d7090bd98.1362863832.git.mschiffer@universe-factory.net>
- <b6b8ee26c56ef0c28d1efe1c54218c4d7090bd98.1362867238.git.mschiffer@universe-factory.net>
-In-Reply-To: <b6b8ee26c56ef0c28d1efe1c54218c4d7090bd98.1362867238.git.mschiffer@universe-factory.net>
-References: <b6b8ee26c56ef0c28d1efe1c54218c4d7090bd98.1362867238.git.mschiffer@universe-factory.net>
-Subject: [B.A.T.M.A.N.] [PATCHv5 2/2] batman-adv: send each broadcast only
-	once on non-wireless interfaces
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 10 Mar 2013 01:19:43 +0100
+Message-Id: <1362874783-8220-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: correct super define in network
+	coding header
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,88 +17,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-While it makes sense to send each broadcast thrice on 802.11 (WLAN) interfaces
-as broadcasts are often unreliable on these, there is no reason to do so on
-other interface types.
-
-The increased the overhead can be harmful on low-bandwidth links like VPN
-connections over slow internet lines, therefore it is better to reduce the
-number of broadcast packets sent on non-wireless links to one.
-
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- hard-interface.c | 4 ++++
- main.h           | 5 +++++
- send.c           | 5 ++++-
- types.h          | 1 +
- 4 files changed, 14 insertions(+), 1 deletion(-)
+ network-coding.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/hard-interface.c b/hard-interface.c
-index 333a504..e4eb77e 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -556,6 +556,10 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 	INIT_WORK(&hard_iface->cleanup_work,
- 		  batadv_hardif_remove_interface_finish);
+diff --git a/network-coding.h b/network-coding.h
+index 352c693..4fa6d0c 100644
+--- a/network-coding.h
++++ b/network-coding.h
+@@ -17,8 +17,8 @@
+  * 02110-1301, USA
+  */
  
-+	hard_iface->num_bcasts = BATADV_NUM_BCASTS_DEFAULT;
-+	if (batadv_is_wifi_net_device(net_dev))
-+		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
-+
- 	/* extra reference for return */
- 	atomic_set(&hard_iface->refcount, 2);
+-#ifndef _NET_BATMAN_ADV_NETWORK_CODING_H
+-#define _NET_BATMAN_ADV_NETWORK_CODING_H
++#ifndef _NET_BATMAN_ADV_NETWORK_CODING_H_
++#define _NET_BATMAN_ADV_NETWORK_CODING_H_
  
-diff --git a/main.h b/main.h
-index e6eaf43..2c751c6 100644
---- a/main.h
-+++ b/main.h
-@@ -76,6 +76,11 @@
+ #ifdef CONFIG_BATMAN_ADV_NC
  
- #define BATADV_LOG_BUF_LEN 8192	  /* has to be a power of 2 */
+@@ -120,4 +120,4 @@ static inline int batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
  
-+/* number of packets to send for broadcasts on different interface types */
-+#define BATADV_NUM_BCASTS_DEFAULT 1
-+#define BATADV_NUM_BCASTS_WIRELESS 3
-+#define BATADV_NUM_BCASTS_MAX 3
-+
- /* msecs after which an ARP_REQUEST is sent in broadcast as fallback */
- #define ARP_REQ_DELAY 250
- /* numbers of originator to contact for any PUT/GET DHT operation */
-diff --git a/send.c b/send.c
-index 0a0bb45..e21138f 100644
---- a/send.c
-+++ b/send.c
-@@ -260,6 +260,9 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 		if (hard_iface->soft_iface != soft_iface)
- 			continue;
+ #endif /* ifdef CONFIG_BATMAN_ADV_NC */
  
-+		if (forw_packet->num_packets >= hard_iface->num_bcasts)
-+			continue;
-+
- 		/* send a copy of the saved skb */
- 		skb1 = skb_clone(forw_packet->skb, GFP_ATOMIC);
- 		if (skb1)
-@@ -271,7 +274,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 	forw_packet->num_packets++;
- 
- 	/* if we still have some more bcasts to send */
--	if (forw_packet->num_packets < 3) {
-+	if (forw_packet->num_packets < BATADV_NUM_BCASTS_MAX) {
- 		_batadv_add_bcast_packet_to_list(bat_priv, forw_packet,
- 						 msecs_to_jiffies(5));
- 		return;
-diff --git a/types.h b/types.h
-index aba8364..0c5009f 100644
---- a/types.h
-+++ b/types.h
-@@ -76,6 +76,7 @@ struct batadv_hard_iface {
- 	char if_status;
- 	struct net_device *net_dev;
- 	atomic_t frag_seqno;
-+	uint8_t num_bcasts;
- 	struct kobject *hardif_obj;
- 	atomic_t refcount;
- 	struct packet_type batman_adv_ptype;
+-#endif /* _NET_BATMAN_ADV_NETWORK_CODING_H */
++#endif /* _NET_BATMAN_ADV_NETWORK_CODING_H_ */
 -- 
 1.8.1.5
 
