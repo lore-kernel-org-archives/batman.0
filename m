@@ -1,11 +1,10 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 11 Mar 2013 23:12:28 +0100
-Message-Id: <1363039948-27190-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1363039948-27190-1-git-send-email-ordex@autistici.org>
-References: <1363039948-27190-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: verify tt len does not exceed
-	packet len
+Return-Path: <ajeetbbr@gmail.com>
+MIME-Version: 1.0
+Date: Tue, 12 Mar 2013 11:25:18 +0530
+Message-ID: <CAHQ_bginU7MXj-EAiy9PUEaWXC0JWTD-1ZbaEH6K4VLad2t89g@mail.gmail.com>
+From: ajeet singh <ajeetbbr@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Ping related issue in batman-adv-2013.0.0
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,46 +16,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+Hello All,
 
-batadv_iv_ogm_process() accesses the packet using the tt_num_changes
-attribute regardless of the real packet len (assuming the length check
-was done before). Therefore a length check is needed to avoid reading
-random memory.
+I am getting a problem with batman-adv-2013.0.0,
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/bat_iv_ogm.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Please find the details,
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index a0b253e..a5bb0a7 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1288,7 +1288,8 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
- 	batadv_ogm_packet = (struct batadv_ogm_packet *)packet_buff;
- 
- 	/* unpack the aggregated packets and process them one by one */
--	do {
-+	while (batadv_iv_ogm_aggr_packet(buff_pos, packet_len,
-+					 batadv_ogm_packet->tt_num_changes)) {
- 		tt_buff = packet_buff + buff_pos + BATADV_OGM_HLEN;
- 
- 		batadv_iv_ogm_process(ethhdr, batadv_ogm_packet, tt_buff,
-@@ -1299,8 +1300,7 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
- 
- 		packet_pos = packet_buff + buff_pos;
- 		batadv_ogm_packet = (struct batadv_ogm_packet *)packet_pos;
--	} while (batadv_iv_ogm_aggr_packet(buff_pos, packet_len,
--					   batadv_ogm_packet->tt_num_changes));
-+	}
- 
- 	kfree_skb(skb);
- 	return NET_RX_SUCCESS;
--- 
-1.8.1.5
+I have two batman-adv nodes A and B,
 
+Initial setup:
+A (bat0: 192.0.0.1) ---------- B (bat0: 192.0.0.2)
+Ping is working properly between node A and node B.
+
+Setup after restarting B:
+ A (bat0: 192.0.0.1) ---------- B (bat0: 192.0.0.2)
+After restarting node B, I am setting the same IP as previously to B
+(192.0.0.2) but this node (B) is not reachable from A for quite some
+time.
+
+Note: If I assign some other IP to B after restart for example
+192.0.0.3, node A is able to ping B without any delay.
+
+Please let me know this is the problem due to DAT or something else.
+
+Thanks
+Ajeet
