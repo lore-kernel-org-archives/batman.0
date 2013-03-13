@@ -1,14 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 13 Mar 2013 23:56:32 +0100
-Message-Id: <1363215399-18875-3-git-send-email-ordex@autistici.org>
+Date: Wed, 13 Mar 2013 23:56:33 +0100
+Message-Id: <1363215399-18875-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1363215399-18875-1-git-send-email-ordex@autistici.org>
 References: <1363215399-18875-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 2/9] batman-adv: Return reason for failure in
-	batadv_check_unicast_packet()
+Subject: [B.A.T.M.A.N.] [PATCH 3/9] batman-adv: don't use !! in bool
+	conversion
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,68 +18,72 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Martin Hundebøll <martin@hundeboll.net>
+In C standard any expression different from 0 will be converted to
+'true' when casting to bool (whatever is the length of the value).
+Therefore all the "!!" conversions can be removed.
 
-batadv_check_unicast_packet() is changed to return a value based on the
-reason to drop the packet, which will be useful information for
-future users of batadv_check_unicast_packet().
-
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/routing.c | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ net/batman-adv/translation-table.c | 4 ++--
+ net/batman-adv/unicast.c           | 6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 5ee21ce..322c97a 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -548,27 +548,37 @@ batadv_find_ifalter_router(struct batadv_orig_node *primary_orig,
- 	return router;
- }
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 7e9e264..9322320 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -902,7 +902,7 @@ out_remove:
+ 	/* remove address from local hash if present */
+ 	local_flags = batadv_tt_local_remove(bat_priv, tt_addr,
+ 					     "global tt received",
+-					     !!(flags & BATADV_TT_CLIENT_ROAM));
++					     flags & BATADV_TT_CLIENT_ROAM);
+ 	tt_global_entry->common.flags |= local_flags & BATADV_TT_CLIENT_WIFI;
  
-+/**
-+ * batadv_check_unicast_packet - Check for malformed unicast packets
-+ * @skb: packet to check
-+ * @hdr_size: size of header to pull
-+ *
-+ * Check for short header and bad addresses in given packet. Returns negative
-+ * value when check fails and 0 otherwise. The negative value depends on the
-+ * reason: -ENODATA for bad header, -EBADR for broadcast destination or source,
-+ * and -EREMOTE for non-local (other host) destination.
-+ */
- static int batadv_check_unicast_packet(struct sk_buff *skb, int hdr_size)
+ 	if (!(flags & BATADV_TT_CLIENT_ROAM))
+@@ -2515,7 +2515,7 @@ bool batadv_tt_global_client_is_roaming(struct batadv_priv *bat_priv,
+ 	if (!tt_global_entry)
+ 		goto out;
+ 
+-	ret = !!(tt_global_entry->common.flags & BATADV_TT_CLIENT_ROAM);
++	ret = tt_global_entry->common.flags & BATADV_TT_CLIENT_ROAM;
+ 	batadv_tt_global_entry_free_ref(tt_global_entry);
+ out:
+ 	return ret;
+diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
+index 50e079f..0bb3b59 100644
+--- a/net/batman-adv/unicast.c
++++ b/net/batman-adv/unicast.c
+@@ -122,7 +122,7 @@ batadv_frag_search_packet(struct list_head *head,
  {
- 	struct ethhdr *ethhdr;
+ 	struct batadv_frag_packet_list_entry *tfp;
+ 	struct batadv_unicast_frag_packet *tmp_up = NULL;
+-	int is_head_tmp, is_head;
++	bool is_head_tmp, is_head;
+ 	uint16_t search_seqno;
  
- 	/* drop packet if it has not necessary minimum size */
- 	if (unlikely(!pskb_may_pull(skb, hdr_size)))
--		return -1;
-+		return -ENODATA;
+ 	if (up->flags & BATADV_UNI_FRAG_HEAD)
+@@ -130,7 +130,7 @@ batadv_frag_search_packet(struct list_head *head,
+ 	else
+ 		search_seqno = ntohs(up->seqno)-1;
  
- 	ethhdr = (struct ethhdr *)skb_mac_header(skb);
+-	is_head = !!(up->flags & BATADV_UNI_FRAG_HEAD);
++	is_head = up->flags & BATADV_UNI_FRAG_HEAD;
  
- 	/* packet with unicast indication but broadcast recipient */
- 	if (is_broadcast_ether_addr(ethhdr->h_dest))
--		return -1;
-+		return -EBADR;
+ 	list_for_each_entry(tfp, head, list) {
+ 		if (!tfp->skb)
+@@ -142,7 +142,7 @@ batadv_frag_search_packet(struct list_head *head,
+ 		tmp_up = (struct batadv_unicast_frag_packet *)tfp->skb->data;
  
- 	/* packet with broadcast sender address */
- 	if (is_broadcast_ether_addr(ethhdr->h_source))
--		return -1;
-+		return -EBADR;
- 
- 	/* not for me */
- 	if (!batadv_is_my_mac(ethhdr->h_dest))
--		return -1;
-+		return -EREMOTE;
- 
- 	return 0;
- }
+ 		if (tfp->seqno == search_seqno) {
+-			is_head_tmp = !!(tmp_up->flags & BATADV_UNI_FRAG_HEAD);
++			is_head_tmp = tmp_up->flags & BATADV_UNI_FRAG_HEAD;
+ 			if (is_head_tmp != is_head)
+ 				return tfp;
+ 			else
 -- 
 1.8.1.5
 
