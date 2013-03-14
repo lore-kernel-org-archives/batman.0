@@ -1,13 +1,12 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 14 Mar 2013 11:48:12 -0400 (EDT)
-Message-Id: <20130314.114812.1928545478791651343.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1363215399-18875-1-git-send-email-ordex@autistici.org>
-References: <1363215399-18875-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-03-13
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Thu, 14 Mar 2013 21:30:21 +0100
+Message-Id: <1363293021-20505-1-git-send-email-martin@hundeboll.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: Fix endianness errors for
+	network coding
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,33 +18,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 13 Mar 2013 23:56:30 +0100
+Add a htonl() in network_coding.c when reading the sequence number
+from received ogm_packet, to avoid wrong byte ordering when comparing
+with a host value. This bug was introduced in
+3ed7ada3f0bbcd058567bc0a8f9729a73eba7db6 ("batman-adv: network coding -
+detect coding nodes and remove these after timeout").
 
-> here you have our first patchset intended for net-next/linux-3.10.
-> =
+Change the type of coded_packet->coded_len from uint16 to __be16 to
+avoid wrong assumptions about endianness in later uses. Introduced in
+c3289f3650d34b60296000a629c99f2488f7c3dd ("batman-adv: network coding -
+code and transmit packets if possible").
 
-> These patches include a new big component implementing a first versio=
-n of
-> Network Coding for mesh networks. This code is the result of Martin H=
-undeb=F8ll
-> and Jeppe Ledet-Pedersen's Master Thesis[1]. The target of Network Co=
-ding is to
-> increase throughput by fusing multiple packets in one wifi transmissi=
-on (thus
-> saving airtime).
-> This new component also introduced a new Kbuild option which can be u=
-sed to
-> decide whether to include this feature or not. However, a switch to d=
-ynamically
-> turn off the behaviour at runtime has been provided too. DebugFS has =
-also been
-> extended with some knobs to be used in case of debugging only.
-> =
+Reported-by: Fengguang Wu <fengguang.wu@intel.com>
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
+ network-coding.c | 2 +-
+ packet.h         | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> The rest is clean up work.
+diff --git a/network-coding.c b/network-coding.c
+index 5728079..086c107 100644
+--- a/network-coding.c
++++ b/network-coding.c
+@@ -654,7 +654,7 @@ static bool batadv_can_nc_with_orig(struct batadv_priv *bat_priv,
+ 				    struct batadv_orig_node *orig_node,
+ 				    struct batadv_ogm_packet *ogm_packet)
+ {
+-	if (orig_node->last_real_seqno != ogm_packet->seqno)
++	if (orig_node->last_real_seqno != ntohl(ogm_packet->seqno))
+ 		return false;
+ 	if (orig_node->last_ttl != ogm_packet->header.ttl + 1)
+ 		return false;
+diff --git a/packet.h b/packet.h
+index a079958..a51ccfc 100644
+--- a/packet.h
++++ b/packet.h
+@@ -308,7 +308,7 @@ struct batadv_coded_packet {
+ 	uint8_t  second_source[ETH_ALEN];
+ 	uint8_t  second_orig_dest[ETH_ALEN];
+ 	__be32   second_crc;
+-	uint16_t coded_len;
++	__be16   coded_len;
+ };
+ 
+ #endif /* _NET_BATMAN_ADV_PACKET_H_ */
+-- 
+1.8.1.5
 
-Pulled, thanks Antonio.
