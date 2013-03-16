@@ -1,11 +1,15 @@
-Return-Path: <mschiffer@universe-factory.net>
-From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Sat, 16 Mar 2013 11:59:55 +0100
-Message-Id: <01f2a6ce4ab512c60760ce0275100750c5cd59bc.1363431558.git.mschiffer@universe-factory.net>
-In-Reply-To: <65e1eabaa1dae3e9003482b35ae1d012939ab07b.1363385881.git.mschiffer@universe-factory.net>
-References: <65e1eabaa1dae3e9003482b35ae1d012939ab07b.1363385881.git.mschiffer@universe-factory.net>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix compat for Debian Wheezy
-	kernel v3.2.39
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 16 Mar 2013 19:08:43 +0800
+References: <1363430978-24202-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1363430978-24202-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201303161908.43771.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add compat RCU code for
+	kernel < 2.6.37
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,39 +21,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Starting with kernel v3.2.39, a Debian specific patch defines
-eth_hw_addr_random() in include/linux/etherdevice.h, causing the build of
-batman-adv to fail.
+On Saturday, March 16, 2013 18:49:38 Antonio Quartulli wrote:
+> @@ -236,6 +242,7 @@ static int __batadv_interface_set_mac_addr(x, y)
+>         ASSERT_RTNL();\
+>         dev->master;\
+>  })
+> +
+>  #define hlist_entry_safe(ptr, type, member) \
+>         (ptr) ? hlist_entry(ptr, type, member) : NULL
 
-This patch fixes the build on these kernels while keeping compatiblity with
-unpatched kernels by replacing batman-adv's compat definition of the
-eth_hw_addr_random() function with a #define macro.
+Why the extra line here ?
 
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
----
-v2: fix commit message
-
- compat.h | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-diff --git a/compat.h b/compat.h
-index e1c6cd2..46baf6c 100644
---- a/compat.h
-+++ b/compat.h
-@@ -174,10 +174,7 @@ static inline void skb_reset_mac_len(struct sk_buff *skb)
- 
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0)
- 
--static inline void eth_hw_addr_random(struct net_device *dev)
--{
--	random_ether_addr(dev->dev_addr);
--}
-+#define eth_hw_addr_random(dev) random_ether_addr((dev)->dev_addr)
- 
- #endif /* < KERNEL_VERSION(3, 4, 0) */
- 
--- 
-1.8.2
-
+Cheers,
+Marek
