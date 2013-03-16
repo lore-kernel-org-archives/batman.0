@@ -1,9 +1,11 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 16 Mar 2013 11:57:42 +0100
-Message-Id: <1363431462-7651-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add RCU compat code for linux <
-	2.6.34
+Return-Path: <mschiffer@universe-factory.net>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+Date: Sat, 16 Mar 2013 11:59:55 +0100
+Message-Id: <01f2a6ce4ab512c60760ce0275100750c5cd59bc.1363431558.git.mschiffer@universe-factory.net>
+In-Reply-To: <65e1eabaa1dae3e9003482b35ae1d012939ab07b.1363385881.git.mschiffer@universe-factory.net>
+References: <65e1eabaa1dae3e9003482b35ae1d012939ab07b.1363385881.git.mschiffer@universe-factory.net>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix compat for Debian Wheezy
+	kernel v3.2.39
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,31 +19,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-In linux version < 2.6.34 rcu_dereference_raw() does not exist and needs to be
-backported.
+Starting with kernel v3.2.39, a Debian specific patch defines
+eth_hw_addr_random() in include/linux/etherdevice.h, causing the build of
+batman-adv to fail.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+This patch fixes the build on these kernels while keeping compatiblity with
+unpatched kernels by replacing batman-adv's compat definition of the
+eth_hw_addr_random() function with a #define macro.
+
+Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 ---
- compat.h | 6 ++++++
- 1 file changed, 6 insertions(+)
+v2: fix commit message
+
+ compat.h | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
 diff --git a/compat.h b/compat.h
-index 6a7e03b..23f43d5 100644
+index e1c6cd2..46baf6c 100644
 --- a/compat.h
 +++ b/compat.h
-@@ -81,6 +81,12 @@ static inline void batadv_this_cpu_add(uint64_t *count_ptr, size_t count)
+@@ -174,10 +174,7 @@ static inline void skb_reset_mac_len(struct sk_buff *skb)
  
- #define rcu_dereference_protected(p, c) (p)
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0)
  
-+#define rcu_dereference_raw(p)	({ \
-+				 typeof(p) _________p1 = ACCESS_ONCE(p); \
-+				 smp_read_barrier_depends(); \
-+				 (_________p1); \
-+				 })
-+
- #endif /* < KERNEL_VERSION(2, 6, 34) */
+-static inline void eth_hw_addr_random(struct net_device *dev)
+-{
+-	random_ether_addr(dev->dev_addr);
+-}
++#define eth_hw_addr_random(dev) random_ether_addr((dev)->dev_addr)
  
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 35)
+ #endif /* < KERNEL_VERSION(3, 4, 0) */
+ 
 -- 
-1.8.1.5
+1.8.2
 
