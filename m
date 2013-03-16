@@ -1,11 +1,9 @@
-Return-Path: <mschiffer@universe-factory.net>
-From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Sat, 16 Mar 2013 12:30:10 +0100
-Message-Id: <be7bde49d2b117e29460dc013cb877b410648a1a.1363433383.git.mschiffer@universe-factory.net>
-In-Reply-To: <201303161910.18263.lindner_marek@yahoo.de>
-References: <201303161910.18263.lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: fix compat for Debian Wheezy
-	kernel v3.2.39
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat, 16 Mar 2013 12:49:18 +0100
+Message-Id: <1363434558-29876-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: add RCU compat code for kernel
+	< 2.6.37
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,35 +17,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Starting with kernel v3.2.39, a Debian specific patch defines
-eth_hw_addr_random() in include/linux/etherdevice.h, causing the build of
-batman-adv to fail.
+In linux version < 2.6.37 hlist_first_rcu() and hlist_next_rcu() do not exist
+and therefore they need to be backported.
 
-This patch fixes the build on these kernels while keeping compatiblity with
-unpatched kernels by renaming batman-adv's compat definition of the
-eth_hw_addr_random() function to resolve the name conflict and adding a #define
-macro.
-
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- compat.h | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ compat.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/compat.h b/compat.h
-index e1c6cd2..d955166 100644
+index e1c6cd2..a71be7d 100644
 --- a/compat.h
 +++ b/compat.h
-@@ -174,7 +174,9 @@ static inline void skb_reset_mac_len(struct sk_buff *skb)
+@@ -129,6 +129,12 @@ static inline int batadv_param_set_copystring(const char *val,
  
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0)
+ #endif /* < KERNEL_VERSION(2, 6, 36) */
  
--static inline void eth_hw_addr_random(struct net_device *dev)
-+#define eth_hw_addr_random(dev)	batadv_eth_hw_addr_random(dev)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 37)
 +
-+static inline void batadv_eth_hw_addr_random(struct net_device *dev)
- {
- 	random_ether_addr(dev->dev_addr);
- }
++#define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
++#define hlist_next_rcu(node)	(*((struct hlist_node __rcu **)(&(node)->next)))
++
++#endif /* < KERNEL_VERSION(2, 6, 37) */
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 39)
+ 
 -- 
-1.8.2
+1.8.1.5
 
