@@ -1,14 +1,15 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Sun, 17 Mar 2013 05:44:57 +0100
-Message-Id: <1363495498-17830-1-git-send-email-linus.luessing@web.de>
-In-Reply-To: <trinity-97d57b03-203f-4915-9bec-fcae5d01e618-1363490537768@3capp-webde-bs08>
+Date: Sun, 17 Mar 2013 05:44:58 +0100
+Message-Id: <1363495498-17830-2-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1363495498-17830-1-git-send-email-linus.luessing@web.de>
 References: <trinity-97d57b03-203f-4915-9bec-fcae5d01e618-1363490537768@3capp-webde-bs08>
+ <1363495498-17830-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix rcu_barrier() miss due
-	to double call_rcu() in TT code
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix general protection fault
+	in batadv_tt_global_del_orig()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,61 +23,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-rcu_barrier() only waits for the currently scheduled rcu functions
-to finish - it won't wait for any function scheduled via another
-call_rcu() within an rcu scheduled function.
+On shutdown a race condition where we access a just freed global TT hash
+might occure. batadv_orig_node_free_rcu() callbacks might have been
+scheduled (especially during the shutdown procedure) and unfortunately
+batadv_tt_global_table_free() does not wait for them to finish first
+before freeing the global TT hash.
 
-Unfortunately our batadv_tt_orig_list_entry_free_ref() does just that,
-via a batadv_orig_node_free_ref() call, leading to our rcu_barrier()
-call potentially missing such a batadv_orig_node_free_ref().
+This potentially results in a general protection fault in
+batadv_tt_global_del_orig(), called via a batadv_orig_node_free_rcu()
+callback, which tries to access the just freed global TT hash.
 
-This patch fixes this issue by calling the batadv_orig_node_free_rcu()
-directly from the rcu callback, removing the unnecessary, additional
-call_rcu() layer here.
+This patch tries to fix this by waiting for any just scheduled
+batadv_orig_node_free_rcu() to finish via an extra rcu_barrier() call
+before freeing the global TT hash. And by moving the TT freeing call to
+the end of the batman cleanup routines.
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 
-diff --git a/originator.c b/originator.c
-index 585e684..013c7d0 100644
---- a/originator.c
-+++ b/originator.c
-@@ -117,7 +117,7 @@ out:
- 	return neigh_node;
- }
+diff --git a/main.c b/main.c
+index 62b1f89..8663d97 100644
+--- a/main.c
++++ b/main.c
+@@ -166,12 +166,13 @@ void batadv_mesh_free(struct net_device *soft_iface)
+ 	batadv_originator_free(bat_priv);
+ 	batadv_nc_free(bat_priv);
  
--static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
-+void batadv_orig_node_free_rcu(struct rcu_head *rcu)
- {
- 	struct hlist_node *node_tmp;
- 	struct batadv_neigh_node *neigh_node, *tmp_neigh_node;
-diff --git a/originator.h b/originator.h
-index 7df48fa..4f9f88b 100644
---- a/originator.h
-+++ b/originator.h
-@@ -25,6 +25,7 @@
- int batadv_originator_init(struct batadv_priv *bat_priv);
- void batadv_originator_free(struct batadv_priv *bat_priv);
- void batadv_purge_orig_ref(struct batadv_priv *bat_priv);
-+void batadv_orig_node_free_rcu(struct rcu_head *rcu);
- void batadv_orig_node_free_ref(struct batadv_orig_node *orig_node);
- struct batadv_orig_node *batadv_get_orig_node(struct batadv_priv *bat_priv,
- 					      const uint8_t *addr);
+-	batadv_tt_free(bat_priv);
+-
+ 	batadv_bla_free(bat_priv);
+ 
+ 	batadv_dat_free(bat_priv);
+ 
++	/* Don't call any batadv_orig_node_free_ref() after me */
++	batadv_tt_free(bat_priv);
++
+ 	free_percpu(bat_priv->bat_counters);
+ 
+ 	atomic_set(&bat_priv->mesh_state, BATADV_MESH_INACTIVE);
 diff --git a/translation-table.c b/translation-table.c
-index 9322320..ee91cc1 100644
+index ee91cc1..279f0fd 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -144,7 +144,10 @@ static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
- 	struct batadv_tt_orig_list_entry *orig_entry;
+@@ -1315,6 +1315,10 @@ static void batadv_tt_global_table_free(struct batadv_priv *bat_priv)
+ 		spin_unlock_bh(list_lock);
+ 	}
  
- 	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
--	batadv_orig_node_free_ref(orig_entry->orig_node);
++	/* Wait for any batadv_orig_node_free_rcu() to finish,
++	 * they access the to be freed global TT hash */
++	rcu_barrier();
 +
-+	if (atomic_dec_and_test(&orig_entry->orig_node->refcount))
-+		batadv_orig_node_free_rcu(&orig_entry->orig_node->rcu);
-+
- 	kfree(orig_entry);
- }
+ 	batadv_hash_destroy(hash);
  
+ 	bat_priv->tt.global_hash = NULL;
 -- 
 1.7.10.4
 
