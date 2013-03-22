@@ -1,18 +1,10 @@
-Return-Path: <onelektra@gmx.net>
-Date: Thu, 21 Mar 2013 16:20:07 +0100
-From: Elektra <onelektra@gmx.net>
-Message-Id: <20130321162007.3e9836dbe3b881a8e2788741@gmx.net>
-In-Reply-To: <20130321161629.3e471711506fc51ccac9c2fd@gmx.net>
-References: <20130320175154.GT41481@l04.local>
- <3212285.GF4Btbehao@sven-desktop>
- <20130321161629.3e471711506fc51ccac9c2fd@gmx.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batmand: Either all or no source file
- should #define _GNU_SOURCE.
-Reply-To: elektra@villagetelco.org,
- The list for a Better Approach To Mobile Ad-hoc Networking
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Fri, 22 Mar 2013 09:49:55 +0100
+Message-Id: <1363942195-21952-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: fix old master freeing
+	operation
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,72 +15,95 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Applied in commit 1e275d939d45ecc1d96957a353dc639d28aefb52
-Author: Elektra Wagenrad <onelektra@gmx.net>
-Date:   Thu Mar 21 15:57:45 2013 +0100
+When a new hard_iface has a master already, ndo_del_slave
+has to be used in order to let the old master perform its
+cleaning up routine correctly. Unsetting the master iface
+only can lead to a inconsistent state in the master driver.
 
-    Either all or no source file should #define _GNU_SOURCE.
-    
-    Thanks to Sven Eckelmann and Michael Tautschnig for reporting and fixing.
-    
-    Signed-off-by: Elektra Wagenrad <onelektra@gmx.net>
+Introduced by 5e57e3bff429cd403f0e30af69cf87a2cd55598f
+("batman-adv: free an hard-interface before adding it").
 
-Thanks, everyone!
+Reported-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-Cheers,
-Elektra
+v2:
+- patch restyled
+- added compat code for <2.6.39 (Thanks to Simon)
 
-> Subject: [PATCH] Either all or no source file should #define _GNU_SOURCE.
-> 
-> Thanks to Sven Eckelmann and Michael Tautschnig for reporting and fixes.
-> 
-> ---
->  Makefile            |    1 +
->  linux/route.c       |    1 -
->  posix/unix_socket.c |    1 -
->  3 files changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index fe1f094..ce1e198 100755
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -27,6 +27,7 @@ LINUX_OBJ =   linux/route.o linux/tun.o linux/kernel.o
->  
->  ifeq ($(UNAME),Linux)
->  OS_OBJ =       $(LINUX_OBJ) $(POSIX_OBJ)
-> +CPPFLAGS +=    -D_GNU_SOURCE
->  endif
->  
->  OBJ = batman.o originator.o schedule.o list-batman.o allocate.o bitarray.o hash.o profile.o ring_buffer.o hna.o $(OS_OBJ)
-> diff --git a/linux/route.c b/linux/route.c
-> index 119ebb2..bceac95 100644
-> --- a/linux/route.c
-> +++ b/linux/route.c
-> @@ -21,7 +21,6 @@
->  
->  
->  
-> -#define _GNU_SOURCE
->  #include <sys/ioctl.h>
->  #include <arpa/inet.h>    /* inet_ntop() */
->  #include <errno.h>
-> diff --git a/posix/unix_socket.c b/posix/unix_socket.c
-> index 5bed217..02a0a3a 100644
-> --- a/posix/unix_socket.c
-> +++ b/posix/unix_socket.c
-> @@ -21,7 +21,6 @@
->  
->  
->  
-> -#define _GNU_SOURCE
->  #include <sys/time.h>
->  #include <stdio.h>
->  #include <fcntl.h>
-> -- 
-> 1.7.9.5
+v3:
+- commit message rewording
+- change EINVAL to EBUSY to better describe the error
 
+ compat.h         |  3 +++
+ hard-interface.c | 29 +++++++++++++++++++++++++++--
+ 2 files changed, 30 insertions(+), 2 deletions(-)
 
+diff --git a/compat.h b/compat.h
+index ba07ae4..0663df5 100644
+--- a/compat.h
++++ b/compat.h
+@@ -161,6 +161,9 @@ static const struct { \
+ } __attribute__((unused)) __useless_ops1 = { \
+ 	.ndo_validate_addr
+ 
++#define ndo_del_slave          ndo_init
++#define ndo_init(x, y)         ndo_init - master->netdev_ops->ndo_init - EBUSY
++
+ #endif /* < KERNEL_VERSION(2, 6, 39) */
+ 
+ 
+diff --git a/hard-interface.c b/hard-interface.c
+index fd99e42..37c1b51 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -307,6 +307,30 @@ batadv_hardif_deactivate_interface(struct batadv_hard_iface *hard_iface)
+ 	batadv_update_min_mtu(hard_iface->soft_iface);
+ }
+ 
++/**
++ * batadv_master_del_slave - remove hard_iface from the current master interface
++ * @slave: the interface enslaved in another master
++ * @master: the master from which slave has to be removed
++ *
++ * Invoke ndo_del_slave on master passing slave as argument. In this way slave
++ * is free'd and master can correctly change its internal state.
++ * Return 0 on success, a negative value representing the error otherwise
++ */
++static int batadv_master_del_slave(struct batadv_hard_iface *slave,
++				   struct net_device *master)
++{
++	int ret;
++
++	if (!master)
++		return 0;
++
++	ret = -EBUSY;
++	if (master->netdev_ops->ndo_del_slave)
++		ret = master->netdev_ops->ndo_del_slave(master, slave->net_dev);
++
++	return ret;
++}
++
+ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 				   const char *iface_name)
+ {
+@@ -346,8 +370,9 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	 * in that case unlink it first
+ 	 */
+ 	master = netdev_master_upper_dev_get(hard_iface->net_dev);
+-	if (master)
+-		netdev_upper_dev_unlink(hard_iface->net_dev, master);
++	ret = batadv_master_del_slave(hard_iface, master);
++	if (ret)
++		goto err_dev;
+ 
+ 	hard_iface->soft_iface = soft_iface;
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
 -- 
-Elektra <onelektra@gmx.net>
+1.8.1.5
+
