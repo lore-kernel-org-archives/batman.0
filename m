@@ -1,9 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri, 22 Mar 2013 09:49:55 +0100
-Message-Id: <1363942195-21952-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: fix old master freeing
-	operation
+Date: Sat, 23 Mar 2013 16:28:01 +0100
+Message-Id: <1364052481-10915-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [RFC] batman-adv: make the routing API more generic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,94 +15,280 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-When a new hard_iface has a master already, ndo_del_slave
-has to be used in order to let the old master perform its
-cleaning up routine correctly. Unsetting the master iface
-only can lead to a inconsistent state in the master driver.
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-Introduced by 5e57e3bff429cd403f0e30af69cf87a2cd55598f
-("batman-adv: free an hard-interface before adding it").
+The current routing API exports bat_ogm_emit() and
+bat_ogm_schedule() which are strictly related to the way
+B.A.T.M.A.N. IV was implemented. Moreover they are invoked
+like "callbacks" and not like real APIs.
 
-Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Implementing a new algorithm which behaves differently using
+this schema is difficult or probably impossible at all.
+
+Remove bat_ogm_emit() and bat_ogm_schedule(), which can be
+directly handled inside the routing code and add
+bat_iface_activate() which is invoked when the interface is
+ready to send packets. This new function is used by the
+routing code to start any sending mechanism or periodic
+work
+
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
+ bat_iv_ogm.c     | 47 +++++++++++++++++++++++++++++++++++++++++++----
+ hard-interface.c | 10 +++++++---
+ main.c           |  3 +--
+ send.c           | 56 +-------------------------------------------------------
+ send.h           |  1 +
+ types.h          |  7 +++----
+ 6 files changed, 56 insertions(+), 68 deletions(-)
 
-v2:
-- patch restyled
-- added compat code for <2.6.39 (Thanks to Simon)
-
-v3:
-- commit message rewording
-- change EINVAL to EBUSY to better describe the error
-
- compat.h         |  3 +++
- hard-interface.c | 29 +++++++++++++++++++++++++++--
- 2 files changed, 30 insertions(+), 2 deletions(-)
-
-diff --git a/compat.h b/compat.h
-index ba07ae4..0663df5 100644
---- a/compat.h
-+++ b/compat.h
-@@ -161,6 +161,9 @@ static const struct { \
- } __attribute__((unused)) __useless_ops1 = { \
- 	.ndo_validate_addr
- 
-+#define ndo_del_slave          ndo_init
-+#define ndo_init(x, y)         ndo_init - master->netdev_ops->ndo_init - EBUSY
-+
- #endif /* < KERNEL_VERSION(2, 6, 39) */
- 
- 
-diff --git a/hard-interface.c b/hard-interface.c
-index fd99e42..37c1b51 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -307,6 +307,30 @@ batadv_hardif_deactivate_interface(struct batadv_hard_iface *hard_iface)
- 	batadv_update_min_mtu(hard_iface->soft_iface);
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 071f288..5d6cc79 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -376,6 +376,8 @@ out:
+ 	return res;
  }
  
-+/**
-+ * batadv_master_del_slave - remove hard_iface from the current master interface
-+ * @slave: the interface enslaved in another master
-+ * @master: the master from which slave has to be removed
-+ *
-+ * Invoke ndo_del_slave on master passing slave as argument. In this way slave
-+ * is free'd and master can correctly change its internal state.
-+ * Return 0 on success, a negative value representing the error otherwise
-+ */
-+static int batadv_master_del_slave(struct batadv_hard_iface *slave,
-+				   struct net_device *master)
++static void batadv_iv_ogm_send_outstanding(struct work_struct *work);
++
+ /* create a new aggregated packet and add this packet to it */
+ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 					int packet_len, unsigned long send_time,
+@@ -447,7 +449,7 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 
+ 	/* start timer for this packet */
+ 	INIT_DELAYED_WORK(&forw_packet_aggr->delayed_work,
+-			  batadv_send_outstanding_bat_ogm_packet);
++			  batadv_iv_ogm_send_outstanding);
+ 	queue_delayed_work(batadv_event_workqueue,
+ 			   &forw_packet_aggr->delayed_work,
+ 			   send_time - jiffies);
+@@ -601,6 +603,9 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ 	uint32_t seqno;
+ 	uint8_t bandwidth;
+ 
++	if (hard_iface->if_status != BATADV_IF_ACTIVE)
++		return;
++
+ 	vis_server = atomic_read(&bat_priv->vis_mode);
+ 	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 
+@@ -643,6 +648,40 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ 		batadv_hardif_free_ref(primary_if);
+ }
+ 
++static void batadv_iv_ogm_send_outstanding(struct work_struct *work)
 +{
-+	int ret;
++	struct delayed_work *delayed_work;
++	struct batadv_forw_packet *forw_packet;
++	struct batadv_priv *bat_priv;
 +
-+	if (!master)
-+		return 0;
++	delayed_work = container_of(work, struct delayed_work, work);
++	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
++				   delayed_work);
++	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
++	spin_lock_bh(&bat_priv->forw_bat_list_lock);
++	hlist_del(&forw_packet->list);
++	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
 +
-+	ret = -EBUSY;
-+	if (master->netdev_ops->ndo_del_slave)
-+		ret = master->netdev_ops->ndo_del_slave(master, slave->net_dev);
++	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
++		goto out;
 +
-+	return ret;
++	batadv_iv_ogm_emit(forw_packet);
++
++	/* we have to have at least one packet in the queue
++	 * to determine the queues wake up time unless we are
++	 * shutting down
++	 */
++	if (forw_packet->own)
++		batadv_iv_ogm_schedule(forw_packet->if_incoming);
++
++out:
++	/* don't count own packet */
++	if (!forw_packet->own)
++		atomic_inc(&bat_priv->batman_queue_left);
++
++	batadv_forw_packet_free(forw_packet);
 +}
 +
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 				   const char *iface_name)
- {
-@@ -346,8 +370,9 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	 * in that case unlink it first
+ static void
+ batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
+ 			  struct batadv_orig_node *orig_node,
+@@ -1280,7 +1319,8 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+ 	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
+ 	 * that does not have B.A.T.M.A.N. IV enabled ?
  	 */
- 	master = netdev_master_upper_dev_get(hard_iface->net_dev);
--	if (master)
--		netdev_upper_dev_unlink(hard_iface->net_dev, master);
-+	ret = batadv_master_del_slave(hard_iface, master);
-+	if (ret)
-+		goto err_dev;
+-	if (bat_priv->bat_algo_ops->bat_ogm_emit != batadv_iv_ogm_emit)
++	if (bat_priv->bat_algo_ops->bat_iface_activate !=
++	    batadv_iv_ogm_schedule)
+ 		return NET_RX_DROP;
  
- 	hard_iface->soft_iface = soft_iface;
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_RX);
+@@ -1317,8 +1357,7 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	.bat_iface_disable = batadv_iv_ogm_iface_disable,
+ 	.bat_iface_update_mac = batadv_iv_ogm_iface_update_mac,
+ 	.bat_primary_iface_set = batadv_iv_ogm_primary_iface_set,
+-	.bat_ogm_schedule = batadv_iv_ogm_schedule,
+-	.bat_ogm_emit = batadv_iv_ogm_emit,
++	.bat_iface_activate = batadv_iv_ogm_schedule,
+ };
+ 
+ int __init batadv_iv_init(void)
+diff --git a/hard-interface.c b/hard-interface.c
+index d55213c..8e57693 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -339,6 +339,13 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
+ 
+ 	batadv_update_min_mtu(hard_iface->soft_iface);
+ 
++	/* the interface gets activated here to avoid race conditions when the
++	 * originator mac has not properly set yet
++	 */
++	hard_iface->if_status = BATADV_IF_ACTIVE;
++
++	bat_priv->bat_algo_ops->bat_iface_activate(hard_iface);
++
+ out:
+ 	if (primary_if)
+ 		batadv_hardif_free_ref(primary_if);
+@@ -453,9 +460,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 			   "Not using interface %s (retrying later): interface not active\n",
+ 			   hard_iface->net_dev->name);
+ 
+-	/* begin scheduling originator messages on that interface */
+-	batadv_schedule_bat_ogm(hard_iface);
+-
+ out:
+ 	return 0;
+ 
+diff --git a/main.c b/main.c
+index 62b1f89..31f71b6 100644
+--- a/main.c
++++ b/main.c
+@@ -383,8 +383,7 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
+ 	    !bat_algo_ops->bat_iface_disable ||
+ 	    !bat_algo_ops->bat_iface_update_mac ||
+ 	    !bat_algo_ops->bat_primary_iface_set ||
+-	    !bat_algo_ops->bat_ogm_schedule ||
+-	    !bat_algo_ops->bat_ogm_emit) {
++	    !bat_algo_ops->bat_iface_activate) {
+ 		pr_info("Routing algo '%s' does not implement required ops\n",
+ 			bat_algo_ops->name);
+ 		ret = -EINVAL;
+diff --git a/send.c b/send.c
+index eb16b04..0642756 100644
+--- a/send.c
++++ b/send.c
+@@ -118,27 +118,7 @@ bool batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	return true;
+ }
+ 
+-void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface)
+-{
+-	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+-
+-	if ((hard_iface->if_status == BATADV_IF_NOT_IN_USE) ||
+-	    (hard_iface->if_status == BATADV_IF_TO_BE_REMOVED))
+-		return;
+-
+-	/* the interface gets activated here to avoid race conditions between
+-	 * the moment of activating the interface in
+-	 * hardif_activate_interface() where the originator mac is set and
+-	 * outdated packets (especially uninitialized mac addresses) in the
+-	 * packet queue
+-	 */
+-	if (hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED)
+-		hard_iface->if_status = BATADV_IF_ACTIVE;
+-
+-	bat_priv->bat_algo_ops->bat_ogm_schedule(hard_iface);
+-}
+-
+-static void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
++void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
+ {
+ 	if (forw_packet->skb)
+ 		kfree_skb(forw_packet->skb);
+@@ -285,40 +265,6 @@ out:
+ 	atomic_inc(&bat_priv->bcast_queue_left);
+ }
+ 
+-void batadv_send_outstanding_bat_ogm_packet(struct work_struct *work)
+-{
+-	struct delayed_work *delayed_work;
+-	struct batadv_forw_packet *forw_packet;
+-	struct batadv_priv *bat_priv;
+-
+-	delayed_work = container_of(work, struct delayed_work, work);
+-	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
+-				   delayed_work);
+-	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
+-	spin_lock_bh(&bat_priv->forw_bat_list_lock);
+-	hlist_del(&forw_packet->list);
+-	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
+-
+-	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
+-		goto out;
+-
+-	bat_priv->bat_algo_ops->bat_ogm_emit(forw_packet);
+-
+-	/* we have to have at least one packet in the queue
+-	 * to determine the queues wake up time unless we are
+-	 * shutting down
+-	 */
+-	if (forw_packet->own)
+-		batadv_schedule_bat_ogm(forw_packet->if_incoming);
+-
+-out:
+-	/* don't count own packet */
+-	if (!forw_packet->own)
+-		atomic_inc(&bat_priv->batman_queue_left);
+-
+-	batadv_forw_packet_free(forw_packet);
+-}
+-
+ void
+ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
+ 				 const struct batadv_hard_iface *hard_iface)
+diff --git a/send.h b/send.h
+index 38e662f..0a966e6 100644
+--- a/send.h
++++ b/send.h
+@@ -34,5 +34,6 @@ void batadv_send_outstanding_bat_ogm_packet(struct work_struct *work);
+ void
+ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
+ 				 const struct batadv_hard_iface *hard_iface);
++void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet);
+ 
+ #endif /* _NET_BATMAN_ADV_SEND_H_ */
+diff --git a/types.h b/types.h
+index 5f542bd..8466a85 100644
+--- a/types.h
++++ b/types.h
+@@ -946,8 +946,8 @@ struct batadv_vis_if_list_entry {
+  * @bat_iface_update_mac: (re-)init mac addresses of the protocol information
+  *  belonging to this hard-interface
+  * @bat_primary_iface_set: called when primary interface is selected / changed
+- * @bat_ogm_schedule: prepare a new outgoing OGM for the send queue
+- * @bat_ogm_emit: send scheduled OGM
++ * @bat_iface_activate: called when the interface is activated and can be used
++ *  for transmissions
+  */
+ struct batadv_algo_ops {
+ 	struct hlist_node list;
+@@ -956,8 +956,7 @@ struct batadv_algo_ops {
+ 	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
+ 	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
+ 	void (*bat_primary_iface_set)(struct batadv_hard_iface *hard_iface);
+-	void (*bat_ogm_schedule)(struct batadv_hard_iface *hard_iface);
+-	void (*bat_ogm_emit)(struct batadv_forw_packet *forw_packet);
++	void (*bat_iface_activate)(struct batadv_hard_iface *hard_iface);
+ };
+ 
+ /**
 -- 
 1.8.1.5
 
