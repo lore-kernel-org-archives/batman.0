@@ -1,9 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 23 Mar 2013 20:09:03 +0100
-Message-Id: <1364065743-20076-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: invoke ogm_schedule() only when
-	the interface is activated
+Date: Sun, 24 Mar 2013 13:00:31 +0100
+Message-Id: <1364126431-17774-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix interface clean up on
+	error
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,47 +17,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-the current implementation works as expected because once
-ogm_schedule() has been invoked once it will continue to
-invoke itself periodically thanks to the schedule (but not
-sent) packets.
-
-A correct behaviour would be to wait for the interface to be
-ready for sending before scheduling the first OGM.
-
-Moreover another routing algorithm may not schedule any
-packet because the interface is not active yet, and this
-would lead to a breakage in the interface activation
-procedure
+When enabling an hard_iface for the first time, the
+hard_iface->soft_iface member is initialised with the newly
+created soft_iface.
+However, in case of error during the activation procedure
+this member has to be set to NULL again, otherwise the
+hard_iface will result busy and will not be possible to use
+it anymore
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- hard-interface.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+
+it is possible to easily reproduce the bug without the patch:
+$ batctl if add eth0
+$ brctl addbr br0
+$ brctl addif br0 bat0
+$ batctl if add br0
+Error - can't write to file '/sys/class/net/br0/batman_adv/mesh_iface': Device or resource busy
+$ batctl if add br0
+$
+[no error anymore because br0 is already "associated" to bat0 and check at
+sysfs.c:575 evaluates to true]
+
+
+
+with the patch:
+$ batctl if add eth0
+$ brctl addbr br0
+$ brctl addif br0 bat0
+$ batctl if add br0
+Error - can't write to file '/sys/class/net/br0/batman_adv/mesh_iface': Device or resource busy
+$ batctl if add br0
+Error - can't write to file '/sys/class/net/br0/batman_adv/mesh_iface': Device or resource busy
+$
+
+Cheers,
+
+
+ hard-interface.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/hard-interface.c b/hard-interface.c
-index d55213c..4a1a24b 100644
+index 368219e..70bc9ce 100644
 --- a/hard-interface.c
 +++ b/hard-interface.c
-@@ -339,6 +339,8 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
- 
- 	batadv_update_min_mtu(hard_iface->soft_iface);
- 
-+	/* begin scheduling originator messages on that interface */
-+	batadv_schedule_bat_ogm(hard_iface);
- out:
- 	if (primary_if)
- 		batadv_hardif_free_ref(primary_if);
-@@ -453,9 +455,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 			   "Not using interface %s (retrying later): interface not active\n",
- 			   hard_iface->net_dev->name);
- 
--	/* begin scheduling originator messages on that interface */
--	batadv_schedule_bat_ogm(hard_iface);
--
- out:
+@@ -402,6 +402,7 @@ out:
  	return 0;
  
+ err_dev:
++	hard_iface->soft_iface = NULL;
+ 	dev_put(soft_iface);
+ err:
+ 	batadv_hardif_free_ref(hard_iface);
 -- 
 1.8.1.5
 
