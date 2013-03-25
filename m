@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 25 Mar 2013 16:47:15 +0800
-References: <1363854209-23414-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1363854209-23414-1-git-send-email-ordex@autistici.org>
+Date: Mon, 25 Mar 2013 18:19:19 +0800
+References: <1364199850-24647-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1364199850-24647-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201303251647.15243.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: use seq_puts instead of
-	seq_printf when the format is constant
+Message-Id: <201303251819.19645.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix interface clean
+	up on error
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,29 +23,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, March 21, 2013 16:23:29 Antonio Quartulli wrote:
-> As reported by checkpatch, seq_puts has to be preferred with
-> respect to seq_printf when the format is a constant string
-> (no va_args)
+On Monday, March 25, 2013 16:24:10 Antonio Quartulli wrote:
+> When enabling an hard_iface for the first time, the
+> hard_iface->soft_iface member is initialised with the newly
+> created soft_iface.
+> However, in case of error during the activation procedure
+> this member has to be set to NULL again, otherwise the
+> hard_iface will result busy and will not be possible to use
+> it anymore
+> 
+> This issue has been introduced with
+> edd08535c00a42143989118bc999060893ce0a41 ("batman-adv: Allow to modify
+> slaves of soft-interfaces through rntl_link")
 > 
 > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 > ---
 > 
-> However checkpatch seems to be implementing this check in a wrong way:
-> multi-line seq_printf are reported like having no arguments after the
-> format.
-> 
-> Cheers,
+> v2:
+> - based on next (the commi introducing the problem is in next, not in
+> maint) - added "introduced-by" in the commit message
 > 
 > 
->  gateway_client.c | 2 +-
->  main.c           | 2 +-
->  network-coding.c | 8 ++++----
->  originator.c     | 4 ++--
->  vis.c            | 4 ++--
->  5 files changed, 10 insertions(+), 10 deletions(-)
+>  hard-interface.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-Applied in revision 174cf3a.
+Applied in revision a1eecdd.
 
 Thanks,
 Marek
