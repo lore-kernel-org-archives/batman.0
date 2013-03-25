@@ -1,9 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 25 Mar 2013 09:24:10 +0100
-Message-Id: <1364199850-24647-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix interface clean up on
-	error
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 25 Mar 2013 16:44:35 +0800
+References: <1363942195-21952-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1363942195-21952-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201303251644.35958.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: fix old master freeing
+	operation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,41 +22,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-When enabling an hard_iface for the first time, the
-hard_iface->soft_iface member is initialised with the newly
-created soft_iface.
-However, in case of error during the activation procedure
-this member has to be set to NULL again, otherwise the
-hard_iface will result busy and will not be possible to use
-it anymore
+On Friday, March 22, 2013 16:49:55 Antonio Quartulli wrote:
+> When a new hard_iface has a master already, ndo_del_slave
+> has to be used in order to let the old master perform its
+> cleaning up routine correctly. Unsetting the master iface
+> only can lead to a inconsistent state in the master driver.
+> 
+> Introduced by 5e57e3bff429cd403f0e30af69cf87a2cd55598f
+> ("batman-adv: free an hard-interface before adding it").
+> 
+> Reported-by: Marek Lindner <lindner_marek@yahoo.de>
+> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+> 
+> v2:
+> - patch restyled
+> - added compat code for <2.6.39 (Thanks to Simon)
+> 
+> v3:
+> - commit message rewording
+> - change EINVAL to EBUSY to better describe the error
+> 
+>  compat.h         |  3 +++
+>  hard-interface.c | 29 +++++++++++++++++++++++++++--
+>  2 files changed, 30 insertions(+), 2 deletions(-)
 
-This issue has been introduced with edd08535c00a42143989118bc999060893ce0a41
-("batman-adv: Allow to modify slaves of soft-interfaces through rntl_link")
+Applied in revision 9e96c4d.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
-
-v2:
-- based on next (the commi introducing the problem is in next, not in maint)
-- added "introduced-by" in the commit message
-
-
- hard-interface.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/hard-interface.c b/hard-interface.c
-index fd99e42..b69fe11 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -410,6 +410,7 @@ out:
- err_upper:
- 	netdev_upper_dev_unlink(hard_iface->net_dev, soft_iface);
- err_dev:
-+	hard_iface->soft_iface = NULL;
- 	dev_put(soft_iface);
- err:
- 	batadv_hardif_free_ref(hard_iface);
--- 
-1.8.1.5
-
+Thanks,
+Marek
