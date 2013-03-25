@@ -1,8 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 25 Mar 2013 22:27:00 +0100
-Message-Id: <1364246820-15581-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: don't check the source address
+Date: Mon, 25 Mar 2013 23:05:34 +0100
+Message-Id: <1364249134-19537-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: don't check the source address
 	twice
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -27,13 +27,26 @@ ogm_process()
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- bat_iv_ogm.c | 10 ----------
- 1 file changed, 10 deletions(-)
+
+v2:
+- removed variable declaration
+
+ bat_iv_ogm.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index da239c5..952a1ff 100644
+index da239c5..6d62e29 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
+@@ -988,7 +988,7 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
+ 	struct batadv_neigh_node *orig_neigh_router = NULL;
+ 	int has_directlink_flag;
+ 	int is_my_addr = 0, is_my_orig = 0, is_my_oldorig = 0;
+-	int is_broadcast = 0, is_bidirect;
++	int is_bidirect;
+ 	bool is_single_hop_neigh = false;
+ 	bool is_from_best_next_hop = false;
+ 	int is_duplicate, sameseq, simlar_ttl;
 @@ -1051,9 +1051,6 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
  		if (batadv_compare_eth(batadv_ogm_packet->prev_sender,
  				       hard_iface->net_dev->dev_addr))
