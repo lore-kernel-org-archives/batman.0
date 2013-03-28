@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Mar 2013 08:50:20 +0100
-Message-Id: <1364457031-3194-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 2013-03-28
+Date: Thu, 28 Mar 2013 08:50:22 +0100
+Message-Id: <1364457031-3194-3-git-send-email-ordex@autistici.org>
+In-Reply-To: <1364457031-3194-1-git-send-email-ordex@autistici.org>
+References: <1364457031-3194-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 02/11] batman-adv: Move soft-interface
+	initialization to ndo_init
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,89 +18,259 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Sven Eckelmann <sven@narfation.org>
 
-here you have another batch of patches intended for net-next/linux-3.10.
+From: Sven Eckelmann <sven@narfation.org>
 
-The first one fixes an endianess bug in the new network coding component,
-sent within our last pull request. It was discovered thanks to
-Fengguang Wu's automated daily checks on our tree (we upgraded our daily
-check to look for endianess bugs as well ;-))
+The initialization of an net_device object should be done in the
+init/constructor function and not from the outside after the register_netdevice
+was done to avoid race conditions.
 
-Then you have patches from 2/11 to 8/11 implementing the RTNL API for virtual
-interfaces manipulation: now users can use the "ip" tool to create/delete
-batman-adv interfaces and to enslave real ones below them. However, to avoid
-breaking any user tool, we did not disrupt our sysfs API.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Acked-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/hard-interface.c |   5 ++
+ net/batman-adv/soft-interface.c | 169 +++++++++++++++++++---------------------
+ 2 files changed, 86 insertions(+), 88 deletions(-)
 
-Patch 11/11 is addressing a new checkpatch complaining by substituting seq_printf
-with seq_puts when possible (however, checkpatch seems to be broken because it
-raises false positives in case of multi-line seq_printf).
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 368219e..da000e9 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -563,6 +563,11 @@ static int batadv_hard_if_event(struct notifier_block *this,
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_priv *bat_priv;
+ 
++	if (batadv_softif_is_valid(net_dev) && event == NETDEV_REGISTER) {
++		batadv_sysfs_add_meshif(net_dev);
++		return NOTIFY_DONE;
++	}
++
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	if (!hard_iface && event == NETDEV_REGISTER)
+ 		hard_iface = batadv_hardif_add_interface(net_dev);
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index f93ae42..c5cb0a7 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -402,55 +402,6 @@ static void batadv_set_lockdep_class(struct net_device *dev)
+ }
+ 
+ /**
+- * batadv_softif_init - Late stage initialization of soft interface
+- * @dev: registered network device to modify
+- *
+- * Returns error code on failures
+- */
+-static int batadv_softif_init(struct net_device *dev)
+-{
+-	batadv_set_lockdep_class(dev);
+-
+-	return 0;
+-}
+-
+-static const struct net_device_ops batadv_netdev_ops = {
+-	.ndo_init = batadv_softif_init,
+-	.ndo_open = batadv_interface_open,
+-	.ndo_stop = batadv_interface_release,
+-	.ndo_get_stats = batadv_interface_stats,
+-	.ndo_set_mac_address = batadv_interface_set_mac_addr,
+-	.ndo_change_mtu = batadv_interface_change_mtu,
+-	.ndo_start_xmit = batadv_interface_tx,
+-	.ndo_validate_addr = eth_validate_addr
+-};
+-
+-static void batadv_interface_setup(struct net_device *dev)
+-{
+-	struct batadv_priv *priv = netdev_priv(dev);
+-
+-	ether_setup(dev);
+-
+-	dev->netdev_ops = &batadv_netdev_ops;
+-	dev->destructor = free_netdev;
+-	dev->tx_queue_len = 0;
+-
+-	/* can't call min_mtu, because the needed variables
+-	 * have not been initialized yet
+-	 */
+-	dev->mtu = ETH_DATA_LEN;
+-	/* reserve more space in the skbuff for our header */
+-	dev->hard_header_len = BATADV_HEADER_LEN;
+-
+-	/* generate random address */
+-	eth_hw_addr_random(dev);
+-
+-	SET_ETHTOOL_OPS(dev, &batadv_ethtool_ops);
+-
+-	memset(priv, 0, sizeof(*priv));
+-}
+-
+-/**
+  * batadv_softif_destroy_finish - cleans up the remains of a softif
+  * @work: work queue item
+  *
+@@ -474,21 +425,22 @@ static void batadv_softif_destroy_finish(struct work_struct *work)
+ 	rtnl_unlock();
+ }
+ 
+-struct net_device *batadv_softif_create(const char *name)
++/**
++ * batadv_softif_init_late - late stage initialization of soft interface
++ * @dev: registered network device to modify
++ *
++ * Returns error code on failures
++ */
++static int batadv_softif_init_late(struct net_device *dev)
+ {
+-	struct net_device *soft_iface;
+ 	struct batadv_priv *bat_priv;
+ 	int ret;
+ 	size_t cnt_len = sizeof(uint64_t) * BATADV_CNT_NUM;
+ 
+-	soft_iface = alloc_netdev(sizeof(*bat_priv), name,
+-				  batadv_interface_setup);
++	batadv_set_lockdep_class(dev);
+ 
+-	if (!soft_iface)
+-		goto out;
+-
+-	bat_priv = netdev_priv(soft_iface);
+-	bat_priv->soft_iface = soft_iface;
++	bat_priv = netdev_priv(dev);
++	bat_priv->soft_iface = dev;
+ 	INIT_WORK(&bat_priv->cleanup_work, batadv_softif_destroy_finish);
+ 
+ 	/* batadv_interface_stats() needs to be available as soon as
+@@ -496,14 +448,7 @@ struct net_device *batadv_softif_create(const char *name)
+ 	 */
+ 	bat_priv->bat_counters = __alloc_percpu(cnt_len, __alignof__(uint64_t));
+ 	if (!bat_priv->bat_counters)
+-		goto free_soft_iface;
+-
+-	ret = register_netdevice(soft_iface);
+-	if (ret < 0) {
+-		pr_err("Unable to register the batman interface '%s': %i\n",
+-		       name, ret);
+-		goto free_bat_counters;
+-	}
++		return -ENOMEM;
+ 
+ 	atomic_set(&bat_priv->aggregated_ogms, 1);
+ 	atomic_set(&bat_priv->bonding, 0);
+@@ -541,41 +486,89 @@ struct net_device *batadv_softif_create(const char *name)
+ 	bat_priv->primary_if = NULL;
+ 	bat_priv->num_ifaces = 0;
+ 
+-	ret = batadv_algo_select(bat_priv, batadv_routing_algo);
+-	if (ret < 0)
+-		goto unreg_soft_iface;
+-
+ 	batadv_nc_init_bat_priv(bat_priv);
+ 
+-	ret = batadv_sysfs_add_meshif(soft_iface);
++	ret = batadv_algo_select(bat_priv, batadv_routing_algo);
+ 	if (ret < 0)
+-		goto unreg_soft_iface;
++		goto free_bat_counters;
+ 
+-	ret = batadv_debugfs_add_meshif(soft_iface);
++	ret = batadv_debugfs_add_meshif(dev);
+ 	if (ret < 0)
+-		goto unreg_sysfs;
++		goto free_bat_counters;
+ 
+-	ret = batadv_mesh_init(soft_iface);
++	ret = batadv_mesh_init(dev);
+ 	if (ret < 0)
+ 		goto unreg_debugfs;
+ 
+-	return soft_iface;
++	return 0;
+ 
+ unreg_debugfs:
+-	batadv_debugfs_del_meshif(soft_iface);
+-unreg_sysfs:
+-	batadv_sysfs_del_meshif(soft_iface);
+-unreg_soft_iface:
+-	free_percpu(bat_priv->bat_counters);
+-	unregister_netdevice(soft_iface);
+-	return NULL;
+-
++	batadv_debugfs_del_meshif(dev);
+ free_bat_counters:
+ 	free_percpu(bat_priv->bat_counters);
+-free_soft_iface:
+-	free_netdev(soft_iface);
+-out:
+-	return NULL;
++
++	return ret;
++}
++
++static const struct net_device_ops batadv_netdev_ops = {
++	.ndo_init = batadv_softif_init_late,
++	.ndo_open = batadv_interface_open,
++	.ndo_stop = batadv_interface_release,
++	.ndo_get_stats = batadv_interface_stats,
++	.ndo_set_mac_address = batadv_interface_set_mac_addr,
++	.ndo_change_mtu = batadv_interface_change_mtu,
++	.ndo_start_xmit = batadv_interface_tx,
++	.ndo_validate_addr = eth_validate_addr
++};
++
++/**
++ * batadv_softif_init_early - early stage initialization of soft interface
++ * @dev: registered network device to modify
++ */
++static void batadv_softif_init_early(struct net_device *dev)
++{
++	struct batadv_priv *priv = netdev_priv(dev);
++
++	ether_setup(dev);
++
++	dev->netdev_ops = &batadv_netdev_ops;
++	dev->destructor = free_netdev;
++	dev->tx_queue_len = 0;
++
++	/* can't call min_mtu, because the needed variables
++	 * have not been initialized yet
++	 */
++	dev->mtu = ETH_DATA_LEN;
++	/* reserve more space in the skbuff for our header */
++	dev->hard_header_len = BATADV_HEADER_LEN;
++
++	/* generate random address */
++	eth_hw_addr_random(dev);
++
++	SET_ETHTOOL_OPS(dev, &batadv_ethtool_ops);
++
++	memset(priv, 0, sizeof(*priv));
++}
++
++struct net_device *batadv_softif_create(const char *name)
++{
++	struct net_device *soft_iface;
++	int ret;
++
++	soft_iface = alloc_netdev(sizeof(struct batadv_priv), name,
++				  batadv_softif_init_early);
++	if (!soft_iface)
++		return NULL;
++
++	ret = register_netdevice(soft_iface);
++	if (ret < 0) {
++		pr_err("Unable to register the batman interface '%s': %i\n",
++		       name, ret);
++		free_netdev(soft_iface);
++		return NULL;
++	}
++
++	return soft_iface;
+ }
+ 
+ void batadv_softif_destroy(struct net_device *soft_iface)
+-- 
+1.8.1.5
 
-The rest is ordinary house keeping.
-
-
-Please pull or let me know if there is any problem!
-
-Thank you,
-	Antonio
-
-
-
-The following changes since commit 6bdeaba47d87f48a3943b6899d6c6e6f17d52f1d:
-
-  6lowpan: use IEEE802154_ADDR_LEN instead of a magic number (2013-03-27 00:52:16 -0400)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
-
-for you to fetch changes up to 0c81465357ffe29da9ff20103afe4a59908e0d30:
-
-  batman-adv: use seq_puts instead of seq_printf when the format is constant (2013-03-27 10:29:55 +0100)
-
-----------------------------------------------------------------
-Included changes:
-- A fix for the network coding component which has been added within the last
-  pull request (so it is in linux-3.10). The problem has been spotted thanks to
-  Fengguang Wu's automated daily checks on our tree.
-- Implementation of the RTNL API for virtual interface creation/deletion and slave
-  manipulation
-- substitution of seq_printf with seq_puts when possible
-- minor cleanups
-
-----------------------------------------------------------------
-Antonio Quartulli (3):
-      batman-adv: free an hard-interface before adding it
-      batman-adv: update Makefile copyright years
-      batman-adv: use seq_puts instead of seq_printf when the format is constant
-
-Marek Lindner (1):
-      batman-adv: rename batadv_softif_destroy to reflect sysfs use case
-
-Martin Hundebøll (1):
-      batman-adv: Fix endianness errors for network coding
-
-Simon Wunderlich (1):
-      batman-adv: Start new development cycle
-
-Sven Eckelmann (5):
-      batman-adv: Move soft-interface initialization to ndo_init
-      batman-adv: Move deinitialization of soft-interface to destructor
-      batman-adv: Don't always delete softif when last slave was removed
-      batman-adv: Allow to use rntl_link for device creation/deletion
-      batman-adv: Allow to modify slaves of soft-interfaces through rntl_link
-
- net/batman-adv/Makefile         |   2 +-
- net/batman-adv/gateway_client.c |   2 +-
- net/batman-adv/hard-interface.c |  66 ++++++++--
- net/batman-adv/hard-interface.h |  13 +-
- net/batman-adv/main.c           |   4 +-
- net/batman-adv/main.h           |   3 +-
- net/batman-adv/network-coding.c |  10 +-
- net/batman-adv/originator.c     |   4 +-
- net/batman-adv/packet.h         |   2 +-
- net/batman-adv/soft-interface.c | 269 ++++++++++++++++++++++++++--------------
- net/batman-adv/soft-interface.h |   3 +-
- net/batman-adv/sysfs.c          |   6 +-
- net/batman-adv/vis.c            |   4 +-
- 13 files changed, 268 insertions(+), 120 deletions(-)
