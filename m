@@ -1,11 +1,15 @@
 Return-Path: <ordex@autistici.org>
+Date: Thu, 28 Mar 2013 11:19:03 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Mar 2013 08:50:31 +0100
-Message-Id: <1364457031-3194-12-git-send-email-ordex@autistici.org>
-In-Reply-To: <1364457031-3194-1-git-send-email-ordex@autistici.org>
-References: <1364457031-3194-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 11/11] batman-adv: use seq_puts instead of
-	seq_printf when the format is constant
+Message-ID: <20130328101903.GF5152@ritirata.org>
+References: <CAP5XTDPibzzo_wLjXOsT07JnwNM_YTioxXdwo2bcDuAb0021xA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="3oCie2+XPXTnK5a5"
+Content-Disposition: inline
+In-Reply-To: <CAP5XTDPibzzo_wLjXOsT07JnwNM_YTioxXdwo2bcDuAb0021xA@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] [RFCv2] batman-adv: Modified DAT structures and
+ functions in order to support both IPv4 and IPv6
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,125 +21,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: Mihail Costea <mihail.costea90@gmail.com>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-As reported by checkpatch, seq_puts has to be preferred with
-respect to seq_printf when the format is a constant string
-(no va_args)
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- net/batman-adv/gateway_client.c | 2 +-
- net/batman-adv/main.c           | 2 +-
- net/batman-adv/network-coding.c | 8 ++++----
- net/batman-adv/originator.c     | 4 ++--
- net/batman-adv/vis.c            | 4 ++--
- 5 files changed, 10 insertions(+), 10 deletions(-)
+--3oCie2+XPXTnK5a5
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 34f99a4..f105219 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -500,7 +500,7 @@ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
- 	rcu_read_unlock();
- 
- 	if (gw_count == 0)
--		seq_printf(seq, "No gateways in range ...\n");
-+		seq_puts(seq, "No gateways in range ...\n");
- 
- out:
- 	if (primary_if)
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 62b1f89..6277735 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -419,7 +419,7 @@ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
- {
- 	struct batadv_algo_ops *bat_algo_ops;
- 
--	seq_printf(seq, "Available routing algorithms:\n");
-+	seq_puts(seq, "Available routing algorithms:\n");
- 
- 	hlist_for_each_entry(bat_algo_ops, &batadv_algo_list, list) {
- 		seq_printf(seq, "%s\n", bat_algo_ops->name);
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 086c107..6b9a544 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -1760,23 +1760,23 @@ int batadv_nc_nodes_seq_print_text(struct seq_file *seq, void *offset)
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
- 			seq_printf(seq, "Node:      %pM\n", orig_node->orig);
- 
--			seq_printf(seq, " Ingoing:  ");
-+			seq_puts(seq, " Ingoing:  ");
- 			/* For each in_nc_node to this orig_node */
- 			list_for_each_entry_rcu(nc_node,
- 						&orig_node->in_coding_list,
- 						list)
- 				seq_printf(seq, "%pM ",
- 					   nc_node->addr);
--			seq_printf(seq, "\n");
-+			seq_puts(seq, "\n");
- 
--			seq_printf(seq, " Outgoing: ");
-+			seq_puts(seq, " Outgoing: ");
- 			/* For out_nc_node to this orig_node */
- 			list_for_each_entry_rcu(nc_node,
- 						&orig_node->out_coding_list,
- 						list)
- 				seq_printf(seq, "%pM ",
- 					   nc_node->addr);
--			seq_printf(seq, "\n\n");
-+			seq_puts(seq, "\n\n");
- 		}
- 		rcu_read_unlock();
- 	}
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 585e684..2f34525 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -465,7 +465,7 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
- 					   neigh_node_tmp->tq_avg);
- 			}
- 
--			seq_printf(seq, "\n");
-+			seq_puts(seq, "\n");
- 			batman_count++;
- 
- next:
-@@ -475,7 +475,7 @@ next:
- 	}
- 
- 	if (batman_count == 0)
--		seq_printf(seq, "No batman nodes in range ...\n");
-+		seq_puts(seq, "No batman nodes in range ...\n");
- 
- out:
- 	if (primary_if)
-diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
-index c053244..962ccf3 100644
---- a/net/batman-adv/vis.c
-+++ b/net/batman-adv/vis.c
-@@ -149,7 +149,7 @@ static void batadv_vis_data_read_prim_sec(struct seq_file *seq,
- 
- 	hlist_for_each_entry(entry, if_list, list) {
- 		if (entry->primary)
--			seq_printf(seq, "PRIMARY, ");
-+			seq_puts(seq, "PRIMARY, ");
- 		else
- 			seq_printf(seq,  "SEC %pM, ", entry->addr);
- 	}
-@@ -207,7 +207,7 @@ static void batadv_vis_data_read_entries(struct seq_file *seq,
- 		if (batadv_compare_eth(entry->addr, packet->vis_orig))
- 			batadv_vis_data_read_prim_sec(seq, list);
- 
--		seq_printf(seq, "\n");
-+		seq_puts(seq, "\n");
- 	}
- }
- 
--- 
-1.8.1.5
+Hi Mihail,
 
+sorry for taking so long to review your patch..I've been very busy last 10 =
+days
+and so it was difficult for me to allocate enough time to review your code.
+I'll try to do it within the end of this week.
+
+Nobody forgot about you :) The point is that this patch is bringing some not
+negligible change, so the review process cannot be done in a few minutes li=
+ke it
+could be for "trivial" patches.
+
+I hope you will understand.
+
+Cheers,
+
+
+On Mon, Mar 18, 2013 at 02:07:42PM +0200, Mihail Costea wrote:
+> Subject: [RFCv2] batman-adv: Modified DAT structures and functions in ord=
+er
+>  to support both IPv4 and IPv6
+>=20
+> Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
+>=20
+> ---
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--3oCie2+XPXTnK5a5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRVBkXAAoJEADl0hg6qKeOwUgQALrlb0Sj6vnxd05WyJIu/s0y
+Uxmga+ybXAaVtKk6/sp5ybW3MprLoQi4KU4md/rcYjyggr3QJ0/Ala5jSkc0R4YP
+wO1ET/n4IDUXo1gv2ZEaeSi2bdMEfez8HY58+MA/Xnq5VMZ8KhObfoLDv+QPWp4u
+9Op5lNw8kaxnHoav2SdhuONSOIyTMZNFhdhGqObD4Fl15WDtuCD7LJ72J5QFxKAF
+8s6WFrGdPssNNj8vjP17G8ZokHw7jJXiccgGEbXyzqRP4AtRfyIW2K3x1TVaOfAJ
+wQBEEiiSMa3GbHS2Ud0e6+zLvqZVlRQpu/nPDLT3wRTEEfBwm0byT1D7lIBlhyCZ
+Eh71EOWgtivwFVvLtTy9c3ViUiWDelVUikel+EbxWmAvSD1/DSO0BAvCMb2uD/p3
+SzYXUhLsOqrYPHPpz86+grUtgYazhcL9ovvzCC9w3vkKEMoicBNtsjGgOp8/0pL5
+hgUhqVoo3xKBubw7H4cD6iuboyG7Cz/xZWApPGdZH2H6WCIzbXF9eJZy0GCy/6f9
+ZtibWw451uv0lNVX1N24qbNx5fe1GDi9lqMxq2qjKo3Y6OhtyGjGFEAQzer01olp
+Eb2lSAqbpW0PGGKjxllyqn+eeFGck/7f48jJ8gi3WwoLvhSmHZc7V935yvMQt1VV
+/r+fJNiFntbiMa1Hh6W8
+=PciD
+-----END PGP SIGNATURE-----
+
+--3oCie2+XPXTnK5a5--
