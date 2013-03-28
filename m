@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 28 Mar 2013 08:50:26 +0100
-Message-Id: <1364457031-3194-7-git-send-email-ordex@autistici.org>
+Date: Thu, 28 Mar 2013 08:50:27 +0100
+Message-Id: <1364457031-3194-8-git-send-email-ordex@autistici.org>
 In-Reply-To: <1364457031-3194-1-git-send-email-ordex@autistici.org>
 References: <1364457031-3194-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 06/11] batman-adv: Allow to use rntl_link for
-	device creation/deletion
+Subject: [B.A.T.M.A.N.] [PATCH 07/11] batman-adv: Allow to modify slaves of
+	soft-interfaces through rntl_link
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,123 +22,145 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lind
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The sysfs configuration interface of batman-adv to add/remove soft-interfaces
-is not deadlock free and doesn't follow the currently common way to create new
-virtual interfaces.
+The sysfs configuration interface of batman-adv to add/remove slaves of an
+soft-iface is not deadlock free and doesn't follow the currently common way to
+modify slaves of an interface.
 
-An additional interface though rtnl_link is introduced which provides easy device
-creation/deletion with tools like "ip":
-
-$ ip link add dev bat0 type batadv
-$ ip link del dev bat0
+An additional configuration interface though rtnl_link is introduced which
+provides easy device adding/removing with tools like "ip":
+$ ip link set dev eth0 master bat0
+$ ip link set dev eth0 nomaster
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Acked-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/main.c           |  2 ++
- net/batman-adv/main.h           |  1 +
- net/batman-adv/soft-interface.c | 29 +++++++++++++++++++++++++++++
- net/batman-adv/soft-interface.h |  1 +
- 4 files changed, 33 insertions(+)
+ net/batman-adv/hard-interface.c | 12 +++++++--
+ net/batman-adv/soft-interface.c | 56 ++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 65 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 0495a7d..62b1f89 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -71,6 +71,7 @@ static int __init batadv_init(void)
- 	batadv_debugfs_init();
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 6c32607..f33ced8 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -350,9 +350,13 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	hard_iface->soft_iface = soft_iface;
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
  
- 	register_netdevice_notifier(&batadv_hard_if_notifier);
-+	rtnl_link_register(&batadv_link_ops);
++	ret = netdev_master_upper_dev_link(hard_iface->net_dev, soft_iface);
++	if (ret)
++		goto err_dev;
++
+ 	ret = bat_priv->bat_algo_ops->bat_iface_enable(hard_iface);
+ 	if (ret < 0)
+-		goto err_dev;
++		goto err_upper;
  
- 	pr_info("B.A.T.M.A.N. advanced %s (compatibility version %i) loaded\n",
- 		BATADV_SOURCE_VERSION, BATADV_COMPAT_VERSION);
-@@ -81,6 +82,7 @@ static int __init batadv_init(void)
- static void __exit batadv_exit(void)
- {
- 	batadv_debugfs_destroy();
-+	rtnl_link_unregister(&batadv_link_ops);
- 	unregister_netdevice_notifier(&batadv_hard_if_notifier);
- 	batadv_hardif_remove_interfaces();
+ 	hard_iface->if_num = bat_priv->num_ifaces;
+ 	bat_priv->num_ifaces++;
+@@ -362,7 +366,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 		bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
+ 		bat_priv->num_ifaces--;
+ 		hard_iface->if_status = BATADV_IF_NOT_IN_USE;
+-		goto err_dev;
++		goto err_upper;
+ 	}
  
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 0afd4ee..a9e12e6 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -152,6 +152,7 @@ enum batadv_uev_type {
- #include <linux/percpu.h>
- #include <linux/slab.h>
- #include <net/sock.h>		/* struct sock */
-+#include <net/rtnetlink.h>
- #include <linux/jiffies.h>
- #include <linux/seq_file.h>
- #include "types.h"
+ 	hard_iface->batman_adv_ptype.type = ethertype;
+@@ -401,7 +405,10 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ out:
+ 	return 0;
+ 
++err_upper:
++	netdev_upper_dev_unlink(hard_iface->net_dev, soft_iface);
+ err_dev:
++	hard_iface->soft_iface = NULL;
+ 	dev_put(soft_iface);
+ err:
+ 	batadv_hardif_free_ref(hard_iface);
+@@ -450,6 +457,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
+ 	if (!bat_priv->num_ifaces && autodel == BATADV_IF_CLEANUP_AUTO)
+ 		batadv_softif_destroy_sysfs(hard_iface->soft_iface);
+ 
++	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->soft_iface);
+ 	hard_iface->soft_iface = NULL;
+ 	batadv_hardif_free_ref(hard_iface);
+ 
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index bc77a5be..545c863 100644
+index 545c863..403b8c4 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -570,6 +570,8 @@ struct net_device *batadv_softif_create(const char *name)
- 	if (!soft_iface)
- 		return NULL;
- 
-+	soft_iface->rtnl_link_ops = &batadv_link_ops;
-+
- 	ret = register_netdevice(soft_iface);
- 	if (ret < 0) {
- 		pr_err("Unable to register the batman interface '%s': %i\n",
-@@ -592,6 +594,26 @@ void batadv_softif_destroy_sysfs(struct net_device *soft_iface)
- 	queue_work(batadv_event_workqueue, &bat_priv->cleanup_work);
+@@ -509,6 +509,58 @@ free_bat_counters:
+ 	return ret;
  }
  
 +/**
-+ * batadv_softif_destroy_netlink - deletion of batadv_soft_interface via netlink
-+ * @soft_iface: the to-be-removed batman-adv interface
-+ * @head: list pointer
++ * batadv_softif_slave_add - Add a slave interface to a batadv_soft_interface
++ * @dev: batadv_soft_interface used as master interface
++ * @slave_dev: net_device which should become the slave interface
++ *
++ * Return 0 if successful or error otherwise.
 + */
-+static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
-+					  struct list_head *head)
++static int batadv_softif_slave_add(struct net_device *dev,
++				   struct net_device *slave_dev)
 +{
 +	struct batadv_hard_iface *hard_iface;
++	int ret = -EINVAL;
 +
-+	list_for_each_entry(hard_iface, &batadv_hardif_list, list) {
-+		if (hard_iface->soft_iface == soft_iface)
-+			batadv_hardif_disable_interface(hard_iface,
-+							BATADV_IF_CLEANUP_KEEP);
-+	}
++	hard_iface = batadv_hardif_get_by_netdev(slave_dev);
++	if (!hard_iface || hard_iface->soft_iface != NULL)
++		goto out;
 +
-+	batadv_sysfs_del_meshif(soft_iface);
-+	unregister_netdevice_queue(soft_iface, head);
++	ret = batadv_hardif_enable_interface(hard_iface, dev->name);
++
++out:
++	if (hard_iface)
++		batadv_hardif_free_ref(hard_iface);
++	return ret;
 +}
 +
- int batadv_softif_is_valid(const struct net_device *net_dev)
- {
- 	if (net_dev->netdev_ops->ndo_start_xmit == batadv_interface_tx)
-@@ -600,6 +622,13 @@ int batadv_softif_is_valid(const struct net_device *net_dev)
- 	return 0;
- }
- 
-+struct rtnl_link_ops batadv_link_ops __read_mostly = {
-+	.kind		= "batadv",
-+	.priv_size	= sizeof(struct batadv_priv),
-+	.setup		= batadv_softif_init_early,
-+	.dellink	= batadv_softif_destroy_netlink,
-+};
++/**
++ * batadv_softif_slave_del - Delete a slave iface from a batadv_soft_interface
++ * @dev: batadv_soft_interface used as master interface
++ * @slave_dev: net_device which should be removed from the master interface
++ *
++ * Return 0 if successful or error otherwise.
++ */
++static int batadv_softif_slave_del(struct net_device *dev,
++				   struct net_device *slave_dev)
++{
++	struct batadv_hard_iface *hard_iface;
++	int ret = -EINVAL;
 +
- /* ethtool */
- static int batadv_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
- {
-diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
-index 49bc66b..2f2472c 100644
---- a/net/batman-adv/soft-interface.h
-+++ b/net/batman-adv/soft-interface.h
-@@ -27,5 +27,6 @@ void batadv_interface_rx(struct net_device *soft_iface,
- struct net_device *batadv_softif_create(const char *name);
- void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
- int batadv_softif_is_valid(const struct net_device *net_dev);
-+extern struct rtnl_link_ops batadv_link_ops;
++	hard_iface = batadv_hardif_get_by_netdev(slave_dev);
++
++	if (!hard_iface || hard_iface->soft_iface != dev)
++		goto out;
++
++	batadv_hardif_disable_interface(hard_iface, BATADV_IF_CLEANUP_KEEP);
++	ret = 0;
++
++out:
++	if (hard_iface)
++		batadv_hardif_free_ref(hard_iface);
++	return ret;
++}
++
+ static const struct net_device_ops batadv_netdev_ops = {
+ 	.ndo_init = batadv_softif_init_late,
+ 	.ndo_open = batadv_interface_open,
+@@ -517,7 +569,9 @@ static const struct net_device_ops batadv_netdev_ops = {
+ 	.ndo_set_mac_address = batadv_interface_set_mac_addr,
+ 	.ndo_change_mtu = batadv_interface_change_mtu,
+ 	.ndo_start_xmit = batadv_interface_tx,
+-	.ndo_validate_addr = eth_validate_addr
++	.ndo_validate_addr = eth_validate_addr,
++	.ndo_add_slave = batadv_softif_slave_add,
++	.ndo_del_slave = batadv_softif_slave_del,
+ };
  
- #endif /* _NET_BATMAN_ADV_SOFT_INTERFACE_H_ */
+ /**
 -- 
 1.8.1.5
 
