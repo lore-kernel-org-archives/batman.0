@@ -1,12 +1,14 @@
-Return-Path: <rostedt@goodmis.org>
-Message-Id: <20130326173600.211530324@goodmis.org>
-Date: Tue, 26 Mar 2013 13:21:01 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-References: <20130326172059.136127374@goodmis.org>
-Content-Disposition: inline;
- filename=0002-batman-adv-fix-random-jitter-calculation.patch
-Subject: [B.A.T.M.A.N.] [PATCH 02/86] batman-adv: fix random jitter
-	calculation
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu, 28 Mar 2013 08:50:21 +0100
+Message-Id: <1364457031-3194-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1364457031-3194-1-git-send-email-ordex@autistici.org>
+References: <1364457031-3194-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 01/11] batman-adv: Fix endianness errors for
+	network coding
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,58 +20,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Akinobu Mita <akinobu.mita@gmail.com>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de>, "David S. Miller" <davem@davemloft.net>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
 
-3.6.11.1 stable review patch.
-If anyone has any objections, please let me know.
+From: Martin Hundebøll <martin@hundeboll.net>
 
-------------------
+Add a htonl() in network_coding.c when reading the sequence number
+from received ogm_packet, to avoid wrong byte ordering when comparing
+with a host value. This bug was introduced in
+3ed7ada3f0bbcd058567bc0a8f9729a73eba7db6 ("batman-adv: network coding -
+detect coding nodes and remove these after timeout").
 
-From: Akinobu Mita <akinobu.mita@gmail.com>
+Change the type of coded_packet->coded_len from uint16 to __be16 to
+avoid wrong assumptions about endianness in later uses. Introduced in
+c3289f3650d34b60296000a629c99f2488f7c3dd ("batman-adv: network coding -
+code and transmit packets if possible").
 
-[ Upstream commit 143cdd8f33909ff5a153e3f02048738c5964ba26 ]
-
-batadv_iv_ogm_emit_send_time() attempts to calculates a random integer
-in the range of 'orig_interval +- BATADV_JITTER' by the below lines.
-
-        msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
-        msecs += (random32() % 2 * BATADV_JITTER);
-
-But it actually gets 'orig_interval' or 'orig_interval - BATADV_JITTER'
-because '%' and '*' have same precedence and associativity is
-left-to-right.
-
-This adds the parentheses at the appropriate position so that it matches
-original intension.
-
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Cc: Antonio Quartulli <ordex@autistici.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Reported-by: Fengguang Wu <fengguang.wu@intel.com>
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_iv_ogm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/network-coding.c | 2 +-
+ net/batman-adv/packet.h         | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 469daab..1476f26 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -119,7 +119,7 @@ batadv_iv_ogm_emit_send_time(const struct batadv_priv *bat_priv)
- 	unsigned int msecs;
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 5728079..086c107 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -654,7 +654,7 @@ static bool batadv_can_nc_with_orig(struct batadv_priv *bat_priv,
+ 				    struct batadv_orig_node *orig_node,
+ 				    struct batadv_ogm_packet *ogm_packet)
+ {
+-	if (orig_node->last_real_seqno != ogm_packet->seqno)
++	if (orig_node->last_real_seqno != ntohl(ogm_packet->seqno))
+ 		return false;
+ 	if (orig_node->last_ttl != ogm_packet->header.ttl + 1)
+ 		return false;
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index a079958..a51ccfc 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -308,7 +308,7 @@ struct batadv_coded_packet {
+ 	uint8_t  second_source[ETH_ALEN];
+ 	uint8_t  second_orig_dest[ETH_ALEN];
+ 	__be32   second_crc;
+-	uint16_t coded_len;
++	__be16   coded_len;
+ };
  
- 	msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
--	msecs += (random32() % 2 * BATADV_JITTER);
-+	msecs += random32() % (2 * BATADV_JITTER);
- 
- 	return jiffies + msecs_to_jiffies(msecs);
- }
+ #endif /* _NET_BATMAN_ADV_PACKET_H_ */
 -- 
-1.7.10.4
-
+1.8.1.5
 
