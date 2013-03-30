@@ -1,8 +1,14 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 30 Mar 2013 15:49:27 +0100
-Message-Id: <1364654967-25455-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: do not silently ignore wrong
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 30 Mar 2013 23:01:29 +0800
+References: <1364654967-25455-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1364654967-25455-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201303302301.29913.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: do not silently ignore wrong
 	condition
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -15,32 +21,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Only one neigh_node per orig_node should match a given
-neighbor address, therefore, if more than one matching
-neigh_node is found, a WARNING has to be triggered to let
-the user know that something is wrong in the originator
-state instead of silently skipping the error.
+On Saturday, March 30, 2013 22:49:27 Antonio Quartulli wrote:
+> @@ -669,7 +669,7 @@ batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
+>                 if (batadv_compare_eth(neigh_addr, ethhdr->h_source) &&
+>                     tmp_neigh_node->if_incoming == if_incoming &&
+>                     atomic_inc_not_zero(&tmp_neigh_node->refcount)) {
+> -                       if (neigh_node)
+> +                       if (WARN(neigh_node, "too many matching
+> neigh_nodes") batadv_neigh_node_free_ref(neigh_node); neigh_node =
+> tmp_neigh_node;
+>                         continue;
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- bat_iv_ogm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I wasn't aware one could throw the warning right in the if-statement but for 
+the sake of readability, please don't do that.
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 38183dc..9fbf588 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -669,7 +669,7 @@ batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
- 		if (batadv_compare_eth(neigh_addr, ethhdr->h_source) &&
- 		    tmp_neigh_node->if_incoming == if_incoming &&
- 		    atomic_inc_not_zero(&tmp_neigh_node->refcount)) {
--			if (neigh_node)
-+			if (WARN(neigh_node, "too many matching neigh_nodes")
- 				batadv_neigh_node_free_ref(neigh_node);
- 			neigh_node = tmp_neigh_node;
- 			continue;
--- 
-1.8.1.5
-
+Cheers,
+Marek
