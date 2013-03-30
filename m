@@ -1,16 +1,17 @@
 Return-Path: <ordex@autistici.org>
-Date: Sat, 30 Mar 2013 14:10:30 +0100
+Date: Sat, 30 Mar 2013 14:16:02 +0100
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130330131029.GB4024@ritirata.org>
+Message-ID: <20130330131602.GC4024@ritirata.org>
 References: <trinity-97d57b03-203f-4915-9bec-fcae5d01e618-1363490537768@3capp-webde-bs08>
  <1363495498-17830-1-git-send-email-linus.luessing@web.de>
+ <1363495498-17830-2-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="6sX45UoQRIJXqkqR"
+ protocol="application/pgp-signature"; boundary="yLVHuoLXiP9kZBkt"
 Content-Disposition: inline
-In-Reply-To: <1363495498-17830-1-git-send-email-linus.luessing@web.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix rcu_barrier() miss
- due to double call_rcu() in TT code
+In-Reply-To: <1363495498-17830-2-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix general protection
+ fault in batadv_tt_global_del_orig()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,89 +26,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---6sX45UoQRIJXqkqR
+--yLVHuoLXiP9kZBkt
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Mar 17, 2013 at 05:44:57AM +0100, Linus L=C3=BCssing wrote:
-> rcu_barrier() only waits for the currently scheduled rcu functions
-> to finish - it won't wait for any function scheduled via another
-> call_rcu() within an rcu scheduled function.
+On Sun, Mar 17, 2013 at 05:44:58AM +0100, Linus L=C3=BCssing wrote:
+> On shutdown a race condition where we access a just freed global TT hash
+> might occure. batadv_orig_node_free_rcu() callbacks might have been
+> scheduled (especially during the shutdown procedure) and unfortunately
+> batadv_tt_global_table_free() does not wait for them to finish first
+> before freeing the global TT hash.
 >=20
-> Unfortunately our batadv_tt_orig_list_entry_free_ref() does just that,
-> via a batadv_orig_node_free_ref() call, leading to our rcu_barrier()
-> call potentially missing such a batadv_orig_node_free_ref().
+> This potentially results in a general protection fault in
+> batadv_tt_global_del_orig(), called via a batadv_orig_node_free_rcu()
+> callback, which tries to access the just freed global TT hash.
 >=20
-> This patch fixes this issue by calling the batadv_orig_node_free_rcu()
-> directly from the rcu callback, removing the unnecessary, additional
-> call_rcu() layer here.
+> This patch tries to fix this by waiting for any just scheduled
+> batadv_orig_node_free_rcu() to finish via an extra rcu_barrier() call
+> before freeing the global TT hash. And by moving the TT freeing call to
+> the end of the batman cleanup routines.
 >=20
 > Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
->=20
-> diff --git a/originator.c b/originator.c
-> index 585e684..013c7d0 100644
-> --- a/originator.c
-> +++ b/originator.c
-> @@ -117,7 +117,7 @@ out:
->  	return neigh_node;
->  }
-> =20
-> -static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
-> +void batadv_orig_node_free_rcu(struct rcu_head *rcu)
->  {
->  	struct hlist_node *node_tmp;
->  	struct batadv_neigh_node *neigh_node, *tmp_neigh_node;
-> diff --git a/originator.h b/originator.h
-> index 7df48fa..4f9f88b 100644
-> --- a/originator.h
-> +++ b/originator.h
-> @@ -25,6 +25,7 @@
->  int batadv_originator_init(struct batadv_priv *bat_priv);
->  void batadv_originator_free(struct batadv_priv *bat_priv);
->  void batadv_purge_orig_ref(struct batadv_priv *bat_priv);
-> +void batadv_orig_node_free_rcu(struct rcu_head *rcu);
->  void batadv_orig_node_free_ref(struct batadv_orig_node *orig_node);
->  struct batadv_orig_node *batadv_get_orig_node(struct batadv_priv *bat_pr=
-iv,
->  					      const uint8_t *addr);
-> diff --git a/translation-table.c b/translation-table.c
-> index 9322320..ee91cc1 100644
-> --- a/translation-table.c
-> +++ b/translation-table.c
-> @@ -144,7 +144,10 @@ static void batadv_tt_orig_list_entry_free_rcu(struc=
-t rcu_head *rcu)
->  	struct batadv_tt_orig_list_entry *orig_entry;
-> =20
->  	orig_entry =3D container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
-> -	batadv_orig_node_free_ref(orig_entry->orig_node);
-> +
-> +	if (atomic_dec_and_test(&orig_entry->orig_node->refcount))
-> +		batadv_orig_node_free_rcu(&orig_entry->orig_node->rcu);
-> +
->  	kfree(orig_entry);
->  }
 
-Hi Linus,
+Acked-by: Antonio Quartulli <ordex@autistici.org>
 
-I was just re-reading this patch: the code can be beautified later (I think=
- it
-would be worth defining a new function, e.g. batadv_orig_node_free(orig_nod=
-e),
-which can then be invoked both in batadv_orig_node_free_rcu() and here - in=
- this
-way we avoid to export batadv_orig_node_free_rcu() which should remain priv=
-ate
-to the originator.c module and we avoid this forced fake rcu invocation), b=
-ut I
-think that putting a comment here to explain why we don't invoke call_rcu is
-definitely needed. In the future somebody else may ask why we don't use it =
-and
-will try to re-add it.
+@Marek: when you will merge this commit, can you please reword "tries to fi=
+x" in
+"fixes" ? :)
+Actually this patch is fixing the problem :)
 
-The rest looks good.
+However, as I discussed with Linus on IRC, this is only a temporary fix, wh=
+ich
+aims to remove the problem, but still we will need a redesign of the TT cle=
+an up
+routine in order to cleanly get rid of this race condition.
 
-Thanks!
+Cheers,
+
 
 
 --=20
@@ -116,25 +72,25 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---6sX45UoQRIJXqkqR
+--yLVHuoLXiP9kZBkt
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRVuRFAAoJEADl0hg6qKeOQJsP/iqoVV/ycRevIA5KkoJS6Xrp
-K2YSnosfkSkKUx0tTrEJkPT4Rwj/Poiqo2w8Db+sDUV6603I1rFNzMjci6Av99iW
-kloaMtnRKzI3vot2z84PpJTI8jg516Wb4SBNm5kz3QzgXq+rhwceigZnjYPYUX7b
-VzeZa2fI9YkqCfQRe5W1ReF+YEOlNRRG9tPEgSqMGOPvVmMRmuHFCotTkFFMQsOu
-Y7G5Y9e4m52qZ7cXnRkYx1YJvyI9PBBbCPMjyatSgL+1lTQhgRwSbHyxBQs08fw9
-+dhtVCDDBQqKmbWGJ+m5WP0PeSQ4Po90BfvbfafVs42pE/ohTcQdzlD5EKiOzGvH
-isZhME63Ed7t6qJExEkHuhVpS29XIr2mrP+Jac4UFRI2ys29zlLboIW1IJSyFM2M
-7EYVc3vvrCFTY7KOIZQ4PhL3Q41+0IRSr1CgbjWn8MVdudlKybr9JzKzUlUVvkxo
-kbkLm6Sj9XVLxqA6jzq9Ws6YMF9xwZdqPBKuRWPq3K4PPj+blZ2oj+J0gXQKURx/
-ULJn7CTkMy4AuRpxdzkUYlD7WXD9Q7N1PTtJYAILF880tgOdgfSdciZpKCOoiMIZ
-Rr0OfxZre81xYu2+YXv+V318SxhM01XJcgKO2Dq8NnXa3UxOgqOM8OGwBEaovZ9T
-/xLCugBP/5X/GlLPjh32
-=khQc
+iQIcBAEBCAAGBQJRVuWSAAoJEADl0hg6qKeOticQALxqy631dTtokT2jMeBoirMv
+WcUYO+qulNQ6qRAFmBLfDycZQB1X5n17YRdsBAI3/tXDFgUHgWY0/FU8A99AZOyw
+B+MSpVuW7dA5UjaAkdDIBCoV4nSj8h19kRDiLZWWLoVjqLk0XvlmSyWjiUg/H97F
+UGDEjGbRgd1k0EZrmGOK7FQB/HxKGyMI4fO5aH4/GIiuHgPwxk58ftCPPooXKlxo
+m/s1rf9cERgbAXxNLLodnBXJjACsNGSh8xaLF2EER+eF3hwaYoOsEUsPbWS6UoKP
+63l3CCnmPFB1z74Pk30RosulDtm/tyOEy8DTYzy9W8jAjHyGdVZKZ33SjwGE5yeR
+D437ApvIkKRzrKl/9YUIUr7yEjf/x8GKq89VButGmoC8jDeHs/U41WEZ7lACEDNh
+6pRAAe8frMy0Q7PARkFyhMR64wHnzfRH15YctEtPOM0cFI3Uui5wa0Y8G0l7Xtn4
+60syXxOTrXb5/DKY+vN9/DExqxh447NF9G1gDQuG2xQnAl6olnD6yJtNNsFcybXS
++l2vR9bRZnKWtxdU6y2nIQLXC6rW1Q3sQChd42MRX510MiZE0Dp2kpfqsXc1kdfM
+V3JFDc3PT4WvKmztrGY8IUKkEorlSDjd+mJgXcJL27M4PSZFLozkst+ALv9aZiXx
+6I9lX3VFBk956NLHSlwC
+=rzSN
 -----END PGP SIGNATURE-----
 
---6sX45UoQRIJXqkqR--
+--yLVHuoLXiP9kZBkt--
