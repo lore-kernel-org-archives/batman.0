@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 30 Mar 2013 17:22:00 +0100
-Message-Id: <1364660520-18385-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <20130330150907.GE4024@ritirata.org>
-References: <20130330150907.GE4024@ritirata.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: do not silently ignore wrong
-	condition
+Date: Sun, 31 Mar 2013 22:03:18 +0200
+Message-Id: <1364760198-17043-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1364760198-17043-1-git-send-email-ordex@autistici.org>
+References: <1364760198-17043-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: tcpdump - print subtype for
+	UNICAST4ADDR packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,34 +19,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Only one neigh_node per orig_node should match a given
-neighbor address, therefore, if more than one matching
-neigh_node is found, a WARNING has to be triggered to let
-the user know that something is wrong in the originator
-state instead of silently skipping the error.
-
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
+ tcpdump.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-v2:
-- fixed closing parenthesis
-
- bat_iv_ogm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 38183dc..bd50e0d 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -669,7 +669,7 @@ batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
- 		if (batadv_compare_eth(neigh_addr, ethhdr->h_source) &&
- 		    tmp_neigh_node->if_incoming == if_incoming &&
- 		    atomic_inc_not_zero(&tmp_neigh_node->refcount)) {
--			if (neigh_node)
-+			if (WARN(neigh_node, "too many matching neigh_nodes"))
- 				batadv_neigh_node_free_ref(neigh_node);
- 			neigh_node = tmp_neigh_node;
- 			continue;
+diff --git a/tcpdump.c b/tcpdump.c
+index 39239dd..bf4edd4 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -562,7 +562,8 @@ static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len, int
+ 
+ 	printf("%s: 4ADDR, subtype %d, ttvn %d, ttl %hhu, ",
+ 	       get_name_by_macaddr((struct ether_addr *)unicast_4addr_packet->u.dest, read_opt),
+-	       unicast_4addr_packet->u.ttvn, unicast_4addr_packet->u.header.ttl);
++	       unicast_4addr_packet->subtype, unicast_4addr_packet->u.ttvn,
++	       unicast_4addr_packet->u.header.ttl);
+ 
+ 	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct batadv_unicast_4addr_packet),
+ 		      buff_len - ETH_HLEN - sizeof(struct batadv_unicast_4addr_packet),
 -- 
 1.8.1.5
 
