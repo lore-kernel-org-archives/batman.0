@@ -1,15 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 02 Apr 2013 11:10:37 +0200
-Message-ID: <6694164.toG189sgU4@bentobox>
-In-Reply-To: <20130329114816.GR798@l04.local>
-References: <20130320175154.GT41481@l04.local>
- <3212285.GF4Btbehao@sven-desktop> <20130329114816.GR798@l04.local>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1886120.pe8fKaU1Wd";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7Bit
-Subject: Re: [B.A.T.M.A.N.] Bug#703540: Inconsistent use of _GNU_SOURCE
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue,  2 Apr 2013 11:41:08 +0200
+Message-Id: <1364895668-15046-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: move
+	batadv_slide_own_bcast_window to bat_iv_ogm.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,57 +15,126 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Michael Tautschnig <mt@debian.org>
-Cc: 703540@bugs.debian.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
+From: Antonio Quartulli <antonio@open-mesh.com>
 
---nextPart1886120.pe8fKaU1Wd
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+batadv_slide_own_bcast_window() is used only in bat_iv_ogm.c
+and it is currently touching only batman_iv specific
+attributes.
 
-On Friday 29 March 2013 11:48:16 Michael Tautschnig wrote:
-> Hi Sven, hi all,
-> 
-> [...]
-> 
-> > > Either all or no file should #define _GNU_SOURCE.
-> > 
-> > Please add information how to reproduce this the next time you are adding
-> > such such a bug. Now I can just assume what you are writing is true (even
-> > when the man page about sendto says otherwise).
-[...]
-> Just one question before I elaborate a bit: what information in the man page
-> are you referring to? I can't quite seem to see anything mentioning
-> _GNU_SOURCE?
+Move it into bat_iv_ogm.c and make it static.
 
-Yes, this was exactly the thing I was pointing out:
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ bat_iv_ogm.c | 32 +++++++++++++++++++++++++++++++-
+ routing.c    | 29 -----------------------------
+ routing.h    |  1 -
+ 3 files changed, 31 insertions(+), 31 deletions(-)
 
-> > > (This was at least noticed for the sendto function, but may extend to
-> > > others.)
-
-Kind regards,
-	Sven
---nextPart1886120.pe8fKaU1Wd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAABCgAGBQJRWqCNAAoJEF2HCgfBJntG4/AQALRfmOncjSWAo2zOnh1CN3Gr
-qlty6ioU8g2H/vn+oREcTZXYSi6KwNiZyi5Pniec7oVu6Xi5jq/HMK5S0sBbeEHO
-YBh78y/7mYbzjDjeFDq/qpGnqg/leFVxKOFvF/kmmxz0d2IACL/eWpWpttxIXhNk
-CFdnGZwMsSOCwCUr5YYhAYGGmXkN7Yca16ZMhy0NkXLgoMy7sbKewGG2lD5JpGkS
-yTgupfWCKjnG4IpPIlx8i7Xc/6Et22CspYbveMZjSde0u7XfaA5B95UegzulYH5R
-wIYTNpR/I8pvq2DZ73KV47Qlv99OEDruUUrnqYNwz+WOINPH8iIKRuk8LglWpH+o
-C5yn3ZhXERA+6kC9PFUiEwS7kwykAQBSnAAyiVi/jr1az5n/laKPAitQl2dsnSYN
-SAvFv5pFuNK+5Jw4mlZtJanJ/hnlCKhHYLtiYk68YRH8B+7JREwto3ypAEWzz3fO
-6uPxtYOvANNvLu3jOh7RMafiMPznWk5TBERS/tg0+gIGyGz0DL73gpvMuLH2eAnL
-Ikv4aHZ+ZMWuJG1mcW5HYb0icypjiCSbFD5shUpDYkpbm2eg1xDs2PtuU5C+C76D
-RC0FolqEPbYmiOp60TcDEsLh02ygZDVEdCMJmzn97iN4g0Pfe/FKnMty2of9ftQk
-mM0iLw99oMsh2wjTjkm8
-=161E
------END PGP SIGNATURE-----
-
---nextPart1886120.pe8fKaU1Wd--
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index bd50e0d..3c6670f 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -589,6 +589,36 @@ static void batadv_iv_ogm_forward(struct batadv_orig_node *orig_node,
+ 				if_incoming, 0, batadv_iv_ogm_fwd_send_time());
+ }
+ 
++static void
++batadv_iv_ogm_slide_own_bcast_window(struct batadv_hard_iface *hard_iface)
++{
++	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
++	struct batadv_hashtable *hash = bat_priv->orig_hash;
++	struct hlist_head *head;
++	struct batadv_orig_node *orig_node;
++	unsigned long *word;
++	uint32_t i;
++	size_t word_index;
++	uint8_t *w;
++
++	for (i = 0; i < hash->size; i++) {
++		head = &hash->table[i];
++
++		rcu_read_lock();
++		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
++			spin_lock_bh(&orig_node->ogm_cnt_lock);
++			word_index = hard_iface->if_num * BATADV_NUM_WORDS;
++			word = &(orig_node->bcast_own[word_index]);
++
++			batadv_bit_get_packet(bat_priv, word, 1, 0);
++			w = &orig_node->bcast_own_sum[hard_iface->if_num];
++			*w = bitmap_weight(word, BATADV_TQ_LOCAL_WINDOW_SIZE);
++			spin_unlock_bh(&orig_node->ogm_cnt_lock);
++		}
++		rcu_read_unlock();
++	}
++}
++
+ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+@@ -633,7 +663,7 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ 		batadv_ogm_packet->gw_flags = BATADV_NO_FLAGS;
+ 	}
+ 
+-	batadv_slide_own_bcast_window(hard_iface);
++	batadv_iv_ogm_slide_own_bcast_window(hard_iface);
+ 	batadv_iv_ogm_queue_add(bat_priv, hard_iface->bat_iv.ogm_buff,
+ 				hard_iface->bat_iv.ogm_buff_len, hard_iface, 1,
+ 				batadv_iv_ogm_emit_send_time(bat_priv));
+diff --git a/routing.c b/routing.c
+index 8f88967..0b79e65 100644
+--- a/routing.c
++++ b/routing.c
+@@ -34,35 +34,6 @@
+ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 				       struct batadv_hard_iface *recv_if);
+ 
+-void batadv_slide_own_bcast_window(struct batadv_hard_iface *hard_iface)
+-{
+-	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+-	struct batadv_hashtable *hash = bat_priv->orig_hash;
+-	struct hlist_head *head;
+-	struct batadv_orig_node *orig_node;
+-	unsigned long *word;
+-	uint32_t i;
+-	size_t word_index;
+-	uint8_t *w;
+-
+-	for (i = 0; i < hash->size; i++) {
+-		head = &hash->table[i];
+-
+-		rcu_read_lock();
+-		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+-			spin_lock_bh(&orig_node->ogm_cnt_lock);
+-			word_index = hard_iface->if_num * BATADV_NUM_WORDS;
+-			word = &(orig_node->bcast_own[word_index]);
+-
+-			batadv_bit_get_packet(bat_priv, word, 1, 0);
+-			w = &orig_node->bcast_own_sum[hard_iface->if_num];
+-			*w = bitmap_weight(word, BATADV_TQ_LOCAL_WINDOW_SIZE);
+-			spin_unlock_bh(&orig_node->ogm_cnt_lock);
+-		}
+-		rcu_read_unlock();
+-	}
+-}
+-
+ static void _batadv_update_route(struct batadv_priv *bat_priv,
+ 				 struct batadv_orig_node *orig_node,
+ 				 struct batadv_neigh_node *neigh_node)
+diff --git a/routing.h b/routing.h
+index 99eeafa..72a29bd 100644
+--- a/routing.h
++++ b/routing.h
+@@ -20,7 +20,6 @@
+ #ifndef _NET_BATMAN_ADV_ROUTING_H_
+ #define _NET_BATMAN_ADV_ROUTING_H_
+ 
+-void batadv_slide_own_bcast_window(struct batadv_hard_iface *hard_iface);
+ bool batadv_check_management_packet(struct sk_buff *skb,
+ 				    struct batadv_hard_iface *hard_iface,
+ 				    int header_len);
+-- 
+1.8.1.5
 
