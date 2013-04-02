@@ -1,17 +1,15 @@
 Return-Path: <ordex@autistici.org>
-Date: Tue, 2 Apr 2013 15:41:55 +0200
+Date: Tue, 2 Apr 2013 17:19:31 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130402134155.GK4024@ritirata.org>
-References: <1364760198-17043-1-git-send-email-ordex@autistici.org>
- <1364760198-17043-2-git-send-email-ordex@autistici.org>
- <201304021641.31457.lindner_marek@yahoo.de>
+Message-ID: <20130402151930.GL4024@ritirata.org>
+References: <1364903975-7141-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="7ArrI7P/b+va1vZ8"
+ protocol="application/pgp-signature"; boundary="HBg0C3yr6HVa1ZCc"
 Content-Disposition: inline
-In-Reply-To: <201304021641.31457.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batctl: tcpdump - print subtype for
- UNICAST4ADDR packets
+In-Reply-To: <1364903975-7141-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: properly push
+ NET_IP_ALIGN bytes more
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,72 +21,68 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 
---7ArrI7P/b+va1vZ8
+--HBg0C3yr6HVa1ZCc
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 02, 2013 at 04:41:31PM +0800, Marek Lindner wrote:
-> On Monday, April 01, 2013 04:03:18 Antonio Quartulli wrote:
-> > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> > ---
-> >  tcpdump.c | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/tcpdump.c b/tcpdump.c
-> > index 39239dd..bf4edd4 100644
-> > --- a/tcpdump.c
-> > +++ b/tcpdump.c
-> > @@ -562,7 +562,8 @@ static void dump_batman_4addr(unsigned char
-> > *packet_buff, ssize_t buff_len, int
-> >=20
-> >  	printf("%s: 4ADDR, subtype %d, ttvn %d, ttl %hhu, ",
-> >  	       get_name_by_macaddr((struct ether_addr *)unicast_4addr_packet-=
->u.dest, read_opt),
-> >  -	       unicast_4addr_packet->u.ttvn, unicast_4addr_packet->u.header.=
-ttl);=20
-> >  +	       unicast_4addr_packet->subtype, unicast_4addr_packet->u.ttvn,=
-=20
-> >  +	       unicast_4addr_packet->u.header.ttl);
-> >=20
+On Tue, Apr 02, 2013 at 01:59:35PM +0200, Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
 >=20
-> You added the subtype printf format string with the previous patch=20
-> already. You might want to fix this.
+> every batman-adv encapsulated packet is supposed to begin
+> with an Ethernet header plus 2 bytes for correct alignment
+> on 4 bytes boundary.
+>=20
+> However, even if allocations are made correctly, the final
+> encapsulation is not made properly since the encapsulating
+> function does not push NET_IP_ALIGN bytes other than
+> ETH_HLEN.
+>=20
+> Fix it by pushing the correct amount of bytes.
+>=20
+> Introduced by 7f91790974c258e71a62f6dee8cb1dbe5dff36c3
+> ("batman-adv: Reserve extra bytes in skb for better alignment")
+>=20
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 
-ops, thanks! I did not realised that when I created the two patches.
+This patch can be dropped.
+We don't want to send those two extra bytes, we use them only for local mem=
+ory
+alignment.
 
-Thanks a lot.
-Will send v2.
+Sorry about that.
 
 Cheers,
+
 --=20
 Antonio Quartulli
 
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---7ArrI7P/b+va1vZ8
+--HBg0C3yr6HVa1ZCc
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRWuAjAAoJEADl0hg6qKeOuIwP/iWw4vWSOtdgt0Ta/cWu8T/s
-xskaINs90sBziYOp5NKjiaKZuzd8Gi2QhtX4blqqVQbLN+kLB4GpexSBdCSWdAOD
-pxb0v9XeunHOHZ8vdSsn6R1X+iz1dMZtArBag0k07qVDnz6t+9o/a74IbNHC3NpO
-lH1JCv+coSd7zX8lNLx6zLd7hhPEWEBkS9GO59j9xixhsp4D0m0Nm7msB7LvoQT/
-fuacGlcb8ObpWLOlx0Nk9zHekNCxTbzvX+SmHaGdJ++IEmU2gH3V1ZPmyibj1nXm
-adnx3riDqT1cJYcPiJqdMrqgk26Sd/lp9ATMMHNiCjKGyL/rS4nyRD/zNEyn1r4q
-cy2lP3Gbwo6jkEYU9Aq534Ig+lzMdJxfGObdEBPW0pkSveyFSMcRzju/fUmXWWld
-KcWLqoGCf7W9oUwW9dHedX5B2VN5c0LJjNMKfdVDMMcmRz5MhVMVyAr9CJ9pfA3Q
-Vv+E6uwBerzwyuYaDuk/Kua8TB6qVAelvTdK9Lqtbb86y7u7pSaosAN97UoZ26dx
-aVxD95Mi62XQGRTqWzX1yXIm5cndpdrYTgUsLIhd9suOTZ0QCpOORehjlXOevr/R
-fnmzf9ujkcKx3MDvYDIf//yEF+dOqH/H9uAkK3BI7oWz29x9jZMjWJSxe9dVpEBQ
-Tg8jozkHwSbgIsV1516N
-=E6xm
+iQIcBAEBCAAGBQJRWvcCAAoJEADl0hg6qKeOkW4QALyO2bwxE+DOL4WOFKkddMFF
+wAQ9GLx3SPvQNDi85N4omo8M2H67PaO6PwAeHOdM98NBCYbIAexx4S2pWpH8Bh4i
+6nFsvWlP5HhdwFEA0STGq0+TlC4zXB1+1DGzSoTdddYRamksFLdkFqSNmadY+KNW
+/840gDmofLX4iSVuJNk1mkK1FqHJYWKhCWu6Hva+kNbo/eG8SSURSZvMnTC43VEK
+B5iMvAxwnYkyKpxr+I1ysyKYtRb6wZKP1h0LeU6Il4es0jRESjmzSxi2lJYOWRYJ
+prDngLd4VEgUFZFUloiIQpwlKqqwXDP8inLaVCy+APidY6dDWlpgWKG/lqUKyJPY
+f4mrfjWeznMdy+MD2KsYf/v1oWZ9BYoGcX8xMEWV/tzmjLjbMcWe31nDvJDeskUh
+f9bxvSCdkJLX4+/x5PL/7CqAoz4l9jyF9EqDfam5WdgAgzbhAHKeM90iP7yFYT5A
+F6idO3bBsC/lzmYTTbz5GJZpFfcDc2cwcCT4hprNeuBAqZRvCKe9xNQ+RaWMQoj6
+RDfBf9iwDr217hOxPVk+oiyXj4LVtJxq7NbzW8Om0I/EKtABoPbVlc2iqOeT9heQ
+BNGvfLwDObhqz9CXBx9qf4LyZmPKPqdziZezyigJ4UAvgOh7LUZyCEfmPSWiDEfd
+CQX8ZLhNBRjsviFlAPLn
+=2TX4
 -----END PGP SIGNATURE-----
 
---7ArrI7P/b+va1vZ8--
+--HBg0C3yr6HVa1ZCc--
