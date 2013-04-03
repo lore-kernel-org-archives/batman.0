@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 3 Apr 2013 19:05:16 +0800
-References: <1364215787-17935-2-git-send-email-ordex@autistici.org>
- <1364216085-27994-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1364216085-27994-1-git-send-email-ordex@autistici.org>
+Date: Wed, 3 Apr 2013 19:11:49 +0800
+References: <1364249134-19537-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1364249134-19537-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201304031905.16678.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: slightly improve
-	neighbor creation debug message
+Message-Id: <201304031911.49381.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: don't check the source
+	address twice
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,21 +24,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-On Monday, March 25, 2013 20:54:45 Antonio Quartulli wrote:
+On Tuesday, March 26, 2013 06:05:34 Antonio Quartulli wrote:
 > From: Antonio Quartulli <antonio@open-mesh.com>
 > 
-> print the interface along with the new neighbor mac address
+> The source address has already been checked in
+> batadv_check_management_packet() upon packet reception and
+> therefore it does not need to be checked again in
+> ogm_process()
 > 
 > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 > ---
 > 
 > v2:
-> - fixed member name
+> - removed variable declaration
 > 
->  originator.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  bat_iv_ogm.c | 12 +-----------
+>  1 file changed, 1 insertion(+), 11 deletions(-)
 
-Applied in revision ca32543.
+Applied in revision 0e7086c.
 
 Thanks,
 Marek
