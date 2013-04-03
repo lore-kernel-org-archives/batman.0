@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 3 Apr 2013 19:19:13 +0800
+Date: Wed, 3 Apr 2013 19:20:09 +0800
 References: <1364934870-23095-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1364934870-23095-1-git-send-email-ordex@autistici.org>
+ <1364934870-23095-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1364934870-23095-2-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201304031919.14015.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batctl: fix 4addr parsing in
-	tcpdump
+Message-Id: <201304031920.09466.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batctl: tcpdump - print subtype
+	for UNICAST4ADDR packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,24 +24,17 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, April 03, 2013 04:34:29 Antonio Quartulli wrote:
-> In the UNICAST4ADDR parsing routing a wrong type is used to
-> parse the batman header, resulting in a wrong data
-> visualization. Fix this by using the correct data type.
-> 
-> Introduced by 70aefcf8abefd509e5721c6ae228d3854d5e8b16
-> ("batctl: Add minimal unicast 4addr dissector support")
-> 
+On Wednesday, April 03, 2013 04:34:30 Antonio Quartulli wrote:
 > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 > ---
 > 
 > v2:
-> - removed subtype print format
+> - added subtype print format
 > 
->  tcpdump.c | 16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
+>  tcpdump.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
-Applied in revision 0ae03c9.
+Applied in revision 02921f7.
 
 Thanks,
 Marek
