@@ -1,14 +1,16 @@
-Return-Path: <mihail.costea90@gmail.com>
+Return-Path: <ordex@autistici.org>
+Date: Wed, 3 Apr 2013 10:11:45 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130403081145.GC14372@ritirata.org>
+References: <20130330131029.GB4024@ritirata.org>
+ <1364952313-3163-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-In-Reply-To: <20130402220654.GB14372@ritirata.org>
-References: <CAP5XTDPibzzo_wLjXOsT07JnwNM_YTioxXdwo2bcDuAb0021xA@mail.gmail.com>
- <20130402220654.GB14372@ritirata.org>
-Date: Wed, 3 Apr 2013 09:19:57 +0300
-Message-ID: <CAP5XTDMHwbKGL2YasitBAR6UH10A4_d89=98H53PGp8L=xmG1w@mail.gmail.com>
-From: Mihail Costea <mihail.costea90@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] [RFCv2] batman-adv: Modified DAT structures and
- functions in order to support both IPv4 and IPv6
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="LwW0XdcUbUexiWVK"
+Content-Disposition: inline
+In-Reply-To: <1364952313-3163-1-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Fix rcu_barrier() miss
+ due to double call_rcu() in TT code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,158 +24,56 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On 3 April 2013 01:06, Antonio Quartulli <ordex@autistici.org> wrote:
-> On Mon, Mar 18, 2013 at 02:07:42PM +0200, Mihail Costea wrote:
->> Subject: [RFCv2] batman-adv: Modified DAT structures and functions in order
->>  to support both IPv4 and IPv6
->>
->> Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
->>
->> ---
->
->
-> A couple of remarks that I missed till today:
->
->> +
->> +/**
->>   * batadv_compare_dat - comparing function used in the local DAT hash table
->>   * @node: node in the local table
->>   * @data2: second object to compare the node to
->> + * @ip_type: type of IP address
->>   *
->>   * Returns 1 if the two entries are the same, 0 otherwise.
->>   */
->> -static int batadv_compare_dat(const struct hlist_node *node, const void *data2)
->> +static int batadv_compare_dat(const struct hlist_node *node, const void *data2,
->> +                            uint8_t ip_type)
->>  {
->> -     const void *data1 = container_of(node, struct batadv_dat_entry,
->> -                                      hash_entry);
->> +     struct batadv_dat_entry *dat_entry1 = container_of(node,
->> +                             struct batadv_dat_entry, hash_entry);
->> +     struct batadv_dat_entry *dat_entry2 = container_of(data2,
->> +                             struct batadv_dat_entry, ip);
->> +     size_t ip_size;
->>
->> -     return (memcmp(data1, data2, sizeof(__be32)) == 0 ? 1 : 0);
->> +     if (dat_entry1->type != dat_entry2->type)
->> +             return 0;
->> +
->> +     ip_size = batadv_sizeof_ip(ip_type);
->> +     return (memcmp(dat_entry1->ip, dat_entry2->ip, ip_size) == 0 ? 1 : 0);
->> +}
->> +
->> +static int batadv_compare_dat_ipv4(const struct hlist_node *node,
->> +                            const void *data2)
->> +{
->> +     return batadv_compare_dat(node, data2, BATADV_DAT_IPV4);
->> +}
->> +
->> +#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
->> +static int batadv_compare_dat_ipv6(const struct hlist_node *node,
->> +                            const void *data2)
->> +{
->> +     return batadv_compare_dat(node, data2, BATADV_DAT_IPV6);
->>  }
->> +#endif
->>
->
-> can't you simply use one function (batadv_compare_dat()) and use
-> dat_entry1->type to compute the ip_size?
->
-> In this way you do not need the two wrapper functions (batadv_compare_dat_ipv6()
-> and batadv_compare_dat_ipv4()).
->
->
->>  /**
->>   * batadv_arp_hw_src - extract the hw_src field from an ARP packet
->> @@ -201,16 +367,19 @@ static __be32 batadv_arp_ip_dst(struct sk_buff
->> *skb, int hdr_size)
->>   * batadv_hash_dat - compute the hash value for an IP address
->>   * @data: data to hash
->>   * @size: size of the hash table
->> + * @ip_type: type of IP address
->>   *
->>   * Returns the selected index in the hash table for the given data.
->>   */
->> -static uint32_t batadv_hash_dat(const void *data, uint32_t size)
->> +static uint32_t batadv_hash_dat(const void *data, uint32_t size,
->> +                            uint8_t ip_type)
->>  {
->>       const unsigned char *key = data;
->>       uint32_t hash = 0;
->> -     size_t i;
->> +     size_t i, ip_size;
->>
->> -     for (i = 0; i < 4; i++) {
->> +     ip_size = batadv_sizeof_ip(ip_type);
->> +     for (i = 0; i < ip_size; i++) {
->>               hash += key[i];
->>               hash += (hash << 10);
->>               hash ^= (hash >> 6);
->
->
-> mh, I think we should encode the "type" in the hash as well..
-> Maybe we can postpone this suggestion to when we will make the DHT more and more
-> generic. :) For now (that we encode IPs) we won't have IP addresses of the same
-> size but different type :):)
->
->> @@ -289,14 +476,34 @@ static void batadv_dat_entry_add(struct
->> batadv_priv *bat_priv, __be32 ip,
->>       if (!dat_entry)
->>               goto out;
->>
->> -     dat_entry->ip = ip;
->> +     ip_size = batadv_sizeof_ip(ip_type);
->> +     dat_entry->ip = kmalloc(ip_size, GFP_ATOMIC);
->> +     if (!dat_entry->ip)
->> +             goto out;
->> +     memcpy(dat_entry->ip, ip, ip_size);
->> +     dat_entry->type = ip_type;
->> +
->>       memcpy(dat_entry->mac_addr, mac_addr, ETH_ALEN);
->>       dat_entry->last_update = jiffies;
->>       atomic_set(&dat_entry->refcount, 2);
->>
->> -     hash_added = batadv_hash_add(bat_priv->dat.hash, batadv_compare_dat,
->> -                                  batadv_hash_dat, &dat_entry->ip,
->> -                                  &dat_entry->hash_entry);
->> +     switch (ip_type) {
->> +     case BATADV_DAT_IPV4:
->> +             hash_added = batadv_hash_add(bat_priv->dat.hash,
->> +                             batadv_compare_dat_ipv4, batadv_hash_dat_ipv4,
->> +                             dat_entry->ip, &dat_entry->hash_entry);
->> +             break;
->> +#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
->> +     case BATADV_DAT_IPV6:
->> +             hash_added = batadv_hash_add(bat_priv->dat.hash,
->> +                             batadv_compare_dat_ipv6, batadv_hash_dat_ipv6,
->> +                             dat_entry->ip, &dat_entry->hash_entry);
->> +             break;
->
-> to reduce indentation here you could use a pointer to function which can be
-> assigned to either batadv_hash_dat_ipv4 or batadv_hash_dat_ipv6 in the switch
-> and then invoke batadv_hash_add once outside the switch block.
->
-> if you follow the iupper suggestion, batadv_compare_dat_ipv6/4()
-> should just become batadv_compare_dat()
->
->> +#endif
->> +     default:
->> +             hash_added = 1; /* in order to catch next if */
->
-> assign 1 (better -1) to hash_added declaration/initialisation and avoid this
-> default branch.
->
-> Cheers,
->
-> --
-> Antonio Quartulli
->
-> ..each of us alone is worth nothing..
-> Ernesto "Che" Guevara
 
-ACK
+--LwW0XdcUbUexiWVK
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
---
-Mihail Costea
+On Wed, Apr 03, 2013 at 03:25:13AM +0200, Linus L=C3=BCssing wrote:
+> rcu_barrier() only waits for the currently scheduled rcu functions
+> to finish - it won't wait for any function scheduled via another
+> call_rcu() within an rcu scheduled function.
+>=20
+> Unfortunately our batadv_tt_orig_list_entry_free_ref() does just that,
+> via a batadv_orig_node_free_ref() call, leading to our rcu_barrier()
+> call potentially missing such a batadv_orig_node_free_ref().
+>=20
+> This patch fixes this issue by calling the batadv_orig_node_free_rcu()
+> directly from the rcu callback, removing the unnecessary, additional
+> call_rcu() layer here.
+>=20
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
+
+Acked-by: Antonio Quartulli <ordex@autistici.org>
+
+Thanks a lot
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--LwW0XdcUbUexiWVK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRW+RBAAoJEADl0hg6qKeOSaYP/095D3Vl780B4zr0RpYwhp/2
+eVDUCV1HXMExGJInx6aS7lfqVsCUpdWFgXzIZgoKMDX3v0+u5i20+DsIuUVbM6NB
+jhZeHs5tFPZIR870sCrsQMwAQRAdd0pO6FBSnuJtr0CwdGe+ST3eX9LFnx8thqaN
+lJuaaM4U9+hKKpFYNuu2kCv8TKamCIIG5WoUDw8F0JTmkSxEMhtSwXyz5hHT+0m7
+Z9mKzSPEhzIi4CXQX1B6tiFLr1gId+39oGZvopEV04qCm+ttt+e11y9FnR9Bf/Tj
+TUozkuuICwY2E9l2xYhej7R/yrfa1iN9ivBoLINSddGp/b6sryaoD9TM2YvMcoH2
+Dh/l8WSLgu5k7lp03hG1hC6N4w09hmnA38OfIVAUPC+zHgSa8FEBbSsfunGhArAy
+pqHhzo6QTnDxKXNm6LIhlvKr9VMuVAVmNYGAavmIt5MxwbWyHefF2DIoMV4udT7i
+ov482rHZKWqN1IVRexZTFjoYPgjNXj6BBS+09pCd10JUkJuKrrHuExkhmzQoEQKG
+bnkF9igU2sCIfK5zoYbSWDEMueJw1qa8EHuXZ2GdHgnqe9kYH44vHXwuqKvPLYoS
+X+Kk/8j+G4m1geln7ARkjpfudEnP2cw9eRKShzUD7lskUggnQ3uA0vmWZnneT/Sr
+lel9mjHgttDBSQrH2swn
+=fbpS
+-----END PGP SIGNATURE-----
+
+--LwW0XdcUbUexiWVK--
