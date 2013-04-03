@@ -1,15 +1,14 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 3 Apr 2013 00:06:54 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130402220654.GB14372@ritirata.org>
-References: <CAP5XTDPibzzo_wLjXOsT07JnwNM_YTioxXdwo2bcDuAb0021xA@mail.gmail.com>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Wed,  3 Apr 2013 03:25:13 +0200
+Message-Id: <1364952313-3163-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <20130330131029.GB4024@ritirata.org>
+References: <20130330131029.GB4024@ritirata.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="TRYliJ5NKNqkz5bu"
-Content-Disposition: inline
-In-Reply-To: <CAP5XTDPibzzo_wLjXOsT07JnwNM_YTioxXdwo2bcDuAb0021xA@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] [RFCv2] batman-adv: Modified DAT structures and
- functions in order to support both IPv4 and IPv6
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Fix rcu_barrier() miss due
+	to double call_rcu() in TT code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,192 +20,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+rcu_barrier() only waits for the currently scheduled rcu functions
+to finish - it won't wait for any function scheduled via another
+call_rcu() within an rcu scheduled function.
 
---TRYliJ5NKNqkz5bu
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Unfortunately our batadv_tt_orig_list_entry_free_ref() does just that,
+via a batadv_orig_node_free_ref() call, leading to our rcu_barrier()
+call potentially missing such a batadv_orig_node_free_ref().
 
-On Mon, Mar 18, 2013 at 02:07:42PM +0200, Mihail Costea wrote:
-> Subject: [RFCv2] batman-adv: Modified DAT structures and functions in ord=
-er
->  to support both IPv4 and IPv6
->=20
-> Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
->=20
-> ---
+This patch fixes this issue by calling the batadv_orig_node_free_rcu()
+directly from the rcu callback, removing the unnecessary, additional
+call_rcu() layer here.
 
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+* v2: Added a code comment as discussed on IRC:
+      To avoid forgetting about it, to avoid accidentally changing things
+      back in the future.
 
-A couple of remarks that I missed till today:
+ originator.c        |    2 +-
+ originator.h        |    1 +
+ translation-table.c |    8 +++++++-
+ 3 files changed, 9 insertions(+), 2 deletions(-)
 
-> +
-> +/**
->   * batadv_compare_dat - comparing function used in the local DAT hash ta=
-ble
->   * @node: node in the local table
->   * @data2: second object to compare the node to
-> + * @ip_type: type of IP address
->   *
->   * Returns 1 if the two entries are the same, 0 otherwise.
->   */
-> -static int batadv_compare_dat(const struct hlist_node *node, const void =
-*data2)
-> +static int batadv_compare_dat(const struct hlist_node *node, const void =
-*data2,
-> +			       uint8_t ip_type)
->  {
-> -	const void *data1 =3D container_of(node, struct batadv_dat_entry,
-> -					 hash_entry);
-> +	struct batadv_dat_entry *dat_entry1 =3D container_of(node,
-> +				struct batadv_dat_entry, hash_entry);
-> +	struct batadv_dat_entry *dat_entry2 =3D container_of(data2,
-> +				struct batadv_dat_entry, ip);
-> +	size_t ip_size;
->=20
-> -	return (memcmp(data1, data2, sizeof(__be32)) =3D=3D 0 ? 1 : 0);
-> +	if (dat_entry1->type !=3D dat_entry2->type)
-> +		return 0;
-> +
-> +	ip_size =3D batadv_sizeof_ip(ip_type);
-> +	return (memcmp(dat_entry1->ip, dat_entry2->ip, ip_size) =3D=3D 0 ? 1 : =
-0);
-> +}
-> +
-> +static int batadv_compare_dat_ipv4(const struct hlist_node *node,
-> +			       const void *data2)
-> +{
-> +	return batadv_compare_dat(node, data2, BATADV_DAT_IPV4);
-> +}
-> +
-> +#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-> +static int batadv_compare_dat_ipv6(const struct hlist_node *node,
-> +			       const void *data2)
-> +{
-> +	return batadv_compare_dat(node, data2, BATADV_DAT_IPV6);
->  }
-> +#endif
->=20
+diff --git a/originator.c b/originator.c
+index 2f34525..1f01e93 100644
+--- a/originator.c
++++ b/originator.c
+@@ -117,7 +117,7 @@ out:
+ 	return neigh_node;
+ }
+ 
+-static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
++void batadv_orig_node_free_rcu(struct rcu_head *rcu)
+ {
+ 	struct hlist_node *node_tmp;
+ 	struct batadv_neigh_node *neigh_node, *tmp_neigh_node;
+diff --git a/originator.h b/originator.h
+index 7df48fa..4f9f88b 100644
+--- a/originator.h
++++ b/originator.h
+@@ -25,6 +25,7 @@
+ int batadv_originator_init(struct batadv_priv *bat_priv);
+ void batadv_originator_free(struct batadv_priv *bat_priv);
+ void batadv_purge_orig_ref(struct batadv_priv *bat_priv);
++void batadv_orig_node_free_rcu(struct rcu_head *rcu);
+ void batadv_orig_node_free_ref(struct batadv_orig_node *orig_node);
+ struct batadv_orig_node *batadv_get_orig_node(struct batadv_priv *bat_priv,
+ 					      const uint8_t *addr);
+diff --git a/translation-table.c b/translation-table.c
+index 9322320..4fe07cf 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -144,7 +144,13 @@ static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
+ 	struct batadv_tt_orig_list_entry *orig_entry;
+ 
+ 	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
+-	batadv_orig_node_free_ref(orig_entry->orig_node);
++
++	/* We are in an rcu callback here, therefore we cannot use
++	 * batadv_orig_node_free_ref() and its call_rcu():
++	 * An rcu_barrier() wouldn't wait for that to finish */
++	if (atomic_dec_and_test(&orig_entry->orig_node->refcount))
++		batadv_orig_node_free_rcu(&orig_entry->orig_node->rcu);
++
+ 	kfree(orig_entry);
+ }
+ 
+-- 
+1.7.10.4
 
-can't you simply use one function (batadv_compare_dat()) and use
-dat_entry1->type to compute the ip_size?
-
-In this way you do not need the two wrapper functions (batadv_compare_dat_i=
-pv6()
-and batadv_compare_dat_ipv4()).
-
-
->  /**
->   * batadv_arp_hw_src - extract the hw_src field from an ARP packet
-> @@ -201,16 +367,19 @@ static __be32 batadv_arp_ip_dst(struct sk_buff
-> *skb, int hdr_size)
->   * batadv_hash_dat - compute the hash value for an IP address
->   * @data: data to hash
->   * @size: size of the hash table
-> + * @ip_type: type of IP address
->   *
->   * Returns the selected index in the hash table for the given data.
->   */
-> -static uint32_t batadv_hash_dat(const void *data, uint32_t size)
-> +static uint32_t batadv_hash_dat(const void *data, uint32_t size,
-> +			       uint8_t ip_type)
->  {
->  	const unsigned char *key =3D data;
->  	uint32_t hash =3D 0;
-> -	size_t i;
-> +	size_t i, ip_size;
->=20
-> -	for (i =3D 0; i < 4; i++) {
-> +	ip_size =3D batadv_sizeof_ip(ip_type);
-> +	for (i =3D 0; i < ip_size; i++) {
->  		hash +=3D key[i];
->  		hash +=3D (hash << 10);
->  		hash ^=3D (hash >> 6);
-
-
-mh, I think we should encode the "type" in the hash as well..
-Maybe we can postpone this suggestion to when we will make the DHT more and=
- more
-generic. :) For now (that we encode IPs) we won't have IP addresses of the =
-same
-size but different type :):)
-
-> @@ -289,14 +476,34 @@ static void batadv_dat_entry_add(struct
-> batadv_priv *bat_priv, __be32 ip,
->  	if (!dat_entry)
->  		goto out;
->=20
-> -	dat_entry->ip =3D ip;
-> +	ip_size =3D batadv_sizeof_ip(ip_type);
-> +	dat_entry->ip =3D kmalloc(ip_size, GFP_ATOMIC);
-> +	if (!dat_entry->ip)
-> +		goto out;
-> +	memcpy(dat_entry->ip, ip, ip_size);
-> +	dat_entry->type =3D ip_type;
-> +
->  	memcpy(dat_entry->mac_addr, mac_addr, ETH_ALEN);
->  	dat_entry->last_update =3D jiffies;
->  	atomic_set(&dat_entry->refcount, 2);
->=20
-> -	hash_added =3D batadv_hash_add(bat_priv->dat.hash, batadv_compare_dat,
-> -				     batadv_hash_dat, &dat_entry->ip,
-> -				     &dat_entry->hash_entry);
-> +	switch (ip_type) {
-> +	case BATADV_DAT_IPV4:
-> +		hash_added =3D batadv_hash_add(bat_priv->dat.hash,
-> +				batadv_compare_dat_ipv4, batadv_hash_dat_ipv4,
-> +				dat_entry->ip, &dat_entry->hash_entry);
-> +		break;
-> +#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-> +	case BATADV_DAT_IPV6:
-> +		hash_added =3D batadv_hash_add(bat_priv->dat.hash,
-> +				batadv_compare_dat_ipv6, batadv_hash_dat_ipv6,
-> +				dat_entry->ip, &dat_entry->hash_entry);
-> +		break;
-
-to reduce indentation here you could use a pointer to function which can be
-assigned to either batadv_hash_dat_ipv4 or batadv_hash_dat_ipv6 in the swit=
-ch
-and then invoke batadv_hash_add once outside the switch block.
-
-if you follow the iupper suggestion, batadv_compare_dat_ipv6/4()
-should just become batadv_compare_dat()
-
-> +#endif
-> +	default:
-> +		hash_added =3D 1; /* in order to catch next if */
-
-assign 1 (better -1) to hash_added declaration/initialisation and avoid this
-default branch.
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---TRYliJ5NKNqkz5bu
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRW1Z+AAoJEADl0hg6qKeOVpIP/1+aRgBp3sgYqyo7YPyZYOro
-2IoDQgzCiB5VHg0KRoEXpyS+AN7Jfe7CqjIgJB7vPersomIEFV/X5AQS6ftobJsQ
-Qap62U/lFtfUtaTaQNUOYgmybhcOjTaw57dEfnEdQeCcQ8mD+Iv2PkPZO2nv4FnA
-64707NOMuThHxBowouatiHf6dCxmvfkLnjpGkYPY+GthMnrtpkMCXzpI2uJwnacl
-+ZIV/2Ate/b2yOdpKeBMdhOz5tUISP/jZoPfKnPtK9LBNBPEgp/eDOPu81GK+pGp
-kOOGOtzEc+HjaePSt4bkjkL5X92I3MS+Pk2Z171Xy8MWe2c94bHEJRNoxpnnqpha
-8G6WmAAj4Ivn93gjaP+KbXDw7ApdoFnZtKAmLvOP2O3WEIazwmfT1o02Y0xfSa7p
-H57t+dz2Tb3Nb2O6amLvglkiDX/j7yCjXxGVv2z/eRkHYmm90YS3R8leq9JESrVt
-PALP05+PZi3JRGM2yBhzerHnmJjPa/VZllpg4/F5RknuDavtQBTlZGEjy1UCGKMA
-Zc2d2Kjx5LLAZ++qK4OtQoG49tffEpcqbapMoIOSrCGgtukQOv6ZatsDZLEz6yLp
-JkpfDR0Ib391Qe2776FC/BF7FfJVEeBK3q2e7bI1Hciv/TsKTs1DFaHu9sbaCnCK
-qRMebbQRM/Wnbl23dlmV
-=g+Dr
------END PGP SIGNATURE-----
-
---TRYliJ5NKNqkz5bu--
