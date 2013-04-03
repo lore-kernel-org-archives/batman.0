@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 3 Apr 2013 19:16:04 +0800
-References: <20130330150907.GE4024@ritirata.org>
- <1364660520-18385-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1364660520-18385-1-git-send-email-ordex@autistici.org>
+Date: Wed, 3 Apr 2013 19:19:13 +0800
+References: <1364934870-23095-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1364934870-23095-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201304031916.04253.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: do not silently ignore
-	wrong condition
+Message-Id: <201304031919.14015.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batctl: fix 4addr parsing in
+	tcpdump
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,23 +23,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sunday, March 31, 2013 00:22:00 Antonio Quartulli wrote:
-> Only one neigh_node per orig_node should match a given
-> neighbor address, therefore, if more than one matching
-> neigh_node is found, a WARNING has to be triggered to let
-> the user know that something is wrong in the originator
-> state instead of silently skipping the error.
+On Wednesday, April 03, 2013 04:34:29 Antonio Quartulli wrote:
+> In the UNICAST4ADDR parsing routing a wrong type is used to
+> parse the batman header, resulting in a wrong data
+> visualization. Fix this by using the correct data type.
+> 
+> Introduced by 70aefcf8abefd509e5721c6ae228d3854d5e8b16
+> ("batctl: Add minimal unicast 4addr dissector support")
 > 
 > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 > ---
 > 
 > v2:
-> - fixed closing parenthesis
+> - removed subtype print format
 > 
->  bat_iv_ogm.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  tcpdump.c | 16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
 
-Applied in revision c969b9e.
+Applied in revision 0ae03c9.
 
 Thanks,
 Marek
