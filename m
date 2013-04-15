@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 15 Apr 2013 17:10:40 +0800
-References: <1364895668-15046-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1364895668-15046-1-git-send-email-ordex@autistici.org>
+Date: Mon, 15 Apr 2013 17:27:35 +0800
+References: <1364897813-19421-1-git-send-email-ordex@autistici.org>
+ <20130402102250.GJ4024@ritirata.org>
+In-Reply-To: <20130402102250.GJ4024@ritirata.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201304151710.40934.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: move
-	batadv_slide_own_bcast_window to bat_iv_ogm.c
+Message-Id: <201304151727.36146.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: don't initialise batman_iv
+	private members in hard-interface.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,41 +22,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, April 02, 2013 17:41:08 Antonio Quartulli wrote:
-> +static void
-> +batadv_iv_ogm_slide_own_bcast_window(struct batadv_hard_iface *hard_iface)
-> +{
-> +       struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-> +       struct batadv_hashtable *hash = bat_priv->orig_hash;
-> +       struct hlist_head *head;
-> +       struct batadv_orig_node *orig_node;
-> +       unsigned long *word;
-> +       uint32_t i;
-> +       size_t word_index;
-> +       uint8_t *w;
-> +
-> +       for (i = 0; i < hash->size; i++) {
-> +               head = &hash->table[i];
-> +
-> +               rcu_read_lock();
-> +               hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-> +                       spin_lock_bh(&orig_node->ogm_cnt_lock);
-> +                       word_index = hard_iface->if_num * BATADV_NUM_WORDS;
-> +                       word = &(orig_node->bcast_own[word_index]);
-> +
-> +                       batadv_bit_get_packet(bat_priv, word, 1, 0);
-> +                       w = &orig_node->bcast_own_sum[hard_iface->if_num];
-> +                       *w = bitmap_weight(word,
-> BATADV_TQ_LOCAL_WINDOW_SIZE);
-> +                       spin_unlock_bh(&orig_node->ogm_cnt_lock);
-> +               }
-> +               rcu_read_unlock();
-> +       }
-> +}
+On Tuesday, April 02, 2013 18:22:50 Antonio Quartulli wrote:
+>   On Tue, Apr 02, 2013 at 12:16:53PM +0200, Antonio Quartulli wrote:
+> > From: Antonio Quartulli <antonio@open-mesh.com>
+> >
+> > 
+> >
+> > hard-interface.c has to do not contain any routing algorithm
+> > specific code.
+> >
+> > 
+> >
+> > Allocate the hard-interface with kzalloc() and remove any
+> > useless and algorithm specific member initialisation
+> >
+> > 
+> >
+> > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> > ---
+> 
+> For whoever is concerned about this missing initialisations, I have to say
+> that those are done in the routing specific API function upon
+> hard-interface activation. Meaning that the seqno and the ogm_buff are
+> initialised somewhere else before being used.
+> 
+> However, using kzalloc, ensure that all the members are initialised to 0
+> after allocation.
 
-Kernel doc ?
+Applied in revision 1cc6cbc.
 
-Cheers,
+Thanks,
 Marek
