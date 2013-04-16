@@ -1,10 +1,11 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 16 Apr 2013 23:26:30 +0800
-Message-Id: <1366125995-18034-3-git-send-email-lindner_marek@yahoo.de>
+Date: Tue, 16 Apr 2013 23:26:31 +0800
+Message-Id: <1366125995-18034-4-git-send-email-lindner_marek@yahoo.de>
 In-Reply-To: <1366125995-18034-1-git-send-email-lindner_marek@yahoo.de>
 References: <1366125995-18034-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/7] batman-adv: tvlv - convert gateway flags
+Subject: [B.A.T.M.A.N.] [PATCH 3/7] batman-adv: tvlv - add distributed arp
+	table container
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,274 +20,201 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-From: Spyros Gasteratos <morfeas3000@gmail.com>
+Create DAT container to announce DAT capabilities (if enabled).
 
-This patch changes the gateway feature to announce the gateway flags
-using the tvlv infrastructure.
-
-Signed-off-by: Spyros Gasteratos <morfeas3000@gmail.com>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- bat_iv_ogm.c     |   23 +--------------
- gateway_common.c |   86 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- gateway_common.h |    3 ++
- main.c           |    7 +++++
- packet.h         |   10 ++++++-
- sysfs.c          |    1 +
- 6 files changed, 107 insertions(+), 23 deletions(-)
+ distributed-arp-table.c |   64 +++++++++++++++++++++++++++++++++++++++++++++++
+ distributed-arp-table.h |    5 ++++
+ packet.h                |    2 ++
+ sysfs.c                 |    3 ++-
+ types.h                 |   10 ++++++++
+ 5 files changed, 83 insertions(+), 1 deletion(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 54227ef..d0a8cc5 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -118,6 +118,7 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
- 	batadv_ogm_packet->header.version = BATADV_COMPAT_VERSION;
- 	batadv_ogm_packet->header.ttl = 2;
- 	batadv_ogm_packet->flags = BATADV_NO_FLAGS;
-+	batadv_ogm_packet->reserved = 0;
- 	batadv_ogm_packet->tq = BATADV_TQ_MAX_VALUE;
- 	batadv_ogm_packet->tt_num_changes = 0;
- 	batadv_ogm_packet->ttvn = 0;
-@@ -639,7 +640,6 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 	int *ogm_buff_len = &hard_iface->bat_iv.ogm_buff_len;
- 	int vis_server, tt_num_changes = 0;
- 	uint32_t seqno;
--	uint8_t bandwidth;
- 	uint16_t tvlv_len = 0;
+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+index 3a3e1d8..3a4b577 100644
+--- a/distributed-arp-table.c
++++ b/distributed-arp-table.c
+@@ -419,6 +419,10 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
+ 	bool ret = false;
+ 	int j;
  
- 	vis_server = atomic_read(&bat_priv->vis_mode);
-@@ -668,14 +668,6 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 	else
- 		batadv_ogm_packet->flags &= ~BATADV_VIS_SERVER;
- 
--	if (hard_iface == primary_if &&
--	    atomic_read(&bat_priv->gw_mode) == BATADV_GW_MODE_SERVER) {
--		bandwidth = (uint8_t)atomic_read(&bat_priv->gw_bandwidth);
--		batadv_ogm_packet->gw_flags = bandwidth;
--	} else {
--		batadv_ogm_packet->gw_flags = BATADV_NO_FLAGS;
--	}
--
- 	batadv_slide_own_bcast_window(hard_iface);
- 	batadv_iv_ogm_queue_add(bat_priv, hard_iface->bat_iv.ogm_buff,
- 				hard_iface->bat_iv.ogm_buff_len, hard_iface, 1,
-@@ -810,19 +802,6 @@ update_tt:
- 				      batadv_ogm_packet->tt_num_changes,
- 				      batadv_ogm_packet->ttvn,
- 				      ntohs(batadv_ogm_packet->tt_crc));
--
--	if (orig_node->gw_flags != batadv_ogm_packet->gw_flags)
--		batadv_gw_node_update(bat_priv, orig_node,
--				      batadv_ogm_packet->gw_flags);
--
--	orig_node->gw_flags = batadv_ogm_packet->gw_flags;
--
--	/* restart gateway selection if fast or late switching was enabled */
--	if ((orig_node->gw_flags) &&
--	    (atomic_read(&bat_priv->gw_mode) == BATADV_GW_MODE_CLIENT) &&
--	    (atomic_read(&bat_priv->gw_sel_class) > 2))
--		batadv_gw_check_election(bat_priv, orig_node);
--
- 	goto out;
- 
- unlock:
-diff --git a/gateway_common.c b/gateway_common.c
-index 84bb2b1..ead96eb 100644
---- a/gateway_common.c
-+++ b/gateway_common.c
-@@ -20,6 +20,7 @@
- #include "main.h"
- #include "gateway_common.h"
- #include "gateway_client.h"
-+#include "packet.h"
- 
- /* calculates the gateway class from kbit */
- static void batadv_kbit_to_gw_bandwidth(int down, int up, long *gw_srv_class)
-@@ -134,6 +135,31 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 	return true;
++	/* check if orig node candidate is running DAT */
++	if (!(candidate->capabilities & BATADV_ORIG_CAPA_HAS_DAT))
++		goto out;
++
+ 	/* Check if this node has already been selected... */
+ 	for (j = 0; j < select; j++)
+ 		if (res[j].orig_node == candidate)
+@@ -626,6 +630,59 @@ out:
  }
  
-+/**
-+ * batadv_gw_tvlv_container_update - update the gw tvlv container after gateway
+ /**
++ * batadv_dat_tvlv_container_update - update the dat tvlv container after dat
 + *  setting change
 + * @bat_priv: the bat priv with all the soft interface information
 + */
-+void batadv_gw_tvlv_container_update(struct batadv_priv *bat_priv)
++static void batadv_dat_tvlv_container_update(struct batadv_priv *bat_priv)
 +{
-+	char gw_mode, gw_tvlv_value;
++	char dat_mode;
 +
-+	gw_mode = atomic_read(&bat_priv->gw_mode);
++	dat_mode = atomic_read(&bat_priv->distributed_arp_table);
 +
-+	switch (gw_mode) {
-+	case BATADV_GW_MODE_OFF:
-+	case BATADV_GW_MODE_CLIENT:
-+		batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_GW, 1);
++	switch (dat_mode) {
++	case 0:
++		batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_DAT, 1);
 +		break;
-+	case BATADV_GW_MODE_SERVER:
-+		gw_tvlv_value = atomic_read(&bat_priv->gw_bandwidth);
-+		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_GW, 1,
-+					       &gw_tvlv_value,
-+					       sizeof(gw_tvlv_value));
++	case 1:
++		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_DAT, 1,
++					       NULL, 0);
 +		break;
 +	}
 +}
 +
- ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
- 				size_t count)
- {
-@@ -173,7 +199,67 @@ ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
- 		    (up > 2048 ? "MBit" : "KBit"));
- 
- 	atomic_set(&bat_priv->gw_bandwidth, gw_bandwidth_tmp);
-+	batadv_gw_tvlv_container_update(bat_priv);
- 
- end:
- 	return count;
- }
++/**
++ * batadv_dat_status_update - update the dat tvlv container after dat
++ *  setting change
++ * @net_dev: the soft interface net device
++ */
++void batadv_dat_status_update(struct net_device *net_dev)
++{
++	struct batadv_priv *bat_priv = netdev_priv(net_dev);
++	batadv_dat_tvlv_container_update(bat_priv);
++}
 +
 +/**
-+ * batadv_gw_tvlv_ogm_handler_v1 - process incoming gateway tvlv container
++ * batadv_gw_tvlv_ogm_handler_v1 - process incoming dat tvlv container
 + * @bat_priv: the bat priv with all the soft interface information
 + * @orig: the orig_node of the ogm
 + * @flags: flags indicating the tvlv state (see batadv_tvlv_handler_flags)
 + * @tvlv_value: tvlv buffer containing the gateway data
 + * @tvlv_value_len: tvlv buffer length
 + */
-+static void batadv_gw_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
-+					  struct batadv_orig_node *orig,
-+					  uint8_t flags,
-+					  void *tvlv_value,
-+					  uint16_t tvlv_value_len)
++static void batadv_dat_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
++					   struct batadv_orig_node *orig,
++					   uint8_t flags,
++					   void *tvlv_value,
++					   uint16_t tvlv_value_len)
 +{
-+	uint8_t gw_flags = BATADV_NO_FLAGS;
-+
-+	/* only fetch the tvlv value if the handler wasn't called via the
-+	 * CIFNOTFND flag and if there is data to fetch
-+	 */
-+	if (!(flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND) &&
-+	    (tvlv_value) && (tvlv_value_len == 1))
-+		gw_flags = *(unsigned char *)tvlv_value;
-+
-+	if (orig->gw_flags != gw_flags)
-+		batadv_gw_node_update(bat_priv, orig, gw_flags);
-+
-+	orig->gw_flags = gw_flags;
-+
-+	/* restart gateway selection if fast or late switching was enabled */
-+	if ((orig->gw_flags != BATADV_NO_FLAGS) &&
-+	    (atomic_read(&bat_priv->gw_mode) == BATADV_GW_MODE_CLIENT) &&
-+	    (atomic_read(&bat_priv->gw_sel_class) > 2))
-+		batadv_gw_check_election(bat_priv, orig);
++	if (flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND)
++		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_DAT;
++	else
++		orig->capabilities |= BATADV_ORIG_CAPA_HAS_DAT;
 +}
 +
 +/**
-+ * batadv_gw_init - initialise the gateway handling internals
-+ * @bat_priv: the bat priv with all the soft interface information
-+ *
-+ * Return 0 on success or negative error number in case of failure.
-+ */
-+int batadv_gw_init(struct batadv_priv *bat_priv)
-+{
-+	batadv_tvlv_handler_register(bat_priv, batadv_gw_tvlv_ogm_handler_v1,
-+				     NULL, BATADV_TVLV_GW, 1,
-+				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
-+	return 0;
-+}
-+
-+/**
-+ * batadv_gw_free - free the gateway handling internals
-+ * @bat_priv: the bat priv with all the soft interface information
-+ */
-+void batadv_gw_free(struct batadv_priv *bat_priv)
-+{
-+	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_GW, 1);
-+	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_GW, 1);
-+}
-diff --git a/gateway_common.h b/gateway_common.h
-index 509b2bf..6b43c0e 100644
---- a/gateway_common.h
-+++ b/gateway_common.h
-@@ -33,5 +33,8 @@ enum batadv_gw_modes {
- void batadv_gw_bandwidth_to_kbit(uint8_t gw_class, int *down, int *up);
- ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
- 				size_t count);
-+void batadv_gw_tvlv_container_update(struct batadv_priv *bat_priv);
-+int batadv_gw_init(struct batadv_priv *bat_priv);
-+void batadv_gw_free(struct batadv_priv *bat_priv);
- 
- #endif /* _NET_BATMAN_ADV_GATEWAY_COMMON_H_ */
-diff --git a/main.c b/main.c
-index 7a72cfc..b631c05 100644
---- a/main.c
-+++ b/main.c
-@@ -33,6 +33,7 @@
- #include "bridge_loop_avoidance.h"
- #include "distributed-arp-table.h"
- #include "unicast.h"
-+#include "gateway_common.h"
- #include "vis.h"
- #include "hash.h"
- #include "bat_algo.h"
-@@ -147,6 +148,10 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 	if (ret < 0)
- 		goto err;
- 
-+	ret = batadv_gw_init(bat_priv);
-+	if (ret < 0)
-+		goto err;
-+
- 	atomic_set(&bat_priv->gw.reselect, 0);
- 	atomic_set(&bat_priv->mesh_state, BATADV_MESH_ACTIVE);
- 
-@@ -177,6 +182,8 @@ void batadv_mesh_free(struct net_device *soft_iface)
- 
- 	batadv_dat_free(bat_priv);
- 
-+	batadv_gw_free(bat_priv);
-+
- 	free_percpu(bat_priv->bat_counters);
- 
- 	atomic_set(&bat_priv->mesh_state, BATADV_MESH_INACTIVE);
-diff --git a/packet.h b/packet.h
-index 4de94c7..a5bd6ee 100644
---- a/packet.h
-+++ b/packet.h
-@@ -118,6 +118,14 @@ enum batadv_bla_claimframe {
- 	BATADV_CLAIM_TYPE_REQUEST	= 0x03,
- };
- 
-+/**
-+ * enum batadv_tvlv_type - tvlv type definitions
-+ * @BATADV_TVLV_GW: gateway tvlv
-+ */
-+enum batadv_tvlv_type {
-+	BATADV_TVLV_GW		= 0x01,
-+};
-+
- /* the destination hardware field in the ARP frame is used to
-  * transport the claim type and the group id
+  * batadv_dat_hash_free - free the local DAT hash table
+  * @bat_priv: the bat priv with all the soft interface information
   */
-@@ -147,7 +155,7 @@ struct batadv_ogm_packet {
- 	__be32   seqno;
- 	uint8_t  orig[ETH_ALEN];
- 	uint8_t  prev_sender[ETH_ALEN];
--	uint8_t  gw_flags;  /* flags related to gateway class */
-+	uint8_t  reserved;
- 	uint8_t  tq;
- 	uint8_t  tt_num_changes;
- 	uint8_t  ttvn; /* translation table version number */
-diff --git a/sysfs.c b/sysfs.c
-index 15a22ef..db38f79 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -386,6 +386,7 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
+@@ -657,6 +714,10 @@ int batadv_dat_init(struct batadv_priv *bat_priv)
  
- 	batadv_gw_deselect(bat_priv);
- 	atomic_set(&bat_priv->gw_mode, (unsigned int)gw_mode_tmp);
-+	batadv_gw_tvlv_container_update(bat_priv);
- 	return count;
+ 	batadv_dat_start_timer(bat_priv);
+ 
++	batadv_tvlv_handler_register(bat_priv, batadv_dat_tvlv_ogm_handler_v1,
++				     NULL, BATADV_TVLV_DAT, 1,
++				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
++	batadv_dat_tvlv_container_update(bat_priv);
+ 	return 0;
  }
  
+@@ -666,6 +727,9 @@ int batadv_dat_init(struct batadv_priv *bat_priv)
+  */
+ void batadv_dat_free(struct batadv_priv *bat_priv)
+ {
++	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_DAT, 1);
++	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_DAT, 1);
++
+ 	cancel_delayed_work_sync(&bat_priv->dat.work);
+ 
+ 	batadv_dat_hash_free(bat_priv);
+diff --git a/distributed-arp-table.h b/distributed-arp-table.h
+index 125c8c6..60d853b 100644
+--- a/distributed-arp-table.h
++++ b/distributed-arp-table.h
+@@ -29,6 +29,7 @@
+ 
+ #define BATADV_DAT_ADDR_MAX ((batadv_dat_addr_t)~(batadv_dat_addr_t)0)
+ 
++void batadv_dat_status_update(struct net_device *net_dev);
+ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 					   struct sk_buff *skb);
+ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
+@@ -98,6 +99,10 @@ static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
+ 
+ #else
+ 
++static inline void batadv_dat_status_update(struct net_device *net_dev)
++{
++}
++
+ static inline bool
+ batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 				      struct sk_buff *skb)
+diff --git a/packet.h b/packet.h
+index a5bd6ee..fec0102 100644
+--- a/packet.h
++++ b/packet.h
+@@ -121,9 +121,11 @@ enum batadv_bla_claimframe {
+ /**
+  * enum batadv_tvlv_type - tvlv type definitions
+  * @BATADV_TVLV_GW: gateway tvlv
++ * @BATADV_TVLV_DAT: distributed arp table tvlv
+  */
+ enum batadv_tvlv_type {
+ 	BATADV_TVLV_GW		= 0x01,
++	BATADV_TVLV_DAT		= 0x02,
+ };
+ 
+ /* the destination hardware field in the ARP frame is used to
+diff --git a/sysfs.c b/sysfs.c
+index db38f79..02ea795 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -423,7 +423,8 @@ BATADV_ATTR_SIF_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
+ BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_DAT
+-BATADV_ATTR_SIF_BOOL(distributed_arp_table, S_IRUGO | S_IWUSR, NULL);
++BATADV_ATTR_SIF_BOOL(distributed_arp_table, S_IRUGO | S_IWUSR,
++		     batadv_dat_status_update);
+ #endif
+ BATADV_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, batadv_update_min_mtu);
+ BATADV_ATTR_SIF_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
+diff --git a/types.h b/types.h
+index ce84cc5..ae47225 100644
+--- a/types.h
++++ b/types.h
+@@ -101,6 +101,7 @@ struct batadv_hard_iface {
+  * @batman_seqno_reset: time when the batman seqno window was reset
+  * @gw_flags: flags related to gateway class
+  * @flags: for now only VIS_SERVER flag
++ * @capabilities: announced capabilities of this originator
+  * @last_ttvn: last seen translation table version number
+  * @tt_crc: CRC of the translation table
+  * @tt_buff: last tt changeset this node received from the orig node
+@@ -149,6 +150,7 @@ struct batadv_orig_node {
+ 	unsigned long batman_seqno_reset;
+ 	uint8_t gw_flags;
+ 	uint8_t flags;
++	uint8_t capabilities;
+ 	atomic_t last_ttvn;
+ 	uint16_t tt_crc;
+ 	unsigned char *tt_buff;
+@@ -186,6 +188,14 @@ struct batadv_orig_node {
+ };
+ 
+ /**
++ * enum batadv_orig_capabilities - orig node capabilities
++ * @BATADV_ORIG_CAPA_HAS_DAT: orig node has distributed arp table enabled
++ */
++enum batadv_orig_capabilities {
++	BATADV_ORIG_CAPA_HAS_DAT = BIT(1),
++};
++
++/**
+  * struct batadv_gw_node - structure for orig nodes announcing gw capabilities
+  * @list: list node for batadv_priv_gw::list
+  * @orig_node: pointer to corresponding orig node
 -- 
 1.7.10.4
 
