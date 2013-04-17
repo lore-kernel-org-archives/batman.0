@@ -1,13 +1,14 @@
-Return-Path: <linus.luessing@web.de>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Wed, 17 Apr 2013 21:13:16 +0200
+Message-Id: <1366225996-13954-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <201304172356.55561.lindner_marek@yahoo.de>
+References: <201304172356.55561.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Message-ID: <trinity-654eb65a-c1c3-48f5-9a73-23614f415e71-1366225529049@3capp-webde-bs26>
-From: =?UTF-8?Q?=22Linus_L=C3=BCssing=22?= <linus.luessing@web.de>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 17 Apr 2013 21:05:29 +0200 (CEST)
-In-Reply-To: <1366109189-17384-1-git-send-email-ordex@autistici.org>
-References: <1366109189-17384-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: avoid race conditions
- on TT global table by counting references
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Avoid double freeing of
+	bat_counters
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,34 +20,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <ordex@autistici.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-Hi Antonio,
+On errors in batadv_mesh_init(), bat_counters will be freed in both
+batadv_mesh_free() and batadv_softif_init_late(). This patch fixes this
+by returning earlier from batadv_softif_init_late() in case of errors in
+batadv_mesh_init() and by setting bat_counters to NULL after freeing.
 
-Looks good, I like the idea of using refcounting for the tt global hash. That will indeed nicely remove the ordering dependancy I introduced with my patch earlier.
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
+v2:
+  Removed label as suggested by Antonio
+v3:
+  Set bat_counters to NULL after freeing
 
-> @@ -844,7 +897,17 @@ int batadv_tt_global_add(struct batadv_priv *bat_priv,
->  
->  		if (unlikely(hash_added != 0)) {
->  			/* remove the reference for the hash */
-> -			batadv_tt_global_entry_free_ref(tt_global_entry);
-> +			batadv_tt_global_entry_free_ref(bat_priv,
-> +							tt_global_entry);
-> +			goto out_remove;
-> +		}
-> +
-> +		/* increase the refcounter for this new "reference to the global
-> +		 * table represented by the global entry. If the increment
-> +		 * fails remove the entry from the hash
-> +		 */
-> +		if (!atomic_inc_not_zero(&bat_priv->tt.global_refcount)) {
-> +			hlist_del_rcu(&tt_global_entry->common.hash_entry);
->  			goto out_remove;
->  		}
+ main.c           | 1 +
+ soft-interface.c | 9 ++++-----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Looks like there's a spin-lock missing, we usually need to do the rcu-list-adds/dels within such a lock.
+diff --git a/main.c b/main.c
+index 3e30a0f..aae96ca 100644
+--- a/main.c
++++ b/main.c
+@@ -173,6 +173,7 @@ void batadv_mesh_free(struct net_device *soft_iface)
+ 	batadv_dat_free(bat_priv);
+ 
+ 	free_percpu(bat_priv->bat_counters);
++	bat_priv->bat_counters = NULL;
+ 
+ 	atomic_set(&bat_priv->mesh_state, BATADV_MESH_INACTIVE);
+ }
+diff --git a/soft-interface.c b/soft-interface.c
+index c2a9c20..6946caa 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -1,4 +1,4 @@
+-/* Copyright (C) 2007-2013 B.A.T.M.A.N. contributors:
++#/* Copyright (C) 2007-2013 B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+  *
+@@ -497,14 +497,13 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 
+ 	ret = batadv_mesh_init(dev);
+ 	if (ret < 0)
+-		goto unreg_debugfs;
++		batadv_debugfs_del_meshif(dev);
+ 
+-	return 0;
++	return ret;
+ 
+-unreg_debugfs:
+-	batadv_debugfs_del_meshif(dev);
+ free_bat_counters:
+ 	free_percpu(bat_priv->bat_counters);
++	bat_priv->bat_counters = NULL;
+ 
+ 	return ret;
+ }
+-- 
+1.8.2.1
 
-Also the ordering looks a little different compared to what we usually do. Usually we increase all the refcounting first and add things to the lists in the end. Changing the order should remove the need for an hlist_del_rcu/spin-lock in the first place.
-
-Cheers, Linus
