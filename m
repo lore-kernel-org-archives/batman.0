@@ -1,9 +1,12 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 16 Apr 2013 20:22:22 +0200
-Message-Id: <1366136543-16916-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: pass a 16bit long flag
-	argument to tt_global_add()
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Wed, 17 Apr 2013 12:28:50 +0200
+Message-Id: <1366194530-9367-1-git-send-email-martin@hundeboll.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Avoid double freeing of
+	bat_counters
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,48 +19,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-it may be the case that we want to store some local TT client flags in a global
-entry, therefore the tt_global_add needs to get a proper argument for this
+On errors in batadv_mesh_init(), bat_counters will be freed in both
+batadv_mesh_free() and batadv_softif_init_late(). This patch fixes this
+by returning earlier from batadv_softif_init_late() in case of errors in
+batadv_mesh_init().
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
+ soft-interface.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Based on top of the TVLV patches sent by Marek (but they may apply on maser as
-well)
-
-Cheers,
-
- translation-table.c | 2 +-
- translation-table.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/translation-table.c b/translation-table.c
-index 5d99c64..c1a8a10 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -786,7 +786,7 @@ out:
- /* caller must hold orig_node refcount */
- int batadv_tt_global_add(struct batadv_priv *bat_priv,
- 			 struct batadv_orig_node *orig_node,
--			 const unsigned char *tt_addr, uint8_t flags,
-+			 const unsigned char *tt_addr, uint16_t flags,
- 			 uint8_t ttvn)
- {
- 	struct batadv_tt_global_entry *tt_global_entry;
-diff --git a/translation-table.h b/translation-table.h
-index 597a5d6..b4b6dea 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -32,7 +32,7 @@ void batadv_tt_global_add_orig(struct batadv_priv *bat_priv,
- 			       const unsigned char *tt_buff, int tt_buff_len);
- int batadv_tt_global_add(struct batadv_priv *bat_priv,
- 			 struct batadv_orig_node *orig_node,
--			 const unsigned char *addr, uint8_t flags,
-+			 const unsigned char *addr, uint16_t flags,
- 			 uint8_t ttvn);
- int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
- void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+diff --git a/soft-interface.c b/soft-interface.c
+index c2a9c20..4de4d0f 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -503,6 +503,9 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 
+ unreg_debugfs:
+ 	batadv_debugfs_del_meshif(dev);
++
++	return ret;
++
+ free_bat_counters:
+ 	free_percpu(bat_priv->bat_counters);
+ 
 -- 
-1.8.1.5
+1.8.2.1
 
