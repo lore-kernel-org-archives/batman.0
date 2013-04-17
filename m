@@ -1,14 +1,9 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Wed, 17 Apr 2013 21:13:16 +0200
-Message-Id: <1366225996-13954-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <201304172356.55561.lindner_marek@yahoo.de>
-References: <201304172356.55561.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Avoid double freeing of
-	bat_counters
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Wed, 17 Apr 2013 21:45:43 +0200
+Message-Id: <1366227943-25134-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix global protection fault
+	during soft_iface destruction
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,64 +16,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On errors in batadv_mesh_init(), bat_counters will be freed in both
-batadv_mesh_free() and batadv_softif_init_late(). This patch fixes this
-by returning earlier from batadv_softif_init_late() in case of errors in
-batadv_mesh_init() and by setting bat_counters to NULL after freeing.
+batadv_mesh_free() schedules some RCU callbacks which need the bat_priv struct
+to do their jobs, while free_netdev(), which is called immediately after, is
+destroying the private data.
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+Put an rcu_barrier() in the middle so that free_netdev() is invoked only after
+all the callbacks returned.
+
+This bug has been introduced by ab8f433dd39be94e8617cff2dfe9f7eca162eb15
+("batman-adv: Move deinitialization of soft-interface to destructor")
+
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
-v2:
-  Removed label as suggested by Antonio
-v3:
-  Set bat_counters to NULL after freeing
 
- main.c           | 1 +
- soft-interface.c | 9 ++++-----
- 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/main.c b/main.c
-index 3e30a0f..aae96ca 100644
---- a/main.c
-+++ b/main.c
-@@ -173,6 +173,7 @@ void batadv_mesh_free(struct net_device *soft_iface)
- 	batadv_dat_free(bat_priv);
- 
- 	free_percpu(bat_priv->bat_counters);
-+	bat_priv->bat_counters = NULL;
- 
- 	atomic_set(&bat_priv->mesh_state, BATADV_MESH_INACTIVE);
- }
+ soft-interface.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
 diff --git a/soft-interface.c b/soft-interface.c
-index c2a9c20..6946caa 100644
+index 403b8c4..6f20d33 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
-@@ -1,4 +1,4 @@
--/* Copyright (C) 2007-2013 B.A.T.M.A.N. contributors:
-+#/* Copyright (C) 2007-2013 B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-@@ -497,14 +497,13 @@ static int batadv_softif_init_late(struct net_device *dev)
- 
- 	ret = batadv_mesh_init(dev);
- 	if (ret < 0)
--		goto unreg_debugfs;
-+		batadv_debugfs_del_meshif(dev);
- 
--	return 0;
-+	return ret;
- 
--unreg_debugfs:
--	batadv_debugfs_del_meshif(dev);
- free_bat_counters:
- 	free_percpu(bat_priv->bat_counters);
-+	bat_priv->bat_counters = NULL;
- 
- 	return ret;
+@@ -582,6 +582,13 @@ static void batadv_softif_free(struct net_device *dev)
+ {
+ 	batadv_debugfs_del_meshif(dev);
+ 	batadv_mesh_free(dev);
++
++	/* some scheduled RCU callbacks need the bat_priv struct to accomplish
++	 * their tasks. Wait for them all to be finished before freeing the
++	 * netdev and its private data (bat_priv)
++	 */
++	rcu_barrier();
++
+ 	free_netdev(dev);
  }
+ 
 -- 
-1.8.2.1
+1.8.1.5
 
