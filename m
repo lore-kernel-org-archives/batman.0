@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 18 Apr 2013 00:37:13 +0800
-References: <1365412636-26039-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1365412636-26039-1-git-send-email-ordex@autistici.org>
+Date: Thu, 18 Apr 2013 00:55:40 +0800
+References: <1366136165-5839-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1366136165-5839-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201304180037.13749.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: change VID semantic in the
-	BLA code
+Message-Id: <201304180055.41009.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: use CRC32C instead of CRC16
+	in TT code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,36 +23,53 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday, April 08, 2013 17:17:16 Antonio Quartulli wrote:
-> @@ -307,7 +307,7 @@ static void batadv_bla_send_claim(struct batadv_priv
-> *bat_priv, uint8_t *mac, */
->                 memcpy(ethhdr->h_source, mac, ETH_ALEN);
->                 batadv_dbg(BATADV_DBG_BLA, bat_priv,
-> -                          "bla_send_claim(): CLAIM %pM on vid %d\n", mac,
-> vid); +                          "bla_send_claim(): CLAIM %pM on vid
-> %u\n", mac, vid); break;
->         case BATADV_CLAIM_TYPE_UNCLAIM:
->                 /* unclaim frame
-> @@ -315,7 +315,7 @@ static void batadv_bla_send_claim(struct batadv_priv
-> *bat_priv, uint8_t *mac, */
->                 memcpy(hw_src, mac, ETH_ALEN);
->                 batadv_dbg(BATADV_DBG_BLA, bat_priv,
-> -                          "bla_send_claim(): UNCLAIM %pM on vid %d\n",
-> mac, +                          "bla_send_claim(): UNCLAIM %pM on vid
-> %u\n", mac, vid);
->                 break;
->         case BATADV_CLAIM_TYPE_ANNOUNCE:
-> @@ -324,7 +324,7 @@ static void batadv_bla_send_claim(struct batadv_priv
-> *bat_priv, uint8_t *mac, */
->                 memcpy(hw_src, mac, ETH_ALEN);
->                 batadv_dbg(BATADV_DBG_BLA, bat_priv,
-> -                          "bla_send_claim(): ANNOUNCE of %pM on vid %d\n",
-> +                          "bla_send_claim(): ANNOUNCE of %pM on vid %u\n",
+On Wednesday, April 17, 2013 02:16:05 Antonio Quartulli wrote:
+> @@ -1376,13 +1376,11 @@ out:
+>  static uint16_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+>                                      struct batadv_orig_node *orig_node)
+>  {
+> -       uint16_t total = 0, total_one;
+>         struct batadv_hashtable *hash = bat_priv->tt.global_hash;
+>         struct batadv_tt_common_entry *tt_common;
+>         struct batadv_tt_global_entry *tt_global;
+>         struct hlist_head *head;
+> -       uint32_t i;
+> -       int j;
+> +       uint32_t i, crc = 0;
+>  
+>         for (i = 0; i < hash->size; i++) {
+>                 head = &hash->table[i];
 
-It should be %hu instead of %u for unsigned short.
+How about making the function to "static uint32_t" ?
 
-Please make sure the printed vid does not contain the BATADV_VLAN_HAS_TAG 
-mixed with the real vid.
+
+>  /* Calculates the checksum of the local table */
+>  static uint16_t batadv_tt_local_crc(struct batadv_priv *bat_priv)
+>  {
+> -       uint16_t total = 0, total_one;
+>         struct batadv_hashtable *hash = bat_priv->tt.local_hash;
+>         struct batadv_tt_common_entry *tt_common;
+>         struct hlist_head *head;
+> -       uint32_t i;
+> -       int j;
+> +       uint32_t i, crc = 0;
+>  
+>         for (i = 0; i < hash->size; i++) {
+>                 head = &hash->table[i];
+
+Same here.
+
+
+> @@ -1642,7 +1631,7 @@ out:
+>  
+>  static int batadv_send_tt_request(struct batadv_priv *bat_priv,
+>                                   struct batadv_orig_node *dst_orig_node,
+> -                                 uint8_t ttvn, uint16_t tt_crc,
+> +                                 uint8_t ttvn, uint32_t tt_crc,
+>                                   bool full_table)
+>  {
+
+Kernel doc ?  :)
 
 Cheers,
 Marek
