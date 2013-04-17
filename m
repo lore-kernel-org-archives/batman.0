@@ -1,9 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 17 Apr 2013 17:44:43 +0200
-Message-Id: <1366213483-10120-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: move
-	batadv_slide_own_bcast_window to bat_iv_ogm.c
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 17 Apr 2013 23:56:55 +0800
+References: <20130417120550.GD20819@ritirata.org>
+ <1366202206-32718-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1366202206-32718-1-git-send-email-martin@hundeboll.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201304172356.55561.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Avoid double freeing of
+	bat_counters
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,136 +22,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+On Wednesday, April 17, 2013 20:36:46 Martin Hundeb=C3=B8ll wrote:
+> --- a/soft-interface.c
+> +++ b/soft-interface.c
+> @@ -497,12 +497,10 @@ static int batadv_softif_init_late(struct net_device
+> *dev)=20
+>         ret =3D batadv_mesh_init(dev);
+>         if (ret < 0)
+> -               goto unreg_debugfs;
+> +               batadv_debugfs_del_meshif(dev);
+> =20
+> -       return 0;
+> +       return ret;
+> =20
+> -unreg_debugfs:
+> -       batadv_debugfs_del_meshif(dev);
+>  free_bat_counters:
+>         free_percpu(bat_priv->bat_counters);
+> =20
 
-batadv_slide_own_bcast_window() is used only in bat_iv_ogm.c
-and it is currently touching only batman_iv specific
-attributes.
+This looks like a valid problem but I do suggest setting bat_priv-
+>bat_counters to NULL after calling free_percpu(). Otherwise we will run in=
+to=20
+this problem again when somebody else changes the order of the calls ...
 
-Move it into bat_iv_ogm.c and make it static.
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
-
-v2:
-- added kernel doc
-
- bat_iv_ogm.c | 37 ++++++++++++++++++++++++++++++++++++-
- routing.c    | 29 -----------------------------
- routing.h    |  1 -
- 3 files changed, 36 insertions(+), 31 deletions(-)
-
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 31c2891..17b43b1 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -630,6 +630,41 @@ static void batadv_iv_ogm_forward(struct batadv_orig_node *orig_node,
- 				if_incoming, 0, batadv_iv_ogm_fwd_send_time());
- }
- 
-+/**
-+ * batadv_iv_ogm_slide_own_bcast_window - bitshift own OGM broadcast windows for
-+ * this interface
-+ * @hard_iface: the interface for which the windows have to be shifted
-+ */
-+static void
-+batadv_iv_ogm_slide_own_bcast_window(struct batadv_hard_iface *hard_iface)
-+{
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	struct batadv_hashtable *hash = bat_priv->orig_hash;
-+	struct hlist_head *head;
-+	struct batadv_orig_node *orig_node;
-+	unsigned long *word;
-+	uint32_t i;
-+	size_t word_index;
-+	uint8_t *w;
-+
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+			spin_lock_bh(&orig_node->ogm_cnt_lock);
-+			word_index = hard_iface->if_num * BATADV_NUM_WORDS;
-+			word = &(orig_node->bcast_own[word_index]);
-+
-+			batadv_bit_get_packet(bat_priv, word, 1, 0);
-+			w = &orig_node->bcast_own_sum[hard_iface->if_num];
-+			*w = bitmap_weight(word, BATADV_TQ_LOCAL_WINDOW_SIZE);
-+			spin_unlock_bh(&orig_node->ogm_cnt_lock);
-+		}
-+		rcu_read_unlock();
-+	}
-+}
-+
- static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-@@ -674,7 +709,7 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 		batadv_ogm_packet->gw_flags = BATADV_NO_FLAGS;
- 	}
- 
--	batadv_slide_own_bcast_window(hard_iface);
-+	batadv_iv_ogm_slide_own_bcast_window(hard_iface);
- 	batadv_iv_ogm_queue_add(bat_priv, hard_iface->bat_iv.ogm_buff,
- 				hard_iface->bat_iv.ogm_buff_len, hard_iface, 1,
- 				batadv_iv_ogm_emit_send_time(bat_priv));
-diff --git a/routing.c b/routing.c
-index 356ad89..0e10720 100644
---- a/routing.c
-+++ b/routing.c
-@@ -34,35 +34,6 @@
- static int batadv_route_unicast_packet(struct sk_buff *skb,
- 				       struct batadv_hard_iface *recv_if);
- 
--void batadv_slide_own_bcast_window(struct batadv_hard_iface *hard_iface)
--{
--	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
--	struct batadv_hashtable *hash = bat_priv->orig_hash;
--	struct hlist_head *head;
--	struct batadv_orig_node *orig_node;
--	unsigned long *word;
--	uint32_t i;
--	size_t word_index;
--	uint8_t *w;
--
--	for (i = 0; i < hash->size; i++) {
--		head = &hash->table[i];
--
--		rcu_read_lock();
--		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
--			spin_lock_bh(&orig_node->ogm_cnt_lock);
--			word_index = hard_iface->if_num * BATADV_NUM_WORDS;
--			word = &(orig_node->bcast_own[word_index]);
--
--			batadv_bit_get_packet(bat_priv, word, 1, 0);
--			w = &orig_node->bcast_own_sum[hard_iface->if_num];
--			*w = bitmap_weight(word, BATADV_TQ_LOCAL_WINDOW_SIZE);
--			spin_unlock_bh(&orig_node->ogm_cnt_lock);
--		}
--		rcu_read_unlock();
--	}
--}
--
- static void _batadv_update_route(struct batadv_priv *bat_priv,
- 				 struct batadv_orig_node *orig_node,
- 				 struct batadv_neigh_node *neigh_node)
-diff --git a/routing.h b/routing.h
-index 99eeafa..72a29bd 100644
---- a/routing.h
-+++ b/routing.h
-@@ -20,7 +20,6 @@
- #ifndef _NET_BATMAN_ADV_ROUTING_H_
- #define _NET_BATMAN_ADV_ROUTING_H_
- 
--void batadv_slide_own_bcast_window(struct batadv_hard_iface *hard_iface);
- bool batadv_check_management_packet(struct sk_buff *skb,
- 				    struct batadv_hard_iface *hard_iface,
- 				    int header_len);
--- 
-1.8.1.5
-
+Cheers,
+Marek
