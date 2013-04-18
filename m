@@ -1,13 +1,13 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Thu, 18 Apr 2013 12:11:33 +0200
-Message-Id: <1366279893-5607-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1366272701-12570-1-git-send-email-martin@hundeboll.net>
-References: <1366272701-12570-1-git-send-email-martin@hundeboll.net>
+Date: Thu, 18 Apr 2013 12:14:59 +0200
+Message-Id: <1366280099-6372-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1366279893-5607-1-git-send-email-martin@hundeboll.net>
+References: <1366279893-5607-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Move call to
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Move call to
 	batadv_nc_skb_forward() from routing.c to send.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -31,12 +31,13 @@ Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
 
 v2: I should make random defines lowercase :)
+v3: Do git add before committing and sending patches :|
 
- network-coding.c |  5 ++---
- network-coding.h |  6 ++----
- routing.c        |  9 +++------
- send.c           | 17 +++++++++++------
- 4 files changed, 18 insertions(+), 19 deletions(-)
+ network-coding.c | 5 ++---
+ network-coding.h | 6 ++----
+ routing.c        | 9 +++------
+ send.c           | 9 +++++++--
+ 4 files changed, 14 insertions(+), 15 deletions(-)
 
 diff --git a/network-coding.c b/network-coding.c
 index c93df9e..dc94b76 100644
@@ -112,7 +113,7 @@ index 0e10720..19cf8b6 100644
  
  out:
 diff --git a/send.c b/send.c
-index ed7072a..a241a79 100644
+index ed7072a..fa8077a 100644
 --- a/send.c
 +++ b/send.c
 @@ -110,8 +110,13 @@ bool batadv_send_skb_to_orig(struct sk_buff *skb,
@@ -131,28 +132,6 @@ index ed7072a..a241a79 100644
  
  	batadv_neigh_node_free_ref(neigh_node);
  
-@@ -122,8 +127,8 @@ void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 
--	if ((hard_iface->if_status == BATADV_IF_NOT_IN_USE) ||
--	    (hard_iface->if_status == BATADV_IF_TO_BE_REMOVED))
-+	if ((hard_iface->if_status == batadv_if_not_in_use) ||
-+	    (hard_iface->if_status == batadv_if_to_be_removed))
- 		return;
- 
- 	/* the interface gets activated here to avoid race conditions between
-@@ -132,8 +137,8 @@ void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface)
- 	 * outdated packets (especially uninitialized mac addresses) in the
- 	 * packet queue
- 	 */
--	if (hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED)
--		hard_iface->if_status = BATADV_IF_ACTIVE;
-+	if (hard_iface->if_status == batadv_if_to_be_activated)
-+		hard_iface->if_status = batadv_if_active;
- 
- 	bat_priv->bat_algo_ops->bat_ogm_schedule(hard_iface);
- }
 -- 
 1.8.2.1
 
