@@ -1,11 +1,13 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Thu, 18 Apr 2013 10:11:41 +0200
-Message-Id: <1366272701-12570-1-git-send-email-martin@hundeboll.net>
+Date: Thu, 18 Apr 2013 12:11:33 +0200
+Message-Id: <1366279893-5607-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1366272701-12570-1-git-send-email-martin@hundeboll.net>
+References: <1366272701-12570-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Move call to
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Move call to
 	batadv_nc_skb_forward() from routing.c to send.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,8 +30,7 @@ looked up.
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
 
-This is a patch to prepare for the merge of the next fragmentation patches,
-as these will remove the current lookup of the next-hop in route_unicast_packet().
+v2: I should make random defines lowercase :)
 
  network-coding.c |  5 ++---
  network-coding.h |  6 ++----
