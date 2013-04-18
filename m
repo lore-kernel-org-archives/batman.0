@@ -1,16 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 18 Apr 2013 20:43:10 +0800
-References: <1366136543-16916-1-git-send-email-ordex@autistici.org>
- <1366136543-16916-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1366136543-16916-2-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201304182043.10972.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: move
-	BATADV_TT_CLIENT_TEMP to higher bit
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu, 18 Apr 2013 14:57:20 +0200
+Message-Id: <1366289840-20316-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: pass a 16bit long flag
+	argument to tt_global_add()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,18 +18,66 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <ordex@autistici.org>
 
-On Wednesday, April 17, 2013 02:22:23 Antonio Quartulli wrote:
-> Client flags from bit 0 to 7 are sent over the wire.
-> BATADV_TT_CLIENT_TEMP is not sent therefore it has occupy
-> an higher bit so to avoid wasting positions used by flags
-> sent within packets
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  packet.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+it may be the case that we want to store some local TT client flags in a global
+entry, therefore the tt_global_add needs to get a proper argument for this
 
-Acked-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-Cheers,
-Marek
+v2:
+- added kernel doc
+
+
+
+ translation-table.c | 19 +++++++++++++++++--
+ translation-table.h |  2 +-
+ 2 files changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/translation-table.c b/translation-table.c
+index 52808c4..bbda424 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -798,10 +798,25 @@ out:
+ 		batadv_tt_orig_list_entry_free_ref(orig_entry);
+ }
+ 
+-/* caller must hold orig_node refcount */
++/**
++ * batadv_tt_global_add - add a new TT global entry or update it
++ * @bat_priv: the bat priv with all the soft interface information
++ * @orig_node: the originator announcing the client
++ * @tt_addr: the MAC address of the client
++ * @flags: TT flags that have to be set for this client
++ * @ttvn: the first originator's TT version number having this client
++ *
++ * Add a new TT global entry for the given originator. If the entry already
++ * exists add a new reference to the given originator (a global entry can have
++ * references to multiple originators) and adjust the flags attribute to reflect
++ * the function argument.
++ * If a TT local entry exists for this client remove it.
++ *
++ * The caller must hold orig_node refcount.
++ */
+ int batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 			 struct batadv_orig_node *orig_node,
+-			 const unsigned char *tt_addr, uint8_t flags,
++			 const unsigned char *tt_addr, uint16_t flags,
+ 			 uint8_t ttvn)
+ {
+ 	struct batadv_tt_global_entry *tt_global_entry;
+diff --git a/translation-table.h b/translation-table.h
+index ab8e683..659a3bb 100644
+--- a/translation-table.h
++++ b/translation-table.h
+@@ -33,7 +33,7 @@ void batadv_tt_global_add_orig(struct batadv_priv *bat_priv,
+ 			       const unsigned char *tt_buff, int tt_buff_len);
+ int batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 			 struct batadv_orig_node *orig_node,
+-			 const unsigned char *addr, uint8_t flags,
++			 const unsigned char *addr, uint16_t flags,
+ 			 uint8_t ttvn);
+ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
+ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+-- 
+1.8.1.5
+
