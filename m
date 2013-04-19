@@ -1,15 +1,12 @@
 Return-Path: <ordex@autistici.org>
-Date: Fri, 19 Apr 2013 09:34:09 +0200
+Date: Fri, 19 Apr 2013 10:26:51 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130419073409.GH20819@ritirata.org>
-References: <20130419132127.05ea53adec329ca794d62be7@canb.auug.org.au>
+Message-ID: <20130419082651.GA13226@ritirata.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="nYySOmuH/HDX6pKp"
+ protocol="application/pgp-signature"; boundary="3V7upXqbjpZ4EhLz"
 Content-Disposition: inline
-In-Reply-To: <20130419132127.05ea53adec329ca794d62be7@canb.auug.org.au>
-Subject: Re: [B.A.T.M.A.N.] linux-next: build failure after merge of the
-	net-next tree
+Subject: [B.A.T.M.A.N.] batman-adv merge-conflict
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,42 +18,105 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, linux-next@vger.kernel.org, Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>, Marek Lindner <lindner_marek@yahoo.de>, David Miller <davem@davemloft.net>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 
---nYySOmuH/HDX6pKp
+--3V7upXqbjpZ4EhLz
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Stephen,
+Hi David,
 
-On Fri, Apr 19, 2013 at 01:21:27PM +1000, Stephen Rothwell wrote:
->=20
-> Caused by commits 612d2b4fe0a1 ("batman-adv: network coding - save
-> overheard and tx packets for decoding") and 2df5278b0267 ("batman-adv:
-> network coding - receive coded packets and decode them") from the
-> net-next tree interacting with commit fe8a93b95145 ("batman-adv: make
-> is_my_mac() check for the current mesh only") from the net tree.
->=20
-> I added the following merge fix patch and can carry it as necessary:
+here are the instructions to resolve the conflicts you will get while mergi=
+ng
+net into net-next.
 
 
-thank you very much for taking care of this.
-However, as I wrote to David in the pull request which generated this noise
-(http://patchwork.ozlabs.org/patch/237363/), I am now going to send a second
-pull request which fixes this problem properly and adds the related kernel =
-doc.
+In net/batman-adv/routing.c
 
-Your patch looks good, but I'd prefer to send my already prepared pull requ=
-est.
+++<<<<<<< HEAD
+ +static int batadv_check_unicast_packet(struct sk_buff *skb, int hdr_size)
+++=3D=3D=3D=3D=3D=3D=3D
++ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
++ 				       struct sk_buff *skb, int hdr_size)
+++>>>>>>> maint
 
-Is it ok with you?
+Resolves as:
+/**
+ * batadv_check_unicast_packet - Check for malformed unicast packets
+ * @skb: packet to check
+ * @hdr_size: size of header to pull
+ *
+ * Check for short header and bad addresses in given packet. Returns negati=
+ve
+ * value when check fails and 0 otherwise. The negative value depends on the
+ * reason: -ENODATA for bad header, -EBADR for broadcast destination or sou=
+rce,
+ * and -EREMOTE for non-local (other host) destination.
+ */
+static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
+				       struct sk_buff *skb, int hdr_size)
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D
+
+++<<<<<<< HEAD
+ +	if (!batadv_is_my_mac(ethhdr->h_dest))
+ +		return -EREMOTE;
+++=3D=3D=3D=3D=3D=3D=3D
++ 	if (!batadv_is_my_mac(bat_priv, ethhdr->h_dest))
++ 		return -1;
+++>>>>>>> maint
+
+Resolves as:
+if (!batadv_is_my_mac(bat_priv, ethhdr->h_dest))
+	return -EREMOTE;
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D
+
+++<<<<<<< HEAD
+ +	/* function returns -EREMOTE for promiscuous packets */
+ +	check =3D batadv_check_unicast_packet(skb, hdr_size);
+ +
+ +	/* Even though the packet is not for us, we might save it to use for
+ +	 * decoding a later received coded packet
+ +	 */
+ +	if (check =3D=3D -EREMOTE)
+ +		batadv_nc_skb_store_sniffed_unicast(bat_priv, skb);
+ +
+ +	if (check < 0)
+++=3D=3D=3D=3D=3D=3D=3D
++ 	if (batadv_check_unicast_packet(bat_priv, skb, hdr_size) < 0)
+++>>>>>>> maint
+
+Resolves as:
+/* function returns -EREMOTE for promiscuous packets */
+check =3D batadv_check_unicast_packet(bat_priv, skb, hdr_size);
+
+/* Even though the packet is not for us, we might save it to use for
+ * decoding a later received coded packet
+ */
+if (check =3D=3D -EREMOTE)
+	batadv_nc_skb_store_sniffed_unicast(bat_priv, skb);
+
+if (check < 0)
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D
+
+
+I'm now going to send a pull request to fix some compile issues generated b=
+y the
+merge.
+
 
 Cheers,
-
-
 
 
 --=20
@@ -65,26 +125,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---nYySOmuH/HDX6pKp
+--3V7upXqbjpZ4EhLz
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRcPNxAAoJEADl0hg6qKeOimIP/1OQBmOUOAtmC2ysu94YCdNk
-pBuo+0D7b7UtbdsIfYVQoj3EienZBWKB7DTPbWW3dV91/zWt7jG3YJuseVFqSDzs
-XYehdFZ1xXkz1VBSj/EBmQcNeyEHRQm2UDYcYvkQxaGIH6lOQ1ChFusyBD+UMQ8q
-Ke4N/fsAHbnsHdhv/qrtxg7qom7ZUxiKvXfyzeW/6l5Lc5x6dtYhU7/8mP/wzaKx
-iiastd8h5NHhnxGrBQl26SzKiyryS9xInINQWU+ZBeNddnqGo5AHjuACxbpt5z1A
-jn8eyGTzL5GyG+ylBKwMoCJPmuzvQ5b6CUIKrY5iFY2iz4h96Ja7srQIdBjeHNYH
-o99KAQrFF7pNN9FF0nFMnz3ngA7rh8cHYndgVBANZWyQl0mWCMmbIfnR2w2YSfQG
-tGI1I1WujcHs670DQZsIMadg8EWCIASQNfu17efH2QogHqikjjw3MPKeiTkr+JZM
-kwYSHvntfK0aY6AkLzUsUlWWMC57EVdHoSgr/RWoRtc6TNcV8C+z4rqfiHdycA27
-5G38FdED2KBILvbUSfneE8Za4XSc9gDCVq0D2d3rzhnGDyrvJ6B5q0C7+DH8FTI5
-GCJBfzbcOmn/zyw+UHfHQiV/ucF2Msd8/uWVuDjKeHKbm5emHKVeDGns7iAgYe3x
-GSRNU2fPoGviSa9pUts7
-=GfXY
+iQIcBAEBCAAGBQJRcP/LAAoJEADl0hg6qKeO5eUP/1LMY0o23vEs5FjDWPdcetKs
++2LMiso2Hu8NqGYKmWw73MFHyUrMgFOLA9MWF8hzSw4SlDqDUhuJb6hjMpOAMsy+
+h3jTnyt0vHqWln3SNElicDB6hal98eoRhcFWX1gnsOnMsqfquVIcw0ahQdOowa4W
+NUYZcREfC4/QXKJ0jNgIc8iBu89WmEiGxldJrv5L4QIWYwqxO4pR88mpR3sYze+E
+lsHU/vKmab3z0uDHadBvA4wKguTsHEU32x9lHmP+EgEhthaz2ROX0LbaNLYBlQ7r
+A5ABv17wcIkv/GIbW5OrGwW8ON/8qFrwPOwO7A8R48jUD+S8C7uHHAgTHijugq7v
+3h66X1GlcsNwgp9Hf/2VC9O14Uf0klxW6l5Z7UTTH/fw5cTCr11RcmJIWxyiFKmy
+zMJiVf0IUommSuALMjzyqT1qntB55utQATbQwIwCMYImvg5NY+/KM3Rh/KYUHD+y
+1m90yYRkm9Uoy28K8PXYxVkwHdxVw+pnxsngyxfw/A4HcUfpNInBcMYs1h5PPC4G
+ewBlBu3pxO31eYaYaX95E/wXArxCm5kuM4EdCqQbb0R5Ckk1qMXb7AUhqB1hlRGN
+legcouy4qr3O7zJ7p07ydzdsn4oj1N6Q1LghHiIGfNFTLf1YNV/HdYhBFYsOuzi7
+Rp8hTP76/yNRrrZUTL6O
+=2HgT
 -----END PGP SIGNATURE-----
 
---nYySOmuH/HDX6pKp--
+--3V7upXqbjpZ4EhLz--
