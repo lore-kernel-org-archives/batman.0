@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 19 Apr 2013 18:16:59 +0800
-References: <1366290604-10322-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1366290604-10322-1-git-send-email-ordex@autistici.org>
+Date: Fri, 19 Apr 2013 18:22:14 +0800
+References: <1366366016-7691-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1366366016-7691-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201304191816.59895.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use CRC32C instead of
-	CRC16 in TT code
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201304191822.15024.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unnecessary
+	INIT_HLIST_NODE() calls
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,17 +21,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday, April 18, 2013 21:10:04 Antonio Quartulli wrote:
-> @@ -1380,16 +1380,14 @@ out:
->  }
->  
->  /* Calculates the checksum of the local table of a given orig_node */
-> -static uint16_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
-> +static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+On Friday, April 19, 2013 18:06:56 Linus L=C3=BCssing wrote:
+> There's no need to for an explicit hlist_node initialization if it is
+> added to a list right away, like it's the case with the
+> hlist_add_head()s here.
+>=20
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
+> ---
+> Unmodified, reposted from:
+> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2013-March/009248.html
+>=20
+>  bat_iv_ogm.c |    2 --
+>  send.c       |    2 --
+>  2 files changed, 4 deletions(-)
 
-Don't forget the kernel doc here.
+Applied in revision 68a3373.
 
-Cheers,
+Thanks,
 Marek
