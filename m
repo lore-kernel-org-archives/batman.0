@@ -1,13 +1,13 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Fri, 19 Apr 2013 18:18:47 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130419161847.GA30846@pandem0nium>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 20 Apr 2013 00:52:19 +0800
 References: <1366387621-12718-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
-Content-Disposition: inline
 In-Reply-To: <1366387621-12718-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201304200052.19401.lindner_marek@yahoo.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv3 1/2] batman-adv: change VID semantic in
 	the BLA code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,44 +21,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <ordex@autistici.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Antonio Quartulli <antonio@open-mesh.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Antonio Quartulli <ordex@autistici.org>, Antonio Quartulli <antonio@open-mesh.com>
 
-
---d6Gm4EdcadzBjdND
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-
-On Fri, Apr 19, 2013 at 06:07:00PM +0200, Antonio Quartulli wrote:
+On Saturday, April 20, 2013 00:07:00 Antonio Quartulli wrote:
 > From: Antonio Quartulli <antonio@open-mesh.com>
->=20
+> 
 > In order to make batman-adv fully vlan aware later, the
 > semantic used for variables storing the VLAN ID values has
 > to be changed in order to be adapted to the new one which
 > will be used batman-adv wide.
->=20
+> 
 > In particular, the VID has to be an "_unsigned_ short int"
 > and its 4 MSB will be used as a flag bitfield, while the
 > remaining 12 bits are used to store the real VID value
->=20
+> 
 > Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+> 
+> v3:
+> - don't change the print format (keep %d)
+> - added a couple of fixes to debug messages
+> 
+>  bridge_loop_avoidance.c | 50
+> +++++++++++++++++++++++++------------------------ bridge_loop_avoidance.h
+> | 12 +++++++-----
+>  main.h                  | 11 +++++++++++
+>  soft-interface.c        |  4 ++--
+>  types.h                 |  4 ++--
+>  5 files changed, 48 insertions(+), 33 deletions(-)
 
-Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Applied in revision 0b1da17.
 
---d6Gm4EdcadzBjdND
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAlFxbmcACgkQrzg/fFk7axa9FwCgzbl5edljNonpExc9ub5/bGV1
-UXwAoKrSm3RZxn9CguMrkpzzakHVlJ4T
-=tFUY
------END PGP SIGNATURE-----
-
---d6Gm4EdcadzBjdND--
+Thanks,
+Marek
