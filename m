@@ -1,10 +1,10 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sat, 20 Apr 2013 13:08:16 +0200
-Message-Id: <1366456097-1447-6-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Sat, 20 Apr 2013 13:08:14 +0200
+Message-Id: <1366456097-1447-4-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <1366456097-1447-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1366456097-1447-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv3 5/6] batman-adv: reorder batadv_iv_flags
+Subject: [B.A.T.M.A.N.] [PATCHv3 3/6] batman-adv: reorder packet types
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,56 +19,173 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-The vis flag is not needed anymore, and since we do a compat bump we
-can start with the first bit again
+Reordering the packet type numbers allows us to handle unicast
+packets in a general way - even if we don't know the specific packet
+type, we can still forward it. There was already code handling
+this for a couple of unicast packets, and this is the more
+generalized version to do that.
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- packet.h |   19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
+ main.c    |   20 +++++++++++++++-----
+ packet.h  |   34 +++++++++++++++++++++++++---------
+ routing.c |   28 ++++++++++++++++++++++++++++
+ routing.h |    2 ++
+ 4 files changed, 70 insertions(+), 14 deletions(-)
 
+diff --git a/main.c b/main.c
+index 5c76d6f..5c0a8db 100644
+--- a/main.c
++++ b/main.c
+@@ -328,6 +328,9 @@ static void batadv_recv_handler_init(void)
+ 	for (i = 0; i < ARRAY_SIZE(batadv_rx_handler); i++)
+ 		batadv_rx_handler[i] = batadv_recv_unhandled_packet;
+ 
++	for (i = BATADV_UNICAST_MIN; i <= BATADV_UNICAST_MAX; i++)
++		batadv_rx_handler[i] = batadv_recv_unhandled_unicast_packet;
++
+ 	/* compile time checks for struct member offsets */
+ 	BUILD_BUG_ON(offsetof(struct batadv_unicast_4addr_packet, src) != 10);
+ 	BUILD_BUG_ON(offsetof(struct batadv_unicast_packet, dest) != 4);
+@@ -336,18 +339,20 @@ static void batadv_recv_handler_init(void)
+ 	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet, dst) != 4);
+ 	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet_rr, dst) != 4);
+ 
+-	/* batman icmp packet */
+-	batadv_rx_handler[BATADV_ICMP] = batadv_recv_icmp_packet;
++	/* broadcast packet */
++	batadv_rx_handler[BATADV_BCAST] = batadv_recv_bcast_packet;
++
++	/* unicast packets ... */
+ 	/* unicast with 4 addresses packet */
+ 	batadv_rx_handler[BATADV_UNICAST_4ADDR] = batadv_recv_unicast_packet;
+ 	/* unicast packet */
+ 	batadv_rx_handler[BATADV_UNICAST] = batadv_recv_unicast_packet;
+ 	/* fragmented unicast packet */
+ 	batadv_rx_handler[BATADV_UNICAST_FRAG] = batadv_recv_ucast_frag_packet;
+-	/* broadcast packet */
+-	batadv_rx_handler[BATADV_BCAST] = batadv_recv_bcast_packet;
+ 	/* unicast tvlv packet */
+ 	batadv_rx_handler[BATADV_UNICAST_TVLV] = batadv_recv_unicast_tvlv;
++	/* batman icmp packet */
++	batadv_rx_handler[BATADV_ICMP] = batadv_recv_icmp_packet;
+ }
+ 
+ int
+@@ -355,7 +360,12 @@ batadv_recv_handler_register(uint8_t packet_type,
+ 			     int (*recv_handler)(struct sk_buff *,
+ 						 struct batadv_hard_iface *))
+ {
+-	if (batadv_rx_handler[packet_type] != &batadv_recv_unhandled_packet)
++	int (*curr)(struct sk_buff *,
++		    struct batadv_hard_iface *);
++	curr = batadv_rx_handler[packet_type];
++
++	if ((curr != batadv_recv_unhandled_packet) &&
++	    (curr != batadv_recv_unhandled_unicast_packet))
+ 		return -EBUSY;
+ 
+ 	batadv_rx_handler[packet_type] = recv_handler;
 diff --git a/packet.h b/packet.h
-index 88d3aa6..8cc9068 100644
+index 8ec9cf7..c90856d 100644
 --- a/packet.h
 +++ b/packet.h
-@@ -69,11 +69,19 @@ enum batadv_subtype {
- /* this file is included by batctl which needs these defines */
- #define BATADV_COMPAT_VERSION 14
+@@ -22,18 +22,34 @@
  
-+/**
-+ * enum batadv_iv_flags - flags used in B.A.T.M.A.N. IV OGM packets
-+ * @BATADV_NOT_BEST_NEXT_HOP: flag is set when ogm packet is forwarded and was
-+ *	previously received from someone else than the best neighbor.
-+ * @BATADV_PRIMARIES_FIRST_HOP: flag is set when the primary interface address
-+ *	is used, and the packet travels its first hop.
-+ * @BATADV_DIRECTLINK: flag is for the first hop or if rebroadcasted from a
-+ *	one hop neighbor on the interface where it was originally received.
-+ */
- enum batadv_iv_flags {
--	BATADV_NOT_BEST_NEXT_HOP   = BIT(3),
--	BATADV_PRIMARIES_FIRST_HOP = BIT(4),
--	BATADV_VIS_SERVER	   = BIT(5),
--	BATADV_DIRECTLINK	   = BIT(6),
-+	BATADV_NOT_BEST_NEXT_HOP   = BIT(0),
-+	BATADV_PRIMARIES_FIRST_HOP = BIT(1),
-+	BATADV_DIRECTLINK	   = BIT(2),
+ /**
+  * enum batadv_packettype - types for batman-adv encapsulated packets
++ * @BATADV_IV_OGM: originator messages for B.A.T.M.A.N. IV
++ * @BATADV_BCAST: broadcast packets carrying broadcast payload
++ * @BATADV_CODED: network coded packets
++ *
++ * @BATADV_UNICAST: unicast packets carrying unicast payload traffic
++ * @BATADV_UNICAST_FRAG: unicast packets carrying a fragment of the original
++ *	payload packet
++ * @BATADV_UNICAST_4ADDR: unicast packet including the originator address of
++ *	the sender
++ * @BATADV_ICMP: unicast packet like IP ICMP used for ping or traceroute
+  * @BATADV_UNICAST_TVLV: unicast packet carrying TVLV containers
++ *
+  */
++
+ enum batadv_packettype {
+-	BATADV_IV_OGM		= 0x01,
+-	BATADV_ICMP		= 0x02,
+-	BATADV_UNICAST		= 0x03,
+-	BATADV_BCAST		= 0x04,
+-	BATADV_VIS		= 0x05,
+-	BATADV_UNICAST_FRAG	= 0x06,
+-	BATADV_UNICAST_4ADDR	= 0x09,
+-	BATADV_CODED		= 0x0a,
+-	BATADV_UNICAST_TVLV	= 0x0b,
++	/* 0x00 - 0x3f: local packets or special rules for handling */
++	BATADV_IV_OGM		= 0x00,
++	BATADV_BCAST		= 0x01,
++	BATADV_CODED		= 0x02,
++	/* 0x40 - 0x7f: unicast */
++#define BATADV_UNICAST_MIN	0x40
++	BATADV_UNICAST		= 0x40,
++	BATADV_UNICAST_FRAG	= 0x41,
++	BATADV_UNICAST_4ADDR	= 0x42,
++	BATADV_ICMP		= 0x43,
++	BATADV_UNICAST_TVLV	= 0x44,
++#define BATADV_UNICAST_MAX	0x7f
++	/* 0x80 - 0xff: reserved */
  };
  
- /* ICMP message types */
-@@ -167,11 +175,12 @@ struct batadv_header {
  /**
-  * struct batadv_ogm_packet - ogm (routing protocol) packet
-  * @header: common batman packet header
-+ * @flags: contains routing relevant flags - see enum batadv_iv_flags
-  * @tvlv_len: length of tvlv data following the ogm header
-  */
- struct batadv_ogm_packet {
- 	struct batadv_header header;
--	uint8_t  flags;    /* 0x40: DIRECTLINK flag, 0x20 VIS_SERVER flag... */
-+	uint8_t  flags;
- 	__be32   seqno;
- 	uint8_t  orig[ETH_ALEN];
- 	uint8_t  prev_sender[ETH_ALEN];
+diff --git a/routing.c b/routing.c
+index d48f9f9..cb219e1 100644
+--- a/routing.c
++++ b/routing.c
+@@ -892,6 +892,34 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+ 	return 1;
+ }
+ 
++/**
++ * batadv_recv_unhandled_unicast_packet - receive and process packets which
++ *	are in the unicast number space but not yet known to the implementation
++ * @skb: unicast tvlv packet to process
++ * @recv_if: pointer to interface this packet was received on
++ *
++ * Returns NET_RX_SUCCESS if the packet has been consumed or NET_RX_DROP
++ * otherwise.
++ */
++int batadv_recv_unhandled_unicast_packet(struct sk_buff *skb,
++					 struct batadv_hard_iface *recv_if)
++{
++	struct batadv_unicast_packet *unicast_packet;
++	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
++	int check, hdr_size = sizeof(*unicast_packet);
++
++	check = batadv_check_unicast_packet(bat_priv, skb, hdr_size);
++	if (check < 0)
++		return NET_RX_DROP;
++
++	/* we don't know about this type, drop it. */
++	unicast_packet = (struct batadv_unicast_packet *)skb->data;
++	if (batadv_is_my_mac(bat_priv, unicast_packet->dest))
++		return NET_RX_DROP;
++
++	return batadv_route_unicast_packet(skb, recv_if);
++}
++
+ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 			       struct batadv_hard_iface *recv_if)
+ {
+diff --git a/routing.h b/routing.h
+index 0a7983b..33cdf6c 100644
+--- a/routing.h
++++ b/routing.h
+@@ -42,6 +42,8 @@ int batadv_recv_roam_adv(struct sk_buff *skb,
+ 			 struct batadv_hard_iface *recv_if);
+ int batadv_recv_unicast_tvlv(struct sk_buff *skb,
+ 			     struct batadv_hard_iface *recv_if);
++int batadv_recv_unhandled_unicast_packet(struct sk_buff *skb,
++					 struct batadv_hard_iface *recv_if);
+ struct batadv_neigh_node *
+ batadv_find_router(struct batadv_priv *bat_priv,
+ 		   struct batadv_orig_node *orig_node,
 -- 
 1.7.10.4
 
