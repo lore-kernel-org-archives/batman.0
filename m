@@ -1,15 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 20 Apr 2013 23:56:51 +0800
-References: <1366466353-18495-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1366466353-18495-1-git-send-email-ordex@autistici.org>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Sat, 20 Apr 2013 18:17:31 +0200
+Message-Id: <1366474654-26361-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201304202356.52166.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: switch to a new packet
-	compatibility version
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 0/3] Fragmentation version 2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,21 +18,40 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Martin =?utf-8?q?Hundeb=C3=B8ll?= <martin@hundeboll.net>, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Antonio Quartulli <ordex@autistici.org>
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On Saturday, April 20, 2013 21:59:13 Antonio Quartulli wrote:
-> With this change batman-adv is breaking compatibility with
-> older versions and it is moving to compat-version 15.
->=20
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-> Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  packet.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+These are a few patches to remove the current fragmentation code and replace it with a new version that supports more packet types and more fragments per packet, thus allowing bigger payloads.
 
-Applied in revision 8a0b4eb.
+The patches are based on simon "bigbump" repo and are meant for the next big bump in compat number.
 
-Thanks,
-Marek
+Martin Hundebøll (3):
+  batman-adv: Remove old fragmentation code
+  batman-adv: Receive fragmented packets and merge
+  batman-adv: Fragment and send skbs larger than mtu
+
+ Makefile.kbuild         |   2 +-
+ distributed-arp-table.c |  11 +-
+ fragmentation.c         | 493 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fragmentation.h         |  34 ++++
+ hard-interface.c        |   1 -
+ main.c                  |   7 +-
+ main.h                  |   4 +
+ originator.c            |  18 +-
+ packet.h                |  32 ++--
+ routing.c               | 145 ++++++--------
+ routing.h               |   4 +-
+ send.c                  | 194 ++++++++++++++++++-
+ send.h                  |  36 ++++
+ soft-interface.c        |  15 +-
+ types.h                 |  55 ++++--
+ unicast.c               | 478 ----------------------------------------------
+ unicast.h               |  92 ---------
+ 17 files changed, 904 insertions(+), 717 deletions(-)
+ create mode 100644 fragmentation.c
+ create mode 100644 fragmentation.h
+ delete mode 100644 unicast.c
+ delete mode 100644 unicast.h
+
+-- 
+1.8.2.1
+
