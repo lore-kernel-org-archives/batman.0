@@ -1,15 +1,16 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <51729FC5.2080608@hundeboll.net>
-Date: Sat, 20 Apr 2013 16:01:41 +0200
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sat, 20 Apr 2013 22:16:24 +0800
+References: <1366373804-26785-1-git-send-email-martin@hundeboll.net>
+ <1366458879-31677-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1366458879-31677-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-References: <1366280099-6372-1-git-send-email-martin@hundeboll.net>
- <1366373804-26785-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1366373804-26785-1-git-send-email-martin@hundeboll.net>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4] batman-adv: Move call to
- batadv_nc_skb_forward() from routing.c to send.c
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201304202216.25126.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5] batman-adv: Move call to
+	batadv_nc_skb_forward() from routing.c to send.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,36 +23,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Martin =?utf-8?q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On 2013-04-19 14:16, Martin Hundebøll wrote:
+On Saturday, April 20, 2013 19:54:39 Martin Hundeb=C3=B8ll wrote:
 > The call to batadv_nc_skb_forward() fits better in
 > batadv_send_skb_to_orig(), as this is where the actual next hop is
 > looked up.
->
-> Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+>=20
+> To let the caller of batadv_send_skb_to_orig() know wether the skb is
+> transmitted, buffered or failed, the return value is changed from
+> boolean to int.
+>=20
+> Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > ---
->
-> v2: I should make random defines lowercase :)
+>=20
+> v2: I should make random defines lowercase=20
 > v3: Do git add before committing and sending patches :|
 > v4: Don't count non-coded packets twice
->
-> network-coding.c | 8 ++------
->   network-coding.h | 6 ++----
->   routing.c        | 9 +++------
->   send.c           | 9 +++++++--
->   4 files changed, 14 insertions(+), 18 deletions(-)
+> v5: Change return value to do correct counting
+>=20
+>  network-coding.c    |  5 ++---
+>  network-coding.h    |  6 ++----
+>  routing.c           | 23 +++++++++++++----------
+>  send.c              | 27 +++++++++++++++++++--------
+>  send.h              |  6 +++---
+>  translation-table.c | 12 +++++++-----
+>  unicast.c           |  2 +-
+>  vis.c               |  7 ++++---
+>  8 files changed, 51 insertions(+), 37 deletions(-)
 
+Applied in revision ae72fda.
 
-Okay, I include this patch as a part of the fragmentation series, as 
-this is why it is needed.
-
-
--- 
-Kind Regards
-Martin Hundebøll
-Frederiks Allé 99, 1.th
-8000 Aarhus C
-Denmark
-
-+45 61 65 54 61
-martin@hundeboll.net
+Thanks,
+Marek
