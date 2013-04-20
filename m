@@ -1,15 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 20 Apr 2013 17:42:53 +0800
-References: <1366401149-31600-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <1366401149-31600-6-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1366401149-31600-6-git-send-email-siwu@hrz.tu-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201304201742.53262.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 5/6] batman-adv: reorder batadv_iv_flags
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sat, 20 Apr 2013 13:08:15 +0200
+Message-Id: <1366456097-1447-5-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1366456097-1447-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+References: <1366456097-1447-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCHv3 4/6] batman-adv: remove packed from
+	batadv_ogm_packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,23 +17,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On Saturday, April 20, 2013 03:52:28 Simon Wunderlich wrote:
-> @@ -70,10 +70,9 @@ enum batadv_subtype {
->  #define BATADV_COMPAT_VERSION 14
->  
->  enum batadv_iv_flags {
-> -       BATADV_NOT_BEST_NEXT_HOP   = BIT(3),
-> -       BATADV_PRIMARIES_FIRST_HOP = BIT(4),
-> -       BATADV_VIS_SERVER          = BIT(5),
-> -       BATADV_DIRECTLINK          = BIT(6),
-> +       BATADV_NOT_BEST_NEXT_HOP   = BIT(0),
-> +       BATADV_PRIMARIES_FIRST_HOP = BIT(1),
-> +       BATADV_DIRECTLINK          = BIT(2),
->  };
+As we decreased the struct size from 26 to 24 byte, we can remove
+__packed as the compiler will not add any more padding.
 
-Can we get some kernel doc here as well ?
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+---
+ packet.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Cheers,
-Marek
+diff --git a/packet.h b/packet.h
+index c90856d..88d3aa6 100644
+--- a/packet.h
++++ b/packet.h
+@@ -178,7 +178,10 @@ struct batadv_ogm_packet {
+ 	uint8_t  reserved;
+ 	uint8_t  tq;
+ 	__be16   tvlv_len;
+-} __packed;
++	/* __packed is not needed as the struct size is divisible by 4,
++	 * and the largest data type in this struct has a size of 4.
++	 */
++};
+ 
+ #define BATADV_OGM_HLEN sizeof(struct batadv_ogm_packet)
+ 
+-- 
+1.7.10.4
+
