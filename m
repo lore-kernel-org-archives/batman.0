@@ -1,14 +1,17 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Sat, 20 Apr 2013 13:54:39 +0200
-Message-Id: <1366458879-31677-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1366373804-26785-1-git-send-email-martin@hundeboll.net>
-References: <1366373804-26785-1-git-send-email-martin@hundeboll.net>
+Return-Path: <ordex@autistici.org>
+Date: Sat, 20 Apr 2013 15:56:36 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130420135636.GB5732@ritirata.org>
+References: <CAP5XTDOompgC27u857UaC6UZ6pk1mg6BnLdtsEL1uMgMq452bw@mail.gmail.com>
+ <20130419123826.GB13226@ritirata.org>
+ <CAP5XTDM4yWxbjEDSDkAyAuizLQDh97Ea616tGOs-dS5YBKgX-A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv5] batman-adv: Move call to
-	batadv_nc_skb_forward() from routing.c to send.c
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="n2Pv11Ogg/Ox8ay5"
+Content-Disposition: inline
+In-Reply-To: <CAP5XTDM4yWxbjEDSDkAyAuizLQDh97Ea616tGOs-dS5YBKgX-A@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] [RFCv3] batman-adv: Modified DAT structures and
+ functions in order to support both IPv4 and IPv6
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,313 +23,88 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The call to batadv_nc_skb_forward() fits better in
-batadv_send_skb_to_orig(), as this is where the actual next hop is
-looked up.
 
-To let the caller of batadv_send_skb_to_orig() know wether the skb is
-transmitted, buffered or failed, the return value is changed from
-boolean to int.
+--n2Pv11Ogg/Ox8ay5
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
----
+On Fri, Apr 19, 2013 at 09:39:17 +0300, Mihail Costea wrote:
+> On 19 April 2013 15:38, Antonio Quartulli <ordex@autistici.org> wrote:
+> >
+> > I think this define is pretty overkill..What about creating a function =
+which
+> > only takes care of converting a generic DHT data in a string. Later you=
+ can
+> > invoke this function when you want to print an IPv4/6 using batadv_dbg.
+> >
+> > Here is an example:
+> >
+> > char *batadv_dat_data_to_str(struct batadv_dat_entry *dat_entry,
+> >                              const char *buf, size_t buf_len)
+> > {
+> >         /* do something and put the string representation of the entry =
+in the
+> >          * buf, without exceeding buf_len.
+> >          * Remember to use IS_ENABLED(CONFIG_IPV6) inside
+> >          */
+> >
+> >
+> >         return buf;
+> > }
+> >
+> > Then you can call it directly as parameter of a batdv_dbg function. E.g:
+> >
+> > batadv_dbg(....," %s\n", batadv_dat_data_to_str(entry, buf, buf_len));
+> >
+> > I think this approach would be better and easy to extend for future dat=
+a types.
+> > If you like this approach, what do you think about sending a patch now =
+to add
+> > this function to the current code?
+> >
+>=20
+> This could work. buf could be a string with a given pattern inside
+> (let's say %data, or something similar) that would be automatically
+> converted to the right type (like %pI4, or %pI6c.
 
-v2: I should make random defines lowercase 
-v3: Do git add before committing and sending patches :|
-v4: Don't count non-coded packets twice
-v5: Change return value to do correct counting
+mh..I did not quite get this..If you know how to implement this "pattern
+substitution" you can send a patch with that. Otherwise what I proposed abo=
+ve is
+just another way of doing that, which is at least simpler and easier to read
+than the macro you proposed before (imho)
 
- network-coding.c    |  5 ++---
- network-coding.h    |  6 ++----
- routing.c           | 23 +++++++++++++----------
- send.c              | 27 +++++++++++++++++++--------
- send.h              |  6 +++---
- translation-table.c | 12 +++++++-----
- unicast.c           |  2 +-
- vis.c               |  7 ++++---
- 8 files changed, 51 insertions(+), 37 deletions(-)
 
-diff --git a/network-coding.c b/network-coding.c
-index 2a996bf..65af447 100644
---- a/network-coding.c
-+++ b/network-coding.c
-@@ -1359,18 +1359,17 @@ static bool batadv_nc_skb_add_to_path(struct sk_buff *skb,
-  *  buffer
-  * @skb: data skb to forward
-  * @neigh_node: next hop to forward packet to
-- * @ethhdr: pointer to the ethernet header inside the skb
-  *
-  * Returns true if the skb was consumed (encoded packet sent) or false otherwise
-  */
- bool batadv_nc_skb_forward(struct sk_buff *skb,
--			   struct batadv_neigh_node *neigh_node,
--			   struct ethhdr *ethhdr)
-+			   struct batadv_neigh_node *neigh_node)
- {
- 	const struct net_device *netdev = neigh_node->if_incoming->soft_iface;
- 	struct batadv_priv *bat_priv = netdev_priv(netdev);
- 	struct batadv_unicast_packet *packet;
- 	struct batadv_nc_path *nc_path;
-+	struct ethhdr *ethhdr = eth_hdr(skb);
- 	__be32 packet_id;
- 	u8 *payload;
- 
-diff --git a/network-coding.h b/network-coding.h
-index 4fa6d0c..85a4ec8 100644
---- a/network-coding.h
-+++ b/network-coding.h
-@@ -36,8 +36,7 @@ void batadv_nc_purge_orig(struct batadv_priv *bat_priv,
- void batadv_nc_init_bat_priv(struct batadv_priv *bat_priv);
- void batadv_nc_init_orig(struct batadv_orig_node *orig_node);
- bool batadv_nc_skb_forward(struct sk_buff *skb,
--			   struct batadv_neigh_node *neigh_node,
--			   struct ethhdr *ethhdr);
-+			   struct batadv_neigh_node *neigh_node);
- void batadv_nc_skb_store_for_decoding(struct batadv_priv *bat_priv,
- 				      struct sk_buff *skb);
- void batadv_nc_skb_store_sniffed_unicast(struct batadv_priv *bat_priv,
-@@ -87,8 +86,7 @@ static inline void batadv_nc_init_orig(struct batadv_orig_node *orig_node)
- }
- 
- static inline bool batadv_nc_skb_forward(struct sk_buff *skb,
--					 struct batadv_neigh_node *neigh_node,
--					 struct ethhdr *ethhdr)
-+					 struct batadv_neigh_node *neigh_node)
- {
- 	return false;
- }
-diff --git a/routing.c b/routing.c
-index 0e10720..5c8a552 100644
---- a/routing.c
-+++ b/routing.c
-@@ -285,7 +285,7 @@ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
- 	icmp_packet->msg_type = BATADV_ECHO_REPLY;
- 	icmp_packet->header.ttl = BATADV_TTL;
- 
--	if (batadv_send_skb_to_orig(skb, orig_node, NULL))
-+	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
- 		ret = NET_RX_SUCCESS;
- 
- out:
-@@ -333,7 +333,7 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
- 	icmp_packet->msg_type = BATADV_TTL_EXCEEDED;
- 	icmp_packet->header.ttl = BATADV_TTL;
- 
--	if (batadv_send_skb_to_orig(skb, orig_node, NULL))
-+	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
- 		ret = NET_RX_SUCCESS;
- 
- out:
-@@ -410,7 +410,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
- 	icmp_packet->header.ttl--;
- 
- 	/* route it */
--	if (batadv_send_skb_to_orig(skb, orig_node, recv_if))
-+	if (batadv_send_skb_to_orig(skb, orig_node, recv_if) != NET_XMIT_DROP)
- 		ret = NET_RX_SUCCESS;
- 
- out:
-@@ -775,7 +775,7 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
- 	struct batadv_neigh_node *neigh_node = NULL;
- 	struct batadv_unicast_packet *unicast_packet;
- 	struct ethhdr *ethhdr = eth_hdr(skb);
--	int ret = NET_RX_DROP;
-+	int res, ret = NET_RX_DROP;
- 	struct sk_buff *new_skb;
- 
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
-@@ -835,16 +835,19 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
- 	/* decrement ttl */
- 	unicast_packet->header.ttl--;
- 
--	/* network code packet if possible */
--	if (batadv_nc_skb_forward(skb, neigh_node, ethhdr)) {
--		ret = NET_RX_SUCCESS;
--	} else if (batadv_send_skb_to_orig(skb, orig_node, recv_if)) {
--		ret = NET_RX_SUCCESS;
-+	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
- 
--		/* Update stats counter */
-+	/* translate transmit result into receive result */
-+	if (res == NET_XMIT_SUCCESS) {
-+		/* skb was transmitted and consumed */
- 		batadv_inc_counter(bat_priv, BATADV_CNT_FORWARD);
- 		batadv_add_counter(bat_priv, BATADV_CNT_FORWARD_BYTES,
- 				   skb->len + ETH_HLEN);
-+
-+		ret = NET_RX_SUCCESS;
-+	} else if (res == NET_XMIT_POLICED) {
-+		/* skb was buffered and consumed */
-+		ret = NET_RX_SUCCESS;
- 	}
- 
- out:
-diff --git a/send.c b/send.c
-index ce69f45..e9ff8d8 100644
---- a/send.c
-+++ b/send.c
-@@ -96,26 +96,37 @@ send_skb_err:
-  * host, NULL can be passed as recv_if and no interface alternating is
-  * attempted.
-  *
-- * Returns TRUE on success; FALSE otherwise.
-+ * Returns NET_XMIT_SUCCESS on success, NET_XMIT_DROP on failure, or
-+ * NET_XMIT_POLICED if the skb is buffered for later transmit.
-  */
--bool batadv_send_skb_to_orig(struct sk_buff *skb,
--			     struct batadv_orig_node *orig_node,
--			     struct batadv_hard_iface *recv_if)
-+int batadv_send_skb_to_orig(struct sk_buff *skb,
-+			    struct batadv_orig_node *orig_node,
-+			    struct batadv_hard_iface *recv_if)
- {
- 	struct batadv_priv *bat_priv = orig_node->bat_priv;
- 	struct batadv_neigh_node *neigh_node;
-+	int ret = NET_XMIT_DROP;
- 
- 	/* batadv_find_router() increases neigh_nodes refcount if found. */
- 	neigh_node = batadv_find_router(bat_priv, orig_node, recv_if);
- 	if (!neigh_node)
--		return false;
-+		return ret;
- 
--	/* route it */
--	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
-+	/* try to network code the packet, if it is received on an interface
-+	 * (i.e. being forwarded). If the packet originates from this node or if
-+	 * network coding fails, then send the packet as usual.
-+	 */
-+	if (recv_if && batadv_nc_skb_forward(skb, neigh_node)) {
-+		ret = NET_XMIT_POLICED;
-+	} else {
-+		batadv_send_skb_packet(skb, neigh_node->if_incoming,
-+				       neigh_node->addr);
-+		ret = NET_XMIT_SUCCESS;
-+	}
- 
- 	batadv_neigh_node_free_ref(neigh_node);
- 
--	return true;
-+	return ret;
- }
- 
- void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface)
-diff --git a/send.h b/send.h
-index 38e662f..e7b1788 100644
---- a/send.h
-+++ b/send.h
-@@ -23,9 +23,9 @@
- int batadv_send_skb_packet(struct sk_buff *skb,
- 			   struct batadv_hard_iface *hard_iface,
- 			   const uint8_t *dst_addr);
--bool batadv_send_skb_to_orig(struct sk_buff *skb,
--			     struct batadv_orig_node *orig_node,
--			     struct batadv_hard_iface *recv_if);
-+int batadv_send_skb_to_orig(struct sk_buff *skb,
-+			    struct batadv_orig_node *orig_node,
-+			    struct batadv_hard_iface *recv_if);
- void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface);
- int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 				    const struct sk_buff *skb,
-diff --git a/translation-table.c b/translation-table.c
-index e272f68..5948a21 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1713,7 +1713,7 @@ static int batadv_send_tt_request(struct batadv_priv *bat_priv,
- 
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_REQUEST_TX);
- 
--	if (batadv_send_skb_to_orig(skb, dst_orig_node, NULL))
-+	if (batadv_send_skb_to_orig(skb, dst_orig_node, NULL) != NET_XMIT_DROP)
- 		ret = 0;
- 
- out:
-@@ -1737,7 +1737,7 @@ batadv_send_other_tt_response(struct batadv_priv *bat_priv,
- 	struct batadv_orig_node *req_dst_orig_node;
- 	struct batadv_orig_node *res_dst_orig_node = NULL;
- 	uint8_t orig_ttvn, req_ttvn, ttvn;
--	int ret = false;
-+	int res, ret = false;
- 	unsigned char *tt_buff;
- 	bool full_table;
- 	uint16_t tt_len, tt_tot;
-@@ -1832,7 +1832,9 @@ batadv_send_other_tt_response(struct batadv_priv *bat_priv,
- 
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_RESPONSE_TX);
- 
--	if (batadv_send_skb_to_orig(skb, res_dst_orig_node, NULL))
-+	res = batadv_send_skb_to_orig(skb, res_dst_orig_node, NULL);
-+
-+	if (res != NET_XMIT_DROP)
- 		ret = true;
- 	goto out;
- 
-@@ -1947,7 +1949,7 @@ batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_RESPONSE_TX);
- 
--	if (batadv_send_skb_to_orig(skb, orig_node, NULL))
-+	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
- 		ret = true;
- 	goto out;
- 
-@@ -2260,7 +2262,7 @@ static void batadv_send_roam_adv(struct batadv_priv *bat_priv, uint8_t *client,
- 
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_ROAM_ADV_TX);
- 
--	if (batadv_send_skb_to_orig(skb, orig_node, NULL))
-+	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
- 		ret = 0;
- 
- out:
-diff --git a/unicast.c b/unicast.c
-index 0bb3b59..dc8b5d4 100644
---- a/unicast.c
-+++ b/unicast.c
-@@ -464,7 +464,7 @@ find_router:
- 		goto out;
- 	}
- 
--	if (batadv_send_skb_to_orig(skb, orig_node, NULL))
-+	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
- 		ret = 0;
- 
- out:
-diff --git a/vis.c b/vis.c
-index 94eaeb5..4983340 100644
---- a/vis.c
-+++ b/vis.c
-@@ -697,7 +697,7 @@ static void batadv_broadcast_vis_packet(struct batadv_priv *bat_priv,
- 	struct batadv_orig_node *orig_node;
- 	struct batadv_vis_packet *packet;
- 	struct sk_buff *skb;
--	uint32_t i;
-+	uint32_t i, res;
- 
- 
- 	packet = (struct batadv_vis_packet *)info->skb_packet->data;
-@@ -724,7 +724,8 @@ static void batadv_broadcast_vis_packet(struct batadv_priv *bat_priv,
- 			if (!skb)
- 				continue;
- 
--			if (!batadv_send_skb_to_orig(skb, orig_node, NULL))
-+			res = batadv_send_skb_to_orig(skb, orig_node, NULL);
-+			if (res == NET_XMIT_DROP)
- 				kfree_skb(skb);
- 		}
- 		rcu_read_unlock();
-@@ -748,7 +749,7 @@ static void batadv_unicast_vis_packet(struct batadv_priv *bat_priv,
- 	if (!skb)
- 		goto out;
- 
--	if (!batadv_send_skb_to_orig(skb, orig_node, NULL))
-+	if (batadv_send_skb_to_orig(skb, orig_node, NULL) == NET_XMIT_DROP)
- 		kfree_skb(skb);
- 
- out:
--- 
-1.8.2.1
+Cheers,
 
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--n2Pv11Ogg/Ox8ay5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRcp6UAAoJEADl0hg6qKeO3hIP/0hN53/86MITI/I64OP8bzBi
+K9zBWvmetxVDjpwDfn7vx9AF7sqX3it8VR/hB98new32ZTOvnwgIcma2pi5ZqqKm
+vhTmLG6nLbnY5M2jpTCkC5Wm/HdoJeryXOBmnhbCMeVvu2UqHYmLkXmVwNesCh68
+xvFhmMq3ScTHcoUYhLhU3shh1A449VZlIw65ybEs9IZ4fGBrgza0w5NYnC1KmZZG
+PoEX79ogZslS9ODhKHREum4/jCoKoPB2S/3TqBY0H6NPpKd8R9Mx5PMudrNjfMem
+yMtF+Pm068aE1rAkjBb+gXfhlKzW8ZEk9GR7IYEalN3/lgLm9Z4xO70B0r6XuqVd
+egcHkULLY2HvALoNWY3bFcm4YQpj7qJ5XsW1dwc75IwrPqkFLAqUkEKsJeH5IbL2
+Vo7D4i6Mgy+NdLwp7mT/UBvk2iY3MhW9q5+R5Ixt+INoqb9su70fm70sHSPy0eRs
+7ppa8pLUpOFvoIF2KpOoUHNnpHtwoDCtDpA6RD2+JXK3CNfbLZKTtr8ocF4zlUzy
+hGAxxxhB3tEF+XLfny203Jxz9PQrVEEvDd8a4MW74P5aH0L/qLu3e8ux4cAnGYj4
+p858hHvs7Rn1pS8J9rQtpcyggb9dMJgXzXj3lM6uGxl/b+daSm2C4+YSXEs3MsdT
+7doF/6loB8b7+fJ/8o8M
+=mSCT
+-----END PGP SIGNATURE-----
+
+--n2Pv11Ogg/Ox8ay5--
