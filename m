@@ -1,11 +1,8 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sat, 20 Apr 2013 13:08:17 +0200
-Message-Id: <1366456097-1447-7-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1366456097-1447-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-References: <1366456097-1447-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv3 6/6] batman-adv: only add recordroute
-	information to icmp request/reply
+Date: Sat, 20 Apr 2013 13:08:11 +0200
+Message-Id: <1366456097-1447-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCHv3 0/6] compat bum work
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,30 +17,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Adding host information for record route is only required for ICMP
-requests and replys, and should not be added to just any (future?)
-packet type.
+Changes to v2:
+ * add some kernel doc
+ * fix typos in commit messages
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
- routing.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Simon Wunderlich (6):
+  batman-adv: remove vis functionality
+  batman-adv: add build check macros for packet member offset
+  batman-adv: reorder packet types
+  batman-adv: remove packed from batadv_ogm_packet
+  batman-adv: reorder batadv_iv_flags
+  batman-adv: only add recordroute information to icmp request/reply
 
-diff --git a/routing.c b/routing.c
-index cb219e1..b2efdbc 100644
---- a/routing.c
-+++ b/routing.c
-@@ -379,7 +379,9 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
- 	icmp_packet = (struct batadv_icmp_packet_rr *)skb->data;
- 
- 	/* add record route information if not full */
--	if ((hdr_size == sizeof(struct batadv_icmp_packet_rr)) &&
-+	if ((icmp_packet->msg_type == BATADV_ECHO_REPLY ||
-+	     icmp_packet->msg_type == BATADV_ECHO_REQUEST) &&
-+	    (hdr_size == sizeof(struct batadv_icmp_packet_rr)) &&
- 	    (icmp_packet->rr_cur < BATADV_RR_LEN)) {
- 		memcpy(&(icmp_packet->rr[icmp_packet->rr_cur]),
- 		       ethhdr->h_dest, ETH_ALEN);
+ Makefile.kbuild  |    1 -
+ bat_iv_ogm.c     |    7 -
+ debugfs.c        |    9 -
+ hard-interface.c |    9 -
+ main.c           |   39 ++-
+ packet.h         |   75 +++--
+ routing.c        |   83 ++---
+ routing.h        |    2 +
+ send.c           |    1 -
+ soft-interface.c |    1 -
+ sysfs.c          |   72 -----
+ types.h          |   82 -----
+ vis.c            |  935 ------------------------------------------------------
+ vis.h            |   36 ---
+ 14 files changed, 99 insertions(+), 1253 deletions(-)
+ delete mode 100644 vis.c
+ delete mode 100644 vis.h
+
 -- 
 1.7.10.4
 
