@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 23 Apr 2013 16:34:32 +0200
-Message-Id: <1366727676-23233-5-git-send-email-ordex@autistici.org>
+Date: Tue, 23 Apr 2013 16:34:33 +0200
+Message-Id: <1366727676-23233-6-git-send-email-ordex@autistici.org>
 In-Reply-To: <1366727676-23233-1-git-send-email-ordex@autistici.org>
 References: <1366727676-23233-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 4/7] batman-adv: make the GW component
-	vlan-featured
+Subject: [B.A.T.M.A.N.] [PATCH 4/7] batman-adv: make the GW module correctly
+	talk to the new VLAN-TT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,26 +28,31 @@ vlan ID
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- gateway_client.c | 6 +++---
- gateway_client.h | 3 ++-
- soft-interface.c | 3 ++-
- 3 files changed, 7 insertions(+), 5 deletions(-)
+ gateway_client.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/gateway_client.c b/gateway_client.c
-index 8812965..5862cff 100644
+index 8812965..a2cd2df 100644
 --- a/gateway_client.c
 +++ b/gateway_client.c
-@@ -635,7 +635,8 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- }
- 
- bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
--			    struct sk_buff *skb, struct ethhdr *ethhdr)
-+			    struct sk_buff *skb, struct ethhdr *ethhdr,
-+			    unsigned short vid)
- {
+@@ -640,17 +640,24 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
  	struct batadv_neigh_node *neigh_curr = NULL, *neigh_old = NULL;
  	struct batadv_orig_node *orig_dst_node = NULL;
-@@ -649,8 +650,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
+ 	struct batadv_gw_node *curr_gw = NULL;
++	struct vlan_ethhdr *vhdr;
+ 	bool ret, out_of_range = false;
+ 	unsigned int header_len = 0;
++	unsigned short vid = BATADV_NO_FLAGS;
+ 	uint8_t curr_tq_avg;
+ 
++	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
++		vhdr = (struct vlan_ethhdr *)ethhdr;
++		vid = ntohs(vhdr->h_vlan_TCI);
++		vid |= BATADV_VLAN_HAS_TAG;
++	}
++
+ 	ret = batadv_gw_is_dhcp_target(skb, &header_len);
+ 	if (!ret)
  		goto out;
  
  	orig_dst_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
@@ -57,33 +62,6 @@ index 8812965..5862cff 100644
  	if (!orig_dst_node)
  		goto out;
  
-diff --git a/gateway_client.h b/gateway_client.h
-index 039902d..e276d70 100644
---- a/gateway_client.h
-+++ b/gateway_client.h
-@@ -35,6 +35,7 @@ void batadv_gw_node_purge(struct batadv_priv *bat_priv);
- int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset);
- bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len);
- bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
--			    struct sk_buff *skb, struct ethhdr *ethhdr);
-+			    struct sk_buff *skb, struct ethhdr *ethhdr,
-+			    unsigned short vid);
- 
- #endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
-diff --git a/soft-interface.c b/soft-interface.c
-index 8911fe5..1559854 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -267,7 +267,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	/* unicast packet */
- 	} else {
- 		if (atomic_read(&bat_priv->gw_mode) != BATADV_GW_MODE_OFF) {
--			ret = batadv_gw_out_of_range(bat_priv, skb, ethhdr);
-+			ret = batadv_gw_out_of_range(bat_priv, skb, ethhdr,
-+						     vid);
- 			if (ret)
- 				goto dropped;
- 		}
 -- 
 1.8.1.5
 
